@@ -82,16 +82,16 @@
 	const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 	const ROW_SEAT_COUNTS: Record<string, number> = {
-		A: 21,
+		A: 22,
 		B: 23,
 		C: 25,
 		D: 26,
 		E: 26,
-		F: 26,
-		G: 27,
+		F: 28,
+		G: 28,
 		H: 27,
 		I: 26,
-		J: 23
+		J: 26
 	};
 
 	// State
@@ -569,9 +569,9 @@
 			</div>
 		</div>
 
-		<div class="w-full overflow-x-auto custom-scrollbar">
-			<div class="min-w-max mx-auto px-4">
-				<div class="min-w-[300px]">
+		<div class="w-full overflow-hidden">
+			<div class="w-full mx-auto px-2">
+				<div class="w-full">
 					<div
 						class="w-3/4 mx-auto h-4 bg-gradient-to-b from-gray-200 to-white rounded-t-2xl mb-8 relative shadow-sm border-t border-x border-gray-300"
 					>
@@ -630,36 +630,219 @@
 
 					<!-- MAP VIEW: SEATS -->
 					{#if mapView === 'SEATS'}
-						<div class="flex flex-col gap-3 pb-4">
+						{@const maxSeatCount = Math.max(...Object.values(seatStats), 1)}
+						<!-- Seat structure per row (total 28 max seats + 3 aisles = 31 columns)
+							 Layout: [Label] [G1: 6 seats] [Aisle] [G2: 6 seats] [Aisle] [G3: 6 seats] [Aisle] [G4: 10 seats]
+						-->
+						{@const SEAT_LAYOUT = {
+							A: {
+								start: 3,
+								seats: 22,
+								groups: [
+									[3, 6],
+									[7, 12],
+									[13, 18],
+									[19, 24]
+								]
+							},
+							B: {
+								start: 3,
+								seats: 23,
+								groups: [
+									[3, 6],
+									[7, 12],
+									[13, 18],
+									[19, 25]
+								]
+							},
+							C: {
+								start: 2,
+								seats: 25,
+								groups: [
+									[2, 6],
+									[7, 12],
+									[13, 18],
+									[19, 26]
+								]
+							},
+							D: {
+								start: 2,
+								seats: 26,
+								groups: [
+									[2, 6],
+									[7, 12],
+									[13, 18],
+									[19, 27]
+								]
+							},
+							E: {
+								start: 2,
+								seats: 26,
+								groups: [
+									[2, 6],
+									[7, 12],
+									[13, 18],
+									[19, 27]
+								]
+							},
+							F: {
+								start: 1,
+								seats: 28,
+								groups: [
+									[1, 6],
+									[7, 12],
+									[13, 18],
+									[19, 28]
+								]
+							},
+							G: {
+								start: 1,
+								seats: 28,
+								groups: [
+									[1, 6],
+									[7, 12],
+									[13, 18],
+									[19, 28]
+								]
+							},
+							H: {
+								start: 1,
+								seats: 27,
+								groups: [
+									[1, 6],
+									[7, 12],
+									[13, 18],
+									[19, 27]
+								]
+							},
+							I: {
+								start: 2,
+								seats: 26,
+								groups: [
+									[2, 6],
+									[7, 12],
+									[13, 18],
+									[19, 27]
+								]
+							},
+							J: {
+								start: 2,
+								seats: 26,
+								groups: [
+									[2, 6],
+									[7, 12],
+									[13, 18],
+									[19, 27]
+								]
+							}
+						}}
+						<div class="seat-map-grid">
 							{#each THEATER_ROWS as row}
-								<div class="flex items-center gap-4">
-									<div
-										class="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 bg-gray-100 rounded-xl flex items-center justify-center text-sm font-bold text-gray-500 shadow-sm flex-shrink-0"
-									>
-										{row}
-									</div>
-									<div class="flex gap-1 md:gap-1.5">
-										{#each getSeatsForRow(row, ROW_SEAT_COUNTS[row] || 20) as i}
-											{@const count = seatStats[`${row}-${i}`] || 0}
-											{@const hasVisit = count > 0}
+								{@const layout = SEAT_LAYOUT[row]}
+								<div class="grid-row">
+									<!-- Row Label -->
+									<div class="row-label">{row}</div>
 
-											{#if i === 7 || i === 18}
-												<div class="w-3 md:w-8 flex-shrink-0"></div>
-											{/if}
+									<!-- Group 1 (columns 1-6) -->
+									{#each [1, 2, 3, 4, 5, 6] as col}
+										{@const seatNum = col - layout.start + 1}
+										{@const isValidSeat = col >= layout.groups[0][0] && col <= layout.groups[0][1]}
+										{@const seatKey = `${row}-${seatNum}`}
+										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
+										{@const hasVisit = count > 0}
+										{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
 
+										{#if isValidSeat}
 											<div
-												class={`w-5 h-5 md:w-7 md:h-7 rounded-md text-[8px] md:text-[9px] flex items-center justify-center font-bold border transition-all cursor-default relative group/seat flex-shrink-0
-                                       ${
-																					hasVisit
-																						? 'bg-red-600 border-red-700 text-white shadow-sm z-10'
-																						: 'bg-white border-gray-200 text-gray-300 hover:border-gray-300'
-																				}`}
-												title={`Row ${row}-${i}: Visited ${count} times`}
+												class="map-seat {hasVisit ? 'active' : ''}"
+												style={hasVisit ? `--intensity: ${intensity}` : ''}
+												data-title="{seatKey}: {count}x"
 											>
-												{i}
+												<span class="seat-id">{seatKey}</span>
+												{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
 											</div>
-										{/each}
-									</div>
+										{:else}
+											<div class="empty-cell"></div>
+										{/if}
+									{/each}
+
+									<!-- Aisle 1 -->
+									<div class="aisle-gap"></div>
+
+									<!-- Group 2 (columns 7-12) -->
+									{#each [7, 8, 9, 10, 11, 12] as col}
+										{@const seatNum = col - layout.start + 1}
+										{@const isValidSeat = col >= layout.groups[1][0] && col <= layout.groups[1][1]}
+										{@const seatKey = `${row}-${seatNum}`}
+										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
+										{@const hasVisit = count > 0}
+										{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
+
+										{#if isValidSeat}
+											<div
+												class="map-seat {hasVisit ? 'active' : ''}"
+												style={hasVisit ? `--intensity: ${intensity}` : ''}
+												data-title="{seatKey}: {count}x"
+											>
+												<span class="seat-id">{seatKey}</span>
+												{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
+											</div>
+										{:else}
+											<div class="empty-cell"></div>
+										{/if}
+									{/each}
+
+									<!-- Aisle 2 -->
+									<div class="aisle-gap"></div>
+
+									<!-- Group 3 (columns 13-18) -->
+									{#each [13, 14, 15, 16, 17, 18] as col}
+										{@const seatNum = col - layout.start + 1}
+										{@const isValidSeat = col >= layout.groups[2][0] && col <= layout.groups[2][1]}
+										{@const seatKey = `${row}-${seatNum}`}
+										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
+										{@const hasVisit = count > 0}
+										{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
+
+										{#if isValidSeat}
+											<div
+												class="map-seat {hasVisit ? 'active' : ''}"
+												style={hasVisit ? `--intensity: ${intensity}` : ''}
+												data-title="{seatKey}: {count}x"
+											>
+												<span class="seat-id">{seatKey}</span>
+												{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
+											</div>
+										{:else}
+											<div class="empty-cell"></div>
+										{/if}
+									{/each}
+
+									<!-- Aisle 3 -->
+									<div class="aisle-gap"></div>
+
+									<!-- Group 4 (columns 19-28) -->
+									{#each [19, 20, 21, 22, 23, 24, 25, 26, 27, 28] as col}
+										{@const seatNum = col - layout.start + 1}
+										{@const isValidSeat = col >= layout.groups[3][0] && col <= layout.groups[3][1]}
+										{@const seatKey = `${row}-${seatNum}`}
+										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
+										{@const hasVisit = count > 0}
+										{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
+
+										{#if isValidSeat}
+											<div
+												class="map-seat {hasVisit ? 'active' : ''}"
+												style={hasVisit ? `--intensity: ${intensity}` : ''}
+												data-title="{seatKey}: {count}x"
+											>
+												<span class="seat-id">{seatKey}</span>
+												{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
+											</div>
+										{:else}
+											<div class="empty-cell"></div>
+										{/if}
+									{/each}
 								</div>
 							{/each}
 						</div>
