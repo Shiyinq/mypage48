@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { isAuthenticated } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import {
@@ -14,43 +15,156 @@
 		Zap,
 		TrendingUp,
 		Music,
-		Calendar
+		Calendar,
+		Award
 	} from 'lucide-svelte';
+	import { auth } from '$lib/apis/auth';
+	import { theater } from '$lib/apis/theater';
+	import { showToast } from '$lib/stores';
+	import type { Ticket } from '$lib/types';
 
-	// Dummy Data
-	const user = {
-		fullName: 'Catherina Vallencia',
-		username: '@cerine_jkt48',
-		id: 'JKT-8839204',
-		joinDate: 'Sept 2022',
-		level: {
-			current: 'Wota Elite',
-			xp: 2450,
-			nextLevelXp: 3000,
-			rank: 12 // Rank in server/global
-		},
-		oshimen: {
-			name: 'Oline Manuel',
-			nickname: 'Oline',
-			generation: '12th Gen',
-			imageUrl: 'https://jkt48.com/profile/oline_manuel.jpg',
-			catchphrase:
-				'Seperti kembang api yang bersinar indah, aku ingin menerangi harimu! Halo aku Oline!'
-		},
-		stats: {
-			shows: 42,
-			mvpPoints: 120,
-			oshiVisits: 15
-		}
+	// Profile data from API
+	interface ProfileData {
+		userId: string;
+		profilePicture: string | null;
+		name: string;
+		email: string;
+		username: string;
+		memberId: string | null;
+		ofcStatus: string | null;
+	}
+
+	let profile: ProfileData | null = null;
+	let tickets: Ticket[] = [];
+	let recentShows: Ticket[] = [];
+	let loading = true;
+
+	// Computed stats
+	$: totalShows = tickets.length;
+
+	// Calculate achievements based on milestones (same logic as achievements page)
+	$: totalAchievements = (() => {
+		if (tickets.length === 0) return 0;
+
+		let count = 0;
+		const totalShows = tickets.length;
+
+		// Date Calculations
+		const sortedDates = [...tickets]
+			.map((t) => new Date(t.event.date).getTime())
+			.sort((a, b) => a - b);
+		const firstDate = sortedDates[0];
+		const lastDate = sortedDates[sortedDates.length - 1];
+		const timeSpanDays = firstDate && lastDate ? (lastDate - firstDate) / (1000 * 60 * 60 * 24) : 0;
+
+		// Show Counts
+		const showCounts: Record<string, number> = {};
+		tickets.forEach((t) => {
+			const title = t.event.title.trim();
+			showCounts[title] = (showCounts[title] || 0) + 1;
+		});
+		const maxSameShow = Math.max(...Object.values(showCounts), 0);
+
+		// Row Calculations
+		const hasRowA = tickets.some((t) => t.seat.section.toUpperCase() === 'A');
+		const hasRowJ = tickets.some((t) => t.seat.section.toUpperCase() === 'J');
+		const collectedRows = new Set(
+			tickets.map((t) => t.seat.section.trim().toUpperCase().charAt(0))
+		);
+		const targetRows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+		const uniqueRowsCount = targetRows.filter((r) => collectedRows.has(r)).length;
+
+		// Spending
+		const totalSpent = tickets.reduce((acc, t) => acc + t.price, 0);
+
+		// Count unlocked milestones
+		if (totalShows >= 1) count++; // First Step
+		if (totalShows >= 10) count++; // Regular Visitor
+		if (totalShows >= 50) count++; // Dedicated Fan
+		if (totalShows >= 100) count++; // Century Club
+		if (totalShows >= 150) count++; // Theater Icon
+		if (totalShows >= 200) count++; // Legendary Wota
+		if (maxSameShow >= 10) count++; // Super Fan
+		if (maxSameShow >= 20) count++; // Mega Fan
+		if (maxSameShow >= 30) count++; // Ultra Fan
+		if (timeSpanDays >= 365) count++; // Theater Enthusiast
+		if (timeSpanDays >= 730) count++; // Theater Veteran
+		if (timeSpanDays >= 1095) count++; // Theater Legend
+		if (hasRowA) count++; // Elite Seat
+		if (hasRowJ) count++; // Back Row Warrior
+		if (uniqueRowsCount >= 10) count++; // Seat Explorer
+		if (totalSpent >= 5000000) count++; // Top Supporter
+
+		return count;
+	})();
+
+	$: oshiVisits = tickets.length; // For now, same as total shows
+
+	// Static data for level (can be dynamic later)
+	const level = {
+		current: 'Wota Elite',
+		xp: 2450,
+		nextLevelXp: 3000,
+		rank: 12
+	};
+
+	// Static oshimen data (can be dynamic later)
+	const oshimen = {
+		name: 'Oline Manuel',
+		nickname: 'Oline',
+		generation: '12th Gen',
+		imageUrl: 'https://jkt48.com/profile/oline_manuel.jpg',
+		catchphrase:
+			'Seperti kembang api yang bersinar indah, aku ingin menerangi harimu! Halo aku Oline!'
 	};
 
 	// Calculate Progress
-	$: progressPercent = (user.level.xp / user.level.nextLevelXp) * 100;
+	$: progressPercent = (level.xp / level.nextLevelXp) * 100;
 
-	import { auth } from '$lib/apis/auth';
-	import { showToast } from '$lib/stores';
+	// Format date for Recent Activity
+	function formatActivityDate(dateStr: string): string {
+		const date = new Date(dateStr);
+		const now = new Date();
+		const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
-	// ... (imports)
+		if (diffDays === 0) return 'Today';
+		if (diffDays === 1) return 'Yesterday';
+		if (diffDays < 7) return `${diffDays} days ago`;
+		if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+		return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+	}
+
+	onMount(async () => {
+		try {
+			// Fetch profile and tickets in parallel
+			const [profileData, ticketsData] = await Promise.all([
+				auth.getProfile(),
+				theater.getMyTickets()
+			]);
+
+			// Map profile data
+			profile = {
+				userId: (profileData as any).userId || '',
+				profilePicture: (profileData as any).profilePicture || null,
+				name: (profileData as any).name || '',
+				email: (profileData as any).email || '',
+				username: (profileData as any).username || '',
+				memberId: (profileData as any).memberId || null,
+				ofcStatus: (profileData as any).ofcStatus || null
+			};
+
+			tickets = ticketsData || [];
+
+			// Sort tickets by event date descending and get 5 most recent
+			recentShows = [...tickets]
+				.sort((a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime())
+				.slice(0, 5);
+		} catch (e) {
+			console.error('Error loading profile data:', e);
+		} finally {
+			loading = false;
+		}
+	});
 
 	const logout = async () => {
 		try {
@@ -153,7 +267,7 @@
 							</div>
 							<div class="text-right">
 								<p class="text-[10px] text-gray-400 font-bold">MEMBER ID</p>
-								<p class="font-mono font-bold text-shadow">{user.id}</p>
+								<p class="font-mono font-bold text-shadow">{profile?.memberId || 'N/A'}</p>
 							</div>
 						</div>
 
@@ -183,7 +297,7 @@
 							<div>
 								<p class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">Card Holder</p>
 								<p class="text-lg font-bold tracking-wide uppercase text-shadow-sm">
-									{user.fullName}
+									{profile?.name || 'Loading...'}
 								</p>
 							</div>
 							<div class="bg-white p-1 rounded-lg">
@@ -199,11 +313,11 @@
 				<div class="flex justify-between items-end mb-2">
 					<div>
 						<p class="text-xs font-bold text-gray-400 uppercase">Current Rank</p>
-						<h3 class="text-2xl font-black idol-text-gradient">{user.level.current}</h3>
+						<h3 class="text-2xl font-black idol-text-gradient">{level.current}</h3>
 					</div>
 					<div class="text-right">
 						<p class="text-xs font-bold text-gray-500">
-							<span class="text-red-600">{user.level.xp}</span> / {user.level.nextLevelXp} XP
+							<span class="text-red-600">{level.xp}</span> / {level.nextLevelXp} XP
 						</p>
 					</div>
 				</div>
@@ -235,7 +349,7 @@
 					>
 						<Trophy class="w-4 h-4" />
 					</div>
-					<span class="text-2xl font-black text-gray-800">{user.stats.shows}</span>
+					<span class="text-2xl font-black text-gray-800">{totalShows}</span>
 					<span class="text-[10px] font-bold text-gray-400 uppercase">Total Shows</span>
 				</div>
 				<div
@@ -246,8 +360,8 @@
 					>
 						<Star class="w-4 h-4" />
 					</div>
-					<span class="text-2xl font-black text-gray-800">{user.stats.mvpPoints}</span>
-					<span class="text-[10px] font-bold text-gray-400 uppercase">MVP Points</span>
+					<span class="text-2xl font-black text-gray-800">{totalAchievements}</span>
+					<span class="text-[10px] font-bold text-gray-400 uppercase">Achievements</span>
 				</div>
 			</div>
 		</div>
@@ -274,8 +388,8 @@
 							></div>
 							<div class="w-32 h-32 rounded-full p-1 bg-white shadow-xl relative z-10">
 								<img
-									src={user.oshimen.imageUrl}
-									alt={user.oshimen.name}
+									src={oshimen.imageUrl}
+									alt={oshimen.name}
 									class="w-full h-full rounded-full object-cover"
 								/>
 								<div
@@ -289,11 +403,11 @@
 						<!-- Info -->
 						<div class="text-center md:text-left flex-1">
 							<div class="flex flex-col md:flex-row items-center gap-2 mb-1">
-								<h3 class="text-2xl font-black text-gray-800">{user.oshimen.name}</h3>
+								<h3 class="text-2xl font-black text-gray-800">{oshimen.name}</h3>
 								<span
 									class="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-md uppercase tracking-wide border border-red-200"
 								>
-									{user.oshimen.generation}
+									{oshimen.generation}
 								</span>
 							</div>
 
@@ -302,7 +416,7 @@
 								class="relative bg-gray-50 p-3 rounded-xl rounded-tl-none border border-gray-100 shadow-sm mt-2 inline-block"
 							>
 								<p class="text-xs text-gray-600 italic font-medium">
-									"{user.oshimen.catchphrase}"
+									"{oshimen.catchphrase}"
 								</p>
 							</div>
 						</div>
@@ -316,7 +430,7 @@
 							</div>
 							<div>
 								<p class="text-lg font-black text-gray-800 leading-none">
-									{user.stats.oshiVisits}
+									{oshiVisits}
 								</p>
 								<p class="text-[10px] font-bold text-gray-400 uppercase">Oshi Visits</p>
 							</div>
@@ -354,59 +468,54 @@
 				<div
 					class="space-y-4 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100"
 				>
-					<!-- Activity Item 1 -->
-					<div class="flex gap-4 relative z-10">
-						<div
-							class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-4 border-white shadow-sm bg-red-100 text-red-600"
-						>
-							<Music class="w-4 h-4" />
+					{#if loading}
+						<div class="flex items-center justify-center py-8">
+							<div
+								class="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"
+							></div>
+							<span class="ml-2 text-sm text-gray-500">Loading...</span>
 						</div>
-						<div
-							class="flex-1 bg-white/50 p-3 rounded-xl border border-gray-50 hover:bg-white transition-colors"
-						>
-							<div class="flex justify-between items-start">
-								<p class="text-sm font-bold text-gray-800">Attended 'Ingin Bertemu'</p>
-								<span class="text-[10px] font-medium text-gray-400">Yesterday</span>
+					{:else if recentShows.length === 0}
+						<div class="text-center py-8 text-gray-500">
+							<Music class="w-8 h-8 mx-auto mb-2 text-gray-300" />
+							<p class="text-sm">No shows attended yet</p>
+							<p class="text-xs text-gray-400">Start tracking your theater visits!</p>
+						</div>
+					{:else}
+						{#each recentShows as show}
+							<div class="flex gap-4 relative z-10">
+								<div
+									class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-4 border-white shadow-sm {show.two_shot
+										? 'bg-yellow-100 text-yellow-600'
+										: 'bg-red-100 text-red-600'}"
+								>
+									{#if show.two_shot}
+										<Zap class="w-4 h-4" />
+									{:else}
+										<Music class="w-4 h-4" />
+									{/if}
+								</div>
+								<div
+									class="flex-1 bg-white/50 p-3 rounded-xl border border-gray-50 hover:bg-white transition-colors"
+								>
+									<div class="flex justify-between items-start">
+										<p class="text-sm font-bold text-gray-800">
+											{show.two_shot ? '2-Shot at' : 'Attended'} '{show.event.title}'
+										</p>
+										<span class="text-[10px] font-medium text-gray-400"
+											>{formatActivityDate(show.event.date)}</span
+										>
+									</div>
+									<p class="text-xs text-gray-500 mt-0.5">
+										Row {show.seat.section}-{show.seat.number}
+										{#if show.two_shot}
+											• {show.two_shot.member_name}
+										{/if}
+									</p>
+								</div>
 							</div>
-							<p class="text-xs text-gray-500 mt-0.5">Row A - Great view!</p>
-						</div>
-					</div>
-
-					<!-- Activity Item 2 -->
-					<div class="flex gap-4 relative z-10">
-						<div
-							class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-4 border-white shadow-sm bg-yellow-100 text-yellow-600"
-						>
-							<Trophy class="w-4 h-4" />
-						</div>
-						<div
-							class="flex-1 bg-white/50 p-3 rounded-xl border border-gray-50 hover:bg-white transition-colors"
-						>
-							<div class="flex justify-between items-start">
-								<p class="text-sm font-bold text-gray-800">Unlocked 'Dedicated Fan'</p>
-								<span class="text-[10px] font-medium text-gray-400">3 days ago</span>
-							</div>
-							<p class="text-xs text-gray-500 mt-0.5">Reached 50 total shows</p>
-						</div>
-					</div>
-
-					<!-- Activity Item 3 -->
-					<div class="flex gap-4 relative z-10">
-						<div
-							class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-4 border-white shadow-sm bg-gray-100 text-gray-600"
-						>
-							<User class="w-4 h-4" />
-						</div>
-						<div
-							class="flex-1 bg-white/50 p-3 rounded-xl border border-gray-50 hover:bg-white transition-colors"
-						>
-							<div class="flex justify-between items-start">
-								<p class="text-sm font-bold text-gray-800">Updated Oshi List</p>
-								<span class="text-[10px] font-medium text-gray-400">1 week ago</span>
-							</div>
-							<p class="text-xs text-gray-500 mt-0.5">Set Oline Manuel as Kami-Oshi</p>
-						</div>
-					</div>
+						{/each}
+					{/if}
 				</div>
 			</div>
 		</div>
