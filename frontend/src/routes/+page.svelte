@@ -100,7 +100,7 @@
 	let startMonth: number = 0;
 	let endMonth: number = 11;
 	let isFilterOpen: boolean = false;
-	let mapView: 'ROWS' | 'SEATS' = 'ROWS';
+	let mapView: 'ROWS' | 'SEATS' = 'SEATS';
 
 	onMount(async () => {
 		try {
