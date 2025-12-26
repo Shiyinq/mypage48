@@ -1,0 +1,58 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017
+      FRONTEND_URL: http://localhost:5050
+    depends_on:
+      mongodb:
+        condition: service_started
+      db_migration:
+        condition: service_completed_successfully
+
+
+  db_migration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python scripts/create_indexes.py
+    env_file:
+      - .env
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017
+    depends_on:
+      - mongodb
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        PUBLIC_CLIENT_SIDE_API_BASE_URL: http://localhost:8000/api
+        PUBLIC_SERVER_SIDE_API_BASE_URL: http://backend:8000/api
+    ports:
+      - "5050:5050"
+    env_file:
+      - .env
+    environment:
+      PORT: 5050
+      ORIGIN: http://localhost:5050
+
+
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+
+volumes:
+  mongodb_data:
