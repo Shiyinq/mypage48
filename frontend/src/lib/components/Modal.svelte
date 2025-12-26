@@ -52,7 +52,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		z-index: 50;
+		z-index: 9999;
 		animation: fadeIn 0.2s ease-out;
 	}
 
