@@ -267,7 +267,13 @@
 							</div>
 							<div class="text-right">
 								<p class="text-[10px] text-gray-400 font-bold">MEMBER ID</p>
-								<p class="font-mono font-bold text-shadow">{profile?.memberId || 'N/A'}</p>
+								<p class="font-mono font-bold text-shadow">
+									{#if loading}
+										<span class="inline-block w-20 h-4 bg-white/20 rounded animate-pulse"></span>
+									{:else}
+										{profile?.memberId || 'N/A'}
+									{/if}
+								</p>
 							</div>
 						</div>
 
@@ -297,7 +303,11 @@
 							<div>
 								<p class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">Card Holder</p>
 								<p class="text-lg font-bold tracking-wide uppercase text-shadow-sm">
-									{profile?.name || 'Loading...'}
+									{#if loading}
+										<span class="inline-block w-40 h-5 bg-white/20 rounded animate-pulse"></span>
+									{:else}
+										{profile?.name || 'N/A'}
+									{/if}
 								</p>
 							</div>
 							<div class="bg-white p-1 rounded-lg">
@@ -349,7 +359,11 @@
 					>
 						<Trophy class="w-4 h-4" />
 					</div>
-					<span class="text-2xl font-black text-gray-800">{totalShows}</span>
+					{#if loading}
+						<span class="inline-block w-10 h-7 bg-gray-200 rounded animate-pulse"></span>
+					{:else}
+						<span class="text-2xl font-black text-gray-800">{totalShows}</span>
+					{/if}
 					<span class="text-[10px] font-bold text-gray-400 uppercase">Total Shows</span>
 				</div>
 				<div
@@ -360,7 +374,11 @@
 					>
 						<Star class="w-4 h-4" />
 					</div>
-					<span class="text-2xl font-black text-gray-800">{totalAchievements}</span>
+					{#if loading}
+						<span class="inline-block w-10 h-7 bg-gray-200 rounded animate-pulse"></span>
+					{:else}
+						<span class="text-2xl font-black text-gray-800">{totalAchievements}</span>
+					{/if}
 					<span class="text-[10px] font-bold text-gray-400 uppercase">Achievements</span>
 				</div>
 			</div>
@@ -430,7 +448,11 @@
 							</div>
 							<div>
 								<p class="text-lg font-black text-gray-800 leading-none">
-									{oshiVisits}
+									{#if loading}
+										<span class="inline-block w-6 h-5 bg-gray-200 rounded animate-pulse"></span>
+									{:else}
+										{oshiVisits}
+									{/if}
 								</p>
 								<p class="text-[10px] font-bold text-gray-400 uppercase">Oshi Visits</p>
 							</div>
@@ -469,12 +491,19 @@
 					class="space-y-4 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100"
 				>
 					{#if loading}
-						<div class="flex items-center justify-center py-8">
-							<div
-								class="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"
-							></div>
-							<span class="ml-2 text-sm text-gray-500">Loading...</span>
-						</div>
+						<!-- Skeleton Loading for Activity Items -->
+						{#each [1, 2, 3] as _}
+							<div class="flex gap-4 relative z-10">
+								<div class="w-10 h-10 rounded-full flex-shrink-0 bg-gray-200 animate-pulse"></div>
+								<div class="flex-1 bg-white/50 p-3 rounded-xl border border-gray-50">
+									<div class="flex justify-between items-start mb-2">
+										<div class="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+										<div class="h-3 bg-gray-200 rounded w-16 animate-pulse"></div>
+									</div>
+									<div class="h-3 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+								</div>
+							</div>
+						{/each}
 					{:else if recentShows.length === 0}
 						<div class="text-center py-8 text-gray-500">
 							<Music class="w-8 h-8 mx-auto mb-2 text-gray-300" />
