@@ -13,6 +13,8 @@ class UserLoginBase(BaseModel):
     name: str
     email: str
     username: str
+    memberId: str | None = None
+    ofcStatus: str | None = None
 
 
 class UserLogin(UserLoginBase):
