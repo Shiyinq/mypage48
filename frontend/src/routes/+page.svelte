@@ -77,9 +77,9 @@
 		'August',
 		'September',
 		'October',
-		'November',
-		'December'
+		'November'
 	];
+	const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 	const ROW_SEAT_COUNTS: Record<string, number> = {
 		A: 21,
@@ -130,15 +130,19 @@
 	$: totalSpent = filteredTickets.reduce((acc, t) => acc + t.price, 0) as number;
 	$: totalVisits = filteredTickets.length as number;
 
-	// Day Data (for Pie Chart replacement / List)
-	$: dayData = (() => {
-		const counts: Record<string, number> = {};
+	// Day Stats (Sync with Monthly Style)
+	$: dayStats = (() => {
+		const stats = DAYS.map((name) => ({ name, count: 0 }));
 		filteredTickets.forEach((t) => {
 			let day = t.event.day || new Date(t.event.date).toLocaleString('en-US', { weekday: 'long' });
-			if (day) counts[day] = (counts[day] || 0) + 1;
+			if (day) {
+				const d = stats.find((s) => s.name.toLowerCase() === day.trim().toLowerCase());
+				if (d) d.count++;
+			}
 		});
-		return Object.entries(counts).sort((a, b) => b[1] - a[1]) as [string, number][];
-	})();
+		const maxCount = Math.max(...stats.map((s) => s.count), 1);
+		return { stats, maxCount };
+	})() as { stats: { name: string; count: number }[]; maxCount: number };
 
 	// Row Stats
 	$: rowStats = (() => {
@@ -706,38 +710,40 @@
 		</div>
 
 		<!-- Day Preference List (Replacing Pie Chart for now) -->
+		<!-- Day Preference Grid -->
 		<div class="glass-panel p-6 rounded-3xl flex flex-col">
-			<div class="mb-4">
+			<div class="mb-6">
 				<h3 class="text-xl font-bold text-gray-800">Day Preference</h3>
-				<p class="text-xs text-gray-400">Top visiting days</p>
+				<p class="text-xs text-gray-400">Weekly breakdown</p>
 			</div>
-			<div class="flex-1 flex flex-col gap-2 overflow-y-auto max-h-[300px] custom-scrollbar">
-				{#each dayData as [day, count], i}
-					<div
-						class="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 hover:border-red-100 dark:bg-gray-800 dark:border-gray-700"
-					>
+
+			<div class="grid grid-cols-3 sm:grid-cols-4 gap-3 flex-1 content-start">
+				{#each dayStats.stats as day}
+					{@const intensity = day.count > 0 ? 0.2 + (day.count / dayStats.maxCount) * 0.7 : 0.05}
+					{@const hasData = day.count > 0}
+					<div class="flex flex-col items-center group">
 						<div
-							class={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm ${i === 0 ? 'bg-red-500' : 'bg-gray-400'}`}
+							class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm"
+							style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : '#f9fafb'}; border-color: ${hasData ? 'transparent' : '#f3f4f6'}`}
 						>
-							{i + 1}
+							{#if hasData}
+								<span class="text-xl md:text-2xl font-bold text-white drop-shadow-sm"
+									>{day.count}</span
+								>
+								<span class="text-[8px] text-white/80 font-medium uppercase tracking-wider"
+									>Shows</span
+								>
+							{:else}
+								<span class="text-gray-300 text-xl font-bold opacity-30">-</span>
+							{/if}
 						</div>
-						<div class="flex-1">
-							<span class="font-bold text-gray-700 text-sm block">{day}</span>
-							<div class="w-full h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
-								<div
-									class="h-full bg-red-400 rounded-full"
-									style={`width: ${(count / totalVisits) * 100}%`}
-								></div>
-							</div>
+						<div class="text-center w-full">
+							<span class="text-[10px] font-bold text-gray-500 block uppercase tracking-wide"
+								>{day.name.substring(0, 3)}</span
+							>
 						</div>
-						<span class="font-bold text-gray-800">{count}</span>
 					</div>
 				{/each}
-				{#if dayData.length === 0}
-					<div class="flex items-center justify-center h-full text-gray-400 text-sm">
-						No data available
-					</div>
-				{/if}
 			</div>
 		</div>
 	</div>
