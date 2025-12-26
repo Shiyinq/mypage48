@@ -20,6 +20,9 @@ from src.users.repository import UserRepository
 from src.users.service import UserService
 from src.llm.repository import LLMRepository
 from src.llm.service import LLMService
+from src.members.repository import MemberRepository
+from src.members.service import MemberService
+
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/signin")
@@ -191,3 +194,14 @@ def get_theater_service(
 ) -> TheaterService:
     background_runner = AsyncBackgroundRunner()
     return TheaterService(repo, background_runner, config)
+
+
+def get_member_repository(db=Depends(get_db)) -> MemberRepository:
+    return MemberRepository(db)
+
+
+def get_member_service(
+    repo: MemberRepository = Depends(get_member_repository),
+    config: Settings = Depends(get_settings),
+) -> MemberService:
+    return MemberService(repo, config)
