@@ -1,322 +1,744 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { auth } from '$lib/apis/auth';
+	import { tickets, showToast } from '$lib/stores';
 	import { goto } from '$app/navigation';
-	import { fade, fly } from 'svelte/transition';
+	import { theater } from '$lib/apis/theater';
+	import StatCard from '$lib/components/StatCard.svelte';
+	import {
+		Ticket as TicketIcon,
+		Calendar,
+		DollarSign,
+		Armchair,
+		MapPin,
+		Filter,
+		ChevronDown,
+		LayoutDashboard,
+		X,
+		Star,
+		Grid3X3,
+		AlignJustify,
+		Heart,
+		Camera,
+		ChevronRight,
+		Crown,
+		User,
+		Wallet,
+		Users,
+		TrendingUp
+	} from 'lucide-svelte';
 
-	let loading = true;
+	// Constants
+	const SHOW_IMAGES = [
+		{
+			title: 'Pertaruhan Cinta',
+			image:
+				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1760105446/wwiaxahqs3ti0lhqdszz.jpg'
+		},
+		{
+			title: 'Pajama Drive',
+			image:
+				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1717174034/xspjxcs9wwm9jxwhiy5q.jpg'
+		},
+		{
+			title: 'Aturan Anti Cinta',
+			image:
+				'https://cdn.idntimes.com/content-images/post/20251115/50a27780-93e7-4e40-8474-60f6e0cca6da-251115200115.jpg'
+		},
+		{
+			title: 'Sambil Menggandeng Erat Tanganku',
+			image:
+				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1743898507/nvw4gqjtdhje2ftxt9i1.jpg'
+		},
+		{
+			title: 'Cara Meminum Ramune',
+			image:
+				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1702404446/nixg3rixpjpom3xa0ivf.jpg'
+		},
+		{
+			title: 'Ingin Bertemu',
+			image:
+				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1697224788/uploads/w2zvghwk8tocey8e8xhv.jpg'
+		},
+		{
+			title: 'KIRA KIRA GIRLS',
+			image:
+				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1763233779/tanfbrrf8oexxmmfoouh.jpg'
+		}
+	];
+
+	const MONTHS = [
+		'January',
+		'February',
+		'March',
+		'April',
+		'May',
+		'June',
+		'July',
+		'August',
+		'September',
+		'October',
+		'November',
+		'December'
+	];
+	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+	const ROW_SEAT_COUNTS: Record<string, number> = {
+		A: 21,
+		B: 23,
+		C: 25,
+		D: 26,
+		E: 26,
+		F: 26,
+		G: 27,
+		H: 27,
+		I: 26,
+		J: 23
+	};
+
+	// State
+	const currentYear: number = new Date().getFullYear();
+	let selectedYear: number = currentYear;
+	let startMonth: number = 0;
+	let endMonth: number = 11;
+	let isFilterOpen: boolean = false;
+	let mapView: 'ROWS' | 'SEATS' = 'ROWS';
 
 	onMount(async () => {
 		try {
-			// Check if already logged in, redirect to app
-			const user = await auth.getProfile();
-			if (user) {
-				goto('/app');
-			}
-		} catch (e) {
-			// Not logged in, stay here
-		} finally {
-			loading = false;
+			const myTickets = await theater.getMyTickets();
+			tickets.set(myTickets);
+		} catch (error) {
+			console.error('Failed to load tickets:', error);
+			showToast('Failed to load dashboard data.', 'error');
 		}
 	});
+
+	// Derived State
+	$: availableYears = Array.from(
+		new Set([
+			currentYear,
+			...$tickets.map((t) => new Date(t.event.date).getFullYear()).filter((y) => !isNaN(y))
+		])
+	).sort((a, b) => b - a) as number[];
+
+	$: filteredTickets = $tickets.filter((t) => {
+		const d = new Date(t.event.date);
+		const y = d.getFullYear();
+		const m = d.getMonth();
+		return y === selectedYear && m >= startMonth && m <= endMonth;
+	});
+
+	$: totalSpent = filteredTickets.reduce((acc, t) => acc + t.price, 0) as number;
+	$: totalVisits = filteredTickets.length as number;
+
+	// Day Data (for Pie Chart replacement / List)
+	$: dayData = (() => {
+		const counts: Record<string, number> = {};
+		filteredTickets.forEach((t) => {
+			let day = t.event.day || new Date(t.event.date).toLocaleString('en-US', { weekday: 'long' });
+			if (day) counts[day] = (counts[day] || 0) + 1;
+		});
+		return Object.entries(counts).sort((a, b) => b[1] - a[1]) as [string, number][];
+	})();
+
+	// Row Stats
+	$: rowStats = (() => {
+		const counts: Record<string, number> = {};
+		filteredTickets.forEach((t) => {
+			const r = t.seat.section.trim().toUpperCase().charAt(0);
+			if (THEATER_ROWS.includes(r)) counts[r] = (counts[r] || 0) + 1;
+		});
+		const maxCount = Math.max(...Object.values(counts), 1);
+		return { counts, maxCount, uniqueVisited: Object.keys(counts).length };
+	})() as { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
+
+	// Seat Stats
+	$: seatStats = (() => {
+		const stats: Record<string, number> = {};
+		filteredTickets.forEach((t) => {
+			const k = `${t.seat.section.trim().toUpperCase().charAt(0)}-${t.seat.number}`;
+			stats[k] = (stats[k] || 0) + 1;
+		});
+		return stats;
+	})() as Record<string, number>;
+
+	// Monthly Stats
+	$: monthlyStats = (() => {
+		const stats = Array(12)
+			.fill(null)
+			.map((_, i) => ({
+				name: new Date(selectedYear, i, 1).toLocaleString('default', { month: 'short' }),
+				count: 0,
+				spent: 0,
+				isActive: i >= startMonth && i <= endMonth
+			}));
+		filteredTickets.forEach((t) => {
+			const d = new Date(t.event.date);
+			if (d.getFullYear() === selectedYear) {
+				const m = d.getMonth();
+				stats[m].count++;
+				stats[m].spent += t.price;
+			}
+		});
+		const maxCount = Math.max(...stats.map((s) => s.count), 1);
+		return { stats, maxCount };
+	})() as {
+		stats: { name: string; count: number; spent: number; isActive: boolean }[];
+		maxCount: number;
+	};
+
+	// Top Show
+	$: topShowStats = (() => {
+		if (filteredTickets.length === 0) return { title: '-', count: 0, image: null as string | null };
+		const counts: Record<string, number> = {};
+		filteredTickets.forEach((t) => {
+			const title = t.event.title.trim();
+			counts[title] = (counts[title] || 0) + 1;
+		});
+
+		let title = '-';
+		if (Object.keys(counts).length > 0) {
+			title = Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b));
+		}
+
+		const matchedShow = SHOW_IMAGES.find((s) =>
+			title.toLowerCase().includes(s.title.toLowerCase())
+		);
+		return { title, count: counts[title] || 0, image: matchedShow?.image || null };
+	})() as { title: string; count: number; image: string | null };
+
+	// Two Shot
+	$: twoShotStats = (() => {
+		const memberStats: Record<string, { count: number; image?: string }> = {};
+		let totalSpend = 0;
+		let totalCount = 0;
+		const uniqueMembers = new Set<string>();
+		filteredTickets.forEach((t) => {
+			if (t.two_shot?.member_name) {
+				const name = t.two_shot.member_name.trim();
+				const price = t.two_shot.price || 0;
+				totalSpend += price;
+				totalCount++;
+				uniqueMembers.add(name);
+				if (!memberStats[name]) memberStats[name] = { count: 0, image: t.two_shot.imageUrl };
+				memberStats[name].count++;
+				if (t.two_shot.imageUrl) memberStats[name].image = t.two_shot.imageUrl;
+			}
+		});
+		const ranking = Object.entries(memberStats)
+			.map(([name, d]) => ({ name, ...d }))
+			.sort((a, b) => b.count - a.count);
+		return {
+			ranking,
+			totalSpend,
+			totalCount,
+			uniqueCount: uniqueMembers.size,
+			kamiOshi: ranking[0] || null
+		};
+	})() as {
+		ranking: { name: string; count: number; image?: string }[];
+		totalSpend: number;
+		totalCount: number;
+		uniqueCount: number;
+		kamiOshi: { name: string; count: number; image?: string } | null;
+	};
+
+	// Most frequent row for card
+	$: mostFrequentRow = (Object.entries(rowStats.counts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+		'-') as string;
+
+	// Helper for rendering detailed row
+	const getSeatsForRow = (row: string, total: number) => {
+		const seats = [];
+		for (let i = 1; i <= total; i++) seats.push(i);
+		return seats;
+	};
 </script>
 
-<svelte:head>
-	<title>FASMO | High Velocity Architecture</title>
-	<meta
-		name="description"
-		content="Next-generation web application architecture fusing FastAPI and SvelteKit."
-	/>
-</svelte:head>
+<div class="space-y-6 p-4 pb-32 max-w-7xl mx-auto">
+	<!-- Header / Filter Toggle -->
+	<div class="mb-6">
+		{#if isFilterOpen}
+			<div class="glass-panel p-4 rounded-3xl animate-fade-in bg-white/70">
+				<div class="flex items-start justify-between mb-4 md:mb-0 md:items-center gap-4">
+					<div class="flex items-center gap-3">
+						<div class="bg-red-50 p-2.5 rounded-xl text-red-600 shadow-sm ring-1 ring-red-100">
+							<Filter class="w-5 h-5" />
+						</div>
+						<div>
+							<h2 class="font-bold text-gray-800 text-lg leading-none">Dashboard Filter</h2>
+							<p class="text-xs text-gray-400 font-medium mt-1">Adjust visualization range</p>
+						</div>
+					</div>
+					<button
+						on:click={() => (isFilterOpen = false)}
+						class="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors"
+					>
+						<X class="w-5 h-5" />
+					</button>
+				</div>
 
-<div class="landing-container">
-	{#if loading}
-		<div class="loader-container" in:fade>
-			<div class="spinner"></div>
+				<div class="mt-4 md:mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+					<div class="relative group w-full">
+						<select
+							bind:value={selectedYear}
+							class="w-full appearance-none bg-white border border-gray-200 pl-10 pr-10 py-2.5 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm cursor-pointer hover:border-red-200 transition-colors"
+						>
+							{#each availableYears as y}
+								<option value={y}>{y}</option>
+							{/each}
+						</select>
+						<Calendar class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-400" />
+						<ChevronDown
+							class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-red-400 transition-colors"
+						/>
+					</div>
+
+					<div
+						class="flex items-center bg-white border border-gray-200 rounded-xl shadow-sm w-full overflow-hidden h-[42px]"
+					>
+						<div
+							class="relative flex-1 h-full border-r border-gray-100 hover:bg-gray-50 transition-colors"
+						>
+							<select
+								bind:value={startMonth}
+								class="w-full h-full appearance-none bg-transparent pl-9 pr-2 text-xs font-bold text-gray-700 focus:outline-none cursor-pointer"
+							>
+								{#each MONTHS as m, i}
+									<option value={i}>{m.substring(0, 3)}</option>
+								{/each}
+							</select>
+							<span
+								class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider pointer-events-none"
+								>Fr</span
+							>
+						</div>
+
+						<div class="relative flex-1 h-full hover:bg-gray-50 transition-colors">
+							<select
+								bind:value={endMonth}
+								class="w-full h-full appearance-none bg-transparent pl-9 pr-2 text-xs font-bold text-gray-700 focus:outline-none cursor-pointer"
+							>
+								{#each MONTHS as m, i}
+									<option value={i}>{m.substring(0, 3)}</option>
+								{/each}
+							</select>
+							<span
+								class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider pointer-events-none"
+								>To</span
+							>
+						</div>
+					</div>
+				</div>
+			</div>
+		{:else}
+			<div class="flex items-center justify-between animate-fade-in">
+				<div class="flex items-center gap-3">
+					<div
+						class="p-3 rounded-2xl bg-red-50 text-red-600 shadow-lg shadow-red-100 border-2 border-white transform -rotate-6"
+					>
+						<LayoutDashboard class="w-6 h-6" />
+					</div>
+					<div>
+						<h2 class="text-2xl font-bold text-gray-800 leading-none relative w-fit">
+							Dashboard
+							<span
+								class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 -z-10 transform -skew-x-12 rounded-sm"
+							></span>
+						</h2>
+						<p class="text-sm text-gray-500 mt-1">Your theater activity overview</p>
+					</div>
+				</div>
+				<button
+					on:click={() => (isFilterOpen = true)}
+					class="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-gray-600 font-bold text-xs shadow-sm border border-gray-200 hover:border-red-200 hover:text-red-600 transition-all"
+				>
+					<Filter class="w-4 h-4" />
+					<span class="hidden sm:inline">Filters</span>
+				</button>
+			</div>
+		{/if}
+	</div>
+
+	<!-- THEATER STATS -->
+	<div class="glass-panel p-6 rounded-3xl">
+		<div class="mb-6">
+			<h3 class="text-xl font-bold text-gray-800">Theater</h3>
+			<p class="text-xs text-gray-400">Your attendance overview</p>
 		</div>
-	{:else}
-		<nav class="top-nav" in:fade={{ duration: 800 }}>
-			<a href="/login" class="nav-link">Login</a>
-			<a href="/register" class="nav-btn">Register</a>
-		</nav>
 
-		<div class="content" in:fly={{ y: 20, duration: 1000 }}>
-			<header class="hero-section">
-				<pre class="ascii-logo">
-            ('-.      .-')   _   .-')                
-           ( OO ).-. ( OO ).( '.( OO )_              
-   ,------./ . --. /(_)---\_),--.   ,--.).-'),-----. 
-('-| _.---'| \-.  \ /    _ | |   `.'   |( OO'  .-.  '
-(OO|(_\  .-'-'  |  |\  :` `. |         |/   |  | |  |
-/  |  '--.\| |_.'  | '..`''.)|  |'.'|  |\_) |  |\|  |
-\_)|  .--' |  .-.  |.-._)   \|  |   |  |  \ |  | |  |
-  \|  |_)  |  | |  |\       /|  |   |  |   `'  '-'  '
-   `--'    `--' `--' `-----' `--'   `--'     `-----' 
-				</pre>
-				<div class="pill">
-					<span>FastAPI</span>
-					<span class="accent">•</span>
-					<span>SvelteKit</span>
-					<span class="accent">•</span>
-					<span>MongoDB</span>
-				</div>
-				<p class="tagline">
-					Your gateway to <span>next-generation</span> architecture. <br />
-					Seamlessly fused for <span>maximum velocity</span>.
-				</p>
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+			<StatCard
+				title="Shows"
+				value={totalVisits}
+				sub={`In ${selectedYear}`}
+				icon={TicketIcon}
+				colorClass="bg-red-600/10 text-red-600"
+			/>
+			<StatCard
+				title="Spending"
+				value={new Intl.NumberFormat('id-ID', {
+					style: 'currency',
+					currency: 'IDR',
+					maximumFractionDigits: 0
+				}).format(totalSpent)}
+				sub="Total Expenses"
+				icon={DollarSign}
+				colorClass="bg-emerald-500/10 text-emerald-500"
+			/>
+			<StatCard
+				title="Top Row"
+				value={mostFrequentRow}
+				sub="Most Frequent Seat"
+				icon={Armchair}
+				colorClass="bg-amber-500/10 text-amber-500"
+			/>
 
-				<div class="header-spacer"></div>
-			</header>
+			<div
+				class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-purple-50/50 border-purple-100"
+			>
+				<div class="p-5 pb-0 flex justify-between items-start">
+					<div class="flex items-center gap-2 text-purple-500">
+						<div class="p-1.5 bg-purple-100 rounded-lg">
+							<Star class="w-4 h-4 fill-current" />
+						</div>
+						<span class="font-bold text-xs tracking-wider">TOP SHOW</span>
+					</div>
+					<Crown class="w-5 h-5 text-yellow-400 fill-current" />
+				</div>
+				<div class="p-5 flex items-center gap-4">
+					<div
+						class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-indigo-400 via-purple-500 to-fuchsia-500 flex-shrink-0"
+					>
+						<div
+							class="w-full h-full rounded-full border-2 border-white overflow-hidden bg-white flex items-center justify-center"
+						>
+							{#if topShowStats.image}
+								<img
+									src={topShowStats.image}
+									alt={topShowStats.title}
+									class="w-full h-full object-cover"
+								/>
+							{:else}
+								<Star class="w-6 h-6 text-purple-500 fill-purple-100" />
+							{/if}
+						</div>
+					</div>
+					<div class="min-w-0">
+						<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">MOST WATCHED</p>
+						<h3
+							class={`font-black text-gray-800 leading-none mb-0.5 truncate ${topShowStats.title.length > 15 ? 'text-sm' : 'text-lg'}`}
+							title={topShowStats.title}
+						>
+							{topShowStats.title}
+						</h3>
+						<p class="text-sm font-bold text-purple-500">
+							{topShowStats.count} Shows
+						</p>
+					</div>
+				</div>
+				<button
+					on:click={() => goto('/shows')}
+					class="mt-auto border-t border-purple-100 p-3 w-full text-center text-xs font-bold text-purple-600 hover:bg-purple-50 transition-colors flex items-center justify-center gap-1 relative z-20"
+				>
+					View Details <ChevronRight class="w-3 h-3" />
+				</button>
+			</div>
+		</div>
+	</div>
 
-			<div class="features-grid">
-				<div class="feature-card">
-					<div class="icon-wrapper">
-						<img src="/assets/icons/lightning.png" alt="Fast" class="feature-icon" />
+	<!-- 2-SHOT STATS SECTION -->
+	<div class="glass-panel p-6 rounded-3xl">
+		<div class="mb-6">
+			<h3 class="text-xl font-bold text-gray-800">2-Shot Roulette & Birthday</h3>
+			<p class="text-xs text-gray-400">Collection overview & ranking</p>
+		</div>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+			<StatCard
+				title="2Shot"
+				value={twoShotStats.totalCount}
+				sub="Collected"
+				icon={Camera}
+				colorClass="bg-pink-500/10 text-pink-500"
+			/>
+			<StatCard
+				title="Spending"
+				value={new Intl.NumberFormat('id-ID', {
+					style: 'currency',
+					currency: 'IDR',
+					maximumFractionDigits: 0
+				}).format(twoShotStats.totalSpend)}
+				sub="Total Expenses"
+				icon={Wallet}
+				colorClass="bg-emerald-500/10 text-emerald-500"
+			/>
+			<StatCard
+				title="Members"
+				value={twoShotStats.uniqueCount}
+				sub="Unique Idols"
+				icon={Users}
+				colorClass="bg-purple-500/10 text-purple-500"
+			/>
+
+			<!-- Top 2-Shot Card -->
+			<div
+				class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-pink-50/50 border-pink-100"
+			>
+				<div class="p-5 pb-0 flex justify-between items-start">
+					<div class="flex items-center gap-2 text-pink-500">
+						<div class="p-1.5 bg-pink-100 rounded-lg">
+							<Heart class="w-4 h-4 fill-current" />
+						</div>
+						<span class="font-bold text-xs tracking-wider">TOP 2SHOT</span>
 					</div>
-					<h3>Lightning Fast</h3>
-					<p>Powered by Vite and FastAPI for incredible speed.</p>
+					<Crown class="w-5 h-5 text-yellow-400 fill-current" />
 				</div>
-				<div class="feature-card">
-					<div class="icon-wrapper">
-						<img src="/assets/icons/padlock.png" alt="Secure" class="feature-icon" />
+				<div class="p-5 flex items-center gap-4">
+					<div
+						class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-pink-400 via-rose-500 to-red-500 flex-shrink-0"
+					>
+						<div
+							class="w-full h-full rounded-full border-2 border-white overflow-hidden bg-white flex items-center justify-center"
+						>
+							{#if twoShotStats?.kamiOshi?.image}
+								<img
+									src={twoShotStats.kamiOshi.image}
+									alt={twoShotStats.kamiOshi.name}
+									class="w-full h-full object-cover"
+								/>
+							{:else}
+								<User class="w-6 h-6 text-pink-500 fill-pink-100" />
+							{/if}
+						</div>
 					</div>
-					<h3>Secure Auth</h3>
-					<p>JWT-based authentication with OAuth support built-in.</p>
+					<div class="min-w-0">
+						<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">KAMI-OSHI</p>
+						<h3
+							class={`font-black text-gray-800 leading-none mb-0.5 truncate ${twoShotStats?.kamiOshi?.name?.length > 15 ? 'text-sm' : 'text-lg'}`}
+							title={twoShotStats?.kamiOshi?.name || '-'}
+						>
+							{twoShotStats?.kamiOshi?.name || '-'}
+						</h3>
+						<p class="text-sm font-bold text-pink-500">
+							{twoShotStats?.kamiOshi?.count || 0} Photos
+						</p>
+					</div>
 				</div>
-				<div class="feature-card">
-					<div class="icon-wrapper">
-						<img src="/assets/icons/diamond.png" alt="Modern" class="feature-icon" />
-					</div>
-					<h3>Modern UI</h3>
-					<p>Sleek glassmorphism design system ready to go.</p>
+				<button
+					on:click={() => goto('/top-2shot')}
+					class="mt-auto border-t border-pink-100 p-3 w-full text-center text-xs font-bold text-pink-600 hover:bg-pink-50 transition-colors flex items-center justify-center gap-1"
+				>
+					View Details <ChevronRight class="w-3 h-3" />
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- THEATER MAP -->
+	<div class="glass-panel p-6 rounded-3xl">
+		<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+			<div>
+				<h3 class="text-xl font-bold text-gray-800">Theater Seat Map</h3>
+				<p class="text-xs text-gray-400">Visual distribution for selected range (Rows A-J)</p>
+			</div>
+			<div class="flex items-center gap-2">
+				<div
+					class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2"
+				>
+					<MapPin class="w-3.5 h-3.5" />
+					<span>{rowStats.uniqueVisited}/{THEATER_ROWS.length} Rows Collected</span>
+				</div>
+				<div class="bg-gray-100 p-1 rounded-lg flex gap-1">
+					<button
+						on:click={() => (mapView = 'ROWS')}
+						class={`p-1.5 rounded-md transition-all ${mapView === 'ROWS' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+					>
+						<AlignJustify class="w-4 h-4" />
+					</button>
+					<button
+						on:click={() => (mapView = 'SEATS')}
+						class={`p-1.5 rounded-md transition-all ${mapView === 'SEATS' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+					>
+						<Grid3X3 class="w-4 h-4" />
+					</button>
 				</div>
 			</div>
 		</div>
-	{/if}
+
+		<div class="w-full overflow-x-auto custom-scrollbar">
+			<div class="min-w-max mx-auto px-4">
+				<div class="min-w-[300px]">
+					<div
+						class="w-3/4 mx-auto h-4 bg-gradient-to-b from-gray-200 to-white rounded-t-2xl mb-8 relative shadow-sm border-t border-x border-gray-300"
+					>
+						<div class="absolute inset-0 bg-red-600 opacity-5 blur-xl"></div>
+						<div
+							class="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-100 px-4 py-1 rounded-full border border-gray-200"
+						>
+							<span
+								class="text-[10px] font-black tracking-[0.3em] text-gray-400 uppercase block text-center"
+								>Stage</span
+							>
+						</div>
+					</div>
+
+					<!-- MAP VIEW: ROWS -->
+					{#if mapView === 'ROWS'}
+						<div class="grid grid-cols-2 gap-x-4 md:gap-x-12 gap-y-3 max-w-5xl mx-auto">
+							{#each THEATER_ROWS as row}
+								{@const count = rowStats.counts[row] || 0}
+								{@const intensity = rowStats.maxCount > 0 ? count / rowStats.maxCount : 0}
+								{@const hasData = count > 0}
+								<div class="flex items-center gap-3 group">
+									<div
+										class={`w-9 h-9 md:w-10 md:h-10 flex-shrink-0 flex items-center justify-center rounded-xl text-sm font-bold transition-all duration-300 ${hasData ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-200' : 'bg-gray-100 text-gray-400'}`}
+									>
+										{row}
+									</div>
+									<div
+										class={`flex-1 h-9 md:h-10 rounded-xl flex items-center px-3 md:px-4 relative overflow-hidden transition-all duration-300 ${hasData ? 'bg-white border border-red-100 shadow-sm' : 'bg-gray-50 border border-gray-100 border-dashed'}`}
+									>
+										{#if hasData}
+											<div
+												class="absolute left-0 top-0 bottom-0 bg-red-50 transition-all duration-1000"
+												style={`width: ${intensity * 100}%`}
+											>
+												<div
+													class="absolute right-0 top-0 bottom-0 w-[1px] bg-red-200 opacity-50"
+												></div>
+											</div>
+										{/if}
+										<div class="relative z-10 w-full flex justify-between items-center">
+											<span
+												class={`text-[10px] md:text-xs font-bold uppercase tracking-wide ${hasData ? 'text-gray-600' : 'text-gray-300'}`}
+												>Row {row}</span
+											>
+											<span
+												class={`text-base md:text-lg font-black ${hasData ? 'text-red-600' : 'text-gray-300'}`}
+												>{count}</span
+											>
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+
+					<!-- MAP VIEW: SEATS -->
+					{#if mapView === 'SEATS'}
+						<div class="flex flex-col gap-3 pb-4">
+							{#each THEATER_ROWS as row}
+								<div class="flex items-center gap-4">
+									<div
+										class="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 bg-gray-100 rounded-xl flex items-center justify-center text-sm font-bold text-gray-500 shadow-sm flex-shrink-0"
+									>
+										{row}
+									</div>
+									<div class="flex gap-1 md:gap-1.5">
+										{#each getSeatsForRow(row, ROW_SEAT_COUNTS[row] || 20) as i}
+											{@const count = seatStats[`${row}-${i}`] || 0}
+											{@const hasVisit = count > 0}
+
+											{#if i === 7 || i === 18}
+												<div class="w-3 md:w-8 flex-shrink-0"></div>
+											{/if}
+
+											<div
+												class={`w-5 h-5 md:w-7 md:h-7 rounded-md text-[8px] md:text-[9px] flex items-center justify-center font-bold border transition-all cursor-default relative group/seat flex-shrink-0
+                                       ${
+																					hasVisit
+																						? 'bg-red-600 border-red-700 text-white shadow-sm z-10'
+																						: 'bg-white border-gray-200 text-gray-300 hover:border-gray-300'
+																				}`}
+												title={`Row ${row}-${i}: Visited ${count} times`}
+											>
+												{i}
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="grid lg:grid-cols-3 gap-6">
+		<!-- Monthly Heatmap -->
+		<div class="glass-panel p-6 rounded-3xl lg:col-span-2 flex flex-col">
+			<div class="mb-6">
+				<h3 class="text-xl font-bold text-gray-800">Monthly Attendance</h3>
+				<p class="text-xs text-gray-400">Breakdown for {selectedYear}</p>
+			</div>
+			<div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 flex-1">
+				{#each monthlyStats.stats as month}
+					{@const intensity =
+						month.count > 0 ? 0.2 + (month.count / monthlyStats.maxCount) * 0.7 : 0.05}
+					{@const hasData = month.count > 0}
+					<div
+						class={`flex flex-col items-center group ${!month.isActive ? 'opacity-30 grayscale pointer-events-none' : ''}`}
+					>
+						<div
+							class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm"
+							style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : '#f9fafb'}; border-color: ${hasData ? 'transparent' : '#f3f4f6'}`}
+						>
+							{#if hasData}
+								<span class="text-xl md:text-2xl font-bold text-white drop-shadow-sm"
+									>{month.count}</span
+								>
+								<span class="text-[8px] text-white/80 font-medium uppercase tracking-wider"
+									>Shows</span
+								>
+							{:else}
+								<span class="text-gray-300 text-xl font-bold opacity-30">-</span>
+							{/if}
+						</div>
+						<div class="text-center w-full">
+							<span class="text-[10px] font-bold text-gray-500 block uppercase tracking-wide"
+								>{month.name}</span
+							>
+						</div>
+					</div>
+				{/each}
+			</div>
+		</div>
+
+		<!-- Day Preference List (Replacing Pie Chart for now) -->
+		<div class="glass-panel p-6 rounded-3xl flex flex-col">
+			<div class="mb-4">
+				<h3 class="text-xl font-bold text-gray-800">Day Preference</h3>
+				<p class="text-xs text-gray-400">Top visiting days</p>
+			</div>
+			<div class="flex-1 flex flex-col gap-2 overflow-y-auto max-h-[300px] custom-scrollbar">
+				{#each dayData as [day, count], i}
+					<div
+						class="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 hover:border-red-100 dark:bg-gray-800 dark:border-gray-700"
+					>
+						<div
+							class={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm ${i === 0 ? 'bg-red-500' : 'bg-gray-400'}`}
+						>
+							{i + 1}
+						</div>
+						<div class="flex-1">
+							<span class="font-bold text-gray-700 text-sm block">{day}</span>
+							<div class="w-full h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
+								<div
+									class="h-full bg-red-400 rounded-full"
+									style={`width: ${(count / totalVisits) * 100}%`}
+								></div>
+							</div>
+						</div>
+						<span class="font-bold text-gray-800">{count}</span>
+					</div>
+				{/each}
+				{#if dayData.length === 0}
+					<div class="flex items-center justify-center h-full text-gray-400 text-sm">
+						No data available
+					</div>
+				{/if}
+			</div>
+		</div>
+	</div>
 </div>
-
-<style>
-	.landing-container {
-		height: 100vh;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: var(--space-md);
-		color: var(--ghost-white);
-		color: var(--ghost-white);
-		text-align: center;
-		overflow: hidden;
-	}
-
-	.loader-container {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
-
-	.spinner {
-		width: 40px;
-		height: 40px;
-		border: 3px solid rgba(255, 255, 255, 0.1);
-		border-radius: 50%;
-		border-top-color: var(--primary);
-		animation: spin 1s ease-in-out infinite;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
-	}
-
-	.content {
-		max-width: 1200px;
-		width: 100%;
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center; /* Center vertically */
-		gap: 3vh; /* Slightly reduced gap to accommodate larger logo */
-	}
-
-	.hero-section {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 2vh;
-		width: 100%;
-	}
-
-	.ascii-logo {
-		font-family: 'Courier New', Courier, monospace;
-		font-weight: bold;
-		font-size: clamp(16px, 2.8vh, 28px); /* Doubled specific values */
-		line-height: 1.1;
-		white-space: pre;
-		margin: 0;
-		background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		user-select: none;
-		text-align: center;
-		padding: 1vh 0;
-		filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.15)); /* Add glow */
-	}
-
-	.pill {
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.25em;
-		padding: 8px 20px;
-		border-radius: 100px;
-		background: rgba(0, 0, 0, 0.4);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		color: var(--ghost-white);
-		margin-bottom: 2vh;
-		backdrop-filter: blur(10px);
-		box-shadow:
-			0 0 20px rgba(0, 0, 0, 0.5),
-			inset 0 0 10px rgba(255, 255, 255, 0.05);
-		display: flex;
-		gap: 12px;
-		align-items: center;
-		font-weight: 600;
-	}
-
-	.pill span {
-		background: linear-gradient(90deg, #fff, #aaa);
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-	}
-
-	.pill .accent {
-		color: var(--primary);
-		-webkit-text-fill-color: initial;
-		text-shadow: 0 0 10px var(--primary);
-	}
-
-	.tagline {
-		font-size: clamp(1.2rem, 3.5vw, 1.8rem); /* Larger font */
-		color: var(--ghost-white);
-		max-width: 800px;
-		line-height: 1.4;
-		font-weight: 300;
-		letter-spacing: -0.02em;
-	}
-
-	.tagline span {
-		color: var(--text-muted);
-	}
-
-	.top-nav {
-		position: absolute;
-		top: 0;
-		right: 0;
-		width: 100%;
-		padding: var(--space-lg);
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-		gap: 20px;
-		z-index: 10;
-	}
-
-	.nav-link {
-		color: var(--ghost-white);
-		text-decoration: none;
-		font-weight: 600;
-		font-size: 0.9rem;
-		opacity: 0.8;
-		transition: opacity 0.2s;
-	}
-
-	.nav-link:hover {
-		opacity: 1;
-		color: var(--primary);
-	}
-
-	.nav-btn {
-		background: rgba(255, 255, 255, 0.1);
-		border: 1px solid var(--glass-border);
-		padding: 8px 24px;
-		border-radius: 100px;
-		color: var(--ghost-white);
-		text-decoration: none;
-		font-weight: 600;
-		font-size: 0.9rem;
-		transition: all 0.3s ease;
-		text-transform: uppercase;
-		font-size: 0.75rem;
-		letter-spacing: 0.05em;
-	}
-
-	.nav-btn:hover {
-		background: var(--primary);
-		color: #000;
-		border-color: var(--primary);
-		box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-	}
-
-	.header-spacer {
-		height: 4vh;
-	}
-
-	.features-grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr); /* Force 3 cols */
-		gap: 1.5rem;
-		width: 100%;
-		max-width: 1000px;
-	}
-
-	.feature-card {
-		background: rgba(255, 255, 255, 0.02);
-		border: 1px solid var(--glass-border);
-		padding: 1.5rem;
-		border-radius: 16px;
-		text-align: left;
-		transition: all 0.3s ease;
-	}
-
-	.feature-card:hover {
-		transform: translateY(-5px);
-		background: rgba(255, 255, 255, 0.04);
-		border-color: var(--primary);
-		box-shadow:
-			0 10px 30px rgba(0, 0, 0, 0.2),
-			0 0 20px rgba(0, 242, 234, 0.1);
-	}
-
-	.icon-wrapper {
-		width: 60px;
-		height: 60px;
-		margin-bottom: 1rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.feature-icon {
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-		filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-	}
-
-	.feature-card h3 {
-		font-size: 1.1rem;
-		margin-bottom: 0.4rem;
-		color: var(--ghost-white);
-	}
-
-	.feature-card p {
-		color: var(--text-muted);
-		line-height: 1.4;
-		font-size: 0.9rem;
-	}
-</style>
