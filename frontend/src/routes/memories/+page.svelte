@@ -88,7 +88,7 @@
 				e.stopPropagation();
 				selectedImage = null;
 			}}
-			class="absolute top-4 right-4 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors z-50 backdrop-blur-sm"
+			class="absolute top-4 right-4 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors z-50 backdrop-blur-sm cursor-pointer"
 		>
 			<X class="w-6 h-6" />
 		</button>
@@ -167,19 +167,19 @@
 		>
 			<button
 				on:click={() => (filter = 'ALL')}
-				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap ${filter === 'ALL' ? 'bg-pink-500 text-white shadow-md shadow-pink-200' : 'text-gray-500 hover:bg-gray-50'}`}
+				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === 'ALL' ? 'bg-pink-500 text-white shadow-md shadow-pink-200' : 'text-gray-500 hover:bg-gray-50'}`}
 			>
 				<Grid class="w-3.5 h-3.5" /> All Photos
 			</button>
 			<button
 				on:click={() => (filter = 'TICKET')}
-				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap ${filter === 'TICKET' ? 'bg-red-500 text-white shadow-md shadow-red-200' : 'text-gray-500 hover:bg-gray-50'}`}
+				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === 'TICKET' ? 'bg-red-500 text-white shadow-md shadow-red-200' : 'text-gray-500 hover:bg-gray-50'}`}
 			>
 				<TicketIcon class="w-3.5 h-3.5" /> Tickets
 			</button>
 			<button
 				on:click={() => (filter = '2SHOT')}
-				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap ${filter === '2SHOT' ? 'bg-purple-500 text-white shadow-md shadow-purple-200' : 'text-gray-500 hover:bg-gray-50'}`}
+				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === '2SHOT' ? 'bg-purple-500 text-white shadow-md shadow-purple-200' : 'text-gray-500 hover:bg-gray-50'}`}
 			>
 				<Camera class="w-3.5 h-3.5" /> 2-Shots
 			</button>

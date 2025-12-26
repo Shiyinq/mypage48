@@ -108,14 +108,14 @@
 			<div class="flex bg-white p-1 rounded-full border border-gray-200 shadow-sm">
 				<button
 					on:click={() => (viewMode = 'GRID')}
-					class={`p-2 rounded-full transition-all ${viewMode === 'GRID' ? 'bg-red-50 text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+					class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'GRID' ? 'bg-red-50 text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
 					title="Grid View"
 				>
 					<LayoutGrid class="w-4 h-4" />
 				</button>
 				<button
 					on:click={() => (viewMode = 'TABLE')}
-					class={`p-2 rounded-full transition-all ${viewMode === 'TABLE' ? 'bg-red-50 text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+					class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'TABLE' ? 'bg-red-50 text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
 					title="Table View"
 				>
 					<List class="w-4 h-4" />
@@ -301,13 +301,13 @@
 					>
 						<button
 							on:click={() => (editingTicket = ticket)}
-							class="text-xs font-bold text-gray-900 hover:text-red-600 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-white transition-colors"
+							class="text-xs font-bold text-gray-900 hover:text-red-600 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-white transition-colors cursor-pointer"
 						>
 							<Pencil class="w-3 h-3" /> Edit Details
 						</button>
 						<button
 							on:click={() => (deleteId = ticket._id)}
-							class="text-gray-400 hover:text-red-600 transition-colors p-2 hover:bg-white rounded-full border border-transparent hover:border-red-100 hover:shadow-sm"
+							class="text-gray-400 hover:text-red-600 transition-colors p-2 hover:bg-white rounded-full border border-transparent hover:border-red-100 hover:shadow-sm cursor-pointer"
 						>
 							<Trash2 class="w-4 h-4" />
 						</button>
@@ -427,13 +427,13 @@
 									<div class="flex items-center justify-end gap-2">
 										<button
 											on:click={() => (editingTicket = ticket)}
-											class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+											class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors cursor-pointer"
 										>
 											<Pencil class="w-4 h-4" />
 										</button>
 										<button
 											on:click={() => (deleteId = ticket._id)}
-											class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+											class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
 										>
 											<Trash2 class="w-4 h-4" />
 										</button>
@@ -475,13 +475,13 @@
 				<div class="grid grid-cols-2 gap-3">
 					<button
 						on:click={() => (deleteId = null)}
-						class="px-4 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors"
+						class="px-4 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
 					>
 						Cancel
 					</button>
 					<button
 						on:click={confirmDelete}
-						class="px-4 py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-colors"
+						class="px-4 py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-colors cursor-pointer"
 					>
 						Yes, Delete
 					</button>
