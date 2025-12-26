@@ -208,7 +208,7 @@
 		<div class="grid md:grid-cols-2 gap-6 w-full">
 			<button
 				on:click={() => fileInputRef.click()}
-				class="group relative overflow-hidden bg-white p-8 rounded-3xl border-2 border-red-100 hover:border-red-500 shadow-lg hover:shadow-xl transition-all duration-300 text-left flex flex-col h-64 justify-between"
+				class="group relative overflow-hidden bg-white p-8 rounded-3xl border-2 border-red-100 hover:border-red-500 shadow-lg hover:shadow-xl transition-all duration-300 text-left flex flex-col h-64 justify-between cursor-pointer"
 			>
 				<div
 					class="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110"
@@ -229,7 +229,7 @@
 			</button>
 			<button
 				on:click={handleManualEntry}
-				class="group relative overflow-hidden bg-white p-8 rounded-3xl border-2 border-gray-100 hover:border-gray-400 shadow-lg hover:shadow-xl transition-all duration-300 text-left flex flex-col h-64 justify-between"
+				class="group relative overflow-hidden bg-white p-8 rounded-3xl border-2 border-gray-100 hover:border-gray-400 shadow-lg hover:shadow-xl transition-all duration-300 text-left flex flex-col h-64 justify-between cursor-pointer"
 			>
 				<div
 					class="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110"
@@ -249,7 +249,7 @@
 		</div>
 		<button
 			on:click={onCancel}
-			class="mt-12 text-gray-400 hover:text-gray-600 font-medium text-sm flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors"
+			class="mt-12 text-gray-400 hover:text-gray-600 font-medium text-sm flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
 		>
 			<X class="w-4 h-4" /> Cancel
 		</button>
@@ -296,7 +296,7 @@
 			</div>
 			<button
 				on:click={onCancel}
-				class="text-sm font-bold text-gray-500 hover:text-red-600 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200"
+				class="text-sm font-bold text-gray-500 hover:text-red-600 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200 cursor-pointer"
 				>Cancel</button
 			>
 		</div>
@@ -484,7 +484,7 @@
 							<button
 								type="button"
 								on:click={() => (showTwoShot = !showTwoShot)}
-								class={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${showTwoShot ? 'bg-red-600' : 'bg-gray-200'}`}
+								class={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 cursor-pointer ${showTwoShot ? 'bg-red-600' : 'bg-gray-200'}`}
 							>
 								<span
 									class={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${showTwoShot ? 'translate-x-6' : 'translate-x-1'}`}
@@ -590,7 +590,7 @@
 					<button
 						type="submit"
 						disabled={isSubmitting}
-						class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
 					>
 						{#if isSubmitting}
 							<Loader2 class="w-6 h-6 animate-spin" />

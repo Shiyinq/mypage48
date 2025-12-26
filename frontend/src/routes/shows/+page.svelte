@@ -273,7 +273,7 @@
 					<div class="flex flex-col justify-center">
 						<button
 							on:click={() => deleteTicket(ticket._id)}
-							class="p-2 text-gray-300 hover:text-red-600 transition-colors"
+							class="p-2 text-gray-300 hover:text-red-600 transition-colors cursor-pointer"
 							><Trash2 class="w-5 h-5" /></button
 						>
 					</div>

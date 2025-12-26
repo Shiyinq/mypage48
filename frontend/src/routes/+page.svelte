@@ -77,7 +77,8 @@
 		'August',
 		'September',
 		'October',
-		'November'
+		'November',
+		'December'
 	];
 	const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
@@ -101,6 +102,18 @@
 	let endMonth: number = 11;
 	let isFilterOpen: boolean = false;
 	let mapView: 'ROWS' | 'SEATS' = 'SEATS';
+	let isAllData: boolean = false;
+
+	// Helper function for filter label
+	$: filterLabel = (() => {
+		if (isAllData) return 'All Data';
+		const startMonthShort = MONTHS[startMonth].substring(0, 3);
+		const endMonthShort = MONTHS[endMonth].substring(0, 3);
+		if (startMonth === 0 && endMonth === 11) {
+			return `${selectedYear} Jan-Dec`;
+		}
+		return `${selectedYear} ${startMonthShort}-${endMonthShort}`;
+	})();
 
 	onMount(async () => {
 		try {
@@ -121,6 +134,7 @@
 	).sort((a, b) => b - a) as number[];
 
 	$: filteredTickets = $tickets.filter((t) => {
+		if (isAllData) return true;
 		const d = new Date(t.event.date);
 		const y = d.getFullYear();
 		const m = d.getMonth();
@@ -275,17 +289,39 @@
 					</div>
 					<button
 						on:click={() => (isFilterOpen = false)}
-						class="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors"
+						class="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors cursor-pointer"
 					>
 						<X class="w-5 h-5" />
 					</button>
 				</div>
 
-				<div class="mt-4 md:mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+				<!-- All Data Toggle -->
+				<div class="mt-4 flex items-center gap-3">
+					<button
+						on:click={() => (isAllData = !isAllData)}
+						class={`relative flex items-center px-4 py-2.5 rounded-xl font-bold text-sm transition-all w-full justify-center gap-2 cursor-pointer ${isAllData ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+					>
+						<span
+							class={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isAllData ? 'border-white bg-white' : 'border-gray-400'}`}
+						>
+							{#if isAllData}
+								<span class="w-2 h-2 rounded-full bg-red-600"></span>
+							{/if}
+						</span>
+						All Data
+					</button>
+				</div>
+
+				<div
+					class="mt-4 md:mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 w-full {isAllData
+						? 'opacity-50 pointer-events-none'
+						: ''}"
+				>
 					<div class="relative group w-full">
 						<select
 							bind:value={selectedYear}
-							class="w-full appearance-none bg-white border border-gray-200 pl-10 pr-10 py-2.5 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm cursor-pointer hover:border-red-200 transition-colors"
+							disabled={isAllData}
+							class="w-full appearance-none bg-white border border-gray-200 pl-10 pr-10 py-2.5 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm cursor-pointer hover:border-red-200 transition-colors disabled:cursor-not-allowed disabled:bg-gray-100"
 						>
 							{#each availableYears as y}
 								<option value={y}>{y}</option>
@@ -305,7 +341,8 @@
 						>
 							<select
 								bind:value={startMonth}
-								class="w-full h-full appearance-none bg-transparent pl-9 pr-2 text-xs font-bold text-gray-700 focus:outline-none cursor-pointer"
+								disabled={isAllData}
+								class="w-full h-full appearance-none bg-transparent pl-9 pr-2 text-xs font-bold text-gray-700 focus:outline-none cursor-pointer disabled:cursor-not-allowed"
 							>
 								{#each MONTHS as m, i}
 									<option value={i}>{m.substring(0, 3)}</option>
@@ -320,7 +357,8 @@
 						<div class="relative flex-1 h-full hover:bg-gray-50 transition-colors">
 							<select
 								bind:value={endMonth}
-								class="w-full h-full appearance-none bg-transparent pl-9 pr-2 text-xs font-bold text-gray-700 focus:outline-none cursor-pointer"
+								disabled={isAllData}
+								class="w-full h-full appearance-none bg-transparent pl-9 pr-2 text-xs font-bold text-gray-700 focus:outline-none cursor-pointer disabled:cursor-not-allowed"
 							>
 								{#each MONTHS as m, i}
 									<option value={i}>{m.substring(0, 3)}</option>
@@ -352,13 +390,20 @@
 						<p class="text-sm text-gray-500 mt-1">Your theater activity overview</p>
 					</div>
 				</div>
-				<button
-					on:click={() => (isFilterOpen = true)}
-					class="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-gray-600 font-bold text-xs shadow-sm border border-gray-200 hover:border-red-200 hover:text-red-600 transition-all"
-				>
-					<Filter class="w-4 h-4" />
-					<span class="hidden sm:inline">Filters</span>
-				</button>
+				<div class="flex items-center gap-2">
+					<span
+						class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200"
+					>
+						{filterLabel}
+					</span>
+					<button
+						on:click={() => (isFilterOpen = true)}
+						class="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-gray-600 font-bold text-xs shadow-sm border border-gray-200 hover:border-red-200 hover:text-red-600 transition-all cursor-pointer"
+					>
+						<Filter class="w-4 h-4" />
+						<span class="hidden sm:inline">Filters</span>
+					</button>
+				</div>
 			</div>
 		{/if}
 	</div>
@@ -442,7 +487,7 @@
 				</div>
 				<button
 					on:click={() => goto('/shows')}
-					class="mt-auto border-t border-purple-100 p-3 w-full text-center text-xs font-bold text-purple-600 hover:bg-purple-50 transition-colors flex items-center justify-center gap-1 relative z-20"
+					class="mt-auto border-t border-purple-100 p-3 w-full text-center text-xs font-bold text-purple-600 hover:bg-purple-50 transition-colors flex items-center justify-center gap-1 relative z-20 cursor-pointer"
 				>
 					View Details <ChevronRight class="w-3 h-3" />
 				</button>
@@ -530,7 +575,7 @@
 				</div>
 				<button
 					on:click={() => goto('/top-2shot')}
-					class="mt-auto border-t border-pink-100 p-3 w-full text-center text-xs font-bold text-pink-600 hover:bg-pink-50 transition-colors flex items-center justify-center gap-1"
+					class="mt-auto border-t border-pink-100 p-3 w-full text-center text-xs font-bold text-pink-600 hover:bg-pink-50 transition-colors flex items-center justify-center gap-1 cursor-pointer"
 				>
 					View Details <ChevronRight class="w-3 h-3" />
 				</button>
@@ -555,13 +600,13 @@
 				<div class="bg-gray-100 p-1 rounded-lg flex gap-1">
 					<button
 						on:click={() => (mapView = 'ROWS')}
-						class={`p-1.5 rounded-md transition-all ${mapView === 'ROWS' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+						class={`p-1.5 rounded-md transition-all cursor-pointer ${mapView === 'ROWS' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
 					>
 						<AlignJustify class="w-4 h-4" />
 					</button>
 					<button
 						on:click={() => (mapView = 'SEATS')}
-						class={`p-1.5 rounded-md transition-all ${mapView === 'SEATS' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+						class={`p-1.5 rounded-md transition-all cursor-pointer ${mapView === 'SEATS' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
 					>
 						<Grid3X3 class="w-4 h-4" />
 					</button>
