@@ -374,17 +374,31 @@
 			</div>
 		</div>
 		<div class="flex items-center gap-3">
-			<div
-				class="hidden md:flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm"
-			>
-				<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-				<span class="text-xs font-bold text-gray-600">OFC Active</span>
-			</div>
+			{#if loading}
+				<div
+					class="hidden md:flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm"
+				>
+					<div class="w-2 h-2 rounded-full bg-gray-200 animate-pulse"></div>
+					<div class="h-3 w-16 bg-gray-200 rounded animate-pulse"></div>
+				</div>
+			{:else}
+				<div
+					class="hidden md:flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm"
+				>
+					<span
+						class="w-2 h-2 rounded-full animate-pulse {profile?.ofcStatus === 'Active'
+							? 'bg-green-500'
+							: 'bg-gray-400'}"
+					></span>
+					<span class="text-xs font-bold text-gray-600">OFC {profile?.ofcStatus || 'Inactive'}</span
+					>
+				</div>
+			{/if}
 
 			<!-- Logout Button -->
 			<button
 				on:click={logout}
-				class="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors border border-transparent hover:border-red-100"
+				class="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors border border-transparent hover:border-red-100 cursor-pointer"
 				title="Logout"
 			>
 				<LogOut class="w-5 h-5" />
