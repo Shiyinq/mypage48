@@ -29,7 +29,9 @@
 		Tv,
 		Info,
 		Cake,
-		Dices
+		Dices,
+		Quote,
+		Globe
 	} from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
 	import { theater } from '$lib/apis/theater';
@@ -278,6 +280,47 @@
 
 	const selectOshi = (id: number) => {
 		selectedOshiId = id;
+	};
+
+	let memberDetail: Member | null = null;
+	let showMemberDetail = false;
+	let loadingMemberDetail = false;
+
+	const openMemberDetail = async () => {
+		if (!profile?.oshi?.name) return;
+		showMemberDetail = true;
+
+		// If we already have the detail loaded and it matches
+		if (memberDetail && memberDetail.name === profile.oshi.name) {
+			return;
+		}
+
+		memberDetail = null;
+		loadingMemberDetail = true;
+		try {
+			// First check if we have it in allMembers
+			const found = allMembers.find((m) => m.name === profile!.oshi!.name);
+			if (found) {
+				memberDetail = found;
+			} else {
+				// Otherwise fetch it
+				const res = await members.getAll({ search: profile!.oshi!.name });
+				if (res.members.length > 0) {
+					// Fuzzy match might return others, try to find exact name match first
+					const exact = res.members.find((m) => m.name === profile!.oshi!.name);
+					memberDetail = exact || res.members[0];
+				}
+			}
+		} catch (e) {
+			console.error('Failed to fetch member details', e);
+			showToast('Failed to load member details', 'error');
+		} finally {
+			loadingMemberDetail = false;
+		}
+	};
+
+	const closeMemberDetail = () => {
+		showMemberDetail = false;
 	};
 
 	const saveOshi = async () => {
@@ -595,21 +638,25 @@
 						<div class="flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16">
 							<!-- Avatar with Glow -->
 							<div class="relative">
-								<div
-									class="absolute inset-0 bg-red-500 rounded-full blur-md opacity-30 animate-pulse"
-								></div>
-								<div class="w-32 h-32 rounded-full p-1 bg-white shadow-xl relative z-10">
-									<img
-										src={profile.oshi.profilePicture}
-										alt={profile.oshi.name}
-										class="w-full h-full rounded-full object-cover"
-									/>
+								<button
+									class="relative w-28 h-28 rounded-full border-4 border-white shadow-xl overflow-hidden flex-shrink-0 cursor-pointer transition-transform hover:scale-105 active:scale-95"
+									on:click={openMemberDetail}
+								>
+									{#if loading}
+										<div class="w-full h-full bg-gray-200 animate-pulse"></div>
+									{:else}
+										<img
+											src={profile?.oshi?.profilePicture || '/placeholder-user.jpg'}
+											alt={profile?.oshi?.name}
+											class="w-full h-full object-cover"
+										/>
+									{/if}
 									<div
-										class="absolute bottom-1 right-1 bg-red-500 text-white p-1.5 rounded-full border-2 border-white shadow-md"
+										class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100"
 									>
-										<Heart class="w-4 h-4 fill-current" />
+										<Info class="w-8 h-8 text-white drop-shadow-md" />
 									</div>
-								</div>
+								</button>
 							</div>
 
 							<!-- Info -->
@@ -963,6 +1010,220 @@
 					Save Oshi
 				</Button>
 			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Member Detail Modal -->
+{#if showMemberDetail}
+	<div class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+		<div
+			class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+			on:click={closeMemberDetail}
+			role="button"
+			tabindex="0"
+			on:keydown={(e) => e.key === 'Escape' && closeMemberDetail()}
+		></div>
+
+		<div
+			class="bg-white rounded-3xl w-full max-w-3xl overflow-hidden relative z-10 shadow-2xl animate-scale-in grid md:grid-cols-2"
+		>
+			{#if loadingMemberDetail}
+				<!-- Skeleton Loader -->
+				<!-- Left Side Skeleton -->
+				<div class="relative h-80 md:h-full bg-gray-200 animate-pulse">
+					<div class="absolute bottom-6 left-6 right-6 space-y-4">
+						<div class="h-6 bg-gray-300 rounded-md w-24"></div>
+						<div class="h-10 bg-gray-300 rounded-md w-3/4"></div>
+						<div class="h-6 bg-gray-300 rounded-md w-1/2"></div>
+					</div>
+				</div>
+
+				<!-- Right Side Skeleton -->
+				<div class="p-6 space-y-8 flex flex-col justify-center bg-white">
+					<!-- Quote Skeleton -->
+					<div class="h-32 bg-gray-100 rounded-2xl animate-pulse w-full"></div>
+
+					<!-- Stats Grid Skeleton -->
+					<div class="grid grid-cols-2 gap-4">
+						<div class="h-20 bg-gray-100 rounded-xl animate-pulse"></div>
+						<div class="h-20 bg-gray-100 rounded-xl animate-pulse"></div>
+						<div class="h-20 bg-gray-100 rounded-xl animate-pulse"></div>
+						<div class="h-20 bg-gray-100 rounded-xl animate-pulse"></div>
+					</div>
+
+					<!-- Socials Skeleton -->
+					<div class="flex gap-4 justify-center pt-4 border-t border-gray-100">
+						<div class="w-10 h-10 bg-gray-100 rounded-full animate-pulse"></div>
+						<div class="w-10 h-10 bg-gray-100 rounded-full animate-pulse"></div>
+						<div class="w-10 h-10 bg-gray-100 rounded-full animate-pulse"></div>
+						<div class="w-10 h-10 bg-gray-100 rounded-full animate-pulse"></div>
+					</div>
+				</div>
+			{:else if memberDetail}
+				<!-- Header Image (Left Side) -->
+				<div class="relative h-80 md:h-full">
+					<img src={memberDetail.img} alt={memberDetail.name} class="w-full h-full object-cover" />
+					<div
+						class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"
+					></div>
+
+					<!-- Name & Gen -->
+					<div class="absolute bottom-0 left-0 w-full p-6">
+						<span
+							class="inline-block px-2 py-0.5 rounded-md bg-red-600/90 text-[10px] font-bold text-white mb-2"
+						>
+							Generation {memberDetail.generation}
+						</span>
+						<h3 class="text-3xl font-black text-white leading-tight mb-1">
+							{memberDetail.name}
+						</h3>
+						<p class="text-gray-300 font-medium text-lg">{memberDetail.nickname}</p>
+					</div>
+
+					<button
+						class="absolute top-4 left-4 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-sm transition-colors cursor-pointer md:hidden"
+						on:click={closeMemberDetail}
+					>
+						<X class="w-5 h-5" />
+					</button>
+				</div>
+
+				<!-- Details (Right Side) -->
+				<div class="p-6 space-y-6 relative bg-white flex flex-col justify-center">
+					<!-- Desktop Close Button -->
+					<button
+						class="absolute top-4 right-4 text-gray-400 hover:text-black transition-colors cursor-pointer hidden md:block"
+						on:click={closeMemberDetail}
+					>
+						<X class="w-6 h-6" />
+					</button>
+
+					<!-- Jikoshoukai -->
+					<div class="bg-red-50 p-5 rounded-2xl relative mt-8 md:mt-0">
+						<Quote class="w-8 h-8 text-red-100 absolute -top-3 -left-2 transform -scale-x-100" />
+						<p class="text-sm text-gray-700 italic relative z-10 text-center leading-relaxed">
+							"{memberDetail.jiko}"
+						</p>
+					</div>
+
+					<!-- Stats Grid -->
+					<div class="grid grid-cols-2 gap-4">
+						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Birthdate</p>
+							<p class="text-sm font-bold text-gray-800">
+								{new Date(memberDetail.birthdate).toLocaleDateString('id-ID', {
+									day: 'numeric',
+									month: 'long',
+									year: 'numeric'
+								})}
+								<span class="text-xs text-gray-500 font-normal block">
+									{Math.floor(
+										(new Date().getTime() - new Date(memberDetail.birthdate).getTime()) /
+											(365.25 * 24 * 60 * 60 * 1000)
+									)} Years Old
+								</span>
+							</p>
+						</div>
+						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Horoscope</p>
+							<p class="text-sm font-bold text-gray-800">{memberDetail.horoscope}</p>
+						</div>
+						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Blood Type</p>
+							<p class="text-sm font-bold text-gray-800">{memberDetail.bloodType}</p>
+						</div>
+						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Height</p>
+							<p class="text-sm font-bold text-gray-800">{memberDetail.height}</p>
+						</div>
+					</div>
+
+					<!-- Socials -->
+					<div class="flex items-center justify-center gap-2 pt-2 border-t border-gray-100">
+						{#if memberDetail.socials.twitter}
+							<a
+								href={memberDetail.socials.twitter}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-black hover:text-white transition-colors cursor-pointer"
+							>
+								<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+									<path
+										d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+									/>
+								</svg>
+							</a>
+						{/if}
+						{#if memberDetail.socials.instagram}
+							<a
+								href={memberDetail.socials.instagram}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-pink-100 hover:text-pink-600 transition-colors cursor-pointer"
+							>
+								<Instagram class="w-4 h-4" />
+							</a>
+						{/if}
+						{#if memberDetail.socials.tiktok}
+							<a
+								href={memberDetail.socials.tiktok}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-black hover:text-white transition-colors cursor-pointer"
+							>
+								<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+									<path
+										d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"
+									/>
+								</svg>
+							</a>
+						{/if}
+						{#if memberDetail.socials.showroom}
+							<a
+								href={memberDetail.socials.showroom}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-blue-50 hover:text-blue-500 transition-colors cursor-pointer"
+							>
+								<Tv class="w-4 h-4" />
+							</a>
+						{/if}
+						{#if memberDetail.href}
+							<a
+								href={memberDetail.href.startsWith('http')
+									? memberDetail.href
+									: `https://jkt48.com${memberDetail.href}`}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+								title="Official Profile"
+							>
+								<Globe class="w-4 h-4" />
+							</a>
+						{/if}
+					</div>
+				</div>
+			{:else}
+				<!-- Error State -->
+				<div
+					class="col-span-2 p-12 flex flex-col items-center justify-center min-h-[400px] text-center"
+				>
+					<div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+						<Search class="w-8 h-8 text-red-500" />
+					</div>
+					<h3 class="text-xl font-bold text-gray-900 mb-2">Member Not Found</h3>
+					<p class="text-gray-500 max-w-xs mx-auto mb-6">
+						We couldn't retrieve the details for this member. Please try again later.
+					</p>
+					<button
+						class="px-6 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium cursor-pointer"
+						on:click={closeMemberDetail}
+					>
+						Close
+					</button>
+				</div>
+			{/if}
 		</div>
 	</div>
 {/if}
