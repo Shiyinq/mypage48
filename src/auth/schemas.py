@@ -7,6 +7,24 @@ from src.auth.http_exceptions import PasswordPolicyViolation, PasswordsNotMatch
 from src.utils import validate_password_strength
 
 
+class OshiSocials(BaseModel):
+    twitter: Optional[str] = None
+    instagram: Optional[str] = None
+    tiktok: Optional[str] = None
+    threads: Optional[str] = None
+    showroom: Optional[str] = None
+    idn_app: Optional[str] = None
+
+
+class OshiResponse(BaseModel):
+    name: str = "Unknown"
+    nickname: str = "-"
+    generation: str = "-"
+    profilePicture: str = "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg"
+    catchphrase: str = "-"
+    socials: Optional[OshiSocials] = None
+
+
 class UserLoginBase(BaseModel):
     userId: str
     profilePicture: str | None = None
@@ -14,6 +32,7 @@ class UserLoginBase(BaseModel):
     email: str
     username: str
     memberId: str | None = None
+    oshiId: int | None = None
     ofcStatus: str | None = None
 
 
@@ -26,7 +45,7 @@ class UserLogin(UserLoginBase):
 
 
 class UserCurrent(UserLoginBase):
-    pass
+    oshi: Optional[OshiResponse] = None
 
 
 class Token(BaseModel):

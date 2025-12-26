@@ -119,6 +119,24 @@
 				progress: `${Math.min(totalShows, 200)}/200`,
 				color: 'rose'
 			},
+			{
+				id: 'theater_kami_300',
+				title: 'Theater Kami',
+				description: 'Attended 300 shows',
+				icon: Sparkles,
+				isUnlocked: totalShows >= 300,
+				progress: `${Math.min(totalShows, 300)}/300`,
+				color: 'purple'
+			},
+			{
+				id: 'absolute_legend_500',
+				title: 'Absolute Legend',
+				description: 'Attended 500 shows',
+				icon: Trophy,
+				isUnlocked: totalShows >= 500,
+				progress: `${Math.min(totalShows, 500)}/500`,
+				color: 'amber'
+			},
 			// Same Show Milestones
 			{
 				id: 'super_fan',
