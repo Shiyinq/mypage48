@@ -1220,6 +1220,17 @@
 								</svg>
 							</a>
 						{/if}
+						{#if memberDetail.socials.idn_app}
+							<a
+								href={memberDetail.socials.idn_app}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-red-50 hover:text-red-500 transition-colors cursor-pointer"
+								title="IDN App"
+							>
+								<Smartphone class="w-4 h-4" />
+							</a>
+						{/if}
 						{#if memberDetail.socials.showroom}
 							<a
 								href={memberDetail.socials.showroom}
