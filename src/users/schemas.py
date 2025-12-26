@@ -71,6 +71,7 @@ class UserInDB(BaseModel):
     profilePicture: Optional[str] = Field(max_length=255, default=None)
     name: str = Field(max_length=100)  # Stores fullName or OAuth name
     memberId: Optional[str] = Field(max_length=20, default=None)  # Optional for OAuth users
+    oshiId: Optional[int] = Field(default=None)
     username: str = Field(max_length=50)
     email: EmailStr
     ofcStatus: str = Field(default="Active")

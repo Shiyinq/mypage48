@@ -133,3 +133,11 @@ class UserService:
         except Exception as e:
             logger.exception(f"Unexpected error in create_user_provider: {str(e)}")
             raise ProviderUserCreationError()
+
+    async def update_oshi(self, user_id: str, oshi_id: int):
+        """Update the user's Oshi ID"""
+        try:
+            await self.user_repo.set_oshi_id(user_id, oshi_id)
+        except Exception as e:
+            logger.exception(f"Error updating oshi for user {user_id}: {str(e)}")
+            raise

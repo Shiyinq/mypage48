@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { Ticket, Plus, User } from 'lucide-svelte';
+	import { onMount } from 'svelte';
+	import { isAuthenticated, userProfile } from '$lib/stores';
+	import { auth } from '$lib/apis/auth';
 
 	const navItems = [
 		{ label: 'Dashboard', href: '/' },
@@ -9,6 +12,17 @@
 		{ label: 'Memories', href: '/memories' },
 		{ label: 'History', href: '/history' }
 	];
+
+	onMount(async () => {
+		if ($isAuthenticated && !$userProfile) {
+			try {
+				const profile = await auth.getProfile();
+				userProfile.set(profile);
+			} catch (error) {
+				console.error('Failed to fetch user profile:', error);
+			}
+		}
+	});
 </script>
 
 <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
@@ -73,7 +87,9 @@
 						}`}
 			>
 				<img
-					src="https://jkt48.com/profile/oline_manuel.jpg"
+					src={$userProfile?.oshi?.profilePicture ||
+						$userProfile?.profilePicture ||
+						'https://jkt48.com/profile/oline_manuel.jpg'}
 					alt="Profile"
 					class="w-full h-full object-cover"
 				/>

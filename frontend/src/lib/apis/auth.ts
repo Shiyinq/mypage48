@@ -57,6 +57,10 @@ export const auth = {
 		return client<GenericResponse>('/auth/logout', { method: 'POST' });
 	},
 
+	updateOshi: async (oshiId: number) => {
+		return client<GenericResponse>('/users/oshi', { method: 'POST', body: { oshiId } as any });
+	},
+
 	refresh: async (): Promise<AuthResponse> => {
 		return client<AuthResponse>('/auth/refresh', { method: 'POST' });
 	},

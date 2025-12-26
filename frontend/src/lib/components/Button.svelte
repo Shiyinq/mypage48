@@ -6,11 +6,14 @@
 	export let disabled = false;
 	export let full = false;
 	export let loading = false;
+
+	let className = '';
+	export { className as class };
 </script>
 
 <button
 	{type}
-	class="btn btn-{variant} btn-{size} {full ? 'w-full' : ''} {loading ? 'loading' : ''}"
+	class="btn btn-{variant} btn-{size} {full ? 'w-full' : ''} {loading ? 'loading' : ''} {className}"
 	{disabled}
 	on:click
 >
@@ -25,27 +28,31 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		border-radius: var(--radius-md);
-		font-weight: 500;
-		transition: all var(--transition-fast);
-		gap: 0.75rem;
+		border-radius: var(--radius-md, 0.75rem);
+		font-weight: 600;
+		transition: all var(--transition-fast, 0.2s);
+		gap: 0.5rem;
 		position: relative;
 		overflow: hidden;
+		cursor: pointer;
+		border: none;
+		outline: none;
+		font-family: inherit;
 	}
 
 	.btn-sm {
 		padding: 0.5rem 1rem;
-		font-size: 0.85rem;
+		font-size: 0.75rem;
 	}
 
 	.btn-md {
 		padding: 0.75rem 1.5rem;
-		font-size: 0.95rem;
+		font-size: 0.875rem;
 	}
 
 	.btn-lg {
 		padding: 1rem 2rem;
-		font-size: 1.1rem;
+		font-size: 1rem;
 	}
 
 	.btn:disabled {
@@ -61,50 +68,60 @@
 
 	/* Variants */
 	.btn-primary {
-		background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+		background: linear-gradient(
+			135deg,
+			var(--color-primary, #ef4444),
+			var(--color-primary-hover, #dc2626)
+		);
 		color: white;
-		box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+		box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+	}
+	.btn-primary:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
 	}
 	.btn-primary:active {
 		transform: scale(0.98);
 	}
 
 	.btn-secondary {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		color: var(--color-text-main);
+		background: var(--color-surface, #ffffff);
+		border: 1px solid var(--color-border, #e2e8f0);
+		color: var(--color-text-main, #1e293b);
 	}
 	.btn-secondary:hover {
-		background: var(--color-surface-hover);
-		border-color: var(--color-text-muted);
+		background: var(--color-surface-hover, #f8fafc);
+		border-color: var(--color-text-muted, #94a3b8);
 	}
 
 	.btn-outline {
 		background: transparent;
-		border: 1px solid var(--color-border);
-		color: var(--color-text-muted);
+		border: 1px solid var(--color-border, #e2e8f0);
+		color: var(--color-text-muted, #64748b);
 	}
 	.btn-outline:hover {
-		color: var(--color-text-main);
-		border-color: var(--color-text-main);
+		color: var(--color-primary, #ef4444);
+		border-color: var(--color-primary, #ef4444);
+		background: var(--color-surface-hover, #fff1f2);
 	}
 
 	.btn-ghost {
 		background: transparent;
-		color: var(--color-text-muted);
+		color: var(--color-text-muted, #64748b);
 	}
 	.btn-ghost:hover {
-		background: rgba(255, 255, 255, 0.05);
-		color: var(--color-text-main);
+		background: rgba(0, 0, 0, 0.05);
+		color: var(--color-text-main, #1e293b);
 	}
 
 	/* Social Buttons */
 	.btn-google {
 		background: white;
 		color: #1a1a1a;
+		border: 1px solid #e2e8f0;
 	}
 	.btn-google:hover {
-		background: #f1f1f1;
+		background: #f8fafc;
 	}
 
 	.btn-github {

@@ -7,6 +7,20 @@ export interface User {
 	provider?: string;
 	isEmailVerified: boolean;
 	createdAt: string;
+	oshi?: {
+		name: string;
+		nickname: string;
+		generation: string;
+		profilePicture: string;
+		catchphrase: string;
+		socials?: {
+			twitter?: string;
+			instagram?: string;
+			tiktok?: string;
+			idn_app?: string;
+			showroom?: string;
+		};
+	} | null;
 }
 
 export interface AuthResponse {

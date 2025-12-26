@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import type { Ticket } from './types';
+import type { Ticket, User } from './types';
 
 const STORAGE_KEY = 'oshi_log_tickets_v2';
 const AUTH_KEY = 'oshi_log_auth';
@@ -11,6 +11,7 @@ const initialAuth = browser ? localStorage.getItem(AUTH_KEY) === 'true' : false;
 
 export const tickets = writable<Ticket[]>(initialTickets);
 export const isAuthenticated = writable<boolean>(initialAuth);
+export const userProfile = writable<User | null>(null);
 
 // Subscribe to changes and update localStorage
 // Toast Store
