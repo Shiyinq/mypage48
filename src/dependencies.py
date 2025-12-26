@@ -18,6 +18,9 @@ from src.health.service import HealthService
 from src.logging_config import create_logger
 from src.users.repository import UserRepository
 from src.users.service import UserService
+from src.llm.repository import LLMRepository
+from src.llm.service import LLMService
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/signin")
 logger = create_logger("dependencies", __name__)
@@ -161,5 +164,30 @@ def get_github_sso(config: Settings = Depends(get_settings)) -> GithubSSO:
     )
 
 
+
 def get_health_service() -> HealthService:
     return HealthService(database_instance)
+
+
+def get_llm_repository(db=Depends(get_db)) -> LLMRepository:
+    return LLMRepository(db)
+
+def get_llm_service(
+    repo: LLMRepository = Depends(get_llm_repository),
+    config: Settings = Depends(get_settings),
+) -> LLMService:
+    return LLMService(repo, config)
+
+
+from src.theater.repository import TheaterRepository
+from src.theater.service import TheaterService
+
+def get_theater_repository(db=Depends(get_db)) -> TheaterRepository:
+    return TheaterRepository(db)
+
+def get_theater_service(
+    repo: TheaterRepository = Depends(get_theater_repository),
+    config: Settings = Depends(get_settings),
+) -> TheaterService:
+    background_runner = AsyncBackgroundRunner()
+    return TheaterService(repo, background_runner, config)

@@ -16,5 +16,5 @@ itsdangerous==2.1.2
 fastapi-sso==0.7.2
 user-agents==2.2.0
 resend==2.11.0
-slowapi==0.1.9
 pydantic-settings==2.7.0
+google-generativeai

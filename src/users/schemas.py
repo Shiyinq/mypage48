@@ -16,9 +16,11 @@ class UserCreateRequest(BaseModel):
     This prevents Mass Assignment attacks.
     """
 
-    name: str = Field(max_length=20)
+    fullName: str = Field(max_length=100)
+    memberId: str = Field(max_length=20)
     username: str = Field(max_length=50)
     email: EmailStr
+    ofcStatus: str = Field(default="Active")  # 'Active' | 'Inactive' | 'Pending'
     password: str
     confirmPassword: str
 
@@ -35,9 +37,11 @@ class UserCreateRequest(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "name": "John Doe",
+                "fullName": "John Doe",
+                "memberId": "JKT-1234",
                 "username": "johndoe",
                 "email": "user@example.com",
+                "ofcStatus": "Active",
                 "password": "SecurePass123!",
                 "confirmPassword": "SecurePass123!",
             }
@@ -65,9 +69,11 @@ class UserInDB(BaseModel):
 
     userId: str = Field(default_factory=lambda: str(uuid4()))
     profilePicture: Optional[str] = Field(max_length=255, default=None)
-    name: str = Field(max_length=100)
+    name: str = Field(max_length=100)  # Stores fullName or OAuth name
+    memberId: Optional[str] = Field(max_length=20, default=None)  # Optional for OAuth users
     username: str = Field(max_length=50)
     email: EmailStr
+    ofcStatus: str = Field(default="Active")
     password: Optional[str] = Field(default=None)
     provider: Optional[str] = Field(default=None)
     createdAt: datetime = Field(default_factory=datetime.now)
