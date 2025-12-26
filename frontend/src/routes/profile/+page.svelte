@@ -352,6 +352,40 @@
 			savingOshi = false;
 		}
 	};
+	function parseIndonesianDate(dateStr: string): Date {
+		const monthMap: { [key: string]: string } = {
+			januari: 'January',
+			februari: 'February',
+			maret: 'March',
+			april: 'April',
+			mei: 'May',
+			juni: 'June',
+			juli: 'July',
+			agustus: 'August',
+			september: 'September',
+			oktober: 'October',
+			november: 'November',
+			desember: 'December'
+		};
+
+		const parts = dateStr.split(' ');
+		if (parts.length >= 3) {
+			const day = parts[0];
+			const month = parts[1].toLowerCase();
+			const year = parts[2];
+			const engMonth = monthMap[month] || month;
+			return new Date(`${engMonth} ${day}, ${year}`);
+		}
+		return new Date(dateStr);
+	}
+
+	function calculateAge(birthdateStr: string): number | string {
+		const birthDate = parseIndonesianDate(birthdateStr);
+		if (isNaN(birthDate.getTime())) return 'N/A';
+		const diffMs = Date.now() - birthDate.getTime();
+		const ageDate = new Date(diffMs);
+		return Math.abs(ageDate.getUTCFullYear() - 1970);
+	}
 </script>
 
 <div class="max-w-5xl mx-auto p-4 animate-fade-in pb-24">
@@ -1126,16 +1160,9 @@
 						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
 							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Birthdate</p>
 							<p class="text-sm font-bold text-gray-800">
-								{new Date(memberDetail.birthdate).toLocaleDateString('id-ID', {
-									day: 'numeric',
-									month: 'long',
-									year: 'numeric'
-								})}
+								{memberDetail.birthdate}
 								<span class="text-xs text-gray-500 font-normal block">
-									{Math.floor(
-										(new Date().getTime() - new Date(memberDetail.birthdate).getTime()) /
-											(365.25 * 24 * 60 * 60 * 1000)
-									)} Years Old
+									{calculateAge(memberDetail.birthdate)} Years Old
 								</span>
 							</p>
 						</div>
