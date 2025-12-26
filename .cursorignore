@@ -1,0 +1,13 @@
+.env
+!.env.example
+/tmp/
+/data/
+/docs/
+/.git/
+/.idea/
+/.vscode/
+*.log
+*.cache
+.DS_Store
+/build/
+/dist/
