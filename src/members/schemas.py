@@ -7,12 +7,18 @@ class SocialMedia(BaseModel):
     twitter: Optional[str] = None
     instagram: Optional[str] = None
     tiktok: Optional[str] = None
+    threads: Optional[str] = None
+    showroom: Optional[str] = None
+    idn_app: Optional[str] = None
 
 
 class MemberBase(BaseModel):
     id: int
     name: str
     nickname: str
+    generation: Optional[str] = None
+    jiko: Optional[str] = None
+    active: bool = True
     href: Optional[str] = None
     img: Optional[str] = None
     birthdate: Optional[str] = None
@@ -23,15 +29,12 @@ class MemberBase(BaseModel):
 
 
 class MemberCreate(MemberBase):
-    generation: Optional[str] = None
-    jiko: Optional[str] = None
     createdAt: datetime = Field(default_factory=datetime.now)
     updatedAt: datetime = Field(default_factory=datetime.now)
 
 
 class MemberResponse(MemberBase):
-    generation: Optional[str] = None
-    jiko: Optional[str] = None
+    pass
 
 
 class MemberListResponse(BaseModel):
