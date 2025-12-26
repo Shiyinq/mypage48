@@ -21,7 +21,10 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URI: str
     GITHUB_CLIENT_ID: str
     GITHUB_CLIENT_SECRET: SecretStr
+    GITHUB_CLIENT_SECRET: SecretStr
     GITHUB_REDIRECT_URI: str
+
+    GEMINI_API_KEY: SecretStr
 
     FRONTEND_URL: str
     ORIGINS: str
@@ -42,7 +45,7 @@ class Settings(BaseSettings):
 
     API_KEY_PREFIX: str = "ffk_"
     DB_MAX_POOL_SIZE: int = 50
-    MAX_UPLOAD_SIZE_BYTES: int = 1_048_576  # 1 MB
+    MAX_UPLOAD_SIZE_BYTES: int = 10_485_760  # 10 MB
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=True
@@ -151,6 +154,10 @@ class Settings(BaseSettings):
     @property
     def github_redirect_uri(self) -> str:
         return self.GITHUB_REDIRECT_URI
+
+    @property
+    def gemini_api_key(self) -> str:
+        return self.GEMINI_API_KEY.get_secret_value()
 
     @property
     def frontend_url(self) -> str:

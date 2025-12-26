@@ -63,9 +63,11 @@ class UserService:
             )
 
             user_in_db = UserInDB(
-                name=request.name,
+                name=request.fullName,
+                memberId=request.memberId,
                 username=request.username.lower(),
                 email=request.email.lower(),
+                ofcStatus=request.ofcStatus,
                 password=hashed_password,
                 isEmailVerified=False,
                 failedLoginAttempts=0,

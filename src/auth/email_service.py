@@ -69,7 +69,7 @@ class EmailService:
 
     async def send_password_reset(self, email: str, token: str, username: str):
         """Send password reset email"""
-        reset_url = f"{self.config.frontend_url}/reset-password?token={token}"
+        reset_url = f"{self.config.frontend_url}/auth/reset-password?token={token}"
 
         html_content = f"""
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
