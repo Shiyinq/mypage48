@@ -31,9 +31,14 @@
 		Cake,
 		Dices,
 		Quote,
-		Globe
+		Globe,
+		Key,
+		Copy,
+		Loader2,
+		AlertTriangle
 	} from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
+	import { apiKeys } from '$lib/apis/api_keys';
 	import { theater } from '$lib/apis/theater';
 	import { showToast, userProfile } from '$lib/stores';
 	import type { Ticket } from '$lib/types';
@@ -352,6 +357,48 @@
 			savingOshi = false;
 		}
 	};
+
+	let generatingKey = false;
+	let newApiKey: string | null = null;
+	let showApiKeyModal = false;
+	let showConfirmModal = false;
+
+	const openConfirmModal = () => {
+		showConfirmModal = true;
+	};
+
+	const closeConfirmModal = () => {
+		showConfirmModal = false;
+	};
+
+	const confirmGenerateApiKey = async () => {
+		showConfirmModal = false;
+		generatingKey = true;
+		try {
+			const res = await apiKeys.create();
+			newApiKey = res.apiKey;
+			showApiKeyModal = true;
+			showToast('API Key generated successfully', 'success');
+		} catch (e) {
+			console.error('Failed to generate API Key', e);
+			showToast('Failed to generate API Key', 'error');
+		} finally {
+			generatingKey = false;
+		}
+	};
+
+	const copyApiKey = () => {
+		if (newApiKey) {
+			navigator.clipboard.writeText(newApiKey);
+			showToast('Copied to clipboard', 'success');
+		}
+	};
+
+	const closeApiKeyModal = () => {
+		showApiKeyModal = false;
+		newApiKey = null;
+	};
+
 	function parseIndonesianDate(dateStr: string): Date {
 		const monthMap: { [key: string]: string } = {
 			januari: 'January',
@@ -639,6 +686,38 @@
 					{/if}
 					<span class="text-[10px] font-bold text-gray-400 uppercase">Achievements</span>
 				</div>
+			</div>
+
+			<!-- DEVELOPER ACCESS -->
+			<div class="glass-panel p-6 rounded-3xl relative">
+				<div class="flex items-center gap-3 mb-4">
+					<div class="p-2 rounded-xl bg-gray-100 text-gray-600">
+						<Key class="w-5 h-5" />
+					</div>
+					<div>
+						<h3 class="text-lg font-bold text-gray-900">Developer Access</h3>
+						<p class="text-xs text-gray-500">Get your API Key</p>
+					</div>
+				</div>
+
+				<p class="text-xs text-gray-500 mb-4 leading-relaxed">
+					Generate an API key to access MYPAGE48 data programmatically.
+					<span class="text-red-500 font-medium">Your key will only be shown once.</span>
+				</p>
+
+				<button
+					class="w-full py-2.5 rounded-xl bg-gray-900 text-white font-bold hover:bg-black transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+					on:click={openConfirmModal}
+					disabled={generatingKey}
+				>
+					{#if generatingKey}
+						<Loader2 class="w-4 h-4 animate-spin" />
+						Generating...
+					{:else}
+						<Plus class="w-4 h-4" />
+						Generate New Key
+					{/if}
+				</button>
 			</div>
 		</div>
 
@@ -1276,6 +1355,85 @@
 					</button>
 				</div>
 			{/if}
+		</div>
+	</div>
+{/if}
+
+<!-- API Key Modal -->
+{#if showApiKeyModal}
+	<div
+		class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+	>
+		<div
+			class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-scale-in p-6"
+		>
+			<div class="text-center mb-6">
+				<div
+					class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
+				>
+					<Key class="w-6 h-6 text-green-600" />
+				</div>
+				<h3 class="text-xl font-bold text-gray-900">API Key Generated</h3>
+				<p class="text-sm text-gray-500 mt-2">
+					Please copy your API key now. You won't be able to see it again!
+				</p>
+			</div>
+
+			<div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 relative group">
+				<code class="text-sm font-mono text-gray-800 break-all">{newApiKey}</code>
+				<button
+					class="absolute top-2 right-2 p-1.5 bg-white rounded-lg border border-gray-200 text-gray-500 hover:text-gray-900 transition-colors shadow-sm cursor-pointer"
+					on:click={copyApiKey}
+					title="Copy to clipboard"
+				>
+					<Copy class="w-4 h-4" />
+				</button>
+			</div>
+
+			<button
+				class="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors cursor-pointer"
+				on:click={closeApiKeyModal}
+			>
+				I have saved my key
+			</button>
+		</div>
+	</div>
+{/if}
+
+<!-- Confirm Generate API Key Modal -->
+{#if showConfirmModal}
+	<div
+		class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+	>
+		<div
+			class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-scale-in p-6"
+		>
+			<div class="text-center mb-6">
+				<div
+					class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4"
+				>
+					<AlertTriangle class="w-6 h-6 text-amber-600" />
+				</div>
+				<h3 class="text-xl font-bold text-gray-900">Generate New API Key?</h3>
+				<p class="text-sm text-gray-500 mt-2">
+					This will revoke any existing API key. This action cannot be undone.
+				</p>
+			</div>
+
+			<div class="flex gap-3">
+				<button
+					class="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors cursor-pointer"
+					on:click={closeConfirmModal}
+				>
+					Cancel
+				</button>
+				<button
+					class="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors cursor-pointer"
+					on:click={confirmGenerateApiKey}
+				>
+					Generate
+				</button>
+			</div>
 		</div>
 	</div>
 {/if}
