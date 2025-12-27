@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { theater } from '$lib/apis/theater';
-	import { showToast } from '$lib/stores';
+	import { showToast, tickets } from '$lib/stores';
 	import type { Ticket } from '$lib/types';
 	import {
 		Loader2,
@@ -108,6 +108,9 @@
 			};
 
 			const updated = await theater.updateTicket(ticket._id, payload);
+			// Fetch fresh data from server after update
+			const freshTickets = await theater.getMyTickets();
+			tickets.set(freshTickets);
 			showToast('Ticket updated successfully!');
 			dispatch('save', updated);
 			dispatch('close');

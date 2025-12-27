@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { tickets } from '$lib/stores';
+	import { tickets, showToast } from '$lib/stores';
+	import { theater } from '$lib/apis/theater';
 	import type { Ticket } from '$lib/types';
 	import EditTicketModal from '$lib/components/EditTicketModal.svelte';
 	import {
@@ -24,6 +25,7 @@
 	let viewMode: 'GRID' | 'TABLE' = 'GRID';
 	let searchQuery = '';
 	let deleteId: string | null = null;
+	let isDeleting = false;
 	let editingId: string | null = null;
 	let noteText = '';
 
@@ -41,9 +43,23 @@
 		.sort((a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime());
 
 	// Methods
-	const confirmDelete = () => {
-		if (deleteId) {
-			tickets.update((current) => current.filter((t) => t._id !== deleteId));
+	const confirmDelete = async () => {
+		if (!deleteId || isDeleting) return;
+
+		const idToDelete = deleteId;
+		isDeleting = true;
+
+		try {
+			await theater.deleteTicket(idToDelete);
+			// Fetch fresh data from server after delete
+			const freshTickets = await theater.getMyTickets();
+			tickets.set(freshTickets);
+			showToast('Ticket deleted successfully', 'success');
+		} catch (error) {
+			console.error('Failed to delete ticket:', error);
+			showToast('Failed to delete ticket', 'error');
+		} finally {
+			isDeleting = false;
 			deleteId = null;
 		}
 	};
@@ -446,50 +462,52 @@
 			</div>
 		</div>
 	{/if}
+</div>
 
-	<!-- Delete Modal -->
-	{#if deleteId}
-		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+<!-- Delete Modal -->
+{#if deleteId}
+	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+	<div
+		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+		on:click={() => (deleteId = null)}
+		transition:fade={{ duration: 150 }}
+	>
+		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
 		<div
-			class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-			on:click={() => (deleteId = null)}
-			transition:fade={{ duration: 150 }}
+			class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6"
+			on:click={(e) => e.stopPropagation()}
+			transition:scale={{ duration: 200, start: 0.95 }}
 		>
-			<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
 			<div
-				class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6"
-				on:click={(e) => e.stopPropagation()}
-				transition:scale={{ duration: 200, start: 0.95 }}
+				class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4 mx-auto"
 			>
-				<div
-					class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4 mx-auto"
+				<AlertTriangle class="w-6 h-6" />
+			</div>
+			<div class="text-center mb-6">
+				<h3 class="text-xl font-bold text-gray-900 mb-2">Delete Ticket?</h3>
+				<p class="text-sm text-gray-500 leading-relaxed">
+					Are you sure you want to delete this ticket history? This action cannot be undone.
+				</p>
+			</div>
+			<div class="grid grid-cols-2 gap-3">
+				<button
+					on:click={() => (deleteId = null)}
+					disabled={isDeleting}
+					class="px-4 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					<AlertTriangle class="w-6 h-6" />
-				</div>
-				<div class="text-center mb-6">
-					<h3 class="text-xl font-bold text-gray-900 mb-2">Delete Ticket?</h3>
-					<p class="text-sm text-gray-500 leading-relaxed">
-						Are you sure you want to delete this ticket history? This action cannot be undone.
-					</p>
-				</div>
-				<div class="grid grid-cols-2 gap-3">
-					<button
-						on:click={() => (deleteId = null)}
-						class="px-4 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
-					>
-						Cancel
-					</button>
-					<button
-						on:click={confirmDelete}
-						class="px-4 py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-colors cursor-pointer"
-					>
-						Yes, Delete
-					</button>
-				</div>
+					Cancel
+				</button>
+				<button
+					on:click={confirmDelete}
+					disabled={isDeleting}
+					class="px-4 py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+				>
+					{isDeleting ? 'Deleting...' : 'Yes, Delete'}
+				</button>
 			</div>
 		</div>
-	{/if}
-</div>
+	</div>
+{/if}
 
 <!-- Edit Modal -->
 {#if editingTicket}

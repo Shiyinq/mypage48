@@ -181,6 +181,9 @@
 			};
 
 			await theater.createTicket(payload);
+			// Fetch fresh data from server after create
+			const freshTickets = await theater.getMyTickets();
+			tickets.set(freshTickets);
 			showToast('Ticket saved successfully!');
 			goto('/');
 		} catch (e) {

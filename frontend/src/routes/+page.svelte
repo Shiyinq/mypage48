@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { tickets, showToast } from '$lib/stores';
+	import { tickets } from '$lib/stores';
 	import { goto } from '$app/navigation';
-	import { theater } from '$lib/apis/theater';
 	import StatCard from '$lib/components/StatCard.svelte';
 	import {
 		Ticket as TicketIcon,
@@ -114,16 +112,6 @@
 		}
 		return `${selectedYear} ${startMonthShort}-${endMonthShort}`;
 	})();
-
-	onMount(async () => {
-		try {
-			const myTickets = await theater.getMyTickets();
-			tickets.set(myTickets);
-		} catch (error) {
-			console.error('Failed to load tickets:', error);
-			showToast('Failed to load dashboard data.', 'error');
-		}
-	});
 
 	// Derived State
 	$: availableYears = Array.from(
