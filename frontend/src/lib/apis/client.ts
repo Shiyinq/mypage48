@@ -109,6 +109,11 @@ export async function client<T>(endpoint: string, options: RequestInit = {}): Pr
 	const response = await fetch(`${API_BASE}${endpoint}`, config);
 
 	// 5. Handle response
+	// Handle 204 No Content - no body to parse
+	if (response.status === 204) {
+		return undefined as T;
+	}
+
 	let data: any;
 	const contentType = response.headers.get('content-type');
 	if (contentType && contentType.includes('application/json')) {

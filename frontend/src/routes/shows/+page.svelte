@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { tickets } from '$lib/stores';
+	import { tickets, showToast } from '$lib/stores';
+	import { theater } from '$lib/apis/theater';
 	import {
 		ChevronLeft,
 		Mic2,
@@ -10,8 +11,10 @@
 		Armchair,
 		Ticket as TicketIcon,
 		MapPin,
-		Trash2
+		Trash2,
+		AlertTriangle
 	} from 'lucide-svelte';
+	import { fade, scale } from 'svelte/transition';
 
 	// Constants
 	const SHOW_DATA = [
@@ -54,6 +57,30 @@
 
 	// State
 	let selectedShowTitle: string | null = null;
+	let deleteId: string | null = null;
+	let isDeleting = false;
+
+	// Methods
+	const confirmDelete = async () => {
+		if (!deleteId || isDeleting) return;
+
+		const idToDelete = deleteId;
+		isDeleting = true;
+
+		try {
+			await theater.deleteTicket(idToDelete);
+			// Fetch fresh data from server after delete
+			const freshTickets = await theater.getMyTickets();
+			tickets.set(freshTickets);
+			showToast('Ticket deleted successfully', 'success');
+		} catch (error) {
+			console.error('Failed to delete ticket:', error);
+			showToast('Failed to delete ticket', 'error');
+		} finally {
+			isDeleting = false;
+			deleteId = null;
+		}
+	};
 
 	// Derived
 	$: showCounts = $tickets.reduce(
@@ -116,12 +143,6 @@
 	const selectShow = (title: string) => {
 		selectedShowTitle = title;
 		window.scrollTo({ top: 0, behavior: 'smooth' });
-	};
-
-	const deleteTicket = (id: string) => {
-		if (confirm('Delete this ticket?')) {
-			tickets.update((current) => current.filter((t) => t._id !== id));
-		}
 	};
 </script>
 
@@ -272,7 +293,7 @@
 					</div>
 					<div class="flex flex-col justify-center">
 						<button
-							on:click={() => deleteTicket(ticket._id)}
+							on:click={() => (deleteId = ticket._id)}
 							class="p-2 text-gray-300 hover:text-red-600 transition-colors cursor-pointer"
 							><Trash2 class="w-5 h-5" /></button
 						>
@@ -379,3 +400,48 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Delete Modal -->
+{#if deleteId}
+	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+	<div
+		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+		on:click={() => (deleteId = null)}
+		transition:fade={{ duration: 150 }}
+	>
+		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
+		<div
+			class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6"
+			on:click={(e) => e.stopPropagation()}
+			transition:scale={{ duration: 200, start: 0.95 }}
+		>
+			<div
+				class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4 mx-auto"
+			>
+				<AlertTriangle class="w-6 h-6" />
+			</div>
+			<div class="text-center mb-6">
+				<h3 class="text-xl font-bold text-gray-900 mb-2">Delete Ticket?</h3>
+				<p class="text-sm text-gray-500 leading-relaxed">
+					Are you sure you want to delete this ticket? This action cannot be undone.
+				</p>
+			</div>
+			<div class="grid grid-cols-2 gap-3">
+				<button
+					on:click={() => (deleteId = null)}
+					disabled={isDeleting}
+					class="px-4 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+				>
+					Cancel
+				</button>
+				<button
+					on:click={confirmDelete}
+					disabled={isDeleting}
+					class="px-4 py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+				>
+					{isDeleting ? 'Deleting...' : 'Yes, Delete'}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
