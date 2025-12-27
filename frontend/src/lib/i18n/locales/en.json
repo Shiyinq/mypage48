@@ -291,10 +291,31 @@
         "progress": "Progress"
     },
     "errors": {
-        "pageNotFound": "Page Not Found",
-        "pageNotFoundMessage": "Sorry, the page you're looking for doesn't exist or has been moved.",
-        "serverError": "Something Went Wrong",
-        "serverErrorMessage": "A server error occurred. Please try again later.",
+        "404": {
+            "title": "Page Not Found",
+            "subtitle": "Oops! The page you're looking for doesn't exist.",
+            "description": "It might have been moved, deleted, or you may have mistyped the URL."
+        },
+        "500": {
+            "title": "Server Error",
+            "subtitle": "Something went wrong on our end.",
+            "description": "Our team has been notified and we're working to fix it. Please try again later."
+        },
+        "403": {
+            "title": "Access Denied",
+            "subtitle": "You don't have permission to access this page.",
+            "description": "Please make sure you have the right credentials or contact support."
+        },
+        "401": {
+            "title": "Unauthorized",
+            "subtitle": "Please sign in to continue.",
+            "description": "You need to be authenticated to access this page."
+        },
+        "default": {
+            "title": "Something Went Wrong",
+            "subtitle": "An unexpected error occurred.",
+            "description": "Please try refreshing the page or come back later."
+        },
         "goHome": "Go to Home",
         "tryAgain": "Try Again"
     },

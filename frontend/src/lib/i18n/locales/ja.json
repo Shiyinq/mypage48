@@ -283,15 +283,6 @@
             "cancel": "キャンセル"
         }
     },
-    "upload": {
-        "title": "チケットアップロード",
-        "subtitle": "新しいチケットをコレクションに追加",
-        "scanTicket": "チケットをスキャン",
-        "manualEntry": "手動入力",
-        "saveTicket": "チケットを保存",
-        "uploadSuccess": "チケットが正常にアップロードされました",
-        "uploadError": "チケットのアップロードに失敗しました"
-    },
     "shows": {
         "title": "公演一覧",
         "subtitle": "観覧した公演の統計",
@@ -343,10 +334,31 @@
         "progress": "進捗"
     },
     "errors": {
-        "pageNotFound": "ページが見つかりません",
-        "pageNotFoundMessage": "お探しのページは存在しないか、移動された可能性があります。",
-        "serverError": "エラーが発生しました",
-        "serverErrorMessage": "サーバーエラーが発生しました。後でもう一度お試しください。",
+        "404": {
+            "title": "ページが見つかりません",
+            "subtitle": "お探しのページは存在しないか、移動した可能性があります。",
+            "description": "URLが間違っているか、削除された可能性があります。"
+        },
+        "500": {
+            "title": "サーバーエラー",
+            "subtitle": "サーバー側で問題が発生しました。",
+            "description": "現在復旧作業中です。しばらくしてからもう一度お試しください。"
+        },
+        "403": {
+            "title": "アクセス拒否",
+            "subtitle": "このページにアクセスする権限がありません。",
+            "description": "権限を確認するか、サポートにお問い合わせください。"
+        },
+        "401": {
+            "title": "認証が必要です",
+            "subtitle": "ログインしてください。",
+            "description": "このページにアクセスするにはログインが必要です。"
+        },
+        "default": {
+            "title": "エラーが発生しました",
+            "subtitle": "予期しないエラーが発生しました。",
+            "description": "ページを再読み込みするか、後でもう一度お試しください。"
+        },
         "goHome": "ホームに戻る",
         "tryAgain": "再試行"
     },
@@ -379,24 +391,6 @@
             "nov": "11月",
             "dec": "12月"
         },
-        "days": {
-            "sunday": "日曜日",
-            "monday": "月曜日",
-            "tuesday": "火曜日",
-            "wednesday": "水曜日",
-            "thursday": "木曜日",
-            "friday": "金曜日",
-            "saturday": "土曜日"
-        },
-        "days": {
-            "monday": "月曜日",
-            "tuesday": "火曜日",
-            "wednesday": "水曜日",
-            "thursday": "木曜日",
-            "friday": "金曜日",
-            "saturday": "土曜日",
-            "sunday": "日曜日"
-        },
         "daysShort": {
             "sun": "日",
             "mon": "月",
@@ -419,7 +413,10 @@
         "scanTicket": "チケットをスキャン",
         "scanDescription": "画像をアップロードしてAIに詳細を抽出させます。",
         "manualEntry": "手動入力",
-        "manualDescription": "詳細を自分で入力します。"
+        "manualDescription": "詳細を自分で入力します。",
+        "saveTicket": "チケットを保存",
+        "uploadSuccess": "チケットが正常にアップロードされました",
+        "uploadError": "チケットのアップロードに失敗しました"
     },
     "forms": {
         "editTicket": "チケット編集",
@@ -446,8 +443,6 @@
         "type": "タイプ",
         "experienceLog": "体験ログ",
         "notesPlaceholder": "公演はどうでしたか？ウィンクもらえましたか？ここに思い出を書きましょう...",
-        "updateTicket": "詳細を更新",
-        "updateTicket": "詳細を更新",
         "saveTicket": "チケットを保存",
         "cancel": "キャンセル",
         "uploadTicketPhoto": "チケット写真アップロード",
