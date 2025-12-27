@@ -15,16 +15,30 @@
 	// Flag to prevent duplicate fetches
 	let hasFetchedInitialData = false;
 
+	// Determine if current page is public (login, register, auth pages)
+	$: isPublicPage =
+		$page.url.pathname === '/login' ||
+		$page.url.pathname === '/register' ||
+		$page.url.pathname.startsWith('/auth/');
+
+	// Track if client has mounted - used to delay auth redirects
+	let mounted = false;
+
 	// Initialize theme and fetch initial data on mount
 	onMount(() => {
+		mounted = true;
 		initTheme();
-		fetchInitialDataIfNeeded();
 	});
+
+	// Reactively fetch initial data when user becomes authenticated
+	// This handles the case when user logs in and layout is already mounted
+	$: if (mounted && $isAuthenticated && !hasFetchedInitialData) {
+		fetchInitialDataIfNeeded();
+	}
 
 	// Fetch initial data only once if authenticated and data not in store
 	async function fetchInitialDataIfNeeded() {
 		if (hasFetchedInitialData) return;
-		if (!get(isAuthenticated)) return;
 
 		hasFetchedInitialData = true;
 
@@ -50,16 +64,13 @@
 		}
 	}
 
-	$: isPublicPage =
-		$page.url.pathname === '/login' ||
-		$page.url.pathname === '/register' ||
-		$page.url.pathname.startsWith('/auth/');
-
-	$: if (typeof window !== 'undefined' && !$isAuthenticated && !isPublicPage) {
+	// Only check auth redirects after component is mounted (hydrated)
+	// This prevents premature redirects during slow connections
+	$: if (mounted && !$isAuthenticated && !isPublicPage) {
 		goto('/login');
 	}
 
-	$: if (typeof window !== 'undefined' && $isAuthenticated && isPublicPage) {
+	$: if (mounted && $isAuthenticated && isPublicPage) {
 		goto('/');
 	}
 </script>
@@ -78,7 +89,7 @@
 		</div>
 	{/if}
 
-	{#if $isAuthenticated && !isPublicPage}
+	{#if !isPublicPage}
 		<Header />
 	{/if}
 
@@ -86,7 +97,7 @@
 		<slot />
 	</main>
 
-	{#if $isAuthenticated && !isPublicPage}
+	{#if !isPublicPage}
 		<MobileNav />
 	{/if}
 </div>
