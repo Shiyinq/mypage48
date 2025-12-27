@@ -24,7 +24,7 @@
 
 <div class="min-h-screen bg-gray-50 flex flex-col relative">
 	{#if $toast}
-		<div class="fixed top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none">
+		<div class="fixed top-4 left-0 right-0 z-[200] flex justify-center pointer-events-none">
 			<div
 				class="bg-gray-900/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 font-medium text-sm border border-white/10 pointer-events-auto animate-[fadeInDown_0.3s_ease-out]"
 			>

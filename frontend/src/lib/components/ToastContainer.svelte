@@ -26,7 +26,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
-		z-index: 100;
+		z-index: 200;
 		pointer-events: none; /* Allow clicking through container */
 	}
 
