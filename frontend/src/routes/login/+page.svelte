@@ -4,6 +4,7 @@
 	import { Ticket, Lock, Mail, ArrowRight, User } from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import SEO from '$lib/components/SEO.svelte';
 
 	const { t } = useTranslation();
 
@@ -23,7 +24,7 @@
 			goto('/');
 		} catch (e: any) {
 			console.error(e);
-			status = 'error'; // ensure local status variable matches if used
+			// status = 'error'; // ensure local status variable matches if used
 
 			if (e.detail && typeof e.detail === 'string') {
 				error = e.detail;
@@ -41,9 +42,7 @@
 	};
 </script>
 
-<svelte:head>
-	<title>{$t('auth.login.title')} | MyPage48</title>
-</svelte:head>
+<SEO title={$t('auth.login.title')} path="/login" description={$t('seo.login')} />
 
 <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
 	<div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">

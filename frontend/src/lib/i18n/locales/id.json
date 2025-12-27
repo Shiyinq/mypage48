@@ -27,6 +27,23 @@
         "dashboard": "Dasbor",
         "language": "Bahasa"
     },
+    "seo": {
+        "default": "MyPage48 - Pendamping teater JKT48 terbaik. Lacak kunjungan teater, 2-shot, dan pencapaianmu.",
+        "dashboard": "Lihat statistik kehadiran teater JKT48, analisis pengeluaran, dan visualisasi peta kursi.",
+        "login": "Masuk ke akun MyPage48 untuk melacak perjalanan teater JKT48 kamu.",
+        "register": "Buat akun MyPage48 baru untuk melacak perjalanan teater JKT48 kamu.",
+        "forgotPassword": "Reset password MyPage48 untuk mendapatkan akses kembali ke akunmu.",
+        "resetPassword": "Buat password baru yang aman untuk akun MyPage48 kamu.",
+        "verifyEmail": "Verifikasi alamat email untuk menyelesaikan pendaftaran MyPage48.",
+        "profile": "Lihat profil MyPage48, kartu member, progres level, dan statistikmu.",
+        "history": "Lihat riwayat lengkap kunjungan teater JKT48 dan kelola log tiket kamu.",
+        "shows": "Jelajahi pertunjukan teater JKT48, lihat detail, dan lacak riwayat kehadiran.",
+        "settings": "Kelola pengaturan akun MyPage48, preferensi, dan akses developer.",
+        "achievements": "Lacak pencapaian teater JKT48, lencana, dan level penggemar.",
+        "memories": "Album digital tiket teater JKT48 dan foto 2-shot kamu.",
+        "top2shot": "Lihat member teratas berdasarkan jumlah 2-shot dan statistik pengeluaran.",
+        "upload": "Unggah dan pindai tiket teater JKT48 atau tambahkan foto 2-shot."
+    },
     "nav": {
         "home": "Beranda",
         "dashboard": "Dasbor",

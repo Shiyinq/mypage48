@@ -17,6 +17,7 @@
 	} from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import SEO from '$lib/components/SEO.svelte';
 
 	const { t } = useTranslation();
 
@@ -149,13 +150,7 @@
 	};
 </script>
 
-<svelte:head>
-	<title
-		>{selectedShowTitle
-			? `${selectedShowTitle} | MyPage48`
-			: `${$t('shows.title')} | MyPage48`}</title
-	>
-</svelte:head>
+<SEO title={selectedShowTitle || $t('shows.title')} path="/shows" description={$t('seo.shows')} />
 
 <div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in">
 	{#if selectedShowTitle && selectedShowData}

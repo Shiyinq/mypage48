@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tickets } from '$lib/stores';
+	import SEO from '$lib/components/SEO.svelte';
 	import {
 		Trophy,
 		Star,
@@ -239,9 +240,7 @@
 	$: locked = milestones.filter((m) => !m.isUnlocked);
 </script>
 
-<svelte:head>
-	<title>{$t('achievements.title')} | MyPage48</title>
-</svelte:head>
+<SEO title={$t('achievements.title')} path="/achievements" description={$t('seo.achievements')} />
 
 <div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in">
 	<div class="flex items-center gap-3 mb-8">

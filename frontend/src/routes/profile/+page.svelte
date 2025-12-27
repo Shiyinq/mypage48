@@ -37,6 +37,7 @@
 	} from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
 	import { theater } from '$lib/apis/theater';
+	import SEO from '$lib/components/SEO.svelte';
 
 	import type { Ticket } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -399,9 +400,7 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{$t('profile.title')} | MyPage48</title>
-</svelte:head>
+<SEO title={$t('profile.title')} path="/profile" description={$t('seo.profile')} />
 
 <div class="max-w-5xl mx-auto p-4 animate-fade-in pb-24">
 	<!-- Page Header -->

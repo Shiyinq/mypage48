@@ -26,6 +26,7 @@
 		Sparkles,
 		TrendingUp
 	} from 'lucide-svelte';
+	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -203,9 +204,7 @@
 	};
 </script>
 
-<svelte:head>
-	<title>{$t('upload.title')} | MyPage48</title>
-</svelte:head>
+<SEO title={$t('upload.title')} path="/upload" description={$t('seo.upload')} />
 
 {#if mode === 'SELECTION'}
 	<div

@@ -27,6 +27,23 @@
         "dashboard": "ダッシュボード",
         "language": "言語"
     },
+    "seo": {
+        "default": "MyPage48 - JKT48劇場の究極のコンパニオン。劇場訪問、2ショット、実績を記録しよう。",
+        "dashboard": "JKT48劇場の観覧統計、支出分析、座席マップの視覚化を表示。",
+        "login": "MyPage48アカウントにログインして、JKT48劇場の旅を記録しよう。",
+        "register": "新しいMyPage48アカウントを作成して、JKT48劇場の旅を記録しよう。",
+        "forgotPassword": "MyPage48のパスワードをリセットして、アカウントへのアクセスを回復。",
+        "resetPassword": "MyPage48アカウントの新しい安全なパスワードを設定。",
+        "verifyEmail": "メールアドレスを確認して、MyPage48の登録を完了。",
+        "profile": "MyPage48プロフィール、会員カード、レベル進捗、統計を表示。",
+        "history": "JKT48劇場訪問の完全な履歴を表示し、チケットログを管理。",
+        "shows": "JKT48劇場公演を閲覧し、詳細を表示し、観覧履歴を追跡。",
+        "settings": "MyPage48アカウント設定、環境設定、開発者アクセスを管理。",
+        "achievements": "JKT48劇場のマイルストーン、バッジ、ファンレベルを追跡。",
+        "memories": "JKT48劇場チケットと2ショット写真のデジタルスクラップブック。",
+        "top2shot": "2ショット数と支出統計によるトップメンバーを表示。",
+        "upload": "JKT48劇場チケットをアップロード・スキャン、または2ショット写真を追加。"
+    },
     "nav": {
         "home": "ホーム",
         "dashboard": "ダッシュボード",
@@ -210,16 +227,6 @@
             "searchMember": "メンバーを検索...",
             "roulette": "ルーレット",
             "birthday": "バースデー"
-        },
-        "oshiModal": {
-            "title": "推しメンを選択",
-            "subtitle": "あなたの世界を照らすメンバーを選んでください！",
-            "searchPlaceholder": "メンバー名を検索...",
-            "loading": "メンバーを読み込み中...",
-            "noMembers": "「{query}」に一致するメンバーが見つかりません",
-            "generation": "{gen}期生",
-            "cancel": "キャンセル",
-            "save": "推しを保存"
         },
         "recentActivity": {
             "title": "最近の活動",
