@@ -11,15 +11,15 @@
 	$: message = $page.error?.message;
 
 	// Define error info based on status code
-	$: errorInfo = getErrorInfo(status);
+	$: errorInfo = getErrorInfo(status, $t);
 
-	function getErrorInfo(code) {
+	function getErrorInfo(code, t) {
 		switch (code) {
 			case 404:
 				return {
-					title: 'Page Not Found',
-					subtitle: "Oops! The page you're looking for doesn't exist.",
-					description: 'It might have been moved, deleted, or you may have mistyped the URL.',
+					title: t('errors.404.title'),
+					subtitle: t('errors.404.subtitle'),
+					description: t('errors.404.description'),
 					icon: Search,
 					color: 'from-amber-500 to-orange-500',
 					bgColor: 'bg-amber-500/10',
@@ -27,10 +27,9 @@
 				};
 			case 500:
 				return {
-					title: 'Server Error',
-					subtitle: 'Something went wrong on our end.',
-					description:
-						"Our team has been notified and we're working to fix it. Please try again later.",
+					title: t('errors.500.title'),
+					subtitle: t('errors.500.subtitle'),
+					description: t('errors.500.description'),
 					icon: ServerCrash,
 					color: 'from-red-500 to-rose-600',
 					bgColor: 'bg-red-500/10',
@@ -38,9 +37,9 @@
 				};
 			case 403:
 				return {
-					title: 'Access Denied',
-					subtitle: "You don't have permission to access this page.",
-					description: 'Please make sure you have the right credentials or contact support.',
+					title: t('errors.403.title'),
+					subtitle: t('errors.403.subtitle'),
+					description: t('errors.403.description'),
 					icon: AlertTriangle,
 					color: 'from-yellow-500 to-amber-500',
 					bgColor: 'bg-yellow-500/10',
@@ -48,9 +47,9 @@
 				};
 			case 401:
 				return {
-					title: 'Unauthorized',
-					subtitle: 'Please sign in to continue.',
-					description: 'You need to be authenticated to access this page.',
+					title: t('errors.401.title'),
+					subtitle: t('errors.401.subtitle'),
+					description: t('errors.401.description'),
 					icon: AlertTriangle,
 					color: 'from-blue-500 to-indigo-500',
 					bgColor: 'bg-blue-500/10',
@@ -58,9 +57,9 @@
 				};
 			default:
 				return {
-					title: 'Something Went Wrong',
-					subtitle: 'An unexpected error occurred.',
-					description: 'Please try refreshing the page or come back later.',
+					title: t('errors.default.title'),
+					subtitle: t('errors.default.subtitle'),
+					description: t('errors.default.description'),
 					icon: AlertTriangle,
 					color: 'from-gray-500 to-slate-600',
 					bgColor: 'bg-gray-500/10',
