@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tickets } from '$lib/stores';
-	import { Heart, Crown, Camera, DollarSign, TrendingUp, User } from 'lucide-svelte';
+	import { Heart, Crown, Camera, TrendingUp, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -12,13 +12,9 @@
 			{ count: number; spend: number; lastDate: string; image?: string }
 		> = {};
 		let totalTwoShotSpend = 0;
-		let totalTicketSpend = 0;
 		let totalTwoShotCount = 0;
 
 		$tickets.forEach((t) => {
-			// Ticket Spending
-			totalTicketSpend += t.price;
-
 			// 2-Shot Stats
 			if (t.two_shot?.member_name) {
 				const name = t.two_shot.member_name.trim();
@@ -64,17 +60,10 @@
 		return {
 			ranking,
 			totalTwoShotSpend,
-			totalTicketSpend,
 			totalTwoShotCount
 		};
 	})();
 
-	$: spendingData = [
-		{ name: $t('top2shot.theaterTickets'), value: stats.totalTicketSpend, color: '#ef4444' }, // Red
-		{ name: $t('top2shot.collection'), value: stats.totalTwoShotSpend, color: '#ec4899' } // Pink
-	];
-
-	$: totalSpending = stats.totalTicketSpend + stats.totalTwoShotSpend;
 	$: kamiOshi = stats.ranking[0];
 
 	// Helper for currency formatting
@@ -91,24 +80,6 @@
 			currency: 'IDR',
 			notation: 'compact'
 		}).format(val);
-
-	// Donut Chart Helpers
-	const size = 160;
-	const strokeWidth = 20;
-	const radius = (size - strokeWidth) / 2;
-	const circumference = 2 * Math.PI * radius;
-
-	$: chartSegments = (() => {
-		let accumulatedAngle = 0; // in degrees? No, simpler to use dashoffset
-		let accumulatedPercent = 0;
-		return spendingData.map((d) => {
-			const percent = totalSpending > 0 ? d.value / totalSpending : 0;
-			const dashArray = percent * circumference;
-			const dashOffset = -accumulatedPercent * circumference;
-			accumulatedPercent += percent;
-			return { ...d, percent, dashArray, dashOffset };
-		});
-	})();
 </script>
 
 <div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in">
@@ -151,128 +122,85 @@
 			<!-- LEFT COL: Kami Oshi Card & Spending -->
 			<div class="space-y-6 lg:col-span-1">
 				<!-- KAMI OSHI CARD -->
-				<div class="relative group perspective-1000">
+				<div class="relative group">
 					<div
-						class="relative overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 rounded-3xl shadow-xl text-white p-6 transition-transform duration-500 hover:scale-[1.02]"
+						class="relative overflow-hidden bg-white dark:bg-zinc-800 rounded-3xl shadow-sm border border-gray-100 dark:border-zinc-700 p-8 transition-all duration-300 hover:shadow-xl"
 					>
-						<!-- Background Pattern -->
+						<!-- Decorative Header Background -->
 						<div
-							class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"
-						></div>
-						<div
-							class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"
+							class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-pink-50/80 to-transparent dark:from-pink-900/10 dark:to-transparent -z-0"
 						></div>
 
 						<div class="relative z-10 flex flex-col items-center text-center">
 							<div
-								class="bg-yellow-400 text-yellow-900 text-[10px] font-black tracking-widest px-3 py-1 rounded-full mb-4 shadow-sm flex items-center gap-1 border border-yellow-200"
+								class="bg-gradient-to-r from-amber-100 to-amber-200 dark:from-amber-900/40 dark:to-amber-800/40 text-amber-700 dark:text-amber-400 text-[10px] font-black tracking-widest px-4 py-1.5 rounded-full mb-6 shadow-sm flex items-center gap-1.5 border border-amber-200/50 dark:border-amber-700/30"
 							>
-								<Crown class="w-3 h-3 fill-current" />
+								<Crown class="w-3.5 h-3.5 fill-current" />
 								{$t('top2shot.kamiOshi')}
 							</div>
 
-							<div
-								class="w-32 h-32 rounded-full p-1.5 bg-white/20 backdrop-blur-sm border border-white/40 mb-4 relative"
-							>
-								<div class="w-full h-full rounded-full overflow-hidden bg-gray-800 relative">
-									{#if kamiOshi.image}
-										<img
-											src={kamiOshi.image}
-											alt={kamiOshi.name}
-											class="w-full h-full object-cover"
-										/>
-									{:else}
-										<div class="w-full h-full flex items-center justify-center bg-white/10">
-											<User class="w-12 h-12 text-white/50" />
-										</div>
-									{/if}
+							<div class="relative mb-6 group-hover:scale-105 transition-transform duration-500">
+								<div
+									class="w-36 h-36 rounded-full p-1.5 bg-white dark:bg-zinc-800 shadow-xl ring-1 ring-gray-100 dark:ring-zinc-700 relative z-10"
+								>
+									<div
+										class="w-full h-full rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-700 relative"
+									>
+										{#if kamiOshi.image}
+											<img
+												src={kamiOshi.image}
+												alt={kamiOshi.name}
+												class="w-full h-full object-cover"
+											/>
+										{:else}
+											<div
+												class="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600"
+											>
+												<User class="w-16 h-16" />
+											</div>
+										{/if}
+									</div>
 								</div>
 								<!-- Rank Badge -->
 								<div
-									class="absolute -bottom-2 -right-0 bg-yellow-400 text-yellow-900 w-8 h-8 flex items-center justify-center rounded-full font-black border-2 border-white shadow-lg text-sm"
+									class="absolute -bottom-2 -right-2 bg-yellow-400 text-yellow-900 w-10 h-10 flex items-center justify-center rounded-full font-black border-4 border-white dark:border-zinc-800 shadow-lg text-lg z-20"
 								>
 									#1
 								</div>
 							</div>
 
-							<h3 class="text-2xl font-black mb-1">{kamiOshi.name}</h3>
-							<p class="text-white/80 text-sm font-medium mb-6">{$t('top2shot.cherished')}</p>
-
-							<div
-								class="grid grid-cols-2 gap-3 w-full bg-black/20 rounded-2xl p-3 backdrop-blur-md border border-white/10"
+							<h3 class="text-2xl font-black text-gray-900 dark:text-white mb-1">
+								{kamiOshi.name}
+							</h3>
+							<p
+								class="text-pink-500 font-bold text-sm mb-8 bg-pink-50 dark:bg-pink-900/20 px-3 py-1 rounded-lg"
 							>
-								<div>
-									<div class="text-xs text-white/60 uppercase font-bold mb-0.5">
+								{$t('top2shot.cherished')}
+							</p>
+
+							<div class="grid grid-cols-2 gap-4 w-full">
+								<div
+									class="bg-gray-50 dark:bg-zinc-700/30 rounded-2xl p-4 border border-gray-100 dark:border-zinc-700/50"
+								>
+									<div class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold mb-1">
 										{$t('top2shot.stats2shots')}
 									</div>
-									<div class="text-xl font-black">{kamiOshi.count}x</div>
+									<div class="text-2xl font-black text-gray-800 dark:text-gray-100">
+										{kamiOshi.count}x
+									</div>
 								</div>
-								<div>
-									<div class="text-xs text-white/60 uppercase font-bold mb-0.5">
+								<div
+									class="bg-gray-50 dark:bg-zinc-700/30 rounded-2xl p-4 border border-gray-100 dark:border-zinc-700/50"
+								>
+									<div class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold mb-1">
 										{$t('top2shot.statsSpent')}
 									</div>
-									<div class="text-sm font-black mt-1">
+									<div class="text-lg font-black text-gray-800 dark:text-gray-100 mt-1">
 										{formatCompact(kamiOshi.spend)}
 									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-				</div>
-
-				<!-- SPENDING BREAKDOWN -->
-				<div
-					class="bg-white dark:bg-zinc-800 rounded-3xl p-6 border border-gray-100 dark:border-zinc-700 shadow-sm"
-				>
-					<h4 class="font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-						<DollarSign class="w-4 h-4 text-green-500" />
-						{$t('top2shot.budgetSplit')}
-					</h4>
-					<div class="h-48 relative flex items-center justify-center">
-						<!-- SVG Donut Chart -->
-						<svg
-							width={size}
-							height={size}
-							viewBox={`0 0 ${size} ${size}`}
-							class="transform -rotate-90"
-						>
-							{#each chartSegments as segment}
-								<circle
-									cx={size / 2}
-									cy={size / 2}
-									r={radius}
-									fill="none"
-									stroke={segment.color}
-									stroke-width={strokeWidth}
-									stroke-dasharray={`${segment.dashArray} ${circumference}`}
-									stroke-dashoffset={segment.dashOffset}
-									class="transition-all duration-500"
-								/>
-							{/each}
-						</svg>
-
-						<!-- Total Center -->
-						<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-							<div class="text-center">
-								<p class="text-[10px] text-gray-400 font-bold uppercase">{$t('top2shot.total')}</p>
-								<p class="text-xs font-black text-gray-800 dark:text-gray-200">
-									{formatCompact(totalSpending)}
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class="space-y-2 mt-4">
-						{#each spendingData as d}
-							<div class="flex items-center justify-between text-xs">
-								<div class="flex items-center gap-2">
-									<div class="w-2.5 h-2.5 rounded-full" style="background-color: {d.color}"></div>
-									<span class="text-gray-600 dark:text-gray-400 font-medium">{d.name}</span>
-								</div>
-								<span class="font-bold text-gray-800 dark:text-gray-200">
-									{formatCompact(d.value)}
-								</span>
-							</div>
-						{/each}
 					</div>
 				</div>
 			</div>
