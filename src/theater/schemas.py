@@ -63,3 +63,7 @@ class TicketResponse(TicketInDB):
 
     class Config:
         populate_by_name = True
+
+
+class MessageResponse(BaseModel):
+    detail: str

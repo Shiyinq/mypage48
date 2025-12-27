@@ -6,6 +6,7 @@ from src.dependencies import get_current_user, get_theater_service
 from src.auth.schemas import UserCurrent
 from src.theater.service import TheaterService
 from src.theater.schemas import (
+    MessageResponse,
     TicketCreateRequest,
     TicketResponse,
     TicketUpdateRequest,
@@ -63,7 +64,7 @@ async def update_ticket(
     return await service.update_ticket(current_user.userId, ticket_id, ticket_data)
 
 
-@router.delete("/tickets/{ticket_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/tickets/{ticket_id}", status_code=status.HTTP_200_OK, response_model=MessageResponse)
 async def delete_ticket(
     ticket_id: str,
     current_user: UserCurrent = Depends(get_current_user),
@@ -73,3 +74,5 @@ async def delete_ticket(
     Delete a ticket.
     """
     await service.delete_ticket(current_user.userId, ticket_id)
+    return MessageResponse(detail=Info.TICKET_DELETED)
+
