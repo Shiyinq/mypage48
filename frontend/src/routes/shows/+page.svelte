@@ -3,6 +3,7 @@
 	import { theater } from '$lib/apis/theater';
 	import {
 		ChevronLeft,
+		ArrowLeft,
 		Mic2,
 		Calendar,
 		History,
@@ -153,10 +154,23 @@
 	{#if selectedShowTitle && selectedShowData}
 		<button
 			on:click={() => (selectedShowTitle = null)}
-			class="flex items-center text-gray-600 mb-6 hover:text-red-600 transition-colors font-medium cursor-pointer"
+			class="flex items-center gap-4 mb-8 group cursor-pointer w-fit text-left"
 		>
-			<ChevronLeft class="w-5 h-5 mr-1" />
-			{$t('common.back')}
+			<div
+				class="p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 group-hover:text-gray-900 dark:group-hover:text-white transition-all shadow-sm"
+			>
+				<ArrowLeft class="w-5 h-5" />
+			</div>
+			<div>
+				<h2
+					class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors leading-none"
+				>
+					{$t('shows.backTitle')}
+				</h2>
+				<p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">
+					{$t('shows.backSubtitle')}
+				</p>
+			</div>
 		</button>
 
 		<!-- Header -->
@@ -194,16 +208,20 @@
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
 				<!-- First Seen -->
 				<div
-					class="glass-panel p-4 rounded-2xl flex items-center gap-4 border-l-4 border-l-blue-400"
+					class="glass-panel p-4 rounded-2xl flex items-center gap-4 border-l-4 border-l-blue-400 dark:border-l-blue-500"
 				>
-					<div class="p-2 bg-blue-50 text-blue-500 rounded-lg">
+					<div
+						class="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 rounded-lg"
+					>
 						<Calendar class="w-5 h-5" />
 					</div>
 					<div>
-						<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+						<p
+							class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider"
+						>
 							{$t('shows.firstAttended')}
 						</p>
-						<p class="font-bold text-gray-800 text-sm">
+						<p class="font-bold text-gray-800 dark:text-gray-200 text-sm">
 							{new Date(stats.first.event.date).toLocaleDateString('id-ID', {
 								day: 'numeric',
 								month: 'short',
@@ -215,16 +233,20 @@
 
 				<!-- Last Seen -->
 				<div
-					class="glass-panel p-4 rounded-2xl flex items-center gap-4 border-l-4 border-l-purple-400"
+					class="glass-panel p-4 rounded-2xl flex items-center gap-4 border-l-4 border-l-purple-400 dark:border-l-purple-500"
 				>
-					<div class="p-2 bg-purple-50 text-purple-500 rounded-lg">
+					<div
+						class="p-2 bg-purple-50 dark:bg-purple-900/30 text-purple-500 dark:text-purple-400 rounded-lg"
+					>
 						<History class="w-5 h-5" />
 					</div>
 					<div>
-						<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+						<p
+							class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider"
+						>
 							{$t('shows.lastAttended')}
 						</p>
-						<p class="font-bold text-gray-800 text-sm">
+						<p class="font-bold text-gray-800 dark:text-gray-200 text-sm">
 							{new Date(stats.last.event.date).toLocaleDateString('id-ID', {
 								day: 'numeric',
 								month: 'short',
@@ -236,16 +258,20 @@
 
 				<!-- Avg Price -->
 				<div
-					class="glass-panel p-4 rounded-2xl flex items-center gap-4 border-l-4 border-l-emerald-400"
+					class="glass-panel p-4 rounded-2xl flex items-center gap-4 border-l-4 border-l-emerald-400 dark:border-l-emerald-500"
 				>
-					<div class="p-2 bg-emerald-50 text-emerald-500 rounded-lg">
+					<div
+						class="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 rounded-lg"
+					>
 						<DollarSign class="w-5 h-5" />
 					</div>
 					<div>
-						<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+						<p
+							class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider"
+						>
 							{$t('shows.avgPrice')}
 						</p>
-						<p class="font-bold text-gray-800 text-sm">
+						<p class="font-bold text-gray-800 dark:text-gray-200 text-sm">
 							{new Intl.NumberFormat('id-ID', {
 								style: 'currency',
 								currency: 'IDR',
@@ -258,16 +284,23 @@
 
 				<!-- Top Row -->
 				<div
-					class="glass-panel p-4 rounded-2xl flex items-center gap-4 border-l-4 border-l-orange-400"
+					class="glass-panel p-4 rounded-2xl flex items-center gap-4 border-l-4 border-l-orange-400 dark:border-l-orange-500"
 				>
-					<div class="p-2 bg-orange-50 text-orange-500 rounded-lg">
+					<div
+						class="p-2 bg-orange-50 dark:bg-orange-900/30 text-orange-500 dark:text-orange-400 rounded-lg"
+					>
 						<Armchair class="w-5 h-5" />
 					</div>
 					<div>
-						<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+						<p
+							class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider"
+						>
 							{$t('shows.topRow')}
 						</p>
-						<p class="font-bold text-gray-800 text-sm">{$t('shows.row')} {stats.topRow}</p>
+						<p class="font-bold text-gray-800 dark:text-gray-200 text-sm">
+							{$t('shows.row')}
+							{stats.topRow}
+						</p>
 					</div>
 				</div>
 			</div>
@@ -276,35 +309,43 @@
 		<!-- Ticket List -->
 		<div class="space-y-4">
 			{#each selectedShowData.tickets as ticket (ticket._id)}
-				<div class="glass-panel p-4 rounded-2xl flex gap-4 transition-all hover:bg-white/80">
-					<div class="w-20 h-20 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden">
+				<div
+					class="glass-panel p-4 rounded-2xl flex gap-4 transition-all hover:bg-white/80 dark:hover:bg-zinc-800/80"
+				>
+					<div
+						class="w-20 h-20 rounded-xl bg-gray-100 dark:bg-zinc-800 flex-shrink-0 overflow-hidden"
+					>
 						{#if ticket.imageUrl}
 							<img src={ticket.imageUrl} alt="" class="w-full h-full object-cover" />
 						{:else}
-							<div class="w-full h-full flex items-center justify-center text-gray-300">
+							<div
+								class="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600"
+							>
 								<TicketIcon class="w-8 h-8" />
 							</div>
 						{/if}
 					</div>
 					<div class="flex-1 min-w-0">
-						<h3 class="font-bold text-gray-800 truncate">{ticket.event.title}</h3>
-						<div class="text-xs text-gray-500 flex items-center gap-2 mt-1">
+						<h3 class="font-bold text-gray-800 dark:text-gray-200 truncate">
+							{ticket.event.title}
+						</h3>
+						<div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-1">
 							<Calendar class="w-3 h-3" />
 							{ticket.event.date}
 						</div>
-						<div class="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
+						<div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
 							<MapPin class="w-3 h-3" />
 							{$t('shows.row')}
 							{ticket.seat.section}-{ticket.seat.number}
 						</div>
-						<div class="mt-2 font-bold text-red-600 text-sm">
+						<div class="mt-2 font-bold text-red-600 dark:text-red-500 text-sm">
 							IDR {ticket.price.toLocaleString()}
 						</div>
 					</div>
 					<div class="flex flex-col justify-center">
 						<button
 							on:click={() => (deleteId = ticket._id)}
-							class="p-2 text-gray-300 hover:text-red-600 transition-colors cursor-pointer"
+							class="p-2 text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-500 transition-colors cursor-pointer"
 							><Trash2 class="w-5 h-5" /></button
 						>
 					</div>
@@ -315,18 +356,18 @@
 		<!-- Main List -->
 		<div class="flex items-center gap-3 mb-8">
 			<div
-				class="p-3 rounded-2xl bg-purple-50 text-purple-600 shadow-lg shadow-purple-100 border-2 border-white transform -rotate-6"
+				class="p-3 rounded-2xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 shadow-lg shadow-purple-100 dark:shadow-purple-900/20 border-2 border-white dark:border-zinc-700 transform -rotate-6"
 			>
 				<Mic2 class="w-6 h-6" />
 			</div>
 			<div>
-				<h2 class="text-2xl font-bold text-gray-800 w-fit relative">
+				<h2 class="text-2xl font-bold text-themed w-fit relative">
 					{$t('shows.title')}
 					<span
-						class="absolute -bottom-1 left-0 w-full h-2 bg-purple-200/60 -z-10 transform -skew-x-12 rounded-sm"
+						class="absolute -bottom-1 left-0 w-full h-2 bg-purple-200/60 dark:bg-purple-500/30 -z-10 transform -skew-x-12 rounded-sm"
 					></span>
 				</h2>
-				<p class="text-sm text-gray-500">{$t('shows.subtitle')}</p>
+				<p class="text-sm text-themed-secondary">{$t('shows.subtitle')}</p>
 			</div>
 		</div>
 

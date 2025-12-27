@@ -1,25 +1,105 @@
 @import "tailwindcss";
 
+/* Tailwind v4: Configure dark mode to use .dark class on html element */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* CSS Custom Properties for theming */
+:root {
+  --color-bg-primary: #f0f2f5;
+  --color-bg-gradient-1: hsla(353, 96%, 66%, 0.07);
+  --color-bg-gradient-2: hsla(353, 96%, 66%, 0.05);
+  --color-bg-gradient-3: hsla(338, 22%, 90%, 1);
+  --color-bg-gradient-4: hsla(353, 96%, 66%, 0.03);
+  --color-glass-bg: rgba(255, 255, 255, 0.65);
+  --color-glass-border: rgba(255, 255, 255, 0.5);
+  --color-card-bg: rgba(255, 255, 255, 0.4);
+  --color-card-border: rgba(255, 255, 255, 0.6);
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f9fafb;
+  --color-border: #e5e7eb;
+  --color-border-light: #f3f4f6;
+  --color-scrollbar: rgba(227, 0, 15, 0.3);
+  --color-scrollbar-hover: rgba(227, 0, 15, 0.6);
+}
+
+.dark {
+  /* Professional Dark Mode - Zinc Theme */
+  --color-bg-primary: #09090b;
+  /* Zinc 950 */
+
+  /* Subtle, premium gradients */
+  --color-bg-gradient-1: rgba(220, 38, 38, 0.08);
+  /* Faint Red glow */
+  --color-bg-gradient-2: rgba(220, 38, 38, 0.05);
+  --color-bg-gradient-3: rgba(9, 9, 11, 0);
+  /* Fade to background */
+  --color-bg-gradient-4: rgba(220, 38, 38, 0.03);
+
+  /* Glass Effects - Sophisticated & Readable */
+  --color-glass-bg: rgba(9, 9, 11, 0.85);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Card Surfaces */
+  --color-card-bg: rgba(24, 24, 27, 0.6);
+  /* Zinc 900 with opacity */
+  --color-card-border: rgba(255, 255, 255, 0.08);
+
+  /* Typography - High Contrast & Legible */
+  --color-text-primary: #fafafa;
+  /* Zinc 50 */
+  --color-text-secondary: #a1a1aa;
+  /* Zinc 400 */
+  --color-text-muted: #71717a;
+  /* Zinc 500 */
+
+  /* Structured Surfaces */
+  --color-surface: #18181b;
+  /* Zinc 900 */
+  --color-surface-hover: #27272a;
+  /* Zinc 800 */
+
+  /* Borders */
+  --color-border: #27272a;
+  /* Zinc 800 */
+  --color-border-light: #3f3f46;
+  /* Zinc 700 */
+
+  /* Scrollbar */
+  --color-scrollbar: rgba(227, 0, 15, 0.4);
+  --color-scrollbar-hover: rgba(227, 0, 15, 0.7);
+}
+
 @layer base {
   body {
     font-family: 'Poppins', sans-serif;
-    background-color: #f0f2f5;
+    background-color: var(--color-bg-primary);
     background-image:
-      radial-gradient(at 0% 0%, hsla(353, 96%, 66%, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(353, 96%, 66%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(338, 22%, 90%, 1) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, hsla(353, 96%, 66%, 0.05) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, var(--color-bg-gradient-1) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, var(--color-bg-gradient-2) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, var(--color-bg-gradient-3) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, var(--color-bg-gradient-4) 0px, transparent 50%);
     background-attachment: fixed;
+    color: var(--color-text-primary);
   }
 }
 
 @layer components {
   .glass-panel {
-    @apply bg-white/[0.65] backdrop-blur-xl border border-white/50;
+    background-color: var(--color-glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--color-glass-border);
   }
 
   .glass-card {
-    @apply bg-white/40 backdrop-blur-md border border-white/60 shadow-sm;
+    background-color: var(--color-card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-card-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
   .idol-gradient {
@@ -28,6 +108,14 @@
 
   .idol-text-gradient {
     background: linear-gradient(135deg, #c5000d 0%, #ff4d4d 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .dark .idol-text-gradient {
+    background: linear-gradient(135deg, #ff4d4d 0%, #ff7070 100%);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -35,7 +123,7 @@
   /* Scoped Custom Scrollbar */
   .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(227, 0, 15, 0.3) transparent;
+    scrollbar-color: var(--color-scrollbar) transparent;
   }
 
   .custom-scrollbar::-webkit-scrollbar {
@@ -48,12 +136,33 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(227, 0, 15, 0.3);
+    background: var(--color-scrollbar);
     border-radius: 10px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(227, 0, 15, 0.6);
+    background: var(--color-scrollbar-hover);
+  }
+
+  /* Dark mode text utilities */
+  .text-themed {
+    color: var(--color-text-primary);
+  }
+
+  .text-themed-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .text-themed-muted {
+    color: var(--color-text-muted);
+  }
+
+  .bg-themed-surface {
+    background-color: var(--color-surface);
+  }
+
+  .border-themed {
+    border-color: var(--color-border);
   }
 }
 
@@ -152,6 +261,11 @@
   margin-right: 4px;
 }
 
+.dark .row-label {
+  color: #f9a8d4;
+  background: rgba(227, 0, 15, 0.2);
+}
+
 .empty-cell {
   width: 32px;
   height: 32px;
@@ -180,11 +294,20 @@
   flex-shrink: 0;
 }
 
+.dark .map-seat {
+  border-color: var(--color-border);
+  background-color: var(--color-surface);
+}
+
 .map-seat .seat-id {
   font-size: 8px;
   font-weight: 700;
   color: #999;
   line-height: 1.2;
+}
+
+.dark .map-seat .seat-id {
+  color: var(--color-text-muted);
 }
 
 .map-seat .seat-count {
@@ -193,6 +316,10 @@
   color: #999;
   line-height: 1;
   display: none;
+}
+
+.dark .map-seat .seat-count {
+  color: var(--color-text-muted);
 }
 
 /* Active seat with heatmap effect */

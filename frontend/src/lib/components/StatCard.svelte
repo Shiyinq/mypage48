@@ -23,7 +23,7 @@
 		<div class="flex items-center gap-3 mb-3">
 			{#if image}
 				<div
-					class="w-10 h-10 -ml-1 rounded-full overflow-hidden border-2 border-white shadow-md flex-shrink-0 bg-gray-100"
+					class="w-10 h-10 -ml-1 rounded-full overflow-hidden border-2 border-white dark:border-gray-700 shadow-md flex-shrink-0 bg-gray-100 dark:bg-gray-800"
 				>
 					<img src={image} alt={title} class="w-full h-full object-cover" />
 				</div>
@@ -32,12 +32,14 @@
 					<svelte:component this={icon} class={`w-5 h-5 ${textClass}`} />
 				</div>
 			{/if}
-			<p class="text-gray-500 text-xs font-bold uppercase tracking-wider">{title}</p>
+			<p class="text-themed-secondary text-xs font-bold uppercase tracking-wider">
+				{title}
+			</p>
 		</div>
 
 		<div class="flex-1 flex flex-col justify-center">
 			<h3
-				class={`font-extrabold text-gray-800 ${isLongText ? 'text-lg leading-tight line-clamp-2' : 'text-3xl'}`}
+				class={`font-extrabold text-themed ${isLongText ? 'text-lg leading-tight line-clamp-2' : 'text-3xl'}`}
 			>
 				{value}
 			</h3>

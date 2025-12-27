@@ -149,42 +149,42 @@
 	<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
 		<div class="flex items-center gap-3">
 			<div
-				class="p-3 rounded-2xl bg-pink-50 text-pink-500 transform -rotate-6 shadow-lg shadow-pink-100 border-2 border-white"
+				class="p-3 rounded-2xl bg-pink-50 dark:bg-pink-900/30 text-pink-500 dark:text-pink-400 transform -rotate-6 shadow-lg shadow-pink-100 dark:shadow-pink-900/20 border-2 border-white dark:border-zinc-700"
 			>
 				<ImageIcon class="w-6 h-6" />
 			</div>
 			<div>
-				<h2 class="text-2xl font-bold text-gray-800 tracking-tight relative w-fit">
+				<h2 class="text-2xl font-bold text-themed tracking-tight relative w-fit">
 					{$t('memories.title')}
 					<span
-						class="absolute -bottom-1 left-0 w-full h-2 bg-pink-200/60 -z-10 transform -skew-x-12 rounded-sm"
+						class="absolute -bottom-1 left-0 w-full h-2 bg-pink-200/60 dark:bg-pink-500/30 -z-10 transform -skew-x-12 rounded-sm"
 					></span>
 				</h2>
-				<p class="text-sm text-gray-500 mt-1">{$t('memories.subtitle')}</p>
+				<p class="text-sm text-themed-secondary mt-1">{$t('memories.subtitle')}</p>
 			</div>
 		</div>
 
 		<!-- Filter Tabs -->
 		<div
-			class="bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-1 w-full md:w-auto overflow-x-auto"
+			class="bg-white dark:bg-zinc-900 p-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm flex items-center gap-1 w-full md:w-auto overflow-x-auto"
 		>
 			<button
 				on:click={() => (filter = 'ALL')}
-				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === 'ALL' ? 'bg-pink-500 text-white shadow-md shadow-pink-200' : 'text-gray-500 hover:bg-gray-50'}`}
+				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === 'ALL' ? 'bg-pink-500 text-white shadow-md shadow-pink-200 dark:shadow-pink-900/30' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}
 			>
 				<Grid class="w-3.5 h-3.5" />
 				{$t('memories.allPhotos')}
 			</button>
 			<button
 				on:click={() => (filter = 'TICKET')}
-				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === 'TICKET' ? 'bg-red-500 text-white shadow-md shadow-red-200' : 'text-gray-500 hover:bg-gray-50'}`}
+				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === 'TICKET' ? 'bg-red-500 text-white shadow-md shadow-red-200 dark:shadow-red-900/30' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}
 			>
 				<TicketIcon class="w-3.5 h-3.5" />
 				{$t('memories.tickets')}
 			</button>
 			<button
 				on:click={() => (filter = '2SHOT')}
-				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === '2SHOT' ? 'bg-purple-500 text-white shadow-md shadow-purple-200' : 'text-gray-500 hover:bg-gray-50'}`}
+				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === '2SHOT' ? 'bg-purple-500 text-white shadow-md shadow-purple-200 dark:shadow-purple-900/30' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}
 			>
 				<Camera class="w-3.5 h-3.5" />
 				{$t('memories.twoShots')}
@@ -195,13 +195,17 @@
 	<!-- Gallery Grid -->
 	{#if filteredItems.length === 0}
 		<div
-			class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center border-2 border-dashed border-gray-200 rounded-3xl bg-gray-50/50"
+			class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-white/5"
 		>
-			<div class="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center mb-6">
-				<ImageIcon class="w-10 h-10 text-gray-300" />
+			<div
+				class="w-20 h-20 bg-white dark:bg-zinc-800 rounded-full shadow-sm flex items-center justify-center mb-6"
+			>
+				<ImageIcon class="w-10 h-10 text-gray-300 dark:text-zinc-600" />
 			</div>
-			<h3 class="text-xl font-bold text-gray-800 mb-2">{$t('memories.noMemories')}</h3>
-			<p class="text-sm text-gray-500 max-w-md mx-auto">
+			<h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">
+				{$t('memories.noMemories')}
+			</h3>
+			<p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
 				{$t('upload.subtitle')}
 			</p>
 		</div>
@@ -224,7 +228,7 @@
 
 					<!-- Polaroid Card -->
 					<div
-						class="bg-white p-3 pb-12 shadow-xl shadow-gray-200/50 border border-gray-100 rounded-sm transition-shadow duration-300 group-hover:shadow-2xl relative overflow-hidden"
+						class="bg-white dark:bg-zinc-900 p-3 pb-12 shadow-xl shadow-gray-200/50 dark:shadow-black/30 border border-gray-100 dark:border-zinc-700 rounded-sm transition-shadow duration-300 group-hover:shadow-2xl relative overflow-hidden"
 					>
 						<!-- Image Area -->
 						<div
@@ -261,7 +265,7 @@
 						<!-- Caption -->
 						<div class="px-2 text-center relative">
 							<h3
-								class={`font-['Poppins'] font-bold text-sm leading-tight mb-1 transition-colors ${item.type === '2SHOT' ? 'text-purple-600' : 'text-gray-800 group-hover:text-red-600'}`}
+								class={`font-['Poppins'] font-bold text-sm leading-tight mb-1 transition-colors ${item.type === '2SHOT' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-800 dark:text-gray-100 group-hover:text-red-600 dark:group-hover:text-red-400'}`}
 							>
 								{item.title}
 							</h3>

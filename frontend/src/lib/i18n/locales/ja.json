@@ -211,6 +211,16 @@
             "roulette": "ルーレット",
             "birthday": "バースデー"
         },
+        "oshiModal": {
+            "title": "推しメンを選択",
+            "subtitle": "あなたの世界を照らすメンバーを選んでください！",
+            "searchPlaceholder": "メンバー名を検索...",
+            "loading": "メンバーを読み込み中...",
+            "noMembers": "「{query}」に一致するメンバーが見つかりません",
+            "generation": "{gen}期生",
+            "cancel": "キャンセル",
+            "save": "推しを保存"
+        },
         "recentActivity": {
             "title": "最近の活動",
             "subtitle": "最近観た公演",
@@ -253,6 +263,16 @@
         "moreSettings": {
             "title": "その他の設定",
             "subtitle": "近日公開..."
+        },
+        "theme": {
+            "title": "テーマ",
+            "subtitle": "お好みの外観を選択",
+            "light": "ライト",
+            "lightDescription": "クラシックなライトモード",
+            "dark": "ダーク",
+            "darkDescription": "夜間に目に優しい",
+            "auto": "自動",
+            "autoDescription": "システム設定に従う"
         }
     },
     "history": {
@@ -284,6 +304,8 @@
         }
     },
     "shows": {
+        "backTitle": "公演一覧に戻る",
+        "backSubtitle": "リストに戻る",
         "title": "公演一覧",
         "subtitle": "観覧した公演の統計",
         "totalShows": "総公演数",

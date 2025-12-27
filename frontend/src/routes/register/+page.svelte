@@ -65,47 +65,51 @@
 
 	<div class="w-full max-w-lg">
 		<div class="text-center mb-8 animate-fade-in">
-			<h1 class="text-3xl font-black text-gray-900 tracking-tight mb-2">
+			<h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
 				{$t('auth.register.title')}
 			</h1>
-			<p class="text-gray-500 font-medium">{$t('auth.register.subtitle')}</p>
+			<p class="text-gray-500 dark:text-gray-400 font-medium">{$t('auth.register.subtitle')}</p>
 		</div>
 
 		<div
-			class="glass-panel p-8 rounded-3xl shadow-2xl border border-white/60 backdrop-blur-xl animate-[slideUpFade_0.5s_ease-out]"
+			class="glass-panel p-8 rounded-3xl shadow-2xl border border-white/60 dark:border-zinc-800 backdrop-blur-xl animate-[slideUpFade_0.5s_ease-out]"
 		>
 			<form on:submit|preventDefault={handleSubmit} class="space-y-4">
 				<div class="grid grid-cols-2 gap-4">
 					<div>
-						<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 							>{$t('auth.register.memberId')}</label
 						>
 						<div class="relative">
-							<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+							<div
+								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
+							>
 								<Hash class="w-4 h-4" />
 							</div>
 							<input
 								name="memberId"
 								required
 								bind:value={formData.memberId}
-								class="w-full pl-9 pr-3 py-3 bg-white/80 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 text-sm"
+								class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
 								placeholder="JKT-XXXX"
 							/>
 						</div>
 					</div>
 					<div>
-						<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 							>{$t('auth.register.username')}</label
 						>
 						<div class="relative">
-							<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+							<div
+								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
+							>
 								<User class="w-4 h-4" />
 							</div>
 							<input
 								name="username"
 								required
 								bind:value={formData.username}
-								class="w-full pl-9 pr-3 py-3 bg-white/80 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 text-sm"
+								class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
 								placeholder="@username"
 							/>
 						</div>
@@ -113,24 +117,24 @@
 				</div>
 
 				<div>
-					<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+					<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 						>{$t('auth.register.fullName')}</label
 					>
 					<input
 						name="fullName"
 						required
 						bind:value={formData.fullName}
-						class="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 text-sm"
+						class="w-full px-4 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
 						placeholder="e.g. Catherina Vallencia"
 					/>
 				</div>
 
 				<div>
-					<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+					<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 						>{$t('auth.register.email')}</label
 					>
 					<div class="relative">
-						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
 							<Mail class="w-4 h-4" />
 						</div>
 						<input
@@ -138,14 +142,14 @@
 							name="email"
 							required
 							bind:value={formData.email}
-							class="w-full pl-9 pr-3 py-3 bg-white/80 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 text-sm"
+							class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
 							placeholder="name@example.com"
 						/>
 					</div>
 				</div>
 
 				<div>
-					<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+					<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 						>{$t('auth.register.ofcStatus')}</label
 					>
 					<div class="relative">
@@ -155,7 +159,7 @@
 						<select
 							name="ofcStatus"
 							bind:value={formData.ofcStatus}
-							class="w-full pl-9 pr-3 py-3 bg-white/80 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 text-sm appearance-none cursor-pointer"
+							class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm appearance-none cursor-pointer"
 						>
 							<option value="Active">{$t('auth.register.ofcActive')}</option>
 							<option value="Inactive">{$t('auth.register.ofcInactive')}</option>
@@ -169,11 +173,13 @@
 
 				<div class="grid md:grid-cols-2 gap-4">
 					<div>
-						<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 							>{$t('auth.register.password')}</label
 						>
 						<div class="relative">
-							<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+							<div
+								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
+							>
 								<Lock class="w-4 h-4" />
 							</div>
 							<input
@@ -181,17 +187,19 @@
 								name="password"
 								required
 								bind:value={formData.password}
-								class="w-full pl-9 pr-3 py-3 bg-white/80 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 text-sm"
+								class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
 								placeholder="••••••••"
 							/>
 						</div>
 					</div>
 					<div>
-						<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 							>{$t('auth.register.confirmPassword')}</label
 						>
 						<div class="relative">
-							<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+							<div
+								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
+							>
 								<Shield class="w-4 h-4" />
 							</div>
 							<input
@@ -199,7 +207,7 @@
 								name="confirmPassword"
 								required
 								bind:value={formData.confirmPassword}
-								class={`w-full pl-9 pr-3 py-3 bg-white/80 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 text-sm ${error ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
+								class={`w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm ${error ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-zinc-700'} placeholder-gray-400 dark:placeholder-zinc-600`}
 								placeholder="••••••••"
 							/>
 						</div>
@@ -208,7 +216,7 @@
 
 				{#if error}
 					<p
-						class="text-xs text-red-600 font-bold text-center bg-red-50 p-2 rounded-lg border border-red-100"
+						class="text-xs text-red-600 dark:text-red-400 font-bold text-center bg-red-50 dark:bg-red-900/20 p-2 rounded-lg border border-red-100 dark:border-red-800"
 					>
 						{error}
 					</p>
@@ -227,8 +235,8 @@
 				</button>
 			</form>
 
-			<div class="mt-6 pt-6 border-t border-gray-100 text-center">
-				<p class="text-sm text-gray-500">{$t('auth.register.hasAccount')}</p>
+			<div class="mt-6 pt-6 border-t border-gray-100 dark:border-zinc-800 text-center">
+				<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.register.hasAccount')}</p>
 				<button
 					on:click={() => goto('/login')}
 					class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto"

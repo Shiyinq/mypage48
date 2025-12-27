@@ -1,6 +1,7 @@
 <script>
 	import '../app.css';
 	import { isAuthenticated, toast, tickets } from '$lib/stores';
+	import { initTheme } from '$lib/stores/theme';
 	import { theater } from '$lib/apis/theater';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -8,6 +9,11 @@
 	import Header from '$lib/components/Header.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import { Check } from 'lucide-svelte';
+
+	// Initialize theme on mount
+	onMount(() => {
+		initTheme();
+	});
 
 	$: isPublicPage =
 		$page.url.pathname === '/login' ||
@@ -31,7 +37,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50 flex flex-col relative">
+<div class="min-h-screen flex flex-col relative">
 	{#if $toast}
 		<div class="fixed top-4 left-0 right-0 z-[10000] flex justify-center pointer-events-none">
 			<div

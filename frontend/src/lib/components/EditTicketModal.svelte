@@ -134,22 +134,22 @@
 
 	<!-- Modal Content -->
 	<div
-		class="bg-white/95 backdrop-blur-xl w-full max-w-5xl h-[90vh] rounded-3xl shadow-2xl overflow-y-auto custom-scrollbar relative z-10 animate-fade-in"
+		class="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl w-full max-w-5xl h-[90vh] rounded-3xl shadow-2xl overflow-y-auto custom-scrollbar relative z-10 animate-fade-in"
 	>
 		<div class="max-w-5xl mx-auto p-4 md:p-8 pb-24">
 			<!-- Header -->
 			<div class="flex items-center justify-between mb-6">
 				<div class="flex items-center gap-3">
 					<div
-						class="p-3 rounded-2xl bg-red-50 text-red-600 shadow-lg shadow-red-100 border-2 border-white transform -rotate-6"
+						class="p-3 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-lg shadow-red-100 dark:shadow-red-900/20 border-2 border-white dark:border-zinc-700 transform -rotate-6"
 					>
 						<NotebookPen class="w-6 h-6" />
 					</div>
 					<div>
-						<h2 class="text-2xl font-bold text-gray-800 leading-none relative w-fit">
+						<h2 class="text-2xl font-bold text-themed leading-none relative w-fit">
 							{$t('forms.editTicket')}
 							<span
-								class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 -z-10 transform -skew-x-12 rounded-sm"
+								class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 dark:bg-red-500/30 -z-10 transform -skew-x-12 rounded-sm"
 							></span>
 						</h2>
 					</div>
@@ -157,7 +157,7 @@
 
 				<button
 					on:click={() => dispatch('close')}
-					class="text-sm font-bold text-gray-500 hover:text-red-600 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200 cursor-pointer"
+					class="text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer"
 				>
 					{$t('forms.cancel')}
 				</button>
@@ -169,7 +169,7 @@
 					<div class="sticky top-6">
 						{#if image}
 							<div
-								class="relative rounded-3xl overflow-hidden border border-gray-200 bg-gray-100 shadow-lg aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-300px)] group"
+								class="relative rounded-3xl overflow-hidden border border-gray-200 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800 shadow-lg aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-300px)] group"
 							>
 								<img src={image} alt="Preview" class="w-full h-full object-contain p-4" />
 								<div
@@ -187,13 +187,15 @@
 						{:else}
 							<div
 								on:click={() => fileInputRef.click()}
-								class="rounded-3xl border-3 border-dashed border-gray-200 bg-gray-50 hover:bg-red-50 hover:border-red-200 transition-all cursor-pointer flex flex-col items-center justify-center aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-300px)] text-gray-400 hover:text-red-500"
+								class="rounded-3xl border-3 border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-500/50 transition-all cursor-pointer flex flex-col items-center justify-center aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-300px)] text-gray-400 dark:text-gray-500 hover:text-red-500"
 							>
-								<div class="p-4 rounded-full bg-white shadow-sm mb-4">
+								<div class="p-4 rounded-full bg-white dark:bg-zinc-700 shadow-sm mb-4">
 									<ImagePlus class="w-8 h-8" />
 								</div>
 								<p class="font-bold text-lg">{$t('forms.uploadPhoto')}</p>
-								<p class="text-xs text-gray-400 mt-1">({$t('forms.optional')})</p>
+								<p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+									({$t('forms.optional')})
+								</p>
 							</div>
 						{/if}
 					</div>
@@ -201,20 +203,20 @@
 
 				<!-- Right: Form -->
 				<div
-					class="bg-white/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/50 shadow-xl h-fit"
+					class="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/50 dark:border-zinc-700 shadow-xl h-fit"
 				>
 					<form on:submit|preventDefault={handleSubmit} class="space-y-8">
 						<!-- Event Details -->
 						<div class="space-y-4">
 							<h3
-								class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"
+								class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
 							>
 								<TicketIcon class="w-4 h-4" />
 								{$t('forms.eventDetails')}
 							</h3>
 
 							<div>
-								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+								<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 									>{$t('forms.showTitle')}</label
 								>
 								<div class="relative group">
@@ -225,7 +227,7 @@
 									</div>
 									<select
 										bind:value={formData.event.title}
-										class="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-bold text-gray-900 transition-all appearance-none cursor-pointer"
+										class="w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-bold text-gray-900 dark:text-gray-100 transition-all appearance-none cursor-pointer"
 									>
 										<option value="" disabled>{$t('forms.selectSetlist')}</option>
 										{#each SHOW_OPTIONS as show}<option value={show}>{show}</option>{/each}
@@ -238,7 +240,8 @@
 
 							<div class="grid grid-cols-2 gap-4">
 								<div>
-									<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									<label
+										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 										>{$t('forms.date')}</label
 									>
 									<div class="relative">
@@ -248,12 +251,13 @@
 										<input
 											type="date"
 											bind:value={formData.event.date}
-											class="w-full pl-9 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900"
+											class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
 										/>
 									</div>
 								</div>
 								<div>
-									<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									<label
+										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 										>{$t('forms.showTime')}</label
 									>
 									<div class="relative">
@@ -263,7 +267,7 @@
 										<input
 											type="time"
 											bind:value={formData.event.time}
-											class="w-full pl-9 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900"
+											class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
 										/>
 									</div>
 								</div>
@@ -271,22 +275,23 @@
 						</div>
 
 						<!-- Seat & Payment -->
-						<div class="space-y-4 pt-4 border-t border-gray-100">
+						<div class="space-y-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
 							<h3
-								class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"
+								class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
 							>
 								<MapPin class="w-4 h-4" />
 								{$t('forms.seatPayment')}
 							</h3>
 							<div class="grid grid-cols-3 gap-4">
 								<div>
-									<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									<label
+										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 										>{$t('forms.row')}</label
 									>
 									<div class="relative">
 										<select
 											bind:value={formData.seat.section}
-											class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-red-500 outline-none text-center font-black text-lg text-gray-900 appearance-none cursor-pointer"
+											class="w-full p-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-center font-black text-lg text-gray-900 dark:text-gray-100 appearance-none cursor-pointer"
 										>
 											<option value="" disabled>-</option>
 											{#each ROW_OPTIONS as r}<option value={r}>{r}</option>{/each}
@@ -297,19 +302,21 @@
 									</div>
 								</div>
 								<div class="col-span-2">
-									<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									<label
+										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 										>{$t('forms.seatNumber')}</label
 									>
 									<input
 										type="number"
 										bind:value={formData.seat.number}
-										class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-red-500 outline-none text-center font-black text-lg text-gray-900 placeholder-gray-300"
+										class="w-full p-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-center font-black text-lg text-gray-900 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600"
 									/>
 								</div>
 							</div>
 							<div class="grid grid-cols-2 gap-4">
 								<div>
-									<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									<label
+										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 										>{$t('forms.price')}</label
 									>
 									<div class="relative">
@@ -319,12 +326,13 @@
 										<input
 											type="number"
 											bind:value={formData.price}
-											class="w-full pl-9 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-red-500 outline-none font-medium text-gray-900"
+											class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-gray-100"
 										/>
 									</div>
 								</div>
 								<div>
-									<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									<label
+										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 										>{$t('forms.ticketId')}</label
 									>
 									<div class="relative">
@@ -334,7 +342,7 @@
 										<input
 											type="text"
 											bind:value={formData.ticket_id}
-											class="w-full pl-9 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900"
+											class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
 											placeholder={$t('forms.optional')}
 										/>
 									</div>
@@ -343,10 +351,10 @@
 						</div>
 
 						<!-- 2-Shot -->
-						<div class="space-y-4 pt-4 border-t border-gray-100">
+						<div class="space-y-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
 							<div class="flex items-center justify-between mb-4">
 								<h3
-									class="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2"
+									class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2"
 								>
 									<Camera class="w-4 h-4" />
 									{$t('forms.twoShotDetails')}
@@ -364,15 +372,16 @@
 
 							{#if showTwoShot}
 								<div
-									class="bg-red-50/50 rounded-2xl p-4 border border-red-100 space-y-4 animate-fade-in"
+									class="bg-red-50/50 dark:bg-zinc-800/50 rounded-2xl p-4 border border-red-100 dark:border-red-500/30 space-y-4 animate-fade-in"
 								>
 									<div>
-										<label class="block text-xs font-bold text-gray-500 mb-2 ml-1"
+										<label
+											class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1"
 											>{$t('forms.twoShotPhoto')}</label
 										>
 										<div
 											on:click={() => twoShotInputRef.click()}
-											class="w-full h-32 border-2 border-dashed border-red-200 rounded-xl bg-white hover:bg-red-50 transition-colors cursor-pointer flex items-center justify-center overflow-hidden relative group"
+											class="w-full h-32 border-2 border-dashed border-red-200 dark:border-red-900/30 rounded-xl bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors cursor-pointer flex items-center justify-center overflow-hidden relative group"
 										>
 											{#if twoShotImage}
 												<img src={twoShotImage} alt="2shot" class="w-full h-full object-contain" />
@@ -382,7 +391,7 @@
 													{$t('forms.changePhoto')}
 												</div>
 											{:else}
-												<div class="flex flex-col items-center text-red-400">
+												<div class="flex flex-col items-center text-red-400 dark:text-red-500">
 													<Camera class="w-6 h-6 mb-1" />
 													<span class="text-xs font-medium">{$t('forms.uploadPhoto')}</span>
 												</div>
@@ -391,7 +400,8 @@
 									</div>
 
 									<div>
-										<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+										<label
+											class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 											>{$t('forms.memberName')}</label
 										>
 										<div class="relative">
@@ -401,7 +411,7 @@
 											<input
 												type="text"
 												bind:value={formData.two_shot.member_name}
-												class="w-full pl-9 pr-3 py-3 bg-white border border-gray-200 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900"
+												class="w-full pl-9 pr-3 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
 												placeholder={$t('forms.memberNamePlaceholder')}
 											/>
 										</div>
@@ -409,7 +419,8 @@
 
 									<div class="grid grid-cols-2 gap-4">
 										<div>
-											<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+											<label
+												class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 												>{$t('forms.type')}</label
 											>
 											<div class="relative">
@@ -418,7 +429,7 @@
 												</div>
 												<select
 													bind:value={formData.two_shot.type}
-													class="w-full pl-9 pr-8 py-3 bg-white border border-gray-200 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 appearance-none cursor-pointer"
+													class="w-full pl-9 pr-8 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100 appearance-none cursor-pointer"
 												>
 													<option value="Roulette">Roulette</option>
 													<option value="Birthday">Birthday</option>
@@ -429,7 +440,8 @@
 											</div>
 										</div>
 										<div>
-											<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+											<label
+												class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 												>{$t('forms.price')}</label
 											>
 											<div class="relative">
@@ -439,7 +451,7 @@
 												<input
 													type="number"
 													bind:value={formData.two_shot.price}
-													class="w-full pl-9 pr-3 py-3 bg-white border border-gray-200 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900"
+													class="w-full pl-9 pr-3 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
 												/>
 											</div>
 										</div>
@@ -449,16 +461,16 @@
 						</div>
 
 						<!-- Notes -->
-						<div class="space-y-4 pt-4 border-t border-gray-100">
+						<div class="space-y-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
 							<h3
-								class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"
+								class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
 							>
 								<NotebookPen class="w-4 h-4" />
 								{$t('forms.experienceLog')}
 							</h3>
 							<textarea
 								bind:value={formData.notes}
-								class="w-full p-4 bg-yellow-50/50 border border-yellow-200 rounded-xl focus:ring-2 focus:ring-yellow-400 outline-none text-sm text-gray-900 placeholder-gray-400 min-h-[120px]"
+								class="w-full p-4 bg-yellow-50/50 dark:bg-zinc-800/50 border border-yellow-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-yellow-400 dark:focus:ring-zinc-600 outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 min-h-[120px]"
 								placeholder={$t('forms.notesPlaceholder')}
 							></textarea>
 						</div>

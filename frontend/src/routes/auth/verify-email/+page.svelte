@@ -43,7 +43,9 @@
 	});
 </script>
 
-<div class="min-h-screen flex items-center justify-center p-4 bg-gray-50 relative overflow-hidden">
+<div
+	class="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-zinc-950 relative overflow-hidden"
+>
 	<!-- Background decorations matching login/register -->
 	<div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
 		<div
@@ -56,25 +58,31 @@
 
 	<div class="w-full max-w-md">
 		<div
-			class="bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/60 text-center animate-fade-in"
+			class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/60 dark:border-zinc-800 text-center animate-fade-in"
 		>
 			<div class="flex justify-center mb-6">
 				{#if status === 'loading'}
-					<div class="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center">
-						<Loader2 class="w-8 h-8 text-blue-500 animate-spin" />
+					<div
+						class="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center"
+					>
+						<Loader2 class="w-8 h-8 text-blue-500" />
 					</div>
 				{:else if status === 'success'}
-					<div class="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center">
+					<div
+						class="w-16 h-16 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center"
+					>
 						<CheckCircle class="w-8 h-8 text-green-500" />
 					</div>
 				{:else}
-					<div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
+					<div
+						class="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center"
+					>
 						<XCircle class="w-8 h-8 text-red-500" />
 					</div>
 				{/if}
 			</div>
 
-			<h1 class="text-2xl font-black text-gray-900 mb-2">
+			<h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2">
 				{#if status === 'loading'}
 					{$t('auth.verifyEmail.loadingTitle')}
 				{:else if status === 'success'}
@@ -84,14 +92,14 @@
 				{/if}
 			</h1>
 
-			<p class="text-gray-500 font-medium mb-8">
+			<p class="text-gray-500 dark:text-gray-400 font-medium mb-8">
 				{message}
 			</p>
 
 			{#if status === 'error'}
 				<button
 					on:click={() => goto('/login')}
-					class="w-full py-3 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+					class="w-full py-3 rounded-xl font-bold bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
 				>
 					{$t('auth.verifyEmail.backToLogin')}
 				</button>
