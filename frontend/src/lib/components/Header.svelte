@@ -80,13 +80,17 @@
 								: 'ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-red-400'
 						}`}
 			>
-				<img
-					src={$userProfile?.oshi?.profilePicture ||
-						$userProfile?.profilePicture ||
-						'https://jkt48.com/profile/oline_manuel.jpg'}
-					alt="Profile"
-					class="w-full h-full object-cover"
-				/>
+				{#if $userProfile?.oshi?.profilePicture || $userProfile?.profilePicture}
+					<img
+						src={$userProfile?.oshi?.profilePicture || $userProfile?.profilePicture}
+						alt="Profile"
+						class="w-full h-full object-cover"
+					/>
+				{:else}
+					<div class="w-full h-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">
+						<User class="w-5 h-5 text-gray-400 dark:text-gray-500" />
+					</div>
+				{/if}
 				<div
 					class={`absolute inset-0 bg-red-500/20 transition-opacity ${$page.url.pathname === '/profile' ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}
 				></div>
