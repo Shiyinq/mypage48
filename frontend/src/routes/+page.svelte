@@ -184,18 +184,16 @@
 		const stats = Array(12)
 			.fill(null)
 			.map((_, i) => ({
-				name: new Date(selectedYear, i, 1).toLocaleString('default', { month: 'short' }),
+				name: new Date(2000, i, 1).toLocaleString('default', { month: 'short' }),
 				count: 0,
 				spent: 0,
-				isActive: i >= startMonth && i <= endMonth
+				isActive: isAllData ? true : i >= startMonth && i <= endMonth
 			}));
 		filteredTickets.forEach((t) => {
 			const d = new Date(t.event.date);
-			if (d.getFullYear() === selectedYear) {
-				const m = d.getMonth();
-				stats[m].count++;
-				stats[m].spent += t.price;
-			}
+			const m = d.getMonth();
+			stats[m].count++;
+			stats[m].spent += t.price;
 		});
 		const maxCount = Math.max(...stats.map((s) => s.count), 1);
 		return { stats, maxCount };
@@ -902,7 +900,13 @@
 		<div class="glass-panel p-6 rounded-3xl lg:col-span-2 flex flex-col">
 			<div class="mb-6">
 				<h3 class="text-xl font-bold text-gray-800">Monthly Attendance</h3>
-				<p class="text-xs text-gray-400">Breakdown for {selectedYear}</p>
+				<p class="text-xs text-gray-400">
+					Breakdown for {isAllData
+						? availableYears.length > 1
+							? `${Math.min(...availableYears)} - ${Math.max(...availableYears)}`
+							: availableYears[0]
+						: selectedYear}
+				</p>
 			</div>
 			<div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 flex-1">
 				{#each monthlyStats.stats as month}
