@@ -146,9 +146,16 @@
 
 	const selectShow = (title: string) => {
 		selectedShowTitle = title;
-		window.scrollTo({ top: 0, behavior: 'smooth' });
 	};
 </script>
+
+<svelte:head>
+	<title
+		>{selectedShowTitle
+			? `${selectedShowTitle} | MyPage48`
+			: `${$t('shows.title')} | MyPage48`}</title
+	>
+</svelte:head>
 
 <div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in">
 	{#if selectedShowTitle && selectedShowData}

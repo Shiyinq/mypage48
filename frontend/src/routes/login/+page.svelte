@@ -41,6 +41,10 @@
 	};
 </script>
 
+<svelte:head>
+	<title>{$t('auth.login.title')} | MyPage48</title>
+</svelte:head>
+
 <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
 	<div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
 		<div

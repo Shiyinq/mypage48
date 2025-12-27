@@ -82,6 +82,10 @@
 		}).format(val);
 </script>
 
+<svelte:head>
+	<title>{$t('top2shot.title')} | MyPage48</title>
+</svelte:head>
+
 <div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in">
 	<!-- Header -->
 	<div class="flex items-center gap-3 mb-8">

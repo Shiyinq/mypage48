@@ -99,6 +99,10 @@
 	};
 </script>
 
+<svelte:head>
+	<title>{$t('settings.title')} | MyPage48</title>
+</svelte:head>
+
 <div class="max-w-2xl mx-auto p-4 animate-fade-in pb-24">
 	<!-- Page Header -->
 	<div class="flex items-center justify-between mb-8">
