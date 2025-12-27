@@ -404,7 +404,7 @@
 	<div class="flex items-center justify-between mb-8">
 		<div class="flex items-center gap-3">
 			<div
-				class="p-3 rounded-2xl bg-red-50 text-red-600 shadow-lg shadow-red-100 border-2 border-white transform -rotate-6"
+				class="p-3 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-lg shadow-red-100 dark:shadow-red-900/20 border-2 border-white dark:border-zinc-700 transform -rotate-6"
 			>
 				<User class="w-6 h-6" />
 			</div>
@@ -412,17 +412,17 @@
 				<h2 class="text-2xl font-black idol-text-gradient leading-none relative w-fit">
 					{$t('profile.title')}
 					<span
-						class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 -z-10 transform -skew-x-12 rounded-sm"
+						class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 dark:bg-red-500/30 -z-10 transform -skew-x-12 rounded-sm"
 					></span>
 				</h2>
-				<p class="text-sm text-gray-500 mt-1">{$t('profile.subtitle')}</p>
+				<p class="text-sm text-themed-secondary mt-1">{$t('profile.subtitle')}</p>
 			</div>
 		</div>
 		<div class="flex items-center gap-2">
 			<!-- Settings Button -->
 			<button
 				on:click={() => goto('/settings')}
-				class="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors border border-transparent hover:border-gray-200 cursor-pointer"
+				class="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-gray-700 dark:hover:text-gray-300 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-zinc-600 cursor-pointer"
 				title="Settings"
 			>
 				<Settings class="w-5 h-5" />
@@ -430,7 +430,7 @@
 			<!-- Logout Button -->
 			<button
 				on:click={logout}
-				class="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors border border-transparent hover:border-red-100 cursor-pointer"
+				class="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-500/30 cursor-pointer"
 				title={$t('common.logout')}
 			>
 				<LogOut class="w-5 h-5" />
@@ -587,20 +587,24 @@
 				{#if loading}
 					<div class="flex justify-between items-end mb-2">
 						<div>
-							<div class="h-3 w-20 bg-gray-200 rounded animate-pulse mb-2"></div>
-							<div class="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
+							<div class="h-3 w-20 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2"></div>
+							<div class="h-8 w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
 						</div>
 						<div class="text-right">
-							<div class="h-3 w-16 bg-gray-200 rounded animate-pulse ml-auto"></div>
+							<div
+								class="h-3 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse ml-auto"
+							></div>
 						</div>
 					</div>
-					<div class="h-3 w-full bg-gray-200 rounded-full animate-pulse mb-4"></div>
-					<div class="h-9 w-full bg-gray-200 rounded-lg animate-pulse"></div>
+					<div
+						class="h-3 w-full bg-gray-200 dark:bg-zinc-700 rounded-full animate-pulse mb-4"
+					></div>
+					<div class="h-9 w-full bg-gray-200 dark:bg-zinc-700 rounded-lg animate-pulse"></div>
 				{:else}
 					<div class="flex justify-between items-end mb-2">
 						<div>
 							<div class="flex items-center gap-1.5 mb-0.5">
-								<p class="text-xs font-bold text-gray-400 uppercase">
+								<p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">
 									{$t('profile.level.currentRank')}
 								</p>
 								<div class="relative group">
@@ -620,14 +624,16 @@
 							<h3 class="text-2xl font-black idol-text-gradient">{level.current}</h3>
 						</div>
 						<div class="text-right">
-							<p class="text-xs font-bold text-gray-500">
+							<p class="text-xs font-bold text-gray-500 dark:text-gray-400">
 								<span class="text-red-600">{level.xp}</span> / {level.nextLevelXp} XP
 							</p>
 						</div>
 					</div>
 
 					<!-- Progress Bar -->
-					<div class="h-3 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner mb-4">
+					<div
+						class="h-3 w-full bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden shadow-inner mb-4"
+					>
 						<div
 							class="h-full idol-gradient rounded-full relative"
 							style="width: {progressPercent}%"
@@ -639,14 +645,16 @@
 					</div>
 
 					<div
-						class="flex items-center gap-2 text-xs text-gray-500 font-medium bg-gray-50 p-2 rounded-lg border border-gray-100"
+						class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-zinc-800 p-2 rounded-lg border border-gray-100 dark:border-zinc-700"
 					>
 						<Sparkles class="w-3.5 h-3.5 text-yellow-500" />
 						<span>
-							<span class="font-bold text-gray-700">{level.nextLevelXp - level.xp} XP</span>
+							<span class="font-bold text-gray-700 dark:text-gray-200"
+								>{level.nextLevelXp - level.xp} XP</span
+							>
 							{$t('profile.level.needed')}
 							{$t('profile.level.for')}
-							<span class="font-bold text-gray-700">{level.nextRankTitle}</span>
+							<span class="font-bold text-gray-700 dark:text-gray-200">{level.nextRankTitle}</span>
 						</span>
 					</div>
 				{/if}
@@ -658,14 +666,15 @@
 					class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center"
 				>
 					<div
-						class="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-2"
+						class="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center mb-2"
 					>
 						<Trophy class="w-4 h-4" />
 					</div>
 					{#if loading}
-						<span class="inline-block w-10 h-7 bg-gray-200 rounded animate-pulse"></span>
+						<span class="inline-block w-10 h-7 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
+						></span>
 					{:else}
-						<span class="text-2xl font-black text-gray-800">{totalShows}</span>
+						<span class="text-2xl font-black text-themed">{totalShows}</span>
 					{/if}
 					<span class="text-[10px] font-bold text-gray-400 uppercase"
 						>{$t('profile.stats.totalShows')}</span
@@ -675,14 +684,15 @@
 					class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center"
 				>
 					<div
-						class="w-8 h-8 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center mb-2"
+						class="w-8 h-8 rounded-full bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 flex items-center justify-center mb-2"
 					>
 						<Star class="w-4 h-4" />
 					</div>
 					{#if loading}
-						<span class="inline-block w-10 h-7 bg-gray-200 rounded animate-pulse"></span>
+						<span class="inline-block w-10 h-7 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
+						></span>
 					{:else}
-						<span class="text-2xl font-black text-gray-800">{totalAchievements}</span>
+						<span class="text-2xl font-black text-themed">{totalAchievements}</span>
 					{/if}
 					<span class="text-[10px] font-bold text-gray-400 uppercase"
 						>{$t('profile.stats.achievements')}</span
@@ -710,24 +720,32 @@
 						<div class="flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16">
 							<!-- Avatar Skeleton -->
 							<div
-								class="w-32 h-32 rounded-full bg-gray-200 border-4 border-white shadow-xl animate-pulse relative z-10"
+								class="w-32 h-32 rounded-full bg-gray-200 dark:bg-zinc-700 border-4 border-white dark:border-zinc-900 shadow-xl animate-pulse relative z-10"
 							></div>
 
 							<!-- Info Skeleton -->
 							<div class="text-center md:text-left flex-1 w-full max-w-sm">
 								<div class="flex flex-col md:flex-row items-center gap-2 mb-2">
-									<div class="h-8 w-48 bg-gray-200 rounded-lg animate-pulse"></div>
-									<div class="h-5 w-24 bg-gray-200 rounded-md animate-pulse"></div>
+									<div class="h-8 w-48 bg-gray-200 dark:bg-zinc-700 rounded-lg animate-pulse"></div>
+									<div class="h-5 w-24 bg-gray-200 dark:bg-zinc-700 rounded-md animate-pulse"></div>
 								</div>
 
 								<!-- Catchphrase Skeleton -->
-								<div class="h-16 w-full bg-gray-100 rounded-xl animate-pulse mt-2"></div>
+								<div
+									class="h-16 w-full bg-gray-100 dark:bg-zinc-800 rounded-xl animate-pulse mt-2"
+								></div>
 
 								<!-- Socials Skeleton -->
 								<div class="flex gap-2 mt-3 justify-center md:justify-start">
-									<div class="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
-									<div class="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
-									<div class="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
+									<div
+										class="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse"
+									></div>
+									<div
+										class="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse"
+									></div>
+									<div
+										class="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse"
+									></div>
 								</div>
 							</div>
 						</div>
@@ -780,9 +798,9 @@
 
 								<!-- Catchphrase Bubble -->
 								<div
-									class="relative bg-gray-50 p-3 rounded-xl rounded-tl-none border border-gray-100 shadow-sm mt-2 inline-block"
+									class="relative bg-gray-50 dark:bg-zinc-900 p-3 rounded-xl rounded-tl-none border border-gray-100 dark:border-zinc-800 shadow-sm mt-2 inline-block"
 								>
-									<p class="text-xs text-gray-600 italic font-medium">
+									<p class="text-xs text-gray-600 dark:text-gray-400 italic font-medium">
 										"{profile.oshi.catchphrase}"
 									</p>
 								</div>
@@ -795,7 +813,7 @@
 												href={profile.oshi.socials.twitter}
 												target="_blank"
 												rel="noopener noreferrer"
-												class="p-1.5 bg-gray-100 rounded-full text-gray-500 hover:bg-black hover:text-white transition-colors cursor-pointer"
+												class="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-black hover:text-white transition-colors cursor-pointer"
 												title="Twitter / X"
 											>
 												<svg
@@ -815,7 +833,7 @@
 												href={profile.oshi.socials.instagram}
 												target="_blank"
 												rel="noopener noreferrer"
-												class="p-1.5 bg-gray-100 rounded-full text-gray-500 hover:bg-pink-100 hover:text-pink-600 transition-colors cursor-pointer"
+												class="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-pink-100 dark:hover:bg-pink-900/30 hover:text-pink-600 transition-colors cursor-pointer"
 												title="Instagram"
 											>
 												<Instagram class="w-3.5 h-3.5" />
@@ -826,7 +844,7 @@
 												href={profile.oshi.socials.tiktok}
 												target="_blank"
 												rel="noopener noreferrer"
-												class="p-1.5 bg-gray-100 rounded-full text-gray-500 hover:bg-black hover:text-white transition-colors cursor-pointer"
+												class="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-black hover:text-white transition-colors cursor-pointer"
 												title="TikTok"
 											>
 												<svg
@@ -846,7 +864,7 @@
 												href={profile.oshi.socials.idn_app}
 												target="_blank"
 												rel="noopener noreferrer"
-												class="p-1.5 bg-gray-100 rounded-full text-gray-500 hover:bg-red-100 hover:text-red-600 transition-colors cursor-pointer"
+												class="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors cursor-pointer"
 												title="IDN App"
 											>
 												<Smartphone class="w-3.5 h-3.5" />
@@ -857,7 +875,7 @@
 												href={profile.oshi.socials.showroom}
 												target="_blank"
 												rel="noopener noreferrer"
-												class="p-1.5 bg-gray-100 rounded-full text-gray-500 hover:bg-blue-100 hover:text-blue-600 transition-colors cursor-pointer"
+												class="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 transition-colors cursor-pointer"
 												title="Showroom"
 											>
 												<Tv class="w-3.5 h-3.5" />
@@ -872,7 +890,7 @@
 						<div class="flex flex-col items-center justify-center text-center py-8 -mt-12">
 							<div class="relative mb-4 group cursor-pointer" on:click={openOshiModal}>
 								<div
-									class="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center border-4 border-dashed border-gray-200 group-hover:border-red-300 transition-colors"
+									class="w-24 h-24 rounded-full bg-white dark:bg-zinc-800 shadow-lg flex items-center justify-center border-4 border-dashed border-gray-200 dark:border-zinc-700 group-hover:border-red-300 transition-colors"
 								>
 									<Plus class="w-8 h-8 text-gray-300 group-hover:text-red-400" />
 								</div>
@@ -882,8 +900,8 @@
 									Select Oshi
 								</div>
 							</div>
-							<h3 class="text-lg font-bold text-gray-700">Who is your Oshi?</h3>
-							<p class="text-sm text-gray-500 max-w-xs mx-auto mt-1">
+							<h3 class="text-lg font-bold text-gray-700 dark:text-gray-300">Who is your Oshi?</h3>
+							<p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto mt-1">
 								Select your favorite member to display them on your profile card.
 							</p>
 							<div class="mt-4">
@@ -894,16 +912,20 @@
 
 					<div class="mt-6 grid grid-cols-2 gap-3 border-t border-gray-100 pt-4">
 						<!-- 2-Shot Roulette -->
-						<div class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
+						<div
+							class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
+						>
 							<div
-								class="p-2 rounded-full bg-white shadow-sm border border-gray-100 text-yellow-500"
+								class="p-2 rounded-full bg-yellow-50 dark:bg-yellow-900/20 shadow-sm text-yellow-600 dark:text-yellow-400"
 							>
 								<Dices class="w-4 h-4" />
 							</div>
 							<div>
-								<p class="text-lg font-black text-gray-800 leading-none">
+								<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
 									{#if loading}
-										<span class="inline-block w-6 h-5 bg-gray-200 rounded animate-pulse"></span>
+										<span
+											class="inline-block w-6 h-5 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
+										></span>
 									{:else}
 										{twoShotRouletteCount}
 									{/if}
@@ -914,14 +936,20 @@
 							</div>
 						</div>
 						<!-- 2-Shot Birthday -->
-						<div class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
-							<div class="p-2 rounded-full bg-white shadow-sm border border-gray-100 text-pink-500">
+						<div
+							class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
+						>
+							<div
+								class="p-2 rounded-full bg-pink-50 dark:bg-pink-900/20 shadow-sm text-pink-600 dark:text-pink-400"
+							>
 								<Cake class="w-4 h-4" />
 							</div>
 							<div>
-								<p class="text-lg font-black text-gray-800 leading-none">
+								<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
 									{#if loading}
-										<span class="inline-block w-6 h-5 bg-gray-200 rounded animate-pulse"></span>
+										<span
+											class="inline-block w-6 h-5 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
+										></span>
 									{:else}
 										{twoShotBirthdayCount}
 									{/if}
@@ -937,25 +965,29 @@
 
 			<!-- RECENT ACTIVITY FEED -->
 			<div class="glass-panel p-6 rounded-3xl">
-				<h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+				<h4 class="font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
 					<TrendingUp class="w-4 h-4 text-red-500" />
 					{$t('profile.recentActivity.title')}
 				</h4>
 
 				<div
-					class="space-y-4 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100"
+					class="space-y-4 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100 before:dark:bg-zinc-800"
 				>
 					{#if loading}
 						<!-- Skeleton Loading for Activity Items -->
 						{#each [1, 2, 3] as _}
 							<div class="flex gap-4 relative z-10">
-								<div class="w-10 h-10 rounded-full flex-shrink-0 bg-gray-200 animate-pulse"></div>
-								<div class="flex-1 bg-white/50 p-3 rounded-xl border border-gray-50">
+								<div
+									class="w-10 h-10 rounded-full flex-shrink-0 bg-gray-200 dark:bg-zinc-700 animate-pulse"
+								></div>
+								<div
+									class="flex-1 bg-white/50 dark:bg-zinc-800/50 p-3 rounded-xl border border-gray-50 dark:border-zinc-700"
+								>
 									<div class="flex justify-between items-start mb-2">
-										<div class="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
-										<div class="h-3 bg-gray-200 rounded w-16 animate-pulse"></div>
+										<div class="h-4 bg-gray-200 dark:bg-zinc-700 rounded w-2/3 animate-pulse"></div>
+										<div class="h-3 bg-gray-200 dark:bg-zinc-700 rounded w-16 animate-pulse"></div>
 									</div>
-									<div class="h-3 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+									<div class="h-3 bg-gray-200 dark:bg-zinc-700 rounded w-1/3 animate-pulse"></div>
 								</div>
 							</div>
 						{/each}
@@ -969,9 +1001,9 @@
 						{#each recentShows as show}
 							<div class="flex gap-4 relative z-10">
 								<div
-									class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-4 border-white shadow-sm {show.two_shot
-										? 'bg-yellow-100 text-yellow-600'
-										: 'bg-red-100 text-red-600'}"
+									class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-4 border-white dark:border-zinc-950 shadow-sm {show.two_shot
+										? 'bg-yellow-100 dark:bg-yellow-950 text-yellow-600 dark:text-yellow-400'
+										: 'bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400'}"
 								>
 									{#if show.two_shot}
 										<Zap class="w-4 h-4" />
@@ -980,10 +1012,10 @@
 									{/if}
 								</div>
 								<div
-									class="flex-1 bg-white/50 p-3 rounded-xl border border-gray-50 hover:bg-white transition-colors"
+									class="flex-1 bg-white/50 dark:bg-zinc-800/50 p-3 rounded-xl border border-gray-50 dark:border-zinc-700 hover:bg-white dark:hover:bg-zinc-800 transition-colors"
 								>
 									<div class="flex justify-between items-start">
-										<p class="text-sm font-bold text-gray-800">
+										<p class="text-sm font-bold text-gray-800 dark:text-gray-200">
 											{show.two_shot
 												? $t('profile.recentActivity.twoShotAt')
 												: $t('profile.recentActivity.attended')} '{show.event.title}'
@@ -1019,24 +1051,28 @@
 
 		<!-- Modal Content -->
 		<div
-			class="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-scale-up flex flex-col max-h-[85vh]"
+			class="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden animate-scale-up flex flex-col max-h-[85vh]"
 		>
 			<!-- Header -->
-			<div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white z-10">
+			<div
+				class="p-6 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-white dark:bg-zinc-900 z-10"
+			>
 				<div>
-					<h3 class="text-xl font-black text-gray-800">{$t('profile.oshiModal.title')}</h3>
-					<p class="text-sm text-gray-500">{$t('profile.oshiModal.subtitle')}</p>
+					<h3 class="text-xl font-black text-gray-800 dark:text-white">
+						{$t('profile.oshiModal.title')}
+					</h3>
+					<p class="text-sm text-gray-500 dark:text-gray-400">{$t('profile.oshiModal.subtitle')}</p>
 				</div>
 				<button
 					on:click={closeOshiModal}
-					class="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
+					class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-500 dark:text-gray-400 transition-colors"
 				>
 					<X class="w-5 h-5" />
 				</button>
 			</div>
 
 			<!-- Search -->
-			<div class="p-4 bg-gray-50 border-b border-gray-100">
+			<div class="p-4 bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800">
 				<div class="relative">
 					<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 					<input
@@ -1044,7 +1080,7 @@
 						bind:value={oshiSearchQuery}
 						on:input={handleOshiSearch}
 						placeholder={$t('profile.oshiModal.searchPlaceholder')}
-						class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-red-300 focus:ring-4 focus:ring-red-50 transition-all font-medium text-sm"
+						class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:border-red-300 focus:ring-4 focus:ring-red-50 dark:focus:ring-red-900/30 transition-all font-medium text-sm"
 					/>
 				</div>
 			</div>
@@ -1071,8 +1107,8 @@
 							<button
 								class="group relative flex flex-col items-center text-center p-3 rounded-2xl transition-all duration-200 border-2 cursor-pointer
 								{selectedOshiId === member.id
-									? 'border-red-500 bg-red-50/50'
-									: 'border-transparent hover:bg-gray-50 hover:border-gray-100'}"
+									? 'border-red-500 bg-red-50/50 dark:bg-red-900/20'
+									: 'border-transparent hover:bg-gray-50 dark:hover:bg-zinc-800 hover:border-gray-100 dark:hover:border-zinc-700'}"
 								on:click={() => selectOshi(member.id)}
 							>
 								<div class="relative w-20 h-20 mb-3">
@@ -1081,7 +1117,7 @@
 										alt={member.name}
 										class="w-full h-full rounded-full object-cover shadow-sm group-hover:shadow-md transition-shadow {selectedOshiId ===
 										member.id
-											? 'ring-2 ring-red-500 ring-offset-2'
+											? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-zinc-900'
 											: ''}"
 									/>
 									{#if selectedOshiId === member.id}
@@ -1092,9 +1128,11 @@
 										</div>
 									{/if}
 								</div>
-								<h4 class="font-bold text-gray-800 text-sm leading-tight mb-1">{member.name}</h4>
+								<h4 class="font-bold text-gray-800 dark:text-white text-sm leading-tight mb-1">
+									{member.name}
+								</h4>
 								<span
-									class="text-[10px] font-bold text-gray-400 uppercase tracking-wide bg-gray-100 px-2 py-0.5 rounded-full group-hover:bg-white transition-colors"
+									class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors"
 									>{$t('profile.oshiModal.generation', { gen: member.generation })}</span
 								>
 							</button>
@@ -1104,7 +1142,9 @@
 			</div>
 
 			<!-- Footer Action -->
-			<div class="p-6 border-t border-gray-100 bg-white flex justify-end gap-3 z-10">
+			<div
+				class="p-6 border-t border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex justify-end gap-3 z-10"
+			>
 				<Button variant="outline" on:click={closeOshiModal} class="cursor-pointer"
 					>{$t('profile.oshiModal.cancel')}</Button
 				>
@@ -1198,65 +1238,85 @@
 				</div>
 
 				<!-- Details (Right Side) -->
-				<div class="p-6 space-y-6 relative bg-white flex flex-col justify-center">
+				<div class="p-6 space-y-6 relative bg-white dark:bg-zinc-800 flex flex-col justify-center">
 					<!-- Desktop Close Button -->
 					<button
-						class="absolute top-4 right-4 text-gray-400 hover:text-black transition-colors cursor-pointer hidden md:block"
+						class="absolute top-4 right-4 text-gray-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer hidden md:block"
 						on:click={closeMemberDetail}
 					>
 						<X class="w-6 h-6" />
 					</button>
 
 					<!-- Jikoshoukai -->
-					<div class="bg-red-50 p-5 rounded-2xl relative mt-8 md:mt-0">
-						<Quote class="w-8 h-8 text-red-100 absolute -top-3 -left-2 transform -scale-x-100" />
-						<p class="text-sm text-gray-700 italic relative z-10 text-center leading-relaxed">
+					<div class="bg-red-50 dark:bg-red-900/20 p-5 rounded-2xl relative mt-8 md:mt-0">
+						<Quote
+							class="w-8 h-8 text-red-100 dark:text-red-800 absolute -top-3 -left-2 transform -scale-x-100"
+						/>
+						<p
+							class="text-sm text-gray-700 dark:text-gray-300 italic relative z-10 text-center leading-relaxed"
+						>
 							"{memberDetail.jiko}"
 						</p>
 					</div>
 
 					<!-- Stats Grid -->
 					<div class="grid grid-cols-2 gap-4">
-						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+						<div
+							class="bg-gray-50 dark:bg-zinc-900 p-3 rounded-xl border border-gray-100 dark:border-zinc-700"
+						>
 							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">
 								{$t('member.birthdate')}
 							</p>
-							<p class="text-sm font-bold text-gray-800">
+							<p class="text-sm font-bold text-gray-800 dark:text-gray-200">
 								{memberDetail.birthdate}
-								<span class="text-xs text-gray-500 font-normal block">
+								<span class="text-xs text-gray-500 dark:text-gray-400 font-normal block">
 									{calculateAge(memberDetail.birthdate)}
 									{$t('member.yearsOld')}
 								</span>
 							</p>
 						</div>
-						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+						<div
+							class="bg-gray-50 dark:bg-zinc-900 p-3 rounded-xl border border-gray-100 dark:border-zinc-700"
+						>
 							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">
 								{$t('member.horoscope')}
 							</p>
-							<p class="text-sm font-bold text-gray-800">{memberDetail.horoscope}</p>
+							<p class="text-sm font-bold text-gray-800 dark:text-gray-200">
+								{memberDetail.horoscope}
+							</p>
 						</div>
-						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+						<div
+							class="bg-gray-50 dark:bg-zinc-900 p-3 rounded-xl border border-gray-100 dark:border-zinc-700"
+						>
 							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">
 								{$t('member.bloodType')}
 							</p>
-							<p class="text-sm font-bold text-gray-800">{memberDetail.bloodType}</p>
+							<p class="text-sm font-bold text-gray-800 dark:text-gray-200">
+								{memberDetail.bloodType}
+							</p>
 						</div>
-						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+						<div
+							class="bg-gray-50 dark:bg-zinc-900 p-3 rounded-xl border border-gray-100 dark:border-zinc-700"
+						>
 							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">
 								{$t('member.height')}
 							</p>
-							<p class="text-sm font-bold text-gray-800">{memberDetail.height}</p>
+							<p class="text-sm font-bold text-gray-800 dark:text-gray-200">
+								{memberDetail.height}
+							</p>
 						</div>
 					</div>
 
 					<!-- Socials -->
-					<div class="flex items-center justify-center gap-2 pt-2 border-t border-gray-100">
+					<div
+						class="flex items-center justify-center gap-2 pt-2 border-t border-gray-100 dark:border-zinc-700"
+					>
 						{#if memberDetail.socials.twitter}
 							<a
 								href={memberDetail.socials.twitter}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-black hover:text-white transition-colors cursor-pointer"
+								class="p-2 bg-gray-100 dark:bg-zinc-700 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black hover:text-white transition-colors cursor-pointer"
 							>
 								<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
 									<path
@@ -1270,7 +1330,7 @@
 								href={memberDetail.socials.instagram}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-pink-100 hover:text-pink-600 transition-colors cursor-pointer"
+								class="p-2 bg-gray-100 dark:bg-zinc-700 rounded-full text-gray-500 dark:text-gray-400 hover:bg-pink-100 dark:hover:bg-pink-900/30 hover:text-pink-600 transition-colors cursor-pointer"
 							>
 								<Instagram class="w-4 h-4" />
 							</a>
@@ -1280,7 +1340,7 @@
 								href={memberDetail.socials.tiktok}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-black hover:text-white transition-colors cursor-pointer"
+								class="p-2 bg-gray-100 dark:bg-zinc-700 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black hover:text-white transition-colors cursor-pointer"
 							>
 								<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
 									<path
@@ -1294,7 +1354,7 @@
 								href={memberDetail.socials.idn_app}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-red-50 hover:text-red-500 transition-colors cursor-pointer"
+								class="p-2 bg-gray-100 dark:bg-zinc-700 rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-500 transition-colors cursor-pointer"
 								title="IDN App"
 							>
 								<Smartphone class="w-4 h-4" />
@@ -1305,7 +1365,7 @@
 								href={memberDetail.socials.showroom}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-blue-50 hover:text-blue-500 transition-colors cursor-pointer"
+								class="p-2 bg-gray-100 dark:bg-zinc-700 rounded-full text-gray-500 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-500 transition-colors cursor-pointer"
 							>
 								<Tv class="w-4 h-4" />
 							</a>
@@ -1317,7 +1377,7 @@
 									: `https://jkt48.com${memberDetail.href}`}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+								class="p-2 bg-gray-100 dark:bg-zinc-700 rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors cursor-pointer"
 								title="Official Profile"
 							>
 								<Globe class="w-4 h-4" />

@@ -201,6 +201,16 @@
             "roulette": "Roulette",
             "birthday": "Birthday"
         },
+        "oshiModal": {
+            "title": "Select Your Oshi",
+            "subtitle": "Choose the member that lights up your world!",
+            "searchPlaceholder": "Search member name...",
+            "loading": "Loading members...",
+            "noMembers": "No members found matching \"{query}\"",
+            "generation": "Generation {gen}",
+            "cancel": "Cancel",
+            "save": "Save Oshi"
+        },
         "recentActivity": {
             "title": "Recent Activity",
             "subtitle": "Last shows visited",
@@ -243,6 +253,16 @@
         "moreSettings": {
             "title": "More Settings",
             "subtitle": "Coming soon..."
+        },
+        "theme": {
+            "title": "Theme",
+            "subtitle": "Choose your preferred appearance",
+            "light": "Light",
+            "lightDescription": "Classic light mode",
+            "dark": "Dark",
+            "darkDescription": "Easy on the eyes at night",
+            "auto": "Auto",
+            "autoDescription": "Follow system settings"
         }
     },
     "history": {
@@ -252,6 +272,19 @@
         "tableView": "Table View",
         "noTickets": "No tickets yet",
         "addFirst": "Add your first ticket!",
+        "date": "Date",
+        "time": "Time",
+        "seat": "Seat",
+        "price": "Price",
+        "notes": "Notes",
+        "addNote": "Add Note",
+        "editNote": "Edit Note",
+        "noNotes": "No notes added",
+        "editDetails": "Edit Details",
+        "saveNote": "Save Note",
+        "eventDetails": "Event",
+        "actions": "Actions",
+        "show": "Show",
         "deleteConfirm": {
             "title": "Delete Ticket?",
             "description": "This action cannot be undone. The ticket will be permanently deleted.",
@@ -259,21 +292,66 @@
             "cancel": "Cancel"
         }
     },
+    "forms": {
+        "editTicket": "Edit Ticket",
+        "newTicket": "New Ticket Entry",
+        "updateMemory": "Update your memory",
+        "addToCollection": "Add to your collection",
+        "eventDetails": "Event Details",
+        "showTitle": "Show Title",
+        "selectSetlist": "Select Setlist",
+        "date": "Date",
+        "showTime": "Time",
+        "seatPayment": "Seat & Payment",
+        "row": "Row",
+        "seatNumber": "Seat Number",
+        "price": "Price (IDR)",
+        "ticketId": "Ticket ID",
+        "optional": "Optional",
+        "twoShotDetails": "2-Shot Details",
+        "twoShotPhoto": "2-Shot Photo",
+        "uploadPhoto": "Upload Photo",
+        "changePhoto": "Change Photo",
+        "memberName": "Member Name",
+        "memberNamePlaceholder": "e.g. Oline Manuel",
+        "type": "Type",
+        "experienceLog": "Experience Log",
+        "notesPlaceholder": "How was the show? Get a wink? Write your memories here...",
+        "updateTicket": "Update Ticket Details",
+        "saveTicket": "Save Ticket",
+        "cancel": "Cancel",
+        "uploadTicketPhoto": "Upload Ticket Photo",
+        "analysisIssue": "Analysis Issue"
+    },
     "upload": {
         "title": "Upload Ticket",
         "subtitle": "Add a new ticket to your collection",
         "scanTicket": "Scan Ticket",
+        "scanDescription": "Automatically extract details from your ticket image using AI.",
         "manualEntry": "Manual Entry",
+        "manualDescription": "Enter ticket details manually if you don't have a photo.",
         "saveTicket": "Save Ticket",
         "uploadSuccess": "Ticket uploaded successfully",
         "uploadError": "Failed to upload ticket"
     },
     "shows": {
+        "backTitle": "Back to Shows",
+        "backSubtitle": "Return to full list",
         "title": "Shows",
         "subtitle": "Statistics of visited shows",
         "totalShows": "Total Shows",
         "uniqueShows": "Unique Shows",
-        "unit": "Shows"
+        "unit": "Shows",
+        "performancesAttended": "performances attended",
+        "firstAttended": "First Attended",
+        "lastAttended": "Last Attended",
+        "avgPrice": "Avg Price",
+        "topRow": "Top Row",
+        "row": "Row",
+        "toTop": "to reach top",
+        "notSeen": "Not yet seen",
+        "viewHistory": "View History",
+        "top": "Top"
     },
     "memories": {
         "title": "Memories",
@@ -372,5 +450,33 @@
             "daysAgo": "{count} days ago",
             "weeksAgo": "{count} weeks ago"
         }
+    },
+    "member": {
+        "birthdate": "Birthdate",
+        "horoscope": "Horoscope",
+        "bloodType": "Blood Type",
+        "height": "Height",
+        "yearsOld": "years old",
+        "notFound": "Member Not Found",
+        "notFoundMessage": "We couldn't retrieve this member's details. Please try again later.",
+        "close": "Close"
+    },
+    "top2shot": {
+        "title": "Top 2-Shot",
+        "subtitle": "Member analytics & spending breakdown",
+        "noData": "No 2-Shot Data Yet",
+        "noDataDesc": "Start adding 2-shot details when creating or editing tickets to see your Oshi rankings!",
+        "kamiOshi": "KAMI-OSHI",
+        "cherished": "Your most cherished member",
+        "stats2shots": "2-Shots",
+        "statsSpent": "Spent",
+        "budgetSplit": "Budget Split",
+        "theaterTickets": "Theater Tickets",
+        "collection": "2-Shot Collection",
+        "total": "Total",
+        "rankingTitle": "Member Ranking",
+        "rankingSubtitle": "Based on your 2-shot history",
+        "totalPhotos": "Total Photos",
+        "photos": "Photos"
     }
 }

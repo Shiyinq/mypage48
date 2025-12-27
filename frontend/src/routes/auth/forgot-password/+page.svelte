@@ -36,7 +36,9 @@
 	};
 </script>
 
-<div class="min-h-screen flex items-center justify-center p-4 bg-gray-50 relative overflow-hidden">
+<div
+	class="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-zinc-950 relative overflow-hidden"
+>
 	<!-- Background decorations -->
 	<div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
 		<div
@@ -50,23 +52,25 @@
 	<div class="w-full max-w-md">
 		<a
 			href="/login"
-			class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 mb-6 transition-colors"
+			class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
 		>
 			<ArrowLeft class="w-4 h-4" />
 			{$t('auth.forgotPassword.backToLogin')}
 		</a>
 
 		<div
-			class="bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/60 animate-fade-in"
+			class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/60 dark:border-zinc-800 animate-fade-in"
 		>
 			<div class="text-center mb-8">
 				<div
-					class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4 text-red-500"
+					class="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4 text-red-500 dark:text-red-400"
 				>
 					<KeyRound class="w-8 h-8" />
 				</div>
-				<h1 class="text-2xl font-black text-gray-900 mb-2">{$t('auth.forgotPassword.title')}</h1>
-				<p class="text-gray-500 font-medium text-sm">
+				<h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2">
+					{$t('auth.forgotPassword.title')}
+				</h1>
+				<p class="text-gray-500 dark:text-gray-400 font-medium text-sm">
 					{#if isSent}
 						{$t('auth.forgotPassword.successMessage', { email })}
 					{:else}
@@ -78,18 +82,20 @@
 			{#if !isSent}
 				<form on:submit|preventDefault={handleSubmit} class="space-y-6">
 					<div>
-						<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 							>{$t('auth.forgotPassword.emailLabel')}</label
 						>
 						<div class="relative">
-							<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+							<div
+								class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
+							>
 								<Mail class="w-5 h-5" />
 							</div>
 							<input
 								type="email"
 								required
 								bind:value={email}
-								class="w-full pl-12 pr-4 py-3.5 bg-white/80 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 transition-all placeholder-gray-400"
+								class="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600"
 								placeholder="member@mypage48.com"
 							/>
 						</div>
@@ -114,7 +120,7 @@
 				<div class="space-y-4">
 					<button
 						on:click={() => (isSent = false)}
-						class="w-full py-4 rounded-2xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all"
+						class="w-full py-4 rounded-2xl font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all"
 					>
 						{$t('auth.forgotPassword.tryAnother')}
 					</button>

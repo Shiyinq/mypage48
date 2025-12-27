@@ -242,18 +242,18 @@
 <div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in">
 	<div class="flex items-center gap-3 mb-8">
 		<div
-			class="p-3 rounded-2xl bg-yellow-50 text-yellow-600 shadow-lg shadow-yellow-100 border-2 border-white transform -rotate-6"
+			class="p-3 rounded-2xl bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 shadow-lg shadow-yellow-100 dark:shadow-yellow-900/20 border-2 border-white dark:border-zinc-700 transform -rotate-6"
 		>
 			<Trophy class="w-6 h-6" />
 		</div>
 		<div>
-			<h2 class="text-2xl font-bold text-gray-800 relative w-fit">
+			<h2 class="text-2xl font-bold text-themed relative w-fit">
 				{$t('achievements.title')}
 				<span
-					class="absolute -bottom-1 left-0 w-full h-2 bg-yellow-200/60 -z-10 transform -skew-x-12 rounded-sm"
+					class="absolute -bottom-1 left-0 w-full h-2 bg-yellow-200/60 dark:bg-yellow-500/30 -z-10 transform -skew-x-12 rounded-sm"
 				></span>
 			</h2>
-			<p class="text-sm text-gray-500">{$t('achievements.subtitle')}</p>
+			<p class="text-sm text-themed-secondary">{$t('achievements.subtitle')}</p>
 		</div>
 	</div>
 
@@ -263,14 +263,16 @@
 			<div
 				class={`relative border-2 rounded-3xl p-5 flex items-center gap-5 transition-all duration-300 h-full ${
 					m.isUnlocked
-						? 'bg-yellow-50 border-yellow-400 shadow-sm hover:shadow-md hover:scale-[1.01]'
-						: 'bg-gray-50 border-gray-200 opacity-70 grayscale'
+						? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 dark:border-yellow-500/50 shadow-sm hover:shadow-md hover:scale-[1.01]'
+						: 'bg-gray-50 dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 opacity-70 grayscale'
 				}`}
 			>
 				<!-- Icon Box -->
 				<div
 					class={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-						m.isUnlocked ? 'bg-white shadow-sm text-yellow-600' : 'bg-gray-200 text-gray-400'
+						m.isUnlocked
+							? 'bg-white dark:bg-zinc-800 shadow-sm text-yellow-600'
+							: 'bg-gray-200 dark:bg-zinc-700 text-gray-400'
 					}`}
 				>
 					{#if m.isUnlocked}
@@ -281,10 +283,10 @@
 				</div>
 
 				<div class="flex-1">
-					<h3 class={`text-lg font-bold ${m.isUnlocked ? 'text-gray-800' : 'text-gray-500'}`}>
+					<h3 class={`text-lg font-bold ${m.isUnlocked ? 'text-themed' : 'text-themed-muted'}`}>
 						{m.title}
 					</h3>
-					<p class="text-xs text-gray-500 font-medium">{m.description}</p>
+					<p class="text-xs text-themed-secondary font-medium">{m.description}</p>
 
 					<!-- Progress Bar for Locked Items -->
 					{#if !m.isUnlocked && m.progress}

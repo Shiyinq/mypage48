@@ -253,6 +253,16 @@
         "moreSettings": {
             "title": "Pengaturan Lainnya",
             "subtitle": "Segera hadir..."
+        },
+        "theme": {
+            "title": "Tema",
+            "subtitle": "Pilih tampilan yang nyaman",
+            "light": "Terang",
+            "lightDescription": "Mode terang klasik",
+            "dark": "Gelap",
+            "darkDescription": "Nyaman untuk mata di malam hari",
+            "auto": "Otomatis",
+            "autoDescription": "Mengikuti pengaturan sistem"
         }
     },
     "history": {
@@ -434,6 +444,8 @@
         "close": "Tutup"
     },
     "shows": {
+        "backTitle": "Kembali ke Daftar Show",
+        "backSubtitle": "Kembali ke daftar lengkap",
         "title": "Daftar Setlist",
         "subtitle": "Statistik pertunjukan teater kamu",
         "top": "Teratas",

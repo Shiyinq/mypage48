@@ -9,6 +9,20 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap"
 		rel="stylesheet">
+	<script>
+		(function () {
+			const theme = localStorage.getItem('mypage48_theme') || 'auto';
+			let isDark = false;
+			if (theme === 'dark') {
+				isDark = true;
+			} else if (theme === 'auto') {
+				isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			}
+			if (isDark) {
+				document.documentElement.classList.add('dark');
+			}
+		})();
+	</script>
 	%sveltekit.head%
 </head>
 

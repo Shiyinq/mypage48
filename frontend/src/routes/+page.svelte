@@ -265,14 +265,16 @@
 	<!-- Header / Filter Toggle -->
 	<div class="mb-6">
 		{#if isFilterOpen}
-			<div class="glass-panel p-4 rounded-3xl animate-fade-in bg-white/70">
+			<div class="glass-panel p-4 rounded-3xl animate-fade-in">
 				<div class="flex items-start justify-between mb-4 md:mb-0 md:items-center gap-4">
 					<div class="flex items-center gap-3">
-						<div class="bg-red-50 p-2.5 rounded-xl text-red-600 shadow-sm ring-1 ring-red-100">
+						<div
+							class="bg-red-50 dark:bg-red-500/20 p-2.5 rounded-xl text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/30"
+						>
 							<Filter class="w-5 h-5" />
 						</div>
 						<div>
-							<h2 class="font-bold text-gray-800 text-lg leading-none">
+							<h2 class="font-bold text-gray-800 dark:text-gray-100 text-lg leading-none">
 								{$t('dashboard.filterTitle')}
 							</h2>
 							<p class="text-xs text-gray-400 font-medium mt-1">
@@ -282,7 +284,7 @@
 					</div>
 					<button
 						on:click={() => (isFilterOpen = false)}
-						class="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors cursor-pointer"
+						class="p-2 hover:bg-red-50 dark:hover:bg-white/5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 rounded-full transition-colors cursor-pointer"
 					>
 						<X class="w-5 h-5" />
 					</button>
@@ -292,7 +294,7 @@
 				<div class="mt-4 flex items-center gap-3">
 					<button
 						on:click={() => (isAllData = !isAllData)}
-						class={`relative flex items-center px-4 py-2.5 rounded-xl font-bold text-sm transition-all w-full justify-center gap-2 cursor-pointer ${isAllData ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+						class={`relative flex items-center px-4 py-2.5 rounded-xl font-bold text-sm transition-all w-full justify-center gap-2 cursor-pointer ${isAllData ? 'bg-red-600 text-white shadow-lg shadow-red-200 dark:shadow-red-900/20' : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'}`}
 					>
 						<span
 							class={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isAllData ? 'border-white bg-white' : 'border-gray-400'}`}
@@ -314,7 +316,7 @@
 						<select
 							bind:value={selectedYear}
 							disabled={isAllData}
-							class="w-full appearance-none bg-white border border-gray-200 pl-10 pr-10 py-2.5 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm cursor-pointer hover:border-red-200 transition-colors disabled:cursor-not-allowed disabled:bg-gray-100"
+							class="w-full appearance-none bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 pl-10 pr-10 py-2.5 rounded-xl text-sm font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm cursor-pointer hover:border-red-200 dark:hover:border-red-500/50 transition-colors disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-900"
 						>
 							{#each availableYears as y}
 								<option value={y}>{y}</option>
@@ -327,15 +329,15 @@
 					</div>
 
 					<div
-						class="flex items-center bg-white border border-gray-200 rounded-xl shadow-sm w-full overflow-hidden h-[42px]"
+						class="flex items-center bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl shadow-sm w-full overflow-hidden h-[42px]"
 					>
 						<div
-							class="relative flex-1 h-full border-r border-gray-100 hover:bg-gray-50 transition-colors"
+							class="relative flex-1 h-full border-r border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
 						>
 							<select
 								bind:value={startMonth}
 								disabled={isAllData}
-								class="w-full h-full appearance-none bg-transparent pl-9 pr-2 text-xs font-bold text-gray-700 focus:outline-none cursor-pointer disabled:cursor-not-allowed"
+								class="w-full h-full appearance-none bg-transparent pl-9 pr-2 text-xs font-bold text-gray-700 dark:text-gray-200 focus:outline-none cursor-pointer disabled:cursor-not-allowed"
 							>
 								{#each MONTHS as m, i}
 									<option value={i}>{m.substring(0, 3)}</option>
@@ -347,7 +349,9 @@
 							>
 						</div>
 
-						<div class="relative flex-1 h-full hover:bg-gray-50 transition-colors">
+						<div
+							class="relative flex-1 h-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+						>
 							<select
 								bind:value={endMonth}
 								disabled={isAllData}
@@ -369,29 +373,29 @@
 			<div class="flex items-center justify-between animate-fade-in">
 				<div class="flex items-center gap-3">
 					<div
-						class="p-3 rounded-2xl bg-red-50 text-red-600 shadow-lg shadow-red-100 border-2 border-white transform -rotate-6"
+						class="p-3 rounded-2xl bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 shadow-lg shadow-red-100 dark:shadow-red-900/30 border-2 border-white dark:border-gray-800 transform -rotate-6"
 					>
 						<LayoutDashboard class="w-6 h-6" />
 					</div>
 					<div>
-						<h2 class="text-2xl font-bold text-gray-800 leading-none relative w-fit">
+						<h2 class="text-2xl font-bold text-themed leading-none relative w-fit">
 							{$t('dashboard.title')}
 							<span
-								class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 -z-10 transform -skew-x-12 rounded-sm"
+								class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 dark:bg-red-500/30 -z-10 transform -skew-x-12 rounded-sm"
 							></span>
 						</h2>
-						<p class="text-sm text-gray-500 mt-1">{$t('dashboard.subtitle')}</p>
+						<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{$t('dashboard.subtitle')}</p>
 					</div>
 				</div>
 				<div class="flex items-center gap-2">
 					<span
-						class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200"
+						class="text-xs font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-zinc-900 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700"
 					>
 						{filterLabel}
 					</span>
 					<button
 						on:click={() => (isFilterOpen = true)}
-						class="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-gray-600 font-bold text-xs shadow-sm border border-gray-200 hover:border-red-200 hover:text-red-600 transition-all cursor-pointer"
+						class="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900 text-gray-600 dark:text-gray-300 font-bold text-xs shadow-sm border border-gray-200 dark:border-zinc-700 hover:border-red-200 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400 transition-all cursor-pointer"
 					>
 						<Filter class="w-4 h-4" />
 						<span class="hidden sm:inline">{$t('common.filters')}</span>
@@ -404,7 +408,9 @@
 	<!-- THEATER STATS -->
 	<div class="glass-panel p-6 rounded-3xl">
 		<div class="mb-6">
-			<h3 class="text-xl font-bold text-gray-800">{$t('dashboard.theater.title')}</h3>
+			<h3 class="text-xl font-bold text-themed">
+				{$t('dashboard.theater.title')}
+			</h3>
 			<p class="text-xs text-gray-400">{$t('dashboard.theater.subtitle')}</p>
 		</div>
 
@@ -436,14 +442,16 @@
 			/>
 
 			<div
-				class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-purple-50/50 border-purple-100"
+				class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-purple-50/50 dark:bg-transparent border-purple-100 dark:border-purple-500/20"
 			>
 				<div class="p-5 pb-0 flex justify-between items-start">
 					<div class="flex items-center gap-2 text-purple-500">
-						<div class="p-1.5 bg-purple-100 rounded-lg">
+						<div class="p-1.5 bg-purple-100 dark:bg-purple-800/40 rounded-lg">
 							<Star class="w-4 h-4 fill-current" />
 						</div>
-						<span class="font-bold text-xs tracking-wider">{$t('dashboard.theater.topShow')}</span>
+						<span class="font-bold text-xs tracking-wider text-purple-500 dark:text-purple-400"
+							>{$t('dashboard.theater.topShow')}</span
+						>
 					</div>
 					<Crown class="w-5 h-5 text-yellow-400 fill-current" />
 				</div>
@@ -452,7 +460,7 @@
 						class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-indigo-400 via-purple-500 to-fuchsia-500 flex-shrink-0"
 					>
 						<div
-							class="w-full h-full rounded-full border-2 border-white overflow-hidden bg-white flex items-center justify-center"
+							class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
 						>
 							{#if topShowStats.image}
 								<img
@@ -470,7 +478,7 @@
 							{$t('dashboard.theater.mostWatched')}
 						</p>
 						<h3
-							class={`font-black text-gray-800 leading-none mb-0.5 truncate ${topShowStats.title.length > 15 ? 'text-sm' : 'text-lg'}`}
+							class={`font-black text-themed leading-none mb-0.5 truncate ${topShowStats.title.length > 15 ? 'text-sm' : 'text-lg'}`}
 							title={topShowStats.title}
 						>
 							{topShowStats.title}
@@ -483,7 +491,7 @@
 				</div>
 				<button
 					on:click={() => goto('/shows')}
-					class="mt-auto border-t border-purple-100 p-3 w-full text-center text-xs font-bold text-purple-600 hover:bg-purple-50 transition-colors flex items-center justify-center gap-1 relative z-20 cursor-pointer"
+					class="mt-auto border-t border-purple-100 dark:border-purple-800/30 p-3 w-full text-center text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors flex items-center justify-center gap-1 relative z-20 cursor-pointer"
 				>
 					{$t('common.viewDetails')}
 					<ChevronRight class="w-3 h-3" />
@@ -495,7 +503,9 @@
 	<!-- 2-SHOT STATS SECTION -->
 	<div class="glass-panel p-6 rounded-3xl">
 		<div class="mb-6">
-			<h3 class="text-xl font-bold text-gray-800">{$t('dashboard.twoShot.title')}</h3>
+			<h3 class="text-xl font-bold text-themed">
+				{$t('dashboard.twoShot.title')}
+			</h3>
 			<p class="text-xs text-gray-400">{$t('dashboard.twoShot.subtitle')}</p>
 		</div>
 
@@ -528,7 +538,7 @@
 
 			<!-- Top 2-Shot Card -->
 			<div
-				class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-pink-50/50 border-pink-100"
+				class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-pink-50/50 dark:bg-transparent border-pink-100 dark:border-pink-500/20"
 			>
 				<div class="p-5 pb-0 flex justify-between items-start">
 					<div class="flex items-center gap-2 text-pink-500">
@@ -546,7 +556,7 @@
 						class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-pink-400 via-rose-500 to-red-500 flex-shrink-0"
 					>
 						<div
-							class="w-full h-full rounded-full border-2 border-white overflow-hidden bg-white flex items-center justify-center"
+							class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
 						>
 							{#if twoShotStats?.kamiOshi?.image}
 								<img
@@ -564,7 +574,7 @@
 							{$t('dashboard.twoShot.kamiOshi')}
 						</p>
 						<h3
-							class={`font-black text-gray-800 leading-none mb-0.5 truncate ${twoShotStats?.kamiOshi?.name?.length > 15 ? 'text-sm' : 'text-lg'}`}
+							class={`font-black text-themed leading-none mb-0.5 truncate ${twoShotStats?.kamiOshi?.name?.length > 15 ? 'text-sm' : 'text-lg'}`}
 							title={twoShotStats?.kamiOshi?.name || '-'}
 						>
 							{twoShotStats?.kamiOshi?.name || '-'}
@@ -577,7 +587,7 @@
 				</div>
 				<button
 					on:click={() => goto('/top-2shot')}
-					class="mt-auto border-t border-pink-100 p-3 w-full text-center text-xs font-bold text-pink-600 hover:bg-pink-50 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+					class="mt-auto border-t border-pink-100 dark:border-pink-800/30 p-3 w-full text-center text-xs font-bold text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors flex items-center justify-center gap-1 cursor-pointer"
 				>
 					{$t('common.viewDetails')}
 					<ChevronRight class="w-3 h-3" />
@@ -590,12 +600,14 @@
 	<div class="glass-panel p-6 rounded-3xl">
 		<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
 			<div>
-				<h3 class="text-xl font-bold text-gray-800">{$t('dashboard.seatMap.title')}</h3>
+				<h3 class="text-xl font-bold text-themed">
+					{$t('dashboard.seatMap.title')}
+				</h3>
 				<p class="text-xs text-gray-400">{$t('dashboard.seatMap.subtitle')}</p>
 			</div>
 			<div class="flex items-center gap-2">
 				<div
-					class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2"
+					class="bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2"
 				>
 					<MapPin class="w-3.5 h-3.5" />
 					<span
@@ -603,16 +615,16 @@
 						{$t('dashboard.seatMap.rowsCollected')}</span
 					>
 				</div>
-				<div class="bg-gray-100 p-1 rounded-lg flex gap-1">
+				<div class="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg flex gap-1">
 					<button
 						on:click={() => (mapView = 'ROWS')}
-						class={`p-1.5 rounded-md transition-all cursor-pointer ${mapView === 'ROWS' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+						class={`p-1.5 rounded-md transition-all cursor-pointer ${mapView === 'ROWS' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
 					>
 						<AlignJustify class="w-4 h-4" />
 					</button>
 					<button
 						on:click={() => (mapView = 'SEATS')}
-						class={`p-1.5 rounded-md transition-all cursor-pointer ${mapView === 'SEATS' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+						class={`p-1.5 rounded-md transition-all cursor-pointer ${mapView === 'SEATS' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
 					>
 						<Grid3X3 class="w-4 h-4" />
 					</button>
@@ -624,11 +636,11 @@
 			<div class="w-full mx-auto px-2">
 				<div class="w-full">
 					<div
-						class="w-3/4 mx-auto h-4 bg-gradient-to-b from-gray-200 to-white rounded-t-2xl mb-8 relative shadow-sm border-t border-x border-gray-300"
+						class="w-3/4 mx-auto h-4 bg-gradient-to-b from-gray-200 dark:from-gray-700 to-white dark:to-gray-800 rounded-t-2xl mb-8 relative shadow-sm border-t border-x border-gray-300 dark:border-gray-600"
 					>
 						<div class="absolute inset-0 bg-red-600 opacity-5 blur-xl"></div>
 						<div
-							class="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-100 px-4 py-1 rounded-full border border-gray-200"
+							class="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-100 dark:bg-gray-800 px-4 py-1 rounded-full border border-gray-200 dark:border-gray-700"
 						>
 							<span
 								class="text-[10px] font-black tracking-[0.3em] text-gray-400 uppercase block text-center"
@@ -646,16 +658,16 @@
 								{@const hasData = count > 0}
 								<div class="flex items-center gap-3 group">
 									<div
-										class={`w-9 h-9 md:w-10 md:h-10 flex-shrink-0 flex items-center justify-center rounded-xl text-sm font-bold transition-all duration-300 ${hasData ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-200' : 'bg-gray-100 text-gray-400'}`}
+										class={`w-9 h-9 md:w-10 md:h-10 flex-shrink-0 flex items-center justify-center rounded-xl text-sm font-bold transition-all duration-300 ${hasData ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-200 dark:shadow-red-900/50' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}
 									>
 										{row}
 									</div>
 									<div
-										class={`flex-1 h-9 md:h-10 rounded-xl flex items-center px-3 md:px-4 relative overflow-hidden transition-all duration-300 ${hasData ? 'bg-white border border-red-100 shadow-sm' : 'bg-gray-50 border border-gray-100 border-dashed'}`}
+										class={`flex-1 h-9 md:h-10 rounded-xl flex items-center px-3 md:px-4 relative overflow-hidden transition-all duration-300 ${hasData ? 'bg-white dark:bg-gray-800 border border-red-100 dark:border-red-500/30 shadow-sm' : 'bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 border-dashed'}`}
 									>
 										{#if hasData}
 											<div
-												class="absolute left-0 top-0 bottom-0 bg-red-50 transition-all duration-1000"
+												class="absolute left-0 top-0 bottom-0 bg-red-50 dark:bg-red-500/20 transition-all duration-1000"
 												style={`width: ${intensity * 100}%`}
 											>
 												<div
@@ -665,11 +677,11 @@
 										{/if}
 										<div class="relative z-10 w-full flex justify-between items-center">
 											<span
-												class={`text-[10px] md:text-xs font-bold uppercase tracking-wide ${hasData ? 'text-gray-600' : 'text-gray-300'}`}
+												class={`text-[10px] md:text-xs font-bold uppercase tracking-wide ${hasData ? 'text-gray-600 dark:text-gray-300' : 'text-gray-300 dark:text-gray-600'}`}
 												>{$t('dashboard.seatMap.row')} {row}</span
 											>
 											<span
-												class={`text-base md:text-lg font-black ${hasData ? 'text-red-600' : 'text-gray-300'}`}
+												class={`text-base md:text-lg font-black ${hasData ? 'text-red-600 dark:text-red-400' : 'text-gray-300 dark:text-gray-600'}`}
 												>{count}</span
 											>
 										</div>
@@ -907,7 +919,9 @@
 		<!-- Monthly Heatmap -->
 		<div class="glass-panel p-6 rounded-3xl lg:col-span-2 flex flex-col">
 			<div class="mb-6">
-				<h3 class="text-xl font-bold text-gray-800">{$t('dashboard.monthlyAttendance.title')}</h3>
+				<h3 class="text-xl font-bold text-themed">
+					{$t('dashboard.monthlyAttendance.title')}
+				</h3>
 				<p class="text-xs text-gray-400">
 					{$t('dashboard.monthlyAttendance.subtitle')}
 					{isAllData
@@ -926,8 +940,8 @@
 						class={`flex flex-col items-center group ${!month.isActive ? 'opacity-30 grayscale pointer-events-none' : ''}`}
 					>
 						<div
-							class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm"
-							style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : '#f9fafb'}; border-color: ${hasData ? 'transparent' : '#f3f4f6'}`}
+							class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm dark:border-gray-700"
+							style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'}`}
 						>
 							{#if hasData}
 								<span class="text-xl md:text-2xl font-bold text-white drop-shadow-sm"
@@ -937,11 +951,12 @@
 									>{$t('shows.unit')}</span
 								>
 							{:else}
-								<span class="text-gray-300 text-xl font-bold opacity-30">-</span>
+								<span class="text-gray-300 dark:text-gray-600 text-xl font-bold opacity-30">-</span>
 							{/if}
 						</div>
 						<div class="text-center w-full">
-							<span class="text-[10px] font-bold text-gray-500 block uppercase tracking-wide"
+							<span
+								class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide"
 								>{$t('time.monthsShort.' + month.name.substring(0, 3).toLowerCase())}</span
 							>
 						</div>
@@ -954,7 +969,9 @@
 		<!-- Day Preference Grid -->
 		<div class="glass-panel p-6 rounded-3xl flex flex-col">
 			<div class="mb-6">
-				<h3 class="text-xl font-bold text-gray-800">{$t('dashboard.dayPreference.title')}</h3>
+				<h3 class="text-xl font-bold text-themed">
+					{$t('dashboard.dayPreference.title')}
+				</h3>
 				<p class="text-xs text-gray-400">{$t('dashboard.dayPreference.subtitle')}</p>
 			</div>
 
@@ -964,8 +981,8 @@
 					{@const hasData = day.count > 0}
 					<div class="flex flex-col items-center group">
 						<div
-							class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm"
-							style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : '#f9fafb'}; border-color: ${hasData ? 'transparent' : '#f3f4f6'}`}
+							class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm dark:border-gray-700"
+							style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'}`}
 						>
 							{#if hasData}
 								<span class="text-xl md:text-2xl font-bold text-white drop-shadow-sm"
@@ -975,11 +992,12 @@
 									>{$t('shows.unit')}</span
 								>
 							{:else}
-								<span class="text-gray-300 text-xl font-bold opacity-30">-</span>
+								<span class="text-gray-300 dark:text-gray-600 text-xl font-bold opacity-30">-</span>
 							{/if}
 						</div>
 						<div class="text-center w-full">
-							<span class="text-[10px] font-bold text-gray-500 block uppercase tracking-wide"
+							<span
+								class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide"
 								>{$t('time.daysShort.' + day.name.substring(0, 3).toLowerCase())}</span
 							>
 						</div>
