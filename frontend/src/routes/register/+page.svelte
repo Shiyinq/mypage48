@@ -4,6 +4,7 @@
 	import { Ticket, Lock, Mail, User, Hash, CheckCircle, Crown, Shield } from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
 	import type { RegisterRequest } from '$lib/types';
+	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -53,9 +54,7 @@
 	};
 </script>
 
-<svelte:head>
-	<title>{$t('auth.register.title')} | MyPage48</title>
-</svelte:head>
+<SEO title={$t('auth.register.title')} path="/register" description={$t('seo.register')} />
 
 <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden py-12">
 	<div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">

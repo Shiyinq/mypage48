@@ -5,6 +5,7 @@
 	import { auth } from '$lib/apis/auth';
 	import { showToast } from '$lib/stores';
 	import { CheckCircle, XCircle, Loader2 } from 'lucide-svelte';
+	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -43,9 +44,11 @@
 	});
 </script>
 
-<svelte:head>
-	<title>Verify Email | MyPage48</title>
-</svelte:head>
+<SEO
+	title={$t('auth.verifyEmail.loadingTitle')}
+	path="/auth/verify-email"
+	description={$t('seo.verifyEmail')}
+/>
 
 <div
 	class="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-zinc-950 relative overflow-hidden"

@@ -5,6 +5,7 @@
 	import { auth } from '$lib/apis/auth';
 	import { showToast } from '$lib/stores';
 	import { Lock, ArrowLeft, Loader2, CheckCircle, ShieldCheck } from 'lucide-svelte';
+	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -64,9 +65,11 @@
 	};
 </script>
 
-<svelte:head>
-	<title>{$t('auth.resetPassword.title')} | MyPage48</title>
-</svelte:head>
+<SEO
+	title={$t('auth.resetPassword.title')}
+	path="/auth/reset-password"
+	description={$t('seo.resetPassword')}
+/>
 
 <div
 	class="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-zinc-950 relative overflow-hidden"

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tickets } from '$lib/stores';
 	import { Heart, Crown, Camera, TrendingUp, User } from 'lucide-svelte';
+	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -82,9 +83,7 @@
 		}).format(val);
 </script>
 
-<svelte:head>
-	<title>{$t('top2shot.title')} | MyPage48</title>
-</svelte:head>
+<SEO title={$t('top2shot.title')} path="/top-2shot" description={$t('seo.top2shot')} />
 
 <div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in">
 	<!-- Header -->

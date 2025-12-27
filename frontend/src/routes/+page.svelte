@@ -2,6 +2,7 @@
 	import { tickets } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import StatCard from '$lib/components/StatCard.svelte';
+	import SEO from '$lib/components/SEO.svelte';
 	import {
 		Ticket as TicketIcon,
 		Calendar,
@@ -261,9 +262,7 @@
 	};
 </script>
 
-<svelte:head>
-	<title>{$t('dashboard.title')} | MyPage48</title>
-</svelte:head>
+<SEO title={$t('dashboard.title')} path="/" description={$t('seo.dashboard')} />
 
 <div class="space-y-6 p-4 pb-32 max-w-7xl mx-auto">
 	<!-- Header / Filter Toggle -->

@@ -11,6 +11,7 @@
 		User,
 		Sparkles
 	} from 'lucide-svelte';
+	import SEO from '$lib/components/SEO.svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -78,9 +79,7 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{$t('memories.title')} | MyPage48</title>
-</svelte:head>
+<SEO title={$t('memories.title')} path="/memories" description={$t('seo.memories')} />
 
 <!-- Lightbox -->
 {#if selectedImage}

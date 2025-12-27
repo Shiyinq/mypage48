@@ -19,6 +19,7 @@
 		NotebookPen,
 		Ticket as TicketIcon
 	} from 'lucide-svelte';
+	import SEO from '$lib/components/SEO.svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -88,9 +89,7 @@
 	};
 </script>
 
-<svelte:head>
-	<title>{$t('history.title')} | MyPage48</title>
-</svelte:head>
+<SEO title={$t('history.title')} path="/history" description={$t('seo.history')} />
 
 <div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in relative">
 	<!-- Header Section -->

@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { isAuthenticated } from '$lib/stores';
 	import { Home, ArrowLeft, RefreshCw, AlertTriangle, Search, ServerCrash } from 'lucide-svelte';
+	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -85,9 +86,7 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{status} - {errorInfo.title} | MyPage48</title>
-</svelte:head>
+<SEO title={`${status} - ${errorInfo.title}`} description={message || errorInfo.description} />
 
 <div class="error-page">
 	<div class="error-container animate-page-transition">

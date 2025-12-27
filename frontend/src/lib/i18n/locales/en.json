@@ -27,6 +27,23 @@
         "dashboard": "Dashboard",
         "language": "Language"
     },
+    "seo": {
+        "default": "MyPage48 - Your ultimate JKT48 theater companion. Track your theater visits, 2-shots, and achievements.",
+        "dashboard": "View your JKT48 theater attendance statistics, spending analysis, and seat map visualization.",
+        "login": "Log in to your MyPage48 account to track your JKT48 theater journey.",
+        "register": "Create a new MyPage48 account to track your JKT48 theater journey.",
+        "forgotPassword": "Reset your MyPage48 password to regain access to your account.",
+        "resetPassword": "Set a new secure password for your MyPage48 account.",
+        "verifyEmail": "Verify your email address to complete your MyPage48 registration.",
+        "profile": "View your MyPage48 profile, membership card, level progress, and stats.",
+        "history": "View your complete JKT48 theater visit history and manage your ticket log.",
+        "shows": "Browse JKT48 theater shows, view details, and track your attendance history.",
+        "settings": "Manage your MyPage48 account settings, preferences, and developer access.",
+        "achievements": "Track your JKT48 theater milestones, badges, and fan levels.",
+        "memories": "Your digital scrapbook of JKT48 theater tickets and 2-shot photos.",
+        "top2shot": "See your top members by 2-shot count and spending statistics.",
+        "upload": "Upload and scan your JKT48 theater tickets or add 2-shot photos."
+    },
     "nav": {
         "home": "Home",
         "dashboard": "Dashboard",
