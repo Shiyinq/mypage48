@@ -78,6 +78,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{$t('memories.title')} | MyPage48</title>
+</svelte:head>
+
 <!-- Lightbox -->
 {#if selectedImage}
 	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->

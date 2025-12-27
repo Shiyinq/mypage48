@@ -36,6 +36,10 @@
 	};
 </script>
 
+<svelte:head>
+	<title>{$t('auth.forgotPassword.title')} | MyPage48</title>
+</svelte:head>
+
 <div
 	class="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-zinc-950 relative overflow-hidden"
 >

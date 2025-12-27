@@ -203,6 +203,10 @@
 	};
 </script>
 
+<svelte:head>
+	<title>{$t('upload.title')} | MyPage48</title>
+</svelte:head>
+
 {#if mode === 'SELECTION'}
 	<div
 		class="min-h-[80vh] flex flex-col items-center justify-center p-4 animate-fade-in max-w-4xl mx-auto"

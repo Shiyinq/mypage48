@@ -261,6 +261,10 @@
 	};
 </script>
 
+<svelte:head>
+	<title>{$t('dashboard.title')} | MyPage48</title>
+</svelte:head>
+
 <div class="space-y-6 p-4 pb-32 max-w-7xl mx-auto">
 	<!-- Header / Filter Toggle -->
 	<div class="mb-6">
