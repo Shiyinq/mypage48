@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { Ticket, Plus, User } from 'lucide-svelte';
-	import { onMount } from 'svelte';
-	import { isAuthenticated, userProfile } from '$lib/stores';
-	import { auth } from '$lib/apis/auth';
+	import { userProfile } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -16,17 +14,6 @@
 		{ labelKey: 'nav.memories', href: '/memories' },
 		{ labelKey: 'nav.history', href: '/history' }
 	];
-
-	onMount(async () => {
-		if ($isAuthenticated && !$userProfile) {
-			try {
-				const profile = await auth.getProfile();
-				userProfile.set(profile);
-			} catch (error) {
-				console.error('Failed to fetch user profile:', error);
-			}
-		}
-	});
 </script>
 
 <header
