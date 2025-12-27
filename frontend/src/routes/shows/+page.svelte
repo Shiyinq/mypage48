@@ -15,6 +15,9 @@
 		AlertTriangle
 	} from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	// Constants
 	const SHOW_DATA = [
@@ -153,7 +156,7 @@
 			class="flex items-center text-gray-600 mb-6 hover:text-red-600 transition-colors font-medium cursor-pointer"
 		>
 			<ChevronLeft class="w-5 h-5 mr-1" />
-			Back to Setlists
+			{$t('common.back')}
 		</button>
 
 		<!-- Header -->
@@ -179,7 +182,8 @@
 						{selectedShowTitle}
 					</h2>
 					<p class="text-gray-200 font-medium text-lg">
-						{selectedShowData.tickets.length} performances attended
+						{selectedShowData.tickets.length}
+						{$t('shows.performancesAttended')}
 					</p>
 				</div>
 			</div>
@@ -197,7 +201,7 @@
 					</div>
 					<div>
 						<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-							First Attended
+							{$t('shows.firstAttended')}
 						</p>
 						<p class="font-bold text-gray-800 text-sm">
 							{new Date(stats.first.event.date).toLocaleDateString('id-ID', {
@@ -218,7 +222,7 @@
 					</div>
 					<div>
 						<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-							Last Attended
+							{$t('shows.lastAttended')}
 						</p>
 						<p class="font-bold text-gray-800 text-sm">
 							{new Date(stats.last.event.date).toLocaleDateString('id-ID', {
@@ -238,7 +242,9 @@
 						<DollarSign class="w-5 h-5" />
 					</div>
 					<div>
-						<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Avg. Price</p>
+						<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+							{$t('shows.avgPrice')}
+						</p>
 						<p class="font-bold text-gray-800 text-sm">
 							{new Intl.NumberFormat('id-ID', {
 								style: 'currency',
@@ -258,8 +264,10 @@
 						<Armchair class="w-5 h-5" />
 					</div>
 					<div>
-						<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Top Row</p>
-						<p class="font-bold text-gray-800 text-sm">Row {stats.topRow}</p>
+						<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+							{$t('shows.topRow')}
+						</p>
+						<p class="font-bold text-gray-800 text-sm">{$t('shows.row')} {stats.topRow}</p>
 					</div>
 				</div>
 			</div>
@@ -285,7 +293,9 @@
 							{ticket.event.date}
 						</div>
 						<div class="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
-							<MapPin class="w-3 h-3" /> Row {ticket.seat.section}-{ticket.seat.number}
+							<MapPin class="w-3 h-3" />
+							{$t('shows.row')}
+							{ticket.seat.section}-{ticket.seat.number}
 						</div>
 						<div class="mt-2 font-bold text-red-600 text-sm">
 							IDR {ticket.price.toLocaleString()}
@@ -311,12 +321,12 @@
 			</div>
 			<div>
 				<h2 class="text-2xl font-bold text-gray-800 w-fit relative">
-					Theater Setlists
+					{$t('shows.title')}
 					<span
 						class="absolute -bottom-1 left-0 w-full h-2 bg-purple-200/60 -z-10 transform -skew-x-12 rounded-sm"
 					></span>
 				</h2>
-				<p class="text-sm text-gray-500">Select a show to view your attendance history</p>
+				<p class="text-sm text-gray-500">{$t('shows.subtitle')}</p>
 			</div>
 		</div>
 
@@ -355,7 +365,8 @@
 									<span
 										class="bg-yellow-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm flex items-center gap-1 flex-shrink-0 border border-white/20"
 									>
-										<Trophy class="w-3 h-3" /> Top
+										<Trophy class="w-3 h-3" />
+										{$t('shows.top')}
 									</span>
 								{/if}
 							</div>
@@ -367,14 +378,16 @@
 								<div
 									class={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold transition-colors backdrop-blur-md border ${count > 0 ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-900/20' : 'bg-white/20 text-gray-200 border-white/10'}`}
 								>
-									{count} Show{count !== 1 ? 's' : ''}
+									{count}
+									{$t('shows.unit')}
 								</div>
 
 								{#if count > 0}
 									<span
 										class="text-xs text-white/90 font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0"
 									>
-										View History <ChevronLeft class="w-3 h-3 rotate-180" />
+										{$t('shows.viewHistory')}
+										<ChevronLeft class="w-3 h-3 rotate-180" />
 									</span>
 								{/if}
 							</div>
@@ -383,7 +396,9 @@
 							<div>
 								<div class="flex justify-end mb-1">
 									<span class="text-[10px] text-gray-300 font-medium">
-										{count > 0 ? `${percentage.toFixed(0)}% to top` : 'Not seen yet'}
+										{count > 0
+											? `${percentage.toFixed(0)}% ${$t('shows.toTop')}`
+											: $t('shows.notSeen')}
 									</span>
 								</div>
 								<div class="w-full bg-white/20 rounded-full h-1.5 overflow-hidden backdrop-blur-sm">
@@ -421,9 +436,9 @@
 				<AlertTriangle class="w-6 h-6" />
 			</div>
 			<div class="text-center mb-6">
-				<h3 class="text-xl font-bold text-gray-900 mb-2">Delete Ticket?</h3>
+				<h3 class="text-xl font-bold text-gray-900 mb-2">{$t('history.deleteConfirm.title')}</h3>
 				<p class="text-sm text-gray-500 leading-relaxed">
-					Are you sure you want to delete this ticket? This action cannot be undone.
+					{$t('history.deleteConfirm.description')}
 				</p>
 			</div>
 			<div class="grid grid-cols-2 gap-3">
@@ -432,14 +447,14 @@
 					disabled={isDeleting}
 					class="px-4 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					Cancel
+					{$t('common.cancel')}
 				</button>
 				<button
 					on:click={confirmDelete}
 					disabled={isDeleting}
 					class="px-4 py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					{isDeleting ? 'Deleting...' : 'Yes, Delete'}
+					{isDeleting ? $t('common.loading') : $t('history.deleteConfirm.confirm')}
 				</button>
 			</div>
 		</div>

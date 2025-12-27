@@ -3,6 +3,9 @@
 	import { isAuthenticated, showToast } from '$lib/stores';
 	import { Ticket, Lock, Mail, ArrowRight, User } from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	let email = '';
 	let password = '';
@@ -16,7 +19,7 @@
 			// Backend expects 'username' field, which can be email or username
 			await auth.login({ username: email, password });
 			isAuthenticated.set(true);
-			showToast('Welcome back!');
+			showToast($t('auth.login.welcomeBack'));
 			goto('/');
 		} catch (e: any) {
 			console.error(e);
@@ -27,11 +30,11 @@
 			} else if (e.message) {
 				error = e.message;
 			} else {
-				error = 'Invalid email or password';
+				error = $t('auth.login.invalidCredentials');
 			}
 
 			// Show toast for better visibility
-			showToast(error || 'Login failed', 'error');
+			showToast(error || $t('common.error'), 'error');
 		} finally {
 			isLoading = false;
 		}
@@ -58,7 +61,7 @@
 			<h1 class="text-3xl font-black text-gray-900 tracking-tight">
 				MyPage<span class="text-red-600">48</span>
 			</h1>
-			<p class="text-gray-500 font-medium mt-2">Welcome back, Wota!</p>
+			<p class="text-gray-500 font-medium mt-2">{$t('auth.login.subtitle')}</p>
 		</div>
 
 		<div
@@ -66,7 +69,9 @@
 		>
 			<form on:submit|preventDefault={handleSubmit} class="space-y-5">
 				<div>
-					<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Email Address</label>
+					<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+						>{$t('auth.login.emailLabel')}</label
+					>
 					<div class="relative">
 						<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
 							<Mail class="w-5 h-5" />
@@ -76,13 +81,15 @@
 							required
 							bind:value={email}
 							class="w-full pl-12 pr-4 py-3.5 bg-white/80 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 transition-all placeholder-gray-400"
-							placeholder="member@mypage48.com"
+							placeholder={$t('auth.login.emailPlaceholder')}
 						/>
 					</div>
 				</div>
 
 				<div>
-					<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Password</label>
+					<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+						>{$t('auth.login.passwordLabel')}</label
+					>
 					<div class="relative">
 						<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
 							<Lock class="w-5 h-5" />
@@ -92,7 +99,7 @@
 							required
 							bind:value={password}
 							class="w-full pl-12 pr-4 py-3.5 bg-white/80 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 transition-all placeholder-gray-400"
-							placeholder="••••••••"
+							placeholder={$t('auth.login.passwordPlaceholder')}
 						/>
 					</div>
 				</div>
@@ -102,7 +109,7 @@
 						href="/auth/forgot-password"
 						class="text-xs font-bold text-red-600 hover:text-red-700 hover:underline"
 					>
-						Forgot Password?
+						{$t('auth.login.forgotPassword')}
 					</a>
 				</div>
 
@@ -115,18 +122,19 @@
 						<span class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"
 						></span>
 					{:else}
-						Sign In <ArrowRight class="w-5 h-5" />
+						{$t('auth.login.signIn')} <ArrowRight class="w-5 h-5" />
 					{/if}
 				</button>
 			</form>
 
 			<div class="mt-8 pt-6 border-t border-gray-100 text-center">
-				<p class="text-sm text-gray-500">Don't have an account?</p>
+				<p class="text-sm text-gray-500">{$t('auth.login.noAccount')}</p>
 				<button
 					on:click={() => goto('/register')}
 					class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto"
 				>
-					Register for OFC Access <User class="w-4 h-4" />
+					{$t('auth.login.registerCta')}
+					<User class="w-4 h-4" />
 				</button>
 			</div>
 		</div>

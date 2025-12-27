@@ -1,0 +1,355 @@
+{
+    "common": {
+        "loading": "Loading...",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "close": "Close",
+        "back": "Back",
+        "submit": "Submit",
+        "confirm": "Confirm",
+        "yes": "Yes",
+        "no": "No",
+        "error": "An error occurred",
+        "success": "Success",
+        "warning": "Warning",
+        "info": "Information",
+        "search": "Search",
+        "filter": "Filter",
+        "filters": "Filters",
+        "all": "All",
+        "allData": "All Data",
+        "viewDetails": "View Details",
+        "logout": "Logout",
+        "settings": "Settings",
+        "profile": "Profile",
+        "dashboard": "Dashboard",
+        "language": "Language"
+    },
+    "nav": {
+        "home": "Home",
+        "dashboard": "Dashboard",
+        "setlists": "Setlists",
+        "shows": "Shows",
+        "achievements": "Achievements",
+        "memories": "Memories",
+        "history": "History",
+        "upload": "Upload",
+        "profile": "Profile",
+        "settings": "Settings",
+        "newTicket": "New Ticket"
+    },
+    "header": {
+        "tagline": "JKT48 THEATER TRACKER"
+    },
+    "auth": {
+        "login": {
+            "title": "Sign In",
+            "subtitle": "Welcome back, Wota!",
+            "emailLabel": "Email Address",
+            "emailPlaceholder": "member@mypage48.com",
+            "passwordLabel": "Password",
+            "passwordPlaceholder": "••••••••",
+            "forgotPassword": "Forgot Password?",
+            "signIn": "Sign In",
+            "noAccount": "Don't have an account?",
+            "registerCta": "Register for OFC Access",
+            "welcomeBack": "Welcome back!",
+            "invalidCredentials": "Invalid email or password"
+        },
+        "register": {
+            "title": "Join the Fandom",
+            "subtitle": "Create your digital theater profile",
+            "memberId": "Member ID",
+            "username": "Username",
+            "fullName": "Full Name",
+            "email": "Email Address",
+            "ofcStatus": "OFC Status",
+            "ofcActive": "OFC Active",
+            "ofcInactive": "OFC Inactive",
+            "pendingRenewal": "Pending Renewal",
+            "password": "Password",
+            "confirmPassword": "Confirm Password",
+            "submit": "Create Account",
+            "submitting": "Creating Account...",
+            "hasAccount": "Already have an account?",
+            "signIn": "Sign In to MyPage48",
+            "passwordsMismatch": "Passwords do not match",
+            "success": "Account created! Please check your email to verify your account.",
+            "failed": "Registration failed. Please try again."
+        },
+        "logout": {
+            "success": "Logged out successfully",
+            "error": "Failed to logout"
+        },
+        "forgotPassword": {
+            "title": "Forgot Password?",
+            "backToLogin": "Back to Login",
+            "emailLabel": "Email Address",
+            "submit": "Send Reset Link",
+            "submitting": "Sending...",
+            "sent": "Reset link sent! Check your email.",
+            "instruction": "Enter your email address and we'll send you a link to reset your password.",
+            "successMessage": "We've sent a password reset link to {email}. Please check your inbox.",
+            "tryAnother": "Try another email",
+            "spamCheck": "Didn't receive the email? Check your spam folder or try again.",
+            "failed": "Failed to send reset link. Please try again.",
+            "error": "Error sending link"
+        },
+        "resetPassword": {
+            "title": "Reset Password",
+            "subtitle": "Create a new secure password for your account.",
+            "successTitle": "Password Reset!",
+            "successMessage": "Your password has been successfully updated. You will be redirected to login shortly.",
+            "newPassword": "New Password",
+            "confirmPassword": "Confirm Password",
+            "submit": "Reset Password",
+            "submitting": "Resetting...",
+            "goToLogin": "Go to Login",
+            "invalidToken": "Invalid reset link. Missing token.",
+            "mismatch": "Passwords do not match",
+            "tooShort": "Password must be at least 8 characters long",
+            "successToast": "Password reset successfully! Please login.",
+            "failed": "Failed to reset password. The link may be invalid or expired."
+        },
+        "verifyEmail": {
+            "loadingTitle": "Verifying Email",
+            "successTitle": "Verified!",
+            "errorTitle": "Verification Failed",
+            "loadingMessage": "Verifying your email...",
+            "successMessage": "Email verified successfully! You can now login.",
+            "invalidLink": "Invalid verification link. Missing token.",
+            "failedMessage": "Verification failed. The link may be invalid or expired.",
+            "backToLogin": "Back to Login",
+            "goToLogin": "Go to Login"
+        }
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Your theater activity overview",
+        "filterTitle": "Dashboard Filter",
+        "filterSubtitle": "Adjust visualization range",
+        "theater": {
+            "title": "Theater",
+            "subtitle": "Your attendance overview",
+            "shows": "Shows",
+            "spending": "Spending",
+            "totalExpenses": "Total Expenses",
+            "topRow": "Top Row",
+            "mostFrequentSeat": "Most Frequent Seat",
+            "topShow": "Top Show",
+            "mostWatched": "Most Watched",
+            "inYear": "In {year}"
+        },
+        "twoShot": {
+            "title": "2-Shot Roulette & Birthday",
+            "subtitle": "Collection overview & ranking",
+            "collected": "Collected",
+            "spending": "Spending",
+            "totalExpenses": "Total Expenses",
+            "members": "Members",
+            "uniqueIdols": "Unique Idols",
+            "topTwoShot": "Top 2Shot",
+            "kamiOshi": "Kami-Oshi",
+            "photos": "Photos"
+        },
+        "seatMap": {
+            "title": "Theater Seat Map",
+            "subtitle": "Visual distribution for selected range (Rows A-J)",
+            "rowsCollected": "Rows Collected",
+            "stage": "Stage",
+            "row": "Row"
+        },
+        "monthlyAttendance": {
+            "title": "Monthly Attendance",
+            "subtitle": "Breakdown for",
+            "breakdown": "Breakdown for",
+            "showsInMonth": "shows in this month"
+        },
+        "dayPreference": {
+            "title": "Day Preference",
+            "subtitle": "Attendance by day of the week"
+        }
+    },
+    "profile": {
+        "title": "My Profile",
+        "subtitle": "Fan Identity & Stats",
+        "memberCard": {
+            "officialFanClub": "Official Fan Club",
+            "memberId": "Member ID",
+            "cardHolder": "Card Holder",
+            "ofcActive": "OFC Active",
+            "ofcInactive": "OFC Inactive"
+        },
+        "level": {
+            "currentRank": "Current Rank",
+            "xpInfo": "1 XP = 1 Show",
+            "needed": "needed",
+            "for": "for"
+        },
+        "stats": {
+            "totalShows": "Total Shows",
+            "achievements": "Achievements"
+        },
+        "oshi": {
+            "title": "Oshi Shrine",
+            "generation": "Generation",
+            "changeOshi": "Change Oshi",
+            "selectOshi": "Select Your Oshi",
+            "searchMember": "Search member...",
+            "roulette": "Roulette",
+            "birthday": "Birthday"
+        },
+        "recentActivity": {
+            "title": "Recent Activity",
+            "subtitle": "Last shows visited",
+            "noActivity": "No activity yet",
+            "viewAllHistory": "View All History",
+            "startTracking": "Start tracking your theater visits!",
+            "attended": "Attended",
+            "twoShotAt": "2-Shot at",
+            "today": "Today",
+            "yesterday": "Yesterday",
+            "daysAgo": "days ago",
+            "weeksAgo": "weeks ago"
+        }
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Manage your preferences",
+        "language": {
+            "title": "Language",
+            "subtitle": "Choose display language",
+            "select": "Select Language",
+            "indonesian": "Bahasa Indonesia",
+            "english": "English",
+            "japanese": "日本語"
+        },
+        "developer": {
+            "title": "Developer Access",
+            "subtitle": "Manage your API Keys",
+            "description": "Generate an API key to access MYPAGE48 data programmatically. Use it to integrate with your own applications or scripts.",
+            "warning": "Important: Your API key will only be shown once after generation. Make sure to copy and store it securely.",
+            "generateButton": "Generate New API Key",
+            "generating": "Generating...",
+            "confirmTitle": "Generate New API Key?",
+            "confirmDescription": "This will revoke any existing API key. This action cannot be undone.",
+            "generated": "API Key Generated!",
+            "copyInfo": "Please copy your API key now. You won't be able to see it again!",
+            "copied": "Copied to clipboard",
+            "savedKey": "I have saved my key"
+        },
+        "moreSettings": {
+            "title": "More Settings",
+            "subtitle": "Coming soon..."
+        }
+    },
+    "history": {
+        "title": "Ticket History",
+        "subtitle": "Your theater ticket collection",
+        "gridView": "Grid View",
+        "tableView": "Table View",
+        "noTickets": "No tickets yet",
+        "addFirst": "Add your first ticket!",
+        "deleteConfirm": {
+            "title": "Delete Ticket?",
+            "description": "This action cannot be undone. The ticket will be permanently deleted.",
+            "confirm": "Yes, Delete",
+            "cancel": "Cancel"
+        }
+    },
+    "upload": {
+        "title": "Upload Ticket",
+        "subtitle": "Add a new ticket to your collection",
+        "scanTicket": "Scan Ticket",
+        "manualEntry": "Manual Entry",
+        "saveTicket": "Save Ticket",
+        "uploadSuccess": "Ticket uploaded successfully",
+        "uploadError": "Failed to upload ticket"
+    },
+    "shows": {
+        "title": "Shows",
+        "subtitle": "Statistics of visited shows",
+        "totalShows": "Total Shows",
+        "uniqueShows": "Unique Shows",
+        "unit": "Shows"
+    },
+    "memories": {
+        "title": "Memories",
+        "subtitle": "Your photo and ticket gallery",
+        "allPhotos": "All Photos",
+        "tickets": "Tickets",
+        "twoShots": "2-Shots",
+        "noMemories": "No memories yet"
+    },
+    "achievements": {
+        "title": "Achievements",
+        "subtitle": "Your badges and milestones",
+        "unlocked": "Unlocked",
+        "locked": "Locked",
+        "progress": "Progress"
+    },
+    "errors": {
+        "pageNotFound": "Page Not Found",
+        "pageNotFoundMessage": "Sorry, the page you're looking for doesn't exist or has been moved.",
+        "serverError": "Something Went Wrong",
+        "serverErrorMessage": "A server error occurred. Please try again later.",
+        "goHome": "Go to Home",
+        "tryAgain": "Try Again"
+    },
+    "time": {
+        "months": {
+            "january": "January",
+            "february": "February",
+            "march": "March",
+            "april": "April",
+            "may": "May",
+            "june": "June",
+            "july": "July",
+            "august": "August",
+            "september": "September",
+            "october": "October",
+            "november": "November",
+            "december": "December"
+        },
+        "monthsShort": {
+            "jan": "Jan",
+            "feb": "Feb",
+            "mar": "Mar",
+            "apr": "Apr",
+            "may": "May",
+            "jun": "Jun",
+            "jul": "Jul",
+            "aug": "Aug",
+            "sep": "Sep",
+            "oct": "Oct",
+            "nov": "Nov",
+            "dec": "Dec"
+        },
+        "days": {
+            "sunday": "Sunday",
+            "monday": "Monday",
+            "tuesday": "Tuesday",
+            "wednesday": "Wednesday",
+            "thursday": "Thursday",
+            "friday": "Friday",
+            "saturday": "Saturday"
+        },
+        "daysShort": {
+            "sun": "Sun",
+            "mon": "Mon",
+            "tue": "Tue",
+            "wed": "Wed",
+            "thu": "Thu",
+            "fri": "Fri",
+            "sat": "Sat"
+        },
+        "relative": {
+            "today": "Today",
+            "yesterday": "Yesterday",
+            "daysAgo": "{count} days ago",
+            "weeksAgo": "{count} weeks ago"
+        }
+    }
+}

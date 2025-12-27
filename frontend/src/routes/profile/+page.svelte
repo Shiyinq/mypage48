@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isAuthenticated } from '$lib/stores';
+	import { isAuthenticated, showToast, userProfile } from '$lib/stores';
+	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
 	import Input from '$lib/components/Input.svelte';
@@ -36,8 +37,11 @@
 	} from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
 	import { theater } from '$lib/apis/theater';
-	import { showToast, userProfile } from '$lib/stores';
+
 	import type { Ticket } from '$lib/types';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t, locale } = useTranslation();
 
 	// Profile data from API
 	interface ProfileData {
@@ -180,17 +184,22 @@
 
 	$: progressPercent = Math.min((level.xp / level.nextLevelXp) * 100, 100);
 
-	// Format date for Recent Activity
+	// Format date for {$t('profile.recentActivity.title')}
+	// Format date for {$t('profile.recentActivity.title')}
 	function formatActivityDate(dateStr: string): string {
 		const date = new Date(dateStr);
 		const now = new Date();
 		const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+		const $t = get(t);
+		const lang = get(locale);
 
-		if (diffDays === 0) return 'Today';
-		if (diffDays === 1) return 'Yesterday';
-		if (diffDays < 7) return `${diffDays} days ago`;
-		if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-		return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+		if (diffDays === 0) return $t('time.relative.today');
+		if (diffDays === 1) return $t('time.relative.yesterday');
+		if (diffDays < 7) return $t('time.relative.daysAgo', { count: diffDays });
+		if (diffDays < 30) return $t('time.relative.weeksAgo', { count: Math.floor(diffDays / 7) });
+
+		const localeMap: Record<string, string> = { id: 'id-ID', ja: 'ja-JP', en: 'en-US' };
+		return date.toLocaleDateString(localeMap[lang] || 'en-US', { month: 'short', day: 'numeric' });
 	}
 
 	onMount(async () => {
@@ -230,7 +239,7 @@
 	const logout = async () => {
 		try {
 			await auth.logout();
-			showToast('Logged out successfully', 'success');
+			showToast($t('auth.logout.success'), 'success');
 		} catch (e) {
 			console.error('Logout error', e);
 			// Even if backend fails, force local logout
@@ -401,12 +410,12 @@
 			</div>
 			<div>
 				<h2 class="text-2xl font-black idol-text-gradient leading-none relative w-fit">
-					My Profile
+					{$t('profile.title')}
 					<span
 						class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 -z-10 transform -skew-x-12 rounded-sm"
 					></span>
 				</h2>
-				<p class="text-sm text-gray-500 mt-1">Fan Identity & Stats</p>
+				<p class="text-sm text-gray-500 mt-1">{$t('profile.subtitle')}</p>
 			</div>
 		</div>
 		<div class="flex items-center gap-2">
@@ -422,7 +431,7 @@
 			<button
 				on:click={logout}
 				class="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors border border-transparent hover:border-red-100 cursor-pointer"
-				title="Logout"
+				title={$t('common.logout')}
 			>
 				<LogOut class="w-5 h-5" />
 			</button>
@@ -479,7 +488,7 @@
 								</div>
 								<div>
 									<p class="text-[10px] font-bold text-red-400 tracking-widest uppercase">
-										Official Fan Club
+										{$t('profile.memberCard.officialFanClub')}
 									</p>
 									<h3 class="font-black text-lg tracking-tight">
 										MYPAGE<span class="text-red-500">48</span>
@@ -489,7 +498,9 @@
 							<div class="flex flex-col items-end gap-1">
 								<!-- Member ID -->
 								<div class="text-right">
-									<p class="text-[10px] text-gray-400 font-bold">MEMBER ID</p>
+									<p class="text-[10px] text-gray-400 font-bold">
+										{$t('profile.memberCard.memberId')}
+									</p>
 									<p class="font-mono font-bold text-shadow">
 										{#if loading}
 											<span class="inline-block w-20 h-4 bg-white/20 rounded animate-pulse"></span>
@@ -519,7 +530,9 @@
 												? 'text-green-300'
 												: 'text-gray-400'}"
 										>
-											OFC {profile?.ofcStatus || 'Inactive'}
+											{profile?.ofcStatus === 'Active'
+												? $t('profile.memberCard.ofcActive')
+												: $t('profile.memberCard.ofcInactive')}
 										</span>
 									</div>
 								{/if}
@@ -550,7 +563,9 @@
 						<!-- Bottom Row -->
 						<div class="flex justify-between items-end">
 							<div>
-								<p class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">Card Holder</p>
+								<p class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">
+									{$t('profile.memberCard.cardHolder')}
+								</p>
 								<p class="text-lg font-bold tracking-wide uppercase text-shadow-sm">
 									{#if loading}
 										<span class="inline-block w-40 h-5 bg-white/20 rounded animate-pulse"></span>
@@ -585,7 +600,9 @@
 					<div class="flex justify-between items-end mb-2">
 						<div>
 							<div class="flex items-center gap-1.5 mb-0.5">
-								<p class="text-xs font-bold text-gray-400 uppercase">Current Rank</p>
+								<p class="text-xs font-bold text-gray-400 uppercase">
+									{$t('profile.level.currentRank')}
+								</p>
 								<div class="relative group">
 									<Info
 										class="w-3.5 h-3.5 text-gray-300 cursor-help hover:text-red-400 transition-colors"
@@ -626,8 +643,9 @@
 					>
 						<Sparkles class="w-3.5 h-3.5 text-yellow-500" />
 						<span>
-							<span class="font-bold text-gray-700">{level.nextLevelXp - level.xp} XP</span> needed
-							for
+							<span class="font-bold text-gray-700">{level.nextLevelXp - level.xp} XP</span>
+							{$t('profile.level.needed')}
+							{$t('profile.level.for')}
 							<span class="font-bold text-gray-700">{level.nextRankTitle}</span>
 						</span>
 					</div>
@@ -649,7 +667,9 @@
 					{:else}
 						<span class="text-2xl font-black text-gray-800">{totalShows}</span>
 					{/if}
-					<span class="text-[10px] font-bold text-gray-400 uppercase">Total Shows</span>
+					<span class="text-[10px] font-bold text-gray-400 uppercase"
+						>{$t('profile.stats.totalShows')}</span
+					>
 				</div>
 				<div
 					class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center"
@@ -664,7 +684,9 @@
 					{:else}
 						<span class="text-2xl font-black text-gray-800">{totalAchievements}</span>
 					{/if}
-					<span class="text-[10px] font-bold text-gray-400 uppercase">Achievements</span>
+					<span class="text-[10px] font-bold text-gray-400 uppercase"
+						>{$t('profile.stats.achievements')}</span
+					>
 				</div>
 			</div>
 		</div>
@@ -886,7 +908,9 @@
 										{twoShotRouletteCount}
 									{/if}
 								</p>
-								<p class="text-[10px] font-bold text-gray-400 uppercase">2-Shot Roulette</p>
+								<p class="text-[10px] font-bold text-gray-400 uppercase">
+									{$t('profile.oshi.roulette')}
+								</p>
 							</div>
 						</div>
 						<!-- 2-Shot Birthday -->
@@ -902,7 +926,9 @@
 										{twoShotBirthdayCount}
 									{/if}
 								</p>
-								<p class="text-[10px] font-bold text-gray-400 uppercase">2-Shot Birthday</p>
+								<p class="text-[10px] font-bold text-gray-400 uppercase">
+									{$t('profile.oshi.birthday')}
+								</p>
 							</div>
 						</div>
 					</div>
@@ -912,7 +938,8 @@
 			<!-- RECENT ACTIVITY FEED -->
 			<div class="glass-panel p-6 rounded-3xl">
 				<h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-					<TrendingUp class="w-4 h-4 text-red-500" /> Recent Activity
+					<TrendingUp class="w-4 h-4 text-red-500" />
+					{$t('profile.recentActivity.title')}
 				</h4>
 
 				<div
@@ -935,8 +962,8 @@
 					{:else if recentShows.length === 0}
 						<div class="text-center py-8 text-gray-500">
 							<Music class="w-8 h-8 mx-auto mb-2 text-gray-300" />
-							<p class="text-sm">No shows attended yet</p>
-							<p class="text-xs text-gray-400">Start tracking your theater visits!</p>
+							<p class="text-sm">{$t('profile.recentActivity.noActivity')}</p>
+							<p class="text-xs text-gray-400">{$t('profile.recentActivity.startTracking')}</p>
 						</div>
 					{:else}
 						{#each recentShows as show}
@@ -957,7 +984,9 @@
 								>
 									<div class="flex justify-between items-start">
 										<p class="text-sm font-bold text-gray-800">
-											{show.two_shot ? '2-Shot at' : 'Attended'} '{show.event.title}'
+											{show.two_shot
+												? $t('profile.recentActivity.twoShotAt')
+												: $t('profile.recentActivity.attended')} '{show.event.title}'
 										</p>
 										<span class="text-[10px] font-medium text-gray-400"
 											>{formatActivityDate(show.event.date)}</span
@@ -995,8 +1024,8 @@
 			<!-- Header -->
 			<div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white z-10">
 				<div>
-					<h3 class="text-xl font-black text-gray-800">Select Your Oshi</h3>
-					<p class="text-sm text-gray-500">Choose the member that lights up your world!</p>
+					<h3 class="text-xl font-black text-gray-800">{$t('profile.oshiModal.title')}</h3>
+					<p class="text-sm text-gray-500">{$t('profile.oshiModal.subtitle')}</p>
 				</div>
 				<button
 					on:click={closeOshiModal}
@@ -1014,7 +1043,7 @@
 						type="text"
 						bind:value={oshiSearchQuery}
 						on:input={handleOshiSearch}
-						placeholder="Search member by name, nickname, or generation..."
+						placeholder={$t('profile.oshiModal.searchPlaceholder')}
 						class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-red-300 focus:ring-4 focus:ring-red-50 transition-all font-medium text-sm"
 					/>
 				</div>
@@ -1027,12 +1056,14 @@
 						<div
 							class="w-10 h-10 border-4 border-red-100 border-t-red-500 rounded-full animate-spin mb-4"
 						></div>
-						<p class="text-sm text-gray-500">Loading members...</p>
+						<p class="text-sm text-gray-500">{$t('profile.oshiModal.loading')}</p>
 					</div>
 				{:else if filteredMembers.length === 0}
 					<div class="text-center py-12">
 						<Search class="w-12 h-12 text-gray-200 mx-auto mb-3" />
-						<p class="text-gray-500">No members found matching "{oshiSearchQuery}"</p>
+						<p class="text-gray-500">
+							{$t('profile.oshiModal.noMembers', { query: oshiSearchQuery })}
+						</p>
 					</div>
 				{:else}
 					<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -1064,7 +1095,7 @@
 								<h4 class="font-bold text-gray-800 text-sm leading-tight mb-1">{member.name}</h4>
 								<span
 									class="text-[10px] font-bold text-gray-400 uppercase tracking-wide bg-gray-100 px-2 py-0.5 rounded-full group-hover:bg-white transition-colors"
-									>Generation {member.generation}</span
+									>{$t('profile.oshiModal.generation', { gen: member.generation })}</span
 								>
 							</button>
 						{/each}
@@ -1074,7 +1105,9 @@
 
 			<!-- Footer Action -->
 			<div class="p-6 border-t border-gray-100 bg-white flex justify-end gap-3 z-10">
-				<Button variant="outline" on:click={closeOshiModal} class="cursor-pointer">Cancel</Button>
+				<Button variant="outline" on:click={closeOshiModal} class="cursor-pointer"
+					>{$t('profile.oshiModal.cancel')}</Button
+				>
 				<Button
 					variant="primary"
 					disabled={!selectedOshiId || savingOshi}
@@ -1082,7 +1115,7 @@
 					on:click={saveOshi}
 					class="cursor-pointer"
 				>
-					Save Oshi
+					{$t('profile.oshiModal.save')}
 				</Button>
 			</div>
 		</div>
@@ -1185,24 +1218,33 @@
 					<!-- Stats Grid -->
 					<div class="grid grid-cols-2 gap-4">
 						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Birthdate</p>
+							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">
+								{$t('member.birthdate')}
+							</p>
 							<p class="text-sm font-bold text-gray-800">
 								{memberDetail.birthdate}
 								<span class="text-xs text-gray-500 font-normal block">
-									{calculateAge(memberDetail.birthdate)} Years Old
+									{calculateAge(memberDetail.birthdate)}
+									{$t('member.yearsOld')}
 								</span>
 							</p>
 						</div>
 						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Horoscope</p>
+							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">
+								{$t('member.horoscope')}
+							</p>
 							<p class="text-sm font-bold text-gray-800">{memberDetail.horoscope}</p>
 						</div>
 						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Blood Type</p>
+							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">
+								{$t('member.bloodType')}
+							</p>
 							<p class="text-sm font-bold text-gray-800">{memberDetail.bloodType}</p>
 						</div>
 						<div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Height</p>
+							<p class="text-[10px] font-bold text-gray-400 uppercase mb-1">
+								{$t('member.height')}
+							</p>
 							<p class="text-sm font-bold text-gray-800">{memberDetail.height}</p>
 						</div>
 					</div>
@@ -1291,15 +1333,15 @@
 					<div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
 						<Search class="w-8 h-8 text-red-500" />
 					</div>
-					<h3 class="text-xl font-bold text-gray-900 mb-2">Member Not Found</h3>
+					<h3 class="text-xl font-bold text-gray-900 mb-2">{$t('member.notFound')}</h3>
 					<p class="text-gray-500 max-w-xs mx-auto mb-6">
-						We couldn't retrieve the details for this member. Please try again later.
+						{$t('member.notFoundMessage')}
 					</p>
 					<button
 						class="px-6 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium cursor-pointer"
 						on:click={closeMemberDetail}
 					>
-						Close
+						{$t('member.close')}
 					</button>
 				</div>
 			{/if}

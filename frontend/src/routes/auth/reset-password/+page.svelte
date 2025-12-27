@@ -5,6 +5,9 @@
 	import { auth } from '$lib/apis/auth';
 	import { showToast } from '$lib/stores';
 	import { Lock, ArrowLeft, Loader2, CheckCircle, ShieldCheck } from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	let token = '';
 	let newPassword = '';
@@ -16,18 +19,18 @@
 	onMount(() => {
 		token = $page.url.searchParams.get('token') || '';
 		if (!token) {
-			error = 'Invalid reset link. Missing token.';
+			error = $t('auth.resetPassword.invalidToken');
 		}
 	});
 
 	const handleSubmit = async () => {
 		if (newPassword !== confirmPassword) {
-			error = 'Passwords do not match';
+			error = $t('auth.resetPassword.mismatch');
 			return;
 		}
 
 		if (newPassword.length < 8) {
-			error = 'Password must be at least 8 characters long';
+			error = $t('auth.resetPassword.tooShort');
 			return;
 		}
 
@@ -41,7 +44,7 @@
 				confirm_password: confirmPassword
 			});
 			isSuccess = true;
-			showToast('Password reset successfully! Please login.', 'success');
+			showToast($t('auth.resetPassword.successToast'), 'success');
 			setTimeout(() => {
 				goto('/login');
 			}, 3000);
@@ -52,7 +55,7 @@
 			} else if (e.message) {
 				error = e.message;
 			} else {
-				error = 'Failed to reset password. The link may be invalid or expired.';
+				error = $t('auth.resetPassword.failed');
 			}
 			showToast(error || 'Reset failed', 'error');
 		} finally {
@@ -78,7 +81,8 @@
 				href="/login"
 				class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 mb-6 transition-colors"
 			>
-				<ArrowLeft class="w-4 h-4" /> Back to Login
+				<ArrowLeft class="w-4 h-4" />
+				{$t('auth.forgotPassword.backToLogin')}
 			</a>
 		{/if}
 
@@ -92,15 +96,17 @@
 					>
 						<CheckCircle class="w-10 h-10 text-green-500" />
 					</div>
-					<h1 class="text-2xl font-black text-gray-900 mb-2">Password Reset!</h1>
+					<h1 class="text-2xl font-black text-gray-900 mb-2">
+						{$t('auth.resetPassword.successTitle')}
+					</h1>
 					<p class="text-gray-500 font-medium mb-8">
-						Your password has been successfully updated. You will be redirected to login shortly.
+						{$t('auth.resetPassword.successMessage')}
 					</p>
 					<button
 						on:click={() => goto('/login')}
 						class="w-full py-4 rounded-2xl font-bold idol-gradient text-white shadow-lg shadow-green-200 hover:shadow-xl hover:scale-[1.02] transition-all"
 					>
-						Go to Login
+						{$t('auth.resetPassword.goToLogin')}
 					</button>
 				</div>
 			{:else}
@@ -110,15 +116,17 @@
 					>
 						<ShieldCheck class="w-8 h-8" />
 					</div>
-					<h1 class="text-2xl font-black text-gray-900 mb-2">Reset Password</h1>
+					<h1 class="text-2xl font-black text-gray-900 mb-2">{$t('auth.resetPassword.title')}</h1>
 					<p class="text-gray-500 font-medium text-sm">
-						Create a new secure password for your account.
+						{$t('auth.resetPassword.subtitle')}
 					</p>
 				</div>
 
 				<form on:submit|preventDefault={handleSubmit} class="space-y-5">
 					<div>
-						<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">New Password</label>
+						<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+							>{$t('auth.resetPassword.newPassword')}</label
+						>
 						<div class="relative">
 							<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
 								<Lock class="w-5 h-5" />
@@ -134,7 +142,8 @@
 					</div>
 
 					<div>
-						<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Confirm Password</label
+						<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+							>{$t('auth.resetPassword.confirmPassword')}</label
 						>
 						<div class="relative">
 							<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
@@ -162,9 +171,9 @@
 						class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
 					>
 						{#if isLoading}
-							<Loader2 class="w-5 h-5 animate-spin" /> Resetting...
+							<Loader2 class="w-5 h-5 animate-spin" /> {$t('auth.resetPassword.submitting')}
 						{:else}
-							Reset Password
+							{$t('auth.resetPassword.submit')}
 						{/if}
 					</button>
 				</form>

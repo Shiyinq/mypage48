@@ -20,6 +20,9 @@
 		Ticket as TicketIcon
 	} from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	// Main Component Logic
 	let viewMode: 'GRID' | 'TABLE' = 'GRID';
@@ -96,12 +99,12 @@
 			</div>
 			<div>
 				<h2 class="text-2xl font-bold text-gray-800 leading-none relative w-fit">
-					History Log
+					{$t('history.title')}
 					<span
 						class="absolute -bottom-1 left-0 w-full h-2 bg-blue-200/60 -z-10 transform -skew-x-12 rounded-sm"
 					></span>
 				</h2>
-				<p class="text-sm text-gray-500 mt-1">Manage your digital ticket collection</p>
+				<p class="text-sm text-gray-500 mt-1">{$t('history.subtitle')}</p>
 			</div>
 		</div>
 
@@ -114,7 +117,7 @@
 				/>
 				<input
 					type="text"
-					placeholder="Search show, ID, or date..."
+					placeholder={$t('common.search')}
 					bind:value={searchQuery}
 					class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm transition-all"
 				/>
@@ -148,8 +151,8 @@
 			<div class="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center mb-6">
 				<Search class="w-10 h-10 text-gray-300" />
 			</div>
-			<h3 class="text-xl font-bold text-gray-800 mb-2">No tickets found.</h3>
-			<p class="text-sm text-gray-500 max-w-md mx-auto">Try adjusting your search terms.</p>
+			<h3 class="text-xl font-bold text-gray-800 mb-2">{$t('history.noTickets')}</h3>
+			<p class="text-sm text-gray-500 max-w-md mx-auto">{$t('history.addFirst')}</p>
 		</div>
 	{:else if viewMode === 'GRID'}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -185,7 +188,9 @@
 							<span
 								class="inline-block px-3 py-1 bg-black/30 backdrop-blur-md text-white text-[10px] font-bold rounded-full uppercase tracking-wider border border-white/20 shadow-lg"
 							>
-								{ticket.event.day || 'Show'}
+								{ticket.event.day
+									? $t('time.days.' + ticket.event.day.toLowerCase())
+									: $t('history.show')}
 							</span>
 						</div>
 
@@ -203,7 +208,9 @@
 					<div class="p-5 flex-1 flex flex-col gap-4">
 						<div class="grid grid-cols-2 gap-4">
 							<div class="flex flex-col">
-								<span class="text-[10px] text-gray-400 font-bold uppercase mb-1">Date</span>
+								<span class="text-[10px] text-gray-400 font-bold uppercase mb-1"
+									>{$t('history.date')}</span
+								>
 								<div class="flex items-center text-gray-700 text-sm font-semibold">
 									<Calendar class="w-3.5 h-3.5 mr-1.5 text-red-500" />
 									{new Date(ticket.event.date).toLocaleDateString('id-ID', {
@@ -214,7 +221,9 @@
 								</div>
 							</div>
 							<div class="flex flex-col">
-								<span class="text-[10px] text-gray-400 font-bold uppercase mb-1">Time</span>
+								<span class="text-[10px] text-gray-400 font-bold uppercase mb-1"
+									>{$t('history.time')}</span
+								>
 								<div class="flex items-center text-gray-700 text-sm font-semibold">
 									<Clock class="w-3.5 h-3.5 mr-1.5 text-red-500" />
 									{ticket.event.time}
@@ -232,14 +241,17 @@
 									<MapPin class="w-4 h-4" />
 								</div>
 								<div class="flex flex-col">
-									<span class="text-[10px] text-red-400 font-bold uppercase">Seat</span>
+									<span class="text-[10px] text-red-400 font-bold uppercase"
+										>{$t('history.seat')}</span
+									>
 									<span class="text-gray-900 font-extrabold text-sm text-gray-900"
 										>{ticket.seat.section} - {ticket.seat.number}</span
 									>
 								</div>
 							</div>
 							<div class="text-right">
-								<span class="text-[10px] text-gray-400 font-bold uppercase block mb-0.5">Price</span
+								<span class="text-[10px] text-gray-400 font-bold uppercase block mb-0.5"
+									>{$t('history.price')}</span
 								>
 								<span class="text-red-600 font-bold text-sm">
 									{new Intl.NumberFormat('id-ID', {
@@ -255,7 +267,8 @@
 						<div class="flex-1">
 							<div class="flex items-center justify-between mb-2">
 								<span class="text-[10px] text-gray-400 font-bold uppercase flex items-center gap-1">
-									<NotebookPen class="w-3 h-3" /> Notes
+									<NotebookPen class="w-3 h-3" />
+									{$t('history.notes')}
 								</span>
 								{#if editingId !== ticket._id}
 									<button
@@ -263,9 +276,9 @@
 										class="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1"
 									>
 										{#if ticket.notes}
-											<Pencil class="w-3 h-3" /> Edit Note
+											<Pencil class="w-3 h-3" /> {$t('history.editNote')}
 										{:else}
-											<NotebookPen class="w-3 h-3" /> Add Note
+											<NotebookPen class="w-3 h-3" /> {$t('history.addNote')}
 										{/if}
 									</button>
 								{/if}
@@ -290,7 +303,8 @@
 											on:click={() => saveNote(ticket)}
 											class="px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-md hover:bg-red-700 transition-colors flex items-center gap-1"
 										>
-											<Save class="w-3 h-3" /> Save
+											<Save class="w-3 h-3" />
+											{$t('history.saveNote')}
 										</button>
 									</div>
 								</div>
@@ -305,7 +319,7 @@
 											"{ticket.notes}"
 										</p>
 									{:else}
-										<p class="text-xs text-gray-400 italic">No notes added yet.</p>
+										<p class="text-xs text-gray-400 italic">{$t('history.noNotes')}</p>
 									{/if}
 								</div>
 							{/if}
@@ -319,7 +333,8 @@
 							on:click={() => (editingTicket = ticket)}
 							class="text-xs font-bold text-gray-900 hover:text-red-600 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-white transition-colors cursor-pointer"
 						>
-							<Pencil class="w-3 h-3" /> Edit Details
+							<Pencil class="w-3 h-3" />
+							{$t('history.editDetails')}
 						</button>
 						<button
 							on:click={() => (deleteId = ticket._id)}
@@ -340,12 +355,12 @@
 						<tr
 							class="bg-gray-50/80 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-bold"
 						>
-							<th class="p-4">Date</th>
-							<th class="p-4">Event Details</th>
-							<th class="p-4">Seat</th>
-							<th class="p-4">Price</th>
-							<th class="p-4">Notes</th>
-							<th class="p-4 text-right">Actions</th>
+							<th class="p-4">{$t('history.date')}</th>
+							<th class="p-4">{$t('history.eventDetails')}</th>
+							<th class="p-4">{$t('history.seat')}</th>
+							<th class="p-4">{$t('history.price')}</th>
+							<th class="p-4">{$t('history.notes')}</th>
+							<th class="p-4 text-right">{$t('history.actions')}</th>
 						</tr>
 					</thead>
 					<tbody class="bg-white/50 divide-y divide-gray-100">
@@ -432,7 +447,7 @@
 											on:click={() => startEditingNote(ticket)}
 											class="text-sm text-gray-500 italic cursor-pointer hover:text-red-600 flex items-center gap-2 group/note"
 										>
-											<span class="line-clamp-1">{ticket.notes || 'Add a note...'}</span>
+											<span class="line-clamp-1">{ticket.notes || $t('history.addNote')}</span>
 											<Pencil
 												class="w-3 h-3 opacity-0 group-hover/note:opacity-100 transition-opacity"
 											/>
@@ -484,9 +499,9 @@
 				<AlertTriangle class="w-6 h-6" />
 			</div>
 			<div class="text-center mb-6">
-				<h3 class="text-xl font-bold text-gray-900 mb-2">Delete Ticket?</h3>
+				<h3 class="text-xl font-bold text-gray-900 mb-2">{$t('history.deleteConfirm.title')}</h3>
 				<p class="text-sm text-gray-500 leading-relaxed">
-					Are you sure you want to delete this ticket history? This action cannot be undone.
+					{$t('history.deleteConfirm.description')}
 				</p>
 			</div>
 			<div class="grid grid-cols-2 gap-3">
@@ -495,14 +510,14 @@
 					disabled={isDeleting}
 					class="px-4 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					Cancel
+					{$t('common.cancel')}
 				</button>
 				<button
 					on:click={confirmDelete}
 					disabled={isDeleting}
 					class="px-4 py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					{isDeleting ? 'Deleting...' : 'Yes, Delete'}
+					{isDeleting ? $t('common.loading') : $t('history.deleteConfirm.confirm')}
 				</button>
 			</div>
 		</div>

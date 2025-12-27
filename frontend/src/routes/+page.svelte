@@ -24,6 +24,9 @@
 		Users,
 		TrendingUp
 	} from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	// Constants
 	const SHOW_IMAGES = [
@@ -269,8 +272,12 @@
 							<Filter class="w-5 h-5" />
 						</div>
 						<div>
-							<h2 class="font-bold text-gray-800 text-lg leading-none">Dashboard Filter</h2>
-							<p class="text-xs text-gray-400 font-medium mt-1">Adjust visualization range</p>
+							<h2 class="font-bold text-gray-800 text-lg leading-none">
+								{$t('dashboard.filterTitle')}
+							</h2>
+							<p class="text-xs text-gray-400 font-medium mt-1">
+								{$t('dashboard.filterSubtitle')}
+							</p>
 						</div>
 					</div>
 					<button
@@ -294,7 +301,7 @@
 								<span class="w-2 h-2 rounded-full bg-red-600"></span>
 							{/if}
 						</span>
-						All Data
+						{$t('common.allData')}
 					</button>
 				</div>
 
@@ -368,12 +375,12 @@
 					</div>
 					<div>
 						<h2 class="text-2xl font-bold text-gray-800 leading-none relative w-fit">
-							Dashboard
+							{$t('dashboard.title')}
 							<span
 								class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 -z-10 transform -skew-x-12 rounded-sm"
 							></span>
 						</h2>
-						<p class="text-sm text-gray-500 mt-1">Your theater activity overview</p>
+						<p class="text-sm text-gray-500 mt-1">{$t('dashboard.subtitle')}</p>
 					</div>
 				</div>
 				<div class="flex items-center gap-2">
@@ -387,7 +394,7 @@
 						class="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-gray-600 font-bold text-xs shadow-sm border border-gray-200 hover:border-red-200 hover:text-red-600 transition-all cursor-pointer"
 					>
 						<Filter class="w-4 h-4" />
-						<span class="hidden sm:inline">Filters</span>
+						<span class="hidden sm:inline">{$t('common.filters')}</span>
 					</button>
 				</div>
 			</div>
@@ -397,33 +404,33 @@
 	<!-- THEATER STATS -->
 	<div class="glass-panel p-6 rounded-3xl">
 		<div class="mb-6">
-			<h3 class="text-xl font-bold text-gray-800">Theater</h3>
-			<p class="text-xs text-gray-400">Your attendance overview</p>
+			<h3 class="text-xl font-bold text-gray-800">{$t('dashboard.theater.title')}</h3>
+			<p class="text-xs text-gray-400">{$t('dashboard.theater.subtitle')}</p>
 		</div>
 
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 			<StatCard
-				title="Shows"
+				title={$t('dashboard.theater.shows')}
 				value={totalVisits}
-				sub={`In ${selectedYear}`}
+				sub={$t('dashboard.theater.inYear', { year: selectedYear })}
 				icon={TicketIcon}
 				colorClass="bg-red-600/10 text-red-600"
 			/>
 			<StatCard
-				title="Spending"
+				title={$t('dashboard.theater.spending')}
 				value={new Intl.NumberFormat('id-ID', {
 					style: 'currency',
 					currency: 'IDR',
 					maximumFractionDigits: 0
 				}).format(totalSpent)}
-				sub="Total Expenses"
+				sub={$t('dashboard.theater.totalExpenses')}
 				icon={DollarSign}
 				colorClass="bg-emerald-500/10 text-emerald-500"
 			/>
 			<StatCard
-				title="Top Row"
+				title={$t('dashboard.theater.topRow')}
 				value={mostFrequentRow}
-				sub="Most Frequent Seat"
+				sub={$t('dashboard.theater.mostFrequentSeat')}
 				icon={Armchair}
 				colorClass="bg-amber-500/10 text-amber-500"
 			/>
@@ -436,7 +443,7 @@
 						<div class="p-1.5 bg-purple-100 rounded-lg">
 							<Star class="w-4 h-4 fill-current" />
 						</div>
-						<span class="font-bold text-xs tracking-wider">TOP SHOW</span>
+						<span class="font-bold text-xs tracking-wider">{$t('dashboard.theater.topShow')}</span>
 					</div>
 					<Crown class="w-5 h-5 text-yellow-400 fill-current" />
 				</div>
@@ -459,7 +466,9 @@
 						</div>
 					</div>
 					<div class="min-w-0">
-						<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">MOST WATCHED</p>
+						<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+							{$t('dashboard.theater.mostWatched')}
+						</p>
 						<h3
 							class={`font-black text-gray-800 leading-none mb-0.5 truncate ${topShowStats.title.length > 15 ? 'text-sm' : 'text-lg'}`}
 							title={topShowStats.title}
@@ -467,7 +476,8 @@
 							{topShowStats.title}
 						</h3>
 						<p class="text-sm font-bold text-purple-500">
-							{topShowStats.count} Shows
+							{topShowStats.count}
+							{$t('shows.unit')}
 						</p>
 					</div>
 				</div>
@@ -475,7 +485,8 @@
 					on:click={() => goto('/shows')}
 					class="mt-auto border-t border-purple-100 p-3 w-full text-center text-xs font-bold text-purple-600 hover:bg-purple-50 transition-colors flex items-center justify-center gap-1 relative z-20 cursor-pointer"
 				>
-					View Details <ChevronRight class="w-3 h-3" />
+					{$t('common.viewDetails')}
+					<ChevronRight class="w-3 h-3" />
 				</button>
 			</div>
 		</div>
@@ -484,33 +495,33 @@
 	<!-- 2-SHOT STATS SECTION -->
 	<div class="glass-panel p-6 rounded-3xl">
 		<div class="mb-6">
-			<h3 class="text-xl font-bold text-gray-800">2-Shot Roulette & Birthday</h3>
-			<p class="text-xs text-gray-400">Collection overview & ranking</p>
+			<h3 class="text-xl font-bold text-gray-800">{$t('dashboard.twoShot.title')}</h3>
+			<p class="text-xs text-gray-400">{$t('dashboard.twoShot.subtitle')}</p>
 		</div>
 
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 			<StatCard
 				title="2Shot"
 				value={twoShotStats.totalCount}
-				sub="Collected"
+				sub={$t('dashboard.twoShot.collected')}
 				icon={Camera}
 				colorClass="bg-pink-500/10 text-pink-500"
 			/>
 			<StatCard
-				title="Spending"
+				title={$t('dashboard.twoShot.spending')}
 				value={new Intl.NumberFormat('id-ID', {
 					style: 'currency',
 					currency: 'IDR',
 					maximumFractionDigits: 0
 				}).format(twoShotStats.totalSpend)}
-				sub="Total Expenses"
+				sub={$t('dashboard.twoShot.totalExpenses')}
 				icon={Wallet}
 				colorClass="bg-emerald-500/10 text-emerald-500"
 			/>
 			<StatCard
-				title="Members"
+				title={$t('dashboard.twoShot.members')}
 				value={twoShotStats.uniqueCount}
-				sub="Unique Idols"
+				sub={$t('dashboard.twoShot.uniqueIdols')}
 				icon={Users}
 				colorClass="bg-purple-500/10 text-purple-500"
 			/>
@@ -521,10 +532,12 @@
 			>
 				<div class="p-5 pb-0 flex justify-between items-start">
 					<div class="flex items-center gap-2 text-pink-500">
-						<div class="p-1.5 bg-pink-100 rounded-lg">
-							<Heart class="w-4 h-4 fill-current" />
+						<div class="flex items-center gap-2 mb-3">
+							<Heart class="w-4 h-4 text-pink-500 fill-pink-500" />
+							<span class="text-[10px] font-black tracking-widest text-pink-500 uppercase"
+								>{$t('dashboard.twoShot.topTwoShot')}</span
+							>
 						</div>
-						<span class="font-bold text-xs tracking-wider">TOP 2SHOT</span>
 					</div>
 					<Crown class="w-5 h-5 text-yellow-400 fill-current" />
 				</div>
@@ -547,7 +560,9 @@
 						</div>
 					</div>
 					<div class="min-w-0">
-						<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">KAMI-OSHI</p>
+						<p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+							{$t('dashboard.twoShot.kamiOshi')}
+						</p>
 						<h3
 							class={`font-black text-gray-800 leading-none mb-0.5 truncate ${twoShotStats?.kamiOshi?.name?.length > 15 ? 'text-sm' : 'text-lg'}`}
 							title={twoShotStats?.kamiOshi?.name || '-'}
@@ -555,7 +570,8 @@
 							{twoShotStats?.kamiOshi?.name || '-'}
 						</h3>
 						<p class="text-sm font-bold text-pink-500">
-							{twoShotStats?.kamiOshi?.count || 0} Photos
+							{twoShotStats?.kamiOshi?.count || 0}
+							{$t('dashboard.twoShot.photos')}
 						</p>
 					</div>
 				</div>
@@ -563,7 +579,8 @@
 					on:click={() => goto('/top-2shot')}
 					class="mt-auto border-t border-pink-100 p-3 w-full text-center text-xs font-bold text-pink-600 hover:bg-pink-50 transition-colors flex items-center justify-center gap-1 cursor-pointer"
 				>
-					View Details <ChevronRight class="w-3 h-3" />
+					{$t('common.viewDetails')}
+					<ChevronRight class="w-3 h-3" />
 				</button>
 			</div>
 		</div>
@@ -573,15 +590,18 @@
 	<div class="glass-panel p-6 rounded-3xl">
 		<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
 			<div>
-				<h3 class="text-xl font-bold text-gray-800">Theater Seat Map</h3>
-				<p class="text-xs text-gray-400">Visual distribution for selected range (Rows A-J)</p>
+				<h3 class="text-xl font-bold text-gray-800">{$t('dashboard.seatMap.title')}</h3>
+				<p class="text-xs text-gray-400">{$t('dashboard.seatMap.subtitle')}</p>
 			</div>
 			<div class="flex items-center gap-2">
 				<div
 					class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2"
 				>
 					<MapPin class="w-3.5 h-3.5" />
-					<span>{rowStats.uniqueVisited}/{THEATER_ROWS.length} Rows Collected</span>
+					<span
+						>{rowStats.uniqueVisited}/{THEATER_ROWS.length}
+						{$t('dashboard.seatMap.rowsCollected')}</span
+					>
 				</div>
 				<div class="bg-gray-100 p-1 rounded-lg flex gap-1">
 					<button
@@ -612,7 +632,7 @@
 						>
 							<span
 								class="text-[10px] font-black tracking-[0.3em] text-gray-400 uppercase block text-center"
-								>Stage</span
+								>{$t('dashboard.seatMap.stage')}</span
 							>
 						</div>
 					</div>
@@ -646,7 +666,7 @@
 										<div class="relative z-10 w-full flex justify-between items-center">
 											<span
 												class={`text-[10px] md:text-xs font-bold uppercase tracking-wide ${hasData ? 'text-gray-600' : 'text-gray-300'}`}
-												>Row {row}</span
+												>{$t('dashboard.seatMap.row')} {row}</span
 											>
 											<span
 												class={`text-base md:text-lg font-black ${hasData ? 'text-red-600' : 'text-gray-300'}`}
@@ -887,9 +907,10 @@
 		<!-- Monthly Heatmap -->
 		<div class="glass-panel p-6 rounded-3xl lg:col-span-2 flex flex-col">
 			<div class="mb-6">
-				<h3 class="text-xl font-bold text-gray-800">Monthly Attendance</h3>
+				<h3 class="text-xl font-bold text-gray-800">{$t('dashboard.monthlyAttendance.title')}</h3>
 				<p class="text-xs text-gray-400">
-					Breakdown for {isAllData
+					{$t('dashboard.monthlyAttendance.subtitle')}
+					{isAllData
 						? availableYears.length > 1
 							? `${Math.min(...availableYears)} - ${Math.max(...availableYears)}`
 							: availableYears[0]
@@ -913,7 +934,7 @@
 									>{month.count}</span
 								>
 								<span class="text-[8px] text-white/80 font-medium uppercase tracking-wider"
-									>Shows</span
+									>{$t('shows.unit')}</span
 								>
 							{:else}
 								<span class="text-gray-300 text-xl font-bold opacity-30">-</span>
@@ -921,7 +942,7 @@
 						</div>
 						<div class="text-center w-full">
 							<span class="text-[10px] font-bold text-gray-500 block uppercase tracking-wide"
-								>{month.name}</span
+								>{$t('time.monthsShort.' + month.name.substring(0, 3).toLowerCase())}</span
 							>
 						</div>
 					</div>
@@ -933,8 +954,8 @@
 		<!-- Day Preference Grid -->
 		<div class="glass-panel p-6 rounded-3xl flex flex-col">
 			<div class="mb-6">
-				<h3 class="text-xl font-bold text-gray-800">Day Preference</h3>
-				<p class="text-xs text-gray-400">Weekly breakdown</p>
+				<h3 class="text-xl font-bold text-gray-800">{$t('dashboard.dayPreference.title')}</h3>
+				<p class="text-xs text-gray-400">{$t('dashboard.dayPreference.subtitle')}</p>
 			</div>
 
 			<div class="grid grid-cols-3 sm:grid-cols-4 gap-3 flex-1 content-start">
@@ -951,7 +972,7 @@
 									>{day.count}</span
 								>
 								<span class="text-[8px] text-white/80 font-medium uppercase tracking-wider"
-									>Shows</span
+									>{$t('shows.unit')}</span
 								>
 							{:else}
 								<span class="text-gray-300 text-xl font-bold opacity-30">-</span>
@@ -959,7 +980,7 @@
 						</div>
 						<div class="text-center w-full">
 							<span class="text-[10px] font-bold text-gray-500 block uppercase tracking-wide"
-								>{day.name.substring(0, 3)}</span
+								>{$t('time.daysShort.' + day.name.substring(0, 3).toLowerCase())}</span
 							>
 						</div>
 					</div>

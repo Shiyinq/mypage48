@@ -3,6 +3,9 @@
 	import { goto } from '$app/navigation';
 	import { isAuthenticated } from '$lib/stores';
 	import { Home, ArrowLeft, RefreshCw, AlertTriangle, Search, ServerCrash } from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	$: status = $page.status;
 	$: message = $page.error?.message;
@@ -131,23 +134,23 @@
 			<div class="actions">
 				<button class="btn btn-primary idol-gradient" on:click={goHome}>
 					<Home class="w-4 h-4" />
-					<span>Go Home</span>
+					<span>{$t('errors.goHome')}</span>
 				</button>
 
 				<button class="btn btn-secondary" on:click={goBack}>
 					<ArrowLeft class="w-4 h-4" />
-					<span>Go Back</span>
+					<span>{$t('common.back')}</span>
 				</button>
 
 				<button class="btn btn-ghost" on:click={refresh}>
 					<RefreshCw class="w-4 h-4" />
-					<span>Refresh</span>
+					<span>{$t('errors.tryAgain')}</span>
 				</button>
 			</div>
 		</div>
 
 		<!-- Footer Text -->
-		<p class="footer-text">JKT48 Theater Tracker • MyPage48</p>
+		<p class="footer-text">{$t('header.tagline')} • MyPage48</p>
 	</div>
 </div>
 

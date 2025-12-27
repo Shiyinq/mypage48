@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { tickets } from '$lib/stores';
 	import { Heart, Crown, Camera, DollarSign, TrendingUp, User } from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	// --- DATA PROCESSING ---
 	$: stats = (() => {
@@ -67,8 +70,8 @@
 	})();
 
 	$: spendingData = [
-		{ name: 'Theater Tickets', value: stats.totalTicketSpend, color: '#ef4444' }, // Red
-		{ name: '2-Shot Collection', value: stats.totalTwoShotSpend, color: '#ec4899' } // Pink
+		{ name: $t('top2shot.theaterTickets'), value: stats.totalTicketSpend, color: '#ef4444' }, // Red
+		{ name: $t('top2shot.collection'), value: stats.totalTwoShotSpend, color: '#ec4899' } // Pink
 	];
 
 	$: totalSpending = stats.totalTicketSpend + stats.totalTwoShotSpend;
@@ -118,12 +121,14 @@
 		</div>
 		<div>
 			<h2 class="text-2xl font-bold text-gray-800 leading-none relative w-fit">
-				Top 2Shot
-				<span
-					class="absolute -bottom-1 left-0 w-full h-2 bg-pink-200/60 -z-10 transform -skew-x-12 rounded-sm"
-				></span>
+				<h2 class="text-2xl font-bold text-gray-800 leading-none relative w-fit">
+					{$t('top2shot.title')}
+					<span
+						class="absolute -bottom-1 left-0 w-full h-2 bg-pink-200/60 -z-10 transform -skew-x-12 rounded-sm"
+					></span>
+				</h2>
+				<p class="text-sm text-gray-500 mt-1">{$t('top2shot.subtitle')}</p>
 			</h2>
-			<p class="text-sm text-gray-500 mt-1">Member analytics & spending breakdown</p>
 		</div>
 	</div>
 
@@ -134,9 +139,9 @@
 			<div class="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center mb-6">
 				<Camera class="w-10 h-10 text-gray-300" />
 			</div>
-			<h3 class="text-xl font-bold text-gray-800 mb-2">No 2-Shot Data Yet</h3>
+			<h3 class="text-xl font-bold text-gray-800 mb-2">{$t('top2shot.noData')}</h3>
 			<p class="text-sm text-gray-500 max-w-md mx-auto">
-				Start adding 2-shot details when you create or edit a ticket to see your Oshi ranking!
+				{$t('top2shot.noDataDesc')}
 			</p>
 		</div>
 	{:else}
@@ -160,7 +165,8 @@
 							<div
 								class="bg-yellow-400 text-yellow-900 text-[10px] font-black tracking-widest px-3 py-1 rounded-full mb-4 shadow-sm flex items-center gap-1 border border-yellow-200"
 							>
-								<Crown class="w-3 h-3 fill-current" /> KAMI-OSHI
+								<Crown class="w-3 h-3 fill-current" />
+								{$t('top2shot.kamiOshi')}
 							</div>
 
 							<div
@@ -188,17 +194,21 @@
 							</div>
 
 							<h3 class="text-2xl font-black mb-1">{kamiOshi.name}</h3>
-							<p class="text-white/80 text-sm font-medium mb-6">Your most cherished member</p>
+							<p class="text-white/80 text-sm font-medium mb-6">{$t('top2shot.cherished')}</p>
 
 							<div
 								class="grid grid-cols-2 gap-3 w-full bg-black/20 rounded-2xl p-3 backdrop-blur-md border border-white/10"
 							>
 								<div>
-									<div class="text-xs text-white/60 uppercase font-bold mb-0.5">2-Shots</div>
+									<div class="text-xs text-white/60 uppercase font-bold mb-0.5">
+										{$t('top2shot.stats2shots')}
+									</div>
 									<div class="text-xl font-black">{kamiOshi.count}x</div>
 								</div>
 								<div>
-									<div class="text-xs text-white/60 uppercase font-bold mb-0.5">Spent</div>
+									<div class="text-xs text-white/60 uppercase font-bold mb-0.5">
+										{$t('top2shot.statsSpent')}
+									</div>
 									<div class="text-sm font-black mt-1">
 										{formatCompact(kamiOshi.spend)}
 									</div>
@@ -211,7 +221,8 @@
 				<!-- SPENDING BREAKDOWN -->
 				<div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
 					<h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-						<DollarSign class="w-4 h-4 text-green-500" /> Budget Split
+						<DollarSign class="w-4 h-4 text-green-500" />
+						{$t('top2shot.budgetSplit')}
 					</h4>
 					<div class="h-48 relative flex items-center justify-center">
 						<!-- SVG Donut Chart -->
@@ -239,7 +250,7 @@
 						<!-- Total Center -->
 						<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
 							<div class="text-center">
-								<p class="text-[10px] text-gray-400 font-bold uppercase">Total</p>
+								<p class="text-[10px] text-gray-400 font-bold uppercase">{$t('top2shot.total')}</p>
 								<p class="text-xs font-black text-gray-800">
 									{formatCompact(totalSpending)}
 								</p>
@@ -267,14 +278,15 @@
 				<div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
 					<div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
 						<div>
-							<h3 class="font-bold text-gray-800 text-lg">Member Ranking</h3>
-							<p class="text-xs text-gray-500">Based on your 2-shot history</p>
+							<h3 class="font-bold text-gray-800 text-lg">{$t('top2shot.rankingTitle')}</h3>
+							<p class="text-xs text-gray-500">{$t('top2shot.rankingSubtitle')}</p>
 						</div>
 						<div
 							class="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"
 						>
 							<TrendingUp class="w-3 h-3" />
-							{stats.totalTwoShotCount} Total Photos
+							{stats.totalTwoShotCount}
+							{$t('top2shot.totalPhotos')}
 						</div>
 					</div>
 
@@ -315,7 +327,8 @@
 									<div class="flex items-center gap-3 mt-0.5">
 										<span class="text-xs text-gray-500 font-medium flex items-center gap-1">
 											<Camera class="w-3 h-3" />
-											{member.count} Photos
+											{member.count}
+											{$t('top2shot.photos')}
 										</span>
 									</div>
 								</div>

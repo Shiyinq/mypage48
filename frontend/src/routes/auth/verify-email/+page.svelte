@@ -5,24 +5,27 @@
 	import { auth } from '$lib/apis/auth';
 	import { showToast } from '$lib/stores';
 	import { CheckCircle, XCircle, Loader2 } from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	let status: 'loading' | 'success' | 'error' = 'loading';
-	let message = 'Verifying your email...';
+	let message = $t('auth.verifyEmail.loadingMessage');
 
 	onMount(async () => {
 		const token = $page.url.searchParams.get('token');
 
 		if (!token) {
 			status = 'error';
-			message = 'Invalid verification link. Missing token.';
+			message = $t('auth.verifyEmail.invalidLink');
 			return;
 		}
 
 		try {
 			await auth.verifyEmail({ token });
 			status = 'success';
-			message = 'Email verified successfully! You can now login.';
-			showToast('Email verified successfully!', 'success');
+			message = $t('auth.verifyEmail.successMessage');
+			showToast($t('auth.verifyEmail.successMessage'), 'success');
 			setTimeout(() => {
 				goto('/login');
 			}, 3000);
@@ -34,7 +37,7 @@
 			} else if (e.message) {
 				message = e.message;
 			} else {
-				message = 'Verification failed. The link may be invalid or expired.';
+				message = $t('auth.verifyEmail.failedMessage');
 			}
 		}
 	});
@@ -73,11 +76,11 @@
 
 			<h1 class="text-2xl font-black text-gray-900 mb-2">
 				{#if status === 'loading'}
-					Verifying Email
+					{$t('auth.verifyEmail.loadingTitle')}
 				{:else if status === 'success'}
-					Verified!
+					{$t('auth.verifyEmail.successTitle')}
 				{:else}
-					Verification Failed
+					{$t('auth.verifyEmail.errorTitle')}
 				{/if}
 			</h1>
 
@@ -90,14 +93,14 @@
 					on:click={() => goto('/login')}
 					class="w-full py-3 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
 				>
-					Back to Login
+					{$t('auth.verifyEmail.backToLogin')}
 				</button>
 			{:else if status === 'success'}
 				<button
 					on:click={() => goto('/login')}
 					class="w-full py-3 rounded-xl font-bold idol-gradient text-white shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all"
 				>
-					Go to Login
+					{$t('auth.verifyEmail.goToLogin')}
 				</button>
 			{/if}
 		</div>

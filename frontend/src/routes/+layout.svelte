@@ -22,17 +22,13 @@
 		goto('/');
 	}
 
-	// Fetch tickets only once when layout mounts
-	onMount(async () => {
-		if ($isAuthenticated) {
-			try {
-				const myTickets = await theater.getMyTickets();
-				tickets.set(myTickets);
-			} catch (error) {
-				console.error('Failed to load tickets:', error);
-			}
-		}
-	});
+	// Fetch tickets whenever authentication status changes to true
+	$: if (typeof window !== 'undefined' && $isAuthenticated) {
+		theater
+			.getMyTickets()
+			.then((data) => tickets.set(data))
+			.catch((err) => console.error('Failed to load tickets:', err));
+	}
 </script>
 
 <div class="min-h-screen bg-gray-50 flex flex-col relative">

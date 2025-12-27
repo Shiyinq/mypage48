@@ -12,6 +12,9 @@
 		Sparkles
 	} from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	type FilterType = 'ALL' | 'TICKET' | '2SHOT';
 
@@ -152,12 +155,12 @@
 			</div>
 			<div>
 				<h2 class="text-2xl font-bold text-gray-800 tracking-tight relative w-fit">
-					Memories
+					{$t('memories.title')}
 					<span
 						class="absolute -bottom-1 left-0 w-full h-2 bg-pink-200/60 -z-10 transform -skew-x-12 rounded-sm"
 					></span>
 				</h2>
-				<p class="text-sm text-gray-500 mt-1">Your theater journey in snapshots</p>
+				<p class="text-sm text-gray-500 mt-1">{$t('memories.subtitle')}</p>
 			</div>
 		</div>
 
@@ -169,19 +172,22 @@
 				on:click={() => (filter = 'ALL')}
 				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === 'ALL' ? 'bg-pink-500 text-white shadow-md shadow-pink-200' : 'text-gray-500 hover:bg-gray-50'}`}
 			>
-				<Grid class="w-3.5 h-3.5" /> All Photos
+				<Grid class="w-3.5 h-3.5" />
+				{$t('memories.allPhotos')}
 			</button>
 			<button
 				on:click={() => (filter = 'TICKET')}
 				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === 'TICKET' ? 'bg-red-500 text-white shadow-md shadow-red-200' : 'text-gray-500 hover:bg-gray-50'}`}
 			>
-				<TicketIcon class="w-3.5 h-3.5" /> Tickets
+				<TicketIcon class="w-3.5 h-3.5" />
+				{$t('memories.tickets')}
 			</button>
 			<button
 				on:click={() => (filter = '2SHOT')}
 				class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === '2SHOT' ? 'bg-purple-500 text-white shadow-md shadow-purple-200' : 'text-gray-500 hover:bg-gray-50'}`}
 			>
-				<Camera class="w-3.5 h-3.5" /> 2-Shots
+				<Camera class="w-3.5 h-3.5" />
+				{$t('memories.twoShots')}
 			</button>
 		</div>
 	</div>
@@ -194,9 +200,9 @@
 			<div class="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center mb-6">
 				<ImageIcon class="w-10 h-10 text-gray-300" />
 			</div>
-			<h3 class="text-xl font-bold text-gray-800 mb-2">No memories found</h3>
+			<h3 class="text-xl font-bold text-gray-800 mb-2">{$t('memories.noMemories')}</h3>
 			<p class="text-sm text-gray-500 max-w-md mx-auto">
-				Upload tickets or 2-shots to populate your gallery!
+				{$t('upload.subtitle')}
 			</p>
 		</div>
 	{:else}

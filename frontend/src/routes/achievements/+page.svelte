@@ -20,6 +20,9 @@
 		Flame,
 		Ticket as TicketIcon
 	} from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	interface Milestone {
 		id: string;
@@ -245,12 +248,12 @@
 		</div>
 		<div>
 			<h2 class="text-2xl font-bold text-gray-800 relative w-fit">
-				Milestones
+				{$t('achievements.title')}
 				<span
 					class="absolute -bottom-1 left-0 w-full h-2 bg-yellow-200/60 -z-10 transform -skew-x-12 rounded-sm"
 				></span>
 			</h2>
-			<p class="text-sm text-gray-500">Your journey as a fan visualized</p>
+			<p class="text-sm text-gray-500">{$t('achievements.subtitle')}</p>
 		</div>
 	</div>
 
@@ -307,7 +310,8 @@
 					<div
 						class="absolute top-4 right-4 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"
 					>
-						Unlocked <Check class="w-3 h-3" />
+						{$t('achievements.unlocked')}
+						<Check class="w-3 h-3" />
 					</div>
 				{/if}
 			</div>

@@ -3,6 +3,9 @@
 	import { auth } from '$lib/apis/auth';
 	import { showToast } from '$lib/stores';
 	import { Mail, ArrowLeft, Loader2, KeyRound } from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	let email = '';
 	let isLoading = false;
@@ -16,7 +19,7 @@
 		try {
 			await auth.forgotPassword({ email });
 			isSent = true;
-			showToast('Reset link sent! Check your email.', 'success');
+			showToast($t('auth.forgotPassword.sent'), 'success');
 		} catch (e: any) {
 			console.error(e);
 			if (e.detail && typeof e.detail === 'string') {
@@ -24,9 +27,9 @@
 			} else if (e.message) {
 				error = e.message;
 			} else {
-				error = 'Failed to send reset link. Please try again.';
+				error = $t('auth.forgotPassword.failed');
 			}
-			showToast(error || 'Error sending link', 'error');
+			showToast(error || $t('auth.forgotPassword.error'), 'error');
 		} finally {
 			isLoading = false;
 		}
@@ -49,7 +52,8 @@
 			href="/login"
 			class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 mb-6 transition-colors"
 		>
-			<ArrowLeft class="w-4 h-4" /> Back to Login
+			<ArrowLeft class="w-4 h-4" />
+			{$t('auth.forgotPassword.backToLogin')}
 		</a>
 
 		<div
@@ -61,13 +65,12 @@
 				>
 					<KeyRound class="w-8 h-8" />
 				</div>
-				<h1 class="text-2xl font-black text-gray-900 mb-2">Forgot Password?</h1>
+				<h1 class="text-2xl font-black text-gray-900 mb-2">{$t('auth.forgotPassword.title')}</h1>
 				<p class="text-gray-500 font-medium text-sm">
 					{#if isSent}
-						We've sent a password reset link to <span class="font-bold text-gray-900">{email}</span
-						>. Please check your inbox.
+						{$t('auth.forgotPassword.successMessage', { email })}
 					{:else}
-						Enter your email address and we'll send you a link to reset your password.
+						{$t('auth.forgotPassword.instruction')}
 					{/if}
 				</p>
 			</div>
@@ -75,7 +78,9 @@
 			{#if !isSent}
 				<form on:submit|preventDefault={handleSubmit} class="space-y-6">
 					<div>
-						<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Email Address</label>
+						<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+							>{$t('auth.forgotPassword.emailLabel')}</label
+						>
 						<div class="relative">
 							<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
 								<Mail class="w-5 h-5" />
@@ -99,9 +104,9 @@
 						class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70"
 					>
 						{#if isLoading}
-							<Loader2 class="w-5 h-5 animate-spin" /> Sending...
+							<Loader2 class="w-5 h-5 animate-spin" /> {$t('auth.forgotPassword.submitting')}
 						{:else}
-							Send Reset Link
+							{$t('auth.forgotPassword.submit')}
 						{/if}
 					</button>
 				</form>
@@ -111,10 +116,10 @@
 						on:click={() => (isSent = false)}
 						class="w-full py-4 rounded-2xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all"
 					>
-						Try another email
+						{$t('auth.forgotPassword.tryAnother')}
 					</button>
 					<p class="text-xs text-gray-400 text-center">
-						Didn't receive the email? Check your spam folder or try again.
+						{$t('auth.forgotPassword.spamCheck')}
 					</p>
 				</div>
 			{/if}
