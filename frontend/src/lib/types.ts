@@ -47,15 +47,31 @@ export interface AnalysisResult {
 }
 
 // Auth Types
+export interface UserOshi {
+    name: string;
+    nickname: string;
+    generation: string;
+    profilePicture: string;
+    catchphrase: string;
+    socials?: {
+        twitter: string | null;
+        instagram: string | null;
+        tiktok: string | null;
+        threads: string | null;
+        showroom: string | null;
+        idn_app: string | null;
+    } | null;
+}
+
 export interface User {
-    id: string; // Should map to userId from backend
+    userId?: string;
     email: string;
     username: string;
-    full_name?: string; // Backend sends 'name'
-    member_id?: string; // Backend sends 'memberId'
-    ofc_status?: string; // Backend sends 'ofcStatus'
-    is_active: boolean;
-    is_superuser: boolean;
+    name?: string;
+    memberId?: string;
+    ofcStatus?: string;
+    profilePicture?: string | null;
+    oshi?: UserOshi | null;
 }
 
 export interface AuthResponse {

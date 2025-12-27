@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isAuthenticated, showToast, userProfile } from '$lib/stores';
+	import { isAuthenticated, showToast, userProfile, tickets as ticketsStore } from '$lib/stores';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
 	import Input from '$lib/components/Input.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import {
-		User,
+		User as UserIcon,
 		LogOut,
 		Crown,
 		QrCode,
@@ -36,10 +36,9 @@
 		Settings
 	} from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
-	import { theater } from '$lib/apis/theater';
 	import SEO from '$lib/components/SEO.svelte';
 
-	import type { Ticket } from '$lib/types';
+	import type { Ticket, User } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t, locale } = useTranslation();
@@ -53,27 +52,14 @@
 		username: string;
 		memberId: string | null;
 		ofcStatus: string | null;
-		oshi: {
-			name: string;
-			nickname: string;
-			generation: string;
-			profilePicture: string;
-			catchphrase: string;
-			socials?: {
-				twitter: string | null;
-				instagram: string | null;
-				tiktok: string | null;
-				threads: string | null;
-				showroom: string | null;
-				idn_app: string | null;
-			} | null;
-		} | null;
+		oshi: import('$lib/types').UserOshi | null;
 	}
 
 	let profile: ProfileData | null = null;
 	let tickets: Ticket[] = [];
 	let recentShows: Ticket[] = [];
-	let loading = true;
+	// Check if we already have data in stores - if so, skip loading state
+	let loading = !get(userProfile) || get(ticketsStore).length === 0;
 
 	// Oshi Selection State
 	let showOshiModal = false;
@@ -203,39 +189,63 @@
 		return date.toLocaleDateString(localeMap[lang] || 'en-US', { month: 'short', day: 'numeric' });
 	}
 
-	onMount(async () => {
-		try {
-			// Fetch profile and tickets in parallel
-			const [profileData, ticketsData] = await Promise.all([
-				auth.getProfile(),
-				theater.getMyTickets()
-			]);
+	// Helper to map profile data from User store to local ProfileData
+	function mapProfileData(profileData: User): ProfileData {
+		return {
+			userId: profileData.userId || '',
+			profilePicture: profileData.profilePicture || null,
+			name: profileData.name || '',
+			email: profileData.email || '',
+			username: profileData.username || '',
+			memberId: profileData.memberId || null,
+			ofcStatus: profileData.ofcStatus || null,
+			oshi: profileData.oshi || null
+		};
+	}
 
-			// Map profile data
-			profile = {
-				userId: (profileData as any).userId || '',
-				profilePicture: (profileData as any).profilePicture || null,
-				name: (profileData as any).name || '',
-				email: (profileData as any).email || '',
-				username: (profileData as any).username || '',
-				memberId: (profileData as any).memberId || null,
-				ofcStatus: (profileData as any).ofcStatus || null,
-				oshi: (profileData as any).oshi || null
-			};
-			userProfile.set(profile as any);
+	// Helper to update recent shows from tickets
+	function updateRecentShows(ticketsList: Ticket[]) {
+		recentShows = [...ticketsList]
+			.sort((a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime())
+			.slice(0, 5);
+	}
 
-			tickets = ticketsData || [];
+	onMount(() => {
+		// Check if we already have data in stores
+		const storedProfile = get(userProfile);
+		const storedTickets = get(ticketsStore);
 
-			// Sort tickets by event date descending and get 5 most recent
-			recentShows = [...tickets]
-				.sort((a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime())
-				.slice(0, 5);
-		} catch (e) {
-			console.error('Error loading profile data:', e);
-		} finally {
+		if (storedProfile && storedTickets.length > 0) {
+			// Use data from stores immediately
+			profile = mapProfileData(storedProfile);
+			tickets = storedTickets;
+			updateRecentShows(tickets);
 			loading = false;
 		}
+		// If store is empty, layout will fetch and reactive statements will update our local state
 	});
+
+	// Subscribe to store changes to keep local state in sync
+	// This handles both initial load (when layout populates store) and updates from other pages
+	$: {
+		const storeTickets = $ticketsStore;
+		if (storeTickets.length > 0) {
+			tickets = storeTickets;
+			updateRecentShows(tickets);
+			loading = false;
+		}
+	}
+
+	$: {
+		const storeProfile = $userProfile;
+		if (storeProfile) {
+			profile = mapProfileData(storeProfile);
+			// Only set loading false if we also have tickets
+			if ($ticketsStore.length > 0) {
+				loading = false;
+			}
+		}
+	}
 
 	const logout = async () => {
 		try {
@@ -245,6 +255,9 @@
 			console.error('Logout error', e);
 			// Even if backend fails, force local logout
 		} finally {
+			// Clear all stores
+			userProfile.set(null);
+			ticketsStore.set([]);
 			isAuthenticated.set(false);
 			goto('/login');
 		}
@@ -409,7 +422,7 @@
 			<div
 				class="p-3 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-lg shadow-red-100 dark:shadow-red-900/20 border-2 border-white dark:border-zinc-700 transform -rotate-6"
 			>
-				<User class="w-6 h-6" />
+				<UserIcon class="w-6 h-6" />
 			</div>
 			<div>
 				<h2 class="text-2xl font-black idol-text-gradient leading-none relative w-fit">

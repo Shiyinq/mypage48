@@ -1,19 +1,54 @@
 <script>
 	import '../app.css';
-	import { isAuthenticated, toast, tickets } from '$lib/stores';
+	import { isAuthenticated, toast, tickets, userProfile } from '$lib/stores';
 	import { initTheme } from '$lib/stores/theme';
 	import { theater } from '$lib/apis/theater';
+	import { auth } from '$lib/apis/auth';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { get } from 'svelte/store';
 	import Header from '$lib/components/Header.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import { Check } from 'lucide-svelte';
 
-	// Initialize theme on mount
+	// Flag to prevent duplicate fetches
+	let hasFetchedInitialData = false;
+
+	// Initialize theme and fetch initial data on mount
 	onMount(() => {
 		initTheme();
+		fetchInitialDataIfNeeded();
 	});
+
+	// Fetch initial data only once if authenticated and data not in store
+	async function fetchInitialDataIfNeeded() {
+		if (hasFetchedInitialData) return;
+		if (!get(isAuthenticated)) return;
+
+		hasFetchedInitialData = true;
+
+		// Only fetch if not already in store
+		const currentTickets = get(tickets);
+		const currentProfile = get(userProfile);
+
+		try {
+			// Fetch tickets and profile in parallel, but only if needed
+			const promises = [];
+
+			if (currentTickets.length === 0) {
+				promises.push(theater.getMyTickets().then((data) => tickets.set(data)));
+			}
+
+			if (!currentProfile) {
+				promises.push(auth.getProfile().then((data) => userProfile.set(data)));
+			}
+
+			await Promise.all(promises);
+		} catch (err) {
+			console.error('Failed to load initial data:', err);
+		}
+	}
 
 	$: isPublicPage =
 		$page.url.pathname === '/login' ||
@@ -26,14 +61,6 @@
 
 	$: if (typeof window !== 'undefined' && $isAuthenticated && isPublicPage) {
 		goto('/');
-	}
-
-	// Fetch tickets whenever authentication status changes to true
-	$: if (typeof window !== 'undefined' && $isAuthenticated) {
-		theater
-			.getMyTickets()
-			.then((data) => tickets.set(data))
-			.catch((err) => console.error('Failed to load tickets:', err));
 	}
 </script>
 
