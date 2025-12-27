@@ -4,13 +4,17 @@
 	import { onMount } from 'svelte';
 	import { isAuthenticated, userProfile } from '$lib/stores';
 	import { auth } from '$lib/apis/auth';
+	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	const navItems = [
-		{ label: 'Dashboard', href: '/' },
-		{ label: 'Setlists', href: '/shows' },
-		{ label: 'Achievements', href: '/achievements' },
-		{ label: 'Memories', href: '/memories' },
-		{ label: 'History', href: '/history' }
+	const { t } = useTranslation();
+
+	// Navigation items with translation keys
+	$: navItems = [
+		{ labelKey: 'nav.dashboard', href: '/' },
+		{ labelKey: 'nav.setlists', href: '/shows' },
+		{ labelKey: 'nav.achievements', href: '/achievements' },
+		{ labelKey: 'nav.memories', href: '/memories' },
+		{ labelKey: 'nav.history', href: '/history' }
 	];
 
 	onMount(async () => {
@@ -39,7 +43,7 @@
 					MyPage<span class="text-red-600">48</span>
 				</h1>
 				<span class="text-[10px] font-semibold text-gray-400 tracking-wide hidden sm:block"
-					>JKT48 THEATER TRACKER</span
+					>{$t('header.tagline')}</span
 				>
 			</div>
 		</a>
@@ -59,7 +63,7 @@
 					}`}
 					class:bg-red-50={$page.url.pathname === item.href}
 				>
-					{item.label}
+					{$t(item.labelKey)}
 				</a>
 			{/each}
 		</div>
@@ -72,7 +76,8 @@
 					href="/upload"
 					class="idol-gradient text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-lg shadow-red-200 hover:shadow-red-300 hover:scale-105 transition-all flex items-center gap-2"
 				>
-					<Plus class="w-4 h-4" /> New Ticket
+					<Plus class="w-4 h-4" />
+					{$t('nav.newTicket')}
 				</a>
 			</div>
 

@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { LayoutDashboard, Mic2, Plus, Image as ImageIcon, History } from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 </script>
 
 <nav
@@ -16,7 +19,7 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all ${$page.url.pathname === '/' ? 'text-red-600' : ''}`}
-				>Home</span
+				>{$t('nav.home')}</span
 			>
 		</a>
 
@@ -29,7 +32,7 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all ${$page.url.pathname === '/shows' ? 'text-purple-600' : ''}`}
-				>Setlists</span
+				>{$t('nav.setlists')}</span
 			>
 		</a>
 
@@ -52,7 +55,7 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all ${$page.url.pathname === '/memories' ? 'text-pink-600' : ''}`}
-				>Memories</span
+				>{$t('nav.memories')}</span
 			>
 		</a>
 
@@ -65,7 +68,7 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all ${$page.url.pathname === '/history' ? 'text-blue-600' : ''}`}
-				>History</span
+				>{$t('nav.history')}</span
 			>
 		</a>
 	</div>

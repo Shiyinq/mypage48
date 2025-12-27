@@ -1,0 +1,283 @@
+{
+    "common": {
+        "loading": "",
+        "save": "",
+        "cancel": "",
+        "delete": "",
+        "edit": "",
+        "close": "",
+        "back": "",
+        "submit": "",
+        "confirm": "",
+        "yes": "",
+        "no": "",
+        "error": "",
+        "success": "",
+        "warning": "",
+        "info": "",
+        "search": "",
+        "filter": "",
+        "filters": "",
+        "all": "",
+        "allData": "",
+        "viewDetails": "",
+        "logout": "",
+        "settings": "",
+        "profile": "",
+        "dashboard": "",
+        "language": ""
+    },
+    "auth": {
+        "login": {
+            "title": "",
+            "subtitle": "",
+            "emailLabel": "",
+            "emailPlaceholder": "",
+            "passwordLabel": "",
+            "passwordPlaceholder": "",
+            "forgotPassword": "",
+            "signIn": "",
+            "noAccount": "",
+            "registerCta": "",
+            "welcomeBack": "",
+            "invalidCredentials": ""
+        },
+        "register": {
+            "title": "",
+            "subtitle": "",
+            "nameLabel": "",
+            "namePlaceholder": "",
+            "usernameLabel": "",
+            "usernamePlaceholder": "",
+            "emailLabel": "",
+            "emailPlaceholder": "",
+            "passwordLabel": "",
+            "passwordPlaceholder": "",
+            "confirmPasswordLabel": "",
+            "confirmPasswordPlaceholder": "",
+            "signUp": "",
+            "haveAccount": "",
+            "loginCta": ""
+        },
+        "logout": {
+            "success": "",
+            "error": ""
+        }
+    },
+    "dashboard": {
+        "title": "",
+        "subtitle": "",
+        "filterTitle": "",
+        "filterSubtitle": "",
+        "theater": {
+            "title": "",
+            "subtitle": "",
+            "shows": "",
+            "spending": "",
+            "totalExpenses": "",
+            "topRow": "",
+            "mostFrequentSeat": "",
+            "topShow": "",
+            "mostWatched": ""
+        },
+        "twoShot": {
+            "title": "",
+            "subtitle": "",
+            "collected": "",
+            "spending": "",
+            "totalExpenses": "",
+            "members": "",
+            "uniqueIdols": "",
+            "topTwoShot": "",
+            "kamiOshi": "",
+            "photos": ""
+        },
+        "seatMap": {
+            "title": "",
+            "subtitle": "",
+            "rowsCollected": "",
+            "stage": "",
+            "row": ""
+        },
+        "monthlyAttendance": {
+            "title": "",
+            "subtitle": "",
+            "breakdown": "",
+            "showsInMonth": ""
+        },
+        "dayPreference": {
+            "title": "",
+            "subtitle": ""
+        }
+    },
+    "profile": {
+        "title": "",
+        "subtitle": "",
+        "memberCard": {
+            "officialFanClub": "",
+            "memberId": "",
+            "cardHolder": "",
+            "ofcActive": "",
+            "ofcInactive": ""
+        },
+        "level": {
+            "currentRank": "",
+            "xpInfo": "",
+            "needed": "",
+            "for": ""
+        },
+        "stats": {
+            "totalShows": "",
+            "achievements": ""
+        },
+        "oshi": {
+            "title": "",
+            "generation": "",
+            "changeOshi": "",
+            "selectOshi": "",
+            "searchMember": "",
+            "roulette": "",
+            "birthday": ""
+        },
+        "recentActivity": {
+            "title": "",
+            "subtitle": "",
+            "noActivity": "",
+            "viewAllHistory": "",
+            "today": "",
+            "yesterday": "",
+            "daysAgo": "",
+            "weeksAgo": ""
+        }
+    },
+    "settings": {
+        "title": "",
+        "subtitle": "",
+        "language": {
+            "title": "",
+            "subtitle": "",
+            "select": "",
+            "indonesian": "",
+            "english": "",
+            "japanese": ""
+        },
+        "developer": {
+            "title": "",
+            "subtitle": "",
+            "description": "",
+            "warning": "",
+            "generateButton": "",
+            "generating": "",
+            "confirmTitle": "",
+            "confirmDescription": "",
+            "generated": "",
+            "copyInfo": "",
+            "copied": "",
+            "savedKey": ""
+        },
+        "moreSettings": {
+            "title": "",
+            "subtitle": ""
+        }
+    },
+    "history": {
+        "title": "",
+        "subtitle": "",
+        "gridView": "",
+        "tableView": "",
+        "noTickets": "",
+        "addFirst": "",
+        "deleteConfirm": {
+            "title": "",
+            "description": "",
+            "confirm": "",
+            "cancel": ""
+        }
+    },
+    "upload": {
+        "title": "",
+        "subtitle": "",
+        "scanTicket": "",
+        "manualEntry": "",
+        "saveTicket": "",
+        "uploadSuccess": "",
+        "uploadError": ""
+    },
+    "shows": {
+        "title": "",
+        "subtitle": "",
+        "totalShows": "",
+        "uniqueShows": ""
+    },
+    "memories": {
+        "title": "",
+        "subtitle": "",
+        "allPhotos": "",
+        "tickets": "",
+        "twoShots": "",
+        "noMemories": ""
+    },
+    "achievements": {
+        "title": "",
+        "subtitle": "",
+        "unlocked": "",
+        "locked": "",
+        "progress": ""
+    },
+    "errors": {
+        "pageNotFound": "",
+        "pageNotFoundMessage": "",
+        "serverError": "",
+        "serverErrorMessage": "",
+        "goHome": "",
+        "tryAgain": ""
+    },
+    "time": {
+        "months": {
+            "january": "",
+            "february": "",
+            "march": "",
+            "april": "",
+            "may": "",
+            "june": "",
+            "july": "",
+            "august": "",
+            "september": "",
+            "october": "",
+            "november": "",
+            "december": ""
+        },
+        "monthsShort": {
+            "jan": "",
+            "feb": "",
+            "mar": "",
+            "apr": "",
+            "may": "",
+            "jun": "",
+            "jul": "",
+            "aug": "",
+            "sep": "",
+            "oct": "",
+            "nov": "",
+            "dec": ""
+        },
+        "days": {
+            "sunday": "",
+            "monday": "",
+            "tuesday": "",
+            "wednesday": "",
+            "thursday": "",
+            "friday": "",
+            "saturday": ""
+        },
+        "daysShort": {
+            "sun": "",
+            "mon": "",
+            "tue": "",
+            "wed": "",
+            "thu": "",
+            "fri": "",
+            "sat": ""
+        }
+    }
+}

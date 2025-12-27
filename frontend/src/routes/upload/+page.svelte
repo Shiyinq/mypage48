@@ -24,8 +24,11 @@
 		ImagePlus,
 		User,
 		Sparkles,
-		Trash2
+		TrendingUp
 	} from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
 
 	// Constants
 	const SHOW_OPTIONS = [
@@ -205,8 +208,8 @@
 		class="min-h-[80vh] flex flex-col items-center justify-center p-4 animate-fade-in max-w-4xl mx-auto"
 	>
 		<div class="text-center mb-10">
-			<h2 class="text-3xl font-black text-gray-800 mb-2">Add New Ticket</h2>
-			<p class="text-gray-500">Choose how you want to input your theater data</p>
+			<h2 class="text-3xl font-black text-gray-800 mb-2">{$t('upload.title')}</h2>
+			<p class="text-gray-500">{$t('upload.subtitle')}</p>
 		</div>
 		<div class="grid md:grid-cols-2 gap-6 w-full">
 			<button
@@ -223,10 +226,10 @@
 					<h3
 						class="text-2xl font-bold text-gray-800 mb-1 group-hover:text-red-600 transition-colors"
 					>
-						Scan Ticket
+						{$t('upload.scanTicket')}
 					</h3>
-					<p class="text-sm text-gray-500 font-medium">
-						Upload an image and let AI extract detailed info.
+					<p class="text-sm font-medium text-gray-600 leading-relaxed">
+						{$t('upload.scanDescription')}
 					</p>
 				</div>
 			</button>
@@ -244,9 +247,9 @@
 					<h3
 						class="text-2xl font-bold text-gray-800 mb-1 group-hover:text-gray-600 transition-colors"
 					>
-						Manual Entry
+						{$t('upload.manualEntry')}
 					</h3>
-					<p class="text-sm text-gray-500 font-medium">Type in the details yourself.</p>
+					<p class="text-sm font-medium text-gray-600">{$t('upload.manualDescription')}</p>
 				</div>
 			</button>
 		</div>
@@ -254,7 +257,8 @@
 			on:click={onCancel}
 			class="mt-12 text-gray-400 hover:text-gray-600 font-medium text-sm flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
 		>
-			<X class="w-4 h-4" /> Cancel
+			<X class="w-4 h-4" />
+			{$t('common.cancel')}
 		</button>
 	</div>
 {/if}
@@ -289,18 +293,18 @@
 				</div>
 				<div>
 					<h2 class="text-2xl font-bold text-gray-800 leading-none relative w-fit">
-						New Ticket Entry
+						{$t('forms.newTicket')}
 						<span
 							class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 -z-10 transform -skew-x-12 rounded-sm"
 						></span>
 					</h2>
-					<p class="text-sm text-gray-500 mt-1">Add to your collection</p>
+					<p class="text-sm text-gray-500 mt-1">{$t('forms.addToCollection')}</p>
 				</div>
 			</div>
 			<button
 				on:click={onCancel}
 				class="text-sm font-bold text-gray-500 hover:text-red-600 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200 cursor-pointer"
-				>Cancel</button
+				>{$t('forms.cancel')}</button
 			>
 		</div>
 
@@ -319,7 +323,7 @@
 								<button
 									on:click={() => fileInputRef.click()}
 									class="bg-white text-gray-800 px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 shadow-lg hover:scale-105 transition-transform"
-									><ImagePlus class="w-4 h-4" /> Change Photo</button
+									><ImagePlus class="w-4 h-4" /> {$t('forms.changePhoto')}</button
 								>
 							</div>
 						</div>
@@ -331,8 +335,8 @@
 							<div class="p-4 rounded-full bg-white shadow-sm mb-4">
 								<ImagePlus class="w-8 h-8" />
 							</div>
-							<p class="font-bold text-lg">Upload Ticket Photo</p>
-							<p class="text-xs text-gray-400 mt-1">(Optional)</p>
+							<p class="font-bold text-lg">{$t('forms.uploadTicketPhoto')}</p>
+							<p class="text-xs text-gray-400 mt-1">{$t('forms.optional')}</p>
 						</div>
 					{/if}
 					{#if error}
@@ -341,7 +345,7 @@
 						>
 							<AlertCircle class="w-5 h-5 flex-shrink-0 mt-0.5" />
 							<div>
-								<p class="font-bold">Analysis Issue</p>
+								<p class="font-bold">{$t('forms.analysisIssue')}</p>
 								<p>{error}</p>
 							</div>
 						</div>
@@ -359,10 +363,13 @@
 						<h3
 							class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"
 						>
-							<TicketIcon class="w-4 h-4" /> Event Details
+							<TicketIcon class="w-4 h-4" />
+							{$t('forms.eventDetails')}
 						</h3>
 						<div>
-							<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Show Title</label>
+							<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+								>{$t('forms.showTitle')}</label
+							>
 							<div class="relative group">
 								<div
 									class="absolute left-3 top-1/2 -translate-y-1/2 text-red-400 z-10 pointer-events-none"
@@ -373,7 +380,7 @@
 									bind:value={formData.event.title}
 									class="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-bold text-gray-900 transition-all appearance-none cursor-pointer"
 								>
-									<option value="" disabled>Select Setlist</option>
+									<option value="" disabled>{$t('forms.selectSetlist')}</option>
 									{#each SHOW_OPTIONS as show}<option value={show}>{show}</option>{/each}
 								</select>
 								<ChevronDown
@@ -383,7 +390,9 @@
 						</div>
 						<div class="grid grid-cols-2 gap-4">
 							<div>
-								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Date</label>
+								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									>{$t('forms.date')}</label
+								>
 								<div class="relative">
 									<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 										<Calendar class="w-4 h-4" />
@@ -396,7 +405,9 @@
 								</div>
 							</div>
 							<div>
-								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Show Time</label>
+								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									>{$t('forms.showTime')}</label
+								>
 								<div class="relative">
 									<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 										<Clock class="w-4 h-4" />
@@ -416,11 +427,14 @@
 						<h3
 							class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"
 						>
-							<MapPin class="w-4 h-4" /> Seat & Payment
+							<MapPin class="w-4 h-4" />
+							{$t('forms.seatPayment')}
 						</h3>
 						<div class="grid grid-cols-3 gap-4">
 							<div>
-								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Row</label>
+								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									>{$t('forms.row')}</label
+								>
 								<div class="relative">
 									<select
 										bind:value={formData.seat.section}
@@ -435,7 +449,9 @@
 								</div>
 							</div>
 							<div class="col-span-2">
-								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Seat Number</label>
+								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									>{$t('forms.seatNumber')}</label
+								>
 								<input
 									type="number"
 									bind:value={formData.seat.number}
@@ -446,7 +462,9 @@
 						</div>
 						<div class="grid grid-cols-2 gap-4">
 							<div>
-								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Price (IDR)</label>
+								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									>{$t('forms.price')}</label
+								>
 								<div class="relative">
 									<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 										<DollarSign class="w-4 h-4" />
@@ -460,7 +478,9 @@
 								</div>
 							</div>
 							<div>
-								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Ticket ID</label>
+								<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+									>{$t('forms.ticketId')}</label
+								>
 								<div class="relative">
 									<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 										<Hash class="w-4 h-4" />
@@ -469,7 +489,7 @@
 										type="text"
 										bind:value={formData.ticket_id}
 										class="w-full pl-9 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900"
-										placeholder="Optional"
+										placeholder={$t('forms.optional')}
 									/>
 								</div>
 							</div>
@@ -482,7 +502,8 @@
 							<h3
 								class="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2"
 							>
-								<Camera class="w-4 h-4" /> 2-Shot Details
+								<Camera class="w-4 h-4" />
+								{$t('forms.twoShotDetails')}
 							</h3>
 							<button
 								type="button"
@@ -499,7 +520,8 @@
 								class="bg-red-50/50 rounded-2xl p-4 border border-red-100 space-y-4 animate-fade-in"
 							>
 								<div>
-									<label class="block text-xs font-bold text-gray-500 mb-2 ml-1">2-Shot Photo</label
+									<label class="block text-xs font-bold text-gray-500 mb-2 ml-1"
+										>{$t('forms.twoShotPhoto')}</label
 									>
 									<div
 										on:click={() => twoShotInputRef.click()}
@@ -510,12 +532,12 @@
 											<div
 												class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs"
 											>
-												Change Photo
+												{$t('forms.changePhoto')}
 											</div>
 										{:else}
 											<div class="flex flex-col items-center text-red-400">
 												<Camera class="w-6 h-6 mb-1" />
-												<span class="text-xs font-medium">Upload Photo</span>
+												<span class="text-xs font-medium">{$t('forms.uploadPhoto')}</span>
 											</div>
 										{/if}
 									</div>
@@ -523,7 +545,7 @@
 
 								<div>
 									<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
-										>Member Name</label
+										>{$t('forms.memberName')}</label
 									>
 									<div class="relative">
 										<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -533,14 +555,16 @@
 											type="text"
 											bind:value={formData.two_shot.member_name}
 											class="w-full pl-9 pr-3 py-3 bg-white border border-gray-200 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900"
-											placeholder="e.g. Oline Manuel"
+											placeholder={$t('forms.memberNamePlaceholder')}
 										/>
 									</div>
 								</div>
 
 								<div class="grid grid-cols-2 gap-4">
 									<div>
-										<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Type</label>
+										<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+											>{$t('forms.type')}</label
+										>
 										<div class="relative">
 											<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 												<Sparkles class="w-4 h-4" />
@@ -559,7 +583,9 @@
 									</div>
 
 									<div>
-										<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Price</label>
+										<label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1"
+											>{$t('forms.price')}</label
+										>
 										<div class="relative">
 											<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 												<DollarSign class="w-4 h-4" />
@@ -581,12 +607,13 @@
 						<h3
 							class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"
 						>
-							<NotebookPen class="w-4 h-4" /> Experience Log
+							<NotebookPen class="w-4 h-4" />
+							{$t('forms.experienceLog')}
 						</h3>
 						<textarea
 							bind:value={formData.notes}
 							class="w-full p-4 bg-yellow-50/50 border border-yellow-200 rounded-xl focus:ring-2 focus:ring-yellow-400 outline-none text-sm text-gray-900 placeholder-gray-400 min-h-[120px]"
-							placeholder="How was the show? Did you get a wink? Write your memories here..."
+							placeholder={$t('forms.notesPlaceholder')}
 						></textarea>
 					</div>
 
@@ -600,7 +627,7 @@
 						{:else}
 							<CheckCircle class="w-6 h-6" />
 						{/if}
-						Save Ticket
+						{$t('forms.saveTicket')}
 					</button>
 				</form>
 			</div>
