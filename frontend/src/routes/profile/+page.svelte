@@ -455,27 +455,6 @@
 			</div>
 		</div>
 		<div class="flex items-center gap-3">
-			{#if loading}
-				<div
-					class="hidden md:flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm"
-				>
-					<div class="w-2 h-2 rounded-full bg-gray-200 animate-pulse"></div>
-					<div class="h-3 w-16 bg-gray-200 rounded animate-pulse"></div>
-				</div>
-			{:else}
-				<div
-					class="hidden md:flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm"
-				>
-					<span
-						class="w-2 h-2 rounded-full animate-pulse {profile?.ofcStatus === 'Active'
-							? 'bg-green-500'
-							: 'bg-gray-400'}"
-					></span>
-					<span class="text-xs font-bold text-gray-600">OFC {profile?.ofcStatus || 'Inactive'}</span
-					>
-				</div>
-			{/if}
-
 			<!-- Logout Button -->
 			<button
 				on:click={logout}
@@ -494,7 +473,10 @@
 			<div class="relative group perspective-1000">
 				<!-- Card Container -->
 				<div
-					class="relative h-56 w-full rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]"
+					class="relative h-56 w-full rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-[1.02] {profile?.ofcStatus ===
+					'Active'
+						? 'ring-2 ring-green-400/50 ring-offset-2 ring-offset-white'
+						: ''}"
 				>
 					<!-- Background -->
 					<div class="absolute inset-0 bg-gradient-to-br from-gray-900 via-red-900 to-black"></div>
@@ -506,6 +488,13 @@
 					<div
 						class="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
 					></div>
+
+					<!-- Active OFC Glow Effect -->
+					{#if profile?.ofcStatus === 'Active'}
+						<div
+							class="absolute -top-2 -right-2 w-20 h-20 bg-green-400 rounded-full blur-2xl opacity-30 animate-pulse"
+						></div>
+					{/if}
 
 					<!-- Red Accent Curves -->
 					<div
@@ -534,15 +523,43 @@
 									</h3>
 								</div>
 							</div>
-							<div class="text-right">
-								<p class="text-[10px] text-gray-400 font-bold">MEMBER ID</p>
-								<p class="font-mono font-bold text-shadow">
-									{#if loading}
-										<span class="inline-block w-20 h-4 bg-white/20 rounded animate-pulse"></span>
-									{:else}
-										{profile?.memberId || 'N/A'}
-									{/if}
-								</p>
+							<div class="flex flex-col items-end gap-1">
+								<!-- Member ID -->
+								<div class="text-right">
+									<p class="text-[10px] text-gray-400 font-bold">MEMBER ID</p>
+									<p class="font-mono font-bold text-shadow">
+										{#if loading}
+											<span class="inline-block w-20 h-4 bg-white/20 rounded animate-pulse"></span>
+										{:else}
+											{profile?.memberId || 'N/A'}
+										{/if}
+									</p>
+								</div>
+								<!-- OFC Status Badge -->
+								{#if loading}
+									<div class="h-5 w-16 bg-white/20 rounded-full animate-pulse mt-1"></div>
+								{:else}
+									<div
+										class="flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md mt-1 {profile?.ofcStatus ===
+										'Active'
+											? 'bg-green-500/20 border border-green-400/30'
+											: 'bg-white/10 border border-white/20'}"
+									>
+										<span
+											class="w-1.5 h-1.5 rounded-full {profile?.ofcStatus === 'Active'
+												? 'bg-green-400 animate-pulse shadow-[0_0_6px_rgba(74,222,128,0.6)]'
+												: 'bg-gray-400'}"
+										></span>
+										<span
+											class="text-[9px] font-bold uppercase tracking-wider {profile?.ofcStatus ===
+											'Active'
+												? 'text-green-300'
+												: 'text-gray-400'}"
+										>
+											OFC {profile?.ofcStatus || 'Inactive'}
+										</span>
+									</div>
+								{/if}
 							</div>
 						</div>
 
