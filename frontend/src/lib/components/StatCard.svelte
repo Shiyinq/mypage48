@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ComponentType } from 'svelte';
+	import { Eye, EyeOff } from 'lucide-svelte';
 
 	export let title: string;
 	export let value: string | number;
@@ -8,6 +9,14 @@
 	export let colorClass: string = 'bg-gray-500';
 	export let image: string | undefined = undefined;
 	export let loading: boolean = false;
+	export let hideable: boolean = false;
+
+	// When hideable is true, start with value hidden
+	let isHidden = hideable;
+
+	const toggleVisibility = () => {
+		isHidden = !isHidden;
+	};
 
 	$: isLongText = typeof value === 'string' && value.length > 13;
 	// Simple replace for text color
@@ -33,9 +42,22 @@
 					<svelte:component this={icon} class={`w-5 h-5 ${textClass}`} />
 				</div>
 			{/if}
-			<p class="text-themed-secondary text-xs font-bold uppercase tracking-wider">
+			<p class="text-themed-secondary text-xs font-bold uppercase tracking-wider flex-1">
 				{title}
 			</p>
+			{#if hideable}
+				<button
+					on:click={toggleVisibility}
+					class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
+					title={isHidden ? 'Show value' : 'Hide value'}
+				>
+					{#if isHidden}
+						<EyeOff class="w-4 h-4" />
+					{:else}
+						<Eye class="w-4 h-4" />
+					{/if}
+				</button>
+			{/if}
 		</div>
 
 		{#if loading}
@@ -47,7 +69,7 @@
 		{:else}
 			<div class="flex-1 flex flex-col justify-center">
 				<h3
-					class={`font-extrabold text-themed ${isLongText ? 'text-lg leading-tight line-clamp-2' : 'text-3xl'}`}
+					class={`font-extrabold text-themed ${isLongText ? 'text-lg leading-tight line-clamp-2' : 'text-3xl'} ${hideable && isHidden ? 'blur-md select-none' : ''}`}
 				>
 					{value}
 				</h3>
