@@ -451,6 +451,7 @@
 					icon={DollarSign}
 					colorClass="bg-emerald-500/10 text-emerald-500"
 					loading={isLoading}
+					hideable={true}
 				/>
 				<StatCard
 					title={$t('dashboard.theater.topRow')}
@@ -569,6 +570,7 @@
 					icon={Wallet}
 					colorClass="bg-emerald-500/10 text-emerald-500"
 					loading={isLoading}
+					hideable={true}
 				/>
 				<StatCard
 					title={$t('dashboard.twoShot.members')}
