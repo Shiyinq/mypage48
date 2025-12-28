@@ -271,9 +271,9 @@
 	</div>
 
 	<!-- Grid Layout -->
-	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 		{#if isLoading}
-			{#each Array(8) as _}
+			{#each Array(9) as _}
 				<div
 					class="relative border-2 border-transparent rounded-3xl p-5 flex items-center gap-5 bg-white dark:bg-zinc-900 shadow-sm"
 				>

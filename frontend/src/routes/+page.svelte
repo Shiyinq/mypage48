@@ -420,223 +420,242 @@
 		{/if}
 	</div>
 
-	<!-- THEATER STATS -->
-	<div class="glass-panel p-6 rounded-3xl">
-		<div class="mb-6">
-			<h3 class="text-xl font-bold text-themed">
-				{$t('dashboard.theater.title')}
-			</h3>
-			<p class="text-xs text-gray-400">{$t('dashboard.theater.subtitle')}</p>
-		</div>
+	<!-- THEATER & 2-SHOT STATS (2 COLUMNS) -->
+	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+		<!-- THEATER STATS -->
+		<div class="glass-panel p-6 rounded-3xl">
+			<div class="mb-6">
+				<h3 class="text-xl font-bold text-themed">
+					{$t('dashboard.theater.title')}
+				</h3>
+				<p class="text-xs text-gray-400">{$t('dashboard.theater.subtitle')}</p>
+			</div>
 
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-			<StatCard
-				title={$t('dashboard.theater.shows')}
-				value={totalVisits}
-				sub={$t('dashboard.theater.inYear', { year: selectedYear })}
-				icon={TicketIcon}
-				colorClass="bg-red-600/10 text-red-600"
-				loading={isLoading}
-			/>
-			<StatCard
-				title={$t('dashboard.theater.spending')}
-				value={new Intl.NumberFormat('id-ID', {
-					style: 'currency',
-					currency: 'IDR',
-					maximumFractionDigits: 0
-				}).format(totalSpent)}
-				sub={$t('dashboard.theater.totalExpenses')}
-				icon={DollarSign}
-				colorClass="bg-emerald-500/10 text-emerald-500"
-				loading={isLoading}
-			/>
-			<StatCard
-				title={$t('dashboard.theater.topRow')}
-				value={mostFrequentRow}
-				sub={$t('dashboard.theater.mostFrequentSeat')}
-				icon={Armchair}
-				colorClass="bg-amber-500/10 text-amber-500"
-				loading={isLoading}
-			/>
+			<div class="grid grid-cols-2 gap-4">
+				<StatCard
+					title={$t('dashboard.theater.shows')}
+					value={totalVisits}
+					sub={$t('dashboard.theater.inYear', { year: selectedYear })}
+					icon={TicketIcon}
+					colorClass="bg-red-600/10 text-red-600"
+					loading={isLoading}
+				/>
+				<StatCard
+					title={$t('dashboard.theater.spending')}
+					value={new Intl.NumberFormat('id-ID', {
+						style: 'currency',
+						currency: 'IDR',
+						maximumFractionDigits: 0
+					}).format(totalSpent)}
+					sub={$t('dashboard.theater.totalExpenses')}
+					icon={DollarSign}
+					colorClass="bg-emerald-500/10 text-emerald-500"
+					loading={isLoading}
+				/>
+				<StatCard
+					title={$t('dashboard.theater.topRow')}
+					value={mostFrequentRow}
+					sub={$t('dashboard.theater.mostFrequentSeat')}
+					icon={Armchair}
+					colorClass="bg-amber-500/10 text-amber-500"
+					loading={isLoading}
+				/>
 
-			<div
-				class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-purple-50/50 dark:bg-transparent border-purple-100 dark:border-purple-500/20"
-			>
-				<div class="p-5 pb-0 flex justify-between items-start">
-					<div class="flex items-center gap-2 text-purple-500">
-						<div class="p-1.5 bg-purple-100 dark:bg-purple-800/40 rounded-lg">
-							<Star class="w-4 h-4 fill-current" />
+				<div
+					class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-purple-50/50 dark:bg-transparent border-purple-100 dark:border-purple-500/20"
+				>
+					<div class="p-5 pb-0 flex justify-between items-start">
+						<div class="flex items-center gap-2 text-purple-500">
+							<div class="p-1.5 bg-purple-100 dark:bg-purple-800/40 rounded-lg">
+								<Star class="w-4 h-4 fill-current" />
+							</div>
+							<span class="font-bold text-xs tracking-wider text-purple-500 dark:text-purple-400"
+								>{$t('dashboard.theater.topShow')}</span
+							>
 						</div>
-						<span class="font-bold text-xs tracking-wider text-purple-500 dark:text-purple-400"
-							>{$t('dashboard.theater.topShow')}</span
-						>
+						<Crown class="w-5 h-5 text-yellow-400 fill-current" />
 					</div>
-					<Crown class="w-5 h-5 text-yellow-400 fill-current" />
-				</div>
-				<div class="p-5 flex items-center gap-4">
+					<div class="p-5 flex items-center gap-4">
+						{#if isLoading}
+							<!-- Skeleton Loading -->
+							<div
+								class="w-14 h-14 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse flex-shrink-0"
+							></div>
+							<div class="min-w-0 flex-1">
+								<div class="h-2 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2"></div>
+								<div class="h-5 w-28 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-1"></div>
+								<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
+							</div>
+						{:else}
+							<div
+								class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-indigo-400 via-purple-500 to-fuchsia-500 flex-shrink-0"
+							>
+								<div
+									class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
+								>
+									{#if topShowStats.image}
+										<img
+											src={topShowStats.image}
+											alt={topShowStats.title}
+											class="w-full h-full object-cover"
+										/>
+									{:else}
+										<Star class="w-6 h-6 text-purple-500 fill-purple-100" />
+									{/if}
+								</div>
+							</div>
+							<div class="min-w-0">
+								<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+									{$t('dashboard.theater.mostWatched')}
+								</p>
+								<h3
+									class={`font-black text-themed leading-none mb-0.5 truncate ${topShowStats.title.length > 15 ? 'text-sm' : 'text-lg'}`}
+									title={topShowStats.title}
+								>
+									{topShowStats.title}
+								</h3>
+								<p class="text-sm font-bold text-purple-500">
+									{topShowStats.count}
+									{$t('shows.unit')}
+								</p>
+							</div>
+						{/if}
+					</div>
 					{#if isLoading}
-						<!-- Skeleton Loading -->
 						<div
-							class="w-14 h-14 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse flex-shrink-0"
-						></div>
-						<div class="min-w-0 flex-1">
-							<div class="h-2 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2"></div>
-							<div class="h-5 w-28 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-1"></div>
-							<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
+							class="mt-auto border-t border-purple-100 dark:border-purple-800/30 p-3 w-full flex justify-center"
+						>
+							<div class="h-4 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
 						</div>
 					{:else}
-						<div
-							class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-indigo-400 via-purple-500 to-fuchsia-500 flex-shrink-0"
+						<button
+							on:click={() => goto('/shows')}
+							class="mt-auto border-t border-purple-100 dark:border-purple-800/30 p-3 w-full text-center text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors flex items-center justify-center gap-1 relative z-20 cursor-pointer"
 						>
-							<div
-								class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
-							>
-								{#if topShowStats.image}
-									<img
-										src={topShowStats.image}
-										alt={topShowStats.title}
-										class="w-full h-full object-cover"
-									/>
-								{:else}
-									<Star class="w-6 h-6 text-purple-500 fill-purple-100" />
-								{/if}
-							</div>
-						</div>
-						<div class="min-w-0">
-							<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-								{$t('dashboard.theater.mostWatched')}
-							</p>
-							<h3
-								class={`font-black text-themed leading-none mb-0.5 truncate ${topShowStats.title.length > 15 ? 'text-sm' : 'text-lg'}`}
-								title={topShowStats.title}
-							>
-								{topShowStats.title}
-							</h3>
-							<p class="text-sm font-bold text-purple-500">
-								{topShowStats.count}
-								{$t('shows.unit')}
-							</p>
-						</div>
+							{$t('common.viewDetails')}
+							<ChevronRight class="w-3 h-3" />
+						</button>
 					{/if}
 				</div>
-				<button
-					on:click={() => goto('/shows')}
-					class="mt-auto border-t border-purple-100 dark:border-purple-800/30 p-3 w-full text-center text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors flex items-center justify-center gap-1 relative z-20 cursor-pointer"
-				>
-					{$t('common.viewDetails')}
-					<ChevronRight class="w-3 h-3" />
-				</button>
 			</div>
 		</div>
-	</div>
 
-	<!-- 2-SHOT STATS SECTION -->
-	<div class="glass-panel p-6 rounded-3xl">
-		<div class="mb-6">
-			<h3 class="text-xl font-bold text-themed">
-				{$t('dashboard.twoShot.title')}
-			</h3>
-			<p class="text-xs text-gray-400">{$t('dashboard.twoShot.subtitle')}</p>
-		</div>
+		<!-- 2-SHOT STATS SECTION -->
+		<div class="glass-panel p-6 rounded-3xl">
+			<div class="mb-6">
+				<h3 class="text-xl font-bold text-themed">
+					{$t('dashboard.twoShot.title')}
+				</h3>
+				<p class="text-xs text-gray-400">{$t('dashboard.twoShot.subtitle')}</p>
+			</div>
 
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-			<StatCard
-				title="2Shot"
-				value={twoShotStats.totalCount}
-				sub={$t('dashboard.twoShot.collected')}
-				icon={Camera}
-				colorClass="bg-pink-500/10 text-pink-500"
-				loading={isLoading}
-			/>
-			<StatCard
-				title={$t('dashboard.twoShot.spending')}
-				value={new Intl.NumberFormat('id-ID', {
-					style: 'currency',
-					currency: 'IDR',
-					maximumFractionDigits: 0
-				}).format(twoShotStats.totalSpend)}
-				sub={$t('dashboard.twoShot.totalExpenses')}
-				icon={Wallet}
-				colorClass="bg-emerald-500/10 text-emerald-500"
-				loading={isLoading}
-			/>
-			<StatCard
-				title={$t('dashboard.twoShot.members')}
-				value={twoShotStats.uniqueCount}
-				sub={$t('dashboard.twoShot.uniqueIdols')}
-				icon={Users}
-				colorClass="bg-purple-500/10 text-purple-500"
-				loading={isLoading}
-			/>
+			<div class="grid grid-cols-2 gap-4">
+				<StatCard
+					title="2Shot"
+					value={twoShotStats.totalCount}
+					sub={$t('dashboard.twoShot.collected')}
+					icon={Camera}
+					colorClass="bg-pink-500/10 text-pink-500"
+					loading={isLoading}
+				/>
+				<StatCard
+					title={$t('dashboard.twoShot.spending')}
+					value={new Intl.NumberFormat('id-ID', {
+						style: 'currency',
+						currency: 'IDR',
+						maximumFractionDigits: 0
+					}).format(twoShotStats.totalSpend)}
+					sub={$t('dashboard.twoShot.totalExpenses')}
+					icon={Wallet}
+					colorClass="bg-emerald-500/10 text-emerald-500"
+					loading={isLoading}
+				/>
+				<StatCard
+					title={$t('dashboard.twoShot.members')}
+					value={twoShotStats.uniqueCount}
+					sub={$t('dashboard.twoShot.uniqueIdols')}
+					icon={Users}
+					colorClass="bg-purple-500/10 text-purple-500"
+					loading={isLoading}
+				/>
 
-			<!-- Top 2-Shot Card -->
-			<div
-				class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-pink-50/50 dark:bg-transparent border-pink-100 dark:border-pink-500/20"
-			>
-				<div class="p-5 pb-0 flex justify-between items-start">
-					<div class="flex items-center gap-2 text-pink-500">
-						<div class="flex items-center gap-2 mb-3">
-							<Heart class="w-4 h-4 text-pink-500 fill-pink-500" />
-							<span class="text-[10px] font-black tracking-widest text-pink-500 uppercase"
-								>{$t('dashboard.twoShot.topTwoShot')}</span
-							>
-						</div>
-					</div>
-					<Crown class="w-5 h-5 text-yellow-400 fill-current" />
-				</div>
-				<div class="p-5 flex items-center gap-4">
-					{#if isLoading}
-						<!-- Skeleton Loading -->
-						<div
-							class="w-14 h-14 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse flex-shrink-0"
-						></div>
-						<div class="min-w-0 flex-1">
-							<div class="h-2 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2"></div>
-							<div class="h-5 w-28 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-1"></div>
-							<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-						</div>
-					{:else}
-						<div
-							class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-pink-400 via-rose-500 to-red-500 flex-shrink-0"
-						>
-							<div
-								class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
-							>
-								{#if twoShotStats?.kamiOshi?.image}
-									<img
-										src={twoShotStats.kamiOshi.image}
-										alt={twoShotStats.kamiOshi.name}
-										class="w-full h-full object-cover"
-									/>
-								{:else}
-									<User class="w-6 h-6 text-pink-500 fill-pink-100" />
-								{/if}
+				<!-- Top 2-Shot Card -->
+				<div
+					class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-pink-50/50 dark:bg-transparent border-pink-100 dark:border-pink-500/20"
+				>
+					<div class="p-5 pb-0 flex justify-between items-start">
+						<div class="flex items-center gap-2 text-pink-500">
+							<div class="flex items-center gap-2 mb-3">
+								<Heart class="w-4 h-4 text-pink-500 fill-pink-500" />
+								<span class="text-[10px] font-black tracking-widest text-pink-500 uppercase"
+									>{$t('dashboard.twoShot.topTwoShot')}</span
+								>
 							</div>
 						</div>
-						<div class="min-w-0">
-							<p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-								{$t('dashboard.twoShot.kamiOshi')}
-							</p>
-							<h3
-								class={`font-black text-themed leading-none mb-0.5 truncate ${(twoShotStats?.kamiOshi?.name?.length ?? 0) > 15 ? 'text-sm' : 'text-lg'}`}
-								title={twoShotStats?.kamiOshi?.name || '-'}
+						<Crown class="w-5 h-5 text-yellow-400 fill-current" />
+					</div>
+					<div class="p-5 flex items-center gap-4">
+						{#if isLoading}
+							<!-- Skeleton Loading -->
+							<div
+								class="w-14 h-14 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse flex-shrink-0"
+							></div>
+							<div class="min-w-0 flex-1">
+								<div class="h-2 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2"></div>
+								<div class="h-5 w-28 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-1"></div>
+								<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
+							</div>
+						{:else}
+							<div
+								class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-pink-400 via-rose-500 to-red-500 flex-shrink-0"
 							>
-								{twoShotStats?.kamiOshi?.name || '-'}
-							</h3>
-							<p class="text-sm font-bold text-pink-500">
-								{twoShotStats?.kamiOshi?.count || 0}
-								{$t('dashboard.twoShot.photos')}
-							</p>
+								<div
+									class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
+								>
+									{#if twoShotStats?.kamiOshi?.image}
+										<img
+											src={twoShotStats.kamiOshi.image}
+											alt={twoShotStats.kamiOshi.name}
+											class="w-full h-full object-cover"
+										/>
+									{:else}
+										<User class="w-6 h-6 text-pink-500 fill-pink-100" />
+									{/if}
+								</div>
+							</div>
+							<div class="min-w-0">
+								<p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+									{$t('dashboard.twoShot.kamiOshi')}
+								</p>
+								<h3
+									class={`font-black text-themed leading-none mb-0.5 truncate ${(twoShotStats?.kamiOshi?.name?.length ?? 0) > 15 ? 'text-sm' : 'text-lg'}`}
+									title={twoShotStats?.kamiOshi?.name || '-'}
+								>
+									{twoShotStats?.kamiOshi?.name || '-'}
+								</h3>
+								<p class="text-sm font-bold text-pink-500">
+									{twoShotStats?.kamiOshi?.count || 0}
+									{$t('dashboard.twoShot.photos')}
+								</p>
+							</div>
+						{/if}
+					</div>
+					{#if isLoading}
+						<div
+							class="mt-auto border-t border-pink-100 dark:border-pink-800/30 p-3 w-full flex justify-center"
+						>
+							<div class="h-4 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
 						</div>
+					{:else}
+						<button
+							on:click={() => goto('/top-2shot')}
+							class="mt-auto border-t border-pink-100 dark:border-pink-800/30 p-3 w-full text-center text-xs font-bold text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+						>
+							{$t('common.viewDetails')}
+							<ChevronRight class="w-3 h-3" />
+						</button>
 					{/if}
 				</div>
-				<button
-					on:click={() => goto('/top-2shot')}
-					class="mt-auto border-t border-pink-100 dark:border-pink-800/30 p-3 w-full text-center text-xs font-bold text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors flex items-center justify-center gap-1 cursor-pointer"
-				>
-					{$t('common.viewDetails')}
-					<ChevronRight class="w-3 h-3" />
-				</button>
 			</div>
 		</div>
 	</div>
