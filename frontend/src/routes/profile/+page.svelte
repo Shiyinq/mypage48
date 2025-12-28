@@ -588,52 +588,51 @@
 
 			<!-- LEVEL PROGRESS -->
 			<div class="glass-panel p-6 rounded-3xl relative">
-				{#if loading}
-					<div class="flex justify-between items-end mb-2">
-						<div>
-							<div class="h-3 w-20 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2"></div>
-							<div class="h-8 w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
+				<div class="flex justify-between items-end mb-2">
+					<div>
+						<div class="flex items-center gap-1.5 mb-0.5">
+							<p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">
+								{$t('profile.level.currentRank')}
+							</p>
+							<div class="relative group">
+								<Info
+									class="w-3.5 h-3.5 text-gray-300 cursor-help hover:text-red-400 transition-colors"
+								/>
+								<div
+									class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2.5 py-1 bg-gray-800 text-white text-[10px] font-medium rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20"
+								>
+									1 XP = 1 Show
+									<div
+										class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-4 border-transparent border-t-gray-800"
+									></div>
+								</div>
+							</div>
 						</div>
-						<div class="text-right">
+						{#if loading}
+							<div class="h-8 w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mt-1"></div>
+						{:else}
+							<h3 class="text-2xl font-black idol-text-gradient">{level.current}</h3>
+						{/if}
+					</div>
+					<div class="text-right">
+						{#if loading}
 							<div
 								class="h-3 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse ml-auto"
 							></div>
-						</div>
+						{:else}
+							<p class="text-xs font-bold text-gray-500 dark:text-gray-400">
+								<span class="text-red-600">{level.xp}</span> / {level.nextLevelXp} XP
+							</p>
+						{/if}
 					</div>
+				</div>
+
+				{#if loading}
 					<div
 						class="h-3 w-full bg-gray-200 dark:bg-zinc-700 rounded-full animate-pulse mb-4"
 					></div>
 					<div class="h-9 w-full bg-gray-200 dark:bg-zinc-700 rounded-lg animate-pulse"></div>
 				{:else}
-					<div class="flex justify-between items-end mb-2">
-						<div>
-							<div class="flex items-center gap-1.5 mb-0.5">
-								<p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">
-									{$t('profile.level.currentRank')}
-								</p>
-								<div class="relative group">
-									<Info
-										class="w-3.5 h-3.5 text-gray-300 cursor-help hover:text-red-400 transition-colors"
-									/>
-									<div
-										class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2.5 py-1 bg-gray-800 text-white text-[10px] font-medium rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20"
-									>
-										1 XP = 1 Show
-										<div
-											class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-4 border-transparent border-t-gray-800"
-										></div>
-									</div>
-								</div>
-							</div>
-							<h3 class="text-2xl font-black idol-text-gradient">{level.current}</h3>
-						</div>
-						<div class="text-right">
-							<p class="text-xs font-bold text-gray-500 dark:text-gray-400">
-								<span class="text-red-600">{level.xp}</span> / {level.nextLevelXp} XP
-							</p>
-						</div>
-					</div>
-
 					<!-- Progress Bar -->
 					<div
 						class="h-3 w-full bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden shadow-inner mb-4"
