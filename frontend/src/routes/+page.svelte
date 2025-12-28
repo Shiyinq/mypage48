@@ -431,7 +431,7 @@
 				<p class="text-xs text-gray-400">{$t('dashboard.theater.subtitle')}</p>
 			</div>
 
-			<div class="grid grid-cols-2 gap-4">
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<StatCard
 					title={$t('dashboard.theater.shows')}
 					value={totalVisits}
@@ -549,7 +549,7 @@
 				<p class="text-xs text-gray-400">{$t('dashboard.twoShot.subtitle')}</p>
 			</div>
 
-			<div class="grid grid-cols-2 gap-4">
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<StatCard
 					title="2Shot"
 					value={twoShotStats.totalCount}
@@ -696,9 +696,9 @@
 			</div>
 		</div>
 
-		<div class="w-full overflow-hidden">
+		<div class="w-full overflow-x-auto sm:overflow-hidden">
 			<div class="w-full mx-auto px-2">
-				<div class="w-full">
+				<div class="w-full min-w-[700px]">
 					<div
 						class="w-3/4 mx-auto h-4 bg-gradient-to-b from-gray-200 dark:from-gray-700 to-white dark:to-gray-800 rounded-t-2xl mb-8 relative shadow-sm border-t border-x border-gray-300 dark:border-gray-600"
 					>
