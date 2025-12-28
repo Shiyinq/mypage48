@@ -775,6 +775,16 @@
 										<Info class="w-8 h-8 text-white drop-shadow-md" />
 									</div>
 								</button>
+								<div
+									class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
+								>
+									<div
+										class="bg-pink-500 text-white pl-2 pr-3 py-1 rounded-full text-[10px] font-bold shadow-lg flex items-center gap-1 whitespace-nowrap border-2 border-white dark:border-gray-800"
+									>
+										<Heart class="w-3 h-3 fill-current animate-pulse" />
+										<span>My Oshi</span>
+									</div>
+								</div>
 							</div>
 
 							<!-- Info -->
