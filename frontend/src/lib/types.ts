@@ -121,5 +121,6 @@ export interface ApiError {
 }
 
 export interface APIKeysResponse {
-    api_key: string;
+    detail?: string;
+    apiKey: string;
 }

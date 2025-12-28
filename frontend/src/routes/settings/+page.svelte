@@ -71,7 +71,7 @@
 		generatingKey = true;
 		try {
 			const res = await apiKeys.create();
-			newApiKey = res.api_key;
+			newApiKey = res.apiKey;
 			showApiKeyModal = true;
 			showToast($t('settings.developer.generated'), 'success');
 		} catch (e) {
