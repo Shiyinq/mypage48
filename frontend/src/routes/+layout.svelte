@@ -1,6 +1,7 @@
 <script>
 	import '../app.css';
-	import { isAuthenticated, toast, tickets, userProfile } from '$lib/stores';
+	import { isAuthenticated, toast, tickets, userProfile, isInitialDataLoaded } from '$lib/stores';
+	import { locale } from '$lib/i18n';
 	import { initTheme } from '$lib/stores/theme';
 	import { theater } from '$lib/apis/theater';
 	import { auth } from '$lib/apis/auth';
@@ -11,6 +12,13 @@
 	import Header from '$lib/components/Header.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import { Check } from 'lucide-svelte';
+
+	export let data;
+
+	// Hydrate locale from server cookie if available (SSR)
+	if (data?.locale) {
+		locale.set(data.locale);
+	}
 
 	// Flag to prevent duplicate fetches
 	let hasFetchedInitialData = false;
@@ -34,6 +42,14 @@
 	// This handles the case when user logs in and layout is already mounted
 	$: if (mounted && $isAuthenticated && !hasFetchedInitialData) {
 		fetchInitialDataIfNeeded();
+	}
+
+	// Reset state when user logs out
+	$: if (!$isAuthenticated) {
+		hasFetchedInitialData = false;
+		isInitialDataLoaded.set(false);
+		tickets.set([]);
+		userProfile.set(null);
 	}
 
 	// Fetch initial data only once if authenticated and data not in store
@@ -61,6 +77,8 @@
 			await Promise.all(promises);
 		} catch (err) {
 			console.error('Failed to load initial data:', err);
+		} finally {
+			isInitialDataLoaded.set(true);
 		}
 	}
 

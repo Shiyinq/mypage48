@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tickets } from '$lib/stores';
+	import { tickets, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import StatCard from '$lib/components/StatCard.svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -26,8 +26,20 @@
 		TrendingUp
 	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { onMount } from 'svelte';
 
 	const { t } = useTranslation();
+
+	let mounted = false;
+
+	onMount(() => {
+		mounted = true;
+	});
+
+	// Loading state - show skeleton when:
+	// 1. Not mounted yet (SSR or initial client render)
+	// 2. Authenticated but data is not loaded yet
+	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
 
 	// Constants
 	const SHOW_IMAGES = [
@@ -424,6 +436,7 @@
 				sub={$t('dashboard.theater.inYear', { year: selectedYear })}
 				icon={TicketIcon}
 				colorClass="bg-red-600/10 text-red-600"
+				loading={isLoading}
 			/>
 			<StatCard
 				title={$t('dashboard.theater.spending')}
@@ -435,6 +448,7 @@
 				sub={$t('dashboard.theater.totalExpenses')}
 				icon={DollarSign}
 				colorClass="bg-emerald-500/10 text-emerald-500"
+				loading={isLoading}
 			/>
 			<StatCard
 				title={$t('dashboard.theater.topRow')}
@@ -442,6 +456,7 @@
 				sub={$t('dashboard.theater.mostFrequentSeat')}
 				icon={Armchair}
 				colorClass="bg-amber-500/10 text-amber-500"
+				loading={isLoading}
 			/>
 
 			<div
@@ -459,38 +474,50 @@
 					<Crown class="w-5 h-5 text-yellow-400 fill-current" />
 				</div>
 				<div class="p-5 flex items-center gap-4">
-					<div
-						class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-indigo-400 via-purple-500 to-fuchsia-500 flex-shrink-0"
-					>
+					{#if isLoading}
+						<!-- Skeleton Loading -->
 						<div
-							class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
-						>
-							{#if topShowStats.image}
-								<img
-									src={topShowStats.image}
-									alt={topShowStats.title}
-									class="w-full h-full object-cover"
-								/>
-							{:else}
-								<Star class="w-6 h-6 text-purple-500 fill-purple-100" />
-							{/if}
+							class="w-14 h-14 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse flex-shrink-0"
+						></div>
+						<div class="min-w-0 flex-1">
+							<div class="h-2 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2"></div>
+							<div class="h-5 w-28 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-1"></div>
+							<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
 						</div>
-					</div>
-					<div class="min-w-0">
-						<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-							{$t('dashboard.theater.mostWatched')}
-						</p>
-						<h3
-							class={`font-black text-themed leading-none mb-0.5 truncate ${topShowStats.title.length > 15 ? 'text-sm' : 'text-lg'}`}
-							title={topShowStats.title}
+					{:else}
+						<div
+							class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-indigo-400 via-purple-500 to-fuchsia-500 flex-shrink-0"
 						>
-							{topShowStats.title}
-						</h3>
-						<p class="text-sm font-bold text-purple-500">
-							{topShowStats.count}
-							{$t('shows.unit')}
-						</p>
-					</div>
+							<div
+								class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
+							>
+								{#if topShowStats.image}
+									<img
+										src={topShowStats.image}
+										alt={topShowStats.title}
+										class="w-full h-full object-cover"
+									/>
+								{:else}
+									<Star class="w-6 h-6 text-purple-500 fill-purple-100" />
+								{/if}
+							</div>
+						</div>
+						<div class="min-w-0">
+							<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+								{$t('dashboard.theater.mostWatched')}
+							</p>
+							<h3
+								class={`font-black text-themed leading-none mb-0.5 truncate ${topShowStats.title.length > 15 ? 'text-sm' : 'text-lg'}`}
+								title={topShowStats.title}
+							>
+								{topShowStats.title}
+							</h3>
+							<p class="text-sm font-bold text-purple-500">
+								{topShowStats.count}
+								{$t('shows.unit')}
+							</p>
+						</div>
+					{/if}
 				</div>
 				<button
 					on:click={() => goto('/shows')}
@@ -519,6 +546,7 @@
 				sub={$t('dashboard.twoShot.collected')}
 				icon={Camera}
 				colorClass="bg-pink-500/10 text-pink-500"
+				loading={isLoading}
 			/>
 			<StatCard
 				title={$t('dashboard.twoShot.spending')}
@@ -530,6 +558,7 @@
 				sub={$t('dashboard.twoShot.totalExpenses')}
 				icon={Wallet}
 				colorClass="bg-emerald-500/10 text-emerald-500"
+				loading={isLoading}
 			/>
 			<StatCard
 				title={$t('dashboard.twoShot.members')}
@@ -537,6 +566,7 @@
 				sub={$t('dashboard.twoShot.uniqueIdols')}
 				icon={Users}
 				colorClass="bg-purple-500/10 text-purple-500"
+				loading={isLoading}
 			/>
 
 			<!-- Top 2-Shot Card -->
@@ -555,38 +585,50 @@
 					<Crown class="w-5 h-5 text-yellow-400 fill-current" />
 				</div>
 				<div class="p-5 flex items-center gap-4">
-					<div
-						class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-pink-400 via-rose-500 to-red-500 flex-shrink-0"
-					>
+					{#if isLoading}
+						<!-- Skeleton Loading -->
 						<div
-							class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
-						>
-							{#if twoShotStats?.kamiOshi?.image}
-								<img
-									src={twoShotStats.kamiOshi.image}
-									alt={twoShotStats.kamiOshi.name}
-									class="w-full h-full object-cover"
-								/>
-							{:else}
-								<User class="w-6 h-6 text-pink-500 fill-pink-100" />
-							{/if}
+							class="w-14 h-14 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse flex-shrink-0"
+						></div>
+						<div class="min-w-0 flex-1">
+							<div class="h-2 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2"></div>
+							<div class="h-5 w-28 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-1"></div>
+							<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
 						</div>
-					</div>
-					<div class="min-w-0">
-						<p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-							{$t('dashboard.twoShot.kamiOshi')}
-						</p>
-						<h3
-							class={`font-black text-themed leading-none mb-0.5 truncate ${twoShotStats?.kamiOshi?.name?.length > 15 ? 'text-sm' : 'text-lg'}`}
-							title={twoShotStats?.kamiOshi?.name || '-'}
+					{:else}
+						<div
+							class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-pink-400 via-rose-500 to-red-500 flex-shrink-0"
 						>
-							{twoShotStats?.kamiOshi?.name || '-'}
-						</h3>
-						<p class="text-sm font-bold text-pink-500">
-							{twoShotStats?.kamiOshi?.count || 0}
-							{$t('dashboard.twoShot.photos')}
-						</p>
-					</div>
+							<div
+								class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
+							>
+								{#if twoShotStats?.kamiOshi?.image}
+									<img
+										src={twoShotStats.kamiOshi.image}
+										alt={twoShotStats.kamiOshi.name}
+										class="w-full h-full object-cover"
+									/>
+								{:else}
+									<User class="w-6 h-6 text-pink-500 fill-pink-100" />
+								{/if}
+							</div>
+						</div>
+						<div class="min-w-0">
+							<p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+								{$t('dashboard.twoShot.kamiOshi')}
+							</p>
+							<h3
+								class={`font-black text-themed leading-none mb-0.5 truncate ${(twoShotStats?.kamiOshi?.name?.length ?? 0) > 15 ? 'text-sm' : 'text-lg'}`}
+								title={twoShotStats?.kamiOshi?.name || '-'}
+							>
+								{twoShotStats?.kamiOshi?.name || '-'}
+							</h3>
+							<p class="text-sm font-bold text-pink-500">
+								{twoShotStats?.kamiOshi?.count || 0}
+								{$t('dashboard.twoShot.photos')}
+							</p>
+						</div>
+					{/if}
 				</div>
 				<button
 					on:click={() => goto('/top-2shot')}
@@ -654,44 +696,60 @@
 
 					<!-- MAP VIEW: ROWS -->
 					{#if mapView === 'ROWS'}
-						<div class="grid grid-cols-2 gap-x-4 md:gap-x-12 gap-y-3 max-w-5xl mx-auto">
-							{#each THEATER_ROWS as row}
-								{@const count = rowStats.counts[row] || 0}
-								{@const intensity = rowStats.maxCount > 0 ? count / rowStats.maxCount : 0}
-								{@const hasData = count > 0}
-								<div class="flex items-center gap-3 group">
-									<div
-										class={`w-9 h-9 md:w-10 md:h-10 flex-shrink-0 flex items-center justify-center rounded-xl text-sm font-bold transition-all duration-300 ${hasData ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-200 dark:shadow-red-900/50' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}
-									>
-										{row}
+						{#if isLoading}
+							<!-- Skeleton Loading for Rows -->
+							<div class="grid grid-cols-2 gap-x-4 md:gap-x-12 gap-y-3 max-w-5xl mx-auto">
+								{#each THEATER_ROWS as row}
+									<div class="flex items-center gap-3">
+										<div
+											class="w-9 h-9 md:w-10 md:h-10 flex-shrink-0 rounded-xl bg-gray-200 dark:bg-zinc-700 animate-pulse"
+										></div>
+										<div
+											class="flex-1 h-9 md:h-10 rounded-xl bg-gray-200 dark:bg-zinc-700 animate-pulse"
+										></div>
 									</div>
-									<div
-										class={`flex-1 h-9 md:h-10 rounded-xl flex items-center px-3 md:px-4 relative overflow-hidden transition-all duration-300 ${hasData ? 'bg-white dark:bg-gray-800 border border-red-100 dark:border-red-500/30 shadow-sm' : 'bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 border-dashed'}`}
-									>
-										{#if hasData}
-											<div
-												class="absolute left-0 top-0 bottom-0 bg-red-50 dark:bg-red-500/20 transition-all duration-1000"
-												style={`width: ${intensity * 100}%`}
-											>
+								{/each}
+							</div>
+						{:else}
+							<div class="grid grid-cols-2 gap-x-4 md:gap-x-12 gap-y-3 max-w-5xl mx-auto">
+								{#each THEATER_ROWS as row}
+									{@const count = rowStats.counts[row] || 0}
+									{@const intensity = rowStats.maxCount > 0 ? count / rowStats.maxCount : 0}
+									{@const hasData = count > 0}
+									<div class="flex items-center gap-3 group">
+										<div
+											class={`w-9 h-9 md:w-10 md:h-10 flex-shrink-0 flex items-center justify-center rounded-xl text-sm font-bold transition-all duration-300 ${hasData ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-200 dark:shadow-red-900/50' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}
+										>
+											{row}
+										</div>
+										<div
+											class={`flex-1 h-9 md:h-10 rounded-xl flex items-center px-3 md:px-4 relative overflow-hidden transition-all duration-300 ${hasData ? 'bg-white dark:bg-gray-800 border border-red-100 dark:border-red-500/30 shadow-sm' : 'bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 border-dashed'}`}
+										>
+											{#if hasData}
 												<div
-													class="absolute right-0 top-0 bottom-0 w-[1px] bg-red-200 opacity-50"
-												></div>
+													class="absolute left-0 top-0 bottom-0 bg-red-50 dark:bg-red-500/20 transition-all duration-1000"
+													style={`width: ${intensity * 100}%`}
+												>
+													<div
+														class="absolute right-0 top-0 bottom-0 w-[1px] bg-red-200 opacity-50"
+													></div>
+												</div>
+											{/if}
+											<div class="relative z-10 w-full flex justify-between items-center">
+												<span
+													class={`text-[10px] md:text-xs font-bold uppercase tracking-wide ${hasData ? 'text-gray-600 dark:text-gray-300' : 'text-gray-300 dark:text-gray-600'}`}
+													>{$t('dashboard.seatMap.row')} {row}</span
+												>
+												<span
+													class={`text-base md:text-lg font-black ${hasData ? 'text-red-600 dark:text-red-400' : 'text-gray-300 dark:text-gray-600'}`}
+													>{count}</span
+												>
 											</div>
-										{/if}
-										<div class="relative z-10 w-full flex justify-between items-center">
-											<span
-												class={`text-[10px] md:text-xs font-bold uppercase tracking-wide ${hasData ? 'text-gray-600 dark:text-gray-300' : 'text-gray-300 dark:text-gray-600'}`}
-												>{$t('dashboard.seatMap.row')} {row}</span
-											>
-											<span
-												class={`text-base md:text-lg font-black ${hasData ? 'text-red-600 dark:text-red-400' : 'text-gray-300 dark:text-gray-600'}`}
-												>{count}</span
-											>
 										</div>
 									</div>
-								</div>
-							{/each}
-						</div>
+								{/each}
+							</div>
+						{/if}
 					{/if}
 
 					<!-- MAP VIEW: SEATS -->
@@ -802,116 +860,140 @@
 								]
 							}
 						}}
-						<div class="seat-map-grid">
-							{#each THEATER_ROWS as row}
-								{@const layout = SEAT_LAYOUT[row]}
-								<div class="grid-row">
-									<!-- Row Label -->
-									<div class="row-label">{row}</div>
+						{#if isLoading}
+							<!-- Skeleton Loading for Seats -->
+							<div class="space-y-2 max-w-5xl mx-auto">
+								{#each THEATER_ROWS as row}
+									<div class="flex items-center gap-2">
+										<div
+											class="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 animate-pulse flex-shrink-0"
+										></div>
+										<div class="flex-1 flex gap-1">
+											{#each Array(28) as _, i}
+												<div
+													class="w-5 h-5 rounded bg-gray-200 dark:bg-zinc-700 animate-pulse"
+												></div>
+											{/each}
+										</div>
+									</div>
+								{/each}
+							</div>
+						{:else}
+							<div class="seat-map-grid">
+								{#each THEATER_ROWS as row}
+									{@const layout = SEAT_LAYOUT[/** @type {keyof typeof SEAT_LAYOUT} */ (row)]}
+									<div class="grid-row">
+										<!-- Row Label -->
+										<div class="row-label">{row}</div>
 
-									<!-- Group 1 (columns 1-6) -->
-									{#each [1, 2, 3, 4, 5, 6] as col}
-										{@const seatNum = col - layout.start + 1}
-										{@const isValidSeat = col >= layout.groups[0][0] && col <= layout.groups[0][1]}
-										{@const seatKey = `${row}-${seatNum}`}
-										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
-										{@const hasVisit = count > 0}
-										{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
+										<!-- Group 1 (columns 1-6) -->
+										{#each [1, 2, 3, 4, 5, 6] as col}
+											{@const seatNum = col - layout.start + 1}
+											{@const isValidSeat =
+												col >= layout.groups[0][0] && col <= layout.groups[0][1]}
+											{@const seatKey = `${row}-${seatNum}`}
+											{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
+											{@const hasVisit = count > 0}
+											{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
 
-										{#if isValidSeat}
-											<div
-												class="map-seat {hasVisit ? 'active' : ''}"
-												style={hasVisit ? `--intensity: ${intensity}` : ''}
-												data-title="{seatKey}: {count}x"
-											>
-												<span class="seat-id">{seatKey}</span>
-												{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
-											</div>
-										{:else}
-											<div class="empty-cell"></div>
-										{/if}
-									{/each}
+											{#if isValidSeat}
+												<div
+													class="map-seat {hasVisit ? 'active' : ''}"
+													style={hasVisit ? `--intensity: ${intensity}` : ''}
+													data-title="{seatKey}: {count}x"
+												>
+													<span class="seat-id">{seatKey}</span>
+													{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
+												</div>
+											{:else}
+												<div class="empty-cell"></div>
+											{/if}
+										{/each}
 
-									<!-- Aisle 1 -->
-									<div class="aisle-gap"></div>
+										<!-- Aisle 1 -->
+										<div class="aisle-gap"></div>
 
-									<!-- Group 2 (columns 7-12) -->
-									{#each [7, 8, 9, 10, 11, 12] as col}
-										{@const seatNum = col - layout.start + 1}
-										{@const isValidSeat = col >= layout.groups[1][0] && col <= layout.groups[1][1]}
-										{@const seatKey = `${row}-${seatNum}`}
-										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
-										{@const hasVisit = count > 0}
-										{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
+										<!-- Group 2 (columns 7-12) -->
+										{#each [7, 8, 9, 10, 11, 12] as col}
+											{@const seatNum = col - layout.start + 1}
+											{@const isValidSeat =
+												col >= layout.groups[1][0] && col <= layout.groups[1][1]}
+											{@const seatKey = `${row}-${seatNum}`}
+											{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
+											{@const hasVisit = count > 0}
+											{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
 
-										{#if isValidSeat}
-											<div
-												class="map-seat {hasVisit ? 'active' : ''}"
-												style={hasVisit ? `--intensity: ${intensity}` : ''}
-												data-title="{seatKey}: {count}x"
-											>
-												<span class="seat-id">{seatKey}</span>
-												{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
-											</div>
-										{:else}
-											<div class="empty-cell"></div>
-										{/if}
-									{/each}
+											{#if isValidSeat}
+												<div
+													class="map-seat {hasVisit ? 'active' : ''}"
+													style={hasVisit ? `--intensity: ${intensity}` : ''}
+													data-title="{seatKey}: {count}x"
+												>
+													<span class="seat-id">{seatKey}</span>
+													{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
+												</div>
+											{:else}
+												<div class="empty-cell"></div>
+											{/if}
+										{/each}
 
-									<!-- Aisle 2 -->
-									<div class="aisle-gap"></div>
+										<!-- Aisle 2 -->
+										<div class="aisle-gap"></div>
 
-									<!-- Group 3 (columns 13-18) -->
-									{#each [13, 14, 15, 16, 17, 18] as col}
-										{@const seatNum = col - layout.start + 1}
-										{@const isValidSeat = col >= layout.groups[2][0] && col <= layout.groups[2][1]}
-										{@const seatKey = `${row}-${seatNum}`}
-										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
-										{@const hasVisit = count > 0}
-										{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
+										<!-- Group 3 (columns 13-18) -->
+										{#each [13, 14, 15, 16, 17, 18] as col}
+											{@const seatNum = col - layout.start + 1}
+											{@const isValidSeat =
+												col >= layout.groups[2][0] && col <= layout.groups[2][1]}
+											{@const seatKey = `${row}-${seatNum}`}
+											{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
+											{@const hasVisit = count > 0}
+											{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
 
-										{#if isValidSeat}
-											<div
-												class="map-seat {hasVisit ? 'active' : ''}"
-												style={hasVisit ? `--intensity: ${intensity}` : ''}
-												data-title="{seatKey}: {count}x"
-											>
-												<span class="seat-id">{seatKey}</span>
-												{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
-											</div>
-										{:else}
-											<div class="empty-cell"></div>
-										{/if}
-									{/each}
+											{#if isValidSeat}
+												<div
+													class="map-seat {hasVisit ? 'active' : ''}"
+													style={hasVisit ? `--intensity: ${intensity}` : ''}
+													data-title="{seatKey}: {count}x"
+												>
+													<span class="seat-id">{seatKey}</span>
+													{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
+												</div>
+											{:else}
+												<div class="empty-cell"></div>
+											{/if}
+										{/each}
 
-									<!-- Aisle 3 -->
-									<div class="aisle-gap"></div>
+										<!-- Aisle 3 -->
+										<div class="aisle-gap"></div>
 
-									<!-- Group 4 (columns 19-28) -->
-									{#each [19, 20, 21, 22, 23, 24, 25, 26, 27, 28] as col}
-										{@const seatNum = col - layout.start + 1}
-										{@const isValidSeat = col >= layout.groups[3][0] && col <= layout.groups[3][1]}
-										{@const seatKey = `${row}-${seatNum}`}
-										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
-										{@const hasVisit = count > 0}
-										{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
+										<!-- Group 4 (columns 19-28) -->
+										{#each [19, 20, 21, 22, 23, 24, 25, 26, 27, 28] as col}
+											{@const seatNum = col - layout.start + 1}
+											{@const isValidSeat =
+												col >= layout.groups[3][0] && col <= layout.groups[3][1]}
+											{@const seatKey = `${row}-${seatNum}`}
+											{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
+											{@const hasVisit = count > 0}
+											{@const intensity = hasVisit ? Math.max(0.25, count / maxSeatCount) : 0}
 
-										{#if isValidSeat}
-											<div
-												class="map-seat {hasVisit ? 'active' : ''}"
-												style={hasVisit ? `--intensity: ${intensity}` : ''}
-												data-title="{seatKey}: {count}x"
-											>
-												<span class="seat-id">{seatKey}</span>
-												{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
-											</div>
-										{:else}
-											<div class="empty-cell"></div>
-										{/if}
-									{/each}
-								</div>
-							{/each}
-						</div>
+											{#if isValidSeat}
+												<div
+													class="map-seat {hasVisit ? 'active' : ''}"
+													style={hasVisit ? `--intensity: ${intensity}` : ''}
+													data-title="{seatKey}: {count}x"
+												>
+													<span class="seat-id">{seatKey}</span>
+													{#if hasVisit}<span class="seat-count">{count}x</span>{/if}
+												</div>
+											{:else}
+												<div class="empty-cell"></div>
+											{/if}
+										{/each}
+									</div>
+								{/each}
+							</div>
+						{/if}
 					{/if}
 				</div>
 			</div>
@@ -935,36 +1017,50 @@
 				</p>
 			</div>
 			<div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 flex-1">
-				{#each monthlyStats.stats as month}
-					{@const intensity =
-						month.count > 0 ? 0.2 + (month.count / monthlyStats.maxCount) * 0.7 : 0.05}
-					{@const hasData = month.count > 0}
-					<div
-						class={`flex flex-col items-center group ${!month.isActive ? 'opacity-30 grayscale pointer-events-none' : ''}`}
-					>
+				{#if isLoading}
+					<!-- Skeleton Loading for Monthly -->
+					{#each Array(12) as _, i}
+						<div class="flex flex-col items-center">
+							<div
+								class="w-full aspect-square rounded-2xl mb-2 bg-gray-200 dark:bg-zinc-700 animate-pulse"
+							></div>
+							<div class="h-3 w-8 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
+						</div>
+					{/each}
+				{:else}
+					{#each monthlyStats.stats as month}
+						{@const intensity =
+							month.count > 0 ? 0.2 + (month.count / monthlyStats.maxCount) * 0.7 : 0.05}
+						{@const hasData = month.count > 0}
 						<div
-							class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm dark:border-gray-700"
-							style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'}`}
+							class={`flex flex-col items-center group ${!month.isActive ? 'opacity-30 grayscale pointer-events-none' : ''}`}
 						>
-							{#if hasData}
-								<span class="text-xl md:text-2xl font-bold text-white drop-shadow-sm"
-									>{month.count}</span
-								>
-								<span class="text-[8px] text-white/80 font-medium uppercase tracking-wider"
-									>{$t('shows.unit')}</span
-								>
-							{:else}
-								<span class="text-gray-300 dark:text-gray-600 text-xl font-bold opacity-30">-</span>
-							{/if}
-						</div>
-						<div class="text-center w-full">
-							<span
-								class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide"
-								>{$t('time.monthsShort.' + month.name.substring(0, 3).toLowerCase())}</span
+							<div
+								class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm dark:border-gray-700"
+								style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'}`}
 							>
+								{#if hasData}
+									<span class="text-xl md:text-2xl font-bold text-white drop-shadow-sm"
+										>{month.count}</span
+									>
+									<span class="text-[8px] text-white/80 font-medium uppercase tracking-wider"
+										>{$t('shows.unit')}</span
+									>
+								{:else}
+									<span class="text-gray-300 dark:text-gray-600 text-xl font-bold opacity-30"
+										>-</span
+									>
+								{/if}
+							</div>
+							<div class="text-center w-full">
+								<span
+									class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide"
+									>{$t('time.monthsShort.' + month.name.substring(0, 3).toLowerCase())}</span
+								>
+							</div>
 						</div>
-					</div>
-				{/each}
+					{/each}
+				{/if}
 			</div>
 		</div>
 
@@ -979,33 +1075,47 @@
 			</div>
 
 			<div class="grid grid-cols-3 sm:grid-cols-4 gap-3 flex-1 content-start">
-				{#each dayStats.stats as day}
-					{@const intensity = day.count > 0 ? 0.2 + (day.count / dayStats.maxCount) * 0.7 : 0.05}
-					{@const hasData = day.count > 0}
-					<div class="flex flex-col items-center group">
-						<div
-							class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm dark:border-gray-700"
-							style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'}`}
-						>
-							{#if hasData}
-								<span class="text-xl md:text-2xl font-bold text-white drop-shadow-sm"
-									>{day.count}</span
-								>
-								<span class="text-[8px] text-white/80 font-medium uppercase tracking-wider"
-									>{$t('shows.unit')}</span
-								>
-							{:else}
-								<span class="text-gray-300 dark:text-gray-600 text-xl font-bold opacity-30">-</span>
-							{/if}
+				{#if isLoading}
+					<!-- Skeleton Loading for Days -->
+					{#each Array(7) as _, i}
+						<div class="flex flex-col items-center">
+							<div
+								class="w-full aspect-square rounded-2xl mb-2 bg-gray-200 dark:bg-zinc-700 animate-pulse"
+							></div>
+							<div class="h-3 w-8 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
 						</div>
-						<div class="text-center w-full">
-							<span
-								class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide"
-								>{$t('time.daysShort.' + day.name.substring(0, 3).toLowerCase())}</span
+					{/each}
+				{:else}
+					{#each dayStats.stats as day}
+						{@const intensity = day.count > 0 ? 0.2 + (day.count / dayStats.maxCount) * 0.7 : 0.05}
+						{@const hasData = day.count > 0}
+						<div class="flex flex-col items-center group">
+							<div
+								class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm dark:border-gray-700"
+								style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'}`}
 							>
+								{#if hasData}
+									<span class="text-xl md:text-2xl font-bold text-white drop-shadow-sm"
+										>{day.count}</span
+									>
+									<span class="text-[8px] text-white/80 font-medium uppercase tracking-wider"
+										>{$t('shows.unit')}</span
+									>
+								{:else}
+									<span class="text-gray-300 dark:text-gray-600 text-xl font-bold opacity-30"
+										>-</span
+									>
+								{/if}
+							</div>
+							<div class="text-center w-full">
+								<span
+									class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide"
+									>{$t('time.daysShort.' + day.name.substring(0, 3).toLowerCase())}</span
+								>
+							</div>
 						</div>
-					</div>
-				{/each}
+					{/each}
+				{/if}
 			</div>
 		</div>
 	</div>
