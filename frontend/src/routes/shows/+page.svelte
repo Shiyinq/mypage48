@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { tickets, showToast } from '$lib/stores';
+	import { tickets, showToast, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
+	import { onMount } from 'svelte';
 	import { theater } from '$lib/apis/theater';
 	import {
 		ChevronLeft,
@@ -64,6 +65,15 @@
 	let selectedShowTitle: string | null = null;
 	let deleteId: string | null = null;
 	let isDeleting = false;
+
+	/* Loading State */
+	let mounted = false;
+
+	onMount(() => {
+		mounted = true;
+	});
+
+	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
 
 	// Methods
 	const confirmDelete = async () => {
@@ -374,87 +384,107 @@
 		</div>
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-			{#each SHOW_DATA as show (show.title)}
-				{@const count = showCounts[show.title] || 0}
-				{@const percentage = (count / maxAttendance) * 100}
-				{@const isMostWatched = count === maxAttendance && count > 0}
-
-				<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-				<div
-					on:click={() => selectShow(show.title)}
-					class="relative overflow-hidden rounded-3xl h-64 cursor-pointer group shadow-md hover:shadow-xl transition-all duration-500 bg-gray-900"
-				>
-					<!-- Background Image -->
-					<img
-						src={show.image}
-						alt={show.title}
-						class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80"
-						loading="lazy"
-					/>
-
-					<!-- Gradient Overlay -->
+			{#if isLoading}
+				{#each Array(6) as _}
 					<div
-						class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300 group-hover:via-black/60"
-					></div>
-
-					<!-- Content -->
-					<div class="relative z-10 flex flex-col h-full justify-between p-6">
-						<div>
-							<div class="flex justify-between items-start gap-2 mb-1">
-								<h3 class="text-xl font-black text-white leading-tight drop-shadow-md line-clamp-2">
-									{show.title}
-								</h3>
-								{#if isMostWatched}
-									<span
-										class="bg-yellow-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm flex items-center gap-1 flex-shrink-0 border border-white/20"
-									>
-										<Trophy class="w-3 h-3" />
-										{$t('shows.top')}
-									</span>
-								{/if}
-							</div>
-						</div>
-
-						<div class="space-y-3">
-							<!-- Stats Row -->
+						class="relative overflow-hidden rounded-3xl h-64 bg-gray-200 dark:bg-zinc-800 animate-pulse"
+					>
+						<div class="absolute bottom-0 left-0 right-0 p-6 flex flex-col gap-3">
+							<div class="h-8 w-3/4 bg-gray-300 dark:bg-zinc-700 rounded mb-1"></div>
 							<div class="flex justify-between items-end">
-								<div
-									class={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold transition-colors backdrop-blur-md border ${count > 0 ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-900/20' : 'bg-white/20 text-gray-200 border-white/10'}`}
-								>
-									{count}
-									{$t('shows.unit')}
-								</div>
+								<div class="h-6 w-16 bg-gray-300 dark:bg-zinc-700 rounded-full"></div>
+							</div>
+							<div class="w-full bg-gray-300 dark:bg-zinc-700 rounded-full h-1.5"></div>
+						</div>
+					</div>
+				{/each}
+			{:else}
+				{#each SHOW_DATA as show (show.title)}
+					{@const count = showCounts[show.title] || 0}
+					{@const percentage = (count / maxAttendance) * 100}
+					{@const isMostWatched = count === maxAttendance && count > 0}
 
-								{#if count > 0}
-									<span
-										class="text-xs text-white/90 font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0"
+					<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+					<div
+						on:click={() => selectShow(show.title)}
+						class="relative overflow-hidden rounded-3xl h-64 cursor-pointer group shadow-md hover:shadow-xl transition-all duration-500 bg-gray-900"
+					>
+						<!-- Background Image -->
+						<img
+							src={show.image}
+							alt={show.title}
+							class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80"
+							loading="lazy"
+						/>
+
+						<!-- Gradient Overlay -->
+						<div
+							class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300 group-hover:via-black/60"
+						></div>
+
+						<!-- Content -->
+						<div class="relative z-10 flex flex-col h-full justify-between p-6">
+							<div>
+								<div class="flex justify-between items-start gap-2 mb-1">
+									<h3
+										class="text-xl font-black text-white leading-tight drop-shadow-md line-clamp-2"
 									>
-										{$t('shows.viewHistory')}
-										<ChevronLeft class="w-3 h-3 rotate-180" />
-									</span>
-								{/if}
+										{show.title}
+									</h3>
+									{#if isMostWatched}
+										<span
+											class="bg-yellow-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm flex items-center gap-1 flex-shrink-0 border border-white/20"
+										>
+											<Trophy class="w-3 h-3" />
+											{$t('shows.top')}
+										</span>
+									{/if}
+								</div>
 							</div>
 
-							<!-- Progress Bar Visual -->
-							<div>
-								<div class="flex justify-end mb-1">
-									<span class="text-[10px] text-gray-300 font-medium">
-										{count > 0
-											? `${percentage.toFixed(0)}% ${$t('shows.toTop')}`
-											: $t('shows.notSeen')}
-									</span>
-								</div>
-								<div class="w-full bg-white/20 rounded-full h-1.5 overflow-hidden backdrop-blur-sm">
+							<div class="space-y-3">
+								<!-- Stats Row -->
+								<div class="flex justify-between items-end">
 									<div
-										class={`h-full rounded-full transition-all duration-1000 ease-out ${count > 0 ? 'bg-red-500 shadow-[0_0_10px_rgba(220,38,38,0.8)]' : 'bg-transparent'}`}
-										style={`width: ${count > 0 ? percentage : 0}%`}
-									></div>
+										class={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold transition-colors backdrop-blur-md border ${count > 0 ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-900/20' : 'bg-white/20 text-gray-200 border-white/10'}`}
+									>
+										{count}
+										{$t('shows.unit')}
+									</div>
+
+									{#if count > 0}
+										<span
+											class="text-xs text-white/90 font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0"
+										>
+											{$t('shows.viewHistory')}
+											<ChevronLeft class="w-3 h-3 rotate-180" />
+										</span>
+									{/if}
+								</div>
+
+								<!-- Progress Bar Visual -->
+								<div>
+									<div class="flex justify-end mb-1">
+										<span class="text-[10px] text-gray-300 font-medium">
+											{count > 0
+												? `${percentage.toFixed(0)}% ${$t('shows.toTop')}`
+												: $t('shows.notSeen')}
+										</span>
+									</div>
+									<div
+										class="w-full bg-white/20 rounded-full h-1.5 overflow-hidden backdrop-blur-sm"
+									>
+										<div
+											class={`h-full rounded-full transition-all duration-1000 ease-out ${count > 0 ? 'bg-red-500 shadow-[0_0_10px_rgba(220,38,38,0.8)]' : 'bg-transparent'}`}
+											style={`width: ${count > 0 ? percentage : 0}%`}
+										></div>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			{/each}
+				{/each}
+			{/if}
 		</div>
 	{/if}
 </div>

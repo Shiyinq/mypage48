@@ -1,10 +1,20 @@
 <script lang="ts">
-	import { tickets } from '$lib/stores';
+	import { tickets, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
 	import { Heart, Crown, Camera, TrendingUp, User } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { onMount } from 'svelte';
 
 	const { t } = useTranslation();
+
+	/* Loading State */
+	let mounted = false;
+
+	onMount(() => {
+		mounted = true;
+	});
+
+	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
 
 	// --- DATA PROCESSING ---
 	$: stats = (() => {
@@ -104,7 +114,56 @@
 		</div>
 	</div>
 
-	{#if stats.ranking.length === 0}
+	{#if isLoading}
+		<div class="grid lg:grid-cols-3 gap-6">
+			<!-- Skeleton: Kami Oshi Card -->
+			<div class="lg:col-span-1">
+				<div
+					class="relative overflow-hidden bg-white dark:bg-zinc-800 rounded-3xl shadow-sm border border-gray-100 dark:border-zinc-700 p-8 flex flex-col items-center"
+				>
+					<div class="h-6 w-32 bg-gray-200 dark:bg-zinc-700 rounded-full mb-6 animate-pulse"></div>
+					<div class="w-36 h-36 rounded-full bg-gray-200 dark:bg-zinc-700 mb-6 animate-pulse"></div>
+					<div class="h-8 w-48 bg-gray-200 dark:bg-zinc-700 rounded mb-4 animate-pulse"></div>
+					<div class="h-6 w-24 bg-gray-200 dark:bg-zinc-700 rounded mb-8 animate-pulse"></div>
+					<div class="grid grid-cols-2 gap-4 w-full">
+						<div class="h-20 bg-gray-100 dark:bg-zinc-700/50 rounded-2xl animate-pulse"></div>
+						<div class="h-20 bg-gray-100 dark:bg-zinc-700/50 rounded-2xl animate-pulse"></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Skeleton: Leaderboard -->
+			<div class="lg:col-span-2">
+				<div
+					class="bg-white dark:bg-zinc-800 rounded-3xl border border-gray-100 dark:border-zinc-700 shadow-sm overflow-hidden"
+				>
+					<div
+						class="p-6 border-b border-gray-100 dark:border-zinc-700 flex justify-between items-center"
+					>
+						<div class="h-6 w-40 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
+						<div class="h-6 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
+					</div>
+					<div class="divide-y divide-gray-50 dark:divide-zinc-700">
+						{#each Array(5) as _}
+							<div class="p-4 flex items-center gap-4">
+								<div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
+								<div
+									class="w-12 h-12 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse"
+								></div>
+								<div class="flex-1 space-y-2">
+									<div class="h-4 w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
+									<div class="h-3 w-20 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
+								</div>
+								<div
+									class="w-24 h-4 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse hidden sm:block"
+								></div>
+							</div>
+						{/each}
+					</div>
+				</div>
+			</div>
+		</div>
+	{:else if stats.ranking.length === 0}
 		<div
 			class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-zinc-800/50"
 		>
