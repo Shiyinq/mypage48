@@ -1,10 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { Ticket, Plus, User } from 'lucide-svelte';
-	import { userProfile } from '$lib/stores';
+	import { userProfile, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { onMount } from 'svelte';
 
 	const { t } = useTranslation();
+
+	/* Loading State */
+	let mounted = false;
+
+	onMount(() => {
+		mounted = true;
+	});
+
+	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
 
 	// Navigation items with translation keys
 	$: navItems = [
@@ -80,7 +90,9 @@
 								: 'ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-red-400'
 						}`}
 			>
-				{#if $userProfile?.oshi?.profilePicture || $userProfile?.profilePicture}
+				{#if isLoading}
+					<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
+				{:else if $userProfile?.oshi?.profilePicture || $userProfile?.profilePicture}
 					<img
 						src={$userProfile?.oshi?.profilePicture || $userProfile?.profilePicture}
 						alt="Profile"

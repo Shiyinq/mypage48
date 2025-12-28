@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { tickets, showToast } from '$lib/stores';
+	import { tickets, showToast, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
+	import { onMount } from 'svelte';
 	import { theater } from '$lib/apis/theater';
 	import type { Ticket } from '$lib/types';
 	import EditTicketModal from '$lib/components/EditTicketModal.svelte';
@@ -32,6 +33,15 @@
 	let isDeleting = false;
 	let editingId: string | null = null;
 	let noteText = '';
+
+	/* Loading State */
+	let mounted = false;
+
+	onMount(() => {
+		mounted = true;
+	});
+
+	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
 
 	// Derived
 	$: filteredTickets = ($tickets as Ticket[])
@@ -149,7 +159,102 @@
 	</div>
 
 	<!-- Content Area -->
-	{#if filteredTickets.length === 0}
+	{#if isLoading}
+		{#if viewMode === 'GRID'}
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				{#each Array(6) as _}
+					<div
+						class="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-700 flex flex-col h-[400px]"
+					>
+						<!-- Image Skeleton -->
+						<div class="h-48 w-full bg-gray-200 dark:bg-zinc-800 animate-pulse"></div>
+						<!-- Body Skeleton -->
+						<div class="p-5 flex-1 flex flex-col gap-4">
+							<div class="grid grid-cols-2 gap-4">
+								<div class="h-8 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"></div>
+								<div class="h-8 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"></div>
+							</div>
+							<div class="h-12 bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
+							<div class="flex-1 bg-gray-200 dark:bg-zinc-800 rounded-lg animate-pulse"></div>
+						</div>
+					</div>
+				{/each}
+			</div>
+		{:else}
+			<!-- Table Skeleton -->
+			<div class="glass-panel rounded-3xl overflow-hidden shadow-sm">
+				<div class="overflow-x-auto">
+					<table class="w-full text-left border-collapse">
+						<thead>
+							<tr
+								class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
+							>
+								<th class="p-4">{$t('history.date')}</th>
+								<th class="p-4">{$t('history.eventDetails')}</th>
+								<th class="p-4">{$t('history.seat')}</th>
+								<th class="p-4">{$t('history.price')}</th>
+								<th class="p-4">{$t('history.notes')}</th>
+								<th class="p-4 text-right">{$t('history.actions')}</th>
+							</tr>
+						</thead>
+						<tbody
+							class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700"
+						>
+							{#each Array(5) as _}
+								<tr class="border-b border-gray-100 dark:border-zinc-700">
+									<td class="p-4"
+										><div
+											class="h-10 w-20 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
+										></div></td
+									>
+									<td class="p-4">
+										<div class="flex items-center gap-3">
+											<div
+												class="w-10 h-10 rounded-lg bg-gray-200 dark:bg-zinc-800 animate-pulse"
+											></div>
+											<div class="flex flex-col gap-1">
+												<div
+													class="h-4 w-32 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
+												></div>
+												<div
+													class="h-3 w-16 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
+												></div>
+											</div>
+										</div>
+									</td>
+									<td class="p-4"
+										><div
+											class="h-6 w-16 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
+										></div></td
+									>
+									<td class="p-4"
+										><div
+											class="h-6 w-24 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
+										></div></td
+									>
+									<td class="p-4"
+										><div
+											class="h-4 w-full bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
+										></div></td
+									>
+									<td class="p-4 text-right"
+										><div class="flex justify-end gap-2">
+											<div
+												class="h-8 w-8 rounded-full bg-gray-200 dark:bg-zinc-800 animate-pulse"
+											></div>
+											<div
+												class="h-8 w-8 rounded-full bg-gray-200 dark:bg-zinc-800 animate-pulse"
+											></div>
+										</div></td
+									>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		{/if}
+	{:else if filteredTickets.length === 0}
 		<div
 			class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-white/5"
 		>

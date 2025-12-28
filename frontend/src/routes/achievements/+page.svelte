@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { tickets } from '$lib/stores';
+	import { tickets, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
+	import { onMount } from 'svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import {
 		Trophy,
@@ -238,6 +239,15 @@
 
 	$: unlocked = milestones.filter((m) => m.isUnlocked);
 	$: locked = milestones.filter((m) => !m.isUnlocked);
+
+	/* Loading State */
+	let mounted = false;
+
+	onMount(() => {
+		mounted = true;
+	});
+
+	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
 </script>
 
 <SEO title={$t('achievements.title')} path="/achievements" description={$t('seo.achievements')} />
@@ -262,64 +272,84 @@
 
 	<!-- Grid Layout -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
-		{#each [...unlocked, ...locked] as m (m.id)}
-			<div
-				class={`relative border-2 rounded-3xl p-5 flex items-center gap-5 transition-all duration-300 h-full ${
-					m.isUnlocked
-						? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 dark:border-yellow-500/50 shadow-sm hover:shadow-md hover:scale-[1.01]'
-						: 'bg-gray-50 dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 opacity-70 grayscale'
-				}`}
-			>
-				<!-- Icon Box -->
+		{#if isLoading}
+			{#each Array(8) as _}
 				<div
-					class={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+					class="relative border-2 border-transparent rounded-3xl p-5 flex items-center gap-5 bg-white dark:bg-zinc-900 shadow-sm"
+				>
+					<!-- Icon Box Skeleton -->
+					<div
+						class="w-14 h-14 rounded-2xl flex-shrink-0 bg-gray-200 dark:bg-zinc-700 animate-pulse"
+					></div>
+
+					<!-- Text Skeleton -->
+					<div class="flex-1">
+						<div class="h-5 w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2"></div>
+						<div class="h-3 w-48 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
+					</div>
+				</div>
+			{/each}
+		{:else}
+			{#each [...unlocked, ...locked] as m (m.id)}
+				<div
+					class={`relative border-2 rounded-3xl p-5 flex items-center gap-5 transition-all duration-300 h-full ${
 						m.isUnlocked
-							? 'bg-white dark:bg-zinc-800 shadow-sm text-yellow-600'
-							: 'bg-gray-200 dark:bg-zinc-700 text-gray-400'
+							? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 dark:border-yellow-500/50 shadow-sm hover:shadow-md hover:scale-[1.01]'
+							: 'bg-gray-50 dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 opacity-70 grayscale'
 					}`}
 				>
-					{#if m.isUnlocked}
-						<svelte:component this={m.icon} class="w-8 h-8 fill-current" />
-					{:else}
-						<Lock class="w-6 h-6" />
-					{/if}
-				</div>
+					<!-- Icon Box -->
+					<div
+						class={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+							m.isUnlocked
+								? 'bg-white dark:bg-zinc-800 shadow-sm text-yellow-600'
+								: 'bg-gray-200 dark:bg-zinc-700 text-gray-400'
+						}`}
+					>
+						{#if m.isUnlocked}
+							<svelte:component this={m.icon} class="w-8 h-8 fill-current" />
+						{:else}
+							<Lock class="w-6 h-6" />
+						{/if}
+					</div>
 
-				<div class="flex-1">
-					<h3 class={`text-lg font-bold ${m.isUnlocked ? 'text-themed' : 'text-themed-muted'}`}>
-						{m.title}
-					</h3>
-					<p class="text-xs text-themed-secondary font-medium">{m.description}</p>
+					<div class="flex-1">
+						<h3 class={`text-lg font-bold ${m.isUnlocked ? 'text-themed' : 'text-themed-muted'}`}>
+							{m.title}
+						</h3>
+						<p class="text-xs text-themed-secondary font-medium">{m.description}</p>
 
-					<!-- Progress Bar for Locked Items -->
-					{#if !m.isUnlocked && m.progress}
-						<div class="mt-2">
-							<div class="text-[10px] font-bold text-gray-400 mb-1 text-right">{m.progress}</div>
-							<div class="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-								<div
-									class="h-full bg-gray-400 rounded-full"
-									style={`width: ${
-										m.progress.includes('/')
-											? (parseInt(m.progress.split('/')[0]) / parseInt(m.progress.split('/')[1])) *
-												100
-											: 0
-									}%`}
-								></div>
+						<!-- Progress Bar for Locked Items -->
+						{#if !m.isUnlocked && m.progress}
+							<div class="mt-2">
+								<div class="text-[10px] font-bold text-gray-400 mb-1 text-right">{m.progress}</div>
+								<div class="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+									<div
+										class="h-full bg-gray-400 rounded-full"
+										style={`width: ${
+											m.progress.includes('/')
+												? (parseInt(m.progress.split('/')[0]) /
+														parseInt(m.progress.split('/')[1])) *
+													100
+												: 0
+										}%`}
+									></div>
+								</div>
 							</div>
+						{/if}
+					</div>
+
+					<!-- Status Badge -->
+					{#if m.isUnlocked}
+						<div
+							class="absolute top-4 right-4 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"
+						>
+							{$t('achievements.unlocked')}
+							<Check class="w-3 h-3" />
 						</div>
 					{/if}
 				</div>
-
-				<!-- Status Badge -->
-				{#if m.isUnlocked}
-					<div
-						class="absolute top-4 right-4 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"
-					>
-						{$t('achievements.unlocked')}
-						<Check class="w-3 h-3" />
-					</div>
-				{/if}
-			</div>
-		{/each}
+			{/each}
+		{/if}
 	</div>
 </div>

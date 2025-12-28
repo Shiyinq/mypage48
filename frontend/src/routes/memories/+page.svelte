@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { tickets } from '$lib/stores';
+	import { tickets, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
+	import { onMount } from 'svelte';
 	import {
 		Image as ImageIcon,
 		MapPin,
@@ -77,6 +78,15 @@
 	$: if (typeof document !== 'undefined') {
 		document.body.style.overflow = selectedImage ? 'hidden' : 'unset';
 	}
+
+	/* Loading State */
+	let mounted = false;
+
+	onMount(() => {
+		mounted = true;
+	});
+
+	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
 </script>
 
 <SEO title={$t('memories.title')} path="/memories" description={$t('seo.memories')} />
@@ -196,7 +206,28 @@
 	</div>
 
 	<!-- Gallery Grid -->
-	{#if filteredItems.length === 0}
+	{#if isLoading}
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4">
+			{#each Array(8) as _, index}
+				{@const rotation = (index % 5) - 2}
+				<div class="relative" style={`transform: rotate(${rotation}deg)`}>
+					<div
+						class="bg-white dark:bg-zinc-900 p-3 pb-12 shadow-md border border-gray-100 dark:border-zinc-700 rounded-sm"
+					>
+						<div class="aspect-[4/5] w-full bg-gray-200 dark:bg-zinc-800 animate-pulse mb-4"></div>
+						<div class="px-2">
+							<div
+								class="h-4 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse w-3/4 mx-auto mb-2"
+							></div>
+							<div
+								class="h-3 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse w-1/2 mx-auto"
+							></div>
+						</div>
+					</div>
+				</div>
+			{/each}
+		</div>
+	{:else if filteredItems.length === 0}
 		<div
 			class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-white/5"
 		>
