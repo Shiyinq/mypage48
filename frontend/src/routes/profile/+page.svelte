@@ -923,56 +923,58 @@
 						</div>
 					{/if}
 
-					<div class="mt-6 grid grid-cols-2 gap-3 border-t border-gray-100 pt-4">
-						<!-- 2-Shot Roulette -->
-						<div
-							class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
-						>
+					{#if profile?.oshi}
+						<div class="mt-6 grid grid-cols-2 gap-3 border-t border-gray-100 pt-4">
+							<!-- 2-Shot Roulette -->
 							<div
-								class="p-2 rounded-full bg-yellow-50 dark:bg-yellow-900/20 shadow-sm text-yellow-600 dark:text-yellow-400"
+								class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
 							>
-								<Dices class="w-4 h-4" />
+								<div
+									class="p-2 rounded-full bg-yellow-50 dark:bg-yellow-900/20 shadow-sm text-yellow-600 dark:text-yellow-400"
+								>
+									<Dices class="w-4 h-4" />
+								</div>
+								<div>
+									<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
+										{#if loading}
+											<span
+												class="inline-block w-6 h-5 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
+											></span>
+										{:else}
+											{twoShotRouletteCount}
+										{/if}
+									</p>
+									<p class="text-[10px] font-bold text-gray-400 uppercase">
+										{$t('profile.oshi.roulette')}
+									</p>
+								</div>
 							</div>
-							<div>
-								<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
-									{#if loading}
-										<span
-											class="inline-block w-6 h-5 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
-										></span>
-									{:else}
-										{twoShotRouletteCount}
-									{/if}
-								</p>
-								<p class="text-[10px] font-bold text-gray-400 uppercase">
-									{$t('profile.oshi.roulette')}
-								</p>
+							<!-- 2-Shot Birthday -->
+							<div
+								class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
+							>
+								<div
+									class="p-2 rounded-full bg-pink-50 dark:bg-pink-900/20 shadow-sm text-pink-600 dark:text-pink-400"
+								>
+									<Cake class="w-4 h-4" />
+								</div>
+								<div>
+									<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
+										{#if loading}
+											<span
+												class="inline-block w-6 h-5 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
+											></span>
+										{:else}
+											{twoShotBirthdayCount}
+										{/if}
+									</p>
+									<p class="text-[10px] font-bold text-gray-400 uppercase">
+										{$t('profile.oshi.birthday')}
+									</p>
+								</div>
 							</div>
 						</div>
-						<!-- 2-Shot Birthday -->
-						<div
-							class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
-						>
-							<div
-								class="p-2 rounded-full bg-pink-50 dark:bg-pink-900/20 shadow-sm text-pink-600 dark:text-pink-400"
-							>
-								<Cake class="w-4 h-4" />
-							</div>
-							<div>
-								<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
-									{#if loading}
-										<span
-											class="inline-block w-6 h-5 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
-										></span>
-									{:else}
-										{twoShotBirthdayCount}
-									{/if}
-								</p>
-								<p class="text-[10px] font-bold text-gray-400 uppercase">
-									{$t('profile.oshi.birthday')}
-								</p>
-							</div>
-						</div>
-					</div>
+					{/if}
 				</div>
 			</div>
 
