@@ -12,6 +12,7 @@ const initialAuth = browser ? localStorage.getItem(AUTH_KEY) === 'true' : false;
 export const tickets = writable<Ticket[]>([]);
 export const isAuthenticated = writable<boolean>(initialAuth);
 export const userProfile = writable<User | null>(null);
+export const isInitialDataLoaded = writable<boolean>(false);
 
 // Toast Store
 export const toast = writable<{ message: string; type?: 'success' | 'error' } | null>(null);

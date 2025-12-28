@@ -40,29 +40,33 @@ const translations: Record<Locale, Translations> = {
 const DEFAULT_LOCALE: Locale = 'id';
 const STORAGE_KEY = 'mypage48_locale';
 
-// Get initial locale from localStorage or default
-function getInitialLocale(): Locale {
-    if (typeof window !== 'undefined') {
+// Check if we're in browser environment
+const isBrowser = typeof window !== 'undefined';
+
+// Get stored locale from localStorage
+function getStoredLocale(): Locale | null {
+    if (isBrowser) {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored && (stored === 'id' || stored === 'en' || stored === 'ja')) {
             return stored as Locale;
         }
     }
-    return DEFAULT_LOCALE;
+    return null;
 }
 
-// Create the locale store
-export const locale: Writable<Locale> = writable<Locale>(DEFAULT_LOCALE);
+// Create the locale store - start with stored value if available, else default
+// We export a set function that can be used to hydrate from server data
+const initialLocale = getStoredLocale() ?? DEFAULT_LOCALE;
+export const locale: Writable<Locale> = writable<Locale>(initialLocale);
 
-// Initialize locale on client side
-if (typeof window !== 'undefined') {
-    locale.set(getInitialLocale());
-}
-
-// Subscribe to locale changes and persist to localStorage
+// Subscribe to locale changes and persist to localStorage AND Cookie
 locale.subscribe((value) => {
-    if (typeof window !== 'undefined') {
+    if (isBrowser) {
         localStorage.setItem(STORAGE_KEY, value);
+
+        // Set cookie for SSR support (expires in 1 year)
+        document.cookie = `${STORAGE_KEY}=${value}; path=/; max-age=31536000; SameSite=Lax`;
+
         // Update html lang attribute
         document.documentElement.lang = value;
     }
