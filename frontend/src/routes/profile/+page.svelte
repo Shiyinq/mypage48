@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isAuthenticated, showToast, userProfile, tickets as ticketsStore } from '$lib/stores';
+	import {
+		isAuthenticated,
+		showToast,
+		userProfile,
+		tickets as ticketsStore,
+		isInitialDataLoaded
+	} from '$lib/stores';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
@@ -58,8 +64,9 @@
 	let profile: ProfileData | null = null;
 	let tickets: Ticket[] = [];
 	let recentShows: Ticket[] = [];
-	// Check if we already have data in stores - if so, skip loading state
-	let loading = !get(userProfile) || get(ticketsStore).length === 0;
+
+	// Loading state now depends on the central isInitialDataLoaded store
+	$: loading = !$isInitialDataLoaded;
 
 	// Oshi Selection State
 	let showOshiModal = false;
@@ -211,39 +218,20 @@
 	}
 
 	onMount(() => {
-		// Check if we already have data in stores
-		const storedProfile = get(userProfile);
-		const storedTickets = get(ticketsStore);
-
-		if (storedProfile && storedTickets.length > 0) {
-			// Use data from stores immediately
-			profile = mapProfileData(storedProfile);
-			tickets = storedTickets;
-			updateRecentShows(tickets);
-			loading = false;
-		}
-		// If store is empty, layout will fetch and reactive statements will update our local state
+		// Data sync handled by reactive statements below
 	});
 
 	// Subscribe to store changes to keep local state in sync
-	// This handles both initial load (when layout populates store) and updates from other pages
 	$: {
 		const storeTickets = $ticketsStore;
-		if (storeTickets.length > 0) {
-			tickets = storeTickets;
-			updateRecentShows(tickets);
-			loading = false;
-		}
+		tickets = storeTickets;
+		updateRecentShows(tickets);
 	}
 
 	$: {
 		const storeProfile = $userProfile;
 		if (storeProfile) {
 			profile = mapProfileData(storeProfile);
-			// Only set loading false if we also have tickets
-			if ($ticketsStore.length > 0) {
-				loading = false;
-			}
 		}
 	}
 
