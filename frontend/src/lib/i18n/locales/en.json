@@ -148,7 +148,7 @@
         "filterTitle": "Dashboard Filter",
         "filterSubtitle": "Adjust visualization range",
         "theater": {
-            "title": "Theater",
+            "title": "Shows",
             "subtitle": "Your attendance overview",
             "shows": "Shows",
             "spending": "Spending",
@@ -157,7 +157,10 @@
             "mostFrequentSeat": "Most Frequent Seat",
             "topShow": "Top Show",
             "mostWatched": "Most Watched",
-            "inYear": "In {year}"
+            "inYear": "In {year}",
+            "firstLast": "First & Last Show",
+            "first": "First",
+            "last": "Last"
         },
         "twoShot": {
             "title": "2-Shot Roulette & Birthday",
@@ -169,7 +172,10 @@
             "uniqueIdols": "Unique Idols",
             "topTwoShot": "Top 2Shot",
             "kamiOshi": "Kami-Oshi",
-            "photos": "Photos"
+            "photos": "Photos",
+            "firstLast": "First & Last 2-Shot",
+            "first": "First",
+            "last": "Last"
         },
         "seatMap": {
             "title": "Theater Seat Map",

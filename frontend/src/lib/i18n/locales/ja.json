@@ -148,7 +148,7 @@
         "filterTitle": "ダッシュボードフィルター",
         "filterSubtitle": "表示範囲を調整",
         "theater": {
-            "title": "劇場",
+            "title": "Shows",
             "subtitle": "観覧履歴の概要",
             "shows": "公演",
             "spending": "支出",
@@ -157,7 +157,10 @@
             "mostFrequentSeat": "最も多い席",
             "topShow": "トップ公演",
             "mostWatched": "最も観た",
-            "inYear": "{year}年"
+            "inYear": "{year}年",
+            "firstLast": "初・最終公演",
+            "first": "初",
+            "last": "最終"
         },
         "twoShot": {
             "title": "2ショットルーレット＆バースデー",
@@ -169,7 +172,10 @@
             "uniqueIdols": "ユニークアイドル",
             "topTwoShot": "トップ2ショット",
             "kamiOshi": "神推し",
-            "photos": "枚"
+            "photos": "枚",
+            "firstLast": "初・最終2ショット",
+            "first": "初",
+            "last": "最終"
         },
         "seatMap": {
             "title": "劇場座席マップ",
