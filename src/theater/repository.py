@@ -20,7 +20,7 @@ class TheaterRepository:
         return await self.collection.find_one({"_id": oid, "user_id": user_id})
     
     async def get_all_tickets(self, user_id: str) -> List[dict]:
-        cursor = self.collection.find({"user_id": user_id}).sort("event.date", -1)
+        cursor = self.collection.find({"user_id": user_id}).sort([("event.date", -1), ("event.time", -1)])
         return await cursor.to_list(length=None)
 
     async def update_ticket(self, ticket_id: str, user_id: str, update_data: TicketUpdateRequest) -> Optional[dict]:

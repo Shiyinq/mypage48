@@ -281,9 +281,12 @@
 	// First & Last Show
 	$: showExtremes = (() => {
 		if (filteredTickets.length === 0) return { first: null, last: null };
-		const sorted = [...filteredTickets].sort(
-			(a, b) => new Date(a.event.date).getTime() - new Date(b.event.date).getTime()
-		);
+		const sorted = [...filteredTickets].sort((a, b) => {
+			const dateA = new Date(a.event.date).getTime();
+			const dateB = new Date(b.event.date).getTime();
+			if (dateA !== dateB) return dateA - dateB;
+			return a.event.time.localeCompare(b.event.time);
+		});
 		return { first: sorted[0], last: sorted[sorted.length - 1] };
 	})() as { first: (typeof $tickets)[0] | null; last: (typeof $tickets)[0] | null };
 
@@ -291,9 +294,12 @@
 	$: twoShotExtremes = (() => {
 		const with2Shot = filteredTickets.filter((t) => t.two_shot?.member_name);
 		if (with2Shot.length === 0) return { first: null, last: null };
-		const sorted = [...with2Shot].sort(
-			(a, b) => new Date(a.event.date).getTime() - new Date(b.event.date).getTime()
-		);
+		const sorted = [...with2Shot].sort((a, b) => {
+			const dateA = new Date(a.event.date).getTime();
+			const dateB = new Date(b.event.date).getTime();
+			if (dateA !== dateB) return dateA - dateB;
+			return a.event.time.localeCompare(b.event.time);
+		});
 		return { first: sorted[0], last: sorted[sorted.length - 1] };
 	})() as { first: (typeof $tickets)[0] | null; last: (typeof $tickets)[0] | null };
 
