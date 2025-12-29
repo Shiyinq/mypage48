@@ -1307,19 +1307,22 @@
 	<div class="grid lg:grid-cols-3 gap-6">
 		<!-- Monthly Heatmap -->
 		<div class="glass-panel p-6 rounded-3xl lg:col-span-2 flex flex-col">
-			<div class="mb-6">
-				<h3 class="text-xl font-bold text-themed">
-					{$t('dashboard.monthlyAttendance.title')}
-				</h3>
-				<p class="text-xs text-gray-400">
-					{$t('dashboard.monthlyAttendance.subtitle')}
-					{isAllData
-						? availableYears.length > 1
-							? `${Math.min(...availableYears)} - ${Math.max(...availableYears)}`
-							: availableYears[0]
-						: selectedYear}
-				</p>
+			<div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+				<div>
+					<h3 class="text-xl font-bold text-themed">
+						{$t('dashboard.monthlyAttendance.title')}
+					</h3>
+					<p class="text-xs text-gray-400">
+						{$t('dashboard.monthlyAttendance.subtitle')}
+						{isAllData
+							? availableYears.length > 1
+								? `${Math.min(...availableYears)} - ${Math.max(...availableYears)}`
+								: availableYears[0]
+							: selectedYear}
+					</p>
+				</div>
 			</div>
+
 			<div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 flex-1">
 				{#if isLoading}
 					<!-- Skeleton Loading for Monthly -->
@@ -1334,22 +1337,46 @@
 				{:else}
 					{#each monthlyStats.stats as month}
 						{@const intensity =
-							month.count > 0 ? 0.2 + (month.count / monthlyStats.maxCount) * 0.7 : 0.05}
+							month.count > 0 ? 0.2 + (month.count / monthlyStats.maxCount) * 0.8 : 0.05}
 						{@const hasData = month.count > 0}
+						{@const isHighIntensity = intensity > 0.5}
 						<div
-							class={`flex flex-col items-center group ${!month.isActive ? 'opacity-30 grayscale pointer-events-none' : ''}`}
+							class={`flex flex-col items-center group relative ${!month.isActive ? 'opacity-30 grayscale pointer-events-none' : ''}`}
+							title={hasData
+								? `${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(month.spent)}`
+								: ''}
 						>
 							<div
-								class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm dark:border-gray-700"
-								style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'}`}
+								class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg group-hover:scale-105 border"
+								style={`
+									background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; 
+									border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'};
+									box-shadow: ${hasData ? `0 4px 12px -2px rgba(220, 38, 38, ${intensity * 0.6})` : 'none'}
+								`}
 							>
 								{#if hasData}
-									<span class="text-xl md:text-2xl font-bold text-white drop-shadow-sm"
-										>{month.count}</span
+									<span
+										class={`text-xl md:text-2xl font-black drop-shadow-sm transition-colors duration-300 ${isHighIntensity ? 'text-white' : 'text-red-600 dark:text-red-400'}`}
 									>
-									<span class="text-[8px] text-white/80 font-medium uppercase tracking-wider"
-										>{$t('shows.unit')}</span
+										{month.count}
+									</span>
+									<span
+										class={`text-[8px] font-bold uppercase tracking-wider transition-colors duration-300 ${isHighIntensity ? 'text-white/80' : 'text-red-600/70 dark:text-red-400/70'}`}
 									>
+										{$t('shows.unit')}
+									</span>
+
+									<!-- Spending Pill on Hover -->
+									<div
+										class="absolute inset-x-0 bottom-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 backdrop-blur-sm flex justify-center"
+									>
+										<p class="text-[9px] text-white font-bold truncate">
+											{new Intl.NumberFormat('id-ID', {
+												notation: 'compact',
+												compactDisplay: 'short'
+											}).format(month.spent)}
+										</p>
+									</div>
 								{:else}
 									<span class="text-gray-300 dark:text-gray-600 text-xl font-bold opacity-30"
 										>-</span
@@ -1358,7 +1385,7 @@
 							</div>
 							<div class="text-center w-full">
 								<span
-									class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide"
+									class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide group-hover:text-red-500 transition-colors"
 									>{$t('time.monthsShort.' + month.name.substring(0, 3).toLowerCase())}</span
 								>
 							</div>
@@ -1368,8 +1395,7 @@
 			</div>
 		</div>
 
-		<!-- Day Preference List (Replacing Pie Chart for now) -->
-		<!-- Day Preference Grid -->
+		<!-- Day Preference List -->
 		<div class="glass-panel p-6 rounded-3xl flex flex-col">
 			<div class="mb-6">
 				<h3 class="text-xl font-bold text-themed">
@@ -1378,11 +1404,13 @@
 				<p class="text-xs text-gray-400">{$t('dashboard.dayPreference.subtitle')}</p>
 			</div>
 
-			<div class="grid grid-cols-3 sm:grid-cols-4 gap-3 flex-1 content-start">
+			<div class="flex flex-wrap justify-center gap-3 flex-1 content-start w-full">
 				{#if isLoading}
 					<!-- Skeleton Loading for Days -->
 					{#each Array(7) as _, i}
-						<div class="flex flex-col items-center">
+						<div
+							class="flex flex-col items-center w-[calc(33.33%-0.5rem)] sm:w-[calc(25%-0.56rem)] lg:w-[calc(33.33%-0.5rem)] xl:w-[calc(25%-0.56rem)]"
+						>
 							<div
 								class="w-full aspect-square rounded-2xl mb-2 bg-gray-200 dark:bg-zinc-700 animate-pulse"
 							></div>
@@ -1391,20 +1419,31 @@
 					{/each}
 				{:else}
 					{#each dayStats.stats as day}
-						{@const intensity = day.count > 0 ? 0.2 + (day.count / dayStats.maxCount) * 0.7 : 0.05}
+						{@const intensity = day.count > 0 ? 0.2 + (day.count / dayStats.maxCount) * 0.8 : 0.05}
 						{@const hasData = day.count > 0}
-						<div class="flex flex-col items-center group">
+						{@const isHighIntensity = intensity > 0.5}
+						<div
+							class="flex flex-col items-center group w-[calc(33.33%-0.5rem)] sm:w-[calc(25%-0.56rem)] lg:w-[calc(33.33%-0.5rem)] xl:w-[calc(25%-0.56rem)]"
+						>
 							<div
-								class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 border border-transparent shadow-sm dark:border-gray-700"
-								style={`background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'}`}
+								class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg group-hover:scale-105 border"
+								style={`
+									background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; 
+									border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'};
+									box-shadow: ${hasData ? `0 4px 12px -2px rgba(220, 38, 38, ${intensity * 0.6})` : 'none'}
+								`}
 							>
 								{#if hasData}
-									<span class="text-xl md:text-2xl font-bold text-white drop-shadow-sm"
-										>{day.count}</span
+									<span
+										class={`text-xl md:text-2xl font-black drop-shadow-sm transition-colors duration-300 ${isHighIntensity ? 'text-white' : 'text-red-600 dark:text-red-400'}`}
 									>
-									<span class="text-[8px] text-white/80 font-medium uppercase tracking-wider"
-										>{$t('shows.unit')}</span
+										{day.count}
+									</span>
+									<span
+										class={`text-[8px] font-bold uppercase tracking-wider transition-colors duration-300 ${isHighIntensity ? 'text-white/80' : 'text-red-600/70 dark:text-red-400/70'}`}
 									>
+										{$t('shows.unit')}
+									</span>
 								{:else}
 									<span class="text-gray-300 dark:text-gray-600 text-xl font-bold opacity-30"
 										>-</span
@@ -1413,7 +1452,7 @@
 							</div>
 							<div class="text-center w-full">
 								<span
-									class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide"
+									class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide group-hover:text-red-500 transition-colors"
 									>{$t('time.daysShort.' + day.name.substring(0, 3).toLowerCase())}</span
 								>
 							</div>
