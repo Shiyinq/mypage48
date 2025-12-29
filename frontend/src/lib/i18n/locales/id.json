@@ -148,7 +148,7 @@
         "filterTitle": "Filter Dasbor",
         "filterSubtitle": "Atur rentang visualisasi",
         "theater": {
-            "title": "Teater",
+            "title": "Show",
             "subtitle": "Ringkasan kehadiran kamu",
             "shows": "Pertunjukan",
             "spending": "Pengeluaran",
@@ -157,7 +157,10 @@
             "mostFrequentSeat": "Kursi Tersering",
             "topShow": "Pertunjukan Favorit",
             "mostWatched": "Paling Sering Ditonton",
-            "inYear": "Pada {year}"
+            "inYear": "Pada {year}",
+            "firstLast": "Show Pertama & Terakhir",
+            "first": "Pertama",
+            "last": "Terakhir"
         },
         "twoShot": {
             "title": "2-Shot Roulette & Birthday",
@@ -169,7 +172,10 @@
             "uniqueIdols": "Idola Unik",
             "topTwoShot": "Top 2-Shot",
             "kamiOshi": "Kami-Oshi",
-            "photos": "Foto"
+            "photos": "Foto",
+            "firstLast": "2-Shot Pertama & Terakhir",
+            "first": "Pertama",
+            "last": "Terakhir"
         },
         "seatMap": {
             "title": "Peta Kursi Teater",
