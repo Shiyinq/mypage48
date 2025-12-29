@@ -47,10 +47,28 @@
 	$: filteredTickets = ($tickets as Ticket[])
 		.filter((t) => {
 			const q = searchQuery.toLowerCase();
+			const date = new Date(t.event.date);
+			const formattedDate = date
+				.toLocaleDateString('id-ID', {
+					day: 'numeric',
+					month: 'long',
+					year: 'numeric'
+				})
+				.toLowerCase();
+			const formattedDateShort = date
+				.toLocaleDateString('id-ID', {
+					day: 'numeric',
+					month: 'short',
+					year: 'numeric'
+				})
+				.toLowerCase();
+
 			return (
 				t.event.title.toLowerCase().includes(q) ||
 				t.ticket_id.toLowerCase().includes(q) ||
 				t.event.date.includes(q) ||
+				formattedDate.includes(q) ||
+				formattedDateShort.includes(q) ||
 				`${t.seat.section}-${t.seat.number}`.toLowerCase().includes(q)
 			);
 		})
