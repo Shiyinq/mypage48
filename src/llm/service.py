@@ -20,7 +20,7 @@ class LLMService:
         
         # Configure Gemini
         genai.configure(api_key=self.config.gemini_api_key)
-        self.model = genai.GenerativeModel("gemini-2.0-flash-exp")
+        self.model = genai.GenerativeModel("gemini-2.5-flash")
 
     async def analyze_ticket_image(self, request: AnalyzeImageRequest) -> AnalysisResult:
         try:
