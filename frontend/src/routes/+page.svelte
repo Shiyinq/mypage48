@@ -21,7 +21,6 @@
 		ChevronRight,
 		Crown,
 		User,
-		Wallet,
 		Users,
 		TrendingUp,
 		Maximize2
@@ -467,9 +466,9 @@
 				<StatCard
 					title={$t('dashboard.theater.shows')}
 					value={totalVisits}
-					sub={$t('dashboard.theater.inYear', { year: selectedYear })}
+					sub={$t('dashboard.theater.timesWatched')}
 					icon={TicketIcon}
-					colorClass="bg-red-600/10 text-red-600"
+					theme="red"
 					loading={isLoading}
 				/>
 				<StatCard
@@ -479,9 +478,8 @@
 						currency: 'IDR',
 						maximumFractionDigits: 0
 					}).format(totalSpent)}
-					sub={$t('dashboard.theater.totalExpenses')}
 					icon={DollarSign}
-					colorClass="bg-emerald-500/10 text-emerald-500"
+					theme="emerald"
 					loading={isLoading}
 					hideable={true}
 				/>
@@ -489,8 +487,10 @@
 					title={$t('dashboard.theater.topRow')}
 					value={mostFrequentRow}
 					sub={$t('dashboard.theater.mostFrequentSeat')}
+					detail={`${rowStats.counts[mostFrequentRow] || 0} ${$t('dashboard.theater.times')}`}
 					icon={Armchair}
-					colorClass="bg-amber-500/10 text-amber-500"
+					theme="amber"
+					showCrown={true}
 					loading={isLoading}
 				/>
 
@@ -502,7 +502,8 @@
 							<div class="p-1.5 bg-purple-100 dark:bg-purple-800/40 rounded-lg">
 								<Star class="w-4 h-4 fill-current" />
 							</div>
-							<span class="font-bold text-xs tracking-wider text-purple-500 dark:text-purple-400"
+							<span
+								class="font-bold text-xs tracking-wider text-purple-500 dark:text-purple-400 uppercase"
 								>{$t('dashboard.theater.topShow')}</span
 							>
 						</div>
@@ -573,7 +574,7 @@
 
 				<!-- First & Last Show Card -->
 				<div
-					class="glass-card rounded-3xl p-5 relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-purple-50/50 dark:bg-transparent border-purple-100 dark:border-purple-500/20 sm:col-span-2"
+					class="glass-card rounded-3xl p-5 relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-purple-50/20 dark:bg-transparent border-purple-100 dark:border-purple-500/20 sm:col-span-2"
 				>
 					<div class="flex justify-between items-start mb-4">
 						<div class="flex items-center gap-2 text-purple-500">
@@ -710,11 +711,11 @@
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<StatCard
-					title="2Shot"
+					title={$t('dashboard.twoShot.twoShotTitle')}
 					value={twoShotStats.totalCount}
 					sub={$t('dashboard.twoShot.collected')}
 					icon={Camera}
-					colorClass="bg-pink-500/10 text-pink-500"
+					theme="pink"
 					loading={isLoading}
 				/>
 				<StatCard
@@ -724,9 +725,8 @@
 						currency: 'IDR',
 						maximumFractionDigits: 0
 					}).format(twoShotStats.totalSpend)}
-					sub={$t('dashboard.twoShot.totalExpenses')}
-					icon={Wallet}
-					colorClass="bg-emerald-500/10 text-emerald-500"
+					icon={DollarSign}
+					theme="emerald"
 					loading={isLoading}
 					hideable={true}
 				/>
@@ -735,7 +735,7 @@
 					value={twoShotStats.uniqueCount}
 					sub={$t('dashboard.twoShot.uniqueIdols')}
 					icon={Users}
-					colorClass="bg-purple-500/10 text-purple-500"
+					theme="blue"
 					loading={isLoading}
 				/>
 
@@ -819,7 +819,7 @@
 
 				<!-- First & Last 2-Shot Card -->
 				<div
-					class="glass-card rounded-3xl p-5 relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-pink-50/30 dark:bg-transparent border-pink-100 dark:border-pink-500/20 sm:col-span-2"
+					class="glass-card rounded-3xl p-5 relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-pink-50/20 dark:bg-transparent border-pink-100 dark:border-pink-500/20 sm:col-span-2"
 				>
 					<div class="flex justify-between items-start mb-4">
 						<div class="flex items-center gap-2 text-pink-400">

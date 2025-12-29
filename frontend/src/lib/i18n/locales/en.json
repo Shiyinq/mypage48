@@ -151,7 +151,7 @@
             "title": "Shows",
             "subtitle": "Your attendance overview",
             "shows": "Shows",
-            "spending": "Spending",
+            "spending": "Expenses",
             "totalExpenses": "Total Expenses",
             "topRow": "Top Row",
             "mostFrequentSeat": "Most Frequent Seat",
@@ -160,13 +160,16 @@
             "inYear": "In {year}",
             "firstLast": "First & Last Show",
             "first": "First",
-            "last": "Last"
+            "last": "Last",
+            "times": "Times",
+            "timesWatched": "Times Watched"
         },
         "twoShot": {
             "title": "2-Shot Roulette & Birthday",
             "subtitle": "Collection overview & ranking",
-            "collected": "Collected",
-            "spending": "Spending",
+            "twoShotTitle": "2Shot",
+            "collected": "Photos Collected",
+            "spending": "Expenses",
             "totalExpenses": "Total Expenses",
             "members": "Members",
             "uniqueIdols": "Unique Idols",

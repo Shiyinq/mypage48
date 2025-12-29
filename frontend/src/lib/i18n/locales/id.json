@@ -160,12 +160,15 @@
             "inYear": "Pada {year}",
             "firstLast": "Show Pertama & Terakhir",
             "first": "Pertama",
-            "last": "Terakhir"
+            "last": "Terakhir",
+            "times": "Kali",
+            "timesWatched": "Kali Menonton"
         },
         "twoShot": {
             "title": "2-Shot Roulette & Birthday",
             "subtitle": "Ringkasan koleksi & peringkat",
-            "collected": "Terkumpul",
+            "twoShotTitle": "2Shot",
+            "collected": "Koleksi Foto",
             "spending": "Pengeluaran",
             "totalExpenses": "Total Pengeluaran",
             "members": "Member",

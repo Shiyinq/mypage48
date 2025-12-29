@@ -148,7 +148,7 @@
         "filterTitle": "ダッシュボードフィルター",
         "filterSubtitle": "表示範囲を調整",
         "theater": {
-            "title": "Shows",
+            "title": "公演",
             "subtitle": "観覧履歴の概要",
             "shows": "公演",
             "spending": "支出",
@@ -160,12 +160,15 @@
             "inYear": "{year}年",
             "firstLast": "初・最終公演",
             "first": "初",
-            "last": "最終"
+            "last": "最終",
+            "times": "回",
+            "timesWatched": "回観覧"
         },
         "twoShot": {
             "title": "2ショットルーレット＆バースデー",
             "subtitle": "コレクション概要＆ランキング",
-            "collected": "収集済み",
+            "twoShotTitle": "2ショット",
+            "collected": "枚収集",
             "spending": "支出",
             "totalExpenses": "総支出",
             "members": "メンバー",
