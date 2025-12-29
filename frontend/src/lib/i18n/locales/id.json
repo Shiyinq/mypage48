@@ -166,7 +166,7 @@
         },
         "twoShot": {
             "title": "2-Shot Roulette & Birthday",
-            "subtitle": "Ringkasan koleksi & peringkat",
+            "subtitle": "Foto bersama member",
             "twoShotTitle": "2-Shot",
             "collected": "Koleksi Foto",
             "spending": "Pengeluaran",
@@ -182,7 +182,7 @@
         },
         "seatMap": {
             "title": "Peta Kursi Teater",
-            "subtitle": "Distribusi visual untuk rentang terpilih (Baris A-J)",
+            "subtitle": "Letak kursi yang pernah kamu dapat",
             "rowsCollected": "Baris Terkumpul",
             "stage": "Panggung",
             "row": "Baris"
