@@ -166,7 +166,7 @@
         },
         "twoShot": {
             "title": "2-Shot Roulette & Birthday",
-            "subtitle": "Collection overview & ranking",
+            "subtitle": "Photo with member",
             "twoShotTitle": "2-Shot",
             "collected": "Photos Collected",
             "spending": "Expenses",
@@ -182,7 +182,7 @@
         },
         "seatMap": {
             "title": "Theater Seat Map",
-            "subtitle": "Visual distribution for selected range (Rows A-J)",
+            "subtitle": "Seat locations you have obtained",
             "rowsCollected": "Rows Collected",
             "stage": "Stage",
             "row": "Row"

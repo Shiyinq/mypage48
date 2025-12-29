@@ -166,7 +166,7 @@
         },
         "twoShot": {
             "title": "2ショットルーレット＆バースデー",
-            "subtitle": "コレクション概要＆ランキング",
+            "subtitle": "メンバーとの写真",
             "twoShotTitle": "2ショット",
             "collected": "枚収集",
             "spending": "支出",
@@ -182,7 +182,7 @@
         },
         "seatMap": {
             "title": "劇場座席マップ",
-            "subtitle": "選択範囲の視覚的分布（A〜J列）",
+            "subtitle": "獲得した座席の位置",
             "rowsCollected": "収集済み列",
             "stage": "ステージ",
             "row": "列"
