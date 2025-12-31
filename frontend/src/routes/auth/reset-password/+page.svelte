@@ -113,7 +113,7 @@
 					</p>
 					<button
 						on:click={() => goto('/login')}
-						class="w-full py-4 rounded-2xl font-bold idol-gradient text-white shadow-lg shadow-green-200 hover:shadow-xl hover:scale-[1.02] transition-all"
+						class="w-full py-4 rounded-2xl font-bold idol-gradient text-white shadow-lg shadow-green-200 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer"
 					>
 						{$t('auth.resetPassword.goToLogin')}
 					</button>
@@ -185,7 +185,7 @@
 					<button
 						type="submit"
 						disabled={isLoading || !token}
-						class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+						class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
 					>
 						{#if isLoading}
 							<Loader2 class="w-5 h-5 animate-spin" /> {$t('auth.resetPassword.submitting')}

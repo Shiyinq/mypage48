@@ -119,7 +119,7 @@
 				<button
 					type="submit"
 					disabled={isLoading}
-					class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+					class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
 				>
 					{#if isLoading}
 						<span class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"
@@ -134,7 +134,7 @@
 				<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.login.noAccount')}</p>
 				<button
 					on:click={() => goto('/register')}
-					class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto"
+					class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
 				>
 					{$t('auth.login.registerCta')}
 					<User class="w-4 h-4" />

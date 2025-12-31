@@ -114,7 +114,7 @@
 					<button
 						type="submit"
 						disabled={isLoading}
-						class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70"
+						class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
 					>
 						{#if isLoading}
 							<Loader2 class="w-5 h-5 animate-spin" /> {$t('auth.forgotPassword.submitting')}
@@ -127,7 +127,7 @@
 				<div class="space-y-4">
 					<button
 						on:click={() => (isSent = false)}
-						class="w-full py-4 rounded-2xl font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all"
+						class="w-full py-4 rounded-2xl font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all cursor-pointer"
 					>
 						{$t('auth.forgotPassword.tryAnother')}
 					</button>

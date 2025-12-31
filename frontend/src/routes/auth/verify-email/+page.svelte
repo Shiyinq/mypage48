@@ -106,14 +106,14 @@
 			{#if status === 'error'}
 				<button
 					on:click={() => goto('/login')}
-					class="w-full py-3 rounded-xl font-bold bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
+					class="w-full py-3 rounded-xl font-bold bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
 				>
 					{$t('auth.verifyEmail.backToLogin')}
 				</button>
 			{:else if status === 'success'}
 				<button
 					on:click={() => goto('/login')}
-					class="w-full py-3 rounded-xl font-bold idol-gradient text-white shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all"
+					class="w-full py-3 rounded-xl font-bold idol-gradient text-white shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer"
 				>
 					{$t('auth.verifyEmail.goToLogin')}
 				</button>
