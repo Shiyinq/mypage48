@@ -110,6 +110,7 @@ export interface PasswordResetRequest {
 export interface PasswordResetConfirmRequest {
     token: string;
     new_password: string;
+    confirm_password: string;
 }
 
 export interface GenericResponse {
