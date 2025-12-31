@@ -23,6 +23,7 @@ from src.users.schemas import (
     PublicUserResponse,
     UserStats,
     PublicShowEntry,
+    UpdateProfilePictureRequest,
 )
 from src.users.service import UserService
 from src.members.service import MemberService
@@ -118,6 +119,19 @@ async def update_public_status(
     """
     await user_service.update_public_status(current_user.userId, request.isPublic, request.publicYear)
     return {"message": "Public status updated successfully"}
+
+
+@router.post("/users/profile-picture", status_code=200)
+async def update_profile_picture(
+    request: UpdateProfilePictureRequest,
+    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    user_service: UserService = Depends(get_user_service),
+):
+    """
+    Update the user's profile picture.
+    """
+    await user_service.update_profile_picture(current_user.userId, request.profilePicture)
+    return {"message": "Profile picture updated successfully"}
 
 
 @router.get("/u/{username}", response_model=PublicUserResponse)

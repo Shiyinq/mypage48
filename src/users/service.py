@@ -165,3 +165,11 @@ class UserService:
         except Exception as e:
             logger.exception(f"Error fetching public user {username}: {str(e)}")
             raise
+
+    async def update_profile_picture(self, user_id: str, profile_picture: str):
+        """Update the user's profile picture"""
+        try:
+            await self.user_repo.set_profile_picture(user_id, profile_picture)
+        except Exception as e:
+            logger.exception(f"Error updating profile picture for user {user_id}: {str(e)}")
+            raise

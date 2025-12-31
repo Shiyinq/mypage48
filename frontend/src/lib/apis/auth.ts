@@ -61,6 +61,13 @@ export const auth = {
 		return client<GenericResponse>('/users/oshi', { method: 'POST', body: { oshiId } as any });
 	},
 
+	updateProfilePicture: async (profilePicture: string) => {
+		return client<GenericResponse>('/users/profile-picture', {
+			method: 'POST',
+			body: { profilePicture } as any
+		});
+	},
+
 	refresh: async (): Promise<AuthResponse> => {
 		return client<AuthResponse>('/auth/refresh', { method: 'POST' });
 	},
