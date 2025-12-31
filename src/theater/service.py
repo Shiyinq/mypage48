@@ -9,8 +9,11 @@ from src.theater.schemas import (
     TicketCreateRequest,
     TicketInDB,
     TicketResponse,
+
     TicketUpdateRequest,
+    MessageResponse,
 )
+from src.theater.constants import Info
 from src.theater.exceptions import (
     TicketCreationError,
     TicketNotFoundError,
@@ -82,11 +85,12 @@ class TheaterService:
             logger.exception(f"Error updating ticket: {str(e)}")
             raise TicketUpdateError()
 
-    async def delete_ticket(self, user_id: str, ticket_id: str):
+    async def delete_ticket(self, user_id: str, ticket_id: str) -> MessageResponse:
         try:
             success = await self.repository.delete_ticket(ticket_id, user_id)
             if not success:
                 raise TicketNotFoundError()
+            return MessageResponse(detail=Info.TICKET_DELETED)
         except TicketNotFoundError:
             raise
         except Exception as e:
