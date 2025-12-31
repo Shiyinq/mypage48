@@ -11,7 +11,7 @@ from src.theater.schemas import (
     TicketResponse,
     TicketUpdateRequest,
 )
-from src.theater.constants import Info
+
 
 router = APIRouter()
 
@@ -73,6 +73,5 @@ async def delete_ticket(
     """
     Delete a ticket.
     """
-    await service.delete_ticket(current_user.userId, ticket_id)
-    return MessageResponse(detail=Info.TICKET_DELETED)
+    return await service.delete_ticket(current_user.userId, ticket_id)
 
