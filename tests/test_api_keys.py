@@ -6,11 +6,13 @@ from src.config import config
 async def test_create_api_key_success(client: AsyncClient, db):
     # Register and Login
     register_payload = {
-        "name": "ApiKey User",
+        "fullName": "ApiKey User",
+        "memberId": "apikey123",
         "username": "apikeyuser",
         "email": "apikey@example.com",
         "password": "Password123!",
-        "confirmPassword": "Password123!"
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
     }
     await client.post("/api/users/signup", json=register_payload)
 
@@ -39,11 +41,13 @@ async def test_create_api_key_success(client: AsyncClient, db):
 async def test_use_api_key_success(client: AsyncClient, db):
     # Register and Login
     register_payload = {
-        "name": "ApiKey Use User",
+        "fullName": "ApiKey Use User",
+        "memberId": "apikeyuse123",
         "username": "apikeyuse",
         "email": "apikeyuse@example.com",
         "password": "Password123!",
-        "confirmPassword": "Password123!"
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
     }
     await client.post("/api/users/signup", json=register_payload)
     
@@ -72,11 +76,13 @@ async def test_use_api_key_success(client: AsyncClient, db):
 async def test_revoke_api_key(client: AsyncClient, db):
     # Register and Create Key
     register_payload = {
-        "name": "Revoke User",
+        "fullName": "Revoke User",
+        "memberId": "revoke123",
         "username": "revokeuser",
         "email": "revoke@example.com",
         "password": "Password123!",
-        "confirmPassword": "Password123!"
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
     }
     await client.post("/api/users/signup", json=register_payload)
     

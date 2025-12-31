@@ -11,7 +11,7 @@ from src.database import database_instance
 from src.dependencies import require_csrf_protection
 
 # Override database name for testing
-config.DB_NAME = "fasmo_test"
+config.DB_NAME = "mypage48_test"
 limiter.enabled = False
 
 # Mock CSRF protection to always pass

@@ -16,11 +16,13 @@ def get_password_hash(password) -> str:
 @pytest.mark.asyncio
 async def test_register_user_success(client: AsyncClient):
     payload = {
-        "name": "Test User",
+        "fullName": "Test User",
+        "memberId": "test1234",
         "username": "testuser",
         "email": "test@example.com",
         "password": "Password123!",
-        "confirmPassword": "Password123!"
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
     }
     response = await client.post("/api/users/signup", json=payload)
     assert response.status_code == 201
@@ -31,11 +33,13 @@ async def test_register_user_success(client: AsyncClient):
 async def test_login_user_success(client: AsyncClient, db):
     # Register first
     register_payload = {
-        "name": "Login User",
+        "fullName": "Login User",
+        "memberId": "login1234",
         "username": "loginuser",
         "email": "login@example.com",
         "password": "Password123!",
-        "confirmPassword": "Password123!"
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
     }
     await client.post("/api/users/signup", json=register_payload)
 
@@ -69,11 +73,13 @@ async def test_login_invalid_credentials(client: AsyncClient):
 async def test_refresh_token_flow(client: AsyncClient, db):
     # Register and login to get refresh token
     register_payload = {
-        "name": "Refresh User",
+        "fullName": "Refresh User",
+        "memberId": "refresh1234",
         "username": "refreshuser",
         "email": "refresh@example.com",
         "password": "Password123!",
-        "confirmPassword": "Password123!"
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
     }
     await client.post("/api/users/signup", json=register_payload)
     
@@ -105,11 +111,13 @@ async def test_refresh_token_flow(client: AsyncClient, db):
 async def test_logout(client: AsyncClient, db):
     # Register and login
     register_payload = {
-        "name": "Logout User",
+        "fullName": "Logout User",
+        "memberId": "logout1234",
         "username": "logoutuser",
         "email": "logout@example.com",
         "password": "Password123!",
-        "confirmPassword": "Password123!"
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
     }
     await client.post("/api/users/signup", json=register_payload)
     
@@ -135,11 +143,13 @@ async def test_logout(client: AsyncClient, db):
 async def test_send_verification_email(client: AsyncClient, db, mock_resend_email):
     # Register user (unverified)
     register_payload = {
-        "name": "Verify User",
+        "fullName": "Verify User",
+        "memberId": "verify1234",
         "username": "verifyuser",
         "email": "verify@example.com",
         "password": "Password123!",
-        "confirmPassword": "Password123!"
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
     }
     await client.post("/api/users/signup", json=register_payload)
     

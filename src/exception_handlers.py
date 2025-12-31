@@ -51,6 +51,18 @@ from src.users.exceptions import (
 )
 from src.users.http_exceptions import EmailTaken, PublicUserNotFound, ServerError, UsernameTaken
 from src.users.constants import ErrorCode
+from src.theater.exceptions import (
+    TicketNotFoundError,
+    TicketCreationError,
+    TicketUpdateError,
+    TicketDeletionError,
+)
+from src.theater.http_exceptions import (
+    TicketNotFound,
+    TicketCreateError,
+    TicketUpdateError as HttpTicketUpdateError,
+    TicketDeleteError,
+)
 
 logger = create_logger("exceptions", __name__)
 
@@ -108,6 +120,15 @@ async def domain_exception_handler(request: Request, exc: DomainException):
 
     if isinstance(exc, PublicUserNotFoundError):
         return await detailed_http_exception_handler(request, PublicUserNotFound())
+
+    if isinstance(exc, TicketNotFoundError):
+        return await detailed_http_exception_handler(request, TicketNotFound())
+    if isinstance(exc, TicketCreationError):
+        return await detailed_http_exception_handler(request, TicketCreateError())
+    if isinstance(exc, TicketUpdateError):
+        return await detailed_http_exception_handler(request, HttpTicketUpdateError())
+    if isinstance(exc, TicketDeletionError):
+        return await detailed_http_exception_handler(request, TicketDeleteError())
 
     error_msg = str(exc)
     if (
