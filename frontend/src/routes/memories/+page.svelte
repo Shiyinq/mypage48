@@ -304,6 +304,14 @@
 								{item.title}
 							</h3>
 
+							{#if item.type === '2SHOT'}
+								<p
+									class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 line-clamp-1"
+								>
+									{item.originalTicket.event.title}
+								</p>
+							{/if}
+
 							<div
 								class="flex items-center justify-center gap-2 text-[10px] font-medium text-gray-400 uppercase tracking-wider"
 							>
