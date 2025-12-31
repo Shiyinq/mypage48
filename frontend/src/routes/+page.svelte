@@ -254,14 +254,14 @@
 			totalSpend,
 			totalCount,
 			uniqueCount: uniqueMembers.size,
-			kamiOshi: ranking[0] || null
+			mostCollected: ranking[0] || null
 		};
 	})() as {
 		ranking: { name: string; count: number; image?: string }[];
 		totalSpend: number;
 		totalCount: number;
 		uniqueCount: number;
-		kamiOshi: { name: string; count: number; image?: string } | null;
+		mostCollected: { name: string; count: number; image?: string } | null;
 	};
 
 	// Most frequent row for card
@@ -778,10 +778,10 @@
 								<div
 									class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
 								>
-									{#if twoShotStats?.kamiOshi?.image}
+									{#if twoShotStats?.mostCollected?.image}
 										<img
-											src={twoShotStats.kamiOshi.image}
-											alt={twoShotStats.kamiOshi.name}
+											src={twoShotStats.mostCollected.image}
+											alt={twoShotStats.mostCollected.name}
 											class="w-full h-full object-cover"
 										/>
 									{:else}
@@ -791,16 +791,16 @@
 							</div>
 							<div class="min-w-0">
 								<p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-									{$t('dashboard.twoShot.kamiOshi')}
+									{$t('dashboard.twoShot.mostCollected')}
 								</p>
 								<h3
-									class={`font-black text-themed leading-none mb-0.5 truncate ${(twoShotStats?.kamiOshi?.name?.length ?? 0) > 15 ? 'text-sm' : 'text-lg'}`}
-									title={twoShotStats?.kamiOshi?.name || '-'}
+									class={`font-black text-themed leading-none mb-0.5 truncate ${(twoShotStats?.mostCollected?.name?.length ?? 0) > 15 ? 'text-sm' : 'text-lg'}`}
+									title={twoShotStats?.mostCollected?.name || '-'}
 								>
-									{twoShotStats?.kamiOshi?.name || '-'}
+									{twoShotStats?.mostCollected?.name || '-'}
 								</h3>
 								<p class="text-sm font-bold text-pink-500">
-									{twoShotStats?.kamiOshi?.count || 0}
+									{twoShotStats?.mostCollected?.count || 0}
 									{$t('dashboard.twoShot.photos')}
 								</p>
 							</div>
