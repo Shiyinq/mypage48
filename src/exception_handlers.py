@@ -1,4 +1,6 @@
 from fastapi import Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from src.api_keys.exceptions import (
@@ -43,10 +45,12 @@ from src.users.exceptions import EmailAlreadyExistsError
 from src.users.exceptions import EmailNotVerified as DomainEmailNotVerified
 from src.users.exceptions import (
     ProviderUserCreationError,
+    PublicUserNotFoundError,
     UserCreationError,
     UsernameAlreadyExistsError,
 )
-from src.users.http_exceptions import EmailTaken, ServerError, UsernameTaken
+from src.users.http_exceptions import EmailTaken, PublicUserNotFound, ServerError, UsernameTaken
+from src.users.constants import ErrorCode
 
 logger = create_logger("exceptions", __name__)
 
@@ -102,6 +106,9 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     if isinstance(exc, APIKeyNotFoundError):
         return await detailed_http_exception_handler(request, APIKeyNotFound())
 
+    if isinstance(exc, PublicUserNotFoundError):
+        return await detailed_http_exception_handler(request, PublicUserNotFound())
+
     error_msg = str(exc)
     if (
         "password" in error_msg.lower()
@@ -124,4 +131,27 @@ async def detailed_http_exception_handler(request: Request, exc: DetailedHTTPExc
         status_code=exc.STATUS_CODE,
         content={"detail": exc.detail},
         headers=getattr(exc, "headers", None),
+    )
+
+
+async def request_validation_exception_handler(
+    request: Request, exc: RequestValidationError
+):
+    errors = exc.errors()
+    if errors:
+        first_error = errors[0]
+        msg = first_error.get("msg", "Invalid request")
+        
+        # Clean Pydantic prefix
+        clean_msg = msg
+        if msg.startswith("Value error, "):
+            clean_msg = msg.replace("Value error, ", "")
+            
+        # Only return 400 if it matches known password errors
+        if clean_msg == ErrorCode.PASSWORD_MISMATCH or clean_msg == ErrorCode.PASSWORD_RULES:
+            return JSONResponse(status_code=400, content={"detail": clean_msg})
+
+    return JSONResponse(
+        status_code=422,
+        content={"detail": jsonable_encoder(exc.errors())},
     )

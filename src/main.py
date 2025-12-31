@@ -3,6 +3,7 @@ import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -19,6 +20,7 @@ if config.oauthlib_insecure_transport:
 from src.exception_handlers import (
     detailed_http_exception_handler,
     domain_exception_handler,
+    request_validation_exception_handler,
 )
 from src.exceptions import DomainException
 from src.http_exceptions import BadRequest, DetailedHTTPException, EntityTooLarge
@@ -53,6 +55,7 @@ app = FastAPI(
 
 app.add_exception_handler(DomainException, domain_exception_handler)
 app.add_exception_handler(DetailedHTTPException, detailed_http_exception_handler)
+app.add_exception_handler(RequestValidationError, request_validation_exception_handler)
 
 
 app.state.limiter = limiter

@@ -1,4 +1,4 @@
-from src.http_exceptions import BadRequest, Conflict, InternalServerError
+from src.http_exceptions import BadRequest, Conflict, InternalServerError, NotFound
 from src.users.constants import ErrorCode
 
 
@@ -20,3 +20,7 @@ class PasswordRules(BadRequest):
 
 class ServerError(InternalServerError):
     DETAIL = "Internal server error."
+
+
+class PublicUserNotFound(NotFound):
+    DETAIL = ErrorCode.PUBLIC_USER_NOT_FOUND
