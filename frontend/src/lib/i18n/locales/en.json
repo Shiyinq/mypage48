@@ -277,7 +277,8 @@
             "enable": "Enable Public Profile",
             "description": "Allow anyone to view your profile stats and theater journey using your unique link.",
             "yourLink": "Your Public Profile Link",
-            "allYears": "All Years"
+            "allYears": "All Years",
+            "thisYear": "This Year"
         },
         "developer": {
             "title": "Developer Access",

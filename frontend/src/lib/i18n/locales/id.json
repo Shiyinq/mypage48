@@ -277,7 +277,8 @@
             "enable": "Aktifkan Profil Publik",
             "description": "Izinkan siapa saja untuk melihat statistik dan perjalanan teatermu menggunakan tautan unikmu.",
             "yourLink": "Tautan Profil Publik Kamu",
-            "allYears": "Semua Tahun"
+            "allYears": "Semua Tahun",
+            "thisYear": "Tahun Ini"
         },
         "developer": {
             "title": "Akses Developer",
