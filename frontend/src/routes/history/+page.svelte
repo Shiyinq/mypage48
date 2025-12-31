@@ -537,9 +537,9 @@
 												<img src={ticket.imageUrl} alt="" class="w-full h-full object-cover" />
 											{:else}
 												<div
-													class="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600"
+													class="w-full h-full idol-gradient flex items-center justify-center relative overflow-hidden"
 												>
-													<TicketIcon class="w-5 h-5" />
+													<TicketIcon class="w-5 h-5 text-white/40 transform -rotate-12" />
 												</div>
 											{/if}
 										</div>
