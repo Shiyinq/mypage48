@@ -75,7 +75,7 @@
 		};
 	})();
 
-	$: kamiOshi = stats.ranking[0];
+	$: mostCollected = stats.ranking[0];
 
 	// Helper for currency formatting
 	const formatCurrency = (val: number) =>
@@ -198,7 +198,7 @@
 								class="bg-gradient-to-r from-amber-100 to-amber-200 dark:from-amber-900/40 dark:to-amber-800/40 text-amber-700 dark:text-amber-400 text-[10px] font-black tracking-widest px-4 py-1.5 rounded-full mb-6 shadow-sm flex items-center gap-1.5 border border-amber-200/50 dark:border-amber-700/30"
 							>
 								<Crown class="w-3.5 h-3.5 fill-current" />
-								{$t('top2shot.kamiOshi')}
+								{$t('top2shot.mostCollected')}
 							</div>
 
 							<div class="relative mb-6 group-hover:scale-105 transition-transform duration-500">
@@ -208,10 +208,10 @@
 									<div
 										class="w-full h-full rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-700 relative"
 									>
-										{#if kamiOshi.image}
+										{#if mostCollected.image}
 											<img
-												src={kamiOshi.image}
-												alt={kamiOshi.name}
+												src={mostCollected.image}
+												alt={mostCollected.name}
 												class="w-full h-full object-cover"
 											/>
 										{:else}
@@ -232,7 +232,7 @@
 							</div>
 
 							<h3 class="text-2xl font-black text-gray-900 dark:text-white mb-1">
-								{kamiOshi.name}
+								{mostCollected.name}
 							</h3>
 							<p
 								class="text-pink-500 font-bold text-sm mb-8 bg-pink-50 dark:bg-pink-900/20 px-3 py-1 rounded-lg"
@@ -248,7 +248,7 @@
 										{$t('top2shot.stats2shots')}
 									</div>
 									<div class="text-2xl font-black text-gray-800 dark:text-gray-100">
-										{kamiOshi.count}x
+										{mostCollected.count}x
 									</div>
 								</div>
 								<div
@@ -258,7 +258,7 @@
 										{$t('top2shot.statsSpent')}
 									</div>
 									<div class="text-lg font-black text-gray-800 dark:text-gray-100 mt-1">
-										{formatCompact(kamiOshi.spend)}
+										{formatCompact(mostCollected.spend)}
 									</div>
 								</div>
 							</div>
@@ -351,7 +351,7 @@
 									>
 										<div
 											class="h-full bg-pink-500 rounded-full"
-											style="width: {(member.count / kamiOshi.count) * 100}%"
+											style="width: {(member.count / mostCollected.count) * 100}%"
 										></div>
 									</div>
 								</div>
