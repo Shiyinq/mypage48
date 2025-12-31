@@ -23,8 +23,16 @@
 	// Flag to prevent duplicate fetches
 	let hasFetchedInitialData = false;
 
-	// Determine if current page is public (login, register, auth pages)
+	// Determine if current page is public (accessible without login)
 	$: isPublicPage =
+		$page.url.pathname === '/login' ||
+		$page.url.pathname === '/register' ||
+		$page.url.pathname.startsWith('/auth/') ||
+		$page.url.pathname.startsWith('/u/');
+
+	// Determine if current page is strictly for guests (login/register pages)
+	// Logged in users should be redirected AWAY from these pages
+	$: isGuestRoute =
 		$page.url.pathname === '/login' ||
 		$page.url.pathname === '/register' ||
 		$page.url.pathname.startsWith('/auth/');
@@ -88,7 +96,9 @@
 		goto('/login');
 	}
 
-	$: if (mounted && $isAuthenticated && isPublicPage) {
+	// Redirect logged-in users away from guest-only routes (login/register)
+	// asking to view a public profile (/u/...) should NOT trigger this!
+	$: if (mounted && $isAuthenticated && isGuestRoute) {
 		goto('/');
 	}
 </script>

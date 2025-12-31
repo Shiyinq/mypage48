@@ -249,6 +249,11 @@
             "yesterday": "Kemarin",
             "daysAgo": "hari yang lalu",
             "weeksAgo": "minggu yang lalu"
+        },
+        "publicActivity": {
+            "titleWithYear": "Aktivitas teater @{username} di tahun {year}",
+            "titleAllTime": "Aktivitas teater @{username}",
+            "yearBadge": "Aktivitas Teater: {year}"
         }
     },
     "settings": {
@@ -261,6 +266,14 @@
             "indonesian": "Bahasa Indonesia",
             "english": "English",
             "japanese": "日本語"
+        },
+        "publicProfile": {
+            "title": "Profil Publik",
+            "subtitle": "Bagikan perjalananmu dengan dunia",
+            "enable": "Aktifkan Profil Publik",
+            "description": "Izinkan siapa saja untuk melihat statistik dan perjalanan teatermu menggunakan tautan unikmu.",
+            "yourLink": "Tautan Profil Publik Kamu",
+            "allYears": "Semua Tahun"
         },
         "developer": {
             "title": "Akses Developer",

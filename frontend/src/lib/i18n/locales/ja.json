@@ -249,6 +249,11 @@
             "yesterday": "昨日",
             "daysAgo": "日前",
             "weeksAgo": "週間前"
+        },
+        "publicActivity": {
+            "titleWithYear": "@{username}の{year}年の劇場活動",
+            "titleAllTime": "@{username}の劇場活動",
+            "yearBadge": "劇場活動: {year}年"
         }
     },
     "settings": {
@@ -261,6 +266,14 @@
             "indonesian": "Bahasa Indonesia",
             "english": "English",
             "japanese": "日本語"
+        },
+        "publicProfile": {
+            "title": "公開プロフィール",
+            "subtitle": "あなたの旅を世界と共有しよう",
+            "enable": "公開プロフィールを有効にする",
+            "description": "独自のリンクを使用して、誰でもあなたの統計や劇場の旅を見ることができるようにします。",
+            "yourLink": "あなたの公開プロフィールリンク",
+            "allYears": "すべての年"
         },
         "developer": {
             "title": "開発者アクセス",
