@@ -280,6 +280,7 @@
 									class="p-1 px-2 text-xs font-bold bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer"
 								>
 									<option value="">{$t('settings.publicProfile.allYears')}</option>
+									<option value="-1">{$t('settings.publicProfile.thisYear')}</option>
 									{#each availableYears as year}
 										<option value={year.toString()}>{year}</option>
 									{/each}

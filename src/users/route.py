@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
@@ -166,9 +167,18 @@ async def get_public_profile(
 
     # Calculate Stats
     stats = None
+    
+    # Handle "This Year" option (-1) by converting to current year
+    query_year = user.publicYear
+    display_year = user.publicYear
+    
+    if user.publicYear == -1:
+        query_year = datetime.now().year
+        display_year = query_year  # Show the actual year in the UI
+    
     try:
         # Respect user's public year setting if set
-        tickets = await theater_service.get_my_tickets(user.userId, user.publicYear)
+        tickets = await theater_service.get_my_tickets(user.userId, query_year)
         total_shows = len(tickets)
         total_spent = sum(t.price for t in tickets)
         total_2shots = sum(1 for t in tickets if t.two_shot is not None)
@@ -242,6 +252,6 @@ async def get_public_profile(
         profilePicture=user.profilePicture,
         oshi=oshi_response,
         createdAt=user.createdAt,
-        publicYear=user.publicYear,
+        publicYear=display_year,  # Show actual year for "This Year" option
         stats=stats
     )
