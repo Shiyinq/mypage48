@@ -29,8 +29,9 @@ class TheaterRepository:
         except:
             return None
         
-        # Filter out None values
-        update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
+        # Use exclude_unset=True to only include fields that were explicitly set in the request.
+        # This allows distinguishing between "field not provided" (don't update) and "field set to null" (delete/unset).
+        update_dict = update_data.model_dump(exclude_unset=True)
         if not update_dict:
             return await self.get_ticket(ticket_id, user_id)
             

@@ -65,6 +65,17 @@
 	let showTwoShot = !!ticket.two_shot;
 	let twoShotImage: string | null = ticket.two_shot?.imageUrl || null;
 
+	// Validation
+	$: isFormValid =
+		formData.event.title &&
+		formData.event.date &&
+		formData.event.time &&
+		formData.seat.section &&
+		formData.seat.number &&
+		formData.price > 0 &&
+		formData.ticket_id &&
+		(!showTwoShot || (showTwoShot && formData.two_shot.member_name));
+
 	// Handlers
 	const handleFileChange = (e: Event) => {
 		const target = e.target as HTMLInputElement;
@@ -107,7 +118,7 @@
 							type: formData.two_shot.type,
 							price: Number(formData.two_shot.price)
 						}
-					: undefined
+					: null
 			};
 
 			const updated = await theater.updateTicket(ticket._id, payload);
@@ -344,7 +355,7 @@
 											type="text"
 											bind:value={formData.ticket_id}
 											class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
-											placeholder={$t('forms.optional')}
+											placeholder="T123456"
 										/>
 									</div>
 								</div>
@@ -474,8 +485,8 @@
 						<div class="pt-4">
 							<button
 								type="submit"
-								disabled={isSubmitting}
-								class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+								disabled={isSubmitting || !isFormValid}
+								class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
 							>
 								{#if isSubmitting}
 									<Loader2 class="w-6 h-6 animate-spin" />

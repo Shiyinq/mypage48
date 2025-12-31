@@ -29,7 +29,7 @@ export interface Ticket {
         member_name: string;
         type: 'Roulette' | 'Birthday';
         price: number;
-    };
+    } | null;
 }
 
 export type ViewState = 'DASHBOARD' | 'UPLOAD' | 'HISTORY' | 'SHOWS' | 'ACHIEVEMENTS' | 'PROFILE' | 'MEMORIES' | 'TOP2SHOT';
