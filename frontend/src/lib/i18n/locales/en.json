@@ -254,6 +254,10 @@
             "titleWithYear": "Theater activity of @{username} in {year}",
             "titleAllTime": "Theater activity of @{username}",
             "yearBadge": "Theater Activity: {year}"
+        },
+        "profilePicture": {
+            "previewTitle": "Profile Picture Preview",
+            "fileTooLarge": "File is too large. Maximum 10MB."
         }
     },
     "settings": {

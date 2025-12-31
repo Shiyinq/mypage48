@@ -2,19 +2,104 @@
 	import type { PageData } from './$types';
 	import SEO from '$lib/components/SEO.svelte';
 	import TheaterSeatMap from '$lib/components/TheaterSeatMap.svelte';
-	import { User, Calendar, Ticket, Camera, DollarSign, Heart, Armchair } from 'lucide-svelte';
+	import {
+		User,
+		Calendar,
+		Ticket,
+		Camera,
+		DollarSign,
+		Heart,
+		Armchair,
+		Loader2,
+		X
+	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { auth } from '$lib/apis/auth';
+	import { userProfile } from '$lib/stores';
 
 	export let data: PageData;
 
 	const { t } = useTranslation();
 	// @ts-ignore
-	const { profile } = data;
+	$: ({ profile } = data);
 
-	const joinDate = new Date(profile.createdAt).toLocaleDateString(undefined, {
-		month: 'long',
-		year: 'numeric'
-	});
+	let fileInput: HTMLInputElement;
+	let isUploading = false;
+
+	// Preview modal state
+	let showPreviewModal = false;
+	let previewImage: string | null = null;
+
+	async function handleFileSelect(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const file = target.files?.[0];
+		if (!file) return;
+
+		try {
+			// Read file as base64 using Promise
+			const base64 = await new Promise<string>((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onload = () => resolve(reader.result as string);
+				reader.onerror = () => reject(new Error('Failed to read file'));
+				reader.readAsDataURL(file);
+			});
+
+			// Show preview modal
+			previewImage = base64;
+			showPreviewModal = true;
+		} catch (error) {
+			console.error('Failed to read file:', error);
+			alert('Failed to read file.');
+		} finally {
+			// Reset input so the same file can be selected again
+			if (fileInput) fileInput.value = '';
+		}
+	}
+
+	function closePreviewModal() {
+		showPreviewModal = false;
+		previewImage = null;
+	}
+
+	async function confirmUpload() {
+		if (!previewImage) return;
+
+		// Validate file size (10MB max) - base64 is ~33% larger than original
+		const base64Size = previewImage.length * 0.75; // approximate original size
+		if (base64Size > 10 * 1024 * 1024) {
+			alert($t('profile.profilePicture.fileTooLarge'));
+			return;
+		}
+
+		isUploading = true;
+		try {
+			// Upload to server
+			await auth.updateProfilePicture(previewImage);
+
+			// Update profile picture locally
+			profile.profilePicture = previewImage;
+
+			// Update global store if it's currently logged in user
+			if ($userProfile && $userProfile.username === profile.username) {
+				userProfile.update((u) => (u ? { ...u, profilePicture: previewImage } : null));
+			}
+
+			// Close modal on success
+			closePreviewModal();
+		} catch (error) {
+			console.error('Failed to upload profile picture:', error);
+			alert('Failed to upload profile picture.');
+		} finally {
+			isUploading = false;
+		}
+	}
+
+	$: joinDate = profile
+		? new Date(profile.createdAt).toLocaleDateString(undefined, {
+				month: 'long',
+				year: 'numeric'
+			})
+		: '';
 
 	const formatCurrency = (amount: number) => {
 		return new Intl.NumberFormat('id-ID', {
@@ -28,7 +113,7 @@
 	let rowStats = { counts: {}, maxCount: 0, uniqueVisited: 0 };
 	let seatStats = {};
 
-	$: if (profile.stats) {
+	$: if (profile?.stats) {
 		const counts = profile.stats.rowCounts || {};
 		const maxCount = Math.max(...Object.values(counts).map(Number), 0);
 		const uniqueVisited = Object.keys(counts).length;
@@ -58,9 +143,17 @@
 		></div>
 
 		<!-- Avatar -->
-		<div class="relative">
+		<div class="relative group">
+			<input
+				type="file"
+				accept="image/*"
+				class="hidden"
+				bind:this={fileInput}
+				on:change={handleFileSelect}
+			/>
+
 			<div
-				class="w-32 h-32 rounded-full border-4 border-white dark:border-zinc-800 shadow-xl overflow-hidden bg-gray-100 dark:bg-zinc-800"
+				class="w-32 h-32 rounded-full border-4 border-white dark:border-zinc-800 shadow-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 relative"
 			>
 				{#if profile.profilePicture}
 					<img src={profile.profilePicture} alt={profile.name} class="w-full h-full object-cover" />
@@ -68,6 +161,21 @@
 					<div class="w-full h-full flex items-center justify-center text-gray-400">
 						<User class="w-12 h-12" />
 					</div>
+				{/if}
+
+				<!-- Edit Overlay -->
+				{#if $userProfile && $userProfile.username === profile.username}
+					<button
+						class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+						on:click={() => fileInput?.click()}
+						disabled={isUploading}
+					>
+						{#if isUploading}
+							<Loader2 class="w-8 h-8 text-white animate-spin" />
+						{:else}
+							<Camera class="w-8 h-8 text-white" />
+						{/if}
+					</button>
 				{/if}
 			</div>
 			{#if profile.oshi}
@@ -282,3 +390,69 @@
 		>
 	</div>
 </div>
+
+<!-- Profile Picture Preview Modal -->
+{#if showPreviewModal && previewImage}
+	<div
+		class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+		on:click={closePreviewModal}
+		on:keydown={(e) => e.key === 'Escape' && closePreviewModal()}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+	>
+		<div
+			class="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-[fadeIn_0.2s_ease-out]"
+			on:click|stopPropagation
+			on:keydown|stopPropagation
+			role="document"
+		>
+			<!-- Header -->
+			<div
+				class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-zinc-800"
+			>
+				<h3 class="text-lg font-bold text-gray-900 dark:text-white">
+					{$t('profile.profilePicture.previewTitle')}
+				</h3>
+				<button
+					class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+					on:click={closePreviewModal}
+				>
+					<X class="w-5 h-5 text-gray-500" />
+				</button>
+			</div>
+
+			<!-- Preview Image -->
+			<div class="p-6 flex justify-center">
+				<div
+					class="w-48 h-48 rounded-full overflow-hidden border-4 border-gray-200 dark:border-zinc-700 shadow-lg"
+				>
+					<img src={previewImage} alt="Preview" class="w-full h-full object-cover" />
+				</div>
+			</div>
+
+			<!-- Actions -->
+			<div class="flex gap-3 p-4 border-t border-gray-100 dark:border-zinc-800">
+				<button
+					class="flex-1 py-3 px-4 rounded-xl font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer disabled:cursor-not-allowed"
+					on:click={closePreviewModal}
+					disabled={isUploading}
+				>
+					{$t('common.cancel')}
+				</button>
+				<button
+					class="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
+					on:click={confirmUpload}
+					disabled={isUploading}
+				>
+					{#if isUploading}
+						<Loader2 class="w-5 h-5 animate-spin" />
+						{$t('common.loading')}
+					{:else}
+						{$t('common.save')}
+					{/if}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}

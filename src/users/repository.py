@@ -64,3 +64,8 @@ class UserRepository:
         return await self.collection.update_one(
             {"userId": user_id}, {"$set": update_data}
         )
+
+    async def set_profile_picture(self, user_id: str, profile_picture: str):
+        return await self.collection.update_one(
+            {"userId": user_id}, {"$set": {"profilePicture": profile_picture}}
+        )

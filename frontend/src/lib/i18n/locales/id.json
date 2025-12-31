@@ -254,6 +254,10 @@
             "titleWithYear": "Aktivitas teater @{username} di tahun {year}",
             "titleAllTime": "Aktivitas teater @{username}",
             "yearBadge": "Aktivitas Teater: {year}"
+        },
+        "profilePicture": {
+            "previewTitle": "Preview Foto Profil",
+            "fileTooLarge": "File terlalu besar. Maksimal 10MB."
         }
     },
     "settings": {

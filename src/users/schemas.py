@@ -56,7 +56,7 @@ class ProviderUserCreateRequest(BaseModel):
     Only contains fields from OAuth provider response.
     """
 
-    profilePicture: Optional[str] = Field(max_length=255, default=None)
+    profilePicture: Optional[str] = Field(default=None)
     name: str = Field(max_length=100)
     username: str = Field(max_length=50)
     email: EmailStr
@@ -70,7 +70,7 @@ class UserInDB(BaseModel):
     """
 
     userId: str = Field(default_factory=lambda: str(uuid4()))
-    profilePicture: Optional[str] = Field(max_length=255, default=None)
+    profilePicture: Optional[str] = Field(default=None)
     name: str = Field(max_length=100)  # Stores fullName or OAuth name
     memberId: Optional[str] = Field(max_length=20, default=None)  # Optional for OAuth users
     oshiId: Optional[int] = Field(default=None)
@@ -128,3 +128,8 @@ class PublicUserResponse(BaseModel):
     createdAt: datetime
     publicYear: Optional[int] = None
     stats: Optional[UserStats] = None
+
+
+class UpdateProfilePictureRequest(BaseModel):
+    profilePicture: str
+

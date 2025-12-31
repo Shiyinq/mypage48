@@ -254,6 +254,10 @@
             "titleWithYear": "@{username}の{year}年の劇場活動",
             "titleAllTime": "@{username}の劇場活動",
             "yearBadge": "劇場活動: {year}年"
+        },
+        "profilePicture": {
+            "previewTitle": "プロフィール写真プレビュー",
+            "fileTooLarge": "ファイルが大きすぎます。最大10MBです。"
         }
     },
     "settings": {
