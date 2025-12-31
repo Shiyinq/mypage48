@@ -141,3 +141,27 @@ class UserService:
         except Exception as e:
             logger.exception(f"Error updating oshi for user {user_id}: {str(e)}")
             raise
+
+    async def update_public_status(self, user_id: str, is_public: bool, public_year: int | None = None):
+        """Update the user's public profile status"""
+        try:
+            await self.user_repo.set_public_status(user_id, is_public, public_year)
+        except Exception as e:
+            logger.exception(f"Error updating public status for user {user_id}: {str(e)}")
+            raise
+
+    async def get_public_user_by_username(self, username: str) -> UserInDB | None:
+        """Get a user by username if they are public"""
+        try:
+            user_data = await self.user_repo.find_one({"username": username.lower()})
+            if not user_data:
+                return None
+
+            user = UserInDB(**user_data)
+            if not user.isPublic:
+                return None
+
+            return user
+        except Exception as e:
+            logger.exception(f"Error fetching public user {username}: {str(e)}")
+            raise

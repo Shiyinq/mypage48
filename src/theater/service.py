@@ -55,8 +55,8 @@ class TheaterService:
             logger.exception(f"Error creating ticket: {str(e)}")
             raise TicketCreationError()
 
-    async def get_my_tickets(self, user_id: str) -> List[TicketResponse]:
-        tickets = await self.repository.get_all_tickets(user_id)
+    async def get_my_tickets(self, user_id: str, year: Optional[int] = None) -> List[TicketResponse]:
+        tickets = await self.repository.get_all_tickets(user_id, year)
         results = []
         for t in tickets:
             t["_id"] = str(t["_id"])

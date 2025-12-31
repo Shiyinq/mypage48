@@ -34,6 +34,8 @@ class UserLoginBase(BaseModel):
     memberId: str | None = None
     oshiId: int | None = None
     ofcStatus: str | None = None
+    isPublic: bool = False
+    publicYear: int | None = None
 
 
 class UserLogin(UserLoginBase):

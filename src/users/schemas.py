@@ -5,7 +5,9 @@ from uuid import uuid4
 from pydantic import BaseModel, EmailStr, Field, model_validator
 
 from src.users.constants import Info
+from src.users.constants import Info
 from src.users.http_exceptions import PasswordNotMatch, PasswordRules
+from src.auth.schemas import OshiResponse
 from src.utils import validate_password_strength
 
 
@@ -80,6 +82,8 @@ class UserInDB(BaseModel):
     createdAt: datetime = Field(default_factory=datetime.now)
     updatedAt: datetime = Field(default_factory=datetime.now)
     isEmailVerified: bool = Field(default=False)
+    isPublic: bool = Field(default=False)
+    publicYear: Optional[int] = Field(default=None) # None = All Years
     failedLoginAttempts: int = Field(default=0)
     isAccountLocked: bool = Field(default=False)
     accountLockedUntil: Optional[datetime] = Field(default=None)
@@ -95,3 +99,32 @@ class UserCreatedWithEmail(UserCreateResponse):
 
 class UserCreated(UserCreateResponse):
     detail: str = Info.USER_CREATED
+
+
+class PublicShowEntry(BaseModel):
+    title: str
+    date: datetime
+    type: str  # 'Theater' or '2-Shot'
+
+
+class UserStats(BaseModel):
+    totalShows: int
+    totalTwoShots: int
+    totalSpent: float
+    topRow: Optional[str] = None
+    topShow: Optional[str] = None
+    topRowCount: Optional[int] = 0
+    topShowCount: Optional[int] = 0
+    rowCounts: Optional[dict] = None
+    seatCounts: Optional[dict] = None
+    recentActivity: Optional[list[PublicShowEntry]] = None
+
+
+class PublicUserResponse(BaseModel):
+    name: str
+    username: str
+    profilePicture: Optional[str] = None
+    oshi: Optional[OshiResponse] = None
+    createdAt: datetime
+    publicYear: Optional[int] = None
+    stats: Optional[UserStats] = None

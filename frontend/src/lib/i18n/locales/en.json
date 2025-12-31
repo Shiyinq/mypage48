@@ -249,6 +249,11 @@
             "yesterday": "Yesterday",
             "daysAgo": "days ago",
             "weeksAgo": "weeks ago"
+        },
+        "publicActivity": {
+            "titleWithYear": "Theater activity of @{username} in {year}",
+            "titleAllTime": "Theater activity of @{username}",
+            "yearBadge": "Theater Activity: {year}"
         }
     },
     "settings": {
@@ -261,6 +266,14 @@
             "indonesian": "Bahasa Indonesia",
             "english": "English",
             "japanese": "日本語"
+        },
+        "publicProfile": {
+            "title": "Public Profile",
+            "subtitle": "Share your journey with the world",
+            "enable": "Enable Public Profile",
+            "description": "Allow anyone to view your profile stats and theater journey using your unique link.",
+            "yourLink": "Your Public Profile Link",
+            "allYears": "All Years"
         },
         "developer": {
             "title": "Developer Access",

@@ -72,6 +72,8 @@ export interface User {
     ofcStatus?: string;
     profilePicture?: string | null;
     oshi?: UserOshi | null;
+    isPublic?: boolean;
+    publicYear?: number | null;
 }
 
 export interface AuthResponse {
