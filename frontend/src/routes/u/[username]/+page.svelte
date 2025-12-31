@@ -381,13 +381,35 @@
 	{/if}
 
 	<!-- Call to Action (if not logged in) or other info -->
-	<div class="text-center mt-12 mb-8 opacity-70">
-		<p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
-			Powered by MyPage48
+	<div class="text-center mt-12 mb-8">
+		<p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Powered by</p>
+
+		<!-- Logo Section (matching navbar style) -->
+		<a href="/" class="inline-flex items-center gap-3 mb-4 group cursor-pointer">
+			<div
+				class="w-9 h-9 rounded-full idol-gradient flex items-center justify-center text-white shadow-red-200 dark:shadow-red-900/50 shadow-lg ring-2 ring-white dark:ring-gray-800"
+			>
+				<Ticket class="w-5 h-5" />
+			</div>
+			<div class="flex flex-col text-left">
+				<span
+					class="text-xl font-black tracking-tight text-gray-900 dark:text-gray-100 leading-none"
+				>
+					MyPage<span class="text-red-600 dark:text-red-500">48</span>
+				</span>
+				<span class="text-[10px] font-semibold text-gray-400 tracking-wide"
+					>{$t('header.tagline')}</span
+				>
+			</div>
+		</a>
+
+		<p class="text-xs font-bold text-gray-400">
+			<a
+				href="/"
+				class="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 underline underline-offset-2 cursor-pointer"
+				>Get your own theater tracker</a
+			>
 		</p>
-		<a href="/" class="text-xs font-bold text-purple-600 hover:text-purple-500 underline"
-			>Get your own theater tracker</a
-		>
 	</div>
 </div>
 
