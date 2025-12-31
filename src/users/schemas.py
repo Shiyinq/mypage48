@@ -4,9 +4,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
 
-from src.users.constants import Info
-from src.users.constants import Info
-from src.users.http_exceptions import PasswordNotMatch, PasswordRules
+from src.users.constants import Info, ErrorCode
 from src.auth.schemas import OshiResponse
 from src.utils import validate_password_strength
 
@@ -29,10 +27,10 @@ class UserCreateRequest(BaseModel):
     @model_validator(mode="after")
     def verify_password_match(self):
         if self.password != self.confirmPassword:
-            raise PasswordNotMatch
+            raise ValueError(ErrorCode.PASSWORD_MISMATCH)
 
         if not validate_password_strength(self.password):
-            raise PasswordRules
+            raise ValueError(ErrorCode.PASSWORD_RULES)
 
         return self
 
@@ -132,4 +130,17 @@ class PublicUserResponse(BaseModel):
 
 class UpdateProfilePictureRequest(BaseModel):
     profilePicture: str
+
+
+class UpdateOshiRequest(BaseModel):
+    oshiId: int
+
+
+class UpdatePublicStatusRequest(BaseModel):
+    isPublic: bool
+    publicYear: Optional[int] = None  # None means "All Time"
+
+
+class MessageResponse(BaseModel):
+    detail: str
 

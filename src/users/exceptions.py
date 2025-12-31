@@ -24,3 +24,7 @@ class AccountLocked(DomainException):
 
 class EmailNotVerified(DomainException):
     ERROR_MESSAGE = DomainErrorCode.EMAIL_NOT_VERIFIED
+
+
+class PublicUserNotFoundError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.PUBLIC_USER_NOT_FOUND

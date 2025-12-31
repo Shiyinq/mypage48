@@ -134,18 +134,24 @@ class UserService:
             logger.exception(f"Unexpected error in create_user_provider: {str(e)}")
             raise ProviderUserCreationError()
 
-    async def update_oshi(self, user_id: str, oshi_id: int):
+    async def update_oshi(self, user_id: str, oshi_id: int) -> "MessageResponse":
         """Update the user's Oshi ID"""
+        from src.users.schemas import MessageResponse
+        from src.users.constants import Info
         try:
             await self.user_repo.set_oshi_id(user_id, oshi_id)
+            return MessageResponse(detail=Info.OSHI_UPDATED)
         except Exception as e:
             logger.exception(f"Error updating oshi for user {user_id}: {str(e)}")
             raise
 
-    async def update_public_status(self, user_id: str, is_public: bool, public_year: int | None = None):
+    async def update_public_status(self, user_id: str, is_public: bool, public_year: int | None = None) -> "MessageResponse":
         """Update the user's public profile status"""
+        from src.users.schemas import MessageResponse
+        from src.users.constants import Info
         try:
             await self.user_repo.set_public_status(user_id, is_public, public_year)
+            return MessageResponse(detail=Info.PUBLIC_STATUS_UPDATED)
         except Exception as e:
             logger.exception(f"Error updating public status for user {user_id}: {str(e)}")
             raise
@@ -166,10 +172,139 @@ class UserService:
             logger.exception(f"Error fetching public user {username}: {str(e)}")
             raise
 
-    async def update_profile_picture(self, user_id: str, profile_picture: str):
+    async def update_profile_picture(self, user_id: str, profile_picture: str) -> "MessageResponse":
         """Update the user's profile picture"""
+        from src.users.schemas import MessageResponse
+        from src.users.constants import Info
         try:
             await self.user_repo.set_profile_picture(user_id, profile_picture)
+            return MessageResponse(detail=Info.PROFILE_PICTURE_UPDATED)
         except Exception as e:
             logger.exception(f"Error updating profile picture for user {user_id}: {str(e)}")
             raise
+
+    async def get_public_profile(
+        self,
+        username: str,
+        member_service,
+        theater_service
+    ) -> "PublicUserResponse":
+        """
+        Get a user's public profile by username.
+        Raises PublicUserNotFoundError if user not found or is private.
+        """
+        from datetime import datetime
+        from src.auth.schemas import OshiResponse
+        from src.users.schemas import PublicUserResponse, UserStats, PublicShowEntry
+        from src.users.exceptions import PublicUserNotFoundError
+
+        user = await self.get_public_user_by_username(username)
+        if not user:
+            raise PublicUserNotFoundError()
+
+        oshi_response = None
+        if user.oshiId:
+            try:
+                member_detail = await member_service.get_member_by_id(user.oshiId)
+                member = member_detail.member
+                oshi_response = OshiResponse(
+                    name=member.name,
+                    nickname=member.nickname,
+                    generation=member.generation or "-",
+                    profilePicture=member.img or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
+                    catchphrase=member.jiko or "-",
+                    socials=member.socials.model_dump() if member.socials else None
+                )
+            except Exception as e:
+                logger.warning(f"Failed to fetch oshi data for id {user.oshiId}: {e}")
+
+        # Calculate Stats
+        stats = None
+
+        # Handle "This Year" option (-1) by converting to current year
+        query_year = user.publicYear
+        display_year = user.publicYear
+
+        if user.publicYear == -1:
+            query_year = datetime.now().year
+            display_year = query_year  # Show the actual year in the UI
+
+        try:
+            # Respect user's public year setting if set
+            tickets = await theater_service.get_my_tickets(user.userId, query_year)
+            total_shows = len(tickets)
+            total_spent = sum(t.price for t in tickets)
+            total_2shots = sum(1 for t in tickets if t.two_shot is not None)
+
+            # Add 2-shot spending to total spent
+            total_spent += sum(t.two_shot.price for t in tickets if t.two_shot and t.two_shot.price)
+
+            # Calculate Seat Stats & Top Show
+            row_counts = {}
+            seat_counts = {}
+            show_counts = {}
+
+            for t in tickets:
+                # Row stats
+                if t.seat and t.seat.section:
+                    row = t.seat.section.strip().upper()[0]
+                    row_counts[row] = row_counts.get(row, 0) + 1
+
+                    # Seat stats
+                    seat_key = f"{row}-{t.seat.number}"
+                    seat_counts[seat_key] = seat_counts.get(seat_key, 0) + 1
+
+                # Show stats
+                if t.event and t.event.title:
+                    show_counts[t.event.title] = show_counts.get(t.event.title, 0) + 1
+
+            top_row = '-'
+            top_row_count = 0
+            if row_counts:
+                # Sort by count desc
+                top_row = max(row_counts, key=row_counts.get)
+                top_row_count = row_counts[top_row]
+
+            top_show = '-'
+            top_show_count = 0
+            if show_counts:
+                top_show = max(show_counts, key=show_counts.get)
+                top_show_count = show_counts[top_show]
+
+            # Recent Activity (Top 5 sorted by date descending)
+            sorted_tickets = sorted(tickets, key=lambda x: x.event.date, reverse=True)
+            recent_activity = []
+            for t in sorted_tickets[:5]:
+                recent_activity.append(
+                    PublicShowEntry(
+                        title=t.event.title,
+                        date=t.event.date,
+                        type="2-Shot" if t.two_shot else "Theater"
+                    )
+                )
+
+            # Create Stats Object
+            stats = UserStats(
+                totalShows=total_shows,
+                totalTwoShots=total_2shots,
+                totalSpent=total_spent,
+                topRow=top_row,
+                topShow=top_show,
+                topRowCount=top_row_count,
+                topShowCount=top_show_count,
+                rowCounts=row_counts,
+                seatCounts=seat_counts,
+                recentActivity=recent_activity
+            )
+        except Exception as e:
+            logger.warning(f"Failed to calculate stats for user {user.userId}: {e}")
+
+        return PublicUserResponse(
+            name=user.name,
+            username=user.username,
+            profilePicture=user.profilePicture,
+            oshi=oshi_response,
+            createdAt=user.createdAt,
+            publicYear=display_year,  # Show actual year for "This Year" option
+            stats=stats
+        )
