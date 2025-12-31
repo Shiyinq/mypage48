@@ -347,6 +347,8 @@
         "saveTicket": "Save Ticket",
         "cancel": "Cancel",
         "uploadTicketPhoto": "Upload Ticket Photo",
+        "selectMember": "Select Member",
+        "selectMemberDesc": "Choose the member you took a photo with",
         "analysisIssue": "Analysis Issue"
     },
     "upload": {

@@ -484,6 +484,8 @@
         "saveTicket": "チケットを保存",
         "cancel": "キャンセル",
         "uploadTicketPhoto": "チケット写真アップロード",
+        "selectMember": "メンバーを選択",
+        "selectMemberDesc": "一緒に写真を撮ったメンバーを選択してください",
         "analysisIssue": "解析エラー"
     },
     "member": {

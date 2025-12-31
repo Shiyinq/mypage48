@@ -457,6 +457,8 @@
         "saveTicket": "Simpan Tiket",
         "cancel": "Batal",
         "uploadTicketPhoto": "Unggah Foto Tiket",
+        "selectMember": "Pilih Member",
+        "selectMemberDesc": "Pilih member yang berfoto denganmu",
         "analysisIssue": "Masalah Analisis"
     },
     "member": {
