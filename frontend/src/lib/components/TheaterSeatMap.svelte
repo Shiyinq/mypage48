@@ -6,6 +6,7 @@
 	export let seatStats: Record<string, number>;
 	export let isLoading: boolean = false;
 	export let showSubtitle: boolean = true;
+	export let compact: boolean = false;
 
 	const { t } = useTranslation();
 	let mapView: 'ROWS' | 'SEATS' = 'SEATS';
@@ -163,11 +164,13 @@
 		<div class="w-full mx-auto px-1 sm:px-2">
 			<div class="w-full">
 				<div
-					class="w-3/4 mx-auto h-4 bg-gradient-to-b from-gray-200 dark:from-gray-700 to-white dark:to-gray-800 rounded-t-2xl mb-8 relative shadow-sm border-t border-x border-gray-300 dark:border-gray-600"
+					class="w-3/4 mx-auto mt-8 md:mt-0 h-4 bg-gradient-to-b from-gray-200 dark:from-gray-700 to-white dark:to-gray-800 rounded-t-2xl mb-1 relative shadow-sm border-t border-x border-gray-300 dark:border-gray-600"
+					style="transform: translateX(-24px)"
 				>
 					<div class="absolute inset-0 bg-red-600 opacity-5 blur-xl"></div>
 					<div
-						class="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-100 dark:bg-gray-800 px-4 py-1 rounded-full border border-gray-200 dark:border-gray-700"
+						class="absolute -top-6 left-1/2 bg-gray-100 dark:bg-gray-800 px-4 py-1 rounded-full border border-gray-200 dark:border-gray-700 stage-pill"
+						class:is-compact={compact}
 					>
 						<span
 							class="text-[8px] sm:text-[10px] font-black tracking-[0.3em] text-gray-400 uppercase block text-center"
@@ -246,24 +249,83 @@
 				{#if mapView === 'SEATS'}
 					{#if isLoading}
 						<!-- Skeleton Loading for Seats -->
-						<div class="space-y-2 max-w-5xl mx-auto">
-							{#each THEATER_ROWS as row}
-								<div class="flex items-center gap-2">
-									<div
-										class="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 animate-pulse flex-shrink-0"
-									></div>
-									<div class="flex-1 flex gap-1">
-										<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-										{#each Array(getLayout(row).seats) as _unused}
-											<div class="w-5 h-5 rounded bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
+						<!-- Skeleton Loading for Seats -->
+						<div class="w-full overflow-x-auto pt-8 pb-4">
+							<div class="seat-map-grid min-w-[700px] md:min-w-0 {compact ? 'is-compact' : ''}">
+								{#each THEATER_ROWS as row}
+									{@const layout = getLayout(row)}
+									<div class="grid-row">
+										<!-- Row Label -->
+										<div class="row-label">
+											<div
+												class="w-3/4 h-3/4 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
+											></div>
+										</div>
+
+										<!-- Group 1 (columns 1-6) -->
+										{#each [1, 2, 3, 4, 5, 6] as col}
+											{@const isValidSeat =
+												col >= layout.groups[0][0] && col <= layout.groups[0][1]}
+											{#if isValidSeat}
+												<div
+													class="map-seat bg-gray-200 dark:bg-zinc-700 animate-pulse border-none"
+												></div>
+											{:else}
+												<div class="empty-cell"></div>
+											{/if}
+										{/each}
+
+										<div class="aisle-gap"></div>
+
+										<!-- Group 2 (columns 7-12) -->
+										{#each [7, 8, 9, 10, 11, 12] as col}
+											{@const isValidSeat =
+												col >= layout.groups[1][0] && col <= layout.groups[1][1]}
+											{#if isValidSeat}
+												<div
+													class="map-seat bg-gray-200 dark:bg-zinc-700 animate-pulse border-none"
+												></div>
+											{:else}
+												<div class="empty-cell"></div>
+											{/if}
+										{/each}
+
+										<div class="aisle-gap"></div>
+
+										<!-- Group 3 (columns 13-18) -->
+										{#each [13, 14, 15, 16, 17, 18] as col}
+											{@const isValidSeat =
+												col >= layout.groups[2][0] && col <= layout.groups[2][1]}
+											{#if isValidSeat}
+												<div
+													class="map-seat bg-gray-200 dark:bg-zinc-700 animate-pulse border-none"
+												></div>
+											{:else}
+												<div class="empty-cell"></div>
+											{/if}
+										{/each}
+
+										<div class="aisle-gap"></div>
+
+										<!-- Group 4 (columns 19-28) -->
+										{#each [19, 20, 21, 22, 23, 24, 25, 26, 27, 28] as col}
+											{@const isValidSeat =
+												col >= layout.groups[3][0] && col <= layout.groups[3][1]}
+											{#if isValidSeat}
+												<div
+													class="map-seat bg-gray-200 dark:bg-zinc-700 animate-pulse border-none"
+												></div>
+											{:else}
+												<div class="empty-cell"></div>
+											{/if}
 										{/each}
 									</div>
-								</div>
-							{/each}
+								{/each}
+							</div>
 						</div>
 					{:else}
-						<div class="w-full overflow-x-auto md:overflow-x-visible pb-4 md:pb-0">
-							<div class="seat-map-grid min-w-[700px] md:min-w-0">
+						<div class="w-full overflow-x-auto pt-8 pb-4">
+							<div class="seat-map-grid min-w-[700px] md:min-w-0 {compact ? 'is-compact' : ''}">
 								{#each THEATER_ROWS as row}
 									{@const layout = getLayout(row)}
 									<div class="grid-row">
@@ -391,7 +453,25 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
-		width: 100%;
+		width: fit-content;
+		margin: 0 auto;
+	}
+
+	.stage-pill {
+		--stage-offset: 31px; /* Default Desktop Offset */
+		transform: translateX(calc(-50% - var(--stage-offset, 0px)));
+		white-space: nowrap;
+	}
+
+	.stage-pill.is-compact {
+		--stage-offset: 11px; /* Compact Mode Offset */
+	}
+
+	@media (max-width: 767px) {
+		.stage-pill,
+		.stage-pill.is-compact {
+			--stage-offset: 0px; /* Center on Mobile */
+		}
 	}
 
 	.grid-row {
@@ -411,10 +491,11 @@
 		color: #664d57;
 		background: #fff5f8;
 		border-radius: 4px;
-		flex: 0 0 16px; /* Reduced fixed width or use percentage */
-		margin-right: 2px;
-		aspect-ratio: 0.8;
-		height: auto;
+		width: 20px;
+		height: 24px;
+		flex-shrink: 0;
+		margin-right: 6px;
+		/* margin-left removed to prevent scroll */
 	}
 
 	:global(.dark) .row-label {
@@ -423,20 +504,23 @@
 	}
 
 	.empty-cell {
-		flex: 1;
+		width: 24px;
+		height: 24px;
+		flex-shrink: 0;
 		visibility: hidden;
 		margin: 0 1px;
 	}
 
 	.aisle-gap {
-		flex: 1; /* Make aisle essentially same width as a seat or slightly less/more */
-		max-width: 1.5%; /* Limit aisle width */
-		min-width: 2px;
+		width: 8px;
+		flex-shrink: 0;
 	}
 
 	.map-seat {
 		display: flex;
-		flex: 1; /* Allow growing/shrinking */
+		width: 24px;
+		height: 24px;
+		flex-shrink: 0;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
@@ -446,8 +530,6 @@
 		cursor: default;
 		transition: transform 0.15s ease;
 		position: relative;
-		aspect-ratio: 1/1; /* Keep square */
-		min-width: 0; /* Allow shrinking below content size */
 		margin: 0 1px;
 	}
 
@@ -519,12 +601,76 @@
 		opacity: 1;
 	}
 
-	/* Breakpoint adjustments */
-	@media (min-width: 640px) {
+	@media (min-width: 768px) {
+		/* Default Mode (Dashboard) - Large sizes */
 		.row-label {
-			flex: 0 0 24px;
+			width: 24px;
+			height: 32px;
 			font-size: 11px;
-			margin-right: 4px;
+			margin-right: 8px;
+		}
+
+		.empty-cell {
+			width: 32px;
+			height: 32px;
+		}
+
+		.aisle-gap {
+			width: 12px;
+		}
+
+		.map-seat {
+			width: 32px;
+			height: 32px;
+			border-radius: 5px;
+		}
+
+		.grid-row {
+			gap: 2px;
+		}
+
+		.map-seat .seat-id {
+			font-size: 8px;
+		}
+
+		.map-seat .seat-count {
+			font-size: 7px;
+		}
+
+		/* Compact Mode (Public Profile) - Small sizes to fit ~816px available width */
+		/* Calculation: 28*22 + 3*6 + 18 + 27 = 679px (Safe) */
+		.is-compact .row-label {
+			width: 18px;
+			height: 22px;
+			font-size: 9px;
+			margin-right: 6px;
+		}
+
+		.is-compact .empty-cell {
+			width: 22px;
+			height: 22px;
+		}
+
+		.is-compact .aisle-gap {
+			width: 6px;
+		}
+
+		.is-compact .map-seat {
+			width: 22px;
+			height: 22px;
+			border-radius: 3px;
+		}
+
+		.is-compact .grid-row {
+			gap: 1px;
+		}
+
+		.is-compact .map-seat .seat-id {
+			font-size: 5px;
+		}
+
+		.is-compact .map-seat .seat-count {
+			font-size: 4px; /* Tiny font for tiny seats */
 		}
 	}
 
@@ -535,22 +681,16 @@
 		}
 	}
 
-	/* Adjust font size based on viewport width for responsiveness */
-	@media (max-width: 600px) {
+	/* Mobile Adjustments (Default is mobile-first, but explicit overrides just in case) */
+	@media (max-width: 767px) {
 		.map-seat .seat-id {
-			font-size: 6px;
+			font-size: 7px;
 		}
 		.map-seat .seat-count {
-			font-size: 5px;
-		}
-		.row-label {
-			font-size: 8px;
-		}
-		.map-seat {
-			margin: 0 0.5px;
+			font-size: 6px;
 		}
 		.grid-row {
-			gap: 0;
+			gap: 1px;
 		}
 	}
 </style>

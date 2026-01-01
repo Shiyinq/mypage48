@@ -139,7 +139,7 @@
 		</div>
 
 		<!-- Theater Map -->
-		<TheaterSeatMap {rowStats} {seatStats} showSubtitle={false} />
+		<TheaterSeatMap {rowStats} {seatStats} showSubtitle={false} compact={true} />
 	{/if}
 
 	<!-- Call to Action (if not logged in) or other info -->
