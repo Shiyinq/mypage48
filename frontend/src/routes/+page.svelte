@@ -25,6 +25,17 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
 
+	// Import shared constants
+	import { SHOW_IMAGES, getShowImage, MONTHS, DAYS, THEATER_ROWS } from '$lib/constants';
+
+	// Import dashboard components
+	import {
+		DashboardFilters,
+		DashboardHeader,
+		TopShowCard,
+		Top2ShotCard
+	} from '$lib/components/dashboard';
+
 	const { t } = useTranslation();
 
 	let mounted = false;
@@ -37,62 +48,6 @@
 	// 1. Not mounted yet (SSR or initial client render)
 	// 2. Authenticated but data is not loaded yet
 	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
-
-	// Constants
-	const SHOW_IMAGES = [
-		{
-			title: 'Pertaruhan Cinta',
-			image:
-				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1760105446/wwiaxahqs3ti0lhqdszz.jpg'
-		},
-		{
-			title: 'Pajama Drive',
-			image:
-				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1717174034/xspjxcs9wwm9jxwhiy5q.jpg'
-		},
-		{
-			title: 'Aturan Anti Cinta',
-			image:
-				'https://cdn.idntimes.com/content-images/post/20251115/50a27780-93e7-4e40-8474-60f6e0cca6da-251115200115.jpg'
-		},
-		{
-			title: 'Sambil Menggandeng Erat Tanganku',
-			image:
-				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1743898507/nvw4gqjtdhje2ftxt9i1.jpg'
-		},
-		{
-			title: 'Cara Meminum Ramune',
-			image:
-				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1702404446/nixg3rixpjpom3xa0ivf.jpg'
-		},
-		{
-			title: 'Ingin Bertemu',
-			image:
-				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1697224788/uploads/w2zvghwk8tocey8e8xhv.jpg'
-		},
-		{
-			title: 'KIRA KIRA GIRLS',
-			image:
-				'https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1763233779/tanfbrrf8oexxmmfoouh.jpg'
-		}
-	];
-
-	const MONTHS = [
-		'January',
-		'February',
-		'March',
-		'April',
-		'May',
-		'June',
-		'July',
-		'August',
-		'September',
-		'October',
-		'November',
-		'December'
-	];
-	const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
 	// State
 	const currentYear: number = new Date().getFullYear();
@@ -154,7 +109,7 @@
 		const counts: Record<string, number> = {};
 		filteredTickets.forEach((t) => {
 			const r = t.seat.section.trim().toUpperCase().charAt(0);
-			if (THEATER_ROWS.includes(r)) counts[r] = (counts[r] || 0) + 1;
+			if ((THEATER_ROWS as readonly string[]).includes(r)) counts[r] = (counts[r] || 0) + 1;
 		});
 		const maxCount = Math.max(...Object.values(counts), 1);
 		return { counts, maxCount, uniqueVisited: Object.keys(counts).length };
@@ -253,9 +208,6 @@
 	$: mostFrequentRow = (Object.entries(rowStats.counts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
 		'-') as string;
 
-	const getShowImage = (title: string) =>
-		SHOW_IMAGES.find((s) => title.toLowerCase().includes(s.title.toLowerCase()))?.image;
-
 	// First & Last Show
 	$: showExtremes = (() => {
 		if (filteredTickets.length === 0) return { first: null, last: null };
@@ -295,143 +247,16 @@
 	<!-- Header / Filter Toggle -->
 	<div class="mb-6">
 		{#if isFilterOpen}
-			<div class="glass-panel p-4 rounded-3xl animate-fade-in">
-				<div class="flex items-start justify-between mb-4 md:mb-0 md:items-center gap-4">
-					<div class="flex items-center gap-3">
-						<div
-							class="bg-red-50 dark:bg-red-500/20 p-2.5 rounded-xl text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/30"
-						>
-							<Filter class="w-5 h-5" />
-						</div>
-						<div>
-							<h2 class="font-bold text-gray-800 dark:text-gray-100 text-lg leading-none">
-								{$t('dashboard.filterTitle')}
-							</h2>
-							<p class="text-xs text-gray-400 font-medium mt-1">
-								{$t('dashboard.filterSubtitle')}
-							</p>
-						</div>
-					</div>
-					<button
-						on:click={() => (isFilterOpen = false)}
-						class="p-2 hover:bg-red-50 dark:hover:bg-white/5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 rounded-full transition-colors cursor-pointer"
-					>
-						<X class="w-5 h-5" />
-					</button>
-				</div>
-
-				<!-- All Data Toggle -->
-				<div class="mt-4 flex items-center gap-3">
-					<button
-						on:click={() => (isAllData = !isAllData)}
-						class={`relative flex items-center px-4 py-2.5 rounded-xl font-bold text-sm transition-all w-full justify-center gap-2 cursor-pointer ${isAllData ? 'bg-red-600 text-white shadow-lg shadow-red-200 dark:shadow-red-900/20' : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'}`}
-					>
-						<span
-							class={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isAllData ? 'border-white bg-white' : 'border-gray-400'}`}
-						>
-							{#if isAllData}
-								<span class="w-2 h-2 rounded-full bg-red-600"></span>
-							{/if}
-						</span>
-						{$t('common.allData')}
-					</button>
-				</div>
-
-				<div
-					class="mt-4 md:mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 w-full {isAllData
-						? 'opacity-50 pointer-events-none'
-						: ''}"
-				>
-					<div class="relative group w-full">
-						<select
-							bind:value={selectedYear}
-							disabled={isAllData}
-							class="w-full appearance-none bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 pl-10 pr-10 py-2.5 rounded-xl text-sm font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm cursor-pointer hover:border-red-200 dark:hover:border-red-500/50 transition-colors disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-900"
-						>
-							{#each availableYears as y}
-								<option value={y}>{y}</option>
-							{/each}
-						</select>
-						<Calendar class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-400" />
-						<ChevronDown
-							class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-red-400 transition-colors"
-						/>
-					</div>
-
-					<div
-						class="flex items-center bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl shadow-sm w-full overflow-hidden h-[42px]"
-					>
-						<div
-							class="relative flex-1 h-full border-r border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-						>
-							<select
-								bind:value={startMonth}
-								disabled={isAllData}
-								class="w-full h-full appearance-none bg-transparent pl-9 pr-2 text-xs font-bold text-gray-700 dark:text-gray-200 focus:outline-none cursor-pointer disabled:cursor-not-allowed"
-							>
-								{#each MONTHS as m, i}
-									<option value={i}>{m.substring(0, 3)}</option>
-								{/each}
-							</select>
-							<span
-								class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider pointer-events-none"
-								>Fr</span
-							>
-						</div>
-
-						<div
-							class="relative flex-1 h-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-						>
-							<select
-								bind:value={endMonth}
-								disabled={isAllData}
-								class="w-full h-full appearance-none bg-transparent pl-9 pr-2 text-xs font-bold text-gray-700 focus:outline-none cursor-pointer disabled:cursor-not-allowed"
-							>
-								{#each MONTHS as m, i}
-									<option value={i}>{m.substring(0, 3)}</option>
-								{/each}
-							</select>
-							<span
-								class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider pointer-events-none"
-								>To</span
-							>
-						</div>
-					</div>
-				</div>
-			</div>
+			<DashboardFilters
+				bind:isOpen={isFilterOpen}
+				bind:isAllData
+				bind:selectedYear
+				bind:startMonth
+				bind:endMonth
+				{availableYears}
+			/>
 		{:else}
-			<div class="flex items-center justify-between animate-fade-in">
-				<div class="flex items-center gap-3">
-					<div
-						class="p-3 rounded-2xl bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 shadow-lg shadow-red-100 dark:shadow-red-900/30 border-2 border-white dark:border-gray-800 transform -rotate-6"
-					>
-						<LayoutDashboard class="w-6 h-6" />
-					</div>
-					<div>
-						<h2 class="text-2xl font-bold text-themed leading-none relative w-fit">
-							{$t('dashboard.title')}
-							<span
-								class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 dark:bg-red-500/30 -z-10 transform -skew-x-12 rounded-sm"
-							></span>
-						</h2>
-						<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{$t('dashboard.subtitle')}</p>
-					</div>
-				</div>
-				<div class="flex items-center gap-2">
-					<span
-						class="text-xs font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-zinc-900 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700"
-					>
-						{filterLabel}
-					</span>
-					<button
-						on:click={() => (isFilterOpen = true)}
-						class="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900 text-gray-600 dark:text-gray-300 font-bold text-xs shadow-sm border border-gray-200 dark:border-zinc-700 hover:border-red-200 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400 transition-all cursor-pointer"
-					>
-						<Filter class="w-4 h-4" />
-						<span class="hidden sm:inline">{$t('common.filters')}</span>
-					</button>
-				</div>
-			</div>
+			<DashboardHeader {filterLabel} onOpenFilter={() => (isFilterOpen = true)} />
 		{/if}
 	</div>
 
@@ -478,83 +303,12 @@
 					loading={isLoading}
 				/>
 
-				<div
-					class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-purple-50/50 dark:bg-transparent border-purple-100 dark:border-purple-500/20"
-				>
-					<div class="p-5 pb-0 flex justify-between items-start">
-						<div class="flex items-center gap-2 text-purple-500">
-							<div class="p-1.5 bg-purple-100 dark:bg-purple-800/40 rounded-lg">
-								<Star class="w-4 h-4 fill-current" />
-							</div>
-							<span
-								class="font-bold text-xs tracking-wider text-purple-500 dark:text-purple-400 uppercase"
-								>{$t('dashboard.theater.topShow')}</span
-							>
-						</div>
-						<Crown class="w-5 h-5 text-yellow-400 fill-current" />
-					</div>
-					<div class="p-5 flex items-center gap-4">
-						{#if isLoading}
-							<!-- Skeleton Loading -->
-							<div
-								class="w-14 h-14 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse flex-shrink-0"
-							></div>
-							<div class="min-w-0 flex-1">
-								<div class="h-2 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2"></div>
-								<div class="h-5 w-28 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-1"></div>
-								<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-							</div>
-						{:else}
-							<div
-								class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-indigo-400 via-purple-500 to-fuchsia-500 flex-shrink-0"
-							>
-								<div
-									class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
-								>
-									{#if topShowStats.image}
-										<img
-											src={topShowStats.image}
-											alt={topShowStats.title}
-											class="w-full h-full object-cover"
-										/>
-									{:else}
-										<Star class="w-6 h-6 text-purple-500 fill-purple-100" />
-									{/if}
-								</div>
-							</div>
-							<div class="min-w-0">
-								<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-									{$t('dashboard.theater.mostWatched')}
-								</p>
-								<h3
-									class={`font-black text-themed leading-none mb-0.5 truncate ${topShowStats.title.length > 15 ? 'text-sm' : 'text-lg'}`}
-									title={topShowStats.title}
-								>
-									{topShowStats.title}
-								</h3>
-								<p class="text-sm font-bold text-purple-500">
-									{topShowStats.count}
-									{$t('shows.unit')}
-								</p>
-							</div>
-						{/if}
-					</div>
-					{#if isLoading}
-						<div
-							class="mt-auto border-t border-purple-100 dark:border-purple-800/30 p-3 w-full flex justify-center"
-						>
-							<div class="h-4 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-						</div>
-					{:else}
-						<button
-							on:click={() => goto('/shows')}
-							class="mt-auto border-t border-purple-100 dark:border-purple-800/30 p-3 w-full text-center text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors flex items-center justify-center gap-1 relative z-20 cursor-pointer"
-						>
-							{$t('common.viewDetails')}
-							<ChevronRight class="w-3 h-3" />
-						</button>
-					{/if}
-				</div>
+				<TopShowCard
+					title={topShowStats.title}
+					count={topShowStats.count}
+					image={topShowStats.image}
+					loading={isLoading}
+				/>
 
 				<!-- First & Last Show Card -->
 				<div
@@ -756,82 +510,12 @@
 				/>
 
 				<!-- Top 2-Shot Card -->
-				<div
-					class="glass-card rounded-3xl relative overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full bg-pink-50/50 dark:bg-transparent border-pink-100 dark:border-pink-500/20"
-				>
-					<div class="p-5 pb-0 flex justify-between items-start">
-						<div class="flex items-center gap-2 text-pink-500">
-							<div class="flex items-center gap-2 mb-3">
-								<Heart class="w-4 h-4 text-pink-500 fill-pink-500" />
-								<span class="text-[10px] font-black tracking-widest text-pink-500 uppercase"
-									>{$t('dashboard.twoShot.topTwoShot')}</span
-								>
-							</div>
-						</div>
-						<Crown class="w-5 h-5 text-yellow-400 fill-current" />
-					</div>
-					<div class="p-5 flex items-center gap-4">
-						{#if isLoading}
-							<!-- Skeleton Loading -->
-							<div
-								class="w-14 h-14 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse flex-shrink-0"
-							></div>
-							<div class="min-w-0 flex-1">
-								<div class="h-2 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2"></div>
-								<div class="h-5 w-28 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-1"></div>
-								<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-							</div>
-						{:else}
-							<div
-								class="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-pink-400 via-rose-500 to-red-500 flex-shrink-0"
-							>
-								<div
-									class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
-								>
-									{#if twoShotStats?.mostCollected?.image}
-										<img
-											src={twoShotStats.mostCollected.image}
-											alt={twoShotStats.mostCollected.name}
-											class="w-full h-full object-cover"
-										/>
-									{:else}
-										<User class="w-6 h-6 text-pink-500 fill-pink-100" />
-									{/if}
-								</div>
-							</div>
-							<div class="min-w-0">
-								<p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-									{$t('dashboard.twoShot.mostCollected')}
-								</p>
-								<h3
-									class={`font-black text-themed leading-none mb-0.5 truncate ${(twoShotStats?.mostCollected?.name?.length ?? 0) > 15 ? 'text-sm' : 'text-lg'}`}
-									title={twoShotStats?.mostCollected?.name || '-'}
-								>
-									{twoShotStats?.mostCollected?.name || '-'}
-								</h3>
-								<p class="text-sm font-bold text-pink-500">
-									{twoShotStats?.mostCollected?.count || 0}
-									{$t('dashboard.twoShot.photos')}
-								</p>
-							</div>
-						{/if}
-					</div>
-					{#if isLoading}
-						<div
-							class="mt-auto border-t border-pink-100 dark:border-pink-800/30 p-3 w-full flex justify-center"
-						>
-							<div class="h-4 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-						</div>
-					{:else}
-						<button
-							on:click={() => goto('/top-2shot')}
-							class="mt-auto border-t border-pink-100 dark:border-pink-800/30 p-3 w-full text-center text-xs font-bold text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors flex items-center justify-center gap-1 cursor-pointer"
-						>
-							{$t('common.viewDetails')}
-							<ChevronRight class="w-3 h-3" />
-						</button>
-					{/if}
-				</div>
+				<Top2ShotCard
+					name={twoShotStats.mostCollected?.name || null}
+					count={twoShotStats.mostCollected?.count || 0}
+					image={twoShotStats.mostCollected?.image || undefined}
+					loading={isLoading}
+				/>
 
 				<!-- First & Last 2-Shot Card -->
 				<div

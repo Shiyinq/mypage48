@@ -1,0 +1,30 @@
+<script lang="ts">
+	import type { ComponentType } from 'svelte';
+
+	/**
+	 * Reusable empty state component for pages with no data
+	 */
+	export let icon: ComponentType;
+	export let title: string;
+	export let description: string = '';
+	export let className: string = '';
+</script>
+
+<div
+	class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-white/5 {className}"
+>
+	<div
+		class="w-20 h-20 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center mb-6 text-gray-300 dark:text-zinc-600"
+	>
+		<svelte:component this={icon} class="w-10 h-10" />
+	</div>
+	<h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">
+		{title}
+	</h3>
+	{#if description}
+		<p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+			{description}
+		</p>
+	{/if}
+	<slot />
+</div>

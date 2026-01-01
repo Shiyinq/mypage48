@@ -24,6 +24,11 @@
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
+	// Shared components and utils
+	import { PageHeader, EmptyState } from '$lib/components';
+	import { GridSkeleton, TableSkeleton } from '$lib/components/skeletons';
+	import { formatCurrency, formatDateFull } from '$lib/utils/formatting';
+
 	const { t } = useTranslation();
 
 	// Main Component Logic
@@ -120,22 +125,13 @@
 <div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in relative">
 	<!-- Header Section -->
 	<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-		<div class="flex items-center gap-3">
-			<div
-				class="p-3 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-lg shadow-blue-100 dark:shadow-blue-900/20 border-2 border-white dark:border-zinc-700 transform -rotate-6"
-			>
-				<History class="w-6 h-6" />
-			</div>
-			<div>
-				<h2 class="text-2xl font-bold text-themed leading-none relative w-fit">
-					{$t('history.title')}
-					<span
-						class="absolute -bottom-1 left-0 w-full h-2 bg-blue-200/60 dark:bg-blue-500/30 -z-10 transform -skew-x-12 rounded-sm"
-					></span>
-				</h2>
-				<p class="text-sm text-themed-secondary mt-1">{$t('history.subtitle')}</p>
-			</div>
-		</div>
+		<!-- Header -->
+		<PageHeader
+			icon={History}
+			title={$t('history.title')}
+			subtitle={$t('history.subtitle')}
+			theme="blue"
+		/>
 
 		<!-- Toolbar -->
 		<div class="flex items-center gap-3 w-full md:w-auto">
@@ -177,117 +173,26 @@
 	<!-- Content Area -->
 	{#if isLoading}
 		{#if viewMode === 'GRID'}
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-				{#each Array(6) as _}
-					<div
-						class="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-700 flex flex-col h-[400px]"
-					>
-						<!-- Image Skeleton -->
-						<div class="h-48 w-full bg-gray-200 dark:bg-zinc-800 animate-pulse"></div>
-						<!-- Body Skeleton -->
-						<div class="p-5 flex-1 flex flex-col gap-4">
-							<div class="grid grid-cols-2 gap-4">
-								<div class="h-8 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"></div>
-								<div class="h-8 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"></div>
-							</div>
-							<div class="h-12 bg-gray-200 dark:bg-zinc-800 rounded-xl animate-pulse"></div>
-							<div class="flex-1 bg-gray-200 dark:bg-zinc-800 rounded-lg animate-pulse"></div>
-						</div>
-					</div>
-				{/each}
-			</div>
+			<GridSkeleton count={6} aspectRatio="video" />
 		{:else}
-			<!-- Table Skeleton -->
-			<div class="glass-panel rounded-3xl overflow-hidden shadow-sm">
-				<div class="overflow-x-auto">
-					<table class="w-full text-left border-collapse">
-						<thead>
-							<tr
-								class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
-							>
-								<th class="p-4">{$t('history.date')}</th>
-								<th class="p-4">{$t('history.eventDetails')}</th>
-								<th class="p-4">{$t('history.seat')}</th>
-								<th class="p-4">{$t('history.price')}</th>
-								<th class="p-4">{$t('history.notes')}</th>
-								<th class="p-4 text-right">{$t('history.actions')}</th>
-							</tr>
-						</thead>
-						<tbody
-							class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700"
-						>
-							<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-							{#each Array(5) as _unused}
-								<tr class="border-b border-gray-100 dark:border-zinc-700">
-									<td class="p-4"
-										><div
-											class="h-10 w-20 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
-										></div></td
-									>
-									<td class="p-4">
-										<div class="flex items-center gap-3">
-											<div
-												class="w-10 h-10 rounded-lg bg-gray-200 dark:bg-zinc-800 animate-pulse"
-											></div>
-											<div class="flex flex-col gap-1">
-												<div
-													class="h-4 w-32 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
-												></div>
-												<div
-													class="h-3 w-16 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
-												></div>
-											</div>
-										</div>
-									</td>
-									<td class="p-4"
-										><div
-											class="h-6 w-16 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
-										></div></td
-									>
-									<td class="p-4"
-										><div
-											class="h-6 w-24 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
-										></div></td
-									>
-									<td class="p-4"
-										><div
-											class="h-4 w-full bg-gray-200 dark:bg-zinc-800 rounded animate-pulse"
-										></div></td
-									>
-									<td class="p-4 text-right"
-										><div class="flex justify-end gap-2">
-											<div
-												class="h-8 w-8 rounded-full bg-gray-200 dark:bg-zinc-800 animate-pulse"
-											></div>
-											<div
-												class="h-8 w-8 rounded-full bg-gray-200 dark:bg-zinc-800 animate-pulse"
-											></div>
-										</div></td
-									>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
-			</div>
+			<TableSkeleton
+				rows={5}
+				columns={[
+					$t('history.date'),
+					$t('history.eventDetails'),
+					$t('history.seat'),
+					$t('history.price'),
+					$t('history.notes'),
+					$t('history.actions')
+				]}
+			/>
 		{/if}
 	{:else if filteredTickets.length === 0}
-		<div
-			class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-white/5"
-		>
-			<div
-				class="w-20 h-20 bg-white dark:bg-zinc-800 rounded-full shadow-sm flex items-center justify-center mb-6"
-			>
-				<Search class="w-10 h-10 text-gray-300 dark:text-zinc-600" />
-			</div>
-			<h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">
-				{$t('history.noTickets')}
-			</h3>
-			<p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-				{$t('history.addFirst')}
-			</p>
-		</div>
+		<EmptyState
+			icon={Search}
+			title={$t('history.noTickets')}
+			description={$t('history.addFirst')}
+		/>
 	{:else if viewMode === 'GRID'}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 			{#each filteredTickets as ticket (ticket._id)}
@@ -349,11 +254,7 @@
 									class="flex items-center text-gray-700 dark:text-gray-300 text-sm font-semibold"
 								>
 									<Calendar class="w-3.5 h-3.5 mr-1.5 text-red-500" />
-									{new Date(ticket.event.date).toLocaleDateString('id-ID', {
-										day: 'numeric',
-										month: 'short',
-										year: 'numeric'
-									})}
+									{formatDateFull(ticket.event.date)}
 								</div>
 							</div>
 							<div class="flex flex-col">
@@ -393,11 +294,7 @@
 									>{$t('history.price')}</span
 								>
 								<span class="text-red-600 font-bold text-sm">
-									{new Intl.NumberFormat('id-ID', {
-										style: 'currency',
-										currency: 'IDR',
-										maximumSignificantDigits: 3
-									}).format(ticket.price)}
+									{formatCurrency(ticket.price)}
 								</span>
 							</div>
 						</div>
@@ -515,11 +412,7 @@
 								<td class="p-4">
 									<div class="flex flex-col">
 										<span class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-											{new Date(ticket.event.date).toLocaleDateString('id-ID', {
-												day: 'numeric',
-												month: 'short',
-												year: 'numeric'
-											})}
+											{formatDateFull(ticket.event.date)}
 										</span>
 										<span
 											class="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5"
@@ -569,11 +462,7 @@
 								</td>
 								<td class="p-4">
 									<span class="text-sm font-medium text-gray-600 dark:text-gray-400">
-										{new Intl.NumberFormat('id-ID', {
-											style: 'currency',
-											currency: 'IDR',
-											maximumSignificantDigits: 3
-										}).format(ticket.price)}
+										{formatCurrency(ticket.price)}
 									</span>
 								</td>
 								<td class="p-4 w-1/3">
