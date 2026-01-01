@@ -178,6 +178,7 @@
 	{#if isLoading}
 		{#if viewMode === 'GRID'}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 				{#each Array(6) as _}
 					<div
 						class="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-700 flex flex-col h-[400px]"
@@ -216,7 +217,8 @@
 						<tbody
 							class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700"
 						>
-							{#each Array(5) as _}
+							<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+							{#each Array(5) as _unused}
 								<tr class="border-b border-gray-100 dark:border-zinc-700">
 									<td class="p-4"
 										><div
@@ -429,7 +431,6 @@
 										bind:value={noteText}
 										class="w-full p-3 text-sm text-gray-900 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none bg-yellow-50/50 min-h-[80px]"
 										placeholder="Write about your experience..."
-										autofocus
 									></textarea>
 									<div class="flex justify-end gap-2 mt-2">
 										<button
@@ -581,7 +582,6 @@
 											<input
 												bind:value={noteText}
 												class="w-full text-sm text-gray-900 dark:text-gray-100 p-2 border border-red-200 dark:border-red-500/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white dark:bg-zinc-800"
-												autofocus
 												on:keydown={(e) => e.key === 'Enter' && saveNote(ticket)}
 											/>
 											<button
@@ -641,7 +641,6 @@
 		on:click={() => (deleteId = null)}
 		transition:fade={{ duration: 150 }}
 	>
-		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
 		<div
 			class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6"
 			on:click={(e) => e.stopPropagation()}

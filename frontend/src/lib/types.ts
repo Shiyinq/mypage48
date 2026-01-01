@@ -128,7 +128,7 @@ export interface GenericResponse {
 }
 
 export interface ApiError {
-	detail: string | Record<string, any>;
+	detail: string | Record<string, unknown>;
 }
 
 export interface APIKeysResponse {

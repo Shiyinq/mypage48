@@ -116,6 +116,10 @@
 	} as const;
 
 	$: maxSeatCount = seatStats ? Math.max(...Object.values(seatStats), 1) : 1;
+
+	function getLayout(row: string) {
+		return SEAT_LAYOUT[row as keyof typeof SEAT_LAYOUT];
+	}
 </script>
 
 <div class="glass-panel p-6 rounded-3xl">
@@ -177,6 +181,7 @@
 					{#if isLoading}
 						<!-- Skeleton Loading for Rows -->
 						<div class="grid grid-cols-2 gap-x-4 md:gap-x-12 gap-y-3 max-w-5xl mx-auto">
+							<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 							{#each THEATER_ROWS as row}
 								<div class="flex items-center gap-3">
 									<div
@@ -248,7 +253,8 @@
 										class="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 animate-pulse flex-shrink-0"
 									></div>
 									<div class="flex-1 flex gap-1">
-										{#each Array(28) as _, i}
+										<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+										{#each Array(getLayout(row).seats) as _unused}
 											<div class="w-5 h-5 rounded bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
 										{/each}
 									</div>
@@ -259,7 +265,7 @@
 						<div class="w-full overflow-x-auto md:overflow-x-visible pb-4 md:pb-0">
 							<div class="seat-map-grid min-w-[700px] md:min-w-0">
 								{#each THEATER_ROWS as row}
-									{@const layout = SEAT_LAYOUT[/** @type {keyof typeof SEAT_LAYOUT} */ (row)]}
+									{@const layout = getLayout(row)}
 									<div class="grid-row">
 										<!-- Row Label -->
 										<div class="row-label">{row}</div>

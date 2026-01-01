@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tickets, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
-	import { onMount } from 'svelte';
+	import { onMount, type ComponentType } from 'svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import {
 		Trophy,
@@ -9,7 +9,6 @@
 		Crown,
 		Zap,
 		Heart,
-		MapPin,
 		Wallet,
 		Lock,
 		Check,
@@ -30,7 +29,7 @@
 		id: string;
 		title: string;
 		description: string;
-		icon: any;
+		icon: ComponentType;
 		isUnlocked: boolean;
 		progress?: string;
 		color: string;
@@ -273,7 +272,8 @@
 	<!-- Grid Layout -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 		{#if isLoading}
-			{#each Array(9) as _}
+			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+			{#each Array(9) as _unused}
 				<div
 					class="relative border-2 border-transparent rounded-3xl p-5 flex items-center gap-5 bg-white dark:bg-zinc-900 shadow-sm"
 				>

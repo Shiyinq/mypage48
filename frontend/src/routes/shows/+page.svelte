@@ -385,7 +385,8 @@
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 			{#if isLoading}
-				{#each Array(6) as _}
+				<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+				{#each Array(4) as _}
 					<div
 						class="relative overflow-hidden rounded-3xl h-64 bg-gray-200 dark:bg-zinc-800 animate-pulse"
 					>
@@ -497,7 +498,6 @@
 		on:click={() => (deleteId = null)}
 		transition:fade={{ duration: 150 }}
 	>
-		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
 		<div
 			class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6"
 			on:click={(e) => e.stopPropagation()}

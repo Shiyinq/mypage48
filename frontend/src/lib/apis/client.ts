@@ -29,12 +29,15 @@ async function refreshAccessToken(): Promise<string | null> {
 			return data.access_token;
 		}
 		return null;
-	} catch (error) {
+	} catch {
 		return null;
 	}
 }
 
-export async function client<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export async function client<T>(
+	endpoint: string,
+	options: Omit<RequestInit, 'body'> & { body?: BodyInit | Record<string, unknown> | null } = {}
+): Promise<T> {
 	// 1. Get current token
 	let token = get(accessToken);
 
@@ -89,13 +92,13 @@ export async function client<T>(endpoint: string, options: RequestInit = {}): Pr
 		defaultHeaders['Authorization'] = `Bearer ${token}`;
 	}
 
-	const config: RequestInit = {
+	const config = {
 		...options,
 		headers: {
 			...defaultHeaders,
 			...options.headers
 		},
-		credentials: 'include' // Important for cookies (refresh_token, csrf_token)
+		credentials: 'include' as RequestCredentials // Important for cookies (refresh_token, csrf_token)
 	};
 
 	// 4. Execute fetch
@@ -109,7 +112,7 @@ export async function client<T>(endpoint: string, options: RequestInit = {}): Pr
 		config.body = JSON.stringify(config.body);
 	}
 
-	const response = await fetch(`${API_BASE}${endpoint}`, config);
+	const response = await fetch(`${API_BASE}${endpoint}`, config as RequestInit);
 
 	// 5. Handle response
 	// Handle 204 No Content - no body to parse
@@ -117,7 +120,7 @@ export async function client<T>(endpoint: string, options: RequestInit = {}): Pr
 		return undefined as T;
 	}
 
-	let data: any;
+	let data: unknown;
 	const contentType = response.headers.get('content-type');
 	if (contentType && contentType.includes('application/json')) {
 		data = await response.json();

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { auth } from '$lib/apis/auth';
 	import { showToast } from '$lib/stores';
 	import { Mail, ArrowLeft, Loader2, KeyRound } from 'lucide-svelte';
@@ -21,15 +20,9 @@
 			await auth.forgotPassword({ email });
 			isSent = true;
 			showToast($t('auth.forgotPassword.sent'), 'success');
-		} catch (e: any) {
+		} catch (err) {
+			const e = err as { detail?: string; message?: string };
 			console.error(e);
-			if (e.detail && typeof e.detail === 'string') {
-				error = e.detail;
-			} else if (e.message) {
-				error = e.message;
-			} else {
-				error = $t('auth.forgotPassword.failed');
-			}
 			showToast(error || $t('auth.forgotPassword.error'), 'error');
 		} finally {
 			isLoading = false;
@@ -89,8 +82,9 @@
 			{#if !isSent}
 				<form on:submit|preventDefault={handleSubmit} class="space-y-6">
 					<div>
-						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-							>{$t('auth.forgotPassword.emailLabel')}</label
+						<label
+							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+							for="email-input">{$t('auth.forgotPassword.emailLabel')}</label
 						>
 						<div class="relative">
 							<div
@@ -99,6 +93,7 @@
 								<Mail class="w-5 h-5" />
 							</div>
 							<input
+								id="email-input"
 								type="email"
 								required
 								bind:value={email}

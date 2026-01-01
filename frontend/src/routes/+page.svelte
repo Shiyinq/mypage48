@@ -9,21 +9,17 @@
 		Calendar,
 		DollarSign,
 		Armchair,
-		MapPin,
 		Filter,
 		ChevronDown,
 		LayoutDashboard,
 		X,
 		Star,
-		Grid3X3,
-		AlignJustify,
 		Heart,
 		Camera,
 		ChevronRight,
 		Crown,
 		User,
 		Users,
-		TrendingUp,
 		Maximize2
 	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -97,18 +93,6 @@
 	];
 	const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-	const ROW_SEAT_COUNTS: Record<string, number> = {
-		A: 22,
-		B: 23,
-		C: 25,
-		D: 26,
-		E: 26,
-		F: 28,
-		G: 28,
-		H: 27,
-		I: 26,
-		J: 26
-	};
 
 	// State
 	const currentYear: number = new Date().getFullYear();
@@ -116,7 +100,7 @@
 	let startMonth: number = 0;
 	let endMonth: number = 11;
 	let isFilterOpen: boolean = false;
-	let mapView: 'ROWS' | 'SEATS' = 'SEATS';
+
 	let isAllData: boolean = false;
 	let showTheaterPopup: boolean = false;
 	let showTwoShotPopup: boolean = false;
@@ -268,13 +252,6 @@
 	// Most frequent row for card
 	$: mostFrequentRow = (Object.entries(rowStats.counts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
 		'-') as string;
-
-	// Helper for rendering detailed row
-	const getSeatsForRow = (row: string, total: number) => {
-		const seats = [];
-		for (let i = 1; i <= total; i++) seats.push(i);
-		return seats;
-	};
 
 	const getShowImage = (title: string) =>
 		SHOW_IMAGES.find((s) => title.toLowerCase().includes(s.title.toLowerCase()))?.image;
@@ -1026,7 +1003,8 @@
 			<div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 flex-1">
 				{#if isLoading}
 					<!-- Skeleton Loading for Monthly -->
-					{#each Array(12) as _, i}
+					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+					{#each [1, 2, 3] as _unused, i}
 						<div class="flex flex-col items-center">
 							<div
 								class="w-full aspect-square rounded-2xl mb-2 bg-gray-200 dark:bg-zinc-700 animate-pulse"
@@ -1107,7 +1085,8 @@
 			<div class="flex flex-wrap justify-center gap-3 flex-1 content-start w-full">
 				{#if isLoading}
 					<!-- Skeleton Loading for Days -->
-					{#each Array(7) as _, i}
+					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+					{#each Array(7) as _unused, i}
 						<div
 							class="flex flex-col items-center w-[calc(33.33%-0.5rem)] sm:w-[calc(25%-0.56rem)] lg:w-[calc(33.33%-0.5rem)] xl:w-[calc(25%-0.56rem)]"
 						>
@@ -1166,6 +1145,8 @@
 
 <!-- THEATER POPUP -->
 {#if showTheaterPopup}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
 		on:click|self={() => (showTheaterPopup = false)}
@@ -1290,6 +1271,8 @@
 
 <!-- 2-SHOT POPUP -->
 {#if showTwoShotPopup}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
 		on:click|self={() => (showTwoShotPopup = false)}

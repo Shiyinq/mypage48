@@ -22,7 +22,8 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		return {
 			profile
 		};
-	} catch (e: any) {
+	} catch (err) {
+		const e = err as { status?: number; message?: string };
 		if (e.status) throw e; // Re-throw SvelteKit errors
 		console.error(e);
 		throw error(500, 'Could not load profile');

@@ -1,5 +1,4 @@
 import { client } from './client';
-import type { GenericResponse } from '$lib/types';
 
 export interface SocialMedia {
 	twitter: string | null;

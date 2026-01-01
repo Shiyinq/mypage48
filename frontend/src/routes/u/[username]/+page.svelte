@@ -2,17 +2,7 @@
 	import type { PageData } from './$types';
 	import SEO from '$lib/components/SEO.svelte';
 	import TheaterSeatMap from '$lib/components/TheaterSeatMap.svelte';
-	import {
-		User,
-		Calendar,
-		Ticket,
-		Camera,
-		DollarSign,
-		Heart,
-		Armchair,
-		Loader2,
-		X
-	} from 'lucide-svelte';
+	import { User, Calendar, Ticket, Camera, Heart, Armchair, Loader2, X } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { auth } from '$lib/apis/auth';
 	import { userProfile } from '$lib/stores';
@@ -20,7 +10,6 @@
 	export let data: PageData;
 
 	const { t } = useTranslation();
-	// @ts-ignore
 	$: ({ profile } = data);
 
 	let fileInput: HTMLInputElement;
@@ -94,21 +83,6 @@
 		}
 	}
 
-	$: joinDate = profile
-		? new Date(profile.createdAt).toLocaleDateString(undefined, {
-				month: 'long',
-				year: 'numeric'
-			})
-		: '';
-
-	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat('id-ID', {
-			style: 'currency',
-			currency: 'IDR',
-			maximumFractionDigits: 0
-		}).format(amount);
-	};
-
 	// Prepare data for Seat Map
 	let rowStats = { counts: {}, maxCount: 0, uniqueVisited: 0 };
 	let seatStats = {};
@@ -134,8 +108,10 @@
 
 <div class="max-w-4xl mx-auto p-4 pb-24 animate-fade-in">
 	<!-- Header -->
+
 	<div
-		class="glass-panel p-8 rounded-[2rem] mb-6 flex flex-col md:flex-row items-center gap-8 text-center md:text-left relative overflow-hidden"
+		class="glass-panel p-6 rounded-3xl relative overflow-hidden group flex flex-col md:flex-row items-center gap-6 mb-6"
+		role="region"
 	>
 		<!-- Background decoration -->
 		<div
@@ -194,7 +170,7 @@
 		</div>
 
 		<!-- Info -->
-		<div class="relative z-10">
+		<div class="relative z-10 text-center md:text-left">
 			<h1 class="text-3xl font-black text-gray-900 dark:text-white leading-tight mb-2">
 				{profile.name}
 			</h1>
@@ -417,17 +393,16 @@
 {#if showPreviewModal && previewImage}
 	<div
 		class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+		role="presentation"
 		on:click={closePreviewModal}
 		on:keydown={(e) => e.key === 'Escape' && closePreviewModal()}
-		role="dialog"
-		aria-modal="true"
-		tabindex="-1"
 	>
 		<div
 			class="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-[fadeIn_0.2s_ease-out]"
 			on:click|stopPropagation
 			on:keydown|stopPropagation
-			role="document"
+			role="button"
+			tabindex="0"
 		>
 			<!-- Header -->
 			<div

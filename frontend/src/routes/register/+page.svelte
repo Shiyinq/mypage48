@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
-	import { Ticket, Lock, Mail, User, Hash, CheckCircle, Crown, Shield } from 'lucide-svelte';
+	import { Lock, Mail, User, Hash, CheckCircle, Crown, Shield } from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
 	import type { RegisterRequest } from '$lib/types';
 	import SEO from '$lib/components/SEO.svelte';
@@ -39,7 +39,8 @@
 			setTimeout(() => {
 				goto('/login');
 			}, 2000);
-		} catch (e: any) {
+		} catch (err) {
+			const e = err as { detail?: string | string[]; message?: string };
 			console.error(e);
 			if (e.detail && typeof e.detail === 'string') {
 				error = e.detail;
@@ -80,7 +81,9 @@
 			<form on:submit|preventDefault={handleSubmit} class="space-y-4">
 				<div class="grid grid-cols-2 gap-4">
 					<div>
-						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+						<label
+							for="memberId"
+							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 							>{$t('auth.register.memberId')}</label
 						>
 						<div class="relative">
@@ -90,6 +93,7 @@
 								<Hash class="w-4 h-4" />
 							</div>
 							<input
+								id="memberId"
 								name="memberId"
 								required
 								bind:value={formData.memberId}
@@ -99,7 +103,9 @@
 						</div>
 					</div>
 					<div>
-						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+						<label
+							for="username"
+							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 							>{$t('auth.register.username')}</label
 						>
 						<div class="relative">
@@ -109,6 +115,7 @@
 								<User class="w-4 h-4" />
 							</div>
 							<input
+								id="username"
 								name="username"
 								required
 								bind:value={formData.username}
@@ -120,10 +127,13 @@
 				</div>
 
 				<div>
-					<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+					<label
+						for="fullName"
+						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 						>{$t('auth.register.fullName')}</label
 					>
 					<input
+						id="fullName"
 						name="fullName"
 						required
 						bind:value={formData.fullName}
@@ -133,7 +143,9 @@
 				</div>
 
 				<div>
-					<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+					<label
+						for="email"
+						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 						>{$t('auth.register.email')}</label
 					>
 					<div class="relative">
@@ -142,6 +154,7 @@
 						</div>
 						<input
 							type="email"
+							id="email"
 							name="email"
 							required
 							bind:value={formData.email}
@@ -152,7 +165,9 @@
 				</div>
 
 				<div>
-					<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+					<label
+						for="ofcStatus"
+						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 						>{$t('auth.register.ofcStatus')}</label
 					>
 					<div class="relative">
@@ -160,6 +175,7 @@
 							<Crown class="w-4 h-4" />
 						</div>
 						<select
+							id="ofcStatus"
 							name="ofcStatus"
 							bind:value={formData.ofcStatus}
 							class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm appearance-none cursor-pointer"
@@ -176,7 +192,9 @@
 
 				<div class="grid md:grid-cols-2 gap-4">
 					<div>
-						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+						<label
+							for="password"
+							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 							>{$t('auth.register.password')}</label
 						>
 						<div class="relative">
@@ -187,6 +205,7 @@
 							</div>
 							<input
 								type="password"
+								id="password"
 								name="password"
 								required
 								bind:value={formData.password}
@@ -196,7 +215,9 @@
 						</div>
 					</div>
 					<div>
-						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+						<label
+							for="confirmPassword"
+							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 							>{$t('auth.register.confirmPassword')}</label
 						>
 						<div class="relative">
@@ -207,6 +228,7 @@
 							</div>
 							<input
 								type="password"
+								id="confirmPassword"
 								name="confirmPassword"
 								required
 								bind:value={formData.confirmPassword}

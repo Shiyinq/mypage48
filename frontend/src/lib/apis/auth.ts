@@ -50,7 +50,10 @@ export const auth = {
 	},
 
 	register: async (data: RegisterRequest) => {
-		return client<any>('/users/signup', { method: 'POST', body: data as any });
+		return client<AuthResponse>('/users/signup', {
+			method: 'POST',
+			body: data as unknown as Record<string, unknown>
+		});
 	},
 
 	logout: async () => {
@@ -58,13 +61,16 @@ export const auth = {
 	},
 
 	updateOshi: async (oshiId: number) => {
-		return client<GenericResponse>('/users/oshi', { method: 'POST', body: { oshiId } as any });
+		return client<GenericResponse>('/users/oshi', {
+			method: 'POST',
+			body: { oshiId } as unknown as Record<string, unknown>
+		});
 	},
 
 	updateProfilePicture: async (profilePicture: string) => {
 		return client<GenericResponse>('/users/profile-picture', {
 			method: 'POST',
-			body: { profilePicture } as any
+			body: { profilePicture } as unknown as Record<string, unknown>
 		});
 	},
 
@@ -79,20 +85,29 @@ export const auth = {
 	sendVerificationEmail: async (data: EmailVerificationRequest) => {
 		return client<GenericResponse>('/auth/send-verification', {
 			method: 'POST',
-			body: data as any
+			body: data as unknown as Record<string, unknown>
 		});
 	},
 
 	verifyEmail: async (data: VerifyEmailRequest) => {
-		return client<GenericResponse>('/auth/verify-email', { method: 'POST', body: data as any });
+		return client<GenericResponse>('/auth/verify-email', {
+			method: 'POST',
+			body: data as unknown as Record<string, unknown>
+		});
 	},
 
 	forgotPassword: async (data: PasswordResetRequest) => {
-		return client<GenericResponse>('/auth/forgot-password', { method: 'POST', body: data as any });
+		return client<GenericResponse>('/auth/forgot-password', {
+			method: 'POST',
+			body: data as unknown as Record<string, unknown>
+		});
 	},
 
 	resetPassword: async (data: PasswordResetConfirmRequest) => {
-		return client<GenericResponse>('/auth/reset-password', { method: 'POST', body: data as any });
+		return client<GenericResponse>('/auth/reset-password', {
+			method: 'POST',
+			body: data as unknown as Record<string, unknown>
+		});
 	},
 
 	// Social Login URLs

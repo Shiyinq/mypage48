@@ -13,13 +13,11 @@
 		DollarSign,
 		Hash,
 		Ticket as TicketIcon,
-		X,
 		ChevronDown,
 		ImagePlus,
-		User,
 		Sparkles
 	} from 'lucide-svelte';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import MemberSelector from '$lib/components/MemberSelector.svelte';
 
@@ -139,6 +137,8 @@
 
 <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
 	<!-- Backdrop -->
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
 		on:click={() => dispatch('close')}
@@ -197,9 +197,10 @@
 								</div>
 							</div>
 						{:else}
-							<div
+							<button
+								type="button"
 								on:click={() => fileInputRef.click()}
-								class="rounded-3xl border-3 border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-500/50 transition-all cursor-pointer flex flex-col items-center justify-center aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-300px)] text-gray-400 dark:text-gray-500 hover:text-red-500"
+								class="w-full rounded-3xl border-3 border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-500/50 transition-all cursor-pointer flex flex-col items-center justify-center aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-300px)] text-gray-400 dark:text-gray-500 hover:text-red-500"
 							>
 								<div class="p-4 rounded-full bg-white dark:bg-zinc-700 shadow-sm mb-4">
 									<ImagePlus class="w-8 h-8" />
@@ -208,7 +209,7 @@
 								<p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
 									({$t('forms.optional')})
 								</p>
-							</div>
+							</button>
 						{/if}
 					</div>
 				</div>
@@ -228,8 +229,9 @@
 							</h3>
 
 							<div>
-								<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-									>{$t('forms.showTitle')}</label
+								<label
+									class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+									for="event-title">{$t('forms.showTitle')}</label
 								>
 								<div class="relative group">
 									<div
@@ -238,6 +240,7 @@
 										<TicketIcon class="w-5 h-5" />
 									</div>
 									<select
+										id="event-title"
 										bind:value={formData.event.title}
 										class="w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-bold text-gray-900 dark:text-gray-100 transition-all appearance-none cursor-pointer"
 									>
@@ -254,13 +257,14 @@
 								<div>
 									<label
 										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-										>{$t('forms.date')}</label
+										for="event-date">{$t('forms.date')}</label
 									>
 									<div class="relative">
 										<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 											<Calendar class="w-4 h-4" />
 										</div>
 										<input
+											id="event-date"
 											type="date"
 											bind:value={formData.event.date}
 											class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
@@ -270,13 +274,14 @@
 								<div>
 									<label
 										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-										>{$t('forms.showTime')}</label
+										for="event-time">{$t('forms.showTime')}</label
 									>
 									<div class="relative">
 										<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 											<Clock class="w-4 h-4" />
 										</div>
 										<input
+											id="event-time"
 											type="time"
 											bind:value={formData.event.time}
 											class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
@@ -298,10 +303,11 @@
 								<div>
 									<label
 										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-										>{$t('forms.row')}</label
+										for="seat-section">{$t('forms.row')}</label
 									>
 									<div class="relative">
 										<select
+											id="seat-section"
 											bind:value={formData.seat.section}
 											class="w-full p-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-center font-black text-lg text-gray-900 dark:text-gray-100 appearance-none cursor-pointer"
 										>
@@ -316,9 +322,10 @@
 								<div class="col-span-2">
 									<label
 										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-										>{$t('forms.seatNumber')}</label
+										for="seat-number">{$t('forms.seatNumber')}</label
 									>
 									<input
+										id="seat-number"
 										type="number"
 										bind:value={formData.seat.number}
 										class="w-full p-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-center font-black text-lg text-gray-900 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600"
@@ -329,13 +336,14 @@
 								<div>
 									<label
 										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-										>{$t('forms.price')}</label
+										for="ticket-price">{$t('forms.price')}</label
 									>
 									<div class="relative">
 										<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 											<DollarSign class="w-4 h-4" />
 										</div>
 										<input
+											id="ticket-price"
 											type="number"
 											bind:value={formData.price}
 											class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-gray-100"
@@ -345,13 +353,14 @@
 								<div>
 									<label
 										class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-										>{$t('forms.ticketId')}</label
+										for="ticket-id">{$t('forms.ticketId')}</label
 									>
 									<div class="relative">
 										<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 											<Hash class="w-4 h-4" />
 										</div>
 										<input
+											id="ticket-id"
 											type="text"
 											bind:value={formData.ticket_id}
 											class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
@@ -389,9 +398,11 @@
 									<div>
 										<label
 											class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1"
-											>{$t('forms.twoShotPhoto')}</label
+											for="twoshot-upload">{$t('forms.twoShotPhoto')}</label
 										>
-										<div
+										<button
+											id="twoshot-upload"
+											type="button"
 											on:click={() => twoShotInputRef.click()}
 											class="w-full h-32 border-2 border-dashed border-red-200 dark:border-red-900/30 rounded-xl bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors cursor-pointer flex items-center justify-center overflow-hidden relative group"
 										>
@@ -408,33 +419,36 @@
 													<span class="text-xs font-medium">{$t('forms.uploadPhoto')}</span>
 												</div>
 											{/if}
-										</div>
+										</button>
 									</div>
 
 									<div>
 										<label
 											class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-											>{$t('forms.memberName')}</label
+											for="member-selector">{$t('forms.memberName')}</label
 										>
-										<MemberSelector
-											bind:value={formData.two_shot.member_name}
-											placeholder={$t('forms.memberNamePlaceholder')}
-											title={$t('forms.selectMember')}
-											subtitle={$t('forms.selectMemberDesc')}
-										/>
+										<div id="member-selector">
+											<MemberSelector
+												bind:value={formData.two_shot.member_name}
+												placeholder={$t('forms.memberNamePlaceholder')}
+												title={$t('forms.selectMember')}
+												subtitle={$t('forms.selectMemberDesc')}
+											/>
+										</div>
 									</div>
 
 									<div class="grid grid-cols-2 gap-4">
 										<div>
 											<label
 												class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-												>{$t('forms.type')}</label
+												for="twoshot-type">{$t('forms.type')}</label
 											>
 											<div class="relative">
 												<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 													<Sparkles class="w-4 h-4" />
 												</div>
 												<select
+													id="twoshot-type"
 													bind:value={formData.two_shot.type}
 													class="w-full pl-9 pr-8 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100 appearance-none cursor-pointer"
 												>
@@ -449,13 +463,14 @@
 										<div>
 											<label
 												class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-												>{$t('forms.price')}</label
+												for="twoshot-price">{$t('forms.price')}</label
 											>
 											<div class="relative">
 												<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
 													<DollarSign class="w-4 h-4" />
 												</div>
 												<input
+													id="twoshot-price"
 													type="number"
 													bind:value={formData.two_shot.price}
 													class="w-full pl-9 pr-3 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
