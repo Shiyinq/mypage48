@@ -11,6 +11,7 @@
 		"confirm": "Konfirmasi",
 		"yes": "Ya",
 		"no": "Tidak",
+		"ok": "OK",
 		"error": "Terjadi kesalahan",
 		"success": "Berhasil",
 		"warning": "Peringatan",
@@ -26,6 +27,14 @@
 		"profile": "Profil",
 		"dashboard": "Dasbor",
 		"language": "Bahasa"
+	},
+	"validation": {
+		"alert": {
+			"title": "Gagal Validasi",
+			"fileTooLarge": "File terlalu besar. Maksimum 3MB.",
+			"invalidType": "Format file tidak didukung. Gunakan JPEG, PNG, GIF, atau WebP.",
+			"noFile": "Tidak ada file yang dipilih."
+		}
 	},
 	"seo": {
 		"default": "MyPage48 - Pendamping teater JKT48 terbaik. Lacak kunjungan teater, 2-shot, dan pencapaianmu.",
