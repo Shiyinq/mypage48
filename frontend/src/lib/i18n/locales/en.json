@@ -11,6 +11,7 @@
 		"confirm": "Confirm",
 		"yes": "Yes",
 		"no": "No",
+		"ok": "OK",
 		"error": "An error occurred",
 		"success": "Success",
 		"warning": "Warning",
@@ -26,6 +27,14 @@
 		"profile": "Profile",
 		"dashboard": "Dashboard",
 		"language": "Language"
+	},
+	"validation": {
+		"alert": {
+			"title": "Validation Error",
+			"fileTooLarge": "File is too large. Maximum 3MB allowed.",
+			"invalidType": "File format not supported. Please use JPEG, PNG, GIF, or WebP.",
+			"noFile": "No file selected."
+		}
 	},
 	"seo": {
 		"default": "MyPage48 - Your ultimate JKT48 theater companion. Track your theater visits, 2-shots, and achievements.",

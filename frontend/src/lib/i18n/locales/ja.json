@@ -11,6 +11,7 @@
 		"confirm": "確認",
 		"yes": "はい",
 		"no": "いいえ",
+		"ok": "OK",
 		"error": "エラーが発生しました",
 		"success": "成功",
 		"warning": "警告",
@@ -26,6 +27,14 @@
 		"profile": "プロフィール",
 		"dashboard": "ダッシュボード",
 		"language": "言語"
+	},
+	"validation": {
+		"alert": {
+			"title": "検証エラー",
+			"fileTooLarge": "ファイルが大きすぎます。最大3MBです。",
+			"invalidType": "対応していないファイル形式です。JPEG、PNG、GIF、またはWebPを使用してください。",
+			"noFile": "ファイルが選択されていません。"
+		}
 	},
 	"seo": {
 		"default": "MyPage48 - JKT48劇場の究極のコンパニオン。劇場訪問、2ショット、実績を記録しよう。",

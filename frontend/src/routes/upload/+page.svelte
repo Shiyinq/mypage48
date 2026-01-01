@@ -3,6 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { extractTicketData } from '$lib/services/geminiService';
 	import { theater } from '$lib/apis/theater';
+	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
+	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 
 	import {
 		Loader2,
@@ -43,6 +45,10 @@
 	let showTwoShot = false;
 	let twoShotImage: string | null = null;
 	let twoShotInputRef: HTMLInputElement;
+
+	// Validation alert modal state
+	let showValidationAlert = false;
+	let validationAlertMessage = '';
 
 	// Temporary state matching Ticket structure but editable
 	let formData = {
@@ -93,6 +99,16 @@
 		const target = e.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (!file) return;
+
+		// Validate file before processing
+		const validation = validateImageFile(file);
+		if (!validation.valid) {
+			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			showValidationAlert = true;
+			target.value = ''; // Reset input
+			return;
+		}
+
 		const reader = new FileReader();
 		reader.onloadend = () => {
 			image = reader.result as string;
@@ -141,6 +157,16 @@
 		const target = e.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (!file) return;
+
+		// Validate file before processing
+		const validation = validateImageFile(file);
+		if (!validation.valid) {
+			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			showValidationAlert = true;
+			target.value = ''; // Reset input
+			return;
+		}
+
 		const reader = new FileReader();
 		reader.onloadend = () => {
 			twoShotImage = reader.result as string;
@@ -454,4 +480,12 @@
 	id="two-shot-photo"
 	bind:this={twoShotInputRef}
 	on:change={handleTwoShotFileChange}
+/>
+
+<!-- Validation Alert Modal -->
+<ValidationAlertModal
+	show={showValidationAlert}
+	title={$t('validation.alert.title')}
+	message={validationAlertMessage}
+	onClose={() => (showValidationAlert = false)}
 />

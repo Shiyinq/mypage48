@@ -5,6 +5,12 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { auth } from '$lib/apis/auth';
 	import { userProfile } from '$lib/stores';
+	import {
+		validateImageFile,
+		validateBase64Image,
+		getValidationErrorI18nKey
+	} from '$lib/utils/fileValidation';
+	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import PublicProfileHeader from '$lib/components/public-profile/PublicProfileHeader.svelte';
 	import PublicProfileStats from '$lib/components/public-profile/PublicProfileStats.svelte';
 	import PublicProfileRecentActivity from '$lib/components/public-profile/PublicProfileRecentActivity.svelte';
@@ -22,10 +28,23 @@
 	let showPreviewModal = false;
 	let previewImage: string | null = null;
 
+	// Validation alert modal state
+	let showValidationAlert = false;
+	let validationAlertMessage = '';
+
 	async function handleFileSelect(event: Event) {
 		const target = event.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (!file) return;
+
+		// Validate file before processing
+		const validation = validateImageFile(file);
+		if (!validation.valid) {
+			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			showValidationAlert = true;
+			if (fileInput) fileInput.value = '';
+			return;
+		}
 
 		try {
 			// Read file as base64 using Promise
@@ -56,10 +75,11 @@
 	async function confirmUpload() {
 		if (!previewImage) return;
 
-		// Validate file size (10MB max) - base64 is ~33% larger than original
-		const base64Size = previewImage.length * 0.75; // approximate original size
-		if (base64Size > 10 * 1024 * 1024) {
-			alert($t('profile.profilePicture.fileTooLarge'));
+		// Validate base64 image (type and size)
+		const validation = validateBase64Image(previewImage);
+		if (!validation.valid) {
+			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			showValidationAlert = true;
 			return;
 		}
 
@@ -184,3 +204,11 @@
 		on:save={confirmUpload}
 	/>
 {/if}
+
+<!-- Validation Alert Modal -->
+<ValidationAlertModal
+	show={showValidationAlert}
+	title={$t('validation.alert.title')}
+	message={validationAlertMessage}
+	onClose={() => (showValidationAlert = false)}
+/>

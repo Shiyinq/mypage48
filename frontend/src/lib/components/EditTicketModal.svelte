@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { theater } from '$lib/apis/theater';
 	import { showToast, tickets } from '$lib/stores';
+	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
+	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import type { Ticket } from '$lib/types';
 	import {
 		Loader2,
@@ -63,6 +65,10 @@
 	let showTwoShot = !!ticket.two_shot;
 	let twoShotImage: string | null = ticket.two_shot?.imageUrl || null;
 
+	// Validation alert modal state
+	let showValidationAlert = false;
+	let validationAlertMessage = '';
+
 	// Validation
 	$: isFormValid =
 		formData.event.title &&
@@ -79,6 +85,16 @@
 		const target = e.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (!file) return;
+
+		// Validate file before processing
+		const validation = validateImageFile(file);
+		if (!validation.valid) {
+			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			showValidationAlert = true;
+			target.value = ''; // Reset input
+			return;
+		}
+
 		const reader = new FileReader();
 		reader.onloadend = () => {
 			image = reader.result as string;
@@ -90,6 +106,16 @@
 		const target = e.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (!file) return;
+
+		// Validate file before processing
+		const validation = validateImageFile(file);
+		if (!validation.valid) {
+			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			showValidationAlert = true;
+			target.value = ''; // Reset input
+			return;
+		}
+
 		const reader = new FileReader();
 		reader.onloadend = () => {
 			twoShotImage = reader.result as string;
@@ -531,4 +557,12 @@
 	class="hidden"
 	accept="image/*"
 	on:change={handleTwoShotFileChange}
+/>
+
+<!-- Validation Alert Modal -->
+<ValidationAlertModal
+	show={showValidationAlert}
+	title={$t('validation.alert.title')}
+	message={validationAlertMessage}
+	onClose={() => (showValidationAlert = false)}
 />
