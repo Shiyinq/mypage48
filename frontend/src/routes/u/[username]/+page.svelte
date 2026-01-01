@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import SEO from '$lib/components/SEO.svelte';
-	import TheaterSeatMap from '$lib/components/TheaterSeatMap.svelte';
+	import { SEO, TheaterSeatMap } from '$lib/components';
 	import { User, Calendar, Ticket, Camera, Heart, Armchair, Loader2, X } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { auth } from '$lib/apis/auth';

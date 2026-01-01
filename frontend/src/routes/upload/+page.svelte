@@ -26,20 +26,14 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import MemberSelector from '$lib/components/MemberSelector.svelte';
+	import { PageHeader } from '$lib/components';
+	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
 
 	const { t } = useTranslation();
 
 	// Constants
-	const SHOW_OPTIONS = [
-		'Pertaruhan Cinta',
-		'Pajama Drive',
-		'Aturan Anti Cinta',
-		'Sambil Menggandeng Erat Tanganku',
-		'Cara Meminum Ramune',
-		'Ingin Bertemu',
-		'KIRA KIRA GIRLS'
-	];
-	const ROW_OPTIONS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+	const SHOW_OPTIONS = SHOW_IMAGES.map((s) => s.title);
+	const ROW_OPTIONS = THEATER_ROWS;
 
 	let mode: 'SELECTION' | 'ANALYZING' | 'EDITING' = 'SELECTION';
 	let image: string | null = null;
@@ -118,11 +112,9 @@
 				SHOW_OPTIONS.find((opt) =>
 					(result.title || '').toLowerCase().includes(opt.toLowerCase())
 				) || '';
-			const detectedRow = ROW_OPTIONS.includes(
-				(result.section || '').toUpperCase().trim().charAt(0)
-			)
-				? (result.section || '').toUpperCase().trim().charAt(0)
-				: '';
+			const inputChar = (result.section || '').toUpperCase().trim().charAt(0);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const detectedRow = THEATER_ROWS.includes(inputChar as any) ? inputChar : '';
 
 			formData = {
 				...formData,
@@ -303,22 +295,12 @@
 {#if mode === 'EDITING'}
 	<div class="max-w-5xl mx-auto p-4 pb-24 animate-fade-in">
 		<div class="flex items-center justify-between mb-6">
-			<div class="flex items-center gap-3">
-				<div
-					class="p-3 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-lg shadow-red-100 dark:shadow-red-900/20 border-2 border-white dark:border-zinc-700 transform -rotate-6"
-				>
-					<Keyboard class="w-6 h-6" />
-				</div>
-				<div>
-					<h2 class="text-2xl font-bold text-themed leading-none relative w-fit">
-						{$t('forms.newTicket')}
-						<span
-							class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 dark:bg-red-500/30 -z-10 transform -skew-x-12 rounded-sm"
-						></span>
-					</h2>
-					<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{$t('forms.addToCollection')}</p>
-				</div>
-			</div>
+			<PageHeader
+				icon={Keyboard}
+				title={$t('forms.newTicket')}
+				subtitle={$t('forms.addToCollection')}
+				theme="red"
+			/>
 			<button
 				on:click={onCancel}
 				class="text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer"

@@ -4,6 +4,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
+	import { PageHeader, EmptyState } from '$lib/components';
 
 	const { t } = useTranslation();
 
@@ -89,22 +90,12 @@
 
 <div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in">
 	<!-- Header -->
-	<div class="flex items-center gap-3 mb-8">
-		<div
-			class="p-3 rounded-2xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 shadow-lg shadow-pink-100 dark:shadow-pink-900/20 border-2 border-white dark:border-zinc-700 transform -rotate-6"
-		>
-			<Heart class="w-6 h-6 fill-current" />
-		</div>
-		<div>
-			<h2 class="text-2xl font-bold text-themed leading-none relative w-fit">
-				{$t('top2shot.title')}
-				<span
-					class="absolute -bottom-1 left-0 w-full h-2 bg-pink-200/60 dark:bg-pink-500/30 -z-10 transform -skew-x-12 rounded-sm"
-				></span>
-			</h2>
-			<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{$t('top2shot.subtitle')}</p>
-		</div>
-	</div>
+	<PageHeader
+		icon={Heart}
+		title={$t('top2shot.title')}
+		subtitle={$t('top2shot.subtitle')}
+		theme="pink"
+	/>
 
 	{#if isLoading}
 		<div class="grid lg:grid-cols-3 gap-6">
@@ -157,21 +148,11 @@
 			</div>
 		</div>
 	{:else if stats.ranking.length === 0}
-		<div
-			class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-zinc-800/50"
-		>
-			<div
-				class="w-20 h-20 bg-white dark:bg-zinc-700 rounded-full shadow-sm flex items-center justify-center mb-6"
-			>
-				<Camera class="w-10 h-10 text-gray-300 dark:text-gray-600" />
-			</div>
-			<h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
-				{$t('top2shot.noData')}
-			</h3>
-			<p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-				{$t('top2shot.noDataDesc')}
-			</p>
-		</div>
+		<EmptyState
+			icon={Camera}
+			title={$t('top2shot.noData')}
+			description={$t('top2shot.noDataDesc')}
+		/>
 	{:else}
 		<div class="grid lg:grid-cols-3 gap-6">
 			<!-- LEFT COL: Kami Oshi Card & Spending -->

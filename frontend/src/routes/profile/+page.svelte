@@ -39,6 +39,7 @@
 	} from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
 	import SEO from '$lib/components/SEO.svelte';
+	import { PageHeader } from '$lib/components';
 
 	import type { Ticket, User } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -401,41 +402,27 @@
 
 <div class="max-w-5xl mx-auto p-4 animate-fade-in pb-24">
 	<!-- Page Header -->
-	<div class="flex items-center justify-between mb-8">
-		<div class="flex items-center gap-3">
-			<div
-				class="p-3 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-lg shadow-red-100 dark:shadow-red-900/20 border-2 border-white dark:border-zinc-700 transform -rotate-6"
-			>
-				<UserIcon class="w-6 h-6" />
-			</div>
-			<div>
-				<h2 class="text-2xl font-black idol-text-gradient leading-none relative w-fit">
-					{$t('profile.title')}
-					<span
-						class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 dark:bg-red-500/30 -z-10 transform -skew-x-12 rounded-sm"
-					></span>
-				</h2>
-				<p class="text-sm text-themed-secondary mt-1">{$t('profile.subtitle')}</p>
-			</div>
-		</div>
-		<div class="flex items-center gap-2">
-			<!-- Settings Button -->
-			<button
-				on:click={() => goto('/settings')}
-				class="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-gray-700 dark:hover:text-gray-300 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-zinc-600 cursor-pointer"
-				title="Settings"
-			>
-				<Settings class="w-5 h-5" />
-			</button>
-			<!-- Logout Button -->
-			<button
-				on:click={logout}
-				class="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-500/30 cursor-pointer"
-				title={$t('common.logout')}
-			>
-				<LogOut class="w-5 h-5" />
-			</button>
-		</div>
+	<div class="mb-8">
+		<PageHeader title={$t('profile.title')} subtitle={$t('profile.subtitle')} icon={UserIcon}>
+			<svelte:fragment slot="actions">
+				<!-- Settings Button -->
+				<button
+					on:click={() => goto('/settings')}
+					class="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-gray-700 dark:hover:text-gray-300 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-zinc-600 cursor-pointer"
+					title="Settings"
+				>
+					<Settings class="w-5 h-5" />
+				</button>
+				<!-- Logout Button -->
+				<button
+					on:click={logout}
+					class="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-500/30 cursor-pointer"
+					title={$t('common.logout')}
+				>
+					<LogOut class="w-5 h-5" />
+				</button>
+			</svelte:fragment>
+		</PageHeader>
 	</div>
 
 	<div class="grid lg:grid-cols-12 gap-8">
