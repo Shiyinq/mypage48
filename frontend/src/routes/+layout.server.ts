@@ -1,16 +1,16 @@
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ cookies, url }) => {
-    // Check if we are on a public profile route
-    const isPublicProfile = url.pathname.startsWith('/u/');
+	// Check if we are on a public profile route
+	const isPublicProfile = url.pathname.startsWith('/u/');
 
-    // Default fallback: 'en' for public profiles, 'id' for others
-    const defaultLocale = isPublicProfile ? 'en' : 'id';
+	// Default fallback: 'en' for public profiles, 'id' for others
+	const defaultLocale = isPublicProfile ? 'en' : 'id';
 
-    // Get locale from cookie, default to determined fallback if not present
-    const locale = cookies.get('mypage48_locale') || defaultLocale;
+	// Get locale from cookie, default to determined fallback if not present
+	const locale = cookies.get('mypage48_locale') || defaultLocale;
 
-    return {
-        locale
-    };
+	return {
+		locale
+	};
 };

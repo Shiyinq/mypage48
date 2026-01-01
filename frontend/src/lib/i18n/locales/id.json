@@ -1,529 +1,529 @@
 {
-    "common": {
-        "loading": "Memuat...",
-        "save": "Simpan",
-        "cancel": "Batal",
-        "delete": "Hapus",
-        "edit": "Edit",
-        "close": "Tutup",
-        "back": "Kembali",
-        "submit": "Kirim",
-        "confirm": "Konfirmasi",
-        "yes": "Ya",
-        "no": "Tidak",
-        "error": "Terjadi kesalahan",
-        "success": "Berhasil",
-        "warning": "Peringatan",
-        "info": "Informasi",
-        "search": "Cari",
-        "filter": "Filter",
-        "filters": "Filter",
-        "all": "Semua",
-        "allData": "Semua Data",
-        "viewDetails": "Lihat Detail",
-        "logout": "Keluar",
-        "settings": "Pengaturan",
-        "profile": "Profil",
-        "dashboard": "Dasbor",
-        "language": "Bahasa"
-    },
-    "seo": {
-        "default": "MyPage48 - Pendamping teater JKT48 terbaik. Lacak kunjungan teater, 2-shot, dan pencapaianmu.",
-        "dashboard": "Lihat statistik kehadiran teater JKT48, analisis pengeluaran, dan visualisasi peta kursi.",
-        "login": "Masuk ke akun MyPage48 untuk melacak perjalanan teater JKT48 kamu.",
-        "register": "Buat akun MyPage48 baru untuk melacak perjalanan teater JKT48 kamu.",
-        "forgotPassword": "Reset password MyPage48 untuk mendapatkan akses kembali ke akunmu.",
-        "resetPassword": "Buat password baru yang aman untuk akun MyPage48 kamu.",
-        "verifyEmail": "Verifikasi alamat email untuk menyelesaikan pendaftaran MyPage48.",
-        "profile": "Lihat profil MyPage48, kartu member, progres level, dan statistikmu.",
-        "history": "Lihat riwayat lengkap kunjungan teater JKT48 dan kelola log tiket kamu.",
-        "shows": "Jelajahi pertunjukan teater JKT48, lihat detail, dan lacak riwayat kehadiran.",
-        "settings": "Kelola pengaturan akun MyPage48, preferensi, dan akses developer.",
-        "achievements": "Lacak pencapaian teater JKT48, lencana, dan level penggemar.",
-        "memories": "Album digital tiket teater JKT48 dan foto 2-shot kamu.",
-        "top2shot": "Lihat member teratas berdasarkan jumlah 2-shot dan statistik pengeluaran.",
-        "upload": "Unggah dan pindai tiket teater JKT48 atau tambahkan foto 2-shot."
-    },
-    "nav": {
-        "home": "Beranda",
-        "dashboard": "Dasbor",
-        "setlists": "Setlists",
-        "shows": "Pertunjukan",
-        "achievements": "Pencapaian",
-        "memories": "Kenangan",
-        "history": "Riwayat",
-        "upload": "Unggah",
-        "profile": "Profil",
-        "settings": "Pengaturan",
-        "newTicket": "Tiket Baru"
-    },
-    "header": {
-        "tagline": "PELACAK TEATER JKT48"
-    },
-    "auth": {
-        "login": {
-            "title": "Masuk",
-            "subtitle": "Selamat datang kembali, Wota!",
-            "emailLabel": "Alamat Email",
-            "emailPlaceholder": "member@mypage48.com",
-            "passwordLabel": "Kata Sandi",
-            "passwordPlaceholder": "••••••••",
-            "forgotPassword": "Lupa Kata Sandi?",
-            "signIn": "Masuk",
-            "noAccount": "Belum punya akun?",
-            "registerCta": "Daftar Akses OFC",
-            "welcomeBack": "Selamat datang kembali!",
-            "invalidCredentials": "Email atau kata sandi salah"
-        },
-        "register": {
-            "title": "Bergabung dengan Fandom",
-            "subtitle": "Buat profil teater digitalmu",
-            "memberId": "Member ID",
-            "username": "Username",
-            "fullName": "Nama Lengkap",
-            "email": "Alamat Email",
-            "ofcStatus": "Status OFC",
-            "ofcActive": "OFC Aktif",
-            "ofcInactive": "OFC Tidak Aktif",
-            "pendingRenewal": "Menunggu Pembaruan",
-            "password": "Password",
-            "confirmPassword": "Konfirmasi Password",
-            "submit": "Buat Akun",
-            "submitting": "Membuat Akun...",
-            "hasAccount": "Sudah punya akun?",
-            "signIn": "Masuk ke MyPage48",
-            "passwordsMismatch": "Password tidak cocok",
-            "success": "Akun dibuat! Silakan cek email Anda untuk verifikasi.",
-            "failed": "Pendaftaran gagal. Silakan coba lagi."
-        },
-        "logout": {
-            "success": "Berhasil keluar",
-            "error": "Gagal keluar"
-        },
-        "forgotPassword": {
-            "title": "Lupa Password?",
-            "backToLogin": "Kembali ke Login",
-            "emailLabel": "Alamat Email",
-            "submit": "Kirim Link Reset",
-            "submitting": "Mengirim...",
-            "sent": "Link reset terkirim! Cek email Anda.",
-            "instruction": "Masukkan alamat email Anda dan kami akan mengirimkan link untuk mereset password Anda.",
-            "successMessage": "Kami telah mengirimkan link reset password ke {email}. Silakan cek kotak masuk Anda.",
-            "tryAnother": "Coba email lain",
-            "spamCheck": "Tidak menerima email? Cek folder spam atau coba lagi.",
-            "failed": "Gagal mengirim link reset. Silakan coba lagi.",
-            "error": "Gagal mengirim link"
-        },
-        "resetPassword": {
-            "title": "Reset Password",
-            "subtitle": "Buat password baru yang aman untuk akun Anda.",
-            "successTitle": "Password Direset!",
-            "successMessage": "Password Anda berhasil diperbarui. Anda akan diarahkan ke login sebentar lagi.",
-            "newPassword": "Password Baru",
-            "confirmPassword": "Konfirmasi Password",
-            "submit": "Reset Password",
-            "submitting": "Mereset...",
-            "goToLogin": "Ke Login",
-            "invalidToken": "Link reset tidak valid. Token hilang.",
-            "mismatch": "Password tidak cocok",
-            "tooShort": "Password harus minimal 8 karakter",
-            "successToast": "Password berhasil direset! Silakan login.",
-            "failed": "Gagal mereset password. Link mungkin tidak valid atau kedaluwarsa."
-        },
-        "verifyEmail": {
-            "loadingTitle": "Memverifikasi Email",
-            "successTitle": "Terverifikasi!",
-            "errorTitle": "Verifikasi Gagal",
-            "loadingMessage": "Memverifikasi email Anda...",
-            "successMessage": "Email berhasil diverifikasi! Anda sekarang dapat login.",
-            "invalidLink": "Link verifikasi tidak valid. Token hilang.",
-            "failedMessage": "Verifikasi gagal. Link mungkin tidak valid atau kedaluwarsa.",
-            "backToLogin": "Kembali ke Login",
-            "goToLogin": "Ke Login"
-        }
-    },
-    "dashboard": {
-        "title": "Dasbor",
-        "subtitle": "Ringkasan aktivitas teater kamu",
-        "filterTitle": "Filter Dasbor",
-        "filterSubtitle": "Atur rentang visualisasi",
-        "theater": {
-            "title": "Show",
-            "subtitle": "Ringkasan kehadiran kamu",
-            "shows": "Pertunjukan",
-            "spending": "Pengeluaran",
-            "totalExpenses": "Total Pengeluaran",
-            "topRow": "Baris Favorit",
-            "mostFrequentSeat": "Kursi Tersering",
-            "topShow": "Pertunjukan Favorit",
-            "mostWatched": "Paling Sering Ditonton",
-            "inYear": "Pada {year}",
-            "firstLast": "Show Pertama & Terakhir",
-            "first": "Pertama",
-            "last": "Terakhir",
-            "times": "Kali",
-            "timesWatched": "Kali Menonton"
-        },
-        "twoShot": {
-            "title": "2-Shot Roulette & Birthday",
-            "subtitle": "Foto bersama member",
-            "twoShotTitle": "2-Shot",
-            "collected": "Koleksi Foto",
-            "spending": "Pengeluaran",
-            "totalExpenses": "Total Pengeluaran",
-            "members": "Member",
-            "uniqueIdols": "Idola Unik",
-            "topTwoShot": "Top 2-Shot",
-            "mostCollected": "Koleksi Terbanyak",
-            "photos": "Foto",
-            "firstLast": "2-Shot Pertama & Terakhir",
-            "first": "Pertama",
-            "last": "Terakhir"
-        },
-        "seatMap": {
-            "title": "Peta Kursi Teater",
-            "subtitle": "Letak kursi yang pernah kamu dapat",
-            "rowsCollected": "Baris Terkumpul",
-            "stage": "Panggung",
-            "row": "Baris"
-        },
-        "monthlyAttendance": {
-            "title": "Kehadiran Bulanan",
-            "subtitle": "Rincian untuk",
-            "breakdown": "Rincian untuk",
-            "showsInMonth": "pertunjukan di bulan ini"
-        },
-        "dayPreference": {
-            "title": "Preferensi Hari",
-            "subtitle": "Kehadiran berdasarkan hari dalam seminggu"
-        }
-    },
-    "profile": {
-        "oshiModal": {
-            "title": "Pilih Oshi Kamu",
-            "subtitle": "Pilih member yang menerangi duniamu!",
-            "searchPlaceholder": "Cari member berdasarkan nama, panggilan, atau generasi...",
-            "cancel": "Batal",
-            "save": "Simpan Oshi",
-            "loading": "Memuat member...",
-            "noMembers": "Tidak ada member yang cocok dengan \"{query}\"",
-            "generation": "Generasi {gen}"
-        },
-        "title": "Profil Saya",
-        "subtitle": "Identitas & Stats Penggemar",
-        "memberCard": {
-            "officialFanClub": "Fan Club Resmi",
-            "memberId": "ID Member",
-            "cardHolder": "Pemegang Kartu",
-            "ofcActive": "OFC Aktif",
-            "ofcInactive": "OFC Tidak Aktif"
-        },
-        "level": {
-            "currentRank": "Peringkat Saat Ini",
-            "xpInfo": "1 XP = 1 Pertunjukan",
-            "needed": "dibutuhkan",
-            "for": "untuk"
-        },
-        "stats": {
-            "totalShows": "Total Pertunjukan",
-            "achievements": "Pencapaian"
-        },
-        "oshi": {
-            "title": "Oshi Shrine",
-            "generation": "Generasi",
-            "changeOshi": "Ganti Oshi",
-            "selectOshi": "Pilih Oshi Kamu",
-            "searchMember": "Cari member...",
-            "roulette": "Roulette",
-            "birthday": "Birthday"
-        },
-        "recentActivity": {
-            "title": "Aktivitas Terbaru",
-            "subtitle": "Pertunjukan terakhir yang dikunjungi",
-            "noActivity": "Belum ada aktivitas",
-            "viewAllHistory": "Lihat Semua Riwayat",
-            "startTracking": "Mulai lacak kunjungan teatermu!",
-            "attended": "Hadir di",
-            "twoShotAt": "2-Shot di",
-            "today": "Hari ini",
-            "yesterday": "Kemarin",
-            "daysAgo": "hari yang lalu",
-            "weeksAgo": "minggu yang lalu"
-        },
-        "publicActivity": {
-            "titleWithYear": "Aktivitas teater @{username} di tahun {year}",
-            "titleAllTime": "Aktivitas teater @{username}",
-            "yearBadge": "Aktivitas Teater: {year}"
-        },
-        "profilePicture": {
-            "previewTitle": "Preview Foto Profil",
-            "fileTooLarge": "File terlalu besar. Maksimal 10MB."
-        }
-    },
-    "settings": {
-        "title": "Pengaturan",
-        "subtitle": "Kelola preferensi kamu",
-        "language": {
-            "title": "Bahasa",
-            "subtitle": "Pilih bahasa tampilan",
-            "select": "Pilih Bahasa",
-            "indonesian": "Bahasa Indonesia",
-            "english": "English",
-            "japanese": "日本語"
-        },
-        "publicProfile": {
-            "title": "Profil Publik",
-            "subtitle": "Bagikan perjalananmu dengan dunia",
-            "enable": "Aktifkan Profil Publik",
-            "description": "Izinkan siapa saja untuk melihat statistik dan perjalanan teatermu menggunakan tautan unikmu.",
-            "yourLink": "Tautan Profil Publik Kamu",
-            "allYears": "Semua Tahun",
-            "thisYear": "Tahun Ini"
-        },
-        "developer": {
-            "title": "Akses Developer",
-            "subtitle": "Kelola API Key kamu",
-            "description": "Buat API key untuk mengakses data MYPAGE48 secara programatik. Gunakan untuk integrasi dengan aplikasi atau skrip kamu sendiri.",
-            "warning": "Penting: API key kamu hanya akan ditampilkan sekali setelah dibuat. Pastikan untuk menyalin dan menyimpannya dengan aman.",
-            "generateButton": "Buat API Key Baru",
-            "generating": "Membuat...",
-            "confirmTitle": "Buat API Key Baru?",
-            "confirmDescription": "Ini akan mencabut API key yang ada. Tindakan ini tidak dapat dibatalkan.",
-            "generated": "API Key Berhasil Dibuat!",
-            "copyInfo": "Silakan salin API key kamu sekarang. Kamu tidak akan bisa melihatnya lagi!",
-            "copied": "Disalin ke clipboard",
-            "savedKey": "Saya sudah menyimpan key saya"
-        },
-        "moreSettings": {
-            "title": "Pengaturan Lainnya",
-            "subtitle": "Segera hadir..."
-        },
-        "theme": {
-            "title": "Tema",
-            "subtitle": "Pilih tampilan yang nyaman",
-            "light": "Terang",
-            "lightDescription": "Mode terang klasik",
-            "dark": "Gelap",
-            "darkDescription": "Nyaman untuk mata di malam hari",
-            "auto": "Otomatis",
-            "autoDescription": "Mengikuti pengaturan sistem"
-        }
-    },
-    "history": {
-        "title": "Riwayat Tiket",
-        "subtitle": "Koleksi tiket teater kamu",
-        "gridView": "Tampilan Grid",
-        "tableView": "Tampilan Tabel",
-        "noTickets": "Belum ada tiket",
-        "addFirst": "Tambahkan tiket pertamamu untuk mulai melacak perjalanan teatermu!",
-        "date": "Tanggal",
-        "time": "Waktu",
-        "seat": "Kursi",
-        "price": "Harga",
-        "notes": "Catatan",
-        "addNote": "Tambah Catatan",
-        "editNote": "Edit Catatan",
-        "deleteNote": "Hapus Catatan",
-        "saveNote": "Simpan Catatan",
-        "noNotes": "Belum ada catatan.",
-        "editDetails": "Edit Detail",
-        "eventDetails": "Detail Acara",
-        "actions": "Aksi",
-        "show": "Pertunjukan",
-        "deleteConfirm": {
-            "title": "Hapus Tiket?",
-            "description": "Tindakan ini tidak dapat dibatalkan. Tiket akan dihapus secara permanen.",
-            "confirm": "Ya, Hapus",
-            "cancel": "Batal"
-        }
-    },
-    "memories": {
-        "title": "Kenangan",
-        "subtitle": "Galeri foto dan tiket kamu",
-        "allPhotos": "Semua Foto",
-        "tickets": "Tiket",
-        "twoShots": "2-Shot",
-        "noMemories": "Belum ada kenangan"
-    },
-    "achievements": {
-        "title": "Pencapaian",
-        "subtitle": "Lencana dan milestone kamu",
-        "unlocked": "Terbuka",
-        "locked": "Terkunci",
-        "progress": "Progres"
-    },
-    "errors": {
-        "404": {
-            "title": "Halaman Tidak Ditemukan",
-            "subtitle": "Oops! Halaman yang kamu cari tidak ada.",
-            "description": "Mungkin telah dipindahkan, dihapus, atau kamu salah ketik URL."
-        },
-        "500": {
-            "title": "Kesalahan Server",
-            "subtitle": "Ada yang salah di sisi kami.",
-            "description": "Tim kami sudah diberitahu dan sedang memperbaikinya. Silakan coba lagi nanti."
-        },
-        "403": {
-            "title": "Akses Ditolak",
-            "subtitle": "Kamu tidak memiliki izin untuk mengakses halaman ini.",
-            "description": "Pastikan kamu memiliki kredensial yang benar atau hubungi dukungan."
-        },
-        "401": {
-            "title": "Tidak Terautorisasi",
-            "subtitle": "Silakan masuk untuk melanjutkan.",
-            "description": "Kamu perlu diautentikasi untuk mengakses halaman ini."
-        },
-        "default": {
-            "title": "Terjadi Kesalahan",
-            "subtitle": "Terjadi kesalahan yang tidak terduga.",
-            "description": "Silakan coba refresh halaman atau kembali lagi nanti."
-        },
-        "goHome": "Kembali ke Beranda",
-        "tryAgain": "Coba Lagi"
-    },
-    "time": {
-        "months": {
-            "january": "Januari",
-            "february": "Februari",
-            "march": "Maret",
-            "april": "April",
-            "may": "Mei",
-            "june": "Juni",
-            "july": "Juli",
-            "august": "Agustus",
-            "september": "September",
-            "october": "Oktober",
-            "november": "November",
-            "december": "Desember"
-        },
-        "monthsShort": {
-            "jan": "Jan",
-            "feb": "Feb",
-            "mar": "Mar",
-            "apr": "Apr",
-            "may": "Mei",
-            "jun": "Jun",
-            "jul": "Jul",
-            "aug": "Agu",
-            "sep": "Sep",
-            "oct": "Okt",
-            "nov": "Nov",
-            "dec": "Des"
-        },
-        "days": {
-            "sunday": "Minggu",
-            "monday": "Senin",
-            "tuesday": "Selasa",
-            "wednesday": "Rabu",
-            "thursday": "Kamis",
-            "friday": "Jumat",
-            "saturday": "Sabtu"
-        },
-        "daysShort": {
-            "sun": "Min",
-            "mon": "Sen",
-            "tue": "Sel",
-            "wed": "Rab",
-            "thu": "Kam",
-            "fri": "Jum",
-            "sat": "Sab"
-        },
-        "relative": {
-            "today": "Hari ini",
-            "yesterday": "Kemarin",
-            "daysAgo": "{count} hari yang lalu",
-            "weeksAgo": "{count} minggu yang lalu"
-        }
-    },
-    "upload": {
-        "title": "Unggah Tiket",
-        "subtitle": "Tambahkan tiket baru ke koleksi",
-        "scanTicket": "Pindai Tiket",
-        "scanDescription": "Unggah gambar dan biarkan AI mengekstrak info detail.",
-        "manualEntry": "Input Manual",
-        "manualDescription": "Ketik detailnya sendiri.",
-        "saveTicket": "Simpan Tiket",
-        "uploadSuccess": "Tiket berhasil diunggah",
-        "uploadError": "Gagal mengunggah tiket"
-    },
-    "forms": {
-        "editTicket": "Edit Tiket",
-        "newTicket": "Entri Tiket Baru",
-        "updateMemory": "Perbarui kenanganmu",
-        "addToCollection": "Tambahkan ke koleksi",
-        "eventDetails": "Detail Acara",
-        "showTitle": "Judul Pertunjukan",
-        "selectSetlist": "Pilih Setlist",
-        "date": "Tanggal",
-        "showTime": "Waktu",
-        "seatPayment": "Kursi & Pembayaran",
-        "row": "Baris",
-        "seatNumber": "Nomor Kursi",
-        "price": "Harga (IDR)",
-        "ticketId": "ID Tiket",
-        "optional": "Opsional",
-        "twoShotDetails": "Detail 2-Shot",
-        "twoShotPhoto": "Foto 2-Shot",
-        "uploadPhoto": "Unggah Foto",
-        "changePhoto": "Ganti Foto",
-        "memberName": "Nama Member",
-        "memberNamePlaceholder": "Contoh: Oline Manuel",
-        "type": "Tipe",
-        "experienceLog": "Catatan Pengalaman",
-        "notesPlaceholder": "Bagaimana pertunjukannya? Dapat wink? Tulis kenanganmu di sini...",
-        "updateTicket": "Perbarui Detail Tiket",
-        "saveTicket": "Simpan Tiket",
-        "cancel": "Batal",
-        "uploadTicketPhoto": "Unggah Foto Tiket",
-        "selectMember": "Pilih Member",
-        "selectMemberDesc": "Pilih member yang berfoto denganmu",
-        "analysisIssue": "Masalah Analisis"
-    },
-    "member": {
-        "birthdate": "Tanggal Lahir",
-        "horoscope": "Zodiak",
-        "bloodType": "Golongan Darah",
-        "height": "Tinggi Badan",
-        "yearsOld": "Tahun",
-        "notFound": "Member Tidak Ditemukan",
-        "notFoundMessage": "Kami tidak dapat mengambil detail member ini. Silakan coba lagi nanti.",
-        "close": "Tutup"
-    },
-    "shows": {
-        "backTitle": "Kembali ke Daftar Show",
-        "backSubtitle": "Kembali ke daftar lengkap",
-        "title": "Daftar Setlist",
-        "subtitle": "Statistik pertunjukan teater kamu",
-        "top": "Teratas",
-        "viewHistory": "Lihat Riwayat",
-        "toTop": "untuk mencapai posisi teratas",
-        "notSeen": "Belum ditonton",
-        "performancesAttended": "pertunjukan dihadiri",
-        "firstAttended": "Pertama Nonton",
-        "lastAttended": "Terakhir Nonton",
-        "avgPrice": "Rata-rata Harga",
-        "topRow": "Baris Favorit",
-        "row": "Baris",
-        "unit": "Pertunjukan",
-        "totalShows": "Total Pertunjukan",
-        "uniqueShows": "Pertunjukan Unik"
-    },
-    "top2shot": {
-        "title": "Top 2-Shot",
-        "subtitle": "Analisis member & rincian pengeluaran",
-        "noData": "Belum Ada Data 2-Shot",
-        "noDataDesc": "Mulai tambahkan detail 2-shot saat membuat atau mengedit tiket untuk melihat peringkat Oshi kamu!",
-        "mostCollected": "KOLEKSI TERBANYAK",
-        "cherished": "Member paling kamu sayangi",
-        "stats2shots": "2-Shot",
-        "statsSpent": "Pengeluaran",
-        "budgetSplit": "Pembagian Anggaran",
-        "theaterTickets": "Tiket Teater",
-        "collection": "Koleksi 2-Shot",
-        "total": "Total",
-        "rankingTitle": "Peringkat Member",
-        "rankingSubtitle": "Berdasarkan riwayat 2-shot kamu",
-        "totalPhotos": "Total Foto",
-        "photos": "Foto"
-    }
+	"common": {
+		"loading": "Memuat...",
+		"save": "Simpan",
+		"cancel": "Batal",
+		"delete": "Hapus",
+		"edit": "Edit",
+		"close": "Tutup",
+		"back": "Kembali",
+		"submit": "Kirim",
+		"confirm": "Konfirmasi",
+		"yes": "Ya",
+		"no": "Tidak",
+		"error": "Terjadi kesalahan",
+		"success": "Berhasil",
+		"warning": "Peringatan",
+		"info": "Informasi",
+		"search": "Cari",
+		"filter": "Filter",
+		"filters": "Filter",
+		"all": "Semua",
+		"allData": "Semua Data",
+		"viewDetails": "Lihat Detail",
+		"logout": "Keluar",
+		"settings": "Pengaturan",
+		"profile": "Profil",
+		"dashboard": "Dasbor",
+		"language": "Bahasa"
+	},
+	"seo": {
+		"default": "MyPage48 - Pendamping teater JKT48 terbaik. Lacak kunjungan teater, 2-shot, dan pencapaianmu.",
+		"dashboard": "Lihat statistik kehadiran teater JKT48, analisis pengeluaran, dan visualisasi peta kursi.",
+		"login": "Masuk ke akun MyPage48 untuk melacak perjalanan teater JKT48 kamu.",
+		"register": "Buat akun MyPage48 baru untuk melacak perjalanan teater JKT48 kamu.",
+		"forgotPassword": "Reset password MyPage48 untuk mendapatkan akses kembali ke akunmu.",
+		"resetPassword": "Buat password baru yang aman untuk akun MyPage48 kamu.",
+		"verifyEmail": "Verifikasi alamat email untuk menyelesaikan pendaftaran MyPage48.",
+		"profile": "Lihat profil MyPage48, kartu member, progres level, dan statistikmu.",
+		"history": "Lihat riwayat lengkap kunjungan teater JKT48 dan kelola log tiket kamu.",
+		"shows": "Jelajahi pertunjukan teater JKT48, lihat detail, dan lacak riwayat kehadiran.",
+		"settings": "Kelola pengaturan akun MyPage48, preferensi, dan akses developer.",
+		"achievements": "Lacak pencapaian teater JKT48, lencana, dan level penggemar.",
+		"memories": "Album digital tiket teater JKT48 dan foto 2-shot kamu.",
+		"top2shot": "Lihat member teratas berdasarkan jumlah 2-shot dan statistik pengeluaran.",
+		"upload": "Unggah dan pindai tiket teater JKT48 atau tambahkan foto 2-shot."
+	},
+	"nav": {
+		"home": "Beranda",
+		"dashboard": "Dasbor",
+		"setlists": "Setlists",
+		"shows": "Pertunjukan",
+		"achievements": "Pencapaian",
+		"memories": "Kenangan",
+		"history": "Riwayat",
+		"upload": "Unggah",
+		"profile": "Profil",
+		"settings": "Pengaturan",
+		"newTicket": "Tiket Baru"
+	},
+	"header": {
+		"tagline": "PELACAK TEATER JKT48"
+	},
+	"auth": {
+		"login": {
+			"title": "Masuk",
+			"subtitle": "Selamat datang kembali, Wota!",
+			"emailLabel": "Alamat Email",
+			"emailPlaceholder": "member@mypage48.com",
+			"passwordLabel": "Kata Sandi",
+			"passwordPlaceholder": "••••••••",
+			"forgotPassword": "Lupa Kata Sandi?",
+			"signIn": "Masuk",
+			"noAccount": "Belum punya akun?",
+			"registerCta": "Daftar Akses OFC",
+			"welcomeBack": "Selamat datang kembali!",
+			"invalidCredentials": "Email atau kata sandi salah"
+		},
+		"register": {
+			"title": "Bergabung dengan Fandom",
+			"subtitle": "Buat profil teater digitalmu",
+			"memberId": "Member ID",
+			"username": "Username",
+			"fullName": "Nama Lengkap",
+			"email": "Alamat Email",
+			"ofcStatus": "Status OFC",
+			"ofcActive": "OFC Aktif",
+			"ofcInactive": "OFC Tidak Aktif",
+			"pendingRenewal": "Menunggu Pembaruan",
+			"password": "Password",
+			"confirmPassword": "Konfirmasi Password",
+			"submit": "Buat Akun",
+			"submitting": "Membuat Akun...",
+			"hasAccount": "Sudah punya akun?",
+			"signIn": "Masuk ke MyPage48",
+			"passwordsMismatch": "Password tidak cocok",
+			"success": "Akun dibuat! Silakan cek email Anda untuk verifikasi.",
+			"failed": "Pendaftaran gagal. Silakan coba lagi."
+		},
+		"logout": {
+			"success": "Berhasil keluar",
+			"error": "Gagal keluar"
+		},
+		"forgotPassword": {
+			"title": "Lupa Password?",
+			"backToLogin": "Kembali ke Login",
+			"emailLabel": "Alamat Email",
+			"submit": "Kirim Link Reset",
+			"submitting": "Mengirim...",
+			"sent": "Link reset terkirim! Cek email Anda.",
+			"instruction": "Masukkan alamat email Anda dan kami akan mengirimkan link untuk mereset password Anda.",
+			"successMessage": "Kami telah mengirimkan link reset password ke {email}. Silakan cek kotak masuk Anda.",
+			"tryAnother": "Coba email lain",
+			"spamCheck": "Tidak menerima email? Cek folder spam atau coba lagi.",
+			"failed": "Gagal mengirim link reset. Silakan coba lagi.",
+			"error": "Gagal mengirim link"
+		},
+		"resetPassword": {
+			"title": "Reset Password",
+			"subtitle": "Buat password baru yang aman untuk akun Anda.",
+			"successTitle": "Password Direset!",
+			"successMessage": "Password Anda berhasil diperbarui. Anda akan diarahkan ke login sebentar lagi.",
+			"newPassword": "Password Baru",
+			"confirmPassword": "Konfirmasi Password",
+			"submit": "Reset Password",
+			"submitting": "Mereset...",
+			"goToLogin": "Ke Login",
+			"invalidToken": "Link reset tidak valid. Token hilang.",
+			"mismatch": "Password tidak cocok",
+			"tooShort": "Password harus minimal 8 karakter",
+			"successToast": "Password berhasil direset! Silakan login.",
+			"failed": "Gagal mereset password. Link mungkin tidak valid atau kedaluwarsa."
+		},
+		"verifyEmail": {
+			"loadingTitle": "Memverifikasi Email",
+			"successTitle": "Terverifikasi!",
+			"errorTitle": "Verifikasi Gagal",
+			"loadingMessage": "Memverifikasi email Anda...",
+			"successMessage": "Email berhasil diverifikasi! Anda sekarang dapat login.",
+			"invalidLink": "Link verifikasi tidak valid. Token hilang.",
+			"failedMessage": "Verifikasi gagal. Link mungkin tidak valid atau kedaluwarsa.",
+			"backToLogin": "Kembali ke Login",
+			"goToLogin": "Ke Login"
+		}
+	},
+	"dashboard": {
+		"title": "Dasbor",
+		"subtitle": "Ringkasan aktivitas teater kamu",
+		"filterTitle": "Filter Dasbor",
+		"filterSubtitle": "Atur rentang visualisasi",
+		"theater": {
+			"title": "Show",
+			"subtitle": "Ringkasan kehadiran kamu",
+			"shows": "Pertunjukan",
+			"spending": "Pengeluaran",
+			"totalExpenses": "Total Pengeluaran",
+			"topRow": "Baris Favorit",
+			"mostFrequentSeat": "Kursi Tersering",
+			"topShow": "Pertunjukan Favorit",
+			"mostWatched": "Paling Sering Ditonton",
+			"inYear": "Pada {year}",
+			"firstLast": "Show Pertama & Terakhir",
+			"first": "Pertama",
+			"last": "Terakhir",
+			"times": "Kali",
+			"timesWatched": "Kali Menonton"
+		},
+		"twoShot": {
+			"title": "2-Shot Roulette & Birthday",
+			"subtitle": "Foto bersama member",
+			"twoShotTitle": "2-Shot",
+			"collected": "Koleksi Foto",
+			"spending": "Pengeluaran",
+			"totalExpenses": "Total Pengeluaran",
+			"members": "Member",
+			"uniqueIdols": "Idola Unik",
+			"topTwoShot": "Top 2-Shot",
+			"mostCollected": "Koleksi Terbanyak",
+			"photos": "Foto",
+			"firstLast": "2-Shot Pertama & Terakhir",
+			"first": "Pertama",
+			"last": "Terakhir"
+		},
+		"seatMap": {
+			"title": "Peta Kursi Teater",
+			"subtitle": "Letak kursi yang pernah kamu dapat",
+			"rowsCollected": "Baris Terkumpul",
+			"stage": "Panggung",
+			"row": "Baris"
+		},
+		"monthlyAttendance": {
+			"title": "Kehadiran Bulanan",
+			"subtitle": "Rincian untuk",
+			"breakdown": "Rincian untuk",
+			"showsInMonth": "pertunjukan di bulan ini"
+		},
+		"dayPreference": {
+			"title": "Preferensi Hari",
+			"subtitle": "Kehadiran berdasarkan hari dalam seminggu"
+		}
+	},
+	"profile": {
+		"oshiModal": {
+			"title": "Pilih Oshi Kamu",
+			"subtitle": "Pilih member yang menerangi duniamu!",
+			"searchPlaceholder": "Cari member berdasarkan nama, panggilan, atau generasi...",
+			"cancel": "Batal",
+			"save": "Simpan Oshi",
+			"loading": "Memuat member...",
+			"noMembers": "Tidak ada member yang cocok dengan \"{query}\"",
+			"generation": "Generasi {gen}"
+		},
+		"title": "Profil Saya",
+		"subtitle": "Identitas & Stats Penggemar",
+		"memberCard": {
+			"officialFanClub": "Fan Club Resmi",
+			"memberId": "ID Member",
+			"cardHolder": "Pemegang Kartu",
+			"ofcActive": "OFC Aktif",
+			"ofcInactive": "OFC Tidak Aktif"
+		},
+		"level": {
+			"currentRank": "Peringkat Saat Ini",
+			"xpInfo": "1 XP = 1 Pertunjukan",
+			"needed": "dibutuhkan",
+			"for": "untuk"
+		},
+		"stats": {
+			"totalShows": "Total Pertunjukan",
+			"achievements": "Pencapaian"
+		},
+		"oshi": {
+			"title": "Oshi Shrine",
+			"generation": "Generasi",
+			"changeOshi": "Ganti Oshi",
+			"selectOshi": "Pilih Oshi Kamu",
+			"searchMember": "Cari member...",
+			"roulette": "Roulette",
+			"birthday": "Birthday"
+		},
+		"recentActivity": {
+			"title": "Aktivitas Terbaru",
+			"subtitle": "Pertunjukan terakhir yang dikunjungi",
+			"noActivity": "Belum ada aktivitas",
+			"viewAllHistory": "Lihat Semua Riwayat",
+			"startTracking": "Mulai lacak kunjungan teatermu!",
+			"attended": "Hadir di",
+			"twoShotAt": "2-Shot di",
+			"today": "Hari ini",
+			"yesterday": "Kemarin",
+			"daysAgo": "hari yang lalu",
+			"weeksAgo": "minggu yang lalu"
+		},
+		"publicActivity": {
+			"titleWithYear": "Aktivitas teater @{username} di tahun {year}",
+			"titleAllTime": "Aktivitas teater @{username}",
+			"yearBadge": "Aktivitas Teater: {year}"
+		},
+		"profilePicture": {
+			"previewTitle": "Preview Foto Profil",
+			"fileTooLarge": "File terlalu besar. Maksimal 10MB."
+		}
+	},
+	"settings": {
+		"title": "Pengaturan",
+		"subtitle": "Kelola preferensi kamu",
+		"language": {
+			"title": "Bahasa",
+			"subtitle": "Pilih bahasa tampilan",
+			"select": "Pilih Bahasa",
+			"indonesian": "Bahasa Indonesia",
+			"english": "English",
+			"japanese": "日本語"
+		},
+		"publicProfile": {
+			"title": "Profil Publik",
+			"subtitle": "Bagikan perjalananmu dengan dunia",
+			"enable": "Aktifkan Profil Publik",
+			"description": "Izinkan siapa saja untuk melihat statistik dan perjalanan teatermu menggunakan tautan unikmu.",
+			"yourLink": "Tautan Profil Publik Kamu",
+			"allYears": "Semua Tahun",
+			"thisYear": "Tahun Ini"
+		},
+		"developer": {
+			"title": "Akses Developer",
+			"subtitle": "Kelola API Key kamu",
+			"description": "Buat API key untuk mengakses data MYPAGE48 secara programatik. Gunakan untuk integrasi dengan aplikasi atau skrip kamu sendiri.",
+			"warning": "Penting: API key kamu hanya akan ditampilkan sekali setelah dibuat. Pastikan untuk menyalin dan menyimpannya dengan aman.",
+			"generateButton": "Buat API Key Baru",
+			"generating": "Membuat...",
+			"confirmTitle": "Buat API Key Baru?",
+			"confirmDescription": "Ini akan mencabut API key yang ada. Tindakan ini tidak dapat dibatalkan.",
+			"generated": "API Key Berhasil Dibuat!",
+			"copyInfo": "Silakan salin API key kamu sekarang. Kamu tidak akan bisa melihatnya lagi!",
+			"copied": "Disalin ke clipboard",
+			"savedKey": "Saya sudah menyimpan key saya"
+		},
+		"moreSettings": {
+			"title": "Pengaturan Lainnya",
+			"subtitle": "Segera hadir..."
+		},
+		"theme": {
+			"title": "Tema",
+			"subtitle": "Pilih tampilan yang nyaman",
+			"light": "Terang",
+			"lightDescription": "Mode terang klasik",
+			"dark": "Gelap",
+			"darkDescription": "Nyaman untuk mata di malam hari",
+			"auto": "Otomatis",
+			"autoDescription": "Mengikuti pengaturan sistem"
+		}
+	},
+	"history": {
+		"title": "Riwayat Tiket",
+		"subtitle": "Koleksi tiket teater kamu",
+		"gridView": "Tampilan Grid",
+		"tableView": "Tampilan Tabel",
+		"noTickets": "Belum ada tiket",
+		"addFirst": "Tambahkan tiket pertamamu untuk mulai melacak perjalanan teatermu!",
+		"date": "Tanggal",
+		"time": "Waktu",
+		"seat": "Kursi",
+		"price": "Harga",
+		"notes": "Catatan",
+		"addNote": "Tambah Catatan",
+		"editNote": "Edit Catatan",
+		"deleteNote": "Hapus Catatan",
+		"saveNote": "Simpan Catatan",
+		"noNotes": "Belum ada catatan.",
+		"editDetails": "Edit Detail",
+		"eventDetails": "Detail Acara",
+		"actions": "Aksi",
+		"show": "Pertunjukan",
+		"deleteConfirm": {
+			"title": "Hapus Tiket?",
+			"description": "Tindakan ini tidak dapat dibatalkan. Tiket akan dihapus secara permanen.",
+			"confirm": "Ya, Hapus",
+			"cancel": "Batal"
+		}
+	},
+	"memories": {
+		"title": "Kenangan",
+		"subtitle": "Galeri foto dan tiket kamu",
+		"allPhotos": "Semua Foto",
+		"tickets": "Tiket",
+		"twoShots": "2-Shot",
+		"noMemories": "Belum ada kenangan"
+	},
+	"achievements": {
+		"title": "Pencapaian",
+		"subtitle": "Lencana dan milestone kamu",
+		"unlocked": "Terbuka",
+		"locked": "Terkunci",
+		"progress": "Progres"
+	},
+	"errors": {
+		"404": {
+			"title": "Halaman Tidak Ditemukan",
+			"subtitle": "Oops! Halaman yang kamu cari tidak ada.",
+			"description": "Mungkin telah dipindahkan, dihapus, atau kamu salah ketik URL."
+		},
+		"500": {
+			"title": "Kesalahan Server",
+			"subtitle": "Ada yang salah di sisi kami.",
+			"description": "Tim kami sudah diberitahu dan sedang memperbaikinya. Silakan coba lagi nanti."
+		},
+		"403": {
+			"title": "Akses Ditolak",
+			"subtitle": "Kamu tidak memiliki izin untuk mengakses halaman ini.",
+			"description": "Pastikan kamu memiliki kredensial yang benar atau hubungi dukungan."
+		},
+		"401": {
+			"title": "Tidak Terautorisasi",
+			"subtitle": "Silakan masuk untuk melanjutkan.",
+			"description": "Kamu perlu diautentikasi untuk mengakses halaman ini."
+		},
+		"default": {
+			"title": "Terjadi Kesalahan",
+			"subtitle": "Terjadi kesalahan yang tidak terduga.",
+			"description": "Silakan coba refresh halaman atau kembali lagi nanti."
+		},
+		"goHome": "Kembali ke Beranda",
+		"tryAgain": "Coba Lagi"
+	},
+	"time": {
+		"months": {
+			"january": "Januari",
+			"february": "Februari",
+			"march": "Maret",
+			"april": "April",
+			"may": "Mei",
+			"june": "Juni",
+			"july": "Juli",
+			"august": "Agustus",
+			"september": "September",
+			"october": "Oktober",
+			"november": "November",
+			"december": "Desember"
+		},
+		"monthsShort": {
+			"jan": "Jan",
+			"feb": "Feb",
+			"mar": "Mar",
+			"apr": "Apr",
+			"may": "Mei",
+			"jun": "Jun",
+			"jul": "Jul",
+			"aug": "Agu",
+			"sep": "Sep",
+			"oct": "Okt",
+			"nov": "Nov",
+			"dec": "Des"
+		},
+		"days": {
+			"sunday": "Minggu",
+			"monday": "Senin",
+			"tuesday": "Selasa",
+			"wednesday": "Rabu",
+			"thursday": "Kamis",
+			"friday": "Jumat",
+			"saturday": "Sabtu"
+		},
+		"daysShort": {
+			"sun": "Min",
+			"mon": "Sen",
+			"tue": "Sel",
+			"wed": "Rab",
+			"thu": "Kam",
+			"fri": "Jum",
+			"sat": "Sab"
+		},
+		"relative": {
+			"today": "Hari ini",
+			"yesterday": "Kemarin",
+			"daysAgo": "{count} hari yang lalu",
+			"weeksAgo": "{count} minggu yang lalu"
+		}
+	},
+	"upload": {
+		"title": "Unggah Tiket",
+		"subtitle": "Tambahkan tiket baru ke koleksi",
+		"scanTicket": "Pindai Tiket",
+		"scanDescription": "Unggah gambar dan biarkan AI mengekstrak info detail.",
+		"manualEntry": "Input Manual",
+		"manualDescription": "Ketik detailnya sendiri.",
+		"saveTicket": "Simpan Tiket",
+		"uploadSuccess": "Tiket berhasil diunggah",
+		"uploadError": "Gagal mengunggah tiket"
+	},
+	"forms": {
+		"editTicket": "Edit Tiket",
+		"newTicket": "Entri Tiket Baru",
+		"updateMemory": "Perbarui kenanganmu",
+		"addToCollection": "Tambahkan ke koleksi",
+		"eventDetails": "Detail Acara",
+		"showTitle": "Judul Pertunjukan",
+		"selectSetlist": "Pilih Setlist",
+		"date": "Tanggal",
+		"showTime": "Waktu",
+		"seatPayment": "Kursi & Pembayaran",
+		"row": "Baris",
+		"seatNumber": "Nomor Kursi",
+		"price": "Harga (IDR)",
+		"ticketId": "ID Tiket",
+		"optional": "Opsional",
+		"twoShotDetails": "Detail 2-Shot",
+		"twoShotPhoto": "Foto 2-Shot",
+		"uploadPhoto": "Unggah Foto",
+		"changePhoto": "Ganti Foto",
+		"memberName": "Nama Member",
+		"memberNamePlaceholder": "Contoh: Oline Manuel",
+		"type": "Tipe",
+		"experienceLog": "Catatan Pengalaman",
+		"notesPlaceholder": "Bagaimana pertunjukannya? Dapat wink? Tulis kenanganmu di sini...",
+		"updateTicket": "Perbarui Detail Tiket",
+		"saveTicket": "Simpan Tiket",
+		"cancel": "Batal",
+		"uploadTicketPhoto": "Unggah Foto Tiket",
+		"selectMember": "Pilih Member",
+		"selectMemberDesc": "Pilih member yang berfoto denganmu",
+		"analysisIssue": "Masalah Analisis"
+	},
+	"member": {
+		"birthdate": "Tanggal Lahir",
+		"horoscope": "Zodiak",
+		"bloodType": "Golongan Darah",
+		"height": "Tinggi Badan",
+		"yearsOld": "Tahun",
+		"notFound": "Member Tidak Ditemukan",
+		"notFoundMessage": "Kami tidak dapat mengambil detail member ini. Silakan coba lagi nanti.",
+		"close": "Tutup"
+	},
+	"shows": {
+		"backTitle": "Kembali ke Daftar Show",
+		"backSubtitle": "Kembali ke daftar lengkap",
+		"title": "Daftar Setlist",
+		"subtitle": "Statistik pertunjukan teater kamu",
+		"top": "Teratas",
+		"viewHistory": "Lihat Riwayat",
+		"toTop": "untuk mencapai posisi teratas",
+		"notSeen": "Belum ditonton",
+		"performancesAttended": "pertunjukan dihadiri",
+		"firstAttended": "Pertama Nonton",
+		"lastAttended": "Terakhir Nonton",
+		"avgPrice": "Rata-rata Harga",
+		"topRow": "Baris Favorit",
+		"row": "Baris",
+		"unit": "Pertunjukan",
+		"totalShows": "Total Pertunjukan",
+		"uniqueShows": "Pertunjukan Unik"
+	},
+	"top2shot": {
+		"title": "Top 2-Shot",
+		"subtitle": "Analisis member & rincian pengeluaran",
+		"noData": "Belum Ada Data 2-Shot",
+		"noDataDesc": "Mulai tambahkan detail 2-shot saat membuat atau mengedit tiket untuk melihat peringkat Oshi kamu!",
+		"mostCollected": "KOLEKSI TERBANYAK",
+		"cherished": "Member paling kamu sayangi",
+		"stats2shots": "2-Shot",
+		"statsSpent": "Pengeluaran",
+		"budgetSplit": "Pembagian Anggaran",
+		"theaterTickets": "Tiket Teater",
+		"collection": "Koleksi 2-Shot",
+		"total": "Total",
+		"rankingTitle": "Peringkat Member",
+		"rankingSubtitle": "Berdasarkan riwayat 2-shot kamu",
+		"totalPhotos": "Total Foto",
+		"photos": "Foto"
+	}
 }

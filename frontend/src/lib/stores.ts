@@ -18,19 +18,18 @@ export const isInitialDataLoaded = writable<boolean>(false);
 export const toast = writable<{ message: string; type?: 'success' | 'error' } | null>(null);
 
 export const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    toast.set({ message, type });
-    setTimeout(() => {
-        toast.set(null);
-    }, 3000);
+	toast.set({ message, type });
+	setTimeout(() => {
+		toast.set(null);
+	}, 3000);
 };
 
 if (browser) {
-    // Cleanup old localStorage data
-    localStorage.removeItem(OLD_STORAGE_KEY);
+	// Cleanup old localStorage data
+	localStorage.removeItem(OLD_STORAGE_KEY);
 
-    isAuthenticated.subscribe((value) => {
-        if (value) localStorage.setItem(AUTH_KEY, 'true');
-        else localStorage.removeItem(AUTH_KEY);
-    });
+	isAuthenticated.subscribe((value) => {
+		if (value) localStorage.setItem(AUTH_KEY, 'true');
+		else localStorage.removeItem(AUTH_KEY);
+	});
 }
-
