@@ -78,6 +78,7 @@
 		isDeleting = true;
 		try {
 			await theater.deleteTicket(deleteId);
+			tickets.update((current) => current.filter((t) => t._id !== deleteId));
 			deleteId = null;
 			showToast($t('history.ticketDeleted'), 'success');
 		} catch (e) {
