@@ -334,7 +334,8 @@
 			"description": "This action cannot be undone. The ticket will be permanently deleted.",
 			"confirm": "Yes, Delete",
 			"cancel": "Cancel"
-		}
+		},
+		"ticketDeleted": "Ticket deleted successfully"
 	},
 	"forms": {
 		"editTicket": "Edit Ticket",

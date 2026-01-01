@@ -335,7 +335,8 @@
 			"description": "この操作は取り消せません。チケットは完全に削除されます。",
 			"confirm": "はい、削除します",
 			"cancel": "キャンセル"
-		}
+		},
+		"ticketDeleted": "チケットが削除されました"
 	},
 	"shows": {
 		"backTitle": "公演一覧に戻る",

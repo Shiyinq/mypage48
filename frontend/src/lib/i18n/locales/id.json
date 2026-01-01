@@ -335,7 +335,8 @@
 			"description": "Tindakan ini tidak dapat dibatalkan. Tiket akan dihapus secara permanen.",
 			"confirm": "Ya, Hapus",
 			"cancel": "Batal"
-		}
+		},
+		"ticketDeleted": "Tiket berhasil dihapus"
 	},
 	"memories": {
 		"title": "Kenangan",
