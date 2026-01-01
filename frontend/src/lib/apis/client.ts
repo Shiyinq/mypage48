@@ -3,7 +3,10 @@ import { accessToken } from '$lib/store/auth';
 import { isTokenExpired, getCSRFToken } from '$lib/utils/auth';
 import type { ApiError, AuthResponse } from '$lib/types';
 
-import { PUBLIC_CLIENT_SIDE_API_BASE_URL, PUBLIC_SERVER_SIDE_API_BASE_URL } from '$env/static/public';
+import {
+	PUBLIC_CLIENT_SIDE_API_BASE_URL,
+	PUBLIC_SERVER_SIDE_API_BASE_URL
+} from '$env/static/public';
 import { browser } from '$app/environment';
 
 export const API_BASE = browser ? PUBLIC_CLIENT_SIDE_API_BASE_URL : PUBLIC_SERVER_SIDE_API_BASE_URL;

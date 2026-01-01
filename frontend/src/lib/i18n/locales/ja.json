@@ -1,519 +1,519 @@
 {
-    "common": {
-        "loading": "読み込み中...",
-        "save": "保存",
-        "cancel": "キャンセル",
-        "delete": "削除",
-        "edit": "編集",
-        "close": "閉じる",
-        "back": "戻る",
-        "submit": "送信",
-        "confirm": "確認",
-        "yes": "はい",
-        "no": "いいえ",
-        "error": "エラーが発生しました",
-        "success": "成功",
-        "warning": "警告",
-        "info": "情報",
-        "search": "検索",
-        "filter": "フィルター",
-        "filters": "フィルター",
-        "all": "すべて",
-        "allData": "全データ",
-        "viewDetails": "詳細を見る",
-        "logout": "ログアウト",
-        "settings": "設定",
-        "profile": "プロフィール",
-        "dashboard": "ダッシュボード",
-        "language": "言語"
-    },
-    "seo": {
-        "default": "MyPage48 - JKT48劇場の究極のコンパニオン。劇場訪問、2ショット、実績を記録しよう。",
-        "dashboard": "JKT48劇場の観覧統計、支出分析、座席マップの視覚化を表示。",
-        "login": "MyPage48アカウントにログインして、JKT48劇場の旅を記録しよう。",
-        "register": "新しいMyPage48アカウントを作成して、JKT48劇場の旅を記録しよう。",
-        "forgotPassword": "MyPage48のパスワードをリセットして、アカウントへのアクセスを回復。",
-        "resetPassword": "MyPage48アカウントの新しい安全なパスワードを設定。",
-        "verifyEmail": "メールアドレスを確認して、MyPage48の登録を完了。",
-        "profile": "MyPage48プロフィール、会員カード、レベル進捗、統計を表示。",
-        "history": "JKT48劇場訪問の完全な履歴を表示し、チケットログを管理。",
-        "shows": "JKT48劇場公演を閲覧し、詳細を表示し、観覧履歴を追跡。",
-        "settings": "MyPage48アカウント設定、環境設定、開発者アクセスを管理。",
-        "achievements": "JKT48劇場のマイルストーン、バッジ、ファンレベルを追跡。",
-        "memories": "JKT48劇場チケットと2ショット写真のデジタルスクラップブック。",
-        "top2shot": "2ショット数と支出統計によるトップメンバーを表示。",
-        "upload": "JKT48劇場チケットをアップロード・スキャン、または2ショット写真を追加。"
-    },
-    "nav": {
-        "home": "ホーム",
-        "dashboard": "ダッシュボード",
-        "setlists": "セットリスト",
-        "shows": "公演",
-        "achievements": "実績",
-        "memories": "思い出",
-        "history": "履歴",
-        "upload": "アップロード",
-        "profile": "プロフィール",
-        "settings": "設定",
-        "newTicket": "新規チケット"
-    },
-    "header": {
-        "tagline": "JKT48劇場トラッカー"
-    },
-    "auth": {
-        "login": {
-            "title": "ログイン",
-            "subtitle": "おかえりなさい！",
-            "emailLabel": "メールアドレス",
-            "emailPlaceholder": "member@mypage48.com",
-            "passwordLabel": "パスワード",
-            "passwordPlaceholder": "••••••••",
-            "forgotPassword": "パスワードをお忘れですか？",
-            "signIn": "ログイン",
-            "noAccount": "アカウントをお持ちでないですか？",
-            "registerCta": "OFCアクセス登録",
-            "welcomeBack": "おかえりなさい！",
-            "invalidCredentials": "メールアドレスまたはパスワードが間違っています"
-        },
-        "register": {
-            "title": "ファンダムに参加",
-            "subtitle": "デジタル劇場プロフィールを作成",
-            "memberId": "メンバーID",
-            "username": "ユーザー名",
-            "fullName": "氏名",
-            "email": "メールアドレス",
-            "ofcStatus": "OFCステータス",
-            "ofcActive": "OFC有効",
-            "ofcInactive": "OFC無効",
-            "pendingRenewal": "更新待ち",
-            "password": "パスワード",
-            "confirmPassword": "パスワード確認",
-            "submit": "アカウント作成",
-            "submitting": "作成中...",
-            "hasAccount": "すでにアカウントをお持ちですか？",
-            "signIn": "MyPage48にログイン",
-            "passwordsMismatch": "パスワードが一致しません",
-            "success": "アカウントが作成されました！メールを確認して認証してください。",
-            "failed": "登録に失敗しました。もう一度お試しください。"
-        },
-        "logout": {
-            "success": "ログアウトしました",
-            "error": "ログアウトに失敗しました"
-        },
-        "forgotPassword": {
-            "title": "パスワードをお忘れですか？",
-            "backToLogin": "ログインに戻る",
-            "emailLabel": "メールアドレス",
-            "submit": "リセットリンク送信",
-            "submitting": "送信中...",
-            "sent": "リセットリンクを送信しました！メールを確認してください。",
-            "instruction": "メールアドレスを入力してください。パスワードリセットリンクを送信します。",
-            "successMessage": "{email} にパスワードリセットリンクを送信しました。受信トレイを確認してください。",
-            "tryAnother": "別のメールを試す",
-            "spamCheck": "メールが届きませんか？迷惑メールフォルダを確認するか、もう一度お試しください。",
-            "failed": "リセットリンクの送信に失敗しました。もう一度お試しください。",
-            "error": "送信エラー"
-        },
-        "resetPassword": {
-            "title": "パスワードリセット",
-            "subtitle": "アカウントの新しい安全なパスワードを作成してください。",
-            "successTitle": "パスワードリセット完了！",
-            "successMessage": "パスワードが正常に更新されました。まもなくログイン画面に移動します。",
-            "newPassword": "新しいパスワード",
-            "confirmPassword": "パスワード確認",
-            "submit": "パスワードリセット",
-            "submitting": "リセット中...",
-            "goToLogin": "ログインへ移動",
-            "invalidToken": "リセットリンクが無効です。トークンがありません。",
-            "mismatch": "パスワードが一致しません",
-            "tooShort": "パスワードは8文字以上である必要があります",
-            "successToast": "パスワードがリセットされました！ログインしてください。",
-            "failed": "パスワードのリセットに失敗しました。リンクが無効か期限切れの可能性があります。"
-        },
-        "verifyEmail": {
-            "loadingTitle": "メール認証中",
-            "successTitle": "認証完了！",
-            "errorTitle": "認証失敗",
-            "loadingMessage": "メールアドレスを認証しています...",
-            "successMessage": "メールが正常に認証されました！ログインできます。",
-            "invalidLink": "認証リンクが無効です。トークンがありません。",
-            "failedMessage": "認証に失敗しました。リンクが無効か期限切れの可能性があります。",
-            "backToLogin": "ログインに戻る",
-            "goToLogin": "ログインへ移動"
-        }
-    },
-    "dashboard": {
-        "title": "ダッシュボード",
-        "subtitle": "劇場活動の概要",
-        "filterTitle": "ダッシュボードフィルター",
-        "filterSubtitle": "表示範囲を調整",
-        "theater": {
-            "title": "公演",
-            "subtitle": "観覧履歴の概要",
-            "shows": "公演",
-            "spending": "支出",
-            "totalExpenses": "総支出",
-            "topRow": "トップ列",
-            "mostFrequentSeat": "最も多い席",
-            "topShow": "トップ公演",
-            "mostWatched": "最も観た",
-            "inYear": "{year}年",
-            "firstLast": "初・最終公演",
-            "first": "初",
-            "last": "最終",
-            "times": "回",
-            "timesWatched": "回観覧"
-        },
-        "twoShot": {
-            "title": "2ショットルーレット＆バースデー",
-            "subtitle": "メンバーとの写真",
-            "twoShotTitle": "2ショット",
-            "collected": "枚収集",
-            "spending": "支出",
-            "totalExpenses": "総支出",
-            "members": "メンバー",
-            "uniqueIdols": "ユニークアイドル",
-            "topTwoShot": "トップ2ショット",
-            "mostCollected": "最多コレクション",
-            "photos": "枚",
-            "firstLast": "初・最終2ショット",
-            "first": "初",
-            "last": "最終"
-        },
-        "seatMap": {
-            "title": "劇場座席マップ",
-            "subtitle": "獲得した座席の位置",
-            "rowsCollected": "収集済み列",
-            "stage": "ステージ",
-            "row": "列"
-        },
-        "monthlyAttendance": {
-            "title": "月別観覧",
-            "subtitle": "内訳",
-            "breakdown": "内訳",
-            "showsInMonth": "今月の公演"
-        },
-        "dayPreference": {
-            "title": "曜日別傾向",
-            "subtitle": "曜日ごとの観覧状況"
-        }
-    },
-    "profile": {
-        "oshiModal": {
-            "title": "推しメンを選択",
-            "subtitle": "あなたの世界を照らすメンバーを選ぼう！",
-            "searchPlaceholder": "名前、ニックネーム、または期生で検索...",
-            "cancel": "キャンセル",
-            "save": "推しを保存",
-            "loading": "メンバーを読み込み中...",
-            "noMembers": "\"{query}\" に一致するメンバーが見つかりません",
-            "generation": "{gen}期生"
-        },
-        "title": "マイプロフィール",
-        "subtitle": "ファンアイデンティティ＆統計",
-        "memberCard": {
-            "officialFanClub": "公式ファンクラブ",
-            "memberId": "会員ID",
-            "cardHolder": "カード所有者",
-            "ofcActive": "OFC有効",
-            "ofcInactive": "OFC無効"
-        },
-        "level": {
-            "currentRank": "現在のランク",
-            "xpInfo": "1 XP = 1 公演",
-            "needed": "必要",
-            "for": "まで"
-        },
-        "stats": {
-            "totalShows": "総公演数",
-            "achievements": "実績"
-        },
-        "oshi": {
-            "title": "推し神社",
-            "generation": "期生",
-            "changeOshi": "推し変更",
-            "selectOshi": "推しを選ぶ",
-            "searchMember": "メンバーを検索...",
-            "roulette": "ルーレット",
-            "birthday": "バースデー"
-        },
-        "recentActivity": {
-            "title": "最近の活動",
-            "subtitle": "最近観た公演",
-            "noActivity": "まだ活動がありません",
-            "viewAllHistory": "全履歴を見る",
-            "startTracking": "劇場公演の記録を始めましょう！",
-            "attended": "参加",
-            "twoShotAt": "2ショット",
-            "today": "今日",
-            "yesterday": "昨日",
-            "daysAgo": "日前",
-            "weeksAgo": "週間前"
-        },
-        "publicActivity": {
-            "titleWithYear": "@{username}の{year}年の劇場活動",
-            "titleAllTime": "@{username}の劇場活動",
-            "yearBadge": "劇場活動: {year}年"
-        },
-        "profilePicture": {
-            "previewTitle": "プロフィール写真プレビュー",
-            "fileTooLarge": "ファイルが大きすぎます。最大10MBです。"
-        }
-    },
-    "settings": {
-        "title": "設定",
-        "subtitle": "設定を管理",
-        "language": {
-            "title": "言語",
-            "subtitle": "表示言語を選択",
-            "select": "言語を選択",
-            "indonesian": "Bahasa Indonesia",
-            "english": "English",
-            "japanese": "日本語"
-        },
-        "publicProfile": {
-            "title": "公開プロフィール",
-            "subtitle": "あなたの旅を世界と共有しよう",
-            "enable": "公開プロフィールを有効にする",
-            "description": "独自のリンクを使用して、誰でもあなたの統計や劇場の旅を見ることができるようにします。",
-            "yourLink": "あなたの公開プロフィールリンク",
-            "allYears": "すべての年",
-            "thisYear": "今年"
-        },
-        "developer": {
-            "title": "開発者アクセス",
-            "subtitle": "APIキーを管理",
-            "description": "MYPAGE48のデータにプログラムでアクセスするためのAPIキーを生成します。自分のアプリケーションやスクリプトとの統合に使用できます。",
-            "warning": "重要：APIキーは生成後一度だけ表示されます。必ずコピーして安全に保管してください。",
-            "generateButton": "新しいAPIキーを生成",
-            "generating": "生成中...",
-            "confirmTitle": "新しいAPIキーを生成しますか？",
-            "confirmDescription": "これにより既存のAPIキーが無効になります。この操作は取り消せません。",
-            "generated": "APIキーが生成されました！",
-            "copyInfo": "今すぐAPIキーをコピーしてください。再度表示することはできません！",
-            "copied": "クリップボードにコピーしました",
-            "savedKey": "キーを保存しました"
-        },
-        "moreSettings": {
-            "title": "その他の設定",
-            "subtitle": "近日公開..."
-        },
-        "theme": {
-            "title": "テーマ",
-            "subtitle": "お好みの外観を選択",
-            "light": "ライト",
-            "lightDescription": "クラシックなライトモード",
-            "dark": "ダーク",
-            "darkDescription": "夜間に目に優しい",
-            "auto": "自動",
-            "autoDescription": "システム設定に従う"
-        }
-    },
-    "history": {
-        "title": "チケット履歴",
-        "subtitle": "劇場チケットコレクション",
-        "gridView": "グリッド表示",
-        "tableView": "テーブル表示",
-        "noTickets": "チケットがありません",
-        "addFirst": "最初のチケットを追加しましょう！",
-        "date": "日付",
-        "time": "時間",
-        "seat": "座席",
-        "price": "価格",
-        "notes": "メモ",
-        "addNote": "メモを追加",
-        "editNote": "メモを編集",
-        "deleteNote": "メモを削除",
-        "saveNote": "保存",
-        "noNotes": "メモはまだありません。",
-        "editDetails": "詳細を編集",
-        "eventDetails": "イベント詳細",
-        "actions": "アクション",
-        "show": "公演",
-        "deleteConfirm": {
-            "title": "チケットを削除しますか？",
-            "description": "この操作は取り消せません。チケットは完全に削除されます。",
-            "confirm": "はい、削除します",
-            "cancel": "キャンセル"
-        }
-    },
-    "shows": {
-        "backTitle": "公演一覧に戻る",
-        "backSubtitle": "リストに戻る",
-        "title": "公演一覧",
-        "subtitle": "観覧した公演の統計",
-        "totalShows": "総公演数",
-        "uniqueShows": "ユニーク公演",
-        "top": "トップ",
-        "viewHistory": "履歴を見る",
-        "toTop": "トップまで",
-        "notSeen": "未見",
-        "performancesAttended": "回観覧",
-        "firstAttended": "初回観覧",
-        "lastAttended": "最終観覧",
-        "avgPrice": "平均価格",
-        "topRow": "トップ列",
-        "row": "列",
-        "unit": "公演"
-    },
-    "top2shot": {
-        "title": "トップ2ショット",
-        "subtitle": "メンバー分析と支出内訳",
-        "noData": "2ショットデータがありません",
-        "noDataDesc": "チケットを作成または編集する際に2ショットの詳細を追加して、推しランキングを確認しましょう！",
-        "mostCollected": "最多コレクション",
-        "cherished": "あなたの一番大切なメンバー",
-        "stats2shots": "2ショット",
-        "statsSpent": "支出",
-        "budgetSplit": "予算内訳",
-        "theaterTickets": "劇場チケット",
-        "collection": "2ショットコレクション",
-        "total": "合計",
-        "rankingTitle": "メンバーランキング",
-        "rankingSubtitle": "2ショット履歴に基づく",
-        "totalPhotos": "総写真数",
-        "photos": "枚"
-    },
-    "memories": {
-        "title": "思い出",
-        "subtitle": "写真とチケットのギャラリー",
-        "allPhotos": "すべての写真",
-        "tickets": "チケット",
-        "twoShots": "2ショット",
-        "noMemories": "まだ思い出がありません"
-    },
-    "achievements": {
-        "title": "実績",
-        "subtitle": "バッジとマイルストーン",
-        "unlocked": "解除済み",
-        "locked": "未解除",
-        "progress": "進捗"
-    },
-    "errors": {
-        "404": {
-            "title": "ページが見つかりません",
-            "subtitle": "お探しのページは存在しないか、移動した可能性があります。",
-            "description": "URLが間違っているか、削除された可能性があります。"
-        },
-        "500": {
-            "title": "サーバーエラー",
-            "subtitle": "サーバー側で問題が発生しました。",
-            "description": "現在復旧作業中です。しばらくしてからもう一度お試しください。"
-        },
-        "403": {
-            "title": "アクセス拒否",
-            "subtitle": "このページにアクセスする権限がありません。",
-            "description": "権限を確認するか、サポートにお問い合わせください。"
-        },
-        "401": {
-            "title": "認証が必要です",
-            "subtitle": "ログインしてください。",
-            "description": "このページにアクセスするにはログインが必要です。"
-        },
-        "default": {
-            "title": "エラーが発生しました",
-            "subtitle": "予期しないエラーが発生しました。",
-            "description": "ページを再読み込みするか、後でもう一度お試しください。"
-        },
-        "goHome": "ホームに戻る",
-        "tryAgain": "再試行"
-    },
-    "time": {
-        "months": {
-            "january": "1月",
-            "february": "2月",
-            "march": "3月",
-            "april": "4月",
-            "may": "5月",
-            "june": "6月",
-            "july": "7月",
-            "august": "8月",
-            "september": "9月",
-            "october": "10月",
-            "november": "11月",
-            "december": "12月"
-        },
-        "monthsShort": {
-            "jan": "1月",
-            "feb": "2月",
-            "mar": "3月",
-            "apr": "4月",
-            "may": "5月",
-            "jun": "6月",
-            "jul": "7月",
-            "aug": "8月",
-            "sep": "9月",
-            "oct": "10月",
-            "nov": "11月",
-            "dec": "12月"
-        },
-        "daysShort": {
-            "sun": "日",
-            "mon": "月",
-            "tue": "火",
-            "wed": "水",
-            "thu": "木",
-            "fri": "金",
-            "sat": "土"
-        },
-        "relative": {
-            "today": "今日",
-            "yesterday": "昨日",
-            "daysAgo": "{count}日前",
-            "weeksAgo": "{count}週間前"
-        }
-    },
-    "upload": {
-        "title": "チケットのアップロード",
-        "subtitle": "新しいチケットをコレクションに追加",
-        "scanTicket": "チケットをスキャン",
-        "scanDescription": "画像をアップロードしてAIに詳細を抽出させます。",
-        "manualEntry": "手動入力",
-        "manualDescription": "詳細を自分で入力します。",
-        "saveTicket": "チケットを保存",
-        "uploadSuccess": "チケットが正常にアップロードされました",
-        "uploadError": "チケットのアップロードに失敗しました"
-    },
-    "forms": {
-        "editTicket": "チケット編集",
-        "newTicket": "新規チケット入力",
-        "updateMemory": "思い出を更新",
-        "addToCollection": "コレクションに追加",
-        "eventDetails": "イベント詳細",
-        "showTitle": "公演タイトル",
-        "selectSetlist": "セットリストを選択",
-        "date": "日付",
-        "showTime": "開演時間",
-        "seatPayment": "座席・支払い",
-        "row": "列",
-        "seatNumber": "座席番号",
-        "price": "価格 (IDR)",
-        "ticketId": "チケットID",
-        "optional": "任意",
-        "twoShotDetails": "2ショット詳細",
-        "twoShotPhoto": "2ショット写真",
-        "uploadPhoto": "写真アップロード",
-        "changePhoto": "写真変更",
-        "memberName": "メンバー名",
-        "memberNamePlaceholder": "例: Oline Manuel",
-        "type": "タイプ",
-        "experienceLog": "体験ログ",
-        "notesPlaceholder": "公演はどうでしたか？ウィンクもらえましたか？ここに思い出を書きましょう...",
-        "saveTicket": "チケットを保存",
-        "cancel": "キャンセル",
-        "uploadTicketPhoto": "チケット写真アップロード",
-        "selectMember": "メンバーを選択",
-        "selectMemberDesc": "一緒に写真を撮ったメンバーを選択してください",
-        "analysisIssue": "解析エラー"
-    },
-    "member": {
-        "birthdate": "生年月日",
-        "horoscope": "星座",
-        "bloodType": "血液型",
-        "height": "身長",
-        "yearsOld": "歳",
-        "notFound": "メンバーが見つかりません",
-        "notFoundMessage": "メンバーの詳細を取得できませんでした。後でもう一度お試しください。",
-        "close": "閉じる"
-    }
+	"common": {
+		"loading": "読み込み中...",
+		"save": "保存",
+		"cancel": "キャンセル",
+		"delete": "削除",
+		"edit": "編集",
+		"close": "閉じる",
+		"back": "戻る",
+		"submit": "送信",
+		"confirm": "確認",
+		"yes": "はい",
+		"no": "いいえ",
+		"error": "エラーが発生しました",
+		"success": "成功",
+		"warning": "警告",
+		"info": "情報",
+		"search": "検索",
+		"filter": "フィルター",
+		"filters": "フィルター",
+		"all": "すべて",
+		"allData": "全データ",
+		"viewDetails": "詳細を見る",
+		"logout": "ログアウト",
+		"settings": "設定",
+		"profile": "プロフィール",
+		"dashboard": "ダッシュボード",
+		"language": "言語"
+	},
+	"seo": {
+		"default": "MyPage48 - JKT48劇場の究極のコンパニオン。劇場訪問、2ショット、実績を記録しよう。",
+		"dashboard": "JKT48劇場の観覧統計、支出分析、座席マップの視覚化を表示。",
+		"login": "MyPage48アカウントにログインして、JKT48劇場の旅を記録しよう。",
+		"register": "新しいMyPage48アカウントを作成して、JKT48劇場の旅を記録しよう。",
+		"forgotPassword": "MyPage48のパスワードをリセットして、アカウントへのアクセスを回復。",
+		"resetPassword": "MyPage48アカウントの新しい安全なパスワードを設定。",
+		"verifyEmail": "メールアドレスを確認して、MyPage48の登録を完了。",
+		"profile": "MyPage48プロフィール、会員カード、レベル進捗、統計を表示。",
+		"history": "JKT48劇場訪問の完全な履歴を表示し、チケットログを管理。",
+		"shows": "JKT48劇場公演を閲覧し、詳細を表示し、観覧履歴を追跡。",
+		"settings": "MyPage48アカウント設定、環境設定、開発者アクセスを管理。",
+		"achievements": "JKT48劇場のマイルストーン、バッジ、ファンレベルを追跡。",
+		"memories": "JKT48劇場チケットと2ショット写真のデジタルスクラップブック。",
+		"top2shot": "2ショット数と支出統計によるトップメンバーを表示。",
+		"upload": "JKT48劇場チケットをアップロード・スキャン、または2ショット写真を追加。"
+	},
+	"nav": {
+		"home": "ホーム",
+		"dashboard": "ダッシュボード",
+		"setlists": "セットリスト",
+		"shows": "公演",
+		"achievements": "実績",
+		"memories": "思い出",
+		"history": "履歴",
+		"upload": "アップロード",
+		"profile": "プロフィール",
+		"settings": "設定",
+		"newTicket": "新規チケット"
+	},
+	"header": {
+		"tagline": "JKT48劇場トラッカー"
+	},
+	"auth": {
+		"login": {
+			"title": "ログイン",
+			"subtitle": "おかえりなさい！",
+			"emailLabel": "メールアドレス",
+			"emailPlaceholder": "member@mypage48.com",
+			"passwordLabel": "パスワード",
+			"passwordPlaceholder": "••••••••",
+			"forgotPassword": "パスワードをお忘れですか？",
+			"signIn": "ログイン",
+			"noAccount": "アカウントをお持ちでないですか？",
+			"registerCta": "OFCアクセス登録",
+			"welcomeBack": "おかえりなさい！",
+			"invalidCredentials": "メールアドレスまたはパスワードが間違っています"
+		},
+		"register": {
+			"title": "ファンダムに参加",
+			"subtitle": "デジタル劇場プロフィールを作成",
+			"memberId": "メンバーID",
+			"username": "ユーザー名",
+			"fullName": "氏名",
+			"email": "メールアドレス",
+			"ofcStatus": "OFCステータス",
+			"ofcActive": "OFC有効",
+			"ofcInactive": "OFC無効",
+			"pendingRenewal": "更新待ち",
+			"password": "パスワード",
+			"confirmPassword": "パスワード確認",
+			"submit": "アカウント作成",
+			"submitting": "作成中...",
+			"hasAccount": "すでにアカウントをお持ちですか？",
+			"signIn": "MyPage48にログイン",
+			"passwordsMismatch": "パスワードが一致しません",
+			"success": "アカウントが作成されました！メールを確認して認証してください。",
+			"failed": "登録に失敗しました。もう一度お試しください。"
+		},
+		"logout": {
+			"success": "ログアウトしました",
+			"error": "ログアウトに失敗しました"
+		},
+		"forgotPassword": {
+			"title": "パスワードをお忘れですか？",
+			"backToLogin": "ログインに戻る",
+			"emailLabel": "メールアドレス",
+			"submit": "リセットリンク送信",
+			"submitting": "送信中...",
+			"sent": "リセットリンクを送信しました！メールを確認してください。",
+			"instruction": "メールアドレスを入力してください。パスワードリセットリンクを送信します。",
+			"successMessage": "{email} にパスワードリセットリンクを送信しました。受信トレイを確認してください。",
+			"tryAnother": "別のメールを試す",
+			"spamCheck": "メールが届きませんか？迷惑メールフォルダを確認するか、もう一度お試しください。",
+			"failed": "リセットリンクの送信に失敗しました。もう一度お試しください。",
+			"error": "送信エラー"
+		},
+		"resetPassword": {
+			"title": "パスワードリセット",
+			"subtitle": "アカウントの新しい安全なパスワードを作成してください。",
+			"successTitle": "パスワードリセット完了！",
+			"successMessage": "パスワードが正常に更新されました。まもなくログイン画面に移動します。",
+			"newPassword": "新しいパスワード",
+			"confirmPassword": "パスワード確認",
+			"submit": "パスワードリセット",
+			"submitting": "リセット中...",
+			"goToLogin": "ログインへ移動",
+			"invalidToken": "リセットリンクが無効です。トークンがありません。",
+			"mismatch": "パスワードが一致しません",
+			"tooShort": "パスワードは8文字以上である必要があります",
+			"successToast": "パスワードがリセットされました！ログインしてください。",
+			"failed": "パスワードのリセットに失敗しました。リンクが無効か期限切れの可能性があります。"
+		},
+		"verifyEmail": {
+			"loadingTitle": "メール認証中",
+			"successTitle": "認証完了！",
+			"errorTitle": "認証失敗",
+			"loadingMessage": "メールアドレスを認証しています...",
+			"successMessage": "メールが正常に認証されました！ログインできます。",
+			"invalidLink": "認証リンクが無効です。トークンがありません。",
+			"failedMessage": "認証に失敗しました。リンクが無効か期限切れの可能性があります。",
+			"backToLogin": "ログインに戻る",
+			"goToLogin": "ログインへ移動"
+		}
+	},
+	"dashboard": {
+		"title": "ダッシュボード",
+		"subtitle": "劇場活動の概要",
+		"filterTitle": "ダッシュボードフィルター",
+		"filterSubtitle": "表示範囲を調整",
+		"theater": {
+			"title": "公演",
+			"subtitle": "観覧履歴の概要",
+			"shows": "公演",
+			"spending": "支出",
+			"totalExpenses": "総支出",
+			"topRow": "トップ列",
+			"mostFrequentSeat": "最も多い席",
+			"topShow": "トップ公演",
+			"mostWatched": "最も観た",
+			"inYear": "{year}年",
+			"firstLast": "初・最終公演",
+			"first": "初",
+			"last": "最終",
+			"times": "回",
+			"timesWatched": "回観覧"
+		},
+		"twoShot": {
+			"title": "2ショットルーレット＆バースデー",
+			"subtitle": "メンバーとの写真",
+			"twoShotTitle": "2ショット",
+			"collected": "枚収集",
+			"spending": "支出",
+			"totalExpenses": "総支出",
+			"members": "メンバー",
+			"uniqueIdols": "ユニークアイドル",
+			"topTwoShot": "トップ2ショット",
+			"mostCollected": "最多コレクション",
+			"photos": "枚",
+			"firstLast": "初・最終2ショット",
+			"first": "初",
+			"last": "最終"
+		},
+		"seatMap": {
+			"title": "劇場座席マップ",
+			"subtitle": "獲得した座席の位置",
+			"rowsCollected": "収集済み列",
+			"stage": "ステージ",
+			"row": "列"
+		},
+		"monthlyAttendance": {
+			"title": "月別観覧",
+			"subtitle": "内訳",
+			"breakdown": "内訳",
+			"showsInMonth": "今月の公演"
+		},
+		"dayPreference": {
+			"title": "曜日別傾向",
+			"subtitle": "曜日ごとの観覧状況"
+		}
+	},
+	"profile": {
+		"oshiModal": {
+			"title": "推しメンを選択",
+			"subtitle": "あなたの世界を照らすメンバーを選ぼう！",
+			"searchPlaceholder": "名前、ニックネーム、または期生で検索...",
+			"cancel": "キャンセル",
+			"save": "推しを保存",
+			"loading": "メンバーを読み込み中...",
+			"noMembers": "\"{query}\" に一致するメンバーが見つかりません",
+			"generation": "{gen}期生"
+		},
+		"title": "マイプロフィール",
+		"subtitle": "ファンアイデンティティ＆統計",
+		"memberCard": {
+			"officialFanClub": "公式ファンクラブ",
+			"memberId": "会員ID",
+			"cardHolder": "カード所有者",
+			"ofcActive": "OFC有効",
+			"ofcInactive": "OFC無効"
+		},
+		"level": {
+			"currentRank": "現在のランク",
+			"xpInfo": "1 XP = 1 公演",
+			"needed": "必要",
+			"for": "まで"
+		},
+		"stats": {
+			"totalShows": "総公演数",
+			"achievements": "実績"
+		},
+		"oshi": {
+			"title": "推し神社",
+			"generation": "期生",
+			"changeOshi": "推し変更",
+			"selectOshi": "推しを選ぶ",
+			"searchMember": "メンバーを検索...",
+			"roulette": "ルーレット",
+			"birthday": "バースデー"
+		},
+		"recentActivity": {
+			"title": "最近の活動",
+			"subtitle": "最近観た公演",
+			"noActivity": "まだ活動がありません",
+			"viewAllHistory": "全履歴を見る",
+			"startTracking": "劇場公演の記録を始めましょう！",
+			"attended": "参加",
+			"twoShotAt": "2ショット",
+			"today": "今日",
+			"yesterday": "昨日",
+			"daysAgo": "日前",
+			"weeksAgo": "週間前"
+		},
+		"publicActivity": {
+			"titleWithYear": "@{username}の{year}年の劇場活動",
+			"titleAllTime": "@{username}の劇場活動",
+			"yearBadge": "劇場活動: {year}年"
+		},
+		"profilePicture": {
+			"previewTitle": "プロフィール写真プレビュー",
+			"fileTooLarge": "ファイルが大きすぎます。最大10MBです。"
+		}
+	},
+	"settings": {
+		"title": "設定",
+		"subtitle": "設定を管理",
+		"language": {
+			"title": "言語",
+			"subtitle": "表示言語を選択",
+			"select": "言語を選択",
+			"indonesian": "Bahasa Indonesia",
+			"english": "English",
+			"japanese": "日本語"
+		},
+		"publicProfile": {
+			"title": "公開プロフィール",
+			"subtitle": "あなたの旅を世界と共有しよう",
+			"enable": "公開プロフィールを有効にする",
+			"description": "独自のリンクを使用して、誰でもあなたの統計や劇場の旅を見ることができるようにします。",
+			"yourLink": "あなたの公開プロフィールリンク",
+			"allYears": "すべての年",
+			"thisYear": "今年"
+		},
+		"developer": {
+			"title": "開発者アクセス",
+			"subtitle": "APIキーを管理",
+			"description": "MYPAGE48のデータにプログラムでアクセスするためのAPIキーを生成します。自分のアプリケーションやスクリプトとの統合に使用できます。",
+			"warning": "重要：APIキーは生成後一度だけ表示されます。必ずコピーして安全に保管してください。",
+			"generateButton": "新しいAPIキーを生成",
+			"generating": "生成中...",
+			"confirmTitle": "新しいAPIキーを生成しますか？",
+			"confirmDescription": "これにより既存のAPIキーが無効になります。この操作は取り消せません。",
+			"generated": "APIキーが生成されました！",
+			"copyInfo": "今すぐAPIキーをコピーしてください。再度表示することはできません！",
+			"copied": "クリップボードにコピーしました",
+			"savedKey": "キーを保存しました"
+		},
+		"moreSettings": {
+			"title": "その他の設定",
+			"subtitle": "近日公開..."
+		},
+		"theme": {
+			"title": "テーマ",
+			"subtitle": "お好みの外観を選択",
+			"light": "ライト",
+			"lightDescription": "クラシックなライトモード",
+			"dark": "ダーク",
+			"darkDescription": "夜間に目に優しい",
+			"auto": "自動",
+			"autoDescription": "システム設定に従う"
+		}
+	},
+	"history": {
+		"title": "チケット履歴",
+		"subtitle": "劇場チケットコレクション",
+		"gridView": "グリッド表示",
+		"tableView": "テーブル表示",
+		"noTickets": "チケットがありません",
+		"addFirst": "最初のチケットを追加しましょう！",
+		"date": "日付",
+		"time": "時間",
+		"seat": "座席",
+		"price": "価格",
+		"notes": "メモ",
+		"addNote": "メモを追加",
+		"editNote": "メモを編集",
+		"deleteNote": "メモを削除",
+		"saveNote": "保存",
+		"noNotes": "メモはまだありません。",
+		"editDetails": "詳細を編集",
+		"eventDetails": "イベント詳細",
+		"actions": "アクション",
+		"show": "公演",
+		"deleteConfirm": {
+			"title": "チケットを削除しますか？",
+			"description": "この操作は取り消せません。チケットは完全に削除されます。",
+			"confirm": "はい、削除します",
+			"cancel": "キャンセル"
+		}
+	},
+	"shows": {
+		"backTitle": "公演一覧に戻る",
+		"backSubtitle": "リストに戻る",
+		"title": "公演一覧",
+		"subtitle": "観覧した公演の統計",
+		"totalShows": "総公演数",
+		"uniqueShows": "ユニーク公演",
+		"top": "トップ",
+		"viewHistory": "履歴を見る",
+		"toTop": "トップまで",
+		"notSeen": "未見",
+		"performancesAttended": "回観覧",
+		"firstAttended": "初回観覧",
+		"lastAttended": "最終観覧",
+		"avgPrice": "平均価格",
+		"topRow": "トップ列",
+		"row": "列",
+		"unit": "公演"
+	},
+	"top2shot": {
+		"title": "トップ2ショット",
+		"subtitle": "メンバー分析と支出内訳",
+		"noData": "2ショットデータがありません",
+		"noDataDesc": "チケットを作成または編集する際に2ショットの詳細を追加して、推しランキングを確認しましょう！",
+		"mostCollected": "最多コレクション",
+		"cherished": "あなたの一番大切なメンバー",
+		"stats2shots": "2ショット",
+		"statsSpent": "支出",
+		"budgetSplit": "予算内訳",
+		"theaterTickets": "劇場チケット",
+		"collection": "2ショットコレクション",
+		"total": "合計",
+		"rankingTitle": "メンバーランキング",
+		"rankingSubtitle": "2ショット履歴に基づく",
+		"totalPhotos": "総写真数",
+		"photos": "枚"
+	},
+	"memories": {
+		"title": "思い出",
+		"subtitle": "写真とチケットのギャラリー",
+		"allPhotos": "すべての写真",
+		"tickets": "チケット",
+		"twoShots": "2ショット",
+		"noMemories": "まだ思い出がありません"
+	},
+	"achievements": {
+		"title": "実績",
+		"subtitle": "バッジとマイルストーン",
+		"unlocked": "解除済み",
+		"locked": "未解除",
+		"progress": "進捗"
+	},
+	"errors": {
+		"404": {
+			"title": "ページが見つかりません",
+			"subtitle": "お探しのページは存在しないか、移動した可能性があります。",
+			"description": "URLが間違っているか、削除された可能性があります。"
+		},
+		"500": {
+			"title": "サーバーエラー",
+			"subtitle": "サーバー側で問題が発生しました。",
+			"description": "現在復旧作業中です。しばらくしてからもう一度お試しください。"
+		},
+		"403": {
+			"title": "アクセス拒否",
+			"subtitle": "このページにアクセスする権限がありません。",
+			"description": "権限を確認するか、サポートにお問い合わせください。"
+		},
+		"401": {
+			"title": "認証が必要です",
+			"subtitle": "ログインしてください。",
+			"description": "このページにアクセスするにはログインが必要です。"
+		},
+		"default": {
+			"title": "エラーが発生しました",
+			"subtitle": "予期しないエラーが発生しました。",
+			"description": "ページを再読み込みするか、後でもう一度お試しください。"
+		},
+		"goHome": "ホームに戻る",
+		"tryAgain": "再試行"
+	},
+	"time": {
+		"months": {
+			"january": "1月",
+			"february": "2月",
+			"march": "3月",
+			"april": "4月",
+			"may": "5月",
+			"june": "6月",
+			"july": "7月",
+			"august": "8月",
+			"september": "9月",
+			"october": "10月",
+			"november": "11月",
+			"december": "12月"
+		},
+		"monthsShort": {
+			"jan": "1月",
+			"feb": "2月",
+			"mar": "3月",
+			"apr": "4月",
+			"may": "5月",
+			"jun": "6月",
+			"jul": "7月",
+			"aug": "8月",
+			"sep": "9月",
+			"oct": "10月",
+			"nov": "11月",
+			"dec": "12月"
+		},
+		"daysShort": {
+			"sun": "日",
+			"mon": "月",
+			"tue": "火",
+			"wed": "水",
+			"thu": "木",
+			"fri": "金",
+			"sat": "土"
+		},
+		"relative": {
+			"today": "今日",
+			"yesterday": "昨日",
+			"daysAgo": "{count}日前",
+			"weeksAgo": "{count}週間前"
+		}
+	},
+	"upload": {
+		"title": "チケットのアップロード",
+		"subtitle": "新しいチケットをコレクションに追加",
+		"scanTicket": "チケットをスキャン",
+		"scanDescription": "画像をアップロードしてAIに詳細を抽出させます。",
+		"manualEntry": "手動入力",
+		"manualDescription": "詳細を自分で入力します。",
+		"saveTicket": "チケットを保存",
+		"uploadSuccess": "チケットが正常にアップロードされました",
+		"uploadError": "チケットのアップロードに失敗しました"
+	},
+	"forms": {
+		"editTicket": "チケット編集",
+		"newTicket": "新規チケット入力",
+		"updateMemory": "思い出を更新",
+		"addToCollection": "コレクションに追加",
+		"eventDetails": "イベント詳細",
+		"showTitle": "公演タイトル",
+		"selectSetlist": "セットリストを選択",
+		"date": "日付",
+		"showTime": "開演時間",
+		"seatPayment": "座席・支払い",
+		"row": "列",
+		"seatNumber": "座席番号",
+		"price": "価格 (IDR)",
+		"ticketId": "チケットID",
+		"optional": "任意",
+		"twoShotDetails": "2ショット詳細",
+		"twoShotPhoto": "2ショット写真",
+		"uploadPhoto": "写真アップロード",
+		"changePhoto": "写真変更",
+		"memberName": "メンバー名",
+		"memberNamePlaceholder": "例: Oline Manuel",
+		"type": "タイプ",
+		"experienceLog": "体験ログ",
+		"notesPlaceholder": "公演はどうでしたか？ウィンクもらえましたか？ここに思い出を書きましょう...",
+		"saveTicket": "チケットを保存",
+		"cancel": "キャンセル",
+		"uploadTicketPhoto": "チケット写真アップロード",
+		"selectMember": "メンバーを選択",
+		"selectMemberDesc": "一緒に写真を撮ったメンバーを選択してください",
+		"analysisIssue": "解析エラー"
+	},
+	"member": {
+		"birthdate": "生年月日",
+		"horoscope": "星座",
+		"bloodType": "血液型",
+		"height": "身長",
+		"yearsOld": "歳",
+		"notFound": "メンバーが見つかりません",
+		"notFoundMessage": "メンバーの詳細を取得できませんでした。後でもう一度お試しください。",
+		"close": "閉じる"
+	}
 }
