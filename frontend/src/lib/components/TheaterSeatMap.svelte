@@ -417,7 +417,7 @@
 		height: auto;
 	}
 
-	.dark .row-label {
+	:global(.dark) .row-label {
 		color: #f9a8d4;
 		background: rgba(227, 0, 15, 0.2);
 	}
@@ -451,9 +451,9 @@
 		margin: 0 1px;
 	}
 
-	.dark .map-seat {
-		border-color: var(--color-border);
-		background-color: var(--color-surface);
+	:global(.dark) .map-seat {
+		border-color: #374151;
+		background-color: #1f2937;
 	}
 
 	.map-seat .seat-id {
@@ -465,8 +465,8 @@
 		overflow: hidden;
 	}
 
-	.dark .map-seat .seat-id {
-		color: var(--color-text-muted);
+	:global(.dark) .map-seat .seat-id {
+		color: #9ca3af;
 	}
 
 	.map-seat .seat-count {
@@ -477,8 +477,8 @@
 		display: none;
 	}
 
-	.dark .map-seat .seat-count {
-		color: var(--color-text-muted);
+	:global(.dark) .map-seat .seat-count {
+		color: #9ca3af;
 	}
 
 	.map-seat.active {
