@@ -26,7 +26,7 @@
 
 	// Shared components and utils
 	import { PageHeader, EmptyState } from '$lib/components';
-	import { GridSkeleton, TableSkeleton } from '$lib/components/skeletons';
+	import { GridSkeleton, TableSkeleton, TicketCardSkeleton } from '$lib/components/skeletons';
 	import { formatCurrency, formatDateFull } from '$lib/utils/formatting';
 
 	const { t } = useTranslation();
@@ -48,67 +48,64 @@
 
 	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
 
-	// Derived
-	$: filteredTickets = ($tickets as Ticket[]).filter((t) => {
-		const q = searchQuery.toLowerCase();
-		const date = new Date(t.event.date);
-		const formattedDate = date
-			.toLocaleDateString('id-ID', {
-				day: 'numeric',
-				month: 'long',
-				year: 'numeric'
-			})
-			.toLowerCase();
-		const formattedDateShort = date
-			.toLocaleDateString('id-ID', {
-				day: 'numeric',
-				month: 'short',
-				year: 'numeric'
-			})
-			.toLowerCase();
+	$: sortedTickets = [...$tickets].sort(
+		(a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime()
+	);
 
+	$: filteredTickets = sortedTickets.filter((ticket) => {
+		const terms = searchQuery.toLowerCase();
 		return (
-			t.event.title.toLowerCase().includes(q) ||
-			t.ticket_id.toLowerCase().includes(q) ||
-			t.event.date.includes(q) ||
-			formattedDate.includes(q) ||
-			formattedDateShort.includes(q) ||
-			`${t.seat.section}-${t.seat.number}`.toLowerCase().includes(q)
+			ticket.event.title.toLowerCase().includes(terms) ||
+			ticket.seat.section.toLowerCase().includes(terms) ||
+			ticket.notes?.toLowerCase().includes(terms)
 		);
 	});
 
-	// Methods
-	const confirmDelete = async () => {
-		if (!deleteId || isDeleting) return;
-
-		const idToDelete = deleteId;
-		isDeleting = true;
-
-		try {
-			await theater.deleteTicket(idToDelete);
-			// Fetch fresh data from server after delete
-			const freshTickets = await theater.getMyTickets();
-			tickets.set(freshTickets);
-			showToast('Ticket deleted successfully', 'success');
-		} catch (error) {
-			console.error('Failed to delete ticket:', error);
-			showToast('Failed to delete ticket', 'error');
-		} finally {
-			isDeleting = false;
-			deleteId = null;
-		}
-	};
-
+	// Actions
 	const startEditingNote = (ticket: Ticket) => {
 		editingId = ticket._id;
 		noteText = ticket.notes || '';
 	};
 
-	const saveNote = (ticket: Ticket) => {
-		tickets.update((current) =>
-			current.map((t) => (t._id === ticket._id ? { ...t, notes: noteText } : t))
-		);
-		editingId = null;
+	const saveNote = async (ticket: Ticket) => {
+		if (ticket.notes === noteText) {
+			editingId = null;
+			return;
+		}
+
+		try {
+			// Update locally immediately
+			tickets.update((items) =>
+				items.map((t) => (t._id === ticket._id ? { ...t, notes: noteText } : t))
+			);
+			editingId = null;
+
+			// Sync with API
+			await theater.updateTicket(ticket._id, { notes: noteText });
+			showToast($t('history.noteSaved'), 'success');
+		} catch (e) {
+			console.error('Failed to update note', e);
+			showToast($t('common.error'), 'error');
+		}
+	};
+
+	const openDeleteModal = (id: string) => {
+		deleteId = id;
+	};
+
+	const confirmDelete = async () => {
+		if (!deleteId) return;
+		isDeleting = true;
+		try {
+			await theater.deleteTicket(deleteId);
+			deleteId = null;
+			showToast($t('history.ticketDeleted'), 'success');
+		} catch (e) {
+			console.error('Failed to delete ticket', e);
+			showToast($t('common.error'), 'error');
+		} finally {
+			isDeleting = false;
+		}
 	};
 
 	let editingTicket: Ticket | null = null;
@@ -120,60 +117,104 @@
 	};
 </script>
 
-<SEO title={$t('history.title')} path="/history" description={$t('seo.history')} />
+<SEO title={$t('history.title')} path="/history" description={$t('history.description')} />
 
-<div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in relative">
-	<!-- Header Section -->
-	<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-		<!-- Header -->
-		<PageHeader
-			icon={History}
-			title={$t('history.title')}
-			subtitle={$t('history.subtitle')}
-			theme="blue"
-		/>
-
-		<!-- Toolbar -->
-		<div class="flex items-center gap-3 w-full md:w-auto">
-			<!-- Search Bar -->
-			<div class="relative flex-1 md:w-64 group">
-				<Search
-					class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-red-500 transition-colors"
-				/>
-				<input
-					type="text"
-					placeholder={$t('common.search')}
-					bind:value={searchQuery}
-					class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full text-sm font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm transition-all"
-				/>
-			</div>
-
-			<!-- View Toggle -->
+{#if deleteId}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div
+			class="bg-white dark:bg-zinc-900 rounded-3xl p-6 max-w-sm w-full shadow-2xl scale-100 animate-[fadeIn_0.2s_ease-out]"
+		>
 			<div
-				class="flex bg-white dark:bg-zinc-900 p-1 rounded-full border border-gray-200 dark:border-zinc-700 shadow-sm"
+				class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4 mx-auto"
 			>
+				<AlertTriangle class="w-6 h-6 text-red-600 dark:text-red-500" />
+			</div>
+			<h3 class="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
+				{$t('history.deleteConfirmTitle')}
+			</h3>
+			<p class="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm">
+				{$t('history.deleteConfirmMessage')}
+			</p>
+			<div class="flex gap-3">
 				<button
-					on:click={() => (viewMode = 'GRID')}
-					class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'GRID' ? 'bg-red-50 dark:bg-red-500/20 text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-					title="Grid View"
+					class="flex-1 px-4 py-2 rounded-xl font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+					on:click={() => (deleteId = null)}
 				>
-					<LayoutGrid class="w-4 h-4" />
+					{$t('common.cancel')}
 				</button>
 				<button
-					on:click={() => (viewMode = 'TABLE')}
-					class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'TABLE' ? 'bg-red-50 dark:bg-red-500/20 text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-					title="Table View"
+					class="flex-1 px-4 py-2 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+					on:click={confirmDelete}
+					disabled={isDeleting}
 				>
-					<List class="w-4 h-4" />
+					{#if isDeleting}
+						<div
+							class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
+						></div>
+					{:else}
+						<Trash2 class="w-4 h-4" />
+					{/if}
+					{$t('common.delete')}
 				</button>
 			</div>
 		</div>
+	</div>
+{/if}
+
+<div class="max-w-7xl mx-auto p-4 animate-fade-in pb-24">
+	<!-- Page Header -->
+	<div class="mb-8">
+		<PageHeader
+			title={$t('history.title')}
+			subtitle={$t('history.subtitle')}
+			icon={History}
+			theme="blue"
+		>
+			<div slot="actions" class="flex items-center gap-3">
+				<!-- Search Bar -->
+				<div class="relative w-full md:w-64 group">
+					<Search
+						class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors"
+					/>
+					<input
+						type="text"
+						placeholder={$t('common.search')}
+						bind:value={searchQuery}
+						class="w-full pl-10 pr-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full text-sm font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all"
+					/>
+				</div>
+
+				<!-- View Toggle -->
+				<div
+					class="flex bg-white dark:bg-zinc-900 p-1 rounded-full border border-gray-200 dark:border-zinc-700 shadow-sm"
+				>
+					<button
+						on:click={() => (viewMode = 'GRID')}
+						class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'GRID' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+						title="Grid View"
+					>
+						<LayoutGrid class="w-4 h-4" />
+					</button>
+					<button
+						on:click={() => (viewMode = 'TABLE')}
+						class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'TABLE' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+						title="Table View"
+					>
+						<List class="w-4 h-4" />
+					</button>
+				</div>
+			</div>
+		</PageHeader>
 	</div>
 
 	<!-- Content Area -->
 	{#if isLoading}
 		{#if viewMode === 'GRID'}
-			<GridSkeleton count={6} aspectRatio="video" />
+			<TicketCardSkeleton count={6} />
 		{:else}
 			<TableSkeleton
 				rows={5}
