@@ -77,14 +77,6 @@
 
 	$: mostCollected = stats.ranking[0];
 
-	// Helper for currency formatting
-	const formatCurrency = (val: number) =>
-		new Intl.NumberFormat('id-ID', {
-			style: 'currency',
-			currency: 'IDR',
-			maximumFractionDigits: 0
-		}).format(val);
-
 	const formatCompact = (val: number) =>
 		new Intl.NumberFormat('id-ID', {
 			style: 'currency',
@@ -144,7 +136,8 @@
 						<div class="h-6 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
 					</div>
 					<div class="divide-y divide-gray-50 dark:divide-zinc-700">
-						{#each Array(5) as _}
+						<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+						{#each Array(5) as _unused}
 							<div class="p-4 flex items-center gap-4">
 								<div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
 								<div

@@ -21,17 +21,19 @@
 			await auth.login({ username: email, password });
 			isAuthenticated.set(true);
 			showToast($t('auth.login.welcomeBack'));
+			showToast($t('auth.login.welcomeBack'));
 			goto('/');
-		} catch (e: any) {
+		} catch (err) {
+			const e = err as { detail?: string; message?: string };
 			console.error(e);
 			// status = 'error'; // ensure local status variable matches if used
 
-			if (e.detail && typeof e.detail === 'string') {
+			if (e.detail) {
 				error = e.detail;
 			} else if (e.message) {
 				error = e.message;
 			} else {
-				error = $t('auth.login.invalidCredentials');
+				error = $t('auth.login.failed');
 			}
 
 			// Show toast for better visibility
@@ -72,7 +74,9 @@
 		>
 			<form on:submit|preventDefault={handleSubmit} class="space-y-5">
 				<div>
-					<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+					<label
+						for="email"
+						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 						>{$t('auth.login.emailLabel')}</label
 					>
 					<div class="relative">
@@ -81,6 +85,7 @@
 						</div>
 						<input
 							type="email"
+							id="email"
 							required
 							bind:value={email}
 							class="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600"
@@ -90,7 +95,9 @@
 				</div>
 
 				<div>
-					<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+					<label
+						for="password"
+						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
 						>{$t('auth.login.passwordLabel')}</label
 					>
 					<div class="relative">
@@ -99,6 +106,7 @@
 						</div>
 						<input
 							type="password"
+							id="password"
 							required
 							bind:value={password}
 							class="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600"

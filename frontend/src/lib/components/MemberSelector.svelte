@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { members, type Member } from '$lib/apis/members';
-	import { User, Search, X, Check, Loader2 } from 'lucide-svelte';
+	import { User, Search, X, Check } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { showToast } from '$lib/stores';
 
@@ -95,6 +95,7 @@
 		readonly
 		{value}
 		on:click={() => (isOpen = true)}
+		on:keydown={(e) => e.key === 'Enter' && (isOpen = true)}
 		class="w-full pl-9 pr-10 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
 		{placeholder}
 	/>

@@ -30,16 +30,11 @@
 			setTimeout(() => {
 				goto('/login');
 			}, 3000);
-		} catch (e: any) {
+		} catch (err) {
+			const e = err as { detail?: string; message?: string };
 			console.error(e);
 			status = 'error';
-			if (e.detail && typeof e.detail === 'string') {
-				message = e.detail;
-			} else if (e.message) {
-				message = e.message;
-			} else {
-				message = $t('auth.verifyEmail.failedMessage');
-			}
+			message = e.detail || e.message || $t('auth.verifyEmail.failedMessage');
 		}
 	});
 </script>

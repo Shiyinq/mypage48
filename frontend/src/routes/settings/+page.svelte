@@ -132,7 +132,6 @@
 	};
 
 	// Theme options
-	// Theme options
 	const themeOptions: { value: Theme; icon: typeof Sun; bgClass: string; textClass: string }[] = [
 		{
 			value: 'light',

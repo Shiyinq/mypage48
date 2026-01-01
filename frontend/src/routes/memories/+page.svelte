@@ -29,7 +29,7 @@
 		title: string;
 		subtitle: string;
 		notes?: string;
-		originalTicket: any;
+		originalTicket: import('$lib/types').Ticket;
 	}
 
 	let filter: FilterType = 'ALL';
@@ -208,7 +208,8 @@
 	<!-- Gallery Grid -->
 	{#if isLoading}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4">
-			{#each Array(8) as _, index}
+			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+			{#each Array(8) as _unused, index}
 				{@const rotation = (index % 5) - 2}
 				<div class="relative" style={`transform: rotate(${rotation}deg)`}>
 					<div

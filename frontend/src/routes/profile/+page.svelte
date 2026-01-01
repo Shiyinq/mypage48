@@ -10,23 +10,19 @@
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
-	import Input from '$lib/components/Input.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import {
 		User as UserIcon,
 		LogOut,
 		Crown,
 		QrCode,
-		Sparkles,
 		Trophy,
+		Sparkles,
 		Star,
 		Heart,
-		MapPin,
 		Zap,
 		TrendingUp,
 		Music,
-		Calendar,
-		Award,
 		Plus,
 		X,
 		Search,
@@ -354,7 +350,7 @@
 					socials: member.socials
 				};
 				// Update global store for Header
-				userProfile.set(profile as any);
+				userProfile.update((u) => (u ? { ...u, oshi: profile!.oshi } : null));
 			}
 			closeOshiModal();
 		} catch (e) {
@@ -901,14 +897,15 @@
 					{:else}
 						<!-- Empty State: Select Oshi -->
 						<div class="flex flex-col items-center justify-center text-center py-8 -mt-12">
-							<div class="relative mb-4 group cursor-pointer" on:click={openOshiModal}>
-								<div
-									class="w-24 h-24 rounded-full bg-white dark:bg-zinc-800 shadow-lg flex items-center justify-center border-4 border-dashed border-gray-200 dark:border-zinc-700 group-hover:border-red-300 transition-colors"
+							<div class="relative mb-4 group cursor-pointer">
+								<button
+									on:click={openOshiModal}
+									class="w-24 h-24 rounded-full bg-white dark:bg-zinc-800 shadow-lg flex items-center justify-center border-4 border-dashed border-gray-200 dark:border-zinc-700 group-hover:border-red-300 transition-colors cursor-pointer"
 								>
 									<Plus class="w-8 h-8 text-gray-300 group-hover:text-red-400" />
-								</div>
+								</button>
 								<div
-									class="absolute -bottom-2 px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-transform"
+									class="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-transform pointer-events-none"
 								>
 									Select Oshi
 								</div>
@@ -990,7 +987,8 @@
 				>
 					{#if loading}
 						<!-- Skeleton Loading for Activity Items -->
-						{#each [1, 2, 3] as _}
+						<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+						{#each [1, 2, 3] as _unused}
 							<div class="flex gap-4 relative z-10">
 								<div
 									class="w-10 h-10 rounded-full flex-shrink-0 bg-gray-200 dark:bg-zinc-700 animate-pulse"
@@ -1059,6 +1057,7 @@
 {#if showOshiModal}
 	<div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
 		<!-- Backdrop -->
+		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 		<div
 			class="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
 			on:click={closeOshiModal}

@@ -48,16 +48,11 @@
 			showToast($t('auth.resetPassword.successToast'), 'success');
 			setTimeout(() => {
 				goto('/login');
-			}, 3000);
-		} catch (e: any) {
+			}, 2000);
+		} catch (err) {
+			const e = err as { detail?: string; message?: string };
 			console.error(e);
-			if (e.detail && typeof e.detail === 'string') {
-				error = e.detail;
-			} else if (e.message) {
-				error = e.message;
-			} else {
-				error = $t('auth.resetPassword.failed');
-			}
+			error = e.detail || e.message || 'Failed to reset password';
 			showToast(error || 'Reset failed', 'error');
 		} finally {
 			isLoading = false;
@@ -135,8 +130,9 @@
 
 				<form on:submit|preventDefault={handleSubmit} class="space-y-5">
 					<div>
-						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-							>{$t('auth.resetPassword.newPassword')}</label
+						<label
+							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+							for="new-password">{$t('auth.resetPassword.newPassword')}</label
 						>
 						<div class="relative">
 							<div
@@ -145,6 +141,7 @@
 								<Lock class="w-5 h-5" />
 							</div>
 							<input
+								id="new-password"
 								type="password"
 								required
 								bind:value={newPassword}
@@ -155,8 +152,9 @@
 					</div>
 
 					<div>
-						<label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-							>{$t('auth.resetPassword.confirmPassword')}</label
+						<label
+							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+							for="confirm-password">{$t('auth.resetPassword.confirmPassword')}</label
 						>
 						<div class="relative">
 							<div
@@ -165,6 +163,7 @@
 								<Lock class="w-5 h-5" />
 							</div>
 							<input
+								id="confirm-password"
 								type="password"
 								required
 								bind:value={confirmPassword}
