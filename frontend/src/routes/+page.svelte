@@ -33,7 +33,11 @@
 		DashboardFilters,
 		DashboardHeader,
 		TopShowCard,
-		Top2ShotCard
+		Top2ShotCard,
+		FirstLastCard,
+		MonthlyAttendance,
+		DayPreference,
+		FirstLastPopup
 	} from '$lib/components/dashboard';
 
 	const { t } = useTranslation();
@@ -311,162 +315,29 @@
 				/>
 
 				<!-- First & Last Show Card -->
-				<div
-					class="glass-card rounded-3xl p-5 relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-purple-50/20 dark:bg-transparent border-purple-100 dark:border-purple-500/20 sm:col-span-2"
-				>
-					<div class="flex justify-between items-start mb-4">
-						<div class="flex items-center gap-2 text-purple-500">
-							<div class="p-1.5 bg-purple-100 dark:bg-purple-800/40 rounded-lg">
-								<Calendar class="w-4 h-4" />
-							</div>
-							<span class="font-bold text-xs tracking-wider text-gray-800 dark:text-gray-100">
-								{$t('dashboard.theater.firstLast')}
-								{!isAllData ? selectedYear : ''}
-							</span>
-						</div>
-						<button
-							on:click={() => (showTheaterPopup = true)}
-							class="p-2 -mr-2 -mt-2 text-purple-400 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-800/30 rounded-full transition-colors cursor-pointer"
-							title="View Fullscreen"
-						>
-							<Maximize2 class="w-4 h-4" />
-						</button>
-					</div>
-
-					{#if isLoading}
-						<div class="grid grid-cols-2 gap-4">
-							<div class="space-y-2">
-								<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-								<div class="h-5 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-								<div class="h-3 w-20 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-							</div>
-							<div class="space-y-2">
-								<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-								<div class="h-5 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-								<div class="h-3 w-20 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-							</div>
-						</div>
-					{:else}
-						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
-							<!-- Divider -->
-							<div
-								class="hidden sm:block absolute left-1/2 top-0 bottom-0 w-px bg-purple-200 dark:bg-purple-800/30"
-							></div>
-
-							<!-- First Show -->
-							<div class="flex items-start gap-3">
-								{#if showExtremes.first}
-									{@const showImg = getShowImage(showExtremes.first.event.title)}
-									<div
-										class="w-12 h-16 rounded-lg bg-gray-200 dark:bg-gray-800 overflow-hidden flex-shrink-0 shadow-sm border border-purple-100 dark:border-purple-500/20"
-									>
-										{#if showImg}
-											<img
-												src={showImg}
-												alt={showExtremes.first.event.title}
-												class="w-full h-full object-cover"
-											/>
-										{:else}
-											<div class="w-full h-full flex items-center justify-center text-purple-300">
-												<Star class="w-4 h-4" />
-											</div>
-										{/if}
-									</div>
-									<div class="min-w-0 flex-1">
-										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-											{$t('dashboard.theater.first')}
-										</p>
-										<p class="font-bold text-themed text-sm leading-tight truncate">
-											{showExtremes.first.event.title}
-										</p>
-										<p class="text-xs font-bold text-purple-600 dark:text-purple-400">
-											{formatDate(showExtremes.first.event.date)}
-										</p>
-										<p class="text-[10px] text-gray-500 mt-0.5">
-											{$t('dashboard.seatMap.row')}
-											{showExtremes.first.seat.section.trim().charAt(0)} - {showExtremes.first.seat
-												.number}
-										</p>
-									</div>
-								{:else}
-									<div
-										class="w-12 h-16 rounded-lg bg-gray-50 dark:bg-gray-800/50 overflow-hidden flex-shrink-0 shadow-sm border border-purple-100 dark:border-purple-500/20"
-									>
-										<div
-											class="w-full h-full flex items-center justify-center text-purple-200 dark:text-purple-800/30"
-										>
-											<Star class="w-4 h-4" />
-										</div>
-									</div>
-									<div class="min-w-0 flex-1">
-										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-											{$t('dashboard.theater.first')}
-										</p>
-										<p class="font-bold text-themed text-sm leading-tight truncate">-</p>
-										<p class="text-xs font-bold text-purple-600 dark:text-purple-400">-</p>
-										<p class="text-[10px] text-gray-500 mt-0.5">-</p>
-									</div>
-								{/if}
-							</div>
-
-							<!-- Last Show -->
-							<div class="flex items-start gap-3 relative sm:pl-2">
-								{#if showExtremes.last}
-									{@const showImg = getShowImage(showExtremes.last.event.title)}
-									<div
-										class="w-12 h-16 rounded-lg bg-gray-200 dark:bg-gray-800 overflow-hidden flex-shrink-0 shadow-sm border border-purple-100 dark:border-purple-500/20"
-									>
-										{#if showImg}
-											<img
-												src={showImg}
-												alt={showExtremes.last.event.title}
-												class="w-full h-full object-cover"
-											/>
-										{:else}
-											<div class="w-full h-full flex items-center justify-center text-purple-300">
-												<Star class="w-4 h-4" />
-											</div>
-										{/if}
-									</div>
-									<div class="min-w-0 flex-1">
-										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-											{$t('dashboard.theater.last')}
-										</p>
-										<p class="font-bold text-themed text-sm leading-tight truncate">
-											{showExtremes.last.event.title}
-										</p>
-										<p class="text-xs font-bold text-purple-600 dark:text-purple-400">
-											{formatDate(showExtremes.last.event.date)}
-										</p>
-										<p class="text-[10px] text-gray-500 mt-0.5">
-											{$t('dashboard.seatMap.row')}
-											{showExtremes.last.seat.section.trim().charAt(0)} - {showExtremes.last.seat
-												.number}
-										</p>
-									</div>
-								{:else}
-									<div
-										class="w-12 h-16 rounded-lg bg-gray-50 dark:bg-gray-800/50 overflow-hidden flex-shrink-0 shadow-sm border border-purple-100 dark:border-purple-500/20"
-									>
-										<div
-											class="w-full h-full flex items-center justify-center text-purple-200 dark:text-purple-800/30"
-										>
-											<Star class="w-4 h-4" />
-										</div>
-									</div>
-									<div class="min-w-0 flex-1">
-										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-											{$t('dashboard.theater.last')}
-										</p>
-										<p class="font-bold text-themed text-sm leading-tight truncate">-</p>
-										<p class="text-xs font-bold text-purple-600 dark:text-purple-400">-</p>
-										<p class="text-[10px] text-gray-500 mt-0.5">-</p>
-									</div>
-								{/if}
-							</div>
-						</div>
-					{/if}
-				</div>
+				<!-- First & Last Show Card -->
+				<FirstLastCard
+					title={`${$t('dashboard.theater.firstLast')} ${!isAllData ? selectedYear : ''}`}
+					type="theater"
+					loading={isLoading}
+					onExpand={() => (showTheaterPopup = true)}
+					first={showExtremes.first
+						? {
+								image: getShowImage(showExtremes.first.event.title),
+								title: showExtremes.first.event.title,
+								date: formatDate(showExtremes.first.event.date),
+								detail: `Row ${showExtremes.first.seat.section.trim().charAt(0)} - ${showExtremes.first.seat.number}`
+							}
+						: null}
+					last={showExtremes.last
+						? {
+								image: getShowImage(showExtremes.last.event.title),
+								title: showExtremes.last.event.title,
+								date: formatDate(showExtremes.last.event.date),
+								detail: `Row ${showExtremes.last.seat.section.trim().charAt(0)} - ${showExtremes.last.seat.number}`
+							}
+						: null}
+				/>
 			</div>
 		</div>
 
@@ -518,146 +389,26 @@
 				/>
 
 				<!-- First & Last 2-Shot Card -->
-				<div
-					class="glass-card rounded-3xl p-5 relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-pink-50/20 dark:bg-transparent border-pink-100 dark:border-pink-500/20 sm:col-span-2"
-				>
-					<div class="flex justify-between items-start mb-4">
-						<div class="flex items-center gap-2 text-pink-400">
-							<div class="p-1.5 bg-pink-50 dark:bg-pink-800/40 rounded-lg">
-								<Calendar class="w-4 h-4" />
-							</div>
-							<span class="font-bold text-xs tracking-wider text-gray-800 dark:text-gray-100">
-								{$t('dashboard.twoShot.firstLast')}
-								{!isAllData ? selectedYear : ''}
-							</span>
-						</div>
-						<button
-							on:click={() => (showTwoShotPopup = true)}
-							class="p-2 -mr-2 -mt-2 text-pink-300 hover:text-pink-500 dark:hover:text-pink-300 hover:bg-pink-50 dark:hover:bg-pink-800/30 rounded-full transition-colors cursor-pointer"
-							title="View Fullscreen"
-						>
-							<Maximize2 class="w-4 h-4" />
-						</button>
-					</div>
-
-					{#if isLoading}
-						<div class="grid grid-cols-2 gap-4">
-							<div class="space-y-2">
-								<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-								<div class="h-5 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-							</div>
-							<div class="space-y-2">
-								<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-								<div class="h-5 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-							</div>
-						</div>
-					{:else}
-						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
-							<!-- Divider -->
-							<div
-								class="hidden sm:block absolute left-1/2 top-0 bottom-0 w-px bg-pink-200 dark:bg-pink-800/30"
-							></div>
-
-							<!-- First 2-Shot -->
-							<div class="flex items-start gap-3">
-								{#if twoShotExtremes.first}
-									<div
-										class="w-12 h-16 rounded-lg bg-gray-200 dark:bg-gray-800 overflow-hidden flex-shrink-0 shadow-sm border border-pink-100 dark:border-pink-500/20"
-									>
-										{#if twoShotExtremes.first.two_shot?.imageUrl}
-											<img
-												src={twoShotExtremes.first.two_shot.imageUrl}
-												alt="2-Shot"
-												class="w-full h-full object-cover"
-											/>
-										{:else}
-											<div class="w-full h-full flex items-center justify-center text-pink-300">
-												<Camera class="w-4 h-4" />
-											</div>
-										{/if}
-									</div>
-									<div class="min-w-0 flex-1">
-										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-											{$t('dashboard.twoShot.first')}
-										</p>
-										<p class="font-bold text-themed text-sm leading-tight truncate">
-											{twoShotExtremes.first.two_shot?.member_name || '-'}
-										</p>
-										<p class="text-xs font-bold text-pink-400">
-											{formatDate(twoShotExtremes.first.event.date)}
-										</p>
-									</div>
-								{:else}
-									<div
-										class="w-12 h-16 rounded-lg bg-gray-50 dark:bg-gray-800/50 overflow-hidden flex-shrink-0 shadow-sm border border-pink-100 dark:border-pink-500/20"
-									>
-										<div
-											class="w-full h-full flex items-center justify-center text-pink-200 dark:text-pink-800/30"
-										>
-											<Camera class="w-4 h-4" />
-										</div>
-									</div>
-									<div class="min-w-0 flex-1">
-										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-											{$t('dashboard.twoShot.first')}
-										</p>
-										<p class="font-bold text-themed text-sm leading-tight truncate">-</p>
-										<p class="text-xs font-bold text-pink-400">-</p>
-									</div>
-								{/if}
-							</div>
-
-							<!-- Last 2-Shot -->
-							<div class="flex items-start gap-3 relative sm:pl-2">
-								{#if twoShotExtremes.last}
-									<div
-										class="w-12 h-16 rounded-lg bg-gray-200 dark:bg-gray-800 overflow-hidden flex-shrink-0 shadow-sm border border-pink-100 dark:border-pink-500/20"
-									>
-										{#if twoShotExtremes.last.two_shot?.imageUrl}
-											<img
-												src={twoShotExtremes.last.two_shot.imageUrl}
-												alt="2-Shot"
-												class="w-full h-full object-cover"
-											/>
-										{:else}
-											<div class="w-full h-full flex items-center justify-center text-pink-300">
-												<Camera class="w-4 h-4" />
-											</div>
-										{/if}
-									</div>
-									<div class="min-w-0 flex-1">
-										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-											{$t('dashboard.twoShot.last')}
-										</p>
-										<p class="font-bold text-themed text-sm leading-tight truncate">
-											{twoShotExtremes.last.two_shot?.member_name || '-'}
-										</p>
-										<p class="text-xs font-bold text-pink-400">
-											{formatDate(twoShotExtremes.last.event.date)}
-										</p>
-									</div>
-								{:else}
-									<div
-										class="w-12 h-16 rounded-lg bg-gray-50 dark:bg-gray-800/50 overflow-hidden flex-shrink-0 shadow-sm border border-pink-100 dark:border-pink-500/20"
-									>
-										<div
-											class="w-full h-full flex items-center justify-center text-pink-200 dark:text-pink-800/30"
-										>
-											<Camera class="w-4 h-4" />
-										</div>
-									</div>
-									<div class="min-w-0 flex-1">
-										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-											{$t('dashboard.twoShot.last')}
-										</p>
-										<p class="font-bold text-themed text-sm leading-tight truncate">-</p>
-										<p class="text-xs font-bold text-pink-400">-</p>
-									</div>
-								{/if}
-							</div>
-						</div>
-					{/if}
-				</div>
+				<FirstLastCard
+					title={`${$t('dashboard.twoShot.firstLast')} ${!isAllData ? selectedYear : ''}`}
+					type="twoShot"
+					loading={isLoading}
+					onExpand={() => (showTwoShotPopup = true)}
+					first={twoShotExtremes.first
+						? {
+								image: twoShotExtremes.first.two_shot?.imageUrl,
+								title: twoShotExtremes.first.two_shot?.member_name || '-',
+								date: formatDate(twoShotExtremes.first.event.date)
+							}
+						: null}
+					last={twoShotExtremes.last
+						? {
+								image: twoShotExtremes.last.two_shot?.imageUrl,
+								title: twoShotExtremes.last.two_shot?.member_name || '-',
+								date: formatDate(twoShotExtremes.last.event.date)
+							}
+						: null}
+				/>
 			</div>
 		</div>
 	</div>
@@ -666,405 +417,63 @@
 	<TheaterSeatMap {rowStats} {seatStats} {isLoading} />
 
 	<div class="grid lg:grid-cols-3 gap-6">
-		<!-- Monthly Heatmap -->
-		<div class="glass-panel p-6 rounded-3xl lg:col-span-2 flex flex-col">
-			<div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-				<div>
-					<h3 class="text-xl font-bold text-themed">
-						{$t('dashboard.monthlyAttendance.title')}
-					</h3>
-					<p class="text-xs text-gray-400">
-						{$t('dashboard.monthlyAttendance.subtitle')}
-						{isAllData
-							? availableYears.length > 1
-								? `${Math.min(...availableYears)} - ${Math.max(...availableYears)}`
-								: availableYears[0]
-							: selectedYear}
-					</p>
-				</div>
-			</div>
+		<MonthlyAttendance
+			stats={monthlyStats.stats}
+			maxCount={monthlyStats.maxCount}
+			loading={isLoading}
+			subtitle={isAllData
+				? availableYears.length > 1
+					? `${Math.min(...availableYears)} - ${Math.max(...availableYears)}`
+					: `${availableYears[0]}`
+				: `${selectedYear}`}
+		/>
 
-			<div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 flex-1">
-				{#if isLoading}
-					<!-- Skeleton Loading for Monthly -->
-					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-					{#each [1, 2, 3] as _unused, i}
-						<div class="flex flex-col items-center">
-							<div
-								class="w-full aspect-square rounded-2xl mb-2 bg-gray-200 dark:bg-zinc-700 animate-pulse"
-							></div>
-							<div class="h-3 w-8 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-						</div>
-					{/each}
-				{:else}
-					{#each monthlyStats.stats as month}
-						{@const intensity =
-							month.count > 0 ? 0.2 + (month.count / monthlyStats.maxCount) * 0.8 : 0.05}
-						{@const hasData = month.count > 0}
-						{@const isHighIntensity = intensity > 0.5}
-						<div
-							class={`flex flex-col items-center group relative ${!month.isActive ? 'opacity-30 grayscale pointer-events-none' : ''}`}
-							title={hasData
-								? `${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(month.spent)}`
-								: ''}
-						>
-							<div
-								class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg group-hover:scale-105 border"
-								style={`
-									background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; 
-									border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'};
-									box-shadow: ${hasData ? `0 4px 12px -2px rgba(220, 38, 38, ${intensity * 0.6})` : 'none'}
-								`}
-							>
-								{#if hasData}
-									<span
-										class={`text-xl md:text-2xl font-black drop-shadow-sm transition-colors duration-300 ${isHighIntensity ? 'text-white' : 'text-red-600 dark:text-red-400'}`}
-									>
-										{month.count}
-									</span>
-									<span
-										class={`text-[8px] font-bold uppercase tracking-wider transition-colors duration-300 ${isHighIntensity ? 'text-white/80' : 'text-red-600/70 dark:text-red-400/70'}`}
-									>
-										{$t('shows.unit')}
-									</span>
-
-									<!-- Spending Pill on Hover -->
-									<div
-										class="absolute inset-x-0 bottom-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 backdrop-blur-sm flex justify-center"
-									>
-										<p class="text-[9px] text-white font-bold truncate">
-											{new Intl.NumberFormat('id-ID', {
-												notation: 'compact',
-												compactDisplay: 'short'
-											}).format(month.spent)}
-										</p>
-									</div>
-								{:else}
-									<span class="text-gray-300 dark:text-gray-600 text-xl font-bold opacity-30"
-										>-</span
-									>
-								{/if}
-							</div>
-							<div class="text-center w-full">
-								<span
-									class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide group-hover:text-red-500 transition-colors"
-									>{$t('time.monthsShort.' + month.name.substring(0, 3).toLowerCase())}</span
-								>
-							</div>
-						</div>
-					{/each}
-				{/if}
-			</div>
-		</div>
-
-		<!-- Day Preference List -->
-		<div class="glass-panel p-6 rounded-3xl flex flex-col">
-			<div class="mb-6">
-				<h3 class="text-xl font-bold text-themed">
-					{$t('dashboard.dayPreference.title')}
-				</h3>
-				<p class="text-xs text-gray-400">{$t('dashboard.dayPreference.subtitle')}</p>
-			</div>
-
-			<div class="flex flex-wrap justify-center gap-3 flex-1 content-start w-full">
-				{#if isLoading}
-					<!-- Skeleton Loading for Days -->
-					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-					{#each Array(7) as _unused, i}
-						<div
-							class="flex flex-col items-center w-[calc(33.33%-0.5rem)] sm:w-[calc(25%-0.56rem)] lg:w-[calc(33.33%-0.5rem)] xl:w-[calc(25%-0.56rem)]"
-						>
-							<div
-								class="w-full aspect-square rounded-2xl mb-2 bg-gray-200 dark:bg-zinc-700 animate-pulse"
-							></div>
-							<div class="h-3 w-8 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
-						</div>
-					{/each}
-				{:else}
-					{#each dayStats.stats as day}
-						{@const intensity = day.count > 0 ? 0.2 + (day.count / dayStats.maxCount) * 0.8 : 0.05}
-						{@const hasData = day.count > 0}
-						{@const isHighIntensity = intensity > 0.5}
-						<div
-							class="flex flex-col items-center group w-[calc(33.33%-0.5rem)] sm:w-[calc(25%-0.56rem)] lg:w-[calc(33.33%-0.5rem)] xl:w-[calc(25%-0.56rem)]"
-						>
-							<div
-								class="w-full aspect-square rounded-2xl mb-2 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg group-hover:scale-105 border"
-								style={`
-									background: ${hasData ? `rgba(227, 0, 15, ${intensity})` : 'var(--color-surface)'}; 
-									border-color: ${hasData ? 'transparent' : 'var(--color-border-light)'};
-									box-shadow: ${hasData ? `0 4px 12px -2px rgba(220, 38, 38, ${intensity * 0.6})` : 'none'}
-								`}
-							>
-								{#if hasData}
-									<span
-										class={`text-xl md:text-2xl font-black drop-shadow-sm transition-colors duration-300 ${isHighIntensity ? 'text-white' : 'text-red-600 dark:text-red-400'}`}
-									>
-										{day.count}
-									</span>
-									<span
-										class={`text-[8px] font-bold uppercase tracking-wider transition-colors duration-300 ${isHighIntensity ? 'text-white/80' : 'text-red-600/70 dark:text-red-400/70'}`}
-									>
-										{$t('shows.unit')}
-									</span>
-								{:else}
-									<span class="text-gray-300 dark:text-gray-600 text-xl font-bold opacity-30"
-										>-</span
-									>
-								{/if}
-							</div>
-							<div class="text-center w-full">
-								<span
-									class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide group-hover:text-red-500 transition-colors"
-									>{$t('time.daysShort.' + day.name.substring(0, 3).toLowerCase())}</span
-								>
-							</div>
-						</div>
-					{/each}
-				{/if}
-			</div>
-		</div>
+		<DayPreference stats={dayStats.stats} maxCount={dayStats.maxCount} loading={isLoading} />
 	</div>
 </div>
 
 <!-- THEATER POPUP -->
-{#if showTheaterPopup}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-		on:click|self={() => (showTheaterPopup = false)}
-		role="dialog"
-		aria-modal="true"
-	>
-		<div
-			class="bg-purple-50 dark:bg-zinc-900 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-scale-in border border-purple-100 dark:border-purple-500/20"
-		>
-			<!-- Header -->
-			<div
-				class="p-6 border-b border-purple-100 dark:border-purple-500/20 flex items-center justify-between bg-purple-50/30 dark:bg-transparent"
-			>
-				<div class="flex items-center gap-3 text-purple-500">
-					<div class="p-2 bg-purple-100 dark:bg-purple-800/40 rounded-xl">
-						<Calendar class="w-6 h-6" />
-					</div>
-					<h3 class="font-bold text-xl text-gray-800 dark:text-gray-100">
-						{$t('dashboard.theater.firstLast')}
-						{!isAllData ? selectedYear : ''}
-					</h3>
-				</div>
-				<button
-					on:click={() => (showTheaterPopup = false)}
-					class="p-2 bg-purple-100 dark:bg-purple-800/40 hover:bg-purple-200 dark:hover:bg-purple-700/50 rounded-full transition-colors cursor-pointer"
-				>
-					<X class="w-6 h-6 text-purple-500 dark:text-purple-400" />
-				</button>
-			</div>
-
-			<!-- Content -->
-			<div class="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 relative">
-				<div
-					class="hidden md:block absolute left-1/2 top-10 bottom-10 w-px bg-purple-200 dark:bg-purple-800/30"
-				></div>
-
-				<!-- First -->
-				<div class="flex flex-col items-center text-center">
-					<span
-						class="text-xs font-black tracking-[0.2em] text-purple-500 uppercase mb-6 bg-purple-100 dark:bg-purple-800/40 px-3 py-1 rounded-full"
-						>{$t('dashboard.theater.first')}</span
-					>
-					{#if showExtremes.first}
-						{@const showImg = getShowImage(showExtremes.first.event.title)}
-						<div
-							class="w-48 h-64 md:w-64 md:h-80 rounded-2xl bg-gray-200 dark:bg-gray-800 shadow-xl mb-6 overflow-hidden relative group border border-purple-100 dark:border-purple-500/20"
-						>
-							{#if showImg}
-								<img
-									src={showImg}
-									alt={showExtremes.first.event.title}
-									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-								/>
-								<div
-									class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
-								></div>
-							{:else}
-								<div class="w-full h-full flex items-center justify-center text-purple-300">
-									<Star class="w-16 h-16" />
-								</div>
-							{/if}
-						</div>
-						<h4 class="text-2xl font-black text-themed mb-2 leading-tight">
-							{showExtremes.first.event.title}
-						</h4>
-						<p class="text-lg font-bold text-purple-600 dark:text-purple-400 mb-1">
-							{formatDate(showExtremes.first.event.date)}
-						</p>
-						<p class="text-sm font-bold text-gray-400">
-							{$t('dashboard.seatMap.row')}
-							{showExtremes.first.seat.section.trim().charAt(0)} - {showExtremes.first.seat.number}
-						</p>
-					{:else}
-						<p class="text-gray-400 italic">No data</p>
-					{/if}
-				</div>
-
-				<!-- Last -->
-				<div class="flex flex-col items-center text-center">
-					<span
-						class="text-xs font-black tracking-[0.2em] text-purple-500 uppercase mb-6 bg-purple-50 dark:bg-purple-900/20 px-3 py-1 rounded-full"
-						>{$t('dashboard.theater.last')}</span
-					>
-					{#if showExtremes.last}
-						{@const showImg = getShowImage(showExtremes.last.event.title)}
-						<div
-							class="w-48 h-64 md:w-64 md:h-80 rounded-2xl bg-gray-200 dark:bg-zinc-800 shadow-xl mb-6 overflow-hidden relative group border border-purple-100 dark:border-purple-500/20"
-						>
-							{#if showImg}
-								<img
-									src={showImg}
-									alt={showExtremes.last.event.title}
-									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-								/>
-								<div
-									class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
-								></div>
-							{:else}
-								<div class="w-full h-full flex items-center justify-center text-purple-200">
-									<Star class="w-16 h-16" />
-								</div>
-							{/if}
-						</div>
-						<h4 class="text-2xl font-black text-themed mb-2 leading-tight">
-							{showExtremes.last.event.title}
-						</h4>
-						<p class="text-lg font-bold text-purple-600 dark:text-purple-400 mb-1">
-							{formatDate(showExtremes.last.event.date)}
-						</p>
-						<p class="text-sm font-bold text-gray-400">
-							{$t('dashboard.seatMap.row')}
-							{showExtremes.last.seat.section.trim().charAt(0)} - {showExtremes.last.seat.number}
-						</p>
-					{:else}
-						<p class="text-gray-400 italic">No data</p>
-					{/if}
-				</div>
-			</div>
-		</div>
-	</div>
-{/if}
+<FirstLastPopup
+	show={showTheaterPopup}
+	onClose={() => (showTheaterPopup = false)}
+	title={`${$t('dashboard.theater.firstLast')} ${!isAllData ? selectedYear : ''}`}
+	type="theater"
+	first={showExtremes.first
+		? {
+				image: getShowImage(showExtremes.first.event.title),
+				title: showExtremes.first.event.title,
+				date: formatDate(showExtremes.first.event.date),
+				detail: `${$t('dashboard.seatMap.row')} ${showExtremes.first.seat.section.trim().charAt(0)} - ${showExtremes.first.seat.number}`
+			}
+		: null}
+	last={showExtremes.last
+		? {
+				image: getShowImage(showExtremes.last.event.title),
+				title: showExtremes.last.event.title,
+				date: formatDate(showExtremes.last.event.date),
+				detail: `${$t('dashboard.seatMap.row')} ${showExtremes.last.seat.section.trim().charAt(0)} - ${showExtremes.last.seat.number}`
+			}
+		: null}
+/>
 
 <!-- 2-SHOT POPUP -->
-{#if showTwoShotPopup}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-		on:click|self={() => (showTwoShotPopup = false)}
-		role="dialog"
-		aria-modal="true"
-	>
-		<div
-			class="bg-pink-50 dark:bg-zinc-900 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-scale-in border border-pink-100 dark:border-pink-500/20"
-		>
-			<!-- Header -->
-			<div
-				class="p-6 border-b border-pink-100 dark:border-pink-500/20 flex items-center justify-between bg-pink-50/20 dark:bg-transparent"
-			>
-				<div class="flex items-center gap-3 text-pink-400">
-					<div class="p-2 bg-pink-50 dark:bg-pink-800/40 rounded-xl">
-						<Calendar class="w-6 h-6" />
-					</div>
-					<h3 class="font-bold text-xl text-gray-800 dark:text-gray-100">
-						{$t('dashboard.twoShot.firstLast')}
-						{!isAllData ? selectedYear : ''}
-					</h3>
-				</div>
-				<button
-					on:click={() => (showTwoShotPopup = false)}
-					class="p-2 bg-pink-50 dark:bg-pink-800/40 hover:bg-pink-100 dark:hover:bg-pink-700/50 rounded-full transition-colors cursor-pointer"
-				>
-					<X class="w-6 h-6 text-pink-400 dark:text-pink-400" />
-				</button>
-			</div>
-
-			<!-- Content -->
-			<div class="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 relative">
-				<div
-					class="hidden md:block absolute left-1/2 top-10 bottom-10 w-px bg-pink-200 dark:bg-pink-800/30"
-				></div>
-
-				<!-- First -->
-				<div class="flex flex-col items-center text-center">
-					<span
-						class="text-xs font-black tracking-[0.2em] text-pink-400 uppercase mb-6 bg-pink-50 dark:bg-pink-800/40 px-3 py-1 rounded-full"
-						>{$t('dashboard.twoShot.first')}</span
-					>
-					{#if twoShotExtremes.first}
-						<div
-							class="w-48 h-64 md:w-64 md:h-80 rounded-2xl bg-gray-200 dark:bg-gray-800 shadow-xl mb-6 overflow-hidden relative group border border-pink-100 dark:border-pink-500/20"
-						>
-							{#if twoShotExtremes.first.two_shot?.imageUrl}
-								<img
-									src={twoShotExtremes.first.two_shot.imageUrl}
-									alt="2-Shot"
-									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-								/>
-								<div
-									class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
-								></div>
-							{:else}
-								<div class="w-full h-full flex items-center justify-center text-pink-300">
-									<Camera class="w-16 h-16" />
-								</div>
-							{/if}
-						</div>
-						<h4 class="text-2xl font-black text-themed mb-2 leading-tight">
-							{twoShotExtremes.first.two_shot?.member_name || '-'}
-						</h4>
-						<p class="text-lg font-bold text-pink-400 dark:text-pink-400">
-							{formatDate(twoShotExtremes.first.event.date)}
-						</p>
-					{:else}
-						<p class="text-gray-400 italic">No data</p>
-					{/if}
-				</div>
-
-				<!-- Last -->
-				<div class="flex flex-col items-center text-center">
-					<span
-						class="text-xs font-black tracking-[0.2em] text-pink-400 uppercase mb-6 bg-pink-50 dark:bg-pink-800/40 px-3 py-1 rounded-full"
-						>{$t('dashboard.twoShot.last')}</span
-					>
-					{#if twoShotExtremes.last}
-						<div
-							class="w-48 h-64 md:w-64 md:h-80 rounded-2xl bg-gray-200 dark:bg-gray-800 shadow-xl mb-6 overflow-hidden relative group border border-pink-100 dark:border-pink-500/20"
-						>
-							{#if twoShotExtremes.last.two_shot?.imageUrl}
-								<img
-									src={twoShotExtremes.last.two_shot.imageUrl}
-									alt="2-Shot"
-									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-								/>
-								<div
-									class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
-								></div>
-							{:else}
-								<div class="w-full h-full flex items-center justify-center text-pink-300">
-									<Camera class="w-16 h-16" />
-								</div>
-							{/if}
-						</div>
-						<h4 class="text-2xl font-black text-themed mb-2 leading-tight">
-							{twoShotExtremes.last.two_shot?.member_name || '-'}
-						</h4>
-						<p class="text-lg font-bold text-pink-400 dark:text-pink-400">
-							{formatDate(twoShotExtremes.last.event.date)}
-						</p>
-					{:else}
-						<p class="text-gray-400 italic">No data</p>
-					{/if}
-				</div>
-			</div>
-		</div>
-	</div>
-{/if}
+<FirstLastPopup
+	show={showTwoShotPopup}
+	onClose={() => (showTwoShotPopup = false)}
+	title={`${$t('dashboard.twoShot.firstLast')} ${!isAllData ? selectedYear : ''}`}
+	type="twoShot"
+	first={twoShotExtremes.first
+		? {
+				image: twoShotExtremes.first.two_shot?.imageUrl,
+				title: twoShotExtremes.first.two_shot?.member_name || '-',
+				date: formatDate(twoShotExtremes.first.event.date)
+			}
+		: null}
+	last={twoShotExtremes.last
+		? {
+				image: twoShotExtremes.last.two_shot?.imageUrl,
+				title: twoShotExtremes.last.two_shot?.member_name || '-',
+				date: formatDate(twoShotExtremes.last.event.date)
+			}
+		: null}
+/>
