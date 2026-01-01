@@ -658,7 +658,23 @@
 										</p>
 									</div>
 								{:else}
-									<p class="text-xs text-gray-400 italic">-</p>
+									<div
+										class="w-12 h-16 rounded-lg bg-gray-50 dark:bg-gray-800/50 overflow-hidden flex-shrink-0 shadow-sm border border-purple-100 dark:border-purple-500/20"
+									>
+										<div
+											class="w-full h-full flex items-center justify-center text-purple-200 dark:text-purple-800/30"
+										>
+											<Star class="w-4 h-4" />
+										</div>
+									</div>
+									<div class="min-w-0 flex-1">
+										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
+											{$t('dashboard.theater.first')}
+										</p>
+										<p class="font-bold text-themed text-sm leading-tight truncate">-</p>
+										<p class="text-xs font-bold text-purple-600 dark:text-purple-400">-</p>
+										<p class="text-[10px] text-gray-500 mt-0.5">-</p>
+									</div>
 								{/if}
 							</div>
 
@@ -698,7 +714,23 @@
 										</p>
 									</div>
 								{:else}
-									<p class="text-xs text-gray-400 italic">-</p>
+									<div
+										class="w-12 h-16 rounded-lg bg-gray-50 dark:bg-gray-800/50 overflow-hidden flex-shrink-0 shadow-sm border border-purple-100 dark:border-purple-500/20"
+									>
+										<div
+											class="w-full h-full flex items-center justify-center text-purple-200 dark:text-purple-800/30"
+										>
+											<Star class="w-4 h-4" />
+										</div>
+									</div>
+									<div class="min-w-0 flex-1">
+										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
+											{$t('dashboard.theater.last')}
+										</p>
+										<p class="font-bold text-themed text-sm leading-tight truncate">-</p>
+										<p class="text-xs font-bold text-purple-600 dark:text-purple-400">-</p>
+										<p class="text-[10px] text-gray-500 mt-0.5">-</p>
+									</div>
 								{/if}
 							</div>
 						</div>
@@ -895,7 +927,22 @@
 										</p>
 									</div>
 								{:else}
-									<p class="text-xs text-gray-400 italic">-</p>
+									<div
+										class="w-12 h-16 rounded-lg bg-gray-50 dark:bg-gray-800/50 overflow-hidden flex-shrink-0 shadow-sm border border-pink-100 dark:border-pink-500/20"
+									>
+										<div
+											class="w-full h-full flex items-center justify-center text-pink-200 dark:text-pink-800/30"
+										>
+											<Camera class="w-4 h-4" />
+										</div>
+									</div>
+									<div class="min-w-0 flex-1">
+										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
+											{$t('dashboard.twoShot.first')}
+										</p>
+										<p class="font-bold text-themed text-sm leading-tight truncate">-</p>
+										<p class="text-xs font-bold text-pink-400">-</p>
+									</div>
 								{/if}
 							</div>
 
@@ -929,7 +976,22 @@
 										</p>
 									</div>
 								{:else}
-									<p class="text-xs text-gray-400 italic">-</p>
+									<div
+										class="w-12 h-16 rounded-lg bg-gray-50 dark:bg-gray-800/50 overflow-hidden flex-shrink-0 shadow-sm border border-pink-100 dark:border-pink-500/20"
+									>
+										<div
+											class="w-full h-full flex items-center justify-center text-pink-200 dark:text-pink-800/30"
+										>
+											<Camera class="w-4 h-4" />
+										</div>
+									</div>
+									<div class="min-w-0 flex-1">
+										<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
+											{$t('dashboard.twoShot.last')}
+										</p>
+										<p class="font-bold text-themed text-sm leading-tight truncate">-</p>
+										<p class="text-xs font-bold text-pink-400">-</p>
+									</div>
 								{/if}
 							</div>
 						</div>
