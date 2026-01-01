@@ -444,7 +444,9 @@
 		"manualDescription": "Ketik detailnya sendiri.",
 		"saveTicket": "Simpan Tiket",
 		"uploadSuccess": "Tiket berhasil diunggah",
-		"uploadError": "Gagal mengunggah tiket"
+		"uploadError": "Gagal mengunggah tiket",
+		"analyzingTitle": "Menganalisis Tiket",
+		"analyzingDescription": "Mengekstrak info pertunjukan..."
 	},
 	"forms": {
 		"editTicket": "Edit Tiket",

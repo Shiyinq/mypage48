@@ -378,7 +378,9 @@
 		"manualDescription": "Enter ticket details manually if you don't have a photo.",
 		"saveTicket": "Save Ticket",
 		"uploadSuccess": "Ticket uploaded successfully",
-		"uploadError": "Failed to upload ticket"
+		"uploadError": "Failed to upload ticket",
+		"analyzingTitle": "Analyzing Ticket",
+		"analyzingDescription": "Extracting show info..."
 	},
 	"shows": {
 		"backTitle": "Back to Shows",
