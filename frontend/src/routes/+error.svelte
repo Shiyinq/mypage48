@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { isAuthenticated } from '$lib/stores';
@@ -14,7 +14,7 @@
 	// Define error info based on status code
 	$: errorInfo = getErrorInfo(status, $t);
 
-	function getErrorInfo(code, t) {
+	function getErrorInfo(code: number, t: any) {
 		switch (code) {
 			case 404:
 				return {

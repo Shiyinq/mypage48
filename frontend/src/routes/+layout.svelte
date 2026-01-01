@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
 	import '../app.css';
 	import { isAuthenticated, toast, tickets, userProfile, isInitialDataLoaded } from '$lib/stores';
-	import { locale } from '$lib/i18n';
+	import { locale, type Locale } from '$lib/i18n';
 	import { initTheme } from '$lib/stores/theme';
 	import { theater } from '$lib/apis/theater';
 	import { auth } from '$lib/apis/auth';
@@ -13,11 +13,11 @@
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import { Check } from 'lucide-svelte';
 
-	export let data;
+	export let data: { locale?: string };
 
 	// Hydrate locale from server cookie if available (SSR)
 	if (data?.locale) {
-		locale.set(data.locale);
+		locale.set(data.locale as Locale);
 	}
 
 	// Flag to prevent duplicate fetches

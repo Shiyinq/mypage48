@@ -401,14 +401,16 @@
 			class="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-[fadeIn_0.2s_ease-out]"
 			on:click|stopPropagation
 			on:keydown|stopPropagation
-			role="button"
-			tabindex="0"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="preview-modal-title"
+			tabindex="-1"
 		>
 			<!-- Header -->
 			<div
 				class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-zinc-800"
 			>
-				<h3 class="text-lg font-bold text-gray-900 dark:text-white">
+				<h3 id="preview-modal-title" class="text-lg font-bold text-gray-900 dark:text-white">
 					{$t('profile.profilePicture.previewTitle')}
 				</h3>
 				<button
