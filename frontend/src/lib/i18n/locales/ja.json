@@ -472,7 +472,9 @@
 		"manualDescription": "詳細を自分で入力します。",
 		"saveTicket": "チケットを保存",
 		"uploadSuccess": "チケットが正常にアップロードされました",
-		"uploadError": "チケットのアップロードに失敗しました"
+		"uploadError": "チケットのアップロードに失敗しました",
+		"analyzingTitle": "チケットを分析中",
+		"analyzingDescription": "公演情報を抽出しています..."
 	},
 	"forms": {
 		"editTicket": "チケット編集",
