@@ -60,32 +60,7 @@ class DashboardService:
         except (ValueError, TypeError):
             return date_str
 
-    def _filter_tickets(
-        self,
-        tickets: List[Dict[str, Any]],
-        year: Optional[int],
-        start_month: int,
-        end_month: int,
-        is_all_data: bool,
-    ) -> List[Dict[str, Any]]:
-        """Filter tickets by year and month range."""
-        if is_all_data:
-            return tickets
 
-        filtered = []
-        for t in tickets:
-            try:
-                date_str = t.get("event", {}).get("date", "")
-                if not date_str:
-                    continue
-                d = datetime.strptime(date_str, "%Y-%m-%d")
-                y = d.year
-                m = d.month - 1  # Convert to 0-indexed
-                if y == year and start_month <= m <= end_month:
-                    filtered.append(t)
-            except (ValueError, TypeError):
-                continue
-        return filtered
 
     def _calculate_day_stats(self, tickets: List[Dict[str, Any]]) -> DayStatsResponse:
         """Calculate day preference statistics."""
@@ -323,20 +298,7 @@ class DashboardService:
             last=to_extreme_item(last),
         )
 
-    def _get_available_years(self, tickets: List[Dict[str, Any]]) -> List[int]:
-        """Get list of available years from tickets."""
-        current_year = datetime.now().year
-        years: set = {current_year}
 
-        for t in tickets:
-            try:
-                date_str = t.get("event", {}).get("date", "")
-                d = datetime.strptime(date_str, "%Y-%m-%d")
-                years.add(d.year)
-            except (ValueError, TypeError):
-                continue
-
-        return sorted(years, reverse=True)
 
     async def get_dashboard_stats(
         self,
@@ -348,19 +310,24 @@ class DashboardService:
     ) -> DashboardStatsResponse:
         """Get complete dashboard statistics for a user."""
         try:
-            # Fetch all tickets for the user
-            all_tickets = await self.theater_repository.get_all_tickets(user_id)
-
-            # Get available years from all tickets
-            available_years = self._get_available_years(all_tickets)
+            # Get available years (efficient query)
+            available_years = await self.theater_repository.get_available_years(user_id)
+            
+            # Ensure current year is always in the list
+            current_year = datetime.now().year
+            if current_year not in available_years:
+                available_years.append(current_year)
+            
+            # Sort descending
+            available_years.sort(reverse=True)
 
             # Use current year if not specified
             if year is None:
                 year = datetime.now().year
 
-            # Filter tickets based on parameters
-            filtered_tickets = self._filter_tickets(
-                all_tickets, year, start_month, end_month, is_all_data
+            # Filter tickets based on parameters (efficient query)
+            filtered_tickets = await self.theater_repository.get_tickets_filtered(
+                user_id, year, start_month, end_month, is_all_data
             )
 
             # Calculate all statistics
