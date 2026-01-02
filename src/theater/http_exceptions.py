@@ -1,4 +1,4 @@
-from src.http_exceptions import InternalServerError, NotFound
+from src.http_exceptions import BadRequest, InternalServerError, NotFound
 from src.theater.constants import ErrorCode
 
 
@@ -16,3 +16,15 @@ class TicketUpdateError(InternalServerError):
 
 class TicketDeleteError(InternalServerError):
     DETAIL = ErrorCode.TICKET_DELETION_FAILED
+
+
+class ImageTooLarge(BadRequest):
+    DETAIL = ErrorCode.IMAGE_TOO_LARGE
+
+
+class InvalidImageType(BadRequest):
+    DETAIL = ErrorCode.INVALID_IMAGE_TYPE
+
+
+class InvalidImage(BadRequest):
+    DETAIL = ErrorCode.INVALID_IMAGE
