@@ -6,7 +6,6 @@
 export const ALLOWED_IMAGE_TYPES = [
     'image/jpeg',
     'image/png',
-    'image/gif',
     'image/webp'
 ] as const;
 
@@ -52,7 +51,6 @@ export function validateBase64Image(base64: string): FileValidationResult {
     const validPrefixes = [
         'data:image/jpeg',
         'data:image/png',
-        'data:image/gif',
         'data:image/webp'
     ];
 
@@ -79,7 +77,7 @@ export function getValidationErrorMessage(error: FileValidationResult['error']):
         case 'FILE_TOO_LARGE':
             return 'File is too large. Maximum 3MB allowed.';
         case 'INVALID_TYPE':
-            return 'File format not supported. Please use JPEG, PNG, GIF, or WebP.';
+            return 'File format not supported. Please use JPEG, PNG, or WebP.';
         case 'NO_FILE':
             return 'No file selected.';
         default:

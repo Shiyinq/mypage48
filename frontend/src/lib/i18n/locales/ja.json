@@ -32,7 +32,7 @@
 		"alert": {
 			"title": "検証エラー",
 			"fileTooLarge": "ファイルが大きすぎます。最大3MBです。",
-			"invalidType": "対応していないファイル形式です。JPEG、PNG、GIF、またはWebPを使用してください。",
+			"invalidType": "対応していないファイル形式です。JPEG、PNG、またはWebPを使用してください。",
 			"noFile": "ファイルが選択されていません。"
 		}
 	},

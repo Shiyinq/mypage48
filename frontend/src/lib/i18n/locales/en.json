@@ -32,7 +32,7 @@
 		"alert": {
 			"title": "Validation Error",
 			"fileTooLarge": "File is too large. Maximum 3MB allowed.",
-			"invalidType": "File format not supported. Please use JPEG, PNG, GIF, or WebP.",
+			"invalidType": "File format not supported. Please use JPEG, PNG, or WebP.",
 			"noFile": "No file selected."
 		}
 	},

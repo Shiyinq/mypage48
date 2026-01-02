@@ -13,7 +13,6 @@ MAX_IMAGE_SIZE_BYTES = 3 * 1024 * 1024
 ALLOWED_MIME_TYPES = frozenset([
     "image/jpeg",
     "image/png",
-    "image/gif",
     "image/webp",
 ])
 
@@ -22,7 +21,6 @@ VALID_DATA_URL_PREFIXES = (
     "data:image/jpeg;base64,",
     "data:image/jpg;base64,",
     "data:image/png;base64,",
-    "data:image/gif;base64,",
     "data:image/webp;base64,",
 )
 
