@@ -287,7 +287,9 @@
 			"description": "Izinkan siapa saja untuk melihat statistik dan perjalanan teatermu menggunakan tautan unikmu.",
 			"yourLink": "Tautan Profil Publik Kamu",
 			"allYears": "Semua Tahun",
-			"thisYear": "Tahun Ini"
+			"thisYear": "Tahun Ini",
+			"uploadError": "Gagal mengunggah foto profil. Silakan coba lagi.",
+			"uploadSuccess": "Foto profil berhasil diperbarui!"
 		},
 		"developer": {
 			"title": "Akses Developer",

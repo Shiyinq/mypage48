@@ -287,7 +287,9 @@
 			"description": "Allow anyone to view your profile stats and theater journey using your unique link.",
 			"yourLink": "Your Public Profile Link",
 			"allYears": "All Years",
-			"thisYear": "This Year"
+			"thisYear": "This Year",
+			"uploadError": "Failed to upload profile picture. Please try again.",
+			"uploadSuccess": "Profile picture updated successfully!"
 		},
 		"developer": {
 			"title": "Developer Access",
