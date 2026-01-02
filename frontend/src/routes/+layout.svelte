@@ -109,8 +109,23 @@
 			<div
 				class="bg-gray-900/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 font-medium text-sm border border-white/10 pointer-events-auto animate-[fadeInDown_0.3s_ease-out]"
 			>
-				<div class="bg-green-500 rounded-full p-1">
-					<Check class="w-3 h-3 text-white" />
+				<div
+					class={$toast.type === 'error'
+						? 'bg-red-500 rounded-full p-1'
+						: 'bg-green-500 rounded-full p-1'}
+				>
+					{#if $toast.type === 'error'}
+						<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="3"
+								d="M6 18L18 6M6 6l12 12"
+							/>
+						</svg>
+					{:else}
+						<Check class="w-3 h-3 text-white" />
+					{/if}
 				</div>
 				{$toast.message}
 			</div>

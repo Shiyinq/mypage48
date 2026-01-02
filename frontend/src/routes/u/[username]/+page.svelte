@@ -4,7 +4,7 @@
 	import { Ticket } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { auth } from '$lib/apis/auth';
-	import { userProfile } from '$lib/stores';
+	import { userProfile, showToast } from '$lib/stores';
 	import {
 		validateImageFile,
 		validateBase64Image,
@@ -60,7 +60,8 @@
 			showPreviewModal = true;
 		} catch (error) {
 			console.error('Failed to read file:', error);
-			alert('Failed to read file.');
+			validationAlertMessage = $t('publicProfile.uploadError');
+			showValidationAlert = true;
 		} finally {
 			// Reset input so the same file can be selected again
 			if (fileInput) fileInput.value = '';
@@ -96,11 +97,16 @@
 				userProfile.update((u) => (u ? { ...u, profilePicture: previewImage } : null));
 			}
 
-			// Close modal on success
+			// Close modal and show success toast
 			closePreviewModal();
-		} catch (error) {
+			showToast($t('settings.publicProfile.uploadSuccess'), 'success');
+		} catch (error: unknown) {
 			console.error('Failed to upload profile picture:', error);
-			alert('Failed to upload profile picture.');
+			const errorMessage =
+				error instanceof Error && 'response' in error
+					? (error as { response?: { data?: { detail?: string } } }).response?.data?.detail
+					: null;
+			showToast(errorMessage || $t('settings.publicProfile.uploadError'), 'error');
 		} finally {
 			isUploading = false;
 		}
