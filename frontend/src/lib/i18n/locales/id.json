@@ -461,6 +461,7 @@
 		"analyzingDescription": "Mengekstrak info pertunjukan..."
 	},
 	"forms": {
+		"analysisFailed": "Gagal membaca detail tiket secara otomatis.",
 		"editTicket": "Edit Tiket",
 		"newTicket": "Entri Tiket Baru",
 		"updateMemory": "Perbarui kenanganmu",

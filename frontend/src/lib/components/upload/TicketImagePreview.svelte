@@ -3,7 +3,6 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	export let image: string | null = null;
-	export let error: string | null = null;
 	export let onChangePhoto: () => void;
 
 	const { t } = useTranslation();
@@ -37,16 +36,5 @@
 			<p class="font-bold text-lg">{$t('forms.uploadTicketPhoto')}</p>
 			<p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{$t('forms.optional')}</p>
 		</button>
-	{/if}
-	{#if error}
-		<div
-			class="bg-red-50 text-red-600 p-4 rounded-2xl mt-4 text-sm flex items-start gap-3 border border-red-100 shadow-sm"
-		>
-			<AlertCircle class="w-5 h-5 flex-shrink-0 mt-0.5" />
-			<div>
-				<p class="font-bold">{$t('forms.analysisIssue')}</p>
-				<p>{error}</p>
-			</div>
-		</div>
 	{/if}
 </div>

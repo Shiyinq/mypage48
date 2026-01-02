@@ -489,6 +489,7 @@
 		"analyzingDescription": "公演情報を抽出しています..."
 	},
 	"forms": {
+		"analysisFailed": "チケットの詳細を自動的に読み取れませんでした。",
 		"editTicket": "チケット編集",
 		"newTicket": "新規チケット入力",
 		"updateMemory": "思い出を更新",
