@@ -17,6 +17,7 @@ from src.theater.exceptions import (
     InvalidImageTypeError,
     TicketCreationError,
     TicketDeletionError,
+    TicketFetchError,
     TicketNotFoundError,
     TicketUpdateError,
 )
@@ -84,19 +85,29 @@ class TheaterService:
             raise TicketCreationError()
 
     async def get_my_tickets(self, user_id: str, year: Optional[int] = None) -> List[TicketResponse]:
-        tickets = await self.repository.get_all_tickets(user_id, year)
-        results = []
-        for t in tickets:
-            t["_id"] = str(t["_id"])
-            results.append(TicketResponse(**t))
-        return results
+        try:
+            tickets = await self.repository.get_all_tickets(user_id, year)
+            results = []
+            for t in tickets:
+                t["_id"] = str(t["_id"])
+                results.append(TicketResponse(**t))
+            return results
+        except Exception as e:
+            logger.exception(f"Error fetching tickets: {str(e)}")
+            raise TicketFetchError()
 
     async def get_ticket(self, user_id: str, ticket_id: str) -> TicketResponse:
-        ticket = await self.repository.get_ticket(ticket_id, user_id)
-        if not ticket:
-            raise TicketNotFoundError()
-        ticket["_id"] = str(ticket["_id"])
-        return TicketResponse(**ticket)
+        try:
+            ticket = await self.repository.get_ticket(ticket_id, user_id)
+            if not ticket:
+                raise TicketNotFoundError()
+            ticket["_id"] = str(ticket["_id"])
+            return TicketResponse(**ticket)
+        except TicketNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error fetching ticket: {str(e)}")
+            raise TicketFetchError()
 
     async def update_ticket(
         self, user_id: str, ticket_id: str, data: TicketUpdateRequest

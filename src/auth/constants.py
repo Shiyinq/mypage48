@@ -25,6 +25,7 @@ class ErrorCode:
     PASSWORD_RESET_TOKEN_INVALID = "Password reset token is invalid or has expired."
     ACCOUNT_LOCKED = "Account is locked."
     EMAIL_NOT_VERIFIED = "Email is not verified."
+    AUTH_OPERATION_FAILED = "Authentication operation failed."
 
 
 class DomainErrorCode:
@@ -43,6 +44,7 @@ class DomainErrorCode:
     USER_NOT_FOUND = "User not found"
     TOKEN_VALIDATION_FAILED = "Token validation failed"
     INVALID_JWT_TOKEN = "Invalid JWT token"
+    AUTH_OPERATION_FAILED = "Authentication operation failed"
 
 
 class Info:

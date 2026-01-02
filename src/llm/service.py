@@ -97,11 +97,15 @@ class LLMService:
             
             json_text = response.text
             if not json_text:
-                raise ImageAnalysisError("Empty response from Gemini")
+                raise ImageAnalysisError()
             
             data = json.loads(json_text)
             return AnalysisResult(**data)
 
+        except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):
+            raise
+        except ImageAnalysisError:
+            raise
         except Exception as e:
             logger.exception(f"Error analyzing image: {str(e)}")
             raise ImageAnalysisError()

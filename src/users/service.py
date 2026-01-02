@@ -20,10 +20,14 @@ from src.users.exceptions import (
     ImageTooLargeError,
     InvalidImageError,
     InvalidImageTypeError,
+    OshiUpdateError,
     ProviderUserCreationError,
-    UserCreationError,
-    UsernameAlreadyExistsError,
+    PublicStatusUpdateError,
     PublicUserNotFoundError,
+    UserCreationError,
+    UserFetchError,
+    UserUpdateError,
+    UsernameAlreadyExistsError,
 )
 from src.users.repository import UserRepository
 from src.users.schemas import (
@@ -153,23 +157,21 @@ class UserService:
 
     async def update_oshi(self, user_id: str, oshi_id: int) -> "MessageResponse":
         """Update the user's Oshi ID"""
-
         try:
             await self.repository.set_oshi_id(user_id, oshi_id)
             return MessageResponse(detail=Info.OSHI_UPDATED)
         except Exception as e:
-            logger.exception(f"Error updating oshi for user {user_id}: {str(e)}")
-            raise
+            logger.exception(f"Error updating oshi: {str(e)}")
+            raise OshiUpdateError()
 
     async def update_public_status(self, user_id: str, is_public: bool, public_year: int | None = None) -> "MessageResponse":
         """Update the user's public profile status"""
-
         try:
             await self.repository.set_public_status(user_id, is_public, public_year)
             return MessageResponse(detail=Info.PUBLIC_STATUS_UPDATED)
         except Exception as e:
-            logger.exception(f"Error updating public status for user {user_id}: {str(e)}")
-            raise
+            logger.exception(f"Error updating public status: {str(e)}")
+            raise PublicStatusUpdateError()
 
     async def get_public_user_by_username(self, username: str) -> UserInDB | None:
         """Get a user by username if they are public"""
@@ -184,8 +186,8 @@ class UserService:
 
             return user
         except Exception as e:
-            logger.exception(f"Error fetching public user {username}: {str(e)}")
-            raise
+            logger.exception(f"Error fetching public user: {str(e)}")
+            raise UserFetchError()
 
     async def update_profile_picture(self, user_id: str, profile_picture: str) -> MessageResponse:
         """Update the user's profile picture"""
@@ -202,8 +204,8 @@ class UserService:
         except ImageValidationError:
             raise InvalidImageError()
         except Exception as e:
-            logger.exception(f"Error updating profile picture for user {user_id}: {str(e)}")
-            raise
+            logger.exception(f"Error updating profile picture: {str(e)}")
+            raise UserUpdateError()
 
     async def get_public_profile(
         self,

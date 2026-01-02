@@ -40,3 +40,19 @@ class InvalidImageTypeError(DomainException):
 
 class InvalidImageError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.INVALID_IMAGE
+
+
+class UserUpdateError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.USER_UPDATE_FAILED
+
+
+class UserFetchError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.USER_FETCH_FAILED
+
+
+class OshiUpdateError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.OSHI_UPDATE_FAILED
+
+
+class PublicStatusUpdateError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.PUBLIC_STATUS_UPDATE_FAILED

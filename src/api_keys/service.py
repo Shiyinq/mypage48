@@ -41,7 +41,7 @@ class ApiKeyService:
                 apiKey=api_key, detail=Info.API_KEY_CREATED + " " + Info.API_KEY_WARNING
             )
         except Exception as e:
-            logger.exception(f"Error creating API key for user {user_id}: {str(e)}")
+            logger.exception(f"Error creating API key: {str(e)}")
             raise APIKeyCreationError()
 
     async def check_and_delete_api_key(self, user_id: str) -> bool:
@@ -61,7 +61,7 @@ class ApiKeyService:
         except APIKeyNotFoundError:
             raise
         except Exception as e:
-            logger.exception(f"Error deleting API key for user {user_id}: {str(e)}")
+            logger.exception(f"Error deleting API key: {str(e)}")
             raise APIKeyDeletionError()
 
     async def update_last_used_api_key(self, user_id: str) -> bool:

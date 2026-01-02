@@ -14,6 +14,7 @@ from src.api_keys.http_exceptions import (
     APIKeyNotFound,
 )
 from src.auth.exceptions import (
+    AuthOperationError,
     IncorrectCredentialsError,
     InvalidJWTTokenError,
     InvalidRefreshTokenError,
@@ -26,6 +27,7 @@ from src.auth.exceptions import (
 )
 from src.auth.http_exceptions import (
     AccountLocked,
+    AuthOperationFailed,
     EmailNotVerified,
     IncorrectEmailOrPassword,
     InvalidJWTToken,
@@ -47,9 +49,13 @@ from src.users.exceptions import (
     ImageTooLargeError as UserImageTooLargeError,
     InvalidImageError as UserInvalidImageError,
     InvalidImageTypeError as UserInvalidImageTypeError,
+    OshiUpdateError,
     ProviderUserCreationError,
+    PublicStatusUpdateError,
     PublicUserNotFoundError,
     UserCreationError,
+    UserFetchError,
+    UserUpdateError,
     UsernameAlreadyExistsError,
 )
 from src.users.http_exceptions import (
@@ -57,8 +63,12 @@ from src.users.http_exceptions import (
     ImageTooLarge as UserImageTooLarge,
     InvalidImage as UserInvalidImage,
     InvalidImageType as UserInvalidImageType,
+    OshiUpdateFailed,
+    PublicStatusUpdateFailed,
     PublicUserNotFound,
     ServerError,
+    UserFetchFailed,
+    UserUpdateFailed,
     UsernameTaken,
 )
 from src.users.constants import ErrorCode
@@ -68,6 +78,7 @@ from src.theater.exceptions import (
     InvalidImageTypeError as TheaterInvalidImageTypeError,
     TicketNotFoundError,
     TicketCreationError,
+    TicketFetchError,
     TicketUpdateError,
     TicketDeletionError,
 )
@@ -77,6 +88,7 @@ from src.theater.http_exceptions import (
     InvalidImageType as TheaterInvalidImageType,
     TicketNotFound,
     TicketCreateError,
+    TicketFetchError as HttpTicketFetchError,
     TicketUpdateError as HttpTicketUpdateError,
     TicketDeleteError,
 )
@@ -134,6 +146,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, PasswordsNotMatch())
     if isinstance(exc, PasswordPolicyViolationError):
         return await detailed_http_exception_handler(request, PasswordPolicyViolation())
+    if isinstance(exc, AuthOperationError):
+        return await detailed_http_exception_handler(request, AuthOperationFailed())
 
     if isinstance(exc, DomainAccountLocked):
         return await detailed_http_exception_handler(request, AccountLocked())
@@ -150,6 +164,16 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     if isinstance(exc, PublicUserNotFoundError):
         return await detailed_http_exception_handler(request, PublicUserNotFound())
 
+    # Users update/fetch errors
+    if isinstance(exc, UserUpdateError):
+        return await detailed_http_exception_handler(request, UserUpdateFailed())
+    if isinstance(exc, UserFetchError):
+        return await detailed_http_exception_handler(request, UserFetchFailed())
+    if isinstance(exc, OshiUpdateError):
+        return await detailed_http_exception_handler(request, OshiUpdateFailed())
+    if isinstance(exc, PublicStatusUpdateError):
+        return await detailed_http_exception_handler(request, PublicStatusUpdateFailed())
+
     # Users image validation errors
     if isinstance(exc, UserImageTooLargeError):
         return await detailed_http_exception_handler(request, UserImageTooLarge())
@@ -163,6 +187,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, TicketNotFound())
     if isinstance(exc, TicketCreationError):
         return await detailed_http_exception_handler(request, TicketCreateError())
+    if isinstance(exc, TicketFetchError):
+        return await detailed_http_exception_handler(request, HttpTicketFetchError())
     if isinstance(exc, TicketUpdateError):
         return await detailed_http_exception_handler(request, HttpTicketUpdateError())
     if isinstance(exc, TicketDeletionError):
