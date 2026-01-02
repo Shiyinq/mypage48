@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tickets, showToast } from '$lib/stores';
+	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { goto } from '$app/navigation';
 	import { extractTicketData } from '$lib/services/geminiService';
 	import { theater } from '$lib/apis/theater';
@@ -203,6 +204,10 @@
 			// Fetch fresh data from server after create
 			const freshTickets = await theater.getMyTickets();
 			tickets.set(freshTickets);
+
+			// Invalidate dashboard cache
+			invalidateDashboard();
+
 			showToast('Ticket saved successfully!');
 			goto('/');
 		} catch (e) {
