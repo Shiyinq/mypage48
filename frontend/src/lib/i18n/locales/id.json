@@ -32,7 +32,7 @@
 		"alert": {
 			"title": "Gagal Validasi",
 			"fileTooLarge": "File terlalu besar. Maksimum 3MB.",
-			"invalidType": "Format file tidak didukung. Gunakan JPEG, PNG, GIF, atau WebP.",
+			"invalidType": "Format file tidak didukung. Gunakan JPEG, PNG, atau WebP.",
 			"noFile": "Tidak ada file yang dipilih."
 		}
 	},
