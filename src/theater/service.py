@@ -75,7 +75,7 @@ class TheaterService:
             
             # Map _id manually for response
             ticket_dict = ticket_in_db.model_dump()
-            ticket_dict["_id"] = str(result.inserted_id)
+            ticket_dict["_id"] = result.inserted_id
             
             return TicketResponse(**ticket_dict)
         except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):
@@ -89,7 +89,6 @@ class TheaterService:
             tickets = await self.repository.get_all_tickets(user_id, year)
             results = []
             for t in tickets:
-                t["_id"] = str(t["_id"])
                 results.append(TicketResponse(**t))
             return results
         except Exception as e:
@@ -101,7 +100,6 @@ class TheaterService:
             ticket = await self.repository.get_ticket(ticket_id, user_id)
             if not ticket:
                 raise TicketNotFoundError()
-            ticket["_id"] = str(ticket["_id"])
             return TicketResponse(**ticket)
         except TicketNotFoundError:
             raise
@@ -120,7 +118,6 @@ class TheaterService:
             updated_ticket = await self.repository.update_ticket(ticket_id, user_id, data)
             if not updated_ticket:
                 raise TicketNotFoundError()
-            updated_ticket["_id"] = str(updated_ticket["_id"])
             return TicketResponse(**updated_ticket)
         except TicketNotFoundError:
             raise
