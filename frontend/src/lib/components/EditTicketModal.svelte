@@ -23,21 +23,14 @@
 	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import MemberSelector from '$lib/components/MemberSelector.svelte';
+	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
 
 	export let ticket: Ticket;
 
 	const dispatch = createEventDispatcher();
 	const { t } = useTranslation();
-	const SHOW_OPTIONS = [
-		'Pertaruhan Cinta',
-		'Pajama Drive',
-		'Aturan Anti Cinta',
-		'Sambil Menggandeng Erat Tanganku',
-		'Cara Meminum Ramune',
-		'Ingin Bertemu',
-		'KIRA KIRA GIRLS'
-	];
-	const ROW_OPTIONS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+	const SHOW_OPTIONS = SHOW_IMAGES.map((s) => s.title);
+	const ROW_OPTIONS = THEATER_ROWS;
 
 	let isSubmitting = false;
 	let fileInputRef: HTMLInputElement;
