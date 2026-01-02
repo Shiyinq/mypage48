@@ -25,6 +25,7 @@ from src.members.repository import MemberRepository
 from src.members.service import MemberService
 from src.theater.repository import TheaterRepository
 from src.theater.service import TheaterService
+from src.dashboard.service import DashboardService
 
 
 
@@ -202,3 +203,11 @@ def get_member_service(
     config: Settings = Depends(get_settings),
 ) -> MemberService:
     return MemberService(repo, config)
+
+
+def get_dashboard_service(
+    theater_repo: TheaterRepository = Depends(get_theater_repository),
+    config: Settings = Depends(get_settings),
+) -> DashboardService:
+    return DashboardService(theater_repo, config)
+
