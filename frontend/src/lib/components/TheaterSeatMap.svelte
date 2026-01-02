@@ -163,27 +163,31 @@
 	<div class="w-full">
 		<div class="w-full mx-auto px-1 sm:px-2">
 			<div class="w-full">
-				<div
-					class="w-3/4 mx-auto mt-8 md:mt-0 h-4 bg-gradient-to-b from-gray-200 dark:from-gray-700 to-white dark:to-gray-800 rounded-t-2xl mb-1 relative shadow-sm border-t border-x border-gray-300 dark:border-gray-600"
-					style="transform: translateX(-24px)"
-				>
-					<div class="absolute inset-0 bg-red-600 opacity-5 blur-xl"></div>
+				{#if mapView === 'SEATS'}
 					<div
-						class="absolute -top-6 left-1/2 bg-gray-100 dark:bg-gray-800 px-4 py-1 rounded-full border border-gray-200 dark:border-gray-700 stage-pill"
-						class:is-compact={compact}
+						class="w-3/4 mx-auto mt-8 md:mt-0 h-4 bg-gradient-to-b from-gray-200 dark:from-gray-700 to-white dark:to-gray-800 rounded-t-2xl mb-1 relative shadow-sm border-t border-x border-gray-300 dark:border-gray-600"
+						style="transform: translateX(-24px)"
 					>
-						<span
-							class="text-[8px] sm:text-[10px] font-black tracking-[0.3em] text-gray-400 uppercase block text-center"
-							>{$t('dashboard.seatMap.stage')}</span
+						<div class="absolute inset-0 bg-red-600 opacity-5 blur-xl"></div>
+						<div
+							class="absolute -top-6 left-1/2 bg-gray-100 dark:bg-gray-800 px-4 py-1 rounded-full border border-gray-200 dark:border-gray-700 stage-pill"
+							class:is-compact={compact}
 						>
+							<span
+								class="text-[8px] sm:text-[10px] font-black tracking-[0.3em] text-gray-400 uppercase block text-center"
+								>{$t('dashboard.seatMap.stage')}</span
+							>
+						</div>
 					</div>
-				</div>
+				{/if}
 
 				<!-- MAP VIEW: ROWS -->
 				{#if mapView === 'ROWS'}
 					{#if isLoading}
 						<!-- Skeleton Loading for Rows -->
-						<div class="grid grid-cols-2 gap-x-4 md:gap-x-12 gap-y-3 max-w-5xl mx-auto">
+						<div
+							class="grid grid-cols-2 gap-x-6 md:gap-x-16 gap-y-4 max-w-4xl mx-auto mt-2 pt-4 pb-4 px-4"
+						>
 							<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 							{#each THEATER_ROWS as row}
 								<div class="flex items-center gap-3">
@@ -197,7 +201,9 @@
 							{/each}
 						</div>
 					{:else}
-						<div class="grid grid-cols-2 gap-x-4 md:gap-x-12 gap-y-3 max-w-5xl mx-auto">
+						<div
+							class="grid grid-cols-2 gap-x-6 md:gap-x-16 gap-y-4 max-w-4xl mx-auto mt-2 pt-4 pb-4 px-4"
+						>
 							{#each THEATER_ROWS as row}
 								{@const count = rowStats.counts[row] || 0}
 								{@const intensity = rowStats.maxCount > 0 ? count / rowStats.maxCount : 0}
@@ -467,9 +473,14 @@
 		--stage-offset: 11px; /* Compact Mode Offset */
 	}
 
+	.stage-pill.is-row-mode {
+		--stage-offset: 0px; /* Center for Row Mode */
+	}
+
 	@media (max-width: 767px) {
 		.stage-pill,
-		.stage-pill.is-compact {
+		.stage-pill.is-compact,
+		.stage-pill.is-row-mode {
 			--stage-offset: 0px; /* Center on Mobile */
 		}
 	}
