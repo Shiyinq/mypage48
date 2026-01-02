@@ -104,6 +104,8 @@ from src.llm.http_exceptions import (
     InvalidImage as LLMInvalidImage,
     InvalidImageType as LLMInvalidImageType,
 )
+from src.dashboard.exceptions import StatsFetchError
+from src.dashboard.http_exceptions import StatsFetchFailed
 
 logger = create_logger("exceptions", __name__)
 
@@ -211,6 +213,10 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, LLMInvalidImageType())
     if isinstance(exc, LLMInvalidImageError):
         return await detailed_http_exception_handler(request, LLMInvalidImage())
+
+    # Dashboard errors
+    if isinstance(exc, StatsFetchError):
+        return await detailed_http_exception_handler(request, StatsFetchFailed())
 
     error_msg = str(exc)
     if (
