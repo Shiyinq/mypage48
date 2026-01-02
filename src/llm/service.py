@@ -1,10 +1,21 @@
 import google.generativeai as genai
 import json
 from src.config import Settings
+from src.image_validation import (
+    validate_base64_image,
+    ImageValidationError,
+    ImageTooLargeError as ImageTooLargeValidationError,
+    InvalidImageTypeError as InvalidImageTypeValidationError,
+)
 from src.logging_config import create_logger
+from src.llm.exceptions import (
+    ImageAnalysisError,
+    ImageTooLargeError,
+    InvalidImageError,
+    InvalidImageTypeError,
+)
 from src.llm.repository import LLMRepository
 from src.llm.schemas import AnalyzeImageRequest, AnalysisResult
-from src.llm.exceptions import ImageAnalysisError
 
 logger = create_logger("llm_service", __name__)
 
@@ -23,6 +34,16 @@ class LLMService:
         self.model = genai.GenerativeModel("gemini-2.5-flash")
 
     async def analyze_ticket_image(self, request: AnalyzeImageRequest) -> AnalysisResult:
+        # Validate image before processing
+        try:
+            validate_base64_image(request.image)
+        except ImageTooLargeValidationError:
+            raise ImageTooLargeError()
+        except InvalidImageTypeValidationError:
+            raise InvalidImageTypeError()
+        except ImageValidationError:
+            raise InvalidImageError()
+        
         try:
             # Clean base64 if needed
             base64_image = request.image
