@@ -1,6 +1,10 @@
 from datetime import datetime
-from typing import Optional, Union
-from pydantic import BaseModel, Field
+from typing import Optional, Union, Annotated
+from pydantic import BaseModel, Field, BeforeValidator
+
+
+
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
 
 class TicketEvent(BaseModel):
@@ -59,7 +63,7 @@ class TicketInDB(TicketCreateRequest):
 
 
 class TicketResponse(TicketInDB):
-    id: str = Field(alias="_id")
+    id: PyObjectId = Field(alias="_id")
 
     class Config:
         populate_by_name = True

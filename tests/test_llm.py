@@ -42,7 +42,7 @@ async def test_analyze_ticket_success(client: AsyncClient, db, monkeypatch):
 
     # Analyze Ticket
     payload = {
-        "image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
     }
     response = await client.post("/api/llm/analyze-ticket", json=payload, headers=headers)
     assert response.status_code == 200
