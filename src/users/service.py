@@ -1,8 +1,10 @@
 import asyncio
+from datetime import datetime
 
 from pymongo.errors import DuplicateKeyError
 
 from src.auth.email_service import EmailService
+from src.auth.schemas import OshiResponse
 from src.auth.security_service import SecurityService
 from src.config import Settings
 from src.image_validation import (
@@ -21,6 +23,7 @@ from src.users.exceptions import (
     ProviderUserCreationError,
     UserCreationError,
     UsernameAlreadyExistsError,
+    PublicUserNotFoundError,
 )
 from src.users.repository import UserRepository
 from src.users.schemas import (
@@ -30,6 +33,9 @@ from src.users.schemas import (
     UserCreatedWithEmail,
     UserCreateRequest,
     UserInDB,
+    PublicUserResponse,
+    UserStats,
+    PublicShowEntry,
 )
 
 logger = create_logger("users_service", __name__)
@@ -38,12 +44,12 @@ logger = create_logger("users_service", __name__)
 class UserService:
     def __init__(
         self,
-        user_repo: UserRepository,
+        repository: UserRepository,
         security_service: SecurityService,
         email_service: EmailService,
         config: Settings,
     ):
-        self.user_repo = user_repo
+        self.repository = repository
         self.security_service = security_service
         self.email_service = email_service
         self.config = config
@@ -86,7 +92,7 @@ class UserService:
                 accountLockedUntil=None,
             )
 
-            await self.user_repo.insert_user(user_in_db.model_dump())
+            await self.repository.insert_user(user_in_db.model_dump())
 
             try:
                 token = await self.security_service.create_and_save_token(
@@ -134,7 +140,7 @@ class UserService:
                 accountLockedUntil=None,
             )
 
-            await self.user_repo.insert_user(user_in_db.model_dump())
+            await self.repository.insert_user(user_in_db.model_dump())
             return UserCreated()
 
         except DuplicateKeyError as dk:
@@ -147,10 +153,9 @@ class UserService:
 
     async def update_oshi(self, user_id: str, oshi_id: int) -> "MessageResponse":
         """Update the user's Oshi ID"""
-        from src.users.schemas import MessageResponse
-        from src.users.constants import Info
+
         try:
-            await self.user_repo.set_oshi_id(user_id, oshi_id)
+            await self.repository.set_oshi_id(user_id, oshi_id)
             return MessageResponse(detail=Info.OSHI_UPDATED)
         except Exception as e:
             logger.exception(f"Error updating oshi for user {user_id}: {str(e)}")
@@ -158,10 +163,9 @@ class UserService:
 
     async def update_public_status(self, user_id: str, is_public: bool, public_year: int | None = None) -> "MessageResponse":
         """Update the user's public profile status"""
-        from src.users.schemas import MessageResponse
-        from src.users.constants import Info
+
         try:
-            await self.user_repo.set_public_status(user_id, is_public, public_year)
+            await self.repository.set_public_status(user_id, is_public, public_year)
             return MessageResponse(detail=Info.PUBLIC_STATUS_UPDATED)
         except Exception as e:
             logger.exception(f"Error updating public status for user {user_id}: {str(e)}")
@@ -170,7 +174,7 @@ class UserService:
     async def get_public_user_by_username(self, username: str) -> UserInDB | None:
         """Get a user by username if they are public"""
         try:
-            user_data = await self.user_repo.find_one({"username": username.lower()})
+            user_data = await self.repository.find_one({"username": username.lower()})
             if not user_data:
                 return None
 
@@ -189,7 +193,7 @@ class UserService:
             # Validate the image before saving
             validate_base64_image(profile_picture)
             
-            await self.user_repo.set_profile_picture(user_id, profile_picture)
+            await self.repository.set_profile_picture(user_id, profile_picture)
             return MessageResponse(detail=Info.PROFILE_PICTURE_UPDATED)
         except ImageTooLargeValidationError:
             raise ImageTooLargeError()
@@ -211,10 +215,7 @@ class UserService:
         Get a user's public profile by username.
         Raises PublicUserNotFoundError if user not found or is private.
         """
-        from datetime import datetime
-        from src.auth.schemas import OshiResponse
-        from src.users.schemas import PublicUserResponse, UserStats, PublicShowEntry
-        from src.users.exceptions import PublicUserNotFoundError
+
 
         user = await self.get_public_user_by_username(username)
         if not user:
