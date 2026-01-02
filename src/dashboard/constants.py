@@ -37,6 +37,10 @@ class DashboardConstants:
         {
             "title": "KIRA KIRA GIRLS",
             "image": "https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1763233779/tanfbrrf8oexxmmfoouh.jpg"
+        },
+        {
+            "title": "Tunas di Balik Seragam",
+            "image": "https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1698750703/uploads/yvryrdy47ppla0nidn3m.webp"
         }
     ]
 
