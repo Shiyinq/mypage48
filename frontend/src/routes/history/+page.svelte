@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tickets, showToast, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
+	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { onMount } from 'svelte';
 	import { theater } from '$lib/apis/theater';
 	import type { Ticket } from '$lib/types';
@@ -79,6 +80,10 @@
 		try {
 			await theater.deleteTicket(deleteId);
 			tickets.update((current) => current.filter((t) => t._id !== deleteId));
+
+			// Invalidate dashboard cache
+			invalidateDashboard();
+
 			deleteId = null;
 			showToast($t('history.ticketDeleted'), 'success');
 		} catch (e) {
@@ -94,6 +99,10 @@
 	const handleTicketUpdate = (e: CustomEvent<Ticket>) => {
 		const updated = e.detail;
 		tickets.update((current) => current.map((t) => (t._id === updated._id ? updated : t)));
+
+		// Invalidate dashboard cache
+		invalidateDashboard();
+
 		editingTicket = null;
 	};
 </script>

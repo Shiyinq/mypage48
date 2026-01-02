@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import type { Ticket, User } from './types';
+import { resetDashboard } from '$lib/stores/dashboard';
 
 const AUTH_KEY = 'oshi_log_auth';
 const OLD_STORAGE_KEY = 'oshi_log_tickets_v2'; // For cleanup
@@ -29,7 +30,15 @@ if (browser) {
 	localStorage.removeItem(OLD_STORAGE_KEY);
 
 	isAuthenticated.subscribe((value) => {
-		if (value) localStorage.setItem(AUTH_KEY, 'true');
-		else localStorage.removeItem(AUTH_KEY);
+		if (value) {
+			localStorage.setItem(AUTH_KEY, 'true');
+		} else {
+			localStorage.removeItem(AUTH_KEY);
+			// Cleanup state on logout
+			tickets.set([]);
+			userProfile.set(null);
+			isInitialDataLoaded.set(false);
+			resetDashboard();
+		}
 	});
 }
