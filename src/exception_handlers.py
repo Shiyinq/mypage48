@@ -80,6 +80,18 @@ from src.theater.http_exceptions import (
     TicketUpdateError as HttpTicketUpdateError,
     TicketDeleteError,
 )
+from src.llm.exceptions import (
+    ImageAnalysisError,
+    ImageTooLargeError as LLMImageTooLargeError,
+    InvalidImageError as LLMInvalidImageError,
+    InvalidImageTypeError as LLMInvalidImageTypeError,
+)
+from src.llm.http_exceptions import (
+    ImageAnalysisFailed,
+    ImageTooLarge as LLMImageTooLarge,
+    InvalidImage as LLMInvalidImage,
+    InvalidImageType as LLMInvalidImageType,
+)
 
 logger = create_logger("exceptions", __name__)
 
@@ -163,6 +175,16 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, TheaterInvalidImageType())
     if isinstance(exc, TheaterInvalidImageError):
         return await detailed_http_exception_handler(request, TheaterInvalidImage())
+
+    # LLM errors
+    if isinstance(exc, ImageAnalysisError):
+        return await detailed_http_exception_handler(request, ImageAnalysisFailed())
+    if isinstance(exc, LLMImageTooLargeError):
+        return await detailed_http_exception_handler(request, LLMImageTooLarge())
+    if isinstance(exc, LLMInvalidImageTypeError):
+        return await detailed_http_exception_handler(request, LLMInvalidImageType())
+    if isinstance(exc, LLMInvalidImageError):
+        return await detailed_http_exception_handler(request, LLMInvalidImage())
 
     error_msg = str(exc)
     if (
