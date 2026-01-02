@@ -63,3 +63,57 @@ class TheaterRepository:
             return False
         result = await self.collection.delete_one({"_id": oid, "user_id": user_id})
         return result.deleted_count > 0
+
+    async def get_available_years(self, user_id: str) -> List[int]:
+        pipeline = [
+            {"$match": {"user_id": user_id}},
+            # Handle potentially missing or invalid dates safely
+            {"$match": {"event.date": {"$exists": True, "$type": "string", "$regex": r"^\d{4}-\d{2}-\d{2}"}}},
+            {"$project": {
+                "year": {
+                    "$year": {"$dateFromString": {"dateString": "$event.date", "format": "%Y-%m-%d"}}
+                }
+            }},
+            {"$group": {"_id": "$year"}},
+            {"$sort": {"_id": -1}}
+        ]
+        results = await self.collection.aggregate(pipeline).to_list(length=None)
+        return [r["_id"] for r in results if r["_id"] is not None]
+
+    async def get_tickets_filtered(
+        self, 
+        user_id: str, 
+        year: Optional[int], 
+        start_month: int, 
+        end_month: int, 
+        is_all_data: bool
+    ) -> List[dict]:
+        pipeline = [{"$match": {"user_id": user_id}}]
+
+        if not is_all_data and year is not None:
+             pipeline.extend([
+                # Ensure date field validity for parsing
+                {"$match": {"event.date": {"$exists": True, "$type": "string", "$regex": r"^\d{4}-\d{2}-\d{2}"}}},
+                {"$addFields": {
+                    "parsedDate": {
+                        "$dateFromString": {
+                            "dateString": "$event.date",
+                            "format": "%Y-%m-%d"
+                        }
+                    }
+                }},
+                {"$addFields": {
+                    "year": {"$year": "$parsedDate"},
+                    "month": {"$month": "$parsedDate"}  # 1-12
+                }},
+                {"$match": {
+                    "year": year,
+                    "month": {"$gte": start_month + 1, "$lte": end_month + 1}
+                }},
+                # Cleanup temp fields (optional but cleaner result)
+                {"$project": {"parsedDate": 0, "year": 0, "month": 0}}
+            ])
+        
+        pipeline.append({"$sort": {"event.date": -1, "event.time": -1}})
+        
+        return await self.collection.aggregate(pipeline).to_list(length=None)
