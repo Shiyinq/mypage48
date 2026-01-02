@@ -2,26 +2,48 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from src.config import Settings
+from src.image_validation import (
+    validate_base64_image,
+    ImageValidationError,
+    ImageTooLargeError as ImageTooLargeValidationError,
+    InvalidImageTypeError as InvalidImageTypeValidationError,
+)
 from src.infrastructure import AsyncBackgroundRunner
 from src.logging_config import create_logger
+from src.theater.constants import Info
+from src.theater.exceptions import (
+    ImageTooLargeError,
+    InvalidImageError,
+    InvalidImageTypeError,
+    TicketCreationError,
+    TicketDeletionError,
+    TicketNotFoundError,
+    TicketUpdateError,
+)
 from src.theater.repository import TheaterRepository
 from src.theater.schemas import (
+    MessageResponse,
     TicketCreateRequest,
     TicketInDB,
     TicketResponse,
-
     TicketUpdateRequest,
-    MessageResponse,
-)
-from src.theater.constants import Info
-from src.theater.exceptions import (
-    TicketCreationError,
-    TicketNotFoundError,
-    TicketUpdateError,
-    TicketDeletionError
 )
 
 logger = create_logger("theater_service", __name__)
+
+
+def _validate_images(image_url: Optional[str], two_shot_image_url: Optional[str]) -> None:
+    """Validate ticket and 2-shot images if provided."""
+    for url in [image_url, two_shot_image_url]:
+        if url:
+            try:
+                validate_base64_image(url)
+            except ImageTooLargeValidationError:
+                raise ImageTooLargeError()
+            except InvalidImageTypeValidationError:
+                raise InvalidImageTypeError()
+            except ImageValidationError:
+                raise InvalidImageError()
 
 
 class TheaterService:
@@ -37,6 +59,10 @@ class TheaterService:
 
     async def create_ticket(self, user_id: str, data: TicketCreateRequest) -> TicketResponse:
         try:
+            # Validate images if provided
+            two_shot_image = data.two_shot.imageUrl if data.two_shot else None
+            _validate_images(data.imageUrl, two_shot_image)
+            
             now = datetime.now(timezone.utc)
             ticket_in_db = TicketInDB(
                 **data.model_dump(),
@@ -51,6 +77,8 @@ class TheaterService:
             ticket_dict["_id"] = str(result.inserted_id)
             
             return TicketResponse(**ticket_dict)
+        except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):
+            raise
         except Exception as e:
             logger.exception(f"Error creating ticket: {str(e)}")
             raise TicketCreationError()
@@ -74,12 +102,18 @@ class TheaterService:
         self, user_id: str, ticket_id: str, data: TicketUpdateRequest
     ) -> TicketResponse:
         try:
+            # Validate images if provided
+            two_shot_image = data.two_shot.imageUrl if data.two_shot else None
+            _validate_images(data.imageUrl, two_shot_image)
+            
             updated_ticket = await self.repository.update_ticket(ticket_id, user_id, data)
             if not updated_ticket:
                 raise TicketNotFoundError()
             updated_ticket["_id"] = str(updated_ticket["_id"])
             return TicketResponse(**updated_ticket)
         except TicketNotFoundError:
+            raise
+        except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):
             raise
         except Exception as e:
             logger.exception(f"Error updating ticket: {str(e)}")

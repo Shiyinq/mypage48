@@ -44,20 +44,37 @@ from src.users.exceptions import AccountLocked as DomainAccountLocked
 from src.users.exceptions import EmailAlreadyExistsError
 from src.users.exceptions import EmailNotVerified as DomainEmailNotVerified
 from src.users.exceptions import (
+    ImageTooLargeError as UserImageTooLargeError,
+    InvalidImageError as UserInvalidImageError,
+    InvalidImageTypeError as UserInvalidImageTypeError,
     ProviderUserCreationError,
     PublicUserNotFoundError,
     UserCreationError,
     UsernameAlreadyExistsError,
 )
-from src.users.http_exceptions import EmailTaken, PublicUserNotFound, ServerError, UsernameTaken
+from src.users.http_exceptions import (
+    EmailTaken,
+    ImageTooLarge as UserImageTooLarge,
+    InvalidImage as UserInvalidImage,
+    InvalidImageType as UserInvalidImageType,
+    PublicUserNotFound,
+    ServerError,
+    UsernameTaken,
+)
 from src.users.constants import ErrorCode
 from src.theater.exceptions import (
+    ImageTooLargeError as TheaterImageTooLargeError,
+    InvalidImageError as TheaterInvalidImageError,
+    InvalidImageTypeError as TheaterInvalidImageTypeError,
     TicketNotFoundError,
     TicketCreationError,
     TicketUpdateError,
     TicketDeletionError,
 )
 from src.theater.http_exceptions import (
+    ImageTooLarge as TheaterImageTooLarge,
+    InvalidImage as TheaterInvalidImage,
+    InvalidImageType as TheaterInvalidImageType,
     TicketNotFound,
     TicketCreateError,
     TicketUpdateError as HttpTicketUpdateError,
@@ -121,6 +138,15 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     if isinstance(exc, PublicUserNotFoundError):
         return await detailed_http_exception_handler(request, PublicUserNotFound())
 
+    # Users image validation errors
+    if isinstance(exc, UserImageTooLargeError):
+        return await detailed_http_exception_handler(request, UserImageTooLarge())
+    if isinstance(exc, UserInvalidImageTypeError):
+        return await detailed_http_exception_handler(request, UserInvalidImageType())
+    if isinstance(exc, UserInvalidImageError):
+        return await detailed_http_exception_handler(request, UserInvalidImage())
+
+    # Theater ticket errors
     if isinstance(exc, TicketNotFoundError):
         return await detailed_http_exception_handler(request, TicketNotFound())
     if isinstance(exc, TicketCreationError):
@@ -129,6 +155,14 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, HttpTicketUpdateError())
     if isinstance(exc, TicketDeletionError):
         return await detailed_http_exception_handler(request, TicketDeleteError())
+
+    # Theater image validation errors
+    if isinstance(exc, TheaterImageTooLargeError):
+        return await detailed_http_exception_handler(request, TheaterImageTooLarge())
+    if isinstance(exc, TheaterInvalidImageTypeError):
+        return await detailed_http_exception_handler(request, TheaterInvalidImageType())
+    if isinstance(exc, TheaterInvalidImageError):
+        return await detailed_http_exception_handler(request, TheaterInvalidImage())
 
     error_msg = str(exc)
     if (

@@ -5,15 +5,26 @@ from pymongo.errors import DuplicateKeyError
 from src.auth.email_service import EmailService
 from src.auth.security_service import SecurityService
 from src.config import Settings
+from src.image_validation import (
+    validate_base64_image,
+    ImageValidationError,
+    ImageTooLargeError as ImageTooLargeValidationError,
+    InvalidImageTypeError as InvalidImageTypeValidationError,
+)
 from src.logging_config import create_logger
+from src.users.constants import Info
 from src.users.exceptions import (
     EmailAlreadyExistsError,
+    ImageTooLargeError,
+    InvalidImageError,
+    InvalidImageTypeError,
     ProviderUserCreationError,
     UserCreationError,
     UsernameAlreadyExistsError,
 )
 from src.users.repository import UserRepository
 from src.users.schemas import (
+    MessageResponse,
     ProviderUserCreateRequest,
     UserCreated,
     UserCreatedWithEmail,
@@ -172,13 +183,20 @@ class UserService:
             logger.exception(f"Error fetching public user {username}: {str(e)}")
             raise
 
-    async def update_profile_picture(self, user_id: str, profile_picture: str) -> "MessageResponse":
+    async def update_profile_picture(self, user_id: str, profile_picture: str) -> MessageResponse:
         """Update the user's profile picture"""
-        from src.users.schemas import MessageResponse
-        from src.users.constants import Info
         try:
+            # Validate the image before saving
+            validate_base64_image(profile_picture)
+            
             await self.user_repo.set_profile_picture(user_id, profile_picture)
             return MessageResponse(detail=Info.PROFILE_PICTURE_UPDATED)
+        except ImageTooLargeValidationError:
+            raise ImageTooLargeError()
+        except InvalidImageTypeValidationError:
+            raise InvalidImageTypeError()
+        except ImageValidationError:
+            raise InvalidImageError()
         except Exception as e:
             logger.exception(f"Error updating profile picture for user {user_id}: {str(e)}")
             raise

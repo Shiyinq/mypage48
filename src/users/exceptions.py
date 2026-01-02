@@ -28,3 +28,15 @@ class EmailNotVerified(DomainException):
 
 class PublicUserNotFoundError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.PUBLIC_USER_NOT_FOUND
+
+
+class ImageTooLargeError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.IMAGE_TOO_LARGE
+
+
+class InvalidImageTypeError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_IMAGE_TYPE
+
+
+class InvalidImageError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_IMAGE

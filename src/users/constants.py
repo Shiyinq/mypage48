@@ -4,6 +4,9 @@ class ErrorCode:
     PASSWORD_MISMATCH = "The two passwords did not match."
     PASSWORD_RULES = "Password must contain at least 8 characters, including uppercase, lowercase, digits, and symbols. No spaces allowed."
     PUBLIC_USER_NOT_FOUND = "User not found or private."
+    IMAGE_TOO_LARGE = "Image is too large. Maximum 3MB allowed."
+    INVALID_IMAGE_TYPE = "Invalid image type. Only JPEG, PNG, GIF, and WebP are allowed."
+    INVALID_IMAGE = "Invalid image data."
 
 
 class DomainErrorCode:
@@ -17,6 +20,9 @@ class DomainErrorCode:
     ACCOUNT_LOCKED = "Account is locked"
     EMAIL_NOT_VERIFIED = "Email not verified"
     PUBLIC_USER_NOT_FOUND = "User not found or private"
+    IMAGE_TOO_LARGE = "Image is too large"
+    INVALID_IMAGE_TYPE = "Invalid image type"
+    INVALID_IMAGE = "Invalid image data"
 
 
 class Info:

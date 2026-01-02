@@ -24,3 +24,15 @@ class ServerError(InternalServerError):
 
 class PublicUserNotFound(NotFound):
     DETAIL = ErrorCode.PUBLIC_USER_NOT_FOUND
+
+
+class ImageTooLarge(BadRequest):
+    DETAIL = ErrorCode.IMAGE_TOO_LARGE
+
+
+class InvalidImageType(BadRequest):
+    DETAIL = ErrorCode.INVALID_IMAGE_TYPE
+
+
+class InvalidImage(BadRequest):
+    DETAIL = ErrorCode.INVALID_IMAGE
