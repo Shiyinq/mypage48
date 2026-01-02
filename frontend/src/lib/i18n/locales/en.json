@@ -379,7 +379,8 @@
 		"uploadTicketPhoto": "Upload Ticket Photo",
 		"selectMember": "Select Member",
 		"selectMemberDesc": "Choose the member you took a photo with",
-		"analysisIssue": "Analysis Issue"
+		"analysisIssue": "Analysis Issue",
+		"analysisFailed": "Could not read ticket details automatically."
 	},
 	"upload": {
 		"title": "Upload Ticket",

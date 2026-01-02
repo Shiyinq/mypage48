@@ -38,7 +38,6 @@
 
 	let mode: 'SELECTION' | 'ANALYZING' | 'EDITING' = 'SELECTION';
 	let image: string | null = null;
-	let error: string | null = null;
 	let isSubmitting = false;
 
 	// 2-Shot
@@ -119,7 +118,6 @@
 
 	const analyzeImage = async (base64: string) => {
 		mode = 'ANALYZING';
-		error = null;
 		try {
 			const result = await extractTicketData(base64);
 			// ... Match logic ...
@@ -148,7 +146,7 @@
 			mode = 'EDITING';
 		} catch (e) {
 			console.error(e);
-			error = 'Could not read ticket details automatically.';
+			showToast($t('forms.analysisFailed'), 'error');
 			mode = 'EDITING';
 		}
 	};
@@ -263,7 +261,7 @@
 		<div class="grid gap-8 lg:grid-cols-2">
 			<!-- Image Preview -->
 			<div class="flex flex-col gap-4">
-				<TicketImagePreview {image} {error} onChangePhoto={() => fileInputRef.click()} />
+				<TicketImagePreview {image} onChangePhoto={() => fileInputRef.click()} />
 			</div>
 
 			<!-- FORM -->
