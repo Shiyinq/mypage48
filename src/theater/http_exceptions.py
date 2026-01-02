@@ -18,6 +18,10 @@ class TicketDeleteError(InternalServerError):
     DETAIL = ErrorCode.TICKET_DELETION_FAILED
 
 
+class TicketFetchError(InternalServerError):
+    DETAIL = ErrorCode.TICKET_FETCH_FAILED
+
+
 class ImageTooLarge(BadRequest):
     DETAIL = ErrorCode.IMAGE_TOO_LARGE
 

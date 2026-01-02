@@ -18,6 +18,10 @@ class TicketDeletionError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.TICKET_DELETION_FAILED
 
 
+class TicketFetchError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.TICKET_FETCH_FAILED
+
+
 class ImageTooLargeError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.IMAGE_TOO_LARGE
 

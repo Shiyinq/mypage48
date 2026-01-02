@@ -7,6 +7,10 @@ class ErrorCode:
     IMAGE_TOO_LARGE = "Image is too large. Maximum 3MB allowed."
     INVALID_IMAGE_TYPE = "Invalid image type. Only JPEG, PNG, and WebP are allowed."
     INVALID_IMAGE = "Invalid image data."
+    USER_UPDATE_FAILED = "Failed to update user."
+    USER_FETCH_FAILED = "Failed to fetch user."
+    OSHI_UPDATE_FAILED = "Failed to update oshi."
+    PUBLIC_STATUS_UPDATE_FAILED = "Failed to update public status."
 
 
 class DomainErrorCode:
@@ -23,6 +27,10 @@ class DomainErrorCode:
     IMAGE_TOO_LARGE = "Image is too large"
     INVALID_IMAGE_TYPE = "Invalid image type"
     INVALID_IMAGE = "Invalid image data"
+    USER_UPDATE_FAILED = "Failed to update user"
+    USER_FETCH_FAILED = "Failed to fetch user"
+    OSHI_UPDATE_FAILED = "Failed to update oshi"
+    PUBLIC_STATUS_UPDATE_FAILED = "Failed to update public status"
 
 
 class Info:

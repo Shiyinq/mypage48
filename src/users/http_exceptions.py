@@ -36,3 +36,19 @@ class InvalidImageType(BadRequest):
 
 class InvalidImage(BadRequest):
     DETAIL = ErrorCode.INVALID_IMAGE
+
+
+class UserUpdateFailed(InternalServerError):
+    DETAIL = ErrorCode.USER_UPDATE_FAILED
+
+
+class UserFetchFailed(InternalServerError):
+    DETAIL = ErrorCode.USER_FETCH_FAILED
+
+
+class OshiUpdateFailed(InternalServerError):
+    DETAIL = ErrorCode.OSHI_UPDATE_FAILED
+
+
+class PublicStatusUpdateFailed(InternalServerError):
+    DETAIL = ErrorCode.PUBLIC_STATUS_UPDATE_FAILED
