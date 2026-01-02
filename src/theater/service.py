@@ -8,7 +8,7 @@ from src.image_validation import (
     ImageTooLargeError as ImageTooLargeValidationError,
     InvalidImageTypeError as InvalidImageTypeValidationError,
 )
-from src.infrastructure import AsyncBackgroundRunner
+
 from src.logging_config import create_logger
 from src.theater.constants import Info
 from src.theater.exceptions import (
@@ -32,36 +32,36 @@ from src.theater.schemas import (
 logger = create_logger("theater_service", __name__)
 
 
-def _validate_images(image_url: Optional[str], two_shot_image_url: Optional[str]) -> None:
-    """Validate ticket and 2-shot images if provided."""
-    for url in [image_url, two_shot_image_url]:
-        if url:
-            try:
-                validate_base64_image(url)
-            except ImageTooLargeValidationError:
-                raise ImageTooLargeError()
-            except InvalidImageTypeValidationError:
-                raise InvalidImageTypeError()
-            except ImageValidationError:
-                raise InvalidImageError()
 
 
 class TheaterService:
     def __init__(
         self,
         repository: TheaterRepository,
-        background_tasks: AsyncBackgroundRunner,
         config: Settings,
     ):
         self.repository = repository
-        self.background_tasks = background_tasks
         self.config = config
+
+    @staticmethod
+    def _validate_images(image_url: Optional[str], two_shot_image_url: Optional[str]) -> None:
+        """Validate ticket and 2-shot images if provided."""
+        for url in [image_url, two_shot_image_url]:
+            if url:
+                try:
+                    validate_base64_image(url)
+                except ImageTooLargeValidationError:
+                    raise ImageTooLargeError()
+                except InvalidImageTypeValidationError:
+                    raise InvalidImageTypeError()
+                except ImageValidationError:
+                    raise InvalidImageError()
 
     async def create_ticket(self, user_id: str, data: TicketCreateRequest) -> TicketResponse:
         try:
             # Validate images if provided
             two_shot_image = data.two_shot.imageUrl if data.two_shot else None
-            _validate_images(data.imageUrl, two_shot_image)
+            self._validate_images(data.imageUrl, two_shot_image)
             
             now = datetime.now(timezone.utc)
             ticket_in_db = TicketInDB(
@@ -104,7 +104,7 @@ class TheaterService:
         try:
             # Validate images if provided
             two_shot_image = data.two_shot.imageUrl if data.two_shot else None
-            _validate_images(data.imageUrl, two_shot_image)
+            self._validate_images(data.imageUrl, two_shot_image)
             
             updated_ticket = await self.repository.update_ticket(ticket_id, user_id, data)
             if not updated_ticket:

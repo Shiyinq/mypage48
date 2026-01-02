@@ -15,6 +15,7 @@ from src.auth.service import AuthService
 from src.config import Settings, config
 from src.database import database_instance
 from src.health.service import HealthService
+from src.infrastructure import AsyncBackgroundRunner
 from src.logging_config import create_logger
 from src.users.repository import UserRepository
 from src.users.service import UserService
@@ -22,6 +23,8 @@ from src.llm.repository import LLMRepository
 from src.llm.service import LLMService
 from src.members.repository import MemberRepository
 from src.members.service import MemberService
+from src.theater.repository import TheaterRepository
+from src.theater.service import TheaterService
 
 
 
@@ -62,8 +65,6 @@ def get_auth_repository(db=Depends(get_db)) -> AuthRepository:
     return AuthRepository(db)
 
 
-from src.infrastructure import AsyncBackgroundRunner
-
 
 def get_security_service(
     auth_repo: AuthRepository = Depends(get_auth_repository),
@@ -88,12 +89,12 @@ def get_auth_service(
 
 
 def get_user_service(
-    user_repo: UserRepository = Depends(get_user_repository),
+    repo: UserRepository = Depends(get_user_repository),
     security_service: SecurityService = Depends(get_security_service),
     email_service: EmailService = Depends(get_email_service),
     config: Settings = Depends(get_settings),
 ) -> UserService:
-    return UserService(user_repo, security_service, email_service, config)
+    return UserService(repo, security_service, email_service, config)
 
 
 async def get_current_user(
@@ -182,9 +183,6 @@ def get_llm_service(
     return LLMService(repo, config)
 
 
-from src.theater.repository import TheaterRepository
-from src.theater.service import TheaterService
-
 def get_theater_repository(db=Depends(get_db)) -> TheaterRepository:
     return TheaterRepository(db)
 
@@ -192,8 +190,7 @@ def get_theater_service(
     repo: TheaterRepository = Depends(get_theater_repository),
     config: Settings = Depends(get_settings),
 ) -> TheaterService:
-    background_runner = AsyncBackgroundRunner()
-    return TheaterService(repo, background_runner, config)
+    return TheaterService(repo, config)
 
 
 def get_member_repository(db=Depends(get_db)) -> MemberRepository:
