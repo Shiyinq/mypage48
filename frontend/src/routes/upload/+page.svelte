@@ -29,6 +29,7 @@
 		TicketImagePreview,
 		TwoShotSection
 	} from '$lib/components/upload';
+	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 
 	const { t } = useTranslation();
 
@@ -82,7 +83,7 @@
 	const normalizeTime = (raw: string | undefined): string => {
 		if (!raw) return '';
 		const clean = raw.trim().toUpperCase();
-		const amPmMatch = clean.match(/(\d{1,2})[:.](d{2})\s*(AM|PM)?/);
+		const amPmMatch = clean.match(/(\d{1,2})[:.](\d{2})\s*(AM|PM)?/);
 		if (amPmMatch) {
 			let [, h, m, period] = amPmMatch;
 			let hours = parseInt(h, 10);
@@ -90,7 +91,7 @@
 			if (period === 'AM' && hours === 12) hours = 0;
 			return `${hours.toString().padStart(2, '0')}:${m}`;
 		}
-		const simpleMatch = clean.match(/(\d{1,2})[:.](d{2})/);
+		const simpleMatch = clean.match(/(\d{1,2})[:.](\d{2})/);
 		return simpleMatch ? `${simpleMatch[1].padStart(2, '0')}:${simpleMatch[2]}` : '';
 	};
 
@@ -137,9 +138,10 @@
 					...formData.event,
 					title: detectedTitle,
 					date: result.date || formData.event.date,
-					day: result.day || '',
+					day: result.day || calculateDayFromDate(result.date || formData.event.date),
 					time: normalizeTime(result.time),
-					gate_open: normalizeTime(result.gate_open)
+					gate_open:
+						normalizeTime(result.gate_open) || calculateGateOpenTime(normalizeTime(result.time))
 				},
 				seat: { ...formData.seat, section: detectedRow, number: result.number || '' }
 			};
@@ -226,6 +228,24 @@
 		formData.price > 0 &&
 		formData.ticket_id &&
 		(!showTwoShot || (showTwoShot && formData.two_shot.member_name));
+
+	// Reactive Day Calculation
+	$: if (formData.event.date) {
+		const newDay = calculateDayFromDate(formData.event.date);
+		if (newDay && newDay !== formData.event.day) {
+			formData.event.day = newDay;
+			formData = { ...formData }; // Force update
+		}
+	}
+
+	// Reactive Gate Open Calculation (30 mins before Show Time)
+	$: if (formData.event.time) {
+		const newGateOpen = calculateGateOpenTime(formData.event.time);
+		if (newGateOpen && newGateOpen !== formData.event.gate_open) {
+			formData.event.gate_open = newGateOpen;
+			formData = { ...formData }; // Force update
+		}
+	}
 </script>
 
 <SEO title={$t('upload.title')} path="/upload" description={$t('seo.upload')} />

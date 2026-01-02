@@ -2,6 +2,7 @@
 	import { theater } from '$lib/apis/theater';
 	import { showToast, tickets } from '$lib/stores';
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
+	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import type { Ticket } from '$lib/types';
 	import {
@@ -79,6 +80,24 @@
 		formData.price > 0 &&
 		formData.ticket_id &&
 		(!showTwoShot || (showTwoShot && formData.two_shot.member_name));
+
+	// Reactive Day Calculation
+	$: if (formData.event.date) {
+		const newDay = calculateDayFromDate(formData.event.date);
+		if (newDay && newDay !== formData.event.day) {
+			formData.event.day = newDay;
+			formData = { ...formData }; // Force update
+		}
+	}
+
+	// Reactive Gate Open Calculation (30 mins before Show Time)
+	$: if (formData.event.time) {
+		const newGateOpen = calculateGateOpenTime(formData.event.time);
+		if (newGateOpen && newGateOpen !== formData.event.gate_open) {
+			formData.event.gate_open = newGateOpen;
+			formData = { ...formData }; // Force update
+		}
+	}
 
 	// Handlers
 	const handleFileChange = (e: Event) => {
