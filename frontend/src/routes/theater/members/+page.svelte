@@ -157,8 +157,30 @@
 		</button>
 	</div>
 {:else if membersList.length === 0}
-	<div class="text-center py-12">
-		<p class="text-themed-secondary">{$t('common.noResults') || 'No members found'}</p>
+	<div class="flex flex-col items-center justify-center py-20 px-4 text-center">
+		<div
+			class="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4"
+		>
+			<Search class="w-8 h-8 text-gray-400 dark:text-gray-500" />
+		</div>
+		<h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
+			{$t('member.emptyState.title')}
+		</h3>
+		<p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-6">
+			{$t('member.emptyState.description')}
+		</p>
+		{#if searchQuery || selectedGeneration}
+			<button
+				on:click={() => {
+					searchQuery = '';
+					selectedGeneration = null;
+					fetchMembers();
+				}}
+				class="px-6 py-2 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full text-sm font-bold hover:bg-pink-200 dark:hover:bg-pink-900/50 transition-colors cursor-pointer"
+			>
+				{$t('common.clearFilters')}
+			</button>
+		{/if}
 	</div>
 {:else}
 	<div

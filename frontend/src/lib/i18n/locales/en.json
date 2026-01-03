@@ -29,7 +29,8 @@
 		"settings": "Settings",
 		"profile": "Profile",
 		"dashboard": "Dashboard",
-		"language": "Language"
+		"language": "Language",
+		"noResults": "No results found"
 	},
 	"validation": {
 		"alert": {
@@ -552,7 +553,11 @@
 		"yearsOld": "years old",
 		"notFound": "Member Not Found",
 		"notFoundMessage": "We couldn't retrieve this member's details. Please try again later.",
-		"close": "Close"
+		"close": "Close",
+		"emptyState": {
+			"title": "No Members Found",
+			"description": "Try adjusting your search or filter to find who you're looking for."
+		}
 	},
 	"top2shot": {
 		"title": "Top 2-Shot",

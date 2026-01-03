@@ -29,7 +29,8 @@
 		"settings": "Pengaturan",
 		"profile": "Profil",
 		"dashboard": "Dasbor",
-		"language": "Bahasa"
+		"language": "Bahasa",
+		"noResults": "Tidak ada hasil ditemukan"
 	},
 	"validation": {
 		"alert": {
@@ -506,7 +507,11 @@
 		"yearsOld": "Tahun",
 		"notFound": "Member Tidak Ditemukan",
 		"notFoundMessage": "Kami tidak dapat mengambil detail member ini. Silakan coba lagi nanti.",
-		"close": "Tutup"
+		"close": "Tutup",
+		"emptyState": {
+			"title": "Tidak Ada Member",
+			"description": "Coba sesuaikan pencarian atau filter untuk menemukan member yang kamu cari."
+		}
 	},
 	"shows": {
 		"backTitle": "Kembali ke Daftar Show",
