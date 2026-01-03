@@ -60,8 +60,9 @@
 				<div
 					class={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold transition-colors backdrop-blur-md border ${count > 0 ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-900/20' : 'bg-white/20 text-gray-200 border-white/10'}`}
 				>
-					{count}
-					{$t('shows.unit')}
+					{count > 0
+						? $t('theater.setlists.attendedCount', { count })
+						: $t('theater.setlists.notAttended')}
 				</div>
 
 				{#if count > 0}

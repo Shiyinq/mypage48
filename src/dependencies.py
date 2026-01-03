@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import BackgroundTasks, Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from fastapi_sso.sso.github import GithubSSO
@@ -29,6 +31,8 @@ from src.dashboard.service import DashboardService
 from src.achievements.service import AchievementsService
 from src.memories.repository import MemoriesRepository
 from src.memories.service import MemoriesService
+from src.setlists.repository import SetlistsRepository
+from src.setlists.service import SetlistsService
 
 
 
@@ -114,6 +118,7 @@ async def get_current_user(
         logger.warning("User not found for provided token")
         raise InvalidJWTToken()
     return UserCurrent(**user.model_dump())
+
 
 
 def require_csrf_protection(request: Request, config: Settings = Depends(get_settings)):
@@ -245,3 +250,13 @@ def get_memories_service(
 ) -> MemoriesService:
     return MemoriesService(repo, config)
 
+
+def get_setlists_repository(db=Depends(get_db)) -> SetlistsRepository:
+    return SetlistsRepository(db)
+
+
+def get_setlists_service(
+    repo: SetlistsRepository = Depends(get_setlists_repository),
+    config: Settings = Depends(get_settings),
+) -> SetlistsService:
+    return SetlistsService(repo, config)
