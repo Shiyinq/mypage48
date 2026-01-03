@@ -11,7 +11,27 @@ import { browser } from '$app/environment';
 
 export const API_BASE = browser ? PUBLIC_CLIENT_SIDE_API_BASE_URL : PUBLIC_SERVER_SIDE_API_BASE_URL;
 
+// Lock to prevent multiple concurrent refresh token calls
+let refreshPromise: Promise<string | null> | null = null;
+
 async function refreshAccessToken(): Promise<string | null> {
+	// If a refresh is already in progress, wait for it
+	if (refreshPromise) {
+		return refreshPromise;
+	}
+
+	// Start the refresh and store the promise
+	refreshPromise = doRefreshAccessToken();
+
+	try {
+		return await refreshPromise;
+	} finally {
+		// Clear the lock after completion
+		refreshPromise = null;
+	}
+}
+
+async function doRefreshAccessToken(): Promise<string | null> {
 	try {
 		// Raw fetch to avoid infinite loops
 		const csrfToken = getCSRFToken();
