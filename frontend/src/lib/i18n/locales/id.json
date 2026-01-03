@@ -552,12 +552,12 @@
 		"upcomingShows": {
 			"title": "Upcoming Shows",
 			"subtitle": "Jadwal dan pengumuman",
-			"comingSoon": "Fitur upcoming shows akan segera hadir!"
+			"empty": "Belum ada jadwal pertunjukan mendatang."
 		},
 		"showHistory": {
 			"title": "Riwayat Show",
 			"subtitle": "Pertunjukan sebelumnya",
-			"comingSoon": "Fitur riwayat show akan segera hadir!"
+			"empty": "Belum ada riwayat pertunjukan."
 		}
 	},
 	"top2shot": {
