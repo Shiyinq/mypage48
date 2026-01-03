@@ -14,7 +14,8 @@ from src.image_validation import (
     InvalidImageTypeError as InvalidImageTypeValidationError,
 )
 from src.logging_config import create_logger
-from src.users.constants import Info, RankConfig
+from src.users.constants import Info
+from src.achievements.service import AchievementsService
 from src.users.exceptions import (
     EmailAlreadyExistsError,
     ImageTooLargeError,
@@ -40,13 +41,13 @@ from src.users.schemas import (
     ProviderUserCreateRequest,
     PublicShowEntry,
     PublicUserResponse,
-    RankInfo,
     UserCreated,
     UserCreatedWithEmail,
     UserCreateRequest,
     UserInDB,
     UserStats,
 )
+from src.achievements.schemas import RankInfo
 from src.theater.service import TheaterService
 from src.members.service import MemberService
 
@@ -62,6 +63,7 @@ class UserService:
         config: Settings,
         theater_service: TheaterService,
         member_service: MemberService,
+        achievements_service: AchievementsService,
     ):
         self.repository = repository
         self.security_service = security_service
@@ -69,6 +71,7 @@ class UserService:
         self.config = config
         self.theater_service = theater_service
         self.member_service = member_service
+        self.achievements_service = achievements_service
 
     def _handle_duplicate_key_error(self, dk: DuplicateKeyError):
         """Handle DuplicateKeyError and raise appropriate domain exception."""
@@ -340,122 +343,6 @@ class UserService:
             stats=stats
         )
 
-    @staticmethod
-    def _calculate_rank(total_shows: int) -> RankInfo:
-        """Calculate rank/level based on total shows (XP)."""
-        xp = total_shows
-        current_rank = RankConfig.MILESTONES[0]
-        next_rank = RankConfig.MILESTONES[1] if len(RankConfig.MILESTONES) > 1 else {"xp": 1000, "title": "Beyond Legend"}
-
-        for i, milestone in enumerate(RankConfig.MILESTONES):
-            if xp >= milestone["xp"]:
-                current_rank = milestone
-                next_rank = RankConfig.MILESTONES[i + 1] if i + 1 < len(RankConfig.MILESTONES) else {"xp": 1000, "title": "Beyond Legend"}
-
-        return RankInfo(
-            current=current_rank["title"],
-            xp=xp,
-            nextLevelXp=next_rank["xp"],
-            nextRankTitle=next_rank["title"]
-        )
-
-    @staticmethod
-    def _calculate_achievements(tickets: list) -> int:
-        """Calculate total unlocked achievements from tickets."""
-        if not tickets:
-            return 0
-
-        total_shows = len(tickets)
-
-        # Date calculations
-        sorted_dates = sorted([t.event.date for t in tickets])
-        first_date = sorted_dates[0] if sorted_dates else None
-        last_date = sorted_dates[-1] if sorted_dates else None
-
-        time_span_days = 0
-        if first_date and last_date:
-            try:
-                first_dt = datetime.strptime(str(first_date), "%Y-%m-%d") if isinstance(first_date, str) else first_date
-                last_dt = datetime.strptime(str(last_date), "%Y-%m-%d") if isinstance(last_date, str) else last_date
-                time_span_days = (last_dt - first_dt).days
-            except (ValueError, TypeError):
-                pass
-
-        # Show counts
-        show_counts = {}
-        for t in tickets:
-            title = t.event.title.strip() if t.event and t.event.title else ""
-            if title:
-                show_counts[title] = show_counts.get(title, 0) + 1
-        max_same_show = max(show_counts.values()) if show_counts else 0
-
-        # Row calculations
-        has_row_a = any(t.seat and t.seat.section and t.seat.section.upper().startswith("A") for t in tickets)
-        has_row_j = any(t.seat and t.seat.section and t.seat.section.upper().startswith("J") for t in tickets)
-
-        collected_rows = set()
-        for t in tickets:
-            if t.seat and t.seat.section:
-                row = t.seat.section.strip().upper()[0] if t.seat.section.strip() else ""
-                if row:
-                    collected_rows.add(row)
-        target_rows = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"}
-        unique_rows_count = len(collected_rows.intersection(target_rows))
-
-        # Spending
-        total_spent = sum(t.price for t in tickets if t.price)
-
-        # Count unlocked achievements (same as frontend achievements.ts)
-        unlocked = 0
-
-        # Attendance milestones
-        if total_shows >= 1:
-            unlocked += 1  # First Step
-        if total_shows >= 10:
-            unlocked += 1  # Regular Visitor
-        if total_shows >= 50:
-            unlocked += 1  # Dedicated Fan
-        if total_shows >= 100:
-            unlocked += 1  # Century Club
-        if total_shows >= 150:
-            unlocked += 1  # Theater Icon
-        if total_shows >= 200:
-            unlocked += 1  # Legendary Wota
-        if total_shows >= 300:
-            unlocked += 1  # Theater Kami
-        if total_shows >= 500:
-            unlocked += 1  # Absolute Legend
-
-        # Same show milestones
-        if max_same_show >= 10:
-            unlocked += 1  # Super Fan
-        if max_same_show >= 20:
-            unlocked += 1  # Mega Fan
-        if max_same_show >= 30:
-            unlocked += 1  # Ultra Fan
-
-        # Anniversary milestones
-        if time_span_days >= 365:
-            unlocked += 1  # Theater Enthusiast
-        if time_span_days >= 730:
-            unlocked += 1  # Theater Veteran
-        if time_span_days >= 1095:
-            unlocked += 1  # Theater Legend
-
-        # Row milestones
-        if has_row_a:
-            unlocked += 1  # Elite Seat
-        if has_row_j:
-            unlocked += 1  # Back Row Warrior
-        if unique_rows_count >= 10:
-            unlocked += 1  # Seat Explorer
-
-        # Spending milestone
-        if total_spent >= 5000000:
-            unlocked += 1  # Top Supporter
-
-        return unlocked
-
     async def get_profile_full(
         self,
         current_user,
@@ -487,12 +374,10 @@ class UserService:
             # Get tickets for stats calculation
             tickets = await self.theater_service.get_my_tickets(current_user.userId, None)
 
-            # Calculate rank
             total_shows = len(tickets)
-            rank = self._calculate_rank(total_shows)
+            rank = self.achievements_service.calculate_rank(total_shows)
 
-            # Calculate achievements
-            total_achievements = self._calculate_achievements(tickets)
+            total_achievements = self.achievements_service.calculate_achievements_count(tickets)
 
             # Calculate oshi 2-shot counts
             roulette_count = 0

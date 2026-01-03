@@ -7,6 +7,7 @@ from pydantic import BaseModel, EmailStr, Field, model_validator
 from src.users.constants import Info, ErrorCode
 from src.auth.schemas import OshiResponse
 from src.utils import validate_password_strength
+from src.achievements.schemas import RankInfo
 
 
 class UserCreateRequest(BaseModel):
@@ -143,14 +144,6 @@ class UpdatePublicStatusRequest(BaseModel):
 
 class MessageResponse(BaseModel):
     detail: str
-
-
-class RankInfo(BaseModel):
-    """Rank/level information based on total shows (XP)."""
-    current: str
-    xp: int
-    nextLevelXp: int
-    nextRankTitle: str
 
 
 class ProfileStats(BaseModel):

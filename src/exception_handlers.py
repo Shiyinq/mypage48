@@ -13,6 +13,8 @@ from src.api_keys.http_exceptions import (
     APIKeyDeleteError,
     APIKeyNotFound,
 )
+from src.achievements.exceptions import AchievementsFetchError
+from src.achievements.http_exceptions import AchievementsFetchHTTPException
 from src.auth.exceptions import (
     AuthOperationError,
     IncorrectCredentialsError,
@@ -221,6 +223,10 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     # Dashboard errors
     if isinstance(exc, StatsFetchError):
         return await detailed_http_exception_handler(request, StatsFetchFailed())
+
+    # Achievements errors
+    if isinstance(exc, AchievementsFetchError):
+        return await detailed_http_exception_handler(request, AchievementsFetchHTTPException())
 
     error_msg = str(exc)
     if (
