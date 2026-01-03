@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { TrendingUp, Music, Zap } from 'lucide-svelte';
-	import type { Ticket } from '$lib/types';
+	import type { ProfileRecentActivity } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let recentShows: Ticket[] = [];
+	export let recentActivity: ProfileRecentActivity[] = [];
 	export let loading: boolean = true;
 
 	const { t, locale } = useTranslation();
@@ -55,21 +55,21 @@
 					</div>
 				</div>
 			{/each}
-		{:else if recentShows.length === 0}
+		{:else if recentActivity.length === 0}
 			<div class="text-center py-8 text-gray-500">
 				<Music class="w-8 h-8 mx-auto mb-2 text-gray-300" />
 				<p class="text-sm">{$t('profile.recentActivity.noActivity')}</p>
 				<p class="text-xs text-gray-400">{$t('profile.recentActivity.startTracking')}</p>
 			</div>
 		{:else}
-			{#each recentShows as show}
+			{#each recentActivity as show}
 				<div class="flex gap-4 relative z-10">
 					<div
-						class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-4 border-white dark:border-zinc-950 shadow-sm {show.two_shot
+						class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-4 border-white dark:border-zinc-950 shadow-sm {show.hasTwoShot
 							? 'bg-yellow-100 dark:bg-yellow-950 text-yellow-600 dark:text-yellow-400'
 							: 'bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400'}"
 					>
-						{#if show.two_shot}
+						{#if show.hasTwoShot}
 							<Zap class="w-4 h-4" />
 						{:else}
 							<Music class="w-4 h-4" />
@@ -80,18 +80,18 @@
 					>
 						<div class="flex justify-between items-start">
 							<p class="text-sm font-bold text-gray-800 dark:text-gray-200">
-								{show.two_shot
+								{show.hasTwoShot
 									? $t('profile.recentActivity.twoShotAt')
-									: $t('profile.recentActivity.attended')} '{show.event.title}'
+									: $t('profile.recentActivity.attended')} '{show.title}'
 							</p>
 							<span class="text-[10px] font-medium text-gray-400"
-								>{formatActivityDate(show.event.date)}</span
+								>{formatActivityDate(show.date)}</span
 							>
 						</div>
 						<p class="text-xs text-gray-500 mt-0.5">
-							Row {show.seat.section}-{show.seat.number}
-							{#if show.two_shot}
-								• {show.two_shot.member_name}
+							Row {show.section}-{show.number}
+							{#if show.twoShotMember}
+								• {show.twoShotMember}
 							{/if}
 						</p>
 					</div>

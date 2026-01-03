@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import type { Ticket, User } from './types';
+import type { Ticket, UserWithProfileStats } from './types';
 import { resetDashboard } from '$lib/stores/dashboard';
 
 const AUTH_KEY = 'oshi_log_auth';
@@ -12,7 +12,7 @@ const initialAuth = browser ? localStorage.getItem(AUTH_KEY) === 'true' : false;
 // Tickets are now fetched from API only, not stored in localStorage
 export const tickets = writable<Ticket[]>([]);
 export const isAuthenticated = writable<boolean>(initialAuth);
-export const userProfile = writable<User | null>(null);
+export const userProfile = writable<UserWithProfileStats | null>(null);
 export const isInitialDataLoaded = writable<boolean>(false);
 
 // Toast Store

@@ -52,3 +52,7 @@ class OshiUpdateFailed(InternalServerError):
 
 class PublicStatusUpdateFailed(InternalServerError):
     DETAIL = ErrorCode.PUBLIC_STATUS_UPDATE_FAILED
+
+
+class ProfileStatsFetchFailed(InternalServerError):
+    DETAIL = ErrorCode.PROFILE_STATS_FETCH_ERROR

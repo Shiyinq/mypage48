@@ -50,6 +50,7 @@ from src.users.exceptions import (
     InvalidImageError as UserInvalidImageError,
     InvalidImageTypeError as UserInvalidImageTypeError,
     OshiUpdateError,
+    ProfileStatsFetchError,
     ProviderUserCreationError,
     PublicStatusUpdateError,
     PublicUserNotFoundError,
@@ -64,6 +65,7 @@ from src.users.http_exceptions import (
     InvalidImage as UserInvalidImage,
     InvalidImageType as UserInvalidImageType,
     OshiUpdateFailed,
+    ProfileStatsFetchFailed,
     PublicStatusUpdateFailed,
     PublicUserNotFound,
     ServerError,
@@ -175,6 +177,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, OshiUpdateFailed())
     if isinstance(exc, PublicStatusUpdateError):
         return await detailed_http_exception_handler(request, PublicStatusUpdateFailed())
+    if isinstance(exc, ProfileStatsFetchError):
+        return await detailed_http_exception_handler(request, ProfileStatsFetchFailed())
 
     # Users image validation errors
     if isinstance(exc, UserImageTooLargeError):

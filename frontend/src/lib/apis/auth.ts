@@ -9,7 +9,8 @@ import type {
 	VerifyEmailRequest,
 	PasswordResetRequest,
 	PasswordResetConfirmRequest,
-	GenericResponse
+	GenericResponse,
+	ProfileFullResponse
 } from '$lib/types';
 
 export const auth = {
@@ -79,7 +80,7 @@ export const auth = {
 	},
 
 	getProfile: async () => {
-		return client<User>('/users/profile');
+		return client<ProfileFullResponse>('/users/profile');
 	},
 
 	sendVerificationEmail: async (data: EmailVerificationRequest) => {
