@@ -61,6 +61,7 @@
 		"dashboard": "ダッシュボード",
 		"setlists": "セットリスト",
 		"shows": "公演",
+		"theater": "シアター",
 		"achievements": "実績",
 		"memories": "思い出",
 		"history": "履歴",
@@ -370,6 +371,34 @@
 		"topRow": "トップ列",
 		"row": "列",
 		"unit": "公演"
+	},
+	"theater": {
+		"title": "シアター",
+		"subtitle": "劇場の旅",
+		"subNav": {
+			"theater": "シアター",
+			"members": "メンバー",
+			"shows": "公演"
+		},
+		"shows": {
+			"title": "公演予定",
+			"subtitle": "スケジュールとお知らせ"
+		},
+		"members": {
+			"title": "メンバー",
+			"subtitle": "JKT48メンバーデータ",
+			"comingSoon": "メンバーデータは近日公開予定！"
+		},
+		"upcomingShows": {
+			"title": "今後の公演",
+			"subtitle": "スケジュールとお知らせ",
+			"comingSoon": "今後の公演機能は近日公開予定！"
+		},
+		"showHistory": {
+			"title": "公演履歴",
+			"subtitle": "過去の公演",
+			"comingSoon": "公演履歴機能は近日公開予定！"
+		}
 	},
 	"top2shot": {
 		"title": "トップ2ショット",

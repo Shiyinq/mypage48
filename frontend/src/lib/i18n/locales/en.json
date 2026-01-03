@@ -61,6 +61,7 @@
 		"dashboard": "Dashboard",
 		"setlists": "Setlists",
 		"shows": "Shows",
+		"theater": "Theater",
 		"achievements": "Achievements",
 		"memories": "Memories",
 		"history": "History",
@@ -416,6 +417,34 @@
 		"notSeen": "Not yet seen",
 		"viewHistory": "View History",
 		"top": "Top"
+	},
+	"theater": {
+		"title": "Theater",
+		"subtitle": "Your theater journey",
+		"subNav": {
+			"theater": "Theater",
+			"members": "Members",
+			"shows": "Shows"
+		},
+		"shows": {
+			"title": "Upcoming Shows",
+			"subtitle": "Schedule and announcements"
+		},
+		"members": {
+			"title": "Members",
+			"subtitle": "JKT48 member data",
+			"comingSoon": "Member data coming soon!"
+		},
+		"upcomingShows": {
+			"title": "Upcoming Shows",
+			"subtitle": "Schedule and announcements",
+			"comingSoon": "Upcoming shows feature coming soon!"
+		},
+		"showHistory": {
+			"title": "Show History",
+			"subtitle": "Past performances",
+			"comingSoon": "Show history feature coming soon!"
+		}
 	},
 	"memories": {
 		"title": "Memories",

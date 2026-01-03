@@ -61,6 +61,7 @@
 		"dashboard": "Dasbor",
 		"setlists": "Setlists",
 		"shows": "Pertunjukan",
+		"theater": "Theater",
 		"achievements": "Pencapaian",
 		"memories": "Kenangan",
 		"history": "Riwayat",
@@ -525,6 +526,34 @@
 		"unit": "Pertunjukan",
 		"totalShows": "Total Pertunjukan",
 		"uniqueShows": "Pertunjukan Unik"
+	},
+	"theater": {
+		"title": "Theater",
+		"subtitle": "Perjalanan teatermu",
+		"subNav": {
+			"theater": "Theater",
+			"members": "Member",
+			"shows": "Shows"
+		},
+		"shows": {
+			"title": "Jadwal Show",
+			"subtitle": "Jadwal dan pengumuman"
+		},
+		"members": {
+			"title": "Member",
+			"subtitle": "Data member JKT48",
+			"comingSoon": "Data member akan segera hadir!"
+		},
+		"upcomingShows": {
+			"title": "Upcoming Shows",
+			"subtitle": "Jadwal dan pengumuman",
+			"comingSoon": "Fitur upcoming shows akan segera hadir!"
+		},
+		"showHistory": {
+			"title": "Riwayat Show",
+			"subtitle": "Pertunjukan sebelumnya",
+			"comingSoon": "Fitur riwayat show akan segera hadir!"
+		}
 	},
 	"top2shot": {
 		"title": "Top 2-Shot",
