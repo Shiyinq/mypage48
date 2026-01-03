@@ -4,6 +4,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { members as membersApi, type Member } from '$lib/apis/members';
 	import { MemberDetailModal } from '$lib/components/profile';
+	import { EmptyState } from '$lib/components';
 	import { Search } from 'lucide-svelte';
 
 	const { t } = useTranslation();
@@ -157,18 +158,11 @@
 		</button>
 	</div>
 {:else if membersList.length === 0}
-	<div class="flex flex-col items-center justify-center py-20 px-4 text-center">
-		<div
-			class="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4"
-		>
-			<Search class="w-8 h-8 text-gray-400 dark:text-gray-500" />
-		</div>
-		<h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
-			{$t('member.emptyState.title')}
-		</h3>
-		<p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-6">
-			{$t('member.emptyState.description')}
-		</p>
+	<EmptyState
+		icon={Search}
+		title={$t('member.emptyState.title')}
+		description={$t('member.emptyState.description')}
+	>
 		{#if searchQuery || selectedGeneration}
 			<button
 				on:click={() => {
@@ -176,12 +170,12 @@
 					selectedGeneration = null;
 					fetchMembers();
 				}}
-				class="px-6 py-2 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full text-sm font-bold hover:bg-pink-200 dark:hover:bg-pink-900/50 transition-colors cursor-pointer"
+				class="mt-4 px-6 py-2 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full text-sm font-bold hover:bg-pink-200 dark:hover:bg-pink-900/50 transition-colors cursor-pointer"
 			>
 				{$t('common.clearFilters')}
 			</button>
 		{/if}
-	</div>
+	</EmptyState>
 {:else}
 	<div
 		class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4"

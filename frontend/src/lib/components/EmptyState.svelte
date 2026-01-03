@@ -10,9 +10,7 @@
 	export let className: string = '';
 </script>
 
-<div
-	class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-white/5 {className}"
->
+<div class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center {className}">
 	<div
 		class="w-20 h-20 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center mb-6 text-gray-300 dark:text-zinc-600"
 	>

@@ -12,9 +12,9 @@
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { onMount, tick } from 'svelte';
 	import { ticketsApi } from '$lib/apis/tickets';
-	import type { Ticket, TicketFilters } from '$lib/types';
+	import type { Ticket as TicketType, TicketFilters } from '$lib/types';
 	import EditTicketModal from '$lib/components/EditTicketModal.svelte';
-	import { History, ListFilter, Loader2 } from 'lucide-svelte';
+	import { History, ListFilter, Loader2, Ticket } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -193,9 +193,9 @@
 		}
 	};
 
-	let editingTicket: Ticket | null = null;
+	let editingTicket: TicketType | null = null;
 
-	const handleTicketUpdate = (e: CustomEvent<Ticket>) => {
+	const handleTicketUpdate = (e: CustomEvent<TicketType>) => {
 		const updated = e.detail;
 		tickets.update((current) => current.map((t) => (t._id === updated._id ? updated : t)));
 		defaultTickets.update((current) =>
@@ -258,7 +258,7 @@
 		{/if}
 	{:else if filteredTickets.length === 0}
 		<EmptyState
-			icon={ListFilter}
+			icon={Ticket}
 			title={$t('history.noTickets')}
 			description={$t('history.addFirst')}
 		/>
