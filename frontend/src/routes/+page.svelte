@@ -75,7 +75,7 @@
 			lastFetchedFilter.set(currentFilterKey);
 		} catch (err) {
 			console.error('Failed to fetch dashboard stats:', err);
-			error = 'Failed to load dashboard data';
+			error = $t('dashboard.error');
 		} finally {
 			isLoading = false;
 		}
@@ -225,10 +225,10 @@
 		<div class="glass-panel p-4 rounded-xl text-center text-red-400">
 			{error}
 			<button
-				class="ml-2 text-sm underline hover:text-red-300"
+				class="ml-2 text-sm underline hover:text-red-300 cursor-pointer"
 				on:click={() => fetchDashboardStats()}
 			>
-				Retry
+				{$t('errors.tryAgain')}
 			</button>
 		</div>
 	{/if}

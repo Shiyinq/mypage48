@@ -20,7 +20,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	// Shared components and utils
-	import { PageHeader, EmptyState } from '$lib/components';
+	import { PageHeader, EmptyState, ErrorState } from '$lib/components';
 	import { GridSkeleton, TableSkeleton, TicketCardSkeleton } from '$lib/components/skeletons';
 	import {
 		DeleteConfirmationModal,
@@ -38,6 +38,7 @@
 	let filters: TicketFilters = {};
 	let deleteId: string | null = null;
 	let isDeleting = false;
+	let error = false;
 
 	/* Loading State */
 	let mounted = false;
@@ -79,7 +80,9 @@
 	async function loadTickets(page: number, currentFilters: TicketFilters = {}) {
 		if (isLoadingMore) return;
 		isLoadingMore = true;
+		isLoadingMore = true;
 		try {
+			error = false;
 			const res = await ticketsApi.getMyTickets(page, 20, currentFilters);
 			if (page === 1) {
 				tickets.set(res.data);
@@ -108,7 +111,8 @@
 			isInitialDataLoaded.set(true);
 		} catch (e) {
 			console.error(e);
-			showToast($t('common.error'), 'error');
+			error = true;
+			showToast($t('history.errorTitle') || 'Failed to load tickets', 'error');
 		} finally {
 			isLoadingMore = false;
 		}
@@ -240,7 +244,13 @@
 
 	<!-- Content Area -->
 	<!-- Content Area -->
-	{#if isLoading || (isLoadingMore && filteredTickets.length === 0)}
+	{#if error && filteredTickets.length === 0}
+		<ErrorState
+			title={$t('history.errorTitle') || 'Failed to load tickets'}
+			description={$t('history.errorDesc') || 'Something went wrong while fetching your history.'}
+			onRetry={() => loadTickets(1, filters)}
+		/>
+	{:else if isLoading || (isLoadingMore && filteredTickets.length === 0)}
 		{#if viewMode === 'GRID'}
 			<TicketCardSkeleton count={6} />
 		{:else}

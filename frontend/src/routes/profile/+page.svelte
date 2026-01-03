@@ -1,21 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import {
-		isAuthenticated,
-		showToast,
-		userProfile,
-		tickets as ticketsStore,
-		isInitialDataLoaded
-	} from '$lib/stores';
+	import { isAuthenticated, showToast, userProfile, tickets as ticketsStore } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
 	import Button from '$lib/components/Button.svelte';
 	import { User as UserIcon, LogOut, Settings } from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
 	import SEO from '$lib/components/SEO.svelte';
-	import { PageHeader } from '$lib/components';
+	import { PageHeader, ErrorState } from '$lib/components';
 
-	import type { User, ProfileRecentActivity, RankInfo } from '$lib/types';
+	import type { User, ProfileRecentActivity, RankInfo, UserWithProfileStats } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		DigitalMemberCard,
@@ -49,8 +43,8 @@
 	let twoShotRouletteCount = 0;
 	let twoShotBirthdayCount = 0;
 
-	// Loading state now depends on the central isInitialDataLoaded store
-	$: loading = !$isInitialDataLoaded;
+	let loading = true;
+	let error = false;
 
 	// Oshi Selection State
 	let showOshiModal = false;
@@ -77,7 +71,9 @@
 	}
 
 	onMount(() => {
-		// Data sync handled by reactive statements below
+		if ($isAuthenticated && !$userProfile) {
+			fetchProfile();
+		}
 	});
 
 	// Subscribe to store changes to keep local state in sync
@@ -102,6 +98,32 @@
 			if (storeProfile.profileRecentActivity) {
 				recentActivity = storeProfile.profileRecentActivity;
 			}
+			loading = false;
+		}
+	}
+
+	async function fetchProfile() {
+		try {
+			loading = true;
+			error = false;
+			const data = await auth.getProfile();
+
+			const userWithStats: UserWithProfileStats = {
+				...data.profile,
+				oshi: data.oshi,
+				profileRank: data.rank,
+				profileStats: data.stats,
+				profileOshiTwoShots: data.oshiTwoShots,
+				profileRecentActivity: data.recentActivity
+			};
+
+			userProfile.set(userWithStats);
+		} catch (e) {
+			console.error('Failed to fetch profile', e);
+			error = true;
+			showToast($t('profile.errorTitle'), 'error');
+		} finally {
+			loading = false;
 		}
 	}
 
@@ -240,27 +262,37 @@
 		</PageHeader>
 	</div>
 
-	<div class="grid lg:grid-cols-12 gap-8">
-		<!-- LEFT COLUMN: Identity & Level (Span 5) -->
-		<div class="lg:col-span-5 space-y-6">
-			<DigitalMemberCard {profile} {loading} />
-			<LevelProgress {level} {progressPercent} {loading} />
-			<QuickStats {totalShows} {totalAchievements} {loading} />
-		</div>
+	<!-- Error State -->
+	<!-- Error State -->
+	{#if error}
+		<ErrorState
+			title={$t('profile.errorTitle')}
+			description={$t('profile.errorDesc')}
+			onRetry={fetchProfile}
+		/>
+	{:else}
+		<div class="grid lg:grid-cols-12 gap-8">
+			<!-- LEFT COLUMN: Identity & Level (Span 5) -->
+			<div class="lg:col-span-5 space-y-6">
+				<DigitalMemberCard {profile} {loading} />
+				<LevelProgress {level} {progressPercent} {loading} />
+				<QuickStats {totalShows} {totalAchievements} {loading} />
+			</div>
 
-		<!-- RIGHT COLUMN: Oshimen & Feed (Span 7) -->
-		<div class="lg:col-span-7 space-y-6">
-			<OshiCard
-				{profile}
-				{loading}
-				rouletteCount={twoShotRouletteCount}
-				birthdayCount={twoShotBirthdayCount}
-				onOpenOshiModal={openOshiModal}
-				onOpenMemberDetail={openMemberDetail}
-			/>
-			<RecentActivity {recentActivity} {loading} />
+			<!-- RIGHT COLUMN: Oshimen & Feed (Span 7) -->
+			<div class="lg:col-span-7 space-y-6">
+				<OshiCard
+					{profile}
+					{loading}
+					rouletteCount={twoShotRouletteCount}
+					birthdayCount={twoShotBirthdayCount}
+					onOpenOshiModal={openOshiModal}
+					onOpenMemberDetail={openMemberDetail}
+				/>
+				<RecentActivity {recentActivity} {loading} />
+			</div>
 		</div>
-	</div>
+	{/if}
 </div>
 
 <!-- Oshi Selection Modal -->
