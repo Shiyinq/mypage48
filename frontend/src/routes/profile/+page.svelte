@@ -7,7 +7,6 @@
 		tickets as ticketsStore,
 		isInitialDataLoaded
 	} from '$lib/stores';
-	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
 	import Button from '$lib/components/Button.svelte';
@@ -16,7 +15,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { PageHeader } from '$lib/components';
 
-	import type { Ticket, User } from '$lib/types';
+	import type { User, ProfileRecentActivity, RankInfo } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		DigitalMemberCard,
@@ -27,12 +26,10 @@
 		OshiSelectionModal,
 		MemberDetailModal
 	} from '$lib/components/profile';
-	import { calculateTotalAchievements } from '$lib/utils/achievements';
-	import { calculateLevel } from '$lib/utils/level';
 
 	const { t, locale } = useTranslation();
 
-	// Profile data from API
+	// Profile data from API (consolidated response)
 	interface ProfileData {
 		userId: string;
 		profilePicture: string | null;
@@ -45,8 +42,12 @@
 	}
 
 	let profile: ProfileData | null = null;
-	let tickets: Ticket[] = [];
-	let recentShows: Ticket[] = [];
+	let recentActivity: ProfileRecentActivity[] = [];
+	let level: RankInfo = { current: 'Newcomer', xp: 0, nextLevelXp: 1, nextRankTitle: 'First Step' };
+	let totalShows = 0;
+	let totalAchievements = 0;
+	let twoShotRouletteCount = 0;
+	let twoShotBirthdayCount = 0;
 
 	// Loading state now depends on the central isInitialDataLoaded store
 	$: loading = !$isInitialDataLoaded;
@@ -57,22 +58,9 @@
 	let loadingMembers = false;
 	let savingOshi = false;
 
-	// Computed stats
-	$: totalShows = tickets.length;
-	$: totalAchievements = calculateTotalAchievements(tickets);
-
-	$: twoShotRouletteCount = tickets.filter(
-		(t) => t.two_shot?.type === 'Roulette' && t.two_shot?.member_name === profile?.oshi?.name
-	).length;
-	$: twoShotBirthdayCount = tickets.filter(
-		(t) => t.two_shot?.type === 'Birthday' && t.two_shot?.member_name === profile?.oshi?.name
-	).length;
-
-	$: level = calculateLevel(totalShows);
-
-	$: progressPercent = Math.min((level.xp / level.nextLevelXp) * 100, 100);
-
-	// Format date for {$t('profile.recentActivity.title')}
+	// Progress percent derived from level
+	$: progressPercent =
+		level.nextLevelXp > 0 ? Math.min((level.xp / level.nextLevelXp) * 100, 100) : 0;
 
 	// Helper to map profile data from User store to local ProfileData
 	function mapProfileData(profileData: User): ProfileData {
@@ -88,28 +76,32 @@
 		};
 	}
 
-	// Helper to update recent shows from tickets
-	function updateRecentShows(ticketsList: Ticket[]) {
-		recentShows = [...ticketsList]
-			.sort((a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime())
-			.slice(0, 5);
-	}
-
 	onMount(() => {
 		// Data sync handled by reactive statements below
 	});
 
 	// Subscribe to store changes to keep local state in sync
-	$: {
-		const storeTickets = $ticketsStore;
-		tickets = storeTickets;
-		updateRecentShows(tickets);
-	}
-
+	// The userProfile store now contains UserWithProfileStats with profile stats
 	$: {
 		const storeProfile = $userProfile;
 		if (storeProfile) {
 			profile = mapProfileData(storeProfile);
+
+			// Extract profile stats from typed store
+			if (storeProfile.profileRank) {
+				level = storeProfile.profileRank;
+			}
+			if (storeProfile.profileStats) {
+				totalShows = storeProfile.profileStats.totalShows;
+				totalAchievements = storeProfile.profileStats.totalAchievements;
+			}
+			if (storeProfile.profileOshiTwoShots) {
+				twoShotRouletteCount = storeProfile.profileOshiTwoShots.roulette;
+				twoShotBirthdayCount = storeProfile.profileOshiTwoShots.birthday;
+			}
+			if (storeProfile.profileRecentActivity) {
+				recentActivity = storeProfile.profileRecentActivity;
+			}
 		}
 	}
 
@@ -266,7 +258,7 @@
 				onOpenOshiModal={openOshiModal}
 				onOpenMemberDetail={openMemberDetail}
 			/>
-			<RecentActivity {recentShows} {loading} />
+			<RecentActivity {recentActivity} {loading} />
 		</div>
 	</div>
 </div>

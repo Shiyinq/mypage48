@@ -79,7 +79,20 @@
 			}
 
 			if (!currentProfile) {
-				promises.push(auth.getProfile().then((data) => userProfile.set(data)));
+				promises.push(
+					auth.getProfile().then((fullResponse) => {
+						// Extract profile and add profile stats for profile page
+						const profileWithStats = {
+							...fullResponse.profile,
+							oshi: fullResponse.oshi,
+							profileRank: fullResponse.rank,
+							profileStats: fullResponse.stats,
+							profileOshiTwoShots: fullResponse.oshiTwoShots,
+							profileRecentActivity: fullResponse.recentActivity
+						};
+						userProfile.set(profileWithStats);
+					})
+				);
 			}
 
 			await Promise.all(promises);

@@ -11,6 +11,7 @@ class ErrorCode:
     USER_FETCH_FAILED = "Failed to fetch user."
     OSHI_UPDATE_FAILED = "Failed to update oshi."
     PUBLIC_STATUS_UPDATE_FAILED = "Failed to update public status."
+    PROFILE_STATS_FETCH_ERROR = "Failed to fetch profile statistics."
 
 
 class DomainErrorCode:
@@ -31,6 +32,7 @@ class DomainErrorCode:
     USER_FETCH_FAILED = "Failed to fetch user"
     OSHI_UPDATE_FAILED = "Failed to update oshi"
     PUBLIC_STATUS_UPDATE_FAILED = "Failed to update public status"
+    PROFILE_STATS_FETCH_FAILED = "Failed to fetch profile statistics"
 
 
 class Info:
@@ -41,3 +43,17 @@ class Info:
     OSHI_UPDATED = "Oshi updated successfully."
     PUBLIC_STATUS_UPDATED = "Public status updated successfully."
     PROFILE_PICTURE_UPDATED = "Profile picture updated successfully."
+
+class RankConfig:
+    """Configuration for user rank/level calculation."""
+    MILESTONES = [
+        {"xp": 0, "title": "Newcomer"},
+        {"xp": 1, "title": "First Step"},
+        {"xp": 10, "title": "Regular Visitor"},
+        {"xp": 50, "title": "Dedicated Fan"},
+        {"xp": 100, "title": "Century Club"},
+        {"xp": 150, "title": "Theater Icon"},
+        {"xp": 200, "title": "Legendary Wota"},
+        {"xp": 300, "title": "Theater Kami"},
+        {"xp": 500, "title": "Absolute Legend"},
+    ]

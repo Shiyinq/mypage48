@@ -56,3 +56,7 @@ class OshiUpdateError(DomainException):
 
 class PublicStatusUpdateError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.PUBLIC_STATUS_UPDATE_FAILED
+
+
+class ProfileStatsFetchError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.PROFILE_STATS_FETCH_FAILED

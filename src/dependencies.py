@@ -89,14 +89,6 @@ def get_auth_service(
     return AuthService(auth_repo, user_repo, security_service, email_service, config)
 
 
-def get_user_service(
-    repo: UserRepository = Depends(get_user_repository),
-    security_service: SecurityService = Depends(get_security_service),
-    email_service: EmailService = Depends(get_email_service),
-    config: Settings = Depends(get_settings),
-) -> UserService:
-    return UserService(repo, security_service, email_service, config)
-
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -203,6 +195,17 @@ def get_member_service(
     config: Settings = Depends(get_settings),
 ) -> MemberService:
     return MemberService(repo, config)
+
+
+def get_user_service(
+    repo: UserRepository = Depends(get_user_repository),
+    security_service: SecurityService = Depends(get_security_service),
+    email_service: EmailService = Depends(get_email_service),
+    config: Settings = Depends(get_settings),
+    theater_service: TheaterService = Depends(get_theater_service),
+    member_service: MemberService = Depends(get_member_service),
+) -> UserService:
+    return UserService(repo, security_service, email_service, config, theater_service, member_service)
 
 
 def get_dashboard_service(

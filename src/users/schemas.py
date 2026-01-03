@@ -144,3 +144,43 @@ class UpdatePublicStatusRequest(BaseModel):
 class MessageResponse(BaseModel):
     detail: str
 
+
+class RankInfo(BaseModel):
+    """Rank/level information based on total shows (XP)."""
+    current: str
+    xp: int
+    nextLevelXp: int
+    nextRankTitle: str
+
+
+class ProfileStats(BaseModel):
+    """Quick stats for profile page."""
+    totalShows: int
+    totalAchievements: int
+
+
+class ProfileRecentActivity(BaseModel):
+    """Recent activity entry for profile page."""
+    ticketId: str
+    title: str
+    date: str
+    section: str
+    number: str
+    hasTwoShot: bool
+    twoShotMember: Optional[str] = None
+
+
+class OshiTwoShotCounts(BaseModel):
+    """2-shot counts with user's oshi."""
+    roulette: int
+    birthday: int
+
+
+class ProfileFullResponse(BaseModel):
+    """Complete profile response with all sections."""
+    profile: dict  # UserCurrent as dict to avoid circular import
+    oshi: Optional[OshiResponse] = None
+    rank: RankInfo
+    stats: ProfileStats
+    oshiTwoShots: OshiTwoShotCounts
+    recentActivity: list[ProfileRecentActivity]
