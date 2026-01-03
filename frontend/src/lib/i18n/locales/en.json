@@ -439,12 +439,12 @@
 		"upcomingShows": {
 			"title": "Upcoming Shows",
 			"subtitle": "Schedule and announcements",
-			"comingSoon": "Upcoming shows feature coming soon!"
+			"empty": "No upcoming shows scheduled at the moment."
 		},
 		"showHistory": {
 			"title": "Show History",
 			"subtitle": "Past performances",
-			"comingSoon": "Show history feature coming soon!"
+			"empty": "No show history found."
 		}
 	},
 	"memories": {

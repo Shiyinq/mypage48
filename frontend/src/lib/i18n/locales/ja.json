@@ -393,12 +393,12 @@
 		"upcomingShows": {
 			"title": "今後の公演",
 			"subtitle": "スケジュールとお知らせ",
-			"comingSoon": "今後の公演機能は近日公開予定！"
+			"empty": "現在予定されている公演はありません。"
 		},
 		"showHistory": {
 			"title": "公演履歴",
 			"subtitle": "過去の公演",
-			"comingSoon": "公演履歴機能は近日公開予定！"
+			"empty": "公演履歴が見つかりません。"
 		}
 	},
 	"top2shot": {
