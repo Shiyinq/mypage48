@@ -40,6 +40,11 @@ export interface PaginationMeta {
 	next_page: number | null;
 }
 
+export interface PaginationState {
+	page: number;
+	hasMore: boolean;
+}
+
 export interface TicketFilters {
 	title?: string;
 	hasTwoShot?: boolean;

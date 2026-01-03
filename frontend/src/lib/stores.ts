@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import type { Ticket, UserWithProfileStats, AchievementsResponse } from './types';
+import type { Ticket, UserWithProfileStats, AchievementsResponse, TicketFilters, PaginationState } from './types';
 import { resetDashboard } from '$lib/stores/dashboard';
 
 const AUTH_KEY = 'oshi_log_auth';
@@ -11,7 +11,14 @@ const initialAuth = browser ? localStorage.getItem(AUTH_KEY) === 'true' : false;
 
 // Tickets are now fetched from API only, not stored in localStorage
 export const tickets = writable<Ticket[]>([]);
-export const ticketsPagination = writable<{ page: number; hasMore: boolean }>({
+export const ticketsFilters = writable<TicketFilters>({});
+// Cache for the default (unfiltered) ticket list and its pagination state
+// This allows restoring the exact scroll position/page count when clearing filters
+export const defaultTickets = writable<Ticket[] | null>(null);
+export const defaultTicketsPagination = writable<PaginationState | null>(null);
+
+// Active pagination state for the currently displayed list (filtered or default)
+export const ticketsPagination = writable<PaginationState>({
 	page: 0,
 	hasMore: true
 });
