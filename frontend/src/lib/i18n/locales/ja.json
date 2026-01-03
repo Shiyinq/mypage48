@@ -29,7 +29,8 @@
 		"settings": "設定",
 		"profile": "プロフィール",
 		"dashboard": "ダッシュボード",
-		"language": "言語"
+		"language": "言語",
+		"noResults": "結果が見つかりません"
 	},
 	"validation": {
 		"alert": {
@@ -570,6 +571,10 @@
 		"yearsOld": "歳",
 		"notFound": "メンバーが見つかりません",
 		"notFoundMessage": "メンバーの詳細を取得できませんでした。後でもう一度お試しください。",
-		"close": "閉じる"
+		"close": "閉じる",
+		"emptyState": {
+			"title": "メンバーが見つかりません",
+			"description": "検索条件やフィルターを変更して、お探しのメンバーを見つけてください。"
+		}
 	}
 }
