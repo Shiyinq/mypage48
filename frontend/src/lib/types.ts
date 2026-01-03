@@ -58,6 +58,27 @@ export interface TicketPaginationResponse {
 	meta: PaginationMeta;
 }
 
+// Memories types
+export type MemoryFilterType = 'ALL' | 'TICKET' | '2SHOT';
+
+export interface MemoryItem {
+	uniqueId: string;
+	type: 'TICKET' | '2SHOT';
+	imageUrl: string;
+	date: string;
+	time: string;
+	title: string;
+	subtitle: string;
+	notes?: string;
+	eventTitle?: string;
+	twoShotMemberName?: string;
+}
+
+export interface MemoriesPaginationResponse {
+	data: MemoryItem[];
+	meta: PaginationMeta;
+}
+
 export type ViewState =
 	| 'DASHBOARD'
 	| 'UPLOAD'

@@ -15,6 +15,8 @@ from src.api_keys.http_exceptions import (
 )
 from src.achievements.exceptions import AchievementsFetchError
 from src.achievements.http_exceptions import AchievementsFetchHTTPException
+from src.memories.exceptions import MemoriesFetchError
+from src.memories.http_exceptions import MemoriesFetchHTTPException
 from src.auth.exceptions import (
     AuthOperationError,
     IncorrectCredentialsError,
@@ -227,6 +229,10 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     # Achievements errors
     if isinstance(exc, AchievementsFetchError):
         return await detailed_http_exception_handler(request, AchievementsFetchHTTPException())
+
+    # Memories errors
+    if isinstance(exc, MemoriesFetchError):
+        return await detailed_http_exception_handler(request, MemoriesFetchHTTPException())
 
     error_msg = str(exc)
     if (

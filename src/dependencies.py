@@ -27,6 +27,8 @@ from src.tickets.repository import TicketsRepository
 from src.tickets.service import TicketsService
 from src.dashboard.service import DashboardService
 from src.achievements.service import AchievementsService
+from src.memories.repository import MemoriesRepository
+from src.memories.service import MemoriesService
 
 
 
@@ -232,4 +234,14 @@ def get_dashboard_service(
 ) -> DashboardService:
     return DashboardService(tickets_repo, config)
 
+
+def get_memories_repository(db=Depends(get_db)) -> MemoriesRepository:
+    return MemoriesRepository(db)
+
+
+def get_memories_service(
+    repo: MemoriesRepository = Depends(get_memories_repository),
+    config: Settings = Depends(get_settings),
+) -> MemoriesService:
+    return MemoriesService(repo, config)
 

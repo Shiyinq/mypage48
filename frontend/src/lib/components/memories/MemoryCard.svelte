@@ -1,18 +1,6 @@
 <script lang="ts">
 	import { Image as ImageIcon, MapPin, Calendar, Sparkles, User } from 'lucide-svelte';
-	import type { Ticket } from '$lib/types';
-
-	interface MemoryItem {
-		uniqueId: string;
-		type: 'TICKET' | '2SHOT';
-		imageUrl: string;
-		date: string;
-		time: string;
-		title: string;
-		subtitle: string;
-		notes?: string;
-		originalTicket: Ticket;
-	}
+	import type { MemoryItem } from '$lib/types';
 
 	export let item: MemoryItem;
 	export let rotation: number = 0;
@@ -75,7 +63,7 @@
 				<p
 					class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 line-clamp-1"
 				>
-					{item.originalTicket.event.title}
+					{item.eventTitle}
 				</p>
 			{/if}
 
@@ -92,7 +80,7 @@
 					<span>•</span>
 					<span class="flex items-center gap-0.5"
 						><User class="w-3 h-3" />
-						{item.originalTicket.two_shot?.member_name.split(' ')[0]}</span
+						{item.twoShotMemberName?.split(' ')[0] ?? ''}</span
 					>
 				{/if}
 			</div>
