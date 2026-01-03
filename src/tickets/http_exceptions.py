@@ -1,5 +1,5 @@
 from src.http_exceptions import BadRequest, InternalServerError, NotFound
-from src.theater.constants import ErrorCode
+from src.tickets.constants import ErrorCode
 
 
 class TicketNotFound(NotFound):

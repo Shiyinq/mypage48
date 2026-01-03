@@ -23,8 +23,8 @@ from src.llm.repository import LLMRepository
 from src.llm.service import LLMService
 from src.members.repository import MemberRepository
 from src.members.service import MemberService
-from src.theater.repository import TheaterRepository
-from src.theater.service import TheaterService
+from src.tickets.repository import TicketsRepository
+from src.tickets.service import TicketsService
 from src.dashboard.service import DashboardService
 from src.achievements.service import AchievementsService
 
@@ -177,14 +177,15 @@ def get_llm_service(
     return LLMService(repo, config)
 
 
-def get_theater_repository(db=Depends(get_db)) -> TheaterRepository:
-    return TheaterRepository(db)
+def get_tickets_repository(db=Depends(get_db)) -> TicketsRepository:
+    return TicketsRepository(db)
 
-def get_theater_service(
-    repo: TheaterRepository = Depends(get_theater_repository),
+
+def get_tickets_service(
+    repo: TicketsRepository = Depends(get_tickets_repository),
     config: Settings = Depends(get_settings),
-) -> TheaterService:
-    return TheaterService(repo, config)
+) -> TicketsService:
+    return TicketsService(repo, config)
 
 
 def get_member_repository(db=Depends(get_db)) -> MemberRepository:
@@ -199,10 +200,10 @@ def get_member_service(
 
 
 def get_achievements_service(
-    theater_service: TheaterService = Depends(get_theater_service),
+    tickets_service: TicketsService = Depends(get_tickets_service),
     config: Settings = Depends(get_settings),
 ) -> AchievementsService:
-    return AchievementsService(theater_service, config)
+    return AchievementsService(tickets_service, config)
 
 
 def get_user_service(
@@ -210,7 +211,7 @@ def get_user_service(
     security_service: SecurityService = Depends(get_security_service),
     email_service: EmailService = Depends(get_email_service),
     config: Settings = Depends(get_settings),
-    theater_service: TheaterService = Depends(get_theater_service),
+    tickets_service: TicketsService = Depends(get_tickets_service),
     member_service: MemberService = Depends(get_member_service),
     achievements_service: AchievementsService = Depends(get_achievements_service),
 ) -> UserService:
@@ -219,16 +220,16 @@ def get_user_service(
         security_service,
         email_service,
         config,
-        theater_service,
+        tickets_service,
         member_service,
         achievements_service,
     )
 
 
 def get_dashboard_service(
-    theater_repo: TheaterRepository = Depends(get_theater_repository),
+    tickets_repo: TicketsRepository = Depends(get_tickets_repository),
     config: Settings = Depends(get_settings),
 ) -> DashboardService:
-    return DashboardService(theater_repo, config)
+    return DashboardService(tickets_repo, config)
 
 

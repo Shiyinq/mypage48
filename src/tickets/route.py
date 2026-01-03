@@ -2,14 +2,15 @@ from typing import List
 
 from fastapi import APIRouter, Depends, status
 
-from src.dependencies import get_current_user, get_theater_service
+from src.dependencies import get_current_user, get_tickets_service
 from src.auth.schemas import UserCurrent
-from src.theater.service import TheaterService
-from src.theater.schemas import (
+from src.tickets.service import TicketsService
+from src.tickets.schemas import (
     MessageResponse,
     TicketCreateRequest,
     TicketResponse,
     TicketUpdateRequest,
+    TicketPaginationResponse,
 )
 
 
@@ -20,7 +21,7 @@ router = APIRouter()
 async def create_ticket(
     ticket_data: TicketCreateRequest,
     current_user: UserCurrent = Depends(get_current_user),
-    service: TheaterService = Depends(get_theater_service),
+    service: TicketsService = Depends(get_tickets_service),
 ):
     """
     Create a new ticket.
@@ -28,22 +29,24 @@ async def create_ticket(
     return await service.create_ticket(current_user.userId, ticket_data)
 
 
-@router.get("/tickets", response_model=List[TicketResponse], response_model_by_alias=True)
+@router.get("/tickets", response_model=TicketPaginationResponse, response_model_by_alias=True)
 async def get_my_tickets(
+    page: int = 1,
+    limit: int = 20,
     current_user: UserCurrent = Depends(get_current_user),
-    service: TheaterService = Depends(get_theater_service),
+    service: TicketsService = Depends(get_tickets_service),
 ):
     """
     Get all tickets for the current user.
     """
-    return await service.get_my_tickets(current_user.userId)
+    return await service.get_tickets_paginated(current_user.userId, page=page, limit=limit)
 
 
 @router.get("/tickets/{ticket_id}", response_model=TicketResponse, response_model_by_alias=True)
 async def get_ticket(
     ticket_id: str,
     current_user: UserCurrent = Depends(get_current_user),
-    service: TheaterService = Depends(get_theater_service),
+    service: TicketsService = Depends(get_tickets_service),
 ):
     """
     Get a specific ticket by ID.
@@ -56,7 +59,7 @@ async def update_ticket(
     ticket_id: str,
     ticket_data: TicketUpdateRequest,
     current_user: UserCurrent = Depends(get_current_user),
-    service: TheaterService = Depends(get_theater_service),
+    service: TicketsService = Depends(get_tickets_service),
 ):
     """
     Update a ticket.
@@ -68,7 +71,7 @@ async def update_ticket(
 async def delete_ticket(
     ticket_id: str,
     current_user: UserCurrent = Depends(get_current_user),
-    service: TheaterService = Depends(get_theater_service),
+    service: TicketsService = Depends(get_tickets_service),
 ):
     """
     Delete a ticket.

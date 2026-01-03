@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 
 from src.config import Settings
 from src.logging_config import create_logger
-from src.theater.repository import TheaterRepository
+from src.tickets.repository import TicketsRepository
 from src.dashboard.constants import DashboardConstants
 from src.dashboard.exceptions import StatsFetchError
 from src.dashboard.schemas import (
@@ -34,10 +34,10 @@ class DashboardService:
 
     def __init__(
         self,
-        theater_repository: TheaterRepository,
+        tickets_repository: TicketsRepository,
         config: Settings,
     ):
-        self.theater_repository = theater_repository
+        self.tickets_repository = tickets_repository
         self.config = config
 
     @staticmethod
@@ -311,7 +311,7 @@ class DashboardService:
         """Get complete dashboard statistics for a user."""
         try:
             # Get available years (efficient query)
-            available_years = await self.theater_repository.get_available_years(user_id)
+            available_years = await self.tickets_repository.get_available_years(user_id)
             
             # Ensure current year is always in the list
             current_year = datetime.now().year
@@ -326,7 +326,7 @@ class DashboardService:
                 year = datetime.now().year
 
             # Filter tickets based on parameters (efficient query)
-            filtered_tickets = await self.theater_repository.get_tickets_filtered(
+            filtered_tickets = await self.tickets_repository.get_tickets_filtered(
                 user_id, year, start_month, end_month, is_all_data
             )
 

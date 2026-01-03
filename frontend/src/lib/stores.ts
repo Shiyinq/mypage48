@@ -11,6 +11,10 @@ const initialAuth = browser ? localStorage.getItem(AUTH_KEY) === 'true' : false;
 
 // Tickets are now fetched from API only, not stored in localStorage
 export const tickets = writable<Ticket[]>([]);
+export const ticketsPagination = writable<{ page: number; hasMore: boolean }>({
+	page: 0,
+	hasMore: true
+});
 export const isAuthenticated = writable<boolean>(initialAuth);
 export const userProfile = writable<UserWithProfileStats | null>(null);
 export const achievementsData = writable<AchievementsResponse | null>(null);
@@ -37,6 +41,7 @@ if (browser) {
 			localStorage.removeItem(AUTH_KEY);
 			// Cleanup state on logout
 			tickets.set([]);
+			ticketsPagination.set({ page: 0, hasMore: true });
 			userProfile.set(null);
 			achievementsData.set(null);
 			isInitialDataLoaded.set(false);

@@ -32,6 +32,19 @@ export interface Ticket {
 	} | null;
 }
 
+export interface PaginationMeta {
+	current_page: number;
+	last_page: number;
+	total_data: number;
+	per_page: number;
+	next_page: number | null;
+}
+
+export interface TicketPaginationResponse {
+	data: Ticket[];
+	meta: PaginationMeta;
+}
+
 export type ViewState =
 	| 'DASHBOARD'
 	| 'UPLOAD'

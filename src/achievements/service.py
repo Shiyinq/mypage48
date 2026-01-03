@@ -6,7 +6,7 @@ from src.achievements.schemas import RankInfo, AchievementItem, AchievementsResp
 from src.achievements.exceptions import AchievementsFetchError
 from src.config import Settings
 from src.logging_config import create_logger
-from src.theater.service import TheaterService
+from src.tickets.service import TicketsService
 
 logger = create_logger("achievements_service", __name__)
 
@@ -14,10 +14,10 @@ logger = create_logger("achievements_service", __name__)
 class AchievementsService:
     def __init__(
         self,
-        theater_service: TheaterService,
+        tickets_service: TicketsService,
         config: Settings,
     ):
-        self.theater_service = theater_service
+        self.tickets_service = tickets_service
         self.config = config
 
     def calculate_rank(self, total_shows: int) -> RankInfo:
@@ -234,7 +234,7 @@ class AchievementsService:
         Get all achievements with unlock status and progress for Achievements page.
         """
         try:
-            tickets = await self.theater_service.get_my_tickets(user_id, None)
+            tickets = await self.tickets_service.get_my_tickets(user_id, None)
             achievements_data = self.calculate_achievements_full(tickets)
 
             # Convert to AchievementItem models

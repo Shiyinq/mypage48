@@ -3,7 +3,7 @@
 	import { isAuthenticated, toast, tickets, userProfile, isInitialDataLoaded } from '$lib/stores';
 	import { locale, type Locale } from '$lib/i18n';
 	import { initTheme } from '$lib/stores/theme';
-	import { theater } from '$lib/apis/theater';
+	import { ticketsApi } from '$lib/apis/tickets';
 	import { auth } from '$lib/apis/auth';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -75,7 +75,8 @@
 			const promises = [];
 
 			if (currentTickets.length === 0) {
-				promises.push(theater.getMyTickets().then((data) => tickets.set(data)));
+				// Initialize with default first page
+				promises.push(ticketsApi.getMyTickets().then((response) => tickets.set(response.data)));
 			}
 
 			if (!currentProfile) {

@@ -1,11 +1,11 @@
 from typing import List, Optional
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from src.theater.schemas import TicketInDB, TicketUpdateRequest
+from src.tickets.schemas import TicketInDB, TicketUpdateRequest
 from pymongo import ReturnDocument
 from bson import ObjectId
 
 
-class TheaterRepository:
+class TicketsRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["tickets"]
 
@@ -19,15 +19,28 @@ class TheaterRepository:
             return None
         return await self.collection.find_one({"_id": oid, "user_id": user_id})
     
-    async def get_all_tickets(self, user_id: str, year: Optional[int] = None) -> List[dict]:
+    async def get_all_tickets(
+        self, 
+        user_id: str, 
+        year: Optional[int] = None, 
+        page: Optional[int] = None, 
+        limit: Optional[int] = None
+    ) -> tuple[List[dict], int]:
         query = {"user_id": user_id}
         
         if year:
             # event.date is stored as string "YYYY-MM-DD", so use regex to match the year prefix
             query["event.date"] = {"$regex": f"^{year}-"}
             
+        total_count = await self.collection.count_documents(query)
+        
         cursor = self.collection.find(query).sort([("event.date", -1), ("event.time", -1)])
-        return await cursor.to_list(length=None)
+        
+        if page is not None and limit is not None:
+            skip = (page - 1) * limit
+            cursor = cursor.skip(skip).limit(limit)
+            
+        return await cursor.to_list(length=None), total_count
 
     async def update_ticket(self, ticket_id: str, user_id: str, update_data: TicketUpdateRequest) -> Optional[dict]:
         try:

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { theater } from '$lib/apis/theater';
+	import { ticketsApi } from '$lib/apis/tickets';
 	import { showToast, tickets } from '$lib/stores';
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
@@ -157,10 +157,10 @@
 					: null
 			};
 
-			const updated = await theater.updateTicket(ticket._id, payload);
+			const updated = await ticketsApi.updateTicket(ticket._id, payload);
 			// Fetch fresh data from server after update
-			const freshTickets = await theater.getMyTickets();
-			tickets.set(freshTickets);
+			const freshTickets = await ticketsApi.getMyTickets();
+			tickets.set(freshTickets.data);
 			showToast('Ticket updated successfully!');
 			dispatch('save', updated);
 			dispatch('close');
