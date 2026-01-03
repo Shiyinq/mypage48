@@ -245,7 +245,8 @@
 	</div>
 
 	<!-- Content Area -->
-	{#if isLoading}
+	<!-- Content Area -->
+	{#if isLoading || (isLoadingMore && filteredTickets.length === 0)}
 		{#if viewMode === 'GRID'}
 			<TicketCardSkeleton count={6} />
 		{:else}
@@ -267,31 +268,48 @@
 			title={$t('history.noTickets')}
 			description={$t('history.addFirst')}
 		/>
-	{:else if viewMode === 'GRID'}
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-			{#each filteredTickets as ticket (ticket._id)}
-				<TicketCard
-					{ticket}
-					on:updateNote={handleNoteUpdate}
-					on:editTicket={(e) => (editingTicket = e.detail)}
-					on:deleteTicket={(e) => openDeleteModal(e.detail)}
-				/>
-			{/each}
-		</div>
 	{:else}
-		<!-- Table View -->
-		<TicketTable
-			tickets={filteredTickets}
-			on:updateNote={handleNoteUpdate}
-			on:editTicket={(e) => (editingTicket = e.detail)}
-			on:deleteTicket={(e) => openDeleteModal(e.detail)}
-		/>
-	{/if}
+		{#if viewMode === 'GRID'}
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				{#each filteredTickets as ticket (ticket._id)}
+					<TicketCard
+						{ticket}
+						on:updateNote={handleNoteUpdate}
+						on:editTicket={(e) => (editingTicket = e.detail)}
+						on:deleteTicket={(e) => openDeleteModal(e.detail)}
+					/>
+				{/each}
+			</div>
+		{:else}
+			<!-- Table View -->
+			<TicketTable
+				tickets={filteredTickets}
+				on:updateNote={handleNoteUpdate}
+				on:editTicket={(e) => (editingTicket = e.detail)}
+				on:deleteTicket={(e) => openDeleteModal(e.detail)}
+			/>
+		{/if}
 
-	{#if isLoadingMore}
-		<div class="flex justify-center py-6">
-			<Loader2 class="w-8 h-8 animate-spin text-primary" />
-		</div>
+		{#if isLoadingMore}
+			{#if viewMode === 'GRID'}
+				<TicketCardSkeleton count={3} className="mt-6" />
+			{:else}
+				<div class="mt-4">
+					<TableSkeleton
+						rows={3}
+						showHeader={false}
+						columns={[
+							$t('history.date'),
+							$t('history.eventDetails'),
+							$t('history.seat'),
+							$t('history.price'),
+							$t('history.notes'),
+							$t('history.actions')
+						]}
+					/>
+				</div>
+			{/if}
+		{/if}
 	{/if}
 </div>
 

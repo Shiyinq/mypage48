@@ -49,6 +49,9 @@ if (browser) {
 			// Cleanup state on logout
 			tickets.set([]);
 			ticketsPagination.set({ page: 0, hasMore: true });
+			ticketsFilters.set({});
+			defaultTickets.set(null);
+			defaultTicketsPagination.set(null);
 			userProfile.set(null);
 			achievementsData.set(null);
 			isInitialDataLoaded.set(false);
