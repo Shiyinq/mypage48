@@ -1,5 +1,5 @@
 from src.exceptions import DomainException
-from src.theater.constants import DomainErrorCode
+from src.tickets.constants import DomainErrorCode
 
 
 class TicketNotFoundError(DomainException):

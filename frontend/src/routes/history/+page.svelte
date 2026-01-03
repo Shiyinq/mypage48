@@ -1,11 +1,17 @@
 <script lang="ts">
-	import { tickets, showToast, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
+	import {
+		tickets,
+		ticketsPagination,
+		showToast,
+		isAuthenticated,
+		isInitialDataLoaded
+	} from '$lib/stores';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
-	import { onMount } from 'svelte';
-	import { theater } from '$lib/apis/theater';
+	import { onMount, tick } from 'svelte';
+	import { ticketsApi } from '$lib/apis/tickets';
 	import type { Ticket } from '$lib/types';
 	import EditTicketModal from '$lib/components/EditTicketModal.svelte';
-	import { History, Search } from 'lucide-svelte';
+	import { History, Search, Loader2 } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -31,12 +37,52 @@
 
 	/* Loading State */
 	let mounted = false;
+	let isLoadingMore = false;
 
 	onMount(() => {
 		mounted = true;
+		if ($tickets.length === 0 && $ticketsPagination.hasMore) {
+			loadTickets(1);
+		}
 	});
 
-	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
+	async function loadTickets(page: number) {
+		if (isLoadingMore) return;
+		isLoadingMore = true;
+		try {
+			const res = await ticketsApi.getMyTickets(page, 20);
+			if (page === 1) {
+				tickets.set(res.data);
+			} else {
+				tickets.update((curr) => [...curr, ...res.data]);
+			}
+
+			ticketsPagination.update((p) => ({
+				page,
+				hasMore: res.meta.current_page < res.meta.last_page
+			}));
+			isInitialDataLoaded.set(true);
+		} catch (e) {
+			console.error(e);
+			showToast($t('common.error'), 'error');
+		} finally {
+			isLoadingMore = false;
+		}
+	}
+
+	function handleScroll() {
+		if (!mounted || isLoadingMore || !$ticketsPagination.hasMore || searchQuery) return;
+
+		const threshold = 300;
+		const position = window.innerHeight + window.scrollY;
+		const height = document.body.offsetHeight;
+
+		if (position > height - threshold) {
+			loadTickets($ticketsPagination.page + 1);
+		}
+	}
+
+	$: isLoading = !mounted || ($isAuthenticated && $tickets.length === 0 && !$isInitialDataLoaded);
 
 	$: sortedTickets = [...$tickets].sort(
 		(a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime()
@@ -62,7 +108,7 @@
 			tickets.update((items) => items.map((t) => (t._id === ticketId ? { ...t, notes: note } : t)));
 
 			// Sync with API
-			await theater.updateTicket(ticketId, { notes: note });
+			await ticketsApi.updateTicket(ticketId, { notes: note });
 			showToast($t('history.noteSaved'), 'success');
 		} catch (err) {
 			console.error('Failed to update note', err);
@@ -78,7 +124,7 @@
 		if (!deleteId) return;
 		isDeleting = true;
 		try {
-			await theater.deleteTicket(deleteId);
+			await ticketsApi.deleteTicket(deleteId);
 			tickets.update((current) => current.filter((t) => t._id !== deleteId));
 
 			// Invalidate dashboard cache
@@ -108,6 +154,7 @@
 </script>
 
 <SEO title={$t('history.title')} path="/history" description={$t('history.description')} />
+<svelte:window on:scroll={handleScroll} />
 
 <DeleteConfirmationModal
 	show={!!deleteId}
@@ -173,6 +220,12 @@
 			on:editTicket={(e) => (editingTicket = e.detail)}
 			on:deleteTicket={(e) => openDeleteModal(e.detail)}
 		/>
+	{/if}
+
+	{#if isLoadingMore}
+		<div class="flex justify-center py-6">
+			<Loader2 class="w-8 h-8 animate-spin text-primary" />
+		</div>
 	{/if}
 </div>
 

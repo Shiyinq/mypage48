@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tickets, showToast, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
 	import { onMount } from 'svelte';
-	import { theater } from '$lib/apis/theater';
+	import { ticketsApi } from '$lib/apis/tickets';
 	import { Mic2 } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
@@ -40,10 +40,10 @@
 		isDeleting = true;
 
 		try {
-			await theater.deleteTicket(idToDelete);
+			await ticketsApi.deleteTicket(idToDelete);
 			// Fetch fresh data from server after delete
-			const freshTickets = await theater.getMyTickets();
-			tickets.set(freshTickets);
+			const freshTickets = await ticketsApi.getMyTickets();
+			tickets.set(freshTickets.data);
 			showToast('Ticket deleted successfully', 'success');
 		} catch (error) {
 			console.error('Failed to delete ticket:', error);

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Union, Annotated
+from typing import List, Optional, Union, Annotated
 from pydantic import BaseModel, Field, BeforeValidator
 
 
@@ -71,3 +71,16 @@ class TicketResponse(TicketInDB):
 
 class MessageResponse(BaseModel):
     detail: str
+
+
+class PaginationMeta(BaseModel):
+    current_page: int
+    last_page: int
+    total_data: int
+    per_page: int
+    next_page: Optional[int] = None
+
+
+class TicketPaginationResponse(BaseModel):
+    data: List[TicketResponse]
+    meta: PaginationMeta

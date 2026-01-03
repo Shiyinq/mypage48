@@ -76,7 +76,7 @@ from src.users.http_exceptions import (
     UsernameTaken,
 )
 from src.users.constants import ErrorCode
-from src.theater.exceptions import (
+from src.tickets.exceptions import (
     ImageTooLargeError as TheaterImageTooLargeError,
     InvalidImageError as TheaterInvalidImageError,
     InvalidImageTypeError as TheaterInvalidImageTypeError,
@@ -86,7 +86,7 @@ from src.theater.exceptions import (
     TicketUpdateError,
     TicketDeletionError,
 )
-from src.theater.http_exceptions import (
+from src.tickets.http_exceptions import (
     ImageTooLarge as TheaterImageTooLarge,
     InvalidImage as TheaterInvalidImage,
     InvalidImageType as TheaterInvalidImageType,

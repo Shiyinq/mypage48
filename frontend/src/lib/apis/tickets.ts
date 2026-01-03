@@ -1,7 +1,7 @@
 import { client } from './client';
-import type { Ticket } from '../types';
+import type { Ticket, TicketPaginationResponse } from '../types';
 
-export const theater = {
+export const ticketsApi = {
 	createTicket: async (ticket: Partial<Ticket>) => {
 		return await client<Ticket>('/theater/tickets', {
 			method: 'POST',
@@ -9,8 +9,8 @@ export const theater = {
 		});
 	},
 
-	getMyTickets: async () => {
-		return await client<Ticket[]>('/theater/tickets', {
+	getMyTickets: async (page = 1, limit = 20) => {
+		return await client<TicketPaginationResponse>(`/theater/tickets?page=${page}&limit=${limit}`, {
 			method: 'GET'
 		});
 	},

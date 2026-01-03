@@ -5,7 +5,7 @@ from src.auth.route import router as auth_router
 from src.health.route import router as health_router
 from src.users.route import router as user_router
 from src.llm.route import router as llm_router
-from src.theater.route import router as theater_router
+from src.tickets.route import router as theater_router
 from src.members.route import router as members_router
 from src.dashboard.route import router as dashboard_router
 from src.achievements.route import router as achievements_router

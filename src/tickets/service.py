@@ -10,8 +10,8 @@ from src.image_validation import (
 )
 
 from src.logging_config import create_logger
-from src.theater.constants import Info
-from src.theater.exceptions import (
+from src.tickets.constants import Info
+from src.tickets.exceptions import (
     ImageTooLargeError,
     InvalidImageError,
     InvalidImageTypeError,
@@ -21,13 +21,15 @@ from src.theater.exceptions import (
     TicketNotFoundError,
     TicketUpdateError,
 )
-from src.theater.repository import TheaterRepository
-from src.theater.schemas import (
+from src.tickets.repository import TicketsRepository
+from src.tickets.schemas import (
     MessageResponse,
     TicketCreateRequest,
     TicketInDB,
     TicketResponse,
     TicketUpdateRequest,
+    TicketPaginationResponse,
+    PaginationMeta,
 )
 
 logger = create_logger("theater_service", __name__)
@@ -35,10 +37,10 @@ logger = create_logger("theater_service", __name__)
 
 
 
-class TheaterService:
+class TicketsService:
     def __init__(
         self,
-        repository: TheaterRepository,
+        repository: TicketsRepository,
         config: Settings,
     ):
         self.repository = repository
@@ -84,11 +86,63 @@ class TheaterService:
             logger.exception(f"Error creating ticket: {str(e)}")
             raise TicketCreationError()
 
-    async def get_my_tickets(self, user_id: str, year: Optional[int] = None) -> List[TicketResponse]:
+    async def get_tickets_paginated(
+        self, 
+        user_id: str, 
+        page: int,
+        limit: int,
+        year: Optional[int] = None,
+    ) -> TicketPaginationResponse:
         try:
-            tickets = await self.repository.get_all_tickets(user_id, year)
+            # Enforce max limit of 100
+            if limit > 100:
+                limit = 100
+
+            # Default pagination values if not provided (though route usually provides them)
+            current_page = page if page else 1
+            per_page = limit if limit else 20
+            
+            tickets_data, total_count = await self.repository.get_all_tickets(user_id, year, current_page, per_page)
+            
             results = []
-            for t in tickets:
+            for t in tickets_data:
+                results.append(TicketResponse(**t))
+            
+            # Calculate total pages
+            last_page = (total_count + per_page - 1) // per_page if per_page > 0 else 1
+            if last_page < 1:
+                last_page = 1
+            
+            next_page = current_page + 1 if current_page < last_page else None
+                
+            return TicketPaginationResponse(
+                data=results,
+                meta=PaginationMeta(
+                    current_page=current_page,
+                    last_page=last_page,
+                    total_data=total_count,
+                    per_page=per_page,
+                    next_page=next_page
+                )
+            )
+        except Exception as e:
+            logger.exception(f"Error fetching tickets: {str(e)}")
+            raise TicketFetchError()
+
+    async def get_my_tickets(
+        self, 
+        user_id: str, 
+        year: Optional[int] = None,
+    ) -> List[TicketResponse]:
+        """
+        Get all tickets for internal use (stats etc).
+        Returns list of tickets without pagination metadata.
+        """
+        try:
+            # We don't pass page/limit here to get all data
+            tickets_data, _ = await self.repository.get_all_tickets(user_id, year, page=None, limit=None)
+            results = []
+            for t in tickets_data:
                 results.append(TicketResponse(**t))
             return results
         except Exception as e:

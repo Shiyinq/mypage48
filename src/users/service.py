@@ -48,7 +48,7 @@ from src.users.schemas import (
     UserStats,
 )
 from src.achievements.schemas import RankInfo
-from src.theater.service import TheaterService
+from src.tickets.service import TicketsService
 from src.members.service import MemberService
 
 logger = create_logger("users_service", __name__)
@@ -61,7 +61,7 @@ class UserService:
         security_service: SecurityService,
         email_service: EmailService,
         config: Settings,
-        theater_service: TheaterService,
+        tickets_service: TicketsService,
         member_service: MemberService,
         achievements_service: AchievementsService,
     ):
@@ -69,7 +69,7 @@ class UserService:
         self.security_service = security_service
         self.email_service = email_service
         self.config = config
-        self.theater_service = theater_service
+        self.tickets_service = tickets_service
         self.member_service = member_service
         self.achievements_service = achievements_service
 
@@ -265,7 +265,7 @@ class UserService:
 
         try:
             # Respect user's public year setting if set
-            tickets = await self.theater_service.get_my_tickets(user.userId, query_year)
+            tickets = await self.tickets_service.get_my_tickets(user.userId, query_year)
             total_shows = len(tickets)
             total_spent = sum(t.price for t in tickets)
             total_2shots = sum(1 for t in tickets if t.two_shot is not None)
@@ -372,7 +372,7 @@ class UserService:
                     logger.warning(f"Failed to fetch oshi data for id {current_user.oshiId}: {e}")
 
             # Get tickets for stats calculation
-            tickets = await self.theater_service.get_my_tickets(current_user.userId, None)
+            tickets = await self.tickets_service.get_my_tickets(current_user.userId, None)
 
             total_shows = len(tickets)
             rank = self.achievements_service.calculate_rank(total_shows)

@@ -3,7 +3,7 @@
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { goto } from '$app/navigation';
 	import { extractTicketData } from '$lib/services/geminiService';
-	import { theater } from '$lib/apis/theater';
+	import { ticketsApi } from '$lib/apis/tickets';
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 
@@ -200,10 +200,10 @@
 					: undefined
 			};
 
-			await theater.createTicket(payload);
+			await ticketsApi.createTicket(payload);
 			// Fetch fresh data from server after create
-			const freshTickets = await theater.getMyTickets();
-			tickets.set(freshTickets);
+			const freshTickets = await ticketsApi.getMyTickets();
+			tickets.set(freshTickets.data);
 
 			// Invalidate dashboard cache
 			invalidateDashboard();

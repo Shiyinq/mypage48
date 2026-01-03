@@ -96,9 +96,11 @@ async def test_get_tickets(client: AsyncClient, db):
     response = await client.get("/api/theater/tickets", headers=headers)
     assert response.status_code == 200
     data = response.json()
-    assert isinstance(data, list)
-    assert len(data) >= 1
-    assert data[0]["event"]["title"] == "Ramune"
+    assert "data" in data
+    assert "meta" in data
+    assert isinstance(data["data"], list)
+    assert len(data["data"]) >= 1
+    assert data["data"][0]["event"]["title"] == "Ramune"
 
 @pytest.mark.asyncio
 async def test_update_ticket(client: AsyncClient, db):
