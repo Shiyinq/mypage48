@@ -1,19 +1,7 @@
 <script lang="ts">
 	import { X, Calendar, MapPin, Sparkles } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
-	import type { Ticket } from '$lib/types';
-
-	interface MemoryItem {
-		uniqueId: string;
-		type: 'TICKET' | '2SHOT';
-		imageUrl: string;
-		date: string;
-		time: string;
-		title: string;
-		subtitle: string;
-		notes?: string;
-		originalTicket: Ticket;
-	}
+	import type { MemoryItem } from '$lib/types';
 
 	export let selectedImage: MemoryItem | null = null;
 	export let onClose: () => void;

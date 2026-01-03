@@ -1,85 +1,107 @@
 <script lang="ts">
-	import { tickets, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
+	import { isAuthenticated } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import { Image as ImageIcon } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { PageHeader, EmptyState } from '$lib/components';
 	import { Lightbox, MemoryFilters, MemoryCard, type FilterType } from '$lib/components/memories';
-	import type { Ticket } from '$lib/types';
+	import type { MemoryItem, PaginationState } from '$lib/types';
+	import { memoriesApi } from '$lib/apis/memories';
 
 	const { t } = useTranslation();
 
-	interface MemoryItem {
-		uniqueId: string;
-		type: 'TICKET' | '2SHOT';
-		imageUrl: string;
-		date: string;
-		time: string;
-		title: string;
-		subtitle: string;
-		notes?: string;
-		originalTicket: Ticket;
-	}
-
+	// State
+	let memories: MemoryItem[] = [];
+	let pagination: PaginationState = { page: 0, hasMore: true };
 	let filter: FilterType = 'ALL';
 	let selectedImage: MemoryItem | null = null;
+	let isLoadingMore = false;
+	let mounted = false;
 
-	// Derived
-	$: memoryItems = (() => {
-		const items: MemoryItem[] = [];
-		$tickets.forEach((ticket) => {
-			// 1. Ticket Image
-			if (ticket.imageUrl) {
-				items.push({
-					uniqueId: `${ticket._id}-ticket`,
-					type: 'TICKET',
-					imageUrl: ticket.imageUrl,
-					date: ticket.event.date,
-					time: ticket.event.time,
-					title: ticket.event.title,
-					subtitle: `${ticket.seat.section}-${ticket.seat.number}`,
-					notes: ticket.notes,
-					originalTicket: ticket
-				});
+	// Cached data for each filter to avoid refetching
+	let cachedData: Record<
+		FilterType,
+		{ memories: MemoryItem[]; pagination: PaginationState } | null
+	> = {
+		ALL: null,
+		TICKET: null,
+		'2SHOT': null
+	};
+
+	onMount(() => {
+		mounted = true;
+		loadMemories(1);
+	});
+
+	async function loadMemories(page: number) {
+		if (isLoadingMore) return;
+		isLoadingMore = true;
+
+		try {
+			const res = await memoriesApi.getMemories(page, 20, filter);
+
+			if (page === 1) {
+				memories = res.data;
+			} else {
+				memories = [...memories, ...res.data];
 			}
-			// 2. 2-Shot Image
-			if (ticket.two_shot?.imageUrl) {
-				items.push({
-					uniqueId: `${ticket._id}-2shot`,
-					type: '2SHOT',
-					imageUrl: ticket.two_shot.imageUrl,
-					date: ticket.event.date,
-					time: ticket.event.time,
-					title: `2-Shot: ${ticket.two_shot.member_name}`,
-					subtitle: ticket.two_shot.type, // Roulette / Birthday
-					notes: ticket.notes,
-					originalTicket: ticket
-				});
-			}
-		});
-		return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-	})();
 
-	$: filteredItems =
-		filter === 'ALL' ? memoryItems : memoryItems.filter((item) => item.type === filter);
+			pagination = {
+				page,
+				hasMore: res.meta.current_page < res.meta.last_page
+			};
 
-	// Scroll lock
+			// Cache the current state
+			cachedData[filter] = { memories, pagination };
+		} catch (e) {
+			console.error('Failed to load memories:', e);
+		} finally {
+			isLoadingMore = false;
+		}
+	}
+
+	let previousFilter: FilterType = 'ALL';
+
+	function handleFilterChange(newFilter: FilterType) {
+		if (previousFilter === newFilter) return;
+		previousFilter = newFilter;
+
+		// Check cache first
+		const cached = cachedData[newFilter];
+		if (cached) {
+			memories = cached.memories;
+			pagination = cached.pagination;
+		} else {
+			// Reset and fetch
+			memories = [];
+			pagination = { page: 0, hasMore: true };
+			loadMemories(1);
+		}
+	}
+
+	function handleScroll() {
+		if (!mounted || isLoadingMore || !pagination.hasMore) return;
+
+		const threshold = 300;
+		const position = window.innerHeight + window.scrollY;
+		const height = document.documentElement.scrollHeight;
+
+		if (position > height - threshold) {
+			loadMemories(pagination.page + 1);
+		}
+	}
+
+	// Scroll lock for lightbox
 	$: if (typeof document !== 'undefined') {
 		document.body.style.overflow = selectedImage ? 'hidden' : 'unset';
 	}
 
-	/* Loading State */
-	let mounted = false;
-
-	onMount(() => {
-		mounted = true;
-	});
-
-	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
+	$: isLoading = !mounted || ($isAuthenticated && memories.length === 0 && isLoadingMore);
 </script>
 
 <SEO title={$t('memories.title')} path="/memories" description={$t('seo.memories')} />
+<svelte:window on:scroll={handleScroll} />
 
 <!-- Lightbox -->
 <Lightbox {selectedImage} onClose={() => (selectedImage = null)} />
@@ -94,7 +116,7 @@
 			theme="pink"
 		>
 			<div slot="actions">
-				<MemoryFilters bind:filter />
+				<MemoryFilters bind:filter on:change={(e) => handleFilterChange(e.detail)} />
 			</div>
 		</PageHeader>
 	</div>
@@ -122,7 +144,7 @@
 				</div>
 			{/each}
 		</div>
-	{:else if filteredItems.length === 0}
+	{:else if memories.length === 0}
 		<EmptyState
 			icon={ImageIcon}
 			title={$t('memories.noMemories')}
@@ -130,10 +152,38 @@
 		/>
 	{:else}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4">
-			{#each filteredItems as item, index (item.uniqueId)}
+			{#each memories as item, index (item.uniqueId)}
 				{@const rotation = (index % 5) - 2}
 				<MemoryCard {item} {rotation} onClick={(i) => (selectedImage = i)} />
 			{/each}
 		</div>
+
+		<!-- Loading more skeleton -->
+		{#if isLoadingMore && memories.length > 0}
+			<div
+				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4 mt-8"
+			>
+				{#each Array(4) as _, index}
+					{@const rotation = (index % 5) - 2}
+					<div class="relative" style={`transform: rotate(${rotation}deg)`}>
+						<div
+							class="bg-white dark:bg-zinc-900 p-3 pb-12 shadow-md border border-gray-100 dark:border-zinc-700 rounded-sm"
+						>
+							<div
+								class="aspect-[4/5] w-full bg-gray-200 dark:bg-zinc-800 animate-pulse mb-4"
+							></div>
+							<div class="px-2">
+								<div
+									class="h-4 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse w-3/4 mx-auto mb-2"
+								></div>
+								<div
+									class="h-3 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse w-1/2 mx-auto"
+								></div>
+							</div>
+						</div>
+					</div>
+				{/each}
+			</div>
+		{/if}
 	{/if}
 </div>
