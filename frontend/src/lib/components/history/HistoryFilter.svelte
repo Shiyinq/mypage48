@@ -99,6 +99,9 @@
 	}
 
 	let filterButton: HTMLButtonElement;
+
+	$: activeFilterCount =
+		(hasTwoShot ? 1 : 0) + (startDate ? 1 : 0) + (endDate ? 1 : 0) + selectedDays.length;
 </script>
 
 <div class="flex flex-col gap-4 w-full relative">
@@ -135,10 +138,20 @@
 		<button
 			bind:this={filterButton}
 			on:click={() => (showFilters = !showFilters)}
-			class={`p-2 rounded-full transition-all border shadow-sm cursor-pointer ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-500 hover:text-gray-700'}`}
+			class={`p-2 rounded-full transition-all border shadow-sm cursor-pointer relative ${showFilters || activeFilterCount > 0 ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-500 hover:text-gray-700'}`}
 			title="Advanced Filters"
 		>
 			<SlidersHorizontal class="w-4 h-4" />
+			{#if activeFilterCount > 0}
+				<span
+					class="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500"
+				>
+					<span
+						class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
+					></span>
+					<span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+				</span>
+			{/if}
 		</button>
 
 		<!-- View Toggle -->
