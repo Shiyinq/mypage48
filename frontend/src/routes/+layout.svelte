@@ -1,9 +1,8 @@
 <script lang="ts">
 	import '../app.css';
-	import { isAuthenticated, toast, tickets, userProfile, isInitialDataLoaded } from '$lib/stores';
+	import { isAuthenticated, toast, userProfile, isInitialDataLoaded } from '$lib/stores';
 	import { locale, type Locale } from '$lib/i18n';
 	import { initTheme } from '$lib/stores/theme';
-	import { ticketsApi } from '$lib/apis/tickets';
 	import { auth } from '$lib/apis/auth';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -56,47 +55,32 @@
 	$: if (!$isAuthenticated) {
 		hasFetchedInitialData = false;
 		isInitialDataLoaded.set(false);
-		tickets.set([]);
 		userProfile.set(null);
 	}
 
-	// Fetch initial data only once if authenticated and data not in store
+	// Fetch profile when authenticated
 	async function fetchInitialDataIfNeeded() {
 		if (hasFetchedInitialData) return;
 
 		hasFetchedInitialData = true;
 
-		// Only fetch if not already in store
-		const currentTickets = get(tickets);
+		// Fetch profile if needed
 		const currentProfile = get(userProfile);
 
 		try {
-			// Fetch tickets and profile in parallel, but only if needed
-			const promises = [];
-
-			if (currentTickets.length === 0) {
-				// Initialize with default first page
-				promises.push(ticketsApi.getMyTickets().then((response) => tickets.set(response.data)));
-			}
-
 			if (!currentProfile) {
-				promises.push(
-					auth.getProfile().then((fullResponse) => {
-						// Extract profile and add profile stats for profile page
-						const profileWithStats = {
-							...fullResponse.profile,
-							oshi: fullResponse.oshi,
-							profileRank: fullResponse.rank,
-							profileStats: fullResponse.stats,
-							profileOshiTwoShots: fullResponse.oshiTwoShots,
-							profileRecentActivity: fullResponse.recentActivity
-						};
-						userProfile.set(profileWithStats);
-					})
-				);
+				const fullResponse = await auth.getProfile();
+				// Extract profile and add profile stats for profile page
+				const profileWithStats = {
+					...fullResponse.profile,
+					oshi: fullResponse.oshi,
+					profileRank: fullResponse.rank,
+					profileStats: fullResponse.stats,
+					profileOshiTwoShots: fullResponse.oshiTwoShots,
+					profileRecentActivity: fullResponse.recentActivity
+				};
+				userProfile.set(profileWithStats);
 			}
-
-			await Promise.all(promises);
 		} catch (err) {
 			console.error('Failed to load initial data:', err);
 		} finally {

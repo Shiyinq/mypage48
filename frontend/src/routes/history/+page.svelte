@@ -12,7 +12,7 @@
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { onMount, tick } from 'svelte';
 	import { ticketsApi } from '$lib/apis/tickets';
-	import type { Ticket } from '$lib/types';
+	import type { Ticket, TicketFilters } from '$lib/types';
 	import EditTicketModal from '$lib/components/EditTicketModal.svelte';
 	import { History, ListFilter, Loader2 } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -35,7 +35,7 @@
 
 	// Main Component Logic
 	let viewMode: 'GRID' | 'TABLE' = 'GRID';
-	let filters: import('$lib/types').TicketFilters = {};
+	let filters: TicketFilters = {};
 	let deleteId: string | null = null;
 	let isDeleting = false;
 
@@ -46,13 +46,8 @@
 	onMount(() => {
 		mounted = true;
 
-		// Logic:
-		// 1. We want to start with clean filters (filters = {})
-		// 2. Check if current 'tickets' store is already showing default data
-		// 3. If yes, done.
-		// 4. If no (store has filtered data), check if we have 'defaultTickets' cached
-		// 5. If yes, swap to default cache.
-		// 6. If no, fetch.
+		// Check if we already have default data, or restore from cache if needed.
+		// If no data exists, fetch from API.
 
 		const cachedFilters = get(ticketsFilters);
 		const currentTicketCount = get(tickets).length;
@@ -66,7 +61,7 @@
 		}
 
 		// Current store is NOT default (it has filtered data).
-		// Do we have default data cached?
+		// Do we have default data cached? If so, restore it.
 		const defaults = get(defaultTickets);
 		const defaultPagination = get(defaultTicketsPagination);
 		if (defaults && defaultPagination) {
@@ -81,10 +76,7 @@
 		loadTickets(1);
 	});
 
-	async function loadTickets(
-		page: number,
-		currentFilters: import('$lib/types').TicketFilters = {}
-	) {
+	async function loadTickets(page: number, currentFilters: TicketFilters = {}) {
 		if (isLoadingMore) return;
 		isLoadingMore = true;
 		try {
@@ -136,8 +128,10 @@
 
 	let searchTimeout: ReturnType<typeof setTimeout>;
 
-	function handleFilterChange(newFilters: import('$lib/types').TicketFilters) {
+	function handleFilterChange(newFilters: TicketFilters) {
 		if (!mounted) return;
+		// Skip if initial data hasn't loaded yet (prevents duplicate calls on refresh)
+		if (!get(isInitialDataLoaded)) return;
 		filters = newFilters;
 		clearTimeout(searchTimeout);
 		searchTimeout = setTimeout(() => {
