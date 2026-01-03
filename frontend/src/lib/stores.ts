@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import type { Ticket, UserWithProfileStats } from './types';
+import type { Ticket, UserWithProfileStats, AchievementsResponse } from './types';
 import { resetDashboard } from '$lib/stores/dashboard';
 
 const AUTH_KEY = 'oshi_log_auth';
@@ -13,6 +13,7 @@ const initialAuth = browser ? localStorage.getItem(AUTH_KEY) === 'true' : false;
 export const tickets = writable<Ticket[]>([]);
 export const isAuthenticated = writable<boolean>(initialAuth);
 export const userProfile = writable<UserWithProfileStats | null>(null);
+export const achievementsData = writable<AchievementsResponse | null>(null);
 export const isInitialDataLoaded = writable<boolean>(false);
 
 // Toast Store
@@ -37,6 +38,7 @@ if (browser) {
 			// Cleanup state on logout
 			tickets.set([]);
 			userProfile.set(null);
+			achievementsData.set(null);
 			isInitialDataLoaded.set(false);
 			resetDashboard();
 		}

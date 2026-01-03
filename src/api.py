@@ -8,6 +8,7 @@ from src.llm.route import router as llm_router
 from src.theater.route import router as theater_router
 from src.members.route import router as members_router
 from src.dashboard.route import router as dashboard_router
+from src.achievements.route import router as achievements_router
 
 router = APIRouter()
 
@@ -19,4 +20,4 @@ router.include_router(llm_router, prefix="/llm", tags=["LLM"])
 router.include_router(theater_router, prefix="/theater", tags=["Theater"])
 router.include_router(members_router, prefix="/members", tags=["Members"])
 router.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
-
+router.include_router(achievements_router, prefix="/achievements", tags=["Achievements"])

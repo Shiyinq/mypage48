@@ -26,6 +26,7 @@ from src.members.service import MemberService
 from src.theater.repository import TheaterRepository
 from src.theater.service import TheaterService
 from src.dashboard.service import DashboardService
+from src.achievements.service import AchievementsService
 
 
 
@@ -197,6 +198,13 @@ def get_member_service(
     return MemberService(repo, config)
 
 
+def get_achievements_service(
+    theater_service: TheaterService = Depends(get_theater_service),
+    config: Settings = Depends(get_settings),
+) -> AchievementsService:
+    return AchievementsService(theater_service, config)
+
+
 def get_user_service(
     repo: UserRepository = Depends(get_user_repository),
     security_service: SecurityService = Depends(get_security_service),
@@ -204,8 +212,17 @@ def get_user_service(
     config: Settings = Depends(get_settings),
     theater_service: TheaterService = Depends(get_theater_service),
     member_service: MemberService = Depends(get_member_service),
+    achievements_service: AchievementsService = Depends(get_achievements_service),
 ) -> UserService:
-    return UserService(repo, security_service, email_service, config, theater_service, member_service)
+    return UserService(
+        repo,
+        security_service,
+        email_service,
+        config,
+        theater_service,
+        member_service,
+        achievements_service,
+    )
 
 
 def get_dashboard_service(
@@ -213,4 +230,5 @@ def get_dashboard_service(
     config: Settings = Depends(get_settings),
 ) -> DashboardService:
     return DashboardService(theater_repo, config)
+
 
