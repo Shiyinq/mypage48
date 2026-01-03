@@ -17,6 +17,8 @@ from src.achievements.exceptions import AchievementsFetchError
 from src.achievements.http_exceptions import AchievementsFetchHTTPException
 from src.memories.exceptions import MemoriesFetchError
 from src.memories.http_exceptions import MemoriesFetchHTTPException
+from src.setlists.exceptions import SetlistNotFoundError, SetlistFetchError
+from src.setlists.http_exceptions import SetlistNotFound, SetlistFetchError as SetlistFetchHTTPException
 from src.auth.exceptions import (
     AuthOperationError,
     IncorrectCredentialsError,
@@ -233,6 +235,12 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     # Memories errors
     if isinstance(exc, MemoriesFetchError):
         return await detailed_http_exception_handler(request, MemoriesFetchHTTPException())
+
+    # Setlists errors
+    if isinstance(exc, SetlistNotFoundError):
+        return await detailed_http_exception_handler(request, SetlistNotFound())
+    if isinstance(exc, SetlistFetchError):
+        return await detailed_http_exception_handler(request, SetlistFetchHTTPException())
 
     error_msg = str(exc)
     if (

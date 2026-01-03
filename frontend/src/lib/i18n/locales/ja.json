@@ -165,6 +165,7 @@
 			"title": "公演",
 			"subtitle": "観覧履歴の概要",
 			"shows": "公演",
+			"tickets": "チケット",
 			"spending": "支出",
 			"totalExpenses": "総支出",
 			"topRow": "トップ列",
@@ -370,6 +371,8 @@
 		"lastAttended": "最終観覧",
 		"avgPrice": "平均価格",
 		"topRow": "トップ列",
+		"mostFrequentedRow": "最もよく座る列",
+		"investmentInMemories": "思い出への投資",
 		"row": "列",
 		"unit": "公演"
 	},
@@ -380,6 +383,23 @@
 			"theater": "シアター",
 			"members": "メンバー",
 			"shows": "公演"
+		},
+		"setlists": {
+			"section": "セットリスト",
+			"events": "スペシャルイベント",
+			"attendedCount": "{count}回出席",
+			"notAttended": "まだ参加していない",
+			"statsOverview": "統計概要",
+			"avgPricePerTicket": "平均チケット価格",
+			"attendanceRate": "出席率",
+			"ofMax": "最大",
+			"timeline": "タイムライン",
+			"firstShow": "初回公演",
+			"latestShow": "最新公演",
+			"active": "劇場で上演中",
+			"inactive": "過去のセットリスト",
+			"activeEvents": "開催中のイベント",
+			"inactiveEvents": "過去のイベント"
 		},
 		"shows": {
 			"title": "公演予定",
