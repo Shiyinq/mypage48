@@ -158,6 +158,7 @@
 	},
 	"dashboard": {
 		"title": "Dasbor",
+		"error": "Gagal memuat data dasbor",
 		"subtitle": "Ringkasan aktivitas teater kamu",
 		"filterTitle": "Filter Dasbor",
 		"filterSubtitle": "Atur rentang visualisasi",
@@ -273,7 +274,9 @@
 		"profilePicture": {
 			"previewTitle": "Preview Foto Profil",
 			"fileTooLarge": "File terlalu besar. Maksimal 10MB."
-		}
+		},
+		"errorTitle": "Gagal memuat profil",
+		"errorDesc": "Terjadi kesalahan saat mengambil data profil kamu."
 	},
 	"settings": {
 		"title": "Pengaturan",
@@ -295,7 +298,9 @@
 			"allYears": "Semua Tahun",
 			"thisYear": "Tahun Ini",
 			"uploadError": "Gagal mengunggah foto profil. Silakan coba lagi.",
-			"uploadSuccess": "Foto profil berhasil diperbarui!"
+			"uploadSuccess": "Foto profil berhasil diperbarui!",
+			"loadErrorTitle": "Gagal Memuat Konfigurasi",
+			"loadErrorDesc": "Kami tidak dapat memuat pengaturan profil publik Anda. Silakan coba lagi."
 		},
 		"developer": {
 			"title": "Akses Developer",
@@ -353,7 +358,9 @@
 			"confirm": "Ya, Hapus",
 			"cancel": "Batal"
 		},
-		"ticketDeleted": "Tiket berhasil dihapus"
+		"ticketDeleted": "Tiket berhasil dihapus",
+		"errorTitle": "Gagal memuat tiket",
+		"errorDesc": "Terjadi kesalahan saat mengambil riwayat kamu."
 	},
 	"memories": {
 		"title": "Kenangan",
@@ -361,14 +368,18 @@
 		"allPhotos": "Semua Foto",
 		"tickets": "Tiket",
 		"twoShots": "2-Shot",
-		"noMemories": "Belum ada kenangan"
+		"noMemories": "Belum ada kenangan",
+		"errorTitle": "Gagal memuat kenangan",
+		"errorDesc": "Terjadi kesalahan saat mengambil kenangan kamu."
 	},
 	"achievements": {
 		"title": "Pencapaian",
 		"subtitle": "Lencana dan milestone kamu",
 		"unlocked": "Terbuka",
 		"locked": "Terkunci",
-		"progress": "Progres"
+		"progress": "Progres",
+		"errorTitle": "Gagal memuat pencapaian",
+		"errorDesc": "Terjadi kesalahan saat mengambil pencapaian kamu."
 	},
 	"errors": {
 		"404": {
@@ -558,7 +569,13 @@
 			"active": "Sedang Aktif di Teater",
 			"inactive": "Setlist Lama",
 			"activeEvents": "Event Aktif",
-			"inactiveEvents": "Event Lampau"
+			"inactiveEvents": "Event Lampau",
+			"errorTitle": "Gagal memuat detail",
+			"errorDesc": "Terjadi kesalahan saat mengambil informasi setlist.",
+			"emptyTitle": "Tidak Ada Setlist",
+			"emptyDesc": "Belum ada setlist atau event yang tersedia saat ini.",
+			"listErrorTitle": "Gagal memuat setlist",
+			"listErrorDesc": "Terjadi kesalahan saat mengambil daftar setlist teater."
 		},
 		"shows": {
 			"title": "Jadwal Show",
@@ -567,7 +584,9 @@
 		"members": {
 			"title": "Member",
 			"subtitle": "Data member JKT48",
-			"comingSoon": "Data member akan segera hadir!"
+			"comingSoon": "Data member akan segera hadir!",
+			"errorTitle": "Gagal memuat member",
+			"errorDesc": "Terjadi kesalahan saat mengambil daftar member."
 		},
 		"upcomingShows": {
 			"title": "Upcoming Shows",
@@ -596,6 +615,8 @@
 		"rankingTitle": "Peringkat Member",
 		"rankingSubtitle": "Berdasarkan riwayat 2-shot kamu",
 		"totalPhotos": "Total Foto",
-		"photos": "Foto"
+		"photos": "Foto",
+		"errorTitle": "Gagal memuat data",
+		"errorDesc": "Terjadi kesalahan saat mengambil papan peringkat."
 	}
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isAuthenticated, achievementsData } from '$lib/stores';
+	import { isAuthenticated, achievementsData, showToast } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import {
@@ -22,7 +22,7 @@
 		Check
 	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { PageHeader } from '$lib/components';
+	import { PageHeader, ErrorState } from '$lib/components';
 	import { AchievementSkeleton } from '$lib/components/skeletons';
 	import { achievements } from '$lib/apis/achievements';
 	import type { ComponentType } from 'svelte';
@@ -54,8 +54,10 @@
 	$: unlocked = $achievementsData?.achievements.filter((m) => m.isUnlocked) ?? [];
 	$: locked = $achievementsData?.achievements.filter((m) => !m.isUnlocked) ?? [];
 
-	onMount(async () => {
+	async function loadAchievements() {
 		if ($isAuthenticated) {
+			loading = true;
+			error = null;
 			if ($achievementsData) {
 				loading = false;
 				return;
@@ -66,12 +68,17 @@
 			} catch (e) {
 				console.error('Failed to fetch achievements:', e);
 				error = 'Failed to load achievements';
+				showToast($t('achievements.errorTitle') || 'Failed to load achievements', 'error');
 			} finally {
 				loading = false;
 			}
 		} else {
 			loading = false;
 		}
+	}
+
+	onMount(() => {
+		loadAchievements();
 	});
 
 	function getIcon(iconName: string): ComponentType {
@@ -99,7 +106,13 @@
 				<AchievementSkeleton />
 			{/each}
 		{:else if error}
-			<div class="col-span-full text-center text-red-500 py-8">{error}</div>
+			<div class="col-span-full">
+				<ErrorState
+					title={$t('achievements.errorTitle') || 'Failed to load achievements'}
+					description={$t('achievements.errorDesc') || error || ''}
+					onRetry={loadAchievements}
+				/>
+			</div>
 		{:else}
 			{#each [...unlocked, ...locked] as m (m.id)}
 				<div

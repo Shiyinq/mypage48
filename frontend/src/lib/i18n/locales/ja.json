@@ -158,6 +158,7 @@
 	},
 	"dashboard": {
 		"title": "ダッシュボード",
+		"error": "ダッシュボードデータの読み込みに失敗しました",
 		"subtitle": "劇場活動の概要",
 		"filterTitle": "ダッシュボードフィルター",
 		"filterSubtitle": "表示範囲を調整",
@@ -273,7 +274,9 @@
 		"profilePicture": {
 			"previewTitle": "プロフィール写真プレビュー",
 			"fileTooLarge": "ファイルが大きすぎます。最大10MBです。"
-		}
+		},
+		"errorTitle": "プロフィールの読み込みに失敗しました",
+		"errorDesc": "プロフィールデータの取得中にエラーが発生しました。"
 	},
 	"settings": {
 		"title": "設定",
@@ -295,7 +298,9 @@
 			"allYears": "すべての年",
 			"thisYear": "今年",
 			"uploadError": "プロフィール写真のアップロードに失敗しました。もう一度お試しください。",
-			"uploadSuccess": "プロフィール写真が正常に更新されました！"
+			"uploadSuccess": "プロフィール写真が正常に更新されました！",
+			"loadErrorTitle": "設定の読み込みに失敗しました",
+			"loadErrorDesc": "公開プロフィールの設定を読み込めませんでした。もう一度お試しください。"
 		},
 		"developer": {
 			"title": "開発者アクセス",
@@ -353,7 +358,9 @@
 			"confirm": "はい、削除します",
 			"cancel": "キャンセル"
 		},
-		"ticketDeleted": "チケットが削除されました"
+		"ticketDeleted": "チケットが削除されました",
+		"errorTitle": "チケットの読み込みに失敗しました",
+		"errorDesc": "履歴の取得中にエラーが発生しました。"
 	},
 	"shows": {
 		"backTitle": "公演一覧に戻る",
@@ -399,7 +406,13 @@
 			"active": "劇場で上演中",
 			"inactive": "過去のセットリスト",
 			"activeEvents": "開催中のイベント",
-			"inactiveEvents": "過去のイベント"
+			"inactiveEvents": "過去のイベント",
+			"errorTitle": "詳細の読み込みに失敗しました",
+			"errorDesc": "セットリスト情報の取得中にエラーが発生しました。",
+			"emptyTitle": "セットリストが見つかりません",
+			"emptyDesc": "現在利用可能なセットリストまたはイベントはありません。",
+			"listErrorTitle": "セットリストの読み込みに失敗しました",
+			"listErrorDesc": "劇場セットリストの取得中にエラーが発生しました。"
 		},
 		"shows": {
 			"title": "公演予定",
@@ -408,7 +421,9 @@
 		"members": {
 			"title": "メンバー",
 			"subtitle": "JKT48メンバーデータ",
-			"comingSoon": "メンバーデータは近日公開予定！"
+			"comingSoon": "メンバーデータは近日公開予定！",
+			"errorTitle": "メンバーの読み込みに失敗しました",
+			"errorDesc": "メンバーリストの取得中にエラーが発生しました。"
 		},
 		"upcomingShows": {
 			"title": "今後の公演",
@@ -437,7 +452,9 @@
 		"rankingTitle": "メンバーランキング",
 		"rankingSubtitle": "2ショット履歴に基づく",
 		"totalPhotos": "総写真数",
-		"photos": "枚"
+		"photos": "枚",
+		"errorTitle": "データの読み込みに失敗しました",
+		"errorDesc": "ランキングの取得中にエラーが発生しました。"
 	},
 	"memories": {
 		"title": "思い出",
@@ -445,14 +462,18 @@
 		"allPhotos": "すべての写真",
 		"tickets": "チケット",
 		"twoShots": "2ショット",
-		"noMemories": "まだ思い出がありません"
+		"noMemories": "まだ思い出がありません",
+		"errorTitle": "思い出の読み込みに失敗しました",
+		"errorDesc": "思い出の取得中にエラーが発生しました。"
 	},
 	"achievements": {
 		"title": "実績",
 		"subtitle": "バッジとマイルストーン",
 		"unlocked": "解除済み",
 		"locked": "未解除",
-		"progress": "進捗"
+		"progress": "進捗",
+		"errorTitle": "実績の読み込みに失敗しました",
+		"errorDesc": "実績の取得中にエラーが発生しました。"
 	},
 	"errors": {
 		"404": {

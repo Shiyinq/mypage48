@@ -6,6 +6,8 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { ShowCard } from '$lib/components/shows';
+	import { EmptyState, ErrorState } from '$lib/components';
+	import { Calendar } from 'lucide-svelte';
 
 	const { t } = useTranslation();
 
@@ -14,6 +16,7 @@
 	let maxAttendance = 1;
 	let setlistsLoading = true;
 	let mounted = false;
+	let error = false;
 
 	// Group setlists by type
 	$: setlistItems = setlists.filter((s) => s.type === 'setlist');
@@ -28,12 +31,14 @@
 	async function fetchSetlists() {
 		try {
 			setlistsLoading = true;
+			error = false;
 			const response = await setlistsApi.getAll();
 			setlists = response.setlists;
 			maxAttendance = response.maxAttendance || 1;
-		} catch (error) {
-			console.error('Failed to fetch setlists:', error);
-			showToast('Failed to load setlists', 'error');
+		} catch (e) {
+			console.error('Failed to fetch setlists:', e);
+			error = true;
+			showToast($t('theater.setlists.listErrorTitle') || 'Failed to load setlists', 'error');
 		} finally {
 			setlistsLoading = false;
 		}
@@ -83,6 +88,18 @@
 			</div>
 		{/each}
 	</div>
+{:else if error}
+	<ErrorState
+		title={$t('theater.setlists.listErrorTitle')}
+		description={$t('theater.setlists.listErrorDesc')}
+		onRetry={fetchSetlists}
+	/>
+{:else if setlists.length === 0}
+	<EmptyState
+		icon={Calendar}
+		title={$t('theater.setlists.emptyTitle')}
+		description={$t('theater.setlists.emptyDesc')}
+	/>
 {:else}
 	<!-- Setlists -->
 	{#if setlistItems.length > 0}

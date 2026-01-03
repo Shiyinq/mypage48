@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { isAuthenticated } from '$lib/stores';
+	import { isAuthenticated, showToast } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import { Image as ImageIcon } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { PageHeader, EmptyState } from '$lib/components';
+	import { PageHeader, EmptyState, ErrorState } from '$lib/components';
 	import { Lightbox, MemoryFilters, MemoryCard, type FilterType } from '$lib/components/memories';
 	import type { MemoryItem, PaginationState } from '$lib/types';
 	import { memoriesApi } from '$lib/apis/memories';
@@ -18,6 +18,7 @@
 	let selectedImage: MemoryItem | null = null;
 	let isLoadingMore = false;
 	let mounted = false;
+	let error = false;
 
 	// Cached data for each filter to avoid refetching
 	let cachedData: Record<
@@ -39,6 +40,7 @@
 		isLoadingMore = true;
 
 		try {
+			error = false;
 			const res = await memoriesApi.getMemories(page, 20, filter);
 
 			if (page === 1) {
@@ -56,6 +58,8 @@
 			cachedData[filter] = { memories, pagination };
 		} catch (e) {
 			console.error('Failed to load memories:', e);
+			error = true;
+			showToast($t('memories.errorTitle') || 'Failed to load memories', 'error');
 		} finally {
 			isLoadingMore = false;
 		}
@@ -122,7 +126,13 @@
 	</div>
 
 	<!-- Gallery Grid -->
-	{#if isLoading}
+	{#if error && memories.length === 0}
+		<ErrorState
+			title={$t('memories.errorTitle') || 'Failed to load memories'}
+			description={$t('memories.errorDesc') || 'Something went wrong while fetching your memories.'}
+			onRetry={() => loadMemories(1)}
+		/>
+	{:else if isLoading}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4">
 			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each Array(8) as _unused, index}

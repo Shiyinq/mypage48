@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { showToast } from '$lib/stores';
-	import { userProfile } from '$lib/stores';
+	import { userProfile, isInitialDataLoaded } from '$lib/stores';
 	import { client } from '$lib/apis/client';
+	import { auth } from '$lib/apis/auth';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Share2, Copy, ExternalLink } from 'lucide-svelte';
+	import { ErrorState } from '$lib/components';
 
 	const { t } = useTranslation();
 
 	let isPublic = $userProfile?.isPublic || false;
 	let selectedPublicYearStr: string = $userProfile?.publicYear?.toString() || '';
 	let updatingStatus = false;
+	let isRetrying = false;
 
 	// Generate available years (from 2011 to current year)
 	const currentYear = new Date().getFullYear();
@@ -107,6 +110,29 @@
 		navigator.clipboard.writeText(`${window.location.origin}/u/${$userProfile?.username}`);
 		showToast($t('settings.developer.copied'), 'success');
 	};
+
+	// Retry fetching profile data if it failed initially
+	const retryGlobalProfileFetch = async () => {
+		isRetrying = true;
+		try {
+			const fullResponse = await auth.getProfile();
+			// Reconstruct the user profile object as done in layout
+			const profileWithStats = {
+				...fullResponse.profile,
+				oshi: fullResponse.oshi,
+				profileRank: fullResponse.rank,
+				profileStats: fullResponse.stats,
+				profileOshiTwoShots: fullResponse.oshiTwoShots,
+				profileRecentActivity: fullResponse.recentActivity
+			};
+			userProfile.set(profileWithStats);
+		} catch (e) {
+			console.error('Failed to retry profile fetch', e);
+			showToast($t('profile.errorTitle'), 'error');
+		} finally {
+			isRetrying = false;
+		}
+	};
 </script>
 
 <div class="glass-panel p-6 rounded-3xl relative">
@@ -127,17 +153,29 @@
 	</div>
 
 	{#if !$userProfile}
-		<div
-			class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 mb-4 animate-pulse"
-		>
-			<div class="flex items-center justify-between">
-				<div>
-					<div class="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
-					<div class="h-3 w-64 bg-gray-200 dark:bg-gray-700 rounded" />
-				</div>
-				<div class="w-12 h-7 bg-gray-200 dark:bg-gray-700 rounded-full" />
+		{#if $isInitialDataLoaded}
+			<!-- Error State if data is loaded but profile is missing -->
+			<div class="mb-4">
+				<ErrorState
+					title={$t('settings.publicProfile.loadErrorTitle')}
+					description={$t('settings.publicProfile.loadErrorDesc')}
+					onRetry={retryGlobalProfileFetch}
+				/>
 			</div>
-		</div>
+		{:else}
+			<!-- Loading Skeleton -->
+			<div
+				class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 mb-4 animate-pulse"
+			>
+				<div class="flex items-center justify-between">
+					<div>
+						<div class="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+						<div class="h-3 w-64 bg-gray-200 dark:bg-gray-700 rounded" />
+					</div>
+					<div class="w-12 h-7 bg-gray-200 dark:bg-gray-700 rounded-full" />
+				</div>
+			</div>
+		{/if}
 	{:else}
 		<div
 			class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 mb-4"

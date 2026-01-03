@@ -18,6 +18,7 @@
 	} from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { DeleteConfirmationModal } from '$lib/components/history';
+	import { ErrorState } from '$lib/components';
 
 	const { t } = useTranslation();
 
@@ -129,21 +130,12 @@
 		</div>
 	</div>
 {:else if error}
-	<div class="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center">
-		<div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-full mb-4">
-			<Ticket class="w-8 h-8 text-red-500" />
-		</div>
-		<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Failed to load detail</h3>
-		<p class="text-gray-500 dark:text-gray-400 mb-6">
-			Something went wrong while fetching the setlist information.
-		</p>
-		<button
-			on:click={fetchDetail}
-			class="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-medium hover:scale-105 transition-transform"
-		>
-			{$t('errors.tryAgain')}
-		</button>
-	</div>
+	<ErrorState
+		title={$t('theater.setlists.errorTitle') || 'Failed to load detail'}
+		description={$t('theater.setlists.errorDesc') ||
+			'Something went wrong while fetching the setlist information.'}
+		onRetry={fetchDetail}
+	/>
 {:else if detail}
 	<div class="max-w-5xl mx-auto animate-fade-in pb-20">
 		<!-- Back Button -->

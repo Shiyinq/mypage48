@@ -4,7 +4,8 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { members as membersApi, type Member } from '$lib/apis/members';
 	import { MemberDetailModal } from '$lib/components/profile';
-	import { EmptyState } from '$lib/components';
+	import { EmptyState, ErrorState } from '$lib/components';
+	import { showToast } from '$lib/stores';
 	import { Search } from 'lucide-svelte';
 
 	const { t } = useTranslation();
@@ -39,6 +40,7 @@
 		} catch (err) {
 			console.error('Failed to fetch members:', err);
 			error = 'Failed to load members';
+			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		} finally {
 			isLoading = false;
 		}
@@ -148,15 +150,11 @@
 		{/each}
 	</div>
 {:else if error}
-	<div class="text-center py-12">
-		<p class="text-red-500">{error}</p>
-		<button
-			on:click={fetchMembers}
-			class="mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors cursor-pointer"
-		>
-			{$t('errors.tryAgain')}
-		</button>
-	</div>
+	<ErrorState
+		title={$t('theater.members.errorTitle') || 'Failed to load members'}
+		description={$t('theater.members.errorDesc') || error || ''}
+		onRetry={fetchMembers}
+	/>
 {:else if membersList.length === 0}
 	<EmptyState
 		icon={Search}

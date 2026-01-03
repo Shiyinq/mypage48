@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { tickets, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
+	import { tickets, isAuthenticated, isInitialDataLoaded, showToast } from '$lib/stores';
 	import { Heart, Camera } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
-	import { PageHeader, EmptyState } from '$lib/components';
+	import { PageHeader, EmptyState, ErrorState } from '$lib/components';
+	import { ticketsApi } from '$lib/apis/tickets';
 	import { KamiOshiCard, Leaderboard } from '$lib/components/top2shot';
 	import { Top2ShotSkeleton } from '$lib/components/skeletons';
 
@@ -12,12 +13,33 @@
 
 	/* Loading State */
 	let mounted = false;
+	let error = false;
+	let loadingData = false;
 
-	onMount(() => {
+	onMount(async () => {
 		mounted = true;
+		if ($tickets.length === 0 && !$isInitialDataLoaded) {
+			await fetchTickets();
+		}
 	});
 
-	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
+	async function fetchTickets() {
+		try {
+			loadingData = true;
+			error = false;
+			const res = await ticketsApi.getMyTickets(1, 100); // Fetch standard amount to populate stats
+			tickets.set(res.data);
+			isInitialDataLoaded.set(true);
+		} catch (e) {
+			console.error('Failed to load tickets for top 2shot:', e);
+			error = true;
+			showToast($t('top2shot.errorTitle') || 'Failed to load data', 'error');
+		} finally {
+			loadingData = false;
+		}
+	}
+
+	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded) || loadingData;
 
 	// --- DATA PROCESSING ---
 	$: stats = (() => {
@@ -96,6 +118,13 @@
 
 	{#if isLoading}
 		<Top2ShotSkeleton />
+	{:else if error && stats.ranking.length === 0}
+		<ErrorState
+			title={$t('top2shot.errorTitle') || 'Failed to load data'}
+			description={$t('top2shot.errorDesc') ||
+				'Something went wrong while fetching the leaderboard.'}
+			onRetry={fetchTickets}
+		/>
 	{:else if stats.ranking.length === 0}
 		<EmptyState
 			icon={Camera}
