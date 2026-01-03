@@ -4,7 +4,10 @@
 		ticketsPagination,
 		showToast,
 		isAuthenticated,
-		isInitialDataLoaded
+		isInitialDataLoaded,
+		ticketsFilters,
+		defaultTickets,
+		defaultTicketsPagination
 	} from '$lib/stores';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { onMount, tick } from 'svelte';
@@ -26,6 +29,7 @@
 		HistoryFilter
 	} from '$lib/components/history';
 	import { formatDateFull } from '$lib/utils/formatting';
+	import { get } from 'svelte/store';
 
 	const { t } = useTranslation();
 
@@ -41,8 +45,39 @@
 
 	onMount(() => {
 		mounted = true;
-		// Always load fresh data on mount to ensure consistency with empty search bar,
-		// since the store might contain filtered results from a previous session.
+
+		// Logic:
+		// 1. We want to start with clean filters (filters = {})
+		// 2. Check if current 'tickets' store is already showing default data
+		// 3. If yes, done.
+		// 4. If no (store has filtered data), check if we have 'defaultTickets' cached
+		// 5. If yes, swap to default cache.
+		// 6. If no, fetch.
+
+		const cachedFilters = get(ticketsFilters);
+		const currentTicketCount = get(tickets).length;
+
+		// Check if the data currently in store matches "Default"
+		const storeIsDefault = Object.keys(cachedFilters).length === 0;
+
+		if (currentTicketCount > 0 && storeIsDefault) {
+			// Current store is already default data. No fetch needed.
+			return;
+		}
+
+		// Current store is NOT default (it has filtered data).
+		// Do we have default data cached?
+		const defaults = get(defaultTickets);
+		const defaultPagination = get(defaultTicketsPagination);
+		if (defaults && defaultPagination) {
+			// Restore default from cache
+			tickets.set(defaults);
+			ticketsPagination.set(defaultPagination);
+			ticketsFilters.set({}); // Mark store as default
+			return;
+		}
+
+		// No cache, must fetch
 		loadTickets(1);
 	});
 
@@ -56,14 +91,28 @@
 			const res = await ticketsApi.getMyTickets(page, 20, currentFilters);
 			if (page === 1) {
 				tickets.set(res.data);
+				// Update cached filters when we start a new search
+				ticketsFilters.set(currentFilters);
+
+				// If this is a default load, cache it for later
+				if (Object.keys(currentFilters).length === 0) {
+					defaultTickets.set(res.data);
+				}
 			} else {
 				tickets.update((curr) => [...curr, ...res.data]);
 			}
 
-			ticketsPagination.update((p) => ({
+			const currentPagination = {
 				page,
 				hasMore: res.meta.current_page < res.meta.last_page
-			}));
+			};
+			ticketsPagination.set(currentPagination);
+
+			// If this is a default load, keep the default cache in sync
+			if (Object.keys(currentFilters).length === 0) {
+				defaultTicketsPagination.set(currentPagination);
+			}
+
 			isInitialDataLoaded.set(true);
 		} catch (e) {
 			console.error(e);
@@ -110,6 +159,9 @@
 		try {
 			// Update locally immediately
 			tickets.update((items) => items.map((t) => (t._id === ticketId ? { ...t, notes: note } : t)));
+			defaultTickets.update((items) =>
+				items ? items.map((t) => (t._id === ticketId ? { ...t, notes: note } : t)) : null
+			);
 
 			// Sync with API
 			await ticketsApi.updateTicket(ticketId, { notes: note });
@@ -130,6 +182,9 @@
 		try {
 			await ticketsApi.deleteTicket(deleteId);
 			tickets.update((current) => current.filter((t) => t._id !== deleteId));
+			defaultTickets.update((current) =>
+				current ? current.filter((t) => t._id !== deleteId) : null
+			);
 
 			// Invalidate dashboard cache
 			invalidateDashboard();
@@ -149,6 +204,9 @@
 	const handleTicketUpdate = (e: CustomEvent<Ticket>) => {
 		const updated = e.detail;
 		tickets.update((current) => current.map((t) => (t._id === updated._id ? updated : t)));
+		defaultTickets.update((current) =>
+			current ? current.map((t) => (t._id === updated._id ? updated : t)) : null
+		);
 
 		// Invalidate dashboard cache
 		invalidateDashboard();
