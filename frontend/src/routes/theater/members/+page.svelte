@@ -3,6 +3,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { members as membersApi, type Member } from '$lib/apis/members';
+	import { MemberDetailModal } from '$lib/components/profile';
 	import { Search } from 'lucide-svelte';
 
 	const { t } = useTranslation();
@@ -14,6 +15,8 @@
 	let selectedGeneration: string | null = null;
 	let generations: string[] = [];
 	let error: string | null = null;
+	let showMemberDetail = false;
+	let selectedMember: Member | null = null;
 
 	// Fetch members
 	async function fetchMembers() {
@@ -55,6 +58,15 @@
 	function setGeneration(gen: string | null) {
 		selectedGeneration = gen;
 		fetchMembers();
+	}
+
+	function openMemberDetail(member: Member) {
+		selectedMember = member;
+		showMemberDetail = true;
+	}
+
+	function closeMemberDetail() {
+		showMemberDetail = false;
 	}
 
 	onMount(() => {
@@ -155,9 +167,7 @@
 		{#each membersList as member (member.id)}
 			<button
 				class="group relative flex flex-col bg-white dark:bg-zinc-900 rounded-xl overflow-hidden border-2 border-pink-100 dark:border-pink-900/30 shadow-sm hover:shadow-lg hover:shadow-pink-500/10 hover:border-pink-300 dark:hover:border-pink-500/50 transition-all duration-300 cursor-pointer text-left"
-				on:click={() => {
-					/* TODO: Open member detail modal */
-				}}
+				on:click={() => openMemberDetail(member)}
 			>
 				<!-- Member Photo Container -->
 				<div class="relative w-full aspect-[2/3] overflow-hidden bg-gray-100 dark:bg-zinc-800">
@@ -202,3 +212,11 @@
 		{/each}
 	</div>
 {/if}
+
+<!-- Member Detail Modal -->
+<MemberDetailModal
+	show={showMemberDetail}
+	member={selectedMember}
+	loading={false}
+	onClose={closeMemberDetail}
+/>

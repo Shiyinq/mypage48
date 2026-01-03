@@ -3,6 +3,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { Member } from '$lib/apis/members';
 	import { fade, scale } from 'svelte/transition';
+	import { portal } from '$lib/actions/portal';
 
 	export let show: boolean = false;
 	export let member: Member | null = null;
@@ -48,7 +49,7 @@
 </script>
 
 {#if show}
-	<div class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+	<div class="fixed inset-0 z-[9999] flex items-center justify-center p-4" use:portal>
 		<!-- svelte-ignore a11y-click-events-have-key-events  a11y-no-static-element-interactions -->
 		<div
 			class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
