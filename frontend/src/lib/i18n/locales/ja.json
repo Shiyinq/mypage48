@@ -20,7 +20,10 @@
 		"filter": "フィルター",
 		"filters": "フィルター",
 		"all": "すべて",
+		"allSetlists": "全セットリスト",
 		"allData": "全データ",
+		"hasTwoShot": "2ショットあり",
+		"clearFilters": "フィルターをクリア",
 		"viewDetails": "詳細を見る",
 		"logout": "ログアウト",
 		"settings": "設定",
@@ -458,6 +461,15 @@
 			"oct": "10月",
 			"nov": "11月",
 			"dec": "12月"
+		},
+		"days": {
+			"sunday": "日曜日",
+			"monday": "月曜日",
+			"tuesday": "火曜日",
+			"wednesday": "水曜日",
+			"thursday": "木曜日",
+			"friday": "金曜日",
+			"saturday": "土曜日"
 		},
 		"daysShort": {
 			"sun": "日",
