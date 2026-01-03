@@ -19,12 +19,17 @@ class TicketsRepository:
             return None
         return await self.collection.find_one({"_id": oid, "user_id": user_id})
     
-    async def get_all_tickets(
+    async def get_tickets(
         self, 
         user_id: str, 
         year: Optional[int] = None, 
         page: Optional[int] = None, 
-        limit: Optional[int] = None
+        limit: Optional[int] = None,
+        title: Optional[str] = None,
+        has_two_shot: Optional[bool] = None,
+        days: Optional[List[str]] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
     ) -> tuple[List[dict], int]:
         query = {"user_id": user_id}
         
@@ -32,6 +37,45 @@ class TicketsRepository:
             # event.date is stored as string "YYYY-MM-DD", so use regex to match the year prefix
             query["event.date"] = {"$regex": f"^{year}-"}
             
+        if title:
+            query["event.title"] = {"$regex": title, "$options": "i"}
+            
+        if has_two_shot:
+            query["two_shot"] = {"$ne": None}
+
+        if days:
+            # days is a list of strings like ["Saturday", "Sunday"]
+            # event.day stores the day name
+            query["event.day"] = {"$in": days}
+
+        if start_date or end_date:
+            date_query = {}
+            if start_date:
+                date_query["$gte"] = start_date
+            if end_date:
+                date_query["$lte"] = end_date
+            
+            # Merge with existing event.date query if year was set (though usually mutually exclusive)
+            if "event.date" in query:
+                 # If both year and range existing, we might need $and, but usually year is for one view
+                 # and range for another. For safety let's use $and if needed or assume query construction
+                 pass 
+            
+            query["event.date"] = date_query
+            
+        # Refinement: If year is set, it might conflict with start_date/end_date if not careful.
+        # But based on usage, year is usually top-level filter. 
+        # If start_date/end_date is provided, we should probably ignore 'year' or ensure they are compatible.
+        # For now, let's let start_date/end_date override or combine. 
+        # Actually simplest is: if start/end date provided, they take optimized precedence for the date field.
+        if start_date or end_date:
+             query["event.date"] = {}
+             if start_date: query["event.date"]["$gte"] = start_date
+             if end_date: query["event.date"]["$lte"] = end_date
+             # If year was set, verify compatibility? Or just let range rule.
+             # Ideally range filter implies we don't care about the generic 'year' param unless it limits further.
+             # Let's assume range filter supersedes generic year check for the date field.
+
         total_count = await self.collection.count_documents(query)
         
         cursor = self.collection.find(query).sort([("event.date", -1), ("event.time", -1)])
@@ -130,3 +174,6 @@ class TicketsRepository:
         pipeline.append({"$sort": {"event.date": -1, "event.time": -1}})
         
         return await self.collection.aggregate(pipeline).to_list(length=None)
+
+    async def get_distinct_titles(self, user_id: str) -> List[str]:
+        return await self.collection.distinct("event.title", {"user_id": user_id})

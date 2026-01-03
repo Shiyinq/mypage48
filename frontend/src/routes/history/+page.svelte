@@ -11,7 +11,7 @@
 	import { ticketsApi } from '$lib/apis/tickets';
 	import type { Ticket } from '$lib/types';
 	import EditTicketModal from '$lib/components/EditTicketModal.svelte';
-	import { History, Search, Loader2 } from 'lucide-svelte';
+	import { History, ListFilter, Loader2 } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -31,7 +31,7 @@
 
 	// Main Component Logic
 	let viewMode: 'GRID' | 'TABLE' = 'GRID';
-	let searchQuery = '';
+	let filters: import('$lib/types').TicketFilters = {};
 	let deleteId: string | null = null;
 	let isDeleting = false;
 
@@ -41,16 +41,19 @@
 
 	onMount(() => {
 		mounted = true;
-		if ($tickets.length === 0 && $ticketsPagination.hasMore) {
-			loadTickets(1);
-		}
+		// Always load fresh data on mount to ensure consistency with empty search bar,
+		// since the store might contain filtered results from a previous session.
+		loadTickets(1);
 	});
 
-	async function loadTickets(page: number) {
+	async function loadTickets(
+		page: number,
+		currentFilters: import('$lib/types').TicketFilters = {}
+	) {
 		if (isLoadingMore) return;
 		isLoadingMore = true;
 		try {
-			const res = await ticketsApi.getMyTickets(page, 20);
+			const res = await ticketsApi.getMyTickets(page, 20, currentFilters);
 			if (page === 1) {
 				tickets.set(res.data);
 			} else {
@@ -71,33 +74,34 @@
 	}
 
 	function handleScroll() {
-		if (!mounted || isLoadingMore || !$ticketsPagination.hasMore || searchQuery) return;
+		if (!mounted || isLoadingMore || !$ticketsPagination.hasMore) return;
 
 		const threshold = 300;
 		const position = window.innerHeight + window.scrollY;
 		const height = document.body.offsetHeight;
 
 		if (position > height - threshold) {
-			loadTickets($ticketsPagination.page + 1);
+			loadTickets($ticketsPagination.page + 1, filters);
 		}
 	}
 
+	let searchTimeout: ReturnType<typeof setTimeout>;
+
+	function handleFilterChange(newFilters: import('$lib/types').TicketFilters) {
+		if (!mounted) return;
+		filters = newFilters;
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(() => {
+			loadTickets(1, filters);
+		}, 500);
+	}
+
+	// We'll bind this to the Filter component later
+	// $: handleFilterChange(filters);
+
 	$: isLoading = !mounted || ($isAuthenticated && $tickets.length === 0 && !$isInitialDataLoaded);
 
-	$: sortedTickets = [...$tickets].sort(
-		(a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime()
-	);
-
-	$: filteredTickets = sortedTickets.filter((ticket) => {
-		const terms = searchQuery.toLowerCase();
-		return (
-			ticket.event.title.toLowerCase().includes(terms) ||
-			ticket.seat.section.toLowerCase().includes(terms) ||
-			ticket.notes?.toLowerCase().includes(terms) ||
-			ticket.event.date.includes(terms) ||
-			formatDateFull(ticket.event.date).toLowerCase().includes(terms)
-		);
-	});
+	$: filteredTickets = [...$tickets];
 
 	// Actions
 	// Logic for note update
@@ -173,7 +177,11 @@
 			theme="blue"
 		>
 			<div slot="actions" class="flex items-center gap-3">
-				<HistoryFilter bind:searchQuery bind:viewMode />
+				<HistoryFilter
+					{filters}
+					on:filterChange={(e) => handleFilterChange(e.detail)}
+					bind:viewMode
+				/>
 			</div>
 		</PageHeader>
 	</div>
@@ -197,7 +205,7 @@
 		{/if}
 	{:else if filteredTickets.length === 0}
 		<EmptyState
-			icon={Search}
+			icon={ListFilter}
 			title={$t('history.noTickets')}
 			description={$t('history.addFirst')}
 		/>

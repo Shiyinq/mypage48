@@ -92,6 +92,11 @@ class TicketsService:
         page: int,
         limit: int,
         year: Optional[int] = None,
+        title: Optional[str] = None,
+        has_two_shot: Optional[bool] = None,
+        days: Optional[List[str]] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
     ) -> TicketPaginationResponse:
         try:
             # Enforce max limit of 100
@@ -102,7 +107,17 @@ class TicketsService:
             current_page = page if page else 1
             per_page = limit if limit else 20
             
-            tickets_data, total_count = await self.repository.get_all_tickets(user_id, year, current_page, per_page)
+            tickets_data, total_count = await self.repository.get_tickets(
+                user_id, 
+                year, 
+                current_page, 
+                per_page, 
+                title=title,
+                has_two_shot=has_two_shot,
+                days=days,
+                start_date=start_date,
+                end_date=end_date
+            )
             
             results = []
             for t in tickets_data:
@@ -126,8 +141,10 @@ class TicketsService:
                 )
             )
         except Exception as e:
-            logger.exception(f"Error fetching tickets: {str(e)}")
             raise TicketFetchError()
+
+    async def get_ticket_titles(self, user_id: str) -> List[str]:
+        return await self.repository.get_distinct_titles(user_id)
 
     async def get_my_tickets(
         self, 
@@ -140,7 +157,7 @@ class TicketsService:
         """
         try:
             # We don't pass page/limit here to get all data
-            tickets_data, _ = await self.repository.get_all_tickets(user_id, year, page=None, limit=None)
+            tickets_data, _ = await self.repository.get_tickets(user_id, year, page=None, limit=None)
             results = []
             for t in tickets_data:
                 results.append(TicketResponse(**t))

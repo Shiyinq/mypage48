@@ -40,6 +40,14 @@ export interface PaginationMeta {
 	next_page: number | null;
 }
 
+export interface TicketFilters {
+	title?: string;
+	hasTwoShot?: boolean;
+	days?: string[];
+	startDate?: string;
+	endDate?: string;
+}
+
 export interface TicketPaginationResponse {
 	data: Ticket[];
 	meta: PaginationMeta;
