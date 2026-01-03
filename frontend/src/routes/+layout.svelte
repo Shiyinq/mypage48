@@ -11,6 +11,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import { Check } from 'lucide-svelte';
+	import SplashScreen from '$lib/components/SplashScreen.svelte';
 
 	export let data: { locale?: string };
 
@@ -130,15 +131,27 @@
 		</div>
 	{/if}
 
-	{#if !isPublicPage}
-		<Header />
-	{/if}
-
-	<main class="flex-1 w-full relative">
+	{#if isPublicPage && !isGuestRoute}
+		<!-- Public non-auth pages (like /u/*): render immediately -->
 		<slot />
-	</main>
-
-	{#if !isPublicPage}
+	{:else if isGuestRoute}
+		<!-- Guest routes (/login, /register, /auth/*): need auth check -->
+		{#if !mounted}
+			<SplashScreen />
+		{:else if !$isAuthenticated}
+			<!-- Not authenticated: show login/register page -->
+			<slot />
+		{/if}
+		<!-- If mounted && $isAuthenticated && isGuestRoute: render nothing, redirect will happen -->
+	{:else if !mounted}
+		<SplashScreen />
+	{:else if $isAuthenticated}
+		<!-- Protected pages: user authenticated, show full content -->
+		<Header />
+		<main class="flex-1 w-full relative">
+			<slot />
+		</main>
 		<MobileNav />
 	{/if}
+	<!-- If mounted && !$isAuthenticated && !isPublicPage: render nothing, redirect will happen -->
 </div>
