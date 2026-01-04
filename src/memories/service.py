@@ -8,6 +8,8 @@ from src.memories.schemas import (
     MemoryItem,
     MemoryType,
     MemoriesPaginationResponse,
+    TopTwoShotResponse,
+    TopTwoShotMember,
 )
 from src.tickets.schemas import PaginationMeta
 
@@ -99,4 +101,32 @@ class MemoriesService:
 
         except Exception as e:
             logger.exception(f"Error fetching memories: {str(e)}")
+            raise MemoriesFetchError()
+
+    async def get_top_two_shot(self, user_id: str) -> TopTwoShotResponse:
+        """Get top 2-shot statistics."""
+        try:
+            stats = await self.repository.get_top_two_shot_stats(user_id)
+
+            # Map to response model
+            ranking = []
+            for item in stats.get("ranking", []):
+                ranking.append(
+                    TopTwoShotMember(
+                        name=item["name"],
+                        count=item["count"],
+                        spend=item["spend"],
+                        lastDate=item["lastDate"],
+                        image=item.get("image"),
+                    )
+                )
+
+            return TopTwoShotResponse(
+                ranking=ranking,
+                totalTwoShotSpend=stats.get("totalTwoShotSpend", 0),
+                totalTwoShotCount=stats.get("totalTwoShotCount", 0),
+            )
+
+        except Exception as e:
+            logger.exception(f"Error fetching top 2-shot stats: {str(e)}")
             raise MemoriesFetchError()

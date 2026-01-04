@@ -16,16 +16,17 @@ async def test_get_members_list(client: AsyncClient, db):
     await client.post("/api/members/seed")
 
     # Test List
-    response = await client.get("/api/members/")
+    response = await client.get("/api/members")
     assert response.status_code == 200
     data = response.json()
-    assert "members" in data
-    assert len(data["members"]) > 0
-    assert "total" in data
+    assert "data" in data
+    assert len(data["data"]) > 0
+    assert "meta" in data
+    assert "total_data" in data["meta"]
     
     # Test Pagination
-    response_limit = await client.get("/api/members/?limit=5")
-    assert len(response_limit.json()["members"]) == 5
+    response_limit = await client.get("/api/members?limit=5")
+    assert len(response_limit.json()["data"]) == 5
 
 @pytest.mark.asyncio
 async def test_get_generations(client: AsyncClient, db):
@@ -44,8 +45,8 @@ async def test_get_member_by_nickname(client: AsyncClient, db):
     await client.post("/api/members/seed")
     
     # Pick a known member from seed logic or just list and pick one
-    list_res = await client.get("/api/members/?limit=1")
-    member = list_res.json()["members"][0]
+    list_res = await client.get("/api/members?limit=1")
+    member = list_res.json()["data"][0]
     nickname = member["nickname"]
     
     response = await client.get(f"/api/members/nickname/{nickname}")
@@ -59,8 +60,8 @@ async def test_get_member_by_nickname(client: AsyncClient, db):
 async def test_get_member_by_id(client: AsyncClient, db):
     await client.post("/api/members/seed")
     
-    list_res = await client.get("/api/members/?limit=1")
-    member = list_res.json()["members"][0]
+    list_res = await client.get("/api/members?limit=1")
+    member = list_res.json()["data"][0]
     m_id = member["id"]
     
     response = await client.get(f"/api/members/id/{m_id}")

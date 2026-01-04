@@ -2,6 +2,7 @@ import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import type { Ticket, UserWithProfileStats, AchievementsResponse, TicketFilters, PaginationState } from './types';
 import { resetDashboard } from '$lib/stores/dashboard';
+import { invalidateTheater } from '$lib/stores/theater';
 
 const AUTH_KEY = 'oshi_log_auth';
 const OLD_STORAGE_KEY = 'oshi_log_tickets_v2'; // For cleanup
@@ -56,6 +57,7 @@ if (browser) {
 			achievementsData.set(null);
 			isInitialDataLoaded.set(false);
 			resetDashboard();
+			invalidateTheater();
 		}
 	});
 }

@@ -12,6 +12,7 @@
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import { Check } from 'lucide-svelte';
 	import SplashScreen from '$lib/components/SplashScreen.svelte';
+	import LoadingBar from '$lib/components/LoadingBar.svelte';
 
 	export let data: { locale?: string };
 
@@ -102,6 +103,7 @@
 	}
 </script>
 
+<LoadingBar />
 <div class="min-h-screen flex flex-col relative">
 	{#if $toast}
 		<div class="fixed top-4 left-0 right-0 z-[10000] flex justify-center pointer-events-none">

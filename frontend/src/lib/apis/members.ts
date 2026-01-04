@@ -25,21 +25,27 @@ export interface Member {
 	socials: SocialMedia;
 }
 
+import type { PaginationMeta } from '$lib/types';
+
 export interface MemberListResponse {
-	total: number;
-	members: Member[];
+	data: Member[];
+	meta: PaginationMeta;
 }
 
 export const members = {
 	getAll: async (
-		params: { skip?: number; limit?: number; generation?: string; search?: string } = {}
+		params: { page?: number; limit?: number; generation?: string; search?: string } = {}
 	) => {
 		const query = new URLSearchParams();
-		if (params.skip) query.append('skip', params.skip.toString());
+		if (params.page) query.append('page', params.page.toString());
 		if (params.limit) query.append('limit', params.limit.toString());
 		if (params.generation) query.append('generation', params.generation);
 		if (params.search) query.append('search', params.search);
 
-		return client<MemberListResponse>(`/members/?${query.toString()}`);
+		return client<MemberListResponse>(`/members?${query.toString()}`);
+	},
+
+	getGenerations: async () => {
+		return client<string[]>('/members/generations');
 	}
 };

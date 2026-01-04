@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { members as membersApi, type Member } from '$lib/apis/members';
@@ -7,60 +7,143 @@
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { showToast } from '$lib/stores';
 	import { Search } from 'lucide-svelte';
+	import { membersStore, membersPagination, membersCacheStore } from '$lib/stores/theater';
+	import { get } from 'svelte/store';
 
 	const { t } = useTranslation();
+	const LIMIT = 20;
 
 	// State
-	let membersList: Member[] = [];
-	let isLoading = true;
+	let isLoading = false;
+	let isAppending = false;
+	let loadingGenerations = true;
 	let searchQuery = '';
 	let selectedGeneration: string | null = null;
 	let generations: string[] = [];
 	let error: string | null = null;
 	let showMemberDetail = false;
 	let selectedMember: Member | null = null;
+	let observer: IntersectionObserver;
+	let sentinel: HTMLElement;
+
+	// Subscribe to store
+	$: membersList = $membersStore;
+
+	// Ensure sentinel is observed whenever it becomes available
+	$: if (sentinel && observer) observer.observe(sentinel);
+
+	async function fetchGenerations() {
+		try {
+			if (generations.length === 0) {
+				const gens = await membersApi.getGenerations();
+				generations = gens.sort((a, b) => parseInt(a) - parseInt(b));
+			}
+		} catch (e) {
+			console.error('Failed to fetch generations', e);
+		} finally {
+			loadingGenerations = false;
+		}
+	}
+
+	function getCacheKey() {
+		return JSON.stringify({ generation: selectedGeneration, search: searchQuery });
+	}
 
 	// Fetch members
-	async function fetchMembers() {
-		isLoading = true;
+	async function fetchMembers(reset = false) {
+		if (isLoading || isAppending) return;
+
+		const cacheKey = getCacheKey();
+		const currentState = get(membersPagination);
+
+		// If resetting, check cache first
+		if (reset) {
+			const cache = get(membersCacheStore);
+			if (cache[cacheKey]) {
+				membersStore.set(cache[cacheKey].members);
+				membersPagination.set(cache[cacheKey].pagination);
+				// If cached data is empty but we expected something, maybe we should fetch?
+				// But cache should be truth.
+				return;
+			}
+		}
+
+		// If we are not resetting, check if we have more pages
+		if (!reset && !currentState.hasMore) return;
+
+		if (reset) {
+			isLoading = true;
+		} else {
+			isAppending = true;
+		}
 		error = null;
+
 		try {
+			// If reset, start from page 1.
+			// Else, fetch next page (current page + 1)
+			const page = reset ? 1 : currentState.page + 1;
+
 			const response = await membersApi.getAll({
-				limit: 100,
+				limit: LIMIT,
+				page,
 				generation: selectedGeneration || undefined,
 				search: searchQuery || undefined
 			});
-			membersList = response.members;
 
-			// Extract unique generations from members
-			if (generations.length === 0) {
-				const uniqueGens = [...new Set(response.members.map((m) => m.generation).filter(Boolean))];
-				generations = uniqueGens.sort((a, b) => parseInt(a) - parseInt(b));
+			const newMembers = response.data;
+			const hasMore = !!response.meta.next_page;
+
+			// Calculate new state
+			let updatedMembers: Member[];
+			if (reset) {
+				updatedMembers = newMembers;
+				membersStore.set(updatedMembers);
+			} else {
+				const current = get(membersStore);
+				updatedMembers = [...current, ...newMembers];
+				membersStore.set(updatedMembers);
 			}
+
+			const updatedPagination = {
+				page,
+				hasMore
+			};
+
+			// Update pagination state
+			membersPagination.set(updatedPagination);
+
+			// Update cache
+			membersCacheStore.update((cache) => ({
+				...cache,
+				[cacheKey]: {
+					members: updatedMembers,
+					pagination: updatedPagination
+				}
+			}));
 		} catch (err) {
 			console.error('Failed to fetch members:', err);
 			error = 'Failed to load members';
 			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		} finally {
 			isLoading = false;
+			isAppending = false;
 		}
 	}
 
-	// Debounced search
+	// Watch filters
 	let searchTimeout: ReturnType<typeof setTimeout>;
 	function handleSearch(e: Event) {
 		const target = e.target as HTMLInputElement;
 		searchQuery = target.value;
 		clearTimeout(searchTimeout);
 		searchTimeout = setTimeout(() => {
-			fetchMembers();
+			fetchMembers(true);
 		}, 300);
 	}
 
-	// Filter by generation
 	function setGeneration(gen: string | null) {
 		selectedGeneration = gen;
-		fetchMembers();
+		fetchMembers(true);
 	}
 
 	function openMemberDetail(member: Member) {
@@ -73,7 +156,31 @@
 	}
 
 	onMount(() => {
-		fetchMembers();
+		fetchGenerations();
+
+		// Initial fetch if empty
+		if ($membersStore.length === 0) {
+			fetchMembers(true);
+		} else {
+			// If we have data, we're good.
+			// But if we want to support recovering pagination position we might need more logic.
+			// For simplicity/requirement "infinite scroll", we just ensure we have data.
+		}
+
+		observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting && !isLoading && !isAppending) {
+					fetchMembers(false);
+				}
+			},
+			{ rootMargin: '200px' }
+		);
+
+		if (sentinel) observer.observe(sentinel);
+	});
+
+	onDestroy(() => {
+		if (observer) observer.disconnect();
 	});
 </script>
 
@@ -98,18 +205,26 @@
 			>
 				{$t('common.all')}
 			</button>
-			{#each generations as gen}
-				<button
-					on:click={() => setGeneration(gen)}
-					class={`px-4 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-						selectedGeneration === gen
-							? 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400 shadow-sm ring-1 ring-pink-200 dark:ring-pink-500/30'
-							: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 border border-gray-100 dark:border-zinc-700'
-					}`}
-				>
-					Gen {gen}
-				</button>
-			{/each}
+			{#if loadingGenerations}
+				{#each Array(5) as _}
+					<div
+						class="h-[42px] w-20 bg-gray-100 dark:bg-zinc-800 rounded-full animate-pulse shrink-0"
+					></div>
+				{/each}
+			{:else}
+				{#each generations as gen}
+					<button
+						on:click={() => setGeneration(gen)}
+						class={`px-4 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+							selectedGeneration === gen
+								? 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400 shadow-sm ring-1 ring-pink-200 dark:ring-pink-500/30'
+								: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 border border-gray-100 dark:border-zinc-700'
+						}`}
+					>
+						Gen {gen}
+					</button>
+				{/each}
+			{/if}
 		</div>
 	</div>
 
@@ -224,6 +339,13 @@
 				</div>
 			</button>
 		{/each}
+	</div>
+
+	<!-- Sentinel for Infinite Scroll -->
+	<div bind:this={sentinel} class="h-8 w-full flex justify-center items-center py-2">
+		{#if isAppending}
+			<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-pink-500"></div>
+		{/if}
 	</div>
 {/if}
 

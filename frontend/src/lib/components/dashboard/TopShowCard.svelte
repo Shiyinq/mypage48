@@ -78,7 +78,7 @@
 		</div>
 	{:else}
 		<button
-			on:click={() => goto('/shows')}
+			on:click={() => goto('/theater')}
 			class="mt-auto border-t border-purple-100 dark:border-purple-800/30 p-3 w-full text-center text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors flex items-center justify-center gap-1 relative z-20 cursor-pointer"
 		>
 			{$t('common.viewDetails')}

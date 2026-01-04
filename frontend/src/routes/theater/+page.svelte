@@ -9,6 +9,9 @@
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { Calendar } from 'lucide-svelte';
 
+	import { setlistsStore, maxAttendanceStore } from '$lib/stores/theater';
+	import { get } from 'svelte/store';
+
 	const { t } = useTranslation();
 
 	// State
@@ -29,12 +32,27 @@
 	$: inactiveEvents = eventItems.filter((s) => !s.active);
 
 	async function fetchSetlists() {
+		// Check cache first
+		const cachedSetlists = get(setlistsStore);
+		const cachedMaxAttendance = get(maxAttendanceStore);
+
+		if (cachedSetlists) {
+			setlists = cachedSetlists;
+			maxAttendance = cachedMaxAttendance;
+			setlistsLoading = false;
+			return;
+		}
+
 		try {
 			setlistsLoading = true;
 			error = false;
 			const response = await setlistsApi.getAll();
 			setlists = response.setlists;
 			maxAttendance = response.maxAttendance || 1;
+
+			// Update cache
+			setlistsStore.set(setlists);
+			maxAttendanceStore.set(maxAttendance);
 		} catch (e) {
 			console.error('Failed to fetch setlists:', e);
 			error = true;

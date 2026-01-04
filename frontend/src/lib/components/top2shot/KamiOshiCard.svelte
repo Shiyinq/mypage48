@@ -1,16 +1,9 @@
 <script lang="ts">
 	import { Crown, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import type { TopTwoShotMember } from '$lib/types';
 
-	interface MemberStat {
-		name: string;
-		count: number;
-		spend: number;
-		lastDate: string;
-		image?: string;
-	}
-
-	export let member: MemberStat;
+	export let member: TopTwoShotMember;
 
 	const { t } = useTranslation();
 
