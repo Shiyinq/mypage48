@@ -13,11 +13,21 @@ async def test_analyze_ticket_success(client: AsyncClient, db, monkeypatch):
             return MockGenResponse()
 
     # Apply Mock
-    # We need to mock 'src.llm.service.genai.GenerativeModel' instantiation
-    # OR we can mock the `GenerativeModel` class itself in `src.llm.service`.
+    # We need to mock 'src.llm.service.genai.Client'
     
-    # Strategy: Mock `src.llm.service.genai.GenerativeModel` to return our MockModel
-    monkeypatch.setattr("src.llm.service.genai.GenerativeModel", lambda model_name: MockModel())
+    class MockModels:
+        async def generate_content(self, model, contents, config):
+            return MockGenResponse()
+
+    class MockAio:
+        def __init__(self):
+            self.models = MockModels()
+
+    class MockClient:
+        def __init__(self, api_key):
+            self.aio = MockAio()
+
+    monkeypatch.setattr("src.llm.service.genai.Client", MockClient)
 
     # Register and Login
     register_payload = {
