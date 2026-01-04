@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/apis/auth';
 	import { showToast } from '$lib/stores';
-	import { Lock, ArrowLeft, Loader2, CheckCircle, ShieldCheck } from 'lucide-svelte';
+	import { Lock, ArrowLeft, LoaderCircle, CircleCheck, ShieldCheck } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -98,7 +98,7 @@
 					<div
 						class="w-20 h-20 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center mx-auto mb-6"
 					>
-						<CheckCircle class="w-10 h-10 text-green-500" />
+						<CircleCheck class="w-10 h-10 text-green-500" />
 					</div>
 					<h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2">
 						{$t('auth.resetPassword.successTitle')}
@@ -187,7 +187,7 @@
 						class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
 					>
 						{#if isLoading}
-							<Loader2 class="w-5 h-5 animate-spin" /> {$t('auth.resetPassword.submitting')}
+							<LoaderCircle class="w-5 h-5 animate-spin" /> {$t('auth.resetPassword.submitting')}
 						{:else}
 							{$t('auth.resetPassword.submit')}
 						{/if}

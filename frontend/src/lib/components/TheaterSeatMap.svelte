@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { MapPin, AlignJustify, Grid3X3 } from 'lucide-svelte';
+	import { MapPin, StretchHorizontal, Grid3x3 } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	export let rowStats: { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
@@ -148,13 +148,13 @@
 					on:click={() => (mapView = 'ROWS')}
 					class={`h-full aspect-square flex items-center justify-center rounded-md transition-all cursor-pointer ${mapView === 'ROWS' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
 				>
-					<AlignJustify class="w-4 h-4" />
+					<StretchHorizontal class="w-4 h-4" />
 				</button>
 				<button
 					on:click={() => (mapView = 'SEATS')}
 					class={`h-full aspect-square flex items-center justify-center rounded-md transition-all cursor-pointer ${mapView === 'SEATS' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
 				>
-					<Grid3X3 class="w-4 h-4" />
+					<Grid3x3 class="w-4 h-4" />
 				</button>
 			</div>
 		</div>

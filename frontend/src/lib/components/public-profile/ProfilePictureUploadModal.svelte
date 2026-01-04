@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { X, Loader2 } from 'lucide-svelte';
+	import { X, LoaderCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { createEventDispatcher } from 'svelte';
 
@@ -80,7 +80,7 @@
 				disabled={isUploading}
 			>
 				{#if isUploading}
-					<Loader2 class="w-5 h-5 animate-spin" />
+					<LoaderCircle class="w-5 h-5 animate-spin" />
 					{$t('common.loading')}
 				{:else}
 					{$t('common.save')}

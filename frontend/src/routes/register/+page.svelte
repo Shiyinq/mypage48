@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
-	import { Lock, Mail, User, Hash, CheckCircle, Crown, Shield } from 'lucide-svelte';
+	import { Lock, Mail, User, Hash, CircleCheck, Crown, Shield } from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
 	import type { RegisterRequest } from '$lib/types';
 	import SEO from '$lib/components/SEO.svelte';
@@ -162,7 +162,7 @@
 					<option value="Pending">{$t('auth.register.pendingRenewal')}</option>
 				</select>
 				<div class="absolute right-3 top-1/2 -translate-y-1/2">
-					<CheckCircle class="w-4 h-4 text-green-500" />
+					<CircleCheck class="w-4 h-4 text-green-500" />
 				</div>
 			</div>
 		</div>

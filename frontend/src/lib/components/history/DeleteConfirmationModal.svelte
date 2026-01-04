@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AlertTriangle } from 'lucide-svelte';
+	import { TriangleAlert } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -26,7 +26,7 @@
 			<div
 				class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-500 flex items-center justify-center mb-4 mx-auto"
 			>
-				<AlertTriangle class="w-6 h-6" />
+				<TriangleAlert class="w-6 h-6" />
 			</div>
 			<div class="text-center mb-6">
 				<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">

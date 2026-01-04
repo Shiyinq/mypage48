@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { User, Camera, Heart, Loader2, Sparkles } from 'lucide-svelte';
+	import { User, Camera, Heart, LoaderCircle, Sparkles } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { createEventDispatcher } from 'svelte';
 	import type { PublicProfileData } from '$lib/types';
@@ -60,7 +60,7 @@
 					disabled={isUploading}
 				>
 					{#if isUploading}
-						<Loader2 class="w-8 h-8 text-white animate-spin" />
+						<LoaderCircle class="w-8 h-8 text-white animate-spin" />
 					{:else}
 						<Camera class="w-8 h-8 text-white" />
 					{/if}

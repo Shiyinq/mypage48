@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AlertCircle } from 'lucide-svelte';
+	import { CircleAlert } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -44,7 +44,7 @@
 			<div
 				class="w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-500 flex items-center justify-center mb-4 mx-auto"
 			>
-				<AlertCircle class="w-7 h-7" />
+				<CircleAlert class="w-7 h-7" />
 			</div>
 
 			<!-- Content -->
