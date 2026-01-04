@@ -267,9 +267,9 @@
 			"weeksAgo": "minggu yang lalu"
 		},
 		"publicActivity": {
-			"titleWithYear": "Aktivitas teater @{username} di tahun {year}",
-			"titleAllTime": "Aktivitas teater @{username}",
-			"yearBadge": "Aktivitas Teater: {year}"
+			"wrapped": "Theater JKT48 Wrapped {year}",
+			"yearSummary": "Ringkasan {year}",
+			"watchedTimes": "Ditonton {count} kali"
 		},
 		"profilePicture": {
 			"previewTitle": "Preview Foto Profil",

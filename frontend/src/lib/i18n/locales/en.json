@@ -267,9 +267,9 @@
 			"weeksAgo": "weeks ago"
 		},
 		"publicActivity": {
-			"titleWithYear": "Theater activity of @{username} in {year}",
-			"titleAllTime": "Theater activity of @{username}",
-			"yearBadge": "Theater Activity: {year}"
+			"wrapped": "Theater JKT48 Wrapped {year}",
+			"yearSummary": "{year} Summary",
+			"watchedTimes": "Watched {count} times"
 		},
 		"profilePicture": {
 			"previewTitle": "Profile Picture Preview",
