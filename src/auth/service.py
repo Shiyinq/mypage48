@@ -239,7 +239,9 @@ class AuthService:
         try:
             refresh_token = self.create_refresh_token()
             hash_refresh_token = hash_token(refresh_token)
-            await self.save_refresh_token(user_id, hash_refresh_token, device, ip, browser)
+            await self.save_refresh_token(
+                user_id, hash_refresh_token, device, ip, browser
+            )
             await self.save_login_history(
                 user_id, device, ip, browser, user_agent_raw=user_agent
             )
@@ -289,7 +291,9 @@ class AuthService:
                 self.config.password_reset_expire_hours,
             )
 
-            await self.email_service.send_password_reset(user.email, token, user.username)
+            await self.email_service.send_password_reset(
+                user.email, token, user.username
+            )
 
             return token, user.username, user.email
         except Exception as e:
@@ -310,7 +314,8 @@ class AuthService:
             hashed_password = await self.get_password_hash(new_password)
 
             await self.user_repo.update_one(
-                {"userId": token_data["userId"]}, {"$set": {"password": hashed_password}}
+                {"userId": token_data["userId"]},
+                {"$set": {"password": hashed_password}},
             )
 
             await self.security_service.delete_token(token_hash, "password_reset")

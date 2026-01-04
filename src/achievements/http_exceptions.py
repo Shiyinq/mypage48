@@ -1,5 +1,5 @@
-from src.http_exceptions import InternalServerError
 from src.achievements.constants import ErrorCode
+from src.http_exceptions import InternalServerError
 
 
 class AchievementsFetchHTTPException(InternalServerError):

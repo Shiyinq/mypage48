@@ -5,11 +5,11 @@ from src.logging_config import create_logger
 from src.memories.exceptions import MemoriesFetchError
 from src.memories.repository import MemoriesRepository
 from src.memories.schemas import (
+    MemoriesPaginationResponse,
     MemoryItem,
     MemoryType,
-    MemoriesPaginationResponse,
-    TopTwoShotResponse,
     TopTwoShotMember,
+    TopTwoShotResponse,
 )
 from src.tickets.schemas import PaginationMeta
 
@@ -34,13 +34,13 @@ class MemoriesService:
     ) -> MemoriesPaginationResponse:
         """
         Get paginated memories for a user.
-        
+
         Args:
             user_id: User's ID
             page: Page number (1-indexed)
             limit: Items per page (max 100)
             type_filter: 'TICKET', '2SHOT', or None for all
-            
+
         Returns:
             MemoriesPaginationResponse with data and pagination meta
         """
@@ -63,7 +63,9 @@ class MemoriesService:
             for item in items_data:
                 # Build subtitle based on type
                 if item["type"] == "TICKET":
-                    subtitle = f"{item.get('seatSection', '')}-{item.get('seatNumber', '')}"
+                    subtitle = (
+                        f"{item.get('seatSection', '')}-{item.get('seatNumber', '')}"
+                    )
                 else:
                     subtitle = item.get("twoShotType", "Roulette")
 

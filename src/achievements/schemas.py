@@ -1,9 +1,11 @@
-from typing import Optional, List, NamedTuple
+from typing import List, NamedTuple, Optional
+
 from pydantic import BaseModel
 
 
 class AchievementDef(NamedTuple):
     """Definition of an achievement."""
+
     id: str
     title: str
     description: str
@@ -14,6 +16,7 @@ class AchievementDef(NamedTuple):
 
 class RankInfo(BaseModel):
     """Rank/level information based on total shows (XP)."""
+
     current: str
     xp: int
     nextLevelXp: int
@@ -22,6 +25,7 @@ class RankInfo(BaseModel):
 
 class AchievementItem(BaseModel):
     """Single achievement with unlock status and progress."""
+
     id: str
     title: str
     description: str
@@ -33,6 +37,7 @@ class AchievementItem(BaseModel):
 
 class AchievementsResponse(BaseModel):
     """Response with all achievements and counts."""
+
     achievements: List[AchievementItem]
     unlockedCount: int
     totalCount: int

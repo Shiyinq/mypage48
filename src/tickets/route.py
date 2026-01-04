@@ -1,23 +1,27 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, Query, status
 
-from src.dependencies import get_current_user, get_tickets_service
 from src.auth.schemas import UserCurrent
-from src.tickets.service import TicketsService
+from src.dependencies import get_current_user, get_tickets_service
 from src.tickets.schemas import (
     MessageResponse,
     TicketCreateRequest,
+    TicketPaginationResponse,
     TicketResponse,
     TicketUpdateRequest,
-    TicketPaginationResponse,
 )
-
+from src.tickets.service import TicketsService
 
 router = APIRouter()
 
 
-@router.post("/tickets", status_code=status.HTTP_201_CREATED, response_model=TicketResponse, response_model_by_alias=True)
+@router.post(
+    "/tickets",
+    status_code=status.HTTP_201_CREATED,
+    response_model=TicketResponse,
+    response_model_by_alias=True,
+)
 async def create_ticket(
     ticket_data: TicketCreateRequest,
     current_user: UserCurrent = Depends(get_current_user),
@@ -29,14 +33,16 @@ async def create_ticket(
     return await service.create_ticket(current_user.userId, ticket_data)
 
 
-@router.get("/tickets", response_model=TicketPaginationResponse, response_model_by_alias=True)
+@router.get(
+    "/tickets", response_model=TicketPaginationResponse, response_model_by_alias=True
+)
 async def get_my_tickets(
     page: int = 1,
     limit: int = 20,
     title: str | None = None,
     has_two_shot: bool | None = None,
     # FastAPI handles list query params as ?days=Sat&days=Sun
-    days: List[str] | None = Query(default=None), 
+    days: List[str] | None = Query(default=None),
     start_date: str | None = None,
     end_date: str | None = None,
     current_user: UserCurrent = Depends(get_current_user),
@@ -58,14 +64,14 @@ async def get_my_tickets(
         TicketPaginationResponse: Paginated list of tickets matching the filters
     """
     return await service.get_tickets_paginated(
-        current_user.userId, 
-        page=page, 
-        limit=limit, 
+        current_user.userId,
+        page=page,
+        limit=limit,
         title=title,
         has_two_shot=has_two_shot,
         days=days,
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
     )
 
 
@@ -80,7 +86,9 @@ async def get_ticket_titles(
     return await service.get_ticket_titles(current_user.userId)
 
 
-@router.get("/tickets/{ticket_id}", response_model=TicketResponse, response_model_by_alias=True)
+@router.get(
+    "/tickets/{ticket_id}", response_model=TicketResponse, response_model_by_alias=True
+)
 async def get_ticket(
     ticket_id: str,
     current_user: UserCurrent = Depends(get_current_user),
@@ -92,7 +100,9 @@ async def get_ticket(
     return await service.get_ticket(current_user.userId, ticket_id)
 
 
-@router.put("/tickets/{ticket_id}", response_model=TicketResponse, response_model_by_alias=True)
+@router.put(
+    "/tickets/{ticket_id}", response_model=TicketResponse, response_model_by_alias=True
+)
 async def update_ticket(
     ticket_id: str,
     ticket_data: TicketUpdateRequest,
@@ -105,7 +115,11 @@ async def update_ticket(
     return await service.update_ticket(current_user.userId, ticket_id, ticket_data)
 
 
-@router.delete("/tickets/{ticket_id}", status_code=status.HTTP_200_OK, response_model=MessageResponse)
+@router.delete(
+    "/tickets/{ticket_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=MessageResponse,
+)
 async def delete_ticket(
     ticket_id: str,
     current_user: UserCurrent = Depends(get_current_user),
@@ -115,4 +129,3 @@ async def delete_ticket(
     Delete a ticket.
     """
     return await service.delete_ticket(current_user.userId, ticket_id)
-

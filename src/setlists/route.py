@@ -1,16 +1,17 @@
-from typing import Optional, List
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, Query
 
+from src.auth.schemas import UserCurrent
+from src.dependencies import get_current_user, get_setlists_service
+from src.logging_config import create_logger
 from src.setlists.schemas import (
+    SetlistDetailResponse,
     SetlistListResponse,
     SetlistResponse,
     SetlistSeedResponse,
-    SetlistDetailResponse,
 )
 from src.setlists.service import SetlistsService
-from src.dependencies import get_setlists_service, get_current_user
-from src.auth.schemas import UserCurrent
-from src.logging_config import create_logger
 
 router = APIRouter()
 logger = create_logger("setlists", __name__)
@@ -19,7 +20,9 @@ logger = create_logger("setlists", __name__)
 @router.get("", response_model=SetlistListResponse)
 async def get_setlists(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(100, ge=1, le=100, description="Maximum number of records to return"),
+    limit: int = Query(
+        100, ge=1, le=100, description="Maximum number of records to return"
+    ),
     type: Optional[str] = Query(None, description="Filter by type (setlist, event)"),
     active: Optional[bool] = Query(None, description="Filter by active status"),
     service: SetlistsService = Depends(get_setlists_service),
@@ -34,7 +37,9 @@ async def get_setlists(
     - **type**: Filter by setlist type (setlist or event)
     - **active**: Filter by active status
     """
-    return await service.get_all_setlists(current_user.userId, skip, limit, type, active)
+    return await service.get_all_setlists(
+        current_user.userId, skip, limit, type, active
+    )
 
 
 @router.get("/types", response_model=List[str])
@@ -91,4 +96,3 @@ async def seed_setlists(
     This will clear existing data and insert fresh data.
     """
     return await service.seed_setlists()
-

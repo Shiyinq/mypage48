@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
-from src.dependencies import get_llm_service, get_current_user
+
+from src.dependencies import get_current_user, get_llm_service
+from src.llm.schemas import AnalysisResult, AnalyzeImageRequest
 from src.llm.service import LLMService
-from src.llm.schemas import AnalyzeImageRequest, AnalysisResult
 
 router = APIRouter()
 

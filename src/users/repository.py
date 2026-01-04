@@ -54,13 +54,15 @@ class UserRepository:
             {"userId": user_id}, {"$set": {"oshiId": oshi_id}}
         )
 
-    async def set_public_status(self, user_id: str, is_public: bool, public_year: Optional[int] = None):
+    async def set_public_status(
+        self, user_id: str, is_public: bool, public_year: Optional[int] = None
+    ):
         update_data = {"isPublic": is_public}
         if is_public:
             update_data["publicYear"] = public_year
         else:
             update_data["publicYear"] = None
-            
+
         return await self.collection.update_one(
             {"userId": user_id}, {"$set": update_data}
         )

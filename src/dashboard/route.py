@@ -1,7 +1,7 @@
 """Dashboard Routes - API endpoints for dashboard statistics."""
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query 
+from fastapi import APIRouter, Depends, Query
 
 from src.auth.schemas import UserCurrent
 from src.dashboard.schemas import DashboardStatsResponse
@@ -9,6 +9,7 @@ from src.dashboard.service import DashboardService
 from src.dependencies import get_current_user, get_dashboard_service
 
 router = APIRouter()
+
 
 @router.get("/stats", response_model=DashboardStatsResponse)
 async def get_dashboard_stats(
@@ -21,7 +22,7 @@ async def get_dashboard_stats(
 ) -> DashboardStatsResponse:
     """
     Get dashboard statistics for the current user.
-    
+
     - **year**: Year to filter tickets (defaults to current year if not provided)
     - **start_month**: Start month for filtering (0 = January, 11 = December)
     - **end_month**: End month for filtering (0 = January, 11 = December)

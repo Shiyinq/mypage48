@@ -1,8 +1,7 @@
 from datetime import datetime
-from typing import List, Optional, Union, Annotated
-from pydantic import BaseModel, Field, BeforeValidator
+from typing import Annotated, List, Optional, Union
 
-
+from pydantic import BaseModel, BeforeValidator, Field
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
