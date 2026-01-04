@@ -363,3 +363,35 @@ export interface AchievementsResponse {
 	unlockedCount: number;
 	totalCount: number;
 }
+
+/**
+ * Public profile data for public-facing profile pages.
+ */
+export interface PublicProfileData {
+	name: string;
+	username: string;
+	profilePicture?: string | null;
+	oshi?: UserOshi | null;
+	publicYear?: number | null;
+}
+
+/**
+ * Public profile recent activity item with type field.
+ */
+export interface PublicRecentActivity {
+	title: string;
+	date: string;
+	type: 'Theater' | '2-Shot';
+}
+
+/**
+ * Public profile stats for the stats component.
+ */
+export interface PublicProfileStats {
+	totalShows: number;
+	totalTwoShots: number;
+	topRow: string | null;
+	topRowCount?: number;
+	topShow: string | null;
+	topShowCount?: number;
+}

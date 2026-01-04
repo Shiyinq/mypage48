@@ -26,7 +26,6 @@
 	import { dashboard } from '$lib/apis/dashboard';
 	// Import dashboard store
 	import { dashboardFilter, dashboardStatsData, lastFetchedFilter } from '$lib/stores/dashboard';
-	import type { DashboardStats } from '$lib/types';
 
 	const { t } = useTranslation();
 
@@ -86,8 +85,7 @@
 	});
 
 	// Refetch when filter params change
-	$: if (mounted && $isAuthenticated) {
-		$dashboardFilter; // Reactive dependency
+	$: if (mounted && $isAuthenticated && $dashboardFilter) {
 		fetchDashboardStats();
 	}
 

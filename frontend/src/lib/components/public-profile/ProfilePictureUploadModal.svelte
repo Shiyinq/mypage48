@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { X, Loader2 } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	export let previewImage: string;
 	export let isUploading: boolean = false;
@@ -25,10 +25,13 @@
 
 <div
 	class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-	role="presentation"
+	role="button"
+	tabindex="-1"
+	aria-label="Close dialog"
 	on:click={close}
 	on:keydown={handleKeydown}
 >
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div
 		class="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-[fadeIn_0.2s_ease-out]"
 		on:click|stopPropagation

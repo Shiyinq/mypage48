@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AlertTriangle, Trash2 } from 'lucide-svelte';
+	import { AlertTriangle } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 

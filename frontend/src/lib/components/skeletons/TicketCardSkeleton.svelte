@@ -11,6 +11,7 @@
 	role="status"
 	aria-label="Loading"
 >
+	<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 	{#each Array(count) as _}
 		<div
 			class="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-700 flex flex-col h-full animate-pulse"

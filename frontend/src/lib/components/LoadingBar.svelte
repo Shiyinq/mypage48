@@ -2,56 +2,66 @@
 	import { navigating } from '$app/stores';
 	import { onDestroy } from 'svelte';
 
+	// Delay before showing loading bar (ms) - prevents flashing on fast navigations
+	const SHOW_DELAY = 150;
+
 	let p = 0;
 	let visible = false;
 	let interval: ReturnType<typeof setInterval>;
+	let delayTimeout: ReturnType<typeof setTimeout>;
 
 	function start() {
-		// Clear any existing finish timers or intervals
+		// Clear any existing timers
 		clearInterval(interval);
+		clearTimeout(delayTimeout);
 
-		visible = true;
+		// Reset progress but don't show yet
 		p = 0;
-		// Initial "start" jump
-		p = 0.1;
 
-		interval = setInterval(() => {
-			// Asymptotic approach to 0.95
-			// The closer we get to 0.95, the smaller the step
-			p += (0.95 - p) * 0.05;
-		}, 100);
+		// Only show loading bar after delay (prevents flash on fast navigations)
+		delayTimeout = setTimeout(() => {
+			visible = true;
+			p = 0.1; // Initial jump
+
+			interval = setInterval(() => {
+				// Asymptotic approach to 0.95
+				p += (0.95 - p) * 0.05;
+			}, 100);
+		}, SHOW_DELAY);
 	}
 
 	function finish() {
+		// Cancel the delay timeout if navigation finished before bar was shown
+		clearTimeout(delayTimeout);
 		clearInterval(interval);
-		p = 1;
 
-		// Wait for the width transition to complete (approx 200ms)
-		// then hide the bar
-		setTimeout(() => {
-			visible = false;
-			// Reset p after it is hidden to be ready for next time
+		// If visible, animate to 100% and hide
+		if (visible) {
+			p = 1;
 			setTimeout(() => {
-				p = 0;
-			}, 300);
-		}, 400);
+				visible = false;
+				setTimeout(() => {
+					p = 0;
+				}, 300);
+			}, 400);
+		} else {
+			// Navigation finished before bar was shown, just reset
+			p = 0;
+		}
 	}
 
 	// Watch for navigation changes
 	$: if ($navigating) {
-		// If we aren't currently showing the bar, or if we are (but effectively "done" from a previous run that didn't clean up?), start over
 		if (!visible || p >= 1) {
 			start();
 		}
 	} else {
-		// If navigation stopped and we are visible, finish the animation
-		if (visible && p < 1) {
-			finish();
-		}
+		finish();
 	}
 
 	onDestroy(() => {
-		if (interval) clearInterval(interval);
+		clearInterval(interval);
+		clearTimeout(delayTimeout);
 	});
 </script>
 

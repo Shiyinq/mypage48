@@ -22,6 +22,7 @@
 </script>
 
 <div class="grid {columnClasses[columns]} gap-6 {className}" role="status" aria-label="Loading">
+	<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 	{#each Array(count) as _}
 		<div class="glass-panel rounded-3xl overflow-hidden animate-pulse">
 			<div class="{aspectClasses[aspectRatio]} bg-gray-200 dark:bg-zinc-700"></div>

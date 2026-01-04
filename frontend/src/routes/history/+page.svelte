@@ -10,25 +10,25 @@
 		defaultTicketsPagination
 	} from '$lib/stores';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
-	import { onMount, tick } from 'svelte';
+	import { onMount } from 'svelte';
 	import { ticketsApi } from '$lib/apis/tickets';
 	import type { Ticket as TicketType, TicketFilters } from '$lib/types';
 	import EditTicketModal from '$lib/components/EditTicketModal.svelte';
-	import { History, ListFilter, Loader2, Ticket } from 'lucide-svelte';
+	import { History, Ticket } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
-	import { fade, scale } from 'svelte/transition';
+
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	// Shared components and utils
 	import { PageHeader, EmptyState, ErrorState } from '$lib/components';
-	import { GridSkeleton, TableSkeleton, TicketCardSkeleton } from '$lib/components/skeletons';
+	import { TableSkeleton, TicketCardSkeleton } from '$lib/components/skeletons';
 	import {
 		DeleteConfirmationModal,
 		TicketCard,
 		TicketTable,
 		HistoryFilter
 	} from '$lib/components/history';
-	import { formatDateFull } from '$lib/utils/formatting';
+
 	import { get } from 'svelte/store';
 
 	const { t } = useTranslation();

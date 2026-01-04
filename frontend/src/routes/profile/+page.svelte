@@ -3,7 +3,6 @@
 	import { isAuthenticated, showToast, userProfile, tickets as ticketsStore } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
-	import Button from '$lib/components/Button.svelte';
 	import { User as UserIcon, LogOut, Settings } from 'lucide-svelte';
 	import { auth } from '$lib/apis/auth';
 	import SEO from '$lib/components/SEO.svelte';
@@ -21,7 +20,7 @@
 		MemberDetailModal
 	} from '$lib/components/profile';
 
-	const { t, locale } = useTranslation();
+	const { t } = useTranslation();
 
 	// Profile data from API (consolidated response)
 	interface ProfileData {

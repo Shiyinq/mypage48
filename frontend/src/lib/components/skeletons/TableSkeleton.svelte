@@ -1,8 +1,4 @@
 <script lang="ts">
-	import { useTranslation } from '$lib/i18n/useTranslation';
-
-	const { t } = useTranslation();
-
 	/**
 	 * Reusable table skeleton component for loading states
 	 */
@@ -31,8 +27,10 @@
 				</thead>
 			{/if}
 			<tbody class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700">
+				<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 				{#each Array(rows) as _}
 					<tr class="border-b border-gray-100 dark:border-zinc-700">
+						<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 						{#each columns as _, i}
 							<td class="p-4">
 								<div

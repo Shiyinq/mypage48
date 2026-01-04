@@ -14,7 +14,7 @@
 	// Define error info based on status code
 	$: errorInfo = getErrorInfo(status, $t);
 
-	function getErrorInfo(code: number, t: any) {
+	function getErrorInfo(code: number, t: (key: string) => string) {
 		switch (code) {
 			case 404:
 				return {

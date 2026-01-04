@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Calendar } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import type { PublicRecentActivity } from '$lib/types';
 
-	export let recentActivity: any[];
+	export let recentActivity: PublicRecentActivity[];
 
 	const { t } = useTranslation();
 </script>
