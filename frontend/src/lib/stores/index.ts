@@ -6,7 +6,7 @@ import type {
 	AchievementsResponse,
 	TicketFilters,
 	PaginationState
-} from './types';
+} from '$lib/types'; // Updated import path
 import { resetDashboard } from '$lib/stores/dashboard';
 import { invalidateTheater } from '$lib/stores/theater';
 

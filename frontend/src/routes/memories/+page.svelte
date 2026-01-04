@@ -6,8 +6,10 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { PageHeader, EmptyState, ErrorState } from '$lib/components';
 	import { Lightbox, MemoryFilters, MemoryCard, type FilterType } from '$lib/components/memories';
+	import { PolaroidSkeleton } from '$lib/components/skeletons';
 	import type { MemoryItem, PaginationState } from '$lib/types';
 	import { memoriesApi } from '$lib/apis/memories';
+	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 
 	const { t } = useTranslation();
 
@@ -20,7 +22,7 @@
 	let mounted = false;
 	let error = false;
 
-	// Cached data for each filter to avoid refetching
+	// Cached data
 	let cachedData: Record<
 		FilterType,
 		{ memories: MemoryItem[]; pagination: PaginationState } | null
@@ -84,16 +86,10 @@
 		}
 	}
 
-	function handleScroll() {
+	// Infinite scroll handler
+	function handleIntersect() {
 		if (!mounted || isLoadingMore || !pagination.hasMore) return;
-
-		const threshold = 300;
-		const position = window.innerHeight + window.scrollY;
-		const height = document.documentElement.scrollHeight;
-
-		if (position > height - threshold) {
-			loadMemories(pagination.page + 1);
-		}
+		loadMemories(pagination.page + 1);
 	}
 
 	// Scroll lock for lightbox
@@ -105,7 +101,6 @@
 </script>
 
 <SEO title={$t('memories.title')} path="/memories" description={$t('seo.memories')} />
-<svelte:window on:scroll={handleScroll} />
 
 <!-- Lightbox -->
 <Lightbox {selectedImage} onClose={() => (selectedImage = null)} />
@@ -138,19 +133,7 @@
 			{#each Array(8) as _unused, index}
 				{@const rotation = (index % 5) - 2}
 				<div class="relative" style={`transform: rotate(${rotation}deg)`}>
-					<div
-						class="bg-white dark:bg-zinc-900 p-3 pb-12 shadow-md border border-gray-100 dark:border-zinc-700 rounded-sm"
-					>
-						<div class="aspect-[4/5] w-full bg-gray-200 dark:bg-zinc-800 animate-pulse mb-4"></div>
-						<div class="px-2">
-							<div
-								class="h-4 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse w-3/4 mx-auto mb-2"
-							></div>
-							<div
-								class="h-3 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse w-1/2 mx-auto"
-							></div>
-						</div>
-					</div>
+					<PolaroidSkeleton />
 				</div>
 			{/each}
 		</div>
@@ -168,32 +151,26 @@
 			{/each}
 		</div>
 
-		<!-- Loading more skeleton -->
-		{#if isLoadingMore && memories.length > 0}
+		<!-- Sentinel for infinite scroll -->
+		{#if pagination.hasMore}
 			<div
-				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4 mt-8"
+				use:infiniteScroll
+				on:intersect={handleIntersect}
+				class="w-full py-8 flex justify-center"
 			>
-				<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-				{#each Array(4) as _, index}
-					{@const rotation = (index % 5) - 2}
-					<div class="relative" style={`transform: rotate(${rotation}deg)`}>
-						<div
-							class="bg-white dark:bg-zinc-900 p-3 pb-12 shadow-md border border-gray-100 dark:border-zinc-700 rounded-sm"
-						>
-							<div
-								class="aspect-[4/5] w-full bg-gray-200 dark:bg-zinc-800 animate-pulse mb-4"
-							></div>
-							<div class="px-2">
-								<div
-									class="h-4 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse w-3/4 mx-auto mb-2"
-								></div>
-								<div
-									class="h-3 bg-gray-200 dark:bg-zinc-800 rounded animate-pulse w-1/2 mx-auto"
-								></div>
+				{#if isLoadingMore}
+					<div
+						class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4 w-full"
+					>
+						<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+						{#each Array(4) as _, index}
+							{@const rotation = (index % 5) - 2}
+							<div class="relative" style={`transform: rotate(${rotation}deg)`}>
+								<PolaroidSkeleton />
 							</div>
-						</div>
+						{/each}
 					</div>
-				{/each}
+				{/if}
 			</div>
 		{/if}
 	{/if}

@@ -5,3 +5,4 @@ export { default as TableSkeleton } from './TableSkeleton.svelte';
 export { default as TicketCardSkeleton } from './TicketCardSkeleton.svelte';
 export { default as AchievementSkeleton } from './AchievementSkeleton.svelte';
 export { default as Top2ShotSkeleton } from './Top2ShotSkeleton.svelte';
+export { default as PolaroidSkeleton } from './PolaroidSkeleton.svelte';

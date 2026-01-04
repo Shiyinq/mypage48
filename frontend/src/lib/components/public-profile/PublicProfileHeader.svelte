@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { User, Ticket, Camera, Heart, Loader2, Sparkles } from 'lucide-svelte';
+	import { User, Camera, Heart, Loader2, Sparkles } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { createEventDispatcher } from 'svelte';
 	import type { PublicProfileData } from '$lib/types';

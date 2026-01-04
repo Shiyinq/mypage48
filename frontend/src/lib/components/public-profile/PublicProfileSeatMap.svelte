@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { MapPin, AlignJustify, Grid3X3, Armchair } from 'lucide-svelte';
+	import { MapPin, Grid3X3 } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	export let rowStats: { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
 	export let seatStats: Record<string, number>;
 	export let isLoading: boolean = false;
-	export let compact: boolean = true;
 
 	const { t } = useTranslation();
 	let mapView: 'ROWS' | 'SEATS' = 'SEATS';
@@ -176,6 +175,7 @@
 				<!-- Rows View -->
 				{#if isLoading}
 					<div class="grid grid-cols-2 gap-4 animate-pulse">
+						<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 						{#each Array(10) as _}
 							<div class="h-10 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
 						{/each}
