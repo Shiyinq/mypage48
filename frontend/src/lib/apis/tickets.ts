@@ -17,7 +17,8 @@ export const ticketsApi = {
 
 		if (filters) {
 			if (filters.title) query.append('title', filters.title);
-			if (filters.hasTwoShot !== undefined) query.append('has_two_shot', filters.hasTwoShot.toString());
+			if (filters.hasTwoShot !== undefined)
+				query.append('has_two_shot', filters.hasTwoShot.toString());
 			if (filters.startDate) query.append('start_date', filters.startDate);
 			if (filters.endDate) query.append('end_date', filters.endDate);
 			if (filters.days && filters.days.length > 0) {

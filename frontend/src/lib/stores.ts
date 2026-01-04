@@ -1,6 +1,12 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import type { Ticket, UserWithProfileStats, AchievementsResponse, TicketFilters, PaginationState } from './types';
+import type {
+	Ticket,
+	UserWithProfileStats,
+	AchievementsResponse,
+	TicketFilters,
+	PaginationState
+} from './types';
 import { resetDashboard } from '$lib/stores/dashboard';
 import { invalidateTheater } from '$lib/stores/theater';
 
