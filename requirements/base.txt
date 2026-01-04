@@ -17,4 +17,4 @@ fastapi-sso==0.7.2
 user-agents==2.2.0
 resend==2.11.0
 pydantic-settings==2.7.0
-google-generativeai
+google-genai

@@ -1,6 +1,8 @@
+import base64
 import json
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 from src.config import Settings
 from src.image_validation import ImageTooLargeError as ImageTooLargeValidationError
@@ -32,8 +34,7 @@ class LLMService:
         self.config = config
 
         # Configure Gemini
-        genai.configure(api_key=self.config.gemini_api_key)
-        self.model = genai.GenerativeModel("gemini-2.5-flash")
+        self.client = genai.Client(api_key=self.config.gemini_api_key)
 
     async def analyze_ticket_image(
         self, request: AnalyzeImageRequest
@@ -53,6 +54,8 @@ class LLMService:
             base64_image = request.image
             if "," in base64_image:
                 base64_image = base64_image.split(",")[1]
+            
+            image_bytes = base64.b64decode(base64_image)
 
             prompt = """
             Analyze this JKT48 theater ticket image. 
@@ -69,30 +72,29 @@ class LLMService:
             """
 
             # Prepare content for Gemini
-            # The SDK supports passing image data as a dict with 'mime_type' and 'data'
-            image_part = {"mime_type": "image/jpeg", "data": base64_image}
+            image_part = types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg")
 
-            generation_config = genai.types.GenerationConfig(
-                response_mime_type="application/json",
-                response_schema={
-                    "type": "OBJECT",
-                    "properties": {
-                        "title": {"type": "STRING"},
-                        "date": {"type": "STRING", "description": "YYYY-MM-DD"},
-                        "time": {"type": "STRING"},
-                        "gate_open": {"type": "STRING"},
-                        "day": {"type": "STRING"},
-                        "section": {"type": "STRING", "description": "Row letter"},
-                        "number": {"type": "STRING", "description": "Seat number only"},
-                        "price": {"type": "NUMBER"},
-                        "ticket_id": {"type": "STRING"},
+            response = await self.client.aio.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=[image_part, prompt],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema={
+                        "type": "OBJECT",
+                        "properties": {
+                            "title": {"type": "STRING"},
+                            "date": {"type": "STRING", "description": "YYYY-MM-DD"},
+                            "time": {"type": "STRING"},
+                            "gate_open": {"type": "STRING"},
+                            "day": {"type": "STRING"},
+                            "section": {"type": "STRING", "description": "Row letter"},
+                            "number": {"type": "STRING", "description": "Seat number only"},
+                            "price": {"type": "NUMBER"},
+                            "ticket_id": {"type": "STRING"},
+                        },
+                        "required": ["title", "date", "section", "number", "price"],
                     },
-                    "required": ["title", "date", "section", "number", "price"],
-                },
-            )
-
-            response = await self.model.generate_content_async(
-                contents=[image_part, prompt], generation_config=generation_config
+                )
             )
 
             json_text = response.text
