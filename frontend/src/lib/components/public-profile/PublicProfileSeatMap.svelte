@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { MapPin, Grid3X3 } from 'lucide-svelte';
+	import { MapPin, Grid3x3 } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	export let rowStats: { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
@@ -154,7 +154,7 @@
 						on:click={() => (mapView = 'SEATS')}
 						class={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition-all cursor-pointer ${mapView === 'SEATS' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
 					>
-						<Grid3X3 class="w-4 h-4" />
+						<Grid3x3 class="w-4 h-4" />
 					</button>
 				</div>
 			</div>

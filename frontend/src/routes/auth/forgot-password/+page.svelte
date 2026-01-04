@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { auth } from '$lib/apis/auth';
 	import { showToast } from '$lib/stores';
-	import { Mail, ArrowLeft, Loader2, KeyRound } from 'lucide-svelte';
+	import { Mail, ArrowLeft, LoaderCircle, KeyRound } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -112,7 +112,7 @@
 						class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
 					>
 						{#if isLoading}
-							<Loader2 class="w-5 h-5 animate-spin" /> {$t('auth.forgotPassword.submitting')}
+							<LoaderCircle class="w-5 h-5 animate-spin" /> {$t('auth.forgotPassword.submitting')}
 						{:else}
 							{$t('auth.forgotPassword.submit')}
 						{/if}

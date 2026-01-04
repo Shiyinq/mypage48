@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { LayoutDashboard, Mic2, Plus, Image as ImageIcon, History } from 'lucide-svelte';
+	import { LayoutDashboard, AudioLines, Plus, Image as ImageIcon, History } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -27,7 +27,7 @@
 			href="/theater"
 			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 group"
 		>
-			<Mic2
+			<AudioLines
 				class={`w-6 h-6 transition-all ${$page.url.pathname.startsWith('/theater') ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`}
 			/>
 			<span

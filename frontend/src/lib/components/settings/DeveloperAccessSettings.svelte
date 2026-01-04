@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Key, Plus, Loader2, AlertTriangle } from 'lucide-svelte';
+	import { Key, Plus, LoaderCircle, TriangleAlert } from 'lucide-svelte';
 
 	const { t } = useTranslation();
 	const dispatch = createEventDispatcher<{ openConfirmModal: void }>();
@@ -39,7 +39,7 @@
 		<div
 			class="mt-3 flex items-start gap-2 bg-amber-50 dark:bg-amber-900/30 p-3 rounded-xl border border-amber-100 dark:border-amber-800"
 		>
-			<AlertTriangle class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+			<TriangleAlert class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
 			<p class="text-xs text-amber-700 dark:text-amber-300">
 				{$t('settings.developer.warning')}
 			</p>
@@ -52,7 +52,7 @@
 		disabled={generatingKey}
 	>
 		{#if generatingKey}
-			<Loader2 class="w-4 h-4 animate-spin" />
+			<LoaderCircle class="w-4 h-4 animate-spin" />
 			{$t('settings.developer.generating')}
 		{:else}
 			<Plus class="w-4 h-4" />

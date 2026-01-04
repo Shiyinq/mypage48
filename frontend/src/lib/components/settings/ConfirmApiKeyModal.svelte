@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { AlertTriangle } from 'lucide-svelte';
+	import { TriangleAlert } from 'lucide-svelte';
 
 	const { t } = useTranslation();
 	const dispatch = createEventDispatcher<{ cancel: void; confirm: void }>();
@@ -28,7 +28,7 @@
 				<div
 					class="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-200 dark:shadow-amber-900/50"
 				>
-					<AlertTriangle class="w-7 h-7 text-white" />
+					<TriangleAlert class="w-7 h-7 text-white" />
 				</div>
 				<h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
 					{$t('settings.developer.confirmTitle')}

@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/apis/auth';
 	import { showToast } from '$lib/stores';
-	import { CheckCircle, XCircle, Loader2 } from 'lucide-svelte';
+	import { CircleCheck, CircleX, LoaderCircle } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -67,19 +67,19 @@
 					<div
 						class="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center"
 					>
-						<Loader2 class="w-8 h-8 text-blue-500" />
+						<LoaderCircle class="w-8 h-8 text-blue-500" />
 					</div>
 				{:else if status === 'success'}
 					<div
 						class="w-16 h-16 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center"
 					>
-						<CheckCircle class="w-8 h-8 text-green-500" />
+						<CircleCheck class="w-8 h-8 text-green-500" />
 					</div>
 				{:else}
 					<div
 						class="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center"
 					>
-						<XCircle class="w-8 h-8 text-red-500" />
+						<CircleX class="w-8 h-8 text-red-500" />
 					</div>
 				{/if}
 			</div>

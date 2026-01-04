@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ArrowLeft, Mic2 } from 'lucide-svelte';
+	import { ArrowLeft, AudioLines } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface ShowInfo {
@@ -49,7 +49,7 @@
 		<div
 			class="p-4 rounded-2xl bg-red-600/20 backdrop-blur-md text-white border border-white/10 shadow-inner"
 		>
-			<Mic2 class="w-8 h-8" />
+			<AudioLines class="w-8 h-8" />
 		</div>
 		<div>
 			<h2 class="text-3xl md:text-4xl font-black text-white leading-none mb-2 drop-shadow-lg">

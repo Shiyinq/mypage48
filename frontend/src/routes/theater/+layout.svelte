@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Mic2, Users, Calendar, ChevronRight, History } from 'lucide-svelte';
+	import { AudioLines, Users, Calendar, ChevronRight, History } from 'lucide-svelte';
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
 
 	const { t } = useTranslation();
@@ -41,7 +41,7 @@
 		return {
 			title: $t('theater.title'),
 			subtitle: $t('theater.subtitle'),
-			icon: Mic2,
+			icon: AudioLines,
 			theme: 'purple'
 		};
 	})();
@@ -53,7 +53,7 @@
 		{
 			labelKey: 'theater.subNav.theater',
 			href: '/theater',
-			icon: Mic2,
+			icon: AudioLines,
 			exact: true,
 			theme: 'purple'
 		},

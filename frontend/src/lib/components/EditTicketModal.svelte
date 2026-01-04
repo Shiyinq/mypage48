@@ -6,9 +6,9 @@
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import type { Ticket } from '$lib/types';
 	import {
-		Loader2,
+		LoaderCircle,
 		Camera,
-		CheckCircle,
+		CircleCheck,
 		NotebookPen,
 		Calendar,
 		Clock,
@@ -542,9 +542,9 @@
 								class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
 							>
 								{#if isSubmitting}
-									<Loader2 class="w-6 h-6 animate-spin" />
+									<LoaderCircle class="w-6 h-6 animate-spin" />
 								{:else}
-									<CheckCircle class="w-6 h-6" />
+									<CircleCheck class="w-6 h-6" />
 								{/if}
 								{$t('forms.updateTicket')}
 							</button>

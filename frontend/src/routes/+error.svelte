@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { isAuthenticated } from '$lib/stores';
-	import { Home, ArrowLeft, RefreshCw, AlertTriangle, Search, ServerCrash } from 'lucide-svelte';
+	import { Home, ArrowLeft, RefreshCw, TriangleAlert, Search, ServerCrash } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -41,7 +41,7 @@
 					title: t('errors.403.title'),
 					subtitle: t('errors.403.subtitle'),
 					description: t('errors.403.description'),
-					icon: AlertTriangle,
+					icon: TriangleAlert,
 					color: 'from-yellow-500 to-amber-500',
 					bgColor: 'bg-yellow-500/10',
 					borderColor: 'border-yellow-500/30'
@@ -51,7 +51,7 @@
 					title: t('errors.401.title'),
 					subtitle: t('errors.401.subtitle'),
 					description: t('errors.401.description'),
-					icon: AlertTriangle,
+					icon: TriangleAlert,
 					color: 'from-blue-500 to-indigo-500',
 					bgColor: 'bg-blue-500/10',
 					borderColor: 'border-blue-500/30'
@@ -61,7 +61,7 @@
 					title: t('errors.default.title'),
 					subtitle: t('errors.default.subtitle'),
 					description: t('errors.default.description'),
-					icon: AlertTriangle,
+					icon: TriangleAlert,
 					color: 'from-gray-500 to-slate-600',
 					bgColor: 'bg-gray-500/10',
 					borderColor: 'border-gray-500/30'
