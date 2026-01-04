@@ -2,50 +2,134 @@
 	import { Search, X, Check } from 'lucide-svelte';
 	import Button from '$lib/components/Button.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import type { Member } from '$lib/apis/members';
+	import { members as membersApi, type Member } from '$lib/apis/members';
 	import { fade, scale } from 'svelte/transition';
+	import { tick } from 'svelte';
+	import { membersCacheStore } from '$lib/stores/theater';
+	import { get } from 'svelte/store';
 
 	export let show: boolean = false;
-	export let members: Member[] = [];
-	export let loading: boolean = false;
+	// members prop removed, we fetch internally
 	export let saving: boolean = false;
 	export let onClose: () => void;
-	export let onSave: (memberId: number) => void;
+	export let onSave: (member: Member) => void;
 
 	const { t } = useTranslation();
 
 	let searchQuery = '';
 	let selectedOshiId: number | null = null;
-	let filteredMembers: Member[] = [];
 
-	// Reset state when modal opens/closes or members change
+	let memberList: Member[] = [];
+	let loading = false;
+	let page = 1;
+	let hasMore = true;
+	let isAppending = false;
+	let searchTimeout: ReturnType<typeof setTimeout>;
+
+	let observer: IntersectionObserver;
+	let sentinel: HTMLElement;
+
+	// Reset/Fetch when modal opens
 	$: if (show) {
-		filteredMembers = members;
-		// If we wanted to persist selection we could, but typical flow resets it
-		// selectedOshiId = null; // Optional: keep or reset? Parent resets it in original code.
-		// Use internal state initialization if needed.
+		if (memberList.length === 0) {
+			fetchMembers(true);
+		}
 	} else {
 		searchQuery = '';
 		selectedOshiId = null;
+		memberList = [];
 	}
 
-	$: {
-		if (!searchQuery.trim()) {
-			filteredMembers = members;
+	$: if (sentinel && observer) {
+		observer.observe(sentinel);
+	}
+
+	function initObserver() {
+		if (observer) observer.disconnect();
+		observer = new IntersectionObserver((entries) => {
+			if (entries[0].isIntersecting && hasMore && !loading && !isAppending) {
+				fetchMembers(false);
+			}
+		});
+		if (sentinel) observer.observe(sentinel);
+	}
+
+	function getCacheKey() {
+		return JSON.stringify({ generation: null, search: searchQuery || '' });
+	}
+
+	async function fetchMembers(reset = false) {
+		const cacheKey = getCacheKey();
+
+		if (reset) {
+			// Check cache first
+			const cache = get(membersCacheStore);
+			if (cache[cacheKey]) {
+				memberList = cache[cacheKey].members;
+				const cachedPagination = cache[cacheKey].pagination;
+				page = cachedPagination.page;
+				hasMore = cachedPagination.hasMore;
+
+				await tick();
+				initObserver();
+				return;
+			}
+
+			loading = true;
+			page = 1;
+			hasMore = true;
 		} else {
-			const q = searchQuery.toLowerCase();
-			filteredMembers = members.filter(
-				(m) =>
-					m.name.toLowerCase().includes(q) ||
-					m.nickname.toLowerCase().includes(q) ||
-					m.generation.toLowerCase().includes(q)
-			);
+			if (!hasMore || isAppending) return;
+			isAppending = true;
 		}
+
+		try {
+			const res = await membersApi.getAll({
+				page: reset ? 1 : page + 1,
+				limit: 20,
+				search: searchQuery || undefined
+			});
+
+			if (reset) {
+				memberList = res.data.filter((m) => m.active);
+				page = 1;
+			} else {
+				memberList = [...memberList, ...res.data.filter((m) => m.active)];
+				page += 1;
+			}
+
+			hasMore = !!res.meta.next_page;
+
+			// Update Cache
+			membersCacheStore.update((store) => ({
+				...store,
+				[cacheKey]: {
+					members: memberList,
+					pagination: { page, hasMore }
+				}
+			}));
+
+			await tick();
+			initObserver();
+		} catch (e) {
+			console.error('Failed to load members', e);
+		} finally {
+			loading = false;
+			isAppending = false;
+		}
+	}
+
+	function handleSearch() {
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(() => {
+			fetchMembers(true);
+		}, 500);
 	}
 
 	function handleSave() {
 		if (selectedOshiId) {
-			onSave(selectedOshiId);
+			const member = memberList.find((m) => m.id === selectedOshiId);
+			if (member) onSave(member);
 		}
 	}
 </script>
@@ -90,6 +174,7 @@
 					<input
 						type="text"
 						bind:value={searchQuery}
+						on:input={handleSearch}
 						placeholder={$t('profile.oshiModal.searchPlaceholder')}
 						class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:border-red-300 focus:ring-4 focus:ring-red-50 dark:focus:ring-red-900/30 transition-all font-medium text-sm"
 					/>
@@ -98,14 +183,14 @@
 
 			<!-- Member Grid -->
 			<div class="flex-1 overflow-y-auto p-6 scrollbar-hide">
-				{#if loading}
+				{#if loading && memberList.length === 0}
 					<div class="flex flex-col items-center justify-center py-12">
 						<div
 							class="w-10 h-10 border-4 border-red-100 border-t-red-500 rounded-full animate-spin mb-4"
 						></div>
 						<p class="text-sm text-gray-500">{$t('profile.oshiModal.loading')}</p>
 					</div>
-				{:else if filteredMembers.length === 0}
+				{:else if memberList.length === 0}
 					<div class="text-center py-12">
 						<Search class="w-12 h-12 text-gray-200 mx-auto mb-3" />
 						<p class="text-gray-500">
@@ -114,7 +199,7 @@
 					</div>
 				{:else}
 					<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-						{#each filteredMembers as member}
+						{#each memberList as member}
 							<button
 								class="group relative flex flex-col items-center text-center p-3 rounded-2xl transition-all duration-200 border-2 cursor-pointer
 								{selectedOshiId === member.id
@@ -149,6 +234,13 @@
 								>
 							</button>
 						{/each}
+					</div>
+
+					<!-- Sentinel for Infinite Scroll -->
+					<div bind:this={sentinel} class="h-8 w-full flex justify-center items-center py-2">
+						{#if isAppending}
+							<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
+						{/if}
 					</div>
 				{/if}
 			</div>

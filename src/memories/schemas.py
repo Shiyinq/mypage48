@@ -30,3 +30,17 @@ class MemoriesPaginationResponse(BaseModel):
     """Paginated response for memories endpoint."""
     data: list[MemoryItem]
     meta: PaginationMeta
+
+
+class TopTwoShotMember(BaseModel):
+    name: str
+    count: int
+    spend: int
+    lastDate: str
+    image: Optional[str] = None
+
+
+class TopTwoShotResponse(BaseModel):
+    ranking: list[TopTwoShotMember]
+    totalTwoShotSpend: int
+    totalTwoShotCount: int

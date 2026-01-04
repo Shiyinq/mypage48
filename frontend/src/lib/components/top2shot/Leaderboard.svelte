@@ -1,16 +1,9 @@
 <script lang="ts">
 	import { TrendingUp, Camera, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import type { TopTwoShotMember } from '$lib/types';
 
-	interface MemberStat {
-		name: string;
-		count: number;
-		spend: number;
-		lastDate: string;
-		image?: string;
-	}
-
-	export let ranking: MemberStat[] = [];
+	export let ranking: TopTwoShotMember[] = [];
 	export let totalCount: number = 0;
 	export let topMemberCount: number = 1;
 

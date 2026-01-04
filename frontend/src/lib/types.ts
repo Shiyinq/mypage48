@@ -79,6 +79,20 @@ export interface MemoriesPaginationResponse {
 	meta: PaginationMeta;
 }
 
+export interface TopTwoShotMember {
+	name: string;
+	count: number;
+	spend: number;
+	lastDate: string;
+	image?: string | null;
+}
+
+export interface TopTwoShotResponse {
+	ranking: TopTwoShotMember[];
+	totalTwoShotSpend: number;
+	totalTwoShotCount: number;
+}
+
 export type ViewState =
 	| 'DASHBOARD'
 	| 'UPLOAD'

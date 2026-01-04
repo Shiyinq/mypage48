@@ -6,7 +6,7 @@ from src import dependencies
 from src.auth.schemas import UserCurrent
 from src.dependencies import get_memories_service
 from src.memories.service import MemoriesService
-from src.memories.schemas import MemoriesPaginationResponse
+from src.memories.schemas import MemoriesPaginationResponse, TopTwoShotResponse
 
 router = APIRouter()
 
@@ -36,3 +36,14 @@ async def get_memories(
         limit=limit,
         type_filter=type,
     )
+
+
+@router.get("/top-two-shot", response_model=TopTwoShotResponse)
+async def get_top_two_shot(
+    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    memories_service: MemoriesService = Depends(get_memories_service),
+):
+    """
+    Get Top 2-Shot statistics.
+    """
+    return await memories_service.get_top_two_shot(user_id=current_user.userId)

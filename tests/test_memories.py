@@ -186,3 +186,101 @@ async def test_get_memories_with_2shot(client: AsyncClient, db):
     assert data["meta"]["total_data"] == 1
     assert data["data"][0]["type"] == "2SHOT"
     assert "Freya" in data["data"][0]["twoShotMemberName"]
+
+
+@pytest.mark.asyncio
+async def test_get_top_two_shot(client: AsyncClient, db):
+    # Register and Login
+    username = "memoryuser4"
+    register_payload = {
+        "fullName": "Memory User 4",
+        "memberId": "66666",
+        "username": username,
+        "email": "memory4@example.com",
+        "password": "Password123!",
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
+    }
+    await client.post("/api/users/signup", json=register_payload)
+    await db["users"].update_one(
+        {"username": username}, 
+        {"$set": {"isEmailVerified": True}}
+    )
+    
+    user = await db["users"].find_one({"username": username})
+    user_id = user["userId"]
+
+    login_res = await client.post("/api/auth/signin", data={
+        "username": username,
+        "password": "Password123!"
+    })
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Insert multiple tickets with 2-shot info for ranking
+    # 1. Freya (2 times)
+    # 2. Christy (1 time)
+    tickets = [
+        TicketInDB(
+            user_id=user_id,
+            ticket_id="T1",
+            event=TicketEvent(title="Show1", date="2023-01-01", day="Sun", time="14:00"),
+            seat=TicketSeat(section="A", number=1),
+            price=150000,
+            two_shot=TicketTwoShot(member_name="Freya Jayawardana", price=50000, type="Roulette"),
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        ),
+        TicketInDB(
+            user_id=user_id,
+            ticket_id="T2",
+            event=TicketEvent(title="Show2", date="2023-01-02", day="Mon", time="19:00"),
+            seat=TicketSeat(section="A", number=2),
+            price=150000,
+            two_shot=TicketTwoShot(member_name="Freya Jayawardana", price=60000, type="Birthday"),
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        ),
+        TicketInDB(
+            user_id=user_id,
+            ticket_id="T3",
+            event=TicketEvent(title="Show3", date="2023-01-03", day="Tue", time="19:00"),
+            seat=TicketSeat(section="A", number=3),
+            price=150000,
+            two_shot=TicketTwoShot(member_name="Angelina Christy", price=50000, type="Roulette"),
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+    ]
+    
+    for t in tickets:
+        await db["tickets"].insert_one(t.model_dump())
+
+    # Call API
+    response = await client.get("/api/memories/top-two-shot", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "ranking" in data
+    assert "totalTwoShotSpend" in data
+    assert "totalTwoShotCount" in data
+
+    # Verify Totals
+    # Spend: 50000 + 60000 + 50000 = 160000
+    assert data["totalTwoShotSpend"] == 160000
+    # Count: 3
+    assert data["totalTwoShotCount"] == 3
+
+    # Verify Ranking
+    ranking = data["ranking"]
+    assert len(ranking) >= 2
+    
+    # Freya should be #1
+    assert ranking[0]["name"] == "Freya Jayawardana"
+    assert ranking[0]["count"] == 2
+    assert ranking[0]["spend"] == 110000
+    
+    # Christy should be #2 (or later if other tests added data, but db fixture drops db so it should be clean)
+    assert ranking[1]["name"] == "Angelina Christy"
+    assert ranking[1]["count"] == 1
+    assert ranking[1]["spend"] == 50000

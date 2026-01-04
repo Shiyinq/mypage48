@@ -16,10 +16,10 @@ router = APIRouter()
 logger = create_logger("members", __name__)
 
 
-@router.get("/", response_model=MemberListResponse)
+@router.get("", response_model=MemberListResponse)
 async def get_members(
-    skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(100, ge=1, le=100, description="Maximum number of records to return"),
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Items per page (max 100)"),
     generation: Optional[str] = Query(None, description="Filter by generation (e.g., '3', '7', '11')"),
     search: Optional[str] = Query(None, description="Search by name or nickname"),
     service: MemberService = Depends(get_member_service),
@@ -27,13 +27,13 @@ async def get_members(
     """
     Get all JKT48 members with optional filtering.
 
-    - **skip**: Number of records to skip (pagination)
-    - **limit**: Maximum number of records to return (max 100)
+    - **page**: Page number (default 1)
+    - **limit**: Items per page (default 20, max 100)
     - **generation**: Filter by generation number
     - **search**: Search by member name or nickname
     """
     try:
-        return await service.get_all_members(skip, limit, generation, search)
+        return await service.get_all_members(page, limit, generation, search)
     except DomainFetchError:
         raise MemberFetchError()
 

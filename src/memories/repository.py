@@ -200,3 +200,70 @@ class MemoriesRepository:
             
             results = await self.collection.aggregate(pipeline).to_list(length=None)
             return results, total_count
+
+    async def get_top_two_shot_stats(self, user_id: str) -> dict:
+        """
+        Calculate Top 2-Shot stats using aggregation.
+        """
+        pipeline = [
+            {"$match": {
+                "user_id": user_id,
+                "two_shot.member_name": {"$exists": True, "$ne": None, "$ne": ""}
+            }},
+            # Sort by date descending first to help finding the latest image in grouping
+            {"$sort": {"event.date": -1}},
+            {"$facet": {
+                "ranking": [
+                    {
+                        "$group": {
+                            "_id": {"$trim": {"input": "$two_shot.member_name"}},
+                            "count": {"$sum": 1},
+                            "spend": {"$sum": "$two_shot.price"},
+                            "lastDate": {"$first": "$event.date"},
+                            "image": {"$first": "$two_shot.imageUrl"}
+                        }
+                    },
+                    {
+                        "$project": {
+                            "_id": 0,
+                            "name": "$_id",
+                            "count": 1,
+                            "spend": 1,
+                            "lastDate": 1,
+                            "image": 1
+                        }
+                    },
+                    {
+                        "$sort": {"count": -1, "spend": -1}
+                    }
+                ],
+                "totals": [
+                    {
+                        "$group": {
+                            "_id": None,
+                            "totalSpend": {"$sum": "$two_shot.price"},
+                            "totalCount": {"$sum": 1}
+                        }
+                    }
+                ]
+            }}
+        ]
+
+        result = await self.collection.aggregate(pipeline).to_list(length=1)
+
+        if not result:
+            return {
+                "ranking": [],
+                "totalTwoShotSpend": 0,
+                "totalTwoShotCount": 0
+            }
+
+        data = result[0]
+        totals = data.get("totals", [])
+        total_data = totals[0] if totals else {"totalSpend": 0, "totalCount": 0}
+
+        return {
+            "ranking": data.get("ranking", []),
+            "totalTwoShotSpend": total_data.get("totalSpend", 0),
+            "totalTwoShotCount": total_data.get("totalCount", 0)
+        }

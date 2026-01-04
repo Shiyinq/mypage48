@@ -48,8 +48,6 @@
 
 	// Oshi Selection State
 	let showOshiModal = false;
-	let allMembers: Member[] = [];
-	let loadingMembers = false;
 	let savingOshi = false;
 
 	// Progress percent derived from level
@@ -144,20 +142,8 @@
 	};
 
 	// Oshi Modal Logic
-	const openOshiModal = async () => {
+	const openOshiModal = () => {
 		showOshiModal = true;
-		if (allMembers.length === 0) {
-			loadingMembers = true;
-			try {
-				const res = await members.getAll({ limit: 100 });
-				allMembers = res.members.filter((m) => m.active); // Only show active members?
-			} catch (e) {
-				console.error('Failed to load members', e);
-				showToast('Failed to load members list', 'error');
-			} finally {
-				loadingMembers = false;
-			}
-		}
 	};
 
 	const closeOshiModal = () => {
@@ -180,18 +166,11 @@
 		memberDetail = null;
 		loadingMemberDetail = true;
 		try {
-			// First check if we have it in allMembers
-			const found = allMembers.find((m) => m.name === profile!.oshi!.name);
-			if (found) {
-				memberDetail = found;
-			} else {
-				// Otherwise fetch it
-				const res = await members.getAll({ search: profile!.oshi!.name });
-				if (res.members.length > 0) {
-					// Fuzzy match might return others, try to find exact name match first
-					const exact = res.members.find((m) => m.name === profile!.oshi!.name);
-					memberDetail = exact || res.members[0];
-				}
+			const res = await members.getAll({ search: profile!.oshi!.name });
+			if (res.data.length > 0) {
+				// Fuzzy match might return others, try to find exact name match first
+				const exact = res.data.find((m) => m.name === profile!.oshi!.name);
+				memberDetail = exact || res.data[0];
 			}
 		} catch (e) {
 			console.error('Failed to fetch member details', e);
@@ -205,15 +184,14 @@
 		showMemberDetail = false;
 	};
 
-	const saveOshi = async (memberId: number) => {
+	const saveOshi = async (member: Member) => {
 		savingOshi = true;
 		try {
-			await auth.updateOshi(memberId);
+			await auth.updateOshi(member.id);
 			showToast('Oshi updated successfully!', 'success');
 
 			// Update local profile
-			const member = allMembers.find((m) => m.id === memberId);
-			if (member && profile) {
+			if (profile) {
 				profile.oshi = {
 					name: member.name,
 					nickname: member.nickname,
@@ -298,8 +276,6 @@
 <!-- Oshi Selection Modal -->
 <OshiSelectionModal
 	show={showOshiModal}
-	members={allMembers}
-	loading={loadingMembers}
 	saving={savingOshi}
 	onClose={closeOshiModal}
 	onSave={saveOshi}
