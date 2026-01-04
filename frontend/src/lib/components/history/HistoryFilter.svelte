@@ -2,9 +2,7 @@
 	import {
 		LayoutGrid,
 		List,
-		Filter,
 		Calendar,
-		Check,
 		X,
 		ChevronDown,
 		Search,

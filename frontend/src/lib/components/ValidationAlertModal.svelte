@@ -20,21 +20,25 @@
 </script>
 
 {#if show}
-	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 	<div
 		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
 		on:click={handleBackdropClick}
 		on:keydown={handleKeydown}
 		transition:fade={{ duration: 150 }}
-		role="dialog"
-		aria-modal="true"
-		aria-labelledby="validation-alert-title"
+		role="button"
+		tabindex="-1"
+		aria-label="Close dialog"
 	>
+		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 		<div
 			class="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-sm w-full p-6"
 			on:click|stopPropagation
 			on:keydown|stopPropagation
 			transition:scale={{ duration: 200, start: 0.95 }}
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="validation-alert-title"
+			tabindex="-1"
 		>
 			<!-- Icon -->
 			<div

@@ -1,16 +1,5 @@
 <script lang="ts">
-	import {
-		Dices,
-		Cake,
-		Search,
-		Plus,
-		Heart,
-		Info,
-		Instagram,
-		Smartphone,
-		Tv,
-		Globe
-	} from 'lucide-svelte';
+	import { Dices, Cake, Search, Plus, Heart, Info, Instagram, Smartphone, Tv } from 'lucide-svelte';
 	import Button from '$lib/components/Button.svelte';
 	import type { User } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';

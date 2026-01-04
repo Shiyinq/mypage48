@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { ArrowLeft, Mic2 } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import type { Ticket } from '$lib/types';
 
 	interface ShowInfo {
 		title: string;

@@ -3,7 +3,6 @@ import type {
 	LoginRequest,
 	RegisterRequest,
 	AuthResponse,
-	User,
 	ApiError,
 	EmailVerificationRequest,
 	VerifyEmailRequest,

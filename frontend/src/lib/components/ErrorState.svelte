@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { Ticket } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import type { ComponentType } from 'svelte';
 
 	const { t } = useTranslation();
 
 	export let title: string = 'Failed to load data';
 	export let description: string = 'Something went wrong while fetching the information.';
 	export let onRetry: (() => void) | undefined = undefined;
-	export let icon: any = Ticket;
+	export let icon: ComponentType = Ticket;
 </script>
 
 <div class="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center animate-fade-in">

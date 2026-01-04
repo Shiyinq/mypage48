@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ImagePlus, AlertCircle } from 'lucide-svelte';
+	import { ImagePlus } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	export let image: string | null = null;

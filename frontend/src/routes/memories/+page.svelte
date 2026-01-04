@@ -173,6 +173,7 @@
 			<div
 				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4 mt-8"
 			>
+				<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 				{#each Array(4) as _, index}
 					{@const rotation = (index % 5) - 2}
 					<div class="relative" style={`transform: rotate(${rotation}deg)`}>

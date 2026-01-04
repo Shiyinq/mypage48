@@ -2,8 +2,9 @@
 	import { User, Ticket, Camera, Heart, Loader2 } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { createEventDispatcher } from 'svelte';
+	import type { PublicProfileData } from '$lib/types';
 
-	export let profile: any;
+	export let profile: PublicProfileData;
 	export let isCurrentUser: boolean = false;
 	export let isUploading: boolean = false;
 

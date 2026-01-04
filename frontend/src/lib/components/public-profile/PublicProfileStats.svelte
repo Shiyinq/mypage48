@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Ticket, Camera, Armchair, Heart } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import type { PublicProfileStats } from '$lib/types';
 
-	export let stats: any;
+	export let stats: PublicProfileStats;
 
 	const { t } = useTranslation();
 </script>

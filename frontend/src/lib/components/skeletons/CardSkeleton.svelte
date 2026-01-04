@@ -22,6 +22,7 @@
 		</div>
 	{/if}
 	<div class="space-y-3">
+		<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 		{#each Array(lines) as _, i}
 			<div class="h-4 bg-gray-200 dark:bg-zinc-700 rounded" style="width: {100 - i * 15}%"></div>
 		{/each}

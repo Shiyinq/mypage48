@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { History, Sparkles } from 'lucide-svelte';
+	import { History } from 'lucide-svelte';
 	import { EmptyState } from '$lib/components';
 
 	const { t } = useTranslation();

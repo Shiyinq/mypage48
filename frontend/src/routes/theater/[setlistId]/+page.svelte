@@ -33,6 +33,7 @@
 	let isDeleting = false;
 
 	async function fetchDetail() {
+		if (!setlistId) return;
 		try {
 			loading = true;
 			error = false;
@@ -96,6 +97,7 @@
 		}).format(price);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	function getGradeColor(percentage: number) {
 		if (percentage >= 100) return 'text-purple-500';
 		if (percentage >= 75) return 'text-blue-500';
@@ -124,6 +126,7 @@
 		<div class="h-[400px] w-full bg-gray-200 dark:bg-zinc-800 rounded-3xl"></div>
 		<!-- Grid Skeleton -->
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each Array(4) as _}
 				<div class="h-32 bg-gray-200 dark:bg-zinc-800 rounded-2xl"></div>
 			{/each}
@@ -222,6 +225,7 @@
 								{detail.watched.count}
 							</span>
 							<span class="text-xs font-bold text-white/60 uppercase tracking-widest text-center">
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html $t('shows.performancesAttended').replace(' ', '<br/>')}
 							</span>
 						</div>

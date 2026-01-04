@@ -12,6 +12,7 @@
 	let isPublic = $userProfile?.isPublic || false;
 	let selectedPublicYearStr: string = $userProfile?.publicYear?.toString() || '';
 	let updatingStatus = false;
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	let isRetrying = false;
 
 	// Generate available years (from 2011 to current year)

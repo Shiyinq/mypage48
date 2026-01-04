@@ -206,6 +206,7 @@
 				{$t('common.all')}
 			</button>
 			{#if loadingGenerations}
+				<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 				{#each Array(5) as _}
 					<div
 						class="h-[42px] w-20 bg-gray-100 dark:bg-zinc-800 rounded-full animate-pulse shrink-0"
