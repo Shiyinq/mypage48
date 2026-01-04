@@ -5,15 +5,15 @@ from src.auth.schemas import UserCurrent
 from src.dependencies import get_user_service
 from src.logging_config import create_logger
 from src.users.schemas import (
+    MessageResponse,
+    ProfileFullResponse,
+    PublicUserResponse,
+    UpdateOshiRequest,
+    UpdateProfilePictureRequest,
+    UpdatePublicStatusRequest,
     UserCreatedWithEmail,
     UserCreateRequest,
     UserCreateResponse,
-    PublicUserResponse,
-    UpdateProfilePictureRequest,
-    UpdateOshiRequest,
-    UpdatePublicStatusRequest,
-    MessageResponse,
-    ProfileFullResponse,
 )
 from src.users.service import UserService
 
@@ -81,7 +81,9 @@ async def update_public_status(
     """
     Update the user's public profile status.
     """
-    return await user_service.update_public_status(current_user.userId, request.isPublic, request.publicYear)
+    return await user_service.update_public_status(
+        current_user.userId, request.isPublic, request.publicYear
+    )
 
 
 @router.post("/users/profile-picture", status_code=200, response_model=MessageResponse)
@@ -93,7 +95,9 @@ async def update_profile_picture(
     """
     Update the user's profile picture.
     """
-    return await user_service.update_profile_picture(current_user.userId, request.profilePicture)
+    return await user_service.update_profile_picture(
+        current_user.userId, request.profilePicture
+    )
 
 
 @router.get("/u/{username}", response_model=PublicUserResponse)

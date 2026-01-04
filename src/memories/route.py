@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends
 from src import dependencies
 from src.auth.schemas import UserCurrent
 from src.dependencies import get_memories_service
-from src.memories.service import MemoriesService
 from src.memories.schemas import MemoriesPaginationResponse, TopTwoShotResponse
+from src.memories.service import MemoriesService
 
 router = APIRouter()
 

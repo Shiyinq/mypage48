@@ -1,5 +1,11 @@
 from src.auth.constants import ErrorCode
-from src.http_exceptions import BadRequest, InternalServerError, NotAuthenticated, NotFound, PermissionDenied
+from src.http_exceptions import (
+    BadRequest,
+    InternalServerError,
+    NotAuthenticated,
+    NotFound,
+    PermissionDenied,
+)
 
 
 class IncorrectEmailOrPassword(NotAuthenticated):

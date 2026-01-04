@@ -44,8 +44,10 @@ class Info:
     PUBLIC_STATUS_UPDATED = "Public status updated successfully."
     PROFILE_PICTURE_UPDATED = "Profile picture updated successfully."
 
+
 class RankConfig:
     """Configuration for user rank/level calculation."""
+
     MILESTONES = [
         {"xp": 0, "title": "Newcomer"},
         {"xp": 1, "title": "First Step"},

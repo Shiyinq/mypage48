@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 
 from src import dependencies
+from src.achievements.schemas import AchievementsResponse
+from src.achievements.service import AchievementsService
 from src.auth.schemas import UserCurrent
 from src.dependencies import get_achievements_service
-from src.achievements.service import AchievementsService
-from src.achievements.schemas import AchievementsResponse
 
 router = APIRouter()
 

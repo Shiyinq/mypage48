@@ -1,4 +1,5 @@
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
@@ -17,25 +18,25 @@ class MemoriesRepository:
     ) -> Tuple[List[dict], int]:
         """
         Get paginated memory items from tickets.
-        
+
         Each ticket can produce up to 2 memory items:
         - 1 for ticket image (if exists)
         - 1 for 2-shot image (if exists)
-        
+
         Args:
             user_id: User's ID
             page: Page number (1-indexed)
             limit: Items per page
             type_filter: 'TICKET', '2SHOT', or None for all
-            
+
         Returns:
             Tuple of (list of memory items, total count)
         """
         # Use $facet to get both ticket images and 2-shot images separately
         # Then combine them with $unionWith or process separately
-        
+
         base_match = {"$match": {"user_id": user_id}}
-        
+
         # Pipeline for ticket images
         ticket_pipeline = [
             base_match,
@@ -54,15 +55,19 @@ class MemoriesRepository:
                     "notes": "$notes",
                     "eventTitle": "$event.title",
                     "twoShotMemberName": {"$literal": None},
-                    "twoShotType": {"$literal": None}
+                    "twoShotType": {"$literal": None},
                 }
-            }
+            },
         ]
-        
+
         # Pipeline for 2-shot images
         twoshot_pipeline = [
             base_match,
-            {"$match": {"two_shot.imageUrl": {"$exists": True, "$ne": None, "$ne": ""}}},
+            {
+                "$match": {
+                    "two_shot.imageUrl": {"$exists": True, "$ne": None, "$ne": ""}
+                }
+            },
             {
                 "$project": {
                     "_id": 0,
@@ -71,15 +76,20 @@ class MemoriesRepository:
                     "ticketId": {"$toString": "$_id"},
                     "date": "$event.date",
                     "time": "$event.time",
-                    "title": {"$concat": ["2-Shot: ", {"$ifNull": ["$two_shot.member_name", "Unknown"]}]},
+                    "title": {
+                        "$concat": [
+                            "2-Shot: ",
+                            {"$ifNull": ["$two_shot.member_name", "Unknown"]},
+                        ]
+                    },
                     "seatSection": {"$literal": None},
                     "seatNumber": {"$literal": None},
                     "notes": "$notes",
                     "eventTitle": "$event.title",
                     "twoShotMemberName": "$two_shot.member_name",
-                    "twoShotType": "$two_shot.type"
+                    "twoShotType": "$two_shot.type",
                 }
-            }
+            },
         ]
 
         # Apply type filter
@@ -96,7 +106,15 @@ class MemoriesRepository:
                 {
                     "$facet": {
                         "tickets": [
-                            {"$match": {"imageUrl": {"$exists": True, "$ne": None, "$ne": ""}}},
+                            {
+                                "$match": {
+                                    "imageUrl": {
+                                        "$exists": True,
+                                        "$ne": None,
+                                        "$ne": "",
+                                    }
+                                }
+                            },
                             {
                                 "$project": {
                                     "_id": 0,
@@ -111,12 +129,20 @@ class MemoriesRepository:
                                     "notes": "$notes",
                                     "eventTitle": "$event.title",
                                     "twoShotMemberName": {"$literal": None},
-                                    "twoShotType": {"$literal": None}
+                                    "twoShotType": {"$literal": None},
                                 }
-                            }
+                            },
                         ],
                         "twoshots": [
-                            {"$match": {"two_shot.imageUrl": {"$exists": True, "$ne": None, "$ne": ""}}},
+                            {
+                                "$match": {
+                                    "two_shot.imageUrl": {
+                                        "$exists": True,
+                                        "$ne": None,
+                                        "$ne": "",
+                                    }
+                                }
+                            },
                             {
                                 "$project": {
                                     "_id": 0,
@@ -125,16 +151,26 @@ class MemoriesRepository:
                                     "ticketId": {"$toString": "$_id"},
                                     "date": "$event.date",
                                     "time": "$event.time",
-                                    "title": {"$concat": ["2-Shot: ", {"$ifNull": ["$two_shot.member_name", "Unknown"]}]},
+                                    "title": {
+                                        "$concat": [
+                                            "2-Shot: ",
+                                            {
+                                                "$ifNull": [
+                                                    "$two_shot.member_name",
+                                                    "Unknown",
+                                                ]
+                                            },
+                                        ]
+                                    },
                                     "seatSection": {"$literal": None},
                                     "seatNumber": {"$literal": None},
                                     "notes": "$notes",
                                     "eventTitle": "$event.title",
                                     "twoShotMemberName": "$two_shot.member_name",
-                                    "twoShotType": "$two_shot.type"
+                                    "twoShotType": "$two_shot.type",
                                 }
-                            }
-                        ]
+                            },
+                        ],
                     }
                 },
                 # Combine both arrays
@@ -146,7 +182,7 @@ class MemoriesRepository:
                 # Unwind the combined array
                 {"$unwind": "$combined"},
                 # Replace root with item
-                {"$replaceRoot": {"newRoot": "$combined"}}
+                {"$replaceRoot": {"newRoot": "$combined"}},
             ]
 
         # For filtered queries, just extend the pipeline
@@ -154,17 +190,21 @@ class MemoriesRepository:
             # Get total count first
             count_pipeline = pipeline.copy()
             count_pipeline.append({"$count": "total"})
-            count_result = await self.collection.aggregate(count_pipeline).to_list(length=1)
+            count_result = await self.collection.aggregate(count_pipeline).to_list(
+                length=1
+            )
             total_count = count_result[0]["total"] if count_result else 0
-            
+
             # Add sorting and pagination
             skip = (page - 1) * limit
-            pipeline.extend([
-                {"$sort": {"date": -1, "time": -1}},
-                {"$skip": skip},
-                {"$limit": limit},
-            ])
-            
+            pipeline.extend(
+                [
+                    {"$sort": {"date": -1, "time": -1}},
+                    {"$skip": skip},
+                    {"$limit": limit},
+                ]
+            )
+
             results = await self.collection.aggregate(pipeline).to_list(length=None)
             return results, total_count
         else:
@@ -174,30 +214,58 @@ class MemoriesRepository:
                 {
                     "$facet": {
                         "ticketCount": [
-                            {"$match": {"imageUrl": {"$exists": True, "$ne": None, "$ne": ""}}},
-                            {"$count": "count"}
+                            {
+                                "$match": {
+                                    "imageUrl": {
+                                        "$exists": True,
+                                        "$ne": None,
+                                        "$ne": "",
+                                    }
+                                }
+                            },
+                            {"$count": "count"},
                         ],
                         "twoshotCount": [
-                            {"$match": {"two_shot.imageUrl": {"$exists": True, "$ne": None, "$ne": ""}}},
-                            {"$count": "count"}
-                        ]
+                            {
+                                "$match": {
+                                    "two_shot.imageUrl": {
+                                        "$exists": True,
+                                        "$ne": None,
+                                        "$ne": "",
+                                    }
+                                }
+                            },
+                            {"$count": "count"},
+                        ],
                     }
-                }
+                },
             ]
-            count_result = await self.collection.aggregate(count_pipeline).to_list(length=1)
-            
-            ticket_count = count_result[0]["ticketCount"][0]["count"] if count_result and count_result[0]["ticketCount"] else 0
-            twoshot_count = count_result[0]["twoshotCount"][0]["count"] if count_result and count_result[0]["twoshotCount"] else 0
+            count_result = await self.collection.aggregate(count_pipeline).to_list(
+                length=1
+            )
+
+            ticket_count = (
+                count_result[0]["ticketCount"][0]["count"]
+                if count_result and count_result[0]["ticketCount"]
+                else 0
+            )
+            twoshot_count = (
+                count_result[0]["twoshotCount"][0]["count"]
+                if count_result and count_result[0]["twoshotCount"]
+                else 0
+            )
             total_count = ticket_count + twoshot_count
-            
+
             # Add sorting and pagination
             skip = (page - 1) * limit
-            pipeline.extend([
-                {"$sort": {"date": -1, "time": -1}},
-                {"$skip": skip},
-                {"$limit": limit},
-            ])
-            
+            pipeline.extend(
+                [
+                    {"$sort": {"date": -1, "time": -1}},
+                    {"$skip": skip},
+                    {"$limit": limit},
+                ]
+            )
+
             results = await self.collection.aggregate(pipeline).to_list(length=None)
             return results, total_count
 
@@ -206,57 +274,55 @@ class MemoriesRepository:
         Calculate Top 2-Shot stats using aggregation.
         """
         pipeline = [
-            {"$match": {
-                "user_id": user_id,
-                "two_shot.member_name": {"$exists": True, "$ne": None, "$ne": ""}
-            }},
+            {
+                "$match": {
+                    "user_id": user_id,
+                    "two_shot.member_name": {"$exists": True, "$ne": None, "$ne": ""},
+                }
+            },
             # Sort by date descending first to help finding the latest image in grouping
             {"$sort": {"event.date": -1}},
-            {"$facet": {
-                "ranking": [
-                    {
-                        "$group": {
-                            "_id": {"$trim": {"input": "$two_shot.member_name"}},
-                            "count": {"$sum": 1},
-                            "spend": {"$sum": "$two_shot.price"},
-                            "lastDate": {"$first": "$event.date"},
-                            "image": {"$first": "$two_shot.imageUrl"}
+            {
+                "$facet": {
+                    "ranking": [
+                        {
+                            "$group": {
+                                "_id": {"$trim": {"input": "$two_shot.member_name"}},
+                                "count": {"$sum": 1},
+                                "spend": {"$sum": "$two_shot.price"},
+                                "lastDate": {"$first": "$event.date"},
+                                "image": {"$first": "$two_shot.imageUrl"},
+                            }
+                        },
+                        {
+                            "$project": {
+                                "_id": 0,
+                                "name": "$_id",
+                                "count": 1,
+                                "spend": 1,
+                                "lastDate": 1,
+                                "image": 1,
+                            }
+                        },
+                        {"$sort": {"count": -1, "spend": -1}},
+                    ],
+                    "totals": [
+                        {
+                            "$group": {
+                                "_id": None,
+                                "totalSpend": {"$sum": "$two_shot.price"},
+                                "totalCount": {"$sum": 1},
+                            }
                         }
-                    },
-                    {
-                        "$project": {
-                            "_id": 0,
-                            "name": "$_id",
-                            "count": 1,
-                            "spend": 1,
-                            "lastDate": 1,
-                            "image": 1
-                        }
-                    },
-                    {
-                        "$sort": {"count": -1, "spend": -1}
-                    }
-                ],
-                "totals": [
-                    {
-                        "$group": {
-                            "_id": None,
-                            "totalSpend": {"$sum": "$two_shot.price"},
-                            "totalCount": {"$sum": 1}
-                        }
-                    }
-                ]
-            }}
+                    ],
+                }
+            },
         ]
 
         result = await self.collection.aggregate(pipeline).to_list(length=1)
 
         if not result:
-            return {
-                "ranking": [],
-                "totalTwoShotSpend": 0,
-                "totalTwoShotCount": 0
-            }
+            return {"ranking": [], "totalTwoShotSpend": 0, "totalTwoShotCount": 0}
 
         data = result[0]
         totals = data.get("totals", [])
@@ -265,5 +331,5 @@ class MemoriesRepository:
         return {
             "ranking": data.get("ranking", []),
             "totalTwoShotSpend": total_data.get("totalSpend", 0),
-            "totalTwoShotCount": total_data.get("totalCount", 0)
+            "totalTwoShotCount": total_data.get("totalCount", 0),
         }

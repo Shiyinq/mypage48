@@ -1,4 +1,5 @@
-from typing import Optional, List
+from typing import List, Optional
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
@@ -56,58 +57,48 @@ class SetlistsRepository:
         # Lookup tickets and count matches
         # Note: tickets collection uses "user_id" field (snake_case)
         if user_id:
-            pipeline.extend([
-                {
-                    "$lookup": {
-                        "from": "tickets",
-                        "let": {"setlist_title": {"$toLower": "$title"}},
-                        "pipeline": [
-                            {
-                                "$match": {
-                                    "$expr": {
-                                        "$and": [
-                                            {"$eq": ["$user_id", user_id]},
-                                            {
-                                                "$regexMatch": {
-                                                    "input": {"$toLower": "$event.title"},
-                                                    "regex": "$$setlist_title"
-                                                }
-                                            }
-                                        ]
+            pipeline.extend(
+                [
+                    {
+                        "$lookup": {
+                            "from": "tickets",
+                            "let": {"setlist_title": {"$toLower": "$title"}},
+                            "pipeline": [
+                                {
+                                    "$match": {
+                                        "$expr": {
+                                            "$and": [
+                                                {"$eq": ["$user_id", user_id]},
+                                                {
+                                                    "$regexMatch": {
+                                                        "input": {
+                                                            "$toLower": "$event.title"
+                                                        },
+                                                        "regex": "$$setlist_title",
+                                                    }
+                                                },
+                                            ]
+                                        }
                                     }
                                 }
-                            }
-                        ],
-                        "as": "matched_tickets"
-                    }
-                },
-                {
-                    "$addFields": {
-                        "count": {"$size": "$matched_tickets"}
-                    }
-                },
-                {
-                    "$project": {
-                        "matched_tickets": 0  # Remove the matched tickets array
-                    }
-                }
-            ])
+                            ],
+                            "as": "matched_tickets",
+                        }
+                    },
+                    {"$addFields": {"count": {"$size": "$matched_tickets"}}},
+                    {
+                        "$project": {
+                            "matched_tickets": 0  # Remove the matched tickets array
+                        }
+                    },
+                ]
+            )
         else:
             # No user, count is 0
-            pipeline.append({
-                "$addFields": {
-                    "count": 0
-                }
-            })
+            pipeline.append({"$addFields": {"count": 0}})
 
         # Sort by active (desc) then count (desc) then title (asc)
-        pipeline.append({
-            "$sort": {
-                "active": -1,
-                "count": -1,
-                "title": 1
-            }
-        })
+        pipeline.append({"$sort": {"active": -1, "count": -1, "title": 1}})
 
         # Skip and limit
         pipeline.append({"$skip": skip})
@@ -178,9 +169,9 @@ class SetlistsRepository:
                                         {
                                             "$regexMatch": {
                                                 "input": {"$toLower": "$event.title"},
-                                                "regex": "$$setlist_title"
+                                                "regex": "$$setlist_title",
                                             }
-                                        }
+                                        },
                                     ]
                                 }
                             }
@@ -195,16 +186,12 @@ class SetlistsRepository:
                                 "price": 1,
                                 "notes": 1,
                             }
-                        }
+                        },
                     ],
-                    "as": "matched_tickets"
+                    "as": "matched_tickets",
                 }
             },
-            {
-                "$addFields": {
-                    "count": {"$size": "$matched_tickets"}
-                }
-            }
+            {"$addFields": {"count": {"$size": "$matched_tickets"}}},
         ]
 
         cursor = self.collection.aggregate(pipeline)
@@ -227,31 +214,21 @@ class SetlistsRepository:
                                         {
                                             "$regexMatch": {
                                                 "input": {"$toLower": "$event.title"},
-                                                "regex": "$$setlist_title"
+                                                "regex": "$$setlist_title",
                                             }
-                                        }
+                                        },
                                     ]
                                 }
                             }
                         }
                     ],
-                    "as": "matched_tickets"
+                    "as": "matched_tickets",
                 }
             },
-            {
-                "$addFields": {
-                    "count": {"$size": "$matched_tickets"}
-                }
-            },
-            {
-                "$group": {
-                    "_id": None,
-                    "maxCount": {"$max": "$count"}
-                }
-            }
+            {"$addFields": {"count": {"$size": "$matched_tickets"}}},
+            {"$group": {"_id": None, "maxCount": {"$max": "$count"}}},
         ]
 
         cursor = self.collection.aggregate(pipeline)
         results = await cursor.to_list(length=1)
         return results[0].get("maxCount", 1) if results else 1
-

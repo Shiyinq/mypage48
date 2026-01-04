@@ -1,22 +1,22 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from src.config import Settings
 from src.logging_config import create_logger
+from src.setlists.constants import Info, Jkt48Setlists
+from src.setlists.exceptions import SetlistFetchError, SetlistNotFoundError
 from src.setlists.repository import SetlistsRepository
 from src.setlists.schemas import (
-    SetlistResponse,
-    SetlistWithStats,
-    SetlistListResponse,
-    SetlistSeedResponse,
     SetlistDetailResponse,
     SetlistDetailStats,
-    WatchedStats,
-    TicketItem,
+    SetlistListResponse,
+    SetlistResponse,
+    SetlistSeedResponse,
+    SetlistWithStats,
     TicketEvent,
+    TicketItem,
     TicketSeat,
+    WatchedStats,
 )
-from src.setlists.constants import Info, Jkt48Setlists
-from src.setlists.exceptions import SetlistNotFoundError, SetlistFetchError
 
 logger = create_logger("setlists_service", __name__)
 
@@ -80,7 +80,11 @@ class SetlistsService:
 
                 setlist_responses.append(
                     SetlistWithStats(
-                        **{k: v for k, v in setlist.items() if k not in ("_id", "count")},
+                        **{
+                            k: v
+                            for k, v in setlist.items()
+                            if k not in ("_id", "count")
+                        },
                         watched=watched,
                     )
                 )
@@ -88,7 +92,7 @@ class SetlistsService:
             return SetlistListResponse(
                 total=total,
                 maxAttendance=max_attendance if user_id else 0,
-                setlists=setlist_responses
+                setlists=setlist_responses,
             )
         except Exception as e:
             logger.exception(f"Error fetching setlists: {str(e)}")
@@ -101,9 +105,7 @@ class SetlistsService:
             if not setlist:
                 raise SetlistNotFoundError()
 
-            return SetlistResponse(
-                **{k: v for k, v in setlist.items() if k != "_id"}
-            )
+            return SetlistResponse(**{k: v for k, v in setlist.items() if k != "_id"})
         except SetlistNotFoundError:
             raise
         except Exception as e:
@@ -117,9 +119,7 @@ class SetlistsService:
             if not setlist:
                 raise SetlistNotFoundError()
 
-            return SetlistResponse(
-                **{k: v for k, v in setlist.items() if k != "_id"}
-            )
+            return SetlistResponse(**{k: v for k, v in setlist.items() if k != "_id"})
         except SetlistNotFoundError:
             raise
         except Exception as e:
@@ -169,20 +169,22 @@ class SetlistsService:
                 event_data = t.get("event", {})
                 seat_data = t.get("seat", {})
 
-                tickets.append(TicketItem(
-                    ticketId=t.get("ticketId", ""),
-                    event=TicketEvent(
-                        title=event_data.get("title", ""),
-                        date=event_data.get("date", ""),
-                        time=event_data.get("time", ""),
-                    ),
-                    seat=TicketSeat(
-                        section=seat_data.get("section", ""),
-                        number=seat_data.get("number", 0),
-                    ),
-                    price=t.get("price", 0),
-                    notes=t.get("notes"),
-                ))
+                tickets.append(
+                    TicketItem(
+                        ticketId=t.get("ticketId", ""),
+                        event=TicketEvent(
+                            title=event_data.get("title", ""),
+                            date=event_data.get("date", ""),
+                            time=event_data.get("time", ""),
+                        ),
+                        seat=TicketSeat(
+                            section=seat_data.get("section", ""),
+                            number=seat_data.get("number", 0),
+                        ),
+                        price=t.get("price", 0),
+                        notes=t.get("notes"),
+                    )
+                )
 
             # Compute stats
             total_spent = sum(t.price for t in tickets)
@@ -194,7 +196,9 @@ class SetlistsService:
                 row = t.seat.section.upper()[0] if t.seat.section else ""
                 if row:
                     row_counts[row] = row_counts.get(row, 0) + 1
-            top_row = max(row_counts.items(), key=lambda x: x[1])[0] if row_counts else None
+            top_row = (
+                max(row_counts.items(), key=lambda x: x[1])[0] if row_counts else None
+            )
 
             # First and last dates
             first_date = tickets[0].event.date if tickets else None
@@ -211,7 +215,8 @@ class SetlistsService:
 
             # Build response excluding internal fields
             setlist_fields = {
-                k: v for k, v in result.items()
+                k: v
+                for k, v in result.items()
                 if k not in ("_id", "count", "matched_tickets")
             }
 
@@ -227,4 +232,3 @@ class SetlistsService:
         except Exception as e:
             logger.exception(f"Error fetching setlist detail {setlist_id}: {str(e)}")
             raise SetlistFetchError()
-

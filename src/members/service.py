@@ -1,18 +1,17 @@
-from typing import Optional, List
-from src.tickets.schemas import PaginationMeta
+from typing import List, Optional
 
 from src.config import Settings
 from src.logging_config import create_logger
+from src.members.constants import Info, Jkt48Members
+from src.members.exceptions import MemberFetchError, MemberNotFoundError
 from src.members.repository import MemberRepository
 from src.members.schemas import (
-    MemberCreate,
-    MemberResponse,
-    MemberListResponse,
     MemberDetailResponse,
+    MemberListResponse,
+    MemberResponse,
     MemberSeedResponse,
 )
-from src.members.constants import Info, Jkt48Members
-from src.members.exceptions import MemberNotFoundError, MemberFetchError
+from src.tickets.schemas import PaginationMeta
 
 logger = create_logger("members_service", __name__)
 
@@ -40,8 +39,6 @@ class MemberService:
         except Exception as e:
             logger.exception(f"Error seeding members: {str(e)}")
             raise MemberFetchError()
-
-
 
     async def get_all_members(
         self,

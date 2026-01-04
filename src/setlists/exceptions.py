@@ -1,5 +1,5 @@
-from src.setlists.constants import DomainErrorCode
 from src.exceptions import DomainException
+from src.setlists.constants import DomainErrorCode
 
 
 class SetlistNotFoundError(DomainException):

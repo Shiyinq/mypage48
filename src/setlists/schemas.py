@@ -1,4 +1,5 @@
-from typing import Optional, List
+from typing import List, Optional
+
 from pydantic import BaseModel
 
 
@@ -15,6 +16,7 @@ class SetlistBase(BaseModel):
 
 class WatchedStats(BaseModel):
     """User-specific watch statistics for a setlist"""
+
     count: int = 0  # Number of times user has watched this show
     percentage: float = 0.0  # Percentage relative to max attendance
     isMostWatched: bool = False  # True if this is the most watched show
@@ -26,6 +28,7 @@ class SetlistResponse(SetlistBase):
 
 class SetlistWithStats(SetlistBase):
     """Setlist response with user-specific statistics"""
+
     watched: WatchedStats
 
 
@@ -42,8 +45,10 @@ class SetlistSeedResponse(BaseModel):
 
 # ---- Detail response with tickets ----
 
+
 class TicketEvent(BaseModel):
     """Event info from a ticket"""
+
     title: str
     date: str
     time: str
@@ -51,12 +56,14 @@ class TicketEvent(BaseModel):
 
 class TicketSeat(BaseModel):
     """Seat info from a ticket"""
+
     section: str
     number: int
 
 
 class TicketItem(BaseModel):
     """Ticket summary for setlist detail"""
+
     ticketId: str
     event: TicketEvent
     seat: TicketSeat
@@ -66,6 +73,7 @@ class TicketItem(BaseModel):
 
 class SetlistDetailStats(BaseModel):
     """Computed statistics for setlist detail"""
+
     totalAttendance: int
     totalSpent: int
     avgPrice: float
@@ -76,6 +84,7 @@ class SetlistDetailStats(BaseModel):
 
 class SetlistDetailResponse(SetlistBase):
     """Setlist detail with user tickets and computed stats"""
+
     watched: WatchedStats
     stats: SetlistDetailStats
     tickets: List[TicketItem]

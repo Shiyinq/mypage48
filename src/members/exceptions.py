@@ -1,5 +1,5 @@
-from src.members.constants import DomainErrorCode
 from src.exceptions import DomainException
+from src.members.constants import DomainErrorCode
 
 
 class MemberNotFoundError(DomainException):

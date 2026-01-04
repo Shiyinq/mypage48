@@ -20,7 +20,9 @@ class OshiResponse(BaseModel):
     name: str = "Unknown"
     nickname: str = "-"
     generation: str = "-"
-    profilePicture: str = "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg"
+    profilePicture: str = (
+        "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg"
+    )
     catchphrase: str = "-"
     socials: Optional[OshiSocials] = None
 

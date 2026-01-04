@@ -1,10 +1,9 @@
-from typing import Optional
-
 from fastapi import BackgroundTasks, Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from fastapi_sso.sso.github import GithubSSO
 from fastapi_sso.sso.google import GoogleSSO
 
+from src.achievements.service import AchievementsService
 from src.api_keys.repository import ApiKeyRepository
 from src.api_keys.service import ApiKeyService
 from src.auth.csrf_service import CSRFService
@@ -15,26 +14,23 @@ from src.auth.schemas import UserCurrent
 from src.auth.security_service import SecurityService
 from src.auth.service import AuthService
 from src.config import Settings, config
+from src.dashboard.service import DashboardService
 from src.database import database_instance
 from src.health.service import HealthService
 from src.infrastructure import AsyncBackgroundRunner
-from src.logging_config import create_logger
-from src.users.repository import UserRepository
-from src.users.service import UserService
 from src.llm.repository import LLMRepository
 from src.llm.service import LLMService
+from src.logging_config import create_logger
 from src.members.repository import MemberRepository
 from src.members.service import MemberService
-from src.tickets.repository import TicketsRepository
-from src.tickets.service import TicketsService
-from src.dashboard.service import DashboardService
-from src.achievements.service import AchievementsService
 from src.memories.repository import MemoriesRepository
 from src.memories.service import MemoriesService
 from src.setlists.repository import SetlistsRepository
 from src.setlists.service import SetlistsService
-
-
+from src.tickets.repository import TicketsRepository
+from src.tickets.service import TicketsService
+from src.users.repository import UserRepository
+from src.users.service import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/signin")
 logger = create_logger("dependencies", __name__)
@@ -73,7 +69,6 @@ def get_auth_repository(db=Depends(get_db)) -> AuthRepository:
     return AuthRepository(db)
 
 
-
 def get_security_service(
     auth_repo: AuthRepository = Depends(get_auth_repository),
     user_repo: UserRepository = Depends(get_user_repository),
@@ -94,7 +89,6 @@ def get_auth_service(
     config: Settings = Depends(get_settings),
 ) -> AuthService:
     return AuthService(auth_repo, user_repo, security_service, email_service, config)
-
 
 
 async def get_current_user(
@@ -118,7 +112,6 @@ async def get_current_user(
         logger.warning("User not found for provided token")
         raise InvalidJWTToken()
     return UserCurrent(**user.model_dump())
-
 
 
 def require_csrf_protection(request: Request, config: Settings = Depends(get_settings)):
@@ -169,13 +162,13 @@ def get_github_sso(config: Settings = Depends(get_settings)) -> GithubSSO:
     )
 
 
-
 def get_health_service() -> HealthService:
     return HealthService(database_instance)
 
 
 def get_llm_repository(db=Depends(get_db)) -> LLMRepository:
     return LLMRepository(db)
+
 
 def get_llm_service(
     repo: LLMRepository = Depends(get_llm_repository),

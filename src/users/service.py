@@ -3,19 +3,21 @@ from datetime import datetime
 
 from pymongo.errors import DuplicateKeyError
 
+from src.achievements.service import AchievementsService
 from src.auth.email_service import EmailService
 from src.auth.schemas import OshiResponse
 from src.auth.security_service import SecurityService
 from src.config import Settings
+from src.image_validation import ImageTooLargeError as ImageTooLargeValidationError
+from src.image_validation import ImageValidationError
 from src.image_validation import (
-    validate_base64_image,
-    ImageValidationError,
-    ImageTooLargeError as ImageTooLargeValidationError,
     InvalidImageTypeError as InvalidImageTypeValidationError,
 )
+from src.image_validation import validate_base64_image
 from src.logging_config import create_logger
+from src.members.service import MemberService
+from src.tickets.service import TicketsService
 from src.users.constants import Info
-from src.achievements.service import AchievementsService
 from src.users.exceptions import (
     EmailAlreadyExistsError,
     ImageTooLargeError,
@@ -28,8 +30,8 @@ from src.users.exceptions import (
     PublicUserNotFoundError,
     UserCreationError,
     UserFetchError,
-    UserUpdateError,
     UsernameAlreadyExistsError,
+    UserUpdateError,
 )
 from src.users.repository import UserRepository
 from src.users.schemas import (
@@ -47,9 +49,6 @@ from src.users.schemas import (
     UserInDB,
     UserStats,
 )
-from src.achievements.schemas import RankInfo
-from src.tickets.service import TicketsService
-from src.members.service import MemberService
 
 logger = create_logger("users_service", __name__)
 
@@ -179,7 +178,9 @@ class UserService:
             logger.exception(f"Error updating oshi: {str(e)}")
             raise OshiUpdateError()
 
-    async def update_public_status(self, user_id: str, is_public: bool, public_year: int | None = None) -> "MessageResponse":
+    async def update_public_status(
+        self, user_id: str, is_public: bool, public_year: int | None = None
+    ) -> "MessageResponse":
         """Update the user's public profile status"""
         try:
             await self.repository.set_public_status(user_id, is_public, public_year)
@@ -204,12 +205,14 @@ class UserService:
             logger.exception(f"Error fetching public user: {str(e)}")
             raise UserFetchError()
 
-    async def update_profile_picture(self, user_id: str, profile_picture: str) -> MessageResponse:
+    async def update_profile_picture(
+        self, user_id: str, profile_picture: str
+    ) -> MessageResponse:
         """Update the user's profile picture"""
         try:
             # Validate the image before saving
             validate_base64_image(profile_picture)
-            
+
             await self.repository.set_profile_picture(user_id, profile_picture)
             return MessageResponse(detail=Info.PROFILE_PICTURE_UPDATED)
         except ImageTooLargeValidationError:
@@ -231,7 +234,6 @@ class UserService:
         Raises PublicUserNotFoundError if user not found or is private.
         """
 
-
         user = await self.get_public_user_by_username(username)
         if not user:
             raise PublicUserNotFoundError()
@@ -245,9 +247,10 @@ class UserService:
                     name=member.name,
                     nickname=member.nickname,
                     generation=member.generation or "-",
-                    profilePicture=member.img or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
+                    profilePicture=member.img
+                    or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
                     catchphrase=member.jiko or "-",
-                    socials=member.socials.model_dump() if member.socials else None
+                    socials=member.socials.model_dump() if member.socials else None,
                 )
             except Exception as e:
                 logger.warning(f"Failed to fetch oshi data for id {user.oshiId}: {e}")
@@ -271,7 +274,9 @@ class UserService:
             total_2shots = sum(1 for t in tickets if t.two_shot is not None)
 
             # Add 2-shot spending to total spent
-            total_spent += sum(t.two_shot.price for t in tickets if t.two_shot and t.two_shot.price)
+            total_spent += sum(
+                t.two_shot.price for t in tickets if t.two_shot and t.two_shot.price
+            )
 
             # Calculate Seat Stats & Top Show
             row_counts = {}
@@ -292,14 +297,14 @@ class UserService:
                 if t.event and t.event.title:
                     show_counts[t.event.title] = show_counts.get(t.event.title, 0) + 1
 
-            top_row = '-'
+            top_row = "-"
             top_row_count = 0
             if row_counts:
                 # Sort by count desc
                 top_row = max(row_counts, key=row_counts.get)
                 top_row_count = row_counts[top_row]
 
-            top_show = '-'
+            top_show = "-"
             top_show_count = 0
             if show_counts:
                 top_show = max(show_counts, key=show_counts.get)
@@ -313,7 +318,7 @@ class UserService:
                     PublicShowEntry(
                         title=t.event.title,
                         date=t.event.date,
-                        type="2-Shot" if t.two_shot else "Theater"
+                        type="2-Shot" if t.two_shot else "Theater",
                     )
                 )
 
@@ -328,7 +333,7 @@ class UserService:
                 topShowCount=top_show_count,
                 rowCounts=row_counts,
                 seatCounts=seat_counts,
-                recentActivity=recent_activity
+                recentActivity=recent_activity,
             )
         except Exception as e:
             logger.warning(f"Failed to calculate stats for user {user.userId}: {e}")
@@ -340,7 +345,7 @@ class UserService:
             oshi=oshi_response,
             createdAt=user.createdAt,
             publicYear=display_year,  # Show actual year for "This Year" option
-            stats=stats
+            stats=stats,
         )
 
     async def get_profile_full(
@@ -357,27 +362,36 @@ class UserService:
             oshi_name = None
             if current_user.oshiId:
                 try:
-                    member_detail = await self.member_service.get_member_by_id(current_user.oshiId)
+                    member_detail = await self.member_service.get_member_by_id(
+                        current_user.oshiId
+                    )
                     member = member_detail.member
                     oshi_name = member.name
                     oshi_response = OshiResponse(
                         name=member.name,
                         nickname=member.nickname,
                         generation=member.generation or "-",
-                        profilePicture=member.img or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
+                        profilePicture=member.img
+                        or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
                         catchphrase=member.jiko or "-",
-                        socials=member.socials.model_dump() if member.socials else None
+                        socials=member.socials.model_dump() if member.socials else None,
                     )
                 except Exception as e:
-                    logger.warning(f"Failed to fetch oshi data for id {current_user.oshiId}: {e}")
+                    logger.warning(
+                        f"Failed to fetch oshi data for id {current_user.oshiId}: {e}"
+                    )
 
             # Get tickets for stats calculation
-            tickets = await self.tickets_service.get_my_tickets(current_user.userId, None)
+            tickets = await self.tickets_service.get_my_tickets(
+                current_user.userId, None
+            )
 
             total_shows = len(tickets)
             rank = self.achievements_service.calculate_rank(total_shows)
 
-            total_achievements = self.achievements_service.calculate_achievements_count(tickets)
+            total_achievements = self.achievements_service.calculate_achievements_count(
+                tickets
+            )
 
             # Calculate oshi 2-shot counts
             roulette_count = 0
@@ -402,7 +416,7 @@ class UserService:
                         section=t.seat.section if t.seat else "",
                         number=str(t.seat.number) if t.seat else "",
                         hasTwoShot=t.two_shot is not None,
-                        twoShotMember=t.two_shot.member_name if t.two_shot else None
+                        twoShotMember=t.two_shot.member_name if t.two_shot else None,
                     )
                 )
 
@@ -425,14 +439,12 @@ class UserService:
                 oshi=oshi_response,
                 rank=rank,
                 stats=ProfileStats(
-                    totalShows=total_shows,
-                    totalAchievements=total_achievements
+                    totalShows=total_shows, totalAchievements=total_achievements
                 ),
                 oshiTwoShots=OshiTwoShotCounts(
-                    roulette=roulette_count,
-                    birthday=birthday_count
+                    roulette=roulette_count, birthday=birthday_count
                 ),
-                recentActivity=recent_activity
+                recentActivity=recent_activity,
             )
 
         except Exception as e:

@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Optional
+
 from pydantic import BaseModel
 
 from src.tickets.schemas import PaginationMeta
@@ -13,6 +14,7 @@ class MemoryType(str, Enum):
 
 class MemoryItem(BaseModel):
     """A single memory item (ticket image or 2-shot image)."""
+
     uniqueId: str
     type: MemoryType
     imageUrl: str
@@ -28,6 +30,7 @@ class MemoryItem(BaseModel):
 
 class MemoriesPaginationResponse(BaseModel):
     """Paginated response for memories endpoint."""
+
     data: list[MemoryItem]
     meta: PaginationMeta
 

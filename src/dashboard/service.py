@@ -1,10 +1,8 @@
 """Dashboard Service - Business logic for dashboard statistics."""
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from src.config import Settings
-from src.logging_config import create_logger
-from src.tickets.repository import TicketsRepository
 from src.dashboard.constants import DashboardConstants
 from src.dashboard.exceptions import StatsFetchError
 from src.dashboard.schemas import (
@@ -15,16 +13,17 @@ from src.dashboard.schemas import (
     ExtremesResponse,
     MonthlyStat,
     MonthlyStatsResponse,
-    RowStatsResponse,
-    TopShowResponse,
-    TopShowResponse,
-    TopMemberResponse,
-    TwoShotStatsResponse,
-    TheaterStatsGroup,
-    TwoShotStatsGroup,
-    SeatMapStatsGroup,
     PeriodStatsGroup,
+    RowStatsResponse,
+    SeatMapStatsGroup,
+    TheaterStatsGroup,
+    TopMemberResponse,
+    TopShowResponse,
+    TwoShotStatsGroup,
+    TwoShotStatsResponse,
 )
+from src.logging_config import create_logger
+from src.tickets.repository import TicketsRepository
 
 logger = create_logger("dashboard_service", __name__)
 
@@ -60,8 +59,6 @@ class DashboardService:
         except (ValueError, TypeError):
             return date_str
 
-
-
     def _calculate_day_stats(self, tickets: List[Dict[str, Any]]) -> DayStatsResponse:
         """Calculate day preference statistics."""
         stats = {day: 0 for day in DashboardConstants.DAYS}
@@ -77,13 +74,15 @@ class DashboardService:
                     day = d.strftime("%A")
                 except (ValueError, TypeError):
                     continue
-            
+
             if day:
                 day_normalized = day.strip().capitalize()
                 if day_normalized in stats:
                     stats[day_normalized] += 1
 
-        stats_list = [DayStat(name=day, count=stats[day]) for day in DashboardConstants.DAYS]
+        stats_list = [
+            DayStat(name=day, count=stats[day]) for day in DashboardConstants.DAYS
+        ]
         max_count = max((s.count for s in stats_list), default=1) or 1
         return DayStatsResponse(stats=stats_list, max_count=max_count)
 
@@ -132,12 +131,14 @@ class DashboardService:
         stats = []
         for i in range(12):
             month_date = datetime(2000, i + 1, 1)
-            stats.append({
-                "name": month_date.strftime("%b"),
-                "count": 0,
-                "spent": 0,
-                "is_active": is_all_data or (start_month <= i <= end_month),
-            })
+            stats.append(
+                {
+                    "name": month_date.strftime("%b"),
+                    "count": 0,
+                    "spent": 0,
+                    "is_active": is_all_data or (start_month <= i <= end_month),
+                }
+            )
 
         for t in tickets:
             try:
@@ -211,9 +212,7 @@ class DashboardService:
             top_name = max(member_stats.keys(), key=lambda k: member_stats[k]["count"])
             top_data = member_stats[top_name]
             top_member = TopMemberResponse(
-                name=top_name,
-                count=top_data["count"],
-                image=top_data.get("image")
+                name=top_name, count=top_data["count"], image=top_data.get("image")
             )
 
         return TwoShotStatsResponse(
@@ -265,7 +264,9 @@ class DashboardService:
         self, tickets: List[Dict[str, Any]], include_year: bool
     ) -> ExtremesResponse:
         """Calculate first and last 2-shot."""
-        with_two_shot = [t for t in tickets if (t.get("two_shot") or {}).get("member_name")]
+        with_two_shot = [
+            t for t in tickets if (t.get("two_shot") or {}).get("member_name")
+        ]
 
         if not with_two_shot:
             return ExtremesResponse(first=None, last=None)
@@ -298,8 +299,6 @@ class DashboardService:
             last=to_extreme_item(last),
         )
 
-
-
     async def get_dashboard_stats(
         self,
         user_id: str,
@@ -312,12 +311,12 @@ class DashboardService:
         try:
             # Get available years (efficient query)
             available_years = await self.tickets_repository.get_available_years(user_id)
-            
+
             # Ensure current year is always in the list
             current_year = datetime.now().year
             if current_year not in available_years:
                 available_years.append(current_year)
-            
+
             # Sort descending
             available_years.sort(reverse=True)
 
@@ -351,7 +350,9 @@ class DashboardService:
             most_frequent_row = "-"
             most_frequent_row_count = 0
             if row_stats.counts:
-                most_frequent_row = max(row_stats.counts.keys(), key=lambda k: row_stats.counts[k])
+                most_frequent_row = max(
+                    row_stats.counts.keys(), key=lambda k: row_stats.counts[k]
+                )
                 most_frequent_row_count = row_stats.counts[most_frequent_row]
 
             # Group statistics
