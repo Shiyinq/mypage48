@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { User, Ticket, Camera, Heart, Loader2 } from 'lucide-svelte';
+	import { User, Ticket, Camera, Heart, Loader2, Sparkles } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { createEventDispatcher } from 'svelte';
 	import type { PublicProfileData } from '$lib/types';
@@ -13,13 +13,31 @@
 </script>
 
 <div
-	class="glass-panel p-6 rounded-3xl relative overflow-hidden group flex flex-col md:flex-row items-center gap-6 mb-6"
+	class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-[2rem] p-6 relative overflow-hidden group flex flex-col md:flex-row items-center gap-6 mb-8 shadow-xl shadow-red-500/5"
 	role="region"
 >
 	<!-- Background decoration -->
 	<div
 		class="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"
 	></div>
+
+	<!-- JKT48 Wrapped Badge (Top Right) -->
+	{#if profile.publicYear}
+		<div class="absolute top-4 right-4 z-20">
+			<div
+				class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-md border border-red-200/50 dark:border-red-900/30 shadow-sm hover:scale-105 transition-transform duration-300 cursor-default group/badge"
+			>
+				<Sparkles
+					class="w-3.5 h-3.5 text-red-500 fill-red-500 dark:text-red-400 dark:fill-red-400 animate-pulse"
+				/>
+				<span
+					class="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600 dark:from-red-400 dark:to-pink-400 uppercase tracking-wider"
+				>
+					{$t('profile.publicActivity.wrapped', { year: profile.publicYear })}
+				</span>
+			</div>
+		</div>
+	{/if}
 
 	<!-- Avatar -->
 	<div class="relative group">
@@ -71,23 +89,15 @@
 		</h1>
 		<p class="text-purple-600 dark:text-purple-400 font-bold mb-4">@{profile.username}</p>
 
-		<div class="flex flex-wrap justify-center md:justify-start gap-3">
-			{#if profile.oshi}
+		{#if profile.oshi}
+			<div class="flex flex-wrap justify-center md:justify-start gap-3">
 				<div
 					class="flex items-center gap-2 px-3 py-1.5 bg-pink-50 dark:bg-pink-900/20 rounded-full text-xs font-bold text-pink-600 dark:text-pink-400"
 				>
 					<Heart class="w-3.5 h-3.5 fill-current" />
 					Oshi: {profile.oshi.name}
 				</div>
-			{/if}
-			{#if profile.publicYear}
-				<div
-					class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-full text-xs font-bold text-blue-700 dark:text-blue-300"
-				>
-					<Ticket class="w-3.5 h-3.5" />
-					{$t('profile.publicActivity.yearBadge', { year: profile.publicYear })}
-				</div>
-			{/if}
-		</div>
+			</div>
+		{/if}
 	</div>
 </div>

@@ -267,9 +267,9 @@
 			"weeksAgo": "週間前"
 		},
 		"publicActivity": {
-			"titleWithYear": "@{username}の{year}年の劇場活動",
-			"titleAllTime": "@{username}の劇場活動",
-			"yearBadge": "劇場活動: {year}年"
+			"wrapped": "JKT48劇場 Wrapped {year}",
+			"yearSummary": "{year}年まとめ",
+			"watchedTimes": "{count}回観覧"
 		},
 		"profilePicture": {
 			"previewTitle": "プロフィール写真プレビュー",
