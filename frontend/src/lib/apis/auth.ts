@@ -1,4 +1,5 @@
 import { client, API_BASE } from './client';
+import { accessToken } from '$lib/stores/auth';
 import type {
 	LoginRequest,
 	RegisterRequest,
@@ -42,8 +43,7 @@ export const auth = {
 			throw data as ApiError;
 		}
 
-		// Import store dynamically or at top level to update it
-		const { accessToken } = await import('$lib/store/auth');
+		// Update store
 		accessToken.set(data.access_token);
 
 		return data as AuthResponse;

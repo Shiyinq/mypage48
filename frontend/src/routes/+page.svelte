@@ -90,15 +90,17 @@
 	}
 
 	// Helper function for filter label
-	$: filterLabel = (() => {
-		if ($dashboardFilter.isAllData) return 'All Data';
-		const startMonthShort = MONTHS[$dashboardFilter.startMonth].substring(0, 3);
-		const endMonthShort = MONTHS[$dashboardFilter.endMonth].substring(0, 3);
-		if ($dashboardFilter.startMonth === 0 && $dashboardFilter.endMonth === 11) {
-			return `${$dashboardFilter.selectedYear} Jan-Dec`;
+	function getFilterLabel(filter: typeof $dashboardFilter) {
+		if (filter.isAllData) return 'All Data';
+		const startMonthShort = MONTHS[filter.startMonth].substring(0, 3);
+		const endMonthShort = MONTHS[filter.endMonth].substring(0, 3);
+		if (filter.startMonth === 0 && filter.endMonth === 11) {
+			return `${filter.selectedYear} Jan-Dec`;
 		}
-		return `${$dashboardFilter.selectedYear} ${startMonthShort}-${endMonthShort}`;
-	})();
+		return `${filter.selectedYear} ${startMonthShort}-${endMonthShort}`;
+	}
+
+	$: filterLabel = getFilterLabel($dashboardFilter);
 
 	// Available years from API
 	$: availableYears = dashboardStats?.available_years ?? [currentYear];

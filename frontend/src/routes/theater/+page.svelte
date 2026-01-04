@@ -5,9 +5,9 @@
 	import { setlistsApi, type Setlist } from '$lib/apis/setlists';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { ShowCard } from '$lib/components/shows';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { Calendar } from 'lucide-svelte';
+	import SetlistSection from '$lib/components/theater/SetlistSection.svelte';
 
 	import { setlistsStore, maxAttendanceStore } from '$lib/stores/theater';
 	import { get } from 'svelte/store';
@@ -73,17 +73,6 @@
 	function goToDetail(setlistId: string) {
 		goto(`/theater/${setlistId}`);
 	}
-
-	// Helper to transform setlist to show data format
-	function toShowData(s: Setlist) {
-		return {
-			title: s.title,
-			image: s.imageUrl,
-			count: s.watched.count,
-			percentage: s.watched.percentage,
-			isMostWatched: s.watched.isMostWatched
-		};
-	}
 </script>
 
 <SEO title={$t('theater.title')} path="/theater" description={$t('seo.shows')} />
@@ -131,45 +120,23 @@
 
 			<!-- Active Setlists -->
 			{#if activeSetlists.length > 0}
-				<div class="mb-8">
-					<h3
-						class="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-4 flex items-center gap-2"
-					>
-						<div class="w-2 h-2 rounded-full bg-green-500"></div>
-						{$t('theater.setlists.active')}
-					</h3>
-					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-						{#each activeSetlists as setlist (setlist.setlistId)}
-							{@const show = toShowData(setlist)}
-							<ShowCard
-								{show}
-								count={show.count}
-								{maxAttendance}
-								onClick={() => goToDetail(setlist.setlistId)}
-							/>
-						{/each}
-					</div>
-				</div>
+				<SetlistSection
+					title={$t('theater.setlists.active')}
+					items={activeSetlists}
+					{maxAttendance}
+					isActive={true}
+					on:click={(e) => goToDetail(e.detail)}
+				/>
 			{/if}
 
 			<!-- Inactive Setlists -->
 			{#if inactiveSetlists.length > 0}
-				<div>
-					<h3 class="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-4">
-						{$t('theater.setlists.inactive')}
-					</h3>
-					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-						{#each inactiveSetlists as setlist (setlist.setlistId)}
-							{@const show = toShowData(setlist)}
-							<ShowCard
-								{show}
-								count={show.count}
-								{maxAttendance}
-								onClick={() => goToDetail(setlist.setlistId)}
-							/>
-						{/each}
-					</div>
-				</div>
+				<SetlistSection
+					title={$t('theater.setlists.inactive')}
+					items={inactiveSetlists}
+					{maxAttendance}
+					on:click={(e) => goToDetail(e.detail)}
+				/>
 			{/if}
 		</div>
 	{/if}
@@ -186,45 +153,23 @@
 
 			<!-- Active Events -->
 			{#if activeEvents.length > 0}
-				<div class="mb-8">
-					<h3
-						class="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-4 flex items-center gap-2"
-					>
-						<div class="w-2 h-2 rounded-full bg-green-500"></div>
-						{$t('theater.setlists.activeEvents')}
-					</h3>
-					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-						{#each activeEvents as event (event.setlistId)}
-							{@const show = toShowData(event)}
-							<ShowCard
-								{show}
-								count={show.count}
-								{maxAttendance}
-								onClick={() => goToDetail(event.setlistId)}
-							/>
-						{/each}
-					</div>
-				</div>
+				<SetlistSection
+					title={$t('theater.setlists.activeEvents')}
+					items={activeEvents}
+					{maxAttendance}
+					isActive={true}
+					on:click={(e) => goToDetail(e.detail)}
+				/>
 			{/if}
 
 			<!-- Inactive Events -->
 			{#if inactiveEvents.length > 0}
-				<div>
-					<h3 class="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-4">
-						{$t('theater.setlists.inactiveEvents')}
-					</h3>
-					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-						{#each inactiveEvents as event (event.setlistId)}
-							{@const show = toShowData(event)}
-							<ShowCard
-								{show}
-								count={show.count}
-								{maxAttendance}
-								onClick={() => goToDetail(event.setlistId)}
-							/>
-						{/each}
-					</div>
-				</div>
+				<SetlistSection
+					title={$t('theater.setlists.inactiveEvents')}
+					items={inactiveEvents}
+					{maxAttendance}
+					on:click={(e) => goToDetail(e.detail)}
+				/>
 			{/if}
 		</div>
 	{/if}

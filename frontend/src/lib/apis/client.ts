@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { accessToken } from '$lib/store/auth';
+import { accessToken } from '$lib/stores/auth';
 import { isTokenExpired, getCSRFToken } from '$lib/utils/auth';
 import type { ApiError, AuthResponse } from '$lib/types';
 
@@ -62,18 +62,6 @@ export async function client<T>(
 	let token = get(accessToken);
 
 	// 2. Check expiration and refresh if needed
-	// Only check if we have a token (implying we think we are logged in)
-	// or if we might need to be logged in.
-	// However, for public endpoints (like login), we might have no token.
-	// We skip this check if no token is present initially?
-	// User logic: "if (isTokenExpired(currentToken)) { refresh... }"
-	// If token is empty string, isTokenExpired returns true.
-	// We should only try to refresh if we actually expect to be authenticated??
-	// But maybe the user IS logged in but the memory store is empty (page reload)?
-	// If page reload, store is empty. access_token is lost.
-	// We MUST try to refresh on first load if we want persistence.
-
-	// List of public endpoints that don't need auth
 	const publicEndpoints = [
 		'/auth/signin',
 		'/users/signup',
@@ -85,10 +73,6 @@ export async function client<T>(
 
 	const isPublic = publicEndpoints.some((p) => endpoint.includes(p));
 
-	// Only attempt refresh if:
-	// 1. Token is present but expired
-	// 2. OR Token is missing AND it's NOT a public endpoint (trying to restore session)
-	// Actually, simple rule: If we are not accessing a public endpoint, try to ensure we have a token.
 	if (!isPublic) {
 		if (isTokenExpired(token)) {
 			// Try to refresh
@@ -118,11 +102,10 @@ export async function client<T>(
 			...defaultHeaders,
 			...options.headers
 		},
-		credentials: 'include' as RequestCredentials // Important for cookies (refresh_token, csrf_token)
+		credentials: 'include' as RequestCredentials
 	};
 
 	// 4. Execute fetch
-	// If options.body is an object, stringify it
 	if (
 		config.body &&
 		typeof config.body !== 'string' &&
@@ -135,7 +118,6 @@ export async function client<T>(
 	const response = await fetch(`${API_BASE}${endpoint}`, config as RequestInit);
 
 	// 5. Handle response
-	// Handle 204 No Content - no body to parse
 	if (response.status === 204) {
 		return undefined as T;
 	}

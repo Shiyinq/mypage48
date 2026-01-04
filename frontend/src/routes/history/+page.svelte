@@ -28,6 +28,7 @@
 		TicketTable,
 		HistoryFilter
 	} from '$lib/components/history';
+	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 
 	import { get } from 'svelte/store';
 
@@ -80,7 +81,6 @@
 	async function loadTickets(page: number, currentFilters: TicketFilters = {}) {
 		if (isLoadingMore) return;
 		isLoadingMore = true;
-		isLoadingMore = true;
 		try {
 			error = false;
 			const res = await ticketsApi.getMyTickets(page, 20, currentFilters);
@@ -118,16 +118,9 @@
 		}
 	}
 
-	function handleScroll() {
+	function handleIntersect() {
 		if (!mounted || isLoadingMore || !$ticketsPagination.hasMore) return;
-
-		const threshold = 300;
-		const position = window.innerHeight + window.scrollY;
-		const height = document.body.offsetHeight;
-
-		if (position > height - threshold) {
-			loadTickets($ticketsPagination.page + 1, filters);
-		}
+		loadTickets($ticketsPagination.page + 1, filters);
 	}
 
 	let searchTimeout: ReturnType<typeof setTimeout>;
@@ -142,9 +135,6 @@
 			loadTickets(1, filters);
 		}, 500);
 	}
-
-	// We'll bind this to the Filter component later
-	// $: handleFilterChange(filters);
 
 	$: isLoading = !mounted || ($isAuthenticated && $tickets.length === 0 && !$isInitialDataLoaded);
 
@@ -214,7 +204,6 @@
 </script>
 
 <SEO title={$t('history.title')} path="/history" description={$t('history.description')} />
-<svelte:window on:scroll={handleScroll} />
 
 <DeleteConfirmationModal
 	show={!!deleteId}
@@ -294,30 +283,39 @@
 			/>
 		{/if}
 
-		{#if isLoadingMore}
-			{#if viewMode === 'GRID'}
-				<TicketCardSkeleton count={3} className="mt-6" />
-			{:else}
-				<div class="mt-4">
-					<TableSkeleton
-						rows={3}
-						showHeader={false}
-						columns={[
-							$t('history.date'),
-							$t('history.eventDetails'),
-							$t('history.seat'),
-							$t('history.price'),
-							$t('history.notes'),
-							$t('history.actions')
-						]}
-					/>
-				</div>
-			{/if}
+		<!-- Sentinel for infinite scroll -->
+		{#if $ticketsPagination.hasMore}
+			<div
+				use:infiniteScroll
+				on:intersect={handleIntersect}
+				class="w-full py-6 flex justify-center"
+			>
+				{#if isLoadingMore}
+					{#if viewMode === 'GRID'}
+						<div class="w-full">
+							<TicketCardSkeleton count={3} />
+						</div>
+					{:else}
+						<div class="w-full">
+							<TableSkeleton
+								rows={3}
+								showHeader={false}
+								columns={[
+									$t('history.date'),
+									$t('history.eventDetails'),
+									$t('history.seat'),
+									$t('history.price'),
+									$t('history.notes'),
+									$t('history.actions')
+								]}
+							/>
+						</div>
+					{/if}
+				{/if}
+			</div>
 		{/if}
 	{/if}
 </div>
-
-<!-- Delete Modal -->
 
 <!-- Edit Modal -->
 {#if editingTicket}
