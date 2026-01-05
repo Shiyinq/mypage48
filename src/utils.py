@@ -74,7 +74,7 @@ def hash_token(token: str) -> str:
 def validate_password_strength(password: str) -> bool:
     """
     Validate password strength:
-    - Min 8 chars, Max 128 chars
+    - Min 8 chars, Max 64 chars
     - At least one uppercase
     - At least one lowercase
     - At least one digit
@@ -83,6 +83,6 @@ def validate_password_strength(password: str) -> bool:
     """
     password_rules = PasswordValidator()
     password_rules.min(8).max(
-        128
+        64
     ).has().uppercase().has().lowercase().has().digits().has().symbols().no().spaces()
     return password_rules.validate(password)
