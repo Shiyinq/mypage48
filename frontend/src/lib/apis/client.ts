@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { accessToken } from '$lib/stores/auth';
+import { accessToken } from '$lib/stores/accessToken';
 import { isTokenExpired, getCSRFToken } from '$lib/utils/auth';
 import type { ApiError, AuthResponse } from '$lib/types';
 
@@ -74,7 +74,8 @@ export async function client<T>(
 	const isPublic = publicEndpoints.some((p) => endpoint.includes(p));
 
 	if (!isPublic) {
-		if (token && isTokenExpired(token)) {
+		// If no token OR token is expired, try to refresh via httpOnly cookie
+		if (isTokenExpired(token)) {
 			// Try to refresh
 			const newToken = await refreshAccessToken();
 			if (newToken) {
