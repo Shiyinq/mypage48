@@ -3,7 +3,7 @@
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { invalidateTheater } from '$lib/stores/theater';
 	import { goto } from '$app/navigation';
-	import { extractTicketData } from '$lib/services/geminiService';
+	import { extractTicketData } from '$lib/apis/llm';
 
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
