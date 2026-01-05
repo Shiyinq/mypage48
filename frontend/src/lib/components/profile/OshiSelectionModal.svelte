@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Search, X, Check } from 'lucide-svelte';
+	import { logger } from '$lib/utils/logger';
 	import Button from '$lib/components/Button.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { members as membersApi, type Member } from '$lib/apis/members';
@@ -58,10 +59,6 @@
 
 	// ... (imports remain)
 
-	function getCacheKey() {
-		return JSON.stringify({ generation: null, search: searchQuery || '' });
-	}
-
 	async function fetchMembers(reset = false) {
 		// cacheKey logic removed as we are not using global cache for modal
 
@@ -94,7 +91,7 @@
 			await tick();
 			initObserver();
 		} catch (e) {
-			console.error('Failed to load members', e);
+			logger.error('Failed to load members', e, { context: 'OshiSelectionModal' });
 		} finally {
 			loading = false;
 			isAppending = false;

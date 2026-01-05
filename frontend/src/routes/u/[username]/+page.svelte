@@ -1,15 +1,19 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	export let params: Record<string, string> | undefined = undefined;
+	import { page } from '$app/stores';
 	import { SEO } from '$lib/components';
 	import { Ticket } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { auth } from '$lib/apis/auth';
+
 	import { userProfile, showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import {
 		validateImageFile,
 		validateBase64Image,
 		getValidationErrorI18nKey
 	} from '$lib/utils/fileValidation';
+	import { getErrorMessage } from '$lib/utils/api';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import PublicProfileHeader from '$lib/components/public-profile/PublicProfileHeader.svelte';
 	import PublicProfileStats from '$lib/components/public-profile/PublicProfileStats.svelte';
@@ -60,7 +64,7 @@
 			previewImage = base64;
 			showPreviewModal = true;
 		} catch (error) {
-			console.error('Failed to read file:', error);
+			logger.error('Failed to read file', error, { context: 'PublicProfilePage' });
 			validationAlertMessage = $t('publicProfile.uploadError');
 			showValidationAlert = true;
 		} finally {
@@ -97,11 +101,8 @@
 			closePreviewModal();
 			showToast($t('settings.publicProfile.uploadSuccess'), 'success');
 		} catch (error: unknown) {
-			console.error('Failed to upload profile picture:', error);
-			const errorMessage =
-				error instanceof Error && 'response' in error
-					? (error as { response?: { data?: { detail?: string } } }).response?.data?.detail
-					: null;
+			logger.error('Failed to upload profile picture', error, { context: 'PublicProfilePage' });
+			const errorMessage = getErrorMessage(error);
 			showToast(errorMessage || $t('settings.publicProfile.uploadError'), 'error');
 		} finally {
 			isUploading = false;

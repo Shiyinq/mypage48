@@ -1,10 +1,12 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { type SetlistDetailResponse } from '$lib/apis/setlists';
 
 	import { ticketsStore, showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import { setlistsStore } from '$lib/stores/theater';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { ArrowLeft, Ticket, DollarSign, Trophy } from 'lucide-svelte';
@@ -37,7 +39,7 @@
 			// Use store loadDetail which handles caching
 			detail = await setlistsStore.loadDetail(setlistId);
 		} catch (e) {
-			console.error('Failed to fetch setlist detail:', e);
+			logger.error('Failed to fetch setlist detail', e, { context: 'SetlistDetailPage' });
 			error = true;
 			showToast('Failed to load setlist detail', 'error');
 		} finally {
@@ -59,7 +61,7 @@
 			await fetchDetail();
 			showToast($t('history.ticketDeleted'), 'success');
 		} catch (e) {
-			console.error('Failed to delete ticket:', e);
+			logger.error('Failed to delete ticket', e, { context: 'SetlistDetailPage' });
 			showToast('Failed to delete ticket', 'error');
 		} finally {
 			isDeleting = false;

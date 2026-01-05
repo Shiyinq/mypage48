@@ -1,6 +1,9 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { authStore } from '$lib/stores/auth';
 	import { showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
+	import { getErrorMessage } from '$lib/utils/api';
 	import { Mail, ArrowLeft, LoaderCircle, KeyRound } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -21,9 +24,10 @@
 			isSent = true;
 			showToast($t('auth.forgotPassword.sent'), 'success');
 		} catch (err) {
-			const e = err as { detail?: string; message?: string };
-			console.error(e);
-			showToast(error || $t('auth.forgotPassword.error'), 'error');
+			const errorMsg = getErrorMessage(err);
+			logger.error('Forgot password failed', err, { context: 'ForgotPasswordPage' });
+			error = errorMsg || $t('auth.forgotPassword.error');
+			showToast(error, 'error');
 		} finally {
 			isLoading = false;
 		}

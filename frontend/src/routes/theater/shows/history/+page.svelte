@@ -1,4 +1,6 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
+	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { History } from 'lucide-svelte';

@@ -1,5 +1,7 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { isAuthenticated } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import StatCard from '$lib/components/StatCard.svelte';
 	import TheaterSeatMap from '$lib/components/TheaterSeatMap.svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -56,7 +58,7 @@
 			// Use smart store load action
 			await dashboardStatsData.load($dashboardFilter);
 		} catch (err) {
-			console.error('Failed to fetch dashboard stats:', err);
+			logger.error('Failed to fetch dashboard stats', err, { context: 'DashboardPage' });
 			error = $t('dashboard.error');
 		} finally {
 			isLoading = false;

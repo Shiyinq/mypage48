@@ -1,10 +1,11 @@
 import { writable, get } from 'svelte/store';
 import { setlistsApi, type Setlist, type SetlistDetailResponse } from '$lib/apis/setlists';
 import { members as membersApi, type Member } from '$lib/apis/members';
+import { logger } from '$lib/utils/logger';
 
 // --- Setlists Store ---
 function createSetlistsStore() {
-	const { subscribe, set, update } = writable<Setlist[] | null>(null);
+	const { subscribe, set } = writable<Setlist[] | null>(null);
 	const detailCache = writable<Record<string, SetlistDetailResponse>>({});
 
 	return {
@@ -17,7 +18,7 @@ function createSetlistsStore() {
 				set(response.setlists);
 				maxAttendanceStore.set(response.maxAttendance || 1);
 			} catch (e) {
-				console.error("Failed to load setlists", e);
+				logger.error('Failed to load setlists', e, { context: 'SetlistsStore' });
 				throw e;
 			}
 		},
@@ -27,10 +28,10 @@ function createSetlistsStore() {
 
 			try {
 				const detail = await setlistsApi.getDetail(id);
-				detailCache.update(c => ({ ...c, [id]: detail }));
+				detailCache.update((c) => ({ ...c, [id]: detail }));
 				return detail;
 			} catch (e) {
-				console.error("Failed to load details", e);
+				logger.error('Failed to load details', e, { context: 'SetlistsStore' });
 				throw e;
 			}
 		},
@@ -43,7 +44,6 @@ function createSetlistsStore() {
 
 export const setlistsStore = createSetlistsStore();
 export const maxAttendanceStore = writable<number>(1);
-
 
 // --- Members Store ---
 interface MembersState {
@@ -67,14 +67,22 @@ function createMembersStore() {
 
 	return {
 		subscribe,
-		load: async (params: { page?: number; limit?: number; generation?: string; search?: string } = {}, reset = false) => {
+		load: async (
+			params: { page?: number; limit?: number; generation?: string; search?: string } = {},
+			reset = false
+		) => {
 			const state = get({ subscribe });
 			const cacheKey = JSON.stringify({ generation: params.generation, search: params.search });
 
 			// If resetting, check if we have this filter cached
 			if (reset && state.cache[cacheKey]) {
 				const cached = state.cache[cacheKey];
-				update(s => ({ ...s, list: cached.members, pagination: cached.pagination, currentFilter: { generation: params.generation, search: params.search } }));
+				update((s) => ({
+					...s,
+					list: cached.members,
+					pagination: cached.pagination,
+					currentFilter: { generation: params.generation, search: params.search }
+				}));
 				return;
 			}
 
@@ -83,34 +91,30 @@ function createMembersStore() {
 
 			const pageToLoad = reset ? 1 : state.pagination.page + 1;
 
-			try {
-				const res = await membersApi.getAll({
-					...params,
+			const res = await membersApi.getAll({
+				...params,
+				page: pageToLoad,
+				limit: params.limit || 20
+			});
+
+			update((s) => {
+				const newList = reset ? res.data : [...s.list, ...res.data];
+				const newPagination = {
 					page: pageToLoad,
-					limit: params.limit || 20
-				});
+					hasMore: !!res.meta.next_page
+				};
 
-				update(s => {
-					const newList = reset ? res.data : [...s.list, ...res.data];
-					const newPagination = {
-						page: pageToLoad,
-						hasMore: !!res.meta.next_page
-					};
-
-					return {
-						...s,
-						list: newList,
-						pagination: newPagination,
-						currentFilter: { generation: params.generation, search: params.search },
-						cache: {
-							...s.cache,
-							[cacheKey]: { members: newList, pagination: newPagination }
-						}
-					};
-				});
-			} catch (e) {
-				throw e;
-			}
+				return {
+					...s,
+					list: newList,
+					pagination: newPagination,
+					currentFilter: { generation: params.generation, search: params.search },
+					cache: {
+						...s.cache,
+						[cacheKey]: { members: newList, pagination: newPagination }
+					}
+				};
+			});
 		},
 		getGenerations: async () => {
 			const state = get({ subscribe });
@@ -119,24 +123,23 @@ function createMembersStore() {
 				return state.generationsCache;
 			}
 			const generations = await membersApi.getGenerations();
-			update(s => ({ ...s, generationsCache: generations }));
+			update((s) => ({ ...s, generationsCache: generations }));
 			return generations;
 		},
 		reset: () => set(initialState)
-	}
+	};
 }
 
 export const membersStore = createMembersStore();
 
 // Backwards compatibility/Convenience exports for components that might need direct access (though mostly internal now)
 export const membersPagination = {
-	subscribe: (cb: (val: any) => void) => {
+	subscribe: (cb: (val: { page: number; hasMore: boolean }) => void) => {
 		// Return a derived-like subscription to just pagination part
 		// This is a temporary shim if needed, or we just refactor I to use $membersStore.pagination
-		return membersStore.subscribe(val => cb(val.pagination));
+		return membersStore.subscribe((val) => cb(val.pagination));
 	}
 };
-
 
 export function invalidateTheater() {
 	setlistsStore.reset();

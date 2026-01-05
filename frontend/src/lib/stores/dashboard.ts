@@ -38,18 +38,14 @@ function createDashboardStore() {
 				return;
 			}
 
-			try {
-				const stats = await dashboard.getStats({
-					year: filter.selectedYear,
-					startMonth: filter.startMonth,
-					endMonth: filter.endMonth,
-					isAllData: filter.isAllData
-				});
-				set(stats);
-				lastFetchedFilter.set(currentFilterKey);
-			} catch (error) {
-				throw error;
-			}
+			const stats = await dashboard.getStats({
+				year: filter.selectedYear,
+				startMonth: filter.startMonth,
+				endMonth: filter.endMonth,
+				isAllData: filter.isAllData
+			});
+			set(stats);
+			lastFetchedFilter.set(currentFilterKey);
 		},
 		reset: () => {
 			set(null);

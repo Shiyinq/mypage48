@@ -1,5 +1,7 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import { apiKeys } from '$lib/apis/api_keys';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Settings } from 'lucide-svelte';
@@ -40,7 +42,7 @@
 			showApiKeyModal = true;
 			showToast($t('settings.developer.generated'), 'success');
 		} catch (e) {
-			console.error('Failed to generate API Key', e);
+			logger.error('Failed to generate API Key', e, { context: 'SettingsPage' });
 			showToast($t('common.error'), 'error');
 		} finally {
 			generatingKey = false;

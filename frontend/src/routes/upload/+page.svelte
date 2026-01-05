@@ -1,5 +1,7 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { ticketsStore, showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { invalidateTheater } from '$lib/stores/theater';
 	import { goto } from '$app/navigation';
@@ -116,8 +118,9 @@
 					(result.title || '').toLowerCase().includes(opt.toLowerCase())
 				) || '';
 			const inputChar = (result.section || '').toUpperCase().trim().charAt(0);
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const detectedRow = THEATER_ROWS.includes(inputChar as any) ? inputChar : '';
+			const detectedRow = (THEATER_ROWS as ReadonlyArray<string>).includes(inputChar)
+				? inputChar
+				: '';
 
 			formData = {
 				...formData,
@@ -136,7 +139,7 @@
 			};
 			mode = 'EDITING';
 		} catch (e) {
-			console.error(e);
+			logger.error('Image analysis failed', e, { context: 'UploadPage' });
 			showToast($t('forms.analysisFailed'), 'error');
 			mode = 'EDITING';
 		}
@@ -198,11 +201,11 @@
 			invalidateDashboard();
 			invalidateTheater();
 
-			showToast('Ticket saved successfully!');
+			showToast($t('upload.uploadSuccess'));
 			goto('/');
 		} catch (e) {
-			console.error(e);
-			showToast('Failed to save ticket. Please try again.', 'error');
+			logger.error('Ticket upload failed', e, { context: 'UploadPage' });
+			showToast($t('upload.uploadError'), 'error');
 		} finally {
 			isSubmitting = false;
 		}
@@ -292,30 +295,6 @@
 		</div>
 	</div>
 {/if}
-
-<input
-	type="file"
-	bind:this={fileInputRef}
-	class="hidden"
-	accept="image/*"
-	on:change={handleFileChange}
-/>
-<input
-	type="file"
-	accept="image/*"
-	class="hidden"
-	id="two-shot-photo"
-	bind:this={twoShotInputRef}
-	on:change={handleTwoShotFileChange}
-/>
-
-<!-- Validation Alert Modal -->
-<ValidationAlertModal
-	show={showValidationAlert}
-	title={$t('validation.alert.title')}
-	message={validationAlertMessage}
-	onClose={() => (showValidationAlert = false)}
-/>
 
 <input
 	type="file"

@@ -1,4 +1,5 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { isAuthenticated, showToast } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import { Image as ImageIcon } from 'lucide-svelte';
@@ -44,8 +45,7 @@
 			error = false;
 			// Use store action
 			await galleryStore.load(page, filter);
-		} catch (e) {
-			console.error('Failed to load memories:', e);
+		} catch {
 			error = true;
 			showToast($t('memories.errorTitle') || 'Failed to load memories', 'error');
 		} finally {
@@ -66,7 +66,7 @@
 		try {
 			isLoadingMore = true;
 			await galleryStore.load(1, newFilter);
-		} catch (e) {
+		} catch {
 			error = true;
 		} finally {
 			isLoadingMore = false;

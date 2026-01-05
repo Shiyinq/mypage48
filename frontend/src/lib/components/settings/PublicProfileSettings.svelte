@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import { userProfile, isInitialDataLoaded } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Share2, Copy, ExternalLink } from 'lucide-svelte';
@@ -42,7 +43,7 @@
 			await userProfile.updatePublicStatus(newIsPublic, yearPayload);
 			showToast($t('common.success'), 'success');
 		} catch (e) {
-			console.error('Failed to update public status', e);
+			logger.error('Failed to update public status', e, { context: 'PublicProfileSettings' });
 			showToast($t('common.error'), 'error');
 		} finally {
 			updatingStatus = false;
@@ -69,7 +70,7 @@
 			await userProfile.updatePublicStatus(true, yearPayload);
 			showToast($t('common.success'), 'success');
 		} catch (err) {
-			console.error('Failed to update public year', err);
+			logger.error('Failed to update public year', err, { context: 'PublicProfileSettings' });
 			showToast($t('common.error'), 'error');
 		} finally {
 			updatingStatus = false;
@@ -88,7 +89,7 @@
 			// Use store action
 			await userProfile.load();
 		} catch (e) {
-			console.error('Failed to retry profile fetch', e);
+			logger.error('Failed to retry profile fetch', e, { context: 'PublicProfileSettings' });
 			showToast($t('profile.errorTitle'), 'error');
 		} finally {
 			isRetrying = false;
@@ -203,6 +204,7 @@
 						<a
 							href="/u/{$userProfile?.username}"
 							target="_blank"
+							rel="noopener noreferrer"
 							class="p-2.5 bg-purple-100/50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"
 							title="Open Link"
 						>

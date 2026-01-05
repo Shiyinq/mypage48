@@ -1,6 +1,8 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { goto } from '$app/navigation';
-	import { showToast, isAuthenticated } from '$lib/stores';
+	import { showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
@@ -46,7 +48,7 @@
 			error = false;
 			await setlistsStore.load();
 		} catch (e) {
-			console.error('Failed to fetch setlists:', e);
+			logger.error('Failed to fetch setlists', e, { context: 'TheaterPage' });
 			error = true;
 			showToast($t('theater.setlists.listErrorTitle') || 'Failed to load setlists', 'error');
 		} finally {

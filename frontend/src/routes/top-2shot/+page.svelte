@@ -1,5 +1,7 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { isAuthenticated, showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import { Heart, Camera } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -43,7 +45,7 @@
 			// Use store load
 			await topTwoShotStore.load();
 		} catch (e) {
-			console.error('Failed to load top 2shot:', e);
+			logger.error('Failed to load top 2shot', e, { context: 'Top2ShotPage' });
 			error = true;
 			showToast($t('top2shot.errorTitle') || 'Failed to load data', 'error');
 		} finally {

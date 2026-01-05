@@ -602,7 +602,10 @@
 		"uploadTicketPhoto": "チケット写真アップロード",
 		"selectMember": "メンバーを選択",
 		"selectMemberDesc": "一緒に写真を撮ったメンバーを選択してください",
-		"analysisIssue": "解析エラー"
+		"analysisIssue": "解析エラー",
+		"updateTicket": "チケットを更新",
+		"ticketUpdateSuccess": "チケットが正常に更新されました！",
+		"ticketUpdateError": "チケットの更新に失敗しました。"
 	},
 	"member": {
 		"birthdate": "生年月日",

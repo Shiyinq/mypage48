@@ -82,8 +82,9 @@
 						{detail.watched.count}
 					</span>
 					<span class="text-xs font-bold text-white/60 uppercase tracking-widest text-center">
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						{@html $t('shows.performancesAttended').replace(' ', '<br/>')}
+						{#each $t('shows.performancesAttended').split(' ') as word, i}
+							{word}{#if i < $t('shows.performancesAttended').split(' ').length - 1}<br />{/if}
+						{/each}
 					</span>
 				</div>
 			</div>
