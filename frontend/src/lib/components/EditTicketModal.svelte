@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { ticketsApi } from '$lib/apis/tickets';
-	import { showToast, tickets } from '$lib/stores';
+	import { ticketsStore, showToast } from '$lib/stores';
+	import { invalidateDashboard } from '$lib/stores/dashboard';
+	import { invalidateTheater } from '$lib/stores/theater';
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
@@ -157,10 +158,12 @@
 					: null
 			};
 
-			const updated = await ticketsApi.updateTicket(ticket._id, payload);
-			// Fetch fresh data from server after update
-			const freshTickets = await ticketsApi.getMyTickets();
-			tickets.set(freshTickets.data);
+			const updated = await ticketsStore.updateTicket(ticket._id, payload);
+
+			// Invalidate dashboard and theater cache
+			invalidateDashboard();
+			invalidateTheater();
+
 			showToast('Ticket updated successfully!');
 			dispatch('save', updated);
 			dispatch('close');

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { auth } from '$lib/apis/auth';
+	import { authStore } from '$lib/stores/auth';
 	import { showToast } from '$lib/stores';
 	import { Lock, ArrowLeft, LoaderCircle, CircleCheck, ShieldCheck } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -39,7 +39,7 @@
 		error = null;
 
 		try {
-			await auth.resetPassword({
+			await authStore.resetPassword({
 				token,
 				new_password: newPassword,
 				confirm_password: confirmPassword

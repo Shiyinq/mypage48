@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { auth } from '$lib/apis/auth';
+	import { authStore } from '$lib/stores/auth';
 	import { showToast } from '$lib/stores';
 	import { CircleCheck, CircleX, LoaderCircle } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -23,7 +23,7 @@
 		}
 
 		try {
-			await auth.verifyEmail({ token });
+			await authStore.verifyEmail({ token });
 			status = 'success';
 			message = $t('auth.verifyEmail.successMessage');
 			showToast($t('auth.verifyEmail.successMessage'), 'success');

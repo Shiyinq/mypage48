@@ -2,18 +2,16 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { members as membersApi, type Member } from '$lib/apis/members';
+	import type { Member } from '$lib/apis/members';
 	import { MemberDetailModal } from '$lib/components/profile';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { showToast } from '$lib/stores';
 	import { Search } from 'lucide-svelte';
-	import { membersStore, membersPagination, membersCacheStore } from '$lib/stores/theater';
-	import { get } from 'svelte/store';
+	import { membersStore } from '$lib/stores/theater';
 	import MemberCard from '$lib/components/theater/MemberCard.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 
 	const { t } = useTranslation();
-	const LIMIT = 20;
 
 	// State
 	let isLoading = false;
@@ -27,12 +25,14 @@
 	let selectedMember: Member | null = null;
 
 	// Subscribe to store
-	$: membersList = $membersStore;
+	$: state = $membersStore;
+	$: membersList = state.list;
+	$: pagination = state.pagination;
 
 	async function fetchGenerations() {
 		try {
 			if (generations.length === 0) {
-				const gens = await membersApi.getGenerations();
+				const gens = await membersStore.getGenerations();
 				generations = gens.sort((a: string, b: string) => parseInt(a) - parseInt(b));
 			}
 		} catch (e) {
@@ -42,31 +42,9 @@
 		}
 	}
 
-	function getCacheKey() {
-		return JSON.stringify({ generation: selectedGeneration, search: searchQuery });
-	}
-
 	// Fetch members
 	async function fetchMembers(reset = false) {
 		if (isLoading || isAppending) return;
-
-		const cacheKey = getCacheKey();
-		const currentState = get(membersPagination);
-
-		// If resetting, check cache first
-		if (reset) {
-			const cache = get(membersCacheStore);
-			if (cache[cacheKey]) {
-				membersStore.set(cache[cacheKey].members);
-				membersPagination.set(cache[cacheKey].pagination);
-				// If cached data is empty but we expected something, maybe we should fetch?
-				// But cache should be truth.
-				return;
-			}
-		}
-
-		// If we are not resetting, check if we have more pages
-		if (!reset && !currentState.hasMore) return;
 
 		if (reset) {
 			isLoading = true;
@@ -76,47 +54,13 @@
 		error = null;
 
 		try {
-			// If reset, start from page 1.
-			// Else, fetch next page (current page + 1)
-			const page = reset ? 1 : currentState.page + 1;
-
-			const response = await membersApi.getAll({
-				limit: LIMIT,
-				page,
-				generation: selectedGeneration || undefined,
-				search: searchQuery || undefined
-			});
-
-			const newMembers = response.data;
-			const hasMore = !!response.meta.next_page;
-
-			// Calculate new state
-			let updatedMembers: Member[];
-			if (reset) {
-				updatedMembers = newMembers;
-				membersStore.set(updatedMembers);
-			} else {
-				const current = get(membersStore);
-				updatedMembers = [...current, ...newMembers];
-				membersStore.set(updatedMembers);
-			}
-
-			const updatedPagination = {
-				page,
-				hasMore
-			};
-
-			// Update pagination state
-			membersPagination.set(updatedPagination);
-
-			// Update cache
-			membersCacheStore.update((cache) => ({
-				...cache,
-				[cacheKey]: {
-					members: updatedMembers,
-					pagination: updatedPagination
-				}
-			}));
+			await membersStore.load(
+				{
+					generation: selectedGeneration || undefined,
+					search: searchQuery || undefined
+				},
+				reset
+			);
 		} catch (err) {
 			console.error('Failed to fetch members:', err);
 			error = 'Failed to load members';
@@ -155,14 +99,15 @@
 	onMount(() => {
 		fetchGenerations();
 
-		// Initial fetch if empty
-		if ($membersStore.length === 0) {
-			fetchMembers(true);
-		}
+		// Always reset filter to "All" on mount
+		selectedGeneration = null;
+
+		// Fetch members with "All" filter (store will use cache if available)
+		fetchMembers(true);
 	});
 
 	function handleInfiniteScroll() {
-		if (!isLoading && !isAppending) {
+		if (!isLoading && !isAppending && pagination.hasMore) {
 			fetchMembers(false);
 		}
 	}

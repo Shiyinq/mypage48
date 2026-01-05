@@ -87,16 +87,11 @@
 
 		isUploading = true;
 		try {
-			// Upload to server
-			await auth.updateProfilePicture(previewImage);
+			// Use store action
+			await userProfile.updateAvatar(previewImage);
 
-			// Update profile picture locally
+			// Update local state for immediate feedback
 			profile.profilePicture = previewImage;
-
-			// Update global store if it's currently logged in user
-			if ($userProfile && $userProfile.username === profile.username) {
-				userProfile.update((u) => (u ? { ...u, profilePicture: previewImage } : null));
-			}
 
 			// Close modal and show success toast
 			closePreviewModal();

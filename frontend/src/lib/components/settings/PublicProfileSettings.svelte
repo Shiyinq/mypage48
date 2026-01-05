@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { showToast } from '$lib/stores';
 	import { userProfile, isInitialDataLoaded } from '$lib/stores';
-	import { client } from '$lib/apis/client';
-	import { auth } from '$lib/apis/auth';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Share2, Copy, ExternalLink } from 'lucide-svelte';
 	import { ErrorState } from '$lib/components';
@@ -40,16 +38,8 @@
 		const yearPayload = newIsPublic ? getYearForApi() : null;
 
 		try {
-			await client('/users/public-status', {
-				method: 'POST',
-				body: {
-					isPublic: newIsPublic,
-					publicYear: yearPayload
-				}
-			});
-
-			userProfile.update((u) => (u ? { ...u, isPublic: newIsPublic, publicYear: yearPayload } : u));
-
+			// Use store action
+			await userProfile.updatePublicStatus(newIsPublic, yearPayload);
 			showToast($t('common.success'), 'success');
 		} catch (e) {
 			console.error('Failed to update public status', e);
@@ -65,39 +55,18 @@
 	};
 
 	const handleYearChange = async (e: Event) => {
-		console.log('handleYearChange called');
-		if (updatingStatus) {
-			console.log('updatingStatus is true, returning early');
-			return;
-		}
+		if (updatingStatus) return;
 
-		// Read value directly from the select element to avoid binding race condition
 		const target = e.target as HTMLSelectElement;
 		const newYearStr = target.value;
-		console.log('newYearStr from target:', newYearStr);
-
-		// Update local variable immediately
 		selectedPublicYearStr = newYearStr;
 
-		// Convert to number or null for API
 		const yearPayload = newYearStr === '' ? null : parseInt(newYearStr, 10);
-		console.log('yearPayload:', yearPayload);
 
 		updatingStatus = true;
 		try {
-			const requestBody = {
-				isPublic: true,
-				publicYear: yearPayload
-			};
-			console.log('Sending to API:', JSON.stringify(requestBody));
-
-			await client('/users/public-status', {
-				method: 'POST',
-				body: requestBody
-			});
-
-			userProfile.update((u) => (u ? { ...u, isPublic: true, publicYear: yearPayload } : u));
-
+			// Use store action
+			await userProfile.updatePublicStatus(true, yearPayload);
 			showToast($t('common.success'), 'success');
 		} catch (err) {
 			console.error('Failed to update public year', err);
@@ -116,17 +85,8 @@
 	const retryGlobalProfileFetch = async () => {
 		isRetrying = true;
 		try {
-			const fullResponse = await auth.getProfile();
-			// Reconstruct the user profile object as done in layout
-			const profileWithStats = {
-				...fullResponse.profile,
-				oshi: fullResponse.oshi,
-				profileRank: fullResponse.rank,
-				profileStats: fullResponse.stats,
-				profileOshiTwoShots: fullResponse.oshiTwoShots,
-				profileRecentActivity: fullResponse.recentActivity
-			};
-			userProfile.set(profileWithStats);
+			// Use store action
+			await userProfile.load();
 		} catch (e) {
 			console.error('Failed to retry profile fetch', e);
 			showToast($t('profile.errorTitle'), 'error');

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { showToast, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
+	import { showToast, isAuthenticated } from '$lib/stores';
 	import { onMount } from 'svelte';
-	import { setlistsApi, type Setlist } from '$lib/apis/setlists';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
@@ -10,13 +9,14 @@
 	import SetlistSection from '$lib/components/theater/SetlistSection.svelte';
 
 	import { setlistsStore, maxAttendanceStore } from '$lib/stores/theater';
-	import { get } from 'svelte/store';
 
 	const { t } = useTranslation();
 
 	// State
-	let setlists: Setlist[] = [];
-	let maxAttendance = 1;
+	// Using reactive statements from store
+	$: setlists = $setlistsStore || [];
+	$: maxAttendance = $maxAttendanceStore;
+
 	let setlistsLoading = true;
 	let mounted = false;
 	let error = false;
@@ -32,13 +32,11 @@
 	$: inactiveEvents = eventItems.filter((s) => !s.active);
 
 	async function fetchSetlists() {
-		// Check cache first
-		const cachedSetlists = get(setlistsStore);
-		const cachedMaxAttendance = get(maxAttendanceStore);
+		// If data is already in store, we might skip loading state or just background refresh
+		// But for consistency let's just use the store load which checks cache key (though current setlistsStore is simple set)
 
-		if (cachedSetlists) {
-			setlists = cachedSetlists;
-			maxAttendance = cachedMaxAttendance;
+		// Actually our new store logic simply checks if get() returns null
+		if ($setlistsStore) {
 			setlistsLoading = false;
 			return;
 		}
@@ -46,13 +44,7 @@
 		try {
 			setlistsLoading = true;
 			error = false;
-			const response = await setlistsApi.getAll();
-			setlists = response.setlists;
-			maxAttendance = response.maxAttendance || 1;
-
-			// Update cache
-			setlistsStore.set(setlists);
-			maxAttendanceStore.set(maxAttendance);
+			await setlistsStore.load();
 		} catch (e) {
 			console.error('Failed to fetch setlists:', e);
 			error = true;
@@ -67,12 +59,12 @@
 		fetchSetlists();
 	});
 
-	$: isLoading = !mounted || setlistsLoading || ($isAuthenticated && !$isInitialDataLoaded);
-
 	// Navigate to detail page
 	function goToDetail(setlistId: string) {
 		goto(`/theater/${setlistId}`);
 	}
+
+	$: isLoading = !mounted || setlistsLoading;
 </script>
 
 <SEO title={$t('theater.title')} path="/theater" description={$t('seo.shows')} />

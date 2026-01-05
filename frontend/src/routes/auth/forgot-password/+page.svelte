@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { auth } from '$lib/apis/auth';
+	import { authStore } from '$lib/stores/auth';
 	import { showToast } from '$lib/stores';
 	import { Mail, ArrowLeft, LoaderCircle, KeyRound } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -17,7 +17,7 @@
 		error = null;
 
 		try {
-			await auth.forgotPassword({ email });
+			await authStore.forgotPassword({ email });
 			isSent = true;
 			showToast($t('auth.forgotPassword.sent'), 'success');
 		} catch (err) {

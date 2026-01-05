@@ -1,17 +1,9 @@
 <script lang="ts">
-	import {
-		tickets,
-		ticketsPagination,
-		showToast,
-		isAuthenticated,
-		isInitialDataLoaded,
-		ticketsFilters,
-		defaultTickets,
-		defaultTicketsPagination
-	} from '$lib/stores';
+	import { ticketsStore, showToast, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
+	import { invalidateTheater } from '$lib/stores/theater';
 	import { onMount } from 'svelte';
-	import { ticketsApi } from '$lib/apis/tickets';
+
 	import type { Ticket as TicketType, TicketFilters } from '$lib/types';
 	import EditTicketModal from '$lib/components/EditTicketModal.svelte';
 	import { History, Ticket } from 'lucide-svelte';
@@ -30,13 +22,16 @@
 	} from '$lib/components/history';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 
-	import { get } from 'svelte/store';
-
 	const { t } = useTranslation();
+
+	// Store subscriptions
+	$: state = $ticketsStore;
+	$: filteredTickets = state.list;
+	$: pagination = state.pagination;
+	$: filters = state.filters;
 
 	// Main Component Logic
 	let viewMode: 'GRID' | 'TABLE' = 'GRID';
-	let filters: TicketFilters = {};
 	let deleteId: string | null = null;
 	let isDeleting = false;
 	let error = false;
@@ -44,69 +39,27 @@
 	/* Loading State */
 	let mounted = false;
 	let isLoadingMore = false;
+	let isLoading = false;
 
 	onMount(() => {
 		mounted = true;
 
-		// Check if we already have default data, or restore from cache if needed.
-		// If no data exists, fetch from API.
-
-		const cachedFilters = get(ticketsFilters);
-		const currentTicketCount = get(tickets).length;
-
-		// Check if the data currently in store matches "Default"
-		const storeIsDefault = Object.keys(cachedFilters).length === 0;
-
-		if (currentTicketCount > 0 && storeIsDefault) {
-			// Current store is already default data. No fetch needed.
-			return;
+		// Initial load check
+		if (filteredTickets.length === 0) {
+			loadTickets(1);
 		}
-
-		// Current store is NOT default (it has filtered data).
-		// Do we have default data cached? If so, restore it.
-		const defaults = get(defaultTickets);
-		const defaultPagination = get(defaultTicketsPagination);
-		if (defaults && defaultPagination) {
-			// Restore default from cache
-			tickets.set(defaults);
-			ticketsPagination.set(defaultPagination);
-			ticketsFilters.set({}); // Mark store as default
-			return;
-		}
-
-		// No cache, must fetch
-		loadTickets(1);
 	});
 
 	async function loadTickets(page: number, currentFilters: TicketFilters = {}) {
 		if (isLoadingMore) return;
-		isLoadingMore = true;
+
+		if (page === 1) isLoading = true;
+		else isLoadingMore = true;
+
 		try {
 			error = false;
-			const res = await ticketsApi.getMyTickets(page, 20, currentFilters);
-			if (page === 1) {
-				tickets.set(res.data);
-				// Update cached filters when we start a new search
-				ticketsFilters.set(currentFilters);
-
-				// If this is a default load, cache it for later
-				if (Object.keys(currentFilters).length === 0) {
-					defaultTickets.set(res.data);
-				}
-			} else {
-				tickets.update((curr) => [...curr, ...res.data]);
-			}
-
-			const currentPagination = {
-				page,
-				hasMore: res.meta.current_page < res.meta.last_page
-			};
-			ticketsPagination.set(currentPagination);
-
-			// If this is a default load, keep the default cache in sync
-			if (Object.keys(currentFilters).length === 0) {
-				defaultTicketsPagination.set(currentPagination);
-			}
+			// Use store action
+			await ticketsStore.load(page, currentFilters);
 
 			isInitialDataLoaded.set(true);
 		} catch (e) {
@@ -115,44 +68,32 @@
 			showToast($t('history.errorTitle') || 'Failed to load tickets', 'error');
 		} finally {
 			isLoadingMore = false;
+			isLoading = false;
 		}
 	}
 
 	function handleIntersect() {
-		if (!mounted || isLoadingMore || !$ticketsPagination.hasMore) return;
-		loadTickets($ticketsPagination.page + 1, filters);
+		if (!mounted || isLoadingMore || !pagination.hasMore) return;
+		loadTickets(pagination.page + 1, filters);
 	}
 
 	let searchTimeout: ReturnType<typeof setTimeout>;
 
 	function handleFilterChange(newFilters: TicketFilters) {
 		if (!mounted) return;
-		// Skip if initial data hasn't loaded yet (prevents duplicate calls on refresh)
-		if (!get(isInitialDataLoaded)) return;
-		filters = newFilters;
 		clearTimeout(searchTimeout);
 		searchTimeout = setTimeout(() => {
-			loadTickets(1, filters);
+			loadTickets(1, newFilters);
 		}, 500);
 	}
-
-	$: isLoading = !mounted || ($isAuthenticated && $tickets.length === 0 && !$isInitialDataLoaded);
-
-	$: filteredTickets = [...$tickets];
 
 	// Actions
 	// Logic for note update
 	const handleNoteUpdate = async (e: CustomEvent<{ ticketId: string; note: string }>) => {
 		const { ticketId, note } = e.detail;
 		try {
-			// Update locally immediately
-			tickets.update((items) => items.map((t) => (t._id === ticketId ? { ...t, notes: note } : t)));
-			defaultTickets.update((items) =>
-				items ? items.map((t) => (t._id === ticketId ? { ...t, notes: note } : t)) : null
-			);
-
-			// Sync with API
-			await ticketsApi.updateTicket(ticketId, { notes: note });
+			// Use store action (handles API + optimistic update)
+			await ticketsStore.updateNote(ticketId, note);
 			showToast($t('history.noteSaved'), 'success');
 		} catch (err) {
 			console.error('Failed to update note', err);
@@ -168,14 +109,12 @@
 		if (!deleteId) return;
 		isDeleting = true;
 		try {
-			await ticketsApi.deleteTicket(deleteId);
-			tickets.update((current) => current.filter((t) => t._id !== deleteId));
-			defaultTickets.update((current) =>
-				current ? current.filter((t) => t._id !== deleteId) : null
-			);
+			// Use store action (handles API call internally)
+			await ticketsStore.deleteTicket(deleteId);
 
-			// Invalidate dashboard cache
+			// Invalidate dashboard/theater cache
 			invalidateDashboard();
+			invalidateTheater();
 
 			deleteId = null;
 			showToast($t('history.ticketDeleted'), 'success');
@@ -191,10 +130,16 @@
 
 	const handleTicketUpdate = (e: CustomEvent<TicketType>) => {
 		const updated = e.detail;
-		tickets.update((current) => current.map((t) => (t._id === updated._id ? updated : t)));
-		defaultTickets.update((current) =>
-			current ? current.map((t) => (t._id === updated._id ? updated : t)) : null
-		);
+		ticketsStore.update((s) => ({
+			...s,
+			list: s.list.map((t) => (t._id === updated._id ? updated : t)),
+			defaultCache: s.defaultCache
+				? {
+						...s.defaultCache,
+						list: s.defaultCache.list.map((t) => (t._id === updated._id ? updated : t))
+					}
+				: null
+		}));
 
 		// Invalidate dashboard cache
 		invalidateDashboard();
@@ -239,7 +184,7 @@
 			description={$t('history.errorDesc') || 'Something went wrong while fetching your history.'}
 			onRetry={() => loadTickets(1, filters)}
 		/>
-	{:else if isLoading || (isLoadingMore && filteredTickets.length === 0)}
+	{:else if isLoading && filteredTickets.length === 0}
 		{#if viewMode === 'GRID'}
 			<TicketCardSkeleton count={6} />
 		{:else}
@@ -264,6 +209,7 @@
 	{:else}
 		{#if viewMode === 'GRID'}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 				{#each filteredTickets as ticket (ticket._id)}
 					<TicketCard
 						{ticket}
@@ -284,7 +230,7 @@
 		{/if}
 
 		<!-- Sentinel for infinite scroll -->
-		{#if $ticketsPagination.hasMore}
+		{#if pagination.hasMore}
 			<div
 				use:infiniteScroll
 				on:intersect={handleIntersect}

@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { tickets, showToast } from '$lib/stores';
+	import { ticketsStore, showToast } from '$lib/stores';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
+	import { invalidateTheater } from '$lib/stores/theater';
 	import { goto } from '$app/navigation';
 	import { extractTicketData } from '$lib/services/geminiService';
-	import { ticketsApi } from '$lib/apis/tickets';
+
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 
@@ -190,13 +191,12 @@
 					: undefined
 			};
 
-			await ticketsApi.createTicket(payload);
-			// Fetch fresh data from server after create
-			const freshTickets = await ticketsApi.getMyTickets();
-			tickets.set(freshTickets.data);
+			// Use store action (handles API + cache invalidation)
+			await ticketsStore.create(payload);
 
-			// Invalidate dashboard cache
+			// Invalidate dashboard and theater cache
 			invalidateDashboard();
+			invalidateTheater();
 
 			showToast('Ticket saved successfully!');
 			goto('/');
