@@ -22,6 +22,22 @@
 	let error: string | null = null;
 	let errors: Record<string, string> = {};
 
+	$: isValid = email.length > 0 && password.length > 0 && Object.values(errors).every((e) => !e);
+
+	const validateField = (field: 'email' | 'password', value: string) => {
+		try {
+			// @ts-ignore - pick is valid on z.object
+			const fieldSchema = loginSchema.pick({ [field]: true });
+			fieldSchema.parse({ [field]: value });
+			errors[field] = '';
+		} catch (err) {
+			if (err instanceof ZodError) {
+				const fieldErrors = err.flatten().fieldErrors as Record<string, string[] | undefined>;
+				errors[field] = fieldErrors[field]?.[0] || '';
+			}
+		}
+	};
+
 	const handleSubmit = async () => {
 		isLoading = true;
 		error = null;
@@ -57,11 +73,10 @@
 	};
 </script>
 
-```svelte
 <SEO title={$t('auth.login.title')} path="/login" description={$t('seo.login')} />
 
 <AuthLayout title={$t('auth.login.title')} subtitle={$t('auth.login.subtitle')}>
-	<form on:submit|preventDefault={handleSubmit} class="space-y-5">
+	<form on:submit|preventDefault={handleSubmit} class="space-y-5" novalidate>
 		<div>
 			<label
 				for="email"
@@ -76,6 +91,7 @@
 					type="email"
 					id="email"
 					bind:value={email}
+					on:input={() => validateField('email', email)}
 					class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 					placeholder={$t('auth.login.emailPlaceholder')}
 				/>
@@ -99,6 +115,7 @@
 					type="password"
 					id="password"
 					bind:value={password}
+					on:input={() => validateField('password', password)}
 					class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.password ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 					placeholder={$t('auth.login.passwordPlaceholder')}
 				/>
@@ -119,7 +136,7 @@
 
 		<button
 			type="submit"
-			disabled={isLoading}
+			disabled={isLoading || !isValid}
 			class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
 		>
 			{#if isLoading}
