@@ -1,4 +1,5 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import '../app.css';
 	import { isAuthenticated, toast, userProfile, isInitialDataLoaded } from '$lib/stores';
 	import { locale, type Locale } from '$lib/i18n';
@@ -13,6 +14,9 @@
 	import { Check } from 'lucide-svelte';
 	import SplashScreen from '$lib/components/SplashScreen.svelte';
 	import LoadingBar from '$lib/components/LoadingBar.svelte';
+	import { logger } from '$lib/utils/logger';
+	import { validateEnv } from '$lib/utils/env';
+	import ErrorFallback from '$lib/components/common/ErrorFallback.svelte';
 
 	export let data: { locale?: string };
 
@@ -41,10 +45,41 @@
 	// Track if client has mounted - used to delay auth redirects
 	let mounted = false;
 
-	// Initialize theme and fetch initial data on mount
+	// Global Error Handling
+	let appError: Error | null = null;
+
+	function handleGlobalError(event: ErrorEvent) {
+		// Don't catch 404s or other navigation errors which are handled by SvelteKit
+		if (event.message.includes('Not found') || event.message.includes('404')) return;
+
+		logger.error('Global unhandled error', event.error, { context: 'GlobalBoundary' });
+		appError = event.error;
+	}
+
+	function handleUnhandledRejection(event: PromiseRejectionEvent) {
+		logger.error('Unhandled promise rejection', event.reason, { context: 'GlobalBoundary' });
+		// Optional: decide if unhandled rejections should crash the app.
+		// Usually safer to just log them unless critical.
+		// appError = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+	}
+
+	function resetError() {
+		appError = null;
+		window.location.reload();
+	}
+
 	onMount(() => {
 		mounted = true;
 		initTheme();
+		validateEnv();
+
+		window.addEventListener('error', handleGlobalError);
+		window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+		return () => {
+			window.removeEventListener('error', handleGlobalError);
+			window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+		};
 	});
 
 	// Reactively fetch initial data when user becomes authenticated
@@ -84,7 +119,7 @@
 				userProfile.set(profileWithStats);
 			}
 		} catch (err) {
-			console.error('Failed to load initial data:', err);
+			logger.error('Failed to load initial data', err, { context: 'Layout' });
 		} finally {
 			isInitialDataLoaded.set(true);
 		}
@@ -103,57 +138,61 @@
 	}
 </script>
 
-<LoadingBar />
-<div class="min-h-screen flex flex-col relative">
-	{#if $toast}
-		<div class="fixed top-4 left-0 right-0 z-[10000] flex justify-center pointer-events-none">
-			<div
-				class="bg-gray-900/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 font-medium text-sm border border-white/10 pointer-events-auto animate-[fadeInDown_0.3s_ease-out]"
-			>
+{#if appError}
+	<ErrorFallback error={appError} onRetry={resetError} />
+{:else}
+	<LoadingBar />
+	<div class="min-h-screen flex flex-col relative">
+		{#if $toast}
+			<div class="fixed top-4 left-0 right-0 z-[10000] flex justify-center pointer-events-none">
 				<div
-					class={$toast.type === 'error'
-						? 'bg-red-500 rounded-full p-1'
-						: 'bg-green-500 rounded-full p-1'}
+					class="bg-gray-900/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 font-medium text-sm border border-white/10 pointer-events-auto animate-[fadeInDown_0.3s_ease-out]"
 				>
-					{#if $toast.type === 'error'}
-						<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="3"
-								d="M6 18L18 6M6 6l12 12"
-							/>
-						</svg>
-					{:else}
-						<Check class="w-3 h-3 text-white" />
-					{/if}
+					<div
+						class={$toast.type === 'error'
+							? 'bg-red-500 rounded-full p-1'
+							: 'bg-green-500 rounded-full p-1'}
+					>
+						{#if $toast.type === 'error'}
+							<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="3"
+									d="M6 18L18 6M6 6l12 12"
+								/>
+							</svg>
+						{:else}
+							<Check class="w-3 h-3 text-white" />
+						{/if}
+					</div>
+					{$toast.message}
 				</div>
-				{$toast.message}
 			</div>
-		</div>
-	{/if}
-
-	{#if isPublicPage && !isGuestRoute}
-		<!-- Public non-auth pages (like /u/*): render immediately -->
-		<slot />
-	{:else if isGuestRoute}
-		<!-- Guest routes (/login, /register, /auth/*): need auth check -->
-		{#if !mounted}
-			<SplashScreen />
-		{:else if !$isAuthenticated}
-			<!-- Not authenticated: show login/register page -->
-			<slot />
 		{/if}
-		<!-- If mounted && $isAuthenticated && isGuestRoute: render nothing, redirect will happen -->
-	{:else if !mounted}
-		<SplashScreen />
-	{:else if $isAuthenticated}
-		<!-- Protected pages: user authenticated, show full content -->
-		<Header />
-		<main class="flex-1 w-full relative">
+
+		{#if isPublicPage && !isGuestRoute}
+			<!-- Public non-auth pages (like /u/*): render immediately -->
 			<slot />
-		</main>
-		<MobileNav />
-	{/if}
-	<!-- If mounted && !$isAuthenticated && !isPublicPage: render nothing, redirect will happen -->
-</div>
+		{:else if isGuestRoute}
+			<!-- Guest routes (/login, /register, /auth/*): need auth check -->
+			{#if !mounted}
+				<SplashScreen />
+			{:else if !$isAuthenticated}
+				<!-- Not authenticated: show login/register page -->
+				<slot />
+			{/if}
+			<!-- If mounted && $isAuthenticated && isGuestRoute: render nothing, redirect will happen -->
+		{:else if !mounted}
+			<SplashScreen />
+		{:else if $isAuthenticated}
+			<!-- Protected pages: user authenticated, show full content -->
+			<Header />
+			<main class="flex-1 w-full relative">
+				<slot />
+			</main>
+			<MobileNav />
+		{/if}
+		<!-- If mounted && !$isAuthenticated && !isPublicPage: render nothing, redirect will happen -->
+	</div>
+{/if}

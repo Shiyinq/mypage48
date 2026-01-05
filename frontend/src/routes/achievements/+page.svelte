@@ -1,5 +1,7 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { isAuthenticated, showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import { achievementsStore } from '$lib/stores/achievements';
 	import { onMount } from 'svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -67,7 +69,7 @@
 		try {
 			await achievementsStore.load();
 		} catch (e) {
-			console.error('Failed to fetch achievements:', e);
+			logger.error('Failed to fetch achievements', e, { context: 'AchievementsPage' });
 			error = 'Failed to load achievements';
 			showToast($t('achievements.errorTitle') || 'Failed to load achievements', 'error');
 		} finally {

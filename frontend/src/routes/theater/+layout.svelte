@@ -1,4 +1,5 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { AudioLines, Users, Calendar, ChevronRight, History } from 'lucide-svelte';

@@ -12,6 +12,7 @@
 	import { slide } from 'svelte/transition';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { ticketsStore } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 
 	export let filters: import('$lib/types').TicketFilters = {};
 	export let viewMode: 'GRID' | 'TABLE' = 'GRID';
@@ -40,7 +41,7 @@
 			isLoadingTitles = true;
 			availableTitles = await ticketsStore.getAvailableTitles();
 		} catch (e) {
-			console.error('Failed to load ticket titles', e);
+			logger.error('Failed to load ticket titles', e, { context: 'HistoryFilter' });
 		} finally {
 			isLoadingTitles = false;
 		}

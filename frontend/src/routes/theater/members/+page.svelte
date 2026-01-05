@@ -1,4 +1,5 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
@@ -6,6 +7,7 @@
 	import { MemberDetailModal } from '$lib/components/profile';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import { Search } from 'lucide-svelte';
 	import { membersStore } from '$lib/stores/theater';
 	import MemberCard from '$lib/components/theater/MemberCard.svelte';
@@ -36,7 +38,7 @@
 				generations = gens.sort((a: string, b: string) => parseInt(a) - parseInt(b));
 			}
 		} catch (e) {
-			console.error('Failed to fetch generations', e);
+			logger.error('Failed to fetch generations', e, { context: 'MembersPage' });
 		} finally {
 			loadingGenerations = false;
 		}
@@ -62,7 +64,7 @@
 				reset
 			);
 		} catch (err) {
-			console.error('Failed to fetch members:', err);
+			logger.error('Failed to fetch members', err, { context: 'MembersPage' });
 			error = 'Failed to load members';
 			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		} finally {

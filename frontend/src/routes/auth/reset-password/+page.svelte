@@ -1,9 +1,12 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth';
 	import { showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
+	import { getErrorMessage } from '$lib/utils/api';
 	import { Lock, ArrowLeft, LoaderCircle, CircleCheck, ShieldCheck } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -50,10 +53,10 @@
 				goto('/login');
 			}, 2000);
 		} catch (err) {
-			const e = err as { detail?: string; message?: string };
-			console.error(e);
-			error = e.detail || e.message || 'Failed to reset password';
-			showToast(error || 'Reset failed', 'error');
+			const errorMsg = getErrorMessage(err);
+			logger.error('Reset password failed', err, { context: 'ResetPasswordPage' });
+			error = errorMsg || 'Failed to reset password';
+			showToast(error, 'error');
 		} finally {
 			isLoading = false;
 		}

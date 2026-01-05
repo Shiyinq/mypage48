@@ -393,7 +393,9 @@
 		"selectMember": "Select Member",
 		"selectMemberDesc": "Choose the member you took a photo with",
 		"analysisIssue": "Analysis Issue",
-		"analysisFailed": "Could not read ticket details automatically."
+		"analysisFailed": "Could not read ticket details automatically.",
+		"ticketUpdateSuccess": "Ticket updated successfully!",
+		"ticketUpdateError": "Failed to update ticket."
 	},
 	"upload": {
 		"title": "Upload Ticket",

@@ -509,7 +509,9 @@
 		"uploadTicketPhoto": "Unggah Foto Tiket",
 		"selectMember": "Pilih Member",
 		"selectMemberDesc": "Pilih member yang berfoto denganmu",
-		"analysisIssue": "Masalah Analisis"
+		"analysisIssue": "Masalah Analisis",
+		"ticketUpdateSuccess": "Tiket berhasil diperbarui!",
+		"ticketUpdateError": "Gagal memperbarui tiket."
 	},
 	"member": {
 		"birthdate": "Tanggal Lahir",

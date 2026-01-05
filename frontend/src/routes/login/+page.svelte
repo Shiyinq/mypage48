@@ -1,11 +1,18 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isAuthenticated, showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
+	import { getErrorMessage } from '$lib/utils/api';
 	import { authStore } from '$lib/stores/auth';
 	import { Lock, Mail, ArrowRight, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import AuthLayout from '$lib/components/layouts/AuthLayout.svelte';
+
+	import { loginSchema } from '$lib/schemas/auth';
+	import { ZodError } from 'zod';
 
 	const { t } = useTranslation();
 
@@ -13,34 +20,44 @@
 	let password = '';
 	let isLoading = false;
 	let error: string | null = null;
+	let errors: Record<string, string> = {};
 
 	const handleSubmit = async () => {
 		isLoading = true;
 		error = null;
+		errors = {};
+
 		try {
+			// Client-side validation
+			loginSchema.parse({ email, password });
+
 			await authStore.login({ username: email, password });
 			isAuthenticated.set(true);
 			showToast($t('auth.login.welcomeBack'));
 			goto('/');
 		} catch (err) {
-			const e = err as { detail?: string; message?: string };
-			console.error(e);
-
-			if (e.detail) {
-				error = e.detail;
-			} else if (e.message) {
-				error = e.message;
-			} else {
-				error = $t('auth.login.failed');
+			if (err instanceof ZodError) {
+				const fieldErrors = err.flatten().fieldErrors;
+				errors = Object.fromEntries(
+					Object.entries(fieldErrors).map(([key, val]) => [
+						key,
+						Array.isArray(val) && val.length > 0 ? val[0] : ''
+					])
+				);
+				return;
 			}
 
-			showToast(error || $t('common.error'), 'error');
+			const errorMsg = getErrorMessage(err);
+			logger.error('Login failed', err, { context: 'LoginPage' });
+			error = errorMsg || $t('auth.login.failed');
+			showToast(error, 'error');
 		} finally {
 			isLoading = false;
 		}
 	};
 </script>
 
+```svelte
 <SEO title={$t('auth.login.title')} path="/login" description={$t('seo.login')} />
 
 <AuthLayout title={$t('auth.login.title')} subtitle={$t('auth.login.subtitle')}>
@@ -58,12 +75,14 @@
 				<input
 					type="email"
 					id="email"
-					required
 					bind:value={email}
-					class="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600"
+					class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 					placeholder={$t('auth.login.emailPlaceholder')}
 				/>
 			</div>
+			{#if errors.email}
+				<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.email}</p>
+			{/if}
 		</div>
 
 		<div>
@@ -79,12 +98,14 @@
 				<input
 					type="password"
 					id="password"
-					required
 					bind:value={password}
-					class="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600"
+					class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.password ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 					placeholder={$t('auth.login.passwordPlaceholder')}
 				/>
 			</div>
+			{#if errors.password}
+				<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.password}</p>
+			{/if}
 		</div>
 
 		<div class="flex justify-end">

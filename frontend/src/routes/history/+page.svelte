@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { ticketsStore, showToast, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
+	export let params: Record<string, string> | undefined = undefined;
+	import { ticketsStore, showToast, isInitialDataLoaded } from '$lib/stores';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { invalidateTheater } from '$lib/stores/theater';
+	import { logger } from '$lib/utils/logger';
 	import { onMount } from 'svelte';
 
 	import type { Ticket as TicketType, TicketFilters } from '$lib/types';
@@ -63,7 +65,7 @@
 
 			isInitialDataLoaded.set(true);
 		} catch (e) {
-			console.error(e);
+			logger.error('Failed to load tickets', e, { context: 'HistoryPage' });
 			error = true;
 			showToast($t('history.errorTitle') || 'Failed to load tickets', 'error');
 		} finally {
@@ -96,7 +98,7 @@
 			await ticketsStore.updateNote(ticketId, note);
 			showToast($t('history.noteSaved'), 'success');
 		} catch (err) {
-			console.error('Failed to update note', err);
+			logger.error('Failed to update note', err, { context: 'HistoryPage' });
 			showToast($t('common.error'), 'error');
 		}
 	};
@@ -119,7 +121,7 @@
 			deleteId = null;
 			showToast($t('history.ticketDeleted'), 'success');
 		} catch (e) {
-			console.error('Failed to delete ticket', e);
+			logger.error('Failed to delete ticket', e, { context: 'HistoryPage' });
 			showToast($t('common.error'), 'error');
 		} finally {
 			isDeleting = false;

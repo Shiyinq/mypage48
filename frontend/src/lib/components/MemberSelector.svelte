@@ -4,6 +4,7 @@
 	import { User, Search, X, Check } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 
 	// Props
 	export let value: string = '';
@@ -75,7 +76,7 @@
 			await tick();
 			initObserver();
 		} catch (e) {
-			console.error(e);
+			logger.error('Failed to load members', e, { context: 'MemberSelector' });
 			showToast('Failed to load members', 'error');
 		} finally {
 			loading = false;

@@ -1,6 +1,8 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { onMount } from 'svelte';
-	import { isAuthenticated, showToast, userProfile, tickets as ticketsStore } from '$lib/stores';
+	import { isAuthenticated, showToast, userProfile } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
 	import { User as UserIcon, LogOut, Settings } from 'lucide-svelte';
@@ -114,7 +116,7 @@
 			// Use store action
 			await userProfile.load();
 		} catch (e) {
-			console.error('Failed to fetch profile', e);
+			logger.error('Failed to fetch profile', e, { context: 'ProfilePage' });
 			error = true;
 			showToast($t('profile.errorTitle'), 'error');
 		} finally {
@@ -127,7 +129,7 @@
 			await auth.logout();
 			showToast($t('auth.logout.success'), 'success');
 		} catch (e) {
-			console.error('Logout error', e);
+			logger.error('Logout error', e, { context: 'ProfilePage' });
 			// Even if backend fails, force local logout
 		} finally {
 			// Clear all stores handled by index.ts subscription to isAuthenticated
@@ -168,7 +170,7 @@
 				memberDetail = exact || res.data[0];
 			}
 		} catch (e) {
-			console.error('Failed to fetch member details', e);
+			logger.error('Failed to fetch member details', e, { context: 'ProfilePage' });
 			showToast('Failed to load member details', 'error');
 		} finally {
 			loadingMemberDetail = false;
@@ -187,7 +189,7 @@
 			showToast('Oshi updated successfully!', 'success');
 			closeOshiModal();
 		} catch (e) {
-			console.error('Failed to save oshi', e);
+			logger.error('Failed to save oshi', e, { context: 'ProfilePage' });
 			showToast('Failed to save oshi', 'error');
 		} finally {
 			savingOshi = false;

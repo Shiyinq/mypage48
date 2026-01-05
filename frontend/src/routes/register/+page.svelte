@@ -1,12 +1,19 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
+	import { getErrorMessage } from '$lib/utils/api';
 	import { authStore } from '$lib/stores/auth';
 	import { Lock, Mail, User, Hash, CircleCheck, Crown, Shield } from 'lucide-svelte';
 	import type { RegisterRequest } from '$lib/types';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import AuthLayout from '$lib/components/layouts/AuthLayout.svelte';
+
+	import { registerSchema } from '$lib/schemas/auth';
+	import { ZodError } from 'zod';
 
 	const { t } = useTranslation();
 
@@ -22,17 +29,17 @@
 
 	let isLoading = false;
 	let error: string | null = null;
+	let errors: Record<string, string> = {};
 
 	const handleSubmit = async () => {
-		if (formData.password !== formData.confirmPassword) {
-			error = $t('auth.register.passwordsMismatch');
-			return;
-		}
-
 		isLoading = true;
 		error = null;
+		errors = {};
 
 		try {
+			// Client-side validation
+			registerSchema.parse(formData);
+
 			await authStore.register(formData);
 			showToast($t('auth.register.success'), 'success');
 
@@ -40,15 +47,20 @@
 				goto('/login');
 			}, 2000);
 		} catch (err) {
-			const e = err as { detail?: string | string[]; message?: string };
-			console.error(e);
-			if (e.detail && typeof e.detail === 'string') {
-				error = e.detail;
-			} else if (e.message) {
-				error = e.message;
-			} else {
-				error = $t('auth.register.failed');
+			if (err instanceof ZodError) {
+				const fieldErrors = err.flatten().fieldErrors;
+				errors = Object.fromEntries(
+					Object.entries(fieldErrors).map(([key, val]) => [
+						key,
+						Array.isArray(val) && val.length > 0 ? val[0] : ''
+					])
+				);
+				return;
 			}
+
+			const errorMsg = getErrorMessage(err);
+			logger.error('Registration failed', err, { context: 'RegisterPage' });
+			error = errorMsg || $t('auth.register.failed');
 		} finally {
 			isLoading = false;
 		}
@@ -75,10 +87,13 @@
 						name="memberId"
 						required
 						bind:value={formData.memberId}
-						class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
+						class={`w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600 ${errors.memberId ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 						placeholder="JKT-XXXX"
 					/>
 				</div>
+				{#if errors.memberId}
+					<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.memberId}</p>
+				{/if}
 			</div>
 			<div>
 				<label
@@ -95,10 +110,13 @@
 						name="username"
 						required
 						bind:value={formData.username}
-						class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
+						class={`w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600 ${errors.username ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 						placeholder="@username"
 					/>
 				</div>
+				{#if errors.username}
+					<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.username}</p>
+				{/if}
 			</div>
 		</div>
 
@@ -111,11 +129,13 @@
 			<input
 				id="fullName"
 				name="fullName"
-				required
 				bind:value={formData.fullName}
-				class="w-full px-4 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
+				class={`w-full px-4 py-3 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600 ${errors.fullName ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 				placeholder="e.g. Catherina Vallencia"
 			/>
+			{#if errors.fullName}
+				<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.fullName}</p>
+			{/if}
 		</div>
 
 		<div>
@@ -134,10 +154,13 @@
 					name="email"
 					required
 					bind:value={formData.email}
-					class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
+					class={`w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 					placeholder="name@example.com"
 				/>
 			</div>
+			{#if errors.email}
+				<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.email}</p>
+			{/if}
 		</div>
 
 		<div>
@@ -183,10 +206,13 @@
 						name="password"
 						required
 						bind:value={formData.password}
-						class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
+						class={`w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600 ${errors.password ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 						placeholder="••••••••"
 					/>
 				</div>
+				{#if errors.password}
+					<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.password}</p>
+				{/if}
 			</div>
 			<div>
 				<label
@@ -204,10 +230,13 @@
 						name="confirmPassword"
 						required
 						bind:value={formData.confirmPassword}
-						class={`w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm ${error ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-zinc-700'} placeholder-gray-400 dark:placeholder-zinc-600`}
+						class={`w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 						placeholder="••••••••"
 					/>
 				</div>
+				{#if errors.confirmPassword}
+					<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.confirmPassword}</p>
+				{/if}
 			</div>
 		</div>
 
