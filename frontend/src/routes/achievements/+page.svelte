@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { isAuthenticated, achievementsData, showToast } from '$lib/stores';
+	import { isAuthenticated, showToast } from '$lib/stores';
+	import { achievementsStore } from '$lib/stores/achievements';
 	import { onMount } from 'svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import {
@@ -22,7 +23,6 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { PageHeader, ErrorState } from '$lib/components';
 	import { AchievementSkeleton } from '$lib/components/skeletons';
-	import { achievements } from '$lib/apis/achievements';
 	import AchievementCard from '$lib/components/achievements/AchievementCard.svelte';
 	import type { ComponentType } from 'svelte';
 
@@ -50,28 +50,27 @@
 	let loading = true;
 	let error: string | null = null;
 
-	$: unlocked = $achievementsData?.achievements.filter((m) => m.isUnlocked) ?? [];
-	$: locked = $achievementsData?.achievements.filter((m) => !m.isUnlocked) ?? [];
+	// Subscribe to store
+	$: data = $achievementsStore;
+	$: unlocked = data?.achievements.filter((m) => m.isUnlocked) ?? [];
+	$: locked = data?.achievements.filter((m) => !m.isUnlocked) ?? [];
 
 	async function loadAchievements() {
-		if ($isAuthenticated) {
-			loading = true;
-			error = null;
-			if ($achievementsData) {
-				loading = false;
-				return;
-			}
-			try {
-				const data = await achievements.getAchievements();
-				achievementsData.set(data);
-			} catch (e) {
-				console.error('Failed to fetch achievements:', e);
-				error = 'Failed to load achievements';
-				showToast($t('achievements.errorTitle') || 'Failed to load achievements', 'error');
-			} finally {
-				loading = false;
-			}
-		} else {
+		if (!$isAuthenticated) {
+			loading = false;
+			return;
+		}
+
+		loading = true;
+		error = null;
+
+		try {
+			await achievementsStore.load();
+		} catch (e) {
+			console.error('Failed to fetch achievements:', e);
+			error = 'Failed to load achievements';
+			showToast($t('achievements.errorTitle') || 'Failed to load achievements', 'error');
+		} finally {
 			loading = false;
 		}
 	}

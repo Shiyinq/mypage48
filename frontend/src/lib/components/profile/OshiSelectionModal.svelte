@@ -5,8 +5,6 @@
 	import { members as membersApi, type Member } from '$lib/apis/members';
 	import { fade, scale } from 'svelte/transition';
 	import { tick } from 'svelte';
-	import { membersCacheStore } from '$lib/stores/theater';
-	import { get } from 'svelte/store';
 
 	export let show: boolean = false;
 	// members prop removed, we fetch internally
@@ -54,27 +52,20 @@
 		if (sentinel) observer.observe(sentinel);
 	}
 
+	// membersCacheStore removed
+	// import { membersCacheStore } from '$lib/stores/theater';
+	// import { get } from 'svelte/store'; -- removed
+
+	// ... (imports remain)
+
 	function getCacheKey() {
 		return JSON.stringify({ generation: null, search: searchQuery || '' });
 	}
 
 	async function fetchMembers(reset = false) {
-		const cacheKey = getCacheKey();
+		// cacheKey logic removed as we are not using global cache for modal
 
 		if (reset) {
-			// Check cache first
-			const cache = get(membersCacheStore);
-			if (cache[cacheKey]) {
-				memberList = cache[cacheKey].members;
-				const cachedPagination = cache[cacheKey].pagination;
-				page = cachedPagination.page;
-				hasMore = cachedPagination.hasMore;
-
-				await tick();
-				initObserver();
-				return;
-			}
-
 			loading = true;
 			page = 1;
 			hasMore = true;
@@ -99,15 +90,6 @@
 			}
 
 			hasMore = !!res.meta.next_page;
-
-			// Update Cache
-			membersCacheStore.update((store) => ({
-				...store,
-				[cacheKey]: {
-					members: memberList,
-					pagination: { page, hasMore }
-				}
-			}));
 
 			await tick();
 			initObserver();

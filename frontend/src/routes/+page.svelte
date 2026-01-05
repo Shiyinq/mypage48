@@ -22,10 +22,8 @@
 		FirstLastPopup
 	} from '$lib/components/dashboard';
 
-	// Import dashboard API
-	import { dashboard } from '$lib/apis/dashboard';
 	// Import dashboard store
-	import { dashboardFilter, dashboardStatsData, lastFetchedFilter } from '$lib/stores/dashboard';
+	import { dashboardFilter, dashboardStatsData } from '$lib/stores/dashboard';
 
 	const { t } = useTranslation();
 
@@ -51,27 +49,12 @@
 			return;
 		}
 
-		const currentFilterKey = JSON.stringify($dashboardFilter);
-
-		// Cache Check: If data exists and filter matches
-		if ($dashboardStatsData && $lastFetchedFilter === currentFilterKey) {
-			isLoading = false;
-			return;
-		}
-
 		isLoading = true;
 		error = null;
 
 		try {
-			const stats = await dashboard.getStats({
-				year: $dashboardFilter.selectedYear,
-				startMonth: $dashboardFilter.startMonth,
-				endMonth: $dashboardFilter.endMonth,
-				isAllData: $dashboardFilter.isAllData
-			});
-
-			dashboardStatsData.set(stats);
-			lastFetchedFilter.set(currentFilterKey);
+			// Use smart store load action
+			await dashboardStatsData.load($dashboardFilter);
 		} catch (err) {
 			console.error('Failed to fetch dashboard stats:', err);
 			error = $t('dashboard.error');

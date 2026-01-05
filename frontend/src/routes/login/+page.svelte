@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { isAuthenticated, showToast } from '$lib/stores';
+	import { authStore } from '$lib/stores/auth';
 	import { Lock, Mail, ArrowRight, User } from 'lucide-svelte';
-	import { auth } from '$lib/apis/auth';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import AuthLayout from '$lib/components/layouts/AuthLayout.svelte';
@@ -18,8 +18,7 @@
 		isLoading = true;
 		error = null;
 		try {
-			// Backend expects 'username' field, which can be email or username
-			await auth.login({ username: email, password });
+			await authStore.login({ username: email, password });
 			isAuthenticated.set(true);
 			showToast($t('auth.login.welcomeBack'));
 			goto('/');
@@ -35,7 +34,6 @@
 				error = $t('auth.login.failed');
 			}
 
-			// Show toast for better visibility
 			showToast(error || $t('common.error'), 'error');
 		} finally {
 			isLoading = false;

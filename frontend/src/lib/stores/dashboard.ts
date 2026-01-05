@@ -1,31 +1,75 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import type { DashboardStats } from '$lib/types';
+import { dashboard } from '$lib/apis/dashboard';
 
 const currentYear = new Date().getFullYear();
 
-export const dashboardFilter = writable({
+// Define filter type
+export interface DashboardFilterState {
+	selectedYear: number;
+	startMonth: number;
+	endMonth: number;
+	isAllData: boolean;
+}
+
+export const dashboardFilter = writable<DashboardFilterState>({
 	selectedYear: currentYear,
 	startMonth: 0,
 	endMonth: 11,
 	isAllData: false
 });
 
-export const dashboardStatsData = writable<DashboardStats | null>(null);
-export const lastFetchedFilter = writable<string>('');
+// Create smart store for stats
+function createDashboardStore() {
+	const { subscribe, set } = writable<DashboardStats | null>(null);
+	const lastFetchedFilter = writable<string>('');
 
-// Call this when data changes (upload/delete ticket)
-export function invalidateDashboard() {
-	dashboardStatsData.set(null);
-	lastFetchedFilter.set('');
+	return {
+		subscribe,
+		set,
+		load: async (filter: DashboardFilterState) => {
+			const currentFilterKey = JSON.stringify(filter);
+
+			// Cache check: if we already fetched this filter, don't re-fetch
+			const lastKey = get(lastFetchedFilter);
+			const currentData = get({ subscribe });
+
+			if (currentData && lastKey === currentFilterKey) {
+				return;
+			}
+
+			try {
+				const stats = await dashboard.getStats({
+					year: filter.selectedYear,
+					startMonth: filter.startMonth,
+					endMonth: filter.endMonth,
+					isAllData: filter.isAllData
+				});
+				set(stats);
+				lastFetchedFilter.set(currentFilterKey);
+			} catch (error) {
+				throw error;
+			}
+		},
+		reset: () => {
+			set(null);
+			lastFetchedFilter.set('');
+			dashboardFilter.set({
+				selectedYear: new Date().getFullYear(),
+				startMonth: 0,
+				endMonth: 11,
+				isAllData: false
+			});
+		},
+		invalidate: () => {
+			set(null);
+			lastFetchedFilter.set('');
+		}
+	};
 }
 
-// Call this on logout to fully reset
-export function resetDashboard() {
-	dashboardFilter.set({
-		selectedYear: new Date().getFullYear(),
-		startMonth: 0,
-		endMonth: 11,
-		isAllData: false
-	});
-	invalidateDashboard();
-}
+export const dashboardStatsData = createDashboardStore();
+
+// Export aliases for compatibility if needed, though simpler to use store methods directly
+export const resetDashboard = dashboardStatsData.reset;
+export const invalidateDashboard = dashboardStatsData.invalidate;

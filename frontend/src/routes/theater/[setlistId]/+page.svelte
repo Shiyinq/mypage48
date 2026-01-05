@@ -2,9 +2,10 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { setlistsApi, type SetlistDetailResponse } from '$lib/apis/setlists';
-	import { ticketsApi } from '$lib/apis/tickets';
-	import { tickets, showToast } from '$lib/stores';
+	import { type SetlistDetailResponse } from '$lib/apis/setlists';
+
+	import { ticketsStore, showToast } from '$lib/stores';
+	import { setlistsStore } from '$lib/stores/theater';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { ArrowLeft, Ticket, DollarSign, Trophy } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -33,7 +34,8 @@
 		try {
 			loading = true;
 			error = false;
-			detail = await setlistsApi.getDetail(setlistId);
+			// Use store loadDetail which handles caching
+			detail = await setlistsStore.loadDetail(setlistId);
 		} catch (e) {
 			console.error('Failed to fetch setlist detail:', e);
 			error = true;
@@ -50,10 +52,9 @@
 		isDeleting = true;
 
 		try {
-			await ticketsApi.deleteTicket(idToDelete);
-			// Fetch fresh data
-			const freshTickets = await ticketsApi.getMyTickets();
-			tickets.set(freshTickets.data);
+			// Use store action (handles API call internally)
+			await ticketsStore.deleteTicket(idToDelete);
+
 			// Re-fetch detail to update stats
 			await fetchDetail();
 			showToast($t('history.ticketDeleted'), 'success');

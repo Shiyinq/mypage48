@@ -5,10 +5,10 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
 	import { PageHeader, EmptyState, ErrorState } from '$lib/components';
-	import { memoriesApi } from '$lib/apis/memories';
 	import { KamiOshiCard, Leaderboard } from '$lib/components/top2shot';
 	import { Top2ShotSkeleton } from '$lib/components/skeletons';
 	import type { TopTwoShotResponse } from '$lib/types';
+	import { topTwoShotStore } from '$lib/stores/memories';
 
 	const { t } = useTranslation();
 
@@ -17,11 +17,14 @@
 	let error = false;
 	let loadingData = false;
 
-	let stats: TopTwoShotResponse = {
+	// Default stats if store is null
+	let defaultStats: TopTwoShotResponse = {
 		ranking: [],
 		totalTwoShotSpend: 0,
 		totalTwoShotCount: 0
 	};
+
+	$: stats = $topTwoShotStore || defaultStats;
 
 	onMount(async () => {
 		mounted = true;
@@ -31,11 +34,14 @@
 	});
 
 	async function fetchTopTwoShot() {
+		// If data exists, no need to show loading
+		if ($topTwoShotStore) return;
+
 		try {
 			loadingData = true;
 			error = false;
-			const res = await memoriesApi.getTopTwoShot();
-			stats = res;
+			// Use store load
+			await topTwoShotStore.load();
 		} catch (e) {
 			console.error('Failed to load top 2shot:', e);
 			error = true;

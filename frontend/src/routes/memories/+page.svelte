@@ -7,57 +7,43 @@
 	import { PageHeader, EmptyState, ErrorState } from '$lib/components';
 	import { Lightbox, MemoryFilters, MemoryCard, type FilterType } from '$lib/components/memories';
 	import { PolaroidSkeleton } from '$lib/components/skeletons';
-	import type { MemoryItem, PaginationState } from '$lib/types';
-	import { memoriesApi } from '$lib/apis/memories';
+	import type { MemoryItem } from '$lib/types';
+	import { galleryStore } from '$lib/stores/memories';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 
 	const { t } = useTranslation();
 
 	// State
-	let memories: MemoryItem[] = [];
-	let pagination: PaginationState = { page: 0, hasMore: true };
-	let filter: FilterType = 'ALL';
+	$: state = $galleryStore;
+	$: memories = state.list;
+	$: pagination = state.pagination;
+	$: filter = state.filter;
+
 	let selectedImage: MemoryItem | null = null;
 	let isLoadingMore = false;
 	let mounted = false;
 	let error = false;
 
-	// Cached data
-	let cachedData: Record<
-		FilterType,
-		{ memories: MemoryItem[]; pagination: PaginationState } | null
-	> = {
-		ALL: null,
-		TICKET: null,
-		'2SHOT': null
-	};
-
 	onMount(() => {
 		mounted = true;
-		loadMemories(1);
+		// Initial load only if empty
+		if (memories.length === 0) {
+			loadMemories(1);
+		}
 	});
 
 	async function loadMemories(page: number) {
 		if (isLoadingMore) return;
+
+		// If not page 1 and no more, don't load
+		if (page > 1 && !pagination.hasMore) return;
+
 		isLoadingMore = true;
 
 		try {
 			error = false;
-			const res = await memoriesApi.getMemories(page, 20, filter);
-
-			if (page === 1) {
-				memories = res.data;
-			} else {
-				memories = [...memories, ...res.data];
-			}
-
-			pagination = {
-				page,
-				hasMore: res.meta.current_page < res.meta.last_page
-			};
-
-			// Cache the current state
-			cachedData[filter] = { memories, pagination };
+			// Use store action
+			await galleryStore.load(page, filter);
 		} catch (e) {
 			console.error('Failed to load memories:', e);
 			error = true;
@@ -67,22 +53,23 @@
 		}
 	}
 
-	let previousFilter: FilterType = 'ALL';
-
 	function handleFilterChange(newFilter: FilterType) {
-		if (previousFilter === newFilter) return;
-		previousFilter = newFilter;
+		if (filter === newFilter) return;
 
-		// Check cache first
-		const cached = cachedData[newFilter];
-		if (cached) {
-			memories = cached.memories;
-			pagination = cached.pagination;
-		} else {
-			// Reset and fetch
-			memories = [];
-			pagination = { page: 0, hasMore: true };
-			loadMemories(1);
+		// Reset load
+		loadMemoriesWithFilter(newFilter);
+	}
+
+	async function loadMemoriesWithFilter(newFilter: FilterType) {
+		// We call load with page 1 and new filter
+		// Store handles cache check
+		try {
+			isLoadingMore = true;
+			await galleryStore.load(1, newFilter);
+		} catch (e) {
+			error = true;
+		} finally {
+			isLoadingMore = false;
 		}
 	}
 
@@ -115,7 +102,7 @@
 			theme="pink"
 		>
 			<div slot="actions">
-				<MemoryFilters bind:filter on:change={(e) => handleFilterChange(e.detail)} />
+				<MemoryFilters filter={state.filter} on:change={(e) => handleFilterChange(e.detail)} />
 			</div>
 		</PageHeader>
 	</div>

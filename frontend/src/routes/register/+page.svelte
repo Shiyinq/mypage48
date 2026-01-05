@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
+	import { authStore } from '$lib/stores/auth';
 	import { Lock, Mail, User, Hash, CircleCheck, Crown, Shield } from 'lucide-svelte';
-	import { auth } from '$lib/apis/auth';
 	import type { RegisterRequest } from '$lib/types';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -33,10 +33,9 @@
 		error = null;
 
 		try {
-			await auth.register(formData);
+			await authStore.register(formData);
 			showToast($t('auth.register.success'), 'success');
 
-			// Optional: delay redirect to let them read the message, or move them to login immediately
 			setTimeout(() => {
 				goto('/login');
 			}, 2000);

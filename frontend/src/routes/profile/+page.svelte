@@ -8,7 +8,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { PageHeader, ErrorState } from '$lib/components';
 
-	import type { User, ProfileRecentActivity, RankInfo, UserWithProfileStats } from '$lib/types';
+	import type { ProfileRecentActivity, RankInfo, User } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		DigitalMemberCard,
@@ -68,8 +68,13 @@
 	}
 
 	onMount(() => {
-		if ($isAuthenticated && !$userProfile) {
-			fetchProfile();
+		if ($isAuthenticated) {
+			// Check if store already has data with stats
+			if (!$userProfile?.profileRank) {
+				fetchProfile();
+			} else {
+				loading = false;
+			}
 		}
 	});
 
@@ -95,7 +100,10 @@
 			if (storeProfile.profileRecentActivity) {
 				recentActivity = storeProfile.profileRecentActivity;
 			}
-			loading = false;
+			// Only unset loading if we actually have data populated
+			if (storeProfile.profileRank) {
+				loading = false;
+			}
 		}
 	}
 
@@ -103,18 +111,8 @@
 		try {
 			loading = true;
 			error = false;
-			const data = await auth.getProfile();
-
-			const userWithStats: UserWithProfileStats = {
-				...data.profile,
-				oshi: data.oshi,
-				profileRank: data.rank,
-				profileStats: data.stats,
-				profileOshiTwoShots: data.oshiTwoShots,
-				profileRecentActivity: data.recentActivity
-			};
-
-			userProfile.set(userWithStats);
+			// Use store action
+			await userProfile.load();
 		} catch (e) {
 			console.error('Failed to fetch profile', e);
 			error = true;
@@ -132,9 +130,7 @@
 			console.error('Logout error', e);
 			// Even if backend fails, force local logout
 		} finally {
-			// Clear all stores
-			userProfile.set(null);
-			ticketsStore.set([]);
+			// Clear all stores handled by index.ts subscription to isAuthenticated
 			isAuthenticated.set(false);
 			goto('/login');
 		}
@@ -186,22 +182,9 @@
 	const saveOshi = async (member: Member) => {
 		savingOshi = true;
 		try {
-			await auth.updateOshi(member.id);
+			// Use store action
+			await userProfile.updateOshi(String(member.id));
 			showToast('Oshi updated successfully!', 'success');
-
-			// Update local profile
-			if (profile) {
-				profile.oshi = {
-					name: member.name,
-					nickname: member.nickname,
-					generation: member.generation,
-					profilePicture: member.img,
-					catchphrase: member.jiko,
-					socials: member.socials
-				};
-				// Update global store for Header
-				userProfile.update((u) => (u ? { ...u, oshi: profile!.oshi } : null));
-			}
 			closeOshiModal();
 		} catch (e) {
 			console.error('Failed to save oshi', e);

@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher, tick } from 'svelte';
 	import { members, type Member } from '$lib/apis/members';
-	import { membersCacheStore } from '$lib/stores/theater';
-	import { get } from 'svelte/store';
 	import { User, Search, X, Check } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { showToast } from '$lib/stores';
@@ -39,34 +37,10 @@
 		observer.observe(sentinel);
 	}
 
-	function getCacheKey() {
-		return JSON.stringify({ generation: null, search: searchQuery || '' });
-	}
-
 	async function loadMembers(reset = false) {
-		const cacheKey = getCacheKey();
+		// cacheKey logic removed
 
 		if (reset) {
-			// Check cache first
-			const cache = get(membersCacheStore);
-			if (cache[cacheKey]) {
-				memberList = cache[cacheKey].members;
-				const cachedPagination = cache[cacheKey].pagination;
-				page = cachedPagination.page;
-				hasMore = cachedPagination.hasMore;
-
-				// Optional: Highlight value if present
-				if (value) {
-					const found = memberList.find((m) => m.name === value);
-					if (found) selectedMember = found;
-				}
-
-				loading = false;
-				await tick();
-				initObserver();
-				return;
-			}
-
 			loading = true;
 			page = 1;
 			hasMore = true;
@@ -97,15 +71,6 @@
 				const found = memberList.find((m) => m.name === value);
 				if (found) selectedMember = found;
 			}
-
-			// Update Cache
-			membersCacheStore.update((store) => ({
-				...store,
-				[cacheKey]: {
-					members: memberList,
-					pagination: { page, hasMore }
-				}
-			}));
 
 			await tick();
 			initObserver();

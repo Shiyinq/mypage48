@@ -74,7 +74,7 @@ export async function client<T>(
 	const isPublic = publicEndpoints.some((p) => endpoint.includes(p));
 
 	if (!isPublic) {
-		if (isTokenExpired(token)) {
+		if (token && isTokenExpired(token)) {
 			// Try to refresh
 			const newToken = await refreshAccessToken();
 			if (newToken) {

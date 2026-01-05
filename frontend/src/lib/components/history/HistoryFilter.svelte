@@ -11,7 +11,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { slide } from 'svelte/transition';
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { ticketsApi } from '$lib/apis/tickets';
+	import { ticketsStore } from '$lib/stores';
 
 	export let filters: import('$lib/types').TicketFilters = {};
 	export let viewMode: 'GRID' | 'TABLE' = 'GRID';
@@ -38,7 +38,7 @@
 	onMount(async () => {
 		try {
 			isLoadingTitles = true;
-			availableTitles = await ticketsApi.getTicketTitles();
+			availableTitles = await ticketsStore.getAvailableTitles();
 		} catch (e) {
 			console.error('Failed to load ticket titles', e);
 		} finally {
