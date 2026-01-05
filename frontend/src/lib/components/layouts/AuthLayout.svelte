@@ -2,6 +2,7 @@
 	import { Ticket } from 'lucide-svelte';
 	export let title: string;
 	export let subtitle: string;
+	export let cardWidth = 'max-w-md';
 </script>
 
 <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden py-12">
@@ -14,7 +15,7 @@
 		></div>
 	</div>
 
-	<div class="w-full max-w-md">
+	<div class="w-full {cardWidth}">
 		<!-- Header -->
 		<div class="text-center mb-8 animate-fade-in">
 			<div
