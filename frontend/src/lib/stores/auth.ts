@@ -7,9 +7,10 @@ import type {
     PasswordResetConfirmRequest,
     VerifyEmailRequest
 } from '$lib/types';
+import { accessToken } from '$lib/stores/accessToken';
 
-// Access token store (used by API client)
-export const accessToken = writable<string | null>(null);
+// Re-export accessToken from separate file
+export { accessToken } from '$lib/stores/accessToken';
 
 // Auth Store with actions
 function createAuthStore() {
@@ -26,7 +27,7 @@ function createAuthStore() {
 
         logout: async () => {
             const response = await authApi.logout();
-            accessToken.set(null);
+            accessToken.set('');
             return response;
         },
 
@@ -42,9 +43,13 @@ function createAuthStore() {
             return await authApi.verifyEmail(data);
         },
 
-        // Social login URLs
-        googleLoginUrl: authApi.googleLoginUrl,
-        githubLoginUrl: authApi.githubLoginUrl
+        // Social login URLs - use getters to avoid circular dependency
+        get googleLoginUrl() {
+            return authApi.googleLoginUrl;
+        },
+        get githubLoginUrl() {
+            return authApi.githubLoginUrl;
+        }
     };
 }
 

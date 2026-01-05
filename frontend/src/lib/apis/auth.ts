@@ -1,5 +1,5 @@
 import { client, API_BASE } from './client';
-import { accessToken } from '$lib/stores/auth';
+import { accessToken } from '$lib/stores/accessToken';
 import type {
 	LoginRequest,
 	RegisterRequest,
@@ -110,7 +110,11 @@ export const auth = {
 		});
 	},
 
-	// Social Login URLs
-	googleLoginUrl: `${API_BASE}/auth/google/signin`,
-	githubLoginUrl: `${API_BASE}/auth/github/signin`
+	// Social Login URLs - use getters to avoid accessing API_BASE during initialization
+	get googleLoginUrl() {
+		return `${API_BASE}/auth/google/signin`;
+	},
+	get githubLoginUrl() {
+		return `${API_BASE}/auth/github/signin`;
+	}
 };
