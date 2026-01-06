@@ -73,60 +73,65 @@
 
 <div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in">
 	{#if !isDetailPage}
-		<!-- Theater Header -->
-		<div class="flex items-center gap-3 mb-6">
-			<div
-				class={`p-3 rounded-2xl shadow-lg border-2 border-white dark:border-zinc-700 transform -rotate-6 transition-colors duration-300 ${currentThemeStyles.headerIcon}`}
-			>
-				<svelte:component this={pageInfo.icon} class="w-6 h-6" />
-			</div>
-			<div>
-				<h2 class="text-2xl font-bold text-themed w-fit relative">
-					{pageInfo.title}
-					<span
-						class={`absolute -bottom-1 left-0 w-full h-2 -z-10 transform -skew-x-12 rounded-sm transition-colors duration-300 ${currentThemeStyles.titleLine}`}
-					></span>
-				</h2>
-				<p class="text-sm text-themed-secondary">{pageInfo.subtitle}</p>
-			</div>
-		</div>
-
-		<!-- Sub Navigation Tabs -->
-		<div class="flex items-center gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-			{#each subNavItems as item}
-				{@const active = isActive(item.href, item.exact)}
-				{@const itemTheme = getThemeStyles(item.theme || 'purple')}
-				<a
-					href={item.href}
-					class={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 whitespace-nowrap ${
-						active
-							? itemTheme.navActive
-							: `bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 ${itemTheme.navInactive}`
-					}`}
+		<!-- Header & Sub Navigation Wrapper -->
+		<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+			<!-- Theater Header -->
+			<div class="flex items-center gap-3">
+				<div
+					class={`p-3 rounded-2xl shadow-lg border-2 border-white dark:border-zinc-700 transform -rotate-6 transition-colors duration-300 ${currentThemeStyles.headerIcon}`}
 				>
-					<svelte:component this={item.icon} class="w-4 h-4" />
-					{$t(item.labelKey)}
-				</a>
-			{/each}
-
-			<!-- Shows sub-link (History) - only show when on shows pages -->
-			{#if currentPath.startsWith('/theater/shows')}
-				<div class="flex items-center text-gray-300 dark:text-gray-600">
-					<ChevronRight class="w-4 h-4" />
+					<svelte:component this={pageInfo.icon} class="w-6 h-6" />
 				</div>
-				{@const historyTheme = getThemeStyles('orange')}
-				<a
-					href="/theater/shows/history"
-					class={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 whitespace-nowrap ${
-						currentPath === '/theater/shows/history'
-							? historyTheme.navActive
-							: `bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 ${historyTheme.navInactive}`
-					}`}
-				>
-					<History class="w-4 h-4" />
-					{$t('theater.showHistory.title')}
-				</a>
-			{/if}
+				<div>
+					<h2 class="text-2xl font-bold text-themed w-fit relative">
+						{pageInfo.title}
+						<span
+							class={`absolute -bottom-1 left-0 w-full h-2 -z-10 transform -skew-x-12 rounded-sm transition-colors duration-300 ${currentThemeStyles.titleLine}`}
+						></span>
+					</h2>
+					<p class="text-sm text-themed-secondary">{pageInfo.subtitle}</p>
+				</div>
+			</div>
+
+			<!-- Sub Navigation Tabs -->
+			<div
+				class="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0 scrollbar-hide"
+			>
+				{#each subNavItems as item}
+					{@const active = isActive(item.href, item.exact)}
+					{@const itemTheme = getThemeStyles(item.theme || 'purple')}
+					<a
+						href={item.href}
+						class={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 whitespace-nowrap ${
+							active
+								? itemTheme.navActive
+								: `bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 ${itemTheme.navInactive}`
+						}`}
+					>
+						<svelte:component this={item.icon} class="w-4 h-4" />
+						{$t(item.labelKey)}
+					</a>
+				{/each}
+
+				<!-- Shows sub-link (History) - only show when on shows pages -->
+				{#if currentPath.startsWith('/theater/shows')}
+					<div class="flex items-center text-gray-300 dark:text-gray-600">
+						<ChevronRight class="w-4 h-4" />
+					</div>
+					{@const historyTheme = getThemeStyles('orange')}
+					<a
+						href="/theater/shows/history"
+						class={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 whitespace-nowrap ${
+							currentPath === '/theater/shows/history'
+								? historyTheme.navActive
+								: `bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 ${historyTheme.navInactive}`
+						}`}
+					>
+						<History class="w-4 h-4" />
+						{$t('theater.showHistory.title')}
+					</a>
+				{/if}
+			</div>
 		</div>
 	{/if}
 

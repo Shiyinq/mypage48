@@ -72,7 +72,7 @@
 	};
 </script>
 
-<div class="flex flex-col md:flex-row md:items-center justify-between w-full gap-4 md:gap-0">
+<div class="flex flex-row items-center justify-between w-full">
 	<div class="flex items-center gap-3">
 		{#if showBackButton}
 			<button
