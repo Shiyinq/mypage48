@@ -6,7 +6,7 @@
 
 **A personal dashboard for JKT48 fans to track theater attendance, 2-shot collections, and spending statistics.**
 
-[Features](#features) · [Quick Start](#quick-start) · [Deployment](#deployment)
+[Features](#-features) · [Quick Start](#-quick-start) · [Deployment](#-deployment)
 
 </div>
 
