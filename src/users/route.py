@@ -1,26 +1,21 @@
 from fastapi import APIRouter, Depends
 
 from src import dependencies
-from src.auth.schemas import UserCurrent, OshiResponse
-from src.dependencies import (
-    get_user_service,
-    get_member_service,
-    get_theater_service,
-)
+from src.auth.schemas import UserCurrent
+from src.dependencies import get_user_service
 from src.logging_config import create_logger
 from src.users.schemas import (
+    MessageResponse,
+    ProfileFullResponse,
+    PublicUserResponse,
+    UpdateOshiRequest,
+    UpdateProfilePictureRequest,
+    UpdatePublicStatusRequest,
     UserCreatedWithEmail,
     UserCreateRequest,
     UserCreateResponse,
-    PublicUserResponse,
-    UpdateProfilePictureRequest,
-    UpdateOshiRequest,
-    UpdatePublicStatusRequest,
-    MessageResponse,
 )
 from src.users.service import UserService
-from src.members.service import MemberService
-from src.theater.service import TheaterService
 
 router = APIRouter()
 
@@ -45,37 +40,24 @@ async def signup(
     return result
 
 
-@router.get("/users/profile", response_model=UserCurrent)
+@router.get("/users/profile", response_model=ProfileFullResponse)
 async def user_profile(
     current_user: UserCurrent = Depends(dependencies.get_current_user),
-    member_service: MemberService = Depends(get_member_service),
+    user_service: UserService = Depends(get_user_service),
 ):
     """
-    Get the profile information of the currently logged-in user.
+    Get the complete profile information of the currently logged-in user.
 
     Returns:
-        UserCurrent: The current user's profile data.
+        ProfileFullResponse: Complete profile with all sections:
+            - profile: Basic user info
+            - oshi: Selected oshi member details
+            - rank: Current rank and XP progress
+            - stats: Total shows and achievements count
+            - oshiTwoShots: 2-shot counts with oshi
+            - recentActivity: 5 most recent shows
     """
-
-    oshi_response = None
-
-    if current_user.oshiId:
-        try:
-            member_detail = await member_service.get_member_by_id(current_user.oshiId)
-            member = member_detail.member
-            oshi_response = OshiResponse(
-                name=member.name,
-                nickname=member.nickname,
-                generation=member.generation or "-",
-                profilePicture=member.img or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
-                catchphrase=member.jiko or "-",
-                socials=member.socials.model_dump() if member.socials else None
-            )
-        except Exception as e:
-            logger.warning(f"Failed to fetch oshi data for id {current_user.oshiId}: {e}")
-
-    current_user.oshi = oshi_response
-    return current_user
+    return await user_service.get_profile_full(current_user)
 
 
 @router.post("/users/oshi", status_code=200, response_model=MessageResponse)
@@ -99,7 +81,9 @@ async def update_public_status(
     """
     Update the user's public profile status.
     """
-    return await user_service.update_public_status(current_user.userId, request.isPublic, request.publicYear)
+    return await user_service.update_public_status(
+        current_user.userId, request.isPublic, request.publicYear
+    )
 
 
 @router.post("/users/profile-picture", status_code=200, response_model=MessageResponse)
@@ -111,17 +95,17 @@ async def update_profile_picture(
     """
     Update the user's profile picture.
     """
-    return await user_service.update_profile_picture(current_user.userId, request.profilePicture)
+    return await user_service.update_profile_picture(
+        current_user.userId, request.profilePicture
+    )
 
 
 @router.get("/u/{username}", response_model=PublicUserResponse)
 async def get_public_profile(
     username: str,
     user_service: UserService = Depends(get_user_service),
-    member_service: MemberService = Depends(get_member_service),
-    theater_service: TheaterService = Depends(get_theater_service),
 ):
     """
     Get a user's public profile by username.
     """
-    return await user_service.get_public_profile(username, member_service, theater_service)
+    return await user_service.get_public_profile(username)

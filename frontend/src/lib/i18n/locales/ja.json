@@ -11,6 +11,7 @@
 		"confirm": "確認",
 		"yes": "はい",
 		"no": "いいえ",
+		"ok": "OK",
 		"error": "エラーが発生しました",
 		"success": "成功",
 		"warning": "警告",
@@ -19,13 +20,25 @@
 		"filter": "フィルター",
 		"filters": "フィルター",
 		"all": "すべて",
+		"allSetlists": "全セットリスト",
 		"allData": "全データ",
+		"hasTwoShot": "2ショットあり",
+		"clearFilters": "フィルターをクリア",
 		"viewDetails": "詳細を見る",
 		"logout": "ログアウト",
 		"settings": "設定",
 		"profile": "プロフィール",
 		"dashboard": "ダッシュボード",
-		"language": "言語"
+		"language": "言語",
+		"noResults": "結果が見つかりません"
+	},
+	"validation": {
+		"alert": {
+			"title": "検証エラー",
+			"fileTooLarge": "ファイルが大きすぎます。最大3MBです。",
+			"invalidType": "対応していないファイル形式です。JPEG、PNG、またはWebPを使用してください。",
+			"noFile": "ファイルが選択されていません。"
+		}
 	},
 	"seo": {
 		"default": "MyPage48 - JKT48劇場の究極のコンパニオン。劇場訪問、2ショット、実績を記録しよう。",
@@ -49,6 +62,7 @@
 		"dashboard": "ダッシュボード",
 		"setlists": "セットリスト",
 		"shows": "公演",
+		"theater": "シアター",
 		"achievements": "実績",
 		"memories": "思い出",
 		"history": "履歴",
@@ -144,6 +158,7 @@
 	},
 	"dashboard": {
 		"title": "ダッシュボード",
+		"error": "ダッシュボードデータの読み込みに失敗しました",
 		"subtitle": "劇場活動の概要",
 		"filterTitle": "ダッシュボードフィルター",
 		"filterSubtitle": "表示範囲を調整",
@@ -151,6 +166,7 @@
 			"title": "公演",
 			"subtitle": "観覧履歴の概要",
 			"shows": "公演",
+			"tickets": "チケット",
 			"spending": "支出",
 			"totalExpenses": "総支出",
 			"topRow": "トップ列",
@@ -251,14 +267,16 @@
 			"weeksAgo": "週間前"
 		},
 		"publicActivity": {
-			"titleWithYear": "@{username}の{year}年の劇場活動",
-			"titleAllTime": "@{username}の劇場活動",
-			"yearBadge": "劇場活動: {year}年"
+			"wrapped": "JKT48劇場 Wrapped {year}",
+			"yearSummary": "{year}年まとめ",
+			"watchedTimes": "{count}回観覧"
 		},
 		"profilePicture": {
 			"previewTitle": "プロフィール写真プレビュー",
 			"fileTooLarge": "ファイルが大きすぎます。最大10MBです。"
-		}
+		},
+		"errorTitle": "プロフィールの読み込みに失敗しました",
+		"errorDesc": "プロフィールデータの取得中にエラーが発生しました。"
 	},
 	"settings": {
 		"title": "設定",
@@ -278,7 +296,11 @@
 			"description": "独自のリンクを使用して、誰でもあなたの統計や劇場の旅を見ることができるようにします。",
 			"yourLink": "あなたの公開プロフィールリンク",
 			"allYears": "すべての年",
-			"thisYear": "今年"
+			"thisYear": "今年",
+			"uploadError": "プロフィール写真のアップロードに失敗しました。もう一度お試しください。",
+			"uploadSuccess": "プロフィール写真が正常に更新されました！",
+			"loadErrorTitle": "設定の読み込みに失敗しました",
+			"loadErrorDesc": "公開プロフィールの設定を読み込めませんでした。もう一度お試しください。"
 		},
 		"developer": {
 			"title": "開発者アクセス",
@@ -335,7 +357,10 @@
 			"description": "この操作は取り消せません。チケットは完全に削除されます。",
 			"confirm": "はい、削除します",
 			"cancel": "キャンセル"
-		}
+		},
+		"ticketDeleted": "チケットが削除されました",
+		"errorTitle": "チケットの読み込みに失敗しました",
+		"errorDesc": "履歴の取得中にエラーが発生しました。"
 	},
 	"shows": {
 		"backTitle": "公演一覧に戻る",
@@ -353,8 +378,63 @@
 		"lastAttended": "最終観覧",
 		"avgPrice": "平均価格",
 		"topRow": "トップ列",
+		"mostFrequentedRow": "最もよく座る列",
+		"investmentInMemories": "思い出への投資",
 		"row": "列",
 		"unit": "公演"
+	},
+	"theater": {
+		"title": "シアター",
+		"subtitle": "劇場の旅",
+		"subNav": {
+			"theater": "シアター",
+			"members": "メンバー",
+			"shows": "公演"
+		},
+		"setlists": {
+			"section": "セットリスト",
+			"events": "スペシャルイベント",
+			"attendedCount": "{count}回出席",
+			"notAttended": "まだ参加していない",
+			"statsOverview": "統計概要",
+			"avgPricePerTicket": "平均チケット価格",
+			"attendanceRate": "出席率",
+			"ofMax": "最大",
+			"timeline": "タイムライン",
+			"firstShow": "初回公演",
+			"latestShow": "最新公演",
+			"active": "劇場で上演中",
+			"inactive": "過去のセットリスト",
+			"activeEvents": "開催中のイベント",
+			"inactiveEvents": "過去のイベント",
+			"errorTitle": "詳細の読み込みに失敗しました",
+			"errorDesc": "セットリスト情報の取得中にエラーが発生しました。",
+			"emptyTitle": "セットリストが見つかりません",
+			"emptyDesc": "現在利用可能なセットリストまたはイベントはありません。",
+			"listErrorTitle": "セットリストの読み込みに失敗しました",
+			"listErrorDesc": "劇場セットリストの取得中にエラーが発生しました。"
+		},
+		"shows": {
+			"title": "公演予定",
+			"subtitle": "スケジュールとお知らせ"
+		},
+		"members": {
+			"title": "メンバー",
+			"subtitle": "JKT48メンバーデータ",
+			"comingSoon": "メンバーデータは近日公開予定！",
+			"errorTitle": "メンバーの読み込みに失敗しました",
+			"errorDesc": "メンバーリストの取得中にエラーが発生しました。"
+		},
+		"upcomingShows": {
+			"title": "今後の公演",
+			"subtitle": "スケジュールとお知らせ",
+			"empty": "現在予定されている公演はありません。"
+		},
+		"showHistory": {
+			"title": "公演履歴",
+			"subtitle": "過去の公演",
+			"empty": "公演履歴が見つかりません。"
+		}
 	},
 	"top2shot": {
 		"title": "トップ2ショット",
@@ -372,7 +452,9 @@
 		"rankingTitle": "メンバーランキング",
 		"rankingSubtitle": "2ショット履歴に基づく",
 		"totalPhotos": "総写真数",
-		"photos": "枚"
+		"photos": "枚",
+		"errorTitle": "データの読み込みに失敗しました",
+		"errorDesc": "ランキングの取得中にエラーが発生しました。"
 	},
 	"memories": {
 		"title": "思い出",
@@ -380,14 +462,18 @@
 		"allPhotos": "すべての写真",
 		"tickets": "チケット",
 		"twoShots": "2ショット",
-		"noMemories": "まだ思い出がありません"
+		"noMemories": "まだ思い出がありません",
+		"errorTitle": "思い出の読み込みに失敗しました",
+		"errorDesc": "思い出の取得中にエラーが発生しました。"
 	},
 	"achievements": {
 		"title": "実績",
 		"subtitle": "バッジとマイルストーン",
 		"unlocked": "解除済み",
 		"locked": "未解除",
-		"progress": "進捗"
+		"progress": "進捗",
+		"errorTitle": "実績の読み込みに失敗しました",
+		"errorDesc": "実績の取得中にエラーが発生しました。"
 	},
 	"errors": {
 		"404": {
@@ -447,6 +533,15 @@
 			"nov": "11月",
 			"dec": "12月"
 		},
+		"days": {
+			"sunday": "日曜日",
+			"monday": "月曜日",
+			"tuesday": "火曜日",
+			"wednesday": "水曜日",
+			"thursday": "木曜日",
+			"friday": "金曜日",
+			"saturday": "土曜日"
+		},
 		"daysShort": {
 			"sun": "日",
 			"mon": "月",
@@ -472,9 +567,12 @@
 		"manualDescription": "詳細を自分で入力します。",
 		"saveTicket": "チケットを保存",
 		"uploadSuccess": "チケットが正常にアップロードされました",
-		"uploadError": "チケットのアップロードに失敗しました"
+		"uploadError": "チケットのアップロードに失敗しました",
+		"analyzingTitle": "チケットを分析中",
+		"analyzingDescription": "公演情報を抽出しています..."
 	},
 	"forms": {
+		"analysisFailed": "チケットの詳細を自動的に読み取れませんでした。",
 		"editTicket": "チケット編集",
 		"newTicket": "新規チケット入力",
 		"updateMemory": "思い出を更新",
@@ -504,7 +602,10 @@
 		"uploadTicketPhoto": "チケット写真アップロード",
 		"selectMember": "メンバーを選択",
 		"selectMemberDesc": "一緒に写真を撮ったメンバーを選択してください",
-		"analysisIssue": "解析エラー"
+		"analysisIssue": "解析エラー",
+		"updateTicket": "チケットを更新",
+		"ticketUpdateSuccess": "チケットが正常に更新されました！",
+		"ticketUpdateError": "チケットの更新に失敗しました。"
 	},
 	"member": {
 		"birthdate": "生年月日",
@@ -514,6 +615,10 @@
 		"yearsOld": "歳",
 		"notFound": "メンバーが見つかりません",
 		"notFoundMessage": "メンバーの詳細を取得できませんでした。後でもう一度お試しください。",
-		"close": "閉じる"
+		"close": "閉じる",
+		"emptyState": {
+			"title": "メンバーが見つかりません",
+			"description": "検索条件やフィルターを変更して、お探しのメンバーを見つけてください。"
+		}
 	}
 }

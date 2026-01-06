@@ -19,7 +19,7 @@
 	// Navigation items with translation keys
 	$: navItems = [
 		{ labelKey: 'nav.dashboard', href: '/' },
-		{ labelKey: 'nav.setlists', href: '/shows' },
+		{ labelKey: 'nav.theater', href: '/theater' },
 		{ labelKey: 'nav.achievements', href: '/achievements' },
 		{ labelKey: 'nav.memories', href: '/memories' },
 		{ labelKey: 'nav.history', href: '/history' }
@@ -52,15 +52,16 @@
 			class="hidden md:flex items-center gap-1 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 p-1.5 rounded-full shadow-sm overflow-x-auto max-w-xl"
 		>
 			{#each navItems as item}
+				{@const isActive =
+					item.href === '/' ? $page.url.pathname === '/' : $page.url.pathname.startsWith(item.href)}
 				<a
 					href={item.href}
 					class={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
-						$page.url.pathname === item.href ||
-						($page.url.pathname === '/' && item.href === '/' && $page.url.pathname === item.href) // Simple matching
+						isActive
 							? 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/30'
 							: 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
 					}`}
-					class:bg-red-50={$page.url.pathname === item.href}
+					class:bg-red-50={isActive}
 				>
 					{$t(item.labelKey)}
 				</a>

@@ -11,6 +11,7 @@
 		"confirm": "Confirm",
 		"yes": "Yes",
 		"no": "No",
+		"ok": "OK",
 		"error": "An error occurred",
 		"success": "Success",
 		"warning": "Warning",
@@ -19,13 +20,25 @@
 		"filter": "Filter",
 		"filters": "Filters",
 		"all": "All",
+		"allSetlists": "All Setlists",
 		"allData": "All Data",
+		"hasTwoShot": "Has 2-Shot",
+		"clearFilters": "Clear Filters",
 		"viewDetails": "View Details",
 		"logout": "Logout",
 		"settings": "Settings",
 		"profile": "Profile",
 		"dashboard": "Dashboard",
-		"language": "Language"
+		"language": "Language",
+		"noResults": "No results found"
+	},
+	"validation": {
+		"alert": {
+			"title": "Validation Error",
+			"fileTooLarge": "File is too large. Maximum 3MB allowed.",
+			"invalidType": "File format not supported. Please use JPEG, PNG, or WebP.",
+			"noFile": "No file selected."
+		}
 	},
 	"seo": {
 		"default": "MyPage48 - Your ultimate JKT48 theater companion. Track your theater visits, 2-shots, and achievements.",
@@ -49,6 +62,7 @@
 		"dashboard": "Dashboard",
 		"setlists": "Setlists",
 		"shows": "Shows",
+		"theater": "Theater",
 		"achievements": "Achievements",
 		"memories": "Memories",
 		"history": "History",
@@ -144,6 +158,7 @@
 	},
 	"dashboard": {
 		"title": "Dashboard",
+		"error": "Failed to load dashboard data",
 		"subtitle": "Your theater activity overview",
 		"filterTitle": "Dashboard Filter",
 		"filterSubtitle": "Adjust visualization range",
@@ -151,6 +166,7 @@
 			"title": "Shows",
 			"subtitle": "Your attendance overview",
 			"shows": "Shows",
+			"tickets": "Tickets",
 			"spending": "Expenses",
 			"totalExpenses": "Total Expenses",
 			"topRow": "Top Row",
@@ -251,14 +267,16 @@
 			"weeksAgo": "weeks ago"
 		},
 		"publicActivity": {
-			"titleWithYear": "Theater activity of @{username} in {year}",
-			"titleAllTime": "Theater activity of @{username}",
-			"yearBadge": "Theater Activity: {year}"
+			"wrapped": "Theater JKT48 Wrapped {year}",
+			"yearSummary": "{year} Summary",
+			"watchedTimes": "Watched {count} times"
 		},
 		"profilePicture": {
 			"previewTitle": "Profile Picture Preview",
 			"fileTooLarge": "File is too large. Maximum 10MB."
-		}
+		},
+		"errorTitle": "Failed to load profile",
+		"errorDesc": "Something went wrong while fetching your profile data."
 	},
 	"settings": {
 		"title": "Settings",
@@ -278,7 +296,11 @@
 			"description": "Allow anyone to view your profile stats and theater journey using your unique link.",
 			"yourLink": "Your Public Profile Link",
 			"allYears": "All Years",
-			"thisYear": "This Year"
+			"thisYear": "This Year",
+			"uploadError": "Failed to upload profile picture. Please try again.",
+			"uploadSuccess": "Profile picture updated successfully!",
+			"loadErrorTitle": "Failed to Load Configuration",
+			"loadErrorDesc": "We couldn't load your public profile settings. Please try again."
 		},
 		"developer": {
 			"title": "Developer Access",
@@ -334,7 +356,10 @@
 			"description": "This action cannot be undone. The ticket will be permanently deleted.",
 			"confirm": "Yes, Delete",
 			"cancel": "Cancel"
-		}
+		},
+		"ticketDeleted": "Ticket deleted successfully",
+		"errorTitle": "Failed to load tickets",
+		"errorDesc": "Something went wrong while fetching your history."
 	},
 	"forms": {
 		"editTicket": "Edit Ticket",
@@ -367,7 +392,10 @@
 		"uploadTicketPhoto": "Upload Ticket Photo",
 		"selectMember": "Select Member",
 		"selectMemberDesc": "Choose the member you took a photo with",
-		"analysisIssue": "Analysis Issue"
+		"analysisIssue": "Analysis Issue",
+		"analysisFailed": "Could not read ticket details automatically.",
+		"ticketUpdateSuccess": "Ticket updated successfully!",
+		"ticketUpdateError": "Failed to update ticket."
 	},
 	"upload": {
 		"title": "Upload Ticket",
@@ -378,7 +406,9 @@
 		"manualDescription": "Enter ticket details manually if you don't have a photo.",
 		"saveTicket": "Save Ticket",
 		"uploadSuccess": "Ticket uploaded successfully",
-		"uploadError": "Failed to upload ticket"
+		"uploadError": "Failed to upload ticket",
+		"analyzingTitle": "Analyzing Ticket",
+		"analyzingDescription": "Extracting show info..."
 	},
 	"shows": {
 		"backTitle": "Back to Shows",
@@ -393,11 +423,66 @@
 		"lastAttended": "Last Attended",
 		"avgPrice": "Avg Price",
 		"topRow": "Top Row",
+		"mostFrequentedRow": "Most frequented row",
+		"investmentInMemories": "Investment in memories",
 		"row": "Row",
 		"toTop": "to reach top",
 		"notSeen": "Not yet seen",
 		"viewHistory": "View History",
 		"top": "Top"
+	},
+	"theater": {
+		"title": "Theater",
+		"subtitle": "Your theater journey",
+		"subNav": {
+			"theater": "Theater",
+			"members": "Members",
+			"shows": "Shows"
+		},
+		"setlists": {
+			"section": "Setlists",
+			"events": "Special Events",
+			"attendedCount": "Attended {count}x",
+			"notAttended": "Not attended yet",
+			"statsOverview": "Stats Overview",
+			"avgPricePerTicket": "Avg Price Per Ticket",
+			"attendanceRate": "Attendance Rate",
+			"ofMax": "of max",
+			"timeline": "Timeline",
+			"firstShow": "First Show",
+			"latestShow": "Latest Show",
+			"active": "Actively Performing on Theater",
+			"inactive": "Past Setlists",
+			"activeEvents": "Active Events",
+			"inactiveEvents": "Past Events",
+			"errorTitle": "Failed to load detail",
+			"errorDesc": "Something went wrong while fetching the setlist information.",
+			"emptyTitle": "No Setlists Found",
+			"emptyDesc": "There are no setlists or events available at the moment.",
+			"listErrorTitle": "Failed to load setlists",
+			"listErrorDesc": "Something went wrong while fetching the theater setlists."
+		},
+		"shows": {
+			"title": "Upcoming Shows",
+			"subtitle": "Schedule and announcements"
+		},
+		"members": {
+			"title": "Members",
+			"subtitle": "JKT48 member data",
+			"comingSoon": "Member data coming soon!",
+			"errorTitle": "Failed to load members",
+			"errorDesc": "Something went wrong while fetching the member list."
+		},
+		"upcomingShows": {
+			"title": "Upcoming Shows",
+			"subtitle": "Schedule and announcements",
+			"empty": "No upcoming shows scheduled at the moment."
+		},
+		"showHistory": {
+			"title": "Show History",
+			"subtitle": "Past performances",
+			"empty": "No show history found."
+		}
 	},
 	"memories": {
 		"title": "Memories",
@@ -405,14 +490,18 @@
 		"allPhotos": "All Photos",
 		"tickets": "Tickets",
 		"twoShots": "2-Shots",
-		"noMemories": "No memories yet"
+		"noMemories": "No memories yet",
+		"errorTitle": "Failed to load memories",
+		"errorDesc": "Something went wrong while fetching your memories."
 	},
 	"achievements": {
 		"title": "Achievements",
 		"subtitle": "Your badges and milestones",
 		"unlocked": "Unlocked",
 		"locked": "Locked",
-		"progress": "Progress"
+		"progress": "Progress",
+		"errorTitle": "Failed to load achievements",
+		"errorDesc": "Something went wrong while fetching your achievements."
 	},
 	"errors": {
 		"404": {
@@ -505,7 +594,11 @@
 		"yearsOld": "years old",
 		"notFound": "Member Not Found",
 		"notFoundMessage": "We couldn't retrieve this member's details. Please try again later.",
-		"close": "Close"
+		"close": "Close",
+		"emptyState": {
+			"title": "No Members Found",
+			"description": "Try adjusting your search or filter to find who you're looking for."
+		}
 	},
 	"top2shot": {
 		"title": "Top 2-Shot",
@@ -523,6 +616,8 @@
 		"rankingTitle": "Member Ranking",
 		"rankingSubtitle": "Based on your 2-shot history",
 		"totalPhotos": "Total Photos",
-		"photos": "Photos"
+		"photos": "Photos",
+		"errorTitle": "Failed to load data",
+		"errorDesc": "Something went wrong while fetching the leaderboard."
 	}
 }

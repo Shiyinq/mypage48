@@ -1,10 +1,25 @@
-import google.generativeai as genai
+import base64
 import json
+
+from google import genai
+from google.genai import types
+
 from src.config import Settings
-from src.logging_config import create_logger
+from src.image_validation import ImageTooLargeError as ImageTooLargeValidationError
+from src.image_validation import ImageValidationError
+from src.image_validation import (
+    InvalidImageTypeError as InvalidImageTypeValidationError,
+)
+from src.image_validation import validate_base64_image
+from src.llm.exceptions import (
+    ImageAnalysisError,
+    ImageTooLargeError,
+    InvalidImageError,
+    InvalidImageTypeError,
+)
 from src.llm.repository import LLMRepository
-from src.llm.schemas import AnalyzeImageRequest, AnalysisResult
-from src.llm.exceptions import ImageAnalysisError
+from src.llm.schemas import AnalysisResult, AnalyzeImageRequest
+from src.logging_config import create_logger
 
 logger = create_logger("llm_service", __name__)
 
@@ -17,17 +32,30 @@ class LLMService:
     ):
         self.repository = repository
         self.config = config
-        
-        # Configure Gemini
-        genai.configure(api_key=self.config.gemini_api_key)
-        self.model = genai.GenerativeModel("gemini-2.5-flash")
 
-    async def analyze_ticket_image(self, request: AnalyzeImageRequest) -> AnalysisResult:
+        # Configure Gemini
+        self.client = genai.Client(api_key=self.config.gemini_api_key)
+
+    async def analyze_ticket_image(
+        self, request: AnalyzeImageRequest
+    ) -> AnalysisResult:
+        # Validate image before processing
+        try:
+            validate_base64_image(request.image)
+        except ImageTooLargeValidationError:
+            raise ImageTooLargeError()
+        except InvalidImageTypeValidationError:
+            raise InvalidImageTypeError()
+        except ImageValidationError:
+            raise InvalidImageError()
+
         try:
             # Clean base64 if needed
             base64_image = request.image
             if "," in base64_image:
                 base64_image = base64_image.split(",")[1]
+            
+            image_bytes = base64.b64decode(base64_image)
 
             prompt = """
             Analyze this JKT48 theater ticket image. 
@@ -44,43 +72,42 @@ class LLMService:
             """
 
             # Prepare content for Gemini
-            # The SDK supports passing image data as a dict with 'mime_type' and 'data'
-            image_part = {
-                "mime_type": "image/jpeg",
-                "data": base64_image
-            }
+            image_part = types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg")
 
-            generation_config = genai.types.GenerationConfig(
-                response_mime_type="application/json",
-                response_schema={
-                    "type": "OBJECT",
-                    "properties": {
-                        "title": {"type": "STRING"},
-                        "date": {"type": "STRING", "description": "YYYY-MM-DD"},
-                        "time": {"type": "STRING"},
-                        "gate_open": {"type": "STRING"},
-                        "day": {"type": "STRING"},
-                        "section": {"type": "STRING", "description": "Row letter"},
-                        "number": {"type": "STRING", "description": "Seat number only"},
-                        "price": {"type": "NUMBER"},
-                        "ticket_id": {"type": "STRING"},
-                    },
-                    "required": ["title", "date", "section", "number", "price"]
-                }
-            )
-
-            response = await self.model.generate_content_async(
+            response = await self.client.aio.models.generate_content(
+                model="gemini-2.5-flash",
                 contents=[image_part, prompt],
-                generation_config=generation_config
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema={
+                        "type": "OBJECT",
+                        "properties": {
+                            "title": {"type": "STRING"},
+                            "date": {"type": "STRING", "description": "YYYY-MM-DD"},
+                            "time": {"type": "STRING"},
+                            "gate_open": {"type": "STRING"},
+                            "day": {"type": "STRING"},
+                            "section": {"type": "STRING", "description": "Row letter"},
+                            "number": {"type": "STRING", "description": "Seat number only"},
+                            "price": {"type": "NUMBER"},
+                            "ticket_id": {"type": "STRING"},
+                        },
+                        "required": ["title", "date", "section", "number", "price"],
+                    },
+                )
             )
-            
+
             json_text = response.text
             if not json_text:
-                raise ImageAnalysisError("Empty response from Gemini")
-            
+                raise ImageAnalysisError()
+
             data = json.loads(json_text)
             return AnalysisResult(**data)
 
+        except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):
+            raise
+        except ImageAnalysisError:
+            raise
         except Exception as e:
             logger.exception(f"Error analyzing image: {str(e)}")
             raise ImageAnalysisError()

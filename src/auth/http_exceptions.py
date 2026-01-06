@@ -1,5 +1,11 @@
 from src.auth.constants import ErrorCode
-from src.http_exceptions import BadRequest, NotAuthenticated, NotFound, PermissionDenied
+from src.http_exceptions import (
+    BadRequest,
+    InternalServerError,
+    NotAuthenticated,
+    NotFound,
+    PermissionDenied,
+)
 
 
 class IncorrectEmailOrPassword(NotAuthenticated):
@@ -52,3 +58,7 @@ class PasswordsNotMatch(BadRequest):
 
 class PasswordPolicyViolation(BadRequest):
     DETAIL = ErrorCode.PASSWORD_POLICY_VIOLATION
+
+
+class AuthOperationFailed(InternalServerError):
+    DETAIL = ErrorCode.AUTH_OPERATION_FAILED

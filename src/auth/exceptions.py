@@ -36,3 +36,7 @@ class PasswordsDoNotMatchError(DomainException):
 
 class PasswordPolicyViolationError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.PASSWORD_POLICY_VIOLATION
+
+
+class AuthOperationError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.AUTH_OPERATION_FAILED

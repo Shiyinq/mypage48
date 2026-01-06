@@ -38,11 +38,13 @@ async def test_read_users_me_success(client: AsyncClient, db):
     response = await client.get("/api/users/profile", headers=headers)
     assert response.status_code == 200
     data = response.json()
-    assert data["username"] == "profileuser"
-    assert data["email"] == "profile@example.com"
+    # Profile data is now nested under 'profile' key in ProfileFullResponse
+    profile = data["profile"]
+    assert profile["username"] == "profileuser"
+    assert profile["email"] == "profile@example.com"
     # Note: DB might store 'name' instead of 'fullName' depending on mapping, 
     # but the input was fullName. UserCurrent schema (response) likely has 'name'.
-    assert data["name"] == "Profile User"
+    assert profile["name"] == "Profile User"
 
 @pytest.mark.asyncio
 async def test_update_oshi(client: AsyncClient, db):
@@ -74,7 +76,8 @@ async def test_update_oshi(client: AsyncClient, db):
     
     # Verify profile update
     profile_res = await client.get("/api/users/profile", headers=headers)
-    assert profile_res.json()["oshiId"] == 1
+    # Profile data is now nested under 'profile' key in ProfileFullResponse
+    assert profile_res.json()["profile"]["oshiId"] == 1
 
 @pytest.mark.asyncio
 async def test_update_public_status(client: AsyncClient, db):
@@ -106,8 +109,10 @@ async def test_update_public_status(client: AsyncClient, db):
     # Verify profile
     profile_res = await client.get("/api/users/profile", headers=headers)
     data = profile_res.json()
-    assert data["isPublic"] is True
-    assert data["publicYear"] == 2024
+    # Profile data is now nested under 'profile' key in ProfileFullResponse
+    profile = data["profile"]
+    assert profile["isPublic"] is True
+    assert profile["publicYear"] == 2024
 
 @pytest.mark.asyncio
 async def test_update_profile_picture(client: AsyncClient, db):
@@ -131,14 +136,22 @@ async def test_update_profile_picture(client: AsyncClient, db):
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
+    # Use a minimal valid PNG image (1x1 pixel transparent)
+    # This is a valid base64-encoded PNG file
+    valid_png_base64 = (
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAA"
+        "DUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    )
+    
     # Update Profile Picture
-    pic_payload = {"profilePicture": "http://example.com/pic.jpg"}
+    pic_payload = {"profilePicture": valid_png_base64}
     response = await client.post("/api/users/profile-picture", json=pic_payload, headers=headers)
     assert response.status_code == 200
     
     # Verify profile
     profile_res = await client.get("/api/users/profile", headers=headers)
-    assert profile_res.json()["profilePicture"] == "http://example.com/pic.jpg"
+    # Profile data is now nested under 'profile' key in ProfileFullResponse
+    assert profile_res.json()["profile"]["profilePicture"] == valid_png_base64
 
 @pytest.mark.asyncio
 async def test_get_public_profile(client: AsyncClient, db):

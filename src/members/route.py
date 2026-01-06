@@ -1,39 +1,43 @@
-from typing import Optional, List
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, Query
 
+from src.dependencies import get_member_service
+from src.logging_config import create_logger
+from src.members.exceptions import MemberFetchError as DomainFetchError
+from src.members.exceptions import MemberNotFoundError
+from src.members.http_exceptions import MemberFetchError, MemberNotFound
 from src.members.schemas import (
-    MemberListResponse,
     MemberDetailResponse,
+    MemberListResponse,
     MemberSeedResponse,
 )
 from src.members.service import MemberService
-from src.members.http_exceptions import MemberNotFound, MemberFetchError
-from src.members.exceptions import MemberNotFoundError, MemberFetchError as DomainFetchError
-from src.dependencies import get_member_service
-from src.logging_config import create_logger
 
 router = APIRouter()
 logger = create_logger("members", __name__)
 
 
-@router.get("/", response_model=MemberListResponse)
+@router.get("", response_model=MemberListResponse)
 async def get_members(
-    skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(100, ge=1, le=100, description="Maximum number of records to return"),
-    generation: Optional[str] = Query(None, description="Filter by generation (e.g., '3', '7', '11')"),
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Items per page (max 100)"),
+    generation: Optional[str] = Query(
+        None, description="Filter by generation (e.g., '3', '7', '11')"
+    ),
     search: Optional[str] = Query(None, description="Search by name or nickname"),
     service: MemberService = Depends(get_member_service),
 ):
     """
     Get all JKT48 members with optional filtering.
 
-    - **skip**: Number of records to skip (pagination)
-    - **limit**: Maximum number of records to return (max 100)
+    - **page**: Page number (default 1)
+    - **limit**: Items per page (default 20, max 100)
     - **generation**: Filter by generation number
     - **search**: Search by member name or nickname
     """
     try:
-        return await service.get_all_members(skip, limit, generation, search)
+        return await service.get_all_members(page, limit, generation, search)
     except DomainFetchError:
         raise MemberFetchError()
 

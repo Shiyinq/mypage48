@@ -1,38 +1,105 @@
-# create-svelte
+# MyPage48 Frontend
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+The frontend application for **MyPage48** - a personal dashboard for JKT48 fans to track theater attendance and 2-shot collections.
 
-## Creating a project
+## 🛠️ Tech Stack
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **Framework**: SvelteKit 2.x
+- **Styling**: TailwindCSS with custom glassmorphism design
+- **Icons**: Lucide Svelte
+- **State Management**: Svelte Stores
+- **i18n**: Custom implementation (EN, ID, JA)
+- **API Client**: Custom fetch wrapper with JWT auth
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+## 📁 Project Structure
 
-# create a new project in my-app
-npm create svelte@latest my-app
+```
+frontend/
+├── src/
+│   ├── lib/
+│   │   ├── apis/         # API client functions
+│   │   ├── components/   # Reusable UI components
+│   │   ├── i18n/         # Internationalization
+│   │   ├── services/     # External services (Gemini AI)
+│   │   ├── stores/       # Svelte stores
+│   │   ├── types/        # TypeScript definitions
+│   │   └── utils/        # Utility functions
+│   └── routes/
+│       ├── (app)/        # Main app layout group
+│       ├── auth/         # OAuth callback routes
+│       ├── history/      # Ticket history page
+│       ├── memories/     # Photo memories
+│       ├── profile/      # User profile & settings
+│       ├── theater/      # Theater, shows, setlists
+│       ├── top-2shot/    # 2-shot ranking
+│       ├── u/            # Public profile pages
+│       └── upload/       # Ticket upload
+├── static/               # Static assets
+└── tests/                # E2E tests
 ```
 
-## Developing
+## 🚀 Development
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### Prerequisites
+
+- Node.js 18+
+- Backend API running (see main README)
+
+### Setup
 
 ```bash
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env
+
+# Start dev server
 npm run dev
 
-# or start the server and open the app in a new browser tab
+# Or open in browser automatically
 npm run dev -- --open
 ```
 
-## Building
+### Available Scripts
 
-To create a production version of your app:
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview production build |
+| `npm run check` | Type-check the codebase |
+| `npm run lint` | Run ESLint |
+| `npm run format` | Format code with Prettier |
 
-```bash
-npm run build
-```
+## 🎨 Key Components
 
-You can preview the production build with `npm run preview`.
+- **Dashboard**: Stats overview with charts and seat map
+- **TheaterSeatMap**: Interactive visualization of seating history
+- **TicketCard**: Display theater ticket information
+- **MemberSelector**: Search and select JKT48 members
+- **OshiSelectionModal**: Set favorite member (oshi)
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+## 🌐 Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Dashboard with statistics |
+| `/theater` | Theater schedule & show info |
+| `/history` | Ticket history |
+| `/top-2shot` | 2-shot collection ranking |
+| `/memories` | Photo memories gallery |
+| `/profile` | User profile |
+| `/settings` | User settings |
+| `/u/[username]` | Public profile (Wrapped) |
+| `/upload` | Upload theater tickets |
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+
+---
+
+<div align="center">
+Made with ❤️ for JKT48 fans
+</div>

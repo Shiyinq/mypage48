@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi_sso.sso.github import GithubSSO
 from fastapi_sso.sso.google import GoogleSSO
 
+from src.achievements.service import AchievementsService
 from src.api_keys.repository import ApiKeyRepository
 from src.api_keys.service import ApiKeyService
 from src.auth.csrf_service import CSRFService
@@ -13,17 +14,23 @@ from src.auth.schemas import UserCurrent
 from src.auth.security_service import SecurityService
 from src.auth.service import AuthService
 from src.config import Settings, config
+from src.dashboard.service import DashboardService
 from src.database import database_instance
 from src.health.service import HealthService
-from src.logging_config import create_logger
-from src.users.repository import UserRepository
-from src.users.service import UserService
+from src.infrastructure import AsyncBackgroundRunner
 from src.llm.repository import LLMRepository
 from src.llm.service import LLMService
+from src.logging_config import create_logger
 from src.members.repository import MemberRepository
 from src.members.service import MemberService
-
-
+from src.memories.repository import MemoriesRepository
+from src.memories.service import MemoriesService
+from src.setlists.repository import SetlistsRepository
+from src.setlists.service import SetlistsService
+from src.tickets.repository import TicketsRepository
+from src.tickets.service import TicketsService
+from src.users.repository import UserRepository
+from src.users.service import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/signin")
 logger = create_logger("dependencies", __name__)
@@ -62,9 +69,6 @@ def get_auth_repository(db=Depends(get_db)) -> AuthRepository:
     return AuthRepository(db)
 
 
-from src.infrastructure import AsyncBackgroundRunner
-
-
 def get_security_service(
     auth_repo: AuthRepository = Depends(get_auth_repository),
     user_repo: UserRepository = Depends(get_user_repository),
@@ -85,15 +89,6 @@ def get_auth_service(
     config: Settings = Depends(get_settings),
 ) -> AuthService:
     return AuthService(auth_repo, user_repo, security_service, email_service, config)
-
-
-def get_user_service(
-    user_repo: UserRepository = Depends(get_user_repository),
-    security_service: SecurityService = Depends(get_security_service),
-    email_service: EmailService = Depends(get_email_service),
-    config: Settings = Depends(get_settings),
-) -> UserService:
-    return UserService(user_repo, security_service, email_service, config)
 
 
 async def get_current_user(
@@ -167,13 +162,13 @@ def get_github_sso(config: Settings = Depends(get_settings)) -> GithubSSO:
     )
 
 
-
 def get_health_service() -> HealthService:
     return HealthService(database_instance)
 
 
 def get_llm_repository(db=Depends(get_db)) -> LLMRepository:
     return LLMRepository(db)
+
 
 def get_llm_service(
     repo: LLMRepository = Depends(get_llm_repository),
@@ -182,18 +177,15 @@ def get_llm_service(
     return LLMService(repo, config)
 
 
-from src.theater.repository import TheaterRepository
-from src.theater.service import TheaterService
+def get_tickets_repository(db=Depends(get_db)) -> TicketsRepository:
+    return TicketsRepository(db)
 
-def get_theater_repository(db=Depends(get_db)) -> TheaterRepository:
-    return TheaterRepository(db)
 
-def get_theater_service(
-    repo: TheaterRepository = Depends(get_theater_repository),
+def get_tickets_service(
+    repo: TicketsRepository = Depends(get_tickets_repository),
     config: Settings = Depends(get_settings),
-) -> TheaterService:
-    background_runner = AsyncBackgroundRunner()
-    return TheaterService(repo, background_runner, config)
+) -> TicketsService:
+    return TicketsService(repo, config)
 
 
 def get_member_repository(db=Depends(get_db)) -> MemberRepository:
@@ -205,3 +197,59 @@ def get_member_service(
     config: Settings = Depends(get_settings),
 ) -> MemberService:
     return MemberService(repo, config)
+
+
+def get_achievements_service(
+    tickets_service: TicketsService = Depends(get_tickets_service),
+    config: Settings = Depends(get_settings),
+) -> AchievementsService:
+    return AchievementsService(tickets_service, config)
+
+
+def get_user_service(
+    repo: UserRepository = Depends(get_user_repository),
+    security_service: SecurityService = Depends(get_security_service),
+    email_service: EmailService = Depends(get_email_service),
+    config: Settings = Depends(get_settings),
+    tickets_service: TicketsService = Depends(get_tickets_service),
+    member_service: MemberService = Depends(get_member_service),
+    achievements_service: AchievementsService = Depends(get_achievements_service),
+) -> UserService:
+    return UserService(
+        repo,
+        security_service,
+        email_service,
+        config,
+        tickets_service,
+        member_service,
+        achievements_service,
+    )
+
+
+def get_dashboard_service(
+    tickets_repo: TicketsRepository = Depends(get_tickets_repository),
+    config: Settings = Depends(get_settings),
+) -> DashboardService:
+    return DashboardService(tickets_repo, config)
+
+
+def get_memories_repository(db=Depends(get_db)) -> MemoriesRepository:
+    return MemoriesRepository(db)
+
+
+def get_memories_service(
+    repo: MemoriesRepository = Depends(get_memories_repository),
+    config: Settings = Depends(get_settings),
+) -> MemoriesService:
+    return MemoriesService(repo, config)
+
+
+def get_setlists_repository(db=Depends(get_db)) -> SetlistsRepository:
+    return SetlistsRepository(db)
+
+
+def get_setlists_service(
+    repo: SetlistsRepository = Depends(get_setlists_repository),
+    config: Settings = Depends(get_settings),
+) -> SetlistsService:
+    return SetlistsService(repo, config)

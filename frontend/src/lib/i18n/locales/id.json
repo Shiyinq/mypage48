@@ -11,6 +11,7 @@
 		"confirm": "Konfirmasi",
 		"yes": "Ya",
 		"no": "Tidak",
+		"ok": "OK",
 		"error": "Terjadi kesalahan",
 		"success": "Berhasil",
 		"warning": "Peringatan",
@@ -19,13 +20,25 @@
 		"filter": "Filter",
 		"filters": "Filter",
 		"all": "Semua",
+		"allSetlists": "Semua Setlist",
 		"allData": "Semua Data",
+		"hasTwoShot": "Ada 2-Shot",
+		"clearFilters": "Hapus Filter",
 		"viewDetails": "Lihat Detail",
 		"logout": "Keluar",
 		"settings": "Pengaturan",
 		"profile": "Profil",
 		"dashboard": "Dasbor",
-		"language": "Bahasa"
+		"language": "Bahasa",
+		"noResults": "Tidak ada hasil ditemukan"
+	},
+	"validation": {
+		"alert": {
+			"title": "Gagal Validasi",
+			"fileTooLarge": "File terlalu besar. Maksimum 3MB.",
+			"invalidType": "Format file tidak didukung. Gunakan JPEG, PNG, atau WebP.",
+			"noFile": "Tidak ada file yang dipilih."
+		}
 	},
 	"seo": {
 		"default": "MyPage48 - Pendamping teater JKT48 terbaik. Lacak kunjungan teater, 2-shot, dan pencapaianmu.",
@@ -49,6 +62,7 @@
 		"dashboard": "Dasbor",
 		"setlists": "Setlists",
 		"shows": "Pertunjukan",
+		"theater": "Theater",
 		"achievements": "Pencapaian",
 		"memories": "Kenangan",
 		"history": "Riwayat",
@@ -144,6 +158,7 @@
 	},
 	"dashboard": {
 		"title": "Dasbor",
+		"error": "Gagal memuat data dasbor",
 		"subtitle": "Ringkasan aktivitas teater kamu",
 		"filterTitle": "Filter Dasbor",
 		"filterSubtitle": "Atur rentang visualisasi",
@@ -151,6 +166,7 @@
 			"title": "Show",
 			"subtitle": "Ringkasan kehadiran kamu",
 			"shows": "Pertunjukan",
+			"tickets": "Tiket",
 			"spending": "Pengeluaran",
 			"totalExpenses": "Total Pengeluaran",
 			"topRow": "Baris Favorit",
@@ -251,14 +267,16 @@
 			"weeksAgo": "minggu yang lalu"
 		},
 		"publicActivity": {
-			"titleWithYear": "Aktivitas teater @{username} di tahun {year}",
-			"titleAllTime": "Aktivitas teater @{username}",
-			"yearBadge": "Aktivitas Teater: {year}"
+			"wrapped": "Theater JKT48 Wrapped {year}",
+			"yearSummary": "Ringkasan {year}",
+			"watchedTimes": "Ditonton {count} kali"
 		},
 		"profilePicture": {
 			"previewTitle": "Preview Foto Profil",
 			"fileTooLarge": "File terlalu besar. Maksimal 10MB."
-		}
+		},
+		"errorTitle": "Gagal memuat profil",
+		"errorDesc": "Terjadi kesalahan saat mengambil data profil kamu."
 	},
 	"settings": {
 		"title": "Pengaturan",
@@ -278,7 +296,11 @@
 			"description": "Izinkan siapa saja untuk melihat statistik dan perjalanan teatermu menggunakan tautan unikmu.",
 			"yourLink": "Tautan Profil Publik Kamu",
 			"allYears": "Semua Tahun",
-			"thisYear": "Tahun Ini"
+			"thisYear": "Tahun Ini",
+			"uploadError": "Gagal mengunggah foto profil. Silakan coba lagi.",
+			"uploadSuccess": "Foto profil berhasil diperbarui!",
+			"loadErrorTitle": "Gagal Memuat Konfigurasi",
+			"loadErrorDesc": "Kami tidak dapat memuat pengaturan profil publik Anda. Silakan coba lagi."
 		},
 		"developer": {
 			"title": "Akses Developer",
@@ -335,7 +357,10 @@
 			"description": "Tindakan ini tidak dapat dibatalkan. Tiket akan dihapus secara permanen.",
 			"confirm": "Ya, Hapus",
 			"cancel": "Batal"
-		}
+		},
+		"ticketDeleted": "Tiket berhasil dihapus",
+		"errorTitle": "Gagal memuat tiket",
+		"errorDesc": "Terjadi kesalahan saat mengambil riwayat kamu."
 	},
 	"memories": {
 		"title": "Kenangan",
@@ -343,14 +368,18 @@
 		"allPhotos": "Semua Foto",
 		"tickets": "Tiket",
 		"twoShots": "2-Shot",
-		"noMemories": "Belum ada kenangan"
+		"noMemories": "Belum ada kenangan",
+		"errorTitle": "Gagal memuat kenangan",
+		"errorDesc": "Terjadi kesalahan saat mengambil kenangan kamu."
 	},
 	"achievements": {
 		"title": "Pencapaian",
 		"subtitle": "Lencana dan milestone kamu",
 		"unlocked": "Terbuka",
 		"locked": "Terkunci",
-		"progress": "Progres"
+		"progress": "Progres",
+		"errorTitle": "Gagal memuat pencapaian",
+		"errorDesc": "Terjadi kesalahan saat mengambil pencapaian kamu."
 	},
 	"errors": {
 		"404": {
@@ -444,9 +473,12 @@
 		"manualDescription": "Ketik detailnya sendiri.",
 		"saveTicket": "Simpan Tiket",
 		"uploadSuccess": "Tiket berhasil diunggah",
-		"uploadError": "Gagal mengunggah tiket"
+		"uploadError": "Gagal mengunggah tiket",
+		"analyzingTitle": "Menganalisis Tiket",
+		"analyzingDescription": "Mengekstrak info pertunjukan..."
 	},
 	"forms": {
+		"analysisFailed": "Gagal membaca detail tiket secara otomatis.",
 		"editTicket": "Edit Tiket",
 		"newTicket": "Entri Tiket Baru",
 		"updateMemory": "Perbarui kenanganmu",
@@ -477,7 +509,9 @@
 		"uploadTicketPhoto": "Unggah Foto Tiket",
 		"selectMember": "Pilih Member",
 		"selectMemberDesc": "Pilih member yang berfoto denganmu",
-		"analysisIssue": "Masalah Analisis"
+		"analysisIssue": "Masalah Analisis",
+		"ticketUpdateSuccess": "Tiket berhasil diperbarui!",
+		"ticketUpdateError": "Gagal memperbarui tiket."
 	},
 	"member": {
 		"birthdate": "Tanggal Lahir",
@@ -487,7 +521,11 @@
 		"yearsOld": "Tahun",
 		"notFound": "Member Tidak Ditemukan",
 		"notFoundMessage": "Kami tidak dapat mengambil detail member ini. Silakan coba lagi nanti.",
-		"close": "Tutup"
+		"close": "Tutup",
+		"emptyState": {
+			"title": "Tidak Ada Member",
+			"description": "Coba sesuaikan pencarian atau filter untuk menemukan member yang kamu cari."
+		}
 	},
 	"shows": {
 		"backTitle": "Kembali ke Daftar Show",
@@ -503,10 +541,65 @@
 		"lastAttended": "Terakhir Nonton",
 		"avgPrice": "Rata-rata Harga",
 		"topRow": "Baris Favorit",
+		"mostFrequentedRow": "Baris yang paling sering ditempati",
+		"investmentInMemories": "Investasi kenangan",
 		"row": "Baris",
 		"unit": "Pertunjukan",
 		"totalShows": "Total Pertunjukan",
 		"uniqueShows": "Pertunjukan Unik"
+	},
+	"theater": {
+		"title": "Theater",
+		"subtitle": "Perjalanan teatermu",
+		"subNav": {
+			"theater": "Theater",
+			"members": "Member",
+			"shows": "Shows"
+		},
+		"setlists": {
+			"section": "Setlist",
+			"events": "Event Spesial",
+			"attendedCount": "{count}x Kehadiran",
+			"notAttended": "Belum pernah hadir",
+			"statsOverview": "Ringkasan Statistik",
+			"avgPricePerTicket": "Rata-rata Harga Tiket",
+			"attendanceRate": "Tingkat Kehadiran",
+			"ofMax": "dari maks",
+			"timeline": "Linimasa",
+			"firstShow": "Pertunjukan Pertama",
+			"latestShow": "Pertunjukan Terakhir",
+			"active": "Sedang Aktif di Teater",
+			"inactive": "Setlist Lama",
+			"activeEvents": "Event Aktif",
+			"inactiveEvents": "Event Lampau",
+			"errorTitle": "Gagal memuat detail",
+			"errorDesc": "Terjadi kesalahan saat mengambil informasi setlist.",
+			"emptyTitle": "Tidak Ada Setlist",
+			"emptyDesc": "Belum ada setlist atau event yang tersedia saat ini.",
+			"listErrorTitle": "Gagal memuat setlist",
+			"listErrorDesc": "Terjadi kesalahan saat mengambil daftar setlist teater."
+		},
+		"shows": {
+			"title": "Jadwal Show",
+			"subtitle": "Jadwal dan pengumuman"
+		},
+		"members": {
+			"title": "Member",
+			"subtitle": "Data member JKT48",
+			"comingSoon": "Data member akan segera hadir!",
+			"errorTitle": "Gagal memuat member",
+			"errorDesc": "Terjadi kesalahan saat mengambil daftar member."
+		},
+		"upcomingShows": {
+			"title": "Upcoming Shows",
+			"subtitle": "Jadwal dan pengumuman",
+			"empty": "Belum ada jadwal pertunjukan mendatang."
+		},
+		"showHistory": {
+			"title": "Riwayat Show",
+			"subtitle": "Pertunjukan sebelumnya",
+			"empty": "Belum ada riwayat pertunjukan."
+		}
 	},
 	"top2shot": {
 		"title": "Top 2-Shot",
@@ -524,6 +617,8 @@
 		"rankingTitle": "Peringkat Member",
 		"rankingSubtitle": "Berdasarkan riwayat 2-shot kamu",
 		"totalPhotos": "Total Foto",
-		"photos": "Foto"
+		"photos": "Foto",
+		"errorTitle": "Gagal memuat data",
+		"errorDesc": "Terjadi kesalahan saat mengambil papan peringkat."
 	}
 }

@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import { API_BASE } from '$lib/apis/client';
+import { logger } from '$lib/utils/logger';
 
 export const load: PageLoad = async ({ params, fetch }) => {
 	const { username } = params;
@@ -25,7 +26,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	} catch (err) {
 		const e = err as { status?: number; message?: string };
 		if (e.status) throw e; // Re-throw SvelteKit errors
-		console.error(e);
+		logger.error('Could not load profile', err, { context: 'PublicProfileLoad' });
 		throw error(500, 'Could not load profile');
 	}
 };

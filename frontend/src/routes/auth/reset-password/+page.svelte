@@ -1,12 +1,18 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { auth } from '$lib/apis/auth';
+	import { authStore } from '$lib/stores/auth';
 	import { showToast } from '$lib/stores';
-	import { Lock, ArrowLeft, Loader2, CheckCircle, ShieldCheck } from 'lucide-svelte';
+	import { logger } from '$lib/utils/logger';
+	import { getErrorMessage } from '$lib/utils/api';
+	import { Lock, ArrowLeft, LoaderCircle, CircleCheck, ShieldCheck } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { resetPasswordSchema, resetPasswordBaseSchema } from '$lib/schemas/auth';
+	import PasswordStrengthChecklist from '$lib/components/auth/PasswordStrengthChecklist.svelte';
+	import { ZodError } from 'zod';
 
 	const { t } = useTranslation();
 
@@ -15,6 +21,7 @@
 	let confirmPassword = '';
 	let isLoading = false;
 	let error: string | null = null;
+	let errors: Record<string, string> = {};
 	let isSuccess = false;
 
 	onMount(() => {
@@ -24,22 +31,41 @@
 		}
 	});
 
+	$: isValid =
+		newPassword.length > 0 && confirmPassword.length > 0 && Object.values(errors).every((e) => !e);
+
+	const validateField = (field: 'newPassword' | 'confirmPassword', value: string) => {
+		try {
+			if (field === 'confirmPassword') {
+				if (value !== newPassword) {
+					errors.confirmPassword = "Passwords don't match";
+				} else {
+					errors.confirmPassword = '';
+				}
+				return;
+			}
+
+			// @ts-ignore - pick is valid on z.object
+			const fieldSchema = resetPasswordBaseSchema.pick({ [field]: true });
+			fieldSchema.parse({ [field]: value });
+			errors[field] = '';
+		} catch (err) {
+			if (err instanceof ZodError) {
+				const fieldErrors = err.flatten().fieldErrors as Record<string, string[] | undefined>;
+				errors[field] = fieldErrors[field]?.[0] || '';
+			}
+		}
+	};
+
 	const handleSubmit = async () => {
-		if (newPassword !== confirmPassword) {
-			error = $t('auth.resetPassword.mismatch');
-			return;
-		}
-
-		if (newPassword.length < 8) {
-			error = $t('auth.resetPassword.tooShort');
-			return;
-		}
-
 		isLoading = true;
 		error = null;
+		errors = {};
 
 		try {
-			await auth.resetPassword({
+			resetPasswordSchema.parse({ newPassword, confirmPassword });
+
+			await authStore.resetPassword({
 				token,
 				new_password: newPassword,
 				confirm_password: confirmPassword
@@ -50,10 +76,21 @@
 				goto('/login');
 			}, 2000);
 		} catch (err) {
-			const e = err as { detail?: string; message?: string };
-			console.error(e);
-			error = e.detail || e.message || 'Failed to reset password';
-			showToast(error || 'Reset failed', 'error');
+			if (err instanceof ZodError) {
+				const fieldErrors = err.flatten().fieldErrors;
+				errors = Object.fromEntries(
+					Object.entries(fieldErrors).map(([key, val]) => [
+						key,
+						Array.isArray(val) && val.length > 0 ? val[0] : ''
+					])
+				);
+				return;
+			}
+
+			const errorMsg = getErrorMessage(err);
+			logger.error('Reset password failed', err, { context: 'ResetPasswordPage' });
+			error = errorMsg || 'Failed to reset password';
+			showToast(error, 'error');
 		} finally {
 			isLoading = false;
 		}
@@ -80,16 +117,6 @@
 	</div>
 
 	<div class="w-full max-w-md">
-		{#if !isSuccess}
-			<a
-				href="/login"
-				class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
-			>
-				<ArrowLeft class="w-4 h-4" />
-				{$t('auth.forgotPassword.backToLogin')}
-			</a>
-		{/if}
-
 		<div
 			class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/60 dark:border-zinc-800 animate-fade-in"
 		>
@@ -98,7 +125,7 @@
 					<div
 						class="w-20 h-20 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center mx-auto mb-6"
 					>
-						<CheckCircle class="w-10 h-10 text-green-500" />
+						<CircleCheck class="w-10 h-10 text-green-500" />
 					</div>
 					<h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2">
 						{$t('auth.resetPassword.successTitle')}
@@ -128,7 +155,7 @@
 					</p>
 				</div>
 
-				<form on:submit|preventDefault={handleSubmit} class="space-y-5">
+				<form on:submit|preventDefault={handleSubmit} class="space-y-5" novalidate>
 					<div>
 						<label
 							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
@@ -143,12 +170,16 @@
 							<input
 								id="new-password"
 								type="password"
-								required
 								bind:value={newPassword}
-								class="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600"
+								on:input={() => validateField('newPassword', newPassword)}
+								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.newPassword ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 								placeholder="••••••••"
 							/>
 						</div>
+						<PasswordStrengthChecklist password={newPassword} />
+						{#if errors.newPassword}
+							<p class="text-xs text-red-600 font-bold mt-2 ml-1">{errors.newPassword}</p>
+						{/if}
 					</div>
 
 					<div>
@@ -165,12 +196,15 @@
 							<input
 								id="confirm-password"
 								type="password"
-								required
 								bind:value={confirmPassword}
-								class="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600"
+								on:input={() => validateField('confirmPassword', confirmPassword)}
+								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 								placeholder="••••••••"
 							/>
 						</div>
+						{#if errors.confirmPassword}
+							<p class="text-xs text-red-600 font-bold mt-2 ml-1">{errors.confirmPassword}</p>
+						{/if}
 					</div>
 
 					{#if error}
@@ -183,15 +217,25 @@
 
 					<button
 						type="submit"
-						disabled={isLoading || !token}
+						disabled={isLoading || !token || !isValid}
 						class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
 					>
 						{#if isLoading}
-							<Loader2 class="w-5 h-5 animate-spin" /> {$t('auth.resetPassword.submitting')}
+							<LoaderCircle class="w-5 h-5 animate-spin" /> {$t('auth.resetPassword.submitting')}
 						{:else}
 							{$t('auth.resetPassword.submit')}
 						{/if}
 					</button>
+
+					<div class="text-center mt-6">
+						<a
+							href="/login"
+							class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors inline-flex items-center gap-2"
+						>
+							<ArrowLeft class="w-4 h-4" />
+							{$t('auth.forgotPassword.backToLogin')}
+						</a>
+					</div>
 				</form>
 			{/if}
 		</div>

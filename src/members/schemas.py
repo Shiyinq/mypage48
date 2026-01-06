@@ -1,6 +1,9 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
+
 from pydantic import BaseModel, Field
+
+from src.tickets.schemas import PaginationMeta
 
 
 class SocialMedia(BaseModel):
@@ -38,8 +41,8 @@ class MemberResponse(MemberBase):
 
 
 class MemberListResponse(BaseModel):
-    total: int
-    members: List[MemberResponse]
+    data: List[MemberResponse]
+    meta: PaginationMeta
 
 
 class MemberDetailResponse(BaseModel):

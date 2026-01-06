@@ -1,15 +1,16 @@
 import { client, API_BASE } from './client';
+import { accessToken } from '$lib/stores/accessToken';
 import type {
 	LoginRequest,
 	RegisterRequest,
 	AuthResponse,
-	User,
 	ApiError,
 	EmailVerificationRequest,
 	VerifyEmailRequest,
 	PasswordResetRequest,
 	PasswordResetConfirmRequest,
-	GenericResponse
+	GenericResponse,
+	ProfileFullResponse
 } from '$lib/types';
 
 export const auth = {
@@ -42,8 +43,7 @@ export const auth = {
 			throw data as ApiError;
 		}
 
-		// Import store dynamically or at top level to update it
-		const { accessToken } = await import('$lib/store/auth');
+		// Update store
 		accessToken.set(data.access_token);
 
 		return data as AuthResponse;
@@ -79,7 +79,7 @@ export const auth = {
 	},
 
 	getProfile: async () => {
-		return client<User>('/users/profile');
+		return client<ProfileFullResponse>('/users/profile');
 	},
 
 	sendVerificationEmail: async (data: EmailVerificationRequest) => {
@@ -110,7 +110,11 @@ export const auth = {
 		});
 	},
 
-	// Social Login URLs
-	googleLoginUrl: `${API_BASE}/auth/google/signin`,
-	githubLoginUrl: `${API_BASE}/auth/github/signin`
+	// Social Login URLs - use getters to avoid accessing API_BASE during initialization
+	get googleLoginUrl() {
+		return `${API_BASE}/auth/google/signin`;
+	},
+	get githubLoginUrl() {
+		return `${API_BASE}/auth/github/signin`;
+	}
 };
