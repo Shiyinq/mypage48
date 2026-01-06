@@ -1,10 +1,18 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isAuthenticated, showToast } from '$lib/stores';
-	import { Ticket, Lock, Mail, ArrowRight, User } from 'lucide-svelte';
-	import { auth } from '$lib/apis/auth';
+	import { logger } from '$lib/utils/logger';
+	import { getErrorMessage } from '$lib/utils/api';
+	import { authStore } from '$lib/stores/auth';
+	import { Lock, Mail, ArrowRight, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
+	import AuthLayout from '$lib/components/layouts/AuthLayout.svelte';
+
+	import { loginSchema } from '$lib/schemas/auth';
+	import { ZodError } from 'zod';
 
 	const { t } = useTranslation();
 
@@ -12,32 +20,53 @@
 	let password = '';
 	let isLoading = false;
 	let error: string | null = null;
+	let errors: Record<string, string> = {};
+
+	$: isValid = email.length > 0 && password.length > 0 && Object.values(errors).every((e) => !e);
+
+	const validateField = (field: 'email' | 'password', value: string) => {
+		try {
+			// @ts-ignore - pick is valid on z.object
+			const fieldSchema = loginSchema.pick({ [field]: true });
+			fieldSchema.parse({ [field]: value });
+			errors[field] = '';
+		} catch (err) {
+			if (err instanceof ZodError) {
+				const fieldErrors = err.flatten().fieldErrors as Record<string, string[] | undefined>;
+				errors[field] = fieldErrors[field]?.[0] || '';
+			}
+		}
+	};
 
 	const handleSubmit = async () => {
 		isLoading = true;
 		error = null;
+		errors = {};
+
 		try {
-			// Backend expects 'username' field, which can be email or username
-			await auth.login({ username: email, password });
+			// Client-side validation
+			loginSchema.parse({ email, password });
+
+			await authStore.login({ username: email, password });
 			isAuthenticated.set(true);
-			showToast($t('auth.login.welcomeBack'));
 			showToast($t('auth.login.welcomeBack'));
 			goto('/');
 		} catch (err) {
-			const e = err as { detail?: string; message?: string };
-			console.error(e);
-			// status = 'error'; // ensure local status variable matches if used
-
-			if (e.detail) {
-				error = e.detail;
-			} else if (e.message) {
-				error = e.message;
-			} else {
-				error = $t('auth.login.failed');
+			if (err instanceof ZodError) {
+				const fieldErrors = err.flatten().fieldErrors;
+				errors = Object.fromEntries(
+					Object.entries(fieldErrors).map(([key, val]) => [
+						key,
+						Array.isArray(val) && val.length > 0 ? val[0] : ''
+					])
+				);
+				return;
 			}
 
-			// Show toast for better visibility
-			showToast(error || $t('common.error'), 'error');
+			const errorMsg = getErrorMessage(err);
+			logger.error('Login failed', err, { context: 'LoginPage' });
+			error = errorMsg || $t('auth.login.failed');
+			showToast(error, 'error');
 		} finally {
 			isLoading = false;
 		}
@@ -46,108 +75,87 @@
 
 <SEO title={$t('auth.login.title')} path="/login" description={$t('seo.login')} />
 
-<div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-	<div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-		<div
-			class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-red-500/20 blur-[100px] animate-pulse"
-		></div>
-		<div
-			class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/20 blur-[100px] animate-pulse"
-		></div>
-	</div>
-
-	<div class="w-full max-w-md">
-		<div class="text-center mb-8 animate-fade-in">
-			<div
-				class="w-16 h-16 rounded-full idol-gradient flex items-center justify-center text-white shadow-xl mx-auto mb-4 ring-4 ring-white/50 dark:ring-white/10"
+<AuthLayout title={$t('auth.login.title')} subtitle={$t('auth.login.subtitle')}>
+	<form on:submit|preventDefault={handleSubmit} class="space-y-5" novalidate>
+		<div>
+			<label
+				for="email"
+				class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+				>{$t('auth.login.emailLabel')}</label
 			>
-				<Ticket class="w-8 h-8" />
+			<div class="relative">
+				<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
+					<Mail class="w-5 h-5" />
+				</div>
+				<input
+					type="email"
+					id="email"
+					bind:value={email}
+					on:input={() => validateField('email', email)}
+					class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
+					placeholder={$t('auth.login.emailPlaceholder')}
+				/>
 			</div>
-			<h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
-				MyPage<span class="text-red-600">48</span>
-			</h1>
-			<p class="text-gray-500 dark:text-gray-400 font-medium mt-2">{$t('auth.login.subtitle')}</p>
+			{#if errors.email}
+				<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.email}</p>
+			{/if}
 		</div>
 
-		<div
-			class="glass-panel p-8 rounded-3xl shadow-2xl border border-white/60 dark:border-zinc-800 backdrop-blur-xl animate-[slideUpFade_0.5s_ease-out]"
+		<div>
+			<label
+				for="password"
+				class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+				>{$t('auth.login.passwordLabel')}</label
+			>
+			<div class="relative">
+				<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
+					<Lock class="w-5 h-5" />
+				</div>
+				<input
+					type="password"
+					id="password"
+					bind:value={password}
+					on:input={() => validateField('password', password)}
+					class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.password ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
+					placeholder={$t('auth.login.passwordPlaceholder')}
+				/>
+			</div>
+			{#if errors.password}
+				<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.password}</p>
+			{/if}
+		</div>
+
+		<div class="flex justify-end">
+			<a
+				href="/auth/forgot-password"
+				class="text-xs font-bold text-red-600 hover:text-red-700 hover:underline"
+			>
+				{$t('auth.login.forgotPassword')}
+			</a>
+		</div>
+
+		<button
+			type="submit"
+			disabled={isLoading || !isValid}
+			class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
 		>
-			<form on:submit|preventDefault={handleSubmit} class="space-y-5">
-				<div>
-					<label
-						for="email"
-						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-						>{$t('auth.login.emailLabel')}</label
-					>
-					<div class="relative">
-						<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
-							<Mail class="w-5 h-5" />
-						</div>
-						<input
-							type="email"
-							id="email"
-							required
-							bind:value={email}
-							class="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600"
-							placeholder={$t('auth.login.emailPlaceholder')}
-						/>
-					</div>
-				</div>
+			{#if isLoading}
+				<span class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"
+				></span>
+			{:else}
+				{$t('auth.login.signIn')} <ArrowRight class="w-5 h-5" />
+			{/if}
+		</button>
+	</form>
 
-				<div>
-					<label
-						for="password"
-						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-						>{$t('auth.login.passwordLabel')}</label
-					>
-					<div class="relative">
-						<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
-							<Lock class="w-5 h-5" />
-						</div>
-						<input
-							type="password"
-							id="password"
-							required
-							bind:value={password}
-							class="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600"
-							placeholder={$t('auth.login.passwordPlaceholder')}
-						/>
-					</div>
-				</div>
-
-				<div class="flex justify-end">
-					<a
-						href="/auth/forgot-password"
-						class="text-xs font-bold text-red-600 hover:text-red-700 hover:underline"
-					>
-						{$t('auth.login.forgotPassword')}
-					</a>
-				</div>
-
-				<button
-					type="submit"
-					disabled={isLoading}
-					class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
-				>
-					{#if isLoading}
-						<span class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"
-						></span>
-					{:else}
-						{$t('auth.login.signIn')} <ArrowRight class="w-5 h-5" />
-					{/if}
-				</button>
-			</form>
-
-			<div class="mt-8 pt-6 border-t border-gray-100 dark:border-zinc-800 text-center">
-				<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.login.noAccount')}</p>
-				<button
-					on:click={() => goto('/register')}
-					class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
-				>
-					{$t('auth.login.registerCta')}
-					<User class="w-4 h-4" />
-				</button>
-			</div>
-		</div>
+	<div slot="footer">
+		<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.login.noAccount')}</p>
+		<button
+			on:click={() => goto('/register')}
+			class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
+		>
+			{$t('auth.login.registerCta')}
+			<User class="w-4 h-4" />
+		</button>
 	</div>
-</div>
+</AuthLayout>

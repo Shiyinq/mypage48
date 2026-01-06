@@ -1,10 +1,13 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { auth } from '$lib/apis/auth';
+	import { authStore } from '$lib/stores/auth';
 	import { showToast } from '$lib/stores';
-	import { CheckCircle, XCircle, Loader2 } from 'lucide-svelte';
+	import { logger } from '$lib/utils/logger';
+	import { getErrorMessage } from '$lib/utils/api';
+	import { CircleCheck, CircleX, LoaderCircle } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -23,7 +26,7 @@
 		}
 
 		try {
-			await auth.verifyEmail({ token });
+			await authStore.verifyEmail({ token });
 			status = 'success';
 			message = $t('auth.verifyEmail.successMessage');
 			showToast($t('auth.verifyEmail.successMessage'), 'success');
@@ -31,10 +34,10 @@
 				goto('/login');
 			}, 3000);
 		} catch (err) {
-			const e = err as { detail?: string; message?: string };
-			console.error(e);
+			const errorMsg = getErrorMessage(err);
+			logger.error('Email verification failed', err, { context: 'VerifyEmailPage' });
 			status = 'error';
-			message = e.detail || e.message || $t('auth.verifyEmail.failedMessage');
+			message = errorMsg || $t('auth.verifyEmail.failedMessage');
 		}
 	});
 </script>
@@ -67,19 +70,19 @@
 					<div
 						class="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center"
 					>
-						<Loader2 class="w-8 h-8 text-blue-500" />
+						<LoaderCircle class="w-8 h-8 text-blue-500" />
 					</div>
 				{:else if status === 'success'}
 					<div
 						class="w-16 h-16 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center"
 					>
-						<CheckCircle class="w-8 h-8 text-green-500" />
+						<CircleCheck class="w-8 h-8 text-green-500" />
 					</div>
 				{:else}
 					<div
 						class="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center"
 					>
-						<XCircle class="w-8 h-8 text-red-500" />
+						<CircleX class="w-8 h-8 text-red-500" />
 					</div>
 				{/if}
 			</div>

@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, tick } from 'svelte';
 	import { members, type Member } from '$lib/apis/members';
 	import { User, Search, X, Check } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 
 	// Props
 	export let value: string = '';
@@ -18,53 +19,86 @@
 	let isOpen = false;
 	let loading = false;
 	let memberList: Member[] = [];
-	let filteredMembers: Member[] = [];
 	let searchQuery = '';
 	let selectedMember: Member | null = null;
 
+	let page = 1;
+	let hasMore = true;
+	let isAppending = false;
+	let searchTimeout: ReturnType<typeof setTimeout>;
+
+	let observer: IntersectionObserver;
+	let sentinel: HTMLElement;
+
 	$: if (isOpen && memberList.length === 0) {
-		loadMembers();
+		loadMembers(true);
 	}
 
-	// If value exists, try to find the member object to highlight ??
-	// We might not have the ID, just the name.
-	$: if (isOpen && value && memberList.length > 0 && !selectedMember) {
-		const found = memberList.find((m) => m.name === value);
-		if (found) selectedMember = found;
+	$: if (isOpen && sentinel && observer) {
+		observer.observe(sentinel);
 	}
 
-	async function loadMembers() {
-		loading = true;
+	async function loadMembers(reset = false) {
+		// cacheKey logic removed
+
+		if (reset) {
+			loading = true;
+			page = 1;
+			hasMore = true;
+		} else {
+			if (!hasMore || isAppending) return;
+			isAppending = true;
+		}
+
 		try {
-			const res = await members.getAll({ limit: 100 });
-			memberList = res.members.filter((m) => m.active);
-			filteredMembers = memberList;
+			const res = await members.getAll({
+				page: reset ? 1 : page + 1,
+				limit: 20,
+				search: searchQuery || undefined
+			});
 
-			// Initial match if value is present
-			if (value) {
+			if (reset) {
+				memberList = res.data.filter((m) => m.active);
+				page = 1;
+			} else {
+				memberList = [...memberList, ...res.data.filter((m) => m.active)];
+				page += 1;
+			}
+
+			hasMore = !!res.meta.next_page;
+
+			// If value exists, try to find the member object to highlight
+			if (value && reset) {
 				const found = memberList.find((m) => m.name === value);
 				if (found) selectedMember = found;
 			}
+
+			await tick();
+			initObserver();
 		} catch (e) {
-			console.error(e);
+			logger.error('Failed to load members', e, { context: 'MemberSelector' });
 			showToast('Failed to load members', 'error');
 		} finally {
 			loading = false;
+			isAppending = false;
 		}
 	}
 
+	function initObserver() {
+		if (observer) observer.disconnect();
+		observer = new IntersectionObserver((entries) => {
+			if (entries[0].isIntersecting && hasMore && !loading && !isAppending) {
+				loadMembers(false);
+			}
+		});
+		if (sentinel) observer.observe(sentinel);
+	}
+
 	function handleSearch() {
-		const q = searchQuery.toLowerCase();
-		if (!q) {
-			filteredMembers = memberList;
-		} else {
-			filteredMembers = memberList.filter(
-				(m) =>
-					m.name.toLowerCase().includes(q) ||
-					m.nickname.toLowerCase().includes(q) ||
-					m.generation.toLowerCase().includes(q)
-			);
-		}
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(() => {
+			loadMembers(true);
+		}, 500);
 	}
 
 	function selectMember(member: Member) {
@@ -82,7 +116,7 @@
 	function close() {
 		isOpen = false;
 		searchQuery = '';
-		filteredMembers = memberList;
+		memberList = [];
 	}
 </script>
 
@@ -154,14 +188,14 @@
 
 			<!-- Member Grid -->
 			<div class="flex-1 overflow-y-auto p-6 scrollbar-hide">
-				{#if loading}
+				{#if loading && memberList.length === 0}
 					<div class="flex flex-col items-center justify-center py-12">
 						<div
 							class="w-10 h-10 border-4 border-red-100 border-t-red-500 rounded-full animate-spin mb-4"
 						></div>
 						<p class="text-sm text-gray-500">{$t('profile.oshiModal.loading')}</p>
 					</div>
-				{:else if filteredMembers.length === 0}
+				{:else if memberList.length === 0}
 					<div class="text-center py-12">
 						<Search class="w-12 h-12 text-gray-200 mx-auto mb-3" />
 						<p class="text-gray-500">
@@ -170,7 +204,7 @@
 					</div>
 				{:else}
 					<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-						{#each filteredMembers as member}
+						{#each memberList as member}
 							<button
 								type="button"
 								class="group relative flex flex-col items-center text-center p-3 rounded-2xl transition-all duration-200 border-2 cursor-pointer
@@ -205,6 +239,13 @@
 								>
 							</button>
 						{/each}
+					</div>
+
+					<!-- Sentinel for Infinite Scroll -->
+					<div bind:this={sentinel} class="h-8 w-full flex justify-center items-center py-2">
+						{#if isAppending}
+							<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
+						{/if}
 					</div>
 				{/if}
 			</div>

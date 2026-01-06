@@ -1,11 +1,20 @@
 <script lang="ts">
+	export let params: Record<string, string> | undefined = undefined;
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
-	import { Lock, Mail, User, Hash, CheckCircle, Crown, Shield } from 'lucide-svelte';
-	import { auth } from '$lib/apis/auth';
+	import { logger } from '$lib/utils/logger';
+	import { getErrorMessage } from '$lib/utils/api';
+	import { authStore } from '$lib/stores/auth';
+	import { Lock, Mail, User, Hash, CircleCheck, Crown, Shield } from 'lucide-svelte';
 	import type { RegisterRequest } from '$lib/types';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import AuthLayout from '$lib/components/layouts/AuthLayout.svelte';
+
+	import PasswordStrengthChecklist from '$lib/components/auth/PasswordStrengthChecklist.svelte';
+	import { registerSchema, registerBaseSchema } from '$lib/schemas/auth';
+	import { ZodError } from 'zod';
 
 	const { t } = useTranslation();
 
@@ -21,34 +30,66 @@
 
 	let isLoading = false;
 	let error: string | null = null;
+	let errors: Record<string, string> = {};
+
+	$: isValid =
+		Object.values(formData).every((val) => val.length > 0) &&
+		Object.values(errors).every((e) => !e);
+
+	const validateField = (field: keyof typeof formData) => {
+		try {
+			if (field === 'confirmPassword') {
+				// Custom check for confirm password since it's a refinement
+				if (formData.confirmPassword !== formData.password) {
+					errors.confirmPassword = "Passwords don't match";
+				} else {
+					errors.confirmPassword = '';
+				}
+				return;
+			}
+
+			// @ts-ignore - pick is valid on z.object
+			const fieldSchema = registerBaseSchema.pick({ [field]: true });
+			fieldSchema.parse({ [field]: formData[field] });
+			errors[field] = '';
+		} catch (err) {
+			if (err instanceof ZodError) {
+				const fieldErrors = err.flatten().fieldErrors as Record<string, string[] | undefined>;
+				errors[field] = fieldErrors[field]?.[0] || '';
+			}
+		}
+	};
 
 	const handleSubmit = async () => {
-		if (formData.password !== formData.confirmPassword) {
-			error = $t('auth.register.passwordsMismatch');
-			return;
-		}
-
 		isLoading = true;
 		error = null;
+		errors = {};
 
 		try {
-			await auth.register(formData);
+			// Client-side validation
+			registerSchema.parse(formData);
+
+			await authStore.register(formData);
 			showToast($t('auth.register.success'), 'success');
 
-			// Optional: delay redirect to let them read the message, or move them to login immediately
 			setTimeout(() => {
 				goto('/login');
 			}, 2000);
 		} catch (err) {
-			const e = err as { detail?: string | string[]; message?: string };
-			console.error(e);
-			if (e.detail && typeof e.detail === 'string') {
-				error = e.detail;
-			} else if (e.message) {
-				error = e.message;
-			} else {
-				error = $t('auth.register.failed');
+			if (err instanceof ZodError) {
+				const fieldErrors = err.flatten().fieldErrors;
+				errors = Object.fromEntries(
+					Object.entries(fieldErrors).map(([key, val]) => [
+						key,
+						Array.isArray(val) && val.length > 0 ? val[0] : ''
+					])
+				);
+				return;
 			}
+
+			const errorMsg = getErrorMessage(err);
+			logger.error('Registration failed', err, { context: 'RegisterPage' });
+			error = errorMsg || $t('auth.register.failed');
 		} finally {
 			isLoading = false;
 		}
@@ -57,29 +98,16 @@
 
 <SEO title={$t('auth.register.title')} path="/register" description={$t('seo.register')} />
 
-<div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden py-12">
-	<div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-		<div
-			class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-red-500/10 blur-[100px] animate-pulse"
-		></div>
-		<div
-			class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[100px] animate-pulse"
-		></div>
-	</div>
-
-	<div class="w-full max-w-lg">
-		<div class="text-center mb-8 animate-fade-in">
-			<h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
-				{$t('auth.register.title')}
-			</h1>
-			<p class="text-gray-500 dark:text-gray-400 font-medium">{$t('auth.register.subtitle')}</p>
-		</div>
-
-		<div
-			class="glass-panel p-8 rounded-3xl shadow-2xl border border-white/60 dark:border-zinc-800 backdrop-blur-xl animate-[slideUpFade_0.5s_ease-out]"
-		>
-			<form on:submit|preventDefault={handleSubmit} class="space-y-4">
-				<div class="grid grid-cols-2 gap-4">
+<AuthLayout
+	title={$t('auth.register.title')}
+	subtitle={$t('auth.register.subtitle')}
+	cardWidth="max-w-4xl"
+>
+	<form on:submit|preventDefault={handleSubmit} class="space-y-6" novalidate>
+		<div class="grid md:grid-cols-2 gap-6">
+			<!-- Left Column: Personal Information -->
+			<div class="space-y-4">
+				<div class="grid grid-cols-2 gap-3">
 					<div>
 						<label
 							for="memberId"
@@ -88,19 +116,22 @@
 						>
 						<div class="relative">
 							<div
-								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
+								class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
 							>
-								<Hash class="w-4 h-4" />
+								<Hash class="w-5 h-5" />
 							</div>
 							<input
 								id="memberId"
 								name="memberId"
-								required
 								bind:value={formData.memberId}
-								class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
+								on:input={() => validateField('memberId')}
+								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.memberId ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 								placeholder="JKT-XXXX"
 							/>
 						</div>
+						{#if errors.memberId}
+							<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.memberId}</p>
+						{/if}
 					</div>
 					<div>
 						<label
@@ -110,19 +141,22 @@
 						>
 						<div class="relative">
 							<div
-								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
+								class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
 							>
-								<User class="w-4 h-4" />
+								<User class="w-5 h-5" />
 							</div>
 							<input
 								id="username"
 								name="username"
-								required
 								bind:value={formData.username}
-								class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
+								on:input={() => validateField('username')}
+								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.username ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 								placeholder="@username"
 							/>
 						</div>
+						{#if errors.username}
+							<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.username}</p>
+						{/if}
 					</div>
 				</div>
 
@@ -135,11 +169,14 @@
 					<input
 						id="fullName"
 						name="fullName"
-						required
 						bind:value={formData.fullName}
-						class="w-full px-4 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
+						on:input={() => validateField('fullName')}
+						class={`w-full px-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.fullName ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 						placeholder="e.g. Catherina Vallencia"
 					/>
+					{#if errors.fullName}
+						<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.fullName}</p>
+					{/if}
 				</div>
 
 				<div>
@@ -149,21 +186,27 @@
 						>{$t('auth.register.email')}</label
 					>
 					<div class="relative">
-						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
-							<Mail class="w-4 h-4" />
+						<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
+							<Mail class="w-5 h-5" />
 						</div>
 						<input
 							type="email"
 							id="email"
 							name="email"
-							required
 							bind:value={formData.email}
-							class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
+							on:input={() => validateField('email')}
+							class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 							placeholder="name@example.com"
 						/>
 					</div>
+					{#if errors.email}
+						<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.email}</p>
+					{/if}
 				</div>
+			</div>
 
+			<!-- Right Column: Account Security -->
+			<div class="space-y-4">
 				<div>
 					<label
 						for="ofcStatus"
@@ -171,26 +214,26 @@
 						>{$t('auth.register.ofcStatus')}</label
 					>
 					<div class="relative">
-						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-red-500">
-							<Crown class="w-4 h-4" />
+						<div class="absolute left-4 top-1/2 -translate-y-1/2 text-red-500">
+							<Crown class="w-5 h-5" />
 						</div>
 						<select
 							id="ofcStatus"
 							name="ofcStatus"
 							bind:value={formData.ofcStatus}
-							class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm appearance-none cursor-pointer"
+							class="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all appearance-none cursor-pointer"
 						>
 							<option value="Active">{$t('auth.register.ofcActive')}</option>
 							<option value="Inactive">{$t('auth.register.ofcInactive')}</option>
 							<option value="Pending">{$t('auth.register.pendingRenewal')}</option>
 						</select>
-						<div class="absolute right-3 top-1/2 -translate-y-1/2">
-							<CheckCircle class="w-4 h-4 text-green-500" />
+						<div class="absolute right-4 top-1/2 -translate-y-1/2">
+							<CircleCheck class="w-5 h-5 text-green-500" />
 						</div>
 					</div>
 				</div>
 
-				<div class="grid md:grid-cols-2 gap-4">
+				<div class="grid grid-cols-2 gap-3">
 					<div>
 						<label
 							for="password"
@@ -199,17 +242,17 @@
 						>
 						<div class="relative">
 							<div
-								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
+								class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
 							>
-								<Lock class="w-4 h-4" />
+								<Lock class="w-5 h-5" />
 							</div>
 							<input
 								type="password"
 								id="password"
 								name="password"
-								required
 								bind:value={formData.password}
-								class="w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-zinc-600"
+								on:input={() => validateField('password')}
+								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.password ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 								placeholder="••••••••"
 							/>
 						</div>
@@ -222,53 +265,68 @@
 						>
 						<div class="relative">
 							<div
-								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
+								class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
 							>
-								<Shield class="w-4 h-4" />
+								<Shield class="w-5 h-5" />
 							</div>
 							<input
 								type="password"
 								id="confirmPassword"
 								name="confirmPassword"
-								required
 								bind:value={formData.confirmPassword}
-								class={`w-full pl-9 pr-3 py-3 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white text-sm ${error ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-zinc-700'} placeholder-gray-400 dark:placeholder-zinc-600`}
+								on:input={() => validateField('confirmPassword')}
+								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 								placeholder="••••••••"
 							/>
 						</div>
 					</div>
 				</div>
 
-				{#if error}
-					<p
-						class="text-xs text-red-600 dark:text-red-400 font-bold text-center bg-red-50 dark:bg-red-900/20 p-2 rounded-lg border border-red-100 dark:border-red-800"
-					>
-						{error}
-					</p>
+				<PasswordStrengthChecklist password={formData.password} />
+
+				{#if errors.password || errors.confirmPassword}
+					<div class="text-center space-y-1">
+						{#if errors.password}
+							<p class="text-xs text-red-500 font-medium">{errors.password}</p>
+						{/if}
+						{#if errors.confirmPassword}
+							<p class="text-xs text-red-500 font-medium">{errors.confirmPassword}</p>
+						{/if}
+					</div>
 				{/if}
-
-				<button
-					type="submit"
-					disabled={isLoading}
-					class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
-				>
-					{#if isLoading}
-						{$t('auth.register.submitting')}
-					{:else}
-						{$t('auth.register.submit')}
-					{/if}
-				</button>
-			</form>
-
-			<div class="mt-6 pt-6 border-t border-gray-100 dark:border-zinc-800 text-center">
-				<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.register.hasAccount')}</p>
-				<button
-					on:click={() => goto('/login')}
-					class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
-				>
-					{$t('auth.register.signIn')}
-				</button>
 			</div>
 		</div>
+
+		{#if error}
+			<p
+				class="text-xs text-red-600 dark:text-red-400 font-bold text-center bg-red-50 dark:bg-red-900/20 p-2 rounded-xl border border-red-100 dark:border-red-800"
+			>
+				{error}
+			</p>
+		{/if}
+
+		<div>
+			<button
+				type="submit"
+				disabled={isLoading || !isValid}
+				class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+			>
+				{#if isLoading}
+					{$t('auth.register.submitting')}
+				{:else}
+					{$t('auth.register.submit')}
+				{/if}
+			</button>
+		</div>
+	</form>
+
+	<div slot="footer">
+		<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.register.hasAccount')}</p>
+		<button
+			on:click={() => goto('/login')}
+			class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
+		>
+			{$t('auth.register.signIn')}
+		</button>
 	</div>
-</div>
+</AuthLayout>

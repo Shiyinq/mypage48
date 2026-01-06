@@ -13,6 +13,7 @@ class DomainErrorCode:
     MEMBER_NOT_FOUND = "Member not found."
     MEMBER_FETCH_FAILED = "Failed to fetch member data."
 
+
 # JKT48 Active Members Data with Generation and Jiko
 class Jkt48Members:
     data = [

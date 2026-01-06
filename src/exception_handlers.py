@@ -3,6 +3,8 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from src.achievements.exceptions import AchievementsFetchError
+from src.achievements.http_exceptions import AchievementsFetchHTTPException
 from src.api_keys.exceptions import (
     APIKeyCreationError,
     APIKeyDeletionError,
@@ -14,6 +16,7 @@ from src.api_keys.http_exceptions import (
     APIKeyNotFound,
 )
 from src.auth.exceptions import (
+    AuthOperationError,
     IncorrectCredentialsError,
     InvalidJWTTokenError,
     InvalidRefreshTokenError,
@@ -26,6 +29,7 @@ from src.auth.exceptions import (
 )
 from src.auth.http_exceptions import (
     AccountLocked,
+    AuthOperationFailed,
     EmailNotVerified,
     IncorrectEmailOrPassword,
     InvalidJWTToken,
@@ -37,31 +41,72 @@ from src.auth.http_exceptions import (
     SuspiciousActivity,
     VerificationTokenInvalid,
 )
+from src.dashboard.exceptions import StatsFetchError
+from src.dashboard.http_exceptions import StatsFetchFailed
 from src.exceptions import DomainException
 from src.http_exceptions import DetailedHTTPException
+from src.llm.exceptions import ImageAnalysisError
+from src.llm.exceptions import ImageTooLargeError as LLMImageTooLargeError
+from src.llm.exceptions import InvalidImageError as LLMInvalidImageError
+from src.llm.exceptions import InvalidImageTypeError as LLMInvalidImageTypeError
+from src.llm.http_exceptions import ImageAnalysisFailed
+from src.llm.http_exceptions import ImageTooLarge as LLMImageTooLarge
+from src.llm.http_exceptions import InvalidImage as LLMInvalidImage
+from src.llm.http_exceptions import InvalidImageType as LLMInvalidImageType
 from src.logging_config import create_logger
+from src.memories.exceptions import MemoriesFetchError
+from src.memories.http_exceptions import MemoriesFetchHTTPException
+from src.setlists.exceptions import SetlistFetchError, SetlistNotFoundError
+from src.setlists.http_exceptions import SetlistFetchError as SetlistFetchHTTPException
+from src.setlists.http_exceptions import SetlistNotFound
+from src.tickets.exceptions import ImageTooLargeError as TheaterImageTooLargeError
+from src.tickets.exceptions import InvalidImageError as TheaterInvalidImageError
+from src.tickets.exceptions import InvalidImageTypeError as TheaterInvalidImageTypeError
+from src.tickets.exceptions import (
+    TicketCreationError,
+    TicketDeletionError,
+    TicketFetchError,
+    TicketNotFoundError,
+    TicketUpdateError,
+)
+from src.tickets.http_exceptions import ImageTooLarge as TheaterImageTooLarge
+from src.tickets.http_exceptions import InvalidImage as TheaterInvalidImage
+from src.tickets.http_exceptions import InvalidImageType as TheaterInvalidImageType
+from src.tickets.http_exceptions import TicketCreateError, TicketDeleteError
+from src.tickets.http_exceptions import TicketFetchError as HttpTicketFetchError
+from src.tickets.http_exceptions import TicketNotFound
+from src.tickets.http_exceptions import TicketUpdateError as HttpTicketUpdateError
+from src.users.constants import ErrorCode
 from src.users.exceptions import AccountLocked as DomainAccountLocked
 from src.users.exceptions import EmailAlreadyExistsError
 from src.users.exceptions import EmailNotVerified as DomainEmailNotVerified
+from src.users.exceptions import ImageTooLargeError as UserImageTooLargeError
+from src.users.exceptions import InvalidImageError as UserInvalidImageError
+from src.users.exceptions import InvalidImageTypeError as UserInvalidImageTypeError
 from src.users.exceptions import (
+    OshiUpdateError,
+    ProfileStatsFetchError,
     ProviderUserCreationError,
+    PublicStatusUpdateError,
     PublicUserNotFoundError,
     UserCreationError,
+    UserFetchError,
     UsernameAlreadyExistsError,
+    UserUpdateError,
 )
-from src.users.http_exceptions import EmailTaken, PublicUserNotFound, ServerError, UsernameTaken
-from src.users.constants import ErrorCode
-from src.theater.exceptions import (
-    TicketNotFoundError,
-    TicketCreationError,
-    TicketUpdateError,
-    TicketDeletionError,
-)
-from src.theater.http_exceptions import (
-    TicketNotFound,
-    TicketCreateError,
-    TicketUpdateError as HttpTicketUpdateError,
-    TicketDeleteError,
+from src.users.http_exceptions import EmailTaken
+from src.users.http_exceptions import ImageTooLarge as UserImageTooLarge
+from src.users.http_exceptions import InvalidImage as UserInvalidImage
+from src.users.http_exceptions import InvalidImageType as UserInvalidImageType
+from src.users.http_exceptions import (
+    OshiUpdateFailed,
+    ProfileStatsFetchFailed,
+    PublicStatusUpdateFailed,
+    PublicUserNotFound,
+    ServerError,
+    UserFetchFailed,
+    UsernameTaken,
+    UserUpdateFailed,
 )
 
 logger = create_logger("exceptions", __name__)
@@ -105,6 +150,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, PasswordsNotMatch())
     if isinstance(exc, PasswordPolicyViolationError):
         return await detailed_http_exception_handler(request, PasswordPolicyViolation())
+    if isinstance(exc, AuthOperationError):
+        return await detailed_http_exception_handler(request, AuthOperationFailed())
 
     if isinstance(exc, DomainAccountLocked):
         return await detailed_http_exception_handler(request, AccountLocked())
@@ -121,14 +168,81 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     if isinstance(exc, PublicUserNotFoundError):
         return await detailed_http_exception_handler(request, PublicUserNotFound())
 
+    # Users update/fetch errors
+    if isinstance(exc, UserUpdateError):
+        return await detailed_http_exception_handler(request, UserUpdateFailed())
+    if isinstance(exc, UserFetchError):
+        return await detailed_http_exception_handler(request, UserFetchFailed())
+    if isinstance(exc, OshiUpdateError):
+        return await detailed_http_exception_handler(request, OshiUpdateFailed())
+    if isinstance(exc, PublicStatusUpdateError):
+        return await detailed_http_exception_handler(
+            request, PublicStatusUpdateFailed()
+        )
+    if isinstance(exc, ProfileStatsFetchError):
+        return await detailed_http_exception_handler(request, ProfileStatsFetchFailed())
+
+    # Users image validation errors
+    if isinstance(exc, UserImageTooLargeError):
+        return await detailed_http_exception_handler(request, UserImageTooLarge())
+    if isinstance(exc, UserInvalidImageTypeError):
+        return await detailed_http_exception_handler(request, UserInvalidImageType())
+    if isinstance(exc, UserInvalidImageError):
+        return await detailed_http_exception_handler(request, UserInvalidImage())
+
+    # Theater ticket errors
     if isinstance(exc, TicketNotFoundError):
         return await detailed_http_exception_handler(request, TicketNotFound())
     if isinstance(exc, TicketCreationError):
         return await detailed_http_exception_handler(request, TicketCreateError())
+    if isinstance(exc, TicketFetchError):
+        return await detailed_http_exception_handler(request, HttpTicketFetchError())
     if isinstance(exc, TicketUpdateError):
         return await detailed_http_exception_handler(request, HttpTicketUpdateError())
     if isinstance(exc, TicketDeletionError):
         return await detailed_http_exception_handler(request, TicketDeleteError())
+
+    # Theater image validation errors
+    if isinstance(exc, TheaterImageTooLargeError):
+        return await detailed_http_exception_handler(request, TheaterImageTooLarge())
+    if isinstance(exc, TheaterInvalidImageTypeError):
+        return await detailed_http_exception_handler(request, TheaterInvalidImageType())
+    if isinstance(exc, TheaterInvalidImageError):
+        return await detailed_http_exception_handler(request, TheaterInvalidImage())
+
+    # LLM errors
+    if isinstance(exc, ImageAnalysisError):
+        return await detailed_http_exception_handler(request, ImageAnalysisFailed())
+    if isinstance(exc, LLMImageTooLargeError):
+        return await detailed_http_exception_handler(request, LLMImageTooLarge())
+    if isinstance(exc, LLMInvalidImageTypeError):
+        return await detailed_http_exception_handler(request, LLMInvalidImageType())
+    if isinstance(exc, LLMInvalidImageError):
+        return await detailed_http_exception_handler(request, LLMInvalidImage())
+
+    # Dashboard errors
+    if isinstance(exc, StatsFetchError):
+        return await detailed_http_exception_handler(request, StatsFetchFailed())
+
+    # Achievements errors
+    if isinstance(exc, AchievementsFetchError):
+        return await detailed_http_exception_handler(
+            request, AchievementsFetchHTTPException()
+        )
+
+    # Memories errors
+    if isinstance(exc, MemoriesFetchError):
+        return await detailed_http_exception_handler(
+            request, MemoriesFetchHTTPException()
+        )
+
+    # Setlists errors
+    if isinstance(exc, SetlistNotFoundError):
+        return await detailed_http_exception_handler(request, SetlistNotFound())
+    if isinstance(exc, SetlistFetchError):
+        return await detailed_http_exception_handler(
+            request, SetlistFetchHTTPException()
+        )
 
     error_msg = str(exc)
     if (
@@ -162,14 +276,17 @@ async def request_validation_exception_handler(
     if errors:
         first_error = errors[0]
         msg = first_error.get("msg", "Invalid request")
-        
+
         # Clean Pydantic prefix
         clean_msg = msg
         if msg.startswith("Value error, "):
             clean_msg = msg.replace("Value error, ", "")
-            
+
         # Only return 400 if it matches known password errors
-        if clean_msg == ErrorCode.PASSWORD_MISMATCH or clean_msg == ErrorCode.PASSWORD_RULES:
+        if (
+            clean_msg == ErrorCode.PASSWORD_MISMATCH
+            or clean_msg == ErrorCode.PASSWORD_RULES
+        ):
             return JSONResponse(status_code=400, content={"detail": clean_msg})
 
     return JSONResponse(

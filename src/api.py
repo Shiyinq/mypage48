@@ -1,12 +1,16 @@
 from fastapi import APIRouter
 
+from src.achievements.route import router as achievements_router
 from src.api_keys.route import router as api_keys_router
 from src.auth.route import router as auth_router
+from src.dashboard.route import router as dashboard_router
 from src.health.route import router as health_router
-from src.users.route import router as user_router
 from src.llm.route import router as llm_router
-from src.theater.route import router as theater_router
 from src.members.route import router as members_router
+from src.memories.route import router as memories_router
+from src.setlists.route import router as setlists_router
+from src.tickets.route import router as theater_router
+from src.users.route import router as user_router
 
 router = APIRouter()
 
@@ -17,3 +21,9 @@ router.include_router(health_router, tags=["Health"])
 router.include_router(llm_router, prefix="/llm", tags=["LLM"])
 router.include_router(theater_router, prefix="/theater", tags=["Theater"])
 router.include_router(members_router, prefix="/members", tags=["Members"])
+router.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
+router.include_router(
+    achievements_router, prefix="/achievements", tags=["Achievements"]
+)
+router.include_router(memories_router, prefix="/memories", tags=["Memories"])
+router.include_router(setlists_router, prefix="/theater/setlists", tags=["Setlists"])

@@ -1,150 +1,165 @@
-# FASMO
+# MyPage48
 
 <div align="center">
-<!-- https://patorjk.com/software/taag/#p=display&f=Ghost&t=FASMO -->
-<pre>
-            ('-.      .-')   _   .-')                
-           ( OO ).-. ( OO ).( '.( OO )_              
-   ,------./ . --. /(_)---\_),--.   ,--.).-'),-----. 
-('-| _.---'| \-.  \ /    _ | |   `.'   |( OO'  .-.  '
-(OO|(_\  .-'-'  |  |\  :` `. |         |/   |  | |  |
-/  |  '--.\| |_.'  | '..`''.)|  |'.'|  |\_) |  |\|  |
-\_)|  .--' |  .-.  |.-._)   \|  |   |  |  \ |  | |  |
-  \|  |_)  |  | |  |\       /|  |   |  |   `'  '-'  '
-   `--'    `--' `--' `-----' `--'   `--'     `-----' 
-</pre>
+
+![MyPage48](https://img.shields.io/badge/MyPage48-JKT48%20Theater%20Tracker-e41e2b?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyTDMgNXY2YzAgNS41NSAzLjg0IDEwLjc0IDkgMTIgNS4xNi0xLjI2IDktNi40NSA5LTEyVjVsLTktM3oiLz48L3N2Zz4=)
+
+**A personal dashboard for JKT48 fans to track theater attendance, 2-shot collections, and spending statistics.**
+
+[Features](#features) · [Quick Start](#quick-start) · [Deployment](#deployment)
+
 </div>
-                         
 
+---
 
-FASMO - FastAPI SvelteKit MongoDB
+## ✨ Features
 
-The project structure for the backend is inspired by [this repository](https://github.com/zhanymkanov/fastapi-best-practices?tab=readme-ov-file#project-structure).
+- 📊 **Dashboard Analytics** - View comprehensive statistics of your theater visits, spending, and attendance patterns
+- 🎭 **Theater Tracking** - Log your theater show attendance with seat information and show details
+- 📸 **2-Shot Collection** - Track your 2-shot photos with member statistics
+- 🗺️ **Seat Map Visualization** - Interactive theater seat map showing your seating history
+- 📅 **Monthly & Daily Stats** - Analyze your attendance patterns by month and day of week
+- 🏆 **Achievements System** - Unlock achievements based on your theater journey
+- 👤 **Public Profile** - Share your theater stats with a public profile page (Wrapped)
+- 🌏 **Multi-language Support** - Available in English, Indonesian, and Japanese
+- 🌙 **Dark Mode** - Beautiful dark-themed UI with glassmorphism design
 
-The frontend of the project is built using SvelteKit, initialized with the command: <br /> `npm create svelte@latest fasmo`
+## 🛠️ Tech Stack
 
-# Table of Contents
-- [FASMO](#fasmo)
-- [Table of Contents](#table-of-contents)
-  - [Development](#development)
-    - [Backend](#backend)
-    - [Frontend](#frontend)
-  - [Formatting](#formatting)
-  - [Deployment](#deployment)
+| Layer | Technology |
+|-------|------------|
+| **Backend** | FastAPI (Python 3.10+) |
+| **Frontend** | SvelteKit 2.x |
+| **Database** | MongoDB |
+| **Styling** | TailwindCSS |
+| **Auth** | JWT Authentication |
 
-
-## Development
-
-### Backend
-
-**1. Create a Virtual Environment (venv)**
-
-Create a virtual environment (venv) using conda with the following command:
-
-```
-conda create -n [venv-name] python=3.10
-```
-
-Activate the venv with the following command:
+## 📁 Project Structure
 
 ```
-conda activate [venv-name]
-```
-**2. Install requirements**
-
-Install the required dependencies with the following command:
-
-```
-pip install -r requirements/dev.txt
-```
-**3. Create the .env File**
-
-Create and update `.env` file based on `.env.example`
-
-```
-cp .env.example .env
-```
-
-**4. Run the backend**
-
-Run the server with the following command:
-
-```
-sh script/start-dev.sh
+mypage48/
+├── src/                    # Backend (FastAPI)
+│   ├── achievements/       # Achievement system
+│   ├── auth/              # Authentication & OAuth
+│   ├── dashboard/         # Dashboard statistics API
+│   ├── members/           # JKT48 members data
+│   ├── setlists/          # Setlist information
+│   ├── tickets/           # Theater ticket logging
+│   ├── users/             # User management
+│   └── ...
+├── frontend/              # Frontend (SvelteKit)
+│   ├── src/
+│   │   ├── lib/          # Components, stores, utilities
+│   │   └── routes/       # Application pages
+│   └── ...
+├── scripts/               # Utility scripts
+├── tests/                 # Backend tests
+└── docker-compose.yml     # Docker deployment
 ```
 
-**5. Open the API Documentation**
+## 🚀 Quick Start
 
-The API documentation can be opened in a browser at the following address:
+### Prerequisites
 
-```
-http://localhost:8000/docs
-```
+- Python 3.10+
+- Node.js 18+
+- MongoDB (local or Atlas)
 
-### Frontend
-**1. Go to frontend folder**
+### Backend Setup
 
-Go to frontend folder and install dependencies:
-```
-cd frontend
-npm install
-```
+1. **Create and activate virtual environment**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   ```
 
-**2. Create the .env File**
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements/dev.txt
+   ```
 
-Create and update `.env` file based on `.env.example`
+3. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your MongoDB URI and other settings
+   ```
 
-```
-cp .env.example .env
-```
+4. **Run development server**
+   ```bash
+   sh scripts/start-dev.sh
+   ```
+   
+   API docs available at: http://localhost:8000/docs
 
-**3. Run the frontend**
+### Frontend Setup
 
-Run development server
+1. **Install dependencies**
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with API URL and other settings
+   ```
+
+3. **Run development server**
+   ```bash
+   npm run dev
+   ```
+   
+   App available at: http://localhost:5173
+
+### Run Both Services
+
+Use the convenience script to start both backend and frontend:
+
 ```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+sh scripts/start-all-dev.sh
 ```
 
-## Formatting
-To make the code cleaner and more structured
+## 🧹 Code Quality
 
-Backend:
+**Backend:**
+```bash
+sh scripts/lint-format.sh
 ```
-sh scripts/lint-fromat.sh
-```
-Frontend:
-```
+
+**Frontend:**
+```bash
+cd frontend
 npm run lint
 npm run format
+npm run check
 ```
 
-## Deployment
+## 🐳 Deployment
 
-Before you begin, ensure you have [Docker](https://docs.docker.com/engine/install/) installed.
+### Docker Compose (Recommended)
 
-**1. Create environment files**
+1. **Configure environment files**
+   ```bash
+   cp .env.example .env
+   cd frontend && cp .env.example .env && cd ..
+   ```
 
-For the backend:
-```bash
-cp .env.example .env
-```
+2. **Build and run containers**
+   ```bash
+   docker compose up --build -d
+   ```
 
-For the frontend:
-```bash
-cd frontend
-cp .env.example .env
-cd ..
-```
+3. **Access the application**
+   - Frontend: http://localhost:5050
+   - Backend: http://localhost:8000
 
-Open each `.env` file you have created and update the values as needed.
+## 📝 License
 
-**2. Build and run the Docker containers**
-```bash
-docker compose up --build -d
-```
-Wait a few minutes for the setup to complete. You can then access:
-- Frontend at http://localhost:5050
-- Backend at http://localhost:8000
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+Made with ❤️ for JKT48 fans
+</div>

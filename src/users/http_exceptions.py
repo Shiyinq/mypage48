@@ -24,3 +24,35 @@ class ServerError(InternalServerError):
 
 class PublicUserNotFound(NotFound):
     DETAIL = ErrorCode.PUBLIC_USER_NOT_FOUND
+
+
+class ImageTooLarge(BadRequest):
+    DETAIL = ErrorCode.IMAGE_TOO_LARGE
+
+
+class InvalidImageType(BadRequest):
+    DETAIL = ErrorCode.INVALID_IMAGE_TYPE
+
+
+class InvalidImage(BadRequest):
+    DETAIL = ErrorCode.INVALID_IMAGE
+
+
+class UserUpdateFailed(InternalServerError):
+    DETAIL = ErrorCode.USER_UPDATE_FAILED
+
+
+class UserFetchFailed(InternalServerError):
+    DETAIL = ErrorCode.USER_FETCH_FAILED
+
+
+class OshiUpdateFailed(InternalServerError):
+    DETAIL = ErrorCode.OSHI_UPDATE_FAILED
+
+
+class PublicStatusUpdateFailed(InternalServerError):
+    DETAIL = ErrorCode.PUBLIC_STATUS_UPDATE_FAILED
+
+
+class ProfileStatsFetchFailed(InternalServerError):
+    DETAIL = ErrorCode.PROFILE_STATS_FETCH_ERROR

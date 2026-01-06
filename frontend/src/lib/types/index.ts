@@ -1,73 +1,15 @@
-export interface User {
-	userId: string;
-	email: string;
-	username: string;
-	name: string;
-	profilePicture?: string;
-	provider?: string;
-	isEmailVerified: boolean;
-	createdAt: string;
-	oshi?: {
-		name: string;
-		nickname: string;
-		generation: string;
-		profilePicture: string;
-		catchphrase: string;
-		socials?: {
-			twitter?: string;
-			instagram?: string;
-			tiktok?: string;
-			idn_app?: string;
-			showroom?: string;
-		};
-	} | null;
-}
+/**
+ * Central export point for all types.
+ * Import from '$lib/types' to access any type.
+ */
 
-export interface AuthResponse {
-	access_token: string;
-	token_type: string;
-}
+// Common/shared types
+export * from './common';
 
-export interface LoginRequest {
-	username: string; // email or username
-	password: string;
-}
-
-export interface RegisterRequest {
-	name: string;
-	username: string;
-	email: string;
-	password: string;
-	confirmPassword: string;
-}
-
-export interface ApiError {
-	detail: string | { loc: (string | number)[]; msg: string; type: string }[];
-}
-
-export interface EmailVerificationRequest {
-	email: string;
-}
-
-export interface VerifyEmailRequest {
-	token: string;
-}
-
-export interface PasswordResetRequest {
-	email: string;
-}
-
-export interface PasswordResetConfirmRequest {
-	token: string;
-	new_password: string;
-	confirm_password: string;
-}
-
-export interface GenericResponse {
-	message: string;
-}
-
-export interface APIKeysResponse {
-	detail: string;
-	apiKey: string;
-}
+// Domain-specific types
+export * from './ticket';
+export * from './auth';
+export * from './memories';
+export * from './dashboard';
+export * from './profile';
+export * from './achievements';

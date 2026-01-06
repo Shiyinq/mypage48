@@ -1,17 +1,17 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from src.config import Settings
 from src.logging_config import create_logger
+from src.members.constants import Info, Jkt48Members
+from src.members.exceptions import MemberFetchError, MemberNotFoundError
 from src.members.repository import MemberRepository
 from src.members.schemas import (
-    MemberCreate,
-    MemberResponse,
-    MemberListResponse,
     MemberDetailResponse,
+    MemberListResponse,
+    MemberResponse,
     MemberSeedResponse,
 )
-from src.members.constants import Info, Jkt48Members
-from src.members.exceptions import MemberNotFoundError, MemberFetchError
+from src.tickets.schemas import PaginationMeta
 
 logger = create_logger("members_service", __name__)
 
@@ -42,19 +42,33 @@ class MemberService:
 
     async def get_all_members(
         self,
-        skip: int = 0,
-        limit: int = 100,
+        page: int = 1,
+        limit: int = 20,
         generation: Optional[str] = None,
         search: Optional[str] = None,
     ) -> MemberListResponse:
         """Get all members with optional filtering"""
         try:
+            skip = (page - 1) * limit
             members = await self.repository.find_all(skip, limit, generation, search)
             total = await self.repository.count(generation, search)
 
             member_responses = [MemberResponse(**member) for member in members]
 
-            return MemberListResponse(total=total, members=member_responses)
+            last_page = (total + limit - 1) // limit if limit > 0 else 1
+            if last_page < 1:
+                last_page = 1
+            next_page = page + 1 if page < last_page else None
+
+            meta = PaginationMeta(
+                current_page=page,
+                last_page=last_page,
+                total_data=total,
+                per_page=limit,
+                next_page=next_page,
+            )
+
+            return MemberListResponse(data=member_responses, meta=meta)
         except Exception as e:
             logger.exception(f"Error fetching members: {str(e)}")
             raise MemberFetchError()

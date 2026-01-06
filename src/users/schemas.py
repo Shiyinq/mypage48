@@ -4,8 +4,9 @@ from uuid import uuid4
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
 
-from src.users.constants import Info, ErrorCode
+from src.achievements.schemas import RankInfo
 from src.auth.schemas import OshiResponse
+from src.users.constants import ErrorCode, Info
 from src.utils import validate_password_strength
 
 
@@ -70,7 +71,9 @@ class UserInDB(BaseModel):
     userId: str = Field(default_factory=lambda: str(uuid4()))
     profilePicture: Optional[str] = Field(default=None)
     name: str = Field(max_length=100)  # Stores fullName or OAuth name
-    memberId: Optional[str] = Field(max_length=20, default=None)  # Optional for OAuth users
+    memberId: Optional[str] = Field(
+        max_length=20, default=None
+    )  # Optional for OAuth users
     oshiId: Optional[int] = Field(default=None)
     username: str = Field(max_length=50)
     email: EmailStr
@@ -81,7 +84,7 @@ class UserInDB(BaseModel):
     updatedAt: datetime = Field(default_factory=datetime.now)
     isEmailVerified: bool = Field(default=False)
     isPublic: bool = Field(default=False)
-    publicYear: Optional[int] = Field(default=None) # None = All Years
+    publicYear: Optional[int] = Field(default=None)  # None = All Years
     failedLoginAttempts: int = Field(default=0)
     isAccountLocked: bool = Field(default=False)
     accountLockedUntil: Optional[datetime] = Field(default=None)
@@ -144,3 +147,39 @@ class UpdatePublicStatusRequest(BaseModel):
 class MessageResponse(BaseModel):
     detail: str
 
+
+class ProfileStats(BaseModel):
+    """Quick stats for profile page."""
+
+    totalShows: int
+    totalAchievements: int
+
+
+class ProfileRecentActivity(BaseModel):
+    """Recent activity entry for profile page."""
+
+    ticketId: str
+    title: str
+    date: str
+    section: str
+    number: str
+    hasTwoShot: bool
+    twoShotMember: Optional[str] = None
+
+
+class OshiTwoShotCounts(BaseModel):
+    """2-shot counts with user's oshi."""
+
+    roulette: int
+    birthday: int
+
+
+class ProfileFullResponse(BaseModel):
+    """Complete profile response with all sections."""
+
+    profile: dict  # UserCurrent as dict to avoid circular import
+    oshi: Optional[OshiResponse] = None
+    rank: RankInfo
+    stats: ProfileStats
+    oshiTwoShots: OshiTwoShotCounts
+    recentActivity: list[ProfileRecentActivity]

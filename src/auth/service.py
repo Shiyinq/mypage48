@@ -6,7 +6,11 @@ from typing import Dict, Optional, Union
 from jose import JWTError, jwt
 
 from src.auth.email_service import EmailService
-from src.auth.exceptions import IncorrectCredentialsError, InvalidJWTTokenError
+from src.auth.exceptions import (
+    AuthOperationError,
+    IncorrectCredentialsError,
+    InvalidJWTTokenError,
+)
 from src.auth.repository import AuthRepository
 from src.auth.schemas import TokenData, UserLogin
 from src.auth.security_service import SecurityService
@@ -35,30 +39,42 @@ class AuthService:
         self.config = config
 
     async def verify_password(self, plain_password, hashed_password) -> str:
-        return await asyncio.to_thread(
-            self.security_service.verify_password, plain_password, hashed_password
-        )
+        try:
+            return await asyncio.to_thread(
+                self.security_service.verify_password, plain_password, hashed_password
+            )
+        except Exception as e:
+            logger.exception(f"Error verifying password: {str(e)}")
+            raise AuthOperationError()
 
     async def get_password_hash(self, password) -> str:
-        return await asyncio.to_thread(
-            self.security_service.get_password_hash, password
-        )
+        try:
+            return await asyncio.to_thread(
+                self.security_service.get_password_hash, password
+            )
+        except Exception as e:
+            logger.exception(f"Error hashing password: {str(e)}")
+            raise AuthOperationError()
 
     def create_access_token(
         self, data: dict, expires_delta: timedelta | None = None
     ) -> str:
-        to_encode = data.copy()
-        if expires_delta:
-            expire = datetime.now(timezone.utc) + expires_delta
-        else:
-            expire = datetime.now(timezone.utc) + timedelta(
-                minutes=self.config.access_token_expire_minutes
+        try:
+            to_encode = data.copy()
+            if expires_delta:
+                expire = datetime.now(timezone.utc) + expires_delta
+            else:
+                expire = datetime.now(timezone.utc) + timedelta(
+                    minutes=self.config.access_token_expire_minutes
+                )
+            to_encode.update({"exp": expire})
+            encoded_jwt = jwt.encode(
+                to_encode, self.config.secret_key, algorithm=self.config.algorithm
             )
-        to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(
-            to_encode, self.config.secret_key, algorithm=self.config.algorithm
-        )
-        return encoded_jwt
+            return encoded_jwt
+        except Exception as e:
+            logger.exception(f"Error creating access token: {str(e)}")
+            raise AuthOperationError()
 
     def verify_access_token(self, token: str) -> TokenData:
         try:
@@ -76,18 +92,22 @@ class AuthService:
             raise InvalidJWTTokenError()
 
     async def get_user(self, username_or_email: str) -> Optional[UserLogin]:
-        username_or_email = username_or_email.lower()
-        query = {
-            "$or": [
-                {"username": username_or_email},
-                {"email": username_or_email},
-                {"userId": username_or_email},
-            ]
-        }
-        user = await self.user_repo.find_one(query)
-        if user:
-            return UserLogin(**user)
-        return None
+        try:
+            username_or_email = username_or_email.lower()
+            query = {
+                "$or": [
+                    {"username": username_or_email},
+                    {"email": username_or_email},
+                    {"userId": username_or_email},
+                ]
+            }
+            user = await self.user_repo.find_one(query)
+            if user:
+                return UserLogin(**user)
+            return None
+        except Exception as e:
+            logger.exception(f"Error getting user: {str(e)}")
+            raise AuthOperationError()
 
     async def authenticate_user(
         self, username_or_email: str, password: str = None, provider: str = None
@@ -148,25 +168,41 @@ class AuthService:
     async def save_refresh_token(
         self, user_id: str, refresh_token: str, device: str, ip: str, browser: str
     ):
-        data = {
-            "userId": user_id,
-            "hashRefreshToken": refresh_token,
-            "device": device,
-            "ip": ip,
-            "browser": browser,
-            "createdAt": datetime.now(timezone.utc),
-            "lastUsedAt": datetime.now(timezone.utc),
-        }
-        await self.auth_repo.insert_refresh_token(data)
+        try:
+            data = {
+                "userId": user_id,
+                "hashRefreshToken": refresh_token,
+                "device": device,
+                "ip": ip,
+                "browser": browser,
+                "createdAt": datetime.now(timezone.utc),
+                "lastUsedAt": datetime.now(timezone.utc),
+            }
+            await self.auth_repo.insert_refresh_token(data)
+        except Exception as e:
+            logger.exception(f"Error saving refresh token: {str(e)}")
+            raise AuthOperationError()
 
     async def get_refresh_token(self, token: str) -> Optional[dict]:
-        return await self.auth_repo.find_refresh_token(token)
+        try:
+            return await self.auth_repo.find_refresh_token(token)
+        except Exception as e:
+            logger.exception(f"Error getting refresh token: {str(e)}")
+            raise AuthOperationError()
 
     async def update_refresh_token_last_used(self, token: str):
-        await self.auth_repo.update_refresh_token_last_used(token)
+        try:
+            await self.auth_repo.update_refresh_token_last_used(token)
+        except Exception as e:
+            logger.exception(f"Error updating refresh token last used: {str(e)}")
+            raise AuthOperationError()
 
     async def delete_refresh_token(self, token: str):
-        await self.auth_repo.delete_refresh_token(token)
+        try:
+            await self.auth_repo.delete_refresh_token(token)
+        except Exception as e:
+            logger.exception(f"Error deleting refresh token: {str(e)}")
+            raise AuthOperationError()
 
     async def save_login_history(
         self,
@@ -176,44 +212,66 @@ class AuthService:
         browser: str,
         user_agent_raw: Optional[str] = None,
     ):
-        data = {
-            "userId": user_id,
-            "device": device,
-            "ip": ip,
-            "browser": browser,
-            "loginAt": datetime.now(timezone.utc),
-            "userAgentRaw": user_agent_raw,
-        }
-        await self.auth_repo.insert_login_history(data)
+        try:
+            data = {
+                "userId": user_id,
+                "device": device,
+                "ip": ip,
+                "browser": browser,
+                "loginAt": datetime.now(timezone.utc),
+                "userAgentRaw": user_agent_raw,
+            }
+            await self.auth_repo.insert_login_history(data)
+        except Exception as e:
+            logger.exception(f"Error saving login history: {str(e)}")
+            raise AuthOperationError()
 
     async def get_last_login_history(self, user_id: str) -> Optional[dict]:
-        return await self.auth_repo.find_last_login_history(user_id)
+        try:
+            return await self.auth_repo.find_last_login_history(user_id)
+        except Exception as e:
+            logger.exception(f"Error getting last login history: {str(e)}")
+            raise AuthOperationError()
 
     async def register_refresh_token_activity(
         self, user_id: str, device: str, ip: str, browser: str, user_agent: str
     ) -> str:
-        refresh_token = self.create_refresh_token()
-        hash_refresh_token = hash_token(refresh_token)
-        await self.save_refresh_token(user_id, hash_refresh_token, device, ip, browser)
-        await self.save_login_history(
-            user_id, device, ip, browser, user_agent_raw=user_agent
-        )
-        return refresh_token
+        try:
+            refresh_token = self.create_refresh_token()
+            hash_refresh_token = hash_token(refresh_token)
+            await self.save_refresh_token(
+                user_id, hash_refresh_token, device, ip, browser
+            )
+            await self.save_login_history(
+                user_id, device, ip, browser, user_agent_raw=user_agent
+            )
+            return refresh_token
+        except Exception as e:
+            logger.exception(f"Error registering refresh token activity: {str(e)}")
+            raise AuthOperationError()
 
     async def create_email_verification_token(self, user_id: str) -> str:
         """Create and save email verification token"""
-        token = await self.security_service.create_and_save_token(
-            user_id,
-            "email_verification",
-            self.config.email_verification_expire_hours,
-        )
-        return token
+        try:
+            token = await self.security_service.create_and_save_token(
+                user_id,
+                "email_verification",
+                self.config.email_verification_expire_hours,
+            )
+            return token
+        except Exception as e:
+            logger.exception(f"Error creating email verification token: {str(e)}")
+            raise AuthOperationError()
 
     async def verify_email(self, token: str) -> bool:
         """Verify email with token"""
-        token_hash = hash_token(token)
-        user_id = await self.security_service.verify_email_token(token_hash)
-        return user_id is not None
+        try:
+            token_hash = hash_token(token)
+            user_id = await self.security_service.verify_email_token(token_hash)
+            return user_id is not None
+        except Exception as e:
+            logger.exception(f"Error verifying email with token: {str(e)}")
+            raise AuthOperationError()
 
     async def create_password_reset_token(
         self, email: str
@@ -222,44 +280,55 @@ class AuthService:
         Create and save password reset token.
         Returns (token, username, email) if user exists, else None.
         """
-        user = await self.get_user(email)
-        if not user:
-            return None  # Don't reveal if email not exists
+        try:
+            user = await self.get_user(email)
+            if not user:
+                return None  # Don't reveal if email not exists
 
-        token = await self.security_service.create_and_save_token(
-            user.userId,
-            "password_reset",
-            self.config.password_reset_expire_hours,
-        )
+            token = await self.security_service.create_and_save_token(
+                user.userId,
+                "password_reset",
+                self.config.password_reset_expire_hours,
+            )
 
-        await self.email_service.send_password_reset(user.email, token, user.username)
+            await self.email_service.send_password_reset(
+                user.email, token, user.username
+            )
 
-        return token, user.username, user.email
+            return token, user.username, user.email
+        except Exception as e:
+            logger.exception(f"Error creating password reset token: {str(e)}")
+            raise AuthOperationError()
 
     async def reset_password(self, token: str, new_password: str) -> bool:
         """Reset password with token"""
-        token_hash = hash_token(token)
-        token_data = await self.security_service.verify_token(
-            token_hash, "password_reset"
-        )
-        if not token_data:
-            return False
+        try:
+            token_hash = hash_token(token)
+            token_data = await self.security_service.verify_token(
+                token_hash, "password_reset"
+            )
+            if not token_data:
+                return False
 
-        # Update password using userId
-        hashed_password = await self.get_password_hash(new_password)
+            # Update password using userId
+            hashed_password = await self.get_password_hash(new_password)
 
-        await self.user_repo.update_one(
-            {"userId": token_data["userId"]}, {"$set": {"password": hashed_password}}
-        )
+            await self.user_repo.update_one(
+                {"userId": token_data["userId"]},
+                {"$set": {"password": hashed_password}},
+            )
 
-        await self.security_service.delete_token(token_hash, "password_reset")
+            await self.security_service.delete_token(token_hash, "password_reset")
 
-        user = await self.user_repo.find_one({"userId": token_data["userId"]})
-        if user:
-            await self.security_service.reset_failed_login_attempts(user["userId"])
-            await self.security_service.unlock_account(user["userId"])
+            user = await self.user_repo.find_one({"userId": token_data["userId"]})
+            if user:
+                await self.security_service.reset_failed_login_attempts(user["userId"])
+                await self.security_service.unlock_account(user["userId"])
 
-        return True
+            return True
+        except Exception as e:
+            logger.exception(f"Error resetting password with token: {str(e)}")
+            raise AuthOperationError()
 
     async def resend_verification_email(
         self, email: str
@@ -268,17 +337,21 @@ class AuthService:
         Resend verification email.
         Returns (token, username, email) if eligible, else None.
         """
-        user = await self.get_user(email)
-        if not user:
-            return None
+        try:
+            user = await self.get_user(email)
+            if not user:
+                return None
 
-        if user.isEmailVerified:
-            return None  # Already verified
+            if user.isEmailVerified:
+                return None  # Already verified
 
-        token = await self.create_email_verification_token(user.userId)
+            token = await self.create_email_verification_token(user.userId)
 
-        await self.email_service.send_email_verification(
-            user.email, token, user.username
-        )
+            await self.email_service.send_email_verification(
+                user.email, token, user.username
+            )
 
-        return token, user.username, user.email
+            return token, user.username, user.email
+        except Exception as e:
+            logger.exception(f"Error resending verification email: {str(e)}")
+            raise AuthOperationError()

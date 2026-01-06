@@ -1,5 +1,5 @@
-from src.members.constants import ErrorCode
 from src.http_exceptions import InternalServerError, NotFound
+from src.members.constants import ErrorCode
 
 
 class MemberNotFound(NotFound):
