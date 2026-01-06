@@ -19,7 +19,7 @@
 </script>
 
 <div
-	class="bg-white dark:bg-zinc-900 p-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm flex items-center gap-1 overflow-x-auto no-scrollbar max-w-[200px] sm:max-w-none"
+	class="bg-white dark:bg-zinc-900 p-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm flex items-center gap-1 overflow-x-auto no-scrollbar max-w-[calc(100vw-3rem)] sm:max-w-none"
 >
 	<button
 		on:click={() => setFilter('ALL')}

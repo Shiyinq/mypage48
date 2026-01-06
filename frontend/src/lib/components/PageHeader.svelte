@@ -72,7 +72,7 @@
 	};
 </script>
 
-<div class="flex flex-row items-center justify-between w-full">
+<div class="flex flex-wrap items-center justify-between w-full gap-4">
 	<div class="flex items-center gap-3">
 		{#if showBackButton}
 			<button
@@ -105,7 +105,7 @@
 		</div>
 	</div>
 
-	<div class="flex items-center gap-2">
+	<div class="flex items-center gap-2 ml-auto sm:ml-0">
 		<slot name="actions" />
 	</div>
 </div>
