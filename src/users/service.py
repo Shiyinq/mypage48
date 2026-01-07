@@ -210,8 +210,10 @@ class UserService:
     ) -> MessageResponse:
         """Update the user's profile picture"""
         try:
-            # Validate the image before saving
-            validate_base64_image(profile_picture)
+            # Only validate if it's a base64 image (legacy upload)
+            # Storage filenames (category/user_id/filename) skip validation
+            if profile_picture.startswith("data:"):
+                validate_base64_image(profile_picture)
 
             await self.repository.set_profile_picture(user_id, profile_picture)
             return MessageResponse(detail=Info.PROFILE_PICTURE_UPDATED)

@@ -27,6 +27,8 @@ from src.memories.repository import MemoriesRepository
 from src.memories.service import MemoriesService
 from src.setlists.repository import SetlistsRepository
 from src.setlists.service import SetlistsService
+from src.storage.repository import StorageRepository
+from src.storage.service import StorageService
 from src.tickets.repository import TicketsRepository
 from src.tickets.service import TicketsService
 from src.users.repository import UserRepository
@@ -253,3 +255,16 @@ def get_setlists_service(
     config: Settings = Depends(get_settings),
 ) -> SetlistsService:
     return SetlistsService(repo, config)
+
+
+def get_storage_repository(
+    config: Settings = Depends(get_settings),
+) -> StorageRepository:
+    return StorageRepository(config)
+
+
+def get_storage_service(
+    repo: StorageRepository = Depends(get_storage_repository),
+    config: Settings = Depends(get_settings),
+) -> StorageService:
+    return StorageService(repo, config)

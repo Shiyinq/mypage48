@@ -47,6 +47,13 @@ class Settings(BaseSettings):
     DB_MAX_POOL_SIZE: int = 50
     MAX_UPLOAD_SIZE_BYTES: int = 10_485_760  # 10 MB
 
+    # MinIO Settings
+    MINIO_ENDPOINT: str = "localhost:9000"
+    MINIO_ACCESS_KEY: SecretStr = SecretStr("minioadmin")
+    MINIO_SECRET_KEY: SecretStr = SecretStr("minioadmin123")
+    MINIO_BUCKET: str = "mypage48-images"
+    MINIO_SECURE: bool = False
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=True
     )
@@ -218,6 +225,26 @@ class Settings(BaseSettings):
     @property
     def max_upload_size_bytes(self) -> int:
         return self.MAX_UPLOAD_SIZE_BYTES
+
+    @property
+    def minio_endpoint(self) -> str:
+        return self.MINIO_ENDPOINT
+
+    @property
+    def minio_access_key(self) -> str:
+        return self.MINIO_ACCESS_KEY.get_secret_value()
+
+    @property
+    def minio_secret_key(self) -> str:
+        return self.MINIO_SECRET_KEY.get_secret_value()
+
+    @property
+    def minio_bucket(self) -> str:
+        return self.MINIO_BUCKET
+
+    @property
+    def minio_secure(self) -> bool:
+        return self.MINIO_SECURE
 
 
 config = Settings()

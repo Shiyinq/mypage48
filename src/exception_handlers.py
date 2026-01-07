@@ -59,6 +59,20 @@ from src.memories.http_exceptions import MemoriesFetchHTTPException
 from src.setlists.exceptions import SetlistFetchError, SetlistNotFoundError
 from src.setlists.http_exceptions import SetlistFetchError as SetlistFetchHTTPException
 from src.setlists.http_exceptions import SetlistNotFound
+from src.storage.exceptions import (
+    ImageNotFoundError as StorageImageNotFoundError,
+    ImageUploadError as StorageImageUploadError,
+    InvalidCategoryError,
+    PresignedUrlError,
+    StorageConnectionError,
+)
+from src.storage.http_exceptions import (
+    ImageNotFound as StorageImageNotFound,
+    ImageUploadFailed as StorageImageUploadFailed,
+    InvalidCategory,
+    PresignedUrlFailed,
+    StorageConnectionFailed,
+)
 from src.tickets.exceptions import ImageTooLargeError as TheaterImageTooLargeError
 from src.tickets.exceptions import InvalidImageError as TheaterInvalidImageError
 from src.tickets.exceptions import InvalidImageTypeError as TheaterInvalidImageTypeError
@@ -243,6 +257,18 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(
             request, SetlistFetchHTTPException()
         )
+
+    # Storage errors
+    if isinstance(exc, StorageConnectionError):
+        return await detailed_http_exception_handler(request, StorageConnectionFailed())
+    if isinstance(exc, StorageImageUploadError):
+        return await detailed_http_exception_handler(request, StorageImageUploadFailed())
+    if isinstance(exc, StorageImageNotFoundError):
+        return await detailed_http_exception_handler(request, StorageImageNotFound())
+    if isinstance(exc, PresignedUrlError):
+        return await detailed_http_exception_handler(request, PresignedUrlFailed())
+    if isinstance(exc, InvalidCategoryError):
+        return await detailed_http_exception_handler(request, InvalidCategory())
 
     error_msg = str(exc)
     if (

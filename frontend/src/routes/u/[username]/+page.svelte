@@ -14,6 +14,7 @@
 		getValidationErrorI18nKey
 	} from '$lib/utils/fileValidation';
 	import { getErrorMessage } from '$lib/utils/api';
+	import { storageApi } from '$lib/apis/storage';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import PublicProfileHeader from '$lib/components/public-profile/PublicProfileHeader.svelte';
 	import PublicProfileStats from '$lib/components/public-profile/PublicProfileStats.svelte';
@@ -91,11 +92,14 @@
 
 		isUploading = true;
 		try {
-			// Use store action
-			await userProfile.updateAvatar(previewImage);
+			// Upload image to storage first
+			const uploadResult = await storageApi.uploadImage(previewImage, 'avatar');
 
-			// Update local state for immediate feedback
-			profile.profilePicture = previewImage;
+			// Save filename to profile
+			await userProfile.updateAvatar(uploadResult.filename);
+
+			// Update local state with presigned URL for immediate feedback
+			profile.profilePicture = uploadResult.url;
 
 			// Close modal and show success toast
 			closePreviewModal();

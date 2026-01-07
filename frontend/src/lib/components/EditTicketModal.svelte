@@ -5,6 +5,7 @@
 	import { invalidateTheater } from '$lib/stores/theater';
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
+	import { storageApi } from '$lib/apis/storage';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import type { Ticket } from '$lib/types';
 	import { LoaderCircle, CircleCheck, NotebookPen } from 'lucide-svelte';
@@ -128,9 +129,41 @@
 		reader.readAsDataURL(file);
 	};
 
+	// Helper to check if image is base64 (new upload) vs storage filename
+	const isBase64Image = (value: string | null): boolean => {
+		if (!value) return false;
+		return value.startsWith('data:image/');
+	};
+
 	const handleSubmit = async () => {
 		isSubmitting = true;
 		try {
+			// Upload new images to storage
+			let ticketImageUrl: string | undefined;
+			let twoShotImageUrl: string | undefined;
+
+			if (image) {
+				if (isBase64Image(image)) {
+					// New image - upload to storage
+					const uploadResult = await storageApi.uploadImage(image, 'ticket');
+					ticketImageUrl = uploadResult.filename;
+				} else {
+					// Existing storage filename - keep as-is
+					ticketImageUrl = image;
+				}
+			}
+
+			if (showTwoShot && twoShotImage) {
+				if (isBase64Image(twoShotImage)) {
+					// New image - upload to storage
+					const uploadResult = await storageApi.uploadImage(twoShotImage, 'twoshot');
+					twoShotImageUrl = uploadResult.filename;
+				} else {
+					// Existing storage filename - keep as-is
+					twoShotImageUrl = twoShotImage;
+				}
+			}
+
 			const payload = {
 				ticket_id: formData.ticket_id,
 				event: formData.event,
@@ -138,11 +171,11 @@
 				price: Number(formData.price),
 				currency: 'IDR',
 				rules: formData.rules,
-				imageUrl: image || undefined,
+				imageUrl: ticketImageUrl,
 				notes: formData.notes,
 				two_shot: showTwoShot
 					? {
-							imageUrl: twoShotImage || undefined,
+							imageUrl: twoShotImageUrl,
 							member_name: formData.two_shot.member_name,
 							type: formData.two_shot.type,
 							price: Number(formData.two_shot.price)

@@ -9,6 +9,7 @@ from src.llm.route import router as llm_router
 from src.members.route import router as members_router
 from src.memories.route import router as memories_router
 from src.setlists.route import router as setlists_router
+from src.storage.route import router as storage_router
 from src.tickets.route import router as theater_router
 from src.users.route import router as user_router
 
@@ -27,3 +28,5 @@ router.include_router(
 )
 router.include_router(memories_router, prefix="/memories", tags=["Memories"])
 router.include_router(setlists_router, prefix="/theater/setlists", tags=["Setlists"])
+router.include_router(storage_router, tags=["Storage"])
+

@@ -49,7 +49,9 @@ class TicketsService:
     ) -> None:
         """Validate ticket and 2-shot images if provided."""
         for url in [image_url, two_shot_image_url]:
-            if url:
+            # Only validate base64 images (legacy uploads)
+            # Storage filenames skip validation
+            if url and url.startswith("data:"):
                 try:
                     validate_base64_image(url)
                 except ImageTooLargeValidationError:
