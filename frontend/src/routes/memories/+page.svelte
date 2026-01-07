@@ -11,6 +11,7 @@
 	import type { MemoryItem } from '$lib/types';
 	import { galleryStore } from '$lib/stores/memories';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
+	import { isCacheExpired } from '$lib/utils/cache';
 
 	const { t } = useTranslation();
 
@@ -27,8 +28,10 @@
 
 	onMount(() => {
 		mounted = true;
-		// Initial load only if empty
-		if (memories.length === 0) {
+		// Initial load only if empty or expired
+		const currentCache = state.cache[filter];
+
+		if (memories.length === 0 || isCacheExpired(currentCache.lastUpdated)) {
 			loadMemories(1);
 		}
 	});

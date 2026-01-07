@@ -1,6 +1,7 @@
 <script lang="ts">
 	export let params: Record<string, string> | undefined = undefined;
 	import { isAuthenticated, showToast } from '$lib/stores';
+	import { isCacheExpired } from '$lib/utils/cache';
 	import { logger } from '$lib/utils/logger';
 	import { Heart, Camera } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -26,7 +27,7 @@
 		totalTwoShotCount: 0
 	};
 
-	$: stats = $topTwoShotStore || defaultStats;
+	$: stats = $topTwoShotStore.data || defaultStats;
 
 	onMount(async () => {
 		mounted = true;
@@ -36,8 +37,8 @@
 	});
 
 	async function fetchTopTwoShot() {
-		// If data exists, no need to show loading
-		if ($topTwoShotStore) return;
+		// If data exists and is not expired, no need to show loading
+		if ($topTwoShotStore.data && !isCacheExpired($topTwoShotStore.lastUpdated)) return;
 
 		try {
 			loadingData = true;
