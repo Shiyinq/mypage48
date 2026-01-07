@@ -1,7 +1,13 @@
 from datetime import datetime
 from typing import Annotated, List, Optional, Union
+from datetime import datetime
+from typing import Annotated, List, Optional, Union
 
-from pydantic import BaseModel, BeforeValidator, Field
+from pydantic import BaseModel, BeforeValidator, Field, field_validator
+
+from src.utils import clean_image_url
+
+
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
@@ -25,14 +31,21 @@ class TicketRules(BaseModel):
     exchange_allowed: bool = False
 
 
-class TicketTwoShot(BaseModel):
+class TicketTwoShotBase(BaseModel):
     member_name: str
     type: str = "Roulette"  # 'Roulette' | 'Birthday'
     price: float
     imageUrl: Optional[str] = None
 
 
-class TicketCreateRequest(BaseModel):
+class TicketTwoShot(TicketTwoShotBase):
+    @field_validator("imageUrl")
+    @classmethod
+    def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
+        return clean_image_url(v)
+
+
+class TicketBase(BaseModel):
     ticket_id: str
     event: TicketEvent
     seat: TicketSeat
@@ -41,7 +54,17 @@ class TicketCreateRequest(BaseModel):
     rules: TicketRules = Field(default_factory=TicketRules)
     imageUrl: Optional[str] = None
     notes: Optional[str] = None
+
+
+class TicketCreateRequest(TicketBase):
     two_shot: Optional[TicketTwoShot] = None
+
+
+    @field_validator("imageUrl")
+    @classmethod
+    def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
+        return clean_image_url(v)
+
 
 
 class TicketUpdateRequest(BaseModel):
@@ -54,11 +77,19 @@ class TicketUpdateRequest(BaseModel):
     notes: Optional[str] = None
     two_shot: Optional[TicketTwoShot] = None
 
+    @field_validator("imageUrl")
+    @classmethod
+    def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
+        return clean_image_url(v)
 
-class TicketInDB(TicketCreateRequest):
+
+
+class TicketInDB(TicketBase):
     user_id: str
     created_at: datetime
     updated_at: datetime
+    two_shot: Optional[TicketTwoShotBase] = None
+
 
 
 class TicketResponse(TicketInDB):
