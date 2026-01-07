@@ -2,14 +2,13 @@ from typing import List, Optional
 
 from src.config import Settings
 from src.logging_config import create_logger
-from src.members.constants import Info, Jkt48Members
+from src.members.constants import Info
 from src.members.exceptions import MemberFetchError, MemberNotFoundError
 from src.members.repository import MemberRepository
 from src.members.schemas import (
     MemberDetailResponse,
     MemberListResponse,
     MemberResponse,
-    MemberSeedResponse,
 )
 from src.tickets.schemas import PaginationMeta
 
@@ -24,21 +23,6 @@ class MemberService:
     ):
         self.repository = repository
         self.config = config
-
-    async def seed_members(self) -> MemberSeedResponse:
-        """Seed the database with JKT48 member data"""
-        try:
-            # Clear existing data
-            await self.repository.delete_all()
-
-            # Insert new data
-            count = await self.repository.insert_many(Jkt48Members.data)
-
-            logger.info(f"Seeded {count} members successfully")
-            return MemberSeedResponse(message=Info.MEMBER_DATA_SEEDED, count=count)
-        except Exception as e:
-            logger.exception(f"Error seeding members: {str(e)}")
-            raise MemberFetchError()
 
     async def get_all_members(
         self,
