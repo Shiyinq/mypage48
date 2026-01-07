@@ -1,12 +1,11 @@
 <script lang="ts">
 	export let params: Record<string, string> | undefined = undefined;
-	import { ticketsStore, showToast } from '$lib/stores';
+	import { ticketsStore, showToast, storageStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { invalidateTheater } from '$lib/stores/theater';
 	import { goto } from '$app/navigation';
 	import { extractTicketData } from '$lib/apis/llm';
-	import { storageApi } from '$lib/apis/storage';
 
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
@@ -180,12 +179,12 @@
 			let twoShotImageUrl: string | undefined;
 
 			if (image) {
-				const uploadResult = await storageApi.uploadImage(image, 'ticket');
+				const uploadResult = await storageStore.uploadImage(image, 'ticket');
 				ticketImageUrl = uploadResult.filename;
 			}
 
 			if (showTwoShot && twoShotImage) {
-				const uploadResult = await storageApi.uploadImage(twoShotImage, 'twoshot');
+				const uploadResult = await storageStore.uploadImage(twoShotImage, 'twoshot');
 				twoShotImageUrl = uploadResult.filename;
 			}
 

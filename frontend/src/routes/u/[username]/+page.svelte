@@ -6,7 +6,7 @@
 	import { Ticket } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	import { userProfile, showToast } from '$lib/stores';
+	import { userProfile, showToast, storageStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import {
 		validateImageFile,
@@ -14,7 +14,6 @@
 		getValidationErrorI18nKey
 	} from '$lib/utils/fileValidation';
 	import { getErrorMessage } from '$lib/utils/api';
-	import { storageApi } from '$lib/apis/storage';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import PublicProfileHeader from '$lib/components/public-profile/PublicProfileHeader.svelte';
 	import PublicProfileStats from '$lib/components/public-profile/PublicProfileStats.svelte';
@@ -93,7 +92,7 @@
 		isUploading = true;
 		try {
 			// Upload image to storage first
-			const uploadResult = await storageApi.uploadImage(previewImage, 'avatar');
+			const uploadResult = await storageStore.uploadImage(previewImage, 'avatar');
 
 			// Save filename to profile
 			await userProfile.updateAvatar(uploadResult.filename);

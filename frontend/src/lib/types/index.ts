@@ -13,3 +13,4 @@ export * from './memories';
 export * from './dashboard';
 export * from './profile';
 export * from './achievements';
+export * from './storage';
