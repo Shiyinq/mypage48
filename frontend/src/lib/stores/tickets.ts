@@ -2,15 +2,19 @@ import { writable, get } from 'svelte/store';
 import type { Ticket, TicketFilters, PaginationState } from '$lib/types';
 import { ticketsApi } from '$lib/apis/tickets';
 import { logger } from '$lib/utils/logger';
+import { CACHE_EXPIRATION_MS, isCacheExpired } from '$lib/utils/cache';
 
 // Tickets Store Types
 interface TicketsState {
 	list: Ticket[];
 	pagination: PaginationState;
 	filters: TicketFilters;
-	defaultCache: { list: Ticket[]; pagination: PaginationState } | null;
+	defaultCache: { list: Ticket[]; pagination: PaginationState; lastUpdated: number } | null;
 	titlesCache: string[] | null;
+	lastUpdated: number;
 }
+
+
 
 function createTicketsStore() {
 	const initialState: TicketsState = {
@@ -18,7 +22,8 @@ function createTicketsStore() {
 		pagination: { page: 0, hasMore: true },
 		filters: {},
 		defaultCache: null,
-		titlesCache: null
+		titlesCache: null,
+		lastUpdated: 0
 	};
 
 	const { subscribe, set, update } = writable<TicketsState>(initialState);
@@ -33,17 +38,20 @@ function createTicketsStore() {
 
 			// Optimistic Cache Check for Default Load (Page 1)
 			if (page === 1 && isDefaultLoad && state.defaultCache) {
-				update((s) => ({
-					...s,
-					list: state.defaultCache!.list,
-					pagination: state.defaultCache!.pagination,
-					filters: {}
-				}));
-				return;
+				if (!isCacheExpired(state.defaultCache.lastUpdated)) {
+					update((s) => ({
+						...s,
+						list: state.defaultCache!.list,
+						pagination: state.defaultCache!.pagination,
+						filters: {}
+					}));
+					return;
+				}
 			}
 
 			try {
 				const res = await ticketsApi.getMyTickets(page, 20, filters);
+				const now = Date.now();
 
 				update((s) => {
 					const newList = page === 1 ? res.data : [...s.list, ...res.data];
@@ -56,13 +64,15 @@ function createTicketsStore() {
 						...s,
 						list: newList,
 						pagination: newPagination,
-						filters
+						filters,
+						lastUpdated: now
 					};
 
 					if (isDefaultLoad) {
 						newState.defaultCache = {
 							list: newList,
-							pagination: newPagination
+							pagination: newPagination,
+							lastUpdated: now
 						};
 					}
 
@@ -78,32 +88,38 @@ function createTicketsStore() {
 
 			update((s) => {
 				const newList = s.list.filter((t) => t._id !== ticketId && t.ticket_id !== ticketId);
+				const now = Date.now();
 				let newCache = s.defaultCache;
 				if (newCache) {
 					newCache = {
 						...newCache,
-						list: newCache.list.filter((t) => t._id !== ticketId && t.ticket_id !== ticketId)
+						list: newCache.list.filter((t) => t._id !== ticketId && t.ticket_id !== ticketId),
+						lastUpdated: now
 					};
 				}
 
 				return {
 					...s,
 					list: newList,
-					defaultCache: newCache
+					defaultCache: newCache,
+					lastUpdated: now
 				};
 			});
 		},
 
 		create: async (payload: Partial<Ticket>) => {
 			const newTicket = await ticketsApi.createTicket(payload);
+			const now = Date.now();
 			update((s) => ({
 				...s,
 				list: [newTicket, ...s.list],
+				lastUpdated: now,
 				defaultCache: s.defaultCache
 					? {
-							...s.defaultCache,
-							list: [newTicket, ...s.defaultCache.list]
-						}
+						...s.defaultCache,
+						list: [newTicket, ...s.defaultCache.list],
+						lastUpdated: now
+					}
 					: null
 			}));
 			return newTicket;
@@ -111,14 +127,17 @@ function createTicketsStore() {
 
 		updateTicket: async (ticketId: string, payload: Partial<Ticket>) => {
 			const updated = await ticketsApi.updateTicket(ticketId, payload);
+			const now = Date.now();
 			update((s) => ({
 				...s,
 				list: s.list.map((t) => (t._id === ticketId ? updated : t)),
+				lastUpdated: now,
 				defaultCache: s.defaultCache
 					? {
-							...s.defaultCache,
-							list: s.defaultCache.list.map((t) => (t._id === ticketId ? updated : t))
-						}
+						...s.defaultCache,
+						list: s.defaultCache.list.map((t) => (t._id === ticketId ? updated : t)),
+						lastUpdated: now
+					}
 					: null
 			}));
 			return updated;
@@ -126,14 +145,17 @@ function createTicketsStore() {
 
 		updateNote: async (ticketId: string, note: string) => {
 			await ticketsApi.updateTicket(ticketId, { notes: note });
+			const now = Date.now();
 			update((s) => ({
 				...s,
 				list: s.list.map((t) => (t._id === ticketId ? { ...t, notes: note } : t)),
+				lastUpdated: now,
 				defaultCache: s.defaultCache
 					? {
-							...s.defaultCache,
-							list: s.defaultCache.list.map((t) => (t._id === ticketId ? { ...t, notes: note } : t))
-						}
+						...s.defaultCache,
+						list: s.defaultCache.list.map((t) => (t._id === ticketId ? { ...t, notes: note } : t)),
+						lastUpdated: now
+					}
 					: null
 			}));
 		},

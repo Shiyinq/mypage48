@@ -23,6 +23,7 @@
 		HistoryFilter
 	} from '$lib/components/history';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
+	import { isCacheExpired } from '$lib/utils/cache';
 
 	const { t } = useTranslation();
 
@@ -47,7 +48,7 @@
 		mounted = true;
 
 		// Initial load check
-		if (filteredTickets.length === 0) {
+		if (filteredTickets.length === 0 || isCacheExpired($ticketsStore.lastUpdated)) {
 			loadTickets(1);
 		}
 	});

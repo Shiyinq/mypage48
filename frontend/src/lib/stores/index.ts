@@ -23,15 +23,8 @@ const initialAuth = browser ? localStorage.getItem(AUTH_KEY) === 'true' : false;
 export const isAuthenticated = writable<boolean>(initialAuth);
 export const isInitialDataLoaded = writable<boolean>(false);
 
-// Toast Store
-export const toast = writable<{ message: string; type?: 'success' | 'error' } | null>(null);
-
-export const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-	toast.set({ message, type });
-	setTimeout(() => {
-		toast.set(null);
-	}, 3000);
-};
+// Re-export toast store
+export { toast, showToast } from '$lib/stores/toast';
 
 // Logout cleanup logic
 if (browser) {
