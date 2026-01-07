@@ -18,3 +18,4 @@ user-agents==2.2.0
 resend==2.11.0
 pydantic-settings==2.7.0
 google-genai
+minio==7.2.12

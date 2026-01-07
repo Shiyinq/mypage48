@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends
 
+
 from src import dependencies
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_user_service
+from src.dependencies import get_user_service, get_storage_service
 from src.logging_config import create_logger
+from src.storage.service import StorageService
 from src.users.schemas import (
     MessageResponse,
     ProfileFullResponse,
@@ -17,9 +19,9 @@ from src.users.schemas import (
 )
 from src.users.service import UserService
 
-router = APIRouter()
-
 logger = create_logger("users", __name__)
+
+router = APIRouter()
 
 
 @router.post("/users/signup", status_code=201, response_model=UserCreateResponse)
@@ -44,20 +46,13 @@ async def signup(
 async def user_profile(
     current_user: UserCurrent = Depends(dependencies.get_current_user),
     user_service: UserService = Depends(get_user_service),
+    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Get the complete profile information of the currently logged-in user.
-
-    Returns:
-        ProfileFullResponse: Complete profile with all sections:
-            - profile: Basic user info
-            - oshi: Selected oshi member details
-            - rank: Current rank and XP progress
-            - stats: Total shows and achievements count
-            - oshiTwoShots: 2-shot counts with oshi
-            - recentActivity: 5 most recent shows
     """
-    return await user_service.get_profile_full(current_user)
+    profile = await user_service.get_profile_full(current_user)
+    return storage_service.resolve_profile_full_images(profile)
 
 
 @router.post("/users/oshi", status_code=200, response_model=MessageResponse)
@@ -104,8 +99,10 @@ async def update_profile_picture(
 async def get_public_profile(
     username: str,
     user_service: UserService = Depends(get_user_service),
+    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Get a user's public profile by username.
     """
-    return await user_service.get_public_profile(username)
+    profile = await user_service.get_public_profile(username)
+    return storage_service.resolve_public_user_images(profile)

@@ -4,9 +4,10 @@ from fastapi import APIRouter, Depends
 
 from src import dependencies
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_memories_service
+from src.dependencies import get_memories_service, get_storage_service
 from src.memories.schemas import MemoriesPaginationResponse, TopTwoShotResponse
 from src.memories.service import MemoriesService
+from src.storage.service import StorageService
 
 router = APIRouter()
 
@@ -18,6 +19,7 @@ async def get_memories(
     type: Optional[str] = None,
     current_user: UserCurrent = Depends(dependencies.get_current_user),
     memories_service: MemoriesService = Depends(get_memories_service),
+    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Get paginated memory items (ticket and 2-shot images).
@@ -30,20 +32,28 @@ async def get_memories(
     Returns:
         MemoriesPaginationResponse: Paginated list of memory items
     """
-    return await memories_service.get_memories_paginated(
+    result = await memories_service.get_memories_paginated(
         user_id=current_user.userId,
         page=page,
         limit=limit,
         type_filter=type,
     )
+    
+    # Resolve image URLs for all memory items
+    resolved_data = [storage_service.resolve_memory_item_image(item) for item in result.data]
+    result.data = resolved_data
+    
+    return result
 
 
 @router.get("/top-two-shot", response_model=TopTwoShotResponse)
 async def get_top_two_shot(
     current_user: UserCurrent = Depends(dependencies.get_current_user),
     memories_service: MemoriesService = Depends(get_memories_service),
+    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Get Top 2-Shot statistics.
     """
-    return await memories_service.get_top_two_shot(user_id=current_user.userId)
+    stats = await memories_service.get_top_two_shot(user_id=current_user.userId)
+    return storage_service.resolve_top_twoshot_images(stats)

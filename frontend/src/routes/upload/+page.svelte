@@ -6,6 +6,7 @@
 	import { invalidateTheater } from '$lib/stores/theater';
 	import { goto } from '$app/navigation';
 	import { extractTicketData } from '$lib/apis/llm';
+	import { storageApi } from '$lib/apis/storage';
 
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
@@ -174,6 +175,20 @@
 
 		isSubmitting = true;
 		try {
+			// Upload images to storage if present
+			let ticketImageUrl: string | undefined;
+			let twoShotImageUrl: string | undefined;
+
+			if (image) {
+				const uploadResult = await storageApi.uploadImage(image, 'ticket');
+				ticketImageUrl = uploadResult.filename;
+			}
+
+			if (showTwoShot && twoShotImage) {
+				const uploadResult = await storageApi.uploadImage(twoShotImage, 'twoshot');
+				twoShotImageUrl = uploadResult.filename;
+			}
+
 			// Prepare object for API
 			const payload = {
 				ticket_id: formData.ticket_id || `MANUAL-${Date.now()}`,
@@ -182,11 +197,11 @@
 				price: Number(formData.price),
 				currency: 'IDR',
 				rules: formData.rules,
-				imageUrl: image || undefined,
+				imageUrl: ticketImageUrl,
 				notes: formData.notes,
 				two_shot: showTwoShot
 					? {
-							imageUrl: twoShotImage || undefined,
+							imageUrl: twoShotImageUrl,
 							member_name: formData.two_shot.member_name,
 							type: formData.two_shot.type,
 							price: Number(formData.two_shot.price)

@@ -1,0 +1,114 @@
+import io
+from datetime import timedelta
+from typing import Optional
+
+from minio import Minio
+from minio.error import S3Error
+
+from src.config import Settings
+from src.logging_config import create_logger
+
+
+logger = create_logger("storage_repository", __name__)
+
+
+class StorageRepository:
+    """Low-level MinIO client wrapper."""
+
+    def __init__(self, config: Settings):
+        self.config = config
+        self._client: Optional[Minio] = None
+        self._bucket_ensured = False
+
+    @property
+    def client(self) -> Minio:
+        """Lazy initialization of MinIO client."""
+        if self._client is None:
+            self._client = Minio(
+                self.config.minio_endpoint,
+                access_key=self.config.minio_access_key,
+                secret_key=self.config.minio_secret_key,
+                secure=self.config.minio_secure,
+            )
+        return self._client
+
+    def _ensure_bucket(self) -> None:
+        """Ensure the bucket exists, create if not."""
+        if self._bucket_ensured:
+            return
+
+        try:
+            if not self.client.bucket_exists(self.config.minio_bucket):
+                self.client.make_bucket(self.config.minio_bucket)
+                logger.info(f"Created bucket: {self.config.minio_bucket}")
+            self._bucket_ensured = True
+        except S3Error as e:
+            logger.error(f"Failed to ensure bucket: {e}")
+            raise
+
+    def upload_file(
+        self,
+        data: bytes,
+        object_name: str,
+        content_type: str = "image/jpeg",
+    ) -> str:
+        """Upload file to MinIO and return the object name."""
+        self._ensure_bucket()
+
+        try:
+            file_stream = io.BytesIO(data)
+            file_size = len(data)
+
+            self.client.put_object(
+                self.config.minio_bucket,
+                object_name,
+                file_stream,
+                file_size,
+                content_type=content_type,
+            )
+            logger.info(f"Uploaded file: {object_name}")
+            return object_name
+        except S3Error as e:
+            logger.error(f"Failed to upload file: {e}")
+            raise
+
+    def get_presigned_url(
+        self,
+        object_name: str,
+        expires: int = 3600,
+    ) -> str:
+        """Generate presigned URL for object access."""
+        self._ensure_bucket()
+
+        try:
+            url = self.client.presigned_get_object(
+                self.config.minio_bucket,
+                object_name,
+                expires=timedelta(seconds=expires),
+            )
+            return url
+        except S3Error as e:
+            logger.error(f"Failed to generate presigned URL: {e}")
+            raise
+
+    def delete_file(self, object_name: str) -> bool:
+        """Delete file from MinIO."""
+        self._ensure_bucket()
+
+        try:
+            self.client.remove_object(self.config.minio_bucket, object_name)
+            logger.info(f"Deleted file: {object_name}")
+            return True
+        except S3Error as e:
+            logger.error(f"Failed to delete file: {e}")
+            raise
+
+    def file_exists(self, object_name: str) -> bool:
+        """Check if file exists in MinIO."""
+        self._ensure_bucket()
+
+        try:
+            self.client.stat_object(self.config.minio_bucket, object_name)
+            return True
+        except S3Error:
+            return False
