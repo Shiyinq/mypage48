@@ -11,6 +11,7 @@ import { galleryStore, topTwoShotStore } from '$lib/stores/memories';
 export { ticketsStore, tickets, ticketsPagination, ticketsFilters } from '$lib/stores/tickets';
 export { userProfile } from '$lib/stores/profile';
 export { achievementsStore } from '$lib/stores/achievements';
+export { storageStore } from '$lib/stores/storage';
 
 const AUTH_KEY = 'oshi_log_auth';
 const OLD_STORAGE_KEY = 'oshi_log_tickets_v2'; // For cleanup

@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { ticketsStore, showToast } from '$lib/stores';
+	import { ticketsStore, showToast, storageStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { invalidateTheater } from '$lib/stores/theater';
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
-	import { storageApi } from '$lib/apis/storage';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import type { Ticket } from '$lib/types';
 	import { LoaderCircle, CircleCheck, NotebookPen } from 'lucide-svelte';
@@ -145,7 +144,7 @@
 			if (image) {
 				if (isBase64Image(image)) {
 					// New image - upload to storage
-					const uploadResult = await storageApi.uploadImage(image, 'ticket');
+					const uploadResult = await storageStore.uploadImage(image, 'ticket');
 					ticketImageUrl = uploadResult.filename;
 				} else {
 					// Existing storage filename - keep as-is
@@ -156,7 +155,7 @@
 			if (showTwoShot && twoShotImage) {
 				if (isBase64Image(twoShotImage)) {
 					// New image - upload to storage
-					const uploadResult = await storageApi.uploadImage(twoShotImage, 'twoshot');
+					const uploadResult = await storageStore.uploadImage(twoShotImage, 'twoshot');
 					twoShotImageUrl = uploadResult.filename;
 				} else {
 					// Existing storage filename - keep as-is
