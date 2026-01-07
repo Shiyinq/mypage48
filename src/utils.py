@@ -1,6 +1,9 @@
 import hashlib
 import math
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+from urllib.parse import urlparse
+
+from src.config import config
 
 from password_validator import PasswordValidator
 
@@ -86,3 +89,32 @@ def validate_password_strength(password: str) -> bool:
         64
     ).has().uppercase().has().lowercase().has().digits().has().symbols().no().spaces()
     return password_rules.validate(password)
+
+
+def clean_image_url(url: Optional[str]) -> Optional[str]:
+    """Strip MinIO endpoint and bucket from URL to store only relative path."""
+    if not url:
+        return None
+
+    # Return data URLs as is
+    if url.startswith("data:"):
+        return url
+
+    # If not http(s), assume it's already a path
+    if not url.startswith(("http:", "https:")):
+        return url
+
+    try:
+        parsed = urlparse(url)
+        path = parsed.path
+        if path.startswith("/"):
+            path = path[1:]
+
+        # Check if path starts with bucket
+        if path.startswith(f"{config.minio_bucket}/"):
+            return path[len(config.minio_bucket) + 1 :]
+
+        return url
+    except Exception:
+        return url
+
