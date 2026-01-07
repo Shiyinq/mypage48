@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from src.config import Settings
 from src.logging_config import create_logger
-from src.setlists.constants import Info, Jkt48Setlists
+from src.setlists.constants import Info
 from src.setlists.exceptions import SetlistFetchError, SetlistNotFoundError
 from src.setlists.repository import SetlistsRepository
 from src.setlists.schemas import (
@@ -10,7 +10,6 @@ from src.setlists.schemas import (
     SetlistDetailStats,
     SetlistListResponse,
     SetlistResponse,
-    SetlistSeedResponse,
     SetlistWithStats,
     TicketEvent,
     TicketItem,
@@ -29,21 +28,6 @@ class SetlistsService:
     ):
         self.repository = repository
         self.config = config
-
-    async def seed_setlists(self) -> SetlistSeedResponse:
-        """Seed the database with JKT48 setlist data"""
-        try:
-            # Clear existing data
-            await self.repository.delete_all()
-
-            # Insert new data
-            count = await self.repository.insert_many(Jkt48Setlists.data)
-
-            logger.info(f"Seeded {count} setlists successfully")
-            return SetlistSeedResponse(message=Info.SETLIST_DATA_SEEDED, count=count)
-        except Exception as e:
-            logger.exception(f"Error seeding setlists: {str(e)}")
-            raise SetlistFetchError()
 
     async def get_all_setlists(
         self,

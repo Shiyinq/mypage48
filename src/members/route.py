@@ -10,7 +10,6 @@ from src.members.http_exceptions import MemberFetchError, MemberNotFound
 from src.members.schemas import (
     MemberDetailResponse,
     MemberListResponse,
-    MemberSeedResponse,
 )
 from src.members.service import MemberService
 
@@ -83,19 +82,5 @@ async def get_member_by_nickname(
         return await service.get_member_by_nickname(nickname)
     except MemberNotFoundError:
         raise MemberNotFound()
-    except DomainFetchError:
-        raise MemberFetchError()
-
-
-@router.post("/seed", response_model=MemberSeedResponse, status_code=201)
-async def seed_members(
-    service: MemberService = Depends(get_member_service),
-):
-    """
-    Seed the database with JKT48 member data.
-    This will clear existing data and insert fresh data.
-    """
-    try:
-        return await service.seed_members()
     except DomainFetchError:
         raise MemberFetchError()

@@ -9,7 +9,6 @@ from src.setlists.schemas import (
     SetlistDetailResponse,
     SetlistListResponse,
     SetlistResponse,
-    SetlistSeedResponse,
 )
 from src.setlists.service import SetlistsService
 
@@ -85,14 +84,3 @@ async def get_setlist_by_title(
     Get a specific setlist by its title.
     """
     return await service.get_setlist_by_title(title)
-
-
-@router.post("/seed", response_model=SetlistSeedResponse, status_code=201)
-async def seed_setlists(
-    service: SetlistsService = Depends(get_setlists_service),
-):
-    """
-    Seed the database with JKT48 setlist data.
-    This will clear existing data and insert fresh data.
-    """
-    return await service.seed_setlists()
