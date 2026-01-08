@@ -2,6 +2,7 @@ class Info:
     MEMBER_FOUND = "Member found successfully."
     MEMBERS_RETRIEVED = "Members retrieved successfully."
     MEMBER_DATA_SEEDED = "Member data seeded successfully."
+    MEMBER_DELETED = "Member deleted successfully."
 
 
 class ErrorCode:

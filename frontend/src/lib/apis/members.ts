@@ -47,5 +47,26 @@ export const members = {
 
 	getGenerations: async () => {
 		return client<string[]>('/members/generations');
+	},
+
+	// Admin-only CRUD operations
+	create: async (data: Omit<Member, 'id'>) => {
+		return client<Member>('/members', {
+			method: 'POST',
+			body: JSON.stringify(data)
+		});
+	},
+
+	update: async (memberId: number, data: Partial<Member>) => {
+		return client<Member>(`/members/${memberId}`, {
+			method: 'PUT',
+			body: JSON.stringify(data)
+		});
+	},
+
+	delete: async (memberId: number) => {
+		return client<{ message: string }>(`/members/${memberId}`, {
+			method: 'DELETE'
+		});
 	}
 };

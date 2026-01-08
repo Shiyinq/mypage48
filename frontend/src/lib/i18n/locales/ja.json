@@ -456,6 +456,116 @@
 		"errorTitle": "データの読み込みに失敗しました",
 		"errorDesc": "ランキングの取得中にエラーが発生しました。"
 	},
+	"admin": {
+		"dashboard": {
+			"title": "管理ダッシュボード",
+			"subtitle": "ユーザー、メンバー、セットリストの管理",
+			"tabs": {
+				"users": "ユーザー",
+				"members": "メンバー",
+				"setlists": "セットリスト"
+			}
+		},
+		"users": {
+			"title": "ユーザー",
+			"searchPlaceholder": "ユーザーを検索...",
+			"noUsersFound": "\"{query}\" に一致するユーザーは見つかりません",
+			"noMoreUsers": "これ以上ユーザーはありません",
+			"table": {
+				"userInfo": "ユーザー情報",
+				"email": "メール",
+				"status": "ステータス",
+				"created": "作成日"
+			},
+			"status": {
+				"verified": "認証済み",
+				"unverified": "未認証",
+				"locked": "ロック中"
+			}
+		},
+		"members": {
+			"title": "メンバー",
+			"addMember": "メンバーを追加",
+			"searchPlaceholder": "メンバーを検索...",
+			"noMembersFound": "\"{query}\" に一致するメンバーは見つかりません",
+			"noMoreMembers": "これ以上メンバーはありません",
+			"table": {
+				"memberInfo": "メンバー情報",
+				"generation": "期生",
+				"jikoshoukai": "自己紹介",
+				"status": "ステータス",
+				"actions": "操作",
+				"gen": "{gen}期生",
+				"active": "活動中",
+				"graduated": "卒業"
+			},
+			"modal": {
+				"addTitle": "新規メンバー追加",
+				"editTitle": "メンバー編集",
+				"name": "氏名",
+				"nameRequired": "名前は必須です",
+				"nickname": "ニックネーム",
+				"generation": "期生",
+				"imageUrl": "画像URL",
+				"jikoshoukai": "自己紹介",
+				"socials": "SNS",
+				"accountStatus": "アカウントステータス",
+				"active": "有効",
+				"inactive": "無効（卒業）",
+				"create": "メンバー作成",
+				"save": "変更を保存",
+				"saving": "保存中...",
+				"created": "メンバーが正常に作成されました",
+				"updated": "メンバーが正常に更新されました",
+				"deleted": "メンバーが正常に削除されました",
+				"failedSave": "メンバーの保存に失敗しました",
+				"failedDelete": "メンバーの削除に失敗しました",
+				"deleteTitle": "メンバーを削除しますか？",
+				"deleteDesc": "この操作は取り消せません。メンバーは完全に削除されます。"
+			}
+		},
+		"setlists": {
+			"title": "セットリスト",
+			"addSetlist": "セットリストを追加",
+			"searchPlaceholder": "セットリストを検索...",
+			"noSetlistsFound": "\"{query}\" に一致するセットリストは見つかりません",
+			"noMoreSetlists": "これ以上セットリストはありません",
+			"table": {
+				"setlistInfo": "セットリスト情報",
+				"songs": "{count}曲",
+				"songs_0": "0曲",
+				"japaneseTitle": "日本語タイトル",
+				"type": "タイプ",
+				"status": "ステータス",
+				"actions": "操作",
+				"theaterSetlist": "劇場公演",
+				"specialEvent": "特別イベント",
+				"active": "有効",
+				"inactive": "無効"
+			},
+			"modal": {
+				"addTitle": "新規セットリスト追加",
+				"editTitle": "セットリスト編集",
+				"title": "タイトル",
+				"titleRequired": "タイトルは必須です",
+				"japaneseTitle": "日本語タイトル（任意）",
+				"type": "タイプ",
+				"description": "説明",
+				"posterUrl": "ポスター画像URL",
+				"setlistStatus": "セットリストステータス",
+				"create": "セットリスト作成",
+				"save": "変更を保存",
+				"saving": "保存中...",
+				"created": "セットリストが正常に作成されました",
+				"updated": "セットリストが正常に更新されました",
+				"deleted": "セットリストが正常に削除されました",
+				"failedSave": "セットリストの保存に失敗しました",
+				"failedDelete": "セットリストの削除に失敗しました",
+				"deleteTitle": "セットリストを削除しますか？",
+				"deleteDesc": "この操作は取り消せません。セットリストは完全に削除されます。"
+			}
+		}
+	},
 	"memories": {
 		"title": "思い出",
 		"subtitle": "写真とチケットのギャラリー",

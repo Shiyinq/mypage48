@@ -619,5 +619,114 @@
 		"photos": "Photos",
 		"errorTitle": "Failed to load data",
 		"errorDesc": "Something went wrong while fetching the leaderboard."
+	},
+	"admin": {
+		"dashboard": {
+			"title": "Admin Dashboard",
+			"subtitle": "Manage users, members, and setlists",
+			"tabs": {
+				"users": "Users",
+				"members": "Members",
+				"setlists": "Setlists"
+			}
+		},
+		"users": {
+			"title": "Users",
+			"searchPlaceholder": "Search users...",
+			"noUsersFound": "No users found matching \"{query}\"",
+			"noMoreUsers": "No more users to load",
+			"table": {
+				"userInfo": "User Info",
+				"email": "Email",
+				"status": "Status",
+				"created": "Created"
+			},
+			"status": {
+				"verified": "Verified",
+				"unverified": "Unverified",
+				"locked": "Locked"
+			}
+		},
+		"members": {
+			"title": "Members",
+			"addMember": "Add Member",
+			"searchPlaceholder": "Search members...",
+			"noMembersFound": "No members found matching \"{query}\"",
+			"noMoreMembers": "No more members to load",
+			"table": {
+				"memberInfo": "Member Info",
+				"generation": "Generation",
+				"jikoshoukai": "Jikoshoukai",
+				"status": "Status",
+				"actions": "Actions",
+				"gen": "Gen {gen}",
+				"active": "Active",
+				"graduated": "Graduated"
+			},
+			"modal": {
+				"addTitle": "Add New Member",
+				"editTitle": "Edit Member",
+				"name": "Full Name",
+				"nameRequired": "Name is required",
+				"nickname": "Nickname",
+				"generation": "Generation",
+				"imageUrl": "Image URL",
+				"jikoshoukai": "Jikoshoukai",
+				"socials": "Social Media",
+				"accountStatus": "Account Status",
+				"active": "Active",
+				"inactive": "Inactive (Graduated)",
+				"create": "Create Member",
+				"save": "Save Changes",
+				"saving": "Saving...",
+				"created": "Member created successfully",
+				"updated": "Member updated successfully",
+				"deleted": "Member deleted successfully",
+				"failedSave": "Failed to save member",
+				"failedDelete": "Failed to delete member",
+				"deleteTitle": "Delete Member?",
+				"deleteDesc": "This action cannot be undone. The member will be permanently deleted."
+			}
+		},
+		"setlists": {
+			"title": "Setlists",
+			"addSetlist": "Add Setlist",
+			"searchPlaceholder": "Search setlists...",
+			"noSetlistsFound": "No setlists found matching \"{query}\"",
+			"noMoreSetlists": "No more setlists to load",
+			"table": {
+				"setlistInfo": "Setlist Info",
+				"songs": "{count} Songs",
+				"japaneseTitle": "Japanese Title",
+				"type": "Type",
+				"status": "Status",
+				"actions": "Actions",
+				"theaterSetlist": "Theater Setlist",
+				"specialEvent": "Special Event",
+				"active": "Active",
+				"inactive": "Inactive"
+			},
+			"modal": {
+				"addTitle": "Add New Setlist",
+				"editTitle": "Edit Setlist",
+				"title": "Title",
+				"titleRequired": "Title is required",
+				"japaneseTitle": "Japanese Title (Optional)",
+				"type": "Type",
+				"description": "Description",
+				"posterUrl": "Poster Image URL",
+				"setlistStatus": "Setlist Status",
+				"create": "Create Setlist",
+				"save": "Save Changes",
+				"saving": "Saving...",
+				"created": "Setlist created successfully",
+				"updated": "Setlist updated successfully",
+				"deleted": "Setlist deleted successfully",
+				"failedSave": "Failed to save setlist",
+				"failedDelete": "Failed to delete setlist",
+				"deleteTitle": "Delete Setlist?",
+				"deleteDesc": "This action cannot be undone. The setlist will be permanently deleted."
+			}
+		}
 	}
 }

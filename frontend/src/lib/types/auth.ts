@@ -31,6 +31,7 @@ export interface User {
 	publicYear?: number | null;
 	provider?: string;
 	isEmailVerified?: boolean;
+	isAdmin?: boolean;
 	createdAt?: string;
 }
 

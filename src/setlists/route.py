@@ -1,14 +1,17 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, status
 
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_current_user, get_setlists_service
+from src.dependencies import get_current_user, get_setlists_service, require_admin
 from src.logging_config import create_logger
 from src.setlists.schemas import (
+    MessageResponse,
+    SetlistCreateRequest,
     SetlistDetailResponse,
     SetlistListResponse,
     SetlistResponse,
+    SetlistUpdateRequest,
 )
 from src.setlists.service import SetlistsService
 
@@ -24,6 +27,9 @@ async def get_setlists(
     ),
     type: Optional[str] = Query(None, description="Filter by type (setlist, event)"),
     active: Optional[bool] = Query(None, description="Filter by active status"),
+    search: Optional[str] = Query(
+        None, description="Search by title or Japanese title"
+    ),
     service: SetlistsService = Depends(get_setlists_service),
     current_user: UserCurrent = Depends(get_current_user),
 ):
@@ -37,7 +43,7 @@ async def get_setlists(
     - **active**: Filter by active status
     """
     return await service.get_all_setlists(
-        current_user.userId, skip, limit, type, active
+        current_user.userId, skip, limit, type, active, search
     )
 
 
@@ -84,3 +90,53 @@ async def get_setlist_by_title(
     Get a specific setlist by its title.
     """
     return await service.get_setlist_by_title(title)
+
+
+# ============ Admin-only CRUD endpoints ============
+
+
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    response_model=SetlistResponse,
+    dependencies=[Depends(require_admin)],
+)
+async def create_setlist(
+    data: SetlistCreateRequest,
+    service: SetlistsService = Depends(get_setlists_service),
+):
+    """
+    Create a new setlist. **Admin only.**
+    """
+    return await service.create_setlist(data)
+
+
+@router.put(
+    "/{setlist_id}",
+    response_model=SetlistResponse,
+    dependencies=[Depends(require_admin)],
+)
+async def update_setlist(
+    setlist_id: str,
+    data: SetlistUpdateRequest,
+    service: SetlistsService = Depends(get_setlists_service),
+):
+    """
+    Update a setlist by ID. **Admin only.**
+    """
+    return await service.update_setlist(setlist_id, data)
+
+
+@router.delete(
+    "/{setlist_id}",
+    response_model=MessageResponse,
+    dependencies=[Depends(require_admin)],
+)
+async def delete_setlist(
+    setlist_id: str,
+    service: SetlistsService = Depends(get_setlists_service),
+):
+    """
+    Delete a setlist by ID. **Admin only.**
+    """
+    return await service.delete_setlist(setlist_id)

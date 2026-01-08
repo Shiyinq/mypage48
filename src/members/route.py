@@ -1,15 +1,16 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, status
 
-from src.dependencies import get_member_service
+from src.dependencies import get_member_service, require_admin
 from src.logging_config import create_logger
-from src.members.exceptions import MemberFetchError as DomainFetchError
-from src.members.exceptions import MemberNotFoundError
-from src.members.http_exceptions import MemberFetchError, MemberNotFound
 from src.members.schemas import (
+    MemberCreateRequest,
     MemberDetailResponse,
     MemberListResponse,
+    MemberResponse,
+    MemberUpdateRequest,
+    MessageResponse,
 )
 from src.members.service import MemberService
 
@@ -35,10 +36,7 @@ async def get_members(
     - **generation**: Filter by generation number
     - **search**: Search by member name or nickname
     """
-    try:
-        return await service.get_all_members(page, limit, generation, search)
-    except DomainFetchError:
-        raise MemberFetchError()
+    return await service.get_all_members(page, limit, generation, search)
 
 
 @router.get("/generations", response_model=List[str])
@@ -48,10 +46,7 @@ async def get_generations(
     """
     Get list of all available generations.
     """
-    try:
-        return await service.get_generations()
-    except DomainFetchError:
-        raise MemberFetchError()
+    return await service.get_generations()
 
 
 @router.get("/id/{member_id}", response_model=MemberDetailResponse)
@@ -62,12 +57,7 @@ async def get_member_by_id(
     """
     Get a specific JKT48 member by their ID.
     """
-    try:
-        return await service.get_member_by_id(member_id)
-    except MemberNotFoundError:
-        raise MemberNotFound()
-    except DomainFetchError:
-        raise MemberFetchError()
+    return await service.get_member_by_id(member_id)
 
 
 @router.get("/nickname/{nickname}", response_model=MemberDetailResponse)
@@ -78,9 +68,54 @@ async def get_member_by_nickname(
     """
     Get a specific JKT48 member by their nickname.
     """
-    try:
-        return await service.get_member_by_nickname(nickname)
-    except MemberNotFoundError:
-        raise MemberNotFound()
-    except DomainFetchError:
-        raise MemberFetchError()
+    return await service.get_member_by_nickname(nickname)
+
+
+# ============ Admin-only CRUD endpoints ============
+
+
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    response_model=MemberResponse,
+    dependencies=[Depends(require_admin)],
+)
+async def create_member(
+    data: MemberCreateRequest,
+    service: MemberService = Depends(get_member_service),
+):
+    """
+    Create a new member. **Admin only.**
+    """
+    return await service.create_member(data)
+
+
+@router.put(
+    "/{member_id}",
+    response_model=MemberResponse,
+    dependencies=[Depends(require_admin)],
+)
+async def update_member(
+    member_id: int,
+    data: MemberUpdateRequest,
+    service: MemberService = Depends(get_member_service),
+):
+    """
+    Update a member by ID. **Admin only.**
+    """
+    return await service.update_member(member_id, data)
+
+
+@router.delete(
+    "/{member_id}",
+    response_model=MessageResponse,
+    dependencies=[Depends(require_admin)],
+)
+async def delete_member(
+    member_id: int,
+    service: MemberService = Depends(get_member_service),
+):
+    """
+    Delete a member by ID. **Admin only.**
+    """
+    return await service.delete_member(member_id)

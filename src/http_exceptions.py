@@ -16,6 +16,11 @@ class PermissionDenied(DetailedHTTPException):
     DETAIL = "Permission denied"
 
 
+class AdminRequired(DetailedHTTPException):
+    STATUS_CODE = status.HTTP_403_FORBIDDEN
+    DETAIL = "Admin access required"
+
+
 class NotFound(DetailedHTTPException):
     STATUS_CODE = status.HTTP_404_NOT_FOUND
 

@@ -183,3 +183,37 @@ class ProfileFullResponse(BaseModel):
     stats: ProfileStats
     oshiTwoShots: OshiTwoShotCounts
     recentActivity: list[ProfileRecentActivity]
+
+
+# Admin User List Schemas
+class UserListItem(BaseModel):
+    """User item for admin list view."""
+
+    userId: str
+    name: str
+    username: str
+    email: str
+    profilePicture: Optional[str] = None
+    isAdmin: bool = False
+    isEmailVerified: bool = False
+    isAccountLocked: bool = False
+    createdAt: datetime
+
+
+class UserPaginationMeta(BaseModel):
+    """Pagination metadata for user list."""
+
+    current_page: int
+    last_page: int
+    total_data: int
+    per_page: int
+    next_page: Optional[int] = None
+
+
+class UserListResponse(BaseModel):
+    """Paginated user list response for admin."""
+
+    data: list[UserListItem]
+    meta: UserPaginationMeta
+
+

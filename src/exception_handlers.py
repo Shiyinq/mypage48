@@ -56,6 +56,9 @@ from src.llm.http_exceptions import InvalidImageType as LLMInvalidImageType
 from src.logging_config import create_logger
 from src.memories.exceptions import MemoriesFetchError
 from src.memories.http_exceptions import MemoriesFetchHTTPException
+from src.members.exceptions import MemberFetchError, MemberNotFoundError
+from src.members.http_exceptions import MemberFetchError as MemberFetchHTTPException
+from src.members.http_exceptions import MemberNotFound
 from src.setlists.exceptions import SetlistFetchError, SetlistNotFoundError
 from src.setlists.http_exceptions import SetlistFetchError as SetlistFetchHTTPException
 from src.setlists.http_exceptions import SetlistNotFound
@@ -257,6 +260,12 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(
             request, SetlistFetchHTTPException()
         )
+
+    # Members errors
+    if isinstance(exc, MemberNotFoundError):
+        return await detailed_http_exception_handler(request, MemberNotFound())
+    if isinstance(exc, MemberFetchError):
+        return await detailed_http_exception_handler(request, MemberFetchHTTPException())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

@@ -18,6 +18,7 @@ class SetlistsRepository:
         limit: int = 100,
         setlist_type: Optional[str] = None,
         active: Optional[bool] = None,
+        search: Optional[str] = None,
     ) -> List[dict]:
         query = {}
 
@@ -26,6 +27,12 @@ class SetlistsRepository:
 
         if active is not None:
             query["active"] = active
+
+        if search:
+            query["$or"] = [
+                {"title": {"$regex": search, "$options": "i"}},
+                {"titleJapanese": {"$regex": search, "$options": "i"}},
+            ]
 
         cursor = self.collection.find(query).skip(skip).limit(limit)
         return await cursor.to_list(length=limit)
@@ -37,6 +44,7 @@ class SetlistsRepository:
         limit: int = 100,
         setlist_type: Optional[str] = None,
         active: Optional[bool] = None,
+        search: Optional[str] = None,
     ) -> tuple[List[dict], int]:
         """
         Get all setlists with ticket count stats using aggregation.
@@ -50,6 +58,11 @@ class SetlistsRepository:
             match_query["type"] = setlist_type
         if active is not None:
             match_query["active"] = active
+        if search:
+            match_query["$or"] = [
+                {"title": {"$regex": search, "$options": "i"}},
+                {"titleJapanese": {"$regex": search, "$options": "i"}},
+            ]
 
         if match_query:
             pipeline.append({"$match": match_query})
@@ -116,6 +129,7 @@ class SetlistsRepository:
         self,
         setlist_type: Optional[str] = None,
         active: Optional[bool] = None,
+        search: Optional[str] = None,
     ) -> int:
         query = {}
 
@@ -124,6 +138,12 @@ class SetlistsRepository:
 
         if active is not None:
             query["active"] = active
+
+        if search:
+            query["$or"] = [
+                {"title": {"$regex": search, "$options": "i"}},
+                {"titleJapanese": {"$regex": search, "$options": "i"}},
+            ]
 
         return await self.collection.count_documents(query)
 
@@ -232,3 +252,22 @@ class SetlistsRepository:
         cursor = self.collection.aggregate(pipeline)
         results = await cursor.to_list(length=1)
         return results[0].get("maxCount", 1) if results else 1
+
+    async def insert_one(self, setlist: dict) -> dict:
+        """Insert a single setlist and return it"""
+        await self.collection.insert_one(setlist)
+        return await self.find_by_setlist_id(setlist["setlistId"])
+
+    async def update_one(self, setlist_id: str, update_data: dict) -> Optional[dict]:
+        """Update a setlist by ID and return the updated document"""
+        result = await self.collection.update_one(
+            {"setlistId": setlist_id}, {"$set": update_data}
+        )
+        if result.modified_count == 0:
+            return None
+        return await self.find_by_setlist_id(setlist_id)
+
+    async def delete_one(self, setlist_id: str) -> bool:
+        """Delete a setlist by ID and return True if successful"""
+        result = await self.collection.delete_one({"setlistId": setlist_id})
+        return result.deleted_count > 0

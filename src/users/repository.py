@@ -71,3 +71,31 @@ class UserRepository:
         return await self.collection.update_one(
             {"userId": user_id}, {"$set": {"profilePicture": profile_picture}}
         )
+
+    async def get_all_paginated(
+        self, page: int, limit: int, search: str | None = None
+    ) -> list[dict]:
+        """Get paginated list of users with optional search."""
+        query = {}
+        if search:
+            query["$or"] = [
+                {"name": {"$regex": search, "$options": "i"}},
+                {"email": {"$regex": search, "$options": "i"}},
+                {"username": {"$regex": search, "$options": "i"}},
+            ]
+
+        skip = (page - 1) * limit
+        cursor = self.collection.find(query).skip(skip).limit(limit).sort("createdAt", -1)
+        return await cursor.to_list(length=limit)
+
+    async def count_all(self, search: str | None = None) -> int:
+        """Count total users with optional search filter."""
+        query = {}
+        if search:
+            query["$or"] = [
+                {"name": {"$regex": search, "$options": "i"}},
+                {"email": {"$regex": search, "$options": "i"}},
+                {"username": {"$regex": search, "$options": "i"}},
+            ]
+        return await self.collection.count_documents(query)
+

@@ -48,7 +48,11 @@ from src.users.schemas import (
     UserCreateRequest,
     UserInDB,
     UserStats,
+    UserListItem,
+    UserListResponse,
+    UserPaginationMeta,
 )
+import math
 
 logger = create_logger("users_service", __name__)
 
@@ -434,6 +438,7 @@ class UserService:
                 "ofcStatus": current_user.ofcStatus,
                 "isPublic": current_user.isPublic,
                 "publicYear": current_user.publicYear,
+                "isAdmin": current_user.isAdmin,
             }
 
             return ProfileFullResponse(
@@ -452,3 +457,48 @@ class UserService:
         except Exception as e:
             logger.exception(f"Error fetching profile stats: {str(e)}")
             raise ProfileStatsFetchError()
+
+    async def get_all_users(
+        self, page: int, limit: int, search: str | None = None
+    ) -> "UserListResponse":
+        """
+        Get paginated list of users (admin only).
+        Returns user list with pagination metadata.
+        """
+        try:
+            users = await self.repository.get_all_paginated(page, limit, search)
+            total = await self.repository.count_all(search)
+
+            user_list = [
+                UserListItem(
+                    userId=u.get("userId", ""),
+                    name=u.get("name", ""),
+                    username=u.get("username", ""),
+                    email=u.get("email", ""),
+                    profilePicture=u.get("profilePicture"),
+                    isAdmin=u.get("isAdmin", False),
+                    isEmailVerified=u.get("isEmailVerified", False),
+                    isAccountLocked=u.get("isAccountLocked", False),
+                    createdAt=u.get("createdAt"),
+                )
+                for u in users
+            ]
+
+            last_page = math.ceil(total / limit) if total > 0 else 1
+            next_page = page + 1 if page < last_page else None
+
+            return UserListResponse(
+                data=user_list,
+                meta=UserPaginationMeta(
+                    current_page=page,
+                    last_page=last_page,
+                    total_data=total,
+                    per_page=limit,
+                    next_page=next_page,
+                ),
+            )
+        except Exception as e:
+            logger.exception(f"Error fetching users list: {str(e)}")
+            raise UserFetchError()
+
+
