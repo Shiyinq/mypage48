@@ -112,3 +112,10 @@ class StorageRepository:
             return True
         except S3Error:
             return False
+
+    def check_connection(self) -> bool:
+        """Check MinIO connection."""
+        try:
+            return self.client.bucket_exists(self.config.minio_bucket)
+        except Exception:
+            return False

@@ -164,8 +164,7 @@ def get_github_sso(config: Settings = Depends(get_settings)) -> GithubSSO:
     )
 
 
-def get_health_service() -> HealthService:
-    return HealthService(database_instance)
+
 
 
 def get_llm_repository(db=Depends(get_db)) -> LLMRepository:
@@ -268,3 +267,9 @@ def get_storage_service(
     config: Settings = Depends(get_settings),
 ) -> StorageService:
     return StorageService(repo, config)
+
+
+def get_health_service(
+    storage_repo: StorageRepository = Depends(get_storage_repository),
+) -> HealthService:
+    return HealthService(database_instance, storage_repo)
