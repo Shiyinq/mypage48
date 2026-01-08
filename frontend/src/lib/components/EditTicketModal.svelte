@@ -86,17 +86,12 @@
 	}
 
 	// Handlers
-	const handleFileChange = (e: Event) => {
-		const target = e.target as HTMLInputElement;
-		const file = target.files?.[0];
-		if (!file) return;
-
+	const processFile = (file: File) => {
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
 			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
-			target.value = ''; // Reset input
 			return;
 		}
 
@@ -107,17 +102,31 @@
 		reader.readAsDataURL(file);
 	};
 
-	const handleTwoShotFileChange = (e: Event) => {
+	const handleFileChange = (e: Event) => {
 		const target = e.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (!file) return;
 
+		processFile(file);
+		target.value = ''; // Reset input
+	};
+
+	const handleFileDrop = (e: CustomEvent<File>) => {
+		processFile(e.detail);
+	};
+
+	// Helper to check if image is base64 (new upload) vs storage filename
+	const isBase64Image = (value: string | null): boolean => {
+		if (!value) return false;
+		return value.startsWith('data:image/');
+	};
+
+	const processTwoShotFile = (file: File) => {
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
 			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
-			target.value = ''; // Reset input
 			return;
 		}
 
@@ -128,10 +137,16 @@
 		reader.readAsDataURL(file);
 	};
 
-	// Helper to check if image is base64 (new upload) vs storage filename
-	const isBase64Image = (value: string | null): boolean => {
-		if (!value) return false;
-		return value.startsWith('data:image/');
+	const handleTwoShotFileChange = (e: Event) => {
+		const target = e.target as HTMLInputElement;
+		const file = target.files?.[0];
+		if (!file) return;
+		processTwoShotFile(file);
+		target.value = ''; // Reset input
+	};
+
+	const handleTwoShotDrop = (e: CustomEvent<File>) => {
+		processTwoShotFile(e.detail);
 	};
 
 	const handleSubmit = async () => {
@@ -242,7 +257,7 @@
 
 			<div class="grid gap-8 lg:grid-cols-2">
 				<!-- Left: Image Preview -->
-				<ImagePreview {image} onSelect={() => fileInputRef.click()} />
+				<ImagePreview {image} onSelect={() => fileInputRef.click()} on:drop={handleFileDrop} />
 
 				<!-- Right: Form -->
 				<div
@@ -261,6 +276,7 @@
 							{twoShotImage}
 							{formData}
 							onSelectImage={() => twoShotInputRef.click()}
+							on:drop={handleTwoShotDrop}
 						/>
 
 						<!-- Notes -->

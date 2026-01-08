@@ -2,6 +2,8 @@
 	import { Camera, Sparkles, DollarSign, ChevronDown } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import MemberSelector from '$lib/components/MemberSelector.svelte';
+	import { createEventDispatcher } from 'svelte';
+	import { dragDrop } from '$lib/actions/dragDrop';
 
 	export let showTwoShot: boolean;
 	export let twoShotImage: string | null;
@@ -9,6 +11,9 @@
 	export let onSelectImage: () => void;
 
 	const { t } = useTranslation();
+	const dispatch = createEventDispatcher();
+
+	let isDragging = false;
 </script>
 
 <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
@@ -43,7 +48,14 @@
 					id="twoshot-upload"
 					type="button"
 					on:click={onSelectImage}
-					class="w-full h-32 border-2 border-dashed border-red-200 dark:border-red-900/30 rounded-xl bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors cursor-pointer flex items-center justify-center overflow-hidden relative group"
+					use:dragDrop={{
+						onDrop: (file) => dispatch('drop', file),
+						onDragChange: (state) => (isDragging = state)
+					}}
+					class="w-full h-32 border-2 border-dashed rounded-xl transition-all cursor-pointer flex items-center justify-center overflow-hidden relative group
+					{isDragging
+						? 'border-red-500 bg-red-50 dark:bg-red-900/10 scale-[1.02] ring-4 ring-red-500/20'
+						: 'border-red-200 dark:border-red-900/30 bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/10'}"
 				>
 					{#if twoShotImage}
 						<img src={twoShotImage} alt="2shot" class="w-full h-full object-contain" />
@@ -53,7 +65,11 @@
 							{$t('forms.changePhoto')}
 						</div>
 					{:else}
-						<div class="flex flex-col items-center text-red-400 dark:text-red-500">
+						<div
+							class="flex flex-col items-center {isDragging
+								? 'text-red-500'
+								: 'text-red-400 dark:text-red-500'}"
+						>
 							<Camera class="w-6 h-6 mb-1" />
 							<span class="text-xs font-medium">{$t('forms.uploadPhoto')}</span>
 						</div>

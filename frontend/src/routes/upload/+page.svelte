@@ -86,17 +86,12 @@
 		return simpleMatch ? `${simpleMatch[1].padStart(2, '0')}:${simpleMatch[2]}` : '';
 	};
 
-	const handleFileChange = (e: Event) => {
-		const target = e.target as HTMLInputElement;
-		const file = target.files?.[0];
-		if (!file) return;
-
+	const processFile = (file: File) => {
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
 			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
-			target.value = ''; // Reset input
 			return;
 		}
 
@@ -106,6 +101,19 @@
 			if (mode === 'SELECTION') analyzeImage(image);
 		};
 		reader.readAsDataURL(file);
+	};
+
+	const handleFileChange = (e: Event) => {
+		const target = e.target as HTMLInputElement;
+		const file = target.files?.[0];
+		if (!file) return;
+
+		processFile(file);
+		target.value = ''; // Reset input
+	};
+
+	const handleFileDrop = (e: CustomEvent<File>) => {
+		processFile(e.detail);
 	};
 
 	const analyzeImage = async (base64: string) => {
@@ -150,12 +158,20 @@
 		const file = target.files?.[0];
 		if (!file) return;
 
+		processTwoShotFile(file);
+		target.value = ''; // Reset input
+	};
+
+	const handleTwoShotDrop = (e: CustomEvent<File>) => {
+		processTwoShotFile(e.detail);
+	};
+
+	const processTwoShotFile = (file: File) => {
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
 			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
-			target.value = ''; // Reset input
 			return;
 		}
 
@@ -293,7 +309,11 @@
 		<div class="grid gap-8 lg:grid-cols-2">
 			<!-- Image Preview -->
 			<div class="flex flex-col gap-4">
-				<TicketImagePreview {image} onChangePhoto={() => fileInputRef.click()} />
+				<TicketImagePreview
+					{image}
+					onChangePhoto={() => fileInputRef.click()}
+					on:drop={handleFileDrop}
+				/>
 			</div>
 
 			<!-- FORM -->
@@ -305,6 +325,7 @@
 				bind:twoShotImage
 				on:click={handleFormSubmit}
 				on:photoClick={() => twoShotInputRef.click()}
+				on:drop={handleTwoShotDrop}
 			/>
 		</div>
 	</div>
