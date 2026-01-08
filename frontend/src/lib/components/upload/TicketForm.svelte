@@ -222,6 +222,7 @@
 				// For now we assume parent handles it, or we dispatch
 			}}
 			on:photoClick
+			on:drop
 		/>
 
 		<!-- Notes -->
