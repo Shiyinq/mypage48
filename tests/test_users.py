@@ -45,7 +45,61 @@ async def test_read_users_me_success(client: AsyncClient, db):
     # Note: DB might store 'name' instead of 'fullName' depending on mapping, 
     # but the input was fullName. UserCurrent schema (response) likely has 'name'.
     assert profile["name"] == "Profile User"
+    assert profile["name"] == "Profile User"
 
+@pytest.mark.asyncio
+async def test_get_all_users_admin(client: AsyncClient, db):
+    # Register Admin
+    register_payload = {
+        "fullName": "Admin List User",
+        "memberId": "adminlist123",
+        "username": "adminlist",
+        "email": "adminlist@example.com",
+        "password": "Password123!",
+        "confirmPassword": "Password123!"
+    }
+    await client.post("/api/users/signup", json=register_payload)
+    await db["users"].update_one(
+        {"username": "adminlist"}, 
+        {"$set": {"isEmailVerified": True, "isAdmin": True}}
+    )
+    
+    login_res = await client.post("/api/auth/signin", data={"username": "adminlist", "password": "Password123!"})
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Get All Users
+    response = await client.get("/api/users", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert "data" in data
+    assert len(data["data"]) > 0
+    assert "meta" in data
+
+@pytest.mark.asyncio
+async def test_get_all_users_forbidden(client: AsyncClient, db):
+    # Register Normal User
+    register_payload = {
+        "fullName": "Normal User",
+        "memberId": "normal123",
+        "username": "normaluser",
+        "email": "normal@example.com",
+        "password": "Password123!",
+        "confirmPassword": "Password123!"
+    }
+    await client.post("/api/users/signup", json=register_payload)
+    await db["users"].update_one(
+        {"username": "normaluser"}, 
+        {"$set": {"isEmailVerified": True}}
+    ) # No role=admin
+    
+    login_res = await client.post("/api/auth/signin", data={"username": "normaluser", "password": "Password123!"})
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Get All Users -> Should fail
+    response = await client.get("/api/users", headers=headers)
+    assert response.status_code == 403
 @pytest.mark.asyncio
 async def test_update_oshi(client: AsyncClient, db):
     # Register and Login

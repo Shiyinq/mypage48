@@ -88,3 +88,33 @@ class SetlistDetailResponse(SetlistBase):
     watched: WatchedStats
     stats: SetlistDetailStats
     tickets: List[TicketItem]
+
+
+class SetlistCreateRequest(BaseModel):
+    """Request schema for creating a setlist"""
+
+    imageUrl: str
+    title: str
+    titleJapanese: Optional[str] = None
+    description: str
+    type: str  # "setlist" or "event"
+    active: bool = False
+    songs: Optional[List[str]] = []
+
+
+class SetlistUpdateRequest(BaseModel):
+    """Request schema for updating a setlist (all fields optional)"""
+
+    imageUrl: Optional[str] = None
+    title: Optional[str] = None
+    titleJapanese: Optional[str] = None
+    description: Optional[str] = None
+    type: Optional[str] = None
+    active: Optional[bool] = None
+    songs: Optional[List[str]] = None
+
+
+class MessageResponse(BaseModel):
+    """Simple message response for delete operations"""
+
+    message: str

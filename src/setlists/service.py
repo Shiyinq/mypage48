@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional
 
 from src.config import Settings
@@ -6,10 +7,13 @@ from src.setlists.constants import Info
 from src.setlists.exceptions import SetlistFetchError, SetlistNotFoundError
 from src.setlists.repository import SetlistsRepository
 from src.setlists.schemas import (
+    MessageResponse,
+    SetlistCreateRequest,
     SetlistDetailResponse,
     SetlistDetailStats,
     SetlistListResponse,
     SetlistResponse,
+    SetlistUpdateRequest,
     SetlistWithStats,
     TicketEvent,
     TicketItem,
@@ -36,6 +40,7 @@ class SetlistsService:
         limit: int = 100,
         setlist_type: Optional[str] = None,
         active: Optional[bool] = None,
+        search: Optional[str] = None,
     ) -> SetlistListResponse:
         """Get all setlists with optional filtering and user statistics"""
         try:
@@ -46,8 +51,9 @@ class SetlistsService:
                 limit=limit,
                 setlist_type=setlist_type,
                 active=active,
+                search=search,
             )
-            total = await self.repository.count(setlist_type, active)
+            total = await self.repository.count(setlist_type, active, search)
 
             setlist_responses = []
             for setlist in setlists:
@@ -215,4 +221,62 @@ class SetlistsService:
             raise
         except Exception as e:
             logger.exception(f"Error fetching setlist detail {setlist_id}: {str(e)}")
+            raise SetlistFetchError()
+
+    async def create_setlist(self, data: SetlistCreateRequest) -> SetlistResponse:
+        """Create a new setlist"""
+        try:
+            setlist_id = str(uuid.uuid4())
+
+            setlist_data = {
+                "setlistId": setlist_id,
+                **data.model_dump(exclude_none=True),
+            }
+
+            setlist = await self.repository.insert_one(setlist_data)
+            return SetlistResponse(**{k: v for k, v in setlist.items() if k != "_id"})
+        except Exception as e:
+            logger.exception(f"Error creating setlist: {str(e)}")
+            raise SetlistFetchError()
+
+    async def update_setlist(
+        self, setlist_id: str, data: SetlistUpdateRequest
+    ) -> SetlistResponse:
+        """Update an existing setlist"""
+        try:
+            # Check if setlist exists
+            existing = await self.repository.find_by_setlist_id(setlist_id)
+            if not existing:
+                raise SetlistNotFoundError()
+
+            update_data = data.model_dump(exclude_none=True)
+            if update_data:
+                setlist = await self.repository.update_one(setlist_id, update_data)
+            else:
+                setlist = existing
+
+            return SetlistResponse(**{k: v for k, v in setlist.items() if k != "_id"})
+        except SetlistNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error updating setlist {setlist_id}: {str(e)}")
+            raise SetlistFetchError()
+
+    async def delete_setlist(self, setlist_id: str) -> MessageResponse:
+        """Delete a setlist by ID"""
+        try:
+            # Check if setlist exists
+            existing = await self.repository.find_by_setlist_id(setlist_id)
+            if not existing:
+                raise SetlistNotFoundError()
+
+            deleted = await self.repository.delete_one(setlist_id)
+            if not deleted:
+                raise SetlistFetchError()
+
+            return MessageResponse(message=Info.SETLIST_DELETED)
+        except SetlistNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error deleting setlist {setlist_id}: {str(e)}")
             raise SetlistFetchError()

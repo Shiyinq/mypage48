@@ -2,6 +2,7 @@ class Info:
     SETLIST_FOUND = "Setlist found successfully."
     SETLISTS_RETRIEVED = "Setlists retrieved successfully."
     SETLIST_DATA_SEEDED = "Setlist data seeded successfully."
+    SETLIST_DELETED = "Setlist deleted successfully."
 
 
 class ErrorCode:

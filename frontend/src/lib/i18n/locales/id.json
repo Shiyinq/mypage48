@@ -620,5 +620,116 @@
 		"photos": "Foto",
 		"errorTitle": "Gagal memuat data",
 		"errorDesc": "Terjadi kesalahan saat mengambil papan peringkat."
+	},
+	"admin": {
+		"dashboard": {
+			"title": "Dasbor Admin",
+			"subtitle": "Kelola pengguna, member, dan setlist",
+			"tabs": {
+				"users": "Pengguna",
+				"members": "Member",
+				"setlists": "Setlist"
+			}
+		},
+		"users": {
+			"title": "Pengguna",
+			"searchPlaceholder": "Cari pengguna...",
+			"noUsersFound": "Tidak ditemukan pengguna yang cocok dengan \"{query}\"",
+			"noMoreUsers": "Tidak ada lagi pengguna untuk dimuat",
+			"table": {
+				"userInfo": "Info Pengguna",
+				"email": "Email",
+				"status": "Status",
+				"created": "Dibuat"
+			},
+			"status": {
+				"verified": "Terverifikasi",
+				"unverified": "Belum Terverifikasi",
+				"locked": "Terkunci"
+			}
+		},
+		"members": {
+			"title": "Member",
+			"addMember": "Tambah Member",
+			"searchPlaceholder": "Cari member...",
+			"noMembersFound": "Tidak ditemukan member yang cocok dengan \"{query}\"",
+			"noMoreMembers": "Tidak ada lagi member untuk dimuat",
+			"table": {
+				"memberInfo": "Info Member",
+				"generation": "Generasi",
+				"jikoshoukai": "Jikoshoukai",
+				"status": "Status",
+				"actions": "Aksi",
+				"gen": "Gen {gen}",
+				"active": "Aktif",
+				"graduated": "Lulus"
+			},
+			"modal": {
+				"addTitle": "Tambah Member Baru",
+				"editTitle": "Edit Member",
+				"name": "Nama Lengkap",
+				"nameRequired": "Nama wajib diisi",
+				"nickname": "Nama Panggilan",
+				"generation": "Generasi",
+				"imageUrl": "URL Gambar",
+				"jikoshoukai": "Jikoshoukai",
+				"socials": "Media Sosial",
+				"accountStatus": "Status Akun",
+				"active": "Aktif",
+				"inactive": "Tidak Aktif (Lulus)",
+				"create": "Buat Member",
+				"save": "Simpan Perubahan",
+				"saving": "Menyimpan...",
+				"created": "Member berhasil dibuat",
+				"updated": "Member berhasil diperbarui",
+				"deleted": "Member berhasil dihapus",
+				"failedSave": "Gagal menyimpan member",
+				"failedDelete": "Gagal menghapus member",
+				"deleteTitle": "Hapus Member?",
+				"deleteDesc": "Tindakan ini tidak dapat dibatalkan. Member akan dihapus secara permanen."
+			}
+		},
+		"setlists": {
+			"title": "Setlist",
+			"addSetlist": "Tambah Setlist",
+			"searchPlaceholder": "Cari setlist...",
+			"noSetlistsFound": "Tidak ditemukan setlist yang cocok dengan \"{query}\"",
+			"noMoreSetlists": "Tidak ada lagi setlist untuk dimuat",
+			"table": {
+				"setlistInfo": "Info Setlist",
+				"songs": "{count} Lagu",
+				"songs_0": "0 Lagu",
+				"songs_1": "1 Lagu",
+				"japaneseTitle": "Judul Jepang",
+				"type": "Tipe",
+				"status": "Status",
+				"actions": "Aksi",
+				"theaterSetlist": "Setlist Teater",
+				"specialEvent": "Event Spesial",
+				"active": "Aktif",
+				"inactive": "Tidak Aktif"
+			},
+			"modal": {
+				"addTitle": "Tambah Setlist Baru",
+				"editTitle": "Edit Setlist",
+				"title": "Judul",
+				"titleRequired": "Judul wajib diisi",
+				"japaneseTitle": "Judul Jepang (Opsional)",
+				"type": "Tipe",
+				"description": "Deskripsi",
+				"posterUrl": "URL Gambar Poster",
+				"setlistStatus": "Status Setlist",
+				"create": "Buat Setlist",
+				"save": "Simpan Perubahan",
+				"saving": "Menyimpan...",
+				"created": "Setlist berhasil dibuat",
+				"updated": "Setlist berhasil diperbarui",
+				"deleted": "Setlist berhasil dihapus",
+				"failedSave": "Gagal menyimpan setlist",
+				"failedDelete": "Gagal menghapus setlist",
+				"deleteTitle": "Hapus Setlist?",
+				"deleteDesc": "Tindakan ini tidak dapat dibatalkan. Setlist akan dihapus secara permanen."
+			}
+		}
 	}
 }

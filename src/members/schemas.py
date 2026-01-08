@@ -53,3 +53,43 @@ class MemberDetailResponse(BaseModel):
 class MemberSeedResponse(BaseModel):
     message: str
     count: int
+
+
+class MemberCreateRequest(BaseModel):
+    """Request schema for creating a member"""
+
+    name: str
+    nickname: str
+    generation: Optional[str] = None
+    jiko: Optional[str] = None
+    active: bool = True
+    href: Optional[str] = None
+    img: Optional[str] = None
+    birthdate: Optional[str] = None
+    bloodType: Optional[str] = None
+    horoscope: Optional[str] = None
+    height: Optional[str] = None
+    socials: Optional[SocialMedia] = None
+
+
+class MemberUpdateRequest(BaseModel):
+    """Request schema for updating a member (all fields optional)"""
+
+    name: Optional[str] = None
+    nickname: Optional[str] = None
+    generation: Optional[str] = None
+    jiko: Optional[str] = None
+    active: Optional[bool] = None
+    href: Optional[str] = None
+    img: Optional[str] = None
+    birthdate: Optional[str] = None
+    bloodType: Optional[str] = None
+    horoscope: Optional[str] = None
+    height: Optional[str] = None
+    socials: Optional[SocialMedia] = None
+
+
+class MessageResponse(BaseModel):
+    """Simple message response for delete operations"""
+
+    message: str

@@ -74,13 +74,14 @@ export interface SetlistDetailResponse {
 
 export const setlistsApi = {
 	getAll: async (
-		params: { skip?: number; limit?: number; type?: string; active?: boolean } = {}
+		params: { skip?: number; limit?: number; type?: string; active?: boolean; search?: string } = {}
 	) => {
 		const query = new URLSearchParams();
 		if (params.skip) query.append('skip', params.skip.toString());
 		if (params.limit) query.append('limit', params.limit.toString());
 		if (params.type) query.append('type', params.type);
 		if (params.active !== undefined) query.append('active', params.active.toString());
+		if (params.search) query.append('search', params.search);
 
 		return client<SetlistListResponse>(`/theater/setlists?${query.toString()}`);
 	},
@@ -97,9 +98,24 @@ export const setlistsApi = {
 		return client<Setlist>(`/theater/setlists/title/${encodeURIComponent(title)}`);
 	},
 
-	seed: async () => {
-		return client<SetlistSeedResponse>('/theater/setlists/seed', {
-			method: 'POST'
+	// Admin-only CRUD operations
+	create: async (data: Omit<Setlist, 'setlistId' | 'watched'>) => {
+		return client<Setlist>('/theater/setlists', {
+			method: 'POST',
+			body: JSON.stringify(data)
+		});
+	},
+
+	update: async (setlistId: string, data: Partial<Omit<Setlist, 'setlistId' | 'watched'>>) => {
+		return client<Setlist>(`/theater/setlists/${setlistId}`, {
+			method: 'PUT',
+			body: JSON.stringify(data)
+		});
+	},
+
+	delete: async (setlistId: string) => {
+		return client<{ message: string }>(`/theater/setlists/${setlistId}`, {
+			method: 'DELETE'
 		});
 	}
 };

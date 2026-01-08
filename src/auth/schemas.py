@@ -38,6 +38,7 @@ class UserLoginBase(BaseModel):
     ofcStatus: str | None = None
     isPublic: bool = False
     publicYear: int | None = None
+    isAdmin: bool = False
 
 
 class UserLogin(UserLoginBase):

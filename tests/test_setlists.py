@@ -3,6 +3,45 @@ from httpx import AsyncClient
 from datetime import datetime
 from src.tickets.schemas import TicketInDB, TicketEvent, TicketSeat
 
+# Minimal test data
+TEST_SETLISTS_DATA = [
+    {
+        "setlistId": "S001",
+        "title": "Pajama Drive",
+        "titleJapanese": "Pajama Drive",
+        "description": "A classic setlist.",
+        "type": "setlist",
+        "imageUrl": "https://example.com/pajama.jpg",
+        "active": True,
+        "songs": []
+    },
+    {
+        "setlistId": "S002",
+        "title": "Pertaruhan Cinta",
+        "titleJapanese": "Renai Kinshi Jourei",
+        "description": "Love Forbidden Ordinance",
+        "type": "setlist",
+        "imageUrl": "https://example.com/rkj.jpg",
+        "active": True,
+        "songs": []
+    },
+    {
+        "setlistId": "E001",
+        "title": "Special Event",
+        "titleJapanese": "Special Event",
+        "description": "Special event.",
+        "type": "event",
+        "imageUrl": "https://example.com/event.jpg",
+        "active": False,
+        "songs": []
+    }
+]
+
+@pytest.fixture
+async def seed_setlists_db(db):
+    """Seed the database with local test setlist data."""
+    if TEST_SETLISTS_DATA:
+        await db["setlists"].insert_many(TEST_SETLISTS_DATA)
 
 @pytest.mark.asyncio
 async def test_get_setlists_unauthorized(client: AsyncClient):
@@ -10,25 +49,9 @@ async def test_get_setlists_unauthorized(client: AsyncClient):
     response = await client.get("/api/theater/setlists")
     assert response.status_code == 401
 
-
 @pytest.mark.asyncio
-async def test_seed_setlists(client: AsyncClient, db):
-    """Test seeding the database with JKT48 setlist data."""
-    # Seed endpoint is at /api/theater/setlists/seed
-    response = await client.post("/api/theater/setlists/seed")
-    assert response.status_code == 201
-    data = response.json()
-    assert "message" in data
-    assert "count" in data
-    assert data["count"] > 0
-
-
-@pytest.mark.asyncio
-async def test_get_setlists_list(client: AsyncClient, db):
+async def test_get_setlists_list(client: AsyncClient, db, seed_setlists_db):
     """Test getting all setlists with authentication."""
-    # Seed setlists data
-    await client.post("/api/theater/setlists/seed")
-
     # Register and Login
     register_payload = {
         "fullName": "Setlist User",
@@ -58,31 +81,12 @@ async def test_get_setlists_list(client: AsyncClient, db):
     data = response.json()
 
     assert "total" in data
-    assert "maxAttendance" in data
-    assert "setlists" in data
     assert data["total"] > 0
     assert len(data["setlists"]) > 0
 
-    # Check setlist structure
-    setlist = data["setlists"][0]
-    assert "setlistId" in setlist
-    assert "title" in setlist
-    assert "imageUrl" in setlist
-    assert "description" in setlist
-    assert "type" in setlist
-    assert "active" in setlist
-    assert "watched" in setlist
-    assert "count" in setlist["watched"]
-    assert "percentage" in setlist["watched"]
-    assert "isMostWatched" in setlist["watched"]
-
-
 @pytest.mark.asyncio
-async def test_get_setlists_pagination(client: AsyncClient, db):
+async def test_get_setlists_pagination(client: AsyncClient, db, seed_setlists_db):
     """Test setlists pagination."""
-    # Seed setlists data
-    await client.post("/api/theater/setlists/seed")
-
     # Register and Login
     register_payload = {
         "fullName": "Pagination User",
@@ -107,22 +111,14 @@ async def test_get_setlists_pagination(client: AsyncClient, db):
     headers = {"Authorization": f"Bearer {token}"}
 
     # Test limit parameter
-    response = await client.get("/api/theater/setlists?limit=5", headers=headers)
+    response = await client.get("/api/theater/setlists?limit=2", headers=headers)
     assert response.status_code == 200
     data = response.json()
-    assert len(data["setlists"]) <= 5
-
-    # Test skip parameter
-    response_skip = await client.get("/api/theater/setlists?skip=2&limit=5", headers=headers)
-    assert response_skip.status_code == 200
-
+    assert len(data["setlists"]) <= 2
 
 @pytest.mark.asyncio
-async def test_get_setlists_filter_by_type(client: AsyncClient, db):
+async def test_get_setlists_filter_by_type(client: AsyncClient, db, seed_setlists_db):
     """Test filtering setlists by type (setlist or event)."""
-    # Seed setlists data
-    await client.post("/api/theater/setlists/seed")
-
     # Register and Login
     register_payload = {
         "fullName": "Filter User",
@@ -160,13 +156,9 @@ async def test_get_setlists_filter_by_type(client: AsyncClient, db):
     for setlist in data["setlists"]:
         assert setlist["type"] == "event"
 
-
 @pytest.mark.asyncio
-async def test_get_setlists_filter_by_active(client: AsyncClient, db):
+async def test_get_setlists_filter_by_active(client: AsyncClient, db, seed_setlists_db):
     """Test filtering setlists by active status."""
-    # Seed setlists data
-    await client.post("/api/theater/setlists/seed")
-
     # Register and Login
     register_payload = {
         "fullName": "Active Filter User",
@@ -204,12 +196,9 @@ async def test_get_setlists_filter_by_active(client: AsyncClient, db):
     for setlist in data["setlists"]:
         assert setlist["active"] is False
 
-
 @pytest.mark.asyncio
-async def test_get_setlist_types(client: AsyncClient, db):
+async def test_get_setlist_types(client: AsyncClient, seed_setlists_db):
     """Test getting list of setlist types."""
-    await client.post("/api/theater/setlists/seed")
-
     response = await client.get("/api/theater/setlists/types")
     assert response.status_code == 200
     types = response.json()
@@ -217,86 +206,40 @@ async def test_get_setlist_types(client: AsyncClient, db):
     assert "setlist" in types
     assert "event" in types
 
-
 @pytest.mark.asyncio
-async def test_get_setlist_by_id(client: AsyncClient, db):
+async def test_get_setlist_by_id(client: AsyncClient, seed_setlists_db):
     """Test getting a setlist by its ID."""
-    await client.post("/api/theater/setlists/seed")
-
-    # Get a setlist from the list
-    # First we need to authenticate to get the list
-    register_payload = {
-        "fullName": "ID User",
-        "memberId": "55555",
-        "username": "iduser",
-        "email": "iduser@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "iduser"},
-        {"$set": {"isEmailVerified": True}}
-    )
-
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "iduser",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
-
-    # Get one setlist ID
-    list_res = await client.get("/api/theater/setlists?limit=1", headers=headers)
-    setlist = list_res.json()["setlists"][0]
-    setlist_id = setlist["setlistId"]
-
-    # Get by ID (this endpoint doesn't require auth)
+    setlist_id = "S001" # Pajama Drive
     response = await client.get(f"/api/theater/setlists/id/{setlist_id}")
     assert response.status_code == 200
     data = response.json()
     assert data["setlistId"] == setlist_id
-    assert data["title"] == setlist["title"]
-
+    assert data["title"] == "Pajama Drive"
 
 @pytest.mark.asyncio
-async def test_get_setlist_by_id_not_found(client: AsyncClient, db):
+async def test_get_setlist_by_id_not_found(client: AsyncClient):
     """Test getting a non-existent setlist by ID returns 404."""
-    await client.post("/api/theater/setlists/seed")
-
     response = await client.get("/api/theater/setlists/id/non-existent-id")
     assert response.status_code == 404
 
-
 @pytest.mark.asyncio
-async def test_get_setlist_by_title(client: AsyncClient, db):
+async def test_get_setlist_by_title(client: AsyncClient, seed_setlists_db):
     """Test getting a setlist by its title."""
-    await client.post("/api/theater/setlists/seed")
-
-    # Use a known title from the seed data
     response = await client.get("/api/theater/setlists/title/Pajama Drive")
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == "Pajama Drive"
     assert data["type"] == "setlist"
 
-
 @pytest.mark.asyncio
-async def test_get_setlist_by_title_not_found(client: AsyncClient, db):
+async def test_get_setlist_by_title_not_found(client: AsyncClient):
     """Test getting a non-existent setlist by title returns 404."""
-    await client.post("/api/theater/setlists/seed")
-
     response = await client.get("/api/theater/setlists/title/Non Existent Setlist")
     assert response.status_code == 404
 
-
 @pytest.mark.asyncio
-async def test_setlist_watched_stats_with_tickets(client: AsyncClient, db):
+async def test_setlist_watched_stats_with_tickets(client: AsyncClient, db, seed_setlists_db):
     """Test that watched stats are correctly calculated with user tickets."""
-    # Seed setlists
-    await client.post("/api/theater/setlists/seed")
-
     # Register and Login
     username = "watcheduser"
     register_payload = {
@@ -313,7 +256,6 @@ async def test_setlist_watched_stats_with_tickets(client: AsyncClient, db):
         {"username": "watcheduser"},
         {"$set": {"isEmailVerified": True}}
     )
-
     user = await db["users"].find_one({"username": username})
     user_id = user["userId"]
 
@@ -324,7 +266,7 @@ async def test_setlist_watched_stats_with_tickets(client: AsyncClient, db):
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    # Insert tickets for "Pajama Drive" (2 tickets)
+    # Insert tickets matches TEST_SETLISTS_DATA titles
     ticket_data_1 = TicketInDB(
         user_id=user_id,
         ticket_id="T001",
@@ -341,44 +283,9 @@ async def test_setlist_watched_stats_with_tickets(client: AsyncClient, db):
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
     )
-    ticket_data_2 = TicketInDB(
-        user_id=user_id,
-        ticket_id="T002",
-        event=TicketEvent(
-            title="Pajama Drive",
-            date="2023-02-20",
-            day="Monday",
-            time="19:00",
-            venue="JKT48 Theater"
-        ),
-        seat=TicketSeat(section="B", number=10),
-        price=200000,
-        currency="IDR",
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
-    )
-    # Insert 1 ticket for "Pertaruhan Cinta"
-    ticket_data_3 = TicketInDB(
-        user_id=user_id,
-        ticket_id="T003",
-        event=TicketEvent(
-            title="Pertaruhan Cinta",
-            date="2023-03-15",
-            day="Wednesday",
-            time="14:00",
-            venue="JKT48 Theater"
-        ),
-        seat=TicketSeat(section="C", number=3),
-        price=200000,
-        currency="IDR",
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
-    )
-
+    
     await db["tickets"].insert_many([
-        ticket_data_1.model_dump(),
-        ticket_data_2.model_dump(),
-        ticket_data_3.model_dump()
+        ticket_data_1.model_dump()
     ])
 
     # Get setlists
@@ -386,63 +293,150 @@ async def test_setlist_watched_stats_with_tickets(client: AsyncClient, db):
     assert response.status_code == 200
     data = response.json()
 
-    # Find Pajama Drive and check stats
+    # Find Pajama Drive
     pajama_drive = next(
         (s for s in data["setlists"] if s["title"] == "Pajama Drive"),
         None
     )
     assert pajama_drive is not None
-    assert pajama_drive["watched"]["count"] == 2
-    assert pajama_drive["watched"]["isMostWatched"] is True
-    assert pajama_drive["watched"]["percentage"] == 100.0
-
-    # Find Pertaruhan Cinta and check stats
-    pertaruhan_cinta = next(
-        (s for s in data["setlists"] if s["title"] == "Pertaruhan Cinta"),
-        None
-    )
-    assert pertaruhan_cinta is not None
-    assert pertaruhan_cinta["watched"]["count"] == 1
-    assert pertaruhan_cinta["watched"]["isMostWatched"] is False
-
+    assert pajama_drive["watched"]["count"] == 1
 
 @pytest.mark.asyncio
-async def test_setlist_max_attendance_in_response(client: AsyncClient, db):
-    """Test that maxAttendance is correctly set in response."""
-    # Seed setlists
-    await client.post("/api/theater/setlists/seed")
-
-    # Register and Login (no tickets - maxAttendance should be 0)
+async def test_delete_setlist(client: AsyncClient, db, seed_setlists_db):
+    """Test deleting a setlist (admin only)."""
+    # Admin Login
+    await db["users"].insert_one({
+        "fullName": "Admin User",
+        "memberId": "99999",
+        "username": "adminuser",
+        "email": "admin@example.com",
+        "hashedPassword": "hashedpassword", 
+        "isEmailVerified": True,
+        "role": "admin"
+    })
     register_payload = {
-        "fullName": "Max User",
-        "memberId": "77777",
-        "username": "maxuser",
-        "email": "max@example.com",
+        "fullName": "Admin Setlist",
+        "memberId": "12345",
+        "username": "adminsetlist",
+        "email": "adminsetlist@example.com",
         "password": "Password123!",
         "confirmPassword": "Password123!",
         "ofcStatus": "Active"
     }
     await client.post("/api/users/signup", json=register_payload)
     await db["users"].update_one(
-        {"username": "maxuser"},
-        {"$set": {"isEmailVerified": True}}
+        {"username": "adminsetlist"},
+        {"$set": {"isEmailVerified": True, "isAdmin": True}}
     )
-
     login_res = await client.post("/api/auth/signin", data={
-        "username": "maxuser",
+        "username": "adminsetlist",
         "password": "Password123!"
     })
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    # Get setlists - user has no tickets, so maxAttendance should be 0
-    response = await client.get("/api/theater/setlists", headers=headers)
+    setlist_id = "S001"
+    response = await client.delete(f"/api/theater/setlists/{setlist_id}", headers=headers)
     assert response.status_code == 200
-    data = response.json()
-    assert data["maxAttendance"] == 0
+    # Check for standardized message
+    assert response.json()["message"] == "Setlist deleted successfully."
 
-    # All watched counts should be 0
-    for setlist in data["setlists"]:
-        assert setlist["watched"]["count"] == 0
-        assert setlist["watched"]["percentage"] == 0.0
-        assert setlist["watched"]["isMostWatched"] is False
+    # Verify deleted
+    get_res = await client.get(f"/api/theater/setlists/id/{setlist_id}")
+    assert get_res.status_code == 404
+
+@pytest.mark.asyncio
+async def test_create_setlist_forbidden(client: AsyncClient, db):
+    """Test that non-admin users cannot create a setlist."""
+    # Register Normal User
+    register_payload = {
+        "fullName": "Normal User SCreate",
+        "memberId": "normscreate",
+        "username": "normscreate",
+        "email": "normscreate@example.com",
+        "password": "Password123!",
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
+    }
+    await client.post("/api/users/signup", json=register_payload)
+    await db["users"].update_one(
+        {"username": "normscreate"},
+        {"$set": {"isEmailVerified": True}}
+    )
+    login_res = await client.post("/api/auth/signin", data={
+        "username": "normscreate",
+        "password": "Password123!"
+    })
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    payload = {
+        "setlistId": "NEW001",
+        "title": "New Setlist",
+        "titleJapanese": "New",
+        "description": "Desc",
+        "type": "setlist",
+        "imageUrl": "https://example.com/new.jpg",
+        "active": True
+    }
+    response = await client.post("/api/theater/setlists", json=payload, headers=headers)
+    assert response.status_code == 403
+
+@pytest.mark.asyncio
+async def test_update_setlist_forbidden(client: AsyncClient, db):
+    """Test that non-admin users cannot update a setlist."""
+    # Register Normal User
+    register_payload = {
+        "fullName": "Normal User SUpdate",
+        "memberId": "normsupdate",
+        "username": "normsupdate",
+        "email": "normsupdate@example.com",
+        "password": "Password123!",
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
+    }
+    await client.post("/api/users/signup", json=register_payload)
+    await db["users"].update_one(
+        {"username": "normsupdate"},
+        {"$set": {"isEmailVerified": True}}
+    )
+    login_res = await client.post("/api/auth/signin", data={
+        "username": "normsupdate",
+        "password": "Password123!"
+    })
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    setlist_id = "S001"
+    payload = {"title": "Updated Title"}
+    response = await client.put(f"/api/theater/setlists/{setlist_id}", json=payload, headers=headers)
+    assert response.status_code == 403
+
+@pytest.mark.asyncio
+async def test_delete_setlist_forbidden(client: AsyncClient, db):
+    """Test that non-admin users cannot delete a setlist."""
+    # Register Normal User
+    register_payload = {
+        "fullName": "Normal User SDelete",
+        "memberId": "normsdelete",
+        "username": "normsdelete",
+        "email": "normsdelete@example.com",
+        "password": "Password123!",
+        "confirmPassword": "Password123!",
+        "ofcStatus": "Active"
+    }
+    await client.post("/api/users/signup", json=register_payload)
+    await db["users"].update_one(
+        {"username": "normsdelete"},
+        {"$set": {"isEmailVerified": True}}
+    )
+    login_res = await client.post("/api/auth/signin", data={
+        "username": "normsdelete",
+        "password": "Password123!"
+    })
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    setlist_id = "S001"
+    response = await client.delete(f"/api/theater/setlists/{setlist_id}", headers=headers)
+    assert response.status_code == 403

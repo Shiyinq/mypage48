@@ -64,3 +64,29 @@ class MemberRepository:
         """Get list of unique generations"""
         generations = await self.collection.distinct("generation")
         return sorted([g for g in generations if g])
+
+    async def get_next_id(self) -> int:
+        """Get the next available member ID"""
+        result = await self.collection.find_one(
+            {}, sort=[("id", -1)], projection={"id": 1}
+        )
+        return (result.get("id", 0) + 1) if result else 1
+
+    async def insert_one(self, member: dict) -> dict:
+        """Insert a single member and return it"""
+        await self.collection.insert_one(member)
+        return await self.find_by_id(member["id"])
+
+    async def update_one(self, member_id: int, update_data: dict) -> Optional[dict]:
+        """Update a member by ID and return the updated document"""
+        result = await self.collection.update_one(
+            {"id": member_id}, {"$set": update_data}
+        )
+        if result.modified_count == 0:
+            return None
+        return await self.find_by_id(member_id)
+
+    async def delete_one(self, member_id: int) -> bool:
+        """Delete a member by ID and return True if successful"""
+        result = await self.collection.delete_one({"id": member_id})
+        return result.deleted_count > 0

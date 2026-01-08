@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends
-
+from fastapi import APIRouter, Depends, Query
+from typing import Optional
 
 from src import dependencies
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_user_service, get_storage_service
+from src.dependencies import get_user_service, get_storage_service, require_admin
 from src.logging_config import create_logger
 from src.storage.service import StorageService
 from src.users.schemas import (
@@ -16,12 +16,40 @@ from src.users.schemas import (
     UserCreatedWithEmail,
     UserCreateRequest,
     UserCreateResponse,
+    UserListResponse,
 )
 from src.users.service import UserService
 
 logger = create_logger("users", __name__)
 
 router = APIRouter()
+
+
+@router.get("/users", response_model=UserListResponse)
+async def get_all_users(
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Items per page (max 100)"),
+    search: Optional[str] = Query(None, description="Search by name, email, or username"),
+    _: UserCurrent = Depends(require_admin),
+    service: UserService = Depends(get_user_service),
+    storage_service: StorageService = Depends(get_storage_service),
+):
+    """
+    Get all registered users (admin only).
+
+    - **page**: Page number (default 1)
+    - **limit**: Items per page (default 20, max 100)
+    - **search**: Search by name, email, or username
+    """
+    result = await service.get_all_users(page, limit, search)
+    
+    # Resolve profile pictures to presigned URLs
+    for user in result.data:
+        if user.profilePicture:
+            user.profilePicture = storage_service.resolve_url(user.profilePicture)
+    
+    return result
+
 
 
 @router.post("/users/signup", status_code=201, response_model=UserCreateResponse)

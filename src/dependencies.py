@@ -9,6 +9,7 @@ from src.api_keys.service import ApiKeyService
 from src.auth.csrf_service import CSRFService
 from src.auth.email_service import EmailService
 from src.auth.http_exceptions import InvalidCSRFToken, InvalidJWTToken
+from src.http_exceptions import AdminRequired
 from src.auth.repository import AuthRepository
 from src.auth.schemas import UserCurrent
 from src.auth.security_service import SecurityService
@@ -162,6 +163,15 @@ def get_github_sso(config: Settings = Depends(get_settings)) -> GithubSSO:
         redirect_uri=config.github_redirect_uri,
         allow_insecure_http=config.is_env_dev,
     )
+
+
+async def require_admin(
+    current_user: UserCurrent = Depends(get_current_user),
+) -> UserCurrent:
+    """Dependency that requires the current user to be an admin."""
+    if not current_user.isAdmin:
+        raise AdminRequired()
+    return current_user
 
 
 

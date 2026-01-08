@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 
 from src.config import Settings
@@ -6,9 +7,12 @@ from src.members.constants import Info
 from src.members.exceptions import MemberFetchError, MemberNotFoundError
 from src.members.repository import MemberRepository
 from src.members.schemas import (
+    MemberCreateRequest,
     MemberDetailResponse,
     MemberListResponse,
     MemberResponse,
+    MemberUpdateRequest,
+    MessageResponse,
 )
 from src.tickets.schemas import PaginationMeta
 
@@ -95,4 +99,66 @@ class MemberService:
             return await self.repository.get_generations()
         except Exception as e:
             logger.exception(f"Error fetching generations: {str(e)}")
+            raise MemberFetchError()
+
+    async def create_member(self, data: MemberCreateRequest) -> MemberResponse:
+        """Create a new member"""
+        try:
+            next_id = await self.repository.get_next_id()
+            now = datetime.now()
+
+            member_data = {
+                "id": next_id,
+                **data.model_dump(exclude_none=True),
+                "createdAt": now,
+                "updatedAt": now,
+            }
+
+            member = await self.repository.insert_one(member_data)
+            return MemberResponse(**member)
+        except Exception as e:
+            logger.exception(f"Error creating member: {str(e)}")
+            raise MemberFetchError()
+
+    async def update_member(
+        self, member_id: int, data: MemberUpdateRequest
+    ) -> MemberResponse:
+        """Update an existing member"""
+        try:
+            # Check if member exists
+            existing = await self.repository.find_by_id(member_id)
+            if not existing:
+                raise MemberNotFoundError()
+
+            update_data = data.model_dump(exclude_none=True)
+            if update_data:
+                update_data["updatedAt"] = datetime.now()
+                member = await self.repository.update_one(member_id, update_data)
+            else:
+                member = existing
+
+            return MemberResponse(**member)
+        except MemberNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error updating member {member_id}: {str(e)}")
+            raise MemberFetchError()
+
+    async def delete_member(self, member_id: int) -> MessageResponse:
+        """Delete a member by ID"""
+        try:
+            # Check if member exists
+            existing = await self.repository.find_by_id(member_id)
+            if not existing:
+                raise MemberNotFoundError()
+
+            deleted = await self.repository.delete_one(member_id)
+            if not deleted:
+                raise MemberFetchError()
+
+            return MessageResponse(message=Info.MEMBER_DELETED)
+        except MemberNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error deleting member {member_id}: {str(e)}")
             raise MemberFetchError()
