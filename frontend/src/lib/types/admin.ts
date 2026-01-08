@@ -8,6 +8,7 @@ export interface AdminState {
         loading: boolean;
         hasMore: boolean;
         page: number;
+        total: number;
         search: string;
         error: string | null;
     };
@@ -17,6 +18,7 @@ export interface AdminState {
         hasMore: boolean;
         skip: number;
         limit: number;
+        total: number;
         search: string;
         error: string | null;
     };
@@ -25,6 +27,7 @@ export interface AdminState {
         loading: boolean;
         hasMore: boolean;
         page: number;
+        total: number;
         search: string;
         error: string | null;
     };
