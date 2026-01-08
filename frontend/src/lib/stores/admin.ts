@@ -12,6 +12,7 @@ const initialState: AdminState = {
         loading: false,
         hasMore: true,
         page: 1,
+        total: 0,
         search: '',
         error: null
     },
@@ -21,6 +22,7 @@ const initialState: AdminState = {
         hasMore: true,
         skip: 0,
         limit: 20,
+        total: 0,
         search: '',
         error: null
     },
@@ -29,6 +31,7 @@ const initialState: AdminState = {
         loading: false,
         hasMore: true,
         page: 1,
+        total: 0,
         search: '',
         error: null
     }
@@ -71,6 +74,7 @@ function createAdminStore() {
                             data: newData,
                             loading: false,
                             page: currentPage + 1,
+                            total: res.meta.total_data,
                             hasMore: res.data.length === 20 // Assuming limit is 20
                         }
                     };
@@ -173,6 +177,7 @@ function createAdminStore() {
                             data: newData,
                             loading: false,
                             skip: currentSkip + res.setlists.length,
+                            total: res.total,
                             hasMore: res.setlists.length === limit
                         }
                     };
@@ -272,6 +277,7 @@ function createAdminStore() {
                             data: newData,
                             loading: false,
                             page: currentPage + 1,
+                            total: res.meta.total_data,
                             hasMore: res.meta.next_page !== null
                         }
                     };

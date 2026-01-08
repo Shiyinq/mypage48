@@ -123,7 +123,7 @@
 		<div class="flex items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<Users class="w-5 h-5 text-pink-500" />
-				{$t('admin.members.title')} ({membersList.length})
+				{$t('admin.members.title')} ({$adminStore.members.total})
 			</h2>
 
 			<!-- Search Input -->

@@ -123,7 +123,7 @@
 		<div class="flex items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<Music class="w-5 h-5 text-purple-500" />
-				{$t('admin.setlists.title')} ({setlistsList.length})
+				{$t('admin.setlists.title')} ({$adminStore.setlists.total})
 			</h2>
 
 			<!-- Search Input -->
