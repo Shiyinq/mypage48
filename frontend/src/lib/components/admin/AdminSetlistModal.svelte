@@ -106,10 +106,13 @@
 					<!-- Basic Info -->
 					<div class="space-y-4">
 						<div class="space-y-2">
-							<label class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+							<label
+								for="setlist-title"
+								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 								>{$t('admin.setlists.modal.title')}</label
 							>
 							<input
+								id="setlist-title"
 								type="text"
 								bind:value={formData.title}
 								placeholder="e.g. Ramune no Nomikata"
@@ -123,10 +126,13 @@
 						</div>
 
 						<div class="space-y-2">
-							<label class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+							<label
+								for="setlist-title-jp"
+								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 								>{$t('admin.setlists.modal.japaneseTitle')}</label
 							>
 							<input
+								id="setlist-title-jp"
 								type="text"
 								bind:value={formData.titleJapanese}
 								placeholder="e.g. ラムネの飲み方"
@@ -135,8 +141,8 @@
 						</div>
 
 						<div class="space-y-2">
-							<label class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.setlists.modal.type')}</label
+							<span class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+								>{$t('admin.setlists.modal.type')}</span
 							>
 							<div class="flex gap-4">
 								<label class="flex items-center gap-2 cursor-pointer">
@@ -167,10 +173,13 @@
 
 					<!-- Description -->
 					<div class="space-y-2">
-						<label class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+						<label
+							for="setlist-desc"
+							class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 							>{$t('admin.setlists.modal.description')}</label
 						>
 						<textarea
+							id="setlist-desc"
 							bind:value={formData.description}
 							placeholder="Brief description of the setlist or event..."
 							class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all min-h-[100px] text-sm"
@@ -180,12 +189,14 @@
 					<!-- Images -->
 					<div class="space-y-2">
 						<label
+							for="setlist-image"
 							class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1 flex items-center gap-2"
 						>
 							<ImageIcon class="w-4 h-4" />
 							{$t('admin.setlists.modal.posterUrl')}
 						</label>
 						<input
+							id="setlist-image"
 							type="text"
 							bind:value={formData.imageUrl}
 							placeholder="https://..."

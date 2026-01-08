@@ -122,10 +122,13 @@
 					<!-- Basic Info -->
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div class="space-y-2">
-							<label class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+							<label
+								for="member-name"
+								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 								>{$t('admin.members.modal.name')}</label
 							>
 							<input
+								id="member-name"
 								type="text"
 								bind:value={formData.name}
 								placeholder="e.g. Feni Fitriyanti"
@@ -137,10 +140,13 @@
 						</div>
 
 						<div class="space-y-2">
-							<label class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+							<label
+								for="member-nickname"
+								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 								>{$t('admin.members.modal.nickname')}</label
 							>
 							<input
+								id="member-nickname"
 								type="text"
 								bind:value={formData.nickname}
 								placeholder="e.g. Feni"
@@ -149,10 +155,13 @@
 						</div>
 
 						<div class="space-y-2">
-							<label class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+							<label
+								for="member-gen"
+								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 								>{$t('admin.members.modal.generation')}</label
 							>
 							<input
+								id="member-gen"
 								type="text"
 								bind:value={formData.generation}
 								placeholder="e.g. 3"
@@ -161,10 +170,13 @@
 						</div>
 
 						<div class="space-y-2">
-							<label class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+							<label
+								for="member-img"
+								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 								>{$t('admin.members.modal.imageUrl')}</label
 							>
 							<input
+								id="member-img"
 								type="text"
 								bind:value={formData.img}
 								placeholder="https://..."
@@ -175,11 +187,12 @@
 
 					<!-- Jikoshoukai -->
 					<div class="space-y-2">
-						<label class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+						<label for="member-jiko" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 							>{$t('admin.members.modal.jikoshoukai')}</label
 						>
 						<div class="relative">
 							<textarea
+								id="member-jiko"
 								bind:value={formData.jiko}
 								placeholder="Enter catchphrase..."
 								class="w-full px-4 py-3 bg-yellow-50/50 dark:bg-zinc-800/50 border border-yellow-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-yellow-400 outline-none transition-all min-h-[100px] text-sm"
@@ -197,8 +210,11 @@
 						</h3>
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 							<div class="space-y-1">
-								<label class="text-xs font-semibold text-gray-500 ml-1">Twitter (X)</label>
+								<label for="social-twitter" class="text-xs font-semibold text-gray-500 ml-1"
+									>Twitter (X)</label
+								>
 								<input
+									id="social-twitter"
 									type="text"
 									bind:value={formData.socials.twitter}
 									placeholder="URL"
@@ -206,8 +222,11 @@
 								/>
 							</div>
 							<div class="space-y-1">
-								<label class="text-xs font-semibold text-gray-500 ml-1">Instagram</label>
+								<label for="social-instagram" class="text-xs font-semibold text-gray-500 ml-1"
+									>Instagram</label
+								>
 								<input
+									id="social-instagram"
 									type="text"
 									bind:value={formData.socials.instagram}
 									placeholder="URL"
@@ -215,8 +234,11 @@
 								/>
 							</div>
 							<div class="space-y-1">
-								<label class="text-xs font-semibold text-gray-500 ml-1">TikTok</label>
+								<label for="social-tiktok" class="text-xs font-semibold text-gray-500 ml-1"
+									>TikTok</label
+								>
 								<input
+									id="social-tiktok"
 									type="text"
 									bind:value={formData.socials.tiktok}
 									placeholder="URL"
@@ -224,8 +246,11 @@
 								/>
 							</div>
 							<div class="space-y-1">
-								<label class="text-xs font-semibold text-gray-500 ml-1">Threads</label>
+								<label for="social-threads" class="text-xs font-semibold text-gray-500 ml-1"
+									>Threads</label
+								>
 								<input
+									id="social-threads"
 									type="text"
 									bind:value={formData.socials.threads}
 									placeholder="URL"
@@ -233,8 +258,11 @@
 								/>
 							</div>
 							<div class="space-y-1">
-								<label class="text-xs font-semibold text-gray-500 ml-1">Showroom</label>
+								<label for="social-showroom" class="text-xs font-semibold text-gray-500 ml-1"
+									>Showroom</label
+								>
 								<input
+									id="social-showroom"
 									type="text"
 									bind:value={formData.socials.showroom}
 									placeholder="URL"
@@ -242,8 +270,11 @@
 								/>
 							</div>
 							<div class="space-y-1">
-								<label class="text-xs font-semibold text-gray-500 ml-1">IDN App</label>
+								<label for="social-idn" class="text-xs font-semibold text-gray-500 ml-1"
+									>IDN App</label
+								>
 								<input
+									id="social-idn"
 									type="text"
 									bind:value={formData.socials.idn_app}
 									placeholder="URL"
