@@ -1,26 +1,26 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { userProfile, isInitialDataLoaded } from '$lib/stores';
 	import PageHeader from '$lib/components/PageHeader.svelte';
-	import TableSkeleton from '$lib/components/skeletons/TableSkeleton.svelte';
+	import NotFound from '$lib/components/NotFound.svelte';
 	import { ShieldCheck, Users, Music, UserCheck } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
 
-	let isAuthorized = false;
+	// State: 'loading' | 'authorized' | 'unauthorized'
+	let authState: 'loading' | 'authorized' | 'unauthorized' = 'loading';
 
 	// Auth Check
 	$: handleAuthCheck(browser, $isInitialDataLoaded, $userProfile);
 
 	function handleAuthCheck(isBrowser: boolean, loaded: boolean, profile: typeof $userProfile) {
 		if (!isBrowser || !loaded) return;
-		if (!profile?.isAdmin) {
-			goto('/404-not-found', { replaceState: true });
+		if (profile?.isAdmin) {
+			authState = 'authorized';
 		} else {
-			isAuthorized = true;
+			authState = 'unauthorized';
 		}
 	}
 
@@ -59,10 +59,10 @@
 </script>
 
 <svelte:head>
-	<title>{isAuthorized ? $t('admin.dashboard.title') : 'Page'} | MyPage48</title>
+	<title>{authState === 'authorized' ? $t('admin.dashboard.title') : 'Page'} | MyPage48</title>
 </svelte:head>
 
-{#if isAuthorized}
+{#if authState === 'authorized'}
 	<div class="max-w-7xl mx-auto p-4 pb-24">
 		<PageHeader
 			title={$t('admin.dashboard.title')}
@@ -90,32 +90,9 @@
 			<slot />
 		</div>
 	</div>
+{:else if authState === 'unauthorized'}
+	<!-- Show 404 page for unauthorized users - no skeleton shown -->
+	<NotFound />
 {:else}
-	<!-- Page Loading Skeleton -->
-	<div class="max-w-7xl mx-auto p-4 pb-24">
-		<PageHeader
-			title={$t('admin.dashboard.title')}
-			subtitle={$t('admin.dashboard.subtitle')}
-			icon={ShieldCheck}
-			theme="red"
-		>
-			<div slot="actions" class="flex items-center gap-2">
-				{#each [1, 2, 3] as _}
-					<div class="w-24 h-10 bg-gray-200 dark:bg-zinc-800/50 rounded-full animate-pulse"></div>
-				{/each}
-			</div>
-		</PageHeader>
-
-		<div class="mt-8">
-			<TableSkeleton
-				rows={10}
-				columns={[
-					$t('admin.users.table.userInfo'),
-					$t('admin.users.table.email'),
-					$t('admin.users.table.status'),
-					$t('admin.users.table.created')
-				]}
-			/>
-		</div>
-	</div>
+	<!-- Loading - render nothing until auth check completes -->
 {/if}
