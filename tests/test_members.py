@@ -83,42 +83,9 @@ async def test_get_member_by_id(client: AsyncClient, seed_members_db):
     assert data["member"]["id"] == m_id
 
 @pytest.mark.asyncio
-async def test_delete_member(client: AsyncClient, db, seed_members_db):
+async def test_delete_member(client: AsyncClient, db, seed_members_db, create_user):
     """Test deleting a member (admin only)."""
-    # First login as admin
-    # Create admin user
-    await db["users"].insert_one({
-        "fullName": "Admin User",
-        "memberId": "99999",
-        "username": "adminuser",
-        "email": "admin@example.com",
-        "hashedPassword": "hashedpassword", # Mocked below since we use login endpoint which verifies
-        "isEmailVerified": True,
-        "role": "admin"
-    })
-    
-    # We need to register properly to get a valid password hash or use the signup endpoint
-    register_payload = {
-        "fullName": "Admin User Test",
-        "memberId": "88888",
-        "username": "admintest",
-        "email": "admintest@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "admintest"},
-        {"$set": {"isEmailVerified": True, "isAdmin": True}}
-    )
-
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "admintest",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("admintest", is_admin=True)
 
     # ID 76 is Feni (from TEST_MEMBERS_DATA)
     member_id = 76
@@ -134,29 +101,9 @@ async def test_delete_member(client: AsyncClient, db, seed_members_db):
     assert get_res.status_code == 404
 
 @pytest.mark.asyncio
-async def test_create_member_forbidden(client: AsyncClient, db):
+async def test_create_member_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot create a member."""
-    # Register Normal User
-    register_payload = {
-        "fullName": "Normal User Create",
-        "memberId": "normcreate",
-        "username": "normcreate",
-        "email": "normcreate@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "normcreate"},
-        {"$set": {"isEmailVerified": True}}
-    )
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "normcreate",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("normcreate")
 
     payload = {
         "name": "New Member",
@@ -167,29 +114,9 @@ async def test_create_member_forbidden(client: AsyncClient, db):
     assert response.status_code == 403
 
 @pytest.mark.asyncio
-async def test_update_member_forbidden(client: AsyncClient, db):
+async def test_update_member_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot update a member."""
-    # Register Normal User
-    register_payload = {
-        "fullName": "Normal User Update",
-        "memberId": "normupdate",
-        "username": "normupdate",
-        "email": "normupdate@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "normupdate"},
-        {"$set": {"isEmailVerified": True}}
-    )
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "normupdate",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("normupdate")
 
     # ID 76 is Feni
     member_id = 76
@@ -198,29 +125,9 @@ async def test_update_member_forbidden(client: AsyncClient, db):
     assert response.status_code == 403
 
 @pytest.mark.asyncio
-async def test_delete_member_forbidden(client: AsyncClient, db):
+async def test_delete_member_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot delete a member."""
-    # Register Normal User
-    register_payload = {
-        "fullName": "Normal User Delete",
-        "memberId": "normdelete",
-        "username": "normdelete",
-        "email": "normdelete@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "normdelete"},
-        {"$set": {"isEmailVerified": True}}
-    )
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "normdelete",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("normdelete")
 
     # ID 76 is Feni
     member_id = 76

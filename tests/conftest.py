@@ -70,3 +70,104 @@ def mock_resend_email(monkeypatch):
     monkeypatch.setattr("resend.Emails.send", mock_send)
     return mock_calls
 
+
+@pytest.fixture
+def create_user(client, db):
+    """
+    Factory fixture to create, verify, and authenticate a user.
+    Returns an async function that creates users on demand.
+    """
+    async def _create(
+        username: str,
+        email: str = None,
+        full_name: str = "Test User",
+        member_id: str = None,
+        is_admin: bool = False
+    ) -> tuple[str, str, dict]:
+        """
+        Create and authenticate a user.
+        
+        Returns:
+            tuple: (token, user_id, headers)
+        """
+        if email is None:
+            email = f"{username}@example.com"
+        if member_id is None:
+            member_id = username[:10]
+        
+        register_payload = {
+            "fullName": full_name,
+            "memberId": member_id,
+            "username": username,
+            "email": email,
+            "password": "Password123!",
+            "confirmPassword": "Password123!",
+            "ofcStatus": "Active"
+        }
+        await client.post("/api/users/signup", json=register_payload)
+        
+        # Verify user and optionally make admin
+        update_fields = {"isEmailVerified": True}
+        if is_admin:
+            update_fields["isAdmin"] = True
+        
+        await db["users"].update_one(
+            {"username": username},
+            {"$set": update_fields}
+        )
+        
+        # Login
+        login_data = {"username": username, "password": "Password123!"}
+        login_res = await client.post("/api/auth/signin", data=login_data)
+        token = login_res.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+        
+        # Get user_id from profile
+        profile_res = await client.get("/api/users/profile", headers=headers)
+        user_id = profile_res.json()["profile"]["userId"]
+        
+        return token, user_id, headers
+    
+    return _create
+
+
+@pytest.fixture
+def create_ticket(db):
+    """
+    Factory fixture to create test tickets directly in the database.
+    Returns an async function that creates tickets on demand.
+    """
+    async def _create(user_id: str, ticket_data: dict) -> str:
+        """
+        Create a test ticket.
+        
+        Args:
+            user_id: The user ID who owns the ticket
+            ticket_data: Dict with optional keys: title, date, time, day, 
+                        section, number, price, two_shot
+        
+        Returns:
+            str: The ticket's ObjectId as string
+        """
+        from bson import ObjectId
+        
+        ticket = {
+            "_id": ObjectId(),
+            "user_id": user_id,
+            "event": {
+                "title": ticket_data.get("title", "Pajama Drive"),
+                "date": ticket_data.get("date", "2024-06-15"),
+                "time": ticket_data.get("time", "14:00"),
+                "day": ticket_data.get("day", "Saturday"),
+            },
+            "seat": {
+                "section": ticket_data.get("section", "A1"),
+                "number": ticket_data.get("number", "5"),
+            },
+            "price": ticket_data.get("price", 50000),
+            "two_shot": ticket_data.get("two_shot", None),
+        }
+        await db["tickets"].insert_one(ticket)
+        return str(ticket["_id"])
+    
+    return _create

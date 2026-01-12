@@ -11,29 +11,9 @@ async def test_get_memories_unauthorized(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_memories_empty(client: AsyncClient, db):
-    # Register and Login
-    register_payload = {
-        "fullName": "Memory User",
-        "memberId": "33333",
-        "username": "memoryuser",
-        "email": "memory@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "memoryuser"}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "memoryuser",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_get_memories_empty(client: AsyncClient, db, create_user):
+    """Test getting memories with no tickets."""
+    token, user_id, headers = await create_user("memoryuser")
 
     # Get Memories (Empty - no tickets with images)
     response = await client.get("/api/memories", headers=headers)
@@ -47,33 +27,9 @@ async def test_get_memories_empty(client: AsyncClient, db):
 
 
 @pytest.mark.asyncio
-async def test_get_memories_with_images(client: AsyncClient, db):
-    # Register and Login
-    username = "memoryuser2"
-    register_payload = {
-        "fullName": "Memory User 2",
-        "memberId": "44444",
-        "username": username,
-        "email": "memory2@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": username}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-    
-    user = await db["users"].find_one({"username": username})
-    user_id = user["userId"]
-
-    login_res = await client.post("/api/auth/signin", data={
-        "username": username,
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_get_memories_with_images(client: AsyncClient, db, create_user):
+    """Test getting memories with ticket images."""
+    token, user_id, headers = await create_user("memoryuser2")
 
     # Insert ticket WITH image
     ticket_data = TicketInDB(
@@ -89,7 +45,7 @@ async def test_get_memories_with_images(client: AsyncClient, db):
         seat=TicketSeat(section="A", number=5),
         price=200000,
         currency="IDR",
-        imageUrl="data:image/png;base64,iVBORw0KGgo=",  # Sample base64 image
+        imageUrl="data:image/png;base64,iVBORw0KGgo=",
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
     )
@@ -107,33 +63,9 @@ async def test_get_memories_with_images(client: AsyncClient, db):
 
 
 @pytest.mark.asyncio
-async def test_get_memories_with_2shot(client: AsyncClient, db):
-    # Register and Login
-    username = "memoryuser3"
-    register_payload = {
-        "fullName": "Memory User 3",
-        "memberId": "55555",
-        "username": username,
-        "email": "memory3@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": username}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-    
-    user = await db["users"].find_one({"username": username})
-    user_id = user["userId"]
-
-    login_res = await client.post("/api/auth/signin", data={
-        "username": username,
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_get_memories_with_2shot(client: AsyncClient, db, create_user):
+    """Test getting memories with 2shot images."""
+    token, user_id, headers = await create_user("memoryuser3")
 
     # Insert ticket with both ticket image and 2-shot image
     ticket_data = TicketInDB(
@@ -189,37 +121,11 @@ async def test_get_memories_with_2shot(client: AsyncClient, db):
 
 
 @pytest.mark.asyncio
-async def test_get_top_two_shot(client: AsyncClient, db):
-    # Register and Login
-    username = "memoryuser4"
-    register_payload = {
-        "fullName": "Memory User 4",
-        "memberId": "66666",
-        "username": username,
-        "email": "memory4@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": username}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-    
-    user = await db["users"].find_one({"username": username})
-    user_id = user["userId"]
-
-    login_res = await client.post("/api/auth/signin", data={
-        "username": username,
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_get_top_two_shot(client: AsyncClient, db, create_user):
+    """Test getting top two shot statistics."""
+    token, user_id, headers = await create_user("memoryuser4")
 
     # Insert multiple tickets with 2-shot info for ranking
-    # 1. Freya (2 times)
-    # 2. Christy (1 time)
     tickets = [
         TicketInDB(
             user_id=user_id,
@@ -265,10 +171,8 @@ async def test_get_top_two_shot(client: AsyncClient, db):
     assert "totalTwoShotSpend" in data
     assert "totalTwoShotCount" in data
 
-    # Verify Totals
-    # Spend: 50000 + 60000 + 50000 = 160000
+    # Verify Totals (50000 + 60000 + 50000 = 160000)
     assert data["totalTwoShotSpend"] == 160000
-    # Count: 3
     assert data["totalTwoShotCount"] == 3
 
     # Verify Ranking
@@ -280,7 +184,7 @@ async def test_get_top_two_shot(client: AsyncClient, db):
     assert ranking[0]["count"] == 2
     assert ranking[0]["spend"] == 110000
     
-    # Christy should be #2 (or later if other tests added data, but db fixture drops db so it should be clean)
+    # Christy should be #2
     assert ranking[1]["name"] == "Angelina Christy"
     assert ranking[1]["count"] == 1
     assert ranking[1]["spend"] == 50000

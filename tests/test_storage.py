@@ -112,42 +112,48 @@ async def test_api_upload_image(client, storage_service):
         role="user"
     )
     
-    payload = {
-        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
-        "category": "ticket"
-    }
-    
-    response = await client.post("/api/storage/upload", json=payload)
-    assert response.status_code == 201
-    data = response.json()
-    assert "filename" in data
-    assert "url" in data
-    assert data["url"] == "https://minio.example.com/bucket/file.jpg"
+    try:
+        payload = {
+            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+            "category": "ticket"
+        }
+        
+        response = await client.post("/api/storage/upload", json=payload)
+        assert response.status_code == 201
+        data = response.json()
+        assert "filename" in data
+        assert "url" in data
+        assert data["url"] == "https://minio.example.com/bucket/file.jpg"
+    finally:
+        # Cleanup only the overrides we added (preserve CSRF mock from conftest)
+        app.dependency_overrides.pop(get_storage_service, None)
+        app.dependency_overrides.pop(get_current_user, None)
 
 @pytest.mark.asyncio
 async def test_api_get_presigned_url(client, storage_service):
     app.dependency_overrides[get_storage_service] = lambda: storage_service
     
-    # Needs auth too? 
-    # The endpoint is likely protected or public? 
-    # Let's check route.py. get_presigned_url endpoint in storage/route.py usually requires auth?
-    # Actually I should verify storage/route.py content.
-    
-    response = await client.get("/api/storage/url/tickets/user1/test.jpg")
-    
-    if response.status_code == 401:
-         # Add auth override if needed
-         from src.dependencies import get_current_user
-         from src.auth.schemas import UserCurrent
-         app.dependency_overrides[get_current_user] = lambda: UserCurrent(
-            userId="user123", 
-            username="test", 
-            name="Test User",
-            email="test@test.com", 
-            role="user"
-         )
-         response = await client.get("/api/storage/url/tickets/user1/test.jpg")
+    try:
+        response = await client.get("/api/storage/url/tickets/user1/test.jpg")
+        
+        if response.status_code == 401:
+            # Add auth override if needed
+            from src.dependencies import get_current_user
+            from src.auth.schemas import UserCurrent
+            app.dependency_overrides[get_current_user] = lambda: UserCurrent(
+                userId="user123", 
+                username="test", 
+                name="Test User",
+                email="test@test.com", 
+                role="user"
+            )
+            response = await client.get("/api/storage/url/tickets/user1/test.jpg")
 
-    assert response.status_code == 200
-    data = response.json()
-    assert data["url"] == "https://minio.example.com/bucket/file.jpg"
+        assert response.status_code == 200
+        data = response.json()
+        assert data["url"] == "https://minio.example.com/bucket/file.jpg"
+    finally:
+        # Cleanup only the overrides we added (preserve CSRF mock from conftest)
+        from src.dependencies import get_current_user
+        app.dependency_overrides.pop(get_storage_service, None)
+        app.dependency_overrides.pop(get_current_user, None)

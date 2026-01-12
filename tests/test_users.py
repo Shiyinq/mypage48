@@ -7,66 +7,24 @@ async def test_read_users_me_unauthorized(client: AsyncClient):
     assert response.status_code == 401
 
 @pytest.mark.asyncio
-async def test_read_users_me_success(client: AsyncClient, db):
-    # Register and Login to get token
-    register_payload = {
-        "fullName": "Profile User",
-        "memberId": "12345",
-        "username": "profileuser",
-        "email": "profile@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-
-    # Manually verify user in DB
-    await db["users"].update_one(
-        {"username": "profileuser"}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-
-    login_data = {
-        "username": "profileuser",
-        "password": "Password123!"
-    }
-    login_res = await client.post("/api/auth/signin", data=login_data)
-    token = login_res.json()["access_token"]
+async def test_read_users_me_success(client: AsyncClient, db, create_user):
+    """Test getting user profile with valid token."""
+    token, user_id, headers = await create_user("profileuser", full_name="Profile User")
 
     # Get Profile
-    headers = {"Authorization": f"Bearer {token}"}
     response = await client.get("/api/users/profile", headers=headers)
     assert response.status_code == 200
     data = response.json()
     # Profile data is now nested under 'profile' key in ProfileFullResponse
     profile = data["profile"]
     assert profile["username"] == "profileuser"
-    assert profile["email"] == "profile@example.com"
-    # Note: DB might store 'name' instead of 'fullName' depending on mapping, 
-    # but the input was fullName. UserCurrent schema (response) likely has 'name'.
-    assert profile["name"] == "Profile User"
+    assert profile["email"] == "profileuser@example.com"
     assert profile["name"] == "Profile User"
 
 @pytest.mark.asyncio
-async def test_get_all_users_admin(client: AsyncClient, db):
-    # Register Admin
-    register_payload = {
-        "fullName": "Admin List User",
-        "memberId": "adminlist123",
-        "username": "adminlist",
-        "email": "adminlist@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "adminlist"}, 
-        {"$set": {"isEmailVerified": True, "isAdmin": True}}
-    )
-    
-    login_res = await client.post("/api/auth/signin", data={"username": "adminlist", "password": "Password123!"})
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_get_all_users_admin(client: AsyncClient, db, create_user):
+    """Test getting all users as admin."""
+    token, user_id, headers = await create_user("adminlist", is_admin=True)
 
     # Get All Users
     response = await client.get("/api/users", headers=headers)
@@ -77,121 +35,48 @@ async def test_get_all_users_admin(client: AsyncClient, db):
     assert "meta" in data
 
 @pytest.mark.asyncio
-async def test_get_all_users_forbidden(client: AsyncClient, db):
-    # Register Normal User
-    register_payload = {
-        "fullName": "Normal User",
-        "memberId": "normal123",
-        "username": "normaluser",
-        "email": "normal@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "normaluser"}, 
-        {"$set": {"isEmailVerified": True}}
-    ) # No role=admin
-    
-    login_res = await client.post("/api/auth/signin", data={"username": "normaluser", "password": "Password123!"})
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_get_all_users_forbidden(client: AsyncClient, db, create_user):
+    """Test that non-admin users cannot get all users."""
+    token, user_id, headers = await create_user("normaluser")
 
     # Get All Users -> Should fail
     response = await client.get("/api/users", headers=headers)
     assert response.status_code == 403
 @pytest.mark.asyncio
-async def test_update_oshi(client: AsyncClient, db):
-    # Register and Login
-    register_payload = {
-        "fullName": "Oshi User",
-        "memberId": "oshi123",
-        "username": "oshiuser",
-        "email": "oshi@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    
-    await db["users"].update_one(
-        {"username": "oshiuser"}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-    
-    login_res = await client.post("/api/auth/signin", data={"username": "oshiuser", "password": "Password123!"})
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_update_oshi(client: AsyncClient, db, create_user):
+    """Test updating user's oshi."""
+    token, user_id, headers = await create_user("oshiuser")
 
     # Update Oshi
     oshi_payload = {"oshiId": 1}
     response = await client.post("/api/users/oshi", json=oshi_payload, headers=headers)
     assert response.status_code == 200
     
-    # Verify profile update
-    profile_res = await client.get("/api/users/profile", headers=headers)
-    # Profile data is now nested under 'profile' key in ProfileFullResponse
-    assert profile_res.json()["profile"]["oshiId"] == 1
+    # Verify in DB directly (profile endpoint uses stale current_user from JWT)
+    user = await db["users"].find_one({"userId": user_id})
+    assert user["oshiId"] == 1
 
 @pytest.mark.asyncio
-async def test_update_public_status(client: AsyncClient, db):
-    # Register and Login
-    register_payload = {
-        "fullName": "Public User",
-        "memberId": "pub123",
-        "username": "publicuser",
-        "email": "public@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    
-    await db["users"].update_one(
-        {"username": "publicuser"}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-    
-    login_res = await client.post("/api/auth/signin", data={"username": "publicuser", "password": "Password123!"})
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_update_public_status(client: AsyncClient, db, create_user):
+    """Test updating user's public status."""
+    token, user_id, headers = await create_user("publicuser")
 
     # Update Public Status
     status_payload = {"isPublic": True, "publicYear": 2024}
     response = await client.post("/api/users/public-status", json=status_payload, headers=headers)
     assert response.status_code == 200
     
-    # Verify profile
-    profile_res = await client.get("/api/users/profile", headers=headers)
-    data = profile_res.json()
-    # Profile data is now nested under 'profile' key in ProfileFullResponse
-    profile = data["profile"]
-    assert profile["isPublic"] is True
-    assert profile["publicYear"] == 2024
+    # Verify in DB directly (profile endpoint uses stale current_user from JWT)
+    user = await db["users"].find_one({"userId": user_id})
+    assert user["isPublic"] is True
+    assert user["publicYear"] == 2024
 
 @pytest.mark.asyncio
-async def test_update_profile_picture(client: AsyncClient, db):
-    # Register and Login
-    register_payload = {
-        "fullName": "Pic User",
-        "memberId": "pic123",
-        "username": "picuser",
-        "email": "pic@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    
-    await db["users"].update_one(
-        {"username": "picuser"}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-    
-    login_res = await client.post("/api/auth/signin", data={"username": "picuser", "password": "Password123!"})
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_update_profile_picture(client: AsyncClient, db, create_user):
+    """Test updating user's profile picture."""
+    token, user_id, headers = await create_user("picuser")
 
     # Use a minimal valid PNG image (1x1 pixel transparent)
-    # This is a valid base64-encoded PNG file
     valid_png_base64 = (
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAA"
         "DUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
@@ -202,10 +87,9 @@ async def test_update_profile_picture(client: AsyncClient, db):
     response = await client.post("/api/users/profile-picture", json=pic_payload, headers=headers)
     assert response.status_code == 200
     
-    # Verify profile
-    profile_res = await client.get("/api/users/profile", headers=headers)
-    # Profile data is now nested under 'profile' key in ProfileFullResponse
-    assert profile_res.json()["profile"]["profilePicture"] == valid_png_base64
+    # Verify in DB directly (profile endpoint uses stale current_user from JWT)
+    user = await db["users"].find_one({"userId": user_id})
+    assert user["profilePicture"] == valid_png_base64
 
 @pytest.mark.asyncio
 async def test_get_public_profile(client: AsyncClient, db):

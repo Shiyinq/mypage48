@@ -3,60 +3,6 @@ import pytest
 from httpx import AsyncClient
 
 
-async def create_authenticated_user(client: AsyncClient, db, username: str, email: str):
-    """Helper to register, verify, login a user and return token + user_id."""
-    register_payload = {
-        "fullName": f"Dashboard User",
-        "memberId": username[:10],  # Keep memberId short
-        "username": username,
-        "email": email,
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-
-    # Manually verify user
-    await db["users"].update_one(
-        {"username": username},
-        {"$set": {"isEmailVerified": True}}
-    )
-
-    login_data = {"username": username, "password": "Password123!"}
-    login_res = await client.post("/api/auth/signin", data=login_data)
-    token = login_res.json()["access_token"]
-
-    # Get user_id from profile - profile data is nested under 'profile' key
-    headers = {"Authorization": f"Bearer {token}"}
-    profile_res = await client.get("/api/users/profile", headers=headers)
-    user_id = profile_res.json()["profile"]["userId"]
-
-    return token, user_id, headers
-
-
-async def create_test_ticket(db, user_id: str, ticket_data: dict):
-    """Helper to create a test ticket."""
-    from bson import ObjectId
-    ticket = {
-        "_id": ObjectId(),
-        "user_id": user_id,  # Use snake_case to match repository query
-        "event": {
-            "title": ticket_data.get("title", "Pajama Drive"),
-            "date": ticket_data.get("date", "2024-06-15"),
-            "time": ticket_data.get("time", "14:00"),
-            "day": ticket_data.get("day", "Saturday"),
-        },
-        "seat": {
-            "section": ticket_data.get("section", "A1"),
-            "number": ticket_data.get("number", "5"),
-        },
-        "price": ticket_data.get("price", 50000),
-        "two_shot": ticket_data.get("two_shot", None),
-    }
-    await db["tickets"].insert_one(ticket)
-    return str(ticket["_id"])
-
-
 @pytest.mark.asyncio
 async def test_get_dashboard_stats_unauthorized(client: AsyncClient, db):
     """Test that unauthenticated requests are rejected."""
@@ -65,11 +11,9 @@ async def test_get_dashboard_stats_unauthorized(client: AsyncClient, db):
 
 
 @pytest.mark.asyncio
-async def test_get_dashboard_stats_empty(client: AsyncClient, db):
+async def test_get_dashboard_stats_empty(client: AsyncClient, db, create_user):
     """Test dashboard stats for user with no tickets."""
-    token, user_id, headers = await create_authenticated_user(
-        client, db, "dashboard_empty", "dashboard_empty@example.com"
-    )
+    token, user_id, headers = await create_user("dashboard_empty")
 
     response = await client.get("/api/dashboard/stats", headers=headers)
     assert response.status_code == 200
@@ -92,28 +36,26 @@ async def test_get_dashboard_stats_empty(client: AsyncClient, db):
 
 
 @pytest.mark.asyncio
-async def test_get_dashboard_stats_with_tickets(client: AsyncClient, db):
+async def test_get_dashboard_stats_with_tickets(client: AsyncClient, db, create_user, create_ticket):
     """Test dashboard stats with ticket data."""
-    token, user_id, headers = await create_authenticated_user(
-        client, db, "dashboard_tickets", "dashboard_tickets@example.com"
-    )
+    token, user_id, headers = await create_user("dashboard_tickets")
 
     # Create test tickets
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Pajama Drive",
         "date": "2024-06-15",
         "section": "A1",
         "number": "5",
         "price": 50000,
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Pajama Drive",
         "date": "2024-07-20",
         "section": "B2",
         "number": "10",
         "price": 60000,
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Aitakatta",
         "date": "2024-08-10",
         "section": "A3",
@@ -138,14 +80,12 @@ async def test_get_dashboard_stats_with_tickets(client: AsyncClient, db):
 
 
 @pytest.mark.asyncio
-async def test_get_dashboard_stats_with_two_shot(client: AsyncClient, db):
+async def test_get_dashboard_stats_with_two_shot(client: AsyncClient, db, create_user, create_ticket):
     """Test dashboard stats with two-shot data."""
-    token, user_id, headers = await create_authenticated_user(
-        client, db, "dashboard_2shot", "dashboard_2shot@example.com"
-    )
+    token, user_id, headers = await create_user("dashboard_2shot")
 
     # Create tickets with two-shot
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Pajama Drive",
         "date": "2024-06-15",
         "section": "A1",
@@ -157,7 +97,7 @@ async def test_get_dashboard_stats_with_two_shot(client: AsyncClient, db):
             "imageUrl": "https://example.com/shani.jpg",
         }
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Aitakatta",
         "date": "2024-07-20",
         "section": "B2",
@@ -169,7 +109,7 @@ async def test_get_dashboard_stats_with_two_shot(client: AsyncClient, db):
             "imageUrl": "https://example.com/shani2.jpg",
         }
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "River",
         "date": "2024-08-10",
         "section": "C1",
@@ -196,24 +136,22 @@ async def test_get_dashboard_stats_with_two_shot(client: AsyncClient, db):
 
 
 @pytest.mark.asyncio
-async def test_get_dashboard_stats_with_month_filter(client: AsyncClient, db):
+async def test_get_dashboard_stats_with_month_filter(client: AsyncClient, db, create_user, create_ticket):
     """Test dashboard stats with month range filter."""
-    token, user_id, headers = await create_authenticated_user(
-        client, db, "dashboard_month", "dashboard_month@example.com"
-    )
+    token, user_id, headers = await create_user("dashboard_month")
 
     # Create tickets across different months
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Show Jan",
         "date": "2024-01-15",
         "price": 50000,
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Show Jun",
         "date": "2024-06-20",
         "price": 60000,
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Show Dec",
         "date": "2024-12-10",
         "price": 55000,
@@ -233,24 +171,22 @@ async def test_get_dashboard_stats_with_month_filter(client: AsyncClient, db):
 
 
 @pytest.mark.asyncio
-async def test_get_dashboard_stats_all_data(client: AsyncClient, db):
+async def test_get_dashboard_stats_all_data(client: AsyncClient, db, create_user, create_ticket):
     """Test dashboard stats with is_all_data flag."""
-    token, user_id, headers = await create_authenticated_user(
-        client, db, "dashboard_all", "dashboard_all@example.com"
-    )
+    token, user_id, headers = await create_user("dashboard_all")
 
     # Create tickets across different years
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Show 2023",
         "date": "2023-06-15",
         "price": 50000,
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Show 2024",
         "date": "2024-06-20",
         "price": 60000,
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Show 2025",
         "date": "2025-01-10",
         "price": 55000,
@@ -274,26 +210,24 @@ async def test_get_dashboard_stats_all_data(client: AsyncClient, db):
 
 
 @pytest.mark.asyncio
-async def test_get_dashboard_stats_day_preference(client: AsyncClient, db):
+async def test_get_dashboard_stats_day_preference(client: AsyncClient, db, create_user, create_ticket):
     """Test dashboard day preference statistics."""
-    token, user_id, headers = await create_authenticated_user(
-        client, db, "dashboard_day", "dashboard_day@example.com"
-    )
+    token, user_id, headers = await create_user("dashboard_day")
 
     # Create tickets on different days
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Saturday Show 1",
         "date": "2024-06-15",
         "day": "Saturday",
         "price": 50000,
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Saturday Show 2",
         "date": "2024-06-22",
         "day": "Saturday",
         "price": 60000,
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Sunday Show",
         "date": "2024-06-16",
         "day": "Sunday",
@@ -317,26 +251,24 @@ async def test_get_dashboard_stats_day_preference(client: AsyncClient, db):
 
 
 @pytest.mark.asyncio
-async def test_get_dashboard_stats_extremes(client: AsyncClient, db):
+async def test_get_dashboard_stats_extremes(client: AsyncClient, db, create_user, create_ticket):
     """Test dashboard first/last show extremes."""
-    token, user_id, headers = await create_authenticated_user(
-        client, db, "dashboard_extremes", "dashboard_extremes@example.com"
-    )
+    token, user_id, headers = await create_user("dashboard_extremes")
 
     # Create tickets with different dates
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "First Show",
         "date": "2024-01-15",
         "time": "14:00",
         "price": 50000,
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Middle Show",
         "date": "2024-06-20",
         "time": "16:00",
         "price": 60000,
     })
-    await create_test_ticket(db, user_id, {
+    await create_ticket(user_id, {
         "title": "Last Show",
         "date": "2024-12-25",
         "time": "19:00",
