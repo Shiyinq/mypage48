@@ -299,11 +299,13 @@
 		aria-modal="true"
 	>
 		<!-- Backdrop -->
-		<div
-			class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+		<button
+			type="button"
+			class="absolute inset-0 w-full h-full bg-black/40 backdrop-blur-sm transition-opacity border-none cursor-default"
 			on:click={() => (open = false)}
 			transition:fade={{ duration: 150 }}
-		></div>
+			tabindex="-1"
+		></button>
 
 		<!-- Palette Window -->
 		<div
