@@ -70,7 +70,7 @@ async def test_use_api_key_success(client: AsyncClient, db):
     headers_key = {"Authorization": f"Bearer {api_key}"}
     response = await client.get("/api/users/profile", headers=headers_key)
     assert response.status_code == 200
-    assert response.json()["username"] == "apikeyuse"
+    assert response.json()["profile"]["username"] == "apikeyuse"
 
 @pytest.mark.asyncio
 async def test_revoke_api_key(client: AsyncClient, db):

@@ -2,30 +2,11 @@ import pytest
 from httpx import AsyncClient
 
 @pytest.mark.asyncio
-async def test_create_ticket_success(client: AsyncClient, db):
-    # Register and Login
-    register_payload = {
-        "fullName": "Theater User",
-        "memberId": "theater123",
-        "username": "theateruser",
-        "email": "theater@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    
-    await db["users"].update_one(
-        {"username": "theateruser"}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-    
-    login_res = await client.post("/api/auth/signin", data={"username": "theateruser", "password": "Password123!"})
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_create_ticket_success(client: AsyncClient, db, create_user):
+    """Test creating a ticket."""
+    token, user_id, headers = await create_user("theateruser")
 
     # Create Ticket
-    # Correct structure based on Schema
     ticket_payload = {
         "ticket_id": "T-12345",
         "event": {
@@ -53,27 +34,9 @@ async def test_create_ticket_success(client: AsyncClient, db):
     assert "_id" in data
 
 @pytest.mark.asyncio
-async def test_get_tickets(client: AsyncClient, db):
-    # Setup user and ticket
-    register_payload = {
-        "fullName": "Tickets User",
-        "memberId": "tickets123",
-        "username": "ticketsuser",
-        "email": "tickets@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    
-    await db["users"].update_one(
-        {"username": "ticketsuser"}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-    
-    login_res = await client.post("/api/auth/signin", data={"username": "ticketsuser", "password": "Password123!"})
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_get_tickets(client: AsyncClient, db, create_user):
+    """Test getting user's tickets."""
+    token, user_id, headers = await create_user("ticketsuser")
 
     ticket_payload = {
         "ticket_id": "T-67890",
@@ -103,27 +66,9 @@ async def test_get_tickets(client: AsyncClient, db):
     assert data["data"][0]["event"]["title"] == "Ramune"
 
 @pytest.mark.asyncio
-async def test_update_ticket(client: AsyncClient, db):
-    # Setup user
-    register_payload = {
-        "fullName": "Update User",
-        "memberId": "upd123",
-        "username": "updateticket",
-        "email": "updateticket@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    
-    await db["users"].update_one(
-        {"username": "updateticket"}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-    
-    login_res = await client.post("/api/auth/signin", data={"username": "updateticket", "password": "Password123!"})
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_update_ticket(client: AsyncClient, db, create_user):
+    """Test updating a ticket."""
+    token, user_id, headers = await create_user("updateticket")
 
     # Create
     create_payload = {
@@ -166,27 +111,9 @@ async def test_update_ticket(client: AsyncClient, db):
     assert data["seat"]["number"] == "4"
 
 @pytest.mark.asyncio
-async def test_delete_ticket(client: AsyncClient, db):
-    # Setup user
-    register_payload = {
-        "fullName": "Del User",
-        "memberId": "del123",
-        "username": "delticket",
-        "email": "delticket@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    
-    await db["users"].update_one(
-        {"username": "delticket"}, 
-        {"$set": {"isEmailVerified": True}}
-    )
-    
-    login_res = await client.post("/api/auth/signin", data={"username": "delticket", "password": "Password123!"})
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+async def test_delete_ticket(client: AsyncClient, db, create_user):
+    """Test deleting a ticket."""
+    token, user_id, headers = await create_user("delticket")
 
     # Create
     create_payload = {
@@ -214,5 +141,4 @@ async def test_delete_ticket(client: AsyncClient, db):
     
     # Verify deletion.
     get_res = await client.get(f"/api/theater/tickets/{ticket_id}", headers=headers)
-    # The route returns TicketResponse. If service raises TicketNotFound -> 404.
     assert get_res.status_code == 404

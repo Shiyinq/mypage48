@@ -50,30 +50,9 @@ async def test_get_setlists_unauthorized(client: AsyncClient):
     assert response.status_code == 401
 
 @pytest.mark.asyncio
-async def test_get_setlists_list(client: AsyncClient, db, seed_setlists_db):
+async def test_get_setlists_list(client: AsyncClient, db, seed_setlists_db, create_user):
     """Test getting all setlists with authentication."""
-    # Register and Login
-    register_payload = {
-        "fullName": "Setlist User",
-        "memberId": "11111",
-        "username": "setlistuser",
-        "email": "setlist@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "setlistuser"},
-        {"$set": {"isEmailVerified": True}}
-    )
-
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "setlistuser",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("setlistuser")
 
     # Get setlists
     response = await client.get("/api/theater/setlists", headers=headers)
@@ -85,30 +64,9 @@ async def test_get_setlists_list(client: AsyncClient, db, seed_setlists_db):
     assert len(data["setlists"]) > 0
 
 @pytest.mark.asyncio
-async def test_get_setlists_pagination(client: AsyncClient, db, seed_setlists_db):
+async def test_get_setlists_pagination(client: AsyncClient, db, seed_setlists_db, create_user):
     """Test setlists pagination."""
-    # Register and Login
-    register_payload = {
-        "fullName": "Pagination User",
-        "memberId": "22222",
-        "username": "paginationuser",
-        "email": "pagination@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "paginationuser"},
-        {"$set": {"isEmailVerified": True}}
-    )
-
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "paginationuser",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("paginationuser")
 
     # Test limit parameter
     response = await client.get("/api/theater/setlists?limit=2", headers=headers)
@@ -117,30 +75,9 @@ async def test_get_setlists_pagination(client: AsyncClient, db, seed_setlists_db
     assert len(data["setlists"]) <= 2
 
 @pytest.mark.asyncio
-async def test_get_setlists_filter_by_type(client: AsyncClient, db, seed_setlists_db):
+async def test_get_setlists_filter_by_type(client: AsyncClient, db, seed_setlists_db, create_user):
     """Test filtering setlists by type (setlist or event)."""
-    # Register and Login
-    register_payload = {
-        "fullName": "Filter User",
-        "memberId": "33333",
-        "username": "filteruser",
-        "email": "filter@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "filteruser"},
-        {"$set": {"isEmailVerified": True}}
-    )
-
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "filteruser",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("filteruser")
 
     # Filter by type=setlist
     response = await client.get("/api/theater/setlists?type=setlist", headers=headers)
@@ -157,30 +94,9 @@ async def test_get_setlists_filter_by_type(client: AsyncClient, db, seed_setlist
         assert setlist["type"] == "event"
 
 @pytest.mark.asyncio
-async def test_get_setlists_filter_by_active(client: AsyncClient, db, seed_setlists_db):
+async def test_get_setlists_filter_by_active(client: AsyncClient, db, seed_setlists_db, create_user):
     """Test filtering setlists by active status."""
-    # Register and Login
-    register_payload = {
-        "fullName": "Active Filter User",
-        "memberId": "44444",
-        "username": "activefilteruser",
-        "email": "activefilter@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "activefilteruser"},
-        {"$set": {"isEmailVerified": True}}
-    )
-
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "activefilteruser",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("activefilter")
 
     # Filter by active=true
     response = await client.get("/api/theater/setlists?active=true", headers=headers)
@@ -238,33 +154,9 @@ async def test_get_setlist_by_title_not_found(client: AsyncClient):
     assert response.status_code == 404
 
 @pytest.mark.asyncio
-async def test_setlist_watched_stats_with_tickets(client: AsyncClient, db, seed_setlists_db):
+async def test_setlist_watched_stats_with_tickets(client: AsyncClient, db, seed_setlists_db, create_user):
     """Test that watched stats are correctly calculated with user tickets."""
-    # Register and Login
-    username = "watcheduser"
-    register_payload = {
-        "fullName": "Watched User",
-        "memberId": "66666",
-        "username": username,
-        "email": "watched@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "watcheduser"},
-        {"$set": {"isEmailVerified": True}}
-    )
-    user = await db["users"].find_one({"username": username})
-    user_id = user["userId"]
-
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "watcheduser",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("watcheduser")
 
     # Insert tickets matches TEST_SETLISTS_DATA titles
     ticket_data_1 = TicketInDB(
@@ -302,38 +194,9 @@ async def test_setlist_watched_stats_with_tickets(client: AsyncClient, db, seed_
     assert pajama_drive["watched"]["count"] == 1
 
 @pytest.mark.asyncio
-async def test_delete_setlist(client: AsyncClient, db, seed_setlists_db):
+async def test_delete_setlist(client: AsyncClient, db, seed_setlists_db, create_user):
     """Test deleting a setlist (admin only)."""
-    # Admin Login
-    await db["users"].insert_one({
-        "fullName": "Admin User",
-        "memberId": "99999",
-        "username": "adminuser",
-        "email": "admin@example.com",
-        "hashedPassword": "hashedpassword", 
-        "isEmailVerified": True,
-        "role": "admin"
-    })
-    register_payload = {
-        "fullName": "Admin Setlist",
-        "memberId": "12345",
-        "username": "adminsetlist",
-        "email": "adminsetlist@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "adminsetlist"},
-        {"$set": {"isEmailVerified": True, "isAdmin": True}}
-    )
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "adminsetlist",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("adminsetlist", is_admin=True)
 
     setlist_id = "S001"
     response = await client.delete(f"/api/theater/setlists/{setlist_id}", headers=headers)
@@ -346,29 +209,9 @@ async def test_delete_setlist(client: AsyncClient, db, seed_setlists_db):
     assert get_res.status_code == 404
 
 @pytest.mark.asyncio
-async def test_create_setlist_forbidden(client: AsyncClient, db):
+async def test_create_setlist_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot create a setlist."""
-    # Register Normal User
-    register_payload = {
-        "fullName": "Normal User SCreate",
-        "memberId": "normscreate",
-        "username": "normscreate",
-        "email": "normscreate@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "normscreate"},
-        {"$set": {"isEmailVerified": True}}
-    )
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "normscreate",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("normscreate")
 
     payload = {
         "setlistId": "NEW001",
@@ -383,29 +226,9 @@ async def test_create_setlist_forbidden(client: AsyncClient, db):
     assert response.status_code == 403
 
 @pytest.mark.asyncio
-async def test_update_setlist_forbidden(client: AsyncClient, db):
+async def test_update_setlist_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot update a setlist."""
-    # Register Normal User
-    register_payload = {
-        "fullName": "Normal User SUpdate",
-        "memberId": "normsupdate",
-        "username": "normsupdate",
-        "email": "normsupdate@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "normsupdate"},
-        {"$set": {"isEmailVerified": True}}
-    )
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "normsupdate",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("normsupdate")
 
     setlist_id = "S001"
     payload = {"title": "Updated Title"}
@@ -413,29 +236,9 @@ async def test_update_setlist_forbidden(client: AsyncClient, db):
     assert response.status_code == 403
 
 @pytest.mark.asyncio
-async def test_delete_setlist_forbidden(client: AsyncClient, db):
+async def test_delete_setlist_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot delete a setlist."""
-    # Register Normal User
-    register_payload = {
-        "fullName": "Normal User SDelete",
-        "memberId": "normsdelete",
-        "username": "normsdelete",
-        "email": "normsdelete@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!",
-        "ofcStatus": "Active"
-    }
-    await client.post("/api/users/signup", json=register_payload)
-    await db["users"].update_one(
-        {"username": "normsdelete"},
-        {"$set": {"isEmailVerified": True}}
-    )
-    login_res = await client.post("/api/auth/signin", data={
-        "username": "normsdelete",
-        "password": "Password123!"
-    })
-    token = login_res.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    token, user_id, headers = await create_user("normsdelete")
 
     setlist_id = "S001"
     response = await client.delete(f"/api/theater/setlists/{setlist_id}", headers=headers)
