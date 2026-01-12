@@ -63,7 +63,18 @@ mypage48/
 
 - Python 3.10+
 - Node.js 18+
+- Docker & Docker Compose
 - MongoDB (local or Atlas)
+
+### Infrastructure Setup (Required)
+
+MinIO is required for image storage (2-shot photos and tickets) and **must be running** during local development.
+
+1. **Start MinIO service**
+   ```bash
+   docker compose up -d minio
+   ```
+   The MinIO console will be available at http://localhost:9001.
 
 ### Backend Setup
 
