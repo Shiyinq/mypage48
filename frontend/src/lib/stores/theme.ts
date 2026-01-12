@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { startCircularViewTransition } from '$lib/utils/view-transition';
 
 export type Theme = 'light' | 'dark' | 'auto';
 
@@ -48,37 +49,8 @@ export function setTheme(newTheme: Theme): void {
 	localStorage.setItem(THEME_KEY, newTheme);
 	theme.set(newTheme);
 
-	// Fallback for browsers without View Transitions API
-	if (!document.startViewTransition) {
+	startCircularViewTransition(() => {
 		applyTheme(newTheme);
-		return;
-	}
-
-	const transition = document.startViewTransition(() => {
-		applyTheme(newTheme);
-	});
-
-	transition.ready.then(() => {
-		const x = window.innerWidth / 2;
-		const y = window.innerHeight / 2;
-		const endRadius = Math.hypot(
-			Math.max(x, window.innerWidth - x),
-			Math.max(y, window.innerHeight - y)
-		);
-
-		document.documentElement.animate(
-			{
-				clipPath: [
-					`circle(0px at ${x}px ${y}px)`,
-					`circle(${endRadius}px at ${x}px ${y}px)`
-				]
-			},
-			{
-				duration: 500,
-				easing: 'ease-in-out',
-				pseudoElement: '::view-transition-new(root)'
-			}
-		);
 	});
 }
 

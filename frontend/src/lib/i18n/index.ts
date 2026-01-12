@@ -1,5 +1,6 @@
 import { writable, derived, get } from 'svelte/store';
 import type { Writable, Readable } from 'svelte/store';
+import { startCircularViewTransition } from '$lib/utils/view-transition';
 
 // Import translation files
 import id from './locales/id.json';
@@ -75,7 +76,9 @@ locale.subscribe((value) => {
 // Function to change locale
 export function setLocale(newLocale: Locale): void {
 	if (locales.some((l) => l.code === newLocale)) {
-		locale.set(newLocale);
+		startCircularViewTransition(() => {
+			locale.set(newLocale);
+		});
 	}
 }
 
