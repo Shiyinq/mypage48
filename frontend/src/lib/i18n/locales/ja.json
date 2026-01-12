@@ -730,5 +730,44 @@
 			"title": "メンバーが見つかりません",
 			"description": "検索条件やフィルターを変更して、お探しのメンバーを見つけてください。"
 		}
+	},
+	"command": {
+		"placeholder": "コマンドを入力または検索...",
+		"noResults": "結果が見つかりません。",
+		"footer": {
+			"navigate": "移動",
+			"select": "選択"
+		},
+		"sections": {
+			"navigation": "ナビゲーション",
+			"ticketing": "チケット",
+			"theme": "テーマ",
+			"language": "言語",
+			"account": "アカウント",
+			"admin": "管理"
+		},
+		"actions": {
+			"home": "ホームへ移動",
+			"theater": "シアターへ移動",
+			"shows": "公演一覧へ移動",
+			"members": "メンバー一覧へ移動",
+			"history": "公演履歴へ移動",
+			"achievements": "実績へ移動",
+			"memories": "思い出へ移動",
+			"profile": "プロフィールへ移動",
+			"settings": "設定へ移動",
+			"scanTicket": "チケットをスキャン",
+			"manualTicket": "チケットを手動追加",
+			"lightMode": "ライトモードに切り替え",
+			"darkMode": "ダークモードに切り替え",
+			"autoMode": "システムテーマに切り替え",
+			"langId": "言語をインドネシア語に変更",
+			"langEn": "言語を英語に変更",
+			"langJa": "言語を日本語に変更",
+			"logout": "ログアウト",
+			"adminDashboard": "管理ダッシュボードへ",
+			"adminMembers": "管理メンバー一覧へ",
+			"adminSetlists": "管理セットリスト一覧へ"
+		}
 	}
 }

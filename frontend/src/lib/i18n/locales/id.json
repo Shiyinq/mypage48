@@ -731,5 +731,44 @@
 				"deleteDesc": "Tindakan ini tidak dapat dibatalkan. Setlist akan dihapus secara permanen."
 			}
 		}
+	},
+	"command": {
+		"placeholder": "Ketik perintah atau cari...",
+		"noResults": "Tidak ada hasil ditemukan.",
+		"footer": {
+			"navigate": "Navigasi dengan",
+			"select": "Pilih dengan"
+		},
+		"sections": {
+			"navigation": "Navigasi",
+			"ticketing": "Tiket",
+			"theme": "Tema",
+			"language": "Bahasa",
+			"account": "Akun",
+			"admin": "Admin"
+		},
+		"actions": {
+			"home": "Ke Beranda",
+			"theater": "Ke Theater",
+			"shows": "Ke Pertunjukan",
+			"members": "Ke Member",
+			"history": "Ke Riwayat Show",
+			"achievements": "Ke Pencapaian",
+			"memories": "Ke Kenangan",
+			"profile": "Ke Profil",
+			"settings": "Ke Pengaturan",
+			"scanTicket": "Pindai Tiket",
+			"manualTicket": "Tambah Tiket Manual",
+			"lightMode": "Ganti ke Mode Terang",
+			"darkMode": "Ganti ke Mode Gelap",
+			"autoMode": "Ganti ke Tema Sistem",
+			"langId": "Ganti Bahasa ke Indonesia",
+			"langEn": "Ganti Bahasa ke Inggris",
+			"langJa": "Ganti Bahasa ke Jepang",
+			"logout": "Keluar",
+			"adminDashboard": "Ke Admin Dashboard",
+			"adminMembers": "Ke Admin Member",
+			"adminSetlists": "Ke Admin Setlist"
+		}
 	}
 }

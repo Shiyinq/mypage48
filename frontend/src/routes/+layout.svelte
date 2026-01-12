@@ -17,6 +17,7 @@
 	import { logger } from '$lib/utils/logger';
 	import { validateEnv } from '$lib/utils/env';
 	import ErrorFallback from '$lib/components/common/ErrorFallback.svelte';
+	import CommandPalette from '$lib/components/CommandPalette.svelte';
 
 	export let data: { locale?: string };
 
@@ -142,6 +143,7 @@
 	<ErrorFallback error={appError} onRetry={resetError} />
 {:else}
 	<LoadingBar />
+	<CommandPalette />
 	<div class="min-h-screen flex flex-col relative">
 		{#if $toast}
 			<div class="fixed top-4 left-0 right-0 z-[10000] flex justify-center pointer-events-none">
