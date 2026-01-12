@@ -83,6 +83,14 @@
 			radial-gradient(at 0% 100%, var(--color-bg-gradient-4) 0px, transparent 50%);
 		background-attachment: fixed;
 		color: var(--color-text-primary);
+		color: var(--color-text-primary);
+	}
+
+	/* Disable default view transition animations so we can control them in JS */
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation: none;
+		mix-blend-mode: normal;
 	}
 }
 
