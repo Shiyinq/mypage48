@@ -1,0 +1,385 @@
+<script lang="ts">
+	import { onMount, onDestroy } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { fade, scale } from 'svelte/transition';
+	import {
+		Search,
+		Moon,
+		Sun,
+		Monitor,
+		Home,
+		User,
+		Settings,
+		LogOut,
+		Command,
+		Laptop,
+		Globe,
+		Plus,
+		ScanLine,
+		AudioLines, // Theater
+		Users, // Members
+		Calendar, // Shows
+		Trophy, // Achievements
+		History, // History
+		Shield, // Admin
+		Music // Admin Setlists
+	} from 'lucide-svelte';
+	import { setTheme } from '$lib/stores/theme';
+	import { setLocale } from '$lib/i18n';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { auth } from '$lib/apis/auth';
+	import { userProfile } from '$lib/stores/profile';
+
+	export let open = false;
+
+	const { t } = useTranslation();
+
+	let inputEl: HTMLInputElement;
+	let searchQuery = '';
+	let selectedIndex = 0;
+	let listContainer: HTMLDivElement;
+
+	// Actions definition
+	type Action = {
+		id: string;
+		title: string;
+		icon: any;
+		shortcut?: string[];
+		section: 'navigation' | 'theme' | 'account' | 'ticketing' | 'language' | 'admin';
+		perform: () => void;
+	};
+
+	let actions: Action[] = [];
+
+	$: actions = [
+		// Admin (Conditional)
+		...($userProfile?.isAdmin
+			? ([
+					{
+						id: 'admin-dashboard',
+						title: $t('command.actions.adminDashboard'),
+						icon: Shield,
+						section: 'admin',
+						perform: () => goto('/admin')
+					},
+					{
+						id: 'admin-members',
+						title: $t('command.actions.adminMembers'),
+						icon: Users,
+						section: 'admin',
+						perform: () => goto('/admin/members')
+					},
+					{
+						id: 'admin-setlists',
+						title: $t('command.actions.adminSetlists'),
+						icon: Music,
+						section: 'admin',
+						perform: () => goto('/admin/setlists')
+					}
+				] as Action[])
+			: []),
+
+		// Navigation
+		{
+			id: 'nav-home',
+			title: $t('command.actions.home'),
+			icon: Home,
+			section: 'navigation',
+			perform: () => goto('/')
+		},
+		{
+			id: 'nav-theater',
+			title: $t('command.actions.theater'),
+			icon: AudioLines,
+			section: 'navigation',
+			perform: () => goto('/theater')
+		},
+		{
+			id: 'nav-shows',
+			title: $t('command.actions.shows'),
+			icon: Calendar,
+			section: 'navigation',
+			perform: () => goto('/theater/shows')
+		},
+		{
+			id: 'nav-members',
+			title: $t('command.actions.members'),
+			icon: Users,
+			section: 'navigation',
+			perform: () => goto('/theater/members')
+		},
+		{
+			id: 'nav-history',
+			title: $t('command.actions.history'),
+			icon: History,
+			section: 'navigation',
+			perform: () => goto('/history')
+		},
+		{
+			id: 'nav-achievements',
+			title: $t('command.actions.achievements'),
+			icon: Trophy,
+			section: 'navigation',
+			perform: () => goto('/achievements')
+		},
+		{
+			id: 'nav-memories',
+			title: $t('command.actions.memories'),
+			icon: Command, // Placeholder icon
+			section: 'navigation',
+			perform: () => goto('/memories')
+		},
+		{
+			id: 'nav-profile',
+			title: $t('command.actions.profile'),
+			icon: User,
+			section: 'navigation',
+			perform: () => goto('/profile')
+		},
+		{
+			id: 'nav-settings',
+			title: $t('command.actions.settings'),
+			icon: Settings,
+			section: 'navigation',
+			perform: () => goto('/settings')
+		},
+
+		// Actions
+		{
+			id: 'ticket-scan',
+			title: $t('command.actions.scanTicket'),
+			icon: ScanLine,
+			section: 'ticketing',
+			perform: () => goto('/upload?mode=scan')
+		},
+		{
+			id: 'ticket-manual',
+			title: $t('command.actions.manualTicket'),
+			icon: Plus,
+			section: 'ticketing',
+			perform: () => goto('/upload?mode=manual')
+		},
+
+		// Theme
+		{
+			id: 'theme-light',
+			title: $t('command.actions.lightMode'),
+			icon: Sun,
+			section: 'theme',
+			perform: () => setTheme('light')
+		},
+		{
+			id: 'theme-dark',
+			title: $t('command.actions.darkMode'),
+			icon: Moon,
+			section: 'theme',
+			perform: () => setTheme('dark')
+		},
+		{
+			id: 'theme-auto',
+			title: $t('command.actions.autoMode'),
+			icon: Laptop,
+			section: 'theme',
+			perform: () => setTheme('auto')
+		},
+
+		// Language
+		{
+			id: 'lang-id',
+			title: $t('command.actions.langId'),
+			icon: Globe,
+			section: 'language',
+			perform: () => setLocale('id')
+		},
+		{
+			id: 'lang-en',
+			title: $t('command.actions.langEn'),
+			icon: Globe,
+			section: 'language',
+			perform: () => setLocale('en')
+		},
+		{
+			id: 'lang-ja',
+			title: $t('command.actions.langJa'),
+			icon: Globe,
+			section: 'language',
+			perform: () => setLocale('ja')
+		},
+
+		// Account
+		{
+			id: 'account-logout',
+			title: $t('command.actions.logout'),
+			icon: LogOut,
+			section: 'account',
+			perform: async () => {
+				await auth.logout();
+				window.location.href = '/login';
+			}
+		}
+	];
+
+	$: filteredActions = searchQuery
+		? actions.filter((a) => a.title.toLowerCase().includes(searchQuery.toLowerCase()))
+		: actions;
+
+	// Reset selection when search changes or when opening
+	$: if (searchQuery || open) {
+		selectedIndex = 0;
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		// Disable on login/register/auth pages
+		const path = $page.url.pathname;
+		if (path === '/login' || path === '/register' || path.startsWith('/auth')) {
+			return;
+		}
+
+		if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+			e.preventDefault();
+			open = !open;
+		}
+
+		if (!open) return;
+
+		if (e.key === 'Escape') {
+			open = false;
+		} else if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			selectedIndex = (selectedIndex + 1) % filteredActions.length;
+			scrollToSelected();
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			selectedIndex = (selectedIndex - 1 + filteredActions.length) % filteredActions.length;
+			scrollToSelected();
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			if (filteredActions[selectedIndex]) {
+				runAction(filteredActions[selectedIndex]);
+			}
+		}
+	}
+
+	function scrollToSelected() {
+		if (!listContainer) return;
+		const selectedEl = listContainer.children[selectedIndex] as HTMLElement;
+		if (selectedEl) {
+			// Simple scroll into view logic
+			if (
+				selectedEl.offsetTop + selectedEl.offsetHeight >
+				listContainer.scrollTop + listContainer.offsetHeight
+			) {
+				listContainer.scrollTop =
+					selectedEl.offsetTop + selectedEl.offsetHeight - listContainer.offsetHeight + 8; // 8px buffer
+			} else if (selectedEl.offsetTop < listContainer.scrollTop) {
+				listContainer.scrollTop = selectedEl.offsetTop - 8;
+			}
+		}
+	}
+
+	function runAction(action: Action) {
+		action.perform();
+		open = false;
+		searchQuery = '';
+	}
+
+	// Focus input when opened
+	$: if (open && inputEl) {
+		setTimeout(() => inputEl.focus(), 10); // Tiny delay to ensure visibility
+	}
+</script>
+
+<svelte:window on:keydown={handleKeydown} />
+
+{#if open}
+	<div
+		class="fixed inset-0 z-[99999] flex items-start justify-center pt-[20vh] px-4"
+		role="dialog"
+		aria-modal="true"
+	>
+		<!-- Backdrop -->
+		<div
+			class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+			on:click={() => (open = false)}
+			transition:fade={{ duration: 150 }}
+		></div>
+
+		<!-- Palette Window -->
+		<div
+			class="glass-panel relative w-full max-w-lg rounded-xl shadow-2xl overflow-hidden flex flex-col ring-1 ring-white/10"
+			transition:scale={{ duration: 150, start: 0.95 }}
+		>
+			<!-- Input Area -->
+			<div class="flex items-center px-4 py-3 border-b border-themed gap-3">
+				<Search class="w-5 h-5 text-themed-muted" />
+				<input
+					bind:this={inputEl}
+					bind:value={searchQuery}
+					type="text"
+					placeholder={$t('command.placeholder')}
+					class="flex-1 bg-transparent border-none outline-none text-themed placeholder:text-themed-muted h-6 text-base"
+				/>
+				<div
+					class="text-[10px] font-medium bg-black/5 dark:bg-white/5 border border-themed rounded px-1.5 py-0.5 text-themed-muted"
+				>
+					ESC
+				</div>
+			</div>
+
+			<!-- List -->
+			<div class="max-h-[300px] overflow-y-auto py-2 command-list" bind:this={listContainer}>
+				{#if filteredActions.length === 0}
+					<div class="px-4 py-8 text-center text-themed-muted text-sm">
+						{$t('command.noResults')}
+					</div>
+				{:else}
+					{#each filteredActions as action, i}
+						<button
+							class="w-full text-left px-4 py-2.5 flex items-center gap-3 text-sm transition-colors
+                                   {i === selectedIndex
+								? 'bg-red-500/10 text-red-600 dark:text-red-400 border-l-2 border-red-500'
+								: 'text-themed-secondary border-l-2 border-transparent hover:bg-black/5 dark:hover:bg-white/5'}"
+							on:click={() => runAction(action)}
+							on:mouseenter={() => (selectedIndex = i)}
+						>
+							<svelte:component
+								this={action.icon}
+								class="w-4 h-4 {i === selectedIndex ? 'text-red-500' : 'text-themed-muted'}"
+							/>
+							<span class="flex-1">{action.title}</span>
+							<span class="text-xs text-themed-muted capitalize"
+								>{$t(`command.sections.${action.section}`)}</span
+							>
+						</button>
+					{/each}
+				{/if}
+			</div>
+
+			<!-- Footer -->
+			<div
+				class="px-4 py-2 bg-black/5 dark:bg-white/5 border-t border-themed text-[10px] text-themed-muted flex justify-between"
+			>
+				<span>{$t('command.footer.navigate')} <span class="text-themed-secondary">↑↓</span></span>
+				<span>{$t('command.footer.select')} <span class="text-themed-secondary">↵</span></span>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<style>
+	/* Custom scrollbar for the list */
+	.command-list::-webkit-scrollbar {
+		width: 6px;
+	}
+	.command-list::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	.command-list::-webkit-scrollbar-thumb {
+		background: var(--color-scrollbar, rgba(150, 150, 150, 0.3));
+		border-radius: 3px;
+	}
+	.command-list::-webkit-scrollbar-thumb:hover {
+		background: var(--color-scrollbar-hover, rgba(150, 150, 150, 0.5));
+	}
+</style>

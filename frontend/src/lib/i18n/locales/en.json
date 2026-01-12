@@ -728,5 +728,44 @@
 				"deleteDesc": "This action cannot be undone. The setlist will be permanently deleted."
 			}
 		}
+	},
+	"command": {
+		"placeholder": "Type a command or search...",
+		"noResults": "No results found.",
+		"footer": {
+			"navigate": "Navigate with",
+			"select": "Select with"
+		},
+		"sections": {
+			"navigation": "Navigation",
+			"ticketing": "Ticketing",
+			"theme": "Theme",
+			"language": "Language",
+			"account": "Account",
+			"admin": "Admin"
+		},
+		"actions": {
+			"home": "Go to Home",
+			"theater": "Go to Theater",
+			"shows": "Go to Shows",
+			"members": "Go to Members",
+			"history": "Go to Show History",
+			"achievements": "Go to Achievements",
+			"memories": "Go to Memories",
+			"profile": "Go to Profile",
+			"settings": "Go to Settings",
+			"scanTicket": "Scan Ticket",
+			"manualTicket": "Add Ticket Manually",
+			"lightMode": "Switch to Light Mode",
+			"darkMode": "Switch to Dark Mode",
+			"autoMode": "Switch to System Theme",
+			"langId": "Change Language to Indonesian",
+			"langEn": "Change Language to English",
+			"langJa": "Change Language to Japanese",
+			"logout": "Logout",
+			"adminDashboard": "Go to Admin Dashboard",
+			"adminMembers": "Go to Admin Members",
+			"adminSetlists": "Go to Admin Setlists"
+		}
 	}
 }

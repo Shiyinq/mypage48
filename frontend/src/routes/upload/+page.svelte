@@ -5,6 +5,7 @@
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { invalidateTheater } from '$lib/stores/theater';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { extractTicketData } from '$lib/apis/llm';
 
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
@@ -29,6 +30,16 @@
 	const SHOW_OPTIONS = SHOW_IMAGES.map((s) => s.title);
 
 	let mode: 'SELECTION' | 'ANALYZING' | 'EDITING' = 'SELECTION';
+
+	$: {
+		const modeParam = $page.url.searchParams.get('mode');
+		if (modeParam === 'manual' && mode !== 'EDITING' && !isSubmitting) {
+			handleManualEntry();
+		} else if (modeParam === 'scan' && mode !== 'SELECTION') {
+			mode = 'SELECTION';
+		}
+	}
+
 	let image: string | null = null;
 	let isSubmitting = false;
 
