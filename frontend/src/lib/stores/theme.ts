@@ -41,16 +41,45 @@ export function applyTheme(selectedTheme: Theme): void {
 }
 
 // Set theme and persist to localStorage
+// Set theme and persist to localStorage
 export function setTheme(newTheme: Theme): void {
 	if (!browser) return;
 
 	localStorage.setItem(THEME_KEY, newTheme);
 	theme.set(newTheme);
-	applyTheme(newTheme);
 
-	// Force page reload to ensure all CSS is re-evaluated
-	// This fixes browser caching issues with dark: variants
-	window.location.reload();
+	// Fallback for browsers without View Transitions API
+	if (!document.startViewTransition) {
+		applyTheme(newTheme);
+		return;
+	}
+
+	const transition = document.startViewTransition(() => {
+		applyTheme(newTheme);
+	});
+
+	transition.ready.then(() => {
+		const x = window.innerWidth / 2;
+		const y = window.innerHeight / 2;
+		const endRadius = Math.hypot(
+			Math.max(x, window.innerWidth - x),
+			Math.max(y, window.innerHeight - y)
+		);
+
+		document.documentElement.animate(
+			{
+				clipPath: [
+					`circle(0px at ${x}px ${y}px)`,
+					`circle(${endRadius}px at ${x}px ${y}px)`
+				]
+			},
+			{
+				duration: 500,
+				easing: 'ease-in-out',
+				pseudoElement: '::view-transition-new(root)'
+			}
+		);
+	});
 }
 
 // Initialize theme on app load
