@@ -23,18 +23,18 @@
 				theme: 'pink'
 			};
 		}
-		if (currentPath.includes('/theater/shows/history')) {
+		if (currentPath.includes('/theater/events/history')) {
 			return {
-				title: $t('theater.showHistory.title') || 'Show History',
-				subtitle: $t('theater.showHistory.subtitle') || 'Past performances',
+				title: $t('theater.eventHistory.title') || 'Event History',
+				subtitle: $t('theater.eventHistory.subtitle') || 'Past events',
 				icon: Calendar,
 				theme: 'orange'
 			};
 		}
-		if (currentPath.includes('/theater/shows')) {
+		if (currentPath.includes('/theater/events')) {
 			return {
-				title: $t('theater.shows.title') || 'Shows',
-				subtitle: $t('theater.shows.subtitle') || 'Browse theater shows',
+				title: $t('theater.events.title') || 'Events',
+				subtitle: $t('theater.events.subtitle') || 'Browse theater events',
 				icon: Calendar,
 				theme: 'blue'
 			};
@@ -59,7 +59,7 @@
 			theme: 'purple'
 		},
 		{ labelKey: 'theater.subNav.members', href: '/theater/members', icon: Users, theme: 'pink' },
-		{ labelKey: 'theater.subNav.shows', href: '/theater/shows', icon: Calendar, theme: 'blue' }
+		{ labelKey: 'theater.subNav.events', href: '/theater/events', icon: Calendar, theme: 'blue' }
 	];
 
 	// Check if current path matches nav item
@@ -113,22 +113,22 @@
 					</a>
 				{/each}
 
-				<!-- Shows sub-link (History) - only show when on shows pages -->
-				{#if currentPath.startsWith('/theater/shows')}
+				<!-- Events sub-link (History) - only show when on events pages -->
+				{#if currentPath.startsWith('/theater/events')}
 					<div class="flex items-center text-gray-300 dark:text-gray-600">
 						<ChevronRight class="w-4 h-4" />
 					</div>
 					{@const historyTheme = getThemeStyles('orange')}
 					<a
-						href="/theater/shows/history"
+						href="/theater/events/history"
 						class={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 whitespace-nowrap ${
-							currentPath === '/theater/shows/history'
+							currentPath === '/theater/events/history'
 								? historyTheme.navActive
 								: `bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 ${historyTheme.navInactive}`
 						}`}
 					>
 						<History class="w-4 h-4" />
-						{$t('theater.showHistory.title')}
+						{$t('theater.eventHistory.title')}
 					</a>
 				{/if}
 			</div>

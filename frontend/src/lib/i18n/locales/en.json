@@ -30,7 +30,8 @@
 		"profile": "Profile",
 		"dashboard": "Dashboard",
 		"language": "Language",
-		"noResults": "No results found"
+		"noResults": "No results found",
+		"date": "Date"
 	},
 	"validation": {
 		"alert": {
@@ -61,7 +62,7 @@
 		"home": "Home",
 		"dashboard": "Dashboard",
 		"setlists": "Setlists",
-		"shows": "Shows",
+		"events": "Events",
 		"theater": "Theater",
 		"achievements": "Achievements",
 		"memories": "Memories",
@@ -165,7 +166,7 @@
 		"theater": {
 			"title": "Shows",
 			"subtitle": "Your attendance overview",
-			"shows": "Shows",
+			"events": "Events",
 			"tickets": "Tickets",
 			"spending": "Expenses",
 			"totalExpenses": "Total Expenses",
@@ -437,7 +438,7 @@
 		"subNav": {
 			"theater": "Theater",
 			"members": "Members",
-			"shows": "Shows"
+			"events": "Events"
 		},
 		"setlists": {
 			"section": "Setlists",
@@ -462,9 +463,10 @@
 			"listErrorTitle": "Failed to load setlists",
 			"listErrorDesc": "Something went wrong while fetching the theater setlists."
 		},
-		"shows": {
-			"title": "Upcoming Shows",
-			"subtitle": "Schedule and announcements"
+		"events": {
+			"title": "Theater Events",
+			"subtitle": "Browse theater events",
+			"eventName": "Event Name"
 		},
 		"members": {
 			"title": "Members",
@@ -473,15 +475,15 @@
 			"errorTitle": "Failed to load members",
 			"errorDesc": "Something went wrong while fetching the member list."
 		},
-		"upcomingShows": {
-			"title": "Upcoming Shows",
+		"upcomingEvents": {
+			"title": "Upcoming Events",
 			"subtitle": "Schedule and announcements",
-			"empty": "No upcoming shows scheduled at the moment."
+			"empty": "No upcoming events scheduled at the moment."
 		},
-		"showHistory": {
-			"title": "Show History",
-			"subtitle": "Past performances",
-			"empty": "No show history found."
+		"eventHistory": {
+			"title": "Event History",
+			"subtitle": "Past events",
+			"empty": "No event history found."
 		}
 	},
 	"memories": {
@@ -747,7 +749,7 @@
 		"actions": {
 			"home": "Go to Home",
 			"theater": "Go to Theater",
-			"shows": "Go to Shows",
+			"events": "Go to Events",
 			"members": "Go to Members",
 			"history": "Go to Show History",
 			"achievements": "Go to Achievements",

@@ -30,7 +30,8 @@
 		"profile": "プロフィール",
 		"dashboard": "ダッシュボード",
 		"language": "言語",
-		"noResults": "結果が見つかりません"
+		"noResults": "結果が見つかりません",
+		"date": "日付"
 	},
 	"validation": {
 		"alert": {
@@ -61,7 +62,7 @@
 		"home": "ホーム",
 		"dashboard": "ダッシュボード",
 		"setlists": "セットリスト",
-		"shows": "公演",
+		"events": "イベント",
 		"theater": "シアター",
 		"achievements": "実績",
 		"memories": "思い出",
@@ -165,7 +166,7 @@
 		"theater": {
 			"title": "公演",
 			"subtitle": "観覧履歴の概要",
-			"shows": "公演",
+			"events": "イベント",
 			"tickets": "チケット",
 			"spending": "支出",
 			"totalExpenses": "総支出",
@@ -389,7 +390,7 @@
 		"subNav": {
 			"theater": "シアター",
 			"members": "メンバー",
-			"shows": "公演"
+			"events": "イベント"
 		},
 		"setlists": {
 			"section": "セットリスト",
@@ -414,9 +415,10 @@
 			"listErrorTitle": "セットリストの読み込みに失敗しました",
 			"listErrorDesc": "劇場セットリストの取得中にエラーが発生しました。"
 		},
-		"shows": {
-			"title": "公演予定",
-			"subtitle": "スケジュールとお知らせ"
+		"events": {
+			"title": "イベント予定",
+			"subtitle": "スケジュールとお知らせ",
+			"eventName": "イベント名"
 		},
 		"members": {
 			"title": "メンバー",
@@ -425,15 +427,15 @@
 			"errorTitle": "メンバーの読み込みに失敗しました",
 			"errorDesc": "メンバーリストの取得中にエラーが発生しました。"
 		},
-		"upcomingShows": {
-			"title": "今後の公演",
+		"upcomingEvents": {
+			"title": "今後のイベント",
 			"subtitle": "スケジュールとお知らせ",
-			"empty": "現在予定されている公演はありません。"
+			"empty": "現在予定されているイベントはありません。"
 		},
-		"showHistory": {
-			"title": "公演履歴",
-			"subtitle": "過去の公演",
-			"empty": "公演履歴が見つかりません。"
+		"eventHistory": {
+			"title": "イベント履歴",
+			"subtitle": "過去のイベント",
+			"empty": "イベント履歴が見つかりません。"
 		}
 	},
 	"top2shot": {
@@ -749,7 +751,7 @@
 		"actions": {
 			"home": "ホームへ移動",
 			"theater": "シアターへ移動",
-			"shows": "公演一覧へ移動",
+			"events": "イベント一覧へ移動",
 			"members": "メンバー一覧へ移動",
 			"history": "公演履歴へ移動",
 			"achievements": "実績へ移動",

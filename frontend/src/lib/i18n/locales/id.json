@@ -26,11 +26,13 @@
 		"clearFilters": "Hapus Filter",
 		"viewDetails": "Lihat Detail",
 		"logout": "Keluar",
+		"events": "Event",
 		"settings": "Pengaturan",
 		"profile": "Profil",
 		"dashboard": "Dasbor",
 		"language": "Bahasa",
-		"noResults": "Tidak ada hasil ditemukan"
+		"noResults": "Tidak ada hasil ditemukan",
+		"date": "Tanggal"
 	},
 	"validation": {
 		"alert": {
@@ -61,7 +63,7 @@
 		"home": "Beranda",
 		"dashboard": "Dasbor",
 		"setlists": "Setlists",
-		"shows": "Pertunjukan",
+		"events": "Event",
 		"theater": "Theater",
 		"achievements": "Pencapaian",
 		"memories": "Kenangan",
@@ -554,7 +556,7 @@
 		"subNav": {
 			"theater": "Theater",
 			"members": "Member",
-			"shows": "Shows"
+			"events": "Event"
 		},
 		"setlists": {
 			"section": "Setlist",
@@ -590,15 +592,22 @@
 			"errorTitle": "Gagal memuat member",
 			"errorDesc": "Terjadi kesalahan saat mengambil daftar member."
 		},
-		"upcomingShows": {
-			"title": "Upcoming Shows",
+		"upcomingEvents": {
+			"title": "Jadwal Event",
 			"subtitle": "Jadwal dan pengumuman",
-			"empty": "Belum ada jadwal pertunjukan mendatang."
+			"emptyTitle": "Tidak ada event",
+			"empty": "Belum ada jadwal event mendatang."
 		},
-		"showHistory": {
-			"title": "Riwayat Show",
-			"subtitle": "Pertunjukan sebelumnya",
-			"empty": "Belum ada riwayat pertunjukan."
+		"events": {
+			"header": "Event",
+			"title": "Event Teater",
+			"subtitle": "Jelajahi event teater",
+			"eventName": "Nama Event"
+		},
+		"eventHistory": {
+			"title": "Riwayat Event",
+			"subtitle": "Event sebelumnya",
+			"empty": "Belum ada riwayat event."
 		}
 	},
 	"top2shot": {
@@ -750,7 +759,7 @@
 		"actions": {
 			"home": "Ke Beranda",
 			"theater": "Ke Theater",
-			"shows": "Ke Pertunjukan",
+			"events": "Ke Event",
 			"members": "Ke Member",
 			"history": "Ke Riwayat Show",
 			"achievements": "Ke Pencapaian",
