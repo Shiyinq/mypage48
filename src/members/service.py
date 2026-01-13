@@ -61,7 +61,7 @@ class MemberService:
             logger.exception(f"Error fetching members: {str(e)}")
             raise MemberFetchError()
 
-    async def get_member_by_id(self, member_id: int) -> MemberDetailResponse:
+    async def get_member_by_id(self, member_id: str) -> MemberDetailResponse:
         """Get a single member by ID"""
         try:
             member = await self.repository.find_by_id(member_id)
@@ -108,7 +108,7 @@ class MemberService:
             now = datetime.now()
 
             member_data = {
-                "id": next_id,
+                "id": str(next_id),
                 **data.model_dump(exclude_none=True),
                 "createdAt": now,
                 "updatedAt": now,
@@ -121,7 +121,7 @@ class MemberService:
             raise MemberFetchError()
 
     async def update_member(
-        self, member_id: int, data: MemberUpdateRequest
+        self, member_id: str, data: MemberUpdateRequest
     ) -> MemberResponse:
         """Update an existing member"""
         try:
@@ -144,7 +144,7 @@ class MemberService:
             logger.exception(f"Error updating member {member_id}: {str(e)}")
             raise MemberFetchError()
 
-    async def delete_member(self, member_id: int) -> MessageResponse:
+    async def delete_member(self, member_id: str) -> MessageResponse:
         """Delete a member by ID"""
         try:
             # Check if member exists

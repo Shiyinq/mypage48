@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 from src.auth.http_exceptions import PasswordPolicyViolation, PasswordsNotMatch
 from src.utils import validate_password_strength
@@ -34,11 +34,18 @@ class UserLoginBase(BaseModel):
     email: str
     username: str
     memberId: str | None = None
-    oshiId: int | None = None
+    oshiId: str | None = None
     ofcStatus: str | None = None
     isPublic: bool = False
     publicYear: int | None = None
     isAdmin: bool = False
+
+    @field_validator("oshiId", mode="before")
+    @classmethod
+    def allow_int_oshi_id(cls, v):
+        if v is None:
+            return None
+        return str(v)
 
 
 class UserLogin(UserLoginBase):

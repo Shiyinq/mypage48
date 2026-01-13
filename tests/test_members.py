@@ -2,9 +2,10 @@ import pytest
 from httpx import AsyncClient
 
 # Minimal test data
+# Minimal test data
 TEST_MEMBERS_DATA = [
     {
-        "id": 76,
+        "id": "76",
         "name": "Feni Fitriyanti",
         "nickname": "Feni",
         "generation": "3",
@@ -14,7 +15,7 @@ TEST_MEMBERS_DATA = [
         "socials": {}
     },
     {
-        "id": 999,
+        "id": "999",
         "name": "Test Member",
         "nickname": "Tester",
         "generation": "12",
@@ -68,13 +69,13 @@ async def test_get_member_by_nickname(client: AsyncClient, seed_members_db):
     data = response.json()
     assert "member" in data
     assert data["member"]["nickname"] == nickname
-    # Feni ID is 76
-    assert data["member"]["id"] == 76
+    # Feni ID is "76"
+    assert data["member"]["id"] == "76"
 
 @pytest.mark.asyncio
 async def test_get_member_by_id(client: AsyncClient, seed_members_db):
-    # Feni ID is 76
-    m_id = 76
+    # Feni ID is "76"
+    m_id = "76"
     
     response = await client.get(f"/api/members/id/{m_id}")
     assert response.status_code == 200
@@ -87,8 +88,8 @@ async def test_delete_member(client: AsyncClient, db, seed_members_db, create_us
     """Test deleting a member (admin only)."""
     token, user_id, headers = await create_user("admintest", is_admin=True)
 
-    # ID 76 is Feni (from TEST_MEMBERS_DATA)
-    member_id = 76
+    # ID "76" is Feni (from TEST_MEMBERS_DATA)
+    member_id = "76"
     
     # Delete
     response = await client.delete(f"/api/members/{member_id}", headers=headers)
@@ -118,8 +119,8 @@ async def test_update_member_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot update a member."""
     token, user_id, headers = await create_user("normupdate")
 
-    # ID 76 is Feni
-    member_id = 76
+    # ID "76" is Feni
+    member_id = "76"
     payload = {"name": "Updated Name"}
     response = await client.put(f"/api/members/{member_id}", json=payload, headers=headers)
     assert response.status_code == 403
@@ -129,8 +130,8 @@ async def test_delete_member_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot delete a member."""
     token, user_id, headers = await create_user("normdelete")
 
-    # ID 76 is Feni
-    member_id = 76
+    # ID "76" is Feni
+    member_id = "76"
     response = await client.delete(f"/api/members/{member_id}", headers=headers)
     assert response.status_code == 403
 
