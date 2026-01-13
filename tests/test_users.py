@@ -54,7 +54,7 @@ async def test_update_oshi(client: AsyncClient, db, create_user):
     
     # Verify in DB directly (profile endpoint uses stale current_user from JWT)
     user = await db["users"].find_one({"userId": user_id})
-    assert user["oshiId"] == 1
+    assert user["oshiId"] == "1"
 
 @pytest.mark.asyncio
 async def test_update_public_status(client: AsyncClient, db, create_user):

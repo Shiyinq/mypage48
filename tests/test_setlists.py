@@ -4,36 +4,47 @@ from datetime import datetime
 from src.tickets.schemas import TicketInDB, TicketEvent, TicketSeat
 
 # Minimal test data
+# Minimal test data
 TEST_SETLISTS_DATA = [
     {
-        "setlistId": "S001",
+        "setlistId": "pajama-drive",
         "title": "Pajama Drive",
         "titleJapanese": "Pajama Drive",
         "description": "A classic setlist.",
         "type": "setlist",
         "imageUrl": "https://example.com/pajama.jpg",
         "active": True,
-        "songs": []
+        "songs": ["Shonichi"],
+        "id": "1",
+        "songDetails": [
+             {
+                 "id": "1",
+                 "title": "Shonichi",
+                 "lyric": "Impian ada di tengah peluh..."
+             }
+        ]
     },
     {
-        "setlistId": "S002",
+        "setlistId": "pertaruhan-cinta",
         "title": "Pertaruhan Cinta",
         "titleJapanese": "Renai Kinshi Jourei",
         "description": "Love Forbidden Ordinance",
         "type": "setlist",
         "imageUrl": "https://example.com/rkj.jpg",
         "active": True,
-        "songs": []
+        "songs": [],
+        "id": "2"
     },
     {
-        "setlistId": "E001",
+        "setlistId": "special-event",
         "title": "Special Event",
         "titleJapanese": "Special Event",
         "description": "Special event.",
         "type": "event",
         "imageUrl": "https://example.com/event.jpg",
         "active": False,
-        "songs": []
+        "songs": [],
+        "id": "3"
     }
 ]
 
@@ -125,7 +136,7 @@ async def test_get_setlist_types(client: AsyncClient, seed_setlists_db):
 @pytest.mark.asyncio
 async def test_get_setlist_by_id(client: AsyncClient, seed_setlists_db):
     """Test getting a setlist by its ID."""
-    setlist_id = "S001" # Pajama Drive
+    setlist_id = "pajama-drive" # Pajama Drive
     response = await client.get(f"/api/theater/setlists/id/{setlist_id}")
     assert response.status_code == 200
     data = response.json()
@@ -198,7 +209,7 @@ async def test_delete_setlist(client: AsyncClient, db, seed_setlists_db, create_
     """Test deleting a setlist (admin only)."""
     token, user_id, headers = await create_user("adminsetlist", is_admin=True)
 
-    setlist_id = "S001"
+    setlist_id = "pajama-drive"
     response = await client.delete(f"/api/theater/setlists/{setlist_id}", headers=headers)
     assert response.status_code == 200
     # Check for standardized message
@@ -230,7 +241,7 @@ async def test_update_setlist_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot update a setlist."""
     token, user_id, headers = await create_user("normsupdate")
 
-    setlist_id = "S001"
+    setlist_id = "pajama-drive"
     payload = {"title": "Updated Title"}
     response = await client.put(f"/api/theater/setlists/{setlist_id}", json=payload, headers=headers)
     assert response.status_code == 403
@@ -240,6 +251,6 @@ async def test_delete_setlist_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot delete a setlist."""
     token, user_id, headers = await create_user("normsdelete")
 
-    setlist_id = "S001"
+    setlist_id = "pajama-drive"
     response = await client.delete(f"/api/theater/setlists/{setlist_id}", headers=headers)
     assert response.status_code == 403

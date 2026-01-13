@@ -51,7 +51,7 @@ async def get_generations(
 
 @router.get("/id/{member_id}", response_model=MemberDetailResponse)
 async def get_member_by_id(
-    member_id: int,
+    member_id: str,
     service: MemberService = Depends(get_member_service),
 ):
     """
@@ -96,7 +96,7 @@ async def create_member(
     dependencies=[Depends(require_admin)],
 )
 async def update_member(
-    member_id: int,
+    member_id: str,
     data: MemberUpdateRequest,
     service: MemberService = Depends(get_member_service),
 ):
@@ -112,7 +112,7 @@ async def update_member(
     dependencies=[Depends(require_admin)],
 )
 async def delete_member(
-    member_id: int,
+    member_id: str,
     service: MemberService = Depends(get_member_service),
 ):
     """

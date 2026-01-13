@@ -16,7 +16,7 @@ class SocialMedia(BaseModel):
 
 
 class MemberBase(BaseModel):
-    id: int
+    id: str
     name: str
     nickname: str
     generation: Optional[str] = None

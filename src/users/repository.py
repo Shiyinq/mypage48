@@ -49,7 +49,7 @@ class UserRepository:
             {"userId": user_id}, {"$set": {"isEmailVerified": True}}
         )
 
-    async def set_oshi_id(self, user_id: str, oshi_id: int):
+    async def set_oshi_id(self, user_id: str, oshi_id: str):
         return await self.collection.update_one(
             {"userId": user_id}, {"$set": {"oshiId": oshi_id}}
         )

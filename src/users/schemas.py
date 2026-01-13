@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import uuid4
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 from src.achievements.schemas import RankInfo
 from src.auth.schemas import OshiResponse
@@ -74,7 +74,7 @@ class UserInDB(BaseModel):
     memberId: Optional[str] = Field(
         max_length=20, default=None
     )  # Optional for OAuth users
-    oshiId: Optional[int] = Field(default=None)
+    oshiId: Optional[str] = Field(default=None)
     username: str = Field(max_length=50)
     email: EmailStr
     ofcStatus: str = Field(default="Active")
@@ -88,6 +88,13 @@ class UserInDB(BaseModel):
     failedLoginAttempts: int = Field(default=0)
     isAccountLocked: bool = Field(default=False)
     accountLockedUntil: Optional[datetime] = Field(default=None)
+
+    @field_validator("oshiId", mode="before")
+    @classmethod
+    def allow_int_oshi_id(cls, v):
+        if v is None:
+            return None
+        return str(v)
 
 
 class UserCreateResponse(BaseModel):
@@ -136,7 +143,14 @@ class UpdateProfilePictureRequest(BaseModel):
 
 
 class UpdateOshiRequest(BaseModel):
-    oshiId: int
+    oshiId: str
+
+    @field_validator("oshiId", mode="before")
+    @classmethod
+    def allow_int_oshi_id(cls, v):
+        if v is None:
+            return None
+        return str(v)
 
 
 class UpdatePublicStatusRequest(BaseModel):

@@ -173,7 +173,7 @@ class UserService:
             logger.exception(f"Unexpected error in create_user_provider: {str(e)}")
             raise ProviderUserCreationError()
 
-    async def update_oshi(self, user_id: str, oshi_id: int) -> "MessageResponse":
+    async def update_oshi(self, user_id: str, oshi_id: str) -> "MessageResponse":
         """Update the user's Oshi ID"""
         try:
             await self.repository.set_oshi_id(user_id, oshi_id)
@@ -247,7 +247,8 @@ class UserService:
         oshi_response = None
         if user.oshiId:
             try:
-                member_detail = await self.member_service.get_member_by_id(user.oshiId)
+                # Ensure oshiId is string provided to MemberService
+                member_detail = await self.member_service.get_member_by_id(str(user.oshiId))
                 member = member_detail.member
                 oshi_response = OshiResponse(
                     name=member.name,
@@ -369,7 +370,7 @@ class UserService:
             if current_user.oshiId:
                 try:
                     member_detail = await self.member_service.get_member_by_id(
-                        current_user.oshiId
+                        str(current_user.oshiId)
                     )
                     member = member_detail.member
                     oshi_name = member.name
