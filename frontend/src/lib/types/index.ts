@@ -15,3 +15,4 @@ export * from './profile';
 export * from './achievements';
 export * from './storage';
 export * from './admin';
+export * from './events';

@@ -96,11 +96,11 @@
 			perform: () => goto('/theater')
 		},
 		{
-			id: 'nav-shows',
-			title: $t('command.actions.shows'),
+			id: 'nav-events',
+			title: $t('command.actions.events'),
 			icon: Calendar,
 			section: 'navigation',
-			perform: () => goto('/theater/shows')
+			perform: () => goto('/theater/events')
 		},
 		{
 			id: 'nav-members',

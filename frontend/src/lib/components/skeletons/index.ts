@@ -6,3 +6,5 @@ export { default as TicketCardSkeleton } from './TicketCardSkeleton.svelte';
 export { default as AchievementSkeleton } from './AchievementSkeleton.svelte';
 export { default as Top2ShotSkeleton } from './Top2ShotSkeleton.svelte';
 export { default as PolaroidSkeleton } from './PolaroidSkeleton.svelte';
+export { default as EventCardSkeleton } from './EventCardSkeleton.svelte';
+export { default as EventHistorySkeleton } from './EventHistorySkeleton.svelte';
