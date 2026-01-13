@@ -1605,7 +1605,7 @@
     "active": false,
     "description": "Setlist spesial dengan konsep cerah dan playful.",
     "imageUrl": "https://res.cloudinary.com/doig4w6cm/image/fetch/f_webp,q_80,ar_0.75,w_640,c_fill/https://res.cloudinary.com/haymzm4wp/image/upload/v1763233779/tanfbrrf8oexxmmfoouh.jpg",
-    "setlistId": "ef9ba259-460f-4260-8d54-4aa362b659de",
+    "setlistId": "kirakiragirls",
     "songs": [],
     "songDetails": [],
     "title": "KIRA KIRA GIRLS",
@@ -1616,7 +1616,7 @@
     "active": false,
     "description": "Di JKT48 School, para Trainee akan menjadi murid yang siap belajar, berkembang, dan mengeksplorasi potensi mereka.",
     "imageUrl": "https://placehold.co/640x960?text=JKT48+EVENT",
-    "setlistId": "de513614-cdd0-4b09-85c0-357d67e2f2d1",
+    "setlistId": "jkt48school",
     "title": "JKT48 SCHOOL",
     "type": "event"
   },
@@ -1624,7 +1624,7 @@
     "active": false,
     "description": "Seluruh MC terkemuka JKT48 akan bersatu untuk menghadirkan tawa dan canda tiada dua.",
     "imageUrl": "https://placehold.co/640x960?text=JKT48+EVENT",
-    "setlistId": "397fecbc-6313-42a7-9911-d419b411138b",
+    "setlistId": "hostsweethost",
     "title": "HOST SWEET HOST",
     "type": "event"
   },
@@ -1632,7 +1632,7 @@
     "active": false,
     "description": "THE BATTLE: VOCAL QUEENS akan mempertemukan kita dengan para member JKT48 bersuara emas.",
     "imageUrl": "https://placehold.co/640x960?text=JKT48+EVENT",
-    "setlistId": "ad0f02a0-567c-4dae-a10d-10cf2044e2b8",
+    "setlistId": "thebattlevocalqueens",
     "title": "THE BATTLE: VOCAL QUEENS",
     "type": "event"
   },
@@ -1640,7 +1640,7 @@
     "active": false,
     "description": "THE BATTLE: DANCING QUEEN akan menghadirkan para member JKT48 dengan skill dance terbaik!",
     "imageUrl": "https://placehold.co/640x960?text=JKT48+EVENT",
-    "setlistId": "01d3fc7c-ae3f-4641-b6e3-7a2429781f33",
+    "setlistId": "thebattledancingqueens",
     "title": "THE BATTLE: DANCING QUEENS",
     "type": "event"
   },
@@ -1648,7 +1648,7 @@
     "active": false,
     "description": "Menampilkan sisi lain dari kehidupan sekelompok manusia yang bekerja dalam sebuah kantor \"Ahensi Kreatif\".",
     "imageUrl": "https://placehold.co/640x960?text=JKT48+EVENT",
-    "setlistId": "85d1807a-6143-4306-be45-3798d7cc321b",
+    "setlistId": "caturasta",
     "title": "CATUR ASTA",
     "type": "event"
   },
@@ -1656,7 +1656,7 @@
     "active": false,
     "description": "Family48 is back! Dalam acara ini, kita akan bersama-sama menyaksikan member menebak jawaban terbanyak.",
     "imageUrl": "https://placehold.co/640x960?text=JKT48+EVENT",
-    "setlistId": "81d1463b-99ef-4704-82f8-bd1705b8644d",
+    "setlistId": "family48",
     "title": "FAMILY48",
     "type": "event"
   },
@@ -1664,7 +1664,7 @@
     "active": false,
     "description": "QUIT GAME adalah sebuah acara spesial Ramadan yang mengusung tema game show.",
     "imageUrl": "https://placehold.co/640x960?text=JKT48+EVENT",
-    "setlistId": "4aedcfc1-9753-4c50-a619-68fa6c2564f1",
+    "setlistId": "quitgame",
     "title": "QUIT GAME",
     "type": "event"
   },
@@ -1672,7 +1672,7 @@
     "active": false,
     "description": "Panggilan untuk setiap member berprestasi di JKT48 untuk mengikuti Seleksi Penelusuran Minat dan Kemampuan 2025.",
     "imageUrl": "https://placehold.co/640x960?text=JKT48+EVENT",
-    "setlistId": "51183b54-b1c9-4c24-b3a7-6ecd16b626bc",
+    "setlistId": "seleksipmdk",
     "title": "SELEKSI PMDK",
     "type": "event"
   }
