@@ -9,6 +9,8 @@ from src.api_keys.service import ApiKeyService
 from src.auth.csrf_service import CSRFService
 from src.auth.email_service import EmailService
 from src.auth.http_exceptions import InvalidCSRFToken, InvalidJWTToken
+from src.events.repository import EventsRepository
+from src.events.service import EventsService
 from src.http_exceptions import AdminRequired
 from src.auth.repository import AuthRepository
 from src.auth.schemas import UserCurrent
@@ -283,3 +285,15 @@ def get_health_service(
     storage_repo: StorageRepository = Depends(get_storage_repository),
 ) -> HealthService:
     return HealthService(database_instance, storage_repo)
+
+
+def get_events_repository(db=Depends(get_db)) -> EventsRepository:
+    return EventsRepository(db)
+
+
+def get_events_service(
+    repo: EventsRepository = Depends(get_events_repository),
+    config: Settings = Depends(get_settings),
+) -> EventsService:
+    background_runner = AsyncBackgroundRunner()
+    return EventsService(repo, background_runner, config)

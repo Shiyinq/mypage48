@@ -17,7 +17,7 @@ class MemoryItem(BaseModel):
 
     uniqueId: str
     type: MemoryType
-    imageUrl: str
+    imageUrl: Optional[str] = None
     date: str
     time: str
     title: str

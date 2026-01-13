@@ -41,6 +41,8 @@ from src.auth.http_exceptions import (
     SuspiciousActivity,
     VerificationTokenInvalid,
 )
+from src.events.exceptions import EventCreationError, EventNotFoundError
+from src.events.http_exceptions import EventCreateError, EventNotFound
 from src.dashboard.exceptions import StatsFetchError
 from src.dashboard.http_exceptions import StatsFetchFailed
 from src.exceptions import DomainException
@@ -266,6 +268,12 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, MemberNotFound())
     if isinstance(exc, MemberFetchError):
         return await detailed_http_exception_handler(request, MemberFetchHTTPException())
+
+    # Events errors
+    if isinstance(exc, EventNotFoundError):
+        return await detailed_http_exception_handler(request, EventNotFound())
+    if isinstance(exc, EventCreationError):
+        return await detailed_http_exception_handler(request, EventCreateError())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):
