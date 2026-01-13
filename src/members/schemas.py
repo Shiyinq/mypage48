@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from src.tickets.schemas import PaginationMeta
 
@@ -18,7 +18,7 @@ class SocialMedia(BaseModel):
 class MemberBase(BaseModel):
     id: str
     name: str
-    nickname: str
+    nickname: Optional[str] = None
     generation: Optional[str] = None
     jiko: Optional[str] = None
     active: bool = True
@@ -29,6 +29,32 @@ class MemberBase(BaseModel):
     horoscope: Optional[str] = None
     height: Optional[str] = None
     socials: Optional[SocialMedia] = None
+
+    @field_validator(
+        "nickname",
+        "generation",
+        "jiko",
+        "birthdate",
+        "bloodType",
+        "horoscope",
+        "height",
+        "img",
+        mode="before",
+    )
+    @classmethod
+    def parse_empty_string(cls, v, info: ValidationInfo):
+        if v is None:
+            if info.field_name == "img":
+                return "https://placehold.co/600x800?text=No+Photo"
+            return "-"
+        return v
+
+    @field_validator("socials", mode="before")
+    @classmethod
+    def parse_socials(cls, v):
+        if v is None:
+            return {}
+        return v
 
 
 class MemberCreate(MemberBase):
