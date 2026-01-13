@@ -7,7 +7,7 @@ from src.tickets.schemas import TicketInDB, TicketEvent, TicketSeat
 # Minimal test data
 TEST_SETLISTS_DATA = [
     {
-        "setlistId": "pajama-drive",
+        "setlistId": "pajamadrive",
         "title": "Pajama Drive",
         "titleJapanese": "Pajama Drive",
         "description": "A classic setlist.",
@@ -25,7 +25,7 @@ TEST_SETLISTS_DATA = [
         ]
     },
     {
-        "setlistId": "pertaruhan-cinta",
+        "setlistId": "pertaruhancinta",
         "title": "Pertaruhan Cinta",
         "titleJapanese": "Renai Kinshi Jourei",
         "description": "Love Forbidden Ordinance",
@@ -36,7 +36,7 @@ TEST_SETLISTS_DATA = [
         "id": "2"
     },
     {
-        "setlistId": "special-event",
+        "setlistId": "specialevent",
         "title": "Special Event",
         "titleJapanese": "Special Event",
         "description": "Special event.",
@@ -136,7 +136,7 @@ async def test_get_setlist_types(client: AsyncClient, seed_setlists_db):
 @pytest.mark.asyncio
 async def test_get_setlist_by_id(client: AsyncClient, seed_setlists_db):
     """Test getting a setlist by its ID."""
-    setlist_id = "pajama-drive" # Pajama Drive
+    setlist_id = "pajamadrive" # Pajama Drive
     response = await client.get(f"/api/theater/setlists/id/{setlist_id}")
     assert response.status_code == 200
     data = response.json()
@@ -209,7 +209,7 @@ async def test_delete_setlist(client: AsyncClient, db, seed_setlists_db, create_
     """Test deleting a setlist (admin only)."""
     token, user_id, headers = await create_user("adminsetlist", is_admin=True)
 
-    setlist_id = "pajama-drive"
+    setlist_id = "pajamadrive"
     response = await client.delete(f"/api/theater/setlists/{setlist_id}", headers=headers)
     assert response.status_code == 200
     # Check for standardized message
@@ -241,7 +241,7 @@ async def test_update_setlist_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot update a setlist."""
     token, user_id, headers = await create_user("normsupdate")
 
-    setlist_id = "pajama-drive"
+    setlist_id = "pajamadrive"
     payload = {"title": "Updated Title"}
     response = await client.put(f"/api/theater/setlists/{setlist_id}", json=payload, headers=headers)
     assert response.status_code == 403
@@ -251,6 +251,6 @@ async def test_delete_setlist_forbidden(client: AsyncClient, db, create_user):
     """Test that non-admin users cannot delete a setlist."""
     token, user_id, headers = await create_user("normsdelete")
 
-    setlist_id = "pajama-drive"
+    setlist_id = "pajamadrive"
     response = await client.delete(f"/api/theater/setlists/{setlist_id}", headers=headers)
     assert response.status_code == 403
