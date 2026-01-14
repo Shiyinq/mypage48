@@ -2,14 +2,14 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { Calendar } from 'lucide-svelte';
+	import { Calendar, Clock, Users } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { scale } from 'svelte/transition';
 
 	import { EventCardSkeleton } from '$lib/components/skeletons';
 	import { eventsStore, upcomingEvents, upcomingLoading, upcomingError } from '$lib/stores/events';
 
-	const { t } = useTranslation();
+	const { t, locale } = useTranslation();
 
 	onMount(async () => {
 		await eventsStore.loadUpcoming();
@@ -24,7 +24,7 @@
 
 <div class="space-y-6">
 	{#if $upcomingLoading}
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 			{#each Array(6) as _}
 				<EventCardSkeleton />
 			{/each}
@@ -42,12 +42,12 @@
 			description={$t('theater.upcomingEvents.empty')}
 		/>
 	{:else}
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 			{#each $upcomingEvents as event (event.id)}
 				<a
 					href={`https://jkt48.com${event.url}`}
 					target="_blank"
-					class="group relative aspect-video bg-gray-100 dark:bg-zinc-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 block"
+					class="group relative aspect-[2/3] bg-gray-100 dark:bg-zinc-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 block"
 					in:scale={{ duration: 300, start: 0.95 }}
 				>
 					{#if event.imageUrl}
@@ -102,18 +102,32 @@
 						>
 							{event.title}
 						</h3>
-						<div class="text-xs text-gray-300 flex items-center gap-2">
-							<span>{new Date(event.date).toLocaleDateString()}</span>
-							<span>•</span>
-							<span
-								>{new Date(event.date).toLocaleTimeString([], {
-									hour: '2-digit',
-									minute: '2-digit'
-								})}</span
-							>
+						<div class="flex flex-col gap-1.5 pl-0.5">
+							<div class="flex items-center gap-2 text-sm text-gray-200 font-medium">
+								<Calendar class="w-4 h-4 text-gray-400" />
+								<span>
+									{new Date(event.date).toLocaleDateString($locale, {
+										weekday: 'long',
+										day: 'numeric',
+										month: 'long',
+										year: 'numeric'
+									})}
+								</span>
+							</div>
+							<div class="flex items-center gap-2 text-sm text-gray-200 font-medium">
+								<Clock class="w-4 h-4 text-gray-400" />
+								<span
+									>{new Date(event.date).toLocaleTimeString([], {
+										hour: '2-digit',
+										minute: '2-digit'
+									})}</span
+								>
+							</div>
 							{#if event.totalMembers > 0}
-								<span>•</span>
-								<span>{event.totalMembers} Members</span>
+								<div class="flex items-center gap-2 text-sm text-gray-200 font-medium">
+									<Users class="w-4 h-4 text-gray-400" />
+									<span>{event.totalMembers} {$t('theater.events.members')}</span>
+								</div>
 							{/if}
 						</div>
 					</div>

@@ -72,7 +72,7 @@
 <SEO title={$t('theater.title')} path="/theater" description={$t('seo.shows')} />
 
 {#if isLoading}
-	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 		<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 		{#each Array(6) as _}
 			<div
