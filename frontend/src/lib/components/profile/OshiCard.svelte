@@ -17,7 +17,7 @@
 <div class="glass-panel p-0 rounded-3xl overflow-hidden relative">
 	<!-- Banner -->
 	<div
-		class="h-32 w-full bg-[url('https://upload.wikimedia.org/wikipedia/commons/5/53/JKT48_Logo_-_Red_Background_%282016%29.png')] bg-cover bg-center relative"
+		class="h-32 w-full bg-[url('https://upload.wikimedia.org/wikipedia/commons/c/c7/JKT48_FIGHT_Logo_%282026%29.png')] bg-cover bg-[center_30%] relative"
 	>
 		<div class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent"></div>
 	</div>
