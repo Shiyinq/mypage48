@@ -98,21 +98,18 @@
 			description={$t('theater.eventHistory.empty')}
 		/>
 	{:else}
-		<div
-			class="glass-panel rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-800"
-			in:fade={{ duration: 300 }}
-		>
+		<div class="glass-panel rounded-3xl overflow-hidden shadow-sm" in:fade={{ duration: 300 }}>
 			<div class="overflow-x-auto">
 				<table class="w-full text-left border-collapse">
-					<thead
-						class="bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800"
-					>
-						<tr>
-							<th class="px-6 py-4 font-semibold text-themed">{$t('common.date')}</th>
-							<th class="px-6 py-4 font-semibold text-themed">{$t('theater.events.eventName')}</th>
-							<th class="px-6 py-4 font-semibold text-themed">Type</th>
-							<th class="px-6 py-4 font-semibold text-themed">Members</th>
-							<th class="px-6 py-4 font-semibold text-themed text-right">Link</th>
+					<thead>
+						<tr
+							class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
+						>
+							<th class="p-4">{$t('common.date')}</th>
+							<th class="p-4">{$t('theater.events.eventName')}</th>
+							<th class="p-4">{$t('theater.eventHistory.table.type')}</th>
+							<th class="p-4">{$t('theater.eventHistory.table.members')}</th>
+							<th class="p-4 text-right">{$t('theater.eventHistory.table.link')}</th>
 						</tr>
 					</thead>
 					<tbody
@@ -202,7 +199,10 @@
 					class="bg-gray-50 dark:bg-zinc-800/50 border-t border-gray-100 dark:border-zinc-800 px-6 py-4 flex items-center justify-between"
 				>
 					<span class="text-xs text-themed-secondary">
-						Page {$historyPagination.current_page} of {$historyPagination.last_page}
+						{$t('theater.eventHistory.pagination.pageOf', {
+							current: $historyPagination.current_page,
+							last: $historyPagination.last_page
+						})}
 					</span>
 					<div class="flex gap-2">
 						<!-- Previous Button -->

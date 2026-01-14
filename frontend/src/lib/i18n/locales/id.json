@@ -610,7 +610,15 @@
 			"emptyTitle": "Tidak Ada Riwayat",
 			"empty": "Belum ada riwayat event.",
 			"errorTitle": "Gagal memuat riwayat",
-			"errorDesc": "Terjadi kesalahan saat mengambil riwayat event."
+			"errorDesc": "Terjadi kesalahan saat mengambil riwayat event.",
+			"table": {
+				"type": "Tipe",
+				"members": "Member",
+				"link": "Link"
+			},
+			"pagination": {
+				"pageOf": "Halaman {current} dari {last}"
+			}
 		}
 	},
 	"top2shot": {

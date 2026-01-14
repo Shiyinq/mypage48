@@ -438,7 +438,15 @@
 			"emptyTitle": "イベント履歴なし",
 			"empty": "イベント履歴が見つかりません。",
 			"errorTitle": "履歴の読み込みに失敗しました",
-			"errorDesc": "イベント履歴の取得中にエラーが発生しました。"
+			"errorDesc": "イベント履歴の取得中にエラーが発生しました。",
+			"table": {
+				"type": "タイプ",
+				"members": "メンバー",
+				"link": "リンク"
+			},
+			"pagination": {
+				"pageOf": "{last}ページ中 {current}ページ目"
+			}
 		}
 	},
 	"top2shot": {
