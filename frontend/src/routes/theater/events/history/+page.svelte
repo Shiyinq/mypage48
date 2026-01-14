@@ -3,7 +3,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { History, Calendar, ExternalLink, Clock, ChevronLeft, ChevronRight } from 'lucide-svelte';
-	import { EmptyState } from '$lib/components';
+	import { EmptyState, ErrorState } from '$lib/components';
 	import { fade } from 'svelte/transition';
 
 	import { EventHistorySkeleton } from '$lib/components/skeletons';
@@ -11,7 +11,8 @@
 		eventsStore,
 		historyEvents,
 		historyLoading,
-		historyPagination
+		historyPagination,
+		historyError
 	} from '$lib/stores/events';
 
 	const { t } = useTranslation();
@@ -82,21 +83,14 @@
 />
 
 <div class="space-y-6">
-	<div class="flex items-center justify-between">
-		<div>
-			<h1
-				class="text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent"
-			>
-				{$t('theater.eventHistory.title')}
-			</h1>
-			<p class="text-themed-secondary mt-1">
-				{$t('theater.eventHistory.subtitle')}
-			</p>
-		</div>
-	</div>
-
 	{#if $historyLoading}
 		<EventHistorySkeleton rows={10} />
+	{:else if $historyError}
+		<ErrorState
+			title={$t('theater.eventHistory.errorTitle') || 'Failed to load history'}
+			description={$t('theater.eventHistory.errorDesc') || $historyError || ''}
+			onRetry={() => eventsStore.loadHistory($historyPagination.current_page)}
+		/>
 	{:else if $historyEvents.length === 0}
 		<EmptyState
 			icon={History}

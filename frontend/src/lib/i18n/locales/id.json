@@ -593,10 +593,10 @@
 			"errorDesc": "Terjadi kesalahan saat mengambil daftar member."
 		},
 		"upcomingEvents": {
-			"title": "Jadwal Event",
-			"subtitle": "Jadwal dan pengumuman",
 			"emptyTitle": "Tidak ada event",
-			"empty": "Belum ada jadwal event mendatang."
+			"empty": "Belum ada jadwal event mendatang.",
+			"errorTitle": "Gagal memuat jadwal",
+			"errorDesc": "Terjadi kesalahan saat mengambil jadwal event."
 		},
 		"events": {
 			"header": "Event",
@@ -607,7 +607,10 @@
 		"eventHistory": {
 			"title": "Riwayat Event",
 			"subtitle": "Event sebelumnya",
-			"empty": "Belum ada riwayat event."
+			"emptyTitle": "Tidak Ada Riwayat",
+			"empty": "Belum ada riwayat event.",
+			"errorTitle": "Gagal memuat riwayat",
+			"errorDesc": "Terjadi kesalahan saat mengambil riwayat event."
 		}
 	},
 	"top2shot": {
