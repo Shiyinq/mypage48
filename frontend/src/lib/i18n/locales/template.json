@@ -11,6 +11,7 @@
 		"confirm": "",
 		"yes": "",
 		"no": "",
+		"ok": "",
 		"error": "",
 		"success": "",
 		"warning": "",
@@ -19,13 +20,60 @@
 		"filter": "",
 		"filters": "",
 		"all": "",
+		"allSetlists": "",
 		"allData": "",
+		"hasTwoShot": "",
+		"clearFilters": "",
 		"viewDetails": "",
 		"logout": "",
 		"settings": "",
 		"profile": "",
 		"dashboard": "",
-		"language": ""
+		"language": "",
+		"noResults": "",
+		"date": ""
+	},
+	"validation": {
+		"alert": {
+			"title": "",
+			"fileTooLarge": "",
+			"invalidType": "",
+			"noFile": ""
+		}
+	},
+	"seo": {
+		"default": "",
+		"dashboard": "",
+		"login": "",
+		"register": "",
+		"forgotPassword": "",
+		"resetPassword": "",
+		"verifyEmail": "",
+		"profile": "",
+		"history": "",
+		"shows": "",
+		"settings": "",
+		"achievements": "",
+		"memories": "",
+		"top2shot": "",
+		"upload": ""
+	},
+	"nav": {
+		"home": "",
+		"dashboard": "",
+		"setlists": "",
+		"events": "",
+		"theater": "",
+		"achievements": "",
+		"memories": "",
+		"history": "",
+		"upload": "",
+		"profile": "",
+		"settings": "",
+		"newTicket": ""
+	},
+	"header": {
+		"tagline": ""
 	},
 	"auth": {
 		"login": {
@@ -45,44 +93,98 @@
 		"register": {
 			"title": "",
 			"subtitle": "",
-			"nameLabel": "",
-			"namePlaceholder": "",
-			"usernameLabel": "",
-			"usernamePlaceholder": "",
-			"emailLabel": "",
-			"emailPlaceholder": "",
-			"passwordLabel": "",
-			"passwordPlaceholder": "",
-			"confirmPasswordLabel": "",
-			"confirmPasswordPlaceholder": "",
-			"signUp": "",
-			"haveAccount": "",
-			"loginCta": ""
+			"memberId": "",
+			"username": "",
+			"fullName": "",
+			"email": "",
+			"ofcStatus": "",
+			"ofcActive": "",
+			"ofcInactive": "",
+			"pendingRenewal": "",
+			"password": "",
+			"confirmPassword": "",
+			"submit": "",
+			"submitting": "",
+			"hasAccount": "",
+			"signIn": "",
+			"passwordsMismatch": "",
+			"success": "",
+			"failed": ""
 		},
 		"logout": {
 			"success": "",
 			"error": ""
+		},
+		"forgotPassword": {
+			"title": "",
+			"backToLogin": "",
+			"emailLabel": "",
+			"submit": "",
+			"submitting": "",
+			"sent": "",
+			"instruction": "",
+			"successMessage": "",
+			"tryAnother": "",
+			"spamCheck": "",
+			"failed": "",
+			"error": ""
+		},
+		"resetPassword": {
+			"title": "",
+			"subtitle": "",
+			"successTitle": "",
+			"successMessage": "",
+			"newPassword": "",
+			"confirmPassword": "",
+			"submit": "",
+			"submitting": "",
+			"goToLogin": "",
+			"invalidToken": "",
+			"mismatch": "",
+			"tooShort": "",
+			"successToast": "",
+			"failed": ""
+		},
+		"verifyEmail": {
+			"loadingTitle": "",
+			"successTitle": "",
+			"errorTitle": "",
+			"loadingMessage": "",
+			"successMessage": "",
+			"invalidLink": "",
+			"failedMessage": "",
+			"backToLogin": "",
+			"goToLogin": ""
 		}
 	},
 	"dashboard": {
 		"title": "",
+		"error": "",
 		"subtitle": "",
 		"filterTitle": "",
 		"filterSubtitle": "",
 		"theater": {
 			"title": "",
 			"subtitle": "",
-			"shows": "",
+			"events": "",
+			"tickets": "",
 			"spending": "",
 			"totalExpenses": "",
 			"topRow": "",
 			"mostFrequentSeat": "",
 			"topShow": "",
-			"mostWatched": ""
+			"mostWatched": "",
+			"inYear": "",
+			"firstLast": "",
+			"first": "",
+			"last": "",
+			"times": "",
+			"timesWatched": ""
 		},
 		"twoShot": {
 			"title": "",
 			"subtitle": "",
+			"twoShotTitle": "",
 			"collected": "",
 			"spending": "",
 			"totalExpenses": "",
@@ -90,7 +192,10 @@
 			"uniqueIdols": "",
 			"topTwoShot": "",
 			"mostCollected": "",
-			"photos": ""
+			"photos": "",
+			"firstLast": "",
+			"first": "",
+			"last": ""
 		},
 		"seatMap": {
 			"title": "",
@@ -139,16 +244,40 @@
 			"roulette": "",
 			"birthday": ""
 		},
+		"oshiModal": {
+			"title": "",
+			"subtitle": "",
+			"searchPlaceholder": "",
+			"loading": "",
+			"noMembers": "",
+			"generation": "",
+			"cancel": "",
+			"save": ""
+		},
 		"recentActivity": {
 			"title": "",
 			"subtitle": "",
 			"noActivity": "",
 			"viewAllHistory": "",
+			"startTracking": "",
+			"attended": "",
+			"twoShotAt": "",
 			"today": "",
 			"yesterday": "",
 			"daysAgo": "",
 			"weeksAgo": ""
-		}
+		},
+		"publicActivity": {
+			"wrapped": "",
+			"yearSummary": "",
+			"watchedTimes": ""
+		},
+		"profilePicture": {
+			"previewTitle": "",
+			"fileTooLarge": ""
+		},
+		"errorTitle": "",
+		"errorDesc": ""
 	},
 	"settings": {
 		"title": "",
@@ -160,6 +289,19 @@
 			"indonesian": "",
 			"english": "",
 			"japanese": ""
+		},
+		"publicProfile": {
+			"title": "",
+			"subtitle": "",
+			"enable": "",
+			"description": "",
+			"yourLink": "",
+			"allYears": "",
+			"thisYear": "",
+			"uploadError": "",
+			"uploadSuccess": "",
+			"loadErrorTitle": "",
+			"loadErrorDesc": ""
 		},
 		"developer": {
 			"title": "",
@@ -178,6 +320,16 @@
 		"moreSettings": {
 			"title": "",
 			"subtitle": ""
+		},
+		"theme": {
+			"title": "",
+			"subtitle": "",
+			"light": "",
+			"lightDescription": "",
+			"dark": "",
+			"darkDescription": "",
+			"auto": "",
+			"autoDescription": ""
 		}
 	},
 	"history": {
@@ -187,27 +339,164 @@
 		"tableView": "",
 		"noTickets": "",
 		"addFirst": "",
+		"date": "",
+		"time": "",
+		"seat": "",
+		"price": "",
+		"notes": "",
+		"addNote": "",
+		"editNote": "",
+		"noNotes": "",
+		"editDetails": "",
+		"saveNote": "",
+		"eventDetails": "",
+		"actions": "",
+		"show": "",
 		"deleteConfirm": {
 			"title": "",
 			"description": "",
 			"confirm": "",
 			"cancel": ""
-		}
+		},
+		"ticketDeleted": "",
+		"errorTitle": "",
+		"errorDesc": ""
+	},
+	"forms": {
+		"editTicket": "",
+		"newTicket": "",
+		"updateMemory": "",
+		"addToCollection": "",
+		"eventDetails": "",
+		"showTitle": "",
+		"selectSetlist": "",
+		"date": "",
+		"showTime": "",
+		"seatPayment": "",
+		"row": "",
+		"seatNumber": "",
+		"price": "",
+		"ticketId": "",
+		"optional": "",
+		"twoShotDetails": "",
+		"twoShotPhoto": "",
+		"uploadPhoto": "",
+		"changePhoto": "",
+		"memberName": "",
+		"memberNamePlaceholder": "",
+		"type": "",
+		"experienceLog": "",
+		"notesPlaceholder": "",
+		"updateTicket": "",
+		"saveTicket": "",
+		"cancel": "",
+		"uploadTicketPhoto": "",
+		"selectMember": "",
+		"selectMemberDesc": "",
+		"analysisIssue": "",
+		"analysisFailed": "",
+		"ticketUpdateSuccess": "",
+		"ticketUpdateError": ""
 	},
 	"upload": {
 		"title": "",
 		"subtitle": "",
 		"scanTicket": "",
+		"scanDescription": "",
 		"manualEntry": "",
+		"manualDescription": "",
 		"saveTicket": "",
 		"uploadSuccess": "",
-		"uploadError": ""
+		"uploadError": "",
+		"analyzingTitle": "",
+		"analyzingDescription": ""
 	},
 	"shows": {
+		"backTitle": "",
+		"backSubtitle": "",
 		"title": "",
 		"subtitle": "",
 		"totalShows": "",
-		"uniqueShows": ""
+		"uniqueShows": "",
+		"unit": "",
+		"performancesAttended": "",
+		"firstAttended": "",
+		"lastAttended": "",
+		"avgPrice": "",
+		"topRow": "",
+		"mostFrequentedRow": "",
+		"investmentInMemories": "",
+		"row": "",
+		"toTop": "",
+		"notSeen": "",
+		"viewHistory": "",
+		"top": ""
+	},
+	"theater": {
+		"title": "",
+		"subtitle": "",
+		"subNav": {
+			"theater": "",
+			"members": "",
+			"events": ""
+		},
+		"setlists": {
+			"section": "",
+			"events": "",
+			"attendedCount": "",
+			"notAttended": "",
+			"statsOverview": "",
+			"avgPricePerTicket": "",
+			"attendanceRate": "",
+			"ofMax": "",
+			"timeline": "",
+			"firstShow": "",
+			"latestShow": "",
+			"active": "",
+			"inactive": "",
+			"activeEvents": "",
+			"inactiveEvents": "",
+			"errorTitle": "",
+			"errorDesc": "",
+			"emptyTitle": "",
+			"emptyDesc": "",
+			"listErrorTitle": "",
+			"listErrorDesc": ""
+		},
+		"events": {
+			"title": "",
+			"subtitle": "",
+			"eventName": "",
+			"members": ""
+		},
+		"members": {
+			"title": "",
+			"subtitle": "",
+			"comingSoon": "",
+			"errorTitle": "",
+			"errorDesc": ""
+		},
+		"upcomingEvents": {
+			"empty": "",
+			"errorTitle": "",
+			"errorDesc": ""
+		},
+		"eventHistory": {
+			"title": "",
+			"subtitle": "",
+			"emptyTitle": "",
+			"empty": "",
+			"errorTitle": "",
+			"errorDesc": "",
+			"table": {
+				"type": "",
+				"members": "",
+				"link": ""
+			},
+			"pagination": {
+				"pageOf": ""
+			}
+		}
 	},
 	"memories": {
 		"title": "",
@@ -215,20 +504,45 @@
 		"allPhotos": "",
 		"tickets": "",
 		"twoShots": "",
-		"noMemories": ""
+		"noMemories": "",
+		"errorTitle": "",
+		"errorDesc": ""
 	},
 	"achievements": {
 		"title": "",
 		"subtitle": "",
 		"unlocked": "",
 		"locked": "",
-		"progress": ""
+		"progress": "",
+		"errorTitle": "",
+		"errorDesc": ""
 	},
 	"errors": {
-		"pageNotFound": "",
-		"pageNotFoundMessage": "",
-		"serverError": "",
-		"serverErrorMessage": "",
+		"404": {
+			"title": "",
+			"subtitle": "",
+			"description": ""
+		},
+		"500": {
+			"title": "",
+			"subtitle": "",
+			"description": ""
+		},
+		"403": {
+			"title": "",
+			"subtitle": "",
+			"description": ""
+		},
+		"401": {
+			"title": "",
+			"subtitle": "",
+			"description": ""
+		},
+		"default": {
+			"title": "",
+			"subtitle": "",
+			"description": ""
+		},
 		"goHome": "",
 		"tryAgain": ""
 	},
@@ -278,6 +592,194 @@
 			"thu": "",
 			"fri": "",
 			"sat": ""
+		},
+		"relative": {
+			"today": "",
+			"yesterday": "",
+			"daysAgo": "",
+			"weeksAgo": ""
+		}
+	},
+	"member": {
+		"birthdate": "",
+		"horoscope": "",
+		"bloodType": "",
+		"height": "",
+		"yearsOld": "",
+		"notFound": "",
+		"notFoundMessage": "",
+		"close": "",
+		"emptyState": {
+			"title": "",
+			"description": ""
+		}
+	},
+	"top2shot": {
+		"title": "",
+		"subtitle": "",
+		"noData": "",
+		"noDataDesc": "",
+		"mostCollected": "",
+		"cherished": "",
+		"stats2shots": "",
+		"statsSpent": "",
+		"budgetSplit": "",
+		"theaterTickets": "",
+		"collection": "",
+		"total": "",
+		"rankingTitle": "",
+		"rankingSubtitle": "",
+		"totalPhotos": "",
+		"photos": "",
+		"errorTitle": "",
+		"errorDesc": ""
+	},
+	"admin": {
+		"dashboard": {
+			"title": "",
+			"subtitle": "",
+			"tabs": {
+				"users": "",
+				"members": "",
+				"setlists": ""
+			}
+		},
+		"users": {
+			"title": "",
+			"searchPlaceholder": "",
+			"noUsersFound": "",
+			"noMoreUsers": "",
+			"table": {
+				"userInfo": "",
+				"email": "",
+				"status": "",
+				"created": ""
+			},
+			"status": {
+				"verified": "",
+				"unverified": "",
+				"locked": ""
+			}
+		},
+		"members": {
+			"title": "",
+			"addMember": "",
+			"searchPlaceholder": "",
+			"noMembersFound": "",
+			"noMoreMembers": "",
+			"table": {
+				"memberInfo": "",
+				"generation": "",
+				"jikoshoukai": "",
+				"status": "",
+				"actions": "",
+				"gen": "",
+				"active": "",
+				"graduated": ""
+			},
+			"modal": {
+				"addTitle": "",
+				"editTitle": "",
+				"name": "",
+				"nameRequired": "",
+				"nickname": "",
+				"generation": "",
+				"imageUrl": "",
+				"jikoshoukai": "",
+				"socials": "",
+				"accountStatus": "",
+				"active": "",
+				"inactive": "",
+				"create": "",
+				"save": "",
+				"saving": "",
+				"created": "",
+				"updated": "",
+				"deleted": "",
+				"failedSave": "",
+				"failedDelete": "",
+				"deleteTitle": "",
+				"deleteDesc": ""
+			}
+		},
+		"setlists": {
+			"title": "",
+			"addSetlist": "",
+			"searchPlaceholder": "",
+			"noSetlistsFound": "",
+			"noMoreSetlists": "",
+			"table": {
+				"setlistInfo": "",
+				"songs": "",
+				"japaneseTitle": "",
+				"type": "",
+				"status": "",
+				"actions": "",
+				"theaterSetlist": "",
+				"specialEvent": "",
+				"active": "",
+				"inactive": ""
+			},
+			"modal": {
+				"addTitle": "",
+				"editTitle": "",
+				"title": "",
+				"titleRequired": "",
+				"japaneseTitle": "",
+				"type": "",
+				"description": "",
+				"posterUrl": "",
+				"setlistStatus": "",
+				"create": "",
+				"save": "",
+				"saving": "",
+				"created": "",
+				"updated": "",
+				"deleted": "",
+				"failedSave": "",
+				"failedDelete": "",
+				"deleteTitle": "",
+				"deleteDesc": ""
+			}
+		}
+	},
+	"command": {
+		"placeholder": "",
+		"noResults": "",
+		"footer": {
+			"navigate": "",
+			"select": ""
+		},
+		"sections": {
+			"navigation": "",
+			"ticketing": "",
+			"theme": "",
+			"language": "",
+			"account": "",
+			"admin": ""
+		},
+		"actions": {
+			"home": "",
+			"theater": "",
+			"events": "",
+			"members": "",
+			"history": "",
+			"achievements": "",
+			"memories": "",
+			"profile": "",
+			"settings": "",
+			"scanTicket": "",
+			"manualTicket": "",
+			"lightMode": "",
+			"darkMode": "",
+			"autoMode": "",
+			"langId": "",
+			"langEn": "",
+			"langJa": "",
+			"logout": "",
+			"adminDashboard": "",
+			"adminMembers": "",
+			"adminSetlists": ""
 		}
 	}
 }
