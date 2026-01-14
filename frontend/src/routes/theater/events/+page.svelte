@@ -3,11 +3,11 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { Calendar } from 'lucide-svelte';
-	import { EmptyState } from '$lib/components';
+	import { EmptyState, ErrorState } from '$lib/components';
 	import { scale } from 'svelte/transition';
 
 	import { EventCardSkeleton } from '$lib/components/skeletons';
-	import { eventsStore, upcomingEvents, upcomingLoading } from '$lib/stores/events';
+	import { eventsStore, upcomingEvents, upcomingLoading, upcomingError } from '$lib/stores/events';
 
 	const { t } = useTranslation();
 
@@ -17,31 +17,24 @@
 </script>
 
 <SEO
-	title={$t('theater.upcomingEvents.title')}
+	title={$t('theater.events.title')}
 	path="/theater/events"
-	description={$t('theater.upcomingEvents.subtitle')}
+	description={$t('theater.events.subtitle')}
 />
 
 <div class="space-y-6">
-	<div class="flex items-center justify-between">
-		<div>
-			<h1
-				class="text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent"
-			>
-				{$t('theater.upcomingEvents.title')}
-			</h1>
-			<p class="text-themed-secondary mt-1">
-				{$t('theater.upcomingEvents.subtitle')}
-			</p>
-		</div>
-	</div>
-
 	{#if $upcomingLoading}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 			{#each Array(6) as _}
 				<EventCardSkeleton />
 			{/each}
 		</div>
+	{:else if $upcomingError}
+		<ErrorState
+			title={$t('theater.upcomingEvents.errorTitle') || 'Failed to load events'}
+			description={$t('theater.upcomingEvents.errorDesc') || $upcomingError || ''}
+			onRetry={() => eventsStore.loadUpcoming(true)}
+		/>
 	{:else if $upcomingEvents.length === 0}
 		<EmptyState
 			icon={Calendar}

@@ -476,14 +476,17 @@
 			"errorDesc": "Something went wrong while fetching the member list."
 		},
 		"upcomingEvents": {
-			"title": "Upcoming Events",
-			"subtitle": "Schedule and announcements",
-			"empty": "No upcoming events scheduled at the moment."
+			"empty": "No upcoming events scheduled at the moment.",
+			"errorTitle": "Failed to load schedule",
+			"errorDesc": "Something went wrong while fetching upcoming events."
 		},
 		"eventHistory": {
 			"title": "Event History",
 			"subtitle": "Past events",
-			"empty": "No event history found."
+			"emptyTitle": "No Event History",
+			"empty": "No event history found.",
+			"errorTitle": "Failed to load history",
+			"errorDesc": "Something went wrong while fetching event history."
 		}
 	},
 	"memories": {

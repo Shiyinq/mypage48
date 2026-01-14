@@ -168,3 +168,11 @@ export const historyPagination = {
 export const historyLoading = {
     subscribe: (cb: (val: boolean) => void) => eventsStore.subscribe(val => cb(val.history.loading))
 };
+
+export const upcomingError = {
+    subscribe: (cb: (val: string | null) => void) => eventsStore.subscribe(val => cb(val.upcoming.error))
+};
+
+export const historyError = {
+    subscribe: (cb: (val: string | null) => void) => eventsStore.subscribe(val => cb(val.history.error))
+};
