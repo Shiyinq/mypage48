@@ -1,0 +1,12 @@
+# Data
+data/**/*.json
+data/*.json
+
+# Sensitive
+cookies.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
