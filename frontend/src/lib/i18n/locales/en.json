@@ -486,7 +486,15 @@
 			"emptyTitle": "No Event History",
 			"empty": "No event history found.",
 			"errorTitle": "Failed to load history",
-			"errorDesc": "Something went wrong while fetching event history."
+			"errorDesc": "Something went wrong while fetching event history.",
+			"table": {
+				"type": "Type",
+				"members": "Members",
+				"link": "Link"
+			},
+			"pagination": {
+				"pageOf": "Page {current} of {last}"
+			}
 		}
 	},
 	"memories": {
