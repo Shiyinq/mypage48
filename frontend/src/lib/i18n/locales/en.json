@@ -466,7 +466,8 @@
 		"events": {
 			"title": "Theater Events",
 			"subtitle": "Browse theater events",
-			"eventName": "Event Name"
+			"eventName": "Event Name",
+			"members": "Members"
 		},
 		"members": {
 			"title": "Members",

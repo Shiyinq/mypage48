@@ -21,7 +21,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 <div
 	on:click={onClick}
-	class="relative overflow-hidden rounded-3xl h-64 cursor-pointer group shadow-md hover:shadow-xl transition-all duration-500 bg-gray-900"
+	class="relative overflow-hidden rounded-3xl aspect-[2/3] cursor-pointer group shadow-md hover:shadow-xl transition-all duration-500 bg-gray-900"
 >
 	<!-- Background Image -->
 	<img
@@ -40,7 +40,7 @@
 	<div class="relative z-10 flex flex-col h-full justify-between p-6">
 		<div>
 			<div class="flex justify-between items-start gap-2 mb-1">
-				<h3 class="text-xl font-black text-white leading-tight drop-shadow-md line-clamp-2">
+				<h3 class="text-xl font-black text-white leading-tight drop-shadow-md line-clamp-4">
 					{show.title}
 				</h3>
 				{#if isMostWatched}

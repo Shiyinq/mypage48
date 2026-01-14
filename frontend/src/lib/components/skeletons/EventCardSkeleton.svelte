@@ -6,7 +6,7 @@
 </script>
 
 <div
-	class="relative aspect-video bg-gray-100 dark:bg-zinc-800 rounded-2xl overflow-hidden shadow-sm animate-pulse {className}"
+	class="relative aspect-[2/3] bg-gray-100 dark:bg-zinc-800 rounded-2xl overflow-hidden shadow-sm animate-pulse {className}"
 	role="status"
 	aria-label="Loading Event"
 >
