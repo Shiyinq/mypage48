@@ -2,7 +2,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query, status
 
-from src.dependencies import get_member_service, require_admin
+from src.auth.schemas import UserCurrent
+from src.dependencies import get_current_user, get_member_service, require_admin
 from src.logging_config import create_logger
 from src.members.schemas import (
     MemberCreateRequest,
@@ -27,6 +28,7 @@ async def get_members(
     ),
     search: Optional[str] = Query(None, description="Search by name or nickname"),
     service: MemberService = Depends(get_member_service),
+    _current_user: UserCurrent = Depends(get_current_user),
 ):
     """
     Get all JKT48 members with optional filtering.
@@ -42,6 +44,7 @@ async def get_members(
 @router.get("/generations", response_model=List[str])
 async def get_generations(
     service: MemberService = Depends(get_member_service),
+    _current_user: UserCurrent = Depends(get_current_user),
 ):
     """
     Get list of all available generations.
@@ -53,6 +56,7 @@ async def get_generations(
 async def get_member_by_id(
     member_id: str,
     service: MemberService = Depends(get_member_service),
+    _current_user: UserCurrent = Depends(get_current_user),
 ):
     """
     Get a specific JKT48 member by their ID.
@@ -64,6 +68,7 @@ async def get_member_by_id(
 async def get_member_by_nickname(
     nickname: str,
     service: MemberService = Depends(get_member_service),
+    _current_user: UserCurrent = Depends(get_current_user),
 ):
     """
     Get a specific JKT48 member by their nickname.

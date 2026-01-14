@@ -50,6 +50,7 @@ async def get_setlists(
 @router.get("/types", response_model=List[str])
 async def get_types(
     service: SetlistsService = Depends(get_setlists_service),
+    _current_user: UserCurrent = Depends(get_current_user),
 ):
     """
     Get list of all available setlist types.
@@ -61,6 +62,7 @@ async def get_types(
 async def get_setlist_by_id(
     setlist_id: str,
     service: SetlistsService = Depends(get_setlists_service),
+    _current_user: UserCurrent = Depends(get_current_user),
 ):
     """
     Get a specific setlist by its ID.
@@ -85,6 +87,7 @@ async def get_setlist_detail(
 async def get_setlist_by_title(
     title: str,
     service: SetlistsService = Depends(get_setlists_service),
+    _current_user: UserCurrent = Depends(get_current_user),
 ):
     """
     Get a specific setlist by its title.
