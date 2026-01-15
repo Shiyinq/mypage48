@@ -166,6 +166,7 @@
 		"theater": {
 			"title": "公演",
 			"subtitle": "観覧履歴の概要",
+			"shows": "公演",
 			"events": "イベント",
 			"tickets": "チケット",
 			"spending": "支出",
