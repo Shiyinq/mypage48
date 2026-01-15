@@ -283,3 +283,48 @@ async def test_get_dashboard_stats_extremes(client: AsyncClient, db, create_user
 
     assert extremes["first"]["title"] == "First Show"
     assert extremes["last"]["title"] == "Last Show"
+
+    
+@pytest.mark.asyncio
+async def test_dashboard_stats_resolves_minio_urls(client: AsyncClient, db, create_user, create_ticket):
+    """Test that dashboard stats resolve MinIO paths to presigned URLs."""
+    token, user_id, headers = await create_user("dashboard_minio")
+
+    # Mock StorageService
+    mock_storage_service = MagicMock()
+    mock_storage_service.resolve_url.side_effect = lambda x: f"https://minio.example.com/{x}?signed=true" if x and "twoshot" in x else x
+
+    # Override dependency
+    app.dependency_overrides[get_storage_service] = lambda: mock_storage_service
+
+    try:
+        # Create ticket with MinIO-style image path
+        await create_ticket(user_id, {
+            "title": "MinIO Show",
+            "date": "2024-09-01",
+            "price": 50000,
+            "two_shot": {
+                "member_name": "MinIO Member",
+                "price": 100000,
+                "imageUrl": "twoshot/user123/image.jpg",
+            }
+        })
+
+        response = await client.get("/api/dashboard/stats?year=2024", headers=headers)
+        assert response.status_code == 200
+
+        data = response.json()
+        
+        # Verify URL was resolved in top_2_shot
+        top_member = data["two_shot"]["top_2_shot"]
+        assert top_member["name"] == "MinIO Member"
+        assert top_member["image"] == "https://minio.example.com/twoshot/user123/image.jpg?signed=true"
+
+        # Verify URL was resolved in extremes
+        extremes = data["two_shot"]["extremes"]
+        first = extremes["first"]
+        assert first["image"] == "https://minio.example.com/twoshot/user123/image.jpg?signed=true"
+
+    finally:
+        # Clean up override
+        del app.dependency_overrides[get_storage_service]

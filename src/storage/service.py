@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from src.memories.schemas import MemoryItem, TopTwoShotResponse
     from src.tickets.schemas import TicketResponse
     from src.users.schemas import PublicUserResponse, ProfileFullResponse
+    from src.dashboard.schemas import DashboardStatsResponse
 
 from minio.error import S3Error
 
@@ -229,6 +230,32 @@ class StorageService:
                     member["image"] = self.resolve_url(member["image"])
                     
         return type(response)(**response_dict)
+
+    def resolve_dashboard_stats(self, stats: "DashboardStatsResponse") -> "DashboardStatsResponse":
+        """Resolve images in dashboard statistics to presigned URLs."""
+        # We need to construct a new dictionary or copy to mutate it
+        stats_dict = stats.model_dump()
+
+        # 1. Resolve Top 2-Shot Member
+        if (
+            stats_dict.get("two_shot") 
+            and stats_dict["two_shot"].get("top_2_shot") 
+            and stats_dict["two_shot"]["top_2_shot"].get("image")
+        ):
+            stats_dict["two_shot"]["top_2_shot"]["image"] = self.resolve_url(
+                stats_dict["two_shot"]["top_2_shot"]["image"]
+            )
+
+        # 2. Resolve Extremes (First/Last) in Two Shot
+        if stats_dict.get("two_shot") and stats_dict["two_shot"].get("extremes"):
+            extremes = stats_dict["two_shot"]["extremes"]
+            if extremes.get("first") and extremes["first"].get("image"):
+                extremes["first"]["image"] = self.resolve_url(extremes["first"]["image"])
+            if extremes.get("last") and extremes["last"].get("image"):
+                extremes["last"]["image"] = self.resolve_url(extremes["last"]["image"])
+
+        return type(stats)(**stats_dict)
+
 
 
 

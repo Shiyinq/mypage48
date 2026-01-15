@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, Query
 from src.auth.schemas import UserCurrent
 from src.dashboard.schemas import DashboardStatsResponse
 from src.dashboard.service import DashboardService
-from src.dependencies import get_current_user, get_dashboard_service
+from src.storage.service import StorageService
+from src.dependencies import get_current_user, get_dashboard_service, get_storage_service
 
 router = APIRouter()
 
@@ -19,6 +20,7 @@ async def get_dashboard_stats(
     is_all_data: bool = Query(False, description="Whether to return all data"),
     current_user: UserCurrent = Depends(get_current_user),
     service: DashboardService = Depends(get_dashboard_service),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> DashboardStatsResponse:
     """
     Get dashboard statistics for the current user.
@@ -28,10 +30,11 @@ async def get_dashboard_stats(
     - **end_month**: End month for filtering (0 = January, 11 = December)
     - **is_all_data**: If true, returns stats for all data regardless of year/month filters
     """
-    return await service.get_dashboard_stats(
+    stats = await service.get_dashboard_stats(
         user_id=current_user.userId,
         year=year,
         start_month=start_month,
         end_month=end_month,
         is_all_data=is_all_data,
     )
+    return storage_service.resolve_dashboard_stats(stats)

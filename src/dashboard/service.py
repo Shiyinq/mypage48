@@ -1,4 +1,3 @@
-"""Dashboard Service - Business logic for dashboard statistics."""
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
