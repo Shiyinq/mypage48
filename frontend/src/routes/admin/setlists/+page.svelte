@@ -15,7 +15,8 @@
 
 	// Store state
 	$: setlistsList = $adminStore.setlists.data;
-	$: setlistsLoading = $adminStore.setlists.loading;
+	$: isLoading = $adminStore.setlists.loading;
+	$: error = $adminStore.setlists.error;
 	$: setlistsHasMore = $adminStore.setlists.hasMore;
 
 	// Search state
@@ -64,7 +65,7 @@
 	}
 
 	function loadMoreSetlists() {
-		if (setlistsHasMore && !setlistsLoading) {
+		if (setlistsHasMore && !isLoading) {
 			adminStore.loadSetlists();
 		}
 	}
@@ -156,7 +157,7 @@
 		</button>
 	</div>
 
-	{#if isInitialLoad && setlistsLoading}
+	{#if isInitialLoad && isLoading}
 		<TableSkeleton
 			rows={10}
 			columns={[
@@ -177,7 +178,7 @@
 		<!-- Infinite Scroll Sentinel -->
 		{#if setlistsHasMore}
 			<div class="mt-4" use:infiniteScroll on:intersect={loadMoreSetlists}>
-				{#if setlistsLoading}
+				{#if isLoading}
 					<TableSkeleton
 						rows={3}
 						columns={[

@@ -32,17 +32,16 @@
 	$: filteredTickets = state.list;
 	$: pagination = state.pagination;
 	$: filters = state.filters;
+	$: isLoading = state.loading;
+	$: error = state.error;
 
 	// Main Component Logic
 	let viewMode: 'GRID' | 'TABLE' = 'GRID';
 	let deleteId: string | null = null;
 	let isDeleting = false;
-	let error = false;
 
 	/* Loading State */
 	let mounted = false;
-	let isLoadingMore = false;
-	let isLoading = false;
 
 	onMount(() => {
 		mounted = true;
@@ -54,29 +53,19 @@
 	});
 
 	async function loadTickets(page: number, currentFilters: TicketFilters = {}) {
-		if (isLoadingMore) return;
-
-		if (page === 1) isLoading = true;
-		else isLoadingMore = true;
-
+		// Store handles locking if needed, or we rely on UI not triggering double loads
 		try {
-			error = false;
 			// Use store action
 			await ticketsStore.load(page, currentFilters);
-
 			isInitialDataLoaded.set(true);
 		} catch (e) {
-			logger.error('Failed to load tickets', e, { context: 'HistoryPage' });
-			error = true;
+			// Error logged and handled by store
 			showToast($t('history.errorTitle') || 'Failed to load tickets', 'error');
-		} finally {
-			isLoadingMore = false;
-			isLoading = false;
 		}
 	}
 
 	function handleIntersect() {
-		if (!mounted || isLoadingMore || !pagination.hasMore) return;
+		if (!mounted || isLoading || !pagination.hasMore) return;
 		loadTickets(pagination.page + 1, filters);
 	}
 
@@ -99,7 +88,7 @@
 			await ticketsStore.updateNote(ticketId, note);
 			showToast($t('history.noteSaved'), 'success');
 		} catch (err) {
-			logger.error('Failed to update note', err, { context: 'HistoryPage' });
+			// Error logged by store
 			showToast($t('common.error'), 'error');
 		}
 	};
@@ -122,7 +111,7 @@
 			deleteId = null;
 			showToast($t('history.ticketDeleted'), 'success');
 		} catch (e) {
-			logger.error('Failed to delete ticket', e, { context: 'HistoryPage' });
+			// Error logged by store
 			showToast($t('common.error'), 'error');
 		} finally {
 			isDeleting = false;
@@ -184,7 +173,7 @@
 	{#if error && filteredTickets.length === 0}
 		<ErrorState
 			title={$t('history.errorTitle') || 'Failed to load tickets'}
-			description={$t('history.errorDesc') || 'Something went wrong while fetching your history.'}
+			description={$t('history.errorDesc') || error || ''}
 			onRetry={() => loadTickets(1, filters)}
 		/>
 	{:else if isLoading && filteredTickets.length === 0}
@@ -239,7 +228,7 @@
 				on:intersect={handleIntersect}
 				class="w-full py-6 flex justify-center"
 			>
-				{#if isLoadingMore}
+				{#if isLoading}
 					{#if viewMode === 'GRID'}
 						<div class="w-full">
 							<TicketCardSkeleton count={3} />

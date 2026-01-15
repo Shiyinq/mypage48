@@ -21,6 +21,9 @@
 		await eventsStore.loadHistory(1);
 	});
 
+	$: isLoading = $historyLoading;
+	$: error = $historyError;
+
 	function handlePageChange(page: number) {
 		eventsStore.loadHistory(page);
 	}
@@ -83,12 +86,12 @@
 />
 
 <div class="space-y-6">
-	{#if $historyLoading}
+	{#if isLoading}
 		<EventHistorySkeleton rows={10} />
-	{:else if $historyError}
+	{:else if error}
 		<ErrorState
 			title={$t('theater.eventHistory.errorTitle') || 'Failed to load history'}
-			description={$t('theater.eventHistory.errorDesc') || $historyError || ''}
+			description={$t('theater.eventHistory.errorDesc') || error || ''}
 			onRetry={() => eventsStore.loadHistory($historyPagination.current_page)}
 		/>
 	{:else if $historyEvents.length === 0}

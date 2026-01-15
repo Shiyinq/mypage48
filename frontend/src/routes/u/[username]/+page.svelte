@@ -149,7 +149,7 @@
 		<!-- Header Section -->
 		<PublicProfileHeader
 			{profile}
-			isCurrentUser={!!($userProfile && $userProfile.username === profile.username)}
+			isCurrentUser={!!($userProfile.data && $userProfile.data.username === profile.username)}
 			{isUploading}
 			on:triggerUpload={() => fileInput?.click()}
 		/>

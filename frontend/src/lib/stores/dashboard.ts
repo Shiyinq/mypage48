@@ -1,6 +1,7 @@
 import { writable, get } from 'svelte/store';
 import type { DashboardStats } from '$lib/types';
 import { dashboard } from '$lib/apis/dashboard';
+import { logger } from '$lib/utils/logger';
 
 const currentYear = new Date().getFullYear();
 
@@ -21,7 +22,15 @@ export const dashboardFilter = writable<DashboardFilterState>({
 
 // Create smart store for stats
 function createDashboardStore() {
-	const { subscribe, set } = writable<DashboardStats | null>(null);
+	const { subscribe, set, update } = writable<{
+		data: DashboardStats | null;
+		loading: boolean;
+		error: string | null;
+	}>({
+		data: null,
+		loading: false,
+		error: null
+	});
 	const lastFetchedFilter = writable<string>('');
 
 	return {
@@ -34,21 +43,29 @@ function createDashboardStore() {
 			const lastKey = get(lastFetchedFilter);
 			const currentData = get({ subscribe });
 
-			if (currentData && lastKey === currentFilterKey) {
+			if (currentData.data && lastKey === currentFilterKey) {
 				return;
 			}
 
-			const stats = await dashboard.getStats({
-				year: filter.selectedYear,
-				startMonth: filter.startMonth,
-				endMonth: filter.endMonth,
-				isAllData: filter.isAllData
-			});
-			set(stats);
-			lastFetchedFilter.set(currentFilterKey);
+			update((s) => ({ ...s, loading: true, error: null }));
+
+			try {
+				const stats = await dashboard.getStats({
+					year: filter.selectedYear,
+					startMonth: filter.startMonth,
+					endMonth: filter.endMonth,
+					isAllData: filter.isAllData
+				});
+				set({ data: stats, loading: false, error: null });
+				lastFetchedFilter.set(currentFilterKey);
+			} catch (e) {
+				logger.error('Failed to load dashboard stats', e, { context: 'DashboardStore' });
+				update((s) => ({ ...s, loading: false, error: 'Failed to load dashboard stats' }));
+				// Optional: don't throw, let store error state handle UI
+			}
 		},
 		reset: () => {
-			set(null);
+			set({ data: null, loading: false, error: null });
 			lastFetchedFilter.set('');
 			dashboardFilter.set({
 				selectedYear: new Date().getFullYear(),
@@ -58,7 +75,7 @@ function createDashboardStore() {
 			});
 		},
 		invalidate: () => {
-			set(null);
+			set({ data: null, loading: false, error: null });
 			lastFetchedFilter.set('');
 		}
 	};

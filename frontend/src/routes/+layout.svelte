@@ -93,7 +93,7 @@
 	$: if (!$isAuthenticated) {
 		hasFetchedInitialData = false;
 		isInitialDataLoaded.set(false);
-		userProfile.set(null);
+		userProfile.reset();
 	}
 
 	// Fetch profile when authenticated
@@ -103,7 +103,7 @@
 		hasFetchedInitialData = true;
 
 		// Fetch profile if needed
-		const currentProfile = get(userProfile);
+		const currentProfile = get(userProfile).data;
 
 		try {
 			if (!currentProfile) {
@@ -117,7 +117,7 @@
 					profileOshiTwoShots: fullResponse.oshiTwoShots,
 					profileRecentActivity: fullResponse.recentActivity
 				};
-				userProfile.set(profileWithStats);
+				userProfile.set({ data: profileWithStats, loading: false, error: null });
 			}
 		} catch (err) {
 			logger.error('Failed to load initial data', err, { context: 'Layout' });

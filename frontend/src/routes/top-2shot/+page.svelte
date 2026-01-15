@@ -17,8 +17,6 @@
 
 	/* Loading State */
 	let mounted = false;
-	let error = false;
-	let loadingData = false;
 
 	// Default stats if store is null
 	let defaultStats: TopTwoShotResponse = {
@@ -28,6 +26,8 @@
 	};
 
 	$: stats = $topTwoShotStore.data || defaultStats;
+	$: isLoading = $topTwoShotStore.loading || !mounted;
+	$: error = $topTwoShotStore.error;
 
 	onMount(async () => {
 		mounted = true;
@@ -38,23 +38,17 @@
 
 	async function fetchTopTwoShot() {
 		// If data exists and is not expired, no need to show loading
+		// Store load check handles cache expiration check too, but we can double check here or just call load()
 		if ($topTwoShotStore.data && !isCacheExpired($topTwoShotStore.lastUpdated)) return;
 
 		try {
-			loadingData = true;
-			error = false;
-			// Use store load
 			await topTwoShotStore.load();
 		} catch (e) {
-			logger.error('Failed to load top 2shot', e, { context: 'Top2ShotPage' });
-			error = true;
+			// Error state is handled by store, we just show toast
 			showToast($t('top2shot.errorTitle') || 'Failed to load data', 'error');
-		} finally {
-			loadingData = false;
 		}
 	}
 
-	$: isLoading = !mounted || loadingData;
 	$: mostCollected = stats.ranking.length > 0 ? stats.ranking[0] : undefined;
 </script>
 
@@ -77,6 +71,7 @@
 		<ErrorState
 			title={$t('top2shot.errorTitle') || 'Failed to load data'}
 			description={$t('top2shot.errorDesc') ||
+				error ||
 				'Something went wrong while fetching the leaderboard.'}
 			onRetry={fetchTopTwoShot}
 		/>

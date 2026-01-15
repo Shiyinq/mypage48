@@ -6,7 +6,6 @@
 	import { type SetlistDetailResponse } from '$lib/apis/setlists';
 
 	import { ticketsStore, showToast } from '$lib/stores';
-	import { logger } from '$lib/utils/logger';
 	import { setlistsStore } from '$lib/stores/theater';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { ArrowLeft, Ticket, DollarSign, Trophy } from 'lucide-svelte';
@@ -24,26 +23,21 @@
 	// Get setlistId from URL
 	$: setlistId = $page.params.setlistId;
 
-	// State
+	// State from store
 	let detail: SetlistDetailResponse | null = null;
-	let loading = true;
-	let error = false;
+	$: isLoading = $setlistsStore.detailLoading;
+	$: error = $setlistsStore.detailError;
 	let deleteId: string | null = null;
 	let isDeleting = false;
 
 	async function fetchDetail() {
 		if (!setlistId) return;
 		try {
-			loading = true;
-			error = false;
 			// Use store loadDetail which handles caching
 			detail = await setlistsStore.loadDetail(setlistId);
 		} catch (e) {
-			logger.error('Failed to fetch setlist detail', e, { context: 'SetlistDetailPage' });
-			error = true;
-			showToast('Failed to load setlist detail', 'error');
-		} finally {
-			loading = false;
+			// Error is handled by store
+			showToast($t('theater.setlists.errorTitle') || 'Failed to load detail', 'error');
 		}
 	}
 
@@ -61,7 +55,7 @@
 			await fetchDetail();
 			showToast($t('history.ticketDeleted'), 'success');
 		} catch (e) {
-			logger.error('Failed to delete ticket', e, { context: 'SetlistDetailPage' });
+			// Error is handled by ticketsStore internally
 			showToast('Failed to delete ticket', 'error');
 		} finally {
 			isDeleting = false;
@@ -87,7 +81,7 @@
 	onConfirm={confirmDelete}
 />
 
-{#if loading}
+{#if isLoading}
 	<div class="animate-pulse space-y-8 max-w-5xl mx-auto">
 		<!-- New Hero Skeleton -->
 		<div class="h-[400px] w-full bg-gray-200 dark:bg-zinc-800 rounded-3xl"></div>
@@ -102,7 +96,8 @@
 {:else if error}
 	<ErrorState
 		title={$t('theater.setlists.errorTitle') || 'Failed to load detail'}
-		description={$t('theater.setlists.errorDesc') ||
+		description={error ||
+			$t('theater.setlists.errorDesc') ||
 			'Something went wrong while fetching the setlist information.'}
 		onRetry={fetchDetail}
 	/>

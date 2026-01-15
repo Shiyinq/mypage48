@@ -4,41 +4,72 @@ import { members as membersApi, type Member } from '$lib/apis/members';
 import { logger } from '$lib/utils/logger';
 
 // --- Setlists Store ---
+interface SetlistsState {
+	data: Setlist[] | null;
+	loading: boolean;
+	error: string | null;
+	detailCache: Record<string, SetlistDetailResponse>;
+	detailLoading: boolean;
+	detailError: string | null;
+}
+
 function createSetlistsStore() {
-	const { subscribe, set } = writable<Setlist[] | null>(null);
-	const detailCache = writable<Record<string, SetlistDetailResponse>>({});
+	const initialState: SetlistsState = {
+		data: null,
+		loading: false,
+		error: null,
+		detailCache: {},
+		detailLoading: false,
+		detailError: null
+	};
+
+	const { subscribe, set, update } = writable<SetlistsState>(initialState);
 
 	return {
 		subscribe,
-		set,
 		load: async () => {
-			if (get({ subscribe })) return; // Use cache if available
+			const state = get({ subscribe });
+			if (state.data) return; // Use cache if available
+
+			update((s) => ({ ...s, loading: true, error: null }));
+
 			try {
 				const response = await setlistsApi.getAll();
-				set(response.setlists);
+				update((s) => ({
+					...s,
+					data: response.setlists,
+					loading: false,
+					error: null
+				}));
 				maxAttendanceStore.set(response.maxAttendance || 1);
 			} catch (e) {
 				logger.error('Failed to load setlists', e, { context: 'SetlistsStore' });
+				update((s) => ({ ...s, loading: false, error: 'Failed to load setlists' }));
 				throw e;
 			}
 		},
 		loadDetail: async (id: string) => {
-			const cache = get(detailCache);
-			if (cache[id]) return cache[id];
+			const state = get({ subscribe });
+			if (state.detailCache[id]) return state.detailCache[id];
+
+			update((s) => ({ ...s, detailLoading: true, detailError: null }));
 
 			try {
 				const detail = await setlistsApi.getDetail(id);
-				detailCache.update((c) => ({ ...c, [id]: detail }));
+				update((s) => ({
+					...s,
+					detailCache: { ...s.detailCache, [id]: detail },
+					detailLoading: false,
+					detailError: null
+				}));
 				return detail;
 			} catch (e) {
 				logger.error('Failed to load details', e, { context: 'SetlistsStore' });
+				update((s) => ({ ...s, detailLoading: false, detailError: 'Failed to load detail' }));
 				throw e;
 			}
 		},
-		reset: () => {
-			set(null);
-			detailCache.set({});
-		}
+		reset: () => set(initialState)
 	};
 }
 
@@ -52,6 +83,8 @@ interface MembersState {
 	cache: Record<string, { members: Member[]; pagination: { page: number; hasMore: boolean } }>; // Cache by filter key
 	generationsCache: string[] | null;
 	currentFilter: { generation?: string; search?: string }; // Track current filter
+	loading: boolean;
+	error: string | null;
 }
 
 function createMembersStore() {
@@ -60,7 +93,9 @@ function createMembersStore() {
 		pagination: { page: 0, hasMore: true },
 		cache: {},
 		generationsCache: null,
-		currentFilter: {}
+		currentFilter: {},
+		loading: false,
+		error: null
 	};
 
 	const { subscribe, set, update } = writable<MembersState>(initialState);
@@ -81,7 +116,9 @@ function createMembersStore() {
 					...s,
 					list: cached.members,
 					pagination: cached.pagination,
-					currentFilter: { generation: params.generation, search: params.search }
+					currentFilter: { generation: params.generation, search: params.search },
+					loading: false,
+					error: null
 				}));
 				return;
 			}
@@ -89,32 +126,41 @@ function createMembersStore() {
 			// Check if we need to load more at all
 			if (!reset && !state.pagination.hasMore) return;
 
-			const pageToLoad = reset ? 1 : state.pagination.page + 1;
+			update((s) => ({ ...s, loading: true, error: null }));
 
-			const res = await membersApi.getAll({
-				...params,
-				page: pageToLoad,
-				limit: params.limit || 20
-			});
+			try {
+				const pageToLoad = reset ? 1 : state.pagination.page + 1;
 
-			update((s) => {
-				const newList = reset ? res.data : [...s.list, ...res.data];
-				const newPagination = {
+				const res = await membersApi.getAll({
+					...params,
 					page: pageToLoad,
-					hasMore: !!res.meta.next_page
-				};
+					limit: params.limit || 20
+				});
 
-				return {
-					...s,
-					list: newList,
-					pagination: newPagination,
-					currentFilter: { generation: params.generation, search: params.search },
-					cache: {
-						...s.cache,
-						[cacheKey]: { members: newList, pagination: newPagination }
-					}
-				};
-			});
+				update((s) => {
+					const newList = reset ? res.data : [...s.list, ...res.data];
+					const newPagination = {
+						page: pageToLoad,
+						hasMore: !!res.meta.next_page
+					};
+
+					return {
+						...s,
+						list: newList,
+						pagination: newPagination,
+						currentFilter: { generation: params.generation, search: params.search },
+						loading: false,
+						cache: {
+							...s.cache,
+							[cacheKey]: { members: newList, pagination: newPagination }
+						}
+					};
+				});
+			} catch (e) {
+				logger.error('Failed to load members', e, { context: 'MembersStore' });
+				update((s) => ({ ...s, loading: false, error: 'Failed to load members' }));
+				throw e;
+			}
 		},
 		getGenerations: async () => {
 			const state = get({ subscribe });

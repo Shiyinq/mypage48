@@ -93,9 +93,9 @@
 			>
 				{#if isLoading}
 					<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
-				{:else if $userProfile?.oshi?.profilePicture || $userProfile?.profilePicture}
+				{:else if $userProfile?.data?.oshi?.profilePicture || $userProfile?.data?.profilePicture}
 					<img
-						src={$userProfile?.oshi?.profilePicture || $userProfile?.profilePicture}
+						src={$userProfile?.data?.oshi?.profilePicture || $userProfile?.data?.profilePicture}
 						alt="Profile"
 						class="w-full h-full object-cover"
 					/>

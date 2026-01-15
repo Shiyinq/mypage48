@@ -20,11 +20,11 @@
 	$: memories = state.list;
 	$: pagination = state.pagination;
 	$: filter = state.filter;
+	$: isLoading = state.loading;
+	$: error = state.error;
 
 	let selectedImage: MemoryItem | null = null;
-	let isLoadingMore = false;
 	let mounted = false;
-	let error = false;
 
 	onMount(() => {
 		mounted = true;
@@ -37,22 +37,20 @@
 	});
 
 	async function loadMemories(page: number) {
-		if (isLoadingMore) return;
+		// Store loading check to prevent double fetch
+		// But here we might want to check if ALREADY loading in store?
+		// relying on store's internal state or just firing it.
+		// Since we removed local `isLoadingMore`, we should check store `isLoading`.
+		if (isLoading) return;
 
 		// If not page 1 and no more, don't load
 		if (page > 1 && !pagination.hasMore) return;
 
-		isLoadingMore = true;
-
 		try {
-			error = false;
 			// Use store action
 			await galleryStore.load(page, filter);
 		} catch {
-			error = true;
 			showToast($t('memories.errorTitle') || 'Failed to load memories', 'error');
-		} finally {
-			isLoadingMore = false;
 		}
 	}
 
@@ -67,18 +65,15 @@
 		// We call load with page 1 and new filter
 		// Store handles cache check
 		try {
-			isLoadingMore = true;
 			await galleryStore.load(1, newFilter);
 		} catch {
-			error = true;
-		} finally {
-			isLoadingMore = false;
+			// Error handled in store/toast above or by subscription
 		}
 	}
 
 	// Infinite scroll handler
 	function handleIntersect() {
-		if (!mounted || isLoadingMore || !pagination.hasMore) return;
+		if (!mounted || isLoading || !pagination.hasMore) return;
 		loadMemories(pagination.page + 1);
 	}
 
@@ -86,8 +81,6 @@
 	$: if (typeof document !== 'undefined') {
 		document.body.style.overflow = selectedImage ? 'hidden' : 'unset';
 	}
-
-	$: isLoading = !mounted || ($isAuthenticated && memories.length === 0 && isLoadingMore);
 </script>
 
 <SEO title={$t('memories.title')} path="/memories" description={$t('seo.memories')} />
@@ -114,10 +107,10 @@
 	{#if error && memories.length === 0}
 		<ErrorState
 			title={$t('memories.errorTitle') || 'Failed to load memories'}
-			description={$t('memories.errorDesc') || 'Something went wrong while fetching your memories.'}
+			description={$t('memories.errorDesc') || error || ''}
 			onRetry={() => loadMemories(1)}
 		/>
-	{:else if isLoading}
+	{:else if isLoading && memories.length === 0}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4">
 			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each Array(8) as _unused, index}
@@ -148,7 +141,7 @@
 				on:intersect={handleIntersect}
 				class="w-full py-8 flex justify-center"
 			>
-				{#if isLoadingMore}
+				{#if isLoading}
 					<div
 						class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4 w-full"
 					>

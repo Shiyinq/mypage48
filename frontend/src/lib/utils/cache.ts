@@ -10,5 +10,5 @@ export const CACHE_EXPIRATION_MS = 50 * 60 * 1000;
  * @returns True if the cache is expired, false otherwise.
  */
 export function isCacheExpired(lastUpdated: number): boolean {
-    return Date.now() - lastUpdated > CACHE_EXPIRATION_MS;
+	return Date.now() - lastUpdated > CACHE_EXPIRATION_MS;
 }

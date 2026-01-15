@@ -5,13 +5,22 @@ import { client } from '$lib/apis/client';
 import { logger } from '$lib/utils/logger';
 
 function createUserProfileStore() {
-	const { subscribe, set, update } = writable<UserWithProfileStats | null>(null);
+	const { subscribe, set, update } = writable<{
+		data: UserWithProfileStats | null;
+		loading: boolean;
+		error: string | null;
+	}>({
+		data: null,
+		loading: false,
+		error: null
+	});
 
 	return {
 		subscribe,
 		set,
 		update,
 		load: async () => {
+			update((s) => ({ ...s, loading: true, error: null }));
 			try {
 				const data = await auth.getProfile();
 				const userWithStats: UserWithProfileStats = {
@@ -22,30 +31,31 @@ function createUserProfileStore() {
 					profileOshiTwoShots: data.oshiTwoShots,
 					profileRecentActivity: data.recentActivity
 				};
-				set(userWithStats);
+				set({ data: userWithStats, loading: false, error: null });
 				return userWithStats;
 			} catch (e) {
 				logger.error('Failed to load profile', e, { context: 'UserProfileStore' });
+				update((s) => ({ ...s, loading: false, error: 'Failed to load profile' }));
 				throw e;
 			}
 		},
 		updateOshi: async (memberId: string) => {
 			await auth.updateOshi(parseInt(memberId));
 			const data = await auth.getProfile();
-			update((u) => (u ? { ...u, oshi: data.oshi } : null));
+			update((u) => (u.data ? { ...u, data: { ...u.data, oshi: data.oshi } } : u));
 		},
 		updateAvatar: async (base64Image: string) => {
 			await auth.updateProfilePicture(base64Image);
-			update((u) => (u ? { ...u, profilePicture: base64Image } : null));
+			update((u) => (u.data ? { ...u, data: { ...u.data, profilePicture: base64Image } } : u));
 		},
 		updatePublicStatus: async (isPublic: boolean, publicYear: number | null) => {
 			await client('/users/public-status', {
 				method: 'POST',
 				body: { isPublic, publicYear }
 			});
-			update((u) => (u ? { ...u, isPublic, publicYear } : u));
+			update((u) => (u.data ? { ...u, data: { ...u.data, isPublic, publicYear } } : u));
 		},
-		reset: () => set(null)
+		reset: () => set({ data: null, loading: false, error: null })
 	};
 }
 
