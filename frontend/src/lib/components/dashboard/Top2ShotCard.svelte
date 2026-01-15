@@ -77,12 +77,12 @@
 			<div class="h-4 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
 		</div>
 	{:else}
-		<button
-			on:click={() => goto('/top-2shot')}
+		<a
+			href="/top-2shot"
 			class="mt-auto border-t border-pink-100 dark:border-pink-800/30 p-3 w-full text-center text-xs font-bold text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors flex items-center justify-center gap-1 cursor-pointer"
 		>
 			{$t('common.viewDetails')}
 			<ChevronRight class="w-3 h-3" />
-		</button>
+		</a>
 	{/if}
 </div>
