@@ -166,6 +166,7 @@
 		"theater": {
 			"title": "Shows",
 			"subtitle": "Your attendance overview",
+			"shows": "Shows",
 			"events": "Events",
 			"tickets": "Tickets",
 			"spending": "Expenses",
