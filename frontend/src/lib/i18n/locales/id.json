@@ -603,7 +603,8 @@
 			"title": "Event Teater",
 			"subtitle": "Jelajahi event teater",
 			"eventName": "Nama Event",
-			"members": "Member"
+			"members": "Member",
+			"today": "Hari ini"
 		},
 		"eventHistory": {
 			"title": "Riwayat Event",

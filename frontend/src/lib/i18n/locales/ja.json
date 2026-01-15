@@ -419,7 +419,8 @@
 			"title": "イベント予定",
 			"subtitle": "スケジュールとお知らせ",
 			"eventName": "イベント名",
-			"members": "メンバー"
+			"members": "メンバー",
+			"today": "今日"
 		},
 		"members": {
 			"title": "メンバー",

@@ -467,7 +467,8 @@
 			"title": "Theater Events",
 			"subtitle": "Browse theater events",
 			"eventName": "Event Name",
-			"members": "Members"
+			"members": "Members",
+			"today": "Today"
 		},
 		"members": {
 			"title": "Members",

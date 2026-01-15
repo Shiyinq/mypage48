@@ -16,6 +16,7 @@ export interface Event {
     label: string;
     imageUrl?: string;
     totalMembers: number;
+    seitansaiMembers?: string[];
     setlistId?: string;
     team?: EventTeam;
 }
