@@ -21,6 +21,7 @@ class Event(BaseModel):
     # List View Fields
     imageUrl: Optional[str] = None
     totalMembers: int = 0
+    seitansaiMembers: Optional[List[str]] = None  # Names of birthday celebrants
     
     # Detail fields (excluded from list view by default in repository projection, but kept here if we want to reuse schema for detail later, 
     # though user asked to remove them. For now, let's keep them optional but defaulting to None/Empty so they don't show up if not populated)
