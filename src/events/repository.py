@@ -38,7 +38,17 @@ class EventsRepository:
                 }
             },
             
-            # 2. Add Fields: imageUrl and totalMembers
+            # 2. Lookup Members for Seitansai (Birthday celebrants)
+            {
+                "$lookup": {
+                    "from": "members",
+                    "localField": "seitansaiIds",
+                    "foreignField": "id",
+                    "as": "seitansai_members"
+                }
+            },
+            
+            # 3. Add Fields: imageUrl, totalMembers, and seitansaiMembers
             {
                 "$addFields": {
                     "setlist_temp": {"$arrayElemAt": ["$setlist_docs", 0]},
@@ -48,29 +58,33 @@ class EventsRepository:
                             "then": {"$size": "$memberIds"},
                             "else": 0
                         }
+                    },
+                    "seitansaiMembers": {
+                        "$map": {
+                            "input": "$seitansai_members",
+                            "as": "member",
+                            "in": "$$member.name"
+                        }
                     }
                 }
             },
             
-            # 3. Extract imageUrl from setlist_temp
+            # 4. Extract imageUrl from setlist_temp
             {
                 "$addFields": {
                     "imageUrl": "$setlist_temp.imageUrl"
                 }
             },
             
-            # 4. Project: Exclude unwanted fields
+            # 5. Project: Exclude unwanted fields
             {
                 "$project": {
                     "setlist_docs": 0,
                     "setlist_temp": 0,
+                    "seitansai_members": 0,
                     "memberIds": 0,
                     "graduationIds": 0,
                     "seitansaiIds": 0,
-                    # "setlist": 0, # We never added 'setlist' field in this new pipeline
-                    # "members": 0, 
-                    # "graduations": 0,
-                    # "seitansais": 0
                 }
             }
         ]
