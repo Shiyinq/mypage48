@@ -8,21 +8,19 @@
 
 	const { t } = useTranslation();
 
-	let isPublic = $userProfile?.isPublic || false;
-	let selectedPublicYearStr: string = $userProfile?.publicYear?.toString() || '';
+	let isPublic = $userProfile.data?.isPublic || false;
+	let selectedPublicYearStr: string = $userProfile.data?.publicYear?.toString() || '';
 	let updatingStatus = false;
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	let isRetrying = false;
 
 	// Generate available years (from 2011 to current year)
 	const currentYear = new Date().getFullYear();
 	const availableYears = Array.from({ length: currentYear - 2011 + 1 }, (_, i) => currentYear - i);
 
-	$: if ($userProfile) {
-		isPublic = $userProfile.isPublic || false;
+	$: if ($userProfile.data) {
+		isPublic = $userProfile.data.isPublic || false;
 		// Only sync from profile if we aren't currently editing
 		if (!updatingStatus) {
-			selectedPublicYearStr = $userProfile.publicYear?.toString() || '';
+			selectedPublicYearStr = $userProfile.data.publicYear?.toString() || '';
 		}
 	}
 
@@ -78,21 +76,18 @@
 	};
 
 	const copyPublicLink = () => {
-		navigator.clipboard.writeText(`${window.location.origin}/u/${$userProfile?.username}`);
+		navigator.clipboard.writeText(`${window.location.origin}/u/${$userProfile.data?.username}`);
 		showToast($t('settings.developer.copied'), 'success');
 	};
 
 	// Retry fetching profile data if it failed initially
 	const retryGlobalProfileFetch = async () => {
-		isRetrying = true;
 		try {
 			// Use store action
 			await userProfile.load();
 		} catch (e) {
 			logger.error('Failed to retry profile fetch', e, { context: 'PublicProfileSettings' });
 			showToast($t('profile.errorTitle'), 'error');
-		} finally {
-			isRetrying = false;
 		}
 	};
 </script>
@@ -114,8 +109,8 @@
 		</div>
 	</div>
 
-	{#if !$userProfile}
-		{#if $isInitialDataLoaded}
+	{#if !$userProfile.data}
+		{#if $isInitialDataLoaded && !$userProfile.loading}
 			<!-- Error State if data is loaded but profile is missing -->
 			<div class="mb-4">
 				<ErrorState
@@ -197,12 +192,11 @@
 						<code
 							class="flex-1 bg-white dark:bg-zinc-900 py-2.5 px-3 rounded-lg border border-gray-200 dark:border-zinc-700 text-sm font-mono text-purple-600 dark:text-purple-400 truncate"
 						>
-							{typeof window !== 'undefined'
-								? window.location.origin
-								: ''}/u/{$userProfile?.username}
+							{typeof window !== 'undefined' ? window.location.origin : ''}/u/{$userProfile.data
+								?.username}
 						</code>
 						<a
-							href="/u/{$userProfile?.username}"
+							href="/u/{$userProfile.data?.username}"
 							target="_blank"
 							rel="noopener noreferrer"
 							class="p-2.5 bg-purple-100/50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"

@@ -6,21 +6,30 @@
 	import NotFound from '$lib/components/NotFound.svelte';
 	import { ShieldCheck, Users, Music, UserCheck } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { goto } from '$app/navigation'; // Added this import for goto
 
 	const { t } = useTranslation();
 
 	// State: 'loading' | 'authorized' | 'unauthorized'
 	let authState: 'loading' | 'authorized' | 'unauthorized' = 'loading';
 
-	// Auth Check
+	// Watch for auth/profile changes
 	$: handleAuthCheck(browser, $isInitialDataLoaded, $userProfile);
 
-	function handleAuthCheck(isBrowser: boolean, loaded: boolean, profile: typeof $userProfile) {
-		if (!isBrowser || !loaded) return;
-		if (profile?.isAdmin) {
-			authState = 'authorized';
-		} else {
-			authState = 'unauthorized';
+	function handleAuthCheck(isBrowser: boolean, loaded: boolean, profileState: typeof $userProfile) {
+		if (!isBrowser) return;
+
+		// If finished loading, we can check permissions
+		if (loaded) {
+			const profile = profileState.data;
+			if (profile?.isAdmin) {
+				authState = 'authorized';
+			} else {
+				// If loaded and not admin -> unauthorized
+				// But maybe we want to redirect?
+				// Constructive approach: redirect to home if not admin
+				goto('/');
+			}
 		}
 	}
 

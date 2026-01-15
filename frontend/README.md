@@ -63,14 +63,14 @@ npm run dev -- --open
 
 ### Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-| `npm run check` | Type-check the codebase |
-| `npm run lint` | Run ESLint |
-| `npm run format` | Format code with Prettier |
+| Command           | Description               |
+| ----------------- | ------------------------- |
+| `npm run dev`     | Start development server  |
+| `npm run build`   | Build for production      |
+| `npm run preview` | Preview production build  |
+| `npm run check`   | Type-check the codebase   |
+| `npm run lint`    | Run ESLint                |
+| `npm run format`  | Format code with Prettier |
 
 ## 🎨 Key Components
 
@@ -82,17 +82,17 @@ npm run dev -- --open
 
 ## 🌐 Pages
 
-| Route | Description |
-|-------|-------------|
-| `/` | Dashboard with statistics |
-| `/theater` | Theater schedule & show info |
-| `/history` | Ticket history |
-| `/top-2shot` | 2-shot collection ranking |
-| `/memories` | Photo memories gallery |
-| `/profile` | User profile |
-| `/settings` | User settings |
-| `/u/[username]` | Public profile (Wrapped) |
-| `/upload` | Upload theater tickets |
+| Route           | Description                  |
+| --------------- | ---------------------------- |
+| `/`             | Dashboard with statistics    |
+| `/theater`      | Theater schedule & show info |
+| `/history`      | Ticket history               |
+| `/top-2shot`    | 2-shot collection ranking    |
+| `/memories`     | Photo memories gallery       |
+| `/profile`      | User profile                 |
+| `/settings`     | User settings                |
+| `/u/[username]` | Public profile (Wrapped)     |
+| `/upload`       | Upload theater tickets       |
 
 ## 📝 License
 

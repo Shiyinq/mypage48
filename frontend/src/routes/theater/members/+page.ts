@@ -3,11 +3,11 @@ import { membersStore } from '$lib/stores/theater';
 import { browser } from '$app/environment';
 
 export const load = async () => {
-    if (browser) {
-        // Defer store loading to next tick to avoid SvelteKit warning about using window.fetch during load
-        setTimeout(() => {
-            membersStore.load({}, true);
-            membersStore.getGenerations();
-        }, 0);
-    }
+	if (browser) {
+		// Defer store loading to next tick to avoid SvelteKit warning about using window.fetch during load
+		setTimeout(() => {
+			membersStore.load({}, true);
+			membersStore.getGenerations();
+		}, 0);
+	}
 };

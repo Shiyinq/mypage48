@@ -2,7 +2,6 @@
 	export let params: Record<string, string> | undefined = undefined;
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
-	import { logger } from '$lib/utils/logger';
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
@@ -14,14 +13,11 @@
 
 	const { t } = useTranslation();
 
-	// State
-	// Using reactive statements from store
-	$: setlists = $setlistsStore || [];
+	// State from store
+	$: setlists = $setlistsStore.data || [];
+	$: isLoading = $setlistsStore.loading;
+	$: error = $setlistsStore.error;
 	$: maxAttendance = $maxAttendanceStore;
-
-	let setlistsLoading = true;
-	let mounted = false;
-	let error = false;
 
 	// Group setlists by type
 	$: setlistItems = setlists.filter((s) => s.type === 'setlist');
@@ -34,30 +30,15 @@
 	$: inactiveEvents = eventItems.filter((s) => !s.active);
 
 	async function fetchSetlists() {
-		// If data is already in store, we might skip loading state or just background refresh
-		// But for consistency let's just use the store load which checks cache key (though current setlistsStore is simple set)
-
-		// Actually our new store logic simply checks if get() returns null
-		if ($setlistsStore) {
-			setlistsLoading = false;
-			return;
-		}
-
 		try {
-			setlistsLoading = true;
-			error = false;
 			await setlistsStore.load();
 		} catch (e) {
-			logger.error('Failed to fetch setlists', e, { context: 'TheaterPage' });
-			error = true;
+			// Error is handled by store
 			showToast($t('theater.setlists.listErrorTitle') || 'Failed to load setlists', 'error');
-		} finally {
-			setlistsLoading = false;
 		}
 	}
 
 	onMount(() => {
-		mounted = true;
 		fetchSetlists();
 	});
 
@@ -65,8 +46,6 @@
 	function goToDetail(setlistId: string) {
 		goto(`/theater/${setlistId}`);
 	}
-
-	$: isLoading = !mounted || setlistsLoading;
 </script>
 
 <SEO title={$t('theater.title')} path="/theater" description={$t('seo.shows')} />
@@ -92,7 +71,7 @@
 {:else if error}
 	<ErrorState
 		title={$t('theater.setlists.listErrorTitle')}
-		description={$t('theater.setlists.listErrorDesc')}
+		description={error || $t('theater.setlists.listErrorDesc')}
 		onRetry={fetchSetlists}
 	/>
 {:else if setlists.length === 0}

@@ -31,12 +31,11 @@
 
 	let mounted = false;
 
-	// Loading & Error states
-	let isLoading = true; // Start true, check cache immediately later
-	let error: string | null = null;
-
 	// Dashboard data sourced from store
-	$: dashboardStats = $dashboardStatsData;
+	$: state = $dashboardStatsData;
+	$: dashboardStats = state.data;
+	$: isLoading = state.loading;
+	$: error = state.error;
 
 	const currentYear: number = new Date().getFullYear();
 	let isFilterOpen: boolean = false;
@@ -47,21 +46,14 @@
 	// Fetch dashboard data from API
 	async function fetchDashboardStats() {
 		if (!$isAuthenticated) {
-			isLoading = false;
 			return;
 		}
-
-		isLoading = true;
-		error = null;
 
 		try {
 			// Use smart store load action
 			await dashboardStatsData.load($dashboardFilter);
 		} catch (err) {
-			logger.error('Failed to fetch dashboard stats', err, { context: 'DashboardPage' });
-			error = $t('dashboard.error');
-		} finally {
-			isLoading = false;
+			// Error logged and handled by store
 		}
 	}
 

@@ -44,8 +44,8 @@
 	let twoShotRouletteCount = 0;
 	let twoShotBirthdayCount = 0;
 
-	let loading = true;
-	let error = false;
+	$: isLoading = $userProfile.loading;
+	$: error = $userProfile.error;
 
 	// Oshi Selection State
 	let showOshiModal = false;
@@ -72,10 +72,8 @@
 	onMount(() => {
 		if ($isAuthenticated) {
 			// Check if store already has data with stats
-			if (!$userProfile?.profileRank) {
+			if (!$userProfile.data?.profileRank) {
 				fetchProfile();
-			} else {
-				loading = false;
 			}
 		}
 	});
@@ -83,7 +81,10 @@
 	// Subscribe to store changes to keep local state in sync
 	// The userProfile store now contains UserWithProfileStats with profile stats
 	$: {
-		const storeProfile = $userProfile;
+		const storeState = $userProfile;
+		const storeProfile = storeState.data;
+		// loading state is handled by top-level reactive declaration
+
 		if (storeProfile) {
 			profile = mapProfileData(storeProfile);
 
@@ -102,25 +103,15 @@
 			if (storeProfile.profileRecentActivity) {
 				recentActivity = storeProfile.profileRecentActivity;
 			}
-			// Only unset loading if we actually have data populated
-			if (storeProfile.profileRank) {
-				loading = false;
-			}
 		}
 	}
 
 	async function fetchProfile() {
 		try {
-			loading = true;
-			error = false;
 			// Use store action
 			await userProfile.load();
 		} catch (e) {
-			logger.error('Failed to fetch profile', e, { context: 'ProfilePage' });
-			error = true;
 			showToast($t('profile.errorTitle'), 'error');
-		} finally {
-			loading = false;
 		}
 	}
 
@@ -236,22 +227,22 @@
 		<div class="grid lg:grid-cols-12 gap-8">
 			<!-- LEFT COLUMN: Identity & Level (Span 5) -->
 			<div class="lg:col-span-5 space-y-6">
-				<DigitalMemberCard {profile} {loading} />
-				<LevelProgress {level} {progressPercent} {loading} />
-				<QuickStats {totalShows} {totalAchievements} {loading} />
+				<DigitalMemberCard {profile} loading={isLoading} />
+				<LevelProgress {level} {progressPercent} loading={isLoading} />
+				<QuickStats {totalShows} {totalAchievements} loading={isLoading} />
 			</div>
 
 			<!-- RIGHT COLUMN: Oshimen & Feed (Span 7) -->
 			<div class="lg:col-span-7 space-y-6">
 				<OshiCard
 					{profile}
-					{loading}
+					loading={isLoading}
 					rouletteCount={twoShotRouletteCount}
 					birthdayCount={twoShotBirthdayCount}
 					onOpenOshiModal={openOshiModal}
 					onOpenMemberDetail={openMemberDetail}
 				/>
-				<RecentActivity {recentActivity} {loading} />
+				<RecentActivity {recentActivity} loading={isLoading} />
 			</div>
 		</div>
 	{/if}

@@ -24,6 +24,9 @@
 	onMount(async () => {
 		await eventsStore.loadUpcoming();
 	});
+
+	$: isLoading = $upcomingLoading;
+	$: error = $upcomingError;
 </script>
 
 <SEO
@@ -33,16 +36,16 @@
 />
 
 <div class="space-y-6">
-	{#if $upcomingLoading}
+	{#if isLoading}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 			{#each Array(6) as _}
 				<EventCardSkeleton />
 			{/each}
 		</div>
-	{:else if $upcomingError}
+	{:else if error}
 		<ErrorState
 			title={$t('theater.upcomingEvents.errorTitle') || 'Failed to load events'}
-			description={$t('theater.upcomingEvents.errorDesc') || $upcomingError || ''}
+			description={$t('theater.upcomingEvents.errorDesc') || error || ''}
 			onRetry={() => eventsStore.loadUpcoming(true)}
 		/>
 	{:else if $upcomingEvents.length === 0}

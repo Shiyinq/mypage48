@@ -12,9 +12,9 @@ interface TicketsState {
 	defaultCache: { list: Ticket[]; pagination: PaginationState; lastUpdated: number } | null;
 	titlesCache: string[] | null;
 	lastUpdated: number;
+	loading: boolean;
+	error: string | null;
 }
-
-
 
 function createTicketsStore() {
 	const initialState: TicketsState = {
@@ -23,7 +23,9 @@ function createTicketsStore() {
 		filters: {},
 		defaultCache: null,
 		titlesCache: null,
-		lastUpdated: 0
+		lastUpdated: 0,
+		loading: false,
+		error: null
 	};
 
 	const { subscribe, set, update } = writable<TicketsState>(initialState);
@@ -43,11 +45,18 @@ function createTicketsStore() {
 						...s,
 						list: state.defaultCache!.list,
 						pagination: state.defaultCache!.pagination,
-						filters: {}
+						filters: {},
+						loading: false,
+						error: null
 					}));
 					return;
 				}
 			}
+
+			// Don't set loading true if we are just loading more pages to avoid flickering whole list
+			// But for initial load (page 1) we might want it.
+			// Let's set loading true generally, the UI can decide how to use it.
+			update((s) => ({ ...s, loading: true, error: null }));
 
 			try {
 				const res = await ticketsApi.getMyTickets(page, 20, filters);
@@ -60,12 +69,14 @@ function createTicketsStore() {
 						hasMore: res.meta.current_page < res.meta.last_page
 					};
 
-					const newState = {
+					const newState: TicketsState = {
 						...s,
 						list: newList,
 						pagination: newPagination,
 						filters,
-						lastUpdated: now
+						lastUpdated: now,
+						loading: false,
+						error: null
 					};
 
 					if (isDefaultLoad) {
@@ -80,84 +91,112 @@ function createTicketsStore() {
 				});
 			} catch (e) {
 				logger.error('Failed to load tickets', e, { context: 'TicketsStore' });
+				update((s) => ({ ...s, loading: false, error: 'Failed to load tickets' }));
 				throw e;
 			}
 		},
 		deleteTicket: async (ticketId: string) => {
-			await ticketsApi.deleteTicket(ticketId);
+			update((s) => ({ ...s, loading: true }));
+			try {
+				await ticketsApi.deleteTicket(ticketId);
 
-			update((s) => {
-				const newList = s.list.filter((t) => t._id !== ticketId && t.ticket_id !== ticketId);
-				const now = Date.now();
-				let newCache = s.defaultCache;
-				if (newCache) {
-					newCache = {
-						...newCache,
-						list: newCache.list.filter((t) => t._id !== ticketId && t.ticket_id !== ticketId),
-						lastUpdated: now
+				update((s) => {
+					const newList = s.list.filter((t) => t._id !== ticketId && t.ticket_id !== ticketId);
+					const now = Date.now();
+					let newCache = s.defaultCache;
+					if (newCache) {
+						newCache = {
+							...newCache,
+							list: newCache.list.filter((t) => t._id !== ticketId && t.ticket_id !== ticketId),
+							lastUpdated: now
+						};
+					}
+
+					return {
+						...s,
+						list: newList,
+						defaultCache: newCache,
+						lastUpdated: now,
+						loading: false
 					};
-				}
-
-				return {
-					...s,
-					list: newList,
-					defaultCache: newCache,
-					lastUpdated: now
-				};
-			});
+				});
+			} catch (e) {
+				update((s) => ({ ...s, loading: false, error: 'Failed to delete ticket' }));
+				throw e;
+			}
 		},
 
 		create: async (payload: Partial<Ticket>) => {
-			const newTicket = await ticketsApi.createTicket(payload);
-			const now = Date.now();
-			update((s) => ({
-				...s,
-				list: [newTicket, ...s.list],
-				lastUpdated: now,
-				defaultCache: s.defaultCache
-					? {
-						...s.defaultCache,
-						list: [newTicket, ...s.defaultCache.list],
-						lastUpdated: now
-					}
-					: null
-			}));
-			return newTicket;
+			update((s) => ({ ...s, loading: true }));
+			try {
+				const newTicket = await ticketsApi.createTicket(payload);
+				const now = Date.now();
+				update((s) => ({
+					...s,
+					list: [newTicket, ...s.list],
+					lastUpdated: now,
+					loading: false,
+					defaultCache: s.defaultCache
+						? {
+							...s.defaultCache,
+							list: [newTicket, ...s.defaultCache.list],
+							lastUpdated: now
+						}
+						: null
+				}));
+				return newTicket;
+			} catch (e) {
+				update((s) => ({ ...s, loading: false, error: 'Failed to create ticket' }));
+				throw e;
+			}
 		},
 
 		updateTicket: async (ticketId: string, payload: Partial<Ticket>) => {
-			const updated = await ticketsApi.updateTicket(ticketId, payload);
-			const now = Date.now();
-			update((s) => ({
-				...s,
-				list: s.list.map((t) => (t._id === ticketId ? updated : t)),
-				lastUpdated: now,
-				defaultCache: s.defaultCache
-					? {
-						...s.defaultCache,
-						list: s.defaultCache.list.map((t) => (t._id === ticketId ? updated : t)),
-						lastUpdated: now
-					}
-					: null
-			}));
-			return updated;
+			// Optimistically not setting global loading for item update to avoid UI flicker
+			// Or we could added a separate 'processingId' state if needed.
+			// For now, let's keep it simple and just update data.
+			try {
+				const updated = await ticketsApi.updateTicket(ticketId, payload);
+				const now = Date.now();
+				update((s) => ({
+					...s,
+					list: s.list.map((t) => (t._id === ticketId ? updated : t)),
+					lastUpdated: now,
+					defaultCache: s.defaultCache
+						? {
+							...s.defaultCache,
+							list: s.defaultCache.list.map((t) => (t._id === ticketId ? updated : t)),
+							lastUpdated: now
+						}
+						: null
+				}));
+				return updated;
+			} catch (e) {
+				throw e;
+			}
 		},
 
 		updateNote: async (ticketId: string, note: string) => {
-			await ticketsApi.updateTicket(ticketId, { notes: note });
-			const now = Date.now();
-			update((s) => ({
-				...s,
-				list: s.list.map((t) => (t._id === ticketId ? { ...t, notes: note } : t)),
-				lastUpdated: now,
-				defaultCache: s.defaultCache
-					? {
-						...s.defaultCache,
-						list: s.defaultCache.list.map((t) => (t._id === ticketId ? { ...t, notes: note } : t)),
-						lastUpdated: now
-					}
-					: null
-			}));
+			try {
+				await ticketsApi.updateTicket(ticketId, { notes: note });
+				const now = Date.now();
+				update((s) => ({
+					...s,
+					list: s.list.map((t) => (t._id === ticketId ? { ...t, notes: note } : t)),
+					lastUpdated: now,
+					defaultCache: s.defaultCache
+						? {
+							...s.defaultCache,
+							list: s.defaultCache.list.map((t) =>
+								t._id === ticketId ? { ...t, notes: note } : t
+							),
+							lastUpdated: now
+						}
+						: null
+				}));
+			} catch (e) {
+				throw e;
+			}
 		},
 
 		getAvailableTitles: async () => {
@@ -186,4 +225,10 @@ export const ticketsPagination = {
 };
 export const ticketsFilters = {
 	subscribe: (cb: (val: TicketFilters) => void) => ticketsStore.subscribe((val) => cb(val.filters))
+};
+export const ticketsLoading = {
+	subscribe: (cb: (val: boolean) => void) => ticketsStore.subscribe((val) => cb(val.loading))
+};
+export const ticketsError = {
+	subscribe: (cb: (val: string | null) => void) => ticketsStore.subscribe((val) => cb(val.error))
 };

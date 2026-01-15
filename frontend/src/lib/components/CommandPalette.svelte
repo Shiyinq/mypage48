@@ -54,7 +54,7 @@
 
 	$: actions = [
 		// Admin (Conditional)
-		...($userProfile?.isAdmin
+		...($userProfile.data?.isAdmin
 			? ([
 					{
 						id: 'admin-dashboard',

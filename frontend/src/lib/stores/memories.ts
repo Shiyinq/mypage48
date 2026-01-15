@@ -14,8 +14,9 @@ interface GalleryState {
 		FilterType,
 		{ list: MemoryItem[]; pagination: { page: number; hasMore: boolean }; lastUpdated: number }
 	>; // Cache by filter
+	loading: boolean;
+	error: string | null;
 }
-
 
 function createGalleryStore() {
 	const initialState: GalleryState = {
@@ -26,7 +27,9 @@ function createGalleryStore() {
 			ALL: { list: [], pagination: { page: 0, hasMore: true }, lastUpdated: 0 }, // Init cache structure
 			TICKET: { list: [], pagination: { page: 0, hasMore: true }, lastUpdated: 0 },
 			'2SHOT': { list: [], pagination: { page: 0, hasMore: true }, lastUpdated: 0 }
-		}
+		},
+		loading: false,
+		error: null
 	};
 
 	const { subscribe, set, update } = writable<GalleryState>(initialState);
@@ -45,7 +48,9 @@ function createGalleryStore() {
 						...s,
 						filter,
 						list: cached.list,
-						pagination: cached.pagination
+						pagination: cached.pagination,
+						loading: false,
+						error: null
 					}));
 					return;
 				}
@@ -56,6 +61,10 @@ function createGalleryStore() {
 			// Should we load?
 			// If page 1, always load (unless we just restored from cache above, but logic there prevents this fallthrough effectively if we structure carefully)
 			// Ideally, we force load if page 1 and explicit call, OR if infinite scroll (page > 1)
+
+			// Set loading true. For pagination, we might want to distinguish initial load vs load more,
+			// but for now consistent 'loading' flag is good, UI can check list length to see if it's 'load more'
+			update((s) => ({ ...s, loading: true, error: null }));
 
 			try {
 				const res = await memoriesApi.getMemories(page, 20, filter);
@@ -76,11 +85,14 @@ function createGalleryStore() {
 						cache: {
 							...s.cache,
 							[filter]: { list: newList, pagination: newPagination, lastUpdated: now }
-						}
+						},
+						loading: false,
+						error: null
 					};
 				});
 			} catch (e) {
 				logger.error('Failed to load memories', e, { context: 'GalleryStore' });
+				update((s) => ({ ...s, loading: false, error: 'Failed to load memories' }));
 				throw e;
 			}
 		},
@@ -91,16 +103,19 @@ function createGalleryStore() {
 export const galleryStore = createGalleryStore();
 
 // --- Top 2-Shot Store ---
-// --- Top 2-Shot Store ---
 interface TopTwoShotState {
 	data: TopTwoShotResponse | null;
 	lastUpdated: number;
+	loading: boolean;
+	error: string | null;
 }
 
 function createTopTwoShotStore() {
 	const initialState: TopTwoShotState = {
 		data: null,
-		lastUpdated: 0
+		lastUpdated: 0,
+		loading: false,
+		error: null
 	};
 
 	const { subscribe, set, update } = writable<TopTwoShotState>(initialState);
@@ -112,15 +127,20 @@ function createTopTwoShotStore() {
 			// Cache check: if loaded, don't reload.
 			if (state.data && !isCacheExpired(state.lastUpdated)) return;
 
+			update((s) => ({ ...s, loading: true, error: null }));
+
 			try {
 				const res = await memoriesApi.getTopTwoShot();
 				update((s) => ({
 					...s,
 					data: res,
-					lastUpdated: Date.now()
+					lastUpdated: Date.now(),
+					loading: false,
+					error: null
 				}));
 			} catch (e) {
 				logger.error('Failed to load top 2-shot', e, { context: 'TopTwoShotStore' });
+				update((s) => ({ ...s, loading: false, error: 'Failed to load top 2-shot' }));
 				throw e;
 			}
 		},

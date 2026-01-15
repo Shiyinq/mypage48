@@ -16,20 +16,23 @@
 	const { t } = useTranslation();
 
 	// State
-	let isLoading = false;
-	let isAppending = false;
 	let loadingGenerations = true;
 	let searchQuery = '';
 	let selectedGeneration: string | null = null;
 	let generations: string[] = [];
-	let error: string | null = null;
 	let showMemberDetail = false;
 	let selectedMember: Member | null = null;
-
-	// Subscribe to store
+	// Store subscriptions
 	$: state = $membersStore;
 	$: membersList = state.list;
 	$: pagination = state.pagination;
+	$: isLoading = state.loading;
+
+	// Error is now managed by store, but we can keep a local derived one if needed or just use store's
+	$: error = state.error;
+
+	// IsAppending logic: inferred if loading is true and list is not empty
+	$: isAppending = isLoading && membersList.length > 0 && pagination.page > 0;
 
 	async function fetchGenerations() {
 		try {
@@ -38,7 +41,7 @@
 				generations = gens.sort((a: string, b: string) => parseInt(a) - parseInt(b));
 			}
 		} catch (e) {
-			logger.error('Failed to fetch generations', e, { context: 'MembersPage' });
+			// Error logged by store
 		} finally {
 			loadingGenerations = false;
 		}
@@ -46,14 +49,7 @@
 
 	// Fetch members
 	async function fetchMembers(reset = false) {
-		if (isLoading || isAppending) return;
-
-		if (reset) {
-			isLoading = true;
-		} else {
-			isAppending = true;
-		}
-		error = null;
+		if (isLoading) return;
 
 		try {
 			await membersStore.load(
@@ -64,12 +60,8 @@
 				reset
 			);
 		} catch (err) {
-			logger.error('Failed to fetch members', err, { context: 'MembersPage' });
-			error = 'Failed to load members';
+			// Error logged by store
 			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
-		} finally {
-			isLoading = false;
-			isAppending = false;
 		}
 	}
 
@@ -109,7 +101,7 @@
 	});
 
 	function handleInfiniteScroll() {
-		if (!isLoading && !isAppending && pagination.hasMore) {
+		if (!isLoading && pagination.hasMore) {
 			fetchMembers(false);
 		}
 	}

@@ -49,31 +49,25 @@
 		wallet: Wallet
 	};
 
-	let loading = true;
-	let error: string | null = null;
-
 	// Subscribe to store
-	$: data = $achievementsStore;
+	$: state = $achievementsStore;
+	$: data = state.data;
+	$: isLoading = state.loading;
+	$: error = state.error;
+
 	$: unlocked = data?.achievements.filter((m) => m.isUnlocked) ?? [];
 	$: locked = data?.achievements.filter((m) => !m.isUnlocked) ?? [];
 
 	async function loadAchievements() {
 		if (!$isAuthenticated) {
-			loading = false;
 			return;
 		}
-
-		loading = true;
-		error = null;
 
 		try {
 			await achievementsStore.load();
 		} catch (e) {
-			logger.error('Failed to fetch achievements', e, { context: 'AchievementsPage' });
-			error = 'Failed to load achievements';
-			showToast($t('achievements.errorTitle') || 'Failed to load achievements', 'error');
-		} finally {
-			loading = false;
+			// Error logged and handled by store
+			showToast($t('achievements.errorLoad'), 'error');
 		}
 	}
 
@@ -100,7 +94,7 @@
 
 	<!-- Grid Layout -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-		{#if loading}
+		{#if isLoading}
 			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each Array(9) as _unused}
 				<AchievementSkeleton />

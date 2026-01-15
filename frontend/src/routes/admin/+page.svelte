@@ -19,7 +19,8 @@
 
 	// Store state
 	$: usersList = $adminStore.users.data;
-	$: usersLoading = $adminStore.users.loading;
+	$: isLoading = $adminStore.users.loading;
+	$: error = $adminStore.users.error;
 	$: usersHasMore = $adminStore.users.hasMore;
 
 	// Search state
@@ -60,7 +61,7 @@
 	}
 
 	function loadMoreUsers() {
-		if (usersHasMore && !usersLoading) {
+		if (usersHasMore && !isLoading) {
 			adminStore.loadUsers();
 		}
 	}
@@ -106,7 +107,7 @@
 		</div>
 	</div>
 
-	{#if isInitialLoad && usersLoading}
+	{#if isInitialLoad && isLoading}
 		<TableSkeleton
 			rows={10}
 			columns={[
@@ -208,7 +209,7 @@
 		<!-- Infinite Scroll Sentinel -->
 		{#if usersHasMore}
 			<div class="mt-4" use:infiniteScroll on:intersect={loadMoreUsers}>
-				{#if usersLoading}
+				{#if isLoading}
 					<TableSkeleton
 						rows={3}
 						columns={[
