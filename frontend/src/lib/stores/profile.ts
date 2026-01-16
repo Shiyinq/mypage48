@@ -4,14 +4,16 @@ import { auth } from '$lib/apis/auth';
 import { client } from '$lib/apis/client';
 import { logger } from '$lib/utils/logger';
 
+interface UserProfileStoreState {
+	data: UserWithProfileStats | null;
+	error: string | null;
+}
+
+export const isUserProfileLoading = writable(false);
+
 function createUserProfileStore() {
-	const { subscribe, set, update } = writable<{
-		data: UserWithProfileStats | null;
-		loading: boolean;
-		error: string | null;
-	}>({
+	const { subscribe, set, update } = writable<UserProfileStoreState>({
 		data: null,
-		loading: false,
 		error: null
 	});
 
@@ -20,7 +22,8 @@ function createUserProfileStore() {
 		set,
 		update,
 		load: async () => {
-			update((s) => ({ ...s, loading: true, error: null }));
+			isUserProfileLoading.set(true);
+			update((s) => ({ ...s, error: null }));
 			try {
 				const data = await auth.getProfile();
 				const userWithStats: UserWithProfileStats = {
@@ -31,12 +34,14 @@ function createUserProfileStore() {
 					profileOshiTwoShots: data.oshiTwoShots,
 					profileRecentActivity: data.recentActivity
 				};
-				set({ data: userWithStats, loading: false, error: null });
+				set({ data: userWithStats, error: null });
 				return userWithStats;
 			} catch (e) {
 				logger.error('Failed to load profile', e, { context: 'UserProfileStore' });
-				update((s) => ({ ...s, loading: false, error: 'Failed to load profile' }));
+				update((s) => ({ ...s, error: 'Failed to load profile' }));
 				throw e;
+			} finally {
+				isUserProfileLoading.set(false);
 			}
 		},
 		updateOshi: async (memberId: string) => {
@@ -55,7 +60,10 @@ function createUserProfileStore() {
 			});
 			update((u) => (u.data ? { ...u, data: { ...u.data, isPublic, publicYear } } : u));
 		},
-		reset: () => set({ data: null, loading: false, error: null })
+		reset: () => {
+			set({ data: null, error: null });
+			isUserProfileLoading.set(false);
+		}
 	};
 }
 

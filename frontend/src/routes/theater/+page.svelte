@@ -9,13 +9,12 @@
 	import { Calendar } from 'lucide-svelte';
 	import SetlistSection from '$lib/components/theater/SetlistSection.svelte';
 
-	import { setlistsStore, maxAttendanceStore } from '$lib/stores/theater';
+	import { setlistsStore, maxAttendanceStore, isSetlistsLoading } from '$lib/stores/theater';
 
 	const { t } = useTranslation();
 
 	// State from store
 	$: setlists = $setlistsStore.data || [];
-	$: isLoading = $setlistsStore.loading;
 	$: error = $setlistsStore.error;
 	$: maxAttendance = $maxAttendanceStore;
 
@@ -50,7 +49,7 @@
 
 <SEO title={$t('theater.title')} path="/theater" description={$t('seo.shows')} />
 
-{#if isLoading}
+{#if $isSetlistsLoading}
 	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 		<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 		{#each Array(6) as _}

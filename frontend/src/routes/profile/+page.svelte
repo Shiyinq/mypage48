@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let params: Record<string, string> | undefined = undefined;
 	import { onMount } from 'svelte';
-	import { isAuthenticated, showToast, userProfile } from '$lib/stores';
+	import { isAuthenticated, showToast, userProfile, isUserProfileLoading } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
@@ -44,7 +44,6 @@
 	let twoShotRouletteCount = 0;
 	let twoShotBirthdayCount = 0;
 
-	$: isLoading = $userProfile.loading;
 	$: error = $userProfile.error;
 
 	// Oshi Selection State
@@ -227,22 +226,22 @@
 		<div class="grid lg:grid-cols-12 gap-8">
 			<!-- LEFT COLUMN: Identity & Level (Span 5) -->
 			<div class="lg:col-span-5 space-y-6">
-				<DigitalMemberCard {profile} loading={isLoading} />
-				<LevelProgress {level} {progressPercent} loading={isLoading} />
-				<QuickStats {totalShows} {totalAchievements} loading={isLoading} />
+				<DigitalMemberCard {profile} loading={$isUserProfileLoading} />
+				<LevelProgress {level} {progressPercent} loading={$isUserProfileLoading} />
+				<QuickStats {totalShows} {totalAchievements} loading={$isUserProfileLoading} />
 			</div>
 
 			<!-- RIGHT COLUMN: Oshimen & Feed (Span 7) -->
 			<div class="lg:col-span-7 space-y-6">
 				<OshiCard
 					{profile}
-					loading={isLoading}
+					loading={$isUserProfileLoading}
 					rouletteCount={twoShotRouletteCount}
 					birthdayCount={twoShotBirthdayCount}
 					onOpenOshiModal={openOshiModal}
 					onOpenMemberDetail={openMemberDetail}
 				/>
-				<RecentActivity {recentActivity} loading={isLoading} />
+				<RecentActivity {recentActivity} loading={$isUserProfileLoading} />
 			</div>
 		</div>
 	{/if}

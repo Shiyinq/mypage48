@@ -10,7 +10,7 @@
 	import {
 		eventsStore,
 		historyEvents,
-		historyLoading,
+		isHistoryEventsLoading,
 		historyPagination,
 		historyError
 	} from '$lib/stores/events';
@@ -21,7 +21,6 @@
 		await eventsStore.loadHistory(1);
 	});
 
-	$: isLoading = $historyLoading;
 	$: error = $historyError;
 
 	function handlePageChange(page: number) {
@@ -86,7 +85,7 @@
 />
 
 <div class="space-y-6">
-	{#if isLoading}
+	{#if $isHistoryEventsLoading}
 		<EventHistorySkeleton rows={10} />
 	{:else if error}
 		<ErrorState

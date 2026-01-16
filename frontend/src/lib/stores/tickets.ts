@@ -1,30 +1,35 @@
 import { writable, get } from 'svelte/store';
-import type { Ticket, TicketFilters, PaginationState } from '$lib/types';
 import { ticketsApi } from '$lib/apis/tickets';
 import { logger } from '$lib/utils/logger';
 import { CACHE_EXPIRATION_MS, isCacheExpired } from '$lib/utils/cache';
+import type { Ticket, PaginationMeta, TicketFilters } from '$lib/types';
 
-// Tickets Store Types
 interface TicketsState {
 	list: Ticket[];
-	pagination: PaginationState;
+	pagination: PaginationMeta;
 	filters: TicketFilters;
-	defaultCache: { list: Ticket[]; pagination: PaginationState; lastUpdated: number } | null;
+	defaultCache: { list: Ticket[]; pagination: PaginationMeta; lastUpdated: number } | null;
 	titlesCache: string[] | null;
 	lastUpdated: number;
-	loading: boolean;
 	error: string | null;
 }
+
+export const isTicketsLoading = writable(false);
 
 function createTicketsStore() {
 	const initialState: TicketsState = {
 		list: [],
-		pagination: { page: 0, hasMore: true },
+		pagination: {
+			current_page: 1,
+			last_page: 1,
+			total_data: 0,
+			per_page: 20,
+			next_page: null
+		},
 		filters: {},
 		defaultCache: null,
 		titlesCache: null,
 		lastUpdated: 0,
-		loading: false,
 		error: null
 	};
 
@@ -32,57 +37,54 @@ function createTicketsStore() {
 
 	return {
 		subscribe,
-		set,
 		update,
-		load: async (page: number, filters: TicketFilters = {}) => {
+		load: async (page = 1, filters: TicketFilters = {}) => {
 			const state = get({ subscribe });
-			const isDefaultLoad = Object.keys(filters).length === 0;
+			const now = Date.now();
+			const isDefaultFilter = Object.keys(filters).length === 0;
 
-			// Optimistic Cache Check for Default Load (Page 1)
-			if (page === 1 && isDefaultLoad && state.defaultCache) {
+			// Optimistic Check for Page 1 with no filters
+			if (page === 1 && isDefaultFilter && state.defaultCache) {
 				if (!isCacheExpired(state.defaultCache.lastUpdated)) {
 					update((s) => ({
 						...s,
-						list: state.defaultCache!.list,
-						pagination: state.defaultCache!.pagination,
-						filters: {},
-						loading: false,
+						list: s.defaultCache!.list,
+						pagination: s.defaultCache!.pagination,
+						filters,
 						error: null
 					}));
 					return;
 				}
 			}
 
-			// Don't set loading true if we are just loading more pages to avoid flickering whole list
-			// But for initial load (page 1) we might want it.
-			// Let's set loading true generally, the UI can decide how to use it.
-			update((s) => ({ ...s, loading: true, error: null }));
+			// Don't reload if we have data and it's fresh (and filters match)
+			// Simplification: only rely on explicit load call triggering fetch unless cached above
+			// But we need to update filters in state
+			update((s) => ({ ...s, filters, error: null }));
+			isTicketsLoading.set(true);
 
 			try {
-				const res = await ticketsApi.getMyTickets(page, 20, filters);
-				const now = Date.now();
+				// Clean filters
+				const cleanFilters = Object.fromEntries(
+					Object.entries(filters).filter(([, v]) => v !== null && v !== undefined && v !== '')
+				);
+
+				const res = await ticketsApi.getMyTickets(page, 20, cleanFilters);
 
 				update((s) => {
-					const newList = page === 1 ? res.data : [...s.list, ...res.data];
-					const newPagination = {
-						page,
-						hasMore: res.meta.current_page < res.meta.last_page
-					};
-
-					const newState: TicketsState = {
+					const newState = {
 						...s,
-						list: newList,
-						pagination: newPagination,
-						filters,
+						list: page === 1 ? res.data : [...s.list, ...res.data],
+						pagination: res.meta,
 						lastUpdated: now,
-						loading: false,
 						error: null
 					};
 
-					if (isDefaultLoad) {
+					// Update default cache if applicable
+					if (page === 1 && isDefaultFilter) {
 						newState.defaultCache = {
-							list: newList,
-							pagination: newPagination,
+							list: res.data,
+							pagination: res.meta,
 							lastUpdated: now
 						};
 					}
@@ -91,43 +93,41 @@ function createTicketsStore() {
 				});
 			} catch (e) {
 				logger.error('Failed to load tickets', e, { context: 'TicketsStore' });
-				update((s) => ({ ...s, loading: false, error: 'Failed to load tickets' }));
+				update((s) => ({ ...s, error: 'Failed to load tickets' }));
 				throw e;
+			} finally {
+				isTicketsLoading.set(false);
 			}
 		},
 		deleteTicket: async (ticketId: string) => {
-			update((s) => ({ ...s, loading: true }));
+			// Optimistic delete
+			const state = get({ subscribe });
+			const oldList = state.list;
+			const oldCache = state.defaultCache;
+
+			update((s) => ({
+				...s,
+				list: s.list.filter((t) => t._id !== ticketId),
+				pagination: {
+					...s.pagination,
+					total_data: Math.max(0, s.pagination.total_data - 1)
+				}
+			}));
+
 			try {
 				await ticketsApi.deleteTicket(ticketId);
-
-				update((s) => {
-					const newList = s.list.filter((t) => t._id !== ticketId && t.ticket_id !== ticketId);
-					const now = Date.now();
-					let newCache = s.defaultCache;
-					if (newCache) {
-						newCache = {
-							...newCache,
-							list: newCache.list.filter((t) => t._id !== ticketId && t.ticket_id !== ticketId),
-							lastUpdated: now
-						};
-					}
-
-					return {
-						...s,
-						list: newList,
-						defaultCache: newCache,
-						lastUpdated: now,
-						loading: false
-					};
-				});
+				// If success, maybe we should invalidate cache to be safe or keep optimistic
+				// Just let it be.
 			} catch (e) {
-				update((s) => ({ ...s, loading: false, error: 'Failed to delete ticket' }));
+				// Revert
+				update((s) => ({ ...s, list: oldList, defaultCache: oldCache }));
+				logger.error('Failed to delete ticket', e);
 				throw e;
 			}
 		},
 
 		create: async (payload: Partial<Ticket>) => {
-			update((s) => ({ ...s, loading: true }));
+			isTicketsLoading.set(true);
 			try {
 				const newTicket = await ticketsApi.createTicket(payload);
 				const now = Date.now();
@@ -135,19 +135,24 @@ function createTicketsStore() {
 					...s,
 					list: [newTicket, ...s.list],
 					lastUpdated: now,
-					loading: false,
 					defaultCache: s.defaultCache
 						? {
 							...s.defaultCache,
 							list: [newTicket, ...s.defaultCache.list],
 							lastUpdated: now
 						}
-						: null
+						: null,
+					pagination: {
+						...s.pagination,
+						total_data: s.pagination.total_data + 1
+					}
 				}));
 				return newTicket;
 			} catch (e) {
-				update((s) => ({ ...s, loading: false, error: 'Failed to create ticket' }));
+				update((s) => ({ ...s, error: 'Failed to create ticket' }));
 				throw e;
+			} finally {
+				isTicketsLoading.set(false);
 			}
 		},
 
@@ -209,7 +214,10 @@ function createTicketsStore() {
 			return titles;
 		},
 
-		reset: () => set(initialState)
+		reset: () => {
+			set(initialState);
+			isTicketsLoading.set(false);
+		}
 	};
 }
 
@@ -220,15 +228,13 @@ export const tickets = {
 	subscribe: (cb: (val: Ticket[]) => void) => ticketsStore.subscribe((val) => cb(val.list))
 };
 export const ticketsPagination = {
-	subscribe: (cb: (val: PaginationState) => void) =>
+	subscribe: (cb: (val: PaginationMeta) => void) =>
 		ticketsStore.subscribe((val) => cb(val.pagination))
 };
 export const ticketsFilters = {
 	subscribe: (cb: (val: TicketFilters) => void) => ticketsStore.subscribe((val) => cb(val.filters))
 };
-export const ticketsLoading = {
-	subscribe: (cb: (val: boolean) => void) => ticketsStore.subscribe((val) => cb(val.loading))
-};
+export const ticketsLoading = isTicketsLoading; // Alias
 export const ticketsError = {
 	subscribe: (cb: (val: string | null) => void) => ticketsStore.subscribe((val) => cb(val.error))
 };

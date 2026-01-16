@@ -7,7 +7,12 @@
 	import { scale } from 'svelte/transition';
 
 	import { EventCardSkeleton } from '$lib/components/skeletons';
-	import { eventsStore, upcomingEvents, upcomingLoading, upcomingError } from '$lib/stores/events';
+	import {
+		eventsStore,
+		upcomingEvents,
+		isUpcomingEventsLoading,
+		upcomingError
+	} from '$lib/stores/events';
 
 	const { t, locale } = useTranslation();
 
@@ -25,7 +30,6 @@
 		await eventsStore.loadUpcoming();
 	});
 
-	$: isLoading = $upcomingLoading;
 	$: error = $upcomingError;
 </script>
 
@@ -36,7 +40,7 @@
 />
 
 <div class="space-y-6">
-	{#if isLoading}
+	{#if $isUpcomingEventsLoading}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 			{#each Array(6) as _}
 				<EventCardSkeleton />
