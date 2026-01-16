@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { adminStore } from '$lib/stores/admin';
+	import { adminStore, isAdminMembersLoading } from '$lib/stores/admin';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { showToast } from '$lib/stores';
 	import type { Member } from '$lib/apis/members';
@@ -15,7 +15,6 @@
 
 	// Store state
 	$: membersList = $adminStore.members.data;
-	$: isLoading = $adminStore.members.loading;
 	$: error = $adminStore.members.error;
 	$: membersHasMore = $adminStore.members.hasMore;
 
@@ -65,7 +64,7 @@
 	}
 
 	function loadMoreMembers() {
-		if (membersHasMore && !isLoading) {
+		if (membersHasMore && !$isAdminMembersLoading) {
 			adminStore.loadMembers();
 		}
 	}
@@ -157,7 +156,7 @@
 		</button>
 	</div>
 
-	{#if isInitialLoad && isLoading}
+	{#if isInitialLoad && $isAdminMembersLoading}
 		<TableSkeleton
 			rows={10}
 			columns={[
@@ -173,7 +172,7 @@
 		<!-- Infinite Scroll Sentinel -->
 		{#if membersHasMore}
 			<div class="mt-4" use:infiniteScroll on:intersect={loadMoreMembers}>
-				{#if isLoading}
+				{#if $isAdminMembersLoading}
 					<TableSkeleton
 						rows={3}
 						columns={[

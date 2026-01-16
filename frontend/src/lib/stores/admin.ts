@@ -9,7 +9,6 @@ import type { AdminState } from '$lib/types';
 const initialState: AdminState = {
 	members: {
 		data: [],
-		loading: false,
 		hasMore: true,
 		page: 1,
 		total: 0,
@@ -18,7 +17,6 @@ const initialState: AdminState = {
 	},
 	setlists: {
 		data: [],
-		loading: false,
 		hasMore: true,
 		skip: 0,
 		limit: 20,
@@ -28,7 +26,6 @@ const initialState: AdminState = {
 	},
 	users: {
 		data: [],
-		loading: false,
 		hasMore: true,
 		page: 1,
 		total: 0,
@@ -36,6 +33,10 @@ const initialState: AdminState = {
 		error: null
 	}
 };
+
+export const isAdminMembersLoading = writable(false);
+export const isAdminSetlistsLoading = writable(false);
+export const isAdminUsersLoading = writable(false);
 
 function createAdminStore() {
 	const { subscribe, set, update } = writable<AdminState>(initialState);
@@ -47,7 +48,8 @@ function createAdminStore() {
 
 		async loadMembers(reset = false) {
 			const state = get({ subscribe });
-			const { loading, hasMore, page, search } = state.members;
+			const { hasMore, page, search } = state.members;
+			const loading = get(isAdminMembersLoading);
 
 			if (loading || (!hasMore && !reset)) return;
 
@@ -55,11 +57,11 @@ function createAdminStore() {
 				...s,
 				members: {
 					...s.members,
-					loading: true,
 					error: null,
 					...(reset ? { data: [], page: 1, hasMore: true } : {})
 				}
 			}));
+			isAdminMembersLoading.set(true);
 
 			try {
 				const currentPage = reset ? 1 : page;
@@ -77,7 +79,6 @@ function createAdminStore() {
 						members: {
 							...s.members,
 							data: newData,
-							loading: false,
 							page: currentPage + 1,
 							total: res.meta.total_data,
 							hasMore: res.data.length === 20 // Assuming limit is 20
@@ -89,8 +90,10 @@ function createAdminStore() {
 				showToast('Failed to load members', 'error');
 				update((s) => ({
 					...s,
-					members: { ...s.members, loading: false, error: 'Failed to load members' }
+					members: { ...s.members, error: 'Failed to load members' }
 				}));
+			} finally {
+				isAdminMembersLoading.set(false);
 			}
 		},
 
@@ -105,6 +108,7 @@ function createAdminStore() {
 		},
 
 		async createMember(data: Omit<Member, 'id'>) {
+			isAdminMembersLoading.set(true);
 			try {
 				await membersApi.create(data);
 				// Refresh list
@@ -113,10 +117,17 @@ function createAdminStore() {
 			} catch (e) {
 				console.error(e);
 				throw e;
+			} finally {
+				isAdminMembersLoading.set(false);
 			}
 		},
 
 		async updateMember(id: number, data: Partial<Member>) {
+			// Optimistic or simple wait? Let's verify requirement.
+			// Usually update doesn't trigger full loading list, but maybe a local one.
+			// For consistency with other stores, we rely on list update without global loading unless necessary.
+			// But here we might want to ensure consistency.
+			// Admin actions usually blocking.
 			try {
 				await membersApi.update(id, data);
 				// Optimistic update or refresh
@@ -155,7 +166,8 @@ function createAdminStore() {
 
 		async loadSetlists(reset = false) {
 			const state = get({ subscribe });
-			const { loading, hasMore, skip, limit, search } = state.setlists;
+			const { hasMore, skip, limit, search } = state.setlists;
+			const loading = get(isAdminSetlistsLoading);
 
 			if (loading || (!hasMore && !reset)) return;
 
@@ -163,11 +175,11 @@ function createAdminStore() {
 				...s,
 				setlists: {
 					...s.setlists,
-					loading: true,
 					error: null,
 					...(reset ? { data: [], skip: 0, hasMore: true } : {})
 				}
 			}));
+			isAdminSetlistsLoading.set(true);
 
 			try {
 				const currentSkip = reset ? 0 : skip;
@@ -184,7 +196,6 @@ function createAdminStore() {
 						setlists: {
 							...s.setlists,
 							data: newData,
-							loading: false,
 							skip: currentSkip + res.setlists.length,
 							total: res.total,
 							hasMore: res.setlists.length === limit
@@ -196,8 +207,10 @@ function createAdminStore() {
 				showToast('Failed to load setlists', 'error');
 				update((s) => ({
 					...s,
-					setlists: { ...s.setlists, loading: false, error: 'Failed to load setlists' }
+					setlists: { ...s.setlists, error: 'Failed to load setlists' }
 				}));
+			} finally {
+				isAdminSetlistsLoading.set(false);
 			}
 		},
 
@@ -210,6 +223,7 @@ function createAdminStore() {
 		},
 
 		async createSetlist(data: any) {
+			isAdminSetlistsLoading.set(true);
 			try {
 				await setlistsApi.create(data);
 				this.loadSetlists(true);
@@ -217,6 +231,8 @@ function createAdminStore() {
 			} catch (e) {
 				console.error(e);
 				throw e;
+			} finally {
+				isAdminSetlistsLoading.set(false);
 			}
 		},
 
@@ -262,7 +278,8 @@ function createAdminStore() {
 
 		async loadUsers(reset = false) {
 			const state = get({ subscribe });
-			const { loading, hasMore, page, search } = state.users;
+			const { hasMore, page, search } = state.users;
+			const loading = get(isAdminUsersLoading);
 
 			if (loading || (!hasMore && !reset)) return;
 
@@ -270,11 +287,11 @@ function createAdminStore() {
 				...s,
 				users: {
 					...s.users,
-					loading: true,
 					error: null,
 					...(reset ? { data: [], page: 1, hasMore: true } : {})
 				}
 			}));
+			isAdminUsersLoading.set(true);
 
 			try {
 				const currentPage = reset ? 1 : page;
@@ -291,7 +308,6 @@ function createAdminStore() {
 						users: {
 							...s.users,
 							data: newData,
-							loading: false,
 							page: currentPage + 1,
 							total: res.meta.total_data,
 							hasMore: res.meta.next_page !== null
@@ -303,8 +319,10 @@ function createAdminStore() {
 				showToast('Failed to load users', 'error');
 				update((s) => ({
 					...s,
-					users: { ...s.users, loading: false, error: 'Failed to load users' }
+					users: { ...s.users, error: 'Failed to load users' }
 				}));
+			} finally {
+				isAdminUsersLoading.set(false);
 			}
 		},
 

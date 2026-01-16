@@ -7,14 +7,12 @@ import { logger } from '$lib/utils/logger';
 interface EventsState {
 	upcoming: {
 		list: Event[];
-		loading: boolean;
 		error: string | null;
 		lastUpdated: number;
 	};
 	history: {
 		list: Event[];
 		pagination: PaginationMeta;
-		loading: boolean;
 		error: string | null;
 		lastUpdated: number;
 		// Cache specifically for page 1
@@ -26,11 +24,13 @@ interface EventsState {
 	};
 }
 
+export const isUpcomingEventsLoading = writable(false);
+export const isHistoryEventsLoading = writable(false);
+
 function createEventsStore() {
 	const initialState: EventsState = {
 		upcoming: {
 			list: [],
-			loading: false,
 			error: null,
 			lastUpdated: 0
 		},
@@ -43,7 +43,6 @@ function createEventsStore() {
 				per_page: 20,
 				next_page: null
 			},
-			loading: false,
 			error: null,
 			lastUpdated: 0,
 			defaultCache: null
@@ -54,7 +53,11 @@ function createEventsStore() {
 
 	return {
 		subscribe,
-		reset: () => set(initialState),
+		reset: () => {
+			set(initialState);
+			isUpcomingEventsLoading.set(false);
+			isHistoryEventsLoading.set(false);
+		},
 
 		loadUpcoming: async (forceRefresh = false) => {
 			const state = get({ subscribe });
@@ -68,7 +71,8 @@ function createEventsStore() {
 				return;
 			}
 
-			update((s) => ({ ...s, upcoming: { ...s.upcoming, loading: true, error: null } }));
+			update((s) => ({ ...s, upcoming: { ...s.upcoming, error: null } }));
+			isUpcomingEventsLoading.set(true);
 
 			try {
 				const res = await events.getCurrentEvents(1, 100); // Fetch mostly all current events
@@ -76,7 +80,6 @@ function createEventsStore() {
 					...s,
 					upcoming: {
 						list: res.data,
-						loading: false,
 						error: null,
 						lastUpdated: now
 					}
@@ -85,8 +88,10 @@ function createEventsStore() {
 				logger.error('Failed to load upcoming events', e);
 				update((s) => ({
 					...s,
-					upcoming: { ...s.upcoming, loading: false, error: 'Failed to load upcoming events' }
+					upcoming: { ...s.upcoming, error: 'Failed to load upcoming events' }
 				}));
+			} finally {
+				isUpcomingEventsLoading.set(false);
 			}
 		},
 
@@ -94,7 +99,7 @@ function createEventsStore() {
 			const state = get({ subscribe });
 			const now = Date.now();
 
-			// Optimistic Check for Page 1
+			// Optimistic Check for page 1
 			if (page === 1 && !forceRefresh && state.history.defaultCache) {
 				if (!isCacheExpired(state.history.defaultCache.lastUpdated)) {
 					update((s) => ({
@@ -103,7 +108,6 @@ function createEventsStore() {
 							...s.history,
 							list: s.history.defaultCache!.list,
 							pagination: s.history.defaultCache!.pagination,
-							loading: false,
 							error: null
 						}
 					}));
@@ -111,7 +115,8 @@ function createEventsStore() {
 				}
 			}
 
-			update((s) => ({ ...s, history: { ...s.history, loading: true, error: null } }));
+			update((s) => ({ ...s, history: { ...s.history, error: null } }));
+			isHistoryEventsLoading.set(true);
 
 			try {
 				const res = await events.getEvents(page, 20); // API defaults, matches UI limit
@@ -123,7 +128,6 @@ function createEventsStore() {
 							...s.history,
 							list: res.data,
 							pagination: res.meta,
-							loading: false,
 							error: null,
 							lastUpdated: now
 						}
@@ -143,8 +147,10 @@ function createEventsStore() {
 				logger.error('Failed to load event history', e);
 				update((s) => ({
 					...s,
-					history: { ...s.history, loading: false, error: 'Failed to load event history' }
+					history: { ...s.history, error: 'Failed to load event history' }
 				}));
+			} finally {
+				isHistoryEventsLoading.set(false);
 			}
 		}
 	};
@@ -157,10 +163,7 @@ export const upcomingEvents = {
 	subscribe: (cb: (val: Event[]) => void) => eventsStore.subscribe((val) => cb(val.upcoming.list))
 };
 
-export const upcomingLoading = {
-	subscribe: (cb: (val: boolean) => void) =>
-		eventsStore.subscribe((val) => cb(val.upcoming.loading))
-};
+export const upcomingLoading = isUpcomingEventsLoading; // Alias to new store
 
 export const historyEvents = {
 	subscribe: (cb: (val: Event[]) => void) => eventsStore.subscribe((val) => cb(val.history.list))
@@ -171,9 +174,7 @@ export const historyPagination = {
 		eventsStore.subscribe((val) => cb(val.history.pagination))
 };
 
-export const historyLoading = {
-	subscribe: (cb: (val: boolean) => void) => eventsStore.subscribe((val) => cb(val.history.loading))
-};
+export const historyLoading = isHistoryEventsLoading; // Alias to new store
 
 export const upcomingError = {
 	subscribe: (cb: (val: string | null) => void) =>

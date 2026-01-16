@@ -6,20 +6,19 @@ import { logger } from '$lib/utils/logger';
 // --- Setlists Store ---
 interface SetlistsState {
 	data: Setlist[] | null;
-	loading: boolean;
 	error: string | null;
 	detailCache: Record<string, SetlistDetailResponse>;
-	detailLoading: boolean;
 	detailError: string | null;
 }
+
+export const isSetlistsLoading = writable(false);
+export const isSetlistDetailLoading = writable(false);
 
 function createSetlistsStore() {
 	const initialState: SetlistsState = {
 		data: null,
-		loading: false,
 		error: null,
 		detailCache: {},
-		detailLoading: false,
 		detailError: null
 	};
 
@@ -31,45 +30,53 @@ function createSetlistsStore() {
 			const state = get({ subscribe });
 			if (state.data) return; // Use cache if available
 
-			update((s) => ({ ...s, loading: true, error: null }));
+			update((s) => ({ ...s, error: null }));
+			isSetlistsLoading.set(true);
 
 			try {
 				const response = await setlistsApi.getAll();
 				update((s) => ({
 					...s,
 					data: response.setlists,
-					loading: false,
 					error: null
 				}));
 				maxAttendanceStore.set(response.maxAttendance || 1);
 			} catch (e) {
 				logger.error('Failed to load setlists', e, { context: 'SetlistsStore' });
-				update((s) => ({ ...s, loading: false, error: 'Failed to load setlists' }));
+				update((s) => ({ ...s, error: 'Failed to load setlists' }));
 				throw e;
+			} finally {
+				isSetlistsLoading.set(false);
 			}
 		},
 		loadDetail: async (id: string) => {
 			const state = get({ subscribe });
 			if (state.detailCache[id]) return state.detailCache[id];
 
-			update((s) => ({ ...s, detailLoading: true, detailError: null }));
+			update((s) => ({ ...s, detailError: null }));
+			isSetlistDetailLoading.set(true);
 
 			try {
 				const detail = await setlistsApi.getDetail(id);
 				update((s) => ({
 					...s,
 					detailCache: { ...s.detailCache, [id]: detail },
-					detailLoading: false,
 					detailError: null
 				}));
 				return detail;
 			} catch (e) {
 				logger.error('Failed to load details', e, { context: 'SetlistsStore' });
-				update((s) => ({ ...s, detailLoading: false, detailError: 'Failed to load detail' }));
+				update((s) => ({ ...s, detailError: 'Failed to load detail' }));
 				throw e;
+			} finally {
+				isSetlistDetailLoading.set(false);
 			}
 		},
-		reset: () => set(initialState)
+		reset: () => {
+			set(initialState);
+			isSetlistsLoading.set(false);
+			isSetlistDetailLoading.set(false);
+		}
 	};
 }
 
@@ -83,9 +90,10 @@ interface MembersState {
 	cache: Record<string, { members: Member[]; pagination: { page: number; hasMore: boolean } }>; // Cache by filter key
 	generationsCache: string[] | null;
 	currentFilter: { generation?: string; search?: string }; // Track current filter
-	loading: boolean;
 	error: string | null;
 }
+
+export const isMembersLoading = writable(false);
 
 function createMembersStore() {
 	const initialState: MembersState = {
@@ -94,7 +102,6 @@ function createMembersStore() {
 		cache: {},
 		generationsCache: null,
 		currentFilter: {},
-		loading: false,
 		error: null
 	};
 
@@ -117,7 +124,6 @@ function createMembersStore() {
 					list: cached.members,
 					pagination: cached.pagination,
 					currentFilter: { generation: params.generation, search: params.search },
-					loading: false,
 					error: null
 				}));
 				return;
@@ -126,7 +132,8 @@ function createMembersStore() {
 			// Check if we need to load more at all
 			if (!reset && !state.pagination.hasMore) return;
 
-			update((s) => ({ ...s, loading: true, error: null }));
+			update((s) => ({ ...s, error: null }));
+			isMembersLoading.set(true);
 
 			try {
 				const pageToLoad = reset ? 1 : state.pagination.page + 1;
@@ -149,7 +156,6 @@ function createMembersStore() {
 						list: newList,
 						pagination: newPagination,
 						currentFilter: { generation: params.generation, search: params.search },
-						loading: false,
 						cache: {
 							...s.cache,
 							[cacheKey]: { members: newList, pagination: newPagination }
@@ -158,8 +164,10 @@ function createMembersStore() {
 				});
 			} catch (e) {
 				logger.error('Failed to load members', e, { context: 'MembersStore' });
-				update((s) => ({ ...s, loading: false, error: 'Failed to load members' }));
+				update((s) => ({ ...s, error: 'Failed to load members' }));
 				throw e;
+			} finally {
+				isMembersLoading.set(false);
 			}
 		},
 		getGenerations: async () => {
@@ -172,7 +180,10 @@ function createMembersStore() {
 			update((s) => ({ ...s, generationsCache: generations }));
 			return generations;
 		},
-		reset: () => set(initialState)
+		reset: () => {
+			set(initialState);
+			isMembersLoading.set(false);
+		}
 	};
 }
 

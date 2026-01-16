@@ -6,7 +6,7 @@
 	import { type SetlistDetailResponse } from '$lib/apis/setlists';
 
 	import { ticketsStore, showToast } from '$lib/stores';
-	import { setlistsStore } from '$lib/stores/theater';
+	import { setlistsStore, isSetlistDetailLoading } from '$lib/stores/theater';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { ArrowLeft, Ticket, DollarSign, Trophy } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -25,7 +25,6 @@
 
 	// State from store
 	let detail: SetlistDetailResponse | null = null;
-	$: isLoading = $setlistsStore.detailLoading;
 	$: error = $setlistsStore.detailError;
 	let deleteId: string | null = null;
 	let isDeleting = false;
@@ -81,7 +80,7 @@
 	onConfirm={confirmDelete}
 />
 
-{#if isLoading}
+{#if $isSetlistDetailLoading}
 	<div class="animate-pulse space-y-8 max-w-5xl mx-auto">
 		<!-- New Hero Skeleton -->
 		<div class="h-[400px] w-full bg-gray-200 dark:bg-zinc-800 rounded-3xl"></div>

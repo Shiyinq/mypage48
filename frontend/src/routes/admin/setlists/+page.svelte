@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { adminStore } from '$lib/stores/admin';
+	import { adminStore, isAdminSetlistsLoading } from '$lib/stores/admin';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { showToast } from '$lib/stores';
 	import type { Setlist } from '$lib/apis/setlists';
@@ -15,7 +15,6 @@
 
 	// Store state
 	$: setlistsList = $adminStore.setlists.data;
-	$: isLoading = $adminStore.setlists.loading;
 	$: error = $adminStore.setlists.error;
 	$: setlistsHasMore = $adminStore.setlists.hasMore;
 
@@ -65,7 +64,7 @@
 	}
 
 	function loadMoreSetlists() {
-		if (setlistsHasMore && !isLoading) {
+		if (setlistsHasMore && !$isAdminSetlistsLoading) {
 			adminStore.loadSetlists();
 		}
 	}
@@ -157,7 +156,7 @@
 		</button>
 	</div>
 
-	{#if isInitialLoad && isLoading}
+	{#if isInitialLoad && $isAdminSetlistsLoading}
 		<TableSkeleton
 			rows={10}
 			columns={[
@@ -178,7 +177,7 @@
 		<!-- Infinite Scroll Sentinel -->
 		{#if setlistsHasMore}
 			<div class="mt-4" use:infiniteScroll on:intersect={loadMoreSetlists}>
-				{#if isLoading}
+				{#if $isAdminSetlistsLoading}
 					<TableSkeleton
 						rows={3}
 						columns={[

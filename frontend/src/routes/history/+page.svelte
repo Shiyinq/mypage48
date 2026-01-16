@@ -1,6 +1,6 @@
 <script lang="ts">
 	export let params: Record<string, string> | undefined = undefined;
-	import { ticketsStore, showToast, isInitialDataLoaded } from '$lib/stores';
+	import { ticketsStore, showToast, isInitialDataLoaded, isTicketsLoading } from '$lib/stores';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { invalidateTheater } from '$lib/stores/theater';
 	import { logger } from '$lib/utils/logger';
@@ -32,8 +32,8 @@
 	$: filteredTickets = state.list;
 	$: pagination = state.pagination;
 	$: filters = state.filters;
-	$: isLoading = state.loading;
 	$: error = state.error;
+	$: hasMore = pagination.current_page < pagination.last_page;
 
 	// Main Component Logic
 	let viewMode: 'GRID' | 'TABLE' = 'GRID';
@@ -65,8 +65,8 @@
 	}
 
 	function handleIntersect() {
-		if (!mounted || isLoading || !pagination.hasMore) return;
-		loadTickets(pagination.page + 1, filters);
+		if (!mounted || $isTicketsLoading || !hasMore) return;
+		loadTickets(pagination.current_page + 1, filters);
 	}
 
 	let searchTimeout: ReturnType<typeof setTimeout>;
@@ -176,7 +176,7 @@
 			description={$t('history.errorDesc') || error || ''}
 			onRetry={() => loadTickets(1, filters)}
 		/>
-	{:else if isLoading && filteredTickets.length === 0}
+	{:else if $isTicketsLoading && filteredTickets.length === 0}
 		{#if viewMode === 'GRID'}
 			<TicketCardSkeleton count={6} />
 		{:else}
@@ -222,13 +222,13 @@
 		{/if}
 
 		<!-- Sentinel for infinite scroll -->
-		{#if pagination.hasMore}
+		{#if hasMore}
 			<div
 				use:infiniteScroll
 				on:intersect={handleIntersect}
 				class="w-full py-6 flex justify-center"
 			>
-				{#if isLoading}
+				{#if $isTicketsLoading}
 					{#if viewMode === 'GRID'}
 						<div class="w-full">
 							<TicketCardSkeleton count={3} />

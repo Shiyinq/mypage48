@@ -11,7 +11,7 @@
 	import { KamiOshiCard, Leaderboard } from '$lib/components/top2shot';
 	import { Top2ShotSkeleton } from '$lib/components/skeletons';
 	import type { TopTwoShotResponse } from '$lib/types';
-	import { topTwoShotStore } from '$lib/stores/memories';
+	import { topTwoShotStore, isTopTwoShotLoading } from '$lib/stores/memories';
 
 	const { t } = useTranslation();
 
@@ -26,7 +26,6 @@
 	};
 
 	$: stats = $topTwoShotStore.data || defaultStats;
-	$: isLoading = $topTwoShotStore.loading || !mounted;
 	$: error = $topTwoShotStore.error;
 
 	onMount(async () => {
@@ -65,7 +64,7 @@
 		/>
 	</div>
 
-	{#if isLoading}
+	{#if $isTopTwoShotLoading || !mounted}
 		<Top2ShotSkeleton />
 	{:else if error && stats.ranking.length === 0}
 		<ErrorState

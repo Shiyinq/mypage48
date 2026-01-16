@@ -9,7 +9,7 @@
 	import { Lightbox, MemoryFilters, MemoryCard, type FilterType } from '$lib/components/memories';
 	import { PolaroidSkeleton } from '$lib/components/skeletons';
 	import type { MemoryItem } from '$lib/types';
-	import { galleryStore } from '$lib/stores/memories';
+	import { galleryStore, isGalleryLoading } from '$lib/stores/memories';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { isCacheExpired } from '$lib/utils/cache';
 
@@ -20,7 +20,6 @@
 	$: memories = state.list;
 	$: pagination = state.pagination;
 	$: filter = state.filter;
-	$: isLoading = state.loading;
 	$: error = state.error;
 
 	let selectedImage: MemoryItem | null = null;
@@ -41,7 +40,7 @@
 		// But here we might want to check if ALREADY loading in store?
 		// relying on store's internal state or just firing it.
 		// Since we removed local `isLoadingMore`, we should check store `isLoading`.
-		if (isLoading) return;
+		if ($isGalleryLoading) return;
 
 		// If not page 1 and no more, don't load
 		if (page > 1 && !pagination.hasMore) return;
@@ -73,7 +72,7 @@
 
 	// Infinite scroll handler
 	function handleIntersect() {
-		if (!mounted || isLoading || !pagination.hasMore) return;
+		if (!mounted || $isGalleryLoading || !pagination.hasMore) return;
 		loadMemories(pagination.page + 1);
 	}
 
@@ -110,7 +109,7 @@
 			description={$t('memories.errorDesc') || error || ''}
 			onRetry={() => loadMemories(1)}
 		/>
-	{:else if isLoading && memories.length === 0}
+	{:else if $isGalleryLoading && memories.length === 0}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4">
 			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each Array(8) as _unused, index}
@@ -141,7 +140,7 @@
 				on:intersect={handleIntersect}
 				class="w-full py-8 flex justify-center"
 			>
-				{#if isLoading}
+				{#if $isGalleryLoading}
 					<div
 						class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 px-4 w-full"
 					>

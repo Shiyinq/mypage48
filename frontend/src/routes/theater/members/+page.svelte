@@ -9,7 +9,7 @@
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { Search } from 'lucide-svelte';
-	import { membersStore } from '$lib/stores/theater';
+	import { membersStore, isMembersLoading } from '$lib/stores/theater';
 	import MemberCard from '$lib/components/theater/MemberCard.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 
@@ -26,13 +26,12 @@
 	$: state = $membersStore;
 	$: membersList = state.list;
 	$: pagination = state.pagination;
-	$: isLoading = state.loading;
 
 	// Error is now managed by store, but we can keep a local derived one if needed or just use store's
 	$: error = state.error;
 
 	// IsAppending logic: inferred if loading is true and list is not empty
-	$: isAppending = isLoading && membersList.length > 0 && pagination.page > 0;
+	$: isAppending = $isMembersLoading && membersList.length > 0 && pagination.page > 0;
 
 	async function fetchGenerations() {
 		try {
@@ -49,7 +48,7 @@
 
 	// Fetch members
 	async function fetchMembers(reset = false) {
-		if (isLoading) return;
+		if ($isMembersLoading) return;
 
 		try {
 			await membersStore.load(
@@ -101,7 +100,7 @@
 	});
 
 	function handleInfiniteScroll() {
-		if (!isLoading && pagination.hasMore) {
+		if (!$isMembersLoading && pagination.hasMore) {
 			fetchMembers(false);
 		}
 	}
@@ -166,7 +165,7 @@
 </div>
 
 <!-- Members Grid -->
-{#if isLoading}
+{#if $isMembersLoading}
 	<div
 		class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4"
 	>

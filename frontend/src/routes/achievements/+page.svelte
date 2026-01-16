@@ -2,7 +2,7 @@
 	export let params: Record<string, string> | undefined = undefined;
 	import { isAuthenticated, showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
-	import { achievementsStore } from '$lib/stores/achievements';
+	import { achievementsStore, isAchievementsLoading } from '$lib/stores/achievements';
 	import { onMount } from 'svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import {
@@ -52,7 +52,6 @@
 	// Subscribe to store
 	$: state = $achievementsStore;
 	$: data = state.data;
-	$: isLoading = state.loading;
 	$: error = state.error;
 
 	$: unlocked = data?.achievements.filter((m) => m.isUnlocked) ?? [];
@@ -94,7 +93,7 @@
 
 	<!-- Grid Layout -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-		{#if isLoading}
+		{#if $isAchievementsLoading}
 			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each Array(9) as _unused}
 				<AchievementSkeleton />
