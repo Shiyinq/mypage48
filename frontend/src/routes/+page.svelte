@@ -25,7 +25,7 @@
 	} from '$lib/components/dashboard';
 
 	// Import dashboard store
-	import { dashboardFilter, dashboardStatsData } from '$lib/stores/dashboard';
+	import { dashboardFilter, dashboardStatsData, isDashboardLoading } from '$lib/stores/dashboard';
 
 	const { t } = useTranslation();
 
@@ -34,7 +34,6 @@
 	// Dashboard data sourced from store
 	$: state = $dashboardStatsData;
 	$: dashboardStats = state.data;
-	$: isLoading = state.loading;
 	$: error = state.error;
 
 	const currentYear: number = new Date().getFullYear();
@@ -228,7 +227,7 @@
 					sub={$t('dashboard.theater.timesWatched')}
 					icon={TicketIcon}
 					theme="red"
-					loading={isLoading}
+					loading={$isDashboardLoading}
 				/>
 				<StatCard
 					title={$t('dashboard.theater.spending')}
@@ -239,7 +238,7 @@
 					}).format(totalSpent)}
 					icon={DollarSign}
 					theme="emerald"
-					loading={isLoading}
+					loading={$isDashboardLoading}
 					hideable={true}
 				/>
 				<StatCard
@@ -250,21 +249,21 @@
 					icon={Armchair}
 					theme="amber"
 					showCrown={true}
-					loading={isLoading}
+					loading={$isDashboardLoading}
 				/>
 
 				<TopShowCard
 					title={topShowStats.title}
 					count={topShowStats.count}
 					image={topShowStats.image}
-					loading={isLoading}
+					loading={$isDashboardLoading}
 				/>
 
 				<!-- First & Last Show Card -->
 				<FirstLastCard
 					title={`${$t('dashboard.theater.firstLast')} ${!$dashboardFilter.isAllData ? $dashboardFilter.selectedYear : ''}`}
 					type="theater"
-					loading={isLoading}
+					loading={$isDashboardLoading}
 					onExpand={() => (showTheaterPopup = true)}
 					first={showExtremes.first}
 					last={showExtremes.last}
@@ -288,7 +287,7 @@
 					sub={$t('dashboard.twoShot.collected')}
 					icon={Camera}
 					theme="pink"
-					loading={isLoading}
+					loading={$isDashboardLoading}
 				/>
 				<StatCard
 					title={$t('dashboard.twoShot.spending')}
@@ -299,7 +298,7 @@
 					}).format(twoShotStats.totalSpend)}
 					icon={DollarSign}
 					theme="emerald"
-					loading={isLoading}
+					loading={$isDashboardLoading}
 					hideable={true}
 				/>
 				<StatCard
@@ -308,7 +307,7 @@
 					sub={$t('dashboard.twoShot.uniqueIdols')}
 					icon={Users}
 					theme="blue"
-					loading={isLoading}
+					loading={$isDashboardLoading}
 				/>
 
 				<!-- Top 2-Shot Card -->
@@ -316,14 +315,14 @@
 					name={twoShotStats.mostCollected?.name || null}
 					count={twoShotStats.mostCollected?.count || 0}
 					image={twoShotStats.mostCollected?.image || undefined}
-					loading={isLoading}
+					loading={$isDashboardLoading}
 				/>
 
 				<!-- First & Last 2-Shot Card -->
 				<FirstLastCard
 					title={`${$t('dashboard.twoShot.firstLast')} ${!$dashboardFilter.isAllData ? $dashboardFilter.selectedYear : ''}`}
 					type="twoShot"
-					loading={isLoading}
+					loading={$isDashboardLoading}
 					onExpand={() => (showTwoShotPopup = true)}
 					first={twoShotExtremes.first}
 					last={twoShotExtremes.last}
@@ -333,13 +332,13 @@
 	</div>
 
 	<!-- THEATER MAP -->
-	<TheaterSeatMap {rowStats} {seatStats} {isLoading} />
+	<TheaterSeatMap {rowStats} {seatStats} isLoading={$isDashboardLoading} />
 
 	<div class="grid lg:grid-cols-3 gap-6">
 		<MonthlyAttendance
 			stats={monthlyStats.stats}
 			maxCount={monthlyStats.maxCount}
-			loading={isLoading}
+			loading={$isDashboardLoading}
 			subtitle={$dashboardFilter.isAllData
 				? availableYears.length > 1
 					? `${Math.min(...availableYears)} - ${Math.max(...availableYears)}`
@@ -347,7 +346,11 @@
 				: `${$dashboardFilter.selectedYear}`}
 		/>
 
-		<DayPreference stats={dayStats.stats} maxCount={dayStats.maxCount} loading={isLoading} />
+		<DayPreference
+			stats={dayStats.stats}
+			maxCount={dayStats.maxCount}
+			loading={$isDashboardLoading}
+		/>
 	</div>
 </div>
 
