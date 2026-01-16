@@ -20,15 +20,15 @@ export const dashboardFilter = writable<DashboardFilterState>({
 	isAllData: false
 });
 
+export const isDashboardLoading = writable(false);
+
 // Create smart store for stats
 function createDashboardStore() {
 	const { subscribe, set, update } = writable<{
 		data: DashboardStats | null;
-		loading: boolean;
 		error: string | null;
 	}>({
 		data: null,
-		loading: false,
 		error: null
 	});
 	const lastFetchedFilter = writable<string>('');
@@ -47,7 +47,8 @@ function createDashboardStore() {
 				return;
 			}
 
-			update((s) => ({ ...s, loading: true, error: null }));
+			update((s) => ({ ...s, error: null }));
+			isDashboardLoading.set(true);
 
 			try {
 				const stats = await dashboard.getStats({
@@ -56,16 +57,18 @@ function createDashboardStore() {
 					endMonth: filter.endMonth,
 					isAllData: filter.isAllData
 				});
-				set({ data: stats, loading: false, error: null });
+				set({ data: stats, error: null });
 				lastFetchedFilter.set(currentFilterKey);
 			} catch (e) {
 				logger.error('Failed to load dashboard stats', e, { context: 'DashboardStore' });
-				update((s) => ({ ...s, loading: false, error: 'Failed to load dashboard stats' }));
+				update((s) => ({ ...s, error: 'Failed to load dashboard stats' }));
 				// Optional: don't throw, let store error state handle UI
+			} finally {
+				isDashboardLoading.set(false);
 			}
 		},
 		reset: () => {
-			set({ data: null, loading: false, error: null });
+			set({ data: null, error: null });
 			lastFetchedFilter.set('');
 			dashboardFilter.set({
 				selectedYear: new Date().getFullYear(),
@@ -73,10 +76,12 @@ function createDashboardStore() {
 				endMonth: 11,
 				isAllData: false
 			});
+			isDashboardLoading.set(false);
 		},
 		invalidate: () => {
-			set({ data: null, loading: false, error: null });
+			set({ data: null, error: null });
 			lastFetchedFilter.set('');
+			isDashboardLoading.set(false);
 		}
 	};
 }
