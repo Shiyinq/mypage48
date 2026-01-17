@@ -60,7 +60,12 @@ function createTicketsStore() {
 			// Don't reload if we have data and it's fresh (and filters match)
 			// Simplification: only rely on explicit load call triggering fetch unless cached above
 			// But we need to update filters in state
-			update((s) => ({ ...s, filters, error: null }));
+			update((s) => ({
+				...s,
+				filters,
+				error: null,
+				list: page === 1 ? [] : s.list
+			}));
 			isTicketsLoading.set(true);
 
 			try {
