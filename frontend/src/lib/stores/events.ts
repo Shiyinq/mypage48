@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { events } from '$lib/apis/events';
-import type { Event, PaginationMeta } from '$lib/types';
+import type { Event, CalendarEvent, PaginationMeta } from '$lib/types';
 import { isCacheExpired } from '$lib/utils/cache';
 import { logger } from '$lib/utils/logger';
 
@@ -22,10 +22,19 @@ interface EventsState {
 			lastUpdated: number;
 		} | null;
 	};
+	calendar: {
+		list: CalendarEvent[];
+		error: string | null;
+		lastUpdated: number;
+		year: number;
+		month: number;
+		cache: Record<string, { list: CalendarEvent[]; lastUpdated: number }>;
+	};
 }
 
 export const isUpcomingEventsLoading = writable(false);
 export const isHistoryEventsLoading = writable(false);
+export const isCalendarEventsLoading = writable(false);
 
 function createEventsStore() {
 	const initialState: EventsState = {
@@ -46,6 +55,14 @@ function createEventsStore() {
 			error: null,
 			lastUpdated: 0,
 			defaultCache: null
+		},
+		calendar: {
+			list: [],
+			error: null,
+			lastUpdated: 0,
+			year: 0,
+			month: 0,
+			cache: {}
 		}
 	};
 
@@ -152,6 +169,90 @@ function createEventsStore() {
 			} finally {
 				isHistoryEventsLoading.set(false);
 			}
+		},
+
+		loadCalendar: async (year: number, month: number, forceRefresh = false) => {
+			const state = get({ subscribe });
+			const now = Date.now();
+			const cacheKey = `${year}-${month}`;
+
+			// 1. Check current view match (fastest)
+			if (
+				!forceRefresh &&
+				state.calendar.year === year &&
+				state.calendar.month === month &&
+				state.calendar.list.length > 0 &&
+				!isCacheExpired(state.calendar.lastUpdated)
+			) {
+				return;
+			}
+
+			// 2. Check cache for this specific month
+			if (
+				!forceRefresh &&
+				state.calendar.cache[cacheKey] &&
+				!isCacheExpired(state.calendar.cache[cacheKey].lastUpdated)
+			) {
+				const cached = state.calendar.cache[cacheKey];
+				update((s) => ({
+					...s,
+					calendar: {
+						...s.calendar,
+						list: cached.list,
+						error: null,
+						lastUpdated: cached.lastUpdated,
+						year,
+						month
+					}
+				}));
+				return;
+			}
+
+			// Clear the list if the requested month/year is different to avoid stale events
+			const shouldClear = state.calendar.year !== year || state.calendar.month !== month;
+
+			update((s) => ({
+				...s,
+				calendar: {
+					...s.calendar,
+					error: null,
+					list: shouldClear ? [] : s.calendar.list,
+					year,
+					month
+				}
+			}));
+
+			isCalendarEventsLoading.set(true);
+
+			try {
+				const res = await events.getCalendarEvents(year, month);
+				update((s) => ({
+					...s,
+					calendar: {
+						...s.calendar,
+						list: res,
+						error: null,
+						lastUpdated: now,
+						year,
+						month,
+						cache: {
+							...s.calendar.cache,
+							[cacheKey]: {
+								list: res,
+								lastUpdated: now
+							}
+						}
+					}
+				}));
+			} catch (e) {
+				logger.error('Failed to load calendar events', e);
+				update((s) => ({
+					...s,
+					calendar: { ...s.calendar, error: 'Failed to load calendar events' }
+				}));
+			} finally {
+				isCalendarEventsLoading.set(false);
+			}
 		}
 	};
 }
@@ -175,6 +276,18 @@ export const historyPagination = {
 };
 
 export const historyLoading = isHistoryEventsLoading; // Alias to new store
+
+// Calendar Derived Stores
+export const calendarEvents = {
+	subscribe: (cb: (val: CalendarEvent[]) => void) => eventsStore.subscribe((val) => cb(val.calendar.list))
+};
+
+export const calendarLoading = isCalendarEventsLoading;
+
+export const calendarError = {
+	subscribe: (cb: (val: string | null) => void) =>
+		eventsStore.subscribe((val) => cb(val.calendar.error))
+};
 
 export const upcomingError = {
 	subscribe: (cb: (val: string | null) => void) =>

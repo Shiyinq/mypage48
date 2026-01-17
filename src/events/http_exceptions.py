@@ -8,3 +8,7 @@ class EventNotFound(NotFound):
 
 class EventCreateError(InternalServerError):
     DETAIL = ErrorCode.EVENT_CREATE_ERROR
+
+
+class EventFetchFailed(InternalServerError):
+    DETAIL = ErrorCode.EVENT_FETCH_ERROR

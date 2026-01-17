@@ -8,3 +8,7 @@ class EventCreationError(DomainException):
 
 class EventNotFoundError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.EVENT_NOT_FOUND
+
+
+class EventFetchError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.EVENT_FETCH_FAILED
