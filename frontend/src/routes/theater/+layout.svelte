@@ -118,6 +118,21 @@
 					<div class="flex items-center text-gray-300 dark:text-gray-600">
 						<ChevronRight class="w-4 h-4" />
 					</div>
+
+					<!-- Calendar Link -->
+					{@const calendarTheme = getThemeStyles('blue')}
+					<a
+						href="/theater/events/calendar"
+						class={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 whitespace-nowrap ${
+							currentPath === '/theater/events/calendar'
+								? calendarTheme.navActive
+								: `bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 ${calendarTheme.navInactive}`
+						}`}
+					>
+						<Calendar class="w-4 h-4" />
+						{$t('theater.events.calendar') || 'Calendar'}
+					</a>
+
 					{@const historyTheme = getThemeStyles('orange')}
 					<a
 						href="/theater/events/history"

@@ -469,7 +469,8 @@
 			"subtitle": "Browse theater events",
 			"eventName": "Event Name",
 			"members": "Members",
-			"today": "Today"
+			"today": "Today",
+			"calendar": "Calendar"
 		},
 		"members": {
 			"title": "Members",

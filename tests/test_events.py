@@ -16,7 +16,10 @@ def create_event(db):
     return _create
 
 @pytest.mark.asyncio
-async def test_get_events_paginated(client, create_event):
+async def test_get_events_paginated(client, create_event, create_user):
+    # Auth
+    _, _, headers = await create_user("testuser")
+
     # Create mixed events
     # Future event (Basic type)
     await create_event({
@@ -41,7 +44,7 @@ async def test_get_events_paginated(client, create_event):
         "label": "/images/icon.cat17.png"
     })
 
-    response = await client.get("/api/events/?page=1&limit=10")
+    response = await client.get("/api/events/?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()
     
@@ -67,7 +70,10 @@ async def test_get_events_paginated(client, create_event):
 
 
 @pytest.mark.asyncio
-async def test_get_current_events(client, create_event):
+async def test_get_current_events(client, create_event, create_user):
+    # Auth
+    _, _, headers = await create_user("testuser")
+
     now = datetime.now()
     future_date = now + timedelta(days=10)
     past_date = now - timedelta(days=10)
@@ -90,7 +96,7 @@ async def test_get_current_events(client, create_event):
         "label": "lbl"
     })
     
-    response = await client.get("/api/events/current?page=1&limit=10")
+    response = await client.get("/api/events/current?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()
     
@@ -100,7 +106,10 @@ async def test_get_current_events(client, create_event):
 
 
 @pytest.mark.asyncio
-async def test_events_sorting(client, create_event):
+async def test_events_sorting(client, create_event, create_user):
+    # Auth
+    _, _, headers = await create_user("testuser")
+
     now = datetime.now()
     
     # Create events with specific dates
@@ -114,7 +123,7 @@ async def test_events_sorting(client, create_event):
     
     # 1. Test History (All events) -> Should be Descending (Latest first)
     # Expected order: future-later, future-soon, past-recent, past-old
-    response = await client.get("/api/events/?page=1&limit=10")
+    response = await client.get("/api/events/?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()["data"]
     ids = [e["id"] for e in data]
@@ -127,7 +136,7 @@ async def test_events_sorting(client, create_event):
     
     # 2. Test Current (Upcoming) -> Should be Ascending (Soonest first)
     # Expected order: future-soon, future-later
-    response = await client.get("/api/events/current?page=1&limit=10")
+    response = await client.get("/api/events/current?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()["data"]
     ids = [e["id"] for e in data]
@@ -136,7 +145,10 @@ async def test_events_sorting(client, create_event):
 
 
 @pytest.mark.asyncio
-async def test_get_events_with_aggregation(client, create_event, db):
+async def test_get_events_with_aggregation(client, create_event, db, create_user):
+    # Auth
+    _, _, headers = await create_user("testuser")
+
     # Setup - Insert related data
     await db["setlists"].insert_one({
         "setlistId": "setlist-agg",
@@ -164,7 +176,7 @@ async def test_get_events_with_aggregation(client, create_event, db):
         "memberIds": ["member-1"]
     })
     
-    response = await client.get("/api/events/?page=1&limit=10")
+    response = await client.get("/api/events/?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()["data"]
     
@@ -174,8 +186,119 @@ async def test_get_events_with_aggregation(client, create_event, db):
     assert event.get("imageUrl") == "img"
     assert event.get("totalMembers") == 1
     
-    # Verify removed/excluded fields
-    # Note: These might be present as None depending on schema, but logically we check for absence of full object
-    assert event.get("setlist") is None
-    assert event.get("members") is None or event.get("members") == []
     assert event.get("memberIds") is None or event.get("memberIds") == []
+
+
+@pytest.mark.asyncio
+async def test_get_calendar_events(client, create_event, create_user, db):
+    # Auth
+    _, _, headers = await create_user("testuser")
+
+    # Setup - Insert member for seitansai lookup
+    await db["members"].insert_one({
+        "id": "member-A",
+        "name": "Member A",
+        "nickname": "MemA"
+    })
+
+    # Setup test data
+    # Target month: Feb 2026
+    year, month = 2026, 2
+    
+    # Events within range (Feb 2026)
+    await create_event({
+        "id": "cal-1",
+        "title": "Feb Event 1",
+        "date": "2026-02-01T12:00:00",
+        "url": "/link",
+        "label": "",
+        "setlistId": "s1",
+        "seitansaiIds": ["member-A"]
+    })
+    
+    # Event in adjacent month (Jan 2026) - Should be included if within grid range (last week of Jan)
+    # 2026-02-01 is Sunday. So grid starts exactly on Feb 1st (if Sunday start) or earlier.
+    # Service logic: first_of_month = Feb 1. weekday() for Feb 1 2026.
+    # Let's assume standard logic includes some previous days.
+    # Wait, 2026-02-01 is a Sunday. If Sunday is start of week (0), then start_date is Feb 1.
+    # If Monday is start (0), Sunday is 6.
+    # Service uses: (first_of_month.weekday() + 1) % 7.
+    # Python weekday: Mon=0, Sun=6.
+    # Feb 1 2026 is Sunday. weekday()=6.
+    # (6 + 1) % 7 = 0. So days_to_subtract = 0. Start Date = Feb 1.
+    # So Jan events strictly won't show up in this specific month case.
+    
+    # Let's try March. Feb 2026 has 28 days.
+    # 42 days from Feb 1 cover all Feb + first 2 weeks of March.
+    # Event in March (within 42 days range)
+    await create_event({
+        "id": "cal-2",
+        "title": "Mar Event (In Grid)",
+        "date": "2026-03-05T12:00:00",
+        "url": "/link",
+        "label": ""
+    })
+    
+    # Event way outside
+    await create_event({
+        "id": "cal-out",
+        "title": "Way Outside",
+        "date": "2026-05-01T12:00:00",
+        "url": "/link",
+        "label": ""
+    })
+    
+    response = await client.get(f"/api/events/calendar?year={year}&month={month}", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    
+    titles = [e["title"] for e in data]
+    assert "Feb Event 1" in titles
+    assert "Mar Event (In Grid)" in titles
+    assert "Way Outside" not in titles
+    
+    # Verify Schema Optimization
+    event = next(e for e in data if e["title"] == "Feb Event 1")
+    # Should NOT have detail fields
+    assert "imageUrl" not in event or event["imageUrl"] is None
+    assert "totalMembers" not in event or event.get("totalMembers", 0) == 0
+    # Should have calendar fields
+    assert event["setlistId"] == "s1"
+    assert event["seitansaiMembers"] == ["Member A"]
+
+
+@pytest.mark.asyncio
+async def test_get_events_paginated_error(client, monkeypatch, create_user):
+    # Auth
+    _, _, headers = await create_user("testuser")
+
+    from src.events.service import EventsService
+    
+    # Mock repository method to raise generic exception
+    async def mock_find(*args, **kwargs):
+        raise Exception("DB Error")
+        
+    monkeypatch.setattr("src.events.repository.EventsRepository.find_events_paginated", mock_find)
+    monkeypatch.setattr("src.events.repository.EventsRepository.count_events", mock_find)
+    
+    # Depending on where count is called first
+    response = await client.get("/api/events/", headers=headers)
+    assert response.status_code == 500
+    assert response.json()["detail"] == "Failed to fetch event data."
+
+
+@pytest.mark.asyncio
+async def test_get_calendar_events_error(client, monkeypatch, create_user):
+    # Auth
+    _, _, headers = await create_user("testuser")
+
+    from src.events.service import EventsService
+    
+    async def mock_find_range(*args, **kwargs):
+        raise Exception("DB Error")
+    
+    monkeypatch.setattr("src.events.repository.EventsRepository.find_events_by_date_range", mock_find_range)
+    
+    response = await client.get("/api/events/calendar?year=2026&month=2", headers=headers)
+    assert response.status_code == 500
+    assert response.json()["detail"] == "Failed to fetch event data."

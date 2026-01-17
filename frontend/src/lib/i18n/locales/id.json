@@ -604,7 +604,8 @@
 			"subtitle": "Jelajahi event teater",
 			"eventName": "Nama Event",
 			"members": "Member",
-			"today": "Hari ini"
+			"today": "Hari ini",
+			"calendar": "Kalender"
 		},
 		"eventHistory": {
 			"title": "Riwayat Event",

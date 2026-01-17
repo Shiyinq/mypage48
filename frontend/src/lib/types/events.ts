@@ -21,6 +21,14 @@ export interface Event {
 	team?: EventTeam;
 }
 
+export interface CalendarEvent {
+	title: string;
+	date: string;
+	url: string;
+	setlistId?: string;
+	seitansaiMembers?: string[];
+}
+
 export interface EventPaginationResponse {
 	data: Event[];
 	meta: PaginationMeta;

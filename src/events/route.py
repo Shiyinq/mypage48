@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, Query
 from src.auth.schemas import UserCurrent
 from src.dependencies import get_current_user, get_events_service
-from src.events.schemas import EventPaginationResponse
+from typing import List
+from src.events.schemas import EventPaginationResponse, Event, CalendarEvent
 from src.events.service import EventsService
 
 router = APIRouter()
@@ -31,3 +32,17 @@ async def get_current_events(
     Get current and future events with pagination.
     """
     return await service.get_events_paginated(page=page, limit=limit, current_only=True)
+
+
+@router.get("/calendar", response_model=List[CalendarEvent])
+async def get_calendar_events(
+    year: int = Query(..., ge=2000, le=3000),
+    month: int = Query(..., ge=1, le=12),
+    service: EventsService = Depends(get_events_service),
+    _current_user: UserCurrent = Depends(get_current_user),
+):
+    """
+    Get events for a specific month and year.
+    Returns a light version of events optimized for calendar view.
+    """
+    return await service.get_calendar_events(year=year, month=month)
