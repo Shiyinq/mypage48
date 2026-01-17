@@ -124,9 +124,11 @@ async def test_get_setlists_filter_by_active(client: AsyncClient, db, seed_setli
         assert setlist["active"] is False
 
 @pytest.mark.asyncio
-async def test_get_setlist_types(client: AsyncClient, seed_setlists_db):
+async def test_get_setlist_types(client: AsyncClient, seed_setlists_db, create_user):
     """Test getting list of setlist types."""
-    response = await client.get("/api/theater/setlists/types")
+    token, user_id, headers = await create_user("typesuser")
+    
+    response = await client.get("/api/theater/setlists/types", headers=headers)
     assert response.status_code == 200
     types = response.json()
     assert isinstance(types, list)
@@ -134,34 +136,42 @@ async def test_get_setlist_types(client: AsyncClient, seed_setlists_db):
     assert "event" in types
 
 @pytest.mark.asyncio
-async def test_get_setlist_by_id(client: AsyncClient, seed_setlists_db):
+async def test_get_setlist_by_id(client: AsyncClient, seed_setlists_db, create_user):
     """Test getting a setlist by its ID."""
+    token, user_id, headers = await create_user("iduser")
+
     setlist_id = "pajamadrive" # Pajama Drive
-    response = await client.get(f"/api/theater/setlists/id/{setlist_id}")
+    response = await client.get(f"/api/theater/setlists/id/{setlist_id}", headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert data["setlistId"] == setlist_id
     assert data["title"] == "Pajama Drive"
 
 @pytest.mark.asyncio
-async def test_get_setlist_by_id_not_found(client: AsyncClient):
+async def test_get_setlist_by_id_not_found(client: AsyncClient, create_user):
     """Test getting a non-existent setlist by ID returns 404."""
-    response = await client.get("/api/theater/setlists/id/non-existent-id")
+    token, user_id, headers = await create_user("notfounduser")
+
+    response = await client.get("/api/theater/setlists/id/non-existent-id", headers=headers)
     assert response.status_code == 404
 
 @pytest.mark.asyncio
-async def test_get_setlist_by_title(client: AsyncClient, seed_setlists_db):
+async def test_get_setlist_by_title(client: AsyncClient, seed_setlists_db, create_user):
     """Test getting a setlist by its title."""
-    response = await client.get("/api/theater/setlists/title/Pajama Drive")
+    token, user_id, headers = await create_user("titleuser")
+
+    response = await client.get("/api/theater/setlists/title/Pajama Drive", headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == "Pajama Drive"
     assert data["type"] == "setlist"
 
 @pytest.mark.asyncio
-async def test_get_setlist_by_title_not_found(client: AsyncClient):
+async def test_get_setlist_by_title_not_found(client: AsyncClient, create_user):
     """Test getting a non-existent setlist by title returns 404."""
-    response = await client.get("/api/theater/setlists/title/Non Existent Setlist")
+    token, user_id, headers = await create_user("titlenotfounduser")
+
+    response = await client.get("/api/theater/setlists/title/Non Existent Setlist", headers=headers)
     assert response.status_code == 404
 
 @pytest.mark.asyncio
@@ -216,7 +226,7 @@ async def test_delete_setlist(client: AsyncClient, db, seed_setlists_db, create_
     assert response.json()["message"] == "Setlist deleted successfully."
 
     # Verify deleted
-    get_res = await client.get(f"/api/theater/setlists/id/{setlist_id}")
+    get_res = await client.get(f"/api/theater/setlists/id/{setlist_id}", headers=headers)
     assert get_res.status_code == 404
 
 @pytest.mark.asyncio
