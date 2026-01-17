@@ -33,9 +33,12 @@ async def seed_members_db(db):
         await db["members"].insert_many(TEST_MEMBERS_DATA)
 
 @pytest.mark.asyncio
-async def test_get_members_list(client: AsyncClient, seed_members_db):
+async def test_get_members_list(client: AsyncClient, seed_members_db, create_user):
+    # Auth
+    token, user_id, headers = await create_user("listuser")
+
     # Test List
-    response = await client.get("/api/members")
+    response = await client.get("/api/members", headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert "data" in data
@@ -44,13 +47,16 @@ async def test_get_members_list(client: AsyncClient, seed_members_db):
     assert "total_data" in data["meta"]
     
     # Test Pagination
-    response_limit = await client.get("/api/members?limit=5")
+    response_limit = await client.get("/api/members?limit=5", headers=headers)
     # We only have 2 mock members
     assert len(response_limit.json()["data"]) == 2
 
 @pytest.mark.asyncio
-async def test_get_generations(client: AsyncClient, seed_members_db):
-    response = await client.get("/api/members/generations")
+async def test_get_generations(client: AsyncClient, seed_members_db, create_user):
+    # Auth
+    token, user_id, headers = await create_user("genuser")
+
+    response = await client.get("/api/members/generations", headers=headers)
     assert response.status_code == 200
     generations = response.json()
     assert isinstance(generations, list)
@@ -59,12 +65,15 @@ async def test_get_generations(client: AsyncClient, seed_members_db):
     assert "3" in generations or "12" in generations
 
 @pytest.mark.asyncio
-async def test_get_member_by_nickname(client: AsyncClient, seed_members_db):
+async def test_get_member_by_nickname(client: AsyncClient, seed_members_db, create_user):
+    # Auth
+    token, user_id, headers = await create_user("nickuser")
+
     # Pick a known member from seed data
     # Feni is in the seed data
     nickname = "Feni"
     
-    response = await client.get(f"/api/members/nickname/{nickname}")
+    response = await client.get(f"/api/members/nickname/{nickname}", headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert "member" in data
@@ -73,11 +82,14 @@ async def test_get_member_by_nickname(client: AsyncClient, seed_members_db):
     assert data["member"]["id"] == "76"
 
 @pytest.mark.asyncio
-async def test_get_member_by_id(client: AsyncClient, seed_members_db):
+async def test_get_member_by_id(client: AsyncClient, seed_members_db, create_user):
+    # Auth
+    token, user_id, headers = await create_user("iduser")
+
     # Feni ID is "76"
     m_id = "76"
     
-    response = await client.get(f"/api/members/id/{m_id}")
+    response = await client.get(f"/api/members/id/{m_id}", headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert "member" in data
@@ -98,7 +110,7 @@ async def test_delete_member(client: AsyncClient, db, seed_members_db, create_us
     assert response.json()["message"] == "Member deleted successfully."
 
     # Verify deleted
-    get_res = await client.get(f"/api/members/id/{member_id}")
+    get_res = await client.get(f"/api/members/id/{member_id}", headers=headers)
     assert get_res.status_code == 404
 
 @pytest.mark.asyncio
