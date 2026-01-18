@@ -117,6 +117,22 @@
 	}
 
 	const weekDays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+	function getDateLocale(locale: string) {
+		switch (locale) {
+			case 'id':
+				return 'id-ID';
+			case 'ja':
+				return 'ja-JP';
+			default:
+				return 'en-US';
+		}
+	}
+
+	$: currentMonthEvents = $calendarEvents.filter((e) => {
+		const d = new Date(e.date);
+		return d.getMonth() === month - 1 && d.getFullYear() === year;
+	});
 </script>
 
 <SEO
@@ -141,7 +157,7 @@
 					class="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 px-2 py-1 rounded-lg transition-colors flex items-center gap-1 md:gap-2"
 					on:click={() => (isDatePickerOpen = !isDatePickerOpen)}
 				>
-					{new Date(year, month - 1).toLocaleString($locale === 'en' ? 'en-US' : 'id-ID', {
+					{new Date(year, month - 1).toLocaleString(getDateLocale($locale), {
 						month: 'long',
 						year: 'numeric'
 					})}
@@ -196,7 +212,7 @@
 										isDatePickerOpen = false;
 									}}
 								>
-									{new Date(2000, monthIndex).toLocaleString($locale === 'en' ? 'en-US' : 'id-ID', {
+									{new Date(2000, monthIndex).toLocaleString(getDateLocale($locale), {
 										month: 'short'
 									})}
 								</button>
@@ -205,6 +221,28 @@
 					</div>
 				{/if}
 			</div>
+
+			<!-- Monthly Stats -->
+			{#if !$calendarLoading}
+				<div
+					class="flex items-center gap-2 md:gap-3 ml-2 md:ml-4 mr-auto text-xs font-medium text-gray-500 dark:text-gray-400"
+				>
+					<span
+						class="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full border border-blue-100 dark:border-blue-900/30"
+					>
+						<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+						{currentMonthEvents.filter((e) => e.setlistId).length}
+						<span class="hidden sm:inline">{$t('theater.events.setlist')}</span>
+					</span>
+					<span
+						class="flex items-center gap-1.5 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-full border border-purple-100 dark:border-purple-900/30"
+					>
+						<span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+						{currentMonthEvents.filter((e) => !e.setlistId).length}
+						<span class="hidden sm:inline">{$t('theater.events.eventType')}</span>
+					</span>
+				</div>
+			{/if}
 
 			<!-- Right: Controls -->
 			<div class="flex items-center gap-2 md:gap-4">
