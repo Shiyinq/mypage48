@@ -799,7 +799,9 @@
 			"logout": "Keluar",
 			"adminDashboard": "Ke Admin Dashboard",
 			"adminMembers": "Ke Admin Member",
-			"adminSetlists": "Ke Admin Setlist"
+			"adminSetlists": "Ke Admin Setlists",
+			"calendar": "Ke Kalender",
+			"eventHistory": "Ke Riwayat Event"
 		}
 	}
 }

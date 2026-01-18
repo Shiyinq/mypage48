@@ -792,7 +792,9 @@
 			"logout": "ログアウト",
 			"adminDashboard": "管理ダッシュボードへ",
 			"adminMembers": "管理メンバー一覧へ",
-			"adminSetlists": "管理セットリスト一覧へ"
+			"adminSetlists": "管理セットリスト一覧へ",
+			"calendar": "カレンダーへ",
+			"eventHistory": "イベント履歴へ"
 		}
 	}
 }

@@ -96,6 +96,13 @@
 			perform: () => goto('/theater')
 		},
 		{
+			id: 'nav-members',
+			title: $t('command.actions.members'),
+			icon: Users,
+			section: 'navigation',
+			perform: () => goto('/theater/members')
+		},
+		{
 			id: 'nav-events',
 			title: $t('command.actions.events'),
 			icon: Calendar,
@@ -103,11 +110,18 @@
 			perform: () => goto('/theater/events')
 		},
 		{
-			id: 'nav-members',
-			title: $t('command.actions.members'),
-			icon: Users,
+			id: 'nav-calendar',
+			title: $t('command.actions.calendar'),
+			icon: Calendar,
 			section: 'navigation',
-			perform: () => goto('/theater/members')
+			perform: () => goto('/theater/events/calendar')
+		},
+		{
+			id: 'nav-event-history',
+			title: $t('command.actions.eventHistory'),
+			icon: History,
+			section: 'navigation',
+			perform: () => goto('/theater/events/history')
 		},
 		{
 			id: 'nav-history',
