@@ -261,9 +261,14 @@
 					class="grid border-b border-gray-200 dark:border-zinc-800"
 					style="grid-template-columns: repeat(7, 1fr);"
 				>
-					{#each weekDays as dayKey}
+					{#each weekDays as dayKey, index}
 						<div
-							class="py-3 text-center text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest"
+							class="py-3 text-center text-[10px] font-semibold uppercase tracking-widest
+								{index === 0
+								? 'text-red-500 dark:text-red-400'
+								: index === 6
+									? 'text-blue-500 dark:text-blue-400'
+									: 'text-gray-500 dark:text-gray-400'}"
 						>
 							{$t(`time.daysShort.${dayKey}`)}
 						</div>
@@ -279,6 +284,9 @@
 					{#each calendarDays as { date, isCurrentMonth }}
 						{@const dayEvents = getEventsForDay(date)}
 						{@const isTodayDate = isToday(date)}
+						{@const dayOfWeek = date.getDay()}
+						{@const isSunday = dayOfWeek === 0}
+						{@const isSaturday = dayOfWeek === 6}
 
 						<div
 							class="border-b border-r border-gray-200 dark:border-zinc-800 p-1 min-h-0 flex flex-col items-center
@@ -293,8 +301,16 @@
                                  {isTodayDate
 									? 'bg-blue-600 text-white'
 									: isCurrentMonth
-										? 'text-gray-700 dark:text-gray-300'
-										: 'text-gray-400 dark:text-zinc-600'}"
+										? isSunday
+											? 'text-red-500 dark:text-red-400'
+											: isSaturday
+												? 'text-blue-500 dark:text-blue-400'
+												: 'text-gray-700 dark:text-gray-300'
+										: isSunday
+											? 'text-red-300 dark:text-red-700'
+											: isSaturday
+												? 'text-blue-300 dark:text-blue-700'
+												: 'text-gray-400 dark:text-zinc-600'}"
 							>
 								{date.getDate()}
 							</div>
