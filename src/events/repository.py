@@ -158,3 +158,18 @@ class EventsRepository:
         # Return all events in range, usually not massive for one month
         events = await cursor.to_list(length=None)
         return events
+
+    async def find_events_by_member_id(self, member_id: str) -> List[dict]:
+        """Find all events where a specific member is present."""
+        query = {
+            "memberIds": member_id
+        }
+        
+        projection = {
+            "title": 1,
+            "date": 1,
+            "_id": 0
+        }
+        
+        cursor = self.collection.find(query, projection)
+        return await cursor.to_list(length=None)

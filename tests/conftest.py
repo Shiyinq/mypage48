@@ -1,6 +1,7 @@
 import asyncio
 import pytest
 import bcrypt
+from datetime import datetime
 # Monkeypatch bcrypt to fix passlib incompatibility with bcrypt >= 4.0.0
 bcrypt.__about__ = type("about", (object,), {"__version__": bcrypt.__version__})
 
@@ -153,12 +154,18 @@ def create_ticket(db):
         
         ticket = {
             "_id": ObjectId(),
+            "ticket_id": f"TKT-{user_id[-4:]}-{datetime.now().timestamp()}",
             "user_id": user_id,
+            "created_at": datetime.now(),
+            "updated_at": datetime.now(),
+            "currency": "IDR",
+            "rules": {"refund_allowed": False, "exchange_allowed": False},
             "event": {
                 "title": ticket_data.get("title", "Pajama Drive"),
                 "date": ticket_data.get("date", "2024-06-15"),
                 "time": ticket_data.get("time", "14:00"),
                 "day": ticket_data.get("day", "Saturday"),
+                "venue": "JKT48 Theater", 
             },
             "seat": {
                 "section": ticket_data.get("section", "A1"),

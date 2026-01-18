@@ -244,7 +244,8 @@
 		},
 		"stats": {
 			"totalShows": "総公演数",
-			"achievements": "実績"
+			"achievements": "実績",
+			"oshiMeetings": "会った"
 		},
 		"oshi": {
 			"title": "推し神社",

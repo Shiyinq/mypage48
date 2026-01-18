@@ -116,3 +116,92 @@ async def test_get_public_profile(client: AsyncClient, db):
     data = response.json()
     assert data["username"] == "visibleuser"
     assert data["name"] == "Visible User"
+
+@pytest.mark.asyncio
+async def test_oshi_meetings_logic(client: AsyncClient, db, create_user, create_ticket):
+    """Test calculation of Oshi Meetings (attendance at events where Oshi was present)."""
+    from datetime import datetime
+    
+    # 1. Create user
+    token, user_id, headers = await create_user("meetinguser")
+    
+    # 2. Set Oshi (Member ID: "123")
+    oshi_id = "123"
+    await db["users"].update_one(
+        {"userId": user_id},
+        {"$set": {"oshiId": oshi_id}}
+    )
+    
+    # Mock Oshi Member Data (needed for profile endpoint to resolve Oshi name)
+    await db["members"].insert_one({
+        "id": oshi_id,
+        "name": "My Oshi",
+        "nickname": "Oshi",
+        "img": "http://example.com/img.jpg",
+        "generation": "1",
+        "jiko": "Oshi desu",
+        "socials": {}
+    })
+    
+    # 3. Create Events
+    # Event 1: Oshi Present
+    await db["events"].insert_one({
+        "title": "Event A",
+        "date": datetime(2024, 1, 1),
+        "memberIds": [oshi_id, "999"],
+        "url": "http://example.com/a",
+        "label": "Theater",
+        "setlistId": "s1"
+    })
+    
+    # Event 2: Oshi Not Present
+    await db["events"].insert_one({
+        "title": "Event B",
+        "date": datetime(2024, 1, 2),
+        "memberIds": ["999"],
+        "url": "http://example.com/b",
+        "label": "Theater",
+        "setlistId": "s1"
+    })
+    
+    # Event 3: Oshi Present but User Not Attended
+    await db["events"].insert_one({
+        "title": "Event C",
+        "date": datetime(2024, 1, 3),
+        "memberIds": [oshi_id],
+        "url": "http://example.com/c",
+        "label": "Theater",
+        "setlistId": "s1"
+    })
+
+    # 4. Create Tickets
+    # Ticket for Event 1 (Match)
+    await create_ticket(user_id, {
+        "title": "Event A",
+        "date": "2024-01-01"
+    })
+    
+    # Ticket for Event 2 (No Match - Oshi absent)
+    await create_ticket(user_id, {
+        "title": "Event B",
+        "date": "2024-01-02"
+    })
+    
+    # Ticket for random event (No Match - Event doesn't exist in DB)
+    await create_ticket(user_id, {
+        "title": "Event D",
+        "date": "2024-01-04"
+    })
+
+    # 5. Call Profile Endpoint
+    response = await client.get("/api/users/profile", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    
+    # Extract stats (stats is a top-level field in ProfileFullResponse)
+    stats = data["stats"]
+
+    # Verify Oshi Meetings
+    # Should be 1 (Event A)
+    assert stats["oshiMeetings"] == 1
+    assert stats["totalShows"] == 3

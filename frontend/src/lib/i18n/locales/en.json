@@ -234,7 +234,8 @@
 		},
 		"stats": {
 			"totalShows": "Total Shows",
-			"achievements": "Achievements"
+			"achievements": "Achievements",
+			"oshiMeetings": "Met"
 		},
 		"oshi": {
 			"title": "Oshi Shrine",
