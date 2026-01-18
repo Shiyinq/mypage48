@@ -5,6 +5,8 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Cake } from 'lucide-svelte';
 	import { calendarEvents, calendarLoading, eventsStore, calendarError } from '$lib/stores/events';
+	import DayEventsModal from './DayEventsModal.svelte';
+	import type { CalendarEvent } from '$lib/types/events';
 
 	const { t, locale } = useTranslation();
 
@@ -17,6 +19,23 @@
 	// Date Picker State
 	let isDatePickerOpen = false;
 	let pickerYear = year;
+
+	let selectedDate: Date | null = null; // For mobile split view
+	$: selectedEvents = selectedDate ? getEventsForDay(selectedDate) : [];
+
+	// Modal State
+	let isModalOpen = false;
+	let modalDate = new Date();
+	let modalEvents: CalendarEvent[] = [];
+
+	function openDayModal(date: Date, events: CalendarEvent[]) {
+		modalDate = date;
+		modalEvents = events;
+		isModalOpen = true;
+	}
+
+	// Constants
+	const MAX_VISIBLE_EVENTS = 3;
 
 	$: if (isDatePickerOpen) {
 		pickerYear = year;
@@ -33,6 +52,8 @@
 		if (qMonth) month = parseInt(qMonth);
 
 		updateCalendar(year, month);
+
+		// Removed auto-selection of 1st day when changing months
 	}
 
 	function updateCalendar(y: number, m: number) {
@@ -110,119 +131,125 @@
 <div class="space-y-6">
 	<!-- Main Calendar Container -->
 	<div
-		class="h-[calc(100vh-100px)] flex flex-col bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden"
+		class="h-[calc(100vh-250px)] md:h-[calc(100vh-100px)] flex flex-col bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden"
 	>
 		<!-- Header -->
+		<!-- Header -->
 		<div
-			class="flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-zinc-800"
+			class="flex items-center justify-between px-4 md:px-6 py-3 border-b border-gray-200 dark:border-zinc-800"
 		>
-			<div class="flex items-center gap-6">
+			<!-- Left: Month Title / Picker Toggle -->
+			<div class="relative">
+				<button
+					class="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 px-2 py-1 rounded-lg transition-colors flex items-center gap-1 md:gap-2"
+					on:click={() => (isDatePickerOpen = !isDatePickerOpen)}
+				>
+					{new Date(year, month - 1).toLocaleString($locale === 'en' ? 'en-US' : 'id-ID', {
+						month: 'long',
+						year: 'numeric'
+					})}
+					<ChevronRight
+						class="w-4 h-4 rotate-90 opacity-50 transition-transform {isDatePickerOpen
+							? '-rotate-90'
+							: ''}"
+					/>
+				</button>
+
+				{#if isDatePickerOpen}
+					<!-- Backdrop -->
+					<div
+						class="fixed inset-0 z-10"
+						on:click={() => (isDatePickerOpen = false)}
+						role="button"
+						tabindex="0"
+						on:keydown={(e) => e.key === 'Escape' && (isDatePickerOpen = false)}
+					></div>
+
+					<!-- Popover -->
+					<div
+						class="absolute top-full left-0 mt-2 bg-white dark:bg-zinc-800 rounded-xl shadow-xl border border-gray-200 dark:border-zinc-700 p-4 z-20 min-w-[280px]"
+					>
+						<!-- Year Selector -->
+						<div class="flex items-center justify-between mb-4 px-2">
+							<button
+								class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full cursor-pointer"
+								on:click|stopPropagation={() => pickerYear--}
+							>
+								<ChevronLeft class="w-5 h-5" />
+							</button>
+							<span class="font-bold text-lg">{pickerYear}</span>
+							<button
+								class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full cursor-pointer"
+								on:click|stopPropagation={() => pickerYear++}
+							>
+								<ChevronRight class="w-5 h-5" />
+							</button>
+						</div>
+
+						<!-- Month Grid -->
+						<div class="grid grid-cols-3 gap-2">
+							{#each Array.from({ length: 12 }, (_, i) => i) as monthIndex}
+								<button
+									class="px-2 py-2 text-sm rounded-lg transition-colors cursor-pointer
+									{monthIndex === month - 1 && pickerYear === year
+										? 'bg-blue-600 text-white font-medium'
+										: 'hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300'}"
+									on:click|stopPropagation={() => {
+										goto(`?year=${pickerYear}&month=${monthIndex + 1}`);
+										isDatePickerOpen = false;
+									}}
+								>
+									{new Date(2000, monthIndex).toLocaleString($locale === 'en' ? 'en-US' : 'id-ID', {
+										month: 'short'
+									})}
+								</button>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Right: Controls -->
+			<div class="flex items-center gap-2 md:gap-4">
 				<!-- Today Button -->
 				<button
 					on:click={() => {
 						const now = new Date();
 						goto(`?year=${now.getFullYear()}&month=${now.getMonth() + 1}`);
 					}}
-					class="cursor-pointer px-5 py-2 text-sm font-medium border border-gray-300 dark:border-zinc-700 rounded-full hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-gray-700 dark:text-gray-300 shadow-sm"
+					class="hidden md:block cursor-pointer px-4 py-1.5 text-sm font-medium border border-gray-300 dark:border-zinc-700 rounded-full hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-gray-700 dark:text-gray-300 shadow-sm"
+				>
+					{$t('theater.events.today') || 'Today'}
+				</button>
+				<button
+					on:click={() => {
+						const now = new Date();
+						goto(`?year=${now.getFullYear()}&month=${now.getMonth() + 1}`);
+					}}
+					class="md:hidden cursor-pointer px-3 py-1.5 text-sm font-medium border border-gray-300 dark:border-zinc-700 rounded-full hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-gray-700 dark:text-gray-300 shadow-sm"
+					aria-label="Today"
 				>
 					{$t('theater.events.today') || 'Today'}
 				</button>
 
-				<div class="flex items-center gap-4">
-					<!-- Arrows -->
-					<div class="flex items-center gap-1">
-						<button
-							on:click={() => changeMonth(-1)}
-							class="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
-							aria-label="Previous month"
-						>
-							<ChevronLeft class="w-5 h-5" />
-						</button>
-						<button
-							on:click={() => changeMonth(1)}
-							class="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
-							aria-label="Next month"
-						>
-							<ChevronRight class="w-5 h-5" />
-						</button>
-					</div>
-
-					<!-- Month Title / Picker Toggle -->
-					<div class="relative">
-						<button
-							class="text-xl font-normal text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 px-3 py-1 rounded-lg transition-colors flex items-center gap-2 min-w-[180px]"
-							on:click={() => (isDatePickerOpen = !isDatePickerOpen)}
-						>
-							{new Date(year, month - 1).toLocaleString($locale === 'en' ? 'en-US' : 'id-ID', {
-								month: 'long',
-								year: 'numeric'
-							})}
-							<ChevronRight
-								class="w-4 h-4 rotate-90 opacity-50 transition-transform {isDatePickerOpen
-									? '-rotate-90'
-									: ''}"
-							/>
-						</button>
-
-						{#if isDatePickerOpen}
-							<!-- Backdrop -->
-							<div
-								class="fixed inset-0 z-10"
-								on:click={() => (isDatePickerOpen = false)}
-								role="button"
-								tabindex="0"
-								on:keydown={(e) => e.key === 'Escape' && (isDatePickerOpen = false)}
-							></div>
-
-							<!-- Popover -->
-							<div
-								class="absolute top-full left-0 mt-2 bg-white dark:bg-zinc-800 rounded-xl shadow-xl border border-gray-200 dark:border-zinc-700 p-4 z-20 min-w-[280px]"
-							>
-								<!-- Year Selector -->
-								<div class="flex items-center justify-between mb-4 px-2">
-									<button
-										class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full cursor-pointer"
-										on:click|stopPropagation={() => pickerYear--}
-									>
-										<ChevronLeft class="w-5 h-5" />
-									</button>
-									<span class="font-bold text-lg">{pickerYear}</span>
-									<button
-										class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full cursor-pointer"
-										on:click|stopPropagation={() => pickerYear++}
-									>
-										<ChevronRight class="w-5 h-5" />
-									</button>
-								</div>
-
-								<!-- Month Grid -->
-								<div class="grid grid-cols-3 gap-2">
-									{#each Array.from({ length: 12 }, (_, i) => i) as monthIndex}
-										<button
-											class="px-2 py-2 text-sm rounded-lg transition-colors cursor-pointer
-											{monthIndex === month - 1 && pickerYear === year
-												? 'bg-blue-600 text-white font-medium'
-												: 'hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300'}"
-											on:click|stopPropagation={() => {
-												goto(`?year=${pickerYear}&month=${monthIndex + 1}`);
-												isDatePickerOpen = false;
-											}}
-										>
-											{new Date(2000, monthIndex).toLocaleString(
-												$locale === 'en' ? 'en-US' : 'id-ID',
-												{ month: 'short' }
-											)}
-										</button>
-									{/each}
-								</div>
-							</div>
-						{/if}
-					</div>
+				<!-- Arrows -->
+				<div class="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-full p-0.5">
+					<button
+						on:click={() => changeMonth(-1)}
+						class="cursor-pointer p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all text-gray-600 dark:text-gray-400 shadow-sm hover:shadow"
+						aria-label="Previous month"
+					>
+						<ChevronLeft class="w-4 h-4" />
+					</button>
+					<button
+						on:click={() => changeMonth(1)}
+						class="cursor-pointer p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all text-gray-600 dark:text-gray-400 shadow-sm hover:shadow"
+						aria-label="Next month"
+					>
+						<ChevronRight class="w-4 h-4" />
+					</button>
 				</div>
 			</div>
-
-			<!-- Right side placeholder -->
-			<div></div>
 		</div>
 
 		<!-- Calendar Content -->
@@ -287,52 +314,84 @@
 						{@const dayOfWeek = date.getDay()}
 						{@const isSunday = dayOfWeek === 0}
 						{@const isSaturday = dayOfWeek === 6}
+						{@const isSelected =
+							selectedDate &&
+							date.getDate() === selectedDate.getDate() &&
+							date.getMonth() === selectedDate.getMonth() &&
+							date.getFullYear() === selectedDate.getFullYear()}
 
 						<div
-							class="border-b border-r border-gray-200 dark:border-zinc-800 p-1 min-h-0 flex flex-col items-center
+							on:click={() => (selectedDate = date)}
+							class="border-b border-r border-gray-200 dark:border-zinc-800 p-0.5 md:p-1 min-h-0 flex flex-col items-center
                             {isCurrentMonth
-								? 'bg-white dark:bg-zinc-900'
-								: 'bg-white dark:bg-zinc-900'} 
-                            group relative overflow-hidden"
+								? 'bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800/50'
+								: 'bg-gray-50/80 dark:bg-zinc-950/50 bg-striped'} 
+							{isSelected && isCurrentMonth
+								? 'bg-blue-50/50 dark:bg-blue-900/10 ring-1 ring-inset ring-blue-500/50 z-10'
+								: ''}
+                            group relative overflow-hidden cursor-pointer transition-all duration-200"
 						>
 							<!-- Date Number -->
 							<div
-								class="mt-1 mb-1 w-6 h-6 flex items-center justify-center rounded-full text-xs font-medium shrink-0
+								class="mt-0.5 md:mt-1 mb-0.5 md:mb-1 w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full text-[10px] md:text-xs font-medium shrink-0 transition-transform group-hover:scale-110
                                  {isTodayDate
-									? 'bg-blue-600 text-white'
-									: isCurrentMonth
-										? isSunday
-											? 'text-red-500 dark:text-red-400'
-											: isSaturday
-												? 'text-blue-500 dark:text-blue-400'
-												: 'text-gray-700 dark:text-gray-300'
-										: isSunday
-											? 'text-red-300 dark:text-red-700'
-											: isSaturday
-												? 'text-blue-300 dark:text-blue-700'
-												: 'text-gray-400 dark:text-zinc-600'}"
+									? 'bg-red-600 text-white shadow-sm shadow-red-200 dark:shadow-red-900/20'
+									: isSelected
+										? 'bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-100'
+										: isCurrentMonth
+											? isSunday
+												? 'text-red-500 dark:text-red-400'
+												: isSaturday
+													? 'text-blue-500 dark:text-blue-400'
+													: 'text-gray-700 dark:text-gray-300'
+											: isSunday
+												? 'text-red-300 dark:text-red-900/40'
+												: isSaturday
+													? 'text-blue-300 dark:text-blue-900/40'
+													: 'text-gray-400 dark:text-zinc-600'}"
 							>
 								{date.getDate()}
 							</div>
 
-							<!-- Events List -->
-							<div
-								class="w-full flex-1 flex flex-col gap-0.5 px-0.5 overflow-y-auto min-h-0 scrollbar-hide"
-							>
-								{#each dayEvents as event}
+							<!-- Mobile Dot Indicator -->
+							<!-- Only show if there are events -->
+							<div class="flex gap-0.5 md:hidden">
+								{#if dayEvents.length > 0}
+									<div class="w-1 h-1 rounded-full bg-blue-500"></div>
+									{#if dayEvents.length > 1}
+										<div class="w-1 h-1 rounded-full bg-blue-300"></div>
+									{/if}
+								{/if}
+							</div>
+
+							<!-- Desktop Events List (Hidden on Mobile) -->
+							<div class="hidden md:flex w-full flex-1 flex-col gap-0.5 px-0.5 overflow-hidden">
+								{#if dayEvents.length === 0 && isCurrentMonth}
+									<!-- Empty State for Current Month -->
+									<div
+										class="h-full w-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+									>
+										<span class="text-[9px] text-gray-300 dark:text-zinc-700 select-none">-</span>
+									</div>
+								{/if}
+
+								{#each dayEvents.length > MAX_VISIBLE_EVENTS ? dayEvents.slice(0, MAX_VISIBLE_EVENTS - 1) : dayEvents as event}
 									<a
 										href={`https://jkt48.com${event.url}`}
 										target="_blank"
-										class="block w-full px-2 py-0.5 rounded text-[10px] font-medium text-left transition-opacity hover:opacity-80 flex items-start gap-1.5
+										on:click|stopPropagation
+										class="block w-full px-1.5 py-0.5 rounded-[4px] text-[10px] font-medium text-left transition-all hover:brightness-95 flex items-center gap-1.5 shadow-sm border border-transparent
                                         {event.setlistId
-											? 'bg-[#E8F0FE] text-[#1967D2] border border-[#E8F0FE] dark:bg-[#1967D2]/30 dark:text-[#E8F0FE] dark:border-transparent'
-											: 'bg-[#F3E8FD] text-[#9334E6] border border-[#F3E8FD] dark:bg-[#9334E6]/30 dark:text-[#F3E8FD] dark:border-transparent'}"
+											? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40'
+											: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'}"
 										title={event.title}
 									>
 										<!-- Time & Icon Container -->
 										<div class="flex items-center gap-1 shrink-0">
 											{#if new Date(event.date).getHours() !== 0 || new Date(event.date).getMinutes() !== 0}
-												<span class="opacity-75 whitespace-nowrap leading-tight">
+												<span
+													class="opacity-100 font-bold whitespace-nowrap leading-tight tracking-tight"
+												>
 													{new Date(event.date).toLocaleTimeString(
 														$locale === 'en' ? 'en-US' : 'id-ID',
 														{ hour: '2-digit', minute: '2-digit', hour12: false }
@@ -341,13 +400,28 @@
 											{/if}
 
 											{#if event.seitansaiMembers && event.seitansaiMembers.length > 0}
-												<Cake class="w-3 h-3 mt-[-4.5px]" strokeWidth={2.5} />
+												<Cake class="w-3 h-3 mt-[-1px] text-pink-500" strokeWidth={2.5} />
 											{/if}
 										</div>
 
-										<span class="break-words leading-tight">{event.title}</span>
+										<span class="truncate leading-tight font-semibold opacity-90"
+											>{event.title}</span
+										>
 									</a>
 								{/each}
+
+								<!-- More Indicator -->
+								{#if dayEvents.length > MAX_VISIBLE_EVENTS}
+									<button
+										class="px-1.5 py-0.5 text-[9px] font-bold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-left w-full hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer flex items-center gap-1"
+										on:click|stopPropagation={() => openDayModal(date, dayEvents)}
+									>
+										<span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span>
+										{$t('theater.events.moreEvents', {
+											count: dayEvents.length - (MAX_VISIBLE_EVENTS - 1)
+										})}
+									</button>
+								{/if}
 							</div>
 						</div>
 					{/each}
@@ -355,4 +429,124 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Mobile Event List (Split View) -->
+	<div
+		class="md:hidden bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden"
+	>
+		<!-- Header for Selected Date -->
+		<div
+			class="px-4 py-3 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between bg-gray-50/50 dark:bg-zinc-900/50"
+		>
+			<h3 class="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+				<CalendarIcon class="w-4 h-4 text-gray-500" />
+				{#if selectedDate}
+					{selectedDate.toLocaleDateString($locale === 'en' ? 'en-US' : 'id-ID', {
+						weekday: 'long',
+						day: 'numeric',
+						month: 'long'
+					})}
+				{:else}
+					<span class="text-gray-500 italic"
+						>{$t('theater.events.selectDate') || 'Select a date'}</span
+					>
+				{/if}
+			</h3>
+			{#if selectedDate && isToday(selectedDate)}
+				<span
+					class="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full"
+				>
+					{$t('time.relative.today')}
+				</span>
+			{/if}
+		</div>
+
+		<div class="p-0">
+			{#if !selectedDate}
+				<div class="py-12 flex flex-col items-center text-center text-gray-400 dark:text-zinc-600">
+					<CalendarIcon class="w-8 h-8 mb-2 opacity-20" />
+					<p class="text-sm">
+						{$t('theater.events.selectDateDesc') || 'Tap a date to see events'}
+					</p>
+				</div>
+			{:else if selectedEvents.length === 0}
+				<div class="py-12 flex flex-col items-center text-center text-gray-400 dark:text-zinc-600">
+					<CalendarIcon class="w-8 h-8 mb-2 opacity-20" />
+					<p class="text-sm">{$t('theater.events.noEvents')}</p>
+				</div>
+			{:else}
+				<div class="divide-y divide-gray-100 dark:divide-zinc-800">
+					{#each selectedEvents as event}
+						<a
+							href={`https://jkt48.com${event.url}`}
+							target="_blank"
+							class="block p-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
+						>
+							<div class="flex items-start gap-3">
+								<!-- Time Column -->
+								<div class="w-16 shrink-0 flex flex-col items-center">
+									{#if new Date(event.date).getHours() !== 0}
+										<span class="text-sm font-bold text-gray-900 dark:text-gray-100">
+											{new Date(event.date).toLocaleTimeString(
+												$locale === 'en' ? 'en-US' : 'id-ID',
+												{ hour: '2-digit', minute: '2-digit', hour12: false }
+											)}
+										</span>
+									{:else}
+										<span class="text-xs text-gray-400">TBA</span>
+									{/if}
+								</div>
+
+								<!-- Content Column -->
+								<div class="flex-1 min-w-0">
+									<div class="flex items-center gap-2 mb-1">
+										{#if event.setlistId}
+											<span
+												class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-sm bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+											>
+												Setlist
+											</span>
+										{:else}
+											<span
+												class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-sm bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+											>
+												Event
+											</span>
+										{/if}
+
+										{#if event.seitansaiMembers && event.seitansaiMembers.length > 0}
+											<span
+												class="flex items-center gap-1 text-[10px] bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 px-2 py-0.5 rounded-sm font-medium"
+											>
+												<Cake class="w-3 h-3" />
+												Birthday
+											</span>
+										{/if}
+									</div>
+
+									<h4 class="font-semibold text-gray-900 dark:text-gray-100 leading-tight mb-1">
+										{event.title}
+									</h4>
+
+									<div
+										class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mt-2"
+									>
+										{$t('common.viewDetails')}
+										<ChevronRight class="w-3 h-3" />
+									</div>
+								</div>
+							</div>
+						</a>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	</div>
 </div>
+
+<DayEventsModal
+	isOpen={isModalOpen}
+	date={modalDate}
+	events={modalEvents}
+	on:close={() => (isModalOpen = false)}
+/>

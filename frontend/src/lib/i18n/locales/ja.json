@@ -422,7 +422,11 @@
 			"eventName": "イベント名",
 			"members": "メンバー",
 			"today": "今日",
-			"calendar": "カレンダー"
+			"calendar": "カレンダー",
+			"moreEvents": "他 {count} 件",
+			"selectDate": "日付を選択",
+			"selectDateDesc": "日付をタップしてイベントを表示",
+			"noEvents": "この日のイベントはありません"
 		},
 		"members": {
 			"title": "メンバー",

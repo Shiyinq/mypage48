@@ -470,7 +470,11 @@
 			"eventName": "Event Name",
 			"members": "Members",
 			"today": "Today",
-			"calendar": "Calendar"
+			"calendar": "Calendar",
+			"moreEvents": "+{count} more",
+			"selectDate": "Select a date",
+			"selectDateDesc": "Tap a date to see events",
+			"noEvents": "No events on this day"
 		},
 		"members": {
 			"title": "Members",
