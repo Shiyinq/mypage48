@@ -189,6 +189,18 @@ def get_llm_service(
 ) -> LLMService:
     return LLMService(repo, config)
 
+def get_events_repository(db=Depends(get_db)) -> EventsRepository:
+    return EventsRepository(db)
+
+
+def get_events_service(
+    repo: EventsRepository = Depends(get_events_repository),
+    config: Settings = Depends(get_settings),
+) -> EventsService:
+    background_runner = AsyncBackgroundRunner()
+    return EventsService(repo, background_runner, config)
+
+
 
 def get_tickets_repository(db=Depends(get_db)) -> TicketsRepository:
     return TicketsRepository(db)
@@ -227,6 +239,7 @@ def get_user_service(
     tickets_service: TicketsService = Depends(get_tickets_service),
     member_service: MemberService = Depends(get_member_service),
     achievements_service: AchievementsService = Depends(get_achievements_service),
+    events_service: EventsService = Depends(get_events_service),
 ) -> UserService:
     return UserService(
         repo,
@@ -236,6 +249,7 @@ def get_user_service(
         tickets_service,
         member_service,
         achievements_service,
+        events_service,
     )
 
 
@@ -287,13 +301,3 @@ def get_health_service(
     return HealthService(database_instance, storage_repo)
 
 
-def get_events_repository(db=Depends(get_db)) -> EventsRepository:
-    return EventsRepository(db)
-
-
-def get_events_service(
-    repo: EventsRepository = Depends(get_events_repository),
-    config: Settings = Depends(get_settings),
-) -> EventsService:
-    background_runner = AsyncBackgroundRunner()
-    return EventsService(repo, background_runner, config)

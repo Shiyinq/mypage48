@@ -89,3 +89,12 @@ class EventsService:
         except Exception as e:
             logger.exception(f"Failed to fetch calendar events: {str(e)}")
             raise EventFetchError() from e
+            raise EventFetchError() from e
+
+    async def get_events_for_member(self, member_id: str) -> List[dict]:
+        """Get all events for a specific member to calculate attendance stats."""
+        try:
+            return await self.repository.find_events_by_member_id(member_id)
+        except Exception as e:
+            logger.exception(f"Failed to fetch events for member {member_id}: {str(e)}")
+            return []

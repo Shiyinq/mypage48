@@ -8,6 +8,7 @@ from src.auth.email_service import EmailService
 from src.auth.schemas import OshiResponse
 from src.auth.security_service import SecurityService
 from src.config import Settings
+from src.events.service import EventsService
 from src.image_validation import ImageTooLargeError as ImageTooLargeValidationError
 from src.image_validation import ImageValidationError
 from src.image_validation import (
@@ -67,6 +68,7 @@ class UserService:
         tickets_service: TicketsService,
         member_service: MemberService,
         achievements_service: AchievementsService,
+        events_service: EventsService,
     ):
         self.repository = repository
         self.security_service = security_service
@@ -75,6 +77,7 @@ class UserService:
         self.tickets_service = tickets_service
         self.member_service = member_service
         self.achievements_service = achievements_service
+        self.events_service = events_service
 
     def _handle_duplicate_key_error(self, dk: DuplicateKeyError):
         """Handle DuplicateKeyError and raise appropriate domain exception."""
@@ -400,16 +403,44 @@ class UserService:
                 tickets
             )
 
-            # Calculate oshi 2-shot counts
+            # Calculate oshi 2-shot counts and meetings
             roulette_count = 0
             birthday_count = 0
+            oshi_meetings = 0
+
             if oshi_name:
+                # 1. 2-Shot Counts
                 for t in tickets:
                     if t.two_shot and t.two_shot.member_name == oshi_name:
                         if t.two_shot.type == "Roulette":
                             roulette_count += 1
                         elif t.two_shot.type == "Birthday":
                             birthday_count += 1
+                
+                # 2. Oshi Meetings (Attendance at events where Oshi was present)
+                # Fetch all events where Oshi was a member
+                oshi_events = await self.events_service.get_events_for_member(str(current_user.oshiId))
+                # Create a set of unique event identifiers (title + date) for O5 events
+                oshi_event_keys = set()
+                for e in oshi_events:
+                    # e is a dict from find_events_by_member_id projection
+                    # key format: "Title|YYYY-MM-DD"
+                    # Ensure date is string YYYY-MM-DD if it's datetime
+                    d = e.get("date")
+                    if isinstance(d, datetime):
+                        d = d.strftime("%Y-%m-%d")
+                    elif isinstance(d, str):
+                        # If date includes time, take only YYYY-MM-DD part
+                        d = d.split("T")[0]
+                        
+                    oshi_event_keys.add(f"{e.get('title')}|{d}")
+                
+                # Check user tickets against these events
+                for t in tickets:
+                    # t.event.date is "YYYY-MM-DD" string
+                    ticket_key = f"{t.event.title}|{t.event.date}"
+                    if ticket_key in oshi_event_keys:
+                        oshi_meetings += 1
 
             # Get recent activity (5 most recent shows)
             sorted_tickets = sorted(tickets, key=lambda x: x.event.date, reverse=True)
@@ -447,7 +478,9 @@ class UserService:
                 oshi=oshi_response,
                 rank=rank,
                 stats=ProfileStats(
-                    totalShows=total_shows, totalAchievements=total_achievements
+                    totalShows=total_shows, 
+                    totalAchievements=total_achievements,
+                    oshiMeetings=oshi_meetings
                 ),
                 oshiTwoShots=OshiTwoShotCounts(
                     roulette=roulette_count, birthday=birthday_count

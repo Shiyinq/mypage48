@@ -43,6 +43,7 @@
 	let totalAchievements = 0;
 	let twoShotRouletteCount = 0;
 	let twoShotBirthdayCount = 0;
+	let oshiMeetings = 0;
 
 	$: error = $userProfile.error;
 
@@ -94,6 +95,7 @@
 			if (storeProfile.profileStats) {
 				totalShows = storeProfile.profileStats.totalShows;
 				totalAchievements = storeProfile.profileStats.totalAchievements;
+				oshiMeetings = storeProfile.profileStats.oshiMeetings || 0;
 			}
 			if (storeProfile.profileOshiTwoShots) {
 				twoShotRouletteCount = storeProfile.profileOshiTwoShots.roulette;
@@ -238,6 +240,7 @@
 					loading={$isUserProfileLoading}
 					rouletteCount={twoShotRouletteCount}
 					birthdayCount={twoShotBirthdayCount}
+					{oshiMeetings}
 					onOpenOshiModal={openOshiModal}
 					onOpenMemberDetail={openMemberDetail}
 				/>

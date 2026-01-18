@@ -167,6 +167,7 @@ class ProfileStats(BaseModel):
 
     totalShows: int
     totalAchievements: int
+    oshiMeetings: int = 0
 
 
 class ProfileRecentActivity(BaseModel):

@@ -14,6 +14,7 @@ export interface RankInfo {
 export interface ProfileStats {
 	totalShows: number;
 	totalAchievements: number;
+	oshiMeetings: number;
 }
 
 export interface ProfileRecentActivity {

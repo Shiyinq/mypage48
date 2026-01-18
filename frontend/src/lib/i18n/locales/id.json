@@ -244,7 +244,8 @@
 		},
 		"stats": {
 			"totalShows": "Total Pertunjukan",
-			"achievements": "Pencapaian"
+			"achievements": "Pencapaian",
+			"oshiMeetings": "Bertemu"
 		},
 		"oshi": {
 			"title": "Oshi Shrine",

@@ -8,6 +8,7 @@
 	export let loading: boolean = true;
 	export let rouletteCount: number = 0;
 	export let birthdayCount: number = 0;
+	export let oshiMeetings: number = 0;
 	export let onOpenOshiModal: () => void;
 	export let onOpenMemberDetail: () => void;
 
@@ -218,7 +219,31 @@
 		{/if}
 
 		{#if profile?.oshi}
-			<div class="mt-6 grid grid-cols-2 gap-3 border-t border-gray-100 pt-4">
+			<div class="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3 border-t border-gray-100 pt-4">
+				<!-- Oshi Meetings -->
+				<div
+					class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
+				>
+					<div
+						class="p-2 rounded-full bg-red-50 dark:bg-red-900/20 shadow-sm text-red-600 dark:text-red-400"
+					>
+						<Heart class="w-4 h-4" />
+					</div>
+					<div>
+						<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
+							{#if loading}
+								<span
+									class="inline-block w-6 h-5 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
+								></span>
+							{:else}
+								{oshiMeetings}
+							{/if}
+						</p>
+						<p class="text-[10px] font-bold text-gray-400 uppercase">
+							{$t('profile.stats.oshiMeetings')}
+						</p>
+					</div>
+				</div>
 				<!-- 2-Shot Roulette -->
 				<div
 					class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
