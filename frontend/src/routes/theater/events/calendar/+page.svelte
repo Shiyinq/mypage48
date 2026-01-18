@@ -368,11 +368,13 @@
 								{/if}
 
 								{#each dayEvents.length > MAX_VISIBLE_EVENTS ? dayEvents.slice(0, MAX_VISIBLE_EVENTS - 1) : dayEvents as event}
+									{@const isPast = new Date(event.date) < new Date()}
 									<button
-										class="block w-full px-1.5 py-0.5 rounded-[4px] text-[10px] font-medium text-left transition-all hover:brightness-95 flex items-center gap-1.5 shadow-sm border border-transparent cursor-pointer
+										class="block w-full px-1.5 py-0.5 rounded-[4px] text-[10px] font-medium text-left transition-all flex items-center gap-1.5 shadow-sm border border-transparent cursor-pointer
                                         {event.setlistId
 											? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40'
-											: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'}"
+											: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'}
+										{isPast ? 'opacity-50 saturate-50 brightness-95' : 'hover:brightness-95'}"
 										title={event.title}
 										on:click|stopPropagation={() => openDayModal(date, dayEvents)}
 									>
