@@ -426,7 +426,11 @@
 			"moreEvents": "他 {count} 件",
 			"selectDate": "日付を選択",
 			"selectDateDesc": "日付をタップしてイベントを表示",
-			"noEvents": "この日のイベントはありません"
+			"noEvents": "この日のイベントはありません",
+			"setlist": "セットリスト",
+			"eventType": "イベント",
+			"birthday": "生誕祭",
+			"tba": "未定"
 		},
 		"members": {
 			"title": "メンバー",

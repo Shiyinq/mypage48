@@ -609,7 +609,11 @@
 			"moreEvents": "+{count} lagi",
 			"selectDate": "Pilih tanggal",
 			"selectDateDesc": "Ketuk tanggal untuk melihat acara",
-			"noEvents": "Tidak ada event hari ini"
+			"noEvents": "Tidak ada event hari ini",
+			"setlist": "Setlist",
+			"eventType": "Event",
+			"birthday": "Ulang Tahun",
+			"tba": "TBA"
 		},
 		"eventHistory": {
 			"title": "Riwayat Event",
