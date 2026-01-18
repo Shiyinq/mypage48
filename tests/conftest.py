@@ -6,17 +6,21 @@ from datetime import datetime
 bcrypt.__about__ = type("about", (object,), {"__version__": bcrypt.__version__})
 
 from httpx import AsyncClient, ASGITransport
-from src.main import app, limiter
 from src.config import config
+
+# Override configuration BEFORE importing main app
+config.DB_NAME = "mypage48_test"
+config.AUTH_REQUESTS_PER_MINUTE = 10000
+config.DEFAULT_REQUESTS_PER_MINUTE = 10000
+
+from src.main import app, limiter
 from src.database import database_instance
 from src.dependencies import require_csrf_protection
 
-# Override database name for testing
-config.DB_NAME = "mypage48_test"
-limiter.enabled = False
 
 # Mock CSRF protection to always pass
 app.dependency_overrides[require_csrf_protection] = lambda: True
+
 
 @pytest.fixture(scope="session")
 def event_loop():

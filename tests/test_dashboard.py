@@ -1,6 +1,10 @@
 """Tests for Dashboard Service endpoints."""
 import pytest
+from unittest.mock import MagicMock
 from httpx import AsyncClient
+
+from src.dependencies import get_storage_service
+from src.main import app
 
 
 @pytest.mark.asyncio
@@ -288,14 +292,21 @@ async def test_get_dashboard_stats_extremes(client: AsyncClient, db, create_user
 @pytest.mark.asyncio
 async def test_dashboard_stats_resolves_minio_urls(client: AsyncClient, db, create_user, create_ticket):
     """Test that dashboard stats resolve MinIO paths to presigned URLs."""
+    from src.storage.service import StorageService
+    
     token, user_id, headers = await create_user("dashboard_minio")
 
-    # Mock StorageService
-    mock_storage_service = MagicMock()
-    mock_storage_service.resolve_url.side_effect = lambda x: f"https://minio.example.com/{x}?signed=true" if x and "twoshot" in x else x
+    # Mock Repository
+    mock_repo = MagicMock()
+    # Mock resolve_url logic via repository
+    mock_repo.get_presigned_url.side_effect = lambda x, expires=3600: f"https://minio.example.com/{x}?signed=true"
+
+    # Use real service with mocked repo and config
+    mock_config = MagicMock()
+    storage_service = StorageService(mock_repo, mock_config)
 
     # Override dependency
-    app.dependency_overrides[get_storage_service] = lambda: mock_storage_service
+    app.dependency_overrides[get_storage_service] = lambda: storage_service
 
     try:
         # Create ticket with MinIO-style image path
