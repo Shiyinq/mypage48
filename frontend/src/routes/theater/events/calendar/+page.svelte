@@ -3,9 +3,9 @@
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Cake } from 'lucide-svelte';
+	import { ChevronLeft, ChevronRight, Cake } from 'lucide-svelte';
 	import { calendarEvents, calendarLoading, eventsStore, calendarError } from '$lib/stores/events';
-	import DayEventsModal from './DayEventsModal.svelte';
+	import DayEventsModal from '$lib/components/calendar/DayEventsModal.svelte';
 	import type { CalendarEvent } from '$lib/types/events';
 
 	const { t, locale } = useTranslation();
@@ -19,9 +19,6 @@
 	// Date Picker State
 	let isDatePickerOpen = false;
 	let pickerYear = year;
-
-	let selectedDate: Date | null = null; // For mobile split view
-	$: selectedEvents = selectedDate ? getEventsForDay(selectedDate) : [];
 
 	// Modal State
 	let isModalOpen = false;
@@ -314,19 +311,14 @@
 						{@const dayOfWeek = date.getDay()}
 						{@const isSunday = dayOfWeek === 0}
 						{@const isSaturday = dayOfWeek === 6}
-						{@const isSelected =
-							selectedDate &&
-							date.getDate() === selectedDate.getDate() &&
-							date.getMonth() === selectedDate.getMonth() &&
-							date.getFullYear() === selectedDate.getFullYear()}
 
 						<div
-							on:click={() => (selectedDate = date)}
+							on:click={() => openDayModal(date, dayEvents)}
 							class="border-b border-r border-gray-200 dark:border-zinc-800 p-0.5 md:p-1 min-h-0 flex flex-col items-center
                             {isCurrentMonth
 								? 'bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800/50'
 								: 'bg-gray-50/80 dark:bg-zinc-950/50 bg-striped'} 
-							{isSelected && isCurrentMonth
+							{isTodayDate && isCurrentMonth
 								? 'bg-blue-50/50 dark:bg-blue-900/10 ring-1 ring-inset ring-blue-500/50 z-10'
 								: ''}
                             group relative overflow-hidden cursor-pointer transition-all duration-200"
@@ -336,31 +328,31 @@
 								class="mt-0.5 md:mt-1 mb-0.5 md:mb-1 w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full text-[10px] md:text-xs font-medium shrink-0 transition-transform group-hover:scale-110
                                  {isTodayDate
 									? 'bg-red-600 text-white shadow-sm shadow-red-200 dark:shadow-red-900/20'
-									: isSelected
-										? 'bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-100'
-										: isCurrentMonth
-											? isSunday
-												? 'text-red-500 dark:text-red-400'
-												: isSaturday
-													? 'text-blue-500 dark:text-blue-400'
-													: 'text-gray-700 dark:text-gray-300'
-											: isSunday
-												? 'text-red-300 dark:text-red-900/40'
-												: isSaturday
-													? 'text-blue-300 dark:text-blue-900/40'
-													: 'text-gray-400 dark:text-zinc-600'}"
+									: isCurrentMonth
+										? isSunday
+											? 'text-red-500 dark:text-red-400'
+											: isSaturday
+												? 'text-blue-500 dark:text-blue-400'
+												: 'text-gray-700 dark:text-gray-300'
+										: isSunday
+											? 'text-red-300 dark:text-red-900/40'
+											: isSaturday
+												? 'text-blue-300 dark:text-blue-900/40'
+												: 'text-gray-400 dark:text-zinc-600'}"
 							>
 								{date.getDate()}
 							</div>
 
 							<!-- Mobile Dot Indicator -->
-							<!-- Only show if there are events -->
-							<div class="flex gap-0.5 md:hidden">
-								{#if dayEvents.length > 0}
-									<div class="w-1 h-1 rounded-full bg-blue-500"></div>
-									{#if dayEvents.length > 1}
-										<div class="w-1 h-1 rounded-full bg-blue-300"></div>
-									{/if}
+							<!-- Show actual count of events -->
+							<div
+								class="flex flex-wrap justify-center gap-0.5 px-0.5 md:hidden w-full max-h-[50%] overflow-hidden"
+							>
+								{#each dayEvents.slice(0, 12) as _}
+									<div class="w-1 h-1 rounded-full bg-blue-400 dark:bg-blue-500"></div>
+								{/each}
+								{#if dayEvents.length > 12}
+									<div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
 								{/if}
 							</div>
 
@@ -400,7 +392,7 @@
 											{/if}
 
 											{#if event.seitansaiMembers && event.seitansaiMembers.length > 0}
-												<Cake class="w-3 h-3 mt-[-1px] text-pink-500" strokeWidth={2.5} />
+												<Cake class="w-3 h-3 mt-[-4px] text-pink-500" strokeWidth={2.5} />
 											{/if}
 										</div>
 
@@ -428,119 +420,6 @@
 				</div>
 			</div>
 		{/if}
-	</div>
-
-	<!-- Mobile Event List (Split View) -->
-	<div
-		class="md:hidden bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden"
-	>
-		<!-- Header for Selected Date -->
-		<div
-			class="px-4 py-3 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between bg-gray-50/50 dark:bg-zinc-900/50"
-		>
-			<h3 class="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
-				<CalendarIcon class="w-4 h-4 text-gray-500" />
-				{#if selectedDate}
-					{selectedDate.toLocaleDateString($locale === 'en' ? 'en-US' : 'id-ID', {
-						weekday: 'long',
-						day: 'numeric',
-						month: 'long'
-					})}
-				{:else}
-					<span class="text-gray-500 italic"
-						>{$t('theater.events.selectDate') || 'Select a date'}</span
-					>
-				{/if}
-			</h3>
-			{#if selectedDate && isToday(selectedDate)}
-				<span
-					class="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full"
-				>
-					{$t('time.relative.today')}
-				</span>
-			{/if}
-		</div>
-
-		<div class="p-0">
-			{#if !selectedDate}
-				<div class="py-12 flex flex-col items-center text-center text-gray-400 dark:text-zinc-600">
-					<CalendarIcon class="w-8 h-8 mb-2 opacity-20" />
-					<p class="text-sm">
-						{$t('theater.events.selectDateDesc') || 'Tap a date to see events'}
-					</p>
-				</div>
-			{:else if selectedEvents.length === 0}
-				<div class="py-12 flex flex-col items-center text-center text-gray-400 dark:text-zinc-600">
-					<CalendarIcon class="w-8 h-8 mb-2 opacity-20" />
-					<p class="text-sm">{$t('theater.events.noEvents')}</p>
-				</div>
-			{:else}
-				<div class="divide-y divide-gray-100 dark:divide-zinc-800">
-					{#each selectedEvents as event}
-						<a
-							href={`https://jkt48.com${event.url}`}
-							target="_blank"
-							class="block p-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
-						>
-							<div class="flex items-start gap-3">
-								<!-- Time Column -->
-								<div class="w-16 shrink-0 flex flex-col items-center">
-									{#if new Date(event.date).getHours() !== 0}
-										<span class="text-sm font-bold text-gray-900 dark:text-gray-100">
-											{new Date(event.date).toLocaleTimeString(
-												$locale === 'en' ? 'en-US' : 'id-ID',
-												{ hour: '2-digit', minute: '2-digit', hour12: false }
-											)}
-										</span>
-									{:else}
-										<span class="text-xs text-gray-400">TBA</span>
-									{/if}
-								</div>
-
-								<!-- Content Column -->
-								<div class="flex-1 min-w-0">
-									<div class="flex items-center gap-2 mb-1">
-										{#if event.setlistId}
-											<span
-												class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-sm bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-											>
-												Setlist
-											</span>
-										{:else}
-											<span
-												class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-sm bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-											>
-												Event
-											</span>
-										{/if}
-
-										{#if event.seitansaiMembers && event.seitansaiMembers.length > 0}
-											<span
-												class="flex items-center gap-1 text-[10px] bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 px-2 py-0.5 rounded-sm font-medium"
-											>
-												<Cake class="w-3 h-3" />
-												Birthday
-											</span>
-										{/if}
-									</div>
-
-									<h4 class="font-semibold text-gray-900 dark:text-gray-100 leading-tight mb-1">
-										{event.title}
-									</h4>
-
-									<div
-										class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mt-2"
-									>
-										{$t('common.viewDetails')}
-										<ChevronRight class="w-3 h-3" />
-									</div>
-								</div>
-							</div>
-						</a>
-					{/each}
-				</div>
-			{/if}
-		</div>
 	</div>
 </div>
 
