@@ -2,7 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { CalendarEvent } from '$lib/types/events';
-	import { Cake, ChevronRight, Calculator, Calendar } from 'lucide-svelte';
+	import { Cake, ChevronRight, Calculator, Calendar, ExternalLink } from 'lucide-svelte';
 
 	export let isOpen = false;
 	export let date: Date;
@@ -124,10 +124,13 @@
 
 											{#if event.seitansaiMembers && event.seitansaiMembers.length > 0}
 												<span
-													class="flex items-center gap-1 text-[10px] bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 px-2 py-0.5 rounded-md font-medium"
+													class="flex items-center gap-1.5 text-[10px] bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 px-2 py-0.5 rounded-md font-medium leading-none"
 												>
-													<Cake class="w-3 h-3" />
+													<Cake class="w-3 h-3 mb-[3px]" />
 													{$t('theater.events.birthday')}
+													{#if event.seitansaiMembers.length > 0}
+														: {event.seitansaiMembers.join(', ')}
+													{/if}
 												</span>
 											{/if}
 										</div>
@@ -139,7 +142,7 @@
 										</h4>
 									</div>
 
-									<ChevronRight
+									<ExternalLink
 										class="w-4 h-4 text-gray-300 dark:text-zinc-600 group-hover:text-blue-400 dark:group-hover:text-blue-400 self-center"
 									/>
 								</div>
