@@ -226,6 +226,14 @@ function createEventsStore() {
 
 			try {
 				const res = await events.getCalendarEvents(year, month);
+
+				// Check if the current state still matches the request
+				// This prevents race conditions where a previous request finishes after a new one started
+				const currentState = get({ subscribe });
+				if (currentState.calendar.year !== year || currentState.calendar.month !== month) {
+					return;
+				}
+
 				update((s) => ({
 					...s,
 					calendar: {

@@ -605,7 +605,11 @@
 			"eventName": "Nama Event",
 			"members": "Member",
 			"today": "Hari ini",
-			"calendar": "Kalender"
+			"calendar": "Kalender",
+			"moreEvents": "+{count} lagi",
+			"selectDate": "Pilih tanggal",
+			"selectDateDesc": "Ketuk tanggal untuk melihat acara",
+			"noEvents": "Tidak ada event hari ini"
 		},
 		"eventHistory": {
 			"title": "Riwayat Event",
