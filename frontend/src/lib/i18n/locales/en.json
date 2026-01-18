@@ -790,7 +790,9 @@
 			"logout": "Logout",
 			"adminDashboard": "Go to Admin Dashboard",
 			"adminMembers": "Go to Admin Members",
-			"adminSetlists": "Go to Admin Setlists"
+			"adminSetlists": "Go to Admin Setlists",
+			"calendar": "Go to Calendar",
+			"eventHistory": "Go to Event History"
 		}
 	}
 }
