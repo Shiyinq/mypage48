@@ -11,6 +11,7 @@
 		Github
 	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import SEO from '$lib/components/SEO.svelte';
 
 	const { t } = useTranslation();
 
@@ -53,6 +54,8 @@
 		}
 	];
 </script>
+
+<SEO title="Home" />
 
 <div
 	class="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white relative overflow-hidden font-sans selection:bg-red-500/20"
