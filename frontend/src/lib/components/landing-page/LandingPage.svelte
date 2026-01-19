@@ -10,12 +10,34 @@
 		Rocket,
 		Github
 	} from 'lucide-svelte';
+	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import LandingPageThemeToggle from './ThemeToggle.svelte';
 	import LanguageToggle from './LanguageToggle.svelte';
 
 	const { t } = useTranslation();
+
+	let decorations: Array<{
+		x: number;
+		y: number;
+		scale: number;
+		delay: number;
+		duration: number;
+		type: 'star' | 'sparkle';
+	}> = [];
+
+	onMount(() => {
+		decorations = Array.from({ length: 25 }, () => ({
+			x: Math.random() * 100,
+			y: Math.random() * 100,
+			scale: 0.5 + Math.random() * 1.5, // Bigger scale range
+			delay: Math.random() * 5,
+			duration: 3 + Math.random() * 4,
+			type: Math.random() > 0.5 ? 'star' : 'sparkle'
+		}));
+	});
 
 	// Make features reactive to language changes
 	$: features = [
@@ -74,13 +96,45 @@
 			class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-pink-100/30 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"
 		></div>
 
-		<!-- Decor Elements -->
+		<!-- Static Decor Elements (Restored) -->
 		<div class="absolute top-20 left-10 text-pink-200 animate-pulse delay-700">
 			<Sparkles size={48} />
 		</div>
 		<div class="absolute top-40 right-10 text-red-200 animate-pulse delay-300">
 			<Star size={32} />
 		</div>
+
+		<!-- Dynamic Decor Elements -->
+		<!-- Decor Elements -->
+		{#each decorations as d}
+			<div
+				in:fade={{ duration: 2000 }}
+				class="absolute pointer-events-none"
+				style="
+                left: {d.x}%;
+                top: {d.y}%;
+                transform: scale({d.scale});
+            "
+			>
+				<div
+					class="animate-float {d.type === 'star'
+						? 'text-red-300 dark:text-red-500/30'
+						: 'text-pink-300 dark:text-pink-500/30'}"
+					style="
+                    animation-delay: {d.delay}s;
+                    animation-duration: {d.duration}s;
+                "
+				>
+					<div class="animate-pulse" style="animation-duration: {d.duration / 1.5}s">
+						{#if d.type === 'star'}
+							<Star size={28} strokeWidth={2} fill="currentColor" class="opacity-60" />
+						{:else}
+							<Sparkles size={32} strokeWidth={2} class="opacity-80" />
+						{/if}
+					</div>
+				</div>
+			</div>
+		{/each}
 	</div>
 
 	<!-- NAV -->
@@ -380,5 +434,22 @@
 	/* Font Handwriting for Polaroid */
 	.font-handwriting {
 		font-family: 'Courier New', Courier, monospace; /* Fallback for now */
+	}
+
+	@keyframes float {
+		0%,
+		100% {
+			transform: translateY(0) scale(1);
+			opacity: 0.4;
+		}
+		50% {
+			transform: translateY(-20px) scale(1.1);
+			opacity: 0.8;
+		}
+	}
+	.animate-float {
+		animation-name: float;
+		animation-timing-function: ease-in-out;
+		animation-iteration-count: infinite;
 	}
 </style>
