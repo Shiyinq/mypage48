@@ -110,7 +110,63 @@
 		"footer": {
 			"copyright": "Dibuat dengan {heart} untuk Keluarga JKT48",
 			"openSource": "PROYEK OPEN SOURCE",
-			"disclaimer": "Ini adalah proyek buatan penggemar dan tidak berafiliasi dengan atau didukung oleh manajemen resmi JKT48."
+			"disclaimer": "Ini adalah proyek buatan penggemar dan tidak berafiliasi dengan atau didukung oleh manajemen resmi JKT48.",
+			"privacy": "Kebijakan Privasi",
+			"terms": "Syarat & Ketentuan",
+			"about": "Tentang Kami"
+		}
+	},
+	"privacy": {
+		"title": "Kebijakan Privasi",
+		"lastUpdated": "Terakhir Diperbarui: {date}",
+		"intro": "Privasi kamu penting bagi kami. Kebijakan ini menjelaskan bagaimana MyPage48 mengumpulkan, menggunakan, dan melindungi data kamu.",
+		"sections": {
+			"collection": {
+				"title": "Pengumpulan Data",
+				"content": "Kami mengumpulkan informasi yang Anda berikan langsung kepada kami, seperti saat Anda membuat akun, mengunggah tiket, foto 2-shot, atau menghubungi kami."
+			},
+			"usage": {
+				"title": "Penggunaan Data",
+				"content": "Kami menggunakan datamu untuk menyediakan dan meningkatkan layanan, menganalisis penggunaan, dan mempersonalisasi pengalaman kamu."
+			},
+			"sharing": {
+				"title": "Berbagi Data",
+				"content": "Kami secara tegas tidak menjual data pribadi Anda kepada pihak ketiga mana pun."
+			},
+			"ai": {
+				"title": "AI & Pemrosesan Pihak Ketiga",
+				"content": "Fitur pemindaian tiket kami melibatkan pemrosesan data melalui Google Gemini. Harap dicatat bahwa data yang dikirimkan untuk fitur khusus ini mungkin digunakan oleh Google untuk melatih dan meningkatkan model AI mereka."
+			}
+		}
+	},
+	"terms": {
+		"title": "Syarat & Ketentuan",
+		"lastUpdated": "Terakhir Diperbarui: {date}",
+		"intro": "Dengan mengakses MyPage48, kamu setuju untuk terikat oleh Syarat & Ketentuan ini.",
+		"sections": {
+			"usage": {
+				"title": "Penggunaan yang Wajar",
+				"content": "Kamu setuju untuk tidak menyalahgunakan layanan atau membantu orang lain melakukannya."
+			},
+			"disclaimer": {
+				"title": "Penafian",
+				"content": "MyPage48 adalah proyek penggemar tidak resmi dan disediakan 'apa adanya' tanpa jaminan dalam bentuk apa pun."
+			}
+		}
+	},
+	"about": {
+		"title": "Tentang Kami",
+		"mission": {
+			"title": "Misi Kami",
+			"content": "Menyediakan alat terbaik bagi fans JKT48 untuk melacak perjalanan teater dan merayakan fandom mereka."
+		},
+		"team": {
+			"title": "Tim",
+			"content": "Dibuat oleh fans, untuk fans. Kami adalah proyek berbasis komunitas yang bersemangat tentang JKT48."
+		},
+		"openSource": {
+			"title": "Open Source",
+			"content": "MyPage48 adalah proyek open-source. Anda dapat menemukan kode kami di {githubLink}. Kami mengutamakan transparansi—Anda dapat memverifikasi kode sumber sendiri atau bahkan membuat instance sendiri untuk penggunaan yang sepenuhnya lokal dan pribadi."
 		}
 	},
 	"auth": {

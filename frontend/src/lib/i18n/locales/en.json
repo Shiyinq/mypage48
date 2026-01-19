@@ -109,7 +109,63 @@
 		"footer": {
 			"copyright": "Crafted with {heart} for the JKT48 Family",
 			"openSource": "OPEN SOURCE PROJECT",
-			"disclaimer": "This is a fan-made project and is not affiliated with or endorsed by official JKT48 management company."
+			"disclaimer": "This is a fan-made project and is not affiliated with or endorsed by official JKT48 management company.",
+			"privacy": "Privacy Policy",
+			"terms": "Terms of Service",
+			"about": "About Us"
+		}
+	},
+	"privacy": {
+		"title": "Privacy Policy",
+		"lastUpdated": "Last Updated: {date}",
+		"intro": "Your privacy is important to us. This policy explains how MyPage48 collects, uses, and protects your data.",
+		"sections": {
+			"collection": {
+				"title": "Data Collection",
+				"content": "We collect information you provide directly to us, such as when you create an account, upload tickets, 2-shot photos, or contact us."
+			},
+			"usage": {
+				"title": "Data Usage",
+				"content": "We use your data to provide and improve our services, analyze usage, and personalize your experience."
+			},
+			"sharing": {
+				"title": "Data Sharing",
+				"content": "We strictly do not sell your personal data to any third parties."
+			},
+			"ai": {
+				"title": "AI & Third Party Processing",
+				"content": "Our ticket scanning feature involves processing data via Google Gemini. Please be aware that data submitted for this specific feature may be used by Google to train and improve their AI models."
+			}
+		}
+	},
+	"terms": {
+		"title": "Terms of Service",
+		"lastUpdated": "Last Updated: {date}",
+		"intro": "By accessing MyPage48, you agree to be bound by these Terms of Service.",
+		"sections": {
+			"usage": {
+				"title": "Acceptable Use",
+				"content": "You agree not to misuse the service or help anyone else do so."
+			},
+			"disclaimer": {
+				"title": "Disclaimer",
+				"content": "MyPage48 is an unofficial fan project and is provided 'as is' without warranty of any kind."
+			}
+		}
+	},
+	"about": {
+		"title": "About Us",
+		"mission": {
+			"title": "Our Mission",
+			"content": "To provide JKT48 fans with the best tools to track their theater journey and celebrate their fandom."
+		},
+		"team": {
+			"title": "The Team",
+			"content": "Built by fans, for fans. We are a community-driven project passionate about JKT48."
+		},
+		"openSource": {
+			"title": "Open Source",
+			"content": "MyPage48 is an open-source project. You can find our code on {githubLink}. We believe in transparency—you can verify the source code yourself or even host your own instance for a completely local and private experience."
 		}
 	},
 	"auth": {

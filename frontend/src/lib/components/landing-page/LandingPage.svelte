@@ -461,6 +461,27 @@
 				{$t('landing.footer.openSource')}
 			</a>
 
+			<div class="flex items-center justify-center gap-6 flex-wrap px-6">
+				<a
+					href="/about"
+					class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+				>
+					{$t('landing.footer.about')}
+				</a>
+				<a
+					href="/privacy"
+					class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+				>
+					{$t('landing.footer.privacy')}
+				</a>
+				<a
+					href="/terms"
+					class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+				>
+					{$t('landing.footer.terms')}
+				</a>
+			</div>
+
 			<p class="text-[9px] text-slate-300 max-w-md mx-auto px-6">
 				{$t('landing.footer.disclaimer')}
 			</p>
