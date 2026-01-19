@@ -240,6 +240,13 @@
 		"oshi": {
 			"title": "Oshi Shrine",
 			"generation": "Generation",
+			"generationPattern": "Generation {gen}",
+			"totalShowsPattern": "{count} Shows",
+			"showsTooltip": "Recorded data excludes Shonichi setlists and member substitutions, subject to scraping limitations.",
+			"emptyTitle": "Who is your Oshi?",
+			"emptyDescription": "Select your favorite member to display them on your profile card.",
+			"selectBadge": "Select Oshi",
+			"browseButton": "Browse Members",
 			"changeOshi": "Change Oshi",
 			"selectOshi": "Select Your Oshi",
 			"searchMember": "Search member...",

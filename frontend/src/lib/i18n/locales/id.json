@@ -250,6 +250,13 @@
 		"oshi": {
 			"title": "Oshi Shrine",
 			"generation": "Generasi",
+			"generationPattern": "Generasi {gen}",
+			"totalShowsPattern": "{count} Show",
+			"showsTooltip": "Data yang tercatat tidak termasuk Shonichi setlist dan menggantikan member lain (under) untuk show, serta keterbatasan data hasil scraping.",
+			"emptyTitle": "Siapa Oshi kamu?",
+			"emptyDescription": "Pilih member favoritmu untuk ditampilkan di kartu profilmu.",
+			"selectBadge": "Pilih Oshi",
+			"browseButton": "Lihat Member",
 			"changeOshi": "Ganti Oshi",
 			"selectOshi": "Pilih Oshi Kamu",
 			"searchMember": "Cari member...",

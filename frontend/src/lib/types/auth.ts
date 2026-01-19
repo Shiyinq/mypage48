@@ -16,6 +16,7 @@ export interface UserOshi {
 		showroom: string | null;
 		idn_app: string | null;
 	} | null;
+	totalShows?: number;
 }
 
 export interface User {

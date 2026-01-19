@@ -250,6 +250,13 @@
 		"oshi": {
 			"title": "推し神社",
 			"generation": "期生",
+			"generationPattern": "{gen}期生",
+			"totalShowsPattern": "{count} 公演",
+			"showsTooltip": "記録されたデータには、初日公演やアンダー出演は含まれておらず、スクレイピング結果による制限があります。",
+			"emptyTitle": "あなたの推しは誰ですか？",
+			"emptyDescription": "プロフィールカードに表示するお気に入りのメンバーを選択してください。",
+			"selectBadge": "推しを選択",
+			"browseButton": "メンバーを見る",
 			"changeOshi": "推し変更",
 			"selectOshi": "推しを選ぶ",
 			"searchMember": "メンバーを検索...",

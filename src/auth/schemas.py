@@ -25,6 +25,7 @@ class OshiResponse(BaseModel):
     )
     catchphrase: str = "-"
     socials: Optional[OshiSocials] = None
+    totalShows: int = 0
 
 
 class UserLoginBase(BaseModel):
