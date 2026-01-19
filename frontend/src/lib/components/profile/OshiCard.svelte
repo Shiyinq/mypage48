@@ -20,7 +20,9 @@
 	<div
 		class="h-32 w-full bg-[url('https://upload.wikimedia.org/wikipedia/commons/c/c7/JKT48_FIGHT_Logo_%282026%29.png')] bg-cover bg-[center_30%] relative"
 	>
-		<div class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent"></div>
+		<div
+			class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent dark:from-zinc-900 dark:via-zinc-900/50"
+		></div>
 	</div>
 
 	<div class="px-6 md:px-8 pb-6 relative">
@@ -85,7 +87,9 @@
 				<div class="text-center md:text-left flex-1 min-w-0">
 					<div class="flex flex-col items-center md:items-start gap-1 mb-2">
 						<div class="flex items-center gap-2">
-							<h3 class="text-2xl font-black text-gray-800 leading-tight">
+							<h3
+								class="text-2xl font-black text-gray-800 dark:text-gray-100 leading-tight drop-shadow-sm dark:drop-shadow-md"
+							>
 								{profile?.oshi?.name}
 							</h3>
 							<button
