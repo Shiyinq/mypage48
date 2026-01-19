@@ -75,6 +75,43 @@
 	"header": {
 		"tagline": "JKT48 THEATER TRACKER"
 	},
+	"landing": {
+		"nav": {
+			"subtitle": "JKT48 Theater Tracker"
+		},
+		"hero": {
+			"badge": "Fan Made Project",
+			"titlePrefix": "Your Ultimate",
+			"titleSuffix": "JKT48 Companion",
+			"description": "Track shows, collect 2-shots, and celebrate your fandom journey with {highlight} and a beautiful personal dashboard.",
+			"highlight": "premium analytics",
+			"getStarted": "Get Started",
+			"openSource": "Open Source • No Ads • Fan Made"
+		},
+		"features": {
+			"theater": {
+				"title": "THEATER",
+				"description": "Track every JKT48 theater show you attend. Monitor your spending, seat history, and watch your fan level grow. See which setlists you've mastered."
+			},
+			"twoShot": {
+				"title": "2-SHOT",
+				"description": "Keep a digital collection of your 2-shot polaroids. Analyze your collection by member and see who's really your oshi with visual breakdown stats."
+			},
+			"memories": {
+				"title": "MEMORIES",
+				"description": "A beautiful digital scrapbook for your fan journey. Store photos, tickets, and special moments in one place. Relive the excitement of every event."
+			},
+			"achievements": {
+				"title": "ACHIEVEMENTS",
+				"description": "Unlock badges and milestones as you support JKT48. From \"First Show\" to \"Legendary Fan\", track your progress and show off your loyalty."
+			}
+		},
+		"footer": {
+			"copyright": "Crafted with {heart} for the JKT48 Family",
+			"openSource": "OPEN SOURCE PROJECT",
+			"disclaimer": "This is a fan-made project and is not affiliated with or endorsed by official JKT48 management company."
+		}
+	},
 	"auth": {
 		"login": {
 			"title": "Sign In",

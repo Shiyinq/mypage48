@@ -76,6 +76,43 @@
 	"header": {
 		"tagline": "PELACAK TEATER JKT48"
 	},
+	"landing": {
+		"nav": {
+			"subtitle": "Pelacak Teater JKT48"
+		},
+		"hero": {
+			"badge": "Fan Made Project",
+			"titlePrefix": "Teman Terbaik",
+			"titleSuffix": "Perjalanan JKT48-mu",
+			"description": "Lacak pertunjukan, kumpulkan 2-shot, dan rayakan perjalanan fandom-mu dengan {highlight} dan dasbor pribadi yang indah.",
+			"highlight": "analitik premium",
+			"getStarted": "Mulai Sekarang",
+			"openSource": "Open Source • Tanpa Iklan • Buatan Fans"
+		},
+		"features": {
+			"theater": {
+				"title": "THEATER",
+				"description": "Lacak setiap pertunjukan teater JKT48 yang kamu hadiri. Pantau pengeluaran, riwayat kursi, dan lihat level penggemarmu meningkat."
+			},
+			"twoShot": {
+				"title": "2-SHOT",
+				"description": "Simpan koleksi digital polaroid 2-shot kamu. Analisis koleksi berdasarkan member dan lihat siapa oshi sejatimu dengan statistik visual."
+			},
+			"memories": {
+				"title": "KENANGAN",
+				"description": "Album digital yang indah untuk perjalanan fandom-mu. Simpan foto, tiket, dan momen spesial di satu tempat. Hidupkan kembali keseruan setiap acara."
+			},
+			"achievements": {
+				"title": "PENCAPAIAN",
+				"description": "Buka lencana dan pencapaian saat kamu mendukung JKT48. Dari \"Pertunjukan Pertama\" hingga \"Fans Legendaris\", lacak kemajuanmu dan tunjukkan loyalitasmu."
+			}
+		},
+		"footer": {
+			"copyright": "Dibuat dengan {heart} untuk Keluarga JKT48",
+			"openSource": "PROYEK OPEN SOURCE",
+			"disclaimer": "Ini adalah proyek buatan penggemar dan tidak berafiliasi dengan atau didukung oleh manajemen resmi JKT48."
+		}
+	},
 	"auth": {
 		"login": {
 			"title": "Masuk",
