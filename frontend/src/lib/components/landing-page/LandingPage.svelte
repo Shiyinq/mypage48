@@ -97,10 +97,14 @@
 		></div>
 
 		<!-- Static Decor Elements (Restored) -->
-		<div class="absolute top-20 left-10 text-pink-200 animate-pulse delay-700">
+		<div
+			class="absolute top-20 left-10 text-pink-200 animate-pulse delay-700 hover:scale-125 hover:text-pink-400 cursor-pointer transition-all duration-300 pointer-events-auto"
+		>
 			<Sparkles size={48} />
 		</div>
-		<div class="absolute top-40 right-10 text-red-200 animate-pulse delay-300">
+		<div
+			class="absolute top-40 right-10 text-red-200 animate-pulse delay-300 hover:scale-125 hover:rotate-12 hover:text-red-400 cursor-pointer transition-all duration-300 pointer-events-auto"
+		>
 			<Star size={32} />
 		</div>
 
@@ -109,28 +113,35 @@
 		{#each decorations as d}
 			<div
 				in:fade={{ duration: 2000 }}
-				class="absolute pointer-events-none"
+				class="absolute cursor-pointer hover:z-10 group pointer-events-auto"
 				style="
                 left: {d.x}%;
                 top: {d.y}%;
                 transform: scale({d.scale});
             "
 			>
+				<!-- Floating Wrapper -->
 				<div
-					class="animate-float {d.type === 'star'
-						? 'text-red-300 dark:text-red-500/30'
-						: 'text-pink-300 dark:text-pink-500/30'}"
+					class="animate-float"
 					style="
                     animation-delay: {d.delay}s;
                     animation-duration: {d.duration}s;
                 "
 				>
-					<div class="animate-pulse" style="animation-duration: {d.duration / 1.5}s">
-						{#if d.type === 'star'}
-							<Star size={28} strokeWidth={2} fill="currentColor" class="opacity-60" />
-						{:else}
-							<Sparkles size={32} strokeWidth={2} class="opacity-80" />
-						{/if}
+					<!-- Interaction Wrapper -->
+					<div
+						class="transition-all duration-500 ease-out group-hover:scale-150 group-hover:rotate-12 {d.type ===
+						'star'
+							? 'text-red-300 dark:text-red-500/30 group-hover:text-red-500 dark:group-hover:text-red-400'
+							: 'text-pink-300 dark:text-pink-500/30 group-hover:text-pink-500 dark:group-hover:text-pink-400'}"
+					>
+						<div class="animate-pulse" style="animation-duration: {d.duration / 1.5}s">
+							{#if d.type === 'star'}
+								<Star size={28} strokeWidth={2} fill="currentColor" class="opacity-60" />
+							{:else}
+								<Sparkles size={32} strokeWidth={2} class="opacity-80" />
+							{/if}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -138,8 +149,10 @@
 	</div>
 
 	<!-- NAV -->
-	<nav class="relative z-50 flex justify-between items-center p-6 max-w-7xl mx-auto">
-		<div class="flex items-center gap-3 group cursor-default">
+	<nav
+		class="relative z-50 flex justify-between items-center p-6 max-w-7xl mx-auto pointer-events-none"
+	>
+		<div class="flex items-center gap-3 group cursor-default pointer-events-auto">
 			<div
 				class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white shadow-xl shadow-red-500/20 ring-4 ring-white dark:ring-zinc-800 transition-transform group-hover:scale-105 duration-300"
 			>
@@ -156,7 +169,7 @@
 				</span>
 			</div>
 		</div>
-		<div class="flex items-center gap-4">
+		<div class="flex items-center gap-4 pointer-events-auto">
 			<LanguageToggle />
 			<LandingPageThemeToggle />
 			<a
@@ -170,10 +183,10 @@
 	</nav>
 
 	<!-- HERO -->
-	<header class="relative z-10 pt-16 pb-32 px-6 text-center max-w-5xl mx-auto">
+	<header class="relative z-10 pt-16 pb-32 px-6 text-center max-w-5xl mx-auto pointer-events-none">
 		<!-- Pill -->
 		<div
-			class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-red-100 dark:border-red-900/30 shadow-sm dark:shadow-none mb-12 opacity-0 animate-appear"
+			class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-red-100 dark:border-red-900/30 shadow-sm dark:shadow-none mb-12 opacity-0 animate-appear pointer-events-auto"
 		>
 			<span class="relative flex h-2 w-2">
 				<span
@@ -188,7 +201,7 @@
 		</div>
 
 		<h1
-			class="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 dark:text-white mb-8 leading-[0.9] opacity-0 animate-appear"
+			class="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 dark:text-white mb-8 leading-[0.9] opacity-0 animate-appear pointer-events-auto"
 			style="animation-delay: 100ms;"
 		>
 			{$t('landing.hero.titlePrefix')} <br />
@@ -198,7 +211,7 @@
 		</h1>
 
 		<p
-			class="text-lg md:text-xl text-slate-500 dark:text-slate-400 mb-12 max-w-2xl mx-auto font-medium leading-relaxed opacity-0 animate-appear"
+			class="text-lg md:text-xl text-slate-500 dark:text-slate-400 mb-12 max-w-2xl mx-auto font-medium leading-relaxed opacity-0 animate-appear pointer-events-auto"
 			style="animation-delay: 200ms;"
 		>
 			{@html $t('landing.hero.description', {
@@ -207,7 +220,7 @@
 		</p>
 
 		<div
-			class="flex flex-col items-center justify-center opacity-0 animate-appear"
+			class="flex flex-col items-center justify-center opacity-0 animate-appear pointer-events-auto"
 			style="animation-delay: 300ms;"
 		>
 			<a
@@ -224,13 +237,13 @@
 	</header>
 
 	<!-- FEATURES SECTION -->
-	<section class="relative z-10 px-6 pb-40">
+	<section class="relative z-10 px-6 pb-40 pointer-events-none">
 		<div class="max-w-6xl mx-auto space-y-40">
 			{#each features as feature, i}
 				<div
 					class="flex flex-col md:flex-row gap-12 lg:gap-24 items-center {i % 2 === 1
 						? 'md:flex-row-reverse'
-						: ''}"
+						: ''} pointer-events-auto"
 				>
 					<!-- Mockup Side -->
 					<div class="flex-1 w-full relative group">
@@ -381,8 +394,8 @@
 	</section>
 
 	<!-- FOOTER -->
-	<footer class="py-20 relative z-10">
-		<div class="text-center space-y-8">
+	<footer class="py-20 relative z-10 pointer-events-none">
+		<div class="text-center space-y-8 pointer-events-auto">
 			<div class="flex items-center justify-center gap-3">
 				<div
 					class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white shadow-xl shadow-red-500/20 ring-4 ring-white dark:ring-zinc-800"
