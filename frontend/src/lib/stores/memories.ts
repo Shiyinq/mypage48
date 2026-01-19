@@ -39,21 +39,27 @@ function createGalleryStore() {
 		load: async (page: number, filter: FilterType) => {
 			const state = get({ subscribe });
 
-			// If switching filters, check cache first
-			if (filter !== state.filter) {
+			// Check cache first for page 1
+			if (page === 1) {
 				const cached = state.cache[filter];
-
 				if (!isCacheExpired(cached.lastUpdated) && cached.list.length > 0) {
-					update((s) => ({
-						...s,
-						filter,
-						list: cached.list,
-						pagination: cached.pagination,
-						error: null
-					}));
+					// If switching filters, restore from cache
+					if (filter !== state.filter) {
+						update((s) => ({
+							...s,
+							filter,
+							list: cached.list,
+							pagination: cached.pagination,
+							error: null
+						}));
+					}
+					// If same filter (re-visiting), just return as we have valid data
 					return;
 				}
-				// If no cache or expired, reset list for new filter
+			}
+
+			// If switching filters (and no valid cache hit above), reset list
+			if (filter !== state.filter) {
 				update((s) => ({ ...s, filter, list: [], pagination: { page: 0, hasMore: true } }));
 			}
 
