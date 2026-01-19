@@ -88,7 +88,7 @@
 					<div class="flex flex-col items-center md:items-start gap-1 mb-2">
 						<div class="flex items-center gap-2">
 							<h3
-								class="text-2xl font-black text-gray-800 dark:text-gray-100 leading-tight drop-shadow-sm dark:drop-shadow-md"
+								class="text-2xl font-black text-gray-800 dark:text-gray-100 leading-tight drop-shadow-md dark:drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]"
 							>
 								{profile?.oshi?.name}
 							</h3>
