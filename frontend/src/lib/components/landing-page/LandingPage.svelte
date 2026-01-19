@@ -12,7 +12,7 @@
 	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import LandingPageThemeToggle from './ThemeToggle.svelte';
 
 	const { t } = useTranslation();
 
@@ -105,7 +105,7 @@
 			</div>
 		</div>
 		<div class="flex items-center gap-4">
-			<ThemeToggle />
+			<LandingPageThemeToggle />
 			<a
 				href="/login"
 				class="px-6 py-2 rounded-full bg-red-600 text-white font-bold text-sm shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-0.5 transition-all flex items-center gap-2 group"

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { isAuthenticated } from '$lib/stores';
-	import LandingPage from '$lib/components/LandingPage.svelte';
+	import LandingPage from '$lib/components/landing-page/LandingPage.svelte';
 	import DashboardView from '$lib/components/dashboard/DashboardView.svelte';
 	import { onMount } from 'svelte';
 	import SplashScreen from '$lib/components/SplashScreen.svelte';
