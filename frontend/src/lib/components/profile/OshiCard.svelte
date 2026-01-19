@@ -96,11 +96,32 @@
 								<Search class="w-4 h-4" />
 							</button>
 						</div>
-						<span
-							class="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-md uppercase tracking-wide border border-red-200 whitespace-nowrap"
-						>
-							Generation {profile?.oshi?.generation}
-						</span>
+						<div class="flex items-center gap-2">
+							<span
+								class="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-md uppercase tracking-wide border border-red-200 whitespace-nowrap"
+							>
+								{$t('profile.oshi.generationPattern', { gen: profile?.oshi?.generation })}
+							</span>
+							<div
+								class="group relative px-2 py-0.5 bg-blue-100 text-blue-600 rounded-md border border-blue-200 cursor-help flex items-center gap-1"
+							>
+								<span class="text-[10px] font-bold uppercase tracking-wide whitespace-nowrap">
+									{$t('profile.oshi.totalShowsPattern', { count: profile?.oshi?.totalShows || 0 })}
+								</span>
+								<Info class="w-3 h-3" />
+
+								<!-- Tooltip -->
+								<div
+									class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-center pointer-events-none"
+								>
+									{$t('profile.oshi.showsTooltip')}
+									<!-- Triangle -->
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-800"
+									></div>
+								</div>
+							</div>
+						</div>
 					</div>
 
 					<!-- Catchphrase Bubble -->
@@ -205,15 +226,19 @@
 					<div
 						class="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-transform pointer-events-none"
 					>
-						Select Oshi
+						{$t('profile.oshi.selectBadge')}
 					</div>
 				</div>
-				<h3 class="text-lg font-bold text-gray-700 dark:text-gray-300">Who is your Oshi?</h3>
+				<h3 class="text-lg font-bold text-gray-700 dark:text-gray-300">
+					{$t('profile.oshi.emptyTitle')}
+				</h3>
 				<p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto mt-1">
-					Select your favorite member to display them on your profile card.
+					{$t('profile.oshi.emptyDescription')}
 				</p>
 				<div class="mt-4">
-					<Button size="sm" variant="outline" on:click={onOpenOshiModal}>Browse Members</Button>
+					<Button size="sm" variant="outline" on:click={onOpenOshiModal}
+						>{$t('profile.oshi.browseButton')}</Button
+					>
 				</div>
 			</div>
 		{/if}

@@ -442,6 +442,12 @@ class UserService:
                     if ticket_key in oshi_event_keys:
                         oshi_meetings += 1
 
+                # 3. Calculate oshi total shows
+                oshi_total_shows = len(oshi_events)
+
+                if oshi_response:
+                    oshi_response.totalShows = oshi_total_shows
+
             # Get recent activity (5 most recent shows)
             sorted_tickets = sorted(tickets, key=lambda x: x.event.date, reverse=True)
             recent_activity = []
