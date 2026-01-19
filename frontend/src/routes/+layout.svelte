@@ -31,6 +31,7 @@
 
 	// Determine if current page is public (accessible without login)
 	$: isPublicPage =
+		$page.url.pathname === '/' ||
 		$page.url.pathname === '/login' ||
 		$page.url.pathname === '/register' ||
 		$page.url.pathname.startsWith('/auth/') ||
@@ -117,7 +118,7 @@
 					profileOshiTwoShots: fullResponse.oshiTwoShots,
 					profileRecentActivity: fullResponse.recentActivity
 				};
-				userProfile.set({ data: profileWithStats, loading: false, error: null });
+				userProfile.set({ data: profileWithStats, error: null });
 			}
 		} catch (err) {
 			logger.error('Failed to load initial data', err, { context: 'Layout' });
@@ -173,7 +174,7 @@
 			</div>
 		{/if}
 
-		{#if isPublicPage && !isGuestRoute}
+		{#if isPublicPage && !isGuestRoute && !$isAuthenticated}
 			<!-- Public non-auth pages (like /u/*): render immediately -->
 			<slot />
 		{:else if isGuestRoute}

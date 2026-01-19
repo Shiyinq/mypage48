@@ -10,7 +10,11 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 	// Get locale from cookie, default to determined fallback if not present
 	const locale = cookies.get('mypage48_locale') || defaultLocale;
 
+	// Check for auth hint cookie
+	const hasSession = cookies.get('mypage48_auth') === 'true';
+
 	return {
-		locale
+		locale,
+		hasSession
 	};
 };

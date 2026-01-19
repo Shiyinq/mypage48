@@ -40,8 +40,13 @@ if (browser) {
 	isAuthenticated.subscribe((value) => {
 		if (value) {
 			localStorage.setItem(AUTH_KEY, 'true');
+			// Set a non-secure cookie for successful auth hint to server (for SSR)
+			document.cookie = 'mypage48_auth=true; path=/; max-age=31536000; SameSite=Lax';
 		} else {
 			localStorage.removeItem(AUTH_KEY);
+			// Clear auth hint cookie
+			document.cookie = 'mypage48_auth=; path=/; max-age=0; SameSite=Lax';
+
 			// Cleanup state on logout
 			ticketsStore.reset();
 			achievementsStore.reset();
