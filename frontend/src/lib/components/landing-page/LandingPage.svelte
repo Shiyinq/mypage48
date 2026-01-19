@@ -175,12 +175,20 @@
 			>
 				<Ticket class="w-5 h-5" />
 			</div>
-			<div class="flex flex-col">
-				<h1 class="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">
+			<div class="flex flex-col relative">
+				<div
+					class="absolute inset-0"
+					style="transform: translate({$mouse.x * 10}px, {$mouse.y * 10}px)"
+				></div>
+				<h1
+					class="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none relative z-10"
+					style="transform: translate({$mouse.x * 5}px, {$mouse.y * 5}px)"
+				>
 					MyPage<span class="text-red-600">48</span>
 				</h1>
 				<span
 					class="text-[9px] font-bold text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase mt-0.5"
+					style="transform: translate({$mouse.x * 8}px, {$mouse.y * 8}px)"
 				>
 					{$t('landing.nav.subtitle')}
 				</span>
@@ -217,24 +225,31 @@
 			>
 		</div>
 
-		<h1
-			class="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 dark:text-white mb-8 leading-[0.9] opacity-0 animate-appear pointer-events-auto"
-			style="animation-delay: 100ms;"
-		>
-			{$t('landing.hero.titlePrefix')} <br />
-			<span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-500">
-				{$t('landing.hero.titleSuffix')}
-			</span>
-		</h1>
+		<!-- Parallax Wrapper for Title -->
+		<div class="opacity-0 animate-appear mb-8" style="animation-delay: 100ms;">
+			<h1
+				class="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 dark:text-white leading-[0.9] pointer-events-auto"
+				style="transform: translate({$mouse.x * 30}px, {$mouse.y * 30}px)"
+			>
+				{$t('landing.hero.titlePrefix')} <br />
+				<span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-500">
+					{$t('landing.hero.titleSuffix')}
+				</span>
+			</h1>
+		</div>
 
-		<p
-			class="text-lg md:text-xl text-slate-500 dark:text-slate-400 mb-12 max-w-2xl mx-auto font-medium leading-relaxed opacity-0 animate-appear pointer-events-auto"
-			style="animation-delay: 200ms;"
-		>
-			{@html $t('landing.hero.description', {
-				highlight: `<span class="text-slate-800 dark:text-slate-200 font-bold decoration-red-200 decoration-2 underline-offset-4">${$t('landing.hero.highlight')}</span>`
-			})}
-		</p>
+		<!-- Parallax Wrapper for Description -->
+		<div class="opacity-0 animate-appear pointer-events-auto mb-12" style="animation-delay: 200ms;">
+			<div style="transform: translate({$mouse.x * 15}px, {$mouse.y * 15}px)">
+				<p
+					class="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed"
+				>
+					{@html $t('landing.hero.description', {
+						highlight: `<span class="text-slate-800 dark:text-slate-200 font-bold decoration-red-200 decoration-2 underline-offset-4">${$t('landing.hero.highlight')}</span>`
+					})}
+				</p>
+			</div>
+		</div>
 
 		<div
 			class="flex flex-col items-center justify-center opacity-0 animate-appear pointer-events-auto"
@@ -391,16 +406,19 @@
 					<div class="flex-1 text-center md:text-left space-y-6">
 						<div
 							class="inline-flex p-3 rounded-full {feature.iconBg} {feature.color} ring-4 ring-white shadow-lg mb-2"
+							style="transform: translate({$mouse.x * 40}px, {$mouse.y * 40}px)"
 						>
 							<svelte:component this={feature.icon} size={24} />
 						</div>
 						<h2
 							class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter"
+							style="transform: translate({$mouse.x * 30}px, {$mouse.y * 30}px)"
 						>
 							{feature.title}
 						</h2>
 						<p
 							class="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium max-w-lg mx-auto md:mx-0"
+							style="transform: translate({$mouse.x * 20}px, {$mouse.y * 20}px)"
 						>
 							{feature.description}
 						</p>
