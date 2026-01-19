@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import type { UserWithProfileStats } from '$lib/types';
 import { auth } from '$lib/apis/auth';
 import { client } from '$lib/apis/client';
@@ -12,16 +12,20 @@ interface UserProfileStoreState {
 export const isUserProfileLoading = writable(false);
 
 function createUserProfileStore() {
-	const { subscribe, set, update } = writable<UserProfileStoreState>({
+	const store = writable<UserProfileStoreState>({
 		data: null,
 		error: null
 	});
+	const { subscribe, set, update } = store;
 
 	return {
 		subscribe,
 		set,
 		update,
 		load: async () => {
+			const current = get(store);
+			if (current.data) return current.data;
+
 			isUserProfileLoading.set(true);
 			update((s) => ({ ...s, error: null }));
 			try {
