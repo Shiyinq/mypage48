@@ -47,7 +47,21 @@ function createUserProfileStore() {
 		updateOshi: async (memberId: string) => {
 			await auth.updateOshi(parseInt(memberId));
 			const data = await auth.getProfile();
-			update((u) => (u.data ? { ...u, data: { ...u.data, oshi: data.oshi } } : u));
+			update((u) =>
+				u.data
+					? {
+						...u,
+						data: {
+							...u.data,
+							oshi: data.oshi,
+							profileRank: data.rank,
+							profileStats: data.stats,
+							profileOshiTwoShots: data.oshiTwoShots,
+							profileRecentActivity: data.recentActivity
+						}
+					}
+					: u
+			);
 		},
 		updateAvatar: async (base64Image: string) => {
 			await auth.updateProfilePicture(base64Image);

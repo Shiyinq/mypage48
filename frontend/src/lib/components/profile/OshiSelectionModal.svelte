@@ -29,14 +29,18 @@
 	let sentinel: HTMLElement;
 
 	// Reset/Fetch when modal opens
-	$: if (show) {
-		if (memberList.length === 0) {
-			fetchMembers(true);
+	$: handleVisibilityChange(show);
+
+	function handleVisibilityChange(isVisible: boolean) {
+		if (isVisible) {
+			if (memberList.length === 0) {
+				fetchMembers(true);
+			}
+		} else {
+			searchQuery = '';
+			selectedOshiId = null;
+			memberList = [];
 		}
-	} else {
-		searchQuery = '';
-		selectedOshiId = null;
-		memberList = [];
 	}
 
 	$: if (sentinel && observer) {
