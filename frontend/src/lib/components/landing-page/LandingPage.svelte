@@ -31,6 +31,7 @@
 	}> = [];
 
 	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
+	let scrollY = 0;
 
 	function handleMouseMove(event: MouseEvent) {
 		const { clientX, clientY, currentTarget } = event;
@@ -90,6 +91,8 @@
 	];
 </script>
 
+<svelte:window bind:scrollY />
+
 <SEO title="Home" />
 
 <div
@@ -114,12 +117,13 @@
 		<!-- Static Decor Elements (Restored) -->
 		<div
 			class="absolute top-20 left-10 text-pink-200 animate-pulse delay-700 hover:scale-125 hover:text-pink-400 cursor-pointer transition-all duration-300 pointer-events-auto"
+			style="transform: translate({$mouse.x * 20}px, {$mouse.y * 20 + scrollY * 0.2}px)"
 		>
 			<Sparkles size={48} />
 		</div>
 		<div
 			class="absolute top-40 right-10 text-red-200 animate-pulse delay-300 hover:scale-125 hover:rotate-12 hover:text-red-400 cursor-pointer transition-all duration-300 pointer-events-auto"
-			style="transform: translate({$mouse.x * 60}px, {$mouse.y * 60}px)"
+			style="transform: translate({$mouse.x * 60}px, {$mouse.y * 60 + scrollY * 0.5}px)"
 		>
 			<Star size={32} />
 		</div>
@@ -133,8 +137,8 @@
 				style="
                 left: {d.x}%;
                 top: {d.y}%;
-                transform: scale({d.scale}) translate({$mouse.x * d.depth}px, {$mouse.y *
-					d.depth}px);
+                transform: scale({d.scale}) translate({$mouse.x * d.depth}px, {$mouse.y * d.depth +
+					scrollY * d.depth * 0.002}px);
             "
 			>
 				<!-- Floating Wrapper -->
