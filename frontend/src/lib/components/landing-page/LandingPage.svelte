@@ -13,41 +13,39 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import LandingPageThemeToggle from './ThemeToggle.svelte';
+	import LanguageToggle from './LanguageToggle.svelte';
 
 	const { t } = useTranslation();
 
-	const features = [
+	// Make features reactive to language changes
+	$: features = [
 		{
-			title: 'THEATER',
-			description:
-				"Track every JKT48 theater show you attend. Monitor your spending, seat history, and watch your fan level grow. See which setlists you've mastered.",
+			title: $t('landing.features.theater.title'),
+			description: $t('landing.features.theater.description'),
 			icon: Ticket,
 			color: 'text-red-500',
 			iconBg: 'bg-red-50',
 			type: 'theater'
 		},
 		{
-			title: '2-SHOT',
-			description:
-				"Keep a digital collection of your 2-shot polaroids. Analyze your collection by member and see who's really your oshi with visual breakdown stats.",
+			title: $t('landing.features.twoShot.title'),
+			description: $t('landing.features.twoShot.description'),
 			icon: Camera,
 			color: 'text-pink-500',
 			iconBg: 'bg-pink-50',
 			type: 'twoshot'
 		},
 		{
-			title: 'MEMORIES',
-			description:
-				'A beautiful digital scrapbook for your fan journey. Store photos, tickets, and special moments in one place. Relive the excitement of every event.',
+			title: $t('landing.features.memories.title'),
+			description: $t('landing.features.memories.description'),
 			icon: Users,
 			color: 'text-blue-500',
 			iconBg: 'bg-blue-50',
 			type: 'memories'
 		},
 		{
-			title: 'ACHIEVEMENTS',
-			description:
-				'Unlock badges and milestones as you support JKT48. From "First Show" to "Legendary Fan", track your progress and show off your loyalty.',
+			title: $t('landing.features.achievements.title'),
+			description: $t('landing.features.achievements.description'),
 			icon: Trophy,
 			color: 'text-yellow-500',
 			iconBg: 'bg-yellow-50',
@@ -100,17 +98,19 @@
 				<span
 					class="text-[9px] font-bold text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase mt-0.5"
 				>
-					JKT48 Theater Tracker
+					{$t('landing.nav.subtitle')}
 				</span>
 			</div>
 		</div>
 		<div class="flex items-center gap-4">
+			<LanguageToggle />
 			<LandingPageThemeToggle />
 			<a
 				href="/login"
 				class="px-6 py-2 rounded-full bg-red-600 text-white font-bold text-sm shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-0.5 transition-all flex items-center gap-2 group"
 			>
-				Login <ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
+				{$t('auth.login.signIn')}
+				<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
 			</a>
 		</div>
 	</nav>
@@ -129,7 +129,7 @@
 			</span>
 			<span
 				class="text-[10px] font-bold text-slate-400 dark:text-slate-400 tracking-[0.2em] uppercase"
-				>Fan Made Project</span
+				>{$t('landing.hero.badge')}</span
 			>
 		</div>
 
@@ -137,9 +137,9 @@
 			class="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 dark:text-white mb-8 leading-[0.9] opacity-0 animate-appear"
 			style="animation-delay: 100ms;"
 		>
-			Your Ultimate <br />
+			{$t('landing.hero.titlePrefix')} <br />
 			<span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-500">
-				JKT48 Companion
+				{$t('landing.hero.titleSuffix')}
 			</span>
 		</h1>
 
@@ -147,11 +147,9 @@
 			class="text-lg md:text-xl text-slate-500 dark:text-slate-400 mb-12 max-w-2xl mx-auto font-medium leading-relaxed opacity-0 animate-appear"
 			style="animation-delay: 200ms;"
 		>
-			Track shows, collect 2-shots, and celebrate your fandom journey with <span
-				class="text-slate-800 dark:text-slate-200 font-bold decoration-red-200 decoration-2 underline-offset-4"
-				>premium analytics</span
-			>
-			and a beautiful personal dashboard.
+			{@html $t('landing.hero.description', {
+				highlight: `<span class="text-slate-800 dark:text-slate-200 font-bold decoration-red-200 decoration-2 underline-offset-4">${$t('landing.hero.highlight')}</span>`
+			})}
 		</p>
 
 		<div
@@ -162,10 +160,11 @@
 				href="/register"
 				class="group relative inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-red-600 text-white font-bold text-base shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-1 transition-all duration-300"
 			>
-				Get Started <Rocket size={20} class="group-hover:rotate-12 transition-transform" />
+				{$t('landing.hero.getStarted')}
+				<Rocket size={20} class="group-hover:rotate-12 transition-transform" />
 			</a>
 			<p class="mt-6 text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">
-				Open Source • No Ads • Fan Made
+				{$t('landing.hero.openSource')}
 			</p>
 		</div>
 	</header>
@@ -344,10 +343,7 @@
 			<div
 				class="flex items-center justify-center gap-2 text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-bold"
 			>
-				<span
-					>&copy; {new Date().getFullYear()} Crafted with <span class="text-red-500">❤️</span> for the
-					JKT48 Family</span
-				>
+				<span>{$t('landing.footer.copyright', { heart: '❤️' })}</span>
 			</div>
 
 			<a
@@ -356,12 +352,11 @@
 				class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
 			>
 				<Github size={14} />
-				OPEN SOURCE PROJECT
+				{$t('landing.footer.openSource')}
 			</a>
 
 			<p class="text-[9px] text-slate-300 max-w-md mx-auto px-6">
-				This is a fan-made project and is not affiliated with or endorsed by official JKT48
-				management company.
+				{$t('landing.footer.disclaimer')}
 			</p>
 		</div>
 	</footer>

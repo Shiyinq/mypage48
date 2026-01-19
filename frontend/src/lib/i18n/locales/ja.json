@@ -75,6 +75,43 @@
 	"header": {
 		"tagline": "JKT48劇場トラッカー"
 	},
+	"landing": {
+		"nav": {
+			"subtitle": "JKT48劇場トラッカー"
+		},
+		"hero": {
+			"badge": "ファンメイドプロジェクト",
+			"titlePrefix": "あなたの究極の",
+			"titleSuffix": "JKT48コンパニオン",
+			"description": "公演を記録し、2ショットを集め、{highlight}と美しい個人ダッシュボードでファンダムの旅を祝いましょう。",
+			"highlight": "プレミアム分析",
+			"getStarted": "始める",
+			"openSource": "オープンソース • 広告なし • ファンメイド"
+		},
+		"features": {
+			"theater": {
+				"title": "THEATER",
+				"description": "参加したすべてのJKT48劇場公演を記録します。支出、座席履歴を監視し、ファンレベルが上がるのを見守りましょう。マスターしたセットリストを確認できます。"
+			},
+			"twoShot": {
+				"title": "2-SHOT",
+				"description": "2ショットのデジタルコレクションを保存します。メンバーごとにコレクションを分析し、視覚的な内訳統計で本当の推しが誰かを確認できます。"
+			},
+			"memories": {
+				"title": "MEMORIES",
+				"description": "ファンの旅のための美しいデジタルスクラップブック。写真、チケット、特別な瞬間を一箇所に保存します。すべてのイベントの興奮を追体験しましょう。"
+			},
+			"achievements": {
+				"title": "ACHIEVEMENTS",
+				"description": "JKT48を応援しながらバッジやマイルストーンを解除します。「初公演」から「伝説のファン」まで、進捗を追跡し、忠誠心を示しましょう。"
+			}
+		},
+		"footer": {
+			"copyright": "JKT48ファミリーのために{heart}を込めて作成",
+			"openSource": "オープンソースプロジェクト",
+			"disclaimer": "これはファンメイドのプロジェクトであり、公式のJKT48運営会社とは関係なく、承認も受けていません。"
+		}
+	},
 	"auth": {
 		"login": {
 			"title": "ログイン",
