@@ -8,13 +8,13 @@ const THEME_KEY = 'mypage48_theme';
 
 // Get initial theme preference
 function getInitialTheme(): Theme {
-	if (!browser) return 'auto';
+	if (!browser) return 'light';
 
 	const stored = localStorage.getItem(THEME_KEY) as Theme | null;
 	if (stored && ['light', 'dark', 'auto'].includes(stored)) {
 		return stored;
 	}
-	return 'auto';
+	return 'light';
 }
 
 // Create the theme store
@@ -65,7 +65,7 @@ export function initTheme(): void {
 	const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 	mediaQuery.addEventListener('change', () => {
 		const storedTheme = localStorage.getItem(THEME_KEY) as Theme | null;
-		if (storedTheme === 'auto' || !storedTheme) {
+		if (storedTheme === 'auto') {
 			applyTheme('auto');
 		}
 	});
