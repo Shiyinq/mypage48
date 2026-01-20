@@ -15,8 +15,8 @@
 	import { spring } from 'svelte/motion';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import LandingPageThemeToggle from './ThemeToggle.svelte';
-	import LanguageToggle from './LanguageToggle.svelte';
+	import LandingNavbar from './LandingNavbar.svelte';
+	import Footer from './Footer.svelte';
 
 	const { t } = useTranslation();
 
@@ -170,46 +170,7 @@
 	</div>
 
 	<!-- NAV -->
-	<nav
-		class="relative z-50 flex justify-between items-center p-6 max-w-7xl mx-auto pointer-events-none"
-	>
-		<div class="flex items-center gap-3 group cursor-default pointer-events-auto">
-			<div
-				class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white shadow-xl shadow-red-500/20 ring-4 ring-white dark:ring-zinc-800 transition-transform group-hover:scale-105 duration-300"
-			>
-				<Ticket class="w-5 h-5" />
-			</div>
-			<div class="flex flex-col relative">
-				<div
-					class="absolute inset-0"
-					style="transform: translate({$mouse.x * 10}px, {$mouse.y * 10}px)"
-				></div>
-				<h1
-					class="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none relative z-10"
-					style="transform: translate({$mouse.x * 5}px, {$mouse.y * 5}px)"
-				>
-					MyPage<span class="text-red-600">48</span>
-				</h1>
-				<span
-					class="text-[9px] font-bold text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase mt-0.5"
-					style="transform: translate({$mouse.x * 8}px, {$mouse.y * 8}px)"
-				>
-					{$t('landing.nav.subtitle')}
-				</span>
-			</div>
-		</div>
-		<div class="flex items-center gap-4 pointer-events-auto">
-			<LanguageToggle />
-			<LandingPageThemeToggle />
-			<a
-				href="/login"
-				class="px-6 py-2 rounded-full bg-red-600 text-white font-bold text-sm shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-0.5 transition-all flex items-center gap-2 group"
-			>
-				{$t('auth.login.signIn')}
-				<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
-			</a>
-		</div>
-	</nav>
+	<LandingNavbar mouse={$mouse} />
 
 	<!-- HERO -->
 	<header class="relative z-10 pt-16 pb-32 px-6 text-center max-w-5xl mx-auto pointer-events-none">
@@ -433,60 +394,7 @@
 	</section>
 
 	<!-- FOOTER -->
-	<footer class="py-20 relative z-10 pointer-events-none">
-		<div class="text-center space-y-8 pointer-events-auto">
-			<div class="flex items-center justify-center gap-3">
-				<div
-					class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white shadow-xl shadow-red-500/20 ring-4 ring-white dark:ring-zinc-800"
-				>
-					<Ticket class="w-5 h-5" />
-				</div>
-				<span class="font-black text-2xl tracking-tighter text-slate-900 dark:text-white">
-					MyPage<span class="text-red-600">48</span>
-				</span>
-			</div>
-
-			<div
-				class="flex items-center justify-center gap-2 text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-bold"
-			>
-				<span>{$t('landing.footer.copyright', { heart: '❤️' })}</span>
-			</div>
-
-			<a
-				href="https://github.com/shiyinq/mypage48"
-				target="_blank"
-				class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
-			>
-				<Github size={14} />
-				{$t('landing.footer.openSource')}
-			</a>
-
-			<div class="flex items-center justify-center gap-6 flex-wrap px-6">
-				<a
-					href="/about"
-					class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-				>
-					{$t('landing.footer.about')}
-				</a>
-				<a
-					href="/privacy"
-					class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-				>
-					{$t('landing.footer.privacy')}
-				</a>
-				<a
-					href="/terms"
-					class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-				>
-					{$t('landing.footer.terms')}
-				</a>
-			</div>
-
-			<p class="text-[9px] text-slate-300 max-w-md mx-auto px-6">
-				{$t('landing.footer.disclaimer')}
-			</p>
-		</div>
-	</footer>
+	<Footer />
 </div>
 
 <style>
