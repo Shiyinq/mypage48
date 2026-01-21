@@ -114,6 +114,13 @@
 												>
 													{$t('theater.events.setlist')}
 												</span>
+											{:else if event.isBirthday}
+												<span
+													class="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 px-2 py-0.5"
+												>
+													<Cake class="w-3 h-3 mb-[2px]" />
+													{$t('theater.events.birthday')}
+												</span>
 											{:else}
 												<span
 													class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"

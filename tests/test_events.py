@@ -302,3 +302,63 @@ async def test_get_calendar_events_error(client, monkeypatch, create_user):
     response = await client.get("/api/events/calendar?year=2026&month=2", headers=headers)
     assert response.status_code == 500
     assert response.json()["detail"] == "Failed to fetch event data."
+
+
+@pytest.mark.asyncio
+async def test_get_calendar_events_with_birthdays(client, create_user, db):
+    # Auth
+    _, _, headers = await create_user("testuser")
+
+    # Insert a member with a birthday in Feb
+    await db["members"].insert_one({
+        "id": "member-bday",
+        "name": "Birthday Girl",
+        "birthdate": "14 Februari 2000",
+        "active": True
+    })
+
+    # Call calendar for Feb 2026
+    year, month = 2026, 2
+    
+    # 2026-02-14 is within the range
+    response = await client.get(f"/api/events/calendar?year={year}&month={month}", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    
+    titles = [e["title"] for e in data]
+    assert "Birthday Girl" in titles
+    
+    # Verify Birthday Event Structure
+    bday_event = next(e for e in data if e["title"] == "Birthday Girl")
+    assert bday_event["isBirthday"] is True
+    assert bday_event["date"].startswith("2026-02-14")
+    assert bday_event["url"] == "/members/member-bday"
+
+
+@pytest.mark.asyncio
+async def test_get_calendar_events_with_cross_month_birthdays(client, create_user, db):
+    # Testing the user request about "next month preview"
+    # Feb 2026 calendar (28 days). 
+    # Starts Feb 1 (Sunday). 
+    # 42 days grid -> Ends mid March.
+    
+    # Insert a member with birthday in early March
+    # Auth
+    _, _, headers = await create_user("testuser2")
+
+    await db["members"].insert_one({
+        "id": "member-march-bday",
+        "name": "March Baby",
+        "birthdate": "5 Maret 2000",
+        "active": True
+    })
+    
+    # Call calendar for Feb 2026
+    # 5 March 2026 should be visible in the Feb view (since it covers 42 days)
+    year, month = 2026, 2
+    response = await client.get(f"/api/events/calendar?year={year}&month={month}", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    
+    titles = [e["title"] for e in data]
+    assert "March Baby" in titles
