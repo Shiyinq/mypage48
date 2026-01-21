@@ -168,6 +168,7 @@ class EventsRepository:
         projection = {
             "title": 1,
             "date": 1,
+            "url": 1,
             "_id": 0
         }
         

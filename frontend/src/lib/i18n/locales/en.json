@@ -344,7 +344,10 @@
 			"selectOshi": "Select Your Oshi",
 			"searchMember": "Search member...",
 			"roulette": "Roulette",
-			"birthday": "Birthday"
+			"birthday": "Birthday",
+			"upcomingSchedule": "Oshi's Next Schedule",
+			"pastSchedule": "Oshi's Previous Schedule",
+			"noSchedule": "No schedule"
 		},
 		"oshiModal": {
 			"title": "Select Your Oshi",

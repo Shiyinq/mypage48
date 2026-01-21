@@ -354,7 +354,10 @@
 			"selectOshi": "Pilih Oshi Kamu",
 			"searchMember": "Cari member...",
 			"roulette": "Roulette",
-			"birthday": "Birthday"
+			"birthday": "Birthday",
+			"upcomingSchedule": "Jadwal Oshi selanjutnya",
+			"pastSchedule": "Jadwal Oshi sebelumnya",
+			"noSchedule": "Tidak ada jadwal"
 		},
 		"recentActivity": {
 			"title": "Aktivitas Terbaru",
