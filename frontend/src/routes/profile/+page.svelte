@@ -10,7 +10,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { PageHeader, ErrorState } from '$lib/components';
 
-	import type { ProfileRecentActivity, RankInfo, User } from '$lib/types';
+	import type { ProfileRecentActivity, RankInfo, User, UserOshi, OshiShow } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		DigitalMemberCard,
@@ -18,6 +18,7 @@
 		QuickStats,
 		OshiCard,
 		RecentActivity,
+		OshiShows,
 		OshiSelectionModal,
 		MemberDetailModal
 	} from '$lib/components/profile';
@@ -33,7 +34,7 @@
 		username: string;
 		memberId?: string;
 		ofcStatus?: string;
-		oshi: import('$lib/types').UserOshi | null;
+		oshi: UserOshi | null;
 	}
 
 	let profile: ProfileData | null = null;
@@ -44,6 +45,8 @@
 	let twoShotRouletteCount = 0;
 	let twoShotBirthdayCount = 0;
 	let oshiMeetings = 0;
+	let upcomingSchedule: OshiShow[] = [];
+	let pastSchedule: OshiShow[] = [];
 
 	$: error = $userProfile.error;
 
@@ -100,6 +103,10 @@
 			if (storeProfile.profileOshiTwoShots) {
 				twoShotRouletteCount = storeProfile.profileOshiTwoShots.roulette;
 				twoShotBirthdayCount = storeProfile.profileOshiTwoShots.birthday;
+			}
+			if (storeProfile.oshi) {
+				upcomingSchedule = storeProfile.oshi.upcomingSchedule || [];
+				pastSchedule = storeProfile.oshi.pastSchedule || [];
 			}
 			if (storeProfile.profileRecentActivity) {
 				recentActivity = storeProfile.profileRecentActivity;
@@ -231,6 +238,7 @@
 				<DigitalMemberCard {profile} loading={$isUserProfileLoading} />
 				<LevelProgress {level} {progressPercent} loading={$isUserProfileLoading} />
 				<QuickStats {totalShows} {totalAchievements} loading={$isUserProfileLoading} />
+				<RecentActivity {recentActivity} loading={$isUserProfileLoading} />
 			</div>
 
 			<!-- RIGHT COLUMN: Oshimen & Feed (Span 7) -->
@@ -244,7 +252,7 @@
 					onOpenOshiModal={openOshiModal}
 					onOpenMemberDetail={openMemberDetail}
 				/>
-				<RecentActivity {recentActivity} loading={$isUserProfileLoading} />
+				<OshiShows {upcomingSchedule} {pastSchedule} loading={$isUserProfileLoading} />
 			</div>
 		</div>
 	{/if}

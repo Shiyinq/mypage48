@@ -354,7 +354,10 @@
 			"selectOshi": "推しを選ぶ",
 			"searchMember": "メンバーを検索...",
 			"roulette": "ルーレット",
-			"birthday": "バースデー"
+			"birthday": "バースデー",
+			"upcomingSchedule": "推しの次のスケジュール",
+			"pastSchedule": "推しの以前のスケジュール",
+			"noSchedule": "スケジュールはありません"
 		},
 		"recentActivity": {
 			"title": "最近の活動",

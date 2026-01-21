@@ -205,3 +205,21 @@ async def test_oshi_meetings_logic(client: AsyncClient, db, create_user, create_
     # Should be 1 (Event A)
     assert stats["oshiMeetings"] == 1
     assert stats["totalShows"] == 3
+
+    # Verify Oshi Schedule Structure
+    oshi_data = data["oshi"]
+    assert oshi_data is not None
+    assert "upcomingSchedule" in oshi_data
+    assert "pastSchedule" in oshi_data
+    assert isinstance(oshi_data["upcomingSchedule"], list)
+    assert isinstance(oshi_data["pastSchedule"], list)
+
+    # Since all events are in 2024 and current date is (presumably) later or events are just past,
+    # we expect them to populate appropriately.
+    # event A (2024-01-01) and event C (2024-01-03) are for Oshi "123".
+    # Since current time is > 2024, they should be in pastSchedule.
+    assert len(oshi_data["pastSchedule"]) > 0
+    # Check that Event A or C is in pastSchedule
+    past_titles = [s["title"] for s in oshi_data["pastSchedule"]]
+    assert "Event A" in past_titles
+    assert "Event C" in past_titles

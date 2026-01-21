@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, field_validator, model_validator
 
@@ -16,6 +16,12 @@ class OshiSocials(BaseModel):
     idn_app: Optional[str] = None
 
 
+class OshiShowResponse(BaseModel):
+    title: str
+    date: datetime
+    url: Optional[str] = None
+
+
 class OshiResponse(BaseModel):
     name: str = "Unknown"
     nickname: str = "-"
@@ -26,6 +32,8 @@ class OshiResponse(BaseModel):
     catchphrase: str = "-"
     socials: Optional[OshiSocials] = None
     totalShows: int = 0
+    upcomingSchedule: List[OshiShowResponse] = []
+    pastSchedule: List[OshiShowResponse] = []
 
 
 class UserLoginBase(BaseModel):

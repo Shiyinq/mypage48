@@ -2,6 +2,12 @@
  * Authentication and user-related types.
  */
 
+export interface OshiShow {
+	title: string;
+	date: string;
+	url?: string | null;
+}
+
 export interface UserOshi {
 	name: string;
 	nickname: string;
@@ -17,6 +23,8 @@ export interface UserOshi {
 		idn_app: string | null;
 	} | null;
 	totalShows?: number;
+	upcomingSchedule?: OshiShow[];
+	pastSchedule?: OshiShow[];
 }
 
 export interface User {

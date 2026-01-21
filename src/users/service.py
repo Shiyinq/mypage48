@@ -5,7 +5,7 @@ from pymongo.errors import DuplicateKeyError
 
 from src.achievements.service import AchievementsService
 from src.auth.email_service import EmailService
-from src.auth.schemas import OshiResponse
+from src.auth.schemas import OshiResponse, OshiShowResponse
 from src.auth.security_service import SecurityService
 from src.config import Settings
 from src.events.service import EventsService
@@ -447,6 +447,36 @@ class UserService:
 
                 if oshi_response:
                     oshi_response.totalShows = oshi_total_shows
+                    
+                    # Split oshi_events into upcoming and history
+                    now = datetime.now()
+                    upcoming_events = []
+                    past_events = []
+                    
+                    for e in oshi_events:
+                        event_date = e.get("date")
+                        if not isinstance(event_date, datetime):
+                            try:
+                                event_date = datetime.fromisoformat(str(event_date))
+                            except:
+                                continue
+                        
+                        show_data = OshiShowResponse(
+                            title=e.get("title", "Unknown"),
+                            date=event_date,
+                            url=e.get("url")
+                        )
+                        
+                        if event_date >= now:
+                            upcoming_events.append(show_data)
+                        else:
+                            past_events.append(show_data)
+                    
+                    # Sort and limit
+                    # Upcoming: Ascending (soonest first) - No limit
+                    # History: Descending (most recent first) - Limit 5
+                    oshi_response.upcomingSchedule = sorted(upcoming_events, key=lambda x: x.date)
+                    oshi_response.pastSchedule = sorted(past_events, key=lambda x: x.date, reverse=True)[:5]
 
             # Get recent activity (5 most recent shows)
             sorted_tickets = sorted(tickets, key=lambda x: x.event.date, reverse=True)
