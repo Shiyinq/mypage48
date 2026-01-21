@@ -32,6 +32,11 @@ class MemberRepository:
         cursor = self.collection.find(query).skip(skip).limit(limit)
         return await cursor.to_list(length=limit)
 
+    async def find_all_active(self) -> List[dict]:
+        """Find all active members without pagination"""
+        cursor = self.collection.find({"active": True})
+        return await cursor.to_list(length=None)
+
     async def count(
         self, generation: Optional[str] = None, search: Optional[str] = None
     ) -> int:

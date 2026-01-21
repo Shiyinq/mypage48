@@ -32,7 +32,9 @@
 		"dashboard": "Dasbor",
 		"language": "Bahasa",
 		"noResults": "Tidak ada hasil ditemukan",
-		"date": "Tanggal"
+		"date": "Tanggal",
+		"today": "Hari Ini",
+		"tomorrow": "Besok"
 	},
 	"validation": {
 		"alert": {
@@ -697,6 +699,7 @@
 			"errorDesc": "Terjadi kesalahan saat mengambil daftar member."
 		},
 		"upcomingEvents": {
+			"title": "Jadwal Mendatang",
 			"emptyTitle": "Tidak ada event",
 			"empty": "Belum ada jadwal event mendatang.",
 			"errorTitle": "Gagal memuat jadwal",
@@ -734,6 +737,11 @@
 			"pagination": {
 				"pageOf": "Halaman {current} dari {last}"
 			}
+		},
+		"birthdays": {
+			"title": "Ulang Tahun Mendatang",
+			"empty": "Tidak ada ulang tahun dalam 30 hari ke depan.",
+			"daysLeft": "{days} hari lagi"
 		}
 	},
 	"top2shot": {

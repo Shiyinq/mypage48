@@ -7,6 +7,7 @@ from src.members.constants import Info
 from src.members.exceptions import MemberFetchError, MemberNotFoundError
 from src.members.repository import MemberRepository
 from src.members.schemas import (
+    BirthdayResponse,
     MemberCreateRequest,
     MemberDetailResponse,
     MemberListResponse,
@@ -161,4 +162,68 @@ class MemberService:
             raise
         except Exception as e:
             logger.exception(f"Error deleting member {member_id}: {str(e)}")
+            raise MemberFetchError()
+
+    async def get_upcoming_birthdays(self) -> List[BirthdayResponse]:
+        """Get members with upcoming birthdays in the next 30 days"""
+        try:
+            members = await self.repository.find_all_active()
+            upcoming = []
+            today = datetime.now().date()
+            
+            months_map = {
+                "Januari": 1, "Februari": 2, "Maret": 3, "April": 4, "Mei": 5, "Juni": 6,
+                "Juli": 7, "Agustus": 8, "September": 9, "Oktober": 10, "November": 11, "Desember": 12
+            }
+
+            for member in members:
+                if not member.get("birthdate"):
+                    continue
+
+                try:
+                    # Parse birthdate "DD Month YYYY" (e.g., "16 Januari 1999")
+                    parts = member["birthdate"].split()
+                    if len(parts) != 3:
+                        continue
+                        
+                    day = int(parts[0])
+                    month_str = parts[1]
+                    year = int(parts[2])
+                    
+                    if month_str not in months_map:
+                        continue
+                        
+                    month = months_map[month_str]
+                    
+                    # Calculate next birthday
+                    current_year_birthday = datetime(today.year, month, day).date()
+                    next_birthday = current_year_birthday
+                    
+                    if current_year_birthday < today:
+                        next_birthday = datetime(today.year + 1, month, day).date()
+                    
+                    days_until = (next_birthday - today).days
+                    
+                    # Check if within next 30 days
+                    if 0 <= days_until <= 30:
+                        age = next_birthday.year - year
+                        upcoming.append(BirthdayResponse(
+                            id=member.get("id", ""),
+                            name=member.get("name", ""),
+                            active=member.get("active", True),
+                            img=member.get("img"),
+                            birthdate=member.get("birthdate", ""),
+                            days_until=days_until,
+                            age=age
+                        ))
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"Error parsing birthdate for member {member.get('name')}: {e}")
+                    continue
+
+            # Sort by days until birthday
+            upcoming.sort(key=lambda x: x.days_until)
+            return upcoming
+
+        except Exception as e:
+            logger.exception(f"Error fetching upcoming birthdays: {str(e)}")
             raise MemberFetchError()

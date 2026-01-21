@@ -32,6 +32,16 @@ export interface MemberListResponse {
 	meta: PaginationMeta;
 }
 
+export interface BirthdayResponse {
+	id: string;
+	name: string;
+	active: boolean;
+	img: string | null;
+	birthdate: string;
+	days_until: number;
+	age: number;
+}
+
 export const members = {
 	getAll: async (
 		params: { page?: number; limit?: number; generation?: string; search?: string } = {}
@@ -43,6 +53,10 @@ export const members = {
 		if (params.search) query.append('search', params.search);
 
 		return client<MemberListResponse>(`/members?${query.toString()}`);
+	},
+
+	getBirthdays: async () => {
+		return client<BirthdayResponse[]>('/members/birthdays');
 	},
 
 	getGenerations: async () => {

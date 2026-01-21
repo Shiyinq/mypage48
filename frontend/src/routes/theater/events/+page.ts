@@ -1,4 +1,5 @@
 import { eventsStore } from '$lib/stores/events';
+import { membersStore } from '$lib/stores/theater';
 
 import { browser } from '$app/environment';
 
@@ -7,6 +8,7 @@ export const load = async () => {
 		// Defer store loading to next tick to avoid SvelteKit warning about using window.fetch during load
 		setTimeout(() => {
 			eventsStore.loadUpcoming();
+			membersStore.loadBirthdays();
 		}, 0);
 	}
 };

@@ -13,6 +13,8 @@
 		isUpcomingEventsLoading,
 		upcomingError
 	} from '$lib/stores/events';
+	import { membersStore, isBirthdaysLoading } from '$lib/stores/theater';
+	import Birthdays from '$lib/components/theater/Birthdays.svelte';
 
 	const { t, locale } = useTranslation();
 
@@ -28,6 +30,7 @@
 
 	onMount(async () => {
 		await eventsStore.loadUpcoming();
+		await membersStore.loadBirthdays();
 	});
 
 	$: error = $upcomingError;
@@ -40,6 +43,16 @@
 />
 
 <div class="space-y-6">
+	<!-- Birthdays Section -->
+	<Birthdays birthdays={$membersStore.birthdays || []} isLoading={$isBirthdaysLoading} />
+
+	<div class="flex items-center gap-2 mb-4">
+		<Calendar class="w-5 h-5 text-red-500" />
+		<h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
+			{$t('theater.upcomingEvents.title') || 'Upcoming Shows'}
+		</h2>
+	</div>
+
 	{#if $isUpcomingEventsLoading}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 			{#each Array(6) as _}
