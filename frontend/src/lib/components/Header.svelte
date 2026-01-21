@@ -19,7 +19,7 @@
 	// Navigation items with translation keys
 	$: navItems = [
 		{ labelKey: 'nav.dashboard', href: '/' },
-		{ labelKey: 'nav.theater', href: '/theater' },
+		{ labelKey: 'nav.theater', href: '/theater/events' },
 		{ labelKey: 'nav.achievements', href: '/achievements' },
 		{ labelKey: 'nav.memories', href: '/memories' },
 		{ labelKey: 'nav.history', href: '/history' }
