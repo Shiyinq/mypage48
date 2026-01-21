@@ -27,6 +27,7 @@ export interface CalendarEvent {
 	url: string;
 	setlistId?: string;
 	seitansaiMembers?: string[];
+	isBirthday?: boolean;
 }
 
 export interface EventPaginationResponse {

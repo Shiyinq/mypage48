@@ -193,12 +193,7 @@ def get_events_repository(db=Depends(get_db)) -> EventsRepository:
     return EventsRepository(db)
 
 
-def get_events_service(
-    repo: EventsRepository = Depends(get_events_repository),
-    config: Settings = Depends(get_settings),
-) -> EventsService:
-    background_runner = AsyncBackgroundRunner()
-    return EventsService(repo, background_runner, config)
+
 
 
 
@@ -222,6 +217,15 @@ def get_member_service(
     config: Settings = Depends(get_settings),
 ) -> MemberService:
     return MemberService(repo, config)
+
+
+def get_events_service(
+    repo: EventsRepository = Depends(get_events_repository),
+    config: Settings = Depends(get_settings),
+    member_service: MemberService = Depends(get_member_service),
+) -> EventsService:
+    background_runner = AsyncBackgroundRunner()
+    return EventsService(repo, background_runner, config, member_service)
 
 
 def get_achievements_service(

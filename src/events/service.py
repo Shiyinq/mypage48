@@ -9,6 +9,7 @@ from src.logging_config import create_logger
 from src.events.repository import EventsRepository
 from src.events.schemas import Event, EventPaginationResponse, PaginationMeta, CalendarEvent
 from src.events.exceptions import EventFetchError
+from src.members.service import MemberService
 
 logger = create_logger("events_service", __name__)
 
@@ -18,10 +19,12 @@ class EventsService:
         repository: EventsRepository,
         background_tasks: BackgroundTaskRunner,
         config: Settings,
+        member_service: MemberService,
     ):
         self.repository = repository
         self.background_tasks = background_tasks
         self.config = config
+        self.member_service = member_service
 
     async def get_events_paginated(
         self, page: int = 1, limit: int = 20, current_only: bool = False
@@ -85,10 +88,23 @@ class EventsService:
         
         try:
             raw_events = await self.repository.find_events_by_date_range(start_date, end_date)
-            return [CalendarEvent(**e) for e in raw_events]
+            results = [CalendarEvent(**e) for e in raw_events]
+            
+            birthdays = await self.member_service.get_birthdays_by_date_range(start_date, end_date)
+            
+            for b in birthdays:
+                results.append(CalendarEvent(
+                    title=b['name'],
+                    date=b['date'],
+                    url=f"/member/detail/id/{b['id']}", 
+                    isBirthday=True,
+                    setlistId=None,
+                    seitansaiMembers=None
+                ))
+                
+            return results
         except Exception as e:
             logger.exception(f"Failed to fetch calendar events: {str(e)}")
-            raise EventFetchError() from e
             raise EventFetchError() from e
 
     async def get_events_for_member(self, member_id: str) -> List[dict]:

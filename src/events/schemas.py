@@ -34,6 +34,7 @@ class CalendarEvent(BaseModel):
     url: str
     setlistId: Optional[str] = None
     seitansaiMembers: Optional[List[str]] = None
+    isBirthday: Optional[bool] = False
 
     class Config:
         populate_by_name = True

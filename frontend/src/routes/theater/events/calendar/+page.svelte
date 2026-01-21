@@ -409,9 +409,11 @@
 									{@const isPast = new Date(event.date) < new Date()}
 									<button
 										class="block w-full px-1.5 py-0.5 rounded-[4px] text-[10px] font-medium text-left transition-all flex items-center gap-1.5 shadow-sm border border-transparent cursor-pointer
-                                        {event.setlistId
-											? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40'
-											: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'}
+                                        {event.isBirthday
+											? 'bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 hover:bg-pink-100 dark:hover:bg-pink-900/40'
+											: event.setlistId
+												? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40'
+												: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'}
 										{isPast ? 'opacity-50 saturate-50 brightness-95' : 'hover:brightness-95'}"
 										title={event.title}
 										on:click|stopPropagation={() => openDayModal(date, dayEvents)}
@@ -429,7 +431,9 @@
 												</span>
 											{/if}
 
-											{#if event.seitansaiMembers && event.seitansaiMembers.length > 0}
+											{#if event.isBirthday}
+												<Cake class="w-3 h-3 mt-[-2px]" strokeWidth={2.5} />
+											{:else if event.seitansaiMembers && event.seitansaiMembers.length > 0}
 												<Cake class="w-3 h-3 mt-[-4px] text-pink-500" strokeWidth={2.5} />
 											{/if}
 										</div>
