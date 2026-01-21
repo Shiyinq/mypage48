@@ -24,7 +24,7 @@
 		</a>
 
 		<a
-			href="/theater"
+			href="/theater/events"
 			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 group"
 		>
 			<AudioLines

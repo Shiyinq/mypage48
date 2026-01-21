@@ -58,8 +58,32 @@
 			exact: true,
 			theme: 'purple'
 		},
-		{ labelKey: 'theater.subNav.members', href: '/theater/members', icon: Users, theme: 'pink' },
-		{ labelKey: 'theater.subNav.events', href: '/theater/events', icon: Calendar, theme: 'blue' }
+		{
+			labelKey: 'theater.subNav.members',
+			href: '/theater/members',
+			icon: Users,
+			theme: 'pink'
+		},
+		{
+			labelKey: 'theater.subNav.events',
+			href: '/theater/events',
+			icon: Calendar,
+			exact: true,
+			theme: 'blue'
+		},
+		{
+			labelKey: 'theater.events.calendar',
+			labelDefault: 'Calendar',
+			href: '/theater/events/calendar',
+			icon: Calendar,
+			theme: 'blue'
+		},
+		{
+			labelKey: 'theater.eventHistory.title',
+			href: '/theater/events/history',
+			icon: History,
+			theme: 'orange'
+		}
 	];
 
 	// Check if current path matches nav item
@@ -109,43 +133,9 @@
 						}`}
 					>
 						<svelte:component this={item.icon} class="w-4 h-4" />
-						{$t(item.labelKey)}
+						{$t(item.labelKey) || item.labelDefault}
 					</a>
 				{/each}
-
-				<!-- Events sub-link (History) - only show when on events pages -->
-				{#if currentPath.startsWith('/theater/events')}
-					<div class="flex items-center text-gray-300 dark:text-gray-600">
-						<ChevronRight class="w-4 h-4" />
-					</div>
-
-					<!-- Calendar Link -->
-					{@const calendarTheme = getThemeStyles('blue')}
-					<a
-						href="/theater/events/calendar"
-						class={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 whitespace-nowrap ${
-							currentPath === '/theater/events/calendar'
-								? calendarTheme.navActive
-								: `bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 ${calendarTheme.navInactive}`
-						}`}
-					>
-						<Calendar class="w-4 h-4" />
-						{$t('theater.events.calendar') || 'Calendar'}
-					</a>
-
-					{@const historyTheme = getThemeStyles('orange')}
-					<a
-						href="/theater/events/history"
-						class={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 whitespace-nowrap ${
-							currentPath === '/theater/events/history'
-								? historyTheme.navActive
-								: `bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 ${historyTheme.navInactive}`
-						}`}
-					>
-						<History class="w-4 h-4" />
-						{$t('theater.eventHistory.title')}
-					</a>
-				{/if}
 			</div>
 		</div>
 	{/if}
