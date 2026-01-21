@@ -6,6 +6,7 @@ from src.auth.schemas import UserCurrent
 from src.dependencies import get_current_user, get_member_service, require_admin
 from src.logging_config import create_logger
 from src.members.schemas import (
+    BirthdayResponse,
     MemberCreateRequest,
     MemberDetailResponse,
     MemberListResponse,
@@ -50,6 +51,17 @@ async def get_generations(
     Get list of all available generations.
     """
     return await service.get_generations()
+
+
+@router.get("/birthdays", response_model=List[BirthdayResponse])
+async def get_upcoming_birthdays(
+    service: MemberService = Depends(get_member_service),
+    _current_user: UserCurrent = Depends(get_current_user),
+):
+    """
+    Get members with upcoming birthdays in the next 30 days.
+    """
+    return await service.get_upcoming_birthdays()
 
 
 @router.get("/id/{member_id}", response_model=MemberDetailResponse)

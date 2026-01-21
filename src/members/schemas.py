@@ -115,7 +115,20 @@ class MemberUpdateRequest(BaseModel):
     socials: Optional[SocialMedia] = None
 
 
+
 class MessageResponse(BaseModel):
     """Simple message response for delete operations"""
 
     message: str
+
+
+class BirthdayResponse(BaseModel):
+    """Response schema for member birthday"""
+
+    id: str
+    name: str
+    active: bool
+    img: Optional[str] = None
+    birthdate: str
+    days_until: int
+    age: int

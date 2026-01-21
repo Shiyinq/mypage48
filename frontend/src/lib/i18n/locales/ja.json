@@ -31,7 +31,9 @@
 		"dashboard": "ダッシュボード",
 		"language": "言語",
 		"noResults": "結果が見つかりません",
-		"date": "日付"
+		"date": "日付",
+		"today": "今日",
+		"tomorrow": "明日"
 	},
 	"validation": {
 		"alert": {
@@ -544,6 +546,7 @@
 			"errorDesc": "メンバーリストの取得中にエラーが発生しました。"
 		},
 		"upcomingEvents": {
+			"title": "近日開催の公演",
 			"empty": "現在予定されているイベントはありません。",
 			"errorTitle": "スケジュールの読み込みに失敗しました",
 			"errorDesc": "イベントスケジュールの取得中にエラーが発生しました。"
@@ -563,6 +566,11 @@
 			"pagination": {
 				"pageOf": "{last}ページ中 {current}ページ目"
 			}
+		},
+		"birthdays": {
+			"title": "近日中の誕生日",
+			"empty": "今後30日間の誕生日メンバーはいません。",
+			"daysLeft": "あと{days}日"
 		}
 	},
 	"top2shot": {

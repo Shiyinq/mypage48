@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { setlistsApi, type Setlist, type SetlistDetailResponse } from '$lib/apis/setlists';
-import { members as membersApi, type Member } from '$lib/apis/members';
+import { members as membersApi, type Member, type BirthdayResponse } from '$lib/apis/members';
 import { logger } from '$lib/utils/logger';
 
 // --- Setlists Store ---
@@ -86,6 +86,7 @@ export const maxAttendanceStore = writable<number>(1);
 // --- Members Store ---
 interface MembersState {
 	list: Member[];
+	birthdays: BirthdayResponse[];
 	pagination: { page: number; hasMore: boolean };
 	cache: Record<string, { members: Member[]; pagination: { page: number; hasMore: boolean } }>; // Cache by filter key
 	generationsCache: string[] | null;
@@ -94,10 +95,12 @@ interface MembersState {
 }
 
 export const isMembersLoading = writable(false);
+export const isBirthdaysLoading = writable(false);
 
 function createMembersStore() {
 	const initialState: MembersState = {
 		list: [],
+		birthdays: [],
 		pagination: { page: 0, hasMore: true },
 		cache: {},
 		generationsCache: null,
@@ -109,6 +112,17 @@ function createMembersStore() {
 
 	return {
 		subscribe,
+		loadBirthdays: async () => {
+			isBirthdaysLoading.set(true);
+			try {
+				const results = await membersApi.getBirthdays();
+				update(s => ({ ...s, birthdays: results }));
+			} catch (e) {
+				logger.error('Failed to load birthdays', e, { context: 'MembersStore' });
+			} finally {
+				isBirthdaysLoading.set(false);
+			}
+		},
 		load: async (
 			params: { page?: number; limit?: number; generation?: string; search?: string } = {},
 			reset = false
@@ -183,6 +197,7 @@ function createMembersStore() {
 		reset: () => {
 			set(initialState);
 			isMembersLoading.set(false);
+			isBirthdaysLoading.set(false);
 		}
 	};
 }

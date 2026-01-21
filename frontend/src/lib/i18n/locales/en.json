@@ -31,7 +31,9 @@
 		"dashboard": "Dashboard",
 		"language": "Language",
 		"noResults": "No results found",
-		"date": "Date"
+		"date": "Date",
+		"today": "Today",
+		"tomorrow": "Tomorrow"
 	},
 	"validation": {
 		"alert": {
@@ -592,6 +594,7 @@
 			"errorDesc": "Something went wrong while fetching the member list."
 		},
 		"upcomingEvents": {
+			"title": "Upcoming Shows",
 			"empty": "No upcoming events scheduled at the moment.",
 			"errorTitle": "Failed to load schedule",
 			"errorDesc": "Something went wrong while fetching upcoming events."
@@ -611,6 +614,11 @@
 			"pagination": {
 				"pageOf": "Page {current} of {last}"
 			}
+		},
+		"birthdays": {
+			"title": "Upcoming Birthdays",
+			"empty": "No upcoming birthdays in the next 30 days.",
+			"daysLeft": "In {days} days"
 		}
 	},
 	"memories": {

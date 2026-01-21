@@ -1,8 +1,7 @@
 import pytest
 from httpx import AsyncClient
+from datetime import datetime
 
-# Minimal test data
-# Minimal test data
 TEST_MEMBERS_DATA = [
     {
         "id": "76",
@@ -12,7 +11,9 @@ TEST_MEMBERS_DATA = [
         "jiko": "Matahari yang indah!",
         "img": "https://example.com/feni.jpg",
         "active": True,
-        "socials": {}
+        "socials": {},
+        # Set birthdate to today/tomorrow dynamically would be better, but for simplicity we'll check schema
+        "birthdate": "16 Januari 1999"
     },
     {
         "id": "999",
@@ -22,7 +23,8 @@ TEST_MEMBERS_DATA = [
         "jiko": "Just a test",
         "img": "https://example.com/test.jpg",
         "active": True,
-        "socials": {}
+        "socials": {},
+        "birthdate": f"{datetime.now().day} {datetime.now().strftime('%B')} 2000".replace("January","Januari").replace("February","Februari").replace("March","Maret").replace("April","April").replace("May","Mei").replace("June","Juni").replace("July","Juli").replace("August","Agustus").replace("September","September").replace("October","Oktober").replace("November","November").replace("December","Desember")
     }
 ]
 
@@ -31,6 +33,23 @@ async def seed_members_db(db):
     """Seed the database with local test member data."""
     if TEST_MEMBERS_DATA:
         await db["members"].insert_many(TEST_MEMBERS_DATA)
+
+@pytest.mark.asyncio
+async def test_get_upcoming_birthdays(client: AsyncClient, seed_members_db, create_user):
+    # Auth
+    token, user_id, headers = await create_user("bdayuser")
+    
+    response = await client.get("/api/members/birthdays", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    # The second mock member is dynamically set to have a birthday today, so it should be in the list
+    assert len(data) >= 1
+    
+    first = data[0]
+    assert "days_until" in first
+    assert "age" in first
+    assert "birthdate" in first
 
 @pytest.mark.asyncio
 async def test_get_members_list(client: AsyncClient, seed_members_db, create_user):
