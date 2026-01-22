@@ -67,9 +67,28 @@
 							class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"
 						></div>
 
+						<!-- Top Overlay Gradient -->
+						<div
+							class="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black/40 to-transparent pointer-events-none"
+						></div>
+
+						<!-- Countdown Overlay (Top) -->
+						<div class="absolute top-2 left-0 right-0 flex justify-center">
+							<span
+								class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-sm backdrop-blur-md border border-white/20 drop-shadow-sm {member.days_until ===
+								0
+									? 'bg-pink-500/90 text-white animate-pulse'
+									: 'bg-black/40 text-white'}"
+							>
+								{getBirthdayText(member.days_until, $t)}
+							</span>
+						</div>
+
 						<div class="absolute bottom-0 left-0 right-0 p-3">
-							<div class="text-white font-bold text-sm truncate">{member.name}</div>
-							<div class="text-pink-300 text-xs font-medium">
+							<div class="text-white font-bold text-sm truncate drop-shadow-sm">
+								{member.name}
+							</div>
+							<div class="text-gray-200 text-xs font-medium drop-shadow-sm">
 								{new Date(member.birthdate).getDate()}
 								{new Date(member.birthdate).toLocaleString($locale, { month: 'short' })}
 								•
@@ -77,17 +96,6 @@
 								{$t('member.yearsOld') || 'years old'}
 							</div>
 						</div>
-					</div>
-
-					<div class="text-center">
-						<span
-							class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {member.days_until ===
-							0
-								? 'bg-pink-500 text-white animate-pulse'
-								: 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-300'}"
-						>
-							{getBirthdayText(member.days_until, $t)}
-						</span>
 					</div>
 				</div>
 			{/each}

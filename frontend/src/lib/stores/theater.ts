@@ -113,10 +113,17 @@ function createMembersStore() {
 	return {
 		subscribe,
 		loadBirthdays: async () => {
+			const state = get({ subscribe });
+
+			// Check if we have data
+			if (state.birthdays.length > 0) {
+				return;
+			}
+
 			isBirthdaysLoading.set(true);
 			try {
 				const results = await membersApi.getBirthdays();
-				update(s => ({ ...s, birthdays: results }));
+				update((s) => ({ ...s, birthdays: results }));
 			} catch (e) {
 				logger.error('Failed to load birthdays', e, { context: 'MembersStore' });
 			} finally {
