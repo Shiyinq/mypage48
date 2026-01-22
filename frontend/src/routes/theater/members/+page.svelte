@@ -166,7 +166,7 @@
 </div>
 
 <!-- Members Grid -->
-{#if $isMembersLoading}
+{#if $isMembersLoading && membersList.length === 0}
 	<div
 		class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4"
 	>
@@ -175,7 +175,7 @@
 			<MemberCardSkeleton />
 		{/each}
 	</div>
-{:else if error}
+{:else if error && membersList.length === 0}
 	<ErrorState
 		title={$t('theater.members.errorTitle') || 'Failed to load members'}
 		description={$t('theater.members.errorDesc') || error || ''}
@@ -209,16 +209,24 @@
 		{/each}
 	</div>
 
+	<!-- Skeletons for Infinite Scroll (Appending) -->
+	{#if $isMembersLoading && membersList.length > 0}
+		<div
+			class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4 mt-3 sm:mt-4"
+		>
+			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+			{#each Array(7) as _}
+				<MemberCardSkeleton />
+			{/each}
+		</div>
+	{/if}
+
 	<!-- Sentinel for Infinite Scroll -->
 	<div
 		use:infiniteScroll
 		on:intersect={handleInfiniteScroll}
 		class="h-8 w-full flex justify-center items-center py-2"
-	>
-		{#if isAppending}
-			<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-pink-500"></div>
-		{/if}
-	</div>
+	></div>
 {/if}
 
 <!-- Member Detail Modal -->
