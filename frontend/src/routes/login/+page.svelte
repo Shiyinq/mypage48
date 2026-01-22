@@ -13,6 +13,7 @@
 
 	import { loginSchema } from '$lib/schemas/auth';
 	import { ZodError } from 'zod';
+	import PasswordInput from '$lib/components/PasswordInput.svelte';
 
 	const { t } = useTranslation();
 
@@ -102,27 +103,17 @@
 		</div>
 
 		<div>
-			<label
-				for="password"
-				class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-				>{$t('auth.login.passwordLabel')}</label
+			<PasswordInput
+				id="password"
+				name="password"
+				label={$t('auth.login.passwordLabel')}
+				placeholder={$t('auth.login.passwordPlaceholder')}
+				bind:value={password}
+				error={errors.password}
+				on:input={() => validateField('password', password)}
 			>
-			<div class="relative">
-				<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
-					<Lock class="w-5 h-5" />
-				</div>
-				<input
-					type="password"
-					id="password"
-					bind:value={password}
-					on:input={() => validateField('password', password)}
-					class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.password ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
-					placeholder={$t('auth.login.passwordPlaceholder')}
-				/>
-			</div>
-			{#if errors.password}
-				<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.password}</p>
-			{/if}
+				<Lock class="w-5 h-5" slot="leading" />
+			</PasswordInput>
 		</div>
 
 		<div class="flex justify-end">

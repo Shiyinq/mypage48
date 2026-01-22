@@ -11,6 +11,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { resetPasswordSchema, resetPasswordBaseSchema } from '$lib/schemas/auth';
+	import PasswordInput from '$lib/components/PasswordInput.svelte';
 	import PasswordStrengthChecklist from '$lib/components/auth/PasswordStrengthChecklist.svelte';
 	import { ZodError } from 'zod';
 
@@ -157,54 +158,32 @@
 
 				<form on:submit|preventDefault={handleSubmit} class="space-y-5" novalidate>
 					<div>
-						<label
-							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-							for="new-password">{$t('auth.resetPassword.newPassword')}</label
+						<PasswordInput
+							id="new-password"
+							name="newPassword"
+							label={$t('auth.resetPassword.newPassword')}
+							placeholder="••••••••"
+							bind:value={newPassword}
+							error={errors.newPassword}
+							on:input={() => validateField('newPassword', newPassword)}
 						>
-						<div class="relative">
-							<div
-								class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
-							>
-								<Lock class="w-5 h-5" />
-							</div>
-							<input
-								id="new-password"
-								type="password"
-								bind:value={newPassword}
-								on:input={() => validateField('newPassword', newPassword)}
-								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.newPassword ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
-								placeholder="••••••••"
-							/>
-						</div>
+							<Lock class="w-5 h-5" slot="leading" />
+						</PasswordInput>
 						<PasswordStrengthChecklist password={newPassword} />
-						{#if errors.newPassword}
-							<p class="text-xs text-red-600 font-bold mt-2 ml-1">{errors.newPassword}</p>
-						{/if}
 					</div>
 
 					<div>
-						<label
-							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-							for="confirm-password">{$t('auth.resetPassword.confirmPassword')}</label
+						<PasswordInput
+							id="confirm-password"
+							name="confirmPassword"
+							label={$t('auth.resetPassword.confirmPassword')}
+							placeholder="••••••••"
+							bind:value={confirmPassword}
+							error={errors.confirmPassword}
+							on:input={() => validateField('confirmPassword', confirmPassword)}
 						>
-						<div class="relative">
-							<div
-								class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
-							>
-								<Lock class="w-5 h-5" />
-							</div>
-							<input
-								id="confirm-password"
-								type="password"
-								bind:value={confirmPassword}
-								on:input={() => validateField('confirmPassword', confirmPassword)}
-								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
-								placeholder="••••••••"
-							/>
-						</div>
-						{#if errors.confirmPassword}
-							<p class="text-xs text-red-600 font-bold mt-2 ml-1">{errors.confirmPassword}</p>
-						{/if}
+							<Lock class="w-5 h-5" slot="leading" />
+						</PasswordInput>
 					</div>
 
 					{#if error}
