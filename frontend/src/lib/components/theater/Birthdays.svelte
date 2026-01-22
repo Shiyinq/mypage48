@@ -4,6 +4,7 @@
 	import { Cake } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { BirthdayResponse } from '$lib/apis/members';
+	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
 
 	const { t, locale } = useTranslation();
 
@@ -31,9 +32,9 @@
 	{#if isLoading}
 		<div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
 			{#each Array(4) as _}
-				<div
-					class="flex-none w-40 h-52 rounded-xl bg-gray-200 dark:bg-zinc-800 animate-pulse"
-				></div>
+				<div class="flex-none w-40 snap-start">
+					<MemberCardSkeleton />
+				</div>
 			{/each}
 		</div>
 	{:else if birthdays.length === 0}
