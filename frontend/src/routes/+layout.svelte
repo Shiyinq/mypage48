@@ -18,6 +18,7 @@
 	import { validateEnv } from '$lib/utils/env';
 	import ErrorFallback from '$lib/components/common/ErrorFallback.svelte';
 	import CommandPalette from '$lib/components/CommandPalette.svelte';
+	import ScrollToTop from '$lib/components/common/ScrollToTop.svelte';
 
 	export let data: { locale?: string };
 
@@ -200,5 +201,6 @@
 			<MobileNav />
 		{/if}
 		<!-- If mounted && !$isAuthenticated && !isPublicPage: render nothing, redirect will happen -->
+		<ScrollToTop />
 	</div>
 {/if}
