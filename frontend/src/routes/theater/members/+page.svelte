@@ -172,17 +172,16 @@
 		<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 		{#each Array(14) as _}
 			<div
-				class="flex flex-col bg-white dark:bg-zinc-900 rounded-xl overflow-hidden border-2 border-pink-100 dark:border-pink-900/30 shadow-sm"
+				class="relative aspect-[3/4] flex flex-col bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-sm"
 			>
-				<div
-					class="relative w-full bg-gray-100 dark:bg-zinc-800 animate-pulse"
-					style="aspect-ratio: 2/3;"
-				></div>
-				<div
-					class="flex-1 p-2.5 flex flex-col items-center justify-center gap-1.5 bg-pink-50/50 dark:bg-zinc-900/50"
-				>
-					<div class="w-16 h-3 bg-gray-100 dark:bg-zinc-800 rounded animate-pulse"></div>
-					<div class="w-20 h-2.5 bg-gray-50 dark:bg-zinc-800/50 rounded animate-pulse"></div>
+				<div class="relative w-full h-full bg-gray-100 dark:bg-zinc-800 animate-pulse">
+					<div
+						class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"
+					></div>
+					<div class="absolute bottom-0 left-0 right-0 p-3 flex flex-col justify-end gap-1.5">
+						<div class="w-16 h-3.5 bg-gray-200/50 dark:bg-zinc-700/50 rounded animate-pulse"></div>
+						<div class="w-24 h-2.5 bg-gray-200/30 dark:bg-zinc-700/30 rounded animate-pulse"></div>
+					</div>
 				</div>
 			</div>
 		{/each}
