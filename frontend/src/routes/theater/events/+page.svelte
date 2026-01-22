@@ -54,7 +54,7 @@
 	</div>
 
 	{#if $isUpcomingEventsLoading}
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 			{#each Array(6) as _}
 				<EventCardSkeleton />
 			{/each}
@@ -72,125 +72,182 @@
 			description={$t('theater.upcomingEvents.empty')}
 		/>
 	{:else}
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 			{#each $upcomingEvents as event (event.id)}
 				<a
 					href={`https://jkt48.com${event.url}`}
 					target="_blank"
-					class="group relative aspect-[2/3] rounded-2xl block {isToday(event.date)
-						? 'today-event overflow-visible bg-gray-900 hover:-translate-y-1 transition-all duration-300'
-						: 'bg-gray-100 dark:bg-zinc-800 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1'}"
+					class="group relative block transition-all duration-300 flex flex-row sm:block h-[8.5rem] sm:h-auto sm:aspect-[2/3] shadow-sm hover:shadow-xl rounded-[20px] sm:rounded-2xl {isToday(
+						event.date
+					)
+						? 'overflow-visible'
+						: 'overflow-hidden border border-gray-100 dark:border-white/5 sm:border-0'}"
 					in:scale={{ duration: 300, start: 0.95 }}
 				>
 					{#if isToday(event.date)}
-						<!-- Blinking Border -->
+						<!-- Premium Pulse Glow Overlay -->
 						<div
-							class="absolute inset-0 z-0 rounded-2xl border-[3px] border-blue-400 animate-border-blink"
+							class="absolute inset-0 z-0 rounded-[20px] sm:rounded-2xl ring-4 ring-blue-500/40 animate-pulse pointer-events-none shadow-[0_0_20px_rgba(59,130,246,0.3)]"
 						></div>
 					{/if}
 
 					<!-- Content Container -->
 					<div
-						class="overflow-hidden {isToday(event.date)
-							? 'absolute inset-[3px] rounded-[13px] bg-gray-900 shadow-sm hover:shadow-md transition-all duration-300'
-							: 'relative h-full w-full'}"
+						class="relative z-10 flex flex-row sm:block w-full h-full overflow-hidden rounded-[20px] sm:rounded-2xl {isToday(
+							event.date
+						)
+							? 'bg-white dark:bg-zinc-900'
+							: 'bg-white dark:bg-zinc-900/50 sm:bg-gray-100 sm:dark:bg-zinc-800'}"
 					>
-						{#if event.imageUrl}
-							<img
-								src={event.imageUrl}
-								alt={event.title}
-								class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-							/>
-							<div
-								class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"
-							></div>
-						{:else}
-							<div
-								class="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"
-							>
-								<Calendar class="w-12 h-12 text-white/50" />
-							</div>
-							<div
-								class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"
-							></div>
-						{/if}
-
-						<!-- Today Badge -->
-						{#if isToday(event.date)}
-							<div class="absolute top-3 right-3 z-20">
-								<span
-									class="today-badge inline-block px-3 py-1 rounded-full text-xs font-bold text-white bg-blue-400 shadow-lg"
+						<!-- Image / Placeholder -->
+						<div class="relative w-[38%] sm:w-full sm:h-full shrink-0 overflow-hidden">
+							{#if event.imageUrl}
+								<img
+									src={event.imageUrl}
+									alt={event.title}
+									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+								/>
+								<!-- Mobile Gradient: Right to Left -->
+								<div
+									class="absolute inset-0 sm:hidden bg-gradient-to-r from-black/10 via-transparent to-black/5"
+								></div>
+								<!-- Desktop Gradient: Bottom to Top (Original) -->
+								<div
+									class="absolute inset-0 hidden sm:block bg-gradient-to-t from-black/90 via-black/50 to-transparent"
+								></div>
+							{:else}
+								<div
+									class="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"
 								>
-									{$t('theater.events.today')}
+									<Calendar class="w-8 h-8 sm:w-12 sm:h-12 text-white/50" />
+								</div>
+								<div
+									class="absolute inset-0 hidden sm:block bg-gradient-to-t from-black/80 via-transparent to-transparent"
+								></div>
+							{/if}
+
+							<!-- Date Badge (Mobile) -->
+							<div
+								class="absolute top-2 left-2 sm:hidden flex flex-col items-center bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md rounded-lg p-1.5 shadow-sm min-w-[3rem]"
+							>
+								<span class="text-[10px] uppercase font-bold text-red-500 leading-none mb-0.5">
+									{new Date(event.date).toLocaleDateString($locale, { month: 'short' })}
+								</span>
+								<span class="text-lg font-black text-gray-900 dark:text-white leading-none">
+									{new Date(event.date).getDate()}
 								</span>
 							</div>
-						{/if}
 
-						<div class="absolute inset-x-0 bottom-0 p-5">
-							<div class="flex items-start justify-between mb-1">
-								{#if event.team?.img}
-									<div class="w-16 h-16">
-										<img
-											src={`https://jkt48.com${event.team.img}`}
-											alt="Team"
-											class="w-full h-full object-contain object-left-bottom"
-										/>
-									</div>
-								{:else if event.label}
-									<div class="w-16 h-16">
-										<img
-											src={`https://jkt48.com${event.label}`}
-											alt="Label"
-											class="w-full h-full object-contain object-left-bottom"
-										/>
-									</div>
-								{:else}
-									<div
-										class="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm p-3 border border-white/20 flex items-center justify-center"
+							<!-- Today Badge -->
+							{#if isToday(event.date)}
+								<div class="absolute bottom-2 left-2 sm:top-3 sm:right-3 sm:left-auto z-20">
+									<span
+										class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold text-white bg-blue-500 sm:bg-blue-400 shadow-lg shadow-blue-500/30 backdrop-blur-sm today-badge"
 									>
-										<Calendar class="w-full h-full text-white/80" />
-									</div>
-								{/if}
-							</div>
-
-							<h3
-								class="font-bold text-white text-lg mb-1 group-hover:text-blue-300 transition-colors"
-							>
-								{event.title}
-							</h3>
-							{#if (event.seitansaiMembers?.length ?? 0) > 0}
-								<div class="flex items-center gap-2 text-sm text-pink-300 font-medium mb-1 pl-0.5">
-									<Cake class="w-4 h-4 text-pink-400" />
-									<span>{event.seitansaiMembers?.join(', ')}</span>
-								</div>
-							{/if}
-							<div class="flex flex-col gap-1.5 pl-0.5">
-								<div class="flex items-center gap-2 text-sm text-gray-200 font-medium">
-									<Calendar class="w-4 h-4 text-gray-400" />
-									<span>
-										{new Date(event.date).toLocaleDateString($locale, {
-											weekday: 'long',
-											day: 'numeric',
-											month: 'long',
-											year: 'numeric'
-										})}
+										{$t('theater.events.today')}
 									</span>
 								</div>
-								<div class="flex items-center gap-2 text-sm text-gray-200 font-medium">
-									<Clock class="w-4 h-4 text-gray-400" />
-									<span
-										>{new Date(event.date).toLocaleTimeString([], {
-											hour: '2-digit',
-											minute: '2-digit'
-										})}</span
-									>
+							{/if}
+						</div>
+
+						<!-- Details -->
+						<div
+							class="relative flex-1 p-3.5 sm:p-5 flex flex-col justify-start sm:justify-end sm:absolute sm:inset-x-0 sm:bottom-0 sm:top-auto sm:pointer-events-none z-10"
+						>
+							<!-- Top Metadata Row (Mobile: Team Info) / Desktop: Team Info at bottom -->
+							<div
+								class="absolute top-3.5 right-3.5 sm:static sm:flex sm:items-start sm:justify-between sm:mb-1 sm:pointer-events-auto z-20"
+							>
+								<div class="flex items-center gap-2">
+									{#if event.team?.img}
+										<div
+											class="w-8 h-8 sm:w-16 sm:h-16 bg-white dark:bg-white/10 sm:bg-transparent rounded-full p-1 sm:p-0 shadow-sm sm:shadow-none border border-gray-100 dark:border-white/10 sm:border-0"
+										>
+											<img
+												src={`https://jkt48.com${event.team.img}`}
+												alt="Team"
+												class="w-full h-full object-contain sm:object-left-bottom"
+											/>
+										</div>
+									{:else if event.label}
+										<div
+											class="w-8 h-8 sm:w-16 sm:h-16 bg-white dark:bg-white/10 sm:bg-transparent rounded-full p-1 sm:p-0 shadow-sm sm:shadow-none border border-gray-100 dark:border-white/10 sm:border-0"
+										>
+											<img
+												src={`https://jkt48.com${event.label}`}
+												alt="Label"
+												class="w-full h-full object-contain sm:object-left-bottom"
+											/>
+										</div>
+									{:else}
+										<div
+											class="w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-white/10 backdrop-blur-sm p-2 sm:p-3 border border-white/20 flex items-center justify-center hidden sm:flex"
+										>
+											<Calendar class="w-full h-full text-white/80" />
+										</div>
+									{/if}
 								</div>
-								{#if event.totalMembers > 0}
-									<div class="flex items-center gap-2 text-sm text-gray-200 font-medium">
-										<Users class="w-4 h-4 text-gray-400" />
-										<span>{event.totalMembers} {$t('theater.events.members')}</span>
+							</div>
+
+							<!-- Text Content -->
+							<div
+								class="flex flex-col h-full sm:h-auto justify-start sm:justify-end sm:pointer-events-auto sm:pl-0.5 pr-10 sm:pr-0"
+							>
+								<h3
+									class="font-bold text-[15px] sm:text-lg leading-tight mb-1.5 sm:mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 sm:group-hover:text-blue-300 transition-colors line-clamp-2 sm:line-clamp-none text-gray-900 dark:text-white sm:text-white"
+								>
+									{event.title}
+								</h3>
+
+								{#if (event.seitansaiMembers?.length ?? 0) > 0}
+									<div
+										class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm text-pink-500 sm:text-pink-300 font-medium mb-1.5 sm:mb-1 w-fit"
+									>
+										<Cake class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 sm:text-pink-400" />
+										<span class="line-clamp-1">{event.seitansaiMembers?.join(', ')}</span>
 									</div>
 								{/if}
+
+								<!-- Metadata Grid: Stacked on both Mobile and Desktop -->
+								<div class="flex flex-col gap-1 sm:gap-1.5">
+									<!-- Date -->
+									<div
+										class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
+									>
+										<Calendar class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+										<span>
+											{new Date(event.date).toLocaleDateString($locale, {
+												weekday: 'long',
+												day: 'numeric',
+												month: 'long',
+												year: 'numeric'
+											})}
+										</span>
+									</div>
+
+									<!-- Time -->
+									<div
+										class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
+									>
+										<Clock class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+										<span
+											>{new Date(event.date).toLocaleTimeString([], {
+												hour: '2-digit',
+												minute: '2-digit'
+											})}</span
+										>
+									</div>
+
+									<!-- Members -->
+									{#if event.totalMembers > 0}
+										<div
+											class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
+										>
+											<Users class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+											<span>{event.totalMembers} {$t('theater.events.members')}</span>
+										</div>
+									{/if}
+								</div>
 							</div>
 						</div>
 					</div>
@@ -201,27 +258,7 @@
 </div>
 
 <style>
-	:global(.today-event) {
-		box-shadow: 0 0 25px rgba(147, 197, 253, 0.6);
-	}
-
-	.animate-border-blink {
-		animation: border-blink 1s ease-in-out infinite;
-	}
-
-	@keyframes border-blink {
-		0%,
-		100% {
-			opacity: 0.5;
-			box-shadow: 0 0 10px rgba(147, 197, 253, 0.4);
-		}
-		50% {
-			opacity: 1;
-			box-shadow: 0 0 20px rgba(147, 197, 253, 0.8);
-		}
-	}
-
-	:global(.today-badge) {
+	.today-badge {
 		animation: pulse-badge 1.5s ease-in-out infinite;
 	}
 

@@ -21,53 +21,72 @@
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 <div
 	on:click={onClick}
-	class="relative overflow-hidden rounded-3xl aspect-[2/3] cursor-pointer group shadow-md hover:shadow-xl transition-all duration-500 bg-gray-900"
+	class="relative overflow-hidden rounded-[20px] sm:rounded-2xl cursor-pointer group shadow-sm hover:shadow-xl transition-all duration-300 bg-white dark:bg-zinc-900/50 dark:backdrop-blur-xl border border-gray-100 dark:border-white/5 flex flex-row sm:flex-col h-[8.5rem] sm:h-auto sm:aspect-[2/3]"
 >
-	<!-- Background Image -->
-	<img
-		src={show.image}
-		alt={show.title}
-		class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80"
-		loading="lazy"
-	/>
+	<!-- Background Image (Mobile: Left side, Desktop: Full bg) -->
+	<div class="relative w-[38%] sm:w-full sm:h-full sm:absolute sm:inset-0 shrink-0 overflow-hidden">
+		<img
+			src={show.image}
+			alt={show.title}
+			class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+			loading="lazy"
+		/>
+		<!-- Mobile Gradient Overlay (Right to Left) -->
+		<div
+			class="absolute inset-0 sm:hidden bg-gradient-to-r from-black/20 via-transparent to-black/10"
+		></div>
 
-	<!-- Gradient Overlay -->
-	<div
-		class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300 group-hover:via-black/60"
-	></div>
+		<!-- Desktop Gradient Overlay (Bottom to Top) -->
+		<div
+			class="absolute inset-0 hidden sm:block bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100"
+		></div>
+	</div>
 
 	<!-- Content -->
-	<div class="relative z-10 flex flex-col h-full justify-between p-6">
-		<div>
-			<div class="flex justify-between items-start gap-2 mb-1">
-				<h3 class="text-xl font-black text-white leading-tight drop-shadow-md line-clamp-4">
-					{show.title}
-				</h3>
+	<div
+		class="relative z-10 flex flex-col justify-between p-3.5 sm:p-5 w-full sm:h-full bg-white dark:bg-transparent sm:bg-transparent"
+	>
+		<div class="flex flex-col gap-1">
+			<!-- Top Tags -->
+			<div class="flex items-center gap-2">
 				{#if isMostWatched}
 					<span
-						class="bg-yellow-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm flex items-center gap-1 flex-shrink-0 border border-white/20"
+						class="bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1 self-start border border-white/20"
 					>
-						<Trophy class="w-3 h-3" />
-						{$t('shows.top')}
+						<Trophy class="w-2.5 h-2.5" />
+						<span class="uppercase tracking-wider">{$t('shows.top')}</span>
 					</span>
 				{/if}
 			</div>
+
+			<!-- Title -->
+			<h3
+				class="text-[15px] sm:text-xl font-bold leading-tight line-clamp-2 sm:line-clamp-3 text-gray-900 dark:text-gray-100 sm:text-white sm:drop-shadow-lg"
+			>
+				{show.title}
+			</h3>
 		</div>
 
-		<div class="space-y-3">
+		<div class="space-y-3 sm:space-y-4">
 			<!-- Stats Row -->
-			<div class="flex justify-between items-end">
-				<div
-					class={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold transition-colors backdrop-blur-md border ${count > 0 ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-900/20' : 'bg-white/20 text-gray-200 border-white/10'}`}
-				>
-					{count > 0
-						? $t('theater.setlists.attendedCount', { count })
-						: $t('theater.setlists.notAttended')}
+			<div class="flex items-end justify-between">
+				<div class="flex items-center gap-2">
+					<div
+						class={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] sm:text-xs font-bold uppercase tracking-wide border transition-all ${
+							count > 0
+								? 'bg-red-50 text-red-600 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
+								: 'bg-gray-50 text-gray-500 border-gray-100 dark:bg-zinc-800 dark:text-zinc-500 dark:border-zinc-700'
+						} sm:bg-white/10 sm:text-white/90 sm:border-white/20 sm:backdrop-blur-md`}
+					>
+						{count > 0
+							? $t('theater.setlists.attendedCount', { count })
+							: $t('theater.setlists.notAttended')}
+					</div>
 				</div>
 
 				{#if count > 0}
 					<span
-						class="text-xs text-white/90 font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0"
+						class="text-[10px] sm:text-xs text-red-500 dark:text-red-400 sm:text-white/90 font-medium hidden sm:flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0"
 					>
 						{$t('shows.viewHistory')}
 						<ChevronLeft class="w-3 h-3 rotate-180" />
@@ -78,13 +97,19 @@
 			<!-- Progress Bar Visual -->
 			<div>
 				<div class="flex justify-end mb-1">
-					<span class="text-[10px] text-gray-300 font-medium">
+					<span class="text-[10px] font-medium text-gray-400 dark:text-zinc-500 sm:text-gray-300">
 						{count > 0 ? `${percentage.toFixed(0)}% ${$t('shows.toTop')}` : $t('shows.notSeen')}
 					</span>
 				</div>
-				<div class="w-full bg-white/20 rounded-full h-1.5 overflow-hidden backdrop-blur-sm">
+				<div
+					class="w-full bg-gray-100 dark:bg-zinc-800 sm:bg-white/20 rounded-full h-1 sm:h-1.5 overflow-hidden"
+				>
 					<div
-						class={`h-full rounded-full transition-all duration-1000 ease-out ${count > 0 ? 'bg-red-500 shadow-[0_0_10px_rgba(220,38,38,0.8)]' : 'bg-transparent'}`}
+						class={`h-full rounded-full transition-all duration-1000 ease-out ${
+							count > 0
+								? 'bg-gradient-to-r from-red-500 to-pink-600 shadow-[0_0_10px_rgba(236,72,153,0.4)]'
+								: 'bg-transparent'
+						}`}
 						style={`width: ${count > 0 ? percentage : 0}%`}
 					></div>
 				</div>
