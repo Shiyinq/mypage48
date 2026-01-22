@@ -13,6 +13,7 @@
 	import AuthLayout from '$lib/components/layouts/AuthLayout.svelte';
 
 	import PasswordStrengthChecklist from '$lib/components/auth/PasswordStrengthChecklist.svelte';
+	import PasswordInput from '$lib/components/PasswordInput.svelte';
 	import { registerSchema, registerBaseSchema } from '$lib/schemas/auth';
 	import { ZodError } from 'zod';
 
@@ -235,50 +236,30 @@
 
 				<div class="grid grid-cols-2 gap-3">
 					<div>
-						<label
-							for="password"
-							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-							>{$t('auth.register.password')}</label
+						<PasswordInput
+							id="password"
+							name="password"
+							label={$t('auth.register.password')}
+							placeholder="••••••••"
+							bind:value={formData.password}
+							error={errors.password}
+							on:input={() => validateField('password')}
 						>
-						<div class="relative">
-							<div
-								class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
-							>
-								<Lock class="w-5 h-5" />
-							</div>
-							<input
-								type="password"
-								id="password"
-								name="password"
-								bind:value={formData.password}
-								on:input={() => validateField('password')}
-								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.password ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
-								placeholder="••••••••"
-							/>
-						</div>
+							<Lock class="w-5 h-5" slot="leading" />
+						</PasswordInput>
 					</div>
 					<div>
-						<label
-							for="confirmPassword"
-							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-							>{$t('auth.register.confirmPassword')}</label
+						<PasswordInput
+							id="confirmPassword"
+							name="confirmPassword"
+							label={$t('auth.register.confirmPassword')}
+							placeholder="••••••••"
+							bind:value={formData.confirmPassword}
+							error={errors.confirmPassword}
+							on:input={() => validateField('confirmPassword')}
 						>
-						<div class="relative">
-							<div
-								class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
-							>
-								<Shield class="w-5 h-5" />
-							</div>
-							<input
-								type="password"
-								id="confirmPassword"
-								name="confirmPassword"
-								bind:value={formData.confirmPassword}
-								on:input={() => validateField('confirmPassword')}
-								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
-								placeholder="••••••••"
-							/>
-						</div>
+							<Shield class="w-5 h-5" slot="leading" />
+						</PasswordInput>
 					</div>
 				</div>
 
