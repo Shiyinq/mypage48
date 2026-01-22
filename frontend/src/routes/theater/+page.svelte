@@ -54,15 +54,24 @@
 		<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 		{#each Array(6) as _}
 			<div
-				class="relative overflow-hidden rounded-3xl h-64 bg-white dark:bg-zinc-900 shadow-sm border border-gray-100 dark:border-zinc-800"
+				class="relative flex flex-row sm:block h-[8.5rem] sm:h-auto sm:aspect-[2/3] bg-white dark:bg-zinc-900 shadow-sm rounded-[20px] sm:rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 animate-pulse"
 			>
-				<div class="absolute inset-0 bg-gray-100 dark:bg-zinc-800 animate-pulse"></div>
-				<div class="absolute bottom-0 left-0 right-0 p-6 flex flex-col gap-3">
-					<div class="h-8 w-3/4 bg-gray-200 dark:bg-zinc-700 rounded mb-1 animate-pulse"></div>
-					<div class="flex justify-between items-end">
-						<div class="h-6 w-16 bg-gray-200 dark:bg-zinc-700 rounded-full animate-pulse"></div>
+				<!-- Image Skeleton -->
+				<div class="w-[38%] sm:w-full sm:h-full bg-gray-100 dark:bg-zinc-800 shrink-0"></div>
+
+				<!-- Content Area -->
+				<div
+					class="relative flex-1 p-3.5 sm:p-5 flex flex-col justify-between sm:justify-end sm:absolute sm:inset-0"
+				>
+					<div class="flex flex-col gap-3">
+						<div class="h-6 w-3/4 bg-gray-200 dark:bg-zinc-700 rounded mb-1"></div>
 					</div>
-					<div class="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-1.5 animate-pulse"></div>
+					<div class="flex flex-col gap-3 sm:gap-4">
+						<div class="flex justify-between items-end">
+							<div class="h-6 w-20 bg-gray-200 dark:bg-zinc-700 rounded-md"></div>
+						</div>
+						<div class="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-1 sm:h-1.5"></div>
+					</div>
 				</div>
 			</div>
 		{/each}
