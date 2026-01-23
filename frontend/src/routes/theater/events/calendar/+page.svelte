@@ -235,10 +235,17 @@
 						<span class="hidden sm:inline">{$t('theater.events.setlist')}</span>
 					</span>
 					<span
+						class="flex items-center gap-1.5 bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 px-2 py-1 rounded-full border border-pink-100 dark:border-pink-900/30"
+					>
+						<span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+						{currentMonthEvents.filter((e) => e.isBirthday).length}
+						<span class="hidden sm:inline">{$t('theater.events.birthday')}</span>
+					</span>
+					<span
 						class="flex items-center gap-1.5 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-full border border-purple-100 dark:border-purple-900/30"
 					>
 						<span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-						{currentMonthEvents.filter((e) => !e.setlistId).length}
+						{currentMonthEvents.filter((e) => !e.setlistId && !e.isBirthday).length}
 						<span class="hidden sm:inline">{$t('theater.events.eventType')}</span>
 					</span>
 				</div>
