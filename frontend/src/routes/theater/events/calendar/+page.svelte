@@ -357,7 +357,9 @@
 								? 'bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800/50'
 								: 'bg-gray-50/80 dark:bg-zinc-950/50 bg-striped'} 
 							{isTodayDate && isCurrentMonth
-								? 'bg-blue-50/50 dark:bg-blue-900/10 ring-1 ring-inset ring-blue-500/50 z-10'
+								? isSunday
+									? 'bg-red-50/50 dark:bg-red-900/10 ring-1 ring-inset ring-red-500/50 z-10'
+									: 'bg-blue-50/50 dark:bg-blue-900/10 ring-1 ring-inset ring-blue-500/50 z-10'
 								: ''}
                             group relative overflow-hidden cursor-pointer transition-all duration-200"
 						>
@@ -365,7 +367,9 @@
 							<div
 								class="mt-0.5 md:mt-1 mb-0.5 md:mb-1 w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full text-[10px] md:text-xs font-medium shrink-0 transition-transform group-hover:scale-110
                                  {isTodayDate
-									? 'bg-red-600 text-white shadow-sm shadow-red-200 dark:shadow-red-900/20'
+									? isSunday
+										? 'bg-red-600 text-white shadow-sm shadow-red-200 dark:shadow-red-900/20'
+										: 'bg-blue-600 text-white shadow-sm shadow-blue-200 dark:shadow-blue-900/20'
 									: isCurrentMonth
 										? isSunday
 											? 'text-red-500 dark:text-red-400'
