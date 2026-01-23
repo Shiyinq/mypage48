@@ -43,6 +43,8 @@ from src.auth.http_exceptions import (
 )
 from src.events.exceptions import EventCreationError, EventNotFoundError, EventFetchError
 from src.events.http_exceptions import EventCreateError, EventNotFound, EventFetchFailed
+from src.export.exceptions import ExportInProgressError, ExportNotFoundError
+from src.export.http_exceptions import ExportInProgress, ExportNotFound
 from src.dashboard.exceptions import StatsFetchError
 from src.dashboard.http_exceptions import StatsFetchFailed
 from src.exceptions import DomainException
@@ -276,6 +278,12 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, EventCreateError())
     if isinstance(exc, EventFetchError):
         return await detailed_http_exception_handler(request, EventFetchFailed())
+
+    # Export errors
+    if isinstance(exc, ExportInProgressError):
+        return await detailed_http_exception_handler(request, ExportInProgress())
+    if isinstance(exc, ExportNotFoundError):
+        return await detailed_http_exception_handler(request, ExportNotFound())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

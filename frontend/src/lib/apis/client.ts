@@ -56,7 +56,10 @@ async function doRefreshAccessToken(): Promise<string | null> {
 
 export async function client<T>(
 	endpoint: string,
-	options: Omit<RequestInit, 'body'> & { body?: BodyInit | Record<string, unknown> | null } = {}
+	options: Omit<RequestInit, 'body'> & {
+		body?: BodyInit | Record<string, unknown> | null;
+		responseType?: 'json' | 'text' | 'blob';
+	} = {}
 ): Promise<T> {
 	// 1. Get current token
 	let token = get(accessToken);
@@ -123,16 +126,32 @@ export async function client<T>(
 		return undefined as T;
 	}
 
-	let data: unknown;
-	const contentType = response.headers.get('content-type');
-	if (contentType && contentType.includes('application/json')) {
-		data = await response.json();
-	} else {
-		data = await response.text();
+	if (!response.ok) {
+		let errorData: unknown;
+		// Try parsing JSON error even if we expect blob success
+		const contentType = response.headers.get('content-type');
+		if (contentType && contentType.includes('application/json')) {
+			errorData = await response.json();
+		} else {
+			errorData = await response.text();
+		}
+		throw errorData as ApiError;
 	}
 
-	if (!response.ok) {
-		throw data as ApiError;
+	let data: unknown;
+
+	if (options.responseType === 'blob') {
+		data = await response.blob();
+	} else if (options.responseType === 'text') {
+		data = await response.text();
+	} else {
+		// Default JSON auto-detection
+		const contentType = response.headers.get('content-type');
+		if (contentType && contentType.includes('application/json')) {
+			data = await response.json();
+		} else {
+			data = await response.text();
+		}
 	}
 
 	return data as T;

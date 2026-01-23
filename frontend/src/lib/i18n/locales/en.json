@@ -424,6 +424,15 @@
 			"copied": "Copied to clipboard",
 			"savedKey": "I have saved my key"
 		},
+		"exportData": {
+			"title": "Download Your Data",
+			"description": "Request a copy of your tickets and 2-shot collection. We'll generate a ZIP file containing Excel exports and all your images.",
+			"request": "Request Download",
+			"requested": "Export requested successfully!",
+			"processing": "Processing...",
+			"download": "Download Data",
+			"expiresAt": "Link expires at {time}"
+		},
 		"moreSettings": {
 			"title": "More Settings",
 			"subtitle": "Coming soon..."

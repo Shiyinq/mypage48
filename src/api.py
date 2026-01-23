@@ -13,6 +13,7 @@ from src.storage.route import router as storage_router
 from src.tickets.route import router as theater_router
 from src.users.route import router as user_router
 from src.events.route import router as events_router
+from src.export.router import router as export_router
 
 router = APIRouter()
 
@@ -31,4 +32,5 @@ router.include_router(memories_router, prefix="/memories", tags=["Memories"])
 router.include_router(setlists_router, prefix="/theater/setlists", tags=["Setlists"])
 router.include_router(storage_router, tags=["Storage"])
 router.include_router(events_router, prefix="/events", tags=["Events"])
+router.include_router(export_router, prefix="/export", tags=["Export"])
 

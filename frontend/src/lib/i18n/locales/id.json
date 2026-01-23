@@ -424,6 +424,15 @@
 			"copied": "Disalin ke clipboard",
 			"savedKey": "Saya sudah menyimpan key saya"
 		},
+		"exportData": {
+			"title": "Unduh Data Anda",
+			"description": "Minta salinan tiket dan koleksi 2-shot Anda. Kami akan membuat file ZIP yang berisi ekspor Excel dan semua gambar Anda.",
+			"request": "Minta Unduhan",
+			"requested": "Ekspor berhasil diminta!",
+			"processing": "Memproses...",
+			"download": "Unduh Data",
+			"expiresAt": "Tautan kedaluwarsa pada {time}"
+		},
 		"moreSettings": {
 			"title": "Pengaturan Lainnya",
 			"subtitle": "Segera hadir..."

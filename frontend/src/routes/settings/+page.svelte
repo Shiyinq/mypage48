@@ -15,7 +15,8 @@
 		LanguageSettings,
 		DeveloperAccessSettings,
 		ApiKeyModal,
-		ConfirmApiKeyModal
+		ConfirmApiKeyModal,
+		ExportData
 	} from '$lib/components/settings';
 
 	const { t } = useTranslation();
@@ -86,6 +87,9 @@
 
 		<!-- LANGUAGE SETTINGS -->
 		<LanguageSettings />
+
+		<!-- EXPORT DATA -->
+		<ExportData />
 
 		<!-- DEVELOPER ACCESS -->
 		<DeveloperAccessSettings {generatingKey} on:openConfirmModal={openConfirmModal} />
