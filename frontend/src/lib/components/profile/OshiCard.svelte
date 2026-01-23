@@ -248,17 +248,17 @@
 		{/if}
 
 		{#if profile?.oshi}
-			<div class="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3 border-t border-gray-100 pt-4">
+			<div class="mt-6 grid grid-cols-3 gap-2 md:gap-3 border-t border-gray-100 pt-4">
 				<!-- Oshi Meetings -->
 				<div
-					class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
+					class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
 				>
 					<div
 						class="p-2 rounded-full bg-red-50 dark:bg-red-900/20 shadow-sm text-red-600 dark:text-red-400"
 					>
 						<Heart class="w-4 h-4" />
 					</div>
-					<div>
+					<div class="text-center md:text-left">
 						<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
 							{#if loading}
 								<span
@@ -275,14 +275,14 @@
 				</div>
 				<!-- 2-Shot Roulette -->
 				<div
-					class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
+					class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
 				>
 					<div
 						class="p-2 rounded-full bg-yellow-50 dark:bg-yellow-900/20 shadow-sm text-yellow-600 dark:text-yellow-400"
 					>
 						<Dices class="w-4 h-4" />
 					</div>
-					<div>
+					<div class="text-center md:text-left">
 						<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
 							{#if loading}
 								<span
@@ -299,14 +299,14 @@
 				</div>
 				<!-- 2-Shot Birthday -->
 				<div
-					class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
+					class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
 				>
 					<div
 						class="p-2 rounded-full bg-pink-50 dark:bg-pink-900/20 shadow-sm text-pink-600 dark:text-pink-400"
 					>
 						<Cake class="w-4 h-4" />
 					</div>
-					<div>
+					<div class="text-center md:text-left">
 						<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
 							{#if loading}
 								<span
