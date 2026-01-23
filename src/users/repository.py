@@ -13,6 +13,10 @@ class UserRepository:
     async def find_one(self, query: dict) -> Optional[dict]:
         return await self.collection.find_one(query)
 
+    async def get_user_by_id(self, user_id: str) -> Optional[dict]:
+        user = await self.collection.find_one({"userId": user_id})
+        return user
+
     async def update_one(self, filter_query: dict, update_data: dict):
         return await self.collection.update_one(filter_query, update_data)
 

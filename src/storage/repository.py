@@ -119,3 +119,25 @@ class StorageRepository:
             return self.client.bucket_exists(self.config.minio_bucket)
         except Exception:
             return False
+
+    def get_file(self, object_name: str) -> Optional[bytes]:
+        """Get file content from MinIO."""
+        self._ensure_bucket()
+        try:
+            response = self.client.get_object(self.config.minio_bucket, object_name)
+            return response.read()
+        except S3Error as e:
+            logger.error(f"Failed to get file: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Unexpected error getting file: {e}")
+            return None
+
+    def get_file_stream(self, object_name: str):
+        """Get file stream from MinIO."""
+        self._ensure_bucket()
+        try:
+            return self.client.get_object(self.config.minio_bucket, object_name)
+        except S3Error as e:
+            logger.error(f"Failed to get file stream: {e}")
+            return None

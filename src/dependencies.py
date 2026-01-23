@@ -11,6 +11,8 @@ from src.auth.email_service import EmailService
 from src.auth.http_exceptions import InvalidCSRFToken, InvalidJWTToken
 from src.events.repository import EventsRepository
 from src.events.service import EventsService
+from src.export.repository import ExportRepository
+from src.export.service import ExportService
 from src.http_exceptions import AdminRequired
 from src.auth.repository import AuthRepository
 from src.auth.schemas import UserCurrent
@@ -303,5 +305,33 @@ def get_health_service(
     storage_repo: StorageRepository = Depends(get_storage_repository),
 ) -> HealthService:
     return HealthService(database_instance, storage_repo)
+
+
+
+def get_export_repository(db=Depends(get_db)) -> ExportRepository:
+    return ExportRepository(db)
+
+
+def get_export_service(
+    export_repo: ExportRepository = Depends(get_export_repository),
+    tickets_repo: TicketsRepository = Depends(get_tickets_repository),
+    memories_repo: MemoriesRepository = Depends(get_memories_repository),
+    storage_repo: StorageRepository = Depends(get_storage_repository),
+    user_repo: UserRepository = Depends(get_user_repository),
+    member_repo: MemberRepository = Depends(get_member_repository),
+    config: Settings = Depends(get_settings),
+) -> ExportService:
+    background_runner = AsyncBackgroundRunner()
+    return ExportService(
+        export_repo, 
+        tickets_repo, 
+        memories_repo, 
+        storage_repo, 
+        user_repo, 
+        member_repo, 
+        background_runner, 
+        config
+    )
+
 
 

@@ -424,6 +424,15 @@
 			"copied": "クリップボードにコピーしました",
 			"savedKey": "キーを保存しました"
 		},
+		"exportData": {
+			"title": "データをダウンロード",
+			"description": "チケットと2ショットコレクションのコピーをリクエストします。Excelエクスポートとすべての画像を含むZIPファイルを生成します。",
+			"request": "ダウンロードをリクエスト",
+			"requested": "エクスポートのリクエストが完了しました！",
+			"processing": "処理中...",
+			"download": "データをダウンロード",
+			"expiresAt": "リンクの有効期限: {time}"
+		},
 		"moreSettings": {
 			"title": "その他の設定",
 			"subtitle": "近日公開..."
