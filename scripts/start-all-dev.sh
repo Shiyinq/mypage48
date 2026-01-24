@@ -1,6 +1,11 @@
 #!/bin/bash
 
 # Parse command line arguments
+if [ -d ".venv" ]; then
+    echo "Activating .venv..."
+    source .venv/bin/activate
+fi
+
 OPEN_BROWSER=false
 for arg in "$@"; do
     case $arg in
