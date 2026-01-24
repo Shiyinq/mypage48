@@ -2,6 +2,11 @@
 
 set -e
 
+if [ -d ".venv" ]; then
+    echo "Activating .venv..."
+    source .venv/bin/activate
+fi
+
 DEFAULT_MODULE_NAME=src.main
 
 MODULE_NAME=${MODULE_NAME:-$DEFAULT_MODULE_NAME}
