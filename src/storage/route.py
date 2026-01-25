@@ -11,7 +11,6 @@ from src.storage.schemas import (
 )
 from src.storage.service import StorageService
 
-
 router = APIRouter()
 
 logger = create_logger("storage", __name__)

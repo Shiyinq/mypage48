@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, Query, status
 
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_current_user, get_tickets_service, get_storage_service
+from src.dependencies import get_current_user, get_storage_service, get_tickets_service
 from src.storage.service import StorageService
 from src.tickets.schemas import (
     MessageResponse,
@@ -77,11 +77,11 @@ async def get_my_tickets(
         start_date=start_date,
         end_date=end_date,
     )
-    
+
     # Resolve image URLs for all tickets
     resolved_tickets = [storage_service.resolve_ticket_images(t) for t in result.data]
     result.data = resolved_tickets
-    
+
     return result
 
 

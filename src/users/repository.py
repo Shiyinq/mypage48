@@ -89,7 +89,9 @@ class UserRepository:
             ]
 
         skip = (page - 1) * limit
-        cursor = self.collection.find(query).skip(skip).limit(limit).sort("createdAt", -1)
+        cursor = (
+            self.collection.find(query).skip(skip).limit(limit).sort("createdAt", -1)
+        )
         return await cursor.to_list(length=limit)
 
     async def count_all(self, search: str | None = None) -> int:
@@ -102,4 +104,3 @@ class UserRepository:
                 {"username": {"$regex": search, "$options": "i"}},
             ]
         return await self.collection.count_documents(query)
-

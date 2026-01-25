@@ -81,7 +81,7 @@ class MemberRepository:
                 ids.append(int(doc.get("id", 0)))
             except (ValueError, TypeError):
                 continue
-        
+
         return (max(ids) + 1) if ids else 1
 
     async def insert_one(self, member: dict) -> dict:

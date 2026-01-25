@@ -1,4 +1,5 @@
 import asyncio
+import math
 from datetime import datetime
 
 from pymongo.errors import DuplicateKeyError
@@ -48,12 +49,11 @@ from src.users.schemas import (
     UserCreatedWithEmail,
     UserCreateRequest,
     UserInDB,
-    UserStats,
     UserListItem,
     UserListResponse,
     UserPaginationMeta,
+    UserStats,
 )
-import math
 
 logger = create_logger("users_service", __name__)
 
@@ -251,7 +251,9 @@ class UserService:
         if user.oshiId:
             try:
                 # Ensure oshiId is string provided to MemberService
-                member_detail = await self.member_service.get_member_by_id(str(user.oshiId))
+                member_detail = await self.member_service.get_member_by_id(
+                    str(user.oshiId)
+                )
                 member = member_detail.member
                 oshi_response = OshiResponse(
                     name=member.name,
@@ -416,10 +418,12 @@ class UserService:
                             roulette_count += 1
                         elif t.two_shot.type == "Birthday":
                             birthday_count += 1
-                
+
                 # 2. Oshi Meetings (Attendance at events where Oshi was present)
                 # Fetch all events where Oshi was a member
-                oshi_events = await self.events_service.get_events_for_member(str(current_user.oshiId))
+                oshi_events = await self.events_service.get_events_for_member(
+                    str(current_user.oshiId)
+                )
                 # Create a set of unique event identifiers (title + date) for O5 events
                 oshi_event_keys = set()
                 for e in oshi_events:
@@ -432,9 +436,9 @@ class UserService:
                     elif isinstance(d, str):
                         # If date includes time, take only YYYY-MM-DD part
                         d = d.split("T")[0]
-                        
+
                     oshi_event_keys.add(f"{e.get('title')}|{d}")
-                
+
                 # Check user tickets against these events
                 for t in tickets:
                     # t.event.date is "YYYY-MM-DD" string
@@ -447,12 +451,12 @@ class UserService:
 
                 if oshi_response:
                     oshi_response.totalShows = oshi_total_shows
-                    
+
                     # Split oshi_events into upcoming and history
                     now = datetime.now()
                     upcoming_events = []
                     past_events = []
-                    
+
                     for e in oshi_events:
                         event_date = e.get("date")
                         if not isinstance(event_date, datetime):
@@ -460,23 +464,27 @@ class UserService:
                                 event_date = datetime.fromisoformat(str(event_date))
                             except:
                                 continue
-                        
+
                         show_data = OshiShowResponse(
                             title=e.get("title", "Unknown"),
                             date=event_date,
-                            url=e.get("url")
+                            url=e.get("url"),
                         )
-                        
+
                         if event_date >= now:
                             upcoming_events.append(show_data)
                         else:
                             past_events.append(show_data)
-                    
+
                     # Sort and limit
                     # Upcoming: Ascending (soonest first) - No limit
                     # History: Descending (most recent first) - Limit 5
-                    oshi_response.upcomingSchedule = sorted(upcoming_events, key=lambda x: x.date)
-                    oshi_response.pastSchedule = sorted(past_events, key=lambda x: x.date, reverse=True)[:5]
+                    oshi_response.upcomingSchedule = sorted(
+                        upcoming_events, key=lambda x: x.date
+                    )
+                    oshi_response.pastSchedule = sorted(
+                        past_events, key=lambda x: x.date, reverse=True
+                    )[:5]
 
             # Get recent activity (5 most recent shows)
             sorted_tickets = sorted(tickets, key=lambda x: x.event.date, reverse=True)
@@ -514,9 +522,9 @@ class UserService:
                 oshi=oshi_response,
                 rank=rank,
                 stats=ProfileStats(
-                    totalShows=total_shows, 
+                    totalShows=total_shows,
                     totalAchievements=total_achievements,
-                    oshiMeetings=oshi_meetings
+                    oshiMeetings=oshi_meetings,
                 ),
                 oshiTwoShots=OshiTwoShotCounts(
                     roulette=roulette_count, birthday=birthday_count
@@ -570,5 +578,3 @@ class UserService:
         except Exception as e:
             logger.exception(f"Error fetching users list: {str(e)}")
             raise UserFetchError()
-
-

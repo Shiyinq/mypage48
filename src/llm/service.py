@@ -54,7 +54,7 @@ class LLMService:
             base64_image = request.image
             if "," in base64_image:
                 base64_image = base64_image.split(",")[1]
-            
+
             image_bytes = base64.b64decode(base64_image)
 
             prompt = """
@@ -88,13 +88,16 @@ class LLMService:
                             "gate_open": {"type": "STRING"},
                             "day": {"type": "STRING"},
                             "section": {"type": "STRING", "description": "Row letter"},
-                            "number": {"type": "STRING", "description": "Seat number only"},
+                            "number": {
+                                "type": "STRING",
+                                "description": "Seat number only",
+                            },
                             "price": {"type": "NUMBER"},
                             "ticket_id": {"type": "STRING"},
                         },
                         "required": ["title", "date", "section", "number", "price"],
                     },
-                )
+                ),
             )
 
             json_text = response.text

@@ -1,17 +1,22 @@
 from datetime import datetime, timedelta
 from math import ceil
 from typing import List
-import calendar
 
 from src.config import Settings
+from src.events.exceptions import EventFetchError
+from src.events.repository import EventsRepository
+from src.events.schemas import (
+    CalendarEvent,
+    Event,
+    EventPaginationResponse,
+    PaginationMeta,
+)
 from src.interfaces import BackgroundTaskRunner
 from src.logging_config import create_logger
-from src.events.repository import EventsRepository
-from src.events.schemas import Event, EventPaginationResponse, PaginationMeta, CalendarEvent
-from src.events.exceptions import EventFetchError
 from src.members.service import MemberService
 
 logger = create_logger("events_service", __name__)
+
 
 class EventsService:
     def __init__(
@@ -39,20 +44,22 @@ class EventsService:
         try:
             total_data = await self.repository.count_events(query)
             last_page = ceil(total_data / limit) if limit > 0 else 1
-            
+
             # Ensure page is within bounds
             if page < 1:
                 page = 1
-            
+
             skip = (page - 1) * limit
-            
+
             sort_direction = 1 if current_only else -1
-            raw_events = await self.repository.find_events_paginated(skip, limit, query, sort_direction)
-            
+            raw_events = await self.repository.find_events_paginated(
+                skip, limit, query, sort_direction
+            )
+
             events_data = [Event(**e) for e in raw_events]
-            
+
             next_page = page + 1 if page < last_page else None
-            
+
             meta = PaginationMeta(
                 current_page=page,
                 last_page=last_page,
@@ -60,7 +67,7 @@ class EventsService:
                 per_page=limit,
                 next_page=next_page,
             )
-            
+
             return EventPaginationResponse(data=events_data, meta=meta)
         except Exception as e:
             logger.exception(f"Failed to fetch paginated events: {str(e)}")
@@ -76,7 +83,7 @@ class EventsService:
         start_date = first_of_month - timedelta(days=days_to_subtract)
         # Ensure time is 00:00:00
         start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-        
+
         # 2. End Date (Fixed 42 days / 6 weeks from start)
         # The frontend renders a fixed 6-row grid (7 cols * 6 rows = 42 days).
         # We need to fetch enough data to cover this entire grid, including "overflow" into next month.
@@ -85,23 +92,29 @@ class EventsService:
         # Let's subtract a microsecond to be safe if we treat it as bound, or just set to end of day.
         # Here we set exactly 42 days later.
         end_date = end_date - timedelta(microseconds=1)
-        
+
         try:
-            raw_events = await self.repository.find_events_by_date_range(start_date, end_date)
+            raw_events = await self.repository.find_events_by_date_range(
+                start_date, end_date
+            )
             results = [CalendarEvent(**e) for e in raw_events]
-            
-            birthdays = await self.member_service.get_birthdays_by_date_range(start_date, end_date)
-            
+
+            birthdays = await self.member_service.get_birthdays_by_date_range(
+                start_date, end_date
+            )
+
             for b in birthdays:
-                results.append(CalendarEvent(
-                    title=b['name'],
-                    date=b['date'],
-                    url=f"/member/detail/id/{b['id']}", 
-                    isBirthday=True,
-                    setlistId=None,
-                    seitansaiMembers=None
-                ))
-                
+                results.append(
+                    CalendarEvent(
+                        title=b["name"],
+                        date=b["date"],
+                        url=f"/member/detail/id/{b['id']}",
+                        isBirthday=True,
+                        setlistId=None,
+                        seitansaiMembers=None,
+                    )
+                )
+
             return results
         except Exception as e:
             logger.exception(f"Failed to fetch calendar events: {str(e)}")

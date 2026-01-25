@@ -1,8 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field
-from src.setlists.schemas import SetlistBase
-from src.members.schemas import MemberBase
+
+from pydantic import BaseModel
 
 
 class EventTeam(BaseModel):
@@ -16,7 +15,7 @@ class Event(BaseModel):
     date: datetime
     url: str
     label: str
-    
+
     # List View Fields
     imageUrl: Optional[str] = None
     totalMembers: int = 0

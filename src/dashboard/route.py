@@ -6,8 +6,12 @@ from fastapi import APIRouter, Depends, Query
 from src.auth.schemas import UserCurrent
 from src.dashboard.schemas import DashboardStatsResponse
 from src.dashboard.service import DashboardService
+from src.dependencies import (
+    get_current_user,
+    get_dashboard_service,
+    get_storage_service,
+)
 from src.storage.service import StorageService
-from src.dependencies import get_current_user, get_dashboard_service, get_storage_service
 
 router = APIRouter()
 

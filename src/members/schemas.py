@@ -115,7 +115,6 @@ class MemberUpdateRequest(BaseModel):
     socials: Optional[SocialMedia] = None
 
 
-
 class MessageResponse(BaseModel):
     """Simple message response for delete operations"""
 

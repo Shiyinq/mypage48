@@ -230,5 +230,3 @@ class UserListResponse(BaseModel):
 
     data: list[UserListItem]
     meta: UserPaginationMeta
-
-

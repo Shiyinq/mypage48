@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends 
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
 from src.auth.schemas import UserCurrent
@@ -33,14 +33,14 @@ async def download_export(
     service: ExportService = Depends(get_export_service),
 ):
     """Download the exported data. This will delete the file after download."""
-    
+
     stream, filename, cleanup = await service.download_export(current_user.userId)
-    
+
     from starlette.background import BackgroundTask
-    
+
     return StreamingResponse(
-        stream, 
-        media_type="application/zip", 
+        stream,
+        media_type="application/zip",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
-        background=BackgroundTask(cleanup)
+        background=BackgroundTask(cleanup),
     )

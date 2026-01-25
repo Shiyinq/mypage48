@@ -170,10 +170,20 @@ class MemberService:
             members = await self.repository.find_all_active()
             upcoming = []
             today = datetime.now().date()
-            
+
             months_map = {
-                "Januari": 1, "Februari": 2, "Maret": 3, "April": 4, "Mei": 5, "Juni": 6,
-                "Juli": 7, "Agustus": 8, "September": 9, "Oktober": 10, "November": 11, "Desember": 12
+                "Januari": 1,
+                "Februari": 2,
+                "Maret": 3,
+                "April": 4,
+                "Mei": 5,
+                "Juni": 6,
+                "Juli": 7,
+                "Agustus": 8,
+                "September": 9,
+                "Oktober": 10,
+                "November": 11,
+                "Desember": 12,
             }
 
             for member in members:
@@ -185,39 +195,43 @@ class MemberService:
                     parts = member["birthdate"].split()
                     if len(parts) != 3:
                         continue
-                        
+
                     day = int(parts[0])
                     month_str = parts[1]
                     year = int(parts[2])
-                    
+
                     if month_str not in months_map:
                         continue
-                        
+
                     month = months_map[month_str]
-                    
+
                     # Calculate next birthday
                     current_year_birthday = datetime(today.year, month, day).date()
                     next_birthday = current_year_birthday
-                    
+
                     if current_year_birthday < today:
                         next_birthday = datetime(today.year + 1, month, day).date()
-                    
+
                     days_until = (next_birthday - today).days
-                    
+
                     # Check if within next 30 days
                     if 0 <= days_until <= 30:
                         age = next_birthday.year - year
-                        upcoming.append(BirthdayResponse(
-                            id=member.get("id", ""),
-                            name=member.get("name", ""),
-                            active=member.get("active", True),
-                            img=member.get("img"),
-                            birthdate=member.get("birthdate", ""),
-                            days_until=days_until,
-                            age=age
-                        ))
+                        upcoming.append(
+                            BirthdayResponse(
+                                id=member.get("id", ""),
+                                name=member.get("name", ""),
+                                active=member.get("active", True),
+                                img=member.get("img"),
+                                birthdate=member.get("birthdate", ""),
+                                days_until=days_until,
+                                age=age,
+                            )
+                        )
                 except (ValueError, TypeError) as e:
-                    logger.warning(f"Error parsing birthdate for member {member.get('name')}: {e}")
+                    logger.warning(
+                        f"Error parsing birthdate for member {member.get('name')}: {e}"
+                    )
                     continue
 
             # Sort by days until birthday
@@ -227,6 +241,7 @@ class MemberService:
         except Exception as e:
             logger.exception(f"Error fetching upcoming birthdays: {str(e)}")
             raise MemberFetchError()
+
     async def get_birthdays_by_date_range(
         self, start_date: datetime, end_date: datetime
     ) -> List[dict]:
@@ -234,10 +249,20 @@ class MemberService:
         try:
             members = await self.repository.find_all_active()
             results = []
-            
+
             months_map = {
-                "Januari": 1, "Februari": 2, "Maret": 3, "April": 4, "Mei": 5, "Juni": 6,
-                "Juli": 7, "Agustus": 8, "September": 9, "Oktober": 10, "November": 11, "Desember": 12
+                "Januari": 1,
+                "Februari": 2,
+                "Maret": 3,
+                "April": 4,
+                "Mei": 5,
+                "Juni": 6,
+                "Juli": 7,
+                "Agustus": 8,
+                "September": 9,
+                "Oktober": 10,
+                "November": 11,
+                "Desember": 12,
             }
 
             for member in members:
@@ -249,37 +274,41 @@ class MemberService:
                     parts = member["birthdate"].split()
                     if len(parts) != 3:
                         continue
-                        
+
                     day = int(parts[0])
                     month_str = parts[1]
                     # year = int(parts[2]) # Birth year not strictly needed for "is birthday on date X" check
-                    
+
                     if month_str not in months_map:
                         continue
-                        
+
                     month = months_map[month_str]
-                    
+
                     # We need to check if this birthday (month, day) occurs in any year covered by start_date -> end_date
                     # Ranges are typically small (42 days), so it might span at most 2 years (e.g. Dec to Jan).
-                    
+
                     # Check for each year in the range [start_date.year, end_date.year]
                     for year_to_check in range(start_date.year, end_date.year + 1):
                         try:
                             birthday_date = datetime(year_to_check, month, day)
                             if start_date <= birthday_date <= end_date:
-                                results.append({
-                                    "id": member.get("id", ""),
-                                    "name": member.get("name", ""),
-                                    "date": birthday_date,
-                                    "img": member.get("img"),
-                                    "active": member.get("active", True)
-                                })
+                                results.append(
+                                    {
+                                        "id": member.get("id", ""),
+                                        "name": member.get("name", ""),
+                                        "date": birthday_date,
+                                        "img": member.get("img"),
+                                        "active": member.get("active", True),
+                                    }
+                                )
                         except ValueError:
                             # Handle Feb 29 on non-leap years if applicable, etc.
                             continue
-                            
+
                 except (ValueError, TypeError) as e:
-                    logger.warning(f"Error parsing birthdate for member {member.get('name')}: {e}")
+                    logger.warning(
+                        f"Error parsing birthdate for member {member.get('name')}: {e}"
+                    )
                     continue
 
             return results
