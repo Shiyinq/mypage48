@@ -8,7 +8,6 @@ from minio.error import S3Error
 from src.config import Settings
 from src.logging_config import create_logger
 
-
 logger = create_logger("storage_repository", __name__)
 
 

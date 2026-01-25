@@ -1,5 +1,3 @@
-from pymongo.errors import ConnectionFailure
-
 from src.database import Database
 from src.health.constants import DatabaseStatus, HealthStatus
 from src.health.schemas import HealthCheckResponse

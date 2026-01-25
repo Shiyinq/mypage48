@@ -9,11 +9,6 @@ from src.api_keys.service import ApiKeyService
 from src.auth.csrf_service import CSRFService
 from src.auth.email_service import EmailService
 from src.auth.http_exceptions import InvalidCSRFToken, InvalidJWTToken
-from src.events.repository import EventsRepository
-from src.events.service import EventsService
-from src.export.repository import ExportRepository
-from src.export.service import ExportService
-from src.http_exceptions import AdminRequired
 from src.auth.repository import AuthRepository
 from src.auth.schemas import UserCurrent
 from src.auth.security_service import SecurityService
@@ -21,7 +16,12 @@ from src.auth.service import AuthService
 from src.config import Settings, config
 from src.dashboard.service import DashboardService
 from src.database import database_instance
+from src.events.repository import EventsRepository
+from src.events.service import EventsService
+from src.export.repository import ExportRepository
+from src.export.service import ExportService
 from src.health.service import HealthService
+from src.http_exceptions import AdminRequired
 from src.infrastructure import AsyncBackgroundRunner
 from src.llm.repository import LLMRepository
 from src.llm.service import LLMService
@@ -178,9 +178,6 @@ async def require_admin(
     return current_user
 
 
-
-
-
 def get_llm_repository(db=Depends(get_db)) -> LLMRepository:
     return LLMRepository(db)
 
@@ -191,12 +188,9 @@ def get_llm_service(
 ) -> LLMService:
     return LLMService(repo, config)
 
+
 def get_events_repository(db=Depends(get_db)) -> EventsRepository:
     return EventsRepository(db)
-
-
-
-
 
 
 def get_tickets_repository(db=Depends(get_db)) -> TicketsRepository:
@@ -307,7 +301,6 @@ def get_health_service(
     return HealthService(database_instance, storage_repo)
 
 
-
 def get_export_repository(db=Depends(get_db)) -> ExportRepository:
     return ExportRepository(db)
 
@@ -323,15 +316,12 @@ def get_export_service(
 ) -> ExportService:
     background_runner = AsyncBackgroundRunner()
     return ExportService(
-        export_repo, 
-        tickets_repo, 
-        memories_repo, 
-        storage_repo, 
-        user_repo, 
-        member_repo, 
-        background_runner, 
-        config
+        export_repo,
+        tickets_repo,
+        memories_repo,
+        storage_repo,
+        user_repo,
+        member_repo,
+        background_runner,
+        config,
     )
-
-
-

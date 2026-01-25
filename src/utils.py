@@ -3,9 +3,9 @@ import math
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
-from src.config import config
-
 from password_validator import PasswordValidator
+
+from src.config import config
 
 
 def pagination(total: int, page: int, limit: int) -> Dict[str, Any]:
@@ -117,4 +117,3 @@ def clean_image_url(url: Optional[str]) -> Optional[str]:
         return url
     except Exception:
         return url
-

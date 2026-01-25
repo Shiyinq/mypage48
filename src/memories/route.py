@@ -38,11 +38,13 @@ async def get_memories(
         limit=limit,
         type_filter=type,
     )
-    
+
     # Resolve image URLs for all memory items
-    resolved_data = [storage_service.resolve_memory_item_image(item) for item in result.data]
+    resolved_data = [
+        storage_service.resolve_memory_item_image(item) for item in result.data
+    ]
     result.data = resolved_data
-    
+
     return result
 
 

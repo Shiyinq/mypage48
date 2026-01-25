@@ -1,13 +1,9 @@
 from datetime import datetime
 from typing import Annotated, List, Optional, Union
-from datetime import datetime
-from typing import Annotated, List, Optional, Union
 
 from pydantic import BaseModel, BeforeValidator, Field, field_validator
 
 from src.utils import clean_image_url
-
-
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
@@ -59,12 +55,10 @@ class TicketBase(BaseModel):
 class TicketCreateRequest(TicketBase):
     two_shot: Optional[TicketTwoShot] = None
 
-
     @field_validator("imageUrl")
     @classmethod
     def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
         return clean_image_url(v)
-
 
 
 class TicketUpdateRequest(BaseModel):
@@ -83,13 +77,11 @@ class TicketUpdateRequest(BaseModel):
         return clean_image_url(v)
 
 
-
 class TicketInDB(TicketBase):
     user_id: str
     created_at: datetime
     updated_at: datetime
     two_shot: Optional[TicketTwoShotBase] = None
-
 
 
 class TicketResponse(TicketInDB):

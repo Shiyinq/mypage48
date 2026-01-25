@@ -1,7 +1,8 @@
-from typing import List, Optional
 from datetime import datetime
+from typing import List
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from src.events.schemas import Event
+
 
 class EventsRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
@@ -21,33 +22,30 @@ class EventsRepository:
     ) -> List[dict]:
         if query is None:
             query = {}
-        
+
         pipeline = [
             {"$match": query},
             {"$sort": {"date": sort_direction}},
             {"$skip": skip},
             {"$limit": limit},
-            
             # 1. Lookup Setlist to get imageUrl
             {
                 "$lookup": {
                     "from": "setlists",
                     "localField": "setlistId",
                     "foreignField": "setlistId",
-                    "as": "setlist_docs"
+                    "as": "setlist_docs",
                 }
             },
-            
             # 2. Lookup Members for Seitansai (Birthday celebrants)
             {
                 "$lookup": {
                     "from": "members",
                     "localField": "seitansaiIds",
                     "foreignField": "id",
-                    "as": "seitansai_members"
+                    "as": "seitansai_members",
                 }
             },
-            
             # 3. Add Fields: imageUrl, totalMembers, and seitansaiMembers
             {
                 "$addFields": {
@@ -56,26 +54,20 @@ class EventsRepository:
                         "$cond": {
                             "if": {"$isArray": "$memberIds"},
                             "then": {"$size": "$memberIds"},
-                            "else": 0
+                            "else": 0,
                         }
                     },
                     "seitansaiMembers": {
                         "$map": {
                             "input": "$seitansai_members",
                             "as": "member",
-                            "in": "$$member.name"
+                            "in": "$$member.name",
                         }
-                    }
+                    },
                 }
             },
-            
             # 4. Extract imageUrl from setlist_temp
-            {
-                "$addFields": {
-                    "imageUrl": "$setlist_temp.imageUrl"
-                }
-            },
-            
+            {"$addFields": {"imageUrl": "$setlist_temp.imageUrl"}},
             # 5. Project: Exclude unwanted fields
             {
                 "$project": {
@@ -86,47 +78,41 @@ class EventsRepository:
                     "graduationIds": 0,
                     "seitansaiIds": 0,
                 }
-            }
+            },
         ]
-        
+
         cursor = self.collection.aggregate(pipeline)
         events = await cursor.to_list(length=limit)
         return events
 
-    async def find_events_by_date_range(self, start_date: datetime, end_date: datetime) -> List[dict]:
-        query = {
-            "date": {
-                "$gte": start_date,
-                "$lte": end_date
-            }
-        }
-        
+    async def find_events_by_date_range(
+        self, start_date: datetime, end_date: datetime
+    ) -> List[dict]:
+        query = {"date": {"$gte": start_date, "$lte": end_date}}
+
         # Reuse similar pipeline logic but for calendar (lighter version if possible, but user wants events so we need details)
         # We need same fields as paginated list for consistency in UI probably
         pipeline = [
             {"$match": query},
             {"$sort": {"date": 1}},
-            
             # 1. Lookup Setlist to get imageUrl
             {
                 "$lookup": {
                     "from": "setlists",
                     "localField": "setlistId",
                     "foreignField": "setlistId",
-                    "as": "setlist_docs"
+                    "as": "setlist_docs",
                 }
             },
-            
             # 2. Lookup Members for Seitansai (Birthday celebrants)
             {
                 "$lookup": {
                     "from": "members",
                     "localField": "seitansaiIds",
                     "foreignField": "id",
-                    "as": "seitansai_members"
+                    "as": "seitansai_members",
                 }
             },
-            
             # 3. Add Fields: imageUrl, and seitansaiMembers
             {
                 "$addFields": {
@@ -135,12 +121,11 @@ class EventsRepository:
                         "$map": {
                             "input": "$seitansai_members",
                             "as": "member",
-                            "in": "$$member.name"
+                            "in": "$$member.name",
                         }
-                    }
+                    },
                 }
             },
-            
             # 4. Project: Include ONLY necessary fields for Calendar
             {
                 "$project": {
@@ -149,11 +134,11 @@ class EventsRepository:
                     "date": 1,
                     "url": 1,
                     "setlistId": 1,
-                    "seitansaiMembers": 1
+                    "seitansaiMembers": 1,
                 }
-            }
+            },
         ]
-        
+
         cursor = self.collection.aggregate(pipeline)
         # Return all events in range, usually not massive for one month
         events = await cursor.to_list(length=None)
@@ -161,16 +146,9 @@ class EventsRepository:
 
     async def find_events_by_member_id(self, member_id: str) -> List[dict]:
         """Find all events where a specific member is present."""
-        query = {
-            "memberIds": member_id
-        }
-        
-        projection = {
-            "title": 1,
-            "date": 1,
-            "url": 1,
-            "_id": 0
-        }
-        
+        query = {"memberIds": member_id}
+
+        projection = {"title": 1, "date": 1, "url": 1, "_id": 0}
+
         cursor = self.collection.find(query, projection)
         return await cursor.to_list(length=None)

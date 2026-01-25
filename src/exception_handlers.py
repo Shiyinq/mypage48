@@ -41,13 +41,17 @@ from src.auth.http_exceptions import (
     SuspiciousActivity,
     VerificationTokenInvalid,
 )
-from src.events.exceptions import EventCreationError, EventNotFoundError, EventFetchError
-from src.events.http_exceptions import EventCreateError, EventNotFound, EventFetchFailed
-from src.export.exceptions import ExportInProgressError, ExportNotFoundError
-from src.export.http_exceptions import ExportInProgress, ExportNotFound
 from src.dashboard.exceptions import StatsFetchError
 from src.dashboard.http_exceptions import StatsFetchFailed
+from src.events.exceptions import (
+    EventCreationError,
+    EventFetchError,
+    EventNotFoundError,
+)
+from src.events.http_exceptions import EventCreateError, EventFetchFailed, EventNotFound
 from src.exceptions import DomainException
+from src.export.exceptions import ExportInProgressError, ExportNotFoundError
+from src.export.http_exceptions import ExportInProgress, ExportNotFound
 from src.http_exceptions import DetailedHTTPException
 from src.llm.exceptions import ImageAnalysisError
 from src.llm.exceptions import ImageTooLargeError as LLMImageTooLargeError
@@ -58,24 +62,24 @@ from src.llm.http_exceptions import ImageTooLarge as LLMImageTooLarge
 from src.llm.http_exceptions import InvalidImage as LLMInvalidImage
 from src.llm.http_exceptions import InvalidImageType as LLMInvalidImageType
 from src.logging_config import create_logger
-from src.memories.exceptions import MemoriesFetchError
-from src.memories.http_exceptions import MemoriesFetchHTTPException
 from src.members.exceptions import MemberFetchError, MemberNotFoundError
 from src.members.http_exceptions import MemberFetchError as MemberFetchHTTPException
 from src.members.http_exceptions import MemberNotFound
+from src.memories.exceptions import MemoriesFetchError
+from src.memories.http_exceptions import MemoriesFetchHTTPException
 from src.setlists.exceptions import SetlistFetchError, SetlistNotFoundError
 from src.setlists.http_exceptions import SetlistFetchError as SetlistFetchHTTPException
 from src.setlists.http_exceptions import SetlistNotFound
+from src.storage.exceptions import ImageNotFoundError as StorageImageNotFoundError
+from src.storage.exceptions import ImageUploadError as StorageImageUploadError
 from src.storage.exceptions import (
-    ImageNotFoundError as StorageImageNotFoundError,
-    ImageUploadError as StorageImageUploadError,
     InvalidCategoryError,
     PresignedUrlError,
     StorageConnectionError,
 )
+from src.storage.http_exceptions import ImageNotFound as StorageImageNotFound
+from src.storage.http_exceptions import ImageUploadFailed as StorageImageUploadFailed
 from src.storage.http_exceptions import (
-    ImageNotFound as StorageImageNotFound,
-    ImageUploadFailed as StorageImageUploadFailed,
     InvalidCategory,
     PresignedUrlFailed,
     StorageConnectionFailed,
@@ -269,7 +273,9 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     if isinstance(exc, MemberNotFoundError):
         return await detailed_http_exception_handler(request, MemberNotFound())
     if isinstance(exc, MemberFetchError):
-        return await detailed_http_exception_handler(request, MemberFetchHTTPException())
+        return await detailed_http_exception_handler(
+            request, MemberFetchHTTPException()
+        )
 
     # Events errors
     if isinstance(exc, EventNotFoundError):
@@ -289,7 +295,9 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     if isinstance(exc, StorageConnectionError):
         return await detailed_http_exception_handler(request, StorageConnectionFailed())
     if isinstance(exc, StorageImageUploadError):
-        return await detailed_http_exception_handler(request, StorageImageUploadFailed())
+        return await detailed_http_exception_handler(
+            request, StorageImageUploadFailed()
+        )
     if isinstance(exc, StorageImageNotFoundError):
         return await detailed_http_exception_handler(request, StorageImageNotFound())
     if isinstance(exc, PresignedUrlError):
