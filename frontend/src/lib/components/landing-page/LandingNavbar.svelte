@@ -3,6 +3,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import LanguageToggle from './LanguageToggle.svelte';
 	import LandingPageThemeToggle from './ThemeToggle.svelte';
+	import { isAuthenticated } from '$lib/stores';
 
 	export let showLogin = true;
 	export let mouse = { x: 0, y: 0 };
@@ -46,7 +47,15 @@
 	<div class="flex items-center gap-4 pointer-events-auto">
 		<LanguageToggle />
 		<LandingPageThemeToggle />
-		{#if showLogin}
+		{#if $isAuthenticated}
+			<a
+				href="/"
+				class="px-6 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-bold text-sm hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all flex items-center gap-2 group"
+			>
+				{$t('nav.dashboard')}
+				<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
+			</a>
+		{:else if showLogin}
 			<a
 				href="/login"
 				class="px-6 py-2 rounded-full bg-red-600 text-white font-bold text-sm shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-0.5 transition-all flex items-center gap-2 group"

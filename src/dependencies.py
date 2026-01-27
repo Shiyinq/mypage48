@@ -20,6 +20,8 @@ from src.events.repository import EventsRepository
 from src.events.service import EventsService
 from src.export.repository import ExportRepository
 from src.export.service import ExportService
+from src.feedback.repository import FeedbackRepository
+from src.feedback.service import FeedbackService
 from src.health.service import HealthService
 from src.http_exceptions import AdminRequired
 from src.infrastructure import AsyncBackgroundRunner
@@ -325,3 +327,13 @@ def get_export_service(
         background_runner,
         config,
     )
+
+
+def get_feedback_repository(db=Depends(get_db)) -> FeedbackRepository:
+    return FeedbackRepository(db)
+
+
+def get_feedback_service(
+    repo: FeedbackRepository = Depends(get_feedback_repository),
+) -> FeedbackService:
+    return FeedbackService(repo)

@@ -6,6 +6,7 @@ from src.auth.route import router as auth_router
 from src.dashboard.route import router as dashboard_router
 from src.events.route import router as events_router
 from src.export.router import router as export_router
+from src.feedback.route import router as feedback_router
 from src.health.route import router as health_router
 from src.llm.route import router as llm_router
 from src.members.route import router as members_router
@@ -33,3 +34,4 @@ router.include_router(setlists_router, prefix="/theater/setlists", tags=["Setlis
 router.include_router(storage_router, tags=["Storage"])
 router.include_router(events_router, prefix="/events", tags=["Events"])
 router.include_router(export_router, prefix="/export", tags=["Export"])
+router.include_router(feedback_router, prefix="/feedback", tags=["Feedback"])

@@ -52,6 +52,12 @@
 			>
 				{$t('landing.footer.terms')}
 			</a>
+			<a
+				href="/cookies"
+				class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+			>
+				{$t('landing.footer.cookies')}
+			</a>
 		</div>
 
 		<p class="text-[9px] text-slate-300 max-w-md mx-auto px-6">
