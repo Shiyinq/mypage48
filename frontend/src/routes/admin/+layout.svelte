@@ -4,7 +4,7 @@
 	import { userProfile, isInitialDataLoaded } from '$lib/stores';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import NotFound from '$lib/components/NotFound.svelte';
-	import { ShieldCheck, Users, Music, UserCheck } from 'lucide-svelte';
+	import { ShieldCheck, Users, Music, UserCheck, MessageSquare } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { goto } from '$app/navigation'; // Added this import for goto
 
@@ -61,6 +61,15 @@
 				'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 border border-transparent',
 			inactiveClass:
 				'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-zinc-700 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-100 dark:hover:bg-purple-900/20'
+		},
+		{
+			path: '/admin/feedback',
+			label: $t('admin.dashboard.tabs.feedback'),
+			icon: MessageSquare,
+			activeClass:
+				'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400 border border-transparent',
+			inactiveClass:
+				'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-zinc-700 hover:bg-cyan-50 hover:text-cyan-600 hover:border-cyan-100 dark:hover:bg-cyan-900/20'
 		}
 	];
 

@@ -115,6 +115,8 @@
 			"disclaimer": "Ini adalah proyek buatan penggemar dan tidak berafiliasi dengan atau didukung oleh manajemen resmi JKT48.",
 			"privacy": "Kebijakan Privasi",
 			"terms": "Syarat & Ketentuan",
+			"cookies": "Kebijakan Cookie",
+			"feedback": "Masukan",
 			"about": "Tentang Kami"
 		}
 	},
@@ -138,6 +140,56 @@
 			"ai": {
 				"title": "AI & Pemrosesan Pihak Ketiga",
 				"content": "Fitur pemindaian tiket kami melibatkan pemrosesan data melalui Google Gemini. Harap dicatat bahwa data yang dikirimkan untuk fitur khusus ini mungkin digunakan oleh Google untuk melatih dan meningkatkan model AI mereka."
+			}
+		}
+	},
+	"cookies": {
+		"title": "Kebijakan Cookie",
+		"subtitle": "Bagaimana kami menggunakan cookie untuk meningkatkan pengalaman Anda",
+		"whatAreCookies": {
+			"title": "Apa Itu Cookie",
+			"content": "Cookie adalah file teks kecil yang ditempatkan di komputer atau perangkat seluler Anda saat Anda mengunjungi situs web. Cookie digunakan secara luas untuk membuat situs web bekerja lebih efisien dan memberikan informasi kepada pemilik situs."
+		},
+		"howWeUse": {
+			"title": "Bagaimana Kami Menggunakan Cookie",
+			"content": "Kami menggunakan cookie untuk memahami bagaimana Anda menggunakan situs web kami dan untuk meningkatkan pengalaman Anda. Ini termasuk:",
+			"items": {
+				"essential": "Cookie penting yang diperlukan agar situs web berfungsi dengan baik",
+				"analytics": "Cookie analitik yang membantu kami memahami bagaimana pengunjung berinteraksi dengan situs web",
+				"preferences": "Cookie preferensi yang memungkinkan situs web mengingat pilihan yang Anda buat"
+			}
+		},
+		"managing": {
+			"title": "Mengelola Cookie",
+			"content": "Sebagian besar browser web memungkinkan Anda mengontrol cookie melalui pengaturan preferensinya. Namun, jika Anda membatasi kemampuan situs web untuk mengatur cookie, Anda mungkin memperburuk pengalaman pengguna Anda secara keseluruhan."
+		}
+	},
+	"feedback": {
+		"title": "Masukan",
+		"subtitle": "Bantu kami meningkatkan MyPage48",
+		"validation": {
+			"messageTooShort": "Pesan harus minimal 10 karakter"
+		},
+		"success": "Masukan terkirim! Terima kasih.",
+		"error": "Gagal mengirim masukan. Silakan coba lagi.",
+		"form": {
+			"type": {
+				"label": "Tipe Masukan",
+				"issue": "Lapor Masalah",
+				"suggestion": "Saran",
+				"other": "Lainnya"
+			},
+			"message": {
+				"label": "Pesan",
+				"placeholder": "Ceritakan apa yang ada di pikiranmu... (min 10 karakter)"
+			},
+			"name": {
+				"label": "Nama (Opsional)",
+				"placeholder": "Nama kamu"
+			},
+			"email": {
+				"label": "Email (Opsional)",
+				"placeholder": "email@kamu.com"
 			}
 		}
 	},
@@ -436,6 +488,10 @@
 		"moreSettings": {
 			"title": "Pengaturan Lainnya",
 			"subtitle": "Segera hadir..."
+		},
+		"feedback": {
+			"title": "Masukan",
+			"subtitle": "Lapor masalah atau saran fitur"
 		},
 		"theme": {
 			"title": "Tema",
@@ -780,8 +836,17 @@
 			"tabs": {
 				"users": "Pengguna",
 				"members": "Member",
-				"setlists": "Setlist"
+				"setlists": "Setlist",
+				"feedback": "Masukan"
 			}
+		},
+		"feedback": {
+			"title": "Masukan",
+			"subtitle": "Laporan dan saran pengguna",
+			"emptyTitle": "Belum Ada Masukan",
+			"emptyDesc": "Belum ada masukan yang dikirim.",
+			"errorTitle": "Gagal memuat masukan",
+			"errorDesc": "Gagal memuat data masukan dari server."
 		},
 		"users": {
 			"title": "Pengguna",

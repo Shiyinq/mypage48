@@ -37,6 +37,7 @@
 		$page.url.pathname === '/register' ||
 		$page.url.pathname === '/privacy' ||
 		$page.url.pathname === '/terms' ||
+		$page.url.pathname === '/cookies' ||
 		$page.url.pathname === '/about' ||
 		$page.url.pathname.startsWith('/auth/') ||
 		$page.url.pathname.startsWith('/u/');

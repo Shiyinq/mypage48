@@ -4,7 +4,7 @@
 	import { logger } from '$lib/utils/logger';
 	import { apiKeys } from '$lib/apis/api_keys';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Settings } from 'lucide-svelte';
+	import { Settings, MessageSquare, ArrowRight } from 'lucide-svelte';
 
 	// Components
 	import SEO from '$lib/components/SEO.svelte';
@@ -95,19 +95,31 @@
 		<DeveloperAccessSettings {generatingKey} on:openConfirmModal={openConfirmModal} />
 
 		<!-- More Settings Coming Soon -->
-		<div class="glass-panel p-6 rounded-3xl opacity-60">
+		<a
+			href="/feedback"
+			class="glass-panel p-6 rounded-3xl block hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group"
+		>
 			<div class="flex items-center justify-between">
 				<div class="flex items-center gap-3">
-					<div class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-400">
-						<Settings class="w-5 h-5" />
+					<div
+						class="p-2.5 rounded-xl bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform"
+					>
+						<MessageSquare class="w-5 h-5" />
 					</div>
 					<div>
-						<h3 class="text-lg font-bold text-gray-400">{$t('settings.moreSettings.title')}</h3>
-						<p class="text-xs text-gray-400">{$t('settings.moreSettings.subtitle')}</p>
+						<h3 class="text-lg font-bold text-slate-900 dark:text-white">
+							{$t('settings.feedback.title')}
+						</h3>
+						<p class="text-xs text-slate-500 dark:text-slate-400">
+							{$t('settings.feedback.subtitle')}
+						</p>
 					</div>
 				</div>
+				<ArrowRight
+					class="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-red-500 group-hover:translate-x-1 transition-all"
+				/>
 			</div>
-		</div>
+		</a>
 	</div>
 </div>
 

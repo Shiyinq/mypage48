@@ -114,6 +114,8 @@
 			"disclaimer": "This is a fan-made project and is not affiliated with or endorsed by official JKT48 management company.",
 			"privacy": "Privacy Policy",
 			"terms": "Terms of Service",
+			"cookies": "Cookies Policy",
+			"feedback": "Feedback",
 			"about": "About Us"
 		}
 	},
@@ -137,6 +139,56 @@
 			"ai": {
 				"title": "AI & Third Party Processing",
 				"content": "Our ticket scanning feature involves processing data via Google Gemini. Please be aware that data submitted for this specific feature may be used by Google to train and improve their AI models."
+			}
+		}
+	},
+	"cookies": {
+		"title": "Cookies Policy",
+		"subtitle": "How we use cookies to improve your experience",
+		"whatAreCookies": {
+			"title": "What Are Cookies",
+			"content": "Cookies are small text files that are placed on your computer or mobile device when you visit a website. They are widely used to make websites work more efficiently and provide information to the owners of the site."
+		},
+		"howWeUse": {
+			"title": "How We Use Cookies",
+			"content": "We use cookies to understand how you use our website and to improve your experience. This includes:",
+			"items": {
+				"essential": "Essential cookies that are necessary for the website to function properly",
+				"analytics": "Analytics cookies that help us understand how visitors interact with the website",
+				"preferences": "Preference cookies that allow the website to remember choices you make"
+			}
+		},
+		"managing": {
+			"title": "Managing Cookies",
+			"content": "Most web browsers allow you to control cookies through their settings preferences. However, if you limit the ability of websites to set cookies, you may worsen your overall user experience."
+		}
+	},
+	"feedback": {
+		"title": "Feedback",
+		"subtitle": "Help us improve MyPage48",
+		"validation": {
+			"messageTooShort": "Message must be at least 10 characters long"
+		},
+		"success": "Feedback sent! Thank you.",
+		"error": "Failed to send feedback. Please try again.",
+		"form": {
+			"type": {
+				"label": "Feedback Type",
+				"issue": "Report Issue",
+				"suggestion": "Suggestion",
+				"other": "Other"
+			},
+			"message": {
+				"label": "Message",
+				"placeholder": "Tell us what's on your mind... (min 10 chars)"
+			},
+			"name": {
+				"label": "Name (Optional)",
+				"placeholder": "Your name"
+			},
+			"email": {
+				"label": "Email (Optional)",
+				"placeholder": "your@email.com"
 			}
 		}
 	},
@@ -436,6 +488,10 @@
 		"moreSettings": {
 			"title": "More Settings",
 			"subtitle": "Coming soon..."
+		},
+		"feedback": {
+			"title": "Feedback",
+			"subtitle": "Report issues or suggest features"
 		},
 		"theme": {
 			"title": "Theme",
@@ -773,8 +829,17 @@
 			"tabs": {
 				"users": "Users",
 				"members": "Members",
-				"setlists": "Setlists"
+				"setlists": "Setlists",
+				"feedback": "Feedback"
 			}
+		},
+		"feedback": {
+			"title": "Feedback",
+			"subtitle": "User reports and suggestions",
+			"emptyTitle": "No Feedback Yet",
+			"emptyDesc": "No feedback has been submitted yet.",
+			"errorTitle": "Error loading feedback",
+			"errorDesc": "Failed to load feedback from server."
 		},
 		"users": {
 			"title": "Users",

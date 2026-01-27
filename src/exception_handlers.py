@@ -52,6 +52,16 @@ from src.events.http_exceptions import EventCreateError, EventFetchFailed, Event
 from src.exceptions import DomainException
 from src.export.exceptions import ExportInProgressError, ExportNotFoundError
 from src.export.http_exceptions import ExportInProgress, ExportNotFound
+from src.feedback.exceptions import (
+    FeedbackCreationError,
+    FeedbackFetchError,
+    FeedbackNotFound,
+)
+from src.feedback.http_exceptions import (
+    FeedbackCreateError,
+    FeedbackFetchFailed,
+    FeedbackNotFound as HttpFeedbackNotFound,
+)
 from src.http_exceptions import DetailedHTTPException
 from src.llm.exceptions import ImageAnalysisError
 from src.llm.exceptions import ImageTooLargeError as LLMImageTooLargeError
@@ -284,6 +294,14 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, EventCreateError())
     if isinstance(exc, EventFetchError):
         return await detailed_http_exception_handler(request, EventFetchFailed())
+
+    # Feedback errors
+    if isinstance(exc, FeedbackCreationError):
+        return await detailed_http_exception_handler(request, FeedbackCreateError())
+    if isinstance(exc, FeedbackFetchError):
+        return await detailed_http_exception_handler(request, FeedbackFetchFailed())
+    if isinstance(exc, FeedbackNotFound):
+        return await detailed_http_exception_handler(request, HttpFeedbackNotFound())
 
     # Export errors
     if isinstance(exc, ExportInProgressError):

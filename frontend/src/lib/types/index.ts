@@ -14,5 +14,6 @@ export * from './dashboard';
 export * from './profile';
 export * from './achievements';
 export * from './storage';
+export * from './feedback';
 export * from './admin';
 export * from './events';
