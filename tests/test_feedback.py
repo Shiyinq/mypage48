@@ -2,14 +2,16 @@ import pytest
 from httpx import AsyncClient
 
 @pytest.mark.asyncio
-async def test_submit_feedback_success(client: AsyncClient):
+@pytest.mark.asyncio
+async def test_submit_feedback_success(client: AsyncClient, create_user):
+    token, _, headers = await create_user("feeduser1")
     payload = {
         "type": "issue",
         "message": "This is a test feedback message that is long enough.",
         "email": "test@example.com",
         "name": "Test User"
     }
-    response = await client.post("/api/feedback", json=payload)
+    response = await client.post("/api/feedback", json=payload, headers=headers)
     assert response.status_code == 201
     data = response.json()
     assert data["message"] == payload["message"]
@@ -18,14 +20,16 @@ async def test_submit_feedback_success(client: AsyncClient):
     assert "created_at" in data
 
 @pytest.mark.asyncio
-async def test_submit_feedback_validation_error(client: AsyncClient):
+@pytest.mark.asyncio
+async def test_submit_feedback_validation_error(client: AsyncClient, create_user):
+    token, _, headers = await create_user("feeduser2")
     # Message too short (< 10 chars)
     payload = {
         "type": "issue",
         "message": "Short",
         "email": "test@example.com"
     }
-    response = await client.post("/api/feedback", json=payload)
+    response = await client.post("/api/feedback", json=payload, headers=headers)
     assert response.status_code == 422
 
 @pytest.mark.asyncio
@@ -38,7 +42,7 @@ async def test_get_feedback_admin_success(client: AsyncClient, create_user):
         "type": "suggestion",
         "message": "Test feedback 1 for list",
         "email": "u1@e.com"
-    })
+    }, headers=headers)
 
     response = await client.get("/api/feedback", headers=headers)
     assert response.status_code == 200
