@@ -96,6 +96,7 @@
 <SEO title="Home" />
 
 <div
+	role="presentation"
 	class="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 relative overflow-hidden font-sans selection:bg-red-500/20"
 	on:mousemove={handleMouseMove}
 >
