@@ -987,7 +987,9 @@
 			"adminMembers": "Ke Admin Member",
 			"adminSetlists": "Ke Admin Setlists",
 			"calendar": "Ke Kalender",
-			"eventHistory": "Ke Riwayat Event"
+			"eventHistory": "Ke Riwayat Event",
+			"feedback": "Ke Masukan",
+			"adminFeedback": "Ke Masukan Admin"
 		}
 	}
 }

@@ -978,7 +978,9 @@
 			"adminMembers": "Go to Admin Members",
 			"adminSetlists": "Go to Admin Setlists",
 			"calendar": "Go to Calendar",
-			"eventHistory": "Go to Event History"
+			"eventHistory": "Go to Event History",
+			"feedback": "Go to Feedback",
+			"adminFeedback": "Go to Admin Feedback"
 		}
 	}
 }
