@@ -11,7 +11,9 @@
 		XCircle,
 		ShieldCheck,
 		Mail,
-		Lock
+		Lock,
+		Eye,
+		EyeOff
 	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -71,6 +73,24 @@
 			month: 'short',
 			day: 'numeric'
 		});
+	}
+
+	function maskEmail(email: string) {
+		const [local, domain] = email.split('@');
+		if (!local || !domain) return email;
+		if (local.length <= 2) return `${local.slice(0, 1)}***@${domain}`;
+		return `${local.slice(0, 2)}***@${domain}`;
+	}
+
+	let revealedEmails = new Set<string>();
+
+	function toggleEmail(userId: string) {
+		if (revealedEmails.has(userId)) {
+			revealedEmails.delete(userId);
+		} else {
+			revealedEmails.add(userId);
+		}
+		revealedEmails = revealedEmails;
 	}
 </script>
 
@@ -164,7 +184,22 @@
 									</div>
 								</td>
 								<td class="p-4">
-									<span class="text-gray-700 dark:text-gray-300">{user.email}</span>
+									<div class="flex items-center gap-2">
+										<span class="text-gray-700 dark:text-gray-300 font-mono text-sm">
+											{revealedEmails.has(user.userId) ? user.email : maskEmail(user.email)}
+										</span>
+										<button
+											class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none transition-colors cursor-pointer"
+											on:click={() => toggleEmail(user.userId)}
+											title={revealedEmails.has(user.userId) ? 'Hide email' : 'Show email'}
+										>
+											{#if revealedEmails.has(user.userId)}
+												<EyeOff class="w-4 h-4" />
+											{:else}
+												<Eye class="w-4 h-4" />
+											{/if}
+										</button>
+									</div>
 								</td>
 								<td class="p-4">
 									<div class="flex items-center gap-2">
