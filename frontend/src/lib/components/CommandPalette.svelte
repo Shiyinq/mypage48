@@ -23,7 +23,8 @@
 		Trophy, // Achievements
 		History, // History
 		Shield, // Admin
-		Music // Admin Setlists
+		Music, // Admin Setlists
+		MessageSquare // Feedback
 	} from 'lucide-svelte';
 	import { setTheme } from '$lib/stores/theme';
 	import { setLocale } from '$lib/i18n';
@@ -76,6 +77,13 @@
 						icon: Music,
 						section: 'admin',
 						perform: () => goto('/admin/setlists')
+					},
+					{
+						id: 'admin-feedback',
+						title: $t('command.actions.adminFeedback'),
+						icon: MessageSquare,
+						section: 'admin',
+						perform: () => goto('/admin/feedback')
 					}
 				] as Action[])
 			: []),
@@ -157,6 +165,13 @@
 			icon: Settings,
 			section: 'navigation',
 			perform: () => goto('/settings')
+		},
+		{
+			id: 'nav-feedback',
+			title: $t('command.actions.feedback'),
+			icon: MessageSquare,
+			section: 'navigation',
+			perform: () => goto('/feedback')
 		},
 
 		// Actions
