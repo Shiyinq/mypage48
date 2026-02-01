@@ -358,7 +358,15 @@
 						{@const isSaturday = dayOfWeek === 6}
 
 						<div
+							role="button"
+							tabindex="0"
 							on:click={() => openDayModal(date, dayEvents)}
+							on:keydown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									openDayModal(date, dayEvents);
+								}
+							}}
 							class="border-b border-r border-gray-200 dark:border-zinc-800 p-0.5 md:p-1 min-h-0 flex flex-col items-center
                             {isCurrentMonth
 								? 'bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800/50'
