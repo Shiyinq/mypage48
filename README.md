@@ -15,14 +15,21 @@
 ## ✨ Features
 
 - 📊 **Dashboard Analytics** - View comprehensive statistics of your theater visits, spending, and attendance patterns
+- 🤖 **AI-Powered Ticket Scanner** - Extract event details from ticket screenshots using Google Gemini
 - 🎭 **Theater Tracking** - Log your theater show attendance with seat information and show details
 - 📸 **2-Shot Collection** - Track your 2-shot photos with member statistics
-- 🗺️ **Seat Map Visualization** - Interactive theater seat map showing your seating history
-- 📅 **Monthly & Daily Stats** - Analyze your attendance patterns by month and day of week
+- �️ **Digital Photobook** - Browse your collected memories in a beautiful gallery view
+- �🗺️ **Seat Map Visualization** - Interactive theater seat map showing your seating history
 - 🏆 **Achievements System** - Unlock achievements based on your theater journey
 - 👤 **Public Profile** - Share your theater stats with a public profile page (Wrapped)
+- 📅 **Interactive Calendar** - Browse JKT48 schedule and events in a monthly view
+- 📜 **Event History** - Comprehensive history of all past JKT48 events
+- 📦 **Data Export** - Download your complete data including images in a ZIP archive
 - 🌏 **Multi-language Support** - Available in English, Indonesian, and Japanese
 - 🌙 **Dark Mode** - Beautiful dark-themed UI with glassmorphism design
+- 🕷️ **Built-in Scraper** - Automated fetching of JKT48 schedule, news, and member data
+- 💬 **Feedback System** - Built-in tool for reporting issues or suggestions
+- 🛡️ **Admin Dashboard** - Comprehensive user management and content moderation tools
 
 ## 🛠️ Tech Stack
 
@@ -31,6 +38,8 @@
 | **Backend** | FastAPI (Python 3.10+) |
 | **Frontend** | SvelteKit 2.x |
 | **Database** | MongoDB |
+| **Storage** | MinIO |
+| **LLM** | Google Gemini |
 | **Styling** | TailwindCSS |
 | **Auth** | JWT Authentication |
 
@@ -42,11 +51,14 @@ mypage48/
 │   ├── achievements/       # Achievement system
 │   ├── auth/              # Authentication & OAuth
 │   ├── dashboard/         # Dashboard statistics API
+│   ├── export/            # Data export service
+│   ├── llm/               # AI integration (Gemini)
 │   ├── members/           # JKT48 members data
 │   ├── setlists/          # Setlist information
 │   ├── tickets/           # Theater ticket logging
 │   ├── users/             # User management
 │   └── ...
+├── scraper/               # JKT48 Web Scraper
 ├── frontend/              # Frontend (SvelteKit)
 │   ├── src/
 │   │   ├── lib/          # Components, stores, utilities
