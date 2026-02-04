@@ -839,7 +839,8 @@
 			"emptyTitle": "No Feedback Yet",
 			"emptyDesc": "No feedback has been submitted yet.",
 			"errorTitle": "Error loading feedback",
-			"errorDesc": "Failed to load feedback from server."
+			"errorDesc": "Failed to load feedback from server.",
+			"noMoreFeedback": "No more feedback to load"
 		},
 		"users": {
 			"title": "Users",

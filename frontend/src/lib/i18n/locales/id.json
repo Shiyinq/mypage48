@@ -846,7 +846,8 @@
 			"emptyTitle": "Belum Ada Masukan",
 			"emptyDesc": "Belum ada masukan yang dikirim.",
 			"errorTitle": "Gagal memuat masukan",
-			"errorDesc": "Gagal memuat data masukan dari server."
+			"errorDesc": "Gagal memuat data masukan dari server.",
+			"noMoreFeedback": "Tidak ada masukan lagi untuk dimuat"
 		},
 		"users": {
 			"title": "Pengguna",

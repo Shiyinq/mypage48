@@ -77,7 +77,7 @@
 	>
 		<div class="flex items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
-				<MessageSquare class="w-5 h-5 text-red-500" />
+				<MessageSquare class="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
 				{$t('admin.feedback.title')} ({$feedbackStore.total})
 			</h2>
 			<p
@@ -179,6 +179,12 @@
 				>
 					<ChevronRight size={20} />
 				</button>
+			</div>
+		{/if}
+
+		{#if !$feedbackStore.has_more && $feedbackStore.data.length > 0}
+			<div class="pb-12 pt-6 text-center text-gray-400 text-sm">
+				{$t('admin.feedback.noMoreFeedback')}
 			</div>
 		{/if}
 	{/if}
