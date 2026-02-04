@@ -675,7 +675,8 @@
 			"emptyTitle": "フィードバックなし",
 			"emptyDesc": "まだフィードバックは送信されていません。",
 			"errorTitle": "読み込みエラー",
-			"errorDesc": "フィードバックの読み込みに失敗しました。"
+			"errorDesc": "フィードバックの読み込みに失敗しました。",
+			"noMoreFeedback": "これ以上フィードバックはありません"
 		},
 		"users": {
 			"title": "ユーザー",
