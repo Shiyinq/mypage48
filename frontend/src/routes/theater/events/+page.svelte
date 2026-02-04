@@ -239,7 +239,7 @@
 									</div>
 
 									<!-- Members -->
-									{#if event.totalMembers > 0}
+									{#if event.totalMembers > 1}
 										<div
 											class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
 										>
