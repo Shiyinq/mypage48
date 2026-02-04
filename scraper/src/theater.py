@@ -119,6 +119,9 @@ def get_theater_detail(
             
             setlist_id = title.replace(' ', '').lower().strip()
             show_id = f'{url_theater_id}-{num}' if len(shows) > 1 else url_theater_id
+
+            memberIds = list(members.keys())
+            seitansaiIds = [s['id'] for s in seitansai]
             
             theater_data.append({
                 'id': show_id,
@@ -130,8 +133,8 @@ def get_theater_detail(
                 },
                 'graduationIds': [],
                 'date': date,
-                'memberIds': list(members.keys()),
-                'seitansaiIds': [s['id'] for s in seitansai],
+                'memberIds': memberIds,
+                'seitansaiIds': seitansaiIds if len(memberIds) > 1 else memberIds, # if only one member, it's birthday.
                 'url': relative_url,
             })
         
