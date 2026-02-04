@@ -57,11 +57,8 @@ from src.feedback.exceptions import (
     FeedbackFetchError,
     FeedbackNotFound,
 )
-from src.feedback.http_exceptions import (
-    FeedbackCreateError,
-    FeedbackFetchFailed,
-    FeedbackNotFound as HttpFeedbackNotFound,
-)
+from src.feedback.http_exceptions import FeedbackCreateError, FeedbackFetchFailed
+from src.feedback.http_exceptions import FeedbackNotFound as HttpFeedbackNotFound
 from src.http_exceptions import DetailedHTTPException
 from src.llm.exceptions import ImageAnalysisError
 from src.llm.exceptions import ImageTooLargeError as LLMImageTooLargeError

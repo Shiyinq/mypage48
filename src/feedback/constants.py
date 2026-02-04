@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class ErrorCode:
     FEEDBACK_CREATE_ERROR = "Failed to submit feedback"
     FEEDBACK_FETCH_ERROR = "Failed to fetch feedback list"
