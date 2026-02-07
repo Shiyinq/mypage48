@@ -2,25 +2,24 @@
 	import { TrendingUp, Music, Zap } from 'lucide-svelte';
 	import type { ProfileRecentActivity } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatDate } from '$lib/i18n';
 
 	export let recentActivity: ProfileRecentActivity[] = [];
 	export let loading: boolean = true;
 
-	const { t, locale } = useTranslation();
+	const { t } = useTranslation();
 
 	$: formatActivityDate = (dateStr: string) => {
 		const date = new Date(dateStr);
 		const now = new Date();
 		const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-		const lang = $locale;
 
 		if (diffDays === 0) return $t('time.relative.today');
 		if (diffDays === 1) return $t('time.relative.yesterday');
 		if (diffDays < 7) return $t('time.relative.daysAgo', { count: diffDays });
 		if (diffDays < 30) return $t('time.relative.weeksAgo', { count: Math.floor(diffDays / 7) });
 
-		const localeMap: Record<string, string> = { id: 'id-ID', ja: 'ja-JP', en: 'en-US' };
-		return date.toLocaleDateString(localeMap[lang] || 'en-US', {
+		return $formatDate(date, {
 			month: 'short',
 			day: 'numeric'
 		});

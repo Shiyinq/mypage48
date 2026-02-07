@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatDate, formatTime } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';
 	import { History, Calendar, ExternalLink, Clock, ChevronLeft, ChevronRight } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
@@ -25,24 +26,6 @@
 
 	function handlePageChange(page: number) {
 		eventsStore.loadHistory(page);
-	}
-
-	function formatDate(dateStr: string) {
-		const date = new Date(dateStr);
-		return date.toLocaleDateString('en-GB', {
-			day: 'numeric',
-			month: 'short',
-			year: '2-digit'
-		});
-	}
-
-	function formatTime(dateStr: string) {
-		const date = new Date(dateStr);
-		return date.toLocaleTimeString('en-US', {
-			hour: '2-digit',
-			minute: '2-digit',
-			hour12: false
-		});
 	}
 
 	function generatePagination(current: number, total: number) {
@@ -124,13 +107,22 @@
 								<td class="p-4 whitespace-nowrap">
 									<div class="flex flex-col">
 										<span class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-											{formatDate(event.date)}
+											{$formatDate(event.date, {
+												day: 'numeric',
+												month: 'short',
+												year: '2-digit'
+											})}
 										</span>
+
 										<span
 											class="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5"
 										>
 											<Clock class="w-3 h-3" />
-											{formatTime(event.date)}
+											{$formatTime(event.date, {
+												hour: '2-digit',
+												minute: '2-digit',
+												hour12: false
+											})}
 										</span>
 									</div>
 								</td>

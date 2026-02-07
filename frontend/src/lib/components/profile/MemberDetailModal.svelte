@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { X, Quote, Instagram, Smartphone, Tv, Globe, Search } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatDate } from '$lib/i18n';
 	import type { Member } from '$lib/apis/members';
 	import { fade, scale } from 'svelte/transition';
 	import { portal } from '$lib/actions/portal';
@@ -153,7 +154,7 @@
 								{$t('member.birthdate')}
 							</p>
 							<p class="text-sm font-bold text-gray-800 dark:text-gray-200">
-								{member.birthdate}
+								{$formatDate(parseIndonesianDate(member.birthdate), { dateStyle: 'long' })}
 								<span class="text-xs text-gray-500 dark:text-gray-400 font-normal block">
 									{calculateAge(member.birthdate)}
 									{$t('member.yearsOld')}

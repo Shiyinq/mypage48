@@ -15,6 +15,7 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import CardSkeleton from '$lib/components/skeletons/CardSkeleton.svelte';
+	import { formatDate } from '$lib/i18n';
 	import { feedbackStore, loadFeedback, isFeedbackLoading } from '$lib/stores/feedback';
 
 	const { t } = useTranslation();
@@ -56,16 +57,6 @@
 			default:
 				return 'text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-400';
 		}
-	};
-
-	const formatDate = (dateStr: string) => {
-		return new Date(dateStr).toLocaleDateString(undefined, {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
 	};
 </script>
 
@@ -130,7 +121,11 @@
 									{item.type}
 								</span>
 								<span class="text-xs text-slate-400 font-medium">
-									{formatDate(item.created_at)}
+									{$formatDate(item.created_at, {
+										year: 'numeric',
+										month: 'short',
+										day: 'numeric'
+									})}
 								</span>
 							</div>
 							<p

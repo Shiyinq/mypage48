@@ -2,23 +2,13 @@
 	import { Calendar, History, ExternalLink, Music } from 'lucide-svelte';
 	import type { OshiShow } from '$lib/types/auth';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatDate } from '$lib/i18n';
 
 	export let upcomingSchedule: OshiShow[] = [];
 	export let pastSchedule: OshiShow[] = [];
 	export let loading: boolean = false;
 
-	const { t, locale } = useTranslation();
-
-	$: formatDate = (dateStr: string) => {
-		const date = new Date(dateStr);
-		const lang = $locale;
-		const localeMap: Record<string, string> = { id: 'id-ID', ja: 'ja-JP', en: 'en-US' };
-		return date.toLocaleDateString(localeMap[lang] || 'en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
-	};
+	const { t } = useTranslation();
 </script>
 
 <div class="flex flex-col gap-6">
@@ -60,7 +50,9 @@
 							<p class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">
 								{show.title}
 							</p>
-							<p class="text-[10px] font-medium text-gray-400">{formatDate(show.date)}</p>
+							<p class="text-[10px] font-medium text-gray-400">
+								{$formatDate(show.date, { day: 'numeric', month: 'short', year: 'numeric' })}
+							</p>
 						</div>
 						{#if show.url}
 							<a
@@ -116,7 +108,9 @@
 							<p class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">
 								{show.title}
 							</p>
-							<p class="text-[10px] font-medium text-gray-400">{formatDate(show.date)}</p>
+							<p class="text-[10px] font-medium text-gray-400">
+								{$formatDate(show.date, { day: 'numeric', month: 'short', year: 'numeric' })}
+							</p>
 						</div>
 						{#if show.url}
 							<a

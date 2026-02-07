@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Image as ImageIcon, MapPin, Calendar, Sparkles, User } from 'lucide-svelte';
+	import { formatDate } from '$lib/i18n';
 	import type { MemoryItem } from '$lib/types';
 
 	export let item: MemoryItem;
@@ -34,7 +35,7 @@
 			<div
 				class="absolute bottom-2 right-2 bg-black/50 backdrop-blur-sm text-white text-[10px] font-mono px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
 			>
-				{new Date(item.date).toLocaleDateString('en-GB', {
+				{$formatDate(item.date, {
 					day: 'numeric',
 					month: 'short',
 					year: '2-digit'

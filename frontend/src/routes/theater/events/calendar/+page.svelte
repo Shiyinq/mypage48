@@ -8,6 +8,7 @@
 	import DayEventsModal from '$lib/components/calendar/DayEventsModal.svelte';
 	import type { CalendarEvent } from '$lib/types/events';
 
+	import { formatDate, formatTime } from '$lib/i18n';
 	const { t, locale } = useTranslation();
 
 	// Default initialization
@@ -118,17 +119,6 @@
 
 	const weekDays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
-	function getDateLocale(locale: string) {
-		switch (locale) {
-			case 'id':
-				return 'id-ID';
-			case 'ja':
-				return 'ja-JP';
-			default:
-				return 'en-US';
-		}
-	}
-
 	$: currentMonthEvents = $calendarEvents.filter((e) => {
 		const d = new Date(e.date);
 		return d.getMonth() === month - 1 && d.getFullYear() === year;
@@ -157,7 +147,7 @@
 					class="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 px-2 py-1 rounded-lg transition-colors flex items-center gap-1 md:gap-2"
 					on:click={() => (isDatePickerOpen = !isDatePickerOpen)}
 				>
-					{new Date(year, month - 1).toLocaleString(getDateLocale($locale), {
+					{$formatDate(new Date(year, month - 1), {
 						month: 'long',
 						year: 'numeric'
 					})}
@@ -212,7 +202,7 @@
 										isDatePickerOpen = false;
 									}}
 								>
-									{new Date(2000, monthIndex).toLocaleString(getDateLocale($locale), {
+									{$formatDate(new Date(2000, monthIndex), {
 										month: 'short'
 									})}
 								</button>
@@ -443,10 +433,11 @@
 												<span
 													class="opacity-100 font-bold whitespace-nowrap leading-tight tracking-tight"
 												>
-													{new Date(event.date).toLocaleTimeString(
-														$locale === 'en' ? 'en-US' : 'id-ID',
-														{ hour: '2-digit', minute: '2-digit', hour12: false }
-													)}
+													{$formatTime(new Date(event.date), {
+														hour: '2-digit',
+														minute: '2-digit',
+														hour12: false
+													})}
 												</span>
 											{/if}
 

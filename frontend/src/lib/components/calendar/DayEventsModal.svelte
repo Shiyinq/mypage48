@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatDate, formatTime } from '$lib/i18n';
 	import type { CalendarEvent } from '$lib/types/events';
 	import { Cake, ChevronRight, Calculator, Calendar, ExternalLink } from 'lucide-svelte';
 
@@ -42,14 +43,11 @@
 						class="font-semibold text-lg text-gray-900 dark:text-gray-100 flex items-center gap-2"
 					>
 						<Calendar class="w-5 h-5 text-gray-500" />
-						{date.toLocaleDateString(
-							$locale === 'en' ? 'en-US' : $locale === 'ja' ? 'ja-JP' : 'id-ID',
-							{
-								weekday: 'long',
-								day: 'numeric',
-								month: 'long'
-							}
-						)}
+						{$formatDate(date, {
+							weekday: 'long',
+							day: 'numeric',
+							month: 'long'
+						})}
 					</h3>
 				</div>
 				<button
@@ -94,10 +92,11 @@
 									<div class="w-14 shrink-0 flex flex-col items-center justify-center pt-0.5">
 										{#if new Date(event.date).getHours() !== 0 || new Date(event.date).getMinutes() !== 0}
 											<span class="text-sm font-bold text-gray-900 dark:text-gray-100">
-												{new Date(event.date).toLocaleTimeString(
-													$locale === 'en' ? 'en-US' : $locale === 'ja' ? 'ja-JP' : 'id-ID',
-													{ hour: '2-digit', minute: '2-digit', hour12: false }
-												)}
+												{$formatTime(event.date, {
+													hour: '2-digit',
+													minute: '2-digit',
+													hour12: false
+												})}
 											</span>
 										{:else}
 											<span class="text-xs text-gray-400 font-medium">TBA</span>

@@ -16,6 +16,7 @@
 	import { membersStore, isBirthdaysLoading } from '$lib/stores/theater';
 	import Birthdays from '$lib/components/theater/Birthdays.svelte';
 
+	import { formatDate, formatTime } from '$lib/i18n';
 	const { t, locale } = useTranslation();
 
 	function isToday(dateStr: string): boolean {
@@ -131,7 +132,7 @@
 								class="absolute top-2 left-2 sm:hidden flex flex-col items-center bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md rounded-lg p-1.5 shadow-sm min-w-[3rem]"
 							>
 								<span class="text-[10px] uppercase font-bold text-red-500 leading-none mb-0.5">
-									{new Date(event.date).toLocaleDateString($locale, { month: 'short' })}
+									{$formatDate(event.date, { month: 'short' })}
 								</span>
 								<span class="text-lg font-black text-gray-900 dark:text-white leading-none">
 									{new Date(event.date).getDate()}
@@ -216,7 +217,7 @@
 									>
 										<Calendar class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
 										<span>
-											{new Date(event.date).toLocaleDateString($locale, {
+											{$formatDate(event.date, {
 												weekday: 'long',
 												day: 'numeric',
 												month: 'long',
@@ -231,7 +232,7 @@
 									>
 										<Clock class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
 										<span
-											>{new Date(event.date).toLocaleTimeString([], {
+											>{$formatTime(event.date, {
 												hour: '2-digit',
 												minute: '2-digit'
 											})}</span

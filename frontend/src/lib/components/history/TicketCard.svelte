@@ -12,7 +12,8 @@
 	} from 'lucide-svelte';
 	import type { Ticket } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { formatCurrency, formatDateFull } from '$lib/utils/formatting';
+	import { formatCurrency } from '$lib/utils/formatting';
+	import { formatDate } from '$lib/i18n';
 	import { createEventDispatcher } from 'svelte';
 
 	export let ticket: Ticket;
@@ -112,8 +113,15 @@
 			<!-- Date & Time -->
 			<div class="flex items-center text-gray-600 dark:text-gray-400">
 				<Calendar class="w-3 h-3 mr-1.5 text-red-500 flex-shrink-0" />
-				<span class="truncate">{formatDateFull(ticket.event.date)}</span>
+				<span class="truncate"
+					>{$formatDate(ticket.event.date, {
+						day: 'numeric',
+						month: 'short',
+						year: '2-digit'
+					})}</span
+				>
 			</div>
+
 			<div class="flex items-center text-gray-600 dark:text-gray-400">
 				<Clock class="w-3 h-3 mr-1.5 text-red-500 flex-shrink-0" />
 				<span>{ticket.event.time}</span>

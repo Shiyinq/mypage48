@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Calendar, History, DollarSign, Armchair } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatDate } from '$lib/i18n';
 	import type { Ticket } from '$lib/types';
 
 	interface ShowStats {
@@ -29,7 +30,7 @@
 				{$t('shows.firstAttended')}
 			</p>
 			<p class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-				{new Date(stats.first.event.date).toLocaleDateString('id-ID', {
+				{$formatDate(stats.first.event.date, {
 					day: 'numeric',
 					month: 'short',
 					year: '2-digit'
@@ -52,7 +53,7 @@
 				{$t('shows.lastAttended')}
 			</p>
 			<p class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-				{new Date(stats.last.event.date).toLocaleDateString('id-ID', {
+				{$formatDate(stats.last.event.date, {
 					day: 'numeric',
 					month: 'short',
 					year: '2-digit'

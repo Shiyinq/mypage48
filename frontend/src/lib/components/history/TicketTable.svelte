@@ -2,7 +2,8 @@
 	import { Clock, Pencil, Save, Trash2, X, Ticket as TicketIcon } from 'lucide-svelte';
 	import type { Ticket } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { formatCurrency, formatDateFull } from '$lib/utils/formatting';
+	import { formatCurrency } from '$lib/utils/formatting';
+	import { formatDate } from '$lib/i18n';
 	import { createEventDispatcher } from 'svelte';
 
 	export let tickets: Ticket[] = [];
@@ -54,8 +55,13 @@
 						<td class="p-4">
 							<div class="flex flex-col">
 								<span class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-									{formatDateFull(ticket.event.date)}
+									{$formatDate(ticket.event.date, {
+										day: 'numeric',
+										month: 'short',
+										year: '2-digit'
+									})}
 								</span>
+
 								<span
 									class="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5"
 								>

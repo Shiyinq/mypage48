@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Calendar, History, Clock } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatDate } from '$lib/i18n';
 	import type { PublicRecentActivity } from '$lib/types';
 
 	export let recentActivity: PublicRecentActivity[];
@@ -46,7 +47,7 @@
 							</p>
 							<div class="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
 								<Clock class="w-3 h-3" />
-								{new Date(activity.date).toLocaleDateString(undefined, {
+								{$formatDate(activity.date, {
 									day: 'numeric',
 									month: 'short',
 									year: 'numeric'

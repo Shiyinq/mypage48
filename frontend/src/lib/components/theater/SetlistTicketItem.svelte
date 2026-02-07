@@ -2,6 +2,7 @@
 	import type { TicketItem } from '$lib/apis/setlists';
 	import { Clock, Trash2 } from 'lucide-svelte';
 	import { formatCurrency } from '$lib/utils/formatting';
+	import { formatDate } from '$lib/i18n';
 
 	export let ticket: TicketItem;
 </script>
@@ -20,10 +21,11 @@
 			class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-14 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-100 dark:border-zinc-700"
 		>
 			<span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase leading-none">
-				{new Date(ticket.event.date).toLocaleDateString('id-ID', {
+				{$formatDate(ticket.event.date, {
 					month: 'short'
 				})}
 			</span>
+
 			<span class="text-xl font-black text-gray-900 dark:text-white leading-tight">
 				{new Date(ticket.event.date).getDate()}
 			</span>
