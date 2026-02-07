@@ -1,25 +1,12 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatDate } from '$lib/i18n';
 	import { Calendar } from 'lucide-svelte';
 
 	export let firstDate: string | undefined;
 	export let lastDate: string | undefined;
 
 	const { t } = useTranslation();
-
-	function formatDate(dateStr: string): string {
-		if (!dateStr) return '-';
-		try {
-			// Using consistent locale from original file
-			return new Date(dateStr).toLocaleDateString('id-ID', {
-				day: 'numeric',
-				month: 'long',
-				year: 'numeric'
-			});
-		} catch {
-			return dateStr;
-		}
-	}
 </script>
 
 <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-6">
@@ -40,7 +27,9 @@
 				{$t('theater.setlists.firstShow')}
 			</p>
 			<p class="font-bold text-gray-900 dark:text-white">
-				{formatDate(firstDate || '')}
+				{firstDate
+					? $formatDate(firstDate, { day: 'numeric', month: 'long', year: 'numeric' })
+					: '-'}
 			</p>
 		</div>
 
@@ -53,7 +42,7 @@
 				{$t('theater.setlists.latestShow')}
 			</p>
 			<p class="font-bold text-gray-900 dark:text-white">
-				{formatDate(lastDate || '')}
+				{lastDate ? $formatDate(lastDate, { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
 			</p>
 		</div>
 	</div>

@@ -16,6 +16,7 @@
 		EyeOff
 	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatDate } from '$lib/i18n';
 
 	const { t, locale } = useTranslation();
 
@@ -65,14 +66,6 @@
 		if (usersHasMore && !$isAdminUsersLoading) {
 			adminStore.loadUsers();
 		}
-	}
-
-	function formatDate(dateStr: string, currentLocale: string) {
-		return new Date(dateStr).toLocaleDateString(currentLocale, {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
 	}
 
 	function maskEmail(email: string) {
@@ -230,7 +223,11 @@
 								</td>
 								<td class="p-4">
 									<span class="text-gray-600 dark:text-gray-400 text-sm"
-										>{formatDate(user.createdAt, $locale)}</span
+										>{$formatDate(user.createdAt, {
+											year: 'numeric',
+											month: 'short',
+											day: 'numeric'
+										})}</span
 									>
 								</td>
 							</tr>

@@ -24,24 +24,4 @@ export function formatCompactCurrency(value: number): string {
 	}).format(value);
 }
 
-/**
- * Format date string to Indonesian locale
- */
-export function formatDate(dateStr: string, includeYear = false): string {
-	const d = new Date(dateStr);
-	const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
-	if (includeYear) options.year = 'numeric';
-	return d.toLocaleDateString('id-ID', options);
-}
 
-/**
- * Format date with full options
- */
-export function formatDateFull(dateStr: string): string {
-	const d = new Date(dateStr);
-	return d.toLocaleDateString('id-ID', {
-		day: 'numeric',
-		month: 'short',
-		year: '2-digit'
-	});
-}

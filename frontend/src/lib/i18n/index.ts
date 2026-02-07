@@ -117,6 +117,44 @@ export function t(key: string, params?: Record<string, string | number>): string
 	return translation;
 }
 
+// Derived store for date formatting
+export const formatDate: Readable<
+	(date: Date | string | number, options?: Intl.DateTimeFormatOptions) => string
+> = derived(locale, ($locale) => {
+	return (date: Date | string | number, options: Intl.DateTimeFormatOptions = {}): string => {
+		const d = new Date(date);
+		// Invalid date check
+		if (isNaN(d.getTime())) return String(date);
+
+		const localeMap: Record<Locale, string> = {
+			id: 'id-ID',
+			en: 'en-US',
+			ja: 'ja-JP'
+		};
+
+		return d.toLocaleDateString(localeMap[$locale], options);
+	};
+});
+
+// Derived store for time formatting
+export const formatTime: Readable<
+	(date: Date | string | number, options?: Intl.DateTimeFormatOptions) => string
+> = derived(locale, ($locale) => {
+	return (date: Date | string | number, options: Intl.DateTimeFormatOptions = {}): string => {
+		const d = new Date(date);
+		// Invalid date check
+		if (isNaN(d.getTime())) return String(date);
+
+		const localeMap: Record<Locale, string> = {
+			id: 'id-ID',
+			en: 'en-US',
+			ja: 'ja-JP'
+		};
+
+		return d.toLocaleTimeString(localeMap[$locale], options);
+	};
+});
+
 // Derived store for reactive translations
 export const i18n: Readable<(key: string, params?: Record<string, string | number>) => string> =
 	derived(locale, ($locale) => {
@@ -132,3 +170,4 @@ export const i18n: Readable<(key: string, params?: Record<string, string | numbe
 			return translation;
 		};
 	});
+
