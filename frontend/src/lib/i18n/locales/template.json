@@ -477,7 +477,13 @@
 			"errorTitle": "",
 			"errorDesc": ""
 		},
+		"shows": {
+			"title": "",
+			"subtitle": ""
+		},
 		"upcomingEvents": {
+			"title": "",
+			"emptyTitle": "",
 			"empty": "",
 			"errorTitle": "",
 			"errorDesc": ""
