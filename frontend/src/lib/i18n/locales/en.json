@@ -658,8 +658,13 @@
 			"errorTitle": "Failed to load members",
 			"errorDesc": "Something went wrong while fetching the member list."
 		},
+		"shows": {
+			"title": "Show Schedule",
+			"subtitle": "Schedule and announcements"
+		},
 		"upcomingEvents": {
 			"title": "Upcoming Shows",
+			"emptyTitle": "No Events",
 			"empty": "No upcoming events scheduled at the moment.",
 			"errorTitle": "Failed to load schedule",
 			"errorDesc": "Something went wrong while fetching upcoming events."
