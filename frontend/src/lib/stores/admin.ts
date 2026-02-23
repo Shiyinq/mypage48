@@ -111,15 +111,14 @@ function createAdminStore() {
 			isAdminMembersLoading.set(true);
 			try {
 				await membersApi.create(data);
-				// Refresh list
-				this.loadMembers(true);
-				return true;
 			} catch (e) {
 				console.error(e);
-				throw e;
-			} finally {
 				isAdminMembersLoading.set(false);
+				throw e;
 			}
+			isAdminMembersLoading.set(false);
+			await this.loadMembers(true);
+			return true;
 		},
 
 		async updateMember(id: number, data: Partial<Member>) {
@@ -226,14 +225,14 @@ function createAdminStore() {
 			isAdminSetlistsLoading.set(true);
 			try {
 				await setlistsApi.create(data);
-				this.loadSetlists(true);
-				return true;
 			} catch (e) {
 				console.error(e);
-				throw e;
-			} finally {
 				isAdminSetlistsLoading.set(false);
+				throw e;
 			}
+			isAdminSetlistsLoading.set(false);
+			await this.loadSetlists(true);
+			return true;
 		},
 
 		async updateSetlist(id: string, data: any) {
