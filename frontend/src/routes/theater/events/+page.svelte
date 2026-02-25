@@ -88,7 +88,7 @@
 					{#if isToday(event.date)}
 						<!-- Premium Pulse Glow Overlay -->
 						<div
-							class="absolute inset-0 z-0 rounded-[20px] sm:rounded-2xl ring-4 ring-blue-500/40 animate-pulse pointer-events-none shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+							class="absolute inset-0 z-0 rounded-[20px] sm:rounded-2xl ring-4 ring-red-500/40 animate-pulse pointer-events-none shadow-[0_0_20px_rgba(239,68,68,0.3)]"
 						></div>
 					{/if}
 
@@ -118,7 +118,7 @@
 								></div>
 							{:else}
 								<div
-									class="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"
+									class="absolute inset-0 bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center"
 								>
 									<Calendar class="w-8 h-8 sm:w-12 sm:h-12 text-white/50" />
 								</div>
@@ -143,7 +143,7 @@
 							{#if isToday(event.date)}
 								<div class="absolute bottom-2 left-2 sm:top-3 sm:right-3 sm:left-auto z-20">
 									<span
-										class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold text-white bg-blue-500 sm:bg-blue-400 shadow-lg shadow-blue-500/30 backdrop-blur-sm today-badge"
+										class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold text-white bg-red-500 sm:bg-red-400 shadow-lg shadow-red-500/30 backdrop-blur-sm today-badge"
 									>
 										{$t('theater.events.today')}
 									</span>
@@ -162,7 +162,7 @@
 								<div class="flex items-center gap-2">
 									{#if event.team?.img}
 										<div
-											class="w-8 h-8 sm:w-16 sm:h-16 bg-white dark:bg-white/10 sm:bg-transparent rounded-full p-1 sm:p-0 shadow-sm sm:shadow-none border border-gray-100 dark:border-white/10 sm:border-0"
+											class="w-8 h-8 sm:w-16 sm:h-16 bg-white dark:bg-white/10 sm:bg-transparent sm:dark:bg-transparent rounded-full p-1 sm:p-0 shadow-sm sm:shadow-none border border-gray-100 dark:border-white/10 sm:border-0 sm:dark:border-0"
 										>
 											<img
 												src={`https://jkt48.com${event.team.img}`}
@@ -172,7 +172,7 @@
 										</div>
 									{:else if event.label}
 										<div
-											class="w-8 h-8 sm:w-16 sm:h-16 bg-white dark:bg-white/10 sm:bg-transparent rounded-full p-1 sm:p-0 shadow-sm sm:shadow-none border border-gray-100 dark:border-white/10 sm:border-0"
+											class="w-8 h-8 sm:w-16 sm:h-16 bg-white dark:bg-white/10 sm:bg-transparent sm:dark:bg-transparent rounded-full p-1 sm:p-0 shadow-sm sm:shadow-none border border-gray-100 dark:border-white/10 sm:border-0 sm:dark:border-0"
 										>
 											<img
 												src={`https://jkt48.com${event.label}`}
@@ -195,7 +195,7 @@
 								class="flex flex-col h-full sm:h-auto justify-start sm:justify-end sm:pointer-events-auto sm:pl-0.5 pr-10 sm:pr-0"
 							>
 								<h3
-									class="font-bold text-[15px] sm:text-lg leading-tight mb-1.5 sm:mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 sm:group-hover:text-blue-300 transition-colors line-clamp-2 sm:line-clamp-none text-gray-900 dark:text-white sm:text-white"
+									class="font-bold text-[15px] sm:text-lg leading-tight mb-1.5 sm:mb-1 group-hover:text-red-600 dark:group-hover:text-red-400 sm:group-hover:text-red-300 transition-colors line-clamp-2 sm:line-clamp-none text-gray-900 dark:text-white sm:text-white"
 								>
 									{event.title}
 								</h3>
@@ -267,11 +267,11 @@
 		0%,
 		100% {
 			transform: scale(1);
-			box-shadow: 0 4px 15px rgba(147, 197, 253, 0.4);
+			box-shadow: 0 4px 15px rgba(252, 165, 165, 0.4);
 		}
 		50% {
 			transform: scale(1.1);
-			box-shadow: 0 4px 25px rgba(147, 197, 253, 0.8);
+			box-shadow: 0 4px 25px rgba(252, 165, 165, 0.8);
 		}
 	}
 </style>
