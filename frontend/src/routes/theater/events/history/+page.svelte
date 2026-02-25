@@ -129,7 +129,11 @@
 								<td class="p-4">
 									<div class="flex items-center gap-3">
 										<div
-											class="w-12 h-8 rounded bg-gray-100 dark:bg-zinc-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-zinc-700"
+											class={`w-12 h-8 rounded overflow-hidden flex-shrink-0 border ${
+												event.imageUrl
+													? 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700'
+													: 'bg-gradient-to-br from-red-500 to-red-700 border-red-600/30 shadow-inner'
+											}`}
 										>
 											{#if event.imageUrl}
 												<img
@@ -139,7 +143,7 @@
 												/>
 											{:else}
 												<div class="w-full h-full flex items-center justify-center">
-													<Calendar class="w-4 h-4 text-gray-400" />
+													<Calendar class="w-4 h-4 text-white/50" />
 												</div>
 											{/if}
 										</div>
