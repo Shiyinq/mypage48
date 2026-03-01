@@ -332,7 +332,7 @@ async def test_get_calendar_events_with_birthdays(client, create_user, db):
     bday_event = next(e for e in data if e["title"] == "Birthday Girl")
     assert bday_event["isBirthday"] is True
     assert bday_event["date"].startswith("2026-02-14")
-    assert bday_event["url"] == "/members/member-bday"
+    assert bday_event["url"] == "/member/detail/id/member-bday"
 
 
 @pytest.mark.asyncio
