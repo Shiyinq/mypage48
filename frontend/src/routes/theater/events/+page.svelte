@@ -227,17 +227,19 @@
 									</div>
 
 									<!-- Time -->
-									<div
-										class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
-									>
-										<Clock class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
-										<span
-											>{$formatTime(event.date, {
-												hour: '2-digit',
-												minute: '2-digit'
-											})}</span
+									{#if event.setlistId}
+										<div
+											class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
 										>
-									</div>
+											<Clock class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+											<span
+												>{$formatTime(event.date, {
+													hour: '2-digit',
+													minute: '2-digit'
+												})}</span
+											>
+										</div>
+									{/if}
 
 									<!-- Members -->
 									{#if event.totalMembers > 1}

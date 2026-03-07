@@ -37,9 +37,17 @@ class EventsService:
         query = {}
         if current_only:
             now = datetime.now()
-            # Assuming 'date' is stored as datetime or ISO string that compares correctly
-            # Based on user input: "date": "2026-02-07T00:00:00" which matches datetime
-            query["date"] = {"$gte": now}
+
+            # this is because we cant get exac date for event except show setlist from scraper web so default is midnight
+            today_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+            # Use $or to handle different types of events
+            query["$or"] = [
+                # 1. Shows with setlistId: must be after right now
+                {"date": {"$gte": now}, "setlistId": {"$ne": None}},
+                # 2. General events (no setlistId): must be after today midnight
+                {"date": {"$gte": today_midnight}, "setlistId": None},
+            ]
 
         try:
             total_data = await self.repository.count_events(query)
