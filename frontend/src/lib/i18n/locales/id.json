@@ -34,7 +34,9 @@
 		"noResults": "Tidak ada hasil ditemukan",
 		"date": "Tanggal",
 		"today": "Hari Ini",
-		"tomorrow": "Besok"
+		"tomorrow": "Besok",
+		"fromShort": "Dari",
+		"toShort": "Ke"
 	},
 	"validation": {
 		"alert": {

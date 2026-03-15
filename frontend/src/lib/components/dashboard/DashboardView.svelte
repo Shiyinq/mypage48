@@ -83,17 +83,19 @@
 	}
 
 	// Helper function for filter label
-	function getFilterLabel(filter: typeof $dashboardFilter) {
-		if (filter.isAllData) return 'All Data';
-		const startMonthShort = MONTHS[filter.startMonth].substring(0, 3);
-		const endMonthShort = MONTHS[filter.endMonth].substring(0, 3);
-		if (filter.startMonth === 0 && filter.endMonth === 11) {
-			return `${filter.selectedYear} Jan-Dec`;
-		}
-		return `${filter.selectedYear} ${startMonthShort}-${endMonthShort}`;
-	}
+	$: filterLabel = getFilterLabel($dashboardFilter, $t);
 
-	$: filterLabel = getFilterLabel($dashboardFilter);
+	function getFilterLabel(filter: typeof $dashboardFilter, tParams: any) {
+		if (filter.isAllData) return tParams('common.allData');
+
+		const startMonthKey = MONTHS[filter.startMonth].substring(0, 3).toLowerCase();
+		const endMonthKey = MONTHS[filter.endMonth].substring(0, 3).toLowerCase();
+
+		const startMonthStr = tParams(`time.monthsShort.${startMonthKey}`);
+		const endMonthStr = tParams(`time.monthsShort.${endMonthKey}`);
+
+		return `${filter.selectedYear} ${startMonthStr}-${endMonthStr}`;
+	}
 
 	// Available years from API
 	$: availableYears = dashboardStats?.available_years ?? [currentYear];
@@ -198,7 +200,7 @@
 
 <div class="space-y-6 p-4 pb-32 max-w-7xl mx-auto">
 	<!-- Header / Filter Toggle -->
-	<div class="mb-6 relative z-50">
+	<div class="mb-6 relative z-30">
 		<DashboardHeader
 			{filterLabel}
 			onOpenFilter={() => (isFilterOpen = !isFilterOpen)}

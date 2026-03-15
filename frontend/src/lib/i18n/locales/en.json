@@ -33,7 +33,9 @@
 		"noResults": "No results found",
 		"date": "Date",
 		"today": "Today",
-		"tomorrow": "Tomorrow"
+		"tomorrow": "Tomorrow",
+		"fromShort": "Fr",
+		"toShort": "To"
 	},
 	"validation": {
 		"alert": {
