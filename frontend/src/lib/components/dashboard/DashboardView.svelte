@@ -7,6 +7,7 @@
 	import { Ticket as TicketIcon, DollarSign, Armchair, Camera, Users } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	// Import shared constants
 	import { MONTHS } from '$lib/constants';
@@ -29,6 +30,23 @@
 	const { t } = useTranslation();
 
 	let mounted = false;
+
+	function clickOutside(node: HTMLElement) {
+		const handleClick = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (node && !node.contains(target) && !target.closest('[data-filter-toggle="true"]')) {
+				isFilterOpen = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
 
 	// Dashboard data sourced from store
 	$: state = $dashboardStatsData;
@@ -180,18 +198,26 @@
 
 <div class="space-y-6 p-4 pb-32 max-w-7xl mx-auto">
 	<!-- Header / Filter Toggle -->
-	<div class="mb-6">
+	<div class="mb-6 relative z-50">
+		<DashboardHeader
+			{filterLabel}
+			onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
+			isOpen={isFilterOpen}
+		/>
 		{#if isFilterOpen}
-			<DashboardFilters
-				bind:isOpen={isFilterOpen}
-				bind:isAllData={$dashboardFilter.isAllData}
-				bind:selectedYear={$dashboardFilter.selectedYear}
-				bind:startMonth={$dashboardFilter.startMonth}
-				bind:endMonth={$dashboardFilter.endMonth}
-				{availableYears}
-			/>
-		{:else}
-			<DashboardHeader {filterLabel} onOpenFilter={() => (isFilterOpen = true)} />
+			<div
+				use:clickOutside
+				transition:slide={{ duration: 200 }}
+				class="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] md:w-auto md:min-w-[400px]"
+			>
+				<DashboardFilters
+					bind:isAllData={$dashboardFilter.isAllData}
+					bind:selectedYear={$dashboardFilter.selectedYear}
+					bind:startMonth={$dashboardFilter.startMonth}
+					bind:endMonth={$dashboardFilter.endMonth}
+					{availableYears}
+				/>
+			</div>
 		{/if}
 	</div>
 

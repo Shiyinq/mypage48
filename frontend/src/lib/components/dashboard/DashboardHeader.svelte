@@ -9,6 +9,7 @@
 	 */
 	export let filterLabel: string;
 	export let onOpenFilter: () => void;
+	export let isOpen: boolean = false;
 </script>
 
 <div class="flex items-center justify-between animate-fade-in">
@@ -36,7 +37,12 @@
 		</span>
 		<button
 			on:click={onOpenFilter}
-			class="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900 text-gray-600 dark:text-gray-300 font-bold text-xs shadow-sm border border-gray-200 dark:border-zinc-700 hover:border-red-200 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400 transition-all cursor-pointer"
+			data-filter-toggle="true"
+			class={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs shadow-sm border transition-all cursor-pointer ${
+				isOpen
+					? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
+					: 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-zinc-700 hover:border-red-200 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400'
+			}`}
 		>
 			<Filter class="w-4 h-4" />
 			<span class="hidden sm:inline">{$t('common.filters')}</span>
