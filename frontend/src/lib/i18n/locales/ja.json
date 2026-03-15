@@ -33,7 +33,9 @@
 		"noResults": "結果が見つかりません",
 		"date": "日付",
 		"today": "今日",
-		"tomorrow": "明日"
+		"tomorrow": "明日",
+		"fromShort": "から",
+		"toShort": "まで"
 	},
 	"validation": {
 		"alert": {
