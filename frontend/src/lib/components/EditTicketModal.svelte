@@ -8,9 +8,10 @@
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import type { Ticket } from '$lib/types';
 	import { LoaderCircle, CircleCheck, NotebookPen } from 'lucide-svelte';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
+	import { setlistsStore } from '$lib/stores/theater';
 
 	// Sub-components
 	import ImagePreview from './tickets/edit/ImagePreview.svelte';
@@ -22,7 +23,15 @@
 
 	const dispatch = createEventDispatcher();
 	const { t } = useTranslation();
-	const SHOW_OPTIONS = SHOW_IMAGES.map((s) => s.title);
+	
+	$: SHOW_OPTIONS = $setlistsStore.data 
+		? $setlistsStore.data.map((s) => s.title)
+		: SHOW_IMAGES.map((s) => s.title);
+		
+	onMount(() => {
+		setlistsStore.load();
+	});
+
 	const ROW_OPTIONS = THEATER_ROWS;
 
 	let isSubmitting = false;

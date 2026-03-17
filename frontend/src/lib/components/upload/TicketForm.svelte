@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { onMount } from 'svelte';
+	import { setlistsStore } from '$lib/stores/theater';
 	import {
 		Ticket as TicketIcon,
 		Calendar,
@@ -50,7 +52,14 @@
 
 	const { t } = useTranslation();
 
-	const SHOW_OPTIONS = SHOW_IMAGES.map((s) => s.title);
+	$: SHOW_OPTIONS = $setlistsStore.data 
+		? $setlistsStore.data.map((s) => s.title)
+		: SHOW_IMAGES.map((s) => s.title);
+
+	onMount(() => {
+		setlistsStore.load();
+	});
+
 	const ROW_OPTIONS = THEATER_ROWS;
 </script>
 
