@@ -77,9 +77,13 @@ function createTicketsStore() {
 				const res = await ticketsApi.getMyTickets(page, 20, cleanFilters);
 
 				update((s) => {
+					// Filter out duplicates based on _id
+					const newItems = res.data.filter(
+						(newItem) => !s.list.some((existingItem) => existingItem._id === newItem._id)
+					);
 					const newState = {
 						...s,
-						list: page === 1 ? res.data : [...s.list, ...res.data],
+						list: page === 1 ? res.data : [...s.list, ...newItems],
 						pagination: res.meta,
 						lastUpdated: now,
 						error: null

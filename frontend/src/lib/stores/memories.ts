@@ -77,7 +77,10 @@ function createGalleryStore() {
 				const now = Date.now();
 
 				update((s) => {
-					const newList = page === 1 ? res.data : [...s.list, ...res.data];
+					const newItems = res.data.filter(
+						(newItem) => !s.list.some((existingItem) => existingItem.uniqueId === newItem.uniqueId)
+					);
+					const newList = page === 1 ? res.data : [...s.list, ...newItems];
 					const newPagination = {
 						page,
 						hasMore: res.meta.current_page < res.meta.last_page
