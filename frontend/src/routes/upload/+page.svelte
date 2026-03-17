@@ -3,7 +3,8 @@
 	import { ticketsStore, showToast, storageStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
-	import { invalidateTheater } from '$lib/stores/theater';
+	import { invalidateTheater, setlistsStore } from '$lib/stores/theater';
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { extractTicketData } from '$lib/apis/llm';
@@ -28,6 +29,10 @@
 
 	// Constants
 	const SHOW_OPTIONS = SHOW_IMAGES.map((s) => s.title);
+
+	onMount(() => {
+		setlistsStore.load();
+	});
 
 	let mode: 'SELECTION' | 'ANALYZING' | 'EDITING' = 'SELECTION';
 
@@ -131,9 +136,14 @@
 		mode = 'ANALYZING';
 		try {
 			const result = await extractTicketData(base64);
-			// Match logic
+			await setlistsStore.load();
+
+			const currentSetlists = $setlistsStore.data
+				? $setlistsStore.data.map((s) => s.title)
+				: SHOW_OPTIONS;
+
 			const detectedTitle =
-				SHOW_OPTIONS.find((opt) =>
+				currentSetlists.find((opt) =>
 					(result.title || '').toLowerCase().includes(opt.toLowerCase())
 				) || '';
 			const inputChar = (result.section || '').toUpperCase().trim().charAt(0);
