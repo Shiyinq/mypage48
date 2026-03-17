@@ -226,10 +226,6 @@
 			bind:memberName={formData.two_shot.member_name}
 			bind:twoShotType={formData.two_shot.type}
 			bind:twoShotPrice={formData.two_shot.price}
-			onPhotoClick={() => {
-				// Dispatch custom event if component needs to trigger file input controlled by parent
-				// For now we assume parent handles it, or we dispatch
-			}}
 			on:photoClick
 			on:drop
 		/>

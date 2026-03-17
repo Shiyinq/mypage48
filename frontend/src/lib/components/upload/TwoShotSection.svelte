@@ -10,7 +10,6 @@
 	export let memberName: string = '';
 	export let twoShotType: 'Roulette' | 'Birthday' = 'Roulette';
 	export let twoShotPrice: number = 100000;
-	export let onPhotoClick: () => void;
 
 	const { t } = useTranslation();
 	const dispatch = createEventDispatcher();
@@ -50,7 +49,7 @@
 				>
 				<button
 					type="button"
-					on:click={onPhotoClick}
+					on:click={() => dispatch('photoClick')}
 					use:dragDrop={{
 						onDrop: (file) => dispatch('drop', file),
 						onDragChange: (state) => (isDragging = state)
