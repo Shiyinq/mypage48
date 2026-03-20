@@ -255,6 +255,7 @@ if __name__ == '__main__':
   python jkt48scraper.py --schedule     # Run schedule scraper (default: current & next month)
   python jkt48scraper.py --schedule 2011       # Run schedule scraper for specific year
   python jkt48scraper.py --schedule 2011-2023  # Run schedule scraper for range of years
+  python jkt48scraper.py --schedule all        # Run schedule scraper for all years (2011-present)
         '''
     )
     
@@ -262,7 +263,7 @@ if __name__ == '__main__':
     parser.add_argument('--setlist', action='store_true', help='Run setlist scraper')
     parser.add_argument('--news', nargs='?', const='1', metavar='PAGE', help='Run news scraper (optional: page, range 1-10, or all)')
     parser.add_argument('--members', action='store_true', help='Run members scraper')
-    parser.add_argument('--schedule', nargs='?', const='current', metavar='YEAR', help='Run schedule scraper (optional: year, range 2011-2023, or current)')
+    parser.add_argument('--schedule', nargs='?', const='current', metavar='YEAR', help='Run schedule scraper (optional: year, range 2011-2023, all, or current)')
     parser.add_argument('--merge', action='store_true', help='Merge historical schedule data (use with --schedule)')
     parser.add_argument('--schedule-merge', action='store_true', help='Run merge process for historical schedule data only')
     
@@ -284,6 +285,15 @@ if __name__ == '__main__':
     if args.schedule:
         if args.schedule == 'current':
             run_schedule_scraper()
+        elif args.schedule == 'all':
+            start_year = 2011
+            end_year = datetime.now().year
+            for year in range(start_year, end_year + 1):
+                run_historical_schedule_scraper(year)
+            
+            if args.merge:
+                print('\n=== Running Data Merge ===')
+                merge_data()
         else:
             if '-' in args.schedule:
                 start_year, end_year = map(int, args.schedule.split('-'))
