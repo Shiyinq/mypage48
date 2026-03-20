@@ -31,7 +31,6 @@ def get_all_setlists(headers: Optional[Dict[str, str]] = None) -> List[Dict[str,
     
     soup = BeautifulSoup(response.text, 'html.parser')
     
-    # Find the "Lagu Panggung" section by looking for h2 with that title
     setlist_section = None
     for section in soup.select('.entry-nav'):
         title = section.select_one('.entry-nav__title')
@@ -79,7 +78,6 @@ def get_setlist_songs(
         
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Get all songs
         songs = []
         song_items = soup.select('.entry-news .entry-news__list .entry-news__list--item')
         
@@ -125,10 +123,8 @@ def get_song_lyrics(
         title_el = soup.select_one('.entry-news__detail h3')
         title = title_el.get_text(strip=True) if title_el else ''
         
-        # Get lyrics from the div after h3
         lyrics_el = soup.select_one('.entry-news__detail > div')
         if lyrics_el:
-            # Get inner HTML and replace <br> tags with newlines
             inner_html = lyrics_el.decode_contents()
             # Replace <br>, <br/>, <br /> with newlines
             lyrics = re.sub(r'<br\s*/?>', '\n', inner_html)
@@ -169,7 +165,6 @@ def get_setlist_with_songs_and_lyrics(
     for song in songs:
         song_titles.append(song['title'])
         
-        # Fetch lyrics for each song
         print(f"  - Fetching lyrics: {song['title']}")
         time.sleep(0.35)  # Rate limiting
         

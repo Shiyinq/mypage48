@@ -47,7 +47,6 @@ def merge_data():
     scraped_members_map = {} # id -> {name, url}
     
     historical_dir = 'data/schedule'
-    # Pattern changed to events.schedule.*.json
     file_pattern = os.path.join(historical_dir, 'events.schedule.*.json')
     files = glob.glob(file_pattern)
     
@@ -59,7 +58,6 @@ def merge_data():
         try:
             filename = os.path.basename(file_path)
             import re
-            # Regex to match events.schedule.YYYY.json
             match = re.search(r'events\.schedule\.(\d{4})\.json', filename)
             if match:
                 years.append(int(match.group(1)))
@@ -99,13 +97,10 @@ def merge_data():
     
     print(f"Total events found: {len(all_events)}")
     
-    # 3. Process members matches
-    # 3. Process members matches
     # Resolve active.members.json relative to this file
     base_dir = os.path.dirname(__file__)
     members_path = os.path.join(base_dir, 'active.members.json')
     ref_members_map = load_reference_members(members_path)
-    final_members = []
     final_members = []
     
     for member_id, info in scraped_members_map.items():

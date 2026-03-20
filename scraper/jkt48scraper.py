@@ -16,10 +16,8 @@ from dateutil.relativedelta import relativedelta
 from typing import Dict, Any, List, Optional, Union
 
 from src.news import get_news_page, get_news, get_all_news
-from src.schedule import get_calendar_events_by_url
-from src.theater import get_theater_detail
-from src.schedule import get_calendar_events_by_url
-from src.theater import get_theater_detail
+from src.schedule import get_schedules_by_month, get_theater_or_event_detail
+from src.members import fetch_and_format_members
 from src.setlist import fetch_all_setlists_with_songs_and_lyrics
 from src.agent.cookies import get_cookies_headers as get_jkt48_headers
 from src.utils import get_theater_id
@@ -33,23 +31,23 @@ def fetch_news_data() -> List[Dict[str, Any]]:
     
     results = []
     for news in news_list:
-        # Check if news already exists (implement your own logic)
-        # if news_exists(news['id']):
-        #     continue
-        
         time.sleep(0.35)  # Rate limiting
         print(f"Processing: {news.get('date', 'Unknown Date')} - {news.get('title', 'Unknown Title')}")
-        news_detail = get_news(news['id'], headers)
+        news_detail = get_news(news.get('link'), headers)
+        
         news_data = {
+            **news,
             **news_detail,
-            'label': news['label'],
         }
         results.append(news_data)
-        
-        # Save to database (implement your own logic)
-        # save_news(news_data)
     
     return results
+
+
+def fetch_members_data() -> List[Dict[str, Any]]:
+    """Fetch and store JKT48 members (delegated to src.members)."""
+    headers = get_jkt48_headers()
+    return fetch_and_format_members(headers)
 
 
 def fetch_schedule_data() -> Dict[str, List]:
@@ -58,14 +56,10 @@ def fetch_schedule_data() -> Dict[str, List]:
     next_month = now + relativedelta(months=1)
     headers = get_jkt48_headers()
     
-    # Fetch current and next month schedules
     schedules = []
     
-    current_month_url = f'/calendar/list/y/{now.year}/m/{now.month}/d/1'
-    next_month_url = f'/calendar/list/y/{next_month.year}/m/{next_month.month}/d/1'
-    
-    schedules.extend(get_calendar_events_by_url(current_month_url, 0, headers))
-    schedules.extend(get_calendar_events_by_url(next_month_url, 0, headers))
+    schedules.extend(get_schedules_by_month(now.year, now.month, headers))
+    schedules.extend(get_schedules_by_month(next_month.year, next_month.month, headers))
     
     return process_schedules(schedules, headers)
 
@@ -78,30 +72,28 @@ def process_schedules(schedules: List[Dict[str, Any]], headers: Dict[str, str]) 
     }
     
     for schedule in schedules:
-        # Save schedule (implement your own logic)
-        # save_schedule(schedule)
+        ref_code = schedule['id']
+        event_type = schedule.get('type', 'EVENT')
         
-        # If it's a theater schedule, fetch theater details
-        if schedule['url'].startswith('/theater/schedule/id'):
-            theater_id = get_theater_id(schedule['url'])
-            if theater_id:
-                time.sleep(0.35)  # Rate limiting
-                theater_data = get_theater_detail(theater_id, 0, headers)
-                
-                # Save members
-                for member in theater_data['members']:
-                    # save_member(member)
-                    results['members'].append(member)
-                
-                # Save theater shows
-                for theater_detail in theater_data['show']:
-                    # save_theater(theater_detail)
-                    theater_detail['label'] = schedule.get('label', '')
-                    results['events'].append(theater_detail)
+        time.sleep(0.35)  # Rate limiting
+        print(f"Fetching detail for {event_type} {ref_code}")
+        detail_data = get_theater_or_event_detail(ref_code, event_type, 1, headers)
+        
+        if detail_data and detail_data.get('show'):
+            # Save members
+            for member in detail_data['members']:
+                results['members'].append(member)
+            
+            # Save theater/event shows
+            for detail_event in detail_data['show']:
+                detail_event['raw_data']['short'] = schedule.get('raw_data', {}).get('short', {})
+                detail_event['label'] = schedule.get('label', '')
+                detail_event['type'] = event_type
+                results['events'].append(detail_event)
         else:
-            # If it's not a theater schedule (e.g. event), just append it to events
+            # If detail fetch failed or returned empty
             results['events'].append(schedule)
-    
+            
     return results
 
 
@@ -116,7 +108,6 @@ def _json_serializer(obj):
     if isinstance(obj, datetime):
         return obj.isoformat()
     raise TypeError(f"Type {type(obj)} not serializable")
-
 
 def _ensure_data_folder():
     """Create data folder if not exists."""
@@ -136,6 +127,21 @@ def run_setlist_scraper():
     print('Saved: data/setlists.json')
     
     return setlists
+
+
+def run_members_scraper():
+    """Fetch and save members to JSON file."""
+    _ensure_data_folder()
+    
+    print('\n=== Fetching Members ===')
+    members = fetch_members_data()
+    print(f'Got {len(members)} members')
+    
+    with open('data/members.current.json', 'w', encoding='utf-8') as f:
+        json.dump(members, f, default=_json_serializer, ensure_ascii=False, indent=2)
+    print('Saved: data/members.current.json')
+    
+    return members
 
 
 def run_news_scraper():
@@ -184,10 +190,9 @@ def run_historical_schedule_scraper(year: int):
     
     # Iterate months 1-12
     for month in range(1, 13):
-        url = f'/calendar/list/y/{year}/m/{month}/d/1'
         print(f"Fetching {year}-{month}...")
         try:
-            events = get_calendar_events_by_url(url, 0, headers)
+            events = get_schedules_by_month(year, month, headers)
             schedules.extend(events)
             time.sleep(0.5) # Be nice
         except Exception as e:
@@ -195,10 +200,6 @@ def run_historical_schedule_scraper(year: int):
 
     # Process details (theater etc)
     print("Processing detailed events...")
-    # NOTE: process_schedules expects a list of event dictionaries
-    # But get_calendar_events_by_url returns processed events (dictionaries) ?
-    # Let's check src/schedule.py: get_calendar_events_by_url returns List[Dict]
-    # process_schedules in scraper.py: iterates and fetches theater details if needed
     
     result = process_schedules(schedules, headers)
     
@@ -213,7 +214,7 @@ def run_historical_schedule_scraper(year: int):
     return result
 
 
-# ============ Main Entry Point ============
+# Main Entry Point
 
 if __name__ == '__main__':
     """Run scrapers based on CLI flags."""
@@ -235,14 +236,14 @@ if __name__ == '__main__':
 
     parser.add_argument('--setlist', action='store_true', help='Run setlist scraper')
     parser.add_argument('--news', action='store_true', help='Run news scraper (fetch latest news from page 1)')
+    parser.add_argument('--members', action='store_true', help='Run members scraper')
     parser.add_argument('--schedule', nargs='?', const='current', help='Run schedule scraper (optional: year or range)')
     parser.add_argument('--merge', action='store_true', help='Merge historical schedule data (use with --schedule)')
     parser.add_argument('--schedule-merge', action='store_true', help='Run merge process for historical schedule data only')
     
     args = parser.parse_args()
     
-    # Check if at least one flag is provided
-    if not (args.setlist or args.news or args.schedule or args.schedule_merge):
+    if not (args.setlist or args.news or args.members or args.schedule or args.schedule_merge):
         parser.print_help()
         print('\nError: At least one flag is required!')
         exit(1)
@@ -253,6 +254,8 @@ if __name__ == '__main__':
         run_setlist_scraper()
     if args.news:
         run_news_scraper()
+    if args.members:
+        run_members_scraper()
     if args.schedule:
         if args.schedule == 'current':
             run_schedule_scraper()
@@ -264,7 +267,6 @@ if __name__ == '__main__':
             else:
                 run_historical_schedule_scraper(int(args.schedule))
             
-            # If --merge flag is present and we processed historical data
             if args.merge:
                 print('\n=== Running Data Merge ===')
                 merge_data()
