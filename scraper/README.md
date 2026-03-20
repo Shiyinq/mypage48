@@ -1,25 +1,29 @@
 # JKT48 Scraper CLI Application
 
-A robust, modular Python scraper for the JKT48 news, schedule and setlists.
+A robust, modular Python scraper for JKT48 news, members, and schedule data.
 
 ## Features
 
--   **Robust Architecture**: Uses `curl_cffi` to mimic real browser TLS fingerprints, bypassing basic bot protections.
--   **Automated Cloudflare Bypass**: Integrates with **FlareSolverr** to automatically solve Cloudflare challenges (403 Forbidden) and refresh cookies.
-
+-   **News Scraper**: Fetch news with pagination support (single page, range, or all).
+-   **Members Scraper**: Fetch and format member profiles from the JKT48 API.
+-   **Schedule Scraper**: Fetch current/upcoming events or historical schedules by year.
+-   **MongoDB Sync**: Sync fetched data directly to MongoDB with `--sync`.
+-   **Robust Architecture**: Uses `curl_cffi` to mimic real browser TLS fingerprints.
+-   **Automated Cloudflare Bypass**: Integrates with **FlareSolverr** to solve Cloudflare challenges.
 
 ## Prerequisites
 
 -   Python 3.10+
--   [Docker](https://www.docker.com/) (Optional, required for auto-retry Cloudflare bypass)
+-   MongoDB (required for `--sync`)
+-   [Docker](https://www.docker.com/) (Optional, for FlareSolverr Cloudflare bypass)
 
 ## Installation
 
 1.  Clone the repository.
-2.  Create a virtual environment (recommended):
+2.  Create a virtual environment:
     ```bash
     python -m venv .venv
-    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    source .venv/bin/activate
     ```
 3.  Install dependencies:
     ```bash
@@ -34,50 +38,67 @@ A robust, modular Python scraper for the JKT48 news, schedule and setlists.
 
 The main entry point is `jkt48scraper.py`.
 
-### 1. Basic Scraping
-
-Fetch the latest data (Current News & Schedule):
+### News
 
 ```bash
-# Fetch latest News
+# Fetch latest news (default: page 1)
 python jkt48scraper.py --news
-# Output: data/news.current.json
 
-# Fetch current & upcoming Schedule
+# Fetch specific page
+python jkt48scraper.py --news 5
+
+# Fetch range of pages
+python jkt48scraper.py --news 1-10
+
+# Fetch all available pages
+python jkt48scraper.py --news all
+```
+
+### Members
+
+```bash
+python jkt48scraper.py --members
+```
+
+### Schedule
+
+```bash
+# Fetch current & upcoming events
 python jkt48scraper.py --schedule
-# Output: data/events.current.json
 
-# Fetch Setlists
-python jkt48scraper.py --setlist
-# Output: data/setlists.json
-```
-
-### 2. Historical Schedule Scraping
-
-Scrape schedule data for a specific year or a range of years.
-
-```bash
-# Scrape a specific year
+# Fetch a specific year
 python jkt48scraper.py --schedule 2012
-# Output: data/schedule/events.schedule.2012.json
 
-# Scrape a range of years
-python jkt48scraper.py --schedule 2011-2015
-# Outputs individual files for each year in data/schedule/
+# Fetch a range of years
+python jkt48scraper.py --schedule 2011-2023
+
+# Fetch all years (2011 to present)
+python jkt48scraper.py --schedule all
 ```
 
-### 3. Merging Data
+### Merging Historical Data
 
-Merge scraped historical files into a single consolidated JSON file, enriched with member details.
+Merge scraped historical schedule files into a single consolidated JSON.
 
 ```bash
-# Option A: Scrape AND Merge immediately
-python jkt48scraper.py --schedule 2011-2015 --merge
-# Output: data/schedule/events.schedule_2011_to_2015.json
+# Scrape AND merge
+python jkt48scraper.py --schedule 2011-2023 --merge
 
-# Option B: Merge existing files in data/schedule/
+# Merge existing files only
 python jkt48scraper.py --schedule-merge
 ```
+
+### Sync to MongoDB
+
+Add `--sync` to any command to upsert fetched data into MongoDB.
+
+```bash
+python jkt48scraper.py --news --sync
+python jkt48scraper.py --members --sync
+python jkt48scraper.py --schedule --sync
+```
+
+Data is upserted (insert or update) based on unique IDs, so running `--sync` multiple times will never create duplicates.
 
 ## Cloudflare Bypass (FlareSolverr)
 
@@ -97,28 +118,28 @@ The scraper's `src/agent/browser.py` will automatically detect 403 errors, conta
 
 ```
 .
-├── jkt48scraper.py            # Main CLI entry point
+├── jkt48scraper.py            # Main CLI entry point (Template Method pattern)
 ├── requirements.txt           # Python dependencies
 ├── cookies.example.json       # Cookie template
-├── .gitignore
 ├── data/                      # Output directory
 │   ├── news.current.json
+│   ├── members.current.json
 │   ├── events.current.json
 │   └── schedule/              # Historical schedule data
 ├── src/
 │   ├── __init__.py
 │   ├── active.members.json    # Reference member data
+│   ├── db.py                  # MongoDB connection & upsert utility
 │   ├── merger.py              # Logic for merging historical data
-│   ├── agent/                 # Core networking & agent logic
-│   │   ├── __init__.py
-│   │   ├── browser.py         # Request handler with retry logic
-│   │   ├── cookies.py         # Cookie management
-│   │   └── flaresolverr.py    # FlareSolverr client
+│   ├── members.py             # Members scraper module
 │   ├── news.py                # News scraper module
-│   ├── schedule.py            # Schedule scraper module
-│   ├── setlist.py             # Setlist scraper module
-│   ├── theater.py             # Theater/Event detail scraper
-│   └── utils.py               # General utilities
+│   ├── schedule.py            # Schedule & theater scraper module
+│   ├── utils.py               # General utilities
+│   └── agent/                 # Core networking & agent logic
+│       ├── __init__.py
+│       ├── browser.py         # Request handler with retry logic
+│       ├── cookies.py         # Cookie management
+│       └── flaresolverr.py    # FlareSolverr client
 └── README.md
 ```
 
