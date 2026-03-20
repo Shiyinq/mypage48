@@ -24,12 +24,33 @@ from src.utils import get_theater_id
 from src.merger import merge_data
 
 
-def fetch_news_data() -> List[Dict[str, Any]]:
-    """Fetch and store JKT48 news."""
+def fetch_news_data(pages: str = "1") -> List[Dict[str, Any]]:
+    """Fetch and store JKT48 news with pagination support."""
     headers = get_jkt48_headers()
-    news_list = get_news_page(1, None, headers)
+    news_list = []
+    
+    if pages == "all":
+        print("Fetching all news pages...")
+        news_list = get_all_news(1, None, headers)
+    elif "-" in pages:
+        try:
+            start_p, end_p = map(int, pages.split("-"))
+            for p in range(start_p, end_p + 1):
+                print(f"Fetching news page {p}...")
+                news_list.extend(get_news_page(p, None, headers))
+                time.sleep(0.35)
+        except ValueError:
+            print(f"Invalid range format: {pages}. Defaulting to page 1.")
+            news_list = get_news_page(1, None, headers)
+    else:
+        try:
+            p = int(pages)
+            news_list = get_news_page(p, None, headers)
+        except ValueError:
+            news_list = get_news_page(1, None, headers)
     
     results = []
+    print(f"Found {len(news_list)} news items. Fetching details...")
     for news in news_list:
         time.sleep(0.35)  # Rate limiting
         print(f"Processing: {news.get('date', 'Unknown Date')} - {news.get('title', 'Unknown Title')}")
@@ -144,12 +165,12 @@ def run_members_scraper():
     return members
 
 
-def run_news_scraper():
-    """Fetch and save news to JSON file."""
+def run_news_scraper(pages: str = "1"):
+    """Fetch and save news to JSON file with pagination support."""
     _ensure_data_folder()
     
     print('\n=== Fetching News ===')
-    news = fetch_news_data()
+    news = fetch_news_data(pages)
     print(f'Got {len(news)} news items')
     
     with open('data/news.current.json', 'w', encoding='utf-8') as f:
@@ -226,8 +247,12 @@ if __name__ == '__main__':
         epilog='''
 
   python jkt48scraper.py --setlist      # Run setlist scraper only
-  python jkt48scraper.py --news         # Run news scraper (fetch latest news from page 1)
-  python jkt48scraper.py --schedule     # Run schedule scraper (current & next month)
+  python jkt48scraper.py --members      # Run members scraper only
+  python jkt48scraper.py --news         # Run news scraper (default: page 1)
+  python jkt48scraper.py --news 5       # Run news scraper for specific page
+  python jkt48scraper.py --news 1-10    # Run news scraper for pages 1 to 10
+  python jkt48scraper.py --news all     # Run news scraper for all available pages
+  python jkt48scraper.py --schedule     # Run schedule scraper (default: current & next month)
   python jkt48scraper.py --schedule 2011       # Run schedule scraper for specific year
   python jkt48scraper.py --schedule 2011-2023  # Run schedule scraper for range of years
         '''
@@ -235,9 +260,9 @@ if __name__ == '__main__':
     
 
     parser.add_argument('--setlist', action='store_true', help='Run setlist scraper')
-    parser.add_argument('--news', action='store_true', help='Run news scraper (fetch latest news from page 1)')
+    parser.add_argument('--news', nargs='?', const='1', metavar='PAGE', help='Run news scraper (optional: page, range 1-10, or all)')
     parser.add_argument('--members', action='store_true', help='Run members scraper')
-    parser.add_argument('--schedule', nargs='?', const='current', help='Run schedule scraper (optional: year or range)')
+    parser.add_argument('--schedule', nargs='?', const='current', metavar='YEAR', help='Run schedule scraper (optional: year, range 2011-2023, or current)')
     parser.add_argument('--merge', action='store_true', help='Merge historical schedule data (use with --schedule)')
     parser.add_argument('--schedule-merge', action='store_true', help='Run merge process for historical schedule data only')
     
@@ -253,7 +278,7 @@ if __name__ == '__main__':
     if args.setlist:
         run_setlist_scraper()
     if args.news:
-        run_news_scraper()
+        run_news_scraper(args.news)
     if args.members:
         run_members_scraper()
     if args.schedule:
