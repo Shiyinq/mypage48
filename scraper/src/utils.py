@@ -1,5 +1,5 @@
-"""Utility functions for JKT48 scraper."""
 import re
+from datetime import datetime
 from typing import Optional, Tuple
 
 
@@ -64,3 +64,19 @@ def extract_news_id(url: str) -> Optional[str]:
     regex = r'/id/(\d+)'
     match = re.search(regex, url)
     return match.group(1) if match else None
+
+
+def slugify(text: str) -> str:
+    """Simple slugify: lower, strip, and replace spaces with dashes."""
+    return text.lower().strip().replace(' ', '-')
+
+
+def format_birthdate_id(date_str: str) -> str:
+    """Format ISO date to Indonesian (e.g., 2008-08-05 -> 06 Agustus 2008)."""
+    try:
+        # date_str is like "2008-08-05T17:00:00.000Z"
+        dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+        return f"{dt.day} {months[dt.month - 1]} {dt.year}"
+    except Exception:
+        return ""

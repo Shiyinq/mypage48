@@ -1,122 +1,200 @@
-"""Schedule/Calendar scraper for JKT48 website."""
-import re
+"""Schedule and Theater scraper for JKT48 website."""
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
-from bs4 import BeautifulSoup
-from tqdm import tqdm
 
-from .utils import extract_year_and_month_from_url
 from .agent.browser import request
 
-
-def get_all_calendar(headers: Optional[Dict[str, str]] = None) -> List[str]:
-    """Get all calendar month URLs."""
+def get_schedules_by_month(year: int, month: int, headers: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
+    """Get all calendar events from API for a specific month and year."""
+    url = f"https://jkt48.com/api/v1/schedules?lang=id&month={month}&year={year}"
     response = request(
         'GET',
-        'https://jkt48.com/calendar/list/',
+        url,
         headers=headers or {},
         impersonate='chrome'
     )
     response.raise_for_status()
+    data = response.json()
     
-    soup = BeautifulSoup(response.text, 'html.parser')
-    months_data = soup.select('.entry-schedule__footer .entry-schedule__footer--month a')
-    
-    urls = [a.get('href') for a in months_data if a.get('href')]
-    return sorted(urls, reverse=True)
-
-
-def get_all_calendar_events(headers: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
-    """Get all calendar events from all months."""
-    months = get_all_calendar(headers)
+    if not data.get('status') or 'data' not in data:
+        return []
+        
+    schedules = data['data']
     events = []
     
-    for url in tqdm(months, desc="Fetching calendar"):
-        time.sleep(0.1)
-        data = get_calendar_events_by_url(url, 0, headers)
-        events.extend(data)
-    
+    for item in schedules:
+        # Date handling: UTC to WIB (+7)
+        try:
+            utc_date_str = item.get('date', '').replace('Z', '+00:00')
+            if not '+' in utc_date_str and not '-' in utc_date_str[-6:]:
+               utc_date_str += '+00:00'
+               
+            utc_date = datetime.fromisoformat(utc_date_str)
+            wib_date = utc_date + timedelta(hours=7)
+            
+            start_time_str = item.get('start_time')
+            if start_time_str:
+                parts = start_time_str.split(':')
+                hour = int(parts[0])
+                minute = int(parts[1]) if len(parts) > 1 else 0
+                wib_date = wib_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
+            
+            wib_date = wib_date.replace(tzinfo=None)
+        except Exception:
+            wib_date = datetime.now()
+            
+        ref_code = item.get('reference_code') or item.get('schedule_id', '')
+        event_type = item.get('type', 'EVENT')
+        
+        url_path = f"/theater/schedule/id/{ref_code}" if event_type == 'SHOW' else f"/event/schedule/id/{ref_code}"
+        label = item.get('jkt48_member_type', '')
+        
+        events.append({
+            'id': str(ref_code),
+            'label': label,
+            'title': item.get('title', ''),
+            'url': url_path,
+            'date': wib_date,
+            'type': event_type,
+            'raw_data': {'short': item}
+        })
+        
     return events
 
 
-def get_events(body: str, url: str) -> List[Dict[str, Any]]:
-    """Parse events from HTML body."""
-    soup = BeautifulSoup(body, 'html.parser')
-    items = soup.select('table tbody tr')
-    
-    events = []
-    year, month = extract_year_and_month_from_url(f'https://jkt48.com{url}')
-    
-    for event in items:
-        date_td = event.select_one('td:nth-child(1)')
-        date_string = 1
-        if date_td:
-            # Extract number from text like "1(Kamis)" or just "1"
-            match = re.match(r'(\d+)', date_td.get_text(strip=True))
-            if match:
-                date_string = int(match.group(1))
-        
-        if year and month:
-            date = datetime(year, month, date_string)
-        else:
-            date = datetime.now()
-        
-        for content in event.select('td .contents'):
-            title_text = content.get_text(strip=True).lower().replace(' ', '-')
-            event_id = f"{date.strftime('%Y%m%d')}-{title_text}"
-            
-            img_el = content.select_one('img')
-            link_el = content.select_one('a')
-            
-            events.append({
-                'id': event_id,
-                'label': img_el.get('src', '') if img_el else '',
-                'title': content.get_text(strip=True),
-                'url': link_el.get('href', '') if link_el else '',
-                'date': date,
-            })
-    
-    return events
+_members_cache: List[Dict[str, Any]] = []
 
+def _ensure_members_cache(headers: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
+    global _members_cache
+    if not _members_cache:
+        try:
+            url = f'https://jkt48.com/api/v1/members?lang=id'
+            response = request('GET', url, headers=headers or {}, impersonate='chrome')
+            response.raise_for_status()
+            data = response.json()
+            if data.get('status') and 'data' in data:
+                _members_cache = data['data']
+        except Exception:
+            pass
+    return _members_cache
 
-def get_calendar_events_by_url(
-    url: str,
-    retry: int = 0,
+def _find_member_id_by_name(name: str, headers: Optional[Dict[str, str]] = None) -> Optional[str]:
+    members = _ensure_members_cache(headers)
+    for m in members:
+        if m.get('name') == name or name in m.get('name', ''):
+            m_id = m.get('jkt48_member_id') or m.get('member_id')
+            return str(m_id) if m_id else None
+    return None
+
+def get_theater_or_event_detail(
+    reference_code: str,
+    event_type: str = 'SHOW',
+    retry: int = 1,
     headers: Optional[Dict[str, str]] = None
-) -> List[Dict[str, Any]]:
-    """Get calendar events by URL with retry logic."""
+) -> Dict[str, Any]:
+    """Get theater or event schedule detail from API."""
     try:
-        response = request(
-            'GET',
-            f'https://jkt48.com{url}',
-            headers=headers or {},
-            impersonate='chrome'
-        )
-        response.raise_for_status()
+        api_path = "theater-shows" if event_type == 'SHOW' else "events"
+        url = f'https://jkt48.com/api/v1/{api_path}/{reference_code}?lang=id'
         
-        return get_events(response.text, url)
-    
+        response = request('GET', url, headers=headers or {}, impersonate='chrome')
+        response.raise_for_status()
+        data = response.json()
+        
+        if not data.get('status') or 'data' not in data:
+             raise Exception('Show detail not found!')
+             
+        detail = data['data']
+        
+        theater_data: List[Dict[str, Any]] = []
+        member_map: Dict[str, Dict[str, Any]] = {}
+        
+        # Date handling
+        wib_date = datetime.now()
+        try:
+             utc_date_str = detail.get('date', '').replace('Z', '+00:00')
+             if not '+' in utc_date_str and not '-' in utc_date_str[-6:]:
+                utc_date_str += '+00:00'
+             utc_date = datetime.fromisoformat(utc_date_str)
+             wib_date = utc_date + timedelta(hours=7)
+             
+             start_time_str = detail.get('start_time')
+             if start_time_str:
+                  parts = start_time_str.split(':')
+                  hour = int(parts[0])
+                  minute = int(parts[1]) if len(parts) > 1 else 0
+                  wib_date = wib_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
+             wib_date = wib_date.replace(tzinfo=None)
+        except Exception:
+             pass
+             
+        members_data = detail.get('jkt48_member', [])
+        member_ids = []
+        
+        for m in members_data:
+            m_id = str(m.get('member_id', '0'))
+            m_name = m.get('name', '')
+            member_ids.append(m_id)
+            
+            member_map[m_id] = {
+                'id': m_id,
+                'name': m_name,
+                'url': f"/member/detail/id/{m_id}"
+            }
+            
+        title = detail.get('title', '')
+        setlist_id = title.replace(' ', '').lower().strip()
+        show_id = str(detail.get('code', reference_code))
+        
+        member_type = detail.get('jkt48_member_type', '')
+        team_id = member_type.lower()
+        team_img = ""
+        
+        seitansai_ids = []
+        bday_names = detail.get('birthday_member_name', [])
+        if bday_names:
+            for name in bday_names:
+                found = False
+                for m in members_data:
+                    if m.get('name') == name or name in m.get('name', ''):
+                        seitansai_ids.append(str(m.get('member_id')))
+                        found = True
+                        break
+                
+                if not found:
+                    global_id = _find_member_id_by_name(name, headers)
+                    if global_id:
+                        seitansai_ids.append(global_id)
+        
+        graduation_ids = []
+        if len(member_ids) == 1:
+             graduation_ids = member_ids.copy()
+             
+        theater_data.append({
+            'id': show_id,
+            'setlistId': setlist_id,
+            'title': title,
+            'team': {
+                'id': team_id,
+                'img': team_img,
+            },
+            'graduationIds': graduation_ids,
+            'date': wib_date,
+            'memberIds': member_ids,
+            'seitansaiIds': seitansai_ids,
+            'url': f"/theater/schedule/id/{show_id}?lang=id",
+            'raw_data': {'detail': detail}
+        })
+        
+        return {
+            'show': theater_data,
+            'members': list(member_map.values()),
+        }
+        
     except Exception as e:
         if retry > 10:
-            raise e
-        time.sleep(0.3)
-        return get_calendar_events_by_url(url, retry + 1, headers)
-
-
-def get_calendar_events(
-    date: datetime,
-    headers: Optional[Dict[str, str]] = None
-) -> List[Dict[str, Any]]:
-    """Get calendar events for a specific month."""
-    url = f'/calendar/list/y/{date.year}/m/{date.month}/d/1'
-    
-    response = request(
-        'GET',
-        f'https://jkt48.com{url}',
-        headers=headers or {},
-        impersonate='chrome'
-    )
-    response.raise_for_status()
-    
-    return get_events(response.text, url)
+            print(f'Error fetching {reference_code}: {e}')
+            return {'show': [], 'members': []}
+        time.sleep(1)
+        return get_theater_or_event_detail(reference_code, event_type, retry + 1, headers)
