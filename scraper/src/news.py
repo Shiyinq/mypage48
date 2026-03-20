@@ -1,5 +1,6 @@
 """News scraper for JKT48 website."""
 import asyncio
+import time
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 
@@ -73,7 +74,6 @@ def get_all_news(
         return news
         
     for item in data['data']:
-        link = item.get('link', '')
         date_str = item.get('valid_date_from', '')
         wib_date = parse_date_wib(date_str) or datetime.now()
         
@@ -84,14 +84,17 @@ def get_all_news(
         })
         
     # Check for next page
-    pagination = data.get('pagination', {})
-    current_page = pagination.get('current_page', page)
-    last_page = pagination.get('last_page', page)
+    meta = data.get('_meta', {})
+    current_page = meta.get('page', page)
+    last_page = meta.get('total_page', page)
+    
+    print(f"  - Listing: Page {current_page}/{last_page}", end='\r', flush=True)
     
     if current_page < last_page:
-        time.sleep(0.5) # rate limit
+        time.sleep(0.5)
         return get_all_news(page + 1, news, headers)
         
+    print() # Finish listing
     return news
 
 def get_news(news_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
