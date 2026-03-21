@@ -36,6 +36,24 @@ export const isUpcomingEventsLoading = writable(false);
 export const isHistoryEventsLoading = writable(false);
 export const isCalendarEventsLoading = writable(false);
 
+const legacyMapping: Record<string, string> = {
+	'/images/icon.cat2.png': 'EVENT',
+	'/images/icon.cat17.png': 'SHOW',
+	'/images/icon.cat19.png': 'SHOW'
+};
+
+function translateLegacyEvent<T extends Event | CalendarEvent>(event: T): T {
+	const labelLower = event.label?.toLowerCase().trim() || '';
+	if (legacyMapping[labelLower]) {
+		return {
+			...event,
+			type: legacyMapping[labelLower],
+			label: undefined
+		};
+	}
+	return event;
+}
+
 function createEventsStore() {
 	const initialState: EventsState = {
 		upcoming: {
@@ -93,10 +111,11 @@ function createEventsStore() {
 
 			try {
 				const res = await events.getCurrentEvents(1, 100); // Fetch mostly all current events
+				const translatedData = res.data.map(translateLegacyEvent);
 				update((s) => ({
 					...s,
 					upcoming: {
-						list: res.data,
+						list: translatedData,
 						error: null,
 						lastUpdated: now
 					}
@@ -116,8 +135,8 @@ function createEventsStore() {
 			const state = get({ subscribe });
 			const now = Date.now();
 
-			// Optimistic Check for page 1
-			if (page === 1 && !forceRefresh && state.history.defaultCache) {
+			// Temporarily disabled cache to avoid stale data during migration
+			/* if (page === 1 && !forceRefresh && state.history.defaultCache) {
 				if (!isCacheExpired(state.history.defaultCache.lastUpdated)) {
 					update((s) => ({
 						...s,
@@ -130,20 +149,21 @@ function createEventsStore() {
 					}));
 					return;
 				}
-			}
+			} */
 
 			update((s) => ({ ...s, history: { ...s.history, error: null } }));
 			isHistoryEventsLoading.set(true);
 
 			try {
 				const res = await events.getEvents(page, 20); // API defaults, matches UI limit
+				const translatedData = res.data.map(translateLegacyEvent);
 
 				update((s) => {
 					const newState = {
 						...s,
 						history: {
 							...s.history,
-							list: res.data,
+							list: translatedData,
 							pagination: res.meta,
 							error: null,
 							lastUpdated: now
@@ -226,6 +246,7 @@ function createEventsStore() {
 
 			try {
 				const res = await events.getCalendarEvents(year, month);
+				const translatedData = res.map(translateLegacyEvent);
 
 				// Check if the current state still matches the request
 				// This prevents race conditions where a previous request finishes after a new one started
@@ -238,7 +259,7 @@ function createEventsStore() {
 					...s,
 					calendar: {
 						...s.calendar,
-						list: res,
+						list: translatedData,
 						error: null,
 						lastUpdated: now,
 						year,
@@ -246,7 +267,7 @@ function createEventsStore() {
 						cache: {
 							...s.calendar.cache,
 							[cacheKey]: {
-								list: res,
+								list: translatedData,
 								lastUpdated: now
 							}
 						}

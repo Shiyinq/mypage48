@@ -15,6 +15,7 @@ class Event(BaseModel):
     date: datetime
     url: str
     label: str
+    type: Optional[str] = None
 
     # List View Fields
     imageUrl: Optional[str] = None
@@ -31,6 +32,8 @@ class CalendarEvent(BaseModel):
     title: str
     date: datetime
     url: str
+    label: Optional[str] = None
+    type: Optional[str] = None
     setlistId: Optional[str] = None
     seitansaiMembers: Optional[List[str]] = None
     isBirthday: Optional[bool] = False
