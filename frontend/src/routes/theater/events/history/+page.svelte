@@ -152,26 +152,32 @@
 										</div>
 									</div>
 								</td>
-								<td class="p-4 text-themed-secondary">
-									{#if event.team?.img}
-										<div class="flex items-center">
-											<img
-												src={`https://jkt48.com${event.team.img}`}
-												alt={event.team.id || 'Team'}
-												class="w-10 h-10 object-contain"
-											/>
-										</div>
-									{:else if event.label}
-										<div class="flex items-center">
-											<img
-												src={`https://jkt48.com${event.label}`}
-												alt="Type"
-												class="w-10 h-10 object-contain"
-											/>
-										</div>
-									{:else}
-										<div class="text-gray-400 w-10 text-center">-</div>
-									{/if}
+								<td class="p-4">
+									<div class="flex items-center gap-1.5">
+										{#if event.label}
+											<div
+												class="px-1.5 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider border shadow-sm {event.label ===
+												'JKT48'
+													? 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800/30'
+													: 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border-gray-200/50 dark:border-white/5'}"
+											>
+												{event.label}
+											</div>
+										{/if}
+										{#if event.type}
+											<div
+												class="px-1.5 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider shadow-sm border border-transparent {event.type ===
+												'EVENT'
+													? 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 border-pink-200/30 dark:border-pink-800/20'
+													: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200/30 dark:border-blue-800/20'}"
+											>
+												{event.type}
+											</div>
+										{/if}
+										{#if !event.label && !event.type}
+											<div class="text-gray-400 w-10 text-center">-</div>
+										{/if}
+									</div>
 								</td>
 								<td class="p-4 text-themed-secondary font-medium">
 									{event.totalMembers > 0 ? event.totalMembers : '-'}

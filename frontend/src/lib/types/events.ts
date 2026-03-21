@@ -19,6 +19,7 @@ export interface Event {
 	seitansaiMembers?: string[];
 	setlistId?: string;
 	team?: EventTeam;
+	type?: string;
 }
 
 export interface CalendarEvent {
@@ -28,6 +29,8 @@ export interface CalendarEvent {
 	setlistId?: string;
 	seitansaiMembers?: string[];
 	isBirthday?: boolean;
+	label?: string;
+	type?: string;
 }
 
 export interface EventPaginationResponse {

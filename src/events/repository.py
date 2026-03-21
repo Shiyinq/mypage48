@@ -133,6 +133,8 @@ class EventsRepository:
                     "title": 1,
                     "date": 1,
                     "url": 1,
+                    "label": 1,
+                    "type": 1,
                     "setlistId": 1,
                     "seitansaiMembers": 1,
                 }

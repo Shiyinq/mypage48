@@ -160,31 +160,24 @@
 								class="absolute top-3.5 right-3.5 sm:static sm:flex sm:items-start sm:justify-between sm:mb-1 sm:pointer-events-auto z-20"
 							>
 								<div class="flex items-center gap-2">
-									{#if event.team?.img}
+									{#if event.label}
 										<div
-											class="w-8 h-8 sm:w-16 sm:h-16 bg-white dark:bg-white/10 sm:bg-transparent sm:dark:bg-transparent rounded-full p-1 sm:p-0 shadow-sm sm:shadow-none border border-gray-100 dark:border-white/10 sm:border-0 sm:dark:border-0"
+											class="px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold rounded-md uppercase tracking-wider border shadow-sm {event.label ===
+											'JKT48'
+												? 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800/30'
+												: 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border-gray-200/50 dark:border-white/5'}"
 										>
-											<img
-												src={`https://jkt48.com${event.team.img}`}
-												alt="Team"
-												class="w-full h-full object-contain sm:object-left-bottom"
-											/>
+											{event.label}
 										</div>
-									{:else if event.label}
+									{/if}
+									{#if event.type}
 										<div
-											class="w-8 h-8 sm:w-16 sm:h-16 bg-white dark:bg-white/10 sm:bg-transparent sm:dark:bg-transparent rounded-full p-1 sm:p-0 shadow-sm sm:shadow-none border border-gray-100 dark:border-white/10 sm:border-0 sm:dark:border-0"
+											class="px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold rounded-md uppercase tracking-wider shadow-sm border border-transparent {event.type ===
+											'EVENT'
+												? 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 border-pink-200/30 dark:border-pink-800/20'
+												: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200/30 dark:border-blue-800/20'}"
 										>
-											<img
-												src={`https://jkt48.com${event.label}`}
-												alt="Label"
-												class="w-full h-full object-contain sm:object-left-bottom"
-											/>
-										</div>
-									{:else}
-										<div
-											class="w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-white/10 backdrop-blur-sm p-2 sm:p-3 border border-white/20 flex items-center justify-center hidden sm:flex"
-										>
-											<Calendar class="w-full h-full text-white/80" />
+											{event.type}
 										</div>
 									{/if}
 								</div>
