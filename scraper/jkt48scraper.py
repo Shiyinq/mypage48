@@ -20,8 +20,7 @@ from src.news import get_news_page, get_news, get_all_news
 from src.schedule import get_schedules_by_month, get_theater_or_event_detail
 from src.members import fetch_and_format_members
 from src.agent.cookies import get_cookies_headers as get_jkt48_headers
-from src.utils import get_theater_id
-from src.merger import merge_data
+from src.merger import merge_data, load_reference_members, format_member
 from src.db import MongoDB, upsert_data
 
 
@@ -116,7 +115,21 @@ def process_schedules(schedules: List[Dict[str, Any]], headers: Dict[str, str]) 
                 results['events'].append(detail_event)
         else:
             results['events'].append(schedule)
-            
+    # Enrich members with full profile data from active.members.json
+    ref_members_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src', 'active.members.json')
+    ref_members_map = load_reference_members(ref_members_path)
+    
+    seen_ids = set()
+    enriched_members = []
+    for member in results['members']:
+        mid = member.get('id')
+        if mid and mid not in seen_ids:
+            seen_ids.add(mid)
+            ref_data = ref_members_map.get(mid)
+            enriched = format_member(mid, member.get('name', ''), member.get('url', ''), ref_data)
+            enriched_members.append(enriched)
+    results['members'] = enriched_members
+    
     return results
 
 
