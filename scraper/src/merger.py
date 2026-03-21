@@ -3,6 +3,8 @@ import glob
 import os
 from typing import List, Dict, Any, Optional
 
+from .utils import clean_jkt48_url
+
 def load_reference_members(path: str) -> Dict[str, Dict[str, Any]]:
     """Load reference members and map by ID."""
     try:
@@ -30,13 +32,14 @@ def format_member(member_id: str, member_name: str, member_url: str, ref_member:
         "generation": None,
         "height": None,
         "horoscope": None,
-        "href": member_url, # Use scraped URL as href
+        "href": clean_jkt48_url(member_url), # Use scraped URL as href
         "id": member_id,
         "img": None,
         "jiko": None,
         "name": member_name, # Use scraped name
         "nickname": None,
-        "socials": None
+        "socials": None,
+        "member_type": None
     }
 
 def merge_data():

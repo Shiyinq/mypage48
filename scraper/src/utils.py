@@ -80,3 +80,18 @@ def format_birthdate_id(date_str: str) -> str:
         return f"{dt.day} {months[dt.month - 1]} {dt.year}"
     except Exception:
         return ""
+
+
+def clean_jkt48_url(url: str) -> str:
+    """Remove domain and storage prefix from JKT48 URLs."""
+    if not url:
+        return ""
+    prefix = "https://jkt48.com/api/v1/storages"
+    if url.startswith(prefix):
+        result = url[len(prefix):]
+    else:
+        result = url.replace("https://jkt48.com", "")
+
+    if result and not result.startswith("/"):
+        result = "/" + result
+    return result

@@ -6,9 +6,9 @@
         "generation": "12",
         "height": "164cm",
         "horoscope": "Leo",
-        "href": "https://jkt48.com/member/detail?member=abigail-rachel-1&type=JKT48",
+        "href": "/member/detail?member=abigail-rachel-1&type=JKT48",
         "id": "1",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/abigail_rachel.jpg",
+        "img": "/media/jkt48-member/abigail_rachel.jpg",
         "jiko": "Seperti bunga yang mekar, aku akan membuat kamu, kamu, dan kamu terbayang-bayang. Aku Ara-Aralie!",
         "name": "Abigail Rachel",
         "nickname": "Aralie",
@@ -20,7 +20,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.aralie/",
             "twitter": "https://twitter.com/Aralie_JKT48"
         },
-        "member_code": "ABIGAIL_RACHEL"
+        "member_code": "ABIGAIL_RACHEL",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -29,9 +30,9 @@
         "generation": "12",
         "height": "167cm",
         "horoscope": "Virgo",
-        "href": "https://jkt48.com/member/detail?member=adeline-wijaya-2&type=JKT48",
+        "href": "/member/detail?member=adeline-wijaya-2&type=JKT48",
         "id": "2",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/adeline_wijaya.jpg",
+        "img": "/media/jkt48-member/adeline_wijaya.jpg",
         "jiko": "Nyemangatin dan ngangenin, siapa yang kamu pikirin? Delynn! Pyong pyong, aku Delynn.",
         "name": "Adeline Wijaya",
         "nickname": "Delynn",
@@ -43,7 +44,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.delynn/",
             "twitter": "https://twitter.com/Delynn_JKT48"
         },
-        "member_code": "ADELINE_WIJAYA"
+        "member_code": "ADELINE_WIJAYA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -52,9 +54,9 @@
         "generation": "14",
         "height": "160cm",
         "horoscope": "Libra",
-        "href": "https://jkt48.com/member/detail?member=afera-thalia-6&type=TRAINEE",
+        "href": "/member/detail?member=afera-thalia-6&type=TRAINEE",
         "id": "6",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/afera_thalia.jpg",
+        "img": "/media/jkt48-member/afera_thalia.jpg",
         "jiko": "",
         "name": "Afera Thalia",
         "nickname": "Fera",
@@ -66,7 +68,8 @@
             "tiktok": "",
             "twitter": ""
         },
-        "member_code": "AFERA_THALIA"
+        "member_code": "AFERA_THALIA",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -75,9 +78,9 @@
         "generation": "11",
         "height": "162cm",
         "horoscope": "Virgo",
-        "href": "https://jkt48.com/member/detail?member=alya-amanda-13&type=JKT48",
+        "href": "/member/detail?member=alya-amanda-13&type=JKT48",
         "id": "13",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/alya_amanda.jpg",
+        "img": "/media/jkt48-member/alya_amanda.jpg",
         "jiko": "Jika hatimu sedang menangis, aku akan datang sebagai pelangi. Halo, aku Alya!",
         "name": "Alya Amanda",
         "nickname": "Alya",
@@ -89,7 +92,8 @@
             "tiktok": "https://www.tiktok.com/@alyajkt48/",
             "twitter": "https://twitter.com/AA_AlyaJKT48"
         },
-        "member_code": "ALYA_AMANDA"
+        "member_code": "ALYA_AMANDA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -98,9 +102,9 @@
         "generation": "10",
         "height": "161cm",
         "horoscope": "Sagitarius",
-        "href": "https://jkt48.com/member/detail?member=amanda-sukma-17&type=JKT48",
+        "href": "/member/detail?member=amanda-sukma-17&type=JKT48",
         "id": "17",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/amanda_sukma.jpg",
+        "img": "/media/jkt48-member/amanda_sukma.jpg",
         "jiko": "Aku akan membuat hatimu berdebar kencang... Halo, aku Amanda!",
         "name": "Amanda Sukma",
         "nickname": "Amanda",
@@ -112,7 +116,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.amanda.s/",
             "twitter": "https://twitter.com/PS_AmandaJKT48"
         },
-        "member_code": "AMANDA_SUKMA"
+        "member_code": "AMANDA_SUKMA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -121,9 +126,9 @@
         "generation": "7",
         "height": "166cm",
         "horoscope": "Sagitarius",
-        "href": "https://jkt48.com/member/detail?member=angelina-christy-22&type=JKT48",
+        "href": "/member/detail?member=angelina-christy-22&type=JKT48",
         "id": "22",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/angelina_christy.jpg",
+        "img": "/media/jkt48-member/angelina_christy.jpg",
         "jiko": "Peduli dan berbaik hati, siapa dia? Chriiiis-ty!",
         "name": "Angelina Christy",
         "nickname": "Christy",
@@ -135,7 +140,8 @@
             "tiktok": "https://www.tiktok.com/@christyjkt48/",
             "twitter": "https://twitter.com/A_ChristyJKT48"
         },
-        "member_code": "ANGELINA_CHRISTY"
+        "member_code": "ANGELINA_CHRISTY",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -144,9 +150,9 @@
         "generation": "11",
         "height": "153cm",
         "horoscope": "Libra",
-        "href": "https://jkt48.com/member/detail?member=anindya-ramadhani-26&type=JKT48",
+        "href": "/member/detail?member=anindya-ramadhani-26&type=JKT48",
         "id": "26",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/anindya_ramadhani.jpg",
+        "img": "/media/jkt48-member/anindya_ramadhani.jpg",
         "jiko": "Si mungil hadir semanis mangga. Hai, aku Anindya!",
         "name": "Anindya Ramadhani",
         "nickname": "Anindya",
@@ -158,7 +164,8 @@
             "tiktok": "https://www.tiktok.com/@anindyajkt48/",
             "twitter": "https://twitter.com/AR_AnindyaJKT48"
         },
-        "member_code": "ANINDYA_RAMADHANI"
+        "member_code": "ANINDYA_RAMADHANI",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -167,9 +174,9 @@
         "generation": "13",
         "height": "164cm",
         "horoscope": "Leo",
-        "href": "https://jkt48.com/member/detail?member=astrella-virgiananda-28&type=TRAINEE",
+        "href": "/member/detail?member=astrella-virgiananda-28&type=TRAINEE",
         "id": "28",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/Astrella_Virgiananda.jpg",
+        "img": "/media/jkt48-member/Astrella_Virgiananda.jpg",
         "jiko": "Suka berekspresi melalui kreasi. Tara! Aku Virgi!",
         "name": "Astrella Virgiananda",
         "nickname": "Virgi",
@@ -181,7 +188,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.virgi/",
             "twitter": "https://twitter.com/A_VirgiJKT48"
         },
-        "member_code": "ASTRELLA_VIRGIANANDA"
+        "member_code": "ASTRELLA_VIRGIANANDA",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -190,9 +198,9 @@
         "generation": "13",
         "height": "166cm",
         "horoscope": "Cancer",
-        "href": "https://jkt48.com/member/detail?member=aulia-riza-30&type=TRAINEE",
+        "href": "/member/detail?member=aulia-riza-30&type=TRAINEE",
         "id": "30",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/Aulia_Riza.jpg",
+        "img": "/media/jkt48-member/Aulia_Riza.jpg",
         "jiko": "Serigala tangguh di bawah sinar purnama. Panggil aku Auuu-wia!",
         "name": "Aulia Riza",
         "nickname": "Auwia",
@@ -204,7 +212,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.auwia/",
             "twitter": "https://twitter.com/Auwia_JKT48"
         },
-        "member_code": "AULIA_RIZA"
+        "member_code": "AULIA_RIZA",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -213,9 +222,9 @@
         "generation": "10",
         "height": "157cm",
         "horoscope": "Scorpio",
-        "href": "https://jkt48.com/member/detail?member=aurellia-31&type=JKT48",
+        "href": "/member/detail?member=aurellia-31&type=JKT48",
         "id": "31",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/aurellia.jpg",
+        "img": "/media/jkt48-member/aurellia.jpg",
         "jiko": "Si social butterfly yang energik dan periang! Halo aku Aurellia.",
         "name": "Aurellia",
         "nickname": "Lia",
@@ -227,7 +236,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.aurellia_/",
             "twitter": "https://twitter.com/AU_LiaJKT48"
         },
-        "member_code": "AURELLIA"
+        "member_code": "AURELLIA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -236,9 +246,9 @@
         "generation": "12",
         "height": "162cm",
         "horoscope": "Virgo",
-        "href": "https://jkt48.com/member/detail?member=aurhel-alana-33&type=JKT48",
+        "href": "/member/detail?member=aurhel-alana-33&type=JKT48",
         "id": "33",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/aurhel_alana.jpg",
+        "img": "/media/jkt48-member/aurhel_alana.jpg",
         "jiko": "Dengan kekuatan bulan Aku akan menyihirmu dengan pesonaku! Hai aku Lana.",
         "name": "Aurhel Alana",
         "nickname": "Lana",
@@ -250,7 +260,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.lana/",
             "twitter": "https://twitter.com/AR_LanaJKT48"
         },
-        "member_code": "AURHEL_ALANA"
+        "member_code": "AURHEL_ALANA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -259,9 +270,9 @@
         "generation": "13",
         "height": "166cm",
         "horoscope": "Aries",
-        "href": "https://jkt48.com/member/detail?member=bong-aprilli-39&type=TRAINEE",
+        "href": "/member/detail?member=bong-aprilli-39&type=TRAINEE",
         "id": "39",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/Bong_Aprilli.jpg",
+        "img": "/media/jkt48-member/Bong_Aprilli.jpg",
         "jiko": "Bagaikan harmoni indah yang berirama di benakmu. Hai, aku Rilly!",
         "name": "Bong Aprilli",
         "nickname": "Rilly",
@@ -273,7 +284,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.rilly/",
             "twitter": "https://twitter.com/Rilly_JKT48"
         },
-        "member_code": "BONG_APRILLI"
+        "member_code": "BONG_APRILLI",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -282,9 +294,9 @@
         "generation": "14",
         "height": "154cm",
         "horoscope": "Aquarius",
-        "href": "https://jkt48.com/member/detail?member=carissa-dini-43&type=TRAINEE",
+        "href": "/member/detail?member=carissa-dini-43&type=TRAINEE",
         "id": "43",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/carissa_dini.jpg",
+        "img": "/media/jkt48-member/carissa_dini.jpg",
         "jiko": "",
         "name": "Carissa Dini",
         "nickname": "Carissa",
@@ -296,7 +308,8 @@
             "tiktok": "",
             "twitter": ""
         },
-        "member_code": "CARISSA_DINI"
+        "member_code": "CARISSA_DINI",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -305,9 +318,9 @@
         "generation": "12",
         "height": "162cm",
         "horoscope": "Leo",
-        "href": "https://jkt48.com/member/detail?member=catherina-vallencia-44&type=JKT48",
+        "href": "/member/detail?member=catherina-vallencia-44&type=JKT48",
         "id": "44",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg",
+        "img": "/media/jkt48-member/catherina_vallencia.jpg",
         "jiko": "Hadir dengan seribu kejutan, Checkmate! Siap memenangkan hatimu. Halo semuanya, namaku Erine.",
         "name": "Catherina Vallencia",
         "nickname": "Erine",
@@ -319,7 +332,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.erine_/",
             "twitter": "https://twitter.com/Cerine_JKT48"
         },
-        "member_code": "CATHERINA_VALLENCIA"
+        "member_code": "CATHERINA_VALLENCIA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -328,9 +342,9 @@
         "generation": "11",
         "height": "162cm",
         "horoscope": "Gemini",
-        "href": "https://jkt48.com/member/detail?member=cathleen-nixie-45&type=JKT48",
+        "href": "/member/detail?member=cathleen-nixie-45&type=JKT48",
         "id": "45",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/cathleen_nixie.jpg",
+        "img": "/media/jkt48-member/cathleen_nixie.jpg",
         "jiko": "Si peri cantik jelita itulah aku. Hai, aku Cathy!",
         "name": "Cathleen Nixie",
         "nickname": "Cathy",
@@ -342,7 +356,8 @@
             "tiktok": "https://www.tiktok.com/@cathyjkt48/",
             "twitter": "https://twitter.com/N_CathyJKT48"
         },
-        "member_code": "CATHLEEN_NIXIE"
+        "member_code": "CATHLEEN_NIXIE",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -351,9 +366,9 @@
         "generation": "11",
         "height": "164cm",
         "horoscope": "Aries",
-        "href": "https://jkt48.com/member/detail?member=celline-thefani-46&type=JKT48",
+        "href": "/member/detail?member=celline-thefani-46&type=JKT48",
         "id": "46",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/celline_thefani.jpg",
+        "img": "/media/jkt48-member/celline_thefani.jpg",
         "jiko": "Semanis permen kapas dan seindah bunga lavender! Hollaa, perkenalkan nama aku Elin.",
         "name": "Celline Thefani",
         "nickname": "Elin",
@@ -365,7 +380,8 @@
             "tiktok": "https://www.tiktok.com/@elinjkt48/",
             "twitter": "https://twitter.com/Elin_JKT48"
         },
-        "member_code": "CELLINE_THEFANI"
+        "member_code": "CELLINE_THEFANI",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -374,9 +390,9 @@
         "generation": "11",
         "height": "169cm",
         "horoscope": "Capricorn",
-        "href": "https://jkt48.com/member/detail?member=chelsea-davina-48&type=JKT48",
+        "href": "/member/detail?member=chelsea-davina-48&type=JKT48",
         "id": "48",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/chelsea_davina.jpg",
+        "img": "/media/jkt48-member/chelsea_davina.jpg",
         "jiko": "As bright as the shooting stars in the starry night sky. Hello, I'm Chelsea!",
         "name": "Chelsea Davina",
         "nickname": "Chelsea",
@@ -388,7 +404,8 @@
             "tiktok": "https://www.tiktok.com/@_chelseajkt48/",
             "twitter": "https://twitter.com/DC_ChelseaJKT48"
         },
-        "member_code": "CHELSEA_DAVINA"
+        "member_code": "CHELSEA_DAVINA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -397,9 +414,9 @@
         "generation": "14",
         "height": "161cm",
         "horoscope": "Pisces",
-        "href": "https://jkt48.com/member/detail?member=christabella-bonita-52&type=TRAINEE",
+        "href": "/member/detail?member=christabella-bonita-52&type=TRAINEE",
         "id": "52",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/christabella_bonita.jpg",
+        "img": "/media/jkt48-member/christabella_bonita.jpg",
         "jiko": "",
         "name": "Christabella Bonita",
         "nickname": "Bella",
@@ -411,7 +428,8 @@
             "tiktok": "",
             "twitter": ""
         },
-        "member_code": "CHRISTABELLA_BONITA"
+        "member_code": "CHRISTABELLA_BONITA",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -420,9 +438,9 @@
         "generation": "8",
         "height": "165cm",
         "horoscope": "Leo",
-        "href": "https://jkt48.com/member/detail?member=cornelia-vanisa-59&type=JKT48",
+        "href": "/member/detail?member=cornelia-vanisa-59&type=JKT48",
         "id": "59",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/cornelia_vanisa.jpg",
+        "img": "/media/jkt48-member/cornelia_vanisa.jpg",
         "jiko": "Si pelawak dengan jokes bapak-bapak yang akan menghiburmu. Halo, aku Oniel!",
         "name": "Cornelia Vanisa",
         "nickname": "Oniel",
@@ -434,7 +452,8 @@
             "tiktok": "https://www.tiktok.com/@onieljkt48/",
             "twitter": "https://twitter.com/C_OnielJKT48"
         },
-        "member_code": "CORNELIA_VANISA"
+        "member_code": "CORNELIA_VANISA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -443,9 +462,9 @@
         "generation": "11",
         "height": "160cm",
         "horoscope": "Sagitarius",
-        "href": "https://jkt48.com/member/detail?member=cynthia-yaputera-60&type=JKT48",
+        "href": "/member/detail?member=cynthia-yaputera-60&type=JKT48",
         "id": "60",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/cynthia_yaputera.jpg",
+        "img": "/media/jkt48-member/cynthia_yaputera.jpg",
         "jiko": "Semangatku terus menerus meluap, pop pop. Aku Cynthia!",
         "name": "Cynthia Yaputera",
         "nickname": "Cynthia",
@@ -457,7 +476,8 @@
             "tiktok": "https://www.tiktok.com/@cynthiajkt48/",
             "twitter": "https://twitter.com/Y_CynthiaJKT48"
         },
-        "member_code": "CYNTHIA_YAPUTERA"
+        "member_code": "CYNTHIA_YAPUTERA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -466,9 +486,9 @@
         "generation": "11",
         "height": "163cm",
         "horoscope": "Sagitarius",
-        "href": "https://jkt48.com/member/detail?member=dena-natalia-64&type=JKT48",
+        "href": "/member/detail?member=dena-natalia-64&type=JKT48",
         "id": "64",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/dena_natalia.jpg",
+        "img": "/media/jkt48-member/dena_natalia.jpg",
         "jiko": "Tok Tok, Siapa? Si penari yang akan menarikmu ke duniaku.",
         "name": "Dena Natalia",
         "nickname": "Danella",
@@ -480,7 +500,8 @@
             "tiktok": "https://www.tiktok.com/@danellajkt48/",
             "twitter": "https://twitter.com/Danella_JKT48"
         },
-        "member_code": "DENA_NATALIA"
+        "member_code": "DENA_NATALIA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -489,9 +510,9 @@
         "generation": "11",
         "height": "165cm",
         "horoscope": "Sagitarius",
-        "href": "https://jkt48.com/member/detail?member=desy-natalia-67&type=JKT48",
+        "href": "/member/detail?member=desy-natalia-67&type=JKT48",
         "id": "67",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/desy_natalia.jpg",
+        "img": "/media/jkt48-member/desy_natalia.jpg",
         "jiko": "Seperti bunga daisy, aku akan memancarkan kesegaran dan kebahagiaan.",
         "name": "Desy Natalia",
         "nickname": "Daisy",
@@ -503,7 +524,8 @@
             "tiktok": "https://www.tiktok.com/@daisyjkt48/",
             "twitter": "https://twitter.com/Daisy_JKT48"
         },
-        "member_code": "DESY_NATALIA"
+        "member_code": "DESY_NATALIA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -512,9 +534,9 @@
         "generation": "14",
         "height": "152cm",
         "horoscope": "Leo",
-        "href": "https://jkt48.com/member/detail?member=fahira-putri-82&type=TRAINEE",
+        "href": "/member/detail?member=fahira-putri-82&type=TRAINEE",
         "id": "82",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/fahira_putri.jpg",
+        "img": "/media/jkt48-member/fahira_putri.jpg",
         "jiko": "",
         "name": "Fahira Putri",
         "nickname": "Fahira",
@@ -526,7 +548,8 @@
             "tiktok": "",
             "twitter": ""
         },
-        "member_code": "FAHIRA_PUTRI"
+        "member_code": "FAHIRA_PUTRI",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -535,9 +558,9 @@
         "generation": "14",
         "height": "170cm",
         "horoscope": "Virgo",
-        "href": "https://jkt48.com/member/detail?member=fatimah-azzahra-85&type=TRAINEE",
+        "href": "/member/detail?member=fatimah-azzahra-85&type=TRAINEE",
         "id": "85",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/fatimah_azzahra.jpg",
+        "img": "/media/jkt48-member/fatimah_azzahra.jpg",
         "jiko": "",
         "name": "Fatimah Azzahra",
         "nickname": "Rara",
@@ -549,7 +572,8 @@
             "tiktok": "",
             "twitter": ""
         },
-        "member_code": "FATIMAH_AZZAHRA"
+        "member_code": "FATIMAH_AZZAHRA",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -558,9 +582,9 @@
         "generation": "7",
         "height": "157cm",
         "horoscope": "Pisces",
-        "href": "https://jkt48.com/member/detail?member=febriola-sinambela-88&type=JKT48",
+        "href": "/member/detail?member=febriola-sinambela-88&type=JKT48",
         "id": "88",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/febriola_sinambela.jpg",
+        "img": "/media/jkt48-member/febriola_sinambela.jpg",
         "jiko": "Dengan keajaibanku, aku akan membuat kalian selalu tertawa. Halo, aku Olla, si mechanic girl!",
         "name": "Febriola Sinambela",
         "nickname": "Olla",
@@ -572,7 +596,8 @@
             "tiktok": "https://www.tiktok.com/@ollajkt48/",
             "twitter": "https://twitter.com/F_OllaJKT48"
         },
-        "member_code": "FEBRIOLA_SINAMBELA"
+        "member_code": "FEBRIOLA_SINAMBELA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -581,9 +606,9 @@
         "generation": "3",
         "height": "163cm",
         "horoscope": "Capricorn",
-        "href": "https://jkt48.com/member/detail?member=feni-fitriyanti-89&type=JKT48",
+        "href": "/member/detail?member=feni-fitriyanti-89&type=JKT48",
         "id": "89",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/feni_fitriyanti.jpg",
+        "img": "/media/jkt48-member/feni_fitriyanti.jpg",
         "jiko": "Matahari yang indah, yang akan memberikan kehangatan di setiap harinya. Halo aku Feni.",
         "name": "Feni Fitriyanti",
         "nickname": "Feni",
@@ -595,7 +620,8 @@
             "tiktok": "https://www.tiktok.com/@fenijkt48/",
             "twitter": "https://twitter.com/F_FeniJKT48"
         },
-        "member_code": "FENI_FITRIYANTI"
+        "member_code": "FENI_FITRIYANTI",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -604,9 +630,9 @@
         "generation": "8",
         "height": "164cm",
         "horoscope": "Aquarius",
-        "href": "https://jkt48.com/member/detail?member=fiony-alveria-91&type=JKT48",
+        "href": "/member/detail?member=fiony-alveria-91&type=JKT48",
         "id": "91",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/fiony_alveria.jpg",
+        "img": "/media/jkt48-member/fiony_alveria.jpg",
         "jiko": "Seperti simfoni yang menenangkan hati. Halo aku Fiony!",
         "name": "Fiony Alveria",
         "nickname": "Fiony",
@@ -618,7 +644,8 @@
             "tiktok": "https://www.tiktok.com/@fionyjkt48/",
             "twitter": "https://twitter.com/A_FionyJKT48"
         },
-        "member_code": "FIONY_ALVERIA"
+        "member_code": "FIONY_ALVERIA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -627,9 +654,9 @@
         "generation": "7",
         "height": "161cm",
         "horoscope": "Aquarius",
-        "href": "https://jkt48.com/member/detail?member=freya-jayawardana-94&type=JKT48",
+        "href": "/member/detail?member=freya-jayawardana-94&type=JKT48",
         "id": "94",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/freya_jayawardana.jpg",
+        "img": "/media/jkt48-member/freya_jayawardana.jpg",
         "jiko": "Gadis koleris yang suka berimajinasi, terangi harimu dengan senyum karamelku. Halo semua, aku Freya!",
         "name": "Freya Jayawardana",
         "nickname": "Freya",
@@ -641,7 +668,8 @@
             "tiktok": "https://www.tiktok.com/@freyajkt48/",
             "twitter": "https://twitter.com/Freya_JKT48"
         },
-        "member_code": "FREYA_JAYAWARDANA"
+        "member_code": "FREYA_JAYAWARDANA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -650,9 +678,9 @@
         "generation": "12",
         "height": "155cm",
         "horoscope": "Leo",
-        "href": "https://jkt48.com/member/detail?member=fritzy-rosmerian-96&type=JKT48",
+        "href": "/member/detail?member=fritzy-rosmerian-96&type=JKT48",
         "id": "96",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/fritzy_rosmerian.jpg",
+        "img": "/media/jkt48-member/fritzy_rosmerian.jpg",
         "jiko": "ABRACADABRA! Si pesulap yang siap membuat hatimu terpikat! Halo semuanya! It's me Fritzy!",
         "name": "Fritzy Rosmerian",
         "nickname": "Fritzy",
@@ -664,7 +692,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.fritzy.r/",
             "twitter": "https://twitter.com/RFritzy_JKT48"
         },
-        "member_code": "FRITZY_ROSMERIAN"
+        "member_code": "FRITZY_ROSMERIAN",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -673,9 +702,9 @@
         "generation": "10",
         "height": "161cm",
         "horoscope": "Leo",
-        "href": "https://jkt48.com/member/detail?member=gabriela-abigail-97&type=JKT48",
+        "href": "/member/detail?member=gabriela-abigail-97&type=JKT48",
         "id": "97",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/gabriela_abigail.jpg",
+        "img": "/media/jkt48-member/gabriela_abigail.jpg",
         "jiko": "Ohayo! Konnichiwa! Oyasumi! Aku ingin ada di setiap harimu. Halo semuanya aku Ella.",
         "name": "Gabriela Abigail",
         "nickname": "Ella",
@@ -687,7 +716,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.ella.a/",
             "twitter": "https://twitter.com/AM_EllaJKT48"
         },
-        "member_code": "GABRIELA_ABIGAIL"
+        "member_code": "GABRIELA_ABIGAIL",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -696,9 +726,9 @@
         "generation": "11",
         "height": "161cm",
         "horoscope": "Cancer",
-        "href": "https://jkt48.com/member/detail?member=gendis-mayrannisa-102&type=JKT48",
+        "href": "/member/detail?member=gendis-mayrannisa-102&type=JKT48",
         "id": "102",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/gendis_mayrannisa.jpg",
+        "img": "/media/jkt48-member/gendis_mayrannisa.jpg",
         "jiko": "Bonjour, periang dan pencair suasana itulah aku, Gendis!",
         "name": "Gendis Mayrannisa",
         "nickname": "Gendis",
@@ -710,7 +740,8 @@
             "tiktok": "https://www.tiktok.com/@gendisjkt48/",
             "twitter": "https://twitter.com/Gendis_JKT48"
         },
-        "member_code": "GENDIS_MAYRANNISA"
+        "member_code": "GENDIS_MAYRANNISA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -719,9 +750,9 @@
         "generation": "6",
         "height": "165cm",
         "horoscope": "Cancer",
-        "href": "https://jkt48.com/member/detail?member=gita-sekar-andarini-104&type=JKT48",
+        "href": "/member/detail?member=gita-sekar-andarini-104&type=JKT48",
         "id": "104",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/gita_sekar_andarini.jpg",
+        "img": "/media/jkt48-member/gita_sekar_andarini.jpg",
         "jiko": "Diam bukan berarti tidak memperhatikanmu, aku Gita!",
         "name": "Gita Sekar Andarini",
         "nickname": "Gita",
@@ -733,7 +764,8 @@
             "tiktok": "https://www.tiktok.com/@gitajkt48/",
             "twitter": "https://twitter.com/A_GitaJKT48"
         },
-        "member_code": "GITA_SEKAR_ANDARINI"
+        "member_code": "GITA_SEKAR_ANDARINI",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -742,9 +774,9 @@
         "generation": "11",
         "height": "166cm",
         "horoscope": "Libra",
-        "href": "https://jkt48.com/member/detail?member=grace-octaviani-105&type=JKT48",
+        "href": "/member/detail?member=grace-octaviani-105&type=JKT48",
         "id": "105",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/grace_octaviani.jpg",
+        "img": "/media/jkt48-member/grace_octaviani.jpg",
         "jiko": "Manis seperti gulali, imut seperti kelinci. Halo, aku Gracie!",
         "name": "Grace Octaviani",
         "nickname": "Gracie",
@@ -756,7 +788,8 @@
             "tiktok": "https://www.tiktok.com/@graciejkt48/",
             "twitter": "https://twitter.com/Gracie_JKT48"
         },
-        "member_code": "GRACE_OCTAVIANI"
+        "member_code": "GRACE_OCTAVIANI",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -765,9 +798,9 @@
         "generation": "11",
         "height": "165cm",
         "horoscope": "Capricorn",
-        "href": "https://jkt48.com/member/detail?member=greesella-adhalia-107&type=JKT48",
+        "href": "/member/detail?member=greesella-adhalia-107&type=JKT48",
         "id": "107",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/greesella_adhalia.jpg",
+        "img": "/media/jkt48-member/greesella_adhalia.jpg",
         "jiko": "Pandangan mataku akan menyinari hatimu bagaikan kunang-kunang di malam hari.",
         "name": "Greesella Adhalia",
         "nickname": "Greesel",
@@ -779,7 +812,8 @@
             "tiktok": "https://www.tiktok.com/@greeseljkt48/",
             "twitter": "https://twitter.com/Greesel_JKT48"
         },
-        "member_code": "GREESELLA_ADHALIA"
+        "member_code": "GREESELLA_ADHALIA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -788,9 +822,9 @@
         "generation": "13",
         "height": "165cm",
         "horoscope": "Cancer",
-        "href": "https://jkt48.com/member/detail?member=hagia-sopia-108&type=TRAINEE",
+        "href": "/member/detail?member=hagia-sopia-108&type=TRAINEE",
         "id": "108",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/Hagia_Sopia.jpg",
+        "img": "/media/jkt48-member/Hagia_Sopia.jpg",
         "jiko": "Dengan semangat dan kerja kerasku. Aku akan membuat kalian bahagia. Halo panggil aku Gia!",
         "name": "Hagia Sopia",
         "nickname": "Giaa",
@@ -802,7 +836,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.giaa/",
             "twitter": "https://twitter.com/Giaa_JKT48"
         },
-        "member_code": "HAGIA_SOPIA"
+        "member_code": "HAGIA_SOPIA",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -811,9 +846,9 @@
         "generation": "14",
         "height": "164cm",
         "horoscope": "Virgo",
-        "href": "https://jkt48.com/member/detail?member=heidi-suyangga-111&type=TRAINEE",
+        "href": "/member/detail?member=heidi-suyangga-111&type=TRAINEE",
         "id": "111",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/heidi_suyangga.jpg",
+        "img": "/media/jkt48-member/heidi_suyangga.jpg",
         "jiko": "",
         "name": "Heidi Suyangga",
         "nickname": "Heidi",
@@ -825,7 +860,8 @@
             "tiktok": "",
             "twitter": ""
         },
-        "member_code": "HEIDI_SUYANGGA"
+        "member_code": "HEIDI_SUYANGGA",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -834,9 +870,9 @@
         "generation": "7",
         "height": "167cm",
         "horoscope": "Gemini",
-        "href": "https://jkt48.com/member/detail?member=helisma-putri-112&type=JKT48",
+        "href": "/member/detail?member=helisma-putri-112&type=JKT48",
         "id": "112",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/helisma_putri.jpg",
+        "img": "/media/jkt48-member/helisma_putri.jpg",
         "jiko": "Dengan energi kegembiraanku, aku akan menghangatkan suasana. Halo halo, aku Ceu Eli!",
         "name": "Helisma Putri",
         "nickname": "Eli",
@@ -848,7 +884,8 @@
             "tiktok": "https://www.tiktok.com/@elijkt48/",
             "twitter": "https://twitter.com/H_EliJKT48"
         },
-        "member_code": "HELISMA_PUTRI"
+        "member_code": "HELISMA_PUTRI",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -857,9 +894,9 @@
         "generation": "12",
         "height": "163cm",
         "horoscope": "Libra",
-        "href": "https://jkt48.com/member/detail?member=hillary-abigail-114&type=JKT48",
+        "href": "/member/detail?member=hillary-abigail-114&type=JKT48",
         "id": "114",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/hillary_abigail.jpg",
+        "img": "/media/jkt48-member/hillary_abigail.jpg",
         "jiko": "Papipapipu aku akan mengejutkanmu dengan kehebatan ku. Halo aku Lily!",
         "name": "Hillary Abigail",
         "nickname": "Lily",
@@ -871,7 +908,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.lily/",
             "twitter": "https://twitter.com/Lily_JKT48"
         },
-        "member_code": "HILLARY_ABIGAIL"
+        "member_code": "HILLARY_ABIGAIL",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -880,9 +918,9 @@
         "generation": "13",
         "height": "159cm",
         "horoscope": "Leo",
-        "href": "https://jkt48.com/member/detail?member=humaira-ramadhani-115&type=TRAINEE",
+        "href": "/member/detail?member=humaira-ramadhani-115&type=TRAINEE",
         "id": "115",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/Humaira_Ramadhani.jpg",
+        "img": "/media/jkt48-member/Humaira_Ramadhani.jpg",
         "jiko": "Penceria yang membuatmu tertawa dengan tingkahku. Halo semuanya, aku Maira!",
         "name": "Humaira Ramadhani",
         "nickname": "Maira",
@@ -894,7 +932,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.maira/",
             "twitter": "https://twitter.com/Maira_JKT48"
         },
-        "member_code": "HUMAIRA_RAMADHANI"
+        "member_code": "HUMAIRA_RAMADHANI",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -903,9 +942,9 @@
         "generation": "9",
         "height": "169cm",
         "horoscope": "Pisces",
-        "href": "https://jkt48.com/member/detail?member=indah-cahya-116&type=JKT48",
+        "href": "/member/detail?member=indah-cahya-116&type=JKT48",
         "id": "116",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/indah_cahya.jpg",
+        "img": "/media/jkt48-member/indah_cahya.jpg",
         "jiko": "Tak banyak bicara, bercerita melalui tulisan. Hai aku Indah.",
         "name": "Indah Cahya",
         "nickname": "Indah",
@@ -917,7 +956,8 @@
             "tiktok": "https://www.tiktok.com/@indahjkt48/",
             "twitter": "https://twitter.com/C_IndahJKT48"
         },
-        "member_code": "INDAH_CAHYA"
+        "member_code": "INDAH_CAHYA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -926,9 +966,9 @@
         "generation": "13",
         "height": "161cm",
         "horoscope": "Cancer",
-        "href": "https://jkt48.com/member/detail?member=jacqueline-immanuela-120&type=TRAINEE",
+        "href": "/member/detail?member=jacqueline-immanuela-120&type=TRAINEE",
         "id": "120",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/Jacqueline_Immanuela.jpg",
+        "img": "/media/jkt48-member/Jacqueline_Immanuela.jpg",
         "jiko": "Sesejuk dan sedingin mint. Perkenalkan, aku Ekin.",
         "name": "Jacqueline Immanuela",
         "nickname": "Ekin",
@@ -940,7 +980,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.ekin/",
             "twitter": "https://twitter.com/Ekin_JKT48"
         },
-        "member_code": "JACQUELINE_IMMANUELA"
+        "member_code": "JACQUELINE_IMMANUELA",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -949,9 +990,9 @@
         "generation": "12",
         "height": "161cm",
         "horoscope": "Aquarius",
-        "href": "https://jkt48.com/member/detail?member=jazzlyn-trisha-121&type=JKT48",
+        "href": "/member/detail?member=jazzlyn-trisha-121&type=JKT48",
         "id": "121",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/jazzlyn_trisha.jpg",
+        "img": "/media/jkt48-member/jazzlyn_trisha.jpg",
         "jiko": "Pelukis yang hadir di mimpi-mimpi indahmu. One… two… tri… sha! Halo semua, aku Trisha.",
         "name": "Jazzlyn Trisha",
         "nickname": "Trisha",
@@ -963,7 +1004,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.trisha/",
             "twitter": "https://twitter.com/JTrisha_JKT48"
         },
-        "member_code": "JAZZLYN_TRISHA"
+        "member_code": "JAZZLYN_TRISHA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -972,9 +1014,9 @@
         "generation": "13",
         "height": "165cm",
         "horoscope": "Scorpio",
-        "href": "https://jkt48.com/member/detail?member=jemima-evodie-123&type=TRAINEE",
+        "href": "/member/detail?member=jemima-evodie-123&type=TRAINEE",
         "id": "123",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/Jemima_Evodie.jpg",
+        "img": "/media/jkt48-member/Jemima_Evodie.jpg",
         "jiko": "Ci...luk...ba! Merpati yang akan membawa kejutan di setiap penampilanku. Halo aku Jemima!",
         "name": "Jemima Evodie",
         "nickname": "Jemima",
@@ -986,7 +1028,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.jemima/",
             "twitter": "https://twitter.com/JE_JemimaJKT48"
         },
-        "member_code": "JEMIMA_EVODIE"
+        "member_code": "JEMIMA_EVODIE",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -995,9 +1038,9 @@
         "generation": "7",
         "height": "165cm",
         "horoscope": "Libra",
-        "href": "https://jkt48.com/member/detail?member=jessica-chandra-127&type=JKT48",
+        "href": "/member/detail?member=jessica-chandra-127&type=JKT48",
         "id": "127",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/jessica_chandra.jpg",
+        "img": "/media/jkt48-member/jessica_chandra.jpg",
         "jiko": "Suka menari dan akan selalu berusaha menjadi sumber energimu. Hai, aku Jessi!",
         "name": "Jessica Chandra",
         "nickname": "Jessi",
@@ -1009,7 +1052,8 @@
             "tiktok": "https://www.tiktok.com/@jessijkt48/",
             "twitter": "https://twitter.com/C_JessiJKT48"
         },
-        "member_code": "JESSICA_CHANDRA"
+        "member_code": "JESSICA_CHANDRA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1018,9 +1062,9 @@
         "generation": "10",
         "height": "155cm",
         "horoscope": "Virgo",
-        "href": "https://jkt48.com/member/detail?member=jesslyn-elly-131&type=JKT48",
+        "href": "/member/detail?member=jesslyn-elly-131&type=JKT48",
         "id": "131",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/jesslyn_elly.jpg",
+        "img": "/media/jkt48-member/jesslyn_elly.jpg",
         "jiko": "Seperti ombak laut yang tenang, tiba-tiba aku akan menyapumu dengan banyak cinta. Halo aku Lyn.",
         "name": "Jesslyn Elly",
         "nickname": "Lyn",
@@ -1032,7 +1076,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.lyn.s/",
             "twitter": "https://twitter.com/SE_LynJKT48"
         },
-        "member_code": "JESSLYN_ELLY"
+        "member_code": "JESSLYN_ELLY",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1041,9 +1086,9 @@
         "generation": "9",
         "height": "166cm",
         "horoscope": "Leo",
-        "href": "https://jkt48.com/member/detail?member=kathrina-irene-143&type=JKT48",
+        "href": "/member/detail?member=kathrina-irene-143&type=JKT48",
         "id": "143",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/kathrina_irene.jpg",
+        "img": "/media/jkt48-member/kathrina_irene.jpg",
         "jiko": "Never miss a chance to be a star. Halo, aku Kathrina!",
         "name": "Kathrina Irene",
         "nickname": "Kathrina",
@@ -1055,7 +1100,8 @@
             "tiktok": "https://www.tiktok.com/@kathrinjkt48/",
             "twitter": "https://twitter.com/I_KathrinaJKT48"
         },
-        "member_code": "KATHRINA_IRENE"
+        "member_code": "KATHRINA_IRENE",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1064,9 +1110,9 @@
         "generation": "8",
         "height": "160cm",
         "horoscope": "Scorpio",
-        "href": "https://jkt48.com/member/detail?member=lulu-salsabila-148&type=JKT48",
+        "href": "/member/detail?member=lulu-salsabila-148&type=JKT48",
         "id": "148",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/lulu_salsabila.jpg",
+        "img": "/media/jkt48-member/lulu_salsabila.jpg",
         "jiko": "Terang seperti bulan, bersinar seperti bintang.. Aku Lulu!",
         "name": "Lulu Salsabila",
         "nickname": "Lulu",
@@ -1078,7 +1124,8 @@
             "tiktok": "https://www.tiktok.com/@lulu_jkt48/",
             "twitter": "https://twitter.com/A_LuluJKT48"
         },
-        "member_code": "LULU_SALSABILA"
+        "member_code": "LULU_SALSABILA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1087,9 +1134,9 @@
         "generation": "9",
         "height": "165cm",
         "horoscope": "Capricorn",
-        "href": "https://jkt48.com/member/detail?member=marsha-lenathea-152&type=JKT48",
+        "href": "/member/detail?member=marsha-lenathea-152&type=JKT48",
         "id": "152",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/marsha_lenathea.jpg",
+        "img": "/media/jkt48-member/marsha_lenathea.jpg",
         "jiko": "Seperti piza yang dinanti-nantikan semua orang, selalu nantikan aku, ya! Halo, aku Marsha!",
         "name": "Marsha Lenathea",
         "nickname": "Marsha",
@@ -1101,7 +1148,8 @@
             "tiktok": "https://www.tiktok.com/@marsha.jkt48/",
             "twitter": "https://twitter.com/L_MarshaJKT48"
         },
-        "member_code": "MARSHA_LENATHEA"
+        "member_code": "MARSHA_LENATHEA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1110,9 +1158,9 @@
         "generation": "14",
         "height": "164cm",
         "horoscope": "Sagitarius",
-        "href": "https://jkt48.com/member/detail?member=maxine-faye-155&type=TRAINEE",
+        "href": "/member/detail?member=maxine-faye-155&type=TRAINEE",
         "id": "155",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/maxine_faye_lee.jpg",
+        "img": "/media/jkt48-member/maxine_faye_lee.jpg",
         "jiko": "",
         "name": "Maxine Faye",
         "nickname": "Maxine",
@@ -1124,7 +1172,8 @@
             "tiktok": "",
             "twitter": ""
         },
-        "member_code": "MAXINE_FAYE"
+        "member_code": "MAXINE_FAYE",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -1133,9 +1182,9 @@
         "generation": "11",
         "height": "162cm",
         "horoscope": "Taurus",
-        "href": "https://jkt48.com/member/detail?member=michelle-alexandra-159&type=JKT48",
+        "href": "/member/detail?member=michelle-alexandra-159&type=JKT48",
         "id": "159",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/michelle_alexandra.jpg",
+        "img": "/media/jkt48-member/michelle_alexandra.jpg",
         "jiko": "Always your number one, till infinity and beyond. Hello everyone, it's Michie!",
         "name": "Michelle Alexandra",
         "nickname": "Michie",
@@ -1147,7 +1196,8 @@
             "tiktok": "https://www.tiktok.com/@michiejkt48/",
             "twitter": "https://twitter.com/Michie_JKT48"
         },
-        "member_code": "MICHELLE_ALEXANDRA"
+        "member_code": "MICHELLE_ALEXANDRA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1156,9 +1206,9 @@
         "generation": "12",
         "height": "169cm",
         "horoscope": "Aquarius",
-        "href": "https://jkt48.com/member/detail?member=michelle-levia-161&type=JKT48",
+        "href": "/member/detail?member=michelle-levia-161&type=JKT48",
         "id": "161",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/michelle_levia.jpg",
+        "img": "/media/jkt48-member/michelle_levia.jpg",
         "jiko": "Are you ready? Jalani hari ini dengan menari bersamaku! Yuhu, aku Levi.",
         "name": "Michelle Levia",
         "nickname": "Levi",
@@ -1170,7 +1220,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.levi/",
             "twitter": "https://twitter.com/Levi_JKT48"
         },
-        "member_code": "MICHELLE_LEVIA"
+        "member_code": "MICHELLE_LEVIA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1179,9 +1230,9 @@
         "generation": "13",
         "height": "166cm",
         "horoscope": "Sagitarius",
-        "href": "https://jkt48.com/member/detail?member=mikaela-kusjanto-162&type=TRAINEE",
+        "href": "/member/detail?member=mikaela-kusjanto-162&type=TRAINEE",
         "id": "162",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/Mikaela_Kusjanto.jpg",
+        "img": "/media/jkt48-member/Mikaela_Kusjanto.jpg",
         "jiko": "Camera... Roll... Action! Sutradara yang akan mewarnai kisah hidupmu dengan penuh warna. Hai Aku Mikaela!",
         "name": "Mikaela Kusjanto",
         "nickname": "Mikaela",
@@ -1193,7 +1244,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.mikaela/",
             "twitter": "https://twitter.com/M_MikaelaJKT48"
         },
-        "member_code": "MIKAELA_KUSJANTO"
+        "member_code": "MIKAELA_KUSJANTO",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -1202,9 +1254,9 @@
         "generation": "7",
         "height": "165cm",
         "horoscope": "Cancer",
-        "href": "https://jkt48.com/member/detail?member=mutiara-azzahra-166&type=JKT48",
+        "href": "/member/detail?member=mutiara-azzahra-166&type=JKT48",
         "id": "166",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/mutiara_azzahra.jpg",
+        "img": "/media/jkt48-member/mutiara_azzahra.jpg",
         "jiko": "Tok tok! Siapa? Si penari yang akan menarikmu ke duniaku.",
         "name": "Mutiara Azzahra",
         "nickname": "Muthe",
@@ -1216,7 +1268,8 @@
             "tiktok": "https://www.tiktok.com/@muthejkt48/",
             "twitter": "https://twitter.com/A_MutheJKT48"
         },
-        "member_code": "MUTIARA_AZZAHRA"
+        "member_code": "MUTIARA_AZZAHRA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1225,9 +1278,9 @@
         "generation": "12",
         "height": "163cm",
         "horoscope": "Gemini",
-        "href": "https://jkt48.com/member/detail?member=nayla-suji-175&type=JKT48",
+        "href": "/member/detail?member=nayla-suji-175&type=JKT48",
         "id": "175",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/nayla_suji.jpg",
+        "img": "/media/jkt48-member/nayla_suji.jpg",
         "jiko": "Bakkyun! Tembakan cintaku akan melelehkan hatimu. Halo, aku Nayla!",
         "name": "Nayla Suji",
         "nickname": "Nayla",
@@ -1239,7 +1292,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.nayla/",
             "twitter": "https://twitter.com/SNayla_JKT48"
         },
-        "member_code": "NAYLA_SUJI"
+        "member_code": "NAYLA_SUJI",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1248,9 +1302,9 @@
         "generation": "12",
         "height": "164cm",
         "horoscope": "Libra",
-        "href": "https://jkt48.com/member/detail?member=nina-tutachia-178&type=JKT48",
+        "href": "/member/detail?member=nina-tutachia-178&type=JKT48",
         "id": "178",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/nina_tutachia.jpg",
+        "img": "/media/jkt48-member/nina_tutachia.jpg",
         "jiko": "Si panda unyu yang selalu ceria! Hai aku Nachia.. bikin kamu bahagia!",
         "name": "Nina Tutachia",
         "nickname": "Nachia",
@@ -1262,7 +1316,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.nachia/",
             "twitter": "https://twitter.com/Nachia_JKT48"
         },
-        "member_code": "NINA_TUTACHIA"
+        "member_code": "NINA_TUTACHIA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1271,9 +1326,9 @@
         "generation": "13",
         "height": "157cm",
         "horoscope": "Pisces",
-        "href": "https://jkt48.com/member/detail?member=nur-intan-182&type=TRAINEE",
+        "href": "/member/detail?member=nur-intan-182&type=TRAINEE",
         "id": "182",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/Nur_Intan.jpg",
+        "img": "/media/jkt48-member/Nur_Intan.jpg",
         "jiko": "Intan permata yang berkilau, temukan cahayaku di hatimu! Halo aku Intan.",
         "name": "Nur Intan",
         "nickname": "Intan",
@@ -1285,7 +1340,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.intan/",
             "twitter": "https://twitter.com/N_IntanJKT48"
         },
-        "member_code": "NUR_INTAN"
+        "member_code": "NUR_INTAN",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -1294,9 +1350,9 @@
         "generation": "12",
         "height": "169cm",
         "horoscope": "Scorpio",
-        "href": "https://jkt48.com/member/detail?member=oline-manuel-185&type=JKT48",
+        "href": "/member/detail?member=oline-manuel-185&type=JKT48",
         "id": "185",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/oline_manuel.jpg",
+        "img": "/media/jkt48-member/oline_manuel.jpg",
         "jiko": "Semangatku Full terus Gas! Gas! Gas! Oline!",
         "name": "Oline Manuel",
         "nickname": "Oline",
@@ -1308,7 +1364,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.oline/",
             "twitter": "https://twitter.com/M_OlineJKT48"
         },
-        "member_code": "OLINE_MANUEL"
+        "member_code": "OLINE_MANUEL",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1317,9 +1374,9 @@
         "generation": "14",
         "height": "159cm",
         "horoscope": "Pisces",
-        "href": "https://jkt48.com/member/detail?member=putry-jazyta-194&type=TRAINEE",
+        "href": "/member/detail?member=putry-jazyta-194&type=TRAINEE",
         "id": "194",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/putry_jazyta.jpg",
+        "img": "/media/jkt48-member/putry_jazyta.jpg",
         "jiko": "",
         "name": "Putry Jazyta",
         "nickname": "Jazzy",
@@ -1331,7 +1388,8 @@
             "tiktok": "",
             "twitter": ""
         },
-        "member_code": "PUTRY_JAZYTA"
+        "member_code": "PUTRY_JAZYTA",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -1340,9 +1398,9 @@
         "generation": "10",
         "height": "169cm",
         "horoscope": "Scorpio",
-        "href": "https://jkt48.com/member/detail?member=raisha-syifa-195&type=JKT48",
+        "href": "/member/detail?member=raisha-syifa-195&type=JKT48",
         "id": "195",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/raisha_syifa.jpg",
+        "img": "/media/jkt48-member/raisha_syifa.jpg",
         "jiko": "Kalau sakura itu kembang, Aku itu kembanggaanmu! Halo aku Raisha.",
         "name": "Raisha Syifa",
         "nickname": "Raisha",
@@ -1354,7 +1412,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.raisha.s/",
             "twitter": "https://twitter.com/SW_RaishaJKT48"
         },
-        "member_code": "RAISHA_SYIFA"
+        "member_code": "RAISHA_SYIFA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1363,9 +1422,9 @@
         "generation": "14",
         "height": "152cm",
         "horoscope": "Libra",
-        "href": "https://jkt48.com/member/detail?member=ralyne-van-irwan-196&type=TRAINEE",
+        "href": "/member/detail?member=ralyne-van-irwan-196&type=TRAINEE",
         "id": "196",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/ralyne_van_irwan.jpg",
+        "img": "/media/jkt48-member/ralyne_van_irwan.jpg",
         "jiko": "",
         "name": "Ralyne Van Irwan",
         "nickname": "Ralyne",
@@ -1377,7 +1436,8 @@
             "tiktok": "",
             "twitter": ""
         },
-        "member_code": "RALYNE_VAN_IRWAN"
+        "member_code": "RALYNE_VAN_IRWAN",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -1386,9 +1446,9 @@
         "generation": "12",
         "height": "162cm",
         "horoscope": "Capricorn",
-        "href": "https://jkt48.com/member/detail?member=ribka-budiman-204&type=JKT48",
+        "href": "/member/detail?member=ribka-budiman-204&type=JKT48",
         "id": "204",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/ribka_budiman.jpg",
+        "img": "/media/jkt48-member/ribka_budiman.jpg",
         "jiko": "Mirror mirror on the wall, who's the sweetest in here? It's me, Ribka!",
         "name": "Ribka Budiman",
         "nickname": "Ribka",
@@ -1400,7 +1460,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.ribka/",
             "twitter": "https://twitter.com/Ribka_JKT48"
         },
-        "member_code": "RIBKA_BUDIMAN"
+        "member_code": "RIBKA_BUDIMAN",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1409,9 +1470,9 @@
         "generation": "12",
         "height": "160cm",
         "horoscope": "Virgo",
-        "href": "https://jkt48.com/member/detail?member=shabilqis-naila-221&type=JKT48",
+        "href": "/member/detail?member=shabilqis-naila-221&type=JKT48",
         "id": "221",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/shabilqis_naila.jpg",
+        "img": "/media/jkt48-member/shabilqis_naila.jpg",
         "jiko": "ROAR! Si singa pemberani yang siap menyemangati harimu. Hai-hai aku Nala.",
         "name": "Shabilqis Naila",
         "nickname": "Nala",
@@ -1423,7 +1484,8 @@
             "tiktok": "https://www.tiktok.com/@jkt48.nala/",
             "twitter": "https://twitter.com/Nala_JKT48"
         },
-        "member_code": "SHABILQIS_NAILA"
+        "member_code": "SHABILQIS_NAILA",
+        "member_type": "JKT48"
     },
     {
         "active": true,
@@ -1432,9 +1494,9 @@
         "generation": "14",
         "height": "154cm",
         "horoscope": "Sagitarius",
-        "href": "https://jkt48.com/member/detail?member=sona-kalyana-231&type=TRAINEE",
+        "href": "/member/detail?member=sona-kalyana-231&type=TRAINEE",
         "id": "231",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/sona_kalyana.jpg",
+        "img": "/media/jkt48-member/sona_kalyana.jpg",
         "jiko": "",
         "name": "Sona Kalyana",
         "nickname": "Sona",
@@ -1446,7 +1508,8 @@
             "tiktok": "",
             "twitter": ""
         },
-        "member_code": "SONA_KALYANA"
+        "member_code": "SONA_KALYANA",
+        "member_type": "TRAINEE"
     },
     {
         "active": true,
@@ -1455,9 +1518,9 @@
         "generation": "12",
         "height": "162cm",
         "horoscope": "Pisces",
-        "href": "https://jkt48.com/member/detail?member=victoria-kimberly-244&type=JKT48",
+        "href": "/member/detail?member=victoria-kimberly-244&type=JKT48",
         "id": "244",
-        "img": "https://jkt48.com/api/v1/storages/media/jkt48-member/victoria_kimberly.jpg",
+        "img": "/media/jkt48-member/victoria_kimberly.jpg",
         "jiko": "Baby hamster yang lincah, aku akan berlari-lari di pikiranmu! Halo-ha, katakan Kimmy!",
         "name": "Victoria Kimberly",
         "nickname": "Kimmy",
@@ -1469,6 +1532,7 @@
             "tiktok": "https://www.tiktok.com/@jkt48.kimmy/",
             "twitter": "https://twitter.com/Kimmy_JKT48"
         },
-        "member_code": "VICTORIA_KIMBERLY"
+        "member_code": "VICTORIA_KIMBERLY",
+        "member_type": "JKT48"
     }
 ]
