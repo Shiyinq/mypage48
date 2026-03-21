@@ -4,6 +4,7 @@
 	import { userProfile, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
+	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	const { t } = useTranslation();
 
@@ -95,7 +96,9 @@
 					<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
 				{:else if $userProfile?.data?.oshi?.profilePicture || $userProfile?.data?.profilePicture}
 					<img
-						src={$userProfile?.data?.oshi?.profilePicture || $userProfile?.data?.profilePicture}
+						src={$userProfile?.data?.oshi?.profilePicture
+							? getExternalMediaUrl($userProfile.data.oshi.profilePicture)
+							: $userProfile?.data?.profilePicture}
 						alt="Profile"
 						class="w-full h-full object-cover"
 					/>

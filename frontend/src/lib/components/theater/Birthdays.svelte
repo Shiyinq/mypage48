@@ -5,6 +5,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { BirthdayResponse } from '$lib/apis/members';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
+	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	const { t, locale } = useTranslation();
 
@@ -55,7 +56,7 @@
 					>
 						{#if member.img}
 							<img
-								src={member.img}
+								src={getExternalMediaUrl(member.img)}
 								alt={member.name}
 								class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
 							/>

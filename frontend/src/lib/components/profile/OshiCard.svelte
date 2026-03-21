@@ -3,6 +3,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import type { User } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	export let profile: User | null = null;
 	export let loading: boolean = true;
@@ -61,7 +62,7 @@
 						on:click={onOpenMemberDetail}
 					>
 						<img
-							src={profile?.oshi?.profilePicture || '/placeholder-user.jpg'}
+							src={getExternalMediaUrl(profile?.oshi?.profilePicture) || '/placeholder-user.jpg'}
 							alt={profile?.oshi?.name}
 							class="w-full h-full object-cover"
 						/>

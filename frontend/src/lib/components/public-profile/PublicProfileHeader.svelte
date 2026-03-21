@@ -3,6 +3,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { createEventDispatcher } from 'svelte';
 	import type { PublicProfileData } from '$lib/types';
+	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	export let profile: PublicProfileData;
 	export let isCurrentUser: boolean = false;
@@ -73,7 +74,7 @@
 			>
 				<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-pink-400">
 					<img
-						src={profile.oshi.profilePicture}
+						src={getExternalMediaUrl(profile.oshi.profilePicture)}
 						alt={profile.oshi.name}
 						class="w-full h-full object-cover"
 					/>
