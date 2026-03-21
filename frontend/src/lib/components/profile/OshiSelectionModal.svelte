@@ -6,6 +6,7 @@
 	import { members as membersApi, type Member } from '$lib/apis/members';
 	import { fade, scale } from 'svelte/transition';
 	import { tick } from 'svelte';
+	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	export let show: boolean = false;
 	// members prop removed, we fetch internally
@@ -192,7 +193,7 @@
 							>
 								<div class="relative w-20 h-20 mb-3">
 									<img
-										src={member.img}
+										src={getExternalMediaUrl(member.img)}
 										alt={member.name}
 										class="w-full h-full rounded-full object-cover shadow-sm group-hover:shadow-md transition-shadow {selectedOshiId ===
 										member.id

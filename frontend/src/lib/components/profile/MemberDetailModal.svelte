@@ -5,6 +5,7 @@
 	import type { Member } from '$lib/apis/members';
 	import { fade, scale } from 'svelte/transition';
 	import { portal } from '$lib/actions/portal';
+	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	export let show: boolean = false;
 	export let member: Member | null = null;
@@ -97,7 +98,7 @@
 			{:else if member}
 				<!-- Header Image (Left Side) -->
 				<div class="relative h-80 md:h-full">
-					<img src={member.img} alt={member.name} class="w-full h-full object-cover" />
+					<img src={getExternalMediaUrl(member.img)} alt={member.name} class="w-full h-full object-cover" />
 					<div
 						class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"
 					></div>

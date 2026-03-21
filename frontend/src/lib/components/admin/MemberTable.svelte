@@ -3,6 +3,7 @@
 	import type { Member } from '$lib/apis/members';
 	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	export let members: Member[] = [];
 
@@ -35,7 +36,7 @@
 									class="w-10 h-10 rounded-full bg-gray-100 dark:bg-zinc-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-zinc-700"
 								>
 									{#if member.img}
-										<img src={member.img} alt={member.name} class="w-full h-full object-cover" />
+										<img src={getExternalMediaUrl(member.img)} alt={member.name} class="w-full h-full object-cover" />
 									{:else}
 										<div
 											class="w-full h-full idol-gradient flex items-center justify-center relative overflow-hidden"

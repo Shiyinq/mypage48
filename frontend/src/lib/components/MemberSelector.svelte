@@ -5,6 +5,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
+	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	// Props
 	export let value: string = '';
@@ -215,7 +216,7 @@
 							>
 								<div class="relative w-20 h-20 mb-3">
 									<img
-										src={member.img}
+										src={getExternalMediaUrl(member.img)}
 										alt={member.name}
 										class="w-full h-full rounded-full object-cover shadow-sm group-hover:shadow-md transition-shadow {selectedMember?.id ===
 										member.id
