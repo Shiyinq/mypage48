@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 
 from .agent.browser import request
+from .utils import clean_jkt48_url
 
 async def sleep(ms: int):
     """Sleep for specified milliseconds."""
@@ -48,6 +49,11 @@ def get_news_page(
         date_str = item.get('valid_date_from', '')
         wib_date = parse_date_wib(date_str) or datetime.now()
         
+        # Clean background image URL
+        bg_image = item.get('background_image', '')
+        if bg_image:
+            item['background_image'] = clean_jkt48_url(bg_image)
+
         news.append({
             **item,  # Include all raw fields from the API
             'title': item.get('title', ''),
@@ -77,6 +83,11 @@ def get_all_news(
         date_str = item.get('valid_date_from', '')
         wib_date = parse_date_wib(date_str) or datetime.now()
         
+        # Clean background image URL
+        bg_image = item.get('background_image', '')
+        if bg_image:
+            item['background_image'] = clean_jkt48_url(bg_image)
+
         news.append({
             **item,
             'title': item.get('title', ''),
@@ -109,6 +120,12 @@ def get_news(news_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str
         return {}
         
     raw_detail = data['data'].get('result', {})
+    
+    # Clean background image URL
+    bg_image = raw_detail.get('background_image', '')
+    if bg_image:
+        raw_detail['background_image'] = clean_jkt48_url(bg_image)
+
     date_str = raw_detail.get('valid_date_from', '')
     wib_date = parse_date_wib(date_str) or datetime.now()
     

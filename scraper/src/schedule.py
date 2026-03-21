@@ -47,7 +47,7 @@ def get_schedules_by_month(year: int, month: int, headers: Optional[Dict[str, st
         ref_code = item.get('reference_code') or item.get('schedule_id', '')
         event_type = item.get('type', 'EVENT')
         
-        url_path = f"/theater/schedule/id/{ref_code}" if event_type == 'SHOW' else f"/event/schedule/id/{ref_code}"
+        url_path = f"/purchase/schedule/event?code={ref_code}"
         label = item.get('jkt48_member_type', '')
         
         events.append({
@@ -183,7 +183,7 @@ def get_theater_or_event_detail(
             'date': wib_date,
             'memberIds': member_ids,
             'seitansaiIds': seitansai_ids,
-            'url': f"/theater/schedule/id/{show_id}?lang=id",
+            'url': f"/purchase/schedule/event?code={show_id}",
             'raw_data': {'detail': detail}
         })
         

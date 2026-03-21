@@ -4,7 +4,7 @@ import json
 from typing import List, Dict, Any, Optional, Union
 
 from .agent.browser import request
-from .utils import slugify, format_birthdate_id
+from .utils import slugify, format_birthdate_id, clean_jkt48_url
 
 def get_members_list(headers: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
     """Get all members from the API."""
@@ -73,8 +73,9 @@ def fetch_and_format_members(headers: Dict[str, str]) -> List[Dict[str, Any]]:
         # Build refined object
         slug_name = slugify(name)
         m_type = api_data.get('type', 'JKT48')
-        href = f"https://jkt48.com/member/detail?member={slug_name}-{m_id}&type={m_type}"
-        
+        href = f"/member/detail?member={slug_name}-{m_id}&type={m_type}"
+        img = clean_jkt48_url(api_data.get('photo') or api_data.get('photo_1') or old_item.get('img', ''))
+
         refined = {
             "active": True,
             "birthdate": format_birthdate_id(api_data.get('birth_date', '')),
@@ -84,7 +85,7 @@ def fetch_and_format_members(headers: Dict[str, str]) -> List[Dict[str, Any]]:
             "horoscope": api_data.get('horoscope', '') or old_item.get('horoscope', ''),
             "href": href,
             "id": m_id,
-            "img": api_data.get('photo_1') or api_data.get('photo', '') or old_item.get('img', ''),
+            "img": img,
             "jiko": old_item.get('jiko', ''),
             "name": name,
             "nickname": api_data.get('nickname', '') or old_item.get('nickname', ''),
@@ -96,7 +97,8 @@ def fetch_and_format_members(headers: Dict[str, str]) -> List[Dict[str, Any]]:
                 "tiktok": f"https://www.tiktok.com/@{api_data.get('tiktok_account', '')}/" if api_data.get('tiktok_account') else "",
                 "twitter": f"https://twitter.com/{api_data.get('twitter_account', '')}" if api_data.get('twitter_account') else ""
             }),
-            "member_code": api_data.get('code', '')
+            "member_code": api_data.get('code', ''),
+            "member_type": m_type
         }
         results.append(refined)
         
