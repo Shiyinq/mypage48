@@ -564,7 +564,20 @@
 		"subNav": {
 			"theater": "シアター",
 			"members": "メンバー",
-			"events": "イベント"
+			"events": "イベント",
+			"news": "ニュース"
+		},
+		"news": {
+			"title": "ニュース",
+			"subtitle": "最新のアップデートとお知らせ",
+			"readMore": "続きを読む",
+			"otherNews": "その他のニュース",
+			"seeAll": "すべて見る",
+			"readOriginal": "JKT48公式サイトで読む",
+			"emptyTitle": "ニュースがありません",
+			"empty": "現在利用可能なニュース記事はありません。",
+			"errorTitle": "ニュースの読み込みに失敗しました",
+			"errorDesc": "ニュースの取得中にエラーが発生しました。"
 		},
 		"setlists": {
 			"section": "セットリスト",

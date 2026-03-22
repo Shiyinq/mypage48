@@ -729,7 +729,20 @@
 		"subNav": {
 			"theater": "Theater",
 			"members": "Member",
-			"events": "Event"
+			"events": "Event",
+			"news": "Berita"
+		},
+		"news": {
+			"title": "Berita",
+			"subtitle": "Pembaruan dan pengumuman terbaru",
+			"readMore": "Baca selengkapnya",
+			"otherNews": "Berita Lainnya",
+			"seeAll": "Lihat Semua",
+			"readOriginal": "Baca di Website Asli JKT48",
+			"emptyTitle": "Tidak Ada Berita",
+			"empty": "Belum ada artikel berita yang tersedia saat ini.",
+			"errorTitle": "Gagal memuat berita",
+			"errorDesc": "Terjadi kesalahan saat mengambil daftar berita."
 		},
 		"setlists": {
 			"section": "Setlist",

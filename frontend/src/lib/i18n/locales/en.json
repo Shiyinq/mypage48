@@ -612,7 +612,20 @@
 		"subNav": {
 			"theater": "Theater",
 			"members": "Members",
-			"events": "Events"
+			"events": "Events",
+			"news": "News"
+		},
+		"news": {
+			"title": "News",
+			"subtitle": "Latest updates and announcements",
+			"readMore": "Read more",
+			"otherNews": "Other News",
+			"seeAll": "See All",
+			"readOriginal": "Read on JKT48 Official Website",
+			"emptyTitle": "No News Found",
+			"empty": "There are currently no news articles available.",
+			"errorTitle": "Failed to load news",
+			"errorDesc": "Something went wrong while fetching the news."
 		},
 		"setlists": {
 			"section": "Setlists",

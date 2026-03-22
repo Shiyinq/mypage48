@@ -40,6 +40,8 @@ from src.tickets.repository import TicketsRepository
 from src.tickets.service import TicketsService
 from src.users.repository import UserRepository
 from src.users.service import UserService
+from src.news.repository import NewsRepository
+from src.news.service import NewsService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/signin")
 logger = create_logger("dependencies", __name__)
@@ -337,3 +339,14 @@ def get_feedback_service(
     repo: FeedbackRepository = Depends(get_feedback_repository),
 ) -> FeedbackService:
     return FeedbackService(repo)
+
+
+def get_news_repository(db=Depends(get_db)) -> NewsRepository:
+    return NewsRepository(db)
+
+
+def get_news_service(
+    repo: NewsRepository = Depends(get_news_repository),
+    config: Settings = Depends(get_settings),
+) -> NewsService:
+    return NewsService(repo, config)

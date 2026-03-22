@@ -17,3 +17,4 @@ export * from './storage';
 export * from './feedback';
 export * from './admin';
 export * from './events';
+export * from './news';
