@@ -46,7 +46,16 @@ class EventsRepository:
                     "as": "seitansai_members",
                 }
             },
-            # 3. Add Fields: imageUrl, totalMembers, and seitansaiMembers
+            # 3. Lookup Members for Graduation
+            {
+                "$lookup": {
+                    "from": "members",
+                    "localField": "graduationIds",
+                    "foreignField": "id",
+                    "as": "graduation_members",
+                }
+            },
+            # 4. Add Fields: imageUrl, totalMembers, seitansaiMembers, and graduationMembers
             {
                 "$addFields": {
                     "setlist_temp": {"$arrayElemAt": ["$setlist_docs", 0]},
@@ -64,6 +73,13 @@ class EventsRepository:
                             "in": "$$member.name",
                         }
                     },
+                    "graduationMembers": {
+                        "$map": {
+                            "input": "$graduation_members",
+                            "as": "member",
+                            "in": "$$member.name",
+                        }
+                    },
                 }
             },
             # 4. Extract imageUrl from setlist_temp
@@ -73,7 +89,7 @@ class EventsRepository:
                 "$project": {
                     "setlist_docs": 0,
                     "setlist_temp": 0,
-                    "seitansai_members": 0,
+                    "graduation_members": 0,
                     "memberIds": 0,
                     "graduationIds": 0,
                     "seitansaiIds": 0,
@@ -113,13 +129,29 @@ class EventsRepository:
                     "as": "seitansai_members",
                 }
             },
-            # 3. Add Fields: imageUrl, and seitansaiMembers
+            # 3. Lookup Members for Graduation
+            {
+                "$lookup": {
+                    "from": "members",
+                    "localField": "graduationIds",
+                    "foreignField": "id",
+                    "as": "graduation_members",
+                }
+            },
+            # 4. Add Fields: imageUrl, seitansaiMembers, and graduationMembers
             {
                 "$addFields": {
                     "setlist_temp": {"$arrayElemAt": ["$setlist_docs", 0]},
                     "seitansaiMembers": {
                         "$map": {
                             "input": "$seitansai_members",
+                            "as": "member",
+                            "in": "$$member.name",
+                        }
+                    },
+                    "graduationMembers": {
+                        "$map": {
+                            "input": "$graduation_members",
                             "as": "member",
                             "in": "$$member.name",
                         }
@@ -137,6 +169,7 @@ class EventsRepository:
                     "type": 1,
                     "setlistId": 1,
                     "seitansaiMembers": 1,
+                    "graduationMembers": 1,
                 }
             },
         ]

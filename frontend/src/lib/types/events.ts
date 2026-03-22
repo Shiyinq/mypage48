@@ -17,6 +17,7 @@ export interface Event {
 	imageUrl?: string;
 	totalMembers: number;
 	seitansaiMembers?: string[];
+	graduationMembers?: string[];
 	setlistId?: string;
 	team?: EventTeam;
 	type?: string;
@@ -28,6 +29,7 @@ export interface CalendarEvent {
 	url: string;
 	setlistId?: string;
 	seitansaiMembers?: string[];
+	graduationMembers?: string[];
 	isBirthday?: boolean;
 	label?: string;
 	type?: string;

@@ -21,6 +21,7 @@ class Event(BaseModel):
     imageUrl: Optional[str] = None
     totalMembers: int = 0
     seitansaiMembers: Optional[List[str]] = None
+    graduationMembers: Optional[List[str]] = None
     setlistId: Optional[str] = None
     team: Optional[EventTeam] = None
 
@@ -36,6 +37,7 @@ class CalendarEvent(BaseModel):
     type: Optional[str] = None
     setlistId: Optional[str] = None
     seitansaiMembers: Optional[List[str]] = None
+    graduationMembers: Optional[List[str]] = None
     isBirthday: Optional[bool] = False
 
     class Config:
