@@ -18,8 +18,8 @@
 - 🤖 **AI-Powered Ticket Scanner** - Extract event details from ticket screenshots using Google Gemini
 - 🎭 **Theater Tracking** - Log your theater show attendance with seat information and show details
 - 📸 **2-Shot Collection** - Track your 2-shot photos with member statistics
-- �️ **Digital Photobook** - Browse your collected memories in a beautiful gallery view
-- �🗺️ **Seat Map Visualization** - Interactive theater seat map showing your seating history
+- 🖼️ **Digital Photobook** - Browse your collected memories in a beautiful gallery view
+- 🗺️ **Seat Map Visualization** - Interactive theater seat map showing your seating history
 - 🏆 **Achievements System** - Unlock achievements based on your theater journey
 - 👤 **Public Profile** - Share your theater stats with a public profile page (Wrapped)
 - 📅 **Interactive Calendar** - Browse JKT48 schedule and events in a monthly view
@@ -47,22 +47,29 @@
 
 ```
 mypage48/
-├── src/                    # Backend (FastAPI)
-│   ├── achievements/       # Achievement system
+├── src/                   # Backend (FastAPI)
+│   ├── achievements/      # Achievement system
+│   ├── api_keys/          # API keys management
 │   ├── auth/              # Authentication & OAuth
 │   ├── dashboard/         # Dashboard statistics API
+│   ├── events/            # Event & schedule management
 │   ├── export/            # Data export service
+│   ├── feedback/          # User feedback system
+│   ├── health/            # Service health checks
 │   ├── llm/               # AI integration (Gemini)
 │   ├── members/           # JKT48 members data
+│   ├── memories/          # Digital photobook storage
+│   ├── news/              # News integration
 │   ├── setlists/          # Setlist information
+│   ├── storage/           # MinIO storage service
 │   ├── tickets/           # Theater ticket logging
 │   ├── users/             # User management
 │   └── ...
 ├── scraper/               # JKT48 Web Scraper
 ├── frontend/              # Frontend (SvelteKit)
 │   ├── src/
-│   │   ├── lib/          # Components, stores, utilities
-│   │   └── routes/       # Application pages
+│   │   ├── lib/           # Components, stores, utilities
+│   │   └── routes/        # Application pages
 │   └── ...
 ├── scripts/               # Utility scripts
 ├── tests/                 # Backend tests
