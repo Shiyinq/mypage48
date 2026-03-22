@@ -35,7 +35,9 @@
 		"today": "Today",
 		"tomorrow": "Tomorrow",
 		"fromShort": "Fr",
-		"toShort": "To"
+		"toShort": "To",
+		"copyLink": "Copy Link",
+		"copied": "Link copied to clipboard!"
 	},
 	"validation": {
 		"alert": {
@@ -622,6 +624,7 @@
 			"otherNews": "Other News",
 			"seeAll": "See All",
 			"readOriginal": "Read on JKT48 Official Website",
+			"share": "Share this news",
 			"emptyTitle": "No News Found",
 			"empty": "There are currently no news articles available.",
 			"errorTitle": "Failed to load news",
