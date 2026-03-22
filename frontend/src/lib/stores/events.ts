@@ -36,10 +36,30 @@ export const isUpcomingEventsLoading = writable(false);
 export const isHistoryEventsLoading = writable(false);
 export const isCalendarEventsLoading = writable(false);
 
+// Maps legacy image-based event types (formerly stored in "label") to modern "type" fields.
+// In newer data, "label" is used for performer indicators (e.g., JKT48, TRAINEE).
 const legacyMapping: Record<string, string> = {
 	'/images/icon.cat2.png': 'EVENT',
+	'/images/icon.cat9.png': 'EVENT',
+	'/images/icon.cat1.png': 'SHOW',
 	'/images/icon.cat17.png': 'SHOW',
-	'/images/icon.cat19.png': 'SHOW'
+	'/images/icon.cat19.png': 'SHOW',
+	'/images/icon.cat13.png': 'SHOW',
+	'/images/icon.cat11.png': 'SHOW',
+	'/images/icon.cat12.png': 'SHOW',
+	'/images/icon.cat14.png': 'SHOW',
+	'/images/icon.cat15.png': 'SHOW',
+	'/images/icon.cat18.png': 'SHOW',
+	'/images/icon.cat20.png': 'SHOW',
+	'/images/icon.cat21.png': 'SHOW',
+	'/images/icon.cat23.png': 'SHOW',
+	'/images/icon.cat8.png': 'GENERAL',
+	'/images/icon.cat3.png': 'GENERAL',
+	'/images/icon.cat4.png': 'GENERAL',
+	'/images/icon.cat99.png': 'GENERAL',
+	'/images/icon.cat5.png': 'BIRTHDAY',
+	'/images/icon.cat10.png': 'BIRTHDAY',
+	'/images/icon.cat7.png': 'BIRTHDAY'
 };
 
 function translateLegacyEvent<T extends Event | CalendarEvent>(event: T): T {
