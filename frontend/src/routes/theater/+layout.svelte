@@ -2,7 +2,7 @@
 	export let params: Record<string, string> | undefined = undefined;
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { AudioLines, Users, Calendar, ChevronRight, History } from 'lucide-svelte';
+	import { AudioLines, Users, Calendar, ChevronRight, History, Newspaper } from 'lucide-svelte';
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
 
 	const { t } = useTranslation();
@@ -15,6 +15,14 @@
 
 	// Dynamic Title, Subtitle & Theme
 	$: pageInfo = (() => {
+		if (currentPath.includes('/theater/news')) {
+			return {
+				title: $t('theater.news.title') || 'News',
+				subtitle: $t('theater.news.subtitle') || 'Latest updates and announcements',
+				icon: Newspaper,
+				theme: 'red'
+			};
+		}
 		if (currentPath.includes('/theater/members')) {
 			return {
 				title: $t('theater.members.title'),
@@ -70,6 +78,13 @@
 			icon: Calendar,
 			exact: true,
 			theme: 'blue'
+		},
+		{
+			labelKey: 'theater.subNav.news',
+			labelDefault: 'News',
+			href: '/theater/news',
+			icon: Newspaper,
+			theme: 'red'
 		},
 		{
 			labelKey: 'theater.events.calendar',

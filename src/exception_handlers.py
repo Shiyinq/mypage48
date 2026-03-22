@@ -140,6 +140,16 @@ from src.users.http_exceptions import (
     UsernameTaken,
     UserUpdateFailed,
 )
+from src.news.exceptions import (
+    NewsNotFoundError,
+    NewsFetchError,
+    NewsItemFetchError,
+)
+from src.news.http_exceptions import (
+    NewsNotFound,
+    NewsFetchHTTPError,
+    NewsItemFetchHTTPError,
+)
 
 logger = create_logger("exceptions", __name__)
 
@@ -299,6 +309,14 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, FeedbackFetchFailed())
     if isinstance(exc, FeedbackNotFound):
         return await detailed_http_exception_handler(request, HttpFeedbackNotFound())
+
+    # News errors
+    if isinstance(exc, NewsNotFoundError):
+        return await detailed_http_exception_handler(request, NewsNotFound())
+    if isinstance(exc, NewsFetchError):
+        return await detailed_http_exception_handler(request, NewsFetchHTTPError())
+    if isinstance(exc, NewsItemFetchError):
+        return await detailed_http_exception_handler(request, NewsItemFetchHTTPError())
 
     # Export errors
     if isinstance(exc, ExportInProgressError):
