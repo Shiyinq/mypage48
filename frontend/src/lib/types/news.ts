@@ -5,7 +5,6 @@ export interface News {
     link: string;
     background_image?: string;
     is_published: boolean;
-    date: string;
     valid_date_from: string;
     content_body: string;
     short_description?: string;

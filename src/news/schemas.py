@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class NewsResponse(BaseModel):
@@ -10,9 +10,15 @@ class NewsResponse(BaseModel):
     link: str
     background_image: Optional[str] = None
     is_published: bool
-    date: datetime
     valid_date_from: datetime
     content_body: str
+
+    @field_validator('valid_date_from', mode='after')
+    @classmethod
+    def force_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
     short_description: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
