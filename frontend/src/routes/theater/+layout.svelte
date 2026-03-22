@@ -73,18 +73,18 @@
 			theme: 'pink'
 		},
 		{
-			labelKey: 'theater.subNav.events',
-			href: '/theater/events',
-			icon: Calendar,
-			exact: true,
-			theme: 'blue'
-		},
-		{
 			labelKey: 'theater.subNav.news',
 			labelDefault: 'News',
 			href: '/theater/news',
 			icon: Newspaper,
 			theme: 'red'
+		},
+		{
+			labelKey: 'theater.subNav.events',
+			href: '/theater/events',
+			icon: Calendar,
+			exact: true,
+			theme: 'blue'
 		},
 		{
 			labelKey: 'theater.events.calendar',
