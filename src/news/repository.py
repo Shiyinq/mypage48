@@ -9,8 +9,8 @@ class NewsRepository:
     async def get_news(self, page: int = 1, limit: int = 10) -> Dict[str, Any]:
         """Get paginated news."""
         skip = (page - 1) * limit
-        # Sort by date descending
-        cursor = self.collection.find({}).sort("date", -1).skip(skip).limit(limit)
+        # Sort by valid_date_from descending
+        cursor = self.collection.find({}).sort("valid_date_from", -1).skip(skip).limit(limit)
         items = await cursor.to_list(length=limit)
         
         total = await self.collection.count_documents({})

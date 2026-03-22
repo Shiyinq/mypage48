@@ -45,10 +45,6 @@ def get_news_page(
     for item in data['data']:
         link = item.get('link', '')
         
-        # Parse date
-        date_str = item.get('valid_date_from', '')
-        wib_date = parse_date_wib(date_str) or datetime.now()
-        
         # Clean background image URL
         bg_image = item.get('background_image', '')
         if bg_image:
@@ -57,7 +53,6 @@ def get_news_page(
         news.append({
             **item,  # Include all raw fields from the API
             'title': item.get('title', ''),
-            'date': wib_date,
         })
     
     return news
@@ -80,9 +75,6 @@ def get_all_news(
         return news
         
     for item in data['data']:
-        date_str = item.get('valid_date_from', '')
-        wib_date = parse_date_wib(date_str) or datetime.now()
-        
         # Clean background image URL
         bg_image = item.get('background_image', '')
         if bg_image:
@@ -91,7 +83,6 @@ def get_all_news(
         news.append({
             **item,
             'title': item.get('title', ''),
-            'date': wib_date,
         })
         
     # Check for next page
@@ -125,12 +116,8 @@ def get_news(news_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str
     bg_image = raw_detail.get('background_image', '')
     if bg_image:
         raw_detail['background_image'] = clean_jkt48_url(bg_image)
-
-    date_str = raw_detail.get('valid_date_from', '')
-    wib_date = parse_date_wib(date_str) or datetime.now()
     
     return {
         **raw_detail,
         'title': raw_detail.get('title', ''),
-        'date': wib_date,
     }

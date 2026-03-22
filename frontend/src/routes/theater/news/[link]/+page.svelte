@@ -55,7 +55,7 @@
                 </span>
                 <span class="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-gray-500 dark:text-gray-400">
                     <Calendar class="w-4 h-4" />
-                    {$formatDate(item.date, { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {$formatDate(item.valid_date_from, { day: 'numeric', month: 'long', year: 'numeric' })}
                 </span>
             </div>
 
@@ -99,7 +99,7 @@
                                 </span>
                                 <span class="text-gray-300 dark:text-zinc-600">|</span>
                                 <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400">
-                                    {$formatDate(recent.date, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    {$formatDate(recent.valid_date_from, { day: 'numeric', month: 'short', year: 'numeric' })}
                                 </span>
                             </div>
                             <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200 leading-snug group-hover:text-red-500 transition-colors line-clamp-2">

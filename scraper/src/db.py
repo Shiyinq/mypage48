@@ -69,13 +69,15 @@ def upsert_data(collection: Collection, data_list: List[Dict[str, Any]], id_fiel
             # Special handling for dates
             if 'date' in db_item:
                 db_item['date'] = parse_date(db_item['date'])
+                
+            for date_field in ['valid_date_from', 'valid_date_to']:
+                if db_item.get(date_field):
+                    db_item[date_field] = parse_date(db_item[date_field])
             if 'birthdate' in db_item and db_item['birthdate']:
                 # birthdate in members is string "DD Month YYYY", might need special parsing if we want it as Date
                 # but for now let's keep it as is or handle if needed.
                 pass
                 
-            db_item['updatedAt'] = datetime.now()
-            
             identifier = db_item.get(id_field)
             if not identifier:
                 stats['errors'] += 1

@@ -126,7 +126,7 @@
                         <div>
                             <div class="flex gap-1.5 items-center mb-1.5 md:mb-2 text-gray-500 dark:text-gray-400 text-[11px] md:text-xs font-semibold">
                                 <Calendar class="w-3.5 h-3.5" />
-                                <span>{$formatDate(item.date, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                <span>{$formatDate(item.valid_date_from, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                             </div>
                             
                             <h3 class="font-bold text-gray-900 dark:text-white leading-snug mb-2 group-hover:text-red-500 transition-colors text-sm md:text-base line-clamp-3 md:line-clamp-3">
