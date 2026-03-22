@@ -2,19 +2,13 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { Newspaper, Calendar, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import { Newspaper, Calendar, ChevronLeft, ChevronRight } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { fade } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	import { EventCardSkeleton } from '$lib/components/skeletons';
-	import {
-		newsStore,
-		newsList,
-		newsLoading,
-		newsError,
-		newsPagination
-	} from '$lib/stores/news';
+	import { newsStore, newsList, newsLoading, newsError, newsPagination } from '$lib/stores/news';
 
 	import { formatDate } from '$lib/i18n';
 	const { t, locale } = useTranslation();
@@ -70,8 +64,6 @@
 />
 
 <div class="space-y-6">
-
-
 	{#if loading && list.length === 0}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
 			{#each Array(8) as _}
@@ -99,23 +91,36 @@
 					in:fade={{ duration: 300 }}
 				>
 					<!-- Image / Placeholder -->
-					<div class="relative w-[38%] md:w-full shrink-0 overflow-hidden bg-gray-100 dark:bg-zinc-800 aspect-square md:aspect-[4/3]">
+					<div
+						class="relative w-[38%] md:w-full shrink-0 overflow-hidden bg-gray-100 dark:bg-zinc-800 aspect-square md:aspect-[4/3]"
+					>
 						{#if item.background_image}
 							<img
 								src={getExternalMediaUrl(item.background_image)}
 								alt={item.title}
 								class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                loading="lazy"
+								loading="lazy"
 							/>
 						{:else}
-							<div class="absolute inset-0 bg-gradient-to-br from-red-500/10 to-red-700/10 flex items-center justify-center">
+							<div
+								class="absolute inset-0 bg-gradient-to-br from-red-500/10 to-red-700/10 flex items-center justify-center"
+							>
 								<Newspaper class="w-10 h-10 md:w-16 md:h-16 text-red-500/30" />
 							</div>
 						{/if}
-						<div class="absolute inset-0 bg-gradient-to-t from-black/20 md:from-black/60 via-transparent to-transparent"></div>
-						
+						<div
+							class="absolute inset-0 bg-gradient-to-t from-black/20 md:from-black/60 via-transparent to-transparent"
+						></div>
+
 						<div class="absolute top-2 right-2 md:top-3 md:right-3 z-10">
-							<span class="inline-flex items-center px-2 py-0.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-bold tracking-wider uppercase shadow-sm {item.category.toLowerCase() === 'event' ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400' : item.category.toLowerCase() === 'theater' ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400' : 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400'}">
+							<span
+								class="inline-flex items-center px-2 py-0.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-bold tracking-wider uppercase shadow-sm {item.category.toLowerCase() ===
+								'event'
+									? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400'
+									: item.category.toLowerCase() === 'theater'
+										? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400'
+										: 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400'}"
+							>
 								{item.category}
 							</span>
 						</div>
@@ -123,27 +128,40 @@
 
 					<!-- Content -->
 					<div class="p-3 md:p-4 flex flex-col flex-1 justify-between w-[62%] md:w-full">
-                        <div>
-                            <div class="flex gap-1.5 items-center mb-1.5 md:mb-2 text-gray-500 dark:text-gray-400 text-[11px] md:text-xs font-semibold">
-                                <Calendar class="w-3.5 h-3.5" />
-                                <span>{$formatDate(item.valid_date_from, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                            </div>
-                            
-                            <h3 class="font-bold text-gray-900 dark:text-white leading-snug mb-2 group-hover:text-red-500 transition-colors text-sm md:text-base line-clamp-3 md:line-clamp-3">
-                                {item.title}
-                            </h3>
-                        </div>
-						
-						<div class="mt-auto md:pt-4 md:border-t flex items-center justify-between text-[11px] md:text-xs text-gray-500 dark:text-gray-400 font-medium md:border-gray-100 dark:border-white/5">
+						<div>
+							<div
+								class="flex gap-1.5 items-center mb-1.5 md:mb-2 text-gray-500 dark:text-gray-400 text-[11px] md:text-xs font-semibold"
+							>
+								<Calendar class="w-3.5 h-3.5" />
+								<span
+									>{$formatDate(item.valid_date_from, {
+										day: 'numeric',
+										month: 'short',
+										year: 'numeric'
+									})}</span
+								>
+							</div>
+
+							<h3
+								class="font-bold text-gray-900 dark:text-white leading-snug mb-2 group-hover:text-red-500 transition-colors text-sm md:text-base line-clamp-3 md:line-clamp-3"
+							>
+								{item.title}
+							</h3>
+						</div>
+
+						<div
+							class="mt-auto md:pt-4 md:border-t flex items-center justify-between text-[11px] md:text-xs text-gray-500 dark:text-gray-400 font-medium md:border-gray-100 dark:border-white/5"
+						>
 							<span class="flex items-center gap-1 hover:text-red-500 transition-colors">
-								{$t('theater.news.readMore')} <ExternalLink class="w-3 h-3" />
+								{$t('theater.news.readMore')}
+								<ChevronRight class="w-3 h-3" />
 							</span>
 						</div>
 					</div>
 				</a>
 			{/each}
 		</div>
-		
+
 		<!-- Numbered Pagination -->
 		{#if $newsPagination && $newsPagination.last_page > 1}
 			<div class="flex items-center justify-center mt-8 mb-20 md:mb-8 w-full">
@@ -160,10 +178,14 @@
 					<!-- Page Numbers -->
 					{#each generatePagination($newsPagination.current_page, $newsPagination.last_page) as page}
 						{#if page === '...'}
-							<span class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-xs md:text-sm text-gray-400">...</span>
+							<span
+								class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-xs md:text-sm text-gray-400"
+								>...</span
+							>
 						{:else}
 							<button
-								class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-xs md:text-sm rounded-md border transition-colors cursor-pointer {page === $newsPagination.current_page
+								class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-xs md:text-sm rounded-md border transition-colors cursor-pointer {page ===
+								$newsPagination.current_page
 									? 'bg-red-500 text-white border-red-500'
 									: 'bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700'}"
 								on:click={() => handlePageChange(Number(page))}
