@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { Calendar, Clock, Users, Cake } from 'lucide-svelte';
+	import { Calendar, Clock, Users, Cake, GraduationCap } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { scale } from 'svelte/transition';
 
@@ -205,6 +205,15 @@
 									>
 										<Cake class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 sm:text-pink-400" />
 										<span class="line-clamp-1">{event.seitansaiMembers?.join(', ')}</span>
+									</div>
+								{/if}
+
+								{#if (event.graduationMembers?.length ?? 0) > 0}
+									<div
+										class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm text-indigo-500 sm:text-indigo-300 font-medium mb-1.5 sm:mb-1 w-fit"
+									>
+										<GraduationCap class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 sm:text-indigo-400" />
+										<span class="line-clamp-1">{event.graduationMembers?.join(', ')}</span>
 									</div>
 								{/if}
 
