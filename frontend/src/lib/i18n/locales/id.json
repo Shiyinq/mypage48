@@ -36,7 +36,9 @@
 		"today": "Hari Ini",
 		"tomorrow": "Besok",
 		"fromShort": "Dari",
-		"toShort": "Ke"
+		"toShort": "Ke",
+		"copyLink": "Salin Tautan",
+		"copied": "Tautan disalin ke clipboard!"
 	},
 	"validation": {
 		"alert": {
@@ -739,6 +741,7 @@
 			"otherNews": "Berita Lainnya",
 			"seeAll": "Lihat Semua",
 			"readOriginal": "Baca di Website Asli JKT48",
+			"share": "Bagikan berita ini",
 			"emptyTitle": "Tidak Ada Berita",
 			"empty": "Belum ada artikel berita yang tersedia saat ini.",
 			"errorTitle": "Gagal memuat berita",

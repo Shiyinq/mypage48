@@ -35,7 +35,9 @@
 		"today": "今日",
 		"tomorrow": "明日",
 		"fromShort": "から",
-		"toShort": "まで"
+		"toShort": "まで",
+		"copyLink": "リンクをコピー",
+		"copied": "リンクをクリップボードにコピーしました！"
 	},
 	"validation": {
 		"alert": {
@@ -574,6 +576,7 @@
 			"otherNews": "その他のニュース",
 			"seeAll": "すべて見る",
 			"readOriginal": "JKT48公式サイトで読む",
+			"share": "このニュースを共有する",
 			"emptyTitle": "ニュースがありません",
 			"empty": "現在利用可能なニュース記事はありません。",
 			"errorTitle": "ニュースの読み込みに失敗しました",
