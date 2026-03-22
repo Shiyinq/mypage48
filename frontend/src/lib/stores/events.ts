@@ -65,11 +65,21 @@ const legacyMapping: Record<string, string> = {
 function translateLegacyEvent<T extends Event | CalendarEvent>(event: T): T {
 	const labelLower = event.label?.toLowerCase().trim() || '';
 	if (legacyMapping[labelLower]) {
-		return {
+		const mappedType = legacyMapping[labelLower];
+		const updatedEvent = {
 			...event,
-			type: legacyMapping[labelLower],
+			type: mappedType,
 			label: undefined
 		};
+
+		// Ensure isBirthday is set for legacy birthday icons
+		if (mappedType === 'BIRTHDAY') {
+			if ('isBirthday' in updatedEvent) {
+				(updatedEvent as CalendarEvent).isBirthday = true;
+			}
+		}
+
+		return updatedEvent as T;
 	}
 	return event;
 }
