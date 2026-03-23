@@ -13,7 +13,9 @@ TEST_MEMBERS_DATA = [
         "active": True,
         "socials": {},
         # Set birthdate to today/tomorrow dynamically would be better, but for simplicity we'll check schema
-        "birthdate": "16 Januari 1999"
+        "birthdate": "16 Januari 1999",
+        "member_type": "JKT48",
+        "member_code": "FENI"
     },
     {
         "id": "999",
@@ -24,7 +26,9 @@ TEST_MEMBERS_DATA = [
         "img": "https://example.com/test.jpg",
         "active": True,
         "socials": {},
-        "birthdate": f"{datetime.now().day} {datetime.now().strftime('%B')} 2000".replace("January","Januari").replace("February","Februari").replace("March","Maret").replace("April","April").replace("May","Mei").replace("June","Juni").replace("July","Juli").replace("August","Agustus").replace("September","September").replace("October","Oktober").replace("November","November").replace("December","Desember")
+        "birthdate": f"{datetime.now().day} {datetime.now().strftime('%B')} 2000".replace("January","Januari").replace("February","Februari").replace("March","Maret").replace("April","April").replace("May","Mei").replace("June","Juni").replace("July","Juli").replace("August","Agustus").replace("September","September").replace("October","Oktober").replace("November","November").replace("December","Desember"),
+        "member_type": "Trainee",
+        "member_code": "TEST"
     }
 ]
 
@@ -64,6 +68,11 @@ async def test_get_members_list(client: AsyncClient, seed_members_db, create_use
     assert len(data["data"]) > 0
     assert "meta" in data
     assert "total_data" in data["meta"]
+    
+    # Assert new fields are present
+    first_member = data["data"][0]
+    assert "member_type" in first_member
+    assert "member_code" in first_member
     
     # Test Pagination
     response_limit = await client.get("/api/members?limit=5", headers=headers)

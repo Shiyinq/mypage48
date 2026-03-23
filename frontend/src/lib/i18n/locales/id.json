@@ -698,6 +698,10 @@
 		"yearsOld": "Tahun",
 		"notFound": "Member Tidak Ditemukan",
 		"notFoundMessage": "Kami tidak dapat mengambil detail member ini. Silakan coba lagi nanti.",
+		"type": {
+			"member": "Member",
+			"trainee": "Trainee"
+		},
 		"close": "Tutup",
 		"emptyState": {
 			"title": "Tidak Ada Member",

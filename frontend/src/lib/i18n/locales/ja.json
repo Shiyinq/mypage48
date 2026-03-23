@@ -960,6 +960,10 @@
 		"yearsOld": "歳",
 		"notFound": "メンバーが見つかりません",
 		"notFoundMessage": "メンバーの詳細を取得できませんでした。後でもう一度お試しください。",
+		"type": {
+			"member": "メンバー",
+			"trainee": "研究生"
+		},
 		"close": "閉じる",
 		"emptyState": {
 			"title": "メンバーが見つかりません",

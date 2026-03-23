@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
@@ -96,8 +95,9 @@
 		// Always reset filter to "All" on mount
 		selectedGeneration = null;
 
-		// Fetch members with "All" filter (store will use cache if available)
-		fetchMembers(true);
+		// Fetch members with "All" filter, loading a larger batch initially (100) 
+		// to ensure the modal sidebar has all members.
+		membersStore.load({ limit: 100 }, true);
 	});
 
 	function handleInfiniteScroll() {
@@ -105,6 +105,23 @@
 			fetchMembers(false);
 		}
 	}
+	// Grouped members
+	$: groupedMembers = membersList.reduce(
+		(acc, member) => {
+			const type = member.member_type || 'JKT48';
+			if (!acc[type]) acc[type] = [];
+			acc[type].push(member);
+			return acc;
+		},
+		{} as Record<string, Member[]>
+	);
+
+	// Sort types: "JKT48" first, then "Trainee"
+	$: types = Object.keys(groupedMembers).sort((a, b) => {
+		if (a === 'JKT48') return -1;
+		if (b === 'JKT48') return 1;
+		return a.localeCompare(b);
+	});
 </script>
 
 <SEO
@@ -201,13 +218,35 @@
 		{/if}
 	</EmptyState>
 {:else}
-	<div
-		class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4"
-	>
-		{#each membersList as member (member.id)}
-			<MemberCard {member} on:click={() => openMemberDetail(member)} />
-		{/each}
-	</div>
+	{#each types as type}
+		<div class="mb-10 last:mb-0">
+			<!-- Group Header -->
+			<div class="flex items-center gap-3 mb-5 group/header">
+				<div
+					class="h-8 w-1.5 bg-pink-500 rounded-full group-hover/header:h-10 transition-all duration-300"
+				></div>
+				<h2 class="text-xl font-bold text-themed tracking-tight">
+					{type === 'JKT48'
+						? $t('member.type.member') || 'Member'
+						: $t('member.type.trainee') || 'Trainee'}
+				</h2>
+				<span
+					class="px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-zinc-800 text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 border border-gray-200/50 dark:border-zinc-700/50"
+				>
+					{groupedMembers[type].length}
+				</span>
+			</div>
+
+			<!-- Grid -->
+			<div
+				class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4"
+			>
+				{#each groupedMembers[type] as member (member.id)}
+					<MemberCard {member} on:click={() => openMemberDetail(member)} />
+				{/each}
+			</div>
+		</div>
+	{/each}
 
 	<!-- Skeletons for Infinite Scroll (Appending) -->
 	{#if $isMembersLoading && membersList.length > 0}
@@ -233,6 +272,7 @@
 <MemberDetailModal
 	show={showMemberDetail}
 	member={selectedMember}
+	members={membersList}
 	loading={false}
 	onClose={closeMemberDetail}
 />
