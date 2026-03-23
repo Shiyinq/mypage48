@@ -62,6 +62,10 @@
 		return type !== 'trainee';
 	});
 
+	$: currentIndex = displayMembers.findIndex(m => m.id === currentMember?.id);
+	$: nextMember = displayMembers.length > 1 ? displayMembers[(currentIndex + 1) % displayMembers.length] : null;
+	$: nextNextMember = displayMembers.length > 2 ? displayMembers[(currentIndex + 2) % displayMembers.length] : null;
+
 	function switchTab(tab: 'Member' | 'Trainee') {
 		if (activeTab === tab) return;
 		activeTab = tab;
@@ -76,31 +80,54 @@
 	}
 
 	// Custom Tinder-like swipe transition
-	function tinderSwipe(node: HTMLElement, { duration = 500, isOut = false }) {
+	function tinderSwipe(node: HTMLElement, { duration = 500, isOut = false, dir = 1 }) {
 		return {
 			duration,
 			css: (t: number, u: number) => {
 				// u goes from 0 to 1 during the transition
 				// t goes from 1 to 0 during 'out', and 0 to 1 during 'in'
 				
-				if (isOut) {
-					// Outgoing card swipes right and tilts
-					const xMove = u * 500;
-					const rotate = u * 30;
-					const yMove = u * 50; // slight drop
-					return `
-						transform: translateX(${xMove}px) translateY(${yMove}px) rotate(${rotate}deg);
-						opacity: ${t};
-						z-index: 20;
-					`;
+				if (dir === 1) {
+					// Forward (Next): Top card swipes away RIGHT, new card SCALE UP from behind
+					if (isOut) {
+						const xMove = u * 500;
+						const rotate = u * 30;
+						const yMove = u * 50; // slight drop
+						return `
+							transform: translateX(${xMove}px) translateY(${yMove}px) rotate(${rotate}deg);
+							opacity: ${t};
+							z-index: 20;
+						`;
+					} else {
+						// Incoming card scale up from center/bottom (Keep opaque to cover background)
+						const scale = 0.9 + t * 0.1;
+						return `
+							transform: scale(${scale});
+							opacity: 1;
+							z-index: 10;
+						`;
+					}
 				} else {
-					// Incoming card fades in and scales up slightly from center/bottom
-					const scale = 0.9 + t * 0.1;
-					return `
-						transform: scale(${scale});
-						opacity: ${t};
-						z-index: 10;
-					`;
+					// Backward (Previous): Top card swiped back IN from RIGHT, current card SCALE DOWN to behind
+					if (isOut) {
+						// Outgoing card scales down to go behind
+						const scale = 1 - u * 0.1;
+						return `
+							transform: scale(${scale});
+							opacity: ${t};
+							z-index: 10;
+						`;
+					} else {
+						// Incoming card swipes in from right and tilts (Keep opaque to cover current)
+						const xMove = (1 - t) * 500;
+						const rotate = (1 - t) * 30;
+						const yMove = (1 - t) * 50;
+						return `
+							transform: translateX(${xMove}px) translateY(${yMove}px) rotate(${rotate}deg);
+							opacity: 1;
+							z-index: 20;
+						`;
+					}
 				}
 			}
 		};
@@ -217,34 +244,41 @@
 				{:else if currentMember}
 					<!-- Card Section (Middle) -->
 					<div class="relative w-full aspect-[4/5] md:aspect-auto md:h-full shrink-0 md:w-1/2 overflow-hidden bg-gray-50/20 dark:bg-zinc-900/30 flex items-center justify-center border-b border-gray-100 dark:border-zinc-800 md:border-b-0">
-						{#key currentMember.id}
-							<div
-								class="absolute inset-0 flex items-center justify-center p-4 md:p-6"
-								in:tinderSwipe={{ duration: 600 }}
-								out:tinderSwipe={{ duration: 600, isOut: true }}
-							>
-								<!-- Stacked Photo Effect -->
-								<div class="relative w-full md:max-w-[420px] aspect-[4/5] group transition-transform duration-500 hover:scale-[1.02]">
-									<!-- Background Stacks (Hidden on mobile for space) -->
-									<div class="absolute inset-0 bg-zinc-200 dark:bg-zinc-800 rounded-3xl transform -rotate-6 translate-x-4 translate-y-2 opacity-40 shadow-xl transition-transform duration-700 hidden md:block"></div>
-									<div class="absolute inset-0 bg-zinc-300 dark:bg-zinc-700 rounded-3xl transform rotate-3 -translate-x-3 translate-y-1 opacity-60 shadow-xl transition-transform duration-700 hidden md:block"></div>
-
-									<!-- Main Image Container -->
-									<div class="relative w-full h-full z-10 rounded-3xl overflow-hidden border-x-0 md:border-[6px] border-white dark:border-zinc-800 shadow-2xl bg-white dark:bg-zinc-800">
-										<img
-											src={getExternalMediaUrl(currentMember.img)}
-											alt={currentMember.name}
-											class="w-full h-full object-cover object-top grayscale-[10%] group-hover:grayscale-0 transition-all duration-700"
-										/>
-										<img
-											src={frameImg}
-											alt="frame"
-											class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 scale-[1.05]"
-										/>
+							<div class="relative w-full md:max-w-[420px] aspect-[4/5] group transition-transform duration-500 hover:scale-[1.02]">
+								<!-- Background Stacks (Next Member) - Stable behind the keyed active card -->
+								{#if nextNextMember}
+									<div class="absolute inset-0 bg-zinc-200 dark:bg-zinc-800 rounded-3xl transform -rotate-3 translate-x-2 translate-y-1 md:-rotate-6 md:translate-x-4 md:translate-y-2 opacity-40 shadow-xl transition-all duration-700 overflow-hidden border-[3px] border-white/50 dark:border-zinc-700/50">
+										<img src={getExternalMediaUrl(nextNextMember.img)} alt="" class="w-full h-full object-cover object-top grayscale opacity-50" />
 									</div>
-								</div>
+								{/if}
+								{#if nextMember}
+									<div class="absolute inset-0 bg-zinc-300 dark:bg-zinc-700 rounded-3xl transform rotate-2 -translate-x-2 translate-y-1 md:rotate-3 md:-translate-x-3 md:translate-y-1 opacity-60 shadow-xl transition-all duration-700 overflow-hidden border-[3px] border-white/50 dark:border-zinc-700/50">
+										<img src={getExternalMediaUrl(nextMember.img)} alt="" class="w-full h-full object-cover object-top grayscale opacity-50" />
+									</div>
+								{/if}
+
+								{#key currentMember.id}
+									<div
+										class="absolute inset-0 flex items-center justify-center p-0"
+										in:tinderSwipe={{ duration: 600, dir: direction }}
+										out:tinderSwipe={{ duration: 600, isOut: true, dir: direction }}
+									>
+										<!-- Main Image Container -->
+										<div class="relative w-full h-full z-10 rounded-3xl overflow-hidden border-x-0 md:border-[6px] border-white dark:border-zinc-800 shadow-2xl bg-white dark:bg-zinc-800">
+											<img
+												src={getExternalMediaUrl(currentMember.img)}
+												alt={currentMember.name}
+												class="w-full h-full object-cover object-top grayscale-[10%] group-hover:grayscale-0 transition-all duration-700"
+											/>
+											<img
+												src={frameImg}
+												alt="frame"
+												class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 scale-[1.05]"
+											/>
+										</div>
+									</div>
+								{/key}
 							</div>
-						{/key}
 						
 						<!-- Mobile Close Button (Top Right of Content) -->
 						<button
