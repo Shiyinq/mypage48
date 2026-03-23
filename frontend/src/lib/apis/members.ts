@@ -10,7 +10,7 @@ export interface SocialMedia {
 }
 
 export interface Member {
-	id: number;
+	id: string | number;
 	name: string;
 	nickname: string;
 	generation: string;
@@ -23,6 +23,8 @@ export interface Member {
 	horoscope: string;
 	height: string;
 	socials: SocialMedia;
+	member_type?: string;
+	member_code?: string;
 }
 
 import type { PaginationMeta } from '$lib/types';
@@ -36,10 +38,11 @@ export interface BirthdayResponse {
 	id: string;
 	name: string;
 	active: boolean;
-	img: string | null;
+	img?: string;
 	birthdate: string;
 	days_until: number;
 	age: number;
+	member_type?: string;
 }
 
 export const members = {

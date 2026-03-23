@@ -29,6 +29,8 @@ class MemberBase(BaseModel):
     horoscope: Optional[str] = None
     height: Optional[str] = None
     socials: Optional[SocialMedia] = None
+    member_type: Optional[str] = "JKT48"
+    member_code: Optional[str] = None
 
     @field_validator(
         "nickname",
@@ -39,6 +41,8 @@ class MemberBase(BaseModel):
         "horoscope",
         "height",
         "img",
+        "member_type",
+        "member_code",
         mode="before",
     )
     @classmethod
@@ -96,6 +100,8 @@ class MemberCreateRequest(BaseModel):
     horoscope: Optional[str] = None
     height: Optional[str] = None
     socials: Optional[SocialMedia] = None
+    member_type: Optional[str] = "JKT48"
+    member_code: Optional[str] = None
 
 
 class MemberUpdateRequest(BaseModel):
@@ -113,6 +119,8 @@ class MemberUpdateRequest(BaseModel):
     horoscope: Optional[str] = None
     height: Optional[str] = None
     socials: Optional[SocialMedia] = None
+    member_type: Optional[str] = None
+    member_code: Optional[str] = None
 
 
 class MessageResponse(BaseModel):
@@ -131,3 +139,4 @@ class BirthdayResponse(BaseModel):
     birthdate: str
     days_until: int
     age: int
+    member_type: Optional[str] = "JKT48"

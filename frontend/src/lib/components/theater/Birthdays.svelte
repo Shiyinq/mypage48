@@ -66,8 +66,17 @@
 							</div>
 						{/if}
 						<div
-							class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"
+							class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent z-20"
 						></div>
+
+						<!-- Frame Image Overlay -->
+						<img
+							src={member.member_type?.toLowerCase() === 'trainee'
+								? 'https://jkt48.com/images/member/bg-member-trainee-frame-transparent.png'
+								: 'https://jkt48.com/images/member/bg-member-item-frame-transparent.png'}
+							alt="frame"
+							class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
+						/>
 
 						<!-- Top Overlay Gradient -->
 						<div
@@ -86,7 +95,7 @@
 							</span>
 						</div>
 
-						<div class="absolute bottom-0 left-0 right-0 p-3">
+						<div class="absolute bottom-0 left-0 right-0 p-3 z-30">
 							<div class="text-white font-bold text-sm truncate drop-shadow-sm">
 								{member.name}
 							</div>

@@ -226,6 +226,7 @@ class MemberService:
                                 birthdate=member.get("birthdate", ""),
                                 days_until=days_until,
                                 age=age,
+                                member_type=member.get("member_type", "JKT48"),
                             )
                         )
                 except (ValueError, TypeError) as e:
@@ -299,6 +300,7 @@ class MemberService:
                                         "date": birthday_date,
                                         "img": member.get("img"),
                                         "active": member.get("active", True),
+                                        "member_type": member.get("member_type", "JKT48"),
                                     }
                                 )
                         except ValueError:

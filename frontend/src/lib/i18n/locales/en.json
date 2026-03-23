@@ -819,6 +819,10 @@
 		"yearsOld": "years old",
 		"notFound": "Member Not Found",
 		"notFoundMessage": "We couldn't retrieve this member's details. Please try again later.",
+		"type": {
+			"member": "Member",
+			"trainee": "Trainee"
+		},
 		"close": "Close",
 		"emptyState": {
 			"title": "No Members Found",

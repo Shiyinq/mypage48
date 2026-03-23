@@ -3,6 +3,12 @@
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	export let member: Member;
+
+	// Frame logic
+	const MEMBER_FRAME = 'https://jkt48.com/images/member/bg-member-item-frame-transparent.png';
+	const TRAINEE_FRAME = 'https://jkt48.com/images/member/bg-member-trainee-frame-transparent.png';
+
+	$: frameImg = member.member_type?.toLowerCase() === 'trainee' ? TRAINEE_FRAME : MEMBER_FRAME;
 </script>
 
 <button
@@ -28,11 +34,20 @@
 			</div>
 		{/if}
 
+		<!-- Frame Image Overlay -->
+		<img
+			src={frameImg}
+			alt="frame"
+			class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
+		/>
+
 		<!-- Gradient Overlay -->
-		<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+		<div
+			class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
+		></div>
 
 		<!-- Content Area (Overlay) -->
-		<div class="absolute bottom-0 left-0 right-0 p-3 flex flex-col justify-end">
+		<div class="absolute bottom-0 left-0 right-0 p-3 flex flex-col justify-end z-30">
 			<h3 class="font-bold text-white text-base leading-tight drop-shadow-sm">
 				{member.nickname}
 			</h3>

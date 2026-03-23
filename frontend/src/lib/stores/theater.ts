@@ -162,7 +162,7 @@ function createMembersStore() {
 				const res = await membersApi.getAll({
 					...params,
 					page: pageToLoad,
-					limit: params.limit || 20
+					limit: params.limit || 100
 				});
 
 				update((s) => {
