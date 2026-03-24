@@ -616,7 +616,28 @@
 			"members": "Members",
 			"events": "Events",
 			"news": "News",
+			"live": "Live",
 			"sorter": "Sorter"
+		},
+		"live": {
+			"title": "Live",
+			"subtitle": "Watch JKT48 members who are currently live",
+			"onLive": "On Live",
+			"viewer": "Viewers",
+			"startedAt": "Started at",
+			"empty": "No members are currently live.",
+			"back": "Back",
+			"focusMode": "Focus Mode",
+			"exitFocus": "Exit Focus",
+			"screenshot": "Screenshot",
+			"refresh": "Refresh Stream",
+			"hideChat": "Hide Chat",
+			"showChat": "Show Chat",
+			"record": "Record Stream",
+			"stopRecord": "Stop Recording",
+			"liveBadge": "LIVE",
+			"chat": "Chat",
+			"connected": "Connected"
 		},
 		"news": {
 			"title": "News",

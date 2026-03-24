@@ -42,6 +42,7 @@ from src.users.repository import UserRepository
 from src.users.service import UserService
 from src.news.repository import NewsRepository
 from src.news.service import NewsService
+from src.live.service import LiveService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/signin")
 logger = create_logger("dependencies", __name__)
@@ -350,3 +351,10 @@ def get_news_service(
     config: Settings = Depends(get_settings),
 ) -> NewsService:
     return NewsService(repo, config)
+
+
+def get_live_service(
+    member_repo: MemberRepository = Depends(get_member_repository),
+    config: Settings = Depends(get_settings),
+) -> LiveService:
+    return LiveService(member_repo, config)
