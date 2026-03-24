@@ -43,6 +43,15 @@ export const THEATER_THEMES = {
 		headerIcon:
 			'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-red-100 dark:shadow-red-900/20',
 		titleLine: 'bg-red-200/60 dark:bg-red-500/30'
+	},
+	rose: {
+		navActive:
+			'bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 shadow-sm ring-1 ring-rose-200 dark:ring-rose-500/30',
+		navInactive:
+			'hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 border-gray-100 dark:border-zinc-700',
+		headerIcon:
+			'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 shadow-rose-100 dark:shadow-rose-900/20',
+		titleLine: 'bg-rose-200/60 dark:bg-rose-500/30'
 	}
 };
 
