@@ -640,6 +640,10 @@
 			"errorTitle": "スケジュールの読み込みに失敗しました",
 			"errorDesc": "イベントスケジュールの取得中にエラーが発生しました。"
 		},
+		"calendar": {
+			"subtitle": "劇場公演スケジュールカレンダー",
+			"more": "他 {count} 件"
+		},
 		"eventHistory": {
 			"title": "イベント履歴",
 			"subtitle": "過去のイベント",

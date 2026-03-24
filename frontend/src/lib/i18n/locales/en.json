@@ -670,6 +670,10 @@
 			"birthday": "Birthday",
 			"tba": "TBA"
 		},
+		"calendar": {
+			"subtitle": "Theater Schedule Calendar",
+			"more": "+ {count} More"
+		},
 		"members": {
 			"title": "Members",
 			"subtitle": "JKT48 member data",

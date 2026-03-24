@@ -793,6 +793,10 @@
 			"errorTitle": "Gagal memuat jadwal",
 			"errorDesc": "Terjadi kesalahan saat mengambil jadwal event."
 		},
+		"calendar": {
+			"subtitle": "Kalender Jadwal Teater",
+			"more": "+ {count} Lagi"
+		},
 		"events": {
 			"header": "Event",
 			"title": "Event Teater",

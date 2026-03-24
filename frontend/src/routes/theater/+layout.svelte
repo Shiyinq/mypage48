@@ -2,7 +2,15 @@
 	export let params: Record<string, string> | undefined = undefined;
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { AudioLines, Users, Calendar, ChevronRight, History, Newspaper, ArrowUpDown } from 'lucide-svelte';
+	import {
+		AudioLines,
+		Users,
+		Calendar,
+		ChevronRight,
+		History,
+		Newspaper,
+		ArrowUpDown
+	} from 'lucide-svelte';
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
 
 	const { t } = useTranslation();
@@ -125,7 +133,7 @@
 	};
 </script>
 
-<div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in">
+<div class="max-w-6xl mx-auto p-4 pb-24">
 	{#if !isDetailPage}
 		<!-- Header & Sub Navigation Wrapper -->
 		<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">

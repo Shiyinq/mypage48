@@ -23,13 +23,13 @@
 	<!-- NAV -->
 	<LandingNavbar showLogin={false} />
 
-	<div class="max-w-3xl mx-auto space-y-12 relative z-10 px-6 pt-16">
+	<div class="max-w-3xl mx-auto pb-12 relative z-10 px-6 pt-4 md:pt-6">
 		<!-- Header -->
-		<div class="space-y-4 text-center">
-			<h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+		<div class="space-y-4 text-center mb-8">
+			<h1 class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3">
 				{$t('cookies.title')}
 			</h1>
-			<p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+			<p class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest leading-relaxed">
 				{$t('cookies.subtitle')}
 			</p>
 		</div>
