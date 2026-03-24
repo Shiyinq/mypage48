@@ -49,7 +49,8 @@
 			'/jkt48/events',
 			'/jkt48/calendar',
 			'/jkt48/event-history',
-			'/jkt48/sorter'
+			'/jkt48/sorter',
+			'/jkt48/live'
 		].some((path) => $page.url.pathname.startsWith(path));
 
 	// Determine if current page is strictly for guests (login/register pages)
@@ -155,7 +156,7 @@
 	}
 
 	// Redirect logged-in users away from public JKT48 routes to their theater counterparts
-	$: if (mounted && $isAuthenticated && $page.url.pathname.startsWith('/jkt48/')) {
+	$: if (mounted && $isAuthenticated && $page.url.pathname.startsWith('/jkt48/') && !$page.url.pathname.startsWith('/jkt48/live')) {
 		let theaterPath = $page.url.pathname.replace('/jkt48/', '/theater/');
 		// Special case for sub-routes that might have different structures
 		if ($page.url.pathname === '/jkt48/event-history') {

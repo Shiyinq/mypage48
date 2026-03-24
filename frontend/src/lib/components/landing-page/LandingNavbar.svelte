@@ -19,7 +19,8 @@
 		{ label: $t('theater.members.title'), href: '/jkt48/members' },
 		{ label: $t('nav.events'), href: '/jkt48/events' },
 		{ label: $t('theater.events.calendar'), href: '/jkt48/calendar' },
-		{ label: $t('theater.sorter.title'), href: '/jkt48/sorter' }
+		{ label: $t('theater.sorter.title'), href: '/jkt48/sorter' },
+		{ label: $t('theater.live.title'), href: '/jkt48/live' }
 	];
 
 	function toggleMenu() {

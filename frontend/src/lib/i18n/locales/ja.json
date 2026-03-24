@@ -568,7 +568,28 @@
 			"members": "メンバー",
 			"events": "イベント",
 			"news": "ニュース",
+			"live": "ライブ",
 			"sorter": "ソーター"
+		},
+		"live": {
+			"title": "ライブ",
+			"subtitle": "配信中のJKT48メンバーを視聴",
+			"onLive": "ライブ中",
+			"viewer": "視聴者",
+			"startedAt": "開始時間",
+			"empty": "現在配信中のメンバーはいません。",
+			"back": "戻る",
+			"focusMode": "フォーカスモード",
+			"exitFocus": "フォーカス終了",
+			"screenshot": "スクリーンショット",
+			"refresh": "更新",
+			"hideChat": "チャットを非表示",
+			"showChat": "チャットを表示",
+			"record": "配信を録画",
+			"stopRecord": "録画を停止",
+			"liveBadge": "ライブ",
+			"chat": "チャット",
+			"connected": "接続中"
 		},
 		"news": {
 			"title": "ニュース",

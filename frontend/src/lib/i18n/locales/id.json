@@ -737,7 +737,28 @@
 			"members": "Member",
 			"events": "Event",
 			"news": "Berita",
+			"live": "Live",
 			"sorter": "Sorter"
+		},
+		"live": {
+			"title": "Live",
+			"subtitle": "Tonton member JKT48 yang sedang siaran langsung",
+			"onLive": "Sedang Langsung",
+			"viewer": "Penonton",
+			"startedAt": "Mulai sejak",
+			"empty": "Tidak ada member yang sedang siaran langsung saat ini.",
+			"back": "Kembali",
+			"focusMode": "Mode Fokus",
+			"exitFocus": "Keluar Fokus",
+			"screenshot": "Screenshot",
+			"refresh": "Muat Ulang",
+			"hideChat": "Sembunyikan Chat",
+			"showChat": "Tampilkan Chat",
+			"record": "Rekam Stream",
+			"stopRecord": "Berhenti Rekam",
+			"liveBadge": "LANGSUNG",
+			"chat": "Obrolan",
+			"connected": "Terhubung"
 		},
 		"news": {
 			"title": "Berita",
