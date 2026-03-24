@@ -19,6 +19,8 @@
 	import ErrorFallback from '$lib/components/common/ErrorFallback.svelte';
 	import CommandPalette from '$lib/components/CommandPalette.svelte';
 	import ScrollToTop from '$lib/components/common/ScrollToTop.svelte';
+	import LandingNavbar from '$lib/components/landing-page/LandingNavbar.svelte';
+	import Footer from '$lib/components/landing-page/Footer.svelte';
 
 	export let data: { locale?: string };
 
@@ -40,7 +42,15 @@
 		$page.url.pathname === '/cookies' ||
 		$page.url.pathname === '/about' ||
 		$page.url.pathname.startsWith('/auth/') ||
-		$page.url.pathname.startsWith('/u/');
+		$page.url.pathname.startsWith('/u/') ||
+		[
+			'/jkt48/members',
+			'/jkt48/news',
+			'/jkt48/events',
+			'/jkt48/calendar',
+			'/jkt48/event-history',
+			'/jkt48/sorter'
+		].some((path) => $page.url.pathname.startsWith(path));
 
 	// Determine if current page is strictly for guests (login/register pages)
 	// Logged in users should be redirected AWAY from these pages
@@ -143,6 +153,18 @@
 	$: if (mounted && $isAuthenticated && isGuestRoute) {
 		goto('/');
 	}
+
+	// Redirect logged-in users away from public JKT48 routes to their theater counterparts
+	$: if (mounted && $isAuthenticated && $page.url.pathname.startsWith('/jkt48/')) {
+		let theaterPath = $page.url.pathname.replace('/jkt48/', '/theater/');
+		// Special case for sub-routes that might have different structures
+		if ($page.url.pathname === '/jkt48/event-history') {
+			theaterPath = '/theater/events/history';
+		} else if ($page.url.pathname === '/jkt48/calendar') {
+			theaterPath = '/theater/events/calendar';
+		}
+		goto(theaterPath);
+	}
 </script>
 
 {#if appError}
@@ -193,6 +215,17 @@
 			<!-- If mounted && $isAuthenticated && isGuestRoute: render nothing, redirect will happen -->
 		{:else if !mounted}
 			<SplashScreen />
+		{:else if isPublicPage && !$isAuthenticated}
+			<!-- Render public theater pages for unauthenticated users -->
+			{#if $page.url.pathname === '/'}
+				<slot />
+			{:else}
+				<LandingNavbar showLogin={false} />
+				<div class="max-w-7xl mx-auto px-4 py-8 flex-1">
+					<slot />
+				</div>
+				<Footer />
+			{/if}
 		{:else if $isAuthenticated}
 			<!-- Protected pages: user authenticated, show full content -->
 			<Header />
@@ -200,6 +233,9 @@
 				<slot />
 			</main>
 			<MobileNav />
+		{:else}
+			<!-- Fallback or Catch-all (should be handled by redirects above) -->
+			<div class="hidden">Nothing to show</div>
 		{/if}
 		<!-- If mounted && !$isAuthenticated && !isPublicPage: render nothing, redirect will happen -->
 		<ScrollToTop />
