@@ -128,14 +128,14 @@
 
 	<div class="flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden transition-all duration-500">
 		<!-- Header -->
-		<div class="flex items-center justify-between px-6 py-4 border-b border-gray-50 dark:border-zinc-800">
+		<div class="flex items-center justify-between px-3 md:px-6 py-4 border-b border-gray-50 dark:border-zinc-800">
 			<div class="relative">
 				<button
-					class="text-xl font-black text-slate-900 dark:text-white cursor-pointer hover:text-red-600 px-3 py-1.5 rounded-xl transition-all flex items-center gap-2 uppercase tracking-tight"
+					class="text-base md:text-xl font-black text-slate-900 dark:text-white cursor-pointer hover:text-red-600 px-2 md:px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 uppercase tracking-tight"
 					on:click={() => (isDatePickerOpen = !isDatePickerOpen)}
 				>
-					{$formatDate(new Date(year, month - 1), { month: 'long', year: 'numeric' })}
-					<ChevronRight class="w-5 h-5 opacity-40 transition-transform {isDatePickerOpen ? 'rotate-90' : ''}" />
+					{$formatDate(new Date(year, month - 1), { month: 'short' })} <span class="hidden md:inline">{$formatDate(new Date(2000, 0), { year: 'numeric' }).replace('2000', year.toString())}</span>
+					<ChevronRight class="w-4 h-4 md:w-5 md:h-5 opacity-40 transition-transform {isDatePickerOpen ? 'rotate-90' : ''}" />
 				</button>
 
 				{#if isDatePickerOpen}
@@ -168,47 +168,56 @@
 			</div>
 
 			<!-- Center: Badges -->
-			<div class="hidden lg:flex items-center gap-2">
-				{#if !$calendarLoading && currentMonthEvents.length > 0}
+			{#if !$calendarLoading && currentMonthEvents.length > 0}
+				<div class="flex items-center gap-1 md:gap-3 ml-1 md:ml-4 mr-1 md:mr-auto text-xs font-medium text-gray-500 dark:text-gray-400 min-w-0">
 					{#if setlistsCount > 0}
-						<div class="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-900/30 text-[10px] font-black uppercase tracking-wider">
-							<div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
-							{setlistsCount} {$t('theater.events.setlist')}
+						<div class="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full border border-blue-100 dark:border-blue-900/30 text-[9px] md:text-[10px] font-black uppercase tracking-wider shrink-0">
+							<div class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+							{setlistsCount} <span class="hidden sm:inline">{$t('theater.events.setlist')}</span>
 						</div>
 					{/if}
 					{#if birthdaysCount > 0}
-						<div class="flex items-center gap-1.5 bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400 px-3 py-1 rounded-full border border-pink-100 dark:border-pink-900/30 text-[10px] font-black uppercase tracking-wider">
-							<div class="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse"></div>
-							{birthdaysCount} {$t('theater.events.birthday')}
+						<div class="flex items-center gap-1 bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400 px-2 py-1 rounded-full border border-pink-100 dark:border-pink-900/30 text-[9px] md:text-[10px] font-black uppercase tracking-wider shrink-0">
+							<div class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-pink-500 animate-pulse"></div>
+							{birthdaysCount} <span class="hidden sm:inline">{$t('theater.events.birthday')}</span>
 						</div>
 					{/if}
 					{#if othersCount > 0}
-						<div class="flex items-center gap-1.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-3 py-1 rounded-full border border-purple-100 dark:border-purple-900/30 text-[10px] font-black uppercase tracking-wider">
-							<div class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></div>
-							{othersCount} {$t('theater.events.eventType')}
+						<div class="flex items-center gap-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-2 py-1 rounded-full border border-purple-100 dark:border-purple-900/30 text-[9px] md:text-[10px] font-black uppercase tracking-wider shrink-0">
+							<div class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-purple-500 animate-pulse"></div>
+							{othersCount} <span class="hidden sm:inline">{$t('theater.events.eventType')}</span>
 						</div>
 					{/if}
-				{/if}
-			</div>
+				</div>
+			{/if}
 
 			<!-- Controls -->
-			<div class="flex items-center gap-4">
+			<div class="flex items-center gap-2 md:gap-4 shrink-0">
 				<button
 					on:click={() => {
 						const now = new Date();
 						goto(`${basePath}?year=${now.getFullYear()}&month=${now.getMonth() + 1}`);
 					}}
-					class="hidden md:block px-6 py-2 text-xs font-black uppercase tracking-widest border-2 border-slate-100 dark:border-zinc-800 rounded-full hover:border-red-600 hover:text-red-600 transition-all text-slate-500 cursor-pointer active:scale-95"
+					class="hidden md:block px-6 py-2 text-xs font-black uppercase tracking-widest border-2 border-slate-100 dark:border-zinc-800 rounded-full hover:border-red-600 hover:text-red-600 transition-all text-slate-500 cursor-pointer active:scale-95 shadow-sm"
+				>
+					{$t('theater.events.today')}
+				</button>
+				<button
+					on:click={() => {
+						const now = new Date();
+						goto(`${basePath}?year=${now.getFullYear()}&month=${now.getMonth() + 1}`);
+					}}
+					class="md:hidden cursor-pointer px-2 py-1 text-[9px] font-black uppercase tracking-widest border-2 border-slate-100 dark:border-zinc-800 rounded-full hover:border-red-600 hover:text-red-600 transition-all text-slate-500 active:scale-95 shadow-sm shrink-0"
 				>
 					{$t('theater.events.today')}
 				</button>
 
-				<div class="flex items-center bg-slate-50 dark:bg-zinc-800 rounded-full p-1 border border-slate-100 dark:border-zinc-700/50">
-					<button on:click={() => changeMonth(-1)} class="p-2 hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all text-slate-600 hover:text-red-600 cursor-pointer active:scale-90">
-						<ChevronLeft class="w-5 h-5" />
+				<div class="flex items-center bg-slate-100/50 dark:bg-zinc-800 rounded-full p-0.5 md:p-1 border border-slate-100 dark:border-zinc-700/50 scale-90 md:scale-100">
+					<button on:click={() => changeMonth(-1)} class="p-1 md:p-2 hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all text-slate-600 hover:text-red-600 cursor-pointer active:scale-90">
+						<ChevronLeft class="w-4 h-4 md:w-5 md:h-5" />
 					</button>
-					<button on:click={() => changeMonth(1)} class="p-2 hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all text-slate-600 hover:text-red-600 cursor-pointer active:scale-90">
-						<ChevronRight class="w-5 h-5" />
+					<button on:click={() => changeMonth(1)} class="p-1 md:p-2 hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all text-slate-600 hover:text-red-600 cursor-pointer active:scale-90">
+						<ChevronRight class="w-4 h-4 md:w-5 md:h-5" />
 					</button>
 				</div>
 			</div>
@@ -264,7 +273,18 @@
 								{date.getDate()}
 							</div>
 
-							<div class="flex flex-col w-full gap-1 px-1 overflow-hidden min-w-0">
+							<!-- Mobile Dot Indicators -->
+							<div class="flex flex-wrap justify-center gap-0.5 px-0.5 md:hidden w-full max-h-[50%] overflow-hidden mb-1">
+								{#each dayEvents.slice(0, 8) as event}
+									<div class={`w-1 h-1 rounded-full ${event.type === 'BIRTHDAY' || event.isBirthday ? 'bg-pink-400' : (event.type === 'SHOW' || event.setlistId ? 'bg-blue-400' : 'bg-purple-400')}`}></div>
+								{/each}
+								{#if dayEvents.length > 8}
+									<div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+								{/if}
+							</div>
+
+							<!-- Desktop Events List (Hidden on Mobile) -->
+							<div class="hidden md:flex flex-col w-full gap-1 px-1 overflow-hidden min-w-0">
 								{#each dayEvents.slice(0, 3) as event}
 									<button
 										class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider truncate cursor-pointer {event.isBirthday ? 'bg-pink-100 text-pink-700' : 'bg-red-50 text-red-700'} brightness-95 min-w-0 hover:scale-[1.02] active:scale-95 transition-transform"
