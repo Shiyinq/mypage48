@@ -615,7 +615,8 @@
 			"theater": "Theater",
 			"members": "Members",
 			"events": "Events",
-			"news": "News"
+			"news": "News",
+			"sorter": "Sorter"
 		},
 		"news": {
 			"title": "News",
@@ -707,6 +708,34 @@
 			"title": "Upcoming Birthdays",
 			"empty": "No upcoming birthdays in the next 30 days.",
 			"daysLeft": "In {days} days"
+		},
+		"sorter": {
+			"title": "Oshi Sorter",
+			"subtitle": "Sort your favorite members!",
+			"start": "Start Sorter",
+			"tie": "Tie",
+			"undo": "Undo",
+			"progress": "Progress",
+			"results": "Results",
+			"share": "Share",
+			"generation": "Select Generation",
+			"allGenerations": "All Generations",
+			"selectAll": "Select All",
+			"clear": "Clear",
+			"selectedMembers": "Selected Members:",
+			"ready": "ready",
+			"sorting": "Sorting...",
+			"questionLabel": "Question #{num}",
+			"exit": "Exit",
+			"restart": "Restart Sorter",
+			"resultsSubtitle": "Here is your ultimate ranking!",
+			"genLabel": "Gen {gen}",
+			"minSelection": "Select at least 2 members",
+			"shareTitle": "JKT48 Oshi Sorter",
+			"shareTextHeader": "My JKT48 Oshi Sorter Results:",
+			"shareTextFooter": "Sort yours at",
+			"copySuccess": "Results copied to clipboard!",
+			"copyFailed": "Failed to copy results. Please copy manually."
 		}
 	},
 	"memories": {

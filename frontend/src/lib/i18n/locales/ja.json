@@ -567,7 +567,8 @@
 			"theater": "シアター",
 			"members": "メンバー",
 			"events": "イベント",
-			"news": "ニュース"
+			"news": "ニュース",
+			"sorter": "ソーター"
 		},
 		"news": {
 			"title": "ニュース",
@@ -659,6 +660,34 @@
 			"title": "近日中の誕生日",
 			"empty": "今後30日間の誕生日メンバーはいません。",
 			"daysLeft": "あと{days}日"
+		},
+		"sorter": {
+			"title": "推しソーター",
+			"subtitle": "お気に入りのメンバーをランク付けしよう！",
+			"start": "ソーターを開始",
+			"tie": "引き分け",
+			"undo": "戻る",
+			"progress": "進行状況",
+			"results": "結果",
+			"share": "共有",
+			"generation": "期生を選択",
+			"allGenerations": "全期生",
+			"selectAll": "すべて選択",
+			"clear": "クリア",
+			"selectedMembers": "選択済みメンバー:",
+			"ready": "準備完了",
+			"sorting": "ソート中...",
+			"questionLabel": "質問 #{num}",
+			"exit": "終了",
+			"restart": "ソーターを再開",
+			"resultsSubtitle": "あなたの最終ランキングです！",
+			"genLabel": "Gen {gen}",
+			"minSelection": "少なくとも2人のメンバーを選択してください",
+			"shareTitle": "JKT48 推しソーター",
+			"shareTextHeader": "私のJKT48推しソーター結果:",
+			"shareTextFooter": "あなたも試してみよう:",
+			"copySuccess": "結果をクリップボードにコピーしました！",
+			"copyFailed": "結果のコピーに失敗しました。手動でコピーしてください。"
 		}
 	},
 	"top2shot": {

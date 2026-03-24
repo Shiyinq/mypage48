@@ -736,7 +736,8 @@
 			"theater": "Theater",
 			"members": "Member",
 			"events": "Event",
-			"news": "Berita"
+			"news": "Berita",
+			"sorter": "Sorter"
 		},
 		"news": {
 			"title": "Berita",
@@ -829,6 +830,34 @@
 			"title": "Ulang Tahun Mendatang",
 			"empty": "Tidak ada ulang tahun dalam 30 hari ke depan.",
 			"daysLeft": "{days} hari lagi"
+		},
+		"sorter": {
+			"title": "Oshi Sorter",
+			"subtitle": "Urutkan member favoritmu!",
+			"start": "Mulai Sorter",
+			"tie": "Seri",
+			"undo": "Batal",
+			"progress": "Progres",
+			"results": "Hasil",
+			"share": "Bagikan",
+			"generation": "Pilih Generasi",
+			"allGenerations": "Semua Generasi",
+			"selectAll": "Pilih Semua",
+			"clear": "Bersihkan",
+			"selectedMembers": "Member Terpilih:",
+			"ready": "siap",
+			"sorting": "Mengurutkan...",
+			"questionLabel": "Pertanyaan #{num}",
+			"exit": "Keluar",
+			"restart": "Ulangi Sorter",
+			"resultsSubtitle": "Ini adalah peringkat terbaikmu!",
+			"genLabel": "Gen {gen}",
+			"minSelection": "Pilih minimal 2 member",
+			"shareTitle": "JKT48 Oshi Sorter",
+			"shareTextHeader": "Hasil JKT48 Oshi Sorter-ku:",
+			"shareTextFooter": "Coba punya kamu di",
+			"copySuccess": "Hasil berhasil disalin ke clipboard!",
+			"copyFailed": "Gagal menyalin hasil. Silakan salin manual."
 		}
 	},
 	"top2shot": {

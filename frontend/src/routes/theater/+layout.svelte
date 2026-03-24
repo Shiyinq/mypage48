@@ -2,7 +2,7 @@
 	export let params: Record<string, string> | undefined = undefined;
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { AudioLines, Users, Calendar, ChevronRight, History, Newspaper } from 'lucide-svelte';
+	import { AudioLines, Users, Calendar, ChevronRight, History, Newspaper, ArrowUpDown } from 'lucide-svelte';
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
 
 	const { t } = useTranslation();
@@ -29,6 +29,14 @@
 				subtitle: $t('theater.members.subtitle'),
 				icon: Users,
 				theme: 'pink'
+			};
+		}
+		if (currentPath.includes('/theater/sorter')) {
+			return {
+				title: $t('theater.sorter.title'),
+				subtitle: $t('theater.sorter.subtitle'),
+				icon: ArrowUpDown,
+				theme: 'rose'
 			};
 		}
 		if (currentPath.includes('/theater/events/history')) {
@@ -98,6 +106,13 @@
 			href: '/theater/events/history',
 			icon: History,
 			theme: 'orange'
+		},
+		{
+			labelKey: 'theater.subNav.sorter',
+			labelDefault: 'Sorter',
+			href: '/theater/sorter',
+			icon: ArrowUpDown,
+			theme: 'rose'
 		}
 	];
 
