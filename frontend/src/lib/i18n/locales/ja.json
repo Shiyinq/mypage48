@@ -592,7 +592,12 @@
 			"offline": "ルームはオフラインです",
 			"liveBadge": "ライブ",
 			"chat": "チャット",
-			"connected": "接続中"
+			"connected": "接続中",
+			"toggleTheme": "テーマ切替",
+			"volume": "音量",
+			"mute": "ミュート",
+			"unmute": "ミュート解除",
+			"pip": "ピクチャー・イン・ピクチャー"
 		},
 		"news": {
 			"title": "ニュース",
