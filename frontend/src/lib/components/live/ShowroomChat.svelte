@@ -48,12 +48,14 @@
 						
 						// Auto-scroll logic
 						if (isFirstLoad || isAtBottom) {
-							setTimeout(() => {
-								if (chatContainer) {
-									chatContainer.scrollTop = chatContainer.scrollHeight;
-									isFirstLoad = false;
-								}
-							}, 100);
+							await tick();
+							if (chatContainer) {
+								chatContainer.scrollTo({
+									top: chatContainer.scrollHeight,
+									behavior: isFirstLoad ? 'auto' : 'smooth'
+								});
+								isFirstLoad = false;
+							}
 						}
 					}
 				}

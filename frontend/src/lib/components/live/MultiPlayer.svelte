@@ -1,0 +1,237 @@
+<script lang="ts">
+	import { onMount, onDestroy } from 'svelte';
+	import { fade, scale, slide } from 'svelte/transition';
+	import { live as liveApi } from '$lib/apis/live';
+	import { API_BASE } from '$lib/apis/client';
+	import { RefreshCw, AlertCircle } from 'lucide-svelte';
+	import GiftOverlay from './GiftOverlay.svelte';
+
+	import { giftEvents, type GiftEvent } from '$lib/stores/gift';
+	
+	export let platform = ''; // 'showroom' or 'idn'
+	export let id = ''; // room_id or live_id
+	export let volume = 1;
+	export let muted = false;
+	export let roomIdentifier = ''; // IDN username
+
+	function getExternalMediaUrl(url?: string) {
+		if (!url) return '';
+		if (url.includes('idn.app')) {
+			try {
+				const u = new URL(url);
+				u.searchParams.delete('timestamp');
+				return u.toString();
+			} catch (e) {
+				return url;
+			}
+		}
+		return url;
+	}
+
+	let videoElement: HTMLVideoElement;
+	let hls: any;
+	let loading = true;
+	let error: string | null = null;
+	let initializing = false;
+	let currentPlatform = '';
+	let currentId = '';
+
+	let isEffectivelyMuted = false;
+	$: isEffectivelyMuted = muted || (isNaN(Number(volume)) ? false : Number(volume) === 0);
+
+	function syncAudioState() {
+		if (!videoElement) return;
+		const vol = Number(volume);
+		
+		if (!isNaN(vol)) {
+			// Double-lock volume to 0 if effectively muted
+			const targetVolume = isEffectivelyMuted ? 0 : Math.max(0, Math.min(1, vol));
+			if (videoElement.volume !== targetVolume) {
+				videoElement.volume = targetVolume;
+			}
+		}
+		
+		if (videoElement.muted !== isEffectivelyMuted) {
+			videoElement.muted = isEffectivelyMuted;
+			// For attribute-level binding (more persistent in some browsers)
+			if (isEffectivelyMuted) {
+				videoElement.setAttribute('muted', 'true');
+			} else {
+				videoElement.removeAttribute('muted');
+			}
+		}
+	}
+
+	$: if (videoElement || volume !== undefined || muted !== undefined) {
+		syncAudioState();
+	}
+
+	// Hardware Hammer: Reinforce mute every 200ms for 10s after playback starts
+	let hammerInterval: any;
+	function startHammer() {
+		if (hammerInterval) clearInterval(hammerInterval);
+		let count = 0;
+		hammerInterval = setInterval(() => {
+			if (isEffectivelyMuted) syncAudioState();
+			count++;
+			if (count > 50) clearInterval(hammerInterval); // Stop after 10s
+		}, 200);
+	}
+
+	// Floating Gift Logic - Handled by GiftOverlay component
+
+	async function initPlayer() {
+		if (typeof window === 'undefined' || initializing) return;
+		if (!videoElement || !platform || !id) return;
+		
+		// Prevent redundant re-init if source hasn't changed
+		if (platform === currentPlatform && id === currentId && (hls || videoElement.src)) return;
+		
+		initializing = true;
+		loading = true;
+		error = null;
+		
+		currentPlatform = platform;
+		currentId = id;
+
+		if (hls) {
+			hls.destroy();
+			hls = null;
+		}
+
+		try {
+			const res = await liveApi.getStreamingUrl(platform, id);
+			if (res && res.streaming_urls && res.streaming_urls.length > 0) {
+				let streamUrl = res.streaming_urls[0].url;
+				
+				if (platform === 'idn' || platform === 'showroom') {
+					streamUrl = `${API_BASE}/jkt48/live/proxy?url=${encodeURIComponent(streamUrl)}`;
+				}
+
+				if ((window as any).Hls && (window as any).Hls.isSupported()) {
+					const Hls = (window as any).Hls;
+					hls = new Hls({
+						enableWorker: true,
+						lowLatencyMode: true,
+						backBufferLength: 60
+					});
+					
+					hls.loadSource(streamUrl);
+					hls.attachMedia(videoElement);
+					
+					hls.on(Hls.Events.MANIFEST_PARSED, () => {
+						syncAudioState(); // Force sync when starting
+						startHammer(); // Start the hammer
+						videoElement.play().catch(e => console.log('Autoplay blocked', e));
+						loading = false;
+					});
+
+					hls.on(Hls.Events.ERROR, (event: any, data: any) => {
+						if (data.fatal) {
+							switch (data.type) {
+								case Hls.ErrorTypes.NETWORK_ERROR:
+									console.log('Fatal network error encountered, try to recover');
+									hls.startLoad();
+									break;
+								case Hls.ErrorTypes.MEDIA_ERROR:
+									console.log('Fatal media error encountered, try to recover');
+									hls.recoverMediaError();
+									break;
+								default:
+									console.error('Fatal unrecoverable error:', data);
+									error = "Stream error: " + data.details;
+									hls.destroy();
+									loading = false;
+									break;
+							}
+						}
+					});
+				} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+					videoElement.src = streamUrl;
+					videoElement.addEventListener('loadedmetadata', () => {
+						videoElement.play().catch(e => console.log('Autoplay blocked', e));
+						loading = false;
+					});
+				} else {
+					error = "HLS not supported";
+					loading = false;
+				}
+			} else {
+				error = "No stream found";
+				loading = false;
+			}
+		} catch (e) {
+			console.error('MultiPlayer init failed:', e);
+			error = "Failed to load stream";
+			loading = false;
+		} finally {
+			initializing = false;
+		}
+	}
+
+	onMount(() => {
+		if ((window as any).Hls) {
+			initPlayer();
+		} else {
+			// Checklist to ensure only one script is added
+			if (!document.getElementById('hls-js-script')) {
+				const script = document.createElement('script');
+				script.id = 'hls-js-script';
+				script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+				script.onload = () => {
+					// Trigger init for all players waiting
+					window.dispatchEvent(new CustomEvent('hls-js-loaded'));
+					initPlayer();
+				};
+				document.head.appendChild(script);
+			} else {
+				// Wait for the script to load if already added by another component
+				window.addEventListener('hls-js-loaded', initPlayer, { once: true });
+			}
+		}
+	});
+
+	onDestroy(() => {
+		if (hls) hls.destroy();
+	});
+
+	// Re-init if platform or id changes
+	$: if (platform && id && videoElement) {
+		initPlayer();
+	}
+</script>
+
+<div class="relative w-full h-full bg-black group/player overflow-hidden">
+	<!-- svelte-ignore a11y-media-has-caption -->
+	<video
+		bind:this={videoElement}
+		class="w-full h-full object-contain"
+		playsinline
+		muted={isEffectivelyMuted}
+		on:play={syncAudioState}
+		on:playing={syncAudioState}
+		on:volumechange={syncAudioState}
+	></video>
+
+	<!-- Multi-view Floating Gift Overlay -->
+	<GiftOverlay {roomIdentifier} />
+
+	{#if loading}
+		<div class="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-10">
+			<RefreshCw class="w-8 h-8 text-white animate-spin opacity-50" />
+		</div>
+	{/if}
+
+	{#if error}
+		<div class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 z-10 p-4 text-center">
+			<AlertCircle class="w-8 h-8 text-red-500 mb-2 opacity-50" />
+			<p class="text-[10px] font-black uppercase tracking-widest text-zinc-500">{error}</p>
+			<button 
+				on:click={initPlayer}
+				class="mt-4 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold rounded-lg transition-colors"
+			>
+				Retry
+			</button>
+		</div>
+	{/if}
+</div>

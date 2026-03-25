@@ -2,6 +2,7 @@
 	import { onMount, onDestroy, afterUpdate, tick } from 'svelte';
 	import { MessageCircle } from 'lucide-svelte';
 	import type { LiveChatIDNMessage } from '$lib/types';
+	import { broadcastGift } from '$lib/stores/gift';
 
 	export let roomIdentifier: string;
 
@@ -9,6 +10,20 @@
 	let messages: LiveChatIDNMessage[] = [];
 	let chatContainer: HTMLElement;
 	let connected = false;
+
+	function getExternalMediaUrl(url?: string) {
+		if (!url) return '';
+		if (url.includes('idn.app')) {
+			try {
+				const u = new URL(url);
+				u.searchParams.delete('timestamp');
+				return u.toString();
+			} catch (e) {
+				return url;
+			}
+		}
+		return url;
+	}
 
 	function connect() {
 		if (!roomIdentifier) return;
@@ -79,25 +94,35 @@
 			if (text.startsWith('{')) {
 				try {
 					const json = JSON.parse(text);
+					
+					// Hydrate user info first
+					if (json.user) {
+						senderName = json.user.name || json.user.display_name || json.user.username || senderName;
+						avatar = json.user.avatar_url || avatar;
+					}
+
 					if (json.gift) {
 						isGift = true;
+						const g = json.gift;
 						giftData = {
-							name: json.gift.name,
-							img: json.gift.image || json.gift.animation_large || json.gift.icon_url,
-							color: json.gift.bg_color
+							name: g.name,
+							img: g.image_url || g.image || g.icon_url || g.icon || g.sticker_url || g.animation_large_url || g.animation_large || g.animation_url,
+							color: g.bg_color
 						};
-						parsedText = `GIFT: ${json.gift.name}`;
+						broadcastGift({
+							roomIdentifier,
+							user: senderName,
+							avatar,
+							gift: giftData,
+							timestamp: Date.now()
+						});
+						parsedText = `GIFT: ${g.name}`;
 					} else if (json.chat && json.chat.message) {
 						parsedText = json.chat.message;
 					} else if (json.system && json.system.message) {
 						parsedText = json.system.message;
 					} else {
 						parsedText = json.message || json.text || parsedText;
-					}
-
-					if (json.user) {
-						senderName = json.user.name || senderName;
-						avatar = json.user.avatar_url || avatar;
 					}
 				} catch (e) {}
 			} else if (text.startsWith('***')) {
@@ -107,9 +132,11 @@
 			const isAtBottom = chatContainer && (chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 100);
 
 			messages = [...messages, { 
+				id: crypto.randomUUID(),
 				user: senderName, 
 				text: parsedText, 
 				avatar, 
+				timestamp: Date.now(),
 				type: isGift ? 'gift' : 'chat',
 				gift: giftData
 			}];
@@ -117,12 +144,14 @@
 			
 			// Auto-scroll
 			if (isFirstLoad || isAtBottom) {
-				setTimeout(() => {
-					if (chatContainer) {
-						chatContainer.scrollTop = chatContainer.scrollHeight;
-						isFirstLoad = false;
-					}
-				}, 50);
+				await tick();
+				if (chatContainer) {
+					chatContainer.scrollTo({
+						top: chatContainer.scrollHeight,
+						behavior: isFirstLoad ? 'auto' : 'smooth'
+					});
+					isFirstLoad = false;
+				}
 			}
 		} catch (e) {
 			console.error('Failed to parse IRC message:', e);
@@ -151,7 +180,7 @@
 			</div>
 		{/if}
 
-		{#each messages as msg}
+		{#each messages as msg (msg.id || msg.timestamp + msg.user)}
 			<div class="flex items-start gap-3 group">
 				{#if msg.avatar}
 					<img src={msg.avatar} alt={msg.user} class="w-8 h-8 rounded-full object-cover border border-gray-100 dark:border-zinc-800" />
@@ -164,12 +193,39 @@
 					<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5">{msg.user}</p>
 					
 					{#if msg.type === 'gift' && msg.gift}
+						{@const isLottie = msg.gift.img ? (msg.gift.img.includes('/animation/') || !msg.gift.img.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i)) : false}
+						{@const isRecent = messages.filter(m => m.type === 'gift').slice(-3).some(m => (m.id || m.timestamp) === (msg.id || msg.timestamp))}
 						<div 
-							class="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl rounded-tl-none text-white text-sm font-black italic shadow-lg shadow-black/10 animate-pulse transition-all"
+							class="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl rounded-tl-none text-white text-sm font-black italic shadow-lg shadow-black/10 transition-all"
 							style="background: {msg.gift.color || '#ef4444'}"
 						>
 							{#if msg.gift.img}
-								<img src={msg.gift.img} alt={msg.gift.name} class="w-10 h-10 object-contain drop-shadow-md" />
+								{#if isLottie && isRecent}
+									<lottie-player 
+										src={getExternalMediaUrl(msg.gift.img)} 
+										background="transparent" 
+										speed="1" 
+										style="width: 50px; height: 50px;"
+										class="object-contain drop-shadow-md" 
+										loop 
+										autoplay
+										on:error={(e) => { if (e.currentTarget instanceof HTMLElement) e.currentTarget.style.display = 'none'; }}
+									></lottie-player>
+								{:else if isLottie}
+									<!-- Static fallback for older Lottie gifts to save resources -->
+									<div class="w-[50px] h-[50px] flex items-center justify-center opacity-50">
+										<MessageCircle size={20} />
+									</div>
+								{:else}
+									<img 
+										src={getExternalMediaUrl(msg.gift.img)} 
+										alt={msg.gift.name} 
+										referrerpolicy="no-referrer"
+										style="width: 50px; height: 50px;"
+										on:error={(e) => { if (e.currentTarget instanceof HTMLImageElement) e.currentTarget.style.display = 'none'; }}
+										class="object-contain drop-shadow-md" 
+									/>
+								{/if}
 							{/if}
 							<div>
 								<p class="text-[10px] uppercase tracking-tighter opacity-80 mb-0.5">Sending Gift</p>
