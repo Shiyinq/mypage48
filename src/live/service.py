@@ -50,11 +50,11 @@ class LiveService:
         )
 
         if isinstance(showroom_lives, Exception):
-            logger.error(f"Error fetching Showroom lives", exc_info=showroom_lives)
+            logger.error(f"Error fetching Showroom lives: {showroom_lives}")
             showroom_lives = []
 
         if isinstance(idn_lives, Exception):
-            logger.error(f"Error fetching IDN lives", exc_info=idn_lives)
+            logger.error(f"Error fetching IDN lives: {idn_lives}")
             idn_lives = []
 
         all_lives = showroom_lives + idn_lives
@@ -170,7 +170,7 @@ class LiveService:
         try:
             async with httpx.AsyncClient() as client:
                 res = await client.post(
-                    url, json={"query": query, "variables": variables}, timeout=10.0
+                    url, json={"query": query, "variables": variables}, timeout=30.0
                 )
                 res.raise_for_status()
                 data = res.json()
@@ -292,6 +292,8 @@ class LiveService:
         if platform == "showroom":
             urls = await self.fetch_showroom_streaming_url(id)
             profile = await self.fetch_showroom_profile(id)
+            if not urls:
+                raise StreamingUrlNotFoundError()
             return LiveStreamInfo(
                 streaming_urls=urls,
                 member=profile
@@ -310,7 +312,7 @@ class LiveService:
                             slug = id
                             scrape_url = f"https://www.idn.app/{username}/live/{slug}"
                             
-                            async with httpx.AsyncClient(follow_redirects=True, timeout=10.0) as client:
+                            async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
                                 res = await client.get(scrape_url)
                                 html = res.text
                                 
