@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from src.live.schemas import LiveResponse, LiveStreamingURL, LiveStreamInfo
 from src.live.service import LiveService
 from src.dependencies import get_live_service
@@ -19,7 +19,13 @@ async def proxy_streaming_data(
     service: LiveService = Depends(get_live_service)
 ):
     """Proxy streaming data (m3u8, ts) to bypass CORS"""
-    return await service.proxy_hls_request(url)
+    proxy_res = await service.proxy_hls_request(url)
+    return Response(
+        content=proxy_res.get("content"),
+        status_code=proxy_res.get("status_code", 200),
+        media_type=proxy_res.get("media_type"),
+        headers=proxy_res.get("headers")
+    )
 
 @router.get("/showroom/comments")
 async def get_showroom_comments(
