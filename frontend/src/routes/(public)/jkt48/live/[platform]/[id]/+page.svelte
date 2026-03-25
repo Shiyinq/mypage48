@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { live } from '$lib/apis/live';
+	import { liveStore, currentStream, otherLive, liveLoading } from '$lib/stores/live';
+	import { showToast } from '$lib/stores/toast';
 	import { API_BASE } from '$lib/apis/client';
+	import type { LiveStatus } from '$lib/types';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import {
@@ -29,28 +32,29 @@
 
 	let videoElement: HTMLVideoElement;
 	let hls: any;
-	let streamingUrls: any[] = [];
-	let roomIdentifier: string | null = null;
-	let loading = true;
-	let error = false;
+	let loadingOtherLive = false;
+	let initializing = false;
+	let scriptLoaded = false;
+	let lastInitializedId = '';
+	let initCount = 0;
 	let chatVisible = true;
-	let memberName: string | null = null;
 	let isFocusMode = false;
 	let isRecording = false;
 	let mediaRecorder: any = null;
 	let recordedChunks: any[] = [];
 	let sidebarMode: 'chat' | 'list' = 'chat';
-	let otherLiveMembers: any[] = [];
-	let loadingOtherLive = false;
 
-	$: if (platform || id) {
-		if (typeof window !== 'undefined') {
-			initPlayer();
-			fetchOtherLive();
-		}
+	$: memberName = $currentStream?.member?.name || null;
+	$: roomIdentifier = $currentStream?.room_identifier || null;
+	$: streamingUrls = $currentStream?.streaming_urls || [];
+
+	$: if (scriptLoaded && platform && id && lastInitializedId !== `${platform}-${id}`) {
+		lastInitializedId = `${platform}-${id}`;
+		initPlayer();
+		fetchOtherLive();
 	}
 
-	function getMemberId(m: any) {
+	function getMemberId(m: LiveStatus | any) {
 		if (m.platform === 'showroom') return m.room_id || m.room_url_key;
 		return m.live_id || m.room_url_key;
 	}
@@ -58,24 +62,35 @@
 	const fallbackAvatar = 'https://placehold.co/640x960?text=NO%20IMAGE';
 
 	async function initPlayer() {
+		const currentInit = ++initCount;
 		try {
-			if (!platform || !id) throw new Error('Missing params');
-			const res = await live.getStreamingUrl(platform, id);
-			streamingUrls = res.streaming_urls || [];
-			roomIdentifier = res.room_identifier;
-			memberName = res.member?.name || null;
+			initializing = true;
+			const p = platform as string;
+			const i = id as string;
+			if (!p || !i) throw new Error('Missing params');
 
-			if (streamingUrls.length > 0) {
-				let streamUrl = streamingUrls[0].url;
+			await liveStore.loadStream(p, i);
+
+			// If a newer initialization has started, stop this one
+			if (currentInit !== initCount) return;
+
+			const current = $currentStream;
+			if (current && current.streaming_urls && current.streaming_urls.length > 0) {
+				const rawUrl = current.streaming_urls[0]?.url;
+				if (!rawUrl) return;
+
+				let streamUrl: string = rawUrl;
 
 				// Use proxy for IDN or Showroom to bypass CORS
-				if (platform === 'idn' || platform === 'showroom') {
-					streamUrl = `${API_BASE}/jkt48/live/proxy?url=${encodeURIComponent(streamUrl)}`;
+				if (p === 'idn' || p === 'showroom') {
+					// @ts-ignore
+					streamUrl = `${API_BASE}/jkt48/live/proxy?url=${encodeURIComponent(streamUrl as string)}`;
 				}
 
 				if (typeof window !== 'undefined' && (window as any).Hls && videoElement) {
 					const Hls = (window as any).Hls;
 					if (Hls.isSupported()) {
+						if (hls) hls.destroy();
 						hls = new Hls();
 						hls.loadSource(streamUrl);
 						hls.attachMedia(videoElement);
@@ -89,26 +104,31 @@
 						});
 					}
 				}
-			} else {
-				error = true;
 			}
-		} catch (e) {
+		} catch (e: any) {
 			console.error('Player init failed:', e);
-			error = true;
+			if (currentInit !== initCount) return;
+
+			// Handle 404 error from server
+			if (e?.detail === 'No streaming URL found for this room.') {
+				showToast($t('theater.live.offline'), 'error');
+				goto('/jkt48/live');
+			}
 		} finally {
-			loading = false;
+			if (currentInit === initCount) {
+				initializing = false;
+			}
 		}
 	}
 
 	async function fetchOtherLive() {
 		try {
+			const p = platform as string;
+			const i = id as string;
+			if (!p || !i) return;
+
 			loadingOtherLive = true;
-			const res = await live.getLiveList();
-			// Filter out the current member from the list
-			otherLiveMembers = (res || []).filter((m: any) => {
-				const isCurrent = m.platform === platform && getMemberId(m) === id;
-				return !isCurrent;
-			});
+			await liveStore.loadOtherLive(p, i);
 		} catch (e) {
 			console.error('Failed to fetch other live members:', e);
 		} finally {
@@ -117,12 +137,15 @@
 	}
 
 	onMount(() => {
+		if ((window as any).Hls) {
+			scriptLoaded = true;
+			return;
+		}
 		// Load hls.js from CDN
 		const script = document.createElement('script');
 		script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
 		script.onload = () => {
-			initPlayer();
-			fetchOtherLive();
+			scriptLoaded = true;
 		};
 		document.head.appendChild(script);
 	});
@@ -131,6 +154,7 @@
 		if (hls) {
 			hls.destroy();
 		}
+		liveStore.reset();
 	});
 
 	function toggleChat() {
@@ -164,8 +188,6 @@
 			videoElement.src = '';
 			videoElement.load();
 		}
-		loading = true;
-		error = false;
 		await initPlayer();
 	}
 
@@ -201,19 +223,14 @@
 
 		if (!isRecording) {
 			try {
-				// @ts-ignore
-				let stream = videoElement.captureStream
-					? videoElement.captureStream()
-					: videoElement.mozCaptureStream();
+				const v = videoElement as any;
+				let stream = v['captureStream'] ? v['captureStream']() : v['mozCaptureStream']();
 
 				// Zero-Loss Strategy: Check for tracks INSTANTLY
 				if (stream.getTracks().length === 0) {
 					// ONLY delay if we hit a race condition/warmup (common after refresh)
 					await new Promise((r) => setTimeout(r, 200));
-					// @ts-ignore
-					stream = videoElement.captureStream
-						? videoElement.captureStream()
-						: videoElement.mozCaptureStream();
+					stream = v['captureStream'] ? v['captureStream']() : v['mozCaptureStream']();
 				}
 
 				if (!stream.getTracks().length) {
@@ -323,9 +340,9 @@
 		<div
 			class="relative flex-1 bg-black rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-zinc-800"
 		>
-			{#if loading}
+			{#if initializing}
 				<div
-					class="absolute inset-0 flex items-center justify-center bg-zinc-950 p-8 text-center"
+					class="absolute inset-0 flex items-center justify-center bg-zinc-950 p-8 text-center z-20"
 					out:fade
 				>
 					<div class="flex flex-col items-center gap-6">
@@ -334,7 +351,7 @@
 						></div>
 						<div>
 							<div class="text-white font-black text-xl uppercase tracking-[0.2em] mb-2">
-								{typeof $t === 'function' ? $t('live.loading_stream') : 'Connecting to Stream...'}
+								{$t('theater.live.loading_stream')}
 							</div>
 							<div class="text-white/40 text-xs font-medium uppercase tracking-widest">
 								{(platform || 'Live').toUpperCase()} Stream Gateway
@@ -342,7 +359,7 @@
 						</div>
 					</div>
 				</div>
-			{:else if error}
+			{:else if !$currentStream}
 				<div
 					class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 text-white gap-6 px-6 text-center"
 				>
@@ -444,7 +461,7 @@
 					class="w-10 h-10 bg-red-600 hover:bg-red-700 active:scale-95 text-white rounded-full flex items-center justify-center shadow-lg shadow-red-500/20 transition-all cursor-pointer"
 					on:click={refreshStream}
 				>
-					<RefreshCw size={18} class={loading ? 'animate-spin' : ''} />
+					<RefreshCw size={18} class={$liveLoading ? 'animate-spin' : ''} />
 				</button>
 				<div
 					class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-2xl z-[100]"
@@ -563,7 +580,7 @@
 										>Searching matches...</span
 									>
 								</div>
-							{:else if otherLiveMembers.length === 0}
+							{:else if $otherLive.length === 0}
 								<div class="flex flex-col items-center justify-center h-full text-center gap-4">
 									<div
 										class="w-12 h-12 rounded-full bg-slate-50 dark:bg-zinc-900 flex items-center justify-center text-slate-300 dark:text-zinc-700"
@@ -575,7 +592,7 @@
 									</p>
 								</div>
 							{:else}
-								{#each otherLiveMembers as member}
+								{#each $otherLive as member}
 									<a
 										href="/jkt48/live/{member.platform}/{getMemberId(member)}"
 										class="flex items-center gap-3 p-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/50 hover:border-red-500/30 hover:shadow-xl hover:shadow-red-500/5 transition-all group overflow-hidden relative"
@@ -607,7 +624,7 @@
 												class="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-wider truncate mb-0.5 group-hover:text-red-600 transition-colors"
 											>
 												{member.member?.name ||
-													(member.platform === 'idn' ? member.room_identifier : member.title)}
+													(member.platform === 'idn' ? member.room_url_key : member.title)}
 											</div>
 											<div class="flex items-center gap-1.5">
 												<span class="text-[8px] font-black text-slate-400 uppercase tracking-widest"

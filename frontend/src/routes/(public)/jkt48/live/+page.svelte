@@ -1,34 +1,24 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { live } from '$lib/apis/live';
+	import { liveStore, liveList, liveLoading, liveError } from '$lib/stores/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Star, Users, ExternalLink, Play, Tv } from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	const { t } = useTranslation();
 
-	let lives: any[] = [];
-	let loading = true;
-	let error = false;
 	let interval: any;
 
+	let initialLoading = true;
 	async function fetchLives() {
-		try {
-			const res = await live.getLiveStatus();
-			lives = res.data || [];
-			error = false;
-		} catch (e) {
-			console.error('Failed to fetch lives:', e);
-			error = true;
-		} finally {
-			loading = false;
-		}
+		await liveStore.loadLiveList();
+		initialLoading = false;
 	}
 
 	onMount(() => {
 		fetchLives();
-		interval = setInterval(fetchLives, 60000); // Refresh every 60 seconds
+		interval = setInterval(() => liveStore.loadLiveList(true), 60000); // Refresh every 60 seconds
 	});
 
 	onDestroy(() => {
@@ -57,10 +47,12 @@
 <div class="py-12 min-h-screen">
 	<!-- Header Section -->
 	<header class="mb-12 text-center" in:fly={{ y: -20, duration: 600 }}>
-		<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-black uppercase tracking-widest mb-4">
-			<span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
-			{$t('theater.live.onLive')}
-		</div>
+		{#if $liveList.length > 0}
+			<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-black uppercase tracking-widest mb-4">
+				<span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+				{$t('theater.live.onLive')}
+			</div>
+		{/if}
 		<h1 class="text-4xl sm:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-4">
 			JKT48 <span class="text-red-600 italic">LIVE</span>
 		</h1>
@@ -69,41 +61,50 @@
 		</p>
 	</header>
 
-	{#if loading && lives.length === 0}
-		<div class="flex flex-col items-center justify-center py-24" transition:fade>
-			<div class="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-			<p class="text-slate-400 font-bold uppercase tracking-widest text-xs">{$t('common.loading')}</p>
+	{#if (initialLoading || $liveLoading) && $liveList.length === 0}
+		<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 px-4">
+			{#each Array(10) as _}
+				<div class="aspect-[3/4] bg-slate-100 dark:bg-zinc-900 rounded-xl overflow-hidden relative shadow-sm border border-slate-100 dark:border-zinc-800">
+					<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 dark:via-white/5 to-transparent -translate-x-full animate-shimmer"></div>
+					<div class="absolute bottom-0 left-0 right-0 p-4 space-y-2">
+						<div class="h-4 w-2/3 bg-slate-200 dark:bg-zinc-800 rounded"></div>
+						<div class="h-3 w-1/2 bg-slate-200 dark:bg-zinc-800 rounded"></div>
+					</div>
+				</div>
+			{/each}
 		</div>
-	{:else if lives.length === 0}
+	{:else if $liveList.length === 0}
 		<div class="flex flex-col items-center justify-center py-24 text-center px-6" in:fade>
 			<div class="w-24 h-24 rounded-full bg-slate-100 dark:bg-zinc-900 flex items-center justify-center mb-6 text-slate-300 dark:text-zinc-800">
 				<Tv size={48} />
 			</div>
-			<h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2 italic">POOF!</h2>
+			<h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2 italic">
+				{$t('theater.live.emptyTitle')}
+			</h2>
 			<p class="text-slate-500 dark:text-slate-400 font-medium max-w-md">
 				{$t('theater.live.empty')}
 			</p>
 		</div>
 	{:else}
 		<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 px-4">
-			{#each lives as live, i (live.platform + (live.room_id || live.live_id))}
+			{#each $liveList as stream, i (stream.platform + (stream.room_id || stream.live_id))}
 				<a 
-					href="/jkt48/live/{live.platform}/{live.room_id || live.live_id}"
+					href="/jkt48/live/{stream.platform}/{stream.room_id || stream.live_id}"
 					class="group relative aspect-[3/4] flex flex-col bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer"
-					in:fly={{ y: 20, delay: i * 100, duration: 500 }}
+					in:fade={{ duration: 400, delay: i * 50 }}
 				>
 					<!-- Member Photo Container -->
 					<div class="relative w-full h-full overflow-hidden bg-gray-100 dark:bg-zinc-800">
 						<img 
-							src={getExternalMediaUrl(live.member?.img) || fallbackAvatar} 
-							alt={live.member?.name}
+							src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar} 
+							alt={stream.member?.name}
 							on:error={(e) => { if (e.currentTarget instanceof HTMLImageElement) e.currentTarget.src = fallbackAvatar; }}
 							class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
 						/>
 						
 						<!-- Frame Image Overlay -->
 						<img
-							src={live.member?.member_type?.toLowerCase() === 'trainee' ? 'https://jkt48.com/images/member/bg-member-trainee-frame-transparent.png' : 'https://jkt48.com/images/member/bg-member-item-frame-transparent.png'}
+							src={stream.member?.member_type?.toLowerCase() === 'trainee' ? 'https://jkt48.com/images/member/bg-member-trainee-frame-transparent.png' : 'https://jkt48.com/images/member/bg-member-item-frame-transparent.png'}
 							alt="frame"
 							class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 						/>
@@ -113,16 +114,16 @@
 
 						<!-- Platform & Viewers Badges -->
 						<div class="absolute top-4 left-4 right-4 flex items-center justify-end gap-2 z-30">
-							{#if live.view_num > 0}
+							{#if stream.view_num > 0}
 								<div class="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest border border-white/20 flex items-center gap-1.5 shadow-lg">
 									<Users size={12} class="text-sky-400" />
-									{live.view_num.toLocaleString()}
+									{stream.view_num.toLocaleString()}
 								</div>
 							{/if}
 
 							<div class="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest border border-white/20 flex items-center gap-1.5 shadow-lg">
 								<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-								{live.platform}
+								{stream.platform}
 							</div>
 						</div>
 
@@ -130,14 +131,14 @@
 						<div class="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end z-30">
 							<div class="flex items-center justify-between gap-2 mb-0.5">
 								<h3 class="font-black text-white text-base leading-tight drop-shadow-md group-hover:text-red-500 transition-colors line-clamp-1">
-									{live.member?.name}
+									{stream.member?.name}
 								</h3>
-								<div class="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br {getPlatformColor(live.platform)} flex items-center justify-center text-white text-[8px] font-bold shadow-lg shadow-black/30 border border-white/20">
-									{getPlatformIcon(live.platform)}
+								<div class="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br {getPlatformColor(stream.platform)} flex items-center justify-center text-white text-[8px] font-bold shadow-lg shadow-black/30 border border-white/20">
+									{getPlatformIcon(stream.platform)}
 								</div>
 							</div>
 							<p class="text-[10px] text-gray-300 font-medium drop-shadow-sm line-clamp-1">
-								{live.title || 'Streaming JKT48! ✨'}
+								{stream.title || 'Streaming JKT48! ✨'}
 							</p>
 						</div>
 
@@ -154,5 +155,10 @@
 </div>
 
 <style>
-	/* Custom styles if needed */
+	@keyframes shimmer {
+		100% { transform: translateX(100%); }
+	}
+	.animate-shimmer {
+		animation: shimmer 2s infinite;
+	}
 </style>
