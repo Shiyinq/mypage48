@@ -21,7 +21,8 @@
 		UserPlus,
 		RefreshCw,
 		Monitor,
-		Smartphone
+		Smartphone,
+		Check
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
@@ -34,6 +35,7 @@
 	let slots: any[] = [];
 	let focusedSlotIndex: number = 0;
 	let focusedStreamDetails: any = null;
+	let lastLoadedId: string | null = null;
 	let showPicker = true;
 	let showChat = true;
 	let isPortrait = true;
@@ -54,6 +56,16 @@
 	);
 
 	$: focusedStream = slots[focusedSlotIndex];
+	$: if (focusedStream) {
+		const currentId = focusedStream.platform === 'showroom' ? (focusedStream.room_id || focusedStream.room_url_key) : (focusedStream.live_id || focusedStream.room_url_key);
+		if (currentId !== lastLoadedId) {
+			lastLoadedId = currentId;
+			loadFocusedDetails(focusedStream);
+		}
+	} else {
+		focusedStreamDetails = null;
+		lastLoadedId = null;
+	}
 
 	onMount(() => {
 		liveStore.loadLiveList();
@@ -94,12 +106,6 @@
 
 	function setFocusedSlot(index: number) {
 		focusedSlotIndex = index;
-		const stream = slots[index];
-		if (stream) {
-			loadFocusedDetails(stream);
-		} else {
-			focusedStreamDetails = null;
-		}
 	}
 
 	async function loadFocusedDetails(stream: any) {
@@ -301,26 +307,38 @@
 						{/each}
 					{:else}
 						{#each filteredStreams as stream}
+							{@const selectedIndex = slots.findIndex(s => 
+								(s.platform === stream.platform && s.room_id === stream.room_id && s.room_id) || 
+								(s.platform === stream.platform && s.live_id === stream.live_id && s.live_id)
+							)}
+							{@const isSelected = selectedIndex !== -1}
 							<button 
-								on:click={() => addMemberToSlot(stream)}
-								class="w-full flex items-center gap-3 p-2 rounded-xl border border-transparent hover:border-red-500/20 hover:bg-red-50/50 dark:hover:bg-red-500/5 transition-all text-left group"
+								on:click={() => isSelected ? removeMemberFromSlot(selectedIndex) : addMemberToSlot(stream)}
+								class="w-full flex items-center gap-3 p-2 rounded-xl border transition-all text-left group
+									{isSelected 
+										? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 shadow-inner' 
+										: 'border-transparent hover:border-red-500/20 hover:bg-slate-50 dark:hover:bg-zinc-800/50'}"
 							>
 								<div class="relative shrink-0">
 									<img 
 										src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar} 
 										on:error={(e) => { if (e.currentTarget instanceof HTMLImageElement) e.currentTarget.src = fallbackAvatar; }}
 										alt={stream.member?.name || 'Member'}
-										class="w-10 h-10 rounded-lg object-cover" 
+										class="w-10 h-10 rounded-lg object-cover {isSelected ? 'grayscale-[0.5] opacity-80' : ''}" 
 									/>
 									<div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-red-600 flex items-center justify-center text-[8px] font-bold text-white border-2 border-white dark:border-zinc-900">
 										{stream.platform === 'showroom' ? 'SR' : 'IDN'}
 									</div>
 								</div>
 								<div class="flex-1 min-w-0">
-									<div class="font-bold text-xs text-slate-900 dark:text-white truncate">{stream.member?.name}</div>
-									<div class="text-[10px] text-gray-400 truncate">{stream.title || 'Live...'}</div>
+									<div class="font-bold text-xs text-slate-900 dark:text-white truncate {isSelected ? 'opacity-50' : ''}">{stream.member?.name}</div>
+									<div class="text-[10px] text-gray-400 truncate {isSelected ? 'opacity-50' : ''}">{stream.title || 'Live...'}</div>
 								</div>
-								<Plus size={16} class="text-gray-300 group-hover:text-red-500 transition-colors" />
+								{#if isSelected}
+									<Check size={16} class="text-red-500" />
+								{:else}
+									<Plus size={16} class="text-gray-300 group-hover:text-red-500 transition-colors" />
+								{/if}
 							</button>
 						{/each}
 					{/if}
