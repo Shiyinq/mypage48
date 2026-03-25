@@ -22,7 +22,10 @@
 		RefreshCw,
 		Monitor,
 		Smartphone,
-		Check
+		Check,
+		Camera,
+		Circle,
+		Square
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
@@ -48,6 +51,8 @@
 	// Media State for slots
 	let volumes: number[] = Array(8).fill(1);
 	let muted: boolean[] = Array(8).fill(false);
+	let isRecording: boolean[] = Array(8).fill(false);
+	let playerRefs: any[] = Array(8).fill(null);
 
 	$: activeStreams = $liveList;
 	$: filteredStreams = activeStreams.filter(s => 
@@ -250,13 +255,13 @@
 		<div class="flex items-center gap-2">
 			<button 
 				on:click={clearAll}
-				class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all"
+				class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
 			>
 				Clear All
 			</button>
 			<button 
 				on:click={() => isPortrait = !isPortrait}
-				class="p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all"
+				class="p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
 				title={isPortrait ? "Switch to Landscape" : "Switch to Portrait"}
 			>
 				{#if isPortrait}
@@ -267,14 +272,14 @@
 			</button>
 			<button 
 				on:click={() => showPicker = !showPicker}
-				class="p-2 rounded-lg {showPicker ? 'bg-red-50 text-red-600' : 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all"
+				class="p-2 rounded-lg {showPicker ? 'bg-red-50 text-red-600' : 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
 				title="Toggle Member Picker"
 			>
 				<UserPlus size={20} />
 			</button>
 			<button 
 				on:click={() => showChat = !showChat}
-				class="p-2 rounded-lg {showChat ? 'bg-red-50 text-red-600' : 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all"
+				class="p-2 rounded-lg {showChat ? 'bg-red-50 text-red-600' : 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
 				title="Toggle Chat"
 			>
 				<MessageCircle size={20} />
@@ -314,7 +319,7 @@
 							{@const isSelected = selectedIndex !== -1}
 							<button 
 								on:click={() => isSelected ? removeMemberFromSlot(selectedIndex) : addMemberToSlot(stream)}
-								class="w-full flex items-center gap-3 p-2 rounded-xl border transition-all text-left group
+								class="w-full flex items-center gap-3 p-2 rounded-xl border transition-all text-left group cursor-pointer
 									{isSelected 
 										? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 shadow-inner' 
 										: 'border-transparent hover:border-red-500/20 hover:bg-slate-50 dark:hover:bg-zinc-800/50'}"
@@ -366,6 +371,8 @@
 						>
 						<div class="absolute inset-0 z-0">
 							<MultiPlayer 
+								bind:this={playerRefs[i]}
+								bind:isRecording={isRecording[i]}
 								platform={stream.platform}
 								id={stream.platform === 'showroom' ? (stream.room_id || stream.room_url_key) : (stream.live_id || stream.room_url_key)}
 								roomIdentifier={stream.room_url_key}
@@ -387,7 +394,7 @@
 							</div>
 							<button 
 								on:click|stopPropagation={() => removeMemberFromSlot(i)}
-								class="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg"
+								class="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg cursor-pointer"
 								aria-label="Remove stream"
 							>
 								<X size={14} />
@@ -398,7 +405,7 @@
 						<div class="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-gradient-to-t from-black/60 to-transparent">
 							<div class="flex items-center gap-0 group/volume relative h-8">
 								<button 
-									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10"
+									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10 cursor-pointer"
 									on:click|stopPropagation={() => muted[i] = !muted[i]}
 									aria-label={muted[i] || volumes[i] === 0 ? 'Unmute' : 'Mute'}
 								>
@@ -425,6 +432,30 @@
 										class="w-16 h-1 accent-white cursor-pointer" 
 									/>
 								</div>
+							</div>
+							
+							<div class="flex items-center gap-2">
+								<!-- Screenshot Button -->
+								<button 
+									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-blue-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/cam cursor-pointer"
+									on:click|stopPropagation={() => playerRefs[i]?.takeScreenshot(stream.member?.name)}
+									title="Take Screenshot"
+								>
+									<Camera size={16} class="group-hover/cam:rotate-12 transition-transform duration-300" />
+								</button>
+								
+								<!-- Record Button -->
+								<button 
+									class="w-8 h-8 rounded-xl {isRecording[i] ? 'bg-red-600 animate-pulse' : 'bg-white/10 backdrop-blur-md grayscale hover:grayscale-0 hover:bg-red-600'} text-white flex items-center justify-center hover:scale-105 transition-all shadow-lg group/rec cursor-pointer"
+									on:click|stopPropagation={() => playerRefs[i]?.toggleRecording(stream.member?.name)}
+									title={isRecording[i] ? "Stop Recording" : "Start Recording"}
+								>
+									{#if isRecording[i]}
+										<Square size={14} fill="currentColor" />
+									{:else}
+										<Circle size={14} fill="currentColor" class="text-red-500 group-hover/rec:scale-110 transition-transform" />
+									{/if}
+								</button>
 							</div>
 						</div>
 					</div>
