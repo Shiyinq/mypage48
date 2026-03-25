@@ -39,6 +39,10 @@
 	let isPortrait = true;
 	let searchQuery = '';
 
+	// Drag and Drop State
+	let draggedIndex: number | null = null;
+	let dragOverIndex: number | null = null;
+
 	// Media State for slots
 	let volumes: number[] = Array(8).fill(1);
 	let muted: boolean[] = Array(8).fill(false);
@@ -123,6 +127,56 @@
 	function clearAll() {
 		slots = [];
 		saveSlots();
+	}
+
+	function handleDragStart(index: number) {
+		draggedIndex = index;
+	}
+
+	function handleDragOver(e: DragEvent, index: number) {
+		e.preventDefault();
+		dragOverIndex = index;
+	}
+
+	function handleDrop(index: number) {
+		if (draggedIndex === null || draggedIndex === index) return;
+		
+		const newSlots = [...slots];
+		const draggedItem = newSlots[draggedIndex];
+		
+		const newVolumes = [...volumes];
+		const draggedVolume = newVolumes[draggedIndex] ?? 1;
+
+		const newMuted = [...muted];
+		const draggedMuted = newMuted[draggedIndex] ?? false;
+
+		newSlots.splice(draggedIndex, 1);
+		newSlots.splice(index, 0, draggedItem);
+		
+		newVolumes.splice(draggedIndex, 1);
+		newVolumes.splice(index, 0, draggedVolume);
+
+		newMuted.splice(draggedIndex, 1);
+		newMuted.splice(index, 0, draggedMuted);
+
+		slots = newSlots;
+		volumes = newVolumes;
+		muted = newMuted;
+		saveSlots();
+		
+		// Adjust focused slot if it was moved
+		if (focusedSlotIndex === draggedIndex) {
+			focusedSlotIndex = index;
+		} else if (draggedIndex < focusedSlotIndex && index >= focusedSlotIndex) {
+			focusedSlotIndex--;
+		} else if (draggedIndex > focusedSlotIndex && index <= focusedSlotIndex) {
+			focusedSlotIndex++;
+		}
+	}
+
+	function handleDragEnd() {
+		draggedIndex = null;
+		dragOverIndex = null;
 	}
 
 	// Computed grid class
@@ -280,7 +334,12 @@
 				{#each slots as stream, i (stream.platform + '-' + (stream.live_id || stream.room_id || stream.room_url_key))}
 					<!-- svelte-ignore a11y-no-noninteractive-element-to-interactive-role -->
 						<div 
-							class="relative {isPortrait ? 'aspect-[9/16]' : 'aspect-video'} bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border {focusedSlotIndex === i ? 'border-red-500 ring-2 ring-red-500/50' : 'border-gray-200 dark:border-zinc-800'} group shadow-sm transition-all hover:shadow-md text-left cursor-pointer transition-[aspect-ratio] duration-500 {isPortrait ? 'max-h-[calc(100vh-140px)]' : ''} mx-auto w-full"
+							class="relative {isPortrait ? 'aspect-[9/16]' : 'aspect-video'} bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border {focusedSlotIndex === i ? 'border-red-500 ring-2 ring-red-500/50' : 'border-gray-200 dark:border-zinc-800'} {dragOverIndex === i ? 'opacity-50 border-dashed border-red-400 scale-[0.98]' : ''} {draggedIndex === i ? 'opacity-20 translate-y-2' : ''} group shadow-sm transition-all hover:shadow-md text-left cursor-pointer transition-[aspect-ratio,transform,opacity] duration-500 {isPortrait ? 'max-h-[calc(100vh-140px)]' : ''} mx-auto w-full"
+							draggable="true"
+							on:dragstart={() => handleDragStart(i)}
+							on:dragover={(e) => handleDragOver(e, i)}
+							on:drop={() => handleDrop(i)}
+							on:dragend={handleDragEnd}
 							on:click={() => setFocusedSlot(i)}
 							on:keydown={(e) => e.key === 'Enter' && setFocusedSlot(i)}
 							role="button"
