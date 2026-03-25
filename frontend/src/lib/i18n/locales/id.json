@@ -761,7 +761,12 @@
 			"offline": "Room sedang offline",
 			"liveBadge": "LANGSUNG",
 			"chat": "Obrolan",
-			"connected": "Terhubung"
+			"connected": "Terhubung",
+			"toggleTheme": "Ganti Tema",
+			"volume": "Volume",
+			"mute": "Senyap",
+			"unmute": "Bunyikan",
+			"pip": "Gambar dalam Gambar (PiP)"
 		},
 		"news": {
 			"title": "Berita",

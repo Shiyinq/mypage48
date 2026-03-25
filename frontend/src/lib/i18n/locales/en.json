@@ -640,7 +640,12 @@
 			"offline": "Room is offline",
 			"liveBadge": "LIVE",
 			"chat": "Chat",
-			"connected": "Connected"
+			"connected": "Connected",
+			"toggleTheme": "Toggle Theme",
+			"volume": "Volume",
+			"mute": "Mute",
+			"unmute": "Unmute",
+			"pip": "Picture in Picture"
 		},
 		"news": {
 			"title": "News",
