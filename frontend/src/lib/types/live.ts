@@ -27,9 +27,11 @@ export interface LiveStreamingResponse {
 }
 
 export interface LiveChatIDNMessage {
+	id: string;
 	user: string;
 	text: string;
 	avatar?: string;
+	timestamp: number;
 	type: 'chat' | 'gift';
 	gift?: { name: string; img: string; color?: string };
 }
