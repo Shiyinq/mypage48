@@ -5,9 +5,14 @@ from typing import Any, Dict, List, Optional
 
 import httpx
 from urllib.parse import urljoin, quote_plus
-from fastapi.responses import Response
-
 from src.config import Settings
+from src.live.exceptions import (
+    FetchShowroomError,
+    FetchIdnError,
+    StreamingUrlNotFoundError,
+    ProxyError,
+    CommentsFetchError,
+)
 from src.live.schemas import (
     LiveMember,
     LiveResponse,
@@ -45,11 +50,11 @@ class LiveService:
         )
 
         if isinstance(showroom_lives, Exception):
-            logger.error(f"Error fetching Showroom lives: {showroom_lives}")
+            logger.error(f"Error fetching Showroom lives", exc_info=showroom_lives)
             showroom_lives = []
 
         if isinstance(idn_lives, Exception):
-            logger.error(f"Error fetching IDN lives: {idn_lives}")
+            logger.error(f"Error fetching IDN lives", exc_info=idn_lives)
             idn_lives = []
 
         all_lives = showroom_lives + idn_lives
@@ -140,7 +145,7 @@ class LiveService:
                 return results
         except Exception as e:
             logger.exception(f"Exception in fetch_showroom_lives: {str(e)}")
-            return []
+            raise FetchShowroomError()
 
     async def fetch_idn_lives(self) -> List[LiveStatus]:
         """Fetch active JKT48 streams from official IDN GraphQL"""
@@ -280,7 +285,7 @@ class LiveService:
                 return results
         except Exception as e:
             logger.exception(f"Exception in fetch_idn_lives: {str(e)}")
-            return []
+            raise FetchIdnError()
 
     async def get_streaming_url(self, platform: str, id: str) -> LiveStreamInfo:
         """Get streaming URL and room info for a specific platform and ID"""
@@ -316,14 +321,14 @@ class LiveService:
                                     livestream = data.get("props", {}).get("pageProps", {}).get("livestream", {})
                                     room_id = livestream.get("chat_room_id")
                         except Exception as scrape_err:
-                            logger.error(f"Failed to scrape IDN chat room ID for {id}: {scrape_err}")
+                            logger.exception(f"Failed to scrape IDN chat room ID for {id}: {scrape_err}")
 
                     return LiveStreamInfo(
                         streaming_urls=live.streaming_url,
                         room_identifier=room_id,
                         member=live.member
                     )
-        return LiveStreamInfo(streaming_urls=[])
+        raise StreamingUrlNotFoundError()
 
     async def fetch_showroom_profile(self, room_id: str) -> Optional[LiveMember]:
         """Fetch Showroom room profile to get member name and image"""
@@ -340,8 +345,8 @@ class LiveService:
                         img=data.get("image")
                     )
         except Exception as e:
-            logger.error(f"Failed to fetch showroom profile for {room_id}: {e}")
-        return None
+            logger.exception(f"Failed to fetch showroom profile for {room_id}: {e}")
+            return None
 
     async def fetch_showroom_streaming_url(self, room_id: str) -> List[LiveStreamingURL]:
         """Fetch streaming URL from official Showroom API"""
@@ -367,7 +372,7 @@ class LiveService:
                     )
                 return streaming_urls
         except Exception as e:
-            logger.error(f"Error fetching Showroom streaming URL for {room_id}: {e}")
+            logger.exception(f"Error fetching Showroom streaming URL for {room_id}: {e}")
             return []
 
     async def get_showroom_comments(self, room_id: str) -> Dict[Any, Any]:
@@ -378,17 +383,21 @@ class LiveService:
                 res = await client.get(url)
                 return res.json()
         except Exception as e:
-            logger.error(f"Error fetching showroom comments for {room_id}: {e}")
-            return {"comment_log": []}
+            logger.exception(f"Error fetching showroom comments for {room_id}: {e}")
+            raise CommentsFetchError()
 
-    async def proxy_hls_request(self, url: str) -> Response:
+    async def proxy_hls_request(self, url: str) -> Dict[str, Any]:
         """Proxy HLS playlist and segments to bypass CORS"""
         try:
             async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
                 resp = await client.get(url)
                 
             if resp.status_code != 200:
-                return Response(status_code=resp.status_code, content=resp.content)
+                return {
+                    "content": resp.content,
+                    "media_type": None,
+                    "status_code": resp.status_code
+                }
 
             content_type = resp.headers.get("content-type", "")
             
@@ -423,25 +432,25 @@ class LiveService:
                         proxied_url = f"/api/jkt48/live/proxy?url={quote_plus(absolute_url)}"
                         rewritten_lines.append(proxied_url)
                 
-                return Response(
-                    content="\n".join(rewritten_lines),
-                    media_type="application/vnd.apple.mpegurl",
-                    headers={
+                return {
+                    "content": "\n".join(rewritten_lines),
+                    "media_type": "application/vnd.apple.mpegurl",
+                    "headers": {
                         "Access-Control-Allow-Origin": "*",
                         "Cache-Control": "no-cache"
                     }
-                )
+                }
             
             # For segments (.ts), just return the content
-            return Response(
-                content=resp.content,
-                media_type=content_type,
-                headers={
+            return {
+                "content": resp.content,
+                "media_type": content_type,
+                "headers": {
                     "Access-Control-Allow-Origin": "*",
                     "Cache-Control": "public, max-age=3600"
                 }
-            )
+            }
             
         except Exception as e:
-            logger.error(f"Error proxying HLS request for {url}: {e}")
-            return Response(status_code=502, content=str(e).encode())
+            logger.exception(f"Error proxying HLS request for {url}: {e}")
+            raise ProxyError()

@@ -150,6 +150,20 @@ from src.news.http_exceptions import (
     NewsFetchHTTPError,
     NewsItemFetchHTTPError,
 )
+from src.live.exceptions import (
+    FetchShowroomError,
+    FetchIdnError,
+    StreamingUrlNotFoundError,
+    ProxyError,
+    CommentsFetchError,
+)
+from src.live.http_exceptions import (
+    ShowroomFetchFailed,
+    IdnFetchFailed,
+    StreamingUrlNotFound,
+    ProxyRequestFailed,
+    CommentsFetchFailed,
+)
 
 logger = create_logger("exceptions", __name__)
 
@@ -317,6 +331,18 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, NewsFetchHTTPError())
     if isinstance(exc, NewsItemFetchError):
         return await detailed_http_exception_handler(request, NewsItemFetchHTTPError())
+
+    # Live exceptions
+    if isinstance(exc, FetchShowroomError):
+        return await detailed_http_exception_handler(request, ShowroomFetchFailed())
+    if isinstance(exc, FetchIdnError):
+        return await detailed_http_exception_handler(request, IdnFetchFailed())
+    if isinstance(exc, StreamingUrlNotFoundError):
+        return await detailed_http_exception_handler(request, StreamingUrlNotFound())
+    if isinstance(exc, ProxyError):
+        return await detailed_http_exception_handler(request, ProxyRequestFailed())
+    if isinstance(exc, CommentsFetchError):
+        return await detailed_http_exception_handler(request, CommentsFetchFailed())
 
     # Export errors
     if isinstance(exc, ExportInProgressError):
