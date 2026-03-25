@@ -19,7 +19,9 @@
 		ChevronLeft,
 		Search,
 		UserPlus,
-		RefreshCw
+		RefreshCw,
+		Monitor,
+		Smartphone
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
@@ -34,6 +36,7 @@
 	let focusedStreamDetails: any = null;
 	let showPicker = true;
 	let showChat = true;
+	let isPortrait = true;
 	let searchQuery = '';
 
 	// Media State for slots
@@ -124,16 +127,22 @@
 
 	// Computed grid class
 	$: expansive = !showPicker && !showChat;
-	$: gridClass = slots.length === 1 
-		? (expansive ? 'grid-cols-1 max-w-7xl mx-auto' : 'grid-cols-1 max-w-5xl mx-auto') 
-		: slots.length === 2 
-		? (expansive ? 'grid-cols-2 max-w-none' : 'grid-cols-1 md:grid-cols-2 max-w-6xl mx-auto') 
-		: slots.length <= 4 
-		? (expansive ? 'grid-cols-2 max-w-none' : 'grid-cols-2 max-w-6xl mx-auto') 
-		: slots.length <= 6 
-		? (expansive ? 'grid-cols-3 max-w-none' : 'grid-cols-2 lg:grid-cols-3') 
-		: (expansive ? 'grid-cols-4 max-w-none' : 'grid-cols-2 lg:grid-cols-4');
-
+	$: gridClass = isPortrait 
+		? (slots.length === 1 
+			? (expansive ? 'grid-cols-1 max-w-md mx-auto' : 'grid-cols-1 max-w-sm mx-auto') 
+			: slots.length === 2 
+			? (expansive ? 'grid-cols-2 max-w-4xl mx-auto' : 'grid-cols-2 max-w-3xl mx-auto')
+			: slots.length === 3
+			? (expansive ? 'grid-cols-3 max-w-6xl mx-auto' : 'grid-cols-3 max-w-5xl mx-auto')
+			: (expansive ? 'grid-cols-4 max-w-none' : 'grid-cols-2 md:grid-cols-4 max-w-none'))
+		: (slots.length === 1 
+			? (expansive ? 'grid-cols-1 max-w-7xl mx-auto' : 'grid-cols-1 max-w-5xl mx-auto') 
+			: slots.length <= 4
+			? (expansive ? 'grid-cols-1 md:grid-cols-2 max-w-none' : 'grid-cols-1 md:grid-cols-2 max-w-6xl mx-auto')
+			: (expansive 
+				? 'grid-cols-2 lg:grid-cols-3 max-w-none'
+				: 'grid-cols-2 lg:grid-cols-3 max-w-none'
+			));
 	// Auto-initialize first slot if empty and no saved session
 	$: if (slots.length === 0 && $liveList.length > 0 && typeof localStorage !== 'undefined' && !localStorage.getItem('mypage48_multiview_slots')) {
 		const firstLive = $liveList.find(l => l.platform === 'idn') || $liveList[0];
@@ -141,6 +150,19 @@
 			slots = [firstLive];
 			setFocusedSlot(0);
 		}
+	}
+
+
+	// Load aspect ratio preference from localStorage
+	onMount(() => {
+		const savedPortrait = localStorage.getItem('mypage48_multiview_portrait');
+		if (savedPortrait !== null) {
+			isPortrait = savedPortrait === 'true';
+		}
+	});
+
+	$: if (typeof localStorage !== 'undefined') {
+		localStorage.setItem('mypage48_multiview_portrait', String(isPortrait));
 	}
 
 	let fallbackAvatar = 'https://placehold.co/640x960?text=NO%20IMAGE';
@@ -171,6 +193,17 @@
 				class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all"
 			>
 				Clear All
+			</button>
+			<button 
+				on:click={() => isPortrait = !isPortrait}
+				class="p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all"
+				title={isPortrait ? "Switch to Landscape" : "Switch to Portrait"}
+			>
+				{#if isPortrait}
+					<Monitor size={20} />
+				{:else}
+					<Smartphone size={20} />
+				{/if}
 			</button>
 			<button 
 				on:click={() => showPicker = !showPicker}
@@ -247,7 +280,7 @@
 				{#each slots as stream, i (stream.platform + '-' + (stream.live_id || stream.room_id || stream.room_url_key))}
 					<!-- svelte-ignore a11y-no-noninteractive-element-to-interactive-role -->
 						<div 
-							class="relative aspect-video bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border {focusedSlotIndex === i ? 'border-red-500 ring-2 ring-red-500/50' : 'border-gray-200 dark:border-zinc-800'} group shadow-sm transition-all hover:shadow-md text-left cursor-pointer"
+							class="relative {isPortrait ? 'aspect-[9/16]' : 'aspect-video'} bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border {focusedSlotIndex === i ? 'border-red-500 ring-2 ring-red-500/50' : 'border-gray-200 dark:border-zinc-800'} group shadow-sm transition-all hover:shadow-md text-left cursor-pointer transition-[aspect-ratio] duration-500 {isPortrait ? 'max-h-[calc(100vh-140px)]' : ''} mx-auto w-full"
 							on:click={() => setFocusedSlot(i)}
 							on:keydown={(e) => e.key === 'Enter' && setFocusedSlot(i)}
 							role="button"
