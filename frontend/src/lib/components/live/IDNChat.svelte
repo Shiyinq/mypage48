@@ -1,17 +1,12 @@
 <script lang="ts">
 	import { onMount, onDestroy, afterUpdate, tick } from 'svelte';
 	import { MessageCircle } from 'lucide-svelte';
+	import type { LiveChatIDNMessage } from '$lib/types';
 
 	export let roomIdentifier: string;
 
 	let socket: WebSocket | null = null;
-	let messages: Array<{ 
-		user: string; 
-		text: string; 
-		avatar?: string; 
-		type: 'chat' | 'gift';
-		gift?: { name: string; img: string; color?: string }
-	}> = [];
+	let messages: LiveChatIDNMessage[] = [];
 	let chatContainer: HTMLElement;
 	let connected = false;
 

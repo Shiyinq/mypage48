@@ -578,6 +578,7 @@
 			"viewer": "視聴者",
 			"startedAt": "開始時間",
 			"empty": "現在配信中のメンバーはいません。",
+			"emptyTitle": "オフライン",
 			"back": "戻る",
 			"focusMode": "フォーカスモード",
 			"exitFocus": "フォーカス終了",
@@ -587,6 +588,8 @@
 			"showChat": "チャットを表示",
 			"record": "配信を録画",
 			"stopRecord": "録画を停止",
+			"loading_stream": "ストリームに接続中...",
+			"offline": "ルームはオフラインです",
 			"liveBadge": "ライブ",
 			"chat": "チャット",
 			"connected": "接続中"

@@ -743,10 +743,11 @@
 		"live": {
 			"title": "Live",
 			"subtitle": "Tonton member JKT48 yang sedang siaran langsung",
-			"onLive": "Sedang Langsung",
+			"onLive": "Siaran Langsung",
 			"viewer": "Penonton",
 			"startedAt": "Mulai sejak",
 			"empty": "Tidak ada member yang sedang siaran langsung saat ini.",
+			"emptyTitle": "Belum Ada Live",
 			"back": "Kembali",
 			"focusMode": "Mode Fokus",
 			"exitFocus": "Keluar Fokus",
@@ -756,6 +757,8 @@
 			"showChat": "Tampilkan Chat",
 			"record": "Rekam Stream",
 			"stopRecord": "Berhenti Rekam",
+			"loading_stream": "Menghubungkan ke Stream...",
+			"offline": "Room sedang offline",
 			"liveBadge": "LANGSUNG",
 			"chat": "Obrolan",
 			"connected": "Terhubung"

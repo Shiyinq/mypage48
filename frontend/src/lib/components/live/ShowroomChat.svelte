@@ -3,10 +3,11 @@
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { MessageCircle } from 'lucide-svelte';
 	import { API_BASE } from '$lib/apis/client';
+	import type { LiveChatShowroomMessage } from '$lib/types';
 
 	export let roomId: string;
 
-	let messages: Array<{ user: string; text: string; avatar?: string; id: string }> = [];
+	let messages: LiveChatShowroomMessage[] = [];
 	let chatContainer: HTMLElement;
 	let pollingInterval: any;
 	let lastCommentTime = 0;
@@ -22,16 +23,16 @@
 				// Filter specifically for comments, not gifts (gifts have comment field too but often special ua)
 				// showroom returns latest first, so we reverse it to process chronologically
 				const validComments = data.comment_log
-					.filter((c: any) => c.comment && !c.comment.match(/^\d+$/)) // Simple filter for non-gift comments (often numbers)
+					.filter((c: { comment: string }) => c.comment && !c.comment.match(/^\d+$/))
 					.reverse();
 
-				const newComments = validComments.filter((c: any) => c.created_at > lastCommentTime);
+				const newComments = validComments.filter((c: { created_at: number }) => c.created_at > lastCommentTime);
 
 				if (newComments.length > 0) {
-					lastCommentTime = Math.max(...newComments.map((c: any) => c.created_at));
+					lastCommentTime = Math.max(...newComments.map((c: { created_at: number }) => c.created_at));
 					
-					const mapped = newComments.map((c: any) => ({
-						id: `${c.user_id}-${c.created_at}`,
+					const mapped = newComments.map((c: { user_id: number; created_at: number; name: string; comment: string; avatar_url?: string }, index: number) => ({
+						id: `${c.user_id}-${c.created_at}-${index}`,
 						user: c.name,
 						text: c.comment,
 						avatar: c.avatar_url

@@ -626,6 +626,7 @@
 			"viewer": "Viewers",
 			"startedAt": "Started at",
 			"empty": "No members are currently live.",
+			"emptyTitle": "OFFLINE",
 			"back": "Back",
 			"focusMode": "Focus Mode",
 			"exitFocus": "Exit Focus",
@@ -635,6 +636,8 @@
 			"showChat": "Show Chat",
 			"record": "Record Stream",
 			"stopRecord": "Stop Recording",
+			"loading_stream": "Connecting to Stream...",
+			"offline": "Room is offline",
 			"liveBadge": "LIVE",
 			"chat": "Chat",
 			"connected": "Connected"
