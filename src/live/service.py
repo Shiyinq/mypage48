@@ -122,25 +122,27 @@ class LiveService:
                             )
                         )
                 
-                # DEBUG MOCK (Commented out): Restore if needed for testing
-                if not results:
-                    results.append(
-                        LiveStatus(
-                            platform="showroom",
-                            room_id="340177", 
-                            live_id="340177",
-                            room_url_key="48_MISAKI_NISHIZUMI",
-                            title="[DEBUG] LIVE SHOWROOM",
-                            view_num=1000,
-                            start_at=datetime.now(),
-                            member=LiveMember(
-                                id="mock_debug_sr",
-                                name="DEBUG NMB48 STREAM",
-                                nickname="NMB48 Debug",
-                                img="https://static.showroom-live.com/image/room/cover/6c6c39f061f038e23f034509743c6838df2944b0373004d098e947ee9ea10874_m.png"
-                            ),
+                # DEBUG MOCK: If no JKT48 members are live, take up to 8 Showroom lives for testing multi-view
+                if not results and all_rooms:
+                    for room in all_rooms[:8]:
+                        results.append(
+                            LiveStatus(
+                                platform="showroom",
+                                room_id=str(room.get("room_id")),
+                                room_url_key=room.get("room_url_key"),
+                                title=f"[DEBUG] {room.get('main_name')}",
+                                view_num=room.get("view_num", 0),
+                                start_at=datetime.fromtimestamp(room.get("started_at"))
+                                if room.get("started_at")
+                                else datetime.now(),
+                                member=LiveMember(
+                                    id=f"debug_{room.get('room_id')}",
+                                    name=room.get("main_name"),
+                                    nickname=room.get("nickname") or room.get("main_name"),
+                                    img=""
+                                ),
+                            )
                         )
-                    )
                 
                 return results
         except Exception as e:
@@ -257,30 +259,30 @@ class LiveService:
                                 )
                             )
  
-                # DEBUG MOCK (Commented out): Restore if needed for testing UI
-                # if not results and streams:
-                #     stream = streams[0]
-                #     room_id = stream.get("room_identifier") or stream.get("creator", {}).get("username")
-                #     results.append(
-                #         LiveStatus(
-                #             platform="idn",
-                #             live_id=stream.get("slug"),
-                #             title=f"[DEBUG] {stream.get('title')}",
-                #             view_num=0,
-                #             start_at=datetime.now(),
-                #             streaming_url=[
-                #                 LiveStreamingURL(url=stream.get("playback_url"), label="HLS", quality=0)
-                #             ],
-                #             room_identifier=room_id,
-                #             room_url_key=room_id,
-                #             member=LiveMember(
-                #                 id="mock_debug",
-                #                 name="DEBUG TEST STREAM",
-                #                 nickname="Debug",
-                #                 img="https://www.jkt48.com/images/ogp.png"
-                #             ),
-                #         )
-                #     )
+                # DEBUG MOCK: If no JKT48 members are live, take the first available IDN live for testing
+                if not results and streams:
+                    stream = streams[0]
+                    room_id = stream.get("room_identifier") or stream.get("creator", {}).get("username")
+                    results.append(
+                        LiveStatus(
+                            platform="idn",
+                            live_id=stream.get("slug"),
+                            title=f"[DEBUG] {stream.get('title')}",
+                            view_num=0,
+                            start_at=datetime.fromisoformat(stream.get("live_at").replace("Z", "+00:00")) if stream.get("live_at") else datetime.now(),
+                            streaming_url=[
+                                LiveStreamingURL(url=stream.get("playback_url"), label="HLS", quality=0)
+                            ] if stream.get("playback_url") else [],
+                            room_identifier=room_id,
+                            room_url_key=stream.get("creator", {}).get("username"),
+                            member=LiveMember(
+                                id=f"debug_{stream.get('slug')}",
+                                name=stream.get("creator", {}).get("name") or "DEBUG TEST STREAM",
+                                nickname=stream.get("creator", {}).get("username") or "Debug",
+                                img=""
+                            ),
+                        )
+                    )
 
                 return results
         except Exception as e:
