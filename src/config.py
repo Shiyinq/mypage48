@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     ACCOUNT_LOCKOUT_MINUTES: int = 15
     AUTH_REQUESTS_PER_MINUTE: int = 60
     DEFAULT_REQUESTS_PER_MINUTE: int = 120
+    LIVE_PROXY_REQUESTS_PER_MINUTE: int = 1500
 
     LOG_LEVEL: str = "INFO"
     LOG_DESTINATION: str = "console"
