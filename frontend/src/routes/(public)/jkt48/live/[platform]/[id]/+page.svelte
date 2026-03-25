@@ -9,6 +9,7 @@
 	import type { LiveStatus } from '$lib/types';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
+	import GiftOverlay from '$lib/components/live/GiftOverlay.svelte';
 	import ThemeToggle from '$lib/components/landing-page/ThemeToggle.svelte';
 	import {
 		ArrowLeft,
@@ -424,6 +425,10 @@
 					autoplay
 					playsinline
 				></video>
+
+				{#if roomIdentifier}
+					<GiftOverlay {roomIdentifier} />
+				{/if}
 			</div>
 		</div>
 		<!-- Player Controls -->

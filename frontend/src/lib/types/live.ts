@@ -9,6 +9,7 @@ export interface LiveStatus {
 	room_id?: string;
 	live_id?: string;
 	room_url_key: string;
+	room_identifier?: string;
 	view_num: number;
 	title: string;
 	member: LiveMember;

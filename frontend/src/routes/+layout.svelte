@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import '../app.css';
 	import { isAuthenticated, toast, userProfile, isInitialDataLoaded } from '$lib/stores';
 	import { locale, type Locale } from '$lib/i18n';
@@ -59,6 +58,8 @@
 		$page.url.pathname === '/login' ||
 		$page.url.pathname === '/register' ||
 		$page.url.pathname.startsWith('/auth/');
+
+	$: isFullScreenRoute = $page.url.pathname.includes('/live/multiview');
 
 	// Track if client has mounted - used to delay auth redirects
 	let mounted = false;
@@ -221,19 +222,29 @@
 			{#if $page.url.pathname === '/'}
 				<slot />
 			{:else}
-				<LandingNavbar showLogin={false} />
-				<div class="max-w-7xl mx-auto px-4 py-8 flex-1">
+				{#if !isFullScreenRoute}
+					<LandingNavbar showLogin={false} />
+				{/if}
+				<div
+					class={isFullScreenRoute ? 'w-full h-full' : 'max-w-7xl mx-auto px-4 py-8 flex-1'}
+				>
 					<slot />
 				</div>
-				<Footer />
+				{#if !isFullScreenRoute}
+					<Footer />
+				{/if}
 			{/if}
 		{:else if $isAuthenticated}
 			<!-- Protected pages: user authenticated, show full content -->
-			<Header />
+			{#if !isFullScreenRoute}
+				<Header />
+			{/if}
 			<main class="flex-1 w-full relative">
 				<slot />
 			</main>
-			<MobileNav />
+			{#if !isFullScreenRoute}
+				<MobileNav />
+			{/if}
 		{:else}
 			<!-- Fallback or Catch-all (should be handled by redirects above) -->
 			<div class="hidden">Nothing to show</div>
