@@ -27,7 +27,9 @@
 		Square,
 		Volume2,
 		VolumeX,
-		PictureInPicture2
+		PictureInPicture2,
+		Play,
+		Pause
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -50,6 +52,17 @@
 	let sidebarMode: 'chat' | 'list' = 'chat';
 	let volume = 1;
 	let isMuted = false;
+	let currentTime = 0;
+	let duration = 0;
+	let isPaused = false;
+	let bufferedEnd = 0;
+	let peakDuration = 0;
+
+	// Keep the largest duration we've seen to avoid shrinking scale during seeking/buffer resets
+	$: if (currentTime > peakDuration) peakDuration = currentTime;
+	$: if (duration > 0 && duration !== Infinity && duration > peakDuration) peakDuration = duration;
+	$: displayDuration = peakDuration || currentTime;
+	$: isLive = duration === Infinity || isNaN(duration) || duration === 0;
 
 	$: memberName = $currentStream?.member?.name || null;
 	$: roomIdentifier = $currentStream?.room_identifier || null;
@@ -195,7 +208,34 @@
 			videoElement.src = '';
 			videoElement.load();
 		}
+		peakDuration = 0; // Reset on manual refresh
 		await initPlayer();
+	}
+
+	function updateBufferAndDuration() {
+		if (videoElement) {
+			const buffered = videoElement.buffered;
+			if (buffered.length > 0) {
+				// The furthest buffered point is usually the 'live edge' for HLS
+				const furthestBuffer = buffered.end(buffered.length - 1);
+				if (furthestBuffer > peakDuration) {
+					peakDuration = furthestBuffer;
+				}
+
+				// Standard buffered end for the current segment
+				for (let i = 0; i < buffered.length; i++) {
+					if (currentTime >= buffered.start(i) && currentTime <= buffered.end(i)) {
+						bufferedEnd = buffered.end(i);
+						break;
+					}
+				}
+			}
+
+			const nativeDuration = videoElement.duration;
+			if (nativeDuration !== Infinity && !isNaN(nativeDuration)) {
+				if (nativeDuration > peakDuration) peakDuration = nativeDuration;
+			}
+		}
 	}
 
 	function takeScreenshot() {
@@ -287,7 +327,9 @@
 			} catch (err) {
 				console.error('Recording failed to start:', err);
 				// Standard alert only if it's a persistent error
-				alert('Record failed. Please ensure the video is playing and try again in a few seconds.');
+				alert(
+					'Record failed. Please ensure the video is playing and try again in a few seconds.'
+				);
 			}
 		} else {
 			if (mediaRecorder) {
@@ -320,6 +362,31 @@
 		} catch (error) {
 			console.error('PiP failed', error);
 		}
+	}
+
+	function handleSeek(e: any) {
+		if (videoElement) {
+			const time = parseFloat(e.target.value);
+			videoElement.currentTime = time;
+		}
+	}
+
+	function togglePlayPause() {
+		if (videoElement) {
+			if (videoElement.paused) videoElement.play();
+			else videoElement.pause();
+		}
+	}
+
+	function formatTime(seconds: number) {
+		if (isNaN(seconds) || seconds === Infinity) return '0:00';
+		const h = Math.floor(seconds / 3600);
+		const m = Math.floor((seconds % 3600) / 60);
+		const s = Math.floor(seconds % 60);
+		if (h > 0) {
+			return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+		}
+		return `${m}:${s.toString().padStart(2, '0')}`;
 	}
 </script>
 
@@ -415,240 +482,178 @@
 				</div>
 			{/if}
 
-			<div class="w-full h-full flex items-center justify-center">
+			<div class="group/player relative w-full h-full flex items-center justify-center">
 				<!-- svelte-ignore a11y-media-has-caption -->
 				<video
 					bind:this={videoElement}
-					class="w-full h-full object-contain"
+					class="w-full h-full object-contain cursor-pointer"
 					crossorigin="anonymous"
-					controls
 					autoplay
 					playsinline
+					on:timeupdate={() => {
+						currentTime = videoElement?.currentTime || 0;
+						updateBufferAndDuration();
+					}}
+					on:loadedmetadata={() => {
+						duration = videoElement?.duration || 0;
+						updateBufferAndDuration();
+					}}
+					on:play={() => (isPaused = false)}
+					on:pause={() => (isPaused = true)}
+					on:click={togglePlayPause}
 				></video>
 
 				{#if roomIdentifier}
 					<GiftOverlay {roomIdentifier} />
 				{/if}
-			</div>
-		</div>
-		<!-- Player Controls -->
-		<div
-			class="flex items-center justify-center sm:justify-between gap-1 sm:gap-4 pr-1 sm:pr-2 py-1.5 sm:py-2 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-xl rounded-full border border-gray-100 dark:border-zinc-800/50 px-2 sm:px-4 shadow-sm w-full max-w-fit sm:min-w-[300px] mx-auto sm:mx-0 sm:ml-auto"
-		>
-			<!-- Volume & Layout Group (Left) -->
-			<div class="flex items-center gap-2">
-				<!-- Volume Control -->
-				<div class="group relative flex items-center">
-					<!-- Volume Slider (Hidden by default, shown on hover, expands left) -->
-					<div
-						class="w-0 group-hover:w-16 sm:group-hover:w-24 overflow-hidden transition-all duration-300 flex items-center"
-					>
-						<input
-							type="range"
-							min="0"
-							max="1"
-							step="0.01"
-							bind:value={volume}
-							on:input={handleVolumeChange}
-							class="w-14 sm:w-20 h-1 sm:h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-red-600 mr-1 sm:mr-2"
-						/>
-					</div>
 
-					<button
-						class="w-8 h-8 sm:w-10 h-10 bg-zinc-900 dark:bg-zinc-800 hover:bg-black dark:hover:bg-zinc-700 active:scale-95 text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
-						on:click={toggleMute}
-					>
-						{#if isMuted || volume === 0}
-							<VolumeX class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:scale-110 transition-transform duration-500" />
-						{:else}
-							<Volume2 class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:scale-110 transition-transform duration-500" />
-						{/if}
-					</button>
-
-					<div
-						class="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-2xl z-[100]"
-					>
-						{$t('theater.live.volume')}
-					</div>
-				</div>
-
-				<!-- PiP Button -->
-				<div class="group relative">
-					<button
-						class="w-8 h-8 sm:w-10 h-10 bg-zinc-900 dark:bg-zinc-800 hover:bg-black dark:hover:bg-zinc-700 active:scale-95 text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
-						on:click={togglePiP}
-					>
-						<PictureInPicture2 class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:scale-110 transition-transform duration-500" />
-					</button>
-					<div
-						class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-2xl z-[100]"
-					>
-						{$t('theater.live.pip')}
-					</div>
-				</div>
-			</div>
-
-			<div class="w-px h-6 bg-gray-200 dark:bg-zinc-800 mx-1"></div>
-
-			<!-- Right Controls -->
-			<div class="flex items-center gap-2 sm:gap-4">
-				<!-- Capture Group -->
-				<div class="flex items-center gap-2">
-					<!-- Screenshot Button -->
-					<div class="group relative">
-						<button
-							class="w-8 h-8 sm:w-10 h-10 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
-							on:click={takeScreenshot}
-						>
-							<Camera class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:rotate-12 transition-transform duration-500" />
-						</button>
-						<div
-							class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-2xl z-[100]"
-						>
-							{$t('theater.live.screenshot')}
-						</div>
-					</div>
-
-					<!-- Recording Button -->
-					<div class="group relative">
-						<button
-							class="w-8 h-8 sm:w-10 h-10 {isRecording
-								? 'bg-red-600 animate-pulse'
-								: 'bg-zinc-900 dark:bg-zinc-800'} hover:bg-red-700 active:scale-95 text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
-							on:click={toggleRecording}
-						>
-							{#if isRecording}
-								<Square
-									class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:scale-110 transition-transform duration-500"
-									fill="currentColor"
+				<!-- Custom Player Overlay (Glassmorphism) -->
+				<div 
+					class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover/player:opacity-100 transition-opacity duration-300 pointer-events-none group-focus-within/player:opacity-100"
+				>
+					<div class="max-w-4xl mx-auto flex flex-col gap-2 pointer-events-auto">
+						<!-- Progress Bar -->
+						<div class="flex flex-col gap-1 px-1">
+							<div class="flex justify-between items-end text-[10px] font-black text-white/90 uppercase tracking-widest mb-0.5">
+								<span>{formatTime(currentTime)} / {formatTime(displayDuration)}</span>
+							</div>
+							
+							<div class="group/progress relative h-6 flex items-center mb-1 cursor-pointer">
+								<!-- Transparent track as a base -->
+								<div class="absolute inset-x-0 h-1 bg-white/20 rounded-full pointer-events-none"></div>
+								<!-- Played Bar (Red) -->
+								<div 
+									class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-red-600 rounded-full pointer-events-none transition-all z-10"
+									style="width: {Math.min(100, (currentTime / (displayDuration || 1)) * 100)}%"
+								></div>
+								<!-- Slider Input (Invisible but interactive) -->
+								<input
+									type="range"
+									min="0"
+									max={displayDuration || 0}
+									step="0.1"
+									value={currentTime}
+									on:input={handleSeek}
+									class="absolute inset-x-0 w-full h-full bg-transparent appearance-none cursor-pointer z-20 custom-range"
 								/>
-							{:else}
-								<Circle
-									class="w-4 h-4 sm:w-[18px] sm:h-[18px] text-red-600 group-hover:scale-110 transition-transform duration-500"
-									fill="currentColor"
-								/>
-							{/if}
-						</button>
-						<div
-							class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-2xl z-[100]"
-						>
-							{isRecording ? $t('theater.live.stopRecord') : $t('theater.live.record')}
-						</div>
-					</div>
-				</div>
-
-				<div class="w-px h-6 bg-gray-200 dark:bg-zinc-800 mx-1"></div>
-
-				<!-- Mode Group -->
-				<div class="flex items-center gap-2">
-					<!-- Focus Mode Button -->
-					<div class="group relative">
-						<button
-							class="w-8 h-8 sm:w-10 h-10 {isFocusMode
-								? 'bg-zinc-100 dark:bg-zinc-800 text-slate-900 dark:text-white'
-								: 'bg-zinc-900 dark:bg-zinc-800 text-white'} hover:opacity-80 active:scale-95 rounded-full flex items-center justify-center transition-all cursor-pointer"
-							on:click={toggleFocus}
-						>
-							{#if isFocusMode}
-								<Minimize2 class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:scale-110 transition-transform duration-500" />
-							{:else}
-								<Maximize2 class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:scale-110 transition-transform duration-500" />
-							{/if}
-						</button>
-						<div
-							class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-2xl z-[100]"
-						>
-							{isFocusMode ? $t('theater.live.exitFocus') : $t('theater.live.focusMode')}
-						</div>
-					</div>
-
-					{#if isFocusMode}
-						<div class="group relative" transition:fade={{ duration: 200 }}>
-							<ThemeToggle />
-							<div
-								class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-2xl z-[100]"
-							>
-								{$t('theater.live.toggleTheme')}
 							</div>
 						</div>
-					{/if}
-				</div>
 
-				<div class="w-px h-6 bg-gray-200 dark:bg-zinc-800 mx-1"></div>
+						<!-- Controls Bar -->
+						<div class="flex items-center justify-between">
+							<!-- Left Side: Play/Pause, Volume, PiP -->
+							<div class="flex items-center gap-1 sm:gap-2">
+								<button 
+									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all active:scale-90 cursor-pointer"
+									on:click={togglePlayPause}
+								>
+									{#if isPaused}
+										<Play size={24} fill="white" class="text-white ml-1" />
+									{:else}
+										<Pause size={24} fill="white" class="text-white" />
+									{/if}
+								</button>
 
-				<!-- Stream Group -->
-				<div class="flex items-center gap-2">
-					<!-- Refresh Button -->
-					<div class="group relative">
-						<button
-							class="w-8 h-8 sm:w-10 h-10 bg-red-600 hover:bg-red-700 active:scale-95 text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
-							on:click={refreshStream}
-						>
-							<RefreshCw
-								class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:rotate-90 transition-transform duration-500 {$liveLoading
-									? 'animate-spin'
-									: ''}"
-							/>
-						</button>
-						<div
-							class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-2xl z-[100]"
-						>
-							{$t('theater.live.refresh')}
-						</div>
-					</div>
-				</div>
+								<div class="flex items-center gap-1 group/volume">
+									<button 
+										class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+										on:click={toggleMute}
+									>
+										{#if isMuted || volume === 0}
+											<VolumeX size={18} />
+										{:else}
+											<Volume2 size={18} />
+										{/if}
+									</button>
+									<input
+										type="range"
+										min="0"
+										max="1"
+										step="0.01"
+										bind:value={volume}
+										on:input={handleVolumeChange}
+										class="w-0 opacity-0 group-hover/volume:w-16 sm:group-hover/volume:w-24 group-hover/volume:opacity-100 transition-all duration-300 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-white"
+									/>
+								</div>
 
-				<div class="w-px h-6 bg-gray-200 dark:bg-zinc-800 mx-1"></div>
+								<button 
+									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+									on:click={togglePiP}
+								>
+									<PictureInPicture2 size={18} />
+								</button>
+							</div>
 
-				<!-- UI Group -->
-				<div class="flex items-center gap-2">
-					<!-- Toggle Mode Button -->
-					<div class="group relative">
-						<button
-							class="w-8 h-8 sm:w-10 h-10 {sidebarMode === 'list'
-								? 'bg-red-600'
-								: 'bg-zinc-900 dark:bg-zinc-800'} hover:bg-red-600 active:scale-95 text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
-							on:click={() => {
-								sidebarMode = sidebarMode === 'chat' ? 'list' : 'chat';
-								if (sidebarMode === 'list') fetchOtherLive();
-								if (!chatVisible) chatVisible = true;
-							}}
-						>
-							{#if sidebarMode === 'chat'}
-								<Users class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:scale-110 transition-transform duration-500" />
-							{:else}
-								<MessageCircle
-									class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:scale-110 transition-transform duration-500"
-								/>
-							{/if}
-						</button>
-						<div
-							class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-2xl z-[100]"
-						>
-							{sidebarMode === 'chat' ? $t('theater.subNav.live') : $t('theater.live.chat')}
-						</div>
-					</div>
+							<!-- Right Side: Capture, Focus, Refresh, Chat -->
+							<div class="flex items-center gap-1 sm:gap-2">
+								<!-- Screenshot -->
+								<button 
+									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-all active:scale-95 shadow-lg shadow-blue-600/20 cursor-pointer"
+									on:click={takeScreenshot}
+								>
+									<Camera size={18} />
+								</button>
 
-					<!-- Chat Toggle Button -->
-					<div class="group relative">
-						<button
-							class="w-8 h-8 sm:w-10 h-10 bg-zinc-900 dark:bg-zinc-800 hover:bg-black dark:hover:bg-zinc-700 active:scale-95 text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
-							on:click={toggleChat}
-						>
-							{#if chatVisible}
-								<ChevronRight
-									class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:translate-x-0.5 transition-transform duration-500"
-								/>
-							{:else}
-								<ChevronLeft
-									class="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:-translate-x-0.5 transition-transform duration-500"
-								/>
-							{/if}
-						</button>
-						<div
-							class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-2xl z-[100]"
-						>
-							{chatVisible ? $t('theater.live.hideChat') : $t('theater.live.showChat')}
+								<!-- Record -->
+								<button 
+									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {isRecording ? 'bg-red-600 animate-pulse' : 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all active:scale-95 cursor-pointer"
+									on:click={toggleRecording}
+								>
+									{#if isRecording}
+										<Square size={16} fill="white" />
+									{:else}
+										<Circle size={16} fill="red" class="text-red-500" />
+									{/if}
+								</button>
+
+								<div class="w-px h-4 bg-white/20 mx-1"></div>
+
+								<!-- Focus -->
+								<button 
+									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {isFocusMode ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
+									on:click={toggleFocus}
+								>
+									{#if isFocusMode}
+										<Minimize2 size={18} />
+									{:else}
+										<Maximize2 size={18} />
+									{/if}
+								</button>
+
+								<!-- Refresh -->
+								<button 
+									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white rounded-full transition-all active:scale-95 cursor-pointer"
+									on:click={refreshStream}
+								>
+									<RefreshCw size={18} class={$liveLoading ? 'animate-spin' : ''} />
+								</button>
+
+								<div class="w-px h-4 bg-white/20 mx-1"></div>
+
+								<!-- Sidebar Toggle -->
+								<button 
+									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {sidebarMode === 'list' ? 'bg-red-600 text-white' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
+									on:click={() => {
+										sidebarMode = sidebarMode === 'chat' ? 'list' : 'chat';
+										if (sidebarMode === 'list') fetchOtherLive();
+										if (!chatVisible) chatVisible = true;
+									}}
+								>
+									{#if sidebarMode === 'chat'}
+										<Users size={18} />
+									{:else}
+										<MessageCircle size={18} />
+									{/if}
+								</button>
+
+								<!-- Chat Fold -->
+								<button 
+									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
+									on:click={toggleChat}
+								>
+									<ChevronRight size={20} class={chatVisible ? 'rotate-0' : 'rotate-180'} />
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -808,5 +813,39 @@
 
 	:global(.dark) .overflow-y-auto {
 		scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+	}
+
+	:global(input[type='range']::-webkit-slider-thumb) {
+		appearance: none;
+		width: 14px;
+		height: 14px;
+		background: white;
+		border-radius: 50%;
+		cursor: pointer;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+		border: 2px solid #ef4444; /* Match red theme */
+	}
+
+	:global(input[type='range']::-moz-range-thumb) {
+		width: 14px;
+		height: 14px;
+		background: white;
+		border-radius: 50%;
+		cursor: pointer;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+		border: 2px solid #ef4444;
+	}
+
+	/* Adjust volume slider thumb slightly smaller */
+	:global(.group\/volume input[type='range']::-webkit-slider-thumb) {
+		width: 12px;
+		height: 12px;
+		border: none;
+	}
+
+	:global(.group\/volume input[type='range']::-moz-range-thumb) {
+		width: 12px;
+		height: 12px;
+		border: none;
 	}
 </style>
