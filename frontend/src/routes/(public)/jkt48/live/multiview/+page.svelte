@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { get } from 'svelte/store';
 	import { fade, fly, slide } from 'svelte/transition';
 	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
 	import { live } from '$lib/apis/live';
@@ -79,7 +80,38 @@
 
 	onMount(() => {
 		liveStore.loadLiveList();
-		const interval = setInterval(() => liveStore.loadLiveList(true), 60000);
+		const interval = setInterval(async () => {
+			await liveStore.loadLiveList(true);
+			// Sync slots with new data from liveList (to update viewer counts and detect offline)
+			const currentLive = get(liveList);
+			
+			let hasGoneOffline = false;
+			const updatedSlots = slots.map((slot) => {
+				const match = currentLive.find(
+					(l) =>
+						(l.platform === slot.platform && l.room_id === slot.room_id && l.room_id) ||
+						(l.platform === slot.platform && l.live_id === slot.live_id && l.live_id)
+				);
+				
+				if (!match) {
+					hasGoneOffline = true;
+					showToast($t('theater.live.multiview.member_offline', { name: slot.member?.name }), 'error');
+					return null;
+				}
+				return { ...slot, view_num: match.view_num };
+			}).filter(s => s !== null);
+
+			if (hasGoneOffline) {
+				slots = updatedSlots;
+				saveSlots();
+				// Adjust focused slot if needed
+				if (focusedSlotIndex >= slots.length) {
+					setFocusedSlot(Math.max(0, slots.length - 1));
+				}
+			} else {
+				slots = updatedSlots;
+			}
+		}, 30000); // 30 seconds
 
 		// Disable body scroll when in multiview
 		document.body.style.overflow = 'hidden';
@@ -408,11 +440,13 @@
 											: ''}"
 									>
 										{#if (stream.view_num ?? 0) > 0}
-											<div class="flex items-center gap-1 text-sky-500 font-bold shrink-0">
-												<Users size={10} />
-												{stream.view_num.toLocaleString()}
+											<div class="flex items-center gap-1 shrink-0">
+												<Users size={10} class="text-sky-500" />
+												<span class="font-medium text-slate-700 dark:text-zinc-300">
+													{stream.view_num.toLocaleString()}
+												</span>
 											</div>
-											<span class="opacity-20">|</span>
+											<span class="opacity-20 text-slate-400">|</span>
 										{/if}
 										<span class="truncate">
 											{stream.title || $t('theater.live.multiview.live_status')}
@@ -496,6 +530,14 @@
 									class="text-[10px] font-black text-white uppercase tracking-wider truncate max-w-[100px]"
 									>{stream.member?.name}</span
 								>
+
+								{#if (stream.view_num ?? 0) > 0}
+									<div class="h-4 w-px bg-white/20 mx-1"></div>
+									<div class="flex items-center gap-1 text-white font-black text-[9px]">
+										<Users size={10} class="text-sky-400" />
+										{stream.view_num.toLocaleString()}
+									</div>
+								{/if}
 							</div>
 							<button
 								on:click|stopPropagation={() => removeMemberFromSlot(i)}

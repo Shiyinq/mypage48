@@ -71,6 +71,7 @@
 	let playerContainer: HTMLDivElement;
 	let recordingDuration = 0;
 	let recordingTimer: any = null;
+	let refreshInterval: any = null;
 	let ignoreNextVideoClick = false;
 
 	function resetControlsTimeout(isTouch = false) {
@@ -162,8 +163,8 @@
 			console.error('Player init failed:', e);
 			if (currentInit !== initCount) return;
 
-			// Handle 404 error from server
-			if (e?.detail === 'No streaming URL found for this room.') {
+			// Handle 404 error from server (Offline)
+			if (e?.status === 404) {
 				showToast($t('theater.live.offline'), 'error');
 				goto('/jkt48/live');
 			}
@@ -190,10 +191,23 @@
 	}
 
 	onMount(() => {
+		// Periodic refresh of stream info (viewer count)
+		refreshInterval = setInterval(() => {
+			if (platform && id && !initializing) {
+				liveStore.refreshStreamInfo(platform, id).catch((e) => {
+					if (e?.status === 404) {
+						showToast($t('theater.live.offline'), 'error');
+						goto('/jkt48/live');
+					}
+				});
+			}
+		}, 30000); // 30 seconds
+
 		if ((window as any).Hls) {
 			scriptLoaded = true;
 			return;
 		}
+
 		// Load hls.js from CDN
 		const script = document.createElement('script');
 		script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
@@ -209,6 +223,9 @@
 		}
 		if (recordingTimer) {
 			clearInterval(recordingTimer);
+		}
+		if (refreshInterval) {
+			clearInterval(refreshInterval);
 		}
 		liveStore.reset();
 	});
