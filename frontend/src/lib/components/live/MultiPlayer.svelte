@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 	import { fade, scale, slide } from 'svelte/transition';
 	import { live as liveApi } from '$lib/apis/live';
 	import { API_BASE } from '$lib/apis/client';
@@ -84,6 +84,8 @@
 
 	// Floating Gift Logic - Handled by GiftOverlay component
 
+	const dispatch = createEventDispatcher();
+
 	async function initPlayer() {
 		if (typeof window === 'undefined' || initializing) return;
 		if (!videoElement || !platform || !id) return;
@@ -164,8 +166,11 @@
 				error = "No stream found";
 				loading = false;
 			}
-		} catch (e) {
+		} catch (e: any) {
 			console.error('MultiPlayer init failed:', e);
+			if (e?.status === 404) {
+				dispatch('offline');
+			}
 			error = "Failed to load stream";
 			loading = false;
 		} finally {

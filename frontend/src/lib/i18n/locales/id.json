@@ -766,7 +766,9 @@
 			"volume": "Volume",
 			"mute": "Senyap",
 			"unmute": "Bunyikan",
-			"pip": "Gambar dalam Gambar (PiP)"
+			"pip": "Gambar dalam Gambar (PiP)",
+			"multiview": "Multi-view",
+			"switchMultiview": "Pindah ke Multi-view"
 		},
 		"news": {
 			"title": "Berita",

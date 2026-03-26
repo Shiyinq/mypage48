@@ -135,7 +135,12 @@ export async function client<T>(
 		} else {
 			errorData = await response.text();
 		}
-		throw errorData as ApiError;
+		
+		const error = (typeof errorData === 'object' && errorData !== null) 
+			? { ...errorData, status: response.status } 
+			: { detail: errorData, status: response.status };
+
+		throw error as ApiError;
 	}
 
 	let data: unknown;

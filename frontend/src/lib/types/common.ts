@@ -20,6 +20,7 @@ export interface GenericResponse {
 }
 
 export interface ApiError {
+	status?: number;
 	detail:
 		| string
 		| { loc: (string | number)[]; msg: string; type: string }[]
