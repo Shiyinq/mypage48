@@ -25,6 +25,8 @@
 - 📅 **Interactive Calendar** - Browse JKT48 schedule and events in a monthly view
 - 📜 **Event History** - Comprehensive history of all past JKT48 events
 - 📦 **Data Export** - Download your complete data including images in a ZIP archive
+- 📺 **JKT48 Live Stream** - Watch Showroom and IDN Live with a real-time multiview experience
+- 📉 **Oshi Sorter** - Rank your favorite JKT48 members with an interactive sorting tool
 - 🌏 **Multi-language Support** - Available in English, Indonesian, and Japanese
 - 🌙 **Dark Mode** - Beautiful dark-themed UI with glassmorphism design
 - 🕷️ **Built-in Scraper** - Automated fetching of JKT48 schedule, news, and member data
@@ -56,6 +58,7 @@ mypage48/
 │   ├── export/            # Data export service
 │   ├── feedback/          # User feedback system
 │   ├── health/            # Service health checks
+│   ├── live/              # JKT48 Live streaming service
 │   ├── llm/               # AI integration (Gemini)
 │   ├── members/           # JKT48 members data
 │   ├── memories/          # Digital photobook storage
