@@ -63,17 +63,24 @@
 				</div>
 
 				{#if $liveList.length > 0}
-					<div class="shrink-0">
+					<div class="shrink-0 flex items-center">
 						<a 
 							href="/jkt48/live/multiview"
-							class="group flex items-center gap-3 px-6 py-4 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+							class="group relative flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
 						>
-							<div class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform">
-								<Users size={24} />
+							<div class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+							
+							<div class="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300">
+								<Users size={18} />
 							</div>
-							<div class="pr-2">
-								<div class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors">Alternative View</div>
-								<div class="text-lg font-black tracking-tight text-slate-900 dark:text-white">Multi-view</div>
+							
+							<div class="flex flex-col items-start leading-none gap-0.5">
+								<span class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors">{$t('theater.live.multiview')}</span>
+								<span class="text-sm font-black tracking-tight text-slate-900 dark:text-white">{$t('theater.live.switchMultiview')}</span>
+							</div>
+
+							<div class="ml-2 w-5 h-5 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-black text-slate-500">
+								{$liveList.length}
 							</div>
 						</a>
 					</div>
