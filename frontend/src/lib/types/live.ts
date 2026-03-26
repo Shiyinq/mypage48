@@ -23,6 +23,7 @@ export interface StreamingUrl {
 export interface LiveStreamingResponse {
 	streaming_urls: StreamingUrl[];
 	room_identifier: string;
+	view_num?: number;
 	member: LiveMember;
 }
 

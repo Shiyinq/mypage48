@@ -402,8 +402,21 @@
 									>
 										{stream.member?.name}
 									</div>
-									<div class="text-[10px] text-gray-400 truncate {isSelected ? 'opacity-50' : ''}">
-										{stream.title || $t('theater.live.multiview.live_status')}
+									<div
+										class="text-[10px] text-gray-400 truncate flex items-center gap-2 {isSelected
+											? 'opacity-50'
+											: ''}"
+									>
+										{#if (stream.view_num ?? 0) > 0}
+											<div class="flex items-center gap-1 text-sky-500 font-bold shrink-0">
+												<Users size={10} />
+												{stream.view_num.toLocaleString()}
+											</div>
+											<span class="opacity-20">|</span>
+										{/if}
+										<span class="truncate">
+											{stream.title || $t('theater.live.multiview.live_status')}
+										</span>
 									</div>
 								</div>
 								{#if isSelected}
