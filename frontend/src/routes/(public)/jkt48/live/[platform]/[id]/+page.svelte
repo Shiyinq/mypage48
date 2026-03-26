@@ -68,30 +68,22 @@
 	let playerContainer: HTMLDivElement;
 	let recordingDuration = 0;
 	let recordingTimer: any = null;
+	let ignoreNextVideoClick = false;
 
-	function resetControlsTimeout() {
-		if (!isFullscreen) {
-			showControls = true;
-			return;
+	function resetControlsTimeout(isTouch = false) {
+		if (isTouch && !showControls) {
+			ignoreNextVideoClick = true;
 		}
-		
 		showControls = true;
 		clearTimeout(controlsTimeout);
 		controlsTimeout = setTimeout(() => {
-			if (isFullscreen) {
-				showControls = false;
-			}
+			showControls = false;
 		}, 5000);
 	}
 
 	function handleFullscreenChange() {
 		isFullscreen = document.fullscreenElement !== null;
-		if (isFullscreen) {
-			resetControlsTimeout();
-		} else {
-			showControls = true;
-			clearTimeout(controlsTimeout);
-		}
+		resetControlsTimeout();
 	}
 
 	// Keep the largest duration we've seen to avoid shrinking scale during seeking/buffer resets
@@ -152,11 +144,13 @@
 						hls.attachMedia(videoElement);
 						hls.on(Hls.Events.MANIFEST_PARSED, () => {
 							videoElement.play().catch((e) => console.log('Autoplay blocked', e));
+							resetControlsTimeout();
 						});
 					} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 						videoElement.src = streamUrl;
 						videoElement.addEventListener('loadedmetadata', () => {
 							videoElement.play().catch((e) => console.log('Autoplay blocked', e));
+							resetControlsTimeout();
 						});
 					}
 				}
@@ -546,17 +540,23 @@
 				</div>
 			{/if}
 
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 			<div 
 				bind:this={playerContainer} 
-				class="group/player relative w-full h-full flex items-center justify-center bg-black"
+				class="group/player relative w-full h-full flex items-center justify-center bg-black transition-all duration-300 {(isFullscreen || isFocusMode) && !showControls ? 'cursor-none' : ''}"
 				role="region"
 				aria-label="Video Player"
 				on:fullscreenchange={handleFullscreenChange}
-				on:mousemove={resetControlsTimeout}
-				on:mouseleave={resetControlsTimeout}
+				on:mousemove={() => resetControlsTimeout(false)}
+				on:mouseleave={() => { showControls = false; clearTimeout(controlsTimeout); }}
+				on:click={() => resetControlsTimeout(false)}
+				on:touchstart={() => resetControlsTimeout(true)}
 			>
 				<!-- Top Info Overlay -->
-				<div class="absolute inset-x-0 top-0 p-6 bg-gradient-to-b from-black/90 via-black/40 to-transparent transition-all duration-500 pointer-events-none z-[5500] {isFullscreen ? (showControls ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0') : 'opacity-0 group-hover/player:opacity-100 translate-y-0'}">
+				<div class="absolute inset-x-0 top-0 p-6 bg-gradient-to-b from-black/90 via-black/40 to-transparent transition-all duration-500 pointer-events-none z-[5500] {showControls ? 'translate-y-0 opacity-100' : (isFullscreen || isFocusMode ? '-translate-y-full opacity-0' : 'opacity-0 -translate-y-full group-hover/player:translate-y-0 group-hover/player:opacity-100')}">
 					<div class="max-w-5xl mx-auto flex items-center {isFullscreen ? 'justify-between' : 'justify-end'} pointer-events-auto">
 						{#if isFullscreen}
 							<div class="flex items-center gap-3 min-w-0">
@@ -588,6 +588,7 @@
 				</div>
 
 				<!-- svelte-ignore a11y-media-has-caption -->
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<video
 					bind:this={videoElement}
 					class="w-full h-full object-contain cursor-pointer"
@@ -604,7 +605,13 @@
 					}}
 					on:play={() => (isPaused = false)}
 					on:pause={() => (isPaused = true)}
-					on:click={togglePlayPause}
+					on:click={() => {
+						if (ignoreNextVideoClick) {
+							ignoreNextVideoClick = false;
+							return;
+						}
+						togglePlayPause();
+					}}
 				></video>
 
 				{#if roomIdentifier}
@@ -613,7 +620,7 @@
 
 				<!-- Custom Player Overlay (Glassmorphism) -->
 				<div 
-					class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-all duration-500 pointer-events-none z-[5500] {isFullscreen ? (showControls ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0') : 'opacity-0 group-hover/player:opacity-100 translate-y-0'}"
+					class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-all duration-500 pointer-events-none z-[5500] {showControls ? 'translate-y-0 opacity-100' : (isFullscreen || isFocusMode ? 'translate-y-full opacity-0' : 'opacity-0 translate-y-full group-hover/player:translate-y-0 group-hover/player:opacity-100')}"
 				>
 					<div class="max-w-4xl mx-auto flex flex-col gap-2 pointer-events-auto">
 						<!-- Progress Bar -->
