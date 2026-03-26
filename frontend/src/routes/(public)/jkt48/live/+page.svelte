@@ -141,30 +141,26 @@
 						<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"></div>
 
 						<!-- Platform & Viewers Badges -->
-						<div class="absolute top-4 left-4 right-4 flex items-center justify-end gap-2 z-30">
-							{#if stream.view_num > 0}
-								<div class="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest border border-white/20 flex items-center gap-1.5 shadow-lg">
-									<Users size={12} class="text-sky-400" />
+						<div class="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 flex items-center justify-between gap-2 z-30">
+							<div class="px-2 sm:px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-white/20 flex items-center gap-1.5 shadow-lg">
+								<span class="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+								{#if stream.view_num > 0}
+									<div class="w-px h-2 sm:h-2.5 bg-white/20 mx-0.5 sm:mx-1"></div>
+									<Users size={12} class="text-sky-400 w-2.5 h-2.5 sm:w-3 sm:h-3" />
 									{stream.view_num.toLocaleString()}
-								</div>
-							{/if}
+								{/if}
+							</div>
 
-							<div class="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest border border-white/20 flex items-center gap-1.5 shadow-lg">
-								<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-								{stream.platform}
+							<div class="shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br {getPlatformColor(stream.platform)} flex items-center justify-center text-white text-[8px] sm:text-[10px] font-bold shadow-lg shadow-black/30 border border-white/20">
+								{getPlatformIcon(stream.platform)}
 							</div>
 						</div>
 
 						<!-- Content Area (Overlay) -->
 						<div class="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end z-30">
-							<div class="flex items-center justify-between gap-2 mb-0.5">
-								<h3 class="font-black text-white text-base leading-tight drop-shadow-md group-hover:text-red-500 transition-colors line-clamp-1">
-									{stream.member?.name}
-								</h3>
-								<div class="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br {getPlatformColor(stream.platform)} flex items-center justify-center text-white text-[8px] font-bold shadow-lg shadow-black/30 border border-white/20">
-									{getPlatformIcon(stream.platform)}
-								</div>
-							</div>
+							<h3 class="font-black text-white text-base leading-tight drop-shadow-md group-hover:text-red-500 transition-colors line-clamp-1 mb-0.5">
+								{stream.member?.name}
+							</h3>
 							<p class="text-[10px] text-gray-300 font-medium drop-shadow-sm line-clamp-1">
 								{stream.title || $t('theater.live.multiview.live_status')}
 							</p>
