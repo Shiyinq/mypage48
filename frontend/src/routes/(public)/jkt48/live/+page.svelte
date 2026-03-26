@@ -75,7 +75,7 @@
 							</div>
 							
 							<div class="flex flex-col items-start leading-none gap-0.5">
-								<span class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors">{$t('theater.live.multiview')}</span>
+								<span class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors">{$t('theater.live.multiview.title')}</span>
 								<span class="text-sm font-black tracking-tight text-slate-900 dark:text-white">{$t('theater.live.switchMultiview')}</span>
 							</div>
 
@@ -166,7 +166,7 @@
 								</div>
 							</div>
 							<p class="text-[10px] text-gray-300 font-medium drop-shadow-sm line-clamp-1">
-								{stream.title || 'Streaming JKT48! ✨'}
+								{stream.title || $t('theater.live.multiview.live_status')}
 							</p>
 						</div>
 

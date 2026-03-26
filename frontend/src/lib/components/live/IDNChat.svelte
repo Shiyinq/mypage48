@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { onMount, onDestroy, afterUpdate, tick } from 'svelte';
 	import { MessageCircle } from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
 	import { broadcastGift } from '$lib/stores/gift';
 
 	export let roomIdentifier: string;
+
+	const { t } = useTranslation();
 
 	let socket: WebSocket | null = null;
 	let messages: LiveChatIDNMessage[] = [];
@@ -167,6 +170,12 @@
 			socket.close();
 		}
 	});
+
+	function handleMediaError(e: any) {
+		if (e.currentTarget instanceof HTMLElement) {
+			e.currentTarget.style.display = 'none';
+		}
+	}
 </script>
 
 <div class="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -176,7 +185,7 @@
 	>
 		{#if messages.length === 0}
 			<div class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900">
-				Chat Started
+				{$t('theater.live.multiview.chat_started')}
 			</div>
 		{/if}
 
@@ -209,7 +218,7 @@
 										class="object-contain drop-shadow-md" 
 										loop 
 										autoplay
-										on:error={(e) => { if (e.currentTarget instanceof HTMLElement) e.currentTarget.style.display = 'none'; }}
+										on:error={handleMediaError}
 									></lottie-player>
 								{:else if isLottie}
 									<!-- Static fallback for older Lottie gifts to save resources -->
@@ -222,13 +231,13 @@
 										alt={msg.gift.name} 
 										referrerpolicy="no-referrer"
 										style="width: 50px; height: 50px;"
-										on:error={(e) => { if (e.currentTarget instanceof HTMLImageElement) e.currentTarget.style.display = 'none'; }}
+										on:error={handleMediaError}
 										class="object-contain drop-shadow-md" 
 									/>
 								{/if}
 							{/if}
 							<div>
-								<p class="text-[10px] uppercase tracking-tighter opacity-80 mb-0.5">Sending Gift</p>
+								<p class="text-[10px] uppercase tracking-tighter opacity-80 mb-0.5">{$t('theater.live.multiview.sending_gift')}</p>
 								{msg.gift.name.toUpperCase()}
 							</div>
 						</div>
@@ -244,7 +253,7 @@
 		{#if messages.length === 0}
 			<div class="flex-1 flex flex-col items-center justify-center text-center py-20 opacity-40">
 				<MessageCircle size={32} class="text-slate-300 dark:text-zinc-700 mb-2" />
-				<p class="text-xs font-bold uppercase tracking-widest text-slate-400">No messages yet</p>
+				<p class="text-xs font-bold uppercase tracking-widest text-slate-400">{$t('theater.live.multiview.no_messages')}</p>
 			</div>
 		{/if}
 	</div>
