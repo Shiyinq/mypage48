@@ -84,7 +84,13 @@
 	},
 	"landing": {
 		"nav": {
-			"subtitle": "Pelacak Teater JKT48"
+			"subtitle": "Pelacak Teater JKT48",
+			"news": "Berita",
+			"members": "Member",
+			"events": "Event",
+			"calendar": "Kalender",
+			"sorter": "Sorter",
+			"live": "Live"
 		},
 		"hero": {
 			"badge": "Fan Made Project",

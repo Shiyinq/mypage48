@@ -83,7 +83,13 @@
 	},
 	"landing": {
 		"nav": {
-			"subtitle": "JKT48劇場トラッカー"
+			"subtitle": "JKT48 劇場トラッカー",
+			"news": "ニュース",
+			"members": "メンバー",
+			"events": "イベント",
+			"calendar": "カレンダー",
+			"sorter": "ソーター",
+			"live": "ライブ"
 		},
 		"hero": {
 			"badge": "ファンメイドプロジェクト",

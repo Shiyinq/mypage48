@@ -83,7 +83,13 @@
 	},
 	"landing": {
 		"nav": {
-			"subtitle": "JKT48 Theater Tracker"
+			"subtitle": "JKT48 Theater Tracker",
+			"news": "News",
+			"members": "Members",
+			"events": "Events",
+			"calendar": "Calendar",
+			"sorter": "Sorter",
+			"live": "Live"
 		},
 		"hero": {
 			"badge": "Fan Made Project",
