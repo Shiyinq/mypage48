@@ -2,10 +2,13 @@
 <script lang="ts">
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { MessageCircle } from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveChatShowroomMessage } from '$lib/types';
 
 	export let roomId: string;
+
+	const { t } = useTranslation();
 
 	let messages: LiveChatShowroomMessage[] = [];
 	let chatContainer: HTMLElement;
@@ -83,7 +86,7 @@
 	>
 		{#if messages.length === 0}
 			<div class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900">
-				Showroom Chat
+				{$t('theater.live.multiview.showroom_chat')}
 			</div>
 		{/if}
 
@@ -108,7 +111,7 @@
 		{#if messages.length === 0 && !loading}
 			<div class="flex-1 flex flex-col items-center justify-center text-center py-20 opacity-40">
 				<MessageCircle size={32} class="text-slate-300 dark:text-zinc-700 mb-2" />
-				<p class="text-xs font-bold uppercase tracking-widest text-slate-400">No messages yet</p>
+				<p class="text-xs font-bold uppercase tracking-widest text-slate-400">{$t('theater.live.multiview.no_messages')}</p>
 			</div>
 		{/if}
 	</div>

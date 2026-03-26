@@ -4,10 +4,13 @@
 	import { live as liveApi } from '$lib/apis/live';
 	import { API_BASE } from '$lib/apis/client';
 	import { RefreshCw, AlertCircle, Circle, Square } from 'lucide-svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
 	import GiftOverlay from './GiftOverlay.svelte';
 
 	import { giftEvents, type GiftEvent } from '$lib/stores/gift';
 	
+	const { t } = useTranslation();
+
 	export let platform = ''; // 'showroom' or 'idn'
 	export let id = ''; // room_id or live_id
 	export let volume = 1;
@@ -145,7 +148,7 @@
 									break;
 								default:
 									console.error('Fatal unrecoverable error:', data);
-									error = "Stream error: " + data.details;
+									error = $t('theater.live.multiview.stream_error', { details: data.details });
 									hls.destroy();
 									loading = false;
 									break;
@@ -159,11 +162,11 @@
 						loading = false;
 					});
 				} else {
-					error = "HLS not supported";
+					error = $t('theater.live.multiview.hls_not_supported');
 					loading = false;
 				}
 			} else {
-				error = "No stream found";
+				error = $t('theater.live.multiview.no_stream_found');
 				loading = false;
 			}
 		} catch (e: any) {
@@ -171,7 +174,7 @@
 			if (e?.status === 404) {
 				dispatch('offline');
 			}
-			error = "Failed to load stream";
+			error = $t('theater.live.multiview.failed_load_stream');
 			loading = false;
 		} finally {
 			initializing = false;
@@ -328,7 +331,7 @@
 				on:click={initPlayer}
 				class="mt-4 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold rounded-lg transition-colors"
 			>
-				Retry
+				{$t('theater.live.multiview.retry')}
 			</button>
 		</div>
 	{/if}
