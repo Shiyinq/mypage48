@@ -382,7 +382,7 @@
 											: ''}"
 									/>
 									<div
-										class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-red-600 flex items-center justify-center text-[8px] font-bold text-white border-2 border-white dark:border-zinc-900"
+										class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br {stream.platform === 'showroom' ? 'from-blue-500 to-indigo-600' : 'from-red-500 to-rose-600'} flex items-center justify-center text-[8px] font-bold text-white border-2 border-white dark:border-zinc-900 shadow-sm"
 									>
 										{stream.platform === 'showroom' ? 'SR' : 'IDN'}
 									</div>
