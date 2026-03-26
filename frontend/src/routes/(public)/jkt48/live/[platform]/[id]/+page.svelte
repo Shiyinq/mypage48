@@ -644,11 +644,11 @@
 						</div>
 
 						<!-- Controls Bar -->
-						<div class="flex items-center justify-between">
+						<div class="flex items-center justify-between gap-2 sm:gap-4 overflow-x-auto scrollbar-hide py-1">
 							<!-- Left Side: Play/Pause, Volume, PiP -->
-							<div class="flex items-center gap-1 sm:gap-2">
+							<div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
 								<button 
-									class="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer group/btn relative"
+									class="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer group/btn relative"
 									on:click={togglePlayPause}
 								>
 									{#if isPaused}
@@ -663,7 +663,7 @@
 
 								<div class="flex items-center gap-1 group/volume">
 									<button 
-										class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+										class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
 										on:click={toggleMute}
 									>
 										{#if isMuted || volume === 0}
@@ -687,7 +687,7 @@
 								</div>
 
 								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
 									on:click={togglePiP}
 								>
 									<PictureInPicture2 size={18} />
@@ -698,10 +698,10 @@
 							</div>
 
 							<!-- Right Side: Capture, Focus, Refresh, Chat -->
-							<div class="flex items-center gap-1 sm:gap-2">
+							<div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
 								<!-- Screenshot -->
 								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
 									on:click={takeScreenshot}
 								>
 									<Camera size={18} />
@@ -713,7 +713,7 @@
 								<!-- Record -->
 								<div class="flex items-center gap-1.5 min-w-[40px] transition-all duration-300">
 									<button
-										class="group/btn relative w-10 h-10 flex items-center justify-center {isRecording ? 'bg-red-600 animate-pulse' : 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all active:scale-95 cursor-pointer"
+										class="group/btn relative w-10 h-10 flex items-center justify-center {isRecording ? 'bg-red-600 animate-pulse' : 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all flex-shrink-0 active:scale-95 cursor-pointer"
 										on:click={toggleRecording}
 									>
 										{#if isRecording}
@@ -739,7 +739,7 @@
 
 								{#if isFocusMode}
 									<button
-										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
+										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
 										on:click={toggleTheme}
 									>
 										{#if $theme === 'dark'}
@@ -755,7 +755,7 @@
 
 								<!-- Focus -->
 								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center {isFocusMode ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-10 h-10 flex items-center justify-center {isFocusMode ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
 									on:click={toggleFocus}
 								>
 									{#if isFocusMode}
@@ -770,7 +770,7 @@
 
 								<!-- Fullscreen -->
 								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center {isFullscreen ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-10 h-10 flex items-center justify-center {isFullscreen ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
 									on:click={toggleFullscreen}
 								>
 									{#if isFullscreen}
@@ -785,7 +785,7 @@
 
 								<!-- Refresh -->
 								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
 									on:click={refreshStream}
 								>
 									<RefreshCw size={18} class={$liveLoading ? 'animate-spin' : ''} />
@@ -798,7 +798,7 @@
 
 								<!-- Sidebar Toggle -->
 								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center {sidebarMode === 'list' ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-10 h-10 flex items-center justify-center {sidebarMode === 'list' ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
 									on:click={() => {
 										sidebarMode = sidebarMode === 'chat' ? 'list' : 'chat';
 										if (sidebarMode === 'list') fetchOtherLive();
@@ -817,7 +817,7 @@
 
 								<!-- Chat Fold -->
 								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center {chatVisible ? 'hover:bg-white/10 text-white' : 'bg-white text-black'} rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-10 h-10 flex items-center justify-center {chatVisible ? 'hover:bg-white/10 text-white' : 'bg-white text-black'} rounded-full transition-all flex-shrink-0 cursor-pointer"
 									on:click={() => (chatVisible = !chatVisible)}
 								>
 									<ChevronRight
