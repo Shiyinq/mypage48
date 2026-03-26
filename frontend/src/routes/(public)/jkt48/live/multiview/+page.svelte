@@ -81,6 +81,9 @@
 		liveStore.loadLiveList();
 		const interval = setInterval(() => liveStore.loadLiveList(true), 60000);
 
+		// Disable body scroll when in multiview
+		document.body.style.overflow = 'hidden';
+
 		// Load from localStorage if available
 		const saved = localStorage.getItem('mypage48_multiview_slots');
 		if (saved) {
@@ -92,7 +95,11 @@
 			} catch (e) {}
 		}
 
-		return () => clearInterval(interval);
+		return () => {
+			clearInterval(interval);
+			// Re-enable body scroll when leaving multiview
+			document.body.style.overflow = '';
+		};
 	});
 
 	function saveSlots() {
@@ -634,7 +641,4 @@
 </div>
 
 <style>
-	:global(body) {
-		overflow: hidden;
-	}
 </style>
