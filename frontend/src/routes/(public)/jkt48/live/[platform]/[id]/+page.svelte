@@ -564,20 +564,23 @@
 						<div class="flex items-center justify-between">
 							<!-- Left Side: Play/Pause, Volume, PiP -->
 							<div class="flex items-center gap-1 sm:gap-2">
-								<button 
-									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all active:scale-90 cursor-pointer"
-									on:click={togglePlayPause}
-								>
-									{#if isPaused}
-										<Play size={24} fill="white" class="text-white ml-1" />
-									{:else}
-										<Pause size={24} fill="white" class="text-white" />
-									{/if}
-								</button>
+									<button 
+										class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+										on:click={togglePlayPause}
+									>
+										{#if isPaused}
+											<Play size={24} fill="currentColor" class="ml-1" />
+										{:else}
+											<Pause size={24} fill="currentColor" />
+										{/if}
+										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+											{isPaused ? $t('theater.live.play') : $t('theater.live.pause')}
+										</div>
+									</button>
 
 								<div class="flex items-center gap-1 group/volume">
 									<button 
-										class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+										class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
 										on:click={toggleMute}
 									>
 										{#if isMuted || volume === 0}
@@ -585,6 +588,9 @@
 										{:else}
 											<Volume2 size={18} />
 										{/if}
+										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+											{isMuted ? $t('theater.live.unmute') : $t('theater.live.mute')}
+										</div>
 									</button>
 									<input
 										type="range"
@@ -598,10 +604,13 @@
 								</div>
 
 								<button 
-									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
 									on:click={togglePiP}
 								>
 									<PictureInPicture2 size={18} />
+									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+										{$t('theater.live.pip')}
+									</div>
 								</button>
 							</div>
 
@@ -609,15 +618,18 @@
 							<div class="flex items-center gap-1 sm:gap-2">
 								<!-- Screenshot -->
 								<button 
-									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-all active:scale-95 shadow-lg shadow-blue-600/20 cursor-pointer"
+									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-all active:scale-95 shadow-lg shadow-blue-600/20 cursor-pointer"
 									on:click={takeScreenshot}
 								>
 									<Camera size={18} />
+									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+										{$t('theater.live.screenshot')}
+									</div>
 								</button>
 
 								<!-- Record -->
 								<button 
-									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {isRecording ? 'bg-red-600 animate-pulse' : 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all active:scale-95 cursor-pointer"
+									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {isRecording ? 'bg-red-600 animate-pulse' : 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all active:scale-95 cursor-pointer"
 									on:click={toggleRecording}
 								>
 									{#if isRecording}
@@ -625,13 +637,16 @@
 									{:else}
 										<Circle size={16} fill="red" class="text-red-500" />
 									{/if}
+									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+										{isRecording ? $t('theater.live.stopRecord') : $t('theater.live.record')}
+									</div>
 								</button>
 
 								<div class="w-px h-4 bg-white/20 mx-1"></div>
 
 								<!-- Focus -->
 								<button 
-									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {isFocusMode ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {isFocusMode ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
 									on:click={toggleFocus}
 								>
 									{#if isFocusMode}
@@ -639,11 +654,14 @@
 									{:else}
 										<Maximize2 size={18} />
 									{/if}
+									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+										{isFocusMode ? $t('theater.live.exitFocus') : $t('theater.live.focusMode')}
+									</div>
 								</button>
 
 								<!-- Fullscreen -->
 								<button 
-									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
 									on:click={toggleFullscreen}
 								>
 									{#if isFullscreen}
@@ -651,21 +669,27 @@
 									{:else}
 										<Maximize size={18} />
 									{/if}
+									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+										{isFullscreen ? $t('theater.live.exitFullscreen') : $t('theater.live.fullscreen')}
+									</div>
 								</button>
 
 								<!-- Refresh -->
 								<button 
-									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white rounded-full transition-all active:scale-95 cursor-pointer"
+									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white rounded-full transition-all active:scale-95 cursor-pointer"
 									on:click={refreshStream}
 								>
 									<RefreshCw size={18} class={$liveLoading ? 'animate-spin' : ''} />
+									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+										{$t('theater.live.refresh')}
+									</div>
 								</button>
 
 								<div class="w-px h-4 bg-white/20 mx-1"></div>
 
 								<!-- Sidebar Toggle -->
 								<button 
-									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {sidebarMode === 'list' ? 'bg-red-600 text-white' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {sidebarMode === 'list' ? 'bg-red-600 text-white' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
 									on:click={() => {
 										sidebarMode = sidebarMode === 'chat' ? 'list' : 'chat';
 										if (sidebarMode === 'list') fetchOtherLive();
@@ -677,14 +701,20 @@
 									{:else}
 										<MessageCircle size={18} />
 									{/if}
+									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+										{sidebarMode === 'chat' ? $t('theater.subNav.members') : $t('theater.live.chat')}
+									</div>
 								</button>
 
 								<!-- Chat Fold -->
 								<button 
-									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
+									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
 									on:click={toggleChat}
 								>
 									<ChevronRight size={20} class={chatVisible ? 'rotate-0' : 'rotate-180'} />
+									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+										{chatVisible ? $t('theater.live.hideChat') : $t('theater.live.showChat')}
+									</div>
 								</button>
 							</div>
 						</div>
