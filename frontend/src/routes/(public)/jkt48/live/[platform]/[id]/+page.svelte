@@ -66,6 +66,8 @@
 	let showControls = true;
 	let controlsTimeout: any;
 	let playerContainer: HTMLDivElement;
+	let recordingDuration = 0;
+	let recordingTimer: any = null;
 
 	function resetControlsTimeout() {
 		if (!isFullscreen) {
@@ -207,6 +209,9 @@
 	onDestroy(() => {
 		if (hls) {
 			hls.destroy();
+		}
+		if (recordingTimer) {
+			clearInterval(recordingTimer);
 		}
 		liveStore.reset();
 	});
@@ -358,6 +363,10 @@
 
 				mediaRecorder.start();
 				isRecording = true;
+				recordingDuration = 0;
+				recordingTimer = setInterval(() => {
+					recordingDuration++;
+				}, 1000);
 			} catch (err) {
 				console.error('Recording failed to start:', err);
 				// Standard alert only if it's a persistent error
@@ -369,6 +378,10 @@
 			if (mediaRecorder) {
 				mediaRecorder.stop();
 				isRecording = false;
+				if (recordingTimer) {
+					clearInterval(recordingTimer);
+					recordingTimer = null;
+				}
 			}
 		}
 	}
@@ -434,14 +447,14 @@
 	}
 
 	function formatTime(seconds: number) {
-		if (isNaN(seconds) || seconds === Infinity) return '0:00';
+		if (isNaN(seconds) || seconds === Infinity) return '00:00';
 		const h = Math.floor(seconds / 3600);
 		const m = Math.floor((seconds % 3600) / 60);
 		const s = Math.floor(seconds % 60);
 		if (h > 0) {
 			return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 		}
-		return `${m}:${s.toString().padStart(2, '0')}`;
+		return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 	}
 </script>
 
@@ -698,19 +711,29 @@
 								</button>
 
 								<!-- Record -->
-								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center {isRecording ? 'bg-red-600 animate-pulse' : 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all active:scale-95 cursor-pointer"
-									on:click={toggleRecording}
-								>
+								<div class="flex items-center gap-1.5 min-w-[40px] transition-all duration-300">
+									<button
+										class="group/btn relative w-10 h-10 flex items-center justify-center {isRecording ? 'bg-red-600 animate-pulse' : 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all active:scale-95 cursor-pointer"
+										on:click={toggleRecording}
+									>
+										{#if isRecording}
+											<Square size={16} fill="white" />
+										{:else}
+											<Circle size={16} fill="white" class="text-white" />
+										{/if}
+										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+											{isRecording ? $t('theater.live.stopRecord') : $t('theater.live.record')}
+										</div>
+									</button>
 									{#if isRecording}
-										<Square size={16} fill="white" />
-									{:else}
-										<Circle size={16} fill="white" class="text-white" />
+										<div 
+											class="text-white text-[11px] font-mono font-bold tabular-nums px-1.5 py-0.5 bg-red-600 rounded-sm shadow-sm"
+											in:fly={{ x: -10, duration: 300 }}
+										>
+											{formatTime(recordingDuration)}
+										</div>
 									{/if}
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
-										{isRecording ? $t('theater.live.stopRecord') : $t('theater.live.record')}
-									</div>
-								</button>
+								</div>
 
 								<div class="w-px h-4 bg-white/20 mx-1"></div>
 
