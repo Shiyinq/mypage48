@@ -11,6 +11,7 @@
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import GiftOverlay from '$lib/components/live/GiftOverlay.svelte';
 	import ThemeToggle from '$lib/components/landing-page/ThemeToggle.svelte';
+	import { theme, setTheme } from '$lib/stores/theme';
 	import {
 		ArrowLeft,
 		Users,
@@ -31,7 +32,9 @@
 		VolumeX,
 		PictureInPicture2,
 		Play,
-		Pause
+		Pause,
+		Sun,
+		Moon
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -60,7 +63,34 @@
 	let bufferedEnd = 0;
 	let peakDuration = 0;
 	let isFullscreen = false;
+	let showControls = true;
+	let controlsTimeout: any;
 	let playerContainer: HTMLDivElement;
+
+	function resetControlsTimeout() {
+		if (!isFullscreen) {
+			showControls = true;
+			return;
+		}
+		
+		showControls = true;
+		clearTimeout(controlsTimeout);
+		controlsTimeout = setTimeout(() => {
+			if (isFullscreen) {
+				showControls = false;
+			}
+		}, 5000);
+	}
+
+	function handleFullscreenChange() {
+		isFullscreen = document.fullscreenElement !== null;
+		if (isFullscreen) {
+			resetControlsTimeout();
+		} else {
+			showControls = true;
+			clearTimeout(controlsTimeout);
+		}
+	}
 
 	// Keep the largest duration we've seen to avoid shrinking scale during seeking/buffer resets
 	$: if (currentTime > peakDuration) peakDuration = currentTime;
@@ -348,6 +378,14 @@
 		if (videoElement) videoElement.muted = isMuted;
 	}
 
+	function toggleTheme() {
+		if ($theme === 'dark') {
+			setTheme('light');
+		} else {
+			setTheme('dark');
+		}
+	}
+
 	function handleVolumeChange(e: any) {
 		volume = parseFloat(e.target.value);
 		if (videoElement) {
@@ -445,11 +483,7 @@
 				{/if}
 			</div>
 
-			<div
-				class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600 text-white text-[10px] font-black uppercase tracking-widest animate-pulse"
-			>
-				{$t('theater.live.liveBadge')}
-			</div>
+			<!-- Live Badge removed from header -->
 		</div>
 
 		<!-- Video Player -->
@@ -501,9 +535,45 @@
 
 			<div 
 				bind:this={playerContainer} 
-				class="group/player relative w-full h-full flex items-center justify-center"
-				on:fullscreenchange={() => isFullscreen = !!document.fullscreenElement}
+				class="group/player relative w-full h-full flex items-center justify-center bg-black"
+				role="region"
+				aria-label="Video Player"
+				on:fullscreenchange={handleFullscreenChange}
+				on:mousemove={resetControlsTimeout}
+				on:mouseleave={resetControlsTimeout}
 			>
+				<!-- Top Info Overlay -->
+				<div class="absolute inset-x-0 top-0 p-6 bg-gradient-to-b from-black/90 via-black/40 to-transparent transition-all duration-500 pointer-events-none z-[5500] {isFullscreen ? (showControls ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0') : 'opacity-0 group-hover/player:opacity-100 translate-y-0'}">
+					<div class="max-w-5xl mx-auto flex items-center {isFullscreen ? 'justify-between' : 'justify-end'} pointer-events-auto">
+						{#if isFullscreen}
+							<div class="flex items-center gap-3 min-w-0">
+								{#if memberName}
+									<h2 class="text-white text-lg sm:text-2xl font-black truncate drop-shadow-xl tracking-tight">
+										{memberName}
+									</h2>
+								{/if}
+							</div>
+							
+							<div class="flex items-center gap-3 flex-shrink-0">
+								<div class="hidden sm:flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-white/80 text-[10px] font-bold uppercase tracking-wider">
+									<div class="w-1 h-1 rounded-full bg-green-500"></div>
+									{platform?.toUpperCase()} {$t('theater.live.title')}
+								</div>
+
+								<div class="flex items-center gap-2 bg-red-600 px-3 py-1 rounded-full shadow-lg shadow-red-600/20">
+									<div class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+									<span class="text-white text-[10px] font-black uppercase tracking-widest">{$t('theater.live.liveBadge')}</span>
+								</div>
+							</div>
+						{:else}
+							<div class="flex items-center gap-2 bg-red-600 px-3 py-1 rounded-full shadow-lg shadow-red-600/20 animate-pulse">
+								<div class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+								<span class="text-white text-[10px] font-black uppercase tracking-widest">{$t('theater.live.liveBadge')}</span>
+							</div>
+						{/if}
+					</div>
+				</div>
+
 				<!-- svelte-ignore a11y-media-has-caption -->
 				<video
 					bind:this={videoElement}
@@ -530,7 +600,7 @@
 
 				<!-- Custom Player Overlay (Glassmorphism) -->
 				<div 
-					class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover/player:opacity-100 transition-opacity duration-300 pointer-events-none group-focus-within/player:opacity-100"
+					class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-all duration-500 pointer-events-none z-[5500] {isFullscreen ? (showControls ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0') : 'opacity-0 group-hover/player:opacity-100 translate-y-0'}"
 				>
 					<div class="max-w-4xl mx-auto flex flex-col gap-2 pointer-events-auto">
 						<!-- Progress Bar -->
@@ -564,15 +634,15 @@
 						<div class="flex items-center justify-between">
 							<!-- Left Side: Play/Pause, Volume, PiP -->
 							<div class="flex items-center gap-1 sm:gap-2">
-									<button 
-										class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
-										on:click={togglePlayPause}
-									>
-										{#if isPaused}
-											<Play size={24} fill="currentColor" class="ml-1" />
-										{:else}
-											<Pause size={24} fill="currentColor" />
-										{/if}
+								<button 
+									class="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer group/btn relative"
+									on:click={togglePlayPause}
+								>
+									{#if isPaused}
+										<Play size={22} fill="currentColor" class="ml-1" />
+									{:else}
+										<Pause size={22} fill="currentColor" />
+									{/if}
 										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
 											{isPaused ? $t('theater.live.play') : $t('theater.live.pause')}
 										</div>
@@ -580,7 +650,7 @@
 
 								<div class="flex items-center gap-1 group/volume">
 									<button 
-										class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+										class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
 										on:click={toggleMute}
 									>
 										{#if isMuted || volume === 0}
@@ -588,7 +658,7 @@
 										{:else}
 											<Volume2 size={18} />
 										{/if}
-										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest">
 											{isMuted ? $t('theater.live.unmute') : $t('theater.live.mute')}
 										</div>
 									</button>
@@ -603,8 +673,8 @@
 									/>
 								</div>
 
-								<button 
-									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
 									on:click={togglePiP}
 								>
 									<PictureInPicture2 size={18} />
@@ -617,8 +687,8 @@
 							<!-- Right Side: Capture, Focus, Refresh, Chat -->
 							<div class="flex items-center gap-1 sm:gap-2">
 								<!-- Screenshot -->
-								<button 
-									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-all active:scale-95 shadow-lg shadow-blue-600/20 cursor-pointer"
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
 									on:click={takeScreenshot}
 								>
 									<Camera size={18} />
@@ -628,14 +698,14 @@
 								</button>
 
 								<!-- Record -->
-								<button 
-									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {isRecording ? 'bg-red-600 animate-pulse' : 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all active:scale-95 cursor-pointer"
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center {isRecording ? 'bg-red-600 animate-pulse' : 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all active:scale-95 cursor-pointer"
 									on:click={toggleRecording}
 								>
 									{#if isRecording}
 										<Square size={16} fill="white" />
 									{:else}
-										<Circle size={16} fill="red" class="text-red-500" />
+										<Circle size={16} fill="white" class="text-white" />
 									{/if}
 									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
 										{isRecording ? $t('theater.live.stopRecord') : $t('theater.live.record')}
@@ -645,8 +715,8 @@
 								<div class="w-px h-4 bg-white/20 mx-1"></div>
 
 								<!-- Focus -->
-								<button 
-									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {isFocusMode ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center {isFocusMode ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
 									on:click={toggleFocus}
 								>
 									{#if isFocusMode}
@@ -654,14 +724,14 @@
 									{:else}
 										<Maximize2 size={18} />
 									{/if}
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest">
 										{isFocusMode ? $t('theater.live.exitFocus') : $t('theater.live.focusMode')}
 									</div>
 								</button>
 
 								<!-- Fullscreen -->
-								<button 
-									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center {isFullscreen ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
 									on:click={toggleFullscreen}
 								>
 									{#if isFullscreen}
@@ -669,14 +739,30 @@
 									{:else}
 										<Maximize size={18} />
 									{/if}
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest">
 										{isFullscreen ? $t('theater.live.exitFullscreen') : $t('theater.live.fullscreen')}
 									</div>
 								</button>
 
+								{#if isFocusMode}
+									<button
+										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
+										on:click={toggleTheme}
+									>
+										{#if $theme === 'dark'}
+											<Moon size={18} />
+										{:else}
+											<Sun size={18} />
+										{/if}
+										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest">
+											{$t('theater.live.toggleTheme')}
+										</div>
+									</button>
+								{/if}
+
 								<!-- Refresh -->
-								<button 
-									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white rounded-full transition-all active:scale-95 cursor-pointer"
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
 									on:click={refreshStream}
 								>
 									<RefreshCw size={18} class={$liveLoading ? 'animate-spin' : ''} />
@@ -688,8 +774,8 @@
 								<div class="w-px h-4 bg-white/20 mx-1"></div>
 
 								<!-- Sidebar Toggle -->
-								<button 
-									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center {sidebarMode === 'list' ? 'bg-red-600 text-white' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center {sidebarMode === 'list' ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
 									on:click={() => {
 										sidebarMode = sidebarMode === 'chat' ? 'list' : 'chat';
 										if (sidebarMode === 'list') fetchOtherLive();
@@ -707,11 +793,14 @@
 								</button>
 
 								<!-- Chat Fold -->
-								<button 
-									class="group/btn relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
-									on:click={toggleChat}
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center {chatVisible ? 'hover:bg-white/10 text-white' : 'bg-white text-black'} rounded-full transition-all cursor-pointer"
+									on:click={() => (chatVisible = !chatVisible)}
 								>
-									<ChevronRight size={20} class={chatVisible ? 'rotate-0' : 'rotate-180'} />
+									<ChevronRight
+										size={18}
+										class={chatVisible ? 'rotate-0' : 'rotate-180'}
+									/>
 									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
 										{chatVisible ? $t('theater.live.hideChat') : $t('theater.live.showChat')}
 									</div>
