@@ -159,9 +159,10 @@ class LiveService:
         url = "https://api.idn.app/graphql"
         query = """
         query GetLivestream($page: Int) {
-          getLivestreams(page: $page) {
+            getLivestreams(page: $page) {
             slug
             title
+            view_count
             playback_url
             room_identifier
             status
@@ -219,7 +220,7 @@ class LiveService:
                                 platform="idn",
                                 live_id=stream.get("slug"),
                                 title=stream.get("title"),
-                                view_num=0,
+                                view_num=stream.get("view_count") or 0,
                                 start_at=datetime.fromisoformat(
                                     stream.get("live_at").replace("Z", "+00:00")
                                 )
@@ -250,7 +251,7 @@ class LiveService:
                                     platform="idn",
                                     live_id=stream.get("slug"),
                                     title=stream.get("title"),
-                                    view_num=0,
+                                    view_num=stream.get("view_count") or 0,
                                     start_at=datetime.fromisoformat(stream.get("live_at").replace("Z", "+00:00")) if stream.get("live_at") else None,
                                     streaming_url=streaming_urls,
                                     room_identifier=stream.get("room_identifier"),
@@ -273,7 +274,7 @@ class LiveService:
                             platform="idn",
                             live_id=stream.get("slug"),
                             title=f"[DEBUG] {stream.get('title')}",
-                            view_num=0,
+                            view_num=stream.get("view_count") or 0,
                             start_at=datetime.fromisoformat(stream.get("live_at").replace("Z", "+00:00")) if stream.get("live_at") else datetime.now(),
                             streaming_url=[
                                 LiveStreamingURL(url=stream.get("playback_url"), label="HLS", quality=0)
@@ -301,8 +302,17 @@ class LiveService:
             profile = await self.fetch_showroom_profile(id)
             if not urls:
                 raise StreamingUrlNotFoundError()
+            # Get view_num from profile or unified list
+            view_num = 0
+            lives = await self.fetch_showroom_lives()
+            for live in lives:
+                if live.room_id == id:
+                    view_num = live.view_num
+                    break
+
             return LiveStreamInfo(
                 streaming_urls=urls,
+                view_num=view_num,
                 member=profile
             )
         elif platform == "idn":
@@ -335,6 +345,7 @@ class LiveService:
                     return LiveStreamInfo(
                         streaming_urls=live.streaming_url,
                         room_identifier=room_id,
+                        view_num=live.view_num,
                         member=live.member
                     )
         raise StreamingUrlNotFoundError()

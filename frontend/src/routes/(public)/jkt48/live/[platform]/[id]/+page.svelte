@@ -613,6 +613,17 @@
 										{/if}
 									</span>
 								</div>
+
+								{#if ($currentStream?.view_num ?? 0) > 0}
+									<div
+										class="flex items-center gap-2 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full shadow-lg"
+									>
+										<Users size={14} class="text-sky-400" />
+										<span class="text-white text-[11px] font-black tabular-nums">
+											{$currentStream?.view_num?.toLocaleString() ?? 0}
+										</span>
+									</div>
+								{/if}
 							</div>
 						{:else}
 							<div
@@ -640,6 +651,17 @@
 									{/if}
 								</span>
 							</div>
+
+							{#if ($currentStream?.view_num ?? 0) > 0}
+								<div
+									class="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm border border-white/5 px-2.5 py-1 rounded-full"
+								>
+									<Users size={12} class="text-sky-400" />
+									<span class="text-white text-[9px] font-black tabular-nums">
+										{$currentStream?.view_num?.toLocaleString() ?? 0}
+									</span>
+								</div>
+							{/if}
 						{/if}
 					</div>
 				</div>
