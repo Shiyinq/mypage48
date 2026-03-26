@@ -15,12 +15,12 @@
 	let isMenuOpen = false;
 
 	$: navItems = [
-		{ label: $t('theater.news.title'), href: '/jkt48/news' },
-		{ label: $t('theater.members.title'), href: '/jkt48/members' },
-		{ label: $t('nav.events'), href: '/jkt48/events' },
-		{ label: $t('theater.events.calendar'), href: '/jkt48/calendar' },
-		{ label: $t('theater.sorter.title'), href: '/jkt48/sorter' },
-		{ label: $t('theater.live.title'), href: '/jkt48/live' }
+		{ label: $t('landing.nav.news'), href: '/jkt48/news' },
+		{ label: $t('landing.nav.members'), href: '/jkt48/members' },
+		{ label: $t('landing.nav.events'), href: '/jkt48/events' },
+		{ label: $t('landing.nav.calendar'), href: '/jkt48/calendar' },
+		{ label: $t('landing.nav.sorter'), href: '/jkt48/sorter' },
+		{ label: $t('landing.nav.live'), href: '/jkt48/live' }
 	];
 
 	function toggleMenu() {
