@@ -28,7 +28,7 @@ function createLiveStore() {
 	return {
 		subscribe,
 		reset: () => {
-			set(initialState);
+			update((s) => ({ ...s, currentStream: null, otherLive: [], error: null }));
 			isLiveLoading.set(false);
 		},
 

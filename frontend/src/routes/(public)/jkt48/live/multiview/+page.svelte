@@ -45,6 +45,30 @@
 	let showChat = true;
 	let isPortrait = true;
 	let searchQuery = '';
+	let isMobile = false;
+
+	// Update isMobile on mount and resize
+	function updateIsMobile() {
+		isMobile = window.innerWidth < 768;
+	}
+
+	$: if (isMobile) {
+		// On mobile, if one is toggled on, toggle the other off
+		if (showPicker && showChat) {
+			// This logic depends on which one was toggled last, 
+			// but for simplicity, let's just ensure only one is active.
+		}
+	}
+
+	function togglePicker() {
+		showPicker = !showPicker;
+		if (showPicker && isMobile) showChat = false;
+	}
+
+	function toggleChat() {
+		showChat = !showChat;
+		if (showChat && isMobile) showPicker = false;
+	}
 
 	// Drag and Drop State
 	let draggedIndex: number | null = null;
@@ -127,8 +151,24 @@
 			} catch (e) {}
 		}
 
+		updateIsMobile();
+		if (isMobile) {
+			showPicker = false;
+			showChat = false;
+			isPortrait = false; // Default to landscape on mobile
+		}
+
+		// Load aspect ratio preference from localStorage
+		const savedPortrait = localStorage.getItem('mypage48_multiview_portrait');
+		if (savedPortrait !== null && !isMobile) { // Only use saved preference if not on mobile, or handle mobile specifically
+			isPortrait = savedPortrait === 'true';
+		}
+		
+		window.addEventListener('resize', updateIsMobile);
+
 		return () => {
 			clearInterval(interval);
+			window.removeEventListener('resize', updateIsMobile);
 			// Re-enable body scroll when leaving multiview
 			document.body.style.overflow = '';
 		};
@@ -240,33 +280,26 @@
 
 	// Computed grid class
 	$: expansive = !showPicker && !showChat;
-	$: gridClass = isPortrait
+	// Responsive grid logic
+	$: gridClass = isMobile
 		? slots.length === 1
-			? expansive
+			? 'grid-cols-1'
+			: 'grid-cols-1' // On mobile always 1 col unless landscape? Let's stick to 1 col for now or 2 if many
+		: isPortrait
+			? slots.length === 1
 				? 'grid-cols-1 max-w-md mx-auto'
-				: 'grid-cols-1 max-w-sm mx-auto'
-			: slots.length === 2
-				? expansive
+				: slots.length === 2
 					? 'grid-cols-2 max-w-4xl mx-auto'
-					: 'grid-cols-2 max-w-3xl mx-auto'
-				: slots.length === 3
-					? expansive
+					: slots.length === 3
 						? 'grid-cols-3 max-w-6xl mx-auto'
-						: 'grid-cols-3 max-w-5xl mx-auto'
-					: expansive
-						? 'grid-cols-4 max-w-none'
-						: 'grid-cols-2 md:grid-cols-4 max-w-none'
-		: slots.length === 1
-			? expansive
+						: 'grid-cols-2 lg:grid-cols-4 max-w-none'
+			: slots.length === 1
 				? 'grid-cols-1 max-w-7xl mx-auto'
-				: 'grid-cols-1 max-w-5xl mx-auto'
-			: slots.length <= 4
-				? expansive
-					? 'grid-cols-1 md:grid-cols-2 max-w-none'
-					: 'grid-cols-1 md:grid-cols-2 max-w-6xl mx-auto'
-				: expansive
-					? 'grid-cols-2 lg:grid-cols-3 max-w-none'
-					: 'grid-cols-2 lg:grid-cols-3 max-w-none';
+				: slots.length <= 2
+					? 'grid-cols-2 max-w-none'
+					: slots.length <= 4
+						? 'grid-cols-2 max-w-none'
+						: 'grid-cols-2 lg:grid-cols-3 max-w-none';
 	// Auto-initialize first slot if empty and no saved session
 	$: if (
 		slots.length === 0 &&
@@ -281,14 +314,7 @@
 		}
 	}
 
-	// Load aspect ratio preference from localStorage
-	onMount(() => {
-		const savedPortrait = localStorage.getItem('mypage48_multiview_portrait');
-		if (savedPortrait !== null) {
-			isPortrait = savedPortrait === 'true';
-		}
-	});
-
+	// Aspect ratio persistence
 	$: if (typeof localStorage !== 'undefined') {
 		localStorage.setItem('mypage48_multiview_portrait', String(isPortrait));
 	}
@@ -320,8 +346,8 @@
 					>JKT48 <span class="text-red-600 italic">LIVE</span></span
 				>
 			</a>
-			<div class="h-4 w-px bg-gray-200 dark:border-zinc-800"></div>
-			<div class="flex items-center gap-2 px-3 py-1 bg-red-50 dark:bg-red-500/10 rounded-full">
+			<div class="hidden sm:h-4 sm:w-px sm:bg-gray-200 sm:dark:border-zinc-800"></div>
+			<div class="hidden xs:flex items-center gap-2 px-3 py-1 bg-red-50 dark:bg-red-500/10 rounded-full">
 				<LayoutGrid size={14} class="text-red-600" />
 				<span
 					class="text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400"
@@ -349,7 +375,7 @@
 				{/if}
 			</button>
 			<button
-				on:click={() => (showPicker = !showPicker)}
+				on:click={togglePicker}
 				class="p-2 rounded-lg {showPicker
 					? 'bg-red-50 text-red-600'
 					: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
@@ -358,7 +384,7 @@
 				<UserPlus size={20} />
 			</button>
 			<button
-				on:click={() => (showChat = !showChat)}
+				on:click={toggleChat}
 				class="p-2 rounded-lg {showChat
 					? 'bg-red-50 text-red-600'
 					: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
@@ -373,19 +399,27 @@
 		<!-- Member Picker Sidebar -->
 		{#if showPicker}
 			<div
-				class="w-72 border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col"
-				transition:fly={{ x: -288, duration: 300 }}
+				class="fixed md:relative top-14 md:top-0 left-0 w-full md:w-72 h-[calc(100vh-56px)] md:h-auto border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col z-[5000]"
+				transition:fly={{ x: isMobile ? -500 : -288, duration: 300 }}
 			>
-				<div class="p-4 border-b border-gray-100 dark:border-zinc-800">
-					<div class="relative">
+				<div class="p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center gap-2">
+					<div class="relative flex-1">
 						<Search class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
 						<input
 							type="text"
 							bind:value={searchQuery}
 							placeholder={$t('theater.live.multiview.search_placeholder')}
-							class="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs focus:ring-2 focus:ring-red-500 outline-none"
+							class="w-full pl-9 pr-4 py-3 md:py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm md:text-xs focus:ring-2 focus:ring-red-500 outline-none"
 						/>
 					</div>
+					{#if isMobile}
+						<button
+							on:click={togglePicker}
+							class="p-2 text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
+						>
+							<X size={20} />
+						</button>
+					{/if}
 				</div>
 				<div class="flex-1 overflow-y-auto p-2 space-y-1">
 					{#if $liveLoading && activeStreams.length === 0}
@@ -469,8 +503,8 @@
 		{/if}
 
 		<!-- Main Grid Area -->
-		<div class="flex-1 bg-slate-100 dark:bg-black p-2 sm:p-4 overflow-y-auto">
-			<div class="grid {gridClass} gap-3 sm:gap-6 h-fit transition-all duration-500 pb-20">
+		<div class="flex-1 bg-slate-100 dark:bg-black p-2 md:p-4 overflow-y-auto">
+			<div class="grid {gridClass} gap-2 md:gap-6 h-fit transition-all duration-500 pb-20">
 				{#each slots as stream, i (stream.platform + '-' + (stream.live_id || stream.room_id || stream.room_url_key))}
 					<!-- svelte-ignore a11y-no-noninteractive-element-to-interactive-role -->
 					<div
@@ -650,8 +684,8 @@
 		<!-- Switchable Chat Sidebar -->
 		{#if showChat}
 			<div
-				class="w-80 border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col"
-				transition:fly={{ x: 320, duration: 300 }}
+				class="fixed md:relative top-14 md:top-0 right-0 w-full md:w-80 h-[calc(100vh-56px)] md:h-auto border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col z-[5000]"
+				transition:fly={{ x: isMobile ? 500 : 320, duration: 300 }}
 			>
 				{#if focusedStream}
 					<div
@@ -665,6 +699,14 @@
 								{$t('theater.live.multiview.chat_with', { name: focusedStream.member?.name })}
 							</span>
 						</div>
+						{#if isMobile}
+							<button
+								on:click={toggleChat}
+								class="p-1 text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
+							>
+								<X size={20} />
+							</button>
+						{/if}
 					</div>
 					<div class="flex-1 overflow-hidden relative flex flex-col">
 						{#key focusedStream.room_url_key || focusedStream.live_id || focusedStream.room_id}

@@ -200,8 +200,9 @@
 						goto('/jkt48/live');
 					}
 				});
+				fetchOtherLive();
 			}
-		}, 30000); // 30 seconds
+		}, 30000);
 
 		if ((window as any).Hls) {
 			scriptLoaded = true;

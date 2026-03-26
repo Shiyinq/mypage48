@@ -3,10 +3,10 @@ import type { LiveStatus, LiveStreamingResponse } from '$lib/types';
 
 export const live = {
 	getLiveStatus: async () => {
-		return await client<{ data: LiveStatus[] }>('/jkt48/live');
+		return await client<{ data: LiveStatus[] }>(`/jkt48/live?t=${Date.now()}`);
 	},
 	getLiveList: async () => {
-		const res = await client<{ data: LiveStatus[] }>('/jkt48/live');
+		const res = await live.getLiveStatus();
 		return res.data || [];
 	},
 	getStreamingUrl: async (platform: string, id: string) => {

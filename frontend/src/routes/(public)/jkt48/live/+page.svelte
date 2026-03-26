@@ -11,15 +11,15 @@
 
 	let interval: any;
 
-	let initialLoading = true;
+	let initialLoading = $liveList.length === 0;
 	async function fetchLives() {
-		await liveStore.loadLiveList();
+		await liveStore.loadLiveList(true); // Force refresh on mount
 		initialLoading = false;
 	}
 
 	onMount(() => {
 		fetchLives();
-		interval = setInterval(() => liveStore.loadLiveList(true), 60000); // Refresh every 60 seconds
+		interval = setInterval(() => liveStore.loadLiveList(true), 30000);
 	});
 
 	onDestroy(() => {
