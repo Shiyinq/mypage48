@@ -10,6 +10,8 @@ export const live = {
 		return res.data || [];
 	},
 	getStreamingUrl: async (platform: string, id: string) => {
-		return await client<LiveStreamingResponse>(`/jkt48/live/${platform}/${id}/streaming-url`);
+		return await client<LiveStreamingResponse>(
+			`/jkt48/live/${platform}/${id}/streaming-url?t=${Date.now()}`
+		);
 	}
 };

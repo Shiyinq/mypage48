@@ -79,6 +79,19 @@ function createLiveStore() {
 			}
 		},
 
+		refreshStreamInfo: async (platform: string, id: string) => {
+			try {
+				const res = await liveApi.getStreamingUrl(platform, id);
+				update((s) => ({
+					...s,
+					currentStream: res
+				}));
+			} catch (e) {
+				logger.error(`Failed to refresh stream info for ${platform}/${id}`, e);
+				throw e;
+			}
+		},
+
 		loadOtherLive: async (currentPlatform: string, currentId: string) => {
 			try {
 				const streams = await liveApi.getLiveList();
