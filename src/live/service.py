@@ -36,6 +36,11 @@ class LiveService:
         self.config = config
         self._cache = {}
         self._cache_ttl = 60  # seconds cache
+        self.showroom_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Referer": "https://www.showroom-live.com/",
+        }
 
     async def get_live_status(self) -> LiveResponse:
         """Get unified live status from Showroom and IDN"""
@@ -70,7 +75,7 @@ class LiveService:
         """Fetch active JKT48 rooms from official Showroom API"""
         url = "https://www.showroom-live.com/api/live/onlives"
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(headers=self.showroom_headers) as client:
                 res = await client.get(url, timeout=10.0)
                 res.raise_for_status()
                 data = res.json()
@@ -338,7 +343,7 @@ class LiveService:
         """Fetch Showroom room profile to get member name and image"""
         url = f"https://www.showroom-live.com/api/room/profile?room_id={room_id}"
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(headers=self.showroom_headers) as client:
                 res = await client.get(url, timeout=10.0)
                 if res.status_code == 200:
                     data = res.json()
@@ -356,7 +361,7 @@ class LiveService:
         """Fetch streaming URL from official Showroom API"""
         url = f"https://www.showroom-live.com/api/live/streaming_url?room_id={room_id}"
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(headers=self.showroom_headers) as client:
                 res = await client.get(url, timeout=10.0)
                 res.raise_for_status()
                 data = res.json()
@@ -383,7 +388,7 @@ class LiveService:
         """Fetch Showroom comment log via proxy to bypass CORS"""
         url = f"https://www.showroom-live.com/api/live/comment_log?room_id={room_id}"
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with httpx.AsyncClient(headers=self.showroom_headers, timeout=10.0) as client:
                 res = await client.get(url)
                 return res.json()
         except Exception as e:
@@ -393,7 +398,8 @@ class LiveService:
     async def proxy_hls_request(self, url: str) -> Dict[str, Any]:
         """Proxy HLS playlist and segments to bypass CORS"""
         try:
-            async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
+            headers = self.showroom_headers if "showroom-live.com" in url else {}
+            async with httpx.AsyncClient(headers=headers, follow_redirects=True, timeout=30.0) as client:
                 resp = await client.get(url)
                 
             if resp.status_code != 200:
