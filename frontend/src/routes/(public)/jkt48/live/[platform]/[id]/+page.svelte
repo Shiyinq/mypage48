@@ -737,6 +737,22 @@
 
 								<div class="w-px h-4 bg-white/20 mx-1"></div>
 
+								{#if isFocusMode}
+									<button
+										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
+										on:click={toggleTheme}
+									>
+										{#if $theme === 'dark'}
+											<Moon size={18} />
+										{:else}
+											<Sun size={18} />
+										{/if}
+										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest">
+											{$t('theater.live.toggleTheme')}
+										</div>
+									</button>
+								{/if}
+
 								<!-- Focus -->
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center {isFocusMode ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all cursor-pointer"
@@ -766,22 +782,6 @@
 										{isFullscreen ? $t('theater.live.exitFullscreen') : $t('theater.live.fullscreen')}
 									</div>
 								</button>
-
-								{#if isFocusMode}
-									<button
-										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
-										on:click={toggleTheme}
-									>
-										{#if $theme === 'dark'}
-											<Moon size={18} />
-										{:else}
-											<Sun size={18} />
-										{/if}
-										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest">
-											{$t('theater.live.toggleTheme')}
-										</div>
-									</button>
-								{/if}
 
 								<!-- Refresh -->
 								<button
