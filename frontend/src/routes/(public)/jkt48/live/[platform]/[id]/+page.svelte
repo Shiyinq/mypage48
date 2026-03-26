@@ -22,6 +22,8 @@
 		RefreshCw,
 		Maximize2,
 		Minimize2,
+		Maximize,
+		Minimize,
 		Camera,
 		Circle,
 		Square,
@@ -57,6 +59,8 @@
 	let isPaused = false;
 	let bufferedEnd = 0;
 	let peakDuration = 0;
+	let isFullscreen = false;
+	let playerContainer: HTMLDivElement;
 
 	// Keep the largest duration we've seen to avoid shrinking scale during seeking/buffer resets
 	$: if (currentTime > peakDuration) peakDuration = currentTime;
@@ -364,6 +368,19 @@
 		}
 	}
 
+	async function toggleFullscreen() {
+		if (!playerContainer) return;
+		try {
+			if (!document.fullscreenElement) {
+				await playerContainer.requestFullscreen();
+			} else {
+				await document.exitFullscreen();
+			}
+		} catch (err) {
+			console.error('Fullscreen toggle failed:', err);
+		}
+	}
+
 	function handleSeek(e: any) {
 		if (videoElement) {
 			const time = parseFloat(e.target.value);
@@ -482,7 +499,11 @@
 				</div>
 			{/if}
 
-			<div class="group/player relative w-full h-full flex items-center justify-center">
+			<div 
+				bind:this={playerContainer} 
+				class="group/player relative w-full h-full flex items-center justify-center"
+				on:fullscreenchange={() => isFullscreen = !!document.fullscreenElement}
+			>
 				<!-- svelte-ignore a11y-media-has-caption -->
 				<video
 					bind:this={videoElement}
@@ -617,6 +638,18 @@
 										<Minimize2 size={18} />
 									{:else}
 										<Maximize2 size={18} />
+									{/if}
+								</button>
+
+								<!-- Fullscreen -->
+								<button 
+									class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all cursor-pointer"
+									on:click={toggleFullscreen}
+								>
+									{#if isFullscreen}
+										<Minimize size={18} />
+									{:else}
+										<Maximize size={18} />
 									{/if}
 								</button>
 
