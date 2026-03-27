@@ -136,6 +136,15 @@
 					});
 
 					hls.on(Hls.Events.ERROR, (event: any, data: any) => {
+						if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
+							console.log('Proxy/Stream 404 detected, triggering offline');
+							dispatch('offline');
+							error = $t('theater.live.offline'); 
+							hls.destroy();
+							loading = false;
+							return;
+						}
+
 						if (data.fatal) {
 							switch (data.type) {
 								case Hls.ErrorTypes.NETWORK_ERROR:

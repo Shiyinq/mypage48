@@ -150,6 +150,14 @@
 							videoElement.play().catch((e) => console.log('Autoplay blocked', e));
 							resetControlsTimeout();
 						});
+
+						hls.on(Hls.Events.ERROR, (event: any, data: any) => {
+							if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
+								console.log('Proxy/Stream 404 detected, redirecting to home');
+								showToast($t('theater.live.offline'), 'error');
+								goto('/jkt48/live');
+							}
+						});
 					} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 						videoElement.src = streamUrl;
 						videoElement.addEventListener('loadedmetadata', () => {
