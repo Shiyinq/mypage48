@@ -26,7 +26,8 @@
 		Check,
 		Camera,
 		Circle,
-		Square
+		Square,
+		Trash2
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
@@ -55,7 +56,7 @@
 	$: if (isMobile) {
 		// On mobile, if one is toggled on, toggle the other off
 		if (showPicker && showChat) {
-			// This logic depends on which one was toggled last, 
+			// This logic depends on which one was toggled last,
 			// but for simplicity, let's just ensure only one is active.
 		}
 	}
@@ -108,22 +109,27 @@
 			await liveStore.loadLiveList(true);
 			// Sync slots with new data from liveList (to update viewer counts and detect offline)
 			const currentLive = get(liveList);
-			
+
 			let hasGoneOffline = false;
-			const updatedSlots = slots.map((slot) => {
-				const match = currentLive.find(
-					(l) =>
-						(l.platform === slot.platform && l.room_id === slot.room_id && l.room_id) ||
-						(l.platform === slot.platform && l.live_id === slot.live_id && l.live_id)
-				);
-				
-				if (!match) {
-					hasGoneOffline = true;
-					showToast($t('theater.live.multiview.member_offline', { name: slot.member?.name }), 'error');
-					return null;
-				}
-				return { ...slot, view_num: match.view_num };
-			}).filter(s => s !== null);
+			const updatedSlots = slots
+				.map((slot) => {
+					const match = currentLive.find(
+						(l) =>
+							(l.platform === slot.platform && l.room_id === slot.room_id && l.room_id) ||
+							(l.platform === slot.platform && l.live_id === slot.live_id && l.live_id)
+					);
+
+					if (!match) {
+						hasGoneOffline = true;
+						showToast(
+							$t('theater.live.multiview.member_offline', { name: slot.member?.name }),
+							'error'
+						);
+						return null;
+					}
+					return { ...slot, view_num: match.view_num };
+				})
+				.filter((s) => s !== null);
 
 			if (hasGoneOffline) {
 				slots = updatedSlots;
@@ -160,10 +166,11 @@
 
 		// Load aspect ratio preference from localStorage
 		const savedPortrait = localStorage.getItem('mypage48_multiview_portrait');
-		if (savedPortrait !== null && !isMobile) { // Only use saved preference if not on mobile, or handle mobile specifically
+		if (savedPortrait !== null && !isMobile) {
+			// Only use saved preference if not on mobile, or handle mobile specifically
 			isPortrait = savedPortrait === 'true';
 		}
-		
+
 		window.addEventListener('resize', updateIsMobile);
 
 		return () => {
@@ -347,7 +354,9 @@
 				>
 			</a>
 			<div class="hidden sm:h-4 sm:w-px sm:bg-gray-200 sm:dark:border-zinc-800"></div>
-			<div class="hidden xs:flex items-center gap-2 px-3 py-1 bg-red-50 dark:bg-red-500/10 rounded-full">
+			<div
+				class="hidden xs:flex items-center gap-2 px-3 py-1 bg-red-50 dark:bg-red-500/10 rounded-full"
+			>
 				<LayoutGrid size={14} class="text-red-600" />
 				<span
 					class="text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400"
@@ -359,14 +368,17 @@
 		<div class="flex items-center gap-2">
 			<button
 				on:click={clearAll}
-				class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
+				class="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
+				title={$t('theater.live.multiview.clear_all')}
 			>
-				{$t('theater.live.multiview.clear_all')}
+				<Trash2 size={20} />
 			</button>
 			<button
 				on:click={() => (isPortrait = !isPortrait)}
 				class="p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
-				title={isPortrait ? $t('theater.live.multiview.switch_to_landscape') : $t('theater.live.multiview.switch_to_portrait')}
+				title={isPortrait
+					? $t('theater.live.multiview.switch_to_landscape')
+					: $t('theater.live.multiview.switch_to_portrait')}
 			>
 				{#if isPortrait}
 					<Monitor size={20} />
@@ -455,7 +467,10 @@
 											: ''}"
 									/>
 									<div
-										class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br {stream.platform === 'showroom' ? 'from-blue-500 to-indigo-600' : 'from-red-500 to-rose-600'} flex items-center justify-center text-[8px] font-bold text-white border-2 border-white dark:border-zinc-900 shadow-sm"
+										class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br {stream.platform ===
+										'showroom'
+											? 'from-blue-500 to-indigo-600'
+											: 'from-red-500 to-rose-600'} flex items-center justify-center text-[8px] font-bold text-white border-2 border-white dark:border-zinc-900 shadow-sm"
 									>
 										{stream.platform === 'showroom' ? 'SR' : 'IDN'}
 									</div>
@@ -590,7 +605,9 @@
 								<button
 									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10 cursor-pointer"
 									on:click|stopPropagation={() => (muted[i] = !muted[i])}
-									aria-label={muted[i] || volumes[i] === 0 ? $t('theater.live.multiview.unmute') : $t('theater.live.multiview.mute')}
+									aria-label={muted[i] || volumes[i] === 0
+										? $t('theater.live.multiview.unmute')
+										: $t('theater.live.multiview.mute')}
 								>
 									{#if muted[i] || volumes[i] === 0}<VolumeX size={16} />{:else}<Volume2
 											size={16}
@@ -644,7 +661,9 @@
 										: 'bg-white/10 backdrop-blur-md grayscale hover:grayscale-0 hover:bg-red-600'} text-white flex items-center justify-center hover:scale-105 transition-all shadow-lg group/rec cursor-pointer"
 									on:click|stopPropagation={() =>
 										playerRefs[i]?.toggleRecording(stream.member?.name)}
-									title={isRecording[i] ? $t('theater.live.multiview.stop_recording') : $t('theater.live.multiview.start_recording')}
+									title={isRecording[i]
+										? $t('theater.live.multiview.stop_recording')
+										: $t('theater.live.multiview.start_recording')}
 								>
 									{#if isRecording[i]}
 										<Square size={14} fill="currentColor" />
