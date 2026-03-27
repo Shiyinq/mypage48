@@ -5,9 +5,12 @@
 	import LandingNavbar from '$lib/components/landing-page/LandingNavbar.svelte';
 	import Footer from '$lib/components/landing-page/Footer.svelte';
 	import { Sparkles, Star } from 'lucide-svelte';
+	import { page } from '$app/stores';
 
 	let scrollY = 0;
 	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
+
+	$: isFullScreenRoute = $page.url.pathname.includes('/live/multiview');
 
 	function handleMouseMove(event: MouseEvent) {
 		const { clientX, clientY } = event;
@@ -55,8 +58,12 @@
 		></div>
 
 		<!-- Soft Glows -->
-		<div class="absolute top-0 right-0 w-[800px] h-[800px] bg-red-100/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"></div>
-		<div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-pink-100/30 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"></div>
+		<div
+			class="absolute top-0 right-0 w-[800px] h-[800px] bg-red-100/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"
+		></div>
+		<div
+			class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-pink-100/30 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"
+		></div>
 
 		<!-- Dynamic Decor Elements -->
 		{#each decorations as d}
@@ -66,11 +73,20 @@
 				style="
                 left: {d.x}%;
                 top: {d.y}%;
-                transform: scale({d.scale}) translate({$mouse.x * d.depth}px, {$mouse.y * d.depth + scrollY * d.depth * 0.002}px);
+                transform: scale({d.scale}) translate({$mouse.x * d.depth}px, {$mouse.y * d.depth +
+					scrollY * d.depth * 0.002}px);
             "
 			>
-				<div class="animate-float" style="animation-delay: {d.delay}s; animation-duration: {d.duration}s;">
-					<div class="transition-all duration-500 ease-out group-hover:scale-150 group-hover:rotate-12 {d.type === 'star' ? 'text-red-300 dark:text-red-500/30 group-hover:text-red-500' : 'text-pink-300 dark:text-pink-500/30 group-hover:text-pink-500'}">
+				<div
+					class="animate-float"
+					style="animation-delay: {d.delay}s; animation-duration: {d.duration}s;"
+				>
+					<div
+						class="transition-all duration-500 ease-out group-hover:scale-150 group-hover:rotate-12 {d.type ===
+						'star'
+							? 'text-red-300 dark:text-red-500/30 group-hover:text-red-500'
+							: 'text-pink-300 dark:text-pink-500/30 group-hover:text-pink-500'}"
+					>
 						<div class="animate-pulse" style="animation-duration: {d.duration / 1.5}s">
 							{#if d.type === 'star'}
 								<Star size={24} fill="currentColor" class="opacity-60" />
@@ -85,21 +101,32 @@
 	</div>
 
 	<!-- NAV -->
-	<LandingNavbar mouse={$mouse} showLogin={true} />
+	{#if !isFullScreenRoute}
+		<LandingNavbar mouse={$mouse} showLogin={true} />
+	{/if}
 
 	<!-- CONTENT -->
-	<main class="relative max-w-7xl mx-auto px-6">
+	<main class={isFullScreenRoute ? 'relative w-full h-full' : 'relative max-w-7xl mx-auto px-6'}>
 		<slot />
 	</main>
 
 	<!-- FOOTER -->
-	<Footer />
+	{#if !isFullScreenRoute}
+		<Footer />
+	{/if}
 </div>
 
 <style>
 	@keyframes float {
-		0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
-		50% { transform: translateY(-20px) scale(1.1); opacity: 0.8; }
+		0%,
+		100% {
+			transform: translateY(0) scale(1);
+			opacity: 0.4;
+		}
+		50% {
+			transform: translateY(-20px) scale(1.1);
+			opacity: 0.8;
+		}
 	}
 	.animate-float {
 		animation: float ease-in-out infinite;
