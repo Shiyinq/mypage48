@@ -34,7 +34,8 @@
 		Play,
 		Pause,
 		Sun,
-		Moon
+		Moon,
+		RotateCw
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -73,6 +74,17 @@
 	let recordingTimer: any = null;
 	let refreshInterval: any = null;
 	let ignoreNextVideoClick = false;
+	let rotation = 0;
+	let videoWidth = 0;
+	let videoHeight = 0;
+	let playerWidth = 0;
+	let playerHeight = 0;
+
+	$: videoAspectRatio = videoWidth > 0 && videoHeight > 0 ? videoWidth / videoHeight : 16 / 9;
+
+	function rotateVideo() {
+		rotation += 90;
+	}
 
 	function resetControlsTimeout(isTouch = false) {
 		if (isTouch && !showControls) {
@@ -573,6 +585,8 @@
 			<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 			<div
 				bind:this={playerContainer}
+				bind:clientWidth={playerWidth}
+				bind:clientHeight={playerHeight}
 				class="group/player relative w-full h-full flex items-center justify-center bg-black transition-all duration-300 {(isFullscreen ||
 					isFocusMode) &&
 				!showControls
@@ -696,7 +710,8 @@
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<video
 					bind:this={videoElement}
-					class="relative z-10 w-full h-full object-contain cursor-pointer bg-transparent"
+					class="relative z-10 w-full h-full object-contain cursor-pointer bg-transparent transition-transform duration-300"
+					style="transform: rotate({rotation}deg);"
 					crossorigin="anonymous"
 					autoplay
 					playsinline
@@ -706,6 +721,8 @@
 					}}
 					on:loadedmetadata={() => {
 						duration = videoElement?.duration || 0;
+						videoWidth = videoElement?.videoWidth || 0;
+						videoHeight = videoElement?.videoHeight || 0;
 						updateBufferAndDuration();
 					}}
 					on:play={() => (isPaused = false)}
@@ -731,7 +748,9 @@
 							? 'translate-y-full opacity-0'
 							: 'opacity-0 translate-y-full group-hover/player:translate-y-0 group-hover/player:opacity-100'}"
 				>
-					<div class="max-w-4xl mx-auto flex flex-col gap-2 pointer-events-auto">
+					<div
+						class="w-full flex flex-col gap-2 pointer-events-auto transition-all duration-300 px-4 sm:px-6"
+					>
 						<!-- Progress Bar -->
 						<div class="flex flex-col gap-1 px-1">
 							<div
@@ -941,6 +960,20 @@
 										{$t('theater.live.refresh')}
 									</div>
 								</button>
+
+								<!-- Rotate -->
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
+									on:click={rotateVideo}
+								>
+									<RotateCw size={18} class="transition-transform duration-500" />
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+									>
+										{$t('theater.live.rotate')}
+									</div>
+								</button>
+
 
 								<div class="w-px h-4 bg-white/20 mx-1"></div>
 
