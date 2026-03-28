@@ -3,7 +3,7 @@
 	import { get } from 'svelte/store';
 	import { fade, fly, slide } from 'svelte/transition';
 	import { spring } from 'svelte/motion';
-	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
+	import { liveStore, liveList, liveLoading, now } from '$lib/stores/live';
 	import { live } from '$lib/apis/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
@@ -38,6 +38,7 @@
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import MultiPlayer from '$lib/components/live/MultiPlayer.svelte';
 	import { showToast } from '$lib/stores/toast';
+	import { formatDuration } from '$lib/utils/time';
 
 	const { t } = useTranslation();
 
@@ -51,21 +52,6 @@
 	let isPortrait = true;
 	let searchQuery = '';
 	let isMobile = false;
-	let now = Date.now();
-
-	function formatElapsed(startAt: string | undefined, currentNow: number): string {
-		if (!startAt) return '';
-		const start = new Date(startAt).getTime();
-		if (isNaN(start)) return '';
-		const diff = Math.max(0, Math.floor((currentNow - start) / 1000));
-		const h = Math.floor(diff / 3600);
-		const m = Math.floor((diff % 3600) / 60);
-		const s = diff % 60;
-		if (h > 0) {
-			return `${h}h ${m.toString().padStart(2, '0')}m`;
-		}
-		return `${m}m ${s.toString().padStart(2, '0')}s`;
-	}
 
 	// Background Decoration State
 	let scrollY = 0;
@@ -223,15 +209,10 @@
 			isPortrait = savedPortrait === 'true';
 		}
 
-		const timer = setInterval(() => {
-			now = Date.now();
-		}, 1000);
-
 		window.addEventListener('resize', updateIsMobile);
 
 		return () => {
 			clearInterval(interval);
-			clearInterval(timer);
 			window.removeEventListener('resize', updateIsMobile);
 			// Re-enable body scroll when leaving multiview
 			document.body.style.overflow = '';
@@ -623,7 +604,7 @@
 											<div class="flex items-center gap-1 shrink-0">
 												<Clock size={10} class="text-red-400" />
 												<span class="font-bold text-red-500 tabular-nums">
-													{formatElapsed(stream.start_at, now)}
+													{formatDuration(stream.start_at, $now)}
 												</span>
 											</div>
 										{/if}
@@ -723,7 +704,7 @@
 											<div class="flex items-center gap-1 text-white/90 font-bold text-[8px] drop-shadow-sm shrink-0">
 												<Clock size={8} class="text-red-400" />
 												<span class="tabular-nums">
-													{formatElapsed(stream.start_at, now)}
+													{formatDuration(stream.start_at, $now)}
 												</span>
 											</div>
 										{/if}

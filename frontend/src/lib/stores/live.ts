@@ -1,4 +1,4 @@
-import { writable, get } from 'svelte/store';
+import { writable, get, readable } from 'svelte/store';
 import { live as liveApi } from '$lib/apis/live';
 import type { LiveStatus, LiveStreamingResponse } from '$lib/types';
 import { isCacheExpired } from '$lib/utils/cache';
@@ -128,3 +128,17 @@ export const liveLoading = isLiveLoading;
 export const liveError = {
 	subscribe: (cb: (val: string | null) => void) => liveStore.subscribe((val) => cb(val.error))
 };
+
+/**
+ * A Svelte readable store that updates with the current timestamp every 1000ms.
+ * This centralizes the 1-second ticker used across live pages.
+ */
+export const now = readable(Date.now(), (set) => {
+	const interval = setInterval(() => {
+		set(Date.now());
+	}, 1000);
+
+	return () => {
+		clearInterval(interval);
+	};
+});

@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { liveStore, currentStream, otherLive, liveLoading } from '$lib/stores/live';
+	import { liveStore, currentStream, otherLive, liveLoading, now } from '$lib/stores/live';
 	import { showToast } from '$lib/stores/toast';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveStatus } from '$lib/types';
@@ -41,6 +41,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { getLiveLogoUrl } from '$lib/constants/live';
+	import { formatDuration } from '$lib/utils/time';
 
 	const { t } = useTranslation();
 	$: ({ platform, id } = $page.params);
@@ -113,24 +114,6 @@
 	$: roomIdentifier = $currentStream?.room_identifier || null;
 	$: streamingUrls = $currentStream?.streaming_urls || [];
 	$: startAt = $currentStream?.start_at || null;
-
-	// Live duration ticker
-	let liveDurationNow = Date.now();
-	let liveDurationInterval: any;
-
-	function formatElapsed(startAtStr: string | null, currentNow: number): string {
-		if (!startAtStr) return '';
-		const start = new Date(startAtStr).getTime();
-		if (isNaN(start)) return '';
-		const diff = Math.max(0, Math.floor((currentNow - start) / 1000));
-		const h = Math.floor(diff / 3600);
-		const m = Math.floor((diff % 3600) / 60);
-		const s = diff % 60;
-		if (h > 0) {
-			return `${h}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
-		}
-		return `${m}m ${s.toString().padStart(2, '0')}s`;
-	}
 
 	$: if (scriptLoaded && platform && id && lastInitializedId !== `${platform}-${id}`) {
 		lastInitializedId = `${platform}-${id}`;
@@ -244,10 +227,7 @@
 			}
 		}, 30000);
 
-		// Live duration ticker
-		liveDurationInterval = setInterval(() => {
-			liveDurationNow = Date.now();
-		}, 1000);
+
 
 		if ((window as any).Hls) {
 			scriptLoaded = true;
@@ -273,9 +253,7 @@
 		if (refreshInterval) {
 			clearInterval(refreshInterval);
 		}
-		if (liveDurationInterval) {
-			clearInterval(liveDurationInterval);
-		}
+
 		liveStore.reset();
 	});
 
@@ -698,7 +676,7 @@
 										<Clock size={14} class="text-red-400" />
 										<span class="text-white text-[11px] font-black tabular-nums">
 											<span class="opacity-60 text-[9px] mr-1">{$t('theater.live.liveDuration')}</span>
-											{formatElapsed(startAt, liveDurationNow)}
+											{formatDuration(startAt, $now)}
 										</span>
 									</div>
 								{/if}
@@ -748,7 +726,7 @@
 									<Clock size={12} class="text-red-400" />
 									<span class="text-white text-[9px] font-black tabular-nums">
 										<span class="opacity-60 text-[8px] mr-1">{$t('theater.live.liveDuration')}</span>
-										{formatElapsed(startAt, liveDurationNow)}
+										{formatDuration(startAt, $now)}
 									</span>
 								</div>
 							{/if}
