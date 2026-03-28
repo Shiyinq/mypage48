@@ -302,17 +302,20 @@ class LiveService:
             profile = await self.fetch_showroom_profile(id)
             if not urls:
                 raise StreamingUrlNotFoundError()
-            # Get view_num from profile or unified list
+            # Get view_num and start_at from unified list
             view_num = 0
+            start_at = None
             lives = await self.fetch_showroom_lives()
             for live in lives:
                 if live.room_id == id:
                     view_num = live.view_num
+                    start_at = live.start_at
                     break
 
             return LiveStreamInfo(
                 streaming_urls=urls,
                 view_num=view_num,
+                start_at=start_at,
                 member=profile
             )
         elif platform == "idn":
@@ -346,6 +349,7 @@ class LiveService:
                         streaming_urls=live.streaming_url,
                         room_identifier=room_id,
                         view_num=live.view_num,
+                        start_at=live.start_at,
                         member=live.member
                     )
         raise StreamingUrlNotFoundError()

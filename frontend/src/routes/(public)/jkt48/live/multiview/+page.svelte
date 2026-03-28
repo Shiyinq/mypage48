@@ -30,7 +30,8 @@
 		Square,
 		Trash2,
 		Star,
-		Sparkles
+		Sparkles,
+		Clock
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
@@ -50,6 +51,21 @@
 	let isPortrait = true;
 	let searchQuery = '';
 	let isMobile = false;
+	let now = Date.now();
+
+	function formatElapsed(startAt: string | undefined, currentNow: number): string {
+		if (!startAt) return '';
+		const start = new Date(startAt).getTime();
+		if (isNaN(start)) return '';
+		const diff = Math.max(0, Math.floor((currentNow - start) / 1000));
+		const h = Math.floor(diff / 3600);
+		const m = Math.floor((diff % 3600) / 60);
+		const s = diff % 60;
+		if (h > 0) {
+			return `${h}h ${m.toString().padStart(2, '0')}m`;
+		}
+		return `${m}m ${s.toString().padStart(2, '0')}s`;
+	}
 
 	// Background Decoration State
 	let scrollY = 0;
@@ -152,7 +168,7 @@
 						);
 						return null;
 					}
-					return { ...slot, view_num: match.view_num };
+					return { ...slot, view_num: match.view_num, start_at: match.start_at };
 				})
 				.filter((s) => s !== null);
 
@@ -207,10 +223,15 @@
 			isPortrait = savedPortrait === 'true';
 		}
 
+		const timer = setInterval(() => {
+			now = Date.now();
+		}, 1000);
+
 		window.addEventListener('resize', updateIsMobile);
 
 		return () => {
 			clearInterval(interval);
+			clearInterval(timer);
 			window.removeEventListener('resize', updateIsMobile);
 			// Re-enable body scroll when leaving multiview
 			document.body.style.overflow = '';
@@ -573,23 +594,39 @@
 									>
 										{stream.member?.name}
 									</div>
+
 									<div
-										class="text-[10px] text-gray-400 truncate flex items-center gap-2 {isSelected
+										class="text-[9px] text-slate-400 truncate mt-0.5 {isSelected
+											? 'opacity-30'
+											: 'opacity-70'}"
+									>
+										{stream.title || $t('theater.live.multiview.live_status')}
+									</div>
+
+									<div
+										class="text-[10px] text-gray-400 flex items-center gap-2 mt-1 {isSelected
 											? 'opacity-50'
 											: ''}"
 									>
-										{#if (stream.view_num ?? 0) > 0}
+										{#if stream.view_num && stream.view_num > 0}
 											<div class="flex items-center gap-1 shrink-0">
 												<Users size={10} class="text-sky-500" />
 												<span class="font-medium text-slate-700 dark:text-zinc-300">
 													{stream.view_num.toLocaleString()}
 												</span>
 											</div>
-											<span class="opacity-20 text-slate-400">|</span>
+											{#if stream.start_at}
+												<span class="opacity-20 text-slate-400">|</span>
+											{/if}
 										{/if}
-										<span class="truncate">
-											{stream.title || $t('theater.live.multiview.live_status')}
-										</span>
+										{#if stream.start_at}
+											<div class="flex items-center gap-1 shrink-0">
+												<Clock size={10} class="text-red-400" />
+												<span class="font-bold text-red-500 tabular-nums">
+													{formatElapsed(stream.start_at, now)}
+												</span>
+											</div>
+										{/if}
 									</div>
 								</div>
 								{#if isSelected}
@@ -655,7 +692,7 @@
 						<div
 							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-gradient-to-b from-black/60 to-transparent"
 						>
-							<div class="flex items-center gap-2">
+							<div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
 								<img
 									src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar}
 									on:error={(e) => {
@@ -663,20 +700,35 @@
 											e.currentTarget.src = fallbackAvatar;
 									}}
 									alt={stream.member?.name || 'Member'}
-									class="w-6 h-6 rounded-md object-cover border border-white/20"
+									class="w-8 h-8 rounded-lg object-cover border border-white/20 shadow-lg shrink-0"
 								/>
-								<span
-									class="text-[10px] font-black text-white uppercase tracking-wider truncate max-w-[100px]"
-									>{stream.member?.name}</span
-								>
+								<div class="flex flex-col min-w-0">
+									<span
+										class="text-[10px] font-black text-white uppercase tracking-wider truncate drop-shadow-md"
+										>{stream.member?.name}</span
+									>
+									<div class="flex items-center gap-1.5 mt-0.5">
+										{#if (stream.view_num ?? 0) > 0}
+											<div class="flex items-center gap-1 text-white/90 font-bold text-[8px] drop-shadow-sm shrink-0">
+												<Users size={8} class="text-sky-400" />
+												{stream.view_num.toLocaleString()}
+											</div>
+										{/if}
 
-								{#if (stream.view_num ?? 0) > 0}
-									<div class="h-4 w-px bg-white/20 mx-1"></div>
-									<div class="flex items-center gap-1 text-white font-black text-[9px]">
-										<Users size={10} class="text-sky-400" />
-										{stream.view_num.toLocaleString()}
+										{#if (stream.view_num ?? 0) > 0 && stream.start_at}
+											<div class="w-0.5 h-0.5 rounded-full bg-white/30 shrink-0"></div>
+										{/if}
+
+										{#if stream.start_at}
+											<div class="flex items-center gap-1 text-white/90 font-bold text-[8px] drop-shadow-sm shrink-0">
+												<Clock size={8} class="text-red-400" />
+												<span class="tabular-nums">
+													{formatElapsed(stream.start_at, now)}
+												</span>
+											</div>
+										{/if}
 									</div>
-								{/if}
+								</div>
 							</div>
 							<button
 								on:click|stopPropagation={() => removeMemberFromSlot(i)}

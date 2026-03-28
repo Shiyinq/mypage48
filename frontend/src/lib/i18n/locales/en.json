@@ -631,6 +631,7 @@
 			"onLive": "On Live",
 			"viewer": "Viewers",
 			"startedAt": "Started at",
+			"liveDuration": "Live for",
 			"empty": "No members are currently live.",
 			"emptyTitle": "OFFLINE",
 			"back": "Back",

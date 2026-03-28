@@ -12,6 +12,7 @@ export interface LiveStatus {
 	room_identifier?: string;
 	view_num: number;
 	title: string;
+	start_at?: string;
 	member: LiveMember;
 }
 
@@ -24,6 +25,7 @@ export interface LiveStreamingResponse {
 	streaming_urls: StreamingUrl[];
 	room_identifier: string;
 	view_num?: number;
+	start_at?: string;
 	member: LiveMember;
 }
 
