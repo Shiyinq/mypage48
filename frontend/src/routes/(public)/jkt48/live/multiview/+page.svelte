@@ -7,9 +7,8 @@
 	import { live } from '$lib/apis/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
-		Users,
-		Plus,
 		X,
+		Plus,
 		Maximize2,
 		Minimize2,
 		Volume2,
@@ -30,8 +29,7 @@
 		Square,
 		Trash2,
 		Star,
-		Sparkles,
-		Clock
+		Sparkles
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
@@ -39,6 +37,8 @@
 	import MultiPlayer from '$lib/components/live/MultiPlayer.svelte';
 	import { showToast } from '$lib/stores/toast';
 	import { formatDuration } from '$lib/utils/time';
+	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
+	import LiveStats from '$lib/components/live/LiveStats.svelte';
 
 	const { t } = useTranslation();
 
@@ -558,13 +558,8 @@
 											? 'grayscale-[0.5] opacity-80'
 											: ''}"
 									/>
-									<div
-										class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br {stream.platform ===
-										'showroom'
-											? 'from-blue-500 to-indigo-600'
-											: 'from-red-500 to-rose-600'} flex items-center justify-center text-[8px] font-bold text-white border-2 border-white dark:border-zinc-900 shadow-sm"
-									>
-										{stream.platform === 'showroom' ? 'SR' : 'IDN'}
+									<div class="absolute -bottom-1 -right-1">
+										<PlatformLogo platform={stream.platform} size="xs" />
 									</div>
 								</div>
 								<div class="flex-1 min-w-0">
@@ -576,39 +571,13 @@
 										{stream.member?.name}
 									</div>
 
-									<div
-										class="text-[9px] text-slate-400 truncate mt-0.5 {isSelected
-											? 'opacity-30'
-											: 'opacity-70'}"
-									>
-										{stream.title || $t('theater.live.multiview.live_status')}
-									</div>
-
-									<div
-										class="text-[10px] text-gray-400 flex items-center gap-2 mt-1 {isSelected
-											? 'opacity-50'
-											: ''}"
-									>
-										{#if stream.view_num && stream.view_num > 0}
-											<div class="flex items-center gap-1 shrink-0">
-												<Users size={10} class="text-sky-500" />
-												<span class="font-medium text-slate-700 dark:text-zinc-300">
-													{stream.view_num.toLocaleString()}
-												</span>
-											</div>
-											{#if stream.start_at}
-												<span class="opacity-20 text-slate-400">|</span>
-											{/if}
-										{/if}
-										{#if stream.start_at}
-											<div class="flex items-center gap-1 shrink-0">
-												<Clock size={10} class="text-red-400" />
-												<span class="font-bold text-red-500 tabular-nums">
-													{formatDuration(stream.start_at, $now)}
-												</span>
-											</div>
-										{/if}
-									</div>
+									<LiveStats
+										view_num={stream.view_num}
+										start_at={stream.start_at}
+										variant="compact"
+										showLabel={true}
+										className="mt-1 {isSelected ? 'opacity-50' : ''}"
+									/>
 								</div>
 								{#if isSelected}
 									<Check size={16} class="text-red-500" />
@@ -688,27 +657,12 @@
 										class="text-[10px] font-black text-white uppercase tracking-wider truncate drop-shadow-md"
 										>{stream.member?.name}</span
 									>
-									<div class="flex items-center gap-1.5 mt-0.5">
-										{#if (stream.view_num ?? 0) > 0}
-											<div class="flex items-center gap-1 text-white/90 font-bold text-[8px] drop-shadow-sm shrink-0">
-												<Users size={8} class="text-sky-400" />
-												{stream.view_num.toLocaleString()}
-											</div>
-										{/if}
-
-										{#if (stream.view_num ?? 0) > 0 && stream.start_at}
-											<div class="w-0.5 h-0.5 rounded-full bg-white/30 shrink-0"></div>
-										{/if}
-
-										{#if stream.start_at}
-											<div class="flex items-center gap-1 text-white/90 font-bold text-[8px] drop-shadow-sm shrink-0">
-												<Clock size={8} class="text-red-400" />
-												<span class="tabular-nums">
-													{formatDuration(stream.start_at, $now)}
-												</span>
-											</div>
-										{/if}
-									</div>
+									<LiveStats
+										view_num={stream.view_num}
+										start_at={stream.start_at}
+										variant="overlay"
+										className="mt-0.5"
+									/>
 								</div>
 							</div>
 							<button
