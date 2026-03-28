@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { liveStore, liveList, liveLoading, liveError } from '$lib/stores/live';
+	import { liveStore, liveList, liveLoading, liveError, now } from '$lib/stores/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Star, Users, ExternalLink, Play, Tv, Clock } from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { getLiveLogoUrl, getPlatformColor, getPlatformIcon } from '$lib/constants/live';
+	import { formatDuration } from '$lib/utils/time';
 
 	const { t } = useTranslation();
 
@@ -20,37 +21,15 @@
 	onMount(() => {
 		fetchLives();
 		interval = setInterval(() => liveStore.loadLiveList(true), 30000);
-		durationInterval = setInterval(() => {
-			now = Date.now();
-		}, 1000);
 	});
 
 	onDestroy(() => {
 		if (interval) clearInterval(interval);
-		if (durationInterval) clearInterval(durationInterval);
 	});
 
 	const fallbackAvatar = 'https://placehold.co/640x960?text=NO%20IMAGE';
 
 	let logoErrors: Record<string, boolean> = {};
-
-	// Live duration ticker
-	let now = Date.now();
-	let durationInterval: any;
-
-	function formatElapsed(startAt: string | undefined, currentNow: number): string {
-		if (!startAt) return '';
-		const start = new Date(startAt).getTime();
-		if (isNaN(start)) return '';
-		const diff = Math.max(0, Math.floor((currentNow - start) / 1000));
-		const h = Math.floor(diff / 3600);
-		const m = Math.floor((diff % 3600) / 60);
-		const s = diff % 60;
-		if (h > 0) {
-			return `${h}h ${m.toString().padStart(2, '0')}m`;
-		}
-		return `${m}m ${s.toString().padStart(2, '0')}s`;
-	}
 </script>
 
 <svelte:head>
@@ -245,7 +224,7 @@
 									<Clock size={10} class="text-red-400" />
 									<span class="text-[10px] font-bold text-red-400 tabular-nums tracking-wide">
 										<span class="opacity-70 text-[9px] uppercase mr-0.5">{$t('landing.nav.live')}</span>
-										{formatElapsed(stream.start_at, now)}
+										{formatDuration(stream.start_at, $now)}
 									</span>
 								</div>
 							{/if}
