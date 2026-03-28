@@ -1,0 +1,81 @@
+<script lang="ts">
+	import { Users, Clock } from 'lucide-svelte';
+	import { now } from '$lib/stores/live';
+	import { formatDuration } from '$lib/utils/time';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+
+	const { t } = useTranslation();
+
+	export let view_num: number | undefined = 0;
+	export let start_at: string | undefined | null = null;
+	export let variant: 'overlay' | 'compact' | 'detailed' = 'overlay';
+	export let showSeconds: boolean = true;
+	export let showLabel: boolean = false;
+	export let className: string = '';
+
+	$: hasViewers = (view_num ?? 0) > 0;
+	$: hasStartAt = !!start_at;
+
+	const variants = {
+		overlay: {
+			container: 'flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-lg',
+			icon: 10,
+			text: 'text-[9px] font-black text-white px-0.5',
+			viewerIconColor: 'text-sky-400',
+			durationIconColor: 'text-red-400',
+			durationTextColor: 'text-white/90 font-bold',
+			dot: 'w-1 h-1 rounded-full bg-white/30 mx-0.5'
+		},
+		compact: {
+			container: 'flex items-center gap-1.5',
+			icon: 10,
+			text: 'text-[10px] font-bold text-gray-500',
+			viewerIconColor: 'text-sky-500',
+			durationIconColor: 'text-red-400',
+			durationTextColor: 'text-red-500',
+			dot: 'w-0.5 h-0.5 rounded-full bg-slate-300'
+		},
+		detailed: {
+			container: 'flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-md border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-xl',
+			icon: 14,
+			text: 'text-[11px] font-black text-slate-900 dark:text-white',
+			viewerIconColor: 'text-sky-600 dark:text-sky-400',
+			durationIconColor: 'text-red-500 dark:text-red-400',
+			durationTextColor: 'text-slate-900 dark:text-white',
+			dot: 'w-px h-3 bg-gray-200 dark:bg-white/20 mx-1'
+		}
+	};
+
+	$: v = variants[variant];
+</script>
+
+<div class="{v.container} {className}">
+	{#if hasViewers}
+		<div class="flex items-center gap-1 shrink-0">
+			<Users size={v.icon} class={v.viewerIconColor} />
+			<span class="{v.text} tabular-nums">
+				{view_num?.toLocaleString() ?? 0}
+			</span>
+		</div>
+	{/if}
+
+	{#if hasViewers && hasStartAt}
+		{#if variant === 'detailed'}
+			<div class={v.dot}></div>
+		{:else}
+			<div class={v.dot}></div>
+		{/if}
+	{/if}
+
+	{#if hasStartAt}
+		<div class="flex items-center gap-1 shrink-0">
+			<Clock size={v.icon} class={v.durationIconColor} />
+			<span class="{v.text} {v.durationTextColor} tabular-nums">
+				{#if showLabel}
+					<span class="opacity-60 text-[9px] mr-1">{$t('theater.live.liveDuration')}</span>
+				{/if}
+				{formatDuration(start_at, $now, showSeconds)}
+			</span>
+		</div>
+	{/if}
+</div>

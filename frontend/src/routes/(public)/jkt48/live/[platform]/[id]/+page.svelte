@@ -39,9 +39,10 @@
 	Clock
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { getExternalMediaUrl } from '$lib/utils/media';
-	import { getLiveLogoUrl } from '$lib/constants/live';
+	import { getExternalMediaUrl, captureVideoScreenshot, startVideoRecording, downloadRecording } from '$lib/utils/media';
 	import { formatDuration } from '$lib/utils/time';
+	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
+	import LiveStats from '$lib/components/live/LiveStats.svelte';
 
 	const { t } = useTranslation();
 	$: ({ platform, id } = $page.params);
@@ -56,8 +57,6 @@
 	let chatVisible = true;
 	let isFocusMode = false;
 	let isRecording = false;
-	let logoError = false;
-	$: logoUrl = getLiveLogoUrl(platform || '');
 	let mediaRecorder: any = null;
 	let recordedChunks: any[] = [];
 	let sidebarMode: 'chat' | 'list' = 'chat';
@@ -319,108 +318,35 @@
 	}
 
 	function takeScreenshot() {
-		if (!videoElement) return;
-
-		const canvas = document.createElement('canvas');
-		canvas.width = videoElement.videoWidth;
-		canvas.height = videoElement.videoHeight;
-		const ctx = canvas.getContext('2d');
-
-		if (ctx) {
-			try {
-				ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-				const dataUrl = canvas.toDataURL('image/png');
-				const link = document.createElement('a');
-				const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-				const name = memberName ? memberName.replace(/\s+/g, '_') : 'JKT48_Live';
-				link.download = `Screenshot_${name}_${timestamp}.png`;
-				link.href = dataUrl;
-				link.click();
-			} catch (err) {
-				console.error('Screenshot failed:', err);
-				alert(
-					'Failed to capture screenshot. This might be due to security restrictions on the stream.'
-				);
-			}
-		}
+		captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
 	}
 
 	async function toggleRecording() {
 		if (!videoElement) return;
 
 		if (!isRecording) {
-			try {
-				const v = videoElement as any;
-				let stream = v['captureStream'] ? v['captureStream']() : v['mozCaptureStream']();
+			mediaRecorder = await startVideoRecording(videoElement, (blob) => {
+				recordedChunks.push(blob);
+			});
 
-				// Zero-Loss Strategy: Check for tracks INSTANTLY
-				if (stream.getTracks().length === 0) {
-					// ONLY delay if we hit a race condition/warmup (common after refresh)
-					await new Promise((r) => setTimeout(r, 200));
-					stream = v['captureStream'] ? v['captureStream']() : v['mozCaptureStream']();
-				}
-
-				if (!stream.getTracks().length) {
-					console.warn('Tracks still empty, fallback strategy initiated.');
-				}
-
-				// Try common mime types
-				const types = [
-					'video/webm;codecs=vp9,opus',
-					'video/webm;codecs=vp8,opus',
-					'video/webm',
-					'video/mp4'
-				];
-
-				let selectedType = '';
-				for (const type of types) {
-					if (MediaRecorder.isTypeSupported(type)) {
-						selectedType = type;
-						break;
-					}
-				}
-
-				mediaRecorder = new MediaRecorder(stream, selectedType ? { mimeType: selectedType } : {});
-
+			if (mediaRecorder) {
 				recordedChunks = [];
-				mediaRecorder.ondataavailable = (e: any) => {
-					if (e.data.size > 0) {
-						recordedChunks.push(e.data);
-					}
-				};
-
-				mediaRecorder.onstop = () => {
-					const blob = new Blob(recordedChunks, { type: selectedType || 'video/webm' });
-					const url = URL.createObjectURL(blob);
-					const link = document.createElement('a');
-					const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-					const name = memberName ? memberName.replace(/\s+/g, '_') : 'JKT48_Live';
-					const ext = selectedType.includes('mp4') ? 'mp4' : 'webm';
-					link.href = url;
-					link.download = `Recording_${name}_${timestamp}.${ext}`;
-					link.click();
-					URL.revokeObjectURL(url);
-				};
-
-				mediaRecorder.start();
 				isRecording = true;
+				mediaRecorder.onstop = () => {
+					downloadRecording(recordedChunks, memberName || 'JKT48_Live');
+					isRecording = false;
+				};
+
 				recordingDuration = 0;
 				recordingTimer = setInterval(() => {
 					recordingDuration++;
 				}, 1000);
-			} catch (err) {
-				console.error('Recording failed to start:', err);
-				// Standard alert only if it's a persistent error
-				alert('Record failed. Please ensure the video is playing and try again in a few seconds.');
 			}
-		} else {
-			if (mediaRecorder) {
-				mediaRecorder.stop();
-				isRecording = false;
-				if (recordingTimer) {
-					clearInterval(recordingTimer);
-					recordingTimer = null;
-				}
+		} else if (mediaRecorder) {
+			mediaRecorder.stop();
+			if (recordingTimer) {
+				clearInterval(recordingTimer);
+				recordingTimer = null;
 			}
 		}
 	}
@@ -534,6 +460,17 @@
 					</div>
 				{/if}
 			</div>
+
+			{#if !isFullscreen}
+				<div class="flex items-center gap-3 flex-shrink-0">
+					<PlatformLogo platform={platform || ''} size="md" />
+					<LiveStats
+						view_num={$currentStream?.view_num}
+						start_at={startAt}
+						variant="detailed"
+					/>
+				</div>
+			{/if}
 		</div>
 
 		<!-- Video Player -->
@@ -609,16 +546,14 @@
 			>
 				<!-- Top Info Overlay -->
 				<div
-					class="absolute inset-x-0 top-0 p-6 bg-gradient-to-b from-black/90 via-black/40 to-transparent transition-all duration-500 pointer-events-none z-[5500] {showControls
+					class="dark absolute inset-x-0 top-0 p-6 bg-gradient-to-b from-black/90 via-black/40 to-transparent transition-all duration-500 pointer-events-none z-[5500] {showControls
 						? 'translate-y-0 opacity-100'
 						: isFullscreen || isFocusMode
 							? '-translate-y-full opacity-0'
 							: 'opacity-0 -translate-y-full group-hover/player:translate-y-0 group-hover/player:opacity-100'}"
 				>
 					<div
-						class="w-full flex items-center {isFullscreen
-							? 'justify-between'
-							: 'justify-end'} pointer-events-auto"
+						class="w-full flex items-center justify-between pointer-events-auto"
 					>
 						{#if isFullscreen}
 							<div class="flex items-center gap-3 min-w-0">
@@ -632,104 +567,13 @@
 							</div>
 
 							<div class="flex items-center gap-3 flex-shrink-0">
-								<div
-									class="flex items-center gap-2 {platform === 'showroom'
-										? 'bg-[#121212] border border-white/5'
-										: 'bg-red-600 shadow-lg shadow-red-600/30'} px-4 py-1.5 rounded-full"
-								>
-									<div class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
-									<span
-										class="text-white text-[10px] font-black uppercase tracking-[0.1em] leading-none flex items-center"
-									>
-										{$t('theater.live.liveBadge')}
-										<span class="mx-2 opacity-40 font-light text-[12px]">|</span>
-										{#if !logoError}
-											<img
-												src={logoUrl}
-												alt={platform}
-												class="h-3 w-auto object-contain {platform === 'showroom'
-													? ''
-													: 'brightness-0 invert'} transition-all"
-												on:error={() => (logoError = true)}
-											/>
-										{:else}
-											{platform?.toUpperCase()}
-										{/if}
-									</span>
-								</div>
-
-								{#if ($currentStream?.view_num ?? 0) > 0}
-									<div
-										class="flex items-center gap-2 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full shadow-lg"
-									>
-										<Users size={14} class="text-sky-400" />
-										<span class="text-white text-[11px] font-black tabular-nums">
-											{$currentStream?.view_num?.toLocaleString() ?? 0}
-										</span>
-									</div>
-								{/if}
-
-								{#if startAt}
-									<div
-										class="flex items-center gap-2 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full shadow-lg"
-									>
-										<Clock size={14} class="text-red-400" />
-										<span class="text-white text-[11px] font-black tabular-nums">
-											<span class="opacity-60 text-[9px] mr-1">{$t('theater.live.liveDuration')}</span>
-											{formatDuration(startAt, $now)}
-										</span>
-									</div>
-								{/if}
+								<PlatformLogo platform={platform || ''} size="md" />
+								<LiveStats
+									view_num={$currentStream?.view_num}
+									start_at={startAt}
+									variant="detailed"
+								/>
 							</div>
-						{:else}
-							<div
-								class="flex items-center gap-2 {platform === 'showroom'
-									? 'bg-[#121212] border border-white/5'
-									: 'bg-red-600 shadow-lg shadow-red-600/20'} px-3 py-1 rounded-full animate-pulse"
-							>
-								<div class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
-								<span
-									class="text-white text-[10px] font-black uppercase tracking-widest leading-none flex items-center"
-								>
-									{$t('theater.live.liveBadge')}
-									<span class="mx-1.5 opacity-40 font-light text-[12px]">|</span>
-									{#if !logoError}
-										<img
-											src={logoUrl}
-											alt={platform}
-											class="h-2.5 w-auto object-contain {platform === 'showroom'
-												? ''
-												: 'brightness-0 invert'}"
-											on:error={() => (logoError = true)}
-										/>
-									{:else}
-										{platform?.toUpperCase()}
-									{/if}
-								</span>
-							</div>
-
-							{#if ($currentStream?.view_num ?? 0) > 0}
-								<div
-									class="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm border border-white/5 px-2.5 py-1 rounded-full"
-								>
-									<Users size={12} class="text-sky-400" />
-									<span class="text-white text-[9px] font-black tabular-nums">
-										{$currentStream?.view_num?.toLocaleString() ?? 0}
-									</span>
-								</div>
-							{/if}
-
-							{#if startAt}
-								<div
-									class="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm border border-white/5 px-2.5 py-1 rounded-full"
-								>
-									<Clock size={12} class="text-red-400" />
-									<span class="text-white text-[9px] font-black tabular-nums">
-										<span class="opacity-60 text-[8px] mr-1">{$t('theater.live.liveDuration')}</span>
-										{formatDuration(startAt, $now)}
-									</span>
-								</div>
-							{/if}
 						{/if}
 					</div>
 				</div>
@@ -1148,12 +992,8 @@
 													class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
 												/>
 											</div>
-											<div class="absolute -top-1 -right-1 flex gap-0.5">
-												<div
-													class="px-1.5 py-0.5 bg-red-600 rounded-md text-[7px] font-black text-white uppercase tracking-tighter shadow-sm"
-												>
-													{$t('theater.live.liveBadge')}
-												</div>
+											<div class="absolute -top-1 -right-1">
+												<PlatformLogo platform={member.platform || ''} size="xs" />
 											</div>
 										</div>
 										<div class="flex-1 min-w-0">
@@ -1163,20 +1003,11 @@
 												{member.member?.name ||
 													(member.platform === 'idn' ? member.room_url_key : member.title)}
 											</div>
-											<div class="flex items-center gap-1.5">
-												<span class="text-[8px] font-black text-slate-400 uppercase tracking-widest"
-													>{member.platform?.toUpperCase()}</span
-												>
-												{#if member.view_num > 0}
-													<div class="w-1 h-1 rounded-full bg-slate-200 dark:bg-zinc-800"></div>
-													<span
-														class="text-[8px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1"
-													>
-														<div class="w-1 h-1 rounded-full bg-red-500"></div>
-														{member.view_num?.toLocaleString()}
-													</span>
-												{/if}
-											</div>
+											<LiveStats
+												view_num={member.view_num}
+												variant="compact"
+												className="mt-0.5"
+											/>
 										</div>
 										<div
 											class="flex-none opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"

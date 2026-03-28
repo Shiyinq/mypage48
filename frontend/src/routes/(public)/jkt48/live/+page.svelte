@@ -5,8 +5,9 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Star, Users, ExternalLink, Play, Tv, Clock } from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
-	import { getLiveLogoUrl, getPlatformColor, getPlatformIcon } from '$lib/constants/live';
 	import { formatDuration } from '$lib/utils/time';
+	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
+	import LiveStats from '$lib/components/live/LiveStats.svelte';
 
 	const { t } = useTranslation();
 
@@ -168,45 +169,16 @@
 						<div
 							class="absolute top-2 sm:top-3 left-2 sm:left-3 right-2 sm:right-3 flex items-center justify-between gap-1 z-30"
 						>
-							<div
-								class="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest border border-white/20 flex items-center gap-1 shadow-lg shrink-0"
-							>
-								<span class="w-1 h-1 rounded-full bg-red-500 animate-pulse"></span>
-								{#if stream.view_num > 0}
-									<div class="w-px h-2 bg-white/20 mx-0.5"></div>
-									<Users size={10} class="text-sky-400 w-2.5 h-2.5" />
-									{stream.view_num.toLocaleString()}
-								{/if}
-							</div>
+							<LiveStats
+								view_num={stream.view_num}
+								variant="overlay"
+								className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-black/60 shadow-lg"
+							/>
 
-							<div
-								class="shrink-0 h-5 sm:h-6 px-2 rounded-full {stream.platform === 'showroom' &&
-								!logoErrors[stream.platform + (stream.room_id || stream.live_id)]
-									? 'bg-[#121212]'
-									: 'bg-gradient-to-br ' +
-										getPlatformColor(stream.platform) +
-										' shadow-lg shadow-black/30'} flex items-center justify-center text-white border border-white/10 min-w-[28px]"
-							>
-								{#if !logoErrors[stream.platform + (stream.room_id || stream.live_id)]}
-									<img
-										src={getLiveLogoUrl(stream.platform)}
-										alt={stream.platform}
-										class="{stream.platform === 'showroom'
-											? 'h-1.5 sm:h-2'
-											: 'h-2 sm:h-2.5'} w-auto object-contain {stream.platform === 'showroom'
-											? ''
-											: 'brightness-0 invert'}"
-										on:error={() => {
-											logoErrors[stream.platform + (stream.room_id || stream.live_id)] = true;
-											logoErrors = logoErrors;
-										}}
-									/>
-								{:else}
-									<span class="text-[7px] sm:text-[8px] font-bold">
-										{getPlatformIcon(stream.platform)}
-									</span>
-								{/if}
-							</div>
+							<PlatformLogo
+								platform={stream.platform}
+								size="sm"
+							/>
 						</div>
 
 						<!-- Content Area (Overlay) -->
@@ -219,15 +191,12 @@
 							<p class="text-[10px] text-gray-300 font-medium drop-shadow-sm line-clamp-1">
 								{stream.title || $t('theater.live.multiview.live_status')}
 							</p>
-							{#if stream.start_at}
-								<div class="flex items-center gap-1 mt-1.5">
-									<Clock size={10} class="text-red-400" />
-									<span class="text-[10px] font-bold text-red-400 tabular-nums tracking-wide">
-										<span class="opacity-70 text-[9px] uppercase mr-0.5">{$t('landing.nav.live')}</span>
-										{formatDuration(stream.start_at, $now)}
-									</span>
-								</div>
-							{/if}
+							<LiveStats
+								start_at={stream.start_at}
+								variant="compact"
+								showLabel={true}
+								className="mt-1.5"
+							/>
 						</div>
 
 						<!-- Hover Play Button Indicator -->

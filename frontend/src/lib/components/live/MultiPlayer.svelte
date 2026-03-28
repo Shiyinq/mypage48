@@ -8,6 +8,8 @@
 	import GiftOverlay from './GiftOverlay.svelte';
 
 	import { giftEvents, type GiftEvent } from '$lib/stores/gift';
+	import { captureVideoScreenshot, startVideoRecording, downloadRecording } from '$lib/utils/media';
+	import LiveStats from './LiveStats.svelte';
 	
 	const { t } = useTranslation();
 
@@ -191,91 +193,27 @@
 	}
 
 	export function takeScreenshot(memberName?: string) {
-		if (!videoElement) return;
-
-		const canvas = document.createElement('canvas');
-		canvas.width = videoElement.videoWidth;
-		canvas.height = videoElement.videoHeight;
-		const ctx = canvas.getContext('2d');
-
-		if (ctx) {
-			try {
-				ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-				const dataUrl = canvas.toDataURL('image/png');
-				const link = document.createElement('a');
-				const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-				const name = memberName ? memberName.replace(/\s+/g, '_') : 'JKT48_Live';
-				link.download = `Screenshot_${name}_${timestamp}.png`;
-				link.href = dataUrl;
-				link.click();
-			} catch (err) {
-				console.error('Screenshot failed:', err);
-			}
-		}
+		captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
 	}
 
 	export async function toggleRecording(memberName?: string) {
 		if (!videoElement) return;
 
 		if (!isRecording) {
-			try {
-				const v = videoElement as any;
-				let stream = v['captureStream'] ? v['captureStream']() : v['mozCaptureStream']();
+			mediaRecorder = await startVideoRecording(videoElement, (blob) => {
+				recordedChunks.push(blob);
+			});
 
-				// Zero-Loss Strategy: Check for tracks INSTANTLY
-				if (stream.getTracks().length === 0) {
-					await new Promise((r) => setTimeout(r, 200));
-					stream = v['captureStream'] ? v['captureStream']() : v['mozCaptureStream']();
-				}
-
-				// Try common mime types
-				const types = [
-					'video/webm;codecs=vp9,opus',
-					'video/webm;codecs=vp8,opus',
-					'video/webm',
-					'video/mp4'
-				];
-
-				let selectedType = '';
-				for (const type of types) {
-					if (MediaRecorder.isTypeSupported(type)) {
-						selectedType = type;
-						break;
-					}
-				}
-
-				mediaRecorder = new MediaRecorder(stream, selectedType ? { mimeType: selectedType } : {});
-
-				recordedChunks = [];
-				mediaRecorder.ondataavailable = (e: any) => {
-					if (e.data.size > 0) {
-						recordedChunks.push(e.data);
-					}
-				};
-
-				mediaRecorder.onstop = () => {
-					const blob = new Blob(recordedChunks, { type: selectedType || 'video/webm' });
-					const url = URL.createObjectURL(blob);
-					const link = document.createElement('a');
-					const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-					const name = memberName ? memberName.replace(/\s+/g, '_') : 'JKT48_Live';
-					const ext = selectedType.includes('mp4') ? 'mp4' : 'webm';
-					link.href = url;
-					link.download = `Recording_${name}_${timestamp}.${ext}`;
-					link.click();
-					URL.revokeObjectURL(url);
-				};
-
-				mediaRecorder.start();
-				isRecording = true;
-			} catch (err) {
-				console.error('Recording failed to start:', err);
-			}
-		} else {
 			if (mediaRecorder) {
-				mediaRecorder.stop();
-				isRecording = false;
+				recordedChunks = [];
+				isRecording = true;
+				mediaRecorder.onstop = () => {
+					downloadRecording(recordedChunks, memberName || 'JKT48_Live');
+					isRecording = false;
+				};
 			}
+		} else if (mediaRecorder) {
+			mediaRecorder.stop();
 		}
 	}
 
