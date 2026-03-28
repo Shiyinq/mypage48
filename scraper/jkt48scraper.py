@@ -57,7 +57,7 @@ def fetch_news_data(pages: str = "1") -> List[Dict[str, Any]]:
     print(f"Found {len(news_list)} news items. Fetching details...")
     for news in news_list:
         time.sleep(0.35)
-        print(f"Processing: {news.get('date', 'Unknown Date')} - {news.get('title', 'Unknown Title')}")
+        print(f"Processing: {news.get('valid_date_from', 'Unknown Date')} - {news.get('title', 'Unknown Title')}")
         news_detail = get_news(news.get('link'), headers)
         
         news_data = {
