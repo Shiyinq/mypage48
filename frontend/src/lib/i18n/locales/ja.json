@@ -583,6 +583,7 @@
 			"onLive": "ライブ中",
 			"viewer": "視聴者",
 			"startedAt": "開始時間",
+			"liveDuration": "配信時間",
 			"empty": "現在配信中のメンバーはいません。",
 			"emptyTitle": "オフライン",
 			"back": "戻る",

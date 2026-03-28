@@ -752,6 +752,7 @@
 			"onLive": "Siaran Langsung",
 			"viewer": "Penonton",
 			"startedAt": "Mulai sejak",
+			"liveDuration": "Sudah Live",
 			"empty": "Tidak ada member yang sedang siaran langsung saat ini.",
 			"emptyTitle": "Belum Ada Live",
 			"back": "Kembali",

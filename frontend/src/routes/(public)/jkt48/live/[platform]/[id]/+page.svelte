@@ -35,7 +35,8 @@
 		Pause,
 		Sun,
 		Moon,
-		RotateCw
+		RotateCw,
+	Clock
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -111,6 +112,25 @@
 	$: memberName = $currentStream?.member?.name || null;
 	$: roomIdentifier = $currentStream?.room_identifier || null;
 	$: streamingUrls = $currentStream?.streaming_urls || [];
+	$: startAt = $currentStream?.start_at || null;
+
+	// Live duration ticker
+	let liveDurationNow = Date.now();
+	let liveDurationInterval: any;
+
+	function formatElapsed(startAtStr: string | null, currentNow: number): string {
+		if (!startAtStr) return '';
+		const start = new Date(startAtStr).getTime();
+		if (isNaN(start)) return '';
+		const diff = Math.max(0, Math.floor((currentNow - start) / 1000));
+		const h = Math.floor(diff / 3600);
+		const m = Math.floor((diff % 3600) / 60);
+		const s = diff % 60;
+		if (h > 0) {
+			return `${h}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
+		}
+		return `${m}m ${s.toString().padStart(2, '0')}s`;
+	}
 
 	$: if (scriptLoaded && platform && id && lastInitializedId !== `${platform}-${id}`) {
 		lastInitializedId = `${platform}-${id}`;
@@ -224,6 +244,11 @@
 			}
 		}, 30000);
 
+		// Live duration ticker
+		liveDurationInterval = setInterval(() => {
+			liveDurationNow = Date.now();
+		}, 1000);
+
 		if ((window as any).Hls) {
 			scriptLoaded = true;
 			return;
@@ -247,6 +272,9 @@
 		}
 		if (refreshInterval) {
 			clearInterval(refreshInterval);
+		}
+		if (liveDurationInterval) {
+			clearInterval(liveDurationInterval);
 		}
 		liveStore.reset();
 	});
@@ -528,8 +556,6 @@
 					</div>
 				{/if}
 			</div>
-
-			<!-- Live Badge removed from header -->
 		</div>
 
 		<!-- Video Player -->
@@ -664,6 +690,18 @@
 										</span>
 									</div>
 								{/if}
+
+								{#if startAt}
+									<div
+										class="flex items-center gap-2 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full shadow-lg"
+									>
+										<Clock size={14} class="text-red-400" />
+										<span class="text-white text-[11px] font-black tabular-nums">
+											<span class="opacity-60 text-[9px] mr-1">{$t('theater.live.liveDuration')}</span>
+											{formatElapsed(startAt, liveDurationNow)}
+										</span>
+									</div>
+								{/if}
 							</div>
 						{:else}
 							<div
@@ -699,6 +737,18 @@
 									<Users size={12} class="text-sky-400" />
 									<span class="text-white text-[9px] font-black tabular-nums">
 										{$currentStream?.view_num?.toLocaleString() ?? 0}
+									</span>
+								</div>
+							{/if}
+
+							{#if startAt}
+								<div
+									class="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm border border-white/5 px-2.5 py-1 rounded-full"
+								>
+									<Clock size={12} class="text-red-400" />
+									<span class="text-white text-[9px] font-black tabular-nums">
+										<span class="opacity-60 text-[8px] mr-1">{$t('theater.live.liveDuration')}</span>
+										{formatElapsed(startAt, liveDurationNow)}
 									</span>
 								</div>
 							{/if}
