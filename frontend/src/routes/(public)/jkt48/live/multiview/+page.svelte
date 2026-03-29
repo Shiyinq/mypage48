@@ -571,12 +571,16 @@
 										{stream.member?.name}
 									</div>
 
+									<div class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate mb-0.5 {isSelected ? 'opacity-50' : ''}">
+										{stream.title || $t('theater.live.multiview.live_status')}
+									</div>
+
 									<LiveStats
 										view_num={stream.view_num}
 										start_at={stream.start_at}
 										variant="compact"
 										showLabel={true}
-										className="mt-1 {isSelected ? 'opacity-50' : ''}"
+										className="{isSelected ? 'opacity-50' : ''}"
 									/>
 								</div>
 								{#if isSelected}
