@@ -4,7 +4,8 @@
     import SEO from '$lib/components/SEO.svelte';
     import { Calendar, ChevronRight, ExternalLink, Share2, Copy } from 'lucide-svelte';
     import { formatDate } from '$lib/i18n';
-    import { getExternalMediaUrl } from '$lib/utils/media';
+    import { getExternalMediaUrl, proxyExternalImageUrls } from '$lib/utils/media';
+    import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
     import { showToast } from '$lib/stores';
     import { browser } from '$app/environment';
     
@@ -23,6 +24,26 @@
         facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
         whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`
     };
+
+    let showLightbox = false;
+    let selectedImgSrc = '';
+    let selectedImgAlt = '';
+
+    function openLightbox(src: string, alt: string) {
+        selectedImgSrc = src;
+        selectedImgAlt = alt;
+        showLightbox = true;
+    }
+
+    function handleContentClick(e: MouseEvent) {
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'IMG') {
+            const img = target as HTMLImageElement;
+            openLightbox(img.src, img.alt);
+        }
+    }
+    
+    $: processedContent = proxyExternalImageUrls(item.content_body);
 
     function copyLink() {
         if (!browser) return;
@@ -57,17 +78,21 @@
         <!-- Main Content (Left) -->
         <main class="lg:col-span-2 space-y-6 bg-white dark:bg-zinc-900 rounded-3xl p-4 md:p-8 shadow-sm border border-gray-100 dark:border-white/5">
             {#if item.background_image}
-                <div class="w-full rounded-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-inner">
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <button 
+                    on:click={() => openLightbox(getExternalMediaUrl(item.background_image), item.title)}
+                    class="w-full rounded-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-inner group/img cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99] duration-500"
+                >
                     <img 
                         src={getExternalMediaUrl(item.background_image)} 
                         alt={item.title}
-                        class="w-full h-auto object-cover max-h-[500px]"
+                        class="w-full h-auto object-cover max-h-[500px] transition-all duration-1000 group-hover/img:scale-110"
                     />
-                </div>
+                </button>
             {/if}
 
-            <div class="flex items-center gap-3 py-2 border-b border-gray-100 dark:border-zinc-800">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold uppercase {item.category.toLowerCase() === 'event' ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400' : item.category.toLowerCase() === 'theater' ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400' : 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400'}">
+            <div class="flex flex-wrap items-center gap-3 md:gap-4 py-2 border-b border-gray-100 dark:border-zinc-800">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold uppercase {item.category.toLowerCase() === 'event' ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400' : item.category.toLowerCase() === 'theater' ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400' : 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400'} whitespace-nowrap">
                     {item.category}
                 </span>
                 <span class="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-gray-500 dark:text-gray-400">
@@ -77,8 +102,13 @@
             </div>
 
             <!-- HTML Content -->
-            <div class="prose prose-red dark:prose-invert max-w-none prose-img:rounded-xl prose-a:text-red-500 hover:prose-a:text-red-600 space-y-4 text-gray-800 dark:text-gray-300 leading-relaxed text-sm md:text-base">
-                {@html item.content_body}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div 
+                class="prose prose-red dark:prose-invert max-w-none prose-img:rounded-xl prose-img:cursor-zoom-in hover:prose-img:scale-[1.01] prose-img:transition-transform prose-img:duration-300 prose-a:text-red-500 hover:prose-a:text-red-600 space-y-4 text-gray-800 dark:text-gray-300 leading-relaxed text-sm md:text-base bg-gray-50/50 dark:bg-zinc-800/30 p-5 md:p-0 rounded-2xl md:bg-transparent"
+                on:click={handleContentClick}
+                role="presentation"
+            >
+                {@html processedContent}
             </div>
 
             <div class="pt-8 mt-8 border-t border-gray-100 dark:border-zinc-800 flex flex-col items-center gap-6">
@@ -188,3 +218,10 @@
         </aside>
     </div>
 </div>
+
+<ImageLightbox 
+    src={selectedImgSrc} 
+    alt={selectedImgAlt} 
+    isOpen={showLightbox} 
+    onClose={() => showLightbox = false} 
+/>

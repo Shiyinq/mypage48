@@ -1,0 +1,209 @@
+<script lang="ts">
+    import { fade, scale } from 'svelte/transition';
+    import { X, ZoomIn, ZoomOut, RotateCcw, Download } from 'lucide-svelte';
+    import { onMount, onDestroy } from 'svelte';
+    import { browser } from '$app/environment';
+
+    export let src: string = '';
+    export let alt: string = '';
+    export let isOpen: boolean = false;
+    export let onClose: () => void = () => {};
+
+    let zoomScale = 1;
+    let translateX = 0;
+    let translateY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    function resetZoom() {
+        zoomScale = 1;
+        translateX = 0;
+        translateY = 0;
+    }
+
+    function handleZoomIn() {
+        zoomScale = Math.min(zoomScale + 0.5, 5);
+    }
+
+    function handleZoomOut() {
+        zoomScale = Math.max(zoomScale - 0.5, 0.5);
+        if (zoomScale === 1) resetZoom();
+    }
+
+    function handleMouseDown(e: MouseEvent) {
+        isDragging = true;
+        startX = e.clientX - translateX;
+        startY = e.clientY - translateY;
+    }
+
+    function handleMouseMove(e: MouseEvent) {
+        if (!isDragging) return;
+        translateX = e.clientX - startX;
+        translateY = e.clientY - startY;
+    }
+
+    function handleTouchStart(e: TouchEvent) {
+        if (e.touches.length === 1) {
+            isDragging = true;
+            startX = e.touches[0].clientX - translateX;
+            startY = e.touches[0].clientY - translateY;
+        }
+    }
+
+    function handleTouchMove(e: TouchEvent) {
+        if (!isDragging || e.touches.length !== 1) return;
+        translateX = e.touches[0].clientX - startX;
+        translateY = e.touches[0].clientY - startY;
+    }
+
+    function handleMouseUp() {
+        isDragging = false;
+    }
+
+    function handleKeyDown(e: KeyboardEvent) {
+        if (!isOpen) return;
+        if (e.key === 'Escape') onClose();
+        if (e.key === '+') handleZoomIn();
+        if (e.key === '-') handleZoomOut();
+    }
+
+    function downloadImage() {
+        const link = document.createElement('a');
+        link.href = src;
+        link.download = alt || 'image';
+        link.click();
+    }
+
+    function handleWheel(e: WheelEvent) {
+        if (e.deltaY < 0) {
+            handleZoomIn();
+        } else {
+            handleZoomOut();
+        }
+    }
+
+    onMount(() => {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    });
+
+    onDestroy(() => {
+        if (browser) document.body.classList.remove('modal-open');
+    });
+
+    $: if (browser && isOpen) {
+        document.body.classList.add('modal-open');
+    } else if (browser) {
+        document.body.classList.remove('modal-open');
+    }
+
+    $: if (!isOpen) resetZoom();
+</script>
+
+{#if isOpen}
+    <div 
+        class="fixed inset-0 z-[100] flex items-center justify-center transition-all"
+        transition:fade={{ duration: 200 }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Image lightbox"
+    >
+        <!-- Backdrop -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div 
+            class="absolute inset-0 bg-black/95 backdrop-blur-sm"
+            on:click={onClose}
+            role="presentation"
+        ></div>
+
+        <!-- Controls -->
+        <div class="fixed top-4 right-4 md:top-6 md:right-6 flex items-center gap-2 md:gap-4 z-[110]">
+            <div class="flex items-center gap-1 md:gap-2 bg-white/10 backdrop-blur-md p-1 md:p-1.5 rounded-full border border-white/20">
+                <button 
+                    on:click={handleZoomOut}
+                    class="p-1.5 md:p-2 hover:bg-white/10 rounded-full transition-colors text-white"
+                    title="Zoom Out"
+                    aria-label="Zoom out"
+                >
+                    <ZoomOut class="w-4 h-4 md:w-5 md:h-5" />
+                </button>
+                <div class="w-8 md:w-12 text-center text-white text-[10px] md:text-xs font-mono font-bold">
+                    {Math.round(zoomScale * 100)}%
+                </div>
+                <button 
+                    on:click={handleZoomIn}
+                    class="p-1.5 md:p-2 hover:bg-white/10 rounded-full transition-colors text-white"
+                    title="Zoom In"
+                    aria-label="Zoom in"
+                >
+                    <ZoomIn class="w-4 h-4 md:w-5 md:h-5" />
+                </button>
+            </div>
+
+            <button 
+                on:click={resetZoom}
+                class="hidden sm:flex p-2.5 md:p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all text-white border border-white/20"
+                title="Reset Zoom"
+                aria-label="Reset zoom"
+            >
+                <RotateCcw class="w-4 h-4 md:w-5 md:h-5" />
+            </button>
+
+            <button 
+                on:click={downloadImage}
+                class="hidden sm:flex p-2.5 md:p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all text-white border border-white/20"
+                title="Download"
+                aria-label="Download image"
+            >
+                <Download class="w-4 h-4 md:w-5 md:h-5" />
+            </button>
+
+            <button 
+                on:click={onClose}
+                class="p-2.5 md:p-3 bg-red-600 hover:bg-red-700 backdrop-blur-md rounded-full transition-all text-white shadow-lg shadow-red-600/20"
+                title="Close"
+                aria-label="Close lightbox"
+            >
+                <X class="w-4 h-4 md:w-5 md:h-5" />
+            </button>
+        </div>
+
+        <!-- Image Container -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div 
+            class="relative w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing pointer-events-none"
+            role="presentation"
+        >
+            <div 
+                class="pointer-events-auto"
+                on:mousedown={handleMouseDown}
+                on:mousemove={handleMouseMove}
+                on:mouseup={handleMouseUp}
+                on:mouseleave={handleMouseUp}
+                on:touchstart|passive={handleTouchStart}
+                on:touchmove|passive={handleTouchMove}
+                on:touchend={handleMouseUp}
+                on:wheel={handleWheel}
+                role="presentation"
+            >
+                <img 
+                    {src} 
+                    {alt}
+                    class="max-w-[90vw] max-h-[90vh] object-contain transition-transform duration-200 ease-out select-none shadow-2xl"
+                    style="transform: scale({zoomScale}) translate({translateX / zoomScale}px, {translateY / zoomScale}px)"
+                    draggable="false"
+                    in:scale={{ duration: 300, start: 0.9 }}
+                />
+            </div>
+        </div>
+
+    </div>
+{/if}
+
+<style>
+    :global(body.modal-open) {
+        overflow: hidden;
+    }
+</style>

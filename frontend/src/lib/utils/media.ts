@@ -1,10 +1,25 @@
 /**
+ * Replaces all occurrences of JKT48 storage URLs with local proxy URLs.
+ * Useful for processing HTML content or full URLs.
+ */
+export function proxyExternalImageUrls(content: string | null | undefined): string {
+    if (!content) return '';
+    return content.replace(/https?:\/\/jkt48\.com\/api\/v1\/storages/g, '/api/storage/external');
+}
+
+/**
  * Builds a proxied URL for external media (jkt48.com storage).
  */
 export function getExternalMediaUrl(path: string | null | undefined): string {
-	if (!path) return '';
-	const cleanPath = path.replace(/^\/+/, '');
-	return `/api/storage/external/${cleanPath}`;
+    if (!path) return '';
+    
+    // Handle full JKT48 storage URLs
+    if (path.includes('jkt48.com/api/v1/storages')) {
+        return proxyExternalImageUrls(path);
+    }
+
+    const cleanPath = path.replace(/^\/+/, '');
+    return `/api/storage/external/${cleanPath}`;
 }
 
 /**
