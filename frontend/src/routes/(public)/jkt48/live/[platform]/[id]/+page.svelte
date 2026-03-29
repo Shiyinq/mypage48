@@ -3,7 +3,14 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { liveStore, currentStream, otherLive, liveLoading, now } from '$lib/stores/live';
+	import {
+		liveStore,
+		liveList,
+		currentStream,
+		otherLive,
+		liveLoading,
+		now
+	} from '$lib/stores/live';
 	import { showToast } from '$lib/stores/toast';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveStatus } from '$lib/types';
@@ -36,10 +43,15 @@
 		Sun,
 		Moon,
 		RotateCw,
-	Clock
+		Clock
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { getExternalMediaUrl, captureVideoScreenshot, startVideoRecording, downloadRecording } from '$lib/utils/media';
+	import {
+		getExternalMediaUrl,
+		captureVideoScreenshot,
+		startVideoRecording,
+		downloadRecording
+	} from '$lib/utils/media';
 	import { formatDuration } from '$lib/utils/time';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
@@ -82,6 +94,11 @@
 	let playerHeight = 0;
 
 	$: videoAspectRatio = videoWidth > 0 && videoHeight > 0 ? videoWidth / videoHeight : 16 / 9;
+	$: streamFromList = $liveList.find(
+		(s) =>
+			s.platform === platform && (s.room_id === id || s.live_id === id || s.room_url_key === id)
+	);
+	$: streamTitle = streamFromList?.title || '';
 
 	function rotateVideo() {
 		rotation += 90;
@@ -225,8 +242,6 @@
 				fetchOtherLive();
 			}
 		}, 30000);
-
-
 
 		if ((window as any).Hls) {
 			scriptLoaded = true;
@@ -440,35 +455,33 @@
 				{#if !isFocusMode}
 					<a
 						href="/jkt48/live"
-						class="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors font-bold text-sm uppercase tracking-widest"
+						class="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800"
+						title={$t('theater.live.back')}
 					>
-						<ArrowLeft size={18} />
-						{$t('theater.live.back')}
+						<ArrowLeft size={20} />
 					</a>
 					<div class="h-4 w-px bg-slate-200 dark:bg-zinc-800 ml-1 hidden sm:block"></div>
 				{/if}
 				{#if memberName}
-					<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2">
-						<span
-							class="text-xs font-black uppercase tracking-[0.15em] text-slate-900 dark:text-white leading-none"
-							>{memberName}</span
-						>
-						<span
-							class="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none hidden sm:inline"
-							>{platform?.toUpperCase()} {$t('theater.live.title')}</span
-						>
+					<div class="flex flex-col gap-0.5">
+						<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2">
+							<span
+								class="text-xs font-black uppercase tracking-[0.15em] text-slate-900 dark:text-white leading-none truncate max-w-[120px] sm:max-w-none"
+								>{memberName}</span
+							>
+							<span
+								class="text-[9px] font-bold text-slate-400 tracking-widest leading-none hidden sm:inline"
+								>{streamTitle}</span
+							>
+						</div>
 					</div>
 				{/if}
 			</div>
 
 			{#if !isFullscreen}
-				<div class="flex items-center gap-3 flex-shrink-0">
+				<div class="hidden sm:flex items-center gap-3 flex-shrink-0">
 					<PlatformLogo platform={platform || ''} size="md" />
-					<LiveStats
-						view_num={$currentStream?.view_num}
-						start_at={startAt}
-						variant="detailed"
-					/>
+					<LiveStats view_num={$currentStream?.view_num} start_at={startAt} variant="detailed" />
 				</div>
 			{/if}
 		</div>
@@ -552,21 +565,39 @@
 							? '-translate-y-full opacity-0'
 							: 'opacity-0 -translate-y-full group-hover/player:translate-y-0 group-hover/player:opacity-100'}"
 				>
-					<div
-						class="w-full flex items-center justify-between pointer-events-auto"
-					>
-						{#if isFullscreen}
-							<div class="flex items-center gap-3 min-w-0">
-								{#if memberName}
+					<div class="w-full flex items-start justify-between pointer-events-auto">
+						<div class="flex flex-col gap-2 min-w-0">
+							{#if isFullscreen && memberName}
+								<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2 min-w-0">
 									<h2
 										class="text-white text-lg sm:text-2xl font-black truncate drop-shadow-xl tracking-tight"
 									>
 										{memberName}
 									</h2>
-								{/if}
-							</div>
+									{#if streamTitle}
+										<span
+											class="text-white/60 text-[10px] sm:text-xs font-bold tracking-widest truncate drop-shadow-lg hidden sm:inline"
+										>
+											{streamTitle}
+										</span>
+									{/if}
+								</div>
+							{/if}
 
-							<div class="flex items-center gap-3 flex-shrink-0">
+							<!-- Stats (Mobile Only: Always on left in overlay) -->
+							<div class="flex sm:hidden items-center gap-3 flex-shrink-0 mt-0.5">
+								<PlatformLogo platform={platform || ''} size="md" />
+								<LiveStats
+									view_num={$currentStream?.view_num}
+									start_at={startAt}
+									variant="detailed"
+								/>
+							</div>
+						</div>
+
+						<!-- Stats (Desktop Fullscreen Only: On the right) -->
+						{#if isFullscreen}
+							<div class="hidden sm:flex items-center gap-3 flex-shrink-0 mt-1">
 								<PlatformLogo platform={platform || ''} size="md" />
 								<LiveStats
 									view_num={$currentStream?.view_num}
@@ -846,7 +877,6 @@
 									</div>
 								</button>
 
-
 								<div class="w-px h-4 bg-white/20 mx-1"></div>
 
 								<!-- Sidebar Toggle -->
@@ -1003,11 +1033,7 @@
 												{member.member?.name ||
 													(member.platform === 'idn' ? member.room_url_key : member.title)}
 											</div>
-											<LiveStats
-												view_num={member.view_num}
-												variant="compact"
-												className="mt-0.5"
-											/>
+											<LiveStats view_num={member.view_num} variant="compact" className="mt-0.5" />
 										</div>
 										<div
 											class="flex-none opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
