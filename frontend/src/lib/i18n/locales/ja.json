@@ -127,6 +127,17 @@
 			"cookies": "クッキーポリシー",
 			"feedback": "フィードバック",
 			"about": "私たちについて"
+		},
+		"radio": {
+			"nowPlaying": "再生中",
+			"paused": "一時停止",
+			"connecting": "ステーションに接続中...",
+			"pause": "一時停止",
+			"play": "再生",
+			"nextTrack": "次の曲",
+			"Playlist1": "プレイリスト 1",
+			"Playlist2": "プレイリスト 2",
+			"Playlist3": "プレイリスト 3"
 		}
 	},
 	"privacy": {

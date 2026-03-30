@@ -128,6 +128,17 @@
 			"cookies": "Kebijakan Cookie",
 			"feedback": "Masukan",
 			"about": "Tentang Kami"
+		},
+		"radio": {
+			"nowPlaying": "Sedang Diputar",
+			"paused": "Jeda",
+			"connecting": "Menyambungkan ke Stasiun...",
+			"pause": "Jeda",
+			"play": "Putar",
+			"nextTrack": "Lagu Selanjutnya",
+			"Playlist1": "Playlist 1",
+			"Playlist2": "Playlist 2",
+			"Playlist3": "Playlist 3"
 		}
 	},
 	"privacy": {

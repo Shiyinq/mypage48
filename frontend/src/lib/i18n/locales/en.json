@@ -127,6 +127,17 @@
 			"cookies": "Cookies Policy",
 			"feedback": "Feedback",
 			"about": "About Us"
+		},
+		"radio": {
+			"nowPlaying": "Now Playing",
+			"paused": "Paused",
+			"connecting": "Connecting to Station...",
+			"pause": "Pause",
+			"play": "Play",
+			"nextTrack": "Next Track",
+			"Playlist1": "Playlist 1",
+			"Playlist2": "Playlist 2",
+			"Playlist3": "Playlist 3"
 		}
 	},
 	"privacy": {
