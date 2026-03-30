@@ -7,6 +7,8 @@
 	import { isAuthenticated } from '$lib/stores';
 	import { fade, fly } from 'svelte/transition';
 	import { radioStore } from '$lib/stores/radio';
+	import { liveStore, liveList } from '$lib/stores/live';
+	import { onMount } from 'svelte';
 	import RadioWidget from './radio-player/RadioWidget.svelte';
 	import MobileRadioWidget from './radio-player/MobileRadioWidget.svelte';
 	import RadioEngine from './radio-player/RadioEngine.svelte';
@@ -18,13 +20,17 @@
 
 	let isMenuOpen = false;
 
+	onMount(() => {
+		liveStore.loadLiveList();
+	});
+
 	$: navItems = [
 		{ label: $t('landing.nav.news'), href: '/jkt48/news' },
 		{ label: $t('landing.nav.members'), href: '/jkt48/members' },
 		{ label: $t('landing.nav.events'), href: '/jkt48/events' },
 		{ label: $t('landing.nav.calendar'), href: '/jkt48/calendar' },
 		{ label: $t('landing.nav.sorter'), href: '/jkt48/sorter' },
-		{ label: $t('landing.nav.live'), href: '/jkt48/live' }
+		{ label: $t('landing.nav.live'), href: '/jkt48/live', id: 'live' }
 	];
 
 	function toggleMenu() {
@@ -82,11 +88,17 @@
 			{@const isActive = $page.url.pathname.startsWith(item.href)}
 			<a
 				href={item.href}
-				class="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 {isActive
+				class="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center gap-1.5 {isActive
 					? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
 					: 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
 			>
 				{item.label}
+				{#if item.id === 'live' && $liveList.length > 0}
+					<span class="relative flex h-2 w-2">
+						<span class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive ? 'bg-white/70' : 'bg-red-400 opacity-75'}"></span>
+						<span class="relative inline-flex rounded-full h-2 w-2 {isActive ? 'bg-white' : 'bg-red-500'}"></span>
+					</span>
+				{/if}
 			</a>
 		{/each}
 	</div>
@@ -156,7 +168,15 @@
 							: 'text-slate-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-zinc-900'}"
 						transition:fly={{ y: 10, delay: i * 50, duration: 300 }}
 					>
-						<span class="text-sm font-black uppercase tracking-[0.2em]">{item.label}</span>
+						<div class="flex items-center gap-3">
+							<span class="text-sm font-black uppercase tracking-[0.2em]">{item.label}</span>
+							{#if item.id === 'live' && $liveList.length > 0}
+								<span class="relative flex h-2.5 w-2.5">
+									<span class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive ? 'bg-white/70' : 'bg-red-400 opacity-75'}"></span>
+									<span class="relative inline-flex rounded-full h-2.5 w-2.5 {isActive ? 'bg-white' : 'bg-red-500'}"></span>
+								</span>
+							{/if}
+						</div>
 						{#if isActive}
 							<Sparkles size={16} />
 						{:else}
