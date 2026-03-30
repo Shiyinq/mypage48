@@ -13,6 +13,7 @@
 		upcomingError
 	} from '$lib/stores/events';
 	import { membersStore, isBirthdaysLoading } from '$lib/stores/theater';
+	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
 	import Birthdays from '$lib/components/theater/Birthdays.svelte';
 	import { formatDate, formatTime } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';
@@ -29,9 +30,12 @@
 		);
 	}
 
+	let mounted = false;
+
 	onMount(async () => {
 		await eventsStore.loadUpcoming();
 		await membersStore.loadBirthdays();
+		mounted = true;
 	});
 
 	$: error = $upcomingError;
@@ -69,10 +73,12 @@
 			</h2>
 		</div>
 
-		{#if $isBirthdaysLoading}
+		{#if !mounted || $isBirthdaysLoading}
 			<div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide">
 				{#each Array(6) as _}
-					<div class="flex-none w-44 aspect-[3/4] bg-slate-100 dark:bg-zinc-800 animate-pulse rounded-xl"></div>
+					<div class="flex-none w-44 snap-start">
+						<MemberCardSkeleton />
+					</div>
 				{/each}
 			</div>
 		{:else if birthdays.length === 0}
@@ -149,7 +155,7 @@
 			</a>
 		</div>
 
-	{#if $isUpcomingEventsLoading}
+	{#if !mounted || $isUpcomingEventsLoading}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 			{#each Array(8) as _}
 				<EventCardSkeleton />

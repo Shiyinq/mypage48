@@ -89,7 +89,9 @@
 		showMemberDetail = false;
 	}
 
-	onMount(() => {
+	let mounted = false;
+
+	onMount(async () => {
 		fetchGenerations();
 
 		// Always reset filter to "All" on mount
@@ -97,7 +99,8 @@
 
 		// Fetch members with "All" filter, loading a larger batch initially (100) 
 		// to ensure the modal sidebar has all members.
-		membersStore.load({ limit: 100 }, true);
+		await membersStore.load({ limit: 100 }, true);
+		mounted = true;
 	});
 
 	function handleInfiniteScroll() {
@@ -183,7 +186,7 @@
 </div>
 
 <!-- Members Grid -->
-{#if $isMembersLoading && membersList.length === 0}
+{#if (!mounted || $isMembersLoading) && membersList.length === 0}
 	<div
 		class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4"
 	>
