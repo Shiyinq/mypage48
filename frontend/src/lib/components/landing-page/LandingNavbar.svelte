@@ -5,13 +5,19 @@
 	import LanguageToggle from './LanguageToggle.svelte';
 	import LandingPageThemeToggle from './ThemeToggle.svelte';
 	import { isAuthenticated } from '$lib/stores';
-	import { fade, fly } from 'svelte/transition';
+	import { fade, fly, crossfade } from 'svelte/transition';
+	import { cubicInOut } from 'svelte/easing';
 	import { radioStore } from '$lib/stores/radio';
 	import { liveStore, liveList } from '$lib/stores/live';
 	import { onMount } from 'svelte';
 	import RadioWidget from './radio-player/RadioWidget.svelte';
 	import MobileRadioWidget from './radio-player/MobileRadioWidget.svelte';
 	import RadioEngine from './radio-player/RadioEngine.svelte';
+
+	const [send, receive] = crossfade({
+		duration: 300,
+		easing: cubicInOut
+	});
 
 	export let showLogin = true;
 	export let mouse = { x: 0, y: 0 };
@@ -84,21 +90,30 @@
 	<div
 		class="hidden lg:flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm pointer-events-auto"
 	>
-		{#each navItems as item}
+		{#each navItems as item (item.href)}
 			{@const isActive = $page.url.pathname.startsWith(item.href)}
 			<a
 				href={item.href}
-				class="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center gap-1.5 {isActive
-					? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
+				class="relative px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-1.5 {isActive
+					? 'text-white'
 					: 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
 			>
-				{item.label}
-				{#if item.id === 'live' && $liveList.length > 0}
-					<span class="relative flex h-2 w-2">
-						<span class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive ? 'bg-white/70' : 'bg-red-400 opacity-75'}"></span>
-						<span class="relative inline-flex rounded-full h-2 w-2 {isActive ? 'bg-white' : 'bg-red-500'}"></span>
-					</span>
+				{#if isActive}
+					<div
+						class="absolute inset-0 bg-red-600 rounded-full shadow-lg shadow-red-500/20 z-0"
+						in:receive={{ key: 'nav-active-pill' }}
+						out:send={{ key: 'nav-active-pill' }}
+					></div>
 				{/if}
+				<span class="relative z-10 flex items-center gap-1.5">
+					{item.label}
+					{#if item.id === 'live' && $liveList.length > 0}
+						<span class="relative flex h-2 w-2">
+							<span class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive ? 'bg-white/70' : 'bg-red-400 opacity-75'}"></span>
+							<span class="relative inline-flex rounded-full h-2 w-2 {isActive ? 'bg-white' : 'bg-red-500'}"></span>
+						</span>
+					{/if}
+				</span>
 			</a>
 		{/each}
 	</div>
