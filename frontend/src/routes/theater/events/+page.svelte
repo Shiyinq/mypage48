@@ -29,9 +29,12 @@
 		);
 	}
 
+	let mounted = false;
+
 	onMount(async () => {
 		await eventsStore.loadUpcoming();
 		await membersStore.loadBirthdays();
+		mounted = true;
 	});
 
 	$: error = $upcomingError;
@@ -45,7 +48,7 @@
 
 <div class="space-y-6">
 	<!-- Birthdays Section -->
-	<Birthdays birthdays={$membersStore.birthdays || []} isLoading={$isBirthdaysLoading} />
+	<Birthdays birthdays={$membersStore.birthdays || []} isLoading={!mounted || $isBirthdaysLoading} />
 
 	<div class="flex items-center gap-2 mb-4">
 		<Calendar class="w-5 h-5 text-red-500" />
@@ -54,7 +57,7 @@
 		</h2>
 	</div>
 
-	{#if $isUpcomingEventsLoading}
+	{#if !mounted || $isUpcomingEventsLoading}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 			{#each Array(6) as _}
 				<EventCardSkeleton />

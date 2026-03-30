@@ -81,10 +81,13 @@
 		showMemberDetail = false;
 	}
 
-	onMount(() => {
+	let mounted = false;
+
+	onMount(async () => {
 		fetchGenerations();
 		selectedGeneration = null;
-		membersStore.load({ limit: 100 }, true);
+		await membersStore.load({ limit: 100 }, true);
+		mounted = true;
 	});
 
 	function handleInfiniteScroll() {
@@ -176,7 +179,7 @@
 	</div>
 
 	<!-- Members Grid -->
-	{#if $isMembersLoading && membersList.length === 0}
+	{#if (!mounted || $isMembersLoading) && membersList.length === 0}
 		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
 			{#each Array(12) as _}
 				<MemberCardSkeleton />

@@ -13,8 +13,11 @@
 	import { formatDate } from '$lib/i18n';
 	const { t, locale } = useTranslation();
 
+	let mounted = false;
+
 	onMount(async () => {
 		await newsStore.load();
+		mounted = true;
 	});
 
 	$: error = $newsError;
@@ -64,7 +67,7 @@
 />
 
 <div class="space-y-6">
-	{#if loading && list.length === 0}
+	{#if (!mounted || loading) && list.length === 0}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
 			{#each Array(8) as _}
 				<EventCardSkeleton />
