@@ -6,6 +6,10 @@
 	import LandingPageThemeToggle from './ThemeToggle.svelte';
 	import { isAuthenticated } from '$lib/stores';
 	import { fade, fly } from 'svelte/transition';
+	import { radioStore } from '$lib/stores/radio';
+	import RadioWidget from './radio-player/RadioWidget.svelte';
+	import MobileRadioWidget from './radio-player/MobileRadioWidget.svelte';
+	import RadioEngine from './radio-player/RadioEngine.svelte';
 
 	export let showLogin = true;
 	export let mouse = { x: 0, y: 0 };
@@ -43,11 +47,7 @@
 >
 	<!-- Left: Logo -->
 	<div class="flex-1 flex items-center justify-start">
-		<a
-			href="/"
-			class="flex items-center gap-3 group pointer-events-auto"
-			on:click={closeMenu}
-		>
+		<a href="/" class="flex items-center gap-3 group pointer-events-auto" on:click={closeMenu}>
 			<div
 				class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white shadow-xl shadow-red-500/20 ring-4 ring-white dark:ring-zinc-800 transition-transform group-hover:scale-105 duration-300"
 			>
@@ -75,12 +75,16 @@
 	</div>
 
 	<!-- Center: Public Navigation (Desktop) -->
-	<div class="hidden lg:flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm pointer-events-auto">
+	<div
+		class="hidden lg:flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm pointer-events-auto"
+	>
 		{#each navItems as item}
 			{@const isActive = $page.url.pathname.startsWith(item.href)}
 			<a
 				href={item.href}
-				class="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 {isActive ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
+				class="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 {isActive
+					? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
+					: 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
 			>
 				{item.label}
 			</a>
@@ -89,9 +93,10 @@
 
 	<!-- Right: Actions -->
 	<div class="flex-1 flex items-center justify-end gap-2 sm:gap-3 pointer-events-auto">
+		<RadioWidget />
 		<LanguageToggle />
 		<LandingPageThemeToggle />
-		
+
 		{#if $isAuthenticated}
 			<a
 				href="/"
@@ -127,19 +132,16 @@
 
 <!-- Mobile Menu Overlay -->
 {#if isMenuOpen}
-	<div
-		class="fixed inset-0 z-[90] lg:hidden"
-		transition:fade={{ duration: 200 }}
-	>
+	<div class="fixed inset-0 z-[90] lg:hidden" transition:fade={{ duration: 200 }}>
 		<!-- Backdrop -->
-		<button 
+		<button
 			class="absolute inset-0 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl cursor-default w-full h-full border-none p-0"
 			on:click={closeMenu}
 			aria-label="Close Menu"
 		></button>
 
 		<!-- Menu Content -->
-		<div 
+		<div
 			class="absolute inset-x-0 top-0 pt-24 pb-12 px-6 bg-white dark:bg-zinc-950 border-b border-gray-100 dark:border-zinc-900 shadow-2xl"
 			transition:fly={{ y: -20, duration: 300 }}
 		>
@@ -149,7 +151,9 @@
 					<a
 						href={item.href}
 						on:click={closeMenu}
-						class="flex items-center justify-between p-4 rounded-2xl transition-all {isActive ? 'bg-red-600 text-white shadow-xl shadow-red-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-zinc-900'}"
+						class="flex items-center justify-between p-4 rounded-2xl transition-all {isActive
+							? 'bg-red-600 text-white shadow-xl shadow-red-500/20'
+							: 'text-slate-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-zinc-900'}"
 						transition:fly={{ y: 10, delay: i * 50, duration: 300 }}
 					>
 						<span class="text-sm font-black uppercase tracking-[0.2em]">{item.label}</span>
@@ -165,10 +169,11 @@
 
 				<div class="flex items-center justify-between px-2">
 					<div class="flex items-center gap-4">
+						<MobileRadioWidget />
 						<LanguageToggle />
 						<LandingPageThemeToggle />
 					</div>
-					
+
 					{#if !$isAuthenticated && showLogin}
 						<a
 							href="/login"
@@ -191,3 +196,6 @@
 		</div>
 	</div>
 {/if}
+
+<!-- Persistent Audio Engine -->
+<RadioEngine />
