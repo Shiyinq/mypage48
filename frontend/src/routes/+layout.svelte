@@ -20,6 +20,7 @@
 	import ScrollToTop from '$lib/components/common/ScrollToTop.svelte';
 	import LandingNavbar from '$lib/components/landing-page/LandingNavbar.svelte';
 	import Footer from '$lib/components/landing-page/Footer.svelte';
+	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 
 	export let data: { locale?: string };
 
@@ -157,7 +158,12 @@
 	}
 
 	// Redirect logged-in users away from public JKT48 routes to their theater counterparts
-	$: if (mounted && $isAuthenticated && $page.url.pathname.startsWith('/jkt48/') && !$page.url.pathname.startsWith('/jkt48/live')) {
+	$: if (
+		mounted &&
+		$isAuthenticated &&
+		$page.url.pathname.startsWith('/jkt48/') &&
+		!$page.url.pathname.startsWith('/jkt48/live')
+	) {
 		let theaterPath = $page.url.pathname.replace('/jkt48/', '/theater/');
 		// Special case for sub-routes that might have different structures
 		if ($page.url.pathname === '/jkt48/event-history') {
@@ -174,7 +180,14 @@
 {:else}
 	<LoadingBar />
 	<CommandPalette />
-	<div class="min-h-screen flex flex-col relative">
+	<div
+		class="min-h-screen flex flex-col relative {$isAuthenticated
+			? 'selection:bg-red-500/20 overflow-x-hidden'
+			: ''}"
+	>
+		{#if $isAuthenticated && !isFullScreenRoute}
+			<AnimatedBackground />
+		{/if}
 		{#if $toast}
 			<div class="fixed top-4 left-0 right-0 z-[10000] flex justify-center pointer-events-none">
 				<div
@@ -225,9 +238,7 @@
 				{#if !isFullScreenRoute}
 					<LandingNavbar showLogin={false} />
 				{/if}
-				<div
-					class={isFullScreenRoute ? 'w-full h-full' : 'max-w-7xl mx-auto px-4 py-8 flex-1'}
-				>
+				<div class={isFullScreenRoute ? 'w-full h-full' : 'max-w-7xl mx-auto px-4 py-8 flex-1'}>
 					<slot />
 				</div>
 				{#if !isFullScreenRoute}
