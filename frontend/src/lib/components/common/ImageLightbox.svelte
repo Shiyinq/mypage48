@@ -113,7 +113,7 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div 
-            class="absolute inset-0 bg-black/95 backdrop-blur-sm"
+            class="absolute inset-0 bg-black/95 backdrop-blur-sm cursor-pointer"
             on:click={onClose}
             role="presentation"
         ></div>
@@ -123,7 +123,7 @@
             <div class="flex items-center gap-1 md:gap-2 bg-white/10 backdrop-blur-md p-1 md:p-1.5 rounded-full border border-white/20">
                 <button 
                     on:click={handleZoomOut}
-                    class="p-1.5 md:p-2 hover:bg-white/10 rounded-full transition-colors text-white"
+                    class="p-1.5 md:p-2 hover:bg-white/10 rounded-full transition-colors text-white cursor-pointer"
                     title="Zoom Out"
                     aria-label="Zoom out"
                 >
@@ -134,7 +134,7 @@
                 </div>
                 <button 
                     on:click={handleZoomIn}
-                    class="p-1.5 md:p-2 hover:bg-white/10 rounded-full transition-colors text-white"
+                    class="p-1.5 md:p-2 hover:bg-white/10 rounded-full transition-colors text-white cursor-pointer"
                     title="Zoom In"
                     aria-label="Zoom in"
                 >
@@ -144,7 +144,7 @@
 
             <button 
                 on:click={resetZoom}
-                class="hidden sm:flex p-2.5 md:p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all text-white border border-white/20"
+                class="hidden sm:flex p-2.5 md:p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all text-white border border-white/20 cursor-pointer"
                 title="Reset Zoom"
                 aria-label="Reset zoom"
             >
@@ -153,7 +153,7 @@
 
             <button 
                 on:click={downloadImage}
-                class="hidden sm:flex p-2.5 md:p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all text-white border border-white/20"
+                class="hidden sm:flex p-2.5 md:p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all text-white border border-white/20 cursor-pointer"
                 title="Download"
                 aria-label="Download image"
             >
@@ -162,7 +162,7 @@
 
             <button 
                 on:click={onClose}
-                class="p-2.5 md:p-3 bg-red-600 hover:bg-red-700 backdrop-blur-md rounded-full transition-all text-white shadow-lg shadow-red-600/20"
+                class="p-2.5 md:p-3 bg-red-600 hover:bg-red-700 backdrop-blur-md rounded-full transition-all text-white shadow-lg shadow-red-600/20 cursor-pointer"
                 title="Close"
                 aria-label="Close lightbox"
             >
