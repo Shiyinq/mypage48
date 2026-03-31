@@ -10,19 +10,16 @@
 	import { radioStore } from '$lib/stores/radio';
 	import { liveStore, liveList } from '$lib/stores/live';
 	import { onMount } from 'svelte';
+	import RadioEngine from './radio-player/RadioEngine.svelte';
 	import RadioWidget from './radio-player/RadioWidget.svelte';
 	import MobileRadioWidget from './radio-player/MobileRadioWidget.svelte';
-	import RadioEngine from './radio-player/RadioEngine.svelte';
+	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
+	import NavPills from '$lib/components/navigation/NavPills.svelte';
 
-	const [send, receive] = crossfade({
-		duration: 300,
-		easing: cubicInOut
-	});
+	const { t } = useTranslation();
 
 	export let showLogin = true;
 	export let mouse = { x: 0, y: 0 };
-
-	const { t } = useTranslation();
 
 	let isMenuOpen = false;
 
@@ -60,63 +57,32 @@
 	<!-- Left: Logo -->
 	<div class="flex-1 flex items-center justify-start">
 		<a href="/" class="flex items-center gap-3 group pointer-events-auto" on:click={closeMenu}>
-			<div
-				class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white shadow-xl shadow-red-500/20 ring-4 ring-white dark:ring-zinc-800 transition-transform group-hover:scale-105 duration-300"
-			>
-				<Ticket class="w-5 h-5" />
-			</div>
-			<div class="flex flex-col relative">
-				<div
-					class="absolute inset-0"
-					style="transform: translate({mouse.x * 10}px, {mouse.y * 10}px)"
-				></div>
-				<h1
-					class="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none relative z-10"
-					style="transform: translate({mouse.x * 5}px, {mouse.y * 5}px)"
-				>
-					MyPage<span class="text-red-600">48</span>
-				</h1>
-				<span
-					class="text-[8px] sm:text-[9px] font-bold text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase mt-0.5 hidden sm:block"
-					style="transform: translate({mouse.x * 8}px, {mouse.y * 8}px)"
-				>
-					{$t('landing.nav.subtitle')}
-				</span>
-			</div>
+			<NavLogo tagline={$t('landing.nav.subtitle')} {mouse} />
 		</a>
 	</div>
 
 	<!-- Center: Public Navigation (Desktop) -->
-	<div
-		class="hidden lg:flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm pointer-events-auto"
+	<NavPills
+		items={navItems}
+		currentPath={$page.url.pathname}
+		className="hidden lg:flex pointer-events-auto"
 	>
-		{#each navItems as item (item.href)}
-			{@const isActive = $page.url.pathname.startsWith(item.href)}
-			<a
-				href={item.href}
-				class="relative px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-1.5 {isActive
-					? 'text-white'
-					: 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
-			>
-				{#if isActive}
-					<div
-						class="absolute inset-0 bg-red-600 rounded-full shadow-lg shadow-red-500/20 z-0"
-						in:receive={{ key: 'nav-active-pill' }}
-						out:send={{ key: 'nav-active-pill' }}
-					></div>
-				{/if}
-				<span class="relative z-10 flex items-center gap-1.5">
-					{item.label}
-					{#if item.id === 'live' && $liveList.length > 0}
-						<span class="relative flex h-2 w-2">
-							<span class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive ? 'bg-white/70' : 'bg-red-400 opacity-75'}"></span>
-							<span class="relative inline-flex rounded-full h-2 w-2 {isActive ? 'bg-white' : 'bg-red-500'}"></span>
-						</span>
-					{/if}
+		<svelte:fragment slot="item" let:item let:isActive>
+			{item.label}
+			{#if item.id === 'live' && $liveList.length > 0}
+				<span class="relative flex h-2 w-2">
+					<span
+						class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive
+							? 'bg-white/70'
+							: 'bg-red-400 opacity-75'}"
+					></span>
+					<span
+						class="relative inline-flex rounded-full h-2 w-2 {isActive ? 'bg-white' : 'bg-red-500'}"
+					></span>
 				</span>
-			</a>
-		{/each}
-	</div>
+			{/if}
+		</svelte:fragment>
+	</NavPills>
 
 	<!-- Right: Actions -->
 	<div class="flex-1 flex items-center justify-end gap-2 sm:gap-3 pointer-events-auto">
