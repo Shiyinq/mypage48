@@ -50,8 +50,8 @@
 	<!-- Birthdays Section -->
 	<Birthdays birthdays={$membersStore.birthdays || []} isLoading={!mounted || $isBirthdaysLoading} />
 
-	<div class="flex items-center gap-2 mb-4">
-		<Calendar class="w-5 h-5 text-red-500" />
+	<div class="flex items-center gap-3 mb-4">
+		<div class="h-8 w-1.5 bg-gradient-to-b from-red-500 to-red-700 rounded-full"></div>
 		<h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
 			{$t('theater.upcomingEvents.title') || 'Upcoming Shows'}
 		</h2>
