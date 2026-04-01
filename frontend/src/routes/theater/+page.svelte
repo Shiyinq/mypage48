@@ -93,7 +93,7 @@
 	{#if setlistItems.length > 0}
 		<div class="mb-12">
 			<div class="flex items-center gap-3 mb-6">
-				<div class="h-8 w-1.5 bg-gradient-to-b from-red-500 to-pink-600 rounded-full"></div>
+				<div class="h-8 w-1.5 bg-red-500 rounded-full"></div>
 				<h2 class="text-2xl font-bold text-gray-900 dark:text-white">
 					{$t('theater.setlists.section')}
 				</h2>
@@ -126,7 +126,7 @@
 	{#if eventItems.length > 0}
 		<div>
 			<div class="flex items-center gap-3 mb-6">
-				<div class="h-8 w-1.5 bg-gradient-to-b from-purple-500 to-indigo-600 rounded-full"></div>
+				<div class="h-8 w-1.5 bg-purple-500 rounded-full"></div>
 				<h2 class="text-2xl font-bold text-gray-900 dark:text-white">
 					{$t('theater.setlists.events')}
 				</h2>
