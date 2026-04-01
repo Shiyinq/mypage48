@@ -755,7 +755,9 @@
 			"events": "Event",
 			"news": "Berita",
 			"live": "Live",
-			"sorter": "Sorter"
+			"sorter": "Sorter",
+			"history": "History",
+			"calendar": "Kalender"
 		},
 		"live": {
 			"title": "Live",

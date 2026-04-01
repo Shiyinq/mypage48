@@ -22,7 +22,7 @@
 	// Navigation items
 	$: navItems = [
 		{ label: $t('nav.dashboard'), href: '/' },
-		{ label: $t('nav.theater'), href: '/theater/events' },
+		{ label: $t('nav.theater'), href: '/theater/events', activeHref: '/theater' },
 		{ label: $t('nav.achievements'), href: '/achievements' },
 		{ label: $t('nav.memories'), href: '/memories' },
 		{ label: $t('nav.history'), href: '/history' }

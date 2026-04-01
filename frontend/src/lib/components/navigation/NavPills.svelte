@@ -7,7 +7,7 @@
     easing: cubicInOut
   });
 
-  export let items: Array<{ label: string; href: string; id?: string }> = [];
+  export let items: Array<{ label: string; href: string; id?: string; activeHref?: string }> = [];
   export let currentPath: string;
   export let className = ''; // Standard hidden md:flex is default but can be overridden
 </script>
@@ -16,7 +16,7 @@
   class="items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm overflow-x-auto {className}"
 >
   {#each items as item (item.href)}
-    {@const isActive = item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href)}
+    {@const isActive = (item.activeHref || item.href) === '/' ? currentPath === '/' : currentPath.startsWith(item.activeHref || item.href)}
     <a
       href={item.href}
       class="relative px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-1.5 {isActive
