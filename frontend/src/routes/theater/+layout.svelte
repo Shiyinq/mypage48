@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
@@ -12,6 +11,13 @@
 		ArrowUpDown
 	} from 'lucide-svelte';
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
+	import { crossfade } from 'svelte/transition';
+	import { cubicInOut } from 'svelte/easing';
+
+	const [send, receive] = crossfade({
+		duration: 300,
+		easing: cubicInOut
+	});
 
 	const { t } = useTranslation();
 
@@ -103,14 +109,15 @@
 			theme: 'blue'
 		},
 		{
-			labelKey: 'theater.events.calendar',
+			labelKey: 'theater.subNav.calendar',
 			labelDefault: 'Calendar',
 			href: '/theater/events/calendar',
 			icon: Calendar,
 			theme: 'blue'
 		},
 		{
-			labelKey: 'theater.eventHistory.title',
+			labelKey: 'theater.subNav.history',
+			labelDefault: 'History',
 			href: '/theater/events/history',
 			icon: History,
 			theme: 'orange'
@@ -135,43 +142,51 @@
 
 <div class="max-w-6xl mx-auto p-4 pb-24">
 	{#if !isDetailPage}
-		<!-- Header & Sub Navigation Wrapper -->
-		<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+		<!-- Theater Header & Sub Navigation Wrapper -->
+		<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6 mb-10">
 			<!-- Theater Header -->
-			<div class="flex items-center gap-3">
+			<div class="flex items-center gap-4 flex-shrink-0">
 				<div
-					class={`p-3 rounded-2xl shadow-lg border-2 border-white dark:border-zinc-700 transform -rotate-6 transition-colors duration-300 ${currentThemeStyles.headerIcon}`}
+					class={`p-3.5 rounded-2xl shadow-xl border-2 border-white dark:border-zinc-700 transform -rotate-6 transition-all duration-300 ${currentThemeStyles.headerIcon}`}
 				>
-					<svelte:component this={pageInfo.icon} class="w-6 h-6" />
+					<svelte:component this={pageInfo.icon} class="w-7 h-7" />
 				</div>
-				<div>
-					<h2 class="text-2xl font-bold text-themed w-fit relative">
+				<div class="flex flex-col">
+					<h2
+						class="text-3xl font-black tracking-tighter text-gray-900 dark:text-white leading-tight relative w-fit"
+					>
 						{pageInfo.title}
 						<span
-							class={`absolute -bottom-1 left-0 w-full h-2 -z-10 transform -skew-x-12 rounded-sm transition-colors duration-300 ${currentThemeStyles.titleLine}`}
+							class={`absolute -bottom-1 left-0 w-full h-2.5 -z-10 transform -skew-x-12 rounded-sm transition-colors duration-300 ${currentThemeStyles.titleLine}`}
 						></span>
 					</h2>
-					<p class="text-sm text-themed-secondary">{pageInfo.subtitle}</p>
+					<p class="text-[13px] font-medium text-themed-secondary mt-0.5">{pageInfo.subtitle}</p>
 				</div>
 			</div>
 
 			<!-- Sub Navigation Tabs -->
 			<div
-				class="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0 scrollbar-hide"
+				class="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm overflow-x-auto scrollbar-hide"
 			>
-				{#each subNavItems as item}
+				{#each subNavItems as item (item.href)}
 					{@const active = isActive(item.href, item.exact)}
 					{@const itemTheme = getThemeStyles(item.theme || 'purple')}
 					<a
 						href={item.href}
-						class={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 whitespace-nowrap ${
-							active
-								? itemTheme.navActive
-								: `bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 ${itemTheme.navInactive}`
-						}`}
+						class="relative px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center whitespace-nowrap {active
+							? 'text-white'
+							: 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
 					>
-						<svelte:component this={item.icon} class="w-4 h-4" />
-						{$t(item.labelKey) || item.labelDefault}
+						{#if active}
+							<div
+								class="absolute inset-0 rounded-full shadow-lg z-0 {itemTheme.navActive}"
+								in:receive={{ key: 'theater-nav-active' }}
+								out:send={{ key: 'theater-nav-active' }}
+							></div>
+						{/if}
+						<span class="relative z-10 flex items-center justify-center">
+							<span>{$t(item.labelKey) || item.labelDefault}</span>
+						</span>
 					</a>
 				{/each}
 			</div>

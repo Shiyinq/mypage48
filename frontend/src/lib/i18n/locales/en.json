@@ -634,7 +634,9 @@
 			"events": "Events",
 			"news": "News",
 			"live": "Live",
-			"sorter": "Sorter"
+			"sorter": "Sorter",
+			"history": "History",
+			"calendar": "Calendar"
 		},
 		"live": {
 			"title": "Live",

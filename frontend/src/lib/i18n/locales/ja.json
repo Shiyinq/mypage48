@@ -586,7 +586,9 @@
 			"events": "イベント",
 			"news": "ニュース",
 			"live": "ライブ",
-			"sorter": "ソーター"
+			"sorter": "ソーター",
+			"history": "履歴",
+			"calendar": "カレンダー"
 		},
 		"live": {
 			"title": "ライブ",
