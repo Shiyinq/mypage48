@@ -543,30 +543,32 @@
 				</button>
 			</div>
 
-			<div class="flex justify-center gap-3">
-				<button
-					on:click={() => handleSelect(0)}
-					disabled={isAnimating}
-					class="h-12 px-8 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-900 dark:text-white font-black rounded-full transition-all text-sm cursor-pointer whitespace-nowrap flex items-center gap-2 shadow-sm"
-				>
-					<Equal size={18} />
-					{$t('theater.sorter.tie')}
-				</button>
-				<button
-					on:click={undo}
-					disabled={history.length === 0}
-					class="h-12 px-8 bg-amber-50 dark:bg-amber-950/20 text-amber-600 font-black rounded-full transition-all text-sm cursor-pointer disabled:opacity-30 whitespace-nowrap flex items-center gap-2 shadow-sm"
-				>
-					<RotateCcw size={18} />
-					{$t('theater.sorter.undo')}
-				</button>
-				<button
-					on:click={restart}
-					class="h-12 px-8 text-red-600 font-black rounded-full transition-all text-sm cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/20 whitespace-nowrap flex items-center gap-2"
-				>
-					<ArrowLeft size={18} />
-					{$t('theater.sorter.exit')}
-				</button>
+			<div class="mt-4 md:mt-6 flex justify-center">
+				<div class="flex items-center gap-1 md:gap-2 p-1.5 bg-zinc-50/50 dark:bg-zinc-900/40 backdrop-blur-sm rounded-full shadow-inner border border-zinc-200/50 dark:border-zinc-800/40">
+					<button
+						on:click={() => handleSelect(0)}
+						disabled={isAnimating}
+						class="h-11 px-6 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-900 dark:text-white font-black rounded-full transition-all text-sm cursor-pointer whitespace-nowrap flex items-center gap-2 shadow-sm border border-zinc-100 dark:border-zinc-700"
+					>
+						<Equal size={18} />
+						{$t('theater.sorter.tie')}
+					</button>
+					<button
+						on:click={undo}
+						disabled={history.length === 0 || isAnimating}
+						class="h-11 px-6 bg-amber-50 dark:bg-amber-950/20 text-amber-600 font-black rounded-full transition-all text-sm cursor-pointer disabled:opacity-30 whitespace-nowrap flex items-center gap-2 shadow-sm border border-amber-100/50 dark:border-amber-900/20"
+					>
+						<RotateCcw size={18} />
+						{$t('theater.sorter.undo')}
+					</button>
+					<button
+						on:click={restart}
+						class="h-11 px-6 text-red-600 font-black rounded-full transition-all text-sm cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/20 whitespace-nowrap flex items-center gap-2"
+					>
+						<ArrowLeft size={18} />
+						{$t('theater.sorter.exit')}
+					</button>
+				</div>
 			</div>
 		</div>
 	{:else if currentState === 'results'}
