@@ -23,8 +23,8 @@
 </script>
 
 <div class="space-y-4 mb-8">
-	<div class="flex items-center gap-2">
-		<Cake class="w-5 h-5 text-pink-400" />
+	<div class="flex items-center gap-3">
+		<div class="h-8 w-1.5 bg-gradient-to-b from-pink-400 to-pink-600 rounded-full"></div>
 		<h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
 			{$t('theater.birthdays.title') || 'Upcoming Birthdays'}
 		</h2>
