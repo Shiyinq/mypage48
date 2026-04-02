@@ -36,29 +36,43 @@ class EmailService:
         verification_url = f"{self.config.frontend_url}/auth/verify-email?token={token}"
 
         html_content = f"""
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">Verify Your Email</h2>
-            <p>Hello {username},</p>
-            <p>Thank you for registering with Fasmo. Please verify your email by clicking the button below:</p>
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="{verification_url}" 
-                   style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                    Verify Email
-                </a>
+        <div style="background-color: #fdf2f8; padding: 60px 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 28px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); border: 1px solid rgba(236, 72, 153, 0.1);">
+                <div style="padding: 40px 20px; text-align: center; border-bottom: 1px solid #f1f5f9;">
+                    <h1 style="color: #0f172a; margin: 0; font-size: 32px; font-weight: 900; letter-spacing: -0.05em;">MyPage<span style="color: #ef4444;">48</span></h1>
+                    <p style="color: #ef4444; margin: 4px 0 0; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em;">Official Member Account</p>
+                </div>
+                <div style="padding: 48px 40px;">
+                    <h2 style="color: #ef4444; margin: 0 0 16px; font-size: 28px; font-weight: 900; tracking: -0.02em;">Verify Your Email</h2>
+                    <p style="color: #475569; line-height: 1.8; margin: 0 0 24px; font-size: 16px;">Hello <strong>{username}</strong>,</p>
+                    <p style="color: #475569; line-height: 1.8; margin: 0 0 40px; font-size: 16px;">Welcome to the family! To activate your digital theater profile and start your journey with MyPage48, please verify your email address below:</p>
+                    
+                    <div style="text-align: center; margin: 40px 0;">
+                        <a href="{verification_url}" 
+                           style="background-color: #dc2626; color: #ffffff; padding: 22px 48px; text-decoration: none; border-radius: 18px; display: inline-block; font-weight: 800; font-size: 16px; box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.4); transition: all 0.2s ease;">
+                            Verify My Email
+                        </a>
+                    </div>
+                    
+                    <div style="background-color: #f8fafc; padding: 24px; border-radius: 18px; border: 1px dashed #cbd5e1; margin: 40px 0;">
+                        <p style="color: #64748b; font-size: 11px; margin: 0 0 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Security Backup Link:</p>
+                        <p style="word-break: break-all; color: #ef4444; font-size: 13px; margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-weight: 500;">{verification_url}</p>
+                    </div>
+                    
+                    <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; text-align: center; font-weight: 500;">This link is valid for {self.config.email_verification_expire_hours} hours. <br>If you didn't request this, you can safely ignore this email.</p>
+                </div>
+                <div style="background-color: #f1f5f9; padding: 32px; text-align: center;">
+                    <p style="color: #0f172a; font-weight: 900; font-size: 14px; margin: 0;">MyPage48</p>
+                    <p style="color: #64748b; font-size: 11px; margin: 4px 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Create your digital theater profile</p>
+                </div>
             </div>
-            <p>Or copy this link to your browser:</p>
-            <p style="word-break: break-all; color: #666;">{verification_url}</p>
-            <p>This link will expire in {self.config.email_verification_expire_hours} hours.</p>
-            <p>If you did not register with Fasmo, please ignore this email.</p>
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-            <p style="color: #666; font-size: 12px;">Fasmo</p>
         </div>
         """
 
         payload = {
             "from": self.config.email_from,
             "to": email,
-            "subject": "Verify Your Email - Fasmo",
+            "subject": "Verify Your Email - MyPage48",
             "html": html_content,
         }
 
@@ -72,29 +86,43 @@ class EmailService:
         reset_url = f"{self.config.frontend_url}/auth/reset-password?token={token}"
 
         html_content = f"""
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">Reset Your Password</h2>
-            <p>Hello {username},</p>
-            <p>We received a request to reset your account password. Please click the button below to create a new password:</p>
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="{reset_url}" 
-                   style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                    Reset Password
-                </a>
+        <div style="background-color: #fdf2f8; padding: 60px 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 28px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); border: 1px solid rgba(236, 72, 153, 0.1);">
+                <div style="padding: 40px 20px; text-align: center; border-bottom: 1px solid #f1f5f9;">
+                    <h1 style="color: #0f172a; margin: 0; font-size: 32px; font-weight: 900; letter-spacing: -0.05em;">MyPage<span style="color: #ef4444;">48</span></h1>
+                    <p style="color: #ef4444; margin: 4px 0 0; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em;">Security Notification</p>
+                </div>
+                <div style="padding: 48px 40px;">
+                    <h2 style="color: #ef4444; margin: 0 0 16px; font-size: 28px; font-weight: 900; tracking: -0.02em;">Reset Your Password</h2>
+                    <p style="color: #475569; line-height: 1.8; margin: 0 0 24px; font-size: 16px;">Hello <strong>{username}</strong>,</p>
+                    <p style="color: #475569; line-height: 1.8; margin: 0 0 40px; font-size: 16px;">We received a request to reset your password. If this was you, please click the button below to set a new one:</p>
+                    
+                    <div style="text-align: center; margin: 40px 0;">
+                        <a href="{reset_url}" 
+                           style="background-color: #dc2626; color: #ffffff; padding: 22px 48px; text-decoration: none; border-radius: 18px; display: inline-block; font-weight: 800; font-size: 16px; box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.4); transition: all 0.2s ease;">
+                            Reset My Password
+                        </a>
+                    </div>
+                    
+                    <div style="background-color: #f8fafc; padding: 24px; border-radius: 18px; border: 1px dashed #cbd5e1; margin: 40px 0;">
+                        <p style="color: #64748b; font-size: 11px; margin: 0 0 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Quick Access Link:</p>
+                        <p style="word-break: break-all; color: #ef4444; font-size: 13px; margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-weight: 500;">{reset_url}</p>
+                    </div>
+                    
+                    <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; text-align: center; font-weight: 500;">This link is valid for {self.config.password_reset_expire_hours} hour. <br>If you didn't request this, ignore this email.</p>
+                </div>
+                <div style="background-color: #f1f5f9; padding: 32px; text-align: center;">
+                    <p style="color: #0f172a; font-weight: 900; font-size: 14px; margin: 0;">MyPage48</p>
+                    <p style="color: #64748b; font-size: 11px; margin: 4px 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Guarding your memories</p>
+                </div>
             </div>
-            <p>Or copy this link to your browser:</p>
-            <p style="word-break: break-all; color: #666;">{reset_url}</p>
-            <p>This link will expire in {self.config.password_reset_expire_hours} hour.</p>
-            <p>If you did not request a password reset, please ignore this email. Your password will not be changed.</p>
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-            <p style="color: #666; font-size: 12px;">Fasmo</p>
         </div>
         """
 
         payload = {
             "from": self.config.email_from,
             "to": email,
-            "subject": "Reset Your Password - Fasmo",
+            "subject": "Reset Your Password - MyPage48",
             "html": html_content,
         }
 
@@ -108,22 +136,39 @@ class EmailService:
     ):
         """Send account locked notification"""
         html_content = f"""
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #dc3545;">Your Account Has Been Locked</h2>
-            <p>Hello {username},</p>
-            <p>Your account has been temporarily locked due to too many failed login attempts.</p>
-            <p>Your account will be automatically unlocked in {lockout_duration} minutes.</p>
-            <p>If you forgot your password, please use the "Forgot Password" feature to reset your password.</p>
-            <p>If you believe this is an error, please contact our support team.</p>
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-            <p style="color: #666; font-size: 12px;">Fasmo</p>
+        <div style="background-color: #fdf2f8; padding: 60px 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 28px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); border: 1px solid rgba(236, 72, 153, 0.1);">
+                <div style="padding: 40px 20px; text-align: center; border-bottom: 1px solid #f1f5f9;">
+                    <h1 style="color: #0f172a; margin: 0; font-size: 32px; font-weight: 900; letter-spacing: -0.05em;">MyPage<span style="color: #ef4444;">48</span></h1>
+                    <p style="color: #ef4444; margin: 4px 0 0; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em;">Security Alert</p>
+                </div>
+                <div style="padding: 48px 40px;">
+                    <h2 style="color: #ef4444; margin: 0 0 16px; font-size: 28px; font-weight: 900; tracking: -0.02em;">Account Locked</h2>
+                    <p style="color: #475569; line-height: 1.8; margin: 0 0 24px; font-size: 16px;">Hello <strong>{username}</strong>,</p>
+                    <p style="color: #475569; line-height: 1.8; margin: 0; font-size: 16px;">For your safety, your account has been temporarily locked due to <strong>multiple failed login attempts</strong>.</p>
+                    
+                    <div style="background-color: #fff1f2; border-left: 5px solid #e11d48; padding: 32px; border-radius: 18px; margin: 40px 0;">
+                        <p style="color: #9f1239; font-size: 18px; margin: 0; font-weight: 800;">
+                            Lockout: {lockout_duration} minutes
+                        </p>
+                    </div>
+                    
+                    <p style="color: #475569; line-height: 1.8; margin: 0 0 24px; font-size: 16px;">Once the lockout period expires, you can use the "Forgot Password" feature to regain access.</p>
+                    
+                    <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; text-align: center; font-weight: 500;">If this wasn't you, please review your security settings once access is restored.</p>
+                </div>
+                <div style="background-color: #f1f5f9; padding: 32px; text-align: center;">
+                    <p style="color: #0f172a; font-weight: 900; font-size: 14px; margin: 0;">MyPage48</p>
+                    <p style="color: #64748b; font-size: 11px; margin: 4px 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Automated Security System</p>
+                </div>
+            </div>
         </div>
         """
 
         payload = {
             "from": self.config.email_from,
             "to": email,
-            "subject": "Account Locked - Fasmo",
+            "subject": "Account Locked - MyPage48",
             "html": html_content,
         }
 
