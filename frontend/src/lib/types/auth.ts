@@ -56,11 +56,9 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-	memberId: string;
 	username: string;
 	fullName: string;
 	email: string;
-	ofcStatus: string;
 	password: string;
 	confirmPassword: string;
 }

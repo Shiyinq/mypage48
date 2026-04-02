@@ -18,10 +18,8 @@ class UserCreateRequest(BaseModel):
     """
 
     fullName: str = Field(max_length=100)
-    memberId: str = Field(max_length=20)
     username: str = Field(max_length=50)
     email: EmailStr
-    ofcStatus: str = Field(default="Active")  # 'Active' | 'Inactive' | 'Pending'
     password: str
     confirmPassword: str
 
@@ -39,10 +37,8 @@ class UserCreateRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "fullName": "John Doe",
-                "memberId": "JKT-1234",
                 "username": "johndoe",
                 "email": "user@example.com",
-                "ofcStatus": "Active",
                 "password": "SecurePass123!",
                 "confirmPassword": "SecurePass123!",
             }

@@ -2,15 +2,12 @@ import { z } from 'zod';
 
 // Login Schema
 export const loginSchema = z.object({
-	email: z.string().email({ message: 'Invalid email address' }),
+	email: z.string().min(3, { message: 'Email or Username must be at least 3 characters' }),
 	password: z.string().min(1, { message: 'Password is required' })
 });
 
 // Register Schema
 export const registerBaseSchema = z.object({
-	memberId: z
-		.string()
-		.regex(/^JKT-\d{4}$/, { message: 'Member ID must be in format JKT-XXXX (e.g. JKT-1234)' }),
 	username: z
 		.string()
 		.min(3, { message: 'Username must be at least 3 characters' })
@@ -20,7 +17,6 @@ export const registerBaseSchema = z.object({
 		}),
 	fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
 	email: z.string().email({ message: 'Invalid email address' }),
-	ofcStatus: z.enum(['Active', 'Inactive', 'Pending']),
 	password: z
 		.string()
 		.min(8, { message: 'Password must be at least 8 characters' })

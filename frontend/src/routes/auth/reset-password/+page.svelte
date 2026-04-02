@@ -169,7 +169,6 @@
 						>
 							<Lock class="w-5 h-5" slot="leading" />
 						</PasswordInput>
-						<PasswordStrengthChecklist password={newPassword} />
 					</div>
 
 					<div>
@@ -184,6 +183,7 @@
 						>
 							<Lock class="w-5 h-5" slot="leading" />
 						</PasswordInput>
+						<PasswordStrengthChecklist password={newPassword} />
 					</div>
 
 					{#if error}
