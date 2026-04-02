@@ -247,14 +247,14 @@
 		"login": {
 			"title": "ログイン",
 			"subtitle": "おかえりなさい！",
-			"emailLabel": "メールアドレス",
-			"emailPlaceholder": "member@mypage48.com",
+			"emailLabel": "メールアドレスまたはユーザーネーム",
+			"emailPlaceholder": "メールアドレスまたはユーザーネーム",
 			"passwordLabel": "パスワード",
 			"passwordPlaceholder": "••••••••",
 			"forgotPassword": "パスワードをお忘れですか？",
 			"signIn": "ログイン",
 			"noAccount": "アカウントをお持ちでないですか？",
-			"registerCta": "OFCアクセス登録",
+			"registerCta": "アカウント登録",
 			"welcomeBack": "おかえりなさい！",
 			"invalidCredentials": "メールアドレスまたはパスワードが間違っています"
 		},

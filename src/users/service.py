@@ -1,5 +1,7 @@
 import asyncio
 import math
+import secrets
+import time
 from datetime import datetime
 
 from pymongo.errors import DuplicateKeyError
@@ -94,6 +96,10 @@ class UserService:
         elif "email" in dk_str:
             raise EmailAlreadyExistsError()
 
+    async def _generate_unique_member_id(self) -> str:
+        """Generate a member ID based on registration timestamp."""
+        return f"MYP48-{int(time.time() * 1000)}"
+
     async def create_user(self, request: UserCreateRequest) -> UserCreated:
         """
         Create a new user from registration request.
@@ -104,12 +110,14 @@ class UserService:
                 self.security_service.get_password_hash, request.password
             )
 
+            member_id = await self._generate_unique_member_id()
+
             user_in_db = UserInDB(
                 name=request.fullName,
-                memberId=request.memberId,
+                memberId=member_id,
                 username=request.username.lower(),
                 email=request.email.lower(),
-                ofcStatus=request.ofcStatus,
+                ofcStatus="Active",
                 password=hashed_password,
                 isEmailVerified=False,
                 failedLoginAttempts=0,

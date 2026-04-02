@@ -19,12 +19,10 @@
 
 	const { t } = useTranslation();
 
-	let formData: RegisterRequest = {
-		memberId: '',
+	let formData = {
 		username: '',
 		fullName: '',
 		email: '',
-		ofcStatus: 'Active',
 		password: '',
 		confirmPassword: ''
 	};
@@ -108,59 +106,6 @@
 		<div class="grid md:grid-cols-2 gap-6">
 			<!-- Left Column: Personal Information -->
 			<div class="space-y-4">
-				<div class="grid grid-cols-2 gap-3">
-					<div>
-						<label
-							for="memberId"
-							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-							>{$t('auth.register.memberId')}</label
-						>
-						<div class="relative">
-							<div
-								class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
-							>
-								<Hash class="w-5 h-5" />
-							</div>
-							<input
-								id="memberId"
-								name="memberId"
-								bind:value={formData.memberId}
-								on:input={() => validateField('memberId')}
-								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.memberId ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
-								placeholder="JKT-XXXX"
-							/>
-						</div>
-						{#if errors.memberId}
-							<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.memberId}</p>
-						{/if}
-					</div>
-					<div>
-						<label
-							for="username"
-							class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-							>{$t('auth.register.username')}</label
-						>
-						<div class="relative">
-							<div
-								class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
-							>
-								<User class="w-5 h-5" />
-							</div>
-							<input
-								id="username"
-								name="username"
-								bind:value={formData.username}
-								on:input={() => validateField('username')}
-								class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.username ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
-								placeholder="@username"
-							/>
-						</div>
-						{#if errors.username}
-							<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.username}</p>
-						{/if}
-					</div>
-				</div>
-
 				<div>
 					<label
 						for="fullName"
@@ -204,77 +149,62 @@
 						<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.email}</p>
 					{/if}
 				</div>
+
+				<div>
+					<label
+						for="username"
+						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+						>{$t('auth.register.username')}</label
+					>
+					<div class="relative">
+						<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
+							<User class="w-5 h-5" />
+						</div>
+						<input
+							id="username"
+							name="username"
+							bind:value={formData.username}
+							on:input={() => validateField('username')}
+							class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.username ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
+							placeholder="@username"
+						/>
+					</div>
+					{#if errors.username}
+						<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.username}</p>
+					{/if}
+				</div>
 			</div>
 
 			<!-- Right Column: Account Security -->
 			<div class="space-y-4">
 				<div>
-					<label
-						for="ofcStatus"
-						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-						>{$t('auth.register.ofcStatus')}</label
+					<PasswordInput
+						id="password"
+						name="password"
+						label={$t('auth.register.password')}
+						placeholder="••••••••"
+						bind:value={formData.password}
+						error={errors.password}
+						on:input={() => validateField('password')}
 					>
-					<div class="relative">
-						<div class="absolute left-4 top-1/2 -translate-y-1/2 text-red-500">
-							<Crown class="w-5 h-5" />
-						</div>
-						<select
-							id="ofcStatus"
-							name="ofcStatus"
-							bind:value={formData.ofcStatus}
-							class="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all appearance-none cursor-pointer"
-						>
-							<option value="Active">{$t('auth.register.ofcActive')}</option>
-							<option value="Inactive">{$t('auth.register.ofcInactive')}</option>
-							<option value="Pending">{$t('auth.register.pendingRenewal')}</option>
-						</select>
-						<div class="absolute right-4 top-1/2 -translate-y-1/2">
-							<CircleCheck class="w-5 h-5 text-green-500" />
-						</div>
-					</div>
+						<Lock class="w-5 h-5" slot="leading" />
+					</PasswordInput>
 				</div>
-
-				<div class="grid grid-cols-2 gap-3">
-					<div>
-						<PasswordInput
-							id="password"
-							name="password"
-							label={$t('auth.register.password')}
-							placeholder="••••••••"
-							bind:value={formData.password}
-							error={errors.password}
-							on:input={() => validateField('password')}
-						>
-							<Lock class="w-5 h-5" slot="leading" />
-						</PasswordInput>
-					</div>
-					<div>
-						<PasswordInput
-							id="confirmPassword"
-							name="confirmPassword"
-							label={$t('auth.register.confirmPassword')}
-							placeholder="••••••••"
-							bind:value={formData.confirmPassword}
-							error={errors.confirmPassword}
-							on:input={() => validateField('confirmPassword')}
-						>
-							<Shield class="w-5 h-5" slot="leading" />
-						</PasswordInput>
-					</div>
+				<div>
+					<PasswordInput
+						id="confirmPassword"
+						name="confirmPassword"
+						label={$t('auth.register.confirmPassword')}
+						placeholder="••••••••"
+						bind:value={formData.confirmPassword}
+						error={errors.confirmPassword}
+						on:input={() => validateField('confirmPassword')}
+					>
+						<Shield class="w-5 h-5" slot="leading" />
+					</PasswordInput>
 				</div>
 
 				<PasswordStrengthChecklist password={formData.password} />
-
-				{#if errors.password || errors.confirmPassword}
-					<div class="text-center space-y-1">
-						{#if errors.password}
-							<p class="text-xs text-red-500 font-medium">{errors.password}</p>
-						{/if}
-						{#if errors.confirmPassword}
-							<p class="text-xs text-red-500 font-medium">{errors.confirmPassword}</p>
-						{/if}
-					</div>
-				{/if}
 			</div>
 		</div>
 

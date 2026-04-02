@@ -6,7 +6,7 @@
 	import { logger } from '$lib/utils/logger';
 	import { getErrorMessage } from '$lib/utils/api';
 	import { authStore } from '$lib/stores/auth';
-	import { Lock, Mail, ArrowRight, User } from 'lucide-svelte';
+	import { Lock, ArrowRight, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import AuthLayout from '$lib/components/layouts/AuthLayout.svelte';
@@ -86,11 +86,12 @@
 			>
 			<div class="relative">
 				<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
-					<Mail class="w-5 h-5" />
+					<User class="w-5 h-5" />
 				</div>
 				<input
-					type="email"
+					type="text"
 					id="email"
+					name="username"
 					bind:value={email}
 					on:input={() => validateField('email', email)}
 					class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}

@@ -248,14 +248,14 @@
 		"login": {
 			"title": "Masuk",
 			"subtitle": "Selamat datang kembali, Wota!",
-			"emailLabel": "Alamat Email",
-			"emailPlaceholder": "member@mypage48.com",
+			"emailLabel": "Email atau Username",
+			"emailPlaceholder": "Email atau Username",
 			"passwordLabel": "Kata Sandi",
 			"passwordPlaceholder": "••••••••",
 			"forgotPassword": "Lupa Kata Sandi?",
 			"signIn": "Masuk",
 			"noAccount": "Belum punya akun?",
-			"registerCta": "Daftar Akses OFC",
+			"registerCta": "Daftar akun",
 			"welcomeBack": "Selamat datang kembali!",
 			"invalidCredentials": "Email atau kata sandi salah"
 		},

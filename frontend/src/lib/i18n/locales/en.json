@@ -247,14 +247,14 @@
 		"login": {
 			"title": "Sign In",
 			"subtitle": "Welcome back, Wota!",
-			"emailLabel": "Email Address",
-			"emailPlaceholder": "member@mypage48.com",
+			"emailLabel": "Email or Username",
+			"emailPlaceholder": "Email or Username",
 			"passwordLabel": "Password",
 			"passwordPlaceholder": "••••••••",
 			"forgotPassword": "Forgot Password?",
 			"signIn": "Sign In",
 			"noAccount": "Don't have an account?",
-			"registerCta": "Register for OFC Access",
+			"registerCta": "Register account",
 			"welcomeBack": "Welcome back!",
 			"invalidCredentials": "Invalid email or password"
 		},

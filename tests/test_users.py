@@ -96,7 +96,6 @@ async def test_get_public_profile(client: AsyncClient, db):
     # Register a user who is public
     register_payload = {
         "fullName": "Visible User",
-        "memberId": "vis123",
         "username": "visibleuser",
         "email": "visible@example.com",
         "password": "Password123!",
