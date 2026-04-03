@@ -701,7 +701,8 @@
 				"no_stream_found": "No stream found",
 				"failed_load_stream": "Failed to load stream",
 				"retry": "Retry",
-				"sending_gift": "Sending Gift"
+				"sending_gift": "Sending Gift",
+				"seoDescription": "Watch multiple JKT48 members live at the same time. Switch, resize, and chat across multiple live streams simultaneously."
 			},
 			"switchMultiview": "Switch to Multi-view"
 		},

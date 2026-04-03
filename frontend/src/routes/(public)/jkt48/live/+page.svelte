@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
-	import { liveStore, liveList, liveLoading, liveError, now } from '$lib/stores/live';
+	import { fly } from 'svelte/transition';
+	import { liveStore, liveList, liveLoading, now } from '$lib/stores/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Star, Users, ExternalLink, Play, Tv, Clock } from 'lucide-svelte';
-	import { getExternalMediaUrl } from '$lib/utils/media';
-	import { formatDuration } from '$lib/utils/time';
-	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
-	import LiveStats from '$lib/components/live/LiveStats.svelte';
+	import { Users } from 'lucide-svelte';
+	import LiveGrid from '$lib/components/live/LiveGrid.svelte';
+	import SEO from '$lib/components/SEO.svelte';
 
 	const { t } = useTranslation();
 
@@ -27,15 +25,13 @@
 	onDestroy(() => {
 		if (interval) clearInterval(interval);
 	});
-
-	const fallbackAvatar = 'https://placehold.co/640x960?text=NO%20IMAGE';
-
-	let logoErrors: Record<string, boolean> = {};
 </script>
 
-<svelte:head>
-	<title>{$t('theater.live.title')} | MyPage48</title>
-</svelte:head>
+<SEO
+	title={$t('theater.live.title')}
+	description={$t('theater.live.subtitle')}
+	path="/jkt48/live"
+/>
 
 <div class="py-12 min-h-screen">
 	<!-- Header Section -->
@@ -97,132 +93,14 @@
 		</div>
 	</header>
 
-	{#if (initialLoading || $liveLoading) && $liveList.length === 0}
-		<div
-			class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 px-4"
-		>
-			{#each Array(10) as _}
-				<div
-					class="aspect-[3/4] bg-slate-100 dark:bg-zinc-900 rounded-xl overflow-hidden relative shadow-sm border border-slate-100 dark:border-zinc-800"
-				>
-					<div
-						class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 dark:via-white/5 to-transparent -translate-x-full animate-shimmer"
-					></div>
-					<div class="absolute bottom-0 left-0 right-0 p-4 space-y-2">
-						<div class="h-4 w-2/3 bg-slate-200 dark:bg-zinc-800 rounded"></div>
-						<div class="h-3 w-1/2 bg-slate-200 dark:bg-zinc-800 rounded"></div>
-					</div>
-				</div>
-			{/each}
-		</div>
-	{:else if $liveList.length === 0}
-		<div class="flex flex-col items-center justify-center py-24 text-center px-6" in:fade>
-			<div
-				class="w-24 h-24 rounded-full bg-slate-100 dark:bg-zinc-900 flex items-center justify-center mb-6 text-slate-300 dark:text-zinc-800"
-			>
-				<Tv size={48} />
-			</div>
-			<h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2 italic">
-				{$t('theater.live.emptyTitle')}
-			</h2>
-			<p class="text-slate-500 dark:text-slate-400 font-medium max-w-md">
-				{$t('theater.live.empty')}
-			</p>
-		</div>
-	{:else}
-		<div
-			class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 px-4"
-		>
-			{#each $liveList as stream, i (stream.platform + (stream.room_id || stream.live_id))}
-				<a
-					href="/jkt48/live/{stream.platform}/{stream.room_id || stream.live_id}"
-					class="group relative aspect-[3/4] flex flex-col bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer"
-					in:fade={{ duration: 400, delay: i * 50 }}
-				>
-					<!-- Member Photo Container -->
-					<div class="relative w-full h-full overflow-hidden bg-gray-100 dark:bg-zinc-800">
-						<img
-							src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar}
-							alt={stream.member?.name}
-							on:error={(e) => {
-								if (e.currentTarget instanceof HTMLImageElement)
-									e.currentTarget.src = fallbackAvatar;
-							}}
-							class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-						/>
-
-						<!-- Frame Image Overlay -->
-						<img
-							src={stream.member?.member_type?.toLowerCase() === 'trainee'
-								? 'https://jkt48.com/images/member/bg-member-trainee-frame-transparent.png'
-								: 'https://jkt48.com/images/member/bg-member-item-frame-transparent.png'}
-							alt="frame"
-							class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
-						/>
-
-						<!-- Gradient Overlay -->
-						<div
-							class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
-						></div>
-
-						<!-- Platform & Viewers Badges -->
-						<div
-							class="absolute top-2 sm:top-3 left-2 sm:left-3 right-2 sm:right-3 flex items-center justify-between gap-1 z-30"
-						>
-							<LiveStats
-								view_num={stream.view_num}
-								variant="overlay"
-								className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-black/60 shadow-lg"
-							/>
-
-							<PlatformLogo
-								platform={stream.platform}
-								size="sm"
-							/>
-						</div>
-
-						<!-- Content Area (Overlay) -->
-						<div class="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end z-30">
-							<h3
-								class="font-black text-white text-base leading-tight drop-shadow-md group-hover:text-red-500 transition-colors line-clamp-1 mb-0.5"
-							>
-								{stream.member?.name}
-							</h3>
-							<p class="text-[10px] text-gray-300 font-medium drop-shadow-sm line-clamp-1">
-								{stream.title || $t('theater.live.multiview.live_status')}
-							</p>
-							<LiveStats
-								start_at={stream.start_at}
-								variant="compact"
-								showLabel={true}
-								className="mt-1.5"
-							/>
-						</div>
-
-						<!-- Hover Play Button Indicator -->
-						<div
-							class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 bg-black/20 backdrop-blur-[2px] z-40"
-						>
-							<div
-								class="w-16 h-16 rounded-full bg-red-600 text-white flex items-center justify-center shadow-2xl scale-50 group-hover:scale-100 transition-transform duration-500"
-							>
-								<Play fill="currentColor" size={28} class="ml-1" />
-							</div>
-						</div>
-					</div>
-				</a>
-			{/each}
-		</div>
-	{/if}
+	<div class="max-w-7xl mx-auto px-4 md:px-0">
+		<LiveGrid 
+			liveList={$liveList} 
+			loading={$liveLoading} 
+			{initialLoading} 
+		/>
+	</div>
 </div>
 
 <style>
-	@keyframes shimmer {
-		100% {
-			transform: translateX(100%);
-		}
-	}
-	.animate-shimmer {
-		animation: shimmer 2s infinite;
-	}
 </style>

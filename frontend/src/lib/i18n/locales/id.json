@@ -822,7 +822,8 @@
 				"no_stream_found": "Stream tidak ditemukan",
 				"failed_load_stream": "Gagal memuat stream",
 				"retry": "Coba Lagi",
-				"sending_gift": "Mengirim Gift"
+				"sending_gift": "Mengirim Gift",
+				"seoDescription": "Tonton beberapa member JKT48 live secara bersamaan. Ganti, atur ulang, dan chat di beberapa live stream sekaligus."
 			},
 			"switchMultiview": "Pindah ke Multi-view"
 		},

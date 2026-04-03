@@ -9,7 +9,7 @@
 <SEO
 	title={$t('theater.live.multiview.title')}
 	description={$t('theater.live.multiview.seoDescription')}
-	path="/jkt48/live/multiview"
+	path="/theater/live/multiview"
 />
 
-<LiveMultiview basePath="/jkt48/live" />
+<LiveMultiview basePath="/theater/live" />

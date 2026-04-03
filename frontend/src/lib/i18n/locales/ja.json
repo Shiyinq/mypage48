@@ -653,7 +653,8 @@
 				"no_stream_found": "ストリームが見つかりません",
 				"failed_load_stream": "ストリームの読み込みに失敗しました",
 				"retry": "再試行",
-				"sending_gift": "ギフト送信中"
+				"sending_gift": "ギフト送信中",
+				"seoDescription": "複数のJKT48メンバーのライブを同時に視聴。複数のライブストリームを切り替え、サイズ変更、チャットしながら楽しめます。"
 			},
 			"switchMultiview": "マルチビューに切り替え"
 		},

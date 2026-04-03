@@ -2,4 +2,4 @@
 	import LiveRoom from '$lib/components/live/LiveRoom.svelte';
 </script>
 
-<LiveRoom basePath="/jkt48/live" />
+<LiveRoom basePath="/theater/live" />
