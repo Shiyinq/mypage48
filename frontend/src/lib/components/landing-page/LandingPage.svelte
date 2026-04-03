@@ -31,7 +31,7 @@
 			description: $t('landing.features.theater.description'),
 			icon: Ticket,
 			color: 'text-red-500',
-			iconBg: 'bg-red-50',
+			iconBg: 'bg-red-50 dark:bg-red-500/10',
 			type: 'theater'
 		},
 		{
@@ -39,7 +39,7 @@
 			description: $t('landing.features.twoShot.description'),
 			icon: Camera,
 			color: 'text-pink-500',
-			iconBg: 'bg-pink-50',
+			iconBg: 'bg-pink-50 dark:bg-pink-500/10',
 			type: 'twoshot'
 		},
 		{
@@ -47,7 +47,7 @@
 			description: $t('landing.features.memories.description'),
 			icon: Users,
 			color: 'text-blue-500',
-			iconBg: 'bg-blue-50',
+			iconBg: 'bg-blue-50 dark:bg-blue-500/10',
 			type: 'memories'
 		},
 		{
@@ -55,7 +55,7 @@
 			description: $t('landing.features.achievements.description'),
 			icon: Trophy,
 			color: 'text-yellow-500',
-			iconBg: 'bg-yellow-50',
+			iconBg: 'bg-yellow-50 dark:bg-yellow-500/10',
 			type: 'achievements'
 		}
 	];
@@ -229,13 +229,10 @@
 									class="relative w-[300px] aspect-square mx-auto flex items-center justify-center"
 								>
 									<div
-										class="absolute inset-0 bg-yellow-100/50 rounded-full blur-3xl animate-pulse"
-									></div>
-									<div
 										class="relative bg-white dark:bg-zinc-900 rounded-[2rem] p-8 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] dark:shadow-none border border-yellow-100 dark:border-yellow-900/20 text-center group-hover:scale-105 transition-transform"
 									>
 										<div
-											class="w-20 h-20 bg-yellow-400 dark:bg-yellow-500 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-yellow-500/20 mb-4 text-white"
+											class="w-20 h-20 bg-yellow-400 dark:bg-yellow-500 rounded-2xl mx-auto flex items-center justify-center shadow-lg mb-4 text-white"
 										>
 											<Trophy size={32} />
 										</div>
