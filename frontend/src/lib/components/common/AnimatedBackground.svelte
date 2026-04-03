@@ -53,10 +53,10 @@
 
 	<!-- Soft Glows -->
 	<div
-		class="absolute top-0 right-0 w-[800px] h-[800px] bg-red-100/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"
+		class="absolute top-0 right-0 w-[800px] h-[800px] bg-red-100/30 dark:bg-red-900/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"
 	></div>
 	<div
-		class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-pink-100/30 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"
+		class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-pink-100/30 dark:bg-rose-950/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"
 	></div>
 
 	<!-- Static Decor Elements -->
