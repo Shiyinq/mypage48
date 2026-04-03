@@ -3,30 +3,26 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import LandingNavbar from '$lib/components/landing-page/LandingNavbar.svelte';
 	import Footer from '$lib/components/landing-page/Footer.svelte';
+	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import { spring } from 'svelte/motion';
 
 	const { t } = useTranslation();
+
+	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
+	let scrollY = 0;
 </script>
 
 <SEO title={$t('terms.title')} />
+
+<svelte:window bind:scrollY />
 
 <div
 	class="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 relative overflow-hidden font-sans selection:bg-red-500/20"
 >
 	<!-- Background Elements -->
-	<div class="fixed inset-0 pointer-events-none z-0">
-		<div
-			class="absolute inset-0 opacity-[0.4]"
-			style="background-image: radial-gradient(#fb7185 1px, transparent 1px); background-size: 32px 32px;"
-		></div>
+	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
 
-		<!-- Soft Glows -->
-		<div
-			class="absolute top-0 right-0 w-[800px] h-[800px] bg-red-100/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"
-		></div>
-		<div
-			class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-pink-100/30 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"
-		></div>
-	</div>
+
 
 	<!-- NAV -->
 	<LandingNavbar showLogin={false} />
