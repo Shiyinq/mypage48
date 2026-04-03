@@ -8,7 +8,8 @@
 		ChevronRight,
 		History,
 		Newspaper,
-		ArrowUpDown
+		ArrowUpDown,
+		Tv
 	} from 'lucide-svelte';
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
 	import { crossfade } from 'svelte/transition';
@@ -26,6 +27,10 @@
 	// Check if on setlist detail page (UUID pattern in URL)
 	$: isDetailPage =
 		/^\/theater\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentPath);
+
+	// Check if on live single detail or multiview page — hide header for immersive player
+	$: isLiveDetailPage =
+		/^\/theater\/live\/.+/.test(currentPath);
 
 	// Dynamic Title, Subtitle & Theme
 	$: pageInfo = (() => {
@@ -67,6 +72,14 @@
 				subtitle: $t('theater.events.subtitle') || 'Browse theater events',
 				icon: Calendar,
 				theme: 'blue'
+			};
+		}
+		if (currentPath.includes('/theater/live')) {
+			return {
+				title: 'JKT48 LIVE',
+				subtitle: $t('theater.live.subtitle'),
+				icon: Tv,
+				theme: 'red'
 			};
 		}
 		return {
@@ -128,6 +141,13 @@
 			href: '/theater/sorter',
 			icon: ArrowUpDown,
 			theme: 'rose'
+		},
+		{
+			labelKey: 'theater.subNav.live',
+			labelDefault: 'Live',
+			href: '/theater/live',
+			icon: Tv,
+			theme: 'red'
 		}
 	];
 
@@ -141,7 +161,7 @@
 </script>
 
 <div class="max-w-6xl mx-auto p-4 pb-24">
-	{#if !isDetailPage}
+	{#if !isDetailPage && !isLiveDetailPage}
 		<!-- Theater Header & Sub Navigation Wrapper -->
 		<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6 mb-10">
 			<!-- Theater Header -->
