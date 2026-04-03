@@ -179,7 +179,9 @@
 	<ErrorFallback error={appError} onRetry={resetError} />
 {:else}
 	<LoadingBar />
-	<CommandPalette />
+	{#if $isAuthenticated}
+		<CommandPalette />
+	{/if}
 	<div
 		class="min-h-screen flex flex-col relative {$isAuthenticated
 			? 'selection:bg-red-500/20'
