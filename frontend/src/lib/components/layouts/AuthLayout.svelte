@@ -1,19 +1,17 @@
 <script lang="ts">
 	import { Ticket } from 'lucide-svelte';
+	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 	export let title: string;
 	export let subtitle: string;
 	export let cardWidth = 'max-w-md';
+	export let icon: any = Ticket;
 </script>
 
-<div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden py-12">
-	<div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-		<div
-			class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-red-500/20 blur-[100px] animate-pulse"
-		></div>
-		<div
-			class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/20 blur-[100px] animate-pulse"
-		></div>
-	</div>
+<div
+	class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden py-12 bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 font-sans selection:bg-red-500/20"
+>
+	<!-- Background Elements -->
+	<AnimatedBackground />
 
 	<div class="w-full {cardWidth}">
 		<!-- Header -->
@@ -21,7 +19,7 @@
 			<div
 				class="w-16 h-16 rounded-full idol-gradient flex items-center justify-center text-white shadow-xl mx-auto mb-4 ring-4 ring-white/50 dark:ring-white/10"
 			>
-				<Ticket class="w-8 h-8" />
+				<svelte:component this={icon} class="w-8 h-8" />
 			</div>
 			<div class="mb-2">
 				<h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight inline-block">

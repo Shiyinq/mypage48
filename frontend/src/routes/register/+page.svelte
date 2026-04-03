@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
@@ -220,7 +219,7 @@
 			<button
 				type="submit"
 				disabled={isLoading || !isValid}
-				class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+				class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-500/25 dark:shadow-red-900/30 hover:shadow-xl hover:shadow-red-500/40 dark:hover:shadow-red-900/50 hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
 			>
 				{#if isLoading}
 					{$t('auth.register.submitting')}
