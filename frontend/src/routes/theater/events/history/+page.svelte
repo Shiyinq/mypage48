@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate, formatTime } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';
@@ -33,8 +33,15 @@
 
 	$: error = $historyError;
 
-	function handlePageChange(page: number) {
+	async function handlePageChange(page: number) {
 		eventsStore.loadHistory(page);
+		await tick();
+		setTimeout(() => {
+			window.scrollTo({
+				top: 0,
+				behavior: 'smooth'
+			});
+		}, 10);
 	}
 
 	function generatePagination(current: number, total: number) {

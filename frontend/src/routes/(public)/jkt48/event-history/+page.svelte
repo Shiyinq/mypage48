@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate, formatTime } from '$lib/i18n';
 	import {
@@ -32,8 +32,15 @@
 
 	$: error = $historyError;
 
-	function handlePageChange(page: number) {
+	async function handlePageChange(page: number) {
 		eventsStore.loadHistory(page);
+		await tick();
+		setTimeout(() => {
+			window.scrollTo({
+				top: 0,
+				behavior: 'smooth'
+			});
+		}, 10);
 	}
 
 	function generatePagination(current: number, total: number) {
@@ -65,12 +72,12 @@
 	description={$t('theater.eventHistory.subtitle')}
 />
 
-<div class="space-y-12">
-	<div class="text-center space-y-4 mb-12">
-		<h1 class="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter uppercase">
+<div class="space-y-16 pt-4 md:pt-6 pb-12">
+	<div class="text-center space-y-4 mb-8">
+		<h1 class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3">
 			{$t('theater.eventHistory.title')}
 		</h1>
-		<p class="text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto">
+		<p class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest">
 			{$t('theater.eventHistory.subtitle')}
 		</p>
 	</div>
@@ -166,15 +173,15 @@
 						Page {$historyPagination.current_page} of {$historyPagination.last_page}
 					</span>
 					<div class="flex gap-2">
-						<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm" disabled={$historyPagination.current_page === 1} on:click={() => handlePageChange($historyPagination.current_page - 1)}>
+						<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm" disabled={$historyPagination.current_page === 1} on:click={() => handlePageChange($historyPagination.current_page - 1)}>
 							<ChevronLeft size={18} />
 						</button>
 						{#each generatePagination($historyPagination.current_page, $historyPagination.last_page) as page}
-							<button class="w-10 h-10 flex items-center justify-center text-xs font-black rounded-full border transition-all {page === $historyPagination.current_page ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-500/30' : 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 text-slate-500 hover:border-red-600 hover:text-red-600 shadow-sm'}" on:click={() => typeof page === 'number' && handlePageChange(page)} disabled={typeof page !== 'number'}>
+							<button class="w-10 h-10 flex items-center justify-center text-xs font-black rounded-full border transition-all {page === $historyPagination.current_page ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-500/30' : 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 text-slate-500 hover:border-red-600 hover:text-red-600 shadow-sm'} {typeof page === 'number' ? 'cursor-pointer' : 'cursor-default'}" on:click={() => typeof page === 'number' && handlePageChange(page)} disabled={typeof page !== 'number'}>
 								{page}
 							</button>
 						{/each}
-						<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm" disabled={$historyPagination.current_page === $historyPagination.last_page} on:click={() => handlePageChange($historyPagination.current_page + 1)}>
+						<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm" disabled={$historyPagination.current_page === $historyPagination.last_page} on:click={() => handlePageChange($historyPagination.current_page + 1)}>
 							<ChevronRight size={18} />
 						</button>
 					</div>
