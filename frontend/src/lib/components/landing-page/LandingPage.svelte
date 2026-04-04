@@ -75,20 +75,8 @@
 	<!-- HERO -->
 	<header class="relative z-10 pt-16 pb-32 px-6 text-center max-w-5xl mx-auto pointer-events-none">
 		<!-- Pill -->
-		<div
-			class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-red-100 dark:border-red-900/30 shadow-sm dark:shadow-none mb-12 opacity-0 animate-appear pointer-events-auto"
-		>
-			<span class="relative flex h-2 w-2">
-				<span
-					class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
-				></span>
-				<span class="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
-			</span>
-			<span
-				class="text-[10px] font-bold text-slate-400 dark:text-slate-400 tracking-[0.2em] uppercase"
-				>{$t('landing.hero.badge')}</span
-			>
-		</div>
+		<!-- Spacer to maintain layout height after badge removal -->
+		<div class="h-[38px] mb-10" aria-hidden="true"></div>
 
 		<!-- Parallax Wrapper for Title -->
 		<div class="opacity-0 animate-appear mb-8" style="animation-delay: 100ms;">
