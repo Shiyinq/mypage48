@@ -12,7 +12,11 @@
 	let scrollY = 0;
 </script>
 
-<SEO title={$t('terms.title')} />
+<SEO 
+	title={$t('terms.title')} 
+	path="/terms" 
+	description={$t('seo.terms')} 
+/>
 
 <svelte:window bind:scrollY />
 

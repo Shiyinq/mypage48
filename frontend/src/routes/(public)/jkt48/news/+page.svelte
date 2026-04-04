@@ -66,7 +66,7 @@
 <SEO
 	title={$t('theater.news.title') || 'News'}
 	path="/jkt48/news"
-	description={$t('theater.news.subtitle') || 'Latest updates and announcements'}
+	description={$t('seo.news')}
 />
 
 <div class="space-y-12 pt-4 md:pt-6 pb-12">

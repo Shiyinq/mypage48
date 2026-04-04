@@ -69,7 +69,7 @@
 	}
 </script>
 
-<SEO title="Home" />
+<SEO title="Home" path="/" description={$t('seo.landing')} />
 
 <div
 	role="presentation"

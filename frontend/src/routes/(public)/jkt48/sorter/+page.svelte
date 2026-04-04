@@ -293,7 +293,7 @@
 <SEO
 	title={$t('theater.sorter.title')}
 	path="/jkt48/sorter"
-	description={$t('theater.sorter.subtitle')}
+	description={$t('seo.sorter')}
 />
 
 <div

@@ -63,7 +63,19 @@
 		"achievements": "Lacak pencapaian teater JKT48, lencana, dan level penggemar.",
 		"memories": "Album digital tiket teater JKT48 dan foto 2-shot kamu.",
 		"top2shot": "Lihat member teratas berdasarkan jumlah 2-shot dan statistik pengeluaran.",
-		"upload": "Unggah dan pindai tiket teater JKT48 atau tambahkan foto 2-shot."
+		"upload": "Unggah dan pindai tiket teater JKT48 atau tambahkan foto 2-shot.",
+		"landing": "Selamat datang di MyPage48, pelacak teater JKT48 terbaik buatan fans. Lacak kehadiran teater, 2-shot, dan lihat statistik fandom-mu.",
+		"news": "Berita JKT48 terbaru, pengumuman pertunjukan teater, dan update event di satu tempat.",
+		"members": "Daftar lengkap member JKT48 beserta profil detail, statistik kehadiran, dan koleksi 2-shot.",
+		"calendar": "Jadwal lengkap teater JKT48 dan event mendatang dalam format kalender yang mudah dibaca.",
+		"events": "Daftar event teater JKT48 mendatang dan riwayat event masa lalu.",
+		"live": "Tonton member JKT48 yang sedang siaran langsung di Showroom atau IDN Live.",
+		"multiview": "Tonton beberapa member JKT48 live sekaligus dalam satu layar dengan fitur Multi-view.",
+		"sorter": "Urutkan member JKT48 favoritmu menggunakan JKT48 Sorter yang interaktif.",
+		"about": "Pelajari lebih lanjut tentang MyPage48, misi kami, dan tim di balik proyek open-source buatan fans ini.",
+		"terms": "Syarat dan ketentuan penggunaan layanan MyPage48.",
+		"privacy": "Kebijakan privasi MyPage48 mengenai data Anda.",
+		"cookies": "Kebijakan penggunaan cookie di MyPage48."
 	},
 	"nav": {
 		"home": "Beranda",

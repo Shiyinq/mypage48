@@ -12,7 +12,11 @@
 	let scrollY = 0;
 </script>
 
-<SEO title={$t('cookies.title')} />
+<SEO 
+	title={$t('cookies.title')} 
+	path="/cookies" 
+	description={$t('seo.cookies')} 
+/>
 
 <svelte:window bind:scrollY />
 

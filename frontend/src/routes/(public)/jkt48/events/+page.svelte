@@ -51,7 +51,7 @@
 <SEO
 	title={$t('theater.events.title')}
 	path="/jkt48/events"
-	description={$t('theater.events.subtitle')}
+	description={$t('seo.events')}
 />
 
 <div class="space-y-16 pt-4 md:pt-6 pb-12">
