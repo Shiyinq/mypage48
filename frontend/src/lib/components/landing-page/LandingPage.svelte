@@ -8,7 +8,8 @@
 		Sparkles,
 		Star,
 		Rocket,
-		Github
+		Github,
+		ChevronDown
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
@@ -59,6 +60,13 @@
 			type: 'achievements'
 		}
 	];
+
+	function scrollToFeatures() {
+		const featuresSection = document.getElementById('features');
+		if (featuresSection) {
+			featuresSection.scrollIntoView({ behavior: 'smooth' });
+		}
+	}
 </script>
 
 <SEO title="Home" />
@@ -119,10 +127,23 @@
 				{$t('landing.hero.openSource')}
 			</p>
 		</div>
+
+		<!-- Scroll Indicator -->
+		<button
+			on:click={scrollToFeatures}
+			class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 animate-appear cursor-pointer pointer-events-auto group/scroll"
+			style="animation-delay: 500ms;"
+			aria-label="Scroll to features"
+		>
+			<div class="w-6 h-10 rounded-full border-2 border-slate-200 dark:border-zinc-800 flex justify-center p-1.5 group-hover/scroll:border-red-500 transition-colors">
+				<div class="w-1 h-2 bg-red-500 rounded-full animate-scroll-dot"></div>
+			</div>
+			<ChevronDown size={16} class="text-slate-300 group-hover/scroll:text-red-500 animate-bounce transition-colors" />
+		</button>
 	</header>
 
 	<!-- FEATURES SECTION -->
-	<section class="relative z-10 px-6 pb-40 pointer-events-none">
+	<section id="features" class="relative z-10 px-6 pb-40 pointer-events-none">
 		<div class="max-w-6xl mx-auto space-y-40">
 			{#each features as feature, i}
 				<div
@@ -300,5 +321,14 @@
 	/* Font Handwriting for Polaroid */
 	.font-handwriting {
 		font-family: 'Courier New', Courier, monospace; /* Fallback for now */
+	}
+
+	@keyframes scroll-dot {
+		0% { transform: translateY(0); opacity: 1; }
+		100% { transform: translateY(12px); opacity: 0; }
+	}
+
+	.animate-scroll-dot {
+		animation: scroll-dot 1.5s ease-in-out infinite;
 	}
 </style>
