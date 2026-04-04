@@ -256,7 +256,8 @@
 			"noAccount": "アカウントをお持ちでないですか？",
 			"registerCta": "アカウント登録",
 			"welcomeBack": "おかえりなさい！",
-			"invalidCredentials": "メールアドレスまたはパスワードが間違っています"
+			"invalidCredentials": "メールアドレスまたはパスワードが間違っています",
+			"sessionInvalid": "セッションの有効期限が切れたか、無効です。再度ログインしてください。"
 		},
 		"register": {
 			"title": "ファンダムに参加",

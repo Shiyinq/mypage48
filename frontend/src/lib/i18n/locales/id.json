@@ -257,7 +257,8 @@
 			"noAccount": "Belum punya akun?",
 			"registerCta": "Daftar akun",
 			"welcomeBack": "Selamat datang kembali!",
-			"invalidCredentials": "Email atau kata sandi salah"
+			"invalidCredentials": "Email atau kata sandi salah",
+			"sessionInvalid": "Sesi Anda telah berakhir atau tidak valid. Silakan masuk kembali."
 		},
 		"register": {
 			"title": "Bergabung dengan Fandom",
