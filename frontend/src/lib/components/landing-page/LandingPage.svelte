@@ -81,11 +81,7 @@
 	<LandingNavbar mouse={$mouse} />
 
 	<!-- HERO -->
-	<header class="relative z-10 pt-16 pb-32 px-6 text-center max-w-5xl mx-auto pointer-events-none">
-		<!-- Pill -->
-		<!-- Spacer to maintain layout height after badge removal -->
-		<div class="h-[38px] mb-10" aria-hidden="true"></div>
-
+	<header class="relative z-10 pt-24 pb-32 px-6 text-center max-w-5xl mx-auto pointer-events-none">
 		<!-- Parallax Wrapper for Title -->
 		<div class="opacity-0 animate-appear mb-8" style="animation-delay: 100ms;">
 			<h1
@@ -143,7 +139,7 @@
 	</header>
 
 	<!-- FEATURES SECTION -->
-	<section id="features" class="relative z-10 px-6 pb-40 pointer-events-none">
+	<section id="features" class="relative z-10 px-6 pt-32 pb-40 pointer-events-none">
 		<div class="max-w-6xl mx-auto space-y-40">
 			{#each features as feature, i}
 				<div
