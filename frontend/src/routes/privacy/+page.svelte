@@ -12,7 +12,11 @@
 	let scrollY = 0;
 </script>
 
-<SEO title={$t('privacy.title')} />
+<SEO 
+	title={$t('privacy.title')} 
+	path="/privacy" 
+	description={$t('seo.privacy')} 
+/>
 
 <svelte:window bind:scrollY />
 

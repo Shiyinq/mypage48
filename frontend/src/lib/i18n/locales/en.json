@@ -62,7 +62,19 @@
 		"achievements": "Track your JKT48 theater milestones, badges, and fan levels.",
 		"memories": "Your digital scrapbook of JKT48 theater tickets and 2-shot photos.",
 		"top2shot": "See your top members by 2-shot count and spending statistics.",
-		"upload": "Upload and scan your JKT48 theater tickets or add 2-shot photos."
+		"upload": "Upload and scan your JKT48 theater tickets or add 2-shot photos.",
+		"landing": "Welcome to MyPage48, the ultimate fan-made JKT48 theater tracker. Track your theater attendance, 2-shots, and view your fandom stats.",
+		"news": "Latest JKT48 news, theater show announcements, and event updates in one place.",
+		"members": "Complete list of JKT48 members with detailed profiles, attendance stats, and 2-shot collections.",
+		"calendar": "Complete JKT48 theater schedule and upcoming events in an easy-to-read calendar format.",
+		"events": "List of upcoming JKT48 theater events and past event history.",
+		"live": "Watch JKT48 members streaming live on Showroom or IDN Live.",
+		"multiview": "Watch multiple JKT48 members live at the same time with our Multi-view feature.",
+		"sorter": "Sort your favorite JKT48 members using our interactive JKT48 Sorter.",
+		"about": "Learn more about MyPage48, our mission, and the team behind this fan-made open-source project.",
+		"terms": "Terms of service for using the MyPage48 platform.",
+		"privacy": "Privacy policy of MyPage48 regarding your data.",
+		"cookies": "Cookies policy for MyPage48."
 	},
 	"nav": {
 		"home": "Home",

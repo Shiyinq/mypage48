@@ -29,7 +29,7 @@
 
 <SEO
 	title={$t('theater.live.title')}
-	description={$t('theater.live.subtitle')}
+	description={$t('seo.live')}
 	path="/jkt48/live"
 />
 

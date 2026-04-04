@@ -113,7 +113,7 @@
 <SEO
 	title={$t('theater.events.title')}
 	path="/jkt48/calendar"
-	description="Theater Schedule Calendar"
+	description={$t('seo.calendar')}
 />
 
 <div class="space-y-8 max-w-7xl mx-auto px-4 pt-4 md:pt-6 pb-12">
