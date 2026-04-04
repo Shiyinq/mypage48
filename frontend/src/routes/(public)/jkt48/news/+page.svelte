@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Newspaper, Calendar, ChevronLeft, ChevronRight } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
@@ -25,8 +25,10 @@
 	$: list = $newsList;
 	$: loading = $newsLoading;
 
-	function handlePageChange(page: number) {
+	async function handlePageChange(page: number) {
 		newsStore.load(page);
+		await tick();
+		setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 10);
 	}
 
 	function generatePagination(current: number, total: number) {
