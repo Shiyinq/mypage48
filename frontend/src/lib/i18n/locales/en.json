@@ -256,7 +256,8 @@
 			"noAccount": "Don't have an account?",
 			"registerCta": "Register account",
 			"welcomeBack": "Welcome back!",
-			"invalidCredentials": "Invalid email or password"
+			"invalidCredentials": "Invalid email or password",
+			"sessionInvalid": "Your session has expired or is invalid. Please sign in again."
 		},
 		"register": {
 			"title": "Join the Fandom",

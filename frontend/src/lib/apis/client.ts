@@ -1,5 +1,8 @@
 import { get } from 'svelte/store';
 import { accessToken } from '$lib/stores/accessToken';
+import { isAuthenticated } from '$lib/stores/authStatus';
+import { showToast } from '$lib/stores/toast';
+import { i18n } from '$lib/i18n';
 import { isTokenExpired, getCSRFToken } from '$lib/utils/auth';
 import type { ApiError, AuthResponse } from '$lib/types';
 
@@ -71,20 +74,37 @@ export async function client<T>(
 		'/auth/forgot-password',
 		'/auth/reset-password',
 		'/auth/verify-email',
-		'/auth/send-verification'
+		'/auth/send-verification',
+		'/jkt48/live',
+		'/theater/news',
+		'/theater/setlists',
+		'/members',
+		'/events',
+		'/health'
 	];
 
-	const isPublic = publicEndpoints.some((p) => endpoint.includes(p));
+	const isPublic = publicEndpoints.some((p) => endpoint.startsWith(p));
+	const hasAuthHint = browser ? localStorage.getItem('mypage48_auth') === 'true' : false;
 
-	if (!isPublic) {
-		// If no token OR token is expired, try to refresh via httpOnly cookie
-		if (isTokenExpired(token)) {
-			// Try to refresh
-			const newToken = await refreshAccessToken();
-			if (newToken) {
-				token = newToken;
-			} else {
+	// Only refresh if:
+	// 1. Token is expired/missing
+	// 2. AND (it's a private endpoint OR we have a session hint)
+	if (isTokenExpired(token) && (!isPublic || hasAuthHint)) {
+		const newToken = await refreshAccessToken();
+		if (newToken) {
+			token = newToken;
+		} else {
+			if (hasAuthHint) {
+				const t = get(i18n);
+				showToast(t('auth.login.sessionInvalid'), 'error');
+			}
+			isAuthenticated.set(false);
+			if (!isPublic) {
 				token = '';
+				// Silence the current request by returning a promise that never resolves.
+				// This avoids triggering generic error toasts in the UI before the 
+				// authentication store triggers a logout/redirect.
+				return new Promise(() => { });
 			}
 		}
 	}
@@ -135,9 +155,9 @@ export async function client<T>(
 		} else {
 			errorData = await response.text();
 		}
-		
-		const error = (typeof errorData === 'object' && errorData !== null) 
-			? { ...errorData, status: response.status } 
+
+		const error = (typeof errorData === 'object' && errorData !== null)
+			? { ...errorData, status: response.status }
 			: { detail: errorData, status: response.status };
 
 		throw error as ApiError;
