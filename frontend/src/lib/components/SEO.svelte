@@ -96,4 +96,10 @@
 			{JSON.stringify(breadcrumbJsonLd)}
 		</script>
 	{/if}
+
+	<!-- Hreflang for Multi-language SEO (using query params) -->
+	<link rel="alternate" hreflang="id" href={`${baseUrl}${path === '/' ? '' : path}?lang=id`} />
+	<link rel="alternate" hreflang="en" href={`${baseUrl}${path === '/' ? '' : path}?lang=en`} />
+	<link rel="alternate" hreflang="ja" href={`${baseUrl}${path === '/' ? '' : path}?lang=ja`} />
+	<link rel="alternate" hreflang="x-default" href={`${baseUrl}${path === '/' ? '' : path}`} />
 </svelte:head>
