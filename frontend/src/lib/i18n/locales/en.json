@@ -1148,6 +1148,8 @@
 		"title": "MyPage48 API Playground",
 		"subtitle": "Try our APIs interactively",
 		"description": "Explore and test the MyPage48 API in real-time.",
+		"tagline": "API Playground",
+		"backToDashboard": "Back to Dashboard",
 		"tryIt": "Try MyPage48 API Playground",
 		"configTitle": "Configuration",
 		"apiKeyLabel": "Global API Key",

@@ -1150,6 +1150,8 @@
 		"title": "MyPage48 API プレイグラウンド",
 		"subtitle": "インタラクティブなAPIテスト",
 		"description": "MyPage48 API をリアルタイムで探索およびテストします。",
+		"tagline": "API プレイグラウンド",
+		"backToDashboard": "ダッシュボードに戻る",
 		"tryIt": "MyPage48 プレイグラウンドを試す",
 		"configTitle": "設定",
 		"apiKeyLabel": "グローバルAPIキー",
