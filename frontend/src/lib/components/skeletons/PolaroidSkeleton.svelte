@@ -3,7 +3,7 @@
 </script>
 
 <div
-	class="bg-white dark:bg-zinc-900 p-3 pb-12 shadow-md border border-gray-100 dark:border-zinc-700 rounded-sm"
+	class="bg-white dark:bg-zinc-900 p-2 sm:p-3 pb-8 sm:pb-12 shadow-md border border-gray-100 dark:border-zinc-700 rounded-sm"
 >
 	<div class="aspect-[4/5] w-full bg-gray-200 dark:bg-zinc-800 animate-pulse mb-4"></div>
 	<div class="px-2">

@@ -18,12 +18,12 @@
 >
 	<!-- Washi Tape -->
 	<div
-		class={`absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-8 ${tapeColor} backdrop-blur-sm opacity-90 z-20 shadow-sm transform rotate-1 clip-path-tape`}
+		class={`absolute -top-3 left-1/2 -translate-x-1/2 w-16 sm:w-24 h-6 sm:h-8 ${tapeColor} backdrop-blur-sm opacity-90 z-20 shadow-sm transform rotate-1 clip-path-tape`}
 	></div>
 
 	<!-- Polaroid Card -->
 	<div
-		class="bg-white dark:bg-zinc-900 p-3 pb-12 shadow-xl shadow-gray-200/50 dark:shadow-black/30 border border-gray-100 dark:border-zinc-700 rounded-sm transition-shadow duration-300 group-hover:shadow-2xl relative overflow-hidden"
+		class="bg-white dark:bg-zinc-900 p-2 sm:p-3 pb-8 sm:pb-12 shadow-xl shadow-gray-200/50 dark:shadow-black/30 border border-gray-100 dark:border-zinc-700 rounded-sm transition-shadow duration-300 group-hover:shadow-2xl relative overflow-hidden"
 	>
 		<!-- Image Area -->
 		<div
@@ -55,7 +55,7 @@
 		<!-- Caption -->
 		<div class="px-2 text-center relative">
 			<h3
-				class={`font-['Poppins'] font-bold text-sm leading-tight mb-1 transition-colors ${item.type === '2SHOT' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-800 dark:text-gray-100 group-hover:text-red-600 dark:group-hover:text-red-400'}`}
+				class={`font-['Poppins'] font-bold text-xs sm:text-sm leading-tight mb-1 transition-colors ${item.type === '2SHOT' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-800 dark:text-gray-100 group-hover:text-red-600 dark:group-hover:text-red-400'}`}
 			>
 				{item.title}
 			</h3>
