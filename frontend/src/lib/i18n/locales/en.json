@@ -1143,5 +1143,26 @@
 			"feedback": "Go to Feedback",
 			"adminFeedback": "Go to Admin Feedback"
 		}
+	},
+	"playground": {
+		"title": "MyPage48 API Playground",
+		"subtitle": "Try our APIs interactively",
+		"description": "Explore and test the MyPage48 API in real-time.",
+		"tryIt": "Try MyPage48 API Playground",
+		"configTitle": "Configuration",
+		"apiKeyLabel": "Global API Key",
+		"apiKeyPlaceholder": "Enter your API key...",
+		"apiKeyRequired": "API Key is required to test APIs",
+		"selectEndpoint": "Select an API from the sidebar to explore its details and test it in real-time.",
+		"execute": "Execute Call",
+		"executing": "Executing...",
+		"noDescription": "No description provided.",
+		"parameters": "Parameters",
+		"requestBody": "Request Body",
+		"copyCurl": "Copy as cURL",
+		"curlCopied": "cURL command copied!",
+		"response": "Response",
+		"waitingResponse": "Waiting for execution...",
+		"copied": "Copied to clipboard"
 	}
 }

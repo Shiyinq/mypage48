@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Key, Plus, LoaderCircle, TriangleAlert } from 'lucide-svelte';
+	import { Key, Plus, LoaderCircle, TriangleAlert, Terminal, ChevronRight } from 'lucide-svelte';
 
 	const { t } = useTranslation();
 	const dispatch = createEventDispatcher<{ openConfirmModal: void }>();
@@ -46,11 +46,30 @@
 		</div>
 	</div>
 
+	<a
+		href="/playground"
+		class="block w-full mb-4 group"
+	>
+		<div class="p-4 rounded-2xl bg-gradient-to-br from-red-500/5 to-orange-500/5 border border-red-100/50 dark:border-red-900/20 hover:border-red-200 dark:hover:border-red-800/40 transition-all flex items-center justify-between group-hover:shadow-md">
+			<div class="flex items-center gap-3">
+				<div class="w-8 h-8 rounded-lg bg-red-500 text-white flex items-center justify-center shadow-lg shadow-red-500/20">
+					<Terminal class="w-4 h-4" />
+				</div>
+				<div>
+					<p class="text-sm font-bold text-gray-900 dark:text-gray-100">{$t('playground.title')}</p>
+					<p class="text-[10px] text-gray-500 dark:text-gray-400">{$t('playground.subtitle')}</p>
+				</div>
+			</div>
+			<ChevronRight class="w-4 h-4 text-gray-400 group-hover:text-red-500 group-hover:translate-x-1 transition-all" />
+		</div>
+	</a>
+
 	<button
 		class="w-full py-3 rounded-xl bg-gray-900 dark:bg-zinc-800 text-white dark:text-gray-100 font-bold hover:bg-black dark:hover:bg-zinc-700 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-gray-300 dark:shadow-zinc-900/50"
 		on:click={handleGenerateClick}
 		disabled={generatingKey}
 	>
+
 		{#if generatingKey}
 			<LoaderCircle class="w-4 h-4 animate-spin" />
 			{$t('settings.developer.generating')}

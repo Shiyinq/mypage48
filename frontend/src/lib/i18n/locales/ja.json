@@ -1145,5 +1145,25 @@
 			"feedback": "フィードバックへ移動",
 			"adminFeedback": "管理フィードバックへ"
 		}
+	},
+	"playground": {
+		"title": "MyPage48 API プレイグラウンド",
+		"subtitle": "インタラクティブなAPIテスト",
+		"description": "MyPage48 API をリアルタイムで探索およびテストします。",
+		"tryIt": "MyPage48 プレイグラウンドを試す",
+		"configTitle": "設定",
+		"apiKeyLabel": "グローバルAPIキー",
+		"apiKeyPlaceholder": "APIキーを入力...",
+		"apiKeyRequired": "APIのテストにはAPIキーが必要です",
+		"selectEndpoint": "サイドバーからAPIを選択して、詳細の確認やテストをリアルタイムで行えます。",
+		"execute": "実行",
+		"executing": "実行中...",
+		"noDescription": "説明はありません。",
+		"parameters": "パラメーター",
+		"requestBody": "リクエストボディ",
+		"copyCurl": "cURLとしてコピー",
+		"curlCopied": "cURLコマンドがコピーされました！",
+		"response": "レスポンス",
+		"waitingResponse": "実行を待機中..."
 	}
 }
