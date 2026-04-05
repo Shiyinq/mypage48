@@ -87,7 +87,7 @@
 
 <SEO title={$t('nav.journal')} description={$t('seo.journal')} />
 
-<div class="h-[calc(100vh-64px)] flex flex-col bg-slate-50/50 dark:bg-zinc-900/40 overflow-hidden relative">
+<div class="h-[calc(100vh-64px)] flex flex-col bg-slate-50/50 dark:bg-zinc-900/40 overflow-hidden relative overscroll-none">
 	{#if loading && tickets.length === 0}
 		<div class="flex-1 flex flex-col items-center justify-center space-y-4 pb-32" in:fade>
 			<LoaderCircle class="w-10 h-10 animate-spin text-red-500" />
