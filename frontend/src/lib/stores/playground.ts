@@ -37,8 +37,13 @@ function createPlaygroundStore() {
 			update(s => ({ ...s, error: null }));
 			try {
 				const schema = await playgroundApi.getSchema();
-				const savedApiKey = localStorage.getItem('mypage48_playground_apiKey');
+				const savedApiKey = sessionStorage.getItem('mypage48_playground_apiKey') || localStorage.getItem('mypage48_playground_apiKey');
 				const savedUseSession = localStorage.getItem('mypage48_playground_useSession');
+				
+				// Cleanup legacy insecure storage if migrated
+				if (localStorage.getItem('mypage48_playground_apiKey')) {
+					localStorage.removeItem('mypage48_playground_apiKey');
+				}
 				
 				// Initialize sidebar visibility based on screen width on every refresh/load
 				const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
@@ -76,9 +81,9 @@ function createPlaygroundStore() {
 		setApiKey: (key: string | null) => {
 			update(s => ({ ...s, apiKey: key }));
 			if (key) {
-				localStorage.setItem('mypage48_playground_apiKey', key);
+				sessionStorage.setItem('mypage48_playground_apiKey', key);
 			} else {
-				localStorage.removeItem('mypage48_playground_apiKey');
+				sessionStorage.removeItem('mypage48_playground_apiKey');
 			}
 		},
 
