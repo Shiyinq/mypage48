@@ -11,7 +11,7 @@
 {#if selectedImage}
 	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 	<div
-		class="fixed inset-0 z-[9999] flex flex-col items-center justify-center p-4 bg-black/90 backdrop-blur-md cursor-pointer"
+		class="fixed inset-0 z-[10001] flex flex-col items-center justify-center p-4 bg-black/90 backdrop-blur-md cursor-pointer"
 		transition:fade={{ duration: 200 }}
 		on:click={onClose}
 	>
