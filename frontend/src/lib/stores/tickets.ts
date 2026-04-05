@@ -64,7 +64,7 @@ function createTicketsStore() {
 				...s,
 				filters,
 				error: null,
-				list: page === 1 ? [] : s.list
+				list: s.list // Keep old list instead of clearing to avoid UI flickering
 			}));
 			isTicketsLoading.set(true);
 

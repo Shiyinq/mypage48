@@ -24,6 +24,7 @@
 		{ label: $t('nav.dashboard'), href: '/' },
 		{ label: $t('nav.theater'), href: '/theater/events', activeHref: '/theater' },
 		{ label: $t('nav.achievements'), href: '/achievements' },
+		{ label: $t('nav.journal'), href: '/journal' },
 		{ label: $t('nav.memories'), href: '/memories' },
 		{ label: $t('nav.history'), href: '/history' }
 	];
@@ -42,7 +43,7 @@
 		<NavPills
 			items={navItems}
 			currentPath={$page.url.pathname}
-			className="hidden md:flex max-w-xl"
+			className="hidden md:flex max-w-2xl"
 		/>
 
 		<!-- Right: Actions & Profile -->
