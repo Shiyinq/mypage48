@@ -1169,6 +1169,8 @@
 		"copied": "Copied to clipboard",
 		"hideSidebar": "Hide Sidebar",
 		"showSidebar": "Show Sidebar",
-		"configActive": "Active"
+		"configActive": "Active",
+		"useSessionLabel": "Use Current Session",
+		"useSessionDescription": "API calls will use your account's access token."
 	}
 }

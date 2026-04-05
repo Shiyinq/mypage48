@@ -1173,6 +1173,8 @@
 		"copied": "Berhasil disalin",
 		"hideSidebar": "Sembunyikan Sidebar",
 		"showSidebar": "Tampilkan Sidebar",
-		"configActive": "Aktif"
+		"configActive": "Aktif",
+		"useSessionLabel": "Gunakan Sesi Saat Ini",
+		"useSessionDescription": "Panggilan API akan menggunakan token akses akun Anda."
 	}
 }
