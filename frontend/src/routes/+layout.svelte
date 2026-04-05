@@ -9,6 +9,7 @@
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import Header from '$lib/components/Header.svelte';
+	import PlaygroundHeader from '$lib/components/playground/PlaygroundHeader.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import { Check } from 'lucide-svelte';
 	import SplashScreen from '$lib/components/SplashScreen.svelte';
@@ -61,6 +62,7 @@
 		$page.url.pathname.startsWith('/auth/');
 
 	$: isFullScreenRoute = $page.url.pathname.includes('/live/multiview');
+	$: isPlaygroundRoute = $page.url.pathname.startsWith('/playground');
 
 	// Track if client has mounted - used to delay auth redirects
 	let mounted = false;
@@ -249,13 +251,15 @@
 			{/if}
 		{:else if $isAuthenticated}
 			<!-- Protected pages: user authenticated, show full content -->
-			{#if !isFullScreenRoute}
+			{#if isPlaygroundRoute}
+				<PlaygroundHeader />
+			{:else if !isFullScreenRoute}
 				<Header />
 			{/if}
 			<main class="flex-1 w-full relative">
 				<slot />
 			</main>
-			{#if !isFullScreenRoute}
+			{#if !isFullScreenRoute && !isPlaygroundRoute}
 				<MobileNav />
 			{/if}
 		{:else}
