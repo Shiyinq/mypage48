@@ -127,7 +127,7 @@
 	$: parsedHtml = isEditing ? '' : DOMPurify.sanitize(marked.parse(content) as string);
 </script>
 
-<div class={`h-full flex flex-col relative w-full transition-colors duration-500 ${isEditing ? 'bg-transparent' : 'bg-white dark:bg-zinc-950'}`}>
+<div class="h-full flex flex-col relative w-full bg-white dark:bg-zinc-950">
 	
 	<!-- Header -->
 	<div class="px-4 md:px-8 py-4 shrink-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md sticky top-0 z-20">
