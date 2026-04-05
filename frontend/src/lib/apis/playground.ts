@@ -37,10 +37,14 @@ export const playgroundApi = {
 			};
 		} catch (err: any) {
 			const duration = Date.now() - startTime;
+			// The client adds 'status' to the error object.
+			// We want to return the raw server response as 'data'.
+			const { status, statusText, ...serverData } = err;
+			
 			return {
-				status: err.status || 500,
-				statusText: err.statusText || 'Error',
-				data: err.detail || err.message || err,
+				status: status || 500,
+				statusText: statusText || 'Error',
+				data: Object.keys(serverData).length > 0 ? serverData : (err.message || err),
 				headers: {},
 				duration
 			};
