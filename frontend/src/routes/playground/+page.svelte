@@ -152,10 +152,10 @@
 					>
 						<button 
 							on:click={() => playgroundStore.toggleSidebar()}
-							class="flex items-center justify-center w-6 h-10 bg-white dark:bg-zinc-800 border-y border-r border-gray-200 dark:border-white/10 rounded-r-xl shadow-lg text-gray-400 hover:text-red-500 transition-all hover:w-8 active:scale-95 cursor-pointer group"
+							class="flex items-center justify-center w-8 h-10 bg-white dark:bg-zinc-900 border-y border-r border-gray-200 dark:border-white/10 rounded-r-xl shadow-lg text-gray-400 hover:text-red-500 transition-all hover:w-10 active:scale-95 cursor-pointer group"
 							title={$t('playground.showSidebar')}
 						>
-							<PanelLeft class="w-4 h-4" />
+							<PanelLeft class="w-4 h-4 ml-1" />
 						</button>
 					</div>
 				{/if}
