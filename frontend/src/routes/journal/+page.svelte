@@ -87,7 +87,7 @@
 
 <SEO title={$t('nav.journal')} description={$t('seo.journal')} />
 
-<div class="h-[calc(100vh-64px)] flex flex-col bg-slate-50/50 dark:bg-zinc-900 overflow-hidden relative">
+<div class="h-[calc(100vh-64px)] flex flex-col bg-slate-50/50 dark:bg-zinc-900/40 overflow-hidden relative">
 	{#if loading && tickets.length === 0}
 		<div class="flex-1 flex flex-col items-center justify-center space-y-4 pb-32" in:fade>
 			<LoaderCircle class="w-10 h-10 animate-spin text-red-500" />
@@ -122,7 +122,7 @@
 			<!-- Sidebar Drawer -->
 			<div 
 				class="h-full overflow-hidden border-r border-gray-100 dark:border-white/5 shrink-0
-					   absolute inset-y-0 left-0 z-30 md:z-[60] bg-white dark:bg-zinc-900
+					   absolute inset-y-0 left-0 z-30 md:z-[60] bg-white dark:bg-zinc-900/60 backdrop-blur-md
 					   transition-transform duration-300 ease-in-out w-full md:w-[320px] md:shadow-none
 					   {isSidebarVisible ? 'translate-x-0' : '-translate-x-full'}"
 			>
