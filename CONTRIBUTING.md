@@ -8,13 +8,13 @@ First off, thank you for considering contributing to MyPage48! It's people like 
 
 This section guides you through submitting a bug report for MyPage48. Following these guidelines helps maintainers and the community understand your report, reproduce the behavior, and find related bugs.
 
-Before creating bug reports, please check this list as you might find out that you don't need to create one. When you are creating a bug report, please include as many details as possible. Fill out [the required template](.github/ISSUE_TEMPLATE/bug_report.md), the information it asks for helps us resolve issues faster.
+Before creating bug reports, please check this list as you might find out that you don't need to create one. When you are creating a bug report, please include as many details as possible. Fill out [the required template](.github/ISSUE_TEMPLATE/bug_report.yml), the information it asks for helps us resolve issues faster.
 
 ### Suggesting Enhancements
 
 This section guides you through submitting an enhancement suggestion for MyPage48, including completely new features and minor improvements to existing functionality. Following these guidelines helps maintainers and the community understand your suggestion and find related suggestions.
 
-When you are creating an enhancement suggestion, please include as many details as possible. Fill out [the template](.github/ISSUE_TEMPLATE/feature_request.md), including the steps that you imagine you would take if the feature you're requesting existed.
+When you are creating an enhancement suggestion, please include as many details as possible. Fill out [the template](.github/ISSUE_TEMPLATE/feature_request.yml), including the steps that you imagine you would take if the feature you're requesting existed.
 
 ### Your First Code Contribution
 
