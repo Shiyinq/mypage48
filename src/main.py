@@ -42,7 +42,7 @@ limiter = Limiter(
 )
 
 app = FastAPI(
-    title="Fasmo API",
+    title="MyPage48 API",
     openapi_url="/api/openapi.json"
     if config.is_env_dev
     else None,  # Disable docs schema in prod

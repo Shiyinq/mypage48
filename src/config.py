@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_MAX_AGE_DAYS: int = 30
 
     MONGODB_URI: SecretStr
-    DB_NAME: str = "fasmo"
+    DB_NAME: str = "mypage48"
 
     OAUTHLIB_INSECURE_TRANSPORT: bool = False
 
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
 
     LOG_LEVEL: str = "INFO"
     LOG_DESTINATION: str = "console"
-    LOG_PATH: str = "/var/log/fasmo/"
+    LOG_PATH: str = "/var/log/mypage48/"
 
     API_KEY_PREFIX: str = "ffk_"
     DB_MAX_POOL_SIZE: int = 50

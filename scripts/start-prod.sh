@@ -12,8 +12,8 @@ HOST=${HOST:-0.0.0.0}
 PORT=${PORT:-8000}
 LOG_LEVEL=${LOG_LEVEL:-info}
 WORKERS=${WORKERS:-4}
-ACCESS_LOG_FILE=${ACCESS_LOG_FILE:-/var/log/fasmo/access.log}
-ERROR_LOG_FILE=${ERROR_LOG_FILE:-/var/log/fasmo/error.log}
+ACCESS_LOG_FILE=${ACCESS_LOG_FILE:-/var/log/mypage48/access.log}
+ERROR_LOG_FILE=${ERROR_LOG_FILE:-/var/log/mypage48/error.log}
 
 mkdir -p $(dirname "$ACCESS_LOG_FILE")
 mkdir -p $(dirname "$ERROR_LOG_FILE")

@@ -33,7 +33,7 @@ COPY scripts /app/scripts
 RUN chmod +x /app/scripts/start-prod.sh
 
 # Create log directory and set permissions so the app can write logs
-RUN mkdir -p /var/log/fasmo && chmod 777 /var/log/fasmo
+RUN mkdir -p /var/log/mypage48 && chmod 777 /var/log/mypage48
 
 # Set the Python path to include the src directory
 ENV PYTHONPATH=/app/src
