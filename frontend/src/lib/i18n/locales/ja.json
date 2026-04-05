@@ -24,6 +24,8 @@
 		"allData": "全データ",
 		"hasTwoShot": "2ショットあり",
 		"clearFilters": "フィルターをクリア",
+		"days": "曜日",
+		"dateRange": "日付範囲",
 		"viewDetails": "詳細を見る",
 		"logout": "ログアウト",
 		"settings": "設定",
@@ -74,7 +76,8 @@
 		"about": "MyPage48のミッション、そしてこのファンメイドのオープンソースプロジェクトを支えるチームについて詳しく知る。",
 		"terms": "MyPage48プラットフォームの利用規約。",
 		"privacy": "あなたのデータに関するMyPage48のプライバシーポリシー。",
-		"cookies": "MyPage48のクッキーポリシー。"
+		"cookies": "MyPage48のクッキーポリシー。",
+		"journal": "あなたが参加したすべての公演の個人的なデジタルジャーナル。"
 	},
 	"nav": {
 		"home": "ホーム",
@@ -88,7 +91,8 @@
 		"upload": "アップロード",
 		"profile": "プロフィール",
 		"settings": "設定",
-		"newTicket": "新規チケット"
+		"newTicket": "新規チケット",
+		"journal": "ジャーナル"
 	},
 	"header": {
 		"tagline": "JKT48劇場トラッカー"
@@ -1174,5 +1178,23 @@
 		"configActive": "有効",
 		"useSessionLabel": "現在のセッションを使用",
 		"useSessionDescription": "API呼び出しはアカウントのアクセストークンを使用します。"
+	},
+	"journal": {
+		"title": "マイ・ジャーナル",
+		"subtitle": "あなたのシアターストーリー",
+		"emptyTitle": "公演を選択",
+		"emptyState": "サイドバーから公演を選択して、ジャーナルを表示または書き込みます。",
+		"noRecords": "公演が見つかりません",
+		"noRecordsDesc": "まだどの公演にも参加していません。",
+		"startWriting": "思い出を書き始めましょう...",
+		"writeToggle": "書く",
+		"previewToggle": "プレビュー",
+		"save": "ジャーナルを保存",
+		"saved": "ジャーナルを保存しました",
+		"insertImage": "画像を挿入",
+		"hideSidebar": "リストを隠す",
+		"showSidebar": "リストを表示",
+		"uploadingImage": "画像をアップロード中...",
+		"cancelImage": "キャンセル"
 	}
 }

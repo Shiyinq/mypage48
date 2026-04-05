@@ -24,6 +24,8 @@
 		"allData": "Semua Data",
 		"hasTwoShot": "Ada 2-Shot",
 		"clearFilters": "Hapus Filter",
+		"days": "Hari",
+		"dateRange": "Rentang Tanggal",
 		"viewDetails": "Lihat Detail",
 		"logout": "Keluar",
 		"events": "Event",
@@ -75,7 +77,8 @@
 		"about": "Pelajari lebih lanjut tentang MyPage48, misi kami, dan tim di balik proyek open-source buatan fans ini.",
 		"terms": "Syarat dan ketentuan penggunaan layanan MyPage48.",
 		"privacy": "Kebijakan privasi MyPage48 mengenai data Anda.",
-		"cookies": "Kebijakan penggunaan cookie di MyPage48."
+		"cookies": "Kebijakan penggunaan cookie di MyPage48.",
+		"journal": "Jurnal digital personal dari setiap pertunjukan yang telah kamu hadiri."
 	},
 	"nav": {
 		"home": "Beranda",
@@ -89,7 +92,8 @@
 		"upload": "Unggah",
 		"profile": "Profil",
 		"settings": "Pengaturan",
-		"newTicket": "Tiket Baru"
+		"newTicket": "Tiket Baru",
+		"journal": "Jurnal"
 	},
 	"header": {
 		"tagline": "PELACAK TEATER JKT48"
@@ -1176,5 +1180,23 @@
 		"configActive": "Aktif",
 		"useSessionLabel": "Gunakan Sesi Saat Ini",
 		"useSessionDescription": "Panggilan API akan menggunakan token akses akun Anda."
+	},
+	"journal": {
+		"title": "Jurnal Saya",
+		"subtitle": "Cerita teater kamu",
+		"emptyTitle": "Pilih pertunjukan",
+		"emptyState": "Pilih pertunjukan dari menu samping untuk melihat atau menulis entri jurnal.",
+		"noRecords": "Belum ada pertunjukan",
+		"noRecordsDesc": "Kamu belum menghadiri pertunjukan apapun.",
+		"startWriting": "Mulai menulis kenanganmu...",
+		"writeToggle": "Tulis",
+		"previewToggle": "Pratinjau",
+		"save": "Simpan Jurnal",
+		"saved": "Jurnal tersimpan",
+		"insertImage": "Sisipkan Gambar",
+		"hideSidebar": "Sembunyikan Daftar",
+		"showSidebar": "Tampilkan Daftar",
+		"uploadingImage": "Mengunggah gambar...",
+		"cancelImage": "Batal"
 	}
 }

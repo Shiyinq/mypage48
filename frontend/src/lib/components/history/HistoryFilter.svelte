@@ -16,6 +16,9 @@
 
 	export let filters: import('$lib/types').TicketFilters = {};
 	export let viewMode: 'GRID' | 'TABLE' = 'GRID';
+    export let showViewToggle = true;
+    export let dropdownPlacement: 'left' | 'right' = 'right';
+    export let isSidebar = false;
 
 	const dispatch = createEventDispatcher<{
 		filterChange: import('$lib/types').TicketFilters;
@@ -154,24 +157,26 @@
 		</button>
 
 		<!-- View Toggle -->
-		<div
-			class="flex bg-white dark:bg-zinc-900 p-1 rounded-full border border-gray-200 dark:border-zinc-700 shadow-sm"
-		>
-			<button
-				on:click={() => (viewMode = 'GRID')}
-				class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'GRID' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-				title="Grid View"
+		{#if showViewToggle}
+			<div
+				class="flex bg-white dark:bg-zinc-900 p-1 rounded-full border border-gray-200 dark:border-zinc-700 shadow-sm shrink-0"
 			>
-				<LayoutGrid class="w-4 h-4" />
-			</button>
-			<button
-				on:click={() => (viewMode = 'TABLE')}
-				class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'TABLE' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-				title="Table View"
-			>
-				<List class="w-4 h-4" />
-			</button>
-		</div>
+				<button
+					on:click={() => (viewMode = 'GRID')}
+					class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'GRID' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+					title="Grid View"
+				>
+					<LayoutGrid class="w-4 h-4" />
+				</button>
+				<button
+					on:click={() => (viewMode = 'TABLE')}
+					class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'TABLE' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+					title="Table View"
+				>
+					<List class="w-4 h-4" />
+				</button>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Advanced Filters Panel -->
@@ -179,11 +184,13 @@
 		<div
 			use:clickOutside
 			transition:slide={{ duration: 200 }}
-			class="absolute top-full right-0 mt-2 p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg flex flex-col gap-4 z-50 w-[calc(100vw-2rem)] md:w-auto md:min-w-[500px]"
+			class={`absolute top-full mt-2 p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg flex flex-col gap-5 z-50 
+                ${isSidebar ? 'left-0 right-0 w-auto' : 'w-[calc(100vw-2rem)] md:w-auto md:min-w-[400px]'} 
+                ${!isSidebar && dropdownPlacement === 'right' ? 'right-0' : 'left-0'}`}
 		>
-			<div class="flex flex-wrap gap-4 items-center">
+			<div class={`flex gap-4 ${isSidebar ? 'flex-col' : 'flex-wrap items-center'}`}>
 				<!-- 2-Shot Toggle -->
-				<label class="flex items-center gap-2 cursor-pointer select-none">
+				<label class="flex items-center gap-3 cursor-pointer select-none group">
 					<div class="relative">
 						<input
 							type="checkbox"
@@ -192,57 +199,80 @@
 							on:change={updateFilters}
 						/>
 						<div
-							class={`w-10 h-6 rounded-full transition-colors ${hasTwoShot ? 'bg-blue-500' : 'bg-gray-200 dark:bg-zinc-700'}`}
+							class={`w-10 h-6 rounded-full transition-colors ${hasTwoShot ? (isSidebar ? 'bg-red-500' : 'bg-blue-500') : 'bg-gray-200 dark:bg-zinc-700 group-hover:bg-gray-300'}`}
 						></div>
 						<div
-							class={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${hasTwoShot ? 'translate-x-4' : 'translate-x-0'}`}
+							class={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${hasTwoShot ? 'translate-x-4' : 'translate-x-0'}`}
 						></div>
 					</div>
-					<span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+					<span class="text-sm font-bold text-gray-700 dark:text-gray-300"
 						>{$t('common.hasTwoShot')}</span
 					>
 				</label>
 
 				<!-- Date Range -->
-				<div class="flex flex-wrap items-center gap-2">
-					<Calendar class="w-4 h-4 text-gray-400" />
-					<input
-						type="date"
-						bind:value={startDate}
-						on:change={updateFilters}
-						class="text-sm bg-transparent border border-gray-200 dark:border-zinc-700 rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
-					/>
-					<span class="text-gray-400">-</span>
-					<input
-						type="date"
-						bind:value={endDate}
-						on:change={updateFilters}
-						class="text-sm bg-transparent border border-gray-200 dark:border-zinc-700 rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
-					/>
+				<div class={isSidebar ? 'flex flex-col gap-2 w-full' : 'flex flex-col gap-1'}>
+                    {#if isSidebar}
+                        <div class="text-[10px] uppercase font-black text-gray-400 tracking-wider mb-0.5">{$t('common.dateRange')}</div>
+                    {/if}
+					<div class={isSidebar ? 'flex flex-col items-stretch gap-2' : 'flex items-center gap-2'}>
+                        <div class="relative flex-1">
+                            <Calendar class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                            <input
+                                type="date"
+                                bind:value={startDate}
+                                on:change={updateFilters}
+                                class={`w-full text-xs bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 rounded-lg pl-8 pr-2 py-2 focus:ring-2 outline-none cursor-pointer transition-all placeholder:text-gray-300 ${isSidebar ? 'focus:ring-red-500/20 focus:border-red-500' : 'focus:ring-blue-500/20 focus:border-blue-500'}`}
+                            />
+                        </div>
+                        {#if !isSidebar}
+    					    <span class="text-gray-400 px-1">-</span>
+                        {/if}
+                        <div class="relative flex-1">
+                            <Calendar class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                            <input
+                                type="date"
+                                bind:value={endDate}
+                                on:change={updateFilters}
+                                class={`w-full text-xs bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 rounded-lg pl-8 pr-2 py-2 focus:ring-2 outline-none cursor-pointer transition-all placeholder:text-gray-300 ${isSidebar ? 'focus:ring-red-500/20 focus:border-red-500' : 'focus:ring-blue-500/20 focus:border-blue-500'}`}
+                            />
+                        </div>
+					</div>
 				</div>
 			</div>
 
 			<!-- Days Selector -->
-			<div class="flex flex-wrap gap-2">
-				{#each daysOfWeek as day}
-					<button
-						on:click={() => toggleDay(day)}
-						class={`px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
-							selectedDays.includes(day)
-								? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400'
-								: 'bg-transparent border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'
-						}`}
-					>
-						{$t(`time.days.${day.toLowerCase()}`)}
-					</button>
-				{/each}
+			<div class={isSidebar ? 'flex flex-col gap-2' : 'flex flex-col gap-1.5'}>
+                {#if isSidebar}
+                    <div class="text-[10px] uppercase font-black text-gray-400 tracking-wider">{$t('common.days')}</div>
+                {/if}
+                <div class={isSidebar ? 'grid grid-cols-4 gap-1.5' : 'flex flex-wrap gap-1.5'}>
+                    {#each daysOfWeek as day}
+                        <button
+                            on:click={() => toggleDay(day)}
+                            class={`transition-all cursor-pointer text-center font-bold px-3 py-1.5 border ${
+                                isSidebar 
+                                    ? 'rounded-lg text-[10px]' 
+                                    : 'rounded-full text-xs'
+                            } ${
+                                selectedDays.includes(day)
+                                    ? (isSidebar 
+                                        ? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400' 
+                                        : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400')
+                                    : 'bg-transparent border-gray-100 dark:border-zinc-800 text-gray-500 dark:text-gray-400 hover:border-gray-200 hover:text-gray-700 dark:hover:text-gray-200'
+                            }`}
+                        >
+                            {isSidebar ? $t(`time.days.${day.toLowerCase()}`).substring(0, 3) : $t(`time.days.${day.toLowerCase()}`)}
+                        </button>
+                    {/each}
+                </div>
 			</div>
 
 			<!-- Clear Filters -->
-			<div class="flex justify-end">
+			<div class={`flex justify-end pt-1 border-t border-gray-50 dark:border-white/5 ${isSidebar ? '' : 'mt-2'}`}>
 				<button
 					on:click={clearFilters}
-					class="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1 cursor-pointer"
+					class={`text-[10px] font-bold flex items-center gap-1 transition-colors uppercase tracking-wider cursor-pointer ${isSidebar ? 'text-gray-400 hover:text-red-500' : 'text-red-500 hover:text-red-600'}`}
 				>
 					<X class="w-3 h-3" />
 					{$t('common.clearFilters')}

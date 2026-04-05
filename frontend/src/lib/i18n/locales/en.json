@@ -24,6 +24,8 @@
 		"allData": "All Data",
 		"hasTwoShot": "Has 2-Shot",
 		"clearFilters": "Clear Filters",
+		"days": "Days",
+		"dateRange": "Date Range",
 		"viewDetails": "View Details",
 		"logout": "Logout",
 		"settings": "Settings",
@@ -74,7 +76,8 @@
 		"about": "Learn more about MyPage48, our mission, and the team behind this fan-made open-source project.",
 		"terms": "Terms of service for using the MyPage48 platform.",
 		"privacy": "Privacy policy of MyPage48 regarding your data.",
-		"cookies": "Cookies policy for MyPage48."
+		"cookies": "Cookies policy for MyPage48.",
+		"journal": "Your personal digital journal of every show you've attended."
 	},
 	"nav": {
 		"home": "Home",
@@ -88,7 +91,8 @@
 		"upload": "Upload",
 		"profile": "Profile",
 		"settings": "Settings",
-		"newTicket": "New Ticket"
+		"newTicket": "New Ticket",
+		"journal": "Journal"
 	},
 	"header": {
 		"tagline": "JKT48 THEATER TRACKER"
@@ -1172,5 +1176,23 @@
 		"configActive": "Active",
 		"useSessionLabel": "Use Current Session",
 		"useSessionDescription": "API calls will use your account's access token."
+	},
+	"journal": {
+		"title": "My Journal",
+		"subtitle": "Your theater stories",
+		"emptyTitle": "Select a show",
+		"emptyState": "Choose a show from the sidebar to view or write a journal entry.",
+		"noRecords": "No shows found",
+		"noRecordsDesc": "You haven't attended any shows yet.",
+		"startWriting": "Start writing your memory...",
+		"writeToggle": "Write",
+		"previewToggle": "Preview",
+		"save": "Save Journal",
+		"saved": "Journal saved",
+		"insertImage": "Insert Image",
+		"hideSidebar": "Hide List",
+		"showSidebar": "Show List",
+		"uploadingImage": "Uploading image...",
+		"cancelImage": "Cancel"
 	}
 }
