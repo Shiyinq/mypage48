@@ -17,3 +17,6 @@ class DomainErrorCode:
     IMAGE_NOT_FOUND = "Image not found"
     PRESIGNED_URL_FAILED = "Presigned URL generation failed"
     INVALID_CATEGORY = "Invalid image category"
+
+
+VALID_CATEGORIES = {"ticket", "twoshot", "avatar", "journal"}

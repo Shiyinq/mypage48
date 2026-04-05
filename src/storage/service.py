@@ -20,6 +20,7 @@ from src.storage.exceptions import (
     PresignedUrlError,
     StorageConnectionError,
 )
+from src.storage.constants import VALID_CATEGORIES
 from src.storage.repository import StorageRepository
 from src.storage.schemas import (
     ImageCategory,
@@ -29,8 +30,6 @@ from src.storage.schemas import (
 )
 
 logger = create_logger("storage_service", __name__)
-
-VALID_CATEGORIES = {"ticket", "twoshot", "avatar", "journal"}
 
 # Regex to detect base64 data URL
 BASE64_PATTERN = re.compile(r"^data:image/(\w+);base64,(.+)$", re.DOTALL)
