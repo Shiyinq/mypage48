@@ -1167,6 +1167,10 @@
 		"copyCurl": "cURLとしてコピー",
 		"curlCopied": "cURLコマンドがコピーされました！",
 		"response": "レスポンス",
-		"waitingResponse": "実行を待機中..."
+		"waitingResponse": "実行を待機中...",
+		"copied": "クリップボードにコピーされました",
+		"hideSidebar": "サイドバーを隠す",
+		"showSidebar": "サイドバーを表示",
+		"configActive": "有効"
 	}
 }

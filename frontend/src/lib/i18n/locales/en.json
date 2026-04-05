@@ -1166,6 +1166,9 @@
 		"curlCopied": "cURL command copied!",
 		"response": "Response",
 		"waitingResponse": "Waiting for execution...",
-		"copied": "Copied to clipboard"
+		"copied": "Copied to clipboard",
+		"hideSidebar": "Hide Sidebar",
+		"showSidebar": "Show Sidebar",
+		"configActive": "Active"
 	}
 }

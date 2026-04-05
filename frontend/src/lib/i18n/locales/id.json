@@ -1170,6 +1170,9 @@
 		"curlCopied": "Command cURL berhasil disalin!",
 		"response": "Respon",
 		"waitingResponse": "Menunggu eksekusi...",
-		"copied": "Berhasil disalin"
+		"copied": "Berhasil disalin",
+		"hideSidebar": "Sembunyikan Sidebar",
+		"showSidebar": "Tampilkan Sidebar",
+		"configActive": "Aktif"
 	}
 }
