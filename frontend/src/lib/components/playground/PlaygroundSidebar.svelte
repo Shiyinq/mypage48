@@ -54,11 +54,11 @@
 				class="flex-1 px-4 h-full flex items-center justify-between group cursor-pointer text-left"
 			>
 				<div class="flex items-center gap-2">
-					<Lock class="w-3.5 h-3.5 { $playgroundStore.apiKey ? 'text-emerald-500' : 'text-red-500' }" />
+					<Lock class="w-3.5 h-3.5 { ($playgroundStore.apiKey || $playgroundStore.useSession) ? 'text-emerald-500' : 'text-red-500' }" />
 					<span class="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">
 						{$t('playground.configTitle')}
 					</span>
-					{#if $playgroundStore.apiKey && !isConfigExpanded}
+					{#if ($playgroundStore.apiKey || $playgroundStore.useSession) && !isConfigExpanded}
 						<span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
 							({$t('playground.configActive')})
 						</span>
@@ -83,41 +83,76 @@
 
 		<!-- Expandable Content: Sits below the fixed header -->
 		{#if isConfigExpanded}
-			<div transition:slide={{ duration: 200 }} class="px-4 pb-4 space-y-1.5 border-t border-gray-100 dark:border-white/5 pt-3">
-				<label for="global-api-key" class="text-[10px] font-bold text-gray-400 dark:text-gray-500 ml-1">
-					{$t('playground.apiKeyLabel')}
-				</label>
-				<div class="relative group">
-					<input
-						id="global-api-key"
-						type={showApiKey ? 'text' : 'password'}
-						placeholder={$t('playground.apiKeyPlaceholder')}
-						value={$playgroundStore.apiKey || ''}
-						on:input={(e) => {
-							playgroundStore.setApiKey(e.currentTarget.value);
-						}}
-						class="w-full pl-3 pr-16 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/5 rounded-xl text-xs focus:ring-1 focus:ring-red-500 transition-all font-mono"
-						autocomplete="off"
-					/>
-					<div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-						{#if $playgroundStore.apiKey}
-							<button 
-								on:click={() => playgroundStore.setApiKey(null)}
-								class="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-md transition-colors text-gray-400 hover:text-red-500"
-							>
-								<X class="w-3.5 h-3.5" />
-							</button>
-						{/if}
-						<button 
-							on:click={() => showApiKey = !showApiKey}
-							class="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-md transition-colors text-gray-400"
-						>
-							{#if showApiKey}
-								<EyeOff class="w-3.5 h-3.5" />
-							{:else}
-								<Eye class="w-3.5 h-3.5" />
+			<div transition:slide={{ duration: 200 }} class="px-4 pb-4 space-y-3 border-t border-gray-100 dark:border-white/5 pt-3">
+				<!-- Session Toggle -->
+				<div class="flex items-center justify-between p-2.5 bg-gray-50/50 dark:bg-zinc-800/30 rounded-xl border border-gray-100 dark:border-white/5 group/session transition-all hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+					<div class="flex flex-col">
+						<div class="flex items-center gap-2">
+							<span class="text-[10px] font-bold text-gray-700 dark:text-gray-300">{$t('playground.useSessionLabel')}</span>
+							{#if $playgroundStore.useSession}
+								<span class="flex items-center gap-1 text-[8px] font-bold text-emerald-500 animate-pulse">
+									<div class="w-1 h-1 rounded-full bg-emerald-500"></div>
+									{$t('playground.configActive')}
+								</span>
 							{/if}
-						</button>
+						</div>
+						<span class="text-[9px] text-gray-500 dark:text-gray-500 leading-tight">{$t('playground.useSessionDescription')}</span>
+					</div>
+					<label class="relative inline-flex items-center cursor-pointer scale-90 origin-right">
+						<input 
+							type="checkbox" 
+							class="sr-only peer" 
+							checked={$playgroundStore.useSession}
+							on:change={(e) => playgroundStore.setUseSession(e.currentTarget.checked)}
+						>
+						<div class="w-9 h-5 bg-gray-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500"></div>
+					</label>
+				</div>
+
+				<div class="space-y-1.5 transition-all duration-300 {$playgroundStore.useSession ? 'opacity-40 grayscale pointer-events-none' : ''}">
+					<div class="flex items-center justify-between ml-1">
+						<label for="global-api-key" class="text-[10px] font-bold text-gray-400 dark:text-gray-500">
+							{$t('playground.apiKeyLabel')}
+						</label>
+						{#if $playgroundStore.apiKey && !$playgroundStore.useSession}
+							<span class="flex items-center gap-1 text-[9px] font-bold text-emerald-500 animate-pulse">
+								{$t('playground.configActive')}
+							</span>
+						{/if}
+					</div>
+					<div class="relative group">
+						<input
+							id="global-api-key"
+							type={showApiKey ? 'text' : 'password'}
+							placeholder={$t('playground.apiKeyPlaceholder')}
+							value={$playgroundStore.apiKey || ''}
+							on:input={(e) => {
+								playgroundStore.setApiKey(e.currentTarget.value);
+							}}
+							class="w-full pl-3 pr-16 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/5 rounded-xl text-xs focus:ring-1 focus:ring-red-500 transition-all font-mono"
+							autocomplete="off"
+							disabled={$playgroundStore.useSession}
+						/>
+						<div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+							{#if $playgroundStore.apiKey && !$playgroundStore.useSession}
+								<button 
+									on:click={() => playgroundStore.setApiKey(null)}
+									class="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-md transition-colors text-gray-400 hover:text-red-500"
+								>
+									<X class="w-3.5 h-3.5" />
+								</button>
+							{/if}
+							<button 
+								on:click={() => showApiKey = !showApiKey}
+								class="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-md transition-colors text-gray-400"
+							>
+								{#if showApiKey}
+									<EyeOff class="w-3.5 h-3.5" />
+								{:else}
+									<Eye class="w-3.5 h-3.5" />
+								{/if}
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>

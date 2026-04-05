@@ -1,4 +1,5 @@
 import { writable, derived, get } from 'svelte/store';
+import { accessToken } from './accessToken';
 import { playgroundApi } from '$lib/apis/playground';
 import type { OpenAPISchema, OpenAPIEndpoint, ExecutionPayload, ExecutionResult } from '$lib/types';
 import { logger } from '$lib/utils/logger';
@@ -12,6 +13,7 @@ interface PlaygroundState {
 	apiKey: string | null;
 	isSidebarVisible: boolean;
 	responseWidth: number;
+	useSession: boolean;
 }
 
 const initialState: PlaygroundState = {
@@ -22,7 +24,8 @@ const initialState: PlaygroundState = {
 	error: null,
 	apiKey: null,
 	isSidebarVisible: true,
-	responseWidth: 450 // Default pixel width
+	responseWidth: 450, // Default pixel width
+	useSession: false
 };
 
 function createPlaygroundStore() {
@@ -35,6 +38,7 @@ function createPlaygroundStore() {
 			try {
 				const schema = await playgroundApi.getSchema();
 				const savedApiKey = localStorage.getItem('mypage48_playground_apiKey');
+				const savedUseSession = localStorage.getItem('mypage48_playground_useSession');
 				
 				// Initialize sidebar visibility based on screen width on every refresh/load
 				const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
@@ -44,7 +48,8 @@ function createPlaygroundStore() {
 					schema, 
 					apiKey: savedApiKey,
 					isSidebarVisible: isDesktop,
-					responseWidth: 450 // Always use default on refresh
+					responseWidth: 450, // Always use default on refresh
+					useSession: savedUseSession === 'true'
 				}));
 			} catch (err: any) {
 				logger.error('Failed to load playground schema', err);
@@ -77,6 +82,13 @@ function createPlaygroundStore() {
 			}
 		},
 
+		setUseSession: (value: boolean) => {
+			update(s => {
+				localStorage.setItem('mypage48_playground_useSession', String(value));
+				return { ...s, useSession: value };
+			});
+		},
+
 		execute: async (payload: ExecutionPayload) => {
 			const currentId = get({ subscribe }).selectedEndpointId;
 			if (!currentId) return;
@@ -84,9 +96,16 @@ function createPlaygroundStore() {
 			update(s => ({ ...s, executing: true }));
 			try {
 				const state = get({ subscribe });
-				if (state.apiKey) {
+				
+				if (state.useSession) {
+					const token = get(accessToken);
+					if (token) {
+						payload.headers['Authorization'] = `Bearer ${token}`;
+					}
+				} else if (state.apiKey) {
 					payload.headers['Authorization'] = `Bearer ${state.apiKey}`;
 				}
+
 				const result = await playgroundApi.executeRequest(payload);
 				update(s => ({
 					...s,

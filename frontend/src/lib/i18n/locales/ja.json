@@ -1171,6 +1171,8 @@
 		"copied": "クリップボードにコピーされました",
 		"hideSidebar": "サイドバーを隠す",
 		"showSidebar": "サイドバーを表示",
-		"configActive": "有効"
+		"configActive": "有効",
+		"useSessionLabel": "現在のセッションを使用",
+		"useSessionDescription": "API呼び出しはアカウントのアクセストークンを使用します。"
 	}
 }
