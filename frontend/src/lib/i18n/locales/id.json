@@ -1154,6 +1154,7 @@
 		"description": "Eksplorasi dan uji API MyPage48 secara real-time.",
 		"tagline": "API Playground",
 		"backToDashboard": "Kembali ke Dashboard",
+		"searchPlaceholder": "Cari API",
 		"tryIt": "Coba MyPage48 API Playground",
 		"configTitle": "Konfigurasi",
 		"apiKeyLabel": "API Key Global",

@@ -42,7 +42,7 @@
 
 <SEO title={$t('playground.title')} description={$t('playground.description')} />
 
-<div class="h-[calc(100vh-64px)] flex flex-col bg-slate-50/50 dark:bg-black/20 overflow-hidden">
+<div class="h-[calc(100vh-64px)] flex flex-col bg-slate-50/50 dark:bg-zinc-900 overflow-hidden">
 	{#if loading}
 		<div class="flex-1 flex flex-col items-center justify-center space-y-4" in:fade>
 			<LoaderCircle class="w-10 h-10 animate-spin text-red-500" />
