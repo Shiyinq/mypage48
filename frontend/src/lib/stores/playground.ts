@@ -10,6 +10,8 @@ interface PlaygroundState {
 	executing: boolean;
 	error: string | null;
 	apiKey: string | null;
+	isSidebarVisible: boolean;
+	responseWidth: number;
 }
 
 const initialState: PlaygroundState = {
@@ -18,7 +20,9 @@ const initialState: PlaygroundState = {
 	results: {},
 	executing: false,
 	error: null,
-	apiKey: null
+	apiKey: null,
+	isSidebarVisible: true,
+	responseWidth: 450 // Default pixel width
 };
 
 function createPlaygroundStore() {
@@ -31,11 +35,31 @@ function createPlaygroundStore() {
 			try {
 				const schema = await playgroundApi.getSchema();
 				const savedApiKey = localStorage.getItem('mypage48_playground_apiKey');
-				update(s => ({ ...s, schema, apiKey: savedApiKey }));
+				const savedSidebar = localStorage.getItem('mypage48_playground_sidebarVisible');
+				
+				update(s => ({ 
+					...s, 
+					schema, 
+					apiKey: savedApiKey,
+					isSidebarVisible: savedSidebar !== null ? savedSidebar === 'true' : true,
+					responseWidth: 450 // Always use default on refresh
+				}));
 			} catch (err: any) {
 				logger.error('Failed to load playground schema', err);
 				update(s => ({ ...s, error: 'Failed to load API metadata' }));
 			}
+		},
+
+		toggleSidebar: () => {
+			update(s => {
+				const newValue = !s.isSidebarVisible;
+				localStorage.setItem('mypage48_playground_sidebarVisible', String(newValue));
+				return { ...s, isSidebarVisible: newValue };
+			});
+		},
+
+		setResponseWidth: (width: number) => {
+			update(s => ({ ...s, responseWidth: width }));
 		},
 
 		selectEndpoint: (id: string) => {

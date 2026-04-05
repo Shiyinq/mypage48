@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Search, ChevronRight, Hash, Eye, EyeOff, X, Lock } from 'lucide-svelte';
+	import { Search, ChevronRight, Hash, Eye, EyeOff, X, Lock, PanelLeft } from 'lucide-svelte';
 	import { playgroundStore } from '$lib/stores/playground';
 	import { createEventDispatcher } from 'svelte';
 	import { slide } from 'svelte/transition';
@@ -46,29 +46,42 @@
 </script>
 
 <div class="flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-gray-100 dark:border-white/5 w-80 shrink-0">
-	<!-- Global Configuration -->
-	<div class="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-zinc-800/30">
-		<button 
-			on:click={() => isConfigExpanded = !isConfigExpanded}
-			class="w-full p-4 flex items-center justify-between group cursor-pointer"
-		>
-			<div class="flex items-center gap-2">
-				<Lock class="w-3.5 h-3.5 { $playgroundStore.apiKey ? 'text-emerald-500' : 'text-red-500' }" />
-				<span class="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">
-					{$t('playground.configTitle')}
-				</span>
-				{#if $playgroundStore.apiKey && !isConfigExpanded}
-					<span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-						(Active)
+	<div class="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-zinc-800/30 shrink-0">
+		<!-- Header Row: Aligned with Navbar -->
+		<div class="h-16 flex items-center">
+			<button 
+				on:click={() => isConfigExpanded = !isConfigExpanded}
+				class="flex-1 px-4 h-full flex items-center justify-between group cursor-pointer text-left"
+			>
+				<div class="flex items-center gap-2">
+					<Lock class="w-3.5 h-3.5 { $playgroundStore.apiKey ? 'text-emerald-500' : 'text-red-500' }" />
+					<span class="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">
+						{$t('playground.configTitle')}
 					</span>
-				{/if}
+					{#if $playgroundStore.apiKey && !isConfigExpanded}
+						<span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+							({$t('playground.configActive')})
+						</span>
+					{/if}
+				</div>
+				<ChevronRight 
+					class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" 
+					style="transform: rotate({isConfigExpanded ? '90deg' : '0deg'})"
+				/>
+			</button>
+			
+			<div class="pr-2">
+				<button 
+					on:click={() => playgroundStore.toggleSidebar()}
+					class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-gray-400 hover:text-red-500 cursor-pointer"
+					title={$t('playground.hideSidebar')}
+				>
+					<PanelLeft class="w-4 h-4" />
+				</button>
 			</div>
-			<ChevronRight 
-				class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" 
-				style="transform: rotate({isConfigExpanded ? '90deg' : '0deg'})"
-			/>
-		</button>
-		
+		</div>
+
+		<!-- Expandable Content: Sits below the fixed header -->
 		{#if isConfigExpanded}
 			<div transition:slide={{ duration: 200 }} class="px-4 pb-4 space-y-1.5 border-t border-gray-100 dark:border-white/5 pt-3">
 				<label for="global-api-key" class="text-[10px] font-bold text-gray-400 dark:text-gray-500 ml-1">
@@ -82,10 +95,8 @@
 						value={$playgroundStore.apiKey || ''}
 						on:input={(e) => {
 							playgroundStore.setApiKey(e.currentTarget.value);
-							// Optional: Auto-hide if they finished typing? 
-							// Better to let them collapse manually or after focus lost if it's valid.
 						}}
-						class="w-full pl-3 pr-16 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-white/5 rounded-xl text-xs focus:ring-1 focus:ring-red-500 transition-all font-mono"
+						class="w-full pl-3 pr-16 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/5 rounded-xl text-xs focus:ring-1 focus:ring-red-500 transition-all font-mono"
 						autocomplete="off"
 					/>
 					<div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

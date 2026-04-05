@@ -10,6 +10,7 @@
 	export let response: ExecutionResult | null = null;
 	export let error: any = null;
 	export let duration: number | null = null;
+	export let width: number | string = '35%';
 
 
 	function copyToClipboard(text: string) {
@@ -25,7 +26,10 @@
 	$: errorJson = error ? JSON.stringify(error, null, 2) : '';
 </script>
 
-<div class="flex flex-col h-full bg-gray-50 dark:bg-zinc-900 border-l border-gray-100 dark:border-white/5 w-[35%] min-w-[450px] shrink-0 p-6 overflow-hidden">
+<div 
+	class="flex flex-col h-full bg-gray-50 dark:bg-zinc-900 border-l border-gray-100 dark:border-white/5 min-w-[300px] shrink-0 p-6 overflow-hidden"
+	style="width: {typeof width === 'number' ? width + 'px' : width}"
+>
 	<div class="flex items-center justify-between mb-6">
 		<div class="flex items-center gap-2 text-gray-900 dark:text-white">
 			<Database class="w-5 h-5 text-red-500" />
