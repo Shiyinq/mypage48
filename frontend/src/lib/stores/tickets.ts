@@ -192,17 +192,17 @@ function createTicketsStore() {
 
 		updateNote: async (ticketId: string, note: string) => {
 			try {
-				await ticketsApi.updateTicket(ticketId, { notes: note });
+				const updated = await ticketsApi.updateTicket(ticketId, { notes: note });
 				const now = Date.now();
 				update((s) => ({
 					...s,
-					list: s.list.map((t) => (t._id === ticketId ? { ...t, notes: note } : t)),
+					list: s.list.map((t) => (t._id === ticketId ? updated : t)),
 					lastUpdated: now,
 					defaultCache: s.defaultCache
 						? {
 							...s.defaultCache,
 							list: s.defaultCache.list.map((t) =>
-								t._id === ticketId ? { ...t, notes: note } : t
+								t._id === ticketId ? updated : t
 							),
 							lastUpdated: now
 						}

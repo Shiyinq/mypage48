@@ -34,6 +34,11 @@ logger = create_logger("storage_service", __name__)
 # Regex to detect base64 data URL
 BASE64_PATTERN = re.compile(r"^data:image/(\w+);base64,(.+)$", re.DOTALL)
 
+# Regex to detect internal storage paths in markdown: ![](journal/abc.png)
+MARKDOWN_IMAGE_PATTERN = re.compile(
+    r"!\[(.*?)\]\(((journal|ticket|twoshot|avatar)\/[^)]+)\)"
+)
+
 
 class StorageService:
     """Service layer for storage operations."""
@@ -188,6 +193,25 @@ class StorageService:
 
         return value
 
+    def resolve_markdown_images(self, content: Optional[str]) -> Optional[str]:
+        """
+        Find internal storage paths in markdown and replace with presigned URLs.
+        Example: ![](journal/abc.png) -> ![](https://minio.../journal/abc.png?X-Amz-...)
+        """
+        if not content:
+            return content
+
+        def replace_path(match):
+            alt_text = match.group(1)
+            path = match.group(2)
+            try:
+                presigned_url = self.repository.get_presigned_url(path)
+                return f"![{alt_text}]({presigned_url})"
+            except Exception:
+                return match.group(0)
+
+        return MARKDOWN_IMAGE_PATTERN.sub(replace_path, content)
+
     def resolve_ticket_images(self, ticket: "TicketResponse") -> "TicketResponse":
         """Resolve storage filenames to presigned URLs for a ticket."""
         # Using model_dump and reconstruct pattern
@@ -200,6 +224,9 @@ class StorageService:
             ticket_dict["two_shot"]["imageUrl"] = self.resolve_url(
                 ticket_dict["two_shot"]["imageUrl"]
             )
+
+        if ticket_dict.get("notes"):
+            ticket_dict["notes"] = self.resolve_markdown_images(ticket_dict["notes"])
 
         return type(ticket)(**ticket_dict)
 

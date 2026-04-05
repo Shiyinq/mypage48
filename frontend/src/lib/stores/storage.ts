@@ -35,6 +35,10 @@ function createStorageStore() {
 
         clearCache: () => {
             update(() => ({}));
+        },
+        
+        updateCache: (signatures: Record<string, string>) => {
+            update(current => ({ ...current, ...signatures }));
         }
     };
 }
