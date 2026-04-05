@@ -9,6 +9,8 @@
 
 	const { t } = useTranslation();
 
+	let innerWidth = 0;
+
 	onMount(async () => {
 		await playgroundStore.init();
 	});
@@ -52,10 +54,17 @@
 	function handleMouseMove(e: MouseEvent) {
 		if (!isResizing) return;
 		const newWidth = window.innerWidth - e.clientX;
-		// Constrain width between 300px and 80% of the window
-		if (newWidth > 300 && newWidth < window.innerWidth * 0.8) {
-			playgroundStore.setResponseWidth(newWidth);
-		}
+		
+		// Map sidebar width for adaptive clamping
+		const sidebarWidth = isSidebarVisible ? (innerWidth >= 768 ? 320 : 0) : 0;
+		const minMiddleSpace = 100; // Preserve some space for endpoint title/content
+
+		// Clamp width between 300px and available space
+		const minWidth = 300;
+		const maxWidth = Math.max(minWidth, innerWidth - sidebarWidth - minMiddleSpace);
+		const clampedWidth = Math.max(minWidth, Math.min(newWidth, maxWidth));
+		
+		playgroundStore.setResponseWidth(clampedWidth);
 	}
 
 	function stopResizing() {
@@ -66,6 +75,8 @@
 		document.body.style.userSelect = 'auto';
 	}
 </script>
+
+<svelte:window bind:innerWidth />
 
 <SEO title={$t('playground.title')} description={$t('playground.description')} />
 
@@ -92,26 +103,51 @@
 			</div>
 		</div>
 	{:else}
-		<div class="flex-1 flex overflow-hidden relative" in:fade>
-			<!-- Sidebar Wrapper with Smooth Width Transition -->
+		<div class="flex-1 flex flex-col md:flex-row overflow-hidden relative" in:fade>
+			<!-- Mobile Sidebar Backdrop -->
+			{#if isSidebarVisible && innerWidth < 768}
+				<button 
+					on:click={() => playgroundStore.toggleSidebar()}
+					class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[55] md:hidden transition-opacity"
+					aria-label="Close Sidebar"
+					transition:fade={{ duration: 200 }}
+				></button>
+			{/if}
+
+			<!-- Desktop Content Spacer: Handles the 'Push' layout shift on desktop -->
+			{#if innerWidth >= 768}
+				<div 
+					class="hidden md:block transition-all duration-300 ease-in-out shrink-0 overflow-hidden" 
+					style="width: {isSidebarVisible ? '320px' : '0px'}; opacity: {isSidebarVisible ? '1' : '0'};"
+				></div>
+			{/if}
+
+			<!-- Sidebar Drawer: Consistent translateX animation for all devices -->
 			<div 
-				class="h-full overflow-hidden transition-all duration-300 ease-in-out border-r border-gray-100 dark:border-white/5 shrink-0"
-				style="width: {isSidebarVisible ? '320px' : '0px'}; opacity: {isSidebarVisible ? '1' : '0'};"
+				class="h-full overflow-hidden border-r border-gray-100 dark:border-white/5 shrink-0
+					   absolute inset-y-0 left-0 z-[60] bg-white dark:bg-zinc-900
+					   transition-transform duration-300 ease-in-out w-80 shadow-2xl md:shadow-none
+					   {isSidebarVisible ? 'translate-x-0' : '-translate-x-full'}"
 			>
+				<!-- Fixed width inner container to prevent layout shifts during animation -->
 				<div class="w-80 h-full"> 
 					<PlaygroundSidebar 
 						groupedEndpoints={$groupedEndpoints} 
 						selectedId={$playgroundStore.selectedEndpointId} 
-						on:select={handleSelect} 
+						on:select={(e) => {
+							handleSelect(e);
+							if (innerWidth < 768) playgroundStore.toggleSidebar();
+						}} 
 					/>
 				</div>
 			</div>
 			
-			<div class="flex-1 flex overflow-hidden relative">
-				<!-- Floating Toggle Button (Perfectly Aligned Edge Tab) -->
+			<!-- Main Content Area: Stacked on Mobile, Flex on Desktop -->
+			<div class="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden relative custom-scrollbar">
+				<!-- Floating Toggle Button (Sleek Edge Tab) -->
 				{#if !isSidebarVisible}
 					<div 
-						class="absolute top-3 left-0 z-[20]"
+						class="absolute top-3 left-0 z-[20] md:z-0"
 						transition:fade={{ duration: 200 }}
 					>
 						<button 
@@ -124,29 +160,36 @@
 					</div>
 				{/if}
 
-				<PlaygroundEndpoint 
-					openapi={schema}
-					endpoint={$selectedEndpoint} 
-					{executing} 
-					on:execute={handleExecute} 
-				/>
+				<div class="flex-1 min-h-[500px] md:min-h-0 min-w-0 overflow-hidden">
+					<PlaygroundEndpoint 
+						openapi={schema}
+						endpoint={$selectedEndpoint} 
+						{executing} 
+						on:execute={handleExecute} 
+					/>
+				</div>
 
-				<!-- Resize Handle -->
+				<!-- Resize Handle (Desktop Only) -->
 				<button 
 					on:mousedown={startResizing}
-					class="absolute top-0 bottom-0 right-0 w-1.5 cursor-col-resize z-10 group"
+					class="hidden md:block absolute top-0 bottom-0 right-0 w-1.5 cursor-col-resize z-10 group"
 					style="right: {responseWidth}px; transform: translateX(50%);"
 					aria-label="Resize response panel"
 				>
 					<div class="absolute inset-y-0 left-1/2 w-px bg-gray-100 dark:bg-white/5 group-hover:bg-red-400 group-active:bg-red-500 transition-colors duration-200"></div>
 				</button>
 
-				<PlaygroundResponse 
-					response={$selectedResult} 
-					error={$selectedResult && $selectedResult.status >= 400 ? $selectedResult : null} 
-					duration={$selectedResult?.duration} 
-					width={responseWidth}
-				/>
+				<div 
+					class="h-[600px] md:h-full shrink-0 border-t md:border-t-0 border-gray-100 dark:border-white/5"
+					style="width: {innerWidth < 768 ? '100%' : responseWidth + 'px'}"
+				>
+					<PlaygroundResponse 
+						response={$selectedResult} 
+						error={$selectedResult && $selectedResult.status >= 400 ? $selectedResult : null} 
+						duration={$selectedResult?.duration} 
+						width={innerWidth < 768 ? innerWidth : responseWidth}
+					/>
+				</div>
 			</div>
 		</div>
 	{/if}

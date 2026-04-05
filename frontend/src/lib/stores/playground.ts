@@ -35,13 +35,15 @@ function createPlaygroundStore() {
 			try {
 				const schema = await playgroundApi.getSchema();
 				const savedApiKey = localStorage.getItem('mypage48_playground_apiKey');
-				const savedSidebar = localStorage.getItem('mypage48_playground_sidebarVisible');
+				
+				// Initialize sidebar visibility based on screen width on every refresh/load
+				const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
 				
 				update(s => ({ 
 					...s, 
 					schema, 
 					apiKey: savedApiKey,
-					isSidebarVisible: savedSidebar !== null ? savedSidebar === 'true' : true,
+					isSidebarVisible: isDesktop,
 					responseWidth: 450 // Always use default on refresh
 				}));
 			} catch (err: any) {
