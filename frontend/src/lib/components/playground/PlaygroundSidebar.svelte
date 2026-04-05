@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Search, ChevronRight, Hash, Eye, EyeOff, X, Lock, PanelLeft } from 'lucide-svelte';
+	import { Search, ChevronRight, Hash, Eye, EyeOff, X, Lock, PanelLeftClose } from 'lucide-svelte';
 	import { playgroundStore } from '$lib/stores/playground';
 	import { createEventDispatcher } from 'svelte';
 	import { slide } from 'svelte/transition';
@@ -76,7 +76,7 @@
 					class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-gray-400 hover:text-red-500 cursor-pointer"
 					title={$t('playground.hideSidebar')}
 				>
-					<PanelLeft class="w-4 h-4" />
+					<PanelLeftClose class="w-5 h-5" />
 				</button>
 			</div>
 		</div>
