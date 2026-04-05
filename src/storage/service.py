@@ -21,11 +21,16 @@ from src.storage.exceptions import (
     StorageConnectionError,
 )
 from src.storage.repository import StorageRepository
-from src.storage.schemas import ImageCategory, ImageUploadResponse, PresignedUrlResponse
+from src.storage.schemas import (
+    ImageCategory,
+    ImageUploadResponse,
+    PresignedUrlResponse,
+    BatchPresignedUrlResponse,
+)
 
 logger = create_logger("storage_service", __name__)
 
-VALID_CATEGORIES = {"ticket", "twoshot", "avatar"}
+VALID_CATEGORIES = {"ticket", "twoshot", "avatar", "journal"}
 
 # Regex to detect base64 data URL
 BASE64_PATTERN = re.compile(r"^data:image/(\w+);base64,(.+)$", re.DOTALL)
@@ -126,6 +131,24 @@ class StorageService:
         except Exception as e:
             logger.exception(f"Unexpected error getting presigned URL: {e}")
             raise PresignedUrlError()
+
+    def get_bulk_presigned_urls(
+        self,
+        filenames: list[str],
+        expires: int = 3600,
+    ) -> BatchPresignedUrlResponse:
+        """Get presigned URLs for multiple files."""
+        urls = {}
+        for filename in filenames:
+            try:
+                # We skip file_exists check for performance in bulk
+                url = self.repository.get_presigned_url(filename, expires)
+                urls[filename] = url
+            except Exception as e:
+                logger.error(f"Error getting presigned URL for {filename}: {e}")
+                urls[filename] = ""
+
+        return BatchPresignedUrlResponse(urls=urls, expires_in=expires)
 
     def delete_image(self, filename: str) -> bool:
         """Delete image from storage."""

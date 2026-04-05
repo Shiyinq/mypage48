@@ -3,6 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import type { Ticket } from '$lib/types';
 	import { storageApi } from '$lib/apis/storage';
+	import { storageStore } from '$lib/stores/storage';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
@@ -82,16 +83,43 @@
 		const end = textareaEl.selectionEnd;
 		const text = textareaEl.value;
 
+		// Save scroll positions before update
+		const textareaScroll = textareaEl.scrollTop;
+		const containerScroll = scrollContainer?.scrollTop || 0;
+
 		const selectedText = text.substring(start, end);
 		const newText = text.substring(0, start) + prefix + selectedText + suffix + text.substring(end);
 
 		content = newText;
 
-		// Preserve cursor
+		// Preserve cursor and scroll
 		setTimeout(() => {
 			textareaEl.focus();
 			textareaEl.setSelectionRange(start + prefix.length, end + prefix.length);
+
+			// Restore scroll positions
+			if (textareaEl) textareaEl.scrollTop = textareaScroll;
+			if (scrollContainer) scrollContainer.scrollTop = containerScroll;
 		}, 0);
+	}
+
+	// Regex to find internal storage paths in markdown
+	const internalPathRegex = /!\[.*?\]\(((journal|ticket|twoshot|avatar)\/[^)]+)\)/g;
+
+	async function resolveInternalImages() {
+		if (!content) return;
+
+		const matches = [...content.matchAll(internalPathRegex)];
+		const filenames = matches.map((m) => m[1]);
+		
+		if (filenames.length > 0) {
+			await storageStore.presignBulk(filenames);
+		}
+	}
+
+	// Resolve images when switching to preview or when content changes
+	$: if (!isEditing && content) {
+		resolveInternalImages();
 	}
 
 	async function handleImageUpload(e: Event) {
@@ -112,11 +140,10 @@
 				reader.readAsDataURL(file);
 			});
 
-			// 'ticket' is a valid ImageCategory
-			const res = await storageApi.uploadImage(base64, 'ticket');
-			const imageUrl = getExternalMediaUrl(res.filename);
-			
-			insertText(`![](${imageUrl})`);
+			const res = await storageStore.uploadImage(base64, 'journal');
+
+			// Insert clean filename path instead of full URL
+			insertText(`![](${res.filename})`);
 		} catch (e) {
 			console.error('Failed to upload image', e);
 		} finally {
@@ -124,7 +151,18 @@
 		}
 	}
 
-	$: parsedHtml = isEditing ? '' : DOMPurify.sanitize(marked.parse(content) as string);
+	$: resolvedContent = content.replace(internalPathRegex, (match, path) => {
+		const presignedUrl = $storageStore[path];
+		if (presignedUrl) {
+			// Extract alt text from the match
+			const altMatch = match.match(/!\[(.*?)\]/);
+			const altText = altMatch ? altMatch[1] : '';
+			return `![${altText}](${presignedUrl})`;
+		}
+		return match;
+	});
+
+	$: parsedHtml = isEditing ? '' : DOMPurify.sanitize(marked.parse(resolvedContent) as string);
 </script>
 
 <div class="h-full flex flex-col relative w-full bg-white dark:bg-zinc-950">

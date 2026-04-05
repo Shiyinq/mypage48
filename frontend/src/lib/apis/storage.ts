@@ -1,5 +1,5 @@
 import { client } from './client';
-import type { ImageCategory, ImageUploadResponse, PresignedUrlResponse } from '$lib/types';
+import type { ImageCategory, ImageUploadResponse, PresignedUrlResponse, BatchPresignedUrlResponse } from '$lib/types';
 
 export const storageApi = {
 	/**
@@ -19,6 +19,16 @@ export const storageApi = {
 	getImageUrl: async (filename: string): Promise<PresignedUrlResponse> => {
 		return await client<PresignedUrlResponse>(`/storage/url/${encodeURIComponent(filename)}`, {
 			method: 'GET'
+		});
+	},
+
+	/**
+	 * Get presigned URLs for multiple images in bulk.
+	 */
+	presignBulk: async (filenames: string[]): Promise<BatchPresignedUrlResponse> => {
+		return await client<BatchPresignedUrlResponse>('/storage/presign/bulk', {
+			method: 'POST',
+			body: { filenames }
 		});
 	}
 };

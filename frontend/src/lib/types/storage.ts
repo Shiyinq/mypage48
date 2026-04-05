@@ -8,4 +8,13 @@ export interface PresignedUrlResponse {
 	expires_in: number;
 }
 
-export type ImageCategory = 'ticket' | 'twoshot' | 'avatar';
+export type ImageCategory = 'ticket' | 'twoshot' | 'avatar' | 'journal';
+
+export interface BatchPresignedUrlRequest {
+	filenames: string[];
+}
+
+export interface BatchPresignedUrlResponse {
+	urls: Record<string, string>;
+	expires_in: number;
+}
