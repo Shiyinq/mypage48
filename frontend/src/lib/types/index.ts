@@ -19,3 +19,4 @@ export * from './admin';
 export * from './events';
 export * from './news';
 export * from './live';
+export * from './playground';

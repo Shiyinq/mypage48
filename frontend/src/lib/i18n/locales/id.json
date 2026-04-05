@@ -1147,5 +1147,26 @@
 			"feedback": "Ke Masukan",
 			"adminFeedback": "Ke Masukan Admin"
 		}
+	},
+	"playground": {
+		"title": "MyPage48 API Playground",
+		"subtitle": "Coba API secara interaktif",
+		"description": "Eksplorasi dan uji API MyPage48 secara real-time.",
+		"tryIt": "Coba MyPage48 API Playground",
+		"configTitle": "Konfigurasi",
+		"apiKeyLabel": "API Key Global",
+		"apiKeyPlaceholder": "Masukkan API key Anda...",
+		"apiKeyRequired": "API Key wajib diisi untuk mencoba API",
+		"selectEndpoint": "Pilih API dari sidebar untuk melihat detail dan mengujinya secara langsung.",
+		"execute": "Jalankan Panggilan",
+		"executing": "Menjalankan...",
+		"noDescription": "Tidak ada deskripsi.",
+		"parameters": "Parameter",
+		"requestBody": "Body Request",
+		"copyCurl": "Salin sebagai cURL",
+		"curlCopied": "Command cURL berhasil disalin!",
+		"response": "Respon",
+		"waitingResponse": "Menunggu eksekusi...",
+		"copied": "Berhasil disalin"
 	}
 }

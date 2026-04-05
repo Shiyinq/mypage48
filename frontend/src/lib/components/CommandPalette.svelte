@@ -24,7 +24,8 @@
 		History, // History
 		Shield, // Admin
 		Music, // Admin Setlists
-		MessageSquare // Feedback
+		MessageSquare, // Feedback
+		Terminal // Playground
 	} from 'lucide-svelte';
 	import { setTheme } from '$lib/stores/theme';
 	import { setLocale } from '$lib/i18n';
@@ -165,6 +166,13 @@
 			icon: Settings,
 			section: 'navigation',
 			perform: () => goto('/settings')
+		},
+		{
+			id: 'nav-playground',
+			title: $t('playground.title'),
+			icon: Terminal,
+			section: 'navigation',
+			perform: () => goto('/playground')
 		},
 		{
 			id: 'nav-feedback',

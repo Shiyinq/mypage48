@@ -17,6 +17,7 @@ from src.tickets.route import router as theater_router
 from src.users.route import router as user_router
 from src.news.route import router as news_router
 from src.live.route import router as live_router
+from src.playground.route import router as playground_router
 
 router = APIRouter()
 
@@ -39,3 +40,4 @@ router.include_router(export_router, prefix="/export", tags=["Export"])
 router.include_router(feedback_router, prefix="/feedback", tags=["Feedback"])
 router.include_router(news_router, prefix="/theater/news", tags=["News"])
 router.include_router(live_router, prefix="/jkt48/live", tags=["Live"])
+router.include_router(playground_router, prefix="/playground", tags=["Playground"])
