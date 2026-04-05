@@ -58,6 +58,30 @@ async def test_upload_image(storage_service):
     storage_service.repository.upload_file.assert_called_once()
 
 @pytest.mark.asyncio
+async def test_upload_image_journal(storage_service):
+    user_id = "user123"
+    category = "journal"
+    base64_img = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+    
+    response = storage_service.upload_image(user_id, base64_img, category)
+    
+    assert response.filename.startswith("journal/user123/")
+    assert response.filename.endswith(".png")
+    assert response.url == "https://minio.example.com/bucket/file.jpg"
+
+@pytest.mark.asyncio
+async def test_get_bulk_presigned_urls(storage_service):
+    filenames = ["journal/u1/1.jpg", "ticket/u1/2.png"]
+    
+    response = storage_service.get_bulk_presigned_urls(filenames)
+    
+    assert len(response.urls) == 2
+    assert response.urls["journal/u1/1.jpg"] == "https://minio.example.com/bucket/file.jpg"
+    assert response.urls["ticket/u1/2.png"] == "https://minio.example.com/bucket/file.jpg"
+    assert response.expires_in == 3600
+    assert storage_service.repository.get_presigned_url.call_count >= 2
+
+@pytest.mark.asyncio
 async def test_resolve_ticket_images(storage_service):
     # Mock TicketResponse with valid data
     from datetime import datetime
@@ -155,5 +179,34 @@ async def test_api_get_presigned_url(client, storage_service):
     finally:
         # Cleanup only the overrides we added (preserve CSRF mock from conftest)
         from src.dependencies import get_current_user
+        app.dependency_overrides.pop(get_storage_service, None)
+        app.dependency_overrides.pop(get_current_user, None)
+
+@pytest.mark.asyncio
+async def test_api_get_bulk_presigned_urls(client, storage_service):
+    app.dependency_overrides[get_storage_service] = lambda: storage_service
+    
+    # Mock Auth
+    from src.dependencies import get_current_user
+    from src.auth.schemas import UserCurrent
+    app.dependency_overrides[get_current_user] = lambda: UserCurrent(
+        userId="user123", 
+        username="test", 
+        name="Test User",
+        email="test@test.com", 
+        role="user"
+    )
+    
+    try:
+        filenames = ["journal/user123/img.jpg", "ticket/user123/img.png"]
+        response = await client.post("/api/storage/presign/bulk", json={"filenames": filenames})
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "urls" in data
+        assert len(data["urls"]) == 2
+        assert data["urls"]["journal/user123/img.jpg"] == "https://minio.example.com/bucket/file.jpg"
+        assert data["expires_in"] == 3600
+    finally:
         app.dependency_overrides.pop(get_storage_service, None)
         app.dependency_overrides.pop(get_current_user, None)
