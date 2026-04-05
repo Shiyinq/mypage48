@@ -22,7 +22,7 @@
 	}
 </script>
 
-<div class="h-full flex flex-col bg-slate-50/30 dark:bg-zinc-900/50">
+<div class="h-full flex flex-col bg-slate-50/30 dark:bg-zinc-900/50 overscroll-none">
 	<div class="p-3 border-b border-gray-100 dark:border-white/5 sticky top-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur z-10 flex-shrink-0 flex justify-between items-center">
 		<h2 class="font-black text-gray-900 dark:text-white flex items-center gap-2 text-sm pr-2">
 			<CalendarDays class="w-4 h-4 text-red-500" />
@@ -54,7 +54,7 @@
         />
     </div>
 
-	<div class="flex-1 overflow-y-auto px-2 py-3 custom-scrollbar relative">
+	<div class="flex-1 overflow-y-auto px-2 py-3 custom-scrollbar relative overscroll-contain">
 		{#if loading && tickets.length === 0}
 			<div class="space-y-2">
 				{#each Array(5) as _}
