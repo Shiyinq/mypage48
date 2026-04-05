@@ -12,6 +12,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
 	import { setlistsStore } from '$lib/stores/theater';
+	import { cleanseMarkdown } from '$lib/utils/markdown';
 
 	// Sub-components
 	import ImagePreview from './tickets/edit/ImagePreview.svelte';
@@ -45,7 +46,7 @@
 		ticket_id: ticket.ticket_id,
 		price: ticket.price,
 		currency: ticket.currency,
-		notes: ticket.notes || '',
+		notes: cleanseMarkdown(ticket.notes || ''),
 		rules: { ...ticket.rules },
 		two_shot: ticket.two_shot
 			? { ...ticket.two_shot }
