@@ -128,19 +128,23 @@
 		});
 
 		const queryString = queryParams.toString();
-		const fullUrl = `${window.location.origin}/api${finalPath}${queryString ? '?' + queryString : ''}`;
+		let cleanPath = finalPath;
+		if (cleanPath.startsWith('/api')) cleanPath = cleanPath.slice(4);
+		else if (cleanPath.startsWith('api')) cleanPath = cleanPath.slice(3);
+		
+		if (cleanPath.startsWith('/')) cleanPath = cleanPath.slice(1);
+		const fullUrl = `${window.location.origin}/api/${cleanPath}${queryString ? '?' + queryString : ''}`;
 		
 		let token = $playgroundStore.useSession ? $accessToken : $playgroundStore.apiKey;
 		if (token) {
 			curlHeaders.push(`-H 'Authorization: Bearer ${token}'`);
 		}
 		
-		let curlCommand = `curl -X ${endpoint.method.toUpperCase()} '${fullUrl}' \\\n  ${curlHeaders.join(' \\\n  ')}`;
+		let curlCommand = `curl -X ${endpoint.method.toUpperCase()} "${fullUrl}" \\\n${curlHeaders.join(' \\\n')}`;
 		
 		if (endpoint.method.toLowerCase() !== 'get' && body) {
-			// Basic escaping for single quotes in body
 			const escapedBody = body.replace(/'/g, "'\\''");
-			curlCommand += ` \\\n  -d '${escapedBody}'`;
+			curlCommand += ` \\\n-d '${escapedBody}'`;
 		}
 
 		navigator.clipboard.writeText(curlCommand);
