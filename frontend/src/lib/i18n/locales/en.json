@@ -1150,6 +1150,7 @@
 		"description": "Explore and test the MyPage48 API in real-time.",
 		"tagline": "API Playground",
 		"backToDashboard": "Back to Dashboard",
+		"searchPlaceholder": "Search APIs",
 		"tryIt": "Try MyPage48 API Playground",
 		"configTitle": "Configuration",
 		"apiKeyLabel": "Global API Key",

@@ -117,7 +117,7 @@
 			<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 			<input
 				type="text"
-				placeholder="Search APIs..."
+				placeholder={$t('playground.searchPlaceholder')}
 				bind:value={searchQuery}
 				class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-zinc-800 border-none rounded-xl text-sm focus:ring-1 focus:ring-red-500 transition-all"
 			/>

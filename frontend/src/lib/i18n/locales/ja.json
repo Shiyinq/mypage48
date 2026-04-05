@@ -1152,6 +1152,7 @@
 		"description": "MyPage48 API をリアルタイムで探索およびテストします。",
 		"tagline": "API プレイグラウンド",
 		"backToDashboard": "ダッシュボードに戻る",
+		"searchPlaceholder": "APIを検索",
 		"tryIt": "MyPage48 プレイグラウンドを試す",
 		"configTitle": "設定",
 		"apiKeyLabel": "グローバルAPIキー",

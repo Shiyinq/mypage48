@@ -25,7 +25,7 @@
 	$: errorJson = error ? JSON.stringify(error, null, 2) : '';
 </script>
 
-<div class="flex flex-col h-full bg-gray-50 dark:bg-zinc-950/20 border-l border-gray-100 dark:border-white/5 w-[35%] min-w-[450px] shrink-0 p-6 overflow-hidden">
+<div class="flex flex-col h-full bg-gray-50 dark:bg-zinc-900 border-l border-gray-100 dark:border-white/5 w-[35%] min-w-[450px] shrink-0 p-6 overflow-hidden">
 	<div class="flex items-center justify-between mb-6">
 		<div class="flex items-center gap-2 text-gray-900 dark:text-white">
 			<Database class="w-5 h-5 text-red-500" />
