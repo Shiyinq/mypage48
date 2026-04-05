@@ -27,7 +27,7 @@
 </script>
 
 <div 
-	class="flex flex-col h-full bg-gray-50 dark:bg-zinc-900 border-l border-gray-100 dark:border-white/5 min-w-[300px] shrink-0 p-6 overflow-hidden"
+	class="flex flex-col h-full bg-gray-50 dark:bg-zinc-900 border-l border-gray-100 dark:border-white/5 shrink-0 p-6 overflow-hidden"
 	style="width: {typeof width === 'number' ? width + 'px' : width}"
 >
 	<div class="flex items-center justify-between mb-6">
