@@ -106,8 +106,8 @@
 		"hero": {
 			"titlePrefix": "あなたの究極の",
 			"titleSuffix": "JKT48コンパニオン",
-			"description": "公演を記録し、2ショットを集め、{highlight}と美しい個人ダッシュボードでファンダムの旅を祝いましょう。",
-			"highlight": "プレミアム分析",
+			"description": "あなたのヲタ活のあらゆる軌跡を、ひとつの個人的な{highlight}に保存しましょう。単なる記録だけではなく、あなたの活動を静かに見守る証となります。",
+			"highlight": "デジタルアーカイブ",
 			"getStarted": "始める",
 			"openSource": "オープンソース • 広告なし • ファンメイド"
 		},
