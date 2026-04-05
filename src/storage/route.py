@@ -10,6 +10,8 @@ from src.storage.schemas import (
     ImageUploadRequest,
     ImageUploadResponse,
     PresignedUrlResponse,
+    BatchPresignedUrlRequest,
+    BatchPresignedUrlResponse,
 )
 from src.storage.service import StorageService
 
@@ -92,3 +94,15 @@ async def get_presigned_url(
     Returns URL with expiration time.
     """
     return storage_service.get_presigned_url(filename)
+
+
+@router.post("/storage/presign/bulk", response_model=BatchPresignedUrlResponse)
+async def get_bulk_presigned_urls(
+    request: BatchPresignedUrlRequest,
+    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    storage_service: StorageService = Depends(get_storage_service),
+):
+    """
+    Get presigned URLs for multiple images in bulk.
+    """
+    return storage_service.get_bulk_presigned_urls(request.filenames)

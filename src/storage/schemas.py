@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-ImageCategory = Literal["ticket", "twoshot", "avatar"]
+ImageCategory = Literal["ticket", "twoshot", "avatar", "journal"]
 
 
 class ImageUploadRequest(BaseModel):
@@ -17,4 +17,13 @@ class ImageUploadResponse(BaseModel):
 
 class PresignedUrlResponse(BaseModel):
     url: str
+    expires_in: int
+
+
+class BatchPresignedUrlRequest(BaseModel):
+    filenames: list[str]
+
+
+class BatchPresignedUrlResponse(BaseModel):
+    urls: dict[str, str]  # filename -> presigned_url
     expires_in: int
