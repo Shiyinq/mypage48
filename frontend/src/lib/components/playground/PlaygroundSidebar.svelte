@@ -86,6 +86,7 @@
 							// Better to let them collapse manually or after focus lost if it's valid.
 						}}
 						class="w-full pl-3 pr-16 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-white/5 rounded-xl text-xs focus:ring-1 focus:ring-red-500 transition-all font-mono"
+						autocomplete="off"
 					/>
 					<div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
 						{#if $playgroundStore.apiKey}
@@ -120,6 +121,7 @@
 				placeholder={$t('playground.searchPlaceholder')}
 				bind:value={searchQuery}
 				class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-zinc-800 border-none rounded-xl text-sm focus:ring-1 focus:ring-red-500 transition-all"
+				autocomplete="off"
 			/>
 		</div>
 	</div>
