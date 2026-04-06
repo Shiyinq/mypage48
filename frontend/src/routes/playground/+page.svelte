@@ -195,9 +195,4 @@
 	{/if}
 </div>
 
-<style>
-	:global(main) {
-		padding: 0 !important;
-		max-width: 100% !important;
-	}
-</style>
+
