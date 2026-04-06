@@ -119,7 +119,7 @@
 
 {#if isOpen}
     <div 
-        class="fixed inset-0 z-[100] flex items-center justify-center transition-all"
+        class="fixed inset-0 z-[10000] flex items-center justify-center transition-all"
         transition:fade={{ duration: 200 }}
         role="dialog"
         aria-modal="true"
@@ -135,7 +135,7 @@
         ></div>
 
         <!-- Controls -->
-        <div class="fixed top-4 right-4 md:top-6 md:right-6 flex items-center gap-2 md:gap-4 z-[110]">
+        <div class="fixed top-4 right-4 md:top-6 md:right-6 flex items-center gap-2 md:gap-4 z-[10001]">
             <div class="flex items-center gap-1 md:gap-2 bg-zinc-900/80 backdrop-blur-md p-1 md:p-1.5 rounded-full border border-white/10 shadow-2xl">
                 <button 
                     on:click={handleZoomOut}
