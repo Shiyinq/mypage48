@@ -7,6 +7,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { cleanseMarkdown, extractSignatures } from '$lib/utils/markdown';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
 
 	// Icons
 	import {
@@ -40,8 +41,12 @@
 	let isUploading = false;
 	let textareaEl: HTMLTextAreaElement;
 	let scrollContainer: HTMLDivElement;
-
 	let currentTicketId = '';
+
+	// Lightbox state
+	let isLightboxOpen = false;
+	let lightboxSrc = '';
+	let lightboxAlt = '';
 
 	// When ticket data comes from backend, always capture signatures to keep cache fresh
 	$: if (ticket) {
@@ -159,6 +164,22 @@
 	});
 
 	$: parsedHtml = isEditing ? '' : DOMPurify.sanitize(marked.parse(resolvedContent) as string);
+
+	function handleMarkdownClick(e: MouseEvent | KeyboardEvent) {
+		const target = e.target as HTMLElement;
+		if (target.tagName === 'IMG') {
+			const img = target as HTMLImageElement;
+			lightboxSrc = img.src;
+			lightboxAlt = img.alt;
+			isLightboxOpen = true;
+		}
+	}
+
+	function handleKeyDown(e: KeyboardEvent) {
+		if (e.key === 'Enter' || e.key === ' ') {
+			handleMarkdownClick(e);
+		}
+	}
 </script>
 
 <div class="h-full flex flex-col relative w-full bg-white dark:bg-zinc-950">
@@ -354,7 +375,11 @@
 						</div>
 					{:else}
 						<div
-							class="prose prose-red prose-img:rounded-xl prose-img:shadow-lg dark:prose-invert max-w-none prose-lg md:prose-xl prose-p:leading-relaxed font-serif w-full shrink-0 h-full"
+							class="prose prose-red prose-img:rounded-xl prose-img:shadow-lg dark:prose-invert max-w-none prose-lg md:prose-xl prose-p:leading-relaxed font-serif w-full shrink-0 h-full cursor-zoom-in"
+							on:click={handleMarkdownClick}
+							on:keydown={handleKeyDown}
+							role="button"
+							tabindex="0"
 						>
 							{@html parsedHtml}
 						</div>
@@ -364,6 +389,13 @@
 		</div>
 	</div>
 </div>
+
+<ImageLightbox
+	src={lightboxSrc}
+	alt={lightboxAlt}
+	isOpen={isLightboxOpen}
+	onClose={() => (isLightboxOpen = false)}
+/>
 
 <style>
 	/* Minimal styling for prose area */
