@@ -68,11 +68,27 @@
         if (e.key === '-') handleZoomOut();
     }
 
-    function downloadImage() {
-        const link = document.createElement('a');
-        link.href = src;
-        link.download = alt || 'image';
-        link.click();
+    async function downloadImage() {
+        try {
+            const response = await fetch(src);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Try to extract filename from src or use alt
+            const filename = src.split('/').pop()?.split('?')[0] || alt || 'image';
+            link.download = filename.includes('.') ? filename : `${filename}.jpg`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download failed:', error);
+            // Fallback: just open in new tab if fetch fails
+            window.open(src, '_blank');
+        }
     }
 
     function handleWheel(e: WheelEvent) {
@@ -120,7 +136,7 @@
 
         <!-- Controls -->
         <div class="fixed top-4 right-4 md:top-6 md:right-6 flex items-center gap-2 md:gap-4 z-[110]">
-            <div class="flex items-center gap-1 md:gap-2 bg-white/10 backdrop-blur-md p-1 md:p-1.5 rounded-full border border-white/20">
+            <div class="flex items-center gap-1 md:gap-2 bg-zinc-900/80 backdrop-blur-md p-1 md:p-1.5 rounded-full border border-white/10 shadow-2xl">
                 <button 
                     on:click={handleZoomOut}
                     class="p-1.5 md:p-2 hover:bg-white/10 rounded-full transition-colors text-white cursor-pointer"
@@ -144,7 +160,7 @@
 
             <button 
                 on:click={resetZoom}
-                class="hidden sm:flex p-2.5 md:p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all text-white border border-white/20 cursor-pointer"
+                class="flex p-2.5 md:p-3 bg-zinc-900/80 hover:bg-zinc-800 backdrop-blur-md rounded-full transition-all text-white border border-white/10 shadow-2xl cursor-pointer"
                 title="Reset Zoom"
                 aria-label="Reset zoom"
             >
@@ -153,7 +169,7 @@
 
             <button 
                 on:click={downloadImage}
-                class="hidden sm:flex p-2.5 md:p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all text-white border border-white/20 cursor-pointer"
+                class="flex p-2.5 md:p-3 bg-zinc-900/80 hover:bg-zinc-800 backdrop-blur-md rounded-full transition-all text-white border border-white/10 shadow-2xl cursor-pointer"
                 title="Download"
                 aria-label="Download image"
             >
