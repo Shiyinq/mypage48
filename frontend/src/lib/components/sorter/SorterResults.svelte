@@ -19,11 +19,9 @@
 	export let layoutMode: 'card' | 'list' = 'card';
 	export let variant: 'public' | 'theater' = 'public';
 
-
-
 	function handleImageError(e: Event) {
 		const target = e.currentTarget as HTMLImageElement;
-		target.src = 'https://jkt48.com/images/member/member_256x256_full.png';
+		target.src = 'https://placehold.co/640x960?text=JKT48';
 	}
 
 	function shareResults() {
@@ -72,14 +70,14 @@
 			>
 				<button
 					on:click={() => setLayout('card')}
-					class={`p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'card' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : (isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500')}`}
+					class={`p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'card' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500'}`}
 					title="Grid View"
 				>
 					<LayoutGrid size={18} />
 				</button>
 				<button
 					on:click={() => setLayout('list')}
-					class={`p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'list' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : (isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500')}`}
+					class={`p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'list' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500'}`}
 					title="List View"
 				>
 					<List size={18} />
@@ -113,7 +111,7 @@
 							class="relative group"
 						>
 							<div
-								class={`aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all group-hover:scale-105 group-hover:shadow-2xl cursor-pointer relative ${i <= 2 ? 'shiny-card' : ''} ${i === 0 ? 'border-yellow-400 shadow-xl shadow-yellow-400/20' : i === 1 ? 'border-slate-300 shadow-xl shadow-slate-300/20' : i === 2 ? 'border-amber-600 shadow-xl shadow-amber-700/10' : (isPublic ? 'border-slate-100 dark:border-zinc-800 shadow-lg' : 'border-zinc-100 dark:border-zinc-800 shadow-lg')}`}
+								class={`aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all group-hover:scale-105 group-hover:shadow-2xl cursor-pointer relative ${i <= 2 ? 'shiny-card' : ''} ${i === 0 ? 'border-yellow-400 shadow-xl shadow-yellow-400/20' : i === 1 ? 'border-slate-300 shadow-xl shadow-slate-300/20' : i === 2 ? 'border-amber-600 shadow-xl shadow-amber-700/10' : isPublic ? 'border-slate-100 dark:border-zinc-800 shadow-lg' : 'border-zinc-100 dark:border-zinc-800 shadow-lg'}`}
 							>
 								<img
 									src={getExternalMediaUrl(member.img)}
@@ -128,10 +126,12 @@
 									class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 								/>
 
-								<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"></div>
+								<div
+									class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
+								></div>
 
 								<div
-									class={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm z-30 shadow-lg ${i === 0 ? 'bg-yellow-400 text-yellow-900 border-2 border-yellow-200' : i === 1 ? 'bg-slate-300 text-slate-800 border-2 border-slate-100' : i === 2 ? 'bg-amber-700 text-white border-2 border-amber-500' : (isPublic ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white border-2 border-slate-50 dark:border-zinc-800' : 'bg-white dark:bg-zinc-900 text-themed border-2 border-zinc-50 dark:border-zinc-800')}`}
+									class={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm z-30 shadow-lg ${i === 0 ? 'bg-yellow-400 text-yellow-900 border-2 border-yellow-200' : i === 1 ? 'bg-slate-300 text-slate-800 border-2 border-slate-100' : i === 2 ? 'bg-amber-700 text-white border-2 border-amber-500' : isPublic ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white border-2 border-slate-50 dark:border-zinc-800' : 'bg-white dark:bg-zinc-900 text-themed border-2 border-zinc-50 dark:border-zinc-800'}`}
 								>
 									{i + 1}
 								</div>
