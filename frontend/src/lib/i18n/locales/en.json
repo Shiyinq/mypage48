@@ -687,6 +687,7 @@
 			"mute": "Mute",
 			"unmute": "Unmute",
 			"pip": "Picture in Picture",
+			"openOriginal": "Open Original Stream",
 			"multiview": {
 				"title": "Multi-view",
 				"clear_all": "Clear All",
