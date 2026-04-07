@@ -234,6 +234,19 @@ class MembersScraper(BaseScraper):
     def fetch(self):
         return fetch_members_data()
 
+    def save(self, data):
+        """Standard save plus update active.members.json mapping."""
+        super().save(data)
+        
+        # Also update the master mapping file src/active.members.json
+        mapping_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src', 'active.members.json')
+        try:
+            with open(mapping_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=4, ensure_ascii=False)
+            print(f"Updated master mapping: {mapping_file}")
+        except Exception as e:
+            print(f"Error updating master mapping: {e}")
+
 
 class NewsScraper(BaseScraper):
     name = "News"
