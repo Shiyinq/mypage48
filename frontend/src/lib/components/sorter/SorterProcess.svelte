@@ -19,11 +19,9 @@
 	export let hasHistory = false;
 	export let variant: 'public' | 'theater' = 'public';
 
-
-
 	function handleImageError(e: Event) {
 		const target = e.currentTarget as HTMLImageElement;
-		target.src = 'https://jkt48.com/images/member/member_256x256_full.png';
+		target.src = 'https://placehold.co/640x960?text=JKT48';
 	}
 
 	function handleSelect(flag: number) {
@@ -102,7 +100,9 @@
 				alt="frame"
 				class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 			/>
-			<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"></div>
+			<div
+				class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
+			></div>
 			<div class="absolute bottom-3 left-3 right-3 text-left z-30">
 				<span
 					class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
@@ -143,7 +143,9 @@
 
 		<div
 			class={`z-10 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-white dark:bg-zinc-900 rounded-full shadow-2xl border-2 md:border-4 font-black italic text-[8px] md:text-[10px] ${
-				isPublic ? 'border-red-600 text-red-600 animate-pulse' : 'border-rose-500 text-rose-500 animate-bounce-slow'
+				isPublic
+					? 'border-red-600 text-red-600 animate-pulse'
+					: 'border-rose-500 text-rose-500 animate-bounce-slow'
 			} ${isAnimating ? 'vs-pulse' : ''}`}
 		>
 			VS
@@ -175,7 +177,9 @@
 				alt="frame"
 				class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 			/>
-			<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"></div>
+			<div
+				class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
+			></div>
 			<div class="absolute bottom-3 left-3 right-3 text-left z-30">
 				<span
 					class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
