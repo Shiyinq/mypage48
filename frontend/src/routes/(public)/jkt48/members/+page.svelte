@@ -18,9 +18,38 @@
 	let loadingGenerations = true;
 	let searchQuery = '';
 	let selectedGeneration: string | null = null;
+	let selectedType: string | null = null;
 	let generations: string[] = [];
 	let showMemberDetail = false;
 	let selectedMember: Member | null = null;
+
+	const teamOrder = ['LOVE', 'DREAM', 'PASSION', 'TRAINEE', 'JKT48_VIRTUAL'];
+	const teamColors: Record<string, string> = {
+		LOVE: 'text-pink-600 border-pink-500 bg-pink-50 dark:bg-pink-900/10',
+		DREAM: 'text-cyan-600 border-cyan-500 bg-cyan-50 dark:bg-cyan-900/10',
+		PASSION: 'text-orange-600 border-orange-500 bg-orange-50 dark:bg-orange-900/10',
+		TRAINEE: 'text-[#c08081] border-[#c08081] bg-rose-50 dark:bg-rose-900/10',
+		JKT48_VIRTUAL: 'text-blue-600 border-blue-500 bg-blue-50 dark:bg-blue-900/10',
+		JKT48: 'text-red-600 border-red-500 bg-red-50 dark:bg-red-900/10'
+	};
+
+	const accentColors: Record<string, string> = {
+		LOVE: 'bg-pink-500 shadow-pink-500/20',
+		DREAM: 'bg-cyan-500 shadow-cyan-500/20',
+		PASSION: 'bg-orange-500 shadow-orange-500/20',
+		TRAINEE: 'bg-[#c08081] shadow-[#c08081]/20',
+		JKT48_VIRTUAL: 'bg-blue-600 shadow-blue-600/20',
+		JKT48: 'bg-red-600 shadow-red-500/20'
+	};
+
+	const teamNames: Record<string, string> = {
+		LOVE: 'Team Love',
+		DREAM: 'Team Dream',
+		PASSION: 'Team Passion',
+		TRAINEE: 'Trainee',
+		JKT48_VIRTUAL: 'JKT48 Virtual',
+		JKT48: 'Member'
+	};
 	
 	// Store subscriptions
 	$: state = $membersStore;
@@ -72,6 +101,10 @@
 		fetchMembers(true);
 	}
 
+	function setType(type: string | null) {
+		selectedType = type;
+	}
+
 	function openMemberDetail(member: Member) {
 		selectedMember = member;
 		showMemberDetail = true;
@@ -96,7 +129,12 @@
 		}
 	}
 
-	$: groupedMembers = membersList.reduce(
+	$: filteredList = membersList.filter((m) => {
+		if (selectedType && (m.member_type || 'JKT48') !== selectedType) return false;
+		return true;
+	});
+
+	$: groupedMembers = filteredList.reduce(
 		(acc, member) => {
 			const type = member.member_type || 'JKT48';
 			if (!acc[type]) acc[type] = [];
@@ -106,11 +144,12 @@
 		{} as Record<string, Member[]>
 	);
 
-	$: types = Object.keys(groupedMembers).sort((a, b) => {
-		if (a === 'JKT48') return -1;
-		if (b === 'JKT48') return 1;
-		return a.localeCompare(b);
-	});
+	$: types = [...teamOrder, 'JKT48'].filter((t) => groupedMembers[t] && groupedMembers[t].length > 0);
+	// Handle any dynamic types not in our list
+	$: otherTypes = Object.keys(groupedMembers)
+		.filter((t) => !teamOrder.includes(t) && t !== 'JKT48')
+		.sort();
+	$: allSortedTypes = [...types, ...otherTypes];
 </script>
 
 <SEO
@@ -130,51 +169,81 @@
 	</div>
 
 	<!-- Search and Filters -->
-	<div class="flex flex-col-reverse md:flex-row gap-4 mb-8 md:items-center justify-between">
-		<!-- Generation Filters -->
-		<div class="flex-1 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-			<div class="flex items-center gap-2">
-				<button
-					on:click={() => setGeneration(null)}
-					class={`px-4 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-						selectedGeneration === null
-							? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
-							: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 border border-gray-100 dark:border-zinc-700'
-					}`}
-				>
-					{$t('common.all')}
-				</button>
-				{#if loadingGenerations}
-					{#each Array(5) as _}
-						<div class="h-[42px] w-20 bg-gray-100 dark:bg-zinc-800 rounded-full animate-pulse shrink-0"></div>
-					{/each}
-				{:else}
-					{#each generations as gen}
-						<button
-							on:click={() => setGeneration(gen)}
-							class={`px-4 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-								selectedGeneration === gen
-									? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
-									: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 border border-gray-100 dark:border-zinc-700'
-							}`}
-						>
-							Gen {gen}
-						</button>
-					{/each}
-				{/if}
+	<div class="space-y-6 mb-10">
+		<div class="flex flex-col md:flex-row gap-4 md:items-center justify-between">
+			<!-- Generation Filters -->
+			<div class="flex-1 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+				<div class="flex items-center gap-2">
+					<button
+						on:click={() => setGeneration(null)}
+						class={`px-4 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+							selectedGeneration === null
+								? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
+								: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 border border-gray-100 dark:border-zinc-700'
+						}`}
+					>
+						{$t('common.all')}
+					</button>
+					{#if loadingGenerations}
+						{#each Array(5) as _}
+							<div class="h-[42px] w-20 bg-gray-100 dark:bg-zinc-800 rounded-full animate-pulse shrink-0"></div>
+						{/each}
+					{:else}
+						{#each generations as gen}
+							<button
+								on:click={() => setGeneration(gen)}
+								class={`px-4 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+									selectedGeneration === gen
+										? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
+										: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 border border-gray-100 dark:border-zinc-700'
+								}`}
+							>
+								Gen {gen}
+							</button>
+						{/each}
+					{/if}
+				</div>
+			</div>
+
+			<!-- Search Bar -->
+			<div class="relative w-full md:w-80 shrink-0">
+				<Search class="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+				<input
+					type="text"
+					placeholder={$t('common.search')}
+					value={searchQuery}
+					on:input={handleSearch}
+					class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 rounded-full text-sm text-themed placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-sm"
+				/>
 			</div>
 		</div>
 
-		<!-- Search Bar -->
-		<div class="relative w-full md:w-64 shrink-0">
-			<Search class="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-			<input
-				type="text"
-				placeholder={$t('common.search')}
-				value={searchQuery}
-				on:input={handleSearch}
-				class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 rounded-full text-sm text-themed placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-sm"
-			/>
+		<!-- Team Filters -->
+		<div class="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+			<div class="flex items-center gap-2">
+				<button
+					on:click={() => setType(null)}
+					class={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+						selectedType === null
+							? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
+							: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 hover:border-red-500/50'
+					}`}
+				>
+					Semua Member
+				</button>
+				{#each teamOrder as type}
+					<button
+						on:click={() => setType(type)}
+						class={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer border ${
+							selectedType === type
+								? teamColors[type] || 'bg-red-600 text-white'
+								: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-zinc-700 hover:border-themed'
+						}`}
+					>
+						{teamNames[type] || type}
+					</button>
+				{/each}
+			</div>
 		</div>
 	</div>
 
@@ -211,15 +280,13 @@
 			{/if}
 		</EmptyState>
 	{:else}
-		{#each types as type}
+		{#each allSortedTypes as type}
 			<div class="mb-16 last:mb-0">
 				<!-- Group Header -->
 				<div class="flex items-center gap-4 mb-8 group/header">
-					<div class="h-10 w-2 bg-red-600 rounded-full shadow-lg shadow-red-500/20"></div>
+					<div class={`h-10 w-2 rounded-full shadow-lg ${accentColors[type] || 'bg-red-600 shadow-red-500/20'}`}></div>
 					<h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
-						{type === 'JKT48'
-							? $t('member.type.member') || 'Member'
-							: $t('member.type.trainee') || 'Trainee'}
+						{teamNames[type] || type}
 					</h2>
 					<span class="px-3 py-1 rounded-full bg-white dark:bg-zinc-900 text-xs font-black text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-800 shadow-sm">
 						{groupedMembers[type].length}
