@@ -1,12 +1,12 @@
 [
     {
         "active": true,
-        "birthdate": "5 Agustus 2008",
+        "birthdate": "06 Agustus 2008",
         "bloodType": "B",
         "generation": "12",
         "height": "164cm",
         "horoscope": "Leo",
-        "href": "/member/detail?member=abigail-rachel-1&type=JKT48",
+        "href": "/member/detail?member=abigail-rachel-1&type=PASSION",
         "id": "1",
         "img": "/media/jkt48-member/abigail_rachel.jpg",
         "jiko": "Seperti bunga yang mekar, aku akan membuat kamu, kamu, dan kamu terbayang-bayang. Aku Ara-Aralie!",
@@ -21,16 +21,16 @@
             "twitter": "https://twitter.com/Aralie_JKT48"
         },
         "member_code": "ABIGAIL_RACHEL",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "31 Agustus 2007",
+        "birthdate": "01 September 2007",
         "bloodType": "B",
         "generation": "12",
         "height": "167cm",
         "horoscope": "Virgo",
-        "href": "/member/detail?member=adeline-wijaya-2&type=JKT48",
+        "href": "/member/detail?member=adeline-wijaya-2&type=DREAM",
         "id": "2",
         "img": "/media/jkt48-member/adeline_wijaya.jpg",
         "jiko": "Nyemangatin dan ngangenin, siapa yang kamu pikirin? Delynn! Pyong pyong, aku Delynn.",
@@ -45,11 +45,11 @@
             "twitter": "https://twitter.com/Delynn_JKT48"
         },
         "member_code": "ADELINE_WIJAYA",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "19 Oktober 2012",
+        "birthdate": "20 Oktober 2012",
         "bloodType": "O",
         "generation": "14",
         "height": "160cm",
@@ -73,12 +73,12 @@
     },
     {
         "active": true,
-        "birthdate": "25 Agustus 2006",
+        "birthdate": "26 Agustus 2006",
         "bloodType": "A",
         "generation": "11",
         "height": "162cm",
         "horoscope": "Virgo",
-        "href": "/member/detail?member=alya-amanda-13&type=JKT48",
+        "href": "/member/detail?member=alya-amanda-13&type=LOVE",
         "id": "13",
         "img": "/media/jkt48-member/alya_amanda.jpg",
         "jiko": "Jika hatimu sedang menangis, aku akan datang sebagai pelangi. Halo, aku Alya!",
@@ -93,10 +93,10 @@
             "twitter": "https://twitter.com/AA_AlyaJKT48"
         },
         "member_code": "ALYA_AMANDA",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
-        "active": true,
+        "active": false,
         "birthdate": "16 Desember 2004",
         "bloodType": "O",
         "generation": "10",
@@ -121,12 +121,12 @@
     },
     {
         "active": true,
-        "birthdate": "4 Desember 2005",
+        "birthdate": "05 Desember 2005",
         "bloodType": "O",
         "generation": "7",
         "height": "166cm",
         "horoscope": "Sagitarius",
-        "href": "/member/detail?member=angelina-christy-22&type=JKT48",
+        "href": "/member/detail?member=angelina-christy-22&type=PASSION",
         "id": "22",
         "img": "/media/jkt48-member/angelina_christy.jpg",
         "jiko": "Peduli dan berbaik hati, siapa dia? Chriiiis-ty!",
@@ -141,16 +141,16 @@
             "twitter": "https://twitter.com/A_ChristyJKT48"
         },
         "member_code": "ANGELINA_CHRISTY",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "17 Oktober 2005",
+        "birthdate": "18 Oktober 2005",
         "bloodType": "O",
         "generation": "11",
         "height": "153cm",
         "horoscope": "Libra",
-        "href": "/member/detail?member=anindya-ramadhani-26&type=JKT48",
+        "href": "/member/detail?member=anindya-ramadhani-26&type=LOVE",
         "id": "26",
         "img": "/media/jkt48-member/anindya_ramadhani.jpg",
         "jiko": "Si mungil hadir semanis mangga. Hai, aku Anindya!",
@@ -165,11 +165,11 @@
             "twitter": "https://twitter.com/AR_AnindyaJKT48"
         },
         "member_code": "ANINDYA_RAMADHANI",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "5 Agustus 2010",
+        "birthdate": "06 Agustus 2010",
         "bloodType": "AB",
         "generation": "13",
         "height": "164cm",
@@ -193,7 +193,7 @@
     },
     {
         "active": true,
-        "birthdate": "13 Juli 2007",
+        "birthdate": "14 Juli 2007",
         "bloodType": "O",
         "generation": "13",
         "height": "166cm",
@@ -217,12 +217,12 @@
     },
     {
         "active": true,
-        "birthdate": "28 Oktober 2002",
+        "birthdate": "29 Oktober 2002",
         "bloodType": "O",
         "generation": "10",
         "height": "157cm",
         "horoscope": "Scorpio",
-        "href": "/member/detail?member=aurellia-31&type=JKT48",
+        "href": "/member/detail?member=aurellia-31&type=LOVE",
         "id": "31",
         "img": "/media/jkt48-member/aurellia.jpg",
         "jiko": "Si social butterfly yang energik dan periang! Halo aku Aurellia.",
@@ -237,16 +237,16 @@
             "twitter": "https://twitter.com/AU_LiaJKT48"
         },
         "member_code": "AURELLIA",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "13 September 2006",
+        "birthdate": "14 September 2006",
         "bloodType": "A",
         "generation": "12",
         "height": "162cm",
         "horoscope": "Virgo",
-        "href": "/member/detail?member=aurhel-alana-33&type=JKT48",
+        "href": "/member/detail?member=aurhel-alana-33&type=LOVE",
         "id": "33",
         "img": "/media/jkt48-member/aurhel_alana.jpg",
         "jiko": "Dengan kekuatan bulan Aku akan menyihirmu dengan pesonaku! Hai aku Lana.",
@@ -261,11 +261,11 @@
             "twitter": "https://twitter.com/AR_LanaJKT48"
         },
         "member_code": "AURHEL_ALANA",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "1 April 2010",
+        "birthdate": "01 April 2010",
         "bloodType": "A",
         "generation": "13",
         "height": "166cm",
@@ -289,7 +289,7 @@
     },
     {
         "active": true,
-        "birthdate": "1 Februari 2012",
+        "birthdate": "02 Februari 2012",
         "bloodType": "A",
         "generation": "14",
         "height": "154cm",
@@ -313,12 +313,12 @@
     },
     {
         "active": true,
-        "birthdate": "20 Agustus 2007",
+        "birthdate": "21 Agustus 2007",
         "bloodType": "B",
         "generation": "12",
         "height": "162cm",
         "horoscope": "Leo",
-        "href": "/member/detail?member=catherina-vallencia-44&type=JKT48",
+        "href": "/member/detail?member=catherina-vallencia-44&type=PASSION",
         "id": "44",
         "img": "/media/jkt48-member/catherina_vallencia.jpg",
         "jiko": "Hadir dengan seribu kejutan, Checkmate! Siap memenangkan hatimu. Halo semuanya, namaku Erine.",
@@ -333,16 +333,16 @@
             "twitter": "https://twitter.com/Cerine_JKT48"
         },
         "member_code": "CATHERINA_VALLENCIA",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "27 Mei 2009",
+        "birthdate": "28 Mei 2009",
         "bloodType": "A",
         "generation": "11",
         "height": "162cm",
         "horoscope": "Gemini",
-        "href": "/member/detail?member=cathleen-nixie-45&type=JKT48",
+        "href": "/member/detail?member=cathleen-nixie-45&type=LOVE",
         "id": "45",
         "img": "/media/jkt48-member/cathleen_nixie.jpg",
         "jiko": "Si peri cantik jelita itulah aku. Hai, aku Cathy!",
@@ -357,16 +357,16 @@
             "twitter": "https://twitter.com/N_CathyJKT48"
         },
         "member_code": "CATHLEEN_NIXIE",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "8 April 2007",
+        "birthdate": "09 April 2007",
         "bloodType": "O",
         "generation": "11",
         "height": "164cm",
         "horoscope": "Aries",
-        "href": "/member/detail?member=celline-thefani-46&type=JKT48",
+        "href": "/member/detail?member=celline-thefani-46&type=LOVE",
         "id": "46",
         "img": "/media/jkt48-member/celline_thefani.jpg",
         "jiko": "Semanis permen kapas dan seindah bunga lavender! Hollaa, perkenalkan nama aku Elin.",
@@ -381,16 +381,16 @@
             "twitter": "https://twitter.com/Elin_JKT48"
         },
         "member_code": "CELLINE_THEFANI",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "22 Desember 2009",
+        "birthdate": "23 Desember 2009",
         "bloodType": "B",
         "generation": "11",
         "height": "169cm",
         "horoscope": "Capricorn",
-        "href": "/member/detail?member=chelsea-davina-48&type=JKT48",
+        "href": "/member/detail?member=chelsea-davina-48&type=DREAM",
         "id": "48",
         "img": "/media/jkt48-member/chelsea_davina.jpg",
         "jiko": "As bright as the shooting stars in the starry night sky. Hello, I'm Chelsea!",
@@ -405,11 +405,11 @@
             "twitter": "https://twitter.com/DC_ChelseaJKT48"
         },
         "member_code": "CHELSEA_DAVINA",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "1 Maret 2011",
+        "birthdate": "02 Maret 2011",
         "bloodType": "A",
         "generation": "14",
         "height": "161cm",
@@ -433,12 +433,12 @@
     },
     {
         "active": true,
-        "birthdate": "25 Juli 2002",
+        "birthdate": "26 Juli 2002",
         "bloodType": "O",
         "generation": "8",
         "height": "165cm",
         "horoscope": "Leo",
-        "href": "/member/detail?member=cornelia-vanisa-59&type=JKT48",
+        "href": "/member/detail?member=cornelia-vanisa-59&type=PASSION",
         "id": "59",
         "img": "/media/jkt48-member/cornelia_vanisa.jpg",
         "jiko": "Si pelawak dengan jokes bapak-bapak yang akan menghiburmu. Halo, aku Oniel!",
@@ -453,16 +453,16 @@
             "twitter": "https://twitter.com/C_OnielJKT48"
         },
         "member_code": "CORNELIA_VANISA",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "21 November 2003",
+        "birthdate": "22 November 2003",
         "bloodType": "O",
         "generation": "11",
         "height": "160cm",
         "horoscope": "Sagitarius",
-        "href": "/member/detail?member=cynthia-yaputera-60&type=JKT48",
+        "href": "/member/detail?member=cynthia-yaputera-60&type=LOVE",
         "id": "60",
         "img": "/media/jkt48-member/cynthia_yaputera.jpg",
         "jiko": "Semangatku terus menerus meluap, pop pop. Aku Cynthia!",
@@ -477,16 +477,16 @@
             "twitter": "https://twitter.com/Y_CynthiaJKT48"
         },
         "member_code": "CYNTHIA_YAPUTERA",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "15 Desember 2005",
+        "birthdate": "16 Desember 2005",
         "bloodType": "O",
         "generation": "11",
         "height": "163cm",
         "horoscope": "Sagitarius",
-        "href": "/member/detail?member=dena-natalia-64&type=JKT48",
+        "href": "/member/detail?member=dena-natalia-64&type=PASSION",
         "id": "64",
         "img": "/media/jkt48-member/dena_natalia.jpg",
         "jiko": "Tok Tok, Siapa? Si penari yang akan menarikmu ke duniaku.",
@@ -501,16 +501,16 @@
             "twitter": "https://twitter.com/Danella_JKT48"
         },
         "member_code": "DENA_NATALIA",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "15 Desember 2005",
+        "birthdate": "16 Desember 2005",
         "bloodType": "O",
         "generation": "11",
         "height": "165cm",
         "horoscope": "Sagitarius",
-        "href": "/member/detail?member=desy-natalia-67&type=JKT48",
+        "href": "/member/detail?member=desy-natalia-67&type=PASSION",
         "id": "67",
         "img": "/media/jkt48-member/desy_natalia.jpg",
         "jiko": "Seperti bunga daisy, aku akan memancarkan kesegaran dan kebahagiaan.",
@@ -525,11 +525,11 @@
             "twitter": "https://twitter.com/Daisy_JKT48"
         },
         "member_code": "DESY_NATALIA",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "12 Agustus 2012",
+        "birthdate": "13 Agustus 2012",
         "bloodType": "O",
         "generation": "14",
         "height": "152cm",
@@ -553,7 +553,7 @@
     },
     {
         "active": true,
-        "birthdate": "29 Agustus 2010",
+        "birthdate": "30 Agustus 2010",
         "bloodType": "AB",
         "generation": "14",
         "height": "170cm",
@@ -577,12 +577,12 @@
     },
     {
         "active": true,
-        "birthdate": "25 Februari 2005",
+        "birthdate": "26 Februari 2005",
         "bloodType": "B",
         "generation": "7",
         "height": "157cm",
         "horoscope": "Pisces",
-        "href": "/member/detail?member=febriola-sinambela-88&type=JKT48",
+        "href": "/member/detail?member=febriola-sinambela-88&type=DREAM",
         "id": "88",
         "img": "/media/jkt48-member/febriola_sinambela.jpg",
         "jiko": "Dengan keajaibanku, aku akan membuat kalian selalu tertawa. Halo, aku Olla, si mechanic girl!",
@@ -597,16 +597,16 @@
             "twitter": "https://twitter.com/F_OllaJKT48"
         },
         "member_code": "FEBRIOLA_SINAMBELA",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "15 Januari 1999",
+        "birthdate": "16 Januari 1999",
         "bloodType": "O",
         "generation": "3",
         "height": "163cm",
         "horoscope": "Capricorn",
-        "href": "/member/detail?member=feni-fitriyanti-89&type=JKT48",
+        "href": "/member/detail?member=feni-fitriyanti-89&type=PASSION",
         "id": "89",
         "img": "/media/jkt48-member/feni_fitriyanti.jpg",
         "jiko": "Matahari yang indah, yang akan memberikan kehangatan di setiap harinya. Halo aku Feni.",
@@ -621,16 +621,16 @@
             "twitter": "https://twitter.com/F_FeniJKT48"
         },
         "member_code": "FENI_FITRIYANTI",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "3 Februari 2002",
+        "birthdate": "04 Februari 2002",
         "bloodType": "O",
         "generation": "8",
         "height": "164cm",
         "horoscope": "Aquarius",
-        "href": "/member/detail?member=fiony-alveria-91&type=JKT48",
+        "href": "/member/detail?member=fiony-alveria-91&type=LOVE",
         "id": "91",
         "img": "/media/jkt48-member/fiony_alveria.jpg",
         "jiko": "Seperti simfoni yang menenangkan hati. Halo aku Fiony!",
@@ -645,16 +645,16 @@
             "twitter": "https://twitter.com/A_FionyJKT48"
         },
         "member_code": "FIONY_ALVERIA",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "12 Februari 2006",
+        "birthdate": "13 Februari 2006",
         "bloodType": "B",
         "generation": "7",
         "height": "161cm",
         "horoscope": "Aquarius",
-        "href": "/member/detail?member=freya-jayawardana-94&type=JKT48",
+        "href": "/member/detail?member=freya-jayawardana-94&type=DREAM",
         "id": "94",
         "img": "/media/jkt48-member/freya_jayawardana.jpg",
         "jiko": "Gadis koleris yang suka berimajinasi, terangi harimu dengan senyum karamelku. Halo semua, aku Freya!",
@@ -669,16 +669,16 @@
             "twitter": "https://twitter.com/Freya_JKT48"
         },
         "member_code": "FREYA_JAYAWARDANA",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "27 Juli 2008",
+        "birthdate": "28 Juli 2008",
         "bloodType": "A",
         "generation": "12",
         "height": "155cm",
         "horoscope": "Leo",
-        "href": "/member/detail?member=fritzy-rosmerian-96&type=JKT48",
+        "href": "/member/detail?member=fritzy-rosmerian-96&type=LOVE",
         "id": "96",
         "img": "/media/jkt48-member/fritzy_rosmerian.jpg",
         "jiko": "ABRACADABRA! Si pesulap yang siap membuat hatimu terpikat! Halo semuanya! It's me Fritzy!",
@@ -693,16 +693,16 @@
             "twitter": "https://twitter.com/RFritzy_JKT48"
         },
         "member_code": "FRITZY_ROSMERIAN",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "6 Agustus 2006",
+        "birthdate": "07 Agustus 2006",
         "bloodType": "B",
         "generation": "10",
         "height": "161cm",
         "horoscope": "Leo",
-        "href": "/member/detail?member=gabriela-abigail-97&type=JKT48",
+        "href": "/member/detail?member=gabriela-abigail-97&type=DREAM",
         "id": "97",
         "img": "/media/jkt48-member/gabriela_abigail.jpg",
         "jiko": "Ohayo! Konnichiwa! Oyasumi! Aku ingin ada di setiap harimu. Halo semuanya aku Ella.",
@@ -717,16 +717,16 @@
             "twitter": "https://twitter.com/AM_EllaJKT48"
         },
         "member_code": "GABRIELA_ABIGAIL",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "22 Juni 2010",
+        "birthdate": "23 Juni 2010",
         "bloodType": "B",
         "generation": "11",
         "height": "161cm",
         "horoscope": "Cancer",
-        "href": "/member/detail?member=gendis-mayrannisa-102&type=JKT48",
+        "href": "/member/detail?member=gendis-mayrannisa-102&type=DREAM",
         "id": "102",
         "img": "/media/jkt48-member/gendis_mayrannisa.jpg",
         "jiko": "Bonjour, periang dan pencair suasana itulah aku, Gendis!",
@@ -741,16 +741,16 @@
             "twitter": "https://twitter.com/Gendis_JKT48"
         },
         "member_code": "GENDIS_MAYRANNISA",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "29 Juni 2001",
+        "birthdate": "30 Juni 2001",
         "bloodType": "O",
         "generation": "6",
         "height": "165cm",
         "horoscope": "Cancer",
-        "href": "/member/detail?member=gita-sekar-andarini-104&type=JKT48",
+        "href": "/member/detail?member=gita-sekar-andarini-104&type=DREAM",
         "id": "104",
         "img": "/media/jkt48-member/gita_sekar_andarini.jpg",
         "jiko": "Diam bukan berarti tidak memperhatikanmu, aku Gita!",
@@ -765,16 +765,16 @@
             "twitter": "https://twitter.com/A_GitaJKT48"
         },
         "member_code": "GITA_SEKAR_ANDARINI",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "17 Oktober 2007",
+        "birthdate": "18 Oktober 2007",
         "bloodType": "B",
         "generation": "11",
         "height": "166cm",
         "horoscope": "Libra",
-        "href": "/member/detail?member=grace-octaviani-105&type=JKT48",
+        "href": "/member/detail?member=grace-octaviani-105&type=LOVE",
         "id": "105",
         "img": "/media/jkt48-member/grace_octaviani.jpg",
         "jiko": "Manis seperti gulali, imut seperti kelinci. Halo, aku Gracie!",
@@ -789,16 +789,16 @@
             "twitter": "https://twitter.com/Gracie_JKT48"
         },
         "member_code": "GRACE_OCTAVIANI",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "9 Januari 2006",
+        "birthdate": "10 Januari 2006",
         "bloodType": "O",
         "generation": "11",
         "height": "165cm",
         "horoscope": "Capricorn",
-        "href": "/member/detail?member=greesella-adhalia-107&type=JKT48",
+        "href": "/member/detail?member=greesella-adhalia-107&type=DREAM",
         "id": "107",
         "img": "/media/jkt48-member/greesella_adhalia.jpg",
         "jiko": "Pandangan mataku akan menyinari hatimu bagaikan kunang-kunang di malam hari.",
@@ -813,11 +813,11 @@
             "twitter": "https://twitter.com/Greesel_JKT48"
         },
         "member_code": "GREESELLA_ADHALIA",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "30 Juni 2008",
+        "birthdate": "01 Juli 2008",
         "bloodType": "O",
         "generation": "13",
         "height": "165cm",
@@ -841,7 +841,7 @@
     },
     {
         "active": true,
-        "birthdate": "26 Agustus 2008",
+        "birthdate": "27 Agustus 2008",
         "bloodType": "O",
         "generation": "14",
         "height": "164cm",
@@ -865,12 +865,12 @@
     },
     {
         "active": true,
-        "birthdate": "14 Juni 2000",
+        "birthdate": "15 Juni 2000",
         "bloodType": "A",
         "generation": "7",
         "height": "167cm",
         "horoscope": "Gemini",
-        "href": "/member/detail?member=helisma-putri-112&type=JKT48",
+        "href": "/member/detail?member=helisma-putri-112&type=DREAM",
         "id": "112",
         "img": "/media/jkt48-member/helisma_putri.jpg",
         "jiko": "Dengan energi kegembiraanku, aku akan menghangatkan suasana. Halo halo, aku Ceu Eli!",
@@ -885,16 +885,16 @@
             "twitter": "https://twitter.com/H_EliJKT48"
         },
         "member_code": "HELISMA_PUTRI",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "18 Oktober 2007",
+        "birthdate": "19 Oktober 2007",
         "bloodType": "O",
         "generation": "12",
         "height": "163cm",
         "horoscope": "Libra",
-        "href": "/member/detail?member=hillary-abigail-114&type=JKT48",
+        "href": "/member/detail?member=hillary-abigail-114&type=LOVE",
         "id": "114",
         "img": "/media/jkt48-member/hillary_abigail.jpg",
         "jiko": "Papipapipu aku akan mengejutkanmu dengan kehebatan ku. Halo aku Lily!",
@@ -909,11 +909,11 @@
             "twitter": "https://twitter.com/Lily_JKT48"
         },
         "member_code": "HILLARY_ABIGAIL",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "12 Agustus 2011",
+        "birthdate": "13 Agustus 2011",
         "bloodType": "A",
         "generation": "13",
         "height": "159cm",
@@ -937,12 +937,12 @@
     },
     {
         "active": true,
-        "birthdate": "19 Maret 2001",
+        "birthdate": "20 Maret 2001",
         "bloodType": "A",
         "generation": "9",
         "height": "169cm",
         "horoscope": "Pisces",
-        "href": "/member/detail?member=indah-cahya-116&type=JKT48",
+        "href": "/member/detail?member=indah-cahya-116&type=LOVE",
         "id": "116",
         "img": "/media/jkt48-member/indah_cahya.jpg",
         "jiko": "Tak banyak bicara, bercerita melalui tulisan. Hai aku Indah.",
@@ -957,11 +957,35 @@
             "twitter": "https://twitter.com/C_IndahJKT48"
         },
         "member_code": "INDAH_CAHYA",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "8 Juli 2009",
+        "birthdate": "25 November 2007",
+        "bloodType": "A",
+        "generation": "",
+        "height": "160cm",
+        "horoscope": "9",
+        "href": "/member/detail?member=isha-kirana-119&type=JKT48_VIRTUAL",
+        "id": "119",
+        "img": "/media/jkt48-member/isha_kirana.png",
+        "jiko": "",
+        "name": "Isha Kirana",
+        "nickname": "Isha",
+        "socials": {
+            "idn_app": "",
+            "instagram": "",
+            "showroom": "",
+            "threads": "",
+            "tiktok": "",
+            "twitter": ""
+        },
+        "member_code": "ISHA_KIRANA",
+        "member_type": "JKT48_VIRTUAL"
+    },
+    {
+        "active": true,
+        "birthdate": "09 Juli 2009",
         "bloodType": "B",
         "generation": "13",
         "height": "161cm",
@@ -985,12 +1009,12 @@
     },
     {
         "active": true,
-        "birthdate": "15 Februari 2011",
+        "birthdate": "16 Februari 2011",
         "bloodType": "O",
         "generation": "12",
         "height": "161cm",
         "horoscope": "Aquarius",
-        "href": "/member/detail?member=jazzlyn-trisha-121&type=JKT48",
+        "href": "/member/detail?member=jazzlyn-trisha-121&type=LOVE",
         "id": "121",
         "img": "/media/jkt48-member/jazzlyn_trisha.jpg",
         "jiko": "Pelukis yang hadir di mimpi-mimpi indahmu. One… two… tri… sha! Halo semua, aku Trisha.",
@@ -1005,11 +1029,11 @@
             "twitter": "https://twitter.com/JTrisha_JKT48"
         },
         "member_code": "JAZZLYN_TRISHA",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "8 November 2009",
+        "birthdate": "09 November 2009",
         "bloodType": "O",
         "generation": "13",
         "height": "165cm",
@@ -1033,12 +1057,12 @@
     },
     {
         "active": true,
-        "birthdate": "22 September 2005",
+        "birthdate": "23 September 2005",
         "bloodType": "O",
         "generation": "7",
         "height": "165cm",
         "horoscope": "Libra",
-        "href": "/member/detail?member=jessica-chandra-127&type=JKT48",
+        "href": "/member/detail?member=jessica-chandra-127&type=PASSION",
         "id": "127",
         "img": "/media/jkt48-member/jessica_chandra.jpg",
         "jiko": "Suka menari dan akan selalu berusaha menjadi sumber energimu. Hai, aku Jessi!",
@@ -1053,16 +1077,16 @@
             "twitter": "https://twitter.com/C_JessiJKT48"
         },
         "member_code": "JESSICA_CHANDRA",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "12 September 2001",
+        "birthdate": "13 September 2001",
         "bloodType": "O",
         "generation": "10",
         "height": "155cm",
         "horoscope": "Virgo",
-        "href": "/member/detail?member=jesslyn-elly-131&type=JKT48",
+        "href": "/member/detail?member=jesslyn-elly-131&type=DREAM",
         "id": "131",
         "img": "/media/jkt48-member/jesslyn_elly.jpg",
         "jiko": "Seperti ombak laut yang tenang, tiba-tiba aku akan menyapumu dengan banyak cinta. Halo aku Lyn.",
@@ -1077,16 +1101,16 @@
             "twitter": "https://twitter.com/SE_LynJKT48"
         },
         "member_code": "JESSLYN_ELLY",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "25 Juli 2006",
+        "birthdate": "26 Juli 2006",
         "bloodType": "A",
         "generation": "9",
         "height": "166cm",
         "horoscope": "Leo",
-        "href": "/member/detail?member=kathrina-irene-143&type=JKT48",
+        "href": "/member/detail?member=kathrina-irene-143&type=PASSION",
         "id": "143",
         "img": "/media/jkt48-member/kathrina_irene.jpg",
         "jiko": "Never miss a chance to be a star. Halo, aku Kathrina!",
@@ -1101,16 +1125,16 @@
             "twitter": "https://twitter.com/I_KathrinaJKT48"
         },
         "member_code": "KATHRINA_IRENE",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "22 Oktober 2002",
+        "birthdate": "23 Oktober 2002",
         "bloodType": "B",
         "generation": "8",
         "height": "160cm",
         "horoscope": "Scorpio",
-        "href": "/member/detail?member=lulu-salsabila-148&type=JKT48",
+        "href": "/member/detail?member=lulu-salsabila-148&type=PASSION",
         "id": "148",
         "img": "/media/jkt48-member/lulu_salsabila.jpg",
         "jiko": "Terang seperti bulan, bersinar seperti bintang.. Aku Lulu!",
@@ -1125,16 +1149,16 @@
             "twitter": "https://twitter.com/A_LuluJKT48"
         },
         "member_code": "LULU_SALSABILA",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "8 Januari 2006",
+        "birthdate": "09 Januari 2006",
         "bloodType": "O",
         "generation": "9",
         "height": "165cm",
         "horoscope": "Capricorn",
-        "href": "/member/detail?member=marsha-lenathea-152&type=JKT48",
+        "href": "/member/detail?member=marsha-lenathea-152&type=DREAM",
         "id": "152",
         "img": "/media/jkt48-member/marsha_lenathea.jpg",
         "jiko": "Seperti piza yang dinanti-nantikan semua orang, selalu nantikan aku, ya! Halo, aku Marsha!",
@@ -1149,11 +1173,35 @@
             "twitter": "https://twitter.com/L_MarshaJKT48"
         },
         "member_code": "MARSHA_LENATHEA",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "1 Desember 2011",
+        "birthdate": "21 Juni 2007",
+        "bloodType": "A",
+        "generation": "",
+        "height": "171cm",
+        "horoscope": "4",
+        "href": "/member/detail?member=maura-nilambari-154&type=JKT48_VIRTUAL",
+        "id": "154",
+        "img": "/media/jkt48-member/maura_nilambari.png",
+        "jiko": "",
+        "name": "Maura Nilambari",
+        "nickname": "Maura",
+        "socials": {
+            "idn_app": "",
+            "instagram": "",
+            "showroom": "",
+            "threads": "",
+            "tiktok": "",
+            "twitter": ""
+        },
+        "member_code": "MAURA_NILAMBARI",
+        "member_type": "JKT48_VIRTUAL"
+    },
+    {
+        "active": true,
+        "birthdate": "02 Desember 2011",
         "bloodType": "B",
         "generation": "14",
         "height": "164cm",
@@ -1177,12 +1225,12 @@
     },
     {
         "active": true,
-        "birthdate": "21 April 2009",
+        "birthdate": "22 April 2009",
         "bloodType": "O",
         "generation": "11",
         "height": "162cm",
         "horoscope": "Taurus",
-        "href": "/member/detail?member=michelle-alexandra-159&type=JKT48",
+        "href": "/member/detail?member=michelle-alexandra-159&type=LOVE",
         "id": "159",
         "img": "/media/jkt48-member/michelle_alexandra.jpg",
         "jiko": "Always your number one, till infinity and beyond. Hello everyone, it's Michie!",
@@ -1197,16 +1245,16 @@
             "twitter": "https://twitter.com/Michie_JKT48"
         },
         "member_code": "MICHELLE_ALEXANDRA",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "23 Januari 2009",
+        "birthdate": "24 Januari 2009",
         "bloodType": "O",
         "generation": "12",
         "height": "169cm",
         "horoscope": "Aquarius",
-        "href": "/member/detail?member=michelle-levia-161&type=JKT48",
+        "href": "/member/detail?member=michelle-levia-161&type=PASSION",
         "id": "161",
         "img": "/media/jkt48-member/michelle_levia.jpg",
         "jiko": "Are you ready? Jalani hari ini dengan menari bersamaku! Yuhu, aku Levi.",
@@ -1221,11 +1269,11 @@
             "twitter": "https://twitter.com/Levi_JKT48"
         },
         "member_code": "MICHELLE_LEVIA",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "14 Desember 2007",
+        "birthdate": "15 Desember 2007",
         "bloodType": "O",
         "generation": "13",
         "height": "166cm",
@@ -1249,12 +1297,12 @@
     },
     {
         "active": true,
-        "birthdate": "11 Juli 2004",
+        "birthdate": "12 Juli 2004",
         "bloodType": "B",
         "generation": "7",
         "height": "165cm",
         "horoscope": "Cancer",
-        "href": "/member/detail?member=mutiara-azzahra-166&type=JKT48",
+        "href": "/member/detail?member=mutiara-azzahra-166&type=PASSION",
         "id": "166",
         "img": "/media/jkt48-member/mutiara_azzahra.jpg",
         "jiko": "Tok tok! Siapa? Si penari yang akan menarikmu ke duniaku.",
@@ -1269,16 +1317,16 @@
             "twitter": "https://twitter.com/A_MutheJKT48"
         },
         "member_code": "MUTIARA_AZZAHRA",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "17 Juni 2007",
+        "birthdate": "18 Juni 2007",
         "bloodType": "AB",
         "generation": "12",
         "height": "163cm",
         "horoscope": "Gemini",
-        "href": "/member/detail?member=nayla-suji-175&type=JKT48",
+        "href": "/member/detail?member=nayla-suji-175&type=LOVE",
         "id": "175",
         "img": "/media/jkt48-member/nayla_suji.jpg",
         "jiko": "Bakkyun! Tembakan cintaku akan melelehkan hatimu. Halo, aku Nayla!",
@@ -1293,16 +1341,16 @@
             "twitter": "https://twitter.com/SNayla_JKT48"
         },
         "member_code": "NAYLA_SUJI",
-        "member_type": "JKT48"
+        "member_type": "LOVE"
     },
     {
         "active": true,
-        "birthdate": "15 Oktober 2009",
+        "birthdate": "16 Oktober 2009",
         "bloodType": "O",
         "generation": "12",
         "height": "164cm",
         "horoscope": "Libra",
-        "href": "/member/detail?member=nina-tutachia-178&type=JKT48",
+        "href": "/member/detail?member=nina-tutachia-178&type=DREAM",
         "id": "178",
         "img": "/media/jkt48-member/nina_tutachia.jpg",
         "jiko": "Si panda unyu yang selalu ceria! Hai aku Nachia.. bikin kamu bahagia!",
@@ -1317,11 +1365,11 @@
             "twitter": "https://twitter.com/Nachia_JKT48"
         },
         "member_code": "NINA_TUTACHIA",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "23 Februari 2006",
+        "birthdate": "24 Februari 2006",
         "bloodType": "B",
         "generation": "13",
         "height": "157cm",
@@ -1345,12 +1393,12 @@
     },
     {
         "active": true,
-        "birthdate": "2 November 2007",
+        "birthdate": "03 November 2007",
         "bloodType": "B",
         "generation": "12",
         "height": "169cm",
         "horoscope": "Scorpio",
-        "href": "/member/detail?member=oline-manuel-185&type=JKT48",
+        "href": "/member/detail?member=oline-manuel-185&type=DREAM",
         "id": "185",
         "img": "/media/jkt48-member/oline_manuel.jpg",
         "jiko": "Semangatku Full terus Gas! Gas! Gas! Oline!",
@@ -1365,11 +1413,35 @@
             "twitter": "https://twitter.com/M_OlineJKT48"
         },
         "member_code": "OLINE_MANUEL",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "11 Maret 2011",
+        "birthdate": "30 Juli 2006",
+        "bloodType": "A",
+        "generation": "",
+        "height": "157cm",
+        "horoscope": "5",
+        "href": "/member/detail?member=pia-meraleo-187&type=JKT48_VIRTUAL",
+        "id": "187",
+        "img": "/media/jkt48-member/pia_meraleo.jpg",
+        "jiko": "",
+        "name": "Pia Meraleo",
+        "nickname": "Pia",
+        "socials": {
+            "idn_app": "",
+            "instagram": "https://www.instagram.com/jkt48v.pia//",
+            "showroom": "",
+            "threads": "",
+            "tiktok": "https://www.tiktok.com/@jkt48v.pia//",
+            "twitter": "https://twitter.com/pia_jkt48v"
+        },
+        "member_code": "PIA_MERALEO",
+        "member_type": "JKT48_VIRTUAL"
+    },
+    {
+        "active": true,
+        "birthdate": "12 Maret 2011",
         "bloodType": "A",
         "generation": "14",
         "height": "159cm",
@@ -1393,12 +1465,12 @@
     },
     {
         "active": true,
-        "birthdate": "10 November 2007",
+        "birthdate": "11 November 2007",
         "bloodType": "AB",
         "generation": "10",
         "height": "169cm",
         "horoscope": "Scorpio",
-        "href": "/member/detail?member=raisha-syifa-195&type=JKT48",
+        "href": "/member/detail?member=raisha-syifa-195&type=PASSION",
         "id": "195",
         "img": "/media/jkt48-member/raisha_syifa.jpg",
         "jiko": "Kalau sakura itu kembang, Aku itu kembanggaanmu! Halo aku Raisha.",
@@ -1413,11 +1485,11 @@
             "twitter": "https://twitter.com/SW_RaishaJKT48"
         },
         "member_code": "RAISHA_SYIFA",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "14 Oktober 2011",
+        "birthdate": "15 Oktober 2011",
         "bloodType": "AB",
         "generation": "14",
         "height": "152cm",
@@ -1441,12 +1513,12 @@
     },
     {
         "active": true,
-        "birthdate": "12 Januari 2009",
+        "birthdate": "13 Januari 2009",
         "bloodType": "O",
         "generation": "12",
         "height": "162cm",
         "horoscope": "Capricorn",
-        "href": "/member/detail?member=ribka-budiman-204&type=JKT48",
+        "href": "/member/detail?member=ribka-budiman-204&type=PASSION",
         "id": "204",
         "img": "/media/jkt48-member/ribka_budiman.jpg",
         "jiko": "Mirror mirror on the wall, who's the sweetest in here? It's me, Ribka!",
@@ -1461,16 +1533,40 @@
             "twitter": "https://twitter.com/Ribka_JKT48"
         },
         "member_code": "RIBKA_BUDIMAN",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     },
     {
         "active": true,
-        "birthdate": "31 Agustus 2008",
+        "birthdate": "07 Oktober 2009",
+        "bloodType": "A",
+        "generation": "",
+        "height": "155cm",
+        "horoscope": "7",
+        "href": "/member/detail?member=sami-maono-217&type=JKT48_VIRTUAL",
+        "id": "217",
+        "img": "/media/jkt48-member/sami_maono.png",
+        "jiko": "",
+        "name": "Sami Maono",
+        "nickname": "Sami",
+        "socials": {
+            "idn_app": "",
+            "instagram": "",
+            "showroom": "",
+            "threads": "",
+            "tiktok": "",
+            "twitter": ""
+        },
+        "member_code": "SAMI_MAONO",
+        "member_type": "JKT48_VIRTUAL"
+    },
+    {
+        "active": true,
+        "birthdate": "01 September 2008",
         "bloodType": "B",
         "generation": "12",
         "height": "160cm",
         "horoscope": "Virgo",
-        "href": "/member/detail?member=shabilqis-naila-221&type=JKT48",
+        "href": "/member/detail?member=shabilqis-naila-221&type=DREAM",
         "id": "221",
         "img": "/media/jkt48-member/shabilqis_naila.jpg",
         "jiko": "ROAR! Si singa pemberani yang siap menyemangati harimu. Hai-hai aku Nala.",
@@ -1485,11 +1581,11 @@
             "twitter": "https://twitter.com/Nala_JKT48"
         },
         "member_code": "SHABILQIS_NAILA",
-        "member_type": "JKT48"
+        "member_type": "DREAM"
     },
     {
         "active": true,
-        "birthdate": "30 November 2011",
+        "birthdate": "01 Desember 2011",
         "bloodType": "O",
         "generation": "14",
         "height": "154cm",
@@ -1513,12 +1609,36 @@
     },
     {
         "active": true,
-        "birthdate": "7 Maret 2010",
+        "birthdate": "22 April 2005",
+        "bloodType": "A",
+        "generation": "",
+        "height": "168cm",
+        "horoscope": "2",
+        "href": "/member/detail?member=tana-nona-238&type=JKT48_VIRTUAL",
+        "id": "238",
+        "img": "/media/jkt48-member/tana_nona.jpg",
+        "jiko": "",
+        "name": "Tana Nona",
+        "nickname": "Tana",
+        "socials": {
+            "idn_app": "",
+            "instagram": "https://www.instagram.com/jkt48v.tana//",
+            "showroom": "",
+            "threads": "",
+            "tiktok": "https://www.tiktok.com/@jkt48v.tana/",
+            "twitter": "https://twitter.com/tana_jkt48v"
+        },
+        "member_code": "TANA_NONA",
+        "member_type": "JKT48_VIRTUAL"
+    },
+    {
+        "active": true,
+        "birthdate": "08 Maret 2010",
         "bloodType": "AB",
         "generation": "12",
         "height": "162cm",
         "horoscope": "Pisces",
-        "href": "/member/detail?member=victoria-kimberly-244&type=JKT48",
+        "href": "/member/detail?member=victoria-kimberly-244&type=PASSION",
         "id": "244",
         "img": "/media/jkt48-member/victoria_kimberly.jpg",
         "jiko": "Baby hamster yang lincah, aku akan berlari-lari di pikiranmu! Halo-ha, katakan Kimmy!",
@@ -1533,6 +1653,6 @@
             "twitter": "https://twitter.com/Kimmy_JKT48"
         },
         "member_code": "VICTORIA_KIMBERLY",
-        "member_type": "JKT48"
+        "member_type": "PASSION"
     }
 ]
