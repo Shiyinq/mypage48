@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Optional, Tuple
 
 
@@ -75,9 +75,11 @@ def format_birthdate_id(date_str: str) -> str:
     """Format ISO date to Indonesian (e.g., 2008-08-05 -> 06 Agustus 2008)."""
     try:
         # date_str is like "2008-08-05T17:00:00.000Z"
-        dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        dt_utc = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        # Convert to WIB (UTC+7)
+        dt_jakarta = dt_utc.astimezone(timezone(timedelta(hours=7)))
         months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
-        return f"{dt.day} {months[dt.month - 1]} {dt.year}"
+        return f"{dt_jakarta.day:02d} {months[dt_jakarta.month - 1]} {dt_jakarta.year}"
     except Exception:
         return ""
 
