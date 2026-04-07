@@ -11,19 +11,25 @@ def _get_id_mapping() -> Tuple[Dict[str, str], Dict[str, str]]:
     """Get mapping from current JKT48 ID to legacy app ID and Name to legacy app ID."""
     id_map = {}
     name_map = {}
-    legacy_file = 'src/active.members.json'
+    
+    # Use absolute path relative to this file
+    legacy_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'active.members.json')
+    
     if os.path.exists(legacy_file):
         try:
             with open(legacy_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 for m in data:
-                    new_id = m.get('jkt48_id')
-                    old_id = m.get('id')
+                    # Priority for mapping: jkt48_id (Official) -> id (Legacy)
+                    # If jkt48_id is missing, assume the current 'id' is the one from API (for legacy support)
+                    official_id = m.get('jkt48_id') or m.get('id')
+                    legacy_id = m.get('id')
                     name = m.get('name', '').strip().lower()
-                    if new_id and old_id:
-                        id_map[str(new_id)] = str(old_id)
-                    if name and old_id:
-                        name_map[name] = str(old_id)
+                    
+                    if official_id and legacy_id:
+                        id_map[str(official_id)] = str(legacy_id)
+                    if name and legacy_id:
+                        name_map[name] = str(legacy_id)
         except Exception as e:
             print(f"Warning: Could not load ID mapping: {e}")
     return id_map, name_map
