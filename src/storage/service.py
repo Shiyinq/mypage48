@@ -1,7 +1,8 @@
 import base64
+import httpx
 import re
 import uuid
-from typing import TYPE_CHECKING, Optional
+from typing import Any, TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from src.memories.schemas import MemoryItem, TopTwoShotResponse
@@ -306,3 +307,53 @@ class StorageService:
                 extremes["last"]["image"] = self.resolve_url(extremes["last"]["image"])
 
         return type(stats)(**stats_dict)
+
+    async def get_external_media(self, path: str) -> tuple[Optional[bytes], str, int]:
+        """
+        Get external media from cache or original source.
+        Returns (content, media_type, status_code).
+        """
+        path = path.lstrip("/")
+        cache_key = f"cache/external/{path}"
+
+        # 1. Try cache
+        try:
+            content, content_type = self.repository.get_file_with_metadata(cache_key)
+            if content:
+                logger.info(f"Serving external media from cache: {path}")
+                return content, content_type or "image/jpeg", 200
+        except Exception as e:
+            logger.error(f"Error checking cache for {path}: {e}")
+
+        # 2. Fetch from source
+        upstream_url = f"https://jkt48.com/api/v1/storages/{path}"
+        try:
+            async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
+                upstream_response = await client.get(upstream_url)
+
+            if upstream_response.status_code == 200:
+                content = upstream_response.content
+                content_type = upstream_response.headers.get("content-type", "image/jpeg")
+
+                # 3. Cache it
+                try:
+                    self.repository.upload_file(content, cache_key, content_type)
+                    logger.info(f"Cached external media: {path}")
+                except Exception as e:
+                    logger.error(f"Failed to cache external media {path}: {e}")
+
+                return content, content_type, 200
+
+            # Forward other status codes as-is
+            return (
+                upstream_response.content,
+                "text/plain",
+                upstream_response.status_code,
+            )
+
+        except httpx.TimeoutException:
+            logger.error(f"Timeout fetching external media: {path}")
+            return b"Gateway Timeout", "text/plain", 504
+        except Exception as e:
+            logger.error(f"Error fetching external media: {e}")
+            return b"Bad Gateway", "text/plain", 502
