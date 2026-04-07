@@ -2,13 +2,11 @@
 	import type { Member } from '$lib/apis/members';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
+	import { getMemberFrame } from '$lib/constants';
+
 	export let member: Member;
 
-	// Frame logic
-	const MEMBER_FRAME = 'https://jkt48.com/images/member/bg-member-item-frame-transparent.png';
-	const TRAINEE_FRAME = 'https://jkt48.com/images/member/bg-member-trainee-frame-transparent.png';
-
-	$: frameImg = member.member_type?.toLowerCase() === 'trainee' ? TRAINEE_FRAME : MEMBER_FRAME;
+	$: frameImg = getMemberFrame(member.member_type);
 </script>
 
 <button

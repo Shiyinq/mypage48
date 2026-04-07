@@ -6,6 +6,7 @@
 	import type { Member } from '$lib/apis/members';
 	import { fly, fade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import { getMemberFrame } from '$lib/constants';
 
 	const { t } = useTranslation();
 	const dispatch = createEventDispatcher();
@@ -18,8 +19,7 @@
 	export let layoutMode: 'card' | 'list' = 'card';
 	export let variant: 'public' | 'theater' = 'public';
 
-	const MEMBER_FRAME = 'https://jkt48.com/images/member/bg-member-item-frame-transparent.png';
-	const TRAINEE_FRAME = 'https://jkt48.com/images/member/bg-member-trainee-frame-transparent.png';
+
 
 	function handleImageError(e: Event) {
 		const target = e.currentTarget as HTMLImageElement;
@@ -123,7 +123,7 @@
 								/>
 
 								<img
-									src={member.member_type?.toLowerCase() === 'trainee' ? TRAINEE_FRAME : MEMBER_FRAME}
+									src={getMemberFrame(member.member_type)}
 									alt="frame"
 									class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 								/>
@@ -180,7 +180,7 @@
 									on:error={handleImageError}
 								/>
 								<img
-									src={member.member_type?.toLowerCase() === 'trainee' ? TRAINEE_FRAME : MEMBER_FRAME}
+									src={getMemberFrame(member.member_type)}
 									alt="frame"
 									class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 								/>
@@ -238,7 +238,7 @@
 											on:error={handleImageError}
 										/>
 										<img
-											src={member.member_type?.toLowerCase() === 'trainee' ? TRAINEE_FRAME : MEMBER_FRAME}
+											src={getMemberFrame(member.member_type)}
 											alt="frame"
 											class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 opacity-80"
 										/>
