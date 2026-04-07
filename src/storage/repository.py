@@ -4,6 +4,7 @@ from typing import Optional
 
 from minio import Minio
 from minio.error import S3Error
+from minio.lifecycleconfig import LifecycleConfig, Rule, Expiration, Filter
 
 from src.config import Settings
 from src.logging_config import create_logger
@@ -32,7 +33,7 @@ class StorageRepository:
         return self._client
 
     def _ensure_bucket(self) -> None:
-        """Ensure the bucket exists, create if not."""
+        """Ensure the bucket exists, create if not, and set lifecycle rules."""
         if self._bucket_ensured:
             return
 
@@ -40,9 +41,25 @@ class StorageRepository:
             if not self.client.bucket_exists(self.config.minio_bucket):
                 self.client.make_bucket(self.config.minio_bucket)
                 logger.info(f"Created bucket: {self.config.minio_bucket}")
+
+            # Set lifecycle rules for cache/external/
+            # This will automatically delete files in this folder after 7 days
+            lifecycle_config = LifecycleConfig(
+                [
+                    Rule(
+                        status="Enabled",
+                        rule_filter=Filter(prefix="cache/external/"),
+                        rule_id="expire_external_cache",
+                        expiration=Expiration(days=7),
+                    )
+                ]
+            )
+            self.client.set_bucket_lifecycle(self.config.minio_bucket, lifecycle_config)
+            # logger.info("Set life-cycle rule for cache/external/ to 7 days") # Muted to reduce noise
+
             self._bucket_ensured = True
         except S3Error as e:
-            logger.error(f"Failed to ensure bucket: {e}")
+            logger.error(f"Failed to ensure bucket or set lifecycle: {e}")
             raise
 
     def upload_file(
@@ -131,6 +148,21 @@ class StorageRepository:
         except Exception as e:
             logger.error(f"Unexpected error getting file: {e}")
             return None
+
+    def get_file_with_metadata(self, object_name: str) -> tuple[Optional[bytes], Optional[str]]:
+        """Get file content and content type from MinIO."""
+        self._ensure_bucket()
+        try:
+            stat = self.client.stat_object(self.config.minio_bucket, object_name)
+            response = self.client.get_object(self.config.minio_bucket, object_name)
+            return response.read(), stat.content_type
+        except S3Error as e:
+            if e.code != "NoSuchKey":
+                logger.error(f"Failed to get file with metadata: {e}")
+            return None, None
+        except Exception as e:
+            logger.error(f"Unexpected error getting file with metadata: {e}")
+            return None, None
 
     def get_file_stream(self, object_name: str):
         """Get file stream from MinIO."""

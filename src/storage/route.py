@@ -1,4 +1,3 @@
-import httpx
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
@@ -21,44 +20,27 @@ logger = create_logger("storage", __name__)
 
 
 @router.get("/storage/external/{path:path}")
-async def proxy_external_media(path: str):
+async def proxy_external_media(
+    path: str,
+    storage_service: StorageService = Depends(get_storage_service),
+):
     """
-    Proxy media files from jkt48.com to bypass cross-site blocking.
+    Proxy media files from jkt48.com with local caching in MinIO.
 
-    Forwards the request to https://jkt48.com/api/v1/storages/{path}
-    and returns the response with appropriate headers.
+    Checks if the file is in local storage (MinIO) first.
+    If not, fetches from https://jkt48.com/api/v1/storages/{path}
+    and saves to MinIO for future requests.
     """
-    path = path.lstrip("/")
-    upstream_url = f"https://jkt48.com/api/v1/storages/{path}"
+    content, media_type, status_code = await storage_service.get_external_media(path)
 
-    try:
-        async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
-            upstream_response = await client.get(upstream_url)
-
-        if upstream_response.status_code != 200:
-            logger.warning(
-                f"Upstream returned {upstream_response.status_code} for {path}"
-            )
-            return Response(
-                status_code=upstream_response.status_code,
-                content=upstream_response.content,
-            )
-
-        content_type = upstream_response.headers.get("content-type", "image/jpeg")
-
-        return Response(
-            content=upstream_response.content,
-            media_type=content_type,
-            headers={
-                "Cache-Control": "public, max-age=3600",
-            },
-        )
-    except httpx.TimeoutException:
-        logger.error(f"Timeout fetching external media: {path}")
-        return Response(status_code=504, content=b"Gateway Timeout")
-    except Exception as e:
-        logger.error(f"Error proxying external media: {e}")
-        return Response(status_code=502, content=b"Bad Gateway")
+    return Response(
+        content=content,
+        status_code=status_code,
+        media_type=media_type,
+        headers={
+            "Cache-Control": "public, max-age=3600",
+        },
+    )
 
 
 @router.post("/storage/upload", status_code=201, response_model=ImageUploadResponse)
