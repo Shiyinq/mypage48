@@ -79,7 +79,7 @@ def fetch_and_format_members(headers: Dict[str, str]) -> List[Dict[str, Any]]:
         # This keeps the app's internal IDs consistent even after JKT48 changed their IDs.
         final_id = old_item.get('id', m_id)
         
-        href = f"/member/detail?member={slug_name}-{final_id}&type={m_type}"
+        href = f"/member/detail?member={slug_name}-{m_id}&type={m_type}"
         img = clean_jkt48_url(api_data.get('photo') or api_data.get('photo_1') or old_item.get('img', ''))
 
         refined = {

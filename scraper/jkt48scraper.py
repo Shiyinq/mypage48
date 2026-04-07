@@ -110,7 +110,7 @@ def process_schedules(schedules: List[Dict[str, Any]], headers: Dict[str, str]) 
             
             for detail_event in detail_data['show']:
                 detail_event['raw_data']['short'] = schedule.get('raw_data', {}).get('short', {})
-                detail_event['label'] = schedule.get('label', '')
+                detail_event['label'] = schedule.get('label') or ''
                 detail_event['type'] = event_type
                 results['events'].append(detail_event)
         else:
