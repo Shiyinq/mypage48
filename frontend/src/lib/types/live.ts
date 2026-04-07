@@ -14,6 +14,7 @@ export interface LiveStatus {
 	title: string;
 	start_at?: string;
 	member: LiveMember;
+	image?: string;
 }
 
 export interface StreamingUrl {
@@ -27,6 +28,7 @@ export interface LiveStreamingResponse {
 	view_num?: number;
 	start_at?: string;
 	member: LiveMember;
+	image?: string;
 }
 
 export interface LiveChatIDNMessage {

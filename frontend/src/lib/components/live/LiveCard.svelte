@@ -25,7 +25,7 @@
 	<!-- Member Photo Container -->
 	<div class="relative w-full h-full overflow-hidden bg-gray-100 dark:bg-zinc-800">
 		<img
-			src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar}
+			src={getExternalMediaUrl(stream.image || stream.member?.img) || fallbackAvatar}
 			alt={stream.member?.name}
 			on:error={(e) => {
 				if (e.currentTarget instanceof HTMLImageElement)

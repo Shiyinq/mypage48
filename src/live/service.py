@@ -115,6 +115,7 @@ class LiveService:
                                 room_url_key=key,
                                 title=room.get("main_name"),
                                 view_num=room.get("view_num", 0),
+                                image=room.get("image"),
                                 start_at=datetime.fromtimestamp(room.get("started_at"))
                                 if room.get("started_at")
                                 else None,
@@ -137,6 +138,7 @@ class LiveService:
                                 room_url_key=room.get("room_url_key"),
                                 title=f"[DEBUG] {room.get('main_name')}",
                                 view_num=room.get("view_num", 0),
+                                image=room.get("image"),
                                 start_at=datetime.fromtimestamp(room.get("started_at"))
                                 if room.get("started_at")
                                 else datetime.now(),
@@ -162,6 +164,7 @@ class LiveService:
             getLivestreams(page: $page) {
             slug
             title
+            image_url
             view_count
             playback_url
             room_identifier
@@ -220,6 +223,7 @@ class LiveService:
                                 platform="idn",
                                 live_id=stream.get("slug"),
                                 title=stream.get("title"),
+                                image=stream.get("image_url"),
                                 view_num=stream.get("view_count") or 0,
                                 start_at=datetime.fromisoformat(
                                     stream.get("live_at").replace("Z", "+00:00")
@@ -251,6 +255,7 @@ class LiveService:
                                     platform="idn",
                                     live_id=stream.get("slug"),
                                     title=stream.get("title"),
+                                    image=stream.get("image_url"),
                                     view_num=stream.get("view_count") or 0,
                                     start_at=datetime.fromisoformat(stream.get("live_at").replace("Z", "+00:00")) if stream.get("live_at") else None,
                                     streaming_url=streaming_urls,
@@ -260,7 +265,7 @@ class LiveService:
                                         id=f"temp_{username}",
                                         name=creator_name,
                                         nickname=creator_name.split(" ")[0],
-                                        img=stream.get("creator", {}).get("avatar") or "https://www.jkt48.com/images/ogp.png",
+                                        img=stream.get("creator", {}).get("avatar") or "/media/news/migrated/jkt48logo.jpg",
                                     ),
                                 )
                             )
@@ -274,6 +279,7 @@ class LiveService:
                             platform="idn",
                             live_id=stream.get("slug"),
                             title=f"[DEBUG] {stream.get('title')}",
+                            image=stream.get("image_url"),
                             view_num=stream.get("view_count") or 0,
                             start_at=datetime.fromisoformat(stream.get("live_at").replace("Z", "+00:00")) if stream.get("live_at") else datetime.now(),
                             streaming_url=[
@@ -310,12 +316,14 @@ class LiveService:
                 if live.room_id == id:
                     view_num = live.view_num
                     start_at = live.start_at
+                    image = live.image
                     break
 
             return LiveStreamInfo(
                 streaming_urls=urls,
                 view_num=view_num,
                 start_at=start_at,
+                image=image,
                 member=profile
             )
         elif platform == "idn":
@@ -350,6 +358,7 @@ class LiveService:
                         room_identifier=room_id,
                         view_num=live.view_num,
                         start_at=live.start_at,
+                        image=live.image,
                         member=live.member
                     )
         raise StreamingUrlNotFoundError()

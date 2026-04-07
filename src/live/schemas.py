@@ -18,6 +18,7 @@ class LiveStreamInfo(BaseModel):
     room_identifier: Optional[str] = None
     view_num: int = 0
     start_at: Optional[datetime] = None
+    image: Optional[str] = None
     member: Optional[LiveMember] = None
 
 class LiveStatus(BaseModel):
@@ -29,6 +30,7 @@ class LiveStatus(BaseModel):
     title: Optional[str] = None
     view_num: int = 0
     start_at: Optional[datetime] = None
+    image: Optional[str] = None
     streaming_url: List[LiveStreamingURL] = []
     member: Optional[LiveMember] = None
 
