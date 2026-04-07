@@ -1,9 +1,32 @@
-"""Schedule and Theater scraper for JKT48 website."""
 import time
+import os
+import json
 from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 
 from .agent.browser import request
+from .utils import slugify
+
+def _get_id_mapping() -> Tuple[Dict[str, str], Dict[str, str]]:
+    """Get mapping from current JKT48 ID to legacy app ID and Name to legacy app ID."""
+    id_map = {}
+    name_map = {}
+    legacy_file = 'src/active.members.json'
+    if os.path.exists(legacy_file):
+        try:
+            with open(legacy_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                for m in data:
+                    new_id = m.get('jkt48_id')
+                    old_id = m.get('id')
+                    name = m.get('name', '').strip().lower()
+                    if new_id and old_id:
+                        id_map[str(new_id)] = str(old_id)
+                    if name and old_id:
+                        name_map[name] = str(old_id)
+        except Exception as e:
+            print(f"Warning: Could not load ID mapping: {e}")
+    return id_map, name_map
 
 def get_schedules_by_month(year: int, month: int, headers: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
     """Get all calendar events from API for a specific month and year."""
@@ -48,12 +71,12 @@ def get_schedules_by_month(year: int, month: int, headers: Optional[Dict[str, st
         event_type = item.get('type', 'EVENT')
         
         url_path = f"/purchase/schedule/event?code={ref_code}"
-        label = item.get('jkt48_member_type', '')
+        label = item.get('jkt48_member_type') or item.get('type') or ''
         
         events.append({
             'id': str(ref_code),
             'label': label,
-            'title': item.get('title', ''),
+            'title': item.get('title') or '',
             'url': url_path,
             'date': wib_date,
             'type': event_type,
@@ -80,11 +103,19 @@ def _ensure_members_cache(headers: Optional[Dict[str, str]] = None) -> List[Dict
     return _members_cache
 
 def _find_member_id_by_name(name: str, headers: Optional[Dict[str, str]] = None) -> Optional[str]:
+    # Try mapping from active.members.json by name first
+    id_map, name_map = _get_id_mapping()
+    name_key = name.strip().lower()
+    if name_key in name_map:
+        return name_map[name_key]
+        
     members = _ensure_members_cache(headers)
     for m in members:
-        if m.get('name') == name or name in m.get('name', ''):
-            m_id = m.get('jkt48_member_id') or m.get('member_id')
-            return str(m_id) if m_id else None
+        m_name = m.get('name', '')
+        if m_name == name or name in m_name:
+            current_id = str(m.get('jkt48_member_id') or m.get('member_id', ''))
+            # Return legacy ID if mapped, else return current API ID
+            return id_map.get(current_id, current_id)
     return None
 
 def get_theater_or_event_detail(
@@ -129,18 +160,29 @@ def get_theater_or_event_detail(
         except Exception:
              pass
              
+        # Get ID and Name mapping (New -> Legacy)
+        id_map, name_map = _get_id_mapping()
+        
         members_data = detail.get('jkt48_member', [])
         member_ids = []
         
+        # Map of Current ID -> Legacy ID for this specific show
+        show_mapping = {}
+        
         for m in members_data:
-            m_id = str(m.get('member_id', '0'))
+            current_id = str(m.get('member_id', '0'))
             m_name = m.get('name', '')
+            
+            # Use Legacy ID: priority ID Map -> Name Map -> Current ID
+            m_id = id_map.get(current_id) or name_map.get(m_name.strip().lower()) or current_id
+            show_mapping[current_id] = m_id
+            
             member_ids.append(m_id)
             
             member_map[m_id] = {
                 'id': m_id,
                 'name': m_name,
-                'url': f"/member/detail/id/{m_id}"
+                'url': f"/member/detail?member={slugify(m_name)}-{current_id}"
             }
             
         title = detail.get('title', '')
@@ -157,8 +199,11 @@ def get_theater_or_event_detail(
             for name in bday_names:
                 found = False
                 for m in members_data:
-                    if m.get('name') == name or name in m.get('name', ''):
-                        seitansai_ids.append(str(m.get('member_id')))
+                    m_name = m.get('name', '')
+                    if m_name == name or name in m_name:
+                        cur_id = str(m.get('member_id', ''))
+                        # Use the mapped Legacy ID from our show_mapping
+                        seitansai_ids.append(show_mapping.get(cur_id, cur_id))
                         found = True
                         break
                 

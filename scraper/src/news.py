@@ -52,7 +52,7 @@ def get_news_page(
 
         news.append({
             **item,  # Include all raw fields from the API
-            'title': item.get('title', ''),
+            'title': item.get('title') or '',
         })
     
     return news
@@ -82,7 +82,7 @@ def get_all_news(
 
         news.append({
             **item,
-            'title': item.get('title', ''),
+            'title': item.get('title') or '',
         })
         
     # Check for next page
@@ -119,5 +119,5 @@ def get_news(news_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str
     
     return {
         **raw_detail,
-        'title': raw_detail.get('title', ''),
+        'title': raw_detail.get('title') or '',
     }
