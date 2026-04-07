@@ -18,7 +18,7 @@ class MemberRepository:
         generation: Optional[str] = None,
         search: Optional[str] = None,
     ) -> List[dict]:
-        query = {}
+        query = {"active": True}
 
         if generation:
             query["generation"] = generation
@@ -40,7 +40,7 @@ class MemberRepository:
     async def count(
         self, generation: Optional[str] = None, search: Optional[str] = None
     ) -> int:
-        query = {}
+        query = {"active": True}
 
         if generation:
             query["generation"] = generation
@@ -66,8 +66,8 @@ class MemberRepository:
         return result.deleted_count
 
     async def get_generations(self) -> List[str]:
-        """Get list of unique generations"""
-        generations = await self.collection.distinct("generation")
+        """Get list of unique generations for active members"""
+        generations = await self.collection.distinct("generation", {"active": True})
         return sorted([g for g in generations if g])
 
     async def get_next_id(self) -> int:
