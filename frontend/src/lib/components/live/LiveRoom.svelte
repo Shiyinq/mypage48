@@ -473,14 +473,22 @@
 					class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 text-white gap-6 px-6 text-center"
 				>
 					<div
-						class="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center text-red-500"
+						class="w-32 h-44 sm:w-40 sm:h-56 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl mb-2 relative group"
 					>
-						<Info size={40} />
+						<img
+							src={getExternalMediaUrl(streamFromList?.image || streamFromList?.member?.img) || fallbackAvatar}
+							alt={streamFromList?.member?.name}
+							class="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
+						/>
+						<div class="absolute inset-0 bg-zinc-950/40 flex items-center justify-center">
+							<Info size={32} class="text-white/20" />
+						</div>
 					</div>
 					<div>
 						<h2 class="text-2xl font-black mb-2 uppercase tracking-tighter">Stream Offline</h2>
-						<p class="text-zinc-500 max-w-sm mx-auto">
-							This live session might have ended or is currently unavailable.
+						<p class="text-zinc-500 max-w-sm mx-auto text-xs sm:text-sm px-4">
+							{streamFromList?.member?.name || 'Member'} is not live at the moment.
+							This session might have ended or is currently unavailable.
 						</p>
 					</div>
 					<a

@@ -13,9 +13,14 @@ export function proxyExternalImageUrls(content: string | null | undefined): stri
 export function getExternalMediaUrl(path: string | null | undefined): string {
     if (!path) return '';
     
-    // Handle full JKT48 storage URLs
+    // Handle full JKT48 storage URLs - these need proxying to bypass CORS/auth
     if (path.includes('jkt48.com/api/v1/storages')) {
         return proxyExternalImageUrls(path);
+    }
+
+    // If it's already an absolute URL (Showroom, IDN, etc.), return it as is
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
     }
 
     const cleanPath = path.replace(/^\/+/, '');
