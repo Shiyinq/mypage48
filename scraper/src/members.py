@@ -37,6 +37,7 @@ def fetch_and_format_members(headers: Dict[str, str]) -> List[Dict[str, Any]]:
     
     # Load legacy data for merging
     old_data_map = {}
+    current_max_id = 0
     legacy_file = 'src/active.members.json'
     if os.path.exists(legacy_file):
         try:
@@ -46,6 +47,11 @@ def fetch_and_format_members(headers: Dict[str, str]) -> List[Dict[str, Any]]:
                     name_key = item.get('name', '').strip().lower()
                     if name_key:
                         old_data_map[name_key] = item
+                    
+                    # Track highest numeric ID
+                    mid_str = item.get('id', '0')
+                    if str(mid_str).isdigit():
+                        current_max_id = max(current_max_id, int(mid_str))
         except Exception as e:
             print(f"Warning: Could not load legacy members data: {e}")
 
@@ -53,6 +59,8 @@ def fetch_and_format_members(headers: Dict[str, str]) -> List[Dict[str, Any]]:
     member_list = get_members_list(headers)
     
     results = []
+    processed_names = set()
+    
     for member in member_list:
         m_id = str(member.get('jkt48_member_id', ''))
         if not m_id:
@@ -66,6 +74,7 @@ def fetch_and_format_members(headers: Dict[str, str]) -> List[Dict[str, Any]]:
         api_data = {**member, **member_detail}
         name = api_data.get('name', '')
         name_key = name.strip().lower()
+        processed_names.add(name_key)
         
         # Get legacy data if exists
         old_item = old_data_map.get(name_key, {})
@@ -75,9 +84,13 @@ def fetch_and_format_members(headers: Dict[str, str]) -> List[Dict[str, Any]]:
         m_type = api_data.get('type', 'JKT48')
         
         # Use ID from active.members.json if exists (Legacy JKT48 ID)
-        # otherwise use source API ID (Current JKT48 ID).
-        # This keeps the app's internal IDs consistent even after JKT48 changed their IDs.
-        final_id = old_item.get('id', m_id)
+        # otherwise use a new unique incrementing ID to avoid collisions (min 310).
+        if old_item.get('id'):
+            final_id = old_item['id']
+        else:
+            current_max_id = max(current_max_id + 1, 310)
+            final_id = str(current_max_id)
+            print(f"Assigning new Legacy ID {final_id} to {name}")
         
         href = f"/member/detail?member={slug_name}-{m_id}&type={m_type}"
         img = clean_jkt48_url(api_data.get('photo') or api_data.get('photo_1') or old_item.get('img', ''))
@@ -108,5 +121,13 @@ def fetch_and_format_members(headers: Dict[str, str]) -> List[Dict[str, Any]]:
             "member_type": m_type
         }
         results.append(refined)
+
+    # FINAL MERGE: Keep members from active.members.json that are NOT in current API response
+    for name_key, old_item in old_data_map.items():
+        if name_key not in processed_names:
+            print(f"Keeping graduated/historical member: {old_item.get('name', 'Unknown')}")
+            # Ensure they are marked as inactive
+            old_item['active'] = False
+            results.append(old_item)
         
     return results
