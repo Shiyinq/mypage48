@@ -13,6 +13,7 @@ class MockStorageRepository:
         self.get_presigned_url = MagicMock(return_value="https://minio.example.com/bucket/file.jpg")
         self.file_exists = MagicMock(return_value=True)
         self.delete_file = MagicMock(return_value=True)
+        self.get_file_with_metadata = MagicMock(return_value=(b"fake_image_content", "image/jpeg"))
 
 @pytest.fixture
 def mock_storage_repo():
@@ -210,3 +211,65 @@ async def test_api_get_bulk_presigned_urls(client, storage_service):
     finally:
         app.dependency_overrides.pop(get_storage_service, None)
         app.dependency_overrides.pop(get_current_user, None)
+
+@pytest.mark.asyncio
+async def test_get_external_media_cache_hit(storage_service):
+    path = "media/jkt48-member/shani.jpg"
+    
+    # Mock cache hit
+    storage_service.repository.get_file_with_metadata.return_value = (b"cached_content", "image/jpeg")
+    
+    content, media_type, status = await storage_service.get_external_media(path)
+    
+    assert status == 200
+    assert content == b"cached_content"
+    assert media_type == "image/jpeg"
+    storage_service.repository.get_file_with_metadata.assert_called_with("cache/external/media/jkt48-member/shani.jpg")
+
+@pytest.mark.asyncio
+async def test_get_external_media_cache_miss(storage_service, monkeypatch):
+    path = "media/jkt48-member/new_member.jpg"
+    
+    # Mock cache miss (returns None)
+    storage_service.repository.get_file_with_metadata.return_value = (None, None)
+    
+    # Mock httpx.AsyncClient
+    mock_client_instance = AsyncMock()
+    
+    class MockResponse:
+        def __init__(self):
+            self.status_code = 200
+            self.content = b"new_image_content"
+            self.headers = {"content-type": "image/jpeg"}
+
+    mock_client_instance.get.return_value = MockResponse()
+    
+    from unittest.mock import patch
+    with patch("httpx.AsyncClient") as mock_client_class:
+        # Patch the context manager: async with httpx.AsyncClient() as client
+        mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+        
+        content, media_type, status = await storage_service.get_external_media(path)
+    
+    assert status == 200
+    assert content == b"new_image_content"
+    # Verify it was cached
+    storage_service.repository.upload_file.assert_called_with(
+        b"new_image_content", "cache/external/media/jkt48-member/new_member.jpg", "image/jpeg"
+    )
+
+@pytest.mark.asyncio
+async def test_api_proxy_external_media(client, storage_service):
+    app.dependency_overrides[get_storage_service] = lambda: storage_service
+    
+    # Mock service response
+    storage_service.get_external_media = AsyncMock(return_value=(b"image_data", "image/png", 200))
+    
+    try:
+        response = await client.get("/api/storage/external/member/1.png")
+        assert response.status_code == 200
+        assert response.content == b"image_data"
+        assert response.headers["content-type"] == "image/png"
+        assert "Cache-Control" in response.headers
+    finally:
+        app.dependency_overrides.pop(get_storage_service, None)
