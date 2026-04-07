@@ -90,8 +90,18 @@
 								<div class="flex items-start justify-between gap-4">
 									<div class="space-y-3 flex-1">
 										<div class="flex flex-wrap gap-2">
-											<span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase {event.isBirthday ? 'bg-pink-100 text-pink-700' : 'bg-red-600 text-white'}">
-												{event.isBirthday ? $t('theater.events.birthday') : (event.category || 'EVENT')}
+											<span
+												class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase {event.isBirthday
+													? 'bg-pink-100 text-pink-700'
+													: event.category === 'LOVE'
+														? 'bg-pink-600 text-white'
+														: event.category === 'DREAM'
+															? 'bg-cyan-600 text-white'
+															: event.category === 'PASSION'
+																? 'bg-orange-600 text-white'
+																: 'bg-rose-600 text-white'}"
+											>
+												{event.isBirthday ? $t('theater.events.birthday') : event.category || 'EVENT'}
 											</span>
 											{#if event.time}
 												<span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">

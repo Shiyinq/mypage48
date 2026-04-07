@@ -256,21 +256,31 @@
 									{#if event.label}
 										<div
 											class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider {event.label ===
-											'JKT48'
+											'JKT48' ||
+											event.label === 'GENERAL' ||
+											event.label === 'EXCLUSIVE'
 												? 'bg-red-600 text-white'
-												: 'bg-zinc-800 text-white'}"
+												: event.label === 'LOVE'
+													? 'bg-pink-600 text-white'
+													: event.label === 'DREAM'
+														? 'bg-cyan-600 text-white'
+														: event.label === 'PASSION'
+															? 'bg-orange-600 text-white'
+															: 'bg-zinc-800 text-white'}"
 										>
 											{event.label}
 										</div>
 									{/if}
-									{#if event.type}
+									{#if event.type && event.type !== event.label}
 										<div
 											class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider {event.type ===
 											'EVENT'
-												? 'bg-pink-600 text-white'
+												? 'bg-rose-600 text-white'
 												: event.type === 'SHOW'
 													? 'bg-blue-600 text-white'
-													: 'bg-slate-700 text-white'}"
+													: event.type === 'GENERAL' || event.type === 'EXCLUSIVE'
+														? 'bg-red-600 text-white'
+														: 'bg-slate-700 text-white'}"
 										>
 											{event.type}
 										</div>
