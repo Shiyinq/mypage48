@@ -73,18 +73,25 @@ def fetch_and_format_members(headers: Dict[str, str]) -> List[Dict[str, Any]]:
         # Build refined object
         slug_name = slugify(name)
         m_type = api_data.get('type', 'JKT48')
-        href = f"/member/detail?member={slug_name}-{m_id}&type={m_type}"
+        
+        # Use ID from active.members.json if exists (Legacy JKT48 ID)
+        # otherwise use source API ID (Current JKT48 ID).
+        # This keeps the app's internal IDs consistent even after JKT48 changed their IDs.
+        final_id = old_item.get('id', m_id)
+        
+        href = f"/member/detail?member={slug_name}-{final_id}&type={m_type}"
         img = clean_jkt48_url(api_data.get('photo') or api_data.get('photo_1') or old_item.get('img', ''))
 
         refined = {
             "active": True,
+            "id": final_id,        # Primary ID for the app (Preserving Legacy JKT48 ID)
+            "jkt48_id": m_id,      # Current JKT48 Official Website ID
             "birthdate": format_birthdate_id(api_data.get('birth_date', '')),
             "bloodType": api_data.get('blood_type', '') or old_item.get('bloodType', ''),
             "generation": str(old_item.get('generation', '')),
             "height": f"{api_data.get('body_height', '')}cm" if api_data.get('body_height') else old_item.get('height', ''),
             "horoscope": api_data.get('horoscope', '') or old_item.get('horoscope', ''),
             "href": href,
-            "id": m_id,
             "img": img,
             "jiko": old_item.get('jiko', ''),
             "name": name,
