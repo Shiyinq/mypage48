@@ -8,6 +8,7 @@
 	import { portal } from '$lib/actions/portal';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { tick } from 'svelte';
+	import { getMemberFrame } from '$lib/constants';
 
 	export let show: boolean = false;
 	let sidebarScrollContainer: HTMLDivElement;
@@ -133,11 +134,8 @@
 		};
 	}
 
-	// Frame logic
-	const MEMBER_FRAME = 'https://jkt48.com/images/member/bg-member-item-frame-transparent.png';
-	const TRAINEE_FRAME = 'https://jkt48.com/images/member/bg-member-trainee-frame-transparent.png';
-	$: frameImg =
-		currentMember?.member_type?.toLowerCase() === 'trainee' ? TRAINEE_FRAME : MEMBER_FRAME;
+
+	$: frameImg = getMemberFrame(currentMember?.member_type);
 
 	function parseIndonesianDate(dateStr: string): Date {
 		const monthMap: { [key: string]: string } = {

@@ -5,6 +5,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import PlatformLogo from './PlatformLogo.svelte';
 	import LiveStats from './LiveStats.svelte';
+	import { getMemberFrame } from '$lib/constants';
 
 	const { t } = useTranslation();
 
@@ -36,9 +37,7 @@
 
 		<!-- Frame Image Overlay -->
 		<img
-			src={stream.member?.member_type?.toLowerCase() === 'trainee'
-				? 'https://jkt48.com/images/member/bg-member-trainee-frame-transparent.png'
-				: 'https://jkt48.com/images/member/bg-member-item-frame-transparent.png'}
+			src={getMemberFrame(stream.member?.member_type)}
 			alt="frame"
 			class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 		/>

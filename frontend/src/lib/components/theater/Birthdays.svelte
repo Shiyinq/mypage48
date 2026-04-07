@@ -6,6 +6,7 @@
 	import type { BirthdayResponse } from '$lib/apis/members';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { getMemberFrame } from '$lib/constants';
 
 	const { t, locale } = useTranslation();
 
@@ -71,9 +72,7 @@
 
 						<!-- Frame Image Overlay -->
 						<img
-							src={member.member_type?.toLowerCase() === 'trainee'
-								? 'https://jkt48.com/images/member/bg-member-trainee-frame-transparent.png'
-								: 'https://jkt48.com/images/member/bg-member-item-frame-transparent.png'}
+							src={getMemberFrame(member.member_type)}
 							alt="frame"
 							class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 						/>
