@@ -808,6 +808,7 @@
 			"mute": "Senyap",
 			"unmute": "Bunyikan",
 			"pip": "Gambar dalam Gambar (PiP)",
+			"openOriginal": "Buka Stream Asli",
 			"multiview": {
 				"title": "Multi-view",
 				"clear_all": "Hapus Semua",

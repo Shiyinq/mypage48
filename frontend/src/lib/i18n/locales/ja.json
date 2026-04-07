@@ -639,6 +639,7 @@
 			"mute": "ミュート",
 			"unmute": "ミュート解除",
 			"pip": "ピクチャー・イン・ピクチャー",
+			"openOriginal": "オリジナル配信を開く",
 			"multiview": {
 				"title": "マルチビュー",
 				"clear_all": "すべてクリア",
