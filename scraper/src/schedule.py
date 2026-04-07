@@ -28,6 +28,17 @@ def _get_id_mapping() -> Tuple[Dict[str, str], Dict[str, str]]:
             print(f"Warning: Could not load ID mapping: {e}")
     return id_map, name_map
 
+def _get_event_url(event_type: str, code: str, slug: str, title: str = "") -> str:
+    """Generate correct JKT48 URL based on event type."""
+    if event_type == 'SHOW':
+        return f"/purchase/schedule/show?code={code}"
+    elif event_type == 'EXCLUSIVE':
+        return f"/purchase/exclusive?code={code}"
+    else:
+        # Default to /schedule/slug for GENERAL, EVENT, etc.
+        url_slug = slug or slugify(title)
+        return f"/schedule/{url_slug}"
+
 def get_schedules_by_month(year: int, month: int, headers: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
     """Get all calendar events from API for a specific month and year."""
     url = f"https://jkt48.com/api/v1/schedules?lang=id&month={month}&year={year}"
@@ -70,7 +81,7 @@ def get_schedules_by_month(year: int, month: int, headers: Optional[Dict[str, st
         ref_code = item.get('reference_code') or item.get('schedule_id', '')
         event_type = item.get('type', 'EVENT')
         
-        url_path = f"/purchase/schedule/event?code={ref_code}"
+        url_path = _get_event_url(event_type, str(ref_code), item.get('link', ''), item.get('title', ''))
         label = item.get('jkt48_member_type') or item.get('type') or ''
         
         events.append({
@@ -228,7 +239,7 @@ def get_theater_or_event_detail(
             'date': wib_date,
             'memberIds': member_ids,
             'seitansaiIds': seitansai_ids,
-            'url': f"/purchase/schedule/event?code={show_id}",
+            'url': _get_event_url(event_type, show_id, detail.get('link', ''), title),
             'raw_data': {'detail': detail}
         })
         
