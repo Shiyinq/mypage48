@@ -445,13 +445,13 @@
 
 			{#if !isFullscreen}
 				<div class="hidden sm:flex items-center gap-3 flex-shrink-0">
+					<LiveStats view_num={$currentStream?.view_num} start_at={startAt} variant="detailed" />
 					<a href={originalLiveUrl} target="_blank" rel="noopener noreferrer" class="group/platform flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-transform" title={$t('theater.live.openOriginal')}>
 						<PlatformLogo platform={platform || ''} size="md" />
 						<div class="w-0 overflow-hidden opacity-0 group-hover/platform:w-4 group-hover/platform:opacity-100 transition-all duration-300">
 							<ExternalLink size={14} class="text-slate-400" />
 						</div>
 					</a>
-					<LiveStats view_num={$currentStream?.view_num} start_at={startAt} variant="detailed" />
 				</div>
 			{/if}
 		</div>
@@ -564,34 +564,34 @@
 
 							<!-- Stats (Mobile Only) -->
 							<div class="flex sm:hidden items-center gap-3 flex-shrink-0 mt-0.5">
+								<LiveStats
+									view_num={$currentStream?.view_num}
+									start_at={startAt}
+									variant="detailed"
+								/>
 								<a href={originalLiveUrl} target="_blank" rel="noopener noreferrer" class="group/platform flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-transform">
 									<PlatformLogo platform={platform || ''} size="md" />
 									<div class="w-0 overflow-hidden opacity-0 group-hover/platform:w-4 group-hover/platform:opacity-100 transition-all duration-300">
 										<ExternalLink size={14} class="text-white/60" />
 									</div>
 								</a>
-								<LiveStats
-									view_num={$currentStream?.view_num}
-									start_at={startAt}
-									variant="detailed"
-								/>
 							</div>
 						</div>
 
 						<!-- Stats (Desktop Fullscreen Only) -->
 						{#if isFullscreen}
 							<div class="hidden sm:flex items-center gap-3 flex-shrink-0 mt-1">
+								<LiveStats
+									view_num={$currentStream?.view_num}
+									start_at={startAt}
+									variant="detailed"
+								/>
 								<a href={originalLiveUrl} target="_blank" rel="noopener noreferrer" class="group/platform flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-transform">
 									<PlatformLogo platform={platform || ''} size="md" />
 									<div class="w-0 overflow-hidden opacity-0 group-hover/platform:w-4 group-hover/platform:opacity-100 transition-all duration-300">
 										<ExternalLink size={14} class="text-white/60" />
 									</div>
 								</a>
-								<LiveStats
-									view_num={$currentStream?.view_num}
-									start_at={startAt}
-									variant="detailed"
-								/>
 							</div>
 						{/if}
 					</div>
