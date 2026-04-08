@@ -4,6 +4,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
+	import { cleanseMarkdown } from '$lib/utils/markdown';
 	import { createEventDispatcher } from 'svelte';
 
 	export let tickets: Ticket[] = [];
@@ -16,7 +17,7 @@
 
 	function startEditingNote(ticket: Ticket) {
 		editingNoteId = ticket._id;
-		noteText = ticket.notes || '';
+		noteText = cleanseMarkdown(ticket.notes || '');
 	}
 
 	function saveNote(ticket: Ticket) {
@@ -141,7 +142,7 @@
 									on:click={() => startEditingNote(ticket)}
 									class="text-sm text-gray-500 dark:text-gray-400 italic cursor-pointer hover:text-red-600 flex items-center gap-2 group/note"
 								>
-									<span class="line-clamp-1">{ticket.notes || $t('history.addNote')}</span>
+									<span class="line-clamp-1">{cleanseMarkdown(ticket.notes) || $t('history.addNote')}</span>
 									<Pencil
 										class="w-3 h-3 opacity-0 group-hover/note:opacity-100 transition-opacity"
 									/>

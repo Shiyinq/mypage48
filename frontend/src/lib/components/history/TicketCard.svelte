@@ -14,6 +14,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
+	import { cleanseMarkdown } from '$lib/utils/markdown';
 	import { createEventDispatcher } from 'svelte';
 
 	export let ticket: Ticket;
@@ -26,7 +27,7 @@
 
 	function startEditingNote() {
 		isEditingNote = true;
-		noteText = ticket.notes || '';
+		noteText = cleanseMarkdown(ticket.notes || '');
 	}
 
 	function cancelEditingNote() {
@@ -174,7 +175,7 @@
 				>
 					{#if ticket.notes}
 						<p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 italic">
-							"{ticket.notes}"
+							"{cleanseMarkdown(ticket.notes)}"
 						</p>
 					{:else}
 						<div
