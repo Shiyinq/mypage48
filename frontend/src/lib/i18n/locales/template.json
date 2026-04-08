@@ -359,6 +359,7 @@
 			"cancel": ""
 		},
 		"ticketDeleted": "",
+		"notesSaved": "",
 		"errorTitle": "",
 		"errorDesc": ""
 	},

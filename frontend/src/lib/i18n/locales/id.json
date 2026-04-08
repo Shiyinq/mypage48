@@ -569,6 +569,7 @@
 			"cancel": "Batal"
 		},
 		"ticketDeleted": "Tiket berhasil dihapus",
+		"notesSaved": "Catatan berhasil disimpan",
 		"errorTitle": "Gagal memuat tiket",
 		"errorDesc": "Terjadi kesalahan saat mengambil riwayat kamu."
 	},

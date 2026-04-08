@@ -569,6 +569,7 @@
 			"cancel": "キャンセル"
 		},
 		"ticketDeleted": "チケットが削除されました",
+		"notesSaved": "メモを保存しました",
 		"errorTitle": "チケットの読み込みに失敗しました",
 		"errorDesc": "履歴の取得中にエラーが発生しました。"
 	},
