@@ -8,6 +8,7 @@ from minio.lifecycleconfig import LifecycleConfig, Rule, Expiration, Filter
 
 from src.config import Settings
 from src.logging_config import create_logger
+from src.utils import resolve_minio_public_url
 
 logger = create_logger("storage_repository", __name__)
 
@@ -102,7 +103,8 @@ class StorageRepository:
                 object_name,
                 expires=timedelta(seconds=expires),
             )
-            return url
+            
+            return resolve_minio_public_url(url)
         except S3Error as e:
             logger.error(f"Failed to generate presigned URL: {e}")
             raise

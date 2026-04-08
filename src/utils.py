@@ -117,3 +117,18 @@ def clean_image_url(url: Optional[str]) -> Optional[str]:
         return url
     except Exception:
         return url
+
+def resolve_minio_public_url(url: str) -> str:
+    """Replace internal MinIO host with public URL if configured."""
+    if not config.minio_public_url:
+        return url
+
+    internal_host = config.minio_endpoint
+    public_url = config.minio_public_url
+
+    # Extract only the host:port part from public_url if it contains http://
+    public_host = public_url
+    if "://" in public_url:
+        public_host = public_url.split("://")[1]
+
+    return url.replace(internal_host, public_host)
