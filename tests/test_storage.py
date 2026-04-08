@@ -24,6 +24,9 @@ def storage_service(mock_storage_repo):
     # Mock config
     mock_config = MagicMock()
     mock_config.MINIO_BUCKET = "test-bucket"
+    mock_config.secret_key = "test-secret-key-for-hmac-signing-purposes"
+    mock_config.algorithm = "HS256"
+    mock_config.api_base_url = "http://localhost:8080/api"
     return StorageService(repository=mock_storage_repo, config=mock_config)
 
 @pytest.mark.asyncio
@@ -42,8 +45,9 @@ async def test_resolve_url(storage_service):
     # Test Storage Filename
     filename = "tickets/user1/abc.jpg"
     url = storage_service.resolve_url(filename)
-    assert url == "https://minio.example.com/bucket/file.jpg"
-    storage_service.repository.get_presigned_url.assert_called_with(filename)
+    assert "/api/storage/m/tickets/user1/abc.jpg" in url
+    assert "expires=" in url
+    assert "signature=" in url
 
 @pytest.mark.asyncio
 async def test_upload_image(storage_service):
@@ -55,7 +59,8 @@ async def test_upload_image(storage_service):
     
     assert response.filename.startswith("ticket/user123/")
     assert response.filename.endswith(".png")
-    assert response.url == "https://minio.example.com/bucket/file.jpg"
+    assert "/api/storage/m/" in response.url
+    assert "signature=" in response.url
     storage_service.repository.upload_file.assert_called_once()
 
 @pytest.mark.asyncio
@@ -68,7 +73,7 @@ async def test_upload_image_journal(storage_service):
     
     assert response.filename.startswith("journal/user123/")
     assert response.filename.endswith(".png")
-    assert response.url == "https://minio.example.com/bucket/file.jpg"
+    assert "/api/storage/m/" in response.url
 
 @pytest.mark.asyncio
 async def test_get_bulk_presigned_urls(storage_service):
@@ -77,10 +82,9 @@ async def test_get_bulk_presigned_urls(storage_service):
     response = storage_service.get_bulk_presigned_urls(filenames)
     
     assert len(response.urls) == 2
-    assert response.urls["journal/u1/1.jpg"] == "https://minio.example.com/bucket/file.jpg"
-    assert response.urls["ticket/u1/2.png"] == "https://minio.example.com/bucket/file.jpg"
+    assert "/api/storage/m/" in response.urls["journal/u1/1.jpg"]
+    assert "/api/storage/m/" in response.urls["ticket/u1/2.png"]
     assert response.expires_in == 3600
-    assert storage_service.repository.get_presigned_url.call_count >= 2
 
 @pytest.mark.asyncio
 async def test_resolve_ticket_images(storage_service):
@@ -116,8 +120,8 @@ async def test_resolve_ticket_images(storage_service):
     
     resolved = storage_service.resolve_ticket_images(ticket)
     
-    assert resolved.imageUrl == "https://minio.example.com/bucket/file.jpg"
-    assert resolved.two_shot.imageUrl == "https://minio.example.com/bucket/file.jpg"
+    assert "/api/storage/m/tickets/u1/img1.jpg" in resolved.imageUrl
+    assert "/api/storage/m/twoshot/u1/img2.jpg" in resolved.two_shot.imageUrl
 
 # API Tests
 @pytest.mark.asyncio
@@ -148,7 +152,7 @@ async def test_api_upload_image(client, storage_service):
         data = response.json()
         assert "filename" in data
         assert "url" in data
-        assert data["url"] == "https://minio.example.com/bucket/file.jpg"
+        assert "/api/storage/m/" in data["url"]
     finally:
         # Cleanup only the overrides we added (preserve CSRF mock from conftest)
         app.dependency_overrides.pop(get_storage_service, None)
@@ -176,7 +180,8 @@ async def test_api_get_presigned_url(client, storage_service):
 
         assert response.status_code == 200
         data = response.json()
-        assert data["url"] == "https://minio.example.com/bucket/file.jpg"
+        assert "/api/storage/m/" in data["url"]
+        assert "signature=" in data["url"]
     finally:
         # Cleanup only the overrides we added (preserve CSRF mock from conftest)
         from src.dependencies import get_current_user
@@ -206,7 +211,7 @@ async def test_api_get_bulk_presigned_urls(client, storage_service):
         data = response.json()
         assert "urls" in data
         assert len(data["urls"]) == 2
-        assert data["urls"]["journal/user123/img.jpg"] == "https://minio.example.com/bucket/file.jpg"
+        assert "/api/storage/m/journal/user123/img.jpg" in data["urls"]["journal/user123/img.jpg"]
         assert data["expires_in"] == 3600
     finally:
         app.dependency_overrides.pop(get_storage_service, None)
@@ -271,5 +276,41 @@ async def test_api_proxy_external_media(client, storage_service):
         assert response.content == b"image_data"
         assert response.headers["content-type"] == "image/png"
         assert "Cache-Control" in response.headers
+    finally:
+        app.dependency_overrides.pop(get_storage_service, None)
+
+
+@pytest.mark.asyncio
+async def test_api_proxy_internal_media(client, storage_service):
+    """
+    Test the actual /storage/m/{path} endpoint that verifies signatures.
+    """
+    app.dependency_overrides[get_storage_service] = lambda: storage_service
+    
+    path = "tickets/u1/evidence.png"
+    
+    # 1. Generate valid params using the service's internal logic
+    signature, expires = storage_service._create_signed_params(path)
+    
+    try:
+        # 2. Test Success (Valid Signature)
+        response = await client.get(f"/api/storage/m/{path}?expires={expires}&signature={signature}")
+        assert response.status_code == 200
+        assert response.content == b"fake_image_content"
+        assert response.headers["X-Robots-Tag"] == "noindex, nofollow, noarchive"
+        
+        # 3. Test Failure (Invalid Signature)
+        bad_sig = "invalid_signature"
+        response = await client.get(f"/api/storage/m/{path}?expires={expires}&signature={bad_sig}")
+        assert response.status_code == 401
+        assert "Unauthorized" in response.text
+        
+        # 4. Test Failure (Expired)
+        expired_time = 1000000000 # Way in the past
+        expired_sig = storage_service._generate_signature(path, expired_time)
+        response = await client.get(f"/api/storage/m/{path}?expires={expired_time}&signature={expired_sig}")
+        assert response.status_code == 401
+        assert "expired" in response.text.lower()
+
     finally:
         app.dependency_overrides.pop(get_storage_service, None)
