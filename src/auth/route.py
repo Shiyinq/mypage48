@@ -173,14 +173,26 @@ async def refresh_access_token(
         raise InvalidRefreshTokenError()
 
     device, ip, browser, user_agent = _extract_request_info(request)
-    if (
-        token_data["device"] != device
-        or token_data["ip"] != ip
-        or token_data["browser"] != browser
-    ):
-        logger.warning(f"Device/IP/Browser mismatch user_id={token_data.get('userId')}")
+    
+    # Check for mismatches but be lenient with IP changes
+    mismatches = []
+    if token_data["device"] != device:
+        mismatches.append(f"device ({token_data['device']} -> {device})")
+    if token_data["browser"] != browser:
+        mismatches.append(f"browser ({token_data['browser']} -> {browser})")
+        
+    if mismatches:
+        logger.warning(
+            f"Security mismatch detected for user_id={token_data.get('userId')}: {', '.join(mismatches)}"
+        )
         await auth_service.delete_refresh_token(hash_refresh_token)
         raise SuspiciousActivityError()
+
+    # Log IP change but don't invalidate session
+    if token_data["ip"] != ip:
+        logger.info(
+            f"IP change detected for user_id={token_data.get('userId')}: {token_data['ip']} -> {ip}. Allowing refresh because device/browser matched."
+        )
 
     created_at = token_data["createdAt"]
     if created_at.tzinfo is None:
@@ -332,7 +344,8 @@ async def logout(
 
     refresh_token = request.cookies.get("refresh_token")
     if refresh_token:
-        await auth_service.delete_refresh_token(refresh_token)
+        hash_refresh_token = auth_service.hash_token(refresh_token)
+        await auth_service.delete_refresh_token(hash_refresh_token)
         response.delete_cookie(
             key="refresh_token",
             path="/",
