@@ -153,13 +153,13 @@
 					<div class="absolute bottom-2 right-2 flex gap-1">
 						<button
 							on:click={cancelEditingNote}
-							class="p-1 text-gray-400 hover:text-gray-600 bg-white rounded shadow-sm border border-gray-100"
+							class="p-1 text-gray-400 hover:text-gray-600 bg-white rounded shadow-sm border border-gray-100 cursor-pointer"
 						>
 							<X class="w-3 h-3" />
 						</button>
 						<button
 							on:click={saveNote}
-							class="p-1 text-red-600 hover:text-red-700 bg-white rounded shadow-sm border border-red-50"
+							class="p-1 text-red-600 hover:text-red-700 bg-white rounded shadow-sm border border-red-50 cursor-pointer"
 						>
 							<Save class="w-3 h-3" />
 						</button>
