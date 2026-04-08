@@ -568,6 +568,7 @@
 			"cancel": "Cancel"
 		},
 		"ticketDeleted": "Ticket deleted successfully",
+		"notesSaved": "Note saved successfully",
 		"errorTitle": "Failed to load tickets",
 		"errorDesc": "Something went wrong while fetching your history."
 	},
