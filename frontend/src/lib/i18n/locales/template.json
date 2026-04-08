@@ -24,14 +24,23 @@
 		"allData": "",
 		"hasTwoShot": "",
 		"clearFilters": "",
+		"days": "",
+		"dateRange": "",
 		"viewDetails": "",
 		"logout": "",
+		"events": "",
 		"settings": "",
 		"profile": "",
 		"dashboard": "",
 		"language": "",
 		"noResults": "",
-		"date": ""
+		"date": "",
+		"today": "",
+		"tomorrow": "",
+		"fromShort": "",
+		"toShort": "",
+		"copyLink": "",
+		"copied": ""
 	},
 	"validation": {
 		"alert": {
@@ -56,7 +65,20 @@
 		"achievements": "",
 		"memories": "",
 		"top2shot": "",
-		"upload": ""
+		"upload": "",
+		"landing": "",
+		"news": "",
+		"members": "",
+		"calendar": "",
+		"events": "",
+		"live": "",
+		"multiview": "",
+		"sorter": "",
+		"about": "",
+		"terms": "",
+		"privacy": "",
+		"cookies": "",
+		"journal": ""
 	},
 	"nav": {
 		"home": "",
@@ -70,10 +92,172 @@
 		"upload": "",
 		"profile": "",
 		"settings": "",
-		"newTicket": ""
+		"newTicket": "",
+		"journal": ""
 	},
 	"header": {
 		"tagline": ""
+	},
+	"landing": {
+		"nav": {
+			"subtitle": "",
+			"news": "",
+			"members": "",
+			"events": "",
+			"calendar": "",
+			"sorter": "",
+			"live": ""
+		},
+		"hero": {
+			"titlePrefix": "",
+			"titleSuffix": "",
+			"description": "",
+			"highlight": "",
+			"getStarted": "",
+			"openSource": ""
+		},
+		"features": {
+			"theater": {
+				"title": "",
+				"description": ""
+			},
+			"twoShot": {
+				"title": "",
+				"description": ""
+			},
+			"memories": {
+				"title": "",
+				"description": ""
+			},
+			"achievements": {
+				"title": "",
+				"description": ""
+			}
+		},
+		"footer": {
+			"copyright": "",
+			"openSource": "",
+			"disclaimer": "",
+			"privacy": "",
+			"terms": "",
+			"cookies": "",
+			"feedback": "",
+			"about": ""
+		},
+		"radio": {
+			"nowPlaying": "",
+			"paused": "",
+			"connecting": "",
+			"pause": "",
+			"play": "",
+			"nextTrack": "",
+			"Playlist1": "",
+			"Playlist2": "",
+			"Playlist3": ""
+		}
+	},
+	"privacy": {
+		"title": "",
+		"lastUpdated": "",
+		"intro": "",
+		"sections": {
+			"collection": {
+				"title": "",
+				"content": ""
+			},
+			"usage": {
+				"title": "",
+				"content": ""
+			},
+			"sharing": {
+				"title": "",
+				"content": ""
+			},
+			"ai": {
+				"title": "",
+				"content": ""
+			}
+		}
+	},
+	"cookies": {
+		"title": "",
+		"subtitle": "",
+		"whatAreCookies": {
+			"title": "",
+			"content": ""
+		},
+		"howWeUse": {
+			"title": "",
+			"content": "",
+			"items": {
+				"essential": "",
+				"analytics": "",
+				"preferences": ""
+			}
+		},
+		"managing": {
+			"title": "",
+			"content": ""
+		}
+	},
+	"feedback": {
+		"title": "",
+		"subtitle": "",
+		"validation": {
+			"messageTooShort": ""
+		},
+		"success": "",
+		"error": "",
+		"form": {
+			"type": {
+				"label": "",
+				"issue": "",
+				"suggestion": "",
+				"other": ""
+			},
+			"message": {
+				"label": "",
+				"placeholder": ""
+			},
+			"name": {
+				"label": "",
+				"placeholder": ""
+			},
+			"email": {
+				"label": "",
+				"placeholder": ""
+			}
+		}
+	},
+	"terms": {
+		"title": "",
+		"lastUpdated": "",
+		"intro": "",
+		"sections": {
+			"usage": {
+				"title": "",
+				"content": ""
+			},
+			"disclaimer": {
+				"title": "",
+				"content": ""
+			}
+		}
+	},
+	"about": {
+		"title": "",
+		"mission": {
+			"title": "",
+			"content": ""
+		},
+		"team": {
+			"title": "",
+			"content": ""
+		},
+		"openSource": {
+			"title": "",
+			"content": ""
+		}
 	},
 	"auth": {
 		"login": {
@@ -88,7 +272,8 @@
 			"noAccount": "",
 			"registerCta": "",
 			"welcomeBack": "",
-			"invalidCredentials": ""
+			"invalidCredentials": "",
+			"sessionInvalid": ""
 		},
 		"register": {
 			"title": "",
@@ -166,7 +351,7 @@
 		"theater": {
 			"title": "",
 			"subtitle": "",
-			"events": "",
+			"shows": "",
 			"tickets": "",
 			"spending": "",
 			"totalExpenses": "",
@@ -179,7 +364,8 @@
 			"first": "",
 			"last": "",
 			"times": "",
-			"timesWatched": ""
+			"timesWatched": "",
+			"events": ""
 		},
 		"twoShot": {
 			"title": "",
@@ -216,6 +402,16 @@
 		}
 	},
 	"profile": {
+		"oshiModal": {
+			"title": "",
+			"subtitle": "",
+			"searchPlaceholder": "",
+			"cancel": "",
+			"save": "",
+			"loading": "",
+			"noMembers": "",
+			"generation": ""
+		},
 		"title": "",
 		"subtitle": "",
 		"memberCard": {
@@ -233,26 +429,27 @@
 		},
 		"stats": {
 			"totalShows": "",
-			"achievements": ""
+			"achievements": "",
+			"oshiMeetings": ""
 		},
 		"oshi": {
 			"title": "",
 			"generation": "",
+			"generationPattern": "",
+			"totalShowsPattern": "",
+			"showsTooltip": "",
+			"emptyTitle": "",
+			"emptyDescription": "",
+			"selectBadge": "",
+			"browseButton": "",
 			"changeOshi": "",
 			"selectOshi": "",
 			"searchMember": "",
 			"roulette": "",
-			"birthday": ""
-		},
-		"oshiModal": {
-			"title": "",
-			"subtitle": "",
-			"searchPlaceholder": "",
-			"loading": "",
-			"noMembers": "",
-			"generation": "",
-			"cancel": "",
-			"save": ""
+			"birthday": "",
+			"upcomingSchedule": "",
+			"pastSchedule": "",
+			"noSchedule": ""
 		},
 		"recentActivity": {
 			"title": "",
@@ -317,7 +514,20 @@
 			"copied": "",
 			"savedKey": ""
 		},
+		"exportData": {
+			"title": "",
+			"description": "",
+			"request": "",
+			"requested": "",
+			"processing": "",
+			"download": "",
+			"expiresAt": ""
+		},
 		"moreSettings": {
+			"title": "",
+			"subtitle": ""
+		},
+		"feedback": {
 			"title": "",
 			"subtitle": ""
 		},
@@ -346,9 +556,10 @@
 		"notes": "",
 		"addNote": "",
 		"editNote": "",
+		"deleteNote": "",
+		"saveNote": "",
 		"noNotes": "",
 		"editDetails": "",
-		"saveNote": "",
 		"eventDetails": "",
 		"actions": "",
 		"show": "",
@@ -362,149 +573,6 @@
 		"notesSaved": "",
 		"errorTitle": "",
 		"errorDesc": ""
-	},
-	"forms": {
-		"editTicket": "",
-		"newTicket": "",
-		"updateMemory": "",
-		"addToCollection": "",
-		"eventDetails": "",
-		"showTitle": "",
-		"selectSetlist": "",
-		"date": "",
-		"showTime": "",
-		"seatPayment": "",
-		"row": "",
-		"seatNumber": "",
-		"price": "",
-		"ticketId": "",
-		"optional": "",
-		"twoShotDetails": "",
-		"twoShotPhoto": "",
-		"uploadPhoto": "",
-		"changePhoto": "",
-		"memberName": "",
-		"memberNamePlaceholder": "",
-		"type": "",
-		"experienceLog": "",
-		"notesPlaceholder": "",
-		"updateTicket": "",
-		"saveTicket": "",
-		"cancel": "",
-		"uploadTicketPhoto": "",
-		"selectMember": "",
-		"selectMemberDesc": "",
-		"analysisIssue": "",
-		"analysisFailed": "",
-		"ticketUpdateSuccess": "",
-		"ticketUpdateError": ""
-	},
-	"upload": {
-		"title": "",
-		"subtitle": "",
-		"scanTicket": "",
-		"scanDescription": "",
-		"manualEntry": "",
-		"manualDescription": "",
-		"saveTicket": "",
-		"uploadSuccess": "",
-		"uploadError": "",
-		"analyzingTitle": "",
-		"analyzingDescription": ""
-	},
-	"shows": {
-		"backTitle": "",
-		"backSubtitle": "",
-		"title": "",
-		"subtitle": "",
-		"totalShows": "",
-		"uniqueShows": "",
-		"unit": "",
-		"performancesAttended": "",
-		"firstAttended": "",
-		"lastAttended": "",
-		"avgPrice": "",
-		"topRow": "",
-		"mostFrequentedRow": "",
-		"investmentInMemories": "",
-		"row": "",
-		"toTop": "",
-		"notSeen": "",
-		"viewHistory": "",
-		"top": ""
-	},
-	"theater": {
-		"title": "",
-		"subtitle": "",
-		"subNav": {
-			"theater": "",
-			"members": "",
-			"events": ""
-		},
-		"setlists": {
-			"section": "",
-			"events": "",
-			"attendedCount": "",
-			"notAttended": "",
-			"statsOverview": "",
-			"avgPricePerTicket": "",
-			"attendanceRate": "",
-			"ofMax": "",
-			"timeline": "",
-			"firstShow": "",
-			"latestShow": "",
-			"active": "",
-			"inactive": "",
-			"activeEvents": "",
-			"inactiveEvents": "",
-			"errorTitle": "",
-			"errorDesc": "",
-			"emptyTitle": "",
-			"emptyDesc": "",
-			"listErrorTitle": "",
-			"listErrorDesc": ""
-		},
-		"events": {
-			"title": "",
-			"subtitle": "",
-			"eventName": "",
-			"members": "",
-			"today": ""
-		},
-		"members": {
-			"title": "",
-			"subtitle": "",
-			"comingSoon": "",
-			"errorTitle": "",
-			"errorDesc": ""
-		},
-		"shows": {
-			"title": "",
-			"subtitle": ""
-		},
-		"upcomingEvents": {
-			"title": "",
-			"emptyTitle": "",
-			"empty": "",
-			"errorTitle": "",
-			"errorDesc": ""
-		},
-		"eventHistory": {
-			"title": "",
-			"subtitle": "",
-			"emptyTitle": "",
-			"empty": "",
-			"errorTitle": "",
-			"errorDesc": "",
-			"table": {
-				"type": "",
-				"members": "",
-				"link": ""
-			},
-			"pagination": {
-				"pageOf": ""
-			}
-		}
 	},
 	"memories": {
 		"title": "",
@@ -608,6 +676,55 @@
 			"weeksAgo": ""
 		}
 	},
+	"upload": {
+		"title": "",
+		"subtitle": "",
+		"scanTicket": "",
+		"scanDescription": "",
+		"manualEntry": "",
+		"manualDescription": "",
+		"saveTicket": "",
+		"uploadSuccess": "",
+		"uploadError": "",
+		"analyzingTitle": "",
+		"analyzingDescription": ""
+	},
+	"forms": {
+		"analysisFailed": "",
+		"editTicket": "",
+		"newTicket": "",
+		"updateMemory": "",
+		"addToCollection": "",
+		"eventDetails": "",
+		"showTitle": "",
+		"selectSetlist": "",
+		"date": "",
+		"showTime": "",
+		"seatPayment": "",
+		"row": "",
+		"seatNumber": "",
+		"price": "",
+		"ticketId": "",
+		"optional": "",
+		"twoShotDetails": "",
+		"twoShotPhoto": "",
+		"uploadPhoto": "",
+		"changePhoto": "",
+		"memberName": "",
+		"memberNamePlaceholder": "",
+		"type": "",
+		"experienceLog": "",
+		"notesPlaceholder": "",
+		"updateTicket": "",
+		"saveTicket": "",
+		"cancel": "",
+		"uploadTicketPhoto": "",
+		"selectMember": "",
+		"selectMemberDesc": "",
+		"analysisIssue": "",
+		"ticketUpdateSuccess": "",
+		"ticketUpdateError": ""
+	},
 	"member": {
 		"birthdate": "",
 		"horoscope": "",
@@ -616,10 +733,242 @@
 		"yearsOld": "",
 		"notFound": "",
 		"notFoundMessage": "",
+		"type": {
+			"member": "",
+			"trainee": ""
+		},
 		"close": "",
 		"emptyState": {
 			"title": "",
 			"description": ""
+		}
+	},
+	"shows": {
+		"backTitle": "",
+		"backSubtitle": "",
+		"title": "",
+		"subtitle": "",
+		"top": "",
+		"viewHistory": "",
+		"toTop": "",
+		"notSeen": "",
+		"performancesAttended": "",
+		"firstAttended": "",
+		"lastAttended": "",
+		"avgPrice": "",
+		"topRow": "",
+		"mostFrequentedRow": "",
+		"investmentInMemories": "",
+		"row": "",
+		"unit": "",
+		"totalShows": "",
+		"uniqueShows": ""
+	},
+	"theater": {
+		"title": "",
+		"subtitle": "",
+		"subNav": {
+			"theater": "",
+			"members": "",
+			"events": "",
+			"news": "",
+			"live": "",
+			"sorter": "",
+			"history": "",
+			"calendar": ""
+		},
+		"live": {
+			"title": "",
+			"subtitle": "",
+			"onLive": "",
+			"viewer": "",
+			"startedAt": "",
+			"liveDuration": "",
+			"empty": "",
+			"emptyTitle": "",
+			"back": "",
+			"focusMode": "",
+			"exitFocus": "",
+			"screenshot": "",
+			"rotate": "",
+			"refresh": "",
+			"hideChat": "",
+			"showChat": "",
+			"record": "",
+			"stopRecord": "",
+			"fullscreen": "",
+			"exitFullscreen": "",
+			"play": "",
+			"pause": "",
+			"loading_stream": "",
+			"offline": "",
+			"liveBadge": "",
+			"chat": "",
+			"connected": "",
+			"toggleTheme": "",
+			"volume": "",
+			"mute": "",
+			"unmute": "",
+			"pip": "",
+			"openOriginal": "",
+			"multiview": {
+				"title": "",
+				"clear_all": "",
+				"switch_to_landscape": "",
+				"switch_to_portrait": "",
+				"toggle_picker": "",
+				"toggle_chat": "",
+				"search_placeholder": "",
+				"live_status": "",
+				"focus_member": "",
+				"remove_stream": "",
+				"unmute": "",
+				"mute": "",
+				"take_screenshot": "",
+				"stop_recording": "",
+				"start_recording": "",
+				"empty_title": "",
+				"empty_description": "",
+				"chat_with": "",
+				"loading_chat": "",
+				"select_stream_to_chat": "",
+				"member_offline": "",
+				"showroom_chat": "",
+				"chat_started": "",
+				"no_messages": "",
+				"stream_error": "",
+				"hls_not_supported": "",
+				"no_stream_found": "",
+				"failed_load_stream": "",
+				"retry": "",
+				"sending_gift": "",
+				"seoDescription": ""
+			},
+			"switchMultiview": ""
+		},
+		"news": {
+			"title": "",
+			"subtitle": "",
+			"readMore": "",
+			"otherNews": "",
+			"seeAll": "",
+			"readOriginal": "",
+			"share": "",
+			"emptyTitle": "",
+			"empty": "",
+			"errorTitle": "",
+			"errorDesc": ""
+		},
+		"setlists": {
+			"section": "",
+			"events": "",
+			"attendedCount": "",
+			"notAttended": "",
+			"statsOverview": "",
+			"avgPricePerTicket": "",
+			"attendanceRate": "",
+			"ofMax": "",
+			"timeline": "",
+			"firstShow": "",
+			"latestShow": "",
+			"active": "",
+			"inactive": "",
+			"activeEvents": "",
+			"inactiveEvents": "",
+			"errorTitle": "",
+			"errorDesc": "",
+			"emptyTitle": "",
+			"emptyDesc": "",
+			"listErrorTitle": "",
+			"listErrorDesc": ""
+		},
+		"shows": {
+			"title": "",
+			"subtitle": ""
+		},
+		"members": {
+			"title": "",
+			"subtitle": "",
+			"comingSoon": "",
+			"errorTitle": "",
+			"errorDesc": ""
+		},
+		"upcomingEvents": {
+			"title": "",
+			"emptyTitle": "",
+			"empty": "",
+			"errorTitle": "",
+			"errorDesc": ""
+		},
+		"calendar": {
+			"subtitle": "",
+			"more": ""
+		},
+		"events": {
+			"header": "",
+			"title": "",
+			"subtitle": "",
+			"eventName": "",
+			"members": "",
+			"today": "",
+			"calendar": "",
+			"moreEvents": "",
+			"selectDate": "",
+			"selectDateDesc": "",
+			"noEvents": "",
+			"setlist": "",
+			"eventType": "",
+			"birthday": "",
+			"tba": ""
+		},
+		"eventHistory": {
+			"title": "",
+			"subtitle": "",
+			"emptyTitle": "",
+			"empty": "",
+			"errorTitle": "",
+			"errorDesc": "",
+			"table": {
+				"type": "",
+				"members": "",
+				"link": ""
+			},
+			"pagination": {
+				"pageOf": ""
+			}
+		},
+		"birthdays": {
+			"title": "",
+			"empty": "",
+			"daysLeft": ""
+		},
+		"sorter": {
+			"title": "",
+			"subtitle": "",
+			"start": "",
+			"tie": "",
+			"undo": "",
+			"progress": "",
+			"results": "",
+			"share": "",
+			"generation": "",
+			"allGenerations": "",
+			"selectAll": "",
+			"clear": "",
+			"selectedMembers": "",
+			"ready": "",
+			"sorting": "",
+			"questionLabel": "",
+			"exit": "",
+			"restart": "",
+			"resultsSubtitle": "",
+			"genLabel": "",
+			"minSelection": "",
+			"shareTitle": "",
+			"shareTextHeader": "",
+			"shareTextFooter": "",
+			"copySuccess": "",
+			"copyFailed": ""
 		}
 	},
 	"top2shot": {
@@ -649,8 +998,18 @@
 			"tabs": {
 				"users": "",
 				"members": "",
-				"setlists": ""
+				"setlists": "",
+				"feedback": ""
 			}
+		},
+		"feedback": {
+			"title": "",
+			"subtitle": "",
+			"emptyTitle": "",
+			"emptyDesc": "",
+			"errorTitle": "",
+			"errorDesc": "",
+			"noMoreFeedback": ""
 		},
 		"users": {
 			"title": "",
@@ -719,6 +1078,8 @@
 			"table": {
 				"setlistInfo": "",
 				"songs": "",
+				"songs_0": "",
+				"songs_1": "",
 				"japaneseTitle": "",
 				"type": "",
 				"status": "",
@@ -787,7 +1148,58 @@
 			"logout": "",
 			"adminDashboard": "",
 			"adminMembers": "",
-			"adminSetlists": ""
+			"adminSetlists": "",
+			"calendar": "",
+			"eventHistory": "",
+			"feedback": "",
+			"adminFeedback": ""
 		}
+	},
+	"playground": {
+		"title": "",
+		"subtitle": "",
+		"description": "",
+		"tagline": "",
+		"backToDashboard": "",
+		"searchPlaceholder": "",
+		"tryIt": "",
+		"configTitle": "",
+		"apiKeyLabel": "",
+		"apiKeyPlaceholder": "",
+		"apiKeyRequired": "",
+		"selectEndpoint": "",
+		"execute": "",
+		"executing": "",
+		"noDescription": "",
+		"parameters": "",
+		"requestBody": "",
+		"copyCurl": "",
+		"curlCopied": "",
+		"response": "",
+		"waitingResponse": "",
+		"copied": "",
+		"hideSidebar": "",
+		"showSidebar": "",
+		"configActive": "",
+		"useSessionLabel": "",
+		"useSessionDescription": ""
+	},
+	"journal": {
+		"title": "",
+		"subtitle": "",
+		"emptyTitle": "",
+		"emptyState": "",
+		"noRecords": "",
+		"noRecordsDesc": "",
+		"startWriting": "",
+		"writeToggle": "",
+		"previewToggle": "",
+		"save": "",
+		"saved": "",
+		"insertImage": "",
+		"hideSidebar": "",
+		"showSidebar": "",
+		"uploadingImage": "",
+		"cancelImage": ""
 	}
 }
