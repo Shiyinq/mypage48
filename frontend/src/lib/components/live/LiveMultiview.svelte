@@ -771,19 +771,4 @@
 	</div>
 </div>
 
-<style>
-	@keyframes float {
-		0%,
-		100% {
-			transform: translateY(0) scale(1);
-			opacity: 0.4;
-		}
-		50% {
-			transform: translateY(-20px) scale(1.1);
-			opacity: 0.8;
-		}
-	}
-	.animate-float {
-		animation: float ease-in-out infinite;
-	}
-</style>
+
