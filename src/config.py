@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import SecretStr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -54,6 +54,7 @@ class Settings(BaseSettings):
     MINIO_SECRET_KEY: SecretStr = SecretStr("minioadmin123")
     MINIO_BUCKET: str = "mypage48-images"
     MINIO_SECURE: bool = False
+    MINIO_PUBLIC_URL: Optional[str] = None
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=True
@@ -246,6 +247,10 @@ class Settings(BaseSettings):
     @property
     def minio_secure(self) -> bool:
         return self.MINIO_SECURE
+
+    @property
+    def minio_public_url(self) -> Optional[str]:
+        return self.MINIO_PUBLIC_URL
 
 
 config = Settings()
