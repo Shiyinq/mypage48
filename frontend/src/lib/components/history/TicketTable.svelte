@@ -127,12 +127,12 @@
 									/>
 									<button
 										on:click|stopPropagation={() => saveNote(ticket)}
-										class="p-1.5 bg-red-600 text-white rounded-md hover:bg-red-700"
+										class="p-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 cursor-pointer"
 										><Save class="w-3 h-3" /></button
 									>
 									<button
 										on:click|stopPropagation={cancelEditingNote}
-										class="p-1.5 bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-zinc-600"
+										class="p-1.5 bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-zinc-600 cursor-pointer"
 										><X class="w-3 h-3" /></button
 									>
 								</div>
