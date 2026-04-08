@@ -2,7 +2,9 @@
 FROM python:3.12.11-slim
 
 # Install build tools & deps for pandas/numpy/scipy
-RUN apt-get update && apt-get install -y \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y \
     gcc \
     g++ \
     make \
@@ -17,11 +19,10 @@ WORKDIR /app
 # Copy the entire requirements directory
 COPY requirements /app/requirements
 
-# Upgrade pip to the latest version ensuring better connectivity handling
-RUN pip install --upgrade pip
-
-# Install production dependencies
-RUN pip install --no-cache-dir -r /app/requirements/prod.txt
+# Upgrade pip and install production dependencies using cache mounts
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip && \
+    pip install -r /app/requirements/prod.txt
 
 # Copy the src directory contents into the container at /app/src
 COPY src /app/src
