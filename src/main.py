@@ -13,6 +13,7 @@ from slowapi.util import get_remote_address
 from src.api import router as api_router
 from src.config import config
 from src.database import database_instance
+from src.limiter import limiter
 
 if config.oauthlib_insecure_transport:
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -36,10 +37,6 @@ async def lifespan(app: FastAPI):
     await database_instance.close()
 
 
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=[f"{config.default_requests_per_minute}/minute"],
-)
 
 app = FastAPI(
     title="MyPage48 API",

@@ -4,12 +4,10 @@ from src.live.service import LiveService
 from src.dependencies import get_live_service
 from typing import List
 
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 from src.config import config
+from src.limiter import limiter
 
 router = APIRouter()
-limiter = Limiter(key_func=get_remote_address)
 
 @router.get("", response_model=LiveResponse)
 async def get_live_status(
@@ -19,7 +17,7 @@ async def get_live_status(
     return await service.get_live_status()
 
 @router.get("/proxy")
-@limiter.limit(f"{config.LIVE_PROXY_REQUESTS_PER_MINUTE}/minute")
+@limiter.limit(f"{config.live_proxy_requests_per_minute}/minute", override_defaults=True)
 async def proxy_streaming_data(
     request: Request,
     url: str,
@@ -35,7 +33,7 @@ async def proxy_streaming_data(
     )
 
 @router.get("/showroom/comments")
-@limiter.limit(f"{config.LIVE_PROXY_REQUESTS_PER_MINUTE}/minute")
+@limiter.limit(f"{config.live_proxy_requests_per_minute}/minute", override_defaults=True)
 async def get_showroom_comments(
     request: Request,
     room_id: str,

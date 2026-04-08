@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, Request
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from src.limiter import limiter
 
 from src.api_keys.schemas import APIKeysResponse
 from src.api_keys.service import ApiKeyService
@@ -13,13 +12,12 @@ from src.dependencies import (
 from src.logging_config import create_logger
 
 router = APIRouter()
-limiter = Limiter(key_func=get_remote_address)
 
 logger = create_logger("api_keys", __name__)
 
 
 @router.post("/key", status_code=201, response_model=APIKeysResponse)
-@limiter.limit(f"{config.auth_requests_per_minute}/minute")
+@limiter.limit(f"{config.auth_requests_per_minute}/minute", override_defaults=True)
 async def create_api_key(
     request: Request,
     current_user=Depends(get_current_user),
