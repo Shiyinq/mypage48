@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 
 from src import dependencies
@@ -17,6 +17,38 @@ from src.storage.service import StorageService
 router = APIRouter()
 
 logger = create_logger("storage", __name__)
+
+
+@router.get("/storage/m/{path:path}")
+async def proxy_storage_media(
+    path: str,
+    expires: str | None = Query(None, description="Expiration timestamp"),
+    signature: str | None = Query(None, description="HMAC signature of the path and expiration"),
+    storage_service: StorageService = Depends(get_storage_service),
+):
+    """
+    Proxy internal media files from MinIO.
+    This behaves like an S3 Presigned URL but is served through our backend proxy.
+
+    Security logic:
+    1. Verify that the signature matches the path and expiration time.
+    2. Verify that the current time is before the expiration time.
+    3. Return X-Robots-Tag: noindex to prevent search engine indexing.
+    """
+    if not expires or not signature or not storage_service.verify_signature(path, expires, signature):
+        return Response(content="Unauthorized access or expired link", status_code=401)
+
+    content, media_type, status_code = await storage_service.get_internal_media(path)
+
+    return Response(
+        content=content,
+        status_code=status_code,
+        media_type=media_type,
+        headers={
+            "Cache-Control": "private, max-age=3600",
+            "X-Robots-Tag": "noindex, nofollow, noarchive",
+        },
+    )
 
 
 @router.get("/storage/external/{path:path}")

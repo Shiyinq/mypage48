@@ -56,6 +56,8 @@ class Settings(BaseSettings):
     MINIO_SECURE: bool = False
     MINIO_PUBLIC_URL: Optional[str] = None
 
+    API_BASE_URL: str = "http://localhost:8080/api"
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=True
     )
@@ -255,6 +257,10 @@ class Settings(BaseSettings):
     @property
     def minio_public_url(self) -> Optional[str]:
         return self.MINIO_PUBLIC_URL
+
+    @property
+    def api_base_url(self) -> str:
+        return self.API_BASE_URL.rstrip("/")
 
 
 config = Settings()

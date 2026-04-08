@@ -1,6 +1,9 @@
 import base64
+import hashlib
+import hmac
 import httpx
 import re
+import time
 import uuid
 from typing import Any, TYPE_CHECKING, Optional
 
@@ -103,8 +106,8 @@ class StorageService:
 
             self.repository.upload_file(image_bytes, filename, content_type)
 
-            # Generate presigned URL for immediate use
-            url = self.repository.get_presigned_url(filename)
+            # Use our proxy resolve instead of direct MinIO presigned URL
+            url = self.resolve_url(filename)
 
             return ImageUploadResponse(filename=filename, url=url)
         except S3Error as e:
@@ -126,7 +129,7 @@ class StorageService:
             if not self.repository.file_exists(filename):
                 raise ImageNotFoundError()
 
-            url = self.repository.get_presigned_url(filename, expires)
+            url = self.resolve_url(filename)
             return PresignedUrlResponse(url=url, expires_in=expires)
         except S3Error as e:
             logger.error(f"MinIO error getting presigned URL: {e}")
@@ -146,8 +149,8 @@ class StorageService:
         urls = {}
         for filename in filenames:
             try:
-                # We skip file_exists check for performance in bulk
-                url = self.repository.get_presigned_url(filename, expires)
+                # Use our proxy resolve for bulk urls as well
+                url = self.resolve_url(filename)
                 urls[filename] = url
             except Exception as e:
                 logger.error(f"Error getting presigned URL for {filename}: {e}")
@@ -171,10 +174,48 @@ class StorageService:
             logger.exception(f"Unexpected error during delete: {e}")
             return False
 
+    def _generate_signature(self, path: str, expires: int) -> str:
+        """
+        Generate a secure HMAC signature for a path and expiration timestamp.
+        Used for proxy-based presigned URLs.
+        """
+        message = f"{path}:{expires}"
+        return hmac.new(
+            self.config.secret_key.encode(), message.encode(), hashlib.sha256
+        ).hexdigest()
+
+    def _create_signed_params(self, path: str, ttl: int = 3600) -> tuple[str, int]:
+        """
+        Create signature and expiration timestamp for a path.
+        """
+        expires = int(time.time()) + ttl
+        signature = self._generate_signature(path, expires)
+        return signature, expires
+
+    def verify_signature(self, path: str, expires: str, signature: str) -> bool:
+        """
+        Verify if the signature is valid for the given path and has not expired.
+        """
+        try:
+            expires_int = int(expires)
+            if expires_int < int(time.time()):
+                logger.warning(f"Signature expired for path: {path}")
+                return False
+
+            expected_sig = self._generate_signature(path, expires_int)
+            if hmac.compare_digest(expected_sig, signature):
+                return True
+
+            logger.warning(f"Invalid signature for path: {path}")
+            return False
+        except Exception as e:
+            logger.error(f"Error verifying signature: {e}")
+            return False
+
     def resolve_url(self, value: Optional[str]) -> Optional[str]:
         """
         Fast resolve of image value to URL without existence check.
-        Used for list views where performance matters.
+        Automatically appends a 1-hour access signature for internal paths.
         """
         if not value:
             return None
@@ -186,18 +227,18 @@ class StorageService:
         # Check for storage filename
         # Storage filenames contain / but don't start with data: or http
         if "/" in value and not value.startswith("http"):
-            try:
-                # Direct call to repository without file_exists check
-                return self.repository.get_presigned_url(value)
-            except Exception:
-                return None
+            path = value.lstrip("/")
+            
+            # Signature generation logic moved to _create_signed_params
+            signature, expires = self._create_signed_params(path)
+            
+            return f"{self.config.api_base_url}/storage/m/{path}?expires={expires}&signature={signature}"
 
         return value
 
     def resolve_markdown_images(self, content: Optional[str]) -> Optional[str]:
         """
-        Find internal storage paths in markdown and replace with presigned URLs.
-        Example: ![](journal/abc.png) -> ![](https://minio.../journal/abc.png?X-Amz-...)
+        Find internal storage paths in markdown and replace with proxy URLs using signatures.
         """
         if not content:
             return content
@@ -206,8 +247,9 @@ class StorageService:
             alt_text = match.group(1)
             path = match.group(2)
             try:
-                presigned_url = self.repository.get_presigned_url(path)
-                return f"![{alt_text}]({presigned_url})"
+                # Use resolve_url to get the signed proxy URL
+                proxy_url = self.resolve_url(path)
+                return f"![{alt_text}]({proxy_url})"
             except Exception:
                 return match.group(0)
 
@@ -307,6 +349,27 @@ class StorageService:
                 extremes["last"]["image"] = self.resolve_url(extremes["last"]["image"])
 
         return type(stats)(**stats_dict)
+
+    async def get_internal_media(
+        self,
+        path: str,
+    ) -> tuple[Optional[bytes], str, int]:
+        """
+        Get internal media from MinIO.
+        Returns (content, media_type, status_code).
+        Signature verification happens at the route level.
+        """
+        path = path.lstrip("/")
+        
+        try:
+            content, content_type = self.repository.get_file_with_metadata(path)
+            if content:
+                return content, content_type or "image/jpeg", 200
+            
+            return b"Not Found", "text/plain", 404
+        except Exception as e:
+            logger.exception(f"Error getting media {path}: {str(e)}")
+            return b"Error", "text/plain", 500
 
     async def get_external_media(self, path: str) -> tuple[Optional[bytes], str, int]:
         """
