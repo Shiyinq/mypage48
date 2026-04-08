@@ -2,23 +2,24 @@ import asyncio
 import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote_plus, urljoin
 
 import httpx
-from urllib.parse import urljoin, quote_plus
+
 from src.config import Settings
 from src.live.exceptions import (
-    FetchShowroomError,
-    FetchIdnError,
-    StreamingUrlNotFoundError,
-    ProxyError,
     CommentsFetchError,
+    FetchIdnError,
+    FetchShowroomError,
+    ProxyError,
+    StreamingUrlNotFoundError,
 )
 from src.live.schemas import (
     LiveMember,
     LiveResponse,
     LiveStatus,
-    LiveStreamingURL,
     LiveStreamInfo,
+    LiveStreamingURL,
 )
 from src.logging_config import create_logger
 from src.members.repository import MemberRepository
@@ -63,9 +64,7 @@ class LiveService:
             idn_lives = []
 
         all_lives = showroom_lives + idn_lives
-        response = LiveResponse(
-            data=all_lives, total=len(all_lives), updated_at=now
-        )
+        response = LiveResponse(data=all_lives, total=len(all_lives), updated_at=now)
 
         self._cache["data"] = response
         self._cache["updated_at"] = now
@@ -86,7 +85,7 @@ class LiveService:
                         rid = room.get("room_id")
                         if rid:
                             all_rooms_map[rid] = room
-                
+
                 all_rooms = list(all_rooms_map.values())
 
                 if not all_rooms:
@@ -127,7 +126,7 @@ class LiveService:
                                 ),
                             )
                         )
-                
+
                 # DEBUG MOCK: If no JKT48 members are live, take up to 8 Showroom lives for testing multi-view
                 if not results and all_rooms:
                     for room in all_rooms[:8]:
@@ -145,12 +144,13 @@ class LiveService:
                                 member=LiveMember(
                                     id=f"debug_{room.get('room_id')}",
                                     name=room.get("main_name"),
-                                    nickname=room.get("nickname") or room.get("main_name"),
-                                    img=""
+                                    nickname=room.get("nickname")
+                                    or room.get("main_name"),
+                                    img="",
                                 ),
                             )
                         )
-                
+
                 return results
         except Exception as e:
             logger.exception(f"Exception in fetch_showroom_lives: {str(e)}")
@@ -197,7 +197,13 @@ class LiveService:
                     idn_url = m.get("socials", {}).get("idn_app", "")
                     if idn_url:
                         # Normalize username: remove trailing slash, take last part, remove @
-                        username = idn_url.rstrip("/").split("/")[-1].replace("@", "").strip().lower()
+                        username = (
+                            idn_url.rstrip("/")
+                            .split("/")[-1]
+                            .replace("@", "")
+                            .strip()
+                            .lower()
+                        )
                         if username:
                             member_map[username] = m
 
@@ -208,14 +214,21 @@ class LiveService:
                     if status not in ["LIVE", "ON_LIVE"]:
                         continue
 
-                    username = str(stream.get("creator", {}).get("username") or "").replace("@", "").strip().lower()
+                    username = (
+                        str(stream.get("creator", {}).get("username") or "")
+                        .replace("@", "")
+                        .strip()
+                        .lower()
+                    )
                     if username in member_map:
                         member = member_map[username]
                         playback_url = stream.get("playback_url")
                         streaming_urls = []
                         if playback_url:
                             streaming_urls.append(
-                                LiveStreamingURL(url=playback_url, label="HLS", quality=0)
+                                LiveStreamingURL(
+                                    url=playback_url, label="HLS", quality=0
+                                )
                             )
 
                         results.append(
@@ -244,11 +257,18 @@ class LiveService:
                     else:
                         # Fallback for IDN JKT48 members not in DB
                         creator_name = str(stream.get("creator", {}).get("name") or "")
-                        if "JKT48" in creator_name.upper() or "JKT48" in str(stream.get("title") or "").upper():
+                        if (
+                            "JKT48" in creator_name.upper()
+                            or "JKT48" in str(stream.get("title") or "").upper()
+                        ):
                             playback_url = stream.get("playback_url")
                             streaming_urls = []
                             if playback_url:
-                                streaming_urls.append(LiveStreamingURL(url=playback_url, label="HLS", quality=0))
+                                streaming_urls.append(
+                                    LiveStreamingURL(
+                                        url=playback_url, label="HLS", quality=0
+                                    )
+                                )
 
                             results.append(
                                 LiveStatus(
@@ -257,23 +277,32 @@ class LiveService:
                                     title=stream.get("title"),
                                     image=stream.get("image_url"),
                                     view_num=stream.get("view_count") or 0,
-                                    start_at=datetime.fromisoformat(stream.get("live_at").replace("Z", "+00:00")) if stream.get("live_at") else None,
+                                    start_at=datetime.fromisoformat(
+                                        stream.get("live_at").replace("Z", "+00:00")
+                                    )
+                                    if stream.get("live_at")
+                                    else None,
                                     streaming_url=streaming_urls,
                                     room_identifier=stream.get("room_identifier"),
-                                    room_url_key=stream.get("creator", {}).get("username"),
+                                    room_url_key=stream.get("creator", {}).get(
+                                        "username"
+                                    ),
                                     member=LiveMember(
                                         id=f"temp_{username}",
                                         name=creator_name,
                                         nickname=creator_name.split(" ")[0],
-                                        img=stream.get("creator", {}).get("avatar") or "/media/news/migrated/jkt48logo.jpg",
+                                        img=stream.get("creator", {}).get("avatar")
+                                        or "/media/news/migrated/jkt48logo.jpg",
                                     ),
                                 )
                             )
- 
+
                 # DEBUG MOCK: If no JKT48 members are live, take the first available IDN live for testing
                 if not results and streams:
                     stream = streams[0]
-                    room_id = stream.get("room_identifier") or stream.get("creator", {}).get("username")
+                    room_id = stream.get("room_identifier") or stream.get(
+                        "creator", {}
+                    ).get("username")
                     results.append(
                         LiveStatus(
                             platform="idn",
@@ -281,17 +310,29 @@ class LiveService:
                             title=f"[DEBUG] {stream.get('title')}",
                             image=stream.get("image_url"),
                             view_num=stream.get("view_count") or 0,
-                            start_at=datetime.fromisoformat(stream.get("live_at").replace("Z", "+00:00")) if stream.get("live_at") else datetime.now(),
+                            start_at=datetime.fromisoformat(
+                                stream.get("live_at").replace("Z", "+00:00")
+                            )
+                            if stream.get("live_at")
+                            else datetime.now(),
                             streaming_url=[
-                                LiveStreamingURL(url=stream.get("playback_url"), label="HLS", quality=0)
-                            ] if stream.get("playback_url") else [],
+                                LiveStreamingURL(
+                                    url=stream.get("playback_url"),
+                                    label="HLS",
+                                    quality=0,
+                                )
+                            ]
+                            if stream.get("playback_url")
+                            else [],
                             room_identifier=room_id,
                             room_url_key=stream.get("creator", {}).get("username"),
                             member=LiveMember(
                                 id=f"debug_{stream.get('slug')}",
-                                name=stream.get("creator", {}).get("name") or "DEBUG TEST STREAM",
-                                nickname=stream.get("creator", {}).get("username") or "Debug",
-                                img=""
+                                name=stream.get("creator", {}).get("name")
+                                or "DEBUG TEST STREAM",
+                                nickname=stream.get("creator", {}).get("username")
+                                or "Debug",
+                                img="",
                             ),
                         )
                     )
@@ -324,14 +365,14 @@ class LiveService:
                 view_num=view_num,
                 start_at=start_at,
                 image=image,
-                member=profile
+                member=profile,
             )
         elif platform == "idn":
             lives = await self.fetch_idn_lives()
             for live in lives:
                 if live.live_id == id:
                     room_id = live.room_identifier
-                    
+
                     # If room_id is None, try scraping from the live page
                     if not room_id and live.room_url_key:
                         try:
@@ -339,19 +380,31 @@ class LiveService:
                             username = live.room_url_key
                             slug = id
                             scrape_url = f"https://www.idn.app/{username}/live/{slug}"
-                            
-                            async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
+
+                            async with httpx.AsyncClient(
+                                follow_redirects=True, timeout=30.0
+                            ) as client:
                                 res = await client.get(scrape_url)
                                 html = res.text
-                                
+
                                 import re
-                                match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', html)
+
+                                match = re.search(
+                                    r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
+                                    html,
+                                )
                                 if match:
                                     data = json.loads(match.group(1))
-                                    livestream = data.get("props", {}).get("pageProps", {}).get("livestream", {})
+                                    livestream = (
+                                        data.get("props", {})
+                                        .get("pageProps", {})
+                                        .get("livestream", {})
+                                    )
                                     room_id = livestream.get("chat_room_id")
                         except Exception as scrape_err:
-                            logger.exception(f"Failed to scrape IDN chat room ID for {id}: {scrape_err}")
+                            logger.exception(
+                                f"Failed to scrape IDN chat room ID for {id}: {scrape_err}"
+                            )
 
                     return LiveStreamInfo(
                         streaming_urls=live.streaming_url,
@@ -359,7 +412,7 @@ class LiveService:
                         view_num=live.view_num,
                         start_at=live.start_at,
                         image=live.image,
-                        member=live.member
+                        member=live.member,
                     )
         raise StreamingUrlNotFoundError()
 
@@ -375,13 +428,15 @@ class LiveService:
                         id=str(data.get("room_id")),
                         name=data.get("main_name", "Unknown Member"),
                         nickname=data.get("nickname"),
-                        img=data.get("image")
+                        img=data.get("image"),
                     )
         except Exception as e:
             logger.exception(f"Failed to fetch showroom profile for {room_id}: {e}")
             return None
 
-    async def fetch_showroom_streaming_url(self, room_id: str) -> List[LiveStreamingURL]:
+    async def fetch_showroom_streaming_url(
+        self, room_id: str
+    ) -> List[LiveStreamingURL]:
         """Fetch streaming URL from official Showroom API"""
         url = f"https://www.showroom-live.com/api/live/streaming_url?room_id={room_id}"
         try:
@@ -389,30 +444,36 @@ class LiveService:
                 res = await client.get(url, timeout=10.0)
                 res.raise_for_status()
                 data = res.json()
-                
+
                 streaming_urls = []
                 for stream in data.get("streaming_url_list", []):
                     stream_url = stream.get("url")
-                    if not stream_url or not stream_url.startswith(("http://", "https://")):
+                    if not stream_url or not stream_url.startswith(
+                        ("http://", "https://")
+                    ):
                         continue
-                        
+
                     streaming_urls.append(
                         LiveStreamingURL(
                             url=stream_url,
                             label=stream.get("label"),
-                            quality=stream.get("quality", 0)
+                            quality=stream.get("quality", 0),
                         )
                     )
                 return streaming_urls
         except Exception as e:
-            logger.exception(f"Error fetching Showroom streaming URL for {room_id}: {e}")
+            logger.exception(
+                f"Error fetching Showroom streaming URL for {room_id}: {e}"
+            )
             return []
 
     async def get_showroom_comments(self, room_id: str) -> Dict[Any, Any]:
         """Fetch Showroom comment log via proxy to bypass CORS"""
         url = f"https://www.showroom-live.com/api/live/comment_log?room_id={room_id}"
         try:
-            async with httpx.AsyncClient(headers=self.showroom_headers, timeout=10.0) as client:
+            async with httpx.AsyncClient(
+                headers=self.showroom_headers, timeout=10.0
+            ) as client:
                 res = await client.get(url)
                 return res.json()
         except Exception as e:
@@ -423,68 +484,75 @@ class LiveService:
         """Proxy HLS playlist and segments to bypass CORS"""
         try:
             headers = self.showroom_headers if "showroom-live.com" in url else {}
-            async with httpx.AsyncClient(headers=headers, follow_redirects=True, timeout=30.0) as client:
+            async with httpx.AsyncClient(
+                headers=headers, follow_redirects=True, timeout=30.0
+            ) as client:
                 resp = await client.get(url)
-                
+
             if resp.status_code != 200:
                 return {
                     "content": resp.content,
                     "media_type": None,
-                    "status_code": resp.status_code
+                    "status_code": resp.status_code,
                 }
 
             content_type = resp.headers.get("content-type", "")
-            
+
             # If it's an m3u8 playlist, rewrite internal URLs
             if url.endswith(".m3u8") or "mpegurl" in content_type.lower():
                 content = resp.text
                 lines = content.splitlines()
                 rewritten_lines = []
-                
+
                 for line in lines:
                     line = line.strip()
                     if not line:
                         continue
-                    
+
                     if line.startswith("#"):
                         # Handle tags that might contain URIs (e.g., #EXT-X-KEY, #EXT-X-MAP, #EXT-X-MEDIA)
                         if "URI=" in line:
                             # Simple replacement for URI="url"
                             import re
+
                             def replace_uri(match):
                                 original_uri = match.group(1).strip("\"'")
                                 absolute_uri = urljoin(url, original_uri)
                                 proxied_uri = f"/api/jkt48/live/proxy?url={quote_plus(absolute_uri)}"
                                 return f'URI="{proxied_uri}"'
-                            
-                            line = re.sub(r'URI=(["\']?)([^"\',]+)\1', replace_uri, line)
-                        
+
+                            line = re.sub(
+                                r'URI=(["\']?)([^"\',]+)\1', replace_uri, line
+                            )
+
                         rewritten_lines.append(line)
                     else:
                         # This is a URL (variant playlist or segment)
                         absolute_url = urljoin(url, line)
-                        proxied_url = f"/api/jkt48/live/proxy?url={quote_plus(absolute_url)}"
+                        proxied_url = (
+                            f"/api/jkt48/live/proxy?url={quote_plus(absolute_url)}"
+                        )
                         rewritten_lines.append(proxied_url)
-                
+
                 return {
                     "content": "\n".join(rewritten_lines),
                     "media_type": "application/vnd.apple.mpegurl",
                     "headers": {
                         "Access-Control-Allow-Origin": "*",
-                        "Cache-Control": "no-cache"
-                    }
+                        "Cache-Control": "no-cache",
+                    },
                 }
-            
+
             # For segments (.ts), just return the content
             return {
                 "content": resp.content,
                 "media_type": content_type,
                 "headers": {
                     "Access-Control-Allow-Origin": "*",
-                    "Cache-Control": "public, max-age=3600"
-                }
+                    "Cache-Control": "public, max-age=3600",
+                },
             }
-            
+
         except Exception as e:
             logger.exception(f"Error proxying HLS request for {url}: {e}")
             raise ProxyError()

@@ -1,12 +1,8 @@
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, Depends, Query
 
-from src.auth.schemas import UserCurrent
-from src.dependencies import (
-    get_current_user,
-    get_events_service,
-)
+from src.dependencies import get_events_service
 from src.events.schemas import CalendarEvent, EventPaginationResponse
 from src.events.service import EventsService
 

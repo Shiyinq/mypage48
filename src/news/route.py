@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, Query
+
 from src.dependencies import get_news_service
-from src.news.service import NewsService
 from src.news.schemas import NewsPaginationResponse, NewsResponse
+from src.news.service import NewsService
 
 router = APIRouter()
+
 
 @router.get("/", response_model=NewsPaginationResponse)
 async def get_news(
@@ -13,6 +15,7 @@ async def get_news(
 ):
     """Get latest news."""
     return await service.get_news(page=page, limit=limit)
+
 
 @router.get("/{link}", response_model=NewsResponse)
 async def get_news_by_link(

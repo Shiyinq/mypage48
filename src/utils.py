@@ -118,6 +118,7 @@ def clean_image_url(url: Optional[str]) -> Optional[str]:
     except Exception:
         return url
 
+
 def resolve_minio_public_url(url: str) -> str:
     """Replace internal MinIO host with public URL if configured."""
     if not config.minio_public_url:

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, Request
-from src.limiter import limiter
 
 from src.api_keys.schemas import APIKeysResponse
 from src.api_keys.service import ApiKeyService
@@ -9,6 +8,7 @@ from src.dependencies import (
     get_current_user,
     require_csrf_protection,
 )
+from src.limiter import limiter
 from src.logging_config import create_logger
 
 router = APIRouter()

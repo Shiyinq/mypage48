@@ -6,11 +6,11 @@ from src.auth.schemas import UserCurrent
 from src.dependencies import get_storage_service
 from src.logging_config import create_logger
 from src.storage.schemas import (
+    BatchPresignedUrlRequest,
+    BatchPresignedUrlResponse,
     ImageUploadRequest,
     ImageUploadResponse,
     PresignedUrlResponse,
-    BatchPresignedUrlRequest,
-    BatchPresignedUrlResponse,
 )
 from src.storage.service import StorageService
 
@@ -23,7 +23,8 @@ logger = create_logger("storage", __name__)
 async def proxy_storage_media(
     path: str,
     expires: str | None = Query(None, description="Expiration timestamp"),
-    signature: str | None = Query(None, description="HMAC signature of the path and expiration"),
+    signature: str
+    | None = Query(None, description="HMAC signature of the path and expiration"),
     storage_service: StorageService = Depends(get_storage_service),
 ):
     """
@@ -35,7 +36,11 @@ async def proxy_storage_media(
     2. Verify that the current time is before the expiration time.
     3. Return X-Robots-Tag: noindex to prevent search engine indexing.
     """
-    if not expires or not signature or not storage_service.verify_signature(path, expires, signature):
+    if (
+        not expires
+        or not signature
+        or not storage_service.verify_signature(path, expires, signature)
+    ):
         return Response(content="Unauthorized access or expired link", status_code=401)
 
     content, media_type, status_code = await storage_service.get_internal_media(path)

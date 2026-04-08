@@ -17,14 +17,13 @@ async def get_playground_openapi(
     """
     filtered_routes = []
     excluded_tags = {"Auth", "API Keys", "Feedback", "Storage"}
-    
+
     # Define (path, method) pairs to exclude
     excluded_endpoints = {
         ("/api/users", "GET"),
         ("/api/users/signup", "POST"),
         ("/api/users/profile-picture", "POST"),
     }
-
 
     for route in request.app.routes:
         if isinstance(route, APIRoute):
@@ -39,13 +38,13 @@ async def get_playground_openapi(
 
             # 3. Filter by require_admin dependency
             is_admin_only = False
-            
+
             # Check route level dependencies
             for dep in route.dependencies:
                 if dep.dependency == require_admin:
                     is_admin_only = True
                     break
-            
+
             # Check function signature dependencies (if any)
             if not is_admin_only and hasattr(route, "dependant"):
                 for dep in route.dependant.dependencies:
@@ -53,17 +52,13 @@ async def get_playground_openapi(
                         is_admin_only = True
                         break
 
-            
             if is_admin_only:
                 continue
 
             filtered_routes.append(route)
-
 
     return get_openapi(
         title="MyPage48 Public API Playground",
         version=request.app.version,
         routes=filtered_routes,
     )
-
-

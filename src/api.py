@@ -8,16 +8,16 @@ from src.events.route import router as events_router
 from src.export.router import router as export_router
 from src.feedback.route import router as feedback_router
 from src.health.route import router as health_router
+from src.live.route import router as live_router
 from src.llm.route import router as llm_router
 from src.members.route import router as members_router
 from src.memories.route import router as memories_router
+from src.news.route import router as news_router
+from src.playground.route import router as playground_router
 from src.setlists.route import router as setlists_router
 from src.storage.route import router as storage_router
 from src.tickets.route import router as theater_router
 from src.users.route import router as user_router
-from src.news.route import router as news_router
-from src.live.route import router as live_router
-from src.playground.route import router as playground_router
 
 router = APIRouter()
 

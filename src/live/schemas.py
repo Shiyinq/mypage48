@@ -1,6 +1,8 @@
-from typing import List, Optional
-from pydantic import BaseModel
 from datetime import datetime
+from typing import List, Optional
+
+from pydantic import BaseModel
+
 
 class LiveMember(BaseModel):
     id: str
@@ -8,10 +10,12 @@ class LiveMember(BaseModel):
     nickname: Optional[str] = None
     img: Optional[str] = None
 
+
 class LiveStreamingURL(BaseModel):
     url: str
     label: str
     quality: int
+
 
 class LiveStreamInfo(BaseModel):
     streaming_urls: List[LiveStreamingURL]
@@ -21,8 +25,9 @@ class LiveStreamInfo(BaseModel):
     image: Optional[str] = None
     member: Optional[LiveMember] = None
 
+
 class LiveStatus(BaseModel):
-    platform: str # 'showroom' or 'idn'
+    platform: str  # 'showroom' or 'idn'
     room_id: Optional[str] = None
     room_identifier: Optional[str] = None
     room_url_key: Optional[str] = None
@@ -33,6 +38,7 @@ class LiveStatus(BaseModel):
     image: Optional[str] = None
     streaming_url: List[LiveStreamingURL] = []
     member: Optional[LiveMember] = None
+
 
 class LiveResponse(BaseModel):
     data: List[LiveStatus]

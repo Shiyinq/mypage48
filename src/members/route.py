@@ -2,12 +2,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query, status
 
-from src.auth.schemas import UserCurrent
-from src.dependencies import (
-    get_current_user,
-    get_member_service,
-    require_admin,
-)
+from src.dependencies import get_member_service, require_admin
 from src.logging_config import create_logger
 from src.members.schemas import (
     BirthdayResponse,
