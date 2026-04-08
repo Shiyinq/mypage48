@@ -61,9 +61,9 @@
 
 	let videoElement: HTMLVideoElement;
 	let hls: any;
+	let Hls: any;
 	let loadingOtherLive = false;
 	let initializing = false;
-	let scriptLoaded = false;
 	let lastInitializedId = '';
 	let initCount = 0;
 	let chatVisible = true;
@@ -99,11 +99,12 @@
 			s.platform === platform && (s.room_id === id || s.live_id === id || s.room_url_key === id)
 	);
 	$: streamTitle = streamFromList?.title || '';
-	$: originalLiveUrl = platform === 'idn' 
-		? `https://www.idn.app/${streamFromList?.room_url_key?.replace('@', '') || ''}/live/${streamFromList?.live_id || ''}`
-		: platform === 'showroom'
-			? `https://www.showroom-live.com/r/${streamFromList?.room_url_key || ''}`
-			: '#';
+	$: originalLiveUrl =
+		platform === 'idn'
+			? `https://www.idn.app/${streamFromList?.room_url_key?.replace('@', '') || ''}/live/${streamFromList?.live_id || ''}`
+			: platform === 'showroom'
+				? `https://www.showroom-live.com/r/${streamFromList?.room_url_key || ''}`
+				: '#';
 
 	function rotateVideo() {
 		rotation += 90;
@@ -135,7 +136,7 @@
 	$: streamingUrls = $currentStream?.streaming_urls || [];
 	$: startAt = $currentStream?.start_at || null;
 
-	$: if (scriptLoaded && platform && id && lastInitializedId !== `${platform}-${id}`) {
+	$: if (platform && id && lastInitializedId !== `${platform}-${id}`) {
 		lastInitializedId = `${platform}-${id}`;
 		initPlayer();
 		fetchOtherLive();
@@ -149,6 +150,11 @@
 	const fallbackAvatar = 'https://placehold.co/640x960?text=NO%20IMAGE';
 
 	async function initPlayer() {
+		if (typeof window === 'undefined') return;
+		if (!Hls) {
+			const mod = await import('hls.js');
+			Hls = mod.default;
+		}
 		const currentInit = ++initCount;
 		try {
 			initializing = true;
@@ -173,8 +179,7 @@
 					streamUrl = `${API_BASE}/jkt48/live/proxy?url=${encodeURIComponent(streamUrl as string)}`;
 				}
 
-				if (typeof window !== 'undefined' && (window as any).Hls && videoElement) {
-					const Hls = (window as any).Hls;
+				if (typeof window !== 'undefined' && videoElement) {
 					if (Hls.isSupported()) {
 						if (hls) hls.destroy();
 						hls = new Hls();
@@ -230,7 +235,6 @@
 			loadingOtherLive = false;
 		}
 	}
-
 	onMount(() => {
 		refreshInterval = setInterval(() => {
 			if (platform && id && !initializing) {
@@ -243,18 +247,6 @@
 				fetchOtherLive();
 			}
 		}, 30000);
-
-		if ((window as any).Hls) {
-			scriptLoaded = true;
-			return;
-		}
-
-		const script = document.createElement('script');
-		script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
-		script.onload = () => {
-			scriptLoaded = true;
-		};
-		document.head.appendChild(script);
 	});
 
 	onDestroy(() => {
@@ -282,7 +274,10 @@
 	}
 
 	async function refreshStream() {
-		if (hls) { hls.destroy(); hls = null; }
+		if (hls) {
+			hls.destroy();
+			hls = null;
+		}
 		if (videoElement) {
 			videoElement.pause();
 			videoElement.src = '';
@@ -330,11 +325,16 @@
 					isRecording = false;
 				};
 				recordingDuration = 0;
-				recordingTimer = setInterval(() => { recordingDuration++; }, 1000);
+				recordingTimer = setInterval(() => {
+					recordingDuration++;
+				}, 1000);
 			}
 		} else if (mediaRecorder) {
 			mediaRecorder.stop();
-			if (recordingTimer) { clearInterval(recordingTimer); recordingTimer = null; }
+			if (recordingTimer) {
+				clearInterval(recordingTimer);
+				recordingTimer = null;
+			}
 		}
 	}
 
@@ -446,9 +446,17 @@
 			{#if !isFullscreen}
 				<div class="hidden sm:flex items-center gap-3 flex-shrink-0">
 					<LiveStats view_num={$currentStream?.view_num} start_at={startAt} variant="detailed" />
-					<a href={originalLiveUrl} target="_blank" rel="noopener noreferrer" class="group/platform flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-transform" title={$t('theater.live.openOriginal')}>
+					<a
+						href={originalLiveUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="group/platform flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-transform"
+						title={$t('theater.live.openOriginal')}
+					>
 						<PlatformLogo platform={platform || ''} size="md" />
-						<div class="w-0 overflow-hidden opacity-0 group-hover/platform:w-4 group-hover/platform:opacity-100 transition-all duration-300">
+						<div
+							class="w-0 overflow-hidden opacity-0 group-hover/platform:w-4 group-hover/platform:opacity-100 transition-all duration-300"
+						>
 							<ExternalLink size={14} class="text-slate-400" />
 						</div>
 					</a>
@@ -487,7 +495,8 @@
 						class="w-32 h-44 sm:w-40 sm:h-56 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl mb-2 relative group"
 					>
 						<img
-							src={getExternalMediaUrl(streamFromList?.image || streamFromList?.member?.img) || fallbackAvatar}
+							src={getExternalMediaUrl(streamFromList?.image || streamFromList?.member?.img) ||
+								fallbackAvatar}
 							alt={streamFromList?.member?.name}
 							class="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
 						/>
@@ -498,8 +507,8 @@
 					<div>
 						<h2 class="text-2xl font-black mb-2 uppercase tracking-tighter">Stream Offline</h2>
 						<p class="text-zinc-500 max-w-sm mx-auto text-xs sm:text-sm px-4">
-							{streamFromList?.member?.name || 'Member'} is not live at the moment.
-							This session might have ended or is currently unavailable.
+							{streamFromList?.member?.name || 'Member'} is not live at the moment. This session might
+							have ended or is currently unavailable.
 						</p>
 					</div>
 					<a
@@ -569,9 +578,16 @@
 									start_at={startAt}
 									variant="detailed"
 								/>
-								<a href={originalLiveUrl} target="_blank" rel="noopener noreferrer" class="group/platform flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-transform">
+								<a
+									href={originalLiveUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="group/platform flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-transform"
+								>
 									<PlatformLogo platform={platform || ''} size="md" />
-									<div class="w-0 overflow-hidden opacity-0 group-hover/platform:w-4 group-hover/platform:opacity-100 transition-all duration-300">
+									<div
+										class="w-0 overflow-hidden opacity-0 group-hover/platform:w-4 group-hover/platform:opacity-100 transition-all duration-300"
+									>
 										<ExternalLink size={14} class="text-white/60" />
 									</div>
 								</a>
@@ -586,9 +602,16 @@
 									start_at={startAt}
 									variant="detailed"
 								/>
-								<a href={originalLiveUrl} target="_blank" rel="noopener noreferrer" class="group/platform flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-transform">
+								<a
+									href={originalLiveUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="group/platform flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-transform"
+								>
 									<PlatformLogo platform={platform || ''} size="md" />
-									<div class="w-0 overflow-hidden opacity-0 group-hover/platform:w-4 group-hover/platform:opacity-100 transition-all duration-300">
+									<div
+										class="w-0 overflow-hidden opacity-0 group-hover/platform:w-4 group-hover/platform:opacity-100 transition-all duration-300"
+									>
 										<ExternalLink size={14} class="text-white/60" />
 									</div>
 								</a>
@@ -639,14 +662,20 @@
 							? 'translate-y-full opacity-0'
 							: 'opacity-0 translate-y-full group-hover/player:translate-y-0 group-hover/player:opacity-100'}"
 				>
-					<div class="w-full flex flex-col gap-2 pointer-events-auto transition-all duration-300 px-4 sm:px-6">
+					<div
+						class="w-full flex flex-col gap-2 pointer-events-auto transition-all duration-300 px-4 sm:px-6"
+					>
 						<!-- Progress Bar -->
 						<div class="flex flex-col gap-1 px-1">
-							<div class="flex justify-between items-end text-[10px] font-black text-white/90 uppercase tracking-widest mb-0.5">
+							<div
+								class="flex justify-between items-end text-[10px] font-black text-white/90 uppercase tracking-widest mb-0.5"
+							>
 								<span>{formatTime(currentTime)} / {formatTime(displayDuration)}</span>
 							</div>
 							<div class="group/progress relative h-6 flex items-center mb-1 cursor-pointer">
-								<div class="absolute inset-x-0 h-1 bg-white/20 rounded-full pointer-events-none"></div>
+								<div
+									class="absolute inset-x-0 h-1 bg-white/20 rounded-full pointer-events-none"
+								></div>
 								<div
 									class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-red-600 rounded-full pointer-events-none transition-all z-10"
 									style="width: {Math.min(100, (currentTime / (displayDuration || 1)) * 100)}%"
@@ -664,48 +693,101 @@
 						</div>
 
 						<!-- Controls Bar -->
-						<div class="flex items-center justify-between gap-2 sm:gap-4 overflow-x-auto scrollbar-hide py-1">
+						<div
+							class="flex items-center justify-between gap-2 sm:gap-4 overflow-x-auto scrollbar-hide py-1"
+						>
 							<!-- Left: Play, Volume, PiP -->
 							<div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-								<button class="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer group/btn relative" on:click={togglePlayPause}>
-									{#if isPaused}<Play size={22} fill="currentColor" class="ml-1" />{:else}<Pause size={22} fill="currentColor" />{/if}
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+								<button
+									class="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer group/btn relative"
+									on:click={togglePlayPause}
+								>
+									{#if isPaused}<Play size={22} fill="currentColor" class="ml-1" />{:else}<Pause
+											size={22}
+											fill="currentColor"
+										/>{/if}
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
+									>
 										{isPaused ? $t('theater.live.play') : $t('theater.live.pause')}
 									</div>
 								</button>
 
 								<div class="flex items-center gap-1 group/volume">
-									<button class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer" on:click={toggleMute}>
-										{#if isMuted || volume === 0}<VolumeX size={18} />{:else}<Volume2 size={18} />{/if}
-										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest">
+									<button
+										class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
+										on:click={toggleMute}
+									>
+										{#if isMuted || volume === 0}<VolumeX size={18} />{:else}<Volume2
+												size={18}
+											/>{/if}
+										<div
+											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+										>
 											{isMuted ? $t('theater.live.unmute') : $t('theater.live.mute')}
 										</div>
 									</button>
-									<input type="range" min="0" max="1" step="0.01" bind:value={volume} on:input={handleVolumeChange} class="w-0 opacity-0 group-hover/volume:w-16 sm:group-hover/volume:w-24 group-hover/volume:opacity-100 transition-all duration-300 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-white" />
+									<input
+										type="range"
+										min="0"
+										max="1"
+										step="0.01"
+										bind:value={volume}
+										on:input={handleVolumeChange}
+										class="w-0 opacity-0 group-hover/volume:w-16 sm:group-hover/volume:w-24 group-hover/volume:opacity-100 transition-all duration-300 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-white"
+									/>
 								</div>
 
-								<button class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer" on:click={togglePiP}>
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
+									on:click={togglePiP}
+								>
 									<PictureInPicture2 size={18} />
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">{$t('theater.live.pip')}</div>
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
+									>
+										{$t('theater.live.pip')}
+									</div>
 								</button>
 							</div>
 
 							<!-- Right: Screenshot, Record, Theme, Focus, Fullscreen, Refresh, Rotate, Sidebar, Chat -->
 							<div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-								<button class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer" on:click={takeScreenshot}>
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
+									on:click={takeScreenshot}
+								>
 									<Camera size={18} />
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">{$t('theater.live.screenshot')}</div>
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
+									>
+										{$t('theater.live.screenshot')}
+									</div>
 								</button>
 
 								<div class="flex items-center gap-1.5 min-w-[40px] transition-all duration-300">
-									<button class="group/btn relative w-10 h-10 flex items-center justify-center {isRecording ? 'bg-red-600 animate-pulse' : 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all flex-shrink-0 active:scale-95 cursor-pointer" on:click={toggleRecording}>
-										{#if isRecording}<Square size={16} fill="white" />{:else}<Circle size={16} fill="white" class="text-white" />{/if}
-										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+									<button
+										class="group/btn relative w-10 h-10 flex items-center justify-center {isRecording
+											? 'bg-red-600 animate-pulse'
+											: 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all flex-shrink-0 active:scale-95 cursor-pointer"
+										on:click={toggleRecording}
+									>
+										{#if isRecording}<Square size={16} fill="white" />{:else}<Circle
+												size={16}
+												fill="white"
+												class="text-white"
+											/>{/if}
+										<div
+											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
+										>
 											{isRecording ? $t('theater.live.stopRecord') : $t('theater.live.record')}
 										</div>
 									</button>
 									{#if isRecording}
-										<div class="text-white text-[11px] font-mono font-bold tabular-nums px-1.5 py-0.5 bg-red-600 rounded-sm shadow-sm" in:fly={{ x: -10, duration: 300 }}>
+										<div
+											class="text-white text-[11px] font-mono font-bold tabular-nums px-1.5 py-0.5 bg-red-600 rounded-sm shadow-sm"
+											in:fly={{ x: -10, duration: 300 }}
+										>
 											{formatTime(recordingDuration)}
 										</div>
 									{/if}
@@ -714,54 +796,108 @@
 								<div class="w-px h-4 bg-white/20 mx-1"></div>
 
 								{#if isFocusMode}
-									<button class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer" on:click={toggleTheme}>
+									<button
+										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
+										on:click={toggleTheme}
+									>
 										{#if $theme === 'dark'}<Moon size={18} />{:else}<Sun size={18} />{/if}
-										<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest">{$t('theater.live.toggleTheme')}</div>
+										<div
+											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+										>
+											{$t('theater.live.toggleTheme')}
+										</div>
 									</button>
 								{/if}
 
-								<button class="group/btn relative w-10 h-10 flex items-center justify-center {isFocusMode ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer" on:click={toggleFocus}>
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center {isFocusMode
+										? 'bg-white text-black'
+										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
+									on:click={toggleFocus}
+								>
 									{#if isFocusMode}<Minimize2 size={18} />{:else}<Maximize2 size={18} />{/if}
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest">
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+									>
 										{isFocusMode ? $t('theater.live.exitFocus') : $t('theater.live.focusMode')}
 									</div>
 								</button>
 
-								<button class="group/btn relative w-10 h-10 flex items-center justify-center {isFullscreen ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer" on:click={toggleFullscreen}>
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center {isFullscreen
+										? 'bg-white text-black'
+										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
+									on:click={toggleFullscreen}
+								>
 									{#if isFullscreen}<Minimize size={18} />{:else}<Maximize size={18} />{/if}
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest">
-										{isFullscreen ? $t('theater.live.exitFullscreen') : $t('theater.live.fullscreen')}
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+									>
+										{isFullscreen
+											? $t('theater.live.exitFullscreen')
+											: $t('theater.live.fullscreen')}
 									</div>
 								</button>
 
-								<button class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer" on:click={refreshStream}>
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
+									on:click={refreshStream}
+								>
 									<RefreshCw size={18} class={$liveLoading ? 'animate-spin' : ''} />
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">{$t('theater.live.refresh')}</div>
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
+									>
+										{$t('theater.live.refresh')}
+									</div>
 								</button>
 
-								<button class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer" on:click={rotateVideo}>
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
+									on:click={rotateVideo}
+								>
 									<RotateCw size={18} class="transition-transform duration-500" />
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest">{$t('theater.live.rotate')}</div>
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+									>
+										{$t('theater.live.rotate')}
+									</div>
 								</button>
 
 								<div class="w-px h-4 bg-white/20 mx-1"></div>
 
-								<button class="group/btn relative w-10 h-10 flex items-center justify-center {sidebarMode === 'list' ? 'bg-white text-black' : 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center {sidebarMode ===
+									'list'
+										? 'bg-white text-black'
+										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
 									on:click={() => {
 										sidebarMode = sidebarMode === 'chat' ? 'list' : 'chat';
 										if (sidebarMode === 'list') fetchOtherLive();
 										if (!chatVisible) chatVisible = true;
 									}}
 								>
-									{#if sidebarMode === 'chat'}<Users size={18} />{:else}<MessageCircle size={18} />{/if}
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
-										{sidebarMode === 'chat' ? $t('theater.subNav.members') : $t('theater.live.chat')}
+									{#if sidebarMode === 'chat'}<Users size={18} />{:else}<MessageCircle
+											size={18}
+										/>{/if}
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
+									>
+										{sidebarMode === 'chat'
+											? $t('theater.subNav.members')
+											: $t('theater.live.chat')}
 									</div>
 								</button>
 
-								<button class="group/btn relative w-10 h-10 flex items-center justify-center {chatVisible ? 'hover:bg-white/10 text-white' : 'bg-white text-black'} rounded-full transition-all flex-shrink-0 cursor-pointer" on:click={() => (chatVisible = !chatVisible)}>
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center {chatVisible
+										? 'hover:bg-white/10 text-white'
+										: 'bg-white text-black'} rounded-full transition-all flex-shrink-0 cursor-pointer"
+									on:click={() => (chatVisible = !chatVisible)}
+								>
 									<ChevronRight size={18} class={chatVisible ? 'rotate-0' : 'rotate-180'} />
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none">
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
+									>
 										{chatVisible ? $t('theater.live.hideChat') : $t('theater.live.showChat')}
 									</div>
 								</button>
@@ -786,15 +922,21 @@
 					? 'flex-1'
 					: 'flex-1 lg:h-full'}"
 			>
-				<div class="p-4 border-b border-gray-100 dark:border-zinc-900 flex items-center justify-between">
+				<div
+					class="p-4 border-b border-gray-100 dark:border-zinc-900 flex items-center justify-between"
+				>
 					<div class="flex items-center gap-2">
 						{#if sidebarMode === 'chat'}
-							<h3 class="font-black text-xs uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2">
+							<h3
+								class="font-black text-xs uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2"
+							>
 								<MessageCircle size={14} class="text-red-600" />
 								{$t('theater.live.chat')}
 							</h3>
 						{:else}
-							<h3 class="font-black text-xs uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2">
+							<h3
+								class="font-black text-xs uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2"
+							>
 								<Users size={14} class="text-red-600" />
 								{$t('theater.subNav.live')}
 							</h3>
@@ -804,7 +946,9 @@
 						{#if sidebarMode === 'chat'}
 							<div class="flex items-center gap-2">
 								<div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-								<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{$t('theater.live.connected')}</span>
+								<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+									>{$t('theater.live.connected')}</span
+								>
 							</div>
 						{/if}
 					</div>
@@ -822,11 +966,15 @@
 							{#if loadingOtherLive}
 								<div class="flex flex-col items-center justify-center h-full gap-3">
 									<RefreshCw size={24} class="animate-spin text-slate-200 dark:text-zinc-800" />
-									<span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Searching matches...</span>
+									<span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest"
+										>Searching matches...</span
+									>
 								</div>
 							{:else if $otherLive.length === 0}
 								<div class="flex flex-col items-center justify-center h-full text-center gap-4">
-									<div class="w-12 h-12 rounded-full bg-slate-50 dark:bg-zinc-900 flex items-center justify-center text-slate-300 dark:text-zinc-700">
+									<div
+										class="w-12 h-12 rounded-full bg-slate-50 dark:bg-zinc-900 flex items-center justify-center text-slate-300 dark:text-zinc-700"
+									>
 										<Users size={24} />
 									</div>
 									<p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
@@ -840,7 +988,9 @@
 										class="flex items-center gap-3 p-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/50 hover:border-red-500/30 hover:shadow-sm hover:shadow-red-500/5 transition-all group overflow-hidden relative"
 									>
 										<div class="relative flex-none">
-											<div class="w-12 aspect-[3/4] rounded-lg overflow-hidden border border-slate-100 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-800">
+											<div
+												class="w-12 aspect-[3/4] rounded-lg overflow-hidden border border-slate-100 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-800"
+											>
 												<img
 													src={getExternalMediaUrl(member.member?.img) || fallbackAvatar}
 													alt={member.member?.name}
@@ -856,12 +1006,17 @@
 											</div>
 										</div>
 										<div class="flex-1 min-w-0">
-											<div class="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-wider truncate mb-0.5 group-hover:text-red-600 transition-colors">
-												{member.member?.name || (member.platform === 'idn' ? member.room_url_key : member.title)}
+											<div
+												class="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-wider truncate mb-0.5 group-hover:text-red-600 transition-colors"
+											>
+												{member.member?.name ||
+													(member.platform === 'idn' ? member.room_url_key : member.title)}
 											</div>
 											<LiveStats view_num={member.view_num} variant="compact" className="mt-0.5" />
 										</div>
-										<div class="flex-none opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all">
+										<div
+											class="flex-none opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
+										>
 											<ChevronRight size={14} class="text-red-500" />
 										</div>
 									</a>

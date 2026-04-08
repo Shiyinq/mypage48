@@ -40,7 +40,9 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@lottiefiles/lottie-player": "^2.0.12",
 		"dompurify": "^3.3.3",
+		"hls.js": "^1.6.15",
 		"lucide-svelte": "^0.562.0",
 		"marked": "^17.0.6",
 		"zod": "^4.3.5"
