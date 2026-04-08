@@ -5,7 +5,6 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_sso.sso.github import GithubSSO
 from fastapi_sso.sso.google import GoogleSSO
-from src.limiter import limiter
 
 from src.auth.constants import (
     REFRESH_TOKEN_COOKIE_KEY,
@@ -43,6 +42,7 @@ from src.dependencies import (
     get_settings,
     get_user_service,
 )
+from src.limiter import limiter
 from src.logging_config import create_logger
 from src.users.schemas import ProviderUserCreateRequest
 from src.users.service import UserService
@@ -173,14 +173,14 @@ async def refresh_access_token(
         raise InvalidRefreshTokenError()
 
     device, ip, browser, user_agent = _extract_request_info(request)
-    
+
     # Check for mismatches but be lenient with IP changes
     mismatches = []
     if token_data["device"] != device:
         mismatches.append(f"device ({token_data['device']} -> {device})")
     if token_data["browser"] != browser:
         mismatches.append(f"browser ({token_data['browser']} -> {browser})")
-        
+
     if mismatches:
         logger.warning(
             f"Security mismatch detected for user_id={token_data.get('userId')}: {', '.join(mismatches)}"

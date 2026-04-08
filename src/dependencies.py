@@ -25,6 +25,7 @@ from src.feedback.service import FeedbackService
 from src.health.service import HealthService
 from src.http_exceptions import AdminRequired
 from src.infrastructure import AsyncBackgroundRunner
+from src.live.service import LiveService
 from src.llm.repository import LLMRepository
 from src.llm.service import LLMService
 from src.logging_config import create_logger
@@ -32,6 +33,8 @@ from src.members.repository import MemberRepository
 from src.members.service import MemberService
 from src.memories.repository import MemoriesRepository
 from src.memories.service import MemoriesService
+from src.news.repository import NewsRepository
+from src.news.service import NewsService
 from src.setlists.repository import SetlistsRepository
 from src.setlists.service import SetlistsService
 from src.storage.repository import StorageRepository
@@ -40,9 +43,6 @@ from src.tickets.repository import TicketsRepository
 from src.tickets.service import TicketsService
 from src.users.repository import UserRepository
 from src.users.service import UserService
-from src.news.repository import NewsRepository
-from src.news.service import NewsService
-from src.live.service import LiveService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/signin")
 logger = create_logger("dependencies", __name__)

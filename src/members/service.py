@@ -300,7 +300,9 @@ class MemberService:
                                         "date": birthday_date,
                                         "img": member.get("img"),
                                         "active": member.get("active", True),
-                                        "member_type": member.get("member_type", "JKT48"),
+                                        "member_type": member.get(
+                                            "member_type", "JKT48"
+                                        ),
                                     }
                                 )
                         except ValueError:

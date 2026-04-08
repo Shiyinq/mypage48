@@ -1,6 +1,8 @@
-from typing import Optional, List, Dict, Any
-from motor.motor_asyncio import AsyncIOMotorDatabase
 import math
+from typing import Any, Dict, Optional
+
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
 
 class NewsRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
@@ -10,12 +12,14 @@ class NewsRepository:
         """Get paginated news."""
         skip = (page - 1) * limit
         # Sort by valid_date_from descending
-        cursor = self.collection.find({}).sort("valid_date_from", -1).skip(skip).limit(limit)
+        cursor = (
+            self.collection.find({}).sort("valid_date_from", -1).skip(skip).limit(limit)
+        )
         items = await cursor.to_list(length=limit)
-        
+
         total = await self.collection.count_documents({})
         total_page = math.ceil(total / limit) if limit > 0 else 0
-        
+
         return {
             "data": items,
             "meta": {
@@ -23,8 +27,8 @@ class NewsRepository:
                 "limit_per_page": limit,
                 "total_page": total_page,
                 "count_per_page": len(items),
-                "count_total": total
-            }
+                "count_total": total,
+            },
         }
 
     async def get_news_by_link(self, link: str) -> Optional[Dict[str, Any]]:

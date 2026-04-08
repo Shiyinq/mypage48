@@ -205,7 +205,7 @@ class Settings(BaseSettings):
     @property
     def default_requests_per_minute(self) -> int:
         return self.DEFAULT_REQUESTS_PER_MINUTE
-    
+
     @property
     def live_proxy_requests_per_minute(self) -> int:
         return self.LIVE_PROXY_REQUESTS_PER_MINUTE

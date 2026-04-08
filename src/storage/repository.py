@@ -4,7 +4,7 @@ from typing import Optional
 
 from minio import Minio
 from minio.error import S3Error
-from minio.lifecycleconfig import LifecycleConfig, Rule, Expiration, Filter
+from minio.lifecycleconfig import Expiration, Filter, LifecycleConfig, Rule
 
 from src.config import Settings
 from src.logging_config import create_logger
@@ -103,7 +103,7 @@ class StorageRepository:
                 object_name,
                 expires=timedelta(seconds=expires),
             )
-            
+
             return resolve_minio_public_url(url)
         except S3Error as e:
             logger.error(f"Failed to generate presigned URL: {e}")
@@ -151,7 +151,9 @@ class StorageRepository:
             logger.error(f"Unexpected error getting file: {e}")
             return None
 
-    def get_file_with_metadata(self, object_name: str) -> tuple[Optional[bytes], Optional[str]]:
+    def get_file_with_metadata(
+        self, object_name: str
+    ) -> tuple[Optional[bytes], Optional[str]]:
         """Get file content and content type from MinIO."""
         self._ensure_bucket()
         try:

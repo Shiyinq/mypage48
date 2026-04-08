@@ -1,10 +1,12 @@
-from typing import Dict, Any, Optional
+from typing import Any, Dict
+
 from src.config import Settings
 from src.logging_config import create_logger
+from src.news.exceptions import NewsFetchError, NewsItemFetchError, NewsNotFoundError
 from src.news.repository import NewsRepository
-from src.news.exceptions import NewsNotFoundError, NewsFetchError, NewsItemFetchError
 
 logger = create_logger("news_service", __name__)
+
 
 class NewsService:
     def __init__(

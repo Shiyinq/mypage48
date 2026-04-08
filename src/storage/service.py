@@ -1,11 +1,12 @@
 import base64
 import hashlib
 import hmac
-import httpx
 import re
 import time
 import uuid
-from typing import Any, TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional
+
+import httpx
 
 if TYPE_CHECKING:
     from src.memories.schemas import MemoryItem, TopTwoShotResponse
@@ -17,6 +18,7 @@ from minio.error import S3Error
 
 from src.config import Settings
 from src.logging_config import create_logger
+from src.storage.constants import VALID_CATEGORIES
 from src.storage.exceptions import (
     ImageNotFoundError,
     ImageUploadError,
@@ -24,13 +26,12 @@ from src.storage.exceptions import (
     PresignedUrlError,
     StorageConnectionError,
 )
-from src.storage.constants import VALID_CATEGORIES
 from src.storage.repository import StorageRepository
 from src.storage.schemas import (
+    BatchPresignedUrlResponse,
     ImageCategory,
     ImageUploadResponse,
     PresignedUrlResponse,
-    BatchPresignedUrlResponse,
 )
 
 logger = create_logger("storage_service", __name__)
@@ -228,10 +229,10 @@ class StorageService:
         # Storage filenames contain / but don't start with data: or http
         if "/" in value and not value.startswith("http"):
             path = value.lstrip("/")
-            
+
             # Signature generation logic moved to _create_signed_params
             signature, expires = self._create_signed_params(path)
-            
+
             return f"{self.config.api_base_url}/storage/m/{path}?expires={expires}&signature={signature}"
 
         return value
@@ -360,12 +361,12 @@ class StorageService:
         Signature verification happens at the route level.
         """
         path = path.lstrip("/")
-        
+
         try:
             content, content_type = self.repository.get_file_with_metadata(path)
             if content:
                 return content, content_type or "image/jpeg", 200
-            
+
             return b"Not Found", "text/plain", 404
         except Exception as e:
             logger.exception(f"Error getting media {path}: {str(e)}")
@@ -396,7 +397,9 @@ class StorageService:
 
             if upstream_response.status_code == 200:
                 content = upstream_response.content
-                content_type = upstream_response.headers.get("content-type", "image/jpeg")
+                content_type = upstream_response.headers.get(
+                    "content-type", "image/jpeg"
+                )
 
                 # 3. Cache it
                 try:
