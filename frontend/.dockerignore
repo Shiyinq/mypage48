@@ -1,0 +1,21 @@
+node_modules
+.svelte-kit
+build
+.DS_Store
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+.dockerignore
+.vscode
+.idea
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+# Note: package-lock.json is usually copied explicitly, 
+# but ignoring it here if we want to rely on the one in the context
+# Actually, better NOT ignore package-lock.json since we use npm ci
+!package-lock.json
