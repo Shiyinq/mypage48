@@ -141,6 +141,8 @@ def require_csrf_protection(request: Request, config: Settings = Depends(get_set
         if (
             referer.startswith("http://localhost:8000/docs")
             or referer.startswith("http://localhost:8000/redoc")
+            or referer.startswith("http://localhost:8080/docs")
+            or referer.startswith("http://localhost:8080/redoc")
         ) and sec_fetch_site == "same-origin":
             return True
 
