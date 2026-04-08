@@ -92,6 +92,7 @@
 
 	onMount(() => {
 		mounted = true;
+		import('@lottiefiles/lottie-player');
 		initTheme();
 		validateEnv();
 
