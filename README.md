@@ -185,7 +185,7 @@ npm run check
 
 3. **Access the application**
    - Frontend: http://localhost:5050
-   - Backend: http://localhost:8000
+   - Backend: http://localhost:8080
 
 ## 📝 License
 

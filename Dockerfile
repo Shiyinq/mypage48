@@ -39,8 +39,8 @@ RUN mkdir -p /var/log/mypage48 && chmod 777 /var/log/mypage48
 # Set the Python path to include the src directory
 ENV PYTHONPATH=/app/src
 
-# Expose port 8000 for the backend API
-EXPOSE 8000
+# Expose port 8080 for the backend API
+EXPOSE 8080
 
 # Use the production start script as the container entrypoint
 CMD ["/app/scripts/start-prod.sh"]

@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8080:8080"
     env_file:
       - .env
     environment:
@@ -37,8 +37,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        PUBLIC_CLIENT_SIDE_API_BASE_URL: http://localhost:8000/api
-        PUBLIC_SERVER_SIDE_API_BASE_URL: http://backend:8000/api
+        PUBLIC_CLIENT_SIDE_API_BASE_URL: http://localhost:8080/api
+        PUBLIC_SERVER_SIDE_API_BASE_URL: http://backend:8080/api
     ports:
       - "5050:5050"
     env_file:
