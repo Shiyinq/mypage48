@@ -142,7 +142,9 @@
 									on:click={() => startEditingNote(ticket)}
 									class="text-sm text-gray-500 dark:text-gray-400 italic cursor-pointer hover:text-red-600 flex items-center gap-2 group/note"
 								>
-									<span class="line-clamp-1">{cleanseMarkdown(ticket.notes) || $t('history.addNote')}</span>
+									<span class="line-clamp-1"
+										>{cleanseMarkdown(ticket.notes) || $t('history.addNote')}</span
+									>
 									<Pencil
 										class="w-3 h-3 opacity-0 group-hover/note:opacity-100 transition-opacity"
 									/>

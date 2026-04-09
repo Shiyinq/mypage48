@@ -65,7 +65,11 @@
 			</div>
 		</div>
 
-		<div class={isPublic ? 'grid grid-cols-2 sm:grid-cols-4 gap-3' : 'grid grid-cols-3 sm:grid-cols-4 gap-2'}>
+		<div
+			class={isPublic
+				? 'grid grid-cols-2 sm:grid-cols-4 gap-3'
+				: 'grid grid-cols-3 sm:grid-cols-4 gap-2'}
+		>
 			{#if loadingGenerations}
 				{#each Array(isPublic ? 8 : 9) as _}
 					<div

@@ -10,7 +10,7 @@
 	import { giftEvents, type GiftEvent } from '$lib/stores/gift';
 	import { captureVideoScreenshot, startVideoRecording, downloadRecording } from '$lib/utils/media';
 	import LiveStats from './LiveStats.svelte';
-	
+
 	const { t } = useTranslation();
 
 	export let platform = ''; // 'showroom' or 'idn'
@@ -40,7 +40,7 @@
 	let initializing = false;
 	let currentPlatform = '';
 	let currentId = '';
-	
+
 	export let isRecording = false;
 	let mediaRecorder: any = null;
 	let recordedChunks: any[] = [];
@@ -51,7 +51,7 @@
 	function syncAudioState() {
 		if (!videoElement) return;
 		const vol = Number(volume);
-		
+
 		if (!isNaN(vol)) {
 			// Double-lock volume to 0 if effectively muted
 			const targetVolume = isEffectivelyMuted ? 0 : Math.max(0, Math.min(1, vol));
@@ -59,7 +59,7 @@
 				videoElement.volume = targetVolume;
 			}
 		}
-		
+
 		if (videoElement.muted !== isEffectivelyMuted) {
 			videoElement.muted = isEffectivelyMuted;
 			// For attribute-level binding (more persistent in some browsers)
@@ -94,14 +94,14 @@
 	async function initPlayer() {
 		if (typeof window === 'undefined' || initializing) return;
 		if (!videoElement || !platform || !id) return;
-		
+
 		// Prevent redundant re-init if source hasn't changed
 		if (platform === currentPlatform && id === currentId && (hls || videoElement.src)) return;
-		
+
 		initializing = true;
 		loading = true;
 		error = null;
-		
+
 		currentPlatform = platform;
 		currentId = id;
 
@@ -114,7 +114,7 @@
 			const res = await liveApi.getStreamingUrl(platform, id);
 			if (res && res.streaming_urls && res.streaming_urls.length > 0) {
 				let streamUrl = res.streaming_urls[0].url;
-				
+
 				if (platform === 'idn' || platform === 'showroom') {
 					streamUrl = `${API_BASE}/jkt48/live/proxy?url=${encodeURIComponent(streamUrl)}`;
 				}
@@ -126,14 +126,14 @@
 						lowLatencyMode: true,
 						backBufferLength: 60
 					});
-					
+
 					hls.loadSource(streamUrl);
 					hls.attachMedia(videoElement);
-					
+
 					hls.on(Hls.Events.MANIFEST_PARSED, () => {
 						syncAudioState(); // Force sync when starting
 						startHammer(); // Start the hammer
-						videoElement.play().catch(e => console.log('Autoplay blocked', e));
+						videoElement.play().catch((e) => console.log('Autoplay blocked', e));
 						loading = false;
 					});
 
@@ -141,7 +141,7 @@
 						if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
 							console.log('Proxy/Stream 404 detected, triggering offline');
 							dispatch('offline');
-							error = $t('theater.live.offline'); 
+							error = $t('theater.live.offline');
 							hls.destroy();
 							loading = false;
 							return;
@@ -169,7 +169,7 @@
 				} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 					videoElement.src = streamUrl;
 					videoElement.addEventListener('loadedmetadata', () => {
-						videoElement.play().catch(e => console.log('Autoplay blocked', e));
+						videoElement.play().catch((e) => console.log('Autoplay blocked', e));
 						loading = false;
 					});
 				} else {
@@ -265,16 +265,20 @@
 	<GiftOverlay {roomIdentifier} />
 
 	{#if loading}
-		<div class="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-10">
+		<div
+			class="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-10"
+		>
 			<RefreshCw class="w-8 h-8 text-white animate-spin opacity-50" />
 		</div>
 	{/if}
 
 	{#if error}
-		<div class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 z-10 p-4 text-center">
+		<div
+			class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 z-10 p-4 text-center"
+		>
 			<AlertCircle class="w-8 h-8 text-red-500 mb-2 opacity-50" />
 			<p class="text-[10px] font-black uppercase tracking-widest text-zinc-500">{error}</p>
-			<button 
+			<button
 				on:click={initPlayer}
 				class="mt-4 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold rounded-lg transition-colors"
 			>

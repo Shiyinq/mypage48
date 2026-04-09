@@ -104,88 +104,88 @@
 	description={$t('seo.resetPassword')}
 />
 
-<AuthLayout 
-    title={$t('auth.resetPassword.title')} 
-    subtitle={isSuccess ? $t('auth.resetPassword.successMessage') : $t('auth.resetPassword.subtitle')}
-    icon={ShieldCheck}
+<AuthLayout
+	title={$t('auth.resetPassword.title')}
+	subtitle={isSuccess ? $t('auth.resetPassword.successMessage') : $t('auth.resetPassword.subtitle')}
+	icon={ShieldCheck}
 >
-    {#if isSuccess}
-        <div class="text-center py-4">
-            <div
-                class="w-20 h-20 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center mx-auto mb-6"
-            >
-                <CircleCheck class="w-10 h-10 text-green-500" />
-            </div>
-            <h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2">
-                {$t('auth.resetPassword.successTitle')}
-            </h1>
-            <button
-                on:click={() => goto('/login')}
-                class="w-full py-4 rounded-2xl font-bold idol-gradient text-white text-lg shadow-lg shadow-red-500/25 dark:shadow-red-900/30 hover:shadow-xl hover:shadow-red-500/40 dark:hover:shadow-red-900/50 hover:scale-[1.02] transition-all cursor-pointer mt-4"
-            >
-                {$t('auth.resetPassword.goToLogin')}
-            </button>
-        </div>
-    {:else}
-        <form on:submit|preventDefault={handleSubmit} class="space-y-5" novalidate>
-            <div>
-                <PasswordInput
-                    id="new-password"
-                    name="newPassword"
-                    label={$t('auth.resetPassword.newPassword')}
-                    placeholder="••••••••"
-                    bind:value={newPassword}
-                    error={errors.newPassword}
-                    on:input={() => validateField('newPassword', newPassword)}
-                >
-                    <Lock class="w-5 h-5" slot="leading" />
-                </PasswordInput>
-            </div>
+	{#if isSuccess}
+		<div class="text-center py-4">
+			<div
+				class="w-20 h-20 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center mx-auto mb-6"
+			>
+				<CircleCheck class="w-10 h-10 text-green-500" />
+			</div>
+			<h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2">
+				{$t('auth.resetPassword.successTitle')}
+			</h1>
+			<button
+				on:click={() => goto('/login')}
+				class="w-full py-4 rounded-2xl font-bold idol-gradient text-white text-lg shadow-lg shadow-red-500/25 dark:shadow-red-900/30 hover:shadow-xl hover:shadow-red-500/40 dark:hover:shadow-red-900/50 hover:scale-[1.02] transition-all cursor-pointer mt-4"
+			>
+				{$t('auth.resetPassword.goToLogin')}
+			</button>
+		</div>
+	{:else}
+		<form on:submit|preventDefault={handleSubmit} class="space-y-5" novalidate>
+			<div>
+				<PasswordInput
+					id="new-password"
+					name="newPassword"
+					label={$t('auth.resetPassword.newPassword')}
+					placeholder="••••••••"
+					bind:value={newPassword}
+					error={errors.newPassword}
+					on:input={() => validateField('newPassword', newPassword)}
+				>
+					<Lock class="w-5 h-5" slot="leading" />
+				</PasswordInput>
+			</div>
 
-            <div>
-                <PasswordInput
-                    id="confirm-password"
-                    name="confirmPassword"
-                    label={$t('auth.resetPassword.confirmPassword')}
-                    placeholder="••••••••"
-                    bind:value={confirmPassword}
-                    error={errors.confirmPassword}
-                    on:input={() => validateField('confirmPassword', confirmPassword)}
-                >
-                    <Lock class="w-5 h-5" slot="leading" />
-                </PasswordInput>
-                <PasswordStrengthChecklist password={newPassword} />
-            </div>
+			<div>
+				<PasswordInput
+					id="confirm-password"
+					name="confirmPassword"
+					label={$t('auth.resetPassword.confirmPassword')}
+					placeholder="••••••••"
+					bind:value={confirmPassword}
+					error={errors.confirmPassword}
+					on:input={() => validateField('confirmPassword', confirmPassword)}
+				>
+					<Lock class="w-5 h-5" slot="leading" />
+				</PasswordInput>
+				<PasswordStrengthChecklist password={newPassword} />
+			</div>
 
-            {#if error}
-                <div
-                    class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-800 text-center"
-                >
-                    <p class="text-xs text-red-600 dark:text-red-400 font-bold">{error}</p>
-                </div>
-            {/if}
+			{#if error}
+				<div
+					class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-800 text-center"
+				>
+					<p class="text-xs text-red-600 dark:text-red-400 font-bold">{error}</p>
+				</div>
+			{/if}
 
-            <button
-                type="submit"
-                disabled={isLoading || !token || !isValid}
-                class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-500/25 dark:shadow-red-900/30 hover:shadow-xl hover:shadow-red-500/40 dark:hover:shadow-red-900/50 hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
-            >
-                {#if isLoading}
-                    <LoaderCircle class="w-5 h-5 animate-spin" /> {$t('auth.resetPassword.submitting')}
-                {:else}
-                    {$t('auth.resetPassword.submit')}
-                {/if}
-            </button>
+			<button
+				type="submit"
+				disabled={isLoading || !token || !isValid}
+				class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-500/25 dark:shadow-red-900/30 hover:shadow-xl hover:shadow-red-500/40 dark:hover:shadow-red-900/50 hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+			>
+				{#if isLoading}
+					<LoaderCircle class="w-5 h-5 animate-spin" /> {$t('auth.resetPassword.submitting')}
+				{:else}
+					{$t('auth.resetPassword.submit')}
+				{/if}
+			</button>
 
-            <div class="text-center mt-6">
-                <a
-                    href="/login"
-                    class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors inline-flex items-center gap-2"
-                >
-                    <ArrowLeft class="w-4 h-4" />
-                    {$t('auth.forgotPassword.backToLogin')}
-                </a>
-            </div>
-        </form>
-    {/if}
+			<div class="text-center mt-6">
+				<a
+					href="/login"
+					class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors inline-flex items-center gap-2"
+				>
+					<ArrowLeft class="w-4 h-4" />
+					{$t('auth.forgotPassword.backToLogin')}
+				</a>
+			</div>
+		</form>
+	{/if}
 </AuthLayout>

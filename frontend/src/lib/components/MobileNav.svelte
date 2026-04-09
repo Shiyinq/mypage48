@@ -1,6 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { LayoutDashboard, AudioLines, Plus, Image as ImageIcon, History, BookOpen, Trophy } from 'lucide-svelte';
+	import {
+		LayoutDashboard,
+		AudioLines,
+		Plus,
+		Image as ImageIcon,
+		History,
+		BookOpen,
+		Trophy
+	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();

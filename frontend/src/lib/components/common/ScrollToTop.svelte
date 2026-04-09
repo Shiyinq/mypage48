@@ -17,7 +17,7 @@
 				top: 0,
 				behavior: 'smooth'
 			});
-			
+
 			// Backup for various scroll containers
 			document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
 			document.body.scrollTo({ top: 0, behavior: 'smooth' });

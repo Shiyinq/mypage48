@@ -10,11 +10,15 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 	// Get locale from query param first (?lang=..), then cookie, then default fallback
 	const urlLocale = url.searchParams.get('lang');
 	let locale = cookies.get('mypage48_locale') || defaultLocale;
-	
+
 	// If valid lang param is provided, override and set cookie for future visits
 	if (urlLocale && ['id', 'en', 'ja'].includes(urlLocale)) {
 		locale = urlLocale;
-		cookies.set('mypage48_locale', locale as string, { path: '/', maxAge: 31536000, sameSite: 'lax' });
+		cookies.set('mypage48_locale', locale as string, {
+			path: '/',
+			maxAge: 31536000,
+			sameSite: 'lax'
+		});
 	}
 
 	// Check for auth hint cookie

@@ -29,8 +29,7 @@
 		/^\/theater\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentPath);
 
 	// Check if on live single detail or multiview page — hide header for immersive player
-	$: isLiveDetailPage =
-		/^\/theater\/live\/.+/.test(currentPath);
+	$: isLiveDetailPage = /^\/theater\/live\/.+/.test(currentPath);
 
 	// Dynamic Title, Subtitle & Theme
 	$: pageInfo = (() => {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getLiveLogoUrl, getPlatformColor, getPlatformIcon } from '$lib/constants/live';
-	
+
 	export let platform: string;
 	export let size: 'xs' | 'sm' | 'md' | 'lg' = 'sm';
 	export let className: string = '';
@@ -9,7 +9,11 @@
 
 	const sizeMap = {
 		xs: { container: 'h-4 min-w-[20px] px-1', img: 'h-1.5', text: 'text-[6px]' },
-		sm: { container: 'h-5 sm:h-6 px-2 min-w-[28px]', img: 'h-1.5 sm:h-2', text: 'text-[7px] sm:text-[8px]' },
+		sm: {
+			container: 'h-5 sm:h-6 px-2 min-w-[28px]',
+			img: 'h-1.5 sm:h-2',
+			text: 'text-[7px] sm:text-[8px]'
+		},
 		md: { container: 'h-7 px-3 min-w-[36px]', img: 'h-2.5', text: 'text-[9px]' },
 		lg: { container: 'h-10 px-4 min-w-[48px]', img: 'h-4', text: 'text-[11px]' }
 	};
@@ -17,11 +21,9 @@
 	$: activeSize = sizeMap[size];
 	$: logoUrl = getLiveLogoUrl(platform);
 	$: isShowroom = platform === 'showroom';
-	
-	$: bgColorClass = isShowroom && !logoError 
-		? 'bg-[#121212]' 
-		: `bg-gradient-to-br ${getPlatformColor(platform)}`;
 
+	$: bgColorClass =
+		isShowroom && !logoError ? 'bg-[#121212]' : `bg-gradient-to-br ${getPlatformColor(platform)}`;
 </script>
 
 <div

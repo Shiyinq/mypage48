@@ -12,12 +12,14 @@
 	export let variant: 'default' | 'theater' = 'default';
 	/** When set, show a multiview shortcut button above the grid */
 	export let multiviewHref: string = '';
-
 </script>
 
 {#if (initialLoading || loading) && liveList.length === 0}
 	<div
-		class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 {variant === 'theater' ? 'px-0' : 'px-4'}"
+		class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 {variant ===
+		'theater'
+			? 'px-0'
+			: 'px-4'}"
 	>
 		{#each Array(10) as _}
 			<div
@@ -54,22 +56,36 @@
 				href={multiviewHref}
 				class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
 			>
-				<div class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-				<div class="w-7 h-7 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300">
+				<div
+					class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
+				></div>
+				<div
+					class="w-7 h-7 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300"
+				>
 					<Users size={16} />
 				</div>
 				<div class="flex flex-col items-start leading-none gap-0.5">
-					<span class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors">{$t('theater.live.multiview.title')}</span>
-					<span class="text-xs font-black tracking-tight text-slate-900 dark:text-white">{$t('theater.live.switchMultiview')}</span>
+					<span
+						class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors"
+						>{$t('theater.live.multiview.title')}</span
+					>
+					<span class="text-xs font-black tracking-tight text-slate-900 dark:text-white"
+						>{$t('theater.live.switchMultiview')}</span
+					>
 				</div>
-				<div class="ml-1 w-5 h-5 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-black text-slate-500">
+				<div
+					class="ml-1 w-5 h-5 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-black text-slate-500"
+				>
 					{liveList.length}
 				</div>
 			</a>
 		</div>
 	{/if}
 	<div
-		class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 {variant === 'theater' ? 'px-0' : 'px-4'}"
+		class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 {variant ===
+		'theater'
+			? 'px-0'
+			: 'px-4'}"
 	>
 		{#each liveList as stream, i (stream.platform + (stream.room_id || stream.live_id))}
 			<LiveCard {stream} {i} {variant} />

@@ -3,12 +3,13 @@
  * Handles multiple path segments after the domain (e.g., /api/storage/m/).
  * Captures the internal path in group 1 (e.g., journal/filename.png).
  */
-export const STORAGE_URL_REGEX = /https?:\/\/[^/)]+\/(?:[^/)]+\/)*?((journal|ticket|twoshot|avatar)\/[^?\s)]+)(?:\?[^)\s]*)?/g;
+export const STORAGE_URL_REGEX =
+	/https?:\/\/[^/)]+\/(?:[^/)]+\/)*?((journal|ticket|twoshot|avatar)\/[^?\s)]+)(?:\?[^)\s]*)?/g;
 
 /**
- * Cleanses markdown content by converting full presigned storage URLs 
+ * Cleanses markdown content by converting full presigned storage URLs
  * back into their relative internal paths (e.g., journal/xyz.png).
- * This ensures that the editor remains clean and prevents saving 
+ * This ensures that the editor remains clean and prevents saving
  * temporary presigned URLs into the database.
  */
 export function cleanseMarkdown(content: string | null | undefined): string {

@@ -153,8 +153,16 @@
 							<span class="text-sm font-black uppercase tracking-[0.2em]">{item.label}</span>
 							{#if item.id === 'live' && $liveList.length > 0}
 								<span class="relative flex h-2.5 w-2.5">
-									<span class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive ? 'bg-white/70' : 'bg-red-400 opacity-75'}"></span>
-									<span class="relative inline-flex rounded-full h-2.5 w-2.5 {isActive ? 'bg-white' : 'bg-red-500'}"></span>
+									<span
+										class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive
+											? 'bg-white/70'
+											: 'bg-red-400 opacity-75'}"
+									></span>
+									<span
+										class="relative inline-flex rounded-full h-2.5 w-2.5 {isActive
+											? 'bg-white'
+											: 'bg-red-500'}"
+									></span>
 								</span>
 							{/if}
 						</div>

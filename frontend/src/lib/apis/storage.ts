@@ -1,5 +1,10 @@
 import { client } from './client';
-import type { ImageCategory, ImageUploadResponse, PresignedUrlResponse, BatchPresignedUrlResponse } from '$lib/types';
+import type {
+	ImageCategory,
+	ImageUploadResponse,
+	PresignedUrlResponse,
+	BatchPresignedUrlResponse
+} from '$lib/types';
 
 export const storageApi = {
 	/**

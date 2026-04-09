@@ -237,7 +237,8 @@
 						<span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
 						{currentMonthEvents.filter(
 							(e) =>
-								(e.type !== 'SHOW' && e.type !== 'BIRTHDAY') &&
+								e.type !== 'SHOW' &&
+								e.type !== 'BIRTHDAY' &&
 								(!e.type ? !e.setlistId && !e.isBirthday : true)
 						).length}
 						<span class="hidden sm:inline">{$t('theater.events.eventType')}</span>
@@ -450,7 +451,10 @@
 											{:else if event.seitansaiMembers && event.seitansaiMembers.length > 0}
 												<Cake class="w-3 h-3 mt-[-4px] text-pink-500" strokeWidth={2.5} />
 											{:else if event.graduationMembers && event.graduationMembers.length > 0}
-												<GraduationCap class="w-3 h-3 mt-[-4px] text-indigo-500" strokeWidth={2.5} />
+												<GraduationCap
+													class="w-3 h-3 mt-[-4px] text-indigo-500"
+													strokeWidth={2.5}
+												/>
 											{/if}
 										</div>
 

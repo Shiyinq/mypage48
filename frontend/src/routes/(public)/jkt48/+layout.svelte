@@ -47,5 +47,3 @@
 
 <!-- Scroll to Top Button (uses its own svelte:window bind:scrollY without conflicts) -->
 <ScrollToTop />
-
-

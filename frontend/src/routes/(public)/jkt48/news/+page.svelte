@@ -63,18 +63,18 @@
 	}
 </script>
 
-<SEO
-	title={$t('theater.news.title') || 'News'}
-	path="/jkt48/news"
-	description={$t('seo.news')}
-/>
+<SEO title={$t('theater.news.title') || 'News'} path="/jkt48/news" description={$t('seo.news')} />
 
 <div class="space-y-12 pt-4 md:pt-6 pb-12">
 	<div class="text-center space-y-4 mb-8">
-		<h1 class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3">
+		<h1
+			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
+		>
 			{$t('theater.news.title') || 'News'}
 		</h1>
-		<p class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest leading-relaxed">
+		<p
+			class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest leading-relaxed"
+		>
 			{$t('theater.news.subtitle') || 'Latest updates and announcements'}
 		</p>
 	</div>

@@ -290,11 +290,7 @@
 	}
 </script>
 
-<SEO
-	title={$t('theater.sorter.title')}
-	path="/jkt48/sorter"
-	description={$t('seo.sorter')}
-/>
+<SEO title={$t('theater.sorter.title')} path="/jkt48/sorter" description={$t('seo.sorter')} />
 
 <div
 	class="w-full flex flex-col items-center justify-start min-h-[calc(100svh-120px)] pt-4 md:pt-6 pb-12"
@@ -349,7 +345,6 @@
 		/>
 	{/if}
 </div>
-
 
 <style>
 </style>

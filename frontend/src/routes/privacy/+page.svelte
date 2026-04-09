@@ -12,14 +12,9 @@
 	let scrollY = 0;
 </script>
 
-<SEO 
-	title={$t('privacy.title')} 
-	path="/privacy" 
-	description={$t('seo.privacy')} 
-/>
+<SEO title={$t('privacy.title')} path="/privacy" description={$t('seo.privacy')} />
 
 <svelte:window bind:scrollY />
-
 
 <div
 	class="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 relative overflow-hidden font-sans selection:bg-red-500/20"
@@ -27,18 +22,20 @@
 	<!-- Background Elements -->
 	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
 
-
-
 	<!-- NAV -->
 	<LandingNavbar showLogin={false} />
 
 	<div class="max-w-3xl mx-auto pb-12 relative z-10 px-6 pt-4 md:pt-6">
 		<!-- Header -->
 		<div class="text-center space-y-4 mb-8">
-			<h1 class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3">
+			<h1
+				class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
+			>
 				{$t('privacy.title')}
 			</h1>
-			<p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+			<p
+				class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]"
+			>
 				{$t('privacy.lastUpdated', { date: '19/01/2026' })}
 			</p>
 		</div>

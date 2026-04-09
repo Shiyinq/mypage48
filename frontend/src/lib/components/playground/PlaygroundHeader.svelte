@@ -28,8 +28,10 @@
 			<a href="/" class="flex items-center gap-3 cursor-pointer group">
 				<NavLogo tagline={$t('playground.tagline')} />
 			</a>
-			
-			<div class="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-white/5">
+
+			<div
+				class="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-white/5"
+			>
 				<span class="text-[10px] font-black uppercase tracking-widest text-red-500">v1.0</span>
 				<div class="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></div>
 				<span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Stable</span>

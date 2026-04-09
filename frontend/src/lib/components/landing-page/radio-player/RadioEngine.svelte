@@ -6,7 +6,8 @@
 	let playerElement: HTMLElement;
 	let isInitialized = false;
 
-	$: currentChannel = RADIO_CHANNELS.find((c) => c.id === $radioStore.currentChannelId) || RADIO_CHANNELS[0];
+	$: currentChannel =
+		RADIO_CHANNELS.find((c) => c.id === $radioStore.currentChannelId) || RADIO_CHANNELS[0];
 
 	// Sync Store -> YouTube Player: React strictly to play/pause toggle
 	let prevIsPlaying = false;
@@ -21,12 +22,17 @@
 
 	// Watch for Playlist Changes
 	let previousPlaylistId = '';
-	$: if (player && isInitialized && currentChannel && previousPlaylistId !== currentChannel.playlistId) {
+	$: if (
+		player &&
+		isInitialized &&
+		currentChannel &&
+		previousPlaylistId !== currentChannel.playlistId
+	) {
 		previousPlaylistId = currentChannel.playlistId;
-		
+
 		// Segera kosongkan track info agar UI menampilkan "Connecting to Station..."
 		radioStore.setTrack('', '');
-		
+
 		player.loadPlaylist({
 			listType: 'playlist',
 			list: currentChannel.playlistId,
@@ -75,9 +81,9 @@
 					event.target.setVolume($radioStore.isMuted ? 0 : $radioStore.volume);
 				},
 				onStateChange: (event: any) => {
-					// YT.PlayerState: 
+					// YT.PlayerState:
 					// -1 = unstarted, 0 = ended, 1 = playing, 2 = paused, 3 = buffering, 5 = video cued
-					
+
 					// Update metadata info when we know video is available
 					if (event.data === 1 || event.data === 2 || event.data === 3 || event.data === 5) {
 						try {
@@ -116,7 +122,7 @@
 
 	onMount(() => {
 		previousPlaylistId = currentChannel.playlistId; // Set initial
-		
+
 		if (typeof window !== 'undefined') {
 			if ((window as any).YT && (window as any).YT.Player) {
 				initPlayer();
@@ -148,6 +154,9 @@
 </script>
 
 <!-- Hidden YouTube Container connected to the Engine -->
-<div class="fixed -top-[1000px] left-0 pointer-events-none opacity-0 overflow-hidden" bind:this={playerElementOuter}>
+<div
+	class="fixed -top-[1000px] left-0 pointer-events-none opacity-0 overflow-hidden"
+	bind:this={playerElementOuter}
+>
 	<div bind:this={playerElement}></div>
 </div>

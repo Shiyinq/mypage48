@@ -24,11 +24,11 @@
 
 	const dispatch = createEventDispatcher();
 	const { t } = useTranslation();
-	
-	$: SHOW_OPTIONS = $setlistsStore.data 
+
+	$: SHOW_OPTIONS = $setlistsStore.data
 		? $setlistsStore.data.map((s) => s.title)
 		: SHOW_IMAGES.map((s) => s.title);
-		
+
 	onMount(() => {
 		setlistsStore.load();
 	});

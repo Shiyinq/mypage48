@@ -130,7 +130,7 @@
 		// Always reset filter to "All" on mount
 		selectedGeneration = null;
 
-		// Fetch members with "All" filter, loading a larger batch initially (100) 
+		// Fetch members with "All" filter, loading a larger batch initially (100)
 		// to ensure the modal sidebar has all members.
 		await membersStore.load({ limit: 100 }, true);
 		mounted = true;
@@ -156,7 +156,9 @@
 		{} as Record<string, Member[]>
 	);
 
-	$: types = [...teamOrder, 'JKT48'].filter((t) => groupedMembers[t] && groupedMembers[t].length > 0);
+	$: types = [...teamOrder, 'JKT48'].filter(
+		(t) => groupedMembers[t] && groupedMembers[t].length > 0
+	);
 	// Handle any dynamic types not in our list
 	$: otherTypes = Object.keys(groupedMembers)
 		.filter((t) => !teamOrder.includes(t) && t !== 'JKT48')

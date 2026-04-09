@@ -54,16 +54,16 @@ function createUserProfileStore() {
 			update((u) =>
 				u.data
 					? {
-						...u,
-						data: {
-							...u.data,
-							oshi: data.oshi,
-							profileRank: data.rank,
-							profileStats: data.stats,
-							profileOshiTwoShots: data.oshiTwoShots,
-							profileRecentActivity: data.recentActivity
+							...u,
+							data: {
+								...u.data,
+								oshi: data.oshi,
+								profileRank: data.rank,
+								profileStats: data.stats,
+								profileOshiTwoShots: data.oshiTwoShots,
+								profileRecentActivity: data.recentActivity
+							}
 						}
-					}
 					: u
 			);
 		},

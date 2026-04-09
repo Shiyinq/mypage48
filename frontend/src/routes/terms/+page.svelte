@@ -12,11 +12,7 @@
 	let scrollY = 0;
 </script>
 
-<SEO 
-	title={$t('terms.title')} 
-	path="/terms" 
-	description={$t('seo.terms')} 
-/>
+<SEO title={$t('terms.title')} path="/terms" description={$t('seo.terms')} />
 
 <svelte:window bind:scrollY />
 
@@ -26,18 +22,20 @@
 	<!-- Background Elements -->
 	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
 
-
-
 	<!-- NAV -->
 	<LandingNavbar showLogin={false} />
 
 	<div class="max-w-3xl mx-auto pb-12 relative z-10 px-6 pt-4 md:pt-6">
 		<!-- Header -->
 		<div class="text-center space-y-4 mb-8">
-			<h1 class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3">
+			<h1
+				class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
+			>
 				{$t('terms.title')}
 			</h1>
-			<p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+			<p
+				class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]"
+			>
 				{$t('terms.lastUpdated', { date: '19/01/2026' })}
 			</p>
 		</div>
