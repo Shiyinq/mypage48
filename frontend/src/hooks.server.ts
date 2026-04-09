@@ -41,9 +41,13 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// For all other requests, continue as normal
 	return resolve(event, {
 		transformPageChunk: ({ html }) => {
+			console.log('Umami Check:', {
+				url: env.PUBLIC_UMAMI_URL,
+				id: env.PUBLIC_UMAMI_WEBSITE_ID
+			});
+
 			if (env.PUBLIC_UMAMI_URL && env.PUBLIC_UMAMI_WEBSITE_ID) {
 				const script = `<script async defer src="${env.PUBLIC_UMAMI_URL}/script.js" data-website-id="${env.PUBLIC_UMAMI_WEBSITE_ID}"></script>`;
-				// Inject after %sveltekit.head%
 				return html.replace('%sveltekit.head%', `%sveltekit.head%\n\t\t${script}`);
 			}
 			return html;
