@@ -87,15 +87,18 @@
 	<link rel="canonical" href={fullUrl} />
 
 	<!-- Structured Data -->
+	<!-- prettier-ignore -->
 	<script type="application/ld+json">
-		{JSON.stringify(jsonLd)}
+		{@html JSON.stringify(jsonLd)}
 	</script>
+	<!-- prettier-ignore -->
 	<script type="application/ld+json">
-		{JSON.stringify(organizationJsonLd)}
+		{@html JSON.stringify(organizationJsonLd)}
 	</script>
 	{#if breadcrumbJsonLd}
+		<!-- prettier-ignore -->
 		<script type="application/ld+json">
-			{JSON.stringify(breadcrumbJsonLd)}
+			{@html JSON.stringify(breadcrumbJsonLd)}
 		</script>
 	{/if}
 
