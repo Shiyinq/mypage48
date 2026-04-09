@@ -27,11 +27,14 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Copy the src directory contents into the container at /app/src
 COPY src /app/src
 
+# Copy the scraper directory
+COPY scraper /app/scraper
+
 # Copy scripts directory
 COPY scripts /app/scripts
 
-# Make it executable
-RUN chmod +x /app/scripts/start-prod.sh
+# Make scripts executable
+RUN chmod +x /app/scripts/start-prod.sh /app/scripts/scraper-cron.sh
 
 # Create log directory and set permissions so the app can write logs
 RUN mkdir -p /var/log/mypage48 && chmod 777 /var/log/mypage48

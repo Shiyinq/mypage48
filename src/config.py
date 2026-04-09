@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import SecretStr, computed_field
+from pydantic import SecretStr, computed_field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -58,9 +58,41 @@ class Settings(BaseSettings):
 
     API_BASE_URL: str = "http://localhost:8080/api"
 
+    # Analytics (Optional, mainly for frontend build but added here for central config)
+    PUBLIC_UMAMI_WEBSITE_ID: Optional[str] = None
+    PUBLIC_UMAMI_URL: Optional[str] = None
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=True
     )
+
+    @field_validator("FRONTEND_URL", "API_BASE_URL")
+    @classmethod
+    def validate_prod_urls(cls, v: str, info):
+        # We need to access ENV, but field_validators run per-field.
+        # This will be supplemented by model_validator below.
+        return v
+
+    @model_validator(mode="after")
+    def validate_production_hardening(self) -> "Settings":
+        if self.ENV == "prod":
+            # 1. Check URLs for localhost
+            for field in ["FRONTEND_URL", "API_BASE_URL"]:
+                val = getattr(self, field)
+                if "localhost" in val or "127.0.0.1" in val:
+                    raise ValueError(
+                        f"{field} cannot contain 'localhost' or '127.0.0.1' in production. Value was: {val}"
+                    )
+
+            # 2. Force MinIO Secure if not explicitly overridden to False
+            # (though explicitly False in prod is also suspicious unless behind a very specific internal proxy)
+            # For now, let's just warn or nudge.
+            if not self.MINIO_SECURE:
+                # We could raise an error, but let's allow it if they really know what they are doing (e.g. internal network)
+                # but default it to True in our recommended template.
+                pass
+
+        return self
 
     @property
     def is_env_dev(self) -> bool:
@@ -87,6 +119,7 @@ class Settings(BaseSettings):
         ]
 
         if not self.is_env_dev:
+            # In production, we assume the subdomains are part of the origins
             for origin in origins:
                 if origin == "*":
                     raise ValueError(
