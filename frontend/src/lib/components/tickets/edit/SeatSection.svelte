@@ -2,7 +2,10 @@
 	import { MapPin, DollarSign, Hash, ChevronDown } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let formData: any;
+	export let section: string;
+	export let number: string | number;
+	export let price: number;
+	export let ticket_id: string;
 	export let rowOptions: readonly string[];
 
 	const { t } = useTranslation();
@@ -24,7 +27,7 @@
 			<div class="relative">
 				<select
 					id="seat-section"
-					bind:value={formData.seat.section}
+					bind:value={section}
 					class="w-full p-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-center font-black text-lg text-gray-900 dark:text-gray-100 appearance-none cursor-pointer"
 				>
 					<option value="" disabled>-</option>
@@ -43,7 +46,7 @@
 			<input
 				id="seat-number"
 				type="number"
-				bind:value={formData.seat.number}
+				bind:value={number}
 				class="w-full p-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-center font-black text-lg text-gray-900 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600"
 			/>
 		</div>
@@ -61,7 +64,7 @@
 				<input
 					id="ticket-price"
 					type="number"
-					bind:value={formData.price}
+					bind:value={price}
 					class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-gray-100"
 				/>
 			</div>
@@ -78,7 +81,7 @@
 				<input
 					id="ticket-id"
 					type="text"
-					bind:value={formData.ticket_id}
+					bind:value={ticket_id}
 					class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
 					placeholder="T123456"
 				/>

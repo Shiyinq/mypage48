@@ -7,7 +7,9 @@
 
 	export let showTwoShot: boolean;
 	export let twoShotImage: string | null;
-	export let formData: any;
+	export let memberName: string;
+	export let type: 'Roulette' | 'Birthday';
+	export let price: number;
 	export let onSelectImage: () => void;
 
 	const { t } = useTranslation();
@@ -84,7 +86,7 @@
 				>
 				<div id="member-selector">
 					<MemberSelector
-						bind:value={formData.two_shot.member_name}
+						bind:value={memberName}
 						placeholder={$t('forms.memberNamePlaceholder')}
 						title={$t('forms.selectMember')}
 						subtitle={$t('forms.selectMemberDesc')}
@@ -104,7 +106,7 @@
 						</div>
 						<select
 							id="twoshot-type"
-							bind:value={formData.two_shot.type}
+							bind:value={type}
 							class="w-full pl-9 pr-8 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100 appearance-none cursor-pointer"
 						>
 							<option value="Roulette">Roulette</option>
@@ -127,7 +129,7 @@
 						<input
 							id="twoshot-price"
 							type="number"
-							bind:value={formData.two_shot.price}
+							bind:value={price}
 							class="w-full pl-9 pr-3 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
 						/>
 					</div>
