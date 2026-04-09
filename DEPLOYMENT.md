@@ -44,6 +44,31 @@ for ip in $(curl -s https://www.cloudflare.com/ips-v4); do sudo ufw allow from $
 sudo ufw enable
 ```
 
+### 2.1 Memory Management (Optional but Recommended)
+If your VPS has less than 4GB RAM, the frontend build process might crash with a `SIGABRT` error. It is highly recommended to create a **Swap File**:
+
+```bash
+# Disable existing swap (if any)
+sudo swapoff -a
+
+# Create a 2GB swap file
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# Make it permanent
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# Verify swap status
+free -h
+```
+
+If you still encounter `JavaScript heap out of memory`, ensure your `frontend/Dockerfile` has the following line for the build stage:
+```dockerfile
+RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build
+```
+
 ---
 
 ## 3. Application Setup
