@@ -22,7 +22,7 @@ export function cleanseMarkdown(content: string | null | undefined): string {
 
 /**
  * Cleanses a single storage URL by converting it back into its relative internal path.
- * Example: http://localhost:8080/api/storage/m/ticket/xyz.png?expires=... 
+ * Example: http://localhost:8080/api/storage/m/ticket/xyz.png?expires=...
  * becomes: ticket/xyz.png
  */
 export function cleanseStorageUrl(url: string | null | undefined): string {
