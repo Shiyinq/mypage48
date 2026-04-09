@@ -134,14 +134,10 @@ To view your data safely from your laptop:
 
 ---
 
-## 7. Maintenance (Automatic SSL Renewal)
+## 7. Maintenance
 
-Certificates expire every 3 meses. Run this to automate renewal:
+Since we use Cloudflare Origin Certificates (15 years) and a Swap File, maintenance is minimal:
 
-```bash
-# Open crontab
-crontab -e
-
-# Add this line to the end (runs every night at 3 AM)
-0 3 * * * docker run --rm -v "$(pwd)/certbot/conf:/etc/letsencrypt" -v "$(pwd)/certbot/www:/var/www/certbot" certbot/certbot renew --quiet && docker exec mypage48-nginx nginx -s reload
-```
+1.  **Logs**: Check logs in `./logs/` if anything goes wrong.
+2.  **Backups**: Regularly backup your `mongodb_data` and `minio_data` volumes.
+3.  **Updates**: To update the app, run `git pull` followed by `docker compose -f docker-compose.prod.yml up -d --build`.
