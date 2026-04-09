@@ -89,6 +89,8 @@ services:
   mongodb:
     image: mongo:7.0
     container_name: mypage48-mongodb
+    ports:
+      - "127.0.0.1:27017:27017" # Securely exposed for SSH Tunnel
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
