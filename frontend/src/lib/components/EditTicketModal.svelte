@@ -67,7 +67,7 @@
 	let validationAlertMessage = '';
 
 	// Validation
-	$: isFormValid =
+	$: isFormValid = !!(
 		formData.event.title &&
 		formData.event.date &&
 		formData.event.time &&
@@ -80,7 +80,8 @@
 				formData.two_shot.member_name &&
 				formData.two_shot.price !== null &&
 				formData.two_shot.price >= 0 &&
-				twoShotImage));
+				twoShotImage))
+	);
 
 	// Reactive Day Calculation
 	$: if (formData.event.date) {
