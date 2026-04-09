@@ -41,14 +41,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// For all other requests, continue as normal
 	return resolve(event, {
 		transformPageChunk: ({ html }) => {
-			console.log('Umami Check:', {
-				url: env.PUBLIC_UMAMI_URL,
-				id: env.PUBLIC_UMAMI_WEBSITE_ID
-			});
-
 			if (env.PUBLIC_UMAMI_URL && env.PUBLIC_UMAMI_WEBSITE_ID) {
-				const script = `<script async defer src="${env.PUBLIC_UMAMI_URL}/script.js" data-website-id="${env.PUBLIC_UMAMI_WEBSITE_ID}"></script>`;
-				return html.replace('%sveltekit.head%', `%sveltekit.head%\n\t\t${script}`);
+				const script = `\n\t\t<script async defer src="${env.PUBLIC_UMAMI_URL}/script.js" data-website-id="${env.PUBLIC_UMAMI_WEBSITE_ID}"></script>\n`;
+				// Inject before closing head tag
+				return html.replace('</head>', `${script}</head>`);
 			}
 			return html;
 		}
