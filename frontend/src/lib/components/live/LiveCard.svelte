@@ -27,7 +27,9 @@
 	<div class="relative w-full h-full overflow-hidden bg-gray-100 dark:bg-zinc-800">
 		<img
 			src={getExternalMediaUrl(
-				stream.platform === 'showroom' ? stream.member?.img || stream.image : stream.image || stream.member?.img
+				stream.platform === 'showroom'
+					? stream.member?.img || stream.image
+					: stream.image || stream.member?.img
 			) || fallbackAvatar}
 			alt={stream.member?.name}
 			on:error={(e) => {
