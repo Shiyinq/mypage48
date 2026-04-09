@@ -495,8 +495,11 @@
 						class="w-32 h-44 sm:w-40 sm:h-56 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl mb-2 relative group"
 					>
 						<img
-							src={getExternalMediaUrl(streamFromList?.image || streamFromList?.member?.img) ||
-								fallbackAvatar}
+							src={getExternalMediaUrl(
+								(platform === 'showroom'
+									? streamFromList?.member?.img || streamFromList?.image
+									: streamFromList?.image || streamFromList?.member?.img) || ''
+							) || fallbackAvatar}
 							alt={streamFromList?.member?.name}
 							class="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
 						/>
