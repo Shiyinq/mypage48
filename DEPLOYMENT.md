@@ -146,19 +146,20 @@ Since we use Cloudflare Origin Certificates (15 years) and a Swap File, maintena
 
 ## 8. Troubleshooting
 
-### 8.1 Nginx Config Not Syncing
-If you edit `nginx/default.conf` but do not see changes on the live site:
-- **Verify**: Run `docker exec mypage48-nginx nginx -T` to see the actual configuration active inside the container.
-- **Force Refresh**: Run `docker compose -f docker-compose.prod.yml up -d --force-recreate nginx`. This forces Docker to recreate the container and pick up volume changes.
-- **Reload**: If the file is synced but not active, run `docker exec mypage48-nginx nginx -s reload`.
+### 8.1 Nginx Management & Debugging
+- **Test Config**: `docker exec mypage48-nginx nginx -t` (Check for syntax errors).
+- **Hot Reload**: `docker exec mypage48-nginx nginx -s reload` (Apply changes without downtime).
+- **Verify Active Config**: `docker exec mypage48-nginx nginx -T` (See what's actually running).
+- **Live Logs**: `docker logs -f mypage48-nginx` (See real-time traffic and errors).
+- **Force Refresh**: `docker compose -f docker-compose.prod.yml up -d --force-recreate nginx` (Use this if `reload` doesn't pick up file changes).
 
 ### 8.2 502 Bad Gateway (Too Big Header)
-If you see 502 in the browser and Nginx logs (`docker logs mypage48-nginx`) show `upstream sent too big header`:
+If you see 502 in the browser and Nginx logs show `upstream sent too big header`:
 - **Cause**: The frontend (SvelteKit) is sending large headers/cookies that exceed Nginx's default buffer.
-- **Fix**: Increase `proxy_buffer_size`, `proxy_buffers`, and `large_client_header_buffers` to `512k` or `1m` in `nginx/default.conf`.
+- **Fix**: Increase `proxy_buffer_size`, `proxy_buffers`, and `large_client_header_buffers` to `512k` or `1m` inside the `server` block in `nginx/default.conf`.
 
 ### 8.3 Backend "Unhealthy" (503)
 If `docker ps` shows the backend as unhealthy:
 - **Log Check**: `docker logs mypage48-backend --tail 100` or `docker exec mypage48-backend cat /var/log/mypage48/error.log`.
-- **MinIO Connection**: Ensure `MINIO_ENDPOINT=minio:9000` and `MINIO_USE_SSL=false` in `.env` for internal communication.
-- **Database**: Ensure MongoDB is healthy and the connection string uses the hostname `mongodb`.
+- **MinIO Connection**: Ensure `MINIO_ENDPOINT=minio:9000` and `MINIO_SECURE=false` in `.env` for internal communication.
+- **Database Connection**: Ensure MongoDB is healthy and the connection string uses the hostname `mongodb`.
