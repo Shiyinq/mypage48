@@ -18,7 +18,8 @@
 
 	const variants = {
 		overlay: {
-			container: 'flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-lg',
+			container:
+				'flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-lg',
 			icon: 10,
 			text: 'text-[9px] font-black text-white px-0.5',
 			viewerIconColor: 'text-sky-400',
@@ -36,7 +37,8 @@
 			dot: 'w-0.5 h-0.5 rounded-full bg-slate-300'
 		},
 		detailed: {
-			container: 'flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-md border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-xl',
+			container:
+				'flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-md border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-xl',
 			icon: 14,
 			text: 'text-[11px] font-black text-slate-900 dark:text-white',
 			viewerIconColor: 'text-sky-600 dark:text-sky-400',

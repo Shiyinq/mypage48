@@ -48,7 +48,10 @@
 
 <div class="space-y-6">
 	<!-- Birthdays Section -->
-	<Birthdays birthdays={$membersStore.birthdays || []} isLoading={!mounted || $isBirthdaysLoading} />
+	<Birthdays
+		birthdays={$membersStore.birthdays || []}
+		isLoading={!mounted || $isBirthdaysLoading}
+	/>
 
 	<div class="flex items-center gap-3 mb-4">
 		<div class="h-8 w-1.5 bg-red-500 rounded-full"></div>
@@ -166,7 +169,7 @@
 									{#if event.label}
 										<div
 											class="px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold rounded-md uppercase tracking-wider border shadow-sm {event.label ===
-											'JKT48' ||
+												'JKT48' ||
 											event.label === 'GENERAL' ||
 											event.label === 'EXCLUSIVE'
 												? 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800/30'
@@ -223,7 +226,9 @@
 									<div
 										class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm text-indigo-500 sm:text-indigo-300 font-medium mb-1.5 sm:mb-1 w-fit"
 									>
-										<GraduationCap class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 sm:text-indigo-400" />
+										<GraduationCap
+											class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 sm:text-indigo-400"
+										/>
 										<span class="line-clamp-1">{event.graduationMembers?.join(', ')}</span>
 									</div>
 								{/if}

@@ -61,13 +61,17 @@
 
 	<!-- Static Decor Elements -->
 	<div
-		class="absolute top-20 left-10 animate-pulse delay-700 {interactive ? 'pointer-events-auto cursor-pointer hover:scale-125 transition-all duration-300 hover:text-pink-400 text-pink-200' : 'pointer-events-none text-pink-200'}"
+		class="absolute top-20 left-10 animate-pulse delay-700 {interactive
+			? 'pointer-events-auto cursor-pointer hover:scale-125 transition-all duration-300 hover:text-pink-400 text-pink-200'
+			: 'pointer-events-none text-pink-200'}"
 		style="transform: translate({$mouse.x * 20}px, {$mouse.y * 20 + scrollY * 0.2}px)"
 	>
 		<Sparkles size={48} />
 	</div>
 	<div
-		class="absolute top-40 right-10 animate-pulse delay-300 {interactive ? 'pointer-events-auto cursor-pointer hover:scale-125 hover:rotate-12 transition-all duration-300 hover:text-red-400 text-red-200' : 'pointer-events-none text-red-200'}"
+		class="absolute top-40 right-10 animate-pulse delay-300 {interactive
+			? 'pointer-events-auto cursor-pointer hover:scale-125 hover:rotate-12 transition-all duration-300 hover:text-red-400 text-red-200'
+			: 'pointer-events-none text-red-200'}"
 		style="transform: translate({$mouse.x * 60}px, {$mouse.y * 60 + scrollY * 0.5}px)"
 	>
 		<Star size={32} />
@@ -77,11 +81,14 @@
 	{#each decorations as d}
 		<div
 			in:fade={{ duration: 2000 }}
-			class="absolute {interactive ? 'cursor-pointer hover:z-10 group pointer-events-auto' : 'pointer-events-none'}"
+			class="absolute {interactive
+				? 'cursor-pointer hover:z-10 group pointer-events-auto'
+				: 'pointer-events-none'}"
 			style="
                 left: {d.x}%;
                 top: {d.y}%;
-                transform: scale({d.scale}) translate({$mouse.x * d.depth}px, {$mouse.y * d.depth + scrollY * d.depth * 0.002}px);
+                transform: scale({d.scale}) translate({$mouse.x * d.depth}px, {$mouse.y * d.depth +
+				scrollY * d.depth * 0.002}px);
             "
 		>
 			<div
@@ -91,7 +98,9 @@
 				<div
 					class="transition-all duration-500 ease-out {d.type === 'star'
 						? `text-red-300 dark:text-red-500/30 ${interactive ? 'group-hover:text-red-500 dark:group-hover:text-red-400' : ''}`
-						: `text-pink-300 dark:text-pink-500/30 ${interactive ? 'group-hover:text-pink-500 dark:group-hover:text-pink-400' : ''}`} {interactive ? 'group-hover:scale-150 group-hover:rotate-12' : ''}"
+						: `text-pink-300 dark:text-pink-500/30 ${interactive ? 'group-hover:text-pink-500 dark:group-hover:text-pink-400' : ''}`} {interactive
+						? 'group-hover:scale-150 group-hover:rotate-12'
+						: ''}"
 				>
 					<div class="animate-pulse" style="animation-duration: {d.duration / 1.5}s">
 						{#if d.type === 'star'}

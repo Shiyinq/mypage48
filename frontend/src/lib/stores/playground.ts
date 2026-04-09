@@ -34,23 +34,25 @@ function createPlaygroundStore() {
 	return {
 		subscribe,
 		init: async () => {
-			update(s => ({ ...s, error: null }));
+			update((s) => ({ ...s, error: null }));
 			try {
 				const schema = await playgroundApi.getSchema();
-				const savedApiKey = sessionStorage.getItem('mypage48_playground_apiKey') || localStorage.getItem('mypage48_playground_apiKey');
+				const savedApiKey =
+					sessionStorage.getItem('mypage48_playground_apiKey') ||
+					localStorage.getItem('mypage48_playground_apiKey');
 				const savedUseSession = localStorage.getItem('mypage48_playground_useSession');
-				
+
 				// Cleanup legacy insecure storage if migrated
 				if (localStorage.getItem('mypage48_playground_apiKey')) {
 					localStorage.removeItem('mypage48_playground_apiKey');
 				}
-				
+
 				// Initialize sidebar visibility based on screen width on every refresh/load
 				const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
-				
-				update(s => ({ 
-					...s, 
-					schema, 
+
+				update((s) => ({
+					...s,
+					schema,
 					apiKey: savedApiKey,
 					isSidebarVisible: isDesktop,
 					responseWidth: 450, // Always use default on refresh
@@ -58,12 +60,12 @@ function createPlaygroundStore() {
 				}));
 			} catch (err: any) {
 				logger.error('Failed to load playground schema', err);
-				update(s => ({ ...s, error: 'Failed to load API metadata' }));
+				update((s) => ({ ...s, error: 'Failed to load API metadata' }));
 			}
 		},
 
 		toggleSidebar: () => {
-			update(s => {
+			update((s) => {
 				const newValue = !s.isSidebarVisible;
 				localStorage.setItem('mypage48_playground_sidebarVisible', String(newValue));
 				return { ...s, isSidebarVisible: newValue };
@@ -71,15 +73,15 @@ function createPlaygroundStore() {
 		},
 
 		setResponseWidth: (width: number) => {
-			update(s => ({ ...s, responseWidth: width }));
+			update((s) => ({ ...s, responseWidth: width }));
 		},
 
 		selectEndpoint: (id: string) => {
-			update(s => ({ ...s, selectedEndpointId: id }));
+			update((s) => ({ ...s, selectedEndpointId: id }));
 		},
-		
+
 		setApiKey: (key: string | null) => {
-			update(s => ({ ...s, apiKey: key }));
+			update((s) => ({ ...s, apiKey: key }));
 			if (key) {
 				sessionStorage.setItem('mypage48_playground_apiKey', key);
 			} else {
@@ -88,7 +90,7 @@ function createPlaygroundStore() {
 		},
 
 		setUseSession: (value: boolean) => {
-			update(s => {
+			update((s) => {
 				localStorage.setItem('mypage48_playground_useSession', String(value));
 				return { ...s, useSession: value };
 			});
@@ -98,10 +100,10 @@ function createPlaygroundStore() {
 			const currentId = get({ subscribe }).selectedEndpointId;
 			if (!currentId) return;
 
-			update(s => ({ ...s, executing: true }));
+			update((s) => ({ ...s, executing: true }));
 			try {
 				const state = get({ subscribe });
-				
+
 				if (state.useSession) {
 					const token = get(accessToken);
 					if (token) {
@@ -112,7 +114,7 @@ function createPlaygroundStore() {
 				}
 
 				const result = await playgroundApi.executeRequest(payload);
-				update(s => ({
+				update((s) => ({
 					...s,
 					results: {
 						...s.results,
@@ -123,7 +125,7 @@ function createPlaygroundStore() {
 			} catch (err: any) {
 				logger.error('Execution failed', err);
 			} finally {
-				update(s => ({ ...s, executing: false }));
+				update((s) => ({ ...s, executing: false }));
 			}
 		},
 
@@ -167,7 +169,7 @@ export const groupedEndpoints = derived(endpoints, ($endpoints) => {
 
 // Derived store for selected endpoint
 export const selectedEndpoint = derived([playgroundStore, endpoints], ([$store, $endpoints]) => {
-	return $endpoints.find(e => e.id === $store.selectedEndpointId) || null;
+	return $endpoints.find((e) => e.id === $store.selectedEndpointId) || null;
 });
 
 // Derived store for selected result

@@ -1,5 +1,18 @@
 <script lang="ts">
-	import { Play, Terminal, Key, ChevronRight, Hash, Globe, Lock, Info, Server, RefreshCw, Copy, AlertCircle } from 'lucide-svelte';
+	import {
+		Play,
+		Terminal,
+		Key,
+		ChevronRight,
+		Hash,
+		Globe,
+		Lock,
+		Info,
+		Server,
+		RefreshCw,
+		Copy,
+		AlertCircle
+	} from 'lucide-svelte';
 	import { playgroundStore } from '$lib/stores/playground';
 	import { accessToken } from '$lib/stores/accessToken';
 	import { createEventDispatcher } from 'svelte';
@@ -14,7 +27,9 @@
 	export let openapi: OpenAPISchema | null = null;
 	export let executing = false;
 
-	const dispatch = createEventDispatcher<{ execute: { method: string; path: string; params: any; body: any; headers: any } }>();
+	const dispatch = createEventDispatcher<{
+		execute: { method: string; path: string; params: any; body: any; headers: any };
+	}>();
 
 	let parameters: Record<string, string> = {};
 	let body: string = '';
@@ -66,7 +81,7 @@
 		parameters = {};
 		body = '';
 		headers = {};
-		
+
 		// Initialize default values for parameters
 		endpoint.details.parameters?.forEach((p: any) => {
 			parameters[p.name] = '';
@@ -131,17 +146,17 @@
 		let cleanPath = finalPath;
 		if (cleanPath.startsWith('/api')) cleanPath = cleanPath.slice(4);
 		else if (cleanPath.startsWith('api')) cleanPath = cleanPath.slice(3);
-		
+
 		if (cleanPath.startsWith('/')) cleanPath = cleanPath.slice(1);
 		const fullUrl = `${window.location.origin}/api/${cleanPath}${queryString ? '?' + queryString : ''}`;
-		
+
 		let token = $playgroundStore.useSession ? $accessToken : $playgroundStore.apiKey;
 		if (token) {
 			curlHeaders.push(`-H 'Authorization: Bearer ${token}'`);
 		}
-		
+
 		let curlCommand = `curl -X ${endpoint.method.toUpperCase()} "${fullUrl}" \\\n${curlHeaders.join(' \\\n')}`;
-		
+
 		if (endpoint.method.toLowerCase() !== 'get' && body) {
 			const escapedBody = body.replace(/'/g, "'\\''");
 			curlCommand += ` \\\n-d '${escapedBody}'`;
@@ -155,8 +170,10 @@
 		get: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/20',
 		post: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/20',
 		put: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/20',
-		delete: 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/20',
-		patch: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-900/20'
+		delete:
+			'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/20',
+		patch:
+			'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-900/20'
 	};
 </script>
 
@@ -166,7 +183,11 @@
 			<!-- Header -->
 			<div class="space-y-4">
 				<div class="flex items-center gap-3">
-					<span class="px-3 py-1 rounded-xl text-xs font-black uppercase border {methodStyles[endpoint.method.toLowerCase()]}">
+					<span
+						class="px-3 py-1 rounded-xl text-xs font-black uppercase border {methodStyles[
+							endpoint.method.toLowerCase()
+						]}"
+					>
 						{endpoint.method}
 					</span>
 					<h1 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white">
@@ -176,12 +197,14 @@
 				<p class="text-sm text-gray-500 dark:text-gray-400 font-medium">
 					{endpoint.details.description || $t('playground.noDescription')}
 				</p>
-				<div class="flex items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-gray-100 dark:border-white/5 font-mono text-sm group">
+				<div
+					class="flex items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-gray-100 dark:border-white/5 font-mono text-sm group"
+				>
 					<div class="flex items-center gap-2 overflow-hidden">
 						<Globe class="w-4 h-4 text-gray-400 shrink-0" />
 						<span class="text-gray-900 dark:text-gray-100 truncate">{endpoint.path}</span>
 					</div>
-					<button 
+					<button
 						on:click={copyCurl}
 						class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-700 border border-gray-200 dark:border-white/10 text-[10px] font-bold text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 transition-all cursor-pointer shadow-sm active:scale-95"
 					>
@@ -189,7 +212,6 @@
 						{$t('playground.copyCurl')}
 					</button>
 				</div>
-
 			</div>
 
 			<!-- Parameters -->
@@ -244,7 +266,9 @@
 					</div>
 					<div class="relative group">
 						<div class="absolute right-4 top-4 z-10">
-							<span class="px-2 py-1 rounded-lg bg-gray-900/50 dark:bg-zinc-700/50 text-[10px] font-bold text-white uppercase backdrop-blur-md">
+							<span
+								class="px-2 py-1 rounded-lg bg-gray-900/50 dark:bg-zinc-700/50 text-[10px] font-bold text-white uppercase backdrop-blur-md"
+							>
 								JSON
 							</span>
 						</div>
@@ -261,7 +285,10 @@
 			<!-- Action -->
 			<div class="pt-6 border-t border-gray-100 dark:border-white/5 space-y-4">
 				{#if !$playgroundStore.apiKey && !$playgroundStore.useSession}
-					<div class="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 dark:text-red-400 text-xs font-bold" in:fade>
+					<div
+						class="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 dark:text-red-400 text-xs font-bold"
+						in:fade
+					>
 						<AlertCircle class="w-4 h-4 shrink-0" />
 						{$t('playground.apiKeyRequired')}
 					</div>
@@ -284,11 +311,15 @@
 		</div>
 	{:else}
 		<div class="h-full flex flex-col items-center justify-center text-center space-y-6 opacity-40">
-			<div class="w-20 h-20 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">
+			<div
+				class="w-20 h-20 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center"
+			>
 				<Terminal class="w-8 h-8 text-gray-400" />
 			</div>
 			<div class="max-w-xs">
-				<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{$t('playground.title')}</h3>
+				<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+					{$t('playground.title')}
+				</h3>
 				<p class="text-sm text-gray-500">
 					{$t('playground.selectEndpoint')}
 				</p>

@@ -75,10 +75,10 @@
 		try {
 			const parts = raw.split(' ');
 			let tags: Record<string, string> = {};
-			
+
 			if (raw.startsWith('@')) {
 				const tagString = parts[0].substring(1);
-				tagString.split(';').forEach(t => {
+				tagString.split(';').forEach((t) => {
 					const [key, value] = t.split('=');
 					tags[key] = decodeURIComponent(value || '');
 				});
@@ -97,10 +97,11 @@
 			if (text.startsWith('{')) {
 				try {
 					const json = JSON.parse(text);
-					
+
 					// Hydrate user info first
 					if (json.user) {
-						senderName = json.user.name || json.user.display_name || json.user.username || senderName;
+						senderName =
+							json.user.name || json.user.display_name || json.user.username || senderName;
 						avatar = json.user.avatar_url || avatar;
 					}
 
@@ -109,7 +110,15 @@
 						const g = json.gift;
 						giftData = {
 							name: g.name,
-							img: g.image_url || g.image || g.icon_url || g.icon || g.sticker_url || g.animation_large_url || g.animation_large || g.animation_url,
+							img:
+								g.image_url ||
+								g.image ||
+								g.icon_url ||
+								g.icon ||
+								g.sticker_url ||
+								g.animation_large_url ||
+								g.animation_large ||
+								g.animation_url,
 							color: g.bg_color
 						};
 						broadcastGift({
@@ -132,19 +141,24 @@
 				return;
 			}
 
-			const isAtBottom = chatContainer && (chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 100);
+			const isAtBottom =
+				chatContainer &&
+				chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 100;
 
-			messages = [...messages, { 
-				id: crypto.randomUUID(),
-				user: senderName, 
-				text: parsedText, 
-				avatar, 
-				timestamp: Date.now(),
-				type: isGift ? 'gift' : 'chat',
-				gift: giftData
-			}];
+			messages = [
+				...messages,
+				{
+					id: crypto.randomUUID(),
+					user: senderName,
+					text: parsedText,
+					avatar,
+					timestamp: Date.now(),
+					type: isGift ? 'gift' : 'chat',
+					gift: giftData
+				}
+			];
 			if (messages.length > 100) messages = messages.slice(-100);
-			
+
 			// Auto-scroll
 			if (isFirstLoad || isAtBottom) {
 				await tick();
@@ -179,12 +193,14 @@
 </script>
 
 <div class="flex-1 min-h-0 flex flex-col overflow-hidden">
-	<div 
+	<div
 		bind:this={chatContainer}
 		class="flex-1 p-4 overflow-y-auto flex flex-col gap-3 scroll-smooth"
 	>
 		{#if messages.length === 0}
-			<div class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900">
+			<div
+				class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900"
+			>
 				{$t('theater.live.multiview.chat_started')}
 			</div>
 		{/if}
@@ -192,31 +208,43 @@
 		{#each messages as msg (msg.id || msg.timestamp + msg.user)}
 			<div class="flex items-start gap-3 group">
 				{#if msg.avatar}
-					<img src={msg.avatar} alt={msg.user} class="w-8 h-8 rounded-full object-cover border border-gray-100 dark:border-zinc-800" />
+					<img
+						src={msg.avatar}
+						alt={msg.user}
+						class="w-8 h-8 rounded-full object-cover border border-gray-100 dark:border-zinc-800"
+					/>
 				{:else}
-					<div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-slate-400">
+					<div
+						class="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-slate-400"
+					>
 						{msg.user[0]}
 					</div>
 				{/if}
 				<div class="flex-1 min-w-0">
 					<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5">{msg.user}</p>
-					
+
 					{#if msg.type === 'gift' && msg.gift}
-						{@const isLottie = msg.gift.img ? (msg.gift.img.includes('/animation/') || !msg.gift.img.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i)) : false}
-						{@const isRecent = messages.filter(m => m.type === 'gift').slice(-3).some(m => (m.id || m.timestamp) === (msg.id || msg.timestamp))}
-						<div 
+						{@const isLottie = msg.gift.img
+							? msg.gift.img.includes('/animation/') ||
+								!msg.gift.img.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i)
+							: false}
+						{@const isRecent = messages
+							.filter((m) => m.type === 'gift')
+							.slice(-3)
+							.some((m) => (m.id || m.timestamp) === (msg.id || msg.timestamp))}
+						<div
 							class="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl rounded-tl-none text-white text-sm font-black italic shadow-lg shadow-black/10 transition-all"
 							style="background: {msg.gift.color || '#ef4444'}"
 						>
 							{#if msg.gift.img}
 								{#if isLottie && isRecent}
-									<lottie-player 
-										src={getExternalMediaUrl(msg.gift.img)} 
-										background="transparent" 
-										speed="1" 
+									<lottie-player
+										src={getExternalMediaUrl(msg.gift.img)}
+										background="transparent"
+										speed="1"
 										style="width: 50px; height: 50px;"
-										class="object-contain drop-shadow-md" 
-										loop 
+										class="object-contain drop-shadow-md"
+										loop
 										autoplay
 										on:error={handleMediaError}
 									></lottie-player>
@@ -226,23 +254,27 @@
 										<MessageCircle size={20} />
 									</div>
 								{:else}
-									<img 
-										src={getExternalMediaUrl(msg.gift.img)} 
-										alt={msg.gift.name} 
+									<img
+										src={getExternalMediaUrl(msg.gift.img)}
+										alt={msg.gift.name}
 										referrerpolicy="no-referrer"
 										style="width: 50px; height: 50px;"
 										on:error={handleMediaError}
-										class="object-contain drop-shadow-md" 
+										class="object-contain drop-shadow-md"
 									/>
 								{/if}
 							{/if}
 							<div>
-								<p class="text-[10px] uppercase tracking-tighter opacity-80 mb-0.5">{$t('theater.live.multiview.sending_gift')}</p>
+								<p class="text-[10px] uppercase tracking-tighter opacity-80 mb-0.5">
+									{$t('theater.live.multiview.sending_gift')}
+								</p>
 								{msg.gift.name.toUpperCase()}
 							</div>
 						</div>
 					{:else}
-						<div class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm">
+						<div
+							class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm"
+						>
 							{msg.text}
 						</div>
 					{/if}
@@ -253,7 +285,9 @@
 		{#if messages.length === 0}
 			<div class="flex-1 flex flex-col items-center justify-center text-center py-20 opacity-40">
 				<MessageCircle size={32} class="text-slate-300 dark:text-zinc-700 mb-2" />
-				<p class="text-xs font-bold uppercase tracking-widest text-slate-400">{$t('theater.live.multiview.no_messages')}</p>
+				<p class="text-xs font-bold uppercase tracking-widest text-slate-400">
+					{$t('theater.live.multiview.no_messages')}
+				</p>
 			</div>
 		{/if}
 	</div>
@@ -262,20 +296,20 @@
 <style>
 	.overflow-y-auto {
 		scrollbar-width: thin;
-		scrollbar-color: rgba(0,0,0,0.1) transparent;
+		scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
 		overflow-y: auto !important;
 	}
-	
+
 	/* Force scrollbar to be visible for debugging */
 	.overflow-y-auto::-webkit-scrollbar {
 		width: 6px;
 	}
 	.overflow-y-auto::-webkit-scrollbar-thumb {
-		background: rgba(0,0,0,0.2);
+		background: rgba(0, 0, 0, 0.2);
 		border-radius: 10px;
 	}
-	
+
 	:global(.dark) .overflow-y-auto {
-		scrollbar-color: rgba(255,255,255,0.1) transparent;
+		scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 	}
 </style>

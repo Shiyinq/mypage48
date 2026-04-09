@@ -131,10 +131,15 @@
 			style="animation-delay: 500ms;"
 			aria-label="Scroll to features"
 		>
-			<div class="w-6 h-10 rounded-full border-2 border-slate-200 dark:border-zinc-800 flex justify-center p-1.5 group-hover/scroll:border-red-500 transition-colors">
+			<div
+				class="w-6 h-10 rounded-full border-2 border-slate-200 dark:border-zinc-800 flex justify-center p-1.5 group-hover/scroll:border-red-500 transition-colors"
+			>
 				<div class="w-1 h-2 bg-red-500 rounded-full animate-scroll-dot"></div>
 			</div>
-			<ChevronDown size={16} class="text-slate-300 group-hover/scroll:text-red-500 animate-bounce transition-colors" />
+			<ChevronDown
+				size={16}
+				class="text-slate-300 group-hover/scroll:text-red-500 animate-bounce transition-colors"
+			/>
 		</button>
 	</header>
 
@@ -320,8 +325,14 @@
 	}
 
 	@keyframes scroll-dot {
-		0% { transform: translateY(0); opacity: 1; }
-		100% { transform: translateY(12px); opacity: 0; }
+		0% {
+			transform: translateY(0);
+			opacity: 1;
+		}
+		100% {
+			transform: translateY(12px);
+			opacity: 0;
+		}
 	}
 
 	.animate-scroll-dot {

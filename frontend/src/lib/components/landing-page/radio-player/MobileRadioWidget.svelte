@@ -37,7 +37,7 @@
 		aria-label="Close Radio"
 	></div>
 
-	<div 
+	<div
 		class="fixed inset-x-6 bottom-32 z-[100] lg:hidden flex justify-center pointer-events-none"
 		transition:fly={{ y: 20, duration: 300 }}
 	>

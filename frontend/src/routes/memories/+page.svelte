@@ -109,7 +109,9 @@
 			onRetry={() => loadMemories(1)}
 		/>
 	{:else if $isGalleryLoading && memories.length === 0}
-	<div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10 px-2 sm:px-4">
+		<div
+			class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10 px-2 sm:px-4"
+		>
 			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each Array(8) as _unused, index}
 				{@const rotation = (index % 5) - 2}
@@ -125,7 +127,9 @@
 			description={$t('upload.subtitle')}
 		/>
 	{:else}
-		<div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10 px-2 sm:px-4">
+		<div
+			class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10 px-2 sm:px-4"
+		>
 			{#each memories as item, index (item.uniqueId)}
 				{@const rotation = (index % 5) - 2}
 				<MemoryCard {item} {rotation} onClick={(i) => (selectedImage = i)} />

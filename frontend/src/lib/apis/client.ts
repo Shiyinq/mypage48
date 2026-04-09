@@ -102,9 +102,9 @@ export async function client<T>(
 			if (!isPublic) {
 				token = '';
 				// Silence the current request by returning a promise that never resolves.
-				// This avoids triggering generic error toasts in the UI before the 
+				// This avoids triggering generic error toasts in the UI before the
 				// authentication store triggers a logout/redirect.
-				return new Promise(() => { });
+				return new Promise(() => {});
 			}
 		}
 	}
@@ -156,9 +156,10 @@ export async function client<T>(
 			errorData = await response.text();
 		}
 
-		const error = (typeof errorData === 'object' && errorData !== null)
-			? { ...errorData, status: response.status }
-			: { detail: errorData, status: response.status };
+		const error =
+			typeof errorData === 'object' && errorData !== null
+				? { ...errorData, status: response.status }
+				: { detail: errorData, status: response.status };
 
 		throw error as ApiError;
 	}

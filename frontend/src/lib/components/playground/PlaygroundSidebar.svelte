@@ -18,15 +18,19 @@
 	let showApiKey = false;
 	let isConfigExpanded = !$playgroundStore.apiKey;
 
-	$: filteredGroups = Object.entries(groupedEndpoints).reduce((acc: Record<string, OpenAPIEndpoint[]>, [tag, endpoints]) => {
-		const filtered = endpoints.filter((e) => 
-			e.path.toLowerCase().includes(searchQuery.toLowerCase()) || 
-			e.details.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			tag.toLowerCase().includes(searchQuery.toLowerCase())
-		);
-		if (filtered.length > 0) acc[tag] = filtered;
-		return acc;
-	}, {});
+	$: filteredGroups = Object.entries(groupedEndpoints).reduce(
+		(acc: Record<string, OpenAPIEndpoint[]>, [tag, endpoints]) => {
+			const filtered = endpoints.filter(
+				(e) =>
+					e.path.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					e.details.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					tag.toLowerCase().includes(searchQuery.toLowerCase())
+			);
+			if (filtered.length > 0) acc[tag] = filtered;
+			return acc;
+		},
+		{}
+	);
 
 	function toggleTag(tag: string) {
 		expandedTags[tag] = !expandedTags[tag];
@@ -45,17 +49,27 @@
 	};
 </script>
 
-<div class="flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-gray-100 dark:border-white/5 w-80 shrink-0">
-	<div class="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-zinc-800/30 shrink-0">
+<div
+	class="flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-gray-100 dark:border-white/5 w-80 shrink-0"
+>
+	<div
+		class="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-zinc-800/30 shrink-0"
+	>
 		<!-- Header Row: Aligned with Navbar -->
 		<div class="h-16 flex items-center">
-			<button 
-				on:click={() => isConfigExpanded = !isConfigExpanded}
+			<button
+				on:click={() => (isConfigExpanded = !isConfigExpanded)}
 				class="flex-1 px-4 h-full flex items-center justify-between group cursor-pointer text-left"
 			>
 				<div class="flex items-center gap-2">
-					<Lock class="w-3.5 h-3.5 { ($playgroundStore.apiKey || $playgroundStore.useSession) ? 'text-emerald-500' : 'text-red-500' }" />
-					<span class="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">
+					<Lock
+						class="w-3.5 h-3.5 {$playgroundStore.apiKey || $playgroundStore.useSession
+							? 'text-emerald-500'
+							: 'text-red-500'}"
+					/>
+					<span
+						class="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400"
+					>
 						{$t('playground.configTitle')}
 					</span>
 					{#if ($playgroundStore.apiKey || $playgroundStore.useSession) && !isConfigExpanded}
@@ -64,14 +78,14 @@
 						</span>
 					{/if}
 				</div>
-				<ChevronRight 
-					class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" 
+				<ChevronRight
+					class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200"
 					style="transform: rotate({isConfigExpanded ? '90deg' : '0deg'})"
 				/>
 			</button>
-			
+
 			<div class="pr-2">
-				<button 
+				<button
 					on:click={() => playgroundStore.toggleSidebar()}
 					class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-gray-400 hover:text-red-500 cursor-pointer"
 					title={$t('playground.hideSidebar')}
@@ -83,39 +97,61 @@
 
 		<!-- Expandable Content: Sits below the fixed header -->
 		{#if isConfigExpanded}
-			<div transition:slide={{ duration: 200 }} class="px-4 pb-4 space-y-3 border-t border-gray-100 dark:border-white/5 pt-3">
+			<div
+				transition:slide={{ duration: 200 }}
+				class="px-4 pb-4 space-y-3 border-t border-gray-100 dark:border-white/5 pt-3"
+			>
 				<!-- Session Toggle -->
-				<div class="flex items-center justify-between p-2.5 bg-gray-50/50 dark:bg-zinc-800/30 rounded-xl border border-gray-100 dark:border-white/5 group/session transition-all hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+				<div
+					class="flex items-center justify-between p-2.5 bg-gray-50/50 dark:bg-zinc-800/30 rounded-xl border border-gray-100 dark:border-white/5 group/session transition-all hover:bg-gray-50 dark:hover:bg-zinc-800/50"
+				>
 					<div class="flex flex-col">
 						<div class="flex items-center gap-2">
-							<span class="text-[10px] font-bold text-gray-700 dark:text-gray-300">{$t('playground.useSessionLabel')}</span>
+							<span class="text-[10px] font-bold text-gray-700 dark:text-gray-300"
+								>{$t('playground.useSessionLabel')}</span
+							>
 							{#if $playgroundStore.useSession}
-								<span class="flex items-center gap-1 text-[8px] font-bold text-emerald-500 animate-pulse">
+								<span
+									class="flex items-center gap-1 text-[8px] font-bold text-emerald-500 animate-pulse"
+								>
 									<div class="w-1 h-1 rounded-full bg-emerald-500"></div>
 									{$t('playground.configActive')}
 								</span>
 							{/if}
 						</div>
-						<span class="text-[9px] text-gray-500 dark:text-gray-500 leading-tight">{$t('playground.useSessionDescription')}</span>
+						<span class="text-[9px] text-gray-500 dark:text-gray-500 leading-tight"
+							>{$t('playground.useSessionDescription')}</span
+						>
 					</div>
 					<label class="relative inline-flex items-center cursor-pointer scale-90 origin-right">
-						<input 
-							type="checkbox" 
-							class="sr-only peer" 
+						<input
+							type="checkbox"
+							class="sr-only peer"
 							checked={$playgroundStore.useSession}
 							on:change={(e) => playgroundStore.setUseSession(e.currentTarget.checked)}
-						>
-						<div class="w-9 h-5 bg-gray-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500"></div>
+						/>
+						<div
+							class="w-9 h-5 bg-gray-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500"
+						></div>
 					</label>
 				</div>
 
-				<div class="space-y-1.5 transition-all duration-300 {$playgroundStore.useSession ? 'opacity-40 grayscale pointer-events-none' : ''}">
+				<div
+					class="space-y-1.5 transition-all duration-300 {$playgroundStore.useSession
+						? 'opacity-40 grayscale pointer-events-none'
+						: ''}"
+				>
 					<div class="flex items-center justify-between ml-1">
-						<label for="global-api-key" class="text-[10px] font-bold text-gray-400 dark:text-gray-500">
+						<label
+							for="global-api-key"
+							class="text-[10px] font-bold text-gray-400 dark:text-gray-500"
+						>
 							{$t('playground.apiKeyLabel')}
 						</label>
 						{#if $playgroundStore.apiKey && !$playgroundStore.useSession}
-							<span class="flex items-center gap-1 text-[9px] font-bold text-emerald-500 animate-pulse">
+							<span
+								class="flex items-center gap-1 text-[9px] font-bold text-emerald-500 animate-pulse"
+							>
 								{$t('playground.configActive')}
 							</span>
 						{/if}
@@ -133,17 +169,19 @@
 							autocomplete="off"
 							disabled={$playgroundStore.useSession}
 						/>
-						<div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+						<div
+							class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+						>
 							{#if $playgroundStore.apiKey && !$playgroundStore.useSession}
-								<button 
+								<button
 									on:click={() => playgroundStore.setApiKey(null)}
 									class="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-md transition-colors text-gray-400 hover:text-red-500"
 								>
 									<X class="w-3.5 h-3.5" />
 								</button>
 							{/if}
-							<button 
-								on:click={() => showApiKey = !showApiKey}
+							<button
+								on:click={() => (showApiKey = !showApiKey)}
 								class="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-md transition-colors text-gray-400"
 							>
 								{#if showApiKey}
@@ -179,13 +217,12 @@
 					on:click={() => toggleTag(tag)}
 					class="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
 				>
-
 					<div class="flex items-center gap-2">
 						<Hash class="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-colors" />
 						<span class="text-sm font-bold text-gray-700 dark:text-gray-200">{tag}</span>
 					</div>
-					<ChevronRight 
-						class="w-4 h-4 text-gray-400 transition-transform duration-200" 
+					<ChevronRight
+						class="w-4 h-4 text-gray-400 transition-transform duration-200"
 						style="transform: rotate({expandedTags[tag] ? '90deg' : '0deg'})"
 					/>
 				</button>
@@ -195,10 +232,16 @@
 						{#each endpoints as endpoint}
 							<button
 								on:click={() => handleSelect(endpoint)}
-								class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all cursor-pointer {selectedId === endpoint.id ? 'bg-red-500/10 text-red-600' : 'hover:bg-gray-50 dark:hover:bg-white/5'}"
+								class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all cursor-pointer {selectedId ===
+								endpoint.id
+									? 'bg-red-500/10 text-red-600'
+									: 'hover:bg-gray-50 dark:hover:bg-white/5'}"
 							>
-
-								<span class="text-[10px] font-black uppercase px-1.5 py-0.5 rounded {methodColors[endpoint.method.toLowerCase()] || 'bg-gray-100' }">
+								<span
+									class="text-[10px] font-black uppercase px-1.5 py-0.5 rounded {methodColors[
+										endpoint.method.toLowerCase()
+									] || 'bg-gray-100'}"
+								>
 									{endpoint.method}
 								</span>
 								<div class="flex-1 min-w-0">

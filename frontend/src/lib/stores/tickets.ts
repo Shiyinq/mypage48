@@ -146,10 +146,10 @@ function createTicketsStore() {
 					lastUpdated: now,
 					defaultCache: s.defaultCache
 						? {
-							...s.defaultCache,
-							list: [newTicket, ...s.defaultCache.list],
-							lastUpdated: now
-						}
+								...s.defaultCache,
+								list: [newTicket, ...s.defaultCache.list],
+								lastUpdated: now
+							}
 						: null,
 					pagination: {
 						...s.pagination,
@@ -178,10 +178,10 @@ function createTicketsStore() {
 					lastUpdated: now,
 					defaultCache: s.defaultCache
 						? {
-							...s.defaultCache,
-							list: s.defaultCache.list.map((t) => (t._id === ticketId ? updated : t)),
-							lastUpdated: now
-						}
+								...s.defaultCache,
+								list: s.defaultCache.list.map((t) => (t._id === ticketId ? updated : t)),
+								lastUpdated: now
+							}
 						: null
 				}));
 				return updated;
@@ -200,12 +200,10 @@ function createTicketsStore() {
 					lastUpdated: now,
 					defaultCache: s.defaultCache
 						? {
-							...s.defaultCache,
-							list: s.defaultCache.list.map((t) =>
-								t._id === ticketId ? updated : t
-							),
-							lastUpdated: now
-						}
+								...s.defaultCache,
+								list: s.defaultCache.list.map((t) => (t._id === ticketId ? updated : t)),
+								lastUpdated: now
+							}
 						: null
 				}));
 			} catch (e) {

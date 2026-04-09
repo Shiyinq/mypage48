@@ -8,7 +8,7 @@ export const playgroundApi = {
 
 	executeRequest: async (payload: ExecutionPayload): Promise<ExecutionResult> => {
 		const startTime = Date.now();
-		
+
 		const options: any = {
 			method: payload.method,
 			headers: payload.headers
@@ -20,10 +20,10 @@ export const playgroundApi = {
 
 		try {
 			// We use the raw Response for playground to get status, headers etc.
-			// But the 'client' usually parses JSON. 
+			// But the 'client' usually parses JSON.
 			// I'll check if client can return absolute response.
 			// Actually, for playground, we want to see the full response object.
-			
+
 			// Let's use a try-catch for the client call.
 			const data = await client<any>(payload.path, options);
 			const duration = Date.now() - startTime;
@@ -40,11 +40,11 @@ export const playgroundApi = {
 			// The client adds 'status' to the error object.
 			// We want to return the raw server response as 'data'.
 			const { status, statusText, ...serverData } = err;
-			
+
 			return {
 				status: status || 500,
 				statusText: statusText || 'Error',
-				data: Object.keys(serverData).length > 0 ? serverData : (err.message || err),
+				data: Object.keys(serverData).length > 0 ? serverData : err.message || err,
 				headers: {},
 				duration
 			};

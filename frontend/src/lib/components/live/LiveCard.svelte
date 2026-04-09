@@ -17,7 +17,7 @@
 </script>
 
 <a
-	href={variant === 'theater' 
+	href={variant === 'theater'
 		? `/theater/live/${stream.platform}/${stream.room_id || stream.live_id}`
 		: `/jkt48/live/${stream.platform}/${stream.room_id || stream.live_id}`}
 	class="group relative aspect-[3/4] flex flex-col bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer border border-slate-100 dark:border-zinc-800/50"
@@ -29,8 +29,7 @@
 			src={getExternalMediaUrl(stream.image || stream.member?.img) || fallbackAvatar}
 			alt={stream.member?.name}
 			on:error={(e) => {
-				if (e.currentTarget instanceof HTMLImageElement)
-					e.currentTarget.src = fallbackAvatar;
+				if (e.currentTarget instanceof HTMLImageElement) e.currentTarget.src = fallbackAvatar;
 			}}
 			class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
 		/>
@@ -57,10 +56,7 @@
 				className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-black/60 shadow-lg"
 			/>
 
-			<PlatformLogo
-				platform={stream.platform}
-				size="sm"
-			/>
+			<PlatformLogo platform={stream.platform} size="sm" />
 		</div>
 
 		<!-- Content Area (Overlay) -->
@@ -73,12 +69,7 @@
 			<p class="text-[10px] text-gray-300 font-medium drop-shadow-sm line-clamp-1">
 				{stream.title || $t('theater.live.multiview.live_status')}
 			</p>
-			<LiveStats
-				start_at={stream.start_at}
-				variant="compact"
-				showLabel={true}
-				className="mt-1.5"
-			/>
+			<LiveStats start_at={stream.start_at} variant="compact" showLabel={true} className="mt-1.5" />
 		</div>
 
 		<!-- Hover Play Button Indicator -->

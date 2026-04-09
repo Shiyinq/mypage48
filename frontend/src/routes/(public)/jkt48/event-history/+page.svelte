@@ -74,10 +74,14 @@
 
 <div class="space-y-16 pt-4 md:pt-6 pb-12">
 	<div class="text-center space-y-4 mb-8">
-		<h1 class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3">
+		<h1
+			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
+		>
 			{$t('theater.eventHistory.title')}
 		</h1>
-		<p class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest">
+		<p
+			class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest"
+		>
 			{$t('theater.eventHistory.subtitle')}
 		</p>
 	</div>
@@ -97,11 +101,16 @@
 			description={$t('theater.eventHistory.empty')}
 		/>
 	{:else}
-		<div class="bg-white dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden shadow-xl border border-gray-100 dark:border-zinc-800" in:fade={{ duration: 300 }}>
+		<div
+			class="bg-white dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden shadow-xl border border-gray-100 dark:border-zinc-800"
+			in:fade={{ duration: 300 }}
+		>
 			<div class="overflow-x-auto">
 				<table class="w-full text-left border-collapse">
 					<thead>
-						<tr class="bg-slate-50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
+						<tr
+							class="bg-slate-50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400"
+						>
 							<th class="p-6">{$t('common.date')}</th>
 							<th class="p-6">{$t('theater.events.eventName')}</th>
 							<th class="p-6">{$t('theater.eventHistory.table.type')}</th>
@@ -111,13 +120,17 @@
 					</thead>
 					<tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
 						{#each $historyEvents as event}
-							<tr class="group hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-all duration-300">
+							<tr
+								class="group hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-all duration-300"
+							>
 								<td class="p-6 whitespace-nowrap">
 									<div class="flex flex-col">
 										<span class="font-black text-slate-900 dark:text-white text-sm">
 											{$formatDate(event.date, { day: 'numeric', month: 'short', year: 'numeric' })}
 										</span>
-										<span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1.5 mt-1">
+										<span
+											class="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1.5 mt-1"
+										>
 											<Clock class="w-3 h-3" />
 											{$formatTime(event.date, { hour: '2-digit', minute: '2-digit' })}
 										</span>
@@ -125,22 +138,34 @@
 								</td>
 								<td class="p-6">
 									<div class="flex items-center gap-4">
-										<div class="w-16 h-10 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-800 shrink-0">
+										<div
+											class="w-16 h-10 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-800 shrink-0"
+										>
 											{#if event.imageUrl}
-												<img src={event.imageUrl} alt="Event" class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
+												<img
+													src={event.imageUrl}
+													alt="Event"
+													class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+												/>
 											{:else}
-												<div class="w-full h-full bg-red-500/10 flex items-center justify-center text-red-500">
+												<div
+													class="w-full h-full bg-red-500/10 flex items-center justify-center text-red-500"
+												>
 													<Calendar size={16} />
 												</div>
 											{/if}
 										</div>
 										<div class="space-y-1">
-											<div class="font-black text-slate-900 dark:text-white text-sm group-hover:text-red-600 transition-colors">
+											<div
+												class="font-black text-slate-900 dark:text-white text-sm group-hover:text-red-600 transition-colors"
+											>
 												{event.title}
 											</div>
 											<div class="flex items-center gap-3">
 												{#if (event.seitansaiMembers?.length ?? 0) > 0}
-													<div class="flex items-center gap-1.5 text-[10px] text-pink-500 font-black uppercase tracking-wider">
+													<div
+														class="flex items-center gap-1.5 text-[10px] text-pink-500 font-black uppercase tracking-wider"
+													>
 														<Cake size={12} />
 														<span>{event.seitansaiMembers?.join(', ')}</span>
 													</div>
@@ -156,7 +181,11 @@
 									{event.totalMembers > 1 ? event.totalMembers : '-'}
 								</td>
 								<td class="p-6 text-right">
-									<a href={`https://jkt48.com${event.url}`} target="_blank" class="inline-flex p-3 rounded-full bg-slate-50 dark:bg-zinc-800 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all">
+									<a
+										href={`https://jkt48.com${event.url}`}
+										target="_blank"
+										class="inline-flex p-3 rounded-full bg-slate-50 dark:bg-zinc-800 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all"
+									>
 										<ExternalLink size={14} />
 									</a>
 								</td>
@@ -168,20 +197,40 @@
 
 			<!-- Pagination -->
 			{#if $historyPagination.last_page > 1}
-				<div class="bg-slate-50 dark:bg-zinc-800/30 px-8 py-6 flex items-center justify-between border-t border-gray-50 dark:border-zinc-800">
+				<div
+					class="bg-slate-50 dark:bg-zinc-800/30 px-8 py-6 flex items-center justify-between border-t border-gray-50 dark:border-zinc-800"
+				>
 					<span class="text-[10px] font-black uppercase tracking-widest text-slate-400">
 						Page {$historyPagination.current_page} of {$historyPagination.last_page}
 					</span>
 					<div class="flex gap-2">
-						<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm" disabled={$historyPagination.current_page === 1} on:click={() => handlePageChange($historyPagination.current_page - 1)}>
+						<button
+							class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm"
+							disabled={$historyPagination.current_page === 1}
+							on:click={() => handlePageChange($historyPagination.current_page - 1)}
+						>
 							<ChevronLeft size={18} />
 						</button>
 						{#each generatePagination($historyPagination.current_page, $historyPagination.last_page) as page}
-							<button class="w-10 h-10 flex items-center justify-center text-xs font-black rounded-full border transition-all {page === $historyPagination.current_page ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-500/30' : 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 text-slate-500 hover:border-red-600 hover:text-red-600 shadow-sm'} {typeof page === 'number' ? 'cursor-pointer' : 'cursor-default'}" on:click={() => typeof page === 'number' && handlePageChange(page)} disabled={typeof page !== 'number'}>
+							<button
+								class="w-10 h-10 flex items-center justify-center text-xs font-black rounded-full border transition-all {page ===
+								$historyPagination.current_page
+									? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-500/30'
+									: 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 text-slate-500 hover:border-red-600 hover:text-red-600 shadow-sm'} {typeof page ===
+								'number'
+									? 'cursor-pointer'
+									: 'cursor-default'}"
+								on:click={() => typeof page === 'number' && handlePageChange(page)}
+								disabled={typeof page !== 'number'}
+							>
 								{page}
 							</button>
 						{/each}
-						<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm" disabled={$historyPagination.current_page === $historyPagination.last_page} on:click={() => handlePageChange($historyPagination.current_page + 1)}>
+						<button
+							class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm"
+							disabled={$historyPagination.current_page === $historyPagination.last_page}
+							on:click={() => handlePageChange($historyPagination.current_page + 1)}
+						>
 							<ChevronRight size={18} />
 						</button>
 					</div>

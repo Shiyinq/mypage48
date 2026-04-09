@@ -170,4 +170,3 @@ export const i18n: Readable<(key: string, params?: Record<string, string | numbe
 			return translation;
 		};
 	});
-

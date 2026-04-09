@@ -27,11 +27,7 @@
 	});
 </script>
 
-<SEO
-	title={$t('theater.live.title')}
-	description={$t('seo.live')}
-	path="/jkt48/live"
-/>
+<SEO title={$t('theater.live.title')} description={$t('seo.live')} path="/jkt48/live" />
 
 <div class="py-12 min-h-screen">
 	<!-- Header Section -->
@@ -94,11 +90,7 @@
 	</header>
 
 	<div class="max-w-7xl mx-auto px-4 md:px-0">
-		<LiveGrid 
-			liveList={$liveList} 
-			loading={$liveLoading} 
-			{initialLoading} 
-		/>
+		<LiveGrid liveList={$liveList} loading={$liveLoading} {initialLoading} />
 	</div>
 </div>
 

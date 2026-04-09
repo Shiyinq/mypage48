@@ -23,5 +23,3 @@ export function formatCompactCurrency(value: number): string {
 		notation: 'compact'
 	}).format(value);
 }
-
-

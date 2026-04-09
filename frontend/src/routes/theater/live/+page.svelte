@@ -32,10 +32,10 @@
 />
 
 <div class="w-full pb-12">
-	<LiveGrid 
-		liveList={$liveList} 
-		loading={$liveLoading} 
-		{initialLoading} 
+	<LiveGrid
+		liveList={$liveList}
+		loading={$liveLoading}
+		{initialLoading}
 		variant="theater"
 		multiviewHref="/theater/live/multiview"
 	/>

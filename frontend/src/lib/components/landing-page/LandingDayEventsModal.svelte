@@ -50,9 +50,13 @@
 			transition:scale={{ duration: 300, start: 0.95 }}
 		>
 			<!-- Header -->
-			<div class="px-8 py-6 border-b border-gray-50 dark:border-zinc-800 flex items-center justify-between bg-white dark:bg-zinc-900 sticky top-0 z-10">
+			<div
+				class="px-8 py-6 border-b border-gray-50 dark:border-zinc-800 flex items-center justify-between bg-white dark:bg-zinc-900 sticky top-0 z-10"
+			>
 				<div class="flex items-center gap-4">
-					<div class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600">
+					<div
+						class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600"
+					>
 						<Calendar class="w-6 h-6" />
 					</div>
 					<div>
@@ -60,7 +64,8 @@
 							{$formatDate(date, { weekday: 'long', day: 'numeric', month: 'long' })}
 						</h2>
 						<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-							{events.length} {events.length === 1 ? $t('theater.events.event') : $t('nav.events')}
+							{events.length}
+							{events.length === 1 ? $t('theater.events.event') : $t('nav.events')}
 						</p>
 					</div>
 				</div>
@@ -76,7 +81,9 @@
 			<div class="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar text-balance">
 				{#if events.length === 0}
 					<div class="flex flex-col items-center justify-center py-12 text-center space-y-4">
-						<div class="w-20 h-20 rounded-full bg-slate-50 dark:bg-zinc-800/50 flex items-center justify-center text-slate-200">
+						<div
+							class="w-20 h-20 rounded-full bg-slate-50 dark:bg-zinc-800/50 flex items-center justify-center text-slate-200"
+						>
 							<Calendar class="w-10 h-10" />
 						</div>
 						<p class="text-slate-400 font-bold uppercase tracking-widest text-xs">
@@ -86,7 +93,9 @@
 				{:else}
 					<div class="space-y-4">
 						{#each events as event}
-							<div class="group relative bg-white dark:bg-zinc-800/50 p-5 rounded-[2rem] border border-gray-100 dark:border-zinc-800 hover:border-red-200 dark:hover:border-red-900/30 transition-all duration-300">
+							<div
+								class="group relative bg-white dark:bg-zinc-800/50 p-5 rounded-[2rem] border border-gray-100 dark:border-zinc-800 hover:border-red-200 dark:hover:border-red-900/30 transition-all duration-300"
+							>
 								<div class="flex items-start justify-between gap-4">
 									<div class="space-y-3 flex-1">
 										<div class="flex flex-wrap gap-2">
@@ -101,22 +110,30 @@
 																? 'bg-orange-600 text-white'
 																: 'bg-rose-600 text-white'}"
 											>
-												{event.isBirthday ? $t('theater.events.birthday') : event.category || 'EVENT'}
+												{event.isBirthday
+													? $t('theater.events.birthday')
+													: event.category || 'EVENT'}
 											</span>
 											{#if event.time}
-												<span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+												<span
+													class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+												>
 													<Clock class="w-3.5 h-3.5" />
 													{event.time}
 												</span>
 											{/if}
 										</div>
 
-										<h3 class="text-lg font-black text-slate-900 dark:text-white leading-tight group-hover:text-red-600 transition-colors">
+										<h3
+											class="text-lg font-black text-slate-900 dark:text-white leading-tight group-hover:text-red-600 transition-colors"
+										>
 											{event.title}
 										</h3>
 
 										{#if event.location}
-											<div class="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+											<div
+												class="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400"
+											>
 												<MapPin class="w-4 h-4 text-red-400" />
 												{event.location}
 											</div>
@@ -125,7 +142,9 @@
 
 									{#if event.id || event.news_id}
 										<a
-											href={event.news_id ? `/jkt48/news/${event.news_id}` : `/theater/schedule/${event.id}`}
+											href={event.news_id
+												? `/jkt48/news/${event.news_id}`
+												: `/theater/schedule/${event.id}`}
 											class="p-3 bg-slate-50 dark:bg-zinc-800 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-all shrink-0"
 											title={$t('theater.news.readMore')}
 										>
@@ -140,7 +159,9 @@
 			</div>
 
 			<!-- Footer -->
-			<div class="p-6 bg-slate-50/50 dark:bg-zinc-950/20 border-t border-gray-50 dark:border-zinc-800 text-center">
+			<div
+				class="p-6 bg-slate-50/50 dark:bg-zinc-950/20 border-t border-gray-50 dark:border-zinc-800 text-center"
+			>
 				<p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
 					JKT48 {new Date().getFullYear()} • {$t('landing.nav.subtitle')}
 				</p>

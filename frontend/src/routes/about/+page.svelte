@@ -23,15 +23,15 @@
 	<!-- Background Elements -->
 	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
 
-
-
 	<!-- NAV -->
 	<LandingNavbar showLogin={false} />
 
 	<div class="max-w-3xl mx-auto pb-12 relative z-10 px-6 pt-4 md:pt-6">
 		<!-- Header -->
 		<div class="text-center space-y-4 mb-8">
-			<h1 class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3 text-balance">
+			<h1
+				class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3 text-balance"
+			>
 				{$t('about.title')}
 			</h1>
 		</div>

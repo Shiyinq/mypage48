@@ -256,7 +256,7 @@
 									{#if event.label}
 										<div
 											class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider {event.label ===
-											'JKT48' ||
+												'JKT48' ||
 											event.label === 'GENERAL' ||
 											event.label === 'EXCLUSIVE'
 												? 'bg-red-600 text-white'

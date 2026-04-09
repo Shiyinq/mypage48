@@ -50,7 +50,7 @@
 		JKT48_VIRTUAL: 'JKT48 Virtual',
 		JKT48: 'Member'
 	};
-	
+
 	// Store subscriptions
 	$: state = $membersStore;
 	$: membersList = state.list;
@@ -144,7 +144,9 @@
 		{} as Record<string, Member[]>
 	);
 
-	$: types = [...teamOrder, 'JKT48'].filter((t) => groupedMembers[t] && groupedMembers[t].length > 0);
+	$: types = [...teamOrder, 'JKT48'].filter(
+		(t) => groupedMembers[t] && groupedMembers[t].length > 0
+	);
 	// Handle any dynamic types not in our list
 	$: otherTypes = Object.keys(groupedMembers)
 		.filter((t) => !teamOrder.includes(t) && t !== 'JKT48')
@@ -152,18 +154,18 @@
 	$: allSortedTypes = [...types, ...otherTypes];
 </script>
 
-<SEO
-	title={$t('theater.members.title')}
-	path="/jkt48/members"
-	description={$t('seo.members')}
-/>
+<SEO title={$t('theater.members.title')} path="/jkt48/members" description={$t('seo.members')} />
 
 <div class="space-y-12 pt-4 md:pt-6 pb-12">
 	<div class="text-center space-y-4 mb-8">
-		<h1 class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3">
+		<h1
+			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
+		>
 			{$t('theater.members.title')}
 		</h1>
-		<p class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest">
+		<p
+			class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest"
+		>
 			{$t('theater.members.subtitle')}
 		</p>
 	</div>
@@ -186,7 +188,9 @@
 					</button>
 					{#if loadingGenerations}
 						{#each Array(5) as _}
-							<div class="h-[42px] w-20 bg-gray-100 dark:bg-zinc-800 rounded-full animate-pulse shrink-0"></div>
+							<div
+								class="h-[42px] w-20 bg-gray-100 dark:bg-zinc-800 rounded-full animate-pulse shrink-0"
+							></div>
 						{/each}
 					{:else}
 						{#each generations as gen}
@@ -249,7 +253,9 @@
 
 	<!-- Members Grid -->
 	{#if (!mounted || $isMembersLoading) && membersList.length === 0}
-		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+		<div
+			class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6"
+		>
 			{#each Array(12) as _}
 				<MemberCardSkeleton />
 			{/each}
@@ -284,17 +290,23 @@
 			<div class="mb-16 last:mb-0">
 				<!-- Group Header -->
 				<div class="flex items-center gap-4 mb-8 group/header">
-					<div class={`h-10 w-2 rounded-full shadow-lg ${accentColors[type] || 'bg-red-600 shadow-red-500/20'}`}></div>
+					<div
+						class={`h-10 w-2 rounded-full shadow-lg ${accentColors[type] || 'bg-red-600 shadow-red-500/20'}`}
+					></div>
 					<h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
 						{teamNames[type] || type}
 					</h2>
-					<span class="px-3 py-1 rounded-full bg-white dark:bg-zinc-900 text-xs font-black text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-800 shadow-sm">
+					<span
+						class="px-3 py-1 rounded-full bg-white dark:bg-zinc-900 text-xs font-black text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-800 shadow-sm"
+					>
 						{groupedMembers[type].length}
 					</span>
 				</div>
 
 				<!-- Grid -->
-				<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+				<div
+					class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6"
+				>
 					{#each groupedMembers[type] as member (member.id)}
 						<MemberCard {member} on:click={() => openMemberDetail(member)} />
 					{/each}
@@ -304,7 +316,9 @@
 
 		<!-- Skeletons for Infinite Scroll (Appending) -->
 		{#if $isMembersLoading && membersList.length > 0}
-			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 mt-6">
+			<div
+				class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 mt-6"
+			>
 				{#each Array(6) as _}
 					<MemberCardSkeleton />
 				{/each}

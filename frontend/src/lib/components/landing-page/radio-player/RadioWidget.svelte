@@ -16,7 +16,9 @@
 	>
 		<RadioIcon
 			size={20}
-			class="transition-colors {isRadioOpen || $radioStore.isPlaying ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-400 group-hover:text-red-500'}"
+			class="transition-colors {isRadioOpen || $radioStore.isPlaying
+				? 'text-red-600 dark:text-red-400'
+				: 'text-slate-600 dark:text-slate-400 group-hover:text-red-500'}"
 		/>
 		{#if $radioStore.isPlaying}
 			<span class="absolute top-1.5 right-1.5 flex h-2 w-2">

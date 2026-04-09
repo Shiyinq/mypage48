@@ -7,19 +7,20 @@
 	export let keywords: string = 'JKT48, Theater, MyPage48, JKT48 Fan, 2shot, Sorter, News';
 
 	const baseUrl = 'https://mypage48.com';
-	$: fullTitle = title === 'Home' ? 'MyPage48 | Your JKT48 Theater Companion' : `${title} | MyPage48`;
+	$: fullTitle =
+		title === 'Home' ? 'MyPage48 | Your JKT48 Theater Companion' : `${title} | MyPage48`;
 	$: fullUrl = `${baseUrl}${path}`;
 	$: fullImage = image.startsWith('http') ? image : `${baseUrl}${image}`;
 
 	const jsonLd = {
 		'@context': 'https://schema.org',
 		'@type': 'WebSite',
-		'name': 'MyPage48',
-		'url': baseUrl,
-		'description': description,
-		'potentialAction': {
+		name: 'MyPage48',
+		url: baseUrl,
+		description: description,
+		potentialAction: {
 			'@type': 'SearchAction',
-			'target': `${baseUrl}/search?q={search_term_string}`,
+			target: `${baseUrl}/search?q={search_term_string}`,
 			'query-input': 'required name=search_term_string'
 		}
 	};
@@ -27,32 +28,33 @@
 	const organizationJsonLd = {
 		'@context': 'https://schema.org',
 		'@type': 'Organization',
-		'name': 'MyPage48',
-		'url': baseUrl,
-		'logo': `${baseUrl}/favicon.png`,
-		'sameAs': [
-			'https://github.com/Shiyinq/mypage48'
-		]
+		name: 'MyPage48',
+		url: baseUrl,
+		logo: `${baseUrl}/favicon.png`,
+		sameAs: ['https://github.com/Shiyinq/mypage48']
 	};
 
-	$: breadcrumbJsonLd = path !== '/' ? {
-		'@context': 'https://schema.org',
-		'@type': 'BreadcrumbList',
-		'itemListElement': [
-			{
-				'@type': 'ListItem',
-				'position': 1,
-				'name': 'Home',
-				'item': baseUrl
-			},
-			{
-				'@type': 'ListItem',
-				'position': 2,
-				'name': title,
-				'item': fullUrl
-			}
-		]
-	} : null;
+	$: breadcrumbJsonLd =
+		path !== '/'
+			? {
+					'@context': 'https://schema.org',
+					'@type': 'BreadcrumbList',
+					itemListElement: [
+						{
+							'@type': 'ListItem',
+							position: 1,
+							name: 'Home',
+							item: baseUrl
+						},
+						{
+							'@type': 'ListItem',
+							position: 2,
+							name: title,
+							item: fullUrl
+						}
+					]
+				}
+			: null;
 </script>
 
 <svelte:head>

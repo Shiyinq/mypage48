@@ -186,9 +186,7 @@
 		<CommandPalette />
 	{/if}
 	<div
-		class="min-h-screen flex flex-col relative {$isAuthenticated
-			? 'selection:bg-red-500/20'
-			: ''}"
+		class="min-h-screen flex flex-col relative {$isAuthenticated ? 'selection:bg-red-500/20' : ''}"
 	>
 		{#if $isAuthenticated && !isFullScreenRoute}
 			<AnimatedBackground />

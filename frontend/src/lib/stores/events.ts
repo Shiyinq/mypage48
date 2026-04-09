@@ -338,7 +338,8 @@ export const historyLoading = isHistoryEventsLoading; // Alias to new store
 
 // Calendar Derived Stores
 export const calendarEvents = {
-	subscribe: (cb: (val: CalendarEvent[]) => void) => eventsStore.subscribe((val) => cb(val.calendar.list))
+	subscribe: (cb: (val: CalendarEvent[]) => void) =>
+		eventsStore.subscribe((val) => cb(val.calendar.list))
 };
 
 export const calendarLoading = isCalendarEventsLoading;

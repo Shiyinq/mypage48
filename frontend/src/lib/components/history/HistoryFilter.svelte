@@ -16,9 +16,9 @@
 
 	export let filters: import('$lib/types').TicketFilters = {};
 	export let viewMode: 'GRID' | 'TABLE' = 'GRID';
-    export let showViewToggle = true;
-    export let dropdownPlacement: 'left' | 'right' = 'right';
-    export let isSidebar = false;
+	export let showViewToggle = true;
+	export let dropdownPlacement: 'left' | 'right' = 'right';
+	export let isSidebar = false;
 
 	const dispatch = createEventDispatcher<{
 		filterChange: import('$lib/types').TicketFilters;
@@ -212,64 +212,74 @@
 
 				<!-- Date Range -->
 				<div class={isSidebar ? 'flex flex-col gap-2 w-full' : 'flex flex-col gap-1'}>
-                    {#if isSidebar}
-                        <div class="text-[10px] uppercase font-black text-gray-400 tracking-wider mb-0.5">{$t('common.dateRange')}</div>
-                    {/if}
+					{#if isSidebar}
+						<div class="text-[10px] uppercase font-black text-gray-400 tracking-wider mb-0.5">
+							{$t('common.dateRange')}
+						</div>
+					{/if}
 					<div class={isSidebar ? 'flex flex-col items-stretch gap-2' : 'flex items-center gap-2'}>
-                        <div class="relative flex-1">
-                            <Calendar class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                            <input
-                                type="date"
-                                bind:value={startDate}
-                                on:change={updateFilters}
-                                class={`w-full text-xs bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 rounded-lg pl-8 pr-2 py-2 focus:ring-2 outline-none cursor-pointer transition-all placeholder:text-gray-300 ${isSidebar ? 'focus:ring-red-500/20 focus:border-red-500' : 'focus:ring-blue-500/20 focus:border-blue-500'}`}
-                            />
-                        </div>
-                        {#if !isSidebar}
-    					    <span class="text-gray-400 px-1">-</span>
-                        {/if}
-                        <div class="relative flex-1">
-                            <Calendar class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                            <input
-                                type="date"
-                                bind:value={endDate}
-                                on:change={updateFilters}
-                                class={`w-full text-xs bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 rounded-lg pl-8 pr-2 py-2 focus:ring-2 outline-none cursor-pointer transition-all placeholder:text-gray-300 ${isSidebar ? 'focus:ring-red-500/20 focus:border-red-500' : 'focus:ring-blue-500/20 focus:border-blue-500'}`}
-                            />
-                        </div>
+						<div class="relative flex-1">
+							<Calendar
+								class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"
+							/>
+							<input
+								type="date"
+								bind:value={startDate}
+								on:change={updateFilters}
+								class={`w-full text-xs bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 rounded-lg pl-8 pr-2 py-2 focus:ring-2 outline-none cursor-pointer transition-all placeholder:text-gray-300 ${isSidebar ? 'focus:ring-red-500/20 focus:border-red-500' : 'focus:ring-blue-500/20 focus:border-blue-500'}`}
+							/>
+						</div>
+						{#if !isSidebar}
+							<span class="text-gray-400 px-1">-</span>
+						{/if}
+						<div class="relative flex-1">
+							<Calendar
+								class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"
+							/>
+							<input
+								type="date"
+								bind:value={endDate}
+								on:change={updateFilters}
+								class={`w-full text-xs bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 rounded-lg pl-8 pr-2 py-2 focus:ring-2 outline-none cursor-pointer transition-all placeholder:text-gray-300 ${isSidebar ? 'focus:ring-red-500/20 focus:border-red-500' : 'focus:ring-blue-500/20 focus:border-blue-500'}`}
+							/>
+						</div>
 					</div>
 				</div>
 			</div>
 
 			<!-- Days Selector -->
 			<div class={isSidebar ? 'flex flex-col gap-2' : 'flex flex-col gap-1.5'}>
-                {#if isSidebar}
-                    <div class="text-[10px] uppercase font-black text-gray-400 tracking-wider">{$t('common.days')}</div>
-                {/if}
-                <div class={isSidebar ? 'grid grid-cols-4 gap-1.5' : 'flex flex-wrap gap-1.5'}>
-                    {#each daysOfWeek as day}
-                        <button
-                            on:click={() => toggleDay(day)}
-                            class={`transition-all cursor-pointer text-center font-bold px-3 py-1.5 border ${
-                                isSidebar 
-                                    ? 'rounded-lg text-[10px]' 
-                                    : 'rounded-full text-xs'
-                            } ${
-                                selectedDays.includes(day)
-                                    ? (isSidebar 
-                                        ? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400' 
-                                        : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400')
-                                    : 'bg-transparent border-gray-100 dark:border-zinc-800 text-gray-500 dark:text-gray-400 hover:border-gray-200 hover:text-gray-700 dark:hover:text-gray-200'
-                            }`}
-                        >
-                            {isSidebar ? $t(`time.days.${day.toLowerCase()}`).substring(0, 3) : $t(`time.days.${day.toLowerCase()}`)}
-                        </button>
-                    {/each}
-                </div>
+				{#if isSidebar}
+					<div class="text-[10px] uppercase font-black text-gray-400 tracking-wider">
+						{$t('common.days')}
+					</div>
+				{/if}
+				<div class={isSidebar ? 'grid grid-cols-4 gap-1.5' : 'flex flex-wrap gap-1.5'}>
+					{#each daysOfWeek as day}
+						<button
+							on:click={() => toggleDay(day)}
+							class={`transition-all cursor-pointer text-center font-bold px-3 py-1.5 border ${
+								isSidebar ? 'rounded-lg text-[10px]' : 'rounded-full text-xs'
+							} ${
+								selectedDays.includes(day)
+									? isSidebar
+										? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
+										: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400'
+									: 'bg-transparent border-gray-100 dark:border-zinc-800 text-gray-500 dark:text-gray-400 hover:border-gray-200 hover:text-gray-700 dark:hover:text-gray-200'
+							}`}
+						>
+							{isSidebar
+								? $t(`time.days.${day.toLowerCase()}`).substring(0, 3)
+								: $t(`time.days.${day.toLowerCase()}`)}
+						</button>
+					{/each}
+				</div>
 			</div>
 
 			<!-- Clear Filters -->
-			<div class={`flex justify-end pt-1 border-t border-gray-50 dark:border-white/5 ${isSidebar ? '' : 'mt-2'}`}>
+			<div
+				class={`flex justify-end pt-1 border-t border-gray-50 dark:border-white/5 ${isSidebar ? '' : 'mt-2'}`}
+			>
 				<button
 					on:click={clearFilters}
 					class={`text-[10px] font-bold flex items-center gap-1 transition-colors uppercase tracking-wider cursor-pointer ${isSidebar ? 'text-gray-400 hover:text-red-500' : 'text-red-500 hover:text-red-600'}`}
