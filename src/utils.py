@@ -1,5 +1,6 @@
 import hashlib
 import math
+import re
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
@@ -91,32 +92,58 @@ def validate_password_strength(password: str) -> bool:
     return password_rules.validate(password)
 
 
-def clean_image_url(url: Optional[str]) -> Optional[str]:
-    """Strip MinIO endpoint and bucket from URL to store only relative path."""
+def cleanse_image_url(url: Optional[str]) -> Optional[str]:
+    """
+    Strip API base URL, MinIO endpoint, and signatures from a storage URL to get the internal path.
+    Example: http://localhost:8080/api/storage/m/ticket/xyz.png?expires=...
+    becomes: ticket/xyz.png
+    """
     if not url:
-        return None
+        return url
 
     # Return data URLs as is
     if url.startswith("data:"):
         return url
 
-    # If not http(s), assume it's already a path
     if not url.startswith(("http:", "https:")):
         return url
 
+    proxy_match = re.search(
+        r"/storage/m/((journal|ticket|twoshot|avatar)/[^?\s]+)", url
+    )
+    if proxy_match:
+        return proxy_match.group(1)
+
     try:
         parsed = urlparse(url)
-        path = parsed.path
-        if path.startswith("/"):
-            path = path[1:]
-
-        # Check if path starts with bucket
+        path = parsed.path.lstrip("/")
         if path.startswith(f"{config.minio_bucket}/"):
             return path[len(config.minio_bucket) + 1 :]
-
-        return url
     except Exception:
-        return url
+        pass
+
+    return url
+
+
+def cleanse_image_markdown(content: Optional[str]) -> Optional[str]:
+    """
+    Find storage proxy URLs in markdown and replace with relative internal paths.
+    """
+    if not content:
+        return content
+
+    # Regex to detect internal storage paths in markdown: ![](journal/abc.png)
+    # Handles both relative paths and full proxy URLs
+    pattern = re.compile(
+        r"!\[(.*?)\]\((?:https?://[^/)]+/(?:[^/)]+/)*?)?((journal|ticket|twoshot|avatar)/[^?\s)]+)(?:\?[^)\s]*)?\)"
+    )
+
+    def replace_path(match):
+        alt_text = match.group(1)
+        internal_path = match.group(2)
+        return f"![{alt_text}]({internal_path})"
+
+    return pattern.sub(replace_path, content)
 
 
 def resolve_minio_public_url(url: str) -> str:

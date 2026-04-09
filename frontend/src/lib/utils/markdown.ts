@@ -21,6 +21,27 @@ export function cleanseMarkdown(content: string | null | undefined): string {
 }
 
 /**
+ * Cleanses a single storage URL by converting it back into its relative internal path.
+ * Example: http://localhost:8080/api/storage/m/ticket/xyz.png?expires=... 
+ * becomes: ticket/xyz.png
+ */
+export function cleanseStorageUrl(url: string | null | undefined): string {
+	if (!url) return '';
+	if (url.startsWith('data:')) return url; // Keep base64 as-is
+
+	// Reuse the regex to extract the internal path
+	// We need to reset the regex because it has the 'g' flag
+	const regex = new RegExp(STORAGE_URL_REGEX.source);
+	const match = regex.exec(url);
+
+	if (match) {
+		return match[1];
+	}
+
+	return url;
+}
+
+/**
  * Extracts internal paths and their full presigned URLs from markdown.
  * Used to populate the cache before cleansing.
  */

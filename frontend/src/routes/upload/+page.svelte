@@ -24,6 +24,7 @@
 		TicketForm
 	} from '$lib/components/upload';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
+	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
 
 	const { t } = useTranslation();
 
@@ -233,11 +234,11 @@
 				price: Number(formData.price),
 				currency: 'IDR',
 				rules: formData.rules,
-				imageUrl: ticketImageUrl,
-				notes: formData.notes,
+				imageUrl: cleanseStorageUrl(ticketImageUrl),
+				notes: cleanseMarkdown(formData.notes),
 				two_shot: showTwoShot
 					? {
-							imageUrl: twoShotImageUrl,
+							imageUrl: cleanseStorageUrl(twoShotImageUrl),
 							member_name: formData.two_shot.member_name,
 							type: formData.two_shot.type,
 							price: Number(formData.two_shot.price)

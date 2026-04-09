@@ -12,7 +12,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
 	import { setlistsStore } from '$lib/stores/theater';
-	import { cleanseMarkdown } from '$lib/utils/markdown';
+	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
 
 	// Sub-components
 	import ImagePreview from './tickets/edit/ImagePreview.svelte';
@@ -195,11 +195,11 @@
 				price: Number(formData.price),
 				currency: 'IDR',
 				rules: formData.rules,
-				imageUrl: ticketImageUrl,
-				notes: formData.notes,
+				imageUrl: cleanseStorageUrl(ticketImageUrl),
+				notes: cleanseMarkdown(formData.notes),
 				two_shot: showTwoShot
 					? {
-							imageUrl: twoShotImageUrl,
+							imageUrl: cleanseStorageUrl(twoShotImageUrl),
 							member_name: formData.two_shot.member_name,
 							type: formData.two_shot.type,
 							price: Number(formData.two_shot.price)
