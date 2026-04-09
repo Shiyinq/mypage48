@@ -93,19 +93,23 @@ RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build
 
 ---
 
-## 4. SSL Certificates (Certbot)
+## 4. SSL Certificates (Cloudflare Origin CA)
 
-Run this one-time command to get HTTPS certificates:
+We are using Cloudflare Proxy, so we use **Cloudflare Origin Certificates** for 15 years of valid SSL.
 
-```bash
-docker run -it --rm --name certbot \
-  -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
-  -v "$(pwd)/certbot/www:/var/www/certbot" \
-  certbot/certbot certonly --webroot \
-  -w /var/www/certbot -d mypage48.com -d api.mypage48.com -d analytics.mypage48.com -d storage.mypage48.com
-```
-
-*Nginx will automatically reload the certificates.*
+1.  **Generate Certificate**:
+    - Go to Cloudflare Dashboard -> **SSL/TLS** -> **Origin Server**.
+    - Click **Create Certificate**.
+    - Keep defaults (RSA 2048, 15 years) and click **Create**.
+2.  **Save to VPS**:
+    - Copy the **Origin Certificate** and save it to: `certbot/conf/live/mypage48.com/fullchain.pem`
+    - Copy the **Private Key** and save it to: `certbot/conf/live/mypage48.com/privkey.pem`
+3.  **Active SSL Mode**:
+    - In Cloudflare, set SSL/TLS mode to **Full (Strict)**.
+4.  **Apply to Nginx**:
+    ```bash
+    docker exec mypage48-nginx nginx -s reload
+    ```
 
 ---
 
