@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    volumes:
+      - ./logs/backend:/var/log/mypage48
     env_file:
       - .env
     environment:
