@@ -141,3 +141,24 @@ Since we use Cloudflare Origin Certificates (15 years) and a Swap File, maintena
 1.  **Logs**: Check logs in `./logs/` if anything goes wrong.
 2.  **Backups**: Regularly backup your `mongodb_data` and `minio_data` volumes.
 3.  **Updates**: To update the app, run `git pull` followed by `docker compose -f docker-compose.prod.yml up -d --build`.
+
+---
+
+## 8. Troubleshooting
+
+### 8.1 Nginx Config Not Syncing
+If you edit `nginx/default.conf` but do not see changes on the live site:
+- **Verify**: Run `docker exec mypage48-nginx nginx -T` to see the actual configuration active inside the container.
+- **Force Refresh**: Run `docker compose -f docker-compose.prod.yml up -d --force-recreate nginx`. This forces Docker to recreate the container and pick up volume changes.
+- **Reload**: If the file is synced but not active, run `docker exec mypage48-nginx nginx -s reload`.
+
+### 8.2 502 Bad Gateway (Too Big Header)
+If you see 502 in the browser and Nginx logs (`docker logs mypage48-nginx`) show `upstream sent too big header`:
+- **Cause**: The frontend (SvelteKit) is sending large headers/cookies that exceed Nginx's default buffer.
+- **Fix**: Increase `proxy_buffer_size`, `proxy_buffers`, and `large_client_header_buffers` to `512k` or `1m` in `nginx/default.conf`.
+
+### 8.3 Backend "Unhealthy" (503)
+If `docker ps` shows the backend as unhealthy:
+- **Log Check**: `docker logs mypage48-backend --tail 100` or `docker exec mypage48-backend cat /var/log/mypage48/error.log`.
+- **MinIO Connection**: Ensure `MINIO_ENDPOINT=minio:9000` and `MINIO_USE_SSL=false` in `.env` for internal communication.
+- **Database**: Ensure MongoDB is healthy and the connection string uses the hostname `mongodb`.
