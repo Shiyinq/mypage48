@@ -11,6 +11,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libopenblas-dev \
     liblapack-dev \
     gfortran \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container
