@@ -17,12 +17,8 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { PageHeader } from '$lib/components';
 	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
-	import {
-		UploadModeSelection,
-		UploadAnalyzing,
-		TicketImagePreview,
-		TicketForm
-	} from '$lib/components/upload';
+	import { UploadModeSelection, UploadAnalyzing, TicketImagePreview } from '$lib/components/upload';
+	import TicketForm from '$lib/components/upload/TicketForm.svelte';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
 
@@ -269,7 +265,7 @@
 	};
 
 	// Validation
-	$: isFormValid =
+	$: isFormValid = !!(
 		formData.event.title &&
 		formData.event.date &&
 		formData.event.time &&
@@ -282,7 +278,8 @@
 				formData.two_shot.member_name &&
 				formData.two_shot.price !== null &&
 				formData.two_shot.price >= 0 &&
-				twoShotImage));
+				twoShotImage))
+	);
 
 	// Reactive Day Calculation
 	$: if (formData.event.date) {
@@ -347,7 +344,7 @@
 			<TicketForm
 				bind:formData
 				bind:isSubmitting
-				bind:isFormValid
+				{isFormValid}
 				bind:showTwoShot
 				bind:twoShotImage
 				on:click={handleFormSubmit}
