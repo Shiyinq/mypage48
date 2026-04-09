@@ -7,7 +7,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator, model_validato
 from src.achievements.schemas import RankInfo
 from src.auth.schemas import OshiResponse
 from src.users.constants import ErrorCode, Info
-from src.utils import validate_password_strength
+from src.utils import cleanse_image_url, validate_password_strength
 
 
 class UserCreateRequest(BaseModel):
@@ -56,6 +56,11 @@ class ProviderUserCreateRequest(BaseModel):
     username: str = Field(max_length=50)
     email: EmailStr
     provider: str
+
+    @field_validator("profilePicture")
+    @classmethod
+    def validate_profile_picture(cls, v: Optional[str]) -> Optional[str]:
+        return cleanse_image_url(v)
 
 
 class UserInDB(BaseModel):
@@ -136,6 +141,11 @@ class PublicUserResponse(BaseModel):
 
 class UpdateProfilePictureRequest(BaseModel):
     profilePicture: str
+
+    @field_validator("profilePicture")
+    @classmethod
+    def validate_profile_picture(cls, v: str) -> str:
+        return cleanse_image_url(v)
 
 
 class UpdateOshiRequest(BaseModel):

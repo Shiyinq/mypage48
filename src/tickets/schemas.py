@@ -3,7 +3,7 @@ from typing import Annotated, List, Optional, Union
 
 from pydantic import BaseModel, BeforeValidator, Field, field_validator
 
-from src.utils import clean_image_url
+from src.utils import cleanse_image_markdown, cleanse_image_url
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
@@ -38,7 +38,7 @@ class TicketTwoShot(TicketTwoShotBase):
     @field_validator("imageUrl")
     @classmethod
     def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
-        return clean_image_url(v)
+        return cleanse_image_url(v)
 
 
 class TicketBase(BaseModel):
@@ -58,7 +58,12 @@ class TicketCreateRequest(TicketBase):
     @field_validator("imageUrl")
     @classmethod
     def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
-        return clean_image_url(v)
+        return cleanse_image_url(v)
+
+    @field_validator("notes")
+    @classmethod
+    def validate_notes(cls, v: Optional[str]) -> Optional[str]:
+        return cleanse_image_markdown(v)
 
 
 class TicketUpdateRequest(BaseModel):
@@ -74,7 +79,12 @@ class TicketUpdateRequest(BaseModel):
     @field_validator("imageUrl")
     @classmethod
     def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
-        return clean_image_url(v)
+        return cleanse_image_url(v)
+
+    @field_validator("notes")
+    @classmethod
+    def validate_notes(cls, v: Optional[str]) -> Optional[str]:
+        return cleanse_image_markdown(v)
 
 
 class TicketInDB(TicketBase):
