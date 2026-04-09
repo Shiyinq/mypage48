@@ -1,7 +1,13 @@
 import type { Handle } from '@sveltejs/kit';
+import { env } from '$env/dynamic/public';
 import { PUBLIC_SERVER_SIDE_API_BASE_URL } from '$env/static/public';
 
 export const handle: Handle = async ({ event, resolve }) => {
+	// Simple health check endpoint for Docker
+	if (event.url.pathname === '/health') {
+		return new Response('OK', { status: 200 });
+	}
+
 	// If the request is for /api, proxy it to the backend
 	if (event.url.pathname.startsWith('/api')) {
 		const targetUrl = event.url.pathname.replace('/api', PUBLIC_SERVER_SIDE_API_BASE_URL);
@@ -33,5 +39,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	// For all other requests, continue as normal
-	return resolve(event);
+	return resolve(event, {
+		transformPageChunk: ({ html }) => {
+			if (env.PUBLIC_UMAMI_URL && env.PUBLIC_UMAMI_WEBSITE_ID) {
+				const script = `<script async defer src="${env.PUBLIC_UMAMI_URL}/script.js" data-website-id="${env.PUBLIC_UMAMI_WEBSITE_ID}"></script>`;
+				// Inject after %sveltekit.head%
+				return html.replace('%sveltekit.head%', `%sveltekit.head%\n\t\t${script}`);
+			}
+			return html;
+		}
+	});
 };

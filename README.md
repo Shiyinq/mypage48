@@ -36,13 +36,14 @@
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
-|-------|------------|
 | **Backend** | FastAPI (Python 3.10+) |
 | **Frontend** | SvelteKit 2.x |
-| **Database** | MongoDB |
+| **Database** | MongoDB & PostgreSQL (Umami) |
 | **Storage** | MinIO |
+| **Reverse Proxy**| Nginx |
+| **Analytics** | Umami |
 | **LLM** | Google Gemini |
-| **Styling** | TailwindCSS |
+| **Styling** | Vanilla CSS & TailwindCSS |
 | **Auth** | JWT Authentication |
 
 ## 📁 Project Structure
@@ -50,33 +51,14 @@
 ```
 mypage48/
 ├── src/                   # Backend (FastAPI)
-│   ├── achievements/      # Achievement system
-│   ├── api_keys/          # API keys management
-│   ├── auth/              # Authentication & OAuth
-│   ├── dashboard/         # Dashboard statistics API
-│   ├── events/            # Event & schedule management
-│   ├── export/            # Data export service
-│   ├── feedback/          # User feedback system
-│   ├── health/            # Service health checks
-│   ├── live/              # JKT48 Live streaming service
-│   ├── llm/               # AI integration (Gemini)
-│   ├── members/           # JKT48 members data
-│   ├── memories/          # Digital photobook storage
-│   ├── news/              # News integration
-│   ├── setlists/          # Setlist information
-│   ├── storage/           # MinIO storage service
-│   ├── tickets/           # Theater ticket logging
-│   ├── users/             # User management
-│   └── ...
 ├── scraper/               # JKT48 Web Scraper
 ├── frontend/              # Frontend (SvelteKit)
-│   ├── src/
-│   │   ├── lib/           # Components, stores, utilities
-│   │   └── routes/        # Application pages
-│   └── ...
-├── scripts/               # Utility scripts
+├── nginx/                 # Nginx Configuration (Production)
+├── scripts/               # Utility & Cron scripts
 ├── tests/                 # Backend tests
-└── docker-compose.yml     # Docker deployment
+├── DEPLOYMENT.md          # PRODUCTION DEPLOYMENT GUIDE 🚀
+├── docker-compose.yml     # Local Development Compose
+└── docker-compose.prod.yml # Production Environment Compose
 ```
 
 ## 🚀 Quick Start
@@ -88,104 +70,41 @@ mypage48/
 - Docker & Docker Compose
 - MongoDB (local or Atlas)
 
-### Infrastructure Setup (Required)
+### Local Development
 
-MinIO is required for image storage (2-shot photos and tickets) and **must be running** during local development.
-
-1. **Start MinIO service**
+1. **Setup Backend**
    ```bash
-   docker compose up -d minio
-   ```
-   The MinIO console will be available at http://localhost:9001.
-
-### Backend Setup
-
-1. **Create and activate virtual environment**
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate
-   ```
-
-2. **Install dependencies**
-   ```bash
+   python -m venv .venv && source .venv/bin/activate
    pip install -r requirements/dev.txt
-   ```
-
-3. **Configure environment**
-   ```bash
    cp .env.example .env
-   # Edit .env with your MongoDB URI and other settings
    ```
 
-4. **Run development server**
+2. **Setup Frontend**
    ```bash
-   sh scripts/start-dev.sh
+   cd frontend && npm install && cp .env.example .env && cd ..
    ```
-   
-   API docs available at: http://localhost:8000/docs
 
-### Frontend Setup
-
-1. **Install dependencies**
+3. **Run All Services**
    ```bash
-   cd frontend
-   npm install
+   sh scripts/start-all-dev.sh
    ```
 
-2. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with API URL and other settings
-   ```
+   - App: http://localhost:5173
+   - API: http://localhost:8000/docs
+   - MinIO: http://localhost:9001
 
-3. **Run development server**
-   ```bash
-   npm run dev
-   ```
-   
-   App available at: http://localhost:5173
+## 🐳 Production Deployment
 
-### Run Both Services
+MyPage48 is now fully production-ready with a secure, automated infrastructure.
 
-Use the convenience script to start both backend and frontend:
+### Features
+- **Nginx Reverse Proxy**: Subdomain routing for App, API, Analytics, and Storage.
+- **Umami Analytics**: Privacy-focused, self-hosted visitor tracking.
+- **Automated Scraper**: Periodic daily sync (12:00 AM) using isolated cron service.
+- **Hardened Security**: Network isolation, Root DB authentication, and HTTPS ready.
 
-```bash
-sh scripts/start-all-dev.sh
-```
-
-## 🧹 Code Quality
-
-**Backend:**
-```bash
-sh scripts/lint-format.sh
-```
-
-**Frontend:**
-```bash
-cd frontend
-npm run lint
-npm run format
-npm run check
-```
-
-## 🐳 Deployment
-
-### Docker Compose (Recommended)
-
-1. **Configure environment files**
-   ```bash
-   cp .env.example .env
-   cd frontend && cp .env.example .env && cd ..
-   ```
-
-2. **Build and run containers**
-   ```bash
-   docker compose up --build -d
-   ```
-
-3. **Access the application**
-   - Frontend: http://localhost:5050
-   - Backend: http://localhost:8080
+### Guide
+For a step-by-step production setup on a VPS, please follow the **[Deployment Guide](DEPLOYMENT.md)**.
 
 ## 📝 License
 
