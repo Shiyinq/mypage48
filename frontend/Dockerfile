@@ -27,7 +27,7 @@ ENV PUBLIC_UMAMI_WEBSITE_ID=$PUBLIC_UMAMI_WEBSITE_ID
 ENV PUBLIC_UMAMI_URL=$PUBLIC_UMAMI_URL
 
 # Build the Svelte application
-RUN npm run build
+RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build
 
 # Stage 2: Runtime
 FROM node:20.10.0-alpine AS runtime
