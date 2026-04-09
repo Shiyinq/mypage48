@@ -128,7 +128,7 @@ class LiveService:
                         )
 
                 # DEBUG MOCK: If no JKT48 members are live, take up to 8 Showroom lives for testing multi-view
-                if not results and all_rooms:
+                if self.config.is_env_dev and not results and all_rooms:
                     for room in all_rooms[:8]:
                         results.append(
                             LiveStatus(
@@ -298,7 +298,7 @@ class LiveService:
                             )
 
                 # DEBUG MOCK: If no JKT48 members are live, take the first available IDN live for testing
-                if not results and streams:
+                if self.config.is_env_dev and not results and streams:
                     stream = streams[0]
                     room_id = stream.get("room_identifier") or stream.get(
                         "creator", {}
@@ -518,7 +518,8 @@ class LiveService:
                             def replace_uri(match):
                                 original_uri = match.group(1).strip("\"'")
                                 absolute_uri = urljoin(url, original_uri)
-                                proxied_uri = f"/api/jkt48/live/proxy?url={quote_plus(absolute_uri)}"
+                                prefix = "/api" if self.config.is_env_dev else ""
+                                proxied_uri = f"{prefix}/jkt48/live/proxy?url={quote_plus(absolute_uri)}"
                                 return f'URI="{proxied_uri}"'
 
                             line = re.sub(
@@ -529,8 +530,9 @@ class LiveService:
                     else:
                         # This is a URL (variant playlist or segment)
                         absolute_url = urljoin(url, line)
+                        prefix = "/api" if self.config.is_env_dev else ""
                         proxied_url = (
-                            f"/api/jkt48/live/proxy?url={quote_plus(absolute_url)}"
+                            f"{prefix}/jkt48/live/proxy?url={quote_plus(absolute_url)}"
                         )
                         rewritten_lines.append(proxied_url)
 
