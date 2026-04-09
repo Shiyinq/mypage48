@@ -75,7 +75,7 @@
 		formData.seat.number &&
 		formData.price > 0 &&
 		formData.ticket_id &&
-		(!showTwoShot || (showTwoShot && formData.two_shot.member_name));
+		(!showTwoShot || (showTwoShot && formData.two_shot.member_name && formData.two_shot.price !== null && formData.two_shot.price >= 0 && twoShotImage));
 
 	// Reactive Day Calculation
 	$: if (formData.event.date) {
@@ -275,16 +275,29 @@
 				>
 					<form on:submit|preventDefault={handleSubmit} class="space-y-8">
 						<!-- Event Details -->
-						<EventSection {formData} showOptions={SHOW_OPTIONS} />
+						<EventSection
+							bind:title={formData.event.title}
+							bind:date={formData.event.date}
+							bind:time={formData.event.time}
+							showOptions={SHOW_OPTIONS}
+						/>
 
 						<!-- Seat & Payment -->
-						<SeatSection {formData} rowOptions={ROW_OPTIONS} />
+						<SeatSection
+							bind:section={formData.seat.section}
+							bind:number={formData.seat.number}
+							bind:price={formData.price}
+							bind:ticket_id={formData.ticket_id}
+							rowOptions={ROW_OPTIONS}
+						/>
 
 						<!-- 2-Shot -->
 						<TwoShotSection
 							bind:showTwoShot
 							{twoShotImage}
-							{formData}
+							bind:memberName={formData.two_shot.member_name}
+							bind:type={formData.two_shot.type}
+							bind:price={formData.two_shot.price}
 							onSelectImage={() => twoShotInputRef.click()}
 							on:drop={handleTwoShotDrop}
 						/>

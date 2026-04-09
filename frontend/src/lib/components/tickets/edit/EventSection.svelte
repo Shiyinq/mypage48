@@ -2,7 +2,9 @@
 	import { Ticket as TicketIcon, Calendar, Clock, ChevronDown } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let formData: any;
+	export let title: string;
+	export let date: string;
+	export let time: string;
 	export let showOptions: string[];
 
 	const { t } = useTranslation();
@@ -27,7 +29,7 @@
 			</div>
 			<select
 				id="event-title"
-				bind:value={formData.event.title}
+				bind:value={title}
 				class="w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-bold text-gray-900 dark:text-gray-100 transition-all appearance-none cursor-pointer"
 			>
 				<option value="" disabled>{$t('forms.selectSetlist')}</option>
@@ -52,7 +54,7 @@
 				<input
 					id="event-date"
 					type="date"
-					bind:value={formData.event.date}
+					bind:value={date}
 					class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
 				/>
 			</div>
@@ -69,7 +71,7 @@
 				<input
 					id="event-time"
 					type="time"
-					bind:value={formData.event.time}
+					bind:value={time}
 					class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
 				/>
 			</div>
