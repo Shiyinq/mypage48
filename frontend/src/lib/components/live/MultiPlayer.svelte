@@ -40,6 +40,7 @@
 	let initializing = false;
 	let currentPlatform = '';
 	let currentId = '';
+	let isBuffering = false;
 	let autoplayBlocked = false;
 
 	export let isRecording = false;
@@ -276,7 +277,14 @@
 		playsinline
 		muted={isEffectivelyMuted}
 		on:play={syncAudioState}
-		on:playing={syncAudioState}
+		on:playing={() => {
+			syncAudioState();
+			isBuffering = false;
+		}}
+		on:waiting={() => (isBuffering = true)}
+		on:stalled={() => (isBuffering = true)}
+		on:canplay={() => (isBuffering = false)}
+		on:pause={() => (isBuffering = false)}
 		on:volumechange={syncAudioState}
 	></video>
 
@@ -297,6 +305,13 @@
 				{$t('theater.live.autoplay_description')}
 			</p>
 		</button>
+	{:else if isBuffering && !loading}
+		<div
+			class="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-[15] pointer-events-none"
+			transition:fade
+		>
+			<div class="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+		</div>
 	{/if}
 
 	<!-- Multi-view Floating Gift Overlay -->
