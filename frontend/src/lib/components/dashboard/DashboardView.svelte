@@ -94,7 +94,11 @@
 		const startMonthStr = tParams(`time.monthsShort.${startMonthKey}`);
 		const endMonthStr = tParams(`time.monthsShort.${endMonthKey}`);
 
-		return `${filter.selectedYear} ${startMonthStr}-${endMonthStr}`;
+		if (filter.startMonth === 0 && filter.endMonth === 11) {
+			return `${filter.selectedYear}`;
+		}
+
+		return `${startMonthStr} - ${endMonthStr} ${filter.selectedYear}`;
 	}
 
 	// Available years from API

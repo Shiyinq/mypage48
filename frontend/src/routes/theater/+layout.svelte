@@ -172,7 +172,7 @@
 				</div>
 				<div class="flex flex-col">
 					<h2
-						class="text-3xl font-black tracking-tighter text-gray-900 dark:text-white leading-tight relative w-fit"
+						class="text-2xl sm:text-3xl font-black tracking-tighter text-gray-900 dark:text-white leading-tight relative w-fit"
 					>
 						{pageInfo.title}
 						<span

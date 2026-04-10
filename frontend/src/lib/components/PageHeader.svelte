@@ -72,12 +72,12 @@
 	};
 </script>
 
-<div class="flex flex-wrap items-center justify-between w-full gap-4">
-	<div class="flex items-center gap-3">
+<div class="flex items-center justify-between w-full gap-4 sm:gap-6 flex-wrap sm:flex-nowrap px-1">
+	<div class="flex items-center gap-3 sm:gap-4 min-w-0">
 		{#if showBackButton}
 			<button
 				on:click={handleBack}
-				class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer"
+				class="p-2 sm:p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer"
 			>
 				<ArrowLeft class="w-5 h-5" />
 			</button>
@@ -85,27 +85,29 @@
 
 		{#if icon}
 			<div
-				class="p-3 rounded-2xl {colors.bg} {colors.text} shadow-lg {colors.shadow} border-2 border-white dark:border-gray-800"
+				class="p-2.5 sm:p-3 rounded-2xl {colors.bg} {colors.text} shadow-lg {colors.shadow} border-2 border-white dark:border-gray-800 flex-shrink-0"
 				style="transform: rotate({rotation}deg)"
 			>
-				<svelte:component this={icon} class="w-6 h-6" />
+				<svelte:component this={icon} class="w-5.5 h-5.5 sm:w-6 sm:h-6" />
 			</div>
 		{/if}
 
-		<div>
-			<h2 class="text-2xl font-bold text-themed leading-none relative w-fit">
+		<div class="min-w-0">
+			<h2 class="text-2xl sm:text-3xl font-black text-themed tracking-tight leading-tight relative w-fit truncate">
 				{title}
 				<span
-					class="absolute -bottom-1 left-0 w-full h-2 {colors.underline} -z-10 transform -skew-x-12 rounded-sm"
+					class={`absolute -bottom-1 left-0 w-full h-2.5 ${colors.underline} -z-10 transform -skew-x-12 rounded-sm`}
 				></span>
 			</h2>
 			{#if subtitle}
-				<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>
+				<p class="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5 sm:mt-1 font-medium line-clamp-1">{subtitle}</p>
 			{/if}
 		</div>
 	</div>
 
-	<div class="flex items-center gap-2 ml-auto sm:ml-0">
-		<slot name="actions" />
-	</div>
+	{#if $$slots.actions}
+		<div class="flex items-center gap-2 sm:gap-3 justify-end">
+			<slot name="actions" />
+		</div>
+	{/if}
 </div>

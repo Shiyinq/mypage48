@@ -16,16 +16,16 @@
 	const { t } = useTranslation();
 </script>
 
-<div class="glass-panel p-6 rounded-3xl relative">
-	<div class="flex justify-between items-end mb-2">
-		<div>
+<div class="glass-panel p-4 sm:p-6 rounded-3xl relative">
+	<div class="flex justify-between items-end gap-2 mb-2">
+		<div class="min-w-0">
 			<div class="flex items-center gap-1.5 mb-0.5">
-				<p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">
+				<p class="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase truncate">
 					{$t('profile.level.currentRank')}
 				</p>
-				<div class="relative group">
+				<div class="relative group flex-shrink-0">
 					<Info
-						class="w-3.5 h-3.5 text-gray-300 cursor-help hover:text-red-400 transition-colors"
+						class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-300 cursor-help hover:text-red-400 transition-colors"
 					/>
 					<div
 						class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2.5 py-1 bg-gray-800 text-white text-[10px] font-medium rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20"
@@ -38,16 +38,16 @@
 				</div>
 			</div>
 			{#if loading}
-				<div class="h-8 w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mt-1"></div>
+				<div class="h-6 sm:h-8 w-24 sm:w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mt-1"></div>
 			{:else}
-				<h3 class="text-2xl font-black idol-text-gradient">{level.current}</h3>
+				<h3 class="text-xl sm:text-2xl font-black idol-text-gradient truncate">{level.current}</h3>
 			{/if}
 		</div>
-		<div class="text-right">
+		<div class="text-right flex-shrink min-w-0">
 			{#if loading}
-				<div class="h-3 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse ml-auto"></div>
+				<div class="h-3 w-12 sm:w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse ml-auto"></div>
 			{:else}
-				<p class="text-xs font-bold text-gray-500 dark:text-gray-400">
+				<p class="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400">
 					<span class="text-red-600">{level.xp}</span> / {level.nextLevelXp} XP
 				</p>
 			{/if}
@@ -55,7 +55,7 @@
 	</div>
 
 	{#if loading}
-		<div class="h-3 w-full bg-gray-200 dark:bg-zinc-700 rounded-full animate-pulse mb-4"></div>
+		<div class="h-2.5 sm:h-3 w-full bg-gray-200 dark:bg-zinc-700 rounded-full animate-pulse mb-4"></div>
 		<div class="h-9 w-full bg-gray-200 dark:bg-zinc-700 rounded-lg animate-pulse"></div>
 	{:else}
 		<!-- Progress Bar -->

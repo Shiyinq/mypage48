@@ -186,10 +186,10 @@
 		<CommandPalette />
 	{/if}
 	<div
-		class="min-h-screen flex flex-col relative {$isAuthenticated ? 'selection:bg-red-500/20' : ''}"
+		class="min-h-screen flex flex-col relative overflow-x-hidden {$isAuthenticated ? 'selection:bg-red-500/20' : ''}"
 	>
 		{#if $isAuthenticated && !isFullScreenRoute}
-			<AnimatedBackground />
+			<AnimatedBackground hideDecorationsOnMobile={true} />
 		{/if}
 		{#if $toast}
 			<div class="fixed top-4 left-0 right-0 z-[10000] flex justify-center pointer-events-none">

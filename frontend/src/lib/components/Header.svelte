@@ -18,6 +18,24 @@
 	});
 
 	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
+	
+	let lastScrollY = 0;
+	let isHidden = false;
+	const threshold = 10;
+
+	function handleScroll() {
+		const currentScrollY = window.scrollY;
+		const delta = Math.abs(currentScrollY - lastScrollY);
+
+		if (delta < threshold) return;
+
+		if (currentScrollY > lastScrollY && currentScrollY > 80) {
+			isHidden = true;
+		} else {
+			isHidden = false;
+		}
+		lastScrollY = currentScrollY;
+	}
 
 	// Navigation items
 	$: navItems = [
@@ -30,8 +48,10 @@
 	];
 </script>
 
+<svelte:window on:scroll={handleScroll} />
+
 <header
-	class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 sticky top-0 z-50"
+	class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 sticky top-0 z-50 transition-transform duration-300 ease-in-out {isHidden ? '-translate-y-full' : 'translate-y-0'}"
 >
 	<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 		<!-- Left: Logo -->
