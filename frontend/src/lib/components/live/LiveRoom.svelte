@@ -92,6 +92,7 @@
 	let videoHeight = 0;
 	let playerWidth = 0;
 	let playerHeight = 0;
+	let isBuffering = false;
 	let autoplayBlocked = false;
 
 	$: videoAspectRatio = videoWidth > 0 && videoHeight > 0 ? videoWidth / videoHeight : 16 / 9;
@@ -682,6 +683,11 @@
 						}
 						togglePlayPause();
 					}}
+					on:waiting={() => (isBuffering = true)}
+					on:playing={() => (isBuffering = false)}
+					on:stalled={() => (isBuffering = true)}
+					on:canplay={() => (isBuffering = false)}
+					on:pause={() => (isBuffering = false)}
 				></video>
 
 				{#if autoplayBlocked}
@@ -703,6 +709,17 @@
 							</p>
 						</div>
 					</button>
+				{:else if isBuffering && !initializing}
+					<div
+						class="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-25 pointer-events-none"
+						transition:fade
+					>
+						<div class="flex flex-col items-center gap-3">
+							<div
+								class="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"
+							></div>
+						</div>
+					</div>
 				{/if}
 
 				{#if roomIdentifier}
