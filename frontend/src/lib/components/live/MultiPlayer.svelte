@@ -40,6 +40,7 @@
 	let initializing = false;
 	let currentPlatform = '';
 	let currentId = '';
+	let autoplayBlocked = false;
 
 	export let isRecording = false;
 	let mediaRecorder: any = null;
@@ -133,7 +134,11 @@
 					hls.on(Hls.Events.MANIFEST_PARSED, () => {
 						syncAudioState(); // Force sync when starting
 						startHammer(); // Start the hammer
-						videoElement.play().catch((e) => console.log('Autoplay blocked', e));
+						videoElement.play().catch((e) => {
+							if (e.name === 'NotAllowedError') {
+								autoplayBlocked = true;
+							}
+						});
 						loading = false;
 					});
 
@@ -169,7 +174,11 @@
 				} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 					videoElement.src = streamUrl;
 					videoElement.addEventListener('loadedmetadata', () => {
-						videoElement.play().catch((e) => console.log('Autoplay blocked', e));
+						videoElement.play().catch((e) => {
+							if (e.name === 'NotAllowedError') {
+								autoplayBlocked = true;
+							}
+						});
 						loading = false;
 					});
 				} else {
@@ -190,6 +199,16 @@
 		} finally {
 			initializing = false;
 		}
+	}
+
+	function retryPlayback() {
+		if (!videoElement) return;
+		autoplayBlocked = false;
+		videoElement.play().catch((e) => {
+			if (e.name === 'NotAllowedError') {
+				autoplayBlocked = true;
+			}
+		});
 	}
 
 	export function takeScreenshot(memberName?: string) {
@@ -260,6 +279,25 @@
 		on:playing={syncAudioState}
 		on:volumechange={syncAudioState}
 	></video>
+
+	{#if autoplayBlocked}
+		<button
+			class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] z-20 group/autoplay cursor-pointer"
+			on:click|stopPropagation={retryPlayback}
+		>
+			<div
+				class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/40 group-hover/autoplay:scale-110 group-hover/autoplay:bg-white/30 transition-all duration-300"
+			>
+				<RefreshCw class="w-8 h-8 text-white" />
+			</div>
+			<p class="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-white">
+				{$t('theater.live.multiview.tap_to_play')}
+			</p>
+			<p class="mt-1 text-white/40 text-[8px] font-bold uppercase tracking-widest text-center px-4">
+				{$t('theater.live.autoplay_description')}
+			</p>
+		</button>
+	{/if}
 
 	<!-- Multi-view Floating Gift Overlay -->
 	<GiftOverlay {roomIdentifier} />
