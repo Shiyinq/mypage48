@@ -76,7 +76,7 @@
 	let isMuted = false;
 	let currentTime = 0;
 	let duration = 0;
-	let isPaused = false;
+	let isPaused = true;
 	let bufferedEnd = 0;
 	let peakDuration = 0;
 	let isFullscreen = false;
@@ -92,6 +92,7 @@
 	let videoHeight = 0;
 	let playerWidth = 0;
 	let playerHeight = 0;
+	let autoplayBlocked = false;
 
 	$: videoAspectRatio = videoWidth > 0 && videoHeight > 0 ? videoWidth / videoHeight : 16 / 9;
 	$: streamFromList = $liveList.find(
@@ -186,7 +187,12 @@
 						hls.loadSource(streamUrl);
 						hls.attachMedia(videoElement);
 						hls.on(Hls.Events.MANIFEST_PARSED, () => {
-							videoElement.play().catch((e) => console.log('Autoplay blocked', e));
+							videoElement.play().catch((e) => {
+								if (e.name === 'NotAllowedError') {
+									autoplayBlocked = true;
+									isPaused = true;
+								}
+							});
 							resetControlsTimeout();
 						});
 
@@ -200,7 +206,12 @@
 					} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 						videoElement.src = streamUrl;
 						videoElement.addEventListener('loadedmetadata', () => {
-							videoElement.play().catch((e) => console.log('Autoplay blocked', e));
+							videoElement.play().catch((e) => {
+								if (e.name === 'NotAllowedError') {
+									autoplayBlocked = true;
+									isPaused = true;
+								}
+							});
 							resetControlsTimeout();
 						});
 					}
@@ -388,8 +399,28 @@
 
 	function togglePlayPause() {
 		if (videoElement) {
-			if (videoElement.paused) videoElement.play();
-			else videoElement.pause();
+			if (videoElement.paused) {
+				videoElement.play().catch((e) => {
+					if (e.name === 'NotAllowedError') {
+						autoplayBlocked = true;
+						isPaused = true;
+					}
+				});
+			} else {
+				videoElement.pause();
+			}
+		}
+	}
+
+	function retryPlayback() {
+		autoplayBlocked = false;
+		if (videoElement) {
+			videoElement.play().catch((e) => {
+				if (e.name === 'NotAllowedError') {
+					autoplayBlocked = true;
+					isPaused = true;
+				}
+			});
 		}
 	}
 
@@ -652,6 +683,27 @@
 						togglePlayPause();
 					}}
 				></video>
+
+				{#if autoplayBlocked}
+					<button
+						class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-sm z-30 group/autoplay cursor-pointer"
+						on:click|stopPropagation={retryPlayback}
+					>
+						<div
+							class="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20 group-hover/autoplay:scale-110 group-hover/autoplay:bg-white/20 transition-all duration-300"
+						>
+							<Play size={40} class="text-white ml-2" fill="white" />
+						</div>
+						<div class="mt-6 text-center">
+							<h3 class="text-white font-black text-lg uppercase tracking-[0.2em] mb-1">
+								{$t('theater.live.tap_to_play')}
+							</h3>
+							<p class="text-white/40 text-[10px] font-bold uppercase tracking-widest">
+								{$t('theater.live.autoplay_description')}
+							</p>
+						</div>
+					</button>
+				{/if}
 
 				{#if roomIdentifier}
 					<GiftOverlay {roomIdentifier} />

@@ -781,6 +781,8 @@
 			"title": "Live",
 			"subtitle": "Tonton member JKT48 yang sedang siaran langsung",
 			"onLive": "Siaran Langsung",
+			"tap_to_play": "Ketuk untuk Memutar",
+			"autoplay_description": "Kebijakan browser memblokir putar otomatis",
 			"viewer": "Penonton",
 			"startedAt": "Mulai sejak",
 			"liveDuration": "Sudah Live",
@@ -813,6 +815,7 @@
 			"openOriginal": "Buka Stream Asli",
 			"multiview": {
 				"title": "Multi-view",
+				"tap_to_play": "Ketuk untuk Memutar",
 				"clear_all": "Hapus Semua",
 				"switch_to_landscape": "Pindah ke Lanskap",
 				"switch_to_portrait": "Pindah ke Potret",

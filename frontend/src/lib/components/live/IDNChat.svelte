@@ -34,7 +34,6 @@
 		socket = new WebSocket('wss://chat.idn.app/');
 
 		socket.onopen = () => {
-			console.log('IDN Chat: Connected');
 			connected = true;
 
 			const userId = Math.floor(Math.random() * 1000000);

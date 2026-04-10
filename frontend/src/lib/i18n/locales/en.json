@@ -660,6 +660,8 @@
 			"title": "Live",
 			"subtitle": "Watch JKT48 members who are currently live",
 			"onLive": "On Live",
+			"tap_to_play": "Tap to Play",
+			"autoplay_description": "Browser policy blocked autoplay",
 			"viewer": "Viewers",
 			"startedAt": "Started at",
 			"liveDuration": "Live for",
@@ -692,6 +694,7 @@
 			"openOriginal": "Open Original Stream",
 			"multiview": {
 				"title": "Multi-view",
+				"tap_to_play": "Tap to Play",
 				"clear_all": "Clear All",
 				"switch_to_landscape": "Switch to Landscape",
 				"switch_to_portrait": "Switch to Portrait",
