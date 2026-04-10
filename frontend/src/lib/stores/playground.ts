@@ -34,6 +34,9 @@ function createPlaygroundStore() {
 	return {
 		subscribe,
 		init: async () => {
+			const state = get({ subscribe });
+			if (state.schema) return; // Prevent double initialization (e.g. preloading + mount)
+
 			update((s) => ({ ...s, error: null }));
 			try {
 				const schema = await playgroundApi.getSchema();

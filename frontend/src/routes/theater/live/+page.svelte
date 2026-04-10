@@ -11,7 +11,7 @@
 	let initialLoading = $liveList.length === 0;
 
 	async function fetchLives() {
-		await liveStore.loadLiveList(true);
+		await liveStore.loadLiveList();
 		initialLoading = false;
 	}
 

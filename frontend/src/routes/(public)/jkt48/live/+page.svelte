@@ -13,7 +13,7 @@
 
 	let initialLoading = $liveList.length === 0;
 	async function fetchLives() {
-		await liveStore.loadLiveList(true); // Force refresh on mount
+		await liveStore.loadLiveList(); 
 		initialLoading = false;
 	}
 
