@@ -82,24 +82,6 @@
 		fetchDashboardStats();
 	}
 
-	// Helper function for filter label
-	$: filterLabel = getFilterLabel($dashboardFilter, $t);
-
-	function getFilterLabel(filter: typeof $dashboardFilter, tParams: any) {
-		if (filter.isAllData) return tParams('common.allData');
-
-		const startMonthKey = MONTHS[filter.startMonth].substring(0, 3).toLowerCase();
-		const endMonthKey = MONTHS[filter.endMonth].substring(0, 3).toLowerCase();
-
-		const startMonthStr = tParams(`time.monthsShort.${startMonthKey}`);
-		const endMonthStr = tParams(`time.monthsShort.${endMonthKey}`);
-
-		if (filter.startMonth === 0 && filter.endMonth === 11) {
-			return `${filter.selectedYear}`;
-		}
-
-		return `${startMonthStr} - ${endMonthStr} ${filter.selectedYear}`;
-	}
 
 	// Available years from API
 	$: availableYears = dashboardStats?.available_years ?? [currentYear];
@@ -206,7 +188,7 @@
 	<!-- Header / Filter Toggle -->
 	<div class="mb-6 relative z-30">
 		<DashboardHeader
-			{filterLabel}
+			filter={$dashboardFilter}
 			onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
 			isOpen={isFilterOpen}
 		/>
