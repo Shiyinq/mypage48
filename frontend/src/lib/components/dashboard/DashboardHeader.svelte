@@ -8,10 +8,11 @@
 	/**
 	 * Dashboard header component when filter panel is closed
 	 */
-	export let filterLabel: string;
 	export let filter: any;
 	export let onOpenFilter: () => void;
 	export let isOpen: boolean = false;
+
+	$: displayLabel = filter ? getFilterLabel(filter, $t) : '';
 
 	function getFilterLabel(filter: any, tParams: any) {
 		if (filter.isAllData) return tParams('common.allData');
@@ -51,7 +52,7 @@
 		<span
 			class="text-[10px] sm:text-xs font-black text-gray-700 dark:text-gray-200 bg-white dark:bg-zinc-800 px-3 py-1.5 rounded-full border border-gray-100 dark:border-white/5 shadow-sm whitespace-nowrap flex items-center justify-center"
 		>
-			{filterLabel}
+			{displayLabel}
 		</span>
 		<button
 			on:click={onOpenFilter}
