@@ -15,11 +15,18 @@
 	}> = [];
 
 	export let interactive = false;
+	export let hideDecorationsOnMobile = false;
 	export let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
 	export let scrollY = 0;
 
 	// Global mouse tracking instead of wrapper-based for reliability across all pages
 	function handleMouseMove(event: MouseEvent) {
+		// Disable magnetic effect on mobile/tablet or non-hover devices
+		if (window.innerWidth < 1024 || !window.matchMedia('(hover: hover)').matches) {
+			mouse.set({ x: 0, y: 0 });
+			return;
+		}
+
 		const clientX = event.clientX;
 		const clientY = event.clientY;
 		const clientWidth = window.innerWidth;
@@ -61,17 +68,17 @@
 
 	<!-- Static Decor Elements -->
 	<div
-		class="absolute top-20 left-10 animate-pulse delay-700 {interactive
+		class={`absolute top-20 left-10 animate-pulse delay-700 ${hideDecorationsOnMobile ? 'hidden md:block' : ''} ${interactive
 			? 'pointer-events-auto cursor-pointer hover:scale-125 transition-all duration-300 hover:text-pink-400 text-pink-200'
-			: 'pointer-events-none text-pink-200'}"
+			: 'pointer-events-none text-pink-200'}`}
 		style="transform: translate({$mouse.x * 20}px, {$mouse.y * 20 + scrollY * 0.2}px)"
 	>
 		<Sparkles size={48} />
 	</div>
 	<div
-		class="absolute top-40 right-10 animate-pulse delay-300 {interactive
+		class={`absolute top-40 right-10 animate-pulse delay-300 ${hideDecorationsOnMobile ? 'hidden md:block' : ''} ${interactive
 			? 'pointer-events-auto cursor-pointer hover:scale-125 hover:rotate-12 transition-all duration-300 hover:text-red-400 text-red-200'
-			: 'pointer-events-none text-red-200'}"
+			: 'pointer-events-none text-red-200'}`}
 		style="transform: translate({$mouse.x * 60}px, {$mouse.y * 60 + scrollY * 0.5}px)"
 	>
 		<Star size={32} />
@@ -102,7 +109,10 @@
 						? 'group-hover:scale-150 group-hover:rotate-12'
 						: ''}"
 				>
-					<div class="animate-pulse" style="animation-duration: {d.duration / 1.5}s">
+					<div
+						class={`animate-pulse ${hideDecorationsOnMobile ? 'hidden md:block' : ''}`}
+						style="animation-duration: {d.duration / 1.5}s"
+					>
 						{#if d.type === 'star'}
 							<Star size={28} strokeWidth={2} fill="currentColor" class="opacity-60" />
 						{:else}

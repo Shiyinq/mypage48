@@ -11,7 +11,7 @@
 	class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden py-12 bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 font-sans selection:bg-red-500/20"
 >
 	<!-- Background Elements -->
-	<AnimatedBackground />
+	<AnimatedBackground hideDecorationsOnMobile={true} />
 
 	<div class="w-full {cardWidth}">
 		<!-- Header -->

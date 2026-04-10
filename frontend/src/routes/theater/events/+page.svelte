@@ -87,8 +87,8 @@
 					class="group relative block transition-all duration-300 flex flex-row sm:block h-[8.5rem] sm:h-auto sm:aspect-[2/3] shadow-sm hover:shadow-xl rounded-[20px] sm:rounded-2xl {isToday(
 						event.date
 					)
-						? 'overflow-visible'
-						: 'overflow-hidden border border-gray-100 dark:border-white/5 sm:border-0'}"
+						? ''
+						: 'border border-gray-100 dark:border-white/5 sm:border-0'}"
 					in:scale={{ duration: 300, start: 0.95 }}
 				>
 					{#if isToday(event.date)}
@@ -159,11 +159,11 @@
 
 						<!-- Details -->
 						<div
-							class="relative flex-1 p-3.5 sm:p-5 flex flex-col justify-start sm:justify-end sm:absolute sm:inset-x-0 sm:bottom-0 sm:top-auto sm:pointer-events-none z-10"
+							class="relative flex-1 p-3 sm:p-5 flex flex-col justify-start sm:justify-end sm:absolute sm:inset-x-0 sm:bottom-0 sm:top-auto sm:pointer-events-none z-10"
 						>
 							<!-- Top Metadata Row (Mobile: Team Info) / Desktop: Team Info at bottom -->
 							<div
-								class="absolute top-3.5 right-3.5 sm:static sm:flex sm:items-start sm:justify-between sm:mb-1 sm:pointer-events-auto z-20"
+								class="relative sm:static flex flex-wrap items-center gap-2 mb-2 sm:mb-1 sm:justify-between sm:pointer-events-auto z-20"
 							>
 								<div class="flex items-center gap-2">
 									{#if event.label}
@@ -205,10 +205,10 @@
 
 							<!-- Text Content -->
 							<div
-								class="flex flex-col h-full sm:h-auto justify-start sm:justify-end sm:pointer-events-auto sm:pl-0.5 pr-10 sm:pr-0"
+								class="flex flex-col h-full sm:h-auto justify-start sm:justify-end sm:pointer-events-auto sm:pl-0.5"
 							>
 								<h3
-									class="font-bold text-[15px] sm:text-lg leading-tight mb-1.5 sm:mb-1 group-hover:text-red-600 dark:group-hover:text-red-400 sm:group-hover:text-red-300 transition-colors line-clamp-2 sm:line-clamp-none text-gray-900 dark:text-white sm:text-white"
+									class="font-bold text-sm sm:text-lg leading-tight mb-1 sm:mb-1 group-hover:text-red-600 dark:group-hover:text-red-400 sm:group-hover:text-red-300 transition-colors line-clamp-2 sm:line-clamp-none text-gray-900 dark:text-white sm:text-white"
 								>
 									{event.title}
 								</h3>
@@ -233,44 +233,50 @@
 									</div>
 								{/if}
 
-								<!-- Metadata Grid: Stacked on both Mobile and Desktop -->
-								<div class="flex flex-col gap-1 sm:gap-1.5">
-									<!-- Date -->
+								<!-- Metadata Grid: Combined on Mobile -->
+								<div class="flex flex-col gap-0.5 sm:gap-1.5 mt-auto">
+									<!-- Date & Time -->
 									<div
-										class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
+										class="flex items-center flex-wrap gap-x-2 gap-y-0.5 text-[10px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
 									>
-										<Calendar class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
-										<span>
-											{$formatDate(event.date, {
-												weekday: 'long',
-												day: 'numeric',
-												month: 'long',
-												year: 'numeric'
-											})}
-										</span>
-									</div>
-
-									<!-- Time -->
-									{#if event.setlistId}
-										<div
-											class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
-										>
-											<Clock class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
-											<span
-												>{$formatTime(event.date, {
-													hour: '2-digit',
-													minute: '2-digit'
-												})}</span
-											>
+										<div class="flex items-center gap-1">
+											<Calendar class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
+											<span class="sm:hidden">
+												{$formatDate(event.date, {
+													weekday: 'short',
+													day: 'numeric',
+													month: 'short'
+												})}
+											</span>
+											<span class="hidden sm:block">
+												{$formatDate(event.date, {
+													weekday: 'long',
+													day: 'numeric',
+													month: 'long',
+													year: 'numeric'
+												})}
+											</span>
 										</div>
-									{/if}
+
+										{#if event.setlistId}
+											<div class="flex items-center gap-1 border-l border-gray-200 dark:border-zinc-700 pl-2 sm:border-0 sm:pl-0">
+												<Clock class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
+												<span
+													>{$formatTime(event.date, {
+														hour: '2-digit',
+														minute: '2-digit'
+													})}</span
+												>
+											</div>
+										{/if}
+									</div>
 
 									<!-- Members -->
 									{#if event.totalMembers > 1}
 										<div
-											class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
+											class="flex items-center gap-1 text-[10px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
 										>
-											<Users class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+											<Users class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
 											<span>{event.totalMembers} {$t('theater.events.members')}</span>
 										</div>
 									{/if}

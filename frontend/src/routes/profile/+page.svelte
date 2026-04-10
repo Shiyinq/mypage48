@@ -198,7 +198,7 @@
 
 <SEO title={$t('profile.title')} path="/profile" description={$t('seo.profile')} />
 
-<div class="max-w-5xl mx-auto p-4 animate-fade-in pb-24">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 animate-fade-in pb-32">
 	<!-- Page Header -->
 	<div class="mb-8">
 		<PageHeader title={$t('profile.title')} subtitle={$t('profile.subtitle')} icon={UserIcon}>
@@ -232,9 +232,9 @@
 			onRetry={fetchProfile}
 		/>
 	{:else}
-		<div class="grid lg:grid-cols-12 gap-8">
+		<div class="grid lg:grid-cols-12 gap-8 min-w-0">
 			<!-- LEFT COLUMN: Identity & Level (Span 5) -->
-			<div class="lg:col-span-5 space-y-6">
+			<div class="lg:col-span-5 space-y-6 min-w-0">
 				<DigitalMemberCard {profile} loading={$isUserProfileLoading} />
 				<LevelProgress {level} {progressPercent} loading={$isUserProfileLoading} />
 				<QuickStats {totalShows} {totalAchievements} loading={$isUserProfileLoading} />
@@ -242,7 +242,7 @@
 			</div>
 
 			<!-- RIGHT COLUMN: Oshimen & Feed (Span 7) -->
-			<div class="lg:col-span-7 space-y-6">
+			<div class="lg:col-span-7 space-y-6 min-w-0">
 				<OshiCard
 					{profile}
 					loading={$isUserProfileLoading}

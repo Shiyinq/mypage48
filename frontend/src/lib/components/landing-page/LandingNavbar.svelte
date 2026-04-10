@@ -22,6 +22,23 @@
 	export let mouse = { x: 0, y: 0 };
 
 	let isMenuOpen = false;
+	let lastScrollY = 0;
+	let isHidden = false;
+	const threshold = 10;
+
+	function handleScroll() {
+		const currentScrollY = window.scrollY;
+		const delta = Math.abs(currentScrollY - lastScrollY);
+
+		if (delta < threshold) return;
+
+		if (currentScrollY > lastScrollY && currentScrollY > 80) {
+			isHidden = true;
+		} else {
+			isHidden = false;
+		}
+		lastScrollY = currentScrollY;
+	}
 
 	onMount(() => {
 		liveStore.loadLiveList();
@@ -51,8 +68,10 @@
 	}
 </script>
 
+<svelte:window on:scroll={handleScroll} />
+
 <nav
-	class="relative z-[100] flex justify-between items-center px-6 py-3 max-w-7xl mx-auto pointer-events-none"
+	class="sticky top-0 z-[100] flex justify-between items-center px-6 py-3 max-w-7xl mx-auto pointer-events-none transition-transform duration-300 ease-in-out {isHidden ? '-translate-y-full' : 'translate-y-0'}"
 >
 	<!-- Left: Logo -->
 	<div class="flex-1 flex items-center justify-start">

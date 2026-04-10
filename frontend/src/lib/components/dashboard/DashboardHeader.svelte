@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { LayoutDashboard, Filter } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { MONTHS } from '$lib/constants';
 
 	const { t } = useTranslation();
 
@@ -8,11 +9,28 @@
 	 * Dashboard header component when filter panel is closed
 	 */
 	export let filterLabel: string;
+	export let filter: any;
 	export let onOpenFilter: () => void;
 	export let isOpen: boolean = false;
+
+	function getFilterLabel(filter: any, tParams: any) {
+		if (filter.isAllData) return tParams('common.allData');
+
+		const startMonthKey = MONTHS[filter.startMonth].substring(0, 3).toLowerCase();
+		const endMonthKey = MONTHS[filter.endMonth].substring(0, 3).toLowerCase();
+
+		const startMonthStr = tParams(`time.monthsShort.${startMonthKey}`);
+		const endMonthStr = tParams(`time.monthsShort.${endMonthKey}`);
+
+		if (filter.startMonth === 0 && filter.endMonth === 11) {
+			return `${filter.selectedYear}`;
+		}
+
+		return `${startMonthStr} - ${endMonthStr} ${filter.selectedYear}`;
+	}
 </script>
 
-<div class="flex items-center justify-between animate-fade-in">
+<div class="flex items-center justify-between animate-fade-in overflow-x-hidden">
 	<div class="flex items-center gap-3">
 		<div
 			class="p-3 rounded-2xl bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 shadow-lg shadow-red-100 dark:shadow-red-900/30 border-2 border-white dark:border-gray-800 transform -rotate-6"
@@ -31,7 +49,7 @@
 	</div>
 	<div class="flex items-center gap-2">
 		<span
-			class="text-xs font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-zinc-900 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700"
+			class="text-[10px] sm:text-xs font-black text-gray-700 dark:text-gray-200 bg-white dark:bg-zinc-800 px-3 py-1.5 rounded-full border border-gray-100 dark:border-white/5 shadow-sm whitespace-nowrap flex items-center justify-center"
 		>
 			{filterLabel}
 		</span>
