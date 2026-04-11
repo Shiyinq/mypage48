@@ -18,7 +18,8 @@
 		Tv,
 		Calendar,
 		ArrowUpDown,
-		Users
+		Users,
+		Crown
 	} from 'lucide-svelte';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -52,6 +53,7 @@
 
 	const secondaryLinks = [
 		{ href: '/memories', icon: ImageIcon, label: 'nav.memories', color: 'text-pink-500' },
+		{ href: '/top-2shot', icon: Crown, label: 'nav.top2shot', color: 'text-indigo-500' },
 		{ href: '/journal', icon: BookOpen, label: 'nav.journal', color: 'text-green-500' },
 		{ href: '/achievements', icon: Trophy, label: 'nav.achievements', color: 'text-amber-500' },
 		{ href: '/history', icon: History, label: 'nav.history', color: 'text-blue-500' }
