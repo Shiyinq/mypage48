@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { afterNavigate } from '$app/navigation';
 	import {
 		LayoutDashboard,
 		AudioLines,
@@ -56,6 +57,12 @@
 	function closeMenu() {
 		isMenuOpen = false;
 	}
+
+	afterNavigate(() => {
+		closeMenu();
+	});
+
+	$: isRouteMore = secondaryLinks.some((link) => $page.url.pathname.startsWith(link.href));
 </script>
 
 <svelte:window on:scroll={handleScroll} />
@@ -75,25 +82,33 @@
 		transition:fly={{ y: 300, duration: 300 }}
 	>
 		<div class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5">
-			<h3 class="text-lg font-bold text-gray-900 dark:text-white">{$t('nav.more') || 'Lainnya'}</h3>
+			<h3 class="text-lg font-bold text-gray-900 dark:text-white">{$t('nav.journey') || 'Journey'}</h3>
 			<button class="p-2 text-gray-400 hover:text-gray-600" on:click={closeMenu}>
 				<X class="w-6 h-6" />
 			</button>
 		</div>
 		<div class="p-4 grid grid-cols-1 gap-2">
 			{#each secondaryLinks as link}
+				{@const isActive = $page.url.pathname.startsWith(link.href)}
 				<a
 					href={link.href}
-					class="flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
+					class={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
 					on:click={closeMenu}
 				>
 					<div class="flex items-center gap-4">
-						<div class={`p-3 rounded-xl bg-gray-50 dark:bg-white/5 ${link.color} group-hover:scale-110 transition-transform`}>
+						<div
+							class={`p-3 rounded-xl transition-transform ${isActive ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 ' + link.color : 'bg-gray-50 dark:bg-white/5 ' + link.color} group-hover:scale-110`}
+						>
 							<svelte:component this={link.icon} class="w-6 h-6" />
 						</div>
-						<span class="font-bold text-gray-700 dark:text-gray-200">{$t(link.label)}</span>
+						<span
+							class={`font-bold transition-colors ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-200'}`}
+							>{$t(link.label)}</span
+						>
 					</div>
-					<ChevronRight class="w-5 h-5 text-gray-300" />
+					<ChevronRight
+						class={`w-5 h-5 transition-all ${isActive ? 'text-indigo-500 transform translate-x-1' : 'text-gray-300'}`}
+					/>
 				</a>
 			{/each}
 		</div>
@@ -145,11 +160,11 @@
 			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 group min-w-[56px]"
 		>
 			<Menu
-				class={`w-6 h-6 transition-all ${isMenuOpen ? 'text-indigo-600 dark:indigo-400 scale-110' : ''}`}
+				class={`w-6 h-6 transition-all ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400 scale-110' : ''}`}
 			/>
 			<span
-				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isMenuOpen ? 'text-indigo-600 dark:text-indigo-400' : ''}`}
-				>{$t('nav.more') || 'Menu'}</span
+				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400' : ''}`}
+				>{$t('nav.journey') || 'Journey'}</span
 			>
 		</button>
 
