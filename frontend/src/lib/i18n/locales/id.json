@@ -91,7 +91,7 @@
 		"history": "Riwayat",
 		"upload": "Unggah",
 		"profile": "Profil",
-		"more": "Lainnya",
+		"journey": "Perjalanan",
 		"settings": "Pengaturan",
 		"newTicket": "Tiket Baru",
 		"journal": "Jurnal"
@@ -318,7 +318,7 @@
 		"resetPassword": {
 			"title": "Reset Password",
 			"subtitle": "Buat password baru yang aman untuk akun Anda.",
-			"successTitle": "Password Direset!",
+			"successTitle": "Password Diperbarui!",
 			"successMessage": "Password Anda berhasil diperbarui. Anda akan diarahkan ke login sebentar lagi.",
 			"newPassword": "Password Baru",
 			"confirmPassword": "Konfirmasi Password",

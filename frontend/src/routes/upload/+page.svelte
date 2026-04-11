@@ -12,7 +12,7 @@
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 
-	import { Keyboard } from 'lucide-svelte';
+	import { ScanLine, Keyboard } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { PageHeader } from '$lib/components';
@@ -21,6 +21,7 @@
 	import TicketForm from '$lib/components/upload/TicketForm.svelte';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
+	import { pageHeaderStore } from '$lib/stores/ui';
 
 	const { t } = useTranslation();
 
@@ -302,6 +303,16 @@
 
 <SEO title={$t('upload.title')} path="/upload" description={$t('seo.upload')} />
 
+<!-- Page Header (Hidden visually but kept for MobileHeader store sync) -->
+<div class="hidden max-w-5xl mx-auto pt-4 sm:pt-6 px-4 mb-4">
+	<PageHeader
+		title={$t('upload.title')}
+		subtitle={$t('upload.subtitle')}
+		icon={ScanLine}
+		theme="red"
+	/>
+</div>
+
 {#if mode === 'SELECTION'}
 	<UploadModeSelection
 		onScanClick={() => fileInputRef.click()}
@@ -315,17 +326,24 @@
 {/if}
 
 {#if mode === 'EDITING'}
-	<div class="max-w-5xl mx-auto p-4 pb-24 animate-fade-in">
-		<div class="flex items-center justify-between mb-6">
-			<PageHeader
-				icon={Keyboard}
-				title={$t('forms.newTicket')}
-				subtitle={$t('forms.addToCollection')}
-				theme="red"
-			/>
+	<div class="max-w-5xl mx-auto pt-0 px-4 pb-24 animate-fade-in">
+		<div class="mb-6 flex items-center justify-between">
+			<div class="flex items-center gap-3">
+				<div class="p-2 rounded-xl bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+					<Keyboard class="w-5 h-5" />
+				</div>
+				<div>
+					<h2 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+						{$t('forms.newTicket')}
+					</h2>
+					<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+						{$t('forms.addToCollection')}
+					</p>
+				</div>
+			</div>
 			<button
 				on:click={onCancel}
-				class="text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer"
+				class="text-[10px] sm:text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer whitespace-nowrap"
 				>{$t('forms.cancel')}</button
 			>
 		</div>

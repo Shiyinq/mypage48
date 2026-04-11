@@ -88,7 +88,7 @@
 		"achievements": "実績",
 		"memories": "思い出",
 		"history": "履歴",
-		"more": "もっと",
+		"journey": "ジャーニー",
 		"upload": "アップロード",
 		"profile": "プロフィール",
 		"settings": "設定",
@@ -317,7 +317,7 @@
 		"resetPassword": {
 			"title": "パスワードリセット",
 			"subtitle": "アカウントの新しい安全なパスワードを作成してください。",
-			"successTitle": "パスワードリセット完了！",
+			"successTitle": "パスワードを更新しました！",
 			"successMessage": "パスワードが正常に更新されました。まもなくログイン画面に移動します。",
 			"newPassword": "新しいパスワード",
 			"confirmPassword": "パスワード確認",

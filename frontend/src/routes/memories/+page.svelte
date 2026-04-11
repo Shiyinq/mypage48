@@ -86,7 +86,7 @@
 <!-- Lightbox -->
 <Lightbox {selectedImage} onClose={() => (selectedImage = null)} />
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-32 animate-fade-in">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32 animate-fade-in">
 	<!-- Header -->
 	<div class="mb-8">
 		<PageHeader

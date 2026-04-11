@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy, afterUpdate, tick } from 'svelte';
-	import { MessageCircle } from 'lucide-svelte';
+	import { MessageCircle, Trophy } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
 	import { broadcastGift } from '$lib/stores/gift';
@@ -16,7 +16,7 @@
 
 	function getExternalMediaUrl(url?: string) {
 		if (!url) return '';
-		if (url.includes('idn.app')) {
+		if (url.includes('idn.app') || url.includes('idn.media')) {
 			try {
 				const u = new URL(url);
 				u.searchParams.delete('timestamp');
@@ -91,6 +91,9 @@
 			let senderName = tags['display-name'] || tags['idn.app/display-name'] || 'User';
 			let avatar = tags['idn.app/avatar'];
 			let isGift = false;
+			let isLetter = false;
+			let letterType = '';
+			let recipient: { name: string; avatar: string } | undefined = undefined;
 			let giftData: { name: string; img: string; color?: string } | undefined = undefined;
 
 			if (text.startsWith('{')) {
@@ -130,6 +133,16 @@
 						parsedText = `GIFT: ${g.name}`;
 					} else if (json.chat && json.chat.message) {
 						parsedText = json.chat.message;
+					} else if (json.letter && json.letter.message) {
+						isLetter = true;
+						letterType = json.letter.type?.name || 'Letter';
+						parsedText = json.letter.message;
+						if (json.letter.recipient) {
+							recipient = {
+								name: json.letter.recipient.name,
+								avatar: json.letter.recipient.avatar_url
+							};
+						}
 					} else if (json.system && json.system.message) {
 						parsedText = json.system.message;
 					} else {
@@ -152,8 +165,10 @@
 					text: parsedText,
 					avatar,
 					timestamp: Date.now(),
-					type: isGift ? 'gift' : 'chat',
-					gift: giftData
+					type: isGift ? 'gift' : isLetter ? 'letter' : 'chat',
+					gift: giftData,
+					letterType: isLetter ? letterType : undefined,
+					recipient: isLetter ? recipient : undefined
 				}
 			];
 			if (messages.length > 100) messages = messages.slice(-100);
@@ -171,6 +186,7 @@
 			}
 		} catch (e) {
 			console.error('Failed to parse IRC message:', e);
+			console.log('Raw message that failed:', raw);
 		}
 	}
 
@@ -220,7 +236,7 @@
 					</div>
 				{/if}
 				<div class="flex-1 min-w-0">
-					<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5">{msg.user}</p>
+					<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate">{msg.user}</p>
 
 					{#if msg.type === 'gift' && msg.gift}
 						{@const isLottie = msg.gift.img
@@ -232,7 +248,7 @@
 							.slice(-3)
 							.some((m) => (m.id || m.timestamp) === (msg.id || msg.timestamp))}
 						<div
-							class="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl rounded-tl-none text-white text-sm font-black italic shadow-lg shadow-black/10 transition-all"
+							class="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl rounded-tl-none text-white text-sm font-black italic shadow-lg shadow-black/10 transition-all max-w-full"
 							style="background: {msg.gift.color || '#ef4444'}"
 						>
 							{#if msg.gift.img}
@@ -270,9 +286,45 @@
 								{msg.gift.name.toUpperCase()}
 							</div>
 						</div>
+					{:else if msg.type === 'letter'}
+						<div
+							class="inline-flex flex-col gap-3 px-4 py-3 rounded-2xl rounded-tl-none bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 max-w-full"
+						>
+							<div class="flex items-center flex-wrap gap-x-3 gap-y-2 border-b border-white/20 pb-2.5 mb-1.5">
+								{#if msg.recipient}
+									<div class="flex items-center gap-2 bg-black/15 px-2.5 py-1.5 rounded-xl border border-white/10 shrink-0 shadow-sm">
+										<span class="text-[9px] font-bold opacity-60 italic">TO:</span>
+										<div class="flex items-center gap-2">
+											<img 
+												src={getExternalMediaUrl(msg.recipient.avatar)} 
+												alt={msg.recipient.name} 
+												referrerpolicy="no-referrer"
+												class="w-5 h-5 rounded-full object-cover ring-1 ring-white/20" 
+												on:error={handleMediaError}
+											/>
+											<span class="text-[10px] font-black">{msg.recipient.name}</span>
+										</div>
+									</div>
+								{/if}
+
+								<div class="flex items-center gap-1.5 opacity-80 brightness-110">
+									{#if msg.recipient}
+										<div class="w-1 h-1 rounded-full bg-white/30 hidden sm:block"></div>
+									{/if}
+									<Trophy class="w-2.5 h-2.5" />
+									<span class="text-[9px] font-black uppercase tracking-widest">
+										{msg.letterType || 'FAN LETTER'}
+									</span>
+								</div>
+							</div>
+							
+							<p class="text-sm leading-relaxed font-medium italic">
+								"{msg.text}"
+							</p>
+						</div>
 					{:else}
 						<div
-							class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm"
+							class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm break-words overflow-wrap-anywhere whitespace-pre-wrap max-w-full"
 						>
 							{msg.text}
 						</div>

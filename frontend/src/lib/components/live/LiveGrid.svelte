@@ -19,7 +19,7 @@
 		class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 {variant ===
 		'theater'
 			? 'px-0'
-			: 'px-4'}"
+			: 'px-0 sm:px-4'}"
 	>
 		{#each Array(10) as _}
 			<div
@@ -85,7 +85,7 @@
 		class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 {variant ===
 		'theater'
 			? 'px-0'
-			: 'px-4'}"
+			: 'px-0 sm:px-4'}"
 	>
 		{#each liveList as stream, i (stream.platform + (stream.room_id || stream.live_id))}
 			<LiveCard {stream} {i} {variant} />

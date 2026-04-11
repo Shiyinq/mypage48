@@ -37,8 +37,10 @@ export interface LiveChatIDNMessage {
 	text: string;
 	avatar?: string;
 	timestamp: number;
-	type: 'chat' | 'gift';
+	type: 'chat' | 'gift' | 'letter';
 	gift?: { name: string; img: string; color?: string };
+	letterType?: string;
+	recipient?: { name: string; avatar: string };
 }
 
 export interface LiveChatShowroomMessage {

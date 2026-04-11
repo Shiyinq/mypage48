@@ -116,7 +116,7 @@
 
 <SEO title={$t('theater.events.title')} path="/jkt48/calendar" description={$t('seo.calendar')} />
 
-<div class="space-y-8 max-w-7xl mx-auto px-4 pt-4 md:pt-6 pb-12">
+<div class="space-y-8 max-w-7xl mx-auto px-0 sm:px-4 pt-4 md:pt-6 pb-12">
 	<div class="text-center space-y-4 mb-8">
 		<h1
 			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
@@ -135,7 +135,7 @@
 	>
 		<!-- Header -->
 		<div
-			class="flex items-center justify-between px-3 md:px-6 py-4 border-b border-gray-50 dark:border-zinc-800"
+			class="flex items-center justify-between px-1.5 md:px-6 py-4 border-b border-gray-50 dark:border-zinc-800"
 		>
 			<div class="relative">
 				<button

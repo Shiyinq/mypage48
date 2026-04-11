@@ -33,21 +33,21 @@
 	<div
 		class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 mb-4"
 	>
-		<p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+		<p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed pl-1">
 			{$t('settings.developer.description')}
 		</p>
 		<div
-			class="mt-3 flex items-start gap-2 bg-amber-50 dark:bg-amber-900/30 p-3 rounded-xl border border-amber-100 dark:border-amber-800"
+			class="mt-4 flex items-start gap-3 bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100 dark:border-amber-800/30"
 		>
-			<TriangleAlert class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-			<p class="text-xs text-amber-700 dark:text-amber-300">
+			<TriangleAlert class="w-4 h-4 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+			<p class="text-xs text-amber-700 dark:text-amber-400 font-medium leading-tight">
 				{$t('settings.developer.warning')}
 			</p>
 		</div>
 	</div>
 
 	<button
-		class="w-full py-3 rounded-xl bg-gray-900 dark:bg-zinc-800 text-white dark:text-gray-100 font-bold hover:bg-black dark:hover:bg-zinc-700 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-gray-300 dark:shadow-zinc-900/50 mb-4"
+		class="w-full py-3.5 rounded-xl bg-gray-900 dark:bg-zinc-800 text-white dark:text-gray-100 font-black uppercase text-xs tracking-widest hover:bg-black dark:hover:bg-zinc-700 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-gray-300 dark:shadow-zinc-900/50 mb-6"
 		on:click={handleGenerateClick}
 		disabled={generatingKey}
 	>
