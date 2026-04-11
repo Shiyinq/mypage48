@@ -6,6 +6,9 @@ export const GET: RequestHandler = async () => {
 		'',
 		'/login',
 		'/register',
+		'/jkt48/live',
+		'/jkt48/live/multiview',
+		'/jkt48/sorter',
 		'/about',
 		'/privacy',
 		'/terms',
@@ -14,10 +17,7 @@ export const GET: RequestHandler = async () => {
 		'/jkt48/members',
 		'/jkt48/calendar',
 		'/jkt48/events',
-		'/jkt48/event-history',
-		'/jkt48/live',
-		'/jkt48/live/multiview',
-		'/jkt48/sorter'
+		'/jkt48/event-history'
 	];
 
 	const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -30,9 +30,15 @@ ${pages
 		if (page === '') {
 			priority = '1.0';
 			changefreq = 'daily';
-		} else if (page === '/login' || page === '/register') {
+		} else if (
+			page === '/login' ||
+			page === '/register' ||
+			page === '/jkt48/live' ||
+			page === '/jkt48/live/multiview' ||
+			page === '/jkt48/sorter'
+		) {
 			priority = '0.9';
-			changefreq = 'monthly';
+			changefreq = page.includes('/live') ? 'daily' : 'monthly';
 		}
 
 		return `  <url>
