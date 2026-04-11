@@ -52,7 +52,7 @@
 		<div class="flex items-center min-w-0 flex-1 gap-2">
 			{#if headerInfo}
 				{@const activeTheme = themeClasses[headerInfo.theme || 'red']}
-				<div class="flex items-center gap-2 min-w-0 flex-shrink">
+				<div class="flex items-center gap-2 min-w-0 flex-1">
 					{#if headerInfo.showBackButton}
 						<button
 							on:click={headerInfo.handleBack}
@@ -66,9 +66,23 @@
 							<svelte:component this={headerInfo.icon} class="w-4 h-4" />
 						</div>
 					{/if}
-					<h1 class="font-black text-sm uppercase tracking-tight text-themed truncate leading-none pt-0.5">
-						{headerInfo.title}
-					</h1>
+					<div class="flex items-center gap-1.5 min-w-0 flex-1">
+						<h1 class="font-black text-sm uppercase tracking-tight text-themed truncate leading-none pt-0.5">
+							{headerInfo.title}
+						</h1>
+						{#if headerInfo.badge}
+							<div
+								class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 leading-none whitespace-nowrap shrink-0 ml-auto flex items-center gap-1.5"
+							>
+								{#if headerInfo.loading}
+									<div
+										class="w-2 h-2 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin"
+									></div>
+								{/if}
+								{headerInfo.badge}
+							</div>
+						{/if}
+					</div>
 				</div>
 
 				<!-- Mobile Actions -->

@@ -4,6 +4,8 @@ import type { ComponentType } from 'svelte';
 export interface PageHeaderState {
 	title: string;
 	subtitle?: string;
+	badge?: string;
+	loading?: boolean;
 	icon?: ComponentType;
 	theme?: 'red' | 'blue' | 'green' | 'purple' | 'pink' | 'amber' | 'yellow' | 'orange' | 'rose' | 'indigo';
 	showBackButton?: boolean;
