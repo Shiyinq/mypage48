@@ -156,7 +156,7 @@
 
 <SEO title={$t('theater.members.title')} path="/jkt48/members" description={$t('seo.members')} />
 
-<div class="space-y-12 pt-4 md:pt-6 pb-12">
+<div class="space-y-8 pt-4 md:pt-6 pb-12 px-0 sm:px-0">
 	<div class="text-center space-y-4 mb-8">
 		<h1
 			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
@@ -171,17 +171,17 @@
 	</div>
 
 	<!-- Search and Filters -->
-	<div class="space-y-6 mb-10">
+	<div class="space-y-6 mb-2">
 		<div class="flex flex-col md:flex-row gap-4 md:items-center justify-between">
 			<!-- Generation Filters -->
-			<div class="flex-1 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+			<div class="flex-1 w-full overflow-x-auto pb-2 -mx-3 px-3 md:mx-0 md:px-0 scrollbar-hide">
 				<div class="flex items-center gap-2">
 					<button
 						on:click={() => setGeneration(null)}
-						class={`px-4 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+						class={`px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
 							selectedGeneration === null
-								? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
-								: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 border border-gray-100 dark:border-zinc-700'
+								? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/20'
+								: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-zinc-800 hover:text-red-600 dark:hover:text-red-400'
 						}`}
 					>
 						{$t('common.all')}
@@ -196,10 +196,10 @@
 						{#each generations as gen}
 							<button
 								on:click={() => setGeneration(gen)}
-								class={`px-4 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+								class={`px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
 									selectedGeneration === gen
-										? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
-										: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 border border-gray-100 dark:border-zinc-700'
+										? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/20'
+										: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-zinc-800 hover:text-red-600 dark:hover:text-red-400'
 								}`}
 							>
 								Gen {gen}
@@ -211,26 +211,26 @@
 
 			<!-- Search Bar -->
 			<div class="relative w-full md:w-80 shrink-0">
-				<Search class="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+				<Search class="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
 				<input
 					type="text"
 					placeholder={$t('common.search')}
 					value={searchQuery}
 					on:input={handleSearch}
-					class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 rounded-full text-sm text-themed placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-sm"
+					class="w-full pl-9.5 pr-4 py-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 rounded-full text-sm text-themed placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-sm"
 				/>
 			</div>
 		</div>
 
 		<!-- Team Filters -->
-		<div class="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+		<div class="overflow-x-auto pb-4 -mx-3 px-3 md:mx-0 md:px-0 scrollbar-hide">
 			<div class="flex items-center gap-2">
 				<button
 					on:click={() => setType(null)}
-					class={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+					class={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
 						selectedType === null
-							? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
-							: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 hover:border-red-500/50'
+							? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/20'
+							: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-zinc-800 hover:border-red-500/50'
 					}`}
 				>
 					Semua Member
@@ -238,10 +238,10 @@
 				{#each teamOrder as type}
 					<button
 						on:click={() => setType(type)}
-						class={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer border ${
+						class={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer border ${
 							selectedType === type
-								? teamColors[type] || 'bg-red-600 text-white'
-								: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-zinc-700 hover:border-themed'
+								? teamColors[type].replace('bg-pink-50', 'bg-red-50 text-red-600 ring-1 ring-red-100 shadow-sm border-0')
+								: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-zinc-800 hover:border-themed'
 						}`}
 					>
 						{teamNames[type] || type}
@@ -254,7 +254,7 @@
 	<!-- Members Grid -->
 	{#if (!mounted || $isMembersLoading) && membersList.length === 0}
 		<div
-			class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6"
+			class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6"
 		>
 			{#each Array(12) as _}
 				<MemberCardSkeleton />
@@ -287,9 +287,9 @@
 		</EmptyState>
 	{:else}
 		{#each allSortedTypes as type}
-			<div class="mb-16 last:mb-0">
+			<div class="mb-10 last:mb-0">
 				<!-- Group Header -->
-				<div class="flex items-center gap-4 mb-8 group/header">
+				<div class="flex items-center gap-4 mb-2 group/header">
 					<div
 						class={`h-10 w-2 rounded-full shadow-lg ${accentColors[type] || 'bg-red-600 shadow-red-500/20'}`}
 					></div>
@@ -305,7 +305,7 @@
 
 				<!-- Grid -->
 				<div
-					class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6"
+					class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6"
 				>
 					{#each groupedMembers[type] as member (member.id)}
 						<MemberCard {member} on:click={() => openMemberDetail(member)} />
@@ -317,7 +317,7 @@
 		<!-- Skeletons for Infinite Scroll (Appending) -->
 		{#if $isMembersLoading && membersList.length > 0}
 			<div
-				class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 mt-6"
+				class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6 mt-6"
 			>
 				{#each Array(6) as _}
 					<MemberCardSkeleton />

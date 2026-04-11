@@ -32,7 +32,7 @@
 <div class="py-12 min-h-screen">
 	<!-- Header Section -->
 	<header class="mb-12" in:fly={{ y: -20, duration: 600 }}>
-		<div class="max-w-7xl mx-auto px-6 flex flex-col items-center">
+		<div class="max-w-7xl mx-auto px-0 sm:px-6 flex flex-col items-center">
 			<div class="flex flex-col md:flex-row items-center justify-between w-full gap-6">
 				<div class="flex-1 text-center md:text-left">
 					<div
@@ -89,7 +89,7 @@
 		</div>
 	</header>
 
-	<div class="max-w-7xl mx-auto px-4 md:px-0">
+	<div class="max-w-7xl mx-auto px-0 md:px-0">
 		<LiveGrid liveList={$liveList} loading={$liveLoading} {initialLoading} />
 	</div>
 </div>
