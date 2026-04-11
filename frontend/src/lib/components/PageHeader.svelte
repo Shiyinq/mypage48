@@ -23,6 +23,7 @@
 	export let showBackButton = false;
 	export let backUrl: string | undefined = undefined;
 	export let loading = false;
+	export let hidden = false;
 
 	const themeClasses = {
 		red: {
@@ -121,50 +122,52 @@
 	};
 </script>
 
-<div class="flex flex-row flex-wrap items-center justify-between w-full gap-y-3 gap-x-2 sm:gap-x-4 md:gap-x-6 px-1">
-	<div class="hidden sm:flex items-center gap-2 sm:gap-4 min-w-0">
-		{#if showBackButton}
-			<button
-				on:click={handleBack}
-				class="p-2 sm:p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer flex-shrink-0"
-			>
-				<ArrowLeft class="w-4 h-4 sm:w-5 sm:h-5" />
-			</button>
-		{/if}
+{#if !hidden}
+	<div class="flex flex-row flex-wrap items-center justify-between w-full gap-y-3 gap-x-2 sm:gap-x-4 md:gap-x-6 px-1">
+		<div class="hidden sm:flex items-center gap-2 sm:gap-4 min-w-0">
+			{#if showBackButton}
+				<button
+					on:click={handleBack}
+					class="p-2 sm:p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer flex-shrink-0"
+				>
+					<ArrowLeft class="w-4 h-4 sm:w-5 sm:h-5" />
+				</button>
+			{/if}
 
-		{#if icon}
+			{#if icon}
+				<div
+					class="p-1.5 rounded-lg sm:p-3 sm:rounded-2xl {colors.bg} {colors.text} shadow-lg {colors.shadow} border-2 border-white dark:border-gray-800 flex-shrink-0"
+					style="transform: rotate({rotation}deg)"
+				>
+					<svelte:component this={icon} class="w-4 h-4 sm:w-6 sm:h-6" />
+				</div>
+			{/if}
+
+			<div class="min-w-0">
+				<h2
+					class="text-xl sm:text-2xl lg:text-3xl font-black text-themed tracking-tighter sm:tracking-tight leading-none relative w-fit truncate max-w-full"
+				>
+					{title}
+					<span
+						class={`absolute -bottom-1 left-0 w-full h-1.5 sm:h-2.5 ${colors.underline} -z-10 transform -skew-x-12 rounded-sm`}
+					></span>
+				</h2>
+				{#if subtitle}
+					<p
+						class="text-[11px] sm:text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1 sm:mt-1.5 font-medium line-clamp-1"
+					>
+						{subtitle}
+					</p>
+				{/if}
+			</div>
+		</div>
+
+		{#if $$slots.actions}
 			<div
-				class="p-1.5 rounded-lg sm:p-3 sm:rounded-2xl {colors.bg} {colors.text} shadow-lg {colors.shadow} border-2 border-white dark:border-gray-800 flex-shrink-0"
-				style="transform: rotate({rotation}deg)"
+				class={`flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-1 overflow-x-auto scrollbar-hide no-scrollbar max-w-full ${actions ? 'hidden sm:flex' : ''}`}
 			>
-				<svelte:component this={icon} class="w-4 h-4 sm:w-6 sm:h-6" />
+				<slot name="actions" />
 			</div>
 		{/if}
-
-		<div class="min-w-0">
-			<h2
-				class="text-xl sm:text-2xl lg:text-3xl font-black text-themed tracking-tighter sm:tracking-tight leading-none relative w-fit truncate max-w-full"
-			>
-				{title}
-				<span
-					class={`absolute -bottom-1 left-0 w-full h-1.5 sm:h-2.5 ${colors.underline} -z-10 transform -skew-x-12 rounded-sm`}
-				></span>
-			</h2>
-			{#if subtitle}
-				<p
-					class="text-[11px] sm:text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1 sm:mt-1.5 font-medium line-clamp-1"
-				>
-					{subtitle}
-				</p>
-			{/if}
-		</div>
 	</div>
-
-	{#if $$slots.actions}
-		<div
-			class={`flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-1 overflow-x-auto scrollbar-hide no-scrollbar max-w-full ${actions ? 'hidden sm:flex' : ''}`}
-		>
-			<slot name="actions" />
-		</div>
-	{/if}
-</div>
+{/if}

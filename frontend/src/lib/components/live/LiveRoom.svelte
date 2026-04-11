@@ -40,6 +40,7 @@
 		Sun,
 		Moon,
 		RotateCw,
+		Tv,
 		ExternalLink
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
@@ -51,11 +52,14 @@
 	} from '$lib/utils/media';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 
 	/** Base path determines back-links and other-live member hrefs.
 	 *  Use '/jkt48/live' for public pages, '/theater/live' for theater pages. */
 	export let basePath: string = '/jkt48/live';
+	$: isTheater = basePath.startsWith('/theater');
 
+	/** Placeholder header for mobile sync - only for theater mode */
 	const { t } = useTranslation();
 	$: ({ platform, id } = $page.params);
 
@@ -442,12 +446,24 @@
 <div
 	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out {isFocusMode
 		? 'fixed inset-0 !top-0 !mt-0 z-[5000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-screen w-screen'
-		: 'h-[calc(100vh-80px)] mt-4 px-4 pb-4'}"
+		: `h-[calc(100vh-80px)] ${isTheater ? 'mt-1 sm:mt-4 px-0 sm:px-4 pb-2 sm:pb-4' : 'mt-4 px-4 pb-4'}`}"
 >
 	<!-- Main Player Area -->
 	<div class="flex-[1.5] lg:flex-1 flex flex-col gap-4 min-h-0 p-1">
+		{#if isTheater}
+			<PageHeader
+				title={memberName || 'JKT48 LIVE'}
+				subtitle={streamTitle}
+				icon={Tv}
+				theme="red"
+				showBackButton={true}
+				backUrl={basePath}
+				hidden={true}
+			/>
+		{/if}
+
 		<!-- Back Button & Info -->
-		<div class="flex items-center justify-between">
+		<div class="{isTheater ? 'hidden sm:flex' : 'flex'} items-center justify-between">
 			<div class="flex items-center gap-3">
 				{#if !isFocusMode}
 					<a
@@ -498,7 +514,9 @@
 
 		<!-- Video Player -->
 		<div
-			class="relative flex-1 bg-black rounded-3xl overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm"
+			class="relative flex-1 bg-black {isTheater
+				? 'rounded-xl sm:rounded-3xl'
+				: 'rounded-3xl'} overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm"
 		>
 			{#if initializing}
 				<div
