@@ -9,6 +9,7 @@
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import Header from '$lib/components/Header.svelte';
+	import MobileHeader from '$lib/components/navigation/MobileHeader.svelte';
 	import PlaygroundHeader from '$lib/components/playground/PlaygroundHeader.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import { Check } from 'lucide-svelte';
@@ -253,7 +254,12 @@
 			{#if isPlaygroundRoute}
 				<PlaygroundHeader />
 			{:else if !isFullScreenRoute}
-				<Header />
+				<div class="hidden md:block">
+					<Header />
+				</div>
+				<div class="block md:hidden">
+					<MobileHeader />
+				</div>
 			{/if}
 			<main class="flex-1 w-full relative">
 				<slot />

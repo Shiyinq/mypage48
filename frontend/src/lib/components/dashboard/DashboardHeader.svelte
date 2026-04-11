@@ -37,6 +37,14 @@
 	subtitle={$t('dashboard.subtitle')}
 	icon={LayoutDashboard}
 	theme="red"
+	actions={[
+		{
+			icon: Filter,
+			label: $t('common.filters'),
+			onClick: onOpenFilter,
+			theme: isOpen ? 'red' : undefined
+		}
+	]}
 >
 	<div slot="actions" class="flex items-center gap-2">
 		<span
