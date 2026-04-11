@@ -75,6 +75,7 @@
 							{#each headerInfo.actions as action}
 								<button
 									on:click={action.onClick}
+									data-filter-toggle="true"
 									class={`p-1.5 rounded-full transition-colors cursor-pointer ${
 										action.theme === 'red'
 											? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800'

@@ -195,7 +195,7 @@
 			<div
 				use:clickOutside
 				transition:slide={{ duration: 200 }}
-				class="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] md:w-auto md:min-w-[400px]"
+				class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
 			>
 				<DashboardFilters
 					bind:isAllData={$dashboardFilter.isAllData}
