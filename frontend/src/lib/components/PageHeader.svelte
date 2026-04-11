@@ -136,7 +136,7 @@
 
 {#if !hidden}
 	<div
-		class="flex flex-row flex-wrap items-center justify-between w-full gap-y-3 gap-x-2 sm:gap-x-4 md:gap-x-6 px-1"
+		class="flex flex-row flex-wrap items-center justify-between w-full gap-y-3 gap-x-2 sm:gap-x-4 md:gap-x-6 px-0"
 	>
 		<div class="hidden sm:flex items-center gap-2 sm:gap-4 min-w-0">
 			{#if showBackButton}

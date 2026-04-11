@@ -115,7 +115,7 @@
 </script>
 
 <div
-	class="max-w-6xl mx-auto {isLiveDetailPage
+	class="{(isLiveDetailPage || isNewsDetailPage || isDetailPage) ? 'max-w-5xl' : 'max-w-6xl'} mx-auto {isLiveDetailPage
 		? 'pt-0 sm:pt-0 px-1.5 sm:px-4'
 		: 'pt-4 sm:pt-6 px-4'} pb-24"
 >
