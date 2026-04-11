@@ -242,7 +242,8 @@
 				{#if !isFullScreenRoute}
 					<LandingNavbar showLogin={false} />
 				{/if}
-				<div class={isFullScreenRoute ? 'w-full h-full' : 'max-w-7xl mx-auto px-4 py-8 flex-1'}>
+				{@const isLivePublicDetailPage = $page.url.pathname.startsWith('/jkt48/live/') && $page.params.id}
+				<div class={isFullScreenRoute ? 'w-full h-full' : isLivePublicDetailPage ? 'max-w-7xl mx-auto p-0 sm:p-2 sm:px-4 flex-1' : 'max-w-7xl mx-auto px-4 py-8 flex-1'}>
 					<slot />
 				</div>
 				{#if !isFullScreenRoute}

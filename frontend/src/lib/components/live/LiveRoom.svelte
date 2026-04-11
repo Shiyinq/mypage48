@@ -446,7 +446,7 @@
 <div
 	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out {isFocusMode
 		? 'fixed inset-0 !top-0 !mt-0 z-[5000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-screen w-screen'
-		: `h-[calc(100vh-80px)] ${isTheater ? 'mt-1 sm:mt-4 px-0 sm:px-4 pb-2 sm:pb-4' : 'mt-4 px-4 pb-4'}`}"
+		: 'h-[calc(100vh-80px)] mt-1 sm:mt-4 px-0 sm:px-4 pb-2 sm:pb-4'}"
 >
 	<!-- Main Player Area -->
 	<div class="flex-[1.5] lg:flex-1 flex flex-col gap-4 min-h-0 p-1">
@@ -463,7 +463,11 @@
 		{/if}
 
 		<!-- Back Button & Info -->
-		<div class="{isTheater ? 'hidden sm:flex' : 'flex'} items-center justify-between">
+		<div
+			class="{isTheater ? 'hidden sm:flex' : 'flex'} items-center justify-between {isTheater
+				? ''
+				: 'px-4 sm:px-0'}"
+		>
 			<div class="flex items-center gap-3">
 				{#if !isFocusMode}
 					<a
@@ -479,7 +483,7 @@
 					<div class="flex flex-col gap-0.5">
 						<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2">
 							<span
-								class="text-xs font-black uppercase tracking-[0.15em] text-slate-900 dark:text-white leading-none truncate max-w-[120px] sm:max-w-none"
+								class="text-xs font-black uppercase tracking-[0.15em] text-slate-900 dark:text-white leading-none truncate max-w-[200px] sm:max-w-none"
 								>{memberName}</span
 							>
 							<span
@@ -514,9 +518,7 @@
 
 		<!-- Video Player -->
 		<div
-			class="relative flex-1 bg-black {isTheater
-				? 'rounded-xl sm:rounded-3xl'
-				: 'rounded-3xl'} overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm"
+			class="relative flex-1 bg-black rounded-xl sm:rounded-3xl overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm"
 		>
 			{#if initializing}
 				<div
