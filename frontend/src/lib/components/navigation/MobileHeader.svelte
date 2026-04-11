@@ -62,11 +62,11 @@
 						</button>
 					{/if}
 					{#if headerInfo.icon}
-						<div class="p-1 rounded-md {activeTheme} flex-shrink-0">
-							<svelte:component this={headerInfo.icon} class="w-3.5 h-3.5" />
+						<div class="p-1.5 rounded-md {activeTheme} flex-shrink-0">
+							<svelte:component this={headerInfo.icon} class="w-4 h-4" />
 						</div>
 					{/if}
-					<h1 class="font-black text-[12px] uppercase tracking-tighter text-themed truncate leading-none pt-0.5">
+					<h1 class="font-black text-sm uppercase tracking-tight text-themed truncate leading-none pt-0.5">
 						{headerInfo.title}
 					</h1>
 				</div>

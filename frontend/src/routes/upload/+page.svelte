@@ -21,6 +21,8 @@
 	import TicketForm from '$lib/components/upload/TicketForm.svelte';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
+	import { pageHeaderStore } from '$lib/stores/ui';
+	import { ScanLine } from 'lucide-svelte';
 
 	const { t } = useTranslation();
 
@@ -29,6 +31,11 @@
 
 	onMount(() => {
 		setlistsStore.load();
+		pageHeaderStore.set({
+			title: $t('upload.title'),
+			icon: ScanLine,
+			theme: 'red'
+		});
 	});
 
 	let mode: 'SELECTION' | 'ANALYZING' | 'EDITING' = 'SELECTION';
