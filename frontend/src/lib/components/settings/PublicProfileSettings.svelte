@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
-	import { userProfile, isInitialDataLoaded } from '$lib/stores';
+	import { userProfile, isInitialDataLoaded, isUserProfileLoading } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Share2, Copy, ExternalLink } from 'lucide-svelte';
 	import { ErrorState } from '$lib/components';
@@ -110,7 +110,7 @@
 	</div>
 
 	{#if !$userProfile.data}
-		{#if $isInitialDataLoaded && !$userProfile.loading}
+		{#if $isInitialDataLoaded && !$isUserProfileLoading}
 			<!-- Error State if data is loaded but profile is missing -->
 			<div class="mb-4">
 				<ErrorState
