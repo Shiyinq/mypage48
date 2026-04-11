@@ -2,6 +2,20 @@
 
 Follow this guide to deploy MyPage48 on a single Linux VPS with full security and automation.
 
+---
+
+## 0. Quick Setup (Automated - Recommended)
+
+If you are starting on a fresh Ubuntu VPS, you can automate sections 2 and 3 using our setup script:
+
+```bash
+# Download and run the setup script
+curl -fsSL https://raw.githubusercontent.com/Shiyinq/mypage48/main/scripts/setup-server.sh | bash
+```
+This script will handle system updates, Docker installation, Firewall configuration, Swap file creation, and interactive `.env` setup.
+
+---
+
 ## 1. DNS & Cloudflare Setup
 
 Before setting up the server, configure your domain in Cloudflare:
