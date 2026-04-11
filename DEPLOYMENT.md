@@ -177,3 +177,40 @@ If `docker ps` shows the backend as unhealthy:
 - **Log Check**: `docker logs mypage48-backend --tail 100` or `docker exec mypage48-backend cat /var/log/mypage48/error.log`.
 - **MinIO Connection**: Ensure `MINIO_ENDPOINT=minio:9000` and `MINIO_SECURE=false` in `.env` for internal communication.
 - **Database Connection**: Ensure MongoDB is healthy and the connection string uses the hostname `mongodb`.
+
+---
+
+## 9. Auto-Deployment (CI/CD Setup)
+
+To enable automatic updates every time you `git push origin main`, follow these steps to link GitHub with your VPS.
+
+### 9.1 Generate Deployment Key
+Run this on your laptop (or anywhere) to create a dedicated key for GitHub:
+```bash
+ssh-keygen -t rsa -b 4096 -f github_deploy_key
+```
+*Note: Press **Enter** when asked for a passphrase (leave it empty) so the process can be automated.*
+
+### 9.2 Add Public Key to VPS
+You need to tell your VPS to trust this new key:
+1.  Copy the content of `github_deploy_key.pub`.
+2.  Login to your VPS and run: `nano ~/.ssh/authorized_keys`.
+3.  Paste the key on a **new line** at the bottom.
+4.  Save and exit (**Ctrl+O, Enter, Ctrl+X**).
+5.  **Set Permissions** (Required for security):
+    ```bash
+    chmod 700 ~/.ssh
+    chmod 600 ~/.ssh/authorized_keys
+    ```
+
+### 9.3 Add Private Key to GitHub Secrets
+1.  **View Private Key**: Run this on your laptop to see the content:
+    ```bash
+    cat github_deploy_key
+    ```
+2.  Go to your GitHub Repository -> **Settings** -> **Secrets and variables** -> **Actions**.
+3.  Add a **New repository secret** named `SSH_PRIVATE_KEY`.
+4.  Paste the **entire content** (including the BEGIN/END lines).
+5.  Add other required secrets: `REMOTE_HOST` (IP), `REMOTE_USER` (e.g. `myremote`), and `REMOTE_TARGET` (e.g. `/home/myremote/mypage48`).
+
+Now, every push to `main` will trigger a fresh deployment!
