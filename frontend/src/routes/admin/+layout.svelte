@@ -6,7 +6,8 @@
 	import NotFound from '$lib/components/NotFound.svelte';
 	import { ShieldCheck, Users, Music, UserCheck, MessageSquare } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { goto } from '$app/navigation'; // Added this import for goto
+	import { goto } from '$app/navigation';
+	import NavPills from '$lib/components/navigation/NavPills.svelte';
 
 	const { t } = useTranslation();
 
@@ -33,43 +34,32 @@
 		}
 	}
 
-	// Navigation tabs with theme colors
+	// Navigation tabs
 	$: tabs = [
 		{
-			path: '/admin',
+			href: '/admin',
 			label: $t('admin.dashboard.tabs.users'),
 			icon: UserCheck,
-			activeClass:
-				'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-transparent',
-			inactiveClass:
-				'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-zinc-700 hover:bg-red-50 hover:text-red-600 hover:border-red-100 dark:hover:bg-red-900/20'
+			exact: true,
+			activeClass: 'bg-red-500 shadow-red-500/20'
 		},
 		{
-			path: '/admin/members',
+			href: '/admin/members',
 			label: $t('admin.dashboard.tabs.members'),
 			icon: Users,
-			activeClass:
-				'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400 border border-transparent',
-			inactiveClass:
-				'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-zinc-700 hover:bg-pink-50 hover:text-pink-600 hover:border-pink-100 dark:hover:bg-pink-900/20'
+			activeClass: 'bg-pink-500 shadow-pink-500/20'
 		},
 		{
-			path: '/admin/setlists',
+			href: '/admin/setlists',
 			label: $t('admin.dashboard.tabs.setlists'),
 			icon: Music,
-			activeClass:
-				'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 border border-transparent',
-			inactiveClass:
-				'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-zinc-700 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-100 dark:hover:bg-purple-900/20'
+			activeClass: 'bg-purple-500 shadow-purple-500/20'
 		},
 		{
-			path: '/admin/feedback',
+			href: '/admin/feedback',
 			label: $t('admin.dashboard.tabs.feedback'),
 			icon: MessageSquare,
-			activeClass:
-				'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400 border border-transparent',
-			inactiveClass:
-				'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-zinc-700 hover:bg-cyan-50 hover:text-cyan-600 hover:border-cyan-100 dark:hover:bg-cyan-900/20'
+			activeClass: 'bg-cyan-500 shadow-cyan-500/20'
 		}
 	];
 
@@ -88,20 +78,13 @@
 			icon={ShieldCheck}
 			theme="red"
 		>
-			<div slot="actions" class="flex items-center gap-2">
-				{#each tabs as tab}
-					<a
-						href={tab.path}
-						class="px-4 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm flex items-center gap-2 cursor-pointer {currentPath ===
-						tab.path
-							? tab.activeClass
-							: tab.inactiveClass}"
-					>
-						<svelte:component this={tab.icon} class="w-4 h-4" />
-						{tab.label}
-					</a>
-				{/each}
-			</div>
+			<NavPills slot="actions" items={tabs} {currentPath}>
+				<div slot="item" let:item let:isActive>
+					<div class="flex items-center justify-center px-0.5">
+						<span>{item.label}</span>
+					</div>
+				</div>
+			</NavPills>
 		</PageHeader>
 
 		<div class="mt-8">

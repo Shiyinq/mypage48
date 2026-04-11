@@ -37,7 +37,9 @@
 				>
 					{$t('upload.scanTicket')}
 				</h3>
-				<p class="text-[12px] sm:text-sm font-medium text-gray-600 dark:text-gray-400 leading-relaxed">
+				<p
+					class="text-[12px] sm:text-sm font-medium text-gray-600 dark:text-gray-400 leading-relaxed"
+				>
 					{$t('upload.scanDescription')}
 				</p>
 			</div>

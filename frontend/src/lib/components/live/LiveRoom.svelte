@@ -487,14 +487,14 @@
 				: 'px-4 sm:px-0'}"
 		>
 			<div class="flex items-center gap-3">
-					<a
-						href={basePath}
-						class="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
-						title={$t('theater.live.back')}
-					>
-						<ArrowLeft size={20} />
-					</a>
-					<div class="h-4 w-px bg-slate-200 dark:bg-zinc-800 ml-1 hidden sm:block"></div>
+				<a
+					href={basePath}
+					class="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
+					title={$t('theater.live.back')}
+				>
+					<ArrowLeft size={20} />
+				</a>
+				<div class="h-4 w-px bg-slate-200 dark:bg-zinc-800 ml-1 hidden sm:block"></div>
 				{#if memberName}
 					<div class="flex flex-col gap-0.5">
 						<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2">
@@ -628,21 +628,21 @@
 							{#if isFullscreen && memberName}
 								<div class="flex items-center gap-3 min-w-0">
 									<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2 min-w-0">
-									<h2
-										class="text-white text-lg sm:text-2xl font-black truncate drop-shadow-xl tracking-tight"
-									>
-										{memberName}
-									</h2>
-									{#if streamTitle}
-										<span
-											class="text-white/60 text-[10px] sm:text-xs font-bold tracking-widest truncate drop-shadow-lg hidden sm:inline"
+										<h2
+											class="text-white text-lg sm:text-2xl font-black truncate drop-shadow-xl tracking-tight"
 										>
-											{streamTitle}
-										</span>
-									{/if}
+											{memberName}
+										</h2>
+										{#if streamTitle}
+											<span
+												class="text-white/60 text-[10px] sm:text-xs font-bold tracking-widest truncate drop-shadow-lg hidden sm:inline"
+											>
+												{streamTitle}
+											</span>
+										{/if}
+									</div>
 								</div>
-							</div>
-						{/if}
+							{/if}
 
 							<!-- Stats (Mobile Only) -->
 							<div class="flex sm:hidden items-center gap-3 flex-shrink-0 mt-0.5">

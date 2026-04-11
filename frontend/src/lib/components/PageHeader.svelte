@@ -12,14 +12,26 @@
 	export let title: string;
 	export let subtitle: string = '';
 	export let badge: string | undefined = undefined;
-	export let actions: Array<{
-		icon: ComponentType;
-		label?: string;
-		onClick: () => void;
-		theme?: string;
-	}> | undefined = undefined;
+	export let actions:
+		| Array<{
+				icon: ComponentType;
+				label?: string;
+				onClick: () => void;
+				theme?: string;
+		  }>
+		| undefined = undefined;
 	export let rotation: number = -6;
-	export let theme: 'red' | 'blue' | 'green' | 'purple' | 'pink' | 'amber' | 'yellow' | 'orange' | 'rose' | 'indigo' = 'red';
+	export let theme:
+		| 'red'
+		| 'blue'
+		| 'green'
+		| 'purple'
+		| 'pink'
+		| 'amber'
+		| 'yellow'
+		| 'orange'
+		| 'rose'
+		| 'indigo' = 'red';
 	export let showBackButton = false;
 	export let backUrl: string | undefined = undefined;
 	export let loading = false;
@@ -95,12 +107,12 @@
 
 	$: {
 		if (title) {
-			pageHeaderStore.set({ 
-				title, 
-				subtitle, 
+			pageHeaderStore.set({
+				title,
+				subtitle,
 				badge,
 				loading,
-				icon, 
+				icon,
 				theme,
 				showBackButton,
 				handleBack,
@@ -123,7 +135,9 @@
 </script>
 
 {#if !hidden}
-	<div class="flex flex-row flex-wrap items-center justify-between w-full gap-y-3 gap-x-2 sm:gap-x-4 md:gap-x-6 px-1">
+	<div
+		class="flex flex-row flex-wrap items-center justify-between w-full gap-y-3 gap-x-2 sm:gap-x-4 md:gap-x-6 px-0"
+	>
 		<div class="hidden sm:flex items-center gap-2 sm:gap-4 min-w-0">
 			{#if showBackButton}
 				<button
@@ -164,7 +178,7 @@
 
 		{#if $$slots.actions}
 			<div
-				class={`flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-1 overflow-x-auto scrollbar-hide no-scrollbar max-w-full ${actions ? 'hidden sm:flex' : ''}`}
+				class={`flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-2 overflow-visible max-w-full ${actions ? 'hidden sm:flex' : ''}`}
 			>
 				<slot name="actions" />
 			</div>

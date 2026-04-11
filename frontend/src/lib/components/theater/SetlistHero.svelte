@@ -28,21 +28,21 @@
 	</div>
 
 	<!-- Content Container -->
-	<div class="relative z-10 p-8 md:p-12 w-full">
-		<div class="flex items-start justify-between gap-6 mb-8 md:mb-12">
-			<div class="space-y-4 max-w-2xl">
+	<div class="relative z-10 p-6 md:p-12 w-full">
+		<div class="flex items-start justify-between gap-6 mb-6 md:mb-12">
+			<div class="space-y-3 md:space-y-4 max-w-full md:max-w-2xl">
 				<!-- Badges -->
 				<div class="flex flex-wrap gap-2 animate-slide-up" style="animation-delay: 100ms;">
 					{#if detail.watched.isMostWatched}
 						<span
-							class="px-3 py-1 bg-yellow-400/20 backdrop-blur-md border border-yellow-400/30 text-yellow-300 text-xs font-bold rounded-full flex items-center gap-1.5 shadow-lg shadow-yellow-900/20"
+							class="px-2.5 py-1 bg-yellow-400/20 backdrop-blur-md border border-yellow-400/30 text-yellow-300 text-[10px] md:text-xs font-bold rounded-full flex items-center gap-1 md:gap-1.5 shadow-lg shadow-yellow-900/20"
 						>
-							<Trophy class="w-3.5 h-3.5" />
+							<Trophy class="w-3 h-3 md:w-3.5 md:h-3.5" />
 							{$t('shows.top')}
 						</span>
 					{/if}
 					<span
-						class="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-xs font-medium rounded-full"
+						class="px-2.5 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-[10px] md:text-xs font-medium rounded-full"
 					>
 						{detail.type === 'setlist'
 							? $t('theater.setlists.section')
@@ -53,12 +53,12 @@
 				<!-- Title -->
 				<div class="animate-slide-up" style="animation-delay: 200ms;">
 					<h1
-						class="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1] mb-2 drop-shadow-lg"
+						class="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15] mb-2 drop-shadow-lg"
 					>
 						{detail.title}
 					</h1>
 					{#if detail.titleJapanese}
-						<p class="text-xl text-white/50 font-medium tracking-wide">
+						<p class="text-base md:text-xl text-white/50 font-medium tracking-wide">
 							{detail.titleJapanese}
 						</p>
 					{/if}
@@ -66,7 +66,7 @@
 
 				<!-- Description -->
 				<p
-					class="text-gray-300 text-sm md:text-base leading-relaxed max-w-xl animate-slide-up"
+					class="text-gray-300 text-xs md:text-base leading-relaxed max-w-xl animate-slide-up line-clamp-3 md:line-clamp-none"
 					style="animation-delay: 300ms;"
 				>
 					{detail.description}

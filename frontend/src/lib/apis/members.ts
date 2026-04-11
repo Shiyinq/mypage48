@@ -74,14 +74,14 @@ export const members = {
 		});
 	},
 
-	update: async (memberId: number, data: Partial<Member>) => {
+	update: async (memberId: string | number, data: Partial<Member>) => {
 		return client<Member>(`/members/${memberId}`, {
 			method: 'PUT',
 			body: JSON.stringify(data)
 		});
 	},
 
-	delete: async (memberId: number) => {
+	delete: async (memberId: string | number) => {
 		return client<{ message: string }>(`/members/${memberId}`, {
 			method: 'DELETE'
 		});

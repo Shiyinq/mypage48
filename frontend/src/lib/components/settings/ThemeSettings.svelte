@@ -68,19 +68,25 @@
 						<p class="font-bold text-sm text-gray-800 dark:text-gray-200">
 							{$t(`settings.theme.${option.value}`)}
 						</p>
-						<p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5 max-w-[120px] md:max-w-none">
+						<p
+							class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5 max-w-[120px] md:max-w-none"
+						>
 							{$t(`settings.theme.${option.value}Description`)}
 						</p>
 					</div>
 				</div>
-				
+
 				<div class="flex-shrink-0">
 					{#if $theme === option.value}
-						<div class="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center shadow-sm shadow-red-500/20">
+						<div
+							class="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center shadow-sm shadow-red-500/20"
+						>
 							<Check class="w-3.5 h-3.5 text-white" />
 						</div>
 					{:else}
-						<div class="w-6 h-6 rounded-full border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-800"></div>
+						<div
+							class="w-6 h-6 rounded-full border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-800"
+						></div>
 					{/if}
 				</div>
 			</button>

@@ -18,7 +18,8 @@
 		Tv,
 		Calendar,
 		ArrowUpDown,
-		Users
+		Users,
+		Crown
 	} from 'lucide-svelte';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -35,7 +36,7 @@
 	function handleScroll() {
 		// Only hide on mobile devices (consistent with md:hidden)
 		if (window.innerWidth >= 768) return;
-		
+
 		const currentScrollY = window.scrollY;
 		const delta = Math.abs(currentScrollY - lastScrollY);
 
@@ -52,6 +53,7 @@
 
 	const secondaryLinks = [
 		{ href: '/memories', icon: ImageIcon, label: 'nav.memories', color: 'text-pink-500' },
+		{ href: '/top-2shot', icon: Crown, label: 'nav.top2shot', color: 'text-indigo-500' },
 		{ href: '/journal', icon: BookOpen, label: 'nav.journal', color: 'text-green-500' },
 		{ href: '/achievements', icon: Trophy, label: 'nav.achievements', color: 'text-amber-500' },
 		{ href: '/history', icon: History, label: 'nav.history', color: 'text-blue-500' }
@@ -96,8 +98,12 @@
 		class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[70] shadow-2xl border-t border-gray-100 dark:border-white/5 pb-8 overflow-hidden"
 		transition:fly={{ y: 300, duration: 300 }}
 	>
-		<div class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5">
-			<h3 class="text-lg font-bold text-gray-900 dark:text-white">{$t('nav.journey') || 'Journey'}</h3>
+		<div
+			class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5"
+		>
+			<h3 class="text-lg font-bold text-gray-900 dark:text-white">
+				{$t('nav.journey') || 'Journey'}
+			</h3>
 			<button class="p-2 text-gray-400 hover:text-gray-600" on:click={closeAllMenus}>
 				<X class="w-6 h-6" />
 			</button>
@@ -144,15 +150,21 @@
 		class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[70] shadow-2xl border-t border-gray-100 dark:border-white/5 pb-8 overflow-hidden"
 		transition:fly={{ y: 300, duration: 300 }}
 	>
-		<div class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5">
-			<h3 class="text-lg font-bold text-gray-900 dark:text-white">{$t('nav.theater') || 'Theater'}</h3>
+		<div
+			class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5"
+		>
+			<h3 class="text-lg font-bold text-gray-900 dark:text-white">
+				{$t('nav.theater') || 'Theater'}
+			</h3>
 			<button class="p-2 text-gray-400 hover:text-gray-600" on:click={closeAllMenus}>
 				<X class="w-6 h-6" />
 			</button>
 		</div>
 		<div class="p-4 grid grid-cols-1 gap-2 max-h-[60vh] overflow-y-auto">
 			{#each theaterNavItems as link}
-				{@const isActive = link.exact ? $page.url.pathname === link.href : $page.url.pathname.startsWith(link.href)}
+				{@const isActive = link.exact
+					? $page.url.pathname === link.href
+					: $page.url.pathname.startsWith(link.href)}
 				<a
 					href={link.href}
 					class={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive ? 'bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}

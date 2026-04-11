@@ -71,7 +71,9 @@
 <svelte:window on:scroll={handleScroll} />
 
 <nav
-	class="sticky top-0 z-[100] flex justify-between items-center px-6 py-3 max-w-7xl mx-auto pointer-events-none transition-transform duration-300 ease-in-out {isHidden ? '-translate-y-full' : 'translate-y-0'}"
+	class="sticky top-0 z-[100] flex justify-between items-center px-6 py-3 max-w-7xl mx-auto pointer-events-none transition-transform duration-300 ease-in-out {isHidden
+		? '-translate-y-full'
+		: 'translate-y-0'}"
 >
 	<!-- Left: Logo -->
 	<div class="flex-1 flex items-center justify-start">
