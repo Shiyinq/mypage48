@@ -180,7 +180,7 @@
 			<div class="flex items-center gap-2">
 				<button
 					on:click={() => setGeneration(null)}
-					class={`px-4 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+					class={`px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
 						selectedGeneration === null
 							? 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400 shadow-sm ring-1 ring-pink-200 dark:ring-pink-500/30'
 							: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 border border-gray-100 dark:border-zinc-700'
@@ -199,7 +199,7 @@
 					{#each generations as gen}
 						<button
 							on:click={() => setGeneration(gen)}
-							class={`px-4 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+							class={`px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
 								selectedGeneration === gen
 									? 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400 shadow-sm ring-1 ring-pink-200 dark:ring-pink-500/30'
 									: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 border border-gray-100 dark:border-zinc-700'
@@ -230,7 +230,7 @@
 		<div class="flex items-center gap-2">
 			<button
 				on:click={() => setType(null)}
-				class={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+				class={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
 					selectedType === null
 						? 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400 shadow-sm ring-1 ring-pink-200 dark:ring-pink-500/30'
 						: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700 hover:border-pink-500/50'
@@ -241,7 +241,7 @@
 			{#each teamOrder as type}
 				<button
 					on:click={() => setType(type)}
-					class={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap cursor-pointer border ${
+					class={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer border ${
 						selectedType === type
 							? teamColors[type] || 'bg-pink-500 text-white'
 							: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-zinc-700 hover:border-themed'

@@ -198,7 +198,7 @@
 
 <SEO title={$t('profile.title')} path="/profile" description={$t('seo.profile')} />
 
-<div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 animate-fade-in pb-32">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 animate-fade-in pb-32">
 	<!-- Page Header -->
 	<div class="mb-8">
 		<PageHeader title={$t('profile.title')} subtitle={$t('profile.subtitle')} icon={UserIcon}>

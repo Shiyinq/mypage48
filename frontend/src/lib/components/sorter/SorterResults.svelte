@@ -41,7 +41,7 @@
 
 <div
 	in:fade
-	class={`w-full space-y-8 px-4 mx-auto ${layoutMode === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}
+	class={`w-full space-y-8 px-1.5 sm:px-4 mx-auto ${layoutMode === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}
 >
 	<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 		<div class="flex items-center gap-4">
@@ -64,38 +64,42 @@
 			</div>
 		</div>
 
-		<div class="flex items-center gap-2">
+		<div class="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide no-scrollbar pb-1">
 			<div
-				class={`flex bg-white dark:bg-zinc-900 rounded-full p-1 border shadow-sm mr-2 ${isPublic ? 'border-gray-100 dark:border-zinc-800' : 'border-zinc-100 dark:border-zinc-800'}`}
+				class={`flex bg-white dark:bg-zinc-900 rounded-full p-1 border shadow-sm ${isPublic ? 'border-gray-100 dark:border-zinc-800' : 'border-zinc-100 dark:border-zinc-800'}`}
 			>
 				<button
 					on:click={() => setLayout('card')}
-					class={`p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'card' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500'}`}
+					class={`p-1.5 sm:p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'card' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500'}`}
 					title="Grid View"
 				>
-					<LayoutGrid size={18} />
+					<LayoutGrid size={16} class="sm:hidden" />
+					<LayoutGrid size={18} class="hidden sm:block" />
 				</button>
 				<button
 					on:click={() => setLayout('list')}
-					class={`p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'list' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500'}`}
+					class={`p-1.5 sm:p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'list' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500'}`}
 					title="List View"
 				>
-					<List size={18} />
+					<List size={16} class="sm:hidden" />
+					<List size={18} class="hidden sm:block" />
 				</button>
 			</div>
 
 			<button
 				on:click={shareResults}
-				class={`h-11 px-6 text-white font-black rounded-full transition-all shadow-lg flex items-center gap-2 text-xs cursor-pointer ${isPublic ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20'}`}
+				class={`h-9 sm:h-11 px-3 sm:px-6 text-white font-black rounded-full transition-all shadow-lg flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs cursor-pointer whitespace-nowrap overflow-hidden ${isPublic ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20'}`}
 			>
-				<Share2 size={16} />
+				<Share2 size={14} class="sm:hidden" />
+				<Share2 size={16} class="hidden sm:block" />
 				{$t('theater.sorter.share')}
 			</button>
 			<button
 				on:click={restart}
-				class={`h-11 px-6 bg-white dark:bg-zinc-800 font-black rounded-full transition-all shadow-md border flex items-center gap-2 text-xs cursor-pointer ${isPublic ? 'text-slate-900 dark:text-white border-gray-100 dark:border-zinc-700' : 'text-themed border-zinc-100 dark:border-zinc-700'}`}
+				class={`h-9 sm:h-11 px-3 sm:px-6 bg-white dark:bg-zinc-800 font-black rounded-full transition-all shadow-md border flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs cursor-pointer whitespace-nowrap overflow-hidden ${isPublic ? 'text-slate-900 dark:text-white border-gray-100 dark:border-zinc-700' : 'text-themed border-zinc-100 dark:border-zinc-700'}`}
 			>
-				<RotateCcw size={16} />
+				<RotateCcw size={14} class="sm:hidden" />
+				<RotateCcw size={16} class="hidden sm:block" />
 				{$t('theater.sorter.restart')}
 			</button>
 		</div>
@@ -104,7 +108,7 @@
 	{#key layoutMode}
 		<div in:fade={{ duration: 400 }}>
 			{#if layoutMode === 'card'}
-				<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+				<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
 					{#each results as member, i (member.id)}
 						<div
 							in:fly={{ y: 20, delay: i * 30, duration: 500, easing: quintOut }}
@@ -165,13 +169,13 @@
 							class={`flex items-center gap-4 bg-white dark:bg-zinc-900 rounded-xl p-3 border-2 transition-all hover:scale-105 hover:shadow-2xl group relative overflow-hidden shadow-sm cursor-pointer mx-auto w-full max-w-2xl ${isPublic ? 'hover:border-red-600' : 'hover:border-rose-500'} ${i === 0 ? 'border-yellow-400 shadow-xl shadow-yellow-400/20' : i === 1 ? 'border-slate-300 shadow-xl shadow-slate-300/20' : 'border-amber-600 shadow-xl shadow-amber-700/10'}`}
 						>
 							<div
-								class={`rank-badge w-10 h-10 rounded-full flex items-center justify-center font-black text-base shrink-0 z-30 shadow-sm ${i === 0 ? 'bg-yellow-400 text-yellow-900' : i === 1 ? 'bg-slate-300 text-slate-800' : 'bg-amber-700 text-white'}`}
+								class={`rank-badge w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-black text-sm md:text-base shrink-0 z-30 shadow-sm ${i === 0 ? 'bg-yellow-400 text-yellow-900' : i === 1 ? 'bg-slate-300 text-slate-800' : 'bg-amber-700 text-white'}`}
 							>
 								{i + 1}
 							</div>
 
 							<div
-								class={`relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 border border-slate-100 dark:border-zinc-800 transition-transform duration-500 z-30 shadow-sm ${i <= 2 ? 'shiny-card' : ''}`}
+								class={`relative w-12 sm:w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 border border-slate-100 dark:border-zinc-800 transition-transform duration-500 z-30 shadow-sm ${i <= 2 ? 'shiny-card' : ''}`}
 							>
 								<img
 									src={getExternalMediaUrl(member.img)}
@@ -186,14 +190,14 @@
 								/>
 							</div>
 
-							<div class="flex flex-col gap-0.5 z-30">
+							<div class="flex flex-col gap-0.5 z-30 min-w-0">
 								<h4
-									class={`font-black text-base md:text-lg uppercase tracking-tight leading-none truncate max-w-[200px] sm:max-w-none ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
+									class={`font-black text-sm md:text-lg uppercase tracking-tight leading-none truncate ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
 								>
 									{member.name}
 								</h4>
 								<span
-									class={`text-[10px] md:text-xs font-bold uppercase tracking-widest truncate ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
+									class={`text-[9px] md:text-xs font-bold uppercase tracking-widest truncate ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
 									>{$t('theater.sorter.genLabel', { gen: member.generation })}</span
 								>
 							</div>

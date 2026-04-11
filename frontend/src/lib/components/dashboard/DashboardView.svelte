@@ -184,7 +184,7 @@
 
 <SEO title={$t('dashboard.title')} path="/" description={$t('seo.dashboard')} />
 
-<div class="space-y-6 p-4 pb-32 max-w-7xl mx-auto">
+<div class="space-y-6 pt-4 sm:pt-6 px-4 pb-32 max-w-7xl mx-auto">
 	<!-- Header / Filter Toggle -->
 	<div class="mb-6 relative z-30">
 		<DashboardHeader

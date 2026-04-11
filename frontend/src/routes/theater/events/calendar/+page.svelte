@@ -215,7 +215,7 @@
 			<!-- Monthly Stats -->
 			{#if !$calendarLoading}
 				<div
-					class="flex items-center gap-2 md:gap-3 ml-2 md:ml-4 mr-auto text-xs font-medium text-gray-500 dark:text-gray-400"
+					class="hidden lg:flex items-center gap-2 md:gap-3 ml-2 md:ml-4 mr-auto text-xs font-medium text-gray-500 dark:text-gray-400"
 				>
 					<span
 						class="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full border border-blue-100 dark:border-blue-900/30"
