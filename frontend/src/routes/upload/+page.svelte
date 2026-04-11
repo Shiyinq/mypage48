@@ -315,19 +315,22 @@
 {/if}
 
 {#if mode === 'EDITING'}
-	<div class="max-w-5xl mx-auto p-4 pb-24 animate-fade-in">
-		<div class="flex items-center justify-between mb-6">
+	<div class="max-w-5xl mx-auto pt-4 sm:pt-6 px-4 pb-24 animate-fade-in">
+		<div class="mb-6">
 			<PageHeader
 				icon={Keyboard}
 				title={$t('forms.newTicket')}
 				subtitle={$t('forms.addToCollection')}
 				theme="red"
-			/>
-			<button
-				on:click={onCancel}
-				class="text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer"
-				>{$t('forms.cancel')}</button
 			>
+				<div slot="actions">
+					<button
+						on:click={onCancel}
+						class="text-[10px] sm:text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer whitespace-nowrap"
+						>{$t('forms.cancel')}</button
+					>
+				</div>
+			</PageHeader>
 		</div>
 
 		<div class="grid gap-8 lg:grid-cols-2">

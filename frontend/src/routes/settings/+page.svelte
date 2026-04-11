@@ -65,12 +65,13 @@
 
 <SEO title={$t('settings.title')} path="/settings" description={$t('seo.settings')} />
 
-<div class="max-w-2xl mx-auto p-4 animate-fade-in pb-24">
+<div class="max-w-2xl mx-auto pt-4 sm:pt-6 px-4 animate-fade-in pb-24">
 	<!-- Page Header -->
 	<div class="mb-6">
 		<PageHeader
 			title={$t('settings.title')}
 			subtitle={$t('settings.subtitle')}
+			icon={Settings}
 			showBackButton={true}
 			backUrl="/profile"
 			theme="red"

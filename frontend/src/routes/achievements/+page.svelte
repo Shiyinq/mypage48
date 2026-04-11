@@ -81,7 +81,7 @@
 
 <SEO title={$t('achievements.title')} path="/achievements" description={$t('seo.achievements')} />
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 animate-fade-in pb-32">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 animate-fade-in pb-32">
 	<div class="mb-8">
 		<PageHeader
 			icon={Trophy}

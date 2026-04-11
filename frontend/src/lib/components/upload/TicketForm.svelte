@@ -64,7 +64,7 @@
 </script>
 
 <div
-	class="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/50 dark:border-zinc-700 shadow-xl h-fit"
+	class="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl p-4 sm:p-6 md:p-8 rounded-3xl border border-white/50 dark:border-zinc-700 shadow-xl h-fit"
 >
 	<form on:submit|preventDefault class="space-y-8">
 		<!-- Event Details -->

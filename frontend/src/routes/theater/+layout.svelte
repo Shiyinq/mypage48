@@ -14,6 +14,7 @@
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
 	import { crossfade } from 'svelte/transition';
 	import { cubicInOut } from 'svelte/easing';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 
 	const [send, receive] = crossfade({
 		duration: 300,
@@ -31,6 +32,8 @@
 	// Check if on live single detail or multiview page — hide header for immersive player
 	$: isLiveDetailPage = /^\/theater\/live\/.+/.test(currentPath);
 
+	type PageTheme = 'red' | 'blue' | 'green' | 'purple' | 'pink' | 'amber' | 'yellow' | 'orange' | 'rose' | 'indigo';
+
 	// Dynamic Title, Subtitle & Theme
 	$: pageInfo = (() => {
 		if (currentPath.includes('/theater/news')) {
@@ -38,7 +41,7 @@
 				title: $t('theater.news.title') || 'News',
 				subtitle: $t('theater.news.subtitle') || 'Latest updates and announcements',
 				icon: Newspaper,
-				theme: 'red'
+				theme: 'red' as PageTheme
 			};
 		}
 		if (currentPath.includes('/theater/members')) {
@@ -46,7 +49,7 @@
 				title: $t('theater.members.title'),
 				subtitle: $t('theater.members.subtitle'),
 				icon: Users,
-				theme: 'pink'
+				theme: 'pink' as PageTheme
 			};
 		}
 		if (currentPath.includes('/theater/sorter')) {
@@ -54,7 +57,7 @@
 				title: $t('theater.sorter.title'),
 				subtitle: $t('theater.sorter.subtitle'),
 				icon: ArrowUpDown,
-				theme: 'rose'
+				theme: 'rose' as PageTheme
 			};
 		}
 		if (currentPath.includes('/theater/events/history')) {
@@ -62,7 +65,7 @@
 				title: $t('theater.eventHistory.title') || 'Event History',
 				subtitle: $t('theater.eventHistory.subtitle') || 'Past events',
 				icon: Calendar,
-				theme: 'orange'
+				theme: 'orange' as PageTheme
 			};
 		}
 		if (currentPath.includes('/theater/events')) {
@@ -70,7 +73,7 @@
 				title: $t('theater.events.title') || 'Events',
 				subtitle: $t('theater.events.subtitle') || 'Browse theater events',
 				icon: Calendar,
-				theme: 'blue'
+				theme: 'blue' as PageTheme
 			};
 		}
 		if (currentPath.includes('/theater/live')) {
@@ -78,14 +81,14 @@
 				title: 'JKT48 LIVE',
 				subtitle: $t('theater.live.subtitle'),
 				icon: Tv,
-				theme: 'red'
+				theme: 'red' as PageTheme
 			};
 		}
 		return {
 			title: $t('theater.title'),
 			subtitle: $t('theater.subtitle'),
 			icon: AudioLines,
-			theme: 'purple'
+			theme: 'purple' as PageTheme
 		};
 	})();
 
@@ -159,40 +162,25 @@
 	};
 </script>
 
-<div class="max-w-6xl mx-auto p-4 pb-24">
+<div class="max-w-6xl mx-auto pt-4 sm:pt-6 px-4 pb-24">
 	{#if !isDetailPage && !isLiveDetailPage}
 		<!-- Theater Header & Sub Navigation Wrapper -->
-		<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6 mb-10">
-			<!-- Theater Header -->
-			<div class="flex items-center gap-4 flex-shrink-0">
-				<div
-					class={`p-3.5 rounded-2xl shadow-xl border-2 border-white dark:border-zinc-700 transform -rotate-6 transition-all duration-300 ${currentThemeStyles.headerIcon}`}
-				>
-					<svelte:component this={pageInfo.icon} class="w-7 h-7" />
-				</div>
-				<div class="flex flex-col">
-					<h2
-						class="text-2xl sm:text-3xl font-black tracking-tighter text-gray-900 dark:text-white leading-tight relative w-fit"
-					>
-						{pageInfo.title}
-						<span
-							class={`absolute -bottom-1 left-0 w-full h-2.5 -z-10 transform -skew-x-12 rounded-sm transition-colors duration-300 ${currentThemeStyles.titleLine}`}
-						></span>
-					</h2>
-					<p class="text-[13px] font-medium text-themed-secondary mt-0.5">{pageInfo.subtitle}</p>
-				</div>
-			</div>
-
-			<!-- Sub Navigation Tabs -->
+		<PageHeader
+			title={pageInfo.title}
+			subtitle={pageInfo.subtitle}
+			icon={pageInfo.icon}
+			theme={pageInfo.theme}
+		>
 			<div
-				class="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm overflow-x-auto scrollbar-hide"
+				slot="actions"
+				class="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm overflow-x-auto scrollbar-hide w-full sm:w-auto"
 			>
 				{#each subNavItems as item (item.href)}
 					{@const active = isActive(item.href, item.exact)}
 					{@const itemTheme = getThemeStyles(item.theme || 'purple')}
 					<a
 						href={item.href}
-						class="relative px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center whitespace-nowrap {active
+						class="relative px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center whitespace-nowrap {active
 							? 'text-white'
 							: 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
 					>
@@ -209,7 +197,8 @@
 					</a>
 				{/each}
 			</div>
-		</div>
+		</PageHeader>
+		<div class="mb-4 sm:mb-6"></div>
 	{/if}
 
 	<!-- Page Content -->
