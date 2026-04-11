@@ -119,7 +119,6 @@
 					{$t('auth.forgotPassword.submit')}
 				{/if}
 			</button>
-
 		</form>
 	{:else}
 		<div class="space-y-4">

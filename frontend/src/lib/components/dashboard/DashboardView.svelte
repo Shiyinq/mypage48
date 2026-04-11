@@ -82,7 +82,6 @@
 		fetchDashboardStats();
 	}
 
-
 	// Available years from API
 	$: availableYears = dashboardStats?.available_years ?? [currentYear];
 

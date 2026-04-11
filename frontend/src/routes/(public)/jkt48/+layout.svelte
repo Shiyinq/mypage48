@@ -35,7 +35,9 @@
 	{/if}
 
 	<!-- CONTENT -->
-	<main class={isFullScreenRoute ? 'relative w-full h-full' : 'relative max-w-7xl mx-auto px-3 sm:px-6'}>
+	<main
+		class={isFullScreenRoute ? 'relative w-full h-full' : 'relative max-w-7xl mx-auto px-3 sm:px-6'}
+	>
 		<slot />
 	</main>
 

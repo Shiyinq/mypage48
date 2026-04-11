@@ -259,7 +259,9 @@
 										</div>
 
 										{#if event.setlistId}
-											<div class="flex items-center gap-1 border-l border-gray-200 dark:border-zinc-700 pl-2 sm:border-0 sm:pl-0">
+											<div
+												class="flex items-center gap-1 border-l border-gray-200 dark:border-zinc-700 pl-2 sm:border-0 sm:pl-0"
+											>
 												<Clock class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
 												<span
 													>{$formatTime(event.date, {

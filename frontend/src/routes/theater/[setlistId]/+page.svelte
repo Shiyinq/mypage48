@@ -116,7 +116,9 @@
 				<div class="order-3 md:order-2">
 					<div class="mt-4 md:mt-0">
 						<div class="flex items-center justify-between mb-6">
-							<h2 class="text-xl md:text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+							<h2
+								class="text-xl md:text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight"
+							>
 								{$t('history.title')}
 							</h2>
 							<span
@@ -137,7 +139,9 @@
 									<Ticket class="w-6 h-6 text-gray-400" />
 								</div>
 								<p class="font-bold text-gray-600 dark:text-gray-300">No tickets found</p>
-								<p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center max-w-[250px] mt-1">
+								<p
+									class="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center max-w-[250px] mt-1"
+								>
 									{$t('theater.setlists.notAttended')}
 								</p>
 							</div>

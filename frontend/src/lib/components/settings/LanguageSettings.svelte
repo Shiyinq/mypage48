@@ -39,13 +39,17 @@
 				<div class="flex items-center md:flex-col gap-4 md:gap-3">
 					<span class="text-3xl drop-shadow-sm filter flex-shrink-0">{localeOption.flag}</span>
 					<div class="text-left md:text-center">
-						<p class="font-bold text-base md:text-sm text-gray-800 dark:text-gray-200 leading-tight">
+						<p
+							class="font-bold text-base md:text-sm text-gray-800 dark:text-gray-200 leading-tight"
+						>
 							{localeOption.nativeName}
 						</p>
-						<p class="text-xs md:text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{localeOption.name}</p>
+						<p class="text-xs md:text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+							{localeOption.name}
+						</p>
 					</div>
 				</div>
-				
+
 				<div class="flex-shrink-0 pl-2">
 					<div
 						class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shadow-sm {$locale ===

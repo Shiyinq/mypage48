@@ -211,7 +211,9 @@
 
 			<!-- Search Bar -->
 			<div class="relative w-full md:w-80 shrink-0">
-				<Search class="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+				<Search
+					class="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+				/>
 				<input
 					type="text"
 					placeholder={$t('common.search')}
@@ -240,7 +242,10 @@
 						on:click={() => setType(type)}
 						class={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer border ${
 							selectedType === type
-								? teamColors[type].replace('bg-pink-50', 'bg-red-50 text-red-600 ring-1 ring-red-100 shadow-sm border-0')
+								? teamColors[type].replace(
+										'bg-pink-50',
+										'bg-red-50 text-red-600 ring-1 ring-red-100 shadow-sm border-0'
+									)
 								: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-zinc-800 hover:border-themed'
 						}`}
 					>

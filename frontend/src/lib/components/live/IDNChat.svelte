@@ -236,7 +236,9 @@
 					</div>
 				{/if}
 				<div class="flex-1 min-w-0">
-					<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate">{msg.user}</p>
+					<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate">
+						{msg.user}
+					</p>
 
 					{#if msg.type === 'gift' && msg.gift}
 						{@const isLottie = msg.gift.img
@@ -290,16 +292,20 @@
 						<div
 							class="inline-flex flex-col gap-3 px-4 py-3 rounded-2xl rounded-tl-none bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 max-w-full"
 						>
-							<div class="flex items-center flex-wrap gap-x-3 gap-y-2 border-b border-white/20 pb-2.5 mb-1.5">
+							<div
+								class="flex items-center flex-wrap gap-x-3 gap-y-2 border-b border-white/20 pb-2.5 mb-1.5"
+							>
 								{#if msg.recipient}
-									<div class="flex items-center gap-2 bg-black/15 px-2.5 py-1.5 rounded-xl border border-white/10 shrink-0 shadow-sm">
+									<div
+										class="flex items-center gap-2 bg-black/15 px-2.5 py-1.5 rounded-xl border border-white/10 shrink-0 shadow-sm"
+									>
 										<span class="text-[9px] font-bold opacity-60 italic">TO:</span>
 										<div class="flex items-center gap-2">
-											<img 
-												src={getExternalMediaUrl(msg.recipient.avatar)} 
-												alt={msg.recipient.name} 
+											<img
+												src={getExternalMediaUrl(msg.recipient.avatar)}
+												alt={msg.recipient.name}
 												referrerpolicy="no-referrer"
-												class="w-5 h-5 rounded-full object-cover ring-1 ring-white/20" 
+												class="w-5 h-5 rounded-full object-cover ring-1 ring-white/20"
 												on:error={handleMediaError}
 											/>
 											<span class="text-[10px] font-black">{msg.recipient.name}</span>
@@ -317,7 +323,7 @@
 									</span>
 								</div>
 							</div>
-							
+
 							<p class="text-sm leading-relaxed font-medium italic">
 								"{msg.text}"
 							</p>

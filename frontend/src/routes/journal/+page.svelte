@@ -129,7 +129,7 @@
 				title={$t('journal.title')}
 				subtitle={$t('journal.subtitle')}
 				badge={`${totalData || tickets.length} ${$t('shows.unit')}`}
-				loading={loading}
+				{loading}
 				icon={CalendarDays}
 				theme="red"
 			/>
