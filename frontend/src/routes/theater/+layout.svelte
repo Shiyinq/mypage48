@@ -162,43 +162,50 @@
 	};
 </script>
 
-<div class="max-w-6xl mx-auto pt-4 sm:pt-6 px-4 pb-24">
-	{#if !isDetailPage && !isLiveDetailPage}
-		<!-- Theater Header & Sub Navigation Wrapper -->
+<div class="max-w-6xl mx-auto {isLiveDetailPage ? 'pt-1.5 sm:pt-6 px-1.5 sm:px-4' : 'pt-4 sm:pt-6 px-4'} pb-24">
+	{#if !isDetailPage}
+		<!-- Unified Page Header (Standard or Background Live Sync) -->
 		<PageHeader
-			title={pageInfo.title}
-			subtitle={pageInfo.subtitle}
-			icon={pageInfo.icon}
-			theme={pageInfo.theme}
+			title={isLiveDetailPage ? 'JKT48 LIVE' : pageInfo.title}
+			subtitle={isLiveDetailPage ? '' : pageInfo.subtitle}
+			icon={isLiveDetailPage ? Tv : pageInfo.icon}
+			theme={isLiveDetailPage ? 'red' : pageInfo.theme}
+			showBackButton={isLiveDetailPage}
+			backUrl={isLiveDetailPage ? '/theater/live' : undefined}
+			hidden={isLiveDetailPage}
 		>
 			<div
 				slot="actions"
-				class="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm overflow-x-auto scrollbar-hide w-full sm:w-auto"
+				class="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm overflow-x-auto scrollbar-hide w-full sm:w-auto {!isLiveDetailPage ? '' : 'hidden'}"
 			>
-				{#each subNavItems as item (item.href)}
-					{@const active = isActive(item.href, item.exact)}
-					{@const itemTheme = getThemeStyles(item.theme || 'purple')}
-					<a
-						href={item.href}
-						class="relative px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center whitespace-nowrap {active
-							? 'text-white'
-							: 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
-					>
-						{#if active}
-							<div
-								class="absolute inset-0 rounded-full shadow-lg z-0 {itemTheme.navActive}"
-								in:receive={{ key: 'theater-nav-active' }}
-								out:send={{ key: 'theater-nav-active' }}
-							></div>
-						{/if}
-						<span class="relative z-10 flex items-center justify-center">
-							<span>{$t(item.labelKey) || item.labelDefault}</span>
-						</span>
-					</a>
-				{/each}
+				{#if !isLiveDetailPage}
+					{#each subNavItems as item (item.href)}
+						{@const active = isActive(item.href, item.exact)}
+						{@const itemTheme = getThemeStyles(item.theme || 'purple')}
+						<a
+							href={item.href}
+							class="relative px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center whitespace-nowrap {active
+								? 'text-white'
+								: 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
+						>
+							{#if active}
+								<div
+									class="absolute inset-0 rounded-full shadow-lg z-0 {itemTheme.navActive}"
+									in:receive={{ key: 'theater-nav-active' }}
+									out:send={{ key: 'theater-nav-active' }}
+								></div>
+							{/if}
+							<span class="relative z-10 flex items-center justify-center">
+								<span>{$t(item.labelKey) || item.labelDefault}</span>
+							</span>
+						</a>
+					{/each}
+				{/if}
 			</div>
 		</PageHeader>
-		<div class="mb-4 sm:mb-6"></div>
+		{#if !isLiveDetailPage}
+			<div class="mb-4 sm:mb-6"></div>
+		{/if}
 	{/if}
 
 	<!-- Page Content -->
