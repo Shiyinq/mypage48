@@ -11,6 +11,7 @@
 	export let icon: ComponentType | undefined = undefined;
 	export let title: string;
 	export let subtitle: string = '';
+	export let badge: string | undefined = undefined;
 	export let actions: Array<{
 		icon: ComponentType;
 		label?: string;
@@ -21,6 +22,7 @@
 	export let theme: 'red' | 'blue' | 'green' | 'purple' | 'pink' | 'amber' | 'yellow' | 'orange' | 'rose' | 'indigo' = 'red';
 	export let showBackButton = false;
 	export let backUrl: string | undefined = undefined;
+	export let loading = false;
 
 	const themeClasses = {
 		red: {
@@ -95,6 +97,8 @@
 			pageHeaderStore.set({ 
 				title, 
 				subtitle, 
+				badge,
+				loading,
 				icon, 
 				theme,
 				showBackButton,

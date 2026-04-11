@@ -9,6 +9,8 @@
 	import JournalSidebar from '$lib/components/journal/JournalSidebar.svelte';
 	import JournalEditor from '$lib/components/journal/JournalEditor.svelte';
 	import { isCacheExpired } from '$lib/utils/cache';
+	import { CalendarDays } from 'lucide-svelte';
+	import { PageHeader } from '$lib/components';
 
 	const { t } = useTranslation();
 
@@ -121,6 +123,17 @@
 			</div>
 		</div>
 	{:else}
+		<!-- Page Header (Hidden visually but kept for MobileHeader store sync) -->
+		<div class="hidden max-w-7xl mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-6 mb-6">
+			<PageHeader
+				title={$t('journal.title')}
+				subtitle={$t('journal.subtitle')}
+				badge={`${totalData || tickets.length} ${$t('shows.unit')}`}
+				loading={loading}
+				icon={CalendarDays}
+				theme="red"
+			/>
+		</div>
 		<div class="flex-1 flex flex-col md:flex-row overflow-hidden relative" in:fade>
 			<!-- Desktop Content Spacer -->
 			{#if innerWidth >= 768}
