@@ -72,7 +72,7 @@
 	let lastInitializedId = '';
 	let initCount = 0;
 	let chatVisible = true;
-	let isFocusMode = false;
+	let isFocusMode = false; // Will be set in onMount for desktop/laptop
 	let isRecording = false;
 	let mediaRecorder: any = null;
 	let recordedChunks: any[] = [];
@@ -253,6 +253,21 @@
 		}
 	}
 	onMount(() => {
+		const isLaptop = window.innerWidth >= 1024;
+		if (isLaptop) {
+			isFocusMode = true;
+			isImmersive.set(true);
+			if (typeof document !== 'undefined') {
+				document.body.style.overflow = 'hidden';
+			}
+		} else {
+			isFocusMode = false;
+			isImmersive.set(false);
+			if (typeof document !== 'undefined') {
+				document.body.style.overflow = 'auto';
+			}
+		}
+
 		refreshInterval = setInterval(() => {
 			if (platform && id && !initializing) {
 				liveStore.refreshStreamInfo(platform, id).catch((e) => {
@@ -472,16 +487,14 @@
 				: 'px-4 sm:px-0'}"
 		>
 			<div class="flex items-center gap-3">
-				{#if !isFocusMode}
 					<a
 						href={basePath}
-						class="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800"
+						class="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
 						title={$t('theater.live.back')}
 					>
 						<ArrowLeft size={20} />
 					</a>
 					<div class="h-4 w-px bg-slate-200 dark:bg-zinc-800 ml-1 hidden sm:block"></div>
-				{/if}
 				{#if memberName}
 					<div class="flex flex-col gap-0.5">
 						<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2">
@@ -610,10 +623,11 @@
 							? '-translate-y-full opacity-0'
 							: 'opacity-0 -translate-y-full group-hover/player:translate-y-0 group-hover/player:opacity-100'}"
 				>
-					<div class="w-full flex items-start justify-between pointer-events-auto">
-						<div class="flex flex-col gap-2 min-w-0">
+					<div class="w-full flex items-start gap-4 pointer-events-auto">
+						<div class="flex flex-col gap-2 min-w-0 flex-1">
 							{#if isFullscreen && memberName}
-								<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2 min-w-0">
+								<div class="flex items-center gap-3 min-w-0">
+									<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2 min-w-0">
 									<h2
 										class="text-white text-lg sm:text-2xl font-black truncate drop-shadow-xl tracking-tight"
 									>
@@ -627,7 +641,8 @@
 										</span>
 									{/if}
 								</div>
-							{/if}
+							</div>
+						{/if}
 
 							<!-- Stats (Mobile Only) -->
 							<div class="flex sm:hidden items-center gap-3 flex-shrink-0 mt-0.5">
