@@ -12,6 +12,7 @@
 		now
 	} from '$lib/stores/live';
 	import { showToast } from '$lib/stores/toast';
+	import { isImmersive } from '$lib/stores/ui';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveStatus } from '$lib/types';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
@@ -270,6 +271,7 @@
 		if (recordingTimer) clearInterval(recordingTimer);
 		if (refreshInterval) clearInterval(refreshInterval);
 		liveStore.reset();
+		isImmersive.set(false);
 	});
 
 	function toggleChat() {
@@ -278,6 +280,7 @@
 
 	function toggleFocus() {
 		isFocusMode = !isFocusMode;
+		isImmersive.set(isFocusMode);
 		if (typeof document !== 'undefined') {
 			if (isFocusMode) {
 				document.body.style.overflow = 'hidden';
@@ -445,7 +448,7 @@
 
 <div
 	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out overflow-x-hidden {isFocusMode
-		? 'fixed inset-0 !top-0 !mt-0 z-[5000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-screen w-screen'
+		? 'fixed inset-0 !top-0 !mt-0 z-[7000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-screen w-screen'
 		: 'h-[calc(100vh-72px)] sm:h-[calc(100vh-76px)] mt-2 sm:mt-3 px-0 sm:px-4 pb-2 sm:pb-4'}"
 >
 	<!-- Main Player Area -->

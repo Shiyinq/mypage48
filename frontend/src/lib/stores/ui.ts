@@ -29,3 +29,5 @@ function createPageHeaderStore() {
 }
 
 export const pageHeaderStore = createPageHeaderStore();
+
+export const isImmersive = writable(false);

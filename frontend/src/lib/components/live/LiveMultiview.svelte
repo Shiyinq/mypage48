@@ -36,6 +36,7 @@
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import MultiPlayer from '$lib/components/live/MultiPlayer.svelte';
 	import { showToast } from '$lib/stores/toast';
+	import { isImmersive } from '$lib/stores/ui';
 	import { formatDuration } from '$lib/utils/time';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
@@ -160,6 +161,7 @@
 
 		// Disable body scroll when in multiview
 		document.body.style.overflow = 'hidden';
+		isImmersive.set(true);
 
 		// Load from localStorage if available
 		const saved = localStorage.getItem('mypage48_multiview_slots');
@@ -195,6 +197,7 @@
 			window.removeEventListener('resize', updateIsMobile);
 			// Re-enable body scroll when leaving multiview
 			document.body.style.overflow = '';
+			isImmersive.set(false);
 		};
 	});
 

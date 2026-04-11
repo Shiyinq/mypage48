@@ -4,7 +4,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
-	import { pageHeaderStore } from '$lib/stores/ui';
+	import { pageHeaderStore, isImmersive } from '$lib/stores/ui';
 
 	const { t } = useTranslation();
 
@@ -28,13 +28,14 @@
 
 
 
-<div class="h-16 md:hidden"></div>
-<header
-	class="md:hidden bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[6000] transition-all duration-300 ease-in-out"
->
-	<div class="h-16 px-4 flex items-center justify-between gap-4">
-		<!-- Left: Title & Icon -->
-		<div class="flex items-center min-w-0 flex-1 gap-2">
+{#if !$isImmersive}
+	<div class="h-16 md:hidden"></div>
+	<header
+		class="md:hidden bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[6000] transition-all duration-300 ease-in-out"
+	>
+		<div class="h-16 px-4 flex items-center justify-between gap-4">
+			<!-- Left: Title & Icon -->
+			<div class="flex items-center min-w-0 flex-1 gap-2">
 			{#if headerInfo}
 				{@const activeTheme = themeClasses[headerInfo.theme || 'red']}
 				<div class="flex items-center gap-2 min-w-0 flex-1">
@@ -96,3 +97,4 @@
 		</div>
 	</div>
 </header>
+{/if}

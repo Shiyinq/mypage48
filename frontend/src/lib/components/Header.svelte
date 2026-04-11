@@ -2,11 +2,21 @@
 	import { page } from '$app/stores';
 	import { Ticket, Plus, User } from 'lucide-svelte';
 	import { userProfile, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
+	import { isImmersive } from '$lib/stores/ui';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
 	import NavPills from '$lib/components/navigation/NavPills.svelte';
+	import { theaterNavItems } from '$lib/constants/theaterNav';
+	import { getThemeStyles } from '$lib/constants/theaterTheme';
+	import { crossfade } from 'svelte/transition';
+	import { cubicInOut } from 'svelte/easing';
+
+	const [send, receive] = crossfade({
+		duration: 300,
+		easing: cubicInOut
+	});
 
 	const { t } = useTranslation();
 
@@ -28,15 +38,26 @@
 		{ label: $t('nav.memories'), href: '/memories' },
 		{ label: $t('nav.history'), href: '/history' }
 	];
+
+	$: currentPath = $page.url.pathname;
+	$: isTheater = currentPath.startsWith('/theater');
+
+	$: theaterIsActive = (href: string, exact: boolean = false) => {
+		if (exact) {
+			return currentPath === href;
+		}
+		return currentPath.startsWith(href);
+	};
 </script>
 
 
 
-<div class="h-16 hidden md:block"></div>
-<header
-	class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[6000]"
->
-	<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+{#if !$isImmersive}
+	<div class="hidden md:block transition-all duration-300 {isTheater ? 'h-[104px]' : 'h-16'}"></div>
+	<header
+		class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[6000] transition-all duration-300"
+	>
+		<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 		<!-- Left: Logo -->
 		<a href="/" class="flex items-center gap-3 cursor-pointer">
 			<NavLogo tagline={$t('header.tagline')} />
@@ -93,4 +114,34 @@
 			</a>
 		</div>
 	</div>
+
+	<!-- Theater Sub Navigation -->
+	{#if isTheater}
+		<div class="max-w-7xl mx-auto px-4 pb-2 hidden md:block" in:receive={{ key: 'theater-subnav' }} out:send={{ key: 'theater-subnav' }}>
+			<div class="flex items-center gap-1 bg-gray-50/50 dark:bg-zinc-900/30 backdrop-blur-md border border-gray-100 dark:border-zinc-800/50 p-1 rounded-full shadow-sm w-fit mx-auto">
+				{#each theaterNavItems as item (item.href)}
+					{@const active = theaterIsActive(item.href, item.exact)}
+					{@const itemTheme = getThemeStyles(item.theme || 'purple')}
+					<a
+						href={item.href}
+						class="relative px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center whitespace-nowrap {active
+							? 'text-white'
+							: 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
+					>
+						{#if active}
+							<div
+								class="absolute inset-0 rounded-full shadow-lg z-0 {itemTheme.navActive}"
+								in:receive={{ key: 'theater-nav-active' }}
+								out:send={{ key: 'theater-nav-active' }}
+							></div>
+						{/if}
+						<span class="relative z-10 flex items-center justify-center">
+							<span>{$t(item.labelKey) || item.labelDefault}</span>
+						</span>
+					</a>
+				{/each}
+			</div>
+		</div>
+	{/if}
 </header>
+{/if}

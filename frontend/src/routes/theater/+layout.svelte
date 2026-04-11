@@ -13,14 +13,7 @@
 	} from 'lucide-svelte';
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
-	import { crossfade } from 'svelte/transition';
-	import { cubicInOut } from 'svelte/easing';
 	import PageHeader from '$lib/components/PageHeader.svelte';
-
-	const [send, receive] = crossfade({
-		duration: 300,
-		easing: cubicInOut
-	});
 
 	const { t } = useTranslation();
 
@@ -98,10 +91,8 @@
 
 	$: currentThemeStyles = getThemeStyles(pageInfo.theme);
 
-	// Sub-navigation items
-	const subNavItems = theaterNavItems;
-
 	// Check if current path matches nav item
+	// (Keeping this helper if needed for other logic, but subNav moved to Header)
 	$: isActive = (href: string, exact: boolean = false) => {
 		if (exact) {
 			return currentPath === href;
@@ -122,34 +113,6 @@
 			backUrl={isNewsDetailPage ? '/theater/news' : isLiveDetailPage ? '/theater/live' : undefined}
 			hidden={isLiveDetailPage}
 		>
-			<div
-				slot="actions"
-				class="hidden md:flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm overflow-x-auto scrollbar-hide w-full sm:w-auto {!isLiveDetailPage ? '' : 'hidden'}"
-			>
-				{#if !isLiveDetailPage}
-					{#each subNavItems as item (item.href)}
-						{@const active = isActive(item.href, item.exact)}
-						{@const itemTheme = getThemeStyles(item.theme || 'purple')}
-						<a
-							href={item.href}
-							class="relative px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center whitespace-nowrap {active
-								? 'text-white'
-								: 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
-						>
-							{#if active}
-								<div
-									class="absolute inset-0 rounded-full shadow-lg z-0 {itemTheme.navActive}"
-									in:receive={{ key: 'theater-nav-active' }}
-									out:send={{ key: 'theater-nav-active' }}
-								></div>
-							{/if}
-							<span class="relative z-10 flex items-center justify-center">
-								<span>{$t(item.labelKey) || item.labelDefault}</span>
-							</span>
-						</a>
-					{/each}
-				{/if}
-			</div>
 		</PageHeader>
 		{#if !isLiveDetailPage}
 			<div class="mb-4 sm:mb-6"></div>
