@@ -224,6 +224,11 @@
 			transparent
 		);
 	}
+
+	/* Force white/gray text in dark mode for content with inline styles (e.g. from JKT48 news) */
+	.dark .prose-responsive-colors :where(span, p, div, h1, h2, h3, h4, h5, h6, li, strong, em, b, i) {
+		color: inherit !important;
+	}
 }
 
 @layer utilities {

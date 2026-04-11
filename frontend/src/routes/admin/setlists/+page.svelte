@@ -120,14 +120,14 @@
 	<div
 		class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white dark:bg-zinc-800 p-4 rounded-3xl shadow-sm"
 	>
-		<div class="flex items-center gap-4 flex-1">
+		<div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<Music class="w-5 h-5 text-purple-500" />
 				{$t('admin.setlists.title')} ({$adminStore.setlists.total})
 			</h2>
 
 			<!-- Search Input -->
-			<div class="relative flex-1 max-w-xs">
+			<div class="relative w-full sm:max-w-xs">
 				<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 				<input
 					type="text"

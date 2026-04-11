@@ -1,12 +1,4 @@
-import {
-	AudioLines,
-	Users,
-	Newspaper,
-	Calendar,
-	History,
-	ArrowUpDown,
-	Tv
-} from 'lucide-svelte';
+import { AudioLines, Users, Newspaper, Calendar, History, ArrowUpDown, Tv } from 'lucide-svelte';
 
 export const theaterNavItems = [
 	{

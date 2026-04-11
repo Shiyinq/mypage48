@@ -68,17 +68,21 @@
 
 	<!-- Static Decor Elements -->
 	<div
-		class={`absolute top-20 left-10 animate-pulse delay-700 ${hideDecorationsOnMobile ? 'hidden md:block' : ''} ${interactive
-			? 'pointer-events-auto cursor-pointer hover:scale-125 transition-all duration-300 hover:text-pink-400 text-pink-200'
-			: 'pointer-events-none text-pink-200'}`}
+		class={`absolute top-20 left-10 animate-pulse delay-700 ${hideDecorationsOnMobile ? 'hidden md:block' : ''} ${
+			interactive
+				? 'pointer-events-auto cursor-pointer hover:scale-125 transition-all duration-300 hover:text-pink-400 text-pink-200'
+				: 'pointer-events-none text-pink-200'
+		}`}
 		style="transform: translate({$mouse.x * 20}px, {$mouse.y * 20 + scrollY * 0.2}px)"
 	>
 		<Sparkles size={48} />
 	</div>
 	<div
-		class={`absolute top-40 right-10 animate-pulse delay-300 ${hideDecorationsOnMobile ? 'hidden md:block' : ''} ${interactive
-			? 'pointer-events-auto cursor-pointer hover:scale-125 hover:rotate-12 transition-all duration-300 hover:text-red-400 text-red-200'
-			: 'pointer-events-none text-red-200'}`}
+		class={`absolute top-40 right-10 animate-pulse delay-300 ${hideDecorationsOnMobile ? 'hidden md:block' : ''} ${
+			interactive
+				? 'pointer-events-auto cursor-pointer hover:scale-125 hover:rotate-12 transition-all duration-300 hover:text-red-400 text-red-200'
+				: 'pointer-events-none text-red-200'
+		}`}
 		style="transform: translate({$mouse.x * 60}px, {$mouse.y * 60 + scrollY * 0.5}px)"
 	>
 		<Star size={32} />

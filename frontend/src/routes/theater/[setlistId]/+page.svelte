@@ -102,68 +102,65 @@
 	/>
 {:else if detail}
 	<div class="max-w-5xl mx-auto animate-fade-in pb-20">
-		<!-- Back Button -->
-		<button
-			on:click={() => goto('/theater')}
-			class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-zinc-800/50 backdrop-blur-sm text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-zinc-800 transition-all mb-6 group border border-gray-100 dark:border-zinc-700/50 cursor-pointer"
-		>
-			<ArrowLeft class="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-			{$t('shows.backTitle')}
-		</button>
-
 		<!-- Immersive Hero Section -->
 		<SetlistHero {detail} />
 
 		<!-- Main Content Grid -->
-		<div class="grid grid-cols-1 md:grid-cols-12 gap-8">
-			<!-- Left Column: Stats & Meta -->
-			<div class="md:col-span-8 space-y-6">
-				<!-- Primary Stats Grid -->
-				<SetlistStats stats={detail.stats} />
+		<div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+			<!-- stats & History (Left Column on Desktop) -->
+			<div class="md:col-span-8 contents md:flex md:flex-col md:gap-8">
+				<div class="order-1">
+					<SetlistStats stats={detail.stats} />
+				</div>
 
-				<!-- Ticket History -->
-				<div class="mt-8">
-					<div class="flex items-center justify-between mb-6">
-						<h2 class="text-xl font-bold text-gray-900 dark:text-white">
-							{$t('history.title')}
-						</h2>
-						<span
-							class="text-sm text-gray-500 dark:text-gray-400 font-medium bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-full"
-						>
-							{detail.tickets.length}
-							{$t('dashboard.theater.tickets')}
-						</span>
-					</div>
-
-					{#if detail.tickets.length === 0}
-						<div
-							class="flex flex-col items-center justify-center py-12 px-4 bg-gray-50 dark:bg-zinc-900/50 rounded-3xl border border-dashed border-gray-200 dark:border-zinc-800"
-						>
-							<div
-								class="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4"
+				<div class="order-3 md:order-2">
+					<div class="mt-4 md:mt-0">
+						<div class="flex items-center justify-between mb-6">
+							<h2
+								class="text-xl md:text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight"
 							>
-								<Ticket class="w-6 h-6 text-gray-400" />
+								{$t('history.title')}
+							</h2>
+							<span
+								class="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-full border border-gray-200 dark:border-zinc-700"
+							>
+								{detail.tickets.length}
+								<span class="hidden sm:inline">{$t('dashboard.theater.tickets')}</span>
+							</span>
+						</div>
+
+						{#if detail.tickets.length === 0}
+							<div
+								class="flex flex-col items-center justify-center py-16 px-4 bg-gray-50 dark:bg-zinc-900/50 rounded-[2rem] border border-dashed border-gray-200 dark:border-zinc-800"
+							>
+								<div
+									class="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4"
+								>
+									<Ticket class="w-6 h-6 text-gray-400" />
+								</div>
+								<p class="font-bold text-gray-600 dark:text-gray-300">No tickets found</p>
+								<p
+									class="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center max-w-[250px] mt-1"
+								>
+									{$t('theater.setlists.notAttended')}
+								</p>
 							</div>
-							<p class="font-medium text-gray-600 dark:text-gray-300">No tickets found</p>
-							<p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-[250px] mt-1">
-								{$t('theater.setlists.notAttended')}
-							</p>
-						</div>
-					{:else}
-						<div class="space-y-3">
-							{#each detail.tickets as ticket (ticket.ticketId)}
-								<SetlistTicketItem {ticket} on:click={() => (deleteId = ticket.ticketId)} />
-							{/each}
-						</div>
-					{/if}
+						{:else}
+							<div class="space-y-3">
+								{#each detail.tickets as ticket (ticket.ticketId)}
+									<SetlistTicketItem {ticket} on:click={() => (deleteId = ticket.ticketId)} />
+								{/each}
+							</div>
+						{/if}
+					</div>
 				</div>
 			</div>
 
-			<!-- Right Column: Sidebar Stats -->
-			<div class="md:col-span-4 space-y-6">
+			<!-- Summary & Timeline (Right Column on Desktop) -->
+			<div class="md:col-span-4 contents md:flex md:flex-col md:gap-6">
 				<!-- Quick Stats Card -->
 				<div
-					class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden"
+					class="order-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-[2rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden"
 				>
 					<div class="absolute top-0 right-0 p-8 opacity-10">
 						<Trophy class="w-32 h-32 rotate-12" />
@@ -179,7 +176,7 @@
 							<div class="flex justify-between text-sm mb-2 opacity-80">
 								<span>{$t('theater.setlists.avgPricePerTicket')}</span>
 							</div>
-							<div class="text-2xl font-bold text-yellow-400">
+							<div class="text-2xl md:text-3xl font-bold text-yellow-400 leading-none">
 								{formatCurrency(detail.stats.avgPrice)}
 							</div>
 						</div>
@@ -191,15 +188,15 @@
 								<span>{$t('theater.setlists.attendanceRate')}</span>
 							</div>
 							<div class="flex items-end gap-2">
-								<span class="text-3xl font-bold">{detail.watched.percentage}%</span>
-								<span class="text-sm opacity-60 mb-1">
+								<span class="text-3xl md:text-4xl font-black">{detail.watched.percentage}%</span>
+								<span class="text-sm opacity-60 mb-1 font-medium">
 									{$t('theater.setlists.ofMax')}
 								</span>
 							</div>
 							<!-- Progress bar -->
 							<div class="w-full bg-white/10 h-1.5 rounded-full mt-3 overflow-hidden">
 								<div
-									class="h-full bg-yellow-400 rounded-full"
+									class="h-full bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.5)]"
 									style="width: {detail.watched.percentage}%"
 								></div>
 							</div>
@@ -208,7 +205,9 @@
 				</div>
 
 				<!-- Timeline Card -->
-				<Timeline firstDate={detail.stats.firstDate} lastDate={detail.stats.lastDate} />
+				<div class="order-2">
+					<Timeline firstDate={detail.stats.firstDate} lastDate={detail.stats.lastDate} />
+				</div>
 			</div>
 		</div>
 	</div>

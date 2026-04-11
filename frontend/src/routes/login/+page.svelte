@@ -78,9 +78,7 @@
 <AuthLayout title={$t('auth.login.title')} subtitle={$t('auth.login.subtitle')}>
 	<form on:submit|preventDefault={handleSubmit} class="space-y-5" novalidate>
 		<div>
-			<label
-				for="email"
-				class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
+			<label for="email" class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
 				>{$t('auth.login.emailLabel')}</label
 			>
 			<div class="relative">

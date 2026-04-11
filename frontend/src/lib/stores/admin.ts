@@ -121,7 +121,7 @@ function createAdminStore() {
 			return true;
 		},
 
-		async updateMember(id: number, data: Partial<Member>) {
+		async updateMember(id: string | number, data: Partial<Member>) {
 			// Optimistic or simple wait? Let's verify requirement.
 			// Usually update doesn't trigger full loading list, but maybe a local one.
 			// For consistency with other stores, we rely on list update without global loading unless necessary.
@@ -144,7 +144,7 @@ function createAdminStore() {
 			}
 		},
 
-		async deleteMember(id: number) {
+		async deleteMember(id: string | number) {
 			try {
 				await membersApi.delete(id);
 				update((s) => ({

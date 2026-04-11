@@ -117,7 +117,7 @@
 
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<div
-			class="prose prose-red dark:prose-invert max-w-none prose-img:rounded-2xl md:prose-img:rounded-3xl prose-img:cursor-zoom-in prose-img:shadow-xl hover:prose-img:scale-[1.02] prose-img:transition-all prose-img:duration-500 prose-a:text-red-500 hover:prose-a:text-red-600 space-y-4 md:space-y-6 text-slate-800 dark:text-slate-300 leading-relaxed text-sm md:text-base md:text-lg font-medium bg-white dark:bg-zinc-900/50 p-5 md:p-10 rounded-2xl md:rounded-[2.5rem] border border-gray-100 dark:border-white/5"
+			class="prose prose-red dark:prose-invert prose-responsive-colors max-w-none prose-img:rounded-2xl md:prose-img:rounded-3xl prose-img:cursor-zoom-in prose-img:shadow-xl hover:prose-img:scale-[1.02] prose-img:transition-all prose-img:duration-500 prose-a:text-red-500 hover:prose-a:text-red-600 space-y-4 md:space-y-6 text-slate-800 dark:text-slate-300 leading-relaxed text-sm md:text-base md:text-lg font-medium bg-white dark:bg-zinc-900/50 p-5 md:p-10 rounded-2xl md:rounded-[2.5rem] border border-gray-100 dark:border-white/5"
 			on:click={handleContentClick}
 			role="presentation"
 		>

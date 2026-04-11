@@ -19,17 +19,30 @@
 
 	$: currentPath = $page.url.pathname;
 
-	// Check if on setlist detail page (UUID pattern in URL)
-	$: isDetailPage =
-		/^\/theater\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentPath);
-
 	// Check if on live single detail or multiview page — hide header for immersive player
 	$: isLiveDetailPage = /^\/theater\/live\/.+/.test(currentPath);
 
 	// Check if on news detail page
 	$: isNewsDetailPage = /^\/theater\/news\/.+/.test(currentPath);
 
-	type PageTheme = 'red' | 'blue' | 'green' | 'purple' | 'pink' | 'amber' | 'yellow' | 'orange' | 'rose' | 'indigo';
+	// Check if on setlist detail page
+	$: isDetailPage = (() => {
+		const parts = currentPath.split('/').filter(Boolean);
+		if (parts.length !== 2 || parts[0] !== 'theater') return false;
+		return !['news', 'members', 'sorter', 'events', 'live'].includes(parts[1]);
+	})();
+
+	type PageTheme =
+		| 'red'
+		| 'blue'
+		| 'green'
+		| 'purple'
+		| 'pink'
+		| 'amber'
+		| 'yellow'
+		| 'orange'
+		| 'rose'
+		| 'indigo';
 
 	// Dynamic Title, Subtitle & Theme
 	$: pageInfo = (() => {
@@ -101,22 +114,29 @@
 	};
 </script>
 
-<div class="max-w-6xl mx-auto {isLiveDetailPage ? 'pt-0 sm:pt-0 px-1.5 sm:px-4' : 'pt-4 sm:pt-6 px-4'} pb-24">
-	{#if !isDetailPage}
-		<!-- Unified Page Header (Standard or Background Live Sync) -->
-		<PageHeader
-			title={isLiveDetailPage ? 'JKT48 LIVE' : pageInfo.title}
-			subtitle={isLiveDetailPage ? '' : pageInfo.subtitle}
-			icon={isLiveDetailPage ? Tv : pageInfo.icon}
-			theme={isLiveDetailPage ? 'red' : pageInfo.theme}
-			showBackButton={isLiveDetailPage || isNewsDetailPage}
-			backUrl={isNewsDetailPage ? '/theater/news' : isLiveDetailPage ? '/theater/live' : undefined}
-			hidden={isLiveDetailPage}
-		>
-		</PageHeader>
-		{#if !isLiveDetailPage}
-			<div class="mb-4 sm:mb-6"></div>
-		{/if}
+<div
+	class="{(isLiveDetailPage || isNewsDetailPage || isDetailPage) ? 'max-w-5xl' : 'max-w-6xl'} mx-auto {isLiveDetailPage
+		? 'pt-0 sm:pt-0 px-1.5 sm:px-4'
+		: 'pt-4 sm:pt-6 px-4'} pb-24"
+>
+	<!-- Unified Page Header (Standard or Background Live Sync) -->
+	<PageHeader
+		title={isLiveDetailPage ? 'JKT48 LIVE' : pageInfo.title}
+		subtitle={isLiveDetailPage ? '' : pageInfo.subtitle}
+		icon={isLiveDetailPage ? Tv : pageInfo.icon}
+		theme={isLiveDetailPage ? 'red' : pageInfo.theme}
+		showBackButton={isLiveDetailPage || isNewsDetailPage || isDetailPage}
+		backUrl={isNewsDetailPage
+			? '/theater/news'
+			: isLiveDetailPage
+				? '/theater/live'
+				: isDetailPage
+					? '/theater'
+					: undefined}
+		hidden={isLiveDetailPage}
+	></PageHeader>
+	{#if !isLiveDetailPage}
+		<div class="mb-4 sm:mb-6"></div>
 	{/if}
 
 	<!-- Page Content -->

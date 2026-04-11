@@ -28,7 +28,7 @@
 	let editingMember: Partial<Member> = {};
 	let isCreatingMember = false;
 	let isSubmitting = false;
-	let deletingId: number | null = null;
+	let deletingId: string | number | null = null;
 
 	// Initial load state
 	let isInitialLoad = true;
@@ -92,7 +92,7 @@
 			if (isCreatingMember) {
 				await adminStore.createMember(e.detail);
 				showToast($t('admin.members.modal.created'), 'success');
-			} else if (editingMember && editingMember.id) {
+			} else if (editingMember && editingMember.id !== undefined) {
 				await adminStore.updateMember(editingMember.id, e.detail);
 				showToast($t('admin.members.modal.updated'), 'success');
 			}
@@ -120,14 +120,14 @@
 	<div
 		class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white dark:bg-zinc-800 p-4 rounded-3xl shadow-sm"
 	>
-		<div class="flex items-center gap-4 flex-1">
+		<div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<Users class="w-5 h-5 text-pink-500" />
 				{$t('admin.members.title')} ({$adminStore.members.total})
 			</h2>
 
 			<!-- Search Input -->
-			<div class="relative flex-1 max-w-xs">
+			<div class="relative w-full sm:max-w-xs">
 				<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 				<input
 					type="text"
