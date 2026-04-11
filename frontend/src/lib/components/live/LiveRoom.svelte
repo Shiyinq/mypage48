@@ -446,10 +446,10 @@
 <div
 	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out overflow-x-hidden {isFocusMode
 		? 'fixed inset-0 !top-0 !mt-0 z-[5000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-screen w-screen'
-		: 'h-[calc(100vh-80px)] mt-1 sm:mt-4 px-0 sm:px-4 pb-2 sm:pb-4'}"
+		: 'h-[calc(100vh-72px)] sm:h-[calc(100vh-76px)] mt-2 sm:mt-3 px-0 sm:px-4 pb-2 sm:pb-4'}"
 >
 	<!-- Main Player Area -->
-	<div class="flex-[1.5] lg:flex-1 flex flex-col gap-4 min-h-0 p-1">
+	<div class="flex-[1.5] lg:flex-1 flex flex-col gap-3 min-h-0 p-0">
 		{#if isTheater}
 			<PageHeader
 				title={memberName || 'JKT48 LIVE'}
