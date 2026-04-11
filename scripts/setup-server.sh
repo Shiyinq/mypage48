@@ -19,9 +19,9 @@ echo "🚀 Starting MyPage48 Server Setup..."
 echo "🔄 Updating system packages..."
 sudo apt update && sudo apt upgrade -y
 
-# 2. Check & Install Dependencies (Git, Curl, UFW)
+# 2. Check & Install Dependencies (Git, Curl, UFW, 7zip, Rclone)
 echo "📦 Checking basic dependencies..."
-sudo apt install -y git curl ufw
+sudo apt install -y git curl ufw p7zip-full rclone
 
 # 3. Check & Install Docker
 if ! [ -x "$(command -v docker)" ]; then
@@ -105,6 +105,13 @@ if [ "$SHOULD_SETUP_ENV" = true ]; then
 
     read -p "🐘 Enter Umami Postgres Password (default: umami123!): " POSTGRES_PASSWORD
     POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-umami123!}
+
+    echo "🔒 --- BACKUP SETTINGS (R2) ---"
+    read -p "🔐 Enter a Password to ENCRYPT your backups: " BACKUP_PASSWORD
+    read -p "🆔 Enter Cloudflare Account ID: " R2_ACCOUNT_ID
+    read -p "🪣 Enter R2 Bucket Name: " R2_BUCKET
+    read -p "🔑 Enter R2 Access Key ID: " R2_ACCESS_KEY
+    read -p "🤫 Enter R2 Secret Access Key: " R2_SECRET_KEY
     
     # Generate random keys
     SECRET_KEY=$(openssl rand -hex 32)
@@ -128,6 +135,13 @@ if [ "$SHOULD_SETUP_ENV" = true ]; then
     sed -i "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$POSTGRES_PASSWORD|g" .env.tmp
     sed -i "s|MINIO_SECURE=.*|MINIO_SECURE=false|g" .env.tmp
 
+    # Backup settings
+    sed -i "s|BACKUP_PASSWORD=.*|BACKUP_PASSWORD=$BACKUP_PASSWORD|g" .env.tmp
+    sed -i "s|R2_ACCOUNT_ID=.*|R2_ACCOUNT_ID=$R2_ACCOUNT_ID|g" .env.tmp
+    sed -i "s|R2_BUCKET=.*|R2_BUCKET=$R2_BUCKET|g" .env.tmp
+    sed -i "s|R2_ACCESS_KEY=.*|R2_ACCESS_KEY=$R2_ACCESS_KEY|g" .env.tmp
+    sed -i "s|R2_SECRET_KEY=.*|R2_SECRET_KEY=$R2_SECRET_KEY|g" .env.tmp
+
     mv .env.tmp .env
     echo "✅ .env file generated successfully."
 fi
@@ -139,6 +153,13 @@ mkdir -p "$CERT_DIR"
 touch "$CERT_DIR/fullchain.pem"
 touch "$CERT_DIR/privkey.pem"
 echo "✅ SSL directory and empty files created."
+
+# 10. Automated Backup Setup (Cron Job)
+echo "⏰ Setting up daily automated backup (00:00)..."
+chmod +x scripts/backup-to-r2.sh
+# Check if cron job already exists to avoid duplication
+(crontab -l 2>/dev/null | grep -F "scripts/backup-to-r2.sh") || (crontab -l 2>/dev/null; echo "0 0 * * * $PROJECT_DIR/scripts/backup-to-r2.sh >> $PROJECT_DIR/logs/backup.log 2>&1") | crontab -
+echo "✅ Cron job for daily backup at midnight created."
 
 echo "--------------------------------------------------------"
 echo "🎉 SETUP COMPLETE!"
