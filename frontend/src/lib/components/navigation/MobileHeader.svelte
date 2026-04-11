@@ -9,10 +9,6 @@
 	const { t } = useTranslation();
 
 	$: headerInfo = $pageHeaderStore;
-	
-	let lastScrollY = 0;
-	let isHidden = false;
-	const threshold = 10;
 
 	const themeClasses = {
 		red: 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400',
@@ -26,26 +22,15 @@
 		rose: 'bg-rose-50 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400',
 		indigo: 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400'
 	};
+	
 
-	function handleScroll() {
-		const currentScrollY = window.scrollY;
-		const delta = Math.abs(currentScrollY - lastScrollY);
-
-		if (delta < threshold) return;
-
-		if (currentScrollY > lastScrollY && currentScrollY > 80) {
-			isHidden = true;
-		} else {
-			isHidden = false;
-		}
-		lastScrollY = currentScrollY;
-	}
 </script>
 
-<svelte:window on:scroll={handleScroll} />
 
+
+<div class="h-16 md:hidden"></div>
 <header
-	class="md:hidden bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 sticky top-0 z-50 transition-transform duration-300 ease-in-out {isHidden ? '-translate-y-full' : 'translate-y-0'}"
+	class="md:hidden bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out"
 >
 	<div class="h-16 px-4 flex items-center justify-between gap-4">
 		<!-- Left: Title & Icon -->
