@@ -101,14 +101,14 @@
 	subtitle={$t('auth.register.subtitle')}
 	cardWidth="max-w-4xl"
 >
-	<form on:submit|preventDefault={handleSubmit} class="space-y-6" novalidate>
-		<div class="grid md:grid-cols-2 gap-6">
+	<form on:submit|preventDefault={handleSubmit} class="space-y-4" novalidate>
+		<div class="grid md:grid-cols-2 gap-4">
 			<!-- Left Column: Personal Information -->
-			<div class="space-y-4">
+			<div class="space-y-3">
 				<div>
 					<label
 						for="fullName"
-						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+						class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
 						>{$t('auth.register.fullName')}</label
 					>
 					<input
@@ -117,7 +117,7 @@
 						bind:value={formData.fullName}
 						on:input={() => validateField('fullName')}
 						class={`w-full px-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.fullName ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
-						placeholder="e.g. Catherina Vallencia"
+						placeholder="Catherina Vallencia"
 					/>
 					{#if errors.fullName}
 						<p class="text-xs text-red-500 mt-1 ml-1 font-medium">{errors.fullName}</p>
@@ -125,9 +125,7 @@
 				</div>
 
 				<div>
-					<label
-						for="email"
-						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+					<label for="email" class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
 						>{$t('auth.register.email')}</label
 					>
 					<div class="relative">
@@ -141,7 +139,7 @@
 							bind:value={formData.email}
 							on:input={() => validateField('email')}
 							class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
-							placeholder="name@example.com"
+							placeholder="erine@oline.com"
 						/>
 					</div>
 					{#if errors.email}
@@ -152,7 +150,7 @@
 				<div>
 					<label
 						for="username"
-						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
+						class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
 						>{$t('auth.register.username')}</label
 					>
 					<div class="relative">
@@ -165,7 +163,7 @@
 							bind:value={formData.username}
 							on:input={() => validateField('username')}
 							class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.username ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
-							placeholder="@username"
+							placeholder="olinecantik"
 						/>
 					</div>
 					{#if errors.username}
@@ -219,7 +217,7 @@
 			<button
 				type="submit"
 				disabled={isLoading || !isValid}
-				class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-500/25 dark:shadow-red-900/30 hover:shadow-xl hover:shadow-red-500/40 dark:hover:shadow-red-900/50 hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+				class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:shadow-md hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer border border-white/20"
 			>
 				{#if isLoading}
 					{$t('auth.register.submitting')}

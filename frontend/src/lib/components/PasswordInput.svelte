@@ -25,7 +25,7 @@
 </script>
 
 <div>
-	<label for={id} class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1">
+	<label for={id} class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5">
 		{label}
 	</label>
 	<div class="relative">
