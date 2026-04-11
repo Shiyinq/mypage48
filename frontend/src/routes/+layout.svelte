@@ -165,8 +165,7 @@
 	$: if (
 		mounted &&
 		$isAuthenticated &&
-		$page.url.pathname.startsWith('/jkt48/') &&
-		!$page.url.pathname.startsWith('/jkt48/live')
+		$page.url.pathname.startsWith('/jkt48/')
 	) {
 		let theaterPath = $page.url.pathname.replace('/jkt48/', '/theater/');
 		// Special case for sub-routes that might have different structures
