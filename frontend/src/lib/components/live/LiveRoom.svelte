@@ -444,7 +444,7 @@
 </svelte:head>
 
 <div
-	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out {isFocusMode
+	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out overflow-x-hidden {isFocusMode
 		? 'fixed inset-0 !top-0 !mt-0 z-[5000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-screen w-screen'
 		: 'h-[calc(100vh-80px)] mt-1 sm:mt-4 px-0 sm:px-4 pb-2 sm:pb-4'}"
 >

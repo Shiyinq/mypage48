@@ -220,7 +220,7 @@
 					</div>
 				{/if}
 				<div class="flex-1 min-w-0">
-					<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5">{msg.user}</p>
+					<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate">{msg.user}</p>
 
 					{#if msg.type === 'gift' && msg.gift}
 						{@const isLottie = msg.gift.img
@@ -232,7 +232,7 @@
 							.slice(-3)
 							.some((m) => (m.id || m.timestamp) === (msg.id || msg.timestamp))}
 						<div
-							class="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl rounded-tl-none text-white text-sm font-black italic shadow-lg shadow-black/10 transition-all"
+							class="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl rounded-tl-none text-white text-sm font-black italic shadow-lg shadow-black/10 transition-all max-w-full"
 							style="background: {msg.gift.color || '#ef4444'}"
 						>
 							{#if msg.gift.img}
@@ -272,7 +272,7 @@
 						</div>
 					{:else}
 						<div
-							class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm"
+							class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm break-words overflow-wrap-anywhere whitespace-pre-wrap max-w-full"
 						>
 							{msg.text}
 						</div>
