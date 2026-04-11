@@ -113,7 +113,9 @@
 
 		<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
 			{#if $isExportLoading}
-				<div class="h-12 w-full sm:w-32 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"></div>
+				<div
+					class="h-12 w-full sm:w-32 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"
+				></div>
 			{:else if status === 'PROCESSING'}
 				<div
 					class="flex items-center justify-center gap-3 px-5 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-500 dark:text-gray-400 font-bold whitespace-nowrap"

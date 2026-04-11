@@ -162,11 +162,7 @@
 	}
 
 	// Redirect logged-in users away from public JKT48 routes to their theater counterparts
-	$: if (
-		mounted &&
-		$isAuthenticated &&
-		$page.url.pathname.startsWith('/jkt48/')
-	) {
+	$: if (mounted && $isAuthenticated && $page.url.pathname.startsWith('/jkt48/')) {
 		let theaterPath = $page.url.pathname.replace('/jkt48/', '/theater/');
 		// Special case for sub-routes that might have different structures
 		if ($page.url.pathname === '/jkt48/event-history') {
@@ -186,7 +182,9 @@
 		<CommandPalette />
 	{/if}
 	<div
-		class="min-h-screen flex flex-col relative overflow-x-hidden {$isAuthenticated ? 'selection:bg-red-500/20' : ''}"
+		class="min-h-screen flex flex-col relative overflow-x-hidden {$isAuthenticated
+			? 'selection:bg-red-500/20'
+			: ''}"
 	>
 		{#if $isAuthenticated && !isFullScreenRoute}
 			<AnimatedBackground hideDecorationsOnMobile={true} />
@@ -241,8 +239,15 @@
 				{#if !isFullScreenRoute}
 					<LandingNavbar showLogin={false} />
 				{/if}
-				{@const isLivePublicDetailPage = $page.url.pathname.startsWith('/jkt48/live/') && $page.params.id}
-				<div class={isFullScreenRoute ? 'w-full h-full' : isLivePublicDetailPage ? 'max-w-7xl mx-auto p-0 sm:p-2 sm:px-4 flex-1' : 'max-w-7xl mx-auto px-4 py-8 flex-1'}>
+				{@const isLivePublicDetailPage =
+					$page.url.pathname.startsWith('/jkt48/live/') && $page.params.id}
+				<div
+					class={isFullScreenRoute
+						? 'w-full h-full'
+						: isLivePublicDetailPage
+							? 'max-w-7xl mx-auto p-0 sm:p-2 sm:px-4 flex-1'
+							: 'max-w-7xl mx-auto px-4 py-8 flex-1'}
+				>
 					<slot />
 				</div>
 				{#if !isFullScreenRoute}

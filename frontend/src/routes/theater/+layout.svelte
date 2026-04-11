@@ -32,7 +32,17 @@
 		return !['news', 'members', 'sorter', 'events', 'live'].includes(parts[1]);
 	})();
 
-	type PageTheme = 'red' | 'blue' | 'green' | 'purple' | 'pink' | 'amber' | 'yellow' | 'orange' | 'rose' | 'indigo';
+	type PageTheme =
+		| 'red'
+		| 'blue'
+		| 'green'
+		| 'purple'
+		| 'pink'
+		| 'amber'
+		| 'yellow'
+		| 'orange'
+		| 'rose'
+		| 'indigo';
 
 	// Dynamic Title, Subtitle & Theme
 	$: pageInfo = (() => {
@@ -104,7 +114,11 @@
 	};
 </script>
 
-<div class="max-w-6xl mx-auto {isLiveDetailPage ? 'pt-0 sm:pt-0 px-1.5 sm:px-4' : 'pt-4 sm:pt-6 px-4'} pb-24">
+<div
+	class="max-w-6xl mx-auto {isLiveDetailPage
+		? 'pt-0 sm:pt-0 px-1.5 sm:px-4'
+		: 'pt-4 sm:pt-6 px-4'} pb-24"
+>
 	<!-- Unified Page Header (Standard or Background Live Sync) -->
 	<PageHeader
 		title={isLiveDetailPage ? 'JKT48 LIVE' : pageInfo.title}
@@ -120,8 +134,7 @@
 					? '/theater'
 					: undefined}
 		hidden={isLiveDetailPage}
-	>
-	</PageHeader>
+	></PageHeader>
 	{#if !isLiveDetailPage}
 		<div class="mb-4 sm:mb-6"></div>
 	{/if}

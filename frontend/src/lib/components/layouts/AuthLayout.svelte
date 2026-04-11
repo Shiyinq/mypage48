@@ -26,13 +26,18 @@
 					<svelte:component this={icon} class="w-6 h-6" />
 				</div>
 				<div class="flex flex-col sm:flex-row items-center justify-center gap-1.5 mb-2">
-					<h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">
+					<h1
+						class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tighter leading-none"
+					>
 						MyPage<span class="text-red-600">48</span>
 					</h1>
 					{#if title}
 						<div class="flex items-center gap-1.5">
 							<span class="hidden sm:block text-gray-300 dark:text-zinc-700">|</span>
-							<span class="text-lg sm:text-xl font-bold text-gray-700 dark:text-zinc-300 leading-none">{title}</span>
+							<span
+								class="text-lg sm:text-xl font-bold text-gray-700 dark:text-zinc-300 leading-none"
+								>{title}</span
+							>
 						</div>
 					{/if}
 				</div>

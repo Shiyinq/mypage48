@@ -39,7 +39,10 @@
 	$: isPublic = variant === 'public';
 </script>
 
-<div in:fade class="w-full max-w-2xl px-4 sm:px-4 space-y-6 flex flex-col items-center overflow-hidden">
+<div
+	in:fade
+	class="w-full max-w-2xl px-4 sm:px-4 space-y-6 flex flex-col items-center overflow-hidden"
+>
 	<div class="w-full space-y-2">
 		<div class="flex justify-between items-end px-2">
 			<div class="space-y-0.5">

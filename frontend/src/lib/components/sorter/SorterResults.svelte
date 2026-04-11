@@ -64,7 +64,9 @@
 			</div>
 		</div>
 
-		<div class="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide no-scrollbar pb-1">
+		<div
+			class="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide no-scrollbar pb-1"
+		>
 			<div
 				class={`flex bg-white dark:bg-zinc-900 rounded-full p-1 border shadow-sm ${isPublic ? 'border-gray-100 dark:border-zinc-800' : 'border-zinc-100 dark:border-zinc-800'}`}
 			>
