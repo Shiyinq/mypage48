@@ -231,7 +231,7 @@
 				<!-- Logout Button -->
 				<button
 					on:click={logout}
-					class="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-500/30 cursor-pointer"
+					class="p-2 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors border border-red-100/50 dark:border-red-500/30 cursor-pointer"
 					title={$t('common.logout')}
 				>
 					<LogOut class="w-5 h-5" />
