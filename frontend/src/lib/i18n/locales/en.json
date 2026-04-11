@@ -317,7 +317,7 @@
 		"resetPassword": {
 			"title": "Reset Password",
 			"subtitle": "Create a new secure password for your account.",
-			"successTitle": "Password Reset!",
+			"successTitle": "Password Updated!",
 			"successMessage": "Your password has been successfully updated. You will be redirected to login shortly.",
 			"newPassword": "New Password",
 			"confirmPassword": "Confirm Password",
