@@ -7,7 +7,14 @@
 		easing: cubicInOut
 	});
 
-	export let items: Array<{ label: string; href: string; id?: string; activeHref?: string }> = [];
+	export let items: Array<{
+		label: string;
+		href: string;
+		id?: string;
+		activeHref?: string;
+		exact?: boolean;
+		[key: string]: any;
+	}> = [];
 	export let currentPath: string;
 	export let className = ''; // Standard hidden md:flex is default but can be overridden
 </script>
@@ -16,8 +23,9 @@
 	class="items-center gap-0.5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm overflow-x-auto md:overflow-visible flex whitespace-nowrap lg:gap-1 {className}"
 >
 	{#each items as item (item.href)}
-		{@const isActive =
-			(item.activeHref || item.href) === '/'
+		{@const isActive = item.exact
+			? currentPath === (item.activeHref || item.href)
+			: (item.activeHref || item.href) === '/'
 				? currentPath === '/'
 				: currentPath.startsWith(item.activeHref || item.href)}
 		<a
@@ -28,7 +36,7 @@
 		>
 			{#if isActive}
 				<div
-					class="absolute inset-0 bg-red-600 rounded-full shadow-lg shadow-red-500/20 z-0"
+					class="absolute inset-0 {item.activeClass || 'bg-red-600 shadow-red-500/20'} rounded-full shadow-lg z-0 transition-all duration-300"
 					in:receive={{ key: 'nav-active-pill' }}
 					out:send={{ key: 'nav-active-pill' }}
 				></div>

@@ -178,7 +178,7 @@
 
 		{#if $$slots.actions}
 			<div
-				class={`flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-1 overflow-x-auto scrollbar-hide no-scrollbar max-w-full ${actions ? 'hidden sm:flex' : ''}`}
+				class={`flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-2 overflow-visible max-w-full ${actions ? 'hidden sm:flex' : ''}`}
 			>
 				<slot name="actions" />
 			</div>
