@@ -198,10 +198,27 @@
 
 <SEO title={$t('profile.title')} path="/profile" description={$t('seo.profile')} />
 
-<div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 animate-fade-in pb-32">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 animate-fade-in pb-32">
 	<!-- Page Header -->
 	<div class="mb-8">
-		<PageHeader title={$t('profile.title')} subtitle={$t('profile.subtitle')} icon={UserIcon}>
+		<PageHeader 
+			title={$t('profile.title')} 
+			subtitle={$t('profile.subtitle')} 
+			icon={UserIcon}
+			actions={[
+				{
+					icon: Settings,
+					label: 'Settings',
+					onClick: () => goto('/settings')
+				},
+				{
+					icon: LogOut,
+					label: $t('common.logout'),
+					onClick: logout,
+					theme: 'red'
+				}
+			]}
+		>
 			<svelte:fragment slot="actions">
 				<!-- Settings Button -->
 				<button
@@ -214,7 +231,7 @@
 				<!-- Logout Button -->
 				<button
 					on:click={logout}
-					class="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-500/30 cursor-pointer"
+					class="p-2 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors border border-red-100/50 dark:border-red-500/30 cursor-pointer"
 					title={$t('common.logout')}
 				>
 					<LogOut class="w-5 h-5" />

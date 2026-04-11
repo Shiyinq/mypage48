@@ -27,31 +27,36 @@
 		</div>
 	</div>
 
-	<div class="grid grid-cols-3 gap-3">
+	<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
 		{#each availableLocales as localeOption}
 			<button
 				on:click={() => handleLanguageChange(localeOption.code)}
-				class="p-4 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer h-full {$locale ===
+				class="p-4 rounded-2xl border-2 transition-all flex md:flex-col items-center justify-between md:justify-center gap-4 cursor-pointer h-full {$locale ===
 				localeOption.code
 					? 'border-red-500 bg-red-50/50 dark:bg-red-900/20 shadow-sm'
 					: 'border-gray-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-gray-200 dark:hover:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-800'}"
 			>
-				<span class="text-3xl drop-shadow-sm filter">{localeOption.flag}</span>
-				<div class="text-center">
-					<p class="font-bold text-sm text-gray-800 dark:text-gray-200 leading-tight">
-						{localeOption.nativeName}
-					</p>
-					<p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{localeOption.name}</p>
+				<div class="flex items-center md:flex-col gap-4 md:gap-3">
+					<span class="text-3xl drop-shadow-sm filter flex-shrink-0">{localeOption.flag}</span>
+					<div class="text-left md:text-center">
+						<p class="font-bold text-base md:text-sm text-gray-800 dark:text-gray-200 leading-tight">
+							{localeOption.nativeName}
+						</p>
+						<p class="text-xs md:text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{localeOption.name}</p>
+					</div>
 				</div>
-				<div
-					class="w-5 h-5 rounded-full border-2 flex items-center justify-center {$locale ===
-					localeOption.code
-						? 'border-red-500 bg-red-500'
-						: 'border-gray-300 dark:border-gray-600'}"
-				>
-					{#if $locale === localeOption.code}
-						<Check class="w-3 h-3 text-white" />
-					{/if}
+				
+				<div class="flex-shrink-0 pl-2">
+					<div
+						class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shadow-sm {$locale ===
+						localeOption.code
+							? 'border-red-500 bg-red-500'
+							: 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-800'}"
+					>
+						{#if $locale === localeOption.code}
+							<Check class="w-3.5 h-3.5 text-white" />
+						{/if}
+					</div>
 				</div>
 			</button>
 		{/each}

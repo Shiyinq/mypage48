@@ -51,7 +51,7 @@
 </script>
 
 <div
-	class="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-zinc-700 flex flex-row group animate-fade-in h-full min-h-[180px] w-full"
+	class="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-zinc-700 flex flex-row group animate-fade-in h-[210px] w-full"
 >
 	<!-- Image Section (Left) -->
 	<div class="w-[140px] sm:w-[180px] h-full relative bg-gray-50 overflow-hidden flex-shrink-0">

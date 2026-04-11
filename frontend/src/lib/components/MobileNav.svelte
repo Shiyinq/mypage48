@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { afterNavigate } from '$app/navigation';
 	import {
 		LayoutDashboard,
 		AudioLines,
@@ -11,13 +12,21 @@
 		Trophy,
 		Settings,
 		ChevronRight,
-		X
+		X,
+		User,
+		Newspaper,
+		Tv,
+		Calendar,
+		ArrowUpDown,
+		Users
 	} from 'lucide-svelte';
+	import { theaterNavItems } from '$lib/constants/theaterNav';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { fade, slide, fly } from 'svelte/transition';
 
 	const { t } = useTranslation();
 	let isMenuOpen = false;
+	let isTheaterMenuOpen = false;
 
 	let lastScrollY = 0;
 	let isHidden = false;
@@ -44,17 +53,34 @@
 	const secondaryLinks = [
 		{ href: '/memories', icon: ImageIcon, label: 'nav.memories', color: 'text-pink-500' },
 		{ href: '/journal', icon: BookOpen, label: 'nav.journal', color: 'text-green-500' },
-		{ href: '/achievements', icon: Trophy, label: 'nav.achievements', color: 'text-amber-500' }
+		{ href: '/achievements', icon: Trophy, label: 'nav.achievements', color: 'text-amber-500' },
+		{ href: '/history', icon: History, label: 'nav.history', color: 'text-blue-500' }
 	];
 
 	function toggleMenu() {
 		isMenuOpen = !isMenuOpen;
+		if (isMenuOpen) isTheaterMenuOpen = false;
 	}
 
-	function closeMenu() {
-		isMenuOpen = false;
+	function toggleTheaterMenu() {
+		isTheaterMenuOpen = !isTheaterMenuOpen;
+		if (isTheaterMenuOpen) isMenuOpen = false;
 	}
+
+	function closeAllMenus() {
+		isMenuOpen = false;
+		isTheaterMenuOpen = false;
+	}
+
+	afterNavigate(() => {
+		closeAllMenus();
+	});
+
+	$: isRouteMore = secondaryLinks.some((link) => $page.url.pathname.startsWith(link.href));
+	$: isRouteTheater = $page.url.pathname.startsWith('/theater');
 </script>
+
+<svelte:window on:scroll={handleScroll} />
 
 <!-- Menu Drawer Overlay -->
 {#if isMenuOpen}
@@ -62,7 +88,7 @@
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-		on:click={closeMenu}
+		on:click={closeAllMenus}
 		transition:fade={{ duration: 200 }}
 	></div>
 
@@ -71,25 +97,81 @@
 		transition:fly={{ y: 300, duration: 300 }}
 	>
 		<div class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5">
-			<h3 class="text-lg font-bold text-gray-900 dark:text-white">{$t('nav.more') || 'Lainnya'}</h3>
-			<button class="p-2 text-gray-400 hover:text-gray-600" on:click={closeMenu}>
+			<h3 class="text-lg font-bold text-gray-900 dark:text-white">{$t('nav.journey') || 'Journey'}</h3>
+			<button class="p-2 text-gray-400 hover:text-gray-600" on:click={closeAllMenus}>
 				<X class="w-6 h-6" />
 			</button>
 		</div>
 		<div class="p-4 grid grid-cols-1 gap-2">
 			{#each secondaryLinks as link}
+				{@const isActive = $page.url.pathname.startsWith(link.href)}
 				<a
 					href={link.href}
-					class="flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
-					on:click={closeMenu}
+					class={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+					on:click={closeAllMenus}
 				>
 					<div class="flex items-center gap-4">
-						<div class={`p-3 rounded-xl bg-gray-50 dark:bg-white/5 ${link.color} group-hover:scale-110 transition-transform`}>
+						<div
+							class={`p-3 rounded-xl transition-transform ${isActive ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 ' + link.color : 'bg-gray-50 dark:bg-white/5 ' + link.color} group-hover:scale-110`}
+						>
 							<svelte:component this={link.icon} class="w-6 h-6" />
 						</div>
-						<span class="font-bold text-gray-700 dark:text-gray-200">{$t(link.label)}</span>
+						<span
+							class={`font-bold transition-colors ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-200'}`}
+							>{$t(link.label)}</span
+						>
 					</div>
-					<ChevronRight class="w-5 h-5 text-gray-300" />
+					<ChevronRight
+						class={`w-5 h-5 transition-all ${isActive ? 'text-indigo-500 transform translate-x-1' : 'text-gray-300'}`}
+					/>
+				</a>
+			{/each}
+		</div>
+	</div>
+{/if}
+
+<!-- Theater Menu Drawer -->
+{#if isTheaterMenuOpen}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div
+		class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
+		on:click={closeAllMenus}
+		transition:fade={{ duration: 200 }}
+	></div>
+
+	<div
+		class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[70] shadow-2xl border-t border-gray-100 dark:border-white/5 pb-8 overflow-hidden"
+		transition:fly={{ y: 300, duration: 300 }}
+	>
+		<div class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5">
+			<h3 class="text-lg font-bold text-gray-900 dark:text-white">{$t('nav.theater') || 'Theater'}</h3>
+			<button class="p-2 text-gray-400 hover:text-gray-600" on:click={closeAllMenus}>
+				<X class="w-6 h-6" />
+			</button>
+		</div>
+		<div class="p-4 grid grid-cols-1 gap-2 max-h-[60vh] overflow-y-auto">
+			{#each theaterNavItems as link}
+				{@const isActive = link.exact ? $page.url.pathname === link.href : $page.url.pathname.startsWith(link.href)}
+				<a
+					href={link.href}
+					class={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive ? 'bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+					on:click={closeAllMenus}
+				>
+					<div class="flex items-center gap-4">
+						<div
+							class={`p-3 rounded-xl transition-transform ${isActive ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 ' + link.color : 'bg-gray-50 dark:bg-white/5 ' + link.color} group-hover:scale-110`}
+						>
+							<svelte:component this={link.icon} class="w-6 h-6" />
+						</div>
+						<span
+							class={`font-bold transition-colors ${isActive ? 'text-purple-600 dark:text-purple-400' : 'text-gray-700 dark:text-gray-200'}`}
+							>{$t(link.labelKey) || link.labelDefault}</span
+						>
+					</div>
+					<ChevronRight
+						class={`w-5 h-5 transition-all ${isActive ? 'text-purple-500 transform translate-x-1' : 'text-gray-300'}`}
+					/>
 				</a>
 			{/each}
 		</div>
@@ -102,7 +184,7 @@
 	<div class="flex h-16 items-center justify-around max-w-[420px] mx-auto px-4">
 		<a
 			href="/"
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 group min-w-[64px]"
+			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 group min-w-[56px]"
 		>
 			<LayoutDashboard
 				class={`w-6 h-6 transition-all ${$page.url.pathname === '/' ? 'text-red-600 dark:text-red-400 scale-110' : ''}`}
@@ -113,18 +195,18 @@
 			>
 		</a>
 
-		<a
-			href="/theater/events"
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 group min-w-[64px]"
+		<button
+			on:click={toggleTheaterMenu}
+			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 group min-w-[56px]"
 		>
 			<AudioLines
-				class={`w-6 h-6 transition-all ${$page.url.pathname.startsWith('/theater') ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`}
+				class={`w-6 h-6 transition-all ${isTheaterMenuOpen || isRouteTheater ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`}
 			/>
 			<span
-				class={`text-[10px] font-medium transition-all truncate w-full text-center ${$page.url.pathname.startsWith('/theater') ? 'text-purple-600 dark:text-purple-400' : ''}`}
+				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isTheaterMenuOpen || isRouteTheater ? 'text-purple-600 dark:text-purple-400' : ''}`}
 				>{$t('nav.theater')}</span
 			>
-		</a>
+		</button>
 
 		<!-- Floating Action Button (FAB) -->
 		<div class="relative -top-5 flex justify-center px-1">
@@ -136,30 +218,30 @@
 			</a>
 		</div>
 
-		<a
-			href="/history"
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 group min-w-[64px]"
-		>
-			<History
-				class={`w-6 h-6 transition-all ${$page.url.pathname === '/history' ? 'text-blue-600 dark:text-blue-400 scale-110' : ''}`}
-			/>
-			<span
-				class={`text-[10px] font-medium transition-all truncate w-full text-center ${$page.url.pathname === '/history' ? 'text-blue-600 dark:text-blue-400' : ''}`}
-				>{$t('nav.history')}</span
-			>
-		</a>
-
 		<button
 			on:click={toggleMenu}
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 group min-w-[64px]"
+			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 group min-w-[56px]"
 		>
 			<Menu
-				class={`w-6 h-6 transition-all ${isMenuOpen ? 'text-indigo-600 dark:text-indigo-400 scale-110' : ''}`}
+				class={`w-6 h-6 transition-all ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400 scale-110' : ''}`}
 			/>
 			<span
-				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isMenuOpen ? 'text-indigo-600 dark:text-indigo-400' : ''}`}
-				>{$t('nav.more') || 'Menu'}</span
+				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400' : ''}`}
+				>{$t('nav.journey') || 'Journey'}</span
 			>
 		</button>
+
+		<a
+			href="/profile"
+			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 group min-w-[56px]"
+		>
+			<User
+				class={`w-6 h-6 transition-all ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white scale-110' : ''}`}
+			/>
+			<span
+				class={`text-[10px] font-medium transition-all truncate w-full text-center ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white' : ''}`}
+				>{$t('nav.profile') || 'Profile'}</span
+			>
+		</a>
 	</div>
 </nav>

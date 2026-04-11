@@ -39,7 +39,7 @@
 	$: isPublic = variant === 'public';
 </script>
 
-<div in:fade class="w-full max-w-2xl space-y-6 flex flex-col items-center">
+<div in:fade class="w-full max-w-2xl px-4 sm:px-4 space-y-6 flex flex-col items-center overflow-hidden">
 	<div class="w-full space-y-2">
 		<div class="flex justify-between items-end px-2">
 			<div class="space-y-0.5">
@@ -72,15 +72,15 @@
 	</div>
 
 	<div
-		class={`grid grid-cols-[1fr_auto_1fr] items-center gap-4 md:gap-8 w-full max-w-2xl ${isPublic ? '' : 'flex-none flex flex-col justify-center min-h-0 py-1'}`}
+		class={`grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 md:gap-8 w-full max-w-2xl ${isPublic ? '' : 'flex-none flex flex-col justify-center min-h-0 py-1'}`}
 	>
 		<button
 			on:click={() => handleSelect(1)}
 			disabled={isAnimating}
-			class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl ${
+			class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-2 md:border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl mx-auto w-full max-w-[135px] md:max-w-none ${
 				isPublic
 					? 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-500/20'
-					: 'hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-500/20 w-auto h-full max-h-[47vh] min-h-[225px]'
+					: 'hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-500/20 h-full max-h-[47vh] min-h-[150px] md:min-h-[225px]'
 			} ${
 				lastSelectedSide === 'left' || lastSelectedSide === 'tie'
 					? 'win-animation'
@@ -142,7 +142,7 @@
 		</button>
 
 		<div
-			class={`z-10 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-white dark:bg-zinc-900 rounded-full shadow-2xl border-2 md:border-4 font-black italic text-[8px] md:text-[10px] ${
+			class={`z-10 w-6 h-6 md:w-10 md:h-10 flex items-center justify-center bg-white dark:bg-zinc-900 rounded-full shadow-2xl border md:border-4 font-black italic text-[6px] md:text-[10px] ${
 				isPublic
 					? 'border-red-600 text-red-600 animate-pulse'
 					: 'border-rose-500 text-rose-500 animate-bounce-slow'
@@ -154,10 +154,10 @@
 		<button
 			on:click={() => handleSelect(-1)}
 			disabled={isAnimating}
-			class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl ${
+			class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-2 md:border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl mx-auto w-full max-w-[135px] md:max-w-none ${
 				isPublic
 					? 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-500/20'
-					: 'hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-500/20 w-auto h-full max-h-[47vh] min-h-[225px]'
+					: 'hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-500/20 h-full max-h-[47vh] min-h-[150px] md:min-h-[225px]'
 			} ${
 				lastSelectedSide === 'right' || lastSelectedSide === 'tie'
 					? 'win-animation'
@@ -219,31 +219,31 @@
 		</button>
 	</div>
 
-	<div class="mt-4 md:mt-6 flex justify-center">
+	<div class="mt-4 md:mt-6 flex justify-center w-full">
 		<div
-			class="flex items-center gap-1 md:gap-2 p-1.5 bg-zinc-50/50 dark:bg-zinc-900/40 backdrop-blur-sm rounded-full shadow-inner border border-zinc-200/50 dark:border-zinc-800/40"
+			class="flex items-center gap-1 md:gap-2 p-1 bg-zinc-50/50 dark:bg-zinc-900/40 backdrop-blur-sm rounded-full shadow-inner border border-zinc-200/50 dark:border-zinc-800/40 w-fit max-w-full overflow-x-auto scrollbar-hide no-scrollbar"
 		>
 			<button
 				on:click={() => handleSelect(0)}
 				disabled={isAnimating}
-				class="h-11 px-6 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-900 dark:text-white font-black rounded-full transition-all text-sm cursor-pointer whitespace-nowrap flex items-center gap-2 shadow-sm border border-zinc-100 dark:border-zinc-700"
+				class="h-10 md:h-11 px-4 md:px-6 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-900 dark:text-white font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 shadow-sm border border-zinc-100 dark:border-zinc-700"
 			>
-				<Equal size={18} />
+				<Equal size={16} />
 				{$t('theater.sorter.tie')}
 			</button>
 			<button
 				on:click={undo}
 				disabled={!hasHistory || isAnimating}
-				class="h-11 px-6 bg-amber-50 dark:bg-amber-950/20 text-amber-600 font-black rounded-full transition-all text-sm cursor-pointer disabled:opacity-30 whitespace-nowrap flex items-center gap-2 shadow-sm border border-amber-100/50 dark:border-amber-900/20"
+				class="h-10 md:h-11 px-4 md:px-6 bg-amber-50 dark:bg-amber-950/20 text-amber-600 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer disabled:opacity-30 whitespace-nowrap flex items-center gap-1.5 shadow-sm border border-amber-100/50 dark:border-amber-900/20"
 			>
-				<RotateCcw size={18} />
+				<RotateCcw size={16} />
 				{$t('theater.sorter.undo')}
 			</button>
 			<button
 				on:click={restart}
-				class={`h-11 px-6 font-black rounded-full transition-all text-sm cursor-pointer whitespace-nowrap flex items-center gap-2 ${isPublic ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20' : 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20'}`}
+				class={`h-10 md:h-11 px-4 md:px-6 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${isPublic ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20' : 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20'}`}
 			>
-				<ArrowLeft size={18} />
+				<ArrowLeft size={16} />
 				{$t('theater.sorter.exit')}
 			</button>
 		</div>

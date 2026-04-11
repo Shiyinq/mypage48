@@ -149,7 +149,7 @@
 	onConfirm={confirmDelete}
 />
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 animate-fade-in pb-32">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 animate-fade-in pb-32">
 	<!-- Page Header -->
 	<div class="mb-8">
 		<PageHeader

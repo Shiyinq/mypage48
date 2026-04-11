@@ -65,7 +65,7 @@
 
 <SEO title={$t('theater.news.title') || 'News'} path="/jkt48/news" description={$t('seo.news')} />
 
-<div class="space-y-12 pt-4 md:pt-6 pb-12">
+<div class="space-y-12 pt-4 md:pt-6 pb-12 px-0 sm:px-0">
 	<div class="text-center space-y-4 mb-8">
 		<h1
 			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
@@ -80,7 +80,7 @@
 	</div>
 
 	{#if (!mounted || loading) && list.length === 0}
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
 			{#each Array(8) as _}
 				<EventCardSkeleton />
 			{/each}
@@ -98,7 +98,7 @@
 			description={$t('theater.news.empty')}
 		/>
 	{:else}
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
 			{#each list as item (item.news_id)}
 				<a
 					href={`${basePath}/${item.link}`}

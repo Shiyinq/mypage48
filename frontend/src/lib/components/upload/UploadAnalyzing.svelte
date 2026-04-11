@@ -14,7 +14,7 @@
 			<ScanLine class="w-8 h-8 text-red-600 animate-pulse" />
 		</div>
 	</div>
-	<div class="text-center">
+	<div class="hidden sm:block text-center">
 		<h3 class="text-xl font-bold text-gray-800">{$t('upload.analyzingTitle')}</h3>
 		<p class="text-sm text-gray-500 mt-1">{$t('upload.analyzingDescription')}</p>
 	</div>

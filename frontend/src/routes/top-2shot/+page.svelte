@@ -53,7 +53,7 @@
 
 <SEO title={$t('top2shot.title')} path="/top-2shot" description={$t('seo.top2shot')} />
 
-<div class="max-w-6xl mx-auto p-4 pb-24 animate-fade-in">
+<div class="max-w-6xl mx-auto pt-4 sm:pt-6 px-4 pb-24 animate-fade-in">
 	<!-- Header -->
 	<div class="mb-8">
 		<PageHeader

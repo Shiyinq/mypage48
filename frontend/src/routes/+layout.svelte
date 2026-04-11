@@ -9,6 +9,7 @@
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import Header from '$lib/components/Header.svelte';
+	import MobileHeader from '$lib/components/navigation/MobileHeader.svelte';
 	import PlaygroundHeader from '$lib/components/playground/PlaygroundHeader.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import { Check } from 'lucide-svelte';
@@ -164,8 +165,7 @@
 	$: if (
 		mounted &&
 		$isAuthenticated &&
-		$page.url.pathname.startsWith('/jkt48/') &&
-		!$page.url.pathname.startsWith('/jkt48/live')
+		$page.url.pathname.startsWith('/jkt48/')
 	) {
 		let theaterPath = $page.url.pathname.replace('/jkt48/', '/theater/');
 		// Special case for sub-routes that might have different structures
@@ -241,7 +241,8 @@
 				{#if !isFullScreenRoute}
 					<LandingNavbar showLogin={false} />
 				{/if}
-				<div class={isFullScreenRoute ? 'w-full h-full' : 'max-w-7xl mx-auto px-4 py-8 flex-1'}>
+				{@const isLivePublicDetailPage = $page.url.pathname.startsWith('/jkt48/live/') && $page.params.id}
+				<div class={isFullScreenRoute ? 'w-full h-full' : isLivePublicDetailPage ? 'max-w-7xl mx-auto p-0 sm:p-2 sm:px-4 flex-1' : 'max-w-7xl mx-auto px-4 py-8 flex-1'}>
 					<slot />
 				</div>
 				{#if !isFullScreenRoute}
@@ -253,7 +254,12 @@
 			{#if isPlaygroundRoute}
 				<PlaygroundHeader />
 			{:else if !isFullScreenRoute}
-				<Header />
+				<div class="hidden md:block">
+					<Header />
+				</div>
+				<div class="block md:hidden">
+					<MobileHeader />
+				</div>
 			{/if}
 			<main class="flex-1 w-full relative">
 				<slot />

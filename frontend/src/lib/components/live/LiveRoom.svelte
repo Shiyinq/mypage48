@@ -12,6 +12,7 @@
 		now
 	} from '$lib/stores/live';
 	import { showToast } from '$lib/stores/toast';
+	import { isImmersive } from '$lib/stores/ui';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveStatus } from '$lib/types';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
@@ -40,6 +41,7 @@
 		Sun,
 		Moon,
 		RotateCw,
+		Tv,
 		ExternalLink
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
@@ -51,11 +53,14 @@
 	} from '$lib/utils/media';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 
 	/** Base path determines back-links and other-live member hrefs.
 	 *  Use '/jkt48/live' for public pages, '/theater/live' for theater pages. */
 	export let basePath: string = '/jkt48/live';
+	$: isTheater = basePath.startsWith('/theater');
 
+	/** Placeholder header for mobile sync - only for theater mode */
 	const { t } = useTranslation();
 	$: ({ platform, id } = $page.params);
 
@@ -67,7 +72,7 @@
 	let lastInitializedId = '';
 	let initCount = 0;
 	let chatVisible = true;
-	let isFocusMode = false;
+	let isFocusMode = false; // Will be set in onMount for desktop/laptop
 	let isRecording = false;
 	let mediaRecorder: any = null;
 	let recordedChunks: any[] = [];
@@ -248,6 +253,21 @@
 		}
 	}
 	onMount(() => {
+		const isLaptop = window.innerWidth >= 1024;
+		if (isLaptop) {
+			isFocusMode = true;
+			isImmersive.set(true);
+			if (typeof document !== 'undefined') {
+				document.body.style.overflow = 'hidden';
+			}
+		} else {
+			isFocusMode = false;
+			isImmersive.set(false);
+			if (typeof document !== 'undefined') {
+				document.body.style.overflow = 'auto';
+			}
+		}
+
 		refreshInterval = setInterval(() => {
 			if (platform && id && !initializing) {
 				liveStore.refreshStreamInfo(platform, id).catch((e) => {
@@ -266,6 +286,7 @@
 		if (recordingTimer) clearInterval(recordingTimer);
 		if (refreshInterval) clearInterval(refreshInterval);
 		liveStore.reset();
+		isImmersive.set(false);
 	});
 
 	function toggleChat() {
@@ -274,6 +295,7 @@
 
 	function toggleFocus() {
 		isFocusMode = !isFocusMode;
+		isImmersive.set(isFocusMode);
 		if (typeof document !== 'undefined') {
 			if (isFocusMode) {
 				document.body.style.overflow = 'hidden';
@@ -440,30 +462,44 @@
 </svelte:head>
 
 <div
-	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out {isFocusMode
-		? 'fixed inset-0 !top-0 !mt-0 z-[5000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-screen w-screen'
-		: 'h-[calc(100vh-80px)] mt-4 px-4 pb-4'}"
+	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out overflow-x-hidden {isFocusMode
+		? 'fixed inset-0 !top-0 !mt-0 z-[7000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-screen w-screen'
+		: 'h-[calc(100vh-72px)] sm:h-[calc(100vh-76px)] mt-2 sm:mt-3 px-0 sm:px-4 pb-2 sm:pb-4'}"
 >
 	<!-- Main Player Area -->
-	<div class="flex-[1.5] lg:flex-1 flex flex-col gap-4 min-h-0 p-1">
+	<div class="flex-[1.5] lg:flex-1 flex flex-col gap-3 min-h-0 p-0">
+		{#if isTheater}
+			<PageHeader
+				title={memberName || 'JKT48 LIVE'}
+				subtitle={streamTitle}
+				icon={Tv}
+				theme="red"
+				showBackButton={true}
+				backUrl={basePath}
+				hidden={true}
+			/>
+		{/if}
+
 		<!-- Back Button & Info -->
-		<div class="flex items-center justify-between">
+		<div
+			class="{isTheater ? 'hidden sm:flex' : 'flex'} items-center justify-between {isTheater
+				? ''
+				: 'px-4 sm:px-0'}"
+		>
 			<div class="flex items-center gap-3">
-				{#if !isFocusMode}
 					<a
 						href={basePath}
-						class="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800"
+						class="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
 						title={$t('theater.live.back')}
 					>
 						<ArrowLeft size={20} />
 					</a>
 					<div class="h-4 w-px bg-slate-200 dark:bg-zinc-800 ml-1 hidden sm:block"></div>
-				{/if}
 				{#if memberName}
 					<div class="flex flex-col gap-0.5">
 						<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2">
 							<span
-								class="text-xs font-black uppercase tracking-[0.15em] text-slate-900 dark:text-white leading-none truncate max-w-[120px] sm:max-w-none"
+								class="text-xs font-black uppercase tracking-[0.15em] text-slate-900 dark:text-white leading-none truncate max-w-[200px] sm:max-w-none"
 								>{memberName}</span
 							>
 							<span
@@ -498,7 +534,7 @@
 
 		<!-- Video Player -->
 		<div
-			class="relative flex-1 bg-black rounded-3xl overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm"
+			class="relative flex-1 bg-black rounded-xl sm:rounded-3xl overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm"
 		>
 			{#if initializing}
 				<div
@@ -587,10 +623,11 @@
 							? '-translate-y-full opacity-0'
 							: 'opacity-0 -translate-y-full group-hover/player:translate-y-0 group-hover/player:opacity-100'}"
 				>
-					<div class="w-full flex items-start justify-between pointer-events-auto">
-						<div class="flex flex-col gap-2 min-w-0">
+					<div class="w-full flex items-start gap-4 pointer-events-auto">
+						<div class="flex flex-col gap-2 min-w-0 flex-1">
 							{#if isFullscreen && memberName}
-								<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2 min-w-0">
+								<div class="flex items-center gap-3 min-w-0">
+									<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2 min-w-0">
 									<h2
 										class="text-white text-lg sm:text-2xl font-black truncate drop-shadow-xl tracking-tight"
 									>
@@ -604,7 +641,8 @@
 										</span>
 									{/if}
 								</div>
-							{/if}
+							</div>
+						{/if}
 
 							<!-- Stats (Mobile Only) -->
 							<div class="flex sm:hidden items-center gap-3 flex-shrink-0 mt-0.5">
