@@ -172,7 +172,7 @@
 	description={$t('theater.members.subtitle')}
 />
 
-<div class="space-y-6 mb-10">
+<div class="space-y-6 mb-2">
 	<!-- Search and Filters -->
 	<div class="flex flex-col md:flex-row gap-4 md:items-center justify-between">
 		<!-- Generation Filters -->
@@ -214,13 +214,13 @@
 
 		<!-- Search Bar -->
 		<div class="relative w-full md:w-80 shrink-0">
-			<Search class="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+			<Search class="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
 			<input
 				type="text"
 				placeholder={$t('common.search')}
 				value={searchQuery}
 				on:input={handleSearch}
-				class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 rounded-full text-sm text-themed placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all shadow-sm"
+				class="w-full pl-9.5 pr-4 py-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 rounded-full text-sm text-themed placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all shadow-sm"
 			/>
 		</div>
 	</div>
@@ -291,9 +291,9 @@
 	</EmptyState>
 {:else}
 	{#each allSortedTypes as type}
-		<div class="mb-10 last:mb-0">
+		<div class="mb-8 last:mb-0">
 			<!-- Group Header -->
-			<div class="flex items-center gap-3 mb-5 group/header">
+			<div class="flex items-center gap-3 mb-2 group/header">
 				<div
 					class={`h-8 w-1.5 rounded-full group-hover/header:h-10 transition-all duration-300 shadow-lg ${accentColors[type] || 'bg-pink-500 shadow-pink-500/20'}`}
 				></div>
