@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { ArrowLeft } from 'lucide-svelte';
+	import { ChevronLeft } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
@@ -38,22 +38,22 @@
 			<div class="flex items-center min-w-0 flex-1 gap-2">
 			{#if headerInfo}
 				{@const activeTheme = themeClasses[headerInfo.theme || 'red']}
-				<div class="flex items-center gap-2 min-w-0 flex-1">
+				<div class="flex items-center gap-1 min-w-0 flex-1">
 					{#if headerInfo.showBackButton}
 						<button
 							on:click={headerInfo.handleBack}
-							class="p-1.5 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 flex-shrink-0 cursor-pointer"
+							class="p-1 -ml-1 hover:bg-gray-100 dark:hover:bg-zinc-800 text-zinc-950 dark:text-white flex-shrink-0 cursor-pointer transition-colors"
 						>
-							<ArrowLeft class="w-4 h-4" />
+							<ChevronLeft class="w-5 h-5" />
 						</button>
 					{/if}
-					{#if headerInfo.icon}
-						<div class="p-1.5 rounded-md {activeTheme} flex-shrink-0">
+					{#if headerInfo.icon && !headerInfo.showBackButton}
+						<div class="p-1 rounded-md {activeTheme} flex-shrink-0">
 							<svelte:component this={headerInfo.icon} class="w-4 h-4" />
 						</div>
 					{/if}
-					<div class="flex items-center gap-1.5 min-w-0 flex-1">
-						<h1 class="font-black text-sm uppercase tracking-tight text-themed truncate leading-none pt-0.5">
+					<div class="flex items-center gap-1 min-w-0 flex-1">
+						<h1 class="font-black text-lg uppercase tracking-tighter text-zinc-950 dark:text-white truncate leading-none pt-0.5">
 							{headerInfo.title}
 						</h1>
 						{#if headerInfo.badge}
