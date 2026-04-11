@@ -79,7 +79,7 @@
 	<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 		<!-- Main Content (Left) -->
 		<main
-			class="lg:col-span-2 space-y-6 bg-white dark:bg-zinc-900 rounded-3xl p-4 md:p-8 shadow-sm border border-gray-100 dark:border-white/5"
+			class="lg:col-span-2 space-y-6 bg-white dark:bg-zinc-900 rounded-3xl p-4 md:p-10 shadow-sm border border-gray-100 dark:border-white/5"
 		>
 			{#if item.background_image}
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -119,7 +119,7 @@
 			<!-- HTML Content -->
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<div
-				class="prose prose-red dark:prose-invert max-w-none prose-img:rounded-xl prose-img:cursor-zoom-in hover:prose-img:scale-[1.01] prose-img:transition-transform prose-img:duration-300 prose-a:text-red-500 hover:prose-a:text-red-600 space-y-4 text-gray-800 dark:text-gray-300 leading-relaxed text-sm md:text-base bg-gray-50/50 dark:bg-zinc-800/30 p-5 md:p-0 rounded-2xl md:bg-transparent"
+				class="prose prose-red dark:prose-invert max-w-none prose-img:rounded-xl prose-img:cursor-zoom-in hover:prose-img:scale-[1.01] prose-img:transition-transform prose-img:duration-300 prose-a:text-red-500 hover:prose-a:text-red-600 space-y-4 text-gray-800 dark:text-gray-300 leading-relaxed text-sm md:text-base md:p-0 rounded-2xl md:bg-transparent"
 				on:click={handleContentClick}
 				role="presentation"
 			>

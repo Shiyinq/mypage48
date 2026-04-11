@@ -12,6 +12,7 @@
 		Tv
 	} from 'lucide-svelte';
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
+	import { theaterNavItems } from '$lib/constants/theaterNav';
 	import { crossfade } from 'svelte/transition';
 	import { cubicInOut } from 'svelte/easing';
 	import PageHeader from '$lib/components/PageHeader.svelte';
@@ -31,6 +32,9 @@
 
 	// Check if on live single detail or multiview page — hide header for immersive player
 	$: isLiveDetailPage = /^\/theater\/live\/.+/.test(currentPath);
+
+	// Check if on news detail page
+	$: isNewsDetailPage = /^\/theater\/news\/.+/.test(currentPath);
 
 	type PageTheme = 'red' | 'blue' | 'green' | 'purple' | 'pink' | 'amber' | 'yellow' | 'orange' | 'rose' | 'indigo';
 
@@ -95,63 +99,7 @@
 	$: currentThemeStyles = getThemeStyles(pageInfo.theme);
 
 	// Sub-navigation items
-	$: subNavItems = [
-		{
-			labelKey: 'theater.subNav.theater',
-			href: '/theater',
-			icon: AudioLines,
-			exact: true,
-			theme: 'purple'
-		},
-		{
-			labelKey: 'theater.subNav.members',
-			href: '/theater/members',
-			icon: Users,
-			theme: 'pink'
-		},
-		{
-			labelKey: 'theater.subNav.news',
-			labelDefault: 'News',
-			href: '/theater/news',
-			icon: Newspaper,
-			theme: 'red'
-		},
-		{
-			labelKey: 'theater.subNav.events',
-			href: '/theater/events',
-			icon: Calendar,
-			exact: true,
-			theme: 'blue'
-		},
-		{
-			labelKey: 'theater.subNav.calendar',
-			labelDefault: 'Calendar',
-			href: '/theater/events/calendar',
-			icon: Calendar,
-			theme: 'blue'
-		},
-		{
-			labelKey: 'theater.subNav.history',
-			labelDefault: 'History',
-			href: '/theater/events/history',
-			icon: History,
-			theme: 'orange'
-		},
-		{
-			labelKey: 'theater.subNav.sorter',
-			labelDefault: 'Sorter',
-			href: '/theater/sorter',
-			icon: ArrowUpDown,
-			theme: 'rose'
-		},
-		{
-			labelKey: 'theater.subNav.live',
-			labelDefault: 'Live',
-			href: '/theater/live',
-			icon: Tv,
-			theme: 'red'
-		}
-	];
+	const subNavItems = theaterNavItems;
 
 	// Check if current path matches nav item
 	$: isActive = (href: string, exact: boolean = false) => {
@@ -170,13 +118,13 @@
 			subtitle={isLiveDetailPage ? '' : pageInfo.subtitle}
 			icon={isLiveDetailPage ? Tv : pageInfo.icon}
 			theme={isLiveDetailPage ? 'red' : pageInfo.theme}
-			showBackButton={isLiveDetailPage}
-			backUrl={isLiveDetailPage ? '/theater/live' : undefined}
+			showBackButton={isLiveDetailPage || isNewsDetailPage}
+			backUrl={isNewsDetailPage ? '/theater/news' : isLiveDetailPage ? '/theater/live' : undefined}
 			hidden={isLiveDetailPage}
 		>
 			<div
 				slot="actions"
-				class="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm overflow-x-auto scrollbar-hide w-full sm:w-auto {!isLiveDetailPage ? '' : 'hidden'}"
+				class="hidden md:flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm overflow-x-auto scrollbar-hide w-full sm:w-auto {!isLiveDetailPage ? '' : 'hidden'}"
 			>
 				{#if !isLiveDetailPage}
 					{#each subNavItems as item (item.href)}
