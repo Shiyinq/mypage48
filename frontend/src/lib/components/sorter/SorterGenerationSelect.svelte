@@ -38,15 +38,15 @@
 			? 'bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-xl border border-gray-100 dark:border-zinc-800 space-y-6'
 			: 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm transition-all duration-300 space-y-6'}
 	>
-		<div class="flex items-center justify-between">
+		<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 			<h3
 				class={isPublic
 					? 'font-black text-themed uppercase tracking-widest text-sm text-slate-400'
-					: 'font-bold text-themed'}
+					: 'font-bold text-themed text-lg sm:text-base'}
 			>
 				{$t('theater.sorter.generation')}
 			</h3>
-			<div class="flex gap-4 font-black items-center">
+			<div class="flex gap-4 font-black items-center sm:justify-end">
 				<button
 					on:click={selectAll}
 					class={`text-xs transition-transform cursor-pointer uppercase tracking-widest ${isPublic ? 'text-red-600 hover:scale-105' : 'text-rose-500 hover:text-rose-600'}`}

@@ -11,7 +11,8 @@
 		Trophy,
 		Settings,
 		ChevronRight,
-		X
+		X,
+		User
 	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { fade, slide, fly } from 'svelte/transition';
@@ -44,7 +45,8 @@
 	const secondaryLinks = [
 		{ href: '/memories', icon: ImageIcon, label: 'nav.memories', color: 'text-pink-500' },
 		{ href: '/journal', icon: BookOpen, label: 'nav.journal', color: 'text-green-500' },
-		{ href: '/achievements', icon: Trophy, label: 'nav.achievements', color: 'text-amber-500' }
+		{ href: '/achievements', icon: Trophy, label: 'nav.achievements', color: 'text-amber-500' },
+		{ href: '/history', icon: History, label: 'nav.history', color: 'text-blue-500' }
 	];
 
 	function toggleMenu() {
@@ -55,6 +57,8 @@
 		isMenuOpen = false;
 	}
 </script>
+
+<svelte:window on:scroll={handleScroll} />
 
 <!-- Menu Drawer Overlay -->
 {#if isMenuOpen}
@@ -102,7 +106,7 @@
 	<div class="flex h-16 items-center justify-around max-w-[420px] mx-auto px-4">
 		<a
 			href="/"
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 group min-w-[64px]"
+			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 group min-w-[56px]"
 		>
 			<LayoutDashboard
 				class={`w-6 h-6 transition-all ${$page.url.pathname === '/' ? 'text-red-600 dark:text-red-400 scale-110' : ''}`}
@@ -115,7 +119,7 @@
 
 		<a
 			href="/theater/events"
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 group min-w-[64px]"
+			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 group min-w-[56px]"
 		>
 			<AudioLines
 				class={`w-6 h-6 transition-all ${$page.url.pathname.startsWith('/theater') ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`}
@@ -136,30 +140,30 @@
 			</a>
 		</div>
 
-		<a
-			href="/history"
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 group min-w-[64px]"
-		>
-			<History
-				class={`w-6 h-6 transition-all ${$page.url.pathname === '/history' ? 'text-blue-600 dark:text-blue-400 scale-110' : ''}`}
-			/>
-			<span
-				class={`text-[10px] font-medium transition-all truncate w-full text-center ${$page.url.pathname === '/history' ? 'text-blue-600 dark:text-blue-400' : ''}`}
-				>{$t('nav.history')}</span
-			>
-		</a>
-
 		<button
 			on:click={toggleMenu}
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 group min-w-[64px]"
+			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 group min-w-[56px]"
 		>
 			<Menu
-				class={`w-6 h-6 transition-all ${isMenuOpen ? 'text-indigo-600 dark:text-indigo-400 scale-110' : ''}`}
+				class={`w-6 h-6 transition-all ${isMenuOpen ? 'text-indigo-600 dark:indigo-400 scale-110' : ''}`}
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isMenuOpen ? 'text-indigo-600 dark:text-indigo-400' : ''}`}
 				>{$t('nav.more') || 'Menu'}</span
 			>
 		</button>
+
+		<a
+			href="/profile"
+			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 group min-w-[56px]"
+		>
+			<User
+				class={`w-6 h-6 transition-all ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white scale-110' : ''}`}
+			/>
+			<span
+				class={`text-[10px] font-medium transition-all truncate w-full text-center ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white' : ''}`}
+				>{$t('nav.profile') || 'Profile'}</span
+			>
+		</a>
 	</div>
 </nav>

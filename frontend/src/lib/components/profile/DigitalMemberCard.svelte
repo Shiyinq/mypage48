@@ -52,7 +52,7 @@
 						<Crown class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400" />
 					</div>
 					<div class="min-w-0">
-						<p class="text-[8px] sm:text-[10px] font-bold text-red-400 tracking-widest uppercase truncate">
+						<p class="text-[10px] sm:text-[11px] font-bold text-red-400 tracking-widest uppercase truncate">
 							{$t('profile.memberCard.officialFanClub')}
 						</p>
 						<h3 class="font-black text-base sm:text-lg tracking-tight truncate">
@@ -63,12 +63,12 @@
 				<div class="flex flex-col items-end gap-1 min-w-0">
 					<!-- Member ID -->
 					<div class="text-right min-w-0 w-full">
-						<p class="text-[8px] sm:text-[10px] text-gray-400 font-bold truncate">
+						<p class="text-[10px] sm:text-[11px] text-gray-400 font-bold truncate">
 							{$t('profile.memberCard.memberId')}
 						</p>
-						<p class="font-mono font-bold text-shadow text-[10px] sm:text-base truncate">
+						<p class="font-mono font-bold text-shadow text-xs sm:text-base truncate">
 							{#if loading}
-								<span class="inline-block w-16 sm:w-20 h-3 sm:h-4 bg-white/20 rounded animate-pulse"></span>
+								<span class="inline-block w-16 sm:w-20 h-3.5 sm:h-4 bg-white/20 rounded animate-pulse"></span>
 							{:else}
 								{profile?.memberId || 'N/A'}
 							{/if}
@@ -90,7 +90,7 @@
 									: 'bg-gray-400'}"
 							></span>
 							<span
-								class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider {profile?.ofcStatus ===
+								class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider {profile?.ofcStatus ===
 								'Active'
 									? 'text-green-300'
 									: 'text-gray-400'} truncate"
@@ -128,7 +128,7 @@
 			<!-- Bottom Row -->
 			<div class="flex justify-between items-end gap-2 min-w-0">
 				<div class="min-w-0">
-					<p class="text-[8px] sm:text-[10px] text-gray-400 font-bold uppercase mb-0.5 truncate">
+					<p class="text-[10px] sm:text-[11px] text-gray-400 font-bold uppercase mb-0.5 truncate">
 						{$t('profile.memberCard.cardHolder')}
 					</p>
 					<p class="text-base sm:text-lg font-bold tracking-wide uppercase text-shadow-sm truncate">

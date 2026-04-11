@@ -137,22 +137,22 @@
 		<div
 			class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 mb-4"
 		>
-			<div class="flex items-center justify-between">
-				<div>
+			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+				<div class="flex-1">
 					<p class="text-sm font-bold text-gray-800 dark:text-gray-200">
 						{$t('settings.publicProfile.enable')}
 					</p>
-					<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+					<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
 						{$t('settings.publicProfile.description')}
 					</p>
 				</div>
-				<div class="flex items-center gap-3">
+				<div class="flex items-center justify-end gap-3 w-full sm:w-auto">
 					{#if isPublic}
 						<select
 							value={selectedPublicYearStr}
 							on:change={(e) => handleYearChange(e)}
 							disabled={updatingStatus}
-							class="p-1 px-2 text-xs font-bold bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer"
+							class="p-2 text-xs font-bold bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer flex-1 sm:flex-none"
 						>
 							<option value="">{$t('settings.publicProfile.allYears')}</option>
 							<option value="-1">{$t('settings.publicProfile.thisYear')}</option>
@@ -164,7 +164,7 @@
 					<button
 						on:click={() => togglePublicStatus()}
 						disabled={updatingStatus}
-						class={`w-12 h-7 rounded-full transition-colors relative cursor-pointer ${
+						class={`w-12 h-7 rounded-full transition-colors relative cursor-pointer flex-shrink-0 ${
 							isPublic ? 'bg-purple-500' : 'bg-gray-300 dark:bg-zinc-600'
 						}`}
 					>
@@ -185,32 +185,36 @@
 
 			{#if isPublic}
 				<div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 animate-slide-down">
-					<p class="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">
+					<p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest pl-1">
 						{$t('settings.publicProfile.yourLink')}
 					</p>
 					<div class="flex items-center gap-2">
-						<code
-							class="flex-1 bg-white dark:bg-zinc-900 py-2.5 px-3 rounded-lg border border-gray-200 dark:border-zinc-700 text-sm font-mono text-purple-600 dark:text-purple-400 truncate"
+						<div
+							class="flex-1 bg-white dark:bg-zinc-900 py-2.5 px-3 rounded-xl border border-gray-200 dark:border-zinc-700 min-w-0"
 						>
-							{typeof window !== 'undefined' ? window.location.origin : ''}/u/{$userProfile.data
-								?.username}
-						</code>
-						<a
-							href="/u/{$userProfile.data?.username}"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="p-2.5 bg-purple-100/50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"
-							title="Open Link"
-						>
-							<ExternalLink class="w-4 h-4" />
-						</a>
-						<button
-							on:click={copyPublicLink}
-							class="p-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-							title="Copy Link"
-						>
-							<Copy class="w-4 h-4" />
-						</button>
+							<code class="text-xs font-mono text-purple-600 dark:text-purple-400 block truncate">
+								{typeof window !== 'undefined' ? window.location.origin : ''}/u/{$userProfile.data
+									?.username}
+							</code>
+						</div>
+						<div class="flex items-center gap-1.5 flex-shrink-0">
+							<a
+								href="/u/{$userProfile.data?.username}"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="p-2.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl hover:bg-purple-100 transition-colors cursor-pointer border border-purple-100/50 dark:border-purple-800/30"
+								title="Open Link"
+							>
+								<ExternalLink class="w-4 h-4" />
+							</a>
+							<button
+								on:click={copyPublicLink}
+								class="p-2.5 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-200 transition-colors cursor-pointer border border-gray-200/50 dark:border-zinc-700"
+								title="Copy Link"
+							>
+								<Copy class="w-4 h-4" />
+							</button>
+						</div>
 					</div>
 				</div>
 			{/if}
