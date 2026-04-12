@@ -352,6 +352,7 @@ class LiveService:
             # Get view_num and start_at from unified list
             view_num = 0
             start_at = None
+            image = None
             lives = await self.fetch_showroom_lives()
             for live in lives:
                 if live.room_id == id:
