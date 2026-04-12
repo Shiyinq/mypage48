@@ -38,19 +38,6 @@ jobs:
   backend-check:
     name: Backend Check
     runs-on: ubuntu-latest
-    services:
-      mongodb:
-        image: mongo:7.0
-        ports:
-          - 27017:27017
-      minio:
-        image: bitnami/minio:rolling
-        ports:
-          - 9000:9000
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin123
-          MINIO_DEFAULT_BUCKETS: mypage48-images
 
     env:
       ENV: dev
@@ -81,6 +68,24 @@ jobs:
         with:
           python-version: '3.12.11'
           cache: 'pip'
+
+      - name: Start Services
+        run: |
+          # Use your own docker-compose to start services
+          docker compose up -d mongodb minio
+          
+          # Wait for services to be ready
+          echo "Waiting for services..."
+          until curl -f http://localhost:9000/minio/health/live; do
+            sleep 2
+          done
+          
+          # Create required bucket
+          docker run --rm --network host minio/mc alias set myminio http://localhost:9000 minioadmin minioadmin123
+          docker run --rm --network host minio/mc mb myminio/mypage48-images
+        env:
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin123
 
       - name: Install dependencies
         run: |
