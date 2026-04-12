@@ -14,7 +14,7 @@
 </script>
 
 <div
-	class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-[2rem] p-6 relative overflow-hidden group flex flex-col md:flex-row items-center gap-6 mb-8 shadow-xl shadow-red-500/5"
+	class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 relative overflow-hidden group flex flex-col md:flex-row items-center gap-6 mb-6 sm:mb-8 shadow-xl shadow-red-500/5"
 	role="region"
 >
 	<!-- Background decoration -->
@@ -24,15 +24,15 @@
 
 	<!-- JKT48 Wrapped Badge (Top Right) -->
 	{#if profile.publicYear}
-		<div class="absolute top-4 right-4 z-20">
+		<div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
 			<div
-				class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-md border border-red-200/50 dark:border-red-900/30 shadow-sm hover:scale-105 transition-transform duration-300 cursor-default group/badge"
+				class="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-md border border-red-200/50 dark:border-red-900/30 shadow-sm hover:scale-105 transition-transform duration-300 cursor-default group/badge"
 			>
 				<Sparkles
-					class="w-3.5 h-3.5 text-red-500 fill-red-500 dark:text-red-400 dark:fill-red-400 animate-pulse"
+					class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500 fill-red-500 dark:text-red-400 dark:fill-red-400 animate-pulse"
 				/>
 				<span
-					class="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600 dark:from-red-400 dark:to-pink-400 uppercase tracking-wider"
+					class="text-[10px] sm:text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600 dark:from-red-400 dark:to-pink-400 uppercase tracking-wider"
 				>
 					{$t('profile.publicActivity.wrapped', { year: profile.publicYear })}
 				</span>
@@ -41,15 +41,15 @@
 	{/if}
 
 	<!-- Avatar -->
-	<div class="relative group">
+	<div class="relative group mt-2 sm:mt-0">
 		<div
-			class="w-32 h-32 rounded-full border-4 border-white dark:border-zinc-800 shadow-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 relative"
+			class="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white dark:border-zinc-800 shadow-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 relative"
 		>
 			{#if profile.profilePicture}
 				<img src={profile.profilePicture} alt={profile.name} class="w-full h-full object-cover" />
 			{:else}
 				<div class="w-full h-full flex items-center justify-center text-gray-400">
-					<User class="w-12 h-12" />
+					<User class="w-10 h-10 sm:w-12 sm:h-12" />
 				</div>
 			{/if}
 
@@ -61,18 +61,18 @@
 					disabled={isUploading}
 				>
 					{#if isUploading}
-						<LoaderCircle class="w-8 h-8 text-white animate-spin" />
+						<LoaderCircle class="w-7 h-7 sm:w-8 sm:h-8 text-white animate-spin" />
 					{:else}
-						<Camera class="w-8 h-8 text-white" />
+						<Camera class="w-7 h-7 sm:w-8 sm:h-8 text-white" />
 					{/if}
 				</button>
 			{/if}
 		</div>
 		{#if profile.oshi}
 			<div
-				class="absolute -bottom-2 -right-2 bg-white dark:bg-zinc-800 rounded-full p-1.5 shadow-md border border-gray-100 dark:border-zinc-700 tooltip-container"
+				class="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 bg-white dark:bg-zinc-800 rounded-full p-1 sm:p-1.5 shadow-md border border-gray-100 dark:border-zinc-700 tooltip-container"
 			>
-				<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-pink-400">
+				<div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-pink-400">
 					<img
 						src={getExternalMediaUrl(profile.oshi.profilePicture)}
 						alt={profile.oshi.name}
@@ -85,17 +85,17 @@
 
 	<!-- Info -->
 	<div class="relative z-10 text-center md:text-left">
-		<h1 class="text-3xl font-black text-gray-900 dark:text-white leading-tight mb-2">
+		<h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight mb-1 sm:mb-2">
 			{profile.name}
 		</h1>
-		<p class="text-purple-600 dark:text-purple-400 font-bold mb-4">@{profile.username}</p>
+		<p class="text-purple-600 dark:text-purple-400 font-bold mb-3 sm:mb-4 text-sm sm:text-base">@{profile.username}</p>
 
 		{#if profile.oshi}
 			<div class="flex flex-wrap justify-center md:justify-start gap-3">
 				<div
-					class="flex items-center gap-2 px-3 py-1.5 bg-pink-50 dark:bg-pink-900/20 rounded-full text-xs font-bold text-pink-600 dark:text-pink-400"
+					class="flex items-center gap-2 px-3 py-1.5 bg-pink-50 dark:bg-pink-900/20 rounded-full text-[10px] sm:text-xs font-bold text-pink-600 dark:text-pink-400"
 				>
-					<Heart class="w-3.5 h-3.5 fill-current" />
+					<Heart class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" />
 					Oshi: {profile.oshi.name}
 				</div>
 			</div>
