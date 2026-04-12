@@ -14,7 +14,7 @@ function getInitialTheme(): Theme {
 	if (stored && ['light', 'dark', 'auto'].includes(stored)) {
 		return stored;
 	}
-	return 'light';
+	return 'auto';
 }
 
 // Create the theme store
