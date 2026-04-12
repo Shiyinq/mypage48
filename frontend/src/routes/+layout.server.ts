@@ -1,20 +1,21 @@
 import type { LayoutServerLoad } from './$types';
+import { detectLocale } from '$lib/i18n/server';
 
-export const load: LayoutServerLoad = async ({ cookies, url }) => {
-	// Check if we are on a public profile route
-	const isPublicProfile = url.pathname.startsWith('/u/');
+export const load: LayoutServerLoad = async ({ cookies, url, request }) => {
+	// Detect locale using centralized utility
+	const locale = detectLocale(request, cookies, url);
 
-	// Default fallback: 'en' for public profiles, 'id' for others
-	const defaultLocale = isPublicProfile ? 'en' : 'id';
-
-	// Get locale from query param first (?lang=..), then cookie, then default fallback
+	// If valid lang param is provided via URL, ensure cookie is set for future visits
 	const urlLocale = url.searchParams.get('lang');
-	let locale = cookies.get('mypage48_locale') || defaultLocale;
-
-	// If valid lang param is provided, override and set cookie for future visits
 	if (urlLocale && ['id', 'en', 'ja'].includes(urlLocale)) {
-		locale = urlLocale;
-		cookies.set('mypage48_locale', locale as string, {
+		cookies.set('mypage48_locale', urlLocale, {
+			path: '/',
+			maxAge: 31536000,
+			sameSite: 'lax'
+		});
+	} else if (!cookies.get('mypage48_locale')) {
+		// Also persist the detected device language to cookie if none exists
+		cookies.set('mypage48_locale', locale, {
 			path: '/',
 			maxAge: 31536000,
 			sameSite: 'lax'
