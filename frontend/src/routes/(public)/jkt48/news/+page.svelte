@@ -63,7 +63,12 @@
 	}
 </script>
 
-<SEO title={$t('theater.news.title') || 'News'} path="/jkt48/news" description={$t('seo.news')} />
+<SEO 
+	title={$t('theater.news.title') || 'News'} 
+	path="/jkt48/news" 
+	description={$t('seo.news')} 
+	articles={list}
+/>
 
 <div class="space-y-12 pt-4 md:pt-6 pb-12 px-0 sm:px-0">
 	<div class="text-center space-y-4 mb-8">
