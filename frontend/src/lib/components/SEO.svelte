@@ -147,8 +147,22 @@
 						item: {
 							'@type': 'NewsArticle',
 							url: `${baseUrl}/jkt48/news/${item.link}`,
-							name: item.title,
-							image: item.background_image ? [getExternalMediaUrl(item.background_image)] : []
+							headline: item.title,
+							datePublished: item.valid_date_from,
+							image: item.background_image ? [getExternalMediaUrl(item.background_image)] : [],
+							author: {
+								'@type': 'Organization',
+								name: 'JKT48',
+								url: 'https://jkt48.com'
+							},
+							publisher: {
+								'@type': 'Organization',
+								name: 'MyPage48',
+								logo: {
+									'@type': 'ImageObject',
+									url: `${baseUrl}/favicon.png`
+								}
+							}
 						}
 					}))
 				}
