@@ -5,6 +5,7 @@
 	export let image: string = '/favicon.png';
 	export let path: string = '/';
 	export let keywords: string = 'JKT48, Theater, MyPage48, JKT48 Fan, 2shot, Sorter, News';
+	export let events: any[] = [];
 
 	const baseUrl = 'https://mypage48.com';
 	$: fullTitle =
@@ -55,6 +56,33 @@
 					]
 				}
 			: null;
+
+	$: eventJsonLd = (events || []).map((event) => ({
+		'@context': 'https://schema.org',
+		'@type': 'Event',
+		name: event.title,
+		startDate: event.date,
+		location: {
+			'@type': 'Place',
+			name: 'JKT48 Theater',
+			address: {
+				'@type': 'PostalAddress',
+				streetAddress: 'fX Sudirman F4',
+				addressLocality: 'Jakarta',
+				addressRegion: 'DKI Jakarta',
+				postalCode: '10270',
+				addressCountry: 'ID'
+			}
+		},
+		image: event.imageUrl ? [event.imageUrl] : [],
+		description: `${event.label || 'JKT48'} Theater Show - ${event.title}`,
+		performer: {
+			'@type': 'Organization',
+			name: 'JKT48'
+		},
+		eventStatus: 'https://schema.org/EventScheduled',
+		eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode'
+	}));
 </script>
 
 <svelte:head>
@@ -87,19 +115,17 @@
 	<link rel="canonical" href={fullUrl} />
 
 	<!-- Structured Data -->
-	<!-- prettier-ignore -->
-	<script type="application/ld+json">
-		{@html JSON.stringify(jsonLd)}
-	</script>
-	<!-- prettier-ignore -->
-	<script type="application/ld+json">
-		{@html JSON.stringify(organizationJsonLd)}
-	</script>
+	{@html `<script type="application/ld+json">${JSON.stringify(jsonLd)}<\/script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(organizationJsonLd)}<\/script>`}
+
 	{#if breadcrumbJsonLd}
-		<!-- prettier-ignore -->
-		<script type="application/ld+json">
-			{@html JSON.stringify(breadcrumbJsonLd)}
-		</script>
+		{@html `<script type="application/ld+json">${JSON.stringify(breadcrumbJsonLd)}<\/script>`}
+	{/if}
+
+	{#if eventJsonLd && eventJsonLd.length > 0}
+		{#each eventJsonLd as eventData}
+			{@html `<script type="application/ld+json">${JSON.stringify(eventData)}<\/script>`}
+		{/each}
 	{/if}
 
 	<!-- Hreflang for Multi-language SEO (using query params) -->
