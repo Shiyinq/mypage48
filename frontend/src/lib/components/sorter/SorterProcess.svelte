@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { Equal, RotateCcw, ArrowLeft, Heart } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -8,7 +7,6 @@
 	import { getMemberFrame } from '$lib/constants';
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
 	interface Props {
 		numQuestion: number;
@@ -19,6 +17,9 @@
 		lastSelectedSide?: 'left' | 'right' | 'tie' | null;
 		hasHistory?: boolean;
 		variant?: 'public' | 'theater';
+		onselect?: (flag: number) => void;
+		onundo?: () => void;
+		onexit?: () => void;
 	}
 
 	let {
@@ -29,7 +30,10 @@
 		isAnimating = false,
 		lastSelectedSide = null,
 		hasHistory = false,
-		variant = 'public'
+		variant = 'public',
+		onselect,
+		onundo,
+		onexit
 	}: Props = $props();
 
 	function handleImageError(e: Event) {
@@ -38,15 +42,15 @@
 	}
 
 	function handleSelect(flag: number) {
-		dispatch('select', flag);
+		onselect?.(flag);
 	}
 
 	function undo() {
-		dispatch('undo');
+		onundo?.();
 	}
 
 	function restart() {
-		dispatch('exit');
+		onexit?.();
 	}
 
 	let isPublic = $derived(variant === 'public');

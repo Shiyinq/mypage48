@@ -1,19 +1,18 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Key, Plus, LoaderCircle, TriangleAlert, Terminal, ChevronRight } from 'lucide-svelte';
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher<{ openConfirmModal: void }>();
 
 	interface Props {
 		generatingKey?: boolean;
+		onopenConfirmModal?: () => void;
 	}
 
-	let { generatingKey = false }: Props = $props();
+	let { generatingKey = false, onopenConfirmModal }: Props = $props();
 
 	const handleGenerateClick = () => {
-		dispatch('openConfirmModal');
+		onopenConfirmModal?.();
 	};
 </script>
 

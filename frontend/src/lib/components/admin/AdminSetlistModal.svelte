@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { run, preventDefault } from 'svelte/legacy';
 
-	import { createEventDispatcher } from 'svelte';
 	import { X, Save, Music, LoaderCircle, CircleCheck, Image as ImageIcon } from 'lucide-svelte';
 	import type { Setlist } from '$lib/apis/setlists';
 	import { fly, fade } from 'svelte/transition';

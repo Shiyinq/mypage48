@@ -216,7 +216,7 @@
 			{error}
 			<button
 				class="ml-2 text-sm underline hover:text-red-300 cursor-pointer"
-				on:click={() => fetchDashboardStats()}
+				onclick={() => fetchDashboardStats()}
 			>
 				{$t('errors.tryAgain')}
 			</button>

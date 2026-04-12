@@ -1,24 +1,24 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Key, Copy } from 'lucide-svelte';
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher<{ close: void; copy: void }>();
 
 	interface Props {
 		show?: boolean;
 		apiKey?: string | null;
+		oncopy?: () => void;
+		onclose?: () => void;
 	}
 
-	let { show = false, apiKey = null }: Props = $props();
+	let { show = false, apiKey = null, oncopy, onclose }: Props = $props();
 
 	const handleCopy = () => {
-		dispatch('copy');
+		oncopy?.();
 	};
 
 	const handleClose = () => {
-		dispatch('close');
+		onclose?.();
 	};
 </script>
 

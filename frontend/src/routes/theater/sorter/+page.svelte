@@ -49,8 +49,7 @@
 	let isAnimating = $state(false);
 	let lastSelectedSide: 'left' | 'right' | 'tie' | null = $state(null);
 
-	async function handleSelect(event: CustomEvent<number>) {
-		const flag = event.detail;
+	async function handleSelect(flag: number) {
 		if (isAnimating) return;
 
 		lastSelectedSide = flag === 1 ? 'left' : flag === -1 ? 'right' : 'tie';
@@ -79,8 +78,7 @@
 		}
 	}
 
-	function toggleGeneration(event: CustomEvent<string>) {
-		const gen = event.detail;
+	function toggleGeneration(gen: string) {
 		if (selectedGenerations.has(gen)) {
 			selectedGenerations.delete(gen);
 		} else {
@@ -321,10 +319,10 @@
 			{selectedGenerations}
 			{loadingGenerations}
 			selectedMembersCount={allMembers.filter((m) => selectedGenerations.has(m.generation)).length}
-			on:toggle={toggleGeneration}
-			on:selectAll={selectAllGenerations}
-			on:deselectAll={deselectAllGenerations}
-			on:start={startSort}
+			ontoggle={toggleGeneration}
+			onselectAll={selectAllGenerations}
+			ondeselectAll={deselectAllGenerations}
+			onstart={startSort}
 			variant="theater"
 		/>
 	{:else if currentState === 'sorting'}
@@ -336,18 +334,18 @@
 			{isAnimating}
 			{lastSelectedSide}
 			hasHistory={history.length > 0}
-			on:select={handleSelect}
-			on:undo={undo}
-			on:exit={restart}
+			onselect={handleSelect}
+			onundo={undo}
+			onexit={restart}
 			variant="theater"
 		/>
 	{:else if currentState === 'results'}
 		<SorterResults
 			{results}
 			{layoutMode}
-			on:share={shareResults}
-			on:restart={restart}
-			on:changeLayout={(e) => (layoutMode = e.detail)}
+			onshare={shareResults}
+			onrestart={restart}
+			onchangeLayout={(mode) => (layoutMode = mode)}
 			variant="theater"
 		/>
 	{/if}

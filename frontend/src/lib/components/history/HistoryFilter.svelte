@@ -10,7 +10,7 @@
 	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { slide } from 'svelte/transition';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { ticketsStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 

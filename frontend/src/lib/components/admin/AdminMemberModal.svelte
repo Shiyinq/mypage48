@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { run, preventDefault } from 'svelte/legacy';
 
-	import { createEventDispatcher } from 'svelte';
 	import { X, Save, User, LoaderCircle, CircleCheck, Sparkles } from 'lucide-svelte';
 	import type { Member } from '$lib/apis/members';
 	import { fly, fade } from 'svelte/transition';

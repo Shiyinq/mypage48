@@ -133,7 +133,7 @@
 					placeholder="••••••••"
 					bind:value={newPassword}
 					error={errors.newPassword}
-					on:input={() => validateField('newPassword', newPassword)}
+					oninput={() => validateField('newPassword', newPassword)}
 				>
 					{#snippet leading()}
 						<Lock class="w-5 h-5" />
@@ -149,7 +149,7 @@
 					placeholder="••••••••"
 					bind:value={confirmPassword}
 					error={errors.confirmPassword}
-					on:input={() => validateField('confirmPassword', confirmPassword)}
+					oninput={() => validateField('confirmPassword', confirmPassword)}
 				>
 					{#snippet leading()}
 						<Lock class="w-5 h-5" />

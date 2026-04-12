@@ -16,11 +16,8 @@
 	import SetlistStats from '$lib/components/theater/SetlistStats.svelte';
 	import Timeline from '$lib/components/history/Timeline.svelte';
 	import SetlistTicketItem from '$lib/components/theater/SetlistTicketItem.svelte';
-	interface Props {
-		params?: Record<string, string> | undefined;
-	}
 
-	let { params = undefined }: Props = $props();
+	let { data: _data } = $props();
 
 	const { t } = useTranslation();
 

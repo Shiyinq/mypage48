@@ -7,7 +7,6 @@
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
 	import { cleanseMarkdown } from '$lib/utils/markdown';
-	import { createEventDispatcher } from 'svelte';
 
 	interface Props {
 		tickets?: Ticket[];
