@@ -14,7 +14,7 @@
 </script>
 
 <div
-	class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 relative overflow-hidden group flex flex-col md:flex-row items-center gap-6 mb-6 sm:mb-8 shadow-xl shadow-red-500/5"
+	class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 relative overflow-hidden group flex flex-col md:flex-row items-center gap-6 mb-6 sm:mb-8 shadow-2xl shadow-red-500/10 dark:shadow-red-950/40 transition-all duration-300 hover:shadow-red-500/15"
 	role="region"
 >
 	<!-- Background decoration -->
