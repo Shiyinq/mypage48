@@ -2,7 +2,7 @@
 @plugin "@tailwindcss/typography";
 
 /* Tailwind v4: Configure dark mode to use .dark class on html element */
-@custom-variant dark (.dark &);
+@variant dark (.dark &);
 
 /* CSS Custom Properties for theming */
 :root {
@@ -225,7 +225,20 @@
 	}
 
 	/* Force white/gray text in dark mode for content with inline styles (e.g. from JKT48 news) */
-	.dark .prose-responsive-colors :where(span, p, div, h1, h2, h3, h4, h5, h6, li, strong, em, b, i) {
+	.dark .prose-responsive-colors span,
+	.dark .prose-responsive-colors p,
+	.dark .prose-responsive-colors div,
+	.dark .prose-responsive-colors h1,
+	.dark .prose-responsive-colors h2,
+	.dark .prose-responsive-colors h3,
+	.dark .prose-responsive-colors h4,
+	.dark .prose-responsive-colors h5,
+	.dark .prose-responsive-colors h6,
+	.dark .prose-responsive-colors li,
+	.dark .prose-responsive-colors strong,
+	.dark .prose-responsive-colors em,
+	.dark .prose-responsive-colors b,
+	.dark .prose-responsive-colors i {
 		color: inherit !important;
 	}
 }
