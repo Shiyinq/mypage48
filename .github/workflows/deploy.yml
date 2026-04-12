@@ -9,6 +9,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://mypage48.com
     steps:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
