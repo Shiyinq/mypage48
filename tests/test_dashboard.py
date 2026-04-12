@@ -303,6 +303,8 @@ async def test_dashboard_stats_resolves_minio_urls(client: AsyncClient, db, crea
 
     # Use real service with mocked repo and config
     mock_config = MagicMock()
+    mock_config.secret_key = "dummy_secret_key_for_testing"
+    mock_config.api_base_url = "https://minio.example.com"
     storage_service = StorageService(mock_repo, mock_config)
 
     # Override dependency
@@ -329,12 +331,14 @@ async def test_dashboard_stats_resolves_minio_urls(client: AsyncClient, db, crea
         # Verify URL was resolved in top_2_shot
         top_member = data["two_shot"]["top_2_shot"]
         assert top_member["name"] == "MinIO Member"
-        assert top_member["image"] == "https://minio.example.com/twoshot/user123/image.jpg?signed=true"
+        assert "storage/m/twoshot/user123/image.jpg" in top_member["image"]
+        assert "signature=" in top_member["image"]
 
         # Verify URL was resolved in extremes
         extremes = data["two_shot"]["extremes"]
         first = extremes["first"]
-        assert first["image"] == "https://minio.example.com/twoshot/user123/image.jpg?signed=true"
+        assert "storage/m/twoshot/user123/image.jpg" in first["image"]
+        assert "signature=" in first["image"]
 
     finally:
         # Clean up override

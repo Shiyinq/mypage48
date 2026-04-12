@@ -1,0 +1,103 @@
+name: CI Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  frontend-check:
+    name: Frontend Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.10.0
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Sync SvelteKit
+        run: npx svelte-kit sync
+        working-directory: frontend
+
+      - name: Build check
+        run: npm run build
+        working-directory: frontend
+        env:
+          PUBLIC_CLIENT_SIDE_API_BASE_URL: http://localhost:8000/api
+          PUBLIC_SERVER_SIDE_API_BASE_URL: http://localhost:8000/api
+
+  backend-check:
+    name: Backend Check
+    runs-on: ubuntu-latest
+
+    env:
+      ENV: dev
+      SECRET_KEY: dummy_secret_key_for_testing_12345
+      ALGORITHM: HS256
+      MONGODB_URI: mongodb://localhost:27018
+      MINIO_ENDPOINT: localhost:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MINIO_BUCKET: mypage48-images
+      MINIO_SECURE: false
+      GOOGLE_CLIENT_ID: dummy
+      GOOGLE_CLIENT_SECRET: dummy
+      GOOGLE_REDIRECT_URI: http://localhost
+      GITHUB_CLIENT_ID: dummy
+      GITHUB_CLIENT_SECRET: dummy
+      GITHUB_REDIRECT_URI: http://localhost
+      GEMINI_API_KEY: dummy
+      FRONTEND_URL: http://localhost:3000
+      ORIGINS: http://localhost:3000
+      RESEND_API_KEY: dummy
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.11'
+          cache: 'pip'
+
+      - name: Start Services
+        run: |
+          # Use your own docker-compose to start services
+          docker compose up -d mongodb minio
+          
+          # Wait for services to be ready
+          echo "Waiting for services..."
+          until curl -f http://localhost:9000/minio/health/live; do
+            sleep 2
+          done
+
+          echo "Waiting for MongoDB..."
+          # Wait for port 27018 to be open
+          until timeout 1 bash -c "cat < /dev/null > /dev/tcp/localhost/27018" 2>/dev/null; do
+            sleep 2
+          done
+          
+          # Create required bucket
+          docker run --rm --network host minio/mc alias set myminio http://localhost:9000 minioadmin minioadmin123
+          docker run --rm --network host minio/mc mb myminio/mypage48-images
+        env:
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin123
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/base.txt -r requirements/dev.txt
+
+      - name: Run tests
+        run: |
+          pytest
