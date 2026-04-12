@@ -20,12 +20,30 @@
 		'@context': 'https://schema.org',
 		'@type': 'WebSite',
 		name: 'MyPage48',
-		url: baseUrl,
+		alternateName: 'MyPage48',
+		url: 'https://mypage48.com/',
 		description: description,
 		potentialAction: {
 			'@type': 'SearchAction',
 			target: `${baseUrl}/search?q={search_term_string}`,
 			'query-input': 'required name=search_term_string'
+		}
+	};
+
+	$: webPageJsonLd = {
+		'@context': 'https://schema.org',
+		'@type': 'WebPage',
+		name: fullTitle,
+		description: description,
+		url: fullUrl,
+		image: fullImage,
+		publisher: {
+			'@type': 'Organization',
+			name: 'MyPage48',
+			logo: {
+				'@type': 'ImageObject',
+				url: `${baseUrl}/favicon.png`
+			}
 		}
 	};
 
@@ -199,7 +217,11 @@
 	<link rel="canonical" href={fullUrl} />
 
 	<!-- Structured Data -->
-	{@html `<script type="application/ld+json">${JSON.stringify(jsonLd)}<\/script>`}
+	{#if path === '/'}
+		{@html `<script type="application/ld+json">${JSON.stringify(jsonLd)}<\/script>`}
+	{:else}
+		{@html `<script type="application/ld+json">${JSON.stringify(webPageJsonLd)}<\/script>`}
+	{/if}
 	{@html `<script type="application/ld+json">${JSON.stringify(organizationJsonLd)}<\/script>`}
 
 	{#if breadcrumbJsonLd}
