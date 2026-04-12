@@ -10,7 +10,7 @@
 </script>
 
 <div
-	class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-[2rem] p-6 flex flex-col h-full shadow-xl shadow-red-500/5"
+	class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 flex flex-col h-full shadow-xl shadow-red-500/5"
 >
 	<h3
 		class="font-black text-sm uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2"
@@ -21,7 +21,7 @@
 
 	<div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
 		{#if recentActivity && recentActivity.length > 0}
-			<div class="space-y-6">
+			<div class="space-y-4 sm:space-y-6">
 				{#each recentActivity as activity}
 					<div class="flex gap-4 group">
 						<!-- Timeline Column -->
