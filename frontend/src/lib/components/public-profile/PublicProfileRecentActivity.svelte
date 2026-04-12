@@ -10,7 +10,7 @@
 </script>
 
 <div
-	class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 flex flex-col h-full shadow-xl shadow-red-500/5"
+	class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 flex flex-col h-full shadow-xl shadow-red-500/5"
 >
 	<h3
 		class="font-black text-sm uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2"
