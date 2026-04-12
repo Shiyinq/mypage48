@@ -58,6 +58,7 @@
 	description={item.short_description || item.title}
 	image={item.background_image ? getExternalMediaUrl(item.background_image) : undefined}
 	keywords={`${item.title}, JKT48 News, ${item.category}, MyPage48, JKT48 Theater`}
+	article={item}
 />
 
 <div class="max-w-4xl mx-auto space-y-8 animate-fade-in pb-20">
