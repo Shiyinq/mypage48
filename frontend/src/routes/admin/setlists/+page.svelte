@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { onDestroy, onMount } from 'svelte';
 	import { adminStore, isAdminSetlistsLoading } from '$lib/stores/admin';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
@@ -14,24 +16,24 @@
 	const { t } = useTranslation();
 
 	// Store state
-	$: setlistsList = $adminStore.setlists.data;
-	$: error = $adminStore.setlists.error;
-	$: setlistsHasMore = $adminStore.setlists.hasMore;
+	let setlistsList = $derived($adminStore.setlists.data);
+	let error = $derived($adminStore.setlists.error);
+	let setlistsHasMore = $derived($adminStore.setlists.hasMore);
 
 	// Search state
-	let searchQuery = '';
+	let searchQuery = $state('');
 	let searchTimeout: ReturnType<typeof setTimeout>;
 
 	// Modal states
-	let showSetlistModal = false;
-	let showDeleteModal = false;
-	let editingSetlist: Partial<Setlist> = {};
-	let isCreatingSetlist = false;
-	let isSubmitting = false;
+	let showSetlistModal = $state(false);
+	let showDeleteModal = $state(false);
+	let editingSetlist: Partial<Setlist> = $state({});
+	let isCreatingSetlist = $state(false);
+	let isSubmitting = $state(false);
 	let deletingId: string | null = null;
 
 	// Initial load state
-	let isInitialLoad = true;
+	let isInitialLoad = $state(true);
 
 	onMount(() => {
 		// Only load if data is not already cached
@@ -43,9 +45,11 @@
 	});
 
 	// Update initial load state when data is loaded
-	$: if (setlistsList.length > 0) {
-		isInitialLoad = false;
-	}
+	$effect(() => {
+		if (setlistsList.length > 0) {
+			isInitialLoad = false;
+		}
+	});
 
 	onDestroy(() => {
 		if (searchTimeout) clearTimeout(searchTimeout);
@@ -75,25 +79,25 @@
 		showSetlistModal = true;
 	}
 
-	function openEditSetlist(e: CustomEvent<Setlist>) {
-		editingSetlist = e.detail;
+	function openEditSetlist(setlist: Setlist) {
+		editingSetlist = setlist;
 		isCreatingSetlist = false;
 		showSetlistModal = true;
 	}
 
-	function confirmDeleteSetlist(e: CustomEvent<Setlist>) {
-		deletingId = e.detail.setlistId;
+	function confirmDeleteSetlist(setlist: Setlist) {
+		deletingId = setlist.setlistId;
 		showDeleteModal = true;
 	}
 
-	async function handleSetlistSubmit(e: CustomEvent<any>) {
+	async function handleSetlistSubmit(data: any) {
 		isSubmitting = true;
 		try {
 			if (isCreatingSetlist) {
-				await adminStore.createSetlist(e.detail);
+				await adminStore.createSetlist(data);
 				showToast($t('admin.setlists.modal.created'), 'success');
 			} else if (editingSetlist && editingSetlist.setlistId) {
-				await adminStore.updateSetlist(editingSetlist.setlistId, e.detail);
+				await adminStore.updateSetlist(editingSetlist.setlistId, data);
 				showToast($t('admin.setlists.modal.updated'), 'success');
 			}
 			showSetlistModal = false;
@@ -132,13 +136,13 @@
 				<input
 					type="text"
 					bind:value={searchQuery}
-					on:input={handleSearch}
+					oninput={handleSearch}
 					placeholder={$t('admin.setlists.searchPlaceholder')}
 					class="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
 				/>
 				{#if searchQuery}
 					<button
-						on:click={clearSearch}
+						onclick={clearSearch}
 						class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
 					>
 						<X class="w-3 h-3" />
@@ -148,7 +152,7 @@
 		</div>
 
 		<button
-			on:click={openCreateSetlist}
+			onclick={openCreateSetlist}
 			class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-opacity shadow-lg shadow-gray-200 dark:shadow-none cursor-pointer"
 		>
 			<Plus class="w-4 h-4" />
@@ -170,13 +174,13 @@
 	{:else}
 		<SetlistTable
 			setlists={setlistsList}
-			on:edit={openEditSetlist}
-			on:delete={confirmDeleteSetlist}
+			onedit={openEditSetlist}
+			ondelete={confirmDeleteSetlist}
 		/>
 
 		<!-- Infinite Scroll Sentinel -->
 		{#if setlistsHasMore}
-			<div class="mt-4" use:infiniteScroll on:intersect={loadMoreSetlists}>
+			<div class="mt-4" use:infiniteScroll onintersect={loadMoreSetlists}>
 				{#if $isAdminSetlistsLoading}
 					<TableSkeleton
 						rows={3}
@@ -209,7 +213,7 @@
 	setlist={editingSetlist}
 	isCreating={isCreatingSetlist}
 	{isSubmitting}
-	on:submit={handleSetlistSubmit}
+	onsubmit={handleSetlistSubmit}
 />
 
 <!-- Delete Confirmation Modal -->

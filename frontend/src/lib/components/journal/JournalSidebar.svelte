@@ -1,24 +1,41 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { Ticket } from '$lib/types';
 	import { CalendarDays, MapPin, PanelLeftClose } from 'lucide-svelte';
-	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
+	import HistoryFilter from '$lib/components/history/HistoryFilter.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
-	import { HistoryFilter } from '$lib/components/history';
 
-	export let tickets: Ticket[] = [];
-	export let selectedId: string | null = null;
-	export let filters: import('$lib/types').TicketFilters = {};
-	export let loading = false;
-	export let hasMore = false;
-	export let totalData = 0;
+	interface Props {
+		tickets?: Ticket[];
+		selectedId?: string | null;
+		filters?: import('$lib/types').TicketFilters;
+		loading?: boolean;
+		hasMore?: boolean;
+		totalData?: number;
+		onselect?: (id: string) => void;
+		onloadMore?: () => void;
+		onfilterChange?: (filters: import('$lib/types').TicketFilters) => void;
+		ontoggleSidebar?: () => void;
+	}
+
+	let {
+		tickets = [],
+		selectedId = null,
+		filters = {},
+		loading = false,
+		hasMore = false,
+		totalData = 0,
+		onselect,
+		onloadMore,
+		onfilterChange,
+		ontoggleSidebar
+	}: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
 	function handleSelect(id: string) {
-		dispatch('select', { id });
+		onselect?.(id);
 	}
 </script>
 
@@ -43,7 +60,7 @@
 				{$t('shows.unit')}
 			</div>
 			<button
-				on:click={() => dispatch('toggleSidebar')}
+				onclick={() => ontoggleSidebar?.()}
 				class="hidden md:flex p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-zinc-800 dark:hover:text-white rounded-lg transition-colors cursor-pointer shrink-0"
 				title="Hide Sidebar"
 			>
@@ -55,7 +72,12 @@
 	<div
 		class="px-3 py-2 border-b border-gray-100 dark:border-white/5 bg-white/50 dark:bg-zinc-950/50 relative z-20"
 	>
-		<HistoryFilter {filters} showViewToggle={false} isSidebar={true} on:filterChange />
+		<HistoryFilter
+			{filters}
+			showViewToggle={false}
+			isSidebar={true}
+			onfilterChange={(newFilters) => onfilterChange?.(newFilters)}
+		/>
 	</div>
 
 	<div class="flex-1 overflow-y-auto px-2 py-3 custom-scrollbar relative overscroll-contain">
@@ -78,7 +100,7 @@
 				{#each tickets as ticket}
 					{@const isSelected = selectedId === ticket._id}
 					<button
-						on:click={() => handleSelect(ticket._id)}
+						onclick={() => handleSelect(ticket._id)}
 						class={`w-full text-left px-3 py-2.5 mx-0 rounded-lg transition-all duration-200 border cursor-pointer flex flex-col group
 							${
 								isSelected
@@ -127,7 +149,7 @@
 				{#if hasMore}
 					<div
 						use:infiniteScroll
-						on:intersect={() => dispatch('loadMore')}
+						onintersect={() => onloadMore?.()}
 						class="w-full py-4 flex justify-center"
 					>
 						{#if loading}

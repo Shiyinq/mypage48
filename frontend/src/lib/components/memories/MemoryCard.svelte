@@ -3,18 +3,22 @@
 	import { formatDate } from '$lib/i18n';
 	import type { MemoryItem } from '$lib/types';
 
-	export let item: MemoryItem;
-	export let rotation: number = 0;
-	export let onClick: (item: MemoryItem) => void;
+	interface Props {
+		item: MemoryItem;
+		rotation?: number;
+		onClick: (item: MemoryItem) => void;
+	}
 
-	$: tapeColor = item.type === '2SHOT' ? 'bg-purple-200/80' : 'bg-red-200/80';
+	let { item, rotation = 0, onClick }: Props = $props();
+
+	let tapeColor = $derived(item.type === '2SHOT' ? 'bg-purple-200/80' : 'bg-red-200/80');
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div
 	class="group relative transition-all duration-500 hover:z-10 hover:scale-105 cursor-pointer"
 	style={`transform: rotate(${rotation}deg)`}
-	on:click={() => onClick(item)}
+	onclick={() => onClick(item)}
 >
 	<!-- Washi Tape -->
 	<div

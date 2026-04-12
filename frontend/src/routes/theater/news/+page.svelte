@@ -13,16 +13,16 @@
 	import { formatDate } from '$lib/i18n';
 	const { t, locale } = useTranslation();
 
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(async () => {
 		await newsStore.load();
 		mounted = true;
 	});
 
-	$: error = $newsError;
-	$: list = $newsList;
-	$: loading = $newsLoading;
+	let error = $derived($newsError);
+	let list = $derived($newsList);
+	let loading = $derived($newsLoading);
 
 	async function handlePageChange(page: number) {
 		newsStore.load(page);
@@ -175,7 +175,7 @@
 					<button
 						class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-md bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
 						disabled={$newsPagination.current_page === 1}
-						on:click={() => handlePageChange($newsPagination.current_page - 1)}
+						onclick={() => handlePageChange($newsPagination.current_page - 1)}
 					>
 						<ChevronLeft class="w-4 h-4 md:w-5 md:h-5" />
 					</button>
@@ -193,7 +193,7 @@
 								$newsPagination.current_page
 									? 'bg-red-500 text-white border-red-500'
 									: 'bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700'}"
-								on:click={() => handlePageChange(Number(page))}
+								onclick={() => handlePageChange(Number(page))}
 							>
 								{page}
 							</button>
@@ -204,7 +204,7 @@
 					<button
 						class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-md bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
 						disabled={$newsPagination.current_page === $newsPagination.last_page}
-						on:click={() => handlePageChange($newsPagination.current_page + 1)}
+						onclick={() => handlePageChange($newsPagination.current_page + 1)}
 					>
 						<ChevronRight class="w-4 h-4 md:w-5 md:h-5" />
 					</button>

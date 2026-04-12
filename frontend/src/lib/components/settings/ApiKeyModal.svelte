@@ -6,8 +6,12 @@
 	const { t } = useTranslation();
 	const dispatch = createEventDispatcher<{ close: void; copy: void }>();
 
-	export let show = false;
-	export let apiKey: string | null = null;
+	interface Props {
+		show?: boolean;
+		apiKey?: string | null;
+	}
+
+	let { show = false, apiKey = null }: Props = $props();
 
 	const handleCopy = () => {
 		dispatch('copy');
@@ -47,7 +51,7 @@
 				>
 				<button
 					class="absolute top-3 right-3 p-2 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-500 transition-all shadow-sm cursor-pointer"
-					on:click={handleCopy}
+					onclick={handleCopy}
 					title={$t('settings.developer.copied')}
 				>
 					<Copy class="w-4 h-4" />
@@ -56,7 +60,7 @@
 
 			<button
 				class="w-full py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-xl font-bold hover:bg-black dark:hover:bg-white transition-colors cursor-pointer"
-				on:click={handleClose}
+				onclick={handleClose}
 			>
 				{$t('settings.developer.savedKey')}
 			</button>

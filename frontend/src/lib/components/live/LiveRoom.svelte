@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run, handlers, stopPropagation } from 'svelte/legacy';
+
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -55,63 +57,52 @@
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 
-	/** Base path determines back-links and other-live member hrefs.
-	 *  Use '/jkt48/live' for public pages, '/theater/live' for theater pages. */
-	export let basePath: string = '/jkt48/live';
-	$: isTheater = basePath.startsWith('/theater');
+	interface Props {
+		/** Base path determines back-links and other-live member hrefs.
+		 *  Use '/jkt48/live' for public pages, '/theater/live' for theater pages. */
+		basePath?: string;
+	}
+
+	let { basePath = '/jkt48/live' }: Props = $props();
 
 	/** Placeholder header for mobile sync - only for theater mode */
 	const { t } = useTranslation();
-	$: ({ platform, id } = $page.params);
 
-	let videoElement: HTMLVideoElement;
+	let videoElement: HTMLVideoElement | undefined = $state();
 	let hls: any;
 	let Hls: any;
-	let loadingOtherLive = false;
-	let initializing = false;
-	let lastInitializedId = '';
+	let loadingOtherLive = $state(false);
+	let initializing = $state(false);
+	let lastInitializedId = $state('');
 	let initCount = 0;
-	let chatVisible = true;
-	let isFocusMode = false; // Will be set in onMount for desktop/laptop
-	let isRecording = false;
+	let chatVisible = $state(true);
+	let isFocusMode = $state(false); // Will be set in onMount for desktop/laptop
+	let isRecording = $state(false);
 	let mediaRecorder: any = null;
 	let recordedChunks: any[] = [];
-	let sidebarMode: 'chat' | 'list' = 'chat';
-	let volume = 1;
-	let isMuted = false;
-	let currentTime = 0;
-	let duration = 0;
-	let isPaused = true;
+	let sidebarMode: 'chat' | 'list' = $state('chat');
+	let volume = $state(1);
+	let isMuted = $state(false);
+	let currentTime = $state(0);
+	let duration = $state(0);
+	let isPaused = $state(true);
 	let bufferedEnd = 0;
-	let peakDuration = 0;
-	let isFullscreen = false;
-	let showControls = true;
-	let controlsTimeout: any;
-	let playerContainer: HTMLDivElement;
-	let recordingDuration = 0;
+	let peakDuration = $state(0);
+	let isFullscreen = $state(false);
+	let showControls = $state(true);
+	let controlsTimeout: any = $state();
+	let playerContainer: HTMLDivElement | undefined = $state();
+	let recordingDuration = $state(0);
 	let recordingTimer: any = null;
 	let refreshInterval: any = null;
-	let ignoreNextVideoClick = false;
-	let rotation = 0;
-	let videoWidth = 0;
-	let videoHeight = 0;
-	let playerWidth = 0;
-	let playerHeight = 0;
-	let isBuffering = false;
-	let autoplayBlocked = false;
-
-	$: videoAspectRatio = videoWidth > 0 && videoHeight > 0 ? videoWidth / videoHeight : 16 / 9;
-	$: streamFromList = $liveList.find(
-		(s) =>
-			s.platform === platform && (s.room_id === id || s.live_id === id || s.room_url_key === id)
-	);
-	$: streamTitle = streamFromList?.title || '';
-	$: originalLiveUrl =
-		platform === 'idn'
-			? `https://www.idn.app/${streamFromList?.room_url_key?.replace('@', '') || ''}/live/${streamFromList?.live_id || ''}`
-			: platform === 'showroom'
-				? `https://www.showroom-live.com/r/${streamFromList?.room_url_key || ''}`
-				: '#';
+	let ignoreNextVideoClick = $state(false);
+	let rotation = $state(0);
+	let videoWidth = $state(0);
+	let videoHeight = $state(0);
+	let playerWidth = $state(0);
+	let playerHeight = $state(0);
+	let isBuffering = $state(false);
+	let autoplayBlocked = $state(false);
 
 	function rotateVideo() {
 		rotation += 90;
@@ -131,22 +122,6 @@
 	function handleFullscreenChange() {
 		isFullscreen = document.fullscreenElement !== null;
 		resetControlsTimeout();
-	}
-
-	$: if (currentTime > peakDuration) peakDuration = currentTime;
-	$: if (duration > 0 && duration !== Infinity && duration > peakDuration) peakDuration = duration;
-	$: displayDuration = peakDuration || currentTime;
-	$: isLive = duration === Infinity || isNaN(duration) || duration === 0;
-
-	$: memberName = $currentStream?.member?.name || null;
-	$: roomIdentifier = $currentStream?.room_identifier || null;
-	$: streamingUrls = $currentStream?.streaming_urls || [];
-	$: startAt = $currentStream?.start_at || null;
-
-	$: if (platform && id && lastInitializedId !== `${platform}-${id}`) {
-		lastInitializedId = `${platform}-${id}`;
-		initPlayer();
-		fetchOtherLive();
 	}
 
 	function getMemberId(m: LiveStatus | any) {
@@ -193,7 +168,7 @@
 						hls.loadSource(streamUrl);
 						hls.attachMedia(videoElement);
 						hls.on(Hls.Events.MANIFEST_PARSED, () => {
-							videoElement.play().catch((e) => {
+							videoElement?.play().catch((e: Error) => {
 								if (e.name === 'NotAllowedError') {
 									autoplayBlocked = true;
 									isPaused = true;
@@ -212,7 +187,7 @@
 					} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 						videoElement.src = streamUrl;
 						videoElement.addEventListener('loadedmetadata', () => {
-							videoElement.play().catch((e) => {
+							videoElement?.play().catch((e: Error) => {
 								if (e.name === 'NotAllowedError') {
 									autoplayBlocked = true;
 									isPaused = true;
@@ -342,7 +317,7 @@
 	}
 
 	function takeScreenshot() {
-		captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
+		if (videoElement) captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
 	}
 
 	async function toggleRecording() {
@@ -455,6 +430,44 @@
 		if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 		return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 	}
+	let isTheater = $derived(basePath.startsWith('/theater'));
+	let { platform, id } = $derived($page.params);
+	let videoAspectRatio = $derived(
+		videoWidth > 0 && videoHeight > 0 ? videoWidth / videoHeight : 16 / 9
+	);
+	let streamFromList = $derived(
+		$liveList.find(
+			(s) =>
+				s.platform === platform && (s.room_id === id || s.live_id === id || s.room_url_key === id)
+		)
+	);
+	let streamTitle = $derived(streamFromList?.title || '');
+	let originalLiveUrl = $derived(
+		platform === 'idn'
+			? `https://www.idn.app/${streamFromList?.room_url_key?.replace('@', '') || ''}/live/${streamFromList?.live_id || ''}`
+			: platform === 'showroom'
+				? `https://www.showroom-live.com/r/${streamFromList?.room_url_key || ''}`
+				: '#'
+	);
+	run(() => {
+		if (currentTime > peakDuration) peakDuration = currentTime;
+	});
+	run(() => {
+		if (duration > 0 && duration !== Infinity && duration > peakDuration) peakDuration = duration;
+	});
+	let displayDuration = $derived(peakDuration || currentTime);
+	let isLive = $derived(duration === Infinity || isNaN(duration) || duration === 0);
+	let memberName = $derived($currentStream?.member?.name || null);
+	let roomIdentifier = $derived($currentStream?.room_identifier || null);
+	let streamingUrls = $derived($currentStream?.streaming_urls || []);
+	let startAt = $derived($currentStream?.start_at || null);
+	run(() => {
+		if (platform && id && lastInitializedId !== `${platform}-${id}`) {
+			lastInitializedId = `${platform}-${id}`;
+			initPlayer();
+			fetchOtherLive();
+		}
+	});
 </script>
 
 <svelte:head>
@@ -591,10 +604,10 @@
 				</div>
 			{/if}
 
-			<!-- svelte-ignore a11y-no-static-element-interactions -->
-			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<!-- svelte-ignore a11y-mouse-events-have-key-events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_mouse_events_have_key_events -->
 			<div
 				bind:this={playerContainer}
 				bind:clientWidth={playerWidth}
@@ -606,14 +619,14 @@
 					: ''}"
 				role="region"
 				aria-label="Video Player"
-				on:fullscreenchange={handleFullscreenChange}
-				on:mousemove={() => resetControlsTimeout(false)}
-				on:mouseleave={() => {
+				onfullscreenchange={handleFullscreenChange}
+				onmousemove={() => resetControlsTimeout(false)}
+				onmouseleave={() => {
 					showControls = false;
 					clearTimeout(controlsTimeout);
 				}}
-				on:click={() => resetControlsTimeout(false)}
-				on:touchstart={() => resetControlsTimeout(true)}
+				onclick={() => resetControlsTimeout(false)}
+				ontouchstart={() => resetControlsTimeout(true)}
 			>
 				<!-- Top Info Overlay -->
 				<div
@@ -693,8 +706,8 @@
 					</div>
 				</div>
 
-				<!-- svelte-ignore a11y-media-has-caption -->
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y_media_has_caption -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<video
 					bind:this={videoElement}
 					class="relative z-10 w-full h-full object-contain cursor-pointer bg-transparent transition-transform duration-300"
@@ -702,36 +715,38 @@
 					crossorigin="anonymous"
 					autoplay
 					playsinline
-					on:timeupdate={() => {
+					ontimeupdate={() => {
 						currentTime = videoElement?.currentTime || 0;
 						updateBufferAndDuration();
 					}}
-					on:loadedmetadata={() => {
+					onloadedmetadata={() => {
 						duration = videoElement?.duration || 0;
 						videoWidth = videoElement?.videoWidth || 0;
 						videoHeight = videoElement?.videoHeight || 0;
 						updateBufferAndDuration();
 					}}
-					on:play={() => (isPaused = false)}
-					on:pause={() => (isPaused = true)}
-					on:click={() => {
+					onplay={() => (isPaused = false)}
+					onpause={handlers(
+						() => (isPaused = true),
+						() => (isBuffering = false)
+					)}
+					onclick={() => {
 						if (ignoreNextVideoClick) {
 							ignoreNextVideoClick = false;
 							return;
 						}
 						togglePlayPause();
 					}}
-					on:waiting={() => (isBuffering = true)}
-					on:playing={() => (isBuffering = false)}
-					on:stalled={() => (isBuffering = true)}
-					on:canplay={() => (isBuffering = false)}
-					on:pause={() => (isBuffering = false)}
+					onwaiting={() => (isBuffering = true)}
+					onplaying={() => (isBuffering = false)}
+					onstalled={() => (isBuffering = true)}
+					oncanplay={() => (isBuffering = false)}
 				></video>
 
 				{#if autoplayBlocked}
 					<button
 						class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-sm z-30 group/autoplay cursor-pointer"
-						on:click|stopPropagation={retryPlayback}
+						onclick={stopPropagation(retryPlayback)}
 					>
 						<div
 							class="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20 group-hover/autoplay:scale-110 group-hover/autoplay:bg-white/20 transition-all duration-300"
@@ -796,7 +811,7 @@
 									max={displayDuration || 0}
 									step="0.1"
 									value={currentTime}
-									on:input={handleSeek}
+									oninput={handleSeek}
 									class="absolute inset-x-0 w-full h-full bg-transparent appearance-none cursor-pointer z-20 custom-range"
 								/>
 							</div>
@@ -810,7 +825,7 @@
 							<div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
 								<button
 									class="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer group/btn relative"
-									on:click={togglePlayPause}
+									onclick={togglePlayPause}
 								>
 									{#if isPaused}<Play size={22} fill="currentColor" class="ml-1" />{:else}<Pause
 											size={22}
@@ -826,7 +841,7 @@
 								<div class="flex items-center gap-1 group/volume">
 									<button
 										class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
-										on:click={toggleMute}
+										onclick={toggleMute}
 									>
 										{#if isMuted || volume === 0}<VolumeX size={18} />{:else}<Volume2
 												size={18}
@@ -843,14 +858,14 @@
 										max="1"
 										step="0.01"
 										bind:value={volume}
-										on:input={handleVolumeChange}
+										oninput={handleVolumeChange}
 										class="w-0 opacity-0 group-hover/volume:w-16 sm:group-hover/volume:w-24 group-hover/volume:opacity-100 transition-all duration-300 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-white"
 									/>
 								</div>
 
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={togglePiP}
+									onclick={togglePiP}
 								>
 									<PictureInPicture2 size={18} />
 									<div
@@ -865,7 +880,7 @@
 							<div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={takeScreenshot}
+									onclick={takeScreenshot}
 								>
 									<Camera size={18} />
 									<div
@@ -880,7 +895,7 @@
 										class="group/btn relative w-10 h-10 flex items-center justify-center {isRecording
 											? 'bg-red-600 animate-pulse'
 											: 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all flex-shrink-0 active:scale-95 cursor-pointer"
-										on:click={toggleRecording}
+										onclick={toggleRecording}
 									>
 										{#if isRecording}<Square size={16} fill="white" />{:else}<Circle
 												size={16}
@@ -908,7 +923,7 @@
 								{#if isFocusMode}
 									<button
 										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
-										on:click={toggleTheme}
+										onclick={toggleTheme}
 									>
 										{#if $theme === 'dark'}<Moon size={18} />{:else}<Sun size={18} />{/if}
 										<div
@@ -923,7 +938,7 @@
 									class="group/btn relative w-10 h-10 flex items-center justify-center {isFocusMode
 										? 'bg-white text-black'
 										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={toggleFocus}
+									onclick={toggleFocus}
 								>
 									{#if isFocusMode}<Minimize2 size={18} />{:else}<Maximize2 size={18} />{/if}
 									<div
@@ -937,7 +952,7 @@
 									class="group/btn relative w-10 h-10 flex items-center justify-center {isFullscreen
 										? 'bg-white text-black'
 										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={toggleFullscreen}
+									onclick={toggleFullscreen}
 								>
 									{#if isFullscreen}<Minimize size={18} />{:else}<Maximize size={18} />{/if}
 									<div
@@ -951,7 +966,7 @@
 
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={refreshStream}
+									onclick={refreshStream}
 								>
 									<RefreshCw size={18} class={$liveLoading ? 'animate-spin' : ''} />
 									<div
@@ -963,7 +978,7 @@
 
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={rotateVideo}
+									onclick={rotateVideo}
 								>
 									<RotateCw size={18} class="transition-transform duration-500" />
 									<div
@@ -980,7 +995,7 @@
 									'list'
 										? 'bg-white text-black'
 										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={() => {
+									onclick={() => {
 										sidebarMode = sidebarMode === 'chat' ? 'list' : 'chat';
 										if (sidebarMode === 'list') fetchOtherLive();
 										if (!chatVisible) chatVisible = true;
@@ -1002,7 +1017,7 @@
 									class="group/btn relative w-10 h-10 flex items-center justify-center {chatVisible
 										? 'hover:bg-white/10 text-white'
 										: 'bg-white text-black'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={() => (chatVisible = !chatVisible)}
+									onclick={() => (chatVisible = !chatVisible)}
 								>
 									<ChevronRight size={18} class={chatVisible ? 'rotate-0' : 'rotate-180'} />
 									<div
@@ -1104,7 +1119,7 @@
 												<img
 													src={getExternalMediaUrl(member.member?.img) || fallbackAvatar}
 													alt={member.member?.name}
-													on:error={(e) => {
+													onerror={(e) => {
 														if (e.currentTarget instanceof HTMLImageElement)
 															e.currentTarget.src = fallbackAvatar;
 													}}

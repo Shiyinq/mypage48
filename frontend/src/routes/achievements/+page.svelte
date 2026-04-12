@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { isAuthenticated, showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { achievementsStore, isAchievementsLoading } from '$lib/stores/achievements';
@@ -27,6 +26,11 @@
 	import { AchievementSkeleton } from '$lib/components/skeletons';
 	import AchievementCard from '$lib/components/achievements/AchievementCard.svelte';
 	import type { ComponentType } from 'svelte';
+	interface Props {
+		params?: Record<string, string> | undefined;
+	}
+
+	let { params = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -50,12 +54,12 @@
 	};
 
 	// Subscribe to store
-	$: state = $achievementsStore;
-	$: data = state.data;
-	$: error = state.error;
+	let state = $derived($achievementsStore);
+	let data = $derived(state.data);
+	let error = $derived(state.error);
 
-	$: unlocked = data?.achievements.filter((m) => m.isUnlocked) ?? [];
-	$: locked = data?.achievements.filter((m) => !m.isUnlocked) ?? [];
+	let unlocked = $derived(data?.achievements.filter((m) => m.isUnlocked) ?? []);
+	let locked = $derived(data?.achievements.filter((m) => !m.isUnlocked) ?? []);
 
 	async function loadAchievements() {
 		if (!$isAuthenticated) {

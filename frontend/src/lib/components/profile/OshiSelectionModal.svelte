@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { Search, X, Check } from 'lucide-svelte';
 	import { logger } from '$lib/utils/logger';
 	import Button from '$lib/components/Button.svelte';
@@ -8,29 +10,30 @@
 	import { tick } from 'svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
-	export let show: boolean = false;
-	// members prop removed, we fetch internally
-	export let saving: boolean = false;
-	export let onClose: () => void;
-	export let onSave: (member: Member) => void;
+	interface Props {
+		show?: boolean;
+		// members prop removed, we fetch internally
+		saving?: boolean;
+		onClose: () => void;
+		onSave: (member: Member) => void;
+	}
+
+	let { show = false, saving = false, onClose, onSave }: Props = $props();
 
 	const { t } = useTranslation();
 
-	let searchQuery = '';
-	let selectedOshiId: number | null = null;
+	let searchQuery = $state('');
+	let selectedOshiId: string | number | null = $state(null);
 
-	let memberList: Member[] = [];
-	let loading = false;
+	let memberList: Member[] = $state([]);
+	let loading = $state(false);
 	let page = 1;
 	let hasMore = true;
-	let isAppending = false;
+	let isAppending = $state(false);
 	let searchTimeout: ReturnType<typeof setTimeout>;
 
-	let observer: IntersectionObserver;
-	let sentinel: HTMLElement;
-
-	// Reset/Fetch when modal opens
-	$: handleVisibilityChange(show);
+	let observer: IntersectionObserver | undefined = $state();
+	let sentinel: HTMLElement | undefined = $state();
 
 	function handleVisibilityChange(isVisible: boolean) {
 		if (isVisible) {
@@ -42,10 +45,6 @@
 			selectedOshiId = null;
 			memberList = [];
 		}
-	}
-
-	$: if (sentinel && observer) {
-		observer.observe(sentinel);
 	}
 
 	function initObserver() {
@@ -116,16 +115,25 @@
 			if (member) onSave(member);
 		}
 	}
+	// Reset/Fetch when modal opens
+	run(() => {
+		handleVisibilityChange(show);
+	});
+	run(() => {
+		if (sentinel && observer) {
+			observer.observe(sentinel);
+		}
+	});
 </script>
 
 {#if show}
 	<div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
 		<!-- Backdrop -->
-		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 		<div
 			class="absolute inset-0 bg-black/60 backdrop-blur-sm"
 			transition:fade={{ duration: 200 }}
-			on:click={onClose}
+			onclick={onClose}
 		></div>
 
 		<!-- Modal Content -->
@@ -144,7 +152,7 @@
 					<p class="text-sm text-gray-500 dark:text-gray-400">{$t('profile.oshiModal.subtitle')}</p>
 				</div>
 				<button
-					on:click={onClose}
+					onclick={onClose}
 					class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-500 dark:text-gray-400 transition-colors cursor-pointer"
 				>
 					<X class="w-5 h-5" />
@@ -158,7 +166,7 @@
 					<input
 						type="text"
 						bind:value={searchQuery}
-						on:input={handleSearch}
+						oninput={handleSearch}
 						placeholder={$t('profile.oshiModal.searchPlaceholder')}
 						class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:border-red-300 focus:ring-4 focus:ring-red-50 dark:focus:ring-red-900/30 transition-all font-medium text-sm"
 					/>
@@ -189,7 +197,7 @@
 								{selectedOshiId === member.id
 									? 'border-red-500 bg-red-50/50 dark:bg-red-900/20'
 									: 'border-transparent hover:bg-gray-50 dark:hover:bg-zinc-800 hover:border-gray-100 dark:hover:border-zinc-700'}"
-								on:click={() => (selectedOshiId = member.id)}
+								onclick={() => (selectedOshiId = member.id)}
 							>
 								<div class="relative w-20 h-20 mb-3">
 									<img
@@ -233,14 +241,14 @@
 			<div
 				class="p-6 border-t border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex justify-end gap-3 z-10"
 			>
-				<Button variant="outline" on:click={onClose} class="cursor-pointer"
+				<Button variant="outline" onclick={onClose} class="cursor-pointer"
 					>{$t('profile.oshiModal.cancel')}</Button
 				>
 				<Button
 					variant="primary"
 					disabled={!selectedOshiId || saving}
 					loading={saving}
-					on:click={handleSave}
+					onclick={handleSave}
 					class="cursor-pointer"
 				>
 					{$t('profile.oshiModal.save')}

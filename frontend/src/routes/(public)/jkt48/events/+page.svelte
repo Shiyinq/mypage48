@@ -31,7 +31,7 @@
 		);
 	}
 
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(async () => {
 		await eventsStore.loadUpcoming();
@@ -39,8 +39,8 @@
 		mounted = true;
 	});
 
-	$: error = $upcomingError;
-	$: birthdays = $membersStore.birthdays || [];
+	let error = $derived($upcomingError);
+	let birthdays = $derived($membersStore.birthdays || []);
 
 	function getBirthdayText(daysUntil: number, t: Function): string {
 		if (daysUntil === 0) return t('common.today');

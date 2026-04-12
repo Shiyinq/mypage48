@@ -11,7 +11,7 @@
 
 	let interval: any;
 
-	let initialLoading = $liveList.length === 0;
+	let initialLoading = $state($liveList.length === 0);
 	async function fetchLives() {
 		await liveStore.loadLiveList();
 		initialLoading = false;

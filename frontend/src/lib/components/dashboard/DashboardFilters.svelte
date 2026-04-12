@@ -5,11 +5,21 @@
 
 	const { t } = useTranslation();
 
-	export let isAllData: boolean;
-	export let selectedYear: number;
-	export let startMonth: number;
-	export let endMonth: number;
-	export let availableYears: number[];
+	interface Props {
+		isAllData: boolean;
+		selectedYear: number;
+		startMonth: number;
+		endMonth: number;
+		availableYears: number[];
+	}
+
+	let {
+		isAllData = $bindable(),
+		selectedYear = $bindable(),
+		startMonth = $bindable(),
+		endMonth = $bindable(),
+		availableYears
+	}: Props = $props();
 </script>
 
 <div

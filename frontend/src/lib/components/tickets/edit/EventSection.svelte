@@ -2,10 +2,19 @@
 	import { Ticket as TicketIcon, Calendar, Clock, ChevronDown } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let title: string;
-	export let date: string;
-	export let time: string;
-	export let showOptions: string[];
+	interface Props {
+		title: string;
+		date: string;
+		time: string;
+		showOptions: string[];
+	}
+
+	let {
+		title = $bindable(),
+		date = $bindable(),
+		time = $bindable(),
+		showOptions
+	}: Props = $props();
 
 	const { t } = useTranslation();
 </script>

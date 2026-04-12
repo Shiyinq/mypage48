@@ -1,10 +1,26 @@
 <script lang="ts">
-	export let label = '';
-	export let type = 'text';
-	export let value = '';
-	export let placeholder = '';
-	export let error = '';
-	export let id = Math.random().toString(36).substr(2, 9);
+	import { createBubbler } from 'svelte/legacy';
+
+	const bubble = createBubbler();
+	interface Props {
+		label?: string;
+		type?: string;
+		value?: string;
+		placeholder?: string;
+		error?: string;
+		id?: any;
+		[key: string]: any;
+	}
+
+	let {
+		label = '',
+		type = 'text',
+		value = $bindable(''),
+		placeholder = '',
+		error = '',
+		id = Math.random().toString(36).substr(2, 9),
+		...rest
+	}: Props = $props();
 </script>
 
 <div class="input-group">
@@ -18,9 +34,9 @@
 		{placeholder}
 		{value}
 		class="input-field {error ? 'has-error' : ''}"
-		on:input={(e) => (value = e.currentTarget.value)}
-		on:blur
-		{...$$restProps}
+		oninput={(e) => (value = e.currentTarget.value)}
+		onblur={bubble('blur')}
+		{...rest}
 	/>
 
 	{#if error}

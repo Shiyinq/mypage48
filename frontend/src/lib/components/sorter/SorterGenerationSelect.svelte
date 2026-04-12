@@ -7,11 +7,21 @@
 	const { t } = useTranslation();
 	const dispatch = createEventDispatcher();
 
-	export let generations: string[];
-	export let selectedGenerations: Set<string>;
-	export let loadingGenerations: boolean;
-	export let selectedMembersCount: number;
-	export let variant: 'public' | 'theater' = 'public';
+	interface Props {
+		generations: string[];
+		selectedGenerations: Set<string>;
+		loadingGenerations: boolean;
+		selectedMembersCount: number;
+		variant?: 'public' | 'theater';
+	}
+
+	let {
+		generations,
+		selectedGenerations,
+		loadingGenerations,
+		selectedMembersCount,
+		variant = 'public'
+	}: Props = $props();
 
 	function toggleGeneration(gen: string) {
 		dispatch('toggle', gen);
@@ -29,7 +39,7 @@
 		dispatch('start');
 	}
 
-	$: isPublic = variant === 'public';
+	let isPublic = $derived(variant === 'public');
 </script>
 
 <div in:fade={{ duration: 300 }} class="w-full max-w-2xl space-y-6">
@@ -48,7 +58,7 @@
 			</h3>
 			<div class="flex gap-4 font-black items-center sm:justify-end">
 				<button
-					on:click={selectAll}
+					onclick={selectAll}
 					class={`text-xs transition-transform cursor-pointer uppercase tracking-widest ${isPublic ? 'text-red-600 hover:scale-105' : 'text-rose-500 hover:text-rose-600'}`}
 				>
 					{$t('theater.sorter.selectAll')}
@@ -57,7 +67,7 @@
 					<span class="text-zinc-300">|</span>
 				{/if}
 				<button
-					on:click={deselectAll}
+					onclick={deselectAll}
 					class={`text-xs transition-colors cursor-pointer uppercase tracking-widest ${isPublic ? 'text-slate-400 hover:text-themed' : 'text-zinc-400 hover:text-themed'}`}
 				>
 					{$t('theater.sorter.clear')}
@@ -81,7 +91,7 @@
 			{:else}
 				{#each generations as gen}
 					<button
-						on:click={() => toggleGeneration(gen)}
+						onclick={() => toggleGeneration(gen)}
 						class={`px-4 py-3 rounded-2xl text-sm font-black transition-all border-2 cursor-pointer shadow-sm ${
 							selectedGenerations.has(gen)
 								? isPublic
@@ -118,7 +128,7 @@
 	</div>
 
 	<button
-		on:click={start}
+		onclick={start}
 		disabled={loadingGenerations || selectedMembersCount < 2}
 		class={`w-full sm:w-80 h-16 rounded-full font-black text-xl shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:grayscale mx-auto cursor-pointer ${
 			isPublic

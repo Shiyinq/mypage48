@@ -30,7 +30,7 @@
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
 		{#each availableLocales as localeOption}
 			<button
-				on:click={() => handleLanguageChange(localeOption.code)}
+				onclick={() => handleLanguageChange(localeOption.code)}
 				class="p-4 rounded-2xl border-2 transition-all flex md:flex-col items-center justify-between md:justify-center gap-4 cursor-pointer h-full {$locale ===
 				localeOption.code
 					? 'border-red-500 bg-red-50/50 dark:bg-red-900/20 shadow-sm'

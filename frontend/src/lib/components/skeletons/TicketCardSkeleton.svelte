@@ -1,9 +1,13 @@
 <script lang="ts">
-	/**
-	 * Skeleton component for ticket/history cards
-	 */
-	export let count: number = 6;
-	export let className: string = '';
+	interface Props {
+		/**
+		 * Skeleton component for ticket/history cards
+		 */
+		count?: number;
+		className?: string;
+	}
+
+	let { count = 6, className = '' }: Props = $props();
 </script>
 
 <div

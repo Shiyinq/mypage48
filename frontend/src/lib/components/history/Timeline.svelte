@@ -3,8 +3,12 @@
 	import { formatDate } from '$lib/i18n';
 	import { Calendar } from 'lucide-svelte';
 
-	export let firstDate: string | undefined;
-	export let lastDate: string | undefined;
+	interface Props {
+		firstDate: string | undefined;
+		lastDate: string | undefined;
+	}
+
+	let { firstDate, lastDate }: Props = $props();
 
 	const { t } = useTranslation();
 </script>

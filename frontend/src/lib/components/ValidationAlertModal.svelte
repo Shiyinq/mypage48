@@ -1,12 +1,19 @@
 <script lang="ts">
+	import { createBubbler, stopPropagation } from 'svelte/legacy';
+
+	const bubble = createBubbler();
 	import { CircleAlert } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let show: boolean = false;
-	export let title: string = '';
-	export let message: string = '';
-	export let onClose: () => void;
+	interface Props {
+		show?: boolean;
+		title?: string;
+		message?: string;
+		onClose: () => void;
+	}
+
+	let { show = false, title = '', message = '', onClose }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -22,18 +29,18 @@
 {#if show}
 	<div
 		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-		on:click={handleBackdropClick}
-		on:keydown={handleKeydown}
+		onclick={handleBackdropClick}
+		onkeydown={handleKeydown}
 		transition:fade={{ duration: 150 }}
 		role="button"
 		tabindex="-1"
 		aria-label="Close dialog"
 	>
-		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<div
 			class="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-sm w-full p-6"
-			on:click|stopPropagation
-			on:keydown|stopPropagation
+			onclick={stopPropagation(bubble('click'))}
+			onkeydown={stopPropagation(bubble('keydown'))}
 			transition:scale={{ duration: 200, start: 0.95 }}
 			role="dialog"
 			aria-modal="true"
@@ -62,7 +69,7 @@
 
 			<!-- Action -->
 			<button
-				on:click={onClose}
+				onclick={onClose}
 				class="w-full px-4 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-200 dark:shadow-none transition-all cursor-pointer"
 			>
 				{$t('common.ok')}

@@ -4,14 +4,19 @@
 
 	import { getMemberFrame } from '$lib/constants';
 
-	export let member: Member;
+	interface Props {
+		member: Member;
+		onclick?: () => void;
+	}
 
-	$: frameImg = getMemberFrame(member.member_type);
+	let { member, onclick }: Props = $props();
+
+	let frameImg = $derived(getMemberFrame(member.member_type));
 </script>
 
 <button
 	class="group relative aspect-[3/4] flex flex-col bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer text-left"
-	on:click
+	{onclick}
 >
 	<!-- Member Photo Container -->
 	<div class="relative w-full h-full overflow-hidden bg-gray-100 dark:bg-zinc-800">

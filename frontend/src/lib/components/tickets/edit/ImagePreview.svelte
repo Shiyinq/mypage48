@@ -1,16 +1,19 @@
 <script lang="ts">
 	import { ImagePlus } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { createEventDispatcher } from 'svelte';
 	import { dragDrop } from '$lib/actions/dragDrop';
 
-	export let image: string | null;
-	export let onSelect: () => void;
+	interface Props {
+		image: string | null;
+		onSelect: () => void;
+		ondrop?: (file: File) => void;
+	}
+
+	let { image, onSelect, ondrop }: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
-	let isDragging = false;
+	let isDragging = $state(false);
 </script>
 
 <div class="flex flex-col gap-4">
@@ -19,7 +22,7 @@
 		role="region"
 		aria-label="Image Upload Dropzone"
 		use:dragDrop={{
-			onDrop: (file) => dispatch('drop', file),
+			onDrop: (file) => ondrop?.(file),
 			onDragChange: (state) => (isDragging = state)
 		}}
 	>
@@ -35,7 +38,7 @@
 					class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
 				>
 					<button
-						on:click={onSelect}
+						onclick={onSelect}
 						class="bg-white text-gray-800 px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 shadow-lg hover:scale-105 transition-transform"
 					>
 						<ImagePlus class="w-4 h-4" />
@@ -46,7 +49,7 @@
 		{:else}
 			<button
 				type="button"
-				on:click={onSelect}
+				onclick={onSelect}
 				class="w-full rounded-3xl border-3 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-300px)]
 				{isDragging
 					? 'border-red-500 bg-red-50 dark:bg-red-900/10 text-red-500 scale-[1.02] ring-4 ring-red-500/20'

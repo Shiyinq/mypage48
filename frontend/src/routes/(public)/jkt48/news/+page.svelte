@@ -14,16 +14,16 @@
 
 	const basePath = '/jkt48/news';
 
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(async () => {
 		await newsStore.load();
 		mounted = true;
 	});
 
-	$: error = $newsError;
-	$: list = $newsList;
-	$: loading = $newsLoading;
+	let error = $derived($newsError);
+	let list = $derived($newsList);
+	let loading = $derived($newsLoading);
 
 	async function handlePageChange(page: number) {
 		newsStore.load(page);
@@ -63,10 +63,10 @@
 	}
 </script>
 
-<SEO 
-	title={$t('theater.news.title') || 'News'} 
-	path="/jkt48/news" 
-	description={$t('seo.news')} 
+<SEO
+	title={$t('theater.news.title') || 'News'}
+	path="/jkt48/news"
+	description={$t('seo.news')}
 	articles={list}
 />
 
@@ -190,7 +190,7 @@
 					<button
 						class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
 						disabled={$newsPagination.current_page === 1}
-						on:click={() => handlePageChange($newsPagination.current_page - 1)}
+						onclick={() => handlePageChange($newsPagination.current_page - 1)}
 					>
 						<ChevronLeft class="w-5 h-5" />
 					</button>
@@ -208,7 +208,7 @@
 								$newsPagination.current_page
 									? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-500/30'
 									: 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 text-gray-500 hover:text-red-600 hover:border-red-200 shadow-sm'}"
-								on:click={() => handlePageChange(Number(page))}
+								onclick={() => handlePageChange(Number(page))}
 							>
 								{page}
 							</button>
@@ -219,7 +219,7 @@
 					<button
 						class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
 						disabled={$newsPagination.current_page === $newsPagination.last_page}
-						on:click={() => handlePageChange($newsPagination.current_page + 1)}
+						onclick={() => handlePageChange($newsPagination.current_page + 1)}
 					>
 						<ChevronRight class="w-5 h-5" />
 					</button>

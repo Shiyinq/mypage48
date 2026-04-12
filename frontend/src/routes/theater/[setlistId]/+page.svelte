@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
@@ -17,17 +16,22 @@
 	import SetlistStats from '$lib/components/theater/SetlistStats.svelte';
 	import Timeline from '$lib/components/history/Timeline.svelte';
 	import SetlistTicketItem from '$lib/components/theater/SetlistTicketItem.svelte';
+	interface Props {
+		params?: Record<string, string> | undefined;
+	}
+
+	let { params = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 
 	// Get setlistId from URL
-	$: setlistId = $page.params.setlistId;
+	let setlistId = $derived($page.params.setlistId);
 
 	// State from store
-	let detail: SetlistDetailResponse | null = null;
-	$: error = $setlistsStore.detailError;
-	let deleteId: string | null = null;
-	let isDeleting = false;
+	let detail: SetlistDetailResponse | null = $state(null);
+	let error = $derived($setlistsStore.detailError);
+	let deleteId: string | null = $state(null);
+	let isDeleting = $state(false);
 
 	async function fetchDetail() {
 		if (!setlistId) return;
@@ -148,7 +152,7 @@
 						{:else}
 							<div class="space-y-3">
 								{#each detail.tickets as ticket (ticket.ticketId)}
-									<SetlistTicketItem {ticket} on:click={() => (deleteId = ticket.ticketId)} />
+									<SetlistTicketItem {ticket} onclick={() => (deleteId = ticket.ticketId)} />
 								{/each}
 							</div>
 						{/if}

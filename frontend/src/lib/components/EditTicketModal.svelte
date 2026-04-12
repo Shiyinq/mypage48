@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run, preventDefault } from 'svelte/legacy';
+
 	import { ticketsStore, showToast, storageStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
@@ -8,7 +10,7 @@
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import type { Ticket } from '$lib/types';
 	import { LoaderCircle, CircleCheck, NotebookPen } from 'lucide-svelte';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
 	import { setlistsStore } from '$lib/stores/theater';
@@ -20,14 +22,19 @@
 	import SeatSection from './tickets/edit/SeatSection.svelte';
 	import TwoShotSection from './tickets/edit/TwoShotSection.svelte';
 
-	export let ticket: Ticket;
+	interface Props {
+		ticket: Ticket;
+		onclose?: () => void;
+		onsave?: (updated: Ticket) => void;
+	}
 
-	const dispatch = createEventDispatcher();
+	let { ticket, onclose, onsave }: Props = $props();
+
 	const { t } = useTranslation();
 
-	$: SHOW_OPTIONS = $setlistsStore.data
-		? $setlistsStore.data.map((s) => s.title)
-		: SHOW_IMAGES.map((s) => s.title);
+	let SHOW_OPTIONS = $derived(
+		$setlistsStore.data ? $setlistsStore.data.map((s) => s.title) : SHOW_IMAGES.map((s) => s.title)
+	);
 
 	onMount(() => {
 		setlistsStore.load();
@@ -35,71 +42,99 @@
 
 	const ROW_OPTIONS = THEATER_ROWS;
 
-	let isSubmitting = false;
-	let fileInputRef: HTMLInputElement;
-	let twoShotInputRef: HTMLInputElement;
+	let isSubmitting = $state(false);
+	let fileInputRef: HTMLInputElement | undefined = $state();
+	let twoShotInputRef: HTMLInputElement | undefined = $state();
 
 	// State
-	let formData = {
-		event: { ...ticket.event },
-		seat: { ...ticket.seat },
-		ticket_id: ticket.ticket_id,
-		price: ticket.price,
-		currency: ticket.currency,
-		notes: cleanseMarkdown(ticket.notes || ''),
-		rules: { ...ticket.rules },
-		two_shot: ticket.two_shot
-			? { ...ticket.two_shot }
-			: {
-					imageUrl: '',
-					member_name: '',
-					type: 'Roulette' as 'Roulette' | 'Birthday',
-					price: 100000
-				}
-	};
+	let formData = $state({
+		event: { title: '', date: '', day: '', time: '', gate_open: '', venue: '' },
+		seat: { section: '', number: '' as string | number },
+		ticket_id: '',
+		price: 0,
+		currency: 'IDR',
+		notes: '',
+		rules: { refund_allowed: false, exchange_allowed: false },
+		two_shot: {
+			imageUrl: '',
+			member_name: '',
+			type: 'Roulette' as 'Roulette' | 'Birthday',
+			price: 100000
+		}
+	});
 
-	let image: string | null = ticket.imageUrl || null;
-	let showTwoShot = !!ticket.two_shot;
-	let twoShotImage: string | null = ticket.two_shot?.imageUrl || null;
+	let image: string | null = $state(null);
+	let showTwoShot = $state(false);
+	let twoShotImage: string | null = $state(null);
+
+	// Sync form data when ticket changes
+	$effect(() => {
+		formData = {
+			event: { ...ticket.event, gate_open: ticket.event.gate_open ?? '' },
+			seat: { ...ticket.seat },
+			ticket_id: ticket.ticket_id,
+			price: ticket.price,
+			currency: ticket.currency,
+			notes: cleanseMarkdown(ticket.notes || ''),
+			rules: { ...ticket.rules },
+			two_shot: ticket.two_shot
+				? { ...ticket.two_shot, imageUrl: ticket.two_shot.imageUrl ?? '' }
+				: {
+						imageUrl: '',
+						member_name: '',
+						type: 'Roulette' as 'Roulette' | 'Birthday',
+						price: 100000
+					}
+		};
+		image = ticket.imageUrl || null;
+		showTwoShot = !!ticket.two_shot;
+		twoShotImage = ticket.two_shot?.imageUrl || null;
+	});
 
 	// Validation alert modal state
-	let showValidationAlert = false;
-	let validationAlertMessage = '';
+	let showValidationAlert = $state(false);
+	let validationAlertMessage = $state('');
 
 	// Validation
-	$: isFormValid = !!(
-		formData.event.title &&
-		formData.event.date &&
-		formData.event.time &&
-		formData.seat.section &&
-		formData.seat.number &&
-		formData.price > 0 &&
-		formData.ticket_id &&
-		(!showTwoShot ||
-			(showTwoShot &&
-				formData.two_shot.member_name &&
-				formData.two_shot.price !== null &&
-				formData.two_shot.price >= 0 &&
-				twoShotImage))
+	let isFormValid = $derived(
+		!!(
+			formData.event.title &&
+			formData.event.date &&
+			formData.event.time &&
+			formData.seat.section &&
+			formData.seat.number &&
+			formData.price > 0 &&
+			formData.ticket_id &&
+			(!showTwoShot ||
+				(showTwoShot &&
+					formData.two_shot.member_name &&
+					formData.two_shot.price !== null &&
+					formData.two_shot.price >= 0 &&
+					twoShotImage))
+		)
 	);
 
 	// Reactive Day Calculation
-	$: if (formData.event.date) {
-		const newDay = calculateDayFromDate(formData.event.date);
-		if (newDay && newDay !== formData.event.day) {
-			formData.event.day = newDay;
-			formData = { ...formData }; // Force update
+	$effect(() => {
+		if (formData.event.date) {
+			const newDay = calculateDayFromDate(formData.event.date);
+			if (newDay && newDay !== formData.event.day) {
+				formData.event.day = newDay;
+				formData = { ...formData }; // Force update
+			}
 		}
-	}
+	});
 
 	// Reactive Gate Open Calculation (30 mins before Show Time)
-	$: if (formData.event.time) {
-		const newGateOpen = calculateGateOpenTime(formData.event.time);
-		if (newGateOpen && newGateOpen !== formData.event.gate_open) {
-			formData.event.gate_open = newGateOpen;
-			formData = { ...formData }; // Force update
+	$effect(() => {
+		if (formData.event.time) {
+			const newGateOpen = calculateGateOpenTime(formData.event.time);
+			if (newGateOpen && newGateOpen !== formData.event.gate_open) {
+				formData.event.gate_open = newGateOpen;
+				formData = { ...formData }; // Force update
+			}
 		}
-	}
+	});
 
 	// Handlers
 	const processFile = (file: File) => {
@@ -127,8 +162,8 @@
 		target.value = ''; // Reset input
 	};
 
-	const handleFileDrop = (e: CustomEvent<File>) => {
-		processFile(e.detail);
+	const handleFileDrop = (file: File) => {
+		processFile(file);
 	};
 
 	// Helper to check if image is base64 (new upload) vs storage filename
@@ -161,8 +196,8 @@
 		target.value = ''; // Reset input
 	};
 
-	const handleTwoShotDrop = (e: CustomEvent<File>) => {
-		processTwoShotFile(e.detail);
+	const handleTwoShotDrop = (file: File) => {
+		processTwoShotFile(file);
 	};
 
 	const handleSubmit = async () => {
@@ -220,8 +255,8 @@
 			invalidateTheater();
 
 			showToast($t('forms.ticketUpdateSuccess'));
-			dispatch('save', updated);
-			dispatch('close');
+			onsave?.(updated);
+			onclose?.();
 		} catch (e) {
 			logger.error('Failed to update ticket', e, { context: 'EditTicketModal' });
 			showToast($t('forms.ticketUpdateError'), 'error');
@@ -233,11 +268,11 @@
 
 <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
 	<!-- Backdrop -->
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
-		on:click={() => dispatch('close')}
+		onclick={() => onclose?.()}
 	></div>
 
 	<!-- Modal Content -->
@@ -264,7 +299,7 @@
 				</div>
 
 				<button
-					on:click={() => dispatch('close')}
+					onclick={() => onclose?.()}
 					class="text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer"
 				>
 					{$t('forms.cancel')}
@@ -273,13 +308,18 @@
 
 			<div class="grid gap-8 lg:grid-cols-2">
 				<!-- Left: Image Preview -->
-				<ImagePreview {image} onSelect={() => fileInputRef.click()} on:drop={handleFileDrop} />
+				<ImagePreview
+					{image}
+					onSelect={() => {
+						fileInputRef?.click();
+					}}
+				/>
 
 				<!-- Right: Form -->
 				<div
 					class="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/50 dark:border-zinc-700 shadow-xl h-fit"
 				>
-					<form on:submit|preventDefault={handleSubmit} class="space-y-8">
+					<form onsubmit={preventDefault(handleSubmit)} class="space-y-8">
 						<!-- Event Details -->
 						<EventSection
 							bind:title={formData.event.title}
@@ -304,8 +344,8 @@
 							bind:memberName={formData.two_shot.member_name}
 							bind:type={formData.two_shot.type}
 							bind:price={formData.two_shot.price}
-							onSelectImage={() => twoShotInputRef.click()}
-							on:drop={handleTwoShotDrop}
+							onSelectImage={() => twoShotInputRef?.click()}
+							ondrop={handleTwoShotDrop}
 						/>
 
 						<!-- Notes -->
@@ -349,14 +389,14 @@
 	bind:this={fileInputRef}
 	class="hidden"
 	accept="image/*"
-	on:change={handleFileChange}
+	onchange={handleFileChange}
 />
 <input
 	type="file"
 	bind:this={twoShotInputRef}
 	class="hidden"
 	accept="image/*"
-	on:change={handleTwoShotFileChange}
+	onchange={handleTwoShotFileChange}
 />
 
 <!-- Validation Alert Modal -->

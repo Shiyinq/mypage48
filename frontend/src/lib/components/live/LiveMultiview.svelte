@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { run, stopPropagation, createBubbler } from 'svelte/legacy';
+
+	const bubble = createBubbler();
 	import { onMount, onDestroy } from 'svelte';
 	import { get } from 'svelte/store';
 	import { fade, fly, slide } from 'svelte/transition';
@@ -44,37 +47,33 @@
 
 	const { t } = useTranslation();
 
-	/** Base path for back-navigation. Use '/jkt48/live' for public, '/theater/live' for theater. */
-	export let basePath: string = '/jkt48/live';
+	interface Props {
+		/** Base path for back-navigation. Use '/jkt48/live' for public, '/theater/live' for theater. */
+		basePath?: string;
+	}
+
+	let { basePath = '/jkt48/live' }: Props = $props();
 
 	// Multi-view State
-	let slots: any[] = [];
-	let focusedSlotIndex: number = 0;
-	let focusedStreamDetails: any = null;
-	let lastLoadedId: string | null = null;
-	let showPicker = true;
-	let showChat = true;
-	let isPortrait = true;
-	let searchQuery = '';
-	let isMobile = false;
+	let slots: any[] = $state([]);
+	let focusedSlotIndex: number = $state(0);
+	let focusedStreamDetails: any = $state(null);
+	let lastLoadedId: string | null = $state(null);
+	let showPicker = $state(true);
+	let showChat = $state(true);
+	let isPortrait = $state(true);
+	let searchQuery = $state('');
+	let isMobile = $state(false);
 
 	// Background Decoration State
-	let scrollY = 0;
-	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
+	let scrollY = $state(0);
+	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
 
 	// Update isMobile on mount and resize
 
 	// Update isMobile on mount and resize
 	function updateIsMobile() {
 		isMobile = window.innerWidth < 768;
-	}
-
-	$: if (isMobile) {
-		// On mobile, if one is toggled on, toggle the other off
-		if (showPicker && showChat) {
-			// This logic depends on which one was toggled last,
-			// but for simplicity, let's just ensure only one is active.
-		}
 	}
 
 	function togglePicker() {
@@ -88,36 +87,14 @@
 	}
 
 	// Drag and Drop State
-	let draggedIndex: number | null = null;
-	let dragOverIndex: number | null = null;
+	let draggedIndex: number | null = $state(null);
+	let dragOverIndex: number | null = $state(null);
 
 	// Media State for slots
-	let volumes: number[] = Array(8).fill(1);
-	let muted: boolean[] = Array(8).fill(false);
-	let isRecording: boolean[] = Array(8).fill(false);
-	let playerRefs: any[] = Array(8).fill(null);
-
-	$: activeStreams = $liveList;
-	$: filteredStreams = activeStreams.filter(
-		(s) =>
-			s.member?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			s.title?.toLowerCase().includes(searchQuery.toLowerCase())
-	);
-
-	$: focusedStream = slots[focusedSlotIndex];
-	$: if (focusedStream) {
-		const currentId =
-			focusedStream.platform === 'showroom'
-				? focusedStream.room_id || focusedStream.room_url_key
-				: focusedStream.live_id || focusedStream.room_url_key;
-		if (currentId !== lastLoadedId) {
-			lastLoadedId = currentId;
-			loadFocusedDetails(focusedStream);
-		}
-	} else {
-		focusedStreamDetails = null;
-		lastLoadedId = null;
-	}
+	let volumes: number[] = $state(Array(8).fill(1));
+	let muted: boolean[] = $state(Array(8).fill(false));
+	let isRecording: boolean[] = $state(Array(8).fill(false));
+	let playerRefs: any[] = $state(Array(8).fill(null));
 
 	onMount(() => {
 		liveStore.loadLiveList();
@@ -305,59 +282,96 @@
 		dragOverIndex = null;
 	}
 
-	// Computed grid class
-	$: expansive = !showPicker && !showChat;
-	// Responsive grid logic
-	$: gridClass = isMobile
-		? slots.length === 1
-			? 'grid-cols-1'
-			: 'grid-cols-1' // On mobile always 1 col unless landscape? Let's stick to 1 col for now or 2 if many
-		: isPortrait
-			? slots.length === 1
-				? 'grid-cols-1 max-w-md mx-auto'
-				: slots.length === 2
-					? 'grid-cols-2 max-w-4xl mx-auto'
-					: slots.length === 3
-						? 'grid-cols-3 max-w-6xl mx-auto'
-						: 'grid-cols-2 lg:grid-cols-4 max-w-none'
-			: slots.length === 1
-				? 'grid-cols-1 max-w-7xl mx-auto'
-				: slots.length <= 2
-					? 'grid-cols-2 max-w-none'
-					: slots.length <= 4
-						? 'grid-cols-2 max-w-none'
-						: 'grid-cols-2 lg:grid-cols-3 max-w-none';
-	// Auto-initialize first slot if empty and no saved session
-	$: if (
-		slots.length === 0 &&
-		$liveList.length > 0 &&
-		typeof localStorage !== 'undefined' &&
-		!localStorage.getItem('mypage48_multiview_slots')
-	) {
-		const firstLive = $liveList.find((l) => l.platform === 'idn') || $liveList[0];
-		if (firstLive) {
-			slots = [firstLive];
-			setFocusedSlot(0);
-		}
-	}
-
-	// Aspect ratio persistence
-	$: if (typeof localStorage !== 'undefined') {
-		localStorage.setItem('mypage48_multiview_portrait', String(isPortrait));
-	}
-
 	let fallbackAvatar = 'https://placehold.co/640x960?text=NO%20IMAGE';
 
 	function handleRoomOffline(index: number, memberName: string) {
 		removeMemberFromSlot(index);
 		showToast($t('theater.live.multiview.member_offline', { name: memberName }), 'error');
 	}
+	run(() => {
+		if (isMobile) {
+			// On mobile, if one is toggled on, toggle the other off
+			if (showPicker && showChat) {
+				// This logic depends on which one was toggled last,
+				// but for simplicity, let's just ensure only one is active.
+			}
+		}
+	});
+	let activeStreams = $derived($liveList);
+	let filteredStreams = $derived(
+		activeStreams.filter(
+			(s) =>
+				s.member?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				s.title?.toLowerCase().includes(searchQuery.toLowerCase())
+		)
+	);
+	// Auto-initialize first slot if empty and no saved session
+	run(() => {
+		if (
+			slots.length === 0 &&
+			$liveList.length > 0 &&
+			typeof localStorage !== 'undefined' &&
+			!localStorage.getItem('mypage48_multiview_slots')
+		) {
+			const firstLive = $liveList.find((l) => l.platform === 'idn') || $liveList[0];
+			if (firstLive) {
+				slots = [firstLive];
+				setFocusedSlot(0);
+			}
+		}
+	});
+	let focusedStream = $derived(slots[focusedSlotIndex]);
+	run(() => {
+		if (focusedStream) {
+			const currentId =
+				focusedStream.platform === 'showroom'
+					? focusedStream.room_id || focusedStream.room_url_key
+					: focusedStream.live_id || focusedStream.room_url_key;
+			if (currentId !== lastLoadedId) {
+				lastLoadedId = currentId;
+				loadFocusedDetails(focusedStream);
+			}
+		} else {
+			focusedStreamDetails = null;
+			lastLoadedId = null;
+		}
+	});
+	// Computed grid class
+	let expansive = $derived(!showPicker && !showChat);
+	// Responsive grid logic
+	let gridClass = $derived(
+		isMobile
+			? slots.length === 1
+				? 'grid-cols-1'
+				: 'grid-cols-1' // On mobile always 1 col unless landscape? Let's stick to 1 col for now or 2 if many
+			: isPortrait
+				? slots.length === 1
+					? 'grid-cols-1 max-w-md mx-auto'
+					: slots.length === 2
+						? 'grid-cols-2 max-w-4xl mx-auto'
+						: slots.length === 3
+							? 'grid-cols-3 max-w-6xl mx-auto'
+							: 'grid-cols-2 lg:grid-cols-4 max-w-none'
+				: slots.length === 1
+					? 'grid-cols-1 max-w-7xl mx-auto'
+					: slots.length <= 2
+						? 'grid-cols-2 max-w-none'
+						: slots.length <= 4
+							? 'grid-cols-2 max-w-none'
+							: 'grid-cols-2 lg:grid-cols-3 max-w-none'
+	);
+	// Aspect ratio persistence
+	run(() => {
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem('mypage48_multiview_portrait', String(isPortrait));
+		}
+	});
 </script>
 
 <div
 	role="presentation"
 	class="fixed inset-0 bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 flex flex-col overflow-hidden z-[9999]"
-	on:mousemove={(e) => {
+	onmousemove={(e) => {
 		const { clientX, clientY } = e;
 		const { innerWidth, innerHeight } = window;
 		const x = clientX / innerWidth - 0.5;
@@ -396,14 +410,14 @@
 
 		<div class="flex items-center gap-2">
 			<button
-				on:click={clearAll}
+				onclick={clearAll}
 				class="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
 				title={$t('theater.live.multiview.clear_all')}
 			>
 				<Trash2 size={20} />
 			</button>
 			<button
-				on:click={() => (isPortrait = !isPortrait)}
+				onclick={() => (isPortrait = !isPortrait)}
 				class="p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
 				title={isPortrait
 					? $t('theater.live.multiview.switch_to_landscape')
@@ -416,7 +430,7 @@
 				{/if}
 			</button>
 			<button
-				on:click={togglePicker}
+				onclick={togglePicker}
 				class="p-2 rounded-lg {showPicker
 					? 'bg-red-50 text-red-600'
 					: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
@@ -425,7 +439,7 @@
 				<UserPlus size={20} />
 			</button>
 			<button
-				on:click={toggleChat}
+				onclick={toggleChat}
 				class="p-2 rounded-lg {showChat
 					? 'bg-red-50 text-red-600'
 					: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
@@ -455,7 +469,7 @@
 					</div>
 					{#if isMobile}
 						<button
-							on:click={togglePicker}
+							onclick={togglePicker}
 							class="p-2 text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
 						>
 							<X size={20} />
@@ -476,7 +490,7 @@
 							)}
 							{@const isSelected = selectedIndex !== -1}
 							<button
-								on:click={() =>
+								onclick={() =>
 									isSelected ? removeMemberFromSlot(selectedIndex) : addMemberToSlot(stream)}
 								class="w-full flex items-center gap-3 p-2 rounded-xl border transition-all text-left group cursor-pointer
 									{isSelected
@@ -486,7 +500,7 @@
 								<div class="relative shrink-0">
 									<img
 										src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar}
-										on:error={(e) => {
+										onerror={(e) => {
 											if (e.currentTarget instanceof HTMLImageElement)
 												e.currentTarget.src = fallbackAvatar;
 										}}
@@ -543,7 +557,7 @@
 		<div class="flex-1 bg-transparent p-2 md:p-4 overflow-y-auto">
 			<div class="grid {gridClass} gap-2 md:gap-6 h-fit transition-all duration-500 pb-20">
 				{#each slots as stream, i (stream.platform + '-' + (stream.live_id || stream.room_id || stream.room_url_key))}
-					<!-- svelte-ignore a11y-no-noninteractive-element-to-interactive-role -->
+					<!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
 					<div
 						class="relative {isPortrait
 							? 'aspect-[9/16]'
@@ -558,12 +572,12 @@
 							? 'max-h-[calc(100vh-140px)]'
 							: ''} mx-auto w-full"
 						draggable="true"
-						on:dragstart={() => handleDragStart(i)}
-						on:dragover={(e) => handleDragOver(e, i)}
-						on:drop={() => handleDrop(i)}
-						on:dragend={handleDragEnd}
-						on:click={() => setFocusedSlot(i)}
-						on:keydown={(e) => e.key === 'Enter' && setFocusedSlot(i)}
+						ondragstart={() => handleDragStart(i)}
+						ondragover={(e) => handleDragOver(e, i)}
+						ondrop={() => handleDrop(i)}
+						ondragend={handleDragEnd}
+						onclick={() => setFocusedSlot(i)}
+						onkeydown={(e) => e.key === 'Enter' && setFocusedSlot(i)}
 						role="button"
 						tabindex="0"
 						aria-label={$t('theater.live.multiview.focus_member', { name: stream.member?.name })}
@@ -590,7 +604,7 @@
 							<div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
 								<img
 									src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar}
-									on:error={(e) => {
+									onerror={(e) => {
 										if (e.currentTarget instanceof HTMLImageElement)
 											e.currentTarget.src = fallbackAvatar;
 									}}
@@ -611,7 +625,7 @@
 								</div>
 							</div>
 							<button
-								on:click|stopPropagation={() => removeMemberFromSlot(i)}
+								onclick={stopPropagation(() => removeMemberFromSlot(i))}
 								class="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg cursor-pointer"
 								aria-label={$t('theater.live.multiview.remove_stream')}
 							>
@@ -626,7 +640,7 @@
 							<div class="flex items-center gap-0 group/volume relative h-8">
 								<button
 									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10 cursor-pointer"
-									on:click|stopPropagation={() => (muted[i] = !muted[i])}
+									onclick={stopPropagation(() => (muted[i] = !muted[i]))}
 									aria-label={muted[i] || volumes[i] === 0
 										? $t('theater.live.multiview.unmute')
 										: $t('theater.live.multiview.mute')}
@@ -644,7 +658,7 @@
 										max="1"
 										step="0.01"
 										value={volumes[i]}
-										on:input={(e) => {
+										oninput={(e) => {
 											let val = parseFloat(e.currentTarget.value);
 											if (val < 0.05) {
 												val = 0;
@@ -656,7 +670,7 @@
 											volumes = volumes; // Trigger reactivity
 											muted = muted;
 										}}
-										on:click|stopPropagation
+										onclick={stopPropagation(bubble('click'))}
 										class="w-16 h-1 accent-white cursor-pointer"
 									/>
 								</div>
@@ -666,8 +680,9 @@
 								<!-- Screenshot Button -->
 								<button
 									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-blue-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/cam cursor-pointer"
-									on:click|stopPropagation={() =>
-										playerRefs[i]?.takeScreenshot(stream.member?.name)}
+									onclick={stopPropagation(() =>
+										playerRefs[i]?.takeScreenshot(stream.member?.name)
+									)}
 									title={$t('theater.live.multiview.take_screenshot')}
 								>
 									<Camera
@@ -681,8 +696,9 @@
 									class="w-8 h-8 rounded-xl {isRecording[i]
 										? 'bg-red-600 animate-pulse'
 										: 'bg-white/10 backdrop-blur-md grayscale hover:grayscale-0 hover:bg-red-600'} text-white flex items-center justify-center hover:scale-105 transition-all shadow-lg group/rec cursor-pointer"
-									on:click|stopPropagation={() =>
-										playerRefs[i]?.toggleRecording(stream.member?.name)}
+									onclick={stopPropagation(() =>
+										playerRefs[i]?.toggleRecording(stream.member?.name)
+									)}
 									title={isRecording[i]
 										? $t('theater.live.multiview.stop_recording')
 										: $t('theater.live.multiview.start_recording')}
@@ -742,7 +758,7 @@
 						</div>
 						{#if isMobile}
 							<button
-								on:click={toggleChat}
+								onclick={toggleChat}
 								class="p-1 text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
 							>
 								<X size={20} />

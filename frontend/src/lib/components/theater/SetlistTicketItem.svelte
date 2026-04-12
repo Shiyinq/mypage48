@@ -4,7 +4,17 @@
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
 
-	export let ticket: TicketItem;
+	interface Props {
+		ticket: TicketItem;
+		onclick?: () => void;
+	}
+
+	let { ticket, onclick }: Props = $props();
+
+	function handleDelete(e: MouseEvent) {
+		e.stopPropagation();
+		onclick?.();
+	}
 </script>
 
 <div
@@ -66,10 +76,7 @@
 
 		<!-- Delete Action -->
 		<button
-			on:click|stopPropagation={() =>
-				// @ts-expect-error - dispatching native event
-				this.dispatchEvent(new CustomEvent('delete', { detail: { ticketId: ticket.ticketId } }))}
-			on:click
+			onclick={handleDelete}
 			class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100 cursor-pointer"
 		>
 			<Trash2 class="w-4.5 h-4.5" />

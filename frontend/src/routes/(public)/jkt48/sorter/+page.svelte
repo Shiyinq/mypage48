@@ -14,40 +14,40 @@
 
 	// Sorter State
 	type SorterState = 'landing' | 'sorting' | 'results';
-	let currentState: SorterState = 'landing';
+	let currentState: SorterState = $state('landing');
 
-	let allMembers: Member[] = [];
-	let selectedMembers: Member[] = [];
-	let generations: string[] = [];
-	let selectedGenerations: Set<string> = new Set();
-	let loadingGenerations = true;
+	let allMembers: Member[] = $state([]);
+	let selectedMembers: Member[] = $state([]);
+	let generations: string[] = $state([]);
+	let selectedGenerations: Set<string> = $state(new Set());
+	let loadingGenerations = $state(true);
 
 	// Sorting Logic State
-	let lstMember: any[] = [];
+	let lstMember: any[] = $state([]);
 	let parent: number[] = [];
 	let rec: number[] = [];
-	let cmp1 = 0;
-	let cmp2 = 0;
-	let head1 = 0;
-	let head2 = 0;
+	let cmp1 = $state(0);
+	let cmp2 = $state(0);
+	let head1 = $state(0);
+	let head2 = $state(0);
 	let nrec = 0;
-	let numQuestion = 0;
-	let finishSize = 0;
-	let finishFlag = 0;
+	let numQuestion = $state(0);
+	let finishSize = $state(0);
+	let finishFlag = $state(0);
 
 	// Results
 	interface ResultMember extends Member {
 		rank: number;
 	}
-	let results: ResultMember[] = [];
-	let layoutMode: 'card' | 'list' = 'card';
+	let results: ResultMember[] = $state([]);
+	let layoutMode: 'card' | 'list' = $state('card');
 
 	// History for Undo
-	let history: any[] = [];
+	let history: any[] = $state([]);
 
 	// Animation State
-	let isAnimating = false;
-	let lastSelectedSide: 'left' | 'right' | 'tie' | null = null;
+	let isAnimating = $state(false);
+	let lastSelectedSide: 'left' | 'right' | 'tie' | null = $state(null);
 
 	async function handleSelect(event: CustomEvent<number>) {
 		const flag = event.detail;
@@ -234,14 +234,16 @@
 		fetchMembers();
 	});
 
-	$: leftMember = selectedMembers[lstMember[cmp1]?.[head1]];
-	$: rightMember = selectedMembers[lstMember[cmp2]?.[head2]];
-	$: progress = finishFlag
-		? 100
-		: Math.floor(
-				(finishSize / (selectedMembers.length * Math.log2(selectedMembers.length) * 0.7)) * 100
-			);
-	$: displayProgress = Math.min(progress, 99);
+	let leftMember = $derived(selectedMembers[lstMember[cmp1]?.[head1]]);
+	let rightMember = $derived(selectedMembers[lstMember[cmp2]?.[head2]]);
+	let progress = $derived(
+		finishFlag
+			? 100
+			: Math.floor(
+					(finishSize / (selectedMembers.length * Math.log2(selectedMembers.length) * 0.7)) * 100
+				)
+	);
+	let displayProgress = $derived(Math.min(progress, 99));
 
 	async function copyToClipboard(text: string): Promise<boolean> {
 		try {

@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { run, createBubbler, stopPropagation } from 'svelte/legacy';
+
+	const bubble = createBubbler();
 	import { X, Quote, Instagram, Smartphone, Tv, Globe, Search } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
@@ -10,33 +13,21 @@
 	import { tick } from 'svelte';
 	import { getMemberFrame } from '$lib/constants';
 
-	export let show: boolean = false;
-	let sidebarScrollContainer: HTMLDivElement;
-	export let member: Member | null = null;
-	export let members: Member[] = [];
-	export let loading: boolean = false;
-	export let onClose: () => void;
+	let sidebarScrollContainer: HTMLDivElement | undefined = $state();
+	interface Props {
+		show?: boolean;
+		member?: Member | null;
+		members?: Member[];
+		loading?: boolean;
+		onClose: () => void;
+	}
+
+	let { show = false, member = null, members = [], loading = false, onClose }: Props = $props();
 
 	const { t } = useTranslation();
 
-	let internalMemberId: string | number | null = null;
-	let direction = 1;
-
-	$: if (show && member && !internalMemberId) {
-		internalMemberId = member.id;
-	}
-
-	$: if (!show) {
-		internalMemberId = null;
-	}
-
-	$: currentMember = members.find((m) => m.id === internalMemberId) || member;
-
-	$: if (activeTab && sidebarScrollContainer) {
-		tick().then(() => {
-			sidebarScrollContainer.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-		});
-	}
+	let internalMemberId: string | number | null = $state(null);
+	let direction = $state(1);
 
 	function selectMember(m: Member) {
 		if (internalMemberId === m.id) return;
@@ -46,28 +37,8 @@
 		internalMemberId = m.id;
 	}
 
-	let activeTab: 'Member' | 'Trainee' = 'Member';
-	let activeTabSetFor: string | number | null = null;
-
-	$: if (show && currentMember && activeTabSetFor !== currentMember.id) {
-		const type = currentMember.member_type?.toLowerCase() || 'member';
-		activeTab = type === 'trainee' ? 'Trainee' : 'Member';
-		activeTabSetFor = currentMember.id;
-	}
-
-	$: if (!show) activeTabSetFor = null;
-
-	$: displayMembers = members.filter((m) => {
-		const type = m.member_type?.toLowerCase() || 'member';
-		if (activeTab === 'Trainee') return type === 'trainee';
-		return type !== 'trainee';
-	});
-
-	$: currentIndex = displayMembers.findIndex((m) => m.id === currentMember?.id);
-	$: nextMember =
-		displayMembers.length > 1 ? displayMembers[(currentIndex + 1) % displayMembers.length] : null;
-	$: nextNextMember =
-		displayMembers.length > 2 ? displayMembers[(currentIndex + 2) % displayMembers.length] : null;
+	let activeTab: 'Member' | 'Trainee' = $state('Member');
+	let activeTabSetFor: string | number | null = $state(null);
 
 	function switchTab(tab: 'Member' | 'Trainee') {
 		if (activeTab === tab) return;
@@ -136,8 +107,6 @@
 		};
 	}
 
-	$: frameImg = getMemberFrame(currentMember?.member_type);
-
 	function parseIndonesianDate(dateStr: string): Date {
 		const monthMap: { [key: string]: string } = {
 			januari: 'January',
@@ -172,6 +141,49 @@
 		const ageDate = new Date(diffMs);
 		return Math.abs(ageDate.getUTCFullYear() - 1970);
 	}
+	run(() => {
+		if (show && member && !internalMemberId) {
+			internalMemberId = member.id;
+		}
+	});
+	run(() => {
+		if (!show) {
+			internalMemberId = null;
+		}
+	});
+	let currentMember = $derived(members.find((m) => m.id === internalMemberId) || member);
+	run(() => {
+		if (show && currentMember && activeTabSetFor !== currentMember.id) {
+			const type = currentMember.member_type?.toLowerCase() || 'member';
+			activeTab = type === 'trainee' ? 'Trainee' : 'Member';
+			activeTabSetFor = currentMember.id;
+		}
+	});
+	run(() => {
+		if (activeTab && sidebarScrollContainer) {
+			tick().then(() => {
+				sidebarScrollContainer?.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+			});
+		}
+	});
+	run(() => {
+		if (!show) activeTabSetFor = null;
+	});
+	let displayMembers = $derived(
+		members.filter((m) => {
+			const type = m.member_type?.toLowerCase() || 'member';
+			if (activeTab === 'Trainee') return type === 'trainee';
+			return type !== 'trainee';
+		})
+	);
+	let currentIndex = $derived(displayMembers.findIndex((m) => m.id === currentMember?.id));
+	let nextMember = $derived(
+		displayMembers.length > 1 ? displayMembers[(currentIndex + 1) % displayMembers.length] : null
+	);
+	let nextNextMember = $derived(
+		displayMembers.length > 2 ? displayMembers[(currentIndex + 2) % displayMembers.length] : null
+	);
+	let frameImg = $derived(getMemberFrame(currentMember?.member_type));
 </script>
 
 {#if show}
@@ -179,18 +191,18 @@
 		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-hidden"
 		use:portal
 	>
-		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 		<div
 			class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-			on:click={onClose}
+			onclick={onClose}
 			transition:fade={{ duration: 200 }}
 		></div>
 
 		<!-- Modal Container -->
-		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 		<div
 			class="relative w-[95vw] max-w-6xl bg-white dark:bg-zinc-900 rounded-[40px] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col md:flex-row h-[85vh] md:h-[75vh] border border-white/20 dark:border-zinc-800/50"
-			on:click|stopPropagation
+			onclick={stopPropagation(bubble('click'))}
 			transition:scale={{ duration: 400, start: 0.95, easing: quintOut }}
 		>
 			<!-- Sidebar (Left) -->
@@ -206,7 +218,7 @@
 							'Member'
 								? 'text-red-500 border-b-2 border-red-500'
 								: 'text-gray-400 dark:text-zinc-500 hover:text-gray-600'}"
-							on:click={() => switchTab('Member')}
+							onclick={() => switchTab('Member')}
 						>
 							Member
 						</button>
@@ -215,7 +227,7 @@
 							'Trainee'
 								? 'text-red-500 border-b-2 border-red-500'
 								: 'text-gray-400 dark:text-zinc-500 hover:text-gray-600'}"
-							on:click={() => switchTab('Trainee')}
+							onclick={() => switchTab('Trainee')}
 						>
 							Trainee
 						</button>
@@ -231,7 +243,7 @@
 									m.id
 										? 'bg-red-500 text-white shadow-lg shadow-red-500/20'
 										: 'bg-white/50 dark:bg-zinc-900/50 md:bg-transparent hover:bg-gray-100 dark:hover:bg-zinc-800/50 text-themed opacity-70 hover:opacity-100 border border-gray-100 dark:border-zinc-800 md:border-none'}"
-									on:click={() => selectMember(m)}
+									onclick={() => selectMember(m)}
 								>
 									<div class="flex items-center gap-2 md:gap-3 whitespace-nowrap">
 										{#if internalMemberId === m.id}
@@ -318,7 +330,7 @@
 						<!-- Mobile Close Button (Top Right of Content) -->
 						<button
 							class="absolute top-4 right-4 bg-white/10 hover:bg-red-600 text-white p-2 rounded-full backdrop-blur-md transition-all duration-300 cursor-pointer md:hidden z-50 shadow-lg border border-white/20"
-							on:click={onClose}
+							onclick={onClose}
 						>
 							<X class="w-4 h-4" />
 						</button>
@@ -331,7 +343,7 @@
 						<!-- Desktop Close Button -->
 						<button
 							class="absolute top-6 right-6 text-gray-300 hover:text-red-500 transition-all duration-300 cursor-pointer hidden md:block hover:rotate-90 z-50"
-							on:click={onClose}
+							onclick={onClose}
 						>
 							<X class="w-6 h-6" />
 						</button>
@@ -451,6 +463,7 @@
 											href={currentMember.socials.twitter}
 											target="_blank"
 											rel="noopener noreferrer"
+											aria-label="Twitter / X profile"
 											class="p-2.5 bg-gray-50 dark:bg-zinc-800 rounded-2xl text-gray-500 dark:text-zinc-400 hover:bg-black hover:text-white transition-all duration-500 hover:-translate-y-1 shadow-sm"
 											><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"
 												><path
@@ -473,6 +486,7 @@
 											href={currentMember.socials.tiktok}
 											target="_blank"
 											rel="noopener noreferrer"
+											aria-label="TikTok profile"
 											class="p-2.5 bg-gray-50 dark:bg-zinc-800 rounded-2xl text-gray-500 dark:text-zinc-400 hover:bg-black hover:text-white transition-all duration-500 hover:-translate-y-1 shadow-sm font-bold"
 										>
 											<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"
@@ -526,7 +540,7 @@
 						<p class="text-gray-500 max-w-xs mx-auto mb-6">{$t('member.notFoundMessage')}</p>
 						<button
 							class="px-6 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium cursor-pointer"
-							on:click={onClose}>{$t('member.close')}</button
+							onclick={onClose}>{$t('member.close')}</button
 						>
 					</div>
 				{/if}

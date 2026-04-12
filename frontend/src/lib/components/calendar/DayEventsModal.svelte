@@ -1,19 +1,24 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { self } from 'svelte/legacy';
+
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate, formatTime } from '$lib/i18n';
 	import type { CalendarEvent } from '$lib/types/events';
 	import { Cake, ChevronRight, Calculator, Calendar, ExternalLink } from 'lucide-svelte';
 
-	export let isOpen = false;
-	export let date: Date;
-	export let events: CalendarEvent[] = [];
+	interface Props {
+		isOpen?: boolean;
+		date: Date;
+		events?: CalendarEvent[];
+		onclose?: () => void;
+	}
 
-	const dispatch = createEventDispatcher();
+	let { isOpen = false, date, events = [], onclose }: Props = $props();
+
 	const { t, locale } = useTranslation();
 
 	function close() {
-		dispatch('close');
+		if (onclose) onclose();
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -23,12 +28,12 @@
 	}
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if isOpen}
 	<div
 		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm bg-black/50 transition-opacity"
-		on:click|self={close}
+		onclick={self(close)}
 		role="presentation"
 	>
 		<div
@@ -51,7 +56,8 @@
 					</h3>
 				</div>
 				<button
-					on:click={close}
+					onclick={close}
+					aria-label="Close modal"
 					class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-gray-500"
 				>
 					<svg

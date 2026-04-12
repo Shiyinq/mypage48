@@ -15,15 +15,19 @@
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
 	import { cleanseMarkdown } from '$lib/utils/markdown';
-	import { createEventDispatcher } from 'svelte';
+	interface Props {
+		ticket: Ticket;
+		onupdateNote?: (ticketId: string, note: string) => void;
+		oneditTicket?: (ticket: Ticket) => void;
+		ondeleteTicket?: (ticketId: string) => void;
+	}
 
-	export let ticket: Ticket;
+	let { ticket, onupdateNote, oneditTicket, ondeleteTicket }: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
-	let isEditingNote = false;
-	let noteText = '';
+	let isEditingNote = $state(false);
+	let noteText = $state('');
 
 	function startEditingNote() {
 		isEditingNote = true;
@@ -37,7 +41,7 @@
 
 	function saveNote() {
 		if (ticket.notes !== noteText) {
-			dispatch('updateNote', { ticketId: ticket._id, note: noteText });
+			onupdateNote?.(ticket._id, noteText);
 		}
 		isEditingNote = false;
 	}
@@ -146,19 +150,19 @@
 				<div class="flex-1 relative animate-fade-in pb-1">
 					<textarea
 						bind:value={noteText}
-						on:keydown={handleKeydown}
+						onkeydown={handleKeydown}
 						class="w-full h-full p-2 text-xs text-gray-900 border border-gray-200 rounded-lg focus:ring-1 focus:ring-red-500 focus:border-transparent outline-none bg-yellow-50/50 resize-none"
 						placeholder="Add note..."
 					></textarea>
 					<div class="absolute bottom-2 right-2 flex gap-1">
 						<button
-							on:click={cancelEditingNote}
+							onclick={cancelEditingNote}
 							class="p-1 text-gray-400 hover:text-gray-600 bg-white rounded shadow-sm border border-gray-100 cursor-pointer"
 						>
 							<X class="w-3 h-3" />
 						</button>
 						<button
-							on:click={saveNote}
+							onclick={saveNote}
 							class="p-1 text-red-600 hover:text-red-700 bg-white rounded shadow-sm border border-red-50 cursor-pointer"
 						>
 							<Save class="w-3 h-3" />
@@ -168,8 +172,8 @@
 			{:else}
 				<div
 					class="group/note relative flex-1 bg-gray-50 dark:bg-zinc-800/50 rounded-lg px-2 py-1.5 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors cursor-pointer"
-					on:click={startEditingNote}
-					on:keydown={(e) => e.key === 'Enter' && startEditingNote()}
+					onclick={startEditingNote}
+					onkeydown={(e) => e.key === 'Enter' && startEditingNote()}
 					role="button"
 					tabindex="0"
 				>
@@ -199,14 +203,14 @@
 			class="px-3 py-2 flex justify-between items-center border-t border-gray-50 dark:border-zinc-800 mt-1"
 		>
 			<button
-				on:click={() => dispatch('editTicket', ticket)}
+				onclick={() => oneditTicket?.(ticket)}
 				class="text-[10px] font-bold text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors cursor-pointer"
 			>
 				<Pencil class="w-3 h-3" />
 				{$t('history.editDetails')}
 			</button>
 			<button
-				on:click={() => dispatch('deleteTicket', ticket._id)}
+				onclick={() => ondeleteTicket?.(ticket._id)}
 				class="text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
 			>
 				<Trash2 class="w-3.5 h-3.5" />

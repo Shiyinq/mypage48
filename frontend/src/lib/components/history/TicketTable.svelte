@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { stopPropagation } from 'svelte/legacy';
+
 	import { Clock, Pencil, Save, Trash2, X, Ticket as TicketIcon } from 'lucide-svelte';
 	import type { Ticket } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -7,13 +9,19 @@
 	import { cleanseMarkdown } from '$lib/utils/markdown';
 	import { createEventDispatcher } from 'svelte';
 
-	export let tickets: Ticket[] = [];
+	interface Props {
+		tickets?: Ticket[];
+		onupdateNote?: (ticketId: string, note: string) => void;
+		oneditTicket?: (ticket: Ticket) => void;
+		ondeleteTicket?: (ticketId: string) => void;
+	}
+
+	let { tickets = [], onupdateNote, oneditTicket, ondeleteTicket }: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
-	let editingNoteId: string | null = null;
-	let noteText = '';
+	let editingNoteId: string | null = $state(null);
+	let noteText = $state('');
 
 	function startEditingNote(ticket: Ticket) {
 		editingNoteId = ticket._id;
@@ -22,7 +30,7 @@
 
 	function saveNote(ticket: Ticket) {
 		if (ticket.notes !== noteText) {
-			dispatch('updateNote', { ticketId: ticket._id, note: noteText });
+			onupdateNote?.(ticket._id, noteText);
 		}
 		editingNoteId = null;
 	}
@@ -117,29 +125,29 @@
 						<td class="p-4 w-1/3">
 							{#if editingNoteId === ticket._id}
 								<div class="flex items-center gap-2">
-									<!-- svelte-ignore a11y-autofocus -->
+									<!-- svelte-ignore a11y_autofocus -->
 									<input
 										autofocus
 										bind:value={noteText}
 										class="w-full text-sm text-gray-900 dark:text-gray-100 p-2 border border-red-200 dark:border-red-500/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white dark:bg-zinc-800"
-										on:keydown={(e) => e.key === 'Enter' && saveNote(ticket)}
-										on:blur={() => saveNote(ticket)}
+										onkeydown={(e) => e.key === 'Enter' && saveNote(ticket)}
+										onblur={() => saveNote(ticket)}
 									/>
 									<button
-										on:click|stopPropagation={() => saveNote(ticket)}
+										onclick={stopPropagation(() => saveNote(ticket))}
 										class="p-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 cursor-pointer"
 										><Save class="w-3 h-3" /></button
 									>
 									<button
-										on:click|stopPropagation={cancelEditingNote}
+										onclick={stopPropagation(cancelEditingNote)}
 										class="p-1.5 bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-zinc-600 cursor-pointer"
 										><X class="w-3 h-3" /></button
 									>
 								</div>
 							{:else}
-								<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+								<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 								<div
-									on:click={() => startEditingNote(ticket)}
+									onclick={() => startEditingNote(ticket)}
 									class="text-sm text-gray-500 dark:text-gray-400 italic cursor-pointer hover:text-red-600 flex items-center gap-2 group/note"
 								>
 									<span class="line-clamp-1"
@@ -154,13 +162,13 @@
 						<td class="p-4 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<button
-									on:click={() => dispatch('editTicket', ticket)}
+									onclick={() => oneditTicket?.(ticket)}
 									class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Pencil class="w-4 h-4" />
 								</button>
 								<button
-									on:click={() => dispatch('deleteTicket', ticket._id)}
+									onclick={() => ondeleteTicket?.(ticket._id)}
 									class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Trash2 class="w-4 h-4" />

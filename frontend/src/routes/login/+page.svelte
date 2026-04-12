@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isAuthenticated, showToast } from '$lib/stores';
@@ -16,13 +18,15 @@
 
 	const { t } = useTranslation();
 
-	let email = '';
-	let password = '';
-	let isLoading = false;
+	let email = $state('');
+	let password = $state('');
+	let isLoading = $state(false);
 	let error: string | null = null;
-	let errors: Record<string, string> = {};
+	let errors: Record<string, string> = $state({});
 
-	$: isValid = email.length > 0 && password.length > 0 && Object.values(errors).every((e) => !e);
+	let isValid = $derived(
+		email.length > 0 && password.length > 0 && Object.values(errors).every((e) => !e)
+	);
 
 	const validateField = (field: 'email' | 'password', value: string) => {
 		try {
@@ -76,7 +80,7 @@
 <SEO title={$t('auth.login.title')} path="/login" description={$t('seo.login')} />
 
 <AuthLayout title={$t('auth.login.title')} subtitle={$t('auth.login.subtitle')}>
-	<form on:submit|preventDefault={handleSubmit} class="space-y-5" novalidate>
+	<form onsubmit={preventDefault(handleSubmit)} class="space-y-5" novalidate>
 		<div>
 			<label for="email" class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
 				>{$t('auth.login.emailLabel')}</label
@@ -90,7 +94,7 @@
 					id="email"
 					name="username"
 					bind:value={email}
-					on:input={() => validateField('email', email)}
+					oninput={() => validateField('email', email)}
 					class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 					placeholder={$t('auth.login.emailPlaceholder')}
 				/>
@@ -110,7 +114,9 @@
 				error={errors.password}
 				on:input={() => validateField('password', password)}
 			>
-				<Lock class="w-5 h-5" slot="leading" />
+				{#snippet leading()}
+					<Lock class="w-5 h-5" />
+				{/snippet}
 			</PasswordInput>
 		</div>
 
@@ -137,14 +143,16 @@
 		</button>
 	</form>
 
-	<div slot="footer">
-		<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.login.noAccount')}</p>
-		<button
-			on:click={() => goto('/register')}
-			class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
-		>
-			{$t('auth.login.registerCta')}
-			<User class="w-4 h-4" />
-		</button>
-	</div>
+	{#snippet footer()}
+		<div>
+			<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.login.noAccount')}</p>
+			<button
+				onclick={() => goto('/register')}
+				class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
+			>
+				{$t('auth.login.registerCta')}
+				<User class="w-4 h-4" />
+			</button>
+		</div>
+	{/snippet}
 </AuthLayout>

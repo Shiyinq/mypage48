@@ -77,8 +77,8 @@
 		}
 	};
 
-	$: ({ status, expiresAt } = $exportStore);
-	$: isExpired = expiresAt ? new Date(expiresAt) < new Date() : false;
+	let { status, expiresAt } = $derived($exportStore);
+	let isExpired = $derived(expiresAt ? new Date(expiresAt) < new Date() : false);
 </script>
 
 <div class="glass-panel p-6 rounded-3xl animate-fade-in relative overflow-hidden group">
@@ -126,7 +126,7 @@
 			{:else if status === 'COMPLETED' && !isExpired}
 				<button
 					class="py-3.5 px-6 rounded-xl bg-red-600 text-white font-black uppercase text-xs tracking-widest hover:bg-red-700 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-red-500/30 hover:shadow-red-500/50 whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed w-full sm:w-auto"
-					on:click={handleDownload}
+					onclick={handleDownload}
 					disabled={$isExportDownloading}
 				>
 					{#if $isExportDownloading}
@@ -139,7 +139,7 @@
 			{:else}
 				<button
 					class="py-3.5 px-6 rounded-xl bg-gray-900 dark:bg-zinc-800 text-white dark:text-gray-100 font-black uppercase text-xs tracking-widest hover:bg-black dark:hover:bg-zinc-700 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-gray-300 dark:shadow-zinc-900/50 whitespace-nowrap min-w-[180px] w-full sm:w-auto"
-					on:click={handleRequestExport}
+					onclick={handleRequestExport}
 					disabled={$isExportProcessing}
 				>
 					{#if $isExportProcessing}

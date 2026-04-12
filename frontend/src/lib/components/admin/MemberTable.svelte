@@ -5,9 +5,14 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
-	export let members: Member[] = [];
+	interface Props {
+		members?: Member[];
+		onedit?: (member: Member) => void;
+		ondelete?: (member: Member) => void;
+	}
 
-	const dispatch = createEventDispatcher();
+	let { members = [], onedit, ondelete }: Props = $props();
+
 	const { t } = useTranslation();
 </script>
 
@@ -83,13 +88,13 @@
 						<td class="p-4 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<button
-									on:click={() => dispatch('edit', member)}
+									onclick={() => onedit?.(member)}
 									class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Pencil class="w-4 h-4" />
 								</button>
 								<button
-									on:click={() => dispatch('delete', member)}
+									onclick={() => ondelete?.(member)}
 									class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Trash2 class="w-4 h-4" />

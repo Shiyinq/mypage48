@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
@@ -18,21 +20,21 @@
 
 	const { t } = useTranslation();
 
-	let formData = {
+	let formData = $state({
 		username: '',
 		fullName: '',
 		email: '',
 		password: '',
 		confirmPassword: ''
-	};
+	});
 
-	let isLoading = false;
-	let error: string | null = null;
-	let errors: Record<string, string> = {};
+	let isLoading = $state(false);
+	let error: string | null = $state(null);
+	let errors: Record<string, string> = $state({});
 
-	$: isValid =
-		Object.values(formData).every((val) => val.length > 0) &&
-		Object.values(errors).every((e) => !e);
+	let isValid = $derived(
+		Object.values(formData).every((val) => val.length > 0) && Object.values(errors).every((e) => !e)
+	);
 
 	const validateField = (field: keyof typeof formData) => {
 		try {
@@ -101,7 +103,7 @@
 	subtitle={$t('auth.register.subtitle')}
 	cardWidth="max-w-4xl"
 >
-	<form on:submit|preventDefault={handleSubmit} class="space-y-4" novalidate>
+	<form onsubmit={preventDefault(handleSubmit)} class="space-y-4" novalidate>
 		<div class="grid md:grid-cols-2 gap-4">
 			<!-- Left Column: Personal Information -->
 			<div class="space-y-3">
@@ -115,7 +117,7 @@
 						id="fullName"
 						name="fullName"
 						bind:value={formData.fullName}
-						on:input={() => validateField('fullName')}
+						oninput={() => validateField('fullName')}
 						class={`w-full px-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.fullName ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 						placeholder="Catherina Vallencia"
 					/>
@@ -137,7 +139,7 @@
 							id="email"
 							name="email"
 							bind:value={formData.email}
-							on:input={() => validateField('email')}
+							oninput={() => validateField('email')}
 							class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 							placeholder="erine@oline.com"
 						/>
@@ -161,7 +163,7 @@
 							id="username"
 							name="username"
 							bind:value={formData.username}
-							on:input={() => validateField('username')}
+							oninput={() => validateField('username')}
 							class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.username ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 							placeholder="olinecantik"
 						/>
@@ -184,7 +186,9 @@
 						error={errors.password}
 						on:input={() => validateField('password')}
 					>
-						<Lock class="w-5 h-5" slot="leading" />
+						{#snippet leading()}
+							<Lock class="w-5 h-5" />
+						{/snippet}
 					</PasswordInput>
 				</div>
 				<div>
@@ -197,7 +201,9 @@
 						error={errors.confirmPassword}
 						on:input={() => validateField('confirmPassword')}
 					>
-						<Shield class="w-5 h-5" slot="leading" />
+						{#snippet leading()}
+							<Shield class="w-5 h-5" />
+						{/snippet}
 					</PasswordInput>
 				</div>
 
@@ -228,13 +234,15 @@
 		</div>
 	</form>
 
-	<div slot="footer">
-		<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.register.hasAccount')}</p>
-		<button
-			on:click={() => goto('/login')}
-			class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
-		>
-			{$t('auth.register.signIn')}
-		</button>
-	</div>
+	{#snippet footer()}
+		<div>
+			<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.register.hasAccount')}</p>
+			<button
+				onclick={() => goto('/login')}
+				class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
+			>
+				{$t('auth.register.signIn')}
+			</button>
+		</div>
+	{/snippet}
 </AuthLayout>

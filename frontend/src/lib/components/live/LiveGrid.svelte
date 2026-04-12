@@ -6,12 +6,22 @@
 
 	const { t } = useTranslation();
 
-	export let liveList: any[] = [];
-	export let loading: boolean = false;
-	export let initialLoading: boolean = false;
-	export let variant: 'default' | 'theater' = 'default';
-	/** When set, show a multiview shortcut button above the grid */
-	export let multiviewHref: string = '';
+	interface Props {
+		liveList?: any[];
+		loading?: boolean;
+		initialLoading?: boolean;
+		variant?: 'default' | 'theater';
+		/** When set, show a multiview shortcut button above the grid */
+		multiviewHref?: string;
+	}
+
+	let {
+		liveList = [],
+		loading = false,
+		initialLoading = false,
+		variant = 'default',
+		multiviewHref = ''
+	}: Props = $props();
 </script>
 
 {#if (initialLoading || loading) && liveList.length === 0}

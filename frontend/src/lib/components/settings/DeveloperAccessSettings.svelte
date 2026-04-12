@@ -6,7 +6,11 @@
 	const { t } = useTranslation();
 	const dispatch = createEventDispatcher<{ openConfirmModal: void }>();
 
-	export let generatingKey = false;
+	interface Props {
+		generatingKey?: boolean;
+	}
+
+	let { generatingKey = false }: Props = $props();
 
 	const handleGenerateClick = () => {
 		dispatch('openConfirmModal');
@@ -48,7 +52,7 @@
 
 	<button
 		class="w-full py-3.5 rounded-xl bg-gray-900 dark:bg-zinc-800 text-white dark:text-gray-100 font-black uppercase text-xs tracking-widest hover:bg-black dark:hover:bg-zinc-700 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-gray-300 dark:shadow-zinc-900/50 mb-6"
-		on:click={handleGenerateClick}
+		onclick={handleGenerateClick}
 		disabled={generatingKey}
 	>
 		{#if generatingKey}

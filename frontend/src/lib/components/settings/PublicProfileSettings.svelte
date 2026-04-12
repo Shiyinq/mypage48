@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { userProfile, isInitialDataLoaded, isUserProfileLoading } from '$lib/stores';
@@ -8,21 +10,23 @@
 
 	const { t } = useTranslation();
 
-	let isPublic = $userProfile.data?.isPublic || false;
-	let selectedPublicYearStr: string = $userProfile.data?.publicYear?.toString() || '';
-	let updatingStatus = false;
+	let isPublic = $state($userProfile.data?.isPublic || false);
+	let selectedPublicYearStr: string = $state($userProfile.data?.publicYear?.toString() || '');
+	let updatingStatus = $state(false);
 
 	// Generate available years (from 2011 to current year)
 	const currentYear = new Date().getFullYear();
 	const availableYears = Array.from({ length: currentYear - 2011 + 1 }, (_, i) => currentYear - i);
 
-	$: if ($userProfile.data) {
-		isPublic = $userProfile.data.isPublic || false;
-		// Only sync from profile if we aren't currently editing
-		if (!updatingStatus) {
-			selectedPublicYearStr = $userProfile.data.publicYear?.toString() || '';
+	run(() => {
+		if ($userProfile.data) {
+			isPublic = $userProfile.data.isPublic || false;
+			// Only sync from profile if we aren't currently editing
+			if (!updatingStatus) {
+				selectedPublicYearStr = $userProfile.data.publicYear?.toString() || '';
+			}
 		}
-	}
+	});
 
 	// Helper to convert string to number | null for API
 	const getYearForApi = (): number | null => {
@@ -126,10 +130,10 @@
 			>
 				<div class="flex items-center justify-between">
 					<div>
-						<div class="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
-						<div class="h-3 w-64 bg-gray-200 dark:bg-gray-700 rounded" />
+						<div class="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+						<div class="h-3 w-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
 					</div>
-					<div class="w-12 h-7 bg-gray-200 dark:bg-gray-700 rounded-full" />
+					<div class="w-12 h-7 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
 				</div>
 			</div>
 		{/if}
@@ -150,7 +154,7 @@
 					{#if isPublic}
 						<select
 							value={selectedPublicYearStr}
-							on:change={(e) => handleYearChange(e)}
+							onchange={(e) => handleYearChange(e)}
 							disabled={updatingStatus}
 							class="p-2 text-xs font-bold bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer flex-1 sm:flex-none"
 						>
@@ -162,7 +166,7 @@
 						</select>
 					{/if}
 					<button
-						on:click={() => togglePublicStatus()}
+						onclick={() => togglePublicStatus()}
 						disabled={updatingStatus}
 						class={`w-12 h-7 rounded-full transition-colors relative cursor-pointer flex-shrink-0 ${
 							isPublic ? 'bg-purple-500' : 'bg-gray-300 dark:bg-zinc-600'
@@ -208,7 +212,7 @@
 								<ExternalLink class="w-4 h-4" />
 							</a>
 							<button
-								on:click={copyPublicLink}
+								onclick={copyPublicLink}
 								class="p-2.5 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-200 transition-colors cursor-pointer border border-gray-200/50 dark:border-zinc-700"
 								title="Copy Link"
 							>

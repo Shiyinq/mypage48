@@ -3,8 +3,12 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { Ticket } from '$lib/types';
 
-	export let ticket: Ticket;
-	export let onDelete: (id: string) => void;
+	interface Props {
+		ticket: Ticket;
+		onDelete: (id: string) => void;
+	}
+
+	let { ticket, onDelete }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -40,7 +44,7 @@
 	</div>
 	<div class="flex flex-col justify-center">
 		<button
-			on:click={() => onDelete(ticket._id)}
+			onclick={() => onDelete(ticket._id)}
 			class="p-2 text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-500 transition-colors cursor-pointer"
 			><Trash2 class="w-5 h-5" /></button
 		>

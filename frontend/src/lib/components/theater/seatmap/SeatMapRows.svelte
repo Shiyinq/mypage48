@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let rows: readonly string[];
-	export let rowStats: { counts: Record<string, number>; maxCount: number };
-	export let isLoading: boolean;
+	interface Props {
+		rows: readonly string[];
+		rowStats: { counts: Record<string, number>; maxCount: number };
+		isLoading: boolean;
+	}
+
+	let { rows, rowStats, isLoading }: Props = $props();
 
 	const { t } = useTranslation();
 </script>

@@ -1,11 +1,15 @@
 <script lang="ts">
-	/**
-	 * Reusable table skeleton component for loading states
-	 */
-	export let rows: number = 5;
-	export let columns: string[] = [];
-	export let className: string = '';
-	export let showHeader: boolean = true;
+	interface Props {
+		/**
+		 * Reusable table skeleton component for loading states
+		 */
+		rows?: number;
+		columns?: string[];
+		className?: string;
+		showHeader?: boolean;
+	}
+
+	let { rows = 5, columns = [], className = '', showHeader = true }: Props = $props();
 </script>
 
 <div

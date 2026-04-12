@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { userProfile, isInitialDataLoaded } from '$lib/stores';
@@ -8,14 +10,16 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { goto } from '$app/navigation';
 	import NavPills from '$lib/components/navigation/NavPills.svelte';
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
 
 	const { t } = useTranslation();
 
 	// State: 'loading' | 'authorized' | 'unauthorized'
-	let authState: 'loading' | 'authorized' | 'unauthorized' = 'loading';
-
-	// Watch for auth/profile changes
-	$: handleAuthCheck(browser, $isInitialDataLoaded, $userProfile);
+	let authState: 'loading' | 'authorized' | 'unauthorized' = $state('loading');
 
 	function handleAuthCheck(isBrowser: boolean, loaded: boolean, profileState: typeof $userProfile) {
 		if (!isBrowser) return;
@@ -34,8 +38,12 @@
 		}
 	}
 
+	// Watch for auth/profile changes
+	run(() => {
+		handleAuthCheck(browser, $isInitialDataLoaded, $userProfile);
+	});
 	// Navigation tabs
-	$: tabs = [
+	let tabs = $derived([
 		{
 			href: '/admin',
 			label: $t('admin.dashboard.tabs.users'),
@@ -61,9 +69,8 @@
 			icon: MessageSquare,
 			activeClass: 'bg-cyan-500 shadow-cyan-500/20'
 		}
-	];
-
-	$: currentPath = $page.url.pathname;
+	]);
+	let currentPath = $derived($page.url.pathname);
 </script>
 
 <svelte:head>
@@ -78,17 +85,21 @@
 			icon={ShieldCheck}
 			theme="red"
 		>
-			<NavPills slot="actions" items={tabs} {currentPath}>
-				<div slot="item" let:item let:isActive>
-					<div class="flex items-center justify-center px-0.5">
-						<span>{item.label}</span>
-					</div>
-				</div>
-			</NavPills>
+			{#snippet actions()}
+				<NavPills items={tabs} {currentPath}>
+					{#snippet item({ item, isActive })}
+						<div>
+							<div class="flex items-center justify-center px-0.5">
+								<span>{item.label}</span>
+							</div>
+						</div>
+					{/snippet}
+				</NavPills>
+			{/snippet}
 		</PageHeader>
 
 		<div class="mt-8">
-			<slot />
+			{@render children?.()}
 		</div>
 	</div>
 {:else if authState === 'unauthorized'}

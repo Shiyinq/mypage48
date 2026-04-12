@@ -4,19 +4,23 @@
 	import { formatDate } from '$lib/i18n';
 	import type { MemoryItem } from '$lib/types';
 
-	export let selectedImage: MemoryItem | null = null;
-	export let onClose: () => void;
+	interface Props {
+		selectedImage?: MemoryItem | null;
+		onClose: () => void;
+	}
+
+	let { selectedImage = null, onClose }: Props = $props();
 </script>
 
 {#if selectedImage}
-	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-[10001] flex flex-col items-center justify-center p-4 bg-black/90 backdrop-blur-md cursor-pointer"
 		transition:fade={{ duration: 200 }}
-		on:click={onClose}
+		onclick={onClose}
 	>
 		<button
-			on:click={(e) => {
+			onclick={(e) => {
 				e.stopPropagation();
 				onClose();
 			}}
@@ -25,7 +29,7 @@
 			<X class="w-6 h-6" />
 		</button>
 
-		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 		<div
 			class="flex flex-col items-center pointer-events-none"
 			transition:scale={{ duration: 300, start: 0.95 }}
@@ -34,12 +38,12 @@
 				src={selectedImage.imageUrl}
 				alt={selectedImage.title}
 				class="max-h-[70vh] w-auto object-contain rounded-lg shadow-2xl border border-white/10 cursor-default pointer-events-auto"
-				on:click={(e) => e.stopPropagation()}
+				onclick={(e) => e.stopPropagation()}
 			/>
 
 			<div
 				class="mt-6 text-center w-full max-w-lg pointer-events-auto"
-				on:click={(e) => e.stopPropagation()}
+				onclick={(e) => e.stopPropagation()}
 			>
 				<h3 class="text-2xl font-bold text-white tracking-tight drop-shadow-md">
 					{selectedImage.title}

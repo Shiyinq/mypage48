@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
 	import { setlistsStore } from '$lib/stores/theater';
@@ -17,44 +18,62 @@
 	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
 	import TwoShotSection from './TwoShotSection.svelte';
 
-	export let formData: {
-		event: {
-			title: string;
-			date: string;
-			time: string;
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			[key: string]: any;
-		};
-		seat: {
-			section: string;
-			number: string;
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			[key: string]: any;
-		};
-		ticket_id: string;
-		price: number;
-		notes: string;
-		two_shot: {
-			member_name: string;
-			type: 'Roulette' | 'Birthday';
+	interface Props {
+		formData: {
+			event: {
+				title: string;
+				date: string;
+				time: string;
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				[key: string]: any;
+			};
+			seat: {
+				section: string;
+				number: string;
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				[key: string]: any;
+			};
+			ticket_id: string;
 			price: number;
+			notes: string;
+			two_shot: {
+				member_name: string;
+				type: 'Roulette' | 'Birthday';
+				price: number;
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				[key: string]: any;
+			};
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			[key: string]: any;
 		};
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		[key: string]: any;
-	};
-	export let isSubmitting: boolean = false;
-	export let isFormValid: boolean = false;
-	// 2-Shot props
-	export let showTwoShot: boolean = false;
-	export let twoShotImage: string | null = null;
+		isSubmitting?: boolean;
+		isFormValid?: boolean;
+		// 2-Shot props
+		showTwoShot?: boolean;
+		twoShotImage?: string | null;
+		onsubmit?: () => void;
+		onclick?: () => void;
+		onphotoClick?: () => void;
+		ondrop?: (file: File) => void;
+	}
+
+	let {
+		formData = $bindable(),
+		isSubmitting = $bindable(false),
+		isFormValid = false,
+		showTwoShot = $bindable(false),
+		twoShotImage = $bindable(null),
+		onsubmit,
+		onclick,
+		onphotoClick,
+		ondrop
+	}: Props = $props();
 
 	const { t } = useTranslation();
 
-	$: SHOW_OPTIONS = $setlistsStore.data
-		? $setlistsStore.data.map((s) => s.title)
-		: SHOW_IMAGES.map((s) => s.title);
+	let SHOW_OPTIONS = $derived(
+		$setlistsStore.data ? $setlistsStore.data.map((s) => s.title) : SHOW_IMAGES.map((s) => s.title)
+	);
 
 	onMount(() => {
 		setlistsStore.load();
@@ -66,7 +85,7 @@
 <div
 	class="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl p-4 sm:p-6 md:p-8 rounded-3xl border border-white/50 dark:border-zinc-700 shadow-xl h-fit"
 >
-	<form on:submit|preventDefault class="space-y-8">
+	<form onsubmit={preventDefault(() => onsubmit?.())} class="space-y-8">
 		<!-- Event Details -->
 		<div class="space-y-4">
 			<h3
@@ -222,12 +241,12 @@
 		<!-- 2-Shot -->
 		<TwoShotSection
 			bind:showTwoShot
-			bind:twoShotImage
+			{twoShotImage}
 			bind:memberName={formData.two_shot.member_name}
 			bind:twoShotType={formData.two_shot.type}
 			bind:twoShotPrice={formData.two_shot.price}
-			on:photoClick
-			on:drop
+			onphotoClick={() => onphotoClick?.()}
+			ondrop={(file) => ondrop?.(file)}
 		/>
 
 		<!-- Notes -->
@@ -247,7 +266,7 @@
 
 		<button
 			type="submit"
-			on:click
+			onclick={() => onclick?.()}
 			disabled={isSubmitting || !isFormValid}
 			class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer disabled:shadow-none disabled:transform-none"
 		>

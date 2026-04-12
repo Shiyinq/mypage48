@@ -29,7 +29,7 @@
 		);
 	}
 
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(async () => {
 		await eventsStore.loadUpcoming();
@@ -37,7 +37,7 @@
 		mounted = true;
 	});
 
-	$: error = $upcomingError;
+	let error = $derived($upcomingError);
 </script>
 
 <SEO

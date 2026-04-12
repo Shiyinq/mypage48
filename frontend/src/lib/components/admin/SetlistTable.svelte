@@ -4,9 +4,14 @@
 	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let setlists: Setlist[] = [];
+	interface Props {
+		setlists?: Setlist[];
+		onedit?: (setlist: Setlist) => void;
+		ondelete?: (setlist: Setlist) => void;
+	}
 
-	const dispatch = createEventDispatcher();
+	let { setlists = [], onedit, ondelete }: Props = $props();
+
 	const { t } = useTranslation();
 </script>
 
@@ -88,13 +93,13 @@
 						<td class="p-4 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<button
-									on:click={() => dispatch('edit', setlist)}
+									onclick={() => onedit?.(setlist)}
 									class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Pencil class="w-4 h-4" />
 								</button>
 								<button
-									on:click={() => dispatch('delete', setlist)}
+									onclick={() => ondelete?.(setlist)}
 									class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Trash2 class="w-4 h-4" />

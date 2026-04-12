@@ -6,9 +6,13 @@
 	import SplashScreen from '$lib/components/SplashScreen.svelte';
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
 
-	let mounted = false;
+	let { data }: Props = $props();
+
+	let mounted = $state(false);
 
 	onMount(() => {
 		mounted = true;

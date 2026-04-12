@@ -5,9 +5,13 @@
 	import type { PublicProfileData } from '$lib/types';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
-	export let profile: PublicProfileData;
-	export let isCurrentUser: boolean = false;
-	export let isUploading: boolean = false;
+	interface Props {
+		profile: PublicProfileData;
+		isCurrentUser?: boolean;
+		isUploading?: boolean;
+	}
+
+	let { profile, isCurrentUser = false, isUploading = false }: Props = $props();
 
 	const { t } = useTranslation();
 	const dispatch = createEventDispatcher();
@@ -57,7 +61,7 @@
 			{#if isCurrentUser}
 				<button
 					class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
-					on:click={() => dispatch('triggerUpload')}
+					onclick={() => dispatch('triggerUpload')}
 					disabled={isUploading}
 				>
 					{#if isUploading}
@@ -85,10 +89,14 @@
 
 	<!-- Info -->
 	<div class="relative z-10 text-center md:text-left">
-		<h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight mb-1 sm:mb-2">
+		<h1
+			class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight mb-1 sm:mb-2"
+		>
 			{profile.name}
 		</h1>
-		<p class="text-purple-600 dark:text-purple-400 font-bold mb-3 sm:mb-4 text-sm sm:text-base">@{profile.username}</p>
+		<p class="text-purple-600 dark:text-purple-400 font-bold mb-3 sm:mb-4 text-sm sm:text-base">
+			@{profile.username}
+		</p>
 
 		{#if profile.oshi}
 			<div class="flex flex-wrap justify-center md:justify-start gap-3">

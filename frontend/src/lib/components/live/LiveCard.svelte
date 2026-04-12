@@ -9,9 +9,13 @@
 
 	const { t } = useTranslation();
 
-	export let stream: any;
-	export let i: number = 0;
-	export let variant: 'default' | 'theater' = 'default';
+	interface Props {
+		stream: any;
+		i?: number;
+		variant?: 'default' | 'theater';
+	}
+
+	let { stream, i = 0, variant = 'default' }: Props = $props();
 
 	const fallbackAvatar = 'https://placehold.co/640x960?text=NO%20IMAGE';
 </script>
@@ -32,7 +36,7 @@
 					: stream.image || stream.member?.img
 			) || fallbackAvatar}
 			alt={stream.member?.name}
-			on:error={(e) => {
+			onerror={(e) => {
 				if (e.currentTarget instanceof HTMLImageElement) e.currentTarget.src = fallbackAvatar;
 			}}
 			class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"

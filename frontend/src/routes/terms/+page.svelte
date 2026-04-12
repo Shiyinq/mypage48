@@ -8,8 +8,8 @@
 
 	const { t } = useTranslation();
 
-	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
-	let scrollY = 0;
+	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
+	let scrollY = $state(0);
 </script>
 
 <SEO title={$t('terms.title')} path="/terms" description={$t('seo.terms')} />

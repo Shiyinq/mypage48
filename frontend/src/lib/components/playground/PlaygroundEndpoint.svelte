@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import {
 		Play,
 		Terminal,
@@ -23,18 +25,22 @@
 
 	const { t } = useTranslation();
 
-	export let endpoint: OpenAPIEndpoint | null = null;
-	export let openapi: OpenAPISchema | null = null;
-	export let executing = false;
+	interface Props {
+		endpoint?: OpenAPIEndpoint | null;
+		openapi?: OpenAPISchema | null;
+		executing?: boolean;
+	}
+
+	let { endpoint = null, openapi = null, executing = false }: Props = $props();
 
 	const dispatch = createEventDispatcher<{
 		execute: { method: string; path: string; params: any; body: any; headers: any };
 	}>();
 
-	let parameters: Record<string, string> = {};
-	let body: string = '';
-	let headers: Record<string, string> = {};
-	let lastEndpointId: string | null = null;
+	let parameters: Record<string, string> = $state({});
+	let body: string = $state('');
+	let headers: Record<string, string> = $state({});
+	let lastEndpointId: string | null = $state(null);
 
 	function resolveSchema(schema: any): any {
 		if (!schema) return null;
@@ -76,26 +82,28 @@
 		}
 	}
 
-	$: if (endpoint && endpoint.id !== lastEndpointId) {
-		lastEndpointId = endpoint.id;
-		parameters = {};
-		body = '';
-		headers = {};
+	run(() => {
+		if (endpoint && endpoint.id !== lastEndpointId) {
+			lastEndpointId = endpoint.id;
+			parameters = {};
+			body = '';
+			headers = {};
 
-		// Initialize default values for parameters
-		endpoint.details.parameters?.forEach((p: any) => {
-			parameters[p.name] = '';
-		});
+			// Initialize default values for parameters
+			endpoint.details.parameters?.forEach((p: any) => {
+				parameters[p.name] = '';
+			});
 
-		// Initialize body if it's a POST/PUT request
-		if (endpoint.details.requestBody) {
-			const content = endpoint.details.requestBody.content?.['application/json'];
-			if (content?.schema) {
-				const example = generateExample(content.schema);
-				body = JSON.stringify(example, null, 2);
+			// Initialize body if it's a POST/PUT request
+			if (endpoint.details.requestBody) {
+				const content = endpoint.details.requestBody.content?.['application/json'];
+				if (content?.schema) {
+					const example = generateExample(content.schema);
+					body = JSON.stringify(example, null, 2);
+				}
 			}
 		}
-	}
+	});
 
 	function handleExecute() {
 		if (!endpoint) return;
@@ -205,7 +213,7 @@
 						<span class="text-gray-900 dark:text-gray-100 truncate">{endpoint.path}</span>
 					</div>
 					<button
-						on:click={copyCurl}
+						onclick={copyCurl}
 						class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-700 border border-gray-200 dark:border-white/10 text-[10px] font-bold text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 transition-all cursor-pointer shadow-sm active:scale-95"
 					>
 						<Copy class="w-3 h-3" />
@@ -295,7 +303,7 @@
 				{/if}
 
 				<button
-					on:click={handleExecute}
+					onclick={handleExecute}
 					disabled={executing || (!$playgroundStore.apiKey && !$playgroundStore.useSession)}
 					class="w-full md:w-auto px-8 py-4 bg-gray-900 dark:bg-zinc-100 text-white dark:text-gray-900 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-black dark:hover:bg-white transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-3 shadow-xl shadow-gray-200 dark:shadow-none"
 				>

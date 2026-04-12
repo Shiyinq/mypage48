@@ -18,12 +18,16 @@
 
 	const { t } = useTranslation();
 
-	export let showLogin = true;
-	export let mouse = { x: 0, y: 0 };
+	interface Props {
+		showLogin?: boolean;
+		mouse?: any;
+	}
 
-	let isMenuOpen = false;
+	let { showLogin = true, mouse = { x: 0, y: 0 } }: Props = $props();
+
+	let isMenuOpen = $state(false);
 	let lastScrollY = 0;
-	let isHidden = false;
+	let isHidden = $state(false);
 	const threshold = 10;
 
 	function handleScroll() {
@@ -44,14 +48,14 @@
 		liveStore.loadLiveList();
 	});
 
-	$: navItems = [
+	let navItems = $derived([
 		{ label: $t('landing.nav.news'), href: '/jkt48/news' },
 		{ label: $t('landing.nav.members'), href: '/jkt48/members' },
 		{ label: $t('landing.nav.events'), href: '/jkt48/events' },
 		{ label: $t('landing.nav.calendar'), href: '/jkt48/calendar' },
 		{ label: $t('landing.nav.sorter'), href: '/jkt48/sorter' },
 		{ label: $t('landing.nav.live'), href: '/jkt48/live', id: 'live' }
-	];
+	]);
 
 	function toggleMenu() {
 		isMenuOpen = !isMenuOpen;
@@ -68,7 +72,7 @@
 	}
 </script>
 
-<svelte:window on:scroll={handleScroll} />
+<svelte:window onscroll={handleScroll} />
 
 <nav
 	class="sticky top-0 z-[100] flex justify-between items-center px-6 py-3 max-w-7xl mx-auto pointer-events-none transition-transform duration-300 ease-in-out {isHidden
@@ -77,7 +81,7 @@
 >
 	<!-- Left: Logo -->
 	<div class="flex-1 flex items-center justify-start">
-		<a href="/" class="flex items-center gap-3 group pointer-events-auto" on:click={closeMenu}>
+		<a href="/" class="flex items-center gap-3 group pointer-events-auto" onclick={closeMenu}>
 			<NavLogo tagline={$t('landing.nav.subtitle')} {mouse} />
 		</a>
 	</div>
@@ -88,7 +92,7 @@
 		currentPath={$page.url.pathname}
 		className="hidden lg:flex pointer-events-auto"
 	>
-		<svelte:fragment slot="item" let:item let:isActive>
+		{#snippet item({ item, isActive })}
 			{item.label}
 			{#if item.id === 'live' && $liveList.length > 0}
 				<span class="relative flex h-2 w-2">
@@ -102,7 +106,7 @@
 					></span>
 				</span>
 			{/if}
-		</svelte:fragment>
+		{/snippet}
 	</NavPills>
 
 	<!-- Right: Actions -->
@@ -134,7 +138,7 @@
 		<!-- Mobile Menu Toggle -->
 		<button
 			class="lg:hidden p-2.5 rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 text-slate-900 dark:text-white shadow-sm transition-all active:scale-95 cursor-pointer"
-			on:click={toggleMenu}
+			onclick={toggleMenu}
 			aria-label="Toggle Menu"
 		>
 			{#if isMenuOpen}
@@ -152,7 +156,7 @@
 		<!-- Backdrop -->
 		<button
 			class="absolute inset-0 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl cursor-default w-full h-full border-none p-0"
-			on:click={closeMenu}
+			onclick={closeMenu}
 			aria-label="Close Menu"
 		></button>
 
@@ -166,7 +170,7 @@
 					{@const isActive = $page.url.pathname.startsWith(item.href)}
 					<a
 						href={item.href}
-						on:click={closeMenu}
+						onclick={closeMenu}
 						class="flex items-center justify-between p-4 rounded-2xl transition-all {isActive
 							? 'bg-red-600 text-white shadow-xl shadow-red-500/20'
 							: 'text-slate-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-zinc-900'}"
@@ -209,7 +213,7 @@
 					{#if !$isAuthenticated && showLogin}
 						<a
 							href="/login"
-							on:click={closeMenu}
+							onclick={closeMenu}
 							class="px-6 py-2.5 rounded-full bg-red-600 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/20"
 						>
 							{$t('auth.login.signIn')}
@@ -217,7 +221,7 @@
 					{:else if $isAuthenticated}
 						<a
 							href="/"
-							on:click={closeMenu}
+							onclick={closeMenu}
 							class="px-6 py-2.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-black text-xs uppercase tracking-widest shadow-sm"
 						>
 							{$t('nav.dashboard')}

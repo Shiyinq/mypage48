@@ -1,17 +1,21 @@
 <script lang="ts">
-	import { onMount, onDestroy, afterUpdate, tick } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import { MessageCircle, Trophy } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
 	import { broadcastGift } from '$lib/stores/gift';
 
-	export let roomIdentifier: string;
+	interface Props {
+		roomIdentifier: string;
+	}
+
+	let { roomIdentifier }: Props = $props();
 
 	const { t } = useTranslation();
 
 	let socket: WebSocket | null = null;
-	let messages: LiveChatIDNMessage[] = [];
-	let chatContainer: HTMLElement;
+	let messages: LiveChatIDNMessage[] = $state([]);
+	let chatContainer: HTMLElement | undefined = $state();
 	let connected = false;
 
 	function getExternalMediaUrl(url?: string) {
@@ -263,7 +267,7 @@
 										class="object-contain drop-shadow-md"
 										loop
 										autoplay
-										on:error={handleMediaError}
+										onerror={handleMediaError}
 									></lottie-player>
 								{:else if isLottie}
 									<!-- Static fallback for older Lottie gifts to save resources -->
@@ -276,7 +280,7 @@
 										alt={msg.gift.name}
 										referrerpolicy="no-referrer"
 										style="width: 50px; height: 50px;"
-										on:error={handleMediaError}
+										onerror={handleMediaError}
 										class="object-contain drop-shadow-md"
 									/>
 								{/if}
@@ -306,7 +310,7 @@
 												alt={msg.recipient.name}
 												referrerpolicy="no-referrer"
 												class="w-5 h-5 rounded-full object-cover ring-1 ring-white/20"
-												on:error={handleMediaError}
+												onerror={handleMediaError}
 											/>
 											<span class="text-[10px] font-black">{msg.recipient.name}</span>
 										</div>

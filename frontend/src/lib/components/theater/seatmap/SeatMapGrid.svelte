@@ -1,12 +1,16 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let rows: readonly string[];
-	export let seatLayout: Record<string, any>;
-	export let seatStats: Record<string, number>;
-	export let maxSeatCount: number;
-	export let isLoading: boolean;
-	export let compact: boolean;
+	interface Props {
+		rows: readonly string[];
+		seatLayout: Record<string, any>;
+		seatStats: Record<string, number>;
+		maxSeatCount: number;
+		isLoading: boolean;
+		compact: boolean;
+	}
+
+	let { rows, seatLayout, seatStats, maxSeatCount, isLoading, compact }: Props = $props();
 
 	const { t } = useTranslation();
 

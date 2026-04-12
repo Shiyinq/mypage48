@@ -7,21 +7,27 @@
 
 	const { t } = useTranslation();
 
-	export let response: ExecutionResult | null = null;
-	export let error: any = null;
-	export let duration: number | null = null;
-	export let width: number | string = '35%';
+	interface Props {
+		response?: ExecutionResult | null;
+		error?: any;
+		duration?: number | null;
+		width?: number | string;
+	}
+
+	let { response = null, error = null, duration = null, width = '35%' }: Props = $props();
 
 	function copyToClipboard(text: string) {
 		navigator.clipboard.writeText(text);
 		showToast($t('playground.copied'), 'success');
 	}
 
-	$: isSuccess = response && response.status >= 200 && response.status < 300;
-	$: statusText = response?.statusText || (isSuccess ? $t('common.success') : $t('common.error'));
+	let isSuccess = $derived(response && response.status >= 200 && response.status < 300);
+	let statusText = $derived(
+		response?.statusText || (isSuccess ? $t('common.success') : $t('common.error'))
+	);
 
-	$: formattedJson = response?.data ? JSON.stringify(response.data, null, 2) : '';
-	$: errorJson = error ? JSON.stringify(error, null, 2) : '';
+	let formattedJson = $derived(response?.data ? JSON.stringify(response.data, null, 2) : '');
+	let errorJson = $derived(error ? JSON.stringify(error, null, 2) : '');
 </script>
 
 <div
@@ -73,7 +79,7 @@
 				>
 					<span class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Body</span>
 					<button
-						on:click={() => copyToClipboard(formattedJson || errorJson)}
+						onclick={() => copyToClipboard(formattedJson || errorJson)}
 						class="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white cursor-pointer"
 					>
 						<Copy class="w-3.5 h-3.5" />

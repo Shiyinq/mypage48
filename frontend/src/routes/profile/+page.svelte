@@ -1,5 +1,6 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
+	import { run } from 'svelte/legacy';
+
 	import { onMount } from 'svelte';
 	import { isAuthenticated, showToast, userProfile, isUserProfileLoading } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
@@ -22,6 +23,11 @@
 		OshiSelectionModal,
 		MemberDetailModal
 	} from '$lib/components/profile';
+	interface Props {
+		params?: Record<string, string> | undefined;
+	}
+
+	let { params = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -37,26 +43,32 @@
 		oshi: UserOshi | null;
 	}
 
-	let profile: ProfileData | null = null;
-	let recentActivity: ProfileRecentActivity[] = [];
-	let level: RankInfo = { current: 'Newcomer', xp: 0, nextLevelXp: 1, nextRankTitle: 'First Step' };
-	let totalShows = 0;
-	let totalAchievements = 0;
-	let twoShotRouletteCount = 0;
-	let twoShotBirthdayCount = 0;
-	let oshiMeetings = 0;
-	let upcomingSchedule: OshiShow[] = [];
-	let pastSchedule: OshiShow[] = [];
+	let profile: ProfileData | null = $state(null);
+	let recentActivity: ProfileRecentActivity[] = $state([]);
+	let level: RankInfo = $state({
+		current: 'Newcomer',
+		xp: 0,
+		nextLevelXp: 1,
+		nextRankTitle: 'First Step'
+	});
+	let totalShows = $state(0);
+	let totalAchievements = $state(0);
+	let twoShotRouletteCount = $state(0);
+	let twoShotBirthdayCount = $state(0);
+	let oshiMeetings = $state(0);
+	let upcomingSchedule: OshiShow[] = $state([]);
+	let pastSchedule: OshiShow[] = $state([]);
 
-	$: error = $userProfile.error;
+	let error = $derived($userProfile.error);
 
 	// Oshi Selection State
-	let showOshiModal = false;
-	let savingOshi = false;
+	let showOshiModal = $state(false);
+	let savingOshi = $state(false);
 
 	// Progress percent derived from level
-	$: progressPercent =
-		level.nextLevelXp > 0 ? Math.min((level.xp / level.nextLevelXp) * 100, 100) : 0;
+	let progressPercent = $derived(
+		level.nextLevelXp > 0 ? Math.min((level.xp / level.nextLevelXp) * 100, 100) : 0
+	);
 
 	// Helper to map profile data from User store to local ProfileData
 	function mapProfileData(profileData: User): ProfileData {
@@ -83,7 +95,7 @@
 
 	// Subscribe to store changes to keep local state in sync
 	// The userProfile store now contains UserWithProfileStats with profile stats
-	$: {
+	run(() => {
 		const storeState = $userProfile;
 		const storeProfile = storeState.data;
 		// loading state is handled by top-level reactive declaration
@@ -112,7 +124,7 @@
 				recentActivity = storeProfile.profileRecentActivity;
 			}
 		}
-	}
+	});
 
 	async function fetchProfile() {
 		try {
@@ -146,9 +158,9 @@
 		showOshiModal = false;
 	};
 
-	let memberDetail: Member | null = null;
-	let showMemberDetail = false;
-	let loadingMemberDetail = false;
+	let memberDetail: Member | null = $state(null);
+	let showMemberDetail = $state(false);
+	let loadingMemberDetail = $state(false);
 
 	const openMemberDetail = async () => {
 		if (!profile?.oshi?.name) return;
@@ -205,7 +217,7 @@
 			title={$t('profile.title')}
 			subtitle={$t('profile.subtitle')}
 			icon={UserIcon}
-			actions={[
+			actionItems={[
 				{
 					icon: Settings,
 					label: 'Settings',
@@ -219,10 +231,10 @@
 				}
 			]}
 		>
-			<svelte:fragment slot="actions">
+			{#snippet actions()}
 				<!-- Settings Button -->
 				<button
-					on:click={() => goto('/settings')}
+					onclick={() => goto('/settings')}
 					class="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-gray-700 dark:hover:text-gray-300 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-zinc-600 cursor-pointer"
 					title="Settings"
 				>
@@ -230,13 +242,13 @@
 				</button>
 				<!-- Logout Button -->
 				<button
-					on:click={logout}
+					onclick={logout}
 					class="p-2 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors border border-red-100/50 dark:border-red-500/30 cursor-pointer"
 					title={$t('common.logout')}
 				>
 					<LogOut class="w-5 h-5" />
 				</button>
-			</svelte:fragment>
+			{/snippet}
 		</PageHeader>
 	</div>
 

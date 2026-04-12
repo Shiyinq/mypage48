@@ -3,13 +3,17 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { PublicProfileStats } from '$lib/types';
 
-	export let stats: PublicProfileStats;
-	export let year: number | null = null;
+	interface Props {
+		stats: PublicProfileStats;
+		year?: number | null;
+	}
+
+	let { stats, year = null }: Props = $props();
 
 	const { t } = useTranslation();
 
 	// Default to current year if not provided
-	$: displayYear = year || new Date().getFullYear();
+	let displayYear = $derived(year || new Date().getFullYear());
 </script>
 
 <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-4">

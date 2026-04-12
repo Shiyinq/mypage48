@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { isAuthenticated, showToast } from '$lib/stores';
 	import { isCacheExpired } from '$lib/utils/cache';
 	import { logger } from '$lib/utils/logger';
@@ -12,11 +11,16 @@
 	import { Top2ShotSkeleton } from '$lib/components/skeletons';
 	import type { TopTwoShotResponse } from '$lib/types';
 	import { topTwoShotStore, isTopTwoShotLoading } from '$lib/stores/memories';
+	interface Props {
+		params?: Record<string, string> | undefined;
+	}
+
+	let { params = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 
 	/* Loading State */
-	let mounted = false;
+	let mounted = $state(false);
 
 	// Default stats if store is null
 	let defaultStats: TopTwoShotResponse = {
@@ -25,8 +29,8 @@
 		totalTwoShotCount: 0
 	};
 
-	$: stats = $topTwoShotStore.data || defaultStats;
-	$: error = $topTwoShotStore.error;
+	let stats = $derived($topTwoShotStore.data || defaultStats);
+	let error = $derived($topTwoShotStore.error);
 
 	onMount(async () => {
 		mounted = true;
@@ -48,7 +52,7 @@
 		}
 	}
 
-	$: mostCollected = stats.ranking.length > 0 ? stats.ranking[0] : undefined;
+	let mostCollected = $derived(stats.ranking.length > 0 ? stats.ranking[0] : undefined);
 </script>
 
 <SEO title={$t('top2shot.title')} path="/top-2shot" description={$t('seo.top2shot')} />

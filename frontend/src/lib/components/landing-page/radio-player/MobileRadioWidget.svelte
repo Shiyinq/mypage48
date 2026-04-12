@@ -4,12 +4,12 @@
 	import RadioPlayer from './RadioPlayer.svelte';
 	import { Radio as RadioIcon } from 'lucide-svelte';
 
-	let isRadioOpen = false;
+	let isRadioOpen = $state(false);
 </script>
 
 <button
 	class="p-2.5 rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 text-slate-900 dark:text-white shadow-sm transition-all active:scale-95 cursor-pointer relative group"
-	on:click={() => (isRadioOpen = !isRadioOpen)}
+	onclick={() => (isRadioOpen = !isRadioOpen)}
 	aria-label="Toggle Radio Mobile"
 >
 	<RadioIcon
@@ -27,11 +27,11 @@
 </button>
 
 {#if isRadioOpen}
-	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-[95] lg:hidden"
-		on:click={() => (isRadioOpen = false)}
-		on:keydown={(e) => e.key === 'Escape' && (isRadioOpen = false)}
+		onclick={() => (isRadioOpen = false)}
+		onkeydown={(e) => e.key === 'Escape' && (isRadioOpen = false)}
 		role="button"
 		tabindex="-1"
 		aria-label="Close Radio"

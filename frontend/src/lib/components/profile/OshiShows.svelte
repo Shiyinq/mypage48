@@ -4,9 +4,13 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
 
-	export let upcomingSchedule: OshiShow[] = [];
-	export let pastSchedule: OshiShow[] = [];
-	export let loading: boolean = false;
+	interface Props {
+		upcomingSchedule?: OshiShow[];
+		pastSchedule?: OshiShow[];
+		loading?: boolean;
+	}
+
+	let { upcomingSchedule = [], pastSchedule = [], loading = false }: Props = $props();
 
 	const { t } = useTranslation();
 </script>

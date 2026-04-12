@@ -30,7 +30,7 @@
 		await eventsStore.loadHistory(1);
 	});
 
-	$: error = $historyError;
+	let error = $derived($historyError);
 
 	async function handlePageChange(page: number) {
 		eventsStore.loadHistory(page);
@@ -207,7 +207,7 @@
 						<button
 							class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm"
 							disabled={$historyPagination.current_page === 1}
-							on:click={() => handlePageChange($historyPagination.current_page - 1)}
+							onclick={() => handlePageChange($historyPagination.current_page - 1)}
 						>
 							<ChevronLeft size={18} />
 						</button>
@@ -220,7 +220,7 @@
 								'number'
 									? 'cursor-pointer'
 									: 'cursor-default'}"
-								on:click={() => typeof page === 'number' && handlePageChange(page)}
+								onclick={() => typeof page === 'number' && handlePageChange(page)}
 								disabled={typeof page !== 'number'}
 							>
 								{page}
@@ -229,7 +229,7 @@
 						<button
 							class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm"
 							disabled={$historyPagination.current_page === $historyPagination.last_page}
-							on:click={() => handlePageChange($historyPagination.current_page + 1)}
+							onclick={() => handlePageChange($historyPagination.current_page + 1)}
 						>
 							<ChevronRight size={18} />
 						</button>

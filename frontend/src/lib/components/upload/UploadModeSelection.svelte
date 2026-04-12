@@ -2,9 +2,13 @@
 	import { ScanLine, Keyboard, X } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let onScanClick: () => void;
-	export let onManualClick: () => void;
-	export let onCancel: () => void;
+	interface Props {
+		onScanClick: () => void;
+		onManualClick: () => void;
+		onCancel: () => void;
+	}
+
+	let { onScanClick, onManualClick, onCancel }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -20,7 +24,7 @@
 	</div>
 	<div class="grid md:grid-cols-2 gap-4 sm:gap-6 w-full px-2 sm:px-0">
 		<button
-			on:click={onScanClick}
+			onclick={onScanClick}
 			class="group relative overflow-hidden bg-white dark:bg-zinc-800 p-6 sm:p-8 rounded-3xl border-2 border-red-100 dark:border-red-900/30 hover:border-red-500 dark:hover:border-red-500 shadow-lg hover:shadow-xl transition-all duration-300 text-left flex flex-col h-52 sm:h-64 justify-between cursor-pointer"
 		>
 			<div
@@ -45,7 +49,7 @@
 			</div>
 		</button>
 		<button
-			on:click={onManualClick}
+			onclick={onManualClick}
 			class="group relative overflow-hidden bg-white dark:bg-zinc-800 p-6 sm:p-8 rounded-3xl border-2 border-gray-100 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-500 shadow-lg hover:shadow-xl transition-all duration-300 text-left flex flex-col h-52 sm:h-64 justify-between cursor-pointer"
 		>
 			<div
@@ -69,7 +73,7 @@
 		</button>
 	</div>
 	<button
-		on:click={onCancel}
+		onclick={onCancel}
 		class="mt-12 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-medium text-sm flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
 	>
 		<X class="w-4 h-4" />

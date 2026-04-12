@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run, preventDefault } from 'svelte/legacy';
+
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import Input from '$lib/components/Input.svelte';
@@ -13,10 +15,10 @@
 
 	const { t } = useTranslation();
 
-	let type: 'issue' | 'suggestion' | 'other' = 'issue';
-	let message = '';
-	let email = '';
-	let name = '';
+	let type: 'issue' | 'suggestion' | 'other' = $state('issue');
+	let message = $state('');
+	let email = $state('');
+	let name = $state('');
 
 	onMount(() => {
 		if (!$isAuthenticated) {
@@ -30,14 +32,16 @@
 		}
 	});
 
-	let isInitialized = false;
+	let isInitialized = $state(false);
 
 	// Reactively update only if fields are empty and data becomes available (e.g. initial load latency)
-	$: if ($userProfile?.data && !isInitialized) {
-		email = $userProfile.data.email || '';
-		name = $userProfile.data.name || '';
-		isInitialized = true;
-	}
+	run(() => {
+		if ($userProfile?.data && !isInitialized) {
+			email = $userProfile.data.email || '';
+			name = $userProfile.data.name || '';
+			isInitialized = true;
+		}
+	});
 
 	const handleSubmit = async () => {
 		if (message.length < 10) {
@@ -88,7 +92,7 @@
 	<div
 		class="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-slate-100 dark:border-zinc-800"
 	>
-		<form on:submit|preventDefault={handleSubmit} class="space-y-6">
+		<form onsubmit={preventDefault(handleSubmit)} class="space-y-6">
 			<!-- Type -->
 			<div class="space-y-2">
 				<label
@@ -103,7 +107,7 @@
 						class="px-4 py-3 rounded-2xl text-sm font-bold transition-all border {type === 'issue'
 							? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50'
 							: 'bg-slate-50 text-slate-600 border-transparent hover:bg-slate-100 dark:bg-zinc-800/50 dark:text-slate-400 dark:hover:bg-zinc-800'}"
-						on:click={() => (type = 'issue')}
+						onclick={() => (type = 'issue')}
 						style="cursor: pointer;"
 					>
 						{$t('feedback.form.type.issue')}
@@ -114,7 +118,7 @@
 						'suggestion'
 							? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/50'
 							: 'bg-slate-50 text-slate-600 border-transparent hover:bg-slate-100 dark:bg-zinc-800/50 dark:text-slate-400 dark:hover:bg-zinc-800'}"
-						on:click={() => (type = 'suggestion')}
+						onclick={() => (type = 'suggestion')}
 						style="cursor: pointer;"
 					>
 						{$t('feedback.form.type.suggestion')}
@@ -124,7 +128,7 @@
 						class="px-4 py-3 rounded-2xl text-sm font-bold transition-all border {type === 'other'
 							? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/50'
 							: 'bg-slate-50 text-slate-600 border-transparent hover:bg-slate-100 dark:bg-zinc-800/50 dark:text-slate-400 dark:hover:bg-zinc-800'}"
-						on:click={() => (type = 'other')}
+						onclick={() => (type = 'other')}
 						style="cursor: pointer;"
 					>
 						{$t('feedback.form.type.other')}
