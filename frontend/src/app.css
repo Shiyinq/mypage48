@@ -2,7 +2,7 @@
 @plugin "@tailwindcss/typography";
 
 /* Tailwind v4: Configure dark mode to use .dark class on html element */
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (.dark &);
 
 /* CSS Custom Properties for theming */
 :root {
@@ -83,7 +83,6 @@
 			radial-gradient(at 100% 100%, var(--color-bg-gradient-3) 0px, transparent 50%),
 			radial-gradient(at 0% 100%, var(--color-bg-gradient-4) 0px, transparent 50%);
 		background-attachment: fixed;
-		color: var(--color-text-primary);
 		color: var(--color-text-primary);
 	}
 
