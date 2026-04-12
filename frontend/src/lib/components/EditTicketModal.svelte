@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { run, preventDefault } from 'svelte/legacy';
+	import { preventDefault } from 'svelte/legacy';
 
 	import { ticketsStore, showToast, storageStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
@@ -160,10 +160,6 @@
 
 		processFile(file);
 		target.value = ''; // Reset input
-	};
-
-	const handleFileDrop = (file: File) => {
-		processFile(file);
 	};
 
 	// Helper to check if image is base64 (new upload) vs storage filename

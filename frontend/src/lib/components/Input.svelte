@@ -2,14 +2,12 @@
 	import { createBubbler } from 'svelte/legacy';
 
 	const bubble = createBubbler();
-	interface Props {
+	import type { HTMLInputAttributes } from 'svelte/elements';
+
+	interface Props extends HTMLInputAttributes {
 		label?: string;
-		type?: string;
-		value?: string;
-		placeholder?: string;
 		error?: string;
-		id?: any;
-		[key: string]: any;
+		value?: string;
 	}
 
 	let {
@@ -18,7 +16,7 @@
 		value = $bindable(''),
 		placeholder = '',
 		error = '',
-		id = Math.random().toString(36).substr(2, 9),
+		id = Math.random().toString(36).substring(2, 11),
 		...rest
 	}: Props = $props();
 </script>

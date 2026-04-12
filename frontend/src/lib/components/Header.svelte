@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { Ticket, Plus, User } from 'lucide-svelte';
+	import { Plus, User } from 'lucide-svelte';
 	import { userProfile, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
 	import { isImmersive } from '$lib/stores/ui';
 	import { useTranslation } from '$lib/i18n/useTranslation';
