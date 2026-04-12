@@ -43,7 +43,7 @@ jobs:
       ENV: dev
       SECRET_KEY: dummy_secret_key_for_testing_12345
       ALGORITHM: HS256
-      MONGODB_URI: mongodb://localhost:27017
+      MONGODB_URI: mongodb://localhost:27018
       MINIO_ENDPOINT: localhost:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin123
@@ -77,6 +77,12 @@ jobs:
           # Wait for services to be ready
           echo "Waiting for services..."
           until curl -f http://localhost:9000/minio/health/live; do
+            sleep 2
+          done
+
+          echo "Waiting for MongoDB..."
+          # Wait for port 27018 to be open
+          until timeout 1 bash -c "cat < /dev/null > /dev/tcp/localhost/27018" 2>/dev/null; do
             sleep 2
           done
           
