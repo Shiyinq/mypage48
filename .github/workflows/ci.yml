@@ -24,9 +24,16 @@ jobs:
         run: npm ci
         working-directory: frontend
 
+      - name: Sync SvelteKit
+        run: npx svelte-kit sync
+        working-directory: frontend
+
       - name: Build check
         run: npm run build
         working-directory: frontend
+        env:
+          PUBLIC_CLIENT_SIDE_API_BASE_URL: http://localhost:8000/api
+          PUBLIC_SERVER_SIDE_API_BASE_URL: http://localhost:8000/api
 
   backend-check:
     name: Backend Check
