@@ -57,32 +57,49 @@
 				}
 			: null;
 
-	$: eventJsonLd = (events || []).map((event) => ({
-		'@context': 'https://schema.org',
-		'@type': 'Event',
-		name: event.title,
-		startDate: event.date,
-		location: {
-			'@type': 'Place',
-			name: 'JKT48 Theater',
-			address: {
-				'@type': 'PostalAddress',
-				streetAddress: 'fX Sudirman F4',
-				addressLocality: 'Jakarta',
-				addressRegion: 'DKI Jakarta',
-				postalCode: '10270',
-				addressCountry: 'ID'
-			}
-		},
-		image: event.imageUrl ? [event.imageUrl] : [],
-		description: `${event.label || 'JKT48'} Theater Show - ${event.title}`,
-		performer: {
-			'@type': 'Organization',
-			name: 'JKT48'
-		},
-		eventStatus: 'https://schema.org/EventScheduled',
-		eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode'
-	}));
+	$: eventJsonLd = (events || []).map((event) => {
+		const start = new Date(event.date);
+		const end = new Date(start.getTime() + 2 * 60 * 60 * 1000); // Estimate 2 hours
+
+		return {
+			'@context': 'https://schema.org',
+			'@type': 'Event',
+			name: event.title,
+			startDate: event.date,
+			endDate: end.toISOString(),
+			location: {
+				'@type': 'Place',
+				name: 'JKT48 Theater',
+				address: {
+					'@type': 'PostalAddress',
+					streetAddress: 'fX Sudirman F4',
+					addressLocality: 'Jakarta',
+					addressRegion: 'DKI Jakarta',
+					postalCode: '10270',
+					addressCountry: 'ID'
+				}
+			},
+			image: event.imageUrl ? [event.imageUrl] : ['https://placehold.co/640x960?text=JKT48+EVENT'],
+			description: `${event.label || 'JKT48'} Theater Show - ${event.title}`,
+			organizer: {
+				'@type': 'Organization',
+				name: 'JKT48',
+				url: 'https://jkt48.com'
+			},
+			offers: {
+				'@type': 'Offer',
+				url: `https://jkt48.com${event.url || '/'}`,
+				availability: 'https://schema.org/InStock',
+				priceCurrency: 'IDR'
+			},
+			performer: {
+				'@type': 'Organization',
+				name: 'JKT48'
+			},
+			eventStatus: 'https://schema.org/EventScheduled',
+			eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode'
+		};
+	});
 </script>
 
 <svelte:head>
