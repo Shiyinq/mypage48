@@ -5,6 +5,8 @@
 	import { SEO } from '$lib/components';
 	import { Ticket } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { spring } from 'svelte/motion';
+	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 
 	import { userProfile, showToast, storageStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
@@ -128,6 +130,9 @@
 		};
 		seatStats = profile.stats.seatCounts || {};
 	}
+
+	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
+	let scrollY = 0;
 </script>
 
 <SEO
@@ -135,7 +140,13 @@
 	description={`Check out ${profile.name}'s JKT48 theater journey!`}
 />
 
-<div class="min-h-screen relative">
+<svelte:window bind:scrollY />
+
+<div
+	class="min-h-screen relative overflow-hidden bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 selection:bg-red-500/20"
+>
+	<AnimatedBackground hideDecorationsOnMobile={true} interactive={true} bind:mouse bind:scrollY />
+
 	<div class="relative max-w-4xl mx-auto p-4 md:p-8 pb-24 z-10 animate-fade-in space-y-8">
 		<!-- Hidden File Input -->
 		<input
