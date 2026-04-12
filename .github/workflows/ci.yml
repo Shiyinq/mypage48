@@ -43,12 +43,25 @@ jobs:
         image: mongo:latest
         ports:
           - 27017:27017
+      minio:
+        image: minio/minio
+        ports:
+          - 9000:9000
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin123
+        options: server /data
 
     env:
       ENV: dev
       SECRET_KEY: dummy_secret_key_for_testing_12345
       ALGORITHM: HS256
       MONGODB_URI: mongodb://localhost:27017
+      MINIO_ENDPOINT: localhost:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MINIO_BUCKET: mypage48-images
+      MINIO_SECURE: false
       GOOGLE_CLIENT_ID: dummy
       GOOGLE_CLIENT_SECRET: dummy
       GOOGLE_REDIRECT_URI: http://localhost
