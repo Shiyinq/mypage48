@@ -5,7 +5,7 @@
 
 	const { locale, changeLocale } = useTranslation();
 
-	let isOpen = false;
+	let isOpen = $state(false);
 
 	const locales: { code: Locale; label: string; flag: string }[] = [
 		{ code: 'id', label: 'Indonesia', flag: '🇮🇩' },
@@ -41,7 +41,7 @@
 
 <div class="relative" use:clickOutside>
 	<button
-		on:click={toggleDropdown}
+		onclick={toggleDropdown}
 		class="w-10 h-10 rounded-full flex items-center justify-center bg-white/50 dark:bg-zinc-800/50 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-sm hover:bg-white dark:hover:bg-zinc-700 hover:scale-105 transition-all active:scale-95 group cursor-pointer text-slate-600 dark:text-slate-300"
 		aria-label="Change language"
 	>
@@ -57,7 +57,7 @@
 			<div class="p-1">
 				{#each locales as l}
 					<button
-						on:click={() => selectLanguage(l.code)}
+						onclick={() => selectLanguage(l.code)}
 						class="w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer {$locale ===
 						l.code
 							? 'text-red-600 font-bold bg-red-50 dark:bg-red-900/10'

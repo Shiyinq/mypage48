@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import '../app.css';
 	import { isAuthenticated, toast, userProfile, isInitialDataLoaded } from '$lib/stores';
 	import { locale, type Locale } from '$lib/i18n';
@@ -24,52 +26,28 @@
 	import Footer from '$lib/components/landing-page/Footer.svelte';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 
-	export let data: { locale?: string };
-
-	// Hydrate locale from server cookie if available (SSR)
-	if (data?.locale) {
-		locale.set(data.locale as Locale);
+	interface Props {
+		data: { locale?: string };
+		children?: import('svelte').Snippet;
 	}
 
+	let { data, children }: Props = $props();
+
+	// Hydrate locale from server cookie if available (SSR)
+	$effect(() => {
+		if (data?.locale) {
+			locale.set(data.locale as Locale);
+		}
+	});
+
 	// Flag to prevent duplicate fetches
-	let hasFetchedInitialData = false;
-
-	// Determine if current page is public (accessible without login)
-	$: isPublicPage =
-		$page.url.pathname === '/' ||
-		$page.url.pathname === '/login' ||
-		$page.url.pathname === '/register' ||
-		$page.url.pathname === '/privacy' ||
-		$page.url.pathname === '/terms' ||
-		$page.url.pathname === '/cookies' ||
-		$page.url.pathname === '/about' ||
-		$page.url.pathname.startsWith('/auth/') ||
-		$page.url.pathname.startsWith('/u/') ||
-		[
-			'/jkt48/members',
-			'/jkt48/news',
-			'/jkt48/events',
-			'/jkt48/calendar',
-			'/jkt48/event-history',
-			'/jkt48/sorter',
-			'/jkt48/live'
-		].some((path) => $page.url.pathname.startsWith(path));
-
-	// Determine if current page is strictly for guests (login/register pages)
-	// Logged in users should be redirected AWAY from these pages
-	$: isGuestRoute =
-		$page.url.pathname === '/login' ||
-		$page.url.pathname === '/register' ||
-		$page.url.pathname.startsWith('/auth/');
-
-	$: isFullScreenRoute = $page.url.pathname.includes('/live/multiview');
-	$: isPlaygroundRoute = $page.url.pathname.startsWith('/playground');
+	let hasFetchedInitialData = $state(false);
 
 	// Track if client has mounted - used to delay auth redirects
-	let mounted = false;
+	let mounted = $state(false);
 
 	// Global Error Handling
-	let appError: Error | null = null;
+	let appError: Error | null = $state(null);
 
 	function handleGlobalError(event: ErrorEvent) {
 		// Don't catch 404s or other navigation errors which are handled by SvelteKit
@@ -106,19 +84,6 @@
 		};
 	});
 
-	// Reactively fetch initial data when user becomes authenticated
-	// This handles the case when user logs in and layout is already mounted
-	$: if (mounted && $isAuthenticated && !hasFetchedInitialData) {
-		fetchInitialDataIfNeeded();
-	}
-
-	// Reset state when user logs out
-	$: if (!$isAuthenticated) {
-		hasFetchedInitialData = false;
-		isInitialDataLoaded.set(false);
-		userProfile.reset();
-	}
-
 	// Fetch profile when authenticated
 	async function fetchInitialDataIfNeeded() {
 		if (hasFetchedInitialData) return;
@@ -149,29 +114,78 @@
 		}
 	}
 
+	// Determine if current page is public (accessible without login)
+	let isPublicPage = $derived(
+		$page.url.pathname === '/' ||
+			$page.url.pathname === '/login' ||
+			$page.url.pathname === '/register' ||
+			$page.url.pathname === '/privacy' ||
+			$page.url.pathname === '/terms' ||
+			$page.url.pathname === '/cookies' ||
+			$page.url.pathname === '/about' ||
+			$page.url.pathname.startsWith('/auth/') ||
+			$page.url.pathname.startsWith('/u/') ||
+			[
+				'/jkt48/members',
+				'/jkt48/news',
+				'/jkt48/events',
+				'/jkt48/calendar',
+				'/jkt48/event-history',
+				'/jkt48/sorter',
+				'/jkt48/live'
+			].some((path) => $page.url.pathname.startsWith(path))
+	);
+	// Determine if current page is strictly for guests (login/register pages)
+	// Logged in users should be redirected AWAY from these pages
+	let isGuestRoute = $derived(
+		$page.url.pathname === '/login' ||
+			$page.url.pathname === '/register' ||
+			$page.url.pathname.startsWith('/auth/')
+	);
+	let isFullScreenRoute = $derived($page.url.pathname.includes('/live/multiview'));
+	let isPlaygroundRoute = $derived($page.url.pathname.startsWith('/playground'));
+	// Reset state when user logs out
+	run(() => {
+		if (!$isAuthenticated) {
+			hasFetchedInitialData = false;
+			isInitialDataLoaded.set(false);
+			userProfile.reset();
+		}
+	});
+	// Reactively fetch initial data when user becomes authenticated
+	// This handles the case when user logs in and layout is already mounted
+	run(() => {
+		if (mounted && $isAuthenticated && !hasFetchedInitialData) {
+			fetchInitialDataIfNeeded();
+		}
+	});
 	// Only check auth redirects after component is mounted (hydrated)
 	// This prevents premature redirects during slow connections
-	$: if (mounted && !$isAuthenticated && !isPublicPage) {
-		goto('/login');
-	}
-
+	run(() => {
+		if (mounted && !$isAuthenticated && !isPublicPage) {
+			goto('/login');
+		}
+	});
 	// Redirect logged-in users away from guest-only routes (login/register)
 	// asking to view a public profile (/u/...) should NOT trigger this!
-	$: if (mounted && $isAuthenticated && isGuestRoute) {
-		goto('/');
-	}
-
-	// Redirect logged-in users away from public JKT48 routes to their theater counterparts
-	$: if (mounted && $isAuthenticated && $page.url.pathname.startsWith('/jkt48/')) {
-		let theaterPath = $page.url.pathname.replace('/jkt48/', '/theater/');
-		// Special case for sub-routes that might have different structures
-		if ($page.url.pathname === '/jkt48/event-history') {
-			theaterPath = '/theater/events/history';
-		} else if ($page.url.pathname === '/jkt48/calendar') {
-			theaterPath = '/theater/events/calendar';
+	run(() => {
+		if (mounted && $isAuthenticated && isGuestRoute) {
+			goto('/');
 		}
-		goto(theaterPath);
-	}
+	});
+	// Redirect logged-in users away from public JKT48 routes to their theater counterparts
+	run(() => {
+		if (mounted && $isAuthenticated && $page.url.pathname.startsWith('/jkt48/')) {
+			let theaterPath = $page.url.pathname.replace('/jkt48/', '/theater/');
+			// Special case for sub-routes that might have different structures
+			if ($page.url.pathname === '/jkt48/event-history') {
+				theaterPath = '/theater/events/history';
+			} else if ($page.url.pathname === '/jkt48/calendar') {
+				theaterPath = '/theater/events/calendar';
+			}
+			goto(theaterPath);
+		}
+	});
 </script>
 
 {#if appError}
@@ -219,14 +233,14 @@
 
 		{#if isPublicPage && !isGuestRoute && !$isAuthenticated}
 			<!-- Public non-auth pages (like /u/*): render immediately -->
-			<slot />
+			{@render children?.()}
 		{:else if isGuestRoute}
 			<!-- Guest routes (/login, /register, /auth/*): need auth check -->
 			{#if !mounted}
 				<SplashScreen />
 			{:else if !$isAuthenticated}
 				<!-- Not authenticated: show login/register page -->
-				<slot />
+				{@render children?.()}
 			{/if}
 			<!-- If mounted && $isAuthenticated && isGuestRoute: render nothing, redirect will happen -->
 		{:else if !mounted}
@@ -234,7 +248,7 @@
 		{:else if isPublicPage && !$isAuthenticated}
 			<!-- Render public theater pages for unauthenticated users -->
 			{#if $page.url.pathname === '/'}
-				<slot />
+				{@render children?.()}
 			{:else}
 				{#if !isFullScreenRoute}
 					<LandingNavbar showLogin={false} />
@@ -248,7 +262,7 @@
 							? 'max-w-7xl mx-auto p-0 sm:p-2 sm:px-4 flex-1'
 							: 'max-w-7xl mx-auto px-4 py-8 flex-1'}
 				>
-					<slot />
+					{@render children?.()}
 				</div>
 				{#if !isFullScreenRoute}
 					<Footer />
@@ -267,7 +281,7 @@
 				</div>
 			{/if}
 			<main class="flex-1 w-full relative">
-				<slot />
+				{@render children?.()}
 			</main>
 			{#if !isFullScreenRoute && !isPlaygroundRoute}
 				<MobileNav />

@@ -14,20 +14,20 @@
 
 	const { t } = useTranslation();
 
-	// State
-	$: state = $galleryStore;
-	$: memories = state.list;
-	$: pagination = state.pagination;
-	$: filter = state.filter;
-	$: error = state.error;
+	// Store data via derived runes
+	let galleryState = $derived($galleryStore);
+	let memories = $derived(galleryState.list);
+	let pagination = $derived(galleryState.pagination);
+	let filter = $derived(galleryState.filter);
+	let error = $derived(galleryState.error);
 
-	let selectedImage: MemoryItem | null = null;
-	let mounted = false;
+	let selectedImage: MemoryItem | null = $state(null);
+	let mounted = $state(false);
 
 	onMount(() => {
 		mounted = true;
 		// Initial load only if empty or expired
-		const currentCache = state.cache[filter];
+		const currentCache = galleryState.cache[filter];
 
 		if (memories.length === 0 || isCacheExpired(currentCache.lastUpdated)) {
 			loadMemories(1);
@@ -35,10 +35,6 @@
 	});
 
 	async function loadMemories(page: number) {
-		// Store loading check to prevent double fetch
-		// But here we might want to check if ALREADY loading in store?
-		// relying on store's internal state or just firing it.
-		// Since we removed local `isLoadingMore`, we should check store `isLoading`.
 		if ($isGalleryLoading) return;
 
 		// If not page 1 and no more, don't load
@@ -76,9 +72,11 @@
 	}
 
 	// Scroll lock for lightbox
-	$: if (typeof document !== 'undefined') {
-		document.body.style.overflow = selectedImage ? 'hidden' : 'unset';
-	}
+	$effect(() => {
+		if (typeof document !== 'undefined') {
+			document.body.style.overflow = selectedImage ? 'hidden' : 'unset';
+		}
+	});
 </script>
 
 <SEO title={$t('memories.title')} path="/memories" description={$t('seo.memories')} />
@@ -95,9 +93,14 @@
 			subtitle={$t('memories.subtitle')}
 			theme="pink"
 		>
-			<div slot="actions">
-				<MemoryFilters filter={state.filter} on:change={(e) => handleFilterChange(e.detail)} />
-			</div>
+			{#snippet actions()}
+				<div>
+					<MemoryFilters
+						filter={galleryState.filter}
+						onchange={(newFilter) => handleFilterChange(newFilter)}
+					/>
+				</div>
+			{/snippet}
 		</PageHeader>
 	</div>
 
@@ -138,11 +141,7 @@
 
 		<!-- Sentinel for infinite scroll -->
 		{#if pagination.hasMore}
-			<div
-				use:infiniteScroll
-				on:intersect={handleIntersect}
-				class="w-full py-8 flex justify-center"
-			>
+			<div use:infiniteScroll onintersect={handleIntersect} class="w-full py-8 flex justify-center">
 				{#if $isGalleryLoading}
 					<div
 						class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10 px-2 sm:px-4 w-full"

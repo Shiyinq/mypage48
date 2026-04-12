@@ -12,12 +12,21 @@
 		duration: number;
 		depth: number;
 		type: 'star' | 'sparkle';
-	}> = [];
+	}> = $state([]);
 
-	export let interactive = false;
-	export let hideDecorationsOnMobile = false;
-	export let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
-	export let scrollY = 0;
+	interface Props {
+		interactive?: boolean;
+		hideDecorationsOnMobile?: boolean;
+		mouse?: any;
+		scrollY?: number;
+	}
+
+	let {
+		interactive = false,
+		hideDecorationsOnMobile = false,
+		mouse = $bindable(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 })),
+		scrollY = $bindable(0)
+	}: Props = $props();
 
 	// Global mouse tracking instead of wrapper-based for reliability across all pages
 	function handleMouseMove(event: MouseEvent) {
@@ -50,7 +59,7 @@
 	});
 </script>
 
-<svelte:window on:mousemove={handleMouseMove} bind:scrollY />
+<svelte:window onmousemove={handleMouseMove} bind:scrollY />
 
 <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
 	<div

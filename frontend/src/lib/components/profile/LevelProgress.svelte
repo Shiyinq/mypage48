@@ -9,9 +9,13 @@
 		nextRankTitle: string;
 	}
 
-	export let level: Level;
-	export let progressPercent: number;
-	export let loading: boolean = true;
+	interface Props {
+		level: Level;
+		progressPercent: number;
+		loading?: boolean;
+	}
+
+	let { level, progressPercent, loading = true }: Props = $props();
 
 	const { t } = useTranslation();
 </script>

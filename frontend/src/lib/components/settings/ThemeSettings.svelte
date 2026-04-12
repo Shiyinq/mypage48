@@ -52,7 +52,7 @@
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
 		{#each themeOptions as option}
 			<button
-				on:click={() => handleThemeChange(option.value)}
+				onclick={() => handleThemeChange(option.value)}
 				class="p-4 rounded-2xl border-2 transition-all flex md:flex-col items-center justify-between md:justify-center gap-3 cursor-pointer {$theme ===
 				option.value
 					? 'border-red-500 bg-red-50/50 dark:bg-red-900/20 shadow-sm'
@@ -62,7 +62,7 @@
 					<div
 						class="w-10 h-10 rounded-xl {option.bgClass} flex items-center justify-center shadow-sm flex-shrink-0"
 					>
-						<svelte:component this={option.icon} class="w-5 h-5 {option.textClass}" />
+						<option.icon class="w-5 h-5 {option.textClass}" />
 					</div>
 					<div class="text-left md:text-center">
 						<p class="font-bold text-sm text-gray-800 dark:text-gray-200">

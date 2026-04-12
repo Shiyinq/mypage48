@@ -1,10 +1,14 @@
 <script lang="ts">
-	/**
-	 * Reusable card skeleton component for loading states
-	 */
-	export let lines: number = 3;
-	export let showIcon: boolean = true;
-	export let className: string = '';
+	interface Props {
+		/**
+		 * Reusable card skeleton component for loading states
+		 */
+		lines?: number;
+		showIcon?: boolean;
+		className?: string;
+	}
+
+	let { lines = 3, showIcon = true, className = '' }: Props = $props();
 </script>
 
 <div

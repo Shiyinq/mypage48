@@ -3,8 +3,12 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { User } from '$lib/types';
 
-	export let profile: User | null = null;
-	export let loading: boolean = true;
+	interface Props {
+		profile?: User | null;
+		loading?: boolean;
+	}
+
+	let { profile = null, loading = true }: Props = $props();
 
 	const { t } = useTranslation();
 </script>

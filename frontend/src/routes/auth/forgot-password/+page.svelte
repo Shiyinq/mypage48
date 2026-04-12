@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import { authStore } from '$lib/stores/auth';
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
@@ -12,13 +14,13 @@
 
 	const { t } = useTranslation();
 
-	let email = '';
-	let isLoading = false;
-	let isSent = false;
-	let error: string | null = null;
-	let errors: Record<string, string> = {};
+	let email = $state('');
+	let isLoading = $state(false);
+	let isSent = $state(false);
+	let error: string | null = $state(null);
+	let errors: Record<string, string> = $state({});
 
-	$: isValid = email.length > 0 && Object.values(errors).every((e) => !e);
+	let isValid = $derived(email.length > 0 && Object.values(errors).every((e) => !e));
 
 	const validateField = (field: 'email', value: string) => {
 		try {
@@ -81,7 +83,7 @@
 	icon={KeyRound}
 >
 	{#if !isSent}
-		<form on:submit|preventDefault={handleSubmit} class="space-y-6" novalidate>
+		<form onsubmit={preventDefault(handleSubmit)} class="space-y-6" novalidate>
 			<div>
 				<label
 					class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
@@ -95,7 +97,7 @@
 						id="email-input"
 						type="email"
 						bind:value={email}
-						on:input={() => validateField('email', email)}
+						oninput={() => validateField('email', email)}
 						class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 						placeholder="member@mypage48.com"
 					/>
@@ -123,7 +125,7 @@
 	{:else}
 		<div class="space-y-4">
 			<button
-				on:click={() => (isSent = false)}
+				onclick={() => (isSent = false)}
 				class="w-full py-4 rounded-2xl font-bold text-lg text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all cursor-pointer"
 			>
 				{$t('auth.forgotPassword.tryAnother')}
@@ -134,13 +136,15 @@
 		</div>
 	{/if}
 
-	<div slot="footer">
-		<a
-			href="/login"
-			class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors inline-flex items-center gap-2"
-		>
-			<ArrowLeft class="w-4 h-4" />
-			{$t('auth.forgotPassword.backToLogin')}
-		</a>
-	</div>
+	{#snippet footer()}
+		<div>
+			<a
+				href="/login"
+				class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors inline-flex items-center gap-2"
+			>
+				<ArrowLeft class="w-4 h-4" />
+				{$t('auth.forgotPassword.backToLogin')}
+			</a>
+		</div>
+	{/snippet}
 </AuthLayout>

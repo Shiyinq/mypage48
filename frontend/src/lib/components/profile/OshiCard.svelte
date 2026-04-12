@@ -5,13 +5,25 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
-	export let profile: User | null = null;
-	export let loading: boolean = true;
-	export let rouletteCount: number = 0;
-	export let birthdayCount: number = 0;
-	export let oshiMeetings: number = 0;
-	export let onOpenOshiModal: () => void;
-	export let onOpenMemberDetail: () => void;
+	interface Props {
+		profile?: User | null;
+		loading?: boolean;
+		rouletteCount?: number;
+		birthdayCount?: number;
+		oshiMeetings?: number;
+		onOpenOshiModal: () => void;
+		onOpenMemberDetail: () => void;
+	}
+
+	let {
+		profile = null,
+		loading = true,
+		rouletteCount = 0,
+		birthdayCount = 0,
+		oshiMeetings = 0,
+		onOpenOshiModal,
+		onOpenMemberDetail
+	}: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -59,7 +71,7 @@
 				<div class="relative">
 					<button
 						class="relative w-28 h-28 rounded-full border-4 border-white shadow-xl overflow-hidden flex-shrink-0 cursor-pointer transition-transform hover:scale-105 active:scale-95"
-						on:click={onOpenMemberDetail}
+						onclick={onOpenMemberDetail}
 					>
 						<img
 							src={getExternalMediaUrl(profile?.oshi?.profilePicture) || '/placeholder-user.jpg'}
@@ -94,7 +106,7 @@
 								{profile?.oshi?.name}
 							</h3>
 							<button
-								on:click={onOpenOshiModal}
+								onclick={onOpenOshiModal}
 								class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
 								title="Change Oshi"
 							>
@@ -223,7 +235,7 @@
 			<div class="flex flex-col items-center justify-center text-center py-8 -mt-12">
 				<div class="relative mb-4 group cursor-pointer">
 					<button
-						on:click={onOpenOshiModal}
+						onclick={onOpenOshiModal}
 						class="w-24 h-24 rounded-full bg-white dark:bg-zinc-800 shadow-lg flex items-center justify-center border-4 border-dashed border-gray-200 dark:border-zinc-700 group-hover:border-red-300 transition-colors cursor-pointer"
 					>
 						<Plus class="w-8 h-8 text-gray-300 group-hover:text-red-400" />
@@ -241,7 +253,7 @@
 					{$t('profile.oshi.emptyDescription')}
 				</p>
 				<div class="mt-4">
-					<Button size="sm" variant="outline" on:click={onOpenOshiModal}
+					<Button size="sm" variant="outline" onclick={onOpenOshiModal}
 						>{$t('profile.oshi.browseButton')}</Button
 					>
 				</div>

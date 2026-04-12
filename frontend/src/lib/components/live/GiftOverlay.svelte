@@ -1,15 +1,17 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { fade, scale, slide } from 'svelte/transition';
 	import { giftEvents, type GiftEvent } from '$lib/stores/gift';
 
-	export let roomIdentifier: string = '';
-
-	let activeGift: GiftEvent | null = null;
-	let giftTimeout: any;
-
-	$: if ($giftEvents && $giftEvents.roomIdentifier === roomIdentifier) {
-		showGift($giftEvents);
+	interface Props {
+		roomIdentifier?: string;
 	}
+
+	let { roomIdentifier = '' }: Props = $props();
+
+	let activeGift: GiftEvent | null = $state(null);
+	let giftTimeout: any;
 
 	function showGift(event: GiftEvent) {
 		activeGift = event;
@@ -43,6 +45,11 @@
 		}
 		return url;
 	}
+	run(() => {
+		if ($giftEvents && $giftEvents.roomIdentifier === roomIdentifier) {
+			showGift($giftEvents);
+		}
+	});
 </script>
 
 {#if activeGift}
@@ -100,8 +107,8 @@
 								style="width: 200px; height: 200px;"
 								loop
 								autoplay
-								on:ready={startGiftTimer}
-								on:error={() => {
+								onready={startGiftTimer}
+								onerror={() => {
 									activeGift = null;
 								}}
 							></lottie-player>
@@ -112,8 +119,8 @@
 								referrerpolicy="no-referrer"
 								style="width: 150px; height: 150px;"
 								class="object-contain drop-shadow-2xl"
-								on:load={startGiftTimer}
-								on:error={() => {
+								onload={startGiftTimer}
+								onerror={() => {
 									activeGift = null;
 								}}
 							/>

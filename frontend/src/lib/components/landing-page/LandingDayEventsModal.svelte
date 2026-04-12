@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { run, self } from 'svelte/legacy';
+
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Calendar, X, ExternalLink, Clock, MapPin } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
-	import { createEventDispatcher } from 'svelte';
+
 	import type { CalendarEvent } from '$lib/types/events';
 	import { formatDate } from '$lib/i18n';
 
@@ -14,34 +16,40 @@
 		news_id?: string;
 	}
 
-	export let isOpen = false;
-	export let date: Date;
-	export let events: LandingCalendarEvent[] = [];
+	interface Props {
+		isOpen?: boolean;
+		date: Date;
+		events?: LandingCalendarEvent[];
+		onclose?: () => void;
+	}
+
+	let { isOpen = false, date, events = [], onclose }: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
 	function close() {
-		dispatch('close');
+		if (onclose) onclose();
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape') close();
 	}
 
-	$: if (isOpen && typeof window !== 'undefined') {
-		document.body.style.overflow = 'hidden';
-	} else if (typeof window !== 'undefined') {
-		document.body.style.overflow = 'unset';
-	}
+	run(() => {
+		if (isOpen && typeof window !== 'undefined') {
+			document.body.style.overflow = 'hidden';
+		} else if (typeof window !== 'undefined') {
+			document.body.style.overflow = 'unset';
+		}
+	});
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if isOpen}
 	<div
 		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md bg-black/60 transition-all duration-300"
-		on:click|self={close}
+		onclick={self(close)}
 		role="presentation"
 		transition:fade={{ duration: 300 }}
 	>
@@ -71,7 +79,7 @@
 				</div>
 				<button
 					class="p-3 hover:bg-slate-50 dark:hover:bg-zinc-800 rounded-full transition-all text-slate-400 hover:text-red-600"
-					on:click={close}
+					onclick={close}
 				>
 					<X class="w-6 h-6" />
 				</button>

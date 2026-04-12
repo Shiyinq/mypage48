@@ -6,8 +6,9 @@
 
 	const { t } = useTranslation();
 
-	$: currentChannel =
-		RADIO_CHANNELS.find((c) => c.id === $radioStore.currentChannelId) || RADIO_CHANNELS[0];
+	let currentChannel = $derived(
+		RADIO_CHANNELS.find((c) => c.id === $radioStore.currentChannelId) || RADIO_CHANNELS[0]
+	);
 
 	function handleVolumeChange(e: Event) {
 		const vol = parseInt((e.target as HTMLInputElement).value);
@@ -137,7 +138,7 @@
 		<div class="flex-1 flex justify-center items-center gap-6">
 			<button
 				class="p-2 text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors active:scale-90 cursor-pointer"
-				on:click={() => radioStore.toggle()}
+				onclick={() => radioStore.toggle()}
 				title={$radioStore.isPlaying ? $t('landing.radio.pause') : $t('landing.radio.play')}
 			>
 				{#if $radioStore.isPlaying}
@@ -149,7 +150,7 @@
 
 			<button
 				class="p-2 text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors active:scale-90 cursor-pointer"
-				on:click={nextTrack}
+				onclick={nextTrack}
 				title={$t('landing.radio.nextTrack')}
 			>
 				<SkipForward size={24} fill="currentColor" />
@@ -161,7 +162,7 @@
 		>
 			<button
 				class="text-gray-400 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-white cursor-pointer"
-				on:click={toggleMute}
+				onclick={toggleMute}
 			>
 				{#if $radioStore.isMuted || $radioStore.volume === 0}
 					<VolumeX size={14} />
@@ -174,7 +175,7 @@
 				min="0"
 				max="100"
 				value={$radioStore.volume}
-				on:input={handleVolumeChange}
+				oninput={handleVolumeChange}
 				class="w-16 h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-red-500 cursor-pointer"
 			/>
 		</div>
@@ -187,7 +188,7 @@
 				$radioStore.currentChannelId
 					? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30 ring-1 ring-red-100 dark:ring-red-500/10'
 					: 'bg-transparent border-transparent hover:bg-gray-50 dark:hover:bg-zinc-800'}"
-				on:click={() => changeChannel(channel.id)}
+				onclick={() => changeChannel(channel.id)}
 			>
 				<div
 					class="w-8 h-8 rounded-full flex items-center justify-center {channel.id ===

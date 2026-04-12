@@ -1,69 +1,83 @@
 <script lang="ts">
+	import { run, preventDefault } from 'svelte/legacy';
+
 	import { createEventDispatcher } from 'svelte';
 	import { X, Save, User, LoaderCircle, CircleCheck, Sparkles } from 'lucide-svelte';
 	import type { Member } from '$lib/apis/members';
 	import { fly, fade } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let show = false;
-	export let member: Partial<Member> = {};
-	export let isCreating = false;
-	export let isSubmitting = false;
-
-	const dispatch = createEventDispatcher();
-	const { t } = useTranslation();
-
-	let formData = {
-		name: member.name || '',
-		nickname: member.nickname || '',
-		generation: member.generation || '',
-		jiko: member.jiko || '',
-		img: member.img || '',
-		active: member.active ?? true,
-		socials: {
-			twitter: member.socials?.twitter || '',
-			instagram: member.socials?.instagram || '',
-			tiktok: member.socials?.tiktok || '',
-			threads: member.socials?.threads || '',
-			showroom: member.socials?.showroom || '',
-			idn_app: member.socials?.idn_app || ''
-		}
-	};
-
-	// Safe Form Reset Pattern
-	let prevShow = false;
-	$: if (show !== prevShow) {
-		if (show) {
-			// Modal opened - reset form
-			formData = {
-				name: member.name || '',
-				nickname: member.nickname || '',
-				generation: member.generation || '',
-				jiko: member.jiko || '',
-				img: member.img || '',
-				active: member.active ?? true,
-				socials: {
-					twitter: member.socials?.twitter || '',
-					instagram: member.socials?.instagram || '',
-					tiktok: member.socials?.tiktok || '',
-					threads: member.socials?.threads || '',
-					showroom: member.socials?.showroom || '',
-					idn_app: member.socials?.idn_app || ''
-				}
-			};
-		}
-		prevShow = show;
+	interface Props {
+		show?: boolean;
+		member?: Partial<Member>;
+		isCreating?: boolean;
+		isSubmitting?: boolean;
+		onsubmit?: (data: any) => void;
 	}
 
+	let {
+		show = $bindable(false),
+		member = {},
+		isCreating = false,
+		isSubmitting = false,
+		onsubmit
+	}: Props = $props();
+
+	const { t } = useTranslation();
+
+	let formData = $state({
+		name: '',
+		nickname: '',
+		generation: '',
+		jiko: '',
+		img: '',
+		active: true,
+		socials: {
+			twitter: '',
+			instagram: '',
+			tiktok: '',
+			threads: '',
+			showroom: '',
+			idn_app: ''
+		}
+	});
+
+	// Safe Form Reset Pattern
+	let prevShow = $state(false);
+	$effect(() => {
+		if (show !== prevShow) {
+			if (show) {
+				// Modal opened - reset form
+				formData = {
+					name: member.name || '',
+					nickname: member.nickname || '',
+					generation: member.generation || '',
+					jiko: member.jiko || '',
+					img: member.img || '',
+					active: member.active ?? true,
+					socials: {
+						twitter: member.socials?.twitter || '',
+						instagram: member.socials?.instagram || '',
+						tiktok: member.socials?.tiktok || '',
+						threads: member.socials?.threads || '',
+						showroom: member.socials?.showroom || '',
+						idn_app: member.socials?.idn_app || ''
+					}
+				};
+			}
+			prevShow = show;
+		}
+	});
+
 	// Realtime Validation
-	$: isNameValid = formData.name.length > 0;
-	$: isNicknameValid = formData.nickname.length > 0;
-	$: isGenValid = formData.generation.length > 0;
-	$: isFormValid = isNameValid && isNicknameValid && isGenValid;
+	let isNameValid = $derived(formData.name.length > 0);
+	let isNicknameValid = $derived(formData.nickname.length > 0);
+	let isGenValid = $derived(formData.generation.length > 0);
+	let isFormValid = $derived(isNameValid && isNicknameValid && isGenValid);
 
 	function handleSubmit() {
 		if (!isFormValid) return;
-		dispatch('submit', formData);
+		onsubmit?.(formData);
 	}
 
 	function handleClose() {
@@ -74,11 +88,11 @@
 {#if show}
 	<div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
 		<!-- Backdrop -->
-		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
-			on:click={handleClose}
+			onclick={handleClose}
 			transition:fade
 		></div>
 
@@ -111,14 +125,14 @@
 					</div>
 
 					<button
-						on:click={handleClose}
+						onclick={handleClose}
 						class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all cursor-pointer"
 					>
 						<X class="w-6 h-6" />
 					</button>
 				</div>
 
-				<form on:submit|preventDefault={handleSubmit} class="space-y-6">
+				<form onsubmit={preventDefault(handleSubmit)} class="space-y-6">
 					<!-- Basic Info -->
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div class="space-y-2">
@@ -288,16 +302,17 @@
 					<div class="flex items-center gap-3 pt-2">
 						<button
 							type="button"
+							aria-label="Toggle active status"
 							class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 {formData.active
 								? 'bg-green-500'
 								: 'bg-gray-200 dark:bg-zinc-700'}"
-							on:click={() => (formData.active = !formData.active)}
+							onclick={() => (formData.active = !formData.active)}
 						>
 							<span
 								class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {formData.active
 									? 'translate-x-6'
 									: 'translate-x-1'}"
-							/>
+							></span>
 						</button>
 						<span class="text-sm font-medium text-gray-700 dark:text-gray-300">
 							{$t('admin.members.modal.accountStatus')}: {formData.active
@@ -310,7 +325,7 @@
 					<div class="pt-6 flex gap-3">
 						<button
 							type="button"
-							on:click={handleClose}
+							onclick={handleClose}
 							class="flex-1 px-4 py-3 rounded-xl font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
 						>
 							{$t('common.cancel')}

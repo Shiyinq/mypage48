@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -17,13 +19,13 @@
 
 	const { t } = useTranslation();
 
-	let token = '';
-	let newPassword = '';
-	let confirmPassword = '';
-	let isLoading = false;
-	let error: string | null = null;
-	let errors: Record<string, string> = {};
-	let isSuccess = false;
+	let token = $state('');
+	let newPassword = $state('');
+	let confirmPassword = $state('');
+	let isLoading = $state(false);
+	let error: string | null = $state(null);
+	let errors: Record<string, string> = $state({});
+	let isSuccess = $state(false);
 
 	onMount(() => {
 		token = $page.url.searchParams.get('token') || '';
@@ -32,8 +34,9 @@
 		}
 	});
 
-	$: isValid =
-		newPassword.length > 0 && confirmPassword.length > 0 && Object.values(errors).every((e) => !e);
+	let isValid = $derived(
+		newPassword.length > 0 && confirmPassword.length > 0 && Object.values(errors).every((e) => !e)
+	);
 
 	const validateField = (field: 'newPassword' | 'confirmPassword', value: string) => {
 		try {
@@ -121,7 +124,7 @@
 			</h1>
 		</div>
 	{:else}
-		<form on:submit|preventDefault={handleSubmit} class="space-y-4" novalidate>
+		<form onsubmit={preventDefault(handleSubmit)} class="space-y-4" novalidate>
 			<div>
 				<PasswordInput
 					id="new-password"
@@ -132,7 +135,9 @@
 					error={errors.newPassword}
 					on:input={() => validateField('newPassword', newPassword)}
 				>
-					<Lock class="w-5 h-5" slot="leading" />
+					{#snippet leading()}
+						<Lock class="w-5 h-5" />
+					{/snippet}
 				</PasswordInput>
 			</div>
 
@@ -146,7 +151,9 @@
 					error={errors.confirmPassword}
 					on:input={() => validateField('confirmPassword', confirmPassword)}
 				>
-					<Lock class="w-5 h-5" slot="leading" />
+					{#snippet leading()}
+						<Lock class="w-5 h-5" />
+					{/snippet}
 				</PasswordInput>
 				<PasswordStrengthChecklist password={newPassword} />
 			</div>
@@ -173,13 +180,15 @@
 		</form>
 	{/if}
 
-	<div slot="footer">
-		<a
-			href="/login"
-			class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors inline-flex items-center gap-2"
-		>
-			<ArrowLeft class="w-4 h-4" />
-			{$t('auth.forgotPassword.backToLogin')}
-		</a>
-	</div>
+	{#snippet footer()}
+		<div>
+			<a
+				href="/login"
+				class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors inline-flex items-center gap-2"
+			>
+				<ArrowLeft class="w-4 h-4" />
+				{$t('auth.forgotPassword.backToLogin')}
+			</a>
+		</div>
+	{/snippet}
 </AuthLayout>

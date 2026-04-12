@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -33,14 +35,18 @@
 	import { auth } from '$lib/apis/auth';
 	import { userProfile } from '$lib/stores/profile';
 
-	export let open = false;
+	interface Props {
+		open?: boolean;
+	}
+
+	let { open = $bindable(false) }: Props = $props();
 
 	const { t } = useTranslation();
 
-	let inputEl: HTMLInputElement;
-	let searchQuery = '';
-	let selectedIndex = 0;
-	let listContainer: HTMLDivElement;
+	let inputEl: HTMLInputElement | undefined = $state();
+	let searchQuery = $state('');
+	let selectedIndex = $state(0);
+	let listContainer: HTMLDivElement | undefined = $state();
 
 	// Actions definition
 	type Action = {
@@ -52,219 +58,225 @@
 		perform: () => void;
 	};
 
-	let actions: Action[] = [];
+	let actions: Action[] = $state([]);
 
-	$: actions = [
-		// Admin (Conditional)
-		...($userProfile.data?.isAdmin
-			? ([
-					{
-						id: 'admin-dashboard',
-						title: $t('command.actions.adminDashboard'),
-						icon: Shield,
-						section: 'admin',
-						perform: () => goto('/admin')
-					},
-					{
-						id: 'admin-members',
-						title: $t('command.actions.adminMembers'),
-						icon: Users,
-						section: 'admin',
-						perform: () => goto('/admin/members')
-					},
-					{
-						id: 'admin-setlists',
-						title: $t('command.actions.adminSetlists'),
-						icon: Music,
-						section: 'admin',
-						perform: () => goto('/admin/setlists')
-					},
-					{
-						id: 'admin-feedback',
-						title: $t('command.actions.adminFeedback'),
-						icon: MessageSquare,
-						section: 'admin',
-						perform: () => goto('/admin/feedback')
-					}
-				] as Action[])
-			: []),
+	run(() => {
+		actions = [
+			// Admin (Conditional)
+			...($userProfile.data?.isAdmin
+				? ([
+						{
+							id: 'admin-dashboard',
+							title: $t('command.actions.adminDashboard'),
+							icon: Shield,
+							section: 'admin',
+							perform: () => goto('/admin')
+						},
+						{
+							id: 'admin-members',
+							title: $t('command.actions.adminMembers'),
+							icon: Users,
+							section: 'admin',
+							perform: () => goto('/admin/members')
+						},
+						{
+							id: 'admin-setlists',
+							title: $t('command.actions.adminSetlists'),
+							icon: Music,
+							section: 'admin',
+							perform: () => goto('/admin/setlists')
+						},
+						{
+							id: 'admin-feedback',
+							title: $t('command.actions.adminFeedback'),
+							icon: MessageSquare,
+							section: 'admin',
+							perform: () => goto('/admin/feedback')
+						}
+					] as Action[])
+				: []),
 
-		// Navigation
-		{
-			id: 'nav-home',
-			title: $t('command.actions.home'),
-			icon: Home,
-			section: 'navigation',
-			perform: () => goto('/')
-		},
-		{
-			id: 'nav-theater',
-			title: $t('command.actions.theater'),
-			icon: AudioLines,
-			section: 'navigation',
-			perform: () => goto('/theater')
-		},
-		{
-			id: 'nav-members',
-			title: $t('command.actions.members'),
-			icon: Users,
-			section: 'navigation',
-			perform: () => goto('/theater/members')
-		},
-		{
-			id: 'nav-events',
-			title: $t('command.actions.events'),
-			icon: Calendar,
-			section: 'navigation',
-			perform: () => goto('/theater/events')
-		},
-		{
-			id: 'nav-calendar',
-			title: $t('command.actions.calendar'),
-			icon: Calendar,
-			section: 'navigation',
-			perform: () => goto('/theater/events/calendar')
-		},
-		{
-			id: 'nav-event-history',
-			title: $t('command.actions.eventHistory'),
-			icon: History,
-			section: 'navigation',
-			perform: () => goto('/theater/events/history')
-		},
-		{
-			id: 'nav-history',
-			title: $t('command.actions.history'),
-			icon: History,
-			section: 'navigation',
-			perform: () => goto('/history')
-		},
-		{
-			id: 'nav-achievements',
-			title: $t('command.actions.achievements'),
-			icon: Trophy,
-			section: 'navigation',
-			perform: () => goto('/achievements')
-		},
-		{
-			id: 'nav-memories',
-			title: $t('command.actions.memories'),
-			icon: Command, // Placeholder icon
-			section: 'navigation',
-			perform: () => goto('/memories')
-		},
-		{
-			id: 'nav-profile',
-			title: $t('command.actions.profile'),
-			icon: User,
-			section: 'navigation',
-			perform: () => goto('/profile')
-		},
-		{
-			id: 'nav-settings',
-			title: $t('command.actions.settings'),
-			icon: Settings,
-			section: 'navigation',
-			perform: () => goto('/settings')
-		},
-		{
-			id: 'nav-playground',
-			title: $t('playground.title'),
-			icon: Terminal,
-			section: 'navigation',
-			perform: () => goto('/playground')
-		},
-		{
-			id: 'nav-feedback',
-			title: $t('command.actions.feedback'),
-			icon: MessageSquare,
-			section: 'navigation',
-			perform: () => goto('/feedback')
-		},
+			// Navigation
+			{
+				id: 'nav-home',
+				title: $t('command.actions.home'),
+				icon: Home,
+				section: 'navigation',
+				perform: () => goto('/')
+			},
+			{
+				id: 'nav-theater',
+				title: $t('command.actions.theater'),
+				icon: AudioLines,
+				section: 'navigation',
+				perform: () => goto('/theater')
+			},
+			{
+				id: 'nav-members',
+				title: $t('command.actions.members'),
+				icon: Users,
+				section: 'navigation',
+				perform: () => goto('/theater/members')
+			},
+			{
+				id: 'nav-events',
+				title: $t('command.actions.events'),
+				icon: Calendar,
+				section: 'navigation',
+				perform: () => goto('/theater/events')
+			},
+			{
+				id: 'nav-calendar',
+				title: $t('command.actions.calendar'),
+				icon: Calendar,
+				section: 'navigation',
+				perform: () => goto('/theater/events/calendar')
+			},
+			{
+				id: 'nav-event-history',
+				title: $t('command.actions.eventHistory'),
+				icon: History,
+				section: 'navigation',
+				perform: () => goto('/theater/events/history')
+			},
+			{
+				id: 'nav-history',
+				title: $t('command.actions.history'),
+				icon: History,
+				section: 'navigation',
+				perform: () => goto('/history')
+			},
+			{
+				id: 'nav-achievements',
+				title: $t('command.actions.achievements'),
+				icon: Trophy,
+				section: 'navigation',
+				perform: () => goto('/achievements')
+			},
+			{
+				id: 'nav-memories',
+				title: $t('command.actions.memories'),
+				icon: Command, // Placeholder icon
+				section: 'navigation',
+				perform: () => goto('/memories')
+			},
+			{
+				id: 'nav-profile',
+				title: $t('command.actions.profile'),
+				icon: User,
+				section: 'navigation',
+				perform: () => goto('/profile')
+			},
+			{
+				id: 'nav-settings',
+				title: $t('command.actions.settings'),
+				icon: Settings,
+				section: 'navigation',
+				perform: () => goto('/settings')
+			},
+			{
+				id: 'nav-playground',
+				title: $t('playground.title'),
+				icon: Terminal,
+				section: 'navigation',
+				perform: () => goto('/playground')
+			},
+			{
+				id: 'nav-feedback',
+				title: $t('command.actions.feedback'),
+				icon: MessageSquare,
+				section: 'navigation',
+				perform: () => goto('/feedback')
+			},
 
-		// Actions
-		{
-			id: 'ticket-scan',
-			title: $t('command.actions.scanTicket'),
-			icon: ScanLine,
-			section: 'ticketing',
-			perform: () => goto('/upload?mode=scan')
-		},
-		{
-			id: 'ticket-manual',
-			title: $t('command.actions.manualTicket'),
-			icon: Plus,
-			section: 'ticketing',
-			perform: () => goto('/upload?mode=manual')
-		},
+			// Actions
+			{
+				id: 'ticket-scan',
+				title: $t('command.actions.scanTicket'),
+				icon: ScanLine,
+				section: 'ticketing',
+				perform: () => goto('/upload?mode=scan')
+			},
+			{
+				id: 'ticket-manual',
+				title: $t('command.actions.manualTicket'),
+				icon: Plus,
+				section: 'ticketing',
+				perform: () => goto('/upload?mode=manual')
+			},
 
-		// Theme
-		{
-			id: 'theme-light',
-			title: $t('command.actions.lightMode'),
-			icon: Sun,
-			section: 'theme',
-			perform: () => setTheme('light')
-		},
-		{
-			id: 'theme-dark',
-			title: $t('command.actions.darkMode'),
-			icon: Moon,
-			section: 'theme',
-			perform: () => setTheme('dark')
-		},
-		{
-			id: 'theme-auto',
-			title: $t('command.actions.autoMode'),
-			icon: Laptop,
-			section: 'theme',
-			perform: () => setTheme('auto')
-		},
+			// Theme
+			{
+				id: 'theme-light',
+				title: $t('command.actions.lightMode'),
+				icon: Sun,
+				section: 'theme',
+				perform: () => setTheme('light')
+			},
+			{
+				id: 'theme-dark',
+				title: $t('command.actions.darkMode'),
+				icon: Moon,
+				section: 'theme',
+				perform: () => setTheme('dark')
+			},
+			{
+				id: 'theme-auto',
+				title: $t('command.actions.autoMode'),
+				icon: Laptop,
+				section: 'theme',
+				perform: () => setTheme('auto')
+			},
 
-		// Language
-		{
-			id: 'lang-id',
-			title: $t('command.actions.langId'),
-			icon: Globe,
-			section: 'language',
-			perform: () => setLocale('id')
-		},
-		{
-			id: 'lang-en',
-			title: $t('command.actions.langEn'),
-			icon: Globe,
-			section: 'language',
-			perform: () => setLocale('en')
-		},
-		{
-			id: 'lang-ja',
-			title: $t('command.actions.langJa'),
-			icon: Globe,
-			section: 'language',
-			perform: () => setLocale('ja')
-		},
+			// Language
+			{
+				id: 'lang-id',
+				title: $t('command.actions.langId'),
+				icon: Globe,
+				section: 'language',
+				perform: () => setLocale('id')
+			},
+			{
+				id: 'lang-en',
+				title: $t('command.actions.langEn'),
+				icon: Globe,
+				section: 'language',
+				perform: () => setLocale('en')
+			},
+			{
+				id: 'lang-ja',
+				title: $t('command.actions.langJa'),
+				icon: Globe,
+				section: 'language',
+				perform: () => setLocale('ja')
+			},
 
-		// Account
-		{
-			id: 'account-logout',
-			title: $t('command.actions.logout'),
-			icon: LogOut,
-			section: 'account',
-			perform: async () => {
-				await auth.logout();
-				window.location.href = '/login';
+			// Account
+			{
+				id: 'account-logout',
+				title: $t('command.actions.logout'),
+				icon: LogOut,
+				section: 'account',
+				perform: async () => {
+					await auth.logout();
+					window.location.href = '/login';
+				}
 			}
-		}
-	];
+		];
+	});
 
-	$: filteredActions = searchQuery
-		? actions.filter((a) => a.title.toLowerCase().includes(searchQuery.toLowerCase()))
-		: actions;
+	let filteredActions = $derived(
+		searchQuery
+			? actions.filter((a) => a.title.toLowerCase().includes(searchQuery.toLowerCase()))
+			: actions
+	);
 
 	// Reset selection when search changes or when opening
-	$: if (searchQuery || open) {
-		selectedIndex = 0;
-	}
+	run(() => {
+		if (searchQuery || open) {
+			selectedIndex = 0;
+		}
+	});
 
 	function handleKeydown(e: KeyboardEvent) {
 		// Disable on login/register/auth pages
@@ -322,12 +334,15 @@
 	}
 
 	// Focus input when opened
-	$: if (open && inputEl) {
-		setTimeout(() => inputEl.focus(), 10); // Tiny delay to ensure visibility
-	}
+	run(() => {
+		if (open && inputEl) {
+			const el = inputEl;
+			setTimeout(() => el.focus(), 10); // Tiny delay to ensure visibility
+		}
+	});
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if open}
 	<div
@@ -338,8 +353,9 @@
 		<!-- Backdrop -->
 		<button
 			type="button"
+			aria-label="Close command palette"
 			class="absolute inset-0 w-full h-full bg-black/40 backdrop-blur-sm transition-opacity border-none cursor-default"
-			on:click={() => (open = false)}
+			onclick={() => (open = false)}
 			transition:fade={{ duration: 150 }}
 			tabindex="-1"
 		></button>
@@ -379,11 +395,10 @@
                                    {i === selectedIndex
 								? 'bg-red-500/10 text-red-600 dark:text-red-400 border-l-2 border-red-500'
 								: 'text-themed-secondary border-l-2 border-transparent hover:bg-black/5 dark:hover:bg-white/5'} cursor-pointer"
-							on:click={() => runAction(action)}
-							on:mouseenter={() => (selectedIndex = i)}
+							onclick={() => runAction(action)}
+							onmouseenter={() => (selectedIndex = i)}
 						>
-							<svelte:component
-								this={action.icon}
+							<action.icon
 								class="w-4 h-4 {i === selectedIndex ? 'text-red-500' : 'text-themed-muted'}"
 							/>
 							<span class="flex-1">{action.title}</span>

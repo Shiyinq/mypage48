@@ -10,8 +10,12 @@
 
 	const { t, locale } = useTranslation();
 
-	export let birthdays: BirthdayResponse[] = [];
-	export let isLoading = true;
+	interface Props {
+		birthdays?: BirthdayResponse[];
+		isLoading?: boolean;
+	}
+
+	let { birthdays = [], isLoading = true }: Props = $props();
 
 	function getBirthdayText(daysUntil: number, t: Function): string {
 		if (daysUntil === 0) return t('common.today');
@@ -20,7 +24,7 @@
 	}
 
 	// Scroll container reference for possible future enhancements like drag-to-scroll
-	let scrollContainer: HTMLElement;
+	let scrollContainer: HTMLElement | undefined = $state();
 </script>
 
 <div class="space-y-4 mb-8">

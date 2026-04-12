@@ -3,9 +3,13 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { TopTwoShotMember } from '$lib/types';
 
-	export let ranking: TopTwoShotMember[] = [];
-	export let totalCount: number = 0;
-	export let topMemberCount: number = 1;
+	interface Props {
+		ranking?: TopTwoShotMember[];
+		totalCount?: number;
+		topMemberCount?: number;
+	}
+
+	let { ranking = [], totalCount = 0, topMemberCount = 1 }: Props = $props();
 
 	const { t } = useTranslation();
 

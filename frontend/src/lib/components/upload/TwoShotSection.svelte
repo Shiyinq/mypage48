@@ -5,16 +5,31 @@
 	import { createEventDispatcher } from 'svelte';
 	import { dragDrop } from '$lib/actions/dragDrop';
 
-	export let showTwoShot: boolean = false;
-	export let twoShotImage: string | null = null;
-	export let memberName: string = '';
-	export let twoShotType: 'Roulette' | 'Birthday' = 'Roulette';
-	export let twoShotPrice: number = 100000;
+	interface Props {
+		showTwoShot?: boolean;
+		twoShotImage?: string | null;
+		memberName?: string;
+		twoShotType?: 'Roulette' | 'Birthday';
+		twoShotPrice?: number;
+		onphotoClick?: () => void;
+		onSelectImage?: () => void;
+		ondrop?: (file: File) => void;
+	}
+
+	let {
+		showTwoShot = $bindable(false),
+		twoShotImage = null,
+		memberName = $bindable(''),
+		twoShotType = $bindable('Roulette'),
+		twoShotPrice = $bindable(100000),
+		onphotoClick,
+		onSelectImage,
+		ondrop
+	}: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
-	let isDragging = false;
+	let isDragging = $state(false);
 </script>
 
 <div class="space-y-4">
@@ -29,12 +44,13 @@
 		</h3>
 		<button
 			type="button"
-			on:click={() => (showTwoShot = !showTwoShot)}
+			aria-label="Toggle two shot section"
+			onclick={() => (showTwoShot = !showTwoShot)}
 			class={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 cursor-pointer ${showTwoShot ? 'bg-red-600' : 'bg-gray-200 dark:bg-zinc-700'}`}
 		>
 			<span
 				class={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${showTwoShot ? 'translate-x-6' : 'translate-x-1'}`}
-			/>
+			></span>
 		</button>
 	</div>
 	{#if showTwoShot}
@@ -49,9 +65,12 @@
 				>
 				<button
 					type="button"
-					on:click={() => dispatch('photoClick')}
+					onclick={() => {
+						onphotoClick?.();
+						onSelectImage?.();
+					}}
 					use:dragDrop={{
-						onDrop: (file) => dispatch('drop', file),
+						onDrop: (file) => ondrop?.(file),
 						onDragChange: (state) => (isDragging = state)
 					}}
 					class="w-full h-32 border-2 border-dashed rounded-xl transition-all cursor-pointer flex items-center justify-center overflow-hidden relative group

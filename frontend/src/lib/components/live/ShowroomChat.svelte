@@ -5,15 +5,19 @@
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveChatShowroomMessage } from '$lib/types';
 
-	export let roomId: string;
+	interface Props {
+		roomId: string;
+	}
+
+	let { roomId }: Props = $props();
 
 	const { t } = useTranslation();
 
-	let messages: LiveChatShowroomMessage[] = [];
-	let chatContainer: HTMLElement;
+	let messages: LiveChatShowroomMessage[] = $state([]);
+	let chatContainer: HTMLElement | undefined = $state();
 	let pollingInterval: any;
 	let lastCommentTime = 0;
-	let loading = true;
+	let loading = $state(true);
 	let isFirstLoad = true;
 
 	async function fetchComments() {

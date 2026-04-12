@@ -2,9 +2,13 @@
 	import { Trophy, Star } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let totalShows: number;
-	export let totalAchievements: number;
-	export let loading: boolean = true;
+	interface Props {
+		totalShows: number;
+		totalAchievements: number;
+		loading?: boolean;
+	}
+
+	let { totalShows, totalAchievements, loading = true }: Props = $props();
 
 	const { t } = useTranslation();
 </script>

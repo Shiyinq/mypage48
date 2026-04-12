@@ -14,28 +14,45 @@
 	import { ticketsStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 
-	export let filters: import('$lib/types').TicketFilters = {};
-	export let viewMode: 'GRID' | 'TABLE' = 'GRID';
-	export let showViewToggle = true;
-	export let dropdownPlacement: 'left' | 'right' = 'right';
-	export let isSidebar = false;
+	interface Props {
+		filters?: import('$lib/types').TicketFilters;
+		viewMode?: 'GRID' | 'TABLE';
+		showViewToggle?: boolean;
+		dropdownPlacement?: 'left' | 'right';
+		isSidebar?: boolean;
+		onfilterChange?: (filters: import('$lib/types').TicketFilters) => void;
+	}
 
-	const dispatch = createEventDispatcher<{
-		filterChange: import('$lib/types').TicketFilters;
-	}>();
+	let {
+		filters = {},
+		viewMode = $bindable('GRID'),
+		showViewToggle = true,
+		dropdownPlacement = 'right',
+		isSidebar = false,
+		onfilterChange
+	}: Props = $props();
 
 	const { t } = useTranslation();
 
-	let showFilters = false;
-	let availableTitles: string[] = [];
-	let isLoadingTitles = false;
+	let showFilters = $state(false);
+	let availableTitles: string[] = $state([]);
+	let isLoadingTitles = $state(false);
 
 	// Local state for debouncing
-	let title = filters.title || '';
-	let hasTwoShot = filters.hasTwoShot || false;
-	let startDate = filters.startDate || '';
-	let endDate = filters.endDate || '';
-	let selectedDays: string[] = filters.days || [];
+	let title = $state('');
+	let hasTwoShot = $state(false);
+	let startDate = $state('');
+	let endDate = $state('');
+	let selectedDays: string[] = $state([]);
+
+	// Initialize from filters prop
+	$effect.pre(() => {
+		title = filters.title || '';
+		hasTwoShot = filters.hasTwoShot || false;
+		startDate = filters.startDate || '';
+		endDate = filters.endDate || '';
+		selectedDays = filters.days || [];
+	});
 
 	const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -58,7 +75,7 @@
 		if (endDate) newFilters.endDate = endDate;
 		if (selectedDays.length > 0) newFilters.days = selectedDays;
 
-		dispatch('filterChange', newFilters);
+		onfilterChange?.(newFilters);
 	}
 
 	function toggleDay(day: string) {
@@ -100,10 +117,11 @@
 		};
 	}
 
-	let filterButton: HTMLButtonElement;
+	let filterButton: HTMLButtonElement | undefined = $state();
 
-	$: activeFilterCount =
-		(hasTwoShot ? 1 : 0) + (startDate ? 1 : 0) + (endDate ? 1 : 0) + selectedDays.length;
+	let activeFilterCount = $derived(
+		(hasTwoShot ? 1 : 0) + (startDate ? 1 : 0) + (endDate ? 1 : 0) + selectedDays.length
+	);
 </script>
 
 <div class="flex flex-col gap-4 w-full relative">
@@ -122,7 +140,7 @@
 
 			<select
 				bind:value={title}
-				on:change={updateFilters}
+				onchange={updateFilters}
 				class="w-full pl-10 pr-10 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full text-sm font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all appearance-none cursor-pointer"
 			>
 				<option value="">{$t('common.allSetlists') || 'All Setlists'}</option>
@@ -139,7 +157,7 @@
 		<!-- Filter Toggle Button -->
 		<button
 			bind:this={filterButton}
-			on:click={() => (showFilters = !showFilters)}
+			onclick={() => (showFilters = !showFilters)}
 			class={`p-2 rounded-full transition-all border shadow-sm cursor-pointer relative ${showFilters || activeFilterCount > 0 ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-500 hover:text-gray-700'}`}
 			title="Advanced Filters"
 		>
@@ -162,14 +180,14 @@
 				class="flex bg-white dark:bg-zinc-900 p-1 rounded-full border border-gray-200 dark:border-zinc-700 shadow-sm shrink-0"
 			>
 				<button
-					on:click={() => (viewMode = 'GRID')}
+					onclick={() => (viewMode = 'GRID')}
 					class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'GRID' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
 					title="Grid View"
 				>
 					<LayoutGrid class="w-4 h-4" />
 				</button>
 				<button
-					on:click={() => (viewMode = 'TABLE')}
+					onclick={() => (viewMode = 'TABLE')}
 					class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'TABLE' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
 					title="Table View"
 				>
@@ -196,7 +214,7 @@
 							type="checkbox"
 							class="sr-only"
 							bind:checked={hasTwoShot}
-							on:change={updateFilters}
+							onchange={updateFilters}
 						/>
 						<div
 							class={`w-10 h-6 rounded-full transition-colors ${hasTwoShot ? (isSidebar ? 'bg-red-500' : 'bg-blue-500') : 'bg-gray-200 dark:bg-zinc-700 group-hover:bg-gray-300'}`}
@@ -225,7 +243,7 @@
 							<input
 								type="date"
 								bind:value={startDate}
-								on:change={updateFilters}
+								onchange={updateFilters}
 								class={`w-full text-xs bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 rounded-lg pl-8 pr-2 py-2 focus:ring-2 outline-none cursor-pointer transition-all placeholder:text-gray-300 ${isSidebar ? 'focus:ring-red-500/20 focus:border-red-500' : 'focus:ring-blue-500/20 focus:border-blue-500'}`}
 							/>
 						</div>
@@ -239,7 +257,7 @@
 							<input
 								type="date"
 								bind:value={endDate}
-								on:change={updateFilters}
+								onchange={updateFilters}
 								class={`w-full text-xs bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 rounded-lg pl-8 pr-2 py-2 focus:ring-2 outline-none cursor-pointer transition-all placeholder:text-gray-300 ${isSidebar ? 'focus:ring-red-500/20 focus:border-red-500' : 'focus:ring-blue-500/20 focus:border-blue-500'}`}
 							/>
 						</div>
@@ -257,7 +275,7 @@
 				<div class={isSidebar ? 'grid grid-cols-4 gap-1.5' : 'flex flex-wrap gap-1.5'}>
 					{#each daysOfWeek as day}
 						<button
-							on:click={() => toggleDay(day)}
+							onclick={() => toggleDay(day)}
 							class={`transition-all cursor-pointer text-center font-bold px-3 py-1.5 border ${
 								isSidebar ? 'rounded-lg text-[10px]' : 'rounded-full text-xs'
 							} ${
@@ -281,7 +299,7 @@
 				class={`flex justify-end pt-1 border-t border-gray-50 dark:border-white/5 ${isSidebar ? '' : 'mt-2'}`}
 			>
 				<button
-					on:click={clearFilters}
+					onclick={clearFilters}
 					class={`text-[10px] font-bold flex items-center gap-1 transition-colors uppercase tracking-wider cursor-pointer ${isSidebar ? 'text-gray-400 hover:text-red-500' : 'text-red-500 hover:text-red-600'}`}
 				>
 					<X class="w-3 h-3" />

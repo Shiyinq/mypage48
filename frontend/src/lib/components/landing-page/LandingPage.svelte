@@ -22,11 +22,11 @@
 
 	const { t } = useTranslation();
 
-	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
-	let scrollY = 0;
+	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
+	let scrollY = $state(0);
 
 	// Make features reactive to language changes
-	$: features = [
+	let features = $derived([
 		{
 			title: $t('landing.features.theater.title'),
 			description: $t('landing.features.theater.description'),
@@ -59,7 +59,7 @@
 			iconBg: 'bg-yellow-50 dark:bg-yellow-500/10',
 			type: 'achievements'
 		}
-	];
+	]);
 
 	function scrollToFeatures() {
 		const featuresSection = document.getElementById('features');
@@ -126,7 +126,7 @@
 
 		<!-- Scroll Indicator -->
 		<button
-			on:click={scrollToFeatures}
+			onclick={scrollToFeatures}
 			class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 animate-appear cursor-pointer pointer-events-auto group/scroll"
 			style="animation-delay: 500ms;"
 			aria-label="Scroll to features"
@@ -280,7 +280,7 @@
 							class="inline-flex p-3 rounded-full {feature.iconBg} {feature.color} ring-4 ring-white shadow-lg mb-2"
 							style="transform: translate({$mouse.x * 40}px, {$mouse.y * 40}px)"
 						>
-							<svelte:component this={feature.icon} size={24} />
+							<feature.icon size={24} />
 						</div>
 						<h2
 							class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter"

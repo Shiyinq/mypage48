@@ -21,33 +21,33 @@
 	const { t } = useTranslation();
 
 	/* Loading State */
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(() => {
 		mounted = true;
 	});
 
-	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
+	let isLoading = $derived(!mounted || ($isAuthenticated && !$isInitialDataLoaded));
 
 	// Navigation items
-	$: navItems = [
+	let navItems = $derived([
 		{ label: $t('nav.dashboard'), href: '/' },
 		{ label: $t('nav.theater'), href: '/theater/events', activeHref: '/theater' },
 		{ label: $t('nav.achievements'), href: '/achievements' },
 		{ label: $t('nav.journal'), href: '/journal' },
 		{ label: $t('nav.memories'), href: '/memories' },
 		{ label: $t('nav.history'), href: '/history' }
-	];
+	]);
 
-	$: currentPath = $page.url.pathname;
-	$: isTheater = currentPath.startsWith('/theater');
+	let currentPath = $derived($page.url.pathname);
+	let isTheater = $derived(currentPath.startsWith('/theater'));
 
-	$: theaterIsActive = (href: string, exact: boolean = false) => {
+	let theaterIsActive = $derived((href: string, exact: boolean = false) => {
 		if (exact) {
 			return currentPath === href;
 		}
 		return currentPath.startsWith(href);
-	};
+	});
 </script>
 
 {#if !$isImmersive}

@@ -26,8 +26,8 @@
 	import { fade, slide, fly } from 'svelte/transition';
 
 	const { t } = useTranslation();
-	let isMenuOpen = false;
-	let isTheaterMenuOpen = false;
+	let isMenuOpen = $state(false);
+	let isTheaterMenuOpen = $state(false);
 
 	let lastScrollY = 0;
 	let isHidden = false;
@@ -78,19 +78,21 @@
 		closeAllMenus();
 	});
 
-	$: isRouteMore = secondaryLinks.some((link) => $page.url.pathname.startsWith(link.href));
-	$: isRouteTheater = $page.url.pathname.startsWith('/theater');
+	let isRouteMore = $derived(
+		secondaryLinks.some((link) => $page.url.pathname.startsWith(link.href))
+	);
+	let isRouteTheater = $derived($page.url.pathname.startsWith('/theater'));
 </script>
 
-<svelte:window on:scroll={handleScroll} />
+<svelte:window onscroll={handleScroll} />
 
 <!-- Menu Drawer Overlay -->
 {#if isMenuOpen}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-		on:click={closeAllMenus}
+		onclick={closeAllMenus}
 		transition:fade={{ duration: 200 }}
 	></div>
 
@@ -104,7 +106,7 @@
 			<h3 class="text-lg font-bold text-gray-900 dark:text-white">
 				{$t('nav.journey') || 'Journey'}
 			</h3>
-			<button class="p-2 text-gray-400 hover:text-gray-600" on:click={closeAllMenus}>
+			<button class="p-2 text-gray-400 hover:text-gray-600" onclick={closeAllMenus}>
 				<X class="w-6 h-6" />
 			</button>
 		</div>
@@ -114,13 +116,13 @@
 				<a
 					href={link.href}
 					class={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
-					on:click={closeAllMenus}
+					onclick={closeAllMenus}
 				>
 					<div class="flex items-center gap-4">
 						<div
 							class={`p-3 rounded-xl transition-transform ${isActive ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 ' + link.color : 'bg-gray-50 dark:bg-white/5 ' + link.color} group-hover:scale-110`}
 						>
-							<svelte:component this={link.icon} class="w-6 h-6" />
+							<link.icon class="w-6 h-6" />
 						</div>
 						<span
 							class={`font-bold transition-colors ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-200'}`}
@@ -138,11 +140,11 @@
 
 <!-- Theater Menu Drawer -->
 {#if isTheaterMenuOpen}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-		on:click={closeAllMenus}
+		onclick={closeAllMenus}
 		transition:fade={{ duration: 200 }}
 	></div>
 
@@ -156,7 +158,7 @@
 			<h3 class="text-lg font-bold text-gray-900 dark:text-white">
 				{$t('nav.theater') || 'Theater'}
 			</h3>
-			<button class="p-2 text-gray-400 hover:text-gray-600" on:click={closeAllMenus}>
+			<button class="p-2 text-gray-400 hover:text-gray-600" onclick={closeAllMenus}>
 				<X class="w-6 h-6" />
 			</button>
 		</div>
@@ -168,13 +170,13 @@
 				<a
 					href={link.href}
 					class={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive ? 'bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
-					on:click={closeAllMenus}
+					onclick={closeAllMenus}
 				>
 					<div class="flex items-center gap-4">
 						<div
 							class={`p-3 rounded-xl transition-transform ${isActive ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 ' + link.color : 'bg-gray-50 dark:bg-white/5 ' + link.color} group-hover:scale-110`}
 						>
-							<svelte:component this={link.icon} class="w-6 h-6" />
+							<link.icon class="w-6 h-6" />
 						</div>
 						<span
 							class={`font-bold transition-colors ${isActive ? 'text-purple-600 dark:text-purple-400' : 'text-gray-700 dark:text-gray-200'}`}
@@ -208,7 +210,7 @@
 		</a>
 
 		<button
-			on:click={toggleTheaterMenu}
+			onclick={toggleTheaterMenu}
 			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 group min-w-[56px]"
 		>
 			<AudioLines
@@ -231,7 +233,7 @@
 		</div>
 
 		<button
-			on:click={toggleMenu}
+			onclick={toggleMenu}
 			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 group min-w-[56px]"
 		>
 			<Menu

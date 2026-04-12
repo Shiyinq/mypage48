@@ -15,9 +15,13 @@
 		rank: number;
 	}
 
-	export let results: ResultMember[];
-	export let layoutMode: 'card' | 'list' = 'card';
-	export let variant: 'public' | 'theater' = 'public';
+	interface Props {
+		results: ResultMember[];
+		layoutMode?: 'card' | 'list';
+		variant?: 'public' | 'theater';
+	}
+
+	let { results, layoutMode = 'card', variant = 'public' }: Props = $props();
 
 	function handleImageError(e: Event) {
 		const target = e.currentTarget as HTMLImageElement;
@@ -36,7 +40,7 @@
 		dispatch('changeLayout', mode);
 	}
 
-	$: isPublic = variant === 'public';
+	let isPublic = $derived(variant === 'public');
 </script>
 
 <div
@@ -71,7 +75,7 @@
 				class={`flex bg-white dark:bg-zinc-900 rounded-full p-1 border shadow-sm ${isPublic ? 'border-gray-100 dark:border-zinc-800' : 'border-zinc-100 dark:border-zinc-800'}`}
 			>
 				<button
-					on:click={() => setLayout('card')}
+					onclick={() => setLayout('card')}
 					class={`p-1.5 sm:p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'card' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500'}`}
 					title="Grid View"
 				>
@@ -79,7 +83,7 @@
 					<LayoutGrid size={18} class="hidden sm:block" />
 				</button>
 				<button
-					on:click={() => setLayout('list')}
+					onclick={() => setLayout('list')}
 					class={`p-1.5 sm:p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'list' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500'}`}
 					title="List View"
 				>
@@ -89,7 +93,7 @@
 			</div>
 
 			<button
-				on:click={shareResults}
+				onclick={shareResults}
 				class={`h-9 sm:h-11 px-3 sm:px-6 text-white font-black rounded-full transition-all shadow-lg flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs cursor-pointer whitespace-nowrap overflow-hidden ${isPublic ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20'}`}
 			>
 				<Share2 size={14} class="sm:hidden" />
@@ -97,7 +101,7 @@
 				{$t('theater.sorter.share')}
 			</button>
 			<button
-				on:click={restart}
+				onclick={restart}
 				class={`h-9 sm:h-11 px-3 sm:px-6 bg-white dark:bg-zinc-800 font-black rounded-full transition-all shadow-md border flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs cursor-pointer whitespace-nowrap overflow-hidden ${isPublic ? 'text-slate-900 dark:text-white border-gray-100 dark:border-zinc-700' : 'text-themed border-zinc-100 dark:border-zinc-700'}`}
 			>
 				<RotateCcw size={14} class="sm:hidden" />
@@ -123,7 +127,7 @@
 									src={getExternalMediaUrl(member.img)}
 									alt={member.name}
 									class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-									on:error={handleImageError}
+									onerror={handleImageError}
 								/>
 
 								<img
@@ -183,7 +187,7 @@
 									src={getExternalMediaUrl(member.img)}
 									alt={member.name}
 									class="w-full h-full object-cover"
-									on:error={handleImageError}
+									onerror={handleImageError}
 								/>
 								<img
 									src={getMemberFrame(member.member_type)}
@@ -241,7 +245,7 @@
 											src={getExternalMediaUrl(member.img)}
 											alt={member.name}
 											class="w-full h-full object-cover"
-											on:error={handleImageError}
+											onerror={handleImageError}
 										/>
 										<img
 											src={getMemberFrame(member.member_type)}

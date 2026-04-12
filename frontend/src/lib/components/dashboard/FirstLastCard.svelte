@@ -4,35 +4,37 @@
 
 	const { t } = useTranslation();
 
-	/**
-	 * First & Last Item Card (Generic for Shows and 2-Shots)
-	 */
-	export let title: string;
-	export let type: 'theater' | 'twoShot';
-	export let loading: boolean = false;
-	export let onExpand: () => void;
-
-	// Data items
-	export let first: {
-		image?: string | null;
+	interface Props {
+		/**
+		 * First & Last Item Card (Generic for Shows and 2-Shots)
+		 */
 		title: string;
-		subtitle?: string | null;
-		date: string;
-		detail?: string;
-	} | null;
+		type: 'theater' | 'twoShot';
+		loading?: boolean;
+		onExpand: () => void;
+		// Data items
+		first: {
+			image?: string | null;
+			title: string;
+			subtitle?: string | null;
+			date: string;
+			detail?: string;
+		} | null;
+		last: {
+			image?: string | null;
+			title: string;
+			subtitle?: string | null;
+			date: string;
+			detail?: string;
+		} | null;
+	}
 
-	export let last: {
-		image?: string | null;
-		title: string;
-		subtitle?: string | null;
-		date: string;
-		detail?: string;
-	} | null;
+	let { title, type, loading = false, onExpand, first, last }: Props = $props();
 
-	const theme = type === 'theater' ? 'purple' : 'pink';
-	const PlaceholderIcon = type === 'theater' ? Star : Camera;
+	let theme = $derived(type === 'theater' ? 'purple' : 'pink');
+	let PlaceholderIcon = $derived(type === 'theater' ? Star : Camera);
 
-	$: themeClasses =
+	let themeClasses = $derived(
 		theme === 'purple'
 			? {
 					bg: 'bg-purple-50/20 dark:bg-transparent',
@@ -65,12 +67,14 @@
 					placeholderEmptyBg: 'bg-gray-50 dark:bg-gray-800/50',
 					placeholderEmptyText: 'text-pink-200 dark:text-pink-800/30',
 					label: 'text-gray-400'
-				};
+				}
+	);
 
-	$: labels =
+	let labels = $derived(
 		type === 'theater'
 			? { first: $t('dashboard.theater.first'), last: $t('dashboard.theater.last') }
-			: { first: $t('dashboard.twoShot.first'), last: $t('dashboard.twoShot.last') };
+			: { first: $t('dashboard.twoShot.first'), last: $t('dashboard.twoShot.last') }
+	);
 </script>
 
 <div
@@ -86,7 +90,7 @@
 			</span>
 		</div>
 		<button
-			on:click={onExpand}
+			onclick={onExpand}
 			class={`p-2 -mr-2 -mt-2 ${themeClasses.textLight} ${themeClasses.hoverText} ${themeClasses.hoverBg} rounded-full transition-colors cursor-pointer`}
 			title="View Fullscreen"
 		>
@@ -124,7 +128,7 @@
 							<div
 								class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderText}`}
 							>
-								<svelte:component this={PlaceholderIcon} class="w-4 h-4" />
+								<PlaceholderIcon class="w-4 h-4" />
 							</div>
 						{/if}
 					</div>
@@ -153,7 +157,7 @@
 						<div
 							class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderEmptyText}`}
 						>
-							<svelte:component this={PlaceholderIcon} class="w-4 h-4" />
+							<PlaceholderIcon class="w-4 h-4" />
 						</div>
 					</div>
 					<div class="min-w-0 flex-1">
@@ -181,7 +185,7 @@
 							<div
 								class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderText}`}
 							>
-								<svelte:component this={PlaceholderIcon} class="w-4 h-4" />
+								<PlaceholderIcon class="w-4 h-4" />
 							</div>
 						{/if}
 					</div>
@@ -210,7 +214,7 @@
 						<div
 							class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderEmptyText}`}
 						>
-							<svelte:component this={PlaceholderIcon} class="w-4 h-4" />
+							<PlaceholderIcon class="w-4 h-4" />
 						</div>
 					</div>
 					<div class="min-w-0 flex-1">

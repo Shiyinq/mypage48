@@ -3,7 +3,11 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { TopTwoShotMember } from '$lib/types';
 
-	export let member: TopTwoShotMember;
+	interface Props {
+		member: TopTwoShotMember;
+	}
+
+	let { member }: Props = $props();
 
 	const { t } = useTranslation();
 

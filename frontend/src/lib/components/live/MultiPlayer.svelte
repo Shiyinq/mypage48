@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run, stopPropagation } from 'svelte/legacy';
+
 	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 	import { fade, scale, slide } from 'svelte/transition';
 	import { live as liveApi } from '$lib/apis/live';
@@ -12,12 +14,6 @@
 	import LiveStats from './LiveStats.svelte';
 
 	const { t } = useTranslation();
-
-	export let platform = ''; // 'showroom' or 'idn'
-	export let id = ''; // room_id or live_id
-	export let volume = 1;
-	export let muted = false;
-	export let roomIdentifier = ''; // IDN username
 
 	function getExternalMediaUrl(url?: string) {
 		if (!url) return '';
@@ -33,22 +29,40 @@
 		return url;
 	}
 
-	let videoElement: HTMLVideoElement;
+	let videoElement: HTMLVideoElement | undefined = $state();
 	let hls: any;
-	let loading = true;
-	let error: string | null = null;
+	let loading = $state(true);
+	let error: string | null = $state(null);
 	let initializing = false;
 	let currentPlatform = '';
 	let currentId = '';
-	let isBuffering = false;
-	let autoplayBlocked = false;
+	let isBuffering = $state(false);
+	let autoplayBlocked = $state(false);
 
-	export let isRecording = false;
+	interface Props {
+		platform?: string; // 'showroom' or 'idn'
+		id?: string; // room_id or live_id
+		volume?: number;
+		muted?: boolean;
+		roomIdentifier?: string; // IDN username
+		isRecording?: boolean;
+	}
+
+	let {
+		platform = '',
+		id = '',
+		volume = 1,
+		muted = false,
+		roomIdentifier = '',
+		isRecording = $bindable(false)
+	}: Props = $props();
 	let mediaRecorder: any = null;
 	let recordedChunks: any[] = [];
 
-	let isEffectivelyMuted = false;
-	$: isEffectivelyMuted = muted || (isNaN(Number(volume)) ? false : Number(volume) === 0);
+	let isEffectivelyMuted = $state(false);
+	run(() => {
+		isEffectivelyMuted = muted || (isNaN(Number(volume)) ? false : Number(volume) === 0);
+	});
 
 	function syncAudioState() {
 		if (!videoElement) return;
@@ -73,9 +87,11 @@
 		}
 	}
 
-	$: if (videoElement || volume !== undefined || muted !== undefined) {
-		syncAudioState();
-	}
+	run(() => {
+		if (videoElement || volume !== undefined || muted !== undefined) {
+			syncAudioState();
+		}
+	});
 
 	// Hardware Hammer: Reinforce mute every 200ms for 10s after playback starts
 	let hammerInterval: any;
@@ -135,7 +151,7 @@
 					hls.on(Hls.Events.MANIFEST_PARSED, () => {
 						syncAudioState(); // Force sync when starting
 						startHammer(); // Start the hammer
-						videoElement.play().catch((e) => {
+						videoElement?.play().catch((e: Error) => {
 							if (e.name === 'NotAllowedError') {
 								autoplayBlocked = true;
 							}
@@ -175,7 +191,7 @@
 				} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 					videoElement.src = streamUrl;
 					videoElement.addEventListener('loadedmetadata', () => {
-						videoElement.play().catch((e) => {
+						videoElement?.play().catch((e: Error) => {
 							if (e.name === 'NotAllowedError') {
 								autoplayBlocked = true;
 							}
@@ -213,7 +229,7 @@
 	}
 
 	export function takeScreenshot(memberName?: string) {
-		captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
+		if (videoElement) captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
 	}
 
 	export async function toggleRecording(memberName?: string) {
@@ -264,34 +280,36 @@
 	});
 
 	// Re-init if platform or id changes
-	$: if (platform && id && videoElement) {
-		initPlayer();
-	}
+	run(() => {
+		if (platform && id && videoElement) {
+			initPlayer();
+		}
+	});
 </script>
 
 <div class="relative w-full h-full bg-black group/player overflow-hidden">
-	<!-- svelte-ignore a11y-media-has-caption -->
+	<!-- svelte-ignore a11y_media_has_caption -->
 	<video
 		bind:this={videoElement}
 		class="w-full h-full object-contain"
 		playsinline
 		muted={isEffectivelyMuted}
-		on:play={syncAudioState}
-		on:playing={() => {
+		onplay={syncAudioState}
+		onplaying={() => {
 			syncAudioState();
 			isBuffering = false;
 		}}
-		on:waiting={() => (isBuffering = true)}
-		on:stalled={() => (isBuffering = true)}
-		on:canplay={() => (isBuffering = false)}
-		on:pause={() => (isBuffering = false)}
-		on:volumechange={syncAudioState}
+		onwaiting={() => (isBuffering = true)}
+		onstalled={() => (isBuffering = true)}
+		oncanplay={() => (isBuffering = false)}
+		onpause={() => (isBuffering = false)}
+		onvolumechange={syncAudioState}
 	></video>
 
 	{#if autoplayBlocked}
 		<button
 			class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] z-20 group/autoplay cursor-pointer"
-			on:click|stopPropagation={retryPlayback}
+			onclick={stopPropagation(retryPlayback)}
 		>
 			<div
 				class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/40 group-hover/autoplay:scale-110 group-hover/autoplay:bg-white/30 transition-all duration-300"
@@ -332,7 +350,7 @@
 			<AlertCircle class="w-8 h-8 text-red-500 mb-2 opacity-50" />
 			<p class="text-[10px] font-black uppercase tracking-widest text-zinc-500">{error}</p>
 			<button
-				on:click={initPlayer}
+				onclick={initPlayer}
 				class="mt-4 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold rounded-lg transition-colors"
 			>
 				{$t('theater.live.multiview.retry')}

@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
 	import { onMount } from 'svelte';
@@ -10,23 +9,28 @@
 	import SetlistSection from '$lib/components/theater/SetlistSection.svelte';
 
 	import { setlistsStore, maxAttendanceStore, isSetlistsLoading } from '$lib/stores/theater';
+	interface Props {
+		params?: Record<string, string> | undefined;
+	}
+
+	let { params = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 
 	// State from store
-	$: setlists = $setlistsStore.data || [];
-	$: error = $setlistsStore.error;
-	$: maxAttendance = $maxAttendanceStore;
+	let setlists = $derived($setlistsStore.data || []);
+	let error = $derived($setlistsStore.error);
+	let maxAttendance = $derived($maxAttendanceStore);
 
 	// Group setlists by type
-	$: setlistItems = setlists.filter((s) => s.type === 'setlist');
-	$: eventItems = setlists.filter((s) => s.type === 'event');
+	let setlistItems = $derived(setlists.filter((s) => s.type === 'setlist'));
+	let eventItems = $derived(setlists.filter((s) => s.type === 'event'));
 
 	// Sub-group by active status
-	$: activeSetlists = setlistItems.filter((s) => s.active);
-	$: inactiveSetlists = setlistItems.filter((s) => !s.active);
-	$: activeEvents = eventItems.filter((s) => s.active);
-	$: inactiveEvents = eventItems.filter((s) => !s.active);
+	let activeSetlists = $derived(setlistItems.filter((s) => s.active));
+	let inactiveSetlists = $derived(setlistItems.filter((s) => !s.active));
+	let activeEvents = $derived(eventItems.filter((s) => s.active));
+	let inactiveEvents = $derived(eventItems.filter((s) => !s.active));
 
 	async function fetchSetlists() {
 		try {

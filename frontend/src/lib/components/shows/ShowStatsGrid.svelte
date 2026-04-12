@@ -12,7 +12,11 @@
 		totalSpent: number;
 	}
 
-	export let stats: ShowStats;
+	interface Props {
+		stats: ShowStats;
+	}
+
+	let { stats }: Props = $props();
 
 	const { t } = useTranslation();
 </script>

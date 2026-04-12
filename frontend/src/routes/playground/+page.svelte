@@ -18,7 +18,7 @@
 
 	const { t } = useTranslation();
 
-	let innerWidth = 0;
+	let innerWidth = $state(0);
 
 	onMount(async () => {
 		await playgroundStore.init();
@@ -47,8 +47,8 @@
 		playgroundStore.selectEndpoint(event.detail.id);
 	}
 
-	$: ({ schema, executing, error, isSidebarVisible, responseWidth } = $playgroundStore);
-	$: loading = !schema && !error;
+	let { schema, executing, error, isSidebarVisible, responseWidth } = $derived($playgroundStore);
+	let loading = $derived(!schema && !error);
 
 	let isResizing = false;
 
@@ -110,7 +110,7 @@
 				<h2 class="text-2xl font-black text-gray-900 dark:text-white mb-2">{$t('common.error')}</h2>
 				<p class="text-sm text-gray-500 dark:text-gray-400 mb-6">{error}</p>
 				<button
-					on:click={() => window.location.reload()}
+					onclick={() => window.location.reload()}
 					class="px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-500/20"
 				>
 					{$t('errors.tryAgain')}
@@ -122,7 +122,7 @@
 			<!-- Mobile Sidebar Backdrop -->
 			{#if isSidebarVisible && innerWidth < 768}
 				<button
-					on:click={() => playgroundStore.toggleSidebar()}
+					onclick={() => playgroundStore.toggleSidebar()}
 					class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[55] md:hidden transition-opacity"
 					aria-label="Close Sidebar"
 					transition:fade={{ duration: 200 }}
@@ -167,7 +167,7 @@
 				{#if !isSidebarVisible}
 					<div class="absolute top-3 left-0 z-[20] md:z-0" transition:fade={{ duration: 200 }}>
 						<button
-							on:click={() => playgroundStore.toggleSidebar()}
+							onclick={() => playgroundStore.toggleSidebar()}
 							class="flex items-center justify-center w-8 h-10 bg-white dark:bg-zinc-900 border-y border-r border-gray-200 dark:border-white/10 rounded-r-xl shadow-lg text-gray-400 hover:text-red-500 transition-all hover:w-10 active:scale-95 cursor-pointer group"
 							title={$t('playground.showSidebar')}
 						>
@@ -187,7 +187,7 @@
 
 				<!-- Resize Handle (Desktop Only) -->
 				<button
-					on:mousedown={startResizing}
+					onmousedown={startResizing}
 					class="hidden md:block absolute top-0 bottom-0 right-0 w-1.5 cursor-col-resize z-10 group"
 					style="right: {responseWidth}px; transform: translateX(50%);"
 					aria-label="Resize response panel"

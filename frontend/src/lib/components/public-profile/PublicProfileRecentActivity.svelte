@@ -4,7 +4,11 @@
 	import { formatDate } from '$lib/i18n';
 	import type { PublicRecentActivity } from '$lib/types';
 
-	export let recentActivity: PublicRecentActivity[];
+	interface Props {
+		recentActivity: PublicRecentActivity[];
+	}
+
+	let { recentActivity }: Props = $props();
 
 	const { t } = useTranslation();
 </script>

@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { ticketsStore, showToast, isInitialDataLoaded, isTicketsLoading } from '$lib/stores';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { invalidateTheater } from '$lib/stores/theater';
@@ -27,21 +26,21 @@
 
 	const { t } = useTranslation();
 
-	// Store subscriptions
-	$: state = $ticketsStore;
-	$: filteredTickets = state.list;
-	$: pagination = state.pagination;
-	$: filters = state.filters;
-	$: error = state.error;
-	$: hasMore = pagination.current_page < pagination.last_page;
+	// Store data via derived runes
+	let ticketsState = $derived($ticketsStore);
+	let filteredTickets = $derived(ticketsState.list);
+	let pagination = $derived(ticketsState.pagination);
+	let filters = $derived(ticketsState.filters);
+	let error = $derived(ticketsState.error);
+	let hasMore = $derived(pagination.current_page < pagination.last_page);
 
 	// Main Component Logic
-	let viewMode: 'GRID' | 'TABLE' = 'GRID';
-	let deleteId: string | null = null;
-	let isDeleting = false;
+	let viewMode: 'GRID' | 'TABLE' = $state('GRID');
+	let deleteId: string | null = $state(null);
+	let isDeleting = $state(false);
 
 	/* Loading State */
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(() => {
 		mounted = true;
@@ -81,8 +80,7 @@
 
 	// Actions
 	// Logic for note update
-	const handleNoteUpdate = async (e: CustomEvent<{ ticketId: string; note: string }>) => {
-		const { ticketId, note } = e.detail;
+	const handleNoteUpdate = async (ticketId: string, note: string) => {
 		try {
 			// Use store action (handles API + optimistic update)
 			await ticketsStore.updateNote(ticketId, note);
@@ -118,10 +116,9 @@
 		}
 	};
 
-	let editingTicket: TicketType | null = null;
+	let editingTicket: TicketType | null = $state(null);
 
-	const handleTicketUpdate = (e: CustomEvent<TicketType>) => {
-		const updated = e.detail;
+	const handleTicketUpdate = (updated: TicketType) => {
 		ticketsStore.update((s) => ({
 			...s,
 			list: s.list.map((t) => (t._id === updated._id ? updated : t)),
@@ -158,13 +155,15 @@
 			icon={History}
 			theme="blue"
 		>
-			<div slot="actions" class="flex items-center gap-3">
-				<HistoryFilter
-					{filters}
-					on:filterChange={(e) => handleFilterChange(e.detail)}
-					bind:viewMode
-				/>
-			</div>
+			{#snippet actions()}
+				<div class="flex items-center gap-3">
+					<HistoryFilter
+						{filters}
+						onfilterChange={(newFilters) => handleFilterChange(newFilters)}
+						bind:viewMode
+					/>
+				</div>
+			{/snippet}
 		</PageHeader>
 	</div>
 
@@ -205,9 +204,9 @@
 				{#each filteredTickets as ticket (ticket._id)}
 					<TicketCard
 						{ticket}
-						on:updateNote={handleNoteUpdate}
-						on:editTicket={(e) => (editingTicket = e.detail)}
-						on:deleteTicket={(e) => openDeleteModal(e.detail)}
+						onupdateNote={handleNoteUpdate}
+						oneditTicket={(t) => (editingTicket = t)}
+						ondeleteTicket={(id) => openDeleteModal(id)}
 					/>
 				{/each}
 			</div>
@@ -215,19 +214,15 @@
 			<!-- Table View -->
 			<TicketTable
 				tickets={filteredTickets}
-				on:updateNote={handleNoteUpdate}
-				on:editTicket={(e) => (editingTicket = e.detail)}
-				on:deleteTicket={(e) => openDeleteModal(e.detail)}
+				onupdateNote={handleNoteUpdate}
+				oneditTicket={(t) => (editingTicket = t)}
+				ondeleteTicket={(id) => openDeleteModal(id)}
 			/>
 		{/if}
 
 		<!-- Sentinel for infinite scroll -->
 		{#if hasMore}
-			<div
-				use:infiniteScroll
-				on:intersect={handleIntersect}
-				class="w-full py-6 flex justify-center"
-			>
+			<div use:infiniteScroll onintersect={handleIntersect} class="w-full py-6 flex justify-center">
 				{#if $isTicketsLoading}
 					{#if viewMode === 'GRID'}
 						<div class="w-full">
@@ -259,7 +254,7 @@
 {#if editingTicket}
 	<EditTicketModal
 		ticket={editingTicket}
-		on:close={() => (editingTicket = null)}
-		on:save={handleTicketUpdate}
+		onclose={() => (editingTicket = null)}
+		onsave={handleTicketUpdate}
 	/>
 {/if}

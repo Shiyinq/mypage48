@@ -9,25 +9,29 @@
 	import { showToast } from '$lib/stores';
 	import { browser } from '$app/environment';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
 
-	$: item = data.item;
-	$: recentNews = data.recentNews.filter((n) => n.link !== item.link).slice(0, 10);
+	let { data }: Props = $props();
+
+	let item = $derived(data.item);
+	let recentNews = $derived(data.recentNews.filter((n) => n.link !== item.link).slice(0, 10));
 
 	const { t, locale } = useTranslation();
 
-	$: shareUrl = browser ? window.location.href : '';
-	$: shareTitle = item?.title || '';
+	let shareUrl = $derived(browser ? window.location.href : '');
+	let shareTitle = $derived(item?.title || '');
 
-	$: shareLinks = {
+	let shareLinks = $derived({
 		x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`,
 		facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
 		whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`
-	};
+	});
 
-	let showLightbox = false;
-	let selectedImgSrc = '';
-	let selectedImgAlt = '';
+	let showLightbox = $state(false);
+	let selectedImgSrc = $state('');
+	let selectedImgAlt = $state('');
 
 	function openLightbox(src: string, alt: string) {
 		selectedImgSrc = src;
@@ -43,7 +47,7 @@
 		}
 	}
 
-	$: processedContent = proxyExternalImageUrls(item.content_body);
+	let processedContent = $derived(proxyExternalImageUrls(item.content_body));
 
 	function copyLink() {
 		if (!browser) return;
@@ -82,9 +86,9 @@
 			class="lg:col-span-2 space-y-6 bg-white dark:bg-zinc-900 rounded-3xl p-4 md:p-10 shadow-sm border border-gray-100 dark:border-white/5"
 		>
 			{#if item.background_image}
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<button
-					on:click={() => openLightbox(getExternalMediaUrl(item.background_image), item.title)}
+					onclick={() => openLightbox(getExternalMediaUrl(item.background_image), item.title)}
 					class="w-full rounded-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-inner group/img cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99] duration-500"
 				>
 					<img
@@ -117,10 +121,10 @@
 			</div>
 
 			<!-- HTML Content -->
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<div
 				class="prose prose-red dark:prose-invert prose-responsive-colors max-w-none prose-img:rounded-xl prose-img:cursor-zoom-in hover:prose-img:scale-[1.01] prose-img:transition-transform prose-img:duration-300 prose-a:text-red-500 hover:prose-a:text-red-600 space-y-4 text-gray-800 dark:text-gray-300 leading-relaxed text-sm md:text-base md:p-0 rounded-2xl md:bg-transparent"
-				on:click={handleContentClick}
+				onclick={handleContentClick}
 				role="presentation"
 			>
 				{@html processedContent}
@@ -195,7 +199,7 @@
 
 						<!-- Copy Link -->
 						<button
-							on:click={copyLink}
+							onclick={copyLink}
 							class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 hover:scale-110 transition-transform shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer"
 							title={$t('common.copyLink')}
 						>

@@ -2,11 +2,21 @@
 	import { MapPin, DollarSign, Hash, ChevronDown } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let section: string;
-	export let number: string | number;
-	export let price: number;
-	export let ticket_id: string;
-	export let rowOptions: readonly string[];
+	interface Props {
+		section: string;
+		number: string | number;
+		price: number;
+		ticket_id: string;
+		rowOptions: readonly string[];
+	}
+
+	let {
+		section = $bindable(),
+		number = $bindable(),
+		price = $bindable(),
+		ticket_id = $bindable(),
+		rowOptions
+	}: Props = $props();
 
 	const { t } = useTranslation();
 </script>

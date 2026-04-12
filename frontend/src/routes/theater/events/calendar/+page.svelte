@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { stopPropagation } from 'svelte/legacy';
+
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -13,18 +15,18 @@
 
 	// Default initialization
 	const now = new Date();
-	let year: number = now.getFullYear();
-	let month: number = now.getMonth() + 1; // 1-12
-	let calendarDays: { date: Date; isCurrentMonth: boolean }[] = [];
+	let year: number = $state(now.getFullYear());
+	let month: number = $state(now.getMonth() + 1); // 1-12
+	let calendarDays: { date: Date; isCurrentMonth: boolean }[] = $state([]);
 
 	// Date Picker State
-	let isDatePickerOpen = false;
-	let pickerYear = year;
+	let isDatePickerOpen = $state(false);
+	let pickerYear = $state(now.getFullYear());
 
 	// Modal State
-	let isModalOpen = false;
-	let modalDate = new Date();
-	let modalEvents: CalendarEvent[] = [];
+	let isModalOpen = $state(false);
+	let modalDate = $state(new Date());
+	let modalEvents: CalendarEvent[] = $state([]);
 
 	function openDayModal(date: Date, events: CalendarEvent[]) {
 		modalDate = date;
@@ -34,25 +36,6 @@
 
 	// Constants
 	const MAX_VISIBLE_EVENTS = 3;
-
-	$: if (isDatePickerOpen) {
-		pickerYear = year;
-	}
-
-	// Initialize with today or query params
-	$: {
-		const qYear = $page.url.searchParams.get('year');
-		const qMonth = $page.url.searchParams.get('month');
-
-		// If query params exist, override the local state
-		// Otherwise, keep the default initialized values (current date)
-		if (qYear) year = parseInt(qYear);
-		if (qMonth) month = parseInt(qMonth);
-
-		updateCalendar(year, month);
-
-		// Removed auto-selection of 1st day when changing months
-	}
 
 	function updateCalendar(y: number, m: number) {
 		const days: { date: Date; isCurrentMonth: boolean }[] = [];
@@ -119,10 +102,32 @@
 
 	const weekDays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
-	$: currentMonthEvents = $calendarEvents.filter((e) => {
-		const d = new Date(e.date);
-		return d.getMonth() === month - 1 && d.getFullYear() === year;
+	// Initialize with today or query params
+	$effect(() => {
+		const qYear = $page.url.searchParams.get('year');
+		const qMonth = $page.url.searchParams.get('month');
+
+		// If query params exist, override the local state
+		// Otherwise, keep the default initialized values (current date)
+		if (qYear) year = parseInt(qYear);
+		if (qMonth) month = parseInt(qMonth);
+
+		updateCalendar(year, month);
+
+		// Removed auto-selection of 1st day when changing months
 	});
+
+	$effect(() => {
+		if (isDatePickerOpen) {
+			pickerYear = year;
+		}
+	});
+	let currentMonthEvents = $derived(
+		$calendarEvents.filter((e) => {
+			const d = new Date(e.date);
+			return d.getMonth() === month - 1 && d.getFullYear() === year;
+		})
+	);
 </script>
 
 <SEO
@@ -145,7 +150,7 @@
 			<div class="relative">
 				<button
 					class="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 px-2 py-1 rounded-lg transition-colors flex items-center gap-1 md:gap-2"
-					on:click={() => (isDatePickerOpen = !isDatePickerOpen)}
+					onclick={() => (isDatePickerOpen = !isDatePickerOpen)}
 				>
 					{$formatDate(new Date(year, month - 1), {
 						month: 'long',
@@ -162,10 +167,10 @@
 					<!-- Backdrop -->
 					<div
 						class="fixed inset-0 z-10"
-						on:click={() => (isDatePickerOpen = false)}
+						onclick={() => (isDatePickerOpen = false)}
 						role="button"
 						tabindex="0"
-						on:keydown={(e) => e.key === 'Escape' && (isDatePickerOpen = false)}
+						onkeydown={(e) => e.key === 'Escape' && (isDatePickerOpen = false)}
 					></div>
 
 					<!-- Popover -->
@@ -176,14 +181,14 @@
 						<div class="flex items-center justify-between mb-4 px-2">
 							<button
 								class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full cursor-pointer"
-								on:click|stopPropagation={() => pickerYear--}
+								onclick={stopPropagation(() => pickerYear--)}
 							>
 								<ChevronLeft class="w-5 h-5" />
 							</button>
 							<span class="font-bold text-lg">{pickerYear}</span>
 							<button
 								class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full cursor-pointer"
-								on:click|stopPropagation={() => pickerYear++}
+								onclick={stopPropagation(() => pickerYear++)}
 							>
 								<ChevronRight class="w-5 h-5" />
 							</button>
@@ -197,10 +202,10 @@
 									{monthIndex === month - 1 && pickerYear === year
 										? 'bg-blue-600 text-white font-medium'
 										: 'hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300'}"
-									on:click|stopPropagation={() => {
+									onclick={stopPropagation(() => {
 										goto(`?year=${pickerYear}&month=${monthIndex + 1}`);
 										isDatePickerOpen = false;
-									}}
+									})}
 								>
 									{$formatDate(new Date(2000, monthIndex), {
 										month: 'short'
@@ -250,7 +255,7 @@
 			<div class="flex items-center gap-2 md:gap-4">
 				<!-- Today Button -->
 				<button
-					on:click={() => {
+					onclick={() => {
 						const now = new Date();
 						goto(`?year=${now.getFullYear()}&month=${now.getMonth() + 1}`);
 					}}
@@ -259,7 +264,7 @@
 					{$t('theater.events.today') || 'Today'}
 				</button>
 				<button
-					on:click={() => {
+					onclick={() => {
 						const now = new Date();
 						goto(`?year=${now.getFullYear()}&month=${now.getMonth() + 1}`);
 					}}
@@ -272,14 +277,14 @@
 				<!-- Arrows -->
 				<div class="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-full p-0.5">
 					<button
-						on:click={() => changeMonth(-1)}
+						onclick={() => changeMonth(-1)}
 						class="cursor-pointer p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all text-gray-600 dark:text-gray-400 shadow-sm hover:shadow"
 						aria-label="Previous month"
 					>
 						<ChevronLeft class="w-4 h-4" />
 					</button>
 					<button
-						on:click={() => changeMonth(1)}
+						onclick={() => changeMonth(1)}
 						class="cursor-pointer p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all text-gray-600 dark:text-gray-400 shadow-sm hover:shadow"
 						aria-label="Next month"
 					>
@@ -355,8 +360,8 @@
 						<div
 							role="button"
 							tabindex="0"
-							on:click={() => openDayModal(date, dayEvents)}
-							on:keydown={(e) => {
+							onclick={() => openDayModal(date, dayEvents)}
+							onkeydown={(e) => {
 								if (e.key === 'Enter' || e.key === ' ') {
 									e.preventDefault();
 									openDayModal(date, dayEvents);
@@ -430,7 +435,7 @@
 												: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'}
 										{isPast ? 'opacity-50 saturate-50 brightness-95' : 'hover:brightness-95'}"
 										title={event.title}
-										on:click|stopPropagation={() => openDayModal(date, dayEvents)}
+										onclick={stopPropagation(() => openDayModal(date, dayEvents))}
 									>
 										<!-- Time & Icon Container -->
 										<div class="flex items-center gap-1 shrink-0">
@@ -468,7 +473,7 @@
 								{#if dayEvents.length > MAX_VISIBLE_EVENTS}
 									<button
 										class="px-1.5 py-0.5 text-[9px] font-bold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-left w-full hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer flex items-center gap-1"
-										on:click|stopPropagation={() => openDayModal(date, dayEvents)}
+										onclick={stopPropagation(() => openDayModal(date, dayEvents))}
 									>
 										<span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span>
 										{$t('theater.events.moreEvents', {
@@ -489,5 +494,5 @@
 	isOpen={isModalOpen}
 	date={modalDate}
 	events={modalEvents}
-	on:close={() => (isModalOpen = false)}
+	onclose={() => (isModalOpen = false)}
 />

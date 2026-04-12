@@ -2,20 +2,31 @@
 	import { Camera, Sparkles, DollarSign, ChevronDown } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import MemberSelector from '$lib/components/MemberSelector.svelte';
-	import { createEventDispatcher } from 'svelte';
 	import { dragDrop } from '$lib/actions/dragDrop';
 
-	export let showTwoShot: boolean;
-	export let twoShotImage: string | null;
-	export let memberName: string;
-	export let type: 'Roulette' | 'Birthday';
-	export let price: number;
-	export let onSelectImage: () => void;
+	interface Props {
+		showTwoShot: boolean;
+		twoShotImage: string | null;
+		memberName: string;
+		type: 'Roulette' | 'Birthday';
+		price: number;
+		onSelectImage: () => void;
+		ondrop?: (file: File) => void;
+	}
+
+	let {
+		showTwoShot = $bindable(),
+		twoShotImage,
+		memberName = $bindable(),
+		type = $bindable(),
+		price = $bindable(),
+		onSelectImage,
+		ondrop
+	}: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
-	let isDragging = false;
+	let isDragging = $state(false);
 </script>
 
 <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
@@ -28,12 +39,13 @@
 		</h3>
 		<button
 			type="button"
-			on:click={() => (showTwoShot = !showTwoShot)}
+			aria-label="Toggle two-shot section"
+			onclick={() => (showTwoShot = !showTwoShot)}
 			class={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 cursor-pointer ${showTwoShot ? 'bg-red-600' : 'bg-gray-200'}`}
 		>
 			<span
 				class={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${showTwoShot ? 'translate-x-6' : 'translate-x-1'}`}
-			/>
+			></span>
 		</button>
 	</div>
 
@@ -49,9 +61,9 @@
 				<button
 					id="twoshot-upload"
 					type="button"
-					on:click={onSelectImage}
+					onclick={onSelectImage}
 					use:dragDrop={{
-						onDrop: (file) => dispatch('drop', file),
+						onDrop: (file) => ondrop?.(file),
 						onDragChange: (state) => (isDragging = state)
 					}}
 					class="w-full h-32 border-2 border-dashed rounded-xl transition-all cursor-pointer flex items-center justify-center overflow-hidden relative group

@@ -51,7 +51,7 @@
 			<!-- Error Icon -->
 			<div class="icon-wrapper {errorInfo.bgColor} {errorInfo.borderColor}">
 				<div class="icon-bg bg-gradient-to-br {errorInfo.color}">
-					<svelte:component this={errorInfo.icon} class="w-8 h-8 text-white" />
+					<errorInfo.icon class="w-8 h-8 text-white" />
 				</div>
 			</div>
 
@@ -78,17 +78,17 @@
 
 			<!-- Action Buttons -->
 			<div class="actions">
-				<button class="btn btn-primary idol-gradient" on:click={goHome}>
+				<button class="btn btn-primary idol-gradient" onclick={goHome}>
 					<Home class="w-4 h-4" />
 					<span>{$t('errors.goHome')}</span>
 				</button>
 
-				<button class="btn btn-secondary" on:click={goBack}>
+				<button class="btn btn-secondary" onclick={goBack}>
 					<ArrowLeft class="w-4 h-4" />
 					<span>{$t('common.back')}</span>
 				</button>
 
-				<button class="btn btn-ghost" on:click={refresh}>
+				<button class="btn btn-ghost" onclick={refresh}>
 					<RefreshCw class="w-4 h-4" />
 					<span>{$t('errors.tryAgain')}</span>
 				</button>

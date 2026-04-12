@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { Ticket } from 'lucide-svelte';
-	export let mouse = { x: 0, y: 0 };
-	export let tagline = '';
+	interface Props {
+		mouse?: any;
+		tagline?: string;
+	}
+
+	let { mouse = { x: 0, y: 0 }, tagline = '' }: Props = $props();
 </script>
 
 <div class="flex items-center gap-3 group">

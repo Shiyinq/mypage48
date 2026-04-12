@@ -4,14 +4,24 @@
 	import SeatMapRows from './theater/seatmap/SeatMapRows.svelte';
 	import SeatMapGrid from './theater/seatmap/SeatMapGrid.svelte';
 
-	export let rowStats: { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
-	export let seatStats: Record<string, number>;
-	export let isLoading: boolean = false;
-	export let showSubtitle: boolean = true;
-	export let compact: boolean = false;
+	interface Props {
+		rowStats: { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
+		seatStats: Record<string, number>;
+		isLoading?: boolean;
+		showSubtitle?: boolean;
+		compact?: boolean;
+	}
+
+	let {
+		rowStats,
+		seatStats,
+		isLoading = false,
+		showSubtitle = true,
+		compact = false
+	}: Props = $props();
 
 	const { t } = useTranslation();
-	let mapView: 'ROWS' | 'SEATS' = 'SEATS';
+	let mapView: 'ROWS' | 'SEATS' = $state('SEATS');
 
 	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'] as const;
 
@@ -118,7 +128,7 @@
 		}
 	} as const;
 
-	$: maxSeatCount = seatStats ? Math.max(...Object.values(seatStats), 1) : 1;
+	let maxSeatCount = $derived(seatStats ? Math.max(...Object.values(seatStats), 1) : 1);
 </script>
 
 <div class="glass-panel p-6 rounded-3xl">

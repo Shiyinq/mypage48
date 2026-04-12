@@ -20,7 +20,7 @@
 
 	const { t } = useTranslation();
 
-	let error: string | null = null;
+	let error: string | null = $state(null);
 
 	const loadData = async (page = 1) => {
 		error = null;
@@ -100,6 +100,7 @@
 	{:else}
 		<div class="grid gap-4">
 			{#each $feedbackStore.data as item}
+				{@const SvelteComponent = getIcon(item.type)}
 				<div
 					class="p-5 rounded-2xl bg-white dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 hover:border-red-200 dark:hover:border-red-900/30 transition-all group"
 				>
@@ -109,7 +110,7 @@
 								item.type
 							)}"
 						>
-							<svelte:component this={getIcon(item.type)} size={20} />
+							<SvelteComponent size={20} />
 						</div>
 						<div class="flex-1 min-w-0">
 							<div class="flex items-center justify-between mb-1">
@@ -159,7 +160,7 @@
 				<button
 					class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 					disabled={$feedbackStore.page === 1}
-					on:click={() => loadData($feedbackStore.page - 1)}
+					onclick={() => loadData($feedbackStore.page - 1)}
 				>
 					<ChevronLeft size={20} />
 				</button>
@@ -170,7 +171,7 @@
 					class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 					disabled={!$feedbackStore.has_more &&
 						$feedbackStore.page * $feedbackStore.limit >= $feedbackStore.total}
-					on:click={() => loadData($feedbackStore.page + 1)}
+					onclick={() => loadData($feedbackStore.page + 1)}
 				>
 					<ChevronRight size={20} />
 				</button>

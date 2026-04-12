@@ -53,7 +53,9 @@ ${pages
 
 		// Generate localized alternates
 		const alternates = languages
-			.map((lang) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${url}?lang=${lang}" />`)
+			.map(
+				(lang) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${url}?lang=${lang}" />`
+			)
 			.join('\n');
 		const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${url}" />`;
 

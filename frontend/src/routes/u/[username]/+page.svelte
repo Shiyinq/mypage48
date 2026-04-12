@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import type { PageData } from './$types';
-	export let params: Record<string, string> | undefined = undefined;
 	import { page } from '$app/stores';
 	import { SEO } from '$lib/components';
 	import { Ticket } from 'lucide-svelte';
@@ -23,21 +24,26 @@
 	import PublicProfileSeatMap from '$lib/components/public-profile/PublicProfileSeatMap.svelte';
 	import ProfilePictureUploadModal from '$lib/components/public-profile/ProfilePictureUploadModal.svelte';
 
-	export let data: PageData;
+	interface Props {
+		params?: Record<string, string> | undefined;
+		data: PageData;
+	}
+
+	let { params = undefined, data }: Props = $props();
 
 	const { t } = useTranslation();
-	$: ({ profile } = data);
+	let { profile } = $derived(data);
 
-	let fileInput: HTMLInputElement | undefined;
-	let isUploading = false;
+	let fileInput: HTMLInputElement | undefined = $state();
+	let isUploading = $state(false);
 
 	// Preview modal state
-	let showPreviewModal = false;
-	let previewImage: string | null = null;
+	let showPreviewModal = $state(false);
+	let previewImage: string | null = $state(null);
 
 	// Validation alert modal state
-	let showValidationAlert = false;
-	let validationAlertMessage = '';
+	let showValidationAlert = $state(false);
+	let validationAlertMessage = $state('');
 
 	async function handleFileSelect(event: Event) {
 		const target = event.target as HTMLInputElement;
@@ -115,24 +121,26 @@
 	}
 
 	// Prepare data for Seat Map
-	let rowStats = { counts: {}, maxCount: 0, uniqueVisited: 0 };
-	let seatStats = {};
+	let rowStats = $state({ counts: {}, maxCount: 0, uniqueVisited: 0 });
+	let seatStats = $state({});
 
-	$: if (profile?.stats) {
-		const counts = profile.stats.rowCounts || {};
-		const maxCount = Math.max(...Object.values(counts).map(Number), 0);
-		const uniqueVisited = Object.keys(counts).length;
+	run(() => {
+		if (profile?.stats) {
+			const counts = profile.stats.rowCounts || {};
+			const maxCount = Math.max(...Object.values(counts).map(Number), 0);
+			const uniqueVisited = Object.keys(counts).length;
 
-		rowStats = {
-			counts,
-			maxCount,
-			uniqueVisited
-		};
-		seatStats = profile.stats.seatCounts || {};
-	}
+			rowStats = {
+				counts,
+				maxCount,
+				uniqueVisited
+			};
+			seatStats = profile.stats.seatCounts || {};
+		}
+	});
 
-	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
-	let scrollY = 0;
+	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
+	let scrollY = $state(0);
 </script>
 
 <SEO
@@ -154,7 +162,7 @@
 			accept="image/*"
 			class="hidden"
 			bind:this={fileInput}
-			on:change={handleFileSelect}
+			onchange={handleFileSelect}
 		/>
 
 		<!-- Header Section -->

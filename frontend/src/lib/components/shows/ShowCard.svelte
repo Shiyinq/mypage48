@@ -7,20 +7,24 @@
 		image: string;
 	}
 
-	export let show: ShowInfo;
-	export let count: number = 0;
-	export let maxAttendance: number = 1;
-	export let onClick: () => void;
+	interface Props {
+		show: ShowInfo;
+		count?: number;
+		maxAttendance?: number;
+		onClick: () => void;
+	}
+
+	let { show, count = 0, maxAttendance = 1, onClick }: Props = $props();
 
 	const { t } = useTranslation();
 
-	$: percentage = (count / maxAttendance) * 100;
-	$: isMostWatched = count === maxAttendance && count > 0;
+	let percentage = $derived((count / maxAttendance) * 100);
+	let isMostWatched = $derived(count === maxAttendance && count > 0);
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div
-	on:click={onClick}
+	onclick={onClick}
 	class="relative overflow-hidden rounded-[20px] sm:rounded-2xl cursor-pointer group shadow-sm hover:shadow-xl transition-all duration-300 bg-white dark:bg-zinc-900/50 dark:backdrop-blur-xl border border-gray-100 dark:border-white/5 flex flex-row sm:flex-col h-[8.5rem] sm:h-auto sm:aspect-[2/3]"
 >
 	<!-- Background Image (Mobile: Left side, Desktop: Full bg) -->

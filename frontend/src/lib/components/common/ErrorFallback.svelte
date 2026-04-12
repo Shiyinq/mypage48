@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { RotateCcw, AlertTriangle } from 'lucide-svelte';
 
-	export let onRetry: () => void;
-	export let error: Error | null = null;
+	interface Props {
+		onRetry: () => void;
+		error?: Error | null;
+	}
+
+	let { onRetry, error = null }: Props = $props();
 </script>
 
 <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-50 dark:bg-black p-4">
@@ -28,7 +32,7 @@
 		{/if}
 
 		<button
-			on:click={onRetry}
+			onclick={onRetry}
 			class="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold hover:bg-black dark:hover:bg-gray-100 transition-colors cursor-pointer"
 		>
 			<RotateCcw class="w-4 h-4" />

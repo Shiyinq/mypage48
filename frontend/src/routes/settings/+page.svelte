@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { apiKeys } from '$lib/apis/api_keys';
@@ -18,13 +17,18 @@
 		ConfirmApiKeyModal,
 		ExportData
 	} from '$lib/components/settings';
+	interface Props {
+		params?: Record<string, string> | undefined;
+	}
+
+	let { params = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 
-	let generatingKey = false;
-	let newApiKey: string | null = null;
-	let showApiKeyModal = false;
-	let showConfirmModal = false;
+	let generatingKey = $state(false);
+	let newApiKey: string | null = $state(null);
+	let showApiKeyModal = $state(false);
+	let showConfirmModal = $state(false);
 
 	const openConfirmModal = () => {
 		showConfirmModal = true;

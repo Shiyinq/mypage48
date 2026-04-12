@@ -5,13 +5,17 @@
 
 	const { t } = useTranslation();
 
-	/**
-	 * Top 2-Shot Card component for dashboard
-	 */
-	export let name: string | null;
-	export let count: number;
-	export let image: string | undefined;
-	export let loading: boolean = false;
+	interface Props {
+		/**
+		 * Top 2-Shot Card component for dashboard
+		 */
+		name: string | null;
+		count: number;
+		image: string | undefined;
+		loading?: boolean;
+	}
+
+	let { name, count, image, loading = false }: Props = $props();
 </script>
 
 <div

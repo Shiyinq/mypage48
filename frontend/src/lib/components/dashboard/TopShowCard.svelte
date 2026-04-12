@@ -5,13 +5,17 @@
 
 	const { t } = useTranslation();
 
-	/**
-	 * Top Show Card component for dashboard
-	 */
-	export let title: string;
-	export let count: number;
-	export let image: string | null;
-	export let loading: boolean = false;
+	interface Props {
+		/**
+		 * Top Show Card component for dashboard
+		 */
+		title: string;
+		count: number;
+		image: string | null;
+		loading?: boolean;
+	}
+
+	let { title, count, image, loading = false }: Props = $props();
 </script>
 
 <div

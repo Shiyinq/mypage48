@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { onDestroy, onMount } from 'svelte';
 	import { adminStore, isAdminUsersLoading } from '$lib/stores/admin';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
@@ -21,16 +23,16 @@
 	const { t, locale } = useTranslation();
 
 	// Store state
-	$: usersList = $adminStore.users.data;
-	$: error = $adminStore.users.error;
-	$: usersHasMore = $adminStore.users.hasMore;
+	let usersList = $derived($adminStore.users.data);
+	let error = $derived($adminStore.users.error);
+	let usersHasMore = $derived($adminStore.users.hasMore);
 
 	// Search state
-	let searchQuery = '';
+	let searchQuery = $state('');
 	let searchTimeout: ReturnType<typeof setTimeout>;
 
 	// Initial load state
-	let isInitialLoad = true;
+	let isInitialLoad = $state(true);
 
 	onMount(() => {
 		// Only load if data is not already cached
@@ -42,9 +44,11 @@
 	});
 
 	// Update initial load state when data is loaded
-	$: if (usersList.length > 0) {
-		isInitialLoad = false;
-	}
+	run(() => {
+		if (usersList.length > 0) {
+			isInitialLoad = false;
+		}
+	});
 
 	onDestroy(() => {
 		if (searchTimeout) clearTimeout(searchTimeout);
@@ -75,7 +79,7 @@
 		return `${local.slice(0, 2)}***@${domain}`;
 	}
 
-	let revealedEmails = new Set<string>();
+	let revealedEmails = $state(new Set<string>());
 
 	function toggleEmail(userId: string) {
 		if (revealedEmails.has(userId)) {
@@ -103,13 +107,13 @@
 				<input
 					type="text"
 					bind:value={searchQuery}
-					on:input={handleSearch}
+					oninput={handleSearch}
 					placeholder={$t('admin.users.searchPlaceholder')}
 					class="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
 				/>
 				{#if searchQuery}
 					<button
-						on:click={clearSearch}
+						onclick={clearSearch}
 						class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
 					>
 						<X class="w-3 h-3" />
@@ -183,7 +187,7 @@
 										</span>
 										<button
 											class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none transition-colors cursor-pointer"
-											on:click={() => toggleEmail(user.userId)}
+											onclick={() => toggleEmail(user.userId)}
 											title={revealedEmails.has(user.userId) ? 'Hide email' : 'Show email'}
 										>
 											{#if revealedEmails.has(user.userId)}
@@ -239,7 +243,7 @@
 
 		<!-- Infinite Scroll Sentinel -->
 		{#if usersHasMore}
-			<div class="mt-4" use:infiniteScroll on:intersect={loadMoreUsers}>
+			<div class="mt-4" use:infiniteScroll onintersect={loadMoreUsers}>
 				{#if $isAdminUsersLoading}
 					<TableSkeleton
 						rows={3}

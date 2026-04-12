@@ -1,11 +1,15 @@
 <script lang="ts">
-	/**
-	 * Reusable grid skeleton component for loading states
-	 */
-	export let columns: 1 | 2 | 3 | 4 = 3;
-	export let count: number = 6;
-	export let aspectRatio: 'square' | 'video' | 'portrait' = 'square';
-	export let className: string = '';
+	interface Props {
+		/**
+		 * Reusable grid skeleton component for loading states
+		 */
+		columns?: 1 | 2 | 3 | 4;
+		count?: number;
+		aspectRatio?: 'square' | 'video' | 'portrait';
+		className?: string;
+	}
+
+	let { columns = 3, count = 6, aspectRatio = 'square', className = '' }: Props = $props();
 
 	const columnClasses = {
 		1: 'grid-cols-1',

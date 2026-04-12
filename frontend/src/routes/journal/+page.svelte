@@ -14,24 +14,26 @@
 
 	const { t } = useTranslation();
 
-	let innerWidth = 0;
-	let isSidebarVisible = true;
-	let isResizing = false;
+	let innerWidth = $state(0);
+	let isSidebarVisible = $state(true);
+	let isResizing = $state(false);
 
-	// Store data
-	$: state = $ticketsStore;
-	$: tickets = state.list;
-	$: filters = state.filters;
-	$: error = state.error;
-	$: loading = $isTicketsLoading;
+	// Store data via derived runes
+	let journalState = $derived($ticketsStore);
+	let tickets = $derived(journalState.list);
+	let filters = $derived(journalState.filters);
+	let error = $derived(journalState.error);
+	let loading = $derived($isTicketsLoading);
 
-	let selectedTicketId: string | null = null;
-	$: selectedTicket = tickets.find((t) => t._id === selectedTicketId) || null;
+	let selectedTicketId: string | null = $state(null);
+	let selectedTicket = $derived(tickets.find((t) => t._id === selectedTicketId) || null);
 
-	$: hasMore = state.pagination
-		? state.pagination.current_page < state.pagination.last_page
-		: false;
-	$: totalData = state.pagination?.total_data || tickets.length;
+	let hasMore = $derived(
+		journalState.pagination
+			? journalState.pagination.current_page < journalState.pagination.last_page
+			: false
+	);
+	let totalData = $derived(journalState.pagination?.total_data || tickets.length);
 
 	onMount(() => {
 		if (tickets.length === 0 || isCacheExpired($ticketsStore.lastUpdated)) {
@@ -39,8 +41,8 @@
 		}
 	});
 
-	function handleSelect(event: CustomEvent<{ id: string }>) {
-		selectedTicketId = event.detail.id;
+	function handleSelect(id: string) {
+		selectedTicketId = id;
 		if (innerWidth < 768) {
 			isSidebarVisible = false; // collapse sidebar on mobile when selected
 		}
@@ -50,8 +52,7 @@
 		isSidebarVisible = !isSidebarVisible;
 	}
 
-	async function handleSaveNote(event: CustomEvent<{ ticketId: string; note: string }>) {
-		const { ticketId, note } = event.detail;
+	async function handleSaveNote(ticketId: string, note: string) {
 		try {
 			await ticketsStore.updateNote(ticketId, note);
 			showToast($t('journal.saved'), 'success');
@@ -61,22 +62,19 @@
 	}
 
 	function handleLoadMore() {
-		if (hasMore && !loading && state.pagination) {
-			ticketsStore.load(state.pagination.current_page + 1, filters);
+		if (hasMore && !loading && journalState.pagination) {
+			ticketsStore.load(journalState.pagination.current_page + 1, filters);
 		}
 	}
 
-	function handleFilterChange(event: CustomEvent<import('$lib/types').TicketFilters>) {
-		ticketsStore.load(1, event.detail);
+	function handleFilterChange(newFilters: import('$lib/types').TicketFilters) {
+		ticketsStore.load(1, newFilters);
 	}
 
 	function startResizing(e: MouseEvent) {
 		isResizing = true;
 		document.body.style.cursor = 'col-resize';
 		document.body.style.userSelect = 'none';
-		// We don't resize the right side like playground, because there's no response pane.
-		// The central pane is full width minus sidebar.
-		// Resizing sidebar is possible, but for now we just keep it fixed to emulate the layout clean look.
 		stopResizing();
 	}
 
@@ -115,7 +113,7 @@
 				<h2 class="text-2xl font-black text-gray-900 dark:text-white mb-2">{$t('common.error')}</h2>
 				<p class="text-sm text-gray-500 dark:text-gray-400 mb-6">{error}</p>
 				<button
-					on:click={() => window.location.reload()}
+					onclick={() => window.location.reload()}
 					class="px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-500/20"
 				>
 					{$t('errors.tryAgain')}
@@ -160,10 +158,10 @@
 						{totalData}
 						{filters}
 						selectedId={selectedTicketId}
-						on:select={handleSelect}
-						on:loadMore={handleLoadMore}
-						on:filterChange={handleFilterChange}
-						on:toggleSidebar={handleToggleSidebar}
+						onselect={handleSelect}
+						onloadMore={handleLoadMore}
+						onfilterChange={handleFilterChange}
+						ontoggleSidebar={handleToggleSidebar}
 					/>
 				</div>
 			</div>
@@ -177,7 +175,7 @@
 						transition:fade={{ duration: 200 }}
 					>
 						<button
-							on:click={handleToggleSidebar}
+							onclick={handleToggleSidebar}
 							class="flex items-center justify-center w-8 h-10 bg-white dark:bg-zinc-900 border-y border-r border-gray-200 dark:border-white/10 rounded-r-xl shadow-lg text-gray-400 hover:text-red-500 transition-all hover:w-10 active:scale-95 cursor-pointer"
 							title={$t('journal.showSidebar')}
 						>
@@ -206,8 +204,8 @@
 					{:else}
 						<JournalEditor
 							ticket={selectedTicket}
-							on:save={handleSaveNote}
-							on:toggleSidebar={handleToggleSidebar}
+							onsave={handleSaveNote}
+							ontoggleSidebar={handleToggleSidebar}
 						/>
 					{/if}
 				</div>

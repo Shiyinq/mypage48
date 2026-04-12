@@ -5,7 +5,11 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
-	export let rows: number = 5;
+	interface Props {
+		rows?: number;
+	}
+
+	let { rows = 5 }: Props = $props();
 </script>
 
 <div

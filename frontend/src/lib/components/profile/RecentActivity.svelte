@@ -4,12 +4,16 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
 
-	export let recentActivity: ProfileRecentActivity[] = [];
-	export let loading: boolean = true;
+	interface Props {
+		recentActivity?: ProfileRecentActivity[];
+		loading?: boolean;
+	}
+
+	let { recentActivity = [], loading = true }: Props = $props();
 
 	const { t } = useTranslation();
 
-	$: formatActivityDate = (dateStr: string) => {
+	let formatActivityDate = $derived((dateStr: string) => {
 		const date = new Date(dateStr);
 		const now = new Date();
 		const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
@@ -23,7 +27,7 @@
 			month: 'short',
 			day: 'numeric'
 		});
-	};
+	});
 </script>
 
 <div class="glass-panel p-6 rounded-3xl">

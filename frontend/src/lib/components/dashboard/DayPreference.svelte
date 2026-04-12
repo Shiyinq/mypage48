@@ -3,12 +3,16 @@
 
 	const { t } = useTranslation();
 
-	export let stats: {
-		name: string;
-		count: number;
-	}[];
-	export let maxCount: number;
-	export let loading: boolean = false;
+	interface Props {
+		stats: {
+			name: string;
+			count: number;
+		}[];
+		maxCount: number;
+		loading?: boolean;
+	}
+
+	let { stats, maxCount, loading = false }: Props = $props();
 </script>
 
 <div class="glass-panel p-6 rounded-3xl flex flex-col">

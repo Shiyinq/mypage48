@@ -4,7 +4,11 @@
 	import { MapPin, DollarSign } from 'lucide-svelte';
 	import { formatCurrency } from '$lib/utils/formatting';
 
-	export let stats: SetlistDetailStats;
+	interface Props {
+		stats: SetlistDetailStats;
+	}
+
+	let { stats }: Props = $props();
 
 	const { t } = useTranslation();
 </script>

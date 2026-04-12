@@ -3,10 +3,14 @@
 	import { ShowCard } from '$lib/components/shows';
 	import { createEventDispatcher } from 'svelte';
 
-	export let title: string;
-	export let items: Setlist[];
-	export let maxAttendance: number;
-	export let isActive = false;
+	interface Props {
+		title: string;
+		items: Setlist[];
+		maxAttendance: number;
+		isActive?: boolean;
+	}
+
+	let { title, items, maxAttendance, isActive = false }: Props = $props();
 
 	const dispatch = createEventDispatcher<{
 		click: string;

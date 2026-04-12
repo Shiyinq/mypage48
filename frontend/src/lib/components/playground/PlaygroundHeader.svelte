@@ -10,13 +10,13 @@
 	const { t } = useTranslation();
 
 	/* Loading State */
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(() => {
 		mounted = true;
 	});
 
-	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
+	let isLoading = $derived(!mounted || ($isAuthenticated && !$isInitialDataLoaded));
 </script>
 
 <header
