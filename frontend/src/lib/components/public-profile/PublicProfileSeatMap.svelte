@@ -122,7 +122,7 @@
 </script>
 
 <div
-	class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-[2rem] p-6 relative shadow-xl shadow-red-500/5"
+	class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 relative shadow-2xl shadow-red-500/10 dark:shadow-red-950/40 transition-all duration-300 hover:shadow-red-500/15"
 >
 	<div class="relative z-10">
 		<div class="flex flex-wrap items-center justify-between mb-8 gap-3">

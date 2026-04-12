@@ -15,7 +15,7 @@
 <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-4">
 	<!-- Total Shows - Large Card -->
 	<div
-		class="col-span-2 relative overflow-hidden bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-[2rem] p-6 shadow-xl shadow-red-500/5 group hover:scale-[1.01] transition-transform duration-300"
+		class="col-span-2 relative overflow-hidden bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 shadow-2xl shadow-red-500/10 dark:shadow-red-950/40 group hover:scale-[1.01] transition-all duration-300"
 	>
 		<div class="relative z-10 flex flex-col h-full justify-between gap-6">
 			<div class="flex items-center gap-2 text-red-500/80 dark:text-red-400/80">
@@ -29,7 +29,7 @@
 			<div class="flex items-end justify-between">
 				<div>
 					<div
-						class="text-8xl font-black tracking-tighter mb-1 text-transparent bg-clip-text bg-gradient-to-br from-red-600 to-purple-600 dark:from-red-400 dark:to-purple-400 leading-none"
+						class="text-6xl sm:text-8xl font-black tracking-tighter mb-1 text-transparent bg-clip-text bg-gradient-to-br from-red-600 to-purple-600 dark:from-red-400 dark:to-purple-400 leading-none"
 					>
 						{stats.totalShows}
 					</div>
@@ -46,7 +46,7 @@
 
 	<!-- 2-Shot Count -->
 	<div
-		class="col-span-1 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-[2rem] p-6 flex flex-col justify-center items-center text-center gap-4 relative overflow-hidden group hover:bg-white/70 dark:hover:bg-zinc-900/70 transition-colors shadow-lg shadow-pink-500/5"
+		class="col-span-1 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 flex flex-col justify-center items-center text-center gap-4 relative overflow-hidden group hover:bg-white/70 dark:hover:bg-zinc-900/70 transition-all duration-300 shadow-xl shadow-pink-500/10 dark:shadow-pink-950/30"
 	>
 		<div
 			class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-50 to-white dark:from-pink-900/20 dark:to-zinc-800 shadow-sm text-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
@@ -65,7 +65,7 @@
 
 	<!-- Top Row -->
 	<div
-		class="col-span-1 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-[2rem] p-6 flex flex-col justify-center items-center text-center gap-4 relative overflow-hidden group hover:bg-white/70 dark:hover:bg-zinc-900/70 transition-colors shadow-lg shadow-purple-500/5"
+		class="col-span-1 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 flex flex-col justify-center items-center text-center gap-4 relative overflow-hidden group hover:bg-white/70 dark:hover:bg-zinc-900/70 transition-all duration-300 shadow-xl shadow-purple-500/10 dark:shadow-purple-950/30"
 	>
 		<div
 			class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-zinc-800 shadow-sm text-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
@@ -84,7 +84,7 @@
 
 	<!-- Top Show - Wide Card -->
 	<div
-		class="col-span-2 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-[2rem] p-6 text-gray-900 dark:text-white shadow-lg shadow-yellow-500/5 relative overflow-hidden group hover:scale-[1.01] transition-transform duration-300"
+		class="col-span-2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 text-gray-900 dark:text-white shadow-xl shadow-yellow-500/10 dark:shadow-yellow-950/30 relative overflow-hidden group hover:scale-[1.01] transition-all duration-300"
 	>
 		<div class="relative z-10 flex items-center gap-6">
 			<div
@@ -97,7 +97,7 @@
 					{$t('dashboard.theater.topShow')}
 				</div>
 				<div
-					class="font-black leading-tight text-2xl truncate mb-1"
+					class="font-black leading-tight text-xl sm:text-2xl line-clamp-2 md:truncate mb-1"
 					title={stats.topShow || 'No Data'}
 				>
 					{stats.topShow || '-'}
