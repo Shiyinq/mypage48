@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { TriangleAlert } from 'lucide-svelte';
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher<{ cancel: void; confirm: void }>();
 
 	interface Props {
 		show?: boolean;
+		oncancel?: () => void;
+		onconfirm?: () => void;
 	}
 
-	let { show = false }: Props = $props();
+	let { show = false, oncancel, onconfirm }: Props = $props();
 
 	const handleCancel = () => {
-		dispatch('cancel');
+		oncancel?.();
 	};
 
 	const handleConfirm = () => {
-		dispatch('confirm');
+		onconfirm?.();
 	};
 </script>
 

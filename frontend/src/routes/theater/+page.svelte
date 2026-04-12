@@ -110,7 +110,7 @@
 					items={activeSetlists}
 					{maxAttendance}
 					isActive={true}
-					on:click={(e) => goToDetail(e.detail)}
+					onclick={goToDetail}
 				/>
 			{/if}
 
@@ -120,7 +120,7 @@
 					title={$t('theater.setlists.inactive')}
 					items={inactiveSetlists}
 					{maxAttendance}
-					on:click={(e) => goToDetail(e.detail)}
+					onclick={goToDetail}
 				/>
 			{/if}
 		</div>
@@ -143,7 +143,7 @@
 					items={activeEvents}
 					{maxAttendance}
 					isActive={true}
-					on:click={(e) => goToDetail(e.detail)}
+					onclick={goToDetail}
 				/>
 			{/if}
 
@@ -153,7 +153,7 @@
 					title={$t('theater.setlists.inactiveEvents')}
 					items={inactiveEvents}
 					{maxAttendance}
-					on:click={(e) => goToDetail(e.detail)}
+					onclick={goToDetail}
 				/>
 			{/if}
 		</div>

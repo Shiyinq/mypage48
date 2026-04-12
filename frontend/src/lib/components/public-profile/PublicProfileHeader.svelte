@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { User, Camera, Heart, LoaderCircle, Sparkles } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { createEventDispatcher } from 'svelte';
 	import type { PublicProfileData } from '$lib/types';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
@@ -9,12 +8,12 @@
 		profile: PublicProfileData;
 		isCurrentUser?: boolean;
 		isUploading?: boolean;
+		ontriggerUpload?: () => void;
 	}
 
-	let { profile, isCurrentUser = false, isUploading = false }: Props = $props();
+	let { profile, isCurrentUser = false, isUploading = false, ontriggerUpload }: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 </script>
 
 <div
@@ -61,7 +60,7 @@
 			{#if isCurrentUser}
 				<button
 					class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
-					onclick={() => dispatch('triggerUpload')}
+					onclick={() => ontriggerUpload?.()}
 					disabled={isUploading}
 				>
 					{#if isUploading}

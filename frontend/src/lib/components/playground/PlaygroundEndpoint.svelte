@@ -17,7 +17,7 @@
 	} from 'lucide-svelte';
 	import { playgroundStore } from '$lib/stores/playground';
 	import { accessToken } from '$lib/stores/accessToken';
-	import { createEventDispatcher } from 'svelte';
+
 	import { fade } from 'svelte/transition';
 	import { showToast } from '$lib/stores';
 	import type { OpenAPIEndpoint, OpenAPISchema } from '$lib/types';
@@ -29,13 +29,16 @@
 		endpoint?: OpenAPIEndpoint | null;
 		openapi?: OpenAPISchema | null;
 		executing?: boolean;
+		onexecute?: (payload: {
+			method: string;
+			path: string;
+			params: any;
+			body: any;
+			headers: any;
+		}) => void;
 	}
 
-	let { endpoint = null, openapi = null, executing = false }: Props = $props();
-
-	const dispatch = createEventDispatcher<{
-		execute: { method: string; path: string; params: any; body: any; headers: any };
-	}>();
+	let { endpoint = null, openapi = null, executing = false, onexecute }: Props = $props();
 
 	let parameters: Record<string, string> = $state({});
 	let body: string = $state('');
@@ -124,7 +127,7 @@
 		const queryString = queryParams.toString();
 		const url = queryString ? `${finalPath}?${queryString}` : finalPath;
 
-		dispatch('execute', {
+		onexecute?.({
 			method: endpoint.method,
 			path: url,
 			params: parameters,

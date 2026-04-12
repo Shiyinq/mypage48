@@ -1,20 +1,16 @@
 <script lang="ts">
 	import type { Setlist } from '$lib/apis/setlists';
 	import { ShowCard } from '$lib/components/shows';
-	import { createEventDispatcher } from 'svelte';
 
 	interface Props {
 		title: string;
 		items: Setlist[];
 		maxAttendance: number;
 		isActive?: boolean;
+		onclick?: (id: string) => void;
 	}
 
-	let { title, items, maxAttendance, isActive = false }: Props = $props();
-
-	const dispatch = createEventDispatcher<{
-		click: string;
-	}>();
+	let { title, items, maxAttendance, isActive = false, onclick }: Props = $props();
 
 	function toShowData(s: Setlist) {
 		return {
@@ -41,7 +37,7 @@
 				{show}
 				count={show.count}
 				{maxAttendance}
-				onClick={() => dispatch('click', item.setlistId)}
+				onClick={() => onclick?.(item.setlistId)}
 			/>
 		{/each}
 	</div>

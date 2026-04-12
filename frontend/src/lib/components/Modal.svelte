@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { self } from 'svelte/legacy';
 
-	import { createEventDispatcher } from 'svelte';
 	import Button from './Button.svelte';
 
 	interface Props {
@@ -10,6 +9,8 @@
 		confirmText?: string;
 		cancelText?: string;
 		confirmVariant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'google' | 'github';
+		onconfirm?: () => void;
+		oncancel?: () => void;
 	}
 
 	let {
@@ -17,36 +18,28 @@
 		message = 'Are you sure you want to proceed?',
 		confirmText = 'Confirm',
 		cancelText = 'Cancel',
-		confirmVariant = 'primary'
+		confirmVariant = 'primary',
+		onconfirm,
+		oncancel
 	}: Props = $props();
-
-	const dispatch = createEventDispatcher();
-
-	function onConfirm() {
-		dispatch('confirm');
-	}
-
-	function onCancel() {
-		dispatch('cancel');
-	}
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
-			onCancel();
+			oncancel?.();
 		}
 	}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="modal-backdrop" onclick={self(onCancel)} role="presentation">
+<div class="modal-backdrop" onclick={self(() => oncancel?.())} role="presentation">
 	<div class="modal-content glass-panel">
 		<h3 class="modal-title">{title}</h3>
 		<p class="modal-message">{message}</p>
 
 		<div class="modal-actions">
-			<Button variant="ghost" onclick={onCancel}>{cancelText}</Button>
-			<Button variant={confirmVariant} onclick={onConfirm}>{confirmText}</Button>
+			<Button variant="ghost" onclick={() => oncancel?.()}>{cancelText}</Button>
+			<Button variant={confirmVariant} onclick={() => onconfirm?.()}>{confirmText}</Button>
 		</div>
 	</div>
 </div>

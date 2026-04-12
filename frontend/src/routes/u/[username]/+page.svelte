@@ -170,7 +170,7 @@
 			{profile}
 			isCurrentUser={!!($userProfile.data && $userProfile.data.username === profile.username)}
 			{isUploading}
-			on:triggerUpload={() => fileInput?.click()}
+			ontriggerUpload={() => fileInput?.click()}
 		/>
 
 		<!-- Stats Section -->
@@ -213,8 +213,8 @@
 	<ProfilePictureUploadModal
 		{previewImage}
 		{isUploading}
-		on:close={closePreviewModal}
-		on:save={confirmUpload}
+		onclose={closePreviewModal}
+		onsave={confirmUpload}
 	/>
 {/if}
 

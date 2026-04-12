@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ImagePlus } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { createEventDispatcher } from 'svelte';
+
 	import { dragDrop } from '$lib/actions/dragDrop';
 
 	interface Props {

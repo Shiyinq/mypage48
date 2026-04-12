@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Search, ChevronRight, Hash, Eye, EyeOff, X, Lock, PanelLeftClose } from 'lucide-svelte';
 	import { playgroundStore } from '$lib/stores/playground';
-	import { createEventDispatcher } from 'svelte';
+
 	import { slide } from 'svelte/transition';
 	import type { OpenAPIEndpoint } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -11,11 +11,10 @@
 	interface Props {
 		groupedEndpoints?: Record<string, OpenAPIEndpoint[]>;
 		selectedId?: string | null;
+		onselect?: (endpoint: OpenAPIEndpoint) => void;
 	}
 
-	let { groupedEndpoints = {}, selectedId = null }: Props = $props();
-
-	const dispatch = createEventDispatcher<{ select: OpenAPIEndpoint }>();
+	let { groupedEndpoints = {}, selectedId = null, onselect }: Props = $props();
 
 	let searchQuery = $state('');
 	let expandedTags: Record<string, boolean> = $state({});
@@ -43,7 +42,7 @@
 	}
 
 	function handleSelect(endpoint: OpenAPIEndpoint) {
-		dispatch('select', endpoint);
+		onselect?.(endpoint);
 	}
 
 	const methodColors: Record<string, string> = {

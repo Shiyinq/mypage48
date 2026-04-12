@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { run } from 'svelte/legacy';
 
-	import { createEventDispatcher, tick } from 'svelte';
+	import { tick } from 'svelte';
 	import { members, type Member } from '$lib/apis/members';
 	import { User, Search, X, Check } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -15,12 +15,18 @@
 		placeholder?: string;
 		title?: string;
 		subtitle?: string;
+		onselect?: (member: Member) => void;
 	}
 
-	let { value = $bindable(''), placeholder = '', title = '', subtitle = '' }: Props = $props();
+	let {
+		value = $bindable(''),
+		placeholder = '',
+		title = '',
+		subtitle = '',
+		onselect
+	}: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
 	// Modal State
 	let isOpen = $state(false);
@@ -107,7 +113,7 @@
 	function confirmSelection() {
 		if (selectedMember) {
 			value = selectedMember.name;
-			dispatch('select', selectedMember);
+			onselect?.(selectedMember);
 			close();
 		}
 	}

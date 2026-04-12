@@ -593,7 +593,7 @@
 								roomIdentifier={stream.room_url_key}
 								volume={volumes[i] || 1}
 								muted={muted[i]}
-								on:offline={() => handleRoomOffline(i, stream.member?.name || 'Member')}
+								onoffline={() => handleRoomOffline(i, stream.member?.name || 'Member')}
 							/>
 						</div>
 

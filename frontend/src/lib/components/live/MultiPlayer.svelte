@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { run, stopPropagation } from 'svelte/legacy';
 
-	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { fade, scale, slide } from 'svelte/transition';
 	import { live as liveApi } from '$lib/apis/live';
 	import { API_BASE } from '$lib/apis/client';
@@ -46,6 +46,7 @@
 		muted?: boolean;
 		roomIdentifier?: string; // IDN username
 		isRecording?: boolean;
+		onoffline?: () => void;
 	}
 
 	let {
@@ -54,7 +55,8 @@
 		volume = 1,
 		muted = false,
 		roomIdentifier = '',
-		isRecording = $bindable(false)
+		isRecording = $bindable(false),
+		onoffline
 	}: Props = $props();
 	let mediaRecorder: any = null;
 	let recordedChunks: any[] = [];
@@ -106,8 +108,6 @@
 	}
 
 	// Floating Gift Logic - Handled by GiftOverlay component
-
-	const dispatch = createEventDispatcher();
 
 	async function initPlayer() {
 		if (typeof window === 'undefined' || initializing) return;
@@ -162,7 +162,7 @@
 					hls.on(Hls.Events.ERROR, (event: any, data: any) => {
 						if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
 							console.log('Proxy/Stream 404 detected, triggering offline');
-							dispatch('offline');
+							onoffline?.();
 							error = $t('theater.live.offline');
 							hls.destroy();
 							loading = false;
@@ -209,7 +209,7 @@
 		} catch (e: any) {
 			console.error('MultiPlayer init failed:', e);
 			if (e?.status === 404) {
-				dispatch('offline');
+				onoffline?.();
 			}
 			error = $t('theater.live.multiview.failed_load_stream');
 			loading = false;

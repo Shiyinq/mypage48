@@ -2,7 +2,7 @@
 	import { Camera, ChevronDown, DollarSign, Sparkles } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import MemberSelector from '$lib/components/MemberSelector.svelte';
-	import { createEventDispatcher } from 'svelte';
+
 	import { dragDrop } from '$lib/actions/dragDrop';
 
 	interface Props {

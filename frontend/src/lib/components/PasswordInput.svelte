@@ -3,8 +3,6 @@
 
 	const bubble = createBubbler();
 	import { Eye, EyeOff } from 'lucide-svelte';
-	import { createEventDispatcher } from 'svelte';
-
 	interface Props {
 		value?: string;
 		id: string;
@@ -14,6 +12,7 @@
 		error?: string | undefined;
 		disabled?: boolean;
 		leading?: import('svelte').Snippet;
+		oninput?: (e: Event) => void;
 	}
 
 	let {
@@ -24,11 +23,11 @@
 		placeholder = '••••••••',
 		error = undefined,
 		disabled = false,
-		leading
+		leading,
+		oninput
 	}: Props = $props();
 
 	let visible = $state(false);
-	const dispatch = createEventDispatcher();
 
 	function toggleVisibility() {
 		visible = !visible;
@@ -37,7 +36,7 @@
 	function handleInput(e: Event) {
 		const target = e.target as HTMLInputElement;
 		value = target.value;
-		dispatch('input', e);
+		oninput?.(e);
 	}
 </script>
 

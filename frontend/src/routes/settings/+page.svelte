@@ -97,7 +97,7 @@
 		<ExportData />
 
 		<!-- DEVELOPER ACCESS -->
-		<DeveloperAccessSettings {generatingKey} on:openConfirmModal={openConfirmModal} />
+		<DeveloperAccessSettings {generatingKey} onopenConfirmModal={openConfirmModal} />
 
 		<!-- More Settings Coming Soon -->
 		<a
@@ -132,12 +132,12 @@
 <ApiKeyModal
 	show={showApiKeyModal}
 	apiKey={newApiKey}
-	on:close={closeApiKeyModal}
-	on:copy={copyApiKey}
+	onclose={closeApiKeyModal}
+	oncopy={copyApiKey}
 />
 
 <ConfirmApiKeyModal
 	show={showConfirmModal}
-	on:cancel={closeConfirmModal}
-	on:confirm={confirmGenerateApiKey}
+	oncancel={closeConfirmModal}
+	onconfirm={confirmGenerateApiKey}
 />

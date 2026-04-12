@@ -28,9 +28,18 @@
 		playgroundStore.reset();
 	});
 
-	async function handleExecute(event: CustomEvent) {
-		const { method, path, body, headers } = event.detail;
-
+	async function handleExecute({
+		method,
+		path,
+		body,
+		headers
+	}: {
+		method: string;
+		path: string;
+		params: any;
+		body: any;
+		headers: any;
+	}) {
 		// The path from the playground may already include /api depending on the openapi.json
 		const cleanPath = path.startsWith('/api') ? path.substring(4) : path;
 
@@ -43,8 +52,8 @@
 		});
 	}
 
-	function handleSelect(event: CustomEvent) {
-		playgroundStore.selectEndpoint(event.detail.id);
+	function handleSelect(endpoint: import('$lib/types').OpenAPIEndpoint) {
+		playgroundStore.selectEndpoint(endpoint.id);
 	}
 
 	let { schema, executing, error, isSidebarVisible, responseWidth } = $derived($playgroundStore);
@@ -151,7 +160,7 @@
 					<PlaygroundSidebar
 						groupedEndpoints={$groupedEndpoints}
 						selectedId={$playgroundStore.selectedEndpointId}
-						on:select={(e) => {
+						onselect={(e) => {
 							handleSelect(e);
 							if (innerWidth < 768) playgroundStore.toggleSidebar();
 						}}
@@ -181,7 +190,7 @@
 						openapi={schema}
 						endpoint={$selectedEndpoint}
 						{executing}
-						on:execute={handleExecute}
+						onexecute={handleExecute}
 					/>
 				</div>
 

@@ -112,7 +112,7 @@
 				placeholder={$t('auth.login.passwordPlaceholder')}
 				bind:value={password}
 				error={errors.password}
-				on:input={() => validateField('password', password)}
+				oninput={() => validateField('password', password)}
 			>
 				{#snippet leading()}
 					<Lock class="w-5 h-5" />

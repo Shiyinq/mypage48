@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { Play } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { fade } from 'svelte/transition';
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
 	interface Props {
 		generations: string[];
@@ -13,6 +11,10 @@
 		loadingGenerations: boolean;
 		selectedMembersCount: number;
 		variant?: 'public' | 'theater';
+		ontoggle?: (gen: string) => void;
+		onselectAll?: () => void;
+		ondeselectAll?: () => void;
+		onstart?: () => void;
 	}
 
 	let {
@@ -20,23 +22,27 @@
 		selectedGenerations,
 		loadingGenerations,
 		selectedMembersCount,
-		variant = 'public'
+		variant = 'public',
+		ontoggle,
+		onselectAll,
+		ondeselectAll,
+		onstart
 	}: Props = $props();
 
 	function toggleGeneration(gen: string) {
-		dispatch('toggle', gen);
+		ontoggle?.(gen);
 	}
 
 	function selectAll() {
-		dispatch('selectAll');
+		onselectAll?.();
 	}
 
 	function deselectAll() {
-		dispatch('deselectAll');
+		ondeselectAll?.();
 	}
 
 	function start() {
-		dispatch('start');
+		onstart?.();
 	}
 
 	let isPublic = $derived(variant === 'public');

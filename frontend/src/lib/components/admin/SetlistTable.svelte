@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Pencil, Trash2, Calendar, Music } from 'lucide-svelte';
 	import type { Setlist } from '$lib/apis/setlists';
-	import { createEventDispatcher } from 'svelte';
+
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {

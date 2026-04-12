@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { Trophy, LayoutGrid, List, Share2, RotateCcw } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -9,7 +8,6 @@
 	import { getMemberFrame } from '$lib/constants';
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
 	interface ResultMember extends Member {
 		rank: number;
@@ -19,9 +17,19 @@
 		results: ResultMember[];
 		layoutMode?: 'card' | 'list';
 		variant?: 'public' | 'theater';
+		onshare?: () => void;
+		onrestart?: () => void;
+		onchangeLayout?: (mode: 'card' | 'list') => void;
 	}
 
-	let { results, layoutMode = 'card', variant = 'public' }: Props = $props();
+	let {
+		results,
+		layoutMode = 'card',
+		variant = 'public',
+		onshare,
+		onrestart,
+		onchangeLayout
+	}: Props = $props();
 
 	function handleImageError(e: Event) {
 		const target = e.currentTarget as HTMLImageElement;
@@ -29,15 +37,15 @@
 	}
 
 	function shareResults() {
-		dispatch('share');
+		onshare?.();
 	}
 
 	function restart() {
-		dispatch('restart');
+		onrestart?.();
 	}
 
 	function setLayout(mode: 'card' | 'list') {
-		dispatch('changeLayout', mode);
+		onchangeLayout?.(mode);
 	}
 
 	let isPublic = $derived(variant === 'public');

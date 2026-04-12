@@ -4,24 +4,24 @@
 	const bubble = createBubbler();
 	import { X, LoaderCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { createEventDispatcher } from 'svelte';
 
 	interface Props {
 		previewImage: string;
 		isUploading?: boolean;
+		onclose?: () => void;
+		onsave?: () => void;
 	}
 
-	let { previewImage, isUploading = false }: Props = $props();
+	let { previewImage, isUploading = false, onclose, onsave }: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
 	function close() {
-		dispatch('close');
+		onclose?.();
 	}
 
 	function save() {
-		dispatch('save');
+		onsave?.();
 	}
 
 	// Handle escape key
