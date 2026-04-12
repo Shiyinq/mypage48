@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { Check, X } from 'lucide-svelte';
-	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
 		password?: string;
 	}
 
 	let { password = '' }: Props = $props();
-
-	const { t } = useTranslation();
 
 	let requirements = $derived([
 		{

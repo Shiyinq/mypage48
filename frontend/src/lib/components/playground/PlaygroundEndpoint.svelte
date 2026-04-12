@@ -1,26 +1,13 @@
 <script lang="ts">
 	import { run } from 'svelte/legacy';
 
-	import {
-		Play,
-		Terminal,
-		Key,
-		ChevronRight,
-		Hash,
-		Globe,
-		Lock,
-		Info,
-		Server,
-		RefreshCw,
-		Copy,
-		AlertCircle
-	} from 'lucide-svelte';
+	import { Play, Terminal, Hash, Globe, Server, RefreshCw, Copy, AlertCircle } from 'lucide-svelte';
 	import { playgroundStore } from '$lib/stores/playground';
 	import { accessToken } from '$lib/stores/accessToken';
 
 	import { fade } from 'svelte/transition';
 	import { showToast } from '$lib/stores';
-	import type { OpenAPIEndpoint, OpenAPISchema } from '$lib/types';
+	import type { OpenAPIEndpoint, OpenAPISchema, ExecutionPayload } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -29,13 +16,7 @@
 		endpoint?: OpenAPIEndpoint | null;
 		openapi?: OpenAPISchema | null;
 		executing?: boolean;
-		onexecute?: (payload: {
-			method: string;
-			path: string;
-			params: any;
-			body: any;
-			headers: any;
-		}) => void;
+		onexecute?: (payload: ExecutionPayload) => void;
 	}
 
 	let { endpoint = null, openapi = null, executing = false, onexecute }: Props = $props();
@@ -93,7 +74,7 @@
 			headers = {};
 
 			// Initialize default values for parameters
-			endpoint.details.parameters?.forEach((p: any) => {
+			endpoint.details.parameters?.forEach((p) => {
 				parameters[p.name] = '';
 			});
 
@@ -114,7 +95,7 @@
 		const queryParams = new URLSearchParams();
 		const finalHeaders = { ...headers };
 
-		endpoint.details.parameters?.forEach((p: any) => {
+		endpoint.details.parameters?.forEach((p) => {
 			if (p.in === 'path') {
 				finalPath = finalPath.replace(`{${p.name}}`, parameters[p.name] || `{${p.name}}`);
 			} else if (p.in === 'query' && parameters[p.name]) {
@@ -143,7 +124,7 @@
 		// In playground, we typically use the session, but for cURL we'll include placeholders or known headers
 		const curlHeaders = ["-H 'Content-Type: application/json'"];
 
-		endpoint.details.parameters?.forEach((p: any) => {
+		endpoint.details.parameters?.forEach((p) => {
 			if (p.in === 'path') {
 				finalPath = finalPath.replace(`{${p.name}}`, parameters[p.name] || `{${p.name}}`);
 			} else if (p.in === 'query' && parameters[p.name]) {

@@ -4,7 +4,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate, formatTime } from '$lib/i18n';
 	import type { CalendarEvent } from '$lib/types/events';
-	import { Cake, ChevronRight, Calculator, Calendar, ExternalLink } from 'lucide-svelte';
+	import { Cake, Calendar, ExternalLink } from 'lucide-svelte';
 
 	interface Props {
 		isOpen?: boolean;
@@ -15,7 +15,7 @@
 
 	let { isOpen = false, date, events = [], onclose }: Props = $props();
 
-	const { t, locale } = useTranslation();
+	const { t } = useTranslation();
 
 	function close() {
 		if (onclose) onclose();

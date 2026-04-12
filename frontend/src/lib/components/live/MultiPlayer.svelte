@@ -2,32 +2,15 @@
 	import { run, stopPropagation } from 'svelte/legacy';
 
 	import { onMount, onDestroy } from 'svelte';
-	import { fade, scale, slide } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { live as liveApi } from '$lib/apis/live';
 	import { API_BASE } from '$lib/apis/client';
-	import { RefreshCw, AlertCircle, Circle, Square } from 'lucide-svelte';
+	import { captureVideoScreenshot, startVideoRecording, downloadRecording } from '$lib/utils/media';
+	import { RefreshCw, AlertCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import GiftOverlay from './GiftOverlay.svelte';
 
-	import { giftEvents, type GiftEvent } from '$lib/stores/gift';
-	import { captureVideoScreenshot, startVideoRecording, downloadRecording } from '$lib/utils/media';
-	import LiveStats from './LiveStats.svelte';
-
 	const { t } = useTranslation();
-
-	function getExternalMediaUrl(url?: string) {
-		if (!url) return '';
-		if (url.includes('idn.app')) {
-			try {
-				const u = new URL(url);
-				u.searchParams.delete('timestamp');
-				return u.toString();
-			} catch (e) {
-				return url;
-			}
-		}
-		return url;
-	}
 
 	let videoElement: HTMLVideoElement | undefined = $state();
 	let hls: any;
@@ -58,8 +41,8 @@
 		isRecording = $bindable(false),
 		onoffline
 	}: Props = $props();
-	let mediaRecorder: any = null;
-	let recordedChunks: any[] = [];
+	let mediaRecorder: MediaRecorder | null = null;
+	let recordedChunks: Blob[] = [];
 
 	let isEffectivelyMuted = $state(false);
 	run(() => {
@@ -191,8 +174,8 @@
 				} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 					videoElement.src = streamUrl;
 					videoElement.addEventListener('loadedmetadata', () => {
-						videoElement?.play().catch((e: Error) => {
-							if (e.name === 'NotAllowedError') {
+						videoElement?.play().catch((_e: Error) => {
+							if (_e.name === 'NotAllowedError') {
 								autoplayBlocked = true;
 							}
 						});
@@ -206,9 +189,9 @@
 				error = $t('theater.live.multiview.no_stream_found');
 				loading = false;
 			}
-		} catch (e: any) {
-			console.error('MultiPlayer init failed:', e);
-			if (e?.status === 404) {
+		} catch (_e: any) {
+			console.error('MultiPlayer init failed:', _e);
+			if (_e?.status === 404) {
 				onoffline?.();
 			}
 			error = $t('theater.live.multiview.failed_load_stream');
@@ -221,8 +204,8 @@
 	function retryPlayback() {
 		if (!videoElement) return;
 		autoplayBlocked = false;
-		videoElement.play().catch((e) => {
-			if (e.name === 'NotAllowedError') {
+		videoElement.play().catch((_e) => {
+			if (_e.name === 'NotAllowedError') {
 				autoplayBlocked = true;
 			}
 		});

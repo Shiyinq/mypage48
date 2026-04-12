@@ -1,7 +1,8 @@
 import { writable, get } from 'svelte/store';
 import { ticketsApi } from '$lib/apis/tickets';
 import { logger } from '$lib/utils/logger';
-import { CACHE_EXPIRATION_MS, isCacheExpired } from '$lib/utils/cache';
+import { isCacheExpired } from '$lib/utils/cache';
+
 import type { Ticket, PaginationMeta, TicketFilters } from '$lib/types';
 
 interface TicketsState {

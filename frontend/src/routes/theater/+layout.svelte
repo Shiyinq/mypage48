@@ -1,18 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import {
-		AudioLines,
-		Users,
-		Calendar,
-		ChevronRight,
-		History,
-		Newspaper,
-		ArrowUpDown,
-		Tv
-	} from 'lucide-svelte';
-	import { getThemeStyles } from '$lib/constants/theaterTheme';
-	import { theaterNavItems } from '$lib/constants/theaterNav';
+	import { AudioLines, Users, Calendar, Newspaper, ArrowUpDown, Tv } from 'lucide-svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	interface Props {
 		children?: import('svelte').Snippet;
@@ -110,17 +99,6 @@
 			};
 		})()
 	);
-
-	let currentThemeStyles = $derived(getThemeStyles(pageInfo.theme));
-
-	// Check if current path matches nav item
-	// (Keeping this helper if needed for other logic, but subNav moved to Header)
-	let isActive = $derived((href: string, exact: boolean = false) => {
-		if (exact) {
-			return currentPath === href;
-		}
-		return currentPath.startsWith(href);
-	});
 </script>
 
 <div
