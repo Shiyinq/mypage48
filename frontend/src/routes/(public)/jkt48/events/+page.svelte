@@ -49,7 +49,12 @@
 	}
 </script>
 
-<SEO title={$t('theater.events.title')} path="/jkt48/events" description={$t('seo.events')} />
+<SEO
+	title={$t('theater.events.title')}
+	path="/jkt48/events"
+	description={$t('seo.events')}
+	events={$upcomingEvents}
+/>
 
 <div class="space-y-16 pt-4 md:pt-6 pb-12">
 	<div class="text-center space-y-4 mb-8">

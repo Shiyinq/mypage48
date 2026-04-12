@@ -1,12 +1,16 @@
 import type { Handle } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
 import { PUBLIC_SERVER_SIDE_API_BASE_URL } from '$env/static/public';
+import { detectLocale } from '$lib/i18n/server';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// Simple health check endpoint for Docker
 	if (event.url.pathname === '/health') {
 		return new Response('OK', { status: 200 });
 	}
+
+	// Get locale for SSR
+	const locale = detectLocale(event.request, event.cookies, event.url);
 
 	// If the request is for /api, proxy it to the backend
 	if (event.url.pathname.startsWith('/api')) {
@@ -41,12 +45,15 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// For all other requests, continue as normal
 	return resolve(event, {
 		transformPageChunk: ({ html }) => {
+			// Set the lang attribute dynamically
+			let modifiedHtml = html.replace('<html lang="id">', `<html lang="${locale}">`);
+
 			if (env.PUBLIC_UMAMI_URL && env.PUBLIC_UMAMI_WEBSITE_ID) {
 				const script = `\n\t\t<script async defer src="${env.PUBLIC_UMAMI_URL}/script.js" data-website-id="${env.PUBLIC_UMAMI_WEBSITE_ID}"></script>\n`;
 				// Inject before closing head tag
-				return html.replace('</head>', `${script}</head>`);
+				modifiedHtml = modifiedHtml.replace('</head>', `${script}</head>`);
 			}
-			return html;
+			return modifiedHtml;
 		}
 	});
 };
