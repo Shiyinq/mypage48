@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { run } from 'svelte/legacy';
 
-	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { fade, scale } from 'svelte/transition';
@@ -9,7 +8,6 @@
 		Search,
 		Moon,
 		Sun,
-		Monitor,
 		Home,
 		User,
 		Settings,
