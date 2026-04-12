@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { run, preventDefault } from 'svelte/legacy';
+	import { preventDefault } from 'svelte/legacy';
 
-	import { X, Save, User, LoaderCircle, CircleCheck, Sparkles } from 'lucide-svelte';
+	import { X, User, LoaderCircle, CircleCheck, Sparkles } from 'lucide-svelte';
 	import type { Member } from '$lib/apis/members';
-	import { fly, fade } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
@@ -11,7 +11,7 @@
 		member?: Partial<Member>;
 		isCreating?: boolean;
 		isSubmitting?: boolean;
-		onsubmit?: (data: any) => void;
+		onsubmit?: (data: Partial<Member>) => void;
 	}
 
 	let {

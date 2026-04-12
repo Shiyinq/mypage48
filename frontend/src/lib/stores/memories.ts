@@ -1,7 +1,7 @@
 import { writable, get } from 'svelte/store';
 import { memoriesApi } from '$lib/apis/memories';
 import { logger } from '$lib/utils/logger';
-import { CACHE_EXPIRATION_MS, isCacheExpired } from '$lib/utils/cache';
+import { isCacheExpired } from '$lib/utils/cache';
 import type { FilterType } from '$lib/components/memories';
 import type { TopTwoShotResponse, MemoryItem } from '$lib/types';
 

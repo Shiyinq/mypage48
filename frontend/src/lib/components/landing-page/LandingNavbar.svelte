@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { Ticket, ArrowRight, Menu, X, Sparkles } from 'lucide-svelte';
+	import { ArrowRight, Menu, X, Sparkles } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import LanguageToggle from './LanguageToggle.svelte';
 	import LandingPageThemeToggle from './ThemeToggle.svelte';
 	import { isAuthenticated } from '$lib/stores';
-	import { fade, fly, crossfade } from 'svelte/transition';
-	import { cubicInOut } from 'svelte/easing';
-	import { radioStore } from '$lib/stores/radio';
+	import { fade, fly } from 'svelte/transition';
 	import { liveStore, liveList } from '$lib/stores/live';
 	import { onMount } from 'svelte';
 	import RadioEngine from './radio-player/RadioEngine.svelte';
@@ -20,7 +18,7 @@
 
 	interface Props {
 		showLogin?: boolean;
-		mouse?: any;
+		mouse?: { x: number; y: number };
 	}
 
 	let { showLogin = true, mouse = { x: 0, y: 0 } }: Props = $props();

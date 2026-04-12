@@ -6,12 +6,12 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { ChevronLeft, ChevronRight, Cake, GraduationCap } from 'lucide-svelte';
-	import { calendarEvents, calendarLoading, eventsStore, calendarError } from '$lib/stores/events';
+	import { calendarEvents, calendarLoading, eventsStore } from '$lib/stores/events';
 	import DayEventsModal from '$lib/components/calendar/DayEventsModal.svelte';
 	import type { CalendarEvent } from '$lib/types/events';
 
 	import { formatDate, formatTime } from '$lib/i18n';
-	const { t, locale } = useTranslation();
+	const { t } = useTranslation();
 
 	// Default initialization
 	const now = new Date();
@@ -302,7 +302,8 @@
 					class="grid border-b border-gray-100 dark:border-zinc-800"
 					style="grid-template-columns: repeat(7, 1fr);"
 				>
-					{#each Array(7) as _}
+					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+					{#each Array(7) as _, i}
 						<div class="py-3 flex justify-center">
 							<div class="h-3 w-8 bg-gray-200 dark:bg-zinc-800 rounded"></div>
 						</div>
@@ -313,6 +314,7 @@
 					class="grid flex-1 overflow-hidden"
 					style="grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(6, 1fr);"
 				>
+					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 					{#each Array(42) as _}
 						<div
 							class="border-b border-r border-gray-100 dark:border-zinc-800 p-1 flex flex-col items-center"
@@ -405,6 +407,7 @@
 							<div
 								class="flex flex-wrap justify-center gap-0.5 px-0.5 md:hidden w-full max-h-[50%] overflow-hidden"
 							>
+								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 								{#each dayEvents.slice(0, 12) as _}
 									<div class="w-1 h-1 rounded-full bg-blue-400 dark:bg-blue-500"></div>
 								{/each}

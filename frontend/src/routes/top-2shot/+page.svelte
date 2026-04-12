@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { isAuthenticated, showToast } from '$lib/stores';
 	import { isCacheExpired } from '$lib/utils/cache';
-	import { logger } from '$lib/utils/logger';
 	import { Heart, Camera } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -11,11 +10,9 @@
 	import { Top2ShotSkeleton } from '$lib/components/skeletons';
 	import type { TopTwoShotResponse } from '$lib/types';
 	import { topTwoShotStore, isTopTwoShotLoading } from '$lib/stores/memories';
-	interface Props {
-		params?: Record<string, string> | undefined;
-	}
+	interface Props {}
 
-	let { params = undefined }: Props = $props();
+	let {}: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -46,7 +43,7 @@
 
 		try {
 			await topTwoShotStore.load();
-		} catch (e) {
+		} catch (_e) {
 			// Error state is handled by store, we just show toast
 			showToast($t('top2shot.errorTitle') || 'Failed to load data', 'error');
 		}

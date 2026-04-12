@@ -2,7 +2,6 @@
 	import { run } from 'svelte/legacy';
 
 	import type { PageData } from './$types';
-	import { page } from '$app/stores';
 	import { SEO } from '$lib/components';
 	import { Ticket } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -25,11 +24,10 @@
 	import ProfilePictureUploadModal from '$lib/components/public-profile/ProfilePictureUploadModal.svelte';
 
 	interface Props {
-		params?: Record<string, string> | undefined;
 		data: PageData;
 	}
 
-	let { params = undefined, data }: Props = $props();
+	let { data }: Props = $props();
 
 	const { t } = useTranslation();
 	let { profile } = $derived(data);

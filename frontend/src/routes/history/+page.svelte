@@ -2,7 +2,6 @@
 	import { ticketsStore, showToast, isInitialDataLoaded, isTicketsLoading } from '$lib/stores';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
 	import { invalidateTheater } from '$lib/stores/theater';
-	import { logger } from '$lib/utils/logger';
 	import { onMount } from 'svelte';
 
 	import type { Ticket as TicketType, TicketFilters } from '$lib/types';

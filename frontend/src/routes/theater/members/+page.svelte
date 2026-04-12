@@ -6,7 +6,6 @@
 	import { MemberDetailModal } from '$lib/components/profile';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { showToast } from '$lib/stores';
-	import { logger } from '$lib/utils/logger';
 	import { Search } from 'lucide-svelte';
 	import { membersStore, isMembersLoading } from '$lib/stores/theater';
 	import MemberCard from '$lib/components/theater/MemberCard.svelte';
@@ -56,7 +55,6 @@
 	let membersList = $derived(membersState.list);
 	let pagination = $derived(membersState.pagination);
 	let error = $derived(membersState.error);
-	let isAppending = $derived($isMembersLoading && membersList.length > 0 && pagination.page > 0);
 
 	async function fetchGenerations() {
 		try {
@@ -64,7 +62,7 @@
 				const gens = await membersStore.getGenerations();
 				generations = gens.sort((a: string, b: string) => parseInt(a) - parseInt(b));
 			}
-		} catch (e) {
+		} catch (_e) {
 			// Error logged by store
 		} finally {
 			loadingGenerations = false;
@@ -83,7 +81,7 @@
 				},
 				reset
 			);
-		} catch (err) {
+		} catch (_err) {
 			// Error logged by store
 			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		}

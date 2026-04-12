@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { ticketsStore, showToast, storageStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
@@ -22,12 +20,9 @@
 	import TicketForm from '$lib/components/upload/TicketForm.svelte';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
-	import { pageHeaderStore } from '$lib/stores/ui';
-	interface Props {
-		params?: Record<string, string> | undefined;
-	}
+	interface Props {}
 
-	let { params = undefined }: Props = $props();
+	let {}: Props = $props();
 
 	const { t } = useTranslation();
 

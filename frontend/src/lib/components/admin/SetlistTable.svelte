@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Pencil, Trash2, Calendar, Music } from 'lucide-svelte';
+	import { Pencil, Trash2, Music } from 'lucide-svelte';
 	import type { Setlist } from '$lib/apis/setlists';
 
 	import { useTranslation } from '$lib/i18n/useTranslation';

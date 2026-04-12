@@ -2,24 +2,21 @@
 	import { run, stopPropagation, createBubbler } from 'svelte/legacy';
 
 	const bubble = createBubbler();
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
-	import { fade, fly, slide } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import { spring } from 'svelte/motion';
-	import { liveStore, liveList, liveLoading, now } from '$lib/stores/live';
+	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
+	import type { LiveStatus, LiveStreamingResponse } from '$lib/types';
 	import { live } from '$lib/apis/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		X,
 		Plus,
-		Maximize2,
-		Minimize2,
 		Volume2,
 		VolumeX,
 		MessageCircle,
-		Settings2,
 		LayoutGrid,
-		ChevronRight,
 		ChevronLeft,
 		Search,
 		UserPlus,
@@ -30,9 +27,7 @@
 		Camera,
 		Circle,
 		Square,
-		Trash2,
-		Star,
-		Sparkles
+		Trash2
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
@@ -40,7 +35,6 @@
 	import MultiPlayer from '$lib/components/live/MultiPlayer.svelte';
 	import { showToast } from '$lib/stores/toast';
 	import { isImmersive } from '$lib/stores/ui';
-	import { formatDuration } from '$lib/utils/time';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
@@ -55,9 +49,9 @@
 	let { basePath = '/jkt48/live' }: Props = $props();
 
 	// Multi-view State
-	let slots: any[] = $state([]);
+	let slots: LiveStatus[] = $state([]);
 	let focusedSlotIndex: number = $state(0);
-	let focusedStreamDetails: any = $state(null);
+	let focusedStreamDetails: LiveStreamingResponse | null = $state(null);
 	let lastLoadedId: string | null = $state(null);
 	let showPicker = $state(true);
 	let showChat = $state(true);
@@ -148,7 +142,7 @@
 				if (Array.isArray(parsed)) {
 					slots = parsed.filter((s) => s !== null).slice(0, 8);
 				}
-			} catch (e) {}
+			} catch (_e) {}
 		}
 
 		updateIsMobile();

@@ -10,27 +10,21 @@
 		Menu,
 		BookOpen,
 		Trophy,
-		Settings,
 		ChevronRight,
 		X,
 		User,
-		Newspaper,
-		Tv,
-		Calendar,
-		ArrowUpDown,
-		Users,
 		Crown
 	} from 'lucide-svelte';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { fade, slide, fly } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
 	const { t } = useTranslation();
 	let isMenuOpen = $state(false);
 	let isTheaterMenuOpen = $state(false);
 
 	let lastScrollY = 0;
-	let isHidden = false;
+	let isHidden = $state(false);
 	const threshold = 10;
 
 	function handleScroll() {
@@ -193,7 +187,9 @@
 {/if}
 
 <nav
-	class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-gray-200 dark:border-zinc-800 z-[80] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-none transition-transform duration-300 ease-in-out"
+	class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-gray-200 dark:border-zinc-800 z-[80] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-none transition-transform duration-300 ease-in-out {isHidden
+		? 'translate-y-full'
+		: 'translate-y-0'}"
 >
 	<div class="flex h-16 items-center justify-around max-w-[420px] mx-auto px-4">
 		<a

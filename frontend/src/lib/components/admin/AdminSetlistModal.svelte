@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { run, preventDefault } from 'svelte/legacy';
+	import { preventDefault } from 'svelte/legacy';
 
-	import { X, Save, Music, LoaderCircle, CircleCheck, Image as ImageIcon } from 'lucide-svelte';
+	import { X, Music, LoaderCircle, CircleCheck, Image as ImageIcon } from 'lucide-svelte';
 	import type { Setlist } from '$lib/apis/setlists';
-	import { fly, fade } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
@@ -11,7 +11,7 @@
 		setlist?: Partial<Setlist>;
 		isCreating?: boolean;
 		isSubmitting?: boolean;
-		onsubmit?: (data: any) => void;
+		onsubmit?: (data: Partial<Setlist>) => void;
 	}
 
 	let {
@@ -31,7 +31,7 @@
 		type: 'setlist',
 		imageUrl: '',
 		active: true,
-		songs: [] as any[]
+		songs: [] as string[]
 	});
 
 	// Safe Form Reset Pattern
