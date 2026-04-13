@@ -16,6 +16,8 @@
 	} from '$lib/stores/playground';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
+	import type { ExecutionPayload } from '$lib/types';
+
 	const { t } = useTranslation();
 
 	let innerWidth = $state(0);
@@ -28,18 +30,7 @@
 		playgroundStore.reset();
 	});
 
-	async function handleExecute({
-		method,
-		path,
-		body,
-		headers
-	}: {
-		method: string;
-		path: string;
-		params: any;
-		body: any;
-		headers: any;
-	}) {
+	async function handleExecute({ method, path, body, headers }: ExecutionPayload) {
 		// The path from the playground may already include /api depending on the openapi.json
 		const cleanPath = path.startsWith('/api') ? path.substring(4) : path;
 

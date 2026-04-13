@@ -9,7 +9,7 @@
 
 	interface Props {
 		response?: ExecutionResult | null;
-		error?: any;
+		error?: ExecutionResult | null;
 		duration?: number | null;
 		width?: number | string;
 	}

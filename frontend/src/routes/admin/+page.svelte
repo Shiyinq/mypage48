@@ -9,7 +9,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
 
-	const { t, locale } = useTranslation();
+	const { t } = useTranslation();
 
 	// Store state
 	let usersList = $derived($adminStore.users.data);
