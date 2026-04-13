@@ -15,25 +15,21 @@
 	let pollInterval: any;
 
 	const pollStatus = async (background = false) => {
-		try {
-			const res = await exportStore.loadStatus(background);
+		const res = await exportStore.loadStatus(background);
 
-			if (res.status === 'PROCESSING') {
-				if (!pollInterval) {
-					pollInterval = setInterval(() => pollStatus(true), 5000);
-				}
-			} else {
-				if (res.status === 'FAILED') {
-					showToast(res.message || $t('common.error'), 'error');
-				}
-
-				if (pollInterval) {
-					clearInterval(pollInterval);
-					pollInterval = null;
-				}
+		if (res.status === 'PROCESSING') {
+			if (!pollInterval) {
+				pollInterval = setInterval(() => pollStatus(true), 5000);
 			}
-		} catch (e) {
-			// Error handled in store
+		} else {
+			if (res.status === 'FAILED') {
+				showToast(res.message || $t('common.error'), 'error');
+			}
+
+			if (pollInterval) {
+				clearInterval(pollInterval);
+				pollInterval = null;
+			}
 		}
 	};
 
@@ -50,7 +46,7 @@
 			await exportStore.initiate();
 			showToast($t('settings.exportData.requested'), 'success');
 			pollStatus(true); // Start polling immediately in background
-		} catch (e) {
+		} catch {
 			showToast($t('common.error'), 'error');
 		}
 	};
@@ -72,7 +68,7 @@
 			setTimeout(() => {
 				pollStatus();
 			}, 2000);
-		} catch (e) {
+		} catch {
 			showToast($t('common.error'), 'error');
 		}
 	};

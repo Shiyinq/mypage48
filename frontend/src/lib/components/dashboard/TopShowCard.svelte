@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { Star, Crown, ChevronRight } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
