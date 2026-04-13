@@ -2,7 +2,6 @@
      Rename the variable and try again or migrate by hand. -->
 <script lang="ts">
 	import { isAuthenticated } from '$lib/stores';
-	import { logger } from '$lib/utils/logger';
 	import StatCard from '$lib/components/StatCard.svelte';
 	import TheaterSeatMap from '$lib/components/TheaterSeatMap.svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -10,9 +9,6 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
-
-	// Import shared constants
-	import { MONTHS } from '$lib/constants';
 
 	// Import dashboard components
 	import {
@@ -67,12 +63,7 @@
 			return;
 		}
 
-		try {
-			// Use smart store load action
-			await dashboardStatsData.load($dashboardFilter);
-		} catch (err) {
-			// Error logged and handled by store
-		}
+		await dashboardStatsData.load($dashboardFilter);
 	}
 
 	onMount(() => {
