@@ -6,8 +6,8 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
 	import type { Member } from '$lib/apis/members';
-	import { fade, scale, fly } from 'svelte/transition';
-	import { quintOut, cubicIn } from 'svelte/easing';
+	import { fade, scale } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 	import { portal } from '$lib/actions/portal';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { tick } from 'svelte';

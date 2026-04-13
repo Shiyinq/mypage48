@@ -3,8 +3,6 @@
 
 	import { ArrowUp } from 'lucide-svelte';
 	import { fly } from 'svelte/transition';
-	import { page } from '$app/stores';
-	import { isAuthenticated } from '$lib/stores';
 
 	let scrollY = $state(0);
 	let showButton = $state(false);
