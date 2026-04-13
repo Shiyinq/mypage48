@@ -22,7 +22,7 @@
 	let loadingGenerations = $state(true);
 
 	// Sorting Logic State
-	let lstMember: any[] = $state([]);
+	let lstMember: number[][] = $state([]);
 	let parent: number[] = [];
 	let rec: number[] = [];
 	let cmp1 = $state(0);
@@ -42,7 +42,20 @@
 	let layoutMode: 'card' | 'list' = $state('card');
 
 	// History for Undo
-	let history: any[] = $state([]);
+	interface SorterHistoryState {
+		lstMember: number[][];
+		parent: number[];
+		rec: number[];
+		cmp1: number;
+		cmp2: number;
+		head1: number;
+		head2: number;
+		nrec: number;
+		numQuestion: number;
+		finishSize: number;
+		finishFlag: number;
+	}
+	let history: SorterHistoryState[] = $state([]);
 
 	// Animation State
 	let isAnimating = $state(false);
