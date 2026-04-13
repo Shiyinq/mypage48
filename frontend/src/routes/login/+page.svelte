@@ -29,7 +29,7 @@
 
 	const validateField = (field: 'email' | 'password', value: string) => {
 		try {
-			// @ts-ignore - pick is valid on z.object
+			// @ts-expect-error - dynamic pick keys are not perfectly inferred by TS for Zod
 			const fieldSchema = loginSchema.pick({ [field]: true });
 			fieldSchema.parse({ [field]: value });
 			errors[field] = '';
