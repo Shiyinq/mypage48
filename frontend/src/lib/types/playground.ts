@@ -44,7 +44,7 @@ export interface ExecutionPayload {
 	method: string;
 	path: string;
 	params: Record<string, string>;
-	body: any;
+	body: unknown;
 	headers: Record<string, string>;
 }
 

@@ -11,7 +11,7 @@
 	let { roomIdentifier = '' }: Props = $props();
 
 	let activeGift: GiftEvent | null = $state(null);
-	let giftTimeout: any;
+	let giftTimeout: ReturnType<typeof setTimeout> | undefined;
 
 	function showGift(event: GiftEvent) {
 		activeGift = event;

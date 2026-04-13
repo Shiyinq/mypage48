@@ -15,7 +15,7 @@
 
 	let messages: LiveChatShowroomMessage[] = $state([]);
 	let chatContainer: HTMLElement | undefined = $state();
-	let pollingInterval: any;
+	let pollingInterval: ReturnType<typeof setInterval> | undefined;
 	let lastCommentTime = 0;
 	let loading = $state(true);
 	let isFirstLoad = true;
@@ -61,7 +61,7 @@
 
 					// Avoid duplicates based on ID
 					const existingIds = new Set(messages.map((m) => m.id));
-					const uniqueNew = mapped.filter((m: any) => !existingIds.has(m.id));
+					const uniqueNew = mapped.filter((m: LiveChatShowroomMessage) => !existingIds.has(m.id));
 
 					if (uniqueNew.length > 0) {
 						const isAtBottom =
