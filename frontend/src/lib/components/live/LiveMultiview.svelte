@@ -38,6 +38,7 @@
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import { logger } from '$lib/utils/logger';
 
 	const { t } = useTranslation();
 
@@ -88,7 +89,7 @@
 	let volumes: number[] = $state(Array(8).fill(1));
 	let muted: boolean[] = $state(Array(8).fill(false));
 	let isRecording: boolean[] = $state(Array(8).fill(false));
-	let playerRefs: any[] = $state(Array(8).fill(null));
+	let playerRefs: (ReturnType<typeof MultiPlayer> | null)[] = $state(Array(8).fill(null));
 
 	onMount(() => {
 		liveStore.loadLiveList();
@@ -142,7 +143,9 @@
 				if (Array.isArray(parsed)) {
 					slots = parsed.filter((s) => s !== null).slice(0, 8);
 				}
-			} catch (_e) {}
+			} catch (e) {
+				logger.error('Failed to parse saved slots', e);
+			}
 		}
 
 		updateIsMobile();
@@ -176,7 +179,7 @@
 		localStorage.setItem('mypage48_multiview_slots', JSON.stringify(slots));
 	}
 
-	function addMemberToSlot(stream: any) {
+	function addMemberToSlot(stream: LiveStatus) {
 		if (slots.length >= 8) return;
 
 		// Check if already in slots
@@ -196,7 +199,7 @@
 		focusedSlotIndex = index;
 	}
 
-	async function loadFocusedDetails(stream: any) {
+	async function loadFocusedDetails(stream: LiveStatus) {
 		focusedStreamDetails = null; // Clear old info
 		try {
 			const platform = stream.platform;
@@ -330,8 +333,6 @@
 			lastLoadedId = null;
 		}
 	});
-	// Computed grid class
-	let expansive = $derived(!showPicker && !showChat);
 	// Responsive grid logic
 	let gridClass = $derived(
 		isMobile
@@ -551,7 +552,6 @@
 		<div class="flex-1 bg-transparent p-2 md:p-4 overflow-y-auto">
 			<div class="grid {gridClass} gap-2 md:gap-6 h-fit transition-all duration-500 pb-20">
 				{#each slots as stream, i (stream.platform + '-' + (stream.live_id || stream.room_id || stream.room_url_key))}
-					<!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
 					<div
 						class="relative {isPortrait
 							? 'aspect-[9/16]'

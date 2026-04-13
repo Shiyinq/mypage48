@@ -4,11 +4,11 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { ChevronLeft, ChevronRight, Cake, GraduationCap } from 'lucide-svelte';
+	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
 	import { calendarEvents, calendarLoading, eventsStore } from '$lib/stores/events';
 	import LandingDayEventsModal from '$lib/components/landing-page/LandingDayEventsModal.svelte';
 	import type { CalendarEvent } from '$lib/types/events';
-	import { formatDate, formatTime } from '$lib/i18n';
+	import { formatDate } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';
 
 	const { t } = useTranslation();

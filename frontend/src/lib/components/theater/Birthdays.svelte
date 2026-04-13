@@ -15,7 +15,10 @@
 
 	let { birthdays = [], isLoading = true }: Props = $props();
 
-	function getBirthdayText(daysUntil: number, t: Function): string {
+	function getBirthdayText(
+		daysUntil: number,
+		t: (key: string, values?: Record<string, string | number>) => string
+	): string {
 		if (daysUntil === 0) return t('common.today');
 		if (daysUntil === 1) return t('common.tomorrow');
 		return t('theater.birthdays.daysLeft', { days: daysUntil });

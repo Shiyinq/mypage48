@@ -2,12 +2,13 @@
 	import { fade } from 'svelte/transition';
 	import { Tv, Users } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import type { LiveStatus } from '$lib/types';
 	import LiveCard from './LiveCard.svelte';
 
 	const { t } = useTranslation();
 
 	interface Props {
-		liveList?: any[];
+		liveList?: LiveStatus[];
 		loading?: boolean;
 		initialLoading?: boolean;
 		variant?: 'default' | 'theater';
