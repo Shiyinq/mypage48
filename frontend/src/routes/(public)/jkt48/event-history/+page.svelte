@@ -9,8 +9,7 @@
 		Clock,
 		ChevronLeft,
 		ChevronRight,
-		Cake,
-		GraduationCap
+		Cake
 	} from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { fade } from 'svelte/transition';

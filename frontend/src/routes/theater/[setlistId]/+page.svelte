@@ -86,7 +86,6 @@
 		<div class="h-[400px] w-full bg-gray-200 dark:bg-zinc-800 rounded-3xl"></div>
 		<!-- Grid Skeleton -->
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each Array(4)}
 				<div class="h-32 bg-gray-200 dark:bg-zinc-800 rounded-2xl"></div>
 			{/each}
