@@ -11,7 +11,7 @@
 	import { newsStore, newsList, newsLoading, newsError, newsPagination } from '$lib/stores/news';
 
 	import { formatDate } from '$lib/i18n';
-	const { t, locale } = useTranslation();
+	const { t } = useTranslation();
 
 	let mounted = $state(false);
 

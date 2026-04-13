@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { Home, User } from 'lucide-svelte';
 	import { userProfile, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';

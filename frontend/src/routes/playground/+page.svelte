@@ -61,7 +61,7 @@
 
 	let isResizing = false;
 
-	function startResizing(e: MouseEvent) {
+	function startResizing() {
 		isResizing = true;
 		window.addEventListener('mousemove', handleMouseMove);
 		window.addEventListener('mouseup', stopResizing);

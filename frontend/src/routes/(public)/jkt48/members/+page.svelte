@@ -64,7 +64,7 @@
 				const gens = await membersStore.getGenerations();
 				generations = gens.sort((a: string, b: string) => parseInt(a) - parseInt(b));
 			}
-		} catch (e) {
+		} catch {
 			// Error logged by store
 		} finally {
 			loadingGenerations = false;

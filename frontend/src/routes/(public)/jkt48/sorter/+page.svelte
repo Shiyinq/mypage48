@@ -71,7 +71,7 @@
 			const gens = await membersStore.getGenerations();
 			generations = gens.sort((a, b) => parseInt(a) - parseInt(b));
 			selectedGenerations = new Set();
-		} catch (e) {
+		} catch {
 			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		} finally {
 			loadingGenerations = false;

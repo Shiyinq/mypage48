@@ -35,7 +35,7 @@
 	async function fetchSetlists() {
 		try {
 			await setlistsStore.load();
-		} catch (e) {
+		} catch {
 			// Error is handled by store
 			showToast($t('theater.setlists.listErrorTitle') || 'Failed to load setlists', 'error');
 		}

@@ -25,7 +25,7 @@
 				const u = new URL(url);
 				u.searchParams.delete('timestamp');
 				return u.toString();
-			} catch (e) {
+			} catch {
 				return url;
 			}
 		}
@@ -152,7 +152,7 @@
 					} else {
 						parsedText = json.message || json.text || parsedText;
 					}
-				} catch (e) {}
+				} catch {}
 			} else if (text.startsWith('***')) {
 				return;
 			}

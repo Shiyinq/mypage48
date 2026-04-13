@@ -130,7 +130,7 @@
 		try {
 			// Use store action
 			await userProfile.load();
-		} catch (e) {
+		} catch {
 			showToast($t('profile.errorTitle'), 'error');
 		}
 	}

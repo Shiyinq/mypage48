@@ -68,7 +68,7 @@
 
 		try {
 			await achievementsStore.load();
-		} catch (e) {
+		} catch {
 			// Error logged and handled by store
 			showToast($t('achievements.errorLoad'), 'error');
 		}

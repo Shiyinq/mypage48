@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { type SetlistDetailResponse } from '$lib/apis/setlists';
 
 	import { ticketsStore, showToast } from '$lib/stores';
 	import { setlistsStore, isSetlistDetailLoading } from '$lib/stores/theater';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { ArrowLeft, Ticket, DollarSign, Trophy } from 'lucide-svelte';
+	import { Ticket, DollarSign, Trophy } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { DeleteConfirmationModal } from '$lib/components/history';
 	import { ErrorState } from '$lib/components';
@@ -35,7 +34,7 @@
 		try {
 			// Use store loadDetail which handles caching
 			detail = await setlistsStore.loadDetail(setlistId);
-		} catch (e) {
+		} catch {
 			// Error is handled by store
 			showToast($t('theater.setlists.errorTitle') || 'Failed to load detail', 'error');
 		}
@@ -54,7 +53,7 @@
 			// Re-fetch detail to update stats
 			await fetchDetail();
 			showToast($t('history.ticketDeleted'), 'success');
-		} catch (e) {
+		} catch {
 			// Error is handled by ticketsStore internally
 			showToast('Failed to delete ticket', 'error');
 		} finally {
@@ -88,7 +87,7 @@
 		<!-- Grid Skeleton -->
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-			{#each Array(4) as _}
+			{#each Array(4)}
 				<div class="h-32 bg-gray-200 dark:bg-zinc-800 rounded-2xl"></div>
 			{/each}
 		</div>

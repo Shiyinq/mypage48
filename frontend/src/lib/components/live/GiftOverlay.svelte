@@ -39,7 +39,7 @@
 				const u = new URL(url);
 				u.searchParams.delete('timestamp');
 				return u.toString();
-			} catch (e) {
+			} catch {
 				return url;
 			}
 		}

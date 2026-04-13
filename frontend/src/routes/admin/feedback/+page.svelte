@@ -26,8 +26,7 @@
 		error = null;
 		try {
 			await loadFeedback(page);
-		} catch (e) {
-			console.error(e);
+		} catch {
 			error = $t('admin.feedback.errorDesc');
 			showToast($t('admin.feedback.errorTitle'), 'error');
 		}

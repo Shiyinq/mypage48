@@ -56,7 +56,7 @@
 		try {
 			await ticketsStore.updateNote(ticketId, note);
 			showToast($t('journal.saved'), 'success');
-		} catch (err) {
+		} catch {
 			showToast($t('common.error'), 'error');
 		}
 	}
@@ -69,19 +69,6 @@
 
 	function handleFilterChange(newFilters: import('$lib/types').TicketFilters) {
 		ticketsStore.load(1, newFilters);
-	}
-
-	function startResizing(e: MouseEvent) {
-		isResizing = true;
-		document.body.style.cursor = 'col-resize';
-		document.body.style.userSelect = 'none';
-		stopResizing();
-	}
-
-	function stopResizing() {
-		isResizing = false;
-		document.body.style.cursor = 'default';
-		document.body.style.userSelect = 'auto';
 	}
 </script>
 
