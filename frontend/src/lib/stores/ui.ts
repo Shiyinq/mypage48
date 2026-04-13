@@ -29,7 +29,7 @@ export interface PageHeaderState {
 }
 
 function createPageHeaderStore() {
-	const { subscribe, set, update } = writable<PageHeaderState | null>(null);
+	const { subscribe, set } = writable<PageHeaderState | null>(null);
 
 	return {
 		subscribe,

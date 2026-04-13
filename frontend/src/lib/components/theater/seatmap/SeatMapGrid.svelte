@@ -12,8 +12,6 @@
 
 	let { rows, seatLayout, seatStats, maxSeatCount, isLoading, compact }: Props = $props();
 
-	const { t } = useTranslation();
-
 	function getLayout(row: string) {
 		return seatLayout[row as keyof typeof seatLayout];
 	}

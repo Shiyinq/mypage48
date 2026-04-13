@@ -7,7 +7,7 @@
 
 	const { t } = useTranslation();
 
-	let interval: any;
+	let interval: ReturnType<typeof setInterval> | undefined;
 	let initialLoading = $state($liveList.length === 0);
 
 	async function fetchLives() {
