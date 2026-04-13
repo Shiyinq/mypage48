@@ -34,7 +34,7 @@
 		ontoggleSidebar?: () => void;
 	}
 
-	let { ticket, onsave, ontoggleSidebar }: Props = $props();
+	let { ticket, onsave }: Props = $props();
 
 	const { t } = useTranslation();
 
