@@ -3,6 +3,7 @@
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { MONTHS } from '$lib/constants';
+	import type { DashboardFilterState } from '$lib/stores/dashboard';
 
 	const { t } = useTranslation();
 
@@ -10,14 +11,14 @@
 		/**
 		 * Dashboard header component when filter panel is closed
 		 */
-		filter: any;
+		filter: DashboardFilterState;
 		onOpenFilter: () => void;
 		isOpen?: boolean;
 	}
 
 	let { filter, onOpenFilter, isOpen = false }: Props = $props();
 
-	function getFilterLabel(filter: any, tParams: any) {
+	function getFilterLabel(filter: DashboardFilterState, tParams: (key: string) => string) {
 		if (filter.isAllData) return tParams('common.allData');
 
 		const startMonthKey = MONTHS[filter.startMonth].substring(0, 3).toLowerCase();

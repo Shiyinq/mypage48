@@ -107,12 +107,10 @@
 		</div>
 	{:else}
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
-			<!-- Divider -->
 			<div
 				class={`hidden sm:block absolute left-1/2 top-0 bottom-0 w-px ${themeClasses.divider}`}
 			></div>
 
-			<!-- First Item -->
 			<div class="flex items-start gap-3">
 				{#if first}
 					<div
@@ -169,7 +167,6 @@
 				{/if}
 			</div>
 
-			<!-- Last Item -->
 			<div class="flex items-start gap-3 relative sm:pl-2">
 				{#if last}
 					<div

@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { members as membersApi, type Member } from '$lib/apis/members';
-import { setlistsApi } from '$lib/apis/setlists';
+import { setlistsApi, type Setlist } from '$lib/apis/setlists';
 import { usersApi } from '$lib/apis/users';
 import { showToast } from './toast';
 
@@ -221,7 +221,7 @@ function createAdminStore() {
 			this.loadSetlists(true);
 		},
 
-		async createSetlist(data: any) {
+		async createSetlist(data: Omit<Setlist, 'setlistId' | 'watched'>) {
 			isAdminSetlistsLoading.set(true);
 			try {
 				await setlistsApi.create(data);
@@ -235,7 +235,7 @@ function createAdminStore() {
 			return true;
 		},
 
-		async updateSetlist(id: string, data: any) {
+		async updateSetlist(id: string, data: Partial<Omit<Setlist, 'setlistId' | 'watched'>>) {
 			try {
 				await setlistsApi.update(id, data);
 				// We can just refresh to be safe or optimistic update

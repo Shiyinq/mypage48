@@ -15,7 +15,7 @@ export const playgroundApi = {
 		};
 
 		if (payload.body && payload.method.toLowerCase() !== 'get') {
-			options.body = payload.body;
+			options.body = payload.body as Record<string, unknown>;
 		}
 
 		try {

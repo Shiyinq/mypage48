@@ -202,7 +202,7 @@
 		}
 	});
 
-	function handleMediaError(e: any) {
+	function handleMediaError(e: Event) {
 		if (e.currentTarget instanceof HTMLElement) {
 			e.currentTarget.style.display = 'none';
 		}

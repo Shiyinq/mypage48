@@ -2,7 +2,7 @@
 	import { Sparkles, Star } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { spring } from 'svelte/motion';
+	import { spring, type Spring } from 'svelte/motion';
 
 	let decorations: Array<{
 		x: number;
@@ -17,7 +17,7 @@
 	interface Props {
 		interactive?: boolean;
 		hideDecorationsOnMobile?: boolean;
-		mouse?: any;
+		mouse?: Spring<{ x: number; y: number }>;
 		scrollY?: number;
 	}
 

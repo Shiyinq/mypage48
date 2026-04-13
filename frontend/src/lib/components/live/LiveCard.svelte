@@ -6,11 +6,12 @@
 	import PlatformLogo from './PlatformLogo.svelte';
 	import LiveStats from './LiveStats.svelte';
 	import { getMemberFrame } from '$lib/constants';
+	import type { LiveStatus } from '$lib/types';
 
 	const { t } = useTranslation();
 
 	interface Props {
-		stream: any;
+		stream: LiveStatus;
 		i?: number;
 		variant?: 'default' | 'theater';
 	}
