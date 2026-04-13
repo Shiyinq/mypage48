@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Calendar, Clock, Users, Cake, GraduationCap, ArrowRight } from 'lucide-svelte';
+	import { Calendar, Clock, Cake, ArrowRight } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { scale } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -14,7 +14,6 @@
 	} from '$lib/stores/events';
 	import { membersStore, isBirthdaysLoading } from '$lib/stores/theater';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
-	import Birthdays from '$lib/components/theater/Birthdays.svelte';
 	import { formatDate, formatTime } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';
 	import { getMemberFrame } from '$lib/constants';
@@ -42,7 +41,10 @@
 	let error = $derived($upcomingError);
 	let birthdays = $derived($membersStore.birthdays || []);
 
-	function getBirthdayText(daysUntil: number, t: Function): string {
+	function getBirthdayText(
+		daysUntil: number,
+		t: (key: string, values?: Record<string, string | number>) => string
+	): string {
 		if (daysUntil === 0) return t('common.today');
 		if (daysUntil === 1) return t('common.tomorrow');
 		return t('theater.birthdays.daysLeft', { days: daysUntil });

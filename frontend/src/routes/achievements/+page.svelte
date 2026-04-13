@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { isAuthenticated, showToast } from '$lib/stores';
-	import { logger } from '$lib/utils/logger';
 	import { achievementsStore, isAchievementsLoading } from '$lib/stores/achievements';
 	import { onMount } from 'svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -26,11 +25,6 @@
 	import { AchievementSkeleton } from '$lib/components/skeletons';
 	import AchievementCard from '$lib/components/achievements/AchievementCard.svelte';
 	import type { ComponentType } from 'svelte';
-	interface Props {
-		params?: Record<string, string> | undefined;
-	}
-
-	let { params = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 

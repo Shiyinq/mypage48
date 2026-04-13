@@ -4,7 +4,6 @@
 	import { showToast } from '$lib/stores';
 	import SEO from '$lib/components/SEO.svelte';
 	import {
-		Loader2,
 		MessageSquare,
 		AlertCircle,
 		Lightbulb,
