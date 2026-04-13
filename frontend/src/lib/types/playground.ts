@@ -8,7 +8,7 @@ export interface OpenAPIParameter {
 
 export interface OpenAPIResponse {
 	description: string;
-	content?: Record<string, { schema: any }>;
+	content?: Record<string, { schema: unknown }>;
 }
 
 export interface OpenAPIEndpoint {
@@ -21,7 +21,7 @@ export interface OpenAPIEndpoint {
 		tags?: string[];
 		parameters?: OpenAPIParameter[];
 		requestBody?: {
-			content: Record<string, { schema: any }>;
+			content: Record<string, { schema: unknown }>;
 		};
 		responses?: Record<string, OpenAPIResponse>;
 	};
@@ -33,10 +33,10 @@ export interface OpenAPISchema {
 		title: string;
 		version: string;
 	};
-	paths: Record<string, Record<string, any>>;
+	paths: Record<string, Record<string, unknown>>;
 	components?: {
-		schemas?: Record<string, any>;
-		securitySchemes?: Record<string, any>;
+		schemas?: Record<string, unknown>;
+		securitySchemes?: Record<string, unknown>;
 	};
 }
 
@@ -51,7 +51,7 @@ export interface ExecutionPayload {
 export interface ExecutionResult {
 	status: number;
 	statusText: string;
-	data: any;
+	data: unknown;
 	headers: Record<string, string>;
 	duration: number;
 }

@@ -61,7 +61,7 @@ function createPlaygroundStore() {
 					responseWidth: 450, // Always use default on refresh
 					useSession: savedUseSession === 'true'
 				}));
-			} catch (err: any) {
+			} catch (err) {
 				logger.error('Failed to load playground schema', err);
 				update((s) => ({ ...s, error: 'Failed to load API metadata' }));
 			}
@@ -125,7 +125,7 @@ function createPlaygroundStore() {
 					}
 				}));
 				return result;
-			} catch (err: any) {
+			} catch (err) {
 				logger.error('Execution failed', err);
 			} finally {
 				update((s) => ({ ...s, executing: false }));
@@ -144,7 +144,7 @@ export const endpoints = derived(playgroundStore, ($store) => {
 
 	const endpoints: OpenAPIEndpoint[] = [];
 	Object.entries($store.schema.paths).forEach(([path, methods]) => {
-		Object.entries(methods).forEach(([method, details]: [string, any]) => {
+		Object.entries(methods).forEach(([method, details]) => {
 			// Skip internal/special fields if any
 			if (['summary', 'description', 'parameters', 'servers'].includes(method)) return;
 
@@ -152,7 +152,7 @@ export const endpoints = derived(playgroundStore, ($store) => {
 				id: `${method.toUpperCase()}:${path}`,
 				method,
 				path,
-				details
+				details: details as OpenAPIEndpoint['details']
 			});
 		});
 	});

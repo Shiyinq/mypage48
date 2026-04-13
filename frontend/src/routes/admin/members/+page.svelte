@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { onDestroy, onMount } from 'svelte';
 	import { adminStore, isAdminMembersLoading } from '$lib/stores/admin';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
@@ -17,7 +15,6 @@
 
 	// Store state
 	let membersList = $derived($adminStore.members.data);
-	let error = $derived($adminStore.members.error);
 	let membersHasMore = $derived($adminStore.members.hasMore);
 
 	// Search state
