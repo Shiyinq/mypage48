@@ -80,7 +80,7 @@
 
 	{#if $isFeedbackLoading && $feedbackStore.data.length === 0}
 		<div class="grid gap-4">
-			{#each Array(5) as _}
+			{#each Array(5)}
 				<CardSkeleton lines={3} />
 			{/each}
 		</div>

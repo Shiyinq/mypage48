@@ -180,7 +180,7 @@
 				{#if isLoading}
 					<div class="grid grid-cols-2 gap-4 animate-pulse">
 						<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-						{#each Array(10) as _}
+						{#each Array(10)}
 							<div class="h-10 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
 						{/each}
 					</div>

@@ -31,7 +31,7 @@
 			? 'px-0'
 			: 'px-0 sm:px-4'}"
 	>
-		{#each Array(10) as _}
+		{#each Array(10)}
 			<div
 				class="aspect-[3/4] bg-slate-100 dark:bg-zinc-900 rounded-xl overflow-hidden relative shadow-sm border border-slate-100 dark:border-zinc-800"
 			>

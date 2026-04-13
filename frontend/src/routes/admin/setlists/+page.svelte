@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { onDestroy, onMount } from 'svelte';
 	import { adminStore, isAdminSetlistsLoading } from '$lib/stores/admin';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
@@ -17,7 +15,6 @@
 
 	// Store state
 	let setlistsList = $derived($adminStore.setlists.data);
-	let error = $derived($adminStore.setlists.error);
 	let setlistsHasMore = $derived($adminStore.setlists.hasMore);
 
 	// Search state

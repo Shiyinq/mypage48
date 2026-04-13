@@ -86,7 +86,7 @@
 
 	{#if (!mounted || loading) && list.length === 0}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-			{#each Array(8) as _}
+			{#each Array(8)}
 				<EventCardSkeleton />
 			{/each}
 		</div>

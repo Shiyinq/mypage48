@@ -98,8 +98,7 @@
 	<!-- Grid Layout -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 		{#if $isAchievementsLoading}
-			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-			{#each Array(9) as _unused}
+			{#each Array(9)}
 				<AchievementSkeleton />
 			{/each}
 		{:else if error}

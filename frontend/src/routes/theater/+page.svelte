@@ -50,8 +50,7 @@
 
 {#if $isSetlistsLoading}
 	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-		<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-		{#each Array(6) as _}
+		{#each Array(6)}
 			<div
 				class="relative flex flex-row sm:block h-[8.5rem] sm:h-auto sm:aspect-[2/3] bg-white dark:bg-zinc-900 shadow-sm rounded-[20px] sm:rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 animate-pulse"
 			>

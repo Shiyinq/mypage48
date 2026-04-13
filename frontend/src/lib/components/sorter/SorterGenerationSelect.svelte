@@ -87,7 +87,7 @@
 				: 'grid grid-cols-3 sm:grid-cols-4 gap-2'}
 		>
 			{#if loadingGenerations}
-				{#each Array(isPublic ? 8 : 9) as _}
+				{#each Array(isPublic ? 8 : 9)}
 					<div
 						class={isPublic
 							? 'h-12 bg-slate-50 dark:bg-zinc-800 animate-pulse rounded-2xl'

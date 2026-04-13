@@ -31,7 +31,7 @@
 				</tr>
 			</thead>
 			<tbody class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700">
-				{#each Array(rows) as _}
+				{#each Array(rows)}
 					<tr class="animate-pulse">
 						<!-- Date Column -->
 						<td class="p-4 whitespace-nowrap">

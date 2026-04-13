@@ -285,7 +285,7 @@
 					class="grid border-b border-gray-50 dark:border-zinc-800"
 					style="grid-template-columns: repeat(7, minmax(0, 1fr));"
 				>
-					{#each Array(7) as _}
+					{#each Array(7)}
 						<div class="py-4 flex justify-center">
 							<div class="h-3 w-12 bg-gray-100 dark:bg-zinc-800 rounded-full"></div>
 						</div>
@@ -295,7 +295,7 @@
 					class="grid flex-1"
 					style="grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: repeat(6, 1fr);"
 				>
-					{#each Array(42) as _}
+					{#each Array(42)}
 						<div
 							class="border-b border-r border-gray-50 dark:border-zinc-800 p-2 flex flex-col items-center gap-2"
 						>
