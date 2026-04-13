@@ -12,7 +12,7 @@
 
 	const { t } = useTranslation();
 
-	let pollInterval: any;
+	let pollInterval: ReturnType<typeof setInterval> | null = null;
 
 	const pollStatus = async (background = false) => {
 		const res = await exportStore.loadStatus(background);

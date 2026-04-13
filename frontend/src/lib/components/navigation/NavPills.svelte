@@ -8,18 +8,21 @@
 		easing: cubicInOut
 	});
 
+	interface NavItem {
+		label: string;
+		href: string;
+		id?: string;
+		activeHref?: string;
+		exact?: boolean;
+		activeClass?: string;
+		[key: string]: any;
+	}
+
 	interface Props {
-		items?: Array<{
-			label: string;
-			href: string;
-			id?: string;
-			activeHref?: string;
-			exact?: boolean;
-			[key: string]: any;
-		}>;
+		items?: NavItem[];
 		currentPath: string;
 		className?: string;
-		item?: Snippet<[{ item: any; isActive: boolean }]>;
+		item?: Snippet<[{ item: NavItem; isActive: boolean }]>;
 	}
 
 	let { items = [], currentPath, className = '', item: itemSnippet }: Props = $props();

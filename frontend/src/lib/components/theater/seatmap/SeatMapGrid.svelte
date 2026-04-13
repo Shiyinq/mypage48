@@ -1,7 +1,12 @@
 <script lang="ts">
+	interface SeatRowLayout {
+		readonly groups: readonly (readonly [number, number])[];
+		readonly start: number;
+	}
+
 	interface Props {
 		rows: readonly string[];
-		seatLayout: Record<string, any>;
+		seatLayout: Record<string, SeatRowLayout>;
 		seatStats: Record<string, number>;
 		maxSeatCount: number;
 		isLoading: boolean;
