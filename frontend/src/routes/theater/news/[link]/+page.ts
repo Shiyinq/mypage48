@@ -16,9 +16,10 @@ export const load: PageLoad = async ({ params }) => {
 			item,
 			recentNews: recentNewsResponse.data
 		};
-	} catch (e: any) {
+	} catch (err) {
 		// If the API throws an error (e.g., News Not Found),
 		// we capture it and throw SvelteKit's built-in 404 error
+		const e = err as { detail?: string };
 		throw error(404, e?.detail || 'News not found');
 	}
 };

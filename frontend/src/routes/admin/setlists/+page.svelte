@@ -87,14 +87,16 @@
 		showDeleteModal = true;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	async function handleSetlistSubmit(data: any) {
+		const setlistData = data as Omit<Setlist, 'setlistId' | 'watched'>;
 		isSubmitting = true;
 		try {
 			if (isCreatingSetlist) {
-				await adminStore.createSetlist(data);
+				await adminStore.createSetlist(setlistData);
 				showToast($t('admin.setlists.modal.created'), 'success');
 			} else if (editingSetlist && editingSetlist.setlistId) {
-				await adminStore.updateSetlist(editingSetlist.setlistId, data);
+				await adminStore.updateSetlist(editingSetlist.setlistId, setlistData);
 				showToast($t('admin.setlists.modal.updated'), 'success');
 			}
 			showSetlistModal = false;

@@ -9,7 +9,6 @@
 		type: 'theater' | 'twoShot';
 		loading?: boolean;
 		onExpand: () => void;
-		// Data items
 		first: {
 			image?: string | null;
 			title: string;
