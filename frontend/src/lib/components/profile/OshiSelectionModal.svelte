@@ -129,11 +129,14 @@
 {#if show}
 	<div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
 		<!-- Backdrop -->
-		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 		<div
 			class="absolute inset-0 bg-black/60 backdrop-blur-sm"
 			transition:fade={{ duration: 200 }}
 			onclick={onClose}
+			onkeydown={(e) => e.key === 'Escape' && onClose()}
+			role="button"
+			tabindex="-1"
+			aria-label="Close modal"
 		></div>
 
 		<!-- Modal Content -->

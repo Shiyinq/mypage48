@@ -36,7 +36,6 @@
 		tabindex="-1"
 		aria-label="Close dialog"
 	>
-		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<div
 			class="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-sm w-full p-6"
 			onclick={stopPropagation(bubble('click'))}

@@ -248,7 +248,9 @@
 				await navigator.clipboard.writeText(text);
 				return true;
 			}
-		} catch {}
+		} catch {
+			// Fallback to execCommand if clipboard API fails
+		}
 		try {
 			const textarea = document.createElement('textarea');
 			textarea.value = text;

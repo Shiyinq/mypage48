@@ -14,11 +14,13 @@
 	let tapeColor = $derived(item.type === '2SHOT' ? 'bg-purple-200/80' : 'bg-red-200/80');
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div
 	class="group relative transition-all duration-500 hover:z-10 hover:scale-105 cursor-pointer"
 	style={`transform: rotate(${rotation}deg)`}
 	onclick={() => onClick(item)}
+	onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick(item)}
+	role="button"
+	tabindex="0"
 >
 	<!-- Washi Tape -->
 	<div

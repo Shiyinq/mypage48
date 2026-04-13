@@ -27,7 +27,6 @@
 </button>
 
 {#if isRadioOpen}
-	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-[95] lg:hidden"
 		onclick={() => (isRadioOpen = false)}

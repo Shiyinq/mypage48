@@ -191,19 +191,25 @@
 		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-hidden"
 		use:portal
 	>
-		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 		<div
 			class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
 			onclick={onClose}
+			onkeydown={(e) => e.key === 'Escape' && onClose()}
 			transition:fade={{ duration: 200 }}
+			role="button"
+			tabindex="-1"
+			aria-label="Close details"
 		></div>
 
 		<!-- Modal Container -->
-		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 		<div
 			class="relative w-[95vw] max-w-6xl bg-white dark:bg-zinc-900 rounded-[40px] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col md:flex-row h-[85vh] md:h-[75vh] border border-white/20 dark:border-zinc-800/50"
 			onclick={stopPropagation(bubble('click'))}
+			onkeydown={stopPropagation(bubble('keydown'))}
 			transition:scale={{ duration: 400, start: 0.95, easing: quintOut }}
+			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
 		>
 			<!-- Sidebar (Left) -->
 			{#if members.length > 0}

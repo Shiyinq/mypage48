@@ -170,46 +170,38 @@ function createTicketsStore() {
 			// Optimistically not setting global loading for item update to avoid UI flicker
 			// Or we could added a separate 'processingId' state if needed.
 			// For now, let's keep it simple and just update data.
-			try {
-				const updated = await ticketsApi.updateTicket(ticketId, payload);
-				const now = Date.now();
-				update((s) => ({
-					...s,
-					list: s.list.map((t) => (t._id === ticketId ? updated : t)),
-					lastUpdated: now,
-					defaultCache: s.defaultCache
-						? {
-								...s.defaultCache,
-								list: s.defaultCache.list.map((t) => (t._id === ticketId ? updated : t)),
-								lastUpdated: now
-							}
-						: null
-				}));
-				return updated;
-			} catch (e) {
-				throw e;
-			}
+			const updated = await ticketsApi.updateTicket(ticketId, payload);
+			const now = Date.now();
+			update((s) => ({
+				...s,
+				list: s.list.map((t) => (t._id === ticketId ? updated : t)),
+				lastUpdated: now,
+				defaultCache: s.defaultCache
+					? {
+							...s.defaultCache,
+							list: s.defaultCache.list.map((t) => (t._id === ticketId ? updated : t)),
+							lastUpdated: now
+						}
+					: null
+			}));
+			return updated;
 		},
 
 		updateNote: async (ticketId: string, note: string) => {
-			try {
-				const updated = await ticketsApi.updateTicket(ticketId, { notes: note });
-				const now = Date.now();
-				update((s) => ({
-					...s,
-					list: s.list.map((t) => (t._id === ticketId ? updated : t)),
-					lastUpdated: now,
-					defaultCache: s.defaultCache
-						? {
-								...s.defaultCache,
-								list: s.defaultCache.list.map((t) => (t._id === ticketId ? updated : t)),
-								lastUpdated: now
-							}
-						: null
-				}));
-			} catch (e) {
-				throw e;
-			}
+			const updated = await ticketsApi.updateTicket(ticketId, { notes: note });
+			const now = Date.now();
+			update((s) => ({
+				...s,
+				list: s.list.map((t) => (t._id === ticketId ? updated : t)),
+				lastUpdated: now,
+				defaultCache: s.defaultCache
+					? {
+							...s.defaultCache,
+							list: s.defaultCache.list.map((t) => (t._id === ticketId ? updated : t)),
+							lastUpdated: now
+						}
+					: null
+			}));
 		},
 
 		getAvailableTitles: async () => {

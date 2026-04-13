@@ -144,10 +144,13 @@
 									>
 								</div>
 							{:else}
-								<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 								<div
 									onclick={() => startEditingNote(ticket)}
+									onkeydown={(e) =>
+										(e.key === 'Enter' || e.key === ' ') && startEditingNote(ticket)}
 									class="text-sm text-gray-500 dark:text-gray-400 italic cursor-pointer hover:text-red-600 flex items-center gap-2 group/note"
+									role="button"
+									tabindex="0"
 								>
 									<span class="line-clamp-1"
 										>{cleanseMarkdown(ticket.notes) || $t('history.addNote')}</span

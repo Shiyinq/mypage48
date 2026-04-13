@@ -13,11 +13,14 @@
 </script>
 
 {#if selectedImage}
-	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-[10001] flex flex-col items-center justify-center p-4 bg-black/90 backdrop-blur-md cursor-pointer"
 		transition:fade={{ duration: 200 }}
 		onclick={onClose}
+		onkeydown={(e) => e.key === 'Escape' && onClose()}
+		role="button"
+		tabindex="-1"
+		aria-label="Close lightbox"
 	>
 		<button
 			onclick={(e) => {
@@ -29,7 +32,6 @@
 			<X class="w-6 h-6" />
 		</button>
 
-		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 		<div
 			class="flex flex-col items-center pointer-events-none"
 			transition:scale={{ duration: 300, start: 0.95 }}
@@ -39,11 +41,15 @@
 				alt={selectedImage.title}
 				class="max-h-[70vh] w-auto object-contain rounded-lg shadow-2xl border border-white/10 cursor-default pointer-events-auto"
 				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => e.stopPropagation()}
+				role="presentation"
 			/>
 
 			<div
 				class="mt-6 text-center w-full max-w-lg pointer-events-auto"
 				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => e.stopPropagation()}
+				role="presentation"
 			>
 				<h3 class="text-2xl font-bold text-white tracking-tight drop-shadow-md">
 					{selectedImage.title}

@@ -22,10 +22,12 @@
 	let isMostWatched = $derived(count === maxAttendance && count > 0);
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div
 	onclick={onClick}
+	onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
 	class="relative overflow-hidden rounded-[20px] sm:rounded-2xl cursor-pointer group shadow-sm hover:shadow-xl transition-all duration-300 bg-white dark:bg-zinc-900/50 dark:backdrop-blur-xl border border-gray-100 dark:border-white/5 flex flex-row sm:flex-col h-[8.5rem] sm:h-auto sm:aspect-[2/3]"
+	role="button"
+	tabindex="0"
 >
 	<!-- Background Image (Mobile: Left side, Desktop: Full bg) -->
 	<div class="relative w-[38%] sm:w-full sm:h-full sm:absolute sm:inset-0 shrink-0 overflow-hidden">
