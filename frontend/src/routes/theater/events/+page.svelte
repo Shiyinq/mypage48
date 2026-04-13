@@ -17,7 +17,7 @@
 	import Birthdays from '$lib/components/theater/Birthdays.svelte';
 
 	import { formatDate, formatTime } from '$lib/i18n';
-	const { t, locale } = useTranslation();
+	const { t } = useTranslation();
 
 	function isToday(dateStr: string): boolean {
 		const eventDate = new Date(dateStr);
@@ -62,7 +62,7 @@
 
 	{#if !mounted || $isUpcomingEventsLoading}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-			{#each Array(6) as _}
+			{#each Array(6)}
 				<EventCardSkeleton />
 			{/each}
 		</div>

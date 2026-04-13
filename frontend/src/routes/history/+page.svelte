@@ -56,7 +56,7 @@
 			// Use store action
 			await ticketsStore.load(page, currentFilters);
 			isInitialDataLoaded.set(true);
-		} catch (e) {
+		} catch {
 			// Error logged and handled by store
 			showToast($t('history.errorTitle') || 'Failed to load tickets', 'error');
 		}
@@ -107,7 +107,7 @@
 
 			deleteId = null;
 			showToast($t('history.ticketDeleted'), 'success');
-		} catch (e) {
+		} catch {
 			// Error logged by store
 			showToast($t('common.error'), 'error');
 		} finally {

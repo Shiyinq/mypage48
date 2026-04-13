@@ -43,7 +43,7 @@
 
 		try {
 			await topTwoShotStore.load();
-		} catch (_e) {
+		} catch {
 			// Error state is handled by store, we just show toast
 			showToast($t('top2shot.errorTitle') || 'Failed to load data', 'error');
 		}

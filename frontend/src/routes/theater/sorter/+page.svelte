@@ -5,7 +5,6 @@
 	import type { Member } from '$lib/apis/members';
 	import { membersStore } from '$lib/stores/theater';
 	import { showToast } from '$lib/stores';
-	import { fade } from 'svelte/transition';
 	import SorterGenerationSelect from '$lib/components/sorter/SorterGenerationSelect.svelte';
 	import SorterProcess from '$lib/components/sorter/SorterProcess.svelte';
 	import SorterResults from '$lib/components/sorter/SorterResults.svelte';
@@ -71,7 +70,7 @@
 			const gens = await membersStore.getGenerations();
 			generations = gens.sort((a, b) => parseInt(a) - parseInt(b));
 			selectedGenerations = new Set();
-		} catch (e) {
+		} catch {
 			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		} finally {
 			loadingGenerations = false;

@@ -20,9 +20,6 @@
 	import TicketForm from '$lib/components/upload/TicketForm.svelte';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
-	interface Props {}
-
-	let {}: Props = $props();
 
 	const { t } = useTranslation();
 

@@ -97,17 +97,13 @@
 
 					// Update metadata info when we know video is available
 					if (event.data === 1 || event.data === 2 || event.data === 3 || event.data === 5) {
-						try {
-							const videoData = player.getVideoData();
-							if (videoData && videoData.video_id) {
-								const videoId = videoData.video_id;
-								radioStore.setTrack(
-									videoData.title || '',
-									`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
-								);
-							}
-						} catch (e) {
-							// Ignore API error
+						const videoData = player.getVideoData();
+						if (videoData && videoData.video_id) {
+							const videoId = videoData.video_id;
+							radioStore.setTrack(
+								videoData.title || '',
+								`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+							);
 						}
 					}
 

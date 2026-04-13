@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { ChevronLeft } from 'lucide-svelte';
-	import { useTranslation } from '$lib/i18n/useTranslation';
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
 	import { pageHeaderStore, isImmersive } from '$lib/stores/ui';
 
