@@ -1,7 +1,7 @@
 import { writable, get } from 'svelte/store';
 import { members as membersApi, type Member } from '$lib/apis/members';
-import { setlistsApi, type Setlist } from '$lib/apis/setlists';
-import { usersApi, type UserListItem } from '$lib/apis/users';
+import { setlistsApi } from '$lib/apis/setlists';
+import { usersApi } from '$lib/apis/users';
 import { showToast } from './toast';
 
 import type { AdminState } from '$lib/types';
@@ -39,7 +39,7 @@ export const isAdminSetlistsLoading = writable(false);
 export const isAdminUsersLoading = writable(false);
 
 function createAdminStore() {
-	const { subscribe, set, update } = writable<AdminState>(initialState);
+	const { subscribe, update } = writable<AdminState>(initialState);
 
 	return {
 		subscribe,

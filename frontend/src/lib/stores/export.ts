@@ -1,4 +1,4 @@
-import { writable, get } from 'svelte/store';
+import { writable } from 'svelte/store';
 import { exportApi, type ExportResponse } from '$lib/apis/export';
 import { logger } from '$lib/utils/logger';
 

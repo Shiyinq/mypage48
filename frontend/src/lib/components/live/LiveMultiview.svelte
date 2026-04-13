@@ -761,7 +761,7 @@
 					</div>
 					<div class="flex-1 overflow-hidden relative flex flex-col">
 						{#key focusedStream.room_url_key || focusedStream.live_id || focusedStream.room_id}
-							{#if focusedStream.platform === 'showroom'}
+							{#if focusedStream.platform === 'showroom' && focusedStream.room_id}
 								<ShowroomChat roomId={focusedStream.room_id} />
 							{:else if focusedStreamDetails}
 								<IDNChat roomIdentifier={focusedStreamDetails.room_identifier} />
