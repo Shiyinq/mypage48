@@ -1,12 +1,8 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { ChevronLeft } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { onMount } from 'svelte';
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
 	import { pageHeaderStore, isImmersive } from '$lib/stores/ui';
-
-	const { t } = useTranslation();
 
 	let headerInfo = $derived($pageHeaderStore);
 

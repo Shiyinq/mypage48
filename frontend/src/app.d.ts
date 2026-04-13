@@ -11,8 +11,8 @@ declare global {
 	namespace svelteHTML {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		interface HTMLAttributes<T> {
-			onintersect?: (event: CustomEvent<any>) => void;
-			'on:intersect'?: (event: CustomEvent<any>) => void;
+			onintersect?: (event: CustomEvent<unknown>) => void;
+			'on:intersect'?: (event: CustomEvent<unknown>) => void;
 		}
 	}
 }

@@ -1,18 +1,5 @@
 <script lang="ts">
-	import {
-		ArrowRight,
-		Ticket,
-		Camera,
-		Users,
-		Trophy,
-		Sparkles,
-		Star,
-		Rocket,
-		Github,
-		ChevronDown
-	} from 'lucide-svelte';
-	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { Ticket, Camera, Users, Trophy, Star, Rocket, ChevronDown } from 'lucide-svelte';
 	import { spring } from 'svelte/motion';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
