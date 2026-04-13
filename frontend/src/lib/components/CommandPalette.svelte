@@ -50,6 +50,7 @@
 	type Action = {
 		id: string;
 		title: string;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		icon: any;
 		shortcut?: string[];
 		section: 'navigation' | 'theme' | 'account' | 'ticketing' | 'language' | 'admin';
