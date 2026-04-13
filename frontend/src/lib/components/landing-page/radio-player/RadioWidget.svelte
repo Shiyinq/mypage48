@@ -37,7 +37,6 @@
 			transition:fly={{ y: 10, duration: 300 }}
 		>
 			<!-- Backdrop for closing -->
-			<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 			<div
 				class="fixed inset-0 -z-10"
 				onclick={() => (isRadioOpen = false)}

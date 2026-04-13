@@ -4,11 +4,11 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { radioStore, RADIO_CHANNELS, type RadioChannel } from '$lib/stores/radio';
 
-	let player: any = $state();
+	let player: YTPlayer | undefined = $state();
 	let playerElement: HTMLElement | undefined = $state();
 	let isInitialized = $state(false);
 
-	let currentChannel = $derived(
+	let currentChannel: RadioChannel = $derived(
 		RADIO_CHANNELS.find((c) => c.id === $radioStore.currentChannelId) || RADIO_CHANNELS[0]
 	);
 
@@ -69,9 +69,9 @@
 	});
 
 	function initPlayer() {
-		if (typeof window === 'undefined' || !(window as any).YT) return;
+		if (typeof window === 'undefined' || !window.YT) return;
 
-		player = new (window as any).YT.Player(playerElement, {
+		player = new window.YT.Player(playerElement, {
 			height: '1',
 			width: '1',
 			playerVars: {
@@ -84,20 +84,20 @@
 				loop: 1
 			},
 			events: {
-				onReady: (event: any) => {
+				onReady: (event: YTEvent) => {
 					isInitialized = true;
 					if ($radioStore.isPlaying) {
 						event.target.playVideo();
 					}
 					event.target.setVolume($radioStore.isMuted ? 0 : $radioStore.volume);
 				},
-				onStateChange: (event: any) => {
+				onStateChange: (event: YTEvent) => {
 					// YT.PlayerState:
 					// -1 = unstarted, 0 = ended, 1 = playing, 2 = paused, 3 = buffering, 5 = video cued
 
 					// Update metadata info when we know video is available
 					if (event.data === 1 || event.data === 2 || event.data === 3 || event.data === 5) {
-						const videoData = player.getVideoData();
+						const videoData = player?.getVideoData();
 						if (videoData && videoData.video_id) {
 							const videoId = videoData.video_id;
 							radioStore.setTrack(
@@ -131,7 +131,7 @@
 		previousPlaylistId = currentChannel.playlistId; // Set initial
 
 		if (typeof window !== 'undefined') {
-			if ((window as any).YT && (window as any).YT.Player) {
+			if (window.YT && window.YT.Player) {
 				initPlayer();
 			} else {
 				if (!document.getElementById('youtube-iframe-api')) {
@@ -146,7 +146,7 @@
 					}
 				}
 
-				(window as any).onYouTubeIframeAPIReady = () => {
+				window.onYouTubeIframeAPIReady = () => {
 					initPlayer();
 				};
 			}
