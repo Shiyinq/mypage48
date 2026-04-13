@@ -41,8 +41,7 @@
 	>
 		{#if loading}
 			<!-- Skeleton Loading for Activity Items -->
-			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-			{#each [1, 2, 3] as _unused}
+			{#each [1, 2, 3]}
 				<div class="flex gap-4 relative z-10">
 					<div
 						class="w-10 h-10 rounded-full flex-shrink-0 bg-gray-200 dark:bg-zinc-700 animate-pulse"

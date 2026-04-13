@@ -17,11 +17,6 @@
 		ConfirmApiKeyModal,
 		ExportData
 	} from '$lib/components/settings';
-	interface Props {
-		params?: Record<string, string> | undefined;
-	}
-
-	let { params = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 

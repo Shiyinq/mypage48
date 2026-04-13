@@ -84,7 +84,7 @@
 			// Use store action (handles API + optimistic update)
 			await ticketsStore.updateNote(ticketId, note);
 			showToast($t('history.notesSaved'), 'success');
-		} catch (err) {
+		} catch {
 			// Error logged by store
 			showToast($t('common.error'), 'error');
 		}
