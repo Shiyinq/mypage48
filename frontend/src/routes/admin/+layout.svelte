@@ -87,7 +87,7 @@
 		>
 			{#snippet actions()}
 				<NavPills items={tabs} {currentPath}>
-					{#snippet item({ item, isActive })}
+					{#snippet item({ item })}
 						<div>
 							<div class="flex items-center justify-center px-0.5">
 								<span>{item.label}</span>

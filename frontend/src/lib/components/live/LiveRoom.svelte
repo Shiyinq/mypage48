@@ -92,8 +92,8 @@
 	let refreshInterval: ReturnType<typeof setInterval> | null = null;
 	let ignoreNextVideoClick = $state(false);
 	let rotation = $state(0);
-	let videoWidth = $state(0);
-	let videoHeight = $state(0);
+	// let videoWidth = $state(0);
+	// let videoHeight = $state(0);
 	let playerWidth = $state(0);
 	let playerHeight = $state(0);
 	let isBuffering = $state(false);
@@ -710,8 +710,8 @@
 					}}
 					onloadedmetadata={() => {
 						duration = videoElement?.duration || 0;
-						videoWidth = videoElement?.videoWidth || 0;
-						videoHeight = videoElement?.videoHeight || 0;
+						// videoWidth = videoElement?.videoWidth || 0;
+						// videoHeight = videoElement?.videoHeight || 0;
 						updateBufferAndDuration();
 					}}
 					onplay={() => (isPaused = false)}
