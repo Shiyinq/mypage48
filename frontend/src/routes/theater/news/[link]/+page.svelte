@@ -8,6 +8,7 @@
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
 	import { showToast } from '$lib/stores';
 	import { browser } from '$app/environment';
+	import DOMPurify from 'dompurify';
 
 	interface Props {
 		data: PageData;
@@ -47,7 +48,7 @@
 		}
 	}
 
-	let processedContent = $derived(proxyExternalImageUrls(item.content_body));
+	let processedContent = $derived(DOMPurify.sanitize(proxyExternalImageUrls(item.content_body)));
 
 	function copyLink() {
 		if (!browser) return;
@@ -127,6 +128,7 @@
 				onclick={handleContentClick}
 				role="presentation"
 			>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html processedContent}
 			</div>
 
