@@ -8,7 +8,7 @@
 		isExportDownloading
 	} from '$lib/stores/export';
 	import { showToast } from '$lib/stores';
-	import { Database, Download, FileText, LoaderCircle, CircleAlert } from 'lucide-svelte';
+	import { Database, Download, LoaderCircle, CircleAlert } from 'lucide-svelte';
 
 	const { t } = useTranslation();
 

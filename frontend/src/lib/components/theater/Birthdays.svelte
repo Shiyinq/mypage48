@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { writable } from 'svelte/store';
-	import { onMount } from 'svelte';
 	import { Cake } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { BirthdayResponse } from '$lib/apis/members';

@@ -26,35 +26,40 @@
 	let headers: Record<string, string> = $state({});
 	let lastEndpointId: string | null = $state(null);
 
-	function resolveSchema(schema: any): any {
-		if (!schema) return null;
-		if (schema.$ref) {
-			const refPath = schema.$ref.replace('#/components/schemas/', '');
-			return resolveSchema(openapi?.components?.schemas?.[refPath]);
+	function resolveSchema(schema: unknown): unknown {
+		if (!schema || typeof schema !== 'object') return schema;
+		const s = schema as Record<string, unknown>;
+		if (typeof s.$ref === 'string') {
+			const refPath = s.$ref.replace('#/components/schemas/', '');
+			const components = openapi?.components as Record<string, unknown> | undefined;
+			const schemas = components?.schemas as Record<string, unknown> | undefined;
+			return resolveSchema(schemas?.[refPath]);
 		}
 		return schema;
 	}
 
-	function generateExample(schema: any): any {
+	function generateExample(schema: unknown): unknown {
 		const resolved = resolveSchema(schema);
-		if (!resolved) return null;
+		if (!resolved || typeof resolved !== 'object') return null;
 
-		if (resolved.type === 'object' || resolved.properties) {
-			const obj: any = {};
-			const props = resolved.properties || {};
-			Object.entries(props).forEach(([key, prop]: [string, any]) => {
+		const r = resolved as Record<string, unknown>;
+
+		if (r.type === 'object' || r.properties) {
+			const obj: Record<string, unknown> = {};
+			const props = (r.properties as Record<string, unknown>) || {};
+			Object.entries(props).forEach(([key, prop]: [string, unknown]) => {
 				obj[key] = generateExample(prop);
 			});
 			return obj;
-		} else if (resolved.type === 'array') {
-			return [generateExample(resolved.items)];
+		} else if (r.type === 'array') {
+			return [generateExample(r.items)];
 		} else {
-			if (resolved.example !== undefined) return resolved.example;
-			if (resolved.default !== undefined) return resolved.default;
+			if (r.example !== undefined) return r.example;
+			if (r.default !== undefined) return r.default;
 
-			switch (resolved.type) {
+			switch (r.type) {
 				case 'string':
-					return resolved.format === 'date' ? '2024-01-01' : 'string';
+					return r.format === 'date' ? '2024-01-01' : 'string';
 				case 'number':
 				case 'integer':
 					return 0;

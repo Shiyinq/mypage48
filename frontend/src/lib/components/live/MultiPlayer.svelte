@@ -13,6 +13,7 @@
 	const { t } = useTranslation();
 
 	let videoElement: HTMLVideoElement | undefined = $state();
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let hls: any;
 	let loading = $state(true);
 	let error: string | null = $state(null);
@@ -79,7 +80,7 @@
 	});
 
 	// Hardware Hammer: Reinforce mute every 200ms for 10s after playback starts
-	let hammerInterval: any;
+	let hammerInterval: ReturnType<typeof setInterval> | undefined;
 	function startHammer() {
 		if (hammerInterval) clearInterval(hammerInterval);
 		let count = 0;
@@ -120,8 +121,10 @@
 					streamUrl = `${API_BASE}/jkt48/live/proxy?url=${encodeURIComponent(streamUrl)}`;
 				}
 
-				if ((window as any).Hls && (window as any).Hls.isSupported()) {
-					const Hls = (window as any).Hls;
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const w = window as any;
+				if (w.Hls && w.Hls.isSupported()) {
+					const Hls = w.Hls;
 					hls = new Hls({
 						enableWorker: true,
 						lowLatencyMode: true,
@@ -142,35 +145,43 @@
 						loading = false;
 					});
 
-					hls.on(Hls.Events.ERROR, (event: any, data: any) => {
-						if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
-							console.log('Proxy/Stream 404 detected, triggering offline');
-							onoffline?.();
-							error = $t('theater.live.offline');
-							hls.destroy();
-							loading = false;
-							return;
-						}
+					hls.on(
+						Hls.Events.ERROR,
+						(
+							event: unknown,
+							data: { type: string; fatal?: boolean; details?: string; response?: { code: number } }
+						) => {
+							if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
+								console.log('Proxy/Stream 404 detected, triggering offline');
+								onoffline?.();
+								error = $t('theater.live.offline');
+								hls.destroy();
+								loading = false;
+								return;
+							}
 
-						if (data.fatal) {
-							switch (data.type) {
-								case Hls.ErrorTypes.NETWORK_ERROR:
-									console.log('Fatal network error encountered, try to recover');
-									hls.startLoad();
-									break;
-								case Hls.ErrorTypes.MEDIA_ERROR:
-									console.log('Fatal media error encountered, try to recover');
-									hls.recoverMediaError();
-									break;
-								default:
-									console.error('Fatal unrecoverable error:', data);
-									error = $t('theater.live.multiview.stream_error', { details: data.details });
-									hls.destroy();
-									loading = false;
-									break;
+							if (data.fatal) {
+								switch (data.type) {
+									case Hls.ErrorTypes.NETWORK_ERROR:
+										console.log('Fatal network error encountered, try to recover');
+										hls.startLoad();
+										break;
+									case Hls.ErrorTypes.MEDIA_ERROR:
+										console.log('Fatal media error encountered, try to recover');
+										hls.recoverMediaError();
+										break;
+									default:
+										console.error('Fatal unrecoverable error:', data);
+										error = $t('theater.live.multiview.stream_error', {
+											details: data.details || 'Unknown error'
+										});
+										hls.destroy();
+										loading = false;
+										break;
+								}
 							}
 						}
-					});
+					);
 				} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 					videoElement.src = streamUrl;
 					videoElement.addEventListener('loadedmetadata', () => {
@@ -189,9 +200,9 @@
 				error = $t('theater.live.multiview.no_stream_found');
 				loading = false;
 			}
-		} catch (_e: any) {
+		} catch (_e: unknown) {
 			console.error('MultiPlayer init failed:', _e);
-			if (_e?.status === 404) {
+			if ((_e as { status?: number })?.status === 404) {
 				onoffline?.();
 			}
 			error = $t('theater.live.multiview.failed_load_stream');
@@ -237,6 +248,7 @@
 	}
 
 	onMount(() => {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		if ((window as any).Hls) {
 			initPlayer();
 		} else {
@@ -271,7 +283,6 @@
 </script>
 
 <div class="relative w-full h-full bg-black group/player overflow-hidden">
-	<!-- svelte-ignore a11y_media_has_caption -->
 	<video
 		bind:this={videoElement}
 		class="w-full h-full object-contain"
