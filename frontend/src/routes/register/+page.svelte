@@ -46,7 +46,7 @@
 				return;
 			}
 
-			// @ts-ignore - pick is valid on z.object
+			// @ts-expect-error - dynamic pick keys are not perfectly inferred by TS for Zod
 			const fieldSchema = registerBaseSchema.pick({ [field]: true });
 			fieldSchema.parse({ [field]: formData[field] });
 			errors[field] = '';

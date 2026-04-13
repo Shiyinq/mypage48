@@ -10,9 +10,6 @@
 	import { Top2ShotSkeleton } from '$lib/components/skeletons';
 	import type { TopTwoShotResponse } from '$lib/types';
 	import { topTwoShotStore, isTopTwoShotLoading } from '$lib/stores/memories';
-	interface Props {}
-
-	let {}: Props = $props();
 
 	const { t } = useTranslation();
 

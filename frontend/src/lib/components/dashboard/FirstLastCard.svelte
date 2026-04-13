@@ -5,9 +5,6 @@
 	const { t } = useTranslation();
 
 	interface Props {
-		/**
-		 * First & Last Item Card (Generic for Shows and 2-Shots)
-		 */
 		title: string;
 		type: 'theater' | 'twoShot';
 		loading?: boolean;
