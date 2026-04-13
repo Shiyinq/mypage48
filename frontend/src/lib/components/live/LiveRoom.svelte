@@ -5,14 +5,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import {
-		liveStore,
-		liveList,
-		currentStream,
-		otherLive,
-		liveLoading,
-		now
-	} from '$lib/stores/live';
+	import { liveStore, liveList, currentStream, otherLive, liveLoading } from '$lib/stores/live';
 	import { showToast } from '$lib/stores/toast';
 	import { isImmersive } from '$lib/stores/ui';
 	import { API_BASE } from '$lib/apis/client';
@@ -69,7 +62,9 @@
 	const { t } = useTranslation();
 
 	let videoElement: HTMLVideoElement | undefined = $state();
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let hls: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let Hls: any;
 	let loadingOtherLive = $state(false);
 	let initializing = $state(false);
@@ -78,23 +73,23 @@
 	let chatVisible = $state(true);
 	let isFocusMode = $state(false); // Will be set in onMount for desktop/laptop
 	let isRecording = $state(false);
-	let mediaRecorder: any = null;
-	let recordedChunks: any[] = [];
+	let mediaRecorder: MediaRecorder | null = null;
+	let recordedChunks: Blob[] = [];
 	let sidebarMode: 'chat' | 'list' = $state('chat');
 	let volume = $state(1);
 	let isMuted = $state(false);
 	let currentTime = $state(0);
 	let duration = $state(0);
 	let isPaused = $state(true);
-	let bufferedEnd = 0;
+
 	let peakDuration = $state(0);
 	let isFullscreen = $state(false);
 	let showControls = $state(true);
-	let controlsTimeout: any = $state();
+	let controlsTimeout: ReturnType<typeof setTimeout> | undefined = $state();
 	let playerContainer: HTMLDivElement | undefined = $state();
 	let recordingDuration = $state(0);
-	let recordingTimer: any = null;
-	let refreshInterval: any = null;
+	let recordingTimer: ReturnType<typeof setInterval> | null = null;
+	let refreshInterval: ReturnType<typeof setInterval> | null = null;
 	let ignoreNextVideoClick = $state(false);
 	let rotation = $state(0);
 	let videoWidth = $state(0);
@@ -124,7 +119,9 @@
 		resetControlsTimeout();
 	}
 
-	function getMemberId(m: LiveStatus | any) {
+	function getMemberId(
+		m: LiveStatus | { platform?: string; room_id?: string; room_url_key?: string; live_id?: string }
+	) {
 		if (m.platform === 'showroom') return m.room_id || m.room_url_key;
 		return m.live_id || m.room_url_key;
 	}
@@ -157,7 +154,6 @@
 
 				// Use proxy for IDN or Showroom to bypass CORS
 				if (p === 'idn' || p === 'showroom') {
-					// @ts-ignore
 					streamUrl = `${API_BASE}/jkt48/live/proxy?url=${encodeURIComponent(streamUrl as string)}`;
 				}
 
@@ -177,13 +173,16 @@
 							resetControlsTimeout();
 						});
 
-						hls.on(Hls.Events.ERROR, (event: any, data: any) => {
-							if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
-								console.log('Proxy/Stream 404 detected, redirecting to list');
-								showToast($t('theater.live.offline'), 'error');
-								goto(basePath);
+						hls.on(
+							Hls.Events.ERROR,
+							(event: unknown, data: { type: string; response?: { code: number } }) => {
+								if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
+									console.log('Proxy/Stream 404 detected, redirecting to list');
+									showToast($t('theater.live.offline'), 'error');
+									goto(basePath);
+								}
 							}
-						});
+						);
 					} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 						videoElement.src = streamUrl;
 						videoElement.addEventListener('loadedmetadata', () => {
@@ -198,11 +197,11 @@
 					}
 				}
 			}
-		} catch (e: any) {
+		} catch (e: unknown) {
 			console.error('Player init failed:', e);
 			if (currentInit !== initCount) return;
 
-			if (e?.status === 404) {
+			if ((e as { status?: number })?.status === 404) {
 				showToast($t('theater.live.offline'), 'error');
 				goto(basePath);
 			}
@@ -264,10 +263,6 @@
 		isImmersive.set(false);
 	});
 
-	function toggleChat() {
-		chatVisible = !chatVisible;
-	}
-
 	function toggleFocus() {
 		isFocusMode = !isFocusMode;
 		isImmersive.set(isFocusMode);
@@ -302,12 +297,6 @@
 			if (buffered.length > 0) {
 				const furthestBuffer = buffered.end(buffered.length - 1);
 				if (furthestBuffer > peakDuration) peakDuration = furthestBuffer;
-				for (let i = 0; i < buffered.length; i++) {
-					if (currentTime >= buffered.start(i) && currentTime <= buffered.end(i)) {
-						bufferedEnd = buffered.end(i);
-						break;
-					}
-				}
 			}
 			const nativeDuration = videoElement.duration;
 			if (nativeDuration !== Infinity && !isNaN(nativeDuration)) {
@@ -356,8 +345,9 @@
 		setTheme($theme === 'dark' ? 'light' : 'dark');
 	}
 
-	function handleVolumeChange(e: any) {
-		volume = parseFloat(e.target.value);
+	function handleVolumeChange(e: Event) {
+		const target = e.target as HTMLInputElement;
+		volume = parseFloat(target.value);
 		if (videoElement) {
 			videoElement.volume = volume;
 			if (volume > 0) isMuted = false;
@@ -366,10 +356,14 @@
 
 	async function togglePiP() {
 		try {
-			if ((document as any).pictureInPictureElement) {
-				await (document as any).exitPictureInPicture();
+			if ((document as Document & { pictureInPictureElement?: Element }).pictureInPictureElement) {
+				await (
+					document as Document & { exitPictureInPicture: () => Promise<void> }
+				).exitPictureInPicture();
 			} else if (videoElement) {
-				await (videoElement as any).requestPictureInPicture();
+				await (
+					videoElement as HTMLVideoElement & { requestPictureInPicture: () => Promise<void> }
+				).requestPictureInPicture();
 			}
 		} catch (error) {
 			console.error('PiP failed', error);
@@ -389,9 +383,10 @@
 		}
 	}
 
-	function handleSeek(e: any) {
+	function handleSeek(e: Event) {
 		if (videoElement) {
-			videoElement.currentTime = parseFloat(e.target.value);
+			const target = e.target as HTMLInputElement;
+			videoElement.currentTime = parseFloat(target.value);
 		}
 	}
 
@@ -432,9 +427,7 @@
 	}
 	let isTheater = $derived(basePath.startsWith('/theater'));
 	let { platform, id } = $derived($page.params);
-	let videoAspectRatio = $derived(
-		videoWidth > 0 && videoHeight > 0 ? videoWidth / videoHeight : 16 / 9
-	);
+
 	let streamFromList = $derived(
 		$liveList.find(
 			(s) =>
@@ -456,10 +449,10 @@
 		if (duration > 0 && duration !== Infinity && duration > peakDuration) peakDuration = duration;
 	});
 	let displayDuration = $derived(peakDuration || currentTime);
-	let isLive = $derived(duration === Infinity || isNaN(duration) || duration === 0);
+
 	let memberName = $derived($currentStream?.member?.name || null);
 	let roomIdentifier = $derived($currentStream?.room_identifier || null);
-	let streamingUrls = $derived($currentStream?.streaming_urls || []);
+
 	let startAt = $derived($currentStream?.start_at || null);
 	run(() => {
 		if (platform && id && lastInitializedId !== `${platform}-${id}`) {
@@ -604,10 +597,8 @@
 				</div>
 			{/if}
 
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<!-- svelte-ignore a11y_mouse_events_have_key_events -->
 			<div
 				bind:this={playerContainer}
 				bind:clientWidth={playerWidth}
@@ -706,8 +697,6 @@
 					</div>
 				</div>
 
-				<!-- svelte-ignore a11y_media_has_caption -->
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<video
 					bind:this={videoElement}
 					class="relative z-10 w-full h-full object-contain cursor-pointer bg-transparent transition-transform duration-300"
