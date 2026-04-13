@@ -9,11 +9,6 @@
 	import { CircleCheck, CircleX, LoaderCircle } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	interface Props {
-		params?: Record<string, string> | undefined;
-	}
-
-	let { params = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 

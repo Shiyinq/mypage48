@@ -386,6 +386,7 @@
 							role="button"
 							tabindex="0"
 						>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html parsedHtml}
 						</div>
 					{/if}

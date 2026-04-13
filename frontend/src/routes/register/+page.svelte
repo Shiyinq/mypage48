@@ -7,7 +7,6 @@
 	import { getErrorMessage } from '$lib/utils/api';
 	import { authStore } from '$lib/stores/auth';
 	import { Lock, Mail, User, Shield } from 'lucide-svelte';
-	import type { RegisterRequest } from '$lib/types';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import AuthLayout from '$lib/components/layouts/AuthLayout.svelte';

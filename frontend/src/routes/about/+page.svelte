@@ -89,6 +89,7 @@
 						{$t('about.openSource.title')}
 					</h2>
 					<p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html $t('about.openSource.content', {
 							githubLink:
 								'<a href="https://github.com/shiyinq/mypage48" target="_blank" class="text-red-600 font-bold hover:underline">GitHub</a>'

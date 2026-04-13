@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { useTranslation } from '$lib/i18n/useTranslation';
-
 	interface Props {
 		rows: readonly string[];
 		seatLayout: Record<string, any>;

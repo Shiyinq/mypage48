@@ -54,6 +54,11 @@
 			featuresSection.scrollIntoView({ behavior: 'smooth' });
 		}
 	}
+	let heroDescription = $derived(
+		$t('landing.hero.description', {
+			highlight: `<span class="text-slate-800 dark:text-slate-200 font-bold decoration-red-200 decoration-2 underline-offset-4">${$t('landing.hero.highlight')}</span>`
+		})
+	);
 </script>
 
 <SEO title="Home" path="/" description={$t('seo.landing')} />
@@ -88,9 +93,8 @@
 				<p
 					class="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed"
 				>
-					{@html $t('landing.hero.description', {
-						highlight: `<span class="text-slate-800 dark:text-slate-200 font-bold decoration-red-200 decoration-2 underline-offset-4">${$t('landing.hero.highlight')}</span>`
-					})}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html heroDescription}
 				</p>
 			</div>
 		</div>
