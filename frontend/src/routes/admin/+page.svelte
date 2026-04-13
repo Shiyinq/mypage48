@@ -5,18 +5,7 @@
 	import { adminStore, isAdminUsersLoading } from '$lib/stores/admin';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import TableSkeleton from '$lib/components/skeletons/TableSkeleton.svelte';
-	import {
-		Search,
-		X,
-		UserCheck,
-		CheckCircle,
-		XCircle,
-		ShieldCheck,
-		Mail,
-		Lock,
-		Eye,
-		EyeOff
-	} from 'lucide-svelte';
+	import { Search, X, UserCheck, ShieldCheck, Mail, Lock, Eye, EyeOff } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
 
@@ -24,7 +13,6 @@
 
 	// Store state
 	let usersList = $derived($adminStore.users.data);
-	let error = $derived($adminStore.users.error);
 	let usersHasMore = $derived($adminStore.users.hasMore);
 
 	// Search state

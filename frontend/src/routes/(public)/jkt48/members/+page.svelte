@@ -56,7 +56,6 @@
 	let membersList = $derived(membersState.list);
 	let pagination = $derived(membersState.pagination);
 	let error = $derived(membersState.error);
-	let isAppending = $derived($isMembersLoading && membersList.length > 0 && pagination.page > 0);
 
 	async function fetchGenerations() {
 		try {
@@ -81,7 +80,7 @@
 				},
 				reset
 			);
-		} catch (err) {
+		} catch {
 			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		}
 	}
@@ -193,7 +192,7 @@
 						{$t('common.all')}
 					</button>
 					{#if loadingGenerations}
-						{#each Array(5) as _}
+						{#each Array(5)}
 							<div
 								class="h-[42px] w-20 bg-gray-100 dark:bg-zinc-800 rounded-full animate-pulse shrink-0"
 							></div>
@@ -267,7 +266,7 @@
 		<div
 			class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6"
 		>
-			{#each Array(12) as _}
+			{#each Array(12)}
 				<MemberCardSkeleton />
 			{/each}
 		</div>
@@ -330,7 +329,7 @@
 			<div
 				class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6 mt-6"
 			>
-				{#each Array(6) as _}
+				{#each Array(6)}
 					<MemberCardSkeleton />
 				{/each}
 			</div>
