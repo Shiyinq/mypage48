@@ -472,7 +472,7 @@
 				</div>
 				<div class="flex-1 overflow-y-auto p-2 space-y-1">
 					{#if $liveLoading && activeStreams.length === 0}
-						{#each Array(6) as _}
+						{#each Array(6)}
 							<div class="h-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl animate-pulse"></div>
 						{/each}
 					{:else}

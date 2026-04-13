@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { preventDefault } from 'svelte/legacy';
 
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isAuthenticated, showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';

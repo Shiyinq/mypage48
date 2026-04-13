@@ -100,8 +100,7 @@
 
 	{#if loading}
 		<div class="grid grid-cols-2 gap-4">
-			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-			{#each Array(2) as _}
+			{#each Array(2)}
 				<div class="space-y-2">
 					<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
 					<div class="h-5 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>

@@ -81,7 +81,7 @@
 
 		{#if !mounted || $isBirthdaysLoading}
 			<div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide">
-				{#each Array(6) as _}
+				{#each Array(6)}
 					<div class="flex-none w-44 snap-start">
 						<MemberCardSkeleton />
 					</div>
@@ -177,7 +177,7 @@
 
 		{#if !mounted || $isUpcomingEventsLoading}
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-				{#each Array(8) as _}
+				{#each Array(8)}
 					<EventCardSkeleton />
 				{/each}
 			</div>

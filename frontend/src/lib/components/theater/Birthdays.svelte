@@ -35,7 +35,7 @@
 
 	{#if isLoading}
 		<div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-			{#each Array(4) as _}
+			{#each Array(4)}
 				<div class="flex-none w-40 snap-start">
 					<MemberCardSkeleton />
 				</div>

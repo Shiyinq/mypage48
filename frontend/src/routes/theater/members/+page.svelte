@@ -189,8 +189,7 @@
 					{$t('common.all')}
 				</button>
 				{#if loadingGenerations}
-					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-					{#each Array(5) as _}
+					{#each Array(5)}
 						<div
 							class="h-[42px] w-20 bg-gray-100 dark:bg-zinc-800 rounded-full animate-pulse shrink-0"
 						></div>
@@ -260,7 +259,7 @@
 		class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4"
 	>
 		<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-		{#each Array(14) as _}
+		{#each Array(14)}
 			<MemberCardSkeleton />
 		{/each}
 	</div>
@@ -324,7 +323,7 @@
 			class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4 mt-3 sm:mt-4"
 		>
 			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-			{#each Array(7) as _}
+			{#each Array(7)}
 				<MemberCardSkeleton />
 			{/each}
 		</div>
