@@ -49,7 +49,6 @@
 				return;
 			}
 
-			// @ts-ignore - pick is valid on z.object
 			const fieldSchema = resetPasswordBaseSchema.pick({ [field]: true });
 			fieldSchema.parse({ [field]: value });
 			errors[field] = '';

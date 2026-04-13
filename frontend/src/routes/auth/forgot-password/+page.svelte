@@ -24,7 +24,6 @@
 
 	const validateField = (field: 'email', value: string) => {
 		try {
-			// @ts-ignore - pick is valid on z.object
 			const fieldSchema = forgotPasswordSchema.pick({ [field]: true });
 			fieldSchema.parse({ [field]: value });
 			errors[field] = '';

@@ -148,7 +148,9 @@
 					} else {
 						parsedText = json.message || json.text || parsedText;
 					}
-				} catch {}
+				} catch {
+					// Fallback to raw text if JSON parsing fails
+				}
 			} else if (text.startsWith('***')) {
 				return;
 			}

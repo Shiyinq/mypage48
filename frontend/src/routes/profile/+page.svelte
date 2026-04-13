@@ -27,7 +27,7 @@
 		params?: Record<string, string> | undefined;
 	}
 
-	let { params = undefined }: Props = $props();
+	let { params: _params = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 

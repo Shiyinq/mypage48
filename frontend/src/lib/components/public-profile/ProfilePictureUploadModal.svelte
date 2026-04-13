@@ -38,7 +38,6 @@
 	onclick={close}
 	onkeydown={handleKeydown}
 >
-	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		class="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-[fadeIn_0.2s_ease-out]"
 		onclick={stopPropagation(bubble('click'))}

@@ -16,7 +16,6 @@
 
 	let innerWidth = $state(0);
 	let isSidebarVisible = $state(true);
-	let isResizing = $state(false);
 
 	// Store data via derived runes
 	let journalState = $derived($ticketsStore);

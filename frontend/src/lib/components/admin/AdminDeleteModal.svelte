@@ -25,16 +25,23 @@
 </script>
 
 {#if show}
-	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
 		onclick={onCancel}
+		onkeydown={(e) => e.key === 'Escape' && onCancel()}
 		transition:fade={{ duration: 150 }}
+		role="button"
+		tabindex="-1"
+		aria-label="Close modal"
 	>
 		<div
 			class="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-sm w-full p-6"
 			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
 			transition:scale={{ duration: 200, start: 0.95 }}
+			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
 		>
 			<div
 				class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-500 flex items-center justify-center mb-4 mx-auto"

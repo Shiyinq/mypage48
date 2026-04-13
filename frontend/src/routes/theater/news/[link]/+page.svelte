@@ -40,7 +40,8 @@
 		showLightbox = true;
 	}
 
-	function handleContentClick(e: MouseEvent) {
+	function handleContentClick(e: MouseEvent | KeyboardEvent) {
+		if (e instanceof KeyboardEvent && e.key !== 'Enter' && e.key !== ' ') return;
 		const target = e.target as HTMLElement;
 		if (target.tagName === 'IMG') {
 			const img = target as HTMLImageElement;
@@ -87,7 +88,6 @@
 			class="lg:col-span-2 space-y-6 bg-white dark:bg-zinc-900 rounded-3xl p-4 md:p-10 shadow-sm border border-gray-100 dark:border-white/5"
 		>
 			{#if item.background_image}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<button
 					onclick={() => openLightbox(getExternalMediaUrl(item.background_image), item.title)}
 					class="w-full rounded-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-inner group/img cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99] duration-500"
@@ -122,10 +122,11 @@
 			</div>
 
 			<!-- HTML Content -->
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
+
 			<div
 				class="prose prose-red dark:prose-invert prose-responsive-colors max-w-none prose-img:rounded-xl prose-img:cursor-zoom-in hover:prose-img:scale-[1.01] prose-img:transition-transform prose-img:duration-300 prose-a:text-red-500 hover:prose-a:text-red-600 space-y-4 text-gray-800 dark:text-gray-300 leading-relaxed text-sm md:text-base md:p-0 rounded-2xl md:bg-transparent"
 				onclick={handleContentClick}
+				onkeydown={handleContentClick}
 				role="presentation"
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
