@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isAuthenticated, showToast } from '$lib/stores';
+	import { showToast } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import { Image as ImageIcon } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';

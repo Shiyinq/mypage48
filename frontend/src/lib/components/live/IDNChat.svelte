@@ -16,7 +16,6 @@
 	let socket: WebSocket | null = null;
 	let messages: LiveChatIDNMessage[] = $state([]);
 	let chatContainer: HTMLElement | undefined = $state();
-	let connected = false;
 
 	function getExternalMediaUrl(url?: string) {
 		if (!url) return '';
@@ -38,8 +37,6 @@
 		socket = new WebSocket('wss://chat.idn.app/');
 
 		socket.onopen = () => {
-			connected = true;
-
 			const userId = Math.floor(Math.random() * 1000000);
 			const timestamp = Date.now();
 			const uuid = crypto.randomUUID();
@@ -67,7 +64,6 @@
 		};
 
 		socket.onclose = () => {
-			connected = false;
 			setTimeout(connect, 5000);
 		};
 	}

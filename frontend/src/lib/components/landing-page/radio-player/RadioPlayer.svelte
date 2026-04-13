@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fade, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import { Play, Pause, SkipForward, Volume2, VolumeX, Music2, Disc, Radio } from 'lucide-svelte';
 	import { radioStore, RADIO_CHANNELS } from '$lib/stores/radio';
 	import { useTranslation } from '$lib/i18n/useTranslation';

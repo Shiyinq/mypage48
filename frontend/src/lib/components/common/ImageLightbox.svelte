@@ -138,8 +138,6 @@
 		aria-label="Image lightbox"
 	>
 		<!-- Backdrop -->
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="absolute inset-0 bg-black/95 backdrop-blur-sm cursor-pointer"
 			onclick={onClose}
@@ -201,7 +199,6 @@
 		</div>
 
 		<!-- Image Container -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="relative w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing pointer-events-none"
 			role="presentation"

@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { fade } from 'svelte/transition';
 	import type { Ticket } from '$lib/types';
-	import { storageApi } from '$lib/apis/storage';
 	import { storageStore } from '$lib/stores/storage';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { cleanseMarkdown, extractSignatures } from '$lib/utils/markdown';
-	import { getExternalMediaUrl } from '$lib/utils/media';
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
 
 	// Icons
@@ -92,10 +89,6 @@
 			onsave?.(ticket._id, content);
 		}
 		isEditing = false;
-	}
-
-	function toggleSidebar() {
-		ontoggleSidebar?.();
 	}
 
 	// Rich text helpers
