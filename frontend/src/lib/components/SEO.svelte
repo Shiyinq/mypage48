@@ -3,7 +3,8 @@
 	import type { Event } from '$lib/types/events';
 	import type { News } from '$lib/types/news';
 
-	const serializeSchema = (data: any) => {
+	const serializeSchema = (data: Record<string, unknown> | null | undefined) => {
+		if (!data) return '';
 		return JSON.stringify(data).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
 	};
 
@@ -213,6 +214,22 @@
 				}
 			: null
 	);
+	let allSchemas = $derived(
+		[
+			path === '/' ? jsonLd : webPageJsonLd,
+			organizationJsonLd,
+			breadcrumbJsonLd,
+			...(eventJsonLd || []),
+			articleJsonLd,
+			itemListJsonLd
+		].filter(Boolean)
+	);
+
+	let ldJsonScripts = $derived(
+		allSchemas
+			.map((schema) => `<script type="application/ld+json">${serializeSchema(schema)}<\/script>`)
+			.join('\n')
+	);
 </script>
 
 <svelte:head>
@@ -245,37 +262,8 @@
 	<link rel="canonical" href={fullUrl} />
 
 	<!-- Structured Data -->
-	{#if path === '/'}
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html `<script type="application/ld+json">${serializeSchema(jsonLd)}</script>`}
-	{:else}
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html `<script type="application/ld+json">${serializeSchema(webPageJsonLd)}</script>`}
-	{/if}
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html `<script type="application/ld+json">${serializeSchema(organizationJsonLd)}</script>`}
-
-	{#if breadcrumbJsonLd}
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html `<script type="application/ld+json">${serializeSchema(breadcrumbJsonLd)}</script>`}
-	{/if}
-
-	{#if eventJsonLd && eventJsonLd.length > 0}
-		{#each eventJsonLd as eventData}
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html `<script type="application/ld+json">${serializeSchema(eventData)}</script>`}
-		{/each}
-	{/if}
-
-	{#if articleJsonLd}
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html `<script type="application/ld+json">${serializeSchema(articleJsonLd)}</script>`}
-	{/if}
-
-	{#if itemListJsonLd}
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html `<script type="application/ld+json">${serializeSchema(itemListJsonLd)}</script>`}
-	{/if}
+	{@html ldJsonScripts}
 
 	<!-- Hreflang for Multi-language SEO (using query params) -->
 	<link rel="alternate" hreflang="id" href={`${baseUrl}${path === '/' ? '' : path}?lang=id`} />

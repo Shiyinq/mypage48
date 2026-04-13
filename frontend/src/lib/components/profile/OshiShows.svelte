@@ -16,7 +16,6 @@
 </script>
 
 <div class="flex flex-col gap-6">
-	<!-- Upcoming Schedule -->
 	<div class="glass-panel p-5 rounded-3xl">
 		<h4 class="font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
 			<Calendar class="w-4 h-4 text-blue-500" />
