@@ -4,7 +4,6 @@
 	import type { Member } from '$lib/apis/members';
 	import { membersStore } from '$lib/stores/theater';
 	import { showToast } from '$lib/stores';
-	import { fade } from 'svelte/transition';
 	import SEO from '$lib/components/SEO.svelte';
 	import SorterGenerationSelect from '$lib/components/sorter/SorterGenerationSelect.svelte';
 	import SorterProcess from '$lib/components/sorter/SorterProcess.svelte';
@@ -249,7 +248,9 @@
 				await navigator.clipboard.writeText(text);
 				return true;
 			}
-		} catch {}
+		} catch {
+			return false;
+		}
 		try {
 			const textarea = document.createElement('textarea');
 			textarea.value = text;

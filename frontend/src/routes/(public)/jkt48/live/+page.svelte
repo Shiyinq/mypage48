@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fly } from 'svelte/transition';
-	import { liveStore, liveList, liveLoading, now } from '$lib/stores/live';
+	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Users } from 'lucide-svelte';
 	import LiveGrid from '$lib/components/live/LiveGrid.svelte';

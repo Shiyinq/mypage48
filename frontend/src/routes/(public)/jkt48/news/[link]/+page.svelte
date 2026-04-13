@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { Calendar, ChevronRight, ExternalLink, Share2, Copy, MoveLeft } from 'lucide-svelte';
+	import { Calendar, ChevronRight, ExternalLink, Copy, MoveLeft } from 'lucide-svelte';
 	import { formatDate } from '$lib/i18n';
 	import { getExternalMediaUrl, proxyExternalImageUrls } from '$lib/utils/media';
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
