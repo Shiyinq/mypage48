@@ -23,7 +23,7 @@ function createLiveStore() {
 		lastUpdated: 0
 	};
 
-	const { subscribe, set, update } = writable<LiveState>(initialState);
+	const { subscribe, update } = writable<LiveState>(initialState);
 
 	return {
 		subscribe,

@@ -161,8 +161,7 @@ function createEventsStore() {
 			}
 		},
 
-		loadHistory: async (page = 1, forceRefresh = false) => {
-			const state = get({ subscribe });
+		loadHistory: async (page = 1) => {
 			const now = Date.now();
 
 			// Temporarily disabled cache to avoid stale data during migration

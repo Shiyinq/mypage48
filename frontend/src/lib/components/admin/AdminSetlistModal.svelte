@@ -28,7 +28,7 @@
 		title: '',
 		titleJapanese: '',
 		description: '',
-		type: 'setlist',
+		type: 'setlist' as 'setlist' | 'event',
 		imageUrl: '',
 		active: true,
 		songs: [] as string[]

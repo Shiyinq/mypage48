@@ -9,8 +9,10 @@ declare global {
 		// interface Platform {}
 	}
 	namespace svelteHTML {
-		interface HTMLAttributes {
-			'on:intersect'?: (event: CustomEvent) => void;
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		interface HTMLAttributes<T> {
+			onintersect?: (event: CustomEvent<any>) => void;
+			'on:intersect'?: (event: CustomEvent<any>) => void;
 		}
 	}
 }

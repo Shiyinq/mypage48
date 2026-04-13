@@ -90,14 +90,14 @@
 		showDeleteModal = true;
 	}
 
-	async function handleMemberSubmit(data: Omit<Member, 'id'>) {
+	async function handleMemberSubmit(data: Partial<Member>) {
 		isSubmitting = true;
 		try {
 			if (isCreatingMember) {
-				await adminStore.createMember(data);
+				await adminStore.createMember(data as Omit<Member, 'id'>);
 				showToast($t('admin.members.modal.created'), 'success');
 			} else if (editingMember && editingMember.id !== undefined) {
-				await adminStore.updateMember(editingMember.id, data);
+				await adminStore.updateMember(editingMember.id, data as Partial<Omit<Member, 'id'>>);
 				showToast($t('admin.members.modal.updated'), 'success');
 			}
 			showMemberModal = false;
