@@ -1,5 +1,3 @@
-<!-- @migration-task Error while migrating Svelte code: can't migrate `let mounted = false;` to `$state` because there's a variable named state.
-     Rename the variable and try again or migrate by hand. -->
 <script lang="ts">
 	import { isAuthenticated } from '$lib/stores';
 	import StatCard from '$lib/components/StatCard.svelte';
@@ -27,7 +25,7 @@
 
 	const { t } = useTranslation();
 
-	let mounted = false;
+	let mounted = $state(false);
 
 	function clickOutside(node: HTMLElement) {
 		const handleClick = (event: MouseEvent) => {
@@ -47,15 +45,15 @@
 	}
 
 	// Dashboard data sourced from store
-	$: state = $dashboardStatsData;
-	$: dashboardStats = state.data;
-	$: error = state.error;
+	let dashboardDataState = $derived($dashboardStatsData);
+	let dashboardStats = $derived(dashboardDataState.data);
+	let error = $derived(dashboardDataState.error);
 
 	const currentYear: number = new Date().getFullYear();
-	let isFilterOpen: boolean = false;
+	let isFilterOpen = $state(false);
 
-	let showTheaterPopup: boolean = false;
-	let showTwoShotPopup: boolean = false;
+	let showTheaterPopup = $state(false);
+	let showTwoShotPopup = $state(false);
 
 	// Fetch dashboard data from API
 	async function fetchDashboardStats() {
@@ -71,35 +69,37 @@
 	});
 
 	// Refetch when filter params change
-	$: if (mounted && $isAuthenticated && $dashboardFilter) {
-		fetchDashboardStats();
-	}
+	$effect(() => {
+		if (mounted && $isAuthenticated && $dashboardFilter) {
+			fetchDashboardStats();
+		}
+	});
 
 	// Available years from API
-	$: availableYears = dashboardStats?.available_years ?? [currentYear];
+	let availableYears = $derived(dashboardStats?.available_years ?? [currentYear]);
 
 	// Derived stats from API response
-	$: totalSpent = dashboardStats?.theater.total_spent ?? 0;
-	$: totalVisits = dashboardStats?.theater.total_visits ?? 0;
+	let totalSpent = $derived(dashboardStats?.theater.total_spent ?? 0);
+	let totalVisits = $derived(dashboardStats?.theater.total_visits ?? 0);
 
 	// Day Stats
-	$: dayStats = {
+	let dayStats = $derived({
 		stats: dashboardStats?.period.day_stats.stats ?? [],
 		maxCount: dashboardStats?.period.day_stats.max_count ?? 1
-	};
+	});
 
 	// Row Stats
-	$: rowStats = {
+	let rowStats = $derived({
 		counts: dashboardStats?.seat_map.row_stats.counts ?? {},
 		maxCount: dashboardStats?.seat_map.row_stats.max_count ?? 1,
 		uniqueVisited: dashboardStats?.seat_map.row_stats.unique_visited ?? 0
-	};
+	});
 
 	// Seat Stats
-	$: seatStats = dashboardStats?.seat_map.seat_stats ?? {};
+	let seatStats = $derived(dashboardStats?.seat_map.seat_stats ?? {});
 
 	// Monthly Stats - convert to frontend format
-	$: monthlyStats = {
+	let monthlyStats = $derived({
 		stats:
 			dashboardStats?.period.monthly_stats.stats.map((s) => ({
 				name: s.name,
@@ -108,17 +108,17 @@
 				isActive: s.is_active
 			})) ?? [],
 		maxCount: dashboardStats?.period.monthly_stats.max_count ?? 1
-	};
+	});
 
 	// Top Show
-	$: topShowStats = {
+	let topShowStats = $derived({
 		title: dashboardStats?.theater.top_show.title ?? '-',
 		count: dashboardStats?.theater.top_show.count ?? 0,
 		image: dashboardStats?.theater.top_show.image ?? null
-	};
+	});
 
 	// Two Shot Stats
-	$: twoShotStats = {
+	let twoShotStats = $derived({
 		totalSpend: dashboardStats?.two_shot.total_spend ?? 0,
 		totalCount: dashboardStats?.two_shot.total_count ?? 0,
 		uniqueCount: dashboardStats?.two_shot.unique_count ?? 0,
@@ -129,14 +129,14 @@
 					image: dashboardStats.two_shot.top_2_shot.image ?? undefined
 				}
 			: null
-	};
+	});
 
 	// Most frequent row
-	$: mostFrequentRow = dashboardStats?.theater.most_frequent_row ?? '-';
-	$: mostFrequentRowCount = dashboardStats?.theater.most_frequent_row_count ?? 0;
+	let mostFrequentRow = $derived(dashboardStats?.theater.most_frequent_row ?? '-');
+	let mostFrequentRowCount = $derived(dashboardStats?.theater.most_frequent_row_count ?? 0);
 
 	// Show Extremes
-	$: showExtremes = {
+	let showExtremes = $derived({
 		first: dashboardStats?.theater.extremes.first
 			? {
 					image: dashboardStats.theater.extremes.first.image,
@@ -153,10 +153,10 @@
 					detail: dashboardStats.theater.extremes.last.detail ?? undefined
 				}
 			: null
-	};
+	});
 
 	// Two Shot Extremes
-	$: twoShotExtremes = {
+	let twoShotExtremes = $derived({
 		first: dashboardStats?.two_shot.extremes.first
 			? {
 					image: dashboardStats.two_shot.extremes.first.image,
@@ -171,7 +171,7 @@
 					date: dashboardStats.two_shot.extremes.last.date
 				}
 			: null
-	};
+	});
 </script>
 
 <SEO title={$t('dashboard.title')} path="/" description={$t('seo.dashboard')} />
