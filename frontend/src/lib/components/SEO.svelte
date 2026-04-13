@@ -1,14 +1,21 @@
 <script lang="ts">
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import type { Event } from '$lib/types/events';
+	import type { News } from '$lib/types/news';
+
+	const serializeSchema = (data: any) => {
+		return JSON.stringify(data).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+	};
+
 	interface Props {
 		title: string;
 		description?: string;
 		image?: string;
 		path?: string;
 		keywords?: string;
-		events?: any[];
-		article?: any;
-		articles?: any[];
+		events?: Event[];
+		article?: News | null;
+		articles?: News[];
 	}
 
 	let {
@@ -239,28 +246,35 @@
 
 	<!-- Structured Data -->
 	{#if path === '/'}
-		{@html `<script type="application/ld+json">${JSON.stringify(jsonLd)}<\/script>`}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html `<script type="application/ld+json">${serializeSchema(jsonLd)}</script>`}
 	{:else}
-		{@html `<script type="application/ld+json">${JSON.stringify(webPageJsonLd)}<\/script>`}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html `<script type="application/ld+json">${serializeSchema(webPageJsonLd)}</script>`}
 	{/if}
-	{@html `<script type="application/ld+json">${JSON.stringify(organizationJsonLd)}<\/script>`}
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html `<script type="application/ld+json">${serializeSchema(organizationJsonLd)}</script>`}
 
 	{#if breadcrumbJsonLd}
-		{@html `<script type="application/ld+json">${JSON.stringify(breadcrumbJsonLd)}<\/script>`}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html `<script type="application/ld+json">${serializeSchema(breadcrumbJsonLd)}</script>`}
 	{/if}
 
 	{#if eventJsonLd && eventJsonLd.length > 0}
 		{#each eventJsonLd as eventData}
-			{@html `<script type="application/ld+json">${JSON.stringify(eventData)}<\/script>`}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html `<script type="application/ld+json">${serializeSchema(eventData)}</script>`}
 		{/each}
 	{/if}
 
 	{#if articleJsonLd}
-		{@html `<script type="application/ld+json">${JSON.stringify(articleJsonLd)}<\/script>`}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html `<script type="application/ld+json">${serializeSchema(articleJsonLd)}</script>`}
 	{/if}
 
 	{#if itemListJsonLd}
-		{@html `<script type="application/ld+json">${JSON.stringify(itemListJsonLd)}<\/script>`}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html `<script type="application/ld+json">${serializeSchema(itemListJsonLd)}</script>`}
 	{/if}
 
 	<!-- Hreflang for Multi-language SEO (using query params) -->
