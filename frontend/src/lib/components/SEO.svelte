@@ -227,7 +227,9 @@
 
 	let ldJsonScripts = $derived(
 		allSchemas
-			.map((schema) => `<script type="application/ld+json">${serializeSchema(schema)}<\/script>`)
+			.map(
+				(schema) => `<script type="application/ld+json">${serializeSchema(schema)}</` + `script>`
+			)
 			.join('\n')
 	);
 </script>
