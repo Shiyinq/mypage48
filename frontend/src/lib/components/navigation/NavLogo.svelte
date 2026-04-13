@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Ticket } from 'lucide-svelte';
 	interface Props {
-		mouse?: any;
+		mouse?: { x: number; y: number };
 		tagline?: string;
 	}
 

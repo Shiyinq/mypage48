@@ -5,6 +5,7 @@
 		title: string;
 		subtitle: string;
 		cardWidth?: string;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		icon?: any;
 		children?: import('svelte').Snippet;
 		footer?: import('svelte').Snippet;
