@@ -83,7 +83,7 @@
 
 		<div class="space-y-3">
 			{#if loading}
-				{#each [1, 2] as _}
+				{#each [1, 2]}
 					<div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50/50 dark:bg-zinc-800/30">
 						<div class="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
 						<div class="flex-1 space-y-2">

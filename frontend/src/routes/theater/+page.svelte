@@ -9,11 +9,6 @@
 	import SetlistSection from '$lib/components/theater/SetlistSection.svelte';
 
 	import { setlistsStore, maxAttendanceStore, isSetlistsLoading } from '$lib/stores/theater';
-	interface Props {
-		params?: Record<string, string> | undefined;
-	}
-
-	let { params = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 
