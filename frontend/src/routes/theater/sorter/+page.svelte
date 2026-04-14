@@ -91,12 +91,13 @@
 	}
 
 	function toggleGeneration(gen: string) {
-		if (selectedGenerations.has(gen)) {
-			selectedGenerations.delete(gen);
+		const next = new Set(selectedGenerations);
+		if (next.has(gen)) {
+			next.delete(gen);
 		} else {
-			selectedGenerations.add(gen);
+			next.add(gen);
 		}
-		selectedGenerations = selectedGenerations;
+		selectedGenerations = next;
 	}
 
 	function selectAllGenerations() {
