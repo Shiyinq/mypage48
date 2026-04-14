@@ -251,6 +251,13 @@
 				fetchOtherLive();
 			}
 		}, 30000);
+	
+		return () => {
+			if (refreshInterval) clearInterval(refreshInterval);
+			if (typeof document !== 'undefined') {
+				document.body.style.overflow = '';
+			}
+		};
 	});
 
 	onDestroy(() => {
@@ -259,6 +266,9 @@
 		if (refreshInterval) clearInterval(refreshInterval);
 		liveStore.reset();
 		isImmersive.set(false);
+		if (typeof document !== 'undefined') {
+			document.body.style.overflow = '';
+		}
 	});
 
 	function toggleFocus() {
