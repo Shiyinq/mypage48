@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { showToast } from '$lib/stores';
-	import { theme, setTheme } from '$lib/stores/theme';
-	import type { Theme } from '$lib/stores/theme';
+	import { theme, setTheme } from '$lib/stores';
+	import type { Theme } from '$lib/stores/theme.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Sun, Moon, Monitor, Check } from 'lucide-svelte';
 
@@ -53,7 +53,7 @@
 		{#each themeOptions as option}
 			<button
 				onclick={() => handleThemeChange(option.value)}
-				class="p-4 rounded-2xl border-2 transition-all flex md:flex-col items-center justify-between md:justify-center gap-3 cursor-pointer {$theme ===
+				class="p-4 rounded-2xl border-2 transition-all flex md:flex-col items-center justify-between md:justify-center gap-3 cursor-pointer {theme.value ===
 				option.value
 					? 'border-red-500 bg-red-50/50 dark:bg-red-900/20 shadow-sm'
 					: 'border-gray-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-gray-200 dark:hover:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-800'}"
@@ -77,7 +77,7 @@
 				</div>
 
 				<div class="flex-shrink-0">
-					{#if $theme === option.value}
+					{#if theme.value === option.value}
 						<div
 							class="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center shadow-sm shadow-red-500/20"
 						>

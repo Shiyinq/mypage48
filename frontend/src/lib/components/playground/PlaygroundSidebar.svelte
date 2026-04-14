@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Search, ChevronRight, Hash, Eye, EyeOff, X, Lock, PanelLeftClose } from 'lucide-svelte';
-	import { playgroundStore } from '$lib/stores/playground';
+	import { playgroundStore } from '$lib/stores/playground.svelte';
 
 	import { slide } from 'svelte/transition';
 	import type { OpenAPIEndpoint } from '$lib/types';

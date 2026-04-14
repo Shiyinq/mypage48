@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { adminStore, isAdminMembersLoading } from '$lib/stores/admin';
+	import { adminStore, isAdminMembersLoading } from '$lib/stores/admin.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { showToast } from '$lib/stores';
 	import type { Member } from '$lib/apis/members';

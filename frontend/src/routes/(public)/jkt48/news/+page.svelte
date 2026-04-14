@@ -6,7 +6,13 @@
 	import { fade } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { EventCardSkeleton } from '$lib/components/skeletons';
-	import { newsStore, newsList, newsLoading, newsError, newsPagination } from '$lib/stores/news';
+	import {
+		newsList,
+		newsPagination,
+		newsLoading,
+		newsError,
+		newsStore
+	} from '$lib/stores/news.svelte';
 	import { formatDate } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';
 
@@ -21,12 +27,13 @@
 		mounted = true;
 	});
 
-	let error = $derived($newsError);
-	let list = $derived($newsList);
-	let loading = $derived($newsLoading);
+	let list = $derived(newsList.value);
+	let pagination = $derived(newsPagination.value);
+	let isLoading = $derived(newsLoading.value);
+	let error = $derived(newsError.value);
 
-	async function handlePageChange(page: number) {
-		newsStore.load(page);
+	async function handlePageChange(pageIdx: number) {
+		newsStore.load(pageIdx);
 		await tick();
 		setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 10);
 	}
@@ -47,7 +54,7 @@
 		}
 		range.push(total);
 
-		for (let i of range) {
+		for (const i of range) {
 			if (l) {
 				if (i - l === 2) {
 					rangeWithDots.push(l + 1);
@@ -84,9 +91,9 @@
 		</p>
 	</div>
 
-	{#if (!mounted || loading) && list.length === 0}
+	{#if (!mounted || isLoading) && list.length === 0}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-			{#each Array(8)}
+			{#each Array(8) as _}
 				<EventCardSkeleton />
 			{/each}
 		</div>
@@ -183,20 +190,20 @@
 		</div>
 
 		<!-- Numbered Pagination -->
-		{#if $newsPagination && $newsPagination.last_page > 1}
+		{#if pagination && pagination.last_page > 1}
 			<div class="flex items-center justify-center mt-12 mb-12 w-full">
 				<div class="flex flex-wrap justify-center gap-2 max-w-full">
 					<!-- Previous Button -->
 					<button
 						class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
-						disabled={$newsPagination.current_page === 1}
-						onclick={() => handlePageChange($newsPagination.current_page - 1)}
+						disabled={pagination.current_page === 1}
+						onclick={() => handlePageChange(pagination.current_page - 1)}
 					>
 						<ChevronLeft class="w-5 h-5" />
 					</button>
 
 					<!-- Page Numbers -->
-					{#each generatePagination($newsPagination.current_page, $newsPagination.last_page) as page}
+					{#each generatePagination(pagination.current_page, pagination.last_page) as page}
 						{#if page === '...'}
 							<span
 								class="w-10 h-10 flex items-center justify-center text-sm font-bold text-gray-400"
@@ -205,7 +212,7 @@
 						{:else}
 							<button
 								class="w-10 h-10 flex items-center justify-center text-sm font-bold rounded-full border transition-all cursor-pointer {page ===
-								$newsPagination.current_page
+								pagination.current_page
 									? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-500/30'
 									: 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 text-gray-500 hover:text-red-600 hover:border-red-200 shadow-sm'}"
 								onclick={() => handlePageChange(Number(page))}
@@ -218,8 +225,8 @@
 					<!-- Next Button -->
 					<button
 						class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
-						disabled={$newsPagination.current_page === $newsPagination.last_page}
-						onclick={() => handlePageChange($newsPagination.current_page + 1)}
+						disabled={pagination.current_page === pagination.last_page}
+						onclick={() => handlePageChange(pagination.current_page + 1)}
 					>
 						<ChevronRight class="w-5 h-5" />
 					</button>

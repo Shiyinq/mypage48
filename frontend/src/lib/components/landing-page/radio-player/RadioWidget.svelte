@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
-	import { radioStore } from '$lib/stores/radio';
+	import { radioStore } from '$lib/stores/radio.svelte';
 	import RadioPlayer from './RadioPlayer.svelte';
 	import { Radio as RadioIcon } from 'lucide-svelte';
 

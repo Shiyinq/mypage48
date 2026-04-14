@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
-	import { setlistsStore } from '$lib/stores/theater';
+	import { setlistsStore } from '$lib/stores/theater.svelte';
 	import {
 		Ticket as TicketIcon,
 		Calendar,

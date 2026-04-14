@@ -64,7 +64,7 @@
 	}
 
 	function goHome() {
-		goto($isAuthenticated ? '/' : '/login');
+		goto(isAuthenticated.value ? '/' : '/login');
 	}
 
 	function goBack() {

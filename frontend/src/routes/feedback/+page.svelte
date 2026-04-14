@@ -7,7 +7,7 @@
 	import { showToast } from '$lib/stores';
 	import { userProfile, isAuthenticated } from '$lib/stores';
 	import { onMount } from 'svelte';
-	import { feedbackStore, isFeedbackLoading } from '$lib/stores/feedback';
+	import { feedbackStore, isFeedbackLoading } from '$lib/stores/feedback.svelte';
 	import { goto } from '$app/navigation';
 	import { PageHeader } from '$lib/components';
 
@@ -17,20 +17,20 @@
 	let message = $state('');
 	let email = $state('');
 	let name = $state('');
+	let isInitialized = $state(false);
 
 	onMount(() => {
-		if (!$isAuthenticated) {
+		if (!isAuthenticated.value) {
 			goto('/login');
 			return;
 		}
 
-		if ($userProfile?.data) {
-			email = $userProfile.data.email || '';
-			name = $userProfile.data.name || '';
+		if (userProfile.data && !isInitialized) {
+			email = userProfile.data.email || '';
+			name = userProfile.data.name || '';
+			isInitialized = true;
 		}
 	});
-
-	let isInitialized = $state(false);
 
 	// Reactively update only if fields are empty and data becomes available (e.g. initial load latency)
 	$effect(() => {

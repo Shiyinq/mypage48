@@ -20,7 +20,7 @@
 		isHistoryEventsLoading,
 		historyPagination,
 		historyError
-	} from '$lib/stores/events';
+	} from '$lib/stores/events.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 
 	const { t } = useTranslation();

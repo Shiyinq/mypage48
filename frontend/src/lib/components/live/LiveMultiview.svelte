@@ -4,7 +4,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { fly } from 'svelte/transition';
 	import { spring } from 'svelte/motion';
-	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
+	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import type { LiveStatus, LiveStreamingResponse } from '$lib/types';
 	import { live } from '$lib/apis/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -31,8 +31,7 @@
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import MultiPlayer from '$lib/components/live/MultiPlayer.svelte';
-	import { showToast } from '$lib/stores/toast';
-	import { isImmersive } from '$lib/stores/ui';
+	import { showToast, isImmersive } from '$lib/stores';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';

@@ -23,7 +23,7 @@
 		isHistoryEventsLoading,
 		historyPagination,
 		historyError
-	} from '$lib/stores/events';
+	} from '$lib/stores/events.svelte';
 
 	const { t } = useTranslation();
 

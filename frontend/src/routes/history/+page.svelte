@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ticketsStore, showToast, isInitialDataLoaded, isTicketsLoading } from '$lib/stores';
-	import { invalidateDashboard } from '$lib/stores/dashboard';
-	import { invalidateTheater } from '$lib/stores/theater';
+	import { invalidateDashboard } from '$lib/stores/dashboard.svelte';
+	import { invalidateTheater } from '$lib/stores/theater.svelte';
 	import { onMount } from 'svelte';
 
 	import type { Ticket as TicketType, TicketFilters } from '$lib/types';
@@ -25,12 +25,11 @@
 
 	const { t } = useTranslation();
 
-	// Store data via derived runes
-	let ticketsState = $derived($ticketsStore);
-	let filteredTickets = $derived(ticketsState.list);
-	let pagination = $derived(ticketsState.pagination);
-	let filters = $derived(ticketsState.filters);
-	let error = $derived(ticketsState.error);
+	// Store data via reactive properties
+	let filteredTickets = $derived(ticketsStore.list);
+	let pagination = $derived(ticketsStore.pagination);
+	let filters = $derived(ticketsStore.filters);
+	let error = $derived(ticketsStore.error);
 	let hasMore = $derived(pagination.current_page < pagination.last_page);
 
 	// Main Component Logic
@@ -45,16 +44,16 @@
 		mounted = true;
 
 		// Initial load check
-		if (filteredTickets.length === 0 || isCacheExpired($ticketsStore.lastUpdated)) {
+		if (filteredTickets.length === 0 || isCacheExpired(ticketsStore.lastUpdated)) {
 			loadTickets(1);
 		}
 	});
 
-	async function loadTickets(page: number, currentFilters: TicketFilters = {}) {
+	async function loadTickets(pageIdx: number, currentFilters: TicketFilters = {}) {
 		// Store handles locking if needed, or we rely on UI not triggering double loads
 		try {
 			// Use store action
-			await ticketsStore.load(page, currentFilters);
+			await ticketsStore.load(pageIdx, currentFilters);
 			isInitialDataLoaded.set(true);
 		} catch {
 			// Error logged and handled by store
@@ -63,7 +62,7 @@
 	}
 
 	function handleIntersect() {
-		if (!mounted || $isTicketsLoading || !hasMore) return;
+		if (!mounted || isTicketsLoading.value || !hasMore) return;
 		loadTickets(pagination.current_page + 1, filters);
 	}
 
@@ -117,22 +116,17 @@
 
 	let editingTicket: TicketType | null = $state(null);
 
-	const handleTicketUpdate = (updated: TicketType) => {
-		ticketsStore.update((s) => ({
-			...s,
-			list: s.list.map((t) => (t._id === updated._id ? updated : t)),
-			defaultCache: s.defaultCache
-				? {
-						...s.defaultCache,
-						list: s.defaultCache.list.map((t) => (t._id === updated._id ? updated : t))
-					}
-				: null
-		}));
+	const handleTicketUpdate = async (updated: TicketType) => {
+		try {
+			// Synchronize via store update action
+			await ticketsStore.updateTicket(updated._id, updated);
 
-		// Invalidate dashboard cache
-		invalidateDashboard();
-
-		editingTicket = null;
+			// Invalidate dashboard cache
+			invalidateDashboard();
+			editingTicket = null;
+		} catch (e) {
+			console.error(e);
+		}
 	};
 </script>
 
@@ -167,14 +161,13 @@
 	</div>
 
 	<!-- Content Area -->
-	<!-- Content Area -->
 	{#if error && filteredTickets.length === 0}
 		<ErrorState
 			title={$t('history.errorTitle') || 'Failed to load tickets'}
 			description={$t('history.errorDesc') || error || ''}
 			onRetry={() => loadTickets(1, filters)}
 		/>
-	{:else if $isTicketsLoading && filteredTickets.length === 0}
+	{:else if isTicketsLoading.value && filteredTickets.length === 0}
 		{#if viewMode === 'GRID'}
 			<TicketCardSkeleton count={6} />
 		{:else}
@@ -204,7 +197,7 @@
 					<TicketCard
 						{ticket}
 						onupdateNote={handleNoteUpdate}
-						oneditTicket={(t) => (editingTicket = t)}
+						oneditTicket={(t_val) => (editingTicket = t_val)}
 						ondeleteTicket={(id) => openDeleteModal(id)}
 					/>
 				{/each}
@@ -214,7 +207,7 @@
 			<TicketTable
 				tickets={filteredTickets}
 				onupdateNote={handleNoteUpdate}
-				oneditTicket={(t) => (editingTicket = t)}
+				oneditTicket={(t_val) => (editingTicket = t_val)}
 				ondeleteTicket={(id) => openDeleteModal(id)}
 			/>
 		{/if}
@@ -222,7 +215,7 @@
 		<!-- Sentinel for infinite scroll -->
 		{#if hasMore}
 			<div use:infiniteScroll onintersect={handleIntersect} class="w-full py-6 flex justify-center">
-				{#if $isTicketsLoading}
+				{#if isTicketsLoading.value}
 					{#if viewMode === 'GRID'}
 						<div class="w-full">
 							<TicketCardSkeleton count={3} />

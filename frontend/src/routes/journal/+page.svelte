@@ -3,8 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import { LoaderCircle, AlertTriangle, PenLine, PanelLeft } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
-	import { ticketsStore, showToast } from '$lib/stores';
-	import { isTicketsLoading } from '$lib/stores';
+	import { ticketsStore, showToast, isTicketsLoading } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import JournalSidebar from '$lib/components/journal/JournalSidebar.svelte';
 	import JournalEditor from '$lib/components/journal/JournalEditor.svelte';
@@ -17,25 +16,24 @@
 	let innerWidth = $state(0);
 	let isSidebarVisible = $state(true);
 
-	// Store data via derived runes
-	let journalState = $derived($ticketsStore);
-	let tickets = $derived(journalState.list);
-	let filters = $derived(journalState.filters);
-	let error = $derived(journalState.error);
-	let loading = $derived($isTicketsLoading);
+	// Store data via reactive properties
+	let tickets = $derived(ticketsStore.list);
+	let filters = $derived(ticketsStore.filters);
+	let error = $derived(ticketsStore.error);
+	let loading = $derived(isTicketsLoading.value);
 
 	let selectedTicketId: string | null = $state(null);
-	let selectedTicket = $derived(tickets.find((t) => t._id === selectedTicketId) || null);
+	let selectedTicket = $derived(tickets.find((t_item) => t_item._id === selectedTicketId) || null);
 
 	let hasMore = $derived(
-		journalState.pagination
-			? journalState.pagination.current_page < journalState.pagination.last_page
+		ticketsStore.pagination
+			? ticketsStore.pagination.current_page < ticketsStore.pagination.last_page
 			: false
 	);
-	let totalData = $derived(journalState.pagination?.total_data || tickets.length);
+	let totalData = $derived(ticketsStore.pagination?.total_data || tickets.length);
 
 	onMount(() => {
-		if (tickets.length === 0 || isCacheExpired($ticketsStore.lastUpdated)) {
+		if (tickets.length === 0 || isCacheExpired(ticketsStore.lastUpdated)) {
 			ticketsStore.load(1);
 		}
 	});
@@ -61,8 +59,8 @@
 	}
 
 	function handleLoadMore() {
-		if (hasMore && !loading && journalState.pagination) {
-			ticketsStore.load(journalState.pagination.current_page + 1, filters);
+		if (hasMore && !loading && ticketsStore.pagination) {
+			ticketsStore.load(ticketsStore.pagination.current_page + 1, filters);
 		}
 	}
 

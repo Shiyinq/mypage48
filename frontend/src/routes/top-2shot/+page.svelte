@@ -9,7 +9,7 @@
 	import { KamiOshiCard, Leaderboard } from '$lib/components/top2shot';
 	import { Top2ShotSkeleton } from '$lib/components/skeletons';
 	import type { TopTwoShotResponse } from '$lib/types';
-	import { topTwoShotStore, isTopTwoShotLoading } from '$lib/stores/memories';
+	import { topTwoShotStore, isTopTwoShotLoading } from '$lib/stores/memories.svelte';
 
 	const { t } = useTranslation();
 
@@ -28,12 +28,12 @@
 
 	onMount(async () => {
 		mounted = true;
-		if ($isAuthenticated) {
-			await fetchTopTwoShot();
+		if (isAuthenticated.value) {
+			loadData();
 		}
 	});
 
-	async function fetchTopTwoShot() {
+	async function loadData() {
 		// If data exists and is not expired, no need to show loading
 		// Store load check handles cache expiration check too, but we can double check here or just call load()
 		if ($topTwoShotStore.data && !isCacheExpired($topTwoShotStore.lastUpdated)) return;
@@ -70,7 +70,7 @@
 			description={$t('top2shot.errorDesc') ||
 				error ||
 				'Something went wrong while fetching the leaderboard.'}
-			onRetry={fetchTopTwoShot}
+			onRetry={loadData}
 		/>
 	{:else if stats.ranking.length === 0}
 		<EmptyState

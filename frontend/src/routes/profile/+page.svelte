@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isAuthenticated, showToast, userProfile, isUserProfileLoading } from '$lib/stores';
+	import { isAuthenticated, showToast, userProfile } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
@@ -57,7 +57,7 @@
 	let upcomingSchedule: OshiShow[] = $state([]);
 	let pastSchedule: OshiShow[] = $state([]);
 
-	let error = $derived($userProfile.error);
+	let error = $derived(userProfile.error);
 
 	// Oshi Selection State
 	let showOshiModal = $state(false);
@@ -83,9 +83,9 @@
 	}
 
 	onMount(() => {
-		if ($isAuthenticated) {
+		if (isAuthenticated.value) {
 			// Check if store already has data with stats
-			if (!$userProfile.data?.profileRank) {
+			if (!userProfile.data?.profileRank) {
 				fetchProfile();
 			}
 		}
@@ -94,8 +94,7 @@
 	// Subscribe to store changes to keep local state in sync
 	// The userProfile store now contains UserWithProfileStats with profile stats
 	$effect(() => {
-		const storeState = $userProfile;
-		const storeProfile = storeState.data;
+		const storeProfile = userProfile.data;
 		// loading state is handled by top-level reactive declaration
 
 		if (storeProfile) {
@@ -262,24 +261,24 @@
 		<div class="grid lg:grid-cols-12 gap-8 min-w-0">
 			<!-- LEFT COLUMN: Identity & Level (Span 5) -->
 			<div class="lg:col-span-5 space-y-6 min-w-0">
-				<DigitalMemberCard {profile} loading={$isUserProfileLoading} />
-				<LevelProgress {level} {progressPercent} loading={$isUserProfileLoading} />
-				<QuickStats {totalShows} {totalAchievements} loading={$isUserProfileLoading} />
-				<RecentActivity {recentActivity} loading={$isUserProfileLoading} />
+				<DigitalMemberCard {profile} loading={userProfile.isLoading} />
+				<LevelProgress {level} {progressPercent} loading={userProfile.isLoading} />
+				<QuickStats {totalShows} {totalAchievements} loading={userProfile.isLoading} />
+				<RecentActivity {recentActivity} loading={userProfile.isLoading} />
 			</div>
 
 			<!-- RIGHT COLUMN: Oshimen & Feed (Span 7) -->
 			<div class="lg:col-span-7 space-y-6 min-w-0">
 				<OshiCard
 					{profile}
-					loading={$isUserProfileLoading}
+					loading={userProfile.isLoading}
 					rouletteCount={twoShotRouletteCount}
 					birthdayCount={twoShotBirthdayCount}
 					{oshiMeetings}
 					onOpenOshiModal={openOshiModal}
 					onOpenMemberDetail={openMemberDetail}
 				/>
-				<OshiShows {upcomingSchedule} {pastSchedule} loading={$isUserProfileLoading} />
+				<OshiShows {upcomingSchedule} {pastSchedule} loading={userProfile.isLoading} />
 			</div>
 		</div>
 	{/if}

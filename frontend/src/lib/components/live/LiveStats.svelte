@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Users, Clock } from 'lucide-svelte';
-	import { now } from '$lib/stores/live';
+	import { now } from '$lib/stores/live.svelte';
 	import { formatDuration } from '$lib/utils/time';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 

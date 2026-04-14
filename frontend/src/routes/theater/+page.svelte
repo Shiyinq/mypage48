@@ -8,7 +8,7 @@
 	import { Calendar } from 'lucide-svelte';
 	import SetlistSection from '$lib/components/theater/SetlistSection.svelte';
 
-	import { setlistsStore, maxAttendanceStore, isSetlistsLoading } from '$lib/stores/theater';
+	import { setlistsStore, maxAttendanceStore, isSetlistsLoading } from '$lib/stores/theater.svelte';
 
 	const { t } = useTranslation();
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { radioStore, RADIO_CHANNELS, type RadioChannel } from '$lib/stores/radio';
+	import { radioStore, RADIO_CHANNELS, type RadioChannel } from '$lib/stores/radio.svelte';
 
 	let player: YTPlayer | undefined = $state();
 	let playerElement: HTMLElement | undefined = $state();

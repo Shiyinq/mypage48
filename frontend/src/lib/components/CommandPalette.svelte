@@ -20,16 +20,16 @@
 		Calendar, // Shows
 		Trophy, // Achievements
 		History, // History
-		Shield, // Admin
 		Music, // Admin Setlists
 		MessageSquare, // Feedback
-		Terminal // Playground
+		Terminal, // Playground
+		ShieldCheck // Admin Dashboard
 	} from 'lucide-svelte';
-	import { setTheme } from '$lib/stores/theme';
+	import { setTheme } from '$lib/stores';
 	import { setLocale } from '$lib/i18n';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { auth } from '$lib/apis/auth';
-	import { userProfile } from '$lib/stores/profile';
+	import { userProfile } from '$lib/stores/profile.svelte';
 
 	interface Props {
 		open?: boolean;
@@ -60,12 +60,12 @@
 	$effect(() => {
 		actions = [
 			// Admin (Conditional)
-			...($userProfile.data?.isAdmin
+			...(userProfile.data?.isAdmin
 				? ([
 						{
 							id: 'admin-dashboard',
 							title: $t('command.actions.adminDashboard'),
-							icon: Shield,
+							icon: ShieldCheck,
 							section: 'admin',
 							perform: () => goto('/admin')
 						},
