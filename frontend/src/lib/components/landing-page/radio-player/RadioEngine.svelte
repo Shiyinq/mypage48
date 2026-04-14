@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { radioStore, RADIO_CHANNELS, type RadioChannel } from '$lib/stores/radio';
 
 	let player: YTPlayer | undefined = $state();
@@ -125,7 +124,7 @@
 
 	let playerElementOuter: HTMLElement | undefined = $state();
 
-	onMount(() => {
+	$effect(() => {
 		previousPlaylistId = currentChannel.playlistId; // Set initial
 
 		if (typeof window !== 'undefined') {
@@ -149,12 +148,13 @@
 				};
 			}
 		}
-	});
 
-	onDestroy(() => {
-		if (player) {
-			player.destroy();
-		}
+		return () => {
+			if (player) {
+				player.destroy();
+				player = undefined;
+			}
+		};
 	});
 </script>
 
