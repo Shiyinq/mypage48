@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
+	import { page } from '$app/stores';
+	import SEO from '$lib/components/SEO.svelte';
 	import { fly } from 'svelte/transition';
 	import { spring } from 'svelte/motion';
 	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
@@ -35,7 +36,6 @@
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
-	import { logger } from '$lib/utils/logger';
 
 	const { t } = useTranslation();
 
@@ -87,8 +87,7 @@
 	let muted: boolean[] = $state(Array(8).fill(false));
 	let isRecording: boolean[] = $state(Array(8).fill(false));
 	let playerRefs: (ReturnType<typeof MultiPlayer> | null)[] = $state(Array(8).fill(null));
-
-	onMount(() => {
+	$effect(() => {
 		liveStore.loadLiveList();
 		const interval = setInterval(async () => {
 			await liveStore.loadLiveList(true);
@@ -98,13 +97,12 @@
 			let hasGoneOffline = false;
 			const updatedSlots = slots
 				.map((slot) => {
-					const match = currentLive.find(
+					const updated = currentLive.find(
 						(l) =>
 							(l.platform === slot.platform && l.room_id === slot.room_id && l.room_id) ||
 							(l.platform === slot.platform && l.live_id === slot.live_id && l.live_id)
 					);
-
-					if (!match) {
+					if (!updated) {
 						hasGoneOffline = true;
 						showToast(
 							$t('theater.live.multiview.member_offline', { name: slot.member?.name }),
@@ -112,63 +110,64 @@
 						);
 						return null;
 					}
-					return { ...slot, view_num: match.view_num, start_at: match.start_at };
+					return { ...slot, ...updated };
 				})
-				.filter((s) => s !== null);
+				.filter((s): s is LiveStatus => s !== null);
 
 			if (hasGoneOffline) {
 				slots = updatedSlots;
 				saveSlots();
-				// Adjust focused slot if needed
 				if (focusedSlotIndex >= slots.length) {
 					setFocusedSlot(Math.max(0, slots.length - 1));
 				}
 			} else {
 				slots = updatedSlots;
 			}
-		}, 30000); // 30 seconds
+		}, 30000);
 
-		// Disable body scroll when in multiview
-		document.body.style.overflow = 'hidden';
-		isImmersive.set(true);
-
-		// Load from localStorage if available
-		const saved = localStorage.getItem('mypage48_multiview_slots');
-		if (saved) {
-			try {
-				const parsed = JSON.parse(saved);
-				if (Array.isArray(parsed)) {
-					slots = parsed.filter((s) => s !== null).slice(0, 8);
+		// Initial setup
+		if (typeof window !== 'undefined') {
+			const savedSlots = localStorage.getItem('mypage48_multiview_slots');
+			if (savedSlots) {
+				try {
+					slots = JSON.parse(savedSlots);
+				} catch (e) {
+					console.error('Failed to load saved slots:', e);
 				}
-			} catch (e) {
-				logger.error('Failed to parse saved slots', e);
 			}
+
+			if (window.innerWidth >= 1024) {
+				showChat = true;
+				isImmersive.set(true);
+				document.body.style.overflow = 'hidden';
+			}
+
+			if (window.innerWidth < 768) {
+				showPicker = false;
+				showChat = false;
+				isPortrait = false; // Default to landscape on mobile
+			}
+
+			updateIsMobile();
+
+			// Load aspect ratio preference from localStorage
+			const savedPortrait = localStorage.getItem('mypage48_multiview_portrait');
+			if (savedPortrait !== null && !isMobile) {
+				// Only use saved preference if not on mobile, or handle mobile specifically
+				isPortrait = savedPortrait === 'true';
+			}
+
+			window.addEventListener('resize', updateIsMobile);
 		}
-
-		updateIsMobile();
-		if (isMobile) {
-			showPicker = false;
-			showChat = false;
-			isPortrait = false; // Default to landscape on mobile
-		}
-
-		updateIsMobile();
-
-		// Load aspect ratio preference from localStorage
-		const savedPortrait = localStorage.getItem('mypage48_multiview_portrait');
-		if (savedPortrait !== null && !isMobile) {
-			// Only use saved preference if not on mobile, or handle mobile specifically
-			isPortrait = savedPortrait === 'true';
-		}
-
-		window.addEventListener('resize', updateIsMobile);
 
 		return () => {
 			clearInterval(interval);
-			window.removeEventListener('resize', updateIsMobile);
-			// Re-enable body scroll when leaving multiview
-			document.body.style.overflow = '';
-			isImmersive.set(false);
+			if (typeof window !== 'undefined') {
+				window.removeEventListener('resize', updateIsMobile);
+				// Re-enable body scroll when leaving multiview
+				document.body.style.overflow = '';
+				isImmersive.set(false);
+			}
 		};
 	});
 
@@ -359,6 +358,12 @@
 		}
 	});
 </script>
+
+<SEO
+	title={$t('theater.live.multiview.live.seoTitle')}
+	path={$page.url.pathname}
+	description={$t('theater.live.multiview.live.seoDescription')}
+/>
 
 <div
 	role="presentation"

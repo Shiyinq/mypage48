@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -12,6 +11,7 @@
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import GiftOverlay from '$lib/components/live/GiftOverlay.svelte';
 	import { theme, setTheme } from '$lib/stores/theme';
+	import SEO from '$lib/components/SEO.svelte';
 	import {
 		ArrowLeft,
 		Users,
@@ -88,7 +88,6 @@
 	let chatStatus: 'connecting' | 'connected' | 'disconnected' = $state('connecting');
 	let recordingDuration = $state(0);
 	let recordingTimer: ReturnType<typeof setInterval> | null = null;
-	let refreshInterval: ReturnType<typeof setInterval> | null = null;
 	let ignoreNextVideoClick = $state(false);
 	let rotation = $state(0);
 	// let videoWidth = $state(0);
@@ -225,8 +224,16 @@
 			loadingOtherLive = false;
 		}
 	}
-	onMount(() => {
-		const isLaptop = window.innerWidth >= 1024;
+	$effect(() => {
+		if (platform && id && lastInitializedId !== `${platform}-${id}`) {
+			lastInitializedId = `${platform}-${id}`;
+			initPlayer();
+			fetchOtherLive();
+		}
+	});
+
+	$effect(() => {
+		const isLaptop = typeof window !== 'undefined' && window.innerWidth >= 1024;
 		if (isLaptop) {
 			isFocusMode = true;
 			isImmersive.set(true);
@@ -241,7 +248,7 @@
 			}
 		}
 
-		refreshInterval = setInterval(() => {
+		const refreshInterval = setInterval(() => {
 			if (platform && id && !initializing) {
 				liveStore.refreshStreamInfo(platform, id).catch((e) => {
 					if (e?.status === 404) {
@@ -254,22 +261,15 @@
 		}, 30000);
 
 		return () => {
-			if (refreshInterval) clearInterval(refreshInterval);
+			clearInterval(refreshInterval);
+			if (hls) hls.destroy();
+			if (recordingTimer) clearInterval(recordingTimer);
+			liveStore.reset();
+			isImmersive.set(false);
 			if (typeof document !== 'undefined') {
 				document.body.style.overflow = '';
 			}
 		};
-	});
-
-	onDestroy(() => {
-		if (hls) hls.destroy();
-		if (recordingTimer) clearInterval(recordingTimer);
-		if (refreshInterval) clearInterval(refreshInterval);
-		liveStore.reset();
-		isImmersive.set(false);
-		if (typeof document !== 'undefined') {
-			document.body.style.overflow = '';
-		}
 	});
 
 	function toggleFocus() {
@@ -463,18 +463,15 @@
 	let roomIdentifier = $derived($currentStream?.room_identifier || null);
 
 	let startAt = $derived($currentStream?.start_at || null);
-	$effect(() => {
-		if (platform && id && lastInitializedId !== `${platform}-${id}`) {
-			lastInitializedId = `${platform}-${id}`;
-			initPlayer();
-			fetchOtherLive();
-		}
-	});
 </script>
 
-<svelte:head>
-	<title>Live Streaming | MyPage48</title>
-</svelte:head>
+<SEO
+	title={memberName ? `${memberName} - Live` : $t('theater.live.seoTitle')}
+	path={$page.url.pathname}
+	description={memberName
+		? $t('theater.live.seoMemberDescription', { name: memberName })
+		: $t('theater.live.seoDescription')}
+/>
 
 <div
 	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out overflow-x-hidden {isFocusMode
@@ -591,17 +588,20 @@
 						</div>
 					</div>
 					<div>
-						<h2 class="text-2xl font-black mb-2 uppercase tracking-tighter">Stream Offline</h2>
+						<h2 class="text-2xl font-black mb-2 uppercase tracking-tighter">
+							{$t('theater.live.offline_title')}
+						</h2>
 						<p class="text-zinc-500 max-w-sm mx-auto text-xs sm:text-sm px-4">
-							{streamFromList?.member?.name || 'Member'} is not live at the moment. This session might
-							have ended or is currently unavailable.
+							{$t('theater.live.offline_description', {
+								name: streamFromList?.member?.name || 'Member'
+							})}
 						</p>
 					</div>
 					<a
 						href={basePath}
 						class="px-8 py-3 rounded-2xl bg-white text-zinc-950 font-black uppercase tracking-widest text-xs hover:bg-red-600 hover:text-white transition-all"
 					>
-						Return Home
+						{$t('theater.live.return_home')}
 					</a>
 				</div>
 			{/if}

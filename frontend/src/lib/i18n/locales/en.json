@@ -666,6 +666,9 @@
 			"viewer": "Viewers",
 			"startedAt": "Started at",
 			"liveDuration": "Live for",
+			"seoTitle": "Live Streaming",
+			"seoDescription": "Watch JKT48 members live on Showroom or IDN Live via MyPage48.",
+			"seoMemberDescription": "Watch {name}'s live stream on MyPage48.",
 			"empty": "No members are currently live.",
 			"emptyTitle": "OFFLINE",
 			"back": "Back",
@@ -687,6 +690,9 @@
 			"liveBadge": "LIVE",
 			"chat": "Chat",
 			"connected": "Connected",
+			"offline_title": "Stream Offline",
+			"offline_description": "{name} is not live at the moment. This session might have ended or is currently unavailable.",
+			"return_home": "Return Home",
 			"toggleTheme": "Change Theme",
 			"volume": "Volume",
 			"mute": "Mute",
@@ -695,6 +701,10 @@
 			"openOriginal": "Open Original Stream",
 			"multiview": {
 				"title": "Multi-view",
+				"live": {
+					"seoTitle": "Multi-view Live",
+					"seoDescription": "Watch multiple JKT48 live streams simultaneously. Switch, rearrange, and chat on multiple lives at once."
+				},
 				"tap_to_play": "Tap to Play",
 				"clear_all": "Clear All",
 				"switch_to_landscape": "Switch to Landscape",
@@ -722,8 +732,7 @@
 				"no_stream_found": "No stream found",
 				"failed_load_stream": "Failed to load stream",
 				"retry": "Retry",
-				"sending_gift": "Sending Gift",
-				"seoDescription": "Watch multiple JKT48 members live at the same time. Switch, resize, and chat across multiple live streams simultaneously."
+				"sending_gift": "Sending Gift"
 			},
 			"joined": "{name} joined",
 			"group_joined": "{name} and {count} others joined",

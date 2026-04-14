@@ -26,9 +26,9 @@
 </script>
 
 <SEO
-	title={$t('theater.live.title')}
+	title={$t('theater.live.seoTitle')}
 	path="/theater/live"
-	description={$t('theater.live.subtitle')}
+	description={$t('theater.live.seoDescription')}
 />
 
 <div class="w-full pb-12">
