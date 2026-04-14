@@ -727,6 +727,8 @@
 				"sending_gift": "Sending Gift",
 				"seoDescription": "Watch multiple JKT48 members live at the same time. Switch, resize, and chat across multiple live streams simultaneously."
 			},
+			"joined": "{name} joined",
+			"group_joined": "{name} and {count} others joined",
 			"switchMultiview": "Switch to Multi-view"
 		},
 		"news": {

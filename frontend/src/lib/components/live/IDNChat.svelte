@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy, tick } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 	import { MessageCircle, Trophy } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
@@ -17,6 +17,7 @@
 	let socket: WebSocket | null = null;
 	let messages: LiveChatIDNMessage[] = $state([]);
 	let chatContainer: HTMLElement | undefined = $state();
+	let expandedSystemId: string | null = $state(null);
 
 	function getExternalMediaUrl(url?: string) {
 		if (!url) return '';
@@ -162,6 +163,22 @@
 				chatContainer &&
 				chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 100;
 
+			const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+
+			if (
+				isSystem &&
+				lastMsg &&
+				lastMsg.type === 'system' &&
+				lastMsg.systemType === 'join' &&
+				lastMsg.joinNames
+			) {
+				const name = senderName || parsedText.replace(/ BERGABUNG/i, '').trim();
+				if (!lastMsg.joinNames.includes(name)) {
+					lastMsg.joinNames = [...lastMsg.joinNames, name];
+				}
+				return;
+			}
+
 			messages = [
 				...messages,
 				{
@@ -171,6 +188,10 @@
 					avatar,
 					timestamp: Date.now(),
 					type: isGift ? 'gift' : isLetter ? 'letter' : isSystem ? 'system' : 'chat',
+					systemType: isSystem ? 'join' : undefined,
+					joinNames: isSystem
+						? [senderName || parsedText.replace(/ BERGABUNG/i, '').trim()]
+						: undefined,
 					gift: giftData,
 					letterType: isLetter ? letterType : undefined,
 					recipient: isLetter ? recipient : undefined
@@ -227,14 +248,50 @@
 
 		{#each messages as msg (msg.id || msg.timestamp + msg.user)}
 			{#if msg.type === 'system'}
-				<div class="flex items-center gap-2 my-1 opacity-80 px-2" in:fade>
-					<div class="h-px flex-1 min-w-[12px] bg-slate-200 dark:bg-zinc-800/50"></div>
-					<p
-						class="text-[9px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-[0.05em] text-center"
+				{@const names = msg.joinNames || []}
+				{@const hasMultiple = names.length > 1}
+				{@const isExpanded = msg.id === expandedSystemId}
+				<div class="flex flex-col items-center gap-1.5 my-1.5 px-2" in:fade>
+					<button
+						class="flex items-center gap-2 w-full opacity-80 group/system transition-all"
+						onclick={() => {
+							if (hasMultiple) {
+								expandedSystemId = expandedSystemId === msg.id ? null : msg.id;
+							}
+						}}
 					>
-						{msg.text}
-					</p>
-					<div class="h-px flex-1 min-w-[12px] bg-slate-200 dark:bg-zinc-800/50"></div>
+						<div class="h-px flex-1 min-w-[12px] bg-slate-200 dark:bg-zinc-800/50"></div>
+						<p
+							class="text-[9px] font-bold text-slate-500 dark:text-zinc-400 tracking-[0.05em] text-center {hasMultiple
+								? 'group-hover/system:text-red-500 cursor-pointer transition-colors'
+								: ''}"
+						>
+							{#if names.length > 1}
+								{$t('theater.live.group_joined', {
+									name: names[0],
+									count: names.length - 1
+								})}
+							{:else}
+								{$t('theater.live.joined', { name: names[0] || msg.text })}
+							{/if}
+						</p>
+						<div class="h-px flex-1 min-w-[12px] bg-slate-200 dark:bg-zinc-800/50"></div>
+					</button>
+
+					{#if isExpanded && names.length > 0}
+						<div
+							class="w-full max-w-[90%] p-2.5 rounded-2xl bg-slate-50/50 dark:bg-zinc-900/30 border border-slate-100 dark:border-zinc-800/30 backdrop-blur-sm"
+							transition:slide={{ duration: 300 }}
+						>
+							<div class="flex flex-wrap justify-center gap-x-2 gap-y-1">
+								{#each names as name}
+									<span class="text-[9px] font-semibold text-slate-500 dark:text-zinc-400">
+										{name}
+									</span>
+								{/each}
+							</div>
+						</div>
+					{/if}
 				</div>
 			{:else}
 				<div class="flex items-start gap-3 group">
