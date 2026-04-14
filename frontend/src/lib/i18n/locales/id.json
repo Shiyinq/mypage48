@@ -848,6 +848,8 @@
 				"sending_gift": "Mengirim Gift",
 				"seoDescription": "Tonton beberapa member JKT48 live secara bersamaan. Ganti, atur ulang, dan chat di beberapa live stream sekaligus."
 			},
+			"joined": "{name} bergabung",
+			"group_joined": "{name} dan {count} lainnya bergabung",
 			"switchMultiview": "Pindah ke Multi-view"
 		},
 		"news": {
