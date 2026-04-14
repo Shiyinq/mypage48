@@ -120,6 +120,7 @@ function createGalleryStore() {
 		 * Legacy subscribe method for backward compatibility
 		 */
 		subscribe: (fn: (val: GalleryState) => void) => {
+			fn(galleryState);
 			$effect.root(() => {
 				$effect(() => {
 					fn(galleryState);
@@ -138,6 +139,7 @@ export const isGalleryLoading = {
 		return galleryState.isLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(galleryState.isLoading);
 		$effect.root(() => {
 			$effect(() => fn(galleryState.isLoading));
 		});
@@ -205,6 +207,7 @@ function createTopTwoShotStore() {
 		 * Legacy subscribe method for backward compatibility
 		 */
 		subscribe: (fn: (val: TopTwoShotState) => void) => {
+			fn(topTwoShotState);
 			$effect.root(() => {
 				$effect(() => {
 					fn(topTwoShotState);
@@ -223,6 +226,7 @@ export const isTopTwoShotLoading = {
 		return topTwoShotState.isLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(topTwoShotState.isLoading);
 		$effect.root(() => {
 			$effect(() => fn(topTwoShotState.isLoading));
 		});

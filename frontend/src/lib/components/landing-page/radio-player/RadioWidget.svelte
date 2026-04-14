@@ -16,11 +16,11 @@
 	>
 		<RadioIcon
 			size={20}
-			class="transition-colors {isRadioOpen || $radioStore.isPlaying
+			class="transition-colors {isRadioOpen || radioStore.isPlaying
 				? 'text-red-600 dark:text-red-400'
 				: 'text-slate-600 dark:text-slate-400 group-hover:text-red-500'}"
 		/>
-		{#if $radioStore.isPlaying}
+		{#if radioStore.isPlaying}
 			<span class="absolute top-1.5 right-1.5 flex h-2 w-2">
 				<span
 					class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"

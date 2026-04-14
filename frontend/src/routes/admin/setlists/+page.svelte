@@ -14,8 +14,8 @@
 	const { t } = useTranslation();
 
 	// Store state
-	let setlistsList = $derived($adminStore.setlists.data);
-	let setlistsHasMore = $derived($adminStore.setlists.hasMore);
+	let setlistsList = $derived(adminStore.setlists.data);
+	let setlistsHasMore = $derived(adminStore.setlists.hasMore);
 
 	// Search state
 	let searchQuery = $state('');
@@ -65,7 +65,7 @@
 	}
 
 	function loadMoreSetlists() {
-		if (setlistsHasMore && !$isAdminSetlistsLoading) {
+		if (setlistsHasMore && !isAdminSetlistsLoading.value) {
 			adminStore.loadSetlists();
 		}
 	}
@@ -126,7 +126,7 @@
 		<div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<Music class="w-5 h-5 text-purple-500" />
-				{$t('admin.setlists.title')} ({$adminStore.setlists.total})
+				{$t('admin.setlists.title')} ({adminStore.setlists.total})
 			</h2>
 
 			<!-- Search Input -->
@@ -159,7 +159,7 @@
 		</button>
 	</div>
 
-	{#if isInitialLoad && $isAdminSetlistsLoading}
+	{#if isInitialLoad && isAdminSetlistsLoading.value}
 		<TableSkeleton
 			rows={10}
 			columns={[
@@ -180,7 +180,7 @@
 		<!-- Infinite Scroll Sentinel -->
 		{#if setlistsHasMore}
 			<div class="mt-4" use:infiniteScroll onintersect={loadMoreSetlists}>
-				{#if $isAdminSetlistsLoading}
+				{#if isAdminSetlistsLoading.value}
 					<TableSkeleton
 						rows={3}
 						columns={[

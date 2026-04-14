@@ -8,7 +8,7 @@
 
 	const { t } = useTranslation();
 
-	let initialLoading = $state($liveList.length === 0);
+	let initialLoading = $state(liveList.value.length === 0);
 
 	async function fetchLives() {
 		try {
@@ -58,7 +58,7 @@
 					</p>
 				</div>
 
-				{#if $liveList.length > 0}
+				{#if liveList.value.length > 0}
 					<div class="shrink-0 flex items-center">
 						<a
 							href="/jkt48/live/multiview"
@@ -87,7 +87,7 @@
 							<div
 								class="ml-2 w-5 h-5 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-black text-slate-500"
 							>
-								{$liveList.length}
+								{liveList.value.length}
 							</div>
 						</a>
 					</div>
@@ -97,6 +97,6 @@
 	</header>
 
 	<div class="max-w-7xl mx-auto px-0 md:px-0">
-		<LiveGrid liveList={$liveList} loading={$liveLoading} {initialLoading} />
+		<LiveGrid liveList={liveList.value} loading={liveLoading.value} {initialLoading} />
 	</div>
 </div>

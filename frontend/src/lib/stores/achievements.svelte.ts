@@ -61,6 +61,10 @@ function createAchievementsStore() {
 		 * Legacy subscribe method for backward compatibility
 		 */
 		subscribe: (fn: (val: { data: AchievementsResponse | null; error: string | null }) => void) => {
+			fn({
+				data: state.data,
+				error: state.error
+			});
 			$effect.root(() => {
 				$effect(() => {
 					fn({
@@ -82,6 +86,7 @@ export const isAchievementsLoading = {
 		return state.isLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(state.isLoading);
 		$effect.root(() => {
 			$effect(() => fn(state.isLoading));
 		});

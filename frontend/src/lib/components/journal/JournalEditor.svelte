@@ -26,7 +26,7 @@
 
 	// Markdown parsing
 	import { marked } from 'marked';
-	import DOMPurify from 'dompurify';
+	import DOMPurify from 'isomorphic-dompurify';
 
 	interface Props {
 		ticket: Ticket;

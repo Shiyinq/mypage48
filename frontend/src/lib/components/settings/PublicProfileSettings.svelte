@@ -1,78 +1,198 @@
 <script lang="ts">
-	import { Image as ImageIcon, ExternalLink } from 'lucide-svelte';
+	import { showToast, userProfile, isInitialDataLoaded, isUserProfileLoading } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { userProfile } from '$lib/stores/profile.svelte';
+	import { Share2, Copy, ExternalLink, LoaderCircle } from 'lucide-svelte';
+	import { ErrorState } from '$lib/components';
 
 	const { t } = useTranslation();
 
-	let shareUrl = $state('');
+	// Local UI state
+	let updatingStatus = $state(false);
 
-	$effect(() => {
-		if (typeof window !== 'undefined' && userProfile.data?.username) {
-			shareUrl = `${window.location.origin}/profile/${userProfile.data.username}`;
+	// Generate available years (from 2011 to current year)
+	const currentYear = new Date().getFullYear();
+	const availableYears = Array.from({ length: currentYear - 2011 + 1 }, (_, i) => currentYear - i);
+
+	const isPublic = $derived(userProfile.data?.isPublic || false);
+	const selectedPublicYearStr = $derived(userProfile.data?.publicYear?.toString() || '');
+
+	const updatePublicSettings = async (newIsPublic: boolean, yearPayload: number | null) => {
+		updatingStatus = true;
+		try {
+			await userProfile.updatePublicStatus(newIsPublic, yearPayload);
+			showToast($t('common.success'), 'success');
+		} catch (e) {
+			logger.error('Failed to update public status', e, { context: 'PublicProfileSettings' });
+			showToast($t('common.error'), 'error');
+		} finally {
+			updatingStatus = false;
 		}
-	});
+	};
 
-	function copyToClipboard() {
-		navigator.clipboard.writeText(shareUrl);
-	}
+	const togglePublicStatus = async () => {
+		if (updatingStatus) return;
+		const nextStatus = !isPublic;
+		const yearPayload = nextStatus
+			? selectedPublicYearStr === ''
+				? null
+				: parseInt(selectedPublicYearStr, 10)
+			: null;
+		await updatePublicSettings(nextStatus, yearPayload);
+	};
+
+	const handleYearChange = async (e: Event) => {
+		if (updatingStatus) return;
+		const target = e.target as HTMLSelectElement;
+		const newYearStr = target.value;
+		const yearPayload = newYearStr === '' ? null : parseInt(newYearStr, 10);
+
+		await updatePublicSettings(true, yearPayload);
+	};
+
+	const copyPublicLink = () => {
+		if (typeof window !== 'undefined' && userProfile.data?.username) {
+			navigator.clipboard.writeText(`${window.location.origin}/u/${userProfile.data.username}`);
+			showToast($t('settings.developer.copied'), 'success');
+		}
+	};
+
+	const retryGlobalProfileFetch = async () => {
+		try {
+			await userProfile.load();
+		} catch (e) {
+			logger.error('Failed to retry profile fetch', e, { context: 'PublicProfileSettings' });
+			showToast($t('profile.errorTitle'), 'error');
+		}
+	};
 </script>
 
-<div class="space-y-6">
-	<div class="flex items-center gap-3 mb-2">
-		<div class="p-2 bg-pink-100 dark:bg-pink-900/30 rounded-lg text-pink-600">
-			<ImageIcon class="w-5 h-5" />
+<div class="glass-panel p-6 rounded-3xl relative">
+	<!-- Header is now inside the card -->
+	<div class="flex items-center gap-3 mb-6">
+		<div
+			class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center shadow-sm"
+		>
+			<Share2 class="w-5 h-5 text-purple-600 dark:text-purple-400" />
 		</div>
 		<div>
-			<h3 class="text-lg font-bold text-slate-900 dark:text-white">
-				{$t('settings.profile.publicProfile')}
+			<h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+				{$t('settings.publicProfile.title')}
 			</h3>
-			<p class="text-sm text-slate-500 dark:text-slate-400">
-				{$t('settings.profile.publicProfileDesc')}
+			<p class="text-xs text-gray-500 dark:text-gray-400">
+				{$t('settings.publicProfile.subtitle')}
 			</p>
 		</div>
 	</div>
 
-	{#if userProfile.data?.username}
-		<div class="glass-panel p-6 rounded-2xl border-themed space-y-4">
-			<div class="flex items-center justify-between">
-				<span class="text-sm font-medium text-slate-500 dark:text-slate-400">
-					{$t('settings.profile.profileUrl')}
-				</span>
-				<a
-					href={shareUrl}
-					target="_blank"
-					class="text-xs font-bold text-pink-600 hover:text-pink-500 flex items-center gap-1 transition-colors"
-				>
-					{$t('settings.profile.viewProfile')}
-					<ExternalLink class="w-3 h-3" />
-				</a>
+	{#if !userProfile.data}
+		{#if isInitialDataLoaded && !isUserProfileLoading.value}
+			<div class="mb-4">
+				<ErrorState
+					title={$t('settings.publicProfile.loadErrorTitle')}
+					description={$t('settings.publicProfile.loadErrorDesc')}
+					onRetry={retryGlobalProfileFetch}
+				/>
 			</div>
-
-			<div class="flex items-center gap-2">
-				<div
-					class="flex-1 px-4 py-3 bg-slate-50 dark:bg-zinc-800/50 rounded-xl border border-slate-100 dark:border-white/5 font-mono text-sm text-slate-600 dark:text-slate-300 truncate"
-				>
-					{shareUrl}
+		{:else}
+			<div
+				class="bg-gray-50 dark:bg-zinc-800/50 rounded-2xl p-4 border border-gray-100 dark:border-zinc-700 mb-4 animate-pulse"
+			>
+				<div class="flex items-center justify-between">
+					<div>
+						<div class="h-4 w-40 bg-gray-200 dark:bg-zinc-700 rounded mb-2"></div>
+						<div class="h-3 w-64 bg-gray-200 dark:bg-zinc-700 rounded"></div>
+					</div>
+					<div class="w-12 h-7 bg-gray-200 dark:bg-zinc-700 rounded-full"></div>
 				</div>
-				<button
-					onclick={copyToClipboard}
-					class="px-4 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-sm font-bold hover:bg-black dark:hover:bg-slate-200 transition-all active:scale-95 cursor-pointer"
-				>
-					{$t('common.copy')}
-				</button>
 			</div>
-		</div>
+		{/if}
 	{:else}
 		<div
-			class="glass-panel p-6 rounded-2xl border-themed text-center space-y-2 opacity-60 grayscale bg-slate-50/50 dark:bg-zinc-800/20"
+			class="bg-gray-50 dark:bg-zinc-800/50 rounded-2xl p-4 border border-gray-100 dark:border-zinc-700 mb-4"
 		>
-			<p class="text-sm font-bold text-slate-900 dark:text-white">
-				{$t('settings.profile.usernameRequired')}
-			</p>
-			<p class="text-xs text-slate-500 dark:text-slate-400">
-				{$t('settings.profile.usernameRequiredDesc')}
-			</p>
+			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+				<div class="flex-1">
+					<p class="text-sm font-bold text-gray-800 dark:text-gray-200">
+						{$t('settings.publicProfile.enable')}
+					</p>
+					<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+						{$t('settings.publicProfile.description')}
+					</p>
+				</div>
+				<div class="flex items-center justify-end gap-3 w-full sm:w-auto">
+					{#if isPublic}
+						<select
+							value={selectedPublicYearStr}
+							onchange={handleYearChange}
+							disabled={updatingStatus}
+							class="p-2 text-xs font-bold bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer flex-1 sm:flex-none"
+						>
+							<option value="">{$t('settings.publicProfile.allYears')}</option>
+							<option value="-1">{$t('settings.publicProfile.thisYear')}</option>
+							{#each availableYears as year}
+								<option value={year.toString()}>{year}</option>
+							{/each}
+						</select>
+					{/if}
+					<button
+						onclick={togglePublicStatus}
+						disabled={updatingStatus}
+						class="w-12 h-7 rounded-full transition-colors relative cursor-pointer flex-shrink-0 {isPublic
+							? 'bg-purple-500'
+							: 'bg-gray-300 dark:bg-zinc-600'}"
+						aria-label="Toggle Public Status"
+					>
+						{#if updatingStatus}
+							<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+								<LoaderCircle class="w-4 h-4 text-white animate-spin" />
+							</div>
+						{:else}
+							<div
+								class="absolute top-1 w-5 h-5 bg-white rounded-full transition-transform shadow-sm {isPublic
+									? 'left-6'
+									: 'left-1'}"
+							></div>
+						{/if}
+					</button>
+				</div>
+			</div>
+
+			{#if isPublic}
+				<div class="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-700 animate-slide-down">
+					<p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest pl-1">
+						{$t('settings.publicProfile.yourLink')}
+					</p>
+					<div class="flex items-center gap-2">
+						<div
+							class="flex-1 bg-white dark:bg-zinc-900 py-2.5 px-3 rounded-xl border border-gray-200 dark:border-zinc-700 min-w-0"
+						>
+							<code class="text-xs font-mono text-purple-600 dark:text-purple-400 block truncate">
+								{typeof window !== 'undefined' ? window.location.origin : ''}/u/{userProfile.data
+									.username}
+							</code>
+						</div>
+						<div class="flex items-center gap-1.5 flex-shrink-0">
+							<a
+								href="/u/{userProfile.data.username}"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="p-2.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl hover:bg-purple-100 transition-colors cursor-pointer border border-purple-100/50 dark:border-purple-800/30"
+								title="Open Link"
+							>
+								<ExternalLink class="w-4 h-4" />
+							</a>
+							<button
+								onclick={copyPublicLink}
+								class="p-2.5 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-200 transition-colors cursor-pointer border border-gray-200/50 dark:border-zinc-700"
+								title="Copy Link"
+							>
+								<Copy class="w-4 h-4" />
+							</button>
+						</div>
+					</div>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>

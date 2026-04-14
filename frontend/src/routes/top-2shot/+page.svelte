@@ -23,8 +23,8 @@
 		totalTwoShotCount: 0
 	};
 
-	let stats = $derived($topTwoShotStore.data || defaultStats);
-	let error = $derived($topTwoShotStore.error);
+	let stats = $derived(topTwoShotStore.data || defaultStats);
+	let error = $derived(topTwoShotStore.error);
 
 	onMount(async () => {
 		mounted = true;
@@ -36,7 +36,7 @@
 	async function loadData() {
 		// If data exists and is not expired, no need to show loading
 		// Store load check handles cache expiration check too, but we can double check here or just call load()
-		if ($topTwoShotStore.data && !isCacheExpired($topTwoShotStore.lastUpdated)) return;
+		if (topTwoShotStore.data && !isCacheExpired(topTwoShotStore.lastUpdated)) return;
 
 		try {
 			await topTwoShotStore.load();
@@ -62,7 +62,7 @@
 		/>
 	</div>
 
-	{#if $isTopTwoShotLoading || !mounted}
+	{#if isTopTwoShotLoading.value || !mounted}
 		<Top2ShotSkeleton />
 	{:else if error && stats.ranking.length === 0}
 		<ErrorState

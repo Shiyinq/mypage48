@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { get } from 'svelte/store';
 	import { page } from '$app/stores';
 	import SEO from '$lib/components/SEO.svelte';
 	import { fly } from 'svelte/transition';
@@ -91,7 +90,7 @@
 		const interval = setInterval(async () => {
 			await liveStore.loadLiveList(true);
 			// Sync slots with new data from liveList (to update viewer counts and detect offline)
-			const currentLive = get(liveList);
+			const currentLive = liveList.value;
 
 			let hasGoneOffline = false;
 			const updatedSlots = slots
@@ -289,7 +288,7 @@
 			}
 		}
 	});
-	let activeStreams = $derived($liveList);
+	let activeStreams = $derived(liveList.value);
 	let filteredStreams = $derived(
 		activeStreams.filter(
 			(s) =>
@@ -301,11 +300,12 @@
 	$effect(() => {
 		if (
 			slots.length === 0 &&
-			$liveList.length > 0 &&
+			(liveList.value?.length ?? 0) > 0 &&
 			typeof localStorage !== 'undefined' &&
 			!localStorage.getItem('mypage48_multiview_slots')
 		) {
-			const firstLive = $liveList.find((l) => l.platform === 'idn') || $liveList[0];
+			const firstLive =
+				(liveList.value || []).find((l) => l.platform === 'idn') || liveList.value?.[0];
 			if (firstLive) {
 				slots = [firstLive];
 				setFocusedSlot(0);
@@ -473,7 +473,7 @@
 					{/if}
 				</div>
 				<div class="flex-1 overflow-y-auto p-2 space-y-1">
-					{#if $liveLoading && activeStreams.length === 0}
+					{#if liveLoading.value && activeStreams.length === 0}
 						{#each Array(6)}
 							<div class="h-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl animate-pulse"></div>
 						{/each}

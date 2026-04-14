@@ -88,7 +88,7 @@
 	}
 
 	function getEventsForDay(date: Date) {
-		return $calendarEvents.filter((e) => {
+		return calendarEvents.value.filter((e) => {
 			const eDate = new Date(e.date);
 			return (
 				eDate.getDate() === date.getDate() &&
@@ -121,7 +121,7 @@
 		}
 	});
 	let currentMonthEvents = $derived(
-		$calendarEvents.filter((e) => {
+		calendarEvents.value.filter((e) => {
 			const d = new Date(e.date);
 			return d.getMonth() === month - 1 && d.getFullYear() === year;
 		})
@@ -223,7 +223,7 @@
 			</div>
 
 			<!-- Monthly Stats -->
-			{#if !$calendarLoading}
+			{#if !calendarLoading.value}
 				<div
 					class="hidden lg:flex items-center gap-2 md:gap-3 ml-2 md:ml-4 mr-auto text-xs font-medium text-gray-500 dark:text-gray-400"
 				>
@@ -300,7 +300,7 @@
 		</div>
 
 		<!-- Calendar Content -->
-		{#if $calendarLoading && $calendarEvents.length === 0}
+		{#if calendarLoading.value && calendarEvents.value.length === 0}
 			<div class="flex-1 flex flex-col min-h-0 animate-pulse">
 				<!-- Skeleton Header -->
 				<div

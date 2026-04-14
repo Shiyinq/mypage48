@@ -1,122 +1,185 @@
 <script lang="ts">
+	import { ticketsStore, showToast, storageStore } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
+	import { resetDashboard } from '$lib/stores/dashboard.svelte';
+	import { invalidateTheater, setlistsStore } from '$lib/stores/theater.svelte';
 	import { onMount } from 'svelte';
-	import {
-		Upload,
-		CheckCircle2,
-		AlertCircle,
-		Ticket as TicketIcon,
-		RefreshCw,
-		Trash2,
-		Camera,
-		PlusCircle
-	} from 'lucide-svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { extractTicketData } from '$lib/apis/llm';
+
+	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
+	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
+
+	import { ScanLine, Keyboard } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { showToast, setlistsStore, ticketsStore } from '$lib/stores';
-	import { extractTicketData } from '$lib/apis/llm';
-	import { THEATER_ROWS } from '$lib/constants/time';
-	import { SHOW_IMAGES } from '$lib/constants/shows';
-	import { page } from '$app/stores';
-	import { LoaderCircle } from 'lucide-svelte';
-	import type { Ticket } from '$lib/types';
-	import type { Setlist } from '$lib/apis/setlists';
+	import { PageHeader } from '$lib/components';
+	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
+	import { UploadModeSelection, UploadAnalyzing, TicketImagePreview } from '$lib/components/upload';
+	import TicketForm from '$lib/components/upload/TicketForm.svelte';
+	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
+	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
 
 	const { t } = useTranslation();
 
+	// Constants
 	const SHOW_OPTIONS = SHOW_IMAGES.map((s) => s.title);
 
-	let mode: 'CHOOSING' | 'SCANNING' | 'MANUAL' | 'ANALYZING' | 'PREVIEW' | 'SUCCESS' =
-		$state('CHOOSING');
-	let fileInput: HTMLInputElement | undefined = $state();
-	let videoEl: HTMLVideoElement | undefined = $state();
-	let canvasEl: HTMLCanvasElement | undefined = $state();
-	let stream: MediaStream | null = $state(null);
+	onMount(() => {
+		setlistsStore.load();
+	});
 
-	// Ticket Data state - Aligned with Partial<Ticket>
-	let ticketData = $state<Partial<Ticket>>({
+	// App State
+	let mode = $state<'SELECTION' | 'ANALYSING' | 'EDITING'>('SELECTION');
+	let image = $state<string | null>(null);
+	let isSubmitting = $state(false);
+
+	// 2-Shot
+	let showTwoShot = $state(false);
+	let twoShotImage = $state<string | null>(null);
+
+	// Validation alert modal state
+	let showValidationAlert = $state(false);
+	let validationAlertMessage = $state('');
+
+	// Temporary state matching Ticket structure but editable
+	let formData = $state({
 		event: {
 			title: '',
-			date: '', // YYYY-MM-DD
+			date: new Date().toISOString().split('T')[0],
 			day: '',
 			time: '',
+			gate_open: '',
 			venue: 'JKT48 Theater'
 		},
 		seat: {
 			section: '',
 			number: ''
 		},
-		imageUrl: ''
-	});
-
-	onMount(() => {
-		const urlMode = $page.url.searchParams.get('mode');
-		if (urlMode === 'scan') {
-			mode = 'SCANNING';
-			startCamera();
-		} else if (urlMode === 'manual') {
-			mode = 'MANUAL';
+		ticket_id: '',
+		price: 200000,
+		currency: 'IDR',
+		notes: '',
+		rules: { refund_allowed: false, exchange_allowed: false },
+		two_shot: {
+			imageUrl: '',
+			member_name: '',
+			type: 'Roulette' as 'Roulette' | 'Birthday',
+			price: 100000
 		}
 	});
 
-	const startCamera = async () => {
-		try {
-			stream = await navigator.mediaDevices.getUserMedia({
-				video: { facingMode: 'environment' }
-			});
-			if (videoEl) videoEl.srcObject = stream;
-		} catch (_err) {
-			showToast($t('upload.cameraError'), 'error');
-			mode = 'CHOOSING';
+	let fileInputRef: HTMLInputElement | undefined = $state();
+	let twoShotInputRef: HTMLInputElement | undefined = $state();
+
+	// Navigation effects
+	$effect(() => {
+		const modeParam = $page.url.searchParams.get('mode');
+		if (modeParam === 'manual' && mode !== 'EDITING' && !isSubmitting) {
+			handleManualEntry();
+		} else if (modeParam === 'scan' && mode !== 'SELECTION') {
+			mode = 'SELECTION';
 		}
-	};
+	});
 
-	const stopCamera = () => {
-		if (stream) {
-			stream.getTracks().forEach((track) => track.stop());
-			stream = null;
+	// Validation
+	let isFormValid = $derived(
+		!!(
+			formData.event.title &&
+			formData.event.date &&
+			formData.event.time &&
+			formData.seat.section &&
+			formData.seat.number &&
+			formData.price > 0 &&
+			formData.ticket_id &&
+			(!showTwoShot ||
+				(showTwoShot &&
+					formData.two_shot.member_name &&
+					formData.two_shot.price !== null &&
+					formData.two_shot.price >= 0 &&
+					twoShotImage))
+		)
+	);
+
+	// Reactive Day Calculation
+	$effect(() => {
+		if (formData.event.date) {
+			const newDay = calculateDayFromDate(formData.event.date);
+			if (newDay && newDay !== formData.event.day) {
+				formData.event.day = newDay;
+			}
 		}
+	});
+
+	// Reactive Gate Open Calculation (30 mins before Show Time)
+	$effect(() => {
+		if (formData.event.time) {
+			const newGateOpen = calculateGateOpenTime(formData.event.time);
+			if (newGateOpen && newGateOpen !== formData.event.gate_open) {
+				formData.event.gate_open = newGateOpen;
+			}
+		}
+	});
+
+	// Normalization functions
+	const normalizeTime = (raw: string | undefined): string => {
+		if (!raw) return '';
+		const clean = raw.trim().toUpperCase();
+		const amPmMatch = clean.match(/(\d{1,2})[:.](\d{2})\s*(AM|PM)?/);
+		if (amPmMatch) {
+			let [, h, m, period] = amPmMatch;
+			let hours = parseInt(h, 10);
+			if (period === 'PM' && hours < 12) hours += 12;
+			if (period === 'AM' && hours === 12) hours = 0;
+			return `${hours.toString().padStart(2, '0')}:${m}`;
+		}
+		const simpleMatch = clean.match(/(\d{1,2})[:.](\d{2})/);
+		return simpleMatch ? `${simpleMatch[1].padStart(2, '0')}:${simpleMatch[2]}` : '';
 	};
 
-	const captureImage = () => {
-		if (!videoEl || !canvasEl) return;
-		const context = canvasEl.getContext('2d');
-		if (!context) return;
-
-		canvasEl.width = videoEl.videoWidth;
-		canvasEl.height = videoEl.videoHeight;
-		context.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-
-		const base64 = canvasEl.toDataURL('image/jpeg', 0.8);
-		stopCamera();
-		analyzeImage(base64);
-	};
-
-	const handleFileUpload = (e: Event) => {
-		const target = e.target as HTMLInputElement;
-		const file = target.files?.[0];
-		if (!file) return;
+	const processFile = (file: File) => {
+		// Validate file before processing
+		const validation = validateImageFile(file);
+		if (!validation.valid) {
+			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			showValidationAlert = true;
+			return;
+		}
 
 		const reader = new FileReader();
-		reader.onload = (event) => {
-			const base64 = event.target?.result as string;
-			analyzeImage(base64);
+		reader.onloadend = () => {
+			image = reader.result as string;
+			if (mode === 'SELECTION') analyzeImage(image);
 		};
 		reader.readAsDataURL(file);
 	};
 
+	const handleFileChange = (e: Event) => {
+		const target = e.target as HTMLInputElement;
+		const file = target.files?.[0];
+		if (!file) return;
+
+		processFile(file);
+		target.value = ''; // Reset input
+	};
+
+	const handleFileDrop = (file: File) => {
+		processFile(file);
+	};
+
 	const analyzeImage = async (base64: string) => {
-		mode = 'ANALYZING';
+		mode = 'ANALYSING';
 		try {
 			const result = await extractTicketData(base64);
 			await setlistsStore.load();
 
 			const currentSetlists = setlistsStore.data
-				? setlistsStore.data.map((s: Setlist) => s.title)
+				? setlistsStore.data.map((s) => s.title)
 				: SHOW_OPTIONS;
 
 			const detectedTitle =
-				currentSetlists.find((opt: string) =>
+				currentSetlists.find((opt) =>
 					(result.title || '').toLowerCase().includes(opt.toLowerCase())
 				) || '';
 			const inputChar = (result.section || '').toUpperCase().trim().charAt(0);
@@ -124,340 +187,212 @@
 				? inputChar
 				: '';
 
-			ticketData = {
-				event: {
-					title: detectedTitle,
-					date: result.date || new Date().toISOString().split('T')[0],
-					day: result.day || '',
-					time: result.time || '',
-					venue: 'JKT48 Theater'
-				},
-				seat: {
-					section: detectedRow,
-					number: result.number || ''
-				},
-				imageUrl: base64
-			};
-			mode = 'PREVIEW';
-		} catch {
-			showToast($t('upload.ocrError'), 'error');
-			mode = 'CHOOSING';
+			formData.ticket_id = result.ticket_id || '';
+			formData.price = result.price || 200000;
+			formData.event.title = detectedTitle;
+			formData.event.date = result.date || formData.event.date;
+			formData.event.day = result.day || calculateDayFromDate(result.date || formData.event.date);
+			formData.event.time = normalizeTime(result.time);
+			formData.event.gate_open =
+				normalizeTime(result.gate_open) || calculateGateOpenTime(normalizeTime(result.time));
+			formData.seat.section = detectedRow;
+			formData.seat.number = result.number || '';
+
+			mode = 'EDITING';
+		} catch (e) {
+			logger.error('Image analysis failed', e, { context: 'UploadPage' });
+			showToast($t('forms.analysisFailed'), 'error');
+			mode = 'EDITING';
 		}
 	};
 
-	const handleSubmit = async () => {
-		try {
-			await ticketsStore.create(ticketData);
-			mode = 'SUCCESS';
-			showToast($t('upload.success'), 'success');
-		} catch {
-			showToast($t('upload.saveError'), 'error');
-		}
+	const handleTwoShotFileChange = (e: Event) => {
+		const target = e.target as HTMLInputElement;
+		const file = target.files?.[0];
+		if (!file) return;
+
+		processTwoShotFile(file);
+		target.value = ''; // Reset input
 	};
 
-	const reset = () => {
-		stopCamera();
-		mode = 'CHOOSING';
-		ticketData = {
-			event: { title: '', date: '', day: '', time: '', venue: 'JKT48 Theater' },
-			seat: { section: '', number: '' },
-			imageUrl: ''
+	const handleTwoShotDrop = (file: File) => {
+		processTwoShotFile(file);
+	};
+
+	const processTwoShotFile = (file: File) => {
+		// Validate file before processing
+		const validation = validateImageFile(file);
+		if (!validation.valid) {
+			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			showValidationAlert = true;
+			return;
+		}
+
+		const reader = new FileReader();
+		reader.onloadend = () => {
+			twoShotImage = reader.result as string;
 		};
+		reader.readAsDataURL(file);
+	};
+
+	const onCancel = () => goto('/');
+
+	const handleFormSubmit = async () => {
+		// Final validation check before submit
+		if (!isFormValid) return;
+
+		isSubmitting = true;
+		try {
+			// Upload images to storage if present
+			let ticketImageUrl: string | undefined;
+			let twoShotImageUrl: string | undefined;
+
+			if (image) {
+				const uploadResult = await storageStore.uploadImage(image, 'ticket');
+				ticketImageUrl = uploadResult.filename;
+			}
+
+			if (showTwoShot && twoShotImage) {
+				const uploadResult = await storageStore.uploadImage(twoShotImage, 'twoshot');
+				twoShotImageUrl = uploadResult.filename;
+			}
+
+			// Prepare object for API
+			const payload = {
+				ticket_id: formData.ticket_id || `MANUAL-${Date.now()}`,
+				event: formData.event,
+				seat: { ...formData.seat, number: Number(formData.seat.number) },
+				price: Number(formData.price),
+				currency: 'IDR',
+				rules: formData.rules,
+				imageUrl: cleanseStorageUrl(ticketImageUrl),
+				notes: cleanseMarkdown(formData.notes),
+				two_shot: showTwoShot
+					? {
+							imageUrl: cleanseStorageUrl(twoShotImageUrl),
+							member_name: formData.two_shot.member_name,
+							type: formData.two_shot.type,
+							price: Number(formData.two_shot.price)
+						}
+					: undefined
+			};
+
+			// Use store action (handles API + cache invalidation)
+			await ticketsStore.create(payload);
+
+			// Invalidate dashboard and theater cache
+			resetDashboard();
+			invalidateTheater();
+
+			showToast($t('upload.uploadSuccess'), 'success');
+			goto('/');
+		} catch (e) {
+			logger.error('Ticket upload failed', e, { context: 'UploadPage' });
+			showToast($t('upload.uploadError'), 'error');
+		} finally {
+			isSubmitting = false;
+		}
+	};
+
+	const handleManualEntry = () => {
+		mode = 'EDITING';
+		image = null;
 	};
 </script>
 
-<SEO title={$t('upload.title')} path="/upload" />
+<SEO title={$t('upload.title')} path="/upload" description={$t('seo.upload')} />
 
-<div class="max-w-4xl mx-auto px-4 py-8">
-	<div class="space-y-8">
-		<!-- Header -->
-		<div class="text-center space-y-2">
-			<h1 class="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-				{$t('upload.title')}
-			</h1>
-			<p class="text-slate-500 dark:text-slate-400 font-medium tracking-wide">
-				{$t('upload.subtitle')}
-			</p>
-		</div>
-
-		<div class="glass-panel p-6 md:p-10 rounded-[2.5rem] border-themed relative overflow-hidden">
-			{#if mode === 'CHOOSING'}
-				<div in:fade class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-					<button
-						onclick={() => {
-							mode = 'SCANNING';
-							startCamera();
-						}}
-						class="group flex flex-col items-center justify-center p-8 rounded-[2rem] bg-pink-50 dark:bg-pink-900/10 border-2 border-dashed border-pink-200 dark:border-pink-500/20 hover:border-pink-500 transition-all space-y-4"
-					>
-						<div
-							class="w-16 h-16 rounded-full bg-pink-500 text-white flex items-center justify-center shadow-lg shadow-pink-500/20 group-hover:scale-110 transition-transform"
-						>
-							<Camera class="w-8 h-8" />
-						</div>
-						<div class="text-center">
-							<h3 class="font-bold text-slate-900 dark:text-white">{$t('upload.capture')}</h3>
-							<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-								{$t('upload.captureDesc')}
-							</p>
-						</div>
-					</button>
-
-					<button
-						onclick={() => fileInput?.click()}
-						class="group flex flex-col items-center justify-center p-8 rounded-[2rem] bg-slate-50 dark:bg-zinc-800/10 border-2 border-dashed border-slate-200 dark:border-white/10 hover:border-slate-500 transition-all space-y-4"
-					>
-						<div
-							class="w-16 h-16 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform"
-						>
-							<Upload class="w-8 h-8" />
-						</div>
-						<div class="text-center">
-							<h3 class="font-bold text-slate-900 dark:text-white">{$t('upload.upload')}</h3>
-							<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-								{$t('upload.uploadDesc')}
-							</p>
-						</div>
-						<input
-							type="file"
-							accept="image/*"
-							class="hidden"
-							bind:this={fileInput}
-							onchange={handleFileUpload}
-						/>
-					</button>
-
-					<div class="md:col-span-2 pt-4 border-t border-themed text-center">
-						<button
-							onclick={() => (mode = 'MANUAL')}
-							class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-						>
-							<PlusCircle class="w-4 h-4 text-pink-500" />
-							{$t('upload.manualLink')}
-						</button>
-					</div>
-				</div>
-			{:else if mode === 'SCANNING'}
-				<div in:fade class="space-y-6 flex flex-col items-center">
-					<div
-						class="relative w-full aspect-square md:aspect-video bg-black rounded-[2rem] overflow-hidden"
-					>
-						<!-- eslint-disable-next-line jsx-a11y/media-has-caption -->
-						<video bind:this={videoEl} autoplay playsinline class="w-full h-full object-cover"
-						></video>
-						<div
-							class="absolute inset-0 border-2 border-white/30 m-8 rounded-xl pointer-events-none"
-						>
-							<div class="absolute inset-0 flex items-center justify-center">
-								<div class="w-64 h-96 border-2 border-pink-500 rounded-lg animate-pulse"></div>
-							</div>
-						</div>
-					</div>
-
-					<div class="flex items-center gap-4">
-						<button
-							onclick={reset}
-							class="px-6 py-3 rounded-xl font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
-						>
-							{$t('common.cancel')}
-						</button>
-						<button
-							onclick={captureImage}
-							class="px-10 py-3 rounded-xl bg-pink-500 text-white font-black uppercase tracking-widest shadow-lg shadow-pink-500/20 active:scale-95 transition-all"
-						>
-							{$t('upload.snap')}
-						</button>
-					</div>
-					<canvas bind:this={canvasEl} class="hidden"></canvas>
-				</div>
-			{:else if mode === 'ANALYZING'}
-				<div
-					in:fade
-					class="py-20 flex flex-col items-center justify-center space-y-6 text-slate-500 dark:text-slate-400"
-				>
-					<div class="relative">
-						<LoaderCircle class="w-16 h-16 animate-spin text-pink-500 mx-auto" />
-						<div class="absolute inset-0 m-auto w-6 h-6 animate-reverse-spin">
-							<RefreshCw class="w-full h-full text-pink-300" />
-						</div>
-					</div>
-					<div class="text-center space-y-1">
-						<p class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-widest">
-							{$t('upload.analyzing')}
-						</p>
-						<p class="text-xs font-medium uppercase tracking-widest opacity-60">
-							{$t('upload.analyzingDesc')}
-						</p>
-					</div>
-				</div>
-			{:else if mode === 'PREVIEW' || mode === 'MANUAL'}
-				<div in:fly={{ y: 20 }} class="space-y-8">
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-						{#if ticketData.imageUrl}
-							<div class="order-2 md:order-1 space-y-3">
-								<p class="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-									{$t('upload.preview')}
-								</p>
-								<div class="rounded-3xl overflow-hidden shadow-2xl border-themed group relative">
-									<img
-										src={ticketData.imageUrl}
-										alt="Ticket Preview"
-										class="w-full aspect-[3/4] object-cover"
-									/>
-									<button
-										onclick={() => (ticketData.imageUrl = '')}
-										class="absolute top-4 right-4 p-2 bg-black/50 hover:bg-red-500 text-white rounded-xl backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
-									>
-										<Trash2 class="w-4 h-4" />
-									</button>
-								</div>
-							</div>
-						{/if}
-
-						<div class="order-1 md:order-2 space-y-6 pt-4">
-							<div class="grid grid-cols-1 gap-6">
-								<!-- Show Select -->
-								<div class="space-y-2">
-									<label
-										for="show"
-										class="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2"
-									>
-										<TicketIcon class="w-3 h-3 text-pink-500" />
-										{$t('upload.label.show')}
-									</label>
-									<select
-										id="show"
-										bind:value={ticketData.event!.title}
-										class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800/50 border border-themed rounded-2xl text-sm font-bold focus:ring-2 focus:ring-pink-500/20 transition-all"
-									>
-										{#each setlistsStore.data || SHOW_OPTIONS as opt}
-											{@const val = typeof opt === 'string' ? opt : opt.title}
-											<option value={val}>{val}</option>
-										{/each}
-									</select>
-								</div>
-
-								<!-- Date -->
-								<div class="space-y-2">
-									<label
-										for="date"
-										class="text-[10px] font-black uppercase text-slate-400 tracking-widest"
-									>
-										{$t('upload.label.date')}
-									</label>
-									<input
-										id="date"
-										type="date"
-										bind:value={ticketData.event!.date}
-										class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800/50 border border-themed rounded-2xl text-sm font-bold focus:ring-2 focus:ring-pink-500/20 transition-all"
-									/>
-								</div>
-
-								<div class="grid grid-cols-2 gap-4">
-									<div class="space-y-2">
-										<label
-											for="row"
-											class="text-[10px] font-black uppercase text-slate-400 tracking-widest"
-										>
-											{$t('upload.label.row')}
-										</label>
-										<select
-											id="row"
-											bind:value={ticketData.seat!.section}
-											class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800/50 border border-themed rounded-2xl text-sm font-bold"
-										>
-											{#each THEATER_ROWS as row}
-												<option value={row}>{row}</option>
-											{/each}
-										</select>
-									</div>
-									<div class="space-y-2">
-										<label
-											for="number"
-											class="text-[10px] font-black uppercase text-slate-400 tracking-widest"
-										>
-											{$t('upload.label.seatNumber')}
-										</label>
-										<input
-											id="number"
-											type="text"
-											bind:value={ticketData.seat!.number}
-											class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800/50 border border-themed rounded-2xl text-sm font-bold"
-										/>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div class="flex items-center justify-end gap-3 pt-6 border-t border-themed">
-						<button
-							onclick={reset}
-							class="px-6 py-3 rounded-xl font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-						>
-							{$t('common.cancel')}
-						</button>
-						<button
-							onclick={handleSubmit}
-							class="px-10 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all cursor-pointer"
-						>
-							{$t('upload.save')}
-						</button>
-					</div>
-				</div>
-			{:else if mode === 'SUCCESS'}
-				<div in:fade class="py-10 flex flex-col items-center justify-center space-y-6 text-center">
-					<div class="relative">
-						<div class="absolute inset-0 bg-emerald-500 blur-2xl opacity-20 animate-pulse"></div>
-						<CheckCircle2 class="w-24 h-24 text-emerald-500 relative z-10" />
-					</div>
-					<div class="space-y-2">
-						<h2
-							class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter"
-						>
-							{$t('upload.successTitle')}
-						</h2>
-						<p class="text-slate-500 dark:text-slate-400 max-w-xs mx-auto font-medium">
-							{$t('upload.successDesc')}
-						</p>
-					</div>
-					<div class="flex items-center gap-3 pt-4">
-						<button
-							onclick={reset}
-							class="px-8 py-3 rounded-xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-white font-bold hover:bg-slate-100 transition-all cursor-pointer"
-						>
-							{$t('upload.addAnother')}
-						</button>
-						<a
-							href="/history"
-							class="px-8 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold hover:bg-black transition-all"
-						>
-							{$t('upload.viewHistory')}
-						</a>
-					</div>
-				</div>
-			{/if}
-		</div>
-
-		<div class="flex items-center gap-2 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
-			<AlertCircle class="w-5 h-5 text-amber-500 shrink-0" />
-			<p class="text-xs font-bold text-amber-600 dark:text-amber-400 leading-relaxed">
-				{$t('upload.privacyNotice')}
-			</p>
-		</div>
-	</div>
+<!-- Page Header (Hidden visually but kept for MobileHeader store sync) -->
+<div class="hidden max-w-5xl mx-auto pt-4 sm:pt-6 px-4 mb-4">
+	<PageHeader
+		title={$t('upload.title')}
+		subtitle={$t('upload.subtitle')}
+		icon={ScanLine}
+		theme="red"
+	/>
 </div>
 
-<style>
-	@keyframes reverse-spin {
-		from {
-			transform: rotate(360deg);
-		}
-		to {
-			transform: rotate(0deg);
-		}
-	}
-	.animate-reverse-spin {
-		animation: reverse-spin 2s linear infinite;
-	}
-</style>
+{#if mode === 'SELECTION'}
+	<UploadModeSelection
+		onScanClick={() => fileInputRef?.click()}
+		onManualClick={handleManualEntry}
+		{onCancel}
+	/>
+{/if}
+
+{#if mode === 'ANALYSING'}
+	<UploadAnalyzing />
+{/if}
+
+{#if mode === 'EDITING'}
+	<div class="max-w-5xl mx-auto pt-0 px-4 pb-24 animate-fade-in">
+		<div class="mb-6 flex items-center justify-between">
+			<div class="flex items-center gap-3">
+				<div class="p-2 rounded-xl bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+					<Keyboard class="w-5 h-5" />
+				</div>
+				<div>
+					<h2 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+						{$t('forms.newTicket')}
+					</h2>
+					<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+						{$t('forms.addToCollection')}
+					</p>
+				</div>
+			</div>
+			<button
+				onclick={onCancel}
+				class="text-[10px] sm:text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer whitespace-nowrap"
+			>
+				{$t('forms.cancel')}
+			</button>
+		</div>
+
+		<div class="grid gap-8 lg:grid-cols-2">
+			<!-- Image Preview -->
+			<div class="flex flex-col gap-4">
+				<TicketImagePreview
+					{image}
+					onChangePhoto={() => fileInputRef?.click()}
+					ondrop={handleFileDrop}
+				/>
+			</div>
+
+			<!-- FORM -->
+			<TicketForm
+				bind:formData
+				bind:isSubmitting
+				{isFormValid}
+				bind:showTwoShot
+				bind:twoShotImage
+				onsubmit={handleFormSubmit}
+				onphotoClick={() => twoShotInputRef?.click()}
+				ondrop={handleTwoShotDrop}
+			/>
+		</div>
+	</div>
+{/if}
+
+<input
+	type="file"
+	bind:this={fileInputRef}
+	class="hidden"
+	accept="image/*"
+	onchange={handleFileChange}
+/>
+<input
+	type="file"
+	accept="image/*"
+	class="hidden"
+	id="two-shot-photo"
+	bind:this={twoShotInputRef}
+	onchange={handleTwoShotFileChange}
+/>
+
+<!-- Validation Alert Modal -->
+<ValidationAlertModal
+	show={showValidationAlert}
+	title={$t('validation.alert.title')}
+	message={validationAlertMessage}
+	onClose={() => (showValidationAlert = false)}
+/>

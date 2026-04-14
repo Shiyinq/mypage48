@@ -31,7 +31,7 @@
 	const { t } = useTranslation();
 
 	let SHOW_OPTIONS = $derived(
-		$setlistsStore.data ? $setlistsStore.data.map((s) => s.title) : SHOW_IMAGES.map((s) => s.title)
+		setlistsStore.data ? setlistsStore.data.map((s) => s.title) : SHOW_IMAGES.map((s) => s.title)
 	);
 
 	onMount(() => {

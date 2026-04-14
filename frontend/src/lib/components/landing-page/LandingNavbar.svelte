@@ -92,7 +92,7 @@
 	>
 		{#snippet item({ item, isActive })}
 			{item.label}
-			{#if item.id === 'live' && $liveList.length > 0}
+			{#if item.id === 'live' && (liveList.value?.length ?? 0) > 0}
 				<span class="relative flex h-2 w-2">
 					<span
 						class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive
@@ -118,34 +118,19 @@
 		{#if isAuthenticated.value}
 			<a
 				href="/"
-				class="idol-gradient text-white px-6 py-2 rounded-full font-black text-[11px] uppercase tracking-widest shadow-xl shadow-red-500/20 hover:shadow-red-500/40 hover:-translate-y-0.5 transition-all text-center flex items-center justify-center gap-2 group"
+				class="flex px-4 sm:px-6 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-bold text-xs sm:text-sm hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all items-center gap-2 group"
 			>
 				{$t('nav.dashboard')}
+				<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
 			</a>
-		{:else}
-			<div class="hidden md:flex items-center gap-2">
-				{#if !isAuthenticated.value && showLogin}
-					<a
-						href="/login"
-						class="px-5 py-2 text-xs font-black uppercase tracking-widest text-gray-600 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-					>
-						{$t('auth.login.title')}
-					</a>
-					<a
-						href="/register"
-						class="idol-gradient text-white px-6 py-2 rounded-full font-black text-[11px] uppercase tracking-widest shadow-lg shadow-red-500/20 hover:shadow-red-500/40 hover:-translate-y-0.5 transition-all"
-					>
-						{$t('auth.register.title')}
-					</a>
-				{:else if isAuthenticated.value}
-					<a
-						href="/"
-						class="px-5 py-2 text-xs font-black uppercase tracking-widest text-gray-600 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-					>
-						{$t('nav.dashboard')}
-					</a>
-				{/if}
-			</div>
+		{:else if showLogin}
+			<a
+				href="/login"
+				class="flex px-4 sm:px-6 py-2 rounded-full bg-red-600 text-white font-bold text-xs sm:text-sm shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-0.5 transition-all items-center gap-2 group"
+			>
+				{$t('auth.login.signIn')}
+				<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
+			</a>
 		{/if}
 
 		<!-- Mobile Menu Toggle -->
@@ -191,7 +176,7 @@
 					>
 						<div class="flex items-center gap-3">
 							<span class="text-sm font-black uppercase tracking-[0.2em]">{item.label}</span>
-							{#if item.id === 'live' && $liveList.length > 0}
+							{#if item.id === 'live' && (liveList.value?.length ?? 0) > 0}
 								<span class="relative flex h-2.5 w-2.5">
 									<span
 										class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive
