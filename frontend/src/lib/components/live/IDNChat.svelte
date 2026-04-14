@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { onMount, onDestroy, tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
-	import { MessageCircle, Trophy, RefreshCw } from 'lucide-svelte';
+	import { MessageCircle, Trophy } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
 	import { broadcastGift } from '$lib/stores/gift';
@@ -39,34 +39,57 @@
 		return url;
 	}
 
+	let lastConnectedRoom = '';
+
 	function connect() {
 		if (!roomIdentifier) return;
+		if (
+			socket &&
+			lastConnectedRoom === roomIdentifier &&
+			(socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)
+		) {
+			return; // Already connecting or connected to this room
+		}
+
+		lastConnectedRoom = roomIdentifier;
+
+		// Cleanup existing socket if any to prevent race conditions
+		if (socket) {
+			socket.onopen = null;
+			socket.onmessage = null;
+			socket.onclose = null;
+			socket.onerror = null;
+			socket.close();
+		}
 
 		status = 'connecting';
-		socket = new WebSocket('wss://chat.idn.app/');
+		const currentSocket = new WebSocket('wss://chat.idn.app/');
+		socket = currentSocket;
 
-		socket.onopen = () => {
+		currentSocket.onopen = () => {
+			if (socket !== currentSocket) return; // Stale connection
 			status = 'connected';
 			const userId = Math.floor(Math.random() * 1000000);
 			const timestamp = Date.now();
 			const uuid = crypto.randomUUID();
 
-			socket?.send(`CAP LS 302\n`);
-			socket?.send(`NICK idn-${userId}-${timestamp}\n`);
-			socket?.send(`USER ${userId}_${uuid} 0 * null\n`);
-			socket?.send(`CAP REQ :idn.app/tags idn.app/commands idn.app/membership\n`);
-			socket?.send(`CAP END\n`);
+			currentSocket.send(`CAP LS 302\n`);
+			currentSocket.send(`NICK idn-${userId}-${timestamp}\n`);
+			currentSocket.send(`USER ${userId}_${uuid} 0 * null\n`);
+			currentSocket.send(`CAP REQ :idn.app/tags idn.app/commands idn.app/membership\n`);
+			currentSocket.send(`CAP END\n`);
 		};
 
-		socket.onmessage = (event) => {
+		currentSocket.onmessage = (event) => {
+			if (socket !== currentSocket) return;
 			const data = event.data;
 			if (data.startsWith('PING')) {
 				if (status !== 'connected') status = 'connected';
-				socket?.send(data.replace('PING', 'PONG') + '\n');
+				currentSocket.send(data.replace('PING', 'PONG') + '\n');
 				return;
 			}
 			if (data.includes(':Welcome')) {
-				socket?.send(`@label=1 JOIN #${roomIdentifier}\n`);
+				currentSocket.send(`@label=1 JOIN #${roomIdentifier}\n`);
 				return;
 			}
 			if (data.includes('PRIVMSG')) {
@@ -74,17 +97,60 @@
 			}
 		};
 
-		socket.onclose = () => {
+		currentSocket.onclose = () => {
+			if (socket !== currentSocket) return;
 			status = 'disconnected';
+			socket = null;
+			lastConnectedRoom = '';
 			setTimeout(connect, 5000);
 		};
 
-		socket.onerror = () => {
+		currentSocket.onerror = () => {
+			if (socket !== currentSocket) return;
 			status = 'disconnected';
+			lastConnectedRoom = '';
 		};
 	}
 
-	let isFirstLoad = true;
+	let isFirstLoad = $state(true);
+
+	onMount(() => {
+		// For testing purposes
+		/*
+		if (typeof window !== 'undefined') {
+			console.log('IDNChat mounted. Testing utility available: forceIdnDisconnect()');
+			(window as any).forceIdnDisconnect = () => {
+				if (socket) {
+					console.log('Force disconnecting IDN socket for testing...');
+					socket.close();
+				} else {
+					console.log('No active socket to disconnect.');
+				}
+			};
+		}
+		*/
+
+		return () => {
+			// Cleanup testing utility (Currently disabled)
+			/*
+			if (typeof window !== 'undefined') {
+				delete (window as any).forceIdnDisconnect;
+			}
+			*/
+
+			// Essential cleanup: Close WebSocket connection when component is destroyed
+			// to prevent memory leaks and redundant background processes.
+			if (socket) {
+				socket.close();
+			}
+		};
+	});
+
+	$effect(() => {
+		if (roomIdentifier) {
+			connect();
+		}
+	});
 
 	async function parseIRCMessage(raw: string) {
 		try {
@@ -230,16 +296,6 @@
 		}
 	}
 
-	onMount(() => {
-		connect();
-	});
-
-	onDestroy(() => {
-		if (socket) {
-			socket.close();
-		}
-	});
-
 	function handleMediaError(e: Event) {
 		if (e.currentTarget instanceof HTMLElement) {
 			e.currentTarget.style.display = 'none';
@@ -247,35 +303,27 @@
 	}
 </script>
 
-<div class="flex-1 min-h-0 flex flex-col overflow-hidden">
+<div class="flex-1 min-h-0 flex flex-col overflow-hidden relative">
+	<!-- Connection Status Overlay -->
+	<div
+		class="absolute inset-x-0 top-0 z-30 pointer-events-none p-2 flex flex-col items-center gap-2"
+	>
+		{#if status === 'disconnected'}
+			<div
+				class="w-full bg-red-500/90 backdrop-blur-md border border-red-400/30 rounded-xl p-2.5 flex items-center justify-center shadow-sm transition-all duration-300 pointer-events-auto"
+				transition:slide={{ duration: 300 }}
+			>
+				<p class="text-[9px] text-white font-medium text-center">
+					{$t('theater.live.reconnect_idn')}
+				</p>
+			</div>
+		{/if}
+	</div>
+
 	<div
 		bind:this={chatContainer}
 		class="flex-1 p-4 overflow-y-auto flex flex-col gap-3 scroll-smooth"
 	>
-		{#if status === 'disconnected'}
-			<div
-				class="bg-red-500/10 border border-red-500/20 rounded-2xl p-3 flex flex-col items-center gap-2 mb-2 shrink-0"
-				transition:fade
-			>
-				<div class="flex items-center gap-2">
-					<div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-					<span class="text-[10px] font-black uppercase tracking-widest text-red-500"
-						>{$t('theater.live.disconnected')}</span
-					>
-				</div>
-				<p class="text-[9px] text-red-500/60 font-medium text-center leading-relaxed">
-					{$t('theater.live.reconnect_idn')}
-				</p>
-			</div>
-		{:else if status === 'connecting'}
-			<div class="flex items-center justify-center gap-2 py-4 opacity-50 shrink-0" transition:fade>
-				<RefreshCw size={12} class="animate-spin text-slate-400" />
-				<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400"
-					>{$t('theater.live.connecting')}</span
-				>
-			</div>
-		{/if}
-
 		{#if messages.length === 0 && status === 'connected'}
 			<div
 				class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900"

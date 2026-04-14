@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy, tick } from 'svelte';
-	import { fade } from 'svelte/transition';
-	import { MessageCircle, RefreshCw } from 'lucide-svelte';
+	import { slide } from 'svelte/transition';
+	import { MessageCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveChatShowroomMessage } from '$lib/types';
@@ -110,35 +110,27 @@
 	});
 </script>
 
-<div class="flex-1 min-h-0 flex flex-col overflow-hidden">
+<div class="flex-1 min-h-0 flex flex-col overflow-hidden relative">
+	<!-- Connection Status Overlay -->
+	<div
+		class="absolute inset-x-0 top-0 z-30 pointer-events-none p-2 flex flex-col items-center gap-2"
+	>
+		{#if status === 'disconnected'}
+			<div
+				class="w-full bg-red-500/90 backdrop-blur-md border border-red-400/30 rounded-xl p-2.5 flex items-center justify-center shadow-sm transition-all duration-300 pointer-events-auto"
+				transition:slide={{ duration: 300 }}
+			>
+				<p class="text-[9px] text-white font-medium text-center">
+					{$t('theater.live.reconnect_showroom')}
+				</p>
+			</div>
+		{/if}
+	</div>
+
 	<div
 		bind:this={chatContainer}
 		class="flex-1 p-4 overflow-y-auto flex flex-col gap-3 scroll-smooth"
 	>
-		{#if status === 'disconnected'}
-			<div
-				class="bg-red-500/10 border border-red-500/20 rounded-2xl p-3 flex flex-col items-center gap-2 mb-2 shrink-0"
-				transition:fade
-			>
-				<div class="flex items-center gap-2">
-					<div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-					<span class="text-[10px] font-black uppercase tracking-widest text-red-500"
-						>{$t('theater.live.disconnected')}</span
-					>
-				</div>
-				<p class="text-[9px] text-red-500/60 font-medium text-center leading-relaxed">
-					{$t('theater.live.reconnect_showroom')}
-				</p>
-			</div>
-		{:else if status === 'connecting'}
-			<div class="flex items-center justify-center gap-2 py-4 opacity-50 shrink-0" transition:fade>
-				<RefreshCw size={12} class="animate-spin text-slate-400" />
-				<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400"
-					>{$t('theater.live.connecting')}</span
-				>
-			</div>
-		{/if}
-
 		{#if messages.length === 0 && status === 'connected'}
 			<div
 				class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900"
