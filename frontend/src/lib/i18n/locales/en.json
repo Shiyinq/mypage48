@@ -731,7 +731,7 @@
 			"connecting": "Connecting...",
 			"disconnected": "Disconnected",
 			"reconnect_idn": "Connection lost. Retrying in a few seconds...",
-			"reconnect_showroom": "Failed to load chat. Please check your connection or refresh the stream.",
+			"reconnect_showroom": "Connection lost. Retrying in a few seconds...",
 			"switchMultiview": "Switch to Multi-view"
 		},
 		"news": {

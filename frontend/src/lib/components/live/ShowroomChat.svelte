@@ -103,9 +103,27 @@
 	onMount(() => {
 		fetchComments();
 		pollingInterval = setInterval(fetchComments, 4000); // 4 seconds interval to be safe
+
+		// For testing purposes
+		/*
+		if (typeof window !== 'undefined') {
+			console.log('ShowroomChat mounted. Testing utility available: forceShowroomDisconnect()');
+			
+			(window as any).forceShowroomDisconnect = () => {
+				status = 'disconnected';
+				console.log('Showroom: Connection failure simulated. Auto-recovery will attempt in 4 seconds...');
+			};
+		}
+		*/
 	});
 
 	onDestroy(() => {
+		// Cleanup testing utility (Currently disabled)
+		/*
+		if (typeof window !== 'undefined') {
+			delete (window as any).forceShowroomDisconnect;
+		}
+		*/
 		if (pollingInterval) clearInterval(pollingInterval);
 	});
 </script>
