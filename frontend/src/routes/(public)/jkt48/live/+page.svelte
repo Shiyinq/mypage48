@@ -27,7 +27,11 @@
 	});
 </script>
 
-<SEO title={$t('theater.live.title')} description={$t('seo.live')} path="/jkt48/live" />
+<SEO
+	title={$t('theater.live.seoTitle')}
+	description={$t('theater.live.seoDescription')}
+	path="/jkt48/live"
+/>
 
 <div class="py-12 min-h-screen">
 	<!-- Header Section -->
