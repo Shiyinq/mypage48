@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy, tick } from 'svelte';
+	import { tick } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { MessageCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -17,7 +17,6 @@
 
 	let messages: LiveChatShowroomMessage[] = $state([]);
 	let chatContainer: HTMLElement | undefined = $state();
-	let pollingInterval: ReturnType<typeof setInterval> | undefined;
 	let lastCommentTime = 0;
 	let status: 'connecting' | 'connected' | 'disconnected' = $state('connecting');
 	let loading = $state(true);
@@ -25,6 +24,38 @@
 
 	$effect(() => {
 		onStatusChange?.(status);
+	});
+
+	$effect(() => {
+		if (roomId) {
+			messages = []; // Clear messages when room changes
+			lastCommentTime = 0;
+			isFirstLoad = true;
+
+			fetchComments();
+			const interval = setInterval(fetchComments, 4000);
+
+			// For testing purposes
+			/*
+			if (typeof window !== 'undefined') {
+				console.log('ShowroomChat mounted. Testing utility available: forceShowroomDisconnect()');
+				
+				(window as any).forceShowroomDisconnect = () => {
+					status = 'disconnected';
+					console.log('Showroom: Connection failure simulated. Auto-recovery will attempt in 4 seconds...');
+				};
+			}
+			*/
+
+			return () => {
+				clearInterval(interval);
+				/*
+				if (typeof window !== 'undefined') {
+					delete (window as any).forceShowroomDisconnect;
+				}
+				*/
+			};
+		}
 	});
 
 	async function fetchComments() {
@@ -99,33 +130,6 @@
 			status = 'disconnected';
 		}
 	}
-
-	onMount(() => {
-		fetchComments();
-		pollingInterval = setInterval(fetchComments, 4000); // 4 seconds interval to be safe
-
-		// For testing purposes
-		/*
-		if (typeof window !== 'undefined') {
-			console.log('ShowroomChat mounted. Testing utility available: forceShowroomDisconnect()');
-			
-			(window as any).forceShowroomDisconnect = () => {
-				status = 'disconnected';
-				console.log('Showroom: Connection failure simulated. Auto-recovery will attempt in 4 seconds...');
-			};
-		}
-		*/
-	});
-
-	onDestroy(() => {
-		// Cleanup testing utility (Currently disabled)
-		/*
-		if (typeof window !== 'undefined') {
-			delete (window as any).forceShowroomDisconnect;
-		}
-		*/
-		if (pollingInterval) clearInterval(pollingInterval);
-	});
 </script>
 
 <div class="flex-1 min-h-0 flex flex-col overflow-hidden relative">
