@@ -5,7 +5,7 @@
 		isExportLoading,
 		isExportProcessing,
 		isExportDownloading
-	} from '$lib/stores/export';
+	} from '$lib/stores/export.svelte';
 	import { showToast } from '$lib/stores';
 	import { Database, Download, LoaderCircle, CircleAlert } from 'lucide-svelte';
 
@@ -74,7 +74,7 @@
 		}
 	};
 
-	let { status, expiresAt } = $derived($exportStore);
+	let { status, expiresAt } = $derived(exportStore);
 	let isExpired = $derived(expiresAt ? new Date(expiresAt) < new Date() : false);
 </script>
 
@@ -109,7 +109,7 @@
 		</div>
 
 		<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-			{#if $isExportLoading}
+			{#if isExportLoading.value}
 				<div
 					class="h-12 w-full sm:w-32 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"
 				></div>
@@ -124,9 +124,9 @@
 				<button
 					class="py-3.5 px-6 rounded-xl bg-red-600 text-white font-black uppercase text-xs tracking-widest hover:bg-red-700 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-red-500/30 hover:shadow-red-500/50 whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed w-full sm:w-auto"
 					onclick={handleDownload}
-					disabled={$isExportDownloading}
+					disabled={isExportDownloading.value}
 				>
-					{#if $isExportDownloading}
+					{#if isExportDownloading.value}
 						<LoaderCircle class="w-4 h-4 animate-spin" />
 					{:else}
 						<Download class="w-4 h-4" />
@@ -137,9 +137,9 @@
 				<button
 					class="py-3.5 px-6 rounded-xl bg-gray-900 dark:bg-zinc-800 text-white dark:text-gray-100 font-black uppercase text-xs tracking-widest hover:bg-black dark:hover:bg-zinc-700 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-gray-300 dark:shadow-zinc-900/50 whitespace-nowrap min-w-[180px] w-full sm:w-auto"
 					onclick={handleRequestExport}
-					disabled={$isExportProcessing}
+					disabled={isExportProcessing.value}
 				>
-					{#if $isExportProcessing}
+					{#if isExportProcessing.value}
 						<LoaderCircle class="w-4 h-4 animate-spin" />
 					{:else}
 						<CircleAlert class="w-4 h-4" />

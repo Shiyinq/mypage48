@@ -2,15 +2,19 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { liveStore, liveList, currentStream, otherLive, liveLoading } from '$lib/stores/live';
-	import { showToast } from '$lib/stores/toast';
-	import { isImmersive } from '$lib/stores/ui';
+	import {
+		currentStream,
+		otherLive,
+		liveLoading,
+		liveList,
+		liveStore
+	} from '$lib/stores/live.svelte';
+	import { showToast, isImmersive, theme, setTheme } from '$lib/stores';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveStatus } from '$lib/types';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import GiftOverlay from '$lib/components/live/GiftOverlay.svelte';
-	import { theme, setTheme } from '$lib/stores/theme';
 	import SEO from '$lib/components/SEO.svelte';
 	import {
 		ArrowLeft,
@@ -351,7 +355,7 @@
 	}
 
 	function toggleTheme() {
-		setTheme($theme === 'dark' ? 'light' : 'dark');
+		setTheme(theme.value === 'dark' ? 'light' : 'dark');
 	}
 
 	function handleVolumeChange(e: Event) {
@@ -926,7 +930,7 @@
 										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
 										onclick={toggleTheme}
 									>
-										{#if $theme === 'dark'}<Moon size={18} />{:else}<Sun size={18} />{/if}
+										{#if theme.value === 'dark'}<Moon size={18} />{:else}<Sun size={18} />{/if}
 										<div
 											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 										>

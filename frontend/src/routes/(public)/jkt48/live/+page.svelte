@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
-	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
+	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Users } from 'lucide-svelte';
 	import LiveGrid from '$lib/components/live/LiveGrid.svelte';

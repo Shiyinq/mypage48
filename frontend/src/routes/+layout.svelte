@@ -2,12 +2,11 @@
 	import '../app.css';
 	import { isAuthenticated, toast, userProfile, isInitialDataLoaded } from '$lib/stores';
 	import { locale, type Locale } from '$lib/i18n';
-	import { initTheme } from '$lib/stores/theme';
+	import { initTheme } from '$lib/stores';
 	import { auth } from '$lib/apis/auth';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { get } from 'svelte/store';
 	import Header from '$lib/components/Header.svelte';
 	import MobileHeader from '$lib/components/navigation/MobileHeader.svelte';
 	import PlaygroundHeader from '$lib/components/playground/PlaygroundHeader.svelte';
@@ -89,7 +88,7 @@
 		hasFetchedInitialData = true;
 
 		// Fetch profile if needed
-		const currentProfile = get(userProfile).data;
+		const currentProfile = userProfile.data;
 
 		try {
 			if (!currentProfile) {
@@ -144,7 +143,7 @@
 	let isPlaygroundRoute = $derived($page.url.pathname.startsWith('/playground'));
 	// Reset state when user logs out
 	$effect(() => {
-		if (!$isAuthenticated) {
+		if (!isAuthenticated.value) {
 			hasFetchedInitialData = false;
 			isInitialDataLoaded.set(false);
 			userProfile.reset();
@@ -153,27 +152,27 @@
 	// Reactively fetch initial data when user becomes authenticated
 	// This handles the case when user logs in and layout is already mounted
 	$effect(() => {
-		if (mounted && $isAuthenticated && !hasFetchedInitialData) {
+		if (mounted && isAuthenticated.value && !hasFetchedInitialData) {
 			fetchInitialDataIfNeeded();
 		}
 	});
 	// Only check auth redirects after component is mounted (hydrated)
 	// This prevents premature redirects during slow connections
 	$effect(() => {
-		if (mounted && !$isAuthenticated && !isPublicPage) {
+		if (mounted && !isAuthenticated.value && !isPublicPage) {
 			goto('/login');
 		}
 	});
 	// Redirect logged-in users away from guest-only routes (login/register)
 	// asking to view a public profile (/u/...) should NOT trigger this!
 	$effect(() => {
-		if (mounted && $isAuthenticated && isGuestRoute) {
+		if (mounted && isAuthenticated.value && isGuestRoute) {
 			goto('/');
 		}
 	});
 	// Redirect logged-in users away from public JKT48 routes to their theater counterparts
 	$effect(() => {
-		if (mounted && $isAuthenticated && $page.url.pathname.startsWith('/jkt48/')) {
+		if (mounted && isAuthenticated.value && $page.url.pathname.startsWith('/jkt48/')) {
 			let theaterPath = $page.url.pathname.replace('/jkt48/', '/theater/');
 			// Special case for sub-routes that might have different structures
 			if ($page.url.pathname === '/jkt48/event-history') {
@@ -190,28 +189,28 @@
 	<ErrorFallback error={appError} onRetry={resetError} />
 {:else}
 	<LoadingBar />
-	{#if $isAuthenticated}
+	{#if isAuthenticated.value}
 		<CommandPalette />
 	{/if}
 	<div
-		class="min-h-screen flex flex-col relative overflow-x-hidden {$isAuthenticated
+		class="min-h-screen flex flex-col relative overflow-x-hidden {isAuthenticated.value
 			? 'selection:bg-red-500/20'
 			: ''}"
 	>
-		{#if $isAuthenticated && !isFullScreenRoute}
+		{#if isAuthenticated.value && !isFullScreenRoute}
 			<AnimatedBackground hideDecorationsOnMobile={true} />
 		{/if}
-		{#if $toast}
+		{#if toast.current}
 			<div class="fixed top-4 left-0 right-0 z-[10000] flex justify-center pointer-events-none">
 				<div
 					class="bg-gray-900/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 font-medium text-sm border border-white/10 pointer-events-auto animate-[fadeInDown_0.3s_ease-out]"
 				>
 					<div
-						class={$toast.type === 'error'
+						class={toast.current.type === 'error'
 							? 'bg-red-500 rounded-full p-1'
 							: 'bg-green-500 rounded-full p-1'}
 					>
-						{#if $toast.type === 'error'}
+						{#if toast.current.type === 'error'}
 							<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
 									stroke-linecap="round"
@@ -224,26 +223,26 @@
 							<Check class="w-3 h-3 text-white" />
 						{/if}
 					</div>
-					{$toast.message}
+					{toast.current.message}
 				</div>
 			</div>
 		{/if}
 
-		{#if isPublicPage && !isGuestRoute && !$isAuthenticated}
+		{#if isPublicPage && !isGuestRoute && !isAuthenticated.value}
 			<!-- Public non-auth pages (like /u/*): render immediately -->
 			{@render children?.()}
 		{:else if isGuestRoute}
 			<!-- Guest routes (/login, /register, /auth/*): need auth check -->
 			{#if !mounted}
 				<SplashScreen />
-			{:else if !$isAuthenticated}
+			{:else if !isAuthenticated.value}
 				<!-- Not authenticated: show login/register page -->
 				{@render children?.()}
 			{/if}
 			<!-- If mounted && $isAuthenticated && isGuestRoute: render nothing, redirect will happen -->
 		{:else if !mounted}
 			<SplashScreen />
-		{:else if isPublicPage && !$isAuthenticated}
+		{:else if isPublicPage && !isAuthenticated.value}
 			<!-- Render public theater pages for unauthenticated users -->
 			{#if $page.url.pathname === '/'}
 				{@render children?.()}
@@ -266,7 +265,7 @@
 					<Footer />
 				{/if}
 			{/if}
-		{:else if $isAuthenticated}
+		{:else if isAuthenticated.value}
 			<!-- Protected pages: user authenticated, show full content -->
 			{#if isPlaygroundRoute}
 				<PlaygroundHeader />

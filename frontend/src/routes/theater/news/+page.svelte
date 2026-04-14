@@ -8,7 +8,13 @@
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	import { EventCardSkeleton } from '$lib/components/skeletons';
-	import { newsStore, newsList, newsLoading, newsError, newsPagination } from '$lib/stores/news';
+	import {
+		newsList,
+		newsPagination,
+		newsLoading,
+		newsError,
+		newsStore
+	} from '$lib/stores/news.svelte';
 
 	import { formatDate } from '$lib/i18n';
 	const { t } = useTranslation();
@@ -20,9 +26,9 @@
 		mounted = true;
 	});
 
-	let error = $derived($newsError);
-	let list = $derived($newsList);
-	let loading = $derived($newsLoading);
+	let list = $derived(newsList.value);
+	let isLoading = $derived(newsLoading.value);
+	let error = $derived(newsError.value);
 
 	async function handlePageChange(page: number) {
 		newsStore.load(page);
@@ -69,7 +75,7 @@
 />
 
 <div class="space-y-6">
-	{#if (!mounted || loading) && list.length === 0}
+	{#if (!mounted || isLoading) && list.length === 0}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
 			{#each Array(8)}
 				<EventCardSkeleton />

@@ -15,7 +15,7 @@
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import CardSkeleton from '$lib/components/skeletons/CardSkeleton.svelte';
 	import { formatDate } from '$lib/i18n';
-	import { feedbackStore, loadFeedback, isFeedbackLoading } from '$lib/stores/feedback';
+	import { feedbackStore, loadFeedback, isFeedbackLoading } from '$lib/stores/feedback.svelte';
 
 	const { t } = useTranslation();
 
@@ -67,7 +67,7 @@
 		<div class="flex items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<MessageSquare class="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-				{$t('admin.feedback.title')} ({$feedbackStore.total})
+				{$t('admin.feedback.title')} ({feedbackStore.total})
 			</h2>
 			<p
 				class="hidden md:block text-slate-500 dark:text-slate-400 text-sm border-l border-gray-200 dark:border-zinc-700 pl-4 ml-2"
@@ -77,7 +77,7 @@
 		</div>
 	</div>
 
-	{#if $isFeedbackLoading && $feedbackStore.data.length === 0}
+	{#if isFeedbackLoading.value && feedbackStore.data.length === 0}
 		<div class="grid gap-4">
 			{#each Array(5)}
 				<CardSkeleton lines={3} />
@@ -89,7 +89,7 @@
 			description={error || ''}
 			onRetry={() => loadData(1)}
 		/>
-	{:else if $feedbackStore.data.length === 0}
+	{:else if feedbackStore.data.length === 0}
 		<EmptyState
 			icon={MessageSquare}
 			title={$t('admin.feedback.emptyTitle')}
@@ -97,7 +97,7 @@
 		/>
 	{:else}
 		<div class="grid gap-4">
-			{#each $feedbackStore.data as item}
+			{#each feedbackStore.data as item}
 				{@const SvelteComponent = getIcon(item.type)}
 				<div
 					class="p-5 rounded-2xl bg-white dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 hover:border-red-200 dark:hover:border-red-900/30 transition-all group"
@@ -151,32 +151,32 @@
 		</div>
 
 		<!-- Pagination -->
-		{#if $feedbackStore.total > $feedbackStore.limit}
+		{#if feedbackStore.total > feedbackStore.limit}
 			<div
 				class="flex items-center justify-center gap-4 mt-8 pt-6 border-t border-slate-100 dark:border-zinc-800"
 			>
 				<button
 					class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-					disabled={$feedbackStore.page === 1}
-					onclick={() => loadData($feedbackStore.page - 1)}
+					disabled={feedbackStore.page === 1}
+					onclick={() => loadData(feedbackStore.page - 1)}
 				>
 					<ChevronLeft size={20} />
 				</button>
 				<span class="text-sm text-slate-500 font-medium">
-					Page {$feedbackStore.page} of {Math.ceil($feedbackStore.total / $feedbackStore.limit)}
+					Page {feedbackStore.page} of {Math.ceil(feedbackStore.total / feedbackStore.limit)}
 				</span>
 				<button
 					class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-					disabled={!$feedbackStore.has_more &&
-						$feedbackStore.page * $feedbackStore.limit >= $feedbackStore.total}
-					onclick={() => loadData($feedbackStore.page + 1)}
+					disabled={!feedbackStore.has_more &&
+						feedbackStore.page * feedbackStore.limit >= feedbackStore.total}
+					onclick={() => loadData(feedbackStore.page + 1)}
 				>
 					<ChevronRight size={20} />
 				</button>
 			</div>
 		{/if}
 
-		{#if !$feedbackStore.has_more && $feedbackStore.data.length > 0}
+		{#if !feedbackStore.has_more && feedbackStore.data.length > 0}
 			<div class="pb-12 pt-6 text-center text-gray-400 text-sm">
 				{$t('admin.feedback.noMoreFeedback')}
 			</div>

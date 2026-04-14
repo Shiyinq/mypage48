@@ -1,5 +1,5 @@
 import { dev } from '$app/environment';
-import { showToast } from '$lib/stores/toast';
+import { showToast } from '$lib/stores';
 
 type LogLevel = 'info' | 'warn' | 'error';
 

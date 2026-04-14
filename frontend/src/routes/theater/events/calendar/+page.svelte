@@ -4,7 +4,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { ChevronLeft, ChevronRight, Cake, GraduationCap } from 'lucide-svelte';
-	import { calendarEvents, calendarLoading, eventsStore } from '$lib/stores/events';
+	import { calendarEvents, calendarLoading, eventsStore } from '$lib/stores/events.svelte';
 	import DayEventsModal from '$lib/components/calendar/DayEventsModal.svelte';
 	import type { CalendarEvent } from '$lib/types/events';
 

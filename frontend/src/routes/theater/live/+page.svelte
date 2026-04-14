@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
+	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import LiveGrid from '$lib/components/live/LiveGrid.svelte';

@@ -4,7 +4,7 @@
 	import { type SetlistDetailResponse } from '$lib/apis/setlists';
 
 	import { ticketsStore, showToast } from '$lib/stores';
-	import { setlistsStore, isSetlistDetailLoading } from '$lib/stores/theater';
+	import { setlistsStore, isSetlistDetailLoading } from '$lib/stores/theater.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Ticket, DollarSign, Trophy } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';

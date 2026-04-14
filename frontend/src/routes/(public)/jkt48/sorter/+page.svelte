@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { Member } from '$lib/apis/members';
-	import { membersStore } from '$lib/stores/theater';
+	import { membersStore } from '$lib/stores/theater.svelte';
 	import { showToast } from '$lib/stores';
 	import SEO from '$lib/components/SEO.svelte';
 	import SorterGenerationSelect from '$lib/components/sorter/SorterGenerationSelect.svelte';

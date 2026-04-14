@@ -56,7 +56,7 @@
 	}
 
 	// membersCacheStore removed
-	// import { membersCacheStore } from '$lib/stores/theater';
+	// import { membersCacheStore } from '$lib/stores/theater.svelte';
 	// import { get } from 'svelte/store'; -- removed
 
 	// ... (imports remain)

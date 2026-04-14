@@ -4,7 +4,7 @@
 	import { MessageCircle, Trophy } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
-	import { broadcastGift } from '$lib/stores/gift';
+	import { broadcastGift } from '$lib/stores/gift.svelte';
 
 	interface Props {
 		roomIdentifier: string;

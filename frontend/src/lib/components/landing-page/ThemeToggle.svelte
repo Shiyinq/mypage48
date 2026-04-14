@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { theme, setTheme } from '$lib/stores/theme';
+	import { theme, setTheme } from '$lib/stores';
 	import { Sun, Moon } from 'lucide-svelte';
 	import { fly } from 'svelte/transition';
 	import { onMount } from 'svelte';
@@ -10,11 +10,11 @@
 	});
 
 	let effectiveTheme = $derived(
-		$theme === 'auto'
+		theme.value === 'auto'
 			? mounted && window.matchMedia('(prefers-color-scheme: dark)').matches
 				? 'dark'
 				: 'light'
-			: $theme
+			: theme.value
 	);
 
 	function toggleTheme() {

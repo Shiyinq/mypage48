@@ -11,8 +11,8 @@
 		upcomingEvents,
 		isUpcomingEventsLoading,
 		upcomingError
-	} from '$lib/stores/events';
-	import { membersStore, isBirthdaysLoading } from '$lib/stores/theater';
+	} from '$lib/stores/events.svelte';
+	import { membersStore, isBirthdaysLoading } from '$lib/stores/theater.svelte';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
 	import { formatDate, formatTime } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';

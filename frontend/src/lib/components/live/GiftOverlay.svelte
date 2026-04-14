@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade, scale, slide } from 'svelte/transition';
-	import { giftEvents, type GiftEvent } from '$lib/stores/gift';
+	import { giftEvents, type GiftEvent } from '$lib/stores/gift.svelte';
 
 	interface Props {
 		roomIdentifier?: string;
@@ -44,8 +44,8 @@
 		return url;
 	}
 	$effect(() => {
-		if ($giftEvents && $giftEvents.roomIdentifier === roomIdentifier) {
-			showGift($giftEvents);
+		if (giftEvents.value && giftEvents.value.roomIdentifier === roomIdentifier) {
+			showGift(giftEvents.value);
 		}
 	});
 </script>

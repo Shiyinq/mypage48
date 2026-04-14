@@ -1,4 +1,3 @@
-import { writable, get } from 'svelte/store';
 import { storageApi } from '$lib/apis/storage';
 import type {
 	ImageCategory,
@@ -7,26 +6,33 @@ import type {
 	BatchPresignedUrlResponse
 } from '$lib/types';
 
-function createStorageStore() {
-	const { subscribe, update } = writable<Record<string, string>>({});
+/**
+ * Storage cache store - migrated to Svelte 5 Shared Rune State.
+ * Manages presigned URL caching for images.
+ */
 
+let cache = $state<Record<string, string>>({});
+
+function createStorageStore() {
 	return {
-		subscribe,
+		get cache() {
+			return cache;
+		},
+
 		uploadImage: async (image: string, category: ImageCategory): Promise<ImageUploadResponse> => {
 			const res = await storageApi.uploadImage(image, category);
 			// Cache the URL immediately
-			update((cache) => ({ ...cache, [res.filename]: res.url }));
+			cache[res.filename] = res.url;
 			return res;
 		},
 
 		getImageUrl: async (filename: string): Promise<PresignedUrlResponse> => {
 			const res = await storageApi.getImageUrl(filename);
-			update((cache) => ({ ...cache, [filename]: res.url }));
+			cache[filename] = res.url;
 			return res;
 		},
 
 		presignBulk: async (filenames: string[]): Promise<BatchPresignedUrlResponse> => {
-			const cache = get({ subscribe });
 			const toResolve = filenames.filter((f) => !cache[f]);
 
 			if (toResolve.length === 0) {
@@ -34,16 +40,29 @@ function createStorageStore() {
 			}
 
 			const res = await storageApi.presignBulk(toResolve);
-			update((currentCache) => ({ ...currentCache, ...res.urls }));
+			// Update cache with new signatures
+			Object.assign(cache, res.urls);
 			return res;
 		},
 
 		clearCache: () => {
-			update(() => ({}));
+			cache = {};
 		},
 
 		updateCache: (signatures: Record<string, string>) => {
-			update((current) => ({ ...current, ...signatures }));
+			Object.assign(cache, signatures);
+		},
+
+		/**
+		 * Legacy subscribe method for backward compatibility
+		 */
+		subscribe: (fn: (val: Record<string, string>) => void) => {
+			$effect.root(() => {
+				$effect(() => {
+					fn(cache);
+				});
+			});
+			return () => {};
 		}
 	};
 }

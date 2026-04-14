@@ -20,7 +20,11 @@
 	} from '$lib/components/dashboard';
 
 	// Import dashboard store
-	import { dashboardFilter, dashboardStatsData, isDashboardLoading } from '$lib/stores/dashboard';
+	import {
+		dashboardFilter,
+		dashboardStatsData,
+		isDashboardLoading
+	} from '$lib/stores/dashboard.svelte';
 
 	const { t } = useTranslation();
 
@@ -41,10 +45,10 @@
 		};
 	}
 
-	// Dashboard data sourced from store
-	let dashboardDataState = $derived($dashboardStatsData);
-	let dashboardStats = $derived(dashboardDataState.data);
-	let error = $derived(dashboardDataState.error);
+	// Dashboard data sourced from store reactive properties
+	let dashboardStats = $derived(dashboardStatsData.data);
+	let error = $derived(dashboardStatsData.error);
+	let loading = $derived(isDashboardLoading.value);
 
 	const currentYear: number = new Date().getFullYear();
 	let isFilterOpen = $state(false);
@@ -54,16 +58,16 @@
 
 	// Fetch dashboard data from API
 	async function fetchDashboardStats() {
-		if (!$isAuthenticated) {
+		if (!isAuthenticated.value) {
 			return;
 		}
 
-		await dashboardStatsData.load($dashboardFilter);
+		await dashboardStatsData.load(dashboardFilter);
 	}
 
 	// Refetch when filter params change
 	$effect(() => {
-		if ($isAuthenticated && $dashboardFilter) {
+		if (isAuthenticated.value && dashboardFilter) {
 			fetchDashboardStats();
 		}
 	});
@@ -173,7 +177,7 @@
 	<!-- Header / Filter Toggle -->
 	<div class="mb-6 relative z-30">
 		<DashboardHeader
-			filter={$dashboardFilter}
+			filter={dashboardFilter}
 			onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
 			isOpen={isFilterOpen}
 		/>
@@ -184,10 +188,10 @@
 				class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
 			>
 				<DashboardFilters
-					bind:isAllData={$dashboardFilter.isAllData}
-					bind:selectedYear={$dashboardFilter.selectedYear}
-					bind:startMonth={$dashboardFilter.startMonth}
-					bind:endMonth={$dashboardFilter.endMonth}
+					bind:isAllData={dashboardFilter.isAllData}
+					bind:selectedYear={dashboardFilter.selectedYear}
+					bind:startMonth={dashboardFilter.startMonth}
+					bind:endMonth={dashboardFilter.endMonth}
 					{availableYears}
 				/>
 			</div>
@@ -225,7 +229,7 @@
 					sub={$t('dashboard.theater.timesWatched')}
 					icon={TicketIcon}
 					theme="red"
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 				<StatCard
 					title={$t('dashboard.theater.spending')}
@@ -236,7 +240,7 @@
 					}).format(totalSpent)}
 					icon={DollarSign}
 					theme="emerald"
-					loading={$isDashboardLoading}
+					{loading}
 					hideable={true}
 				/>
 				<StatCard
@@ -247,21 +251,21 @@
 					icon={Armchair}
 					theme="amber"
 					showCrown={true}
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 
 				<TopShowCard
 					title={topShowStats.title}
 					count={topShowStats.count}
 					image={topShowStats.image}
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 
 				<!-- First & Last Show Card -->
 				<FirstLastCard
-					title={`${$t('dashboard.theater.firstLast')} ${!$dashboardFilter.isAllData ? $dashboardFilter.selectedYear : ''}`}
+					title={`${$t('dashboard.theater.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 					type="theater"
-					loading={$isDashboardLoading}
+					{loading}
 					onExpand={() => (showTheaterPopup = true)}
 					first={showExtremes.first}
 					last={showExtremes.last}
@@ -285,7 +289,7 @@
 					sub={$t('dashboard.twoShot.collected')}
 					icon={Camera}
 					theme="pink"
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 				<StatCard
 					title={$t('dashboard.twoShot.spending')}
@@ -296,7 +300,7 @@
 					}).format(twoShotStats.totalSpend)}
 					icon={DollarSign}
 					theme="emerald"
-					loading={$isDashboardLoading}
+					{loading}
 					hideable={true}
 				/>
 				<StatCard
@@ -305,7 +309,7 @@
 					sub={$t('dashboard.twoShot.uniqueIdols')}
 					icon={Users}
 					theme="blue"
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 
 				<!-- Top 2-Shot Card -->
@@ -313,14 +317,14 @@
 					name={twoShotStats.mostCollected?.name || null}
 					count={twoShotStats.mostCollected?.count || 0}
 					image={twoShotStats.mostCollected?.image || undefined}
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 
 				<!-- First & Last 2-Shot Card -->
 				<FirstLastCard
-					title={`${$t('dashboard.twoShot.firstLast')} ${!$dashboardFilter.isAllData ? $dashboardFilter.selectedYear : ''}`}
+					title={`${$t('dashboard.twoShot.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 					type="twoShot"
-					loading={$isDashboardLoading}
+					{loading}
 					onExpand={() => (showTwoShotPopup = true)}
 					first={twoShotExtremes.first}
 					last={twoShotExtremes.last}
@@ -330,25 +334,21 @@
 	</div>
 
 	<!-- THEATER MAP -->
-	<TheaterSeatMap {rowStats} {seatStats} isLoading={$isDashboardLoading} />
+	<TheaterSeatMap {rowStats} {seatStats} isLoading={loading} />
 
 	<div class="grid lg:grid-cols-3 gap-6">
 		<MonthlyAttendance
 			stats={monthlyStats.stats}
 			maxCount={monthlyStats.maxCount}
-			loading={$isDashboardLoading}
-			subtitle={$dashboardFilter.isAllData
+			{loading}
+			subtitle={dashboardFilter.isAllData
 				? availableYears.length > 1
 					? `${Math.min(...availableYears)} - ${Math.max(...availableYears)}`
 					: `${availableYears[0]}`
-				: `${$dashboardFilter.selectedYear}`}
+				: `${dashboardFilter.selectedYear}`}
 		/>
 
-		<DayPreference
-			stats={dayStats.stats}
-			maxCount={dayStats.maxCount}
-			loading={$isDashboardLoading}
-		/>
+		<DayPreference stats={dayStats.stats} maxCount={dayStats.maxCount} {loading} />
 	</div>
 </div>
 
@@ -356,7 +356,7 @@
 <FirstLastPopup
 	show={showTheaterPopup}
 	onClose={() => (showTheaterPopup = false)}
-	title={`${$t('dashboard.theater.firstLast')} ${!$dashboardFilter.isAllData ? $dashboardFilter.selectedYear : ''}`}
+	title={`${$t('dashboard.theater.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 	type="theater"
 	first={showExtremes.first
 		? {
@@ -380,7 +380,7 @@
 <FirstLastPopup
 	show={showTwoShotPopup}
 	onClose={() => (showTwoShotPopup = false)}
-	title={`${$t('dashboard.twoShot.firstLast')} ${!$dashboardFilter.isAllData ? $dashboardFilter.selectedYear : ''}`}
+	title={`${$t('dashboard.twoShot.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 	type="twoShot"
 	first={twoShotExtremes.first}
 	last={twoShotExtremes.last}

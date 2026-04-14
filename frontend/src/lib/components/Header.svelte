@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { Plus, User } from 'lucide-svelte';
 	import { userProfile, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
-	import { isImmersive } from '$lib/stores/ui';
+	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -27,7 +27,7 @@
 		mounted = true;
 	});
 
-	let isLoading = $derived(!mounted || ($isAuthenticated && !$isInitialDataLoaded));
+	let isLoading = $derived(!mounted || (isAuthenticated.value && !$isInitialDataLoaded));
 
 	// Navigation items
 	let navItems = $derived([
@@ -50,7 +50,7 @@
 	});
 </script>
 
-{#if !$isImmersive}
+{#if !isImmersive.value}
 	<div class="hidden md:block transition-all duration-300 {isTheater ? 'h-[104px]' : 'h-16'}"></div>
 	<header
 		class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[6000] transition-all duration-300"
@@ -93,11 +93,11 @@
 				>
 					{#if isLoading}
 						<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
-					{:else if $userProfile?.data?.oshi?.profilePicture || $userProfile?.data?.profilePicture}
+					{:else if userProfile.data?.oshi?.profilePicture || userProfile.data?.profilePicture}
 						<img
-							src={$userProfile?.data?.oshi?.profilePicture
-								? getExternalMediaUrl($userProfile.data.oshi.profilePicture)
-								: $userProfile?.data?.profilePicture}
+							src={userProfile.data?.oshi?.profilePicture
+								? getExternalMediaUrl(userProfile.data.oshi.profilePicture)
+								: userProfile.data?.profilePicture}
 							alt="Profile"
 							class="w-full h-full object-cover"
 						/>

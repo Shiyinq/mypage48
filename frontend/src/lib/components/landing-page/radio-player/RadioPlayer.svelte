@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 	import { Play, Pause, SkipForward, Volume2, VolumeX, Music2, Disc, Radio } from 'lucide-svelte';
-	import { radioStore, RADIO_CHANNELS } from '$lib/stores/radio';
+	import { radioStore, RADIO_CHANNELS } from '$lib/stores/radio.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();

@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { isAuthenticated, showToast } from '$lib/stores';
-	import { achievementsStore, isAchievementsLoading } from '$lib/stores/achievements';
+	import { achievementsStore, isAchievementsLoading } from '$lib/stores/achievements.svelte';
 	import { onMount } from 'svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import {
@@ -56,8 +57,8 @@
 	let locked = $derived(data?.achievements.filter((m) => !m.isUnlocked) ?? []);
 
 	async function loadAchievements() {
-		if (!$isAuthenticated) {
-			return;
+		if (!isAuthenticated.value) {
+			goto('/login');
 		}
 
 		try {

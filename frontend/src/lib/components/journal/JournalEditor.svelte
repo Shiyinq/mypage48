@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import type { Ticket } from '$lib/types';
-	import { storageStore } from '$lib/stores/storage';
+	import { storageStore } from '$lib/stores/storage.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { cleanseMarkdown, extractSignatures } from '$lib/utils/markdown';
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { ticketsStore, showToast, storageStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
-	import { invalidateDashboard } from '$lib/stores/dashboard';
-	import { invalidateTheater } from '$lib/stores/theater';
+	import { invalidateDashboard } from '$lib/stores/dashboard.svelte';
+	import { invalidateTheater } from '$lib/stores/theater.svelte';
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
@@ -11,7 +11,7 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
-	import { setlistsStore } from '$lib/stores/theater';
+	import { setlistsStore } from '$lib/stores/theater.svelte';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
 
 	// Sub-components

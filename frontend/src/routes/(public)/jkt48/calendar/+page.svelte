@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
-	import { calendarEvents, calendarLoading, eventsStore } from '$lib/stores/events';
+	import { calendarEvents, calendarLoading, eventsStore } from '$lib/stores/events.svelte';
 	import LandingDayEventsModal from '$lib/components/landing-page/LandingDayEventsModal.svelte';
 	import type { CalendarEvent } from '$lib/types/events';
 	import { formatDate } from '$lib/i18n';

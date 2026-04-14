@@ -3,7 +3,7 @@
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { MONTHS } from '$lib/constants';
-	import type { DashboardFilterState } from '$lib/stores/dashboard';
+	import type { DashboardFilterState } from '$lib/stores/dashboard.svelte';
 
 	const { t } = useTranslation();
 

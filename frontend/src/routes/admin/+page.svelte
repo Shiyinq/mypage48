@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { adminStore, isAdminUsersLoading } from '$lib/stores/admin';
+	import { adminStore, isAdminUsersLoading } from '$lib/stores/admin.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import TableSkeleton from '$lib/components/skeletons/TableSkeleton.svelte';
 	import { Search, X, UserCheck, ShieldCheck, Mail, Lock, Eye, EyeOff } from 'lucide-svelte';
