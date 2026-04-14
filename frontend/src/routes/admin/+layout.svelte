@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { userProfile, isInitialDataLoaded } from '$lib/stores';
@@ -39,7 +37,7 @@
 	}
 
 	// Watch for auth/profile changes
-	run(() => {
+	$effect(() => {
 		handleAuthCheck(browser, $isInitialDataLoaded, $userProfile);
 	});
 	// Navigation tabs

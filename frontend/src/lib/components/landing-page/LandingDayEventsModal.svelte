@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run, self } from 'svelte/legacy';
-
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Calendar, X, ExternalLink, Clock, MapPin } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
@@ -35,7 +33,7 @@
 		if (event.key === 'Escape') close();
 	}
 
-	run(() => {
+	$effect(() => {
 		if (isOpen && typeof window !== 'undefined') {
 			document.body.style.overflow = 'hidden';
 		} else if (typeof window !== 'undefined') {
@@ -49,7 +47,9 @@
 {#if isOpen}
 	<div
 		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md bg-black/60 transition-all duration-300"
-		onclick={self(close)}
+		onclick={(e) => {
+			if (e.target === e.currentTarget) close();
+		}}
 		role="presentation"
 		transition:fade={{ duration: 300 }}
 	>

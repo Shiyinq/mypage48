@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { run, stopPropagation, createBubbler } from 'svelte/legacy';
-
-	const bubble = createBubbler();
 	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import { fly } from 'svelte/transition';
@@ -285,7 +282,7 @@
 		removeMemberFromSlot(index);
 		showToast($t('theater.live.multiview.member_offline', { name: memberName }), 'error');
 	}
-	run(() => {
+	$effect(() => {
 		if (isMobile) {
 			// On mobile, if one is toggled on, toggle the other off
 			if (showPicker && showChat) {
@@ -303,7 +300,7 @@
 		)
 	);
 	// Auto-initialize first slot if empty and no saved session
-	run(() => {
+	$effect(() => {
 		if (
 			slots.length === 0 &&
 			$liveList.length > 0 &&
@@ -318,7 +315,7 @@
 		}
 	});
 	let focusedStream = $derived(slots[focusedSlotIndex]);
-	run(() => {
+	$effect(() => {
 		if (focusedStream) {
 			const currentId =
 				focusedStream.platform === 'showroom'
@@ -356,7 +353,7 @@
 							: 'grid-cols-2 lg:grid-cols-3 max-w-none'
 	);
 	// Aspect ratio persistence
-	run(() => {
+	$effect(() => {
 		if (typeof localStorage !== 'undefined') {
 			localStorage.setItem('mypage48_multiview_portrait', String(isPortrait));
 		}
@@ -619,7 +616,10 @@
 								</div>
 							</div>
 							<button
-								onclick={stopPropagation(() => removeMemberFromSlot(i))}
+								onclick={(e) => {
+									e.stopPropagation();
+									removeMemberFromSlot(i);
+								}}
 								class="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg cursor-pointer"
 								aria-label={$t('theater.live.multiview.remove_stream')}
 							>
@@ -634,7 +634,10 @@
 							<div class="flex items-center gap-0 group/volume relative h-8">
 								<button
 									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10 cursor-pointer"
-									onclick={stopPropagation(() => (muted[i] = !muted[i]))}
+									onclick={(e) => {
+										e.stopPropagation();
+										muted[i] = !muted[i];
+									}}
 									aria-label={muted[i] || volumes[i] === 0
 										? $t('theater.live.multiview.unmute')
 										: $t('theater.live.multiview.mute')}
@@ -664,7 +667,7 @@
 											volumes = volumes; // Trigger reactivity
 											muted = muted;
 										}}
-										onclick={stopPropagation(bubble('click'))}
+										onclick={(e) => e.stopPropagation()}
 										class="w-16 h-1 accent-white cursor-pointer"
 									/>
 								</div>
@@ -674,9 +677,10 @@
 								<!-- Screenshot Button -->
 								<button
 									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-blue-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/cam cursor-pointer"
-									onclick={stopPropagation(() =>
-										playerRefs[i]?.takeScreenshot(stream.member?.name)
-									)}
+									onclick={(e) => {
+										e.stopPropagation();
+										playerRefs[i]?.takeScreenshot(stream.member?.name);
+									}}
 									title={$t('theater.live.multiview.take_screenshot')}
 								>
 									<Camera
@@ -690,9 +694,10 @@
 									class="w-8 h-8 rounded-xl {isRecording[i]
 										? 'bg-red-600 animate-pulse'
 										: 'bg-white/10 backdrop-blur-md grayscale hover:grayscale-0 hover:bg-red-600'} text-white flex items-center justify-center hover:scale-105 transition-all shadow-lg group/rec cursor-pointer"
-									onclick={stopPropagation(() =>
-										playerRefs[i]?.toggleRecording(stream.member?.name)
-									)}
+									onclick={(e) => {
+										e.stopPropagation();
+										playerRefs[i]?.toggleRecording(stream.member?.name);
+									}}
 									title={isRecording[i]
 										? $t('theater.live.multiview.stop_recording')
 										: $t('theater.live.multiview.start_recording')}

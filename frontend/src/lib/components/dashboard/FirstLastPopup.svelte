@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { self } from 'svelte/legacy';
-
 	import { Calendar, X, Star, Camera } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { fade, scale } from 'svelte/transition';
@@ -77,7 +75,9 @@
 {#if show}
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-		onclick={self(onClose)}
+		onclick={(e) => {
+			if (e.target === e.currentTarget) onClose();
+		}}
 		onkeydown={(e) => e.key === 'Escape' && onClose()}
 		role="dialog"
 		aria-modal="true"

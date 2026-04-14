@@ -1,8 +1,6 @@
 <script lang="ts">
 	/* eslint-disable svelte/valid-compile */
-	import { createBubbler } from 'svelte/legacy';
 
-	const bubble = createBubbler();
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
 	interface Props extends HTMLInputAttributes {
@@ -34,7 +32,7 @@
 		{value}
 		class="input-field {error ? 'has-error' : ''}"
 		oninput={(e) => (value = e.currentTarget.value)}
-		onblur={bubble('blur')}
+		onblur={rest.onblur}
 		{...rest}
 	/>
 

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import { X, Music, LoaderCircle, CircleCheck, Image as ImageIcon } from 'lucide-svelte';
 	import type { Setlist } from '$lib/apis/setlists';
 	import { fade } from 'svelte/transition';
@@ -116,7 +114,13 @@
 					</button>
 				</div>
 
-				<form onsubmit={preventDefault(handleSubmit)} class="space-y-6">
+				<form
+					onsubmit={(e) => {
+						e.preventDefault();
+						handleSubmit();
+					}}
+					class="space-y-6"
+				>
 					<!-- Basic Info -->
 					<div class="space-y-4">
 						<div class="space-y-2">

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { stopPropagation } from 'svelte/legacy';
-
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -181,14 +179,20 @@
 						<div class="flex items-center justify-between mb-4 px-2">
 							<button
 								class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full cursor-pointer"
-								onclick={stopPropagation(() => pickerYear--)}
+								onclick={(e) => {
+									e.stopPropagation();
+									pickerYear--;
+								}}
 							>
 								<ChevronLeft class="w-5 h-5" />
 							</button>
 							<span class="font-bold text-lg">{pickerYear}</span>
 							<button
 								class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full cursor-pointer"
-								onclick={stopPropagation(() => pickerYear++)}
+								onclick={(e) => {
+									e.stopPropagation();
+									pickerYear++;
+								}}
 							>
 								<ChevronRight class="w-5 h-5" />
 							</button>
@@ -202,10 +206,11 @@
 									{monthIndex === month - 1 && pickerYear === year
 										? 'bg-blue-600 text-white font-medium'
 										: 'hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300'}"
-									onclick={stopPropagation(() => {
+									onclick={(e) => {
+										e.stopPropagation();
 										goto(`?year=${pickerYear}&month=${monthIndex + 1}`);
 										isDatePickerOpen = false;
-									})}
+									}}
 								>
 									{$formatDate(new Date(2000, monthIndex), {
 										month: 'short'
@@ -438,7 +443,10 @@
 												: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'}
 										{isPast ? 'opacity-50 saturate-50 brightness-95' : 'hover:brightness-95'}"
 										title={event.title}
-										onclick={stopPropagation(() => openDayModal(date, dayEvents))}
+										onclick={(e) => {
+											e.stopPropagation();
+											openDayModal(date, dayEvents);
+										}}
 									>
 										<!-- Time & Icon Container -->
 										<div class="flex items-center gap-1 shrink-0">
@@ -476,7 +484,10 @@
 								{#if dayEvents.length > MAX_VISIBLE_EVENTS}
 									<button
 										class="px-1.5 py-0.5 text-[9px] font-bold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-left w-full hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer flex items-center gap-1"
-										onclick={stopPropagation(() => openDayModal(date, dayEvents))}
+										onclick={(e) => {
+											e.stopPropagation();
+											openDayModal(date, dayEvents);
+										}}
 									>
 										<span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span>
 										{$t('theater.events.moreEvents', {

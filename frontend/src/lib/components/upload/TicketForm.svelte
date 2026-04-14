@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
 	import { setlistsStore } from '$lib/stores/theater';
@@ -85,7 +84,13 @@
 <div
 	class="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl p-4 sm:p-6 md:p-8 rounded-3xl border border-white/50 dark:border-zinc-700 shadow-xl h-fit"
 >
-	<form onsubmit={preventDefault(() => onsubmit?.())} class="space-y-8">
+	<form
+		onsubmit={(e) => {
+			e.preventDefault();
+			onsubmit?.();
+		}}
+		class="space-y-8"
+	>
 		<!-- Event Details -->
 		<div class="space-y-4">
 			<h3

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { stopPropagation } from 'svelte/legacy';
-
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -174,14 +172,20 @@
 						<div class="flex items-center justify-between mb-6">
 							<button
 								class="p-2 hover:bg-gray-50 dark:hover:bg-zinc-700 rounded-full transition-colors cursor-pointer"
-								onclick={stopPropagation(() => pickerYear--)}
+								onclick={(e) => {
+									e.stopPropagation();
+									pickerYear--;
+								}}
 							>
 								<ChevronLeft class="w-6 h-6" />
 							</button>
 							<span class="font-black text-xl text-themed">{pickerYear}</span>
 							<button
 								class="p-2 hover:bg-gray-50 dark:hover:bg-zinc-700 rounded-full transition-colors cursor-pointer"
-								onclick={stopPropagation(() => pickerYear++)}
+								onclick={(e) => {
+									e.stopPropagation();
+									pickerYear++;
+								}}
 							>
 								<ChevronRight class="w-6 h-6" />
 							</button>
@@ -193,10 +197,11 @@
 										month - 1 && pickerYear === year
 										? 'bg-red-600 text-white shadow-lg shadow-red-500/30'
 										: 'hover:bg-gray-50 dark:hover:bg-zinc-700 text-slate-600'}"
-									onclick={stopPropagation(() => {
+									onclick={(e) => {
+										e.stopPropagation();
 										goto(`${basePath}?year=${pickerYear}&month=${monthIndex + 1}`);
 										isDatePickerOpen = false;
-									})}
+									}}
 								>
 									{$formatDate(new Date(2000, monthIndex), { month: 'short' })}
 								</button>
@@ -384,14 +389,20 @@
 										class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider truncate cursor-pointer {event.isBirthday
 											? 'bg-pink-100 text-pink-700'
 											: 'bg-red-50 text-red-700'} brightness-95 min-w-0 hover:scale-[1.02] active:scale-95 transition-transform"
-										onclick={stopPropagation(() => openDayModal(date, dayEvents))}
+										onclick={(e) => {
+											e.stopPropagation();
+											openDayModal(date, dayEvents);
+										}}
 									>
 										{event.title}
 									</button>
 								{/each}
 								{#if dayEvents.length > 3}
 									<button
-										onclick={stopPropagation(() => openDayModal(date, dayEvents))}
+										onclick={(e) => {
+											e.stopPropagation();
+											openDayModal(date, dayEvents);
+										}}
 										class="text-[8px] font-black text-slate-400 text-center uppercase tracking-widest mt-0.5 truncate cursor-pointer hover:text-themed transition-colors"
 									>
 										{$t('theater.calendar.more', { count: dayEvents.length - 3 })}

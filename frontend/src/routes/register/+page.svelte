@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
@@ -101,7 +99,14 @@
 	subtitle={$t('auth.register.subtitle')}
 	cardWidth="max-w-4xl"
 >
-	<form onsubmit={preventDefault(handleSubmit)} class="space-y-4" novalidate>
+	<form
+		onsubmit={(e) => {
+			e.preventDefault();
+			handleSubmit();
+		}}
+		class="space-y-4"
+		novalidate
+	>
 		<div class="grid md:grid-cols-2 gap-4">
 			<!-- Left Column: Personal Information -->
 			<div class="space-y-3">

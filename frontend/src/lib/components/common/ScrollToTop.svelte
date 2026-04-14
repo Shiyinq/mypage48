@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { ArrowUp } from 'lucide-svelte';
 	import { fly } from 'svelte/transition';
 
@@ -9,7 +7,7 @@
 
 	// Show button if scrolled down AND (not on landing page OR user is authenticated)
 	// This hides it on the public landing page ('/') but keeps it on the dashboard ('/')
-	run(() => {
+	$effect(() => {
 		showButton = scrollY > 300;
 	});
 

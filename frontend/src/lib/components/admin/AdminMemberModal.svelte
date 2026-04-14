@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import { X, User, LoaderCircle, CircleCheck, Sparkles } from 'lucide-svelte';
 	import type { Member } from '$lib/apis/members';
 	import { fade } from 'svelte/transition';
@@ -131,7 +129,13 @@
 					</button>
 				</div>
 
-				<form onsubmit={preventDefault(handleSubmit)} class="space-y-6">
+				<form
+					onsubmit={(e) => {
+						e.preventDefault();
+						handleSubmit();
+					}}
+					class="space-y-6"
+				>
 					<!-- Basic Info -->
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div class="space-y-2">

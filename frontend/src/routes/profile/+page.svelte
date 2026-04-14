@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { onMount } from 'svelte';
 	import { isAuthenticated, showToast, userProfile, isUserProfileLoading } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
@@ -95,7 +93,7 @@
 
 	// Subscribe to store changes to keep local state in sync
 	// The userProfile store now contains UserWithProfileStats with profile stats
-	run(() => {
+	$effect(() => {
 		const storeState = $userProfile;
 		const storeProfile = storeState.data;
 		// loading state is handled by top-level reactive declaration

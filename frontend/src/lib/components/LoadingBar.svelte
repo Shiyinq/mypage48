@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { navigating } from '$app/stores';
 	import { onDestroy } from 'svelte';
 
@@ -53,7 +51,7 @@
 	}
 
 	// Watch for navigation changes
-	run(() => {
+	$effect(() => {
 		if ($navigating) {
 			if (!visible || p >= 1) {
 				start();

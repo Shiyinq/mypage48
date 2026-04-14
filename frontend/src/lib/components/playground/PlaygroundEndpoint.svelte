@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { Play, Terminal, Hash, Globe, Server, RefreshCw, Copy, AlertCircle } from 'lucide-svelte';
 	import { playgroundStore } from '$lib/stores/playground';
 	import { accessToken } from '$lib/stores/accessToken';
@@ -71,7 +69,7 @@
 		}
 	}
 
-	run(() => {
+	$effect(() => {
 		if (endpoint && endpoint.id !== lastEndpointId) {
 			lastEndpointId = endpoint.id;
 			parameters = {};

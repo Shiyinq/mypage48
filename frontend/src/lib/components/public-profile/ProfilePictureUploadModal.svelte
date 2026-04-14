@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { createBubbler, stopPropagation } from 'svelte/legacy';
-
-	const bubble = createBubbler();
 	import { X, LoaderCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -40,8 +37,8 @@
 >
 	<div
 		class="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-[fadeIn_0.2s_ease-out]"
-		onclick={stopPropagation(bubble('click'))}
-		onkeydown={stopPropagation(bubble('keydown'))}
+		onclick={(e) => e.stopPropagation()}
+		onkeydown={(e) => e.stopPropagation()}
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="preview-modal-title"

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run, handlers, stopPropagation } from 'svelte/legacy';
-
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -442,10 +440,10 @@
 				? `https://www.showroom-live.com/r/${streamFromList?.room_url_key || ''}`
 				: '#'
 	);
-	run(() => {
+	$effect(() => {
 		if (currentTime > peakDuration) peakDuration = currentTime;
 	});
-	run(() => {
+	$effect(() => {
 		if (duration > 0 && duration !== Infinity && duration > peakDuration) peakDuration = duration;
 	});
 	let displayDuration = $derived(peakDuration || currentTime);
@@ -454,7 +452,7 @@
 	let roomIdentifier = $derived($currentStream?.room_identifier || null);
 
 	let startAt = $derived($currentStream?.start_at || null);
-	run(() => {
+	$effect(() => {
 		if (platform && id && lastInitializedId !== `${platform}-${id}`) {
 			lastInitializedId = `${platform}-${id}`;
 			initPlayer();
@@ -715,10 +713,10 @@
 						updateBufferAndDuration();
 					}}
 					onplay={() => (isPaused = false)}
-					onpause={handlers(
-						() => (isPaused = true),
-						() => (isBuffering = false)
-					)}
+					onpause={() => {
+						isPaused = true;
+						isBuffering = false;
+					}}
 					onclick={() => {
 						if (ignoreNextVideoClick) {
 							ignoreNextVideoClick = false;
@@ -735,7 +733,10 @@
 				{#if autoplayBlocked}
 					<button
 						class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-sm z-30 group/autoplay cursor-pointer"
-						onclick={stopPropagation(retryPlayback)}
+						onclick={(e) => {
+							e.stopPropagation();
+							retryPlayback();
+						}}
 					>
 						<div
 							class="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20 group-hover/autoplay:scale-110 group-hover/autoplay:bg-white/20 transition-all duration-300"

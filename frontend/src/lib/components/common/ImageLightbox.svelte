@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run, passive } from 'svelte/legacy';
-
 	import { fade, scale } from 'svelte/transition';
 	import { X, ZoomIn, ZoomOut, RotateCcw, Download } from 'lucide-svelte';
 	import { onMount, onDestroy } from 'svelte';
@@ -116,7 +114,7 @@
 		if (browser) document.body.classList.remove('modal-open');
 	});
 
-	run(() => {
+	$effect(() => {
 		if (browser && isOpen) {
 			document.body.classList.add('modal-open');
 		} else if (browser) {
@@ -124,7 +122,7 @@
 		}
 	});
 
-	run(() => {
+	$effect(() => {
 		if (!isOpen) resetZoom();
 	});
 </script>
@@ -209,8 +207,8 @@
 				onmousemove={handleMouseMove}
 				onmouseup={handleMouseUp}
 				onmouseleave={handleMouseUp}
-				use:passive={['touchstart', () => handleTouchStart]}
-				use:passive={['touchmove', () => handleTouchMove]}
+				ontouchstart={handleTouchStart}
+				ontouchmove={handleTouchMove}
 				ontouchend={handleMouseUp}
 				onwheel={handleWheel}
 				role="presentation"

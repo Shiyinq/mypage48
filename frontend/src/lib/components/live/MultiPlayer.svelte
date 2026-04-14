@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run, stopPropagation } from 'svelte/legacy';
-
 	import { onMount, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { live as liveApi } from '$lib/apis/live';
@@ -46,7 +44,7 @@
 	let recordedChunks: Blob[] = [];
 
 	let isEffectivelyMuted = $state(false);
-	run(() => {
+	$effect(() => {
 		isEffectivelyMuted = muted || (isNaN(Number(volume)) ? false : Number(volume) === 0);
 	});
 
@@ -73,7 +71,7 @@
 		}
 	}
 
-	run(() => {
+	$effect(() => {
 		if (videoElement || volume !== undefined || muted !== undefined) {
 			syncAudioState();
 		}
@@ -275,7 +273,7 @@
 	});
 
 	// Re-init if platform or id changes
-	run(() => {
+	$effect(() => {
 		if (platform && id && videoElement) {
 			initPlayer();
 		}
@@ -303,7 +301,10 @@
 	{#if autoplayBlocked}
 		<button
 			class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] z-20 group/autoplay cursor-pointer"
-			onclick={stopPropagation(retryPlayback)}
+			onclick={(e) => {
+				e.stopPropagation();
+				retryPlayback();
+			}}
 		>
 			<div
 				class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/40 group-hover/autoplay:scale-110 group-hover/autoplay:bg-white/30 transition-all duration-300"

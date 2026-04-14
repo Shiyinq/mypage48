@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import '../app.css';
 	import { isAuthenticated, toast, userProfile, isInitialDataLoaded } from '$lib/stores';
 	import { locale, type Locale } from '$lib/i18n';
@@ -145,7 +143,7 @@
 	let isFullScreenRoute = $derived($page.url.pathname.includes('/live/multiview'));
 	let isPlaygroundRoute = $derived($page.url.pathname.startsWith('/playground'));
 	// Reset state when user logs out
-	run(() => {
+	$effect(() => {
 		if (!$isAuthenticated) {
 			hasFetchedInitialData = false;
 			isInitialDataLoaded.set(false);
@@ -154,27 +152,27 @@
 	});
 	// Reactively fetch initial data when user becomes authenticated
 	// This handles the case when user logs in and layout is already mounted
-	run(() => {
+	$effect(() => {
 		if (mounted && $isAuthenticated && !hasFetchedInitialData) {
 			fetchInitialDataIfNeeded();
 		}
 	});
 	// Only check auth redirects after component is mounted (hydrated)
 	// This prevents premature redirects during slow connections
-	run(() => {
+	$effect(() => {
 		if (mounted && !$isAuthenticated && !isPublicPage) {
 			goto('/login');
 		}
 	});
 	// Redirect logged-in users away from guest-only routes (login/register)
 	// asking to view a public profile (/u/...) should NOT trigger this!
-	run(() => {
+	$effect(() => {
 		if (mounted && $isAuthenticated && isGuestRoute) {
 			goto('/');
 		}
 	});
 	// Redirect logged-in users away from public JKT48 routes to their theater counterparts
-	run(() => {
+	$effect(() => {
 		if (mounted && $isAuthenticated && $page.url.pathname.startsWith('/jkt48/')) {
 			let theaterPath = $page.url.pathname.replace('/jkt48/', '/theater/');
 			// Special case for sub-routes that might have different structures
