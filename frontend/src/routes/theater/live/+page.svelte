@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
@@ -7,7 +6,6 @@
 
 	const { t } = useTranslation();
 
-	let interval: ReturnType<typeof setInterval> | undefined;
 	let initialLoading = $state($liveList.length === 0);
 
 	async function fetchLives() {
@@ -15,13 +13,10 @@
 		initialLoading = false;
 	}
 
-	onMount(() => {
+	$effect(() => {
 		fetchLives();
-		interval = setInterval(() => liveStore.loadLiveList(true), 30000);
-	});
-
-	onDestroy(() => {
-		if (interval) clearInterval(interval);
+		const intervalId = setInterval(() => liveStore.loadLiveList(true), 30000);
+		return () => clearInterval(intervalId);
 	});
 </script>
 
