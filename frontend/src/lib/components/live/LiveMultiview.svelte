@@ -769,7 +769,7 @@
 							{#if focusedStream.platform === 'showroom' && focusedStream.room_id}
 								<ShowroomChat roomId={focusedStream.room_id} />
 							{:else if focusedStreamDetails}
-								<IDNChat roomIdentifier={focusedStreamDetails.room_identifier} />
+								<IDNChat roomIdentifier={focusedStreamDetails?.room_identifier || ''} />
 							{:else}
 								<div class="flex flex-col items-center justify-center h-full text-center p-8">
 									<RefreshCw size={24} class="text-gray-300 animate-spin mb-4" />
