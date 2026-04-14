@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy, tick } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { MessageCircle, Trophy } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
@@ -96,6 +97,7 @@
 			let recipient: { name: string; avatar: string } | undefined = undefined;
 			let giftData: { name: string; img: string; color?: string } | undefined = undefined;
 
+			let isSystem = false;
 			if (text.startsWith('{')) {
 				try {
 					const json = JSON.parse(text);
@@ -144,6 +146,7 @@
 							};
 						}
 					} else if (json.system && json.system.message) {
+						isSystem = true;
 						parsedText = json.system.message;
 					} else {
 						parsedText = json.message || json.text || parsedText;
@@ -167,7 +170,7 @@
 					text: parsedText,
 					avatar,
 					timestamp: Date.now(),
-					type: isGift ? 'gift' : isLetter ? 'letter' : 'chat',
+					type: isGift ? 'gift' : isLetter ? 'letter' : isSystem ? 'system' : 'chat',
 					gift: giftData,
 					letterType: isLetter ? letterType : undefined,
 					recipient: isLetter ? recipient : undefined
@@ -223,122 +226,134 @@
 		{/if}
 
 		{#each messages as msg (msg.id || msg.timestamp + msg.user)}
-			<div class="flex items-start gap-3 group">
-				{#if msg.avatar}
-					<img
-						src={msg.avatar}
-						alt={msg.user}
-						class="w-8 h-8 rounded-full object-cover border border-gray-100 dark:border-zinc-800"
-					/>
-				{:else}
-					<div
-						class="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-slate-400"
+			{#if msg.type === 'system'}
+				<div class="flex items-center gap-2 my-1 opacity-80 px-2" in:fade>
+					<div class="h-px flex-1 min-w-[12px] bg-slate-200 dark:bg-zinc-800/50"></div>
+					<p
+						class="text-[9px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-[0.05em] text-center"
 					>
-						{msg.user[0]}
-					</div>
-				{/if}
-				<div class="flex-1 min-w-0">
-					<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate">
-						{msg.user}
+						{msg.text}
 					</p>
-
-					{#if msg.type === 'gift' && msg.gift}
-						{@const isLottie = msg.gift.img
-							? msg.gift.img.includes('/animation/') ||
-								!msg.gift.img.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i)
-							: false}
-						{@const isRecent = messages
-							.filter((m) => m.type === 'gift')
-							.slice(-3)
-							.some((m) => (m.id || m.timestamp) === (msg.id || msg.timestamp))}
-						<div
-							class="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl rounded-tl-none text-white text-sm font-black italic shadow-lg shadow-black/10 transition-all max-w-full"
-							style="background: {msg.gift.color || '#ef4444'}"
-						>
-							{#if msg.gift.img}
-								{#if isLottie && isRecent}
-									<lottie-player
-										src={getExternalMediaUrl(msg.gift.img)}
-										background="transparent"
-										speed="1"
-										style="width: 50px; height: 50px;"
-										class="object-contain drop-shadow-md"
-										loop
-										autoplay
-										onerror={handleMediaError}
-									></lottie-player>
-								{:else if isLottie}
-									<!-- Static fallback for older Lottie gifts to save resources -->
-									<div class="w-[50px] h-[50px] flex items-center justify-center opacity-50">
-										<MessageCircle size={20} />
-									</div>
-								{:else}
-									<img
-										src={getExternalMediaUrl(msg.gift.img)}
-										alt={msg.gift.name}
-										referrerpolicy="no-referrer"
-										style="width: 50px; height: 50px;"
-										onerror={handleMediaError}
-										class="object-contain drop-shadow-md"
-									/>
-								{/if}
-							{/if}
-							<div>
-								<p class="text-[10px] uppercase tracking-tighter opacity-80 mb-0.5">
-									{$t('theater.live.multiview.sending_gift')}
-								</p>
-								{msg.gift.name.toUpperCase()}
-							</div>
-						</div>
-					{:else if msg.type === 'letter'}
-						<div
-							class="inline-flex flex-col gap-3 px-4 py-3 rounded-2xl rounded-tl-none bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 max-w-full"
-						>
-							<div
-								class="flex items-center flex-wrap gap-x-3 gap-y-2 border-b border-white/20 pb-2.5 mb-1.5"
-							>
-								{#if msg.recipient}
-									<div
-										class="flex items-center gap-2 bg-black/15 px-2.5 py-1.5 rounded-xl border border-white/10 shrink-0 shadow-sm"
-									>
-										<span class="text-[9px] font-bold opacity-60 italic">TO:</span>
-										<div class="flex items-center gap-2">
-											<img
-												src={getExternalMediaUrl(msg.recipient.avatar)}
-												alt={msg.recipient.name}
-												referrerpolicy="no-referrer"
-												class="w-5 h-5 rounded-full object-cover ring-1 ring-white/20"
-												onerror={handleMediaError}
-											/>
-											<span class="text-[10px] font-black">{msg.recipient.name}</span>
-										</div>
-									</div>
-								{/if}
-
-								<div class="flex items-center gap-1.5 opacity-80 brightness-110">
-									{#if msg.recipient}
-										<div class="w-1 h-1 rounded-full bg-white/30 hidden sm:block"></div>
-									{/if}
-									<Trophy class="w-2.5 h-2.5" />
-									<span class="text-[9px] font-black uppercase tracking-widest">
-										{msg.letterType || 'FAN LETTER'}
-									</span>
-								</div>
-							</div>
-
-							<p class="text-sm leading-relaxed font-medium italic">
-								"{msg.text}"
-							</p>
-						</div>
+					<div class="h-px flex-1 min-w-[12px] bg-slate-200 dark:bg-zinc-800/50"></div>
+				</div>
+			{:else}
+				<div class="flex items-start gap-3 group">
+					{#if msg.avatar}
+						<img
+							src={msg.avatar}
+							alt={msg.user}
+							class="w-8 h-8 rounded-full object-cover border border-gray-100 dark:border-zinc-800"
+						/>
 					{:else}
 						<div
-							class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm break-words overflow-wrap-anywhere whitespace-pre-wrap max-w-full"
+							class="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-slate-400"
 						>
-							{msg.text}
+							{msg.user[0]}
 						</div>
 					{/if}
+					<div class="flex-1 min-w-0">
+						<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate">
+							{msg.user}
+						</p>
+
+						{#if msg.type === 'gift' && msg.gift}
+							{@const isLottie = msg.gift.img
+								? msg.gift.img.includes('/animation/') ||
+									!msg.gift.img.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i)
+								: false}
+							{@const isRecent = messages
+								.filter((m) => m.type === 'gift')
+								.slice(-3)
+								.some((m) => (m.id || m.timestamp) === (msg.id || msg.timestamp))}
+							<div
+								class="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl rounded-tl-none text-white text-sm font-black italic shadow-lg shadow-black/10 transition-all max-w-full"
+								style="background: {msg.gift.color || '#ef4444'}"
+							>
+								{#if msg.gift.img}
+									{#if isLottie && isRecent}
+										<lottie-player
+											src={getExternalMediaUrl(msg.gift.img)}
+											background="transparent"
+											speed="1"
+											style="width: 50px; height: 50px;"
+											class="object-contain drop-shadow-md"
+											loop
+											autoplay
+											onerror={handleMediaError}
+										></lottie-player>
+									{:else if isLottie}
+										<!-- Static fallback for older Lottie gifts to save resources -->
+										<div class="w-[50px] h-[50px] flex items-center justify-center opacity-50">
+											<MessageCircle size={20} />
+										</div>
+									{:else}
+										<img
+											src={getExternalMediaUrl(msg.gift.img)}
+											alt={msg.gift.name}
+											referrerpolicy="no-referrer"
+											style="width: 50px; height: 50px;"
+											onerror={handleMediaError}
+											class="object-contain drop-shadow-md"
+										/>
+									{/if}
+								{/if}
+								<div>
+									<p class="text-[10px] uppercase tracking-tighter opacity-80 mb-0.5">
+										{$t('theater.live.multiview.sending_gift')}
+									</p>
+									{msg.gift.name.toUpperCase()}
+								</div>
+							</div>
+						{:else if msg.type === 'letter'}
+							<div
+								class="inline-flex flex-col gap-3 px-4 py-3 rounded-2xl rounded-tl-none bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 max-w-full"
+							>
+								<div
+									class="flex items-center flex-wrap gap-x-3 gap-y-2 border-b border-white/20 pb-2.5 mb-1.5"
+								>
+									{#if msg.recipient}
+										<div
+											class="flex items-center gap-2 bg-black/15 px-2.5 py-1.5 rounded-xl border border-white/10 shrink-0 shadow-sm"
+										>
+											<span class="text-[9px] font-bold opacity-60 italic">TO:</span>
+											<div class="flex items-center gap-2">
+												<img
+													src={getExternalMediaUrl(msg.recipient.avatar)}
+													alt={msg.recipient.name}
+													referrerpolicy="no-referrer"
+													class="w-5 h-5 rounded-full object-cover ring-1 ring-white/20"
+													onerror={handleMediaError}
+												/>
+												<span class="text-[10px] font-black">{msg.recipient.name}</span>
+											</div>
+										</div>
+									{/if}
+
+									<div class="flex items-center gap-1.5 opacity-80 brightness-110">
+										{#if msg.recipient}
+											<div class="w-1 h-1 rounded-full bg-white/30 hidden sm:block"></div>
+										{/if}
+										<Trophy class="w-2.5 h-2.5" />
+										<span class="text-[9px] font-black uppercase tracking-widest">
+											{msg.letterType || 'FAN LETTER'}
+										</span>
+									</div>
+								</div>
+
+								<p class="text-sm leading-relaxed font-medium italic">
+									"{msg.text}"
+								</p>
+							</div>
+						{:else}
+							<div
+								class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm break-words overflow-wrap-anywhere whitespace-pre-wrap max-w-full"
+							>
+								{msg.text}
+							</div>
+						{/if}
+					</div>
 				</div>
-			</div>
+			{/if}
 		{/each}
 
 		{#if messages.length === 0}

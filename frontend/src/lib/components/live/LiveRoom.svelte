@@ -251,7 +251,7 @@
 				fetchOtherLive();
 			}
 		}, 30000);
-	
+
 		return () => {
 			if (refreshInterval) clearInterval(refreshInterval);
 			if (typeof document !== 'undefined') {
