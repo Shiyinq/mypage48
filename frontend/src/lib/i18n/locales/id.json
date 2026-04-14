@@ -852,7 +852,7 @@
 			"connecting": "Menyambungkan...",
 			"disconnected": "Terputus",
 			"reconnect_idn": "Koneksi terputus. Mencoba menghubungkan kembali dalam beberapa detik...",
-			"reconnect_showroom": "Gagal memuat chat. Pastikan koneksi internet stabil atau coba muat ulang stream.",
+			"reconnect_showroom": "Koneksi terputus. Mencoba menghubungkan kembali dalam beberapa detik...",
 			"switchMultiview": "Pindah ke Multi-view"
 		},
 		"news": {
