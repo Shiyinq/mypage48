@@ -5,7 +5,6 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { Ticket as TicketIcon, DollarSign, Armchair, Camera, Users } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 
 	// Import dashboard components
@@ -24,8 +23,6 @@
 	import { dashboardFilter, dashboardStatsData, isDashboardLoading } from '$lib/stores/dashboard';
 
 	const { t } = useTranslation();
-
-	let mounted = $state(false);
 
 	function clickOutside(node: HTMLElement) {
 		const handleClick = (event: MouseEvent) => {
@@ -64,13 +61,9 @@
 		await dashboardStatsData.load($dashboardFilter);
 	}
 
-	onMount(() => {
-		mounted = true;
-	});
-
 	// Refetch when filter params change
 	$effect(() => {
-		if (mounted && $isAuthenticated && $dashboardFilter) {
+		if ($isAuthenticated && $dashboardFilter) {
 			fetchDashboardStats();
 		}
 	});
