@@ -197,8 +197,7 @@
 				>
 					<PlaygroundResponse
 						response={playgroundStore.selectedResult}
-						error={playgroundStore.selectedResult &&
-						playgroundStore.selectedResult.status >= 400
+						error={playgroundStore.selectedResult && playgroundStore.selectedResult.status >= 400
 							? playgroundStore.selectedResult
 							: null}
 						duration={playgroundStore.selectedResult?.duration}
