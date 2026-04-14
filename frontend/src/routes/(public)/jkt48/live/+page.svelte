@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -9,21 +8,25 @@
 
 	const { t } = useTranslation();
 
-	let interval: ReturnType<typeof setInterval> | null = null;
-
 	let initialLoading = $state($liveList.length === 0);
+
 	async function fetchLives() {
-		await liveStore.loadLiveList();
-		initialLoading = false;
+		try {
+			await liveStore.loadLiveList();
+		} finally {
+			initialLoading = false;
+		}
 	}
 
-	onMount(() => {
+	$effect(() => {
 		fetchLives();
-		interval = setInterval(() => liveStore.loadLiveList(true), 30000);
-	});
+		const intervalId = setInterval(() => {
+			liveStore.loadLiveList(true);
+		}, 30000);
 
-	onDestroy(() => {
-		if (interval) clearInterval(interval);
+		return () => {
+			clearInterval(intervalId);
+		};
 	});
 </script>
 
@@ -97,6 +100,3 @@
 		<LiveGrid liveList={$liveList} loading={$liveLoading} {initialLoading} />
 	</div>
 </div>
-
-<style>
-</style>

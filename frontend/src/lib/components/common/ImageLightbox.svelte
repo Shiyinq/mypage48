@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
 	import { X, ZoomIn, ZoomOut, RotateCcw, Download } from 'lucide-svelte';
-	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 
 	interface Props {
@@ -105,20 +104,14 @@
 		}
 	}
 
-	onMount(() => {
-		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
-	});
-
-	onDestroy(() => {
-		if (browser) document.body.classList.remove('modal-open');
-	});
-
 	$effect(() => {
 		if (browser && isOpen) {
 			document.body.classList.add('modal-open');
-		} else if (browser) {
-			document.body.classList.remove('modal-open');
+			window.addEventListener('keydown', handleKeyDown);
+			return () => {
+				document.body.classList.remove('modal-open');
+				window.removeEventListener('keydown', handleKeyDown);
+			};
 		}
 	});
 

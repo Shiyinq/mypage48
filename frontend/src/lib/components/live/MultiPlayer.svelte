@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { live as liveApi } from '$lib/apis/live';
 	import { API_BASE } from '$lib/apis/client';
@@ -153,7 +152,7 @@
 								console.log('Proxy/Stream 404 detected, triggering offline');
 								onoffline?.();
 								error = $t('theater.live.offline');
-								hls.destroy();
+								if (hls) hls.destroy();
 								loading = false;
 								return;
 							}
@@ -173,7 +172,7 @@
 										error = $t('theater.live.multiview.stream_error', {
 											details: data.details || 'Unknown error'
 										});
-										hls.destroy();
+										if (hls) hls.destroy();
 										loading = false;
 										break;
 								}
@@ -245,38 +244,41 @@
 		}
 	}
 
-	onMount(() => {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		if ((window as any).Hls) {
-			initPlayer();
-		} else {
-			// Checklist to ensure only one script is added
-			if (!document.getElementById('hls-js-script')) {
-				const script = document.createElement('script');
-				script.id = 'hls-js-script';
-				script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
-				script.onload = () => {
-					// Trigger init for all players waiting
-					window.dispatchEvent(new CustomEvent('hls-js-loaded'));
-					initPlayer();
-				};
-				document.head.appendChild(script);
-			} else {
-				// Wait for the script to load if already added by another component
-				window.addEventListener('hls-js-loaded', initPlayer, { once: true });
-			}
-		}
-	});
-
-	onDestroy(() => {
-		if (hls) hls.destroy();
-	});
-
-	// Re-init if platform or id changes
 	$effect(() => {
 		if (platform && id && videoElement) {
-			initPlayer();
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const w = window as any;
+			if (w.Hls) {
+				initPlayer();
+			} else {
+				// Checklist to ensure only one script is added
+				if (!document.getElementById('hls-js-script')) {
+					const script = document.createElement('script');
+					script.id = 'hls-js-script';
+					script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+					script.onload = () => {
+						// Trigger init for all players waiting
+						window.dispatchEvent(new CustomEvent('hls-js-loaded'));
+						initPlayer();
+					};
+					document.head.appendChild(script);
+				} else {
+					// Wait for the script to load if already added by another component
+					const handleLoaded = () => initPlayer();
+					window.addEventListener('hls-js-loaded', handleLoaded, { once: true });
+				}
+			}
 		}
+
+		return () => {
+			if (hls) {
+				hls.destroy();
+				hls = null;
+			}
+			if (hammerInterval) {
+				clearInterval(hammerInterval);
+			}
+		};
 	});
 </script>
 

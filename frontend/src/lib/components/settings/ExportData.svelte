@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		exportStore,
@@ -33,12 +32,14 @@
 		}
 	};
 
-	onMount(() => {
+	$effect(() => {
 		pollStatus();
-	});
-
-	onDestroy(() => {
-		if (pollInterval) clearInterval(pollInterval);
+		return () => {
+			if (pollInterval) {
+				clearInterval(pollInterval);
+				pollInterval = null;
+			}
+		};
 	});
 
 	const handleRequestExport = async () => {

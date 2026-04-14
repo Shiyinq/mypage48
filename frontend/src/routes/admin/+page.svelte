@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
 	import { adminStore, isAdminUsersLoading } from '$lib/stores/admin';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import TableSkeleton from '$lib/components/skeletons/TableSkeleton.svelte';
@@ -20,24 +19,21 @@
 	// Initial load state
 	let isInitialLoad = $state(true);
 
-	onMount(() => {
+	$effect(() => {
 		// Only load if data is not already cached
 		if (usersList.length === 0) {
 			adminStore.loadUsers();
 		} else {
 			isInitialLoad = false;
 		}
-	});
 
-	// Update initial load state when data is loaded
-	$effect(() => {
 		if (usersList.length > 0) {
 			isInitialLoad = false;
 		}
-	});
 
-	onDestroy(() => {
-		if (searchTimeout) clearTimeout(searchTimeout);
+		return () => {
+			if (searchTimeout) clearTimeout(searchTimeout);
+		};
 	});
 
 	function handleSearch() {
