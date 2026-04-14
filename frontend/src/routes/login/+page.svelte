@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import { goto } from '$app/navigation';
 	import { isAuthenticated, showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
@@ -79,7 +77,14 @@
 <SEO title={$t('auth.login.title')} path="/login" description={$t('seo.login')} />
 
 <AuthLayout title={$t('auth.login.title')} subtitle={$t('auth.login.subtitle')}>
-	<form onsubmit={preventDefault(handleSubmit)} class="space-y-5" novalidate>
+	<form
+		onsubmit={(e) => {
+			e.preventDefault();
+			handleSubmit();
+		}}
+		class="space-y-5"
+		novalidate
+	>
 		<div>
 			<label for="email" class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
 				>{$t('auth.login.emailLabel')}</label

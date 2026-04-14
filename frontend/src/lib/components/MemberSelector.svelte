@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { tick } from 'svelte';
 	import { members, type Member } from '$lib/apis/members';
 	import { User, Search, X, Check } from 'lucide-svelte';
@@ -123,12 +121,12 @@
 		searchQuery = '';
 		memberList = [];
 	}
-	run(() => {
+	$effect(() => {
 		if (isOpen && memberList.length === 0) {
 			loadMembers(true);
 		}
 	});
-	run(() => {
+	$effect(() => {
 		if (isOpen && sentinel && observer) {
 			observer.observe(sentinel);
 		}

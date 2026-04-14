@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { self } from 'svelte/legacy';
-
 	import Button from './Button.svelte';
 
 	interface Props {
@@ -32,7 +30,13 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="modal-backdrop" onclick={self(() => oncancel?.())} role="presentation">
+<div
+	class="modal-backdrop"
+	onclick={(e) => {
+		if (e.target === e.currentTarget) oncancel?.();
+	}}
+	role="presentation"
+>
 	<div class="modal-content glass-panel">
 		<h3 class="modal-title">{title}</h3>
 		<p class="modal-message">{message}</p>

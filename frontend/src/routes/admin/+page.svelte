@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { onDestroy, onMount } from 'svelte';
 	import { adminStore, isAdminUsersLoading } from '$lib/stores/admin';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
@@ -32,7 +30,7 @@
 	});
 
 	// Update initial load state when data is loaded
-	run(() => {
+	$effect(() => {
 		if (usersList.length > 0) {
 			isInitialLoad = false;
 		}

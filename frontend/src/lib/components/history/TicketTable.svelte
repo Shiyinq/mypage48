@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { stopPropagation } from 'svelte/legacy';
-
 	import { Clock, Pencil, Save, Trash2, X, Ticket as TicketIcon } from 'lucide-svelte';
 	import type { Ticket } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -133,12 +131,18 @@
 										onblur={() => saveNote(ticket)}
 									/>
 									<button
-										onclick={stopPropagation(() => saveNote(ticket))}
+										onclick={(e) => {
+											e.stopPropagation();
+											saveNote(ticket);
+										}}
 										class="p-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 cursor-pointer"
 										><Save class="w-3 h-3" /></button
 									>
 									<button
-										onclick={stopPropagation(cancelEditingNote)}
+										onclick={(e) => {
+											e.stopPropagation();
+											cancelEditingNote();
+										}}
 										class="p-1.5 bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-zinc-600 cursor-pointer"
 										><X class="w-3 h-3" /></button
 									>

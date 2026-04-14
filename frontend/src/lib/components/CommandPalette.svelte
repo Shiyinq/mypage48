@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { fade, scale } from 'svelte/transition';
@@ -59,7 +57,7 @@
 
 	let actions: Action[] = $state([]);
 
-	run(() => {
+	$effect(() => {
 		actions = [
 			// Admin (Conditional)
 			...($userProfile.data?.isAdmin
@@ -271,7 +269,7 @@
 	);
 
 	// Reset selection when search changes or when opening
-	run(() => {
+	$effect(() => {
 		if (searchQuery || open) {
 			selectedIndex = 0;
 		}
@@ -333,7 +331,7 @@
 	}
 
 	// Focus input when opened
-	run(() => {
+	$effect(() => {
 		if (open && inputEl) {
 			const el = inputEl;
 			setTimeout(() => el.focus(), 10); // Tiny delay to ensure visibility

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { onMount, onDestroy } from 'svelte';
 	import { radioStore, RADIO_CHANNELS, type RadioChannel } from '$lib/stores/radio';
 
@@ -14,7 +12,7 @@
 
 	// Sync Store -> YouTube Player: React strictly to play/pause toggle
 	let prevIsPlaying = $state(false);
-	run(() => {
+	$effect(() => {
 		if (player && isInitialized && prevIsPlaying !== $radioStore.isPlaying) {
 			prevIsPlaying = $radioStore.isPlaying;
 			if ($radioStore.isPlaying) {
@@ -27,7 +25,7 @@
 
 	// Watch for Playlist Changes
 	let previousPlaylistId = $state('');
-	run(() => {
+	$effect(() => {
 		if (
 			player &&
 			isInitialized &&
@@ -53,7 +51,7 @@
 		}
 	});
 
-	run(() => {
+	$effect(() => {
 		if (player && isInitialized) {
 			player.setVolume($radioStore.isMuted ? 0 : $radioStore.volume);
 		}
@@ -61,7 +59,7 @@
 
 	// Trigger Next Track (only run once per trigger increment)
 	let lastTrigger = $state(0);
-	run(() => {
+	$effect(() => {
 		if (player && isInitialized && $radioStore.nextTrackTrigger > lastTrigger) {
 			lastTrigger = $radioStore.nextTrackTrigger;
 			player.nextVideo();

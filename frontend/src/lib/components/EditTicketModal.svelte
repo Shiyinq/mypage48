@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import { ticketsStore, showToast, storageStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { invalidateDashboard } from '$lib/stores/dashboard';
@@ -315,7 +313,13 @@
 				<div
 					class="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/50 dark:border-zinc-700 shadow-xl h-fit"
 				>
-					<form onsubmit={preventDefault(handleSubmit)} class="space-y-8">
+					<form
+						onsubmit={(e) => {
+							e.preventDefault();
+							handleSubmit();
+						}}
+						class="space-y-8"
+					>
 						<!-- Event Details -->
 						<EventSection
 							bind:title={formData.event.title}

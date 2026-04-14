@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { userProfile, isInitialDataLoaded, isUserProfileLoading } from '$lib/stores';
@@ -18,7 +16,7 @@
 	const currentYear = new Date().getFullYear();
 	const availableYears = Array.from({ length: currentYear - 2011 + 1 }, (_, i) => currentYear - i);
 
-	run(() => {
+	$effect(() => {
 		if ($userProfile.data) {
 			isPublic = $userProfile.data.isPublic || false;
 			// Only sync from profile if we aren't currently editing

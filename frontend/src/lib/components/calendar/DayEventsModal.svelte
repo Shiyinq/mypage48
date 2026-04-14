@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { self } from 'svelte/legacy';
-
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate, formatTime } from '$lib/i18n';
 	import type { CalendarEvent } from '$lib/types/events';
@@ -33,7 +31,9 @@
 {#if isOpen}
 	<div
 		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm bg-black/50 transition-opacity"
-		onclick={self(close)}
+		onclick={(e) => {
+			if (e.target === e.currentTarget) close();
+		}}
 		role="presentation"
 	>
 		<div

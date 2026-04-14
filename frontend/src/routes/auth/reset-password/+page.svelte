@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -123,7 +121,14 @@
 			</h1>
 		</div>
 	{:else}
-		<form onsubmit={preventDefault(handleSubmit)} class="space-y-4" novalidate>
+		<form
+			onsubmit={(e) => {
+				e.preventDefault();
+				handleSubmit();
+			}}
+			class="space-y-4"
+			novalidate
+		>
 			<div>
 				<PasswordInput
 					id="new-password"

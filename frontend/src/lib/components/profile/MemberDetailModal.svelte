@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { run, createBubbler, stopPropagation } from 'svelte/legacy';
-
-	const bubble = createBubbler();
 	import { X, Quote, Instagram, Smartphone, Tv, Globe, Search } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
@@ -141,32 +138,32 @@
 		const ageDate = new Date(diffMs);
 		return Math.abs(ageDate.getUTCFullYear() - 1970);
 	}
-	run(() => {
+	$effect(() => {
 		if (show && member && !internalMemberId) {
 			internalMemberId = member.id;
 		}
 	});
-	run(() => {
+	$effect(() => {
 		if (!show) {
 			internalMemberId = null;
 		}
 	});
 	let currentMember = $derived(members.find((m) => m.id === internalMemberId) || member);
-	run(() => {
+	$effect(() => {
 		if (show && currentMember && activeTabSetFor !== currentMember.id) {
 			const type = currentMember.member_type?.toLowerCase() || 'member';
 			activeTab = type === 'trainee' ? 'Trainee' : 'Member';
 			activeTabSetFor = currentMember.id;
 		}
 	});
-	run(() => {
+	$effect(() => {
 		if (activeTab && sidebarScrollContainer) {
 			tick().then(() => {
 				sidebarScrollContainer?.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
 			});
 		}
 	});
-	run(() => {
+	$effect(() => {
 		if (!show) activeTabSetFor = null;
 	});
 	let displayMembers = $derived(
@@ -204,8 +201,8 @@
 		<!-- Modal Container -->
 		<div
 			class="relative w-[95vw] max-w-6xl bg-white dark:bg-zinc-900 rounded-[40px] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col md:flex-row h-[85vh] md:h-[75vh] border border-white/20 dark:border-zinc-800/50"
-			onclick={stopPropagation(bubble('click'))}
-			onkeydown={stopPropagation(bubble('keydown'))}
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
 			transition:scale={{ duration: 400, start: 0.95, easing: quintOut }}
 			role="dialog"
 			aria-modal="true"

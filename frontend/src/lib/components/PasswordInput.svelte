@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { createBubbler } from 'svelte/legacy';
-
-	const bubble = createBubbler();
 	import { Eye, EyeOff } from 'lucide-svelte';
 	interface Props {
 		value?: string;
@@ -13,6 +10,7 @@
 		disabled?: boolean;
 		leading?: import('svelte').Snippet;
 		oninput?: (e: Event) => void;
+		onblur?: (e: FocusEvent) => void;
 	}
 
 	let {
@@ -24,7 +22,8 @@
 		error = undefined,
 		disabled = false,
 		leading,
-		oninput
+		oninput,
+		onblur
 	}: Props = $props();
 
 	let visible = $state(false);
@@ -60,7 +59,7 @@
 			{placeholder}
 			{disabled}
 			oninput={handleInput}
-			onblur={bubble('blur')}
+			{onblur}
 			class={`w-full pl-12 pr-12 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${
 				error ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'
 			} ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}

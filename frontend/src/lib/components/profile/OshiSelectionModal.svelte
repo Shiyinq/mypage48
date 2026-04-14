@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { Search, X, Check } from 'lucide-svelte';
 	import { logger } from '$lib/utils/logger';
 	import Button from '$lib/components/Button.svelte';
@@ -116,10 +114,10 @@
 		}
 	}
 	// Reset/Fetch when modal opens
-	run(() => {
+	$effect(() => {
 		handleVisibilityChange(show);
 	});
-	run(() => {
+	$effect(() => {
 		if (sentinel && observer) {
 			observer.observe(sentinel);
 		}

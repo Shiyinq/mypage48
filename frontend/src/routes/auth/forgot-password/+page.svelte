@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import { authStore } from '$lib/stores/auth';
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
@@ -82,7 +80,14 @@
 	icon={KeyRound}
 >
 	{#if !isSent}
-		<form onsubmit={preventDefault(handleSubmit)} class="space-y-6" novalidate>
+		<form
+			onsubmit={(e) => {
+				e.preventDefault();
+				handleSubmit();
+			}}
+			class="space-y-6"
+			novalidate
+		>
 			<div>
 				<label
 					class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"

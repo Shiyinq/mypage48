@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run, preventDefault } from 'svelte/legacy';
-
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import Input from '$lib/components/Input.svelte';
@@ -35,7 +33,7 @@
 	let isInitialized = $state(false);
 
 	// Reactively update only if fields are empty and data becomes available (e.g. initial load latency)
-	run(() => {
+	$effect(() => {
 		if ($userProfile?.data && !isInitialized) {
 			email = $userProfile.data.email || '';
 			name = $userProfile.data.name || '';
@@ -92,7 +90,13 @@
 	<div
 		class="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-slate-100 dark:border-zinc-800"
 	>
-		<form onsubmit={preventDefault(handleSubmit)} class="space-y-6">
+		<form
+			onsubmit={(e) => {
+				e.preventDefault();
+				handleSubmit();
+			}}
+			class="space-y-6"
+		>
 			<!-- Type -->
 			<div class="space-y-2">
 				<label

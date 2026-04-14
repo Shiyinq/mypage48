@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import type { PageData } from './$types';
 	import { SEO } from '$lib/components';
 	import { Ticket } from 'lucide-svelte';
@@ -122,7 +120,7 @@
 	let rowStats = $state({ counts: {}, maxCount: 0, uniqueVisited: 0 });
 	let seatStats = $state({});
 
-	run(() => {
+	$effect(() => {
 		if (profile?.stats) {
 			const counts = profile.stats.rowCounts || {};
 			const maxCount = Math.max(...Object.values(counts).map(Number), 0);
