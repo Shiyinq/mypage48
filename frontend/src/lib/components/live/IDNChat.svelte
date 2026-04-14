@@ -1,23 +1,29 @@
 <script lang="ts">
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
-	import { MessageCircle, Trophy } from 'lucide-svelte';
+	import { MessageCircle, Trophy, RefreshCw } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
 	import { broadcastGift } from '$lib/stores/gift';
 
 	interface Props {
 		roomIdentifier: string;
+		onStatusChange?: (status: 'connecting' | 'connected' | 'disconnected') => void;
 	}
 
-	let { roomIdentifier }: Props = $props();
+	let { roomIdentifier, onStatusChange }: Props = $props();
 
 	const { t } = useTranslation();
 
 	let socket: WebSocket | null = null;
+	let status: 'connecting' | 'connected' | 'disconnected' = $state('connecting');
 	let messages: LiveChatIDNMessage[] = $state([]);
 	let chatContainer: HTMLElement | undefined = $state();
 	let expandedSystemId: string | null = $state(null);
+
+	$effect(() => {
+		onStatusChange?.(status);
+	});
 
 	function getExternalMediaUrl(url?: string) {
 		if (!url) return '';
@@ -36,9 +42,11 @@
 	function connect() {
 		if (!roomIdentifier) return;
 
+		status = 'connecting';
 		socket = new WebSocket('wss://chat.idn.app/');
 
 		socket.onopen = () => {
+			status = 'connected';
 			const userId = Math.floor(Math.random() * 1000000);
 			const timestamp = Date.now();
 			const uuid = crypto.randomUUID();
@@ -53,6 +61,7 @@
 		socket.onmessage = (event) => {
 			const data = event.data;
 			if (data.startsWith('PING')) {
+				if (status !== 'connected') status = 'connected';
 				socket?.send(data.replace('PING', 'PONG') + '\n');
 				return;
 			}
@@ -66,7 +75,12 @@
 		};
 
 		socket.onclose = () => {
+			status = 'disconnected';
 			setTimeout(connect, 5000);
+		};
+
+		socket.onerror = () => {
+			status = 'disconnected';
 		};
 	}
 
@@ -238,11 +252,35 @@
 		bind:this={chatContainer}
 		class="flex-1 p-4 overflow-y-auto flex flex-col gap-3 scroll-smooth"
 	>
-		{#if messages.length === 0}
+		{#if status === 'disconnected'}
+			<div
+				class="bg-red-500/10 border border-red-500/20 rounded-2xl p-3 flex flex-col items-center gap-2 mb-2 shrink-0"
+				transition:fade
+			>
+				<div class="flex items-center gap-2">
+					<div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+					<span class="text-[10px] font-black uppercase tracking-widest text-red-500"
+						>{$t('theater.live.disconnected')}</span
+					>
+				</div>
+				<p class="text-[9px] text-red-500/60 font-medium text-center leading-relaxed">
+					{$t('theater.live.reconnect_idn')}
+				</p>
+			</div>
+		{:else if status === 'connecting'}
+			<div class="flex items-center justify-center gap-2 py-4 opacity-50 shrink-0" transition:fade>
+				<RefreshCw size={12} class="animate-spin text-slate-400" />
+				<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400"
+					>{$t('theater.live.connecting')}</span
+				>
+			</div>
+		{/if}
+
+		{#if messages.length === 0 && status === 'connected'}
 			<div
 				class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900"
 			>
-				{$t('theater.live.multiview.chat_started')}
+				{$t('theater.live.chat_started')}
 			</div>
 		{/if}
 

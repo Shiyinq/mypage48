@@ -716,8 +716,6 @@
 				"loading_chat": "Loading chat...",
 				"select_stream_to_chat": "Select a stream to see chat",
 				"member_offline": "{name} offline",
-				"showroom_chat": "Showroom Chat",
-				"chat_started": "Chat Started",
 				"no_messages": "No messages yet",
 				"stream_error": "Stream error: {details}",
 				"hls_not_supported": "HLS not supported",
@@ -729,6 +727,11 @@
 			},
 			"joined": "{name} joined",
 			"group_joined": "{name} and {count} others joined",
+			"chat_started": "Chat Started",
+			"connecting": "Connecting...",
+			"disconnected": "Disconnected",
+			"reconnect_idn": "Connection lost. Retrying in a few seconds...",
+			"reconnect_showroom": "Failed to load chat. Please check your connection or refresh the stream.",
 			"switchMultiview": "Switch to Multi-view"
 		},
 		"news": {

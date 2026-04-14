@@ -668,8 +668,6 @@
 				"loading_chat": "チャットを読み込み中...",
 				"select_stream_to_chat": "配信を選択してチャットを表示",
 				"member_offline": "{name} がオフラインです",
-				"showroom_chat": "SHOWROOMチャット",
-				"chat_started": "チャット開始",
 				"no_messages": "メッセージはまだありません",
 				"stream_error": "ストリームエラー: {details}",
 				"hls_not_supported": "HLSはサポートされていません",
@@ -681,6 +679,11 @@
 			},
 			"joined": "{name}さんが参加しました",
 			"group_joined": "{name}さんと他{count}人が参加しました",
+			"chat_started": "チャット開始",
+			"connecting": "接続中...",
+			"disconnected": "切断されました",
+			"reconnect_idn": "接続が切れました。数秒後に再試行します...",
+			"reconnect_showroom": "チャットの読み込みに失敗しました。接続を確認するか、ストリームを更新してください。",
 			"switchMultiview": "マルチビューに切り替え"
 		},
 		"news": {
