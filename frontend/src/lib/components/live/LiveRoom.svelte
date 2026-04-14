@@ -85,6 +85,7 @@
 	let showControls = $state(true);
 	let controlsTimeout: ReturnType<typeof setTimeout> | undefined = $state();
 	let playerContainer: HTMLDivElement | undefined = $state();
+	let chatStatus: 'connecting' | 'connected' | 'disconnected' = $state('connecting');
 	let recordingDuration = $state(0);
 	let recordingTimer: ReturnType<typeof setInterval> | null = null;
 	let refreshInterval: ReturnType<typeof setInterval> | null = null;
@@ -1069,11 +1070,23 @@
 					</div>
 					<div class="flex items-center gap-3">
 						{#if sidebarMode === 'chat'}
-							<div class="flex items-center gap-2">
-								<div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-								<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-									>{$t('theater.live.connected')}</span
-								>
+							<div class="flex items-center gap-2" transition:fade>
+								<div
+									class="w-1.5 h-1.5 rounded-full {chatStatus === 'connected'
+										? 'bg-green-500 animate-pulse'
+										: chatStatus === 'connecting'
+											? 'bg-yellow-500 animate-pulse'
+											: 'bg-red-500'}"
+								></div>
+								<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+									{#if chatStatus === 'connected'}
+										{$t('theater.live.connected')}
+									{:else if chatStatus === 'connecting'}
+										{$t('theater.live.connecting')}
+									{:else}
+										{$t('theater.live.disconnected')}
+									{/if}
+								</span>
 							</div>
 						{/if}
 					</div>
@@ -1082,9 +1095,9 @@
 				<div class="flex-1 overflow-hidden flex flex-col">
 					{#if sidebarMode === 'chat'}
 						{#if platform === 'showroom' && id}
-							<ShowroomChat roomId={id} />
+							<ShowroomChat roomId={id} onStatusChange={(s) => (chatStatus = s)} />
 						{:else if platform === 'idn' && roomIdentifier}
-							<IDNChat {roomIdentifier} />
+							<IDNChat {roomIdentifier} onStatusChange={(s) => (chatStatus = s)} />
 						{/if}
 					{:else}
 						<div class="flex-1 overflow-y-auto p-4 space-y-3">

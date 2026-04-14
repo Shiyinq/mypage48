@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { onMount, onDestroy, tick } from 'svelte';
-	import { MessageCircle } from 'lucide-svelte';
+	import { fade, slide } from 'svelte/transition';
+	import { MessageCircle, RefreshCw } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveChatShowroomMessage } from '$lib/types';
 
 	interface Props {
 		roomId: string;
+		onStatusChange?: (status: 'connecting' | 'connected' | 'disconnected') => void;
 	}
 
-	let { roomId }: Props = $props();
+	let { roomId, onStatusChange }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -17,15 +19,22 @@
 	let chatContainer: HTMLElement | undefined = $state();
 	let pollingInterval: ReturnType<typeof setInterval> | undefined;
 	let lastCommentTime = 0;
+	let status: 'connecting' | 'connected' | 'disconnected' = $state('connecting');
 	let loading = $state(true);
 	let isFirstLoad = true;
+
+	$effect(() => {
+		onStatusChange?.(status);
+	});
 
 	async function fetchComments() {
 		try {
 			const res = await fetch(`${API_BASE}/jkt48/live/showroom/comments?room_id=${roomId}`);
+			if (!res.ok) throw new Error('Failed to fetch');
 			const data = await res.json();
 
 			if (data && data.comment_log) {
+				status = 'connected';
 				// Filter specifically for comments, not gifts (gifts have comment field too but often special ua)
 				// showroom returns latest first, so we reverse it to process chronologically
 				const validComments = data.comment_log
@@ -87,6 +96,7 @@
 			loading = false;
 		} catch (e) {
 			console.error('Failed to fetch Showroom comments:', e);
+			status = 'disconnected';
 		}
 	}
 
@@ -105,11 +115,35 @@
 		bind:this={chatContainer}
 		class="flex-1 p-4 overflow-y-auto flex flex-col gap-3 scroll-smooth"
 	>
-		{#if messages.length === 0}
+		{#if status === 'disconnected'}
+			<div
+				class="bg-red-500/10 border border-red-500/20 rounded-2xl p-3 flex flex-col items-center gap-2 mb-2 shrink-0"
+				transition:fade
+			>
+				<div class="flex items-center gap-2">
+					<div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+					<span class="text-[10px] font-black uppercase tracking-widest text-red-500"
+						>{$t('theater.live.disconnected')}</span
+					>
+				</div>
+				<p class="text-[9px] text-red-500/60 font-medium text-center leading-relaxed">
+					{$t('theater.live.reconnect_showroom')}
+				</p>
+			</div>
+		{:else if status === 'connecting'}
+			<div class="flex items-center justify-center gap-2 py-4 opacity-50 shrink-0" transition:fade>
+				<RefreshCw size={12} class="animate-spin text-slate-400" />
+				<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400"
+					>{$t('theater.live.connecting')}</span
+				>
+			</div>
+		{/if}
+
+		{#if messages.length === 0 && status === 'connected'}
 			<div
 				class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900"
 			>
-				{$t('theater.live.multiview.showroom_chat')}
+				{$t('theater.live.chat_started')}
 			</div>
 		{/if}
 

@@ -837,8 +837,6 @@
 				"loading_chat": "Memuat chat...",
 				"select_stream_to_chat": "Pilih stream untuk melihat chat",
 				"member_offline": "{name} offline",
-				"showroom_chat": "Chat Showroom",
-				"chat_started": "Chat Dimulai",
 				"no_messages": "Belum ada pesan",
 				"stream_error": "Kesalahan stream: {details}",
 				"hls_not_supported": "HLS tidak didukung",
@@ -850,6 +848,11 @@
 			},
 			"joined": "{name} bergabung",
 			"group_joined": "{name} dan {count} lainnya bergabung",
+			"chat_started": "Obrolan dimulai",
+			"connecting": "Menyambungkan...",
+			"disconnected": "Terputus",
+			"reconnect_idn": "Koneksi terputus. Mencoba menghubungkan kembali dalam beberapa detik...",
+			"reconnect_showroom": "Gagal memuat chat. Pastikan koneksi internet stabil atau coba muat ulang stream.",
 			"switchMultiview": "Pindah ke Multi-view"
 		},
 		"news": {
