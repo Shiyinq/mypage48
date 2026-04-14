@@ -52,10 +52,9 @@
 	};
 
 	// Store data via derived runes
-	let membersState = $derived($membersStore);
-	let membersList = $derived(membersState.list);
-	let pagination = $derived(membersState.pagination);
-	let error = $derived(membersState.error);
+	let membersList = $derived(membersStore.list);
+	let pagination = $derived(membersStore.pagination);
+	let error = $derived(membersStore.error);
 
 	async function fetchGenerations() {
 		try {
@@ -71,7 +70,7 @@
 	}
 
 	async function fetchMembers(reset = false) {
-		if ($isMembersLoading) return;
+		if (isMembersLoading.value) return;
 		try {
 			await membersStore.load(
 				{
@@ -123,7 +122,7 @@
 	});
 
 	function handleInfiniteScroll() {
-		if (!$isMembersLoading && pagination.hasMore) {
+		if (!isMembersLoading.value && pagination.hasMore) {
 			fetchMembers(false);
 		}
 	}
@@ -262,7 +261,7 @@
 	</div>
 
 	<!-- Members Grid -->
-	{#if (!mounted || $isMembersLoading) && membersList.length === 0}
+	{#if (!mounted || isMembersLoading.value) && membersList.length === 0}
 		<div
 			class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6"
 		>
@@ -325,7 +324,7 @@
 		{/each}
 
 		<!-- Skeletons for Infinite Scroll (Appending) -->
-		{#if $isMembersLoading && membersList.length > 0}
+		{#if isMembersLoading.value && membersList.length > 0}
 			<div
 				class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6 mt-6"
 			>

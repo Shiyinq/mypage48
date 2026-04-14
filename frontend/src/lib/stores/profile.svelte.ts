@@ -131,6 +131,7 @@ function createUserProfileStore() {
 		 * Legacy subscribe method for backward compatibility
 		 */
 		subscribe: (fn: (val: { data: UserWithProfileStats | null; error: string | null }) => void) => {
+			fn({ data: state.data, error: state.error });
 			$effect.root(() => {
 				$effect(() => {
 					fn({ data: state.data, error: state.error });
@@ -151,6 +152,7 @@ export const isUserProfileLoading = {
 		return state.isLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(state.isLoading);
 		$effect.root(() => {
 			$effect(() => {
 				fn(state.isLoading);

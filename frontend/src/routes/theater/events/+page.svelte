@@ -37,7 +37,8 @@
 		mounted = true;
 	});
 
-	let error = $derived($upcomingError);
+	let eventsList = $derived(upcomingEvents.value);
+	let error = $derived(upcomingError.value);
 </script>
 
 <SEO
@@ -72,7 +73,7 @@
 			description={$t('theater.upcomingEvents.errorDesc') || error || ''}
 			onRetry={() => eventsStore.loadUpcoming(true)}
 		/>
-	{:else if $upcomingEvents.length === 0}
+	{:else if eventsList.length === 0}
 		<EmptyState
 			icon={Calendar}
 			title={$t('theater.upcomingEvents.emptyTitle')}
@@ -80,7 +81,7 @@
 		/>
 	{:else}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-			{#each $upcomingEvents as event (event.id)}
+			{#each eventsList as event (event.id)}
 				<a
 					href={`https://jkt48.com${event.url}`}
 					target="_blank"

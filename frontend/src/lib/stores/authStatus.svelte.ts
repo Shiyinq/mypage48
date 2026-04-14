@@ -35,6 +35,7 @@ export const isAuthenticated = {
 	 * or other stores that subscribe to this one.
 	 */
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(authenticated);
 		$effect.root(() => {
 			$effect(() => {
 				fn(authenticated);

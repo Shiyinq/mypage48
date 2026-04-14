@@ -8,6 +8,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { goto } from '$app/navigation';
 	import NavPills from '$lib/components/navigation/NavPills.svelte';
+	import type { UserWithProfileStats } from '$lib/types';
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
@@ -19,13 +20,17 @@
 	// State: 'loading' | 'authorized' | 'unauthorized'
 	let authState: 'loading' | 'authorized' | 'unauthorized' = $state('loading');
 
-	function handleAuthCheck(isBrowser: boolean, loaded: boolean, profileState: typeof $userProfile) {
+	function handleAuthCheck(
+		isBrowser: boolean,
+		loaded: boolean,
+		profile: { data: UserWithProfileStats | null; error: string | null }
+	) {
 		if (!isBrowser) return;
 
 		// If finished loading, we can check permissions
 		if (loaded) {
-			const profile = profileState.data;
-			if (profile?.isAdmin) {
+			const profileData = profile.data;
+			if (profileData?.isAdmin) {
 				authState = 'authorized';
 			} else {
 				// If loaded and not admin -> unauthorized
@@ -38,7 +43,10 @@
 
 	// Watch for auth/profile changes
 	$effect(() => {
-		handleAuthCheck(browser, $isInitialDataLoaded, $userProfile);
+		handleAuthCheck(browser, $isInitialDataLoaded, {
+			data: userProfile.data,
+			error: userProfile.error
+		});
 	});
 	// Navigation tabs
 	let tabs = $derived([

@@ -49,9 +49,8 @@
 	};
 
 	// Subscribe to store
-	let state = $derived($achievementsStore);
-	let data = $derived(state.data);
-	let error = $derived(state.error);
+	let data = $derived(achievementsStore.data);
+	let error = $derived(achievementsStore.error);
 
 	let unlocked = $derived(data?.achievements.filter((m) => m.isUnlocked) ?? []);
 	let locked = $derived(data?.achievements.filter((m) => !m.isUnlocked) ?? []);
@@ -92,7 +91,7 @@
 
 	<!-- Grid Layout -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-		{#if $isAchievementsLoading}
+		{#if isAchievementsLoading.value}
 			{#each Array(9)}
 				<AchievementSkeleton />
 			{/each}

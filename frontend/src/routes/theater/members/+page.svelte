@@ -51,10 +51,9 @@
 		JKT48: 'Member'
 	};
 	// Store data via derived runes
-	let membersState = $derived($membersStore);
-	let membersList = $derived(membersState.list);
-	let pagination = $derived(membersState.pagination);
-	let error = $derived(membersState.error);
+	let membersList = $derived(membersStore.list);
+	let pagination = $derived(membersStore.pagination);
+	let error = $derived(membersStore.error);
 
 	async function fetchGenerations() {
 		try {
@@ -71,7 +70,7 @@
 
 	// Fetch members
 	async function fetchMembers(reset = false) {
-		if ($isMembersLoading) return;
+		if (isMembersLoading.value) return;
 
 		try {
 			await membersStore.load(
@@ -131,7 +130,7 @@
 	});
 
 	function handleInfiniteScroll() {
-		if (!$isMembersLoading && pagination.hasMore) {
+		if (!isMembersLoading.value && pagination.hasMore) {
 			fetchMembers(false);
 		}
 	}
@@ -254,7 +253,7 @@
 </div>
 
 <!-- Members Grid -->
-{#if (!mounted || $isMembersLoading) && membersList.length === 0}
+{#if (!mounted || isMembersLoading.value) && membersList.length === 0}
 	<div
 		class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4"
 	>
@@ -318,7 +317,7 @@
 	{/each}
 
 	<!-- Skeletons for Infinite Scroll (Appending) -->
-	{#if $isMembersLoading && membersList.length > 0}
+	{#if isMembersLoading.value && membersList.length > 0}
 		<div
 			class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4 mt-3 sm:mt-4"
 		>

@@ -18,9 +18,9 @@
 		borderColor: 'border-amber-500/30'
 	};
 
-	function goHome() {
-		goto($isAuthenticated ? '/' : '/login');
-	}
+	const handleGoHome = () => {
+		goto(isAuthenticated.value ? '/' : '/login');
+	};
 
 	function goBack() {
 		if (typeof window !== 'undefined') {
@@ -76,9 +76,8 @@
 				<code class="error-message">Not Found</code>
 			</div>
 
-			<!-- Action Buttons -->
 			<div class="actions">
-				<button class="btn btn-primary idol-gradient" onclick={goHome}>
+				<button class="btn btn-primary idol-gradient" onclick={handleGoHome}>
 					<Home class="w-4 h-4" />
 					<span>{$t('errors.goHome')}</span>
 				</button>

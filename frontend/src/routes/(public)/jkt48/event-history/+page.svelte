@@ -29,7 +29,10 @@
 		await eventsStore.loadHistory(1);
 	});
 
-	let error = $derived($historyError);
+	let error = $derived(historyError.value);
+	let eventsList = $derived(historyEvents.value);
+	let loading = $derived(isHistoryEventsLoading.value);
+	let paginationObj = $derived(historyPagination.value);
 
 	async function handlePageChange(page: number) {
 		eventsStore.loadHistory(page);
@@ -85,15 +88,15 @@
 		</p>
 	</div>
 
-	{#if $isHistoryEventsLoading}
+	{#if loading && eventsList.length === 0}
 		<EventHistorySkeleton rows={10} />
 	{:else if error}
 		<ErrorState
 			title={$t('theater.eventHistory.errorTitle') || 'Failed to load history'}
 			description={$t('theater.eventHistory.errorDesc') || error || ''}
-			onRetry={() => eventsStore.loadHistory($historyPagination.current_page)}
+			onRetry={() => eventsStore.loadHistory(paginationObj.current_page)}
 		/>
-	{:else if $historyEvents.length === 0}
+	{:else if eventsList.length === 0}
 		<EmptyState
 			icon={History}
 			title={$t('theater.eventHistory.emptyTitle')}
@@ -118,7 +121,7 @@
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
-						{#each $historyEvents as event}
+						{#each eventsList as event}
 							<tr
 								class="group hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-all duration-300"
 							>
@@ -195,25 +198,25 @@
 			</div>
 
 			<!-- Pagination -->
-			{#if $historyPagination.last_page > 1}
+			{#if paginationObj.last_page > 1}
 				<div
 					class="bg-slate-50 dark:bg-zinc-800/30 px-8 py-6 flex items-center justify-between border-t border-gray-50 dark:border-zinc-800"
 				>
 					<span class="text-[10px] font-black uppercase tracking-widest text-slate-400">
-						Page {$historyPagination.current_page} of {$historyPagination.last_page}
+						Page {paginationObj.current_page} of {paginationObj.last_page}
 					</span>
 					<div class="flex gap-2">
 						<button
 							class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm"
-							disabled={$historyPagination.current_page === 1}
-							onclick={() => handlePageChange($historyPagination.current_page - 1)}
+							disabled={paginationObj.current_page === 1}
+							onclick={() => handlePageChange(paginationObj.current_page - 1)}
 						>
 							<ChevronLeft size={18} />
 						</button>
-						{#each generatePagination($historyPagination.current_page, $historyPagination.last_page) as page}
+						{#each generatePagination(paginationObj.current_page, paginationObj.last_page) as page}
 							<button
 								class="w-10 h-10 flex items-center justify-center text-xs font-black rounded-full border transition-all {page ===
-								$historyPagination.current_page
+								paginationObj.current_page
 									? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-500/30'
 									: 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 text-slate-500 hover:border-red-600 hover:text-red-600 shadow-sm'} {typeof page ===
 								'number'
@@ -227,8 +230,8 @@
 						{/each}
 						<button
 							class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all hover:border-red-600 hover:text-red-600 shadow-sm"
-							disabled={$historyPagination.current_page === $historyPagination.last_page}
-							onclick={() => handlePageChange($historyPagination.current_page + 1)}
+							disabled={paginationObj.current_page === paginationObj.last_page}
+							onclick={() => handlePageChange(paginationObj.current_page + 1)}
 						>
 							<ChevronRight size={18} />
 						</button>

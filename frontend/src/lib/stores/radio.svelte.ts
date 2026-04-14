@@ -111,6 +111,7 @@ function createRadioStore() {
 		 * Legacy subscribe method for backward compatibility
 		 */
 		subscribe: (fn: (val: RadioState) => void) => {
+			fn(state);
 			$effect.root(() => {
 				$effect(() => {
 					fn(state);

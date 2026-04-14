@@ -248,6 +248,7 @@ function createEventsStore() {
 		 * Legacy subscribe method for backward compatibility
 		 */
 		subscribe: (fn: (val: EventsState) => void) => {
+			fn(state);
 			$effect.root(() => {
 				$effect(() => {
 					fn(state);
@@ -266,6 +267,7 @@ export const upcomingEvents = {
 		return state.upcoming.list;
 	},
 	subscribe: (cb: (val: Event[]) => void) => {
+		cb(state.upcoming.list);
 		$effect.root(() => {
 			$effect(() => cb(state.upcoming.list));
 		});
@@ -278,6 +280,7 @@ export const upcomingLoading = {
 		return state.upcoming.isLoading;
 	},
 	subscribe: (cb: (val: boolean) => void) => {
+		cb(state.upcoming.isLoading);
 		$effect.root(() => {
 			$effect(() => cb(state.upcoming.isLoading));
 		});
@@ -290,6 +293,7 @@ export const historyEvents = {
 		return state.history.list;
 	},
 	subscribe: (cb: (val: Event[]) => void) => {
+		cb(state.history.list);
 		$effect.root(() => {
 			$effect(() => cb(state.history.list));
 		});
@@ -302,6 +306,7 @@ export const historyPagination = {
 		return state.history.pagination;
 	},
 	subscribe: (cb: (val: PaginationMeta) => void) => {
+		cb(state.history.pagination);
 		$effect.root(() => {
 			$effect(() => cb(state.history.pagination));
 		});
@@ -314,6 +319,7 @@ export const historyLoading = {
 		return state.history.isLoading;
 	},
 	subscribe: (cb: (val: boolean) => void) => {
+		cb(state.history.isLoading);
 		$effect.root(() => {
 			$effect(() => cb(state.history.isLoading));
 		});
@@ -326,6 +332,7 @@ export const calendarEvents = {
 		return state.calendar.list;
 	},
 	subscribe: (cb: (val: CalendarEvent[]) => void) => {
+		cb(state.calendar.list);
 		$effect.root(() => {
 			$effect(() => cb(state.calendar.list));
 		});
@@ -338,6 +345,7 @@ export const calendarLoading = {
 		return state.calendar.isLoading;
 	},
 	subscribe: (cb: (val: boolean) => void) => {
+		cb(state.calendar.isLoading);
 		$effect.root(() => {
 			$effect(() => cb(state.calendar.isLoading));
 		});
@@ -350,6 +358,7 @@ export const calendarError = {
 		return state.calendar.error;
 	},
 	subscribe: (cb: (val: string | null) => void) => {
+		cb(state.calendar.error);
 		$effect.root(() => {
 			$effect(() => cb(state.calendar.error));
 		});
@@ -362,6 +371,7 @@ export const upcomingError = {
 		return state.upcoming.error;
 	},
 	subscribe: (cb: (val: string | null) => void) => {
+		cb(state.upcoming.error);
 		$effect.root(() => {
 			$effect(() => cb(state.upcoming.error));
 		});
@@ -374,6 +384,7 @@ export const historyError = {
 		return state.history.error;
 	},
 	subscribe: (cb: (val: string | null) => void) => {
+		cb(state.history.error);
 		$effect.root(() => {
 			$effect(() => cb(state.history.error));
 		});

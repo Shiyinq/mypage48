@@ -107,6 +107,12 @@ function createSetlistsStore() {
 				detailError: string | null;
 			}) => void
 		) => {
+			fn({
+				data: setlistsState.data,
+				error: setlistsState.error,
+				detailCache: setlistsState.detailCache,
+				detailError: setlistsState.detailError
+			});
 			$effect.root(() => {
 				$effect(() => {
 					fn({
@@ -133,6 +139,7 @@ export const maxAttendanceStore = {
 		setlistsState.maxAttendance = val;
 	},
 	subscribe: (fn: (val: number) => void) => {
+		fn(setlistsState.maxAttendance);
 		$effect.root(() => {
 			$effect(() => fn(setlistsState.maxAttendance));
 		});
@@ -266,6 +273,7 @@ function createMembersStore() {
 		 * Legacy subscribe method for backward compatibility
 		 */
 		subscribe: (fn: (val: MembersState) => void) => {
+			fn(membersState);
 			$effect.root(() => {
 				$effect(() => {
 					fn(membersState);
@@ -284,6 +292,7 @@ export const isMembersLoading = {
 		return membersState.isMembersLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(membersState.isMembersLoading);
 		$effect.root(() => {
 			$effect(() => fn(membersState.isMembersLoading));
 		});
@@ -298,6 +307,7 @@ export const membersPagination = {
 		return membersState.pagination;
 	},
 	subscribe: (cb: (val: { page: number; hasMore: boolean }) => void) => {
+		cb(membersState.pagination);
 		$effect.root(() => {
 			$effect(() => cb(membersState.pagination));
 		});
@@ -310,6 +320,7 @@ export const isSetlistsLoading = {
 		return setlistsState.isSetlistsLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(setlistsState.isSetlistsLoading);
 		$effect.root(() => {
 			$effect(() => fn(setlistsState.isSetlistsLoading));
 		});
@@ -322,6 +333,7 @@ export const isSetlistDetailLoading = {
 		return setlistsState.isSetlistDetailLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(setlistsState.isSetlistDetailLoading);
 		$effect.root(() => {
 			$effect(() => fn(setlistsState.isSetlistDetailLoading));
 		});

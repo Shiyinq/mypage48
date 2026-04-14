@@ -499,7 +499,8 @@
 			"uploadError": "Failed to upload profile picture. Please try again.",
 			"uploadSuccess": "Profile picture updated successfully!",
 			"loadErrorTitle": "Failed to Load Configuration",
-			"loadErrorDesc": "We couldn't load your public profile settings. Please try again."
+			"loadErrorDesc": "We couldn't load your public profile settings. Please try again.",
+			"viewProfile": "View Profile"
 		},
 		"developer": {
 			"title": "Developer Access",

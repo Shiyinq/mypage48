@@ -13,9 +13,9 @@
 	const { t } = useTranslation();
 
 	// State from store
-	let setlists = $derived($setlistsStore.data || []);
-	let error = $derived($setlistsStore.error);
-	let maxAttendance = $derived($maxAttendanceStore);
+	let setlists = $derived(setlistsStore.data || []);
+	let error = $derived(setlistsStore.error);
+	let maxAttendance = $derived(maxAttendanceStore.value);
 
 	// Group setlists by type
 	let setlistItems = $derived(setlists.filter((s) => s.type === 'setlist'));
@@ -48,7 +48,7 @@
 
 <SEO title={$t('theater.title')} path="/theater" description={$t('seo.shows')} />
 
-{#if $isSetlistsLoading}
+{#if isSetlistsLoading.value}
 	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 		{#each Array(6)}
 			<div

@@ -202,6 +202,12 @@ function createTicketsStore() {
 				error: string | null;
 			}) => void
 		) => {
+			fn({
+				list: state.list,
+				pagination: state.pagination,
+				filters: state.filters,
+				error: state.error
+			});
 			$effect.root(() => {
 				$effect(() => {
 					fn({
@@ -225,6 +231,7 @@ export const tickets = {
 		return state.list;
 	},
 	subscribe: (cb: (val: Ticket[]) => void) => {
+		cb(state.list);
 		$effect.root(() => {
 			$effect(() => cb(state.list));
 		});
@@ -237,6 +244,7 @@ export const ticketsPagination = {
 		return state.pagination;
 	},
 	subscribe: (cb: (val: PaginationMeta) => void) => {
+		cb(state.pagination);
 		$effect.root(() => {
 			$effect(() => cb(state.pagination));
 		});
@@ -249,6 +257,7 @@ export const ticketsFilters = {
 		return state.filters;
 	},
 	subscribe: (cb: (val: TicketFilters) => void) => {
+		cb(state.filters);
 		$effect.root(() => {
 			$effect(() => cb(state.filters));
 		});
@@ -261,6 +270,7 @@ export const ticketsLoading = {
 		return state.isLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(state.isLoading);
 		$effect.root(() => {
 			$effect(() => fn(state.isLoading));
 		});
@@ -275,6 +285,7 @@ export const ticketsError = {
 		return state.error;
 	},
 	subscribe: (cb: (val: string | null) => void) => {
+		cb(state.error);
 		$effect.root(() => {
 			$effect(() => cb(state.error));
 		});

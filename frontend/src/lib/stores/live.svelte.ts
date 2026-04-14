@@ -137,6 +137,13 @@ function createLiveStore() {
 				lastUpdated: number;
 			}) => void
 		) => {
+			fn({
+				list: state.list,
+				otherLive: state.otherLive,
+				currentStream: state.currentStream,
+				error: state.error,
+				lastUpdated: state.lastUpdated
+			});
 			$effect.root(() => {
 				$effect(() => {
 					fn({
@@ -161,6 +168,7 @@ export const liveList = {
 		return state.list;
 	},
 	subscribe: (cb: (val: LiveStatus[]) => void) => {
+		cb(state.list);
 		$effect.root(() => {
 			$effect(() => cb(state.list));
 		});
@@ -173,6 +181,7 @@ export const currentStream = {
 		return state.currentStream;
 	},
 	subscribe: (cb: (val: LiveStreamingResponse | null) => void) => {
+		cb(state.currentStream);
 		$effect.root(() => {
 			$effect(() => cb(state.currentStream));
 		});
@@ -185,6 +194,7 @@ export const otherLive = {
 		return state.otherLive;
 	},
 	subscribe: (cb: (val: LiveStatus[]) => void) => {
+		cb(state.otherLive);
 		$effect.root(() => {
 			$effect(() => cb(state.otherLive));
 		});
@@ -197,6 +207,7 @@ export const liveLoading = {
 		return state.isLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(state.isLoading);
 		$effect.root(() => {
 			$effect(() => fn(state.isLoading));
 		});
@@ -209,6 +220,7 @@ export const liveError = {
 		return state.error;
 	},
 	subscribe: (cb: (val: string | null) => void) => {
+		cb(state.error);
 		$effect.root(() => {
 			$effect(() => cb(state.error));
 		});
@@ -224,6 +236,7 @@ export const now = {
 		return currentTime;
 	},
 	subscribe: (fn: (val: number) => void) => {
+		fn(currentTime);
 		$effect.root(() => {
 			$effect(() => fn(currentTime));
 		});

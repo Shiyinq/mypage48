@@ -251,6 +251,7 @@ function createAdminStore() {
 		 * Legacy subscribe method for backward compatibility
 		 */
 		subscribe: (fn: (val: AdminState) => void) => {
+			fn(state);
 			$effect.root(() => {
 				$effect(() => {
 					fn(state);
@@ -269,6 +270,7 @@ export const isAdminMembersLoading = {
 		return isMembersLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(isMembersLoading);
 		$effect.root(() => {
 			$effect(() => fn(isMembersLoading));
 		});
@@ -281,6 +283,7 @@ export const isAdminSetlistsLoading = {
 		return isSetlistsLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(isSetlistsLoading);
 		$effect.root(() => {
 			$effect(() => fn(isSetlistsLoading));
 		});
@@ -293,6 +296,7 @@ export const isAdminUsersLoading = {
 		return isUsersLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
+		fn(isUsersLoading);
 		$effect.root(() => {
 			$effect(() => fn(isUsersLoading));
 		});

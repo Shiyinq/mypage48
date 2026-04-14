@@ -6,7 +6,7 @@
 
 	const { t } = useTranslation();
 
-	let initialLoading = $state($liveList.length === 0);
+	let initialLoading = $state(liveList.value.length === 0);
 
 	async function fetchLives() {
 		await liveStore.loadLiveList();
@@ -28,8 +28,8 @@
 
 <div class="w-full pb-12">
 	<LiveGrid
-		liveList={$liveList}
-		loading={$liveLoading}
+		liveList={liveList.value}
+		loading={liveLoading.value}
 		{initialLoading}
 		variant="theater"
 		multiviewHref="/theater/live/multiview"

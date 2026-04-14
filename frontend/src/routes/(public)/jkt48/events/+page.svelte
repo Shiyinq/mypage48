@@ -12,7 +12,7 @@
 		isUpcomingEventsLoading,
 		upcomingError
 	} from '$lib/stores/events.svelte';
-	import { membersStore, isBirthdaysLoading } from '$lib/stores/theater.svelte';
+	import { membersStore } from '$lib/stores/theater.svelte';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
 	import { formatDate, formatTime } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';
@@ -30,16 +30,15 @@
 		);
 	}
 
-	let mounted = $state(false);
-
 	onMount(async () => {
 		await eventsStore.loadUpcoming();
 		await membersStore.loadBirthdays();
-		mounted = true;
 	});
 
-	let error = $derived($upcomingError);
-	let birthdays = $derived($membersStore.birthdays || []);
+	let eventsList = $derived(upcomingEvents.value);
+	let loading = $derived(isUpcomingEventsLoading.value);
+	let error = $derived(upcomingError.value);
+	let birthdays = $derived(membersStore.birthdays || []);
 
 	function getBirthdayText(
 		daysUntil: number,
@@ -55,7 +54,7 @@
 	title={$t('theater.events.title')}
 	path="/jkt48/events"
 	description={$t('seo.events')}
-	events={$upcomingEvents}
+	events={eventsList}
 />
 
 <div class="space-y-16 pt-4 md:pt-6 pb-12">
@@ -81,9 +80,9 @@
 			</h2>
 		</div>
 
-		{#if !mounted || $isBirthdaysLoading}
+		{#if loading && birthdays.length === 0}
 			<div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide">
-				{#each Array(6)}
+				{#each Array(6) as _}
 					<div class="flex-none w-44 snap-start">
 						<MemberCardSkeleton />
 					</div>
@@ -177,9 +176,9 @@
 			</a>
 		</div>
 
-		{#if !mounted || $isUpcomingEventsLoading}
+		{#if loading && eventsList.length === 0}
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-				{#each Array(8)}
+				{#each Array(8) as _}
 					<EventCardSkeleton />
 				{/each}
 			</div>
@@ -189,7 +188,7 @@
 				description={$t('theater.upcomingEvents.errorDesc') || error || ''}
 				onRetry={() => eventsStore.loadUpcoming(true)}
 			/>
-		{:else if $upcomingEvents.length === 0}
+		{:else if eventsList.length === 0}
 			<EmptyState
 				icon={Calendar}
 				title={$t('theater.upcomingEvents.emptyTitle')}
@@ -197,7 +196,7 @@
 			/>
 		{:else}
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-				{#each $upcomingEvents as event (event.id)}
+				{#each eventsList as event (event.id)}
 					<a
 						href={`https://jkt48.com${event.url}`}
 						target="_blank"

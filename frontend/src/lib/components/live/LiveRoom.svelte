@@ -147,7 +147,7 @@
 
 			if (currentInit !== initCount) return;
 
-			const current = $currentStream;
+			const current = currentStream.value;
 			if (current && current.streaming_urls && current.streaming_urls.length > 0) {
 				const rawUrl = current.streaming_urls[0]?.url;
 				if (!rawUrl) return;
@@ -442,7 +442,7 @@
 	let { platform, id } = $derived($page.params);
 
 	let streamFromList = $derived(
-		$liveList.find(
+		liveList.value.find(
 			(s) =>
 				s.platform === platform && (s.room_id === id || s.live_id === id || s.room_url_key === id)
 		)
@@ -463,10 +463,9 @@
 	});
 	let displayDuration = $derived(peakDuration || currentTime);
 
-	let memberName = $derived($currentStream?.member?.name || null);
-	let roomIdentifier = $derived($currentStream?.room_identifier || null);
-
-	let startAt = $derived($currentStream?.start_at || null);
+	let memberName = $derived(currentStream.value?.member?.name || null);
+	let roomIdentifier = $derived(currentStream.value?.room_identifier || null);
+	let startAt = $derived(currentStream.value?.start_at || null);
 </script>
 
 <SEO
@@ -529,7 +528,11 @@
 
 			{#if !isFullscreen}
 				<div class="hidden sm:flex items-center gap-3 flex-shrink-0">
-					<LiveStats view_num={$currentStream?.view_num} start_at={startAt} variant="detailed" />
+					<LiveStats
+						view_num={currentStream.value?.view_num}
+						start_at={startAt}
+						variant="detailed"
+					/>
 					<a
 						href={originalLiveUrl}
 						target="_blank"
@@ -571,7 +574,7 @@
 						</div>
 					</div>
 				</div>
-			{:else if !$currentStream}
+			{:else if !currentStream.value}
 				<div
 					class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 text-white gap-6 px-6 text-center"
 				>
@@ -664,7 +667,7 @@
 							<!-- Stats (Mobile Only) -->
 							<div class="flex sm:hidden items-center gap-3 flex-shrink-0 mt-0.5">
 								<LiveStats
-									view_num={$currentStream?.view_num}
+									view_num={currentStream.value?.view_num}
 									start_at={startAt}
 									variant="detailed"
 								/>
@@ -688,7 +691,7 @@
 						{#if isFullscreen}
 							<div class="hidden sm:flex items-center gap-3 flex-shrink-0 mt-1">
 								<LiveStats
-									view_num={$currentStream?.view_num}
+									view_num={currentStream.value?.view_num}
 									start_at={startAt}
 									variant="detailed"
 								/>
@@ -973,7 +976,7 @@
 									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
 									onclick={refreshStream}
 								>
-									<RefreshCw size={18} class={$liveLoading ? 'animate-spin' : ''} />
+									<RefreshCw size={18} class={liveLoading.value ? 'animate-spin' : ''} />
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
@@ -1112,7 +1115,7 @@
 										>Searching matches...</span
 									>
 								</div>
-							{:else if $otherLive.length === 0}
+							{:else if otherLive.value.length === 0}
 								<div class="flex flex-col items-center justify-center h-full text-center gap-4">
 									<div
 										class="w-12 h-12 rounded-full bg-slate-50 dark:bg-zinc-900 flex items-center justify-center text-slate-300 dark:text-zinc-700"
@@ -1124,7 +1127,7 @@
 									</p>
 								</div>
 							{:else}
-								{#each $otherLive as member}
+								{#each otherLive.value as member}
 									<a
 										href="{basePath}/{member.platform}/{getMemberId(member)}"
 										class="flex items-center gap-3 p-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/50 hover:border-red-500/30 hover:shadow-sm hover:shadow-red-500/5 transition-all group overflow-hidden relative"

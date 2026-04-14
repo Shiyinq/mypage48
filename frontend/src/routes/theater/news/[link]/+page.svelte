@@ -8,7 +8,7 @@
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
 	import { showToast } from '$lib/stores';
 	import { browser } from '$app/environment';
-	import DOMPurify from 'dompurify';
+	import DOMPurify from 'isomorphic-dompurify';
 
 	interface Props {
 		data: PageData;

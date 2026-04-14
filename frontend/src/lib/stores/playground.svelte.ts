@@ -209,6 +209,7 @@ function createPlaygroundStore() {
 		 * Legacy subscribe method for backward compatibility
 		 */
 		subscribe: (fn: (val: PlaygroundState) => void) => {
+			fn(state);
 			$effect.root(() => {
 				$effect(() => {
 					fn(state);

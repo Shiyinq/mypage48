@@ -9,8 +9,8 @@
 	const { t } = useTranslation();
 
 	// Store state
-	let usersList = $derived($adminStore.users.data);
-	let usersHasMore = $derived($adminStore.users.hasMore);
+	let usersList = $derived(adminStore.users.data);
+	let usersHasMore = $derived(adminStore.users.hasMore);
 
 	// Search state
 	let searchQuery = $state('');
@@ -49,7 +49,7 @@
 	}
 
 	function loadMoreUsers() {
-		if (usersHasMore && !$isAdminUsersLoading) {
+		if (usersHasMore && !isAdminUsersLoading.value) {
 			adminStore.loadUsers();
 		}
 	}
@@ -80,7 +80,7 @@
 		<div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<UserCheck class="w-5 h-5 text-red-500" />
-				{$t('admin.users.title')} ({$adminStore.users.total})
+				{$t('admin.users.title')} ({adminStore.users.total})
 			</h2>
 
 			<!-- Search Input -->
@@ -105,7 +105,7 @@
 		</div>
 	</div>
 
-	{#if isInitialLoad && $isAdminUsersLoading}
+	{#if isInitialLoad && isAdminUsersLoading.value}
 		<TableSkeleton
 			rows={10}
 			columns={[
@@ -226,7 +226,7 @@
 		<!-- Infinite Scroll Sentinel -->
 		{#if usersHasMore}
 			<div class="mt-4" use:infiniteScroll onintersect={loadMoreUsers}>
-				{#if $isAdminUsersLoading}
+				{#if isAdminUsersLoading.value}
 					<TableSkeleton
 						rows={3}
 						columns={[

@@ -76,7 +76,7 @@
 	}
 
 	function getEventsForDay(date: Date) {
-		return $calendarEvents.filter((e) => {
+		return calendarEvents.value.filter((e) => {
 			const eDate = new Date(e.date);
 			return (
 				eDate.getDate() === date.getDate() &&
@@ -104,7 +104,7 @@
 	});
 
 	let currentMonthEvents = $derived(
-		$calendarEvents.filter((e) => {
+		calendarEvents.value.filter((e) => {
 			const d = new Date(e.date);
 			return d.getMonth() === month - 1 && d.getFullYear() === year;
 		})
@@ -212,7 +212,7 @@
 			</div>
 
 			<!-- Center: Badges -->
-			{#if !$calendarLoading && currentMonthEvents.length > 0}
+			{#if !calendarLoading.value && currentMonthEvents.length > 0}
 				<div
 					class="flex items-center gap-1 md:gap-3 ml-1 md:ml-4 mr-1 md:mr-auto text-xs font-medium text-gray-500 dark:text-gray-400 min-w-0"
 				>
@@ -284,7 +284,7 @@
 		</div>
 
 		<!-- Calendar Content -->
-		{#if $calendarLoading && $calendarEvents.length === 0}
+		{#if calendarLoading.value && calendarEvents.value.length === 0}
 			<div class="flex-1 flex flex-col animate-pulse">
 				<div
 					class="grid border-b border-gray-50 dark:border-zinc-800"
