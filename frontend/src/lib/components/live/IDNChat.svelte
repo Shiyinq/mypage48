@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
+	import { tick } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 	import { MessageCircle, Trophy } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -16,13 +16,49 @@
 	const { t } = useTranslation();
 
 	let socket: WebSocket | null = null;
+	let lastConnectedRoom = '';
 	let status: 'connecting' | 'connected' | 'disconnected' = $state('connecting');
-	let messages: LiveChatIDNMessage[] = $state([]);
+	let messages: (LiveChatIDNMessage & { id: string })[] = $state([]);
 	let chatContainer: HTMLElement | undefined = $state();
 	let expandedSystemId: string | null = $state(null);
+	let isFirstLoad = $state(true);
 
 	$effect(() => {
 		onStatusChange?.(status);
+	});
+
+	$effect(() => {
+		if (roomIdentifier) {
+			messages = []; // Clear messages when room changes
+			isFirstLoad = true;
+			connect();
+
+			// For testing purposes
+			/*
+			if (typeof window !== 'undefined') {
+				console.log('IDNChat mounted. Testing utility available: forceIdnDisconnect()');
+				(window as any).forceIdnDisconnect = () => {
+					if (socket) {
+						console.log('Force disconnecting IDN socket for testing...');
+						socket.close();
+					} else {
+						console.log('No active socket to disconnect.');
+					}
+				};
+			}
+			*/
+
+			return () => {
+				/*
+				if (typeof window !== 'undefined') {
+					delete (window as any).forceIdnDisconnect;
+				}
+				*/
+				if (socket) {
+					socket.close();
+				}
+			};
+		}
 	});
 
 	function getExternalMediaUrl(url?: string) {
@@ -38,8 +74,6 @@
 		}
 		return url;
 	}
-
-	let lastConnectedRoom = '';
 
 	function connect() {
 		if (!roomIdentifier) return;
@@ -80,7 +114,7 @@
 			currentSocket.send(`CAP END\n`);
 		};
 
-		currentSocket.onmessage = (event) => {
+		currentSocket.onmessage = async (event) => {
 			if (socket !== currentSocket) return;
 			const data = event.data;
 			if (data.startsWith('PING')) {
@@ -93,7 +127,7 @@
 				return;
 			}
 			if (data.includes('PRIVMSG')) {
-				parseIRCMessage(data);
+				await parseIRCMessage(data);
 			}
 		};
 
@@ -111,46 +145,6 @@
 			lastConnectedRoom = '';
 		};
 	}
-
-	let isFirstLoad = $state(true);
-
-	onMount(() => {
-		// For testing purposes
-		/*
-		if (typeof window !== 'undefined') {
-			console.log('IDNChat mounted. Testing utility available: forceIdnDisconnect()');
-			(window as any).forceIdnDisconnect = () => {
-				if (socket) {
-					console.log('Force disconnecting IDN socket for testing...');
-					socket.close();
-				} else {
-					console.log('No active socket to disconnect.');
-				}
-			};
-		}
-		*/
-
-		return () => {
-			// Cleanup testing utility (Currently disabled)
-			/*
-			if (typeof window !== 'undefined') {
-				delete (window as any).forceIdnDisconnect;
-			}
-			*/
-
-			// Essential cleanup: Close WebSocket connection when component is destroyed
-			// to prevent memory leaks and redundant background processes.
-			if (socket) {
-				socket.close();
-			}
-		};
-	});
-
-	$effect(() => {
-		if (roomIdentifier) {
-			connect();
-		}
-	});
 
 	async function parseIRCMessage(raw: string) {
 		try {
