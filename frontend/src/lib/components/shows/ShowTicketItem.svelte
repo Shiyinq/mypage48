@@ -35,7 +35,7 @@
 		</div>
 		<div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
 			<MapPin class="w-3 h-3" />
-			{$t('shows.row')}
+			{t('shows.row')}
 			{ticket.seat.section}-{ticket.seat.number}
 		</div>
 		<div class="mt-2 font-bold text-red-600 dark:text-red-500 text-sm">

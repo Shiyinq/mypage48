@@ -499,7 +499,8 @@
 			"uploadError": "Gagal mengunggah foto profil. Silakan coba lagi.",
 			"uploadSuccess": "Foto profil berhasil diperbarui!",
 			"loadErrorTitle": "Gagal Memuat Konfigurasi",
-			"loadErrorDesc": "Kami tidak dapat memuat pengaturan profil publik Anda. Silakan coba lagi."
+			"loadErrorDesc": "Kami tidak dapat memuat pengaturan profil publik Anda. Silakan coba lagi.",
+			"viewProfile": "Lihat Profil"
 		},
 		"developer": {
 			"title": "Akses Developer",

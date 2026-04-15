@@ -29,10 +29,10 @@
 		<h2
 			class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors leading-none"
 		>
-			{$t('shows.backTitle')}
+			{t('shows.backTitle')}
 		</h2>
 		<p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">
-			{$t('shows.backSubtitle')}
+			{t('shows.backSubtitle')}
 		</p>
 	</div>
 </button>
@@ -61,7 +61,7 @@
 			</h2>
 			<p class="text-gray-200 font-medium text-lg">
 				{ticketCount}
-				{$t('shows.performancesAttended')}
+				{t('shows.performancesAttended')}
 			</p>
 		</div>
 	</div>

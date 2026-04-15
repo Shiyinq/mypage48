@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ticketsStore, showToast, isInitialDataLoaded, isTicketsLoading } from '$lib/stores';
-	import { invalidateDashboard } from '$lib/stores/dashboard';
-	import { invalidateTheater } from '$lib/stores/theater';
+	import { invalidateDashboard } from '$lib/stores/dashboard.svelte';
+	import { invalidateTheater } from '$lib/stores/theater.svelte';
 	import { onMount } from 'svelte';
 
 	import type { Ticket as TicketType, TicketFilters } from '$lib/types';
@@ -25,12 +25,11 @@
 
 	const { t } = useTranslation();
 
-	// Store data via derived runes
-	let ticketsState = $derived($ticketsStore);
-	let filteredTickets = $derived(ticketsState.list);
-	let pagination = $derived(ticketsState.pagination);
-	let filters = $derived(ticketsState.filters);
-	let error = $derived(ticketsState.error);
+	// Store data via reactive properties
+	let filteredTickets = $derived(ticketsStore.list);
+	let pagination = $derived(ticketsStore.pagination);
+	let filters = $derived(ticketsStore.filters);
+	let error = $derived(ticketsStore.error);
 	let hasMore = $derived(pagination.current_page < pagination.last_page);
 
 	// Main Component Logic
@@ -45,25 +44,25 @@
 		mounted = true;
 
 		// Initial load check
-		if (filteredTickets.length === 0 || isCacheExpired($ticketsStore.lastUpdated)) {
+		if (filteredTickets.length === 0 || isCacheExpired(ticketsStore.lastUpdated)) {
 			loadTickets(1);
 		}
 	});
 
-	async function loadTickets(page: number, currentFilters: TicketFilters = {}) {
+	async function loadTickets(pageIdx: number, currentFilters: TicketFilters = {}) {
 		// Store handles locking if needed, or we rely on UI not triggering double loads
 		try {
 			// Use store action
-			await ticketsStore.load(page, currentFilters);
+			await ticketsStore.load(pageIdx, currentFilters);
 			isInitialDataLoaded.set(true);
 		} catch {
 			// Error logged and handled by store
-			showToast($t('history.errorTitle') || 'Failed to load tickets', 'error');
+			showToast(t('history.errorTitle') || 'Failed to load tickets', 'error');
 		}
 	}
 
 	function handleIntersect() {
-		if (!mounted || $isTicketsLoading || !hasMore) return;
+		if (!mounted || isTicketsLoading.value || !hasMore) return;
 		loadTickets(pagination.current_page + 1, filters);
 	}
 
@@ -83,10 +82,10 @@
 		try {
 			// Use store action (handles API + optimistic update)
 			await ticketsStore.updateNote(ticketId, note);
-			showToast($t('history.notesSaved'), 'success');
+			showToast(t('history.notesSaved'), 'success');
 		} catch {
 			// Error logged by store
-			showToast($t('common.error'), 'error');
+			showToast(t('common.error'), 'error');
 		}
 	};
 
@@ -106,10 +105,10 @@
 			invalidateTheater();
 
 			deleteId = null;
-			showToast($t('history.ticketDeleted'), 'success');
+			showToast(t('history.ticketDeleted'), 'success');
 		} catch {
 			// Error logged by store
-			showToast($t('common.error'), 'error');
+			showToast(t('common.error'), 'error');
 		} finally {
 			isDeleting = false;
 		}
@@ -117,26 +116,21 @@
 
 	let editingTicket: TicketType | null = $state(null);
 
-	const handleTicketUpdate = (updated: TicketType) => {
-		ticketsStore.update((s) => ({
-			...s,
-			list: s.list.map((t) => (t._id === updated._id ? updated : t)),
-			defaultCache: s.defaultCache
-				? {
-						...s.defaultCache,
-						list: s.defaultCache.list.map((t) => (t._id === updated._id ? updated : t))
-					}
-				: null
-		}));
+	const handleTicketUpdate = async (updated: TicketType) => {
+		try {
+			// Synchronize via store update action
+			await ticketsStore.updateTicket(updated._id, updated);
 
-		// Invalidate dashboard cache
-		invalidateDashboard();
-
-		editingTicket = null;
+			// Invalidate dashboard cache
+			invalidateDashboard();
+			editingTicket = null;
+		} catch (e) {
+			console.error(e);
+		}
 	};
 </script>
 
-<SEO title={$t('history.title')} path="/history" description={$t('history.description')} />
+<SEO title={t('history.title')} path="/history" description={t('history.description')} />
 
 <DeleteConfirmationModal
 	show={!!deleteId}
@@ -149,8 +143,8 @@
 	<!-- Page Header -->
 	<div class="mb-8">
 		<PageHeader
-			title={$t('history.title')}
-			subtitle={$t('history.subtitle')}
+			title={t('history.title')}
+			subtitle={t('history.subtitle')}
 			icon={History}
 			theme="blue"
 		>
@@ -167,35 +161,30 @@
 	</div>
 
 	<!-- Content Area -->
-	<!-- Content Area -->
 	{#if error && filteredTickets.length === 0}
 		<ErrorState
-			title={$t('history.errorTitle') || 'Failed to load tickets'}
-			description={$t('history.errorDesc') || error || ''}
+			title={t('history.errorTitle') || 'Failed to load tickets'}
+			description={t('history.errorDesc') || error || ''}
 			onRetry={() => loadTickets(1, filters)}
 		/>
-	{:else if $isTicketsLoading && filteredTickets.length === 0}
+	{:else if isTicketsLoading.value && filteredTickets.length === 0}
 		{#if viewMode === 'GRID'}
 			<TicketCardSkeleton count={6} />
 		{:else}
 			<TableSkeleton
 				rows={5}
 				columns={[
-					$t('history.date'),
-					$t('history.eventDetails'),
-					$t('history.seat'),
-					$t('history.price'),
-					$t('history.notes'),
-					$t('history.actions')
+					t('history.date'),
+					t('history.eventDetails'),
+					t('history.seat'),
+					t('history.price'),
+					t('history.notes'),
+					t('history.actions')
 				]}
 			/>
 		{/if}
 	{:else if filteredTickets.length === 0}
-		<EmptyState
-			icon={Ticket}
-			title={$t('history.noTickets')}
-			description={$t('history.addFirst')}
-		/>
+		<EmptyState icon={Ticket} title={t('history.noTickets')} description={t('history.addFirst')} />
 	{:else}
 		{#if viewMode === 'GRID'}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -204,7 +193,7 @@
 					<TicketCard
 						{ticket}
 						onupdateNote={handleNoteUpdate}
-						oneditTicket={(t) => (editingTicket = t)}
+						oneditTicket={(t_val) => (editingTicket = t_val)}
 						ondeleteTicket={(id) => openDeleteModal(id)}
 					/>
 				{/each}
@@ -214,7 +203,7 @@
 			<TicketTable
 				tickets={filteredTickets}
 				onupdateNote={handleNoteUpdate}
-				oneditTicket={(t) => (editingTicket = t)}
+				oneditTicket={(t_val) => (editingTicket = t_val)}
 				ondeleteTicket={(id) => openDeleteModal(id)}
 			/>
 		{/if}
@@ -222,7 +211,7 @@
 		<!-- Sentinel for infinite scroll -->
 		{#if hasMore}
 			<div use:infiniteScroll onintersect={handleIntersect} class="w-full py-6 flex justify-center">
-				{#if $isTicketsLoading}
+				{#if isTicketsLoading.value}
 					{#if viewMode === 'GRID'}
 						<div class="w-full">
 							<TicketCardSkeleton count={3} />
@@ -233,12 +222,12 @@
 								rows={3}
 								showHeader={false}
 								columns={[
-									$t('history.date'),
-									$t('history.eventDetails'),
-									$t('history.seat'),
-									$t('history.price'),
-									$t('history.notes'),
-									$t('history.actions')
+									t('history.date'),
+									t('history.eventDetails'),
+									t('history.seat'),
+									t('history.price'),
+									t('history.notes'),
+									t('history.actions')
 								]}
 							/>
 						</div>

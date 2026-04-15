@@ -8,7 +8,7 @@
 
 	const handleLanguageChange = (newLocale: Locale) => {
 		changeLocale(newLocale);
-		showToast($t('common.success'), 'success');
+		showToast(t('common.success'), 'success');
 	};
 </script>
 
@@ -21,9 +21,9 @@
 		</div>
 		<div>
 			<h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
-				{$t('settings.language.title')}
+				{t('settings.language.title')}
 			</h3>
-			<p class="text-xs text-gray-500 dark:text-gray-400">{$t('settings.language.subtitle')}</p>
+			<p class="text-xs text-gray-500 dark:text-gray-400">{t('settings.language.subtitle')}</p>
 		</div>
 	</div>
 
@@ -31,7 +31,7 @@
 		{#each availableLocales as localeOption}
 			<button
 				onclick={() => handleLanguageChange(localeOption.code)}
-				class="p-4 rounded-2xl border-2 transition-all flex md:flex-col items-center justify-between md:justify-center gap-4 cursor-pointer h-full {$locale ===
+				class="p-4 rounded-2xl border-2 transition-all flex md:flex-col items-center justify-between md:justify-center gap-4 cursor-pointer h-full {locale.value ===
 				localeOption.code
 					? 'border-red-500 bg-red-50/50 dark:bg-red-900/20 shadow-sm'
 					: 'border-gray-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-gray-200 dark:hover:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-800'}"
@@ -52,12 +52,12 @@
 
 				<div class="flex-shrink-0 pl-2">
 					<div
-						class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shadow-sm {$locale ===
+						class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shadow-sm {locale.value ===
 						localeOption.code
 							? 'border-red-500 bg-red-500'
 							: 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-800'}"
 					>
-						{#if $locale === localeOption.code}
+						{#if locale.value === localeOption.code}
 							<Check class="w-3.5 h-3.5 text-white" />
 						{/if}
 					</div>

@@ -40,10 +40,10 @@
 			const res = await apiKeys.create();
 			newApiKey = res.apiKey;
 			showApiKeyModal = true;
-			showToast($t('settings.developer.generated'), 'success');
+			showToast(t('settings.developer.generated'), 'success');
 		} catch (e) {
 			logger.error('Failed to generate API Key', e, { context: 'SettingsPage' });
-			showToast($t('common.error'), 'error');
+			showToast(t('common.error'), 'error');
 		} finally {
 			generatingKey = false;
 		}
@@ -52,7 +52,7 @@
 	const copyApiKey = () => {
 		if (newApiKey) {
 			navigator.clipboard.writeText(newApiKey);
-			showToast($t('settings.developer.copied'), 'success');
+			showToast(t('settings.developer.copied'), 'success');
 		}
 	};
 
@@ -62,14 +62,14 @@
 	};
 </script>
 
-<SEO title={$t('settings.title')} path="/settings" description={$t('seo.settings')} />
+<SEO title={t('settings.title')} path="/settings" description={t('seo.settings')} />
 
 <div class="max-w-2xl mx-auto pt-4 sm:pt-6 px-4 animate-fade-in pb-24">
 	<!-- Page Header -->
 	<div class="mb-6">
 		<PageHeader
-			title={$t('settings.title')}
-			subtitle={$t('settings.subtitle')}
+			title={t('settings.title')}
+			subtitle={t('settings.subtitle')}
 			icon={Settings}
 			showBackButton={true}
 			backUrl="/profile"
@@ -108,10 +108,10 @@
 					</div>
 					<div>
 						<h3 class="text-lg font-bold text-slate-900 dark:text-white">
-							{$t('settings.feedback.title')}
+							{t('settings.feedback.title')}
 						</h3>
 						<p class="text-xs text-slate-500 dark:text-slate-400">
-							{$t('settings.feedback.subtitle')}
+							{t('settings.feedback.subtitle')}
 						</p>
 					</div>
 				</div>

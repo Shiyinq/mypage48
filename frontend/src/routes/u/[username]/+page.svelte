@@ -49,7 +49,7 @@
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			if (fileInput) fileInput.value = '';
 			return;
@@ -69,7 +69,7 @@
 			showPreviewModal = true;
 		} catch (error) {
 			logger.error('Failed to read file', error, { context: 'PublicProfilePage' });
-			validationAlertMessage = $t('publicProfile.uploadError');
+			validationAlertMessage = t('publicProfile.uploadError');
 			showValidationAlert = true;
 		} finally {
 			// Reset input so the same file can be selected again
@@ -88,7 +88,7 @@
 		// Validate base64 image (type and size)
 		const validation = validateBase64Image(previewImage);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			return;
 		}
@@ -106,11 +106,11 @@
 
 			// Close modal and show success toast
 			closePreviewModal();
-			showToast($t('settings.publicProfile.uploadSuccess'), 'success');
+			showToast(t('settings.publicProfile.uploadSuccess'), 'success');
 		} catch (error: unknown) {
 			logger.error('Failed to upload profile picture', error, { context: 'PublicProfilePage' });
 			const errorMessage = getErrorMessage(error);
-			showToast(errorMessage || $t('settings.publicProfile.uploadError'), 'error');
+			showToast(errorMessage || t('settings.publicProfile.uploadError'), 'error');
 		} finally {
 			isUploading = false;
 		}
@@ -164,7 +164,7 @@
 		<!-- Header Section -->
 		<PublicProfileHeader
 			{profile}
-			isCurrentUser={!!($userProfile.data && $userProfile.data.username === profile.username)}
+			isCurrentUser={!!(userProfile.data && userProfile.data.username === profile.username)}
 			{isUploading}
 			ontriggerUpload={() => fileInput?.click()}
 		/>
@@ -217,7 +217,7 @@
 <!-- Validation Alert Modal -->
 <ValidationAlertModal
 	show={showValidationAlert}
-	title={$t('validation.alert.title')}
+	title={t('validation.alert.title')}
 	message={validationAlertMessage}
 	onClose={() => (showValidationAlert = false)}
 />

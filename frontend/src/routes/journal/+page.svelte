@@ -3,8 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import { LoaderCircle, AlertTriangle, PenLine, PanelLeft } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
-	import { ticketsStore, showToast } from '$lib/stores';
-	import { isTicketsLoading } from '$lib/stores';
+	import { ticketsStore, showToast, isTicketsLoading } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import JournalSidebar from '$lib/components/journal/JournalSidebar.svelte';
 	import JournalEditor from '$lib/components/journal/JournalEditor.svelte';
@@ -17,25 +16,24 @@
 	let innerWidth = $state(0);
 	let isSidebarVisible = $state(true);
 
-	// Store data via derived runes
-	let journalState = $derived($ticketsStore);
-	let tickets = $derived(journalState.list);
-	let filters = $derived(journalState.filters);
-	let error = $derived(journalState.error);
-	let loading = $derived($isTicketsLoading);
+	// Store data via reactive properties
+	let tickets = $derived(ticketsStore.list);
+	let filters = $derived(ticketsStore.filters);
+	let error = $derived(ticketsStore.error);
+	let loading = $derived(isTicketsLoading.value);
 
 	let selectedTicketId: string | null = $state(null);
-	let selectedTicket = $derived(tickets.find((t) => t._id === selectedTicketId) || null);
+	let selectedTicket = $derived(tickets.find((t_item) => t_item._id === selectedTicketId) || null);
 
 	let hasMore = $derived(
-		journalState.pagination
-			? journalState.pagination.current_page < journalState.pagination.last_page
+		ticketsStore.pagination
+			? ticketsStore.pagination.current_page < ticketsStore.pagination.last_page
 			: false
 	);
-	let totalData = $derived(journalState.pagination?.total_data || tickets.length);
+	let totalData = $derived(ticketsStore.pagination?.total_data || tickets.length);
 
 	onMount(() => {
-		if (tickets.length === 0 || isCacheExpired($ticketsStore.lastUpdated)) {
+		if (tickets.length === 0 || isCacheExpired(ticketsStore.lastUpdated)) {
 			ticketsStore.load(1);
 		}
 	});
@@ -54,15 +52,15 @@
 	async function handleSaveNote(ticketId: string, note: string) {
 		try {
 			await ticketsStore.updateNote(ticketId, note);
-			showToast($t('journal.saved'), 'success');
+			showToast(t('journal.saved'), 'success');
 		} catch {
-			showToast($t('common.error'), 'error');
+			showToast(t('common.error'), 'error');
 		}
 	}
 
 	function handleLoadMore() {
-		if (hasMore && !loading && journalState.pagination) {
-			ticketsStore.load(journalState.pagination.current_page + 1, filters);
+		if (hasMore && !loading && ticketsStore.pagination) {
+			ticketsStore.load(ticketsStore.pagination.current_page + 1, filters);
 		}
 	}
 
@@ -73,7 +71,7 @@
 
 <svelte:window bind:innerWidth />
 
-<SEO title={$t('nav.journal')} description={$t('seo.journal')} />
+<SEO title={t('nav.journal')} description={t('seo.journal')} />
 
 <div
 	class="h-[calc(100vh-64px)] flex flex-col bg-slate-50/50 dark:bg-zinc-900/40 overflow-hidden relative overscroll-none"
@@ -82,7 +80,7 @@
 		<div class="flex-1 flex flex-col items-center justify-center space-y-4 pb-32" in:fade>
 			<LoaderCircle class="w-10 h-10 animate-spin text-red-500" />
 			<p class="text-sm font-bold text-gray-500 uppercase tracking-widest">
-				{$t('common.loading')}
+				{t('common.loading')}
 			</p>
 		</div>
 	{:else if error && tickets.length === 0}
@@ -96,13 +94,13 @@
 				<AlertTriangle class="w-10 h-10 text-red-600" />
 			</div>
 			<div class="max-w-md">
-				<h2 class="text-2xl font-black text-gray-900 dark:text-white mb-2">{$t('common.error')}</h2>
+				<h2 class="text-2xl font-black text-gray-900 dark:text-white mb-2">{t('common.error')}</h2>
 				<p class="text-sm text-gray-500 dark:text-gray-400 mb-6">{error}</p>
 				<button
 					onclick={() => window.location.reload()}
 					class="px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-500/20"
 				>
-					{$t('errors.tryAgain')}
+					{t('errors.tryAgain')}
 				</button>
 			</div>
 		</div>
@@ -110,9 +108,9 @@
 		<!-- Page Header (Hidden visually but kept for MobileHeader store sync) -->
 		<div class="hidden max-w-7xl mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-6 mb-6">
 			<PageHeader
-				title={$t('journal.title')}
-				subtitle={$t('journal.subtitle')}
-				badge={`${totalData || tickets.length} ${$t('shows.unit')}`}
+				title={t('journal.title')}
+				subtitle={t('journal.subtitle')}
+				badge={`${totalData || tickets.length} ${t('shows.unit')}`}
 				{loading}
 				icon={CalendarDays}
 				theme="red"
@@ -163,7 +161,7 @@
 						<button
 							onclick={handleToggleSidebar}
 							class="flex items-center justify-center w-8 h-10 bg-white dark:bg-zinc-900 border-y border-r border-gray-200 dark:border-white/10 rounded-r-xl shadow-lg text-gray-400 hover:text-red-500 transition-all hover:w-10 active:scale-95 cursor-pointer"
-							title={$t('journal.showSidebar')}
+							title={t('journal.showSidebar')}
 						>
 							<PanelLeft class="w-4 h-4 ml-1" />
 						</button>
@@ -181,10 +179,10 @@
 								<PenLine class="w-10 h-10 text-gray-300 dark:text-gray-700" />
 							</div>
 							<h2 class="text-2xl font-black text-gray-900 dark:text-gray-100 mb-2">
-								{$t('journal.emptyTitle')}
+								{t('journal.emptyTitle')}
 							</h2>
 							<p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto leading-relaxed">
-								{$t('journal.emptyState')}
+								{t('journal.emptyState')}
 							</p>
 						</div>
 					{:else}

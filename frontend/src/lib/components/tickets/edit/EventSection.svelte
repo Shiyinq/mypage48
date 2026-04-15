@@ -24,13 +24,13 @@
 		class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
 	>
 		<TicketIcon class="w-4 h-4" />
-		{$t('forms.eventDetails')}
+		{t('forms.eventDetails')}
 	</h3>
 
 	<div>
 		<label
 			class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-			for="event-title">{$t('forms.showTitle')}</label
+			for="event-title">{t('forms.showTitle')}</label
 		>
 		<div class="relative group">
 			<div class="absolute left-3 top-1/2 -translate-y-1/2 text-red-400 z-10 pointer-events-none">
@@ -41,7 +41,7 @@
 				bind:value={title}
 				class="w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-bold text-gray-900 dark:text-gray-100 transition-all appearance-none cursor-pointer"
 			>
-				<option value="" disabled>{$t('forms.selectSetlist')}</option>
+				<option value="" disabled>{t('forms.selectSetlist')}</option>
 				{#each showOptions as show}<option value={show}>{show}</option>{/each}
 			</select>
 			<ChevronDown
@@ -54,7 +54,7 @@
 		<div>
 			<label
 				class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-				for="event-date">{$t('forms.date')}</label
+				for="event-date">{t('forms.date')}</label
 			>
 			<div class="relative">
 				<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -71,7 +71,7 @@
 		<div>
 			<label
 				class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-				for="event-time">{$t('forms.showTime')}</label
+				for="event-time">{t('forms.showTime')}</label
 			>
 			<div class="relative">
 				<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">

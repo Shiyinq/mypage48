@@ -60,7 +60,7 @@
 						class="bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1 self-start border border-white/20"
 					>
 						<Trophy class="w-2.5 h-2.5" />
-						<span class="uppercase tracking-wider">{$t('shows.top')}</span>
+						<span class="uppercase tracking-wider">{t('shows.top')}</span>
 					</span>
 				{/if}
 			</div>
@@ -85,8 +85,8 @@
 						} sm:bg-white/10 sm:text-white/90 sm:border-white/20 sm:backdrop-blur-md`}
 					>
 						{count > 0
-							? $t('theater.setlists.attendedCount', { count })
-							: $t('theater.setlists.notAttended')}
+							? t('theater.setlists.attendedCount', { count })
+							: t('theater.setlists.notAttended')}
 					</div>
 				</div>
 
@@ -94,7 +94,7 @@
 					<span
 						class="text-[10px] sm:text-xs text-red-500 dark:text-red-400 sm:text-white/90 font-medium hidden sm:flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0"
 					>
-						{$t('shows.viewHistory')}
+						{t('shows.viewHistory')}
 						<ChevronLeft class="w-3 h-3 rotate-180" />
 					</span>
 				{/if}
@@ -104,7 +104,7 @@
 			<div>
 				<div class="flex justify-end mb-1">
 					<span class="text-[10px] font-medium text-gray-400 dark:text-zinc-500 sm:text-gray-300">
-						{count > 0 ? `${percentage.toFixed(0)}% ${$t('shows.toTop')}` : $t('shows.notSeen')}
+						{count > 0 ? `${percentage.toFixed(0)}% ${t('shows.toTop')}` : t('shows.notSeen')}
 					</span>
 				</div>
 				<div

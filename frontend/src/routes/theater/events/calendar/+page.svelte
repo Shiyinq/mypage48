@@ -4,7 +4,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { ChevronLeft, ChevronRight, Cake, GraduationCap } from 'lucide-svelte';
-	import { calendarEvents, calendarLoading, eventsStore } from '$lib/stores/events';
+	import { calendarEvents, calendarLoading, eventsStore } from '$lib/stores/events.svelte';
 	import DayEventsModal from '$lib/components/calendar/DayEventsModal.svelte';
 	import type { CalendarEvent } from '$lib/types/events';
 
@@ -88,7 +88,7 @@
 	}
 
 	function getEventsForDay(date: Date) {
-		return $calendarEvents.filter((e) => {
+		return calendarEvents.value.filter((e) => {
 			const eDate = new Date(e.date);
 			return (
 				eDate.getDate() === date.getDate() &&
@@ -121,7 +121,7 @@
 		}
 	});
 	let currentMonthEvents = $derived(
-		$calendarEvents.filter((e) => {
+		calendarEvents.value.filter((e) => {
 			const d = new Date(e.date);
 			return d.getMonth() === month - 1 && d.getFullYear() === year;
 		})
@@ -129,7 +129,7 @@
 </script>
 
 <SEO
-	title={`${$t('theater.events.title')} - Calendar`}
+	title={`${t('theater.events.title')} - Calendar`}
 	path="/theater/events/calendar"
 	description="Theater schedule calendar"
 />
@@ -150,7 +150,7 @@
 					class="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 px-2 py-1 rounded-lg transition-colors flex items-center gap-1 md:gap-2"
 					onclick={() => (isDatePickerOpen = !isDatePickerOpen)}
 				>
-					{$formatDate(new Date(year, month - 1), {
+					{formatDate(new Date(year, month - 1), {
 						month: 'long',
 						year: 'numeric'
 					})}
@@ -212,7 +212,7 @@
 										isDatePickerOpen = false;
 									}}
 								>
-									{$formatDate(new Date(2000, monthIndex), {
+									{formatDate(new Date(2000, monthIndex), {
 										month: 'short'
 									})}
 								</button>
@@ -223,7 +223,7 @@
 			</div>
 
 			<!-- Monthly Stats -->
-			{#if !$calendarLoading}
+			{#if !calendarLoading.value}
 				<div
 					class="hidden lg:flex items-center gap-2 md:gap-3 ml-2 md:ml-4 mr-auto text-xs font-medium text-gray-500 dark:text-gray-400"
 				>
@@ -232,14 +232,14 @@
 					>
 						<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
 						{currentMonthEvents.filter((e) => e.type === 'SHOW' || (!e.type && e.setlistId)).length}
-						<span class="hidden sm:inline">{$t('theater.events.setlist')}</span>
+						<span class="hidden sm:inline">{t('theater.events.setlist')}</span>
 					</span>
 					<span
 						class="flex items-center gap-1.5 bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 px-2 py-1 rounded-full border border-pink-100 dark:border-pink-900/30"
 					>
 						<span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
 						{currentMonthEvents.filter((e) => e.type === 'BIRTHDAY' || e.isBirthday).length}
-						<span class="hidden sm:inline">{$t('theater.events.birthday')}</span>
+						<span class="hidden sm:inline">{t('theater.events.birthday')}</span>
 					</span>
 					<span
 						class="flex items-center gap-1.5 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-full border border-purple-100 dark:border-purple-900/30"
@@ -251,7 +251,7 @@
 								e.type !== 'BIRTHDAY' &&
 								(!e.type ? !e.setlistId && !e.isBirthday : true)
 						).length}
-						<span class="hidden sm:inline">{$t('theater.events.eventType')}</span>
+						<span class="hidden sm:inline">{t('theater.events.eventType')}</span>
 					</span>
 				</div>
 			{/if}
@@ -266,7 +266,7 @@
 					}}
 					class="hidden md:block cursor-pointer px-4 py-1.5 text-sm font-medium border border-gray-300 dark:border-zinc-700 rounded-full hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-gray-700 dark:text-gray-300 shadow-sm"
 				>
-					{$t('theater.events.today') || 'Today'}
+					{t('theater.events.today') || 'Today'}
 				</button>
 				<button
 					onclick={() => {
@@ -276,7 +276,7 @@
 					class="md:hidden cursor-pointer px-3 py-1.5 text-sm font-medium border border-gray-300 dark:border-zinc-700 rounded-full hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-gray-700 dark:text-gray-300 shadow-sm"
 					aria-label="Today"
 				>
-					{$t('theater.events.today') || 'Today'}
+					{t('theater.events.today') || 'Today'}
 				</button>
 
 				<!-- Arrows -->
@@ -300,7 +300,7 @@
 		</div>
 
 		<!-- Calendar Content -->
-		{#if $calendarLoading && $calendarEvents.length === 0}
+		{#if calendarLoading.value && calendarEvents.value.length === 0}
 			<div class="flex-1 flex flex-col min-h-0 animate-pulse">
 				<!-- Skeleton Header -->
 				<div
@@ -346,7 +346,7 @@
 									? 'text-blue-500 dark:text-blue-400'
 									: 'text-gray-500 dark:text-gray-400'}"
 						>
-							{$t(`time.daysShort.${dayKey}`)}
+							{t(`time.daysShort.${dayKey}`)}
 						</div>
 					{/each}
 				</div>
@@ -454,7 +454,7 @@
 												<span
 													class="opacity-100 font-bold whitespace-nowrap leading-tight tracking-tight"
 												>
-													{$formatTime(new Date(event.date), {
+													{formatTime(new Date(event.date), {
 														hour: '2-digit',
 														minute: '2-digit',
 														hour12: false
@@ -490,7 +490,7 @@
 										}}
 									>
 										<span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span>
-										{$t('theater.events.moreEvents', {
+										{t('theater.events.moreEvents', {
 											count: dayEvents.length - (MAX_VISIBLE_EVENTS - 1)
 										})}
 									</button>

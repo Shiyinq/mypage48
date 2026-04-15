@@ -6,7 +6,7 @@
 	import LandingPageThemeToggle from './ThemeToggle.svelte';
 	import { isAuthenticated } from '$lib/stores';
 	import { fade, fly } from 'svelte/transition';
-	import { liveStore, liveList } from '$lib/stores/live';
+	import { liveStore, liveList } from '$lib/stores/live.svelte';
 	import { onMount } from 'svelte';
 	import RadioEngine from './radio-player/RadioEngine.svelte';
 	import RadioWidget from './radio-player/RadioWidget.svelte';
@@ -47,12 +47,12 @@
 	});
 
 	let navItems = $derived([
-		{ label: $t('landing.nav.news'), href: '/jkt48/news' },
-		{ label: $t('landing.nav.members'), href: '/jkt48/members' },
-		{ label: $t('landing.nav.events'), href: '/jkt48/events' },
-		{ label: $t('landing.nav.calendar'), href: '/jkt48/calendar' },
-		{ label: $t('landing.nav.sorter'), href: '/jkt48/sorter' },
-		{ label: $t('landing.nav.live'), href: '/jkt48/live', id: 'live' }
+		{ label: t('landing.nav.news'), href: '/jkt48/news' },
+		{ label: t('landing.nav.members'), href: '/jkt48/members' },
+		{ label: t('landing.nav.events'), href: '/jkt48/events' },
+		{ label: t('landing.nav.calendar'), href: '/jkt48/calendar' },
+		{ label: t('landing.nav.sorter'), href: '/jkt48/sorter' },
+		{ label: t('landing.nav.live'), href: '/jkt48/live', id: 'live' }
 	]);
 
 	function toggleMenu() {
@@ -80,7 +80,7 @@
 	<!-- Left: Logo -->
 	<div class="flex-1 flex items-center justify-start">
 		<a href="/" class="flex items-center gap-3 group pointer-events-auto" onclick={closeMenu}>
-			<NavLogo tagline={$t('landing.nav.subtitle')} {mouse} />
+			<NavLogo tagline={t('landing.nav.subtitle')} {mouse} />
 		</a>
 	</div>
 
@@ -92,7 +92,7 @@
 	>
 		{#snippet item({ item, isActive })}
 			{item.label}
-			{#if item.id === 'live' && $liveList.length > 0}
+			{#if item.id === 'live' && (liveList.value?.length ?? 0) > 0}
 				<span class="relative flex h-2 w-2">
 					<span
 						class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive
@@ -115,12 +115,12 @@
 			<LandingPageThemeToggle />
 		</div>
 
-		{#if $isAuthenticated}
+		{#if isAuthenticated.value}
 			<a
 				href="/"
 				class="flex px-4 sm:px-6 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-bold text-xs sm:text-sm hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all items-center gap-2 group"
 			>
-				{$t('nav.dashboard')}
+				{t('nav.dashboard')}
 				<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
 			</a>
 		{:else if showLogin}
@@ -128,7 +128,7 @@
 				href="/login"
 				class="flex px-4 sm:px-6 py-2 rounded-full bg-red-600 text-white font-bold text-xs sm:text-sm shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-0.5 transition-all items-center gap-2 group"
 			>
-				{$t('auth.login.signIn')}
+				{t('auth.login.signIn')}
 				<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
 			</a>
 		{/if}
@@ -176,7 +176,7 @@
 					>
 						<div class="flex items-center gap-3">
 							<span class="text-sm font-black uppercase tracking-[0.2em]">{item.label}</span>
-							{#if item.id === 'live' && $liveList.length > 0}
+							{#if item.id === 'live' && (liveList.value?.length ?? 0) > 0}
 								<span class="relative flex h-2.5 w-2.5">
 									<span
 										class="animate-ping absolute inline-flex h-full w-full rounded-full {isActive
@@ -208,21 +208,21 @@
 						<LandingPageThemeToggle />
 					</div>
 
-					{#if !$isAuthenticated && showLogin}
+					{#if !isAuthenticated.value && showLogin}
 						<a
 							href="/login"
 							onclick={closeMenu}
 							class="px-6 py-2.5 rounded-full bg-red-600 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/20"
 						>
-							{$t('auth.login.signIn')}
+							{t('auth.login.signIn')}
 						</a>
-					{:else if $isAuthenticated}
+					{:else if isAuthenticated.value}
 						<a
 							href="/"
 							onclick={closeMenu}
 							class="px-6 py-2.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-black text-xs uppercase tracking-widest shadow-sm"
 						>
-							{$t('nav.dashboard')}
+							{t('nav.dashboard')}
 						</a>
 					{/if}
 				</div>

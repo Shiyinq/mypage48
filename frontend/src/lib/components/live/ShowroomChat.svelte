@@ -143,7 +143,7 @@
 				transition:slide={{ duration: 300 }}
 			>
 				<p class="text-[9px] text-white font-medium text-center">
-					{$t('theater.live.reconnect_showroom')}
+					{t('theater.live.reconnect_showroom')}
 				</p>
 			</div>
 		{/if}
@@ -157,7 +157,7 @@
 			<div
 				class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900"
 			>
-				{$t('theater.live.chat_started')}
+				{t('theater.live.chat_started')}
 			</div>
 		{/if}
 
@@ -193,7 +193,7 @@
 			<div class="flex-1 flex flex-col items-center justify-center text-center py-20 opacity-40">
 				<MessageCircle size={32} class="text-slate-300 dark:text-zinc-700 mb-2" />
 				<p class="text-xs font-bold uppercase tracking-widest text-slate-400">
-					{$t('theater.live.multiview.no_messages')}
+					{t('theater.live.multiview.no_messages')}
 				</p>
 			</div>
 		{/if}

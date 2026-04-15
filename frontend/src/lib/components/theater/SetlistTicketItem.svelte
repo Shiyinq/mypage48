@@ -31,7 +31,7 @@
 			class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-14 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-100 dark:border-zinc-700"
 		>
 			<span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase leading-none">
-				{$formatDate(ticket.event.date, {
+				{formatDate(ticket.event.date, {
 					month: 'short'
 				})}
 			</span>

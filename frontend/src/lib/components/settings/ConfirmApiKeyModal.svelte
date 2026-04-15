@@ -35,10 +35,10 @@
 					<TriangleAlert class="w-7 h-7 text-white" />
 				</div>
 				<h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
-					{$t('settings.developer.confirmTitle')}
+					{t('settings.developer.confirmTitle')}
 				</h3>
 				<p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-					{$t('settings.developer.confirmDescription')}
+					{t('settings.developer.confirmDescription')}
 				</p>
 			</div>
 
@@ -47,13 +47,13 @@
 					class="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
 					onclick={handleCancel}
 				>
-					{$t('common.cancel')}
+					{t('common.cancel')}
 				</button>
 				<button
 					class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors cursor-pointer"
 					onclick={handleConfirm}
 				>
-					{$t('common.confirm')}
+					{t('common.confirm')}
 				</button>
 			</div>
 		</div>

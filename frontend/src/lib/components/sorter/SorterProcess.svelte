@@ -66,12 +66,12 @@
 				<h2
 					class={`font-black text-lg uppercase tracking-tighter ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
 				>
-					{$t('theater.sorter.sorting')}
+					{t('theater.sorter.sorting')}
 				</h2>
 				<p
 					class={`text-[8px] font-black uppercase tracking-widest ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
 				>
-					{$t('theater.sorter.questionLabel', { num: numQuestion })}
+					{t('theater.sorter.questionLabel', { num: numQuestion })}
 				</p>
 			</div>
 			<div class="text-right">
@@ -126,7 +126,7 @@
 			<div class="absolute bottom-3 left-3 right-3 text-left z-30">
 				<span
 					class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
-					>{$t('theater.sorter.genLabel', { gen: leftMember?.generation ?? '' })}</span
+					>{t('theater.sorter.genLabel', { gen: leftMember?.generation ?? '' })}</span
 				>
 				<h3 class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md truncate">
 					{leftMember?.name}
@@ -203,7 +203,7 @@
 			<div class="absolute bottom-3 left-3 right-3 text-left z-30">
 				<span
 					class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
-					>{$t('theater.sorter.genLabel', { gen: rightMember?.generation ?? '' })}</span
+					>{t('theater.sorter.genLabel', { gen: rightMember?.generation ?? '' })}</span
 				>
 				<h3 class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md truncate">
 					{rightMember?.name}
@@ -249,7 +249,7 @@
 				class="h-10 md:h-11 px-4 md:px-6 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-900 dark:text-white font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 shadow-sm border border-zinc-100 dark:border-zinc-700"
 			>
 				<Equal size={16} />
-				{$t('theater.sorter.tie')}
+				{t('theater.sorter.tie')}
 			</button>
 			<button
 				onclick={undo}
@@ -257,14 +257,14 @@
 				class="h-10 md:h-11 px-4 md:px-6 bg-amber-50 dark:bg-amber-950/20 text-amber-600 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer disabled:opacity-30 whitespace-nowrap flex items-center gap-1.5 shadow-sm border border-amber-100/50 dark:border-amber-900/20"
 			>
 				<RotateCcw size={16} />
-				{$t('theater.sorter.undo')}
+				{t('theater.sorter.undo')}
 			</button>
 			<button
 				onclick={restart}
 				class={`h-10 md:h-11 px-4 md:px-6 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${isPublic ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20' : 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20'}`}
 			>
 				<ArrowLeft size={16} />
-				{$t('theater.sorter.exit')}
+				{t('theater.sorter.exit')}
 			</button>
 		</div>
 	</div>

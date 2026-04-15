@@ -70,7 +70,7 @@
 		<div
 			class="absolute top-4 right-4 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"
 		>
-			{$t('achievements.unlocked')}
+			{t('achievements.unlocked')}
 			<Check class="w-3 h-3" />
 		</div>
 	{/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { isAuthenticated, showToast } from '$lib/stores';
-	import { achievementsStore, isAchievementsLoading } from '$lib/stores/achievements';
+	import { achievementsStore, isAchievementsLoading } from '$lib/stores/achievements.svelte';
 	import { onMount } from 'svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import {
@@ -48,23 +49,22 @@
 	};
 
 	// Subscribe to store
-	let state = $derived($achievementsStore);
-	let data = $derived(state.data);
-	let error = $derived(state.error);
+	let data = $derived(achievementsStore.data);
+	let error = $derived(achievementsStore.error);
 
 	let unlocked = $derived(data?.achievements.filter((m) => m.isUnlocked) ?? []);
 	let locked = $derived(data?.achievements.filter((m) => !m.isUnlocked) ?? []);
 
 	async function loadAchievements() {
-		if (!$isAuthenticated) {
-			return;
+		if (!isAuthenticated.value) {
+			goto('/login');
 		}
 
 		try {
 			await achievementsStore.load();
 		} catch {
 			// Error logged and handled by store
-			showToast($t('achievements.errorLoad'), 'error');
+			showToast(t('achievements.errorLoad'), 'error');
 		}
 	}
 
@@ -77,29 +77,29 @@
 	}
 </script>
 
-<SEO title={$t('achievements.title')} path="/achievements" description={$t('seo.achievements')} />
+<SEO title={t('achievements.title')} path="/achievements" description={t('seo.achievements')} />
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 animate-fade-in pb-32">
 	<div class="mb-8">
 		<PageHeader
 			icon={Trophy}
-			title={$t('achievements.title')}
-			subtitle={$t('achievements.subtitle')}
+			title={t('achievements.title')}
+			subtitle={t('achievements.subtitle')}
 			theme="yellow"
 		/>
 	</div>
 
 	<!-- Grid Layout -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-		{#if $isAchievementsLoading}
+		{#if isAchievementsLoading.value}
 			{#each Array(9)}
 				<AchievementSkeleton />
 			{/each}
 		{:else if error}
 			<div class="col-span-full">
 				<ErrorState
-					title={$t('achievements.errorTitle') || 'Failed to load achievements'}
-					description={$t('achievements.errorDesc') || error || ''}
+					title={t('achievements.errorTitle') || 'Failed to load achievements'}
+					description={t('achievements.errorDesc') || error || ''}
 					onRetry={loadAchievements}
 				/>
 			</div>

@@ -42,7 +42,7 @@
 						class="bg-white text-gray-800 px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 shadow-lg hover:scale-105 transition-transform"
 					>
 						<ImagePlus class="w-4 h-4" />
-						{$t('forms.changePhoto')}
+						{t('forms.changePhoto')}
 					</button>
 				</div>
 			</div>
@@ -62,9 +62,9 @@
 				>
 					<ImagePlus class="w-8 h-8" />
 				</div>
-				<p class="font-bold text-lg">{$t('forms.uploadPhoto')}</p>
+				<p class="font-bold text-lg">{t('forms.uploadPhoto')}</p>
 				<p class="{isDragging ? 'text-red-400' : 'text-gray-400 dark:text-gray-500'} text-xs mt-1">
-					({$t('forms.optional')})
+					({t('forms.optional')})
 				</p>
 			</button>
 		{/if}

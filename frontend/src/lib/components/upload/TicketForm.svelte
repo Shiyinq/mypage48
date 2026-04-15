@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
-	import { setlistsStore } from '$lib/stores/theater';
+	import { setlistsStore } from '$lib/stores/theater.svelte';
 	import {
 		Ticket as TicketIcon,
 		Calendar,
@@ -71,7 +71,7 @@
 	const { t } = useTranslation();
 
 	let SHOW_OPTIONS = $derived(
-		$setlistsStore.data ? $setlistsStore.data.map((s) => s.title) : SHOW_IMAGES.map((s) => s.title)
+		setlistsStore.data ? setlistsStore.data.map((s) => s.title) : SHOW_IMAGES.map((s) => s.title)
 	);
 
 	onMount(() => {
@@ -97,12 +97,12 @@
 				class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
 			>
 				<TicketIcon class="w-4 h-4" />
-				{$t('forms.eventDetails')}
+				{t('forms.eventDetails')}
 			</h3>
 			<div>
 				<label
 					class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-					for="event-title">{$t('forms.showTitle')}</label
+					for="event-title">{t('forms.showTitle')}</label
 				>
 				<div class="relative group">
 					<div
@@ -115,7 +115,7 @@
 						bind:value={formData.event.title}
 						class="w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-bold text-gray-900 dark:text-gray-100 transition-all appearance-none cursor-pointer"
 					>
-						<option value="" disabled>{$t('forms.selectSetlist')}</option>
+						<option value="" disabled>{t('forms.selectSetlist')}</option>
 						{#each SHOW_OPTIONS as show}<option value={show}>{show}</option>{/each}
 					</select>
 					<ChevronDown
@@ -127,7 +127,7 @@
 				<div>
 					<label
 						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-						for="event-date">{$t('forms.date')}</label
+						for="event-date">{t('forms.date')}</label
 					>
 					<div class="relative">
 						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -144,7 +144,7 @@
 				<div>
 					<label
 						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-						for="event-time">{$t('forms.showTime')}</label
+						for="event-time">{t('forms.showTime')}</label
 					>
 					<div class="relative">
 						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -167,13 +167,13 @@
 				class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
 			>
 				<MapPin class="w-4 h-4" />
-				{$t('forms.seatPayment')}
+				{t('forms.seatPayment')}
 			</h3>
 			<div class="grid grid-cols-3 gap-4">
 				<div>
 					<label
 						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-						for="seat-section">{$t('forms.row')}</label
+						for="seat-section">{t('forms.row')}</label
 					>
 					<div class="relative">
 						<select
@@ -192,7 +192,7 @@
 				<div class="col-span-2">
 					<label
 						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-						for="seat-number">{$t('forms.seatNumber')}</label
+						for="seat-number">{t('forms.seatNumber')}</label
 					>
 					<input
 						id="seat-number"
@@ -207,7 +207,7 @@
 				<div>
 					<label
 						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-						for="ticket-price">{$t('forms.price')}</label
+						for="ticket-price">{t('forms.price')}</label
 					>
 					<div class="relative">
 						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -225,7 +225,7 @@
 				<div>
 					<label
 						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-						for="ticket-id">{$t('forms.ticketId')}</label
+						for="ticket-id">{t('forms.ticketId')}</label
 					>
 					<div class="relative">
 						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -260,12 +260,12 @@
 				class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
 			>
 				<NotebookPen class="w-4 h-4" />
-				{$t('forms.experienceLog')}
+				{t('forms.experienceLog')}
 			</h3>
 			<textarea
 				bind:value={formData.notes}
 				class="w-full p-4 bg-yellow-50/50 dark:bg-zinc-800/50 border border-yellow-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-yellow-400 dark:focus:ring-zinc-600 outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 min-h-[120px]"
-				placeholder={$t('forms.notesPlaceholder')}
+				placeholder={t('forms.notesPlaceholder')}
 			></textarea>
 		</div>
 
@@ -280,7 +280,7 @@
 			{:else}
 				<CircleCheck class="w-6 h-6" />
 			{/if}
-			{$t('forms.saveTicket')}
+			{t('forms.saveTicket')}
 		</button>
 	</form>
 </div>

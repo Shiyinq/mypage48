@@ -23,7 +23,7 @@
 		isHistoryEventsLoading,
 		historyPagination,
 		historyError
-	} from '$lib/stores/events';
+	} from '$lib/stores/events.svelte';
 
 	const { t } = useTranslation();
 
@@ -31,7 +31,10 @@
 		await eventsStore.loadHistory(1);
 	});
 
-	let error = $derived($historyError);
+	let error = $derived(historyError.value);
+	let eventsList = $derived(historyEvents.value);
+	let loading = $derived(isHistoryEventsLoading.value);
+	let paginationObj = $derived(historyPagination.value);
 
 	async function handlePageChange(page: number) {
 		eventsStore.loadHistory(page);
@@ -78,25 +81,25 @@
 </script>
 
 <SEO
-	title={$t('theater.eventHistory.title')}
+	title={t('theater.eventHistory.title')}
 	path="/theater/events/history"
-	description={$t('theater.eventHistory.subtitle')}
+	description={t('theater.eventHistory.subtitle')}
 />
 
 <div class="space-y-6">
-	{#if $isHistoryEventsLoading}
+	{#if loading && eventsList.length === 0}
 		<EventHistorySkeleton rows={10} />
 	{:else if error}
 		<ErrorState
-			title={$t('theater.eventHistory.errorTitle') || 'Failed to load history'}
-			description={$t('theater.eventHistory.errorDesc') || error || ''}
-			onRetry={() => eventsStore.loadHistory($historyPagination.current_page)}
+			title={t('theater.eventHistory.errorTitle') || 'Failed to load history'}
+			description={t('theater.eventHistory.errorDesc') || error || ''}
+			onRetry={() => eventsStore.loadHistory(paginationObj.current_page)}
 		/>
 	{:else if $historyEvents.length === 0}
 		<EmptyState
 			icon={History}
-			title={$t('theater.eventHistory.emptyTitle')}
-			description={$t('theater.eventHistory.empty')}
+			title={t('theater.eventHistory.emptyTitle')}
+			description={t('theater.eventHistory.empty')}
 		/>
 	{:else}
 		<div class="glass-panel rounded-3xl overflow-hidden shadow-sm" in:fade={{ duration: 300 }}>
@@ -106,24 +109,24 @@
 						<tr
 							class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 						>
-							<th class="p-4">{$t('common.date')}</th>
-							<th class="p-4">{$t('theater.events.eventName')}</th>
-							<th class="p-4">{$t('theater.eventHistory.table.type')}</th>
-							<th class="p-4">{$t('theater.eventHistory.table.members')}</th>
-							<th class="p-4 text-right">{$t('theater.eventHistory.table.link')}</th>
+							<th class="p-4">{t('common.date')}</th>
+							<th class="p-4">{t('theater.events.eventName')}</th>
+							<th class="p-4">{t('theater.eventHistory.table.type')}</th>
+							<th class="p-4">{t('theater.eventHistory.table.members')}</th>
+							<th class="p-4 text-right">{t('theater.eventHistory.table.link')}</th>
 						</tr>
 					</thead>
 					<tbody
 						class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700"
 					>
-						{#each $historyEvents as event}
+						{#each eventsList as event}
 							<tr
 								class="group border-b border-gray-100 dark:border-zinc-700 hover:bg-orange-50/30 dark:hover:bg-orange-900/10 transition-colors"
 							>
 								<td class="p-4 whitespace-nowrap">
 									<div class="flex flex-col">
 										<span class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-											{$formatDate(event.date, {
+											{formatDate(event.date, {
 												day: 'numeric',
 												month: 'short',
 												year: '2-digit'
@@ -134,7 +137,7 @@
 											class="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5"
 										>
 											<Clock class="w-3 h-3" />
-											{$formatTime(event.date, {
+											{formatTime(event.date, {
 												hour: '2-digit',
 												minute: '2-digit',
 												hour12: false
@@ -247,29 +250,28 @@
 				</table>
 			</div>
 
-			<!-- Numbered Pagination -->
-			{#if $historyPagination.last_page > 1}
+			{#if paginationObj.last_page > 1}
 				<div
 					class="bg-gray-50 dark:bg-zinc-800/50 border-t border-gray-100 dark:border-zinc-800 px-6 py-4 flex items-center justify-between"
 				>
 					<span class="text-xs text-themed-secondary">
-						{$t('theater.eventHistory.pagination.pageOf', {
-							current: $historyPagination.current_page,
-							last: $historyPagination.last_page
+						{t('theater.eventHistory.pagination.pageOf', {
+							current: paginationObj.current_page,
+							last: paginationObj.last_page
 						})}
 					</span>
 					<div class="flex gap-2">
 						<!-- Previous Button -->
 						<button
 							class="w-8 h-8 flex items-center justify-center rounded-md bg-white dark:bg-zinc-900 border border-gray-200 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
-							disabled={$historyPagination.current_page === 1}
-							onclick={() => handlePageChange($historyPagination.current_page - 1)}
+							disabled={paginationObj.current_page === 1}
+							onclick={() => handlePageChange(paginationObj.current_page - 1)}
 						>
 							<ChevronLeft class="w-4 h-4" />
 						</button>
 
 						<!-- Page Numbers -->
-						{#each generatePagination($historyPagination.current_page, $historyPagination.last_page) as page}
+						{#each generatePagination(paginationObj.current_page, paginationObj.last_page) as page}
 							{#if page === '...'}
 								<span class="w-8 h-8 flex items-center justify-center text-xs text-gray-400"
 									>...</span
@@ -277,7 +279,7 @@
 							{:else}
 								<button
 									class="w-8 h-8 flex items-center justify-center text-xs rounded-md border transition-colors cursor-pointer {page ===
-									$historyPagination.current_page
+									paginationObj.current_page
 										? 'bg-orange-500 text-white border-orange-500'
 										: 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800'}"
 									onclick={() => handlePageChange(Number(page))}
@@ -290,8 +292,8 @@
 						<!-- Next Button -->
 						<button
 							class="w-8 h-8 flex items-center justify-center rounded-md bg-white dark:bg-zinc-900 border border-gray-200 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
-							disabled={$historyPagination.current_page === $historyPagination.last_page}
-							onclick={() => handlePageChange($historyPagination.current_page + 1)}
+							disabled={paginationObj.current_page === paginationObj.last_page}
+							onclick={() => handlePageChange(paginationObj.current_page + 1)}
 						>
 							<ChevronRight class="w-4 h-4" />
 						</button>

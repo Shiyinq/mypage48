@@ -6,7 +6,7 @@
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { showToast } from '$lib/stores';
 	import { Search } from 'lucide-svelte';
-	import { membersStore, isMembersLoading } from '$lib/stores/theater';
+	import { membersStore, isMembersLoading } from '$lib/stores/theater.svelte';
 	import MemberCard from '$lib/components/theater/MemberCard.svelte';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
@@ -52,10 +52,9 @@
 	};
 
 	// Store data via derived runes
-	let membersState = $derived($membersStore);
-	let membersList = $derived(membersState.list);
-	let pagination = $derived(membersState.pagination);
-	let error = $derived(membersState.error);
+	let membersList = $derived(membersStore.list);
+	let pagination = $derived(membersStore.pagination);
+	let error = $derived(membersStore.error);
 
 	async function fetchGenerations() {
 		try {
@@ -71,7 +70,7 @@
 	}
 
 	async function fetchMembers(reset = false) {
-		if ($isMembersLoading) return;
+		if (isMembersLoading.value) return;
 		try {
 			await membersStore.load(
 				{
@@ -81,7 +80,7 @@
 				reset
 			);
 		} catch {
-			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
+			showToast(t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		}
 	}
 
@@ -123,7 +122,7 @@
 	});
 
 	function handleInfiniteScroll() {
-		if (!$isMembersLoading && pagination.hasMore) {
+		if (!isMembersLoading.value && pagination.hasMore) {
 			fetchMembers(false);
 		}
 	}
@@ -159,19 +158,19 @@
 	let allSortedTypes = $derived([...types, ...otherTypes]);
 </script>
 
-<SEO title={$t('theater.members.title')} path="/jkt48/members" description={$t('seo.members')} />
+<SEO title={t('theater.members.title')} path="/jkt48/members" description={t('seo.members')} />
 
 <div class="space-y-8 pt-4 md:pt-6 pb-12 px-0 sm:px-0">
 	<div class="text-center space-y-4 mb-8">
 		<h1
 			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
 		>
-			{$t('theater.members.title')}
+			{t('theater.members.title')}
 		</h1>
 		<p
 			class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest"
 		>
-			{$t('theater.members.subtitle')}
+			{t('theater.members.subtitle')}
 		</p>
 	</div>
 
@@ -189,7 +188,7 @@
 								: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-zinc-800 hover:text-red-600 dark:hover:text-red-400'
 						}`}
 					>
-						{$t('common.all')}
+						{t('common.all')}
 					</button>
 					{#if loadingGenerations}
 						{#each Array(5)}
@@ -221,7 +220,7 @@
 				/>
 				<input
 					type="text"
-					placeholder={$t('common.search')}
+					placeholder={t('common.search')}
 					value={searchQuery}
 					oninput={handleSearch}
 					class="w-full pl-9.5 pr-4 py-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 rounded-full text-sm text-themed placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-sm"
@@ -262,7 +261,7 @@
 	</div>
 
 	<!-- Members Grid -->
-	{#if (!mounted || $isMembersLoading) && membersList.length === 0}
+	{#if (!mounted || isMembersLoading.value) && membersList.length === 0}
 		<div
 			class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6"
 		>
@@ -272,15 +271,15 @@
 		</div>
 	{:else if error && membersList.length === 0}
 		<ErrorState
-			title={$t('theater.members.errorTitle') || 'Failed to load members'}
-			description={$t('theater.members.errorDesc') || error || ''}
+			title={t('theater.members.errorTitle') || 'Failed to load members'}
+			description={t('theater.members.errorDesc') || error || ''}
 			onRetry={fetchMembers}
 		/>
 	{:else if membersList.length === 0}
 		<EmptyState
 			icon={Search}
-			title={$t('member.emptyState.title')}
-			description={$t('member.emptyState.description')}
+			title={t('member.emptyState.title')}
+			description={t('member.emptyState.description')}
 		>
 			{#if searchQuery || selectedGeneration}
 				<button
@@ -291,7 +290,7 @@
 					}}
 					class="mt-4 px-6 py-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full text-sm font-bold hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors cursor-pointer"
 				>
-					{$t('common.clearFilters')}
+					{t('common.clearFilters')}
 				</button>
 			{/if}
 		</EmptyState>
@@ -325,7 +324,7 @@
 		{/each}
 
 		<!-- Skeletons for Infinite Scroll (Appending) -->
-		{#if $isMembersLoading && membersList.length > 0}
+		{#if isMembersLoading.value && membersList.length > 0}
 			<div
 				class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6 mt-6"
 			>

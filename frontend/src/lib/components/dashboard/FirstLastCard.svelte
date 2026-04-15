@@ -68,8 +68,8 @@
 
 	let labels = $derived(
 		type === 'theater'
-			? { first: $t('dashboard.theater.first'), last: $t('dashboard.theater.last') }
-			: { first: $t('dashboard.twoShot.first'), last: $t('dashboard.twoShot.last') }
+			? { first: t('dashboard.theater.first'), last: t('dashboard.theater.last') }
+			: { first: t('dashboard.twoShot.first'), last: t('dashboard.twoShot.last') }
 	);
 </script>
 

@@ -62,7 +62,7 @@
 					disabled={isDeleting}
 					class="px-4 py-2.5 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					{$t('common.cancel')}
+					{t('common.cancel')}
 				</button>
 				<button
 					onclick={onConfirm}
@@ -73,9 +73,9 @@
 						<div
 							class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
 						></div>
-						{$t('common.loading')}
+						{t('common.loading')}
 					{:else}
-						{$t('history.deleteConfirm.confirm')}
+						{t('history.deleteConfirm.confirm')}
 					{/if}
 				</button>
 			</div>

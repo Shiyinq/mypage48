@@ -79,7 +79,7 @@ export function getValidationErrorMessage(error: FileValidationResult['error']):
 
 /**
  * Get i18n key for validation error
- * Returns the key to use with $t() for localized messages
+ * Returns the key to use with t() for localized messages
  */
 export function getValidationErrorI18nKey(error: FileValidationResult['error']): string {
 	switch (error) {

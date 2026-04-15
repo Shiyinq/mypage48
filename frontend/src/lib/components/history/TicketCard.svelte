@@ -85,7 +85,7 @@
 			<span
 				class="inline-block px-2 py-0.5 bg-black/40 backdrop-blur-md text-white text-[10px] font-bold rounded-md uppercase tracking-wider border border-white/20 shadow-sm"
 			>
-				{ticket.event.day ? $t('time.days.' + ticket.event.day.toLowerCase()) : $t('history.show')}
+				{ticket.event.day ? t('time.days.' + ticket.event.day.toLowerCase()) : t('history.show')}
 			</span>
 		</div>
 	</div>
@@ -119,7 +119,7 @@
 			<div class="flex items-center text-gray-600 dark:text-gray-400">
 				<Calendar class="w-3 h-3 mr-1.5 text-red-500 flex-shrink-0" />
 				<span class="truncate"
-					>{$formatDate(ticket.event.date, {
+					>{formatDate(ticket.event.date, {
 						day: 'numeric',
 						month: 'short',
 						year: '2-digit'
@@ -186,7 +186,7 @@
 							class="h-full flex items-center text-gray-400 dark:text-gray-600 italic text-[10px]"
 						>
 							<NotebookPen class="w-3 h-3 mr-1 opacity-50" />
-							{$t('history.addNote')}
+							{t('history.addNote')}
 						</div>
 					{/if}
 					<div
@@ -207,7 +207,7 @@
 				class="text-[10px] font-bold text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors cursor-pointer"
 			>
 				<Pencil class="w-3 h-3" />
-				{$t('history.editDetails')}
+				{t('history.editDetails')}
 			</button>
 			<button
 				onclick={() => ondeleteTicket?.(ticket._id)}
