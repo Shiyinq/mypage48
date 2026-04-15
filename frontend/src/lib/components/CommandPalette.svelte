@@ -64,28 +64,28 @@
 				? ([
 						{
 							id: 'admin-dashboard',
-							title: $t('command.actions.adminDashboard'),
+							title: t('command.actions.adminDashboard'),
 							icon: ShieldCheck,
 							section: 'admin',
 							perform: () => goto('/admin')
 						},
 						{
 							id: 'admin-members',
-							title: $t('command.actions.adminMembers'),
+							title: t('command.actions.adminMembers'),
 							icon: Users,
 							section: 'admin',
 							perform: () => goto('/admin/members')
 						},
 						{
 							id: 'admin-setlists',
-							title: $t('command.actions.adminSetlists'),
+							title: t('command.actions.adminSetlists'),
 							icon: Music,
 							section: 'admin',
 							perform: () => goto('/admin/setlists')
 						},
 						{
 							id: 'admin-feedback',
-							title: $t('command.actions.adminFeedback'),
+							title: t('command.actions.adminFeedback'),
 							icon: MessageSquare,
 							section: 'admin',
 							perform: () => goto('/admin/feedback')
@@ -96,91 +96,91 @@
 			// Navigation
 			{
 				id: 'nav-home',
-				title: $t('command.actions.home'),
+				title: t('command.actions.home'),
 				icon: Home,
 				section: 'navigation',
 				perform: () => goto('/')
 			},
 			{
 				id: 'nav-theater',
-				title: $t('command.actions.theater'),
+				title: t('command.actions.theater'),
 				icon: AudioLines,
 				section: 'navigation',
 				perform: () => goto('/theater')
 			},
 			{
 				id: 'nav-members',
-				title: $t('command.actions.members'),
+				title: t('command.actions.members'),
 				icon: Users,
 				section: 'navigation',
 				perform: () => goto('/theater/members')
 			},
 			{
 				id: 'nav-events',
-				title: $t('command.actions.events'),
+				title: t('command.actions.events'),
 				icon: Calendar,
 				section: 'navigation',
 				perform: () => goto('/theater/events')
 			},
 			{
 				id: 'nav-calendar',
-				title: $t('command.actions.calendar'),
+				title: t('command.actions.calendar'),
 				icon: Calendar,
 				section: 'navigation',
 				perform: () => goto('/theater/events/calendar')
 			},
 			{
 				id: 'nav-event-history',
-				title: $t('command.actions.eventHistory'),
+				title: t('command.actions.eventHistory'),
 				icon: History,
 				section: 'navigation',
 				perform: () => goto('/theater/events/history')
 			},
 			{
 				id: 'nav-history',
-				title: $t('command.actions.history'),
+				title: t('command.actions.history'),
 				icon: History,
 				section: 'navigation',
 				perform: () => goto('/history')
 			},
 			{
 				id: 'nav-achievements',
-				title: $t('command.actions.achievements'),
+				title: t('command.actions.achievements'),
 				icon: Trophy,
 				section: 'navigation',
 				perform: () => goto('/achievements')
 			},
 			{
 				id: 'nav-memories',
-				title: $t('command.actions.memories'),
+				title: t('command.actions.memories'),
 				icon: Command, // Placeholder icon
 				section: 'navigation',
 				perform: () => goto('/memories')
 			},
 			{
 				id: 'nav-profile',
-				title: $t('command.actions.profile'),
+				title: t('command.actions.profile'),
 				icon: User,
 				section: 'navigation',
 				perform: () => goto('/profile')
 			},
 			{
 				id: 'nav-settings',
-				title: $t('command.actions.settings'),
+				title: t('command.actions.settings'),
 				icon: Settings,
 				section: 'navigation',
 				perform: () => goto('/settings')
 			},
 			{
 				id: 'nav-playground',
-				title: $t('playground.title'),
+				title: t('playground.title'),
 				icon: Terminal,
 				section: 'navigation',
 				perform: () => goto('/playground')
 			},
 			{
 				id: 'nav-feedback',
-				title: $t('command.actions.feedback'),
+				title: t('command.actions.feedback'),
 				icon: MessageSquare,
 				section: 'navigation',
 				perform: () => goto('/feedback')
@@ -189,14 +189,14 @@
 			// Actions
 			{
 				id: 'ticket-scan',
-				title: $t('command.actions.scanTicket'),
+				title: t('command.actions.scanTicket'),
 				icon: ScanLine,
 				section: 'ticketing',
 				perform: () => goto('/upload?mode=scan')
 			},
 			{
 				id: 'ticket-manual',
-				title: $t('command.actions.manualTicket'),
+				title: t('command.actions.manualTicket'),
 				icon: Plus,
 				section: 'ticketing',
 				perform: () => goto('/upload?mode=manual')
@@ -205,21 +205,21 @@
 			// Theme
 			{
 				id: 'theme-light',
-				title: $t('command.actions.lightMode'),
+				title: t('command.actions.lightMode'),
 				icon: Sun,
 				section: 'theme',
 				perform: () => setTheme('light')
 			},
 			{
 				id: 'theme-dark',
-				title: $t('command.actions.darkMode'),
+				title: t('command.actions.darkMode'),
 				icon: Moon,
 				section: 'theme',
 				perform: () => setTheme('dark')
 			},
 			{
 				id: 'theme-auto',
-				title: $t('command.actions.autoMode'),
+				title: t('command.actions.autoMode'),
 				icon: Laptop,
 				section: 'theme',
 				perform: () => setTheme('auto')
@@ -228,21 +228,21 @@
 			// Language
 			{
 				id: 'lang-id',
-				title: $t('command.actions.langId'),
+				title: t('command.actions.langId'),
 				icon: Globe,
 				section: 'language',
 				perform: () => setLocale('id')
 			},
 			{
 				id: 'lang-en',
-				title: $t('command.actions.langEn'),
+				title: t('command.actions.langEn'),
 				icon: Globe,
 				section: 'language',
 				perform: () => setLocale('en')
 			},
 			{
 				id: 'lang-ja',
-				title: $t('command.actions.langJa'),
+				title: t('command.actions.langJa'),
 				icon: Globe,
 				section: 'language',
 				perform: () => setLocale('ja')
@@ -251,7 +251,7 @@
 			// Account
 			{
 				id: 'account-logout',
-				title: $t('command.actions.logout'),
+				title: t('command.actions.logout'),
 				icon: LogOut,
 				section: 'account',
 				perform: async () => {
@@ -369,7 +369,7 @@
 					bind:this={inputEl}
 					bind:value={searchQuery}
 					type="text"
-					placeholder={$t('command.placeholder')}
+					placeholder={t('command.placeholder')}
 					class="flex-1 bg-transparent border-none outline-none text-themed placeholder:text-themed-muted h-6 text-base"
 				/>
 				<div
@@ -383,7 +383,7 @@
 			<div class="max-h-[300px] overflow-y-auto py-2 command-list" bind:this={listContainer}>
 				{#if filteredActions.length === 0}
 					<div class="px-4 py-8 text-center text-themed-muted text-sm">
-						{$t('command.noResults')}
+						{t('command.noResults')}
 					</div>
 				{:else}
 					{#each filteredActions as action, i}
@@ -400,7 +400,7 @@
 							/>
 							<span class="flex-1">{action.title}</span>
 							<span class="text-xs text-themed-muted capitalize"
-								>{$t(`command.sections.${action.section}`)}</span
+								>{t(`command.sections.${action.section}`)}</span
 							>
 						</button>
 					{/each}
@@ -411,8 +411,8 @@
 			<div
 				class="px-4 py-2 bg-black/5 dark:bg-white/5 border-t border-themed text-[10px] text-themed-muted flex justify-between"
 			>
-				<span>{$t('command.footer.navigate')} <span class="text-themed-secondary">↑↓</span></span>
-				<span>{$t('command.footer.select')} <span class="text-themed-secondary">↵</span></span>
+				<span>{t('command.footer.navigate')} <span class="text-themed-secondary">↑↓</span></span>
+				<span>{t('command.footer.select')} <span class="text-themed-secondary">↵</span></span>
 			</div>
 		</div>
 	</div>

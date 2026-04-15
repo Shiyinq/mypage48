@@ -308,7 +308,7 @@
 				transition:slide={{ duration: 300 }}
 			>
 				<p class="text-[9px] text-white font-medium text-center">
-					{$t('theater.live.reconnect_idn')}
+					{t('theater.live.reconnect_idn')}
 				</p>
 			</div>
 		{/if}
@@ -322,7 +322,7 @@
 			<div
 				class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900"
 			>
-				{$t('theater.live.chat_started')}
+				{t('theater.live.chat_started')}
 			</div>
 		{/if}
 
@@ -347,12 +347,12 @@
 								: ''}"
 						>
 							{#if names.length > 1}
-								{$t('theater.live.group_joined', {
+								{t('theater.live.group_joined', {
 									name: names[0],
 									count: names.length - 1
 								})}
 							{:else}
-								{$t('theater.live.joined', { name: names[0] || msg.text })}
+								{t('theater.live.joined', { name: names[0] || msg.text })}
 							{/if}
 						</p>
 						<div class="h-px flex-1 min-w-[12px] bg-slate-200 dark:bg-zinc-800/50"></div>
@@ -436,7 +436,7 @@
 								{/if}
 								<div>
 									<p class="text-[10px] uppercase tracking-tighter opacity-80 mb-0.5">
-										{$t('theater.live.multiview.sending_gift')}
+										{t('theater.live.multiview.sending_gift')}
 									</p>
 									{msg.gift.name.toUpperCase()}
 								</div>
@@ -497,7 +497,7 @@
 			<div class="flex-1 flex flex-col items-center justify-center text-center py-20 opacity-40">
 				<MessageCircle size={32} class="text-slate-300 dark:text-zinc-700 mb-2" />
 				<p class="text-xs font-bold uppercase tracking-widest text-slate-400">
-					{$t('theater.live.multiview.no_messages')}
+					{t('theater.live.multiview.no_messages')}
 				</p>
 			</div>
 		{/if}

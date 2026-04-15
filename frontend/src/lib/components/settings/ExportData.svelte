@@ -22,7 +22,7 @@
 			}
 		} else {
 			if (res.status === 'FAILED') {
-				showToast(res.message || $t('common.error'), 'error');
+				showToast(res.message || t('common.error'), 'error');
 			}
 
 			if (pollInterval) {
@@ -45,10 +45,10 @@
 	const handleRequestExport = async () => {
 		try {
 			await exportStore.initiate();
-			showToast($t('settings.exportData.requested'), 'success');
+			showToast(t('settings.exportData.requested'), 'success');
 			pollStatus(true); // Start polling immediately in background
 		} catch {
-			showToast($t('common.error'), 'error');
+			showToast(t('common.error'), 'error');
 		}
 	};
 
@@ -70,7 +70,7 @@
 				pollStatus();
 			}, 2000);
 		} catch {
-			showToast($t('common.error'), 'error');
+			showToast(t('common.error'), 'error');
 		}
 	};
 
@@ -88,13 +88,13 @@
 			</div>
 			<div>
 				<h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-					{$t('settings.exportData.title')}
+					{t('settings.exportData.title')}
 					{#if status === 'PROCESSING'}
 						<span class="inline-flex h-2 w-2 rounded-full bg-yellow-500 animate-pulse"></span>
 					{/if}
 				</h3>
 				<p class="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md">
-					{$t('settings.exportData.description')}
+					{t('settings.exportData.description')}
 				</p>
 
 				{#if expiresAt && status === 'COMPLETED' && !isExpired}
@@ -102,7 +102,7 @@
 						class="mt-2 text-xs font-medium text-orange-500 flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/10 px-2 py-1 rounded-lg w-fit"
 					>
 						<CircleAlert class="w-3.5 h-3.5" />
-						{$t('settings.exportData.expiresAt', { time: new Date(expiresAt).toLocaleString() })}
+						{t('settings.exportData.expiresAt', { time: new Date(expiresAt).toLocaleString() })}
 					</div>
 				{/if}
 			</div>
@@ -118,7 +118,7 @@
 					class="flex items-center justify-center gap-3 px-5 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-500 dark:text-gray-400 font-bold whitespace-nowrap"
 				>
 					<LoaderCircle class="w-5 h-5 animate-spin" />
-					<span class="text-sm">{$t('settings.exportData.processing')}</span>
+					<span class="text-sm">{t('settings.exportData.processing')}</span>
 				</div>
 			{:else if status === 'COMPLETED' && !isExpired}
 				<button
@@ -131,7 +131,7 @@
 					{:else}
 						<Download class="w-4 h-4" />
 					{/if}
-					{$t('settings.exportData.download')}
+					{t('settings.exportData.download')}
 				</button>
 			{:else}
 				<button
@@ -144,7 +144,7 @@
 					{:else}
 						<CircleAlert class="w-4 h-4" />
 					{/if}
-					{$t('settings.exportData.request')}
+					{t('settings.exportData.request')}
 				</button>
 			{/if}
 		</div>

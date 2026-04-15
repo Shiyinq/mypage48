@@ -13,7 +13,7 @@
 	let scrollY = $state(0);
 </script>
 
-<SEO title={$t('terms.title')} path="/terms" description={$t('seo.terms')} />
+<SEO title={t('terms.title')} path="/terms" description={t('seo.terms')} />
 
 <div
 	class="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 relative overflow-hidden font-sans selection:bg-red-500/20"
@@ -32,12 +32,12 @@
 			<h1
 				class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
 			>
-				{$t('terms.title')}
+				{t('terms.title')}
 			</h1>
 			<p
 				class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]"
 			>
-				{$t('terms.lastUpdated', { date: '19/01/2026' })}
+				{t('terms.lastUpdated', { date: '19/01/2026' })}
 			</p>
 		</div>
 
@@ -46,24 +46,24 @@
 			class="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 md:p-12 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-none border border-slate-100 dark:border-zinc-800 space-y-8"
 		>
 			<p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-				{$t('terms.intro')}
+				{t('terms.intro')}
 			</p>
 
 			<section class="space-y-4">
 				<h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-					{$t('terms.sections.usage.title')}
+					{t('terms.sections.usage.title')}
 				</h2>
 				<p class="text-slate-600 dark:text-slate-400 leading-relaxed">
-					{$t('terms.sections.usage.content')}
+					{t('terms.sections.usage.content')}
 				</p>
 			</section>
 
 			<section class="space-y-4">
 				<h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-					{$t('terms.sections.disclaimer.title')}
+					{t('terms.sections.disclaimer.title')}
 				</h2>
 				<p class="text-slate-600 dark:text-slate-400 leading-relaxed">
-					{$t('terms.sections.disclaimer.content')}
+					{t('terms.sections.disclaimer.content')}
 				</p>
 			</section>
 		</div>

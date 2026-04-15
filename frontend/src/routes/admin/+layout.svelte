@@ -43,7 +43,7 @@
 
 	// Watch for auth/profile changes
 	$effect(() => {
-		handleAuthCheck(browser, $isInitialDataLoaded, {
+		handleAuthCheck(browser, isInitialDataLoaded.value, {
 			data: userProfile.data,
 			error: userProfile.error
 		});
@@ -52,26 +52,26 @@
 	let tabs = $derived([
 		{
 			href: '/admin',
-			label: $t('admin.dashboard.tabs.users'),
+			label: t('admin.dashboard.tabs.users'),
 			icon: UserCheck,
 			exact: true,
 			activeClass: 'bg-red-500 shadow-red-500/20'
 		},
 		{
 			href: '/admin/members',
-			label: $t('admin.dashboard.tabs.members'),
+			label: t('admin.dashboard.tabs.members'),
 			icon: Users,
 			activeClass: 'bg-pink-500 shadow-pink-500/20'
 		},
 		{
 			href: '/admin/setlists',
-			label: $t('admin.dashboard.tabs.setlists'),
+			label: t('admin.dashboard.tabs.setlists'),
 			icon: Music,
 			activeClass: 'bg-purple-500 shadow-purple-500/20'
 		},
 		{
 			href: '/admin/feedback',
-			label: $t('admin.dashboard.tabs.feedback'),
+			label: t('admin.dashboard.tabs.feedback'),
 			icon: MessageSquare,
 			activeClass: 'bg-cyan-500 shadow-cyan-500/20'
 		}
@@ -80,14 +80,14 @@
 </script>
 
 <svelte:head>
-	<title>{authState === 'authorized' ? $t('admin.dashboard.title') : 'Page'} | MyPage48</title>
+	<title>{authState === 'authorized' ? t('admin.dashboard.title') : 'Page'} | MyPage48</title>
 </svelte:head>
 
 {#if authState === 'authorized'}
 	<div class="max-w-7xl mx-auto p-4 pb-24">
 		<PageHeader
-			title={$t('admin.dashboard.title')}
-			subtitle={$t('admin.dashboard.subtitle')}
+			title={t('admin.dashboard.title')}
+			subtitle={t('admin.dashboard.subtitle')}
 			icon={ShieldCheck}
 			theme="red"
 		>

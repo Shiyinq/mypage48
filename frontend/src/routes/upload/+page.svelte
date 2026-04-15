@@ -142,7 +142,7 @@
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			return;
 		}
@@ -201,7 +201,7 @@
 			mode = 'EDITING';
 		} catch (e) {
 			logger.error('Image analysis failed', e, { context: 'UploadPage' });
-			showToast($t('forms.analysisFailed'), 'error');
+			showToast(t('forms.analysisFailed'), 'error');
 			mode = 'EDITING';
 		}
 	};
@@ -223,7 +223,7 @@
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			return;
 		}
@@ -284,11 +284,11 @@
 			resetDashboard();
 			invalidateTheater();
 
-			showToast($t('upload.uploadSuccess'), 'success');
+			showToast(t('upload.uploadSuccess'), 'success');
 			goto('/');
 		} catch (e) {
 			logger.error('Ticket upload failed', e, { context: 'UploadPage' });
-			showToast($t('upload.uploadError'), 'error');
+			showToast(t('upload.uploadError'), 'error');
 		} finally {
 			isSubmitting = false;
 		}
@@ -300,13 +300,13 @@
 	};
 </script>
 
-<SEO title={$t('upload.title')} path="/upload" description={$t('seo.upload')} />
+<SEO title={t('upload.title')} path="/upload" description={t('seo.upload')} />
 
 <!-- Page Header (Hidden visually but kept for MobileHeader store sync) -->
 <div class="hidden max-w-5xl mx-auto pt-4 sm:pt-6 px-4 mb-4">
 	<PageHeader
-		title={$t('upload.title')}
-		subtitle={$t('upload.subtitle')}
+		title={t('upload.title')}
+		subtitle={t('upload.subtitle')}
 		icon={ScanLine}
 		theme="red"
 	/>
@@ -333,10 +333,10 @@
 				</div>
 				<div>
 					<h2 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-						{$t('forms.newTicket')}
+						{t('forms.newTicket')}
 					</h2>
 					<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
-						{$t('forms.addToCollection')}
+						{t('forms.addToCollection')}
 					</p>
 				</div>
 			</div>
@@ -344,7 +344,7 @@
 				onclick={onCancel}
 				class="text-[10px] sm:text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer whitespace-nowrap"
 			>
-				{$t('forms.cancel')}
+				{t('forms.cancel')}
 			</button>
 		</div>
 
@@ -392,7 +392,7 @@
 <!-- Validation Alert Modal -->
 <ValidationAlertModal
 	show={showValidationAlert}
-	title={$t('validation.alert.title')}
+	title={t('validation.alert.title')}
 	message={validationAlertMessage}
 	onClose={() => (showValidationAlert = false)}
 />

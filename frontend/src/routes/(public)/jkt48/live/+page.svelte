@@ -31,8 +31,8 @@
 </script>
 
 <SEO
-	title={$t('theater.live.seoTitle')}
-	description={$t('theater.live.seoDescription')}
+	title={t('theater.live.seoTitle')}
+	description={t('theater.live.seoDescription')}
 	path="/jkt48/live"
 />
 
@@ -46,7 +46,7 @@
 						class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-black uppercase tracking-widest mb-4"
 					>
 						<span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
-						{$t('theater.live.onLive')}
+						{t('theater.live.onLive')}
 					</div>
 					<h1
 						class="text-4xl sm:text-6xl font-black tracking-tighter text-slate-900 dark:text-white leading-[0.9]"
@@ -54,7 +54,7 @@
 						JKT48 <span class="text-red-600 italic">LIVE</span>
 					</h1>
 					<p class="text-slate-500 dark:text-slate-400 mt-4 font-medium max-w-lg">
-						{$t('theater.live.subtitle')}
+						{t('theater.live.subtitle')}
 					</p>
 				</div>
 
@@ -77,10 +77,10 @@
 							<div class="flex flex-col items-start leading-none gap-0.5">
 								<span
 									class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors"
-									>{$t('theater.live.multiview.title')}</span
+									>{t('theater.live.multiview.title')}</span
 								>
 								<span class="text-sm font-black tracking-tight text-slate-900 dark:text-white"
-									>{$t('theater.live.switchMultiview')}</span
+									>{t('theater.live.switchMultiview')}</span
 								>
 							</div>
 

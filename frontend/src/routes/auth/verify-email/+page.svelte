@@ -13,22 +13,22 @@
 	const { t } = useTranslation();
 
 	let status: 'loading' | 'success' | 'error' = $state('loading');
-	let message = $state($t('auth.verifyEmail.loadingMessage'));
+	let message = $state(t('auth.verifyEmail.loadingMessage'));
 
 	onMount(async () => {
 		const token = $page.url.searchParams.get('token');
 
 		if (!token) {
 			status = 'error';
-			message = $t('auth.verifyEmail.invalidLink');
+			message = t('auth.verifyEmail.invalidLink');
 			return;
 		}
 
 		try {
 			await authStore.verifyEmail({ token });
 			status = 'success';
-			message = $t('auth.verifyEmail.successMessage');
-			showToast($t('auth.verifyEmail.successMessage'), 'success');
+			message = t('auth.verifyEmail.successMessage');
+			showToast(t('auth.verifyEmail.successMessage'), 'success');
 			setTimeout(() => {
 				goto('/login');
 			}, 3000);
@@ -36,15 +36,15 @@
 			const errorMsg = getErrorMessage(err);
 			logger.error('Email verification failed', err, { context: 'VerifyEmailPage' });
 			status = 'error';
-			message = errorMsg || $t('auth.verifyEmail.failedMessage');
+			message = errorMsg || t('auth.verifyEmail.failedMessage');
 		}
 	});
 </script>
 
 <SEO
-	title={$t('auth.verifyEmail.loadingTitle')}
+	title={t('auth.verifyEmail.loadingTitle')}
 	path="/auth/verify-email"
-	description={$t('seo.verifyEmail')}
+	description={t('seo.verifyEmail')}
 />
 
 <div
@@ -88,11 +88,11 @@
 
 			<h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2">
 				{#if status === 'loading'}
-					{$t('auth.verifyEmail.loadingTitle')}
+					{t('auth.verifyEmail.loadingTitle')}
 				{:else if status === 'success'}
-					{$t('auth.verifyEmail.successTitle')}
+					{t('auth.verifyEmail.successTitle')}
 				{:else}
-					{$t('auth.verifyEmail.errorTitle')}
+					{t('auth.verifyEmail.errorTitle')}
 				{/if}
 			</h1>
 
@@ -105,14 +105,14 @@
 					onclick={() => goto('/login')}
 					class="w-full py-3 rounded-xl font-bold bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
 				>
-					{$t('auth.verifyEmail.backToLogin')}
+					{t('auth.verifyEmail.backToLogin')}
 				</button>
 			{:else if status === 'success'}
 				<button
 					onclick={() => goto('/login')}
 					class="w-full py-3 rounded-xl font-bold idol-gradient text-white shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer"
 				>
-					{$t('auth.verifyEmail.goToLogin')}
+					{t('auth.verifyEmail.goToLogin')}
 				</button>
 			{/if}
 		</div>

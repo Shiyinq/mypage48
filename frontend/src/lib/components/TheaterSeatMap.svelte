@@ -149,7 +149,7 @@
 						>
 							<span
 								class="text-[8px] sm:text-[10px] font-black tracking-[0.3em] text-gray-400 uppercase block text-center"
-								>{$t('dashboard.seatMap.stage')}</span
+								>{t('dashboard.seatMap.stage')}</span
 							>
 						</div>
 					</div>

@@ -76,7 +76,7 @@
 				{stream.member?.name}
 			</h3>
 			<p class="text-[10px] text-gray-300 font-medium drop-shadow-sm line-clamp-1">
-				{stream.title || $t('theater.live.multiview.live_status')}
+				{stream.title || t('theater.live.multiview.live_status')}
 			</p>
 			<LiveStats start_at={stream.start_at} variant="compact" showLabel={true} className="mt-1.5" />
 		</div>

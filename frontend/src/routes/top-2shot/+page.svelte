@@ -42,22 +42,22 @@
 			await topTwoShotStore.load();
 		} catch {
 			// Error state is handled by store, we just show toast
-			showToast($t('top2shot.errorTitle') || 'Failed to load data', 'error');
+			showToast(t('top2shot.errorTitle') || 'Failed to load data', 'error');
 		}
 	}
 
 	let mostCollected = $derived(stats.ranking.length > 0 ? stats.ranking[0] : undefined);
 </script>
 
-<SEO title={$t('top2shot.title')} path="/top-2shot" description={$t('seo.top2shot')} />
+<SEO title={t('top2shot.title')} path="/top-2shot" description={t('seo.top2shot')} />
 
 <div class="max-w-6xl mx-auto pt-4 sm:pt-6 px-4 pb-24 animate-fade-in">
 	<!-- Header -->
 	<div class="mb-8">
 		<PageHeader
 			icon={Heart}
-			title={$t('top2shot.title')}
-			subtitle={$t('top2shot.subtitle')}
+			title={t('top2shot.title')}
+			subtitle={t('top2shot.subtitle')}
 			theme="pink"
 		/>
 	</div>
@@ -66,18 +66,14 @@
 		<Top2ShotSkeleton />
 	{:else if error && stats.ranking.length === 0}
 		<ErrorState
-			title={$t('top2shot.errorTitle') || 'Failed to load data'}
-			description={$t('top2shot.errorDesc') ||
+			title={t('top2shot.errorTitle') || 'Failed to load data'}
+			description={t('top2shot.errorDesc') ||
 				error ||
 				'Something went wrong while fetching the leaderboard.'}
 			onRetry={loadData}
 		/>
 	{:else if stats.ranking.length === 0}
-		<EmptyState
-			icon={Camera}
-			title={$t('top2shot.noData')}
-			description={$t('top2shot.noDataDesc')}
-		/>
+		<EmptyState icon={Camera} title={t('top2shot.noData')} description={t('top2shot.noDataDesc')} />
 	{:else}
 		<div class="grid lg:grid-cols-3 gap-6">
 			<!-- LEFT COL: Kami Oshi Card -->

@@ -64,7 +64,7 @@
 			await achievementsStore.load();
 		} catch {
 			// Error logged and handled by store
-			showToast($t('achievements.errorLoad'), 'error');
+			showToast(t('achievements.errorLoad'), 'error');
 		}
 	}
 
@@ -77,14 +77,14 @@
 	}
 </script>
 
-<SEO title={$t('achievements.title')} path="/achievements" description={$t('seo.achievements')} />
+<SEO title={t('achievements.title')} path="/achievements" description={t('seo.achievements')} />
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 animate-fade-in pb-32">
 	<div class="mb-8">
 		<PageHeader
 			icon={Trophy}
-			title={$t('achievements.title')}
-			subtitle={$t('achievements.subtitle')}
+			title={t('achievements.title')}
+			subtitle={t('achievements.subtitle')}
 			theme="yellow"
 		/>
 	</div>
@@ -98,8 +98,8 @@
 		{:else if error}
 			<div class="col-span-full">
 				<ErrorState
-					title={$t('achievements.errorTitle') || 'Failed to load achievements'}
-					description={$t('achievements.errorDesc') || error || ''}
+					title={t('achievements.errorTitle') || 'Failed to load achievements'}
+					description={t('achievements.errorDesc') || error || ''}
 					onRetry={loadAchievements}
 				/>
 			</div>

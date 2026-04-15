@@ -98,7 +98,7 @@
 			class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5"
 		>
 			<h3 class="text-lg font-bold text-gray-900 dark:text-white">
-				{$t('nav.journey') || 'Journey'}
+				{t('nav.journey') || 'Journey'}
 			</h3>
 			<button class="p-2 text-gray-400 hover:text-gray-600" onclick={closeAllMenus}>
 				<X class="w-6 h-6" />
@@ -120,7 +120,7 @@
 						</div>
 						<span
 							class={`font-bold transition-colors ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-200'}`}
-							>{$t(link.label)}</span
+							>{t(link.label)}</span
 						>
 					</div>
 					<ChevronRight
@@ -150,7 +150,7 @@
 			class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5"
 		>
 			<h3 class="text-lg font-bold text-gray-900 dark:text-white">
-				{$t('nav.theater') || 'Theater'}
+				{t('nav.theater') || 'Theater'}
 			</h3>
 			<button class="p-2 text-gray-400 hover:text-gray-600" onclick={closeAllMenus}>
 				<X class="w-6 h-6" />
@@ -174,7 +174,7 @@
 						</div>
 						<span
 							class={`font-bold transition-colors ${isActive ? 'text-purple-600 dark:text-purple-400' : 'text-gray-700 dark:text-gray-200'}`}
-							>{$t(link.labelKey) || link.labelDefault}</span
+							>{t(link.labelKey) || link.labelDefault}</span
 						>
 					</div>
 					<ChevronRight
@@ -201,7 +201,7 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all truncate w-full text-center ${$page.url.pathname === '/' ? 'text-red-600 dark:text-red-400' : ''}`}
-				>{$t('nav.home')}</span
+				>{t('nav.home')}</span
 			>
 		</a>
 
@@ -214,7 +214,7 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isTheaterMenuOpen || isRouteTheater ? 'text-purple-600 dark:text-purple-400' : ''}`}
-				>{$t('nav.theater')}</span
+				>{t('nav.theater')}</span
 			>
 		</button>
 
@@ -237,7 +237,7 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400' : ''}`}
-				>{$t('nav.journey') || 'Journey'}</span
+				>{t('nav.journey') || 'Journey'}</span
 			>
 		</button>
 
@@ -250,7 +250,7 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all truncate w-full text-center ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white' : ''}`}
-				>{$t('nav.profile') || 'Profile'}</span
+				>{t('nav.profile') || 'Profile'}</span
 			>
 		</a>
 	</div>

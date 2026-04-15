@@ -215,14 +215,14 @@
 						class="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
 					>
 						<Eye class="w-3.5 h-3.5" />
-						<span class="hidden sm:inline">{$t('journal.previewToggle')}</span>
+						<span class="hidden sm:inline">{t('journal.previewToggle')}</span>
 					</button>
 					<button
 						onclick={handleSave}
 						class="px-4 py-1.5 text-xs font-black text-white bg-red-600 hover:bg-red-700 shadow-md shadow-red-500/20 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer"
 					>
 						<Save class="w-3.5 h-3.5" />
-						<span class="hidden sm:inline">{$t('journal.save')}</span>
+						<span class="hidden sm:inline">{t('journal.save')}</span>
 					</button>
 				{:else}
 					<button
@@ -230,7 +230,7 @@
 						class="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
 					>
 						<PenLine class="w-3.5 h-3.5" />
-						<span class="hidden sm:inline">{$t('journal.writeToggle')}</span>
+						<span class="hidden sm:inline">{t('journal.writeToggle')}</span>
 					</button>
 				{/if}
 			</div>
@@ -357,7 +357,7 @@
 					<textarea
 						bind:this={textareaEl}
 						bind:value={content}
-						placeholder={$t('journal.startWriting')}
+						placeholder={t('journal.startWriting')}
 						class="w-full flex-1 min-h-[500px] resize-none outline-none bg-transparent text-gray-800 dark:text-gray-200 text-lg sm:text-xl leading-relaxed custom-scrollbar pb-20 font-serif placeholder:font-sans placeholder:text-gray-300 dark:placeholder:text-gray-700"
 					></textarea>
 				</div>
@@ -375,7 +375,7 @@
 						>
 							<PenLine class="w-10 h-10 mb-4 text-gray-300 dark:text-gray-700" />
 							<p class="text-sm font-medium text-gray-400 dark:text-gray-500 text-center max-w-sm">
-								{$t('journal.startWriting')}
+								{t('journal.startWriting')}
 							</p>
 						</div>
 					{:else}

@@ -171,7 +171,7 @@
 	});
 </script>
 
-<SEO title={$t('dashboard.title')} path="/" description={$t('seo.dashboard')} />
+<SEO title={t('dashboard.title')} path="/" description={t('seo.dashboard')} />
 
 <div class="space-y-6 pt-4 sm:pt-6 px-4 pb-32 max-w-7xl mx-auto">
 	<!-- Header / Filter Toggle -->
@@ -206,7 +206,7 @@
 				class="ml-2 text-sm underline hover:text-red-300 cursor-pointer"
 				onclick={() => fetchDashboardStats()}
 			>
-				{$t('errors.tryAgain')}
+				{t('errors.tryAgain')}
 			</button>
 		</div>
 	{/if}
@@ -217,22 +217,22 @@
 		<div class="glass-panel p-6 rounded-3xl">
 			<div class="mb-6">
 				<h3 class="text-xl font-bold text-themed">
-					{$t('dashboard.theater.title')}
+					{t('dashboard.theater.title')}
 				</h3>
-				<p class="text-xs text-gray-400">{$t('dashboard.theater.subtitle')}</p>
+				<p class="text-xs text-gray-400">{t('dashboard.theater.subtitle')}</p>
 			</div>
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<StatCard
-					title={$t('dashboard.theater.shows')}
+					title={t('dashboard.theater.shows')}
 					value={totalVisits}
-					sub={$t('dashboard.theater.timesWatched')}
+					sub={t('dashboard.theater.timesWatched')}
 					icon={TicketIcon}
 					theme="red"
 					{loading}
 				/>
 				<StatCard
-					title={$t('dashboard.theater.spending')}
+					title={t('dashboard.theater.spending')}
 					value={new Intl.NumberFormat('id-ID', {
 						style: 'currency',
 						currency: 'IDR',
@@ -244,10 +244,10 @@
 					hideable={true}
 				/>
 				<StatCard
-					title={$t('dashboard.theater.topRow')}
+					title={t('dashboard.theater.topRow')}
 					value={mostFrequentRow}
-					sub={$t('dashboard.theater.mostFrequentSeat')}
-					detail={`${mostFrequentRowCount} ${$t('dashboard.theater.times')}`}
+					sub={t('dashboard.theater.mostFrequentSeat')}
+					detail={`${mostFrequentRowCount} ${t('dashboard.theater.times')}`}
 					icon={Armchair}
 					theme="amber"
 					showCrown={true}
@@ -263,7 +263,7 @@
 
 				<!-- First & Last Show Card -->
 				<FirstLastCard
-					title={`${$t('dashboard.theater.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
+					title={`${t('dashboard.theater.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 					type="theater"
 					{loading}
 					onExpand={() => (showTheaterPopup = true)}
@@ -277,22 +277,22 @@
 		<div class="glass-panel p-6 rounded-3xl">
 			<div class="mb-6">
 				<h3 class="text-xl font-bold text-themed">
-					{$t('dashboard.twoShot.title')}
+					{t('dashboard.twoShot.title')}
 				</h3>
-				<p class="text-xs text-gray-400">{$t('dashboard.twoShot.subtitle')}</p>
+				<p class="text-xs text-gray-400">{t('dashboard.twoShot.subtitle')}</p>
 			</div>
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<StatCard
-					title={$t('dashboard.twoShot.twoShotTitle')}
+					title={t('dashboard.twoShot.twoShotTitle')}
 					value={twoShotStats.totalCount}
-					sub={$t('dashboard.twoShot.collected')}
+					sub={t('dashboard.twoShot.collected')}
 					icon={Camera}
 					theme="pink"
 					{loading}
 				/>
 				<StatCard
-					title={$t('dashboard.twoShot.spending')}
+					title={t('dashboard.twoShot.spending')}
 					value={new Intl.NumberFormat('id-ID', {
 						style: 'currency',
 						currency: 'IDR',
@@ -304,9 +304,9 @@
 					hideable={true}
 				/>
 				<StatCard
-					title={$t('dashboard.twoShot.members')}
+					title={t('dashboard.twoShot.members')}
 					value={twoShotStats.uniqueCount}
-					sub={$t('dashboard.twoShot.uniqueIdols')}
+					sub={t('dashboard.twoShot.uniqueIdols')}
 					icon={Users}
 					theme="blue"
 					{loading}
@@ -322,7 +322,7 @@
 
 				<!-- First & Last 2-Shot Card -->
 				<FirstLastCard
-					title={`${$t('dashboard.twoShot.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
+					title={`${t('dashboard.twoShot.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 					type="twoShot"
 					{loading}
 					onExpand={() => (showTwoShotPopup = true)}
@@ -356,13 +356,13 @@
 <FirstLastPopup
 	show={showTheaterPopup}
 	onClose={() => (showTheaterPopup = false)}
-	title={`${$t('dashboard.theater.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
+	title={`${t('dashboard.theater.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 	type="theater"
 	first={showExtremes.first
 		? {
 				...showExtremes.first,
 				detail: showExtremes.first.detail
-					? `${$t('dashboard.seatMap.row')} ${showExtremes.first.detail.replace('Row ', '')}`
+					? `${t('dashboard.seatMap.row')} ${showExtremes.first.detail.replace('Row ', '')}`
 					: undefined
 			}
 		: null}
@@ -370,7 +370,7 @@
 		? {
 				...showExtremes.last,
 				detail: showExtremes.last.detail
-					? `${$t('dashboard.seatMap.row')} ${showExtremes.last.detail.replace('Row ', '')}`
+					? `${t('dashboard.seatMap.row')} ${showExtremes.last.detail.replace('Row ', '')}`
 					: undefined
 			}
 		: null}
@@ -380,7 +380,7 @@
 <FirstLastPopup
 	show={showTwoShotPopup}
 	onClose={() => (showTwoShotPopup = false)}
-	title={`${$t('dashboard.twoShot.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
+	title={`${t('dashboard.twoShot.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 	type="twoShot"
 	first={twoShotExtremes.first}
 	last={twoShotExtremes.last}

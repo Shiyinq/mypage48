@@ -29,10 +29,10 @@
 	>
 		<div>
 			<h3 class="font-bold text-gray-800 dark:text-gray-200 text-lg">
-				{$t('top2shot.rankingTitle')}
+				{t('top2shot.rankingTitle')}
 			</h3>
 			<p class="text-xs text-gray-500 dark:text-gray-400">
-				{$t('top2shot.rankingSubtitle')}
+				{t('top2shot.rankingSubtitle')}
 			</p>
 		</div>
 		<div
@@ -40,7 +40,7 @@
 		>
 			<TrendingUp class="w-3 h-3" />
 			{totalCount}
-			{$t('top2shot.totalPhotos')}
+			{t('top2shot.totalPhotos')}
 		</div>
 	</div>
 
@@ -88,7 +88,7 @@
 						>
 							<Camera class="w-3 h-3" />
 							{member.count}
-							{$t('top2shot.photos')}
+							{t('top2shot.photos')}
 						</span>
 					</div>
 				</div>

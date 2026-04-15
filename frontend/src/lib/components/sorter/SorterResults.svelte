@@ -66,12 +66,12 @@
 				<h1
 					class={`text-2xl md:text-3xl font-black tracking-tighter uppercase leading-none ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
 				>
-					{$t('theater.sorter.results')}
+					{t('theater.sorter.results')}
 				</h1>
 				<p
 					class={`text-[10px] font-bold uppercase tracking-widest ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
 				>
-					{$t('theater.sorter.resultsSubtitle')}
+					{t('theater.sorter.resultsSubtitle')}
 				</p>
 			</div>
 		</div>
@@ -106,7 +106,7 @@
 			>
 				<Share2 size={14} class="sm:hidden" />
 				<Share2 size={16} class="hidden sm:block" />
-				{$t('theater.sorter.share')}
+				{t('theater.sorter.share')}
 			</button>
 			<button
 				onclick={restart}
@@ -114,7 +114,7 @@
 			>
 				<RotateCcw size={14} class="sm:hidden" />
 				<RotateCcw size={16} class="hidden sm:block" />
-				{$t('theater.sorter.restart')}
+				{t('theater.sorter.restart')}
 			</button>
 		</div>
 	</div>
@@ -161,7 +161,7 @@
 										{member.name}
 									</h4>
 									<span class="text-[8px] font-black text-white/70 uppercase tracking-widest"
-										>{$t('theater.sorter.genLabel', { gen: member.generation })}</span
+										>{t('theater.sorter.genLabel', { gen: member.generation })}</span
 									>
 								</div>
 
@@ -212,7 +212,7 @@
 								</h4>
 								<span
 									class={`text-[9px] md:text-xs font-bold uppercase tracking-widest truncate ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
-									>{$t('theater.sorter.genLabel', { gen: member.generation })}</span
+									>{t('theater.sorter.genLabel', { gen: member.generation })}</span
 								>
 							</div>
 
@@ -270,7 +270,7 @@
 										</h4>
 										<span
 											class={`text-[9px] font-bold uppercase tracking-widest truncate ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
-											>{$t('theater.sorter.genLabel', { gen: member.generation })}</span
+											>{t('theater.sorter.genLabel', { gen: member.generation })}</span
 										>
 									</div>
 								</div>

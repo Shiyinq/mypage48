@@ -20,7 +20,7 @@
 		class="font-black text-sm uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2"
 	>
 		<History class="w-4 h-4" />
-		{$t('profile.recentActivity.title')}
+		{t('profile.recentActivity.title')}
 	</h3>
 
 	<div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
@@ -51,7 +51,7 @@
 							</p>
 							<div class="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
 								<Clock class="w-3 h-3" />
-								{$formatDate(activity.date, {
+								{formatDate(activity.date, {
 									day: 'numeric',
 									month: 'short',
 									year: 'numeric'
@@ -69,7 +69,7 @@
 					<Calendar class="w-8 h-8 opacity-30" />
 				</div>
 				<p class="text-xs font-bold uppercase tracking-wide opacity-50">
-					{$t('profile.recentActivity.noActivity')}
+					{t('profile.recentActivity.noActivity')}
 				</p>
 			</div>
 		{/if}

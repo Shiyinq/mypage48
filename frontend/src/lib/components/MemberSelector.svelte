@@ -170,10 +170,10 @@
 			>
 				<div>
 					<h3 class="text-xl font-black text-gray-800 dark:text-white">
-						{title || $t('profile.oshiModal.title')}
+						{title || t('profile.oshiModal.title')}
 					</h3>
 					<p class="text-sm text-gray-500 dark:text-gray-400">
-						{subtitle || $t('profile.oshiModal.subtitle')}
+						{subtitle || t('profile.oshiModal.subtitle')}
 					</p>
 				</div>
 				<button
@@ -193,7 +193,7 @@
 						type="text"
 						bind:value={searchQuery}
 						oninput={handleSearch}
-						placeholder={$t('profile.oshiModal.searchPlaceholder')}
+						placeholder={t('profile.oshiModal.searchPlaceholder')}
 						class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:border-red-300 focus:ring-4 focus:ring-red-50 dark:focus:ring-red-900/30 transition-all font-medium text-sm"
 					/>
 				</div>
@@ -206,13 +206,13 @@
 						<div
 							class="w-10 h-10 border-4 border-red-100 border-t-red-500 rounded-full animate-spin mb-4"
 						></div>
-						<p class="text-sm text-gray-500">{$t('profile.oshiModal.loading')}</p>
+						<p class="text-sm text-gray-500">{t('profile.oshiModal.loading')}</p>
 					</div>
 				{:else if memberList.length === 0}
 					<div class="text-center py-12">
 						<Search class="w-12 h-12 text-gray-200 mx-auto mb-3" />
 						<p class="text-gray-500">
-							{$t('profile.oshiModal.noMembers', { query: searchQuery })}
+							{t('profile.oshiModal.noMembers', { query: searchQuery })}
 						</p>
 					</div>
 				{:else}
@@ -248,7 +248,7 @@
 								</h4>
 								<span
 									class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors"
-									>{$t('profile.oshiModal.generation', { gen: member.generation })}</span
+									>{t('profile.oshiModal.generation', { gen: member.generation })}</span
 								>
 							</button>
 						{/each}
@@ -272,7 +272,7 @@
 					onclick={close}
 					class="px-4 py-2 rounded-xl text-gray-500 hover:text-gray-700 font-bold text-sm transition-colors cursor-pointer"
 				>
-					{$t('profile.oshiModal.cancel')}
+					{t('profile.oshiModal.cancel')}
 				</button>
 				<button
 					type="button"

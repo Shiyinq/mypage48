@@ -97,8 +97,8 @@
 								class="text-2xl font-bold text-gray-900 dark:text-white leading-none relative w-fit"
 							>
 								{isCreating
-									? $t('admin.setlists.modal.addTitle')
-									: $t('admin.setlists.modal.editTitle')}
+									? t('admin.setlists.modal.addTitle')
+									: t('admin.setlists.modal.editTitle')}
 								<span
 									class="absolute -bottom-1 left-0 w-full h-2 bg-purple-200/60 dark:bg-purple-500/30 -z-10 transform -skew-x-12 rounded-sm"
 								></span>
@@ -127,7 +127,7 @@
 							<label
 								for="setlist-title"
 								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.setlists.modal.title')}</label
+								>{t('admin.setlists.modal.title')}</label
 							>
 							<input
 								id="setlist-title"
@@ -138,7 +138,7 @@
 							/>
 							{#if !isTitleValid && formData.title.length > 0}
 								<p class="text-xs text-red-500 ml-1">
-									{$t('admin.setlists.modal.titleRequired')}
+									{t('admin.setlists.modal.titleRequired')}
 								</p>
 							{/if}
 						</div>
@@ -147,7 +147,7 @@
 							<label
 								for="setlist-title-jp"
 								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.setlists.modal.japaneseTitle')}</label
+								>{t('admin.setlists.modal.japaneseTitle')}</label
 							>
 							<input
 								id="setlist-title-jp"
@@ -160,7 +160,7 @@
 
 						<div class="space-y-2">
 							<span class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.setlists.modal.type')}</span
+								>{t('admin.setlists.modal.type')}</span
 							>
 							<div class="flex gap-4">
 								<label class="flex items-center gap-2 cursor-pointer">
@@ -171,7 +171,7 @@
 										class="w-5 h-5 text-purple-600 focus:ring-purple-500 border-gray-300"
 									/>
 									<span class="text-sm font-medium text-gray-800 dark:text-gray-200"
-										>{$t('admin.setlists.table.theaterSetlist')}</span
+										>{t('admin.setlists.table.theaterSetlist')}</span
 									>
 								</label>
 								<label class="flex items-center gap-2 cursor-pointer">
@@ -182,7 +182,7 @@
 										class="w-5 h-5 text-purple-600 focus:ring-purple-500 border-gray-300"
 									/>
 									<span class="text-sm font-medium text-gray-800 dark:text-gray-200"
-										>{$t('admin.setlists.table.specialEvent')}</span
+										>{t('admin.setlists.table.specialEvent')}</span
 									>
 								</label>
 							</div>
@@ -194,7 +194,7 @@
 						<label
 							for="setlist-desc"
 							class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-							>{$t('admin.setlists.modal.description')}</label
+							>{t('admin.setlists.modal.description')}</label
 						>
 						<textarea
 							id="setlist-desc"
@@ -211,7 +211,7 @@
 							class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1 flex items-center gap-2"
 						>
 							<ImageIcon class="w-4 h-4" />
-							{$t('admin.setlists.modal.posterUrl')}
+							{t('admin.setlists.modal.posterUrl')}
 						</label>
 						<input
 							id="setlist-image"
@@ -239,9 +239,9 @@
 							></span>
 						</button>
 						<span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-							{$t('admin.setlists.modal.setlistStatus')}: {formData.active
-								? $t('admin.setlists.table.active')
-								: $t('admin.setlists.table.inactive')}
+							{t('admin.setlists.modal.setlistStatus')}: {formData.active
+								? t('admin.setlists.table.active')
+								: t('admin.setlists.table.inactive')}
 						</span>
 					</div>
 
@@ -252,7 +252,7 @@
 							onclick={handleClose}
 							class="flex-1 px-4 py-3 rounded-xl font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
 						>
-							{$t('common.cancel')}
+							{t('common.cancel')}
 						</button>
 						<button
 							type="submit"
@@ -261,10 +261,10 @@
 						>
 							{#if isSubmitting}
 								<LoaderCircle class="w-5 h-5 animate-spin" />
-								{$t('admin.setlists.modal.saving')}
+								{t('admin.setlists.modal.saving')}
 							{:else}
 								<CircleCheck class="w-5 h-5" />
-								{isCreating ? $t('admin.setlists.modal.create') : $t('admin.setlists.modal.save')}
+								{isCreating ? t('admin.setlists.modal.create') : t('admin.setlists.modal.save')}
 							{/if}
 						</button>
 					</div>

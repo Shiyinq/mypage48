@@ -84,7 +84,7 @@
 			generations = gens.sort((a: string, b: string) => parseInt(a) - parseInt(b));
 			selectedGenerations = new Set();
 		} catch {
-			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
+			showToast(t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		} finally {
 			loadingGenerations = false;
 		}
@@ -111,7 +111,7 @@
 	function startSort() {
 		selectedMembers = allMembers.filter((m) => selectedGenerations.has(m.generation));
 		if (selectedMembers.length < 2) {
-			showToast($t('theater.sorter.minSelection'), 'error');
+			showToast(t('theater.sorter.minSelection'), 'error');
 			return;
 		}
 		selectedMembers = [...selectedMembers].sort(() => Math.random() - 0.5);
@@ -286,11 +286,11 @@
 			.slice(0, 10)
 			.map((r) => `#${r.rank} ${r.name}`)
 			.join('\n');
-		const shareText = `${$t('theater.sorter.shareTextHeader')}\n${textList}\n\n${$t('theater.sorter.shareTextFooter')} ${window.location.origin}/theater/sorter`;
+		const shareText = `${t('theater.sorter.shareTextHeader')}\n${textList}\n\n${t('theater.sorter.shareTextFooter')} ${window.location.origin}/theater/sorter`;
 		if (navigator.share) {
 			try {
 				await navigator.share({
-					title: $t('theater.sorter.shareTitle'),
+					title: t('theater.sorter.shareTitle'),
 					text: shareText,
 					url: window.location.href
 				});
@@ -300,15 +300,15 @@
 			}
 		}
 		const copied = await copyToClipboard(shareText);
-		if (copied) showToast($t('theater.sorter.copySuccess'), 'success');
-		else showToast($t('theater.sorter.copyFailed'), 'error');
+		if (copied) showToast(t('theater.sorter.copySuccess'), 'success');
+		else showToast(t('theater.sorter.copyFailed'), 'error');
 	}
 </script>
 
 <SEO
-	title={$t('theater.sorter.title')}
+	title={t('theater.sorter.title')}
 	path="/theater/sorter"
-	description={$t('theater.sorter.subtitle')}
+	description={t('theater.sorter.subtitle')}
 />
 
 <svelte:head>

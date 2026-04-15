@@ -18,12 +18,12 @@
 
 	function copyToClipboard(text: string) {
 		navigator.clipboard.writeText(text);
-		showToast($t('playground.copied'), 'success');
+		showToast(t('playground.copied'), 'success');
 	}
 
 	let isSuccess = $derived(response && response.status >= 200 && response.status < 300);
 	let statusText = $derived(
-		response?.statusText || (isSuccess ? $t('common.success') : $t('common.error'))
+		response?.statusText || (isSuccess ? t('common.success') : t('common.error'))
 	);
 
 	let formattedJson = $derived(response?.data ? JSON.stringify(response.data, null, 2) : '');
@@ -37,7 +37,7 @@
 	<div class="flex items-center justify-between mb-6">
 		<div class="flex items-center gap-2 text-gray-900 dark:text-white">
 			<Database class="w-5 h-5 text-red-500" />
-			<h2 class="text-lg font-bold">{$t('playground.response')}</h2>
+			<h2 class="text-lg font-bold">{t('playground.response')}</h2>
 		</div>
 		{#if duration}
 			<div
@@ -101,7 +101,7 @@
 				<Info class="w-6 h-6 text-gray-400" />
 			</div>
 			<p class="text-xs font-bold text-gray-500 uppercase tracking-widest leading-relaxed">
-				{$t('playground.waitingResponse')}
+				{t('playground.waitingResponse')}
 			</p>
 		</div>
 	{/if}

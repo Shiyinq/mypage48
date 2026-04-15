@@ -30,7 +30,7 @@
 
 	const handleThemeChange = (newTheme: Theme) => {
 		setTheme(newTheme);
-		showToast($t('common.success'), 'success');
+		showToast(t('common.success'), 'success');
 	};
 </script>
 
@@ -43,9 +43,9 @@
 		</div>
 		<div>
 			<h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
-				{$t('settings.theme.title')}
+				{t('settings.theme.title')}
 			</h3>
-			<p class="text-xs text-gray-500 dark:text-gray-400">{$t('settings.theme.subtitle')}</p>
+			<p class="text-xs text-gray-500 dark:text-gray-400">{t('settings.theme.subtitle')}</p>
 		</div>
 	</div>
 
@@ -66,12 +66,12 @@
 					</div>
 					<div class="text-left md:text-center">
 						<p class="font-bold text-sm text-gray-800 dark:text-gray-200">
-							{$t(`settings.theme.${option.value}`)}
+							{t(`settings.theme.${option.value}`)}
 						</p>
 						<p
 							class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5 max-w-[120px] md:max-w-none"
 						>
-							{$t(`settings.theme.${option.value}Description`)}
+							{t(`settings.theme.${option.value}Description`)}
 						</p>
 					</div>
 				</div>

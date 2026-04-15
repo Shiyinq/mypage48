@@ -158,7 +158,7 @@
 		}
 
 		navigator.clipboard.writeText(curlCommand);
-		showToast($t('playground.curlCopied'), 'success');
+		showToast(t('playground.curlCopied'), 'success');
 	}
 
 	const methodStyles: Record<string, string> = {
@@ -186,11 +186,11 @@
 						{endpoint.method}
 					</span>
 					<h1 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white">
-						{endpoint.details.summary || $t('playground.title')}
+						{endpoint.details.summary || t('playground.title')}
 					</h1>
 				</div>
 				<p class="text-sm text-gray-500 dark:text-gray-400 font-medium">
-					{endpoint.details.description || $t('playground.noDescription')}
+					{endpoint.details.description || t('playground.noDescription')}
 				</p>
 				<div
 					class="flex items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-gray-100 dark:border-white/5 font-mono text-sm group"
@@ -204,7 +204,7 @@
 						class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-700 border border-gray-200 dark:border-white/10 text-[10px] font-bold text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 transition-all cursor-pointer shadow-sm active:scale-95"
 					>
 						<Copy class="w-3 h-3" />
-						{$t('playground.copyCurl')}
+						{t('playground.copyCurl')}
 					</button>
 				</div>
 			</div>
@@ -214,7 +214,7 @@
 				<div class="space-y-4">
 					<div class="flex items-center gap-2 text-gray-900 dark:text-white">
 						<Hash class="w-5 h-5 text-red-500" />
-						<h2 class="text-lg font-bold">{$t('playground.parameters')}</h2>
+						<h2 class="text-lg font-bold">{t('playground.parameters')}</h2>
 					</div>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						{#each endpoint.details.parameters as p}
@@ -257,7 +257,7 @@
 				<div class="space-y-4">
 					<div class="flex items-center gap-2 text-gray-900 dark:text-white">
 						<Server class="w-5 h-5 text-red-500" />
-						<h2 class="text-lg font-bold">{$t('playground.requestBody')}</h2>
+						<h2 class="text-lg font-bold">{t('playground.requestBody')}</h2>
 					</div>
 					<div class="relative group">
 						<div class="absolute right-4 top-4 z-10">
@@ -285,7 +285,7 @@
 						in:fade
 					>
 						<AlertCircle class="w-4 h-4 shrink-0" />
-						{$t('playground.apiKeyRequired')}
+						{t('playground.apiKeyRequired')}
 					</div>
 				{/if}
 
@@ -296,10 +296,10 @@
 				>
 					{#if executing}
 						<RefreshCw class="w-4 h-4 animate-spin" />
-						{$t('playground.executing')}
+						{t('playground.executing')}
 					{:else}
 						<Play class="w-4 h-4 fill-current" />
-						{$t('playground.execute')}
+						{t('playground.execute')}
 					{/if}
 				</button>
 			</div>
@@ -313,10 +313,10 @@
 			</div>
 			<div class="max-w-xs">
 				<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-					{$t('playground.title')}
+					{t('playground.title')}
 				</h3>
 				<p class="text-sm text-gray-500">
-					{$t('playground.selectEndpoint')}
+					{t('playground.selectEndpoint')}
 				</p>
 			</div>
 		</div>

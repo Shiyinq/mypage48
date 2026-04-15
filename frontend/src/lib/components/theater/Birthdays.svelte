@@ -32,7 +32,7 @@
 	<div class="flex items-center gap-3">
 		<div class="h-8 w-1.5 bg-pink-500 rounded-full"></div>
 		<h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
-			{$t('theater.birthdays.title') || 'Upcoming Birthdays'}
+			{t('theater.birthdays.title') || 'Upcoming Birthdays'}
 		</h2>
 	</div>
 
@@ -48,7 +48,7 @@
 		<div
 			class="p-6 rounded-xl bg-gray-100 dark:bg-zinc-800/50 border border-dashed border-gray-300 dark:border-zinc-700 text-center text-gray-500"
 		>
-			{$t('theater.birthdays.empty') || 'No upcoming birthdays in the next 30 days.'}
+			{t('theater.birthdays.empty') || 'No upcoming birthdays in the next 30 days.'}
 		</div>
 	{:else}
 		<div
@@ -95,7 +95,7 @@
 									? 'bg-pink-500/90 text-white animate-pulse'
 									: 'bg-black/40 text-white'}"
 							>
-								{getBirthdayText(member.days_until, $t)}
+								{getBirthdayText(member.days_until, t)}
 							</span>
 						</div>
 
@@ -105,10 +105,10 @@
 							</div>
 							<div class="text-gray-200 text-xs font-medium drop-shadow-sm">
 								{new Date(member.birthdate).getDate()}
-								{new Date(member.birthdate).toLocaleString($locale, { month: 'short' })}
+								{new Date(member.birthdate).toLocaleString(locale.value, { month: 'short' })}
 								•
 								{member.age}
-								{$t('member.yearsOld') || 'years old'}
+								{t('member.yearsOld') || 'years old'}
 							</div>
 						</div>
 					</div>

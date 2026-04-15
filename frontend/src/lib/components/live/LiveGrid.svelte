@@ -54,10 +54,10 @@
 			<Tv size={48} />
 		</div>
 		<h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2 italic">
-			{$t('theater.live.emptyTitle')}
+			{t('theater.live.emptyTitle')}
 		</h2>
 		<p class="text-slate-500 dark:text-slate-400 font-medium max-w-md">
-			{$t('theater.live.empty')}
+			{t('theater.live.empty')}
 		</p>
 	</div>
 {:else}
@@ -78,10 +78,10 @@
 				<div class="flex flex-col items-start leading-none gap-0.5">
 					<span
 						class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors"
-						>{$t('theater.live.multiview.title')}</span
+						>{t('theater.live.multiview.title')}</span
 					>
 					<span class="text-xs font-black tracking-tight text-slate-900 dark:text-white"
-						>{$t('theater.live.switchMultiview')}</span
+						>{t('theater.live.switchMultiview')}</span
 					>
 				</div>
 				<div

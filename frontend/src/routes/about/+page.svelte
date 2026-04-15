@@ -14,7 +14,7 @@
 	let scrollY = $state(0);
 </script>
 
-<SEO title={$t('about.title')} />
+<SEO title={t('about.title')} />
 
 <div
 	class="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 relative overflow-hidden font-sans selection:bg-red-500/20"
@@ -33,7 +33,7 @@
 			<h1
 				class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3 text-balance"
 			>
-				{$t('about.title')}
+				{t('about.title')}
 			</h1>
 		</div>
 
@@ -50,10 +50,10 @@
 				</div>
 				<div class="space-y-3">
 					<h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-						{$t('about.mission.title')}
+						{t('about.mission.title')}
 					</h2>
 					<p class="text-slate-600 dark:text-slate-400 leading-relaxed">
-						{$t('about.mission.content')}
+						{t('about.mission.content')}
 					</p>
 				</div>
 			</div>
@@ -69,10 +69,10 @@
 				</div>
 				<div class="space-y-3">
 					<h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-						{$t('about.team.title')}
+						{t('about.team.title')}
 					</h2>
 					<p class="text-slate-600 dark:text-slate-400 leading-relaxed">
-						{$t('about.team.content')}
+						{t('about.team.content')}
 					</p>
 				</div>
 			</div>
@@ -87,11 +87,11 @@
 				</div>
 				<div class="space-y-3">
 					<h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-						{$t('about.openSource.title')}
+						{t('about.openSource.title')}
 					</h2>
 					<p class="text-slate-600 dark:text-slate-400 leading-relaxed">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						{@html $t('about.openSource.content', {
+						{@html t('about.openSource.content', {
 							githubLink:
 								'<a href="https://github.com/shiyinq/mypage48" target="_blank" class="text-red-600 font-bold hover:underline">GitHub</a>'
 						})}

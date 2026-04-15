@@ -21,10 +21,10 @@
 		updatingStatus = true;
 		try {
 			await userProfile.updatePublicStatus(newIsPublic, yearPayload);
-			showToast($t('common.success'), 'success');
+			showToast(t('common.success'), 'success');
 		} catch (e) {
 			logger.error('Failed to update public status', e, { context: 'PublicProfileSettings' });
-			showToast($t('common.error'), 'error');
+			showToast(t('common.error'), 'error');
 		} finally {
 			updatingStatus = false;
 		}
@@ -53,7 +53,7 @@
 	const copyPublicLink = () => {
 		if (typeof window !== 'undefined' && userProfile.data?.username) {
 			navigator.clipboard.writeText(`${window.location.origin}/u/${userProfile.data.username}`);
-			showToast($t('settings.developer.copied'), 'success');
+			showToast(t('settings.developer.copied'), 'success');
 		}
 	};
 
@@ -62,7 +62,7 @@
 			await userProfile.load();
 		} catch (e) {
 			logger.error('Failed to retry profile fetch', e, { context: 'PublicProfileSettings' });
-			showToast($t('profile.errorTitle'), 'error');
+			showToast(t('profile.errorTitle'), 'error');
 		}
 	};
 </script>
@@ -77,10 +77,10 @@
 		</div>
 		<div>
 			<h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
-				{$t('settings.publicProfile.title')}
+				{t('settings.publicProfile.title')}
 			</h3>
 			<p class="text-xs text-gray-500 dark:text-gray-400">
-				{$t('settings.publicProfile.subtitle')}
+				{t('settings.publicProfile.subtitle')}
 			</p>
 		</div>
 	</div>
@@ -89,8 +89,8 @@
 		{#if isInitialDataLoaded && !isUserProfileLoading.value}
 			<div class="mb-4">
 				<ErrorState
-					title={$t('settings.publicProfile.loadErrorTitle')}
-					description={$t('settings.publicProfile.loadErrorDesc')}
+					title={t('settings.publicProfile.loadErrorTitle')}
+					description={t('settings.publicProfile.loadErrorDesc')}
 					onRetry={retryGlobalProfileFetch}
 				/>
 			</div>
@@ -114,10 +114,10 @@
 			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 				<div class="flex-1">
 					<p class="text-sm font-bold text-gray-800 dark:text-gray-200">
-						{$t('settings.publicProfile.enable')}
+						{t('settings.publicProfile.enable')}
 					</p>
 					<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-						{$t('settings.publicProfile.description')}
+						{t('settings.publicProfile.description')}
 					</p>
 				</div>
 				<div class="flex items-center justify-end gap-3 w-full sm:w-auto">
@@ -128,8 +128,8 @@
 							disabled={updatingStatus}
 							class="p-2 text-xs font-bold bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer flex-1 sm:flex-none"
 						>
-							<option value="">{$t('settings.publicProfile.allYears')}</option>
-							<option value="-1">{$t('settings.publicProfile.thisYear')}</option>
+							<option value="">{t('settings.publicProfile.allYears')}</option>
+							<option value="-1">{t('settings.publicProfile.thisYear')}</option>
 							{#each availableYears as year}
 								<option value={year.toString()}>{year}</option>
 							{/each}
@@ -161,7 +161,7 @@
 			{#if isPublic}
 				<div class="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-700 animate-slide-down">
 					<p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest pl-1">
-						{$t('settings.publicProfile.yourLink')}
+						{t('settings.publicProfile.yourLink')}
 					</p>
 					<div class="flex items-center gap-2">
 						<div

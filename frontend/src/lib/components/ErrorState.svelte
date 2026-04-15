@@ -35,7 +35,7 @@
 			onclick={onRetry}
 			class="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-medium hover:scale-105 transition-transform cursor-pointer"
 		>
-			{$t('errors.tryAgain') || 'Try Again'}
+			{t('errors.tryAgain') || 'Try Again'}
 		</button>
 	{/if}
 </div>

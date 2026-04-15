@@ -69,9 +69,9 @@
 </script>
 
 <SEO
-	title={$t('theater.eventHistory.title')}
+	title={t('theater.eventHistory.title')}
 	path="/jkt48/event-history"
-	description={$t('theater.eventHistory.subtitle')}
+	description={t('theater.eventHistory.subtitle')}
 />
 
 <div class="space-y-16 pt-4 md:pt-6 pb-12">
@@ -79,12 +79,12 @@
 		<h1
 			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
 		>
-			{$t('theater.eventHistory.title')}
+			{t('theater.eventHistory.title')}
 		</h1>
 		<p
 			class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest"
 		>
-			{$t('theater.eventHistory.subtitle')}
+			{t('theater.eventHistory.subtitle')}
 		</p>
 	</div>
 
@@ -92,15 +92,15 @@
 		<EventHistorySkeleton rows={10} />
 	{:else if error}
 		<ErrorState
-			title={$t('theater.eventHistory.errorTitle') || 'Failed to load history'}
-			description={$t('theater.eventHistory.errorDesc') || error || ''}
+			title={t('theater.eventHistory.errorTitle') || 'Failed to load history'}
+			description={t('theater.eventHistory.errorDesc') || error || ''}
 			onRetry={() => eventsStore.loadHistory(paginationObj.current_page)}
 		/>
 	{:else if eventsList.length === 0}
 		<EmptyState
 			icon={History}
-			title={$t('theater.eventHistory.emptyTitle')}
-			description={$t('theater.eventHistory.empty')}
+			title={t('theater.eventHistory.emptyTitle')}
+			description={t('theater.eventHistory.empty')}
 		/>
 	{:else}
 		<div
@@ -113,11 +113,11 @@
 						<tr
 							class="bg-slate-50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400"
 						>
-							<th class="p-6">{$t('common.date')}</th>
-							<th class="p-6">{$t('theater.events.eventName')}</th>
-							<th class="p-6">{$t('theater.eventHistory.table.type')}</th>
-							<th class="p-6">{$t('theater.eventHistory.table.members')}</th>
-							<th class="p-6 text-right">{$t('theater.eventHistory.table.link')}</th>
+							<th class="p-6">{t('common.date')}</th>
+							<th class="p-6">{t('theater.events.eventName')}</th>
+							<th class="p-6">{t('theater.eventHistory.table.type')}</th>
+							<th class="p-6">{t('theater.eventHistory.table.members')}</th>
+							<th class="p-6 text-right">{t('theater.eventHistory.table.link')}</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
@@ -128,13 +128,13 @@
 								<td class="p-6 whitespace-nowrap">
 									<div class="flex flex-col">
 										<span class="font-black text-slate-900 dark:text-white text-sm">
-											{$formatDate(event.date, { day: 'numeric', month: 'short', year: 'numeric' })}
+											{formatDate(event.date, { day: 'numeric', month: 'short', year: 'numeric' })}
 										</span>
 										<span
 											class="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1.5 mt-1"
 										>
 											<Clock class="w-3 h-3" />
-											{$formatTime(event.date, { hour: '2-digit', minute: '2-digit' })}
+											{formatTime(event.date, { hour: '2-digit', minute: '2-digit' })}
 										</span>
 									</div>
 								</td>

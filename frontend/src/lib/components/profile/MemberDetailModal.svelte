@@ -403,15 +403,15 @@
 											<p
 												class="text-[9px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 group-hover:text-red-500 transition-colors"
 											>
-												{$t('member.birthdate')}
+												{t('member.birthdate')}
 											</p>
 											<p class="text-sm font-black text-themed leading-tight">
-												{$formatDate(parseIndonesianDate(currentMember.birthdate), {
+												{formatDate(parseIndonesianDate(currentMember.birthdate), {
 													dateStyle: 'medium'
 												})}
 												<span
 													class="text-[10px] text-gray-500 dark:text-zinc-400 font-bold block mt-1 px-2 py-0.5 bg-gray-200/50 dark:bg-zinc-700/50 w-max rounded-full"
-													>{calculateAge(currentMember.birthdate)} {$t('member.yearsOld')}</span
+													>{calculateAge(currentMember.birthdate)} {t('member.yearsOld')}</span
 												>
 											</p>
 										</div>
@@ -421,7 +421,7 @@
 											<p
 												class="text-[9px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 group-hover:text-red-500 transition-colors"
 											>
-												{$t('member.horoscope')}
+												{t('member.horoscope')}
 											</p>
 											<p class="text-sm font-black text-themed leading-tight">
 												{currentMember.horoscope}
@@ -433,7 +433,7 @@
 											<p
 												class="text-[9px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 group-hover:text-red-500 transition-colors"
 											>
-												{$t('member.bloodType')}
+												{t('member.bloodType')}
 											</p>
 											<p class="text-sm font-black text-themed leading-tight">
 												{currentMember.bloodType}
@@ -445,7 +445,7 @@
 											<p
 												class="text-[9px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 group-hover:text-red-500 transition-colors"
 											>
-												{$t('member.height')}
+												{t('member.height')}
 											</p>
 											<p class="text-sm font-black text-themed leading-tight">
 												{currentMember.height?.toString().toLowerCase().includes('cm')
@@ -539,11 +539,11 @@
 						<div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
 							<Search class="w-8 h-8 text-red-500" />
 						</div>
-						<h3 class="text-xl font-bold text-gray-900 mb-2">{$t('member.notFound')}</h3>
-						<p class="text-gray-500 max-w-xs mx-auto mb-6">{$t('member.notFoundMessage')}</p>
+						<h3 class="text-xl font-bold text-gray-900 mb-2">{t('member.notFound')}</h3>
+						<p class="text-gray-500 max-w-xs mx-auto mb-6">{t('member.notFoundMessage')}</p>
 						<button
 							class="px-6 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium cursor-pointer"
-							onclick={onClose}>{$t('member.close')}</button
+							onclick={onClose}>{t('member.close')}</button
 						>
 					</div>
 				{/if}

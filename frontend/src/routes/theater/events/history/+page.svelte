@@ -81,9 +81,9 @@
 </script>
 
 <SEO
-	title={$t('theater.eventHistory.title')}
+	title={t('theater.eventHistory.title')}
 	path="/theater/events/history"
-	description={$t('theater.eventHistory.subtitle')}
+	description={t('theater.eventHistory.subtitle')}
 />
 
 <div class="space-y-6">
@@ -91,15 +91,15 @@
 		<EventHistorySkeleton rows={10} />
 	{:else if error}
 		<ErrorState
-			title={$t('theater.eventHistory.errorTitle') || 'Failed to load history'}
-			description={$t('theater.eventHistory.errorDesc') || error || ''}
+			title={t('theater.eventHistory.errorTitle') || 'Failed to load history'}
+			description={t('theater.eventHistory.errorDesc') || error || ''}
 			onRetry={() => eventsStore.loadHistory(paginationObj.current_page)}
 		/>
 	{:else if $historyEvents.length === 0}
 		<EmptyState
 			icon={History}
-			title={$t('theater.eventHistory.emptyTitle')}
-			description={$t('theater.eventHistory.empty')}
+			title={t('theater.eventHistory.emptyTitle')}
+			description={t('theater.eventHistory.empty')}
 		/>
 	{:else}
 		<div class="glass-panel rounded-3xl overflow-hidden shadow-sm" in:fade={{ duration: 300 }}>
@@ -109,11 +109,11 @@
 						<tr
 							class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 						>
-							<th class="p-4">{$t('common.date')}</th>
-							<th class="p-4">{$t('theater.events.eventName')}</th>
-							<th class="p-4">{$t('theater.eventHistory.table.type')}</th>
-							<th class="p-4">{$t('theater.eventHistory.table.members')}</th>
-							<th class="p-4 text-right">{$t('theater.eventHistory.table.link')}</th>
+							<th class="p-4">{t('common.date')}</th>
+							<th class="p-4">{t('theater.events.eventName')}</th>
+							<th class="p-4">{t('theater.eventHistory.table.type')}</th>
+							<th class="p-4">{t('theater.eventHistory.table.members')}</th>
+							<th class="p-4 text-right">{t('theater.eventHistory.table.link')}</th>
 						</tr>
 					</thead>
 					<tbody
@@ -126,7 +126,7 @@
 								<td class="p-4 whitespace-nowrap">
 									<div class="flex flex-col">
 										<span class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-											{$formatDate(event.date, {
+											{formatDate(event.date, {
 												day: 'numeric',
 												month: 'short',
 												year: '2-digit'
@@ -137,7 +137,7 @@
 											class="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5"
 										>
 											<Clock class="w-3 h-3" />
-											{$formatTime(event.date, {
+											{formatTime(event.date, {
 												hour: '2-digit',
 												minute: '2-digit',
 												hour12: false
@@ -255,7 +255,7 @@
 					class="bg-gray-50 dark:bg-zinc-800/50 border-t border-gray-100 dark:border-zinc-800 px-6 py-4 flex items-center justify-between"
 				>
 					<span class="text-xs text-themed-secondary">
-						{$t('theater.eventHistory.pagination.pageOf', {
+						{t('theater.eventHistory.pagination.pageOf', {
 							current: paginationObj.current_page,
 							last: paginationObj.last_page
 						})}

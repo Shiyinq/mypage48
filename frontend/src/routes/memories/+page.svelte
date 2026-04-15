@@ -44,7 +44,7 @@
 			// Use store action
 			await galleryStore.load(pageIdx, filter);
 		} catch {
-			showToast($t('memories.errorTitle') || 'Failed to load memories', 'error');
+			showToast(t('memories.errorTitle') || 'Failed to load memories', 'error');
 		}
 	}
 
@@ -78,7 +78,7 @@
 	});
 </script>
 
-<SEO title={$t('memories.title')} path="/memories" description={$t('seo.memories')} />
+<SEO title={t('memories.title')} path="/memories" description={t('seo.memories')} />
 
 <!-- Lightbox -->
 <Lightbox {selectedImage} onClose={() => (selectedImage = null)} />
@@ -88,8 +88,8 @@
 	<div class="mb-8">
 		<PageHeader
 			icon={ImageIcon}
-			title={$t('memories.title')}
-			subtitle={$t('memories.subtitle')}
+			title={t('memories.title')}
+			subtitle={t('memories.subtitle')}
 			theme="pink"
 		>
 			{#snippet actions()}
@@ -106,8 +106,8 @@
 	<!-- Gallery Grid -->
 	{#if error && memories.length === 0}
 		<ErrorState
-			title={$t('memories.errorTitle') || 'Failed to load memories'}
-			description={$t('memories.errorDesc') || error || ''}
+			title={t('memories.errorTitle') || 'Failed to load memories'}
+			description={t('memories.errorDesc') || error || ''}
 			onRetry={() => loadMemories(1)}
 		/>
 	{:else if isLoading && memories.length === 0}
@@ -125,8 +125,8 @@
 	{:else if memories.length === 0}
 		<EmptyState
 			icon={ImageIcon}
-			title={$t('memories.noMemories')}
-			description={$t('upload.subtitle')}
+			title={t('memories.noMemories')}
+			description={t('upload.subtitle')}
 		/>
 	{:else}
 		<div

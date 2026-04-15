@@ -69,9 +69,9 @@
 </script>
 
 <SEO
-	title={$t('theater.news.title') || 'News'}
+	title={t('theater.news.title') || 'News'}
 	path="/theater/news"
-	description={$t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
+	description={t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
 />
 
 <div class="space-y-6">
@@ -83,15 +83,15 @@
 		</div>
 	{:else if error && list.length === 0}
 		<ErrorState
-			title={$t('theater.news.errorTitle')}
-			description={$t('theater.news.errorDesc')}
+			title={t('theater.news.errorTitle')}
+			description={t('theater.news.errorDesc')}
 			onRetry={() => newsStore.load(1, 12, true)}
 		/>
 	{:else if list.length === 0}
 		<EmptyState
 			icon={Newspaper}
-			title={$t('theater.news.emptyTitle')}
-			description={$t('theater.news.empty')}
+			title={t('theater.news.emptyTitle')}
+			description={t('theater.news.empty')}
 		/>
 	{:else}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
@@ -145,7 +145,7 @@
 							>
 								<Calendar class="w-3.5 h-3.5" />
 								<span
-									>{$formatDate(item.valid_date_from, {
+									>{formatDate(item.valid_date_from, {
 										day: 'numeric',
 										month: 'short',
 										year: 'numeric'
@@ -164,7 +164,7 @@
 							class="mt-auto md:pt-4 md:border-t flex items-center justify-between text-[11px] md:text-xs text-gray-500 dark:text-gray-400 font-medium md:border-gray-100 dark:border-white/5"
 						>
 							<span class="flex items-center gap-1 hover:text-red-500 transition-colors">
-								{$t('theater.news.readMore')}
+								{t('theater.news.readMore')}
 								<ChevronRight class="w-3 h-3" />
 							</span>
 						</div>

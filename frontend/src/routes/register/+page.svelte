@@ -66,7 +66,7 @@
 			registerSchema.parse(formData);
 
 			await authStore.register(formData);
-			showToast($t('auth.register.success'), 'success');
+			showToast(t('auth.register.success'), 'success');
 
 			setTimeout(() => {
 				goto('/login');
@@ -85,18 +85,18 @@
 
 			const errorMsg = getErrorMessage(err);
 			logger.error('Registration failed', err, { context: 'RegisterPage' });
-			error = errorMsg || $t('auth.register.failed');
+			error = errorMsg || t('auth.register.failed');
 		} finally {
 			isLoading = false;
 		}
 	};
 </script>
 
-<SEO title={$t('auth.register.title')} path="/register" description={$t('seo.register')} />
+<SEO title={t('auth.register.title')} path="/register" description={t('seo.register')} />
 
 <AuthLayout
-	title={$t('auth.register.title')}
-	subtitle={$t('auth.register.subtitle')}
+	title={t('auth.register.title')}
+	subtitle={t('auth.register.subtitle')}
 	cardWidth="max-w-4xl"
 >
 	<form
@@ -114,7 +114,7 @@
 					<label
 						for="fullName"
 						class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
-						>{$t('auth.register.fullName')}</label
+						>{t('auth.register.fullName')}</label
 					>
 					<input
 						id="fullName"
@@ -131,7 +131,7 @@
 
 				<div>
 					<label for="email" class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
-						>{$t('auth.register.email')}</label
+						>{t('auth.register.email')}</label
 					>
 					<div class="relative">
 						<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
@@ -156,7 +156,7 @@
 					<label
 						for="username"
 						class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
-						>{$t('auth.register.username')}</label
+						>{t('auth.register.username')}</label
 					>
 					<div class="relative">
 						<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
@@ -183,7 +183,7 @@
 					<PasswordInput
 						id="password"
 						name="password"
-						label={$t('auth.register.password')}
+						label={t('auth.register.password')}
 						placeholder="••••••••"
 						bind:value={formData.password}
 						error={errors.password}
@@ -198,7 +198,7 @@
 					<PasswordInput
 						id="confirmPassword"
 						name="confirmPassword"
-						label={$t('auth.register.confirmPassword')}
+						label={t('auth.register.confirmPassword')}
 						placeholder="••••••••"
 						bind:value={formData.confirmPassword}
 						error={errors.confirmPassword}
@@ -229,9 +229,9 @@
 				class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:shadow-md hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer border border-white/20"
 			>
 				{#if isLoading}
-					{$t('auth.register.submitting')}
+					{t('auth.register.submitting')}
 				{:else}
-					{$t('auth.register.submit')}
+					{t('auth.register.submit')}
 				{/if}
 			</button>
 		</div>
@@ -239,12 +239,12 @@
 
 	{#snippet footer()}
 		<div>
-			<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.register.hasAccount')}</p>
+			<p class="text-sm text-gray-500 dark:text-gray-400">{t('auth.register.hasAccount')}</p>
 			<button
 				onclick={() => goto('/login')}
 				class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
 			>
-				{$t('auth.register.signIn')}
+				{t('auth.register.signIn')}
 			</button>
 		</div>
 	{/snippet}

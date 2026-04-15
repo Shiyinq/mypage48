@@ -103,7 +103,7 @@
 					if (!updated) {
 						hasGoneOffline = true;
 						showToast(
-							$t('theater.live.multiview.member_offline', { name: slot.member?.name }),
+							t('theater.live.multiview.member_offline', { name: slot.member?.name }),
 							'error'
 						);
 						return null;
@@ -277,7 +277,7 @@
 
 	function handleRoomOffline(index: number, memberName: string) {
 		removeMemberFromSlot(index);
-		showToast($t('theater.live.multiview.member_offline', { name: memberName }), 'error');
+		showToast(t('theater.live.multiview.member_offline', { name: memberName }), 'error');
 	}
 	$effect(() => {
 		if (isMobile) {
@@ -359,9 +359,9 @@
 </script>
 
 <SEO
-	title={$t('theater.live.multiview.live.seoTitle')}
+	title={t('theater.live.multiview.live.seoTitle')}
 	path={$page.url.pathname}
-	description={$t('theater.live.multiview.live.seoDescription')}
+	description={t('theater.live.multiview.live.seoDescription')}
 />
 
 <div
@@ -399,7 +399,7 @@
 				<LayoutGrid size={14} class="text-red-600" />
 				<span
 					class="text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400"
-					>{$t('theater.live.multiview.title')}</span
+					>{t('theater.live.multiview.title')}</span
 				>
 			</div>
 		</div>
@@ -408,7 +408,7 @@
 			<button
 				onclick={clearAll}
 				class="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
-				title={$t('theater.live.multiview.clear_all')}
+				title={t('theater.live.multiview.clear_all')}
 			>
 				<Trash2 size={20} />
 			</button>
@@ -416,8 +416,8 @@
 				onclick={() => (isPortrait = !isPortrait)}
 				class="p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
 				title={isPortrait
-					? $t('theater.live.multiview.switch_to_landscape')
-					: $t('theater.live.multiview.switch_to_portrait')}
+					? t('theater.live.multiview.switch_to_landscape')
+					: t('theater.live.multiview.switch_to_portrait')}
 			>
 				{#if isPortrait}
 					<Monitor size={20} />
@@ -430,7 +430,7 @@
 				class="p-2 rounded-lg {showPicker
 					? 'bg-red-50 text-red-600'
 					: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
-				title={$t('theater.live.multiview.toggle_picker')}
+				title={t('theater.live.multiview.toggle_picker')}
 			>
 				<UserPlus size={20} />
 			</button>
@@ -439,7 +439,7 @@
 				class="p-2 rounded-lg {showChat
 					? 'bg-red-50 text-red-600'
 					: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
-				title={$t('theater.live.multiview.toggle_chat')}
+				title={t('theater.live.multiview.toggle_chat')}
 			>
 				<MessageCircle size={20} />
 			</button>
@@ -459,7 +459,7 @@
 						<input
 							type="text"
 							bind:value={searchQuery}
-							placeholder={$t('theater.live.multiview.search_placeholder')}
+							placeholder={t('theater.live.multiview.search_placeholder')}
 							class="w-full pl-9 pr-4 py-3 md:py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm md:text-xs focus:ring-2 focus:ring-red-500 outline-none"
 						/>
 					</div>
@@ -523,7 +523,7 @@
 											? 'opacity-50'
 											: ''}"
 									>
-										{stream.title || $t('theater.live.multiview.live_status')}
+										{stream.title || t('theater.live.multiview.live_status')}
 									</div>
 
 									<LiveStats
@@ -575,7 +575,7 @@
 						onkeydown={(e) => e.key === 'Enter' && setFocusedSlot(i)}
 						role="button"
 						tabindex="0"
-						aria-label={$t('theater.live.multiview.focus_member', { name: stream.member?.name })}
+						aria-label={t('theater.live.multiview.focus_member', { name: stream.member?.name })}
 					>
 						<div class="absolute inset-0 z-0">
 							<MultiPlayer
@@ -625,7 +625,7 @@
 									removeMemberFromSlot(i);
 								}}
 								class="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg cursor-pointer"
-								aria-label={$t('theater.live.multiview.remove_stream')}
+								aria-label={t('theater.live.multiview.remove_stream')}
 							>
 								<X size={14} />
 							</button>
@@ -643,8 +643,8 @@
 										muted[i] = !muted[i];
 									}}
 									aria-label={muted[i] || volumes[i] === 0
-										? $t('theater.live.multiview.unmute')
-										: $t('theater.live.multiview.mute')}
+										? t('theater.live.multiview.unmute')
+										: t('theater.live.multiview.mute')}
 								>
 									{#if muted[i] || volumes[i] === 0}<VolumeX size={16} />{:else}<Volume2
 											size={16}
@@ -685,7 +685,7 @@
 										e.stopPropagation();
 										playerRefs[i]?.takeScreenshot(stream.member?.name);
 									}}
-									title={$t('theater.live.multiview.take_screenshot')}
+									title={t('theater.live.multiview.take_screenshot')}
 								>
 									<Camera
 										size={16}
@@ -703,8 +703,8 @@
 										playerRefs[i]?.toggleRecording(stream.member?.name);
 									}}
 									title={isRecording[i]
-										? $t('theater.live.multiview.stop_recording')
-										: $t('theater.live.multiview.start_recording')}
+										? t('theater.live.multiview.stop_recording')
+										: t('theater.live.multiview.start_recording')}
 								>
 									{#if isRecording[i]}
 										<Square size={14} fill="currentColor" />
@@ -731,10 +731,10 @@
 						<h3
 							class="text-xl font-black uppercase tracking-widest text-slate-900 dark:text-white mb-2"
 						>
-							{$t('theater.live.multiview.empty_title')}
+							{t('theater.live.multiview.empty_title')}
 						</h3>
 						<p class="text-sm text-slate-500 dark:text-zinc-500 max-w-xs mx-auto italic">
-							{$t('theater.live.multiview.empty_description')}
+							{t('theater.live.multiview.empty_description')}
 						</p>
 					</div>
 				{/if}
@@ -756,7 +756,7 @@
 							<span
 								class="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white truncate"
 							>
-								{$t('theater.live.multiview.chat_with', { name: focusedStream.member?.name })}
+								{t('theater.live.multiview.chat_with', { name: focusedStream.member?.name })}
 							</span>
 						</div>
 						{#if isMobile}
@@ -778,7 +778,7 @@
 								<div class="flex flex-col items-center justify-center h-full text-center p-8">
 									<RefreshCw size={24} class="text-gray-300 animate-spin mb-4" />
 									<p class="text-[10px] font-black uppercase tracking-widest text-gray-400">
-										{$t('theater.live.multiview.loading_chat')}
+										{t('theater.live.multiview.loading_chat')}
 									</p>
 								</div>
 							{/if}
@@ -788,7 +788,7 @@
 					<div class="flex flex-col items-center justify-center h-full text-center p-8">
 						<MessageCircle size={32} class="text-gray-300 mb-4" />
 						<p class="text-[10px] font-black uppercase tracking-widest text-gray-400">
-							{$t('theater.live.multiview.select_stream_to_chat')}
+							{t('theater.live.multiview.select_stream_to_chat')}
 						</p>
 					</div>
 				{/if}

@@ -118,19 +118,19 @@
 	let othersCount = $derived(currentMonthEvents.length - setlistsCount - birthdaysCount);
 </script>
 
-<SEO title={$t('theater.events.title')} path="/jkt48/calendar" description={$t('seo.calendar')} />
+<SEO title={t('theater.events.title')} path="/jkt48/calendar" description={t('seo.calendar')} />
 
 <div class="space-y-8 max-w-7xl mx-auto px-0 sm:px-4 pt-4 md:pt-6 pb-12">
 	<div class="text-center space-y-4 mb-8">
 		<h1
 			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
 		>
-			{$t('theater.events.title')}
+			{t('theater.events.title')}
 		</h1>
 		<p
 			class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest leading-relaxed"
 		>
-			{$t('theater.calendar.subtitle')}
+			{t('theater.calendar.subtitle')}
 		</p>
 	</div>
 
@@ -146,9 +146,9 @@
 					class="text-base md:text-xl font-black text-slate-900 dark:text-white cursor-pointer hover:text-red-600 px-2 md:px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 uppercase tracking-tight"
 					onclick={() => (isDatePickerOpen = !isDatePickerOpen)}
 				>
-					{$formatDate(new Date(year, month - 1), { month: 'short' })}
+					{formatDate(new Date(year, month - 1), { month: 'short' })}
 					<span class="hidden md:inline"
-						>{$formatDate(new Date(2000, 0), { year: 'numeric' }).replace(
+						>{formatDate(new Date(2000, 0), { year: 'numeric' }).replace(
 							'2000',
 							year.toString()
 						)}</span
@@ -203,7 +203,7 @@
 										isDatePickerOpen = false;
 									}}
 								>
-									{$formatDate(new Date(2000, monthIndex), { month: 'short' })}
+									{formatDate(new Date(2000, monthIndex), { month: 'short' })}
 								</button>
 							{/each}
 						</div>
@@ -221,7 +221,7 @@
 							class="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full border border-blue-100 dark:border-blue-900/30 text-[9px] md:text-[10px] font-black uppercase tracking-wider shrink-0"
 						>
 							<div class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
-							{setlistsCount} <span class="hidden sm:inline">{$t('theater.events.setlist')}</span>
+							{setlistsCount} <span class="hidden sm:inline">{t('theater.events.setlist')}</span>
 						</div>
 					{/if}
 					{#if birthdaysCount > 0}
@@ -229,7 +229,7 @@
 							class="flex items-center gap-1 bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400 px-2 py-1 rounded-full border border-pink-100 dark:border-pink-900/30 text-[9px] md:text-[10px] font-black uppercase tracking-wider shrink-0"
 						>
 							<div class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-pink-500 animate-pulse"></div>
-							{birthdaysCount} <span class="hidden sm:inline">{$t('theater.events.birthday')}</span>
+							{birthdaysCount} <span class="hidden sm:inline">{t('theater.events.birthday')}</span>
 						</div>
 					{/if}
 					{#if othersCount > 0}
@@ -237,7 +237,7 @@
 							class="flex items-center gap-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-2 py-1 rounded-full border border-purple-100 dark:border-purple-900/30 text-[9px] md:text-[10px] font-black uppercase tracking-wider shrink-0"
 						>
 							<div class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-purple-500 animate-pulse"></div>
-							{othersCount} <span class="hidden sm:inline">{$t('theater.events.eventType')}</span>
+							{othersCount} <span class="hidden sm:inline">{t('theater.events.eventType')}</span>
 						</div>
 					{/if}
 				</div>
@@ -252,7 +252,7 @@
 					}}
 					class="hidden md:block px-6 py-2 text-xs font-black uppercase tracking-widest border-2 border-slate-100 dark:border-zinc-800 rounded-full hover:border-red-600 hover:text-red-600 transition-all text-slate-500 cursor-pointer active:scale-95 shadow-sm"
 				>
-					{$t('theater.events.today')}
+					{t('theater.events.today')}
 				</button>
 				<button
 					onclick={() => {
@@ -261,7 +261,7 @@
 					}}
 					class="md:hidden cursor-pointer px-2 py-1 text-[9px] font-black uppercase tracking-widest border-2 border-slate-100 dark:border-zinc-800 rounded-full hover:border-red-600 hover:text-red-600 transition-all text-slate-500 active:scale-95 shadow-sm shrink-0"
 				>
-					{$t('theater.events.today')}
+					{t('theater.events.today')}
 				</button>
 
 				<div
@@ -327,7 +327,7 @@
 									? 'text-blue-600'
 									: 'text-slate-400'}"
 						>
-							{$t(`time.daysShort.${dayKey}`)}
+							{t(`time.daysShort.${dayKey}`)}
 						</div>
 					{/each}
 				</div>
@@ -405,7 +405,7 @@
 										}}
 										class="text-[8px] font-black text-slate-400 text-center uppercase tracking-widest mt-0.5 truncate cursor-pointer hover:text-themed transition-colors"
 									>
-										{$t('theater.calendar.more', { count: dayEvents.length - 3 })}
+										{t('theater.calendar.more', { count: dayEvents.length - 3 })}
 									</button>
 								{/if}
 							</div>

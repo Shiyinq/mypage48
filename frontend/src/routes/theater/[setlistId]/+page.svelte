@@ -36,7 +36,7 @@
 			detail = await setlistsStore.loadDetail(setlistId);
 		} catch {
 			// Error is handled by store
-			showToast($t('theater.setlists.errorTitle') || 'Failed to load detail', 'error');
+			showToast(t('theater.setlists.errorTitle') || 'Failed to load detail', 'error');
 		}
 	}
 
@@ -52,7 +52,7 @@
 
 			// Re-fetch detail to update stats
 			await fetchDetail();
-			showToast($t('history.ticketDeleted'), 'success');
+			showToast(t('history.ticketDeleted'), 'success');
 		} catch {
 			// Error is handled by ticketsStore internally
 			showToast('Failed to delete ticket', 'error');
@@ -93,9 +93,9 @@
 	</div>
 {:else if error}
 	<ErrorState
-		title={$t('theater.setlists.errorTitle') || 'Failed to load detail'}
+		title={t('theater.setlists.errorTitle') || 'Failed to load detail'}
 		description={error ||
-			$t('theater.setlists.errorDesc') ||
+			t('theater.setlists.errorDesc') ||
 			'Something went wrong while fetching the setlist information.'}
 		onRetry={fetchDetail}
 	/>
@@ -118,13 +118,13 @@
 							<h2
 								class="text-xl md:text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight"
 							>
-								{$t('history.title')}
+								{t('history.title')}
 							</h2>
 							<span
 								class="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-full border border-gray-200 dark:border-zinc-700"
 							>
 								{detail.tickets.length}
-								<span class="hidden sm:inline">{$t('dashboard.theater.tickets')}</span>
+								<span class="hidden sm:inline">{t('dashboard.theater.tickets')}</span>
 							</span>
 						</div>
 
@@ -141,7 +141,7 @@
 								<p
 									class="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center max-w-[250px] mt-1"
 								>
-									{$t('theater.setlists.notAttended')}
+									{t('theater.setlists.notAttended')}
 								</p>
 							</div>
 						{:else}
@@ -167,13 +167,13 @@
 
 					<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
 						<DollarSign class="w-5 h-5 text-yellow-400" />
-						{$t('theater.setlists.statsOverview')}
+						{t('theater.setlists.statsOverview')}
 					</h3>
 
 					<div class="space-y-6 relative z-10">
 						<div>
 							<div class="flex justify-between text-sm mb-2 opacity-80">
-								<span>{$t('theater.setlists.avgPricePerTicket')}</span>
+								<span>{t('theater.setlists.avgPricePerTicket')}</span>
 							</div>
 							<div class="text-2xl md:text-3xl font-bold text-yellow-400 leading-none">
 								{formatCurrency(detail.stats.avgPrice)}
@@ -184,12 +184,12 @@
 
 						<div>
 							<div class="flex justify-between text-sm mb-2 opacity-80">
-								<span>{$t('theater.setlists.attendanceRate')}</span>
+								<span>{t('theater.setlists.attendanceRate')}</span>
 							</div>
 							<div class="flex items-end gap-2">
 								<span class="text-3xl md:text-4xl font-black">{detail.watched.percentage}%</span>
 								<span class="text-sm opacity-60 mb-1 font-medium">
-									{$t('theater.setlists.ofMax')}
+									{t('theater.setlists.ofMax')}
 								</span>
 							</div>
 							<!-- Progress bar -->

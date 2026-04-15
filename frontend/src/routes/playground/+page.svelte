@@ -81,7 +81,7 @@
 
 <svelte:window bind:innerWidth />
 
-<SEO title={$t('playground.title')} description={$t('playground.description')} />
+<SEO title={t('playground.title')} description={t('playground.description')} />
 
 <div
 	class="h-[calc(100vh-64px)] flex flex-col bg-slate-50/50 dark:bg-zinc-900 overflow-hidden relative"
@@ -90,7 +90,7 @@
 		<div class="flex-1 flex flex-col items-center justify-center space-y-4" in:fade>
 			<LoaderCircle class="w-10 h-10 animate-spin text-red-500" />
 			<p class="text-sm font-bold text-gray-500 uppercase tracking-widest">
-				{$t('common.loading')}
+				{t('common.loading')}
 			</p>
 		</div>
 	{:else if playgroundStore.error}
@@ -101,13 +101,13 @@
 				<AlertTriangle class="w-10 h-10 text-red-600" />
 			</div>
 			<div class="max-w-md">
-				<h2 class="text-2xl font-black text-gray-900 dark:text-white mb-2">{$t('common.error')}</h2>
+				<h2 class="text-2xl font-black text-gray-900 dark:text-white mb-2">{t('common.error')}</h2>
 				<p class="text-sm text-gray-500 dark:text-gray-400 mb-6">{playgroundStore.error}</p>
 				<button
 					onclick={() => window.location.reload()}
 					class="px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-500/20"
 				>
-					{$t('errors.tryAgain')}
+					{t('errors.tryAgain')}
 				</button>
 			</div>
 		</div>
@@ -163,7 +163,7 @@
 						<button
 							onclick={() => playgroundStore.toggleSidebar()}
 							class="flex items-center justify-center w-8 h-10 bg-white dark:bg-zinc-900 border-y border-r border-gray-200 dark:border-white/10 rounded-r-xl shadow-lg text-gray-400 hover:text-red-500 transition-all hover:w-10 active:scale-95 cursor-pointer group"
-							title={$t('playground.showSidebar')}
+							title={t('playground.showSidebar')}
 						>
 							<PanelLeft class="w-4 h-4 ml-1" />
 						</button>

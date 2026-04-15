@@ -80,7 +80,7 @@
 		<div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<UserCheck class="w-5 h-5 text-red-500" />
-				{$t('admin.users.title')} ({adminStore.users.total})
+				{t('admin.users.title')} ({adminStore.users.total})
 			</h2>
 
 			<!-- Search Input -->
@@ -90,7 +90,7 @@
 					type="text"
 					bind:value={searchQuery}
 					oninput={handleSearch}
-					placeholder={$t('admin.users.searchPlaceholder')}
+					placeholder={t('admin.users.searchPlaceholder')}
 					class="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
 				/>
 				{#if searchQuery}
@@ -109,10 +109,10 @@
 		<TableSkeleton
 			rows={10}
 			columns={[
-				$t('admin.users.table.userInfo'),
-				$t('admin.users.table.email'),
-				$t('admin.users.table.status'),
-				$t('admin.users.table.created')
+				t('admin.users.table.userInfo'),
+				t('admin.users.table.email'),
+				t('admin.users.table.status'),
+				t('admin.users.table.created')
 			]}
 		/>
 	{:else}
@@ -123,10 +123,10 @@
 						<tr
 							class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 						>
-							<th class="p-4">{$t('admin.users.table.userInfo')}</th>
-							<th class="p-4">{$t('admin.users.table.email')}</th>
-							<th class="p-4">{$t('admin.users.table.status')}</th>
-							<th class="p-4">{$t('admin.users.table.created')}</th>
+							<th class="p-4">{t('admin.users.table.userInfo')}</th>
+							<th class="p-4">{t('admin.users.table.email')}</th>
+							<th class="p-4">{t('admin.users.table.status')}</th>
+							<th class="p-4">{t('admin.users.table.created')}</th>
 						</tr>
 					</thead>
 					<tbody
@@ -187,14 +187,14 @@
 												class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
 											>
 												<Mail class="w-3 h-3" />
-												{$t('admin.users.status.verified')}
+												{t('admin.users.status.verified')}
 											</span>
 										{:else}
 											<span
 												class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
 											>
 												<Mail class="w-3 h-3" />
-												{$t('admin.users.status.unverified')}
+												{t('admin.users.status.unverified')}
 											</span>
 										{/if}
 										{#if user.isAccountLocked}
@@ -202,14 +202,14 @@
 												class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
 											>
 												<Lock class="w-3 h-3" />
-												{$t('admin.users.status.locked')}
+												{t('admin.users.status.locked')}
 											</span>
 										{/if}
 									</div>
 								</td>
 								<td class="p-4">
 									<span class="text-gray-600 dark:text-gray-400 text-sm"
-										>{$formatDate(user.createdAt, {
+										>{formatDate(user.createdAt, {
 											year: 'numeric',
 											month: 'short',
 											day: 'numeric'
@@ -230,10 +230,10 @@
 					<TableSkeleton
 						rows={3}
 						columns={[
-							$t('admin.users.table.userInfo'),
-							$t('admin.users.table.email'),
-							$t('admin.users.table.status'),
-							$t('admin.users.table.created')
+							t('admin.users.table.userInfo'),
+							t('admin.users.table.email'),
+							t('admin.users.table.status'),
+							t('admin.users.table.created')
 						]}
 						showHeader={false}
 					/>
@@ -241,11 +241,11 @@
 			</div>
 		{:else if usersList.length > 0}
 			<div class="py-12 text-center text-gray-400 text-sm">
-				{$t('admin.users.noMoreUsers')}
+				{t('admin.users.noMoreUsers')}
 			</div>
 		{:else}
 			<div class="py-20 text-center text-gray-500">
-				{$t('admin.users.noUsersFound', { query: searchQuery })}
+				{t('admin.users.noUsersFound', { query: searchQuery })}
 			</div>
 		{/if}
 	{/if}
