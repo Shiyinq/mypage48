@@ -3,9 +3,13 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { TopTwoShotMember } from '$lib/types';
 
-	export let ranking: TopTwoShotMember[] = [];
-	export let totalCount: number = 0;
-	export let topMemberCount: number = 1;
+	interface Props {
+		ranking?: TopTwoShotMember[];
+		totalCount?: number;
+		topMemberCount?: number;
+	}
+
+	let { ranking = [], totalCount = 0, topMemberCount = 1 }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -25,10 +29,10 @@
 	>
 		<div>
 			<h3 class="font-bold text-gray-800 dark:text-gray-200 text-lg">
-				{$t('top2shot.rankingTitle')}
+				{t('top2shot.rankingTitle')}
 			</h3>
 			<p class="text-xs text-gray-500 dark:text-gray-400">
-				{$t('top2shot.rankingSubtitle')}
+				{t('top2shot.rankingSubtitle')}
 			</p>
 		</div>
 		<div
@@ -36,7 +40,7 @@
 		>
 			<TrendingUp class="w-3 h-3" />
 			{totalCount}
-			{$t('top2shot.totalPhotos')}
+			{t('top2shot.totalPhotos')}
 		</div>
 	</div>
 
@@ -84,7 +88,7 @@
 						>
 							<Camera class="w-3 h-3" />
 							{member.count}
-							{$t('top2shot.photos')}
+							{t('top2shot.photos')}
 						</span>
 					</div>
 				</div>

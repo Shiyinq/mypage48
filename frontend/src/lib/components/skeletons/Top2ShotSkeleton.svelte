@@ -31,7 +31,7 @@
 			</div>
 			<div class="divide-y divide-gray-50 dark:divide-zinc-700">
 				<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-				{#each Array(5) as _unused}
+				{#each Array(5)}
 					<div class="p-4 flex items-center gap-4">
 						<div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
 						<div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>

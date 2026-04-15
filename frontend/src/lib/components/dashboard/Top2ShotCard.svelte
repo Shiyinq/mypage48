@@ -1,17 +1,20 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { Heart, Crown, ChevronRight, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
 
-	/**
-	 * Top 2-Shot Card component for dashboard
-	 */
-	export let name: string | null;
-	export let count: number;
-	export let image: string | undefined;
-	export let loading: boolean = false;
+	interface Props {
+		/**
+		 * Top 2-Shot Card component for dashboard
+		 */
+		name: string | null;
+		count: number;
+		image: string | undefined;
+		loading?: boolean;
+	}
+
+	let { name, count, image, loading = false }: Props = $props();
 </script>
 
 <div
@@ -22,7 +25,7 @@
 			<div class="flex items-center gap-2 mb-3">
 				<Heart class="w-4 h-4 text-pink-500 fill-pink-500" />
 				<span class="text-[10px] font-black tracking-widest text-pink-500 uppercase"
-					>{$t('dashboard.twoShot.topTwoShot')}</span
+					>{t('dashboard.twoShot.topTwoShot')}</span
 				>
 			</div>
 		</div>
@@ -55,7 +58,7 @@
 			</div>
 			<div class="min-w-0">
 				<p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-					{$t('dashboard.twoShot.mostCollected')}
+					{t('dashboard.twoShot.mostCollected')}
 				</p>
 				<h3
 					class={`font-black text-themed leading-none mb-0.5 truncate ${(name?.length ?? 0) > 15 ? 'text-sm' : 'text-lg'}`}
@@ -65,7 +68,7 @@
 				</h3>
 				<p class="text-sm font-bold text-pink-500">
 					{count}
-					{$t('dashboard.twoShot.photos')}
+					{t('dashboard.twoShot.photos')}
 				</p>
 			</div>
 		{/if}
@@ -81,7 +84,7 @@
 			href="/top-2shot"
 			class="mt-auto border-t border-pink-100 dark:border-pink-800/30 p-3 w-full text-center text-xs font-bold text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors flex items-center justify-center gap-1 cursor-pointer"
 		>
-			{$t('common.viewDetails')}
+			{t('common.viewDetails')}
 			<ChevronRight class="w-3 h-3" />
 		</a>
 	{/if}

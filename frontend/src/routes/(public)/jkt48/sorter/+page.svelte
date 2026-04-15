@@ -2,9 +2,8 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { Member } from '$lib/apis/members';
-	import { membersStore } from '$lib/stores/theater';
+	import { membersStore } from '$lib/stores/theater.svelte';
 	import { showToast } from '$lib/stores';
-	import { fade } from 'svelte/transition';
 	import SEO from '$lib/components/SEO.svelte';
 	import SorterGenerationSelect from '$lib/components/sorter/SorterGenerationSelect.svelte';
 	import SorterProcess from '$lib/components/sorter/SorterProcess.svelte';
@@ -14,43 +13,55 @@
 
 	// Sorter State
 	type SorterState = 'landing' | 'sorting' | 'results';
-	let currentState: SorterState = 'landing';
+	let currentState: SorterState = $state('landing');
 
-	let allMembers: Member[] = [];
-	let selectedMembers: Member[] = [];
-	let generations: string[] = [];
-	let selectedGenerations: Set<string> = new Set();
-	let loadingGenerations = true;
+	let allMembers: Member[] = $state([]);
+	let selectedMembers: Member[] = $state([]);
+	let generations: string[] = $state([]);
+	let selectedGenerations: Set<string> = $state(new Set());
+	let loadingGenerations = $state(true);
 
 	// Sorting Logic State
-	let lstMember: any[] = [];
+	let lstMember: number[][] = $state([]);
 	let parent: number[] = [];
 	let rec: number[] = [];
-	let cmp1 = 0;
-	let cmp2 = 0;
-	let head1 = 0;
-	let head2 = 0;
+	let cmp1 = $state(0);
+	let cmp2 = $state(0);
+	let head1 = $state(0);
+	let head2 = $state(0);
 	let nrec = 0;
-	let numQuestion = 0;
-	let finishSize = 0;
-	let finishFlag = 0;
+	let numQuestion = $state(0);
+	let finishSize = $state(0);
+	let finishFlag = $state(0);
 
 	// Results
 	interface ResultMember extends Member {
 		rank: number;
 	}
-	let results: ResultMember[] = [];
-	let layoutMode: 'card' | 'list' = 'card';
+	let results: ResultMember[] = $state([]);
+	let layoutMode: 'card' | 'list' = $state('card');
 
 	// History for Undo
-	let history: any[] = [];
+	interface SorterHistoryState {
+		lstMember: number[][];
+		parent: number[];
+		rec: number[];
+		cmp1: number;
+		cmp2: number;
+		head1: number;
+		head2: number;
+		nrec: number;
+		numQuestion: number;
+		finishSize: number;
+		finishFlag: number;
+	}
+	let history: SorterHistoryState[] = $state([]);
 
 	// Animation State
-	let isAnimating = false;
-	let lastSelectedSide: 'left' | 'right' | 'tie' | null = null;
+	let isAnimating = $state(false);
+	let lastSelectedSide: 'left' | 'right' | 'tie' | null = $state(null);
 
-	async function handleSelect(event: CustomEvent<number>) {
-		const flag = event.detail;
+	async function handleSelect(flag: number) {
 		if (isAnimating) return;
 
 		lastSelectedSide = flag === 1 ? 'left' : flag === -1 ? 'right' : 'tie';
@@ -72,21 +83,21 @@
 			const gens = await membersStore.getGenerations();
 			generations = gens.sort((a, b) => parseInt(a) - parseInt(b));
 			selectedGenerations = new Set();
-		} catch (e) {
-			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
+		} catch {
+			showToast(t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		} finally {
 			loadingGenerations = false;
 		}
 	}
 
-	function toggleGeneration(event: CustomEvent<string>) {
-		const gen = event.detail;
-		if (selectedGenerations.has(gen)) {
-			selectedGenerations.delete(gen);
+	function toggleGeneration(gen: string) {
+		const next = new Set(selectedGenerations);
+		if (next.has(gen)) {
+			next.delete(gen);
 		} else {
-			selectedGenerations.add(gen);
+			next.add(gen);
 		}
-		selectedGenerations = selectedGenerations;
+		selectedGenerations = next;
 	}
 
 	function selectAllGenerations() {
@@ -100,7 +111,7 @@
 	function startSort() {
 		selectedMembers = allMembers.filter((m) => selectedGenerations.has(m.generation));
 		if (selectedMembers.length < 2) {
-			showToast($t('theater.sorter.minSelection'), 'error');
+			showToast(t('theater.sorter.minSelection'), 'error');
 			return;
 		}
 		selectedMembers = [...selectedMembers].sort(() => Math.random() - 0.5);
@@ -234,14 +245,16 @@
 		fetchMembers();
 	});
 
-	$: leftMember = selectedMembers[lstMember[cmp1]?.[head1]];
-	$: rightMember = selectedMembers[lstMember[cmp2]?.[head2]];
-	$: progress = finishFlag
-		? 100
-		: Math.floor(
-				(finishSize / (selectedMembers.length * Math.log2(selectedMembers.length) * 0.7)) * 100
-			);
-	$: displayProgress = Math.min(progress, 99);
+	let leftMember = $derived(selectedMembers[lstMember[cmp1]?.[head1]]);
+	let rightMember = $derived(selectedMembers[lstMember[cmp2]?.[head2]]);
+	let progress = $derived(
+		finishFlag
+			? 100
+			: Math.floor(
+					(finishSize / (selectedMembers.length * Math.log2(selectedMembers.length) * 0.7)) * 100
+				)
+	);
+	let displayProgress = $derived(Math.min(progress, 99));
 
 	async function copyToClipboard(text: string): Promise<boolean> {
 		try {
@@ -249,7 +262,9 @@
 				await navigator.clipboard.writeText(text);
 				return true;
 			}
-		} catch {}
+		} catch {
+			return false;
+		}
 		try {
 			const textarea = document.createElement('textarea');
 			textarea.value = text;
@@ -271,11 +286,11 @@
 			.slice(0, 10)
 			.map((r) => `#${r.rank} ${r.name}`)
 			.join('\n');
-		const shareText = `${$t('theater.sorter.shareTextHeader')}\n${text}\n\n${$t('theater.sorter.shareTextFooter')} ${window.location.origin}/jkt48/sorter`;
+		const shareText = `${t('theater.sorter.shareTextHeader')}\n${text}\n\n${t('theater.sorter.shareTextFooter')} ${window.location.origin}/jkt48/sorter`;
 		if (navigator.share) {
 			try {
 				await navigator.share({
-					title: $t('theater.sorter.shareTitle'),
+					title: t('theater.sorter.shareTitle'),
 					text: shareText,
 					url: window.location.href
 				});
@@ -285,12 +300,12 @@
 			}
 		}
 		const copied = await copyToClipboard(shareText);
-		if (copied) showToast($t('theater.sorter.copySuccess'), 'success');
-		else showToast($t('theater.sorter.copyFailed'), 'error');
+		if (copied) showToast(t('theater.sorter.copySuccess'), 'success');
+		else showToast(t('theater.sorter.copyFailed'), 'error');
 	}
 </script>
 
-<SEO title={$t('theater.sorter.title')} path="/jkt48/sorter" description={$t('seo.sorter')} />
+<SEO title={t('theater.sorter.title')} path="/jkt48/sorter" description={t('seo.sorter')} />
 
 <div
 	class="w-full flex flex-col items-center justify-start min-h-[calc(100svh-120px)] pt-4 md:pt-6 pb-12"
@@ -300,12 +315,12 @@
 			<h1
 				class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
 			>
-				{$t('theater.sorter.title')}
+				{t('theater.sorter.title')}
 			</h1>
 			<p
 				class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest leading-relaxed"
 			>
-				{$t('theater.sorter.subtitle')}
+				{t('theater.sorter.subtitle')}
 			</p>
 		</div>
 
@@ -314,10 +329,10 @@
 			{selectedGenerations}
 			{loadingGenerations}
 			selectedMembersCount={allMembers.filter((m) => selectedGenerations.has(m.generation)).length}
-			on:toggle={toggleGeneration}
-			on:selectAll={selectAllGenerations}
-			on:deselectAll={deselectAllGenerations}
-			on:start={startSort}
+			ontoggle={toggleGeneration}
+			onselectAll={selectAllGenerations}
+			ondeselectAll={deselectAllGenerations}
+			onstart={startSort}
 			variant="public"
 		/>
 	{:else if currentState === 'sorting'}
@@ -329,18 +344,18 @@
 			{isAnimating}
 			{lastSelectedSide}
 			hasHistory={history.length > 0}
-			on:select={handleSelect}
-			on:undo={undo}
-			on:exit={restart}
+			onselect={handleSelect}
+			onundo={undo}
+			onexit={restart}
 			variant="public"
 		/>
 	{:else if currentState === 'results'}
 		<SorterResults
 			{results}
 			{layoutMode}
-			on:share={shareResults}
-			on:restart={restart}
-			on:changeLayout={(e) => (layoutMode = e.detail)}
+			onshare={shareResults}
+			onrestart={restart}
+			onchangeLayout={(mode) => (layoutMode = mode)}
 			variant="public"
 		/>
 	{/if}

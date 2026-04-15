@@ -3,18 +3,24 @@
 	import { formatDate } from '$lib/i18n';
 	import type { MemoryItem } from '$lib/types';
 
-	export let item: MemoryItem;
-	export let rotation: number = 0;
-	export let onClick: (item: MemoryItem) => void;
+	interface Props {
+		item: MemoryItem;
+		rotation?: number;
+		onClick: (item: MemoryItem) => void;
+	}
 
-	$: tapeColor = item.type === '2SHOT' ? 'bg-purple-200/80' : 'bg-red-200/80';
+	let { item, rotation = 0, onClick }: Props = $props();
+
+	let tapeColor = $derived(item.type === '2SHOT' ? 'bg-purple-200/80' : 'bg-red-200/80');
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 <div
 	class="group relative transition-all duration-500 hover:z-10 hover:scale-105 cursor-pointer"
 	style={`transform: rotate(${rotation}deg)`}
-	on:click={() => onClick(item)}
+	onclick={() => onClick(item)}
+	onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick(item)}
+	role="button"
+	tabindex="0"
 >
 	<!-- Washi Tape -->
 	<div
@@ -35,7 +41,7 @@
 			<div
 				class="absolute bottom-2 right-2 bg-black/50 backdrop-blur-sm text-white text-[10px] font-mono px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
 			>
-				{$formatDate(item.date, {
+				{formatDate(item.date, {
 					day: 'numeric',
 					month: 'short',
 					year: '2-digit'

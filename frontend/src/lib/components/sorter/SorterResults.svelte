@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { Trophy, LayoutGrid, List, Share2, RotateCcw } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -9,15 +8,28 @@
 	import { getMemberFrame } from '$lib/constants';
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
 	interface ResultMember extends Member {
 		rank: number;
 	}
 
-	export let results: ResultMember[];
-	export let layoutMode: 'card' | 'list' = 'card';
-	export let variant: 'public' | 'theater' = 'public';
+	interface Props {
+		results: ResultMember[];
+		layoutMode?: 'card' | 'list';
+		variant?: 'public' | 'theater';
+		onshare?: () => void;
+		onrestart?: () => void;
+		onchangeLayout?: (mode: 'card' | 'list') => void;
+	}
+
+	let {
+		results,
+		layoutMode = 'card',
+		variant = 'public',
+		onshare,
+		onrestart,
+		onchangeLayout
+	}: Props = $props();
 
 	function handleImageError(e: Event) {
 		const target = e.currentTarget as HTMLImageElement;
@@ -25,18 +37,18 @@
 	}
 
 	function shareResults() {
-		dispatch('share');
+		onshare?.();
 	}
 
 	function restart() {
-		dispatch('restart');
+		onrestart?.();
 	}
 
 	function setLayout(mode: 'card' | 'list') {
-		dispatch('changeLayout', mode);
+		onchangeLayout?.(mode);
 	}
 
-	$: isPublic = variant === 'public';
+	let isPublic = $derived(variant === 'public');
 </script>
 
 <div
@@ -54,12 +66,12 @@
 				<h1
 					class={`text-2xl md:text-3xl font-black tracking-tighter uppercase leading-none ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
 				>
-					{$t('theater.sorter.results')}
+					{t('theater.sorter.results')}
 				</h1>
 				<p
 					class={`text-[10px] font-bold uppercase tracking-widest ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
 				>
-					{$t('theater.sorter.resultsSubtitle')}
+					{t('theater.sorter.resultsSubtitle')}
 				</p>
 			</div>
 		</div>
@@ -71,7 +83,7 @@
 				class={`flex bg-white dark:bg-zinc-900 rounded-full p-1 border shadow-sm ${isPublic ? 'border-gray-100 dark:border-zinc-800' : 'border-zinc-100 dark:border-zinc-800'}`}
 			>
 				<button
-					on:click={() => setLayout('card')}
+					onclick={() => setLayout('card')}
 					class={`p-1.5 sm:p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'card' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500'}`}
 					title="Grid View"
 				>
@@ -79,7 +91,7 @@
 					<LayoutGrid size={18} class="hidden sm:block" />
 				</button>
 				<button
-					on:click={() => setLayout('list')}
+					onclick={() => setLayout('list')}
 					class={`p-1.5 sm:p-2 rounded-full transition-all cursor-pointer ${layoutMode === 'list' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : isPublic ? 'text-slate-400 hover:text-red-600' : 'text-zinc-400 hover:text-rose-500'}`}
 					title="List View"
 				>
@@ -89,20 +101,20 @@
 			</div>
 
 			<button
-				on:click={shareResults}
+				onclick={shareResults}
 				class={`h-9 sm:h-11 px-3 sm:px-6 text-white font-black rounded-full transition-all shadow-lg flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs cursor-pointer whitespace-nowrap overflow-hidden ${isPublic ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20'}`}
 			>
 				<Share2 size={14} class="sm:hidden" />
 				<Share2 size={16} class="hidden sm:block" />
-				{$t('theater.sorter.share')}
+				{t('theater.sorter.share')}
 			</button>
 			<button
-				on:click={restart}
+				onclick={restart}
 				class={`h-9 sm:h-11 px-3 sm:px-6 bg-white dark:bg-zinc-800 font-black rounded-full transition-all shadow-md border flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs cursor-pointer whitespace-nowrap overflow-hidden ${isPublic ? 'text-slate-900 dark:text-white border-gray-100 dark:border-zinc-700' : 'text-themed border-zinc-100 dark:border-zinc-700'}`}
 			>
 				<RotateCcw size={14} class="sm:hidden" />
 				<RotateCcw size={16} class="hidden sm:block" />
-				{$t('theater.sorter.restart')}
+				{t('theater.sorter.restart')}
 			</button>
 		</div>
 	</div>
@@ -123,7 +135,7 @@
 									src={getExternalMediaUrl(member.img)}
 									alt={member.name}
 									class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-									on:error={handleImageError}
+									onerror={handleImageError}
 								/>
 
 								<img
@@ -149,7 +161,7 @@
 										{member.name}
 									</h4>
 									<span class="text-[8px] font-black text-white/70 uppercase tracking-widest"
-										>{$t('theater.sorter.genLabel', { gen: member.generation })}</span
+										>{t('theater.sorter.genLabel', { gen: member.generation })}</span
 									>
 								</div>
 
@@ -183,7 +195,7 @@
 									src={getExternalMediaUrl(member.img)}
 									alt={member.name}
 									class="w-full h-full object-cover"
-									on:error={handleImageError}
+									onerror={handleImageError}
 								/>
 								<img
 									src={getMemberFrame(member.member_type)}
@@ -200,7 +212,7 @@
 								</h4>
 								<span
 									class={`text-[9px] md:text-xs font-bold uppercase tracking-widest truncate ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
-									>{$t('theater.sorter.genLabel', { gen: member.generation })}</span
+									>{t('theater.sorter.genLabel', { gen: member.generation })}</span
 								>
 							</div>
 
@@ -241,7 +253,7 @@
 											src={getExternalMediaUrl(member.img)}
 											alt={member.name}
 											class="w-full h-full object-cover"
-											on:error={handleImageError}
+											onerror={handleImageError}
 										/>
 										<img
 											src={getMemberFrame(member.member_type)}
@@ -258,7 +270,7 @@
 										</h4>
 										<span
 											class={`text-[9px] font-bold uppercase tracking-widest truncate ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
-											>{$t('theater.sorter.genLabel', { gen: member.generation })}</span
+											>{t('theater.sorter.genLabel', { gen: member.generation })}</span
 										>
 									</div>
 								</div>

@@ -1,35 +1,40 @@
 <script lang="ts">
 	import { Search, ChevronRight, Hash, Eye, EyeOff, X, Lock, PanelLeftClose } from 'lucide-svelte';
-	import { playgroundStore } from '$lib/stores/playground';
-	import { createEventDispatcher } from 'svelte';
+	import { playgroundStore } from '$lib/stores/playground.svelte';
+
 	import { slide } from 'svelte/transition';
 	import type { OpenAPIEndpoint } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
 
-	export let groupedEndpoints: Record<string, OpenAPIEndpoint[]> = {};
-	export let selectedId: string | null = null;
+	interface Props {
+		groupedEndpoints?: Record<string, OpenAPIEndpoint[]>;
+		selectedId?: string | null;
+		onselect?: (endpoint: OpenAPIEndpoint) => void;
+	}
 
-	const dispatch = createEventDispatcher<{ select: OpenAPIEndpoint }>();
+	let { groupedEndpoints = {}, selectedId = null, onselect }: Props = $props();
 
-	let searchQuery = '';
-	let expandedTags: Record<string, boolean> = {};
-	let showApiKey = false;
-	let isConfigExpanded = !$playgroundStore.apiKey;
+	let searchQuery = $state('');
+	let expandedTags: Record<string, boolean> = $state({});
+	let showApiKey = $state(false);
+	let isConfigExpanded = $state(!$playgroundStore.apiKey);
 
-	$: filteredGroups = Object.entries(groupedEndpoints).reduce(
-		(acc: Record<string, OpenAPIEndpoint[]>, [tag, endpoints]) => {
-			const filtered = endpoints.filter(
-				(e) =>
-					e.path.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					e.details.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					tag.toLowerCase().includes(searchQuery.toLowerCase())
-			);
-			if (filtered.length > 0) acc[tag] = filtered;
-			return acc;
-		},
-		{}
+	let filteredGroups = $derived(
+		Object.entries(groupedEndpoints).reduce(
+			(acc: Record<string, OpenAPIEndpoint[]>, [tag, endpoints]) => {
+				const filtered = endpoints.filter(
+					(e) =>
+						e.path.toLowerCase().includes(searchQuery.toLowerCase()) ||
+						e.details.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+						tag.toLowerCase().includes(searchQuery.toLowerCase())
+				);
+				if (filtered.length > 0) acc[tag] = filtered;
+				return acc;
+			},
+			{}
+		)
 	);
 
 	function toggleTag(tag: string) {
@@ -37,7 +42,7 @@
 	}
 
 	function handleSelect(endpoint: OpenAPIEndpoint) {
-		dispatch('select', endpoint);
+		onselect?.(endpoint);
 	}
 
 	const methodColors: Record<string, string> = {
@@ -58,7 +63,7 @@
 		<!-- Header Row: Aligned with Navbar -->
 		<div class="h-16 flex items-center">
 			<button
-				on:click={() => (isConfigExpanded = !isConfigExpanded)}
+				onclick={() => (isConfigExpanded = !isConfigExpanded)}
 				class="flex-1 px-4 h-full flex items-center justify-between group cursor-pointer text-left"
 			>
 				<div class="flex items-center gap-2">
@@ -70,11 +75,11 @@
 					<span
 						class="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400"
 					>
-						{$t('playground.configTitle')}
+						{t('playground.configTitle')}
 					</span>
 					{#if ($playgroundStore.apiKey || $playgroundStore.useSession) && !isConfigExpanded}
 						<span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-							({$t('playground.configActive')})
+							({t('playground.configActive')})
 						</span>
 					{/if}
 				</div>
@@ -86,9 +91,9 @@
 
 			<div class="pr-2">
 				<button
-					on:click={() => playgroundStore.toggleSidebar()}
+					onclick={() => playgroundStore.toggleSidebar()}
 					class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-gray-400 hover:text-red-500 cursor-pointer"
-					title={$t('playground.hideSidebar')}
+					title={t('playground.hideSidebar')}
 				>
 					<PanelLeftClose class="w-5 h-5" />
 				</button>
@@ -108,19 +113,19 @@
 					<div class="flex flex-col">
 						<div class="flex items-center gap-2">
 							<span class="text-[10px] font-bold text-gray-700 dark:text-gray-300"
-								>{$t('playground.useSessionLabel')}</span
+								>{t('playground.useSessionLabel')}</span
 							>
 							{#if $playgroundStore.useSession}
 								<span
 									class="flex items-center gap-1 text-[8px] font-bold text-emerald-500 animate-pulse"
 								>
 									<div class="w-1 h-1 rounded-full bg-emerald-500"></div>
-									{$t('playground.configActive')}
+									{t('playground.configActive')}
 								</span>
 							{/if}
 						</div>
 						<span class="text-[9px] text-gray-500 dark:text-gray-500 leading-tight"
-							>{$t('playground.useSessionDescription')}</span
+							>{t('playground.useSessionDescription')}</span
 						>
 					</div>
 					<label class="relative inline-flex items-center cursor-pointer scale-90 origin-right">
@@ -128,7 +133,7 @@
 							type="checkbox"
 							class="sr-only peer"
 							checked={$playgroundStore.useSession}
-							on:change={(e) => playgroundStore.setUseSession(e.currentTarget.checked)}
+							onchange={(e) => playgroundStore.setUseSession(e.currentTarget.checked)}
 						/>
 						<div
 							class="w-9 h-5 bg-gray-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500"
@@ -146,13 +151,13 @@
 							for="global-api-key"
 							class="text-[10px] font-bold text-gray-400 dark:text-gray-500"
 						>
-							{$t('playground.apiKeyLabel')}
+							{t('playground.apiKeyLabel')}
 						</label>
 						{#if $playgroundStore.apiKey && !$playgroundStore.useSession}
 							<span
 								class="flex items-center gap-1 text-[9px] font-bold text-emerald-500 animate-pulse"
 							>
-								{$t('playground.configActive')}
+								{t('playground.configActive')}
 							</span>
 						{/if}
 					</div>
@@ -160,9 +165,9 @@
 						<input
 							id="global-api-key"
 							type={showApiKey ? 'text' : 'password'}
-							placeholder={$t('playground.apiKeyPlaceholder')}
+							placeholder={t('playground.apiKeyPlaceholder')}
 							value={$playgroundStore.apiKey || ''}
-							on:input={(e) => {
+							oninput={(e) => {
 								playgroundStore.setApiKey(e.currentTarget.value);
 							}}
 							class="w-full pl-3 pr-16 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/5 rounded-xl text-xs focus:ring-1 focus:ring-red-500 transition-all font-mono"
@@ -174,14 +179,14 @@
 						>
 							{#if $playgroundStore.apiKey && !$playgroundStore.useSession}
 								<button
-									on:click={() => playgroundStore.setApiKey(null)}
+									onclick={() => playgroundStore.setApiKey(null)}
 									class="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-md transition-colors text-gray-400 hover:text-red-500"
 								>
 									<X class="w-3.5 h-3.5" />
 								</button>
 							{/if}
 							<button
-								on:click={() => (showApiKey = !showApiKey)}
+								onclick={() => (showApiKey = !showApiKey)}
 								class="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-md transition-colors text-gray-400"
 							>
 								{#if showApiKey}
@@ -202,7 +207,7 @@
 			<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 			<input
 				type="text"
-				placeholder={$t('playground.searchPlaceholder')}
+				placeholder={t('playground.searchPlaceholder')}
 				bind:value={searchQuery}
 				class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-zinc-800 border-none rounded-xl text-sm focus:ring-1 focus:ring-red-500 transition-all"
 				autocomplete="off"
@@ -214,7 +219,7 @@
 		{#each Object.entries(filteredGroups) as [tag, endpoints]}
 			<div class="mb-2">
 				<button
-					on:click={() => toggleTag(tag)}
+					onclick={() => toggleTag(tag)}
 					class="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
 				>
 					<div class="flex items-center gap-2">
@@ -231,7 +236,7 @@
 					<div transition:slide={{ duration: 200 }} class="mt-1 space-y-0.5 ml-2">
 						{#each endpoints as endpoint}
 							<button
-								on:click={() => handleSelect(endpoint)}
+								onclick={() => handleSelect(endpoint)}
 								class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all cursor-pointer {selectedId ===
 								endpoint.id
 									? 'bg-red-500/10 text-red-600'

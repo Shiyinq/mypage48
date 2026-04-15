@@ -9,9 +9,13 @@
 		nextRankTitle: string;
 	}
 
-	export let level: Level;
-	export let progressPercent: number;
-	export let loading: boolean = true;
+	interface Props {
+		level: Level;
+		progressPercent: number;
+		loading?: boolean;
+	}
+
+	let { level, progressPercent, loading = true }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -23,7 +27,7 @@
 				<p
 					class="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase truncate"
 				>
-					{$t('profile.level.currentRank')}
+					{t('profile.level.currentRank')}
 				</p>
 				<div class="relative group flex-shrink-0">
 					<Info
@@ -85,8 +89,8 @@
 				<span class="font-bold text-gray-700 dark:text-gray-200"
 					>{level.nextLevelXp - level.xp} XP</span
 				>
-				{$t('profile.level.needed')}
-				{$t('profile.level.for')}
+				{t('profile.level.needed')}
+				{t('profile.level.for')}
 				<span class="font-bold text-gray-700 dark:text-gray-200">{level.nextRankTitle}</span>
 			</span>
 		</div>

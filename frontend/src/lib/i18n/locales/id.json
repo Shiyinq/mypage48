@@ -499,7 +499,8 @@
 			"uploadError": "Gagal mengunggah foto profil. Silakan coba lagi.",
 			"uploadSuccess": "Foto profil berhasil diperbarui!",
 			"loadErrorTitle": "Gagal Memuat Konfigurasi",
-			"loadErrorDesc": "Kami tidak dapat memuat pengaturan profil publik Anda. Silakan coba lagi."
+			"loadErrorDesc": "Kami tidak dapat memuat pengaturan profil publik Anda. Silakan coba lagi.",
+			"viewProfile": "Lihat Profil"
 		},
 		"developer": {
 			"title": "Akses Developer",
@@ -787,6 +788,9 @@
 			"viewer": "Penonton",
 			"startedAt": "Mulai sejak",
 			"liveDuration": "Sudah Live",
+			"seoTitle": "Live Streaming",
+			"seoDescription": "Tonton member JKT48 yang sedang siaran langsung di Showroom atau IDN Live melalui MyPage48.",
+			"seoMemberDescription": "Tonton siaran langsung {name} di MyPage48.",
 			"empty": "Tidak ada member yang sedang siaran langsung saat ini.",
 			"emptyTitle": "Belum Ada Live",
 			"back": "Kembali",
@@ -808,6 +812,9 @@
 			"liveBadge": "LANGSUNG",
 			"chat": "Obrolan",
 			"connected": "Terhubung",
+			"offline_title": "Stream Offline",
+			"offline_description": "{name} tidak sedang live saat ini. Sesi ini mungkin telah berakhir atau sedang tidak tersedia.",
+			"return_home": "Kembali ke Beranda",
 			"toggleTheme": "Ganti Tema",
 			"volume": "Volume",
 			"mute": "Senyap",
@@ -816,6 +823,10 @@
 			"openOriginal": "Buka Stream Asli",
 			"multiview": {
 				"title": "Multi-view",
+				"live": {
+					"seoTitle": "Multi-view Live",
+					"seoDescription": "Tonton beberapa member JKT48 live secara bersamaan. Ganti, atur ulang, dan chat di beberapa live stream sekaligus."
+				},
 				"tap_to_play": "Ketuk untuk Memutar",
 				"clear_all": "Hapus Semua",
 				"switch_to_landscape": "Pindah ke Lanskap",
@@ -837,17 +848,21 @@
 				"loading_chat": "Memuat chat...",
 				"select_stream_to_chat": "Pilih stream untuk melihat chat",
 				"member_offline": "{name} offline",
-				"showroom_chat": "Chat Showroom",
-				"chat_started": "Chat Dimulai",
 				"no_messages": "Belum ada pesan",
 				"stream_error": "Kesalahan stream: {details}",
 				"hls_not_supported": "HLS tidak didukung",
 				"no_stream_found": "Stream tidak ditemukan",
 				"failed_load_stream": "Gagal memuat stream",
 				"retry": "Coba Lagi",
-				"sending_gift": "Mengirim Gift",
-				"seoDescription": "Tonton beberapa member JKT48 live secara bersamaan. Ganti, atur ulang, dan chat di beberapa live stream sekaligus."
+				"sending_gift": "Mengirim Gift"
 			},
+			"joined": "{name} bergabung",
+			"group_joined": "{name} dan {count} lainnya bergabung",
+			"chat_started": "Obrolan dimulai",
+			"connecting": "Menyambungkan...",
+			"disconnected": "Terputus",
+			"reconnect_idn": "Koneksi terputus. Mencoba menghubungkan kembali dalam beberapa detik...",
+			"reconnect_showroom": "Koneksi terputus. Mencoba menghubungkan kembali dalam beberapa detik...",
 			"switchMultiview": "Pindah ke Multi-view"
 		},
 		"news": {

@@ -1,12 +1,17 @@
 <script lang="ts">
-	import { Pencil, Trash2, Calendar, Music } from 'lucide-svelte';
+	import { Pencil, Trash2, Music } from 'lucide-svelte';
 	import type { Setlist } from '$lib/apis/setlists';
-	import { createEventDispatcher } from 'svelte';
+
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let setlists: Setlist[] = [];
+	interface Props {
+		setlists?: Setlist[];
+		onedit?: (setlist: Setlist) => void;
+		ondelete?: (setlist: Setlist) => void;
+	}
 
-	const dispatch = createEventDispatcher();
+	let { setlists = [], onedit, ondelete }: Props = $props();
+
 	const { t } = useTranslation();
 </script>
 
@@ -17,11 +22,11 @@
 				<tr
 					class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 				>
-					<th class="p-4">{$t('admin.setlists.table.setlistInfo')}</th>
-					<th class="p-4">{$t('admin.setlists.table.japaneseTitle')}</th>
-					<th class="p-4">{$t('admin.setlists.table.type')}</th>
-					<th class="p-4">{$t('admin.setlists.table.status')}</th>
-					<th class="p-4 text-right">{$t('admin.setlists.table.actions')}</th>
+					<th class="p-4">{t('admin.setlists.table.setlistInfo')}</th>
+					<th class="p-4">{t('admin.setlists.table.japaneseTitle')}</th>
+					<th class="p-4">{t('admin.setlists.table.type')}</th>
+					<th class="p-4">{t('admin.setlists.table.status')}</th>
+					<th class="p-4 text-right">{t('admin.setlists.table.actions')}</th>
 				</tr>
 			</thead>
 			<tbody class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700">
@@ -53,7 +58,7 @@
 										{setlist.title}
 									</div>
 									<div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-										{$t('admin.setlists.table.songs', { count: (setlist.songs || []).length })}
+										{t('admin.setlists.table.songs', { count: (setlist.songs || []).length })}
 									</div>
 								</div>
 							</div>
@@ -70,8 +75,8 @@
 									: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'}"
 							>
 								{setlist.type === 'setlist'
-									? $t('admin.setlists.table.theaterSetlist')
-									: $t('admin.setlists.table.specialEvent')}
+									? t('admin.setlists.table.theaterSetlist')
+									: t('admin.setlists.table.specialEvent')}
 							</span>
 						</td>
 						<td class="p-4">
@@ -81,20 +86,20 @@
 									: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'}"
 							>
 								{setlist.active
-									? $t('admin.setlists.table.active')
-									: $t('admin.setlists.table.inactive')}
+									? t('admin.setlists.table.active')
+									: t('admin.setlists.table.inactive')}
 							</span>
 						</td>
 						<td class="p-4 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<button
-									on:click={() => dispatch('edit', setlist)}
+									onclick={() => onedit?.(setlist)}
 									class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Pencil class="w-4 h-4" />
 								</button>
 								<button
-									on:click={() => dispatch('delete', setlist)}
+									onclick={() => ondelete?.(setlist)}
 									class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Trash2 class="w-4 h-4" />

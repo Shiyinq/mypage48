@@ -12,12 +12,12 @@
 		upcomingEvents,
 		isUpcomingEventsLoading,
 		upcomingError
-	} from '$lib/stores/events';
-	import { membersStore, isBirthdaysLoading } from '$lib/stores/theater';
+	} from '$lib/stores/events.svelte';
+	import { membersStore, isBirthdaysLoading } from '$lib/stores/theater.svelte';
 	import Birthdays from '$lib/components/theater/Birthdays.svelte';
 
 	import { formatDate, formatTime } from '$lib/i18n';
-	const { t, locale } = useTranslation();
+	const { t } = useTranslation();
 
 	function isToday(dateStr: string): boolean {
 		const eventDate = new Date(dateStr);
@@ -29,7 +29,7 @@
 		);
 	}
 
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(async () => {
 		await eventsStore.loadUpcoming();
@@ -37,13 +37,14 @@
 		mounted = true;
 	});
 
-	$: error = $upcomingError;
+	let eventsList = $derived(upcomingEvents.value);
+	let error = $derived(upcomingError.value);
 </script>
 
 <SEO
-	title={$t('theater.events.title')}
+	title={t('theater.events.title')}
 	path="/theater/events"
-	description={$t('theater.events.subtitle')}
+	description={t('theater.events.subtitle')}
 />
 
 <div class="space-y-6">
@@ -56,31 +57,31 @@
 	<div class="flex items-center gap-3 mb-4">
 		<div class="h-8 w-1.5 bg-red-500 rounded-full"></div>
 		<h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
-			{$t('theater.upcomingEvents.title') || 'Upcoming Shows'}
+			{t('theater.upcomingEvents.title') || 'Upcoming Shows'}
 		</h2>
 	</div>
 
 	{#if !mounted || $isUpcomingEventsLoading}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-			{#each Array(6) as _}
+			{#each Array(6)}
 				<EventCardSkeleton />
 			{/each}
 		</div>
 	{:else if error}
 		<ErrorState
-			title={$t('theater.upcomingEvents.errorTitle') || 'Failed to load events'}
-			description={$t('theater.upcomingEvents.errorDesc') || error || ''}
+			title={t('theater.upcomingEvents.errorTitle') || 'Failed to load events'}
+			description={t('theater.upcomingEvents.errorDesc') || error || ''}
 			onRetry={() => eventsStore.loadUpcoming(true)}
 		/>
-	{:else if $upcomingEvents.length === 0}
+	{:else if eventsList.length === 0}
 		<EmptyState
 			icon={Calendar}
-			title={$t('theater.upcomingEvents.emptyTitle')}
-			description={$t('theater.upcomingEvents.empty')}
+			title={t('theater.upcomingEvents.emptyTitle')}
+			description={t('theater.upcomingEvents.empty')}
 		/>
 	{:else}
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-			{#each $upcomingEvents as event (event.id)}
+			{#each eventsList as event (event.id)}
 				<a
 					href={`https://jkt48.com${event.url}`}
 					target="_blank"
@@ -138,7 +139,7 @@
 								class="absolute top-2 left-2 sm:hidden flex flex-col items-center bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md rounded-lg p-1.5 shadow-sm min-w-[3rem]"
 							>
 								<span class="text-[10px] uppercase font-bold text-red-500 leading-none mb-0.5">
-									{$formatDate(event.date, { month: 'short' })}
+									{formatDate(event.date, { month: 'short' })}
 								</span>
 								<span class="text-lg font-black text-gray-900 dark:text-white leading-none">
 									{new Date(event.date).getDate()}
@@ -151,7 +152,7 @@
 									<span
 										class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold text-white bg-red-500 sm:bg-red-400 shadow-lg shadow-red-500/30 backdrop-blur-sm today-badge"
 									>
-										{$t('theater.events.today')}
+										{t('theater.events.today')}
 									</span>
 								</div>
 							{/if}
@@ -242,14 +243,14 @@
 										<div class="flex items-center gap-1">
 											<Calendar class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
 											<span class="sm:hidden">
-												{$formatDate(event.date, {
+												{formatDate(event.date, {
 													weekday: 'short',
 													day: 'numeric',
 													month: 'short'
 												})}
 											</span>
 											<span class="hidden sm:block">
-												{$formatDate(event.date, {
+												{formatDate(event.date, {
 													weekday: 'long',
 													day: 'numeric',
 													month: 'long',
@@ -264,7 +265,7 @@
 											>
 												<Clock class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
 												<span
-													>{$formatTime(event.date, {
+													>{formatTime(event.date, {
 														hour: '2-digit',
 														minute: '2-digit'
 													})}</span
@@ -279,7 +280,7 @@
 											class="flex items-center gap-1 text-[10px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-gray-200"
 										>
 											<Users class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
-											<span>{event.totalMembers} {$t('theater.events.members')}</span>
+											<span>{event.totalMembers} {t('theater.events.members')}</span>
 										</div>
 									{/if}
 								</div>

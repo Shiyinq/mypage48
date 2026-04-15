@@ -8,26 +8,31 @@
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
 	import { showToast } from '$lib/stores';
 	import { browser } from '$app/environment';
+	import DOMPurify from 'isomorphic-dompurify';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
 
-	$: item = data.item;
-	$: recentNews = data.recentNews.filter((n) => n.link !== item.link).slice(0, 10);
+	let { data }: Props = $props();
+
+	let item = $derived(data.item);
+	let recentNews = $derived(data.recentNews.filter((n) => n.link !== item.link).slice(0, 10));
 
 	const { t, locale } = useTranslation();
 
-	$: shareUrl = browser ? window.location.href : '';
-	$: shareTitle = item?.title || '';
+	let shareUrl = $derived(browser ? window.location.href : '');
+	let shareTitle = $derived(item?.title || '');
 
-	$: shareLinks = {
+	let shareLinks = $derived({
 		x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`,
 		facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
 		whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`
-	};
+	});
 
-	let showLightbox = false;
-	let selectedImgSrc = '';
-	let selectedImgAlt = '';
+	let showLightbox = $state(false);
+	let selectedImgSrc = $state('');
+	let selectedImgAlt = $state('');
 
 	function openLightbox(src: string, alt: string) {
 		selectedImgSrc = src;
@@ -35,7 +40,8 @@
 		showLightbox = true;
 	}
 
-	function handleContentClick(e: MouseEvent) {
+	function handleContentClick(e: MouseEvent | KeyboardEvent) {
+		if (e instanceof KeyboardEvent && e.key !== 'Enter' && e.key !== ' ') return;
 		const target = e.target as HTMLElement;
 		if (target.tagName === 'IMG') {
 			const img = target as HTMLImageElement;
@@ -43,12 +49,12 @@
 		}
 	}
 
-	$: processedContent = proxyExternalImageUrls(item.content_body);
+	let processedContent = $derived(DOMPurify.sanitize(proxyExternalImageUrls(item.content_body)));
 
 	function copyLink() {
 		if (!browser) return;
 		navigator.clipboard.writeText(shareUrl);
-		showToast($t('common.copied'), 'success');
+		showToast(t('common.copied'), 'success');
 	}
 </script>
 
@@ -82,9 +88,8 @@
 			class="lg:col-span-2 space-y-6 bg-white dark:bg-zinc-900 rounded-3xl p-4 md:p-10 shadow-sm border border-gray-100 dark:border-white/5"
 		>
 			{#if item.background_image}
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<button
-					on:click={() => openLightbox(getExternalMediaUrl(item.background_image), item.title)}
+					onclick={() => openLightbox(getExternalMediaUrl(item.background_image), item.title)}
 					class="w-full rounded-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-inner group/img cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99] duration-500"
 				>
 					<img
@@ -112,17 +117,19 @@
 					class="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-gray-500 dark:text-gray-400"
 				>
 					<Calendar class="w-4 h-4" />
-					{$formatDate(item.valid_date_from, { day: 'numeric', month: 'long', year: 'numeric' })}
+					{formatDate(item.valid_date_from, { day: 'numeric', month: 'long', year: 'numeric' })}
 				</span>
 			</div>
 
 			<!-- HTML Content -->
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
+
 			<div
 				class="prose prose-red dark:prose-invert prose-responsive-colors max-w-none prose-img:rounded-xl prose-img:cursor-zoom-in hover:prose-img:scale-[1.01] prose-img:transition-transform prose-img:duration-300 prose-a:text-red-500 hover:prose-a:text-red-600 space-y-4 text-gray-800 dark:text-gray-300 leading-relaxed text-sm md:text-base md:p-0 rounded-2xl md:bg-transparent"
-				on:click={handleContentClick}
+				onclick={handleContentClick}
+				onkeydown={handleContentClick}
 				role="presentation"
 			>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html processedContent}
 			</div>
 
@@ -130,12 +137,12 @@
 				class="pt-8 mt-8 border-t border-gray-100 dark:border-zinc-800 flex flex-col items-center gap-6"
 			>
 				<a
-					href={`https://jkt48.com/news/${item.link}?lang=${$locale === 'id' ? 'id' : 'jp'}`}
+					href={`https://jkt48.com/news/${item.link}?lang=${locale.value === 'id' ? 'id' : 'jp'}`}
 					target="_blank"
 					rel="noopener noreferrer"
 					class="inline-flex items-center gap-2 px-8 py-3 bg-red-500 hover:bg-red-600 text-white rounded-full font-bold shadow-md hover:shadow-lg transition-all"
 				>
-					{$t('theater.news.readOriginal')}
+					{t('theater.news.readOriginal')}
 					<ExternalLink class="w-4 h-4" />
 				</a>
 
@@ -143,7 +150,7 @@
 					<div class="flex items-center gap-2 text-gray-400">
 						<Share2 class="w-3.5 h-3.5" />
 						<span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-							{$t('theater.news.share')}
+							{t('theater.news.share')}
 						</span>
 					</div>
 
@@ -195,9 +202,9 @@
 
 						<!-- Copy Link -->
 						<button
-							on:click={copyLink}
+							onclick={copyLink}
 							class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 hover:scale-110 transition-transform shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer"
-							title={$t('common.copyLink')}
+							title={t('common.copyLink')}
 						>
 							<Copy class="w-4 h-4" />
 						</button>
@@ -215,13 +222,13 @@
 					class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-zinc-800"
 				>
 					<h3 class="text-lg font-bold text-gray-900 dark:text-white">
-						{$t('theater.news.otherNews')}
+						{t('theater.news.otherNews')}
 					</h3>
 					<a
 						href="/theater/news"
 						class="text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-0.5"
 					>
-						{$t('theater.news.seeAll')}
+						{t('theater.news.seeAll')}
 						<ChevronRight class="w-3 h-3" />
 					</a>
 				</div>
@@ -246,7 +253,7 @@
 								</span>
 								<span class="text-gray-300 dark:text-zinc-600">|</span>
 								<span class="text-[11px] font-medium text-gray-500 dark:text-gray-400">
-									{$formatDate(recent.valid_date_from, {
+									{formatDate(recent.valid_date_from, {
 										day: 'numeric',
 										month: 'short',
 										year: 'numeric'

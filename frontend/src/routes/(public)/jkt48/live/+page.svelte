@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { fly } from 'svelte/transition';
-	import { liveStore, liveList, liveLoading, now } from '$lib/stores/live';
+	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Users } from 'lucide-svelte';
 	import LiveGrid from '$lib/components/live/LiveGrid.svelte';
@@ -9,25 +8,33 @@
 
 	const { t } = useTranslation();
 
-	let interval: any;
+	let initialLoading = $state(liveList.value.length === 0);
 
-	let initialLoading = $liveList.length === 0;
 	async function fetchLives() {
-		await liveStore.loadLiveList();
-		initialLoading = false;
+		try {
+			await liveStore.loadLiveList();
+		} finally {
+			initialLoading = false;
+		}
 	}
 
-	onMount(() => {
+	$effect(() => {
 		fetchLives();
-		interval = setInterval(() => liveStore.loadLiveList(true), 30000);
-	});
+		const intervalId = setInterval(() => {
+			liveStore.loadLiveList(true);
+		}, 30000);
 
-	onDestroy(() => {
-		if (interval) clearInterval(interval);
+		return () => {
+			clearInterval(intervalId);
+		};
 	});
 </script>
 
-<SEO title={$t('theater.live.title')} description={$t('seo.live')} path="/jkt48/live" />
+<SEO
+	title={t('theater.live.seoTitle')}
+	description={t('theater.live.seoDescription')}
+	path="/jkt48/live"
+/>
 
 <div class="py-12 min-h-screen">
 	<!-- Header Section -->
@@ -39,7 +46,7 @@
 						class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-black uppercase tracking-widest mb-4"
 					>
 						<span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
-						{$t('theater.live.onLive')}
+						{t('theater.live.onLive')}
 					</div>
 					<h1
 						class="text-4xl sm:text-6xl font-black tracking-tighter text-slate-900 dark:text-white leading-[0.9]"
@@ -47,11 +54,11 @@
 						JKT48 <span class="text-red-600 italic">LIVE</span>
 					</h1>
 					<p class="text-slate-500 dark:text-slate-400 mt-4 font-medium max-w-lg">
-						{$t('theater.live.subtitle')}
+						{t('theater.live.subtitle')}
 					</p>
 				</div>
 
-				{#if $liveList.length > 0}
+				{#if liveList.value.length > 0}
 					<div class="shrink-0 flex items-center">
 						<a
 							href="/jkt48/live/multiview"
@@ -70,17 +77,17 @@
 							<div class="flex flex-col items-start leading-none gap-0.5">
 								<span
 									class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors"
-									>{$t('theater.live.multiview.title')}</span
+									>{t('theater.live.multiview.title')}</span
 								>
 								<span class="text-sm font-black tracking-tight text-slate-900 dark:text-white"
-									>{$t('theater.live.switchMultiview')}</span
+									>{t('theater.live.switchMultiview')}</span
 								>
 							</div>
 
 							<div
 								class="ml-2 w-5 h-5 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-black text-slate-500"
 							>
-								{$liveList.length}
+								{liveList.value.length}
 							</div>
 						</a>
 					</div>
@@ -90,9 +97,6 @@
 	</header>
 
 	<div class="max-w-7xl mx-auto px-0 md:px-0">
-		<LiveGrid liveList={$liveList} loading={$liveLoading} {initialLoading} />
+		<LiveGrid liveList={liveList.value} loading={liveLoading.value} {initialLoading} />
 	</div>
 </div>
-
-<style>
-</style>

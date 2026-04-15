@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
 	import { onMount } from 'svelte';
@@ -9,31 +8,31 @@
 	import { Calendar } from 'lucide-svelte';
 	import SetlistSection from '$lib/components/theater/SetlistSection.svelte';
 
-	import { setlistsStore, maxAttendanceStore, isSetlistsLoading } from '$lib/stores/theater';
+	import { setlistsStore, maxAttendanceStore, isSetlistsLoading } from '$lib/stores/theater.svelte';
 
 	const { t } = useTranslation();
 
 	// State from store
-	$: setlists = $setlistsStore.data || [];
-	$: error = $setlistsStore.error;
-	$: maxAttendance = $maxAttendanceStore;
+	let setlists = $derived(setlistsStore.data || []);
+	let error = $derived(setlistsStore.error);
+	let maxAttendance = $derived(maxAttendanceStore.value);
 
 	// Group setlists by type
-	$: setlistItems = setlists.filter((s) => s.type === 'setlist');
-	$: eventItems = setlists.filter((s) => s.type === 'event');
+	let setlistItems = $derived(setlists.filter((s) => s.type === 'setlist'));
+	let eventItems = $derived(setlists.filter((s) => s.type === 'event'));
 
 	// Sub-group by active status
-	$: activeSetlists = setlistItems.filter((s) => s.active);
-	$: inactiveSetlists = setlistItems.filter((s) => !s.active);
-	$: activeEvents = eventItems.filter((s) => s.active);
-	$: inactiveEvents = eventItems.filter((s) => !s.active);
+	let activeSetlists = $derived(setlistItems.filter((s) => s.active));
+	let inactiveSetlists = $derived(setlistItems.filter((s) => !s.active));
+	let activeEvents = $derived(eventItems.filter((s) => s.active));
+	let inactiveEvents = $derived(eventItems.filter((s) => !s.active));
 
 	async function fetchSetlists() {
 		try {
 			await setlistsStore.load();
-		} catch (e) {
+		} catch {
 			// Error is handled by store
-			showToast($t('theater.setlists.listErrorTitle') || 'Failed to load setlists', 'error');
+			showToast(t('theater.setlists.listErrorTitle') || 'Failed to load setlists', 'error');
 		}
 	}
 
@@ -47,12 +46,11 @@
 	}
 </script>
 
-<SEO title={$t('theater.title')} path="/theater" description={$t('seo.shows')} />
+<SEO title={t('theater.title')} path="/theater" description={t('seo.shows')} />
 
-{#if $isSetlistsLoading}
+{#if isSetlistsLoading.value}
 	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-		<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-		{#each Array(6) as _}
+		{#each Array(6)}
 			<div
 				class="relative flex flex-row sm:block h-[8.5rem] sm:h-auto sm:aspect-[2/3] bg-white dark:bg-zinc-900 shadow-sm rounded-[20px] sm:rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 animate-pulse"
 			>
@@ -78,15 +76,15 @@
 	</div>
 {:else if error}
 	<ErrorState
-		title={$t('theater.setlists.listErrorTitle')}
-		description={error || $t('theater.setlists.listErrorDesc')}
+		title={t('theater.setlists.listErrorTitle')}
+		description={error || t('theater.setlists.listErrorDesc')}
 		onRetry={fetchSetlists}
 	/>
 {:else if setlists.length === 0}
 	<EmptyState
 		icon={Calendar}
-		title={$t('theater.setlists.emptyTitle')}
-		description={$t('theater.setlists.emptyDesc')}
+		title={t('theater.setlists.emptyTitle')}
+		description={t('theater.setlists.emptyDesc')}
 	/>
 {:else}
 	<!-- Setlists -->
@@ -95,28 +93,28 @@
 			<div class="flex items-center gap-3 mb-6">
 				<div class="h-8 w-1.5 bg-red-500 rounded-full"></div>
 				<h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-					{$t('theater.setlists.section')}
+					{t('theater.setlists.section')}
 				</h2>
 			</div>
 
 			<!-- Active Setlists -->
 			{#if activeSetlists.length > 0}
 				<SetlistSection
-					title={$t('theater.setlists.active')}
+					title={t('theater.setlists.active')}
 					items={activeSetlists}
 					{maxAttendance}
 					isActive={true}
-					on:click={(e) => goToDetail(e.detail)}
+					onclick={goToDetail}
 				/>
 			{/if}
 
 			<!-- Inactive Setlists -->
 			{#if inactiveSetlists.length > 0}
 				<SetlistSection
-					title={$t('theater.setlists.inactive')}
+					title={t('theater.setlists.inactive')}
 					items={inactiveSetlists}
 					{maxAttendance}
-					on:click={(e) => goToDetail(e.detail)}
+					onclick={goToDetail}
 				/>
 			{/if}
 		</div>
@@ -128,28 +126,28 @@
 			<div class="flex items-center gap-3 mb-6">
 				<div class="h-8 w-1.5 bg-purple-500 rounded-full"></div>
 				<h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-					{$t('theater.setlists.events')}
+					{t('theater.setlists.events')}
 				</h2>
 			</div>
 
 			<!-- Active Events -->
 			{#if activeEvents.length > 0}
 				<SetlistSection
-					title={$t('theater.setlists.activeEvents')}
+					title={t('theater.setlists.activeEvents')}
 					items={activeEvents}
 					{maxAttendance}
 					isActive={true}
-					on:click={(e) => goToDetail(e.detail)}
+					onclick={goToDetail}
 				/>
 			{/if}
 
 			<!-- Inactive Events -->
 			{#if inactiveEvents.length > 0}
 				<SetlistSection
-					title={$t('theater.setlists.inactiveEvents')}
+					title={t('theater.setlists.inactiveEvents')}
 					items={inactiveEvents}
 					{maxAttendance}
-					on:click={(e) => goToDetail(e.detail)}
+					onclick={goToDetail}
 				/>
 			{/if}
 		</div>

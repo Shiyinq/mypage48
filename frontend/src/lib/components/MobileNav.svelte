@@ -10,27 +10,21 @@
 		Menu,
 		BookOpen,
 		Trophy,
-		Settings,
 		ChevronRight,
 		X,
 		User,
-		Newspaper,
-		Tv,
-		Calendar,
-		ArrowUpDown,
-		Users,
 		Crown
 	} from 'lucide-svelte';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { fade, slide, fly } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
 	const { t } = useTranslation();
-	let isMenuOpen = false;
-	let isTheaterMenuOpen = false;
+	let isMenuOpen = $state(false);
+	let isTheaterMenuOpen = $state(false);
 
 	let lastScrollY = 0;
-	let isHidden = false;
+	let isHidden = $state(false);
 	const threshold = 10;
 
 	function handleScroll() {
@@ -78,19 +72,21 @@
 		closeAllMenus();
 	});
 
-	$: isRouteMore = secondaryLinks.some((link) => $page.url.pathname.startsWith(link.href));
-	$: isRouteTheater = $page.url.pathname.startsWith('/theater');
+	let isRouteMore = $derived(
+		secondaryLinks.some((link) => $page.url.pathname.startsWith(link.href))
+	);
+	let isRouteTheater = $derived($page.url.pathname.startsWith('/theater'));
 </script>
 
-<svelte:window on:scroll={handleScroll} />
+<svelte:window onscroll={handleScroll} />
 
 <!-- Menu Drawer Overlay -->
 {#if isMenuOpen}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-		on:click={closeAllMenus}
+		onclick={closeAllMenus}
 		transition:fade={{ duration: 200 }}
 	></div>
 
@@ -102,9 +98,9 @@
 			class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5"
 		>
 			<h3 class="text-lg font-bold text-gray-900 dark:text-white">
-				{$t('nav.journey') || 'Journey'}
+				{t('nav.journey') || 'Journey'}
 			</h3>
-			<button class="p-2 text-gray-400 hover:text-gray-600" on:click={closeAllMenus}>
+			<button class="p-2 text-gray-400 hover:text-gray-600" onclick={closeAllMenus}>
 				<X class="w-6 h-6" />
 			</button>
 		</div>
@@ -114,17 +110,17 @@
 				<a
 					href={link.href}
 					class={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
-					on:click={closeAllMenus}
+					onclick={closeAllMenus}
 				>
 					<div class="flex items-center gap-4">
 						<div
 							class={`p-3 rounded-xl transition-transform ${isActive ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 ' + link.color : 'bg-gray-50 dark:bg-white/5 ' + link.color} group-hover:scale-110`}
 						>
-							<svelte:component this={link.icon} class="w-6 h-6" />
+							<link.icon class="w-6 h-6" />
 						</div>
 						<span
 							class={`font-bold transition-colors ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-200'}`}
-							>{$t(link.label)}</span
+							>{t(link.label)}</span
 						>
 					</div>
 					<ChevronRight
@@ -138,11 +134,11 @@
 
 <!-- Theater Menu Drawer -->
 {#if isTheaterMenuOpen}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-		on:click={closeAllMenus}
+		onclick={closeAllMenus}
 		transition:fade={{ duration: 200 }}
 	></div>
 
@@ -154,9 +150,9 @@
 			class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5"
 		>
 			<h3 class="text-lg font-bold text-gray-900 dark:text-white">
-				{$t('nav.theater') || 'Theater'}
+				{t('nav.theater') || 'Theater'}
 			</h3>
-			<button class="p-2 text-gray-400 hover:text-gray-600" on:click={closeAllMenus}>
+			<button class="p-2 text-gray-400 hover:text-gray-600" onclick={closeAllMenus}>
 				<X class="w-6 h-6" />
 			</button>
 		</div>
@@ -168,17 +164,17 @@
 				<a
 					href={link.href}
 					class={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive ? 'bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
-					on:click={closeAllMenus}
+					onclick={closeAllMenus}
 				>
 					<div class="flex items-center gap-4">
 						<div
 							class={`p-3 rounded-xl transition-transform ${isActive ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 ' + link.color : 'bg-gray-50 dark:bg-white/5 ' + link.color} group-hover:scale-110`}
 						>
-							<svelte:component this={link.icon} class="w-6 h-6" />
+							<link.icon class="w-6 h-6" />
 						</div>
 						<span
 							class={`font-bold transition-colors ${isActive ? 'text-purple-600 dark:text-purple-400' : 'text-gray-700 dark:text-gray-200'}`}
-							>{$t(link.labelKey) || link.labelDefault}</span
+							>{t(link.labelKey) || link.labelDefault}</span
 						>
 					</div>
 					<ChevronRight
@@ -191,7 +187,9 @@
 {/if}
 
 <nav
-	class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-gray-200 dark:border-zinc-800 z-[80] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-none transition-transform duration-300 ease-in-out"
+	class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-gray-200 dark:border-zinc-800 z-[80] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-none transition-transform duration-300 ease-in-out {isHidden
+		? 'translate-y-full'
+		: 'translate-y-0'}"
 >
 	<div class="flex h-16 items-center justify-around max-w-[420px] mx-auto px-4">
 		<a
@@ -203,12 +201,12 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all truncate w-full text-center ${$page.url.pathname === '/' ? 'text-red-600 dark:text-red-400' : ''}`}
-				>{$t('nav.home')}</span
+				>{t('nav.home')}</span
 			>
 		</a>
 
 		<button
-			on:click={toggleTheaterMenu}
+			onclick={toggleTheaterMenu}
 			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 group min-w-[56px]"
 		>
 			<AudioLines
@@ -216,7 +214,7 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isTheaterMenuOpen || isRouteTheater ? 'text-purple-600 dark:text-purple-400' : ''}`}
-				>{$t('nav.theater')}</span
+				>{t('nav.theater')}</span
 			>
 		</button>
 
@@ -231,7 +229,7 @@
 		</div>
 
 		<button
-			on:click={toggleMenu}
+			onclick={toggleMenu}
 			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 group min-w-[56px]"
 		>
 			<Menu
@@ -239,7 +237,7 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400' : ''}`}
-				>{$t('nav.journey') || 'Journey'}</span
+				>{t('nav.journey') || 'Journey'}</span
 			>
 		</button>
 
@@ -252,7 +250,7 @@
 			/>
 			<span
 				class={`text-[10px] font-medium transition-all truncate w-full text-center ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white' : ''}`}
-				>{$t('nav.profile') || 'Profile'}</span
+				>{t('nav.profile') || 'Profile'}</span
 			>
 		</a>
 	</div>

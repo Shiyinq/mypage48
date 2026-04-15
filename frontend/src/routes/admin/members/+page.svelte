@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { adminStore, isAdminMembersLoading } from '$lib/stores/admin';
+	import { adminStore, isAdminMembersLoading } from '$lib/stores/admin.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { showToast } from '$lib/stores';
 	import type { Member } from '$lib/apis/members';
@@ -14,24 +14,23 @@
 	const { t } = useTranslation();
 
 	// Store state
-	$: membersList = $adminStore.members.data;
-	$: error = $adminStore.members.error;
-	$: membersHasMore = $adminStore.members.hasMore;
+	let membersList = $derived(adminStore.members.data);
+	let membersHasMore = $derived(adminStore.members.hasMore);
 
 	// Search state
-	let searchQuery = '';
+	let searchQuery = $state('');
 	let searchTimeout: ReturnType<typeof setTimeout>;
 
 	// Modal states
-	let showMemberModal = false;
-	let showDeleteModal = false;
-	let editingMember: Partial<Member> = {};
-	let isCreatingMember = false;
-	let isSubmitting = false;
+	let showMemberModal = $state(false);
+	let showDeleteModal = $state(false);
+	let editingMember: Partial<Member> = $state({});
+	let isCreatingMember = $state(false);
+	let isSubmitting = $state(false);
 	let deletingId: string | number | null = null;
 
 	// Initial load state
-	let isInitialLoad = true;
+	let isInitialLoad = $state(true);
 
 	onMount(() => {
 		// Only load if data is not already cached
@@ -43,9 +42,11 @@
 	});
 
 	// Update initial load state when data is loaded
-	$: if (membersList.length > 0) {
-		isInitialLoad = false;
-	}
+	$effect(() => {
+		if (membersList.length > 0) {
+			isInitialLoad = false;
+		}
+	});
 
 	onDestroy(() => {
 		if (searchTimeout) clearTimeout(searchTimeout);
@@ -64,7 +65,7 @@
 	}
 
 	function loadMoreMembers() {
-		if (membersHasMore && !$isAdminMembersLoading) {
+		if (membersHasMore && !isAdminMembersLoading.value) {
 			adminStore.loadMembers();
 		}
 	}
@@ -75,30 +76,30 @@
 		showMemberModal = true;
 	}
 
-	function openEditMember(e: CustomEvent<Member>) {
-		editingMember = e.detail;
+	function openEditMember(member: Member) {
+		editingMember = member;
 		isCreatingMember = false;
 		showMemberModal = true;
 	}
 
-	function confirmDeleteMember(e: CustomEvent<Member>) {
-		deletingId = e.detail.id;
+	function confirmDeleteMember(member: Member) {
+		deletingId = member.id;
 		showDeleteModal = true;
 	}
 
-	async function handleMemberSubmit(e: CustomEvent<Omit<Member, 'id'>>) {
+	async function handleMemberSubmit(data: Partial<Member>) {
 		isSubmitting = true;
 		try {
 			if (isCreatingMember) {
-				await adminStore.createMember(e.detail);
-				showToast($t('admin.members.modal.created'), 'success');
+				await adminStore.createMember(data as Omit<Member, 'id'>);
+				showToast(t('admin.members.modal.created'), 'success');
 			} else if (editingMember && editingMember.id !== undefined) {
-				await adminStore.updateMember(editingMember.id, e.detail);
-				showToast($t('admin.members.modal.updated'), 'success');
+				await adminStore.updateMember(editingMember.id, data as Partial<Omit<Member, 'id'>>);
+				showToast(t('admin.members.modal.updated'), 'success');
 			}
 			showMemberModal = false;
 		} catch {
-			showToast($t('admin.members.modal.failedSave'), 'error');
+			showToast(t('admin.members.modal.failedSave'), 'error');
 		} finally {
 			isSubmitting = false;
 		}
@@ -108,10 +109,10 @@
 		if (deletingId === null) return;
 		try {
 			await adminStore.deleteMember(deletingId);
-			showToast($t('admin.members.modal.deleted'), 'success');
+			showToast(t('admin.members.modal.deleted'), 'success');
 			showDeleteModal = false;
 		} catch {
-			showToast($t('admin.members.modal.failedDelete'), 'error');
+			showToast(t('admin.members.modal.failedDelete'), 'error');
 		}
 	}
 </script>
@@ -123,7 +124,7 @@
 		<div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<Users class="w-5 h-5 text-pink-500" />
-				{$t('admin.members.title')} ({$adminStore.members.total})
+				{t('admin.members.title')} ({adminStore.members.total})
 			</h2>
 
 			<!-- Search Input -->
@@ -132,13 +133,13 @@
 				<input
 					type="text"
 					bind:value={searchQuery}
-					on:input={handleSearch}
-					placeholder={$t('admin.members.searchPlaceholder')}
+					oninput={handleSearch}
+					placeholder={t('admin.members.searchPlaceholder')}
 					class="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all"
 				/>
 				{#if searchQuery}
 					<button
-						on:click={clearSearch}
+						onclick={clearSearch}
 						class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
 					>
 						<X class="w-3 h-3" />
@@ -148,38 +149,38 @@
 		</div>
 
 		<button
-			on:click={openCreateMember}
+			onclick={openCreateMember}
 			class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-opacity shadow-lg shadow-gray-200 dark:shadow-none cursor-pointer"
 		>
 			<Plus class="w-4 h-4" />
-			{$t('admin.members.addMember')}
+			{t('admin.members.addMember')}
 		</button>
 	</div>
 
-	{#if isInitialLoad && $isAdminMembersLoading}
+	{#if isInitialLoad && isAdminMembersLoading.value}
 		<TableSkeleton
 			rows={10}
 			columns={[
-				$t('admin.members.table.memberInfo'),
-				$t('admin.members.table.generation'),
-				$t('admin.members.table.status'),
-				$t('admin.members.table.actions')
+				t('admin.members.table.memberInfo'),
+				t('admin.members.table.generation'),
+				t('admin.members.table.status'),
+				t('admin.members.table.actions')
 			]}
 		/>
 	{:else}
-		<MemberTable members={membersList} on:edit={openEditMember} on:delete={confirmDeleteMember} />
+		<MemberTable members={membersList} onedit={openEditMember} ondelete={confirmDeleteMember} />
 
 		<!-- Infinite Scroll Sentinel -->
 		{#if membersHasMore}
-			<div class="mt-4" use:infiniteScroll on:intersect={loadMoreMembers}>
-				{#if $isAdminMembersLoading}
+			<div class="mt-4" use:infiniteScroll onintersect={loadMoreMembers}>
+				{#if isAdminMembersLoading.value}
 					<TableSkeleton
 						rows={3}
 						columns={[
-							$t('admin.members.table.memberInfo'),
-							$t('admin.members.table.generation'),
-							$t('admin.members.table.status'),
-							$t('admin.members.table.actions')
+							t('admin.members.table.memberInfo'),
+							t('admin.members.table.generation'),
+							t('admin.members.table.status'),
+							t('admin.members.table.actions')
 						]}
 						showHeader={false}
 					/>
@@ -187,11 +188,11 @@
 			</div>
 		{:else if membersList.length > 0}
 			<div class="py-12 text-center text-gray-400 text-sm">
-				{$t('admin.members.noMoreMembers')}
+				{t('admin.members.noMoreMembers')}
 			</div>
 		{:else}
 			<div class="py-20 text-center text-gray-500">
-				{$t('admin.members.noMembersFound', { query: searchQuery })}
+				{t('admin.members.noMembersFound', { query: searchQuery })}
 			</div>
 		{/if}
 	{/if}
@@ -203,7 +204,7 @@
 	member={editingMember}
 	isCreating={isCreatingMember}
 	{isSubmitting}
-	on:submit={handleMemberSubmit}
+	onsubmit={handleMemberSubmit}
 />
 
 <!-- Delete Confirmation Modal -->
@@ -211,6 +212,6 @@
 	bind:show={showDeleteModal}
 	onCancel={() => (showDeleteModal = false)}
 	onConfirm={handleDeleteConfirm}
-	title={$t('admin.members.modal.deleteTitle')}
-	description={$t('admin.members.modal.deleteDesc')}
+	title={t('admin.members.modal.deleteTitle')}
+	description={t('admin.members.modal.deleteDesc')}
 />

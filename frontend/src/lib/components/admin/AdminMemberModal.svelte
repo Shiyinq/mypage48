@@ -1,69 +1,80 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-	import { X, Save, User, LoaderCircle, CircleCheck, Sparkles } from 'lucide-svelte';
+	import { X, User, LoaderCircle, CircleCheck, Sparkles } from 'lucide-svelte';
 	import type { Member } from '$lib/apis/members';
-	import { fly, fade } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let show = false;
-	export let member: Partial<Member> = {};
-	export let isCreating = false;
-	export let isSubmitting = false;
-
-	const dispatch = createEventDispatcher();
-	const { t } = useTranslation();
-
-	let formData = {
-		name: member.name || '',
-		nickname: member.nickname || '',
-		generation: member.generation || '',
-		jiko: member.jiko || '',
-		img: member.img || '',
-		active: member.active ?? true,
-		socials: {
-			twitter: member.socials?.twitter || '',
-			instagram: member.socials?.instagram || '',
-			tiktok: member.socials?.tiktok || '',
-			threads: member.socials?.threads || '',
-			showroom: member.socials?.showroom || '',
-			idn_app: member.socials?.idn_app || ''
-		}
-	};
-
-	// Safe Form Reset Pattern
-	let prevShow = false;
-	$: if (show !== prevShow) {
-		if (show) {
-			// Modal opened - reset form
-			formData = {
-				name: member.name || '',
-				nickname: member.nickname || '',
-				generation: member.generation || '',
-				jiko: member.jiko || '',
-				img: member.img || '',
-				active: member.active ?? true,
-				socials: {
-					twitter: member.socials?.twitter || '',
-					instagram: member.socials?.instagram || '',
-					tiktok: member.socials?.tiktok || '',
-					threads: member.socials?.threads || '',
-					showroom: member.socials?.showroom || '',
-					idn_app: member.socials?.idn_app || ''
-				}
-			};
-		}
-		prevShow = show;
+	interface Props {
+		show?: boolean;
+		member?: Partial<Member>;
+		isCreating?: boolean;
+		isSubmitting?: boolean;
+		onsubmit?: (data: Partial<Member>) => void;
 	}
 
+	let {
+		show = $bindable(false),
+		member = {},
+		isCreating = false,
+		isSubmitting = false,
+		onsubmit
+	}: Props = $props();
+
+	const { t } = useTranslation();
+
+	let formData = $state({
+		name: '',
+		nickname: '',
+		generation: '',
+		jiko: '',
+		img: '',
+		active: true,
+		socials: {
+			twitter: '',
+			instagram: '',
+			tiktok: '',
+			threads: '',
+			showroom: '',
+			idn_app: ''
+		}
+	});
+
+	// Safe Form Reset Pattern
+	let prevShow = $state(false);
+	$effect(() => {
+		if (show !== prevShow) {
+			if (show) {
+				// Modal opened - reset form
+				formData = {
+					name: member.name || '',
+					nickname: member.nickname || '',
+					generation: member.generation || '',
+					jiko: member.jiko || '',
+					img: member.img || '',
+					active: member.active ?? true,
+					socials: {
+						twitter: member.socials?.twitter || '',
+						instagram: member.socials?.instagram || '',
+						tiktok: member.socials?.tiktok || '',
+						threads: member.socials?.threads || '',
+						showroom: member.socials?.showroom || '',
+						idn_app: member.socials?.idn_app || ''
+					}
+				};
+			}
+			prevShow = show;
+		}
+	});
+
 	// Realtime Validation
-	$: isNameValid = formData.name.length > 0;
-	$: isNicknameValid = formData.nickname.length > 0;
-	$: isGenValid = formData.generation.length > 0;
-	$: isFormValid = isNameValid && isNicknameValid && isGenValid;
+	let isNameValid = $derived(formData.name.length > 0);
+	let isNicknameValid = $derived(formData.nickname.length > 0);
+	let isGenValid = $derived(formData.generation.length > 0);
+	let isFormValid = $derived(isNameValid && isNicknameValid && isGenValid);
 
 	function handleSubmit() {
 		if (!isFormValid) return;
-		dispatch('submit', formData);
+		onsubmit?.(formData);
 	}
 
 	function handleClose() {
@@ -74,11 +85,11 @@
 {#if show}
 	<div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
 		<!-- Backdrop -->
-		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
-			on:click={handleClose}
+			onclick={handleClose}
 			transition:fade
 		></div>
 
@@ -101,8 +112,8 @@
 								class="text-2xl font-bold text-gray-900 dark:text-white leading-none relative w-fit"
 							>
 								{isCreating
-									? $t('admin.members.modal.addTitle')
-									: $t('admin.members.modal.editTitle')}
+									? t('admin.members.modal.addTitle')
+									: t('admin.members.modal.editTitle')}
 								<span
 									class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 dark:bg-red-500/30 -z-10 transform -skew-x-12 rounded-sm"
 								></span>
@@ -111,21 +122,27 @@
 					</div>
 
 					<button
-						on:click={handleClose}
+						onclick={handleClose}
 						class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all cursor-pointer"
 					>
 						<X class="w-6 h-6" />
 					</button>
 				</div>
 
-				<form on:submit|preventDefault={handleSubmit} class="space-y-6">
+				<form
+					onsubmit={(e) => {
+						e.preventDefault();
+						handleSubmit();
+					}}
+					class="space-y-6"
+				>
 					<!-- Basic Info -->
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div class="space-y-2">
 							<label
 								for="member-name"
 								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.members.modal.name')}</label
+								>{t('admin.members.modal.name')}</label
 							>
 							<input
 								id="member-name"
@@ -135,7 +152,7 @@
 								class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
 							/>
 							{#if !isNameValid && formData.name.length > 0}
-								<p class="text-xs text-red-500 ml-1">{$t('admin.members.modal.nameRequired')}</p>
+								<p class="text-xs text-red-500 ml-1">{t('admin.members.modal.nameRequired')}</p>
 							{/if}
 						</div>
 
@@ -143,7 +160,7 @@
 							<label
 								for="member-nickname"
 								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.members.modal.nickname')}</label
+								>{t('admin.members.modal.nickname')}</label
 							>
 							<input
 								id="member-nickname"
@@ -158,7 +175,7 @@
 							<label
 								for="member-gen"
 								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.members.modal.generation')}</label
+								>{t('admin.members.modal.generation')}</label
 							>
 							<input
 								id="member-gen"
@@ -173,7 +190,7 @@
 							<label
 								for="member-img"
 								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.members.modal.imageUrl')}</label
+								>{t('admin.members.modal.imageUrl')}</label
 							>
 							<input
 								id="member-img"
@@ -188,7 +205,7 @@
 					<!-- Jikoshoukai -->
 					<div class="space-y-2">
 						<label for="member-jiko" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-							>{$t('admin.members.modal.jikoshoukai')}</label
+							>{t('admin.members.modal.jikoshoukai')}</label
 						>
 						<div class="relative">
 							<textarea
@@ -206,7 +223,7 @@
 					<!-- Socials -->
 					<div class="space-y-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
 						<h3 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-							{$t('admin.members.modal.socials')}
+							{t('admin.members.modal.socials')}
 						</h3>
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 							<div class="space-y-1">
@@ -288,21 +305,22 @@
 					<div class="flex items-center gap-3 pt-2">
 						<button
 							type="button"
+							aria-label="Toggle active status"
 							class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 {formData.active
 								? 'bg-green-500'
 								: 'bg-gray-200 dark:bg-zinc-700'}"
-							on:click={() => (formData.active = !formData.active)}
+							onclick={() => (formData.active = !formData.active)}
 						>
 							<span
 								class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {formData.active
 									? 'translate-x-6'
 									: 'translate-x-1'}"
-							/>
+							></span>
 						</button>
 						<span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-							{$t('admin.members.modal.accountStatus')}: {formData.active
-								? $t('admin.members.modal.active')
-								: $t('admin.members.modal.inactive')}
+							{t('admin.members.modal.accountStatus')}: {formData.active
+								? t('admin.members.modal.active')
+								: t('admin.members.modal.inactive')}
 						</span>
 					</div>
 
@@ -310,10 +328,10 @@
 					<div class="pt-6 flex gap-3">
 						<button
 							type="button"
-							on:click={handleClose}
+							onclick={handleClose}
 							class="flex-1 px-4 py-3 rounded-xl font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
 						>
-							{$t('common.cancel')}
+							{t('common.cancel')}
 						</button>
 						<button
 							type="submit"
@@ -322,10 +340,10 @@
 						>
 							{#if isSubmitting}
 								<LoaderCircle class="w-5 h-5 animate-spin" />
-								{$t('admin.members.modal.saving')}
+								{t('admin.members.modal.saving')}
 							{:else}
 								<CircleCheck class="w-5 h-5" />
-								{isCreating ? $t('admin.members.modal.create') : $t('admin.members.modal.save')}
+								{isCreating ? t('admin.members.modal.create') : t('admin.members.modal.save')}
 							{/if}
 						</button>
 					</div>

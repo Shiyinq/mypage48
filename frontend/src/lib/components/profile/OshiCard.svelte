@@ -5,13 +5,25 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
-	export let profile: User | null = null;
-	export let loading: boolean = true;
-	export let rouletteCount: number = 0;
-	export let birthdayCount: number = 0;
-	export let oshiMeetings: number = 0;
-	export let onOpenOshiModal: () => void;
-	export let onOpenMemberDetail: () => void;
+	interface Props {
+		profile?: User | null;
+		loading?: boolean;
+		rouletteCount?: number;
+		birthdayCount?: number;
+		oshiMeetings?: number;
+		onOpenOshiModal: () => void;
+		onOpenMemberDetail: () => void;
+	}
+
+	let {
+		profile = null,
+		loading = true,
+		rouletteCount = 0,
+		birthdayCount = 0,
+		oshiMeetings = 0,
+		onOpenOshiModal,
+		onOpenMemberDetail
+	}: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -59,7 +71,7 @@
 				<div class="relative">
 					<button
 						class="relative w-28 h-28 rounded-full border-4 border-white shadow-xl overflow-hidden flex-shrink-0 cursor-pointer transition-transform hover:scale-105 active:scale-95"
-						on:click={onOpenMemberDetail}
+						onclick={onOpenMemberDetail}
 					>
 						<img
 							src={getExternalMediaUrl(profile?.oshi?.profilePicture) || '/placeholder-user.jpg'}
@@ -94,7 +106,7 @@
 								{profile?.oshi?.name}
 							</h3>
 							<button
-								on:click={onOpenOshiModal}
+								onclick={onOpenOshiModal}
 								class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
 								title="Change Oshi"
 							>
@@ -105,13 +117,13 @@
 							<span
 								class="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-md uppercase tracking-wide border border-red-200 whitespace-nowrap"
 							>
-								{$t('profile.oshi.generationPattern', { gen: profile?.oshi?.generation })}
+								{t('profile.oshi.generationPattern', { gen: profile?.oshi?.generation })}
 							</span>
 							<div
 								class="group relative px-2 py-0.5 bg-blue-100 text-blue-600 rounded-md border border-blue-200 cursor-help flex items-center gap-1"
 							>
 								<span class="text-[10px] font-bold uppercase tracking-wide whitespace-nowrap">
-									{$t('profile.oshi.totalShowsPattern', { count: profile?.oshi?.totalShows || 0 })}
+									{t('profile.oshi.totalShowsPattern', { count: profile?.oshi?.totalShows || 0 })}
 								</span>
 								<Info class="w-3 h-3" />
 
@@ -119,7 +131,7 @@
 								<div
 									class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-center pointer-events-none"
 								>
-									{$t('profile.oshi.showsTooltip')}
+									{t('profile.oshi.showsTooltip')}
 									<!-- Triangle -->
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-800"
@@ -223,7 +235,7 @@
 			<div class="flex flex-col items-center justify-center text-center py-8 -mt-12">
 				<div class="relative mb-4 group cursor-pointer">
 					<button
-						on:click={onOpenOshiModal}
+						onclick={onOpenOshiModal}
 						class="w-24 h-24 rounded-full bg-white dark:bg-zinc-800 shadow-lg flex items-center justify-center border-4 border-dashed border-gray-200 dark:border-zinc-700 group-hover:border-red-300 transition-colors cursor-pointer"
 					>
 						<Plus class="w-8 h-8 text-gray-300 group-hover:text-red-400" />
@@ -231,18 +243,18 @@
 					<div
 						class="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-transform pointer-events-none"
 					>
-						{$t('profile.oshi.selectBadge')}
+						{t('profile.oshi.selectBadge')}
 					</div>
 				</div>
 				<h3 class="text-lg font-bold text-gray-700 dark:text-gray-300">
-					{$t('profile.oshi.emptyTitle')}
+					{t('profile.oshi.emptyTitle')}
 				</h3>
 				<p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto mt-1">
-					{$t('profile.oshi.emptyDescription')}
+					{t('profile.oshi.emptyDescription')}
 				</p>
 				<div class="mt-4">
-					<Button size="sm" variant="outline" on:click={onOpenOshiModal}
-						>{$t('profile.oshi.browseButton')}</Button
+					<Button size="sm" variant="outline" onclick={onOpenOshiModal}
+						>{t('profile.oshi.browseButton')}</Button
 					>
 				</div>
 			</div>
@@ -270,7 +282,7 @@
 							{/if}
 						</p>
 						<p class="text-[10px] font-bold text-gray-400 uppercase">
-							{$t('profile.stats.oshiMeetings')}
+							{t('profile.stats.oshiMeetings')}
 						</p>
 					</div>
 				</div>
@@ -294,7 +306,7 @@
 							{/if}
 						</p>
 						<p class="text-[10px] font-bold text-gray-400 uppercase">
-							{$t('profile.oshi.roulette')}
+							{t('profile.oshi.roulette')}
 						</p>
 					</div>
 				</div>
@@ -318,7 +330,7 @@
 							{/if}
 						</p>
 						<p class="text-[10px] font-bold text-gray-400 uppercase">
-							{$t('profile.oshi.birthday')}
+							{t('profile.oshi.birthday')}
 						</p>
 					</div>
 				</div>

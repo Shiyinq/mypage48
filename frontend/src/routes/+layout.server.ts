@@ -11,14 +11,16 @@ export const load: LayoutServerLoad = async ({ cookies, url, request }) => {
 		cookies.set('mypage48_locale', urlLocale, {
 			path: '/',
 			maxAge: 31536000,
-			sameSite: 'lax'
+			sameSite: 'lax',
+			httpOnly: false
 		});
 	} else if (!cookies.get('mypage48_locale')) {
 		// Also persist the detected device language to cookie if none exists
 		cookies.set('mypage48_locale', locale, {
 			path: '/',
 			maxAge: 31536000,
-			sameSite: 'lax'
+			sameSite: 'lax',
+			httpOnly: false
 		});
 	}
 

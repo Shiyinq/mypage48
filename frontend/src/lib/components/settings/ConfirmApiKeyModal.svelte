@@ -1,19 +1,23 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { TriangleAlert } from 'lucide-svelte';
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher<{ cancel: void; confirm: void }>();
 
-	export let show = false;
+	interface Props {
+		show?: boolean;
+		oncancel?: () => void;
+		onconfirm?: () => void;
+	}
+
+	let { show = false, oncancel, onconfirm }: Props = $props();
 
 	const handleCancel = () => {
-		dispatch('cancel');
+		oncancel?.();
 	};
 
 	const handleConfirm = () => {
-		dispatch('confirm');
+		onconfirm?.();
 	};
 </script>
 
@@ -31,25 +35,25 @@
 					<TriangleAlert class="w-7 h-7 text-white" />
 				</div>
 				<h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
-					{$t('settings.developer.confirmTitle')}
+					{t('settings.developer.confirmTitle')}
 				</h3>
 				<p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-					{$t('settings.developer.confirmDescription')}
+					{t('settings.developer.confirmDescription')}
 				</p>
 			</div>
 
 			<div class="flex gap-3">
 				<button
 					class="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-					on:click={handleCancel}
+					onclick={handleCancel}
 				>
-					{$t('common.cancel')}
+					{t('common.cancel')}
 				</button>
 				<button
 					class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors cursor-pointer"
-					on:click={handleConfirm}
+					onclick={handleConfirm}
 				>
-					{$t('common.confirm')}
+					{t('common.confirm')}
 				</button>
 			</div>
 		</div>

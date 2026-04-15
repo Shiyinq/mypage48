@@ -1,12 +1,9 @@
 <script lang="ts">
-	import { createEventDispatcher, tick } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { tick } from 'svelte';
 	import type { Ticket } from '$lib/types';
-	import { storageApi } from '$lib/apis/storage';
-	import { storageStore } from '$lib/stores/storage';
+	import { storageStore } from '$lib/stores/storage.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { cleanseMarkdown, extractSignatures } from '$lib/utils/markdown';
-	import { getExternalMediaUrl } from '$lib/utils/media';
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
 
 	// Icons
@@ -29,41 +26,48 @@
 
 	// Markdown parsing
 	import { marked } from 'marked';
-	import DOMPurify from 'dompurify';
+	import DOMPurify from 'isomorphic-dompurify';
 
-	export let ticket: Ticket;
+	interface Props {
+		ticket: Ticket;
+		onsave?: (ticketId: string, note: string) => void;
+		ontoggleSidebar?: () => void;
+	}
+
+	let { ticket, onsave }: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
-	let isEditing = false;
-	let content = '';
-	let isUploading = false;
-	let textareaEl: HTMLTextAreaElement;
-	let scrollContainer: HTMLDivElement;
-	let currentTicketId = '';
+	let isEditing = $state(false);
+	let content = $state('');
+	let isUploading = $state(false);
+	let textareaEl: HTMLTextAreaElement | undefined = $state();
+	let scrollContainer: HTMLDivElement | undefined = $state();
+	let currentTicketId = $state('');
 
 	// Lightbox state
-	let isLightboxOpen = false;
-	let lightboxSrc = '';
-	let lightboxAlt = '';
+	let isLightboxOpen = $state(false);
+	let lightboxSrc = $state('');
+	let lightboxAlt = $state('');
 
 	// When ticket data comes from backend, always capture signatures to keep cache fresh
-	$: if (ticket) {
-		// 1. Extract existing signatures from Backend (always do this for cache freshness)
-		const signatures = extractSignatures(ticket.notes);
-		if (Object.keys(signatures).length > 0) {
-			storageStore.updateCache(signatures);
-		}
+	$effect(() => {
+		if (ticket) {
+			// 1. Extract existing signatures from Backend (always do this for cache freshness)
+			const signatures = extractSignatures(ticket.notes);
+			if (Object.keys(signatures).length > 0) {
+				storageStore.updateCache(signatures);
+			}
 
-		// 2. Only update editor content if it's a completely different ticket
-		// or if we don't have a ticket ID set yet.
-		if (ticket._id !== currentTicketId) {
-			currentTicketId = ticket._id;
-			content = cleanseMarkdown(ticket.notes || '');
-			isEditing = !content; // Start in edit mode if empty
+			// 2. Only update editor content if it's a completely different ticket
+			// or if we don't have a ticket ID set yet.
+			if (ticket._id !== currentTicketId) {
+				currentTicketId = ticket._id;
+				content = cleanseMarkdown(ticket.notes || '');
+				isEditing = !content; // Start in edit mode if empty
+			}
 		}
-	}
+	});
 
 	async function toggleMode() {
 		const currentScroll = scrollContainer?.scrollTop || 0;
@@ -82,13 +86,9 @@
 
 	async function handleSave() {
 		if (content !== ticket.notes) {
-			dispatch('save', { ticketId: ticket._id, note: content });
+			onsave?.(ticket._id, content);
 		}
 		isEditing = false;
-	}
-
-	function toggleSidebar() {
-		dispatch('toggleSidebar');
 	}
 
 	// Rich text helpers
@@ -110,6 +110,7 @@
 
 		// Preserve cursor and scroll
 		setTimeout(() => {
+			if (!textareaEl) return;
 			textareaEl.focus();
 			textareaEl.setSelectionRange(start + prefix.length, end + prefix.length);
 
@@ -152,18 +153,22 @@
 		}
 	}
 
-	$: resolvedContent = content.replace(internalPathRegex, (match, path) => {
-		const presignedUrl = $storageStore[path];
-		if (presignedUrl) {
-			// Extract alt text from the match
-			const altMatch = match.match(/!\[(.*?)\]/);
-			const altText = altMatch ? altMatch[1] : '';
-			return `![${altText}](${presignedUrl})`;
-		}
-		return match;
-	});
+	let resolvedContent = $derived(
+		content.replace(internalPathRegex, (match, path) => {
+			const presignedUrl = $storageStore[path];
+			if (presignedUrl) {
+				// Extract alt text from the match
+				const altMatch = match.match(/!\[(.*?)\]/);
+				const altText = altMatch ? altMatch[1] : '';
+				return `![${altText}](${presignedUrl})`;
+			}
+			return match;
+		})
+	);
 
-	$: parsedHtml = isEditing ? '' : DOMPurify.sanitize(marked.parse(resolvedContent) as string);
+	let parsedHtml = $derived(
+		isEditing ? '' : DOMPurify.sanitize(marked.parse(resolvedContent) as string)
+	);
 
 	function handleMarkdownClick(e: MouseEvent | KeyboardEvent) {
 		const target = e.target as HTMLElement;
@@ -206,26 +211,26 @@
 			<div class="flex items-center gap-2 shrink-0 pt-1">
 				{#if isEditing}
 					<button
-						on:click={toggleMode}
+						onclick={toggleMode}
 						class="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
 					>
 						<Eye class="w-3.5 h-3.5" />
-						<span class="hidden sm:inline">{$t('journal.previewToggle')}</span>
+						<span class="hidden sm:inline">{t('journal.previewToggle')}</span>
 					</button>
 					<button
-						on:click={handleSave}
+						onclick={handleSave}
 						class="px-4 py-1.5 text-xs font-black text-white bg-red-600 hover:bg-red-700 shadow-md shadow-red-500/20 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer"
 					>
 						<Save class="w-3.5 h-3.5" />
-						<span class="hidden sm:inline">{$t('journal.save')}</span>
+						<span class="hidden sm:inline">{t('journal.save')}</span>
 					</button>
 				{:else}
 					<button
-						on:click={toggleMode}
+						onclick={toggleMode}
 						class="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
 					>
 						<PenLine class="w-3.5 h-3.5" />
-						<span class="hidden sm:inline">{$t('journal.writeToggle')}</span>
+						<span class="hidden sm:inline">{t('journal.writeToggle')}</span>
 					</button>
 				{/if}
 			</div>
@@ -247,14 +252,14 @@
 						<button
 							class="p-1.5 md:p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer"
 							title="Heading 1"
-							on:click={() => insertText('# ')}
+							onclick={() => insertText('# ')}
 						>
 							<Heading1 class="w-4 h-4" />
 						</button>
 						<button
 							class="p-1.5 md:p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer"
 							title="Heading 2"
-							on:click={() => insertText('## ')}
+							onclick={() => insertText('## ')}
 						>
 							<Heading2 class="w-4 h-4" />
 						</button>
@@ -262,14 +267,14 @@
 						<button
 							class="p-1.5 md:p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer"
 							title="Bold"
-							on:click={() => insertText('**', '**')}
+							onclick={() => insertText('**', '**')}
 						>
 							<Bold class="w-4 h-4" />
 						</button>
 						<button
 							class="p-1.5 md:p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer"
 							title="Italic"
-							on:click={() => insertText('*', '*')}
+							onclick={() => insertText('*', '*')}
 						>
 							<Italic class="w-4 h-4" />
 						</button>
@@ -277,14 +282,14 @@
 						<button
 							class="p-1.5 md:p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer"
 							title="Quote"
-							on:click={() => insertText('> ')}
+							onclick={() => insertText('> ')}
 						>
 							<Quote class="w-4 h-4" />
 						</button>
 						<button
 							class="p-1.5 md:p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer"
 							title="Code"
-							on:click={() => insertText('`', '`')}
+							onclick={() => insertText('`', '`')}
 						>
 							<Code class="w-4 h-4" />
 						</button>
@@ -292,14 +297,14 @@
 						<button
 							class="p-1.5 md:p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer"
 							title="List"
-							on:click={() => insertText('- ')}
+							onclick={() => insertText('- ')}
 						>
 							<List class="w-4 h-4" />
 						</button>
 						<button
 							class="p-1.5 md:p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer"
 							title="Ordered List"
-							on:click={() => insertText('1. ')}
+							onclick={() => insertText('1. ')}
 						>
 							<ListOrdered class="w-4 h-4" />
 						</button>
@@ -307,7 +312,7 @@
 						<button
 							class="p-1.5 md:p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer"
 							title="Link"
-							on:click={() => insertText('[', '](url)')}
+							onclick={() => insertText('[', '](url)')}
 						>
 							<LinkIcon class="w-4 h-4" />
 						</button>
@@ -320,7 +325,7 @@
 								type="file"
 								accept="image/jpeg,image/png,image/webp"
 								class="hidden"
-								on:change={handleImageUpload}
+								onchange={handleImageUpload}
 								disabled={isUploading}
 							/>
 							{#if isUploading}
@@ -337,7 +342,7 @@
 						<button
 							class="p-1.5 md:p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer"
 							title="Divider"
-							on:click={() => insertText('\n---\n')}
+							onclick={() => insertText('\n---\n')}
 						>
 							<Minus class="w-4 h-4" />
 						</button>
@@ -352,7 +357,7 @@
 					<textarea
 						bind:this={textareaEl}
 						bind:value={content}
-						placeholder={$t('journal.startWriting')}
+						placeholder={t('journal.startWriting')}
 						class="w-full flex-1 min-h-[500px] resize-none outline-none bg-transparent text-gray-800 dark:text-gray-200 text-lg sm:text-xl leading-relaxed custom-scrollbar pb-20 font-serif placeholder:font-sans placeholder:text-gray-300 dark:placeholder:text-gray-700"
 					></textarea>
 				</div>
@@ -363,24 +368,25 @@
 						<!-- Empty View Mode -->
 						<div
 							class="flex flex-col items-center justify-center p-12 opacity-50 cursor-pointer pb-32"
-							on:click={toggleMode}
-							on:keydown={(e) => e.key === 'Enter' && toggleMode()}
+							onclick={toggleMode}
+							onkeydown={(e) => e.key === 'Enter' && toggleMode()}
 							role="button"
 							tabindex="0"
 						>
 							<PenLine class="w-10 h-10 mb-4 text-gray-300 dark:text-gray-700" />
 							<p class="text-sm font-medium text-gray-400 dark:text-gray-500 text-center max-w-sm">
-								{$t('journal.startWriting')}
+								{t('journal.startWriting')}
 							</p>
 						</div>
 					{:else}
 						<div
 							class="prose prose-red prose-img:rounded-xl prose-img:shadow-lg dark:prose-invert max-w-none prose-lg md:prose-xl prose-p:leading-relaxed font-serif w-full shrink-0 h-full cursor-zoom-in"
-							on:click={handleMarkdownClick}
-							on:keydown={handleKeyDown}
+							onclick={handleMarkdownClick}
+							onkeydown={handleKeyDown}
 							role="button"
 							tabindex="0"
 						>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html parsedHtml}
 						</div>
 					{/if}

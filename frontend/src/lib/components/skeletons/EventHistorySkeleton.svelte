@@ -5,7 +5,11 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
-	export let rows: number = 5;
+	interface Props {
+		rows?: number;
+	}
+
+	let { rows = 5 }: Props = $props();
 </script>
 
 <div
@@ -19,15 +23,15 @@
 				<tr
 					class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 				>
-					<th class="p-4">{$t('common.date')}</th>
-					<th class="p-4">{$t('theater.events.eventName')}</th>
+					<th class="p-4">{t('common.date')}</th>
+					<th class="p-4">{t('theater.events.eventName')}</th>
 					<th class="p-4">Type</th>
 					<th class="p-4">Members</th>
 					<th class="p-4 text-right">Link</th>
 				</tr>
 			</thead>
 			<tbody class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700">
-				{#each Array(rows) as _}
+				{#each Array(rows)}
 					<tr class="animate-pulse">
 						<!-- Date Column -->
 						<td class="p-4 whitespace-nowrap">

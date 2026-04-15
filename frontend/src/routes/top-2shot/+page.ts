@@ -1,4 +1,4 @@
-import { topTwoShotStore } from '$lib/stores/memories';
+import { topTwoShotStore } from '$lib/stores/memories.svelte';
 
 import { browser } from '$app/environment';
 

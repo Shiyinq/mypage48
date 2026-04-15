@@ -21,7 +21,9 @@ export function detectLocale(request: Request, cookies: Cookies, url: URL): Loca
 	// 3. Device/Browser Language (Accept-Language header)
 	const acceptLanguage = request.headers.get('accept-language');
 	if (acceptLanguage) {
-		const preferredLocales = acceptLanguage.split(',').map((l) => l.split(';')[0].trim().split('-')[0]);
+		const preferredLocales = acceptLanguage
+			.split(',')
+			.map((l) => l.split(';')[0].trim().split('-')[0]);
 		const found = preferredLocales.find((l) => l === 'id' || l === 'en' || l === 'ja');
 		if (found) return found as Locale;
 	}

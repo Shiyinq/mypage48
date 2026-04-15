@@ -1,53 +1,39 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
-	import { adminStore, isAdminUsersLoading } from '$lib/stores/admin';
+	import { adminStore, isAdminUsersLoading } from '$lib/stores/admin.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import TableSkeleton from '$lib/components/skeletons/TableSkeleton.svelte';
-	import {
-		Search,
-		X,
-		UserCheck,
-		CheckCircle,
-		XCircle,
-		ShieldCheck,
-		Mail,
-		Lock,
-		Eye,
-		EyeOff
-	} from 'lucide-svelte';
+	import { Search, X, UserCheck, ShieldCheck, Mail, Lock, Eye, EyeOff } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
 
-	const { t, locale } = useTranslation();
+	const { t } = useTranslation();
 
 	// Store state
-	$: usersList = $adminStore.users.data;
-	$: error = $adminStore.users.error;
-	$: usersHasMore = $adminStore.users.hasMore;
+	let usersList = $derived(adminStore.users.data);
+	let usersHasMore = $derived(adminStore.users.hasMore);
 
 	// Search state
-	let searchQuery = '';
+	let searchQuery = $state('');
 	let searchTimeout: ReturnType<typeof setTimeout>;
 
 	// Initial load state
-	let isInitialLoad = true;
+	let isInitialLoad = $state(true);
 
-	onMount(() => {
+	$effect(() => {
 		// Only load if data is not already cached
 		if (usersList.length === 0) {
 			adminStore.loadUsers();
 		} else {
 			isInitialLoad = false;
 		}
-	});
 
-	// Update initial load state when data is loaded
-	$: if (usersList.length > 0) {
-		isInitialLoad = false;
-	}
+		if (usersList.length > 0) {
+			isInitialLoad = false;
+		}
 
-	onDestroy(() => {
-		if (searchTimeout) clearTimeout(searchTimeout);
+		return () => {
+			if (searchTimeout) clearTimeout(searchTimeout);
+		};
 	});
 
 	function handleSearch() {
@@ -63,7 +49,7 @@
 	}
 
 	function loadMoreUsers() {
-		if (usersHasMore && !$isAdminUsersLoading) {
+		if (usersHasMore && !isAdminUsersLoading.value) {
 			adminStore.loadUsers();
 		}
 	}
@@ -75,7 +61,7 @@
 		return `${local.slice(0, 2)}***@${domain}`;
 	}
 
-	let revealedEmails = new Set<string>();
+	let revealedEmails = $state(new Set<string>());
 
 	function toggleEmail(userId: string) {
 		if (revealedEmails.has(userId)) {
@@ -94,7 +80,7 @@
 		<div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<UserCheck class="w-5 h-5 text-red-500" />
-				{$t('admin.users.title')} ({$adminStore.users.total})
+				{t('admin.users.title')} ({adminStore.users.total})
 			</h2>
 
 			<!-- Search Input -->
@@ -103,13 +89,13 @@
 				<input
 					type="text"
 					bind:value={searchQuery}
-					on:input={handleSearch}
-					placeholder={$t('admin.users.searchPlaceholder')}
+					oninput={handleSearch}
+					placeholder={t('admin.users.searchPlaceholder')}
 					class="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
 				/>
 				{#if searchQuery}
 					<button
-						on:click={clearSearch}
+						onclick={clearSearch}
 						class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
 					>
 						<X class="w-3 h-3" />
@@ -119,14 +105,14 @@
 		</div>
 	</div>
 
-	{#if isInitialLoad && $isAdminUsersLoading}
+	{#if isInitialLoad && isAdminUsersLoading.value}
 		<TableSkeleton
 			rows={10}
 			columns={[
-				$t('admin.users.table.userInfo'),
-				$t('admin.users.table.email'),
-				$t('admin.users.table.status'),
-				$t('admin.users.table.created')
+				t('admin.users.table.userInfo'),
+				t('admin.users.table.email'),
+				t('admin.users.table.status'),
+				t('admin.users.table.created')
 			]}
 		/>
 	{:else}
@@ -137,10 +123,10 @@
 						<tr
 							class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 						>
-							<th class="p-4">{$t('admin.users.table.userInfo')}</th>
-							<th class="p-4">{$t('admin.users.table.email')}</th>
-							<th class="p-4">{$t('admin.users.table.status')}</th>
-							<th class="p-4">{$t('admin.users.table.created')}</th>
+							<th class="p-4">{t('admin.users.table.userInfo')}</th>
+							<th class="p-4">{t('admin.users.table.email')}</th>
+							<th class="p-4">{t('admin.users.table.status')}</th>
+							<th class="p-4">{t('admin.users.table.created')}</th>
 						</tr>
 					</thead>
 					<tbody
@@ -183,7 +169,7 @@
 										</span>
 										<button
 											class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none transition-colors cursor-pointer"
-											on:click={() => toggleEmail(user.userId)}
+											onclick={() => toggleEmail(user.userId)}
 											title={revealedEmails.has(user.userId) ? 'Hide email' : 'Show email'}
 										>
 											{#if revealedEmails.has(user.userId)}
@@ -201,14 +187,14 @@
 												class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
 											>
 												<Mail class="w-3 h-3" />
-												{$t('admin.users.status.verified')}
+												{t('admin.users.status.verified')}
 											</span>
 										{:else}
 											<span
 												class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
 											>
 												<Mail class="w-3 h-3" />
-												{$t('admin.users.status.unverified')}
+												{t('admin.users.status.unverified')}
 											</span>
 										{/if}
 										{#if user.isAccountLocked}
@@ -216,14 +202,14 @@
 												class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
 											>
 												<Lock class="w-3 h-3" />
-												{$t('admin.users.status.locked')}
+												{t('admin.users.status.locked')}
 											</span>
 										{/if}
 									</div>
 								</td>
 								<td class="p-4">
 									<span class="text-gray-600 dark:text-gray-400 text-sm"
-										>{$formatDate(user.createdAt, {
+										>{formatDate(user.createdAt, {
 											year: 'numeric',
 											month: 'short',
 											day: 'numeric'
@@ -239,15 +225,15 @@
 
 		<!-- Infinite Scroll Sentinel -->
 		{#if usersHasMore}
-			<div class="mt-4" use:infiniteScroll on:intersect={loadMoreUsers}>
-				{#if $isAdminUsersLoading}
+			<div class="mt-4" use:infiniteScroll onintersect={loadMoreUsers}>
+				{#if isAdminUsersLoading.value}
 					<TableSkeleton
 						rows={3}
 						columns={[
-							$t('admin.users.table.userInfo'),
-							$t('admin.users.table.email'),
-							$t('admin.users.table.status'),
-							$t('admin.users.table.created')
+							t('admin.users.table.userInfo'),
+							t('admin.users.table.email'),
+							t('admin.users.table.status'),
+							t('admin.users.table.created')
 						]}
 						showHeader={false}
 					/>
@@ -255,11 +241,11 @@
 			</div>
 		{:else if usersList.length > 0}
 			<div class="py-12 text-center text-gray-400 text-sm">
-				{$t('admin.users.noMoreUsers')}
+				{t('admin.users.noMoreUsers')}
 			</div>
 		{:else}
 			<div class="py-20 text-center text-gray-500">
-				{$t('admin.users.noUsersFound', { query: searchQuery })}
+				{t('admin.users.noUsersFound', { query: searchQuery })}
 			</div>
 		{/if}
 	{/if}

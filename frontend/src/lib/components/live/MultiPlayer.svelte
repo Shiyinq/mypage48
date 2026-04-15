@@ -1,54 +1,51 @@
 <script lang="ts">
-	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
-	import { fade, scale, slide } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { live as liveApi } from '$lib/apis/live';
 	import { API_BASE } from '$lib/apis/client';
-	import { RefreshCw, AlertCircle, Circle, Square } from 'lucide-svelte';
+	import { captureVideoScreenshot, startVideoRecording, downloadRecording } from '$lib/utils/media';
+	import { RefreshCw, AlertCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import GiftOverlay from './GiftOverlay.svelte';
 
-	import { giftEvents, type GiftEvent } from '$lib/stores/gift';
-	import { captureVideoScreenshot, startVideoRecording, downloadRecording } from '$lib/utils/media';
-	import LiveStats from './LiveStats.svelte';
-
 	const { t } = useTranslation();
 
-	export let platform = ''; // 'showroom' or 'idn'
-	export let id = ''; // room_id or live_id
-	export let volume = 1;
-	export let muted = false;
-	export let roomIdentifier = ''; // IDN username
-
-	function getExternalMediaUrl(url?: string) {
-		if (!url) return '';
-		if (url.includes('idn.app')) {
-			try {
-				const u = new URL(url);
-				u.searchParams.delete('timestamp');
-				return u.toString();
-			} catch (e) {
-				return url;
-			}
-		}
-		return url;
-	}
-
-	let videoElement: HTMLVideoElement;
+	let videoElement: HTMLVideoElement | undefined = $state();
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let hls: any;
-	let loading = true;
-	let error: string | null = null;
+	let loading = $state(true);
+	let error: string | null = $state(null);
 	let initializing = false;
 	let currentPlatform = '';
 	let currentId = '';
-	let isBuffering = false;
-	let autoplayBlocked = false;
+	let isBuffering = $state(false);
+	let autoplayBlocked = $state(false);
 
-	export let isRecording = false;
-	let mediaRecorder: any = null;
-	let recordedChunks: any[] = [];
+	interface Props {
+		platform?: string; // 'showroom' or 'idn'
+		id?: string; // room_id or live_id
+		volume?: number;
+		muted?: boolean;
+		roomIdentifier?: string; // IDN username
+		isRecording?: boolean;
+		onoffline?: () => void;
+	}
 
-	let isEffectivelyMuted = false;
-	$: isEffectivelyMuted = muted || (isNaN(Number(volume)) ? false : Number(volume) === 0);
+	let {
+		platform = '',
+		id = '',
+		volume = 1,
+		muted = false,
+		roomIdentifier = '',
+		isRecording = $bindable(false),
+		onoffline
+	}: Props = $props();
+	let mediaRecorder: MediaRecorder | null = null;
+	let recordedChunks: Blob[] = [];
+
+	let isEffectivelyMuted = $state(false);
+	$effect(() => {
+		isEffectivelyMuted = muted || (isNaN(Number(volume)) ? false : Number(volume) === 0);
+	});
 
 	function syncAudioState() {
 		if (!videoElement) return;
@@ -73,12 +70,14 @@
 		}
 	}
 
-	$: if (videoElement || volume !== undefined || muted !== undefined) {
-		syncAudioState();
-	}
+	$effect(() => {
+		if (videoElement || volume !== undefined || muted !== undefined) {
+			syncAudioState();
+		}
+	});
 
 	// Hardware Hammer: Reinforce mute every 200ms for 10s after playback starts
-	let hammerInterval: any;
+	let hammerInterval: ReturnType<typeof setInterval> | undefined;
 	function startHammer() {
 		if (hammerInterval) clearInterval(hammerInterval);
 		let count = 0;
@@ -90,8 +89,6 @@
 	}
 
 	// Floating Gift Logic - Handled by GiftOverlay component
-
-	const dispatch = createEventDispatcher();
 
 	async function initPlayer() {
 		if (typeof window === 'undefined' || initializing) return;
@@ -121,8 +118,10 @@
 					streamUrl = `${API_BASE}/jkt48/live/proxy?url=${encodeURIComponent(streamUrl)}`;
 				}
 
-				if ((window as any).Hls && (window as any).Hls.isSupported()) {
-					const Hls = (window as any).Hls;
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const w = window as any;
+				if (w.Hls && w.Hls.isSupported()) {
+					const Hls = w.Hls;
 					hls = new Hls({
 						enableWorker: true,
 						lowLatencyMode: true,
@@ -135,7 +134,7 @@
 					hls.on(Hls.Events.MANIFEST_PARSED, () => {
 						syncAudioState(); // Force sync when starting
 						startHammer(); // Start the hammer
-						videoElement.play().catch((e) => {
+						videoElement?.play().catch((e: Error) => {
 							if (e.name === 'NotAllowedError') {
 								autoplayBlocked = true;
 							}
@@ -143,59 +142,67 @@
 						loading = false;
 					});
 
-					hls.on(Hls.Events.ERROR, (event: any, data: any) => {
-						if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
-							console.log('Proxy/Stream 404 detected, triggering offline');
-							dispatch('offline');
-							error = $t('theater.live.offline');
-							hls.destroy();
-							loading = false;
-							return;
-						}
+					hls.on(
+						Hls.Events.ERROR,
+						(
+							event: unknown,
+							data: { type: string; fatal?: boolean; details?: string; response?: { code: number } }
+						) => {
+							if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
+								console.log('Proxy/Stream 404 detected, triggering offline');
+								onoffline?.();
+								error = t('theater.live.offline');
+								if (hls) hls.destroy();
+								loading = false;
+								return;
+							}
 
-						if (data.fatal) {
-							switch (data.type) {
-								case Hls.ErrorTypes.NETWORK_ERROR:
-									console.log('Fatal network error encountered, try to recover');
-									hls.startLoad();
-									break;
-								case Hls.ErrorTypes.MEDIA_ERROR:
-									console.log('Fatal media error encountered, try to recover');
-									hls.recoverMediaError();
-									break;
-								default:
-									console.error('Fatal unrecoverable error:', data);
-									error = $t('theater.live.multiview.stream_error', { details: data.details });
-									hls.destroy();
-									loading = false;
-									break;
+							if (data.fatal) {
+								switch (data.type) {
+									case Hls.ErrorTypes.NETWORK_ERROR:
+										console.log('Fatal network error encountered, try to recover');
+										hls.startLoad();
+										break;
+									case Hls.ErrorTypes.MEDIA_ERROR:
+										console.log('Fatal media error encountered, try to recover');
+										hls.recoverMediaError();
+										break;
+									default:
+										console.error('Fatal unrecoverable error:', data);
+										error = t('theater.live.multiview.stream_error', {
+											details: data.details || 'Unknown error'
+										});
+										if (hls) hls.destroy();
+										loading = false;
+										break;
+								}
 							}
 						}
-					});
+					);
 				} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 					videoElement.src = streamUrl;
 					videoElement.addEventListener('loadedmetadata', () => {
-						videoElement.play().catch((e) => {
-							if (e.name === 'NotAllowedError') {
+						videoElement?.play().catch((_e: Error) => {
+							if (_e.name === 'NotAllowedError') {
 								autoplayBlocked = true;
 							}
 						});
 						loading = false;
 					});
 				} else {
-					error = $t('theater.live.multiview.hls_not_supported');
+					error = t('theater.live.multiview.hls_not_supported');
 					loading = false;
 				}
 			} else {
-				error = $t('theater.live.multiview.no_stream_found');
+				error = t('theater.live.multiview.no_stream_found');
 				loading = false;
 			}
-		} catch (e: any) {
-			console.error('MultiPlayer init failed:', e);
-			if (e?.status === 404) {
-				dispatch('offline');
+		} catch (_e: unknown) {
+			console.error('MultiPlayer init failed:', _e);
+			if ((_e as { status?: number })?.status === 404) {
+				onoffline?.();
 			}
-			error = $t('theater.live.multiview.failed_load_stream');
+			error = t('theater.live.multiview.failed_load_stream');
 			loading = false;
 		} finally {
 			initializing = false;
@@ -205,15 +212,15 @@
 	function retryPlayback() {
 		if (!videoElement) return;
 		autoplayBlocked = false;
-		videoElement.play().catch((e) => {
-			if (e.name === 'NotAllowedError') {
+		videoElement.play().catch((_e) => {
+			if (_e.name === 'NotAllowedError') {
 				autoplayBlocked = true;
 			}
 		});
 	}
 
 	export function takeScreenshot(memberName?: string) {
-		captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
+		if (videoElement) captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
 	}
 
 	export async function toggleRecording(memberName?: string) {
@@ -237,61 +244,69 @@
 		}
 	}
 
-	onMount(() => {
-		if ((window as any).Hls) {
-			initPlayer();
-		} else {
-			// Checklist to ensure only one script is added
-			if (!document.getElementById('hls-js-script')) {
-				const script = document.createElement('script');
-				script.id = 'hls-js-script';
-				script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
-				script.onload = () => {
-					// Trigger init for all players waiting
-					window.dispatchEvent(new CustomEvent('hls-js-loaded'));
-					initPlayer();
-				};
-				document.head.appendChild(script);
+	$effect(() => {
+		if (platform && id && videoElement) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const w = window as any;
+			if (w.Hls) {
+				initPlayer();
 			} else {
-				// Wait for the script to load if already added by another component
-				window.addEventListener('hls-js-loaded', initPlayer, { once: true });
+				// Checklist to ensure only one script is added
+				if (!document.getElementById('hls-js-script')) {
+					const script = document.createElement('script');
+					script.id = 'hls-js-script';
+					script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+					script.onload = () => {
+						// Trigger init for all players waiting
+						window.dispatchEvent(new CustomEvent('hls-js-loaded'));
+						initPlayer();
+					};
+					document.head.appendChild(script);
+				} else {
+					// Wait for the script to load if already added by another component
+					const handleLoaded = () => initPlayer();
+					window.addEventListener('hls-js-loaded', handleLoaded, { once: true });
+				}
 			}
 		}
-	});
 
-	onDestroy(() => {
-		if (hls) hls.destroy();
+		return () => {
+			if (hls) {
+				hls.destroy();
+				hls = null;
+			}
+			if (hammerInterval) {
+				clearInterval(hammerInterval);
+			}
+		};
 	});
-
-	// Re-init if platform or id changes
-	$: if (platform && id && videoElement) {
-		initPlayer();
-	}
 </script>
 
 <div class="relative w-full h-full bg-black group/player overflow-hidden">
-	<!-- svelte-ignore a11y-media-has-caption -->
 	<video
 		bind:this={videoElement}
 		class="w-full h-full object-contain"
 		playsinline
 		muted={isEffectivelyMuted}
-		on:play={syncAudioState}
-		on:playing={() => {
+		onplay={syncAudioState}
+		onplaying={() => {
 			syncAudioState();
 			isBuffering = false;
 		}}
-		on:waiting={() => (isBuffering = true)}
-		on:stalled={() => (isBuffering = true)}
-		on:canplay={() => (isBuffering = false)}
-		on:pause={() => (isBuffering = false)}
-		on:volumechange={syncAudioState}
+		onwaiting={() => (isBuffering = true)}
+		onstalled={() => (isBuffering = true)}
+		oncanplay={() => (isBuffering = false)}
+		onpause={() => (isBuffering = false)}
+		onvolumechange={syncAudioState}
 	></video>
 
 	{#if autoplayBlocked}
 		<button
 			class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] z-20 group/autoplay cursor-pointer"
-			on:click|stopPropagation={retryPlayback}
+			onclick={(e) => {
+				e.stopPropagation();
+				retryPlayback();
+			}}
 		>
 			<div
 				class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/40 group-hover/autoplay:scale-110 group-hover/autoplay:bg-white/30 transition-all duration-300"
@@ -299,10 +314,10 @@
 				<RefreshCw class="w-8 h-8 text-white" />
 			</div>
 			<p class="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-white">
-				{$t('theater.live.multiview.tap_to_play')}
+				{t('theater.live.multiview.tap_to_play')}
 			</p>
 			<p class="mt-1 text-white/40 text-[8px] font-bold uppercase tracking-widest text-center px-4">
-				{$t('theater.live.autoplay_description')}
+				{t('theater.live.autoplay_description')}
 			</p>
 		</button>
 	{:else if isBuffering && !loading}
@@ -332,10 +347,10 @@
 			<AlertCircle class="w-8 h-8 text-red-500 mb-2 opacity-50" />
 			<p class="text-[10px] font-black uppercase tracking-widest text-zinc-500">{error}</p>
 			<button
-				on:click={initPlayer}
+				onclick={initPlayer}
 				class="mt-4 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold rounded-lg transition-colors"
 			>
-				{$t('theater.live.multiview.retry')}
+				{t('theater.live.multiview.retry')}
 			</button>
 		</div>
 	{/if}

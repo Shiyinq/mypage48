@@ -1,24 +1,21 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
-		liveStore,
-		liveList,
 		currentStream,
 		otherLive,
 		liveLoading,
-		now
-	} from '$lib/stores/live';
-	import { showToast } from '$lib/stores/toast';
-	import { isImmersive } from '$lib/stores/ui';
+		liveList,
+		liveStore
+	} from '$lib/stores/live.svelte';
+	import { showToast, isImmersive, theme, setTheme } from '$lib/stores';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveStatus } from '$lib/types';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import GiftOverlay from '$lib/components/live/GiftOverlay.svelte';
-	import { theme, setTheme } from '$lib/stores/theme';
+	import SEO from '$lib/components/SEO.svelte';
 	import {
 		ArrowLeft,
 		Users,
@@ -55,63 +52,54 @@
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 
-	/** Base path determines back-links and other-live member hrefs.
-	 *  Use '/jkt48/live' for public pages, '/theater/live' for theater pages. */
-	export let basePath: string = '/jkt48/live';
-	$: isTheater = basePath.startsWith('/theater');
+	interface Props {
+		/** Base path determines back-links and other-live member hrefs.
+		 *  Use '/jkt48/live' for public pages, '/theater/live' for theater pages. */
+		basePath?: string;
+	}
+
+	let { basePath = '/jkt48/live' }: Props = $props();
 
 	/** Placeholder header for mobile sync - only for theater mode */
 	const { t } = useTranslation();
-	$: ({ platform, id } = $page.params);
 
-	let videoElement: HTMLVideoElement;
+	let videoElement: HTMLVideoElement | undefined = $state();
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let hls: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let Hls: any;
-	let loadingOtherLive = false;
-	let initializing = false;
-	let lastInitializedId = '';
+	let loadingOtherLive = $state(false);
+	let initializing = $state(false);
+	let lastInitializedId = $state('');
 	let initCount = 0;
-	let chatVisible = true;
-	let isFocusMode = false; // Will be set in onMount for desktop/laptop
-	let isRecording = false;
-	let mediaRecorder: any = null;
-	let recordedChunks: any[] = [];
-	let sidebarMode: 'chat' | 'list' = 'chat';
-	let volume = 1;
-	let isMuted = false;
-	let currentTime = 0;
-	let duration = 0;
-	let isPaused = true;
-	let bufferedEnd = 0;
-	let peakDuration = 0;
-	let isFullscreen = false;
-	let showControls = true;
-	let controlsTimeout: any;
-	let playerContainer: HTMLDivElement;
-	let recordingDuration = 0;
-	let recordingTimer: any = null;
-	let refreshInterval: any = null;
-	let ignoreNextVideoClick = false;
-	let rotation = 0;
-	let videoWidth = 0;
-	let videoHeight = 0;
-	let playerWidth = 0;
-	let playerHeight = 0;
-	let isBuffering = false;
-	let autoplayBlocked = false;
+	let chatVisible = $state(true);
+	let isFocusMode = $state(false); // Will be set in onMount for desktop/laptop
+	let isRecording = $state(false);
+	let mediaRecorder: MediaRecorder | null = null;
+	let recordedChunks: Blob[] = [];
+	let sidebarMode: 'chat' | 'list' = $state('chat');
+	let volume = $state(1);
+	let isMuted = $state(false);
+	let currentTime = $state(0);
+	let duration = $state(0);
+	let isPaused = $state(true);
 
-	$: videoAspectRatio = videoWidth > 0 && videoHeight > 0 ? videoWidth / videoHeight : 16 / 9;
-	$: streamFromList = $liveList.find(
-		(s) =>
-			s.platform === platform && (s.room_id === id || s.live_id === id || s.room_url_key === id)
-	);
-	$: streamTitle = streamFromList?.title || '';
-	$: originalLiveUrl =
-		platform === 'idn'
-			? `https://www.idn.app/${streamFromList?.room_url_key?.replace('@', '') || ''}/live/${streamFromList?.live_id || ''}`
-			: platform === 'showroom'
-				? `https://www.showroom-live.com/r/${streamFromList?.room_url_key || ''}`
-				: '#';
+	let peakDuration = $state(0);
+	let isFullscreen = $state(false);
+	let showControls = $state(true);
+	let controlsTimeout: ReturnType<typeof setTimeout> | undefined = $state();
+	let playerContainer: HTMLDivElement | undefined = $state();
+	let chatStatus: 'connecting' | 'connected' | 'disconnected' = $state('connecting');
+	let recordingDuration = $state(0);
+	let recordingTimer: ReturnType<typeof setInterval> | null = null;
+	let ignoreNextVideoClick = $state(false);
+	let rotation = $state(0);
+	// let videoWidth = $state(0);
+	// let videoHeight = $state(0);
+	let playerWidth = $state(0);
+	let playerHeight = $state(0);
+	let isBuffering = $state(false);
+	let autoplayBlocked = $state(false);
 
 	function rotateVideo() {
 		rotation += 90;
@@ -133,23 +121,9 @@
 		resetControlsTimeout();
 	}
 
-	$: if (currentTime > peakDuration) peakDuration = currentTime;
-	$: if (duration > 0 && duration !== Infinity && duration > peakDuration) peakDuration = duration;
-	$: displayDuration = peakDuration || currentTime;
-	$: isLive = duration === Infinity || isNaN(duration) || duration === 0;
-
-	$: memberName = $currentStream?.member?.name || null;
-	$: roomIdentifier = $currentStream?.room_identifier || null;
-	$: streamingUrls = $currentStream?.streaming_urls || [];
-	$: startAt = $currentStream?.start_at || null;
-
-	$: if (platform && id && lastInitializedId !== `${platform}-${id}`) {
-		lastInitializedId = `${platform}-${id}`;
-		initPlayer();
-		fetchOtherLive();
-	}
-
-	function getMemberId(m: LiveStatus | any) {
+	function getMemberId(
+		m: LiveStatus | { platform?: string; room_id?: string; room_url_key?: string; live_id?: string }
+	) {
 		if (m.platform === 'showroom') return m.room_id || m.room_url_key;
 		return m.live_id || m.room_url_key;
 	}
@@ -173,7 +147,7 @@
 
 			if (currentInit !== initCount) return;
 
-			const current = $currentStream;
+			const current = currentStream.value;
 			if (current && current.streaming_urls && current.streaming_urls.length > 0) {
 				const rawUrl = current.streaming_urls[0]?.url;
 				if (!rawUrl) return;
@@ -182,7 +156,6 @@
 
 				// Use proxy for IDN or Showroom to bypass CORS
 				if (p === 'idn' || p === 'showroom') {
-					// @ts-ignore
 					streamUrl = `${API_BASE}/jkt48/live/proxy?url=${encodeURIComponent(streamUrl as string)}`;
 				}
 
@@ -193,7 +166,7 @@
 						hls.loadSource(streamUrl);
 						hls.attachMedia(videoElement);
 						hls.on(Hls.Events.MANIFEST_PARSED, () => {
-							videoElement.play().catch((e) => {
+							videoElement?.play().catch((e: Error) => {
 								if (e.name === 'NotAllowedError') {
 									autoplayBlocked = true;
 									isPaused = true;
@@ -202,17 +175,20 @@
 							resetControlsTimeout();
 						});
 
-						hls.on(Hls.Events.ERROR, (event: any, data: any) => {
-							if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
-								console.log('Proxy/Stream 404 detected, redirecting to list');
-								showToast($t('theater.live.offline'), 'error');
-								goto(basePath);
+						hls.on(
+							Hls.Events.ERROR,
+							(event: unknown, data: { type: string; response?: { code: number } }) => {
+								if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
+									console.log('Proxy/Stream 404 detected, redirecting to list');
+									showToast(t('theater.live.offline'), 'error');
+									goto(basePath);
+								}
 							}
-						});
+						);
 					} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 						videoElement.src = streamUrl;
 						videoElement.addEventListener('loadedmetadata', () => {
-							videoElement.play().catch((e) => {
+							videoElement?.play().catch((e: Error) => {
 								if (e.name === 'NotAllowedError') {
 									autoplayBlocked = true;
 									isPaused = true;
@@ -223,12 +199,12 @@
 					}
 				}
 			}
-		} catch (e: any) {
+		} catch (e: unknown) {
 			console.error('Player init failed:', e);
 			if (currentInit !== initCount) return;
 
-			if (e?.status === 404) {
-				showToast($t('theater.live.offline'), 'error');
+			if ((e as { status?: number })?.status === 404) {
+				showToast(t('theater.live.offline'), 'error');
 				goto(basePath);
 			}
 		} finally {
@@ -252,8 +228,16 @@
 			loadingOtherLive = false;
 		}
 	}
-	onMount(() => {
-		const isLaptop = window.innerWidth >= 1024;
+	$effect(() => {
+		if (platform && id && lastInitializedId !== `${platform}-${id}`) {
+			lastInitializedId = `${platform}-${id}`;
+			initPlayer();
+			fetchOtherLive();
+		}
+	});
+
+	$effect(() => {
+		const isLaptop = typeof window !== 'undefined' && window.innerWidth >= 1024;
 		if (isLaptop) {
 			isFocusMode = true;
 			isImmersive.set(true);
@@ -268,30 +252,29 @@
 			}
 		}
 
-		refreshInterval = setInterval(() => {
+		const refreshInterval = setInterval(() => {
 			if (platform && id && !initializing) {
 				liveStore.refreshStreamInfo(platform, id).catch((e) => {
 					if (e?.status === 404) {
-						showToast($t('theater.live.offline'), 'error');
+						showToast(t('theater.live.offline'), 'error');
 						goto(basePath);
 					}
 				});
 				fetchOtherLive();
 			}
 		}, 30000);
-	});
 
-	onDestroy(() => {
-		if (hls) hls.destroy();
-		if (recordingTimer) clearInterval(recordingTimer);
-		if (refreshInterval) clearInterval(refreshInterval);
-		liveStore.reset();
-		isImmersive.set(false);
+		return () => {
+			clearInterval(refreshInterval);
+			if (hls) hls.destroy();
+			if (recordingTimer) clearInterval(recordingTimer);
+			liveStore.reset();
+			isImmersive.set(false);
+			if (typeof document !== 'undefined') {
+				document.body.style.overflow = '';
+			}
+		};
 	});
-
-	function toggleChat() {
-		chatVisible = !chatVisible;
-	}
 
 	function toggleFocus() {
 		isFocusMode = !isFocusMode;
@@ -327,12 +310,6 @@
 			if (buffered.length > 0) {
 				const furthestBuffer = buffered.end(buffered.length - 1);
 				if (furthestBuffer > peakDuration) peakDuration = furthestBuffer;
-				for (let i = 0; i < buffered.length; i++) {
-					if (currentTime >= buffered.start(i) && currentTime <= buffered.end(i)) {
-						bufferedEnd = buffered.end(i);
-						break;
-					}
-				}
 			}
 			const nativeDuration = videoElement.duration;
 			if (nativeDuration !== Infinity && !isNaN(nativeDuration)) {
@@ -342,7 +319,7 @@
 	}
 
 	function takeScreenshot() {
-		captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
+		if (videoElement) captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
 	}
 
 	async function toggleRecording() {
@@ -378,11 +355,12 @@
 	}
 
 	function toggleTheme() {
-		setTheme($theme === 'dark' ? 'light' : 'dark');
+		setTheme(theme.value === 'dark' ? 'light' : 'dark');
 	}
 
-	function handleVolumeChange(e: any) {
-		volume = parseFloat(e.target.value);
+	function handleVolumeChange(e: Event) {
+		const target = e.target as HTMLInputElement;
+		volume = parseFloat(target.value);
 		if (videoElement) {
 			videoElement.volume = volume;
 			if (volume > 0) isMuted = false;
@@ -391,10 +369,14 @@
 
 	async function togglePiP() {
 		try {
-			if ((document as any).pictureInPictureElement) {
-				await (document as any).exitPictureInPicture();
+			if ((document as Document & { pictureInPictureElement?: Element }).pictureInPictureElement) {
+				await (
+					document as Document & { exitPictureInPicture: () => Promise<void> }
+				).exitPictureInPicture();
 			} else if (videoElement) {
-				await (videoElement as any).requestPictureInPicture();
+				await (
+					videoElement as HTMLVideoElement & { requestPictureInPicture: () => Promise<void> }
+				).requestPictureInPicture();
 			}
 		} catch (error) {
 			console.error('PiP failed', error);
@@ -414,9 +396,10 @@
 		}
 	}
 
-	function handleSeek(e: any) {
+	function handleSeek(e: Event) {
 		if (videoElement) {
-			videoElement.currentTime = parseFloat(e.target.value);
+			const target = e.target as HTMLInputElement;
+			videoElement.currentTime = parseFloat(target.value);
 		}
 	}
 
@@ -455,11 +438,43 @@
 		if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 		return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 	}
+	let isTheater = $derived(basePath.startsWith('/theater'));
+	let { platform, id } = $derived($page.params);
+
+	let streamFromList = $derived(
+		liveList.value.find(
+			(s) =>
+				s.platform === platform && (s.room_id === id || s.live_id === id || s.room_url_key === id)
+		)
+	);
+	let streamTitle = $derived(streamFromList?.title || '');
+	let originalLiveUrl = $derived(
+		platform === 'idn'
+			? `https://www.idn.app/${streamFromList?.room_url_key?.replace('@', '') || ''}/live/${streamFromList?.live_id || ''}`
+			: platform === 'showroom'
+				? `https://www.showroom-live.com/r/${streamFromList?.room_url_key || ''}`
+				: '#'
+	);
+	$effect(() => {
+		if (currentTime > peakDuration) peakDuration = currentTime;
+	});
+	$effect(() => {
+		if (duration > 0 && duration !== Infinity && duration > peakDuration) peakDuration = duration;
+	});
+	let displayDuration = $derived(peakDuration || currentTime);
+
+	let memberName = $derived(currentStream.value?.member?.name || null);
+	let roomIdentifier = $derived(currentStream.value?.room_identifier || null);
+	let startAt = $derived(currentStream.value?.start_at || null);
 </script>
 
-<svelte:head>
-	<title>Live Streaming | MyPage48</title>
-</svelte:head>
+<SEO
+	title={memberName ? `${memberName} - Live` : t('theater.live.seoTitle')}
+	path={$page.url.pathname}
+	description={memberName
+		? t('theater.live.seoMemberDescription', { name: memberName })
+		: t('theater.live.seoDescription')}
+/>
 
 <div
 	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out overflow-x-hidden {isFocusMode
@@ -490,7 +505,7 @@
 				<a
 					href={basePath}
 					class="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
-					title={$t('theater.live.back')}
+					title={t('theater.live.back')}
 				>
 					<ArrowLeft size={20} />
 				</a>
@@ -513,13 +528,17 @@
 
 			{#if !isFullscreen}
 				<div class="hidden sm:flex items-center gap-3 flex-shrink-0">
-					<LiveStats view_num={$currentStream?.view_num} start_at={startAt} variant="detailed" />
+					<LiveStats
+						view_num={currentStream.value?.view_num}
+						start_at={startAt}
+						variant="detailed"
+					/>
 					<a
 						href={originalLiveUrl}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group/platform flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-transform"
-						title={$t('theater.live.openOriginal')}
+						title={t('theater.live.openOriginal')}
 					>
 						<PlatformLogo platform={platform || ''} size="md" />
 						<div
@@ -547,7 +566,7 @@
 						></div>
 						<div>
 							<div class="text-white font-black text-xl uppercase tracking-[0.2em] mb-2">
-								{$t('theater.live.loading_stream')}
+								{t('theater.live.loading_stream')}
 							</div>
 							<div class="text-white/40 text-xs font-medium uppercase tracking-widest">
 								{(platform || 'Live').toUpperCase()} Stream Gateway
@@ -555,7 +574,7 @@
 						</div>
 					</div>
 				</div>
-			{:else if !$currentStream}
+			{:else if !currentStream.value}
 				<div
 					class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 text-white gap-6 px-6 text-center"
 				>
@@ -576,25 +595,26 @@
 						</div>
 					</div>
 					<div>
-						<h2 class="text-2xl font-black mb-2 uppercase tracking-tighter">Stream Offline</h2>
+						<h2 class="text-2xl font-black mb-2 uppercase tracking-tighter">
+							{t('theater.live.offline_title')}
+						</h2>
 						<p class="text-zinc-500 max-w-sm mx-auto text-xs sm:text-sm px-4">
-							{streamFromList?.member?.name || 'Member'} is not live at the moment. This session might
-							have ended or is currently unavailable.
+							{t('theater.live.offline_description', {
+								name: streamFromList?.member?.name || 'Member'
+							})}
 						</p>
 					</div>
 					<a
 						href={basePath}
 						class="px-8 py-3 rounded-2xl bg-white text-zinc-950 font-black uppercase tracking-widest text-xs hover:bg-red-600 hover:text-white transition-all"
 					>
-						Return Home
+						{t('theater.live.return_home')}
 					</a>
 				</div>
 			{/if}
 
-			<!-- svelte-ignore a11y-no-static-element-interactions -->
-			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<!-- svelte-ignore a11y-mouse-events-have-key-events -->
+			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<div
 				bind:this={playerContainer}
 				bind:clientWidth={playerWidth}
@@ -606,14 +626,14 @@
 					: ''}"
 				role="region"
 				aria-label="Video Player"
-				on:fullscreenchange={handleFullscreenChange}
-				on:mousemove={() => resetControlsTimeout(false)}
-				on:mouseleave={() => {
+				onfullscreenchange={handleFullscreenChange}
+				onmousemove={() => resetControlsTimeout(false)}
+				onmouseleave={() => {
 					showControls = false;
 					clearTimeout(controlsTimeout);
 				}}
-				on:click={() => resetControlsTimeout(false)}
-				on:touchstart={() => resetControlsTimeout(true)}
+				onclick={() => resetControlsTimeout(false)}
+				ontouchstart={() => resetControlsTimeout(true)}
 			>
 				<!-- Top Info Overlay -->
 				<div
@@ -647,7 +667,7 @@
 							<!-- Stats (Mobile Only) -->
 							<div class="flex sm:hidden items-center gap-3 flex-shrink-0 mt-0.5">
 								<LiveStats
-									view_num={$currentStream?.view_num}
+									view_num={currentStream.value?.view_num}
 									start_at={startAt}
 									variant="detailed"
 								/>
@@ -671,7 +691,7 @@
 						{#if isFullscreen}
 							<div class="hidden sm:flex items-center gap-3 flex-shrink-0 mt-1">
 								<LiveStats
-									view_num={$currentStream?.view_num}
+									view_num={currentStream.value?.view_num}
 									start_at={startAt}
 									variant="detailed"
 								/>
@@ -693,8 +713,6 @@
 					</div>
 				</div>
 
-				<!-- svelte-ignore a11y-media-has-caption -->
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<video
 					bind:this={videoElement}
 					class="relative z-10 w-full h-full object-contain cursor-pointer bg-transparent transition-transform duration-300"
@@ -702,36 +720,41 @@
 					crossorigin="anonymous"
 					autoplay
 					playsinline
-					on:timeupdate={() => {
+					ontimeupdate={() => {
 						currentTime = videoElement?.currentTime || 0;
 						updateBufferAndDuration();
 					}}
-					on:loadedmetadata={() => {
+					onloadedmetadata={() => {
 						duration = videoElement?.duration || 0;
-						videoWidth = videoElement?.videoWidth || 0;
-						videoHeight = videoElement?.videoHeight || 0;
+						// videoWidth = videoElement?.videoWidth || 0;
+						// videoHeight = videoElement?.videoHeight || 0;
 						updateBufferAndDuration();
 					}}
-					on:play={() => (isPaused = false)}
-					on:pause={() => (isPaused = true)}
-					on:click={() => {
+					onplay={() => (isPaused = false)}
+					onpause={() => {
+						isPaused = true;
+						isBuffering = false;
+					}}
+					onclick={() => {
 						if (ignoreNextVideoClick) {
 							ignoreNextVideoClick = false;
 							return;
 						}
 						togglePlayPause();
 					}}
-					on:waiting={() => (isBuffering = true)}
-					on:playing={() => (isBuffering = false)}
-					on:stalled={() => (isBuffering = true)}
-					on:canplay={() => (isBuffering = false)}
-					on:pause={() => (isBuffering = false)}
+					onwaiting={() => (isBuffering = true)}
+					onplaying={() => (isBuffering = false)}
+					onstalled={() => (isBuffering = true)}
+					oncanplay={() => (isBuffering = false)}
 				></video>
 
 				{#if autoplayBlocked}
 					<button
 						class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-sm z-30 group/autoplay cursor-pointer"
-						on:click|stopPropagation={retryPlayback}
+						onclick={(e) => {
+							e.stopPropagation();
+							retryPlayback();
+						}}
 					>
 						<div
 							class="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20 group-hover/autoplay:scale-110 group-hover/autoplay:bg-white/20 transition-all duration-300"
@@ -740,10 +763,10 @@
 						</div>
 						<div class="mt-6 text-center">
 							<h3 class="text-white font-black text-lg uppercase tracking-[0.2em] mb-1">
-								{$t('theater.live.tap_to_play')}
+								{t('theater.live.tap_to_play')}
 							</h3>
 							<p class="text-white/40 text-[10px] font-bold uppercase tracking-widest">
-								{$t('theater.live.autoplay_description')}
+								{t('theater.live.autoplay_description')}
 							</p>
 						</div>
 					</button>
@@ -796,7 +819,7 @@
 									max={displayDuration || 0}
 									step="0.1"
 									value={currentTime}
-									on:input={handleSeek}
+									oninput={handleSeek}
 									class="absolute inset-x-0 w-full h-full bg-transparent appearance-none cursor-pointer z-20 custom-range"
 								/>
 							</div>
@@ -810,7 +833,7 @@
 							<div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
 								<button
 									class="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer group/btn relative"
-									on:click={togglePlayPause}
+									onclick={togglePlayPause}
 								>
 									{#if isPaused}<Play size={22} fill="currentColor" class="ml-1" />{:else}<Pause
 											size={22}
@@ -819,14 +842,14 @@
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{isPaused ? $t('theater.live.play') : $t('theater.live.pause')}
+										{isPaused ? t('theater.live.play') : t('theater.live.pause')}
 									</div>
 								</button>
 
 								<div class="flex items-center gap-1 group/volume">
 									<button
 										class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
-										on:click={toggleMute}
+										onclick={toggleMute}
 									>
 										{#if isMuted || volume === 0}<VolumeX size={18} />{:else}<Volume2
 												size={18}
@@ -834,7 +857,7 @@
 										<div
 											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 										>
-											{isMuted ? $t('theater.live.unmute') : $t('theater.live.mute')}
+											{isMuted ? t('theater.live.unmute') : t('theater.live.mute')}
 										</div>
 									</button>
 									<input
@@ -843,20 +866,20 @@
 										max="1"
 										step="0.01"
 										bind:value={volume}
-										on:input={handleVolumeChange}
+										oninput={handleVolumeChange}
 										class="w-0 opacity-0 group-hover/volume:w-16 sm:group-hover/volume:w-24 group-hover/volume:opacity-100 transition-all duration-300 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-white"
 									/>
 								</div>
 
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={togglePiP}
+									onclick={togglePiP}
 								>
 									<PictureInPicture2 size={18} />
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{$t('theater.live.pip')}
+										{t('theater.live.pip')}
 									</div>
 								</button>
 							</div>
@@ -865,13 +888,13 @@
 							<div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={takeScreenshot}
+									onclick={takeScreenshot}
 								>
 									<Camera size={18} />
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{$t('theater.live.screenshot')}
+										{t('theater.live.screenshot')}
 									</div>
 								</button>
 
@@ -880,7 +903,7 @@
 										class="group/btn relative w-10 h-10 flex items-center justify-center {isRecording
 											? 'bg-red-600 animate-pulse'
 											: 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all flex-shrink-0 active:scale-95 cursor-pointer"
-										on:click={toggleRecording}
+										onclick={toggleRecording}
 									>
 										{#if isRecording}<Square size={16} fill="white" />{:else}<Circle
 												size={16}
@@ -890,7 +913,7 @@
 										<div
 											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 										>
-											{isRecording ? $t('theater.live.stopRecord') : $t('theater.live.record')}
+											{isRecording ? t('theater.live.stopRecord') : t('theater.live.record')}
 										</div>
 									</button>
 									{#if isRecording}
@@ -908,13 +931,13 @@
 								{#if isFocusMode}
 									<button
 										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
-										on:click={toggleTheme}
+										onclick={toggleTheme}
 									>
-										{#if $theme === 'dark'}<Moon size={18} />{:else}<Sun size={18} />{/if}
+										{#if theme.value === 'dark'}<Moon size={18} />{:else}<Sun size={18} />{/if}
 										<div
 											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 										>
-											{$t('theater.live.toggleTheme')}
+											{t('theater.live.toggleTheme')}
 										</div>
 									</button>
 								{/if}
@@ -923,13 +946,13 @@
 									class="group/btn relative w-10 h-10 flex items-center justify-center {isFocusMode
 										? 'bg-white text-black'
 										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={toggleFocus}
+									onclick={toggleFocus}
 								>
 									{#if isFocusMode}<Minimize2 size={18} />{:else}<Maximize2 size={18} />{/if}
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 									>
-										{isFocusMode ? $t('theater.live.exitFocus') : $t('theater.live.focusMode')}
+										{isFocusMode ? t('theater.live.exitFocus') : t('theater.live.focusMode')}
 									</div>
 								</button>
 
@@ -937,39 +960,37 @@
 									class="group/btn relative w-10 h-10 flex items-center justify-center {isFullscreen
 										? 'bg-white text-black'
 										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={toggleFullscreen}
+									onclick={toggleFullscreen}
 								>
 									{#if isFullscreen}<Minimize size={18} />{:else}<Maximize size={18} />{/if}
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 									>
-										{isFullscreen
-											? $t('theater.live.exitFullscreen')
-											: $t('theater.live.fullscreen')}
+										{isFullscreen ? t('theater.live.exitFullscreen') : t('theater.live.fullscreen')}
 									</div>
 								</button>
 
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={refreshStream}
+									onclick={refreshStream}
 								>
-									<RefreshCw size={18} class={$liveLoading ? 'animate-spin' : ''} />
+									<RefreshCw size={18} class={liveLoading.value ? 'animate-spin' : ''} />
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{$t('theater.live.refresh')}
+										{t('theater.live.refresh')}
 									</div>
 								</button>
 
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={rotateVideo}
+									onclick={rotateVideo}
 								>
 									<RotateCw size={18} class="transition-transform duration-500" />
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 									>
-										{$t('theater.live.rotate')}
+										{t('theater.live.rotate')}
 									</div>
 								</button>
 
@@ -980,7 +1001,7 @@
 									'list'
 										? 'bg-white text-black'
 										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={() => {
+									onclick={() => {
 										sidebarMode = sidebarMode === 'chat' ? 'list' : 'chat';
 										if (sidebarMode === 'list') fetchOtherLive();
 										if (!chatVisible) chatVisible = true;
@@ -992,9 +1013,7 @@
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{sidebarMode === 'chat'
-											? $t('theater.subNav.members')
-											: $t('theater.live.chat')}
+										{sidebarMode === 'chat' ? t('theater.subNav.members') : t('theater.live.chat')}
 									</div>
 								</button>
 
@@ -1002,13 +1021,13 @@
 									class="group/btn relative w-10 h-10 flex items-center justify-center {chatVisible
 										? 'hover:bg-white/10 text-white'
 										: 'bg-white text-black'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									on:click={() => (chatVisible = !chatVisible)}
+									onclick={() => (chatVisible = !chatVisible)}
 								>
 									<ChevronRight size={18} class={chatVisible ? 'rotate-0' : 'rotate-180'} />
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{chatVisible ? $t('theater.live.hideChat') : $t('theater.live.showChat')}
+										{chatVisible ? t('theater.live.hideChat') : t('theater.live.showChat')}
 									</div>
 								</button>
 							</div>
@@ -1041,24 +1060,36 @@
 								class="font-black text-xs uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2"
 							>
 								<MessageCircle size={14} class="text-red-600" />
-								{$t('theater.live.chat')}
+								{t('theater.live.chat')}
 							</h3>
 						{:else}
 							<h3
 								class="font-black text-xs uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2"
 							>
 								<Users size={14} class="text-red-600" />
-								{$t('theater.subNav.live')}
+								{t('theater.subNav.live')}
 							</h3>
 						{/if}
 					</div>
 					<div class="flex items-center gap-3">
 						{#if sidebarMode === 'chat'}
-							<div class="flex items-center gap-2">
-								<div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-								<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-									>{$t('theater.live.connected')}</span
-								>
+							<div class="flex items-center gap-2" transition:fade>
+								<div
+									class="w-1.5 h-1.5 rounded-full {chatStatus === 'connected'
+										? 'bg-green-500 animate-pulse'
+										: chatStatus === 'connecting'
+											? 'bg-yellow-500 animate-pulse'
+											: 'bg-red-500'}"
+								></div>
+								<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+									{#if chatStatus === 'connected'}
+										{t('theater.live.connected')}
+									{:else if chatStatus === 'connecting'}
+										{t('theater.live.connecting')}
+									{:else}
+										{t('theater.live.disconnected')}
+									{/if}
+								</span>
 							</div>
 						{/if}
 					</div>
@@ -1067,9 +1098,9 @@
 				<div class="flex-1 overflow-hidden flex flex-col">
 					{#if sidebarMode === 'chat'}
 						{#if platform === 'showroom' && id}
-							<ShowroomChat roomId={id} />
+							<ShowroomChat roomId={id} onStatusChange={(s) => (chatStatus = s)} />
 						{:else if platform === 'idn' && roomIdentifier}
-							<IDNChat {roomIdentifier} />
+							<IDNChat {roomIdentifier} onStatusChange={(s) => (chatStatus = s)} />
 						{/if}
 					{:else}
 						<div class="flex-1 overflow-y-auto p-4 space-y-3">
@@ -1080,7 +1111,7 @@
 										>Searching matches...</span
 									>
 								</div>
-							{:else if $otherLive.length === 0}
+							{:else if otherLive.value.length === 0}
 								<div class="flex flex-col items-center justify-center h-full text-center gap-4">
 									<div
 										class="w-12 h-12 rounded-full bg-slate-50 dark:bg-zinc-900 flex items-center justify-center text-slate-300 dark:text-zinc-700"
@@ -1088,11 +1119,11 @@
 										<Users size={24} />
 									</div>
 									<p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-										{$t('theater.live.empty')}
+										{t('theater.live.empty')}
 									</p>
 								</div>
 							{:else}
-								{#each $otherLive as member}
+								{#each otherLive.value as member}
 									<a
 										href="{basePath}/{member.platform}/{getMemberId(member)}"
 										class="flex items-center gap-3 p-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/50 hover:border-red-500/30 hover:shadow-sm hover:shadow-red-500/5 transition-all group overflow-hidden relative"
@@ -1104,7 +1135,7 @@
 												<img
 													src={getExternalMediaUrl(member.member?.img) || fallbackAvatar}
 													alt={member.member?.name}
-													on:error={(e) => {
+													onerror={(e) => {
 														if (e.currentTarget instanceof HTMLImageElement)
 															e.currentTarget.src = fallbackAvatar;
 													}}

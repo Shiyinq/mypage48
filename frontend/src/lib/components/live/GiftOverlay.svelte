@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { fade, scale, slide } from 'svelte/transition';
-	import { giftEvents, type GiftEvent } from '$lib/stores/gift';
+	import { giftEvents, type GiftEvent } from '$lib/stores/gift.svelte';
 
-	export let roomIdentifier: string = '';
-
-	let activeGift: GiftEvent | null = null;
-	let giftTimeout: any;
-
-	$: if ($giftEvents && $giftEvents.roomIdentifier === roomIdentifier) {
-		showGift($giftEvents);
+	interface Props {
+		roomIdentifier?: string;
 	}
+
+	let { roomIdentifier = '' }: Props = $props();
+
+	let activeGift: GiftEvent | null = $state(null);
+	let giftTimeout: ReturnType<typeof setTimeout> | undefined;
 
 	function showGift(event: GiftEvent) {
 		activeGift = event;
@@ -37,12 +37,17 @@
 				const u = new URL(url);
 				u.searchParams.delete('timestamp');
 				return u.toString();
-			} catch (e) {
+			} catch {
 				return url;
 			}
 		}
 		return url;
 	}
+	$effect(() => {
+		if (giftEvents.value && giftEvents.value.roomIdentifier === roomIdentifier) {
+			showGift(giftEvents.value);
+		}
+	});
 </script>
 
 {#if activeGift}
@@ -100,8 +105,8 @@
 								style="width: 200px; height: 200px;"
 								loop
 								autoplay
-								on:ready={startGiftTimer}
-								on:error={() => {
+								onready={startGiftTimer}
+								onerror={() => {
 									activeGift = null;
 								}}
 							></lottie-player>
@@ -112,8 +117,8 @@
 								referrerpolicy="no-referrer"
 								style="width: 150px; height: 150px;"
 								class="object-contain drop-shadow-2xl"
-								on:load={startGiftTimer}
-								on:error={() => {
+								onload={startGiftTimer}
+								onerror={() => {
 									activeGift = null;
 								}}
 							/>

@@ -3,9 +3,8 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import type { Member } from '$lib/apis/members';
-	import { membersStore } from '$lib/stores/theater';
+	import { membersStore } from '$lib/stores/theater.svelte';
 	import { showToast } from '$lib/stores';
-	import { fade } from 'svelte/transition';
 	import SorterGenerationSelect from '$lib/components/sorter/SorterGenerationSelect.svelte';
 	import SorterProcess from '$lib/components/sorter/SorterProcess.svelte';
 	import SorterResults from '$lib/components/sorter/SorterResults.svelte';
@@ -14,43 +13,55 @@
 
 	// Sorter State
 	type SorterState = 'landing' | 'sorting' | 'results';
-	let currentState: SorterState = 'landing';
+	let currentState: SorterState = $state('landing');
 
-	let allMembers: Member[] = [];
-	let selectedMembers: Member[] = [];
-	let generations: string[] = [];
-	let selectedGenerations: Set<string> = new Set();
-	let loadingGenerations = true;
+	let allMembers: Member[] = $state([]);
+	let selectedMembers: Member[] = $state([]);
+	let generations: string[] = $state([]);
+	let selectedGenerations: Set<string> = $state(new Set());
+	let loadingGenerations = $state(true);
 
 	// Sorting Logic State
-	let lstMember: any[] = [];
+	let lstMember: number[][] = $state([]);
 	let parent: number[] = [];
 	let rec: number[] = [];
-	let cmp1 = 0;
-	let cmp2 = 0;
-	let head1 = 0;
-	let head2 = 0;
+	let cmp1 = $state(0);
+	let cmp2 = $state(0);
+	let head1 = $state(0);
+	let head2 = $state(0);
 	let nrec = 0;
-	let numQuestion = 0;
-	let finishSize = 0;
-	let finishFlag = 0;
+	let numQuestion = $state(0);
+	let finishSize = $state(0);
+	let finishFlag = $state(0);
 
 	// Results
 	interface ResultMember extends Member {
 		rank: number;
 	}
-	let results: ResultMember[] = [];
-	let layoutMode: 'card' | 'list' = 'card';
+	let results: ResultMember[] = $state([]);
+	let layoutMode: 'card' | 'list' = $state('card');
 
 	// History for Undo
-	let history: any[] = [];
+	interface SorterHistoryState {
+		lstMember: number[][];
+		parent: number[];
+		rec: number[];
+		cmp1: number;
+		cmp2: number;
+		head1: number;
+		head2: number;
+		nrec: number;
+		numQuestion: number;
+		finishSize: number;
+		finishFlag: number;
+	}
+	let history: SorterHistoryState[] = $state([]);
 
 	// Animation State
-	let isAnimating = false;
-	let lastSelectedSide: 'left' | 'right' | 'tie' | null = null;
+	let isAnimating = $state(false);
+	let lastSelectedSide: 'left' | 'right' | 'tie' | null = $state(null);
 
-	async function handleSelect(event: CustomEvent<number>) {
-		const flag = event.detail;
+	async function handleSelect(flag: number) {
 		if (isAnimating) return;
 
 		lastSelectedSide = flag === 1 ? 'left' : flag === -1 ? 'right' : 'tie';
@@ -68,25 +79,25 @@
 	async function fetchMembers() {
 		try {
 			await membersStore.load({ limit: 100 }, true);
-			allMembers = $membersStore.list;
+			allMembers = membersStore.list;
 			const gens = await membersStore.getGenerations();
-			generations = gens.sort((a, b) => parseInt(a) - parseInt(b));
+			generations = gens.sort((a: string, b: string) => parseInt(a) - parseInt(b));
 			selectedGenerations = new Set();
-		} catch (e) {
-			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
+		} catch {
+			showToast(t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		} finally {
 			loadingGenerations = false;
 		}
 	}
 
-	function toggleGeneration(event: CustomEvent<string>) {
-		const gen = event.detail;
-		if (selectedGenerations.has(gen)) {
-			selectedGenerations.delete(gen);
+	function toggleGeneration(gen: string) {
+		const next = new Set(selectedGenerations);
+		if (next.has(gen)) {
+			next.delete(gen);
 		} else {
-			selectedGenerations.add(gen);
+			next.add(gen);
 		}
-		selectedGenerations = selectedGenerations;
+		selectedGenerations = next;
 	}
 
 	function selectAllGenerations() {
@@ -100,7 +111,7 @@
 	function startSort() {
 		selectedMembers = allMembers.filter((m) => selectedGenerations.has(m.generation));
 		if (selectedMembers.length < 2) {
-			showToast($t('theater.sorter.minSelection'), 'error');
+			showToast(t('theater.sorter.minSelection'), 'error');
 			return;
 		}
 		selectedMembers = [...selectedMembers].sort(() => Math.random() - 0.5);
@@ -218,8 +229,8 @@
 
 	function showResults() {
 		const finalOrder = lstMember[0];
-		results = finalOrder.map((idx: number, i: number) => ({
-			...selectedMembers[idx],
+		results = finalOrder.map((idxVal: number, i: number) => ({
+			...selectedMembers[idxVal],
 			rank: i + 1
 		}));
 		currentState = 'results';
@@ -234,14 +245,16 @@
 		fetchMembers();
 	});
 
-	$: leftMember = selectedMembers[lstMember[cmp1]?.[head1]];
-	$: rightMember = selectedMembers[lstMember[cmp2]?.[head2]];
-	$: progress = finishFlag
-		? 100
-		: Math.floor(
-				(finishSize / (selectedMembers.length * Math.log2(selectedMembers.length) * 0.7)) * 100
-			);
-	$: displayProgress = Math.min(progress, 99);
+	let leftMember = $derived(selectedMembers[lstMember[cmp1]?.[head1]]);
+	let rightMember = $derived(selectedMembers[lstMember[cmp2]?.[head2]]);
+	let progress = $derived(
+		finishFlag
+			? 100
+			: Math.floor(
+					(finishSize / (selectedMembers.length * Math.log2(selectedMembers.length) * 0.7)) * 100
+				)
+	);
+	let displayProgress = $derived(Math.min(progress, 99));
 
 	async function copyToClipboard(text: string): Promise<boolean> {
 		try {
@@ -249,7 +262,9 @@
 				await navigator.clipboard.writeText(text);
 				return true;
 			}
-		} catch {}
+		} catch {
+			// Fallback to execCommand if clipboard API fails
+		}
 		try {
 			const textarea = document.createElement('textarea');
 			textarea.value = text;
@@ -267,15 +282,15 @@
 	}
 
 	async function shareResults() {
-		const text = results
+		const textList = results
 			.slice(0, 10)
 			.map((r) => `#${r.rank} ${r.name}`)
 			.join('\n');
-		const shareText = `${$t('theater.sorter.shareTextHeader')}\n${text}\n\n${$t('theater.sorter.shareTextFooter')} ${window.location.origin}/theater/sorter`;
+		const shareText = `${t('theater.sorter.shareTextHeader')}\n${textList}\n\n${t('theater.sorter.shareTextFooter')} ${window.location.origin}/theater/sorter`;
 		if (navigator.share) {
 			try {
 				await navigator.share({
-					title: $t('theater.sorter.shareTitle'),
+					title: t('theater.sorter.shareTitle'),
 					text: shareText,
 					url: window.location.href
 				});
@@ -285,15 +300,15 @@
 			}
 		}
 		const copied = await copyToClipboard(shareText);
-		if (copied) showToast($t('theater.sorter.copySuccess'), 'success');
-		else showToast($t('theater.sorter.copyFailed'), 'error');
+		if (copied) showToast(t('theater.sorter.copySuccess'), 'success');
+		else showToast(t('theater.sorter.copyFailed'), 'error');
 	}
 </script>
 
 <SEO
-	title={$t('theater.sorter.title')}
+	title={t('theater.sorter.title')}
 	path="/theater/sorter"
-	description={$t('theater.sorter.subtitle')}
+	description={t('theater.sorter.subtitle')}
 />
 
 <svelte:head>
@@ -319,10 +334,10 @@
 			{selectedGenerations}
 			{loadingGenerations}
 			selectedMembersCount={allMembers.filter((m) => selectedGenerations.has(m.generation)).length}
-			on:toggle={toggleGeneration}
-			on:selectAll={selectAllGenerations}
-			on:deselectAll={deselectAllGenerations}
-			on:start={startSort}
+			ontoggle={toggleGeneration}
+			onselectAll={selectAllGenerations}
+			ondeselectAll={deselectAllGenerations}
+			onstart={startSort}
 			variant="theater"
 		/>
 	{:else if currentState === 'sorting'}
@@ -334,18 +349,18 @@
 			{isAnimating}
 			{lastSelectedSide}
 			hasHistory={history.length > 0}
-			on:select={handleSelect}
-			on:undo={undo}
-			on:exit={restart}
+			onselect={handleSelect}
+			onundo={undo}
+			onexit={restart}
 			variant="theater"
 		/>
 	{:else if currentState === 'results'}
 		<SorterResults
 			{results}
 			{layoutMode}
-			on:share={shareResults}
-			on:restart={restart}
-			on:changeLayout={(e) => (layoutMode = e.detail)}
+			onshare={shareResults}
+			onrestart={restart}
+			onchangeLayout={(modeVal) => (layoutMode = modeVal)}
 			variant="theater"
 		/>
 	{/if}

@@ -7,21 +7,27 @@
 		image: string;
 	}
 
-	export let show: ShowInfo;
-	export let count: number = 0;
-	export let maxAttendance: number = 1;
-	export let onClick: () => void;
+	interface Props {
+		show: ShowInfo;
+		count?: number;
+		maxAttendance?: number;
+		onClick: () => void;
+	}
+
+	let { show, count = 0, maxAttendance = 1, onClick }: Props = $props();
 
 	const { t } = useTranslation();
 
-	$: percentage = (count / maxAttendance) * 100;
-	$: isMostWatched = count === maxAttendance && count > 0;
+	let percentage = $derived((count / maxAttendance) * 100);
+	let isMostWatched = $derived(count === maxAttendance && count > 0);
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 <div
-	on:click={onClick}
+	onclick={onClick}
+	onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
 	class="relative overflow-hidden rounded-[20px] sm:rounded-2xl cursor-pointer group shadow-sm hover:shadow-xl transition-all duration-300 bg-white dark:bg-zinc-900/50 dark:backdrop-blur-xl border border-gray-100 dark:border-white/5 flex flex-row sm:flex-col h-[8.5rem] sm:h-auto sm:aspect-[2/3]"
+	role="button"
+	tabindex="0"
 >
 	<!-- Background Image (Mobile: Left side, Desktop: Full bg) -->
 	<div class="relative w-[38%] sm:w-full sm:h-full sm:absolute sm:inset-0 shrink-0 overflow-hidden">
@@ -54,7 +60,7 @@
 						class="bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1 self-start border border-white/20"
 					>
 						<Trophy class="w-2.5 h-2.5" />
-						<span class="uppercase tracking-wider">{$t('shows.top')}</span>
+						<span class="uppercase tracking-wider">{t('shows.top')}</span>
 					</span>
 				{/if}
 			</div>
@@ -79,8 +85,8 @@
 						} sm:bg-white/10 sm:text-white/90 sm:border-white/20 sm:backdrop-blur-md`}
 					>
 						{count > 0
-							? $t('theater.setlists.attendedCount', { count })
-							: $t('theater.setlists.notAttended')}
+							? t('theater.setlists.attendedCount', { count })
+							: t('theater.setlists.notAttended')}
 					</div>
 				</div>
 
@@ -88,7 +94,7 @@
 					<span
 						class="text-[10px] sm:text-xs text-red-500 dark:text-red-400 sm:text-white/90 font-medium hidden sm:flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0"
 					>
-						{$t('shows.viewHistory')}
+						{t('shows.viewHistory')}
 						<ChevronLeft class="w-3 h-3 rotate-180" />
 					</span>
 				{/if}
@@ -98,7 +104,7 @@
 			<div>
 				<div class="flex justify-end mb-1">
 					<span class="text-[10px] font-medium text-gray-400 dark:text-zinc-500 sm:text-gray-300">
-						{count > 0 ? `${percentage.toFixed(0)}% ${$t('shows.toTop')}` : $t('shows.notSeen')}
+						{count > 0 ? `${percentage.toFixed(0)}% ${t('shows.toTop')}` : t('shows.notSeen')}
 					</span>
 				</div>
 				<div
