@@ -6,6 +6,7 @@
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 	import { spring } from 'svelte/motion';
 
+	import { isAuthenticated } from '$lib/stores';
 	const { t } = useTranslation();
 
 	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
@@ -14,8 +15,6 @@
 
 <SEO title={$t('terms.title')} path="/terms" description={$t('seo.terms')} />
 
-
-
 <div
 	class="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 relative overflow-hidden font-sans selection:bg-red-500/20"
 >
@@ -23,7 +22,9 @@
 	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
 
 	<!-- NAV -->
-	<LandingNavbar showLogin={false} />
+	{#if !isAuthenticated.value}
+		<LandingNavbar showLogin={true} />
+	{/if}
 
 	<div class="max-w-3xl mx-auto pb-12 relative z-10 px-6 pt-4 md:pt-6">
 		<!-- Header -->
@@ -69,5 +70,7 @@
 	</div>
 
 	<!-- FOOTER -->
-	<Footer />
+	{#if !isAuthenticated.value}
+		<Footer />
+	{/if}
 </div>
