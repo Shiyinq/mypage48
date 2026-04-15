@@ -35,6 +35,18 @@ async def create_indexes():
         await db["verification_tokens"].create_index("hashToken", unique=True)
         await db["verification_tokens"].create_index("expiresAt", expireAfterSeconds=0)
 
+        # Members indexes (Only ID, Name, Nickname)
+        await db["members"].create_index("id", unique=True)
+        await db["members"].create_index("name")
+        await db["members"].create_index("nickname")
+
+        # Tickets indexes
+        await db["tickets"].create_index("user_id")
+        await db["tickets"].create_index("theater_name")
+        await db["tickets"].create_index("event.date")
+        await db["tickets"].create_index("event.title")
+        await db["tickets"].create_index("two_shot.member_name")
+
         print("Database indexes created successfully")
     except Exception as e:
         print(f"Failed to create indexes: {str(e)}")
