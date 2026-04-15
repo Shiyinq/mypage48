@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { radioStore, RADIO_CHANNELS, type RadioChannel } from '$lib/stores/radio.svelte';
 
 	let player: YTPlayer | undefined = $state();
@@ -125,7 +126,9 @@
 	let playerElementOuter: HTMLElement | undefined = $state();
 
 	$effect(() => {
-		previousPlaylistId = currentChannel.playlistId; // Set initial
+		// Use untrack to avoid re-running this entire init effect when playlist changes.
+		// Playlist changes are handled by the other effect using player.loadPlaylist.
+		previousPlaylistId = untrack(() => currentChannel.playlistId);
 
 		if (typeof window !== 'undefined') {
 			if (window.YT && window.YT.Player) {
@@ -153,6 +156,7 @@
 			if (player) {
 				player.destroy();
 				player = undefined;
+				isInitialized = false;
 			}
 		};
 	});

@@ -119,6 +119,12 @@ function createTicketsStore() {
 			state.list = state.list.filter((t) => t._id !== ticketId);
 			state.pagination.total_data = Math.max(0, state.pagination.total_data - 1);
 
+			// Update default cache too to reflect state immediately
+			if (state.defaultCache) {
+				state.defaultCache.list = state.defaultCache.list.filter((t) => t._id !== ticketId);
+				state.defaultCache.pagination.total_data = state.pagination.total_data;
+			}
+
 			try {
 				await ticketsApi.deleteTicket(ticketId);
 			} catch (e) {
