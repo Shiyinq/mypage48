@@ -36,9 +36,10 @@
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
-| **Backend** | FastAPI (Python 3.10+) |
-| **Frontend** | SvelteKit 2.x |
-| **Database** | MongoDB & PostgreSQL (Umami) |
+| --- | --- |
+| **Backend** | FastAPI |
+| **Frontend** | Svelte & SvelteKit |
+| **Database** | MongoDB |
 | **Storage** | MinIO |
 | **Reverse Proxy**| Nginx |
 | **Analytics** | Umami |
@@ -58,7 +59,7 @@ mypage48/
 ├── tests/                 # Backend tests
 ├── DEPLOYMENT.md          # PRODUCTION DEPLOYMENT GUIDE 🚀
 ├── docker-compose.yml     # Local Development Compose
-└── docker-compose.prod.yml # Production Environment Compose
+├── docker-compose.prod.yml # Production Environment Compose
 ```
 
 ## 🚀 Quick Start
@@ -66,9 +67,9 @@ mypage48/
 ### Prerequisites
 
 - Python 3.10+
-- Node.js 18+
+- Node.js 24+
+- MongoDB 7+
 - Docker & Docker Compose
-- MongoDB (local or Atlas)
 
 ### Local Development
 
