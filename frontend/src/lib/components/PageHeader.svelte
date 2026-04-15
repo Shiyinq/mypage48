@@ -1,41 +1,59 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { ArrowLeft } from 'lucide-svelte';
-	import { createEventDispatcher, type ComponentType } from 'svelte';
-
-	const dispatch = createEventDispatcher();
+	import { type ComponentType } from 'svelte';
+	import { pageHeaderStore } from '$lib/stores';
+	import { onDestroy } from 'svelte';
 
 	/**
 	 * Reusable page header component with icon, title, subtitle, and optional back button
 	 */
-	export let icon: ComponentType | undefined = undefined;
-	export let title: string;
-	export let subtitle: string = '';
-	export let badge: string | undefined = undefined;
-	export let actions:
-		| Array<{
-				icon: ComponentType;
-				label?: string;
-				onClick: () => void;
-				theme?: string;
-		  }>
-		| undefined = undefined;
-	export let rotation: number = -6;
-	export let theme:
-		| 'red'
-		| 'blue'
-		| 'green'
-		| 'purple'
-		| 'pink'
-		| 'amber'
-		| 'yellow'
-		| 'orange'
-		| 'rose'
-		| 'indigo' = 'red';
-	export let showBackButton = false;
-	export let backUrl: string | undefined = undefined;
-	export let loading = false;
-	export let hidden = false;
+	interface Props {
+		icon?: ComponentType;
+		title: string;
+		subtitle?: string;
+		badge?: string;
+		actionItems?: Array<{
+			icon: ComponentType;
+			label?: string;
+			onClick: () => void;
+			theme?: string;
+		}>;
+		rotation?: number;
+		theme?:
+			| 'red'
+			| 'blue'
+			| 'green'
+			| 'purple'
+			| 'pink'
+			| 'amber'
+			| 'yellow'
+			| 'orange'
+			| 'rose'
+			| 'indigo';
+		showBackButton?: boolean;
+		backUrl?: string;
+		loading?: boolean;
+		hidden?: boolean;
+		actions?: import('svelte').Snippet;
+		onback?: () => void;
+	}
+
+	let {
+		icon,
+		title,
+		subtitle = '',
+		badge,
+		actionItems,
+		rotation = -6,
+		theme = 'red',
+		showBackButton = false,
+		backUrl,
+		loading = false,
+		hidden = false,
+		actions,
+		onback
+	}: Props = $props();
 
 	const themeClasses = {
 		red: {
@@ -100,12 +118,17 @@
 		}
 	};
 
-	import { pageHeaderStore } from '$lib/stores/ui';
-	import { onDestroy } from 'svelte';
+	let colors = $derived(themeClasses[theme]);
 
-	$: colors = themeClasses[theme];
+	const handleBack = () => {
+		if (backUrl) {
+			goto(backUrl);
+		} else {
+			onback?.();
+		}
+	};
 
-	$: {
+	$effect(() => {
 		if (title) {
 			pageHeaderStore.set({
 				title,
@@ -116,22 +139,14 @@
 				theme,
 				showBackButton,
 				handleBack,
-				actions
+				actions: actionItems
 			});
 		}
-	}
+	});
 
 	onDestroy(() => {
 		pageHeaderStore.reset();
 	});
-
-	const handleBack = () => {
-		if (backUrl) {
-			goto(backUrl);
-		} else {
-			dispatch('back');
-		}
-	};
 </script>
 
 {#if !hidden}
@@ -141,7 +156,7 @@
 		<div class="hidden sm:flex items-center gap-2 sm:gap-4 min-w-0">
 			{#if showBackButton}
 				<button
-					on:click={handleBack}
+					onclick={handleBack}
 					class="p-2 sm:p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer flex-shrink-0"
 				>
 					<ArrowLeft class="w-4 h-4 sm:w-5 sm:h-5" />
@@ -149,11 +164,12 @@
 			{/if}
 
 			{#if icon}
+				{@const IconComponent = icon}
 				<div
 					class="p-1.5 rounded-lg sm:p-3 sm:rounded-2xl {colors.bg} {colors.text} shadow-lg {colors.shadow} border-2 border-white dark:border-gray-800 flex-shrink-0"
 					style="transform: rotate({rotation}deg)"
 				>
-					<svelte:component this={icon} class="w-4 h-4 sm:w-6 sm:h-6" />
+					<IconComponent class="w-4 h-4 sm:w-6 sm:h-6" />
 				</div>
 			{/if}
 
@@ -176,11 +192,11 @@
 			</div>
 		</div>
 
-		{#if $$slots.actions}
+		{#if actions}
 			<div
-				class={`flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-2 overflow-visible max-w-full ${actions ? 'hidden sm:flex' : ''}`}
+				class={`flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-2 overflow-visible max-w-full ${actionItems ? 'hidden sm:flex' : ''}`}
 			>
-				<slot name="actions" />
+				{@render actions()}
 			</div>
 		{/if}
 	</div>

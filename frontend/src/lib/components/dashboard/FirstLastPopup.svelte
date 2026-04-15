@@ -5,29 +5,31 @@
 
 	const { t } = useTranslation();
 
-	export let show: boolean = false;
-	export let onClose: () => void;
-	export let title: string;
-	export let type: 'theater' | 'twoShot';
-
-	export let first: {
-		image?: string | null;
+	interface Props {
+		show?: boolean;
+		onClose: () => void;
 		title: string;
-		date: string;
-		detail?: string;
-	} | null;
+		type: 'theater' | 'twoShot';
+		first: {
+			image?: string | null;
+			title: string;
+			date: string;
+			detail?: string;
+		} | null;
+		last: {
+			image?: string | null;
+			title: string;
+			date: string;
+			detail?: string;
+		} | null;
+	}
 
-	export let last: {
-		image?: string | null;
-		title: string;
-		date: string;
-		detail?: string;
-	} | null;
+	let { show = false, onClose, title, type, first, last }: Props = $props();
 
-	const theme = type === 'theater' ? 'purple' : 'pink';
-	const PlaceholderIcon = type === 'theater' ? Star : Camera;
+	let theme = $derived(type === 'theater' ? 'purple' : 'pink');
+	let PlaceholderIcon = $derived(type === 'theater' ? Star : Camera);
 
-	$: themeClasses =
+	let themeClasses = $derived(
 		theme === 'purple'
 			? {
 					bg: 'bg-purple-50 dark:bg-zinc-900',
@@ -60,22 +62,26 @@
 					date: 'text-pink-400 dark:text-pink-400',
 					placeholderText: 'text-pink-300',
 					placeholderEmptyText: 'text-pink-300'
-				};
+				}
+	);
 
-	$: labels =
+	let labels = $derived(
 		type === 'theater'
-			? { first: $t('dashboard.theater.first'), last: $t('dashboard.theater.last') }
-			: { first: $t('dashboard.twoShot.first'), last: $t('dashboard.twoShot.last') };
+			? { first: t('dashboard.theater.first'), last: t('dashboard.theater.last') }
+			: { first: t('dashboard.twoShot.first'), last: t('dashboard.twoShot.last') }
+	);
 </script>
 
 {#if show}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-		on:click|self={onClose}
+		onclick={(e) => {
+			if (e.target === e.currentTarget) onClose();
+		}}
+		onkeydown={(e) => e.key === 'Escape' && onClose()}
 		role="dialog"
 		aria-modal="true"
+		tabindex="-1"
 		transition:fade={{ duration: 200 }}
 	>
 		<div
@@ -95,7 +101,7 @@
 					</h3>
 				</div>
 				<button
-					on:click={onClose}
+					onclick={onClose}
 					class={`p-2 rounded-full transition-colors cursor-pointer ${themeClasses.closeBtnBg} ${themeClasses.closeBtnHover}`}
 				>
 					<X class={`w-6 h-6 ${themeClasses.closeBtnIcon}`} />
@@ -131,7 +137,7 @@
 								<div
 									class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderText}`}
 								>
-									<svelte:component this={PlaceholderIcon} class="w-16 h-16" />
+									<PlaceholderIcon class="w-16 h-16" />
 								</div>
 							{/if}
 						</div>
@@ -174,7 +180,7 @@
 								<div
 									class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderEmptyText}`}
 								>
-									<svelte:component this={PlaceholderIcon} class="w-16 h-16" />
+									<PlaceholderIcon class="w-16 h-16" />
 								</div>
 							{/if}
 						</div>

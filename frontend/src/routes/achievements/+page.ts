@@ -1,4 +1,4 @@
-import { achievementsStore } from '$lib/stores/achievements';
+import { achievementsStore } from '$lib/stores/achievements.svelte';
 
 import { browser } from '$app/environment';
 

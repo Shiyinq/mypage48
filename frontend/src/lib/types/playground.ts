@@ -3,12 +3,13 @@ export interface OpenAPIParameter {
 	in: 'path' | 'query' | 'header' | 'body';
 	required: boolean;
 	description?: string;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	schema: any;
 }
 
 export interface OpenAPIResponse {
 	description: string;
-	content?: Record<string, { schema: any }>;
+	content?: Record<string, { schema: unknown }>;
 }
 
 export interface OpenAPIEndpoint {
@@ -21,7 +22,7 @@ export interface OpenAPIEndpoint {
 		tags?: string[];
 		parameters?: OpenAPIParameter[];
 		requestBody?: {
-			content: Record<string, { schema: any }>;
+			content: Record<string, { schema: unknown }>;
 		};
 		responses?: Record<string, OpenAPIResponse>;
 	};
@@ -33,10 +34,10 @@ export interface OpenAPISchema {
 		title: string;
 		version: string;
 	};
-	paths: Record<string, Record<string, any>>;
+	paths: Record<string, Record<string, unknown>>;
 	components?: {
-		schemas?: Record<string, any>;
-		securitySchemes?: Record<string, any>;
+		schemas?: Record<string, unknown>;
+		securitySchemes?: Record<string, unknown>;
 	};
 }
 
@@ -44,14 +45,14 @@ export interface ExecutionPayload {
 	method: string;
 	path: string;
 	params: Record<string, string>;
-	body: any;
+	body: unknown;
 	headers: Record<string, string>;
 }
 
 export interface ExecutionResult {
 	status: number;
 	statusText: string;
-	data: any;
+	data: unknown;
 	headers: Record<string, string>;
 	duration: number;
 }

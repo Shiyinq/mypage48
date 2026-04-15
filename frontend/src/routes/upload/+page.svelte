@@ -1,9 +1,8 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { ticketsStore, showToast, storageStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
-	import { invalidateDashboard } from '$lib/stores/dashboard';
-	import { invalidateTheater, setlistsStore } from '$lib/stores/theater';
+	import { resetDashboard } from '$lib/stores/dashboard.svelte';
+	import { invalidateTheater, setlistsStore } from '$lib/stores/theater.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -21,7 +20,6 @@
 	import TicketForm from '$lib/components/upload/TicketForm.svelte';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
-	import { pageHeaderStore } from '$lib/stores/ui';
 
 	const { t } = useTranslation();
 
@@ -32,31 +30,21 @@
 		setlistsStore.load();
 	});
 
-	let mode: 'SELECTION' | 'ANALYZING' | 'EDITING' = 'SELECTION';
-
-	$: {
-		const modeParam = $page.url.searchParams.get('mode');
-		if (modeParam === 'manual' && mode !== 'EDITING' && !isSubmitting) {
-			handleManualEntry();
-		} else if (modeParam === 'scan' && mode !== 'SELECTION') {
-			mode = 'SELECTION';
-		}
-	}
-
-	let image: string | null = null;
-	let isSubmitting = false;
+	// App State
+	let mode = $state<'SELECTION' | 'ANALYSING' | 'EDITING'>('SELECTION');
+	let image = $state<string | null>(null);
+	let isSubmitting = $state(false);
 
 	// 2-Shot
-	let showTwoShot = false;
-	let twoShotImage: string | null = null;
-	let twoShotInputRef: HTMLInputElement;
+	let showTwoShot = $state(false);
+	let twoShotImage = $state<string | null>(null);
 
 	// Validation alert modal state
-	let showValidationAlert = false;
-	let validationAlertMessage = '';
+	let showValidationAlert = $state(false);
+	let validationAlertMessage = $state('');
 
 	// Temporary state matching Ticket structure but editable
-	let formData = {
+	let formData = $state({
 		event: {
 			title: '',
 			date: new Date().toISOString().split('T')[0],
@@ -80,9 +68,59 @@
 			type: 'Roulette' as 'Roulette' | 'Birthday',
 			price: 100000
 		}
-	};
+	});
 
-	let fileInputRef: HTMLInputElement;
+	let fileInputRef: HTMLInputElement | undefined = $state();
+	let twoShotInputRef: HTMLInputElement | undefined = $state();
+
+	// Navigation effects
+	$effect(() => {
+		const modeParam = $page.url.searchParams.get('mode');
+		if (modeParam === 'manual' && mode !== 'EDITING' && !isSubmitting) {
+			handleManualEntry();
+		} else if (modeParam === 'scan' && mode !== 'SELECTION') {
+			mode = 'SELECTION';
+		}
+	});
+
+	// Validation
+	let isFormValid = $derived(
+		!!(
+			formData.event.title &&
+			formData.event.date &&
+			formData.event.time &&
+			formData.seat.section &&
+			formData.seat.number &&
+			formData.price > 0 &&
+			formData.ticket_id &&
+			(!showTwoShot ||
+				(showTwoShot &&
+					formData.two_shot.member_name &&
+					formData.two_shot.price !== null &&
+					formData.two_shot.price >= 0 &&
+					twoShotImage))
+		)
+	);
+
+	// Reactive Day Calculation
+	$effect(() => {
+		if (formData.event.date) {
+			const newDay = calculateDayFromDate(formData.event.date);
+			if (newDay && newDay !== formData.event.day) {
+				formData.event.day = newDay;
+			}
+		}
+	});
+
+	// Reactive Gate Open Calculation (30 mins before Show Time)
+	$effect(() => {
+		if (formData.event.time) {
+			const newGateOpen = calculateGateOpenTime(formData.event.time);
+			if (newGateOpen && newGateOpen !== formData.event.gate_open) {
+				formData.event.gate_open = newGateOpen;
+			}
+		}
+	});
 
 	// Normalization functions
 	const normalizeTime = (raw: string | undefined): string => {
@@ -104,7 +142,7 @@
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			return;
 		}
@@ -126,18 +164,18 @@
 		target.value = ''; // Reset input
 	};
 
-	const handleFileDrop = (e: CustomEvent<File>) => {
-		processFile(e.detail);
+	const handleFileDrop = (file: File) => {
+		processFile(file);
 	};
 
 	const analyzeImage = async (base64: string) => {
-		mode = 'ANALYZING';
+		mode = 'ANALYSING';
 		try {
 			const result = await extractTicketData(base64);
 			await setlistsStore.load();
 
-			const currentSetlists = $setlistsStore.data
-				? $setlistsStore.data.map((s) => s.title)
+			const currentSetlists = setlistsStore.data
+				? setlistsStore.data.map((s) => s.title)
 				: SHOW_OPTIONS;
 
 			const detectedTitle =
@@ -149,25 +187,21 @@
 				? inputChar
 				: '';
 
-			formData = {
-				...formData,
-				ticket_id: result.ticket_id || '',
-				price: result.price || 200000,
-				event: {
-					...formData.event,
-					title: detectedTitle,
-					date: result.date || formData.event.date,
-					day: result.day || calculateDayFromDate(result.date || formData.event.date),
-					time: normalizeTime(result.time),
-					gate_open:
-						normalizeTime(result.gate_open) || calculateGateOpenTime(normalizeTime(result.time))
-				},
-				seat: { ...formData.seat, section: detectedRow, number: result.number || '' }
-			};
+			formData.ticket_id = result.ticket_id || '';
+			formData.price = result.price || 200000;
+			formData.event.title = detectedTitle;
+			formData.event.date = result.date || formData.event.date;
+			formData.event.day = result.day || calculateDayFromDate(result.date || formData.event.date);
+			formData.event.time = normalizeTime(result.time);
+			formData.event.gate_open =
+				normalizeTime(result.gate_open) || calculateGateOpenTime(normalizeTime(result.time));
+			formData.seat.section = detectedRow;
+			formData.seat.number = result.number || '';
+
 			mode = 'EDITING';
 		} catch (e) {
 			logger.error('Image analysis failed', e, { context: 'UploadPage' });
-			showToast($t('forms.analysisFailed'), 'error');
+			showToast(t('forms.analysisFailed'), 'error');
 			mode = 'EDITING';
 		}
 	};
@@ -181,15 +215,15 @@
 		target.value = ''; // Reset input
 	};
 
-	const handleTwoShotDrop = (e: CustomEvent<File>) => {
-		processTwoShotFile(e.detail);
+	const handleTwoShotDrop = (file: File) => {
+		processTwoShotFile(file);
 	};
 
 	const processTwoShotFile = (file: File) => {
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			return;
 		}
@@ -247,14 +281,14 @@
 			await ticketsStore.create(payload);
 
 			// Invalidate dashboard and theater cache
-			invalidateDashboard();
+			resetDashboard();
 			invalidateTheater();
 
-			showToast($t('upload.uploadSuccess'));
+			showToast(t('upload.uploadSuccess'), 'success');
 			goto('/');
 		} catch (e) {
 			logger.error('Ticket upload failed', e, { context: 'UploadPage' });
-			showToast($t('upload.uploadError'), 'error');
+			showToast(t('upload.uploadError'), 'error');
 		} finally {
 			isSubmitting = false;
 		}
@@ -264,50 +298,15 @@
 		mode = 'EDITING';
 		image = null;
 	};
-
-	// Validation
-	$: isFormValid = !!(
-		formData.event.title &&
-		formData.event.date &&
-		formData.event.time &&
-		formData.seat.section &&
-		formData.seat.number &&
-		formData.price > 0 &&
-		formData.ticket_id &&
-		(!showTwoShot ||
-			(showTwoShot &&
-				formData.two_shot.member_name &&
-				formData.two_shot.price !== null &&
-				formData.two_shot.price >= 0 &&
-				twoShotImage))
-	);
-
-	// Reactive Day Calculation
-	$: if (formData.event.date) {
-		const newDay = calculateDayFromDate(formData.event.date);
-		if (newDay && newDay !== formData.event.day) {
-			formData.event.day = newDay;
-			formData = { ...formData }; // Force update
-		}
-	}
-
-	// Reactive Gate Open Calculation (30 mins before Show Time)
-	$: if (formData.event.time) {
-		const newGateOpen = calculateGateOpenTime(formData.event.time);
-		if (newGateOpen && newGateOpen !== formData.event.gate_open) {
-			formData.event.gate_open = newGateOpen;
-			formData = { ...formData }; // Force update
-		}
-	}
 </script>
 
-<SEO title={$t('upload.title')} path="/upload" description={$t('seo.upload')} />
+<SEO title={t('upload.title')} path="/upload" description={t('seo.upload')} />
 
 <!-- Page Header (Hidden visually but kept for MobileHeader store sync) -->
 <div class="hidden max-w-5xl mx-auto pt-4 sm:pt-6 px-4 mb-4">
 	<PageHeader
-		title={$t('upload.title')}
-		subtitle={$t('upload.subtitle')}
+		title={t('upload.title')}
+		subtitle={t('upload.subtitle')}
 		icon={ScanLine}
 		theme="red"
 	/>
@@ -315,13 +314,13 @@
 
 {#if mode === 'SELECTION'}
 	<UploadModeSelection
-		onScanClick={() => fileInputRef.click()}
+		onScanClick={() => fileInputRef?.click()}
 		onManualClick={handleManualEntry}
 		{onCancel}
 	/>
 {/if}
 
-{#if mode === 'ANALYZING'}
+{#if mode === 'ANALYSING'}
 	<UploadAnalyzing />
 {/if}
 
@@ -334,18 +333,19 @@
 				</div>
 				<div>
 					<h2 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-						{$t('forms.newTicket')}
+						{t('forms.newTicket')}
 					</h2>
 					<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
-						{$t('forms.addToCollection')}
+						{t('forms.addToCollection')}
 					</p>
 				</div>
 			</div>
 			<button
-				on:click={onCancel}
+				onclick={onCancel}
 				class="text-[10px] sm:text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer whitespace-nowrap"
-				>{$t('forms.cancel')}</button
 			>
+				{t('forms.cancel')}
+			</button>
 		</div>
 
 		<div class="grid gap-8 lg:grid-cols-2">
@@ -353,8 +353,8 @@
 			<div class="flex flex-col gap-4">
 				<TicketImagePreview
 					{image}
-					onChangePhoto={() => fileInputRef.click()}
-					on:drop={handleFileDrop}
+					onChangePhoto={() => fileInputRef?.click()}
+					ondrop={handleFileDrop}
 				/>
 			</div>
 
@@ -365,9 +365,9 @@
 				{isFormValid}
 				bind:showTwoShot
 				bind:twoShotImage
-				on:click={handleFormSubmit}
-				on:photoClick={() => twoShotInputRef.click()}
-				on:drop={handleTwoShotDrop}
+				onsubmit={handleFormSubmit}
+				onphotoClick={() => twoShotInputRef?.click()}
+				ondrop={handleTwoShotDrop}
 			/>
 		</div>
 	</div>
@@ -378,7 +378,7 @@
 	bind:this={fileInputRef}
 	class="hidden"
 	accept="image/*"
-	on:change={handleFileChange}
+	onchange={handleFileChange}
 />
 <input
 	type="file"
@@ -386,13 +386,13 @@
 	class="hidden"
 	id="two-shot-photo"
 	bind:this={twoShotInputRef}
-	on:change={handleTwoShotFileChange}
+	onchange={handleTwoShotFileChange}
 />
 
 <!-- Validation Alert Modal -->
 <ValidationAlertModal
 	show={showValidationAlert}
-	title={$t('validation.alert.title')}
+	title={t('validation.alert.title')}
 	message={validationAlertMessage}
 	onClose={() => (showValidationAlert = false)}
 />

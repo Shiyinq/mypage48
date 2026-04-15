@@ -4,35 +4,33 @@
 
 	const { t } = useTranslation();
 
-	/**
-	 * First & Last Item Card (Generic for Shows and 2-Shots)
-	 */
-	export let title: string;
-	export let type: 'theater' | 'twoShot';
-	export let loading: boolean = false;
-	export let onExpand: () => void;
-
-	// Data items
-	export let first: {
-		image?: string | null;
+	interface Props {
 		title: string;
-		subtitle?: string | null;
-		date: string;
-		detail?: string;
-	} | null;
+		type: 'theater' | 'twoShot';
+		loading?: boolean;
+		onExpand: () => void;
+		first: {
+			image?: string | null;
+			title: string;
+			subtitle?: string | null;
+			date: string;
+			detail?: string;
+		} | null;
+		last: {
+			image?: string | null;
+			title: string;
+			subtitle?: string | null;
+			date: string;
+			detail?: string;
+		} | null;
+	}
 
-	export let last: {
-		image?: string | null;
-		title: string;
-		subtitle?: string | null;
-		date: string;
-		detail?: string;
-	} | null;
+	let { title, type, loading = false, onExpand, first, last }: Props = $props();
 
-	const theme = type === 'theater' ? 'purple' : 'pink';
-	const PlaceholderIcon = type === 'theater' ? Star : Camera;
+	let theme = $derived(type === 'theater' ? 'purple' : 'pink');
+	let PlaceholderIcon = $derived(type === 'theater' ? Star : Camera);
 
-	$: themeClasses =
+	let themeClasses = $derived(
 		theme === 'purple'
 			? {
 					bg: 'bg-purple-50/20 dark:bg-transparent',
@@ -65,12 +63,14 @@
 					placeholderEmptyBg: 'bg-gray-50 dark:bg-gray-800/50',
 					placeholderEmptyText: 'text-pink-200 dark:text-pink-800/30',
 					label: 'text-gray-400'
-				};
+				}
+	);
 
-	$: labels =
+	let labels = $derived(
 		type === 'theater'
-			? { first: $t('dashboard.theater.first'), last: $t('dashboard.theater.last') }
-			: { first: $t('dashboard.twoShot.first'), last: $t('dashboard.twoShot.last') };
+			? { first: t('dashboard.theater.first'), last: t('dashboard.theater.last') }
+			: { first: t('dashboard.twoShot.first'), last: t('dashboard.twoShot.last') }
+	);
 </script>
 
 <div
@@ -86,7 +86,7 @@
 			</span>
 		</div>
 		<button
-			on:click={onExpand}
+			onclick={onExpand}
 			class={`p-2 -mr-2 -mt-2 ${themeClasses.textLight} ${themeClasses.hoverText} ${themeClasses.hoverBg} rounded-full transition-colors cursor-pointer`}
 			title="View Fullscreen"
 		>
@@ -96,8 +96,7 @@
 
 	{#if loading}
 		<div class="grid grid-cols-2 gap-4">
-			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-			{#each Array(2) as _}
+			{#each Array(2)}
 				<div class="space-y-2">
 					<div class="h-3 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
 					<div class="h-5 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></div>
@@ -107,12 +106,10 @@
 		</div>
 	{:else}
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
-			<!-- Divider -->
 			<div
 				class={`hidden sm:block absolute left-1/2 top-0 bottom-0 w-px ${themeClasses.divider}`}
 			></div>
 
-			<!-- First Item -->
 			<div class="flex items-start gap-3">
 				{#if first}
 					<div
@@ -124,7 +121,7 @@
 							<div
 								class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderText}`}
 							>
-								<svelte:component this={PlaceholderIcon} class="w-4 h-4" />
+								<PlaceholderIcon class="w-4 h-4" />
 							</div>
 						{/if}
 					</div>
@@ -153,7 +150,7 @@
 						<div
 							class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderEmptyText}`}
 						>
-							<svelte:component this={PlaceholderIcon} class="w-4 h-4" />
+							<PlaceholderIcon class="w-4 h-4" />
 						</div>
 					</div>
 					<div class="min-w-0 flex-1">
@@ -169,7 +166,6 @@
 				{/if}
 			</div>
 
-			<!-- Last Item -->
 			<div class="flex items-start gap-3 relative sm:pl-2">
 				{#if last}
 					<div
@@ -181,7 +177,7 @@
 							<div
 								class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderText}`}
 							>
-								<svelte:component this={PlaceholderIcon} class="w-4 h-4" />
+								<PlaceholderIcon class="w-4 h-4" />
 							</div>
 						{/if}
 					</div>
@@ -210,7 +206,7 @@
 						<div
 							class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderEmptyText}`}
 						>
-							<svelte:component this={PlaceholderIcon} class="w-4 h-4" />
+							<PlaceholderIcon class="w-4 h-4" />
 						</div>
 					</div>
 					<div class="min-w-0 flex-1">

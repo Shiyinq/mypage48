@@ -2,9 +2,13 @@
 	import { Trophy, Star } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let totalShows: number;
-	export let totalAchievements: number;
-	export let loading: boolean = true;
+	interface Props {
+		totalShows: number;
+		totalAchievements: number;
+		loading?: boolean;
+	}
+
+	let { totalShows, totalAchievements, loading = true }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -22,7 +26,7 @@
 			<span class="text-2xl font-black text-themed">{totalShows}</span>
 		{/if}
 		<span class="text-[10px] font-bold text-gray-400 uppercase"
-			>{$t('profile.stats.totalShows')}</span
+			>{t('profile.stats.totalShows')}</span
 		>
 	</div>
 	<div class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center">
@@ -37,7 +41,7 @@
 			<span class="text-2xl font-black text-themed">{totalAchievements}</span>
 		{/if}
 		<span class="text-[10px] font-bold text-gray-400 uppercase"
-			>{$t('profile.stats.achievements')}</span
+			>{t('profile.stats.achievements')}</span
 		>
 	</div>
 </div>

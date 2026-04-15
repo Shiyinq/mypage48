@@ -8,21 +8,27 @@
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	import { EventCardSkeleton } from '$lib/components/skeletons';
-	import { newsStore, newsList, newsLoading, newsError, newsPagination } from '$lib/stores/news';
+	import {
+		newsList,
+		newsPagination,
+		newsLoading,
+		newsError,
+		newsStore
+	} from '$lib/stores/news.svelte';
 
 	import { formatDate } from '$lib/i18n';
-	const { t, locale } = useTranslation();
+	const { t } = useTranslation();
 
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(async () => {
 		await newsStore.load();
 		mounted = true;
 	});
 
-	$: error = $newsError;
-	$: list = $newsList;
-	$: loading = $newsLoading;
+	let list = $derived(newsList.value);
+	let isLoading = $derived(newsLoading.value);
+	let error = $derived(newsError.value);
 
 	async function handlePageChange(page: number) {
 		newsStore.load(page);
@@ -63,29 +69,29 @@
 </script>
 
 <SEO
-	title={$t('theater.news.title') || 'News'}
+	title={t('theater.news.title') || 'News'}
 	path="/theater/news"
-	description={$t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
+	description={t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
 />
 
 <div class="space-y-6">
-	{#if (!mounted || loading) && list.length === 0}
+	{#if (!mounted || isLoading) && list.length === 0}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-			{#each Array(8) as _}
+			{#each Array(8)}
 				<EventCardSkeleton />
 			{/each}
 		</div>
 	{:else if error && list.length === 0}
 		<ErrorState
-			title={$t('theater.news.errorTitle')}
-			description={$t('theater.news.errorDesc')}
+			title={t('theater.news.errorTitle')}
+			description={t('theater.news.errorDesc')}
 			onRetry={() => newsStore.load(1, 12, true)}
 		/>
 	{:else if list.length === 0}
 		<EmptyState
 			icon={Newspaper}
-			title={$t('theater.news.emptyTitle')}
-			description={$t('theater.news.empty')}
+			title={t('theater.news.emptyTitle')}
+			description={t('theater.news.empty')}
 		/>
 	{:else}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
@@ -139,7 +145,7 @@
 							>
 								<Calendar class="w-3.5 h-3.5" />
 								<span
-									>{$formatDate(item.valid_date_from, {
+									>{formatDate(item.valid_date_from, {
 										day: 'numeric',
 										month: 'short',
 										year: 'numeric'
@@ -158,7 +164,7 @@
 							class="mt-auto md:pt-4 md:border-t flex items-center justify-between text-[11px] md:text-xs text-gray-500 dark:text-gray-400 font-medium md:border-gray-100 dark:border-white/5"
 						>
 							<span class="flex items-center gap-1 hover:text-red-500 transition-colors">
-								{$t('theater.news.readMore')}
+								{t('theater.news.readMore')}
 								<ChevronRight class="w-3 h-3" />
 							</span>
 						</div>
@@ -175,7 +181,7 @@
 					<button
 						class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-md bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
 						disabled={$newsPagination.current_page === 1}
-						on:click={() => handlePageChange($newsPagination.current_page - 1)}
+						onclick={() => handlePageChange($newsPagination.current_page - 1)}
 					>
 						<ChevronLeft class="w-4 h-4 md:w-5 md:h-5" />
 					</button>
@@ -193,7 +199,7 @@
 								$newsPagination.current_page
 									? 'bg-red-500 text-white border-red-500'
 									: 'bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700'}"
-								on:click={() => handlePageChange(Number(page))}
+								onclick={() => handlePageChange(Number(page))}
 							>
 								{page}
 							</button>
@@ -204,7 +210,7 @@
 					<button
 						class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-md bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
 						disabled={$newsPagination.current_page === $newsPagination.last_page}
-						on:click={() => handlePageChange($newsPagination.current_page + 1)}
+						onclick={() => handlePageChange($newsPagination.current_page + 1)}
 					>
 						<ChevronRight class="w-4 h-4 md:w-5 md:h-5" />
 					</button>

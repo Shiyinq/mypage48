@@ -1,8 +1,7 @@
-import { get } from 'svelte/store';
-import { accessToken } from '$lib/stores/accessToken';
-import { isAuthenticated } from '$lib/stores/authStatus';
-import { showToast } from '$lib/stores/toast';
-import { i18n } from '$lib/i18n';
+import { accessToken } from '$lib/stores/accessToken.svelte';
+import { isAuthenticated } from '$lib/stores/authStatus.svelte';
+import { showToast } from '$lib/stores';
+import { t } from '$lib/i18n';
 import { isTokenExpired, getCSRFToken } from '$lib/utils/auth';
 import type { ApiError, AuthResponse } from '$lib/types';
 
@@ -65,7 +64,7 @@ export async function client<T>(
 	} = {}
 ): Promise<T> {
 	// 1. Get current token
-	let token = get(accessToken);
+	let token: string = accessToken.value;
 
 	// 2. Check expiration and refresh if needed
 	const publicEndpoints = [
@@ -95,7 +94,6 @@ export async function client<T>(
 			token = newToken;
 		} else {
 			if (hasAuthHint) {
-				const t = get(i18n);
 				showToast(t('auth.login.sessionInvalid'), 'error');
 			}
 			isAuthenticated.set(false);

@@ -3,7 +3,11 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Trophy } from 'lucide-svelte';
 
-	export let detail: SetlistDetailResponse;
+	interface Props {
+		detail: SetlistDetailResponse;
+	}
+
+	let { detail }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -38,15 +42,15 @@
 							class="px-2.5 py-1 bg-yellow-400/20 backdrop-blur-md border border-yellow-400/30 text-yellow-300 text-[10px] md:text-xs font-bold rounded-full flex items-center gap-1 md:gap-1.5 shadow-lg shadow-yellow-900/20"
 						>
 							<Trophy class="w-3 h-3 md:w-3.5 md:h-3.5" />
-							{$t('shows.top')}
+							{t('shows.top')}
 						</span>
 					{/if}
 					<span
 						class="px-2.5 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-[10px] md:text-xs font-medium rounded-full"
 					>
 						{detail.type === 'setlist'
-							? $t('theater.setlists.section')
-							: $t('theater.setlists.events')}
+							? t('theater.setlists.section')
+							: t('theater.setlists.events')}
 					</span>
 				</div>
 
@@ -82,8 +86,8 @@
 						{detail.watched.count}
 					</span>
 					<span class="text-xs font-bold text-white/60 uppercase tracking-widest text-center">
-						{#each $t('shows.performancesAttended').split(' ') as word, i}
-							{word}{#if i < $t('shows.performancesAttended').split(' ').length - 1}<br />{/if}
+						{#each t('shows.performancesAttended').split(' ') as word, i}
+							{word}{#if i < t('shows.performancesAttended').split(' ').length - 1}<br />{/if}
 						{/each}
 					</span>
 				</div>

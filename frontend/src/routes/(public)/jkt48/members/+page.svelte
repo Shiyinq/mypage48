@@ -6,7 +6,7 @@
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { showToast } from '$lib/stores';
 	import { Search } from 'lucide-svelte';
-	import { membersStore, isMembersLoading } from '$lib/stores/theater';
+	import { membersStore, isMembersLoading } from '$lib/stores/theater.svelte';
 	import MemberCard from '$lib/components/theater/MemberCard.svelte';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
@@ -15,13 +15,13 @@
 	const { t } = useTranslation();
 
 	// State
-	let loadingGenerations = true;
-	let searchQuery = '';
-	let selectedGeneration: string | null = null;
-	let selectedType: string | null = null;
-	let generations: string[] = [];
-	let showMemberDetail = false;
-	let selectedMember: Member | null = null;
+	let loadingGenerations = $state(true);
+	let searchQuery = $state('');
+	let selectedGeneration: string | null = $state(null);
+	let selectedType: string | null = $state(null);
+	let generations: string[] = $state([]);
+	let showMemberDetail = $state(false);
+	let selectedMember: Member | null = $state(null);
 
 	const teamOrder = ['LOVE', 'DREAM', 'PASSION', 'TRAINEE', 'JKT48_VIRTUAL'];
 	const teamColors: Record<string, string> = {
@@ -51,12 +51,10 @@
 		JKT48: 'Member'
 	};
 
-	// Store subscriptions
-	$: state = $membersStore;
-	$: membersList = state.list;
-	$: pagination = state.pagination;
-	$: error = state.error;
-	$: isAppending = $isMembersLoading && membersList.length > 0 && pagination.page > 0;
+	// Store data via derived runes
+	let membersList = $derived(membersStore.list);
+	let pagination = $derived(membersStore.pagination);
+	let error = $derived(membersStore.error);
 
 	async function fetchGenerations() {
 		try {
@@ -64,7 +62,7 @@
 				const gens = await membersStore.getGenerations();
 				generations = gens.sort((a: string, b: string) => parseInt(a) - parseInt(b));
 			}
-		} catch (e) {
+		} catch {
 			// Error logged by store
 		} finally {
 			loadingGenerations = false;
@@ -72,7 +70,7 @@
 	}
 
 	async function fetchMembers(reset = false) {
-		if ($isMembersLoading) return;
+		if (isMembersLoading.value) return;
 		try {
 			await membersStore.load(
 				{
@@ -81,8 +79,8 @@
 				},
 				reset
 			);
-		} catch (err) {
-			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
+		} catch {
+			showToast(t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		}
 	}
 
@@ -114,7 +112,7 @@
 		showMemberDetail = false;
 	}
 
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(async () => {
 		fetchGenerations();
@@ -124,49 +122,55 @@
 	});
 
 	function handleInfiniteScroll() {
-		if (!$isMembersLoading && pagination.hasMore) {
+		if (!isMembersLoading.value && pagination.hasMore) {
 			fetchMembers(false);
 		}
 	}
 
-	$: filteredList = membersList.filter((m) => {
-		if (selectedType && (m.member_type || 'JKT48') !== selectedType) return false;
-		return true;
-	});
-
-	$: groupedMembers = filteredList.reduce(
-		(acc, member) => {
-			const type = member.member_type || 'JKT48';
-			if (!acc[type]) acc[type] = [];
-			acc[type].push(member);
-			return acc;
-		},
-		{} as Record<string, Member[]>
+	let filteredList = $derived(
+		membersList.filter((m) => {
+			if (selectedType && (m.member_type || 'JKT48') !== selectedType) return false;
+			return true;
+		})
 	);
 
-	$: types = [...teamOrder, 'JKT48'].filter(
-		(t) => groupedMembers[t] && groupedMembers[t].length > 0
+	let groupedMembers = $derived(
+		filteredList.reduce(
+			(acc, member) => {
+				const type = member.member_type || 'JKT48';
+				if (!acc[type]) acc[type] = [];
+				acc[type].push(member);
+				return acc;
+			},
+			{} as Record<string, Member[]>
+		)
+	);
+
+	let types = $derived(
+		[...teamOrder, 'JKT48'].filter((t) => groupedMembers[t] && groupedMembers[t].length > 0)
 	);
 	// Handle any dynamic types not in our list
-	$: otherTypes = Object.keys(groupedMembers)
-		.filter((t) => !teamOrder.includes(t) && t !== 'JKT48')
-		.sort();
-	$: allSortedTypes = [...types, ...otherTypes];
+	let otherTypes = $derived(
+		Object.keys(groupedMembers)
+			.filter((t) => !teamOrder.includes(t) && t !== 'JKT48')
+			.sort()
+	);
+	let allSortedTypes = $derived([...types, ...otherTypes]);
 </script>
 
-<SEO title={$t('theater.members.title')} path="/jkt48/members" description={$t('seo.members')} />
+<SEO title={t('theater.members.title')} path="/jkt48/members" description={t('seo.members')} />
 
 <div class="space-y-8 pt-4 md:pt-6 pb-12 px-0 sm:px-0">
 	<div class="text-center space-y-4 mb-8">
 		<h1
 			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
 		>
-			{$t('theater.members.title')}
+			{t('theater.members.title')}
 		</h1>
 		<p
 			class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest"
 		>
-			{$t('theater.members.subtitle')}
+			{t('theater.members.subtitle')}
 		</p>
 	</div>
 
@@ -177,17 +181,17 @@
 			<div class="flex-1 w-full overflow-x-auto pb-2 -mx-3 px-3 md:mx-0 md:px-0 scrollbar-hide">
 				<div class="flex items-center gap-2">
 					<button
-						on:click={() => setGeneration(null)}
+						onclick={() => setGeneration(null)}
 						class={`px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
 							selectedGeneration === null
 								? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/20'
 								: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-zinc-800 hover:text-red-600 dark:hover:text-red-400'
 						}`}
 					>
-						{$t('common.all')}
+						{t('common.all')}
 					</button>
 					{#if loadingGenerations}
-						{#each Array(5) as _}
+						{#each Array(5)}
 							<div
 								class="h-[42px] w-20 bg-gray-100 dark:bg-zinc-800 rounded-full animate-pulse shrink-0"
 							></div>
@@ -195,7 +199,7 @@
 					{:else}
 						{#each generations as gen}
 							<button
-								on:click={() => setGeneration(gen)}
+								onclick={() => setGeneration(gen)}
 								class={`px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
 									selectedGeneration === gen
 										? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/20'
@@ -216,9 +220,9 @@
 				/>
 				<input
 					type="text"
-					placeholder={$t('common.search')}
+					placeholder={t('common.search')}
 					value={searchQuery}
-					on:input={handleSearch}
+					oninput={handleSearch}
 					class="w-full pl-9.5 pr-4 py-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 rounded-full text-sm text-themed placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-sm"
 				/>
 			</div>
@@ -228,7 +232,7 @@
 		<div class="overflow-x-auto pb-4 -mx-3 px-3 md:mx-0 md:px-0 scrollbar-hide">
 			<div class="flex items-center gap-2">
 				<button
-					on:click={() => setType(null)}
+					onclick={() => setType(null)}
 					class={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
 						selectedType === null
 							? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/20'
@@ -239,7 +243,7 @@
 				</button>
 				{#each teamOrder as type}
 					<button
-						on:click={() => setType(type)}
+						onclick={() => setType(type)}
 						class={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer border ${
 							selectedType === type
 								? teamColors[type].replace(
@@ -257,36 +261,36 @@
 	</div>
 
 	<!-- Members Grid -->
-	{#if (!mounted || $isMembersLoading) && membersList.length === 0}
+	{#if (!mounted || isMembersLoading.value) && membersList.length === 0}
 		<div
 			class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6"
 		>
-			{#each Array(12) as _}
+			{#each Array(12)}
 				<MemberCardSkeleton />
 			{/each}
 		</div>
 	{:else if error && membersList.length === 0}
 		<ErrorState
-			title={$t('theater.members.errorTitle') || 'Failed to load members'}
-			description={$t('theater.members.errorDesc') || error || ''}
+			title={t('theater.members.errorTitle') || 'Failed to load members'}
+			description={t('theater.members.errorDesc') || error || ''}
 			onRetry={fetchMembers}
 		/>
 	{:else if membersList.length === 0}
 		<EmptyState
 			icon={Search}
-			title={$t('member.emptyState.title')}
-			description={$t('member.emptyState.description')}
+			title={t('member.emptyState.title')}
+			description={t('member.emptyState.description')}
 		>
 			{#if searchQuery || selectedGeneration}
 				<button
-					on:click={() => {
+					onclick={() => {
 						searchQuery = '';
 						selectedGeneration = null;
 						fetchMembers();
 					}}
 					class="mt-4 px-6 py-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full text-sm font-bold hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors cursor-pointer"
 				>
-					{$t('common.clearFilters')}
+					{t('common.clearFilters')}
 				</button>
 			{/if}
 		</EmptyState>
@@ -313,18 +317,18 @@
 					class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6"
 				>
 					{#each groupedMembers[type] as member (member.id)}
-						<MemberCard {member} on:click={() => openMemberDetail(member)} />
+						<MemberCard {member} onclick={() => openMemberDetail(member)} />
 					{/each}
 				</div>
 			</div>
 		{/each}
 
 		<!-- Skeletons for Infinite Scroll (Appending) -->
-		{#if $isMembersLoading && membersList.length > 0}
+		{#if isMembersLoading.value && membersList.length > 0}
 			<div
 				class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-6 mt-6"
 			>
-				{#each Array(6) as _}
+				{#each Array(6)}
 					<MemberCardSkeleton />
 				{/each}
 			</div>
@@ -333,7 +337,7 @@
 		<!-- Sentinel for Infinite Scroll -->
 		<div
 			use:infiniteScroll
-			on:intersect={handleInfiniteScroll}
+			onintersect={handleInfiniteScroll}
 			class="h-8 w-full flex justify-center items-center py-2"
 		></div>
 	{/if}

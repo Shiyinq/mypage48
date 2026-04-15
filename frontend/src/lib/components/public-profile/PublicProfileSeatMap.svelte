@@ -2,12 +2,16 @@
 	import { MapPin, Grid3x3 } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let rowStats: { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
-	export let seatStats: Record<string, number>;
-	export let isLoading: boolean = false;
+	interface Props {
+		rowStats: { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
+		seatStats: Record<string, number>;
+		isLoading?: boolean;
+	}
+
+	let { rowStats, seatStats, isLoading = false }: Props = $props();
 
 	const { t } = useTranslation();
-	let mapView: 'ROWS' | 'SEATS' = 'SEATS';
+	let mapView: 'ROWS' | 'SEATS' = $state('SEATS');
 
 	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
@@ -114,7 +118,7 @@
 		}
 	} as const;
 
-	$: maxSeatCount = seatStats ? Math.max(...Object.values(seatStats), 1) : 1;
+	let maxSeatCount = $derived(seatStats ? Math.max(...Object.values(seatStats), 1) : 1);
 
 	function getLayout(row: string) {
 		return SEAT_LAYOUT[row as keyof typeof SEAT_LAYOUT];
@@ -130,7 +134,7 @@
 				class="font-black text-sm uppercase tracking-widest text-gray-400 flex items-center gap-2"
 			>
 				<MapPin class="w-4 h-4" />
-				{$t('dashboard.seatMap.title')}
+				{t('dashboard.seatMap.title')}
 			</h3>
 
 			<div class="flex items-center gap-2 sm:gap-3 ml-auto">
@@ -140,18 +144,18 @@
 					<span class="text-red-500 dark:text-red-400 font-black"
 						>{rowStats.uniqueVisited}/{THEATER_ROWS.length}</span
 					>
-					{$t('dashboard.seatMap.rowsCollected')}
+					{t('dashboard.seatMap.rowsCollected')}
 				</div>
 
 				<div class="bg-gray-100/50 dark:bg-gray-800/50 p-1 rounded-full flex items-center gap-1">
 					<button
-						on:click={() => (mapView = 'ROWS')}
+						onclick={() => (mapView = 'ROWS')}
 						class={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition-all cursor-pointer ${mapView === 'ROWS' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
 					>
 						<p class="font-black text-[10px]">R</p>
 					</button>
 					<button
-						on:click={() => (mapView = 'SEATS')}
+						onclick={() => (mapView = 'SEATS')}
 						class={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition-all cursor-pointer ${mapView === 'SEATS' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
 					>
 						<Grid3x3 class="w-4 h-4" />
@@ -176,7 +180,7 @@
 				{#if isLoading}
 					<div class="grid grid-cols-2 gap-4 animate-pulse">
 						<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-						{#each Array(10) as _}
+						{#each Array(10)}
 							<div class="h-10 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
 						{/each}
 					</div>

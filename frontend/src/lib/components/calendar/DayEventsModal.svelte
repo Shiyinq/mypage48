@@ -1,19 +1,22 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate, formatTime } from '$lib/i18n';
 	import type { CalendarEvent } from '$lib/types/events';
-	import { Cake, ChevronRight, Calculator, Calendar, ExternalLink } from 'lucide-svelte';
+	import { Cake, Calendar, ExternalLink } from 'lucide-svelte';
 
-	export let isOpen = false;
-	export let date: Date;
-	export let events: CalendarEvent[] = [];
+	interface Props {
+		isOpen?: boolean;
+		date: Date;
+		events?: CalendarEvent[];
+		onclose?: () => void;
+	}
 
-	const dispatch = createEventDispatcher();
-	const { t, locale } = useTranslation();
+	let { isOpen = false, date, events = [], onclose }: Props = $props();
+
+	const { t } = useTranslation();
 
 	function close() {
-		dispatch('close');
+		if (onclose) onclose();
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -23,12 +26,14 @@
 	}
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if isOpen}
 	<div
 		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm bg-black/50 transition-opacity"
-		on:click|self={close}
+		onclick={(e) => {
+			if (e.target === e.currentTarget) close();
+		}}
 		role="presentation"
 	>
 		<div
@@ -43,7 +48,7 @@
 						class="font-semibold text-lg text-gray-900 dark:text-gray-100 flex items-center gap-2"
 					>
 						<Calendar class="w-5 h-5 text-gray-500" />
-						{$formatDate(date, {
+						{formatDate(date, {
 							weekday: 'long',
 							day: 'numeric',
 							month: 'long'
@@ -51,7 +56,8 @@
 					</h3>
 				</div>
 				<button
-					on:click={close}
+					onclick={close}
+					aria-label="Close modal"
 					class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-gray-500"
 				>
 					<svg
@@ -77,7 +83,7 @@
 						class="py-12 flex flex-col items-center text-center text-gray-400 dark:text-zinc-600"
 					>
 						<Calendar class="w-10 h-10 mb-2 opacity-20" />
-						<p>{$t('theater.events.noEvents')}</p>
+						<p>{t('theater.events.noEvents')}</p>
 					</div>
 				{:else}
 					<div class="space-y-1">
@@ -92,7 +98,7 @@
 									<div class="w-14 shrink-0 flex flex-col items-center justify-center pt-0.5">
 										{#if new Date(event.date).getHours() !== 0 || new Date(event.date).getMinutes() !== 0}
 											<span class="text-sm font-bold text-gray-900 dark:text-gray-100">
-												{$formatTime(event.date, {
+												{formatTime(event.date, {
 													hour: '2-digit',
 													minute: '2-digit',
 													hour12: false
@@ -111,20 +117,20 @@
 												<span
 													class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
 												>
-													{$t('theater.events.setlist')}
+													{t('theater.events.setlist')}
 												</span>
 											{:else if event.isBirthday}
 												<span
 													class="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 px-2 py-0.5"
 												>
 													<Cake class="w-3 h-3 mb-[2px]" />
-													{$t('theater.events.birthday')}
+													{t('theater.events.birthday')}
 												</span>
 											{:else}
 												<span
 													class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
 												>
-													{$t('theater.events.eventType')}
+													{t('theater.events.eventType')}
 												</span>
 											{/if}
 
@@ -133,7 +139,7 @@
 													class="flex items-center gap-1.5 text-[10px] bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 px-2 py-0.5 rounded-md font-medium leading-none"
 												>
 													<Cake class="w-3 h-3 mb-[3px]" />
-													{$t('theater.events.birthday')}
+													{t('theater.events.birthday')}
 													{#if event.seitansaiMembers.length > 0}
 														: {event.seitansaiMembers.join(', ')}
 													{/if}

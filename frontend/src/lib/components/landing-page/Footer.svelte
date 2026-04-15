@@ -21,7 +21,7 @@
 		<div
 			class="flex items-center justify-center gap-2 text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-bold"
 		>
-			<span>{$t('landing.footer.copyright', { heart: '❤️' })}</span>
+			<span>{t('landing.footer.copyright', { heart: '❤️' })}</span>
 		</div>
 
 		<a
@@ -30,7 +30,7 @@
 			class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
 		>
 			<Github size={14} />
-			{$t('landing.footer.openSource')}
+			{t('landing.footer.openSource')}
 		</a>
 
 		<div class="flex items-center justify-center gap-6 flex-wrap px-6">
@@ -38,30 +38,30 @@
 				href="/about"
 				class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
 			>
-				{$t('landing.footer.about')}
+				{t('landing.footer.about')}
 			</a>
 			<a
 				href="/privacy"
 				class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
 			>
-				{$t('landing.footer.privacy')}
+				{t('landing.footer.privacy')}
 			</a>
 			<a
 				href="/terms"
 				class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
 			>
-				{$t('landing.footer.terms')}
+				{t('landing.footer.terms')}
 			</a>
 			<a
 				href="/cookies"
 				class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
 			>
-				{$t('landing.footer.cookies')}
+				{t('landing.footer.cookies')}
 			</a>
 		</div>
 
 		<p class="text-[9px] text-slate-300 max-w-md mx-auto px-6">
-			{$t('landing.footer.disclaimer')}
+			{t('landing.footer.disclaimer')}
 		</p>
 	</div>
 </footer>

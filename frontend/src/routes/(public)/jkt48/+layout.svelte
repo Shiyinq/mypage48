@@ -6,11 +6,16 @@
 	import { page } from '$app/stores';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 	import ScrollToTop from '$lib/components/common/ScrollToTop.svelte';
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
 
-	let scrollY = 0;
-	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
+	let { children }: Props = $props();
 
-	$: isFullScreenRoute = $page.url.pathname.includes('/live/multiview');
+	let scrollY = $state(0);
+	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
+
+	let isFullScreenRoute = $derived($page.url.pathname.includes('/live/multiview'));
 
 	// Use addEventListener instead of svelte:window bind:scrollY
 	// to avoid conflicting with ScrollToTop's own bind:scrollY binding
@@ -38,7 +43,7 @@
 	<main
 		class={isFullScreenRoute ? 'relative w-full h-full' : 'relative max-w-7xl mx-auto px-3 sm:px-6'}
 	>
-		<slot />
+		{@render children?.()}
 	</main>
 
 	<!-- FOOTER -->

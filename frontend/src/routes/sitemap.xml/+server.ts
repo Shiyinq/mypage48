@@ -13,12 +13,8 @@ export const GET: RequestHandler = async () => {
 		'/jkt48/calendar',
 		'/jkt48/event-history',
 		'/jkt48/sorter',
-		'/about',
 		'/login',
-		'/register',
-		'/privacy',
-		'/terms',
-		'/cookies'
+		'/register'
 	];
 
 	const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -44,16 +40,15 @@ ${pages
 		) {
 			priority = '0.9';
 			changefreq = 'daily';
-		} else if (['/privacy', '/terms', '/cookies'].includes(page)) {
-			priority = '0.1';
-			changefreq = 'monthly';
 		}
 
 		const url = `${baseUrl}${page}`;
 
 		// Generate localized alternates
 		const alternates = languages
-			.map((lang) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${url}?lang=${lang}" />`)
+			.map(
+				(lang) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${url}?lang=${lang}" />`
+			)
 			.join('\n');
 		const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${url}" />`;
 

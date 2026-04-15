@@ -3,6 +3,8 @@ import ts from 'typescript-eslint';
 import svelte from 'eslint-plugin-svelte';
 import prettier from 'eslint-config-prettier';
 import globals from 'globals';
+import svelteParser from 'svelte-eslint-parser';
+import svelteConfig from './svelte.config.js';
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
@@ -12,18 +14,38 @@ export default [
 	prettier,
 	...svelte.configs['flat/prettier'],
 	{
+		rules: {
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_'
+				}
+			]
+		}
+	},
+	{
 		languageOptions: {
 			globals: {
 				...globals.browser,
-				...globals.node
+				...globals.node,
+				YTPlayer: 'readonly',
+				YTEvent: 'readonly'
 			}
 		}
 	},
 	{
 		files: ['**/*.svelte'],
 		languageOptions: {
+			parser: svelteParser,
 			parserOptions: {
-				parser: ts.parser
+				parser: ts.parser,
+				extraFileExtensions: ['.svelte'],
+				svelteConfig,
+				svelteFeatures: {
+					runes: true
+				}
 			}
 		}
 	},

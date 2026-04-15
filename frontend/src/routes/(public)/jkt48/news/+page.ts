@@ -1,4 +1,4 @@
-import { newsStore } from '$lib/stores/news';
+import { newsStore } from '$lib/stores/news.svelte';
 import { browser } from '$app/environment';
 
 export const load = async () => {

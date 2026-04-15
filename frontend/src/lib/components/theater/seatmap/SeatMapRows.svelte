@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let rows: readonly string[];
-	export let rowStats: { counts: Record<string, number>; maxCount: number };
-	export let isLoading: boolean;
+	interface Props {
+		rows: readonly string[];
+		rowStats: { counts: Record<string, number>; maxCount: number };
+		isLoading: boolean;
+	}
+
+	let { rows, rowStats, isLoading }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -52,7 +56,7 @@
 							class={`text-[10px] md:text-xs font-bold uppercase tracking-wide transition-colors duration-300 ${hasData && intensity <= 0.3 ? 'text-gray-600 dark:text-gray-300' : ''} ${!hasData ? 'text-gray-300 dark:text-gray-600' : ''}`}
 							style={hasData && intensity > 0.3
 								? 'color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3)'
-								: ''}>{$t('dashboard.seatMap.row')} {row}</span
+								: ''}>{t('dashboard.seatMap.row')} {row}</span
 						>
 						<span
 							class={`text-base md:text-lg font-black transition-colors duration-300 ${hasData && intensity <= 0.85 ? 'text-red-600 dark:text-red-400' : ''} ${!hasData ? 'text-gray-300 dark:text-gray-600' : ''}`}

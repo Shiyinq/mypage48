@@ -1,5 +1,5 @@
 import { client } from './client';
-import type { OpenAPISchema, ExecutionPayload, ExecutionResult } from '$lib/types';
+import type { OpenAPISchema, ExecutionPayload, ExecutionResult, ApiError } from '$lib/types';
 
 export const playgroundApi = {
 	getSchema: async (): Promise<OpenAPISchema> => {
@@ -9,13 +9,13 @@ export const playgroundApi = {
 	executeRequest: async (payload: ExecutionPayload): Promise<ExecutionResult> => {
 		const startTime = Date.now();
 
-		const options: any = {
+		const options: Parameters<typeof client>[1] = {
 			method: payload.method,
 			headers: payload.headers
 		};
 
 		if (payload.body && payload.method.toLowerCase() !== 'get') {
-			options.body = payload.body;
+			options.body = payload.body as Record<string, unknown>;
 		}
 
 		try {
@@ -25,7 +25,7 @@ export const playgroundApi = {
 			// Actually, for playground, we want to see the full response object.
 
 			// Let's use a try-catch for the client call.
-			const data = await client<any>(payload.path, options);
+			const data = await client<unknown>(payload.path, options);
 			const duration = Date.now() - startTime;
 
 			return {
@@ -35,16 +35,17 @@ export const playgroundApi = {
 				headers: {}, // Client doesn't easily expose headers unless modified
 				duration
 			};
-		} catch (err: any) {
+		} catch (err: unknown) {
 			const duration = Date.now() - startTime;
 			// The client adds 'status' to the error object.
 			// We want to return the raw server response as 'data'.
-			const { status, statusText, ...serverData } = err;
+			const { status, detail, ...serverData } = err as ApiError;
 
 			return {
 				status: status || 500,
-				statusText: statusText || 'Error',
-				data: Object.keys(serverData).length > 0 ? serverData : err.message || err,
+				statusText: 'Error',
+				data:
+					Object.keys(serverData).length > 0 ? serverData : detail || (err as Error).message || err,
 				headers: {},
 				duration
 			};

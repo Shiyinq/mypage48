@@ -1,40 +1,35 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
+	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import LiveGrid from '$lib/components/live/LiveGrid.svelte';
 
 	const { t } = useTranslation();
 
-	let interval: any;
-	let initialLoading = $liveList.length === 0;
+	let initialLoading = $state(liveList.value.length === 0);
 
 	async function fetchLives() {
 		await liveStore.loadLiveList();
 		initialLoading = false;
 	}
 
-	onMount(() => {
+	$effect(() => {
 		fetchLives();
-		interval = setInterval(() => liveStore.loadLiveList(true), 30000);
-	});
-
-	onDestroy(() => {
-		if (interval) clearInterval(interval);
+		const intervalId = setInterval(() => liveStore.loadLiveList(true), 30000);
+		return () => clearInterval(intervalId);
 	});
 </script>
 
 <SEO
-	title={$t('theater.live.title')}
+	title={t('theater.live.seoTitle')}
 	path="/theater/live"
-	description={$t('theater.live.subtitle')}
+	description={t('theater.live.seoDescription')}
 />
 
 <div class="w-full pb-12">
 	<LiveGrid
-		liveList={$liveList}
-		loading={$liveLoading}
+		liveList={liveList.value}
+		loading={liveLoading.value}
 		{initialLoading}
 		variant="theater"
 		multiviewHref="/theater/live/multiview"

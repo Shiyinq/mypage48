@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { authStore } from '$lib/stores/auth';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { getErrorMessage } from '$lib/utils/api';
@@ -12,17 +12,16 @@
 
 	const { t } = useTranslation();
 
-	let email = '';
-	let isLoading = false;
-	let isSent = false;
-	let error: string | null = null;
-	let errors: Record<string, string> = {};
+	let email = $state('');
+	let isLoading = $state(false);
+	let isSent = $state(false);
+	let error: string | null = $state(null);
+	let errors: Record<string, string> = $state({});
 
-	$: isValid = email.length > 0 && Object.values(errors).every((e) => !e);
+	let isValid = $derived(email.length > 0 && Object.values(errors).every((e) => !e));
 
 	const validateField = (field: 'email', value: string) => {
 		try {
-			// @ts-ignore - pick is valid on z.object
 			const fieldSchema = forgotPasswordSchema.pick({ [field]: true });
 			fieldSchema.parse({ [field]: value });
 			errors[field] = '';
@@ -44,7 +43,7 @@
 
 			await authStore.forgotPassword({ email });
 			isSent = true;
-			showToast($t('auth.forgotPassword.sent'), 'success');
+			showToast(t('auth.forgotPassword.sent'), 'success');
 		} catch (err) {
 			if (err instanceof ZodError) {
 				const fieldErrors = err.flatten().fieldErrors;
@@ -59,7 +58,7 @@
 
 			const errorMsg = getErrorMessage(err);
 			logger.error('Forgot password failed', err, { context: 'ForgotPasswordPage' });
-			error = errorMsg || $t('auth.forgotPassword.error');
+			error = errorMsg || t('auth.forgotPassword.error');
 			showToast(error, 'error');
 		} finally {
 			isLoading = false;
@@ -68,24 +67,31 @@
 </script>
 
 <SEO
-	title={$t('auth.forgotPassword.title')}
+	title={t('auth.forgotPassword.title')}
 	path="/auth/forgot-password"
-	description={$t('seo.forgotPassword')}
+	description={t('seo.forgotPassword')}
 />
 
 <AuthLayout
-	title={$t('auth.forgotPassword.title')}
+	title={t('auth.forgotPassword.title')}
 	subtitle={isSent
-		? $t('auth.forgotPassword.successMessage', { email })
-		: $t('auth.forgotPassword.instruction')}
+		? t('auth.forgotPassword.successMessage', { email })
+		: t('auth.forgotPassword.instruction')}
 	icon={KeyRound}
 >
 	{#if !isSent}
-		<form on:submit|preventDefault={handleSubmit} class="space-y-6" novalidate>
+		<form
+			onsubmit={(e) => {
+				e.preventDefault();
+				handleSubmit();
+			}}
+			class="space-y-6"
+			novalidate
+		>
 			<div>
 				<label
 					class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
-					for="email-input">{$t('auth.forgotPassword.emailLabel')}</label
+					for="email-input">{t('auth.forgotPassword.emailLabel')}</label
 				>
 				<div class="relative">
 					<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
@@ -95,7 +101,7 @@
 						id="email-input"
 						type="email"
 						bind:value={email}
-						on:input={() => validateField('email', email)}
+						oninput={() => validateField('email', email)}
 						class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
 						placeholder="member@mypage48.com"
 					/>
@@ -114,33 +120,35 @@
 				class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:shadow-md hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer border border-white/20"
 			>
 				{#if isLoading}
-					<LoaderCircle class="w-5 h-5 animate-spin" /> {$t('auth.forgotPassword.submitting')}
+					<LoaderCircle class="w-5 h-5 animate-spin" /> {t('auth.forgotPassword.submitting')}
 				{:else}
-					{$t('auth.forgotPassword.submit')}
+					{t('auth.forgotPassword.submit')}
 				{/if}
 			</button>
 		</form>
 	{:else}
 		<div class="space-y-4">
 			<button
-				on:click={() => (isSent = false)}
+				onclick={() => (isSent = false)}
 				class="w-full py-4 rounded-2xl font-bold text-lg text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all cursor-pointer"
 			>
-				{$t('auth.forgotPassword.tryAnother')}
+				{t('auth.forgotPassword.tryAnother')}
 			</button>
 			<p class="text-xs text-gray-400 text-center">
-				{$t('auth.forgotPassword.spamCheck')}
+				{t('auth.forgotPassword.spamCheck')}
 			</p>
 		</div>
 	{/if}
 
-	<div slot="footer">
-		<a
-			href="/login"
-			class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors inline-flex items-center gap-2"
-		>
-			<ArrowLeft class="w-4 h-4" />
-			{$t('auth.forgotPassword.backToLogin')}
-		</a>
-	</div>
+	{#snippet footer()}
+		<div>
+			<a
+				href="/login"
+				class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors inline-flex items-center gap-2"
+			>
+				<ArrowLeft class="w-4 h-4" />
+				{t('auth.forgotPassword.backToLogin')}
+			</a>
+		</div>
+	{/snippet}
 </AuthLayout>

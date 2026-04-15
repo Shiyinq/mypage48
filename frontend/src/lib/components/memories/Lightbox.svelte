@@ -4,19 +4,26 @@
 	import { formatDate } from '$lib/i18n';
 	import type { MemoryItem } from '$lib/types';
 
-	export let selectedImage: MemoryItem | null = null;
-	export let onClose: () => void;
+	interface Props {
+		selectedImage?: MemoryItem | null;
+		onClose: () => void;
+	}
+
+	let { selectedImage = null, onClose }: Props = $props();
 </script>
 
 {#if selectedImage}
-	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 	<div
 		class="fixed inset-0 z-[10001] flex flex-col items-center justify-center p-4 bg-black/90 backdrop-blur-md cursor-pointer"
 		transition:fade={{ duration: 200 }}
-		on:click={onClose}
+		onclick={onClose}
+		onkeydown={(e) => e.key === 'Escape' && onClose()}
+		role="button"
+		tabindex="-1"
+		aria-label="Close lightbox"
 	>
 		<button
-			on:click={(e) => {
+			onclick={(e) => {
 				e.stopPropagation();
 				onClose();
 			}}
@@ -25,7 +32,6 @@
 			<X class="w-6 h-6" />
 		</button>
 
-		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
 		<div
 			class="flex flex-col items-center pointer-events-none"
 			transition:scale={{ duration: 300, start: 0.95 }}
@@ -34,12 +40,16 @@
 				src={selectedImage.imageUrl}
 				alt={selectedImage.title}
 				class="max-h-[70vh] w-auto object-contain rounded-lg shadow-2xl border border-white/10 cursor-default pointer-events-auto"
-				on:click={(e) => e.stopPropagation()}
+				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => e.stopPropagation()}
+				role="presentation"
 			/>
 
 			<div
 				class="mt-6 text-center w-full max-w-lg pointer-events-auto"
-				on:click={(e) => e.stopPropagation()}
+				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => e.stopPropagation()}
+				role="presentation"
 			>
 				<h3 class="text-2xl font-bold text-white tracking-tight drop-shadow-md">
 					{selectedImage.title}
@@ -51,7 +61,7 @@
 						class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-md border border-white/10"
 					>
 						<Calendar class="w-3.5 h-3.5" />
-						{$formatDate(selectedImage.date, {
+						{formatDate(selectedImage.date, {
 							day: 'numeric',
 							month: 'long',
 							year: 'numeric'

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, tick } from 'svelte';
+	import { tick } from 'svelte';
 	import { members, type Member } from '$lib/apis/members';
 	import { User, Search, X, Check } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -7,37 +7,39 @@
 	import { logger } from '$lib/utils/logger';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
-	// Props
-	export let value: string = '';
-	export let placeholder: string = '';
-	export let title: string = '';
-	export let subtitle: string = '';
+	interface Props {
+		// Props
+		value?: string;
+		placeholder?: string;
+		title?: string;
+		subtitle?: string;
+		onselect?: (member: Member) => void;
+	}
+
+	let {
+		value = $bindable(''),
+		placeholder = '',
+		title = '',
+		subtitle = '',
+		onselect
+	}: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
 	// Modal State
-	let isOpen = false;
-	let loading = false;
-	let memberList: Member[] = [];
-	let searchQuery = '';
-	let selectedMember: Member | null = null;
+	let isOpen = $state(false);
+	let loading = $state(false);
+	let memberList: Member[] = $state([]);
+	let searchQuery = $state('');
+	let selectedMember: Member | null = $state(null);
 
 	let page = 1;
 	let hasMore = true;
-	let isAppending = false;
+	let isAppending = $state(false);
 	let searchTimeout: ReturnType<typeof setTimeout>;
 
-	let observer: IntersectionObserver;
-	let sentinel: HTMLElement;
-
-	$: if (isOpen && memberList.length === 0) {
-		loadMembers(true);
-	}
-
-	$: if (isOpen && sentinel && observer) {
-		observer.observe(sentinel);
-	}
+	let observer: IntersectionObserver | undefined = $state();
+	let sentinel: HTMLElement | undefined = $state();
 
 	async function loadMembers(reset = false) {
 		// cacheKey logic removed
@@ -109,7 +111,7 @@
 	function confirmSelection() {
 		if (selectedMember) {
 			value = selectedMember.name;
-			dispatch('select', selectedMember);
+			onselect?.(selectedMember);
 			close();
 		}
 	}
@@ -119,6 +121,16 @@
 		searchQuery = '';
 		memberList = [];
 	}
+	$effect(() => {
+		if (isOpen && memberList.length === 0) {
+			loadMembers(true);
+		}
+	});
+	$effect(() => {
+		if (isOpen && sentinel && observer) {
+			observer.observe(sentinel);
+		}
+	});
 </script>
 
 <div class="relative">
@@ -129,8 +141,8 @@
 		type="text"
 		readonly
 		{value}
-		on:click={() => (isOpen = true)}
-		on:keydown={(e) => e.key === 'Enter' && (isOpen = true)}
+		onclick={() => (isOpen = true)}
+		onkeydown={(e) => e.key === 'Enter' && (isOpen = true)}
 		class="w-full pl-9 pr-10 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
 		{placeholder}
 	/>
@@ -144,7 +156,7 @@
 		<!-- Backdrop -->
 		<div
 			class="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
-			on:click={close}
+			onclick={close}
 			role="presentation"
 		></div>
 
@@ -158,15 +170,15 @@
 			>
 				<div>
 					<h3 class="text-xl font-black text-gray-800 dark:text-white">
-						{title || $t('profile.oshiModal.title')}
+						{title || t('profile.oshiModal.title')}
 					</h3>
 					<p class="text-sm text-gray-500 dark:text-gray-400">
-						{subtitle || $t('profile.oshiModal.subtitle')}
+						{subtitle || t('profile.oshiModal.subtitle')}
 					</p>
 				</div>
 				<button
 					type="button"
-					on:click={close}
+					onclick={close}
 					class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-500 dark:text-gray-400 transition-colors cursor-pointer"
 				>
 					<X class="w-5 h-5" />
@@ -180,8 +192,8 @@
 					<input
 						type="text"
 						bind:value={searchQuery}
-						on:input={handleSearch}
-						placeholder={$t('profile.oshiModal.searchPlaceholder')}
+						oninput={handleSearch}
+						placeholder={t('profile.oshiModal.searchPlaceholder')}
 						class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:border-red-300 focus:ring-4 focus:ring-red-50 dark:focus:ring-red-900/30 transition-all font-medium text-sm"
 					/>
 				</div>
@@ -194,13 +206,13 @@
 						<div
 							class="w-10 h-10 border-4 border-red-100 border-t-red-500 rounded-full animate-spin mb-4"
 						></div>
-						<p class="text-sm text-gray-500">{$t('profile.oshiModal.loading')}</p>
+						<p class="text-sm text-gray-500">{t('profile.oshiModal.loading')}</p>
 					</div>
 				{:else if memberList.length === 0}
 					<div class="text-center py-12">
 						<Search class="w-12 h-12 text-gray-200 mx-auto mb-3" />
 						<p class="text-gray-500">
-							{$t('profile.oshiModal.noMembers', { query: searchQuery })}
+							{t('profile.oshiModal.noMembers', { query: searchQuery })}
 						</p>
 					</div>
 				{:else}
@@ -212,7 +224,7 @@
 								{selectedMember?.id === member.id
 									? 'border-red-500 bg-red-50/50 dark:bg-red-900/20'
 									: 'border-transparent hover:bg-gray-50 dark:hover:bg-zinc-800 hover:border-gray-100 dark:hover:border-zinc-700'}"
-								on:click={() => selectMember(member)}
+								onclick={() => selectMember(member)}
 							>
 								<div class="relative w-20 h-20 mb-3">
 									<img
@@ -236,7 +248,7 @@
 								</h4>
 								<span
 									class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors"
-									>{$t('profile.oshiModal.generation', { gen: member.generation })}</span
+									>{t('profile.oshiModal.generation', { gen: member.generation })}</span
 								>
 							</button>
 						{/each}
@@ -257,15 +269,15 @@
 			>
 				<button
 					type="button"
-					on:click={close}
+					onclick={close}
 					class="px-4 py-2 rounded-xl text-gray-500 hover:text-gray-700 font-bold text-sm transition-colors cursor-pointer"
 				>
-					{$t('profile.oshiModal.cancel')}
+					{t('profile.oshiModal.cancel')}
 				</button>
 				<button
 					type="button"
 					disabled={!selectedMember}
-					on:click={confirmSelection}
+					onclick={confirmSelection}
 					class="idol-gradient text-white px-6 py-2 rounded-xl font-bold text-sm shadow-lg shadow-red-200 hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none cursor-pointer"
 				>
 					Confirm Selection

@@ -1,11 +1,15 @@
 <script lang="ts">
-	/**
-	 * Reusable table skeleton component for loading states
-	 */
-	export let rows: number = 5;
-	export let columns: string[] = [];
-	export let className: string = '';
-	export let showHeader: boolean = true;
+	interface Props {
+		/**
+		 * Reusable table skeleton component for loading states
+		 */
+		rows?: number;
+		columns?: string[];
+		className?: string;
+		showHeader?: boolean;
+	}
+
+	let { rows = 5, columns = [], className = '', showHeader = true }: Props = $props();
 </script>
 
 <div
@@ -28,7 +32,7 @@
 			{/if}
 			<tbody class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700">
 				<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-				{#each Array(rows) as _}
+				{#each Array(rows)}
 					<tr class="border-b border-gray-100 dark:border-zinc-700">
 						<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 						{#each columns as _, i}

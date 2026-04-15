@@ -12,7 +12,11 @@
 		totalSpent: number;
 	}
 
-	export let stats: ShowStats;
+	interface Props {
+		stats: ShowStats;
+	}
+
+	let { stats }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -27,10 +31,10 @@
 		</div>
 		<div>
 			<p class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">
-				{$t('shows.firstAttended')}
+				{t('shows.firstAttended')}
 			</p>
 			<p class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-				{$formatDate(stats.first.event.date, {
+				{formatDate(stats.first.event.date, {
 					day: 'numeric',
 					month: 'short',
 					year: '2-digit'
@@ -50,10 +54,10 @@
 		</div>
 		<div>
 			<p class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">
-				{$t('shows.lastAttended')}
+				{t('shows.lastAttended')}
 			</p>
 			<p class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-				{$formatDate(stats.last.event.date, {
+				{formatDate(stats.last.event.date, {
 					day: 'numeric',
 					month: 'short',
 					year: '2-digit'
@@ -73,7 +77,7 @@
 		</div>
 		<div>
 			<p class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">
-				{$t('shows.avgPrice')}
+				{t('shows.avgPrice')}
 			</p>
 			<p class="font-bold text-gray-800 dark:text-gray-200 text-sm">
 				{new Intl.NumberFormat('id-ID', {
@@ -97,10 +101,10 @@
 		</div>
 		<div>
 			<p class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">
-				{$t('shows.topRow')}
+				{t('shows.topRow')}
 			</p>
 			<p class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-				{$t('shows.row')}
+				{t('shows.row')}
 				{stats.topRow}
 			</p>
 		</div>

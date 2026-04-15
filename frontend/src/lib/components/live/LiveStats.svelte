@@ -1,20 +1,31 @@
 <script lang="ts">
 	import { Users, Clock } from 'lucide-svelte';
-	import { now } from '$lib/stores/live';
+	import { now } from '$lib/stores/live.svelte';
 	import { formatDuration } from '$lib/utils/time';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
 
-	export let view_num: number | undefined = 0;
-	export let start_at: string | undefined | null = null;
-	export let variant: 'overlay' | 'compact' | 'detailed' = 'overlay';
-	export let showSeconds: boolean = true;
-	export let showLabel: boolean = false;
-	export let className: string = '';
+	interface Props {
+		view_num?: number | undefined;
+		start_at?: string | undefined | null;
+		variant?: 'overlay' | 'compact' | 'detailed';
+		showSeconds?: boolean;
+		showLabel?: boolean;
+		className?: string;
+	}
 
-	$: hasViewers = (view_num ?? 0) > 0;
-	$: hasStartAt = !!start_at;
+	let {
+		view_num = 0,
+		start_at = null,
+		variant = 'overlay',
+		showSeconds = true,
+		showLabel = false,
+		className = ''
+	}: Props = $props();
+
+	let hasViewers = $derived((view_num ?? 0) > 0);
+	let hasStartAt = $derived(!!start_at);
 
 	const variants = {
 		overlay: {
@@ -48,7 +59,7 @@
 		}
 	};
 
-	$: v = variants[variant];
+	let v = $derived(variants[variant]);
 </script>
 
 <div class="{v.container} {className}">
@@ -74,7 +85,7 @@
 			<Clock size={v.icon} class={v.durationIconColor} />
 			<span class="{v.text} {v.durationTextColor} tabular-nums">
 				{#if showLabel}
-					<span class="opacity-60 text-[9px] mr-1">{$t('theater.live.liveDuration')}</span>
+					<span class="opacity-60 text-[9px] mr-1">{t('theater.live.liveDuration')}</span>
 				{/if}
 				{formatDuration(start_at, $now, showSeconds)}
 			</span>

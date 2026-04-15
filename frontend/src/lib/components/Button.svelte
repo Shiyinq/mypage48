@@ -1,26 +1,39 @@
 <script lang="ts">
-	export let type: 'button' | 'submit' | 'reset' = 'button';
-	export let variant: 'primary' | 'secondary' | 'outline' | 'ghost' | 'google' | 'github' =
-		'primary';
-	export let size: 'sm' | 'md' | 'lg' = 'md';
-	export let disabled = false;
-	export let full = false;
-	export let loading = false;
+	interface Props {
+		type?: 'button' | 'submit' | 'reset';
+		variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'google' | 'github';
+		size?: 'sm' | 'md' | 'lg';
+		disabled?: boolean;
+		full?: boolean;
+		loading?: boolean;
+		class?: string;
+		onclick?: (e: MouseEvent) => void;
+		children?: import('svelte').Snippet;
+	}
 
-	let className = '';
-	export { className as class };
+	let {
+		type = 'button',
+		variant = 'primary',
+		size = 'md',
+		disabled = false,
+		full = false,
+		loading = false,
+		class: className = '',
+		onclick,
+		children
+	}: Props = $props();
 </script>
 
 <button
 	{type}
 	class="btn btn-{variant} btn-{size} {full ? 'w-full' : ''} {loading ? 'loading' : ''} {className}"
 	{disabled}
-	on:click
+	{onclick}
 >
 	{#if loading}
 		<span class="spinner"></span>
 	{/if}
-	<slot />
+	{@render children?.()}
 </button>
 
 <style>

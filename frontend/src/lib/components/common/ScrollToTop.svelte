@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { ArrowUp } from 'lucide-svelte';
 	import { fly } from 'svelte/transition';
-	import { page } from '$app/stores';
-	import { isAuthenticated } from '$lib/stores';
 
-	let scrollY = 0;
-	let showButton = false;
+	let scrollY = $state(0);
+	let showButton = $state(false);
 
 	// Show button if scrolled down AND (not on landing page OR user is authenticated)
 	// This hides it on the public landing page ('/') but keeps it on the dashboard ('/')
-	$: showButton = scrollY > 300;
+	$effect(() => {
+		showButton = scrollY > 300;
+	});
 
 	function scrollToTop() {
 		if (typeof window !== 'undefined') {
@@ -29,7 +29,7 @@
 
 {#if showButton}
 	<button
-		on:click={scrollToTop}
+		onclick={scrollToTop}
 		transition:fly={{ y: 20, duration: 300 }}
 		class="fixed z-[9999] bottom-24 right-4 md:bottom-8 md:right-8 idol-gradient text-white p-3 rounded-full shadow-lg shadow-red-500/30 transition-all duration-300 hover:scale-110 group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cursor-pointer pointer-events-auto"
 		aria-label="Scroll to top"

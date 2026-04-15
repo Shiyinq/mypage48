@@ -1,24 +1,41 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { Ticket } from '$lib/types';
 	import { CalendarDays, MapPin, PanelLeftClose } from 'lucide-svelte';
-	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
+	import HistoryFilter from '$lib/components/history/HistoryFilter.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
-	import { HistoryFilter } from '$lib/components/history';
 
-	export let tickets: Ticket[] = [];
-	export let selectedId: string | null = null;
-	export let filters: import('$lib/types').TicketFilters = {};
-	export let loading = false;
-	export let hasMore = false;
-	export let totalData = 0;
+	interface Props {
+		tickets?: Ticket[];
+		selectedId?: string | null;
+		filters?: import('$lib/types').TicketFilters;
+		loading?: boolean;
+		hasMore?: boolean;
+		totalData?: number;
+		onselect?: (id: string) => void;
+		onloadMore?: () => void;
+		onfilterChange?: (filters: import('$lib/types').TicketFilters) => void;
+		ontoggleSidebar?: () => void;
+	}
+
+	let {
+		tickets = [],
+		selectedId = null,
+		filters = {},
+		loading = false,
+		hasMore = false,
+		totalData = 0,
+		onselect,
+		onloadMore,
+		onfilterChange,
+		ontoggleSidebar
+	}: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
 	function handleSelect(id: string) {
-		dispatch('select', { id });
+		onselect?.(id);
 	}
 </script>
 
@@ -28,7 +45,7 @@
 	>
 		<h2 class="font-black text-gray-900 dark:text-white flex items-center gap-2 text-sm pr-2">
 			<CalendarDays class="w-4 h-4 text-red-500" />
-			{$t('journal.title')}
+			{t('journal.title')}
 		</h2>
 		<div class="flex items-center gap-1">
 			<div
@@ -40,10 +57,10 @@
 					></div>
 				{/if}
 				{totalData || tickets.length}
-				{$t('shows.unit')}
+				{t('shows.unit')}
 			</div>
 			<button
-				on:click={() => dispatch('toggleSidebar')}
+				onclick={() => ontoggleSidebar?.()}
 				class="hidden md:flex p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-zinc-800 dark:hover:text-white rounded-lg transition-colors cursor-pointer shrink-0"
 				title="Hide Sidebar"
 			>
@@ -55,13 +72,18 @@
 	<div
 		class="px-3 py-2 border-b border-gray-100 dark:border-white/5 bg-white/50 dark:bg-zinc-950/50 relative z-20"
 	>
-		<HistoryFilter {filters} showViewToggle={false} isSidebar={true} on:filterChange />
+		<HistoryFilter
+			{filters}
+			showViewToggle={false}
+			isSidebar={true}
+			onfilterChange={(newFilters) => onfilterChange?.(newFilters)}
+		/>
 	</div>
 
 	<div class="flex-1 overflow-y-auto px-2 py-3 custom-scrollbar relative overscroll-contain">
 		{#if loading && tickets.length === 0}
 			<div class="space-y-2">
-				{#each Array(5) as _}
+				{#each Array(5)}
 					<div
 						class="animate-pulse bg-white/50 dark:bg-zinc-800/50 h-24 rounded-xl border border-gray-100 dark:border-white/5 w-full"
 					></div>
@@ -70,15 +92,15 @@
 		{:else if tickets.length === 0}
 			<div class="h-full flex flex-col items-center justify-center p-6 text-center text-gray-500">
 				<CalendarDays class="w-8 h-8 mb-3 opacity-20" />
-				<p class="text-sm font-medium">{$t('journal.noRecords')}</p>
-				<p class="text-xs mt-1 text-gray-400">{$t('journal.noRecordsDesc')}</p>
+				<p class="text-sm font-medium">{t('journal.noRecords')}</p>
+				<p class="text-xs mt-1 text-gray-400">{t('journal.noRecordsDesc')}</p>
 			</div>
 		{:else}
 			<div class="space-y-1 flex flex-col pb-10">
 				{#each tickets as ticket}
 					{@const isSelected = selectedId === ticket._id}
 					<button
-						on:click={() => handleSelect(ticket._id)}
+						onclick={() => handleSelect(ticket._id)}
 						class={`w-full text-left px-3 py-2.5 mx-0 rounded-lg transition-all duration-200 border cursor-pointer flex flex-col group
 							${
 								isSelected
@@ -92,7 +114,7 @@
 									? 'text-red-500'
 									: 'text-gray-400 dark:text-gray-500'}"
 							>
-								{$formatDate(ticket.event.date, {
+								{formatDate(ticket.event.date, {
 									day: 'numeric',
 									month: 'short',
 									year: 'numeric'
@@ -127,7 +149,7 @@
 				{#if hasMore}
 					<div
 						use:infiniteScroll
-						on:intersect={() => dispatch('loadMore')}
+						onintersect={() => onloadMore?.()}
 						class="w-full py-4 flex justify-center"
 					>
 						{#if loading}

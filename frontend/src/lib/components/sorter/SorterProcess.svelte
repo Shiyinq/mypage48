@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { Equal, RotateCcw, ArrowLeft, Heart } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -8,16 +7,34 @@
 	import { getMemberFrame } from '$lib/constants';
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
-	export let numQuestion: number;
-	export let displayProgress: number;
-	export let leftMember: Member | null = null;
-	export let rightMember: Member | null = null;
-	export let isAnimating = false;
-	export let lastSelectedSide: 'left' | 'right' | 'tie' | null = null;
-	export let hasHistory = false;
-	export let variant: 'public' | 'theater' = 'public';
+	interface Props {
+		numQuestion: number;
+		displayProgress: number;
+		leftMember?: Member | null;
+		rightMember?: Member | null;
+		isAnimating?: boolean;
+		lastSelectedSide?: 'left' | 'right' | 'tie' | null;
+		hasHistory?: boolean;
+		variant?: 'public' | 'theater';
+		onselect?: (flag: number) => void;
+		onundo?: () => void;
+		onexit?: () => void;
+	}
+
+	let {
+		numQuestion,
+		displayProgress,
+		leftMember = null,
+		rightMember = null,
+		isAnimating = false,
+		lastSelectedSide = null,
+		hasHistory = false,
+		variant = 'public',
+		onselect,
+		onundo,
+		onexit
+	}: Props = $props();
 
 	function handleImageError(e: Event) {
 		const target = e.currentTarget as HTMLImageElement;
@@ -25,18 +42,18 @@
 	}
 
 	function handleSelect(flag: number) {
-		dispatch('select', flag);
+		onselect?.(flag);
 	}
 
 	function undo() {
-		dispatch('undo');
+		onundo?.();
 	}
 
 	function restart() {
-		dispatch('exit');
+		onexit?.();
 	}
 
-	$: isPublic = variant === 'public';
+	let isPublic = $derived(variant === 'public');
 </script>
 
 <div
@@ -49,12 +66,12 @@
 				<h2
 					class={`font-black text-lg uppercase tracking-tighter ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
 				>
-					{$t('theater.sorter.sorting')}
+					{t('theater.sorter.sorting')}
 				</h2>
 				<p
 					class={`text-[8px] font-black uppercase tracking-widest ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
 				>
-					{$t('theater.sorter.questionLabel', { num: numQuestion })}
+					{t('theater.sorter.questionLabel', { num: numQuestion })}
 				</p>
 			</div>
 			<div class="text-right">
@@ -78,7 +95,7 @@
 		class={`grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 md:gap-8 w-full max-w-2xl ${isPublic ? '' : 'flex-none flex flex-col justify-center min-h-0 py-1'}`}
 	>
 		<button
-			on:click={() => handleSelect(1)}
+			onclick={() => handleSelect(1)}
 			disabled={isAnimating}
 			class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-2 md:border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl mx-auto w-full max-w-[135px] md:max-w-none ${
 				isPublic
@@ -96,7 +113,7 @@
 				src={getExternalMediaUrl(leftMember?.img)}
 				alt={leftMember?.name}
 				class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-				on:error={handleImageError}
+				onerror={handleImageError}
 			/>
 			<img
 				src={getMemberFrame(leftMember?.member_type)}
@@ -109,7 +126,7 @@
 			<div class="absolute bottom-3 left-3 right-3 text-left z-30">
 				<span
 					class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
-					>{$t('theater.sorter.genLabel', { gen: leftMember?.generation ?? '' })}</span
+					>{t('theater.sorter.genLabel', { gen: leftMember?.generation ?? '' })}</span
 				>
 				<h3 class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md truncate">
 					{leftMember?.name}
@@ -155,7 +172,7 @@
 		</div>
 
 		<button
-			on:click={() => handleSelect(-1)}
+			onclick={() => handleSelect(-1)}
 			disabled={isAnimating}
 			class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-2 md:border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl mx-auto w-full max-w-[135px] md:max-w-none ${
 				isPublic
@@ -173,7 +190,7 @@
 				src={getExternalMediaUrl(rightMember?.img)}
 				alt={rightMember?.name}
 				class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-				on:error={handleImageError}
+				onerror={handleImageError}
 			/>
 			<img
 				src={getMemberFrame(rightMember?.member_type)}
@@ -186,7 +203,7 @@
 			<div class="absolute bottom-3 left-3 right-3 text-left z-30">
 				<span
 					class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
-					>{$t('theater.sorter.genLabel', { gen: rightMember?.generation ?? '' })}</span
+					>{t('theater.sorter.genLabel', { gen: rightMember?.generation ?? '' })}</span
 				>
 				<h3 class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md truncate">
 					{rightMember?.name}
@@ -227,27 +244,27 @@
 			class="flex items-center gap-1 md:gap-2 p-1 bg-zinc-50/50 dark:bg-zinc-900/40 backdrop-blur-sm rounded-full shadow-inner border border-zinc-200/50 dark:border-zinc-800/40 w-fit max-w-full overflow-x-auto scrollbar-hide no-scrollbar"
 		>
 			<button
-				on:click={() => handleSelect(0)}
+				onclick={() => handleSelect(0)}
 				disabled={isAnimating}
 				class="h-10 md:h-11 px-4 md:px-6 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-900 dark:text-white font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 shadow-sm border border-zinc-100 dark:border-zinc-700"
 			>
 				<Equal size={16} />
-				{$t('theater.sorter.tie')}
+				{t('theater.sorter.tie')}
 			</button>
 			<button
-				on:click={undo}
+				onclick={undo}
 				disabled={!hasHistory || isAnimating}
 				class="h-10 md:h-11 px-4 md:px-6 bg-amber-50 dark:bg-amber-950/20 text-amber-600 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer disabled:opacity-30 whitespace-nowrap flex items-center gap-1.5 shadow-sm border border-amber-100/50 dark:border-amber-900/20"
 			>
 				<RotateCcw size={16} />
-				{$t('theater.sorter.undo')}
+				{t('theater.sorter.undo')}
 			</button>
 			<button
-				on:click={restart}
+				onclick={restart}
 				class={`h-10 md:h-11 px-4 md:px-6 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${isPublic ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20' : 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20'}`}
 			>
 				<ArrowLeft size={16} />
-				{$t('theater.sorter.exit')}
+				{t('theater.sorter.exit')}
 			</button>
 		</div>
 	</div>
