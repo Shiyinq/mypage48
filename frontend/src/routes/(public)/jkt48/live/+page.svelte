@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -19,7 +20,9 @@
 	}
 
 	$effect(() => {
-		fetchLives();
+		untrack(() => {
+			fetchLives();
+		});
 		const intervalId = setInterval(() => {
 			liveStore.loadLiveList(true);
 		}, 30000);

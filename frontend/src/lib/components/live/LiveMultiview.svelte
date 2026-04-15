@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { page } from '$app/stores';
 	import SEO from '$lib/components/SEO.svelte';
 	import { fly } from 'svelte/transition';
@@ -86,7 +87,9 @@
 	let isRecording: boolean[] = $state(Array(8).fill(false));
 	let playerRefs: (ReturnType<typeof MultiPlayer> | null)[] = $state(Array(8).fill(null));
 	$effect(() => {
-		liveStore.loadLiveList();
+		untrack(() => {
+			liveStore.loadLiveList();
+		});
 		const interval = setInterval(async () => {
 			await liveStore.loadLiveList(true);
 			// Sync slots with new data from liveList (to update viewer counts and detect offline)
