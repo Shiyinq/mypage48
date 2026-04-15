@@ -25,10 +25,10 @@
 		</div>
 		<div>
 			<h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
-				{$t('settings.developer.title')}
+				{t('settings.developer.title')}
 			</h3>
 			<p class="text-xs text-gray-500 dark:text-gray-400">
-				{$t('settings.developer.subtitle')}
+				{t('settings.developer.subtitle')}
 			</p>
 		</div>
 	</div>
@@ -37,14 +37,14 @@
 		class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 mb-4"
 	>
 		<p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed pl-1">
-			{$t('settings.developer.description')}
+			{t('settings.developer.description')}
 		</p>
 		<div
 			class="mt-4 flex items-start gap-3 bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100 dark:border-amber-800/30"
 		>
 			<TriangleAlert class="w-4 h-4 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
 			<p class="text-xs text-amber-700 dark:text-amber-400 font-medium leading-tight">
-				{$t('settings.developer.warning')}
+				{t('settings.developer.warning')}
 			</p>
 		</div>
 	</div>
@@ -56,10 +56,10 @@
 	>
 		{#if generatingKey}
 			<LoaderCircle class="w-4 h-4 animate-spin" />
-			{$t('settings.developer.generating')}
+			{t('settings.developer.generating')}
 		{:else}
 			<Plus class="w-4 h-4" />
-			{$t('settings.developer.generateButton')}
+			{t('settings.developer.generateButton')}
 		{/if}
 	</button>
 
@@ -74,8 +74,8 @@
 					<Terminal class="w-4 h-4" />
 				</div>
 				<div>
-					<p class="text-sm font-bold text-gray-900 dark:text-gray-100">{$t('playground.title')}</p>
-					<p class="text-[10px] text-gray-500 dark:text-gray-400">{$t('playground.subtitle')}</p>
+					<p class="text-sm font-bold text-gray-900 dark:text-gray-100">{t('playground.title')}</p>
+					<p class="text-[10px] text-gray-500 dark:text-gray-400">{t('playground.subtitle')}</p>
 				</div>
 			</div>
 			<ChevronRight

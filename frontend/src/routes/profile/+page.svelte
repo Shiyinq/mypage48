@@ -128,14 +128,14 @@
 			// Use store action
 			await userProfile.load();
 		} catch {
-			showToast($t('profile.errorTitle'), 'error');
+			showToast(t('profile.errorTitle'), 'error');
 		}
 	}
 
 	const logout = async () => {
 		try {
 			await auth.logout();
-			showToast($t('auth.logout.success'), 'success');
+			showToast(t('auth.logout.success'), 'success');
 		} catch (e) {
 			logger.error('Logout error', e, { context: 'ProfilePage' });
 			// Even if backend fails, force local logout
@@ -205,14 +205,14 @@
 	};
 </script>
 
-<SEO title={$t('profile.title')} path="/profile" description={$t('seo.profile')} />
+<SEO title={t('profile.title')} path="/profile" description={t('seo.profile')} />
 
 <div class="max-w-5xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 animate-fade-in pb-32">
 	<!-- Page Header -->
 	<div class="mb-8">
 		<PageHeader
-			title={$t('profile.title')}
-			subtitle={$t('profile.subtitle')}
+			title={t('profile.title')}
+			subtitle={t('profile.subtitle')}
 			icon={UserIcon}
 			actionItems={[
 				{
@@ -222,7 +222,7 @@
 				},
 				{
 					icon: LogOut,
-					label: $t('common.logout'),
+					label: t('common.logout'),
 					onClick: logout,
 					theme: 'red'
 				}
@@ -241,7 +241,7 @@
 				<button
 					onclick={logout}
 					class="p-2 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors border border-red-100/50 dark:border-red-500/30 cursor-pointer"
-					title={$t('common.logout')}
+					title={t('common.logout')}
 				>
 					<LogOut class="w-5 h-5" />
 				</button>
@@ -253,8 +253,8 @@
 	<!-- Error State -->
 	{#if error}
 		<ErrorState
-			title={$t('profile.errorTitle')}
-			description={$t('profile.errorDesc')}
+			title={t('profile.errorTitle')}
+			description={t('profile.errorDesc')}
 			onRetry={fetchProfile}
 		/>
 	{:else}

@@ -15,7 +15,7 @@
 		mounted = true;
 	});
 
-	let isLoading = $derived(!mounted || (isAuthenticated.value && !$isInitialDataLoaded));
+	let isLoading = $derived(!mounted || (isAuthenticated.value && !isInitialDataLoaded.value));
 </script>
 
 <header
@@ -25,7 +25,7 @@
 		<!-- Left: Logo + Title -->
 		<div class="flex items-center gap-6">
 			<a href="/" class="flex items-center gap-3 cursor-pointer group">
-				<NavLogo tagline={$t('playground.tagline')} />
+				<NavLogo tagline={t('playground.tagline')} />
 			</a>
 
 			<div
@@ -45,7 +45,7 @@
 				class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-white/5 text-xs font-bold text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-white dark:hover:bg-zinc-800 transition-all shadow-sm group"
 			>
 				<Home class="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" />
-				<span class="hidden sm:inline">{$t('playground.backToDashboard')}</span>
+				<span class="hidden sm:inline">{t('playground.backToDashboard')}</span>
 			</a>
 
 			<!-- Profile Icon Button -->

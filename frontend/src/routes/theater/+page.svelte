@@ -32,7 +32,7 @@
 			await setlistsStore.load();
 		} catch {
 			// Error is handled by store
-			showToast($t('theater.setlists.listErrorTitle') || 'Failed to load setlists', 'error');
+			showToast(t('theater.setlists.listErrorTitle') || 'Failed to load setlists', 'error');
 		}
 	}
 
@@ -46,7 +46,7 @@
 	}
 </script>
 
-<SEO title={$t('theater.title')} path="/theater" description={$t('seo.shows')} />
+<SEO title={t('theater.title')} path="/theater" description={t('seo.shows')} />
 
 {#if isSetlistsLoading.value}
 	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -76,15 +76,15 @@
 	</div>
 {:else if error}
 	<ErrorState
-		title={$t('theater.setlists.listErrorTitle')}
-		description={error || $t('theater.setlists.listErrorDesc')}
+		title={t('theater.setlists.listErrorTitle')}
+		description={error || t('theater.setlists.listErrorDesc')}
 		onRetry={fetchSetlists}
 	/>
 {:else if setlists.length === 0}
 	<EmptyState
 		icon={Calendar}
-		title={$t('theater.setlists.emptyTitle')}
-		description={$t('theater.setlists.emptyDesc')}
+		title={t('theater.setlists.emptyTitle')}
+		description={t('theater.setlists.emptyDesc')}
 	/>
 {:else}
 	<!-- Setlists -->
@@ -93,14 +93,14 @@
 			<div class="flex items-center gap-3 mb-6">
 				<div class="h-8 w-1.5 bg-red-500 rounded-full"></div>
 				<h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-					{$t('theater.setlists.section')}
+					{t('theater.setlists.section')}
 				</h2>
 			</div>
 
 			<!-- Active Setlists -->
 			{#if activeSetlists.length > 0}
 				<SetlistSection
-					title={$t('theater.setlists.active')}
+					title={t('theater.setlists.active')}
 					items={activeSetlists}
 					{maxAttendance}
 					isActive={true}
@@ -111,7 +111,7 @@
 			<!-- Inactive Setlists -->
 			{#if inactiveSetlists.length > 0}
 				<SetlistSection
-					title={$t('theater.setlists.inactive')}
+					title={t('theater.setlists.inactive')}
 					items={inactiveSetlists}
 					{maxAttendance}
 					onclick={goToDetail}
@@ -126,14 +126,14 @@
 			<div class="flex items-center gap-3 mb-6">
 				<div class="h-8 w-1.5 bg-purple-500 rounded-full"></div>
 				<h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-					{$t('theater.setlists.events')}
+					{t('theater.setlists.events')}
 				</h2>
 			</div>
 
 			<!-- Active Events -->
 			{#if activeEvents.length > 0}
 				<SetlistSection
-					title={$t('theater.setlists.activeEvents')}
+					title={t('theater.setlists.activeEvents')}
 					items={activeEvents}
 					{maxAttendance}
 					isActive={true}
@@ -144,7 +144,7 @@
 			<!-- Inactive Events -->
 			{#if inactiveEvents.length > 0}
 				<SetlistSection
-					title={$t('theater.setlists.inactiveEvents')}
+					title={t('theater.setlists.inactiveEvents')}
 					items={inactiveEvents}
 					{maxAttendance}
 					onclick={goToDetail}

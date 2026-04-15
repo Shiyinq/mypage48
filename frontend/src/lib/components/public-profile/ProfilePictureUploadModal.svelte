@@ -49,7 +49,7 @@
 			class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-zinc-800"
 		>
 			<h3 id="preview-modal-title" class="text-lg font-bold text-gray-900 dark:text-white">
-				{$t('profile.profilePicture.previewTitle')}
+				{t('profile.profilePicture.previewTitle')}
 			</h3>
 			<button
 				class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
@@ -75,7 +75,7 @@
 				onclick={close}
 				disabled={isUploading}
 			>
-				{$t('common.cancel')}
+				{t('common.cancel')}
 			</button>
 			<button
 				class="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -84,9 +84,9 @@
 			>
 				{#if isUploading}
 					<LoaderCircle class="w-5 h-5 animate-spin" />
-					{$t('common.loading')}
+					{t('common.loading')}
 				{:else}
-					{$t('common.save')}
+					{t('common.save')}
 				{/if}
 			</button>
 		</div>

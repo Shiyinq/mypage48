@@ -180,7 +180,7 @@
 							(event: unknown, data: { type: string; response?: { code: number } }) => {
 								if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
 									console.log('Proxy/Stream 404 detected, redirecting to list');
-									showToast($t('theater.live.offline'), 'error');
+									showToast(t('theater.live.offline'), 'error');
 									goto(basePath);
 								}
 							}
@@ -204,7 +204,7 @@
 			if (currentInit !== initCount) return;
 
 			if ((e as { status?: number })?.status === 404) {
-				showToast($t('theater.live.offline'), 'error');
+				showToast(t('theater.live.offline'), 'error');
 				goto(basePath);
 			}
 		} finally {
@@ -256,7 +256,7 @@
 			if (platform && id && !initializing) {
 				liveStore.refreshStreamInfo(platform, id).catch((e) => {
 					if (e?.status === 404) {
-						showToast($t('theater.live.offline'), 'error');
+						showToast(t('theater.live.offline'), 'error');
 						goto(basePath);
 					}
 				});
@@ -469,11 +469,11 @@
 </script>
 
 <SEO
-	title={memberName ? `${memberName} - Live` : $t('theater.live.seoTitle')}
+	title={memberName ? `${memberName} - Live` : t('theater.live.seoTitle')}
 	path={$page.url.pathname}
 	description={memberName
-		? $t('theater.live.seoMemberDescription', { name: memberName })
-		: $t('theater.live.seoDescription')}
+		? t('theater.live.seoMemberDescription', { name: memberName })
+		: t('theater.live.seoDescription')}
 />
 
 <div
@@ -505,7 +505,7 @@
 				<a
 					href={basePath}
 					class="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
-					title={$t('theater.live.back')}
+					title={t('theater.live.back')}
 				>
 					<ArrowLeft size={20} />
 				</a>
@@ -538,7 +538,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group/platform flex items-center gap-1.5 hover:scale-110 active:scale-95 transition-transform"
-						title={$t('theater.live.openOriginal')}
+						title={t('theater.live.openOriginal')}
 					>
 						<PlatformLogo platform={platform || ''} size="md" />
 						<div
@@ -566,7 +566,7 @@
 						></div>
 						<div>
 							<div class="text-white font-black text-xl uppercase tracking-[0.2em] mb-2">
-								{$t('theater.live.loading_stream')}
+								{t('theater.live.loading_stream')}
 							</div>
 							<div class="text-white/40 text-xs font-medium uppercase tracking-widest">
 								{(platform || 'Live').toUpperCase()} Stream Gateway
@@ -596,10 +596,10 @@
 					</div>
 					<div>
 						<h2 class="text-2xl font-black mb-2 uppercase tracking-tighter">
-							{$t('theater.live.offline_title')}
+							{t('theater.live.offline_title')}
 						</h2>
 						<p class="text-zinc-500 max-w-sm mx-auto text-xs sm:text-sm px-4">
-							{$t('theater.live.offline_description', {
+							{t('theater.live.offline_description', {
 								name: streamFromList?.member?.name || 'Member'
 							})}
 						</p>
@@ -608,7 +608,7 @@
 						href={basePath}
 						class="px-8 py-3 rounded-2xl bg-white text-zinc-950 font-black uppercase tracking-widest text-xs hover:bg-red-600 hover:text-white transition-all"
 					>
-						{$t('theater.live.return_home')}
+						{t('theater.live.return_home')}
 					</a>
 				</div>
 			{/if}
@@ -763,10 +763,10 @@
 						</div>
 						<div class="mt-6 text-center">
 							<h3 class="text-white font-black text-lg uppercase tracking-[0.2em] mb-1">
-								{$t('theater.live.tap_to_play')}
+								{t('theater.live.tap_to_play')}
 							</h3>
 							<p class="text-white/40 text-[10px] font-bold uppercase tracking-widest">
-								{$t('theater.live.autoplay_description')}
+								{t('theater.live.autoplay_description')}
 							</p>
 						</div>
 					</button>
@@ -842,7 +842,7 @@
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{isPaused ? $t('theater.live.play') : $t('theater.live.pause')}
+										{isPaused ? t('theater.live.play') : t('theater.live.pause')}
 									</div>
 								</button>
 
@@ -857,7 +857,7 @@
 										<div
 											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 										>
-											{isMuted ? $t('theater.live.unmute') : $t('theater.live.mute')}
+											{isMuted ? t('theater.live.unmute') : t('theater.live.mute')}
 										</div>
 									</button>
 									<input
@@ -879,7 +879,7 @@
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{$t('theater.live.pip')}
+										{t('theater.live.pip')}
 									</div>
 								</button>
 							</div>
@@ -894,7 +894,7 @@
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{$t('theater.live.screenshot')}
+										{t('theater.live.screenshot')}
 									</div>
 								</button>
 
@@ -913,7 +913,7 @@
 										<div
 											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 										>
-											{isRecording ? $t('theater.live.stopRecord') : $t('theater.live.record')}
+											{isRecording ? t('theater.live.stopRecord') : t('theater.live.record')}
 										</div>
 									</button>
 									{#if isRecording}
@@ -937,7 +937,7 @@
 										<div
 											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 										>
-											{$t('theater.live.toggleTheme')}
+											{t('theater.live.toggleTheme')}
 										</div>
 									</button>
 								{/if}
@@ -952,7 +952,7 @@
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 									>
-										{isFocusMode ? $t('theater.live.exitFocus') : $t('theater.live.focusMode')}
+										{isFocusMode ? t('theater.live.exitFocus') : t('theater.live.focusMode')}
 									</div>
 								</button>
 
@@ -966,9 +966,7 @@
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 									>
-										{isFullscreen
-											? $t('theater.live.exitFullscreen')
-											: $t('theater.live.fullscreen')}
+										{isFullscreen ? t('theater.live.exitFullscreen') : t('theater.live.fullscreen')}
 									</div>
 								</button>
 
@@ -980,7 +978,7 @@
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{$t('theater.live.refresh')}
+										{t('theater.live.refresh')}
 									</div>
 								</button>
 
@@ -992,7 +990,7 @@
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 									>
-										{$t('theater.live.rotate')}
+										{t('theater.live.rotate')}
 									</div>
 								</button>
 
@@ -1015,9 +1013,7 @@
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{sidebarMode === 'chat'
-											? $t('theater.subNav.members')
-											: $t('theater.live.chat')}
+										{sidebarMode === 'chat' ? t('theater.subNav.members') : t('theater.live.chat')}
 									</div>
 								</button>
 
@@ -1031,7 +1027,7 @@
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
-										{chatVisible ? $t('theater.live.hideChat') : $t('theater.live.showChat')}
+										{chatVisible ? t('theater.live.hideChat') : t('theater.live.showChat')}
 									</div>
 								</button>
 							</div>
@@ -1064,14 +1060,14 @@
 								class="font-black text-xs uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2"
 							>
 								<MessageCircle size={14} class="text-red-600" />
-								{$t('theater.live.chat')}
+								{t('theater.live.chat')}
 							</h3>
 						{:else}
 							<h3
 								class="font-black text-xs uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2"
 							>
 								<Users size={14} class="text-red-600" />
-								{$t('theater.subNav.live')}
+								{t('theater.subNav.live')}
 							</h3>
 						{/if}
 					</div>
@@ -1087,11 +1083,11 @@
 								></div>
 								<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
 									{#if chatStatus === 'connected'}
-										{$t('theater.live.connected')}
+										{t('theater.live.connected')}
 									{:else if chatStatus === 'connecting'}
-										{$t('theater.live.connecting')}
+										{t('theater.live.connecting')}
 									{:else}
-										{$t('theater.live.disconnected')}
+										{t('theater.live.disconnected')}
 									{/if}
 								</span>
 							</div>
@@ -1123,7 +1119,7 @@
 										<Users size={24} />
 									</div>
 									<p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-										{$t('theater.live.empty')}
+										{t('theater.live.empty')}
 									</p>
 								</div>
 							{:else}

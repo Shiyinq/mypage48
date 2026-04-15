@@ -37,7 +37,7 @@
 				<span
 					class="text-[10px] sm:text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600 dark:from-red-400 dark:to-pink-400 uppercase tracking-wider"
 				>
-					{$t('profile.publicActivity.wrapped', { year: profile.publicYear })}
+					{t('profile.publicActivity.wrapped', { year: profile.publicYear })}
 				</span>
 			</div>
 		</div>

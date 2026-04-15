@@ -1,4 +1,3 @@
-import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
 // Imports for local usage (cleanup logic)
@@ -10,6 +9,7 @@ import { pageHeaderStore } from '$lib/stores/ui.svelte';
 import { achievementsStore } from '$lib/stores/achievements.svelte';
 import { galleryStore, topTwoShotStore } from '$lib/stores/memories.svelte';
 import { isAuthenticated } from '$lib/stores/authStatus.svelte';
+import { isInitialDataLoaded } from './global.svelte';
 
 // Re-export all stores for consumers
 export * from '$lib/stores/dashboard.svelte';
@@ -30,8 +30,7 @@ export * from '$lib/stores/live.svelte';
 export * from '$lib/stores/playground.svelte';
 export * from '$lib/stores/radio.svelte';
 export { isAuthenticated } from '$lib/stores/authStatus.svelte';
-
-export const isInitialDataLoaded = writable<boolean>(false);
+export { isInitialDataLoaded } from './global.svelte';
 
 // Logout cleanup logic
 if (browser) {
@@ -42,7 +41,7 @@ if (browser) {
 			achievementsStore.reset();
 			galleryStore.reset();
 			topTwoShotStore.reset();
-			isInitialDataLoaded.set(false);
+			isInitialDataLoaded.value = false;
 			pageHeaderStore.reset();
 
 			// Reset custom stores

@@ -18,9 +18,9 @@
 >
 	<div class="hidden sm:block text-center mb-6 sm:mb-10">
 		<h2 class="text-2xl sm:text-3xl font-black text-gray-800 dark:text-white mb-2">
-			{$t('upload.title')}
+			{t('upload.title')}
 		</h2>
-		<p class="text-sm sm:text-base text-gray-500 dark:text-gray-400">{$t('upload.subtitle')}</p>
+		<p class="text-sm sm:text-base text-gray-500 dark:text-gray-400">{t('upload.subtitle')}</p>
 	</div>
 	<div class="grid md:grid-cols-2 gap-4 sm:gap-6 w-full px-2 sm:px-0">
 		<button
@@ -39,12 +39,12 @@
 				<h3
 					class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors"
 				>
-					{$t('upload.scanTicket')}
+					{t('upload.scanTicket')}
 				</h3>
 				<p
 					class="text-[12px] sm:text-sm font-medium text-gray-600 dark:text-gray-400 leading-relaxed"
 				>
-					{$t('upload.scanDescription')}
+					{t('upload.scanDescription')}
 				</p>
 			</div>
 		</button>
@@ -64,10 +64,10 @@
 				<h3
 					class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors"
 				>
-					{$t('upload.manualEntry')}
+					{t('upload.manualEntry')}
 				</h3>
 				<p class="text-[12px] sm:text-sm font-medium text-gray-600 dark:text-gray-400">
-					{$t('upload.manualDescription')}
+					{t('upload.manualDescription')}
 				</p>
 			</div>
 		</button>
@@ -77,6 +77,6 @@
 		class="mt-12 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-medium text-sm flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
 	>
 		<X class="w-4 h-4" />
-		{$t('common.cancel')}
+		{t('common.cancel')}
 	</button>
 </div>

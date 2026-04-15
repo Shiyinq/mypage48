@@ -112,8 +112,8 @@
 								class="text-2xl font-bold text-gray-900 dark:text-white leading-none relative w-fit"
 							>
 								{isCreating
-									? $t('admin.members.modal.addTitle')
-									: $t('admin.members.modal.editTitle')}
+									? t('admin.members.modal.addTitle')
+									: t('admin.members.modal.editTitle')}
 								<span
 									class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 dark:bg-red-500/30 -z-10 transform -skew-x-12 rounded-sm"
 								></span>
@@ -142,7 +142,7 @@
 							<label
 								for="member-name"
 								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.members.modal.name')}</label
+								>{t('admin.members.modal.name')}</label
 							>
 							<input
 								id="member-name"
@@ -152,7 +152,7 @@
 								class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
 							/>
 							{#if !isNameValid && formData.name.length > 0}
-								<p class="text-xs text-red-500 ml-1">{$t('admin.members.modal.nameRequired')}</p>
+								<p class="text-xs text-red-500 ml-1">{t('admin.members.modal.nameRequired')}</p>
 							{/if}
 						</div>
 
@@ -160,7 +160,7 @@
 							<label
 								for="member-nickname"
 								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.members.modal.nickname')}</label
+								>{t('admin.members.modal.nickname')}</label
 							>
 							<input
 								id="member-nickname"
@@ -175,7 +175,7 @@
 							<label
 								for="member-gen"
 								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.members.modal.generation')}</label
+								>{t('admin.members.modal.generation')}</label
 							>
 							<input
 								id="member-gen"
@@ -190,7 +190,7 @@
 							<label
 								for="member-img"
 								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{$t('admin.members.modal.imageUrl')}</label
+								>{t('admin.members.modal.imageUrl')}</label
 							>
 							<input
 								id="member-img"
@@ -205,7 +205,7 @@
 					<!-- Jikoshoukai -->
 					<div class="space-y-2">
 						<label for="member-jiko" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-							>{$t('admin.members.modal.jikoshoukai')}</label
+							>{t('admin.members.modal.jikoshoukai')}</label
 						>
 						<div class="relative">
 							<textarea
@@ -223,7 +223,7 @@
 					<!-- Socials -->
 					<div class="space-y-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
 						<h3 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-							{$t('admin.members.modal.socials')}
+							{t('admin.members.modal.socials')}
 						</h3>
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 							<div class="space-y-1">
@@ -318,9 +318,9 @@
 							></span>
 						</button>
 						<span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-							{$t('admin.members.modal.accountStatus')}: {formData.active
-								? $t('admin.members.modal.active')
-								: $t('admin.members.modal.inactive')}
+							{t('admin.members.modal.accountStatus')}: {formData.active
+								? t('admin.members.modal.active')
+								: t('admin.members.modal.inactive')}
 						</span>
 					</div>
 
@@ -331,7 +331,7 @@
 							onclick={handleClose}
 							class="flex-1 px-4 py-3 rounded-xl font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
 						>
-							{$t('common.cancel')}
+							{t('common.cancel')}
 						</button>
 						<button
 							type="submit"
@@ -340,10 +340,10 @@
 						>
 							{#if isSubmitting}
 								<LoaderCircle class="w-5 h-5 animate-spin" />
-								{$t('admin.members.modal.saving')}
+								{t('admin.members.modal.saving')}
 							{:else}
 								<CircleCheck class="w-5 h-5" />
-								{isCreating ? $t('admin.members.modal.create') : $t('admin.members.modal.save')}
+								{isCreating ? t('admin.members.modal.create') : t('admin.members.modal.save')}
 							{/if}
 						</button>
 					</div>

@@ -50,7 +50,7 @@
 		<div
 			class="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-zinc-800 text-[9px] font-bold text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-700"
 		>
-			{radioStore.isPlaying ? $t('landing.radio.nowPlaying') : $t('landing.radio.paused')}
+			{radioStore.isPlaying ? t('landing.radio.nowPlaying') : t('landing.radio.paused')}
 		</div>
 	</div>
 
@@ -126,10 +126,10 @@
 		<h3
 			class="text-sm font-black text-gray-900 dark:text-gray-100 line-clamp-1 mb-1 tracking-tight"
 		>
-			{radioStore.currentTrackTitle || $t('landing.radio.connecting')}
+			{radioStore.currentTrackTitle || t('landing.radio.connecting')}
 		</h3>
 		<p class="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">
-			{$t(`landing.radio.${currentChannel.id}`)}
+			{t(`landing.radio.${currentChannel.id}`)}
 		</p>
 	</div>
 
@@ -139,7 +139,7 @@
 			<button
 				class="p-2 text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors active:scale-90 cursor-pointer"
 				onclick={() => radioStore.toggle()}
-				title={radioStore.isPlaying ? $t('landing.radio.pause') : $t('landing.radio.play')}
+				title={radioStore.isPlaying ? t('landing.radio.pause') : t('landing.radio.play')}
 			>
 				{#if radioStore.isPlaying}
 					<Pause size={24} fill="currentColor" />
@@ -151,7 +151,7 @@
 			<button
 				class="p-2 text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors active:scale-90 cursor-pointer"
 				onclick={nextTrack}
-				title={$t('landing.radio.nextTrack')}
+				title={t('landing.radio.nextTrack')}
 			>
 				<SkipForward size={24} fill="currentColor" />
 			</button>
@@ -204,7 +204,7 @@
 						? 'text-red-600 dark:text-red-400'
 						: 'text-gray-400 dark:text-zinc-500'}"
 				>
-					{$t('landing.radio.' + channel.id)}
+					{t('landing.radio.' + channel.id)}
 				</span>
 			</button>
 		{/each}

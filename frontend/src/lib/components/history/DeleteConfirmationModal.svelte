@@ -41,10 +41,10 @@
 			</div>
 			<div class="text-center mb-6">
 				<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-					{$t('history.deleteConfirm.title')}
+					{t('history.deleteConfirm.title')}
 				</h3>
 				<p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-					{$t('history.deleteConfirm.description')}
+					{t('history.deleteConfirm.description')}
 				</p>
 			</div>
 			<div class="grid grid-cols-2 gap-3">
@@ -53,7 +53,7 @@
 					disabled={isDeleting}
 					class="px-4 py-2.5 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					{$t('common.cancel')}
+					{t('common.cancel')}
 				</button>
 				<button
 					onclick={onConfirm}
@@ -64,9 +64,9 @@
 						<div
 							class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
 						></div>
-						{$t('common.loading')}
+						{t('common.loading')}
 					{:else}
-						{$t('history.deleteConfirm.confirm')}
+						{t('history.deleteConfirm.confirm')}
 					{/if}
 				</button>
 			</div>

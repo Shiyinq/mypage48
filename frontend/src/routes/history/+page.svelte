@@ -57,7 +57,7 @@
 			isInitialDataLoaded.set(true);
 		} catch {
 			// Error logged and handled by store
-			showToast($t('history.errorTitle') || 'Failed to load tickets', 'error');
+			showToast(t('history.errorTitle') || 'Failed to load tickets', 'error');
 		}
 	}
 
@@ -82,10 +82,10 @@
 		try {
 			// Use store action (handles API + optimistic update)
 			await ticketsStore.updateNote(ticketId, note);
-			showToast($t('history.notesSaved'), 'success');
+			showToast(t('history.notesSaved'), 'success');
 		} catch {
 			// Error logged by store
-			showToast($t('common.error'), 'error');
+			showToast(t('common.error'), 'error');
 		}
 	};
 
@@ -105,10 +105,10 @@
 			invalidateTheater();
 
 			deleteId = null;
-			showToast($t('history.ticketDeleted'), 'success');
+			showToast(t('history.ticketDeleted'), 'success');
 		} catch {
 			// Error logged by store
-			showToast($t('common.error'), 'error');
+			showToast(t('common.error'), 'error');
 		} finally {
 			isDeleting = false;
 		}
@@ -130,7 +130,7 @@
 	};
 </script>
 
-<SEO title={$t('history.title')} path="/history" description={$t('history.description')} />
+<SEO title={t('history.title')} path="/history" description={t('history.description')} />
 
 <DeleteConfirmationModal
 	show={!!deleteId}
@@ -143,8 +143,8 @@
 	<!-- Page Header -->
 	<div class="mb-8">
 		<PageHeader
-			title={$t('history.title')}
-			subtitle={$t('history.subtitle')}
+			title={t('history.title')}
+			subtitle={t('history.subtitle')}
 			icon={History}
 			theme="blue"
 		>
@@ -163,8 +163,8 @@
 	<!-- Content Area -->
 	{#if error && filteredTickets.length === 0}
 		<ErrorState
-			title={$t('history.errorTitle') || 'Failed to load tickets'}
-			description={$t('history.errorDesc') || error || ''}
+			title={t('history.errorTitle') || 'Failed to load tickets'}
+			description={t('history.errorDesc') || error || ''}
 			onRetry={() => loadTickets(1, filters)}
 		/>
 	{:else if isTicketsLoading.value && filteredTickets.length === 0}
@@ -174,21 +174,17 @@
 			<TableSkeleton
 				rows={5}
 				columns={[
-					$t('history.date'),
-					$t('history.eventDetails'),
-					$t('history.seat'),
-					$t('history.price'),
-					$t('history.notes'),
-					$t('history.actions')
+					t('history.date'),
+					t('history.eventDetails'),
+					t('history.seat'),
+					t('history.price'),
+					t('history.notes'),
+					t('history.actions')
 				]}
 			/>
 		{/if}
 	{:else if filteredTickets.length === 0}
-		<EmptyState
-			icon={Ticket}
-			title={$t('history.noTickets')}
-			description={$t('history.addFirst')}
-		/>
+		<EmptyState icon={Ticket} title={t('history.noTickets')} description={t('history.addFirst')} />
 	{:else}
 		{#if viewMode === 'GRID'}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -226,12 +222,12 @@
 								rows={3}
 								showHeader={false}
 								columns={[
-									$t('history.date'),
-									$t('history.eventDetails'),
-									$t('history.seat'),
-									$t('history.price'),
-									$t('history.notes'),
-									$t('history.actions')
+									t('history.date'),
+									t('history.eventDetails'),
+									t('history.seat'),
+									t('history.price'),
+									t('history.notes'),
+									t('history.actions')
 								]}
 							/>
 						</div>

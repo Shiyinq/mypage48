@@ -26,13 +26,13 @@
 		class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
 	>
 		<MapPin class="w-4 h-4" />
-		{$t('forms.seatPayment')}
+		{t('forms.seatPayment')}
 	</h3>
 	<div class="grid grid-cols-3 gap-4">
 		<div>
 			<label
 				class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-				for="seat-section">{$t('forms.row')}</label
+				for="seat-section">{t('forms.row')}</label
 			>
 			<div class="relative">
 				<select
@@ -51,7 +51,7 @@
 		<div class="col-span-2">
 			<label
 				class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-				for="seat-number">{$t('forms.seatNumber')}</label
+				for="seat-number">{t('forms.seatNumber')}</label
 			>
 			<input
 				id="seat-number"
@@ -65,7 +65,7 @@
 		<div>
 			<label
 				class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-				for="ticket-price">{$t('forms.price')}</label
+				for="ticket-price">{t('forms.price')}</label
 			>
 			<div class="relative">
 				<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -82,7 +82,7 @@
 		<div>
 			<label
 				class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-				for="ticket-id">{$t('forms.ticketId')}</label
+				for="ticket-id">{t('forms.ticketId')}</label
 			>
 			<div class="relative">
 				<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">

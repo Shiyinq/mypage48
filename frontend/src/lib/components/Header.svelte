@@ -27,16 +27,16 @@
 		mounted = true;
 	});
 
-	let isLoading = $derived(!mounted || (isAuthenticated.value && !$isInitialDataLoaded));
+	let isLoading = $derived(!mounted || (isAuthenticated.value && !isInitialDataLoaded.value));
 
 	// Navigation items
 	let navItems = $derived([
-		{ label: $t('nav.dashboard'), href: '/' },
-		{ label: $t('nav.theater'), href: '/theater/events', activeHref: '/theater' },
-		{ label: $t('nav.achievements'), href: '/achievements' },
-		{ label: $t('nav.journal'), href: '/journal' },
-		{ label: $t('nav.memories'), href: '/memories' },
-		{ label: $t('nav.history'), href: '/history' }
+		{ label: t('nav.dashboard'), href: '/' },
+		{ label: t('nav.theater'), href: '/theater/events', activeHref: '/theater' },
+		{ label: t('nav.achievements'), href: '/achievements' },
+		{ label: t('nav.journal'), href: '/journal' },
+		{ label: t('nav.memories'), href: '/memories' },
+		{ label: t('nav.history'), href: '/history' }
 	]);
 
 	let currentPath = $derived($page.url.pathname);
@@ -58,7 +58,7 @@
 		<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 			<!-- Left: Logo -->
 			<a href="/" class="flex items-center gap-3 cursor-pointer">
-				<NavLogo tagline={$t('header.tagline')} />
+				<NavLogo tagline={t('header.tagline')} />
 			</a>
 
 			<!-- Center: Desktop Navigation -->
@@ -77,7 +77,7 @@
 						class="idol-gradient text-white px-6 py-2 rounded-full font-black text-[11px] uppercase tracking-widest shadow-xl shadow-red-500/20 hover:shadow-red-500/40 hover:-translate-y-0.5 transition-all flex items-center gap-2 group"
 					>
 						<Plus class="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
-						{$t('nav.newTicket')}
+						{t('nav.newTicket')}
 					</a>
 				</div>
 
@@ -142,7 +142,7 @@
 								></div>
 							{/if}
 							<span class="relative z-10 flex items-center justify-center">
-								<span>{$t(item.labelKey) || item.labelDefault}</span>
+								<span>{t(item.labelKey) || item.labelDefault}</span>
 							</span>
 						</a>
 					{/each}

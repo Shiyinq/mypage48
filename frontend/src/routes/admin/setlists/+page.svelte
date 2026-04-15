@@ -94,14 +94,14 @@
 		try {
 			if (isCreatingSetlist) {
 				await adminStore.createSetlist(setlistData);
-				showToast($t('admin.setlists.modal.created'), 'success');
+				showToast(t('admin.setlists.modal.created'), 'success');
 			} else if (editingSetlist && editingSetlist.setlistId) {
 				await adminStore.updateSetlist(editingSetlist.setlistId, setlistData);
-				showToast($t('admin.setlists.modal.updated'), 'success');
+				showToast(t('admin.setlists.modal.updated'), 'success');
 			}
 			showSetlistModal = false;
 		} catch {
-			showToast($t('admin.setlists.modal.failedSave'), 'error');
+			showToast(t('admin.setlists.modal.failedSave'), 'error');
 		} finally {
 			isSubmitting = false;
 		}
@@ -111,10 +111,10 @@
 		if (deletingId === null) return;
 		try {
 			await adminStore.deleteSetlist(deletingId);
-			showToast($t('admin.setlists.modal.deleted'), 'success');
+			showToast(t('admin.setlists.modal.deleted'), 'success');
 			showDeleteModal = false;
 		} catch {
-			showToast($t('admin.setlists.modal.failedDelete'), 'error');
+			showToast(t('admin.setlists.modal.failedDelete'), 'error');
 		}
 	}
 </script>
@@ -126,7 +126,7 @@
 		<div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<Music class="w-5 h-5 text-purple-500" />
-				{$t('admin.setlists.title')} ({adminStore.setlists.total})
+				{t('admin.setlists.title')} ({adminStore.setlists.total})
 			</h2>
 
 			<!-- Search Input -->
@@ -136,7 +136,7 @@
 					type="text"
 					bind:value={searchQuery}
 					oninput={handleSearch}
-					placeholder={$t('admin.setlists.searchPlaceholder')}
+					placeholder={t('admin.setlists.searchPlaceholder')}
 					class="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
 				/>
 				{#if searchQuery}
@@ -155,7 +155,7 @@
 			class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-opacity shadow-lg shadow-gray-200 dark:shadow-none cursor-pointer"
 		>
 			<Plus class="w-4 h-4" />
-			{$t('admin.setlists.addSetlist')}
+			{t('admin.setlists.addSetlist')}
 		</button>
 	</div>
 
@@ -163,11 +163,11 @@
 		<TableSkeleton
 			rows={10}
 			columns={[
-				$t('admin.setlists.table.setlistInfo'),
-				$t('admin.setlists.table.japaneseTitle'),
-				$t('admin.setlists.table.type'),
-				$t('admin.setlists.table.status'),
-				$t('admin.setlists.table.actions')
+				t('admin.setlists.table.setlistInfo'),
+				t('admin.setlists.table.japaneseTitle'),
+				t('admin.setlists.table.type'),
+				t('admin.setlists.table.status'),
+				t('admin.setlists.table.actions')
 			]}
 		/>
 	{:else}
@@ -184,11 +184,11 @@
 					<TableSkeleton
 						rows={3}
 						columns={[
-							$t('admin.setlists.table.setlistInfo'),
-							$t('admin.setlists.table.japaneseTitle'),
-							$t('admin.setlists.table.type'),
-							$t('admin.setlists.table.status'),
-							$t('admin.setlists.table.actions')
+							t('admin.setlists.table.setlistInfo'),
+							t('admin.setlists.table.japaneseTitle'),
+							t('admin.setlists.table.type'),
+							t('admin.setlists.table.status'),
+							t('admin.setlists.table.actions')
 						]}
 						showHeader={false}
 					/>
@@ -196,11 +196,11 @@
 			</div>
 		{:else if setlistsList.length > 0}
 			<div class="py-12 text-center text-gray-400 text-sm">
-				{$t('admin.setlists.noMoreSetlists')}
+				{t('admin.setlists.noMoreSetlists')}
 			</div>
 		{:else}
 			<div class="py-20 text-center text-gray-500">
-				{$t('admin.setlists.noSetlistsFound', { query: searchQuery })}
+				{t('admin.setlists.noSetlistsFound', { query: searchQuery })}
 			</div>
 		{/if}
 	{/if}
@@ -220,6 +220,6 @@
 	bind:show={showDeleteModal}
 	onCancel={() => (showDeleteModal = false)}
 	onConfirm={handleDeleteConfirm}
-	title={$t('admin.setlists.modal.deleteTitle')}
-	description={$t('admin.setlists.modal.deleteDesc')}
+	title={t('admin.setlists.modal.deleteTitle')}
+	description={t('admin.setlists.modal.deleteDesc')}
 />

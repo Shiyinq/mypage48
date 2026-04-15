@@ -45,40 +45,40 @@
 		(() => {
 			if (currentPath.includes('/theater/news')) {
 				return {
-					title: $t('theater.news.title') || 'News',
-					subtitle: $t('theater.news.subtitle') || 'Latest updates and announcements',
+					title: t('theater.news.title') || 'News',
+					subtitle: t('theater.news.subtitle') || 'Latest updates and announcements',
 					icon: Newspaper,
 					theme: 'red' as PageTheme
 				};
 			}
 			if (currentPath.includes('/theater/members')) {
 				return {
-					title: $t('theater.members.title'),
-					subtitle: $t('theater.members.subtitle'),
+					title: t('theater.members.title'),
+					subtitle: t('theater.members.subtitle'),
 					icon: Users,
 					theme: 'pink' as PageTheme
 				};
 			}
 			if (currentPath.includes('/theater/sorter')) {
 				return {
-					title: $t('theater.sorter.title'),
-					subtitle: $t('theater.sorter.subtitle'),
+					title: t('theater.sorter.title'),
+					subtitle: t('theater.sorter.subtitle'),
 					icon: ArrowUpDown,
 					theme: 'rose' as PageTheme
 				};
 			}
 			if (currentPath.includes('/theater/events/history')) {
 				return {
-					title: $t('theater.eventHistory.title') || 'Event History',
-					subtitle: $t('theater.eventHistory.subtitle') || 'Past events',
+					title: t('theater.eventHistory.title') || 'Event History',
+					subtitle: t('theater.eventHistory.subtitle') || 'Past events',
 					icon: Calendar,
 					theme: 'orange' as PageTheme
 				};
 			}
 			if (currentPath.includes('/theater/events')) {
 				return {
-					title: $t('theater.events.title') || 'Events',
-					subtitle: $t('theater.events.subtitle') || 'Browse theater events',
+					title: t('theater.events.title') || 'Events',
+					subtitle: t('theater.events.subtitle') || 'Browse theater events',
 					icon: Calendar,
 					theme: 'blue' as PageTheme
 				};
@@ -86,14 +86,14 @@
 			if (currentPath.includes('/theater/live')) {
 				return {
 					title: 'JKT48 LIVE',
-					subtitle: $t('theater.live.subtitle'),
+					subtitle: t('theater.live.subtitle'),
 					icon: Tv,
 					theme: 'red' as PageTheme
 				};
 			}
 			return {
-				title: $t('theater.title'),
-				subtitle: $t('theater.subtitle'),
+				title: t('theater.title'),
+				subtitle: t('theater.subtitle'),
 				icon: AudioLines,
 				theme: 'purple' as PageTheme
 			};

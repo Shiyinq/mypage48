@@ -82,7 +82,7 @@
 			);
 		} catch {
 			// Error logged by store
-			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
+			showToast(t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		}
 	}
 
@@ -166,9 +166,9 @@
 </script>
 
 <SEO
-	title={$t('theater.members.title')}
+	title={t('theater.members.title')}
 	path="/theater/members"
-	description={$t('theater.members.subtitle')}
+	description={t('theater.members.subtitle')}
 />
 
 <div class="space-y-6 mb-2">
@@ -185,7 +185,7 @@
 							: 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 border border-gray-100 dark:border-zinc-700'
 					}`}
 				>
-					{$t('common.all')}
+					{t('common.all')}
 				</button>
 				{#if loadingGenerations}
 					{#each Array(5)}
@@ -215,7 +215,7 @@
 			<Search class="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
 			<input
 				type="text"
-				placeholder={$t('common.search')}
+				placeholder={t('common.search')}
 				value={searchQuery}
 				oninput={handleSearch}
 				class="w-full pl-9.5 pr-4 py-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 rounded-full text-sm text-themed placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all shadow-sm"
@@ -264,15 +264,15 @@
 	</div>
 {:else if error && membersList.length === 0}
 	<ErrorState
-		title={$t('theater.members.errorTitle') || 'Failed to load members'}
-		description={$t('theater.members.errorDesc') || error || ''}
+		title={t('theater.members.errorTitle') || 'Failed to load members'}
+		description={t('theater.members.errorDesc') || error || ''}
 		onRetry={() => fetchMembers(true)}
 	/>
 {:else if membersList.length === 0}
 	<EmptyState
 		icon={Search}
-		title={$t('member.emptyState.title')}
-		description={$t('member.emptyState.description')}
+		title={t('member.emptyState.title')}
+		description={t('member.emptyState.description')}
 	>
 		{#if searchQuery || selectedGeneration}
 			<button
@@ -283,7 +283,7 @@
 				}}
 				class="mt-4 px-6 py-2 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full text-sm font-bold hover:bg-pink-200 dark:hover:bg-pink-900/50 transition-colors cursor-pointer"
 			>
-				{$t('common.clearFilters')}
+				{t('common.clearFilters')}
 			</button>
 		{/if}
 	</EmptyState>

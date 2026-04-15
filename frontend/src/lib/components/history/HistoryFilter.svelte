@@ -143,7 +143,7 @@
 				onchange={updateFilters}
 				class="w-full pl-10 pr-10 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full text-sm font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all appearance-none cursor-pointer"
 			>
-				<option value="">{$t('common.allSetlists') || 'All Setlists'}</option>
+				<option value="">{t('common.allSetlists') || 'All Setlists'}</option>
 				{#each availableTitles as t}
 					<option value={t}>{t}</option>
 				{/each}
@@ -224,7 +224,7 @@
 						></div>
 					</div>
 					<span class="text-sm font-bold text-gray-700 dark:text-gray-300"
-						>{$t('common.hasTwoShot')}</span
+						>{t('common.hasTwoShot')}</span
 					>
 				</label>
 
@@ -232,7 +232,7 @@
 				<div class={isSidebar ? 'flex flex-col gap-2 w-full' : 'flex flex-col gap-1'}>
 					{#if isSidebar}
 						<div class="text-[10px] uppercase font-black text-gray-400 tracking-wider mb-0.5">
-							{$t('common.dateRange')}
+							{t('common.dateRange')}
 						</div>
 					{/if}
 					<div class={isSidebar ? 'flex flex-col items-stretch gap-2' : 'flex items-center gap-2'}>
@@ -269,7 +269,7 @@
 			<div class={isSidebar ? 'flex flex-col gap-2' : 'flex flex-col gap-1.5'}>
 				{#if isSidebar}
 					<div class="text-[10px] uppercase font-black text-gray-400 tracking-wider">
-						{$t('common.days')}
+						{t('common.days')}
 					</div>
 				{/if}
 				<div class={isSidebar ? 'grid grid-cols-4 gap-1.5' : 'flex flex-wrap gap-1.5'}>
@@ -287,8 +287,8 @@
 							}`}
 						>
 							{isSidebar
-								? $t(`time.days.${day.toLowerCase()}`).substring(0, 3)
-								: $t(`time.days.${day.toLowerCase()}`)}
+								? t(`time.days.${day.toLowerCase()}`).substring(0, 3)
+								: t(`time.days.${day.toLowerCase()}`)}
 						</button>
 					{/each}
 				</div>
@@ -303,7 +303,7 @@
 					class={`text-[10px] font-bold flex items-center gap-1 transition-colors uppercase tracking-wider cursor-pointer ${isSidebar ? 'text-gray-400 hover:text-red-500' : 'text-red-500 hover:text-red-600'}`}
 				>
 					<X class="w-3 h-3" />
-					{$t('common.clearFilters')}
+					{t('common.clearFilters')}
 				</button>
 			</div>
 		</div>

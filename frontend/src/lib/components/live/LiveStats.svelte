@@ -85,7 +85,7 @@
 			<Clock size={v.icon} class={v.durationIconColor} />
 			<span class="{v.text} {v.durationTextColor} tabular-nums">
 				{#if showLabel}
-					<span class="opacity-60 text-[9px] mr-1">{$t('theater.live.liveDuration')}</span>
+					<span class="opacity-60 text-[9px] mr-1">{t('theater.live.liveDuration')}</span>
 				{/if}
 				{formatDuration(start_at, $now, showSeconds)}
 			</span>

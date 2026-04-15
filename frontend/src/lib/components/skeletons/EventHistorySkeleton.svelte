@@ -23,8 +23,8 @@
 				<tr
 					class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 				>
-					<th class="p-4">{$t('common.date')}</th>
-					<th class="p-4">{$t('theater.events.eventName')}</th>
+					<th class="p-4">{t('common.date')}</th>
+					<th class="p-4">{t('theater.events.eventName')}</th>
 					<th class="p-4">Type</th>
 					<th class="p-4">Members</th>
 					<th class="p-4 text-right">Link</th>

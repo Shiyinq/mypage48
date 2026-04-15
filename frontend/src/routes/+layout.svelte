@@ -107,7 +107,7 @@
 		} catch (err) {
 			logger.error('Failed to load initial data', err, { context: 'Layout' });
 		} finally {
-			isInitialDataLoaded.set(true);
+			isInitialDataLoaded.value = true;
 		}
 	}
 
@@ -145,7 +145,7 @@
 	$effect(() => {
 		if (!isAuthenticated.value) {
 			hasFetchedInitialData = false;
-			isInitialDataLoaded.set(false);
+			isInitialDataLoaded.value = false;
 			userProfile.reset();
 		}
 	});

@@ -139,7 +139,7 @@
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			return;
 		}
@@ -170,7 +170,7 @@
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			return;
 		}
@@ -248,12 +248,12 @@
 			invalidateDashboard();
 			invalidateTheater();
 
-			showToast($t('forms.ticketUpdateSuccess'));
+			showToast(t('forms.ticketUpdateSuccess'));
 			onsave?.(updated);
 			onclose?.();
 		} catch (e) {
 			logger.error('Failed to update ticket', e, { context: 'EditTicketModal' });
-			showToast($t('forms.ticketUpdateError'), 'error');
+			showToast(t('forms.ticketUpdateError'), 'error');
 		} finally {
 			isSubmitting = false;
 		}
@@ -284,7 +284,7 @@
 					</div>
 					<div>
 						<h2 class="text-2xl font-bold text-themed leading-none relative w-fit">
-							{$t('forms.editTicket')}
+							{t('forms.editTicket')}
 							<span
 								class="absolute -bottom-1 left-0 w-full h-2 bg-red-200/60 dark:bg-red-500/30 -z-10 transform -skew-x-12 rounded-sm"
 							></span>
@@ -296,7 +296,7 @@
 					onclick={() => onclose?.()}
 					class="text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-zinc-700 cursor-pointer"
 				>
-					{$t('forms.cancel')}
+					{t('forms.cancel')}
 				</button>
 			</div>
 
@@ -354,12 +354,12 @@
 								class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
 							>
 								<NotebookPen class="w-4 h-4" />
-								{$t('forms.experienceLog')}
+								{t('forms.experienceLog')}
 							</h3>
 							<textarea
 								bind:value={formData.notes}
 								class="w-full p-4 bg-yellow-50/50 dark:bg-zinc-800/50 border border-yellow-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-yellow-400 dark:focus:ring-zinc-600 outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 min-h-[120px]"
-								placeholder={$t('forms.notesPlaceholder')}
+								placeholder={t('forms.notesPlaceholder')}
 							></textarea>
 						</div>
 
@@ -374,7 +374,7 @@
 								{:else}
 									<CircleCheck class="w-6 h-6" />
 								{/if}
-								{$t('forms.updateTicket')}
+								{t('forms.updateTicket')}
 							</button>
 						</div>
 					</form>
@@ -402,7 +402,7 @@
 <!-- Validation Alert Modal -->
 <ValidationAlertModal
 	show={showValidationAlert}
-	title={$t('validation.alert.title')}
+	title={t('validation.alert.title')}
 	message={validationAlertMessage}
 	onClose={() => (showValidationAlert = false)}
 />

@@ -26,8 +26,8 @@
 		try {
 			await loadFeedback(page);
 		} catch {
-			error = $t('admin.feedback.errorDesc');
-			showToast($t('admin.feedback.errorTitle'), 'error');
+			error = t('admin.feedback.errorDesc');
+			showToast(t('admin.feedback.errorTitle'), 'error');
 		}
 	};
 
@@ -58,7 +58,7 @@
 	};
 </script>
 
-<SEO title={$t('admin.feedback.title')} />
+<SEO title={t('admin.feedback.title')} />
 
 <div class="space-y-6">
 	<div
@@ -67,12 +67,12 @@
 		<div class="flex items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<MessageSquare class="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-				{$t('admin.feedback.title')} ({feedbackStore.total})
+				{t('admin.feedback.title')} ({feedbackStore.total})
 			</h2>
 			<p
 				class="hidden md:block text-slate-500 dark:text-slate-400 text-sm border-l border-gray-200 dark:border-zinc-700 pl-4 ml-2"
 			>
-				{$t('admin.feedback.subtitle')}
+				{t('admin.feedback.subtitle')}
 			</p>
 		</div>
 	</div>
@@ -85,15 +85,15 @@
 		</div>
 	{:else if error}
 		<ErrorState
-			title={$t('admin.feedback.errorTitle') || 'Failed to load feedback'}
+			title={t('admin.feedback.errorTitle') || 'Failed to load feedback'}
 			description={error || ''}
 			onRetry={() => loadData(1)}
 		/>
 	{:else if feedbackStore.data.length === 0}
 		<EmptyState
 			icon={MessageSquare}
-			title={$t('admin.feedback.emptyTitle')}
-			description={$t('admin.feedback.emptyDesc')}
+			title={t('admin.feedback.emptyTitle')}
+			description={t('admin.feedback.emptyDesc')}
 		/>
 	{:else}
 		<div class="grid gap-4">
@@ -120,7 +120,7 @@
 									{item.type}
 								</span>
 								<span class="text-xs text-slate-400 font-medium">
-									{$formatDate(item.created_at, {
+									{formatDate(item.created_at, {
 										year: 'numeric',
 										month: 'short',
 										day: 'numeric'
@@ -178,7 +178,7 @@
 
 		{#if !feedbackStore.has_more && feedbackStore.data.length > 0}
 			<div class="pb-12 pt-6 text-center text-gray-400 text-sm">
-				{$t('admin.feedback.noMoreFeedback')}
+				{t('admin.feedback.noMoreFeedback')}
 			</div>
 		{/if}
 	{/if}

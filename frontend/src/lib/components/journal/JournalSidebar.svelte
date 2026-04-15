@@ -45,7 +45,7 @@
 	>
 		<h2 class="font-black text-gray-900 dark:text-white flex items-center gap-2 text-sm pr-2">
 			<CalendarDays class="w-4 h-4 text-red-500" />
-			{$t('journal.title')}
+			{t('journal.title')}
 		</h2>
 		<div class="flex items-center gap-1">
 			<div
@@ -57,7 +57,7 @@
 					></div>
 				{/if}
 				{totalData || tickets.length}
-				{$t('shows.unit')}
+				{t('shows.unit')}
 			</div>
 			<button
 				onclick={() => ontoggleSidebar?.()}
@@ -92,8 +92,8 @@
 		{:else if tickets.length === 0}
 			<div class="h-full flex flex-col items-center justify-center p-6 text-center text-gray-500">
 				<CalendarDays class="w-8 h-8 mb-3 opacity-20" />
-				<p class="text-sm font-medium">{$t('journal.noRecords')}</p>
-				<p class="text-xs mt-1 text-gray-400">{$t('journal.noRecordsDesc')}</p>
+				<p class="text-sm font-medium">{t('journal.noRecords')}</p>
+				<p class="text-xs mt-1 text-gray-400">{t('journal.noRecordsDesc')}</p>
 			</div>
 		{:else}
 			<div class="space-y-1 flex flex-col pb-10">
@@ -114,7 +114,7 @@
 									? 'text-red-500'
 									: 'text-gray-400 dark:text-gray-500'}"
 							>
-								{$formatDate(ticket.event.date, {
+								{formatDate(ticket.event.date, {
 									day: 'numeric',
 									month: 'short',
 									year: 'numeric'

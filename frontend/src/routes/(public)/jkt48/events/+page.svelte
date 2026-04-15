@@ -51,9 +51,9 @@
 </script>
 
 <SEO
-	title={$t('theater.events.title')}
+	title={t('theater.events.title')}
 	path="/jkt48/events"
-	description={$t('seo.events')}
+	description={t('seo.events')}
 	events={eventsList}
 />
 
@@ -62,12 +62,12 @@
 		<h1
 			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
 		>
-			{$t('theater.events.title')}
+			{t('theater.events.title')}
 		</h1>
 		<p
 			class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest"
 		>
-			{$t('theater.events.subtitle')}
+			{t('theater.events.subtitle')}
 		</p>
 	</div>
 
@@ -76,7 +76,7 @@
 		<div class="flex items-center gap-4 mb-8 group/header">
 			<div class="h-10 w-2 bg-red-600 rounded-full shadow-lg shadow-red-500/20"></div>
 			<h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
-				{$t('theater.birthdays.title') || 'Upcoming Birthdays'}
+				{t('theater.birthdays.title') || 'Upcoming Birthdays'}
 			</h2>
 		</div>
 
@@ -92,7 +92,7 @@
 			<div
 				class="p-12 rounded-[2.5rem] bg-slate-50 dark:bg-zinc-900/50 border-2 border-dashed border-slate-200 dark:border-zinc-800 text-center text-slate-400 font-bold uppercase tracking-widest text-sm"
 			>
-				{$t('theater.birthdays.empty') || 'No upcoming birthdays'}
+				{t('theater.birthdays.empty') || 'No upcoming birthdays'}
 			</div>
 		{:else}
 			<div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory">
@@ -133,7 +133,7 @@
 										? 'bg-red-600 text-white animate-pulse'
 										: 'bg-black/60 text-white'}"
 								>
-									{getBirthdayText(member.days_until, $t)}
+									{getBirthdayText(member.days_until, t)}
 								</span>
 							</div>
 
@@ -148,7 +148,7 @@
 									{new Date(member.birthdate).toLocaleString('id-ID', { month: 'short' })}
 									•
 									{member.age}
-									{$t('member.yearsOld')}
+									{t('member.yearsOld')}
 								</div>
 							</div>
 						</div>
@@ -163,7 +163,7 @@
 			<div class="flex items-center gap-4 group/header">
 				<div class="h-10 w-2 bg-red-600 rounded-full shadow-lg shadow-red-500/20"></div>
 				<h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
-					{$t('theater.upcomingEvents.title') || 'Upcoming Shows'}
+					{t('theater.upcomingEvents.title') || 'Upcoming Shows'}
 				</h2>
 			</div>
 
@@ -171,7 +171,7 @@
 				href="/jkt48/event-history"
 				class="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-sm hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all group"
 			>
-				{$t('theater.eventHistory.title') || 'Event History'}
+				{t('theater.eventHistory.title') || 'Event History'}
 				<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
 			</a>
 		</div>
@@ -184,15 +184,15 @@
 			</div>
 		{:else if error}
 			<ErrorState
-				title={$t('theater.upcomingEvents.errorTitle') || 'Failed to load events'}
-				description={$t('theater.upcomingEvents.errorDesc') || error || ''}
+				title={t('theater.upcomingEvents.errorTitle') || 'Failed to load events'}
+				description={t('theater.upcomingEvents.errorDesc') || error || ''}
 				onRetry={() => eventsStore.loadUpcoming(true)}
 			/>
 		{:else if eventsList.length === 0}
 			<EmptyState
 				icon={Calendar}
-				title={$t('theater.upcomingEvents.emptyTitle')}
-				description={$t('theater.upcomingEvents.empty')}
+				title={t('theater.upcomingEvents.emptyTitle')}
+				description={t('theater.upcomingEvents.empty')}
 			/>
 		{:else}
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -247,7 +247,7 @@
 										<span
 											class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black text-white bg-red-600 shadow-xl shadow-red-500/30 ring-2 ring-white/20"
 										>
-											{$t('theater.events.today')}
+											{t('theater.events.today')}
 										</span>
 									</div>
 								{/if}
@@ -318,7 +318,7 @@
 											>
 												<Calendar class="w-3.5 h-3.5" />
 												<span
-													>{$formatDate(event.date, {
+													>{formatDate(event.date, {
 														day: 'numeric',
 														month: 'short',
 														year: 'numeric'
@@ -331,7 +331,7 @@
 												>
 													<Clock class="w-3.5 h-3.5" />
 													<span
-														>{$formatTime(event.date, { hour: '2-digit', minute: '2-digit' })}</span
+														>{formatTime(event.date, { hour: '2-digit', minute: '2-digit' })}</span
 													>
 												</div>
 											{/if}

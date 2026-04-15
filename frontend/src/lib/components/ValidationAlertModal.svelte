@@ -56,7 +56,7 @@
 					id="validation-alert-title"
 					class="text-xl font-bold text-gray-900 dark:text-white mb-2"
 				>
-					{title || $t('validation.alert.title')}
+					{title || t('validation.alert.title')}
 				</h3>
 				<p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
 					{message}
@@ -68,7 +68,7 @@
 				onclick={onClose}
 				class="w-full px-4 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-200 dark:shadow-none transition-all cursor-pointer"
 			>
-				{$t('common.ok')}
+				{t('common.ok')}
 			</button>
 		</div>
 	</div>

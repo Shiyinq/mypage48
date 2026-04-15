@@ -71,9 +71,9 @@
 </script>
 
 <SEO
-	title={$t('theater.news.title') || 'News'}
+	title={t('theater.news.title') || 'News'}
 	path="/jkt48/news"
-	description={$t('seo.news')}
+	description={t('seo.news')}
 	articles={list}
 />
 
@@ -82,12 +82,12 @@
 		<h1
 			class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
 		>
-			{$t('theater.news.title') || 'News'}
+			{t('theater.news.title') || 'News'}
 		</h1>
 		<p
 			class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest leading-relaxed"
 		>
-			{$t('theater.news.subtitle') || 'Latest updates and announcements'}
+			{t('theater.news.subtitle') || 'Latest updates and announcements'}
 		</p>
 	</div>
 
@@ -99,15 +99,15 @@
 		</div>
 	{:else if error && list.length === 0}
 		<ErrorState
-			title={$t('theater.news.errorTitle')}
-			description={$t('theater.news.errorDesc')}
+			title={t('theater.news.errorTitle')}
+			description={t('theater.news.errorDesc')}
 			onRetry={() => newsStore.load(1, 12, true)}
 		/>
 	{:else if list.length === 0}
 		<EmptyState
 			icon={Newspaper}
-			title={$t('theater.news.emptyTitle')}
-			description={$t('theater.news.empty')}
+			title={t('theater.news.emptyTitle')}
+			description={t('theater.news.empty')}
 		/>
 	{:else}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
@@ -161,7 +161,7 @@
 							>
 								<Calendar class="w-3.5 h-3.5" />
 								<span
-									>{$formatDate(item.valid_date_from, {
+									>{formatDate(item.valid_date_from, {
 										day: 'numeric',
 										month: 'short',
 										year: 'numeric'
@@ -180,7 +180,7 @@
 							class="mt-auto pt-4 border-t flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-widest border-gray-50 dark:border-white/5"
 						>
 							<span class="flex items-center gap-2 group-hover:text-red-600 transition-colors">
-								{$t('theater.news.readMore')}
+								{t('theater.news.readMore')}
 								<ChevronRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
 							</span>
 						</div>
