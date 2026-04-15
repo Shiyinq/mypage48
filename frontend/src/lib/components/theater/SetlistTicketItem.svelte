@@ -4,7 +4,17 @@
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
 
-	export let ticket: TicketItem;
+	interface Props {
+		ticket: TicketItem;
+		onclick?: () => void;
+	}
+
+	let { ticket, onclick }: Props = $props();
+
+	function handleDelete(e: MouseEvent) {
+		e.stopPropagation();
+		onclick?.();
+	}
 </script>
 
 <div
@@ -21,7 +31,7 @@
 			class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-14 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-100 dark:border-zinc-700"
 		>
 			<span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase leading-none">
-				{$formatDate(ticket.event.date, {
+				{formatDate(ticket.event.date, {
 					month: 'short'
 				})}
 			</span>
@@ -66,10 +76,7 @@
 
 		<!-- Delete Action -->
 		<button
-			on:click|stopPropagation={() =>
-				// @ts-expect-error - dispatching native event
-				this.dispatchEvent(new CustomEvent('delete', { detail: { ticketId: ticket.ticketId } }))}
-			on:click
+			onclick={handleDelete}
 			class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100 cursor-pointer"
 		>
 			<Trash2 class="w-4.5 h-4.5" />

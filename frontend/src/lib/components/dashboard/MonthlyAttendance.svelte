@@ -3,25 +3,29 @@
 
 	const { t } = useTranslation();
 
-	export let stats: {
-		name: string;
-		count: number;
-		spent: number;
-		isActive: boolean;
-	}[];
-	export let maxCount: number;
-	export let subtitle: string;
-	export let loading: boolean = false;
+	interface Props {
+		stats: {
+			name: string;
+			count: number;
+			spent: number;
+			isActive: boolean;
+		}[];
+		maxCount: number;
+		subtitle: string;
+		loading?: boolean;
+	}
+
+	let { stats, maxCount, subtitle, loading = false }: Props = $props();
 </script>
 
 <div class="glass-panel p-6 rounded-3xl lg:col-span-2 flex flex-col">
 	<div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 		<div>
 			<h3 class="text-xl font-bold text-themed">
-				{$t('dashboard.monthlyAttendance.title')}
+				{t('dashboard.monthlyAttendance.title')}
 			</h3>
 			<p class="text-xs text-gray-400">
-				{$t('dashboard.monthlyAttendance.subtitle')}
+				{t('dashboard.monthlyAttendance.subtitle')}
 				{subtitle}
 			</p>
 		</div>
@@ -67,7 +71,7 @@
 							<span
 								class={`text-[8px] font-bold uppercase tracking-wider transition-colors duration-300 ${isHighIntensity ? 'text-white/80' : 'text-red-600/70 dark:text-red-400/70'}`}
 							>
-								{$t('shows.unit')}
+								{t('shows.unit')}
 							</span>
 
 							<!-- Spending Pill on Hover -->
@@ -88,7 +92,7 @@
 					<div class="text-center w-full">
 						<span
 							class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide group-hover:text-red-500 transition-colors"
-							>{$t('time.monthsShort.' + month.name.substring(0, 3).toLowerCase())}</span
+							>{t('time.monthsShort.' + month.name.substring(0, 3).toLowerCase())}</span
 						>
 					</div>
 				</div>

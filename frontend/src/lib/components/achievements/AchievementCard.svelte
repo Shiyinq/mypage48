@@ -4,8 +4,12 @@
 	import { Lock, Check, Trophy } from 'lucide-svelte';
 	import type { ComponentType } from 'svelte';
 
-	export let achievement: AchievementItem;
-	export let icon: ComponentType = Trophy;
+	interface Props {
+		achievement: AchievementItem;
+		icon?: ComponentType;
+	}
+
+	let { achievement, icon = Trophy }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -26,7 +30,8 @@
 		}`}
 	>
 		{#if achievement.isUnlocked}
-			<svelte:component this={icon} class="w-8 h-8 fill-current" />
+			{@const SvelteComponent = icon}
+			<SvelteComponent class="w-8 h-8 fill-current" />
 		{:else}
 			<Lock class="w-6 h-6" />
 		{/if}
@@ -65,7 +70,7 @@
 		<div
 			class="absolute top-4 right-4 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"
 		>
-			{$t('achievements.unlocked')}
+			{t('achievements.unlocked')}
 			<Check class="w-3 h-3" />
 		</div>
 	{/if}

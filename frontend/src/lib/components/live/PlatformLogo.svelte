@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { getLiveLogoUrl, getPlatformColor, getPlatformIcon } from '$lib/constants/live';
 
-	export let platform: string;
-	export let size: 'xs' | 'sm' | 'md' | 'lg' = 'sm';
-	export let className: string = '';
+	interface Props {
+		platform: string;
+		size?: 'xs' | 'sm' | 'md' | 'lg';
+		className?: string;
+	}
 
-	let logoError = false;
+	let { platform, size = 'sm', className = '' }: Props = $props();
+
+	let logoError = $state(false);
 
 	const sizeMap = {
 		xs: { container: 'h-4 min-w-[20px] px-1', img: 'h-1.5', text: 'text-[6px]' },
@@ -18,12 +22,13 @@
 		lg: { container: 'h-10 px-4 min-w-[48px]', img: 'h-4', text: 'text-[11px]' }
 	};
 
-	$: activeSize = sizeMap[size];
-	$: logoUrl = getLiveLogoUrl(platform);
-	$: isShowroom = platform === 'showroom';
+	let activeSize = $derived(sizeMap[size]);
+	let logoUrl = $derived(getLiveLogoUrl(platform));
+	let isShowroom = $derived(platform === 'showroom');
 
-	$: bgColorClass =
-		isShowroom && !logoError ? 'bg-[#121212]' : `bg-gradient-to-br ${getPlatformColor(platform)}`;
+	let bgColorClass = $derived(
+		isShowroom && !logoError ? 'bg-[#121212]' : `bg-gradient-to-br ${getPlatformColor(platform)}`
+	);
 </script>
 
 <div
@@ -34,7 +39,7 @@
 			src={logoUrl}
 			alt={platform}
 			class="w-auto object-contain {activeSize.img} {!isShowroom ? 'brightness-0 invert' : ''}"
-			on:error={() => (logoError = true)}
+			onerror={() => (logoError = true)}
 		/>
 	{:else}
 		<span class="font-bold uppercase tracking-widest {activeSize.text}">

@@ -1,4 +1,4 @@
-import { setlistsStore } from '$lib/stores/theater';
+import { setlistsStore } from '$lib/stores/theater.svelte';
 
 import { browser } from '$app/environment';
 

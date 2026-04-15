@@ -3,8 +3,12 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { User } from '$lib/types';
 
-	export let profile: User | null = null;
-	export let loading: boolean = true;
+	interface Props {
+		profile?: User | null;
+		loading?: boolean;
+	}
+
+	let { profile = null, loading = true }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -60,7 +64,7 @@
 							<p
 								class="text-[10px] sm:text-[11px] font-bold text-red-400 tracking-widest uppercase truncate"
 							>
-								{$t('profile.memberCard.officialFanClub')}
+								{t('profile.memberCard.officialFanClub')}
 							</p>
 							<h3 class="font-black text-base sm:text-lg tracking-tight truncate">
 								MYPAGE<span class="text-red-500">48</span>
@@ -71,7 +75,7 @@
 						<!-- Member ID -->
 						<div class="text-right min-w-0 w-full">
 							<p class="text-[10px] sm:text-[11px] text-gray-400 font-bold truncate">
-								{$t('profile.memberCard.memberId')}
+								{t('profile.memberCard.memberId')}
 							</p>
 							<p class="font-mono font-bold text-shadow text-xs sm:text-base truncate">
 								{#if loading}
@@ -108,8 +112,8 @@
 										: 'text-gray-400'} truncate"
 								>
 									{profile?.ofcStatus === 'Active'
-										? $t('profile.memberCard.ofcActive')
-										: $t('profile.memberCard.ofcInactive')}
+										? t('profile.memberCard.ofcActive')
+										: t('profile.memberCard.ofcInactive')}
 								</span>
 							</div>
 						{/if}
@@ -145,7 +149,7 @@
 				<div class="flex justify-between items-end gap-2 min-w-0">
 					<div class="min-w-0">
 						<p class="text-[10px] sm:text-[11px] text-gray-400 font-bold uppercase mb-0.5 truncate">
-							{$t('profile.memberCard.cardHolder')}
+							{t('profile.memberCard.cardHolder')}
 						</p>
 						<p
 							class="text-base sm:text-lg font-bold tracking-wide uppercase text-shadow-sm truncate"

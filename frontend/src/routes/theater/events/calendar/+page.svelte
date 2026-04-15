@@ -4,27 +4,27 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { ChevronLeft, ChevronRight, Cake, GraduationCap } from 'lucide-svelte';
-	import { calendarEvents, calendarLoading, eventsStore, calendarError } from '$lib/stores/events';
+	import { calendarEvents, calendarLoading, eventsStore } from '$lib/stores/events.svelte';
 	import DayEventsModal from '$lib/components/calendar/DayEventsModal.svelte';
 	import type { CalendarEvent } from '$lib/types/events';
 
 	import { formatDate, formatTime } from '$lib/i18n';
-	const { t, locale } = useTranslation();
+	const { t } = useTranslation();
 
 	// Default initialization
 	const now = new Date();
-	let year: number = now.getFullYear();
-	let month: number = now.getMonth() + 1; // 1-12
-	let calendarDays: { date: Date; isCurrentMonth: boolean }[] = [];
+	let year: number = $state(now.getFullYear());
+	let month: number = $state(now.getMonth() + 1); // 1-12
+	let calendarDays: { date: Date; isCurrentMonth: boolean }[] = $state([]);
 
 	// Date Picker State
-	let isDatePickerOpen = false;
-	let pickerYear = year;
+	let isDatePickerOpen = $state(false);
+	let pickerYear = $state(now.getFullYear());
 
 	// Modal State
-	let isModalOpen = false;
-	let modalDate = new Date();
-	let modalEvents: CalendarEvent[] = [];
+	let isModalOpen = $state(false);
+	let modalDate = $state(new Date());
+	let modalEvents: CalendarEvent[] = $state([]);
 
 	function openDayModal(date: Date, events: CalendarEvent[]) {
 		modalDate = date;
@@ -34,25 +34,6 @@
 
 	// Constants
 	const MAX_VISIBLE_EVENTS = 3;
-
-	$: if (isDatePickerOpen) {
-		pickerYear = year;
-	}
-
-	// Initialize with today or query params
-	$: {
-		const qYear = $page.url.searchParams.get('year');
-		const qMonth = $page.url.searchParams.get('month');
-
-		// If query params exist, override the local state
-		// Otherwise, keep the default initialized values (current date)
-		if (qYear) year = parseInt(qYear);
-		if (qMonth) month = parseInt(qMonth);
-
-		updateCalendar(year, month);
-
-		// Removed auto-selection of 1st day when changing months
-	}
 
 	function updateCalendar(y: number, m: number) {
 		const days: { date: Date; isCurrentMonth: boolean }[] = [];
@@ -107,7 +88,7 @@
 	}
 
 	function getEventsForDay(date: Date) {
-		return $calendarEvents.filter((e) => {
+		return calendarEvents.value.filter((e) => {
 			const eDate = new Date(e.date);
 			return (
 				eDate.getDate() === date.getDate() &&
@@ -119,14 +100,36 @@
 
 	const weekDays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
-	$: currentMonthEvents = $calendarEvents.filter((e) => {
-		const d = new Date(e.date);
-		return d.getMonth() === month - 1 && d.getFullYear() === year;
+	// Initialize with today or query params
+	$effect(() => {
+		const qYear = $page.url.searchParams.get('year');
+		const qMonth = $page.url.searchParams.get('month');
+
+		// If query params exist, override the local state
+		// Otherwise, keep the default initialized values (current date)
+		if (qYear) year = parseInt(qYear);
+		if (qMonth) month = parseInt(qMonth);
+
+		updateCalendar(year, month);
+
+		// Removed auto-selection of 1st day when changing months
 	});
+
+	$effect(() => {
+		if (isDatePickerOpen) {
+			pickerYear = year;
+		}
+	});
+	let currentMonthEvents = $derived(
+		calendarEvents.value.filter((e) => {
+			const d = new Date(e.date);
+			return d.getMonth() === month - 1 && d.getFullYear() === year;
+		})
+	);
 </script>
 
 <SEO
-	title={`${$t('theater.events.title')} - Calendar`}
+	title={`${t('theater.events.title')} - Calendar`}
 	path="/theater/events/calendar"
 	description="Theater schedule calendar"
 />
@@ -145,9 +148,9 @@
 			<div class="relative">
 				<button
 					class="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 px-2 py-1 rounded-lg transition-colors flex items-center gap-1 md:gap-2"
-					on:click={() => (isDatePickerOpen = !isDatePickerOpen)}
+					onclick={() => (isDatePickerOpen = !isDatePickerOpen)}
 				>
-					{$formatDate(new Date(year, month - 1), {
+					{formatDate(new Date(year, month - 1), {
 						month: 'long',
 						year: 'numeric'
 					})}
@@ -162,10 +165,10 @@
 					<!-- Backdrop -->
 					<div
 						class="fixed inset-0 z-10"
-						on:click={() => (isDatePickerOpen = false)}
+						onclick={() => (isDatePickerOpen = false)}
 						role="button"
 						tabindex="0"
-						on:keydown={(e) => e.key === 'Escape' && (isDatePickerOpen = false)}
+						onkeydown={(e) => e.key === 'Escape' && (isDatePickerOpen = false)}
 					></div>
 
 					<!-- Popover -->
@@ -176,14 +179,20 @@
 						<div class="flex items-center justify-between mb-4 px-2">
 							<button
 								class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full cursor-pointer"
-								on:click|stopPropagation={() => pickerYear--}
+								onclick={(e) => {
+									e.stopPropagation();
+									pickerYear--;
+								}}
 							>
 								<ChevronLeft class="w-5 h-5" />
 							</button>
 							<span class="font-bold text-lg">{pickerYear}</span>
 							<button
 								class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-full cursor-pointer"
-								on:click|stopPropagation={() => pickerYear++}
+								onclick={(e) => {
+									e.stopPropagation();
+									pickerYear++;
+								}}
 							>
 								<ChevronRight class="w-5 h-5" />
 							</button>
@@ -197,12 +206,13 @@
 									{monthIndex === month - 1 && pickerYear === year
 										? 'bg-blue-600 text-white font-medium'
 										: 'hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300'}"
-									on:click|stopPropagation={() => {
+									onclick={(e) => {
+										e.stopPropagation();
 										goto(`?year=${pickerYear}&month=${monthIndex + 1}`);
 										isDatePickerOpen = false;
 									}}
 								>
-									{$formatDate(new Date(2000, monthIndex), {
+									{formatDate(new Date(2000, monthIndex), {
 										month: 'short'
 									})}
 								</button>
@@ -213,7 +223,7 @@
 			</div>
 
 			<!-- Monthly Stats -->
-			{#if !$calendarLoading}
+			{#if !calendarLoading.value}
 				<div
 					class="hidden lg:flex items-center gap-2 md:gap-3 ml-2 md:ml-4 mr-auto text-xs font-medium text-gray-500 dark:text-gray-400"
 				>
@@ -222,14 +232,14 @@
 					>
 						<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
 						{currentMonthEvents.filter((e) => e.type === 'SHOW' || (!e.type && e.setlistId)).length}
-						<span class="hidden sm:inline">{$t('theater.events.setlist')}</span>
+						<span class="hidden sm:inline">{t('theater.events.setlist')}</span>
 					</span>
 					<span
 						class="flex items-center gap-1.5 bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 px-2 py-1 rounded-full border border-pink-100 dark:border-pink-900/30"
 					>
 						<span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
 						{currentMonthEvents.filter((e) => e.type === 'BIRTHDAY' || e.isBirthday).length}
-						<span class="hidden sm:inline">{$t('theater.events.birthday')}</span>
+						<span class="hidden sm:inline">{t('theater.events.birthday')}</span>
 					</span>
 					<span
 						class="flex items-center gap-1.5 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-full border border-purple-100 dark:border-purple-900/30"
@@ -241,7 +251,7 @@
 								e.type !== 'BIRTHDAY' &&
 								(!e.type ? !e.setlistId && !e.isBirthday : true)
 						).length}
-						<span class="hidden sm:inline">{$t('theater.events.eventType')}</span>
+						<span class="hidden sm:inline">{t('theater.events.eventType')}</span>
 					</span>
 				</div>
 			{/if}
@@ -250,36 +260,36 @@
 			<div class="flex items-center gap-2 md:gap-4">
 				<!-- Today Button -->
 				<button
-					on:click={() => {
+					onclick={() => {
 						const now = new Date();
 						goto(`?year=${now.getFullYear()}&month=${now.getMonth() + 1}`);
 					}}
 					class="hidden md:block cursor-pointer px-4 py-1.5 text-sm font-medium border border-gray-300 dark:border-zinc-700 rounded-full hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-gray-700 dark:text-gray-300 shadow-sm"
 				>
-					{$t('theater.events.today') || 'Today'}
+					{t('theater.events.today') || 'Today'}
 				</button>
 				<button
-					on:click={() => {
+					onclick={() => {
 						const now = new Date();
 						goto(`?year=${now.getFullYear()}&month=${now.getMonth() + 1}`);
 					}}
 					class="md:hidden cursor-pointer px-3 py-1.5 text-sm font-medium border border-gray-300 dark:border-zinc-700 rounded-full hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-gray-700 dark:text-gray-300 shadow-sm"
 					aria-label="Today"
 				>
-					{$t('theater.events.today') || 'Today'}
+					{t('theater.events.today') || 'Today'}
 				</button>
 
 				<!-- Arrows -->
 				<div class="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-full p-0.5">
 					<button
-						on:click={() => changeMonth(-1)}
+						onclick={() => changeMonth(-1)}
 						class="cursor-pointer p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all text-gray-600 dark:text-gray-400 shadow-sm hover:shadow"
 						aria-label="Previous month"
 					>
 						<ChevronLeft class="w-4 h-4" />
 					</button>
 					<button
-						on:click={() => changeMonth(1)}
+						onclick={() => changeMonth(1)}
 						class="cursor-pointer p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all text-gray-600 dark:text-gray-400 shadow-sm hover:shadow"
 						aria-label="Next month"
 					>
@@ -290,14 +300,15 @@
 		</div>
 
 		<!-- Calendar Content -->
-		{#if $calendarLoading && $calendarEvents.length === 0}
+		{#if calendarLoading.value && calendarEvents.value.length === 0}
 			<div class="flex-1 flex flex-col min-h-0 animate-pulse">
 				<!-- Skeleton Header -->
 				<div
 					class="grid border-b border-gray-100 dark:border-zinc-800"
 					style="grid-template-columns: repeat(7, 1fr);"
 				>
-					{#each Array(7) as _}
+					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+					{#each Array(7) as _, i}
 						<div class="py-3 flex justify-center">
 							<div class="h-3 w-8 bg-gray-200 dark:bg-zinc-800 rounded"></div>
 						</div>
@@ -308,6 +319,7 @@
 					class="grid flex-1 overflow-hidden"
 					style="grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(6, 1fr);"
 				>
+					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 					{#each Array(42) as _}
 						<div
 							class="border-b border-r border-gray-100 dark:border-zinc-800 p-1 flex flex-col items-center"
@@ -334,7 +346,7 @@
 									? 'text-blue-500 dark:text-blue-400'
 									: 'text-gray-500 dark:text-gray-400'}"
 						>
-							{$t(`time.daysShort.${dayKey}`)}
+							{t(`time.daysShort.${dayKey}`)}
 						</div>
 					{/each}
 				</div>
@@ -355,8 +367,8 @@
 						<div
 							role="button"
 							tabindex="0"
-							on:click={() => openDayModal(date, dayEvents)}
-							on:keydown={(e) => {
+							onclick={() => openDayModal(date, dayEvents)}
+							onkeydown={(e) => {
 								if (e.key === 'Enter' || e.key === ' ') {
 									e.preventDefault();
 									openDayModal(date, dayEvents);
@@ -400,6 +412,7 @@
 							<div
 								class="flex flex-wrap justify-center gap-0.5 px-0.5 md:hidden w-full max-h-[50%] overflow-hidden"
 							>
+								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 								{#each dayEvents.slice(0, 12) as _}
 									<div class="w-1 h-1 rounded-full bg-blue-400 dark:bg-blue-500"></div>
 								{/each}
@@ -430,7 +443,10 @@
 												: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'}
 										{isPast ? 'opacity-50 saturate-50 brightness-95' : 'hover:brightness-95'}"
 										title={event.title}
-										on:click|stopPropagation={() => openDayModal(date, dayEvents)}
+										onclick={(e) => {
+											e.stopPropagation();
+											openDayModal(date, dayEvents);
+										}}
 									>
 										<!-- Time & Icon Container -->
 										<div class="flex items-center gap-1 shrink-0">
@@ -438,7 +454,7 @@
 												<span
 													class="opacity-100 font-bold whitespace-nowrap leading-tight tracking-tight"
 												>
-													{$formatTime(new Date(event.date), {
+													{formatTime(new Date(event.date), {
 														hour: '2-digit',
 														minute: '2-digit',
 														hour12: false
@@ -468,10 +484,13 @@
 								{#if dayEvents.length > MAX_VISIBLE_EVENTS}
 									<button
 										class="px-1.5 py-0.5 text-[9px] font-bold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-left w-full hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors cursor-pointer flex items-center gap-1"
-										on:click|stopPropagation={() => openDayModal(date, dayEvents)}
+										onclick={(e) => {
+											e.stopPropagation();
+											openDayModal(date, dayEvents);
+										}}
 									>
 										<span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span>
-										{$t('theater.events.moreEvents', {
+										{t('theater.events.moreEvents', {
 											count: dayEvents.length - (MAX_VISIBLE_EVENTS - 1)
 										})}
 									</button>
@@ -489,5 +508,5 @@
 	isOpen={isModalOpen}
 	date={modalDate}
 	events={modalEvents}
-	on:close={() => (isModalOpen = false)}
+	onclose={() => (isModalOpen = false)}
 />

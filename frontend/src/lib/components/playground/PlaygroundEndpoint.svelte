@@ -1,70 +1,63 @@
 <script lang="ts">
-	import {
-		Play,
-		Terminal,
-		Key,
-		ChevronRight,
-		Hash,
-		Globe,
-		Lock,
-		Info,
-		Server,
-		RefreshCw,
-		Copy,
-		AlertCircle
-	} from 'lucide-svelte';
-	import { playgroundStore } from '$lib/stores/playground';
-	import { accessToken } from '$lib/stores/accessToken';
-	import { createEventDispatcher } from 'svelte';
+	import { Play, Terminal, Hash, Globe, Server, RefreshCw, Copy, AlertCircle } from 'lucide-svelte';
+	import { playgroundStore } from '$lib/stores/playground.svelte';
+	import { accessToken } from '$lib/stores/accessToken.svelte';
+
 	import { fade } from 'svelte/transition';
 	import { showToast } from '$lib/stores';
-	import type { OpenAPIEndpoint, OpenAPISchema } from '$lib/types';
+	import type { OpenAPIEndpoint, OpenAPISchema, ExecutionPayload } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
 
-	export let endpoint: OpenAPIEndpoint | null = null;
-	export let openapi: OpenAPISchema | null = null;
-	export let executing = false;
+	interface Props {
+		endpoint?: OpenAPIEndpoint | null;
+		openapi?: OpenAPISchema | null;
+		executing?: boolean;
+		onexecute?: (payload: ExecutionPayload) => void;
+	}
 
-	const dispatch = createEventDispatcher<{
-		execute: { method: string; path: string; params: any; body: any; headers: any };
-	}>();
+	let { endpoint = null, openapi = null, executing = false, onexecute }: Props = $props();
 
-	let parameters: Record<string, string> = {};
-	let body: string = '';
-	let headers: Record<string, string> = {};
-	let lastEndpointId: string | null = null;
+	let parameters: Record<string, string> = $state({});
+	let body: string = $state('');
+	let headers: Record<string, string> = $state({});
+	let lastEndpointId: string | null = $state(null);
 
-	function resolveSchema(schema: any): any {
-		if (!schema) return null;
-		if (schema.$ref) {
-			const refPath = schema.$ref.replace('#/components/schemas/', '');
-			return resolveSchema(openapi?.components?.schemas?.[refPath]);
+	function resolveSchema(schema: unknown): unknown {
+		if (!schema || typeof schema !== 'object') return schema;
+		const s = schema as Record<string, unknown>;
+		if (typeof s.$ref === 'string') {
+			const refPath = s.$ref.replace('#/components/schemas/', '');
+			const components = openapi?.components as Record<string, unknown> | undefined;
+			const schemas = components?.schemas as Record<string, unknown> | undefined;
+			return resolveSchema(schemas?.[refPath]);
 		}
 		return schema;
 	}
 
-	function generateExample(schema: any): any {
+	function generateExample(schema: unknown): unknown {
 		const resolved = resolveSchema(schema);
-		if (!resolved) return null;
+		if (!resolved || typeof resolved !== 'object') return null;
 
-		if (resolved.type === 'object' || resolved.properties) {
-			const obj: any = {};
-			const props = resolved.properties || {};
-			Object.entries(props).forEach(([key, prop]: [string, any]) => {
+		const r = resolved as Record<string, unknown>;
+
+		if (r.type === 'object' || r.properties) {
+			const obj: Record<string, unknown> = {};
+			const props = (r.properties as Record<string, unknown>) || {};
+			Object.entries(props).forEach(([key, prop]: [string, unknown]) => {
 				obj[key] = generateExample(prop);
 			});
 			return obj;
-		} else if (resolved.type === 'array') {
-			return [generateExample(resolved.items)];
+		} else if (r.type === 'array') {
+			return [generateExample(r.items)];
 		} else {
-			if (resolved.example !== undefined) return resolved.example;
-			if (resolved.default !== undefined) return resolved.default;
+			if (r.example !== undefined) return r.example;
+			if (r.default !== undefined) return r.default;
 
-			switch (resolved.type) {
+			switch (r.type) {
 				case 'string':
-					return resolved.format === 'date' ? '2024-01-01' : 'string';
+					return r.format === 'date' ? '2024-01-01' : 'string';
 				case 'number':
 				case 'integer':
 					return 0;
@@ -76,26 +69,28 @@
 		}
 	}
 
-	$: if (endpoint && endpoint.id !== lastEndpointId) {
-		lastEndpointId = endpoint.id;
-		parameters = {};
-		body = '';
-		headers = {};
+	$effect(() => {
+		if (endpoint && endpoint.id !== lastEndpointId) {
+			lastEndpointId = endpoint.id;
+			parameters = {};
+			body = '';
+			headers = {};
 
-		// Initialize default values for parameters
-		endpoint.details.parameters?.forEach((p: any) => {
-			parameters[p.name] = '';
-		});
+			// Initialize default values for parameters
+			endpoint.details.parameters?.forEach((p) => {
+				parameters[p.name] = '';
+			});
 
-		// Initialize body if it's a POST/PUT request
-		if (endpoint.details.requestBody) {
-			const content = endpoint.details.requestBody.content?.['application/json'];
-			if (content?.schema) {
-				const example = generateExample(content.schema);
-				body = JSON.stringify(example, null, 2);
+			// Initialize body if it's a POST/PUT request
+			if (endpoint.details.requestBody) {
+				const content = endpoint.details.requestBody.content?.['application/json'];
+				if (content?.schema) {
+					const example = generateExample(content.schema);
+					body = JSON.stringify(example, null, 2);
+				}
 			}
 		}
-	}
+	});
 
 	function handleExecute() {
 		if (!endpoint) return;
@@ -103,7 +98,7 @@
 		const queryParams = new URLSearchParams();
 		const finalHeaders = { ...headers };
 
-		endpoint.details.parameters?.forEach((p: any) => {
+		endpoint.details.parameters?.forEach((p) => {
 			if (p.in === 'path') {
 				finalPath = finalPath.replace(`{${p.name}}`, parameters[p.name] || `{${p.name}}`);
 			} else if (p.in === 'query' && parameters[p.name]) {
@@ -116,7 +111,7 @@
 		const queryString = queryParams.toString();
 		const url = queryString ? `${finalPath}?${queryString}` : finalPath;
 
-		dispatch('execute', {
+		onexecute?.({
 			method: endpoint.method,
 			path: url,
 			params: parameters,
@@ -132,7 +127,7 @@
 		// In playground, we typically use the session, but for cURL we'll include placeholders or known headers
 		const curlHeaders = ["-H 'Content-Type: application/json'"];
 
-		endpoint.details.parameters?.forEach((p: any) => {
+		endpoint.details.parameters?.forEach((p) => {
 			if (p.in === 'path') {
 				finalPath = finalPath.replace(`{${p.name}}`, parameters[p.name] || `{${p.name}}`);
 			} else if (p.in === 'query' && parameters[p.name]) {
@@ -150,7 +145,7 @@
 		if (cleanPath.startsWith('/')) cleanPath = cleanPath.slice(1);
 		const fullUrl = `${window.location.origin}/api/${cleanPath}${queryString ? '?' + queryString : ''}`;
 
-		let token = $playgroundStore.useSession ? $accessToken : $playgroundStore.apiKey;
+		const token = playgroundStore.useSession ? accessToken.value : playgroundStore.apiKey;
 		if (token) {
 			curlHeaders.push(`-H 'Authorization: Bearer ${token}'`);
 		}
@@ -163,7 +158,7 @@
 		}
 
 		navigator.clipboard.writeText(curlCommand);
-		showToast($t('playground.curlCopied'), 'success');
+		showToast(t('playground.curlCopied'), 'success');
 	}
 
 	const methodStyles: Record<string, string> = {
@@ -191,11 +186,11 @@
 						{endpoint.method}
 					</span>
 					<h1 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white">
-						{endpoint.details.summary || $t('playground.title')}
+						{endpoint.details.summary || t('playground.title')}
 					</h1>
 				</div>
 				<p class="text-sm text-gray-500 dark:text-gray-400 font-medium">
-					{endpoint.details.description || $t('playground.noDescription')}
+					{endpoint.details.description || t('playground.noDescription')}
 				</p>
 				<div
 					class="flex items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-gray-100 dark:border-white/5 font-mono text-sm group"
@@ -205,11 +200,11 @@
 						<span class="text-gray-900 dark:text-gray-100 truncate">{endpoint.path}</span>
 					</div>
 					<button
-						on:click={copyCurl}
+						onclick={copyCurl}
 						class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-700 border border-gray-200 dark:border-white/10 text-[10px] font-bold text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 transition-all cursor-pointer shadow-sm active:scale-95"
 					>
 						<Copy class="w-3 h-3" />
-						{$t('playground.copyCurl')}
+						{t('playground.copyCurl')}
 					</button>
 				</div>
 			</div>
@@ -219,7 +214,7 @@
 				<div class="space-y-4">
 					<div class="flex items-center gap-2 text-gray-900 dark:text-white">
 						<Hash class="w-5 h-5 text-red-500" />
-						<h2 class="text-lg font-bold">{$t('playground.parameters')}</h2>
+						<h2 class="text-lg font-bold">{t('playground.parameters')}</h2>
 					</div>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						{#each endpoint.details.parameters as p}
@@ -262,7 +257,7 @@
 				<div class="space-y-4">
 					<div class="flex items-center gap-2 text-gray-900 dark:text-white">
 						<Server class="w-5 h-5 text-red-500" />
-						<h2 class="text-lg font-bold">{$t('playground.requestBody')}</h2>
+						<h2 class="text-lg font-bold">{t('playground.requestBody')}</h2>
 					</div>
 					<div class="relative group">
 						<div class="absolute right-4 top-4 z-10">
@@ -284,27 +279,27 @@
 
 			<!-- Action -->
 			<div class="pt-6 border-t border-gray-100 dark:border-white/5 space-y-4">
-				{#if !$playgroundStore.apiKey && !$playgroundStore.useSession}
+				{#if !playgroundStore.apiKey && !playgroundStore.useSession}
 					<div
 						class="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 dark:text-red-400 text-xs font-bold"
 						in:fade
 					>
 						<AlertCircle class="w-4 h-4 shrink-0" />
-						{$t('playground.apiKeyRequired')}
+						{t('playground.apiKeyRequired')}
 					</div>
 				{/if}
 
 				<button
-					on:click={handleExecute}
-					disabled={executing || (!$playgroundStore.apiKey && !$playgroundStore.useSession)}
+					onclick={handleExecute}
+					disabled={executing || (!playgroundStore.apiKey && !playgroundStore.useSession)}
 					class="w-full md:w-auto px-8 py-4 bg-gray-900 dark:bg-zinc-100 text-white dark:text-gray-900 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-black dark:hover:bg-white transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-3 shadow-xl shadow-gray-200 dark:shadow-none"
 				>
 					{#if executing}
 						<RefreshCw class="w-4 h-4 animate-spin" />
-						{$t('playground.executing')}
+						{t('playground.executing')}
 					{:else}
 						<Play class="w-4 h-4 fill-current" />
-						{$t('playground.execute')}
+						{t('playground.execute')}
 					{/if}
 				</button>
 			</div>
@@ -318,10 +313,10 @@
 			</div>
 			<div class="max-w-xs">
 				<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-					{$t('playground.title')}
+					{t('playground.title')}
 				</h3>
 				<p class="text-sm text-gray-500">
-					{$t('playground.selectEndpoint')}
+					{t('playground.selectEndpoint')}
 				</p>
 			</div>
 		</div>

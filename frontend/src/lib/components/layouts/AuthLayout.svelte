@@ -1,10 +1,26 @@
 <script lang="ts">
 	import { Ticket } from 'lucide-svelte';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
-	export let title: string;
-	export let subtitle: string;
-	export let cardWidth = 'max-w-md';
-	export let icon: any = Ticket;
+	interface Props {
+		title: string;
+		subtitle: string;
+		cardWidth?: string;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		icon?: any;
+		children?: import('svelte').Snippet;
+		footer?: import('svelte').Snippet;
+	}
+
+	let {
+		title,
+		subtitle,
+		cardWidth = 'max-w-md',
+		icon = Ticket,
+		children,
+		footer
+	}: Props = $props();
+
+	const SvelteComponent = $derived(icon);
 </script>
 
 <div
@@ -23,7 +39,7 @@
 				<div
 					class="w-12 h-12 rounded-2xl idol-gradient flex items-center justify-center text-white shadow-lg shadow-red-500/10 mx-auto mb-4 rotate-3 ring-4 ring-white dark:ring-zinc-900"
 				>
-					<svelte:component this={icon} class="w-6 h-6" />
+					<SvelteComponent class="w-6 h-6" />
 				</div>
 				<div class="flex flex-col sm:flex-row items-center justify-center gap-1.5 mb-2">
 					<h1
@@ -44,10 +60,10 @@
 				<p class="text-gray-500 dark:text-zinc-500 font-medium text-[13px]">{subtitle}</p>
 			</div>
 
-			<slot />
+			{@render children?.()}
 
 			<div class="mt-8 pt-6 border-t border-gray-100 dark:border-zinc-800/50 text-center">
-				<slot name="footer" />
+				{@render footer?.()}
 			</div>
 		</div>
 	</div>

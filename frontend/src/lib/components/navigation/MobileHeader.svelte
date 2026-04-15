@@ -1,14 +1,9 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { ChevronLeft } from 'lucide-svelte';
-	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { onMount } from 'svelte';
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
-	import { pageHeaderStore, isImmersive } from '$lib/stores/ui';
+	import { pageHeaderStore, isImmersive } from '$lib/stores';
 
-	const { t } = useTranslation();
-
-	$: headerInfo = $pageHeaderStore;
+	let headerInfo = $derived(pageHeaderStore.value);
 
 	const themeClasses = {
 		red: 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400',
@@ -24,7 +19,7 @@
 	};
 </script>
 
-{#if !$isImmersive}
+{#if !isImmersive.value}
 	<div class="h-16 md:hidden"></div>
 	<header
 		class="md:hidden bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[6000] transition-all duration-300 ease-in-out"
@@ -33,11 +28,12 @@
 			<!-- Left: Title & Icon -->
 			<div class="flex items-center min-w-0 flex-1 gap-2">
 				{#if headerInfo}
-					{@const activeTheme = themeClasses[headerInfo.theme || 'red']}
+					{@const activeTheme =
+						themeClasses[(headerInfo.theme as keyof typeof themeClasses) || 'red']}
 					<div class="flex items-center gap-1 min-w-0 flex-1">
 						{#if headerInfo.showBackButton}
 							<button
-								on:click={headerInfo.handleBack}
+								onclick={headerInfo.handleBack}
 								class="p-1 -ml-1 hover:bg-gray-100 dark:hover:bg-zinc-800 text-zinc-950 dark:text-white flex-shrink-0 cursor-pointer transition-colors"
 							>
 								<ChevronLeft class="w-5 h-5" />
@@ -45,7 +41,7 @@
 						{/if}
 						{#if headerInfo.icon && !headerInfo.showBackButton}
 							<div class="p-1 rounded-md {activeTheme} flex-shrink-0">
-								<svelte:component this={headerInfo.icon} class="w-4 h-4" />
+								<headerInfo.icon class="w-4 h-4" />
 							</div>
 						{/if}
 						<div class="flex items-center gap-1 min-w-0 flex-1">
@@ -74,7 +70,7 @@
 						<div class="flex items-center gap-1.5 ml-auto mr-1 flex-shrink-0">
 							{#each headerInfo.actions as action}
 								<button
-									on:click={action.onClick}
+									onclick={action.onClick}
 									data-filter-toggle="true"
 									class={`p-1.5 rounded-full transition-colors cursor-pointer ${
 										action.theme === 'red'
@@ -83,7 +79,7 @@
 									}`}
 									title={action.label}
 								>
-									<svelte:component this={action.icon} class="w-4 h-4" />
+									<action.icon class="w-4 h-4" />
 								</button>
 							{/each}
 						</div>

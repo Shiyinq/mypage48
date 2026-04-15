@@ -1,20 +1,21 @@
 <script lang="ts">
-	import { theme, setTheme } from '$lib/stores/theme';
+	import { theme, setTheme } from '$lib/stores';
 	import { Sun, Moon } from 'lucide-svelte';
 	import { fly } from 'svelte/transition';
 	import { onMount } from 'svelte';
 
-	let mounted = false;
+	let mounted = $state(false);
 	onMount(() => {
 		mounted = true;
 	});
 
-	$: effectiveTheme =
-		$theme === 'auto'
+	let effectiveTheme = $derived(
+		theme.value === 'auto'
 			? mounted && window.matchMedia('(prefers-color-scheme: dark)').matches
 				? 'dark'
 				: 'light'
-			: $theme;
+			: theme.value
+	);
 
 	function toggleTheme() {
 		// If auto, toggle to the opposite of current effective theme
@@ -27,7 +28,7 @@
 </script>
 
 <button
-	on:click={toggleTheme}
+	onclick={toggleTheme}
 	class="relative w-10 h-10 rounded-full flex items-center justify-center bg-white/50 dark:bg-zinc-800/50 backdrop-blur-md border border-gray-200/50 dark:border-zinc-700/50 shadow-sm hover:bg-white dark:hover:bg-zinc-700 transition-all active:scale-95 group cursor-pointer"
 	aria-label="Toggle theme"
 >

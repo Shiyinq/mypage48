@@ -499,7 +499,8 @@
 			"uploadError": "Failed to upload profile picture. Please try again.",
 			"uploadSuccess": "Profile picture updated successfully!",
 			"loadErrorTitle": "Failed to Load Configuration",
-			"loadErrorDesc": "We couldn't load your public profile settings. Please try again."
+			"loadErrorDesc": "We couldn't load your public profile settings. Please try again.",
+			"viewProfile": "View Profile"
 		},
 		"developer": {
 			"title": "Developer Access",
@@ -666,6 +667,9 @@
 			"viewer": "Viewers",
 			"startedAt": "Started at",
 			"liveDuration": "Live for",
+			"seoTitle": "Live Streaming",
+			"seoDescription": "Watch JKT48 members live on Showroom or IDN Live via MyPage48.",
+			"seoMemberDescription": "Watch {name}'s live stream on MyPage48.",
 			"empty": "No members are currently live.",
 			"emptyTitle": "OFFLINE",
 			"back": "Back",
@@ -687,6 +691,9 @@
 			"liveBadge": "LIVE",
 			"chat": "Chat",
 			"connected": "Connected",
+			"offline_title": "Stream Offline",
+			"offline_description": "{name} is not live at the moment. This session might have ended or is currently unavailable.",
+			"return_home": "Return Home",
 			"toggleTheme": "Change Theme",
 			"volume": "Volume",
 			"mute": "Mute",
@@ -695,6 +702,10 @@
 			"openOriginal": "Open Original Stream",
 			"multiview": {
 				"title": "Multi-view",
+				"live": {
+					"seoTitle": "Multi-view Live",
+					"seoDescription": "Watch multiple JKT48 live streams simultaneously. Switch, rearrange, and chat on multiple lives at once."
+				},
 				"tap_to_play": "Tap to Play",
 				"clear_all": "Clear All",
 				"switch_to_landscape": "Switch to Landscape",
@@ -716,17 +727,21 @@
 				"loading_chat": "Loading chat...",
 				"select_stream_to_chat": "Select a stream to see chat",
 				"member_offline": "{name} offline",
-				"showroom_chat": "Showroom Chat",
-				"chat_started": "Chat Started",
 				"no_messages": "No messages yet",
 				"stream_error": "Stream error: {details}",
 				"hls_not_supported": "HLS not supported",
 				"no_stream_found": "No stream found",
 				"failed_load_stream": "Failed to load stream",
 				"retry": "Retry",
-				"sending_gift": "Sending Gift",
-				"seoDescription": "Watch multiple JKT48 members live at the same time. Switch, resize, and chat across multiple live streams simultaneously."
+				"sending_gift": "Sending Gift"
 			},
+			"joined": "{name} joined",
+			"group_joined": "{name} and {count} others joined",
+			"chat_started": "Chat Started",
+			"connecting": "Connecting...",
+			"disconnected": "Disconnected",
+			"reconnect_idn": "Connection lost. Retrying in a few seconds...",
+			"reconnect_showroom": "Connection lost. Retrying in a few seconds...",
 			"switchMultiview": "Switch to Multi-view"
 		},
 		"news": {

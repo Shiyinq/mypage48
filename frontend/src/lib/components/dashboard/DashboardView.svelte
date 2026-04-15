@@ -1,16 +1,11 @@
 <script lang="ts">
 	import { isAuthenticated } from '$lib/stores';
-	import { logger } from '$lib/utils/logger';
 	import StatCard from '$lib/components/StatCard.svelte';
 	import TheaterSeatMap from '$lib/components/TheaterSeatMap.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { Ticket as TicketIcon, DollarSign, Armchair, Camera, Users } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
-
-	// Import shared constants
-	import { MONTHS } from '$lib/constants';
 
 	// Import dashboard components
 	import {
@@ -25,11 +20,13 @@
 	} from '$lib/components/dashboard';
 
 	// Import dashboard store
-	import { dashboardFilter, dashboardStatsData, isDashboardLoading } from '$lib/stores/dashboard';
+	import {
+		dashboardFilter,
+		dashboardStatsData,
+		isDashboardLoading
+	} from '$lib/stores/dashboard.svelte';
 
 	const { t } = useTranslation();
-
-	let mounted = false;
 
 	function clickOutside(node: HTMLElement) {
 		const handleClick = (event: MouseEvent) => {
@@ -48,65 +45,58 @@
 		};
 	}
 
-	// Dashboard data sourced from store
-	$: state = $dashboardStatsData;
-	$: dashboardStats = state.data;
-	$: error = state.error;
+	// Dashboard data sourced from store reactive properties
+	let dashboardStats = $derived(dashboardStatsData.data);
+	let error = $derived(dashboardStatsData.error);
+	let loading = $derived(isDashboardLoading.value);
 
 	const currentYear: number = new Date().getFullYear();
-	let isFilterOpen: boolean = false;
+	let isFilterOpen = $state(false);
 
-	let showTheaterPopup: boolean = false;
-	let showTwoShotPopup: boolean = false;
+	let showTheaterPopup = $state(false);
+	let showTwoShotPopup = $state(false);
 
 	// Fetch dashboard data from API
 	async function fetchDashboardStats() {
-		if (!$isAuthenticated) {
+		if (!isAuthenticated.value) {
 			return;
 		}
 
-		try {
-			// Use smart store load action
-			await dashboardStatsData.load($dashboardFilter);
-		} catch (err) {
-			// Error logged and handled by store
-		}
+		await dashboardStatsData.load(dashboardFilter);
 	}
-
-	onMount(() => {
-		mounted = true;
-	});
 
 	// Refetch when filter params change
-	$: if (mounted && $isAuthenticated && $dashboardFilter) {
-		fetchDashboardStats();
-	}
+	$effect(() => {
+		if (isAuthenticated.value && dashboardFilter) {
+			fetchDashboardStats();
+		}
+	});
 
 	// Available years from API
-	$: availableYears = dashboardStats?.available_years ?? [currentYear];
+	let availableYears = $derived(dashboardStats?.available_years ?? [currentYear]);
 
 	// Derived stats from API response
-	$: totalSpent = dashboardStats?.theater.total_spent ?? 0;
-	$: totalVisits = dashboardStats?.theater.total_visits ?? 0;
+	let totalSpent = $derived(dashboardStats?.theater.total_spent ?? 0);
+	let totalVisits = $derived(dashboardStats?.theater.total_visits ?? 0);
 
 	// Day Stats
-	$: dayStats = {
+	let dayStats = $derived({
 		stats: dashboardStats?.period.day_stats.stats ?? [],
 		maxCount: dashboardStats?.period.day_stats.max_count ?? 1
-	};
+	});
 
 	// Row Stats
-	$: rowStats = {
+	let rowStats = $derived({
 		counts: dashboardStats?.seat_map.row_stats.counts ?? {},
 		maxCount: dashboardStats?.seat_map.row_stats.max_count ?? 1,
 		uniqueVisited: dashboardStats?.seat_map.row_stats.unique_visited ?? 0
-	};
+	});
 
 	// Seat Stats
-	$: seatStats = dashboardStats?.seat_map.seat_stats ?? {};
+	let seatStats = $derived(dashboardStats?.seat_map.seat_stats ?? {});
 
 	// Monthly Stats - convert to frontend format
-	$: monthlyStats = {
+	let monthlyStats = $derived({
 		stats:
 			dashboardStats?.period.monthly_stats.stats.map((s) => ({
 				name: s.name,
@@ -115,17 +105,17 @@
 				isActive: s.is_active
 			})) ?? [],
 		maxCount: dashboardStats?.period.monthly_stats.max_count ?? 1
-	};
+	});
 
 	// Top Show
-	$: topShowStats = {
+	let topShowStats = $derived({
 		title: dashboardStats?.theater.top_show.title ?? '-',
 		count: dashboardStats?.theater.top_show.count ?? 0,
 		image: dashboardStats?.theater.top_show.image ?? null
-	};
+	});
 
 	// Two Shot Stats
-	$: twoShotStats = {
+	let twoShotStats = $derived({
 		totalSpend: dashboardStats?.two_shot.total_spend ?? 0,
 		totalCount: dashboardStats?.two_shot.total_count ?? 0,
 		uniqueCount: dashboardStats?.two_shot.unique_count ?? 0,
@@ -136,14 +126,14 @@
 					image: dashboardStats.two_shot.top_2_shot.image ?? undefined
 				}
 			: null
-	};
+	});
 
 	// Most frequent row
-	$: mostFrequentRow = dashboardStats?.theater.most_frequent_row ?? '-';
-	$: mostFrequentRowCount = dashboardStats?.theater.most_frequent_row_count ?? 0;
+	let mostFrequentRow = $derived(dashboardStats?.theater.most_frequent_row ?? '-');
+	let mostFrequentRowCount = $derived(dashboardStats?.theater.most_frequent_row_count ?? 0);
 
 	// Show Extremes
-	$: showExtremes = {
+	let showExtremes = $derived({
 		first: dashboardStats?.theater.extremes.first
 			? {
 					image: dashboardStats.theater.extremes.first.image,
@@ -160,10 +150,10 @@
 					detail: dashboardStats.theater.extremes.last.detail ?? undefined
 				}
 			: null
-	};
+	});
 
 	// Two Shot Extremes
-	$: twoShotExtremes = {
+	let twoShotExtremes = $derived({
 		first: dashboardStats?.two_shot.extremes.first
 			? {
 					image: dashboardStats.two_shot.extremes.first.image,
@@ -178,16 +168,16 @@
 					date: dashboardStats.two_shot.extremes.last.date
 				}
 			: null
-	};
+	});
 </script>
 
-<SEO title={$t('dashboard.title')} path="/" description={$t('seo.dashboard')} />
+<SEO title={t('dashboard.title')} path="/" description={t('seo.dashboard')} />
 
 <div class="space-y-6 pt-4 sm:pt-6 px-4 pb-32 max-w-7xl mx-auto">
 	<!-- Header / Filter Toggle -->
 	<div class="mb-6 relative z-30">
 		<DashboardHeader
-			filter={$dashboardFilter}
+			filter={dashboardFilter}
 			onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
 			isOpen={isFilterOpen}
 		/>
@@ -198,10 +188,10 @@
 				class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
 			>
 				<DashboardFilters
-					bind:isAllData={$dashboardFilter.isAllData}
-					bind:selectedYear={$dashboardFilter.selectedYear}
-					bind:startMonth={$dashboardFilter.startMonth}
-					bind:endMonth={$dashboardFilter.endMonth}
+					bind:isAllData={dashboardFilter.isAllData}
+					bind:selectedYear={dashboardFilter.selectedYear}
+					bind:startMonth={dashboardFilter.startMonth}
+					bind:endMonth={dashboardFilter.endMonth}
 					{availableYears}
 				/>
 			</div>
@@ -214,9 +204,9 @@
 			{error}
 			<button
 				class="ml-2 text-sm underline hover:text-red-300 cursor-pointer"
-				on:click={() => fetchDashboardStats()}
+				onclick={() => fetchDashboardStats()}
 			>
-				{$t('errors.tryAgain')}
+				{t('errors.tryAgain')}
 			</button>
 		</div>
 	{/if}
@@ -227,22 +217,22 @@
 		<div class="glass-panel p-6 rounded-3xl">
 			<div class="mb-6">
 				<h3 class="text-xl font-bold text-themed">
-					{$t('dashboard.theater.title')}
+					{t('dashboard.theater.title')}
 				</h3>
-				<p class="text-xs text-gray-400">{$t('dashboard.theater.subtitle')}</p>
+				<p class="text-xs text-gray-400">{t('dashboard.theater.subtitle')}</p>
 			</div>
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<StatCard
-					title={$t('dashboard.theater.shows')}
+					title={t('dashboard.theater.shows')}
 					value={totalVisits}
-					sub={$t('dashboard.theater.timesWatched')}
+					sub={t('dashboard.theater.timesWatched')}
 					icon={TicketIcon}
 					theme="red"
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 				<StatCard
-					title={$t('dashboard.theater.spending')}
+					title={t('dashboard.theater.spending')}
 					value={new Intl.NumberFormat('id-ID', {
 						style: 'currency',
 						currency: 'IDR',
@@ -250,32 +240,32 @@
 					}).format(totalSpent)}
 					icon={DollarSign}
 					theme="emerald"
-					loading={$isDashboardLoading}
+					{loading}
 					hideable={true}
 				/>
 				<StatCard
-					title={$t('dashboard.theater.topRow')}
+					title={t('dashboard.theater.topRow')}
 					value={mostFrequentRow}
-					sub={$t('dashboard.theater.mostFrequentSeat')}
-					detail={`${mostFrequentRowCount} ${$t('dashboard.theater.times')}`}
+					sub={t('dashboard.theater.mostFrequentSeat')}
+					detail={`${mostFrequentRowCount} ${t('dashboard.theater.times')}`}
 					icon={Armchair}
 					theme="amber"
 					showCrown={true}
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 
 				<TopShowCard
 					title={topShowStats.title}
 					count={topShowStats.count}
 					image={topShowStats.image}
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 
 				<!-- First & Last Show Card -->
 				<FirstLastCard
-					title={`${$t('dashboard.theater.firstLast')} ${!$dashboardFilter.isAllData ? $dashboardFilter.selectedYear : ''}`}
+					title={`${t('dashboard.theater.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 					type="theater"
-					loading={$isDashboardLoading}
+					{loading}
 					onExpand={() => (showTheaterPopup = true)}
 					first={showExtremes.first}
 					last={showExtremes.last}
@@ -287,22 +277,22 @@
 		<div class="glass-panel p-6 rounded-3xl">
 			<div class="mb-6">
 				<h3 class="text-xl font-bold text-themed">
-					{$t('dashboard.twoShot.title')}
+					{t('dashboard.twoShot.title')}
 				</h3>
-				<p class="text-xs text-gray-400">{$t('dashboard.twoShot.subtitle')}</p>
+				<p class="text-xs text-gray-400">{t('dashboard.twoShot.subtitle')}</p>
 			</div>
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<StatCard
-					title={$t('dashboard.twoShot.twoShotTitle')}
+					title={t('dashboard.twoShot.twoShotTitle')}
 					value={twoShotStats.totalCount}
-					sub={$t('dashboard.twoShot.collected')}
+					sub={t('dashboard.twoShot.collected')}
 					icon={Camera}
 					theme="pink"
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 				<StatCard
-					title={$t('dashboard.twoShot.spending')}
+					title={t('dashboard.twoShot.spending')}
 					value={new Intl.NumberFormat('id-ID', {
 						style: 'currency',
 						currency: 'IDR',
@@ -310,16 +300,16 @@
 					}).format(twoShotStats.totalSpend)}
 					icon={DollarSign}
 					theme="emerald"
-					loading={$isDashboardLoading}
+					{loading}
 					hideable={true}
 				/>
 				<StatCard
-					title={$t('dashboard.twoShot.members')}
+					title={t('dashboard.twoShot.members')}
 					value={twoShotStats.uniqueCount}
-					sub={$t('dashboard.twoShot.uniqueIdols')}
+					sub={t('dashboard.twoShot.uniqueIdols')}
 					icon={Users}
 					theme="blue"
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 
 				<!-- Top 2-Shot Card -->
@@ -327,14 +317,14 @@
 					name={twoShotStats.mostCollected?.name || null}
 					count={twoShotStats.mostCollected?.count || 0}
 					image={twoShotStats.mostCollected?.image || undefined}
-					loading={$isDashboardLoading}
+					{loading}
 				/>
 
 				<!-- First & Last 2-Shot Card -->
 				<FirstLastCard
-					title={`${$t('dashboard.twoShot.firstLast')} ${!$dashboardFilter.isAllData ? $dashboardFilter.selectedYear : ''}`}
+					title={`${t('dashboard.twoShot.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 					type="twoShot"
-					loading={$isDashboardLoading}
+					{loading}
 					onExpand={() => (showTwoShotPopup = true)}
 					first={twoShotExtremes.first}
 					last={twoShotExtremes.last}
@@ -344,25 +334,21 @@
 	</div>
 
 	<!-- THEATER MAP -->
-	<TheaterSeatMap {rowStats} {seatStats} isLoading={$isDashboardLoading} />
+	<TheaterSeatMap {rowStats} {seatStats} isLoading={loading} />
 
 	<div class="grid lg:grid-cols-3 gap-6">
 		<MonthlyAttendance
 			stats={monthlyStats.stats}
 			maxCount={monthlyStats.maxCount}
-			loading={$isDashboardLoading}
-			subtitle={$dashboardFilter.isAllData
+			{loading}
+			subtitle={dashboardFilter.isAllData
 				? availableYears.length > 1
 					? `${Math.min(...availableYears)} - ${Math.max(...availableYears)}`
 					: `${availableYears[0]}`
-				: `${$dashboardFilter.selectedYear}`}
+				: `${dashboardFilter.selectedYear}`}
 		/>
 
-		<DayPreference
-			stats={dayStats.stats}
-			maxCount={dayStats.maxCount}
-			loading={$isDashboardLoading}
-		/>
+		<DayPreference stats={dayStats.stats} maxCount={dayStats.maxCount} {loading} />
 	</div>
 </div>
 
@@ -370,13 +356,13 @@
 <FirstLastPopup
 	show={showTheaterPopup}
 	onClose={() => (showTheaterPopup = false)}
-	title={`${$t('dashboard.theater.firstLast')} ${!$dashboardFilter.isAllData ? $dashboardFilter.selectedYear : ''}`}
+	title={`${t('dashboard.theater.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 	type="theater"
 	first={showExtremes.first
 		? {
 				...showExtremes.first,
 				detail: showExtremes.first.detail
-					? `${$t('dashboard.seatMap.row')} ${showExtremes.first.detail.replace('Row ', '')}`
+					? `${t('dashboard.seatMap.row')} ${showExtremes.first.detail.replace('Row ', '')}`
 					: undefined
 			}
 		: null}
@@ -384,7 +370,7 @@
 		? {
 				...showExtremes.last,
 				detail: showExtremes.last.detail
-					? `${$t('dashboard.seatMap.row')} ${showExtremes.last.detail.replace('Row ', '')}`
+					? `${t('dashboard.seatMap.row')} ${showExtremes.last.detail.replace('Row ', '')}`
 					: undefined
 			}
 		: null}
@@ -394,7 +380,7 @@
 <FirstLastPopup
 	show={showTwoShotPopup}
 	onClose={() => (showTwoShotPopup = false)}
-	title={`${$t('dashboard.twoShot.firstLast')} ${!$dashboardFilter.isAllData ? $dashboardFilter.selectedYear : ''}`}
+	title={`${t('dashboard.twoShot.firstLast')} ${!dashboardFilter.isAllData ? dashboardFilter.selectedYear : ''}`}
 	type="twoShot"
 	first={twoShotExtremes.first}
 	last={twoShotExtremes.last}

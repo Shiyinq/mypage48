@@ -1,11 +1,15 @@
 <script lang="ts">
-	/**
-	 * Reusable grid skeleton component for loading states
-	 */
-	export let columns: 1 | 2 | 3 | 4 = 3;
-	export let count: number = 6;
-	export let aspectRatio: 'square' | 'video' | 'portrait' = 'square';
-	export let className: string = '';
+	interface Props {
+		/**
+		 * Reusable grid skeleton component for loading states
+		 */
+		columns?: 1 | 2 | 3 | 4;
+		count?: number;
+		aspectRatio?: 'square' | 'video' | 'portrait';
+		className?: string;
+	}
+
+	let { columns = 3, count = 6, aspectRatio = 'square', className = '' }: Props = $props();
 
 	const columnClasses = {
 		1: 'grid-cols-1',
@@ -23,7 +27,7 @@
 
 <div class="grid {columnClasses[columns]} gap-6 {className}" role="status" aria-label="Loading">
 	<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-	{#each Array(count) as _}
+	{#each Array(count)}
 		<div class="glass-panel rounded-3xl overflow-hidden animate-pulse">
 			<div class="{aspectClasses[aspectRatio]} bg-gray-200 dark:bg-zinc-700"></div>
 			<div class="p-4 space-y-2">

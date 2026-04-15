@@ -1,7 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	export let params: Record<string, string> | undefined = undefined;
-	import { page } from '$app/stores';
 	import { SEO } from '$lib/components';
 	import { Ticket } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -23,21 +21,25 @@
 	import PublicProfileSeatMap from '$lib/components/public-profile/PublicProfileSeatMap.svelte';
 	import ProfilePictureUploadModal from '$lib/components/public-profile/ProfilePictureUploadModal.svelte';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	const { t } = useTranslation();
-	$: ({ profile } = data);
+	let { profile } = $derived(data);
 
-	let fileInput: HTMLInputElement | undefined;
-	let isUploading = false;
+	let fileInput: HTMLInputElement | undefined = $state();
+	let isUploading = $state(false);
 
 	// Preview modal state
-	let showPreviewModal = false;
-	let previewImage: string | null = null;
+	let showPreviewModal = $state(false);
+	let previewImage: string | null = $state(null);
 
 	// Validation alert modal state
-	let showValidationAlert = false;
-	let validationAlertMessage = '';
+	let showValidationAlert = $state(false);
+	let validationAlertMessage = $state('');
 
 	async function handleFileSelect(event: Event) {
 		const target = event.target as HTMLInputElement;
@@ -47,7 +49,7 @@
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			if (fileInput) fileInput.value = '';
 			return;
@@ -67,7 +69,7 @@
 			showPreviewModal = true;
 		} catch (error) {
 			logger.error('Failed to read file', error, { context: 'PublicProfilePage' });
-			validationAlertMessage = $t('publicProfile.uploadError');
+			validationAlertMessage = t('publicProfile.uploadError');
 			showValidationAlert = true;
 		} finally {
 			// Reset input so the same file can be selected again
@@ -86,7 +88,7 @@
 		// Validate base64 image (type and size)
 		const validation = validateBase64Image(previewImage);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			return;
 		}
@@ -104,35 +106,37 @@
 
 			// Close modal and show success toast
 			closePreviewModal();
-			showToast($t('settings.publicProfile.uploadSuccess'), 'success');
+			showToast(t('settings.publicProfile.uploadSuccess'), 'success');
 		} catch (error: unknown) {
 			logger.error('Failed to upload profile picture', error, { context: 'PublicProfilePage' });
 			const errorMessage = getErrorMessage(error);
-			showToast(errorMessage || $t('settings.publicProfile.uploadError'), 'error');
+			showToast(errorMessage || t('settings.publicProfile.uploadError'), 'error');
 		} finally {
 			isUploading = false;
 		}
 	}
 
 	// Prepare data for Seat Map
-	let rowStats = { counts: {}, maxCount: 0, uniqueVisited: 0 };
-	let seatStats = {};
+	let rowStats = $state({ counts: {}, maxCount: 0, uniqueVisited: 0 });
+	let seatStats = $state({});
 
-	$: if (profile?.stats) {
-		const counts = profile.stats.rowCounts || {};
-		const maxCount = Math.max(...Object.values(counts).map(Number), 0);
-		const uniqueVisited = Object.keys(counts).length;
+	$effect(() => {
+		if (profile?.stats) {
+			const counts = profile.stats.rowCounts || {};
+			const maxCount = Math.max(...Object.values(counts).map(Number), 0);
+			const uniqueVisited = Object.keys(counts).length;
 
-		rowStats = {
-			counts,
-			maxCount,
-			uniqueVisited
-		};
-		seatStats = profile.stats.seatCounts || {};
-	}
+			rowStats = {
+				counts,
+				maxCount,
+				uniqueVisited
+			};
+			seatStats = profile.stats.seatCounts || {};
+		}
+	});
 
-	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
-	let scrollY = 0;
+	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
+	let scrollY = $state(0);
 </script>
 
 <SEO
@@ -154,15 +158,15 @@
 			accept="image/*"
 			class="hidden"
 			bind:this={fileInput}
-			on:change={handleFileSelect}
+			onchange={handleFileSelect}
 		/>
 
 		<!-- Header Section -->
 		<PublicProfileHeader
 			{profile}
-			isCurrentUser={!!($userProfile.data && $userProfile.data.username === profile.username)}
+			isCurrentUser={!!(userProfile.data && userProfile.data.username === profile.username)}
 			{isUploading}
-			on:triggerUpload={() => fileInput?.click()}
+			ontriggerUpload={() => fileInput?.click()}
 		/>
 
 		<!-- Stats Section -->
@@ -205,15 +209,15 @@
 	<ProfilePictureUploadModal
 		{previewImage}
 		{isUploading}
-		on:close={closePreviewModal}
-		on:save={confirmUpload}
+		onclose={closePreviewModal}
+		onsave={confirmUpload}
 	/>
 {/if}
 
 <!-- Validation Alert Modal -->
 <ValidationAlertModal
 	show={showValidationAlert}
-	title={$t('validation.alert.title')}
+	title={t('validation.alert.title')}
 	message={validationAlertMessage}
 	onClose={() => (showValidationAlert = false)}
 />

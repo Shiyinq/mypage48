@@ -1,35 +1,51 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { Play } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { fade } from 'svelte/transition';
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
-	export let generations: string[];
-	export let selectedGenerations: Set<string>;
-	export let loadingGenerations: boolean;
-	export let selectedMembersCount: number;
-	export let variant: 'public' | 'theater' = 'public';
+	interface Props {
+		generations: string[];
+		selectedGenerations: Set<string>;
+		loadingGenerations: boolean;
+		selectedMembersCount: number;
+		variant?: 'public' | 'theater';
+		ontoggle?: (gen: string) => void;
+		onselectAll?: () => void;
+		ondeselectAll?: () => void;
+		onstart?: () => void;
+	}
+
+	let {
+		generations,
+		selectedGenerations,
+		loadingGenerations,
+		selectedMembersCount,
+		variant = 'public',
+		ontoggle,
+		onselectAll,
+		ondeselectAll,
+		onstart
+	}: Props = $props();
 
 	function toggleGeneration(gen: string) {
-		dispatch('toggle', gen);
+		ontoggle?.(gen);
 	}
 
 	function selectAll() {
-		dispatch('selectAll');
+		onselectAll?.();
 	}
 
 	function deselectAll() {
-		dispatch('deselectAll');
+		ondeselectAll?.();
 	}
 
 	function start() {
-		dispatch('start');
+		onstart?.();
 	}
 
-	$: isPublic = variant === 'public';
+	let isPublic = $derived(variant === 'public');
 </script>
 
 <div in:fade={{ duration: 300 }} class="w-full max-w-2xl space-y-6">
@@ -44,23 +60,23 @@
 					? 'font-black text-themed uppercase tracking-widest text-sm text-slate-400'
 					: 'font-bold text-themed text-lg sm:text-base'}
 			>
-				{$t('theater.sorter.generation')}
+				{t('theater.sorter.generation')}
 			</h3>
 			<div class="flex gap-4 font-black items-center sm:justify-end">
 				<button
-					on:click={selectAll}
+					onclick={selectAll}
 					class={`text-xs transition-transform cursor-pointer uppercase tracking-widest ${isPublic ? 'text-red-600 hover:scale-105' : 'text-rose-500 hover:text-rose-600'}`}
 				>
-					{$t('theater.sorter.selectAll')}
+					{t('theater.sorter.selectAll')}
 				</button>
 				{#if !isPublic}
 					<span class="text-zinc-300">|</span>
 				{/if}
 				<button
-					on:click={deselectAll}
+					onclick={deselectAll}
 					class={`text-xs transition-colors cursor-pointer uppercase tracking-widest ${isPublic ? 'text-slate-400 hover:text-themed' : 'text-zinc-400 hover:text-themed'}`}
 				>
-					{$t('theater.sorter.clear')}
+					{t('theater.sorter.clear')}
 				</button>
 			</div>
 		</div>
@@ -71,7 +87,7 @@
 				: 'grid grid-cols-3 sm:grid-cols-4 gap-2'}
 		>
 			{#if loadingGenerations}
-				{#each Array(isPublic ? 8 : 9) as _}
+				{#each Array(isPublic ? 8 : 9)}
 					<div
 						class={isPublic
 							? 'h-12 bg-slate-50 dark:bg-zinc-800 animate-pulse rounded-2xl'
@@ -81,7 +97,7 @@
 			{:else}
 				{#each generations as gen}
 					<button
-						on:click={() => toggleGeneration(gen)}
+						onclick={() => toggleGeneration(gen)}
 						class={`px-4 py-3 rounded-2xl text-sm font-black transition-all border-2 cursor-pointer shadow-sm ${
 							selectedGenerations.has(gen)
 								? isPublic
@@ -92,7 +108,7 @@
 									: 'bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-rose-300'
 						}`}
 					>
-						{$t('theater.sorter.genLabel', { gen })}
+						{t('theater.sorter.genLabel', { gen })}
 					</button>
 				{/each}
 			{/if}
@@ -102,7 +118,7 @@
 			class={`flex items-center justify-between ${isPublic ? 'pt-6 border-t border-gray-50 dark:border-zinc-800' : 'pt-4 border-t border-zinc-100 dark:border-zinc-800 text-sm text-themed-secondary'}`}
 		>
 			<span class={isPublic ? 'text-xs font-black uppercase tracking-widest text-slate-400' : ''}
-				>{$t('theater.sorter.selectedMembers')}</span
+				>{t('theater.sorter.selectedMembers')}</span
 			>
 			<div class="flex items-baseline gap-2">
 				<span class={`font-black text-3xl ${isPublic ? 'text-red-600' : 'text-rose-500'}`}>
@@ -111,14 +127,14 @@
 				<span
 					class={isPublic
 						? 'text-[10px] font-black uppercase border-b-2 border-red-600'
-						: 'text-[10px] font-bold uppercase tracking-widest'}>{$t('theater.sorter.ready')}</span
+						: 'text-[10px] font-bold uppercase tracking-widest'}>{t('theater.sorter.ready')}</span
 				>
 			</div>
 		</div>
 	</div>
 
 	<button
-		on:click={start}
+		onclick={start}
 		disabled={loadingGenerations || selectedMembersCount < 2}
 		class={`w-full sm:w-80 h-16 rounded-full font-black text-xl shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:grayscale mx-auto cursor-pointer ${
 			isPublic
@@ -127,6 +143,6 @@
 		}`}
 	>
 		<Play class="w-6 h-6 fill-current group-hover:translate-x-1 transition-transform" />
-		{$t('theater.sorter.start')}
+		{t('theater.sorter.start')}
 	</button>
 </div>

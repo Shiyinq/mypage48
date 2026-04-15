@@ -9,18 +9,18 @@
 
 	const status = 404;
 	const errorInfo = {
-		title: $t('errors.404.title'),
-		subtitle: $t('errors.404.subtitle'),
-		description: $t('errors.404.description'),
+		title: t('errors.404.title'),
+		subtitle: t('errors.404.subtitle'),
+		description: t('errors.404.description'),
 		icon: Search,
 		color: 'from-amber-500 to-orange-500',
 		bgColor: 'bg-amber-500/10',
 		borderColor: 'border-amber-500/30'
 	};
 
-	function goHome() {
-		goto($isAuthenticated ? '/' : '/login');
-	}
+	const handleGoHome = () => {
+		goto(isAuthenticated.value ? '/' : '/login');
+	};
 
 	function goBack() {
 		if (typeof window !== 'undefined') {
@@ -51,7 +51,7 @@
 			<!-- Error Icon -->
 			<div class="icon-wrapper {errorInfo.bgColor} {errorInfo.borderColor}">
 				<div class="icon-bg bg-gradient-to-br {errorInfo.color}">
-					<svelte:component this={errorInfo.icon} class="w-8 h-8 text-white" />
+					<errorInfo.icon class="w-8 h-8 text-white" />
 				</div>
 			</div>
 
@@ -76,27 +76,26 @@
 				<code class="error-message">Not Found</code>
 			</div>
 
-			<!-- Action Buttons -->
 			<div class="actions">
-				<button class="btn btn-primary idol-gradient" on:click={goHome}>
+				<button class="btn btn-primary idol-gradient" onclick={handleGoHome}>
 					<Home class="w-4 h-4" />
-					<span>{$t('errors.goHome')}</span>
+					<span>{t('errors.goHome')}</span>
 				</button>
 
-				<button class="btn btn-secondary" on:click={goBack}>
+				<button class="btn btn-secondary" onclick={goBack}>
 					<ArrowLeft class="w-4 h-4" />
-					<span>{$t('common.back')}</span>
+					<span>{t('common.back')}</span>
 				</button>
 
-				<button class="btn btn-ghost" on:click={refresh}>
+				<button class="btn btn-ghost" onclick={refresh}>
 					<RefreshCw class="w-4 h-4" />
-					<span>{$t('errors.tryAgain')}</span>
+					<span>{t('errors.tryAgain')}</span>
 				</button>
 			</div>
 		</div>
 
 		<!-- Footer Text -->
-		<p class="footer-text">{$t('header.tagline')} • MyPage48</p>
+		<p class="footer-text">{t('header.tagline')} • MyPage48</p>
 	</div>
 </div>
 

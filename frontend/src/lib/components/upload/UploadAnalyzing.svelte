@@ -15,7 +15,7 @@
 		</div>
 	</div>
 	<div class="hidden sm:block text-center">
-		<h3 class="text-xl font-bold text-gray-800">{$t('upload.analyzingTitle')}</h3>
-		<p class="text-sm text-gray-500 mt-1">{$t('upload.analyzingDescription')}</p>
+		<h3 class="text-xl font-bold text-gray-800">{t('upload.analyzingTitle')}</h3>
+		<p class="text-sm text-gray-500 mt-1">{t('upload.analyzingDescription')}</p>
 	</div>
 </div>

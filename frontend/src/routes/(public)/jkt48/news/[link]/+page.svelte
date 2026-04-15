@@ -2,32 +2,37 @@
 	import type { PageData } from './$types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { Calendar, ChevronRight, ExternalLink, Share2, Copy, MoveLeft } from 'lucide-svelte';
+	import { Calendar, ChevronRight, ExternalLink, Copy, MoveLeft } from 'lucide-svelte';
 	import { formatDate } from '$lib/i18n';
 	import { getExternalMediaUrl, proxyExternalImageUrls } from '$lib/utils/media';
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
 	import { showToast } from '$lib/stores';
 	import { browser } from '$app/environment';
+	import DOMPurify from 'isomorphic-dompurify';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
 
-	$: item = data.item;
-	$: recentNews = data.recentNews.filter((n) => n.link !== item.link).slice(0, 5);
+	let { data }: Props = $props();
+
+	let item = $derived(data.item);
+	let recentNews = $derived(data.recentNews.filter((n) => n.link !== item.link).slice(0, 5));
 
 	const { t, locale } = useTranslation();
 
-	$: shareUrl = browser ? window.location.href : '';
-	$: shareTitle = item?.title || '';
+	let shareUrl = $derived(browser ? window.location.href : '');
+	let shareTitle = $derived(item?.title || '');
 
-	$: shareLinks = {
+	let shareLinks = $derived({
 		x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`,
 		facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
 		whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`
-	};
+	});
 
-	let showLightbox = false;
-	let selectedImgSrc = '';
-	let selectedImgAlt = '';
+	let showLightbox = $state(false);
+	let selectedImgSrc = $state('');
+	let selectedImgAlt = $state('');
 
 	function openLightbox(src: string, alt: string) {
 		selectedImgSrc = src;
@@ -35,7 +40,8 @@
 		showLightbox = true;
 	}
 
-	function handleContentClick(e: MouseEvent) {
+	function handleContentClick(e: MouseEvent | KeyboardEvent) {
+		if (e instanceof KeyboardEvent && e.key !== 'Enter' && e.key !== ' ') return;
 		const target = e.target as HTMLElement;
 		if (target.tagName === 'IMG') {
 			const img = target as HTMLImageElement;
@@ -43,12 +49,12 @@
 		}
 	}
 
-	$: processedContent = proxyExternalImageUrls(item.content_body);
+	let processedContent = $derived(DOMPurify.sanitize(proxyExternalImageUrls(item.content_body)));
 
 	function copyLink() {
 		if (!browser) return;
 		navigator.clipboard.writeText(shareUrl);
-		showToast($t('common.copied'), 'success');
+		showToast(t('common.copied'), 'success');
 	}
 </script>
 
@@ -69,7 +75,7 @@
 			class="inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-red-500 transition-colors group"
 		>
 			<MoveLeft class="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-			{$t('common.back') || 'Back'}
+			{t('common.back') || 'Back'}
 		</a>
 
 		<h1
@@ -95,7 +101,7 @@
 				class="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider"
 			>
 				<Calendar class="w-4 h-4" />
-				{$formatDate(item.valid_date_from, { day: 'numeric', month: 'long', year: 'numeric' })}
+				{formatDate(item.valid_date_from, { day: 'numeric', month: 'long', year: 'numeric' })}
 			</span>
 		</div>
 	</div>
@@ -103,9 +109,8 @@
 	<!-- Content Area -->
 	<main class="space-y-8">
 		{#if item.background_image}
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<button
-				on:click={() => openLightbox(getExternalMediaUrl(item.background_image), item.title)}
+				onclick={() => openLightbox(getExternalMediaUrl(item.background_image), item.title)}
 				class="w-full rounded-2xl md:rounded-[2.5rem] overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-2xl group/img cursor-pointer transition-transform hover:scale-[1.012] active:scale-[0.99] duration-500"
 			>
 				<img
@@ -116,12 +121,13 @@
 			</button>
 		{/if}
 
-		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<div
 			class="prose prose-red dark:prose-invert prose-responsive-colors max-w-none prose-img:rounded-2xl md:prose-img:rounded-3xl prose-img:cursor-zoom-in prose-img:shadow-xl hover:prose-img:scale-[1.02] prose-img:transition-all prose-img:duration-500 prose-a:text-red-500 hover:prose-a:text-red-600 space-y-4 md:space-y-6 text-slate-800 dark:text-slate-300 leading-relaxed text-sm md:text-base md:text-lg font-medium bg-white dark:bg-zinc-900/50 p-5 md:p-10 rounded-2xl md:rounded-[2.5rem] border border-gray-100 dark:border-white/5"
-			on:click={handleContentClick}
+			onclick={handleContentClick}
+			onkeydown={handleContentClick}
 			role="presentation"
 		>
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html processedContent}
 		</div>
 
@@ -131,7 +137,7 @@
 		>
 			<div class="flex flex-col items-center gap-2">
 				<span class="text-[10px] font-black uppercase tracking-widest text-slate-400">
-					{$t('theater.news.share')}
+					{t('theater.news.share')}
 				</span>
 			</div>
 
@@ -179,9 +185,9 @@
 				</a>
 
 				<button
-					on:click={copyLink}
+					onclick={copyLink}
 					class="w-12 h-12 flex items-center justify-center rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 hover:scale-110 transition-transform shadow-md border border-slate-200 dark:border-zinc-700 cursor-pointer"
-					title={$t('common.copyLink')}
+					title={t('common.copyLink')}
 				>
 					<Copy class="w-5 h-5" />
 				</button>
@@ -191,12 +197,12 @@
 		<!-- Read Original -->
 		<div class="flex justify-center pb-20">
 			<a
-				href={`https://jkt48.com/news/${item.link}?lang=${$locale === 'id' ? 'id' : 'jp'}`}
+				href={`https://jkt48.com/news/${item.link}?lang=${locale.value === 'id' ? 'id' : 'jp'}`}
 				target="_blank"
 				rel="noopener noreferrer"
 				class="inline-flex items-center gap-3 px-10 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-black shadow-xl hover:shadow-2xl transition-all uppercase tracking-widest text-sm"
 			>
-				{$t('theater.news.readOriginal')}
+				{t('theater.news.readOriginal')}
 				<ExternalLink class="w-5 h-5" />
 			</a>
 		</div>
@@ -207,13 +213,13 @@
 		<section class="space-y-8 pt-12 border-t border-slate-100 dark:border-white/10">
 			<div class="flex items-center justify-between">
 				<h3 class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-					{$t('theater.news.otherNews')}
+					{t('theater.news.otherNews')}
 				</h3>
 				<a
 					href="/jkt48/news"
 					class="text-sm font-bold text-red-500 hover:text-red-600 flex items-center gap-1"
 				>
-					{$t('theater.news.seeAll')}
+					{t('theater.news.seeAll')}
 					<ChevronRight class="w-4 h-4" />
 				</a>
 			</div>
@@ -237,7 +243,7 @@
 								{recent.category}
 							</span>
 							<span class="text-[11px] font-bold text-slate-400">
-								{$formatDate(recent.valid_date_from, {
+								{formatDate(recent.valid_date_from, {
 									day: 'numeric',
 									month: 'short',
 									year: 'numeric'

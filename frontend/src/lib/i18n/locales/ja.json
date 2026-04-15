@@ -499,7 +499,8 @@
 			"uploadError": "プロフィール写真のアップロードに失敗しました。もう一度お試しください。",
 			"uploadSuccess": "プロフィール写真が正常に更新されました！",
 			"loadErrorTitle": "設定の読み込みに失敗しました",
-			"loadErrorDesc": "公開プロフィールの設定を読み込めませんでした。もう一度お試しください。"
+			"loadErrorDesc": "公開プロフィールの設定を読み込めませんでした。もう一度お試しください。",
+			"viewProfile": "プロフィールを表示"
 		},
 		"developer": {
 			"title": "開発者アクセス",
@@ -618,6 +619,9 @@
 			"viewer": "視聴者",
 			"startedAt": "開始時間",
 			"liveDuration": "配信時間",
+			"seoTitle": "ライブ配信",
+			"seoDescription": "MyPage48でJKT48メンバーのShowroomやIDN Liveの配信を視聴しましょう。",
+			"seoMemberDescription": "MyPage48で{name}のライブ配信を視聴しましょう。",
 			"empty": "現在配信中のメンバーはいません。",
 			"emptyTitle": "オフライン",
 			"back": "戻る",
@@ -639,6 +643,9 @@
 			"liveBadge": "ライブ",
 			"chat": "チャット",
 			"connected": "接続中",
+			"offline_title": "ストリームはオフラインです",
+			"offline_description": "{name}は現在配信していません。配信が終了したか、現在利用できない可能性があります。",
+			"return_home": "ホームに戻る",
 			"toggleTheme": "テーマ切替",
 			"volume": "音量",
 			"mute": "ミュート",
@@ -647,6 +654,10 @@
 			"openOriginal": "オリジナル配信を開く",
 			"multiview": {
 				"title": "マルチビュー",
+				"live": {
+					"seoTitle": "マルチビュー配信",
+					"seoDescription": "複数のJKT48ライブ配信を同時に視聴できます。複数の配信を切り替え、並べ替え、チャットを同時に楽しめます。"
+				},
 				"tap_to_play": "タップして再生",
 				"clear_all": "すべてクリア",
 				"switch_to_landscape": "横画面に切り替え",
@@ -668,17 +679,21 @@
 				"loading_chat": "チャットを読み込み中...",
 				"select_stream_to_chat": "配信を選択してチャットを表示",
 				"member_offline": "{name} がオフラインです",
-				"showroom_chat": "SHOWROOMチャット",
-				"chat_started": "チャット開始",
 				"no_messages": "メッセージはまだありません",
 				"stream_error": "ストリームエラー: {details}",
 				"hls_not_supported": "HLSはサポートされていません",
 				"no_stream_found": "ストリームが見つかりません",
 				"failed_load_stream": "ストリームの読み込みに失敗しました",
 				"retry": "再試行",
-				"sending_gift": "ギフト送信中",
-				"seoDescription": "複数のJKT48メンバーのライブを同時に視聴。複数のライブストリームを切り替え、サイズ変更、チャットしながら楽しめます。"
+				"sending_gift": "ギフト送信中"
 			},
+			"joined": "{name}さんが参加しました",
+			"group_joined": "{name}さんと他{count}人が参加しました",
+			"chat_started": "チャット開始",
+			"connecting": "接続中...",
+			"disconnected": "切断されました",
+			"reconnect_idn": "接続が切れました。数秒後に再試行します...",
+			"reconnect_showroom": "接続が切れました।数秒後に再試行します...",
 			"switchMultiview": "マルチビューに切り替え"
 		},
 		"news": {

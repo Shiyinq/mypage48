@@ -31,7 +31,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 					event.request.method !== 'GET' && event.request.method !== 'HEAD'
 						? await event.request.arrayBuffer()
 						: undefined,
-				// @ts-ignore - duplex is needed for streaming bodies in some environments
+				// @ts-expect-error - duplex is needed for streaming bodies in some environments
 				duplex: 'half'
 			});
 

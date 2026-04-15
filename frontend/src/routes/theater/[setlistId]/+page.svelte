@@ -1,14 +1,12 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { type SetlistDetailResponse } from '$lib/apis/setlists';
 
 	import { ticketsStore, showToast } from '$lib/stores';
-	import { setlistsStore, isSetlistDetailLoading } from '$lib/stores/theater';
+	import { setlistsStore, isSetlistDetailLoading } from '$lib/stores/theater.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { ArrowLeft, Ticket, DollarSign, Trophy } from 'lucide-svelte';
+	import { Ticket, DollarSign, Trophy } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { DeleteConfirmationModal } from '$lib/components/history';
 	import { ErrorState } from '$lib/components';
@@ -18,25 +16,27 @@
 	import Timeline from '$lib/components/history/Timeline.svelte';
 	import SetlistTicketItem from '$lib/components/theater/SetlistTicketItem.svelte';
 
+	let { data: _data } = $props();
+
 	const { t } = useTranslation();
 
 	// Get setlistId from URL
-	$: setlistId = $page.params.setlistId;
+	let setlistId = $derived($page.params.setlistId);
 
 	// State from store
-	let detail: SetlistDetailResponse | null = null;
-	$: error = $setlistsStore.detailError;
-	let deleteId: string | null = null;
-	let isDeleting = false;
+	let detail: SetlistDetailResponse | null = $state(null);
+	let error = $derived($setlistsStore.detailError);
+	let deleteId: string | null = $state(null);
+	let isDeleting = $state(false);
 
 	async function fetchDetail() {
 		if (!setlistId) return;
 		try {
 			// Use store loadDetail which handles caching
 			detail = await setlistsStore.loadDetail(setlistId);
-		} catch (e) {
+		} catch {
 			// Error is handled by store
-			showToast($t('theater.setlists.errorTitle') || 'Failed to load detail', 'error');
+			showToast(t('theater.setlists.errorTitle') || 'Failed to load detail', 'error');
 		}
 	}
 
@@ -52,8 +52,8 @@
 
 			// Re-fetch detail to update stats
 			await fetchDetail();
-			showToast($t('history.ticketDeleted'), 'success');
-		} catch (e) {
+			showToast(t('history.ticketDeleted'), 'success');
+		} catch {
 			// Error is handled by ticketsStore internally
 			showToast('Failed to delete ticket', 'error');
 		} finally {
@@ -86,17 +86,16 @@
 		<div class="h-[400px] w-full bg-gray-200 dark:bg-zinc-800 rounded-3xl"></div>
 		<!-- Grid Skeleton -->
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-			{#each Array(4) as _}
+			{#each Array(4)}
 				<div class="h-32 bg-gray-200 dark:bg-zinc-800 rounded-2xl"></div>
 			{/each}
 		</div>
 	</div>
 {:else if error}
 	<ErrorState
-		title={$t('theater.setlists.errorTitle') || 'Failed to load detail'}
+		title={t('theater.setlists.errorTitle') || 'Failed to load detail'}
 		description={error ||
-			$t('theater.setlists.errorDesc') ||
+			t('theater.setlists.errorDesc') ||
 			'Something went wrong while fetching the setlist information.'}
 		onRetry={fetchDetail}
 	/>
@@ -119,13 +118,13 @@
 							<h2
 								class="text-xl md:text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight"
 							>
-								{$t('history.title')}
+								{t('history.title')}
 							</h2>
 							<span
 								class="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-full border border-gray-200 dark:border-zinc-700"
 							>
 								{detail.tickets.length}
-								<span class="hidden sm:inline">{$t('dashboard.theater.tickets')}</span>
+								<span class="hidden sm:inline">{t('dashboard.theater.tickets')}</span>
 							</span>
 						</div>
 
@@ -142,13 +141,13 @@
 								<p
 									class="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center max-w-[250px] mt-1"
 								>
-									{$t('theater.setlists.notAttended')}
+									{t('theater.setlists.notAttended')}
 								</p>
 							</div>
 						{:else}
 							<div class="space-y-3">
 								{#each detail.tickets as ticket (ticket.ticketId)}
-									<SetlistTicketItem {ticket} on:click={() => (deleteId = ticket.ticketId)} />
+									<SetlistTicketItem {ticket} onclick={() => (deleteId = ticket.ticketId)} />
 								{/each}
 							</div>
 						{/if}
@@ -168,13 +167,13 @@
 
 					<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
 						<DollarSign class="w-5 h-5 text-yellow-400" />
-						{$t('theater.setlists.statsOverview')}
+						{t('theater.setlists.statsOverview')}
 					</h3>
 
 					<div class="space-y-6 relative z-10">
 						<div>
 							<div class="flex justify-between text-sm mb-2 opacity-80">
-								<span>{$t('theater.setlists.avgPricePerTicket')}</span>
+								<span>{t('theater.setlists.avgPricePerTicket')}</span>
 							</div>
 							<div class="text-2xl md:text-3xl font-bold text-yellow-400 leading-none">
 								{formatCurrency(detail.stats.avgPrice)}
@@ -185,12 +184,12 @@
 
 						<div>
 							<div class="flex justify-between text-sm mb-2 opacity-80">
-								<span>{$t('theater.setlists.attendanceRate')}</span>
+								<span>{t('theater.setlists.attendanceRate')}</span>
 							</div>
 							<div class="flex items-end gap-2">
 								<span class="text-3xl md:text-4xl font-black">{detail.watched.percentage}%</span>
 								<span class="text-sm opacity-60 mb-1 font-medium">
-									{$t('theater.setlists.ofMax')}
+									{t('theater.setlists.ofMax')}
 								</span>
 							</div>
 							<!-- Progress bar -->

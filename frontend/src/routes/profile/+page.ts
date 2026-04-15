@@ -1,4 +1,4 @@
-import { userProfile } from '$lib/stores/profile';
+import { userProfile } from '$lib/stores/profile.svelte';
 
 import { browser } from '$app/environment';
 

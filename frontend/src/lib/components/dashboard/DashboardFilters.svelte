@@ -5,11 +5,21 @@
 
 	const { t } = useTranslation();
 
-	export let isAllData: boolean;
-	export let selectedYear: number;
-	export let startMonth: number;
-	export let endMonth: number;
-	export let availableYears: number[];
+	interface Props {
+		isAllData: boolean;
+		selectedYear: number;
+		startMonth: number;
+		endMonth: number;
+		availableYears: number[];
+	}
+
+	let {
+		isAllData = $bindable(),
+		selectedYear = $bindable(),
+		startMonth = $bindable(),
+		endMonth = $bindable(),
+		availableYears
+	}: Props = $props();
 </script>
 
 <div
@@ -27,7 +37,7 @@
 			></div>
 		</div>
 		<span class="text-sm font-bold text-gray-700 dark:text-gray-200">
-			{$t('common.allData')}
+			{t('common.allData')}
 		</span>
 	</label>
 
@@ -61,7 +71,7 @@
 			>
 				<span
 					class="absolute left-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider pointer-events-none w-8 group-hover:text-red-500 transition-colors"
-					>{$t('common.fromShort')}</span
+					>{t('common.fromShort')}</span
 				>
 				<select
 					bind:value={startMonth}
@@ -69,7 +79,7 @@
 					class="w-full appearance-none bg-transparent pl-11 pr-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 cursor-pointer disabled:cursor-not-allowed transition-colors"
 				>
 					{#each MONTHS as m, i}
-						<option value={i}>{$t(`time.monthsShort.${m.substring(0, 3).toLowerCase()}`)}</option>
+						<option value={i}>{t(`time.monthsShort.${m.substring(0, 3).toLowerCase()}`)}</option>
 					{/each}
 				</select>
 				<ChevronDown
@@ -81,7 +91,7 @@
 			>
 				<span
 					class="absolute left-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider pointer-events-none w-8 group-hover:text-red-500 transition-colors"
-					>{$t('common.toShort')}</span
+					>{t('common.toShort')}</span
 				>
 				<select
 					bind:value={endMonth}
@@ -89,7 +99,7 @@
 					class="w-full appearance-none bg-transparent pl-11 pr-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 cursor-pointer disabled:cursor-not-allowed transition-colors"
 				>
 					{#each MONTHS as m, i}
-						<option value={i}>{$t(`time.monthsShort.${m.substring(0, 3).toLowerCase()}`)}</option>
+						<option value={i}>{t(`time.monthsShort.${m.substring(0, 3).toLowerCase()}`)}</option>
 					{/each}
 				</select>
 				<ChevronDown

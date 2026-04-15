@@ -1,22 +1,19 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { get } from 'svelte/store';
-	import { fade, fly, slide } from 'svelte/transition';
+	import { page } from '$app/stores';
+	import SEO from '$lib/components/SEO.svelte';
+	import { fly } from 'svelte/transition';
 	import { spring } from 'svelte/motion';
-	import { liveStore, liveList, liveLoading, now } from '$lib/stores/live';
+	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
+	import type { LiveStatus, LiveStreamingResponse } from '$lib/types';
 	import { live } from '$lib/apis/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		X,
 		Plus,
-		Maximize2,
-		Minimize2,
 		Volume2,
 		VolumeX,
 		MessageCircle,
-		Settings2,
 		LayoutGrid,
-		ChevronRight,
 		ChevronLeft,
 		Search,
 		UserPlus,
@@ -27,54 +24,46 @@
 		Camera,
 		Circle,
 		Square,
-		Trash2,
-		Star,
-		Sparkles
+		Trash2
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import MultiPlayer from '$lib/components/live/MultiPlayer.svelte';
-	import { showToast } from '$lib/stores/toast';
-	import { isImmersive } from '$lib/stores/ui';
-	import { formatDuration } from '$lib/utils/time';
+	import { showToast, isImmersive } from '$lib/stores';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 
 	const { t } = useTranslation();
 
-	/** Base path for back-navigation. Use '/jkt48/live' for public, '/theater/live' for theater. */
-	export let basePath: string = '/jkt48/live';
+	interface Props {
+		/** Base path for back-navigation. Use '/jkt48/live' for public, '/theater/live' for theater. */
+		basePath?: string;
+	}
+
+	let { basePath = '/jkt48/live' }: Props = $props();
 
 	// Multi-view State
-	let slots: any[] = [];
-	let focusedSlotIndex: number = 0;
-	let focusedStreamDetails: any = null;
-	let lastLoadedId: string | null = null;
-	let showPicker = true;
-	let showChat = true;
-	let isPortrait = true;
-	let searchQuery = '';
-	let isMobile = false;
+	let slots: LiveStatus[] = $state([]);
+	let focusedSlotIndex: number = $state(0);
+	let focusedStreamDetails: LiveStreamingResponse | null = $state(null);
+	let lastLoadedId: string | null = $state(null);
+	let showPicker = $state(true);
+	let showChat = $state(true);
+	let isPortrait = $state(true);
+	let searchQuery = $state('');
+	let isMobile = $state(false);
 
 	// Background Decoration State
-	let scrollY = 0;
-	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
+	let scrollY = $state(0);
+	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
 
 	// Update isMobile on mount and resize
 
 	// Update isMobile on mount and resize
 	function updateIsMobile() {
 		isMobile = window.innerWidth < 768;
-	}
-
-	$: if (isMobile) {
-		// On mobile, if one is toggled on, toggle the other off
-		if (showPicker && showChat) {
-			// This logic depends on which one was toggled last,
-			// but for simplicity, let's just ensure only one is active.
-		}
 	}
 
 	function togglePicker() {
@@ -88,116 +77,95 @@
 	}
 
 	// Drag and Drop State
-	let draggedIndex: number | null = null;
-	let dragOverIndex: number | null = null;
+	let draggedIndex: number | null = $state(null);
+	let dragOverIndex: number | null = $state(null);
 
 	// Media State for slots
-	let volumes: number[] = Array(8).fill(1);
-	let muted: boolean[] = Array(8).fill(false);
-	let isRecording: boolean[] = Array(8).fill(false);
-	let playerRefs: any[] = Array(8).fill(null);
-
-	$: activeStreams = $liveList;
-	$: filteredStreams = activeStreams.filter(
-		(s) =>
-			s.member?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			s.title?.toLowerCase().includes(searchQuery.toLowerCase())
-	);
-
-	$: focusedStream = slots[focusedSlotIndex];
-	$: if (focusedStream) {
-		const currentId =
-			focusedStream.platform === 'showroom'
-				? focusedStream.room_id || focusedStream.room_url_key
-				: focusedStream.live_id || focusedStream.room_url_key;
-		if (currentId !== lastLoadedId) {
-			lastLoadedId = currentId;
-			loadFocusedDetails(focusedStream);
-		}
-	} else {
-		focusedStreamDetails = null;
-		lastLoadedId = null;
-	}
-
-	onMount(() => {
+	let volumes: number[] = $state(Array(8).fill(1));
+	let muted: boolean[] = $state(Array(8).fill(false));
+	let isRecording: boolean[] = $state(Array(8).fill(false));
+	let playerRefs: (ReturnType<typeof MultiPlayer> | null)[] = $state(Array(8).fill(null));
+	$effect(() => {
 		liveStore.loadLiveList();
 		const interval = setInterval(async () => {
 			await liveStore.loadLiveList(true);
 			// Sync slots with new data from liveList (to update viewer counts and detect offline)
-			const currentLive = get(liveList);
+			const currentLive = liveList.value;
 
 			let hasGoneOffline = false;
 			const updatedSlots = slots
 				.map((slot) => {
-					const match = currentLive.find(
+					const updated = currentLive.find(
 						(l) =>
 							(l.platform === slot.platform && l.room_id === slot.room_id && l.room_id) ||
 							(l.platform === slot.platform && l.live_id === slot.live_id && l.live_id)
 					);
-
-					if (!match) {
+					if (!updated) {
 						hasGoneOffline = true;
 						showToast(
-							$t('theater.live.multiview.member_offline', { name: slot.member?.name }),
+							t('theater.live.multiview.member_offline', { name: slot.member?.name }),
 							'error'
 						);
 						return null;
 					}
-					return { ...slot, view_num: match.view_num, start_at: match.start_at };
+					return { ...slot, ...updated };
 				})
-				.filter((s) => s !== null);
+				.filter((s): s is LiveStatus => s !== null);
 
 			if (hasGoneOffline) {
 				slots = updatedSlots;
 				saveSlots();
-				// Adjust focused slot if needed
 				if (focusedSlotIndex >= slots.length) {
 					setFocusedSlot(Math.max(0, slots.length - 1));
 				}
 			} else {
 				slots = updatedSlots;
 			}
-		}, 30000); // 30 seconds
+		}, 30000);
 
-		// Disable body scroll when in multiview
-		document.body.style.overflow = 'hidden';
-		isImmersive.set(true);
-
-		// Load from localStorage if available
-		const saved = localStorage.getItem('mypage48_multiview_slots');
-		if (saved) {
-			try {
-				const parsed = JSON.parse(saved);
-				if (Array.isArray(parsed)) {
-					slots = parsed.filter((s) => s !== null).slice(0, 8);
+		// Initial setup
+		if (typeof window !== 'undefined') {
+			const savedSlots = localStorage.getItem('mypage48_multiview_slots');
+			if (savedSlots) {
+				try {
+					slots = JSON.parse(savedSlots);
+				} catch (e) {
+					console.error('Failed to load saved slots:', e);
 				}
-			} catch (e) {}
+			}
+
+			if (window.innerWidth >= 1024) {
+				showChat = true;
+				isImmersive.set(true);
+				document.body.style.overflow = 'hidden';
+			}
+
+			if (window.innerWidth < 768) {
+				showPicker = false;
+				showChat = false;
+				isPortrait = false; // Default to landscape on mobile
+			}
+
+			updateIsMobile();
+
+			// Load aspect ratio preference from localStorage
+			const savedPortrait = localStorage.getItem('mypage48_multiview_portrait');
+			if (savedPortrait !== null && !isMobile) {
+				// Only use saved preference if not on mobile, or handle mobile specifically
+				isPortrait = savedPortrait === 'true';
+			}
+
+			window.addEventListener('resize', updateIsMobile);
 		}
-
-		updateIsMobile();
-		if (isMobile) {
-			showPicker = false;
-			showChat = false;
-			isPortrait = false; // Default to landscape on mobile
-		}
-
-		updateIsMobile();
-
-		// Load aspect ratio preference from localStorage
-		const savedPortrait = localStorage.getItem('mypage48_multiview_portrait');
-		if (savedPortrait !== null && !isMobile) {
-			// Only use saved preference if not on mobile, or handle mobile specifically
-			isPortrait = savedPortrait === 'true';
-		}
-
-		window.addEventListener('resize', updateIsMobile);
 
 		return () => {
 			clearInterval(interval);
-			window.removeEventListener('resize', updateIsMobile);
-			// Re-enable body scroll when leaving multiview
-			document.body.style.overflow = '';
-			isImmersive.set(false);
+			if (typeof window !== 'undefined') {
+				window.removeEventListener('resize', updateIsMobile);
+				// Re-enable body scroll when leaving multiview
+				document.body.style.overflow = '';
+				isImmersive.set(false);
+			}
 		};
 	});
 
@@ -205,7 +173,7 @@
 		localStorage.setItem('mypage48_multiview_slots', JSON.stringify(slots));
 	}
 
-	function addMemberToSlot(stream: any) {
+	function addMemberToSlot(stream: LiveStatus) {
 		if (slots.length >= 8) return;
 
 		// Check if already in slots
@@ -225,7 +193,7 @@
 		focusedSlotIndex = index;
 	}
 
-	async function loadFocusedDetails(stream: any) {
+	async function loadFocusedDetails(stream: LiveStatus) {
 		focusedStreamDetails = null; // Clear old info
 		try {
 			const platform = stream.platform;
@@ -305,59 +273,101 @@
 		dragOverIndex = null;
 	}
 
-	// Computed grid class
-	$: expansive = !showPicker && !showChat;
-	// Responsive grid logic
-	$: gridClass = isMobile
-		? slots.length === 1
-			? 'grid-cols-1'
-			: 'grid-cols-1' // On mobile always 1 col unless landscape? Let's stick to 1 col for now or 2 if many
-		: isPortrait
-			? slots.length === 1
-				? 'grid-cols-1 max-w-md mx-auto'
-				: slots.length === 2
-					? 'grid-cols-2 max-w-4xl mx-auto'
-					: slots.length === 3
-						? 'grid-cols-3 max-w-6xl mx-auto'
-						: 'grid-cols-2 lg:grid-cols-4 max-w-none'
-			: slots.length === 1
-				? 'grid-cols-1 max-w-7xl mx-auto'
-				: slots.length <= 2
-					? 'grid-cols-2 max-w-none'
-					: slots.length <= 4
-						? 'grid-cols-2 max-w-none'
-						: 'grid-cols-2 lg:grid-cols-3 max-w-none';
-	// Auto-initialize first slot if empty and no saved session
-	$: if (
-		slots.length === 0 &&
-		$liveList.length > 0 &&
-		typeof localStorage !== 'undefined' &&
-		!localStorage.getItem('mypage48_multiview_slots')
-	) {
-		const firstLive = $liveList.find((l) => l.platform === 'idn') || $liveList[0];
-		if (firstLive) {
-			slots = [firstLive];
-			setFocusedSlot(0);
-		}
-	}
-
-	// Aspect ratio persistence
-	$: if (typeof localStorage !== 'undefined') {
-		localStorage.setItem('mypage48_multiview_portrait', String(isPortrait));
-	}
-
 	let fallbackAvatar = 'https://placehold.co/640x960?text=NO%20IMAGE';
 
 	function handleRoomOffline(index: number, memberName: string) {
 		removeMemberFromSlot(index);
-		showToast($t('theater.live.multiview.member_offline', { name: memberName }), 'error');
+		showToast(t('theater.live.multiview.member_offline', { name: memberName }), 'error');
 	}
+	$effect(() => {
+		if (isMobile) {
+			// On mobile, if one is toggled on, toggle the other off
+			if (showPicker && showChat) {
+				// This logic depends on which one was toggled last,
+				// but for simplicity, let's just ensure only one is active.
+			}
+		}
+	});
+	let activeStreams = $derived(liveList.value);
+	let filteredStreams = $derived(
+		activeStreams.filter(
+			(s) =>
+				s.member?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				s.title?.toLowerCase().includes(searchQuery.toLowerCase())
+		)
+	);
+	// Auto-initialize first slot if empty and no saved session
+	$effect(() => {
+		if (
+			slots.length === 0 &&
+			(liveList.value?.length ?? 0) > 0 &&
+			typeof localStorage !== 'undefined' &&
+			!localStorage.getItem('mypage48_multiview_slots')
+		) {
+			const firstLive =
+				(liveList.value || []).find((l) => l.platform === 'idn') || liveList.value?.[0];
+			if (firstLive) {
+				slots = [firstLive];
+				setFocusedSlot(0);
+			}
+		}
+	});
+	let focusedStream = $derived(slots[focusedSlotIndex]);
+	$effect(() => {
+		if (focusedStream) {
+			const currentId =
+				focusedStream.platform === 'showroom'
+					? focusedStream.room_id || focusedStream.room_url_key
+					: focusedStream.live_id || focusedStream.room_url_key;
+			if (currentId !== lastLoadedId) {
+				lastLoadedId = currentId;
+				loadFocusedDetails(focusedStream);
+			}
+		} else {
+			focusedStreamDetails = null;
+			lastLoadedId = null;
+		}
+	});
+	// Responsive grid logic
+	let gridClass = $derived(
+		isMobile
+			? slots.length === 1
+				? 'grid-cols-1'
+				: 'grid-cols-1' // On mobile always 1 col unless landscape? Let's stick to 1 col for now or 2 if many
+			: isPortrait
+				? slots.length === 1
+					? 'grid-cols-1 max-w-md mx-auto'
+					: slots.length === 2
+						? 'grid-cols-2 max-w-4xl mx-auto'
+						: slots.length === 3
+							? 'grid-cols-3 max-w-6xl mx-auto'
+							: 'grid-cols-2 lg:grid-cols-4 max-w-none'
+				: slots.length === 1
+					? 'grid-cols-1 max-w-7xl mx-auto'
+					: slots.length <= 2
+						? 'grid-cols-2 max-w-none'
+						: slots.length <= 4
+							? 'grid-cols-2 max-w-none'
+							: 'grid-cols-2 lg:grid-cols-3 max-w-none'
+	);
+	// Aspect ratio persistence
+	$effect(() => {
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem('mypage48_multiview_portrait', String(isPortrait));
+		}
+	});
 </script>
+
+<SEO
+	title={t('theater.live.multiview.live.seoTitle')}
+	path={$page.url.pathname}
+	description={t('theater.live.multiview.live.seoDescription')}
+/>
 
 <div
 	role="presentation"
 	class="fixed inset-0 bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 flex flex-col overflow-hidden z-[9999]"
-	on:mousemove={(e) => {
+	onmousemove={(e) => {
 		const { clientX, clientY } = e;
 		const { innerWidth, innerHeight } = window;
 		const x = clientX / innerWidth - 0.5;
@@ -389,25 +399,25 @@
 				<LayoutGrid size={14} class="text-red-600" />
 				<span
 					class="text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400"
-					>{$t('theater.live.multiview.title')}</span
+					>{t('theater.live.multiview.title')}</span
 				>
 			</div>
 		</div>
 
 		<div class="flex items-center gap-2">
 			<button
-				on:click={clearAll}
+				onclick={clearAll}
 				class="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
-				title={$t('theater.live.multiview.clear_all')}
+				title={t('theater.live.multiview.clear_all')}
 			>
 				<Trash2 size={20} />
 			</button>
 			<button
-				on:click={() => (isPortrait = !isPortrait)}
+				onclick={() => (isPortrait = !isPortrait)}
 				class="p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
 				title={isPortrait
-					? $t('theater.live.multiview.switch_to_landscape')
-					: $t('theater.live.multiview.switch_to_portrait')}
+					? t('theater.live.multiview.switch_to_landscape')
+					: t('theater.live.multiview.switch_to_portrait')}
 			>
 				{#if isPortrait}
 					<Monitor size={20} />
@@ -416,20 +426,20 @@
 				{/if}
 			</button>
 			<button
-				on:click={togglePicker}
+				onclick={togglePicker}
 				class="p-2 rounded-lg {showPicker
 					? 'bg-red-50 text-red-600'
 					: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
-				title={$t('theater.live.multiview.toggle_picker')}
+				title={t('theater.live.multiview.toggle_picker')}
 			>
 				<UserPlus size={20} />
 			</button>
 			<button
-				on:click={toggleChat}
+				onclick={toggleChat}
 				class="p-2 rounded-lg {showChat
 					? 'bg-red-50 text-red-600'
 					: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
-				title={$t('theater.live.multiview.toggle_chat')}
+				title={t('theater.live.multiview.toggle_chat')}
 			>
 				<MessageCircle size={20} />
 			</button>
@@ -449,13 +459,13 @@
 						<input
 							type="text"
 							bind:value={searchQuery}
-							placeholder={$t('theater.live.multiview.search_placeholder')}
+							placeholder={t('theater.live.multiview.search_placeholder')}
 							class="w-full pl-9 pr-4 py-3 md:py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm md:text-xs focus:ring-2 focus:ring-red-500 outline-none"
 						/>
 					</div>
 					{#if isMobile}
 						<button
-							on:click={togglePicker}
+							onclick={togglePicker}
 							class="p-2 text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
 						>
 							<X size={20} />
@@ -463,8 +473,8 @@
 					{/if}
 				</div>
 				<div class="flex-1 overflow-y-auto p-2 space-y-1">
-					{#if $liveLoading && activeStreams.length === 0}
-						{#each Array(6) as _}
+					{#if liveLoading.value && activeStreams.length === 0}
+						{#each Array(6)}
 							<div class="h-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl animate-pulse"></div>
 						{/each}
 					{:else}
@@ -476,7 +486,7 @@
 							)}
 							{@const isSelected = selectedIndex !== -1}
 							<button
-								on:click={() =>
+								onclick={() =>
 									isSelected ? removeMemberFromSlot(selectedIndex) : addMemberToSlot(stream)}
 								class="w-full flex items-center gap-3 p-2 rounded-xl border transition-all text-left group cursor-pointer
 									{isSelected
@@ -486,7 +496,7 @@
 								<div class="relative shrink-0">
 									<img
 										src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar}
-										on:error={(e) => {
+										onerror={(e) => {
 											if (e.currentTarget instanceof HTMLImageElement)
 												e.currentTarget.src = fallbackAvatar;
 										}}
@@ -513,7 +523,7 @@
 											? 'opacity-50'
 											: ''}"
 									>
-										{stream.title || $t('theater.live.multiview.live_status')}
+										{stream.title || t('theater.live.multiview.live_status')}
 									</div>
 
 									<LiveStats
@@ -543,7 +553,6 @@
 		<div class="flex-1 bg-transparent p-2 md:p-4 overflow-y-auto">
 			<div class="grid {gridClass} gap-2 md:gap-6 h-fit transition-all duration-500 pb-20">
 				{#each slots as stream, i (stream.platform + '-' + (stream.live_id || stream.room_id || stream.room_url_key))}
-					<!-- svelte-ignore a11y-no-noninteractive-element-to-interactive-role -->
 					<div
 						class="relative {isPortrait
 							? 'aspect-[9/16]'
@@ -558,15 +567,15 @@
 							? 'max-h-[calc(100vh-140px)]'
 							: ''} mx-auto w-full"
 						draggable="true"
-						on:dragstart={() => handleDragStart(i)}
-						on:dragover={(e) => handleDragOver(e, i)}
-						on:drop={() => handleDrop(i)}
-						on:dragend={handleDragEnd}
-						on:click={() => setFocusedSlot(i)}
-						on:keydown={(e) => e.key === 'Enter' && setFocusedSlot(i)}
+						ondragstart={() => handleDragStart(i)}
+						ondragover={(e) => handleDragOver(e, i)}
+						ondrop={() => handleDrop(i)}
+						ondragend={handleDragEnd}
+						onclick={() => setFocusedSlot(i)}
+						onkeydown={(e) => e.key === 'Enter' && setFocusedSlot(i)}
 						role="button"
 						tabindex="0"
-						aria-label={$t('theater.live.multiview.focus_member', { name: stream.member?.name })}
+						aria-label={t('theater.live.multiview.focus_member', { name: stream.member?.name })}
 					>
 						<div class="absolute inset-0 z-0">
 							<MultiPlayer
@@ -579,7 +588,7 @@
 								roomIdentifier={stream.room_url_key}
 								volume={volumes[i] || 1}
 								muted={muted[i]}
-								on:offline={() => handleRoomOffline(i, stream.member?.name || 'Member')}
+								onoffline={() => handleRoomOffline(i, stream.member?.name || 'Member')}
 							/>
 						</div>
 
@@ -590,7 +599,7 @@
 							<div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
 								<img
 									src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar}
-									on:error={(e) => {
+									onerror={(e) => {
 										if (e.currentTarget instanceof HTMLImageElement)
 											e.currentTarget.src = fallbackAvatar;
 									}}
@@ -611,9 +620,12 @@
 								</div>
 							</div>
 							<button
-								on:click|stopPropagation={() => removeMemberFromSlot(i)}
+								onclick={(e) => {
+									e.stopPropagation();
+									removeMemberFromSlot(i);
+								}}
 								class="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg cursor-pointer"
-								aria-label={$t('theater.live.multiview.remove_stream')}
+								aria-label={t('theater.live.multiview.remove_stream')}
 							>
 								<X size={14} />
 							</button>
@@ -626,10 +638,13 @@
 							<div class="flex items-center gap-0 group/volume relative h-8">
 								<button
 									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10 cursor-pointer"
-									on:click|stopPropagation={() => (muted[i] = !muted[i])}
+									onclick={(e) => {
+										e.stopPropagation();
+										muted[i] = !muted[i];
+									}}
 									aria-label={muted[i] || volumes[i] === 0
-										? $t('theater.live.multiview.unmute')
-										: $t('theater.live.multiview.mute')}
+										? t('theater.live.multiview.unmute')
+										: t('theater.live.multiview.mute')}
 								>
 									{#if muted[i] || volumes[i] === 0}<VolumeX size={16} />{:else}<Volume2
 											size={16}
@@ -644,7 +659,7 @@
 										max="1"
 										step="0.01"
 										value={volumes[i]}
-										on:input={(e) => {
+										oninput={(e) => {
 											let val = parseFloat(e.currentTarget.value);
 											if (val < 0.05) {
 												val = 0;
@@ -656,7 +671,7 @@
 											volumes = volumes; // Trigger reactivity
 											muted = muted;
 										}}
-										on:click|stopPropagation
+										onclick={(e) => e.stopPropagation()}
 										class="w-16 h-1 accent-white cursor-pointer"
 									/>
 								</div>
@@ -666,9 +681,11 @@
 								<!-- Screenshot Button -->
 								<button
 									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-blue-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/cam cursor-pointer"
-									on:click|stopPropagation={() =>
-										playerRefs[i]?.takeScreenshot(stream.member?.name)}
-									title={$t('theater.live.multiview.take_screenshot')}
+									onclick={(e) => {
+										e.stopPropagation();
+										playerRefs[i]?.takeScreenshot(stream.member?.name);
+									}}
+									title={t('theater.live.multiview.take_screenshot')}
 								>
 									<Camera
 										size={16}
@@ -681,11 +698,13 @@
 									class="w-8 h-8 rounded-xl {isRecording[i]
 										? 'bg-red-600 animate-pulse'
 										: 'bg-white/10 backdrop-blur-md grayscale hover:grayscale-0 hover:bg-red-600'} text-white flex items-center justify-center hover:scale-105 transition-all shadow-lg group/rec cursor-pointer"
-									on:click|stopPropagation={() =>
-										playerRefs[i]?.toggleRecording(stream.member?.name)}
+									onclick={(e) => {
+										e.stopPropagation();
+										playerRefs[i]?.toggleRecording(stream.member?.name);
+									}}
 									title={isRecording[i]
-										? $t('theater.live.multiview.stop_recording')
-										: $t('theater.live.multiview.start_recording')}
+										? t('theater.live.multiview.stop_recording')
+										: t('theater.live.multiview.start_recording')}
 								>
 									{#if isRecording[i]}
 										<Square size={14} fill="currentColor" />
@@ -712,10 +731,10 @@
 						<h3
 							class="text-xl font-black uppercase tracking-widest text-slate-900 dark:text-white mb-2"
 						>
-							{$t('theater.live.multiview.empty_title')}
+							{t('theater.live.multiview.empty_title')}
 						</h3>
 						<p class="text-sm text-slate-500 dark:text-zinc-500 max-w-xs mx-auto italic">
-							{$t('theater.live.multiview.empty_description')}
+							{t('theater.live.multiview.empty_description')}
 						</p>
 					</div>
 				{/if}
@@ -737,12 +756,12 @@
 							<span
 								class="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white truncate"
 							>
-								{$t('theater.live.multiview.chat_with', { name: focusedStream.member?.name })}
+								{t('theater.live.multiview.chat_with', { name: focusedStream.member?.name })}
 							</span>
 						</div>
 						{#if isMobile}
 							<button
-								on:click={toggleChat}
+								onclick={toggleChat}
 								class="p-1 text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
 							>
 								<X size={20} />
@@ -751,15 +770,15 @@
 					</div>
 					<div class="flex-1 overflow-hidden relative flex flex-col">
 						{#key focusedStream.room_url_key || focusedStream.live_id || focusedStream.room_id}
-							{#if focusedStream.platform === 'showroom'}
+							{#if focusedStream.platform === 'showroom' && focusedStream.room_id}
 								<ShowroomChat roomId={focusedStream.room_id} />
 							{:else if focusedStreamDetails}
-								<IDNChat roomIdentifier={focusedStreamDetails.room_identifier} />
+								<IDNChat roomIdentifier={focusedStreamDetails?.room_identifier || ''} />
 							{:else}
 								<div class="flex flex-col items-center justify-center h-full text-center p-8">
 									<RefreshCw size={24} class="text-gray-300 animate-spin mb-4" />
 									<p class="text-[10px] font-black uppercase tracking-widest text-gray-400">
-										{$t('theater.live.multiview.loading_chat')}
+										{t('theater.live.multiview.loading_chat')}
 									</p>
 								</div>
 							{/if}
@@ -769,7 +788,7 @@
 					<div class="flex flex-col items-center justify-center h-full text-center p-8">
 						<MessageCircle size={32} class="text-gray-300 mb-4" />
 						<p class="text-[10px] font-black uppercase tracking-widest text-gray-400">
-							{$t('theater.live.multiview.select_stream_to_chat')}
+							{t('theater.live.multiview.select_stream_to_chat')}
 						</p>
 					</div>
 				{/if}

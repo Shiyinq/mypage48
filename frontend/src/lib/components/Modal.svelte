@@ -1,41 +1,49 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import Button from './Button.svelte';
 
-	export let title = 'Confirm Action';
-	export let message = 'Are you sure you want to proceed?';
-	export let confirmText = 'Confirm';
-	export let cancelText = 'Cancel';
-	export let confirmVariant: 'primary' | 'secondary' | 'outline' | 'ghost' | 'google' | 'github' =
-		'primary';
-
-	const dispatch = createEventDispatcher();
-
-	function onConfirm() {
-		dispatch('confirm');
+	interface Props {
+		title?: string;
+		message?: string;
+		confirmText?: string;
+		cancelText?: string;
+		confirmVariant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'google' | 'github';
+		onconfirm?: () => void;
+		oncancel?: () => void;
 	}
 
-	function onCancel() {
-		dispatch('cancel');
-	}
+	let {
+		title = 'Confirm Action',
+		message = 'Are you sure you want to proceed?',
+		confirmText = 'Confirm',
+		cancelText = 'Cancel',
+		confirmVariant = 'primary',
+		onconfirm,
+		oncancel
+	}: Props = $props();
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
-			onCancel();
+			oncancel?.();
 		}
 	}
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
-<div class="modal-backdrop" on:click|self={onCancel} role="presentation">
+<div
+	class="modal-backdrop"
+	onclick={(e) => {
+		if (e.target === e.currentTarget) oncancel?.();
+	}}
+	role="presentation"
+>
 	<div class="modal-content glass-panel">
 		<h3 class="modal-title">{title}</h3>
 		<p class="modal-message">{message}</p>
 
 		<div class="modal-actions">
-			<Button variant="ghost" on:click={onCancel}>{cancelText}</Button>
-			<Button variant={confirmVariant} on:click={onConfirm}>{confirmText}</Button>
+			<Button variant="ghost" onclick={() => oncancel?.()}>{cancelText}</Button>
+			<Button variant={confirmVariant} onclick={() => onconfirm?.()}>{confirmText}</Button>
 		</div>
 	</div>
 </div>

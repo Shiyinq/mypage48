@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isAuthenticated, showToast } from '$lib/stores';
+	import { showToast } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import { Image as ImageIcon } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -8,47 +8,43 @@
 	import { Lightbox, MemoryFilters, MemoryCard, type FilterType } from '$lib/components/memories';
 	import { PolaroidSkeleton } from '$lib/components/skeletons';
 	import type { MemoryItem } from '$lib/types';
-	import { galleryStore, isGalleryLoading } from '$lib/stores/memories';
+	import { galleryStore, isGalleryLoading } from '$lib/stores/memories.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { isCacheExpired } from '$lib/utils/cache';
 
 	const { t } = useTranslation();
 
-	// State
-	$: state = $galleryStore;
-	$: memories = state.list;
-	$: pagination = state.pagination;
-	$: filter = state.filter;
-	$: error = state.error;
+	// Reactive state from store
+	let memories = $derived(galleryStore.list);
+	let pagination = $derived(galleryStore.pagination);
+	let filter = $derived(galleryStore.filter);
+	let error = $derived(galleryStore.error);
+	let isLoading = $derived(isGalleryLoading.value);
 
-	let selectedImage: MemoryItem | null = null;
-	let mounted = false;
+	let selectedImage: MemoryItem | null = $state(null);
+	let mounted = $state(false);
 
 	onMount(() => {
 		mounted = true;
 		// Initial load only if empty or expired
-		const currentCache = state.cache[filter];
+		const currentCache = galleryStore.cache[filter];
 
-		if (memories.length === 0 || isCacheExpired(currentCache.lastUpdated)) {
+		if (memories.length === 0 || isCacheExpired(currentCache?.lastUpdated)) {
 			loadMemories(1);
 		}
 	});
 
-	async function loadMemories(page: number) {
-		// Store loading check to prevent double fetch
-		// But here we might want to check if ALREADY loading in store?
-		// relying on store's internal state or just firing it.
-		// Since we removed local `isLoadingMore`, we should check store `isLoading`.
-		if ($isGalleryLoading) return;
+	async function loadMemories(pageIdx: number) {
+		if (isLoading) return;
 
 		// If not page 1 and no more, don't load
-		if (page > 1 && !pagination.hasMore) return;
+		if (pageIdx > 1 && !pagination.hasMore) return;
 
 		try {
 			// Use store action
-			await galleryStore.load(page, filter);
+			await galleryStore.load(pageIdx, filter);
 		} catch {
-			showToast($t('memories.errorTitle') || 'Failed to load memories', 'error');
+			showToast(t('memories.errorTitle') || 'Failed to load memories', 'error');
 		}
 	}
 
@@ -61,7 +57,6 @@
 
 	async function loadMemoriesWithFilter(newFilter: FilterType) {
 		// We call load with page 1 and new filter
-		// Store handles cache check
 		try {
 			await galleryStore.load(1, newFilter);
 		} catch {
@@ -71,17 +66,19 @@
 
 	// Infinite scroll handler
 	function handleIntersect() {
-		if (!mounted || $isGalleryLoading || !pagination.hasMore) return;
+		if (!mounted || isLoading || !pagination.hasMore) return;
 		loadMemories(pagination.page + 1);
 	}
 
 	// Scroll lock for lightbox
-	$: if (typeof document !== 'undefined') {
-		document.body.style.overflow = selectedImage ? 'hidden' : 'unset';
-	}
+	$effect(() => {
+		if (typeof document !== 'undefined') {
+			document.body.style.overflow = selectedImage ? 'hidden' : 'unset';
+		}
+	});
 </script>
 
-<SEO title={$t('memories.title')} path="/memories" description={$t('seo.memories')} />
+<SEO title={t('memories.title')} path="/memories" description={t('seo.memories')} />
 
 <!-- Lightbox -->
 <Lightbox {selectedImage} onClose={() => (selectedImage = null)} />
@@ -91,24 +88,29 @@
 	<div class="mb-8">
 		<PageHeader
 			icon={ImageIcon}
-			title={$t('memories.title')}
-			subtitle={$t('memories.subtitle')}
+			title={t('memories.title')}
+			subtitle={t('memories.subtitle')}
 			theme="pink"
 		>
-			<div slot="actions">
-				<MemoryFilters filter={state.filter} on:change={(e) => handleFilterChange(e.detail)} />
-			</div>
+			{#snippet actions()}
+				<div>
+					<MemoryFilters
+						filter={galleryStore.filter}
+						onchange={(newFilter) => handleFilterChange(newFilter)}
+					/>
+				</div>
+			{/snippet}
 		</PageHeader>
 	</div>
 
 	<!-- Gallery Grid -->
 	{#if error && memories.length === 0}
 		<ErrorState
-			title={$t('memories.errorTitle') || 'Failed to load memories'}
-			description={$t('memories.errorDesc') || error || ''}
+			title={t('memories.errorTitle') || 'Failed to load memories'}
+			description={t('memories.errorDesc') || error || ''}
 			onRetry={() => loadMemories(1)}
 		/>
-	{:else if $isGalleryLoading && memories.length === 0}
+	{:else if isLoading && memories.length === 0}
 		<div
 			class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10 px-2 sm:px-4"
 		>
@@ -123,8 +125,8 @@
 	{:else if memories.length === 0}
 		<EmptyState
 			icon={ImageIcon}
-			title={$t('memories.noMemories')}
-			description={$t('upload.subtitle')}
+			title={t('memories.noMemories')}
+			description={t('upload.subtitle')}
 		/>
 	{:else}
 		<div
@@ -138,12 +140,8 @@
 
 		<!-- Sentinel for infinite scroll -->
 		{#if pagination.hasMore}
-			<div
-				use:infiniteScroll
-				on:intersect={handleIntersect}
-				class="w-full py-8 flex justify-center"
-			>
-				{#if $isGalleryLoading}
+			<div use:infiniteScroll onintersect={handleIntersect} class="w-full py-8 flex justify-center">
+				{#if isLoading}
 					<div
 						class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10 px-2 sm:px-4 w-full"
 					>

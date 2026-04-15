@@ -1,4 +1,4 @@
-import { playgroundStore } from '$lib/stores/playground';
+import { playgroundStore } from '$lib/stores/playground.svelte';
 import { browser } from '$app/environment';
 
 export const load = async () => {

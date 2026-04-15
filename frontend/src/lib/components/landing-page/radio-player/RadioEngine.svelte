@@ -1,66 +1,75 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { radioStore, RADIO_CHANNELS, type RadioChannel } from '$lib/stores/radio';
+	import { untrack } from 'svelte';
+	import { radioStore, RADIO_CHANNELS, type RadioChannel } from '$lib/stores/radio.svelte';
 
-	let player: any;
-	let playerElement: HTMLElement;
-	let isInitialized = false;
+	let player: YTPlayer | undefined = $state();
+	let playerElement: HTMLElement | undefined = $state();
+	let isInitialized = $state(false);
 
-	$: currentChannel =
-		RADIO_CHANNELS.find((c) => c.id === $radioStore.currentChannelId) || RADIO_CHANNELS[0];
+	let currentChannel: RadioChannel = $derived(
+		RADIO_CHANNELS.find((c) => c.id === $radioStore.currentChannelId) || RADIO_CHANNELS[0]
+	);
 
 	// Sync Store -> YouTube Player: React strictly to play/pause toggle
-	let prevIsPlaying = false;
-	$: if (player && isInitialized && prevIsPlaying !== $radioStore.isPlaying) {
-		prevIsPlaying = $radioStore.isPlaying;
-		if ($radioStore.isPlaying) {
-			player.playVideo();
-		} else {
-			player.pauseVideo();
+	let prevIsPlaying = $state(false);
+	$effect(() => {
+		if (player && isInitialized && prevIsPlaying !== $radioStore.isPlaying) {
+			prevIsPlaying = $radioStore.isPlaying;
+			if ($radioStore.isPlaying) {
+				player.playVideo();
+			} else {
+				player.pauseVideo();
+			}
 		}
-	}
+	});
 
 	// Watch for Playlist Changes
-	let previousPlaylistId = '';
-	$: if (
-		player &&
-		isInitialized &&
-		currentChannel &&
-		previousPlaylistId !== currentChannel.playlistId
-	) {
-		previousPlaylistId = currentChannel.playlistId;
+	let previousPlaylistId = $state('');
+	$effect(() => {
+		if (
+			player &&
+			isInitialized &&
+			currentChannel &&
+			previousPlaylistId !== currentChannel.playlistId
+		) {
+			previousPlaylistId = currentChannel.playlistId;
 
-		// Segera kosongkan track info agar UI menampilkan "Connecting to Station..."
-		radioStore.setTrack('', '');
+			// Segera kosongkan track info agar UI menampilkan "Connecting to Station..."
+			radioStore.setTrack('', '');
 
-		player.loadPlaylist({
-			listType: 'playlist',
-			list: currentChannel.playlistId,
-			index: 0,
-			startSeconds: 0
-		});
+			player.loadPlaylist({
+				listType: 'playlist',
+				list: currentChannel.playlistId,
+				index: 0,
+				startSeconds: 0
+			});
 
-		// Paksa agar statusnya selalu 'play' saat pindah playlist
-		if (!$radioStore.isPlaying) {
-			radioStore.play();
+			// Paksa agar statusnya selalu 'play' saat pindah playlist
+			if (!$radioStore.isPlaying) {
+				radioStore.play();
+			}
 		}
-	}
+	});
 
-	$: if (player && isInitialized) {
-		player.setVolume($radioStore.isMuted ? 0 : $radioStore.volume);
-	}
+	$effect(() => {
+		if (player && isInitialized) {
+			player.setVolume($radioStore.isMuted ? 0 : $radioStore.volume);
+		}
+	});
 
 	// Trigger Next Track (only run once per trigger increment)
-	let lastTrigger = 0;
-	$: if (player && isInitialized && $radioStore.nextTrackTrigger > lastTrigger) {
-		lastTrigger = $radioStore.nextTrackTrigger;
-		player.nextVideo();
-	}
+	let lastTrigger = $state(0);
+	$effect(() => {
+		if (player && isInitialized && $radioStore.nextTrackTrigger > lastTrigger) {
+			lastTrigger = $radioStore.nextTrackTrigger;
+			player.nextVideo();
+		}
+	});
 
 	function initPlayer() {
-		if (typeof window === 'undefined' || !(window as any).YT) return;
+		if (typeof window === 'undefined' || !window.YT) return;
 
-		player = new (window as any).YT.Player(playerElement, {
+		player = new window.YT.Player(playerElement, {
 			height: '1',
 			width: '1',
 			playerVars: {
@@ -73,30 +82,26 @@
 				loop: 1
 			},
 			events: {
-				onReady: (event: any) => {
+				onReady: (event: YTEvent) => {
 					isInitialized = true;
 					if ($radioStore.isPlaying) {
 						event.target.playVideo();
 					}
 					event.target.setVolume($radioStore.isMuted ? 0 : $radioStore.volume);
 				},
-				onStateChange: (event: any) => {
+				onStateChange: (event: YTEvent) => {
 					// YT.PlayerState:
 					// -1 = unstarted, 0 = ended, 1 = playing, 2 = paused, 3 = buffering, 5 = video cued
 
 					// Update metadata info when we know video is available
 					if (event.data === 1 || event.data === 2 || event.data === 3 || event.data === 5) {
-						try {
-							const videoData = player.getVideoData();
-							if (videoData && videoData.video_id) {
-								const videoId = videoData.video_id;
-								radioStore.setTrack(
-									videoData.title || '',
-									`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
-								);
-							}
-						} catch (e) {
-							// Ignore API error
+						const videoData = player?.getVideoData();
+						if (videoData && videoData.video_id) {
+							const videoId = videoData.video_id;
+							radioStore.setTrack(
+								videoData.title || '',
+								`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+							);
 						}
 					}
 
@@ -118,13 +123,15 @@
 		});
 	}
 
-	let playerElementOuter: HTMLElement;
+	let playerElementOuter: HTMLElement | undefined = $state();
 
-	onMount(() => {
-		previousPlaylistId = currentChannel.playlistId; // Set initial
+	$effect(() => {
+		// Use untrack to avoid re-running this entire init effect when playlist changes.
+		// Playlist changes are handled by the other effect using player.loadPlaylist.
+		previousPlaylistId = untrack(() => currentChannel.playlistId);
 
 		if (typeof window !== 'undefined') {
-			if ((window as any).YT && (window as any).YT.Player) {
+			if (window.YT && window.YT.Player) {
 				initPlayer();
 			} else {
 				if (!document.getElementById('youtube-iframe-api')) {
@@ -139,17 +146,19 @@
 					}
 				}
 
-				(window as any).onYouTubeIframeAPIReady = () => {
+				window.onYouTubeIframeAPIReady = () => {
 					initPlayer();
 				};
 			}
 		}
-	});
 
-	onDestroy(() => {
-		if (player) {
-			player.destroy();
-		}
+		return () => {
+			if (player) {
+				player.destroy();
+				player = undefined;
+				isInitialized = false;
+			}
+		};
 	});
 </script>
 

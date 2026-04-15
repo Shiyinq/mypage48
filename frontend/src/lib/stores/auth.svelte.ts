@@ -6,16 +6,25 @@ import type {
 	PasswordResetConfirmRequest,
 	VerifyEmailRequest
 } from '$lib/types';
-import { accessToken } from '$lib/stores/accessToken';
+import { accessToken } from '$lib/stores/accessToken.svelte';
+import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 
-// Re-export accessToken from separate file
-export { accessToken } from '$lib/stores/accessToken';
+/**
+ * Auth actions service - migrated to Svelte 5 Shared Rune State.
+ * Provides methods for login, logout, registration and password management.
+ */
 
-// Auth Store with actions
 function createAuthStore() {
 	return {
+		/**
+		 * Handle login and set initial auth status
+		 */
 		login: async (credentials: LoginRequest) => {
 			const response = await authApi.login(credentials);
+			if (response.access_token) {
+				accessToken.set(response.access_token);
+				isAuthenticated.set(true);
+			}
 			return response;
 		},
 
@@ -24,10 +33,17 @@ function createAuthStore() {
 			return response;
 		},
 
+		/**
+		 * Handle logout and clear auth status
+		 */
 		logout: async () => {
-			const response = await authApi.logout();
-			accessToken.set('');
-			return response;
+			try {
+				const response = await authApi.logout();
+				return response;
+			} finally {
+				accessToken.set('');
+				isAuthenticated.set(false);
+			}
 		},
 
 		forgotPassword: async (data: PasswordResetRequest) => {
@@ -42,7 +58,7 @@ function createAuthStore() {
 			return await authApi.verifyEmail(data);
 		},
 
-		// Social login URLs - use getters to avoid circular dependency
+		// Social login URLs
 		get googleLoginUrl() {
 			return authApi.googleLoginUrl;
 		},
@@ -53,3 +69,4 @@ function createAuthStore() {
 }
 
 export const authStore = createAuthStore();
+export { accessToken } from '$lib/stores/accessToken.svelte';

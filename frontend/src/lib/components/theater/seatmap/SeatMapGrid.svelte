@@ -1,14 +1,19 @@
 <script lang="ts">
-	import { useTranslation } from '$lib/i18n/useTranslation';
+	interface SeatRowLayout {
+		readonly groups: readonly (readonly [number, number])[];
+		readonly start: number;
+	}
 
-	export let rows: readonly string[];
-	export let seatLayout: Record<string, any>;
-	export let seatStats: Record<string, number>;
-	export let maxSeatCount: number;
-	export let isLoading: boolean;
-	export let compact: boolean;
+	interface Props {
+		rows: readonly string[];
+		seatLayout: Record<string, SeatRowLayout>;
+		seatStats: Record<string, number>;
+		maxSeatCount: number;
+		isLoading: boolean;
+		compact: boolean;
+	}
 
-	const { t } = useTranslation();
+	let { rows, seatLayout, seatStats, maxSeatCount, isLoading, compact }: Props = $props();
 
 	function getLayout(row: string) {
 		return seatLayout[row as keyof typeof seatLayout];
