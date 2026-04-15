@@ -26,14 +26,14 @@
 			<span
 				class="text-[10px] md:text-xs font-bold text-purple-600/50 dark:text-purple-400/50 uppercase tracking-wider"
 			>
-				{$t('shows.topRow')}
+				{t('shows.topRow')}
 			</span>
 		</div>
 		<div class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
 			{stats.topRow || '-'}
 		</div>
 		<div class="text-[11px] md:text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
-			{$t('shows.mostFrequentedRow') || 'Most frequented row'}
+			{t('shows.mostFrequentedRow') || 'Most frequented row'}
 		</div>
 	</div>
 
@@ -49,14 +49,14 @@
 			<span
 				class="text-[10px] md:text-xs font-bold text-green-600/50 dark:text-green-400/50 uppercase tracking-wider"
 			>
-				{$t('dashboard.theater.totalExpenses')}
+				{t('dashboard.theater.totalExpenses')}
 			</span>
 		</div>
 		<div class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">
 			{formatCurrency(stats.totalSpent)}
 		</div>
 		<div class="text-[11px] md:text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
-			{$t('shows.investmentInMemories') || 'Investment in memories'}
+			{t('shows.investmentInMemories') || 'Investment in memories'}
 		</div>
 	</div>
 </div>

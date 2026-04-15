@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { authStore } from '$lib/stores/auth';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { getErrorMessage } from '$lib/utils/api';
@@ -43,7 +43,7 @@
 
 			await authStore.forgotPassword({ email });
 			isSent = true;
-			showToast($t('auth.forgotPassword.sent'), 'success');
+			showToast(t('auth.forgotPassword.sent'), 'success');
 		} catch (err) {
 			if (err instanceof ZodError) {
 				const fieldErrors = err.flatten().fieldErrors;
@@ -58,7 +58,7 @@
 
 			const errorMsg = getErrorMessage(err);
 			logger.error('Forgot password failed', err, { context: 'ForgotPasswordPage' });
-			error = errorMsg || $t('auth.forgotPassword.error');
+			error = errorMsg || t('auth.forgotPassword.error');
 			showToast(error, 'error');
 		} finally {
 			isLoading = false;
@@ -67,16 +67,16 @@
 </script>
 
 <SEO
-	title={$t('auth.forgotPassword.title')}
+	title={t('auth.forgotPassword.title')}
 	path="/auth/forgot-password"
-	description={$t('seo.forgotPassword')}
+	description={t('seo.forgotPassword')}
 />
 
 <AuthLayout
-	title={$t('auth.forgotPassword.title')}
+	title={t('auth.forgotPassword.title')}
 	subtitle={isSent
-		? $t('auth.forgotPassword.successMessage', { email })
-		: $t('auth.forgotPassword.instruction')}
+		? t('auth.forgotPassword.successMessage', { email })
+		: t('auth.forgotPassword.instruction')}
 	icon={KeyRound}
 >
 	{#if !isSent}
@@ -91,7 +91,7 @@
 			<div>
 				<label
 					class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
-					for="email-input">{$t('auth.forgotPassword.emailLabel')}</label
+					for="email-input">{t('auth.forgotPassword.emailLabel')}</label
 				>
 				<div class="relative">
 					<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
@@ -120,9 +120,9 @@
 				class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:shadow-md hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer border border-white/20"
 			>
 				{#if isLoading}
-					<LoaderCircle class="w-5 h-5 animate-spin" /> {$t('auth.forgotPassword.submitting')}
+					<LoaderCircle class="w-5 h-5 animate-spin" /> {t('auth.forgotPassword.submitting')}
 				{:else}
-					{$t('auth.forgotPassword.submit')}
+					{t('auth.forgotPassword.submit')}
 				{/if}
 			</button>
 		</form>
@@ -132,10 +132,10 @@
 				onclick={() => (isSent = false)}
 				class="w-full py-4 rounded-2xl font-bold text-lg text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all cursor-pointer"
 			>
-				{$t('auth.forgotPassword.tryAnother')}
+				{t('auth.forgotPassword.tryAnother')}
 			</button>
 			<p class="text-xs text-gray-400 text-center">
-				{$t('auth.forgotPassword.spamCheck')}
+				{t('auth.forgotPassword.spamCheck')}
 			</p>
 		</div>
 	{/if}
@@ -147,7 +147,7 @@
 				class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors inline-flex items-center gap-2"
 			>
 				<ArrowLeft class="w-4 h-4" />
-				{$t('auth.forgotPassword.backToLogin')}
+				{t('auth.forgotPassword.backToLogin')}
 			</a>
 		</div>
 	{/snippet}

@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { liveStore, liveList, liveLoading } from '$lib/stores/live';
+	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import LiveGrid from '$lib/components/live/LiveGrid.svelte';
 
 	const { t } = useTranslation();
 
-	let initialLoading = $state($liveList.length === 0);
+	let initialLoading = $state(liveList.value.length === 0);
 
 	async function fetchLives() {
 		await liveStore.loadLiveList();
@@ -21,15 +21,15 @@
 </script>
 
 <SEO
-	title={$t('theater.live.seoTitle')}
+	title={t('theater.live.seoTitle')}
 	path="/theater/live"
-	description={$t('theater.live.seoDescription')}
+	description={t('theater.live.seoDescription')}
 />
 
 <div class="w-full pb-12">
 	<LiveGrid
-		liveList={$liveList}
-		loading={$liveLoading}
+		liveList={liveList.value}
+		loading={liveLoading.value}
 		{initialLoading}
 		variant="theater"
 		multiviewHref="/theater/live/multiview"

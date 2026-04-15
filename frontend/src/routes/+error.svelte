@@ -64,7 +64,7 @@
 	}
 
 	function goHome() {
-		goto($isAuthenticated ? '/' : '/login');
+		goto(isAuthenticated.value ? '/' : '/login');
 	}
 
 	function goBack() {
@@ -81,7 +81,7 @@
 	let status = $derived($page.status);
 	let message = $derived($page.error?.message);
 	// Define error info based on status code
-	let errorInfo = $derived(getErrorInfo(status, $t));
+	let errorInfo = $derived(getErrorInfo(status, t));
 </script>
 
 <SEO title={`${status} - ${errorInfo.title}`} description={message || errorInfo.description} />
@@ -130,23 +130,23 @@
 			<div class="actions">
 				<button class="btn btn-primary idol-gradient" onclick={goHome}>
 					<Home class="w-4 h-4" />
-					<span>{$t('errors.goHome')}</span>
+					<span>{t('errors.goHome')}</span>
 				</button>
 
 				<button class="btn btn-secondary" onclick={goBack}>
 					<ArrowLeft class="w-4 h-4" />
-					<span>{$t('common.back')}</span>
+					<span>{t('common.back')}</span>
 				</button>
 
 				<button class="btn btn-ghost" onclick={refresh}>
 					<RefreshCw class="w-4 h-4" />
-					<span>{$t('errors.tryAgain')}</span>
+					<span>{t('errors.tryAgain')}</span>
 				</button>
 			</div>
 		</div>
 
 		<!-- Footer Text -->
-		<p class="footer-text">{$t('header.tagline')} • MyPage48</p>
+		<p class="footer-text">{t('header.tagline')} • MyPage48</p>
 	</div>
 </div>
 

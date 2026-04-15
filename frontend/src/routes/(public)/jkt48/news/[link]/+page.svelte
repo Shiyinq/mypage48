@@ -8,7 +8,7 @@
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
 	import { showToast } from '$lib/stores';
 	import { browser } from '$app/environment';
-	import DOMPurify from 'dompurify';
+	import DOMPurify from 'isomorphic-dompurify';
 
 	interface Props {
 		data: PageData;
@@ -54,7 +54,7 @@
 	function copyLink() {
 		if (!browser) return;
 		navigator.clipboard.writeText(shareUrl);
-		showToast($t('common.copied'), 'success');
+		showToast(t('common.copied'), 'success');
 	}
 </script>
 
@@ -75,7 +75,7 @@
 			class="inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-red-500 transition-colors group"
 		>
 			<MoveLeft class="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-			{$t('common.back') || 'Back'}
+			{t('common.back') || 'Back'}
 		</a>
 
 		<h1
@@ -101,7 +101,7 @@
 				class="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider"
 			>
 				<Calendar class="w-4 h-4" />
-				{$formatDate(item.valid_date_from, { day: 'numeric', month: 'long', year: 'numeric' })}
+				{formatDate(item.valid_date_from, { day: 'numeric', month: 'long', year: 'numeric' })}
 			</span>
 		</div>
 	</div>
@@ -137,7 +137,7 @@
 		>
 			<div class="flex flex-col items-center gap-2">
 				<span class="text-[10px] font-black uppercase tracking-widest text-slate-400">
-					{$t('theater.news.share')}
+					{t('theater.news.share')}
 				</span>
 			</div>
 
@@ -187,7 +187,7 @@
 				<button
 					onclick={copyLink}
 					class="w-12 h-12 flex items-center justify-center rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 hover:scale-110 transition-transform shadow-md border border-slate-200 dark:border-zinc-700 cursor-pointer"
-					title={$t('common.copyLink')}
+					title={t('common.copyLink')}
 				>
 					<Copy class="w-5 h-5" />
 				</button>
@@ -197,12 +197,12 @@
 		<!-- Read Original -->
 		<div class="flex justify-center pb-20">
 			<a
-				href={`https://jkt48.com/news/${item.link}?lang=${$locale === 'id' ? 'id' : 'jp'}`}
+				href={`https://jkt48.com/news/${item.link}?lang=${locale.value === 'id' ? 'id' : 'jp'}`}
 				target="_blank"
 				rel="noopener noreferrer"
 				class="inline-flex items-center gap-3 px-10 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-black shadow-xl hover:shadow-2xl transition-all uppercase tracking-widest text-sm"
 			>
-				{$t('theater.news.readOriginal')}
+				{t('theater.news.readOriginal')}
 				<ExternalLink class="w-5 h-5" />
 			</a>
 		</div>
@@ -213,13 +213,13 @@
 		<section class="space-y-8 pt-12 border-t border-slate-100 dark:border-white/10">
 			<div class="flex items-center justify-between">
 				<h3 class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-					{$t('theater.news.otherNews')}
+					{t('theater.news.otherNews')}
 				</h3>
 				<a
 					href="/jkt48/news"
 					class="text-sm font-bold text-red-500 hover:text-red-600 flex items-center gap-1"
 				>
-					{$t('theater.news.seeAll')}
+					{t('theater.news.seeAll')}
 					<ChevronRight class="w-4 h-4" />
 				</a>
 			</div>
@@ -243,7 +243,7 @@
 								{recent.category}
 							</span>
 							<span class="text-[11px] font-bold text-slate-400">
-								{$formatDate(recent.valid_date_from, {
+								{formatDate(recent.valid_date_from, {
 									day: 'numeric',
 									month: 'short',
 									year: 'numeric'

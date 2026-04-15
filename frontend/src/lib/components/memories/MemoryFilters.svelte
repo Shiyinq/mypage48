@@ -29,20 +29,20 @@
 		class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === 'ALL' ? 'bg-pink-500 text-white shadow-md shadow-pink-200 dark:shadow-pink-900/30' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}
 	>
 		<Grid class="w-3.5 h-3.5" />
-		{$t('memories.allPhotos')}
+		{t('memories.allPhotos')}
 	</button>
 	<button
 		onclick={() => setFilter('TICKET')}
 		class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === 'TICKET' ? 'bg-red-500 text-white shadow-md shadow-red-200 dark:shadow-red-900/30' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}
 	>
 		<TicketIcon class="w-3.5 h-3.5" />
-		{$t('memories.tickets')}
+		{t('memories.tickets')}
 	</button>
 	<button
 		onclick={() => setFilter('2SHOT')}
 		class={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${filter === '2SHOT' ? 'bg-purple-500 text-white shadow-md shadow-purple-200 dark:shadow-purple-900/30' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}
 	>
 		<Camera class="w-3.5 h-3.5" />
-		{$t('memories.twoShots')}
+		{t('memories.twoShots')}
 	</button>
 </div>

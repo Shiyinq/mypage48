@@ -26,7 +26,7 @@
 				<Star class="w-4 h-4 fill-current" />
 			</div>
 			<span class="font-bold text-xs tracking-wider text-purple-500 dark:text-purple-400 uppercase"
-				>{$t('dashboard.theater.topShow')}</span
+				>{t('dashboard.theater.topShow')}</span
 			>
 		</div>
 		<Crown class="w-5 h-5 text-yellow-400 fill-current" />
@@ -58,7 +58,7 @@
 			</div>
 			<div class="min-w-0">
 				<p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-					{$t('dashboard.theater.mostWatched')}
+					{t('dashboard.theater.mostWatched')}
 				</p>
 				<h3
 					class={`font-black text-themed leading-none mb-0.5 truncate ${title.length > 15 ? 'text-sm' : 'text-lg'}`}
@@ -68,7 +68,7 @@
 				</h3>
 				<p class="text-sm font-bold text-purple-500">
 					{count}
-					{$t('shows.unit')}
+					{t('shows.unit')}
 				</p>
 			</div>
 		{/if}
@@ -84,7 +84,7 @@
 			href="/theater"
 			class="mt-auto border-t border-purple-100 dark:border-purple-800/30 p-3 w-full text-center text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors flex items-center justify-center gap-1 relative z-20 cursor-pointer"
 		>
-			{$t('common.viewDetails')}
+			{t('common.viewDetails')}
 			<ChevronRight class="w-3 h-3" />
 		</a>
 	{/if}

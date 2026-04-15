@@ -58,7 +58,7 @@
 				{#each locales as l}
 					<button
 						onclick={() => selectLanguage(l.code)}
-						class="w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer {$locale ===
+						class="w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer {locale.value ===
 						l.code
 							? 'text-red-600 font-bold bg-red-50 dark:bg-red-900/10'
 							: 'text-slate-600 dark:text-slate-300'}"
@@ -67,7 +67,7 @@
 							<span>{l.flag}</span>
 							<span>{l.label}</span>
 						</span>
-						{#if $locale === l.code}
+						{#if locale.value === l.code}
 							<Check size={14} class="text-red-500" />
 						{/if}
 					</button>

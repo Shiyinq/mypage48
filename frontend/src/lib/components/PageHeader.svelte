@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { ArrowLeft } from 'lucide-svelte';
 	import { type ComponentType } from 'svelte';
-	import { pageHeaderStore } from '$lib/stores/ui';
+	import { pageHeaderStore } from '$lib/stores';
 	import { onDestroy } from 'svelte';
 
 	/**

@@ -45,12 +45,12 @@
 				<tr
 					class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 				>
-					<th class="p-4">{$t('history.date')}</th>
-					<th class="p-4">{$t('history.eventDetails')}</th>
-					<th class="p-4">{$t('history.seat')}</th>
-					<th class="p-4">{$t('history.price')}</th>
-					<th class="p-4">{$t('history.notes')}</th>
-					<th class="p-4 text-right">{$t('history.actions')}</th>
+					<th class="p-4">{t('history.date')}</th>
+					<th class="p-4">{t('history.eventDetails')}</th>
+					<th class="p-4">{t('history.seat')}</th>
+					<th class="p-4">{t('history.price')}</th>
+					<th class="p-4">{t('history.notes')}</th>
+					<th class="p-4 text-right">{t('history.actions')}</th>
 				</tr>
 			</thead>
 			<tbody class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700">
@@ -61,7 +61,7 @@
 						<td class="p-4">
 							<div class="flex flex-col">
 								<span class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-									{$formatDate(ticket.event.date, {
+									{formatDate(ticket.event.date, {
 										day: 'numeric',
 										month: 'short',
 										year: '2-digit'
@@ -157,7 +157,7 @@
 									tabindex="0"
 								>
 									<span class="line-clamp-1"
-										>{cleanseMarkdown(ticket.notes) || $t('history.addNote')}</span
+										>{cleanseMarkdown(ticket.notes) || t('history.addNote')}</span
 									>
 									<Pencil
 										class="w-3 h-3 opacity-0 group-hover/note:opacity-100 transition-opacity"

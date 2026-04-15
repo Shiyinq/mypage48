@@ -36,10 +36,10 @@
 					<Key class="w-7 h-7 text-white" />
 				</div>
 				<h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
-					{$t('settings.developer.generated')}
+					{t('settings.developer.generated')}
 				</h3>
 				<p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-					{$t('settings.developer.copyInfo')}
+					{t('settings.developer.copyInfo')}
 				</p>
 			</div>
 
@@ -52,7 +52,7 @@
 				<button
 					class="absolute top-3 right-3 p-2 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-500 transition-all shadow-sm cursor-pointer"
 					onclick={handleCopy}
-					title={$t('settings.developer.copied')}
+					title={t('settings.developer.copied')}
 				>
 					<Copy class="w-4 h-4" />
 				</button>
@@ -62,7 +62,7 @@
 				class="w-full py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-xl font-bold hover:bg-black dark:hover:bg-white transition-colors cursor-pointer"
 				onclick={handleClose}
 			>
-				{$t('settings.developer.savedKey')}
+				{t('settings.developer.savedKey')}
 			</button>
 		</div>
 	</div>

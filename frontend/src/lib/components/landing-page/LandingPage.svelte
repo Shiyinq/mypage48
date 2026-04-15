@@ -15,32 +15,32 @@
 	// Make features reactive to language changes
 	let features = $derived([
 		{
-			title: $t('landing.features.theater.title'),
-			description: $t('landing.features.theater.description'),
+			title: t('landing.features.theater.title'),
+			description: t('landing.features.theater.description'),
 			icon: Ticket,
 			color: 'text-red-500',
 			iconBg: 'bg-red-50 dark:bg-red-500/10',
 			type: 'theater'
 		},
 		{
-			title: $t('landing.features.twoShot.title'),
-			description: $t('landing.features.twoShot.description'),
+			title: t('landing.features.twoShot.title'),
+			description: t('landing.features.twoShot.description'),
 			icon: Camera,
 			color: 'text-pink-500',
 			iconBg: 'bg-pink-50 dark:bg-pink-500/10',
 			type: 'twoshot'
 		},
 		{
-			title: $t('landing.features.memories.title'),
-			description: $t('landing.features.memories.description'),
+			title: t('landing.features.memories.title'),
+			description: t('landing.features.memories.description'),
 			icon: Users,
 			color: 'text-blue-500',
 			iconBg: 'bg-blue-50 dark:bg-blue-500/10',
 			type: 'memories'
 		},
 		{
-			title: $t('landing.features.achievements.title'),
-			description: $t('landing.features.achievements.description'),
+			title: t('landing.features.achievements.title'),
+			description: t('landing.features.achievements.description'),
 			icon: Trophy,
 			color: 'text-yellow-500',
 			iconBg: 'bg-yellow-50 dark:bg-yellow-500/10',
@@ -55,13 +55,13 @@
 		}
 	}
 	let heroDescription = $derived(
-		$t('landing.hero.description', {
-			highlight: `<span class="text-slate-800 dark:text-slate-200 font-bold decoration-red-200 decoration-2 underline-offset-4">${$t('landing.hero.highlight')}</span>`
+		t('landing.hero.description', {
+			highlight: `<span class="text-slate-800 dark:text-slate-200 font-bold decoration-red-200 decoration-2 underline-offset-4">${t('landing.hero.highlight')}</span>`
 		})
 	);
 </script>
 
-<SEO title="Home" path="/" description={$t('seo.landing')} />
+<SEO title="Home" path="/" description={t('seo.landing')} />
 
 <div
 	role="presentation"
@@ -80,9 +80,9 @@
 				class="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 dark:text-white leading-[0.9] pointer-events-auto"
 				style="transform: translate({$mouse.x * 30}px, {$mouse.y * 30}px)"
 			>
-				{$t('landing.hero.titlePrefix')} <br />
+				{t('landing.hero.titlePrefix')} <br />
 				<span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-500">
-					{$t('landing.hero.titleSuffix')}
+					{t('landing.hero.titleSuffix')}
 				</span>
 			</h1>
 		</div>
@@ -107,11 +107,11 @@
 				href="/register"
 				class="group relative inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-red-600 text-white font-bold text-base shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-1 transition-all duration-300"
 			>
-				{$t('landing.hero.getStarted')}
+				{t('landing.hero.getStarted')}
 				<Rocket size={20} class="group-hover:rotate-12 transition-transform" />
 			</a>
 			<p class="mt-6 text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">
-				{$t('landing.hero.openSource')}
+				{t('landing.hero.openSource')}
 			</p>
 		</div>
 

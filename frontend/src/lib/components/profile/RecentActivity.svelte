@@ -18,12 +18,12 @@
 		const now = new Date();
 		const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
-		if (diffDays === 0) return $t('time.relative.today');
-		if (diffDays === 1) return $t('time.relative.yesterday');
-		if (diffDays < 7) return $t('time.relative.daysAgo', { count: diffDays });
-		if (diffDays < 30) return $t('time.relative.weeksAgo', { count: Math.floor(diffDays / 7) });
+		if (diffDays === 0) return t('time.relative.today');
+		if (diffDays === 1) return t('time.relative.yesterday');
+		if (diffDays < 7) return t('time.relative.daysAgo', { count: diffDays });
+		if (diffDays < 30) return t('time.relative.weeksAgo', { count: Math.floor(diffDays / 7) });
 
-		return $formatDate(date, {
+		return formatDate(date, {
 			month: 'short',
 			day: 'numeric'
 		});
@@ -33,7 +33,7 @@
 <div class="glass-panel p-6 rounded-3xl">
 	<h4 class="font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
 		<TrendingUp class="w-4 h-4 text-red-500" />
-		{$t('profile.recentActivity.title')}
+		{t('profile.recentActivity.title')}
 	</h4>
 
 	<div
@@ -60,8 +60,8 @@
 		{:else if recentActivity.length === 0}
 			<div class="text-center py-8 text-gray-500">
 				<Music class="w-8 h-8 mx-auto mb-2 text-gray-300" />
-				<p class="text-sm">{$t('profile.recentActivity.noActivity')}</p>
-				<p class="text-xs text-gray-400">{$t('profile.recentActivity.startTracking')}</p>
+				<p class="text-sm">{t('profile.recentActivity.noActivity')}</p>
+				<p class="text-xs text-gray-400">{t('profile.recentActivity.startTracking')}</p>
 			</div>
 		{:else}
 			{#each recentActivity as show}
@@ -83,8 +83,8 @@
 						<div class="flex justify-between items-start">
 							<p class="text-sm font-bold text-gray-800 dark:text-gray-200">
 								{show.hasTwoShot
-									? $t('profile.recentActivity.twoShotAt')
-									: $t('profile.recentActivity.attended')} '{show.title}'
+									? t('profile.recentActivity.twoShotAt')
+									: t('profile.recentActivity.attended')} '{show.title}'
 							</p>
 							<span class="text-[10px] font-medium text-gray-400"
 								>{formatActivityDate(show.date)}</span

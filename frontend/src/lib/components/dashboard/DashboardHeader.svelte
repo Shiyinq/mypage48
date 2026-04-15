@@ -3,7 +3,7 @@
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { MONTHS } from '$lib/constants';
-	import type { DashboardFilterState } from '$lib/stores/dashboard';
+	import type { DashboardFilterState } from '$lib/stores/dashboard.svelte';
 
 	const { t } = useTranslation();
 
@@ -33,12 +33,12 @@
 
 		return `${startMonthStr} - ${endMonthStr} ${filter.selectedYear}`;
 	}
-	let displayLabel = $derived(filter ? getFilterLabel(filter, $t) : '');
+	let displayLabel = $derived(filter ? getFilterLabel(filter, t) : '');
 </script>
 
 <PageHeader
-	title={$t('dashboard.title')}
-	subtitle={$t('dashboard.subtitle')}
+	title={t('dashboard.title')}
+	subtitle={t('dashboard.subtitle')}
 	icon={LayoutDashboard}
 	theme="red"
 >
@@ -59,7 +59,7 @@
 				}`}
 			>
 				<Filter class="w-4 h-4" />
-				<span class="hidden sm:inline">{$t('common.filters')}</span>
+				<span class="hidden sm:inline">{t('common.filters')}</span>
 			</button>
 		</div>
 	{/snippet}

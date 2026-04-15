@@ -134,7 +134,7 @@
 				class="font-black text-sm uppercase tracking-widest text-gray-400 flex items-center gap-2"
 			>
 				<MapPin class="w-4 h-4" />
-				{$t('dashboard.seatMap.title')}
+				{t('dashboard.seatMap.title')}
 			</h3>
 
 			<div class="flex items-center gap-2 sm:gap-3 ml-auto">
@@ -144,7 +144,7 @@
 					<span class="text-red-500 dark:text-red-400 font-black"
 						>{rowStats.uniqueVisited}/{THEATER_ROWS.length}</span
 					>
-					{$t('dashboard.seatMap.rowsCollected')}
+					{t('dashboard.seatMap.rowsCollected')}
 				</div>
 
 				<div class="bg-gray-100/50 dark:bg-gray-800/50 p-1 rounded-full flex items-center gap-1">

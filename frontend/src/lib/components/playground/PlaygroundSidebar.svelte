@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Search, ChevronRight, Hash, Eye, EyeOff, X, Lock, PanelLeftClose } from 'lucide-svelte';
-	import { playgroundStore } from '$lib/stores/playground';
+	import { playgroundStore } from '$lib/stores/playground.svelte';
 
 	import { slide } from 'svelte/transition';
 	import type { OpenAPIEndpoint } from '$lib/types';
@@ -75,11 +75,11 @@
 					<span
 						class="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400"
 					>
-						{$t('playground.configTitle')}
+						{t('playground.configTitle')}
 					</span>
 					{#if ($playgroundStore.apiKey || $playgroundStore.useSession) && !isConfigExpanded}
 						<span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-							({$t('playground.configActive')})
+							({t('playground.configActive')})
 						</span>
 					{/if}
 				</div>
@@ -93,7 +93,7 @@
 				<button
 					onclick={() => playgroundStore.toggleSidebar()}
 					class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-gray-400 hover:text-red-500 cursor-pointer"
-					title={$t('playground.hideSidebar')}
+					title={t('playground.hideSidebar')}
 				>
 					<PanelLeftClose class="w-5 h-5" />
 				</button>
@@ -113,19 +113,19 @@
 					<div class="flex flex-col">
 						<div class="flex items-center gap-2">
 							<span class="text-[10px] font-bold text-gray-700 dark:text-gray-300"
-								>{$t('playground.useSessionLabel')}</span
+								>{t('playground.useSessionLabel')}</span
 							>
 							{#if $playgroundStore.useSession}
 								<span
 									class="flex items-center gap-1 text-[8px] font-bold text-emerald-500 animate-pulse"
 								>
 									<div class="w-1 h-1 rounded-full bg-emerald-500"></div>
-									{$t('playground.configActive')}
+									{t('playground.configActive')}
 								</span>
 							{/if}
 						</div>
 						<span class="text-[9px] text-gray-500 dark:text-gray-500 leading-tight"
-							>{$t('playground.useSessionDescription')}</span
+							>{t('playground.useSessionDescription')}</span
 						>
 					</div>
 					<label class="relative inline-flex items-center cursor-pointer scale-90 origin-right">
@@ -151,13 +151,13 @@
 							for="global-api-key"
 							class="text-[10px] font-bold text-gray-400 dark:text-gray-500"
 						>
-							{$t('playground.apiKeyLabel')}
+							{t('playground.apiKeyLabel')}
 						</label>
 						{#if $playgroundStore.apiKey && !$playgroundStore.useSession}
 							<span
 								class="flex items-center gap-1 text-[9px] font-bold text-emerald-500 animate-pulse"
 							>
-								{$t('playground.configActive')}
+								{t('playground.configActive')}
 							</span>
 						{/if}
 					</div>
@@ -165,7 +165,7 @@
 						<input
 							id="global-api-key"
 							type={showApiKey ? 'text' : 'password'}
-							placeholder={$t('playground.apiKeyPlaceholder')}
+							placeholder={t('playground.apiKeyPlaceholder')}
 							value={$playgroundStore.apiKey || ''}
 							oninput={(e) => {
 								playgroundStore.setApiKey(e.currentTarget.value);
@@ -207,7 +207,7 @@
 			<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 			<input
 				type="text"
-				placeholder={$t('playground.searchPlaceholder')}
+				placeholder={t('playground.searchPlaceholder')}
 				bind:value={searchQuery}
 				class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-zinc-800 border-none rounded-xl text-sm focus:ring-1 focus:ring-red-500 transition-all"
 				autocomplete="off"

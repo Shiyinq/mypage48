@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { Member } from '$lib/apis/members';
-	import { membersStore } from '$lib/stores/theater';
+	import { membersStore } from '$lib/stores/theater.svelte';
 	import { showToast } from '$lib/stores';
 	import SEO from '$lib/components/SEO.svelte';
 	import SorterGenerationSelect from '$lib/components/sorter/SorterGenerationSelect.svelte';
@@ -84,7 +84,7 @@
 			generations = gens.sort((a, b) => parseInt(a) - parseInt(b));
 			selectedGenerations = new Set();
 		} catch {
-			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
+			showToast(t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		} finally {
 			loadingGenerations = false;
 		}
@@ -111,7 +111,7 @@
 	function startSort() {
 		selectedMembers = allMembers.filter((m) => selectedGenerations.has(m.generation));
 		if (selectedMembers.length < 2) {
-			showToast($t('theater.sorter.minSelection'), 'error');
+			showToast(t('theater.sorter.minSelection'), 'error');
 			return;
 		}
 		selectedMembers = [...selectedMembers].sort(() => Math.random() - 0.5);
@@ -286,11 +286,11 @@
 			.slice(0, 10)
 			.map((r) => `#${r.rank} ${r.name}`)
 			.join('\n');
-		const shareText = `${$t('theater.sorter.shareTextHeader')}\n${text}\n\n${$t('theater.sorter.shareTextFooter')} ${window.location.origin}/jkt48/sorter`;
+		const shareText = `${t('theater.sorter.shareTextHeader')}\n${text}\n\n${t('theater.sorter.shareTextFooter')} ${window.location.origin}/jkt48/sorter`;
 		if (navigator.share) {
 			try {
 				await navigator.share({
-					title: $t('theater.sorter.shareTitle'),
+					title: t('theater.sorter.shareTitle'),
 					text: shareText,
 					url: window.location.href
 				});
@@ -300,12 +300,12 @@
 			}
 		}
 		const copied = await copyToClipboard(shareText);
-		if (copied) showToast($t('theater.sorter.copySuccess'), 'success');
-		else showToast($t('theater.sorter.copyFailed'), 'error');
+		if (copied) showToast(t('theater.sorter.copySuccess'), 'success');
+		else showToast(t('theater.sorter.copyFailed'), 'error');
 	}
 </script>
 
-<SEO title={$t('theater.sorter.title')} path="/jkt48/sorter" description={$t('seo.sorter')} />
+<SEO title={t('theater.sorter.title')} path="/jkt48/sorter" description={t('seo.sorter')} />
 
 <div
 	class="w-full flex flex-col items-center justify-start min-h-[calc(100svh-120px)] pt-4 md:pt-6 pb-12"
@@ -315,12 +315,12 @@
 			<h1
 				class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-3"
 			>
-				{$t('theater.sorter.title')}
+				{t('theater.sorter.title')}
 			</h1>
 			<p
 				class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto uppercase tracking-widest leading-relaxed"
 			>
-				{$t('theater.sorter.subtitle')}
+				{t('theater.sorter.subtitle')}
 			</p>
 		</div>
 

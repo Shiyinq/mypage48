@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { authStore } from '$lib/stores/auth';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { getErrorMessage } from '$lib/utils/api';
@@ -28,7 +28,7 @@
 	onMount(() => {
 		token = $page.url.searchParams.get('token') || '';
 		if (!token) {
-			error = $t('auth.resetPassword.invalidToken');
+			error = t('auth.resetPassword.invalidToken');
 		}
 	});
 
@@ -72,7 +72,7 @@
 				confirm_password: confirmPassword
 			});
 			isSuccess = true;
-			showToast($t('auth.resetPassword.successToast'), 'success');
+			showToast(t('auth.resetPassword.successToast'), 'success');
 			setTimeout(() => {
 				goto('/login');
 			}, 2000);
@@ -99,14 +99,14 @@
 </script>
 
 <SEO
-	title={$t('auth.resetPassword.title')}
+	title={t('auth.resetPassword.title')}
 	path="/auth/reset-password"
-	description={$t('seo.resetPassword')}
+	description={t('seo.resetPassword')}
 />
 
 <AuthLayout
-	title={$t('auth.resetPassword.title')}
-	subtitle={isSuccess ? $t('auth.resetPassword.successMessage') : $t('auth.resetPassword.subtitle')}
+	title={t('auth.resetPassword.title')}
+	subtitle={isSuccess ? t('auth.resetPassword.successMessage') : t('auth.resetPassword.subtitle')}
 	icon={ShieldCheck}
 >
 	{#if isSuccess}
@@ -117,7 +117,7 @@
 				<CircleCheck class="w-10 h-10 text-green-500" />
 			</div>
 			<h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2">
-				{$t('auth.resetPassword.successTitle')}
+				{t('auth.resetPassword.successTitle')}
 			</h1>
 		</div>
 	{:else}
@@ -133,7 +133,7 @@
 				<PasswordInput
 					id="new-password"
 					name="newPassword"
-					label={$t('auth.resetPassword.newPassword')}
+					label={t('auth.resetPassword.newPassword')}
 					placeholder="••••••••"
 					bind:value={newPassword}
 					error={errors.newPassword}
@@ -149,7 +149,7 @@
 				<PasswordInput
 					id="confirm-password"
 					name="confirmPassword"
-					label={$t('auth.resetPassword.confirmPassword')}
+					label={t('auth.resetPassword.confirmPassword')}
 					placeholder="••••••••"
 					bind:value={confirmPassword}
 					error={errors.confirmPassword}
@@ -176,9 +176,9 @@
 				class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:shadow-md hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer border border-white/20"
 			>
 				{#if isLoading}
-					<LoaderCircle class="w-5 h-5 animate-spin" /> {$t('auth.resetPassword.submitting')}
+					<LoaderCircle class="w-5 h-5 animate-spin" /> {t('auth.resetPassword.submitting')}
 				{:else}
-					{$t('auth.resetPassword.submit')}
+					{t('auth.resetPassword.submit')}
 				{/if}
 			</button>
 		</form>
@@ -191,7 +191,7 @@
 				class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors inline-flex items-center gap-2"
 			>
 				<ArrowLeft class="w-4 h-4" />
-				{$t('auth.forgotPassword.backToLogin')}
+				{t('auth.forgotPassword.backToLogin')}
 			</a>
 		</div>
 	{/snippet}

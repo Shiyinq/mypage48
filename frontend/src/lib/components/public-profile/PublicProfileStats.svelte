@@ -27,7 +27,7 @@
 					<TrendingUp class="w-4 h-4" />
 				</div>
 				<span class="text-sm font-bold uppercase tracking-widest"
-					>{$t('profile.publicActivity.yearSummary', { year: displayYear })}</span
+					>{t('profile.publicActivity.yearSummary', { year: displayYear })}</span
 				>
 			</div>
 			<div class="flex items-end justify-between">
@@ -38,7 +38,7 @@
 						{stats.totalShows}
 					</div>
 					<div class="font-bold text-gray-400 text-sm uppercase tracking-widest ml-1">
-						{$t('profile.stats.totalShows')}
+						{t('profile.stats.totalShows')}
 					</div>
 				</div>
 				<div class="opacity-10 dark:opacity-[0.05] transform rotate-12 mb-2 mr-2">
@@ -62,7 +62,7 @@
 				{stats.totalTwoShots}
 			</span>
 			<span class="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-				{$t('dashboard.twoShot.twoShotTitle')}
+				{t('dashboard.twoShot.twoShotTitle')}
 			</span>
 		</div>
 	</div>
@@ -81,7 +81,7 @@
 				{stats.topRow || '-'}
 			</span>
 			<span class="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-				{$t('dashboard.theater.topRow')}
+				{t('dashboard.theater.topRow')}
 			</span>
 		</div>
 	</div>
@@ -98,7 +98,7 @@
 			</div>
 			<div class="flex-1 min-w-0">
 				<div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
-					{$t('dashboard.theater.topShow')}
+					{t('dashboard.theater.topShow')}
 				</div>
 				<div
 					class="font-black leading-tight text-xl sm:text-2xl line-clamp-2 md:truncate mb-1"
@@ -110,7 +110,7 @@
 					<div
 						class="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 dark:bg-zinc-800 text-xs font-bold text-gray-500 dark:text-gray-400"
 					>
-						{$t('profile.publicActivity.watchedTimes', { count: stats.topShowCount })}
+						{t('profile.publicActivity.watchedTimes', { count: stats.topShowCount })}
 					</div>
 				{/if}
 			</div>

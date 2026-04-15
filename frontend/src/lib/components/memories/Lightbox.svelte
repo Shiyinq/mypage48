@@ -61,7 +61,7 @@
 						class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-md border border-white/10"
 					>
 						<Calendar class="w-3.5 h-3.5" />
-						{$formatDate(selectedImage.date, {
+						{formatDate(selectedImage.date, {
 							day: 'numeric',
 							month: 'long',
 							year: 'numeric'

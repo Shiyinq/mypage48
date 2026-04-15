@@ -1,5 +1,5 @@
 import { client, API_BASE } from './client';
-import { accessToken } from '$lib/stores/accessToken';
+import { accessToken } from '$lib/stores/accessToken.svelte';
 import type {
 	LoginRequest,
 	RegisterRequest,

@@ -1,4 +1,4 @@
-import { adminStore } from '$lib/stores/admin';
+import { adminStore } from '$lib/stores/admin.svelte';
 
 import { browser } from '$app/environment';
 

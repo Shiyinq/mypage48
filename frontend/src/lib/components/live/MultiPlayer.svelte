@@ -151,7 +151,7 @@
 							if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
 								console.log('Proxy/Stream 404 detected, triggering offline');
 								onoffline?.();
-								error = $t('theater.live.offline');
+								error = t('theater.live.offline');
 								if (hls) hls.destroy();
 								loading = false;
 								return;
@@ -169,7 +169,7 @@
 										break;
 									default:
 										console.error('Fatal unrecoverable error:', data);
-										error = $t('theater.live.multiview.stream_error', {
+										error = t('theater.live.multiview.stream_error', {
 											details: data.details || 'Unknown error'
 										});
 										if (hls) hls.destroy();
@@ -190,11 +190,11 @@
 						loading = false;
 					});
 				} else {
-					error = $t('theater.live.multiview.hls_not_supported');
+					error = t('theater.live.multiview.hls_not_supported');
 					loading = false;
 				}
 			} else {
-				error = $t('theater.live.multiview.no_stream_found');
+				error = t('theater.live.multiview.no_stream_found');
 				loading = false;
 			}
 		} catch (_e: unknown) {
@@ -202,7 +202,7 @@
 			if ((_e as { status?: number })?.status === 404) {
 				onoffline?.();
 			}
-			error = $t('theater.live.multiview.failed_load_stream');
+			error = t('theater.live.multiview.failed_load_stream');
 			loading = false;
 		} finally {
 			initializing = false;
@@ -314,10 +314,10 @@
 				<RefreshCw class="w-8 h-8 text-white" />
 			</div>
 			<p class="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-white">
-				{$t('theater.live.multiview.tap_to_play')}
+				{t('theater.live.multiview.tap_to_play')}
 			</p>
 			<p class="mt-1 text-white/40 text-[8px] font-bold uppercase tracking-widest text-center px-4">
-				{$t('theater.live.autoplay_description')}
+				{t('theater.live.autoplay_description')}
 			</p>
 		</button>
 	{:else if isBuffering && !loading}
@@ -350,7 +350,7 @@
 				onclick={initPlayer}
 				class="mt-4 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold rounded-lg transition-colors"
 			>
-				{$t('theater.live.multiview.retry')}
+				{t('theater.live.multiview.retry')}
 			</button>
 		</div>
 	{/if}

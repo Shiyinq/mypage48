@@ -40,7 +40,7 @@
 			class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2"
 		>
 			<Camera class="w-4 h-4" />
-			{$t('forms.twoShotDetails')}
+			{t('forms.twoShotDetails')}
 		</h3>
 		<button
 			type="button"
@@ -61,7 +61,7 @@
 				<label
 					for="two-shot-photo"
 					class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1"
-					>{$t('forms.twoShotPhoto')}</label
+					>{t('forms.twoShotPhoto')}</label
 				>
 				<button
 					type="button"
@@ -83,7 +83,7 @@
 						<div
 							class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs"
 						>
-							{$t('forms.changePhoto')}
+							{t('forms.changePhoto')}
 						</div>
 					{:else}
 						<div
@@ -92,7 +92,7 @@
 								: 'text-red-400 dark:text-red-500'}"
 						>
 							<Camera class="w-6 h-6 mb-1" />
-							<span class="text-xs font-medium">{$t('forms.uploadPhoto')}</span>
+							<span class="text-xs font-medium">{t('forms.uploadPhoto')}</span>
 						</div>
 					{/if}
 				</button>
@@ -101,14 +101,14 @@
 			<div>
 				<label
 					class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-					for="member-selector">{$t('forms.memberName')}</label
+					for="member-selector">{t('forms.memberName')}</label
 				>
 				<div id="member-selector">
 					<MemberSelector
 						bind:value={memberName}
-						placeholder={$t('forms.memberNamePlaceholder')}
-						title={$t('forms.selectMember')}
-						subtitle={$t('forms.selectMemberDesc')}
+						placeholder={t('forms.memberNamePlaceholder')}
+						title={t('forms.selectMember')}
+						subtitle={t('forms.selectMemberDesc')}
 					/>
 				</div>
 			</div>
@@ -117,7 +117,7 @@
 				<div>
 					<label
 						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-						for="twoshot-type">{$t('forms.type')}</label
+						for="twoshot-type">{t('forms.type')}</label
 					>
 					<div class="relative">
 						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -139,7 +139,7 @@
 				<div>
 					<label
 						class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-						for="twoshot-price">{$t('forms.price')}</label
+						for="twoshot-price">{t('forms.price')}</label
 					>
 					<div class="relative">
 						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">

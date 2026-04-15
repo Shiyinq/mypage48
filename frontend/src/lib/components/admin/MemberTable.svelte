@@ -23,11 +23,11 @@
 				<tr
 					class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 				>
-					<th class="p-4">{$t('admin.members.table.memberInfo')}</th>
-					<th class="p-4">{$t('admin.members.table.generation')}</th>
-					<th class="p-4">{$t('admin.members.table.jikoshoukai')}</th>
-					<th class="p-4">{$t('admin.members.table.status')}</th>
-					<th class="p-4 text-right">{$t('admin.members.table.actions')}</th>
+					<th class="p-4">{t('admin.members.table.memberInfo')}</th>
+					<th class="p-4">{t('admin.members.table.generation')}</th>
+					<th class="p-4">{t('admin.members.table.jikoshoukai')}</th>
+					<th class="p-4">{t('admin.members.table.status')}</th>
+					<th class="p-4 text-right">{t('admin.members.table.actions')}</th>
 				</tr>
 			</thead>
 			<tbody class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700">
@@ -66,7 +66,7 @@
 						</td>
 						<td class="p-4">
 							<span class="text-sm font-medium text-gray-600 dark:text-gray-400">
-								{$t('admin.members.table.gen', { gen: member.generation })}
+								{t('admin.members.table.gen', { gen: member.generation })}
 							</span>
 						</td>
 						<td class="p-4 max-w-xs">
@@ -81,8 +81,8 @@
 									: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'}"
 							>
 								{member.active
-									? $t('admin.members.table.active')
-									: $t('admin.members.table.graduated')}
+									? t('admin.members.table.active')
+									: t('admin.members.table.graduated')}
 							</span>
 						</td>
 						<td class="p-4 text-right">
