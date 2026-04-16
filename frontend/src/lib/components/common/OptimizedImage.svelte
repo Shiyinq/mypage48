@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-	import { ImageIcon } from 'lucide-svelte';
+	import { ImageIcon, LoaderCircle } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
 	interface Props {
@@ -32,7 +32,7 @@
 		onkeydown
 	}: Props = $props();
 
-	let isLoaded = $state(loadedImageUrls.has(src));
+	let isLoaded = $state(false);
 	let isError = $state(false);
 	let imgRef: HTMLImageElement | undefined = $state();
 
@@ -52,8 +52,8 @@
 		}
 	});
 
-	// Reset state when src changes
-	$effect(() => {
+	// Synchronize state with src changes and initial cache check
+	$effect.pre(() => {
 		if (src) {
 			const alreadyLoaded = loadedImageUrls.has(src);
 			isLoaded = alreadyLoaded;
@@ -72,8 +72,10 @@
 	<!-- Placeholder / Skeleton -->
 	{#if !isLoaded && !isError}
 		<div
-			class="absolute inset-0 z-0 animate-pulse bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-700"
-		></div>
+			class="absolute inset-0 z-0 animate-pulse bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center"
+		>
+			<LoaderCircle class="w-5 h-5 text-gray-300 dark:text-zinc-600 animate-spin" />
+		</div>
 	{/if}
 
 	<!-- Error State -->
