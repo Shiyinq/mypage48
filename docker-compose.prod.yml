@@ -160,6 +160,8 @@ services:
       - .env
     environment:
       MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017
+      DB_NAME: ${DB_NAME}
+      ENV: ${ENV:-prod}
       FLARESOLVERR_URL: http://flaresolverr:8191/v1
     depends_on:
       - mongodb
