@@ -7,14 +7,23 @@
 	import { onMount } from 'svelte';
 
 	interface Props {
-		src: string;
-		alt: string;
+		src?: string | null;
+		alt?: string;
 		class?: string;
 		style?: string;
 		loading?: 'lazy' | 'eager';
 		objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
 		aspectRatio?: string;
 		fallback?: boolean;
+		referrerPolicy?:
+			| 'no-referrer'
+			| 'no-referrer-when-downgrade'
+			| 'origin'
+			| 'origin-when-cross-origin'
+			| 'same-origin'
+			| 'strict-origin'
+			| 'strict-origin-when-cross-origin'
+			| 'unsafe-url';
 		onclick?: (e: MouseEvent) => void;
 		onkeydown?: (e: KeyboardEvent) => void;
 	}
@@ -28,6 +37,7 @@
 		objectFit = 'cover',
 		aspectRatio = 'auto',
 		fallback = true,
+		referrerPolicy,
 		onclick,
 		onkeydown
 	}: Props = $props();
@@ -94,6 +104,7 @@
 			{src}
 			{alt}
 			{loading}
+			referrerpolicy={referrerPolicy}
 			class="w-full h-full transition-all duration-1000 ease-out {isLoaded
 				? 'opacity-100 scale-100 blur-0'
 				: 'opacity-0 scale-[1.05] blur-md'}"

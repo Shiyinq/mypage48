@@ -321,7 +321,7 @@
 											alt={currentMember.name}
 											class="w-full h-full grayscale-[10%] group-hover:grayscale-0 transition-all duration-700"
 										/>
-										<img
+										<OptimizedImage
 											src={frameImg}
 											alt="frame"
 											class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 scale-[1.05]"

@@ -5,6 +5,7 @@
 	import type { Member } from '$lib/apis/members';
 	import { fade } from 'svelte/transition';
 	import { getMemberFrame } from '$lib/constants';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const { t } = useTranslation();
 
@@ -35,11 +36,6 @@
 		onundo,
 		onexit
 	}: Props = $props();
-
-	function handleImageError(e: Event) {
-		const target = e.currentTarget as HTMLImageElement;
-		target.src = 'https://placehold.co/640x960?text=JKT48';
-	}
 
 	function handleSelect(flag: number) {
 		onselect?.(flag);
@@ -109,14 +105,13 @@
 						: ''
 			}`}
 		>
-			<img
-				src={getExternalMediaUrl(leftMember?.img)}
-				alt={leftMember?.name}
+			<OptimizedImage
+				src={getExternalMediaUrl(leftMember?.img) || ''}
+				alt={leftMember?.name || ''}
 				class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-				onerror={handleImageError}
 			/>
-			<img
-				src={getMemberFrame(leftMember?.member_type)}
+			<OptimizedImage
+				src={getMemberFrame(leftMember?.member_type) || ''}
 				alt="frame"
 				class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 			/>
@@ -186,14 +181,13 @@
 						: ''
 			}`}
 		>
-			<img
-				src={getExternalMediaUrl(rightMember?.img)}
-				alt={rightMember?.name}
+			<OptimizedImage
+				src={getExternalMediaUrl(rightMember?.img) || ''}
+				alt={rightMember?.name || ''}
 				class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-				onerror={handleImageError}
 			/>
-			<img
-				src={getMemberFrame(rightMember?.member_type)}
+			<OptimizedImage
+				src={getMemberFrame(rightMember?.member_type) || ''}
 				alt="frame"
 				class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 			/>

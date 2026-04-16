@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ComponentType } from 'svelte';
 	import { Eye, EyeOff, Crown } from 'lucide-svelte';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		title: string;
@@ -94,7 +95,7 @@
 				<div
 					class="w-10 h-10 -ml-1 rounded-full overflow-hidden border-2 border-white dark:border-gray-700 shadow-md flex-shrink-0 bg-gray-100 dark:bg-gray-800"
 				>
-					<img src={image} alt={title} class="w-full h-full object-cover" />
+					<OptimizedImage src={image} alt={title} class="w-full h-full object-cover" />
 				</div>
 			{:else if icon}
 				{@const SvelteComponent = icon}

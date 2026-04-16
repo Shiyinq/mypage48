@@ -28,6 +28,7 @@
 		Trash2
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { OptimizedImage } from '$lib/components/common';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import MultiPlayer from '$lib/components/live/MultiPlayer.svelte';
@@ -497,12 +498,8 @@
 									: 'border-transparent hover:border-red-500/20 hover:bg-slate-50 dark:hover:bg-zinc-800/50'}"
 							>
 								<div class="relative shrink-0">
-									<img
+									<OptimizedImage
 										src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar}
-										onerror={(e) => {
-											if (e.currentTarget instanceof HTMLImageElement)
-												e.currentTarget.src = fallbackAvatar;
-										}}
 										alt={stream.member?.name || 'Member'}
 										class="w-10 h-10 rounded-lg object-cover {isSelected
 											? 'grayscale-[0.5] opacity-80'
@@ -600,12 +597,8 @@
 							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-gradient-to-b from-black/60 to-transparent"
 						>
 							<div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
-								<img
+								<OptimizedImage
 									src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar}
-									onerror={(e) => {
-										if (e.currentTarget instanceof HTMLImageElement)
-											e.currentTarget.src = fallbackAvatar;
-									}}
 									alt={stream.member?.name || 'Member'}
 									class="w-8 h-8 rounded-lg object-cover border border-white/20 shadow-lg shrink-0"
 								/>

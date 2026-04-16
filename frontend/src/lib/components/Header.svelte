@@ -12,6 +12,7 @@
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
 	import { crossfade } from 'svelte/transition';
 	import { cubicInOut } from 'svelte/easing';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const [send, receive] = crossfade({
 		duration: 300,
@@ -94,10 +95,10 @@
 					{#if isLoading}
 						<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
 					{:else if userProfile.data?.oshi?.profilePicture || userProfile.data?.profilePicture}
-						<img
+						<OptimizedImage
 							src={userProfile.data?.oshi?.profilePicture
 								? getExternalMediaUrl(userProfile.data.oshi.profilePicture)
-								: userProfile.data?.profilePicture}
+								: userProfile.data?.profilePicture || ''}
 							alt="Profile"
 							class="w-full h-full object-cover"
 						/>

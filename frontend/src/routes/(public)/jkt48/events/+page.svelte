@@ -17,6 +17,7 @@
 	import { formatDate, formatTime } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';
 	import { getMemberFrame } from '$lib/constants';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const { t } = useTranslation();
 
@@ -102,7 +103,7 @@
 							class="relative group aspect-[3/4] rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-300"
 						>
 							{#if member.img}
-								<img
+								<OptimizedImage
 									src={getExternalMediaUrl(member.img)}
 									alt={member.name}
 									class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
@@ -119,7 +120,7 @@
 								class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-20"
 							></div>
 
-							<img
+							<OptimizedImage
 								src={getMemberFrame(member.member_type)}
 								alt="frame"
 								class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
@@ -222,7 +223,7 @@
 								class="relative w-[40%] sm:w-full sm:h-full shrink-0 overflow-hidden bg-slate-50 dark:bg-zinc-800"
 							>
 								{#if event.imageUrl}
-									<img
+									<OptimizedImage
 										src={event.imageUrl}
 										alt={event.title}
 										class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"

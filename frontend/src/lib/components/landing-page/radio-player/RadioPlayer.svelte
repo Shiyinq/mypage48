@@ -3,6 +3,7 @@
 	import { Play, Pause, SkipForward, Volume2, VolumeX, Music2, Disc, Radio } from 'lucide-svelte';
 	import { radioStore, RADIO_CHANNELS } from '$lib/stores/radio.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const { t } = useTranslation();
 
@@ -68,7 +69,7 @@
 				class:animate-spin-slow={radioStore.isPlaying}
 			>
 				{#if radioStore.currentThumbnail}
-					<img
+					<OptimizedImage
 						src={radioStore.currentThumbnail}
 						alt="Track Art"
 						class="w-[110%] h-[110%] object-cover opacity-60 blur-[2px]"
@@ -87,7 +88,7 @@
 						class="w-24 h-24 rounded-full bg-white dark:bg-zinc-900 shadow-inner border-8 border-black/10 dark:border-white/10 overflow-hidden relative"
 					>
 						{#if radioStore.currentThumbnail}
-							<img
+							<OptimizedImage
 								src={radioStore.currentThumbnail}
 								alt="Art"
 								class="w-full h-full object-cover scale-150"
