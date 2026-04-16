@@ -168,6 +168,23 @@ class StorageRepository:
             logger.error(f"Unexpected error getting file with metadata: {e}")
             return None, None
 
+    def get_file_stream_with_metadata(
+        self, object_name: str
+    ) -> tuple[Optional[any], Optional[str]]:
+        """Get file stream and content type from MinIO."""
+        self._ensure_bucket()
+        try:
+            stat = self.client.stat_object(self.config.minio_bucket, object_name)
+            response = self.client.get_object(self.config.minio_bucket, object_name)
+            return response, stat.content_type
+        except S3Error as e:
+            if e.code != "NoSuchKey":
+                logger.error(f"Failed to get file stream with metadata: {e}")
+            return None, None
+        except Exception as e:
+            logger.error(f"Unexpected error getting file stream with metadata: {e}")
+            return None, None
+
     def get_file_stream(self, object_name: str):
         """Get file stream from MinIO."""
         self._ensure_bucket()
