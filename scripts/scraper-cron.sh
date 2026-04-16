@@ -14,11 +14,11 @@ while true; do
     
     # Run Schedule Sync
     echo "Syncing Schedules..."
-    python src/scraper/jkt48scraper.py --schedule --sync
+    python scraper/jkt48scraper.py --schedule --sync
     
     # Run News Sync
     echo "Syncing News..."
-    python src/scraper/jkt48scraper.py --news --sync
+    python scraper/jkt48scraper.py --news --sync
     
     echo "Scraper run complete. Sleeping for 1 hour to avoid double run."
     sleep 3600
