@@ -88,17 +88,27 @@ def get_schedules_by_month(
         except Exception:
             wib_date = datetime.now()
 
-        ref_code = item.get("reference_code") or item.get("schedule_id", "")
         event_type = item.get("type", "EVENT")
+        schedule_id = str(item.get("schedule_id", ""))
 
+        # EXCLUSIVE events often share the same reference_code for multiple dates.
+        # For these, we MUST use schedule_id to avoid data collision in the DB.
+        if event_type == "EXCLUSIVE":
+            id_val = schedule_id
+        else:
+            # For SHOW and other types, we prioritize reference_code for consistency
+            id_val = str(item.get("reference_code") or schedule_id)
+
+        # For URL generation, we ALWAYS want the reference_code if it exists.
+        url_code = str(item.get("reference_code") or schedule_id)
         url_path = _get_event_url(
-            event_type, str(ref_code), item.get("link", ""), item.get("title", "")
+            event_type, url_code, item.get("link", ""), item.get("title", "")
         )
         label = item.get("jkt48_member_type") or item.get("type") or ""
 
         events.append(
             {
-                "id": str(ref_code),
+                "id": id_val,
                 "label": label,
                 "title": item.get("title") or "",
                 "url": url_path,
