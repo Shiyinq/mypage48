@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 
 from src import dependencies
 from src.auth.schemas import UserCurrent
@@ -45,7 +45,10 @@ async def proxy_storage_media(
 
     content, media_type, status_code = await storage_service.get_internal_media(path)
 
-    return Response(
+    if status_code != 200:
+        return Response(content=content, status_code=status_code, media_type=media_type)
+
+    return StreamingResponse(
         content=content,
         status_code=status_code,
         media_type=media_type,
@@ -70,7 +73,10 @@ async def proxy_external_media(
     """
     content, media_type, status_code = await storage_service.get_external_media(path)
 
-    return Response(
+    if status_code != 200:
+        return Response(content=content, status_code=status_code, media_type=media_type)
+
+    return StreamingResponse(
         content=content,
         status_code=status_code,
         media_type=media_type,

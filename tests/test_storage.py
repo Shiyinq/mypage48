@@ -1,4 +1,5 @@
 import pytest
+import io
 from unittest.mock import AsyncMock, MagicMock
 from src.storage.service import StorageService
 from src.storage.schemas import ImageCategory
@@ -8,12 +9,13 @@ from src.tickets.schemas import TicketResponse
 
 # Mock Repository
 class MockStorageRepository:
-    def __init__(self):
-        self.upload_file = MagicMock()
-        self.get_presigned_url = MagicMock(return_value="https://minio.example.com/bucket/file.jpg")
-        self.file_exists = MagicMock(return_value=True)
-        self.delete_file = MagicMock(return_value=True)
-        self.get_file_with_metadata = MagicMock(return_value=(b"fake_image_content", "image/jpeg"))
+	def __init__(self):
+		self.upload_file = MagicMock()
+		self.get_presigned_url = MagicMock(return_value="https://minio.example.com/bucket/file.jpg")
+		self.file_exists = MagicMock(return_value=True)
+		self.delete_file = MagicMock(return_value=True)
+		self.get_file_with_metadata = MagicMock(return_value=(b"fake_image_content", "image/jpeg"))
+		self.get_file_stream_with_metadata = MagicMock(return_value=(io.BytesIO(b"fake_image_content"), "image/jpeg"))
 
 @pytest.fixture
 def mock_storage_repo():
@@ -222,21 +224,21 @@ async def test_get_external_media_cache_hit(storage_service):
     path = "media/jkt48-member/shani.jpg"
     
     # Mock cache hit
-    storage_service.repository.get_file_with_metadata.return_value = (b"cached_content", "image/jpeg")
+    storage_service.repository.get_file_stream_with_metadata.return_value = (io.BytesIO(b"cached_content"), "image/jpeg")
     
-    content, media_type, status = await storage_service.get_external_media(path)
+    stream, media_type, status = await storage_service.get_external_media(path)
     
     assert status == 200
-    assert content == b"cached_content"
+    assert stream.read() == b"cached_content"
     assert media_type == "image/jpeg"
-    storage_service.repository.get_file_with_metadata.assert_called_with("cache/external/media/jkt48-member/shani.jpg")
+    storage_service.repository.get_file_stream_with_metadata.assert_called_with("cache/external/media/jkt48-member/shani.jpg")
 
 @pytest.mark.asyncio
 async def test_get_external_media_cache_miss(storage_service, monkeypatch):
     path = "media/jkt48-member/new_member.jpg"
     
     # Mock cache miss (returns None)
-    storage_service.repository.get_file_with_metadata.return_value = (None, None)
+    storage_service.repository.get_file_stream_with_metadata.return_value = (None, None)
     
     # Mock httpx.AsyncClient
     mock_client_instance = AsyncMock()
@@ -268,7 +270,9 @@ async def test_api_proxy_external_media(client, storage_service):
     app.dependency_overrides[get_storage_service] = lambda: storage_service
     
     # Mock service response
-    storage_service.get_external_media = AsyncMock(return_value=(b"image_data", "image/png", 200))
+    # StreamingResponse needs an iterable. io.BytesIO(b"...") is an iterable but yields bytes one by one? 
+    # Actually for StreamingResponse, a list of bytes [b"..."] or a generator is better in tests.
+    storage_service.get_external_media = AsyncMock(return_value=([b"image_data"], "image/png", 200))
     
     try:
         response = await client.get("/api/storage/external/member/1.png")
