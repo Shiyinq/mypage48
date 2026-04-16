@@ -363,9 +363,9 @@ class StorageService:
         path = path.lstrip("/")
 
         try:
-            content, content_type = self.repository.get_file_with_metadata(path)
-            if content:
-                return content, content_type or "image/jpeg", 200
+            stream, content_type = self.repository.get_file_stream_with_metadata(path)
+            if stream:
+                return stream, content_type or "image/jpeg", 200
 
             return b"Not Found", "text/plain", 404
         except Exception as e:
@@ -382,10 +382,12 @@ class StorageService:
 
         # 1. Try cache
         try:
-            content, content_type = self.repository.get_file_with_metadata(cache_key)
-            if content:
+            stream, content_type = self.repository.get_file_stream_with_metadata(
+                cache_key
+            )
+            if stream:
                 logger.info(f"Serving external media from cache: {path}")
-                return content, content_type or "image/jpeg", 200
+                return stream, content_type or "image/jpeg", 200
         except Exception as e:
             logger.error(f"Error checking cache for {path}: {e}")
 
