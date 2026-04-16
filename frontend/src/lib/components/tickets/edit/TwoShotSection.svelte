@@ -3,6 +3,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import MemberSelector from '$lib/components/MemberSelector.svelte';
 	import { dragDrop } from '$lib/actions/dragDrop';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		showTwoShot: boolean;
@@ -72,7 +73,12 @@
 						: 'border-red-200 dark:border-red-900/30 bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/10'}"
 				>
 					{#if twoShotImage}
-						<img src={twoShotImage} alt="2shot" class="w-full h-full object-contain" />
+						<OptimizedImage
+							src={twoShotImage}
+							alt="2shot"
+							class="w-full h-full"
+							objectFit="contain"
+						/>
 						<div
 							class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs"
 						>

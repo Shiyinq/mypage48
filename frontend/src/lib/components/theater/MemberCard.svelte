@@ -3,6 +3,7 @@
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	import { getMemberFrame } from '$lib/constants';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		member: Member;
@@ -21,11 +22,10 @@
 	<!-- Member Photo Container -->
 	<div class="relative w-full h-full overflow-hidden bg-gray-100 dark:bg-zinc-800">
 		{#if member.img}
-			<img
+			<OptimizedImage
 				src={getExternalMediaUrl(member.img)}
 				alt={member.name}
-				class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-				loading="lazy"
+				class="w-full h-full transition-transform duration-500 group-hover:scale-110"
 			/>
 		{:else}
 			<div
