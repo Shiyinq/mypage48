@@ -77,9 +77,9 @@
 						></div>
 
 						<!-- Frame Image Overlay -->
-						<OptimizedImage
+						<img
 							src={getMemberFrame(member.member_type)}
-							alt="frame"
+							alt="member frame"
 							class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 						/>
 
