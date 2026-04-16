@@ -160,8 +160,20 @@ services:
       - .env
     environment:
       MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017
+      FLARESOLVERR_URL: http://flaresolverr:8191/v1
     depends_on:
       - mongodb
+      - flaresolverr
+    restart: always
+    networks:
+      - internal_net
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: mypage48-flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - TZ=Asia/Jakarta
     restart: always
     networks:
       - internal_net
