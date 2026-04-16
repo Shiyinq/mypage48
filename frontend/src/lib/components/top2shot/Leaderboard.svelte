@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { TrendingUp, Camera, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 	import type { TopTwoShotMember } from '$lib/types';
 
 	interface Props {
@@ -69,7 +70,11 @@
 					class="w-12 h-12 rounded-full bg-gray-100 dark:bg-zinc-700 flex-shrink-0 overflow-hidden border border-gray-100 dark:border-zinc-600"
 				>
 					{#if member.image}
-						<img src={member.image} alt={member.name} class="w-full h-full object-cover" />
+						<OptimizedImage
+							src={member.image}
+							alt={member.name}
+							class="w-full h-full object-cover"
+						/>
 					{:else}
 						<div
 							class="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-500"

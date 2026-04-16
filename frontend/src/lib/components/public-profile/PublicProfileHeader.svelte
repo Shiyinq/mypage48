@@ -3,6 +3,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { PublicProfileData } from '$lib/types';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		profile: PublicProfileData;
@@ -49,7 +50,11 @@
 			class="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white dark:border-zinc-800 shadow-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 relative"
 		>
 			{#if profile.profilePicture}
-				<img src={profile.profilePicture} alt={profile.name} class="w-full h-full object-cover" />
+				<OptimizedImage
+					src={profile.profilePicture}
+					alt={profile.name}
+					class="w-full h-full object-cover"
+				/>
 			{:else}
 				<div class="w-full h-full flex items-center justify-center text-gray-400">
 					<User class="w-10 h-10 sm:w-12 sm:h-12" />
@@ -76,7 +81,7 @@
 				class="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 bg-white dark:bg-zinc-800 rounded-full p-1 sm:p-1.5 shadow-md border border-gray-100 dark:border-zinc-700 tooltip-container"
 			>
 				<div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-pink-400">
-					<img
+					<OptimizedImage
 						src={getExternalMediaUrl(profile.oshi.profilePicture)}
 						alt={profile.oshi.name}
 						class="w-full h-full object-cover"

@@ -38,7 +38,7 @@
 		{/if}
 
 		<!-- Frame Image Overlay -->
-		<img
+		<OptimizedImage
 			src={frameImg}
 			alt="frame"
 			class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"

@@ -9,6 +9,7 @@
 		liveList,
 		liveStore
 	} from '$lib/stores/live.svelte';
+	import { OptimizedImage } from '$lib/components/common';
 	import { showToast, isImmersive, theme, setTheme } from '$lib/stores';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveStatus } from '$lib/types';
@@ -581,13 +582,13 @@
 					<div
 						class="w-32 h-44 sm:w-40 sm:h-56 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl mb-2 relative group"
 					>
-						<img
+						<OptimizedImage
 							src={getExternalMediaUrl(
 								(platform === 'showroom'
 									? streamFromList?.member?.img || streamFromList?.image
 									: streamFromList?.image || streamFromList?.member?.img) || ''
 							) || fallbackAvatar}
-							alt={streamFromList?.member?.name}
+							alt={streamFromList?.member?.name || ''}
 							class="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
 						/>
 						<div class="absolute inset-0 bg-zinc-950/40 flex items-center justify-center">
@@ -1132,13 +1133,9 @@
 											<div
 												class="w-12 aspect-[3/4] rounded-lg overflow-hidden border border-slate-100 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-800"
 											>
-												<img
+												<OptimizedImage
 													src={getExternalMediaUrl(member.member?.img) || fallbackAvatar}
 													alt={member.member?.name}
-													onerror={(e) => {
-														if (e.currentTarget instanceof HTMLImageElement)
-															e.currentTarget.src = fallbackAvatar;
-													}}
 													class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
 												/>
 											</div>

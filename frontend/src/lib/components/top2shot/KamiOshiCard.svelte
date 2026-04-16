@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Crown, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 	import type { TopTwoShotMember } from '$lib/types';
 
 	interface Props {
@@ -44,7 +45,11 @@
 						class="w-full h-full rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-700 relative"
 					>
 						{#if member.image}
-							<img src={member.image} alt={member.name} class="w-full h-full object-cover" />
+							<OptimizedImage
+								src={member.image}
+								alt={member.name}
+								class="w-full h-full object-cover"
+							/>
 						{:else}
 							<div
 								class="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600"

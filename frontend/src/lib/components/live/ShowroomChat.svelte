@@ -4,6 +4,7 @@
 	import { MessageCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { API_BASE } from '$lib/apis/client';
+	import { OptimizedImage } from '$lib/components/common';
 	import type { LiveChatShowroomMessage } from '$lib/types';
 
 	interface Props {
@@ -164,7 +165,7 @@
 		{#each messages as msg (msg.id)}
 			<div class="flex items-start gap-3 group">
 				{#if msg.avatar}
-					<img
+					<OptimizedImage
 						src={msg.avatar}
 						alt={msg.user}
 						class="w-8 h-8 rounded-full object-cover border border-gray-100 dark:border-zinc-800"

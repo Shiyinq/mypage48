@@ -6,6 +6,7 @@
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		// Props
@@ -227,7 +228,7 @@
 								onclick={() => selectMember(member)}
 							>
 								<div class="relative w-20 h-20 mb-3">
-									<img
+									<OptimizedImage
 										src={getExternalMediaUrl(member.img)}
 										alt={member.name}
 										class="w-full h-full rounded-full object-cover shadow-sm group-hover:shadow-md transition-shadow {selectedMember?.id ===
