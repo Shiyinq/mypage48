@@ -1,11 +1,11 @@
-"""
-Cookie Management Module.
-"""
 import json
 import os
 from typing import Dict
 
-COOKIES_FILE = "cookies.json"
+# Use absolute path for cookies.json relative to this file's directory
+# (Back one level from src/agent/ to scraper/)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+COOKIES_FILE = os.path.join(BASE_DIR, "cookies.json")
 
 
 def get_config_from_file() -> Dict[str, str]:
@@ -40,7 +40,6 @@ def get_cookies_headers() -> Dict[str, str]:
 def save_cookies_from_response(cookie_data: Dict[str, str]):
     """Save new cookies/UA to file."""
     config = get_config_from_file()
-
     # Update fields
     if "cookies" in cookie_data:
         config["cookies"] = cookie_data["cookies"]
