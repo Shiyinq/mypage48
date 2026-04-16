@@ -2,10 +2,10 @@ import json
 import os
 from typing import Dict
 
-# Use absolute path for cookies.json relative to this file's directory
-# (Back one level from src/agent/ to scraper/)
+# Use absolute path for cookies.json inside the data directory
+# BASE_DIR points to the scraper root folder
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-COOKIES_FILE = os.path.join(BASE_DIR, "cookies.json")
+COOKIES_FILE = os.path.join(BASE_DIR, "data", "cookies.json")
 
 
 def get_config_from_file() -> Dict[str, str]:

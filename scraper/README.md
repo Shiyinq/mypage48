@@ -31,7 +31,7 @@ A robust, modular Python scraper for JKT48 news, members, and schedule data.
     ```
 4.  Setup configuration:
     ```bash
-    cp cookies.example.json cookies.json
+    cp cookies.example.json data/cookies.json
     ```
 
 ## Usage
@@ -100,19 +100,9 @@ python jkt48scraper.py --schedule --sync
 
 Data is upserted (insert or update) based on unique IDs, so running `--sync` multiple times will never create duplicates.
 
-## Cloudflare Bypass (FlareSolverr)
+The scraper's `src/agent/browser.py` will automatically detect 403 errors, contact the FlareSolverr instance to get new cookies, and retry the request.
 
-To enable the "Lazy Retry" mechanism (automatically solvng 403 errors), you must run a FlareSolverr instance:
-
-```bash
-docker run -d \
-  --name=flaresolverr \
-  -p 8191:8191 \
-  -e LOG_LEVEL=info \
-  ghcr.io/flaresolverr/flaresolverr:latest
-```
-
-The scraper's `src/agent/browser.py` will automatically detect 403 errors, contact `localhost:8191` to get new cookies, and retry the request.
+In production (Docker), FlareSolverr is already included and configured as a service.
 
 ## Project Structure
 
@@ -121,7 +111,8 @@ The scraper's `src/agent/browser.py` will automatically detect 403 errors, conta
 ├── jkt48scraper.py            # Main CLI entry point (Template Method pattern)
 ├── requirements.txt           # Python dependencies
 ├── cookies.example.json       # Cookie template
-├── data/                      # Output directory
+├── data/                      # Output directory (Persisted in Docker)
+│   ├── cookies.json           # Active cookies & UA
 │   ├── news.current.json
 │   ├── members.current.json
 │   ├── events.current.json

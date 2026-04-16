@@ -167,7 +167,6 @@ services:
     volumes:
       - ./logs/scraper:/var/log/mypage48
       - ./scraper/data:/app/scraper/data
-      - ./scraper/cookies.json:/app/scraper/cookies.json
     restart: always
     networks:
       - internal_net
