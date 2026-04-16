@@ -260,7 +260,7 @@
 	};
 </script>
 
-<div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
+<div class="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6">
 	<!-- Backdrop -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->

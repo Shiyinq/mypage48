@@ -186,7 +186,7 @@
 
 {#if show}
 	<div
-		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-hidden"
+		class="fixed inset-0 z-[1000] flex items-center justify-center p-4 overflow-hidden"
 		use:portal
 	>
 		<div
