@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
 	const baseUrl = 'https://mypage48.com';
-	
+
 	const content = `# MyPage48 - The Ultimate JKT48 Fan Dashboard
 
 > MyPage48 is a comprehensive, open-source dashboard designed specifically for JKT48 fans. It provides tools to track personal history, monitor real-time activities, and explore the JKT48 ecosystem through interactive data visualizations.
