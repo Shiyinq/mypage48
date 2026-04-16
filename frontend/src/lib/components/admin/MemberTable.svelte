@@ -4,6 +4,7 @@
 
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		members?: Member[];
@@ -41,9 +42,9 @@
 									class="w-10 h-10 rounded-full bg-gray-100 dark:bg-zinc-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-zinc-700"
 								>
 									{#if member.img}
-										<img
-											src={getExternalMediaUrl(member.img)}
-											alt={member.name}
+										<OptimizedImage
+											src={getExternalMediaUrl(member.img) || ''}
+											alt={member.name || ''}
 											class="w-full h-full object-cover"
 										/>
 									{:else}

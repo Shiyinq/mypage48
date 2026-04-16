@@ -3,6 +3,7 @@
 	import type { Setlist } from '$lib/apis/setlists';
 
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		setlists?: Setlist[];
@@ -40,9 +41,9 @@
 									class="w-12 h-16 rounded-lg bg-gray-100 dark:bg-zinc-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-zinc-700"
 								>
 									{#if setlist.imageUrl}
-										<img
-											src={setlist.imageUrl}
-											alt={setlist.title}
+										<OptimizedImage
+											src={setlist.imageUrl || ''}
+											alt={setlist.title || ''}
 											class="w-full h-full object-cover"
 										/>
 									{:else}
