@@ -4,6 +4,7 @@
 	import TableSkeleton from '$lib/components/skeletons/TableSkeleton.svelte';
 	import { Search, X, UserCheck, ShieldCheck, Mail, Lock, Eye, EyeOff } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 	import { formatDate } from '$lib/i18n';
 
 	const { t } = useTranslation();
@@ -137,9 +138,9 @@
 								<td class="p-4">
 									<div class="flex items-center gap-3">
 										{#if user.profilePicture}
-											<img
-												src={user.profilePicture}
-												alt={user.name}
+											<OptimizedImage
+												src={user.profilePicture || ''}
+												alt={user.name || ''}
 												class="w-10 h-10 rounded-full object-cover"
 											/>
 										{:else}
