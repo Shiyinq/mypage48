@@ -24,6 +24,7 @@
 			| 'strict-origin'
 			| 'strict-origin-when-cross-origin'
 			| 'unsafe-url';
+		noBackground?: boolean;
 		onclick?: (e: MouseEvent) => void;
 		onkeydown?: (e: KeyboardEvent) => void;
 	}
@@ -38,6 +39,7 @@
 		aspectRatio = 'auto',
 		fallback = true,
 		referrerPolicy,
+		noBackground = false,
 		onclick,
 		onkeydown
 	}: Props = $props();
@@ -73,7 +75,9 @@
 </script>
 
 <div
-	class="relative overflow-hidden bg-gray-100 dark:bg-zinc-800 transition-colors duration-300 {className}"
+	class="relative overflow-hidden {noBackground
+		? ''
+		: 'bg-gray-100 dark:bg-zinc-800'} transition-colors duration-300 {className}"
 	style="aspect-ratio: {aspectRatio}; {style}"
 	{onclick}
 	{onkeydown}

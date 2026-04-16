@@ -133,9 +133,9 @@
 									class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
 								/>
 
-								<OptimizedImage
+								<img
 									src={getMemberFrame(member.member_type) || ''}
-									alt="frame"
+									alt="member frame"
 									class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 								/>
 
@@ -191,9 +191,9 @@
 									alt={member.name}
 									class="w-full h-full object-cover"
 								/>
-								<OptimizedImage
+								<img
 									src={getMemberFrame(member.member_type) || ''}
-									alt="frame"
+									alt="member frame"
 									class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 								/>
 							</div>
@@ -248,9 +248,9 @@
 											alt={member.name}
 											class="w-full h-full object-cover"
 										/>
-										<OptimizedImage
+										<img
 											src={getMemberFrame(member.member_type) || ''}
-											alt="frame"
+											alt="member frame"
 											class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 opacity-80"
 										/>
 									</div>
