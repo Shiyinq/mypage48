@@ -26,11 +26,19 @@ def request(method: str, url: str, **kwargs) -> requests.Response:
     However, protections may tighten at any time (e.g., during heavy traffic).
     This function implements a "Lazy Retry" strategy to handle both cases efficiently.
     """
-    # 1. Prepare headers
-    if "headers" not in kwargs:
-        kwargs["headers"] = get_cookies_headers()
+    # 1. Prepare headers and Cookies
+    config = get_cookies_headers()
 
-    # Default to chrome impersonation if not specified
+    if "headers" not in kwargs:
+        kwargs["headers"] = {}
+
+    # Merge config headers (Cookie & User-Agent) into request headers
+    # This ensures FlareSolverr's UA and Cookies are always used
+    for key, value in config.items():
+        if value:
+            kwargs["headers"][key] = value
+
+    # Default to chrome impersonation
     if "impersonate" not in kwargs:
         kwargs["impersonate"] = "chrome"
 
@@ -46,21 +54,23 @@ def request(method: str, url: str, **kwargs) -> requests.Response:
 
     except Exception as e:
         print(f"Request failed: {e}")
-        # Proceed to try recovery logic if applicable, otherwise re-raise?
-        # For now, let's treat exception as a signal to potentially retry if it's network related
 
     # 3. Recovery Logic (FlareSolverr)
-    print("Refreshing cookies via FlareSolverr...")
-    new_cookies = get_cookies_via_flaresolverr(url)
+    # We use the HOMEPAGE to get cookies because API endpoints often don't trigger challenges
+    print("Refreshing cookies via JKT48 Homepage (FlareSolverr)...")
+    new_cookies = get_cookies_via_flaresolverr("https://jkt48.com")
 
     if new_cookies:
         print("Cookies refreshed successfully!")
 
-        # Save cookies to file
+        # Save cookies and User-Agent to file
         save_cookies_from_response(new_cookies)
 
-        # Update headers for retry
-        kwargs["headers"] = get_cookies_headers()
+        # Re-fetch config and update headers for retry
+        new_config = get_cookies_headers()
+        for key, value in new_config.items():
+            if value:
+                kwargs["headers"][key] = value
 
         # 4. Retry request
         print("Retrying request...")
