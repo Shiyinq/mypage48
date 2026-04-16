@@ -1,11 +1,9 @@
-"""
-FlareSolverr Client Module.
-"""
+import os
 from typing import Dict, Optional
 
 from curl_cffi import requests
 
-FLARESOLVERR_URL = "http://localhost:8191/v1"
+FLARESOLVERR_URL = os.getenv("FLARESOLVERR_URL", "http://localhost:8191/v1")
 
 
 def get_cookies_via_flaresolverr(
