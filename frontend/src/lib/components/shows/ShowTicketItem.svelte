@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Calendar, MapPin, Trash2, Ticket as TicketIcon } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 	import type { Ticket } from '$lib/types';
 
 	interface Props {
@@ -18,7 +19,7 @@
 >
 	<div class="w-20 h-20 rounded-xl bg-gray-100 dark:bg-zinc-800 flex-shrink-0 overflow-hidden">
 		{#if ticket.imageUrl}
-			<img src={ticket.imageUrl} alt="" class="w-full h-full object-cover" />
+			<OptimizedImage src={ticket.imageUrl} alt="" class="w-full h-full object-cover" />
 		{:else}
 			<div class="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600">
 				<TicketIcon class="w-8 h-8" />

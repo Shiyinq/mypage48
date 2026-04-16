@@ -5,6 +5,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
 	import { broadcastGift } from '$lib/stores/gift.svelte';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		roomIdentifier: string;
@@ -376,7 +377,7 @@
 			{:else}
 				<div class="flex items-start gap-3 group">
 					{#if msg.avatar}
-						<img
+						<OptimizedImage
 							src={msg.avatar}
 							alt={msg.user}
 							class="w-8 h-8 rounded-full object-cover border border-gray-100 dark:border-zinc-800"
@@ -424,12 +425,11 @@
 											<MessageCircle size={20} />
 										</div>
 									{:else}
-										<img
+										<OptimizedImage
 											src={getExternalMediaUrl(msg.gift.img)}
 											alt={msg.gift.name}
-											referrerpolicy="no-referrer"
+											referrerPolicy="no-referrer"
 											style="width: 50px; height: 50px;"
-											onerror={handleMediaError}
 											class="object-contain drop-shadow-md"
 										/>
 									{/if}
@@ -454,12 +454,11 @@
 										>
 											<span class="text-[9px] font-bold opacity-60 italic">TO:</span>
 											<div class="flex items-center gap-2">
-												<img
+												<OptimizedImage
 													src={getExternalMediaUrl(msg.recipient.avatar)}
 													alt={msg.recipient.name}
-													referrerpolicy="no-referrer"
+													referrerPolicy="no-referrer"
 													class="w-5 h-5 rounded-full object-cover ring-1 ring-white/20"
-													onerror={handleMediaError}
 												/>
 												<span class="text-[10px] font-black">{msg.recipient.name}</span>
 											</div>

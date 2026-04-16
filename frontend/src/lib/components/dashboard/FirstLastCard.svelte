@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Calendar, Maximize2, Star, Camera } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const { t } = useTranslation();
 
@@ -116,7 +117,7 @@
 						class={`w-12 h-16 rounded-lg overflow-hidden flex-shrink-0 shadow-sm border ${themeClasses.border} ${themeClasses.placeholderBg}`}
 					>
 						{#if first.image}
-							<img src={first.image} alt={first.title} class="w-full h-full object-cover" />
+							<OptimizedImage src={first.image} alt={first.title} class="w-full h-full" />
 						{:else}
 							<div
 								class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderText}`}
@@ -172,7 +173,7 @@
 						class={`w-12 h-16 rounded-lg overflow-hidden flex-shrink-0 shadow-sm border ${themeClasses.border} ${themeClasses.placeholderBg}`}
 					>
 						{#if last.image}
-							<img src={last.image} alt={last.title} class="w-full h-full object-cover" />
+							<OptimizedImage src={last.image} alt={last.title} class="w-full h-full" />
 						{:else}
 							<div
 								class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderText}`}

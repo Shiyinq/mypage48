@@ -15,6 +15,7 @@
 	} from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { fade } from 'svelte/transition';
+	import { OptimizedImage } from '$lib/components/common';
 
 	import { EventHistorySkeleton } from '$lib/components/skeletons';
 	import {
@@ -155,7 +156,7 @@
 											}`}
 										>
 											{#if event.imageUrl}
-												<img
+												<OptimizedImage
 													src={event.imageUrl}
 													alt="Setlist"
 													class="w-full h-full object-cover"

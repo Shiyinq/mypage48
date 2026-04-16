@@ -15,6 +15,7 @@
 	} from '$lib/stores/events.svelte';
 	import { membersStore, isBirthdaysLoading } from '$lib/stores/theater.svelte';
 	import Birthdays from '$lib/components/theater/Birthdays.svelte';
+	import { OptimizedImage } from '$lib/components/common';
 
 	import { formatDate, formatTime } from '$lib/i18n';
 	const { t } = useTranslation();
@@ -110,7 +111,7 @@
 						<!-- Image / Placeholder -->
 						<div class="relative w-[38%] sm:w-full sm:h-full shrink-0 overflow-hidden">
 							{#if event.imageUrl}
-								<img
+								<OptimizedImage
 									src={event.imageUrl}
 									alt={event.title}
 									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"

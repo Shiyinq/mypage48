@@ -7,6 +7,7 @@
 	import LiveStats from './LiveStats.svelte';
 	import { getMemberFrame } from '$lib/constants';
 	import type { LiveStatus } from '$lib/types';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const { t } = useTranslation();
 
@@ -30,23 +31,20 @@
 >
 	<!-- Member Photo Container -->
 	<div class="relative w-full h-full overflow-hidden bg-gray-100 dark:bg-zinc-800">
-		<img
+		<OptimizedImage
 			src={getExternalMediaUrl(
 				stream.platform === 'showroom'
 					? stream.member?.img || stream.image
 					: stream.image || stream.member?.img
 			) || fallbackAvatar}
 			alt={stream.member?.name}
-			onerror={(e) => {
-				if (e.currentTarget instanceof HTMLImageElement) e.currentTarget.src = fallbackAvatar;
-			}}
 			class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
 		/>
 
 		<!-- Frame Image Overlay -->
 		<img
 			src={getMemberFrame(stream.member?.member_type)}
-			alt="frame"
+			alt="member frame"
 			class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 		/>
 

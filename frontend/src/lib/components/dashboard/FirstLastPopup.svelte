@@ -2,6 +2,7 @@
 	import { Calendar, X, Star, Camera } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { fade, scale } from 'svelte/transition';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const { t } = useTranslation();
 
@@ -74,7 +75,7 @@
 
 {#if show}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+		class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
 		onclick={(e) => {
 			if (e.target === e.currentTarget) onClose();
 		}}
@@ -125,10 +126,10 @@
 							class={`w-48 h-64 md:w-64 md:h-80 rounded-2xl bg-gray-200 dark:bg-gray-800 shadow-xl mb-6 overflow-hidden relative group border ${themeClasses.border}`}
 						>
 							{#if first.image}
-								<img
+								<OptimizedImage
 									src={first.image}
 									alt={first.title}
-									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+									class="w-full h-full transition-transform duration-700 group-hover:scale-110"
 								/>
 								<div
 									class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
@@ -168,10 +169,10 @@
 							class={`w-48 h-64 md:w-64 md:h-80 rounded-2xl bg-gray-200 dark:bg-gray-800 shadow-xl mb-6 overflow-hidden relative group border ${themeClasses.border}`}
 						>
 							{#if last.image}
-								<img
+								<OptimizedImage
 									src={last.image}
 									alt={last.title}
-									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+									class="w-full h-full transition-transform duration-700 group-hover:scale-110"
 								/>
 								<div
 									class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"

@@ -4,6 +4,7 @@
 	import type { User } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		profile?: User | null;
@@ -73,7 +74,7 @@
 						class="relative w-28 h-28 rounded-full border-4 border-white shadow-xl overflow-hidden flex-shrink-0 cursor-pointer transition-transform hover:scale-105 active:scale-95"
 						onclick={onOpenMemberDetail}
 					>
-						<img
+						<OptimizedImage
 							src={getExternalMediaUrl(profile?.oshi?.profilePicture) || '/placeholder-user.jpg'}
 							alt={profile?.oshi?.name}
 							class="w-full h-full object-cover"

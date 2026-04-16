@@ -13,6 +13,7 @@
 	} from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { fade } from 'svelte/transition';
+	import { OptimizedImage } from '$lib/components/common';
 	import { EventHistorySkeleton } from '$lib/components/skeletons';
 	import {
 		eventsStore,
@@ -144,7 +145,7 @@
 											class="w-16 h-10 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-800 shrink-0"
 										>
 											{#if event.imageUrl}
-												<img
+												<OptimizedImage
 													src={event.imageUrl}
 													alt="Event"
 													class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"

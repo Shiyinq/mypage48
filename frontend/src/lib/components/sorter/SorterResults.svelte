@@ -6,6 +6,7 @@
 	import { fly, fade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import { getMemberFrame } from '$lib/constants';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const { t } = useTranslation();
 
@@ -30,11 +31,6 @@
 		onrestart,
 		onchangeLayout
 	}: Props = $props();
-
-	function handleImageError(e: Event) {
-		const target = e.currentTarget as HTMLImageElement;
-		target.src = 'https://placehold.co/640x960?text=JKT48';
-	}
 
 	function shareResults() {
 		onshare?.();
@@ -131,16 +127,15 @@
 							<div
 								class={`aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all group-hover:scale-105 group-hover:shadow-2xl cursor-pointer relative ${i <= 2 ? 'shiny-card' : ''} ${i === 0 ? 'border-yellow-400 shadow-xl shadow-yellow-400/20' : i === 1 ? 'border-slate-300 shadow-xl shadow-slate-300/20' : i === 2 ? 'border-amber-600 shadow-xl shadow-amber-700/10' : isPublic ? 'border-slate-100 dark:border-zinc-800 shadow-lg' : 'border-zinc-100 dark:border-zinc-800 shadow-lg'}`}
 							>
-								<img
-									src={getExternalMediaUrl(member.img)}
+								<OptimizedImage
+									src={getExternalMediaUrl(member.img) || ''}
 									alt={member.name}
 									class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-									onerror={handleImageError}
 								/>
 
 								<img
-									src={getMemberFrame(member.member_type)}
-									alt="frame"
+									src={getMemberFrame(member.member_type) || ''}
+									alt="member frame"
 									class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 								/>
 
@@ -191,15 +186,14 @@
 							<div
 								class={`relative w-12 sm:w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 border border-slate-100 dark:border-zinc-800 transition-transform duration-500 z-30 shadow-sm ${i <= 2 ? 'shiny-card' : ''}`}
 							>
-								<img
-									src={getExternalMediaUrl(member.img)}
+								<OptimizedImage
+									src={getExternalMediaUrl(member.img) || ''}
 									alt={member.name}
 									class="w-full h-full object-cover"
-									onerror={handleImageError}
 								/>
 								<img
-									src={getMemberFrame(member.member_type)}
-									alt="frame"
+									src={getMemberFrame(member.member_type) || ''}
+									alt="member frame"
 									class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 								/>
 							</div>
@@ -249,15 +243,14 @@
 									<div
 										class="relative w-11 aspect-[3/4] rounded-lg overflow-hidden shrink-0 border border-slate-100 dark:border-zinc-800 transition-transform duration-500 z-30 shadow-sm"
 									>
-										<img
-											src={getExternalMediaUrl(member.img)}
+										<OptimizedImage
+											src={getExternalMediaUrl(member.img) || ''}
 											alt={member.name}
 											class="w-full h-full object-cover"
-											onerror={handleImageError}
 										/>
 										<img
-											src={getMemberFrame(member.member_type)}
-											alt="frame"
+											src={getMemberFrame(member.member_type) || ''}
+											alt="member frame"
 											class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 opacity-80"
 										/>
 									</div>

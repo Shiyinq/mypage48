@@ -17,6 +17,7 @@
 	} from '$lib/stores/news.svelte';
 
 	import { formatDate } from '$lib/i18n';
+	import { OptimizedImage } from '$lib/components/common';
 	const { t } = useTranslation();
 
 	let mounted = $state(false);
@@ -106,11 +107,10 @@
 						class="relative w-[38%] md:w-full shrink-0 overflow-hidden bg-gray-100 dark:bg-zinc-800 aspect-square md:aspect-[4/3]"
 					>
 						{#if item.background_image}
-							<img
+							<OptimizedImage
 								src={getExternalMediaUrl(item.background_image)}
 								alt={item.title}
 								class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-								loading="lazy"
 							/>
 						{:else}
 							<div

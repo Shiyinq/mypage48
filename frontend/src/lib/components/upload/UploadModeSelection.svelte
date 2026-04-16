@@ -13,9 +13,7 @@
 	const { t } = useTranslation();
 </script>
 
-<div
-	class="min-h-[80vh] flex flex-col items-center justify-center p-4 animate-fade-in max-w-4xl mx-auto"
->
+<div class="min-h-[80vh] flex flex-col items-center justify-center p-4 max-w-4xl mx-auto">
 	<div class="hidden sm:block text-center mb-6 sm:mb-10">
 		<h2 class="text-2xl sm:text-3xl font-black text-gray-800 dark:text-white mb-2">
 			{t('upload.title')}

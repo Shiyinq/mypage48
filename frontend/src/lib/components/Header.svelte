@@ -12,6 +12,7 @@
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
 	import { crossfade } from 'svelte/transition';
 	import { cubicInOut } from 'svelte/easing';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const [send, receive] = crossfade({
 		duration: 300,
@@ -53,7 +54,7 @@
 {#if !isImmersive.value}
 	<div class="hidden md:block transition-all duration-300 {isTheater ? 'h-[104px]' : 'h-16'}"></div>
 	<header
-		class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[6000] transition-all duration-300"
+		class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[50] transition-all duration-300"
 	>
 		<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 			<!-- Left: Logo -->
@@ -94,10 +95,10 @@
 					{#if isLoading}
 						<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
 					{:else if userProfile.data?.oshi?.profilePicture || userProfile.data?.profilePicture}
-						<img
+						<OptimizedImage
 							src={userProfile.data?.oshi?.profilePicture
 								? getExternalMediaUrl(userProfile.data.oshi.profilePicture)
-								: userProfile.data?.profilePicture}
+								: userProfile.data?.profilePicture || ''}
 							alt="Profile"
 							class="w-full h-full object-cover"
 						/>

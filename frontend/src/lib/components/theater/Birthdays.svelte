@@ -5,6 +5,7 @@
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { getMemberFrame } from '$lib/constants';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const { t, locale } = useTranslation();
 
@@ -61,7 +62,7 @@
 						class="relative group aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-sm hover:shadow-md transition-all mb-2"
 					>
 						{#if member.img}
-							<img
+							<OptimizedImage
 								src={getExternalMediaUrl(member.img)}
 								alt={member.name}
 								class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -78,7 +79,7 @@
 						<!-- Frame Image Overlay -->
 						<img
 							src={getMemberFrame(member.member_type)}
-							alt="frame"
+							alt="member frame"
 							class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 						/>
 

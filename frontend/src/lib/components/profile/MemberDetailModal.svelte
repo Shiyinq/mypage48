@@ -9,6 +9,7 @@
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { tick } from 'svelte';
 	import { getMemberFrame } from '$lib/constants';
+	import { OptimizedImage } from '$lib/components/common';
 
 	let sidebarScrollContainer: HTMLDivElement | undefined = $state();
 	interface Props {
@@ -185,7 +186,7 @@
 
 {#if show}
 	<div
-		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-hidden"
+		class="fixed inset-0 z-[1000] flex items-center justify-center p-4 overflow-hidden"
 		use:portal
 	>
 		<div
@@ -286,10 +287,10 @@
 								<div
 									class="absolute inset-0 bg-zinc-200 dark:bg-zinc-800 rounded-3xl transform -rotate-3 translate-x-2 translate-y-1 md:-rotate-6 md:translate-x-4 md:translate-y-2 opacity-40 shadow-xl transition-all duration-700 overflow-hidden border-[3px] border-white/50 dark:border-zinc-700/50"
 								>
-									<img
+									<OptimizedImage
 										src={getExternalMediaUrl(nextNextMember.img)}
 										alt=""
-										class="w-full h-full object-cover object-top grayscale opacity-50"
+										class="w-full h-full grayscale opacity-50"
 									/>
 								</div>
 							{/if}
@@ -297,10 +298,10 @@
 								<div
 									class="absolute inset-0 bg-zinc-300 dark:bg-zinc-700 rounded-3xl transform rotate-2 -translate-x-2 translate-y-1 md:rotate-3 md:-translate-x-3 md:translate-y-1 opacity-60 shadow-xl transition-all duration-700 overflow-hidden border-[3px] border-white/50 dark:border-zinc-700/50"
 								>
-									<img
+									<OptimizedImage
 										src={getExternalMediaUrl(nextMember.img)}
 										alt=""
-										class="w-full h-full object-cover object-top grayscale opacity-50"
+										class="w-full h-full grayscale opacity-50"
 									/>
 								</div>
 							{/if}
@@ -315,14 +316,14 @@
 									<div
 										class="relative w-full h-full z-10 rounded-3xl overflow-hidden border-x-0 md:border-[6px] border-white dark:border-zinc-800 shadow-2xl bg-white dark:bg-zinc-800"
 									>
-										<img
+										<OptimizedImage
 											src={getExternalMediaUrl(currentMember.img)}
 											alt={currentMember.name}
-											class="w-full h-full object-cover object-top grayscale-[10%] group-hover:grayscale-0 transition-all duration-700"
+											class="w-full h-full grayscale-[10%] group-hover:grayscale-0 transition-all duration-700"
 										/>
 										<img
 											src={frameImg}
-											alt="frame"
+											alt="member frame"
 											class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 scale-[1.05]"
 										/>
 									</div>

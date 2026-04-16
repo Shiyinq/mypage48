@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ArrowLeft, AudioLines } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface ShowInfo {
 		title: string;
@@ -40,7 +41,7 @@
 <!-- Header -->
 <div class="relative rounded-3xl overflow-hidden mb-8 shadow-lg group bg-gray-900 h-64 md:h-80">
 	{#if info}
-		<img
+		<OptimizedImage
 			src={info.image}
 			alt={title}
 			class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"

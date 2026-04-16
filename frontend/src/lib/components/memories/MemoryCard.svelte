@@ -2,6 +2,7 @@
 	import { Image as ImageIcon, MapPin, Calendar, Sparkles, User } from 'lucide-svelte';
 	import { formatDate } from '$lib/i18n';
 	import type { MemoryItem } from '$lib/types';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		item: MemoryItem;
@@ -35,7 +36,7 @@
 		<div
 			class="aspect-[4/5] w-full bg-gray-100 mb-4 overflow-hidden relative border border-gray-50 grayscale-[20%] group-hover:grayscale-0 transition-all duration-500"
 		>
-			<img src={item.imageUrl} alt={item.title} class="w-full h-full object-cover" loading="lazy" />
+			<OptimizedImage src={item.imageUrl} alt={item.title} class="w-full h-full" />
 
 			<!-- Date Stamp -->
 			<div

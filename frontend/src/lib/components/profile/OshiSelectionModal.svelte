@@ -7,6 +7,7 @@
 	import { fade, scale } from 'svelte/transition';
 	import { tick } from 'svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		show?: boolean;
@@ -125,7 +126,7 @@
 </script>
 
 {#if show}
-	<div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+	<div class="fixed inset-0 z-[1000] flex items-center justify-center p-4">
 		<!-- Backdrop -->
 		<div
 			class="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -201,7 +202,7 @@
 								onclick={() => (selectedOshiId = member.id)}
 							>
 								<div class="relative w-20 h-20 mb-3">
-									<img
+									<OptimizedImage
 										src={getExternalMediaUrl(member.img)}
 										alt={member.name}
 										class="w-full h-full rounded-full object-cover shadow-sm group-hover:shadow-md transition-shadow {selectedOshiId ===

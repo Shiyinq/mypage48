@@ -5,6 +5,7 @@
 	import { Calendar, ChevronRight, ExternalLink, Share2, Copy } from 'lucide-svelte';
 	import { formatDate } from '$lib/i18n';
 	import { getExternalMediaUrl, proxyExternalImageUrls } from '$lib/utils/media';
+	import { OptimizedImage } from '$lib/components/common';
 	import ImageLightbox from '$lib/components/common/ImageLightbox.svelte';
 	import { showToast } from '$lib/stores';
 	import { browser } from '$app/environment';
@@ -65,7 +66,7 @@
 	image={item.background_image ? getExternalMediaUrl(item.background_image) : undefined}
 />
 
-<div class="max-w-5xl mx-auto space-y-6 animate-fade-in pb-12">
+<div class="max-w-5xl mx-auto space-y-6 pb-12">
 	<!-- Breadcrumbs & Header -->
 	<div class="mb-8">
 		<h1 class="text-3xl md:text-4xl font-extrabold text-red-500 mb-4 leading-tight">
@@ -92,7 +93,7 @@
 					onclick={() => openLightbox(getExternalMediaUrl(item.background_image), item.title)}
 					class="w-full rounded-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-inner group/img cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99] duration-500"
 				>
-					<img
+					<OptimizedImage
 						src={getExternalMediaUrl(item.background_image)}
 						alt={item.title}
 						class="w-full h-auto object-cover max-h-[500px] transition-all duration-1000 group-hover/img:scale-110"

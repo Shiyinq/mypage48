@@ -15,6 +15,7 @@
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
 	import { cleanseMarkdown } from '$lib/utils/markdown';
+	import { OptimizedImage } from '$lib/components/common';
 	interface Props {
 		ticket: Ticket;
 		onupdateNote?: (ticketId: string, note: string) => void;
@@ -55,16 +56,16 @@
 </script>
 
 <div
-	class="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-zinc-700 flex flex-row group animate-fade-in h-[210px] w-full"
+	class="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-zinc-700 flex flex-row group h-[210px] w-full"
 >
 	<!-- Image Section (Left) -->
 	<div class="w-[140px] sm:w-[180px] h-full relative bg-gray-50 overflow-hidden flex-shrink-0">
 		{#if ticket.imageUrl}
 			<div class="w-full h-full relative">
-				<img
+				<OptimizedImage
 					src={ticket.imageUrl}
 					alt={ticket.event.title}
-					class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+					class="w-full h-full transition-transform duration-700 group-hover:scale-105"
 				/>
 				<div
 					class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent opacity-60"
@@ -147,7 +148,7 @@
 		<!-- Notes Area (Compact) -->
 		<div class="px-3 flex-1 min-h-0 flex flex-col">
 			{#if isEditingNote}
-				<div class="flex-1 relative animate-fade-in pb-1">
+				<div class="flex-1 relative pb-1">
 					<textarea
 						bind:value={noteText}
 						onkeydown={handleKeydown}

@@ -4,6 +4,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { OptimizedImage } from '$lib/components/common';
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
 
 	const { t } = useTranslation();
@@ -56,10 +57,10 @@
 				{#if isLoading}
 					<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
 				{:else if userProfile.data?.oshi?.profilePicture || userProfile.data?.profilePicture}
-					<img
+					<OptimizedImage
 						src={userProfile.data?.oshi?.profilePicture
 							? getExternalMediaUrl(userProfile.data.oshi.profilePicture)
-							: userProfile.data?.profilePicture}
+							: userProfile.data?.profilePicture || ''}
 						alt="Profile"
 						class="w-full h-full object-cover"
 					/>
