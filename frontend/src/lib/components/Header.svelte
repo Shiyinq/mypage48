@@ -53,7 +53,7 @@
 {#if !isImmersive.value}
 	<div class="hidden md:block transition-all duration-300 {isTheater ? 'h-[104px]' : 'h-16'}"></div>
 	<header
-		class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[6000] transition-all duration-300"
+		class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[50] transition-all duration-300"
 	>
 		<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 			<!-- Left: Logo -->
