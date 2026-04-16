@@ -65,7 +65,7 @@
 	image={item.background_image ? getExternalMediaUrl(item.background_image) : undefined}
 />
 
-<div class="max-w-5xl mx-auto space-y-6 animate-fade-in pb-12">
+<div class="max-w-5xl mx-auto space-y-6 pb-12">
 	<!-- Breadcrumbs & Header -->
 	<div class="mb-8">
 		<h1 class="text-3xl md:text-4xl font-extrabold text-red-500 mb-4 leading-tight">

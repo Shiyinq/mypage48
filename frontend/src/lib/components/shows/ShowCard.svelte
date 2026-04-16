@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Trophy, ChevronLeft } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface ShowInfo {
 		title: string;
@@ -31,11 +32,10 @@
 >
 	<!-- Background Image (Mobile: Left side, Desktop: Full bg) -->
 	<div class="relative w-[38%] sm:w-full sm:h-full sm:absolute sm:inset-0 shrink-0 overflow-hidden">
-		<img
+		<OptimizedImage
 			src={show.image}
 			alt={show.title}
-			class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-			loading="lazy"
+			class="w-full h-full transition-transform duration-700 group-hover:scale-105"
 		/>
 		<!-- Mobile Gradient Overlay (Right to Left) -->
 		<div

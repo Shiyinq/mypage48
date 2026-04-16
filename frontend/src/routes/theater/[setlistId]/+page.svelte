@@ -100,7 +100,7 @@
 		onRetry={fetchDetail}
 	/>
 {:else if detail}
-	<div class="max-w-5xl mx-auto animate-fade-in pb-20">
+	<div class="max-w-5xl mx-auto pb-20">
 		<!-- Immersive Hero Section -->
 		<SetlistHero {detail} />
 

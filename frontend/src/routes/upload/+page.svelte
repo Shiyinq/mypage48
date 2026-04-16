@@ -325,7 +325,7 @@
 {/if}
 
 {#if mode === 'EDITING'}
-	<div class="max-w-5xl mx-auto pt-0 px-4 pb-24 animate-fade-in">
+	<div class="max-w-5xl mx-auto pt-4 sm:pt-6 px-4 pb-24">
 		<div class="mb-6 flex items-center justify-between">
 			<div class="flex items-center gap-3">
 				<div class="p-2 rounded-xl bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400">

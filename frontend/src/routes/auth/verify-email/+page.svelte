@@ -62,7 +62,7 @@
 
 	<div class="w-full max-w-md">
 		<div
-			class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/60 dark:border-zinc-800 text-center animate-fade-in"
+			class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/60 dark:border-zinc-800 text-center"
 		>
 			<div class="flex justify-center mb-6">
 				{#if status === 'loading'}

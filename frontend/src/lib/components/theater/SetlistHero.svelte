@@ -2,6 +2,7 @@
 	import type { SetlistDetailResponse } from '$lib/apis/setlists';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Trophy } from 'lucide-svelte';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		detail: SetlistDetailResponse;
@@ -17,10 +18,10 @@
 >
 	<!-- Background Image with Parallax-like effect -->
 	<div class="absolute inset-0">
-		<img
+		<OptimizedImage
 			src={detail.imageUrl}
 			alt={detail.title}
-			class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+			class="w-full h-full transition-transform duration-1000 group-hover:scale-105"
 		/>
 		<!-- Gradient Mesh Overlay -->
 		<div

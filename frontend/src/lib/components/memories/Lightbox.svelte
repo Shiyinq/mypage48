@@ -3,6 +3,7 @@
 	import { fade, scale } from 'svelte/transition';
 	import { formatDate } from '$lib/i18n';
 	import type { MemoryItem } from '$lib/types';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		selectedImage?: MemoryItem | null;
@@ -36,19 +37,19 @@
 			class="flex flex-col items-center pointer-events-none"
 			transition:scale={{ duration: 300, start: 0.95 }}
 		>
-			<img
+			<OptimizedImage
 				src={selectedImage.imageUrl}
 				alt={selectedImage.title}
-				class="max-h-[70vh] w-auto object-contain rounded-lg shadow-2xl border border-white/10 cursor-default pointer-events-auto"
-				onclick={(e) => e.stopPropagation()}
-				onkeydown={(e) => e.stopPropagation()}
-				role="presentation"
+				class="max-h-[70vh] w-auto rounded-lg shadow-2xl border border-white/10 cursor-default pointer-events-auto"
+				objectFit="contain"
+				onclick={(e: MouseEvent) => e.stopPropagation()}
+				onkeydown={(e: KeyboardEvent) => e.stopPropagation()}
 			/>
 
 			<div
 				class="mt-6 text-center w-full max-w-lg pointer-events-auto"
-				onclick={(e) => e.stopPropagation()}
-				onkeydown={(e) => e.stopPropagation()}
+				onclick={(e: MouseEvent) => e.stopPropagation()}
+				onkeydown={(e: KeyboardEvent) => e.stopPropagation()}
 				role="presentation"
 			>
 				<h3 class="text-2xl font-bold text-white tracking-tight drop-shadow-md">

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Heart, Crown, ChevronRight, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const { t } = useTranslation();
 
@@ -50,7 +51,7 @@
 					class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
 				>
 					{#if image}
-						<img src={image} alt={name || ''} class="w-full h-full object-cover" />
+						<OptimizedImage src={image} alt={name || ''} class="w-full h-full" />
 					{:else}
 						<User class="w-6 h-6 text-pink-500 fill-pink-100" />
 					{/if}

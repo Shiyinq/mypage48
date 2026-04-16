@@ -5,6 +5,7 @@
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
 	import { cleanseMarkdown } from '$lib/utils/markdown';
+	import { OptimizedImage } from '$lib/components/common';
 
 	interface Props {
 		tickets?: Ticket[];
@@ -82,7 +83,7 @@
 									class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-zinc-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-zinc-700"
 								>
 									{#if ticket.imageUrl}
-										<img src={ticket.imageUrl} alt="" class="w-full h-full object-cover" />
+										<OptimizedImage src={ticket.imageUrl} alt="" class="w-full h-full" />
 									{:else}
 										<div
 											class="w-full h-full idol-gradient flex items-center justify-center relative overflow-hidden"

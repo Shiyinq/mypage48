@@ -75,7 +75,7 @@
 
 <SEO title={t('feedback.title')} />
 
-<div class="max-w-2xl mx-auto p-4 animate-fade-in pb-24">
+<div class="max-w-2xl mx-auto p-4 pb-24">
 	<!-- Page Header -->
 	<div class="mb-8">
 		<PageHeader
