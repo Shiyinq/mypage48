@@ -10,7 +10,11 @@ from pymongo.collection import Collection
 class MongoDB:
     def __init__(self):
         # Support both MONGODB_URI and MONGO_URI env variables
-        self.uri = os.environ.get("MONGODB_URI") or os.environ.get("MONGO_URI") or "mongodb://localhost:27017"
+        self.uri = (
+            os.environ.get("MONGODB_URI")
+            or os.environ.get("MONGO_URI")
+            or "mongodb://localhost:27017"
+        )
         self.db_name = os.environ.get("DB_NAME", "mypage48")
         self.client = None
         self.db = None
