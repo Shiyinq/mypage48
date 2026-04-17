@@ -96,7 +96,7 @@
 			description={t('theater.eventHistory.errorDesc') || error || ''}
 			onRetry={() => eventsStore.loadHistory(paginationObj.current_page)}
 		/>
-	{:else if $historyEvents.length === 0}
+	{:else if eventsList.length === 0}
 		<EmptyState
 			icon={History}
 			title={t('theater.eventHistory.emptyTitle')}
