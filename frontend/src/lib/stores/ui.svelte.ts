@@ -25,10 +25,11 @@ export interface PageHeaderState {
 	showBackButton?: boolean;
 	handleBack?: () => void;
 	actions?: Array<{
-		icon: ComponentType;
+		icon?: ComponentType;
 		label?: string;
 		onClick: () => void;
 		theme?: string;
+		showLabel?: boolean;
 	}>;
 }
 

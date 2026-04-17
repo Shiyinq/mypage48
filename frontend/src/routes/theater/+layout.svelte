@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { goto } from '$app/navigation';
 	import { AudioLines, Users, Calendar, Newspaper, ArrowUpDown, Tv } from 'lucide-svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
+	import { liveList } from '$lib/stores';
+
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
@@ -12,6 +15,9 @@
 	const { t } = useTranslation();
 
 	let currentPath = $derived($page.url.pathname);
+
+	// Check if on live listing page
+	let isLiveListingPage = $derived(currentPath === '/theater/live');
 
 	// Check if on live single detail or multiview page — hide header for immersive player
 	let isLiveDetailPage = $derived(/^\/theater\/live\/.+/.test(currentPath));
@@ -99,6 +105,20 @@
 			};
 		})()
 	);
+
+	let actionItems = $derived(
+		isLiveListingPage && liveList.value.length > 0
+			? [
+					{
+						icon: Users,
+						label: 'Multi-View',
+						onClick: () => goto('/theater/live/multiview'),
+						showLabel: true,
+						theme: 'gray'
+					}
+				]
+			: []
+	);
 </script>
 
 <div
@@ -114,6 +134,7 @@
 		subtitle={isLiveDetailPage ? '' : pageInfo.subtitle}
 		icon={isLiveDetailPage ? Tv : pageInfo.icon}
 		theme={isLiveDetailPage ? 'red' : pageInfo.theme}
+		{actionItems}
 		showBackButton={isLiveDetailPage || isNewsDetailPage || isDetailPage}
 		backUrl={isNewsDetailPage
 			? '/theater/news'

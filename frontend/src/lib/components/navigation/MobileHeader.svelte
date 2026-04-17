@@ -32,37 +32,52 @@
 						themeClasses[(headerInfo.theme as keyof typeof themeClasses) || 'red']}
 					<div class="flex items-center gap-1 min-w-0 flex-1">
 						{#if headerInfo.showBackButton}
+							<!-- Unified Back Button & Title Area -->
 							<button
 								onclick={headerInfo.handleBack}
-								class="p-1 -ml-1 hover:bg-gray-100 dark:hover:bg-zinc-800 text-zinc-950 dark:text-white flex-shrink-0 cursor-pointer transition-colors"
+								class="flex items-center gap-1 min-w-0 flex-1 -ml-1 py-1 transition-opacity active:opacity-60 group cursor-pointer"
+								title={headerInfo.title}
 							>
-								<ChevronLeft class="w-5 h-5" />
+								<ChevronLeft
+									class="w-6 h-6 flex-shrink-0 text-zinc-950 dark:text-white group-hover:-translate-x-0.5 transition-transform"
+								/>
+								<div class="flex flex-col min-w-0">
+									<h1
+										class="font-black text-lg tracking-tighter text-zinc-950 dark:text-white truncate leading-none pt-0.5"
+									>
+										{headerInfo.title}
+									</h1>
+								</div>
 							</button>
-						{/if}
-						{#if headerInfo.icon && !headerInfo.showBackButton}
-							<div class="p-1 rounded-md {activeTheme} flex-shrink-0">
-								<headerInfo.icon class="w-4 h-4" />
+						{:else}
+							<!-- Icon + Title Area (Non-clickable) -->
+							<div class="flex items-center gap-1.5 min-w-0 flex-1">
+								{#if headerInfo.icon}
+									<div class="p-1 rounded-md {activeTheme} flex-shrink-0">
+										<headerInfo.icon class="w-4 h-4" />
+									</div>
+								{/if}
+								<h1
+									class="font-black text-lg tracking-tighter text-zinc-950 dark:text-white truncate leading-none pt-0.5"
+								>
+									{headerInfo.title}
+								</h1>
 							</div>
 						{/if}
-						<div class="flex items-center gap-1 min-w-0 flex-1">
-							<h1
-								class="font-black text-lg uppercase tracking-tighter text-zinc-950 dark:text-white truncate leading-none pt-0.5"
+
+						<!-- Badge (rendered outside for both cases if space permits, but usually right-aligned in title area) -->
+						{#if headerInfo.badge}
+							<div
+								class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 leading-none whitespace-nowrap shrink-0 ml-auto flex items-center gap-1.5"
 							>
-								{headerInfo.title}
-							</h1>
-							{#if headerInfo.badge}
-								<div
-									class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 leading-none whitespace-nowrap shrink-0 ml-auto flex items-center gap-1.5"
-								>
-									{#if headerInfo.loading}
-										<div
-											class="w-2 h-2 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin"
-										></div>
-									{/if}
-									{headerInfo.badge}
-								</div>
-							{/if}
-						</div>
+								{#if headerInfo.loading}
+									<div
+										class="w-2 h-2 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin"
+									></div>
+								{/if}
+								{headerInfo.badge}
+							</div>
+						{/if}
 					</div>
 
 					<!-- Mobile Actions -->
@@ -72,14 +87,23 @@
 								<button
 									onclick={action.onClick}
 									data-filter-toggle="true"
-									class={`p-1.5 rounded-full transition-colors cursor-pointer ${
+									class={`rounded-full transition-colors cursor-pointer flex items-center justify-center ${
 										action.theme === 'red'
 											? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800'
 											: 'bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700'
-									}`}
+									} ${action.icon && !action.showLabel ? 'p-1.5' : 'px-3 py-1.5'}`}
 									title={action.label}
 								>
-									<action.icon class="w-4 h-4" />
+									{#if action.icon}
+										<action.icon
+											class="w-4 h-4 {action.showLabel && action.label ? 'mr-1.5' : ''}"
+										/>
+									{/if}
+									{#if !action.icon || action.showLabel}
+										{#if action.label}
+											<span class="text-[10px] font-bold whitespace-nowrap">{action.label}</span>
+										{/if}
+									{/if}
 								</button>
 							{/each}
 						</div>

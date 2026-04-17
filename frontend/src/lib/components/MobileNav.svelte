@@ -23,28 +23,6 @@
 	let isMenuOpen = $state(false);
 	let isTheaterMenuOpen = $state(false);
 
-	let lastScrollY = 0;
-	let isHidden = $state(false);
-	const threshold = 10;
-
-	function handleScroll() {
-		// Only hide on mobile devices (consistent with md:hidden)
-		if (window.innerWidth >= 768) return;
-
-		const currentScrollY = window.scrollY;
-		const delta = Math.abs(currentScrollY - lastScrollY);
-
-		if (delta < threshold) return;
-
-		// If user scrolls down, hide. If user scrolls up, show.
-		if (currentScrollY > lastScrollY && currentScrollY > 80) {
-			isHidden = true;
-		} else {
-			isHidden = false;
-		}
-		lastScrollY = currentScrollY;
-	}
-
 	const secondaryLinks = [
 		{ href: '/memories', icon: ImageIcon, label: 'nav.memories', color: 'text-pink-500' },
 		{ href: '/top-2shot', icon: Crown, label: 'nav.top2shot', color: 'text-indigo-500' },
@@ -77,8 +55,6 @@
 	);
 	let isRouteTheater = $derived($page.url.pathname.startsWith('/theater'));
 </script>
-
-<svelte:window onscroll={handleScroll} />
 
 <!-- Menu Drawer Overlay -->
 {#if isMenuOpen}
@@ -187,9 +163,7 @@
 {/if}
 
 <nav
-	class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-gray-200 dark:border-zinc-800 z-[80] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-none transition-transform duration-300 ease-in-out {isHidden
-		? 'translate-y-full'
-		: 'translate-y-0'}"
+	class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-gray-200 dark:border-zinc-800 z-[80] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-none transition-transform duration-300 ease-in-out"
 >
 	<div class="flex h-16 items-center justify-around max-w-[420px] mx-auto px-4">
 		<a

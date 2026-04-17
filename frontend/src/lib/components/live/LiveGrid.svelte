@@ -23,6 +23,8 @@
 		variant = 'default',
 		multiviewHref = ''
 	}: Props = $props();
+
+	let isTheater = $derived(variant === 'theater');
 </script>
 
 {#if (initialLoading || loading) && liveList.length === 0}
@@ -62,7 +64,7 @@
 	</div>
 {:else}
 	{#if multiviewHref && liveList.length > 0}
-		<div class="flex justify-end mb-4 {variant === 'theater' ? 'px-0' : 'px-4'}" in:fade>
+		<div class="flex justify-end mb-4 {isTheater ? 'hidden sm:flex px-0' : 'px-4'}" in:fade>
 			<a
 				href={multiviewHref}
 				class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
