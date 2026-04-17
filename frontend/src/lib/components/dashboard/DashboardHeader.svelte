@@ -41,6 +41,19 @@
 	subtitle={t('dashboard.subtitle')}
 	icon={LayoutDashboard}
 	theme="red"
+	actionItems={[
+		{
+			label: displayLabel,
+			onClick: onOpenFilter,
+			theme: isOpen ? 'red' : 'gray'
+		},
+		{
+			icon: Filter,
+			label: t('common.filters'),
+			onClick: onOpenFilter,
+			theme: isOpen ? 'red' : 'gray'
+		}
+	]}
 >
 	{#snippet actions()}
 		<div class="flex items-center gap-2">

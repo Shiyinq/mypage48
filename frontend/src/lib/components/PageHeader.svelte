@@ -14,7 +14,7 @@
 		subtitle?: string;
 		badge?: string;
 		actionItems?: Array<{
-			icon: ComponentType;
+			icon?: ComponentType;
 			label?: string;
 			onClick: () => void;
 			theme?: string;
