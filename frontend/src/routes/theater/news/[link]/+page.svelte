@@ -141,7 +141,7 @@
 					href={`https://jkt48.com/news/${item.link}?lang=${locale.value === 'id' ? 'id' : 'jp'}`}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="inline-flex items-center gap-2 px-8 py-3 bg-red-500 hover:bg-red-600 text-white rounded-full font-bold shadow-md hover:shadow-lg transition-all"
+					class="flex md:inline-flex items-center justify-center gap-2 w-full md:w-auto px-4 md:px-8 py-3 md:py-3 bg-red-500 hover:bg-red-600 text-white rounded-full font-bold shadow-md hover:shadow-lg transition-all uppercase tracking-wide md:tracking-normal text-[11px] md:text-base"
 				>
 					{t('theater.news.readOriginal')}
 					<ExternalLink class="w-4 h-4" />
