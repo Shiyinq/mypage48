@@ -51,8 +51,8 @@
 	let focusedSlotIndex: number = $state(0);
 	let focusedStreamDetails: LiveStreamingResponse | null = $state(null);
 	let lastLoadedId: string | null = $state(null);
-	let showPicker = $state(true);
-	let showChat = $state(true);
+	let showPicker = $state(false);
+	let showChat = $state(false);
 	let isPortrait = $state(true);
 	let searchQuery = $state('');
 	let isMobile = $state(false);
@@ -139,6 +139,7 @@
 			}
 
 			if (window.innerWidth >= 1024) {
+				showPicker = true;
 				showChat = true;
 				isImmersive.set(true);
 				document.body.style.overflow = 'hidden';
