@@ -196,15 +196,15 @@
 		</div>
 
 		<!-- Read Original -->
-		<div class="flex justify-center pb-20">
+		<div class="flex justify-center pb-20 px-4 md:px-0">
 			<a
 				href={`https://jkt48.com/news/${item.link}?lang=${locale.value === 'id' ? 'id' : 'jp'}`}
 				target="_blank"
 				rel="noopener noreferrer"
-				class="inline-flex items-center gap-3 px-10 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-black shadow-xl hover:shadow-2xl transition-all uppercase tracking-widest text-sm"
+				class="flex md:inline-flex items-center justify-center gap-2 w-full md:w-auto px-4 md:px-10 py-3 md:py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-black shadow-xl hover:shadow-2xl transition-all uppercase tracking-wide md:tracking-widest text-[11px] md:text-sm"
 			>
 				{t('theater.news.readOriginal')}
-				<ExternalLink class="w-5 h-5" />
+				<ExternalLink class="w-4 md:w-5 h-4 md:h-5" />
 			</a>
 		</div>
 	</main>
