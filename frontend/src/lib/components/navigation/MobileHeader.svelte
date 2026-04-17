@@ -46,7 +46,7 @@
 						{/if}
 						<div class="flex items-center gap-1 min-w-0 flex-1">
 							<h1
-								class="font-black text-lg uppercase tracking-tighter text-zinc-950 dark:text-white truncate leading-none pt-0.5"
+								class="font-black text-lg tracking-tighter text-zinc-950 dark:text-white truncate leading-none pt-0.5"
 							>
 								{headerInfo.title}
 							</h1>
@@ -72,14 +72,18 @@
 								<button
 									onclick={action.onClick}
 									data-filter-toggle="true"
-									class={`p-1.5 rounded-full transition-colors cursor-pointer ${
+									class={`rounded-full transition-colors cursor-pointer flex items-center justify-center ${
 										action.theme === 'red'
 											? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800'
 											: 'bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700'
-									}`}
+									} ${action.icon ? 'p-1.5' : 'px-3 py-1.5'}`}
 									title={action.label}
 								>
-									<action.icon class="w-4 h-4" />
+									{#if action.icon}
+										<action.icon class="w-4 h-4" />
+									{:else if action.label}
+										<span class="text-[10px] font-bold whitespace-nowrap">{action.label}</span>
+									{/if}
 								</button>
 							{/each}
 						</div>
