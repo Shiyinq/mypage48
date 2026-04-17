@@ -29,6 +29,7 @@ export interface PageHeaderState {
 		label?: string;
 		onClick: () => void;
 		theme?: string;
+		showLabel?: boolean;
 	}>;
 }
 
