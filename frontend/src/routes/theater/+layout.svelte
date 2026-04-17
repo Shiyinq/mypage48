@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { goto } from '$app/navigation';
-	import { AudioLines, Users, Calendar, Newspaper, ArrowUpDown, Tv, LayoutGrid } from 'lucide-svelte';
+	import { AudioLines, Users, Calendar, Newspaper, ArrowUpDown, Tv } from 'lucide-svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { liveList } from '$lib/stores';
 
