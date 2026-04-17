@@ -91,13 +91,18 @@
 										action.theme === 'red'
 											? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800'
 											: 'bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700'
-									} ${action.icon ? 'p-1.5' : 'px-3 py-1.5'}`}
+									} ${action.icon && !action.showLabel ? 'p-1.5' : 'px-3 py-1.5'}`}
 									title={action.label}
 								>
 									{#if action.icon}
-										<action.icon class="w-4 h-4" />
-									{:else if action.label}
-										<span class="text-[10px] font-bold whitespace-nowrap">{action.label}</span>
+										<action.icon
+											class="w-4 h-4 {action.showLabel && action.label ? 'mr-1.5' : ''}"
+										/>
+									{/if}
+									{#if !action.icon || action.showLabel}
+										{#if action.label}
+											<span class="text-[10px] font-bold whitespace-nowrap">{action.label}</span>
+										{/if}
 									{/if}
 								</button>
 							{/each}
