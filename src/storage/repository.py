@@ -28,8 +28,10 @@ class StorageRepository:
             # Clean endpoint: strip protocol and trailing slashes
             # Minio library expects hostname:port and handles protocol via 'secure' flag
             endpoint = self.config.storage_endpoint
-            endpoint = endpoint.replace("https://", "").replace("http://", "").strip("/")
-            
+            endpoint = (
+                endpoint.replace("https://", "").replace("http://", "").strip("/")
+            )
+
             self._client = Minio(
                 endpoint,
                 access_key=self.config.storage_access_key,
@@ -65,7 +67,9 @@ class StorageRepository:
                     )
                 ]
             )
-            self.client.set_bucket_lifecycle(self.config.storage_bucket, lifecycle_config)
+            self.client.set_bucket_lifecycle(
+                self.config.storage_bucket, lifecycle_config
+            )
             self._bucket_ensured = True
         except S3Error as e:
             logger.error(f"Failed to ensure bucket or set lifecycle: {e}")
