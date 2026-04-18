@@ -14,7 +14,7 @@ logger = create_logger("storage_repository", __name__)
 
 
 class StorageRepository:
-    """Low-level MinIO client wrapper."""
+    """Low-level S3-compatible client wrapper (MinIO/R2)."""
 
     def __init__(self, config: Settings):
         self.config = config
@@ -23,28 +23,38 @@ class StorageRepository:
 
     @property
     def client(self) -> Minio:
-        """Lazy initialization of MinIO client."""
+        """Lazy initialization of S3 client."""
         if self._client is None:
+            # Clean endpoint: strip protocol and trailing slashes
+            # Minio library expects hostname:port and handles protocol via 'secure' flag
+            endpoint = self.config.storage_endpoint
+            endpoint = endpoint.replace("https://", "").replace("http://", "").strip("/")
+            
             self._client = Minio(
-                self.config.minio_endpoint,
-                access_key=self.config.minio_access_key,
-                secret_key=self.config.minio_secret_key,
-                secure=self.config.minio_secure,
+                endpoint,
+                access_key=self.config.storage_access_key,
+                secret_key=self.config.storage_secret_key,
+                secure=self.config.storage_secure,
             )
         return self._client
 
     def _ensure_bucket(self) -> None:
-        """Ensure the bucket exists, create if not, and set lifecycle rules."""
+        """Ensure the bucket exists and set lifecycle rules (mainly for local MinIO)."""
         if self._bucket_ensured:
             return
 
+        # For R2/Cloudflare, we typically manage buckets and lifecycle via Dashboard
+        # and API tokens might not have permission to list/check buckets.
+        if self.config.storage_provider in ["r2", "cloudflare"]:
+            self._bucket_ensured = True
+            return
+
         try:
-            if not self.client.bucket_exists(self.config.minio_bucket):
-                self.client.make_bucket(self.config.minio_bucket)
-                logger.info(f"Created bucket: {self.config.minio_bucket}")
+            if not self.client.bucket_exists(self.config.storage_bucket):
+                self.client.make_bucket(self.config.storage_bucket)
+                logger.info(f"Created bucket: {self.config.storage_bucket}")
 
             # Set lifecycle rules for cache/external/
-            # This will automatically delete files in this folder after 7 days
             lifecycle_config = LifecycleConfig(
                 [
                     Rule(
@@ -55,13 +65,12 @@ class StorageRepository:
                     )
                 ]
             )
-            self.client.set_bucket_lifecycle(self.config.minio_bucket, lifecycle_config)
-            # logger.info("Set life-cycle rule for cache/external/ to 7 days") # Muted to reduce noise
-
+            self.client.set_bucket_lifecycle(self.config.storage_bucket, lifecycle_config)
             self._bucket_ensured = True
         except S3Error as e:
             logger.error(f"Failed to ensure bucket or set lifecycle: {e}")
-            raise
+            # Don't crash if lifecycle fails (might be unsupported by provider)
+            self._bucket_ensured = True
 
     def upload_file(
         self,
@@ -69,7 +78,7 @@ class StorageRepository:
         object_name: str,
         content_type: str = "image/jpeg",
     ) -> str:
-        """Upload file to MinIO and return the object name."""
+        """Upload file to storage and return the object name."""
         self._ensure_bucket()
 
         try:
@@ -77,7 +86,7 @@ class StorageRepository:
             file_size = len(data)
 
             self.client.put_object(
-                self.config.minio_bucket,
+                self.config.storage_bucket,
                 object_name,
                 file_stream,
                 file_size,
@@ -94,12 +103,12 @@ class StorageRepository:
         object_name: str,
         expires: int = 3600,
     ) -> str:
-        """Generate presigned URL for object access."""
+        """Generate presigned URL for direct object access."""
         self._ensure_bucket()
 
         try:
             url = self.client.presigned_get_object(
-                self.config.minio_bucket,
+                self.config.storage_bucket,
                 object_name,
                 expires=timedelta(seconds=expires),
             )
@@ -110,11 +119,11 @@ class StorageRepository:
             raise
 
     def delete_file(self, object_name: str) -> bool:
-        """Delete file from MinIO."""
+        """Delete file from storage."""
         self._ensure_bucket()
 
         try:
-            self.client.remove_object(self.config.minio_bucket, object_name)
+            self.client.remove_object(self.config.storage_bucket, object_name)
             logger.info(f"Deleted file: {object_name}")
             return True
         except S3Error as e:
@@ -122,27 +131,27 @@ class StorageRepository:
             raise
 
     def file_exists(self, object_name: str) -> bool:
-        """Check if file exists in MinIO."""
+        """Check if file exists in storage."""
         self._ensure_bucket()
 
         try:
-            self.client.stat_object(self.config.minio_bucket, object_name)
+            self.client.stat_object(self.config.storage_bucket, object_name)
             return True
         except S3Error:
             return False
 
     def check_connection(self) -> bool:
-        """Check MinIO connection."""
+        """Check storage connection."""
         try:
-            return self.client.bucket_exists(self.config.minio_bucket)
+            return self.client.bucket_exists(self.config.storage_bucket)
         except Exception:
             return False
 
     def get_file(self, object_name: str) -> Optional[bytes]:
-        """Get file content from MinIO."""
+        """Get file content from storage."""
         self._ensure_bucket()
         try:
-            response = self.client.get_object(self.config.minio_bucket, object_name)
+            response = self.client.get_object(self.config.storage_bucket, object_name)
             return response.read()
         except S3Error as e:
             logger.error(f"Failed to get file: {e}")
@@ -154,11 +163,11 @@ class StorageRepository:
     def get_file_with_metadata(
         self, object_name: str
     ) -> tuple[Optional[bytes], Optional[str]]:
-        """Get file content and content type from MinIO."""
+        """Get file content and content type from storage."""
         self._ensure_bucket()
         try:
-            stat = self.client.stat_object(self.config.minio_bucket, object_name)
-            response = self.client.get_object(self.config.minio_bucket, object_name)
+            stat = self.client.stat_object(self.config.storage_bucket, object_name)
+            response = self.client.get_object(self.config.storage_bucket, object_name)
             return response.read(), stat.content_type
         except S3Error as e:
             if e.code != "NoSuchKey":
@@ -171,11 +180,11 @@ class StorageRepository:
     def get_file_stream_with_metadata(
         self, object_name: str
     ) -> tuple[Optional[any], Optional[str]]:
-        """Get file stream and content type from MinIO."""
+        """Get file stream and content type from storage."""
         self._ensure_bucket()
         try:
-            stat = self.client.stat_object(self.config.minio_bucket, object_name)
-            response = self.client.get_object(self.config.minio_bucket, object_name)
+            stat = self.client.stat_object(self.config.storage_bucket, object_name)
+            response = self.client.get_object(self.config.storage_bucket, object_name)
             return response, stat.content_type
         except S3Error as e:
             if e.code != "NoSuchKey":
@@ -186,10 +195,10 @@ class StorageRepository:
             return None, None
 
     def get_file_stream(self, object_name: str):
-        """Get file stream from MinIO."""
+        """Get file stream from storage."""
         self._ensure_bucket()
         try:
-            return self.client.get_object(self.config.minio_bucket, object_name)
+            return self.client.get_object(self.config.storage_bucket, object_name)
         except S3Error as e:
             logger.error(f"Failed to get file stream: {e}")
             return None

@@ -29,6 +29,7 @@ def storage_service(mock_storage_repo):
     mock_config.secret_key = "test-secret-key-for-hmac-signing-purposes"
     mock_config.algorithm = "HS256"
     mock_config.api_base_url = "http://localhost:8080/api"
+    mock_config.storage_use_presigned = False
     return StorageService(repository=mock_storage_repo, config=mock_config)
 
 @pytest.mark.asyncio
@@ -50,6 +51,14 @@ async def test_resolve_url(storage_service):
     assert "/api/storage/m/tickets/user1/abc.jpg" in url
     assert "expires=" in url
     assert "signature=" in url
+
+@pytest.mark.asyncio
+async def test_resolve_url_presigned(storage_service):
+    # Test Storage Filename with presigned mode enabled
+    storage_service.config.storage_use_presigned = True
+    filename = "tickets/user1/abc.jpg"
+    url = storage_service.resolve_url(filename)
+    assert url == "https://minio.example.com/bucket/file.jpg"
 
 @pytest.mark.asyncio
 async def test_upload_image(storage_service):
