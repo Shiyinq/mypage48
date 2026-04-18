@@ -215,8 +215,9 @@ class StorageService:
 
     def resolve_url(self, value: Optional[str]) -> Optional[str]:
         """
-        Fast resolve of image value to URL without existence check.
-        Automatically appends a 1-hour access signature for internal paths.
+        Fast resolve of image value to URL.
+        If STORAGE_USE_PRESIGNED is True, generates a direct S3/R2 presigned URL.
+        Otherwise, returns a signed proxy URL.
         """
         if not value:
             return None
@@ -230,16 +231,23 @@ class StorageService:
         if "/" in value and not value.startswith("http"):
             path = value.lstrip("/")
 
-            # Signature generation logic moved to _create_signed_params
-            signature, expires = self._create_signed_params(path)
+            # Strategy 1: Direct Presigned URL (Best performance, low BE load)
+            if self.config.storage_use_presigned:
+                try:
+                    return self.repository.get_presigned_url(path)
+                except Exception as e:
+                    logger.error(f"Failed to generate direct presigned URL for {path}: {e}")
+                    # Fallback to proxy if presign fails
 
+            # Strategy 2: Proxy URL (Secure, handles signature mismatch in local dev)
+            signature, expires = self._create_signed_params(path)
             return f"{self.config.api_base_url}/storage/m/{path}?expires={expires}&signature={signature}"
 
         return value
 
     def resolve_markdown_images(self, content: Optional[str]) -> Optional[str]:
         """
-        Find internal storage paths in markdown and replace with proxy URLs using signatures.
+        Find internal storage paths in markdown and replace with resolved URLs.
         """
         if not content:
             return content
@@ -248,7 +256,7 @@ class StorageService:
             alt_text = match.group(1)
             path = match.group(2)
             try:
-                # Use resolve_url to get the signed proxy URL
+                # Use resolve_url to get the signed proxy URL or direct URL
                 proxy_url = self.resolve_url(path)
                 return f"![{alt_text}]({proxy_url})"
             except Exception:
@@ -257,7 +265,7 @@ class StorageService:
         return MARKDOWN_IMAGE_PATTERN.sub(replace_path, content)
 
     def resolve_ticket_images(self, ticket: "TicketResponse") -> "TicketResponse":
-        """Resolve storage filenames to presigned URLs for a ticket."""
+        """Resolve storage filenames to URLs for a ticket."""
         # Using model_dump and reconstruct pattern
         ticket_dict = ticket.model_dump()
 
@@ -277,7 +285,7 @@ class StorageService:
     def resolve_public_user_images(
         self, user: "PublicUserResponse"
     ) -> "PublicUserResponse":
-        """Resolve profile picture to presigned URL for public profile."""
+        """Resolve profile picture to URL for public profile."""
         user_dict = user.model_dump()
 
         if user_dict.get("profilePicture"):
@@ -288,7 +296,7 @@ class StorageService:
     def resolve_profile_full_images(
         self, profile: "ProfileFullResponse"
     ) -> "ProfileFullResponse":
-        """Resolve profile picture to presigned URL for full profile."""
+        """Resolve profile picture to URL for full profile."""
         profile_dict = profile.model_dump()
 
         if profile_dict.get("profile") and profile_dict["profile"].get(
@@ -301,7 +309,7 @@ class StorageService:
         return type(profile)(**profile_dict)
 
     def resolve_memory_item_image(self, memory: "MemoryItem") -> "MemoryItem":
-        """Resolve memory item image to presigned URL."""
+        """Resolve memory item image to URL."""
         memory_dict = memory.model_dump()
 
         if memory_dict.get("imageUrl"):
@@ -312,7 +320,7 @@ class StorageService:
     def resolve_top_twoshot_images(
         self, response: "TopTwoShotResponse"
     ) -> "TopTwoShotResponse":
-        """Resolve top 2-shot member images to presigned URLs."""
+        """Resolve top 2-shot member images to URLs."""
         response_dict = response.model_dump()
 
         if response_dict.get("ranking"):
@@ -325,7 +333,7 @@ class StorageService:
     def resolve_dashboard_stats(
         self, stats: "DashboardStatsResponse"
     ) -> "DashboardStatsResponse":
-        """Resolve images in dashboard statistics to presigned URLs."""
+        """Resolve images in dashboard statistics to URLs."""
         # We need to construct a new dictionary or copy to mutate it
         stats_dict = stats.model_dump()
 
@@ -354,11 +362,10 @@ class StorageService:
     async def get_internal_media(
         self,
         path: str,
-    ) -> tuple[Optional[bytes], str, int]:
+    ) -> tuple[Optional[any], str, int]:
         """
-        Get internal media from MinIO.
-        Returns (content, media_type, status_code).
-        Signature verification happens at the route level.
+        Get internal media as a stream.
+        Returns (stream, media_type, status_code).
         """
         path = path.lstrip("/")
 
@@ -367,15 +374,14 @@ class StorageService:
             if stream:
                 return stream, content_type or "image/jpeg", 200
 
-            return b"Not Found", "text/plain", 404
+            return [b"Not Found"], "text/plain", 404
         except Exception as e:
             logger.exception(f"Error getting media {path}: {str(e)}")
-            return b"Error", "text/plain", 500
+            return [b"Error"], "text/plain", 500
 
-    async def get_external_media(self, path: str) -> tuple[Optional[bytes], str, int]:
+    async def get_external_media(self, path: str) -> tuple[Optional[any], str, int]:
         """
-        Get external media from cache or original source.
-        Returns (content, media_type, status_code).
+        Get external media from cache or original source as a stream.
         """
         path = path.lstrip("/")
         cache_key = f"cache/external/{path}"
@@ -410,18 +416,18 @@ class StorageService:
                 except Exception as e:
                     logger.error(f"Failed to cache external media {path}: {e}")
 
-                return content, content_type, 200
+                return [content], content_type, 200
 
             # Forward other status codes as-is
             return (
-                upstream_response.content,
+                [upstream_response.content],
                 "text/plain",
                 upstream_response.status_code,
             )
 
         except httpx.TimeoutException:
             logger.error(f"Timeout fetching external media: {path}")
-            return b"Gateway Timeout", "text/plain", 504
+            return [b"Gateway Timeout"], "text/plain", 504
         except Exception as e:
             logger.error(f"Error fetching external media: {e}")
-            return b"Bad Gateway", "text/plain", 502
+            return [b"Bad Gateway"], "text/plain", 502
