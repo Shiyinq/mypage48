@@ -236,7 +236,9 @@ class StorageService:
                 try:
                     return self.repository.get_presigned_url(path)
                 except Exception as e:
-                    logger.error(f"Failed to generate direct presigned URL for {path}: {e}")
+                    logger.error(
+                        f"Failed to generate direct presigned URL for {path}: {e}"
+                    )
                     # Fallback to proxy if presign fails
 
             # Strategy 2: Proxy URL (Secure, handles signature mismatch in local dev)
