@@ -4,7 +4,7 @@
 	import { Image as ImageIcon } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { PageHeader, EmptyState, ErrorState } from '$lib/components';
+	import { PageHeader, EmptyState, ErrorState, NoMoreData } from '$lib/components';
 	import { Lightbox, MemoryFilters, MemoryCard, type FilterType } from '$lib/components/memories';
 	import { PolaroidSkeleton } from '$lib/components/skeletons';
 	import type { MemoryItem } from '$lib/types';
@@ -155,6 +155,8 @@
 					</div>
 				{/if}
 			</div>
+		{:else if memories.length > 0}
+			<NoMoreData theme="pink" />
 		{/if}
 	{/if}
 </div>
