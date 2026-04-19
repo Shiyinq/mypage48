@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -13,6 +13,7 @@ class ImageUploadRequest(BaseModel):
 class ImageUploadResponse(BaseModel):
     filename: str
     url: str
+    blurHash: Optional[str] = None
 
 
 class PresignedUrlResponse(BaseModel):

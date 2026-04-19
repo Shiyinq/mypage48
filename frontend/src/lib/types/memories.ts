@@ -10,6 +10,7 @@ export interface MemoryItem {
 	uniqueId: string;
 	type: 'TICKET' | '2SHOT';
 	imageUrl: string;
+	blurHash?: string;
 	date: string;
 	time: string;
 	title: string;

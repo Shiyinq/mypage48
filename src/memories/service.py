@@ -88,6 +88,7 @@ class MemoriesService:
                             uniqueId=f"{item['ticketId']}-{item['type'].lower()}",
                             type=MemoryType(item["type"]),
                             imageUrl=item["imageUrl"],
+                            blurHash=item.get("blurHash"),
                             date=item["date"],
                             time=item["time"],
                             title=item["title"],

@@ -245,16 +245,20 @@
 		try {
 			// Upload images to storage if present
 			let ticketImageUrl: string | undefined;
+			let ticketBlurHash: string | undefined;
 			let twoShotImageUrl: string | undefined;
+			let twoShotBlurHash: string | undefined;
 
 			if (image) {
 				const uploadResult = await storageStore.uploadImage(image, 'ticket');
 				ticketImageUrl = uploadResult.filename;
+				ticketBlurHash = uploadResult.blurHash;
 			}
 
 			if (showTwoShot && twoShotImage) {
 				const uploadResult = await storageStore.uploadImage(twoShotImage, 'twoshot');
 				twoShotImageUrl = uploadResult.filename;
+				twoShotBlurHash = uploadResult.blurHash;
 			}
 
 			// Prepare object for API
@@ -266,10 +270,12 @@
 				currency: 'IDR',
 				rules: formData.rules,
 				imageUrl: cleanseStorageUrl(ticketImageUrl),
+				blurHash: ticketBlurHash,
 				notes: cleanseMarkdown(formData.notes),
 				two_shot: showTwoShot
 					? {
 							imageUrl: cleanseStorageUrl(twoShotImageUrl),
+							blurHash: twoShotBlurHash,
 							member_name: formData.two_shot.member_name,
 							type: formData.two_shot.type,
 							price: Number(formData.two_shot.price)

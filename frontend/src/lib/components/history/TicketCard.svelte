@@ -10,7 +10,7 @@
 		X,
 		Ticket as TicketIcon
 	} from 'lucide-svelte';
-	import type { Ticket } from '$lib/types';
+	import type { Ticket } from '../../types/ticket';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
@@ -64,6 +64,7 @@
 			<div class="w-full h-full relative">
 				<OptimizedImage
 					src={ticket.imageUrl}
+					blurHash={ticket.blurHash}
 					alt={ticket.event.title}
 					class="w-full h-full transition-transform duration-700 group-hover:scale-105"
 				/>

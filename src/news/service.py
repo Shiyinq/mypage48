@@ -26,11 +26,12 @@ class NewsService:
             if "data" in res and isinstance(res["data"], list):
                 for item in res["data"]:
                     if isinstance(item, dict) and item.get("background_image"):
-                        item[
-                            "background_image"
-                        ] = await self.storage_service.resolve_external_url(
+                        media_res = await self.storage_service.resolve_external_media(
                             item["background_image"]
                         )
+                        item["background_image"] = media_res["url"]
+                        if media_res.get("blurHash"):
+                            item["blurHash"] = media_res["blurHash"]
             return res
         except Exception as e:
             logger.exception(f"Error fetching news: {str(e)}")
@@ -43,11 +44,12 @@ class NewsService:
                 raise NewsNotFoundError()
 
             if news.get("background_image"):
-                news[
-                    "background_image"
-                ] = await self.storage_service.resolve_external_url(
+                media_res = await self.storage_service.resolve_external_media(
                     news["background_image"]
                 )
+                news["background_image"] = media_res["url"]
+                if media_res.get("blurHash"):
+                    news["blurHash"] = media_res["blurHash"]
 
             return news
         except NewsNotFoundError:

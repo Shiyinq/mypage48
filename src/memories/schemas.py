@@ -18,6 +18,7 @@ class MemoryItem(BaseModel):
     uniqueId: str
     type: MemoryType
     imageUrl: Optional[str] = None
+    blurHash: Optional[str] = None
     date: str
     time: str
     title: str

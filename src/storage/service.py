@@ -11,7 +11,11 @@ import httpx
 if TYPE_CHECKING:
     from src.dashboard.schemas import DashboardStatsResponse
 
+from io import BytesIO
+
+import blurhash
 from minio.error import S3Error
+from PIL import Image
 
 from src.config import Settings
 from src.logging_config import create_logger
@@ -88,6 +92,37 @@ class StorageService:
         unique_id = uuid.uuid4().hex[:12]
         return f"{category}/{user_id}/{unique_id}.{extension}"
 
+    def _generate_blurhash(self, image_bytes: bytes) -> Optional[str]:
+        """Generate a BlurHash for the given image bytes."""
+        try:
+            if not image_bytes:
+                logger.warning("Empty image bytes received for blurhash")
+                return None
+
+            with Image.open(BytesIO(image_bytes)) as img:
+                # Convert to RGB if necessary
+                if img.mode != "RGB":
+                    img = img.convert("RGB")
+
+                # Resize to a very small size for performance
+                # Blurhash recommends around 32x32 for calculation
+                img.thumbnail((32, 32))
+
+                # Calculate components based on aspect ratio
+                # Usually 4x4 or 4x3 is good for most images
+                width, height = img.size
+                x_components = 4
+                y_components = 4 if height >= width else 3
+
+                hash_str = blurhash.encode(
+                    img, x_components=x_components, y_components=y_components
+                )
+                logger.debug(f"Generated blurhash: {hash_str}")
+                return hash_str
+        except Exception as e:
+            logger.error(f"Failed to generate blurhash: {str(e)}", exc_info=True)
+            return None
+
     def upload_image(
         self,
         user_id: str,
@@ -102,12 +137,15 @@ class StorageService:
             image_bytes, content_type = self._parse_base64_image(base64_image)
             filename = self._generate_filename(user_id, category, content_type)
 
+            # Generate blurhash before uploading
+            blurHash = self._generate_blurhash(image_bytes)
+
             self.repository.upload_file(image_bytes, filename, content_type)
 
             # Use our proxy resolve instead of direct MinIO presigned URL
             url = self.resolve_url(filename)
 
-            return ImageUploadResponse(filename=filename, url=url)
+            return ImageUploadResponse(filename=filename, url=url, blurHash=blurHash)
         except S3Error as e:
             logger.error(f"MinIO error during upload: {e}")
             raise StorageConnectionError()
@@ -277,8 +315,52 @@ class StorageService:
         # Now it's guaranteed to be in R2, resolve via standard logic
         return self.resolve_url(cache_key)
 
-    async def _cache_external_media(self, path: str) -> bool:
-        """Helper to fetch from source and save to R2."""
+    async def resolve_external_media(self, value: Optional[str]) -> dict:
+        """
+        New specialized resolve that returns both URL and BlurHash.
+        Matches the logic of resolve_external_url but returns a dict.
+        """
+        if not value:
+            return {"url": None, "blur_hash": None}
+
+        # Check if it's already a full URL or base64
+        if value.startswith("data:") or value.startswith("http"):
+            # If it's a jkt48 storage URL, treat it as a path
+            if "jkt48.com/api/v1/storages/" in value:
+                value = value.split("jkt48.com/api/v1/storages/")[1]
+            else:
+                return {"url": value, "blur_hash": None}
+
+        path = value.lstrip("/")
+        cache_key = f"cache/external/{path}"
+
+        # Ensure it's cached in R2 and get blurHash
+        blurHash = None
+        if not self.repository.file_exists(cache_key):
+            # Not in cache, fetch, upload and GET blurHash
+            try:
+                blurHash = await self._cache_external_media(path)
+            except Exception as e:
+                logger.error(f"Failed to JIT cache external media {path}: {e}")
+                return {
+                    "url": f"{self.config.api_base_url}/storage/external/{path}",
+                    "blurHash": None,
+                }
+        else:
+            # Already in cache, but we might not have the blurHash easily available
+            # We'll need a way to retrieve it. For now, we can calculate it on the fly
+            # or rely on the migration script to have pre-populated it in the DB.
+            # To avoid CPU spikes on GET, we'll return None and let the fallback handle it
+            # if it's not already in the database record.
+            pass
+
+        return {"url": self.resolve_url(cache_key), "blurHash": blurHash}
+
+    async def _cache_external_media(self, path: str) -> Optional[str]:
+        """
+        Helper to fetch from source and save to R2.
+        Returns the blurHash if successful.
+        """
         cache_key = f"cache/external/{path}"
         upstream_url = f"https://jkt48.com/api/v1/storages/{path}"
 
@@ -289,12 +371,15 @@ class StorageService:
             content = upstream_response.content
             content_type = upstream_response.headers.get("content-type", "image/jpeg")
             try:
+                # Generate blurhash
+                blurHash = self._generate_blurhash(content)
+
                 self.repository.upload_file(content, cache_key, content_type)
                 logger.info(f"Successfully cached {path} to R2")
-                return True
+                return blurHash
             except Exception as e:
                 logger.error(f"Failed to upload {path} to R2: {e}")
-        return False
+        return None
 
     def resolve_markdown_images(self, content: Optional[str]) -> Optional[str]:
         """
