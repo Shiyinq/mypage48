@@ -61,6 +61,19 @@ def get_email_service(config: Settings = Depends(get_settings)) -> EmailService:
     return EmailService(config, background_runner)
 
 
+def get_storage_repository(
+    config: Settings = Depends(get_settings),
+) -> StorageRepository:
+    return StorageRepository(config)
+
+
+def get_storage_service(
+    repo: StorageRepository = Depends(get_storage_repository),
+    config: Settings = Depends(get_settings),
+) -> StorageService:
+    return StorageService(repo, config)
+
+
 def get_api_key_repository(db=Depends(get_db)) -> ApiKeyRepository:
     return ApiKeyRepository(db)
 
@@ -218,8 +231,9 @@ def get_member_repository(db=Depends(get_db)) -> MemberRepository:
 def get_member_service(
     repo: MemberRepository = Depends(get_member_repository),
     config: Settings = Depends(get_settings),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> MemberService:
-    return MemberService(repo, config)
+    return MemberService(repo, config, storage_service)
 
 
 def get_events_service(
@@ -289,19 +303,6 @@ def get_setlists_service(
     return SetlistsService(repo, config)
 
 
-def get_storage_repository(
-    config: Settings = Depends(get_settings),
-) -> StorageRepository:
-    return StorageRepository(config)
-
-
-def get_storage_service(
-    repo: StorageRepository = Depends(get_storage_repository),
-    config: Settings = Depends(get_settings),
-) -> StorageService:
-    return StorageService(repo, config)
-
-
 def get_health_service(
     storage_repo: StorageRepository = Depends(get_storage_repository),
 ) -> HealthService:
@@ -351,8 +352,9 @@ def get_news_repository(db=Depends(get_db)) -> NewsRepository:
 def get_news_service(
     repo: NewsRepository = Depends(get_news_repository),
     config: Settings = Depends(get_settings),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> NewsService:
-    return NewsService(repo, config)
+    return NewsService(repo, config, storage_service)
 
 
 def get_live_service(

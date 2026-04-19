@@ -247,6 +247,58 @@ class StorageService:
 
         return value
 
+    async def resolve_external_url(self, value: Optional[str]) -> Optional[str]:
+        """
+        Specialized resolve for external media (jkt48.com).
+        Checks if the image exists in R2 cache. If not, fetches from source,
+        uploads to R2, and then returns the direct R2 URL.
+        """
+        if not value:
+            return None
+
+        # Check if it's already a full URL or base64
+        if value.startswith("data:") or value.startswith("http"):
+            # If it's a jkt48 storage URL, treat it as a path
+            if "jkt48.com/api/v1/storages/" in value:
+                value = value.split("jkt48.com/api/v1/storages/")[1]
+            else:
+                return value
+
+        path = value.lstrip("/")
+        cache_key = f"cache/external/{path}"
+
+        # Ensure it's cached in R2
+        if not self.repository.file_exists(cache_key):
+            # Not in cache, fetch and upload
+            try:
+                await self._cache_external_media(path)
+            except Exception as e:
+                logger.error(f"Failed to JIT cache external media {path}: {e}")
+                # Fallback to backend proxy if cache fails
+                return f"{self.config.api_base_url}/storage/external/{path}"
+
+        # Now it's guaranteed to be in R2, resolve via standard logic
+        return self.resolve_url(cache_key)
+
+    async def _cache_external_media(self, path: str) -> bool:
+        """Helper to fetch from source and save to R2."""
+        cache_key = f"cache/external/{path}"
+        upstream_url = f"https://jkt48.com/api/v1/storages/{path}"
+
+        async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
+            upstream_response = await client.get(upstream_url)
+
+        if upstream_response.status_code == 200:
+            content = upstream_response.content
+            content_type = upstream_response.headers.get("content-type", "image/jpeg")
+            try:
+                self.repository.upload_file(content, cache_key, content_type)
+                logger.info(f"Successfully cached {path} to R2")
+                return True
+            except Exception as e:
+                logger.error(f"Failed to upload {path} to R2: {e}")
+        return False
+
     def resolve_markdown_images(self, content: Optional[str]) -> Optional[str]:
         """
         Find internal storage paths in markdown and replace with resolved URLs.
@@ -399,37 +451,13 @@ class StorageService:
         except Exception as e:
             logger.error(f"Error checking cache for {path}: {e}")
 
-        # 2. Fetch from source
-        upstream_url = f"https://jkt48.com/api/v1/storages/{path}"
-        try:
-            async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
-                upstream_response = await client.get(upstream_url)
-
-            if upstream_response.status_code == 200:
-                content = upstream_response.content
-                content_type = upstream_response.headers.get(
-                    "content-type", "image/jpeg"
-                )
-
-                # 3. Cache it
-                try:
-                    self.repository.upload_file(content, cache_key, content_type)
-                    logger.info(f"Cached external media: {path}")
-                except Exception as e:
-                    logger.error(f"Failed to cache external media {path}: {e}")
-
-                return [content], content_type, 200
-
-            # Forward other status codes as-is
-            return (
-                [upstream_response.content],
-                "text/plain",
-                upstream_response.status_code,
+        # 2. Fetch from source using shared helper
+        success = await self._cache_external_media(path)
+        if success:
+            # Serve what we just cached
+            stream, content_type = self.repository.get_file_stream_with_metadata(
+                cache_key
             )
+            return stream, content_type or "image/jpeg", 200
 
-        except httpx.TimeoutException:
-            logger.error(f"Timeout fetching external media: {path}")
-            return [b"Gateway Timeout"], "text/plain", 504
-        except Exception as e:
-            logger.error(f"Error fetching external media: {e}")
-            return [b"Bad Gateway"], "text/plain", 502
+        return [b"Not Found"], "text/plain", 404
