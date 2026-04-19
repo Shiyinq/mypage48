@@ -9,6 +9,7 @@ from src.image_validation import (
 )
 from src.image_validation import validate_base64_image
 from src.logging_config import create_logger
+from src.storage.service import StorageService
 from src.tickets.constants import Info
 from src.tickets.exceptions import (
     ImageTooLargeError,
@@ -39,9 +40,28 @@ class TicketsService:
         self,
         repository: TicketsRepository,
         config: Settings,
+        storage_service: StorageService,
     ):
         self.repository = repository
         self.config = config
+        self.storage_service = storage_service
+
+    def _resolve_ticket(self, ticket: dict) -> dict:
+        """Resolve storage paths for ticket images and notes."""
+        if ticket.get("imageUrl"):
+            ticket["imageUrl"] = self.storage_service.resolve_url(ticket["imageUrl"])
+
+        if ticket.get("two_shot") and ticket["two_shot"].get("imageUrl"):
+            ticket["two_shot"]["imageUrl"] = self.storage_service.resolve_url(
+                ticket["two_shot"]["imageUrl"]
+            )
+
+        if ticket.get("notes"):
+            ticket["notes"] = self.storage_service.resolve_markdown_images(
+                ticket.get("notes")
+            )
+
+        return ticket
 
     @staticmethod
     def _validate_images(
@@ -79,7 +99,7 @@ class TicketsService:
             ticket_dict = ticket_in_db.model_dump()
             ticket_dict["_id"] = result.inserted_id
 
-            return TicketResponse(**ticket_dict)
+            return TicketResponse(**self._resolve_ticket(ticket_dict))
         except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):
             raise
         except Exception as e:
@@ -121,7 +141,7 @@ class TicketsService:
 
             results = []
             for t in tickets_data:
-                results.append(TicketResponse(**t))
+                results.append(TicketResponse(**self._resolve_ticket(t)))
 
             # Calculate total pages
             last_page = (total_count + per_page - 1) // per_page if per_page > 0 else 1
@@ -162,7 +182,7 @@ class TicketsService:
             )
             results = []
             for t in tickets_data:
-                results.append(TicketResponse(**t))
+                results.append(TicketResponse(**self._resolve_ticket(t)))
             return results
         except Exception as e:
             logger.exception(f"Error fetching tickets: {str(e)}")
@@ -173,7 +193,7 @@ class TicketsService:
             ticket = await self.repository.get_ticket(ticket_id, user_id)
             if not ticket:
                 raise TicketNotFoundError()
-            return TicketResponse(**ticket)
+            return TicketResponse(**self._resolve_ticket(ticket))
         except TicketNotFoundError:
             raise
         except Exception as e:
@@ -193,7 +213,7 @@ class TicketsService:
             )
             if not updated_ticket:
                 raise TicketNotFoundError()
-            return TicketResponse(**updated_ticket)
+            return TicketResponse(**self._resolve_ticket(updated_ticket))
         except TicketNotFoundError:
             raise
         except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):

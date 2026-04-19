@@ -9,9 +9,6 @@ from typing import TYPE_CHECKING, Optional
 import httpx
 
 if TYPE_CHECKING:
-    from src.memories.schemas import MemoryItem, TopTwoShotResponse
-    from src.tickets.schemas import TicketResponse
-    from src.users.schemas import PublicUserResponse, ProfileFullResponse
     from src.dashboard.schemas import DashboardStatsResponse
 
 from minio.error import S3Error
@@ -317,72 +314,6 @@ class StorageService:
                 return match.group(0)
 
         return MARKDOWN_IMAGE_PATTERN.sub(replace_path, content)
-
-    def resolve_ticket_images(self, ticket: "TicketResponse") -> "TicketResponse":
-        """Resolve storage filenames to URLs for a ticket."""
-        # Using model_dump and reconstruct pattern
-        ticket_dict = ticket.model_dump()
-
-        if ticket_dict.get("imageUrl"):
-            ticket_dict["imageUrl"] = self.resolve_url(ticket_dict["imageUrl"])
-
-        if ticket_dict.get("two_shot") and ticket_dict["two_shot"].get("imageUrl"):
-            ticket_dict["two_shot"]["imageUrl"] = self.resolve_url(
-                ticket_dict["two_shot"]["imageUrl"]
-            )
-
-        if ticket_dict.get("notes"):
-            ticket_dict["notes"] = self.resolve_markdown_images(ticket_dict["notes"])
-
-        return type(ticket)(**ticket_dict)
-
-    def resolve_public_user_images(
-        self, user: "PublicUserResponse"
-    ) -> "PublicUserResponse":
-        """Resolve profile picture to URL for public profile."""
-        user_dict = user.model_dump()
-
-        if user_dict.get("profilePicture"):
-            user_dict["profilePicture"] = self.resolve_url(user_dict["profilePicture"])
-
-        return type(user)(**user_dict)
-
-    def resolve_profile_full_images(
-        self, profile: "ProfileFullResponse"
-    ) -> "ProfileFullResponse":
-        """Resolve profile picture to URL for full profile."""
-        profile_dict = profile.model_dump()
-
-        if profile_dict.get("profile") and profile_dict["profile"].get(
-            "profilePicture"
-        ):
-            profile_dict["profile"]["profilePicture"] = self.resolve_url(
-                profile_dict["profile"]["profilePicture"]
-            )
-
-        return type(profile)(**profile_dict)
-
-    def resolve_memory_item_image(self, memory: "MemoryItem") -> "MemoryItem":
-        """Resolve memory item image to URL."""
-        memory_dict = memory.model_dump()
-
-        if memory_dict.get("imageUrl"):
-            memory_dict["imageUrl"] = self.resolve_url(memory_dict["imageUrl"])
-
-        return type(memory)(**memory_dict)
-
-    def resolve_top_twoshot_images(
-        self, response: "TopTwoShotResponse"
-    ) -> "TopTwoShotResponse":
-        """Resolve top 2-shot member images to URLs."""
-        response_dict = response.model_dump()
-
-        if response_dict.get("ranking"):
-            for member in response_dict["ranking"]:
-                if member.get("image"):
-                    member["image"] = self.resolve_url(member["image"])
-
-        return type(response)(**response_dict)
 
     def resolve_dashboard_stats(
         self, stats: "DashboardStatsResponse"

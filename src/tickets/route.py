@@ -3,8 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, Query, status
 
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_current_user, get_storage_service, get_tickets_service
-from src.storage.service import StorageService
+from src.dependencies import get_current_user, get_tickets_service
 from src.tickets.schemas import (
     MessageResponse,
     TicketCreateRequest,
@@ -27,13 +26,11 @@ async def create_ticket(
     ticket_data: TicketCreateRequest,
     current_user: UserCurrent = Depends(get_current_user),
     service: TicketsService = Depends(get_tickets_service),
-    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Create a new ticket.
     """
-    ticket = await service.create_ticket(current_user.userId, ticket_data)
-    return storage_service.resolve_ticket_images(ticket)
+    return await service.create_ticket(current_user.userId, ticket_data)
 
 
 @router.get(
@@ -50,7 +47,6 @@ async def get_my_tickets(
     end_date: str | None = None,
     current_user: UserCurrent = Depends(get_current_user),
     service: TicketsService = Depends(get_tickets_service),
-    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Get all tickets for the current user with advanced filtering options.
@@ -67,7 +63,7 @@ async def get_my_tickets(
     Returns:
         TicketPaginationResponse: Paginated list of tickets matching the filters
     """
-    result = await service.get_tickets_paginated(
+    return await service.get_tickets_paginated(
         current_user.userId,
         page=page,
         limit=limit,
@@ -77,12 +73,6 @@ async def get_my_tickets(
         start_date=start_date,
         end_date=end_date,
     )
-
-    # Resolve image URLs for all tickets
-    resolved_tickets = [storage_service.resolve_ticket_images(t) for t in result.data]
-    result.data = resolved_tickets
-
-    return result
 
 
 @router.get("/tickets/titles", response_model=List[str])
@@ -103,13 +93,11 @@ async def get_ticket(
     ticket_id: str,
     current_user: UserCurrent = Depends(get_current_user),
     service: TicketsService = Depends(get_tickets_service),
-    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Get a specific ticket by ID.
     """
-    ticket = await service.get_ticket(current_user.userId, ticket_id)
-    return storage_service.resolve_ticket_images(ticket)
+    return await service.get_ticket(current_user.userId, ticket_id)
 
 
 @router.put(
@@ -120,13 +108,11 @@ async def update_ticket(
     ticket_data: TicketUpdateRequest,
     current_user: UserCurrent = Depends(get_current_user),
     service: TicketsService = Depends(get_tickets_service),
-    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Update a ticket.
     """
-    ticket = await service.update_ticket(current_user.userId, ticket_id, ticket_data)
-    return storage_service.resolve_ticket_images(ticket)
+    return await service.update_ticket(current_user.userId, ticket_id, ticket_data)
 
 
 @router.delete(

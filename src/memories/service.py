@@ -11,6 +11,7 @@ from src.memories.schemas import (
     TopTwoShotMember,
     TopTwoShotResponse,
 )
+from src.storage.service import StorageService
 from src.tickets.schemas import PaginationMeta
 
 logger = create_logger("memories_service", __name__)
@@ -21,9 +22,21 @@ class MemoriesService:
         self,
         repository: MemoriesRepository,
         config: Settings,
+        storage_service: StorageService,
     ):
         self.repository = repository
         self.config = config
+        self.storage_service = storage_service
+
+    def _resolve_memory_item(self, item: MemoryItem) -> MemoryItem:
+        """Resolve storage paths for a memory item."""
+        if item.imageUrl:
+            item.imageUrl = self.storage_service.resolve_url(item.imageUrl)
+
+        if item.notes:
+            item.notes = self.storage_service.resolve_markdown_images(item.notes)
+
+        return item
 
     async def get_memories_paginated(
         self,
@@ -70,17 +83,19 @@ class MemoriesService:
                     subtitle = item.get("twoShotType", "Roulette")
 
                 memory_items.append(
-                    MemoryItem(
-                        uniqueId=f"{item['ticketId']}-{item['type'].lower()}",
-                        type=MemoryType(item["type"]),
-                        imageUrl=item["imageUrl"],
-                        date=item["date"],
-                        time=item["time"],
-                        title=item["title"],
-                        subtitle=subtitle,
-                        notes=item.get("notes"),
-                        eventTitle=item.get("eventTitle"),
-                        twoShotMemberName=item.get("twoShotMemberName"),
+                    self._resolve_memory_item(
+                        MemoryItem(
+                            uniqueId=f"{item['ticketId']}-{item['type'].lower()}",
+                            type=MemoryType(item["type"]),
+                            imageUrl=item["imageUrl"],
+                            date=item["date"],
+                            time=item["time"],
+                            title=item["title"],
+                            subtitle=subtitle,
+                            notes=item.get("notes"),
+                            eventTitle=item.get("eventTitle"),
+                            twoShotMemberName=item.get("twoShotMemberName"),
+                        )
                     )
                 )
 
@@ -113,13 +128,17 @@ class MemoriesService:
             # Map to response model
             ranking = []
             for item in stats.get("ranking", []):
+                image_url = item.get("image")
+                if image_url:
+                    image_url = self.storage_service.resolve_url(image_url)
+
                 ranking.append(
                     TopTwoShotMember(
                         name=item["name"],
                         count=item["count"],
                         spend=item["spend"],
                         lastDate=item["lastDate"],
-                        image=item.get("image"),
+                        image=image_url,
                     )
                 )
 
