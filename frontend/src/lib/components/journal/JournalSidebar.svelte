@@ -3,8 +3,9 @@
 	import type { Ticket } from '$lib/types';
 	import { CalendarDays, MapPin, PanelLeftClose } from 'lucide-svelte';
 	import { formatDate } from '$lib/i18n';
-	import HistoryFilter from '$lib/components/history/HistoryFilter.svelte';
+	import { HistoryFilter } from '$lib/components/history';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
+	import { NoMoreData } from '$lib/components';
 
 	interface Props {
 		tickets?: Ticket[];
@@ -158,6 +159,8 @@
 							></span>
 						{/if}
 					</div>
+				{:else if tickets.length > 0}
+					<NoMoreData theme="red" padding="py-8" />
 				{/if}
 			</div>
 		{/if}

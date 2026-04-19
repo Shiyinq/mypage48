@@ -39,7 +39,8 @@
 		"fromShort": "から",
 		"toShort": "まで",
 		"copyLink": "リンクをコピー",
-		"copied": "リンクをクリップボードにコピーしました！"
+		"copied": "リンクをクリップボードにコピーしました！",
+		"noMoreData": "すべてのデータが読み込まれました"
 	},
 	"validation": {
 		"alert": {

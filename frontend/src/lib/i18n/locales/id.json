@@ -40,7 +40,8 @@
 		"fromShort": "Dari",
 		"toShort": "Ke",
 		"copyLink": "Salin Tautan",
-		"copied": "Tautan disalin ke clipboard!"
+		"copied": "Tautan disalin ke clipboard!",
+		"noMoreData": "Seluruh data telah dimuat"
 	},
 	"validation": {
 		"alert": {

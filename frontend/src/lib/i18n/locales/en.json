@@ -39,7 +39,8 @@
 		"fromShort": "Fr",
 		"toShort": "To",
 		"copyLink": "Copy Link",
-		"copied": "Link copied to clipboard!"
+		"copied": "Link copied to clipboard!",
+		"noMoreData": "All data has been loaded"
 	},
 	"validation": {
 		"alert": {
