@@ -92,17 +92,7 @@
 
 		try {
 			if (!currentProfile) {
-				const fullResponse = await auth.getProfile();
-				// Extract profile and add profile stats for profile page
-				const profileWithStats = {
-					...fullResponse.profile,
-					oshi: fullResponse.oshi,
-					profileRank: fullResponse.rank,
-					profileStats: fullResponse.stats,
-					profileOshiTwoShots: fullResponse.oshiTwoShots,
-					profileRecentActivity: fullResponse.recentActivity
-				};
-				userProfile.set({ data: profileWithStats, error: null });
+				await userProfile.load();
 			}
 		} catch (err) {
 			logger.error('Failed to load initial data', err, { context: 'Layout' });
