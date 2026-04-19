@@ -6,15 +6,11 @@ export const load: PageLoad = async ({ params }) => {
 	const { link } = params;
 
 	try {
-		// Fetch current news and latest news for the sidebar concurrently
-		const [item, recentNewsResponse] = await Promise.all([
-			news.getNewsByLink(link),
-			news.getNews(1, 10) // fetch 10 latest
-		]);
+		// Fetch current news
+		const item = await news.getNewsByLink(link);
 
 		return {
-			item,
-			recentNews: recentNewsResponse.data
+			item
 		};
 	} catch (err) {
 		// If the API throws an error (e.g., News Not Found),
