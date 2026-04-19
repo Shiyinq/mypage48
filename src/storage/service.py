@@ -37,10 +37,8 @@ from src.storage.schemas import (
 
 logger = create_logger("storage_service", __name__)
 
-# Regex to detect base64 data URL
 BASE64_PATTERN = re.compile(r"^data:image/(\w+);base64,(.+)$", re.DOTALL)
 
-# Regex to detect internal storage paths in markdown: ![](journal/abc.png)
 MARKDOWN_IMAGE_PATTERN = re.compile(
     r"!\[(.*?)\]\(((journal|ticket|twoshot|avatar)\/[^)]+)\)"
 )
@@ -62,7 +60,6 @@ class StorageService:
         image_format = match.group(1).lower()
         base64_data = match.group(2)
 
-        # Map format to content type
         content_type_map = {
             "jpeg": "image/jpeg",
             "jpg": "image/jpeg",
@@ -82,15 +79,30 @@ class StorageService:
 
     def _generate_filename(self, user_id: str, category: str, content_type: str) -> str:
         """Generate unique filename for storage."""
-        extension_map = {
-            "image/jpeg": "jpg",
-            "image/png": "png",
-            "image/webp": "webp",
-            "image/gif": "gif",
-        }
-        extension = extension_map.get(content_type, "jpg")
+        # We now standardize on webp for all uploads via the upload API
+        extension = "webp"
         unique_id = uuid.uuid4().hex[:12]
         return f"{category}/{user_id}/{unique_id}.{extension}"
+
+    def _generate_blurhash_from_image(self, img: Image.Image) -> Optional[str]:
+        """Generate a BlurHash for the given PIL Image object."""
+        try:
+            temp_img = img.copy()
+            if temp_img.mode != "RGB":
+                temp_img = temp_img.convert("RGB")
+            
+            temp_img.thumbnail((32, 32))
+            
+            width, height = temp_img.size
+            x_components = 4
+            y_components = 4 if height >= width else 3
+            
+            hash_str = blurhash.encode(temp_img, x_components=x_components, y_components=y_components)
+            logger.debug(f"Generated blurhash: {hash_str}")
+            return hash_str
+        except Exception as e:
+            logger.error(f"Failed to generate blurhash from image: {str(e)}", exc_info=True)
+            return None
 
     def _generate_blurhash(self, image_bytes: bytes) -> Optional[str]:
         """Generate a BlurHash for the given image bytes."""
@@ -98,27 +110,9 @@ class StorageService:
             if not image_bytes:
                 logger.warning("Empty image bytes received for blurhash")
                 return None
-
+            
             with Image.open(BytesIO(image_bytes)) as img:
-                # Convert to RGB if necessary
-                if img.mode != "RGB":
-                    img = img.convert("RGB")
-
-                # Resize to a very small size for performance
-                # Blurhash recommends around 32x32 for calculation
-                img.thumbnail((32, 32))
-
-                # Calculate components based on aspect ratio
-                # Usually 4x4 or 4x3 is good for most images
-                width, height = img.size
-                x_components = 4
-                y_components = 4 if height >= width else 3
-
-                hash_str = blurhash.encode(
-                    img, x_components=x_components, y_components=y_components
-                )
-                logger.debug(f"Generated blurhash: {hash_str}")
-                return hash_str
+                return self._generate_blurhash_from_image(img)
         except Exception as e:
             logger.error(f"Failed to generate blurhash: {str(e)}", exc_info=True)
             return None
@@ -134,15 +128,23 @@ class StorageService:
             raise InvalidCategoryError()
 
         try:
-            image_bytes, content_type = self._parse_base64_image(base64_image)
+            original_bytes, _ = self._parse_base64_image(base64_image)
+            
+            with Image.open(BytesIO(original_bytes)) as img:
+                blurHash = self._generate_blurhash_from_image(img)
+                
+                output = BytesIO()
+                if img.mode in ("RGBA", "LA", "P"):
+                    img = img.convert("RGBA")
+                else:
+                    img = img.convert("RGB")
+                
+                img.save(output, format="WEBP", quality=75)
+                webp_bytes = output.getvalue()
+                content_type = "image/webp"
+
             filename = self._generate_filename(user_id, category, content_type)
-
-            # Generate blurhash before uploading
-            blurHash = self._generate_blurhash(image_bytes)
-
-            self.repository.upload_file(image_bytes, filename, content_type)
-
-            # Use our proxy resolve instead of direct MinIO presigned URL
+            self.repository.upload_file(webp_bytes, filename, content_type)
             url = self.resolve_url(filename)
 
             return ImageUploadResponse(filename=filename, url=url, blurHash=blurHash)
@@ -257,12 +259,9 @@ class StorageService:
         if not value:
             return None
 
-        # Check for base64
         if value.startswith("data:image/"):
             return value
 
-        # Check for storage filename
-        # Storage filenames contain / but don't start with data: or http
         if "/" in value and not value.startswith("http"):
             path = value.lstrip("/")
 
@@ -334,10 +333,7 @@ class StorageService:
         path = value.lstrip("/")
         cache_key = f"cache/external/{path}"
 
-        # Ensure it's cached in R2 and get blurHash
-        blurHash = None
         if not self.repository.file_exists(cache_key):
-            # Not in cache, fetch, upload and GET blurHash
             try:
                 blurHash = await self._cache_external_media(path)
             except Exception as e:
@@ -371,9 +367,7 @@ class StorageService:
             content = upstream_response.content
             content_type = upstream_response.headers.get("content-type", "image/jpeg")
             try:
-                # Generate blurhash
                 blurHash = self._generate_blurhash(content)
-
                 self.repository.upload_file(content, cache_key, content_type)
                 logger.info(f"Successfully cached {path} to R2")
                 return blurHash
@@ -456,7 +450,6 @@ class StorageService:
         path = path.lstrip("/")
         cache_key = f"cache/external/{path}"
 
-        # 1. Try cache
         try:
             stream, content_type = self.repository.get_file_stream_with_metadata(
                 cache_key
@@ -467,7 +460,6 @@ class StorageService:
         except Exception as e:
             logger.error(f"Error checking cache for {path}: {e}")
 
-        # 2. Fetch from source using shared helper
         success = await self._cache_external_media(path)
         if success:
             # Serve what we just cached
