@@ -10,6 +10,8 @@
 	import { showToast } from '$lib/stores';
 	import { browser } from '$app/environment';
 	import DOMPurify from 'isomorphic-dompurify';
+	import { onMount } from 'svelte';
+	import { newsStore, newsList } from '$lib/stores/news.svelte';
 
 	interface Props {
 		data: PageData;
@@ -18,7 +20,13 @@
 	let { data }: Props = $props();
 
 	let item = $derived(data.item);
-	let recentNews = $derived(data.recentNews.filter((n) => n.link !== item.link).slice(0, 10));
+	let recentNews = $derived(newsList.value.filter((n) => n.link !== item?.link).slice(0, 10));
+
+	onMount(() => {
+		if (newsList.value.length === 0) {
+			newsStore.load(1);
+		}
+	});
 
 	const { t, locale } = useTranslation();
 
@@ -77,7 +85,10 @@
 		>
 			<a href="/theater" class="hover:text-red-500 transition-colors">Home</a>
 			<span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-zinc-600"></span>
-			<a href="/theater/news" class="hover:text-red-500 transition-colors">News</a>
+			<a
+				href={`/theater/news${newsStore.pagination.current_page > 1 ? `?page=${newsStore.pagination.current_page}` : ''}`}
+				class="hover:text-red-500 transition-colors">News</a
+			>
 			<span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-zinc-600"></span>
 			<span class="text-gray-900 dark:text-gray-200 line-clamp-1 break-all">{item.title}</span>
 		</div>
@@ -226,7 +237,7 @@
 						{t('theater.news.otherNews')}
 					</h3>
 					<a
-						href="/theater/news"
+						href={`/theater/news${newsStore.pagination.current_page > 1 ? `?page=${newsStore.pagination.current_page}` : ''}`}
 						class="text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-0.5"
 					>
 						{t('theater.news.seeAll')}

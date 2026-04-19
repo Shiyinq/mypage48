@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Newspaper, Calendar, ChevronLeft, ChevronRight } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
@@ -24,7 +25,6 @@
 	let mounted = $state(false);
 
 	onMount(async () => {
-		await newsStore.load();
 		mounted = true;
 	});
 
@@ -34,7 +34,7 @@
 	let error = $derived(newsError.value);
 
 	async function handlePageChange(pageIdx: number) {
-		newsStore.load(pageIdx);
+		goto(`${basePath}?page=${pageIdx}`);
 		await tick();
 		setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 10);
 	}
@@ -92,7 +92,7 @@
 		</p>
 	</div>
 
-	{#if (!mounted || isLoading) && list.length === 0}
+	{#if !mounted || isLoading}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
 			{#each Array(8) as _}
 				<EventCardSkeleton />

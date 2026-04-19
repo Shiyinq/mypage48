@@ -3,7 +3,6 @@
 	import { isAuthenticated, toast, userProfile, isInitialDataLoaded } from '$lib/stores';
 	import { locale, type Locale } from '$lib/i18n';
 	import { initTheme } from '$lib/stores';
-	import { auth } from '$lib/apis/auth';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
