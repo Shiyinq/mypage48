@@ -35,9 +35,10 @@ class MemberService:
     async def _resolve_member(self, member: dict) -> dict:
         """Resolve member image using storage service (external)."""
         if member.get("img"):
-            member["img"] = await self.storage_service.resolve_external_url(
-                member["img"]
-            )
+            res = await self.storage_service.resolve_external_media(member["img"])
+            member["img"] = res["url"]
+            if res.get("blurHash"):
+                member["blurHash"] = res["blurHash"]
         return member
 
     async def get_all_members(

@@ -125,6 +125,7 @@
 						{#if item.background_image}
 							<OptimizedImage
 								src={getExternalMediaUrl(item.background_image)}
+								blurHash={item.blurHash}
 								alt={item.title}
 								class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
 							/>

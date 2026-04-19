@@ -5,9 +5,11 @@
 <script lang="ts">
 	import { ImageIcon, LoaderCircle } from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import { decode } from 'blurhash';
 
 	interface Props {
 		src?: string | null;
+		blurHash?: string | null;
 		alt?: string;
 		class?: string;
 		style?: string;
@@ -31,6 +33,7 @@
 
 	let {
 		src,
+		blurHash,
 		alt,
 		class: className = '',
 		style = '',
@@ -47,6 +50,7 @@
 	let isLoaded = $state(false);
 	let isError = $state(false);
 	let imgRef: HTMLImageElement | undefined = $state();
+	let canvasRef: HTMLCanvasElement | undefined = $state();
 
 	function handleLoad() {
 		isLoaded = true;
@@ -57,6 +61,22 @@
 		isError = true;
 		isLoaded = true;
 	}
+
+	$effect(() => {
+		if (blurHash && !isLoaded && canvasRef) {
+			try {
+				const pixels = decode(blurHash, 32, 32);
+				const ctx = canvasRef.getContext('2d');
+				if (ctx) {
+					const imageData = ctx.createImageData(32, 32);
+					imageData.data.set(pixels);
+					ctx.putImageData(imageData, 0, 0);
+				}
+			} catch (e) {
+				console.error('Failed to decode blurhash', e);
+			}
+		}
+	});
 
 	onMount(() => {
 		if (imgRef?.complete) {
@@ -96,6 +116,18 @@
 	{:else}
 		<!-- Image (renders immediately to support progressive loading) -->
 		{#if src}
+			<!-- BlurHash Placeholder -->
+			{#if blurHash && !isLoaded && !isError}
+				<canvas
+					bind:this={canvasRef}
+					width="32"
+					height="32"
+					class="absolute inset-0 w-full h-full rounded-[inherit] transition-opacity duration-700 {isLoaded
+						? 'opacity-0'
+						: 'opacity-100'}"
+				></canvas>
+			{/if}
+
 			<img
 				bind:this={imgRef}
 				{src}
@@ -111,8 +143,8 @@
 			/>
 		{/if}
 
-		<!-- Loading Overlay (shows over the blurring image) -->
-		{#if !isLoaded && !isError}
+		<!-- Loading Overlay (shows over the blurring image/canvas) -->
+		{#if !isLoaded && !isError && !blurHash}
 			<div
 				class="absolute inset-0 z-10 flex items-center justify-center bg-white/5 dark:bg-black/5 border border-white/10 dark:border-black/10 backdrop-blur-[1px] transition-opacity duration-500"
 			>

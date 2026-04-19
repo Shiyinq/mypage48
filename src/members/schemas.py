@@ -24,6 +24,7 @@ class MemberBase(BaseModel):
     active: bool = True
     href: Optional[str] = None
     img: Optional[str] = None
+    blurHash: Optional[str] = None
     birthdate: Optional[str] = None
     bloodType: Optional[str] = None
     horoscope: Optional[str] = None

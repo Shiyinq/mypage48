@@ -24,6 +24,7 @@
 		{#if member.img}
 			<OptimizedImage
 				src={getExternalMediaUrl(member.img)}
+				blurHash={member.blurHash}
 				alt={member.name}
 				class="w-full h-full transition-transform duration-500 group-hover:scale-110"
 			/>

@@ -1,6 +1,7 @@
 export interface ImageUploadResponse {
 	filename: string;
 	url: string;
+	blurHash?: string;
 }
 
 export interface PresignedUrlResponse {
