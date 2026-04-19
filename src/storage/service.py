@@ -90,18 +90,22 @@ class StorageService:
             temp_img = img.copy()
             if temp_img.mode != "RGB":
                 temp_img = temp_img.convert("RGB")
-            
+
             temp_img.thumbnail((32, 32))
-            
+
             width, height = temp_img.size
             x_components = 4
             y_components = 4 if height >= width else 3
-            
-            hash_str = blurhash.encode(temp_img, x_components=x_components, y_components=y_components)
+
+            hash_str = blurhash.encode(
+                temp_img, x_components=x_components, y_components=y_components
+            )
             logger.debug(f"Generated blurhash: {hash_str}")
             return hash_str
         except Exception as e:
-            logger.error(f"Failed to generate blurhash from image: {str(e)}", exc_info=True)
+            logger.error(
+                f"Failed to generate blurhash from image: {str(e)}", exc_info=True
+            )
             return None
 
     def _generate_blurhash(self, image_bytes: bytes) -> Optional[str]:
@@ -110,7 +114,7 @@ class StorageService:
             if not image_bytes:
                 logger.warning("Empty image bytes received for blurhash")
                 return None
-            
+
             with Image.open(BytesIO(image_bytes)) as img:
                 return self._generate_blurhash_from_image(img)
         except Exception as e:
@@ -129,16 +133,16 @@ class StorageService:
 
         try:
             original_bytes, _ = self._parse_base64_image(base64_image)
-            
+
             with Image.open(BytesIO(original_bytes)) as img:
                 blurHash = self._generate_blurhash_from_image(img)
-                
+
                 output = BytesIO()
                 if img.mode in ("RGBA", "LA", "P"):
                     img = img.convert("RGBA")
                 else:
                     img = img.convert("RGB")
-                
+
                 img.save(output, format="WEBP", quality=75)
                 webp_bytes = output.getvalue()
                 content_type = "image/webp"
@@ -365,15 +369,26 @@ class StorageService:
             upstream_response = await client.get(upstream_url)
 
         if upstream_response.status_code == 200:
-            content = upstream_response.content
-            content_type = upstream_response.headers.get("content-type", "image/jpeg")
+            original_content = upstream_response.content
             try:
-                blurHash = self._generate_blurhash(content)
-                self.repository.upload_file(content, cache_key, content_type)
-                logger.info(f"Successfully cached {path} to R2")
-                return blurHash
+                with Image.open(BytesIO(original_content)) as img:
+                    blurHash = self._generate_blurhash_from_image(img)
+
+                    output = BytesIO()
+                    if img.mode in ("RGBA", "LA", "P"):
+                        img = img.convert("RGBA")
+                    else:
+                        img = img.convert("RGB")
+
+                    img.save(output, format="WEBP", quality=75)
+                    webp_data = output.getvalue()
+                    content_type = "image/webp"
+
+                    self.repository.upload_file(webp_data, cache_key, content_type)
+                    logger.info(f"Successfully cached {path} to R2 as WebP")
+                    return blurHash
             except Exception as e:
-                logger.error(f"Failed to upload {path} to R2: {e}")
+                logger.error(f"Failed to process and upload {path} to R2: {e}")
         return None
 
     def resolve_markdown_images(self, content: Optional[str]) -> Optional[str]:
@@ -428,10 +443,15 @@ class StorageService:
         """Resolve images for a ticket object."""
         if hasattr(ticket, "imageUrl") and ticket.imageUrl:
             ticket.imageUrl = self.resolve_url(ticket.imageUrl)
-        
-        if hasattr(ticket, "two_shot") and ticket.two_shot and hasattr(ticket.two_shot, "imageUrl") and ticket.two_shot.imageUrl:
+
+        if (
+            hasattr(ticket, "two_shot")
+            and ticket.two_shot
+            and hasattr(ticket.two_shot, "imageUrl")
+            and ticket.two_shot.imageUrl
+        ):
             ticket.two_shot.imageUrl = self.resolve_url(ticket.two_shot.imageUrl)
-            
+
         return ticket
 
     async def get_internal_media(
