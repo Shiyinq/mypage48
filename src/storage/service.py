@@ -332,6 +332,7 @@ class StorageService:
 
         path = value.lstrip("/")
         cache_key = f"cache/external/{path}"
+        blurHash = None
 
         if not self.repository.file_exists(cache_key):
             try:
@@ -422,6 +423,16 @@ class StorageService:
                 extremes["last"]["image"] = self.resolve_url(extremes["last"]["image"])
 
         return type(stats)(**stats_dict)
+
+    def resolve_ticket_images(self, ticket: any) -> any:
+        """Resolve images for a ticket object."""
+        if hasattr(ticket, "imageUrl") and ticket.imageUrl:
+            ticket.imageUrl = self.resolve_url(ticket.imageUrl)
+        
+        if hasattr(ticket, "two_shot") and ticket.two_shot and hasattr(ticket.two_shot, "imageUrl") and ticket.two_shot.imageUrl:
+            ticket.two_shot.imageUrl = self.resolve_url(ticket.two_shot.imageUrl)
+            
+        return ticket
 
     async def get_internal_media(
         self,

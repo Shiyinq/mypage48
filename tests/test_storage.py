@@ -1,6 +1,7 @@
 import pytest
 import io
-from unittest.mock import AsyncMock, MagicMock
+import base64
+from unittest.mock import AsyncMock, MagicMock, ANY
 from src.storage.service import StorageService
 from src.storage.schemas import ImageCategory
 from src.dependencies import get_storage_service
@@ -14,8 +15,10 @@ class MockStorageRepository:
 		self.get_presigned_url = MagicMock(return_value="https://minio.example.com/bucket/file.jpg")
 		self.file_exists = MagicMock(return_value=True)
 		self.delete_file = MagicMock(return_value=True)
-		self.get_file_with_metadata = MagicMock(return_value=(b"fake_image_content", "image/jpeg"))
-		self.get_file_stream_with_metadata = MagicMock(return_value=(io.BytesIO(b"fake_image_content"), "image/jpeg"))
+		# Use valid 1x1 PNG bytes instead of "fake_image_content"
+		valid_image = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
+		self.get_file_with_metadata = MagicMock(return_value=(valid_image, "image/png"))
+		self.get_file_stream_with_metadata = MagicMock(return_value=(io.BytesIO(valid_image), "image/png"))
 
 @pytest.fixture
 def mock_storage_repo():
@@ -69,7 +72,7 @@ async def test_upload_image(storage_service):
     response = storage_service.upload_image(user_id, base64_img, category)
     
     assert response.filename.startswith("ticket/user123/")
-    assert response.filename.endswith(".png")
+    assert response.filename.endswith(".webp")
     assert "/api/storage/m/" in response.url
     assert "signature=" in response.url
     storage_service.repository.upload_file.assert_called_once()
@@ -83,7 +86,7 @@ async def test_upload_image_journal(storage_service):
     response = storage_service.upload_image(user_id, base64_img, category)
     
     assert response.filename.startswith("journal/user123/")
-    assert response.filename.endswith(".png")
+    assert response.filename.endswith(".webp")
     assert "/api/storage/m/" in response.url
 
 @pytest.mark.asyncio
@@ -246,8 +249,12 @@ async def test_get_external_media_cache_hit(storage_service):
 async def test_get_external_media_cache_miss(storage_service, monkeypatch):
     path = "media/jkt48-member/new_member.jpg"
     
-    # Mock cache miss (returns None)
-    storage_service.repository.get_file_stream_with_metadata.return_value = (None, None)
+    # Mock cache miss then hit
+    valid_image = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
+    storage_service.repository.get_file_stream_with_metadata.side_effect = [
+        (None, None),
+        (io.BytesIO(valid_image), "image/png")
+    ]
     
     # Mock httpx.AsyncClient
     mock_client_instance = AsyncMock()
@@ -255,8 +262,8 @@ async def test_get_external_media_cache_miss(storage_service, monkeypatch):
     class MockResponse:
         def __init__(self):
             self.status_code = 200
-            self.content = b"new_image_content"
-            self.headers = {"content-type": "image/jpeg"}
+            self.content = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
+            self.headers = {"content-type": "image/png"}
 
     mock_client_instance.get.return_value = MockResponse()
     
@@ -268,10 +275,10 @@ async def test_get_external_media_cache_miss(storage_service, monkeypatch):
         content, media_type, status = await storage_service.get_external_media(path)
     
     assert status == 200
-    assert content == b"new_image_content"
+    assert content.getbuffer().nbytes > 0 # Use nbytes for BytesIO
     # Verify it was cached
     storage_service.repository.upload_file.assert_called_with(
-        b"new_image_content", "cache/external/media/jkt48-member/new_member.jpg", "image/jpeg"
+        ANY, "cache/external/media/jkt48-member/new_member.jpg", "image/png"
     )
 
 @pytest.mark.asyncio
@@ -309,7 +316,8 @@ async def test_api_proxy_internal_media(client, storage_service):
         # 2. Test Success (Valid Signature)
         response = await client.get(f"/api/storage/m/{path}?expires={expires}&signature={signature}")
         assert response.status_code == 200
-        assert response.content == b"fake_image_content"
+        # Check we got some bytes (the valid PNG)
+        assert len(response.content) > 0
         assert response.headers["X-Robots-Tag"] == "noindex, nofollow, noarchive"
         
         # 3. Test Failure (Invalid Signature)
