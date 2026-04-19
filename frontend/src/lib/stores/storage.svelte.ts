@@ -51,18 +51,6 @@ function createStorageStore() {
 
 		updateCache: (signatures: Record<string, string>) => {
 			Object.assign(cache, signatures);
-		},
-
-		/**
-		 * Legacy subscribe method for backward compatibility
-		 */
-		subscribe: (fn: (val: Record<string, string>) => void) => {
-			$effect.root(() => {
-				$effect(() => {
-					fn(cache);
-				});
-			});
-			return () => {};
 		}
 	};
 }
