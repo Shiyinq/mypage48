@@ -15,6 +15,7 @@ from src.members.schemas import (
     MemberUpdateRequest,
     MessageResponse,
 )
+from src.storage.service import StorageService
 from src.tickets.schemas import PaginationMeta
 
 logger = create_logger("members_service", __name__)
@@ -25,9 +26,19 @@ class MemberService:
         self,
         repository: MemberRepository,
         config: Settings,
+        storage_service: StorageService,
     ):
         self.repository = repository
         self.config = config
+        self.storage_service = storage_service
+
+    async def _resolve_member(self, member: dict) -> dict:
+        """Resolve member image using storage service (external)."""
+        if member.get("img"):
+            member["img"] = await self.storage_service.resolve_external_url(
+                member["img"]
+            )
+        return member
 
     async def get_all_members(
         self,
@@ -42,7 +53,10 @@ class MemberService:
             members = await self.repository.find_all(skip, limit, generation, search)
             total = await self.repository.count(generation, search)
 
-            member_responses = [MemberResponse(**member) for member in members]
+            member_responses = [
+                MemberResponse(**(await self._resolve_member(member)))
+                for member in members
+            ]
 
             last_page = (total + limit - 1) // limit if limit > 0 else 1
             if last_page < 1:
@@ -70,7 +84,8 @@ class MemberService:
                 raise MemberNotFoundError()
 
             return MemberDetailResponse(
-                member=MemberResponse(**member), detail=Info.MEMBER_FOUND
+                member=MemberResponse(**(await self._resolve_member(member))),
+                detail=Info.MEMBER_FOUND,
             )
         except MemberNotFoundError:
             raise
@@ -86,7 +101,8 @@ class MemberService:
                 raise MemberNotFoundError()
 
             return MemberDetailResponse(
-                member=MemberResponse(**member), detail=Info.MEMBER_FOUND
+                member=MemberResponse(**(await self._resolve_member(member))),
+                detail=Info.MEMBER_FOUND,
             )
         except MemberNotFoundError:
             raise
@@ -116,7 +132,7 @@ class MemberService:
             }
 
             member = await self.repository.insert_one(member_data)
-            return MemberResponse(**member)
+            return MemberResponse(**(await self._resolve_member(member)))
         except Exception as e:
             logger.exception(f"Error creating member: {str(e)}")
             raise MemberFetchError()
@@ -138,7 +154,7 @@ class MemberService:
             else:
                 member = existing
 
-            return MemberResponse(**member)
+            return MemberResponse(**(await self._resolve_member(member)))
         except MemberNotFoundError:
             raise
         except Exception as e:
@@ -217,18 +233,22 @@ class MemberService:
                     # Check if within next 30 days
                     if 0 <= days_until <= 30:
                         age = next_birthday.year - year
-                        upcoming.append(
-                            BirthdayResponse(
-                                id=member.get("id", ""),
-                                name=member.get("name", ""),
-                                active=member.get("active", True),
-                                img=member.get("img"),
-                                birthdate=member.get("birthdate", ""),
-                                days_until=days_until,
-                                age=age,
-                                member_type=member.get("member_type", "JKT48"),
-                            )
+                        res = BirthdayResponse(
+                            id=member.get("id", ""),
+                            name=member.get("name", ""),
+                            active=member.get("active", True),
+                            img=member.get("img"),
+                            birthdate=member.get("birthdate", ""),
+                            days_until=days_until,
+                            age=age,
+                            member_type=member.get("member_type", "JKT48"),
                         )
+                        # Resolve image (async)
+                        if res.img:
+                            res.img = await self.storage_service.resolve_external_url(
+                                res.img
+                            )
+                        upcoming.append(res)
                 except (ValueError, TypeError) as e:
                     logger.warning(
                         f"Error parsing birthdate for member {member.get('name')}: {e}"
@@ -298,7 +318,9 @@ class MemberService:
                                         "id": member.get("id", ""),
                                         "name": member.get("name", ""),
                                         "date": birthday_date,
-                                        "img": member.get("img"),
+                                        "img": await self.storage_service.resolve_external_url(
+                                            member.get("img")
+                                        ),
                                         "active": member.get("active", True),
                                         "member_type": member.get(
                                             "member_type", "JKT48"
