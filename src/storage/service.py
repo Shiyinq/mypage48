@@ -47,6 +47,9 @@ MARKDOWN_IMAGE_PATTERN = re.compile(
 class StorageService:
     """Service layer for storage operations."""
 
+    MAX_IMAGE_DIMENSION = 2000
+    WEBP_QUALITY = 75
+
     def __init__(self, repository: StorageRepository, config: Settings):
         self.repository = repository
         self.config = config
@@ -142,8 +145,13 @@ class StorageService:
                     img = img.convert("RGBA")
                 else:
                     img = img.convert("RGB")
-
-                img.save(output, format="WEBP", quality=75)
+                
+                # Auto-resize if too large
+                if max(img.width, img.height) > self.MAX_IMAGE_DIMENSION:
+                    img.thumbnail((self.MAX_IMAGE_DIMENSION, self.MAX_IMAGE_DIMENSION))
+                
+                # Save as WebP (stripping EXIF by not passing it)
+                img.save(output, format="WEBP", quality=self.WEBP_QUALITY)
                 webp_bytes = output.getvalue()
                 content_type = "image/webp"
 
@@ -379,8 +387,13 @@ class StorageService:
                         img = img.convert("RGBA")
                     else:
                         img = img.convert("RGB")
-
-                    img.save(output, format="WEBP", quality=75)
+                    
+                    # Auto-resize if too large
+                    if max(img.width, img.height) > self.MAX_IMAGE_DIMENSION:
+                        img.thumbnail((self.MAX_IMAGE_DIMENSION, self.MAX_IMAGE_DIMENSION))
+                    
+                    # Save as WebP (stripping EXIF by not passing it)
+                    img.save(output, format="WEBP", quality=self.WEBP_QUALITY)
                     webp_data = output.getvalue()
                     content_type = "image/webp"
 
