@@ -276,9 +276,9 @@ async def test_get_external_media_cache_miss(storage_service, monkeypatch):
     
     assert status == 200
     assert content.getbuffer().nbytes > 0 # Use nbytes for BytesIO
-    # Verify it was cached
+    # Verify it was cached as WebP
     storage_service.repository.upload_file.assert_called_with(
-        ANY, "cache/external/media/jkt48-member/new_member.jpg", "image/png"
+        ANY, "cache/external/media/jkt48-member/new_member.jpg", "image/webp"
     )
 
 @pytest.mark.asyncio
