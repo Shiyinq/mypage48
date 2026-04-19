@@ -19,6 +19,7 @@ from src.image_validation import (
 from src.image_validation import validate_base64_image
 from src.logging_config import create_logger
 from src.members.service import MemberService
+from src.storage.service import StorageService
 from src.tickets.service import TicketsService
 from src.users.constants import Info
 from src.users.exceptions import (
@@ -70,6 +71,7 @@ class UserService:
         member_service: MemberService,
         achievements_service: AchievementsService,
         events_service: EventsService,
+        storage_service: StorageService,
     ):
         self.repository = repository
         self.security_service = security_service
@@ -79,6 +81,7 @@ class UserService:
         self.member_service = member_service
         self.achievements_service = achievements_service
         self.events_service = events_service
+        self.storage_service = storage_service
 
     def _handle_duplicate_key_error(self, dk: DuplicateKeyError):
         """Handle DuplicateKeyError and raise appropriate domain exception."""
@@ -357,10 +360,14 @@ class UserService:
         except Exception as e:
             logger.warning(f"Failed to calculate stats for user {user.userId}: {e}")
 
+        profile_picture = user.profilePicture
+        if profile_picture:
+            profile_picture = self.storage_service.resolve_url(profile_picture)
+
         return PublicUserResponse(
             name=user.name,
             username=user.username,
-            profilePicture=user.profilePicture,
+            profilePicture=profile_picture,
             oshi=oshi_response,
             createdAt=user.createdAt,
             publicYear=display_year,  # Show actual year for "This Year" option
@@ -509,10 +516,15 @@ class UserService:
                     )
                 )
 
+            # Resolve profile picture if it's a storage path
+            profile_pic = current_user.profilePicture
+            if profile_pic:
+                profile_pic = self.storage_service.resolve_url(profile_pic)
+
             # Build profile dict from current_user
             profile_dict = {
                 "userId": current_user.userId,
-                "profilePicture": current_user.profilePicture,
+                "profilePicture": profile_pic,
                 "name": current_user.name,
                 "email": current_user.email,
                 "username": current_user.username,
@@ -554,20 +566,25 @@ class UserService:
             users = await self.repository.get_all_paginated(page, limit, search)
             total = await self.repository.count_all(search)
 
-            user_list = [
-                UserListItem(
-                    userId=u.get("userId", ""),
-                    name=u.get("name", ""),
-                    username=u.get("username", ""),
-                    email=u.get("email", ""),
-                    profilePicture=u.get("profilePicture"),
-                    isAdmin=u.get("isAdmin", False),
-                    isEmailVerified=u.get("isEmailVerified", False),
-                    isAccountLocked=u.get("isAccountLocked", False),
-                    createdAt=u.get("createdAt"),
+            user_list = []
+            for u in users:
+                profile_pic = u.get("profilePicture")
+                if profile_pic:
+                    profile_pic = self.storage_service.resolve_url(profile_pic)
+
+                user_list.append(
+                    UserListItem(
+                        userId=u.get("userId", ""),
+                        name=u.get("name", ""),
+                        username=u.get("username", ""),
+                        email=u.get("email", ""),
+                        profilePicture=profile_pic,
+                        isAdmin=u.get("isAdmin", False),
+                        isEmailVerified=u.get("isEmailVerified", False),
+                        isAccountLocked=u.get("isAccountLocked", False),
+                        createdAt=u.get("createdAt"),
+                    )
                 )
-                for u in users
-            ]
 
             last_page = math.ceil(total / limit) if total > 0 else 1
             next_page = page + 1 if page < last_page else None

@@ -220,8 +220,9 @@ def get_tickets_repository(db=Depends(get_db)) -> TicketsRepository:
 def get_tickets_service(
     repo: TicketsRepository = Depends(get_tickets_repository),
     config: Settings = Depends(get_settings),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> TicketsService:
-    return TicketsService(repo, config)
+    return TicketsService(repo, config, storage_service)
 
 
 def get_member_repository(db=Depends(get_db)) -> MemberRepository:
@@ -261,6 +262,7 @@ def get_user_service(
     member_service: MemberService = Depends(get_member_service),
     achievements_service: AchievementsService = Depends(get_achievements_service),
     events_service: EventsService = Depends(get_events_service),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> UserService:
     return UserService(
         repo,
@@ -271,6 +273,7 @@ def get_user_service(
         member_service,
         achievements_service,
         events_service,
+        storage_service,
     )
 
 
@@ -288,8 +291,9 @@ def get_memories_repository(db=Depends(get_db)) -> MemoriesRepository:
 def get_memories_service(
     repo: MemoriesRepository = Depends(get_memories_repository),
     config: Settings = Depends(get_settings),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> MemoriesService:
-    return MemoriesService(repo, config)
+    return MemoriesService(repo, config, storage_service)
 
 
 def get_setlists_repository(db=Depends(get_db)) -> SetlistsRepository:
