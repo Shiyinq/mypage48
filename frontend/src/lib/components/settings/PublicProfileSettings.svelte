@@ -86,7 +86,7 @@
 	</div>
 
 	{#if !userProfile.data}
-		{#if isInitialDataLoaded && !isUserProfileLoading.value}
+		{#if isInitialDataLoaded.value && !isUserProfileLoading.value}
 			<div class="mb-4">
 				<ErrorState
 					title={t('settings.publicProfile.loadErrorTitle')}
