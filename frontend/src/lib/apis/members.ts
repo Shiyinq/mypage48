@@ -18,6 +18,8 @@ export interface Member {
 	active: boolean;
 	href: string;
 	img: string;
+	img_medium?: string;
+	img_small?: string;
 	blurHash?: string;
 	birthdate: string;
 	bloodType: string;
@@ -40,6 +42,8 @@ export interface BirthdayResponse {
 	name: string;
 	active: boolean;
 	img?: string;
+	img_medium?: string;
+	img_small?: string;
 	blurHash?: string;
 	birthdate: string;
 	days_until: number;

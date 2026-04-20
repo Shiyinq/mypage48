@@ -10,6 +10,8 @@ export interface MemoryItem {
 	uniqueId: string;
 	type: 'TICKET' | '2SHOT';
 	imageUrl: string;
+	imageUrl_medium?: string;
+	imageUrl_small?: string;
 	blurHash?: string;
 	date: string;
 	time: string;
@@ -31,6 +33,8 @@ export interface TopTwoShotMember {
 	spend: number;
 	lastDate: string;
 	image?: string | null;
+	image_medium?: string | null;
+	image_small?: string | null;
 }
 
 export interface TopTwoShotResponse {

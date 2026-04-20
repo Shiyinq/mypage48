@@ -32,6 +32,8 @@ class TicketTwoShotBase(BaseModel):
     type: str = "Roulette"  # 'Roulette' | 'Birthday'
     price: float
     imageUrl: Optional[str] = None
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
     blurHash: Optional[str] = None
 
 
@@ -50,6 +52,8 @@ class TicketBase(BaseModel):
     currency: str = "IDR"
     rules: TicketRules = Field(default_factory=TicketRules)
     imageUrl: Optional[str] = None
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
     blurHash: Optional[str] = None
     notes: Optional[str] = None
 

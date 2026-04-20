@@ -64,9 +64,12 @@
 			<div class="w-full h-full relative">
 				<OptimizedImage
 					src={ticket.imageUrl}
+					srcMedium={ticket.imageUrl_medium}
+					srcSmall={ticket.imageUrl_small}
 					blurHash={ticket.blurHash}
 					alt={ticket.event.title}
 					class="w-full h-full transition-transform duration-700 group-hover:scale-105"
+					sizes="(max-width: 640px) 140px, 180px"
 				/>
 				<div
 					class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent opacity-60"

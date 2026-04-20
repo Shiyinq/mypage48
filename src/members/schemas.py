@@ -24,6 +24,8 @@ class MemberBase(BaseModel):
     active: bool = True
     href: Optional[str] = None
     img: Optional[str] = None
+    img_medium: Optional[str] = None
+    img_small: Optional[str] = None
     blurHash: Optional[str] = None
     birthdate: Optional[str] = None
     bloodType: Optional[str] = None

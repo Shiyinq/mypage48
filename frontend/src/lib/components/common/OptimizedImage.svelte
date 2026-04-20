@@ -9,6 +9,8 @@
 
 	interface Props {
 		src?: string | null;
+		srcMedium?: string | null;
+		srcSmall?: string | null;
 		blurHash?: string | null;
 		alt?: string;
 		class?: string;
@@ -27,12 +29,15 @@
 			| 'strict-origin-when-cross-origin'
 			| 'unsafe-url';
 		noBackground?: boolean;
+		sizes?: string;
 		onclick?: (e: MouseEvent) => void;
 		onkeydown?: (e: KeyboardEvent) => void;
 	}
 
 	let {
 		src,
+		srcMedium,
+		srcSmall,
 		blurHash,
 		alt,
 		class: className = '',
@@ -43,9 +48,19 @@
 		fallback = true,
 		referrerPolicy,
 		noBackground = false,
+		sizes = '100vw',
 		onclick,
 		onkeydown
 	}: Props = $props();
+
+	const srcset = $derived.by(() => {
+		if (!srcSmall && !srcMedium) return undefined;
+		const sets = [];
+		if (srcSmall) sets.push(`${srcSmall} 500w`);
+		if (srcMedium) sets.push(`${srcMedium} 1000w`);
+		if (src) sets.push(`${src} 2000w`);
+		return sets.join(', ');
+	});
 
 	let isLoaded = $state(false);
 	let isError = $state(false);
@@ -131,6 +146,8 @@
 			<img
 				bind:this={imgRef}
 				{src}
+				{srcset}
+				{sizes}
 				{alt}
 				{loading}
 				referrerpolicy={referrerPolicy}

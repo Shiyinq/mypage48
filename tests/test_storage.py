@@ -75,7 +75,9 @@ async def test_upload_image(storage_service):
     assert response.filename.endswith(".webp")
     assert "/api/storage/m/" in response.url
     assert "signature=" in response.url
-    storage_service.repository.upload_file.assert_called_once()
+    assert response.url_medium is not None
+    assert response.url_small is not None
+    assert storage_service.repository.upload_file.call_count == 3
 
 @pytest.mark.asyncio
 async def test_upload_image_journal(storage_service):
@@ -135,7 +137,11 @@ async def test_resolve_ticket_images(storage_service):
     resolved = storage_service.resolve_ticket_images(ticket)
     
     assert "/api/storage/m/tickets/u1/img1.jpg" in resolved.imageUrl
+    assert "/api/storage/m/tickets/u1/img1_medium.jpg" in resolved.imageUrl_medium
+    assert "/api/storage/m/tickets/u1/img1_small.jpg" in resolved.imageUrl_small
     assert "/api/storage/m/twoshot/u1/img2.jpg" in resolved.two_shot.imageUrl
+    assert "/api/storage/m/twoshot/u1/img2_medium.jpg" in resolved.two_shot.imageUrl_medium
+    assert "/api/storage/m/twoshot/u1/img2_small.jpg" in resolved.two_shot.imageUrl_small
 
 # API Tests
 @pytest.mark.asyncio

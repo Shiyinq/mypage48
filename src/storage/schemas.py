@@ -13,6 +13,8 @@ class ImageUploadRequest(BaseModel):
 class ImageUploadResponse(BaseModel):
     filename: str
     url: str
+    url_medium: Optional[str] = None
+    url_small: Optional[str] = None
     blurHash: Optional[str] = None
 
 

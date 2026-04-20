@@ -1,10 +1,11 @@
 import base64
 import hashlib
 import hmac
+import os
 import re
 import time
 import uuid
-from typing import TYPE_CHECKING, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 import httpx
 
@@ -48,6 +49,8 @@ class StorageService:
     """Service layer for storage operations."""
 
     MAX_IMAGE_DIMENSION = 2000
+    MEDIUM_IMAGE_DIMENSION = 1000
+    SMALL_IMAGE_DIMENSION = 500
     WEBP_QUALITY = 75
 
     def __init__(self, repository: StorageRepository, config: Settings):
@@ -139,27 +142,38 @@ class StorageService:
 
             with Image.open(BytesIO(original_bytes)) as img:
                 blurHash = self._generate_blurhash_from_image(img)
+                filename = self._generate_filename(user_id, category, "image/webp")
 
                 output = BytesIO()
                 if img.mode in ("RGBA", "LA", "P"):
                     img = img.convert("RGBA")
                 else:
                     img = img.convert("RGB")
-                
+
                 # Auto-resize if too large
                 if max(img.width, img.height) > self.MAX_IMAGE_DIMENSION:
                     img.thumbnail((self.MAX_IMAGE_DIMENSION, self.MAX_IMAGE_DIMENSION))
-                
+
                 # Save as WebP (stripping EXIF by not passing it)
                 img.save(output, format="WEBP", quality=self.WEBP_QUALITY)
                 webp_bytes = output.getvalue()
                 content_type = "image/webp"
 
-            filename = self._generate_filename(user_id, category, content_type)
-            self.repository.upload_file(webp_bytes, filename, content_type)
-            url = self.resolve_url(filename)
+                # Generate and upload variants
+                self._generate_and_upload_variants(img, filename)
 
-            return ImageUploadResponse(filename=filename, url=url, blurHash=blurHash)
+            content_type = "image/webp"
+            self.repository.upload_file(webp_bytes, filename, content_type)
+            
+            variants = self.resolve_image_variants(filename)
+
+            return ImageUploadResponse(
+                filename=filename,
+                url=variants["url"],
+                url_medium=variants["url_medium"],
+                url_small=variants["url_small"],
+                blurHash=blurHash,
+            )
         except S3Error as e:
             logger.error(f"MinIO error during upload: {e}")
             raise StorageConnectionError()
@@ -262,36 +276,50 @@ class StorageService:
             logger.error(f"Error verifying signature: {e}")
             return False
 
-    def resolve_url(self, value: Optional[str]) -> Optional[str]:
+    def resolve_url(
+        self, value: Optional[str], variant: Optional[str] = None
+    ) -> Optional[str]:
         """
         Fast resolve of image value to URL.
         If STORAGE_USE_PRESIGNED is True, generates a direct S3/R2 presigned URL.
         Otherwise, returns a signed proxy URL.
+        Optional variant: 'medium' or 'small'.
         """
         if not value:
             return None
 
-        if value.startswith("data:image/"):
+        # Check for base64 or full URL
+        if value.startswith("data:") or value.startswith("http"):
             return value
 
-        if "/" in value and not value.startswith("http"):
-            path = value.lstrip("/")
+        path = value.lstrip("/")
 
-            # Strategy 1: Direct Presigned URL (Best performance, low BE load)
-            if self.config.storage_use_presigned:
-                try:
-                    return self.repository.get_presigned_url(path)
-                except Exception as e:
-                    logger.error(
-                        f"Failed to generate direct presigned URL for {path}: {e}"
-                    )
-                    # Fallback to proxy if presign fails
+        # Apply variant if requested
+        if variant in ["medium", "small"]:
+            path = self._get_variant_path(path, variant)
 
-            # Strategy 2: Proxy URL (Secure, handles signature mismatch in local dev)
-            signature, expires = self._create_signed_params(path)
-            return f"{self.config.api_base_url}/storage/m/{path}?expires={expires}&signature={signature}"
+        # Strategy 1: Direct Presigned URL (Best performance, low BE load)
+        if self.config.storage_use_presigned:
+            try:
+                return self.repository.get_presigned_url(path)
+            except Exception as e:
+                logger.error(f"Failed to generate direct presigned URL for {path}: {e}")
+                # Fallback to proxy if presign fails
 
-        return value
+        # Strategy 2: Proxy URL (Secure, handles signature mismatch in local dev)
+        signature, expires = self._create_signed_params(path)
+        return f"{self.config.api_base_url}/storage/m/{path}?expires={expires}&signature={signature}"
+
+    def resolve_image_variants(self, path: Optional[str]) -> dict[str, Optional[str]]:
+        """
+        Resolve all image variants (Original, Medium, Small) for a given path.
+        Returns a dict with 'url', 'url_medium', and 'url_small'.
+        """
+        return {
+            "url": self.resolve_url(path),
+            "url_medium": self.resolve_url(path, variant="medium"),
+            "url_small": self.resolve_url(path, variant="small"),
+        }
 
     async def resolve_external_url(self, value: Optional[str]) -> Optional[str]:
         """
@@ -328,11 +356,15 @@ class StorageService:
 
     async def resolve_external_media(self, value: Optional[str]) -> dict:
         """
-        New specialized resolve that returns both URL and BlurHash.
-        Matches the logic of resolve_external_url but returns a dict.
+        New specialized resolve that returns URL variants and BlurHash.
         """
         if not value:
-            return {"url": None, "blur_hash": None}
+            return {
+                "url": None,
+                "url_medium": None,
+                "url_small": None,
+                "blurHash": None,
+            }
 
         # Check if it's already a full URL or base64
         if value.startswith("data:") or value.startswith("http"):
@@ -340,7 +372,12 @@ class StorageService:
             if "jkt48.com/api/v1/storages/" in value:
                 value = value.split("jkt48.com/api/v1/storages/")[1]
             else:
-                return {"url": value, "blur_hash": None}
+                return {
+                    "url": value,
+                    "url_medium": None,
+                    "url_small": None,
+                    "blurHash": None,
+                }
 
         path = value.lstrip("/")
         cache_key = f"cache/external/{path}"
@@ -351,19 +388,17 @@ class StorageService:
                 blurHash = await self._cache_external_media(path)
             except Exception as e:
                 logger.error(f"Failed to JIT cache external media {path}: {e}")
+                # Fallback to backend proxy if cache fails
                 return {
                     "url": f"{self.config.api_base_url}/storage/external/{path}",
+                    "url_medium": None,
+                    "url_small": None,
                     "blurHash": None,
                 }
-        else:
-            # Already in cache, but we might not have the blurHash easily available
-            # We'll need a way to retrieve it. For now, we can calculate it on the fly
-            # or rely on the migration script to have pre-populated it in the DB.
-            # To avoid CPU spikes on GET, we'll return None and let the fallback handle it
-            # if it's not already in the database record.
-            pass
-
-        return {"url": self.resolve_url(cache_key), "blurHash": blurHash}
+        
+        # Guaranteed to be in R2 (either previously or just now)
+        variants = self.resolve_image_variants(cache_key)
+        return {**variants, "blurHash": blurHash}
 
     async def _cache_external_media(self, path: str) -> Optional[str]:
         """
@@ -387,15 +422,20 @@ class StorageService:
                         img = img.convert("RGBA")
                     else:
                         img = img.convert("RGB")
-                    
+
                     # Auto-resize if too large
                     if max(img.width, img.height) > self.MAX_IMAGE_DIMENSION:
-                        img.thumbnail((self.MAX_IMAGE_DIMENSION, self.MAX_IMAGE_DIMENSION))
-                    
+                        img.thumbnail(
+                            (self.MAX_IMAGE_DIMENSION, self.MAX_IMAGE_DIMENSION)
+                        )
+
                     # Save as WebP (stripping EXIF by not passing it)
                     img.save(output, format="WEBP", quality=self.WEBP_QUALITY)
                     webp_data = output.getvalue()
                     content_type = "image/webp"
+
+                    # Generate and upload variants
+                    self._generate_and_upload_variants(img, cache_key)
 
                     self.repository.upload_file(webp_data, cache_key, content_type)
                     logger.info(f"Successfully cached {path} to R2 as WebP")
@@ -443,29 +483,76 @@ class StorageService:
         # 2. Resolve Extremes (First/Last) in Two Shot
         if stats_dict.get("two_shot") and stats_dict["two_shot"].get("extremes"):
             extremes = stats_dict["two_shot"]["extremes"]
-            if extremes.get("first") and extremes["first"].get("image"):
-                extremes["first"]["image"] = self.resolve_url(
-                    extremes["first"]["image"]
-                )
-            if extremes.get("last") and extremes["last"].get("image"):
-                extremes["last"]["image"] = self.resolve_url(extremes["last"]["image"])
+            for key in ["first", "last"]:
+                if extremes.get(key) and extremes[key].get("image"):
+                    extremes[key]["image"] = self.resolve_url(extremes[key]["image"])
 
         return type(stats)(**stats_dict)
 
-    def resolve_ticket_images(self, ticket: any) -> any:
-        """Resolve images for a ticket object."""
-        if hasattr(ticket, "imageUrl") and ticket.imageUrl:
-            ticket.imageUrl = self.resolve_url(ticket.imageUrl)
+    def resolve_ticket_images(self, ticket: Any) -> Any:
+        """
+        Resolve all potential images in a ticket (main image and 2-shot).
+        Updates the ticket object in-place.
+        """
+        if not ticket:
+            return ticket
 
+        # Main image
+        if hasattr(ticket, "imageUrl") and ticket.imageUrl:
+            variants = self.resolve_image_variants(ticket.imageUrl)
+            ticket.imageUrl = variants["url"]
+            ticket.imageUrl_medium = variants["url_medium"]
+            ticket.imageUrl_small = variants["url_small"]
+
+        # 2-Shot image
         if (
             hasattr(ticket, "two_shot")
             and ticket.two_shot
             and hasattr(ticket.two_shot, "imageUrl")
             and ticket.two_shot.imageUrl
         ):
-            ticket.two_shot.imageUrl = self.resolve_url(ticket.two_shot.imageUrl)
+            variants = self.resolve_image_variants(ticket.two_shot.imageUrl)
+            ticket.two_shot.imageUrl = variants["url"]
+            ticket.two_shot.imageUrl_medium = variants["url_medium"]
+            ticket.two_shot.imageUrl_small = variants["url_small"]
 
         return ticket
+
+    def _get_variant_path(self, path: str, variant: str) -> str:
+        """Helper to get path for a variant."""
+        if not path:
+            return path
+        name, ext = os.path.splitext(path)
+        return f"{name}_{variant}{ext}"
+
+    def _generate_and_upload_variants(self, img: Image.Image, base_path: str) -> None:
+        """Helper to generate and upload medium/small variants."""
+        variants = {
+            "medium": self.MEDIUM_IMAGE_DIMENSION,
+            "small": self.SMALL_IMAGE_DIMENSION,
+        }
+
+        for suffix, dimension in variants.items():
+            try:
+                variant_path = self._get_variant_path(base_path, suffix)
+
+                # We work on a copy to avoid shrinking the original in the loop
+                temp_img = img.copy()
+
+                # Check if we need to resize
+                if max(temp_img.width, temp_img.height) > dimension:
+                    temp_img.thumbnail((dimension, dimension))
+
+                output = BytesIO()
+                temp_img.save(output, format="WEBP", quality=self.WEBP_QUALITY)
+                variant_bytes = output.getvalue()
+
+                self.repository.upload_file(variant_bytes, variant_path, "image/webp")
+                logger.debug(f"Generated and uploaded variant: {variant_path}")
+            except Exception as e:
+                logger.error(
+                    f"Failed to generate {suffix} variant for {base_path}: {e}"
+                )
 
     async def get_internal_media(
         self,

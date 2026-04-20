@@ -49,12 +49,18 @@ class TicketsService:
     def _resolve_ticket(self, ticket: dict) -> dict:
         """Resolve storage paths for ticket images and notes."""
         if ticket.get("imageUrl"):
-            ticket["imageUrl"] = self.storage_service.resolve_url(ticket["imageUrl"])
+            variants = self.storage_service.resolve_image_variants(ticket["imageUrl"])
+            ticket["imageUrl"] = variants["url"]
+            ticket["imageUrl_medium"] = variants["url_medium"]
+            ticket["imageUrl_small"] = variants["url_small"]
 
         if ticket.get("two_shot") and ticket["two_shot"].get("imageUrl"):
-            ticket["two_shot"]["imageUrl"] = self.storage_service.resolve_url(
+            variants = self.storage_service.resolve_image_variants(
                 ticket["two_shot"]["imageUrl"]
             )
+            ticket["two_shot"]["imageUrl"] = variants["url"]
+            ticket["two_shot"]["imageUrl_medium"] = variants["url_medium"]
+            ticket["two_shot"]["imageUrl_small"] = variants["url_small"]
 
         if ticket.get("notes"):
             ticket["notes"] = self.storage_service.resolve_markdown_images(
