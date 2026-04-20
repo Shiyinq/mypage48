@@ -11,9 +11,6 @@
 	let { stats, year = null }: Props = $props();
 
 	const { t } = useTranslation();
-
-	// Default to current year if not provided
-	let displayYear = $derived(year || new Date().getFullYear());
 </script>
 
 <div class="lg:col-span-2">
@@ -31,9 +28,13 @@
 		<!-- TOP SECTION: HEADER & 3-COLUMN STATS -->
 		<div class="p-6 sm:p-8">
 			<!-- Card Header -->
-			<div class="relative z-10 flex items-center justify-center gap-2 mb-8 text-red-500/80 dark:text-red-400/80">
+			<div
+				class="relative z-10 flex items-center justify-center gap-2 mb-8 text-red-500/80 dark:text-red-400/80"
+			>
 				<TrendingUp class="w-4 h-4" />
-				<span class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400">
+				<span
+					class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400"
+				>
 					{#if year}
 						{t('profile.publicActivity.yearSummary', { year })}
 					{:else}
@@ -44,14 +45,18 @@
 
 			<div class="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-y-8 md:gap-0 items-center">
 				<!-- Total Shows -->
-				<div class="col-span-2 md:col-span-1 flex flex-col items-center md:border-r border-gray-100 dark:border-white/5 pb-8 md:pb-0 md:px-4 border-b md:border-b-0">
+				<div
+					class="col-span-2 md:col-span-1 flex flex-col items-center md:border-r border-gray-100 dark:border-white/5 pb-8 md:pb-0 md:px-4 border-b md:border-b-0"
+				>
 					<div
 						class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-50 to-white dark:from-red-900/20 dark:to-zinc-800 shadow-sm text-red-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"
 					>
 						<Ticket class="w-5 h-5" />
 					</div>
 					<div class="text-center">
-						<div class="text-5xl sm:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-red-600 to-red-400 leading-none mb-3 px-1">
+						<div
+							class="text-5xl sm:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-red-600 to-red-400 leading-none mb-3 px-1"
+						>
 							{stats.totalShows}
 						</div>
 						<div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -61,7 +66,9 @@
 				</div>
 
 				<!-- Top Row -->
-				<div class="col-span-1 flex flex-col items-center border-r border-gray-100 dark:border-white/5 md:px-4 pt-8 md:pt-0">
+				<div
+					class="col-span-1 flex flex-col items-center border-r border-gray-100 dark:border-white/5 md:px-4 pt-8 md:pt-0"
+				>
 					<div
 						class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-zinc-800 shadow-sm text-purple-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"
 					>
@@ -69,16 +76,22 @@
 					</div>
 					<div class="text-center w-full px-2">
 						<div class="flex items-baseline justify-center gap-1 mb-3 px-1">
-							<div class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-purple-600 to-purple-400 leading-none">
+							<div
+								class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-purple-600 to-purple-400 leading-none"
+							>
 								{stats.topRow || '-'}
 							</div>
 							{#if stats.topRowCount}
-								<div class="text-[8px] sm:text-[10px] font-bold text-purple-500 bg-purple-50 dark:bg-purple-900/20 px-1.5 py-0.5 rounded-full border border-purple-100 dark:border-purple-800/50">
+								<div
+									class="text-[8px] sm:text-[10px] font-bold text-purple-500 bg-purple-50 dark:bg-purple-900/20 px-1.5 py-0.5 rounded-full border border-purple-100 dark:border-purple-800/50"
+								>
 									{stats.topRowCount}x
 								</div>
 							{/if}
 						</div>
-						<div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center truncate">
+						<div
+							class="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center truncate"
+						>
 							{t('dashboard.theater.topRow')}
 						</div>
 					</div>
@@ -92,7 +105,9 @@
 						<Camera class="w-5 h-5" />
 					</div>
 					<div class="text-center w-full px-2">
-						<div class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-pink-600 to-pink-400 leading-none mb-3 px-1">
+						<div
+							class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-pink-600 to-pink-400 leading-none mb-3 px-1"
+						>
 							{stats.totalTwoShots}
 						</div>
 						<div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">
