@@ -468,6 +468,8 @@
 		},
 		"publicActivity": {
 			"wrapped": "JKT48劇場 Wrapped {year}",
+			"allTime": "Theater JKT48 Wrapped",
+			"summary": "まとめ",
 			"yearSummary": "{year}年まとめ",
 			"watchedTimes": "{count}回観覧"
 		},

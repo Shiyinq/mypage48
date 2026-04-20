@@ -16,103 +16,119 @@
 	let displayYear = $derived(year || new Date().getFullYear());
 </script>
 
-<div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-4">
-	<!-- Total Shows - Large Card -->
+<div class="lg:col-span-2">
+	<!-- Unified Summary Card -->
 	<div
-		class="col-span-2 relative overflow-hidden bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 shadow-2xl shadow-red-500/10 dark:shadow-red-950/40 group hover:scale-[1.01] transition-all duration-300"
+		class="relative overflow-hidden bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] shadow-2xl shadow-red-500/10 dark:shadow-red-950/40 group hover:scale-[1.01] transition-all duration-300"
 	>
-		<div class="relative z-10 flex flex-col h-full justify-between gap-6">
-			<div class="flex items-center gap-2 text-red-500/80 dark:text-red-400/80">
-				<div class="p-2 rounded-full bg-red-50 dark:bg-red-900/10">
-					<TrendingUp class="w-4 h-4" />
-				</div>
-				<span class="text-sm font-bold uppercase tracking-widest"
-					>{t('profile.publicActivity.yearSummary', { year: displayYear })}</span
-				>
+		<!-- Background tickets decoration -->
+		<div
+			class="absolute -right-8 -bottom-8 opacity-[0.03] dark:opacity-[0.02] transform -rotate-12 pointer-events-none"
+		>
+			<Ticket class="w-64 h-64" />
+		</div>
+
+		<!-- TOP SECTION: HEADER & 3-COLUMN STATS -->
+		<div class="p-6 sm:p-8">
+			<!-- Card Header -->
+			<div class="relative z-10 flex items-center justify-center gap-2 mb-8 text-red-500/80 dark:text-red-400/80">
+				<TrendingUp class="w-4 h-4" />
+				<span class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400">
+					{#if year}
+						{t('profile.publicActivity.yearSummary', { year })}
+					{:else}
+						{t('profile.publicActivity.summary')}
+					{/if}
+				</span>
 			</div>
-			<div class="flex items-end justify-between">
-				<div>
+
+			<div class="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-y-8 md:gap-0 items-center">
+				<!-- Total Shows -->
+				<div class="col-span-2 md:col-span-1 flex flex-col items-center md:border-r border-gray-100 dark:border-white/5 pb-8 md:pb-0 md:px-4 border-b md:border-b-0">
 					<div
-						class="text-6xl sm:text-8xl font-black tracking-tighter mb-1 text-transparent bg-clip-text bg-gradient-to-br from-red-600 to-purple-600 dark:from-red-400 dark:to-purple-400 leading-none"
+						class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-50 to-white dark:from-red-900/20 dark:to-zinc-800 shadow-sm text-red-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"
 					>
-						{stats.totalShows}
+						<Ticket class="w-5 h-5" />
 					</div>
-					<div class="font-bold text-gray-400 text-sm uppercase tracking-widest ml-1">
-						{t('profile.stats.totalShows')}
+					<div class="text-center">
+						<div class="text-5xl sm:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-red-600 to-red-400 leading-none mb-3 px-1">
+							{stats.totalShows}
+						</div>
+						<div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+							{t('profile.stats.totalShows')}
+						</div>
 					</div>
 				</div>
-				<div class="opacity-10 dark:opacity-[0.05] transform rotate-12 mb-2 mr-2">
-					<Ticket class="w-24 h-24" />
+
+				<!-- Top Row -->
+				<div class="col-span-1 flex flex-col items-center border-r border-gray-100 dark:border-white/5 md:px-4 pt-8 md:pt-0">
+					<div
+						class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-zinc-800 shadow-sm text-purple-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"
+					>
+						<Armchair class="w-5 h-5" />
+					</div>
+					<div class="text-center w-full px-2">
+						<div class="flex items-baseline justify-center gap-1 mb-3 px-1">
+							<div class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-purple-600 to-purple-400 leading-none">
+								{stats.topRow || '-'}
+							</div>
+							{#if stats.topRowCount}
+								<div class="text-[8px] sm:text-[10px] font-bold text-purple-500 bg-purple-50 dark:bg-purple-900/20 px-1.5 py-0.5 rounded-full border border-purple-100 dark:border-purple-800/50">
+									{stats.topRowCount}x
+								</div>
+							{/if}
+						</div>
+						<div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center truncate">
+							{t('dashboard.theater.topRow')}
+						</div>
+					</div>
+				</div>
+
+				<!-- 2-Shot -->
+				<div class="col-span-1 flex flex-col items-center md:px-4 pt-8 md:pt-0">
+					<div
+						class="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-50 to-white dark:from-pink-900/20 dark:to-zinc-800 shadow-sm text-pink-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"
+					>
+						<Camera class="w-5 h-5" />
+					</div>
+					<div class="text-center w-full px-2">
+						<div class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-pink-600 to-pink-400 leading-none mb-3 px-1">
+							{stats.totalTwoShots}
+						</div>
+						<div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">
+							{t('dashboard.twoShot.twoShotTitle')}
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<!-- 2-Shot Count -->
-	<div
-		class="col-span-1 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 flex flex-col justify-center items-center text-center gap-4 relative overflow-hidden group hover:bg-white/70 dark:hover:bg-zinc-900/70 transition-all duration-300 shadow-xl shadow-pink-500/10 dark:shadow-pink-950/30"
-	>
-		<div
-			class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-50 to-white dark:from-pink-900/20 dark:to-zinc-800 shadow-sm text-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
-		>
-			<Camera class="w-6 h-6" />
-		</div>
-		<div>
-			<span class="text-4xl font-black text-gray-900 dark:text-white block leading-none mb-2">
-				{stats.totalTwoShots}
-			</span>
-			<span class="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-				{t('dashboard.twoShot.twoShotTitle')}
-			</span>
-		</div>
-	</div>
-
-	<!-- Top Row -->
-	<div
-		class="col-span-1 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 flex flex-col justify-center items-center text-center gap-4 relative overflow-hidden group hover:bg-white/70 dark:hover:bg-zinc-900/70 transition-all duration-300 shadow-xl shadow-purple-500/10 dark:shadow-purple-950/30"
-	>
-		<div
-			class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-zinc-800 shadow-sm text-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
-		>
-			<Armchair class="w-6 h-6" />
-		</div>
-		<div>
-			<span class="text-4xl font-black text-gray-900 dark:text-white block leading-none mb-2">
-				{stats.topRow || '-'}
-			</span>
-			<span class="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-				{t('dashboard.theater.topRow')}
-			</span>
-		</div>
-	</div>
-
-	<!-- Top Show - Wide Card -->
-	<div
-		class="col-span-2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 text-gray-900 dark:text-white shadow-xl shadow-yellow-500/10 dark:shadow-yellow-950/30 relative overflow-hidden group hover:scale-[1.01] transition-all duration-300"
-	>
-		<div class="relative z-10 flex items-center gap-6">
-			<div
-				class="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-50 to-white dark:from-yellow-900/20 dark:to-zinc-800 shadow-sm flex-shrink-0 flex items-center justify-center"
-			>
-				<Heart class="w-8 h-8 text-yellow-500 fill-yellow-500 ml-0.5 mt-0.5" />
-			</div>
-			<div class="flex-1 min-w-0">
-				<div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
-					{t('dashboard.theater.topShow')}
-				</div>
+		<!-- BOTTOM SECTION: TOP SHOW (Unified Row) -->
+		<div class="relative z-10 border-t border-gray-100 dark:border-white/5 p-5 sm:p-6 group/bottom">
+			<div class="flex items-center gap-6">
 				<div
-					class="font-black leading-tight text-xl sm:text-2xl line-clamp-2 md:truncate mb-1"
-					title={stats.topShow || 'No Data'}
+					class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-yellow-50 to-white dark:from-yellow-900/20 dark:to-zinc-800 shadow-sm flex-shrink-0 flex items-center justify-center"
 				>
-					{stats.topShow || '-'}
+					<Heart class="w-7 h-7 sm:w-8 sm:h-8 text-yellow-500 fill-yellow-500 ml-0.5 mt-0.5" />
 				</div>
-				{#if stats.topShowCount}
-					<div
-						class="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 dark:bg-zinc-800 text-xs font-bold text-gray-500 dark:text-gray-400"
-					>
-						{t('profile.publicActivity.watchedTimes', { count: stats.topShowCount })}
+				<div class="flex-1 min-w-0">
+					<div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+						{t('dashboard.theater.topShow')}
 					</div>
-				{/if}
+					<div
+						class="font-black leading-tight text-xl sm:text-2xl line-clamp-2 md:truncate mb-1 text-gray-900 dark:text-white"
+						title={stats.topShow || 'No Data'}
+					>
+						{stats.topShow || '-'}
+					</div>
+					{#if stats.topShowCount}
+						<div
+							class="inline-flex items-center px-2 py-0.5 rounded-full bg-white dark:bg-zinc-800 text-[10px] font-bold text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700"
+						>
+							{t('profile.publicActivity.watchedTimes', { count: stats.topShowCount })}
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</div>

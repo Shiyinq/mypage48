@@ -27,22 +27,24 @@
 	></div>
 
 	<!-- JKT48 Wrapped Badge (Top Right) -->
-	{#if profile.publicYear}
-		<div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
-			<div
-				class="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-md border border-red-200/50 dark:border-red-900/30 shadow-sm hover:scale-105 transition-transform duration-300 cursor-default group/badge"
+	<div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
+		<div
+			class="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-md border border-red-200/50 dark:border-red-900/30 shadow-sm hover:scale-105 transition-transform duration-300 cursor-default group/badge"
+		>
+			<Sparkles
+				class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500 fill-red-500 dark:text-red-400 dark:fill-red-400 animate-pulse"
+			/>
+			<span
+				class="text-[10px] sm:text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600 dark:from-red-400 dark:to-pink-400 uppercase tracking-wider"
 			>
-				<Sparkles
-					class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500 fill-red-500 dark:text-red-400 dark:fill-red-400 animate-pulse"
-				/>
-				<span
-					class="text-[10px] sm:text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600 dark:from-red-400 dark:to-pink-400 uppercase tracking-wider"
-				>
+				{#if profile.publicYear}
 					{t('profile.publicActivity.wrapped', { year: profile.publicYear })}
-				</span>
-			</div>
+				{:else}
+					{t('profile.publicActivity.allTime')}
+				{/if}
+			</span>
 		</div>
-	{/if}
+	</div>
 
 	<!-- Avatar -->
 	<div class="relative group mt-2 sm:mt-0">
@@ -52,7 +54,10 @@
 			{#if profile.profilePicture}
 				<OptimizedImage
 					src={profile.profilePicture}
+					srcMedium={profile.profilePicture_medium}
+					srcSmall={profile.profilePicture_small}
 					alt={profile.name}
+					sizes="128px"
 					class="w-full h-full object-cover"
 				/>
 			{:else}
@@ -83,7 +88,10 @@
 				<div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-pink-400">
 					<OptimizedImage
 						src={getExternalMediaUrl(profile.oshi.profilePicture)}
+						srcMedium={getExternalMediaUrl(profile.oshi.profilePicture_medium)}
+						srcSmall={getExternalMediaUrl(profile.oshi.profilePicture_small)}
 						alt={profile.oshi.name}
+						sizes="40px"
 						class="w-full h-full object-cover"
 					/>
 				</div>

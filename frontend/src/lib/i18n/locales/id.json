@@ -468,6 +468,8 @@
 		},
 		"publicActivity": {
 			"wrapped": "Theater JKT48 Wrapped {year}",
+			"allTime": "Theater JKT48 Wrapped",
+			"summary": "Ringkasan",
 			"yearSummary": "Ringkasan {year}",
 			"watchedTimes": "Ditonton {count} kali"
 		},
