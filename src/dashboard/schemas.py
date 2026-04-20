@@ -48,6 +48,8 @@ class TopShowResponse(BaseModel):
     title: str
     count: int
     image: Optional[str] = None
+    image_medium: Optional[str] = None
+    image_small: Optional[str] = None
 
 
 class TopMemberResponse(BaseModel):
@@ -56,6 +58,8 @@ class TopMemberResponse(BaseModel):
     name: str
     count: int
     image: Optional[str] = None
+    image_medium: Optional[str] = None
+    image_small: Optional[str] = None
 
 
 class TwoShotStatsResponse(BaseModel):
@@ -72,6 +76,8 @@ class ExtremeItem(BaseModel):
 
     ticket_id: str
     image: Optional[str] = None
+    image_medium: Optional[str] = None
+    image_small: Optional[str] = None
     title: str
     date: str
     time: str

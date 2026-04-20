@@ -29,6 +29,8 @@ class OshiResponse(BaseModel):
     profilePicture: str = (
         "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg"
     )
+    profilePicture_medium: Optional[str] = None
+    profilePicture_small: Optional[str] = None
     catchphrase: str = "-"
     socials: Optional[OshiSocials] = None
     totalShows: int = 0
@@ -39,6 +41,8 @@ class OshiResponse(BaseModel):
 class UserLoginBase(BaseModel):
     userId: str
     profilePicture: str | None = None
+    profilePicture_medium: str | None = None
+    profilePicture_small: str | None = None
     name: str
     email: str
     username: str

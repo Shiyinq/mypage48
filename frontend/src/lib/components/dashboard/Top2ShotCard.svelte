@@ -12,10 +12,12 @@
 		name: string | null;
 		count: number;
 		image: string | undefined;
+		image_medium?: string | undefined;
+		image_small?: string | undefined;
 		loading?: boolean;
 	}
 
-	let { name, count, image, loading = false }: Props = $props();
+	let { name, count, image, image_medium, image_small, loading = false }: Props = $props();
 </script>
 
 <div
@@ -51,7 +53,14 @@
 					class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
 				>
 					{#if image}
-						<OptimizedImage src={image} alt={name || ''} class="w-full h-full" />
+						<OptimizedImage
+							src={image}
+							srcMedium={image_medium}
+							srcSmall={image_small}
+							alt={name || ''}
+							class="w-full h-full"
+							sizes="56px"
+						/>
 					{:else}
 						<User class="w-6 h-6 text-pink-500 fill-pink-100" />
 					{/if}

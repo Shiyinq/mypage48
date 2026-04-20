@@ -99,8 +99,13 @@
 							src={userProfile.data?.oshi?.profilePicture
 								? getExternalMediaUrl(userProfile.data.oshi.profilePicture)
 								: userProfile.data?.profilePicture || ''}
+							srcMedium={userProfile.data?.oshi?.profilePicture_medium ||
+								userProfile.data?.profilePicture_medium}
+							srcSmall={userProfile.data?.oshi?.profilePicture_small ||
+								userProfile.data?.profilePicture_small}
 							alt="Profile"
 							class="w-full h-full object-cover"
+							sizes="40px"
 						/>
 					{:else}
 						<div

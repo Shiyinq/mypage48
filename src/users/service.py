@@ -269,8 +269,9 @@ class UserService:
                     name=member.name,
                     nickname=member.nickname,
                     generation=member.generation or "-",
-                    profilePicture=member.img
-                    or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
+                    profilePicture=member.img,
+                    profilePicture_medium=member.img_medium,
+                    profilePicture_small=member.img_small,
                     catchphrase=member.jiko or "-",
                     socials=member.socials.model_dump() if member.socials else None,
                 )
@@ -362,12 +363,20 @@ class UserService:
 
         profile_picture = user.profilePicture
         if profile_picture:
-            profile_picture = self.storage_service.resolve_url(profile_picture)
+            variants = self.storage_service.resolve_image_variants(profile_picture)
+            profile_picture = variants["url"]
+            profile_picture_medium = variants["url_medium"]
+            profile_picture_small = variants["url_small"]
+        else:
+            profile_picture_medium = None
+            profile_picture_small = None
 
         return PublicUserResponse(
             name=user.name,
             username=user.username,
             profilePicture=profile_picture,
+            profilePicture_medium=profile_picture_medium,
+            profilePicture_small=profile_picture_small,
             oshi=oshi_response,
             createdAt=user.createdAt,
             publicYear=display_year,  # Show actual year for "This Year" option
@@ -397,8 +406,9 @@ class UserService:
                         name=member.name,
                         nickname=member.nickname,
                         generation=member.generation or "-",
-                        profilePicture=member.img
-                        or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
+                        profilePicture=member.img,
+                        profilePicture_medium=member.img_medium,
+                        profilePicture_small=member.img_small,
                         catchphrase=member.jiko or "-",
                         socials=member.socials.model_dump() if member.socials else None,
                     )
@@ -518,13 +528,20 @@ class UserService:
 
             # Resolve profile picture if it's a storage path
             profile_pic = current_user.profilePicture
+            profile_pic_medium = None
+            profile_pic_small = None
             if profile_pic:
-                profile_pic = self.storage_service.resolve_url(profile_pic)
+                variants = self.storage_service.resolve_image_variants(profile_pic)
+                profile_pic = variants["url"]
+                profile_pic_medium = variants["url_medium"]
+                profile_pic_small = variants["url_small"]
 
             # Build profile dict from current_user
             profile_dict = {
                 "userId": current_user.userId,
                 "profilePicture": profile_pic,
+                "profilePicture_medium": profile_pic_medium,
+                "profilePicture_small": profile_pic_small,
                 "name": current_user.name,
                 "email": current_user.email,
                 "username": current_user.username,
@@ -569,8 +586,13 @@ class UserService:
             user_list = []
             for u in users:
                 profile_pic = u.get("profilePicture")
+                profile_pic_medium = None
+                profile_pic_small = None
                 if profile_pic:
-                    profile_pic = self.storage_service.resolve_url(profile_pic)
+                    variants = self.storage_service.resolve_image_variants(profile_pic)
+                    profile_pic = variants["url"]
+                    profile_pic_medium = variants["url_medium"]
+                    profile_pic_small = variants["url_small"]
 
                 user_list.append(
                     UserListItem(
@@ -579,6 +601,8 @@ class UserService:
                         username=u.get("username", ""),
                         email=u.get("email", ""),
                         profilePicture=profile_pic,
+                        profilePicture_medium=profile_pic_medium,
+                        profilePicture_small=profile_pic_small,
                         isAdmin=u.get("isAdmin", False),
                         isEmailVerified=u.get("isEmailVerified", False),
                         isAccountLocked=u.get("isAccountLocked", False),

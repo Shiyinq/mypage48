@@ -5,7 +5,7 @@ import os
 import re
 import time
 import uuid
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 import httpx
 
@@ -164,7 +164,7 @@ class StorageService:
 
             content_type = "image/webp"
             self.repository.upload_file(webp_bytes, filename, content_type)
-            
+
             variants = self.resolve_image_variants(filename)
 
             return ImageUploadResponse(
@@ -395,7 +395,7 @@ class StorageService:
                     "url_small": None,
                     "blurHash": None,
                 }
-        
+
         # Guaranteed to be in R2 (either previously or just now)
         variants = self.resolve_image_variants(cache_key)
         return {**variants, "blurHash": blurHash}
@@ -476,16 +476,47 @@ class StorageService:
             and stats_dict["two_shot"].get("top_2_shot")
             and stats_dict["two_shot"]["top_2_shot"].get("image")
         ):
-            stats_dict["two_shot"]["top_2_shot"]["image"] = self.resolve_url(
+            variants = self.resolve_image_variants(
                 stats_dict["two_shot"]["top_2_shot"]["image"]
             )
+            stats_dict["two_shot"]["top_2_shot"]["image"] = variants["url"]
+            stats_dict["two_shot"]["top_2_shot"]["image_medium"] = variants[
+                "url_medium"
+            ]
+            stats_dict["two_shot"]["top_2_shot"]["image_small"] = variants["url_small"]
 
         # 2. Resolve Extremes (First/Last) in Two Shot
         if stats_dict.get("two_shot") and stats_dict["two_shot"].get("extremes"):
             extremes = stats_dict["two_shot"]["extremes"]
             for key in ["first", "last"]:
                 if extremes.get(key) and extremes[key].get("image"):
-                    extremes[key]["image"] = self.resolve_url(extremes[key]["image"])
+                    variants = self.resolve_image_variants(extremes[key]["image"])
+                    extremes[key]["image"] = variants["url"]
+                    extremes[key]["image_medium"] = variants["url_medium"]
+                    extremes[key]["image_small"] = variants["url_small"]
+
+        # 3. Resolve Top Show image
+        if (
+            stats_dict.get("theater")
+            and stats_dict["theater"].get("top_show")
+            and stats_dict["theater"]["top_show"].get("image")
+        ):
+            variants = self.resolve_image_variants(
+                stats_dict["theater"]["top_show"]["image"]
+            )
+            stats_dict["theater"]["top_show"]["image"] = variants["url"]
+            stats_dict["theater"]["top_show"]["image_medium"] = variants["url_medium"]
+            stats_dict["theater"]["top_show"]["image_small"] = variants["url_small"]
+
+        # 4. Resolve Theater Extremes
+        if stats_dict.get("theater") and stats_dict["theater"].get("extremes"):
+            extremes = stats_dict["theater"]["extremes"]
+            for key in ["first", "last"]:
+                if extremes.get(key) and extremes[key].get("image"):
+                    variants = self.resolve_image_variants(extremes[key]["image"])
+                    extremes[key]["image"] = variants["url"]
+                    extremes[key]["image_medium"] = variants["url_medium"]
+                    extremes[key]["image_small"] = variants["url_small"]
 
         return type(stats)(**stats_dict)
 

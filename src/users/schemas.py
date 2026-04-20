@@ -133,6 +133,8 @@ class PublicUserResponse(BaseModel):
     name: str
     username: str
     profilePicture: Optional[str] = None
+    profilePicture_medium: Optional[str] = None
+    profilePicture_small: Optional[str] = None
     oshi: Optional[OshiResponse] = None
     createdAt: datetime
     publicYear: Optional[int] = None
@@ -215,6 +217,8 @@ class UserListItem(BaseModel):
     username: str
     email: str
     profilePicture: Optional[str] = None
+    profilePicture_medium: Optional[str] = None
+    profilePicture_small: Optional[str] = None
     isAdmin: bool = False
     isEmailVerified: bool = False
     isAccountLocked: bool = False
