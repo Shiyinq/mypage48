@@ -6,6 +6,8 @@ export interface UserListItem {
 	username: string;
 	email: string;
 	profilePicture?: string | null;
+	profilePicture_medium?: string | null;
+	profilePicture_small?: string | null;
 	isAdmin: boolean;
 	isEmailVerified: boolean;
 	isAccountLocked: boolean;
