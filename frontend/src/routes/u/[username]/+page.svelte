@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { invalidateAll } from '$app/navigation';
 	import { SEO } from '$lib/components';
 	import { Ticket } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -101,8 +102,8 @@
 			// Save filename to profile
 			await userProfile.updateAvatar(uploadResult.filename);
 
-			// Update local state with presigned URL for immediate feedback
-			profile.profilePicture = uploadResult.url;
+			// Refresh page data to show new avatar
+			await invalidateAll();
 
 			// Close modal and show success toast
 			closePreviewModal();
