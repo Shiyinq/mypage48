@@ -270,6 +270,8 @@
 					title={topShowStats.title}
 					count={topShowStats.count}
 					image={topShowStats.image}
+					image_medium={topShowStats.image_medium}
+					image_small={topShowStats.image_small}
 					{loading}
 				/>
 
@@ -329,6 +331,8 @@
 					name={twoShotStats.mostCollected?.name || null}
 					count={twoShotStats.mostCollected?.count || 0}
 					image={twoShotStats.mostCollected?.image || undefined}
+					image_medium={twoShotStats.mostCollected?.image_medium || undefined}
+					image_small={twoShotStats.mostCollected?.image_small || undefined}
 					{loading}
 				/>
 

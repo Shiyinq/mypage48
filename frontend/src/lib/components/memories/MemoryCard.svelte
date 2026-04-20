@@ -40,7 +40,7 @@
 				src={item.imageUrl}
 				srcMedium={item.imageUrl_medium}
 				srcSmall={item.imageUrl_small}
-				sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
+				sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 256px"
 				blurHash={item.blurHash}
 				alt={item.title}
 				class="w-full h-full"

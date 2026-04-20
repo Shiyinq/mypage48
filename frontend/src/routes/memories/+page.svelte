@@ -83,7 +83,7 @@
 <!-- Lightbox -->
 <Lightbox {selectedImage} onClose={() => (selectedImage = null)} />
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32">
+<div class="max-w-[1600px] mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32">
 	<!-- Header -->
 	<div class="mb-8">
 		<PageHeader
@@ -112,7 +112,7 @@
 		/>
 	{:else if isLoading && memories.length === 0}
 		<div
-			class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10 px-2 sm:px-4"
+			class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-8 px-2 sm:px-4"
 		>
 			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each Array(8) as _unused, index}
@@ -130,7 +130,7 @@
 		/>
 	{:else}
 		<div
-			class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10 px-2 sm:px-4"
+			class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-8 px-2 sm:px-4"
 		>
 			{#each memories as item, index (item.uniqueId)}
 				{@const rotation = (index % 5) - 2}
@@ -143,7 +143,7 @@
 			<div use:infiniteScroll onintersect={handleIntersect} class="w-full py-8 flex justify-center">
 				{#if isLoading}
 					<div
-						class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10 px-2 sm:px-4 w-full"
+						class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-8 px-2 sm:px-4 w-full"
 					>
 						<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 						{#each Array(4) as _, index}
