@@ -31,7 +31,10 @@ class MemoriesService:
     def _resolve_memory_item(self, item: MemoryItem) -> MemoryItem:
         """Resolve storage paths for a memory item."""
         if item.imageUrl:
-            item.imageUrl = self.storage_service.resolve_url(item.imageUrl)
+            variants = self.storage_service.resolve_image_variants(item.imageUrl)
+            item.imageUrl = variants["url"]
+            item.imageUrl_medium = variants["url_medium"]
+            item.imageUrl_small = variants["url_small"]
 
         if item.notes:
             item.notes = self.storage_service.resolve_markdown_images(item.notes)
@@ -130,8 +133,13 @@ class MemoriesService:
             ranking = []
             for item in stats.get("ranking", []):
                 image_url = item.get("image")
+                img_medium = None
+                img_small = None
                 if image_url:
-                    image_url = self.storage_service.resolve_url(image_url)
+                    variants = self.storage_service.resolve_image_variants(image_url)
+                    image_url = variants["url"]
+                    img_medium = variants["url_medium"]
+                    img_small = variants["url_small"]
 
                 ranking.append(
                     TopTwoShotMember(
@@ -140,6 +148,8 @@ class MemoriesService:
                         spend=item["spend"],
                         lastDate=item["lastDate"],
                         image=image_url,
+                        image_medium=img_medium,
+                        image_small=img_small,
                     )
                 )
 

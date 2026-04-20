@@ -18,6 +18,8 @@ class MemoryItem(BaseModel):
     uniqueId: str
     type: MemoryType
     imageUrl: Optional[str] = None
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
     blurHash: Optional[str] = None
     date: str
     time: str
@@ -42,6 +44,8 @@ class TopTwoShotMember(BaseModel):
     spend: int
     lastDate: str
     image: Optional[str] = None
+    image_medium: Optional[str] = None
+    image_small: Optional[str] = None
 
 
 class TopTwoShotResponse(BaseModel):

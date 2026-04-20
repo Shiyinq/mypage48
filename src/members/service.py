@@ -37,6 +37,8 @@ class MemberService:
         if member.get("img"):
             res = await self.storage_service.resolve_external_media(member["img"])
             member["img"] = res["url"]
+            member["img_medium"] = res.get("url_medium")
+            member["img_small"] = res.get("url_small")
             if res.get("blurHash"):
                 member["blurHash"] = res["blurHash"]
         return member

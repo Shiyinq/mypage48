@@ -14,6 +14,7 @@
 </script>
 
 {#if selectedImage}
+	{@const image = selectedImage}
 	<div
 		class="fixed inset-0 z-[10001] flex flex-col items-center justify-center p-4 bg-black/90 backdrop-blur-md cursor-pointer"
 		transition:fade={{ duration: 200 }}
@@ -38,8 +39,8 @@
 			transition:scale={{ duration: 300, start: 0.95 }}
 		>
 			<OptimizedImage
-				src={selectedImage.imageUrl}
-				alt={selectedImage.title}
+				src={image.imageUrl}
+				alt={image.title}
 				class="max-h-[70vh] w-auto rounded-lg shadow-2xl border border-white/10 cursor-default pointer-events-auto"
 				objectFit="contain"
 				onclick={(e: MouseEvent) => e.stopPropagation()}
@@ -53,7 +54,7 @@
 				role="presentation"
 			>
 				<h3 class="text-2xl font-bold text-white tracking-tight drop-shadow-md">
-					{selectedImage.title}
+					{image.title}
 				</h3>
 				<div
 					class="flex flex-wrap items-center justify-center gap-2 text-sm font-medium text-white/90 mt-3"
@@ -62,7 +63,7 @@
 						class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-md border border-white/10"
 					>
 						<Calendar class="w-3.5 h-3.5" />
-						{formatDate(selectedImage.date, {
+						{formatDate(image.date, {
 							day: 'numeric',
 							month: 'long',
 							year: 'numeric'
@@ -71,12 +72,12 @@
 					<span
 						class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-md border border-white/10"
 					>
-						{#if selectedImage.type === 'TICKET'}
+						{#if image.type === 'TICKET'}
 							<MapPin class="w-3.5 h-3.5" />
 						{:else}
 							<Sparkles class="w-3.5 h-3.5" />
 						{/if}
-						{selectedImage.subtitle}
+						{image.subtitle}
 					</span>
 				</div>
 			</div>
