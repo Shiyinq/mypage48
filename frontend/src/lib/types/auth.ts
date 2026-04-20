@@ -13,6 +13,8 @@ export interface UserOshi {
 	nickname: string;
 	generation: string;
 	profilePicture: string;
+	profilePicture_medium?: string | null;
+	profilePicture_small?: string | null;
 	catchphrase: string;
 	socials?: {
 		twitter: string | null;
@@ -35,6 +37,8 @@ export interface User {
 	memberId?: string;
 	ofcStatus?: string;
 	profilePicture?: string | null;
+	profilePicture_medium?: string | null;
+	profilePicture_small?: string | null;
 	oshi?: UserOshi | null;
 	isPublic?: boolean;
 	publicYear?: number | null;

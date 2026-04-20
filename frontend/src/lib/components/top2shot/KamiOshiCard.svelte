@@ -47,7 +47,10 @@
 						{#if member.image}
 							<OptimizedImage
 								src={member.image}
+								srcMedium={member.image_medium}
+								srcSmall={member.image_small}
 								alt={member.name}
+								sizes="144px"
 								class="w-full h-full object-cover"
 							/>
 						{:else}

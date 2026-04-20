@@ -111,7 +111,9 @@
 	let topShowStats = $derived({
 		title: dashboardStats?.theater.top_show.title ?? '-',
 		count: dashboardStats?.theater.top_show.count ?? 0,
-		image: dashboardStats?.theater.top_show.image ?? null
+		image: dashboardStats?.theater.top_show.image ?? null,
+		image_medium: dashboardStats?.theater.top_show.image_medium ?? null,
+		image_small: dashboardStats?.theater.top_show.image_small ?? null
 	});
 
 	// Two Shot Stats
@@ -123,7 +125,9 @@
 			? {
 					name: dashboardStats.two_shot.top_2_shot.name,
 					count: dashboardStats.two_shot.top_2_shot.count,
-					image: dashboardStats.two_shot.top_2_shot.image ?? undefined
+					image: dashboardStats.two_shot.top_2_shot.image ?? undefined,
+					image_medium: dashboardStats.two_shot.top_2_shot.image_medium ?? undefined,
+					image_small: dashboardStats.two_shot.top_2_shot.image_small ?? undefined
 				}
 			: null
 	});
@@ -137,6 +141,8 @@
 		first: dashboardStats?.theater.extremes.first
 			? {
 					image: dashboardStats.theater.extremes.first.image,
+					image_medium: dashboardStats.theater.extremes.first.image_medium,
+					image_small: dashboardStats.theater.extremes.first.image_small,
 					title: dashboardStats.theater.extremes.first.title,
 					date: dashboardStats.theater.extremes.first.date,
 					detail: dashboardStats.theater.extremes.first.detail ?? undefined
@@ -145,6 +151,8 @@
 		last: dashboardStats?.theater.extremes.last
 			? {
 					image: dashboardStats.theater.extremes.last.image,
+					image_medium: dashboardStats.theater.extremes.last.image_medium,
+					image_small: dashboardStats.theater.extremes.last.image_small,
 					title: dashboardStats.theater.extremes.last.title,
 					date: dashboardStats.theater.extremes.last.date,
 					detail: dashboardStats.theater.extremes.last.detail ?? undefined
@@ -157,6 +165,8 @@
 		first: dashboardStats?.two_shot.extremes.first
 			? {
 					image: dashboardStats.two_shot.extremes.first.image,
+					image_medium: dashboardStats.two_shot.extremes.first.image_medium,
+					image_small: dashboardStats.two_shot.extremes.first.image_small,
 					title: dashboardStats.two_shot.extremes.first.title,
 					date: dashboardStats.two_shot.extremes.first.date
 				}
@@ -164,6 +174,8 @@
 		last: dashboardStats?.two_shot.extremes.last
 			? {
 					image: dashboardStats.two_shot.extremes.last.image,
+					image_medium: dashboardStats.two_shot.extremes.last.image_medium,
+					image_small: dashboardStats.two_shot.extremes.last.image_small,
 					title: dashboardStats.two_shot.extremes.last.title,
 					date: dashboardStats.two_shot.extremes.last.date
 				}
