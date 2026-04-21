@@ -105,8 +105,12 @@
 							{#if member.img}
 								<OptimizedImage
 									src={getExternalMediaUrl(member.img)}
+									srcMedium={getExternalMediaUrl(member.img_medium)}
+									srcSmall={getExternalMediaUrl(member.img_small)}
+									blurHash={member.blurHash}
 									alt={member.name}
 									class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+									sizes="(max-width: 640px) 44vw, 176px"
 								/>
 							{:else}
 								<div
