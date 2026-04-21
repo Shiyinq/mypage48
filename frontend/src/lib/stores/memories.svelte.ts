@@ -1,6 +1,7 @@
 import { memoriesApi } from '$lib/apis/memories';
 import { logger } from '$lib/utils/logger';
 import { isCacheExpired } from '$lib/utils/cache';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 import type { FilterType } from '$lib/components/memories';
 import type { TopTwoShotResponse, MemoryItem } from '$lib/types';
 
@@ -36,6 +37,7 @@ const initialGalleryState: GalleryState = {
 };
 
 const galleryState = $state<GalleryState>(initialGalleryState);
+const galleryDedup = createRequestDedup();
 
 function createGalleryStore() {
 	return {
@@ -76,44 +78,53 @@ function createGalleryStore() {
 				}
 			}
 
-			if (filter !== galleryState.filter) {
-				galleryState.filter = filter;
-				galleryState.list = [];
-				galleryState.pagination = { page: 0, hasMore: true };
-			}
+			// Deduplicate concurrent requests with the same page + filter
+			const key = JSON.stringify({ page, filter });
+			return galleryDedup.execute(key, async () => {
+				if (filter !== galleryState.filter) {
+					galleryState.filter = filter;
+					galleryState.list = [];
+					galleryState.pagination = { page: 0, hasMore: true };
+				}
 
-			galleryState.error = null;
-			galleryState.isLoading = true;
-
-			try {
-				const res = await memoriesApi.getMemories(page, 20, filter);
-				const now = Date.now();
-
-				const newItems = res.data.filter(
-					(newItem) =>
-						!galleryState.list.some((existingItem) => existingItem.uniqueId === newItem.uniqueId)
-				);
-				const newList = page === 1 ? res.data : [...galleryState.list, ...newItems];
-				const newPagination = {
-					page,
-					hasMore: res.meta.current_page < res.meta.last_page
-				};
-
-				galleryState.list = newList;
-				galleryState.pagination = newPagination;
-				galleryState.cache[filter] = { list: newList, pagination: newPagination, lastUpdated: now };
 				galleryState.error = null;
-			} catch (e) {
-				logger.error('Failed to load memories', e, { context: 'GalleryStore' });
-				galleryState.error = 'Failed to load memories';
-				throw e;
-			} finally {
-				galleryState.isLoading = false;
-			}
+				galleryState.isLoading = true;
+
+				try {
+					const res = await memoriesApi.getMemories(page, 20, filter);
+					const now = Date.now();
+
+					const newItems = res.data.filter(
+						(newItem) =>
+							!galleryState.list.some((existingItem) => existingItem.uniqueId === newItem.uniqueId)
+					);
+					const newList = page === 1 ? res.data : [...galleryState.list, ...newItems];
+					const newPagination = {
+						page,
+						hasMore: res.meta.current_page < res.meta.last_page
+					};
+
+					galleryState.list = newList;
+					galleryState.pagination = newPagination;
+					galleryState.cache[filter] = {
+						list: newList,
+						pagination: newPagination,
+						lastUpdated: now
+					};
+					galleryState.error = null;
+				} catch (e) {
+					logger.error('Failed to load memories', e, { context: 'GalleryStore' });
+					galleryState.error = 'Failed to load memories';
+					throw e;
+				} finally {
+					galleryState.isLoading = false;
+				}
+			});
 		},
 
 		reset: () => {
 			Object.assign(galleryState, initialGalleryState);
+			galleryDedup.clear();
 		},
 
 		/**
@@ -163,6 +174,7 @@ const initialTopTwoShotState: TopTwoShotState = {
 };
 
 const topTwoShotState = $state<TopTwoShotState>(initialTopTwoShotState);
+const topTwoShotDedup = createRequestDedup();
 
 function createTopTwoShotStore() {
 	return {
@@ -182,25 +194,29 @@ function createTopTwoShotStore() {
 		load: async () => {
 			if (topTwoShotState.data && !isCacheExpired(topTwoShotState.lastUpdated)) return;
 
-			topTwoShotState.error = null;
-			topTwoShotState.isLoading = true;
-
-			try {
-				const res = await memoriesApi.getTopTwoShot();
-				topTwoShotState.data = res;
-				topTwoShotState.lastUpdated = Date.now();
+			// Deduplicate concurrent requests
+			return topTwoShotDedup.execute('top-2shot', async () => {
 				topTwoShotState.error = null;
-			} catch (e) {
-				logger.error('Failed to load top 2-shot', e, { context: 'TopTwoShotStore' });
-				topTwoShotState.error = 'Failed to load top 2-shot';
-				throw e;
-			} finally {
-				topTwoShotState.isLoading = false;
-			}
+				topTwoShotState.isLoading = true;
+
+				try {
+					const res = await memoriesApi.getTopTwoShot();
+					topTwoShotState.data = res;
+					topTwoShotState.lastUpdated = Date.now();
+					topTwoShotState.error = null;
+				} catch (e) {
+					logger.error('Failed to load top 2-shot', e, { context: 'TopTwoShotStore' });
+					topTwoShotState.error = 'Failed to load top 2-shot';
+					throw e;
+				} finally {
+					topTwoShotState.isLoading = false;
+				}
+			});
 		},
 
 		reset: () => {
 			Object.assign(topTwoShotState, initialTopTwoShotState);
+			topTwoShotDedup.clear();
 		},
 
 		/**

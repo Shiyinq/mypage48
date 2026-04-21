@@ -1,6 +1,7 @@
 import type { DashboardStats } from '$lib/types';
 import { dashboard } from '$lib/apis/dashboard';
 import { logger } from '$lib/utils/logger';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 
 /**
  * Dashboard store - migrated to Svelte 5 Shared Rune State.
@@ -39,6 +40,7 @@ const statsState = $state<StatsState>({
 });
 
 let lastFetchedFilterKey = $state('');
+const dedup = createRequestDedup();
 
 function createDashboardStore() {
 	return {
@@ -63,25 +65,28 @@ function createDashboardStore() {
 				return;
 			}
 
-			statsState.error = null;
-			isLoading = true;
-
-			try {
-				const stats = await dashboard.getStats({
-					year: filter.selectedYear,
-					startMonth: filter.startMonth,
-					endMonth: filter.endMonth,
-					isAllData: filter.isAllData
-				});
-				statsState.data = stats;
+			// Deduplicate concurrent requests for the same filter
+			return dedup.execute(currentFilterKey, async () => {
 				statsState.error = null;
-				lastFetchedFilterKey = currentFilterKey;
-			} catch (e) {
-				logger.error('Failed to load dashboard stats', e, { context: 'DashboardStore' });
-				statsState.error = 'Failed to load dashboard stats';
-			} finally {
-				isLoading = false;
-			}
+				isLoading = true;
+
+				try {
+					const stats = await dashboard.getStats({
+						year: filter.selectedYear,
+						startMonth: filter.startMonth,
+						endMonth: filter.endMonth,
+						isAllData: filter.isAllData
+					});
+					statsState.data = stats;
+					statsState.error = null;
+					lastFetchedFilterKey = currentFilterKey;
+				} catch (e) {
+					logger.error('Failed to load dashboard stats', e, { context: 'DashboardStore' });
+					statsState.error = 'Failed to load dashboard stats';
+				} finally {
+					isLoading = false;
+				}
+			});
 		},
 
 		/**
@@ -91,6 +96,7 @@ function createDashboardStore() {
 			statsState.data = null;
 			statsState.error = null;
 			lastFetchedFilterKey = '';
+			dedup.clear();
 			Object.assign(dashboardFilter, {
 				selectedYear: new Date().getFullYear(),
 				startMonth: 0,
@@ -107,6 +113,7 @@ function createDashboardStore() {
 			statsState.data = null;
 			statsState.error = null;
 			lastFetchedFilterKey = '';
+			dedup.clear();
 			isLoading = false;
 		},
 

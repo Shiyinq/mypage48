@@ -2,6 +2,7 @@ import { events } from '$lib/apis/events';
 import type { Event, CalendarEvent, PaginationMeta } from '$lib/types';
 import { isCacheExpired } from '$lib/utils/cache';
 import { logger } from '$lib/utils/logger';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 
 /**
  * Events store - migrated to Svelte 5 Shared Rune State.
@@ -72,6 +73,7 @@ const initialState: EventsState = {
 };
 
 const state = $state<EventsState>(initialState);
+const dedup = createRequestDedup();
 
 // Maps legacy image-based event types to modern types.
 const legacyMapping: Record<string, string> = {
@@ -131,6 +133,7 @@ function createEventsStore() {
 
 		reset: () => {
 			Object.assign(state, initialState);
+			dedup.clear();
 		},
 
 		loadUpcoming: async (forceRefresh = false) => {
@@ -143,49 +146,70 @@ function createEventsStore() {
 				return;
 			}
 
-			state.upcoming.error = null;
-			state.upcoming.isLoading = true;
-
-			try {
-				const res = await events.getCurrentEvents(1, 100);
-				state.upcoming.list = res.data.map(translateLegacyEvent);
-				state.upcoming.lastUpdated = now;
+			// Deduplicate concurrent requests
+			const key = `upcoming:${forceRefresh}`;
+			return dedup.execute(key, async () => {
 				state.upcoming.error = null;
-			} catch (e) {
-				logger.error('Failed to load upcoming events', e);
-				state.upcoming.error = 'Failed to load upcoming events';
-			} finally {
-				state.upcoming.isLoading = false;
-			}
+				state.upcoming.isLoading = true;
+
+				try {
+					const res = await events.getCurrentEvents(1, 100);
+					state.upcoming.list = res.data.map(translateLegacyEvent);
+					state.upcoming.lastUpdated = now;
+					state.upcoming.error = null;
+				} catch (e) {
+					logger.error('Failed to load upcoming events', e);
+					state.upcoming.error = 'Failed to load upcoming events';
+				} finally {
+					state.upcoming.isLoading = false;
+				}
+			});
 		},
 
 		loadHistory: async (page = 1) => {
-			const now = Date.now();
-			state.history.error = null;
-			state.history.isLoading = true;
-
-			try {
-				const res = await events.getEvents(page, 20);
-				const translatedData = res.data.map(translateLegacyEvent);
-
-				state.history.list = translatedData;
-				state.history.pagination = res.meta;
-				state.history.lastUpdated = now;
-				state.history.error = null;
-
-				if (page === 1) {
-					state.history.defaultCache = {
-						list: res.data,
-						pagination: res.meta,
-						lastUpdated: now
-					};
+			// Short-circuit with cached data for page 1 (prevents hover-prefetch + click double request)
+			if (
+				page === 1 &&
+				state.history.defaultCache &&
+				!isCacheExpired(state.history.defaultCache.lastUpdated)
+			) {
+				if (state.history.list.length === 0) {
+					state.history.list = state.history.defaultCache.list;
+					state.history.pagination = state.history.defaultCache.pagination;
 				}
-			} catch (e) {
-				logger.error('Failed to load event history', e);
-				state.history.error = 'Failed to load event history';
-			} finally {
-				state.history.isLoading = false;
+				state.history.error = null;
+				return;
 			}
+
+			// Deduplicate concurrent requests for the same page
+			return dedup.execute(`history:${page}`, async () => {
+				const now = Date.now();
+				state.history.error = null;
+				state.history.isLoading = true;
+
+				try {
+					const res = await events.getEvents(page, 20);
+					const translatedData = res.data.map(translateLegacyEvent);
+
+					state.history.list = translatedData;
+					state.history.pagination = res.meta;
+					state.history.lastUpdated = now;
+					state.history.error = null;
+
+					if (page === 1) {
+						state.history.defaultCache = {
+							list: res.data,
+							pagination: res.meta,
+							lastUpdated: now
+						};
+					}
+				} catch (e) {
+					logger.error('Failed to load event history', e);
+					state.history.error = 'Failed to load event history';
+				} finally {
+					state.history.isLoading = false;
+				}
+			});
 		},
 
 		loadCalendar: async (year: number, month: number, forceRefresh = false) => {
@@ -216,32 +240,36 @@ function createEventsStore() {
 				return;
 			}
 
-			const shouldClear = state.calendar.year !== year || state.calendar.month !== month;
-			state.calendar.year = year;
-			state.calendar.month = month;
-			state.calendar.error = null;
-			if (shouldClear) state.calendar.list = [];
-			state.calendar.isLoading = true;
-
-			try {
-				const res = await events.getCalendarEvents(year, month);
-				const translatedData = res.map(translateLegacyEvent);
-
-				if (state.calendar.year !== year || state.calendar.month !== month) return;
-
-				state.calendar.list = translatedData;
-				state.calendar.lastUpdated = now;
-				state.calendar.cache[cacheKey] = {
-					list: translatedData,
-					lastUpdated: now
-				};
+			// Deduplicate concurrent requests for the same year/month
+			const dedupKey = `calendar:${cacheKey}:${forceRefresh}`;
+			return dedup.execute(dedupKey, async () => {
+				const shouldClear = state.calendar.year !== year || state.calendar.month !== month;
+				state.calendar.year = year;
+				state.calendar.month = month;
 				state.calendar.error = null;
-			} catch (e) {
-				logger.error('Failed to load calendar events', e);
-				state.calendar.error = 'Failed to load calendar events';
-			} finally {
-				state.calendar.isLoading = false;
-			}
+				if (shouldClear) state.calendar.list = [];
+				state.calendar.isLoading = true;
+
+				try {
+					const res = await events.getCalendarEvents(year, month);
+					const translatedData = res.map(translateLegacyEvent);
+
+					if (state.calendar.year !== year || state.calendar.month !== month) return;
+
+					state.calendar.list = translatedData;
+					state.calendar.lastUpdated = now;
+					state.calendar.cache[cacheKey] = {
+						list: translatedData,
+						lastUpdated: now
+					};
+					state.calendar.error = null;
+				} catch (e) {
+					logger.error('Failed to load calendar events', e);
+					state.calendar.error = 'Failed to load calendar events';
+				} finally {
+					state.calendar.isLoading = false;
+				}
+			});
 		},
 
 		/**
