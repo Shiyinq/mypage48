@@ -208,19 +208,22 @@ class MemberService:
             }
 
             async def _resolve_upcoming(m_data, d_until, m_age):
-                res = BirthdayResponse(
+                img_data = await self.storage_service.resolve_external_media(
+                    m_data.get("img")
+                )
+                return BirthdayResponse(
                     id=m_data.get("id", ""),
                     name=m_data.get("name", ""),
                     active=m_data.get("active", True),
-                    img=m_data.get("img"),
+                    img=img_data["url"],
+                    img_medium=img_data["url_medium"],
+                    img_small=img_data["url_small"],
+                    blurHash=img_data["blurHash"] or m_data.get("blurHash"),
                     birthdate=m_data.get("birthdate", ""),
                     days_until=d_until,
                     age=m_age,
                     member_type=m_data.get("member_type", "JKT48"),
                 )
-                if res.img:
-                    res.img = await self.storage_service.resolve_external_url(res.img)
-                return res
 
             tasks = []
             for member in members:

@@ -139,6 +139,9 @@ class BirthdayResponse(BaseModel):
     name: str
     active: bool
     img: Optional[str] = None
+    img_medium: Optional[str] = None
+    img_small: Optional[str] = None
+    blurHash: Optional[str] = None
     birthdate: str
     days_until: int
     age: int
