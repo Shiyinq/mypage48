@@ -363,7 +363,9 @@ class UserService:
 
         profile_picture = user.profilePicture
         if profile_picture:
-            variants = self.storage_service.resolve_image_variants(profile_picture)
+            variants = await self.storage_service.resolve_image_variants(
+                profile_picture
+            )
             profile_picture = variants["url"]
             profile_picture_medium = variants["url_medium"]
             profile_picture_small = variants["url_small"]
@@ -531,7 +533,9 @@ class UserService:
             profile_pic_medium = None
             profile_pic_small = None
             if profile_pic:
-                variants = self.storage_service.resolve_image_variants(profile_pic)
+                variants = await self.storage_service.resolve_image_variants(
+                    profile_pic
+                )
                 profile_pic = variants["url"]
                 profile_pic_medium = variants["url_medium"]
                 profile_pic_small = variants["url_small"]
@@ -583,32 +587,38 @@ class UserService:
             users = await self.repository.get_all_paginated(page, limit, search)
             total = await self.repository.count_all(search)
 
-            user_list = []
-            for u in users:
+            async def _resolve_user(u):
                 profile_pic = u.get("profilePicture")
                 profile_pic_medium = None
                 profile_pic_small = None
                 if profile_pic:
-                    variants = self.storage_service.resolve_image_variants(profile_pic)
+                    variants = await self.storage_service.resolve_image_variants(
+                        profile_pic
+                    )
                     profile_pic = variants["url"]
                     profile_pic_medium = variants["url_medium"]
                     profile_pic_small = variants["url_small"]
 
-                user_list.append(
-                    UserListItem(
-                        userId=u.get("userId", ""),
-                        name=u.get("name", ""),
-                        username=u.get("username", ""),
-                        email=u.get("email", ""),
-                        profilePicture=profile_pic,
-                        profilePicture_medium=profile_pic_medium,
-                        profilePicture_small=profile_pic_small,
-                        isAdmin=u.get("isAdmin", False),
-                        isEmailVerified=u.get("isEmailVerified", False),
-                        isAccountLocked=u.get("isAccountLocked", False),
-                        createdAt=u.get("createdAt"),
-                    )
+                return UserListItem(
+                    userId=u.get("userId", ""),
+                    name=u.get("name", ""),
+                    username=u.get("username", ""),
+                    email=u.get("email", ""),
+                    profilePicture=profile_pic,
+                    profilePicture_medium=profile_pic_medium,
+                    profilePicture_small=profile_pic_small,
+                    isAdmin=u.get("isAdmin", False),
+                    isEmailVerified=u.get("isEmailVerified", False),
+                    isAccountLocked=u.get("isAccountLocked", False),
+                    createdAt=u.get("createdAt"),
                 )
+
+            if users:
+                user_list = list(
+                    await asyncio.gather(*(_resolve_user(u) for u in users))
+                )
+            else:
+                user_list = []
 
             last_page = math.ceil(total / limit) if total > 0 else 1
             next_page = page + 1 if page < last_page else None

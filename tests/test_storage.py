@@ -11,14 +11,15 @@ from src.tickets.schemas import TicketResponse
 # Mock Repository
 class MockStorageRepository:
 	def __init__(self):
-		self.upload_file = MagicMock()
-		self.get_presigned_url = MagicMock(return_value="https://minio.example.com/bucket/file.jpg")
-		self.file_exists = MagicMock(return_value=True)
-		self.delete_file = MagicMock(return_value=True)
+		self.upload_file = AsyncMock()
+		self.get_presigned_url = AsyncMock(return_value="https://minio.example.com/bucket/file.jpg")
+		self.file_exists = AsyncMock(return_value=True)
+		self.delete_file = AsyncMock(return_value=True)
+		self.check_connection = AsyncMock(return_value=True)
 		# Use valid 1x1 PNG bytes instead of "fake_image_content"
 		valid_image = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
-		self.get_file_with_metadata = MagicMock(return_value=(valid_image, "image/png"))
-		self.get_file_stream_with_metadata = MagicMock(return_value=(io.BytesIO(valid_image), "image/png"))
+		self.get_file_with_metadata = AsyncMock(return_value=(valid_image, "image/png"))
+		self.get_file_stream_with_metadata = AsyncMock(return_value=(io.BytesIO(valid_image), "image/png"))
 
 @pytest.fixture
 def mock_storage_repo():
@@ -38,19 +39,19 @@ def storage_service(mock_storage_repo):
 @pytest.mark.asyncio
 async def test_resolve_url(storage_service):
     # Test None
-    assert storage_service.resolve_url(None) is None
+    assert await storage_service.resolve_url(None) is None
     
     # Test Base64
     base64_img = "data:image/png;base64,aaaa"
-    assert storage_service.resolve_url(base64_img) == base64_img
+    assert await storage_service.resolve_url(base64_img) == base64_img
     
     # Test HTTP URL
     http_url = "http://example.com/image.jpg"
-    assert storage_service.resolve_url(http_url) == http_url
+    assert await storage_service.resolve_url(http_url) == http_url
     
     # Test Storage Filename
     filename = "tickets/user1/abc.jpg"
-    url = storage_service.resolve_url(filename)
+    url = await storage_service.resolve_url(filename)
     assert "/api/storage/m/tickets/user1/abc.jpg" in url
     assert "expires=" in url
     assert "signature=" in url
@@ -60,7 +61,7 @@ async def test_resolve_url_presigned(storage_service):
     # Test Storage Filename with presigned mode enabled
     storage_service.config.storage_use_presigned = True
     filename = "tickets/user1/abc.jpg"
-    url = storage_service.resolve_url(filename)
+    url = await storage_service.resolve_url(filename)
     assert url == "https://minio.example.com/bucket/file.jpg"
 
 @pytest.mark.asyncio
@@ -69,7 +70,7 @@ async def test_upload_image(storage_service):
     category = "ticket"
     base64_img = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
     
-    response = storage_service.upload_image(user_id, base64_img, category)
+    response = await storage_service.upload_image(user_id, base64_img, category)
     
     assert response.filename.startswith("ticket/user123/")
     assert response.filename.endswith(".webp")
@@ -85,7 +86,7 @@ async def test_upload_image_journal(storage_service):
     category = "journal"
     base64_img = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
     
-    response = storage_service.upload_image(user_id, base64_img, category)
+    response = await storage_service.upload_image(user_id, base64_img, category)
     
     assert response.filename.startswith("journal/user123/")
     assert response.filename.endswith(".webp")
@@ -95,7 +96,7 @@ async def test_upload_image_journal(storage_service):
 async def test_get_bulk_presigned_urls(storage_service):
     filenames = ["journal/u1/1.jpg", "ticket/u1/2.png"]
     
-    response = storage_service.get_bulk_presigned_urls(filenames)
+    response = await storage_service.get_bulk_presigned_urls(filenames)
     
     assert len(response.urls) == 2
     assert "/api/storage/m/" in response.urls["journal/u1/1.jpg"]
@@ -134,7 +135,7 @@ async def test_resolve_ticket_images(storage_service):
     # Use actual class
     ticket = TicketResponse(**ticket_data)
     
-    resolved = storage_service.resolve_ticket_images(ticket)
+    resolved = await storage_service.resolve_ticket_images(ticket)
     
     assert "/api/storage/m/tickets/u1/img1.jpg" in resolved.imageUrl
     assert "/api/storage/m/tickets/u1/img1_medium.jpg" in resolved.imageUrl_medium

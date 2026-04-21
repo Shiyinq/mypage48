@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import hashlib
 import hmac
@@ -127,7 +128,7 @@ class StorageService:
             logger.error(f"Failed to generate blurhash: {str(e)}", exc_info=True)
             return None
 
-    def upload_image(
+    async def upload_image(
         self,
         user_id: str,
         base64_image: str,
@@ -160,12 +161,12 @@ class StorageService:
                 content_type = "image/webp"
 
                 # Generate and upload variants
-                self._generate_and_upload_variants(img, filename)
+                await self._generate_and_upload_variants(img, filename)
 
             content_type = "image/webp"
-            self.repository.upload_file(webp_bytes, filename, content_type)
+            await self.repository.upload_file(webp_bytes, filename, content_type)
 
-            variants = self.resolve_image_variants(filename)
+            variants = await self.resolve_image_variants(filename)
 
             return ImageUploadResponse(
                 filename=filename,
@@ -183,17 +184,17 @@ class StorageService:
             logger.exception(f"Unexpected error during upload: {e}")
             raise ImageUploadError()
 
-    def get_presigned_url(
+    async def get_presigned_url(
         self,
         filename: str,
         expires: int = 3600,
     ) -> PresignedUrlResponse:
         """Get presigned URL for a stored file."""
         try:
-            if not self.repository.file_exists(filename):
+            if not await self.repository.file_exists(filename):
                 raise ImageNotFoundError()
 
-            url = self.resolve_url(filename)
+            url = await self.resolve_url(filename)
             return PresignedUrlResponse(url=url, expires_in=expires)
         except S3Error as e:
             logger.error(f"MinIO error getting presigned URL: {e}")
@@ -204,7 +205,7 @@ class StorageService:
             logger.exception(f"Unexpected error getting presigned URL: {e}")
             raise PresignedUrlError()
 
-    def get_bulk_presigned_urls(
+    async def get_bulk_presigned_urls(
         self,
         filenames: list[str],
         expires: int = 3600,
@@ -214,7 +215,7 @@ class StorageService:
         for filename in filenames:
             try:
                 # Use our proxy resolve for bulk urls as well
-                url = self.resolve_url(filename)
+                url = await self.resolve_url(filename)
                 urls[filename] = url
             except Exception as e:
                 logger.error(f"Error getting presigned URL for {filename}: {e}")
@@ -222,13 +223,13 @@ class StorageService:
 
         return BatchPresignedUrlResponse(urls=urls, expires_in=expires)
 
-    def delete_image(self, filename: str) -> bool:
+    async def delete_image(self, filename: str) -> bool:
         """Delete image from storage."""
         try:
-            if not self.repository.file_exists(filename):
+            if not await self.repository.file_exists(filename):
                 raise ImageNotFoundError()
 
-            return self.repository.delete_file(filename)
+            return await self.repository.delete_file(filename)
         except S3Error as e:
             logger.error(f"MinIO error during delete: {e}")
             raise StorageConnectionError()
@@ -276,7 +277,7 @@ class StorageService:
             logger.error(f"Error verifying signature: {e}")
             return False
 
-    def resolve_url(
+    async def resolve_url(
         self, value: Optional[str], variant: Optional[str] = None
     ) -> Optional[str]:
         """
@@ -301,7 +302,7 @@ class StorageService:
         # Strategy 1: Direct Presigned URL (Best performance, low BE load)
         if self.config.storage_use_presigned:
             try:
-                return self.repository.get_presigned_url(path)
+                return await self.repository.get_presigned_url(path)
             except Exception as e:
                 logger.error(f"Failed to generate direct presigned URL for {path}: {e}")
                 # Fallback to proxy if presign fails
@@ -310,15 +311,22 @@ class StorageService:
         signature, expires = self._create_signed_params(path)
         return f"{self.config.api_base_url}/storage/m/{path}?expires={expires}&signature={signature}"
 
-    def resolve_image_variants(self, path: Optional[str]) -> dict[str, Optional[str]]:
+    async def resolve_image_variants(
+        self, path: Optional[str]
+    ) -> dict[str, Optional[str]]:
         """
         Resolve all image variants (Original, Medium, Small) for a given path.
         Returns a dict with 'url', 'url_medium', and 'url_small'.
         """
+        url, url_medium, url_small = await asyncio.gather(
+            self.resolve_url(path),
+            self.resolve_url(path, variant="medium"),
+            self.resolve_url(path, variant="small"),
+        )
         return {
-            "url": self.resolve_url(path),
-            "url_medium": self.resolve_url(path, variant="medium"),
-            "url_small": self.resolve_url(path, variant="small"),
+            "url": url,
+            "url_medium": url_medium,
+            "url_small": url_small,
         }
 
     async def resolve_external_url(self, value: Optional[str]) -> Optional[str]:
@@ -342,7 +350,7 @@ class StorageService:
         cache_key = f"cache/external/{path}"
 
         # Ensure it's cached in R2
-        if not self.repository.file_exists(cache_key):
+        if not await self.repository.file_exists(cache_key):
             # Not in cache, fetch and upload
             try:
                 await self._cache_external_media(path)
@@ -352,7 +360,7 @@ class StorageService:
                 return f"{self.config.api_base_url}/storage/external/{path}"
 
         # Now it's guaranteed to be in R2, resolve via standard logic
-        return self.resolve_url(cache_key)
+        return await self.resolve_url(cache_key)
 
     async def resolve_external_media(self, value: Optional[str]) -> dict:
         """
@@ -383,7 +391,7 @@ class StorageService:
         cache_key = f"cache/external/{path}"
         blurHash = None
 
-        if not self.repository.file_exists(cache_key):
+        if not await self.repository.file_exists(cache_key):
             try:
                 blurHash = await self._cache_external_media(path)
             except Exception as e:
@@ -397,7 +405,7 @@ class StorageService:
                 }
 
         # Guaranteed to be in R2 (either previously or just now)
-        variants = self.resolve_image_variants(cache_key)
+        variants = await self.resolve_image_variants(cache_key)
         return {**variants, "blurHash": blurHash}
 
     async def _cache_external_media(self, path: str) -> Optional[str]:
@@ -435,35 +443,48 @@ class StorageService:
                     content_type = "image/webp"
 
                     # Generate and upload variants
-                    self._generate_and_upload_variants(img, cache_key)
+                    await self._generate_and_upload_variants(img, cache_key)
 
-                    self.repository.upload_file(webp_data, cache_key, content_type)
+                    await self.repository.upload_file(
+                        webp_data, cache_key, content_type
+                    )
                     logger.info(f"Successfully cached {path} to R2 as WebP")
                     return blurHash
             except Exception as e:
                 logger.error(f"Failed to process and upload {path} to R2: {e}")
         return None
 
-    def resolve_markdown_images(self, content: Optional[str]) -> Optional[str]:
+    async def resolve_markdown_images(self, content: Optional[str]) -> Optional[str]:
         """
         Find internal storage paths in markdown and replace with resolved URLs.
         """
         if not content:
             return content
 
-        def replace_path(match):
+        matches = list(MARKDOWN_IMAGE_PATTERN.finditer(content))
+        if not matches:
+            return content
+
+        paths = [m.group(2) for m in matches]
+        urls = await asyncio.gather(
+            *(self.resolve_url(path) for path in paths), return_exceptions=True
+        )
+
+        result = content
+        # we iterate backward so replacements don't mess up earlier indices
+        for match, url_obj in reversed(list(zip(matches, urls))):
             alt_text = match.group(1)
-            path = match.group(2)
-            try:
-                # Use resolve_url to get the signed proxy URL or direct URL
-                proxy_url = self.resolve_url(path)
-                return f"![{alt_text}]({proxy_url})"
-            except Exception:
-                return match.group(0)
+            match.group(0)
+            if isinstance(url_obj, str):
+                proxy_url = url_obj
+                result = (
+                    result[: match.start()]
+                    + f"![{alt_text}]({proxy_url})"
+                    + result[match.end() :]
+                )
+        return result
 
-        return MARKDOWN_IMAGE_PATTERN.sub(replace_path, content)
-
-    def resolve_dashboard_stats(
+    async def resolve_dashboard_stats(
         self, stats: "DashboardStatsResponse"
     ) -> "DashboardStatsResponse":
         """Resolve images in dashboard statistics to URLs."""
@@ -476,7 +497,7 @@ class StorageService:
             and stats_dict["two_shot"].get("top_2_shot")
             and stats_dict["two_shot"]["top_2_shot"].get("image")
         ):
-            variants = self.resolve_image_variants(
+            variants = await self.resolve_image_variants(
                 stats_dict["two_shot"]["top_2_shot"]["image"]
             )
             stats_dict["two_shot"]["top_2_shot"]["image"] = variants["url"]
@@ -490,7 +511,7 @@ class StorageService:
             extremes = stats_dict["two_shot"]["extremes"]
             for key in ["first", "last"]:
                 if extremes.get(key) and extremes[key].get("image"):
-                    variants = self.resolve_image_variants(extremes[key]["image"])
+                    variants = await self.resolve_image_variants(extremes[key]["image"])
                     extremes[key]["image"] = variants["url"]
                     extremes[key]["image_medium"] = variants["url_medium"]
                     extremes[key]["image_small"] = variants["url_small"]
@@ -501,7 +522,7 @@ class StorageService:
             and stats_dict["theater"].get("top_show")
             and stats_dict["theater"]["top_show"].get("image")
         ):
-            variants = self.resolve_image_variants(
+            variants = await self.resolve_image_variants(
                 stats_dict["theater"]["top_show"]["image"]
             )
             stats_dict["theater"]["top_show"]["image"] = variants["url"]
@@ -513,14 +534,14 @@ class StorageService:
             extremes = stats_dict["theater"]["extremes"]
             for key in ["first", "last"]:
                 if extremes.get(key) and extremes[key].get("image"):
-                    variants = self.resolve_image_variants(extremes[key]["image"])
+                    variants = await self.resolve_image_variants(extremes[key]["image"])
                     extremes[key]["image"] = variants["url"]
                     extremes[key]["image_medium"] = variants["url_medium"]
                     extremes[key]["image_small"] = variants["url_small"]
 
         return type(stats)(**stats_dict)
 
-    def resolve_ticket_images(self, ticket: Any) -> Any:
+    async def resolve_ticket_images(self, ticket: Any) -> Any:
         """
         Resolve all potential images in a ticket (main image and 2-shot).
         Updates the ticket object in-place.
@@ -530,7 +551,7 @@ class StorageService:
 
         # Main image
         if hasattr(ticket, "imageUrl") and ticket.imageUrl:
-            variants = self.resolve_image_variants(ticket.imageUrl)
+            variants = await self.resolve_image_variants(ticket.imageUrl)
             ticket.imageUrl = variants["url"]
             ticket.imageUrl_medium = variants["url_medium"]
             ticket.imageUrl_small = variants["url_small"]
@@ -542,7 +563,7 @@ class StorageService:
             and hasattr(ticket.two_shot, "imageUrl")
             and ticket.two_shot.imageUrl
         ):
-            variants = self.resolve_image_variants(ticket.two_shot.imageUrl)
+            variants = await self.resolve_image_variants(ticket.two_shot.imageUrl)
             ticket.two_shot.imageUrl = variants["url"]
             ticket.two_shot.imageUrl_medium = variants["url_medium"]
             ticket.two_shot.imageUrl_small = variants["url_small"]
@@ -556,7 +577,9 @@ class StorageService:
         name, ext = os.path.splitext(path)
         return f"{name}_{variant}{ext}"
 
-    def _generate_and_upload_variants(self, img: Image.Image, base_path: str) -> None:
+    async def _generate_and_upload_variants(
+        self, img: Image.Image, base_path: str
+    ) -> None:
         """Helper to generate and upload medium/small variants."""
         variants = {
             "medium": self.MEDIUM_IMAGE_DIMENSION,
@@ -578,7 +601,9 @@ class StorageService:
                 temp_img.save(output, format="WEBP", quality=self.WEBP_QUALITY)
                 variant_bytes = output.getvalue()
 
-                self.repository.upload_file(variant_bytes, variant_path, "image/webp")
+                await self.repository.upload_file(
+                    variant_bytes, variant_path, "image/webp"
+                )
                 logger.debug(f"Generated and uploaded variant: {variant_path}")
             except Exception as e:
                 logger.error(
@@ -596,7 +621,9 @@ class StorageService:
         path = path.lstrip("/")
 
         try:
-            stream, content_type = self.repository.get_file_stream_with_metadata(path)
+            stream, content_type = await self.repository.get_file_stream_with_metadata(
+                path
+            )
             if stream:
                 return stream, content_type or "image/jpeg", 200
 
@@ -613,7 +640,7 @@ class StorageService:
         cache_key = f"cache/external/{path}"
 
         try:
-            stream, content_type = self.repository.get_file_stream_with_metadata(
+            stream, content_type = await self.repository.get_file_stream_with_metadata(
                 cache_key
             )
             if stream:
@@ -625,7 +652,7 @@ class StorageService:
         success = await self._cache_external_media(path)
         if success:
             # Serve what we just cached
-            stream, content_type = self.repository.get_file_stream_with_metadata(
+            stream, content_type = await self.repository.get_file_stream_with_metadata(
                 cache_key
             )
             return stream, content_type or "image/jpeg", 200

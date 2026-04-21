@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -46,16 +47,18 @@ class TicketsService:
         self.config = config
         self.storage_service = storage_service
 
-    def _resolve_ticket(self, ticket: dict) -> dict:
+    async def _resolve_ticket(self, ticket: dict) -> dict:
         """Resolve storage paths for ticket images and notes."""
         if ticket.get("imageUrl"):
-            variants = self.storage_service.resolve_image_variants(ticket["imageUrl"])
+            variants = await self.storage_service.resolve_image_variants(
+                ticket["imageUrl"]
+            )
             ticket["imageUrl"] = variants["url"]
             ticket["imageUrl_medium"] = variants["url_medium"]
             ticket["imageUrl_small"] = variants["url_small"]
 
         if ticket.get("two_shot") and ticket["two_shot"].get("imageUrl"):
-            variants = self.storage_service.resolve_image_variants(
+            variants = await self.storage_service.resolve_image_variants(
                 ticket["two_shot"]["imageUrl"]
             )
             ticket["two_shot"]["imageUrl"] = variants["url"]
@@ -63,7 +66,7 @@ class TicketsService:
             ticket["two_shot"]["imageUrl_small"] = variants["url_small"]
 
         if ticket.get("notes"):
-            ticket["notes"] = self.storage_service.resolve_markdown_images(
+            ticket["notes"] = await self.storage_service.resolve_markdown_images(
                 ticket.get("notes")
             )
 
@@ -105,7 +108,7 @@ class TicketsService:
             ticket_dict = ticket_in_db.model_dump()
             ticket_dict["_id"] = result.inserted_id
 
-            return TicketResponse(**self._resolve_ticket(ticket_dict))
+            return TicketResponse(**(await self._resolve_ticket(ticket_dict)))
         except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):
             raise
         except Exception as e:
@@ -145,9 +148,10 @@ class TicketsService:
                 end_date=end_date,
             )
 
-            results = []
-            for t in tickets_data:
-                results.append(TicketResponse(**self._resolve_ticket(t)))
+            resolved_tickets = await asyncio.gather(
+                *(self._resolve_ticket(t) for t in tickets_data)
+            )
+            results = [TicketResponse(**t) for t in resolved_tickets]
 
             # Calculate total pages
             last_page = (total_count + per_page - 1) // per_page if per_page > 0 else 1
@@ -186,9 +190,10 @@ class TicketsService:
             tickets_data, _ = await self.repository.get_tickets(
                 user_id, year, page=None, limit=None
             )
-            results = []
-            for t in tickets_data:
-                results.append(TicketResponse(**self._resolve_ticket(t)))
+            resolved_tickets = await asyncio.gather(
+                *(self._resolve_ticket(t) for t in tickets_data)
+            )
+            results = [TicketResponse(**t) for t in resolved_tickets]
             return results
         except Exception as e:
             logger.exception(f"Error fetching tickets: {str(e)}")
@@ -199,7 +204,7 @@ class TicketsService:
             ticket = await self.repository.get_ticket(ticket_id, user_id)
             if not ticket:
                 raise TicketNotFoundError()
-            return TicketResponse(**self._resolve_ticket(ticket))
+            return TicketResponse(**(await self._resolve_ticket(ticket)))
         except TicketNotFoundError:
             raise
         except Exception as e:
@@ -219,7 +224,7 @@ class TicketsService:
             )
             if not updated_ticket:
                 raise TicketNotFoundError()
-            return TicketResponse(**self._resolve_ticket(updated_ticket))
+            return TicketResponse(**(await self._resolve_ticket(updated_ticket)))
         except TicketNotFoundError:
             raise
         except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):

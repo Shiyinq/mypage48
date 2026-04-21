@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional
 
 from src.config import Settings
@@ -28,16 +29,16 @@ class MemoriesService:
         self.config = config
         self.storage_service = storage_service
 
-    def _resolve_memory_item(self, item: MemoryItem) -> MemoryItem:
+    async def _resolve_memory_item(self, item: MemoryItem) -> MemoryItem:
         """Resolve storage paths for a memory item."""
         if item.imageUrl:
-            variants = self.storage_service.resolve_image_variants(item.imageUrl)
+            variants = await self.storage_service.resolve_image_variants(item.imageUrl)
             item.imageUrl = variants["url"]
             item.imageUrl_medium = variants["url_medium"]
             item.imageUrl_small = variants["url_small"]
 
         if item.notes:
-            item.notes = self.storage_service.resolve_markdown_images(item.notes)
+            item.notes = await self.storage_service.resolve_markdown_images(item.notes)
 
         return item
 
@@ -103,6 +104,9 @@ class MemoriesService:
                     )
                 )
 
+            if memory_items:
+                memory_items = list(await asyncio.gather(*memory_items))
+
             # Calculate pagination meta
             last_page = (total_count + limit - 1) // limit if limit > 0 else 1
             if last_page < 1:
@@ -130,28 +134,33 @@ class MemoriesService:
             stats = await self.repository.get_top_two_shot_stats(user_id)
 
             # Map to response model
-            ranking = []
-            for item in stats.get("ranking", []):
+            async def _resolve_stat(item: dict):
                 image_url = item.get("image")
                 img_medium = None
                 img_small = None
                 if image_url:
-                    variants = self.storage_service.resolve_image_variants(image_url)
+                    variants = await self.storage_service.resolve_image_variants(
+                        image_url
+                    )
                     image_url = variants["url"]
                     img_medium = variants["url_medium"]
                     img_small = variants["url_small"]
 
-                ranking.append(
-                    TopTwoShotMember(
-                        name=item["name"],
-                        count=item["count"],
-                        spend=item["spend"],
-                        lastDate=item["lastDate"],
-                        image=image_url,
-                        image_medium=img_medium,
-                        image_small=img_small,
-                    )
+                return TopTwoShotMember(
+                    name=item["name"],
+                    count=item["count"],
+                    spend=item["spend"],
+                    lastDate=item["lastDate"],
+                    image=image_url,
+                    image_medium=img_medium,
+                    image_small=img_small,
                 )
+
+            tasks = [_resolve_stat(item) for item in stats.get("ranking", [])]
+            if tasks:
+                ranking = list(await asyncio.gather(*tasks))
+            else:
+                ranking = []
 
             return TopTwoShotResponse(
                 ranking=ranking,

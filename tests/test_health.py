@@ -10,7 +10,7 @@ from src.dependencies import get_storage_repository
 
 @pytest.fixture
 def mock_storage_repo():
-    mock = MagicMock()
+    mock = AsyncMock()
     mock.check_connection.return_value = True
     return mock
 
@@ -73,7 +73,7 @@ async def test_health_check_minio_failure(client):
     """
     Test health check endpoint returns 503 when Storage check fails.
     """
-    mock_storage_fail = MagicMock()
+    mock_storage_fail = AsyncMock()
     mock_storage_fail.check_connection.return_value = False
     
     app.dependency_overrides[get_storage_repository] = lambda: mock_storage_fail
