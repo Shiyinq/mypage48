@@ -35,7 +35,7 @@ class HealthService:
 
         # Check Storage connection
         try:
-            if self.storage_repo.check_connection():
+            if await self.storage_repo.check_connection():
                 storage_status = DatabaseStatus.CONNECTED
             else:
                 storage_status = DatabaseStatus.DISCONNECTED

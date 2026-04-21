@@ -297,7 +297,8 @@ async def test_dashboard_stats_resolves_minio_urls(client: AsyncClient, db, crea
     token, user_id, headers = await create_user("dashboard_minio")
 
     # Mock Repository
-    mock_repo = MagicMock()
+    from unittest.mock import AsyncMock
+    mock_repo = AsyncMock()
     # Mock resolve_url logic via repository
     mock_repo.get_presigned_url.side_effect = lambda x, expires=3600: f"https://minio.example.com/{x}?signed=true"
 
@@ -305,6 +306,7 @@ async def test_dashboard_stats_resolves_minio_urls(client: AsyncClient, db, crea
     mock_config = MagicMock()
     mock_config.secret_key = "dummy_secret_key_for_testing"
     mock_config.api_base_url = "https://minio.example.com"
+    mock_config.storage_use_presigned = False
     storage_service = StorageService(mock_repo, mock_config)
 
     # Override dependency

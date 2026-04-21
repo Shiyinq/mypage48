@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from typing import List, Optional
 
@@ -56,10 +57,11 @@ class MemberService:
             members = await self.repository.find_all(skip, limit, generation, search)
             total = await self.repository.count(generation, search)
 
-            member_responses = [
-                MemberResponse(**(await self._resolve_member(member)))
-                for member in members
-            ]
+            resolved_members = await asyncio.gather(
+                *(self._resolve_member(member) for member in members)
+            )
+
+            member_responses = [MemberResponse(**member) for member in resolved_members]
 
             last_page = (total + limit - 1) // limit if limit > 0 else 1
             if last_page < 1:
@@ -205,6 +207,22 @@ class MemberService:
                 "Desember": 12,
             }
 
+            async def _resolve_upcoming(m_data, d_until, m_age):
+                res = BirthdayResponse(
+                    id=m_data.get("id", ""),
+                    name=m_data.get("name", ""),
+                    active=m_data.get("active", True),
+                    img=m_data.get("img"),
+                    birthdate=m_data.get("birthdate", ""),
+                    days_until=d_until,
+                    age=m_age,
+                    member_type=m_data.get("member_type", "JKT48"),
+                )
+                if res.img:
+                    res.img = await self.storage_service.resolve_external_url(res.img)
+                return res
+
+            tasks = []
             for member in members:
                 if not member.get("birthdate"):
                     continue
@@ -236,27 +254,15 @@ class MemberService:
                     # Check if within next 30 days
                     if 0 <= days_until <= 30:
                         age = next_birthday.year - year
-                        res = BirthdayResponse(
-                            id=member.get("id", ""),
-                            name=member.get("name", ""),
-                            active=member.get("active", True),
-                            img=member.get("img"),
-                            birthdate=member.get("birthdate", ""),
-                            days_until=days_until,
-                            age=age,
-                            member_type=member.get("member_type", "JKT48"),
-                        )
-                        # Resolve image (async)
-                        if res.img:
-                            res.img = await self.storage_service.resolve_external_url(
-                                res.img
-                            )
-                        upcoming.append(res)
+                        tasks.append(_resolve_upcoming(member, days_until, age))
                 except (ValueError, TypeError) as e:
                     logger.warning(
                         f"Error parsing birthdate for member {member.get('name')}: {e}"
                     )
                     continue
+
+            if tasks:
+                upcoming = list(await asyncio.gather(*tasks))
 
             # Sort by days until birthday
             upcoming.sort(key=lambda x: x.days_until)
@@ -289,6 +295,19 @@ class MemberService:
                 "Desember": 12,
             }
 
+            async def _resolve_range(m_data, b_date):
+                return {
+                    "id": m_data.get("id", ""),
+                    "name": m_data.get("name", ""),
+                    "date": b_date,
+                    "img": await self.storage_service.resolve_external_url(
+                        m_data.get("img")
+                    ),
+                    "active": m_data.get("active", True),
+                    "member_type": m_data.get("member_type", "JKT48"),
+                }
+
+            tasks = []
             for member in members:
                 if not member.get("birthdate"):
                     continue
@@ -316,20 +335,7 @@ class MemberService:
                         try:
                             birthday_date = datetime(year_to_check, month, day)
                             if start_date <= birthday_date <= end_date:
-                                results.append(
-                                    {
-                                        "id": member.get("id", ""),
-                                        "name": member.get("name", ""),
-                                        "date": birthday_date,
-                                        "img": await self.storage_service.resolve_external_url(
-                                            member.get("img")
-                                        ),
-                                        "active": member.get("active", True),
-                                        "member_type": member.get(
-                                            "member_type", "JKT48"
-                                        ),
-                                    }
-                                )
+                                tasks.append(_resolve_range(member, birthday_date))
                         except ValueError:
                             # Handle Feb 29 on non-leap years if applicable, etc.
                             continue
@@ -339,6 +345,9 @@ class MemberService:
                         f"Error parsing birthdate for member {member.get('name')}: {e}"
                     )
                     continue
+
+            if tasks:
+                results = list(await asyncio.gather(*tasks))
 
             return results
 
