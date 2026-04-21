@@ -1,6 +1,6 @@
 import asyncio
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus, urljoin
 
@@ -45,7 +45,7 @@ class LiveService:
 
     async def get_live_status(self) -> LiveResponse:
         """Get unified live status from Showroom and IDN"""
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         if "data" in self._cache:
             updated_at = self._cache.get("updated_at")
             if updated_at and (now - updated_at).total_seconds() < self._cache_ttl:
@@ -115,7 +115,9 @@ class LiveService:
                                 title=room.get("main_name"),
                                 view_num=room.get("view_num", 0),
                                 image=room.get("image"),
-                                start_at=datetime.fromtimestamp(room.get("started_at"))
+                                start_at=datetime.fromtimestamp(
+                                    room.get("started_at"), tz=timezone.utc
+                                )
                                 if room.get("started_at")
                                 else None,
                                 member=LiveMember(
@@ -138,9 +140,11 @@ class LiveService:
                                 title=f"[DEBUG] {room.get('main_name')}",
                                 view_num=room.get("view_num", 0),
                                 image=room.get("image"),
-                                start_at=datetime.fromtimestamp(room.get("started_at"))
+                                start_at=datetime.fromtimestamp(
+                                    room.get("started_at"), tz=timezone.utc
+                                )
                                 if room.get("started_at")
-                                else datetime.now(),
+                                else datetime.now(timezone.utc),
                                 member=LiveMember(
                                     id=f"debug_{room.get('room_id')}",
                                     name=room.get("main_name"),
@@ -240,7 +244,7 @@ class LiveService:
                                 view_num=stream.get("view_count") or 0,
                                 start_at=datetime.fromisoformat(
                                     stream.get("live_at").replace("Z", "+00:00")
-                                )
+                                ).astimezone(timezone.utc)
                                 if stream.get("live_at")
                                 else None,
                                 streaming_url=streaming_urls,
@@ -279,7 +283,7 @@ class LiveService:
                                     view_num=stream.get("view_count") or 0,
                                     start_at=datetime.fromisoformat(
                                         stream.get("live_at").replace("Z", "+00:00")
-                                    )
+                                    ).astimezone(timezone.utc)
                                     if stream.get("live_at")
                                     else None,
                                     streaming_url=streaming_urls,
@@ -312,9 +316,9 @@ class LiveService:
                             view_num=stream.get("view_count") or 0,
                             start_at=datetime.fromisoformat(
                                 stream.get("live_at").replace("Z", "+00:00")
-                            )
+                            ).astimezone(timezone.utc)
                             if stream.get("live_at")
-                            else datetime.now(),
+                            else datetime.now(timezone.utc),
                             streaming_url=[
                                 LiveStreamingURL(
                                     url=stream.get("playback_url"),
