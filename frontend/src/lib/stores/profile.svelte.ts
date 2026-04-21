@@ -2,6 +2,7 @@ import type { UserWithProfileStats } from '$lib/types';
 import { auth } from '$lib/apis/auth';
 import { client } from '$lib/apis/client';
 import { logger } from '$lib/utils/logger';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 
 /**
  * User profile store - migrated to Svelte 5 Shared Rune State.
@@ -19,6 +20,7 @@ const state = $state<UserProfileStoreState>({
 	error: null,
 	isLoading: false
 });
+const dedup = createRequestDedup();
 
 function createUserProfileStore() {
 	return {
@@ -38,28 +40,31 @@ function createUserProfileStore() {
 		load: async () => {
 			if (state.data) return state.data;
 
-			state.isLoading = true;
-			state.error = null;
-			try {
-				const data = await auth.getProfile();
-				const userWithStats: UserWithProfileStats = {
-					...data.profile,
-					oshi: data.oshi,
-					profileRank: data.rank,
-					profileStats: data.stats,
-					profileOshiTwoShots: data.oshiTwoShots,
-					profileRecentActivity: data.recentActivity
-				};
-				state.data = userWithStats;
+			// Deduplicate concurrent requests (e.g. layout + page race on refresh)
+			return dedup.execute('profile', async () => {
+				state.isLoading = true;
 				state.error = null;
-				return userWithStats;
-			} catch (e) {
-				logger.error('Failed to load profile', e, { context: 'UserProfileStore' });
-				state.error = 'Failed to load profile';
-				throw e;
-			} finally {
-				state.isLoading = false;
-			}
+				try {
+					const data = await auth.getProfile();
+					const userWithStats: UserWithProfileStats = {
+						...data.profile,
+						oshi: data.oshi,
+						profileRank: data.rank,
+						profileStats: data.stats,
+						profileOshiTwoShots: data.oshiTwoShots,
+						profileRecentActivity: data.recentActivity
+					};
+					state.data = userWithStats;
+					state.error = null;
+					return userWithStats;
+				} catch (e) {
+					logger.error('Failed to load profile', e, { context: 'UserProfileStore' });
+					state.error = 'Failed to load profile';
+					throw e;
+				} finally {
+					state.isLoading = false;
+				}
+			});
 		},
 
 		/**
@@ -125,6 +130,7 @@ function createUserProfileStore() {
 			state.data = null;
 			state.error = null;
 			state.isLoading = false;
+			dedup.clear();
 		},
 
 		/**

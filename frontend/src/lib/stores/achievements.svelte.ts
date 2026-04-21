@@ -1,6 +1,7 @@
 import type { AchievementsResponse } from '$lib/types';
 import { achievements as achievementsApi } from '$lib/apis/achievements';
 import { logger } from '$lib/utils/logger';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 
 /**
  * Achievements store - migrated to Svelte 5 Shared Rune State.
@@ -20,6 +21,7 @@ const initialState: AchievementsState = {
 };
 
 const state = $state<AchievementsState>(initialState);
+const dedup = createRequestDedup();
 
 function createAchievementsStore() {
 	return {
@@ -36,25 +38,29 @@ function createAchievementsStore() {
 		load: async () => {
 			if (state.data) return state.data;
 
-			state.error = null;
-			state.isLoading = true;
-
-			try {
-				const data = await achievementsApi.getAchievements();
-				state.data = data;
+			// Deduplicate concurrent requests (e.g. hover-prefetch + onMount)
+			return dedup.execute('achievements', async () => {
 				state.error = null;
-				return data;
-			} catch (e) {
-				logger.error('Failed to load achievements', e, { context: 'AchievementsStore' });
-				state.error = 'Failed to load achievements';
-				throw e;
-			} finally {
-				state.isLoading = false;
-			}
+				state.isLoading = true;
+
+				try {
+					const data = await achievementsApi.getAchievements();
+					state.data = data;
+					state.error = null;
+					return data;
+				} catch (e) {
+					logger.error('Failed to load achievements', e, { context: 'AchievementsStore' });
+					state.error = 'Failed to load achievements';
+					throw e;
+				} finally {
+					state.isLoading = false;
+				}
+			});
 		},
 
 		reset: () => {
 			Object.assign(state, initialState);
+			dedup.clear();
 		},
 
 		/**
