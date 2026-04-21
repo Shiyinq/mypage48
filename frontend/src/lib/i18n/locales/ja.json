@@ -50,6 +50,20 @@
 			"noFile": "ファイルが選択されていません。"
 		}
 	},
+	"imageEditor": {
+		"title": "画像編集",
+		"done": "完了",
+		"aspectRatio": "アスペクト比",
+		"ratios": {
+			"free": "自由",
+			"original": "オリジナル",
+			"square": "1:1",
+			"sixteenNine": "16:9",
+			"nineSixteen": "9:16",
+			"fourThree": "4:3",
+			"threeFour": "3:4"
+		}
+	},
 	"seo": {
 		"default": "MyPage48 - JKT48劇場の究極のコンパニオン。劇場訪問、2ショット、実績を記録しよう。",
 		"dashboard": "JKT48劇場の観覧統計、支出分析、座席マップの視覚化を表示。",

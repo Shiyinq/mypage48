@@ -50,6 +50,20 @@
 			"noFile": "No file selected."
 		}
 	},
+	"imageEditor": {
+		"title": "Edit Image",
+		"done": "Done",
+		"aspectRatio": "Aspect Ratio",
+		"ratios": {
+			"free": "Free",
+			"original": "Original",
+			"square": "1:1",
+			"sixteenNine": "16:9",
+			"nineSixteen": "9:16",
+			"fourThree": "4:3",
+			"threeFour": "3:4"
+		}
+	},
 	"seo": {
 		"default": "MyPage48 - Your ultimate JKT48 theater companion. Track your theater visits, 2-shots, and achievements.",
 		"dashboard": "View your JKT48 theater attendance statistics, spending analysis, and seat map visualization.",
