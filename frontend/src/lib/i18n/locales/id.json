@@ -51,6 +51,20 @@
 			"noFile": "Tidak ada file yang dipilih."
 		}
 	},
+	"imageEditor": {
+		"title": "Edit Gambar",
+		"done": "Selesai",
+		"aspectRatio": "Rasio Aspek",
+		"ratios": {
+			"free": "Bebas",
+			"original": "Asli",
+			"square": "1:1",
+			"sixteenNine": "16:9",
+			"nineSixteen": "9:16",
+			"fourThree": "4:3",
+			"threeFour": "3:4"
+		}
+	},
 	"seo": {
 		"default": "MyPage48 - Pendamping teater JKT48 terbaik. Lacak kunjungan teater, 2-shot, dan pencapaianmu.",
 		"dashboard": "Lihat statistik kehadiran teater JKT48, analisis pengeluaran, dan visualisasi peta kursi.",

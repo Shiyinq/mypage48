@@ -53,6 +53,7 @@
 		onsubmit?: () => void;
 		onclick?: () => void;
 		onphotoClick?: () => void;
+		onEditTwoShot?: () => void;
 		ondrop?: (file: File) => void;
 	}
 
@@ -65,6 +66,7 @@
 		onsubmit,
 		onclick,
 		onphotoClick,
+		onEditTwoShot,
 		ondrop
 	}: Props = $props();
 
@@ -251,6 +253,7 @@
 			bind:twoShotType={formData.two_shot.type}
 			bind:twoShotPrice={formData.two_shot.price}
 			onphotoClick={() => onphotoClick?.()}
+			onEdit={() => onEditTwoShot?.()}
 			ondrop={(file) => ondrop?.(file)}
 		/>
 

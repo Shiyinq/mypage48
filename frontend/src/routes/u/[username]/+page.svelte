@@ -20,7 +20,7 @@
 	import PublicProfileStats from '$lib/components/public-profile/PublicProfileStats.svelte';
 	import PublicProfileRecentActivity from '$lib/components/public-profile/PublicProfileRecentActivity.svelte';
 	import PublicProfileSeatMap from '$lib/components/public-profile/PublicProfileSeatMap.svelte';
-	import ProfilePictureUploadModal from '$lib/components/public-profile/ProfilePictureUploadModal.svelte';
+	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 
 	interface Props {
 		data: PageData;
@@ -83,21 +83,24 @@
 		previewImage = null;
 	}
 
-	async function confirmUpload() {
-		if (!previewImage) return;
+	async function confirmUpload(croppedBase64: string) {
+		if (!croppedBase64) return;
 
 		// Validate base64 image (type and size)
-		const validation = validateBase64Image(previewImage);
+		const validation = validateBase64Image(croppedBase64);
 		if (!validation.valid) {
 			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			return;
 		}
 
+		// Close modal immediately so user sees the loading state on the avatar
+		closePreviewModal();
 		isUploading = true;
+
 		try {
 			// Upload image to storage first
-			const uploadResult = await storageStore.uploadImage(previewImage, 'avatar');
+			const uploadResult = await storageStore.uploadImage(croppedBase64, 'avatar');
 
 			// Save filename to profile
 			await userProfile.updateAvatar(uploadResult.filename);
@@ -105,8 +108,6 @@
 			// Refresh page data to show new avatar
 			await invalidateAll();
 
-			// Close modal and show success toast
-			closePreviewModal();
 			showToast(t('settings.publicProfile.uploadSuccess'), 'success');
 		} catch (error: unknown) {
 			logger.error('Failed to upload profile picture', error, { context: 'PublicProfilePage' });
@@ -207,12 +208,7 @@
 
 <!-- Profile Picture Preview Modal -->
 {#if showPreviewModal && previewImage}
-	<ProfilePictureUploadModal
-		{previewImage}
-		{isUploading}
-		onclose={closePreviewModal}
-		onsave={confirmUpload}
-	/>
+	<ImageCropperModal imageUrl={previewImage} onClose={closePreviewModal} onSave={confirmUpload} />
 {/if}
 
 <!-- Validation Alert Modal -->

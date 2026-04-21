@@ -17,6 +17,7 @@
 	import { PageHeader } from '$lib/components';
 	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
 	import { UploadModeSelection, UploadAnalyzing, TicketImagePreview } from '$lib/components/upload';
+	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 	import TicketForm from '$lib/components/upload/TicketForm.svelte';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
@@ -42,6 +43,10 @@
 	// Validation alert modal state
 	let showValidationAlert = $state(false);
 	let validationAlertMessage = $state('');
+
+	// Cropper state
+	let cropTarget = $state<'TICKET' | 'TWOSHOT' | null>(null);
+	let imageToCrop = $state<string | null>(null);
 
 	// Temporary state matching Ticket structure but editable
 	let formData = $state({
@@ -149,8 +154,8 @@
 
 		const reader = new FileReader();
 		reader.onloadend = () => {
-			image = reader.result as string;
-			if (mode === 'SELECTION') analyzeImage(image);
+			imageToCrop = reader.result as string;
+			cropTarget = 'TICKET';
 		};
 		reader.readAsDataURL(file);
 	};
@@ -230,9 +235,42 @@
 
 		const reader = new FileReader();
 		reader.onloadend = () => {
-			twoShotImage = reader.result as string;
+			imageToCrop = reader.result as string;
+			cropTarget = 'TWOSHOT';
 		};
 		reader.readAsDataURL(file);
+	};
+
+	const handleCropSave = (croppedBase64: string) => {
+		if (cropTarget === 'TICKET') {
+			image = croppedBase64;
+			cropTarget = null;
+			imageToCrop = null;
+			if (mode === 'SELECTION') analyzeImage(croppedBase64);
+		} else if (cropTarget === 'TWOSHOT') {
+			twoShotImage = croppedBase64;
+			cropTarget = null;
+			imageToCrop = null;
+		}
+	};
+
+	const handleCropCancel = () => {
+		cropTarget = null;
+		imageToCrop = null;
+	};
+
+	const handleEditTicketImage = () => {
+		if (image) {
+			imageToCrop = image;
+			cropTarget = 'TICKET';
+		}
+	};
+
+	const handleEditTwoShotImage = () => {
+		if (twoShotImage) {
+			imageToCrop = twoShotImage;
+			cropTarget = 'TWOSHOT';
+		}
 	};
 
 	const onCancel = () => goto('/');
@@ -360,6 +398,7 @@
 				<TicketImagePreview
 					{image}
 					onChangePhoto={() => fileInputRef?.click()}
+					onEdit={handleEditTicketImage}
 					ondrop={handleFileDrop}
 				/>
 			</div>
@@ -373,6 +412,7 @@
 				bind:twoShotImage
 				onsubmit={handleFormSubmit}
 				onphotoClick={() => twoShotInputRef?.click()}
+				onEditTwoShot={handleEditTwoShotImage}
 				ondrop={handleTwoShotDrop}
 			/>
 		</div>
@@ -394,6 +434,10 @@
 	bind:this={twoShotInputRef}
 	onchange={handleTwoShotFileChange}
 />
+
+{#if cropTarget && imageToCrop}
+	<ImageCropperModal imageUrl={imageToCrop} onClose={handleCropCancel} onSave={handleCropSave} />
+{/if}
 
 <!-- Validation Alert Modal -->
 <ValidationAlertModal
