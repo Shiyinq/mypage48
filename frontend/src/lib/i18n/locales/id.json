@@ -497,6 +497,27 @@
 	"settings": {
 		"title": "Pengaturan",
 		"subtitle": "Kelola preferensi kamu",
+		"account": {
+			"title": "Informasi Akun",
+			"subtitle": "Lihat dan kelola identitas Anda",
+			"fullName": "Nama Lengkap",
+			"username": "Username",
+			"email": "Alamat Email",
+			"memberId": "ID Member",
+			"ofcStatus": "Status OFC",
+			"memberSince": "Member Sejak",
+			"type": "Tipe Akun",
+			"admin": "Administrator",
+			"verified": "Terverifikasi",
+			"unverified": "Belum Verifikasi",
+			"saveSuccess": "Profil berhasil diperbarui!",
+			"saveError": "Gagal memperbarui profil",
+			"noChanges": "Tidak ada perubahan",
+			"emailWarning": "Mengubah email akan memerlukan verifikasi ulang.",
+			"systemInfo": "Informasi Anggota",
+			"systemSubtitle": "Detail data keanggotaan Anda",
+			"verification": "Verifikasi Akun"
+		},
 		"language": {
 			"title": "Bahasa",
 			"subtitle": "Pilih bahasa tampilan",

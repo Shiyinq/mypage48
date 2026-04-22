@@ -95,7 +95,7 @@ class StorageService:
 
         if (category == "member" or category == "setlist") and slug:
             # Sanitize slug: lowercase, replace spaces with underscore
-            # Keep other characters 
+            # Keep other characters
             sanitized_slug = slug.lower().strip().replace(" ", "_")
             folder = "jkt48-member" if category == "member" else "setlists"
             return f"media/{folder}/{sanitized_slug}.{extension}"

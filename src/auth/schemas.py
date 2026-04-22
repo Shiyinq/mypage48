@@ -52,6 +52,8 @@ class UserLoginBase(BaseModel):
     isPublic: bool = False
     publicYear: int | None = None
     isAdmin: bool = False
+    isEmailVerified: bool = False
+    createdAt: datetime | None = None
 
     @field_validator("oshiId", mode="before")
     @classmethod
@@ -63,7 +65,6 @@ class UserLoginBase(BaseModel):
 
 class UserLogin(UserLoginBase):
     password: Optional[str] = None
-    isEmailVerified: bool = False
     failedLoginAttempts: int = 0
     isAccountLocked: bool = False
     accountLockedUntil: Optional[datetime] = None

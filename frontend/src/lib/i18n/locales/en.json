@@ -497,6 +497,27 @@
 	"settings": {
 		"title": "Settings",
 		"subtitle": "Manage your preferences",
+		"account": {
+			"title": "Account Information",
+			"subtitle": "View and manage your identity",
+			"fullName": "Full Name",
+			"username": "Username",
+			"email": "Email Address",
+			"memberId": "Member ID",
+			"ofcStatus": "OFC Status",
+			"memberSince": "Member Since",
+			"type": "Account Type",
+			"admin": "Administrator",
+			"verified": "Verified",
+			"unverified": "Unverified",
+			"saveSuccess": "Profile updated successfully!",
+			"saveError": "Failed to update profile",
+			"noChanges": "No changes to save",
+			"emailWarning": "Changing your email will require re-verification.",
+			"systemInfo": "Member Information",
+			"systemSubtitle": "Membership details",
+			"verification": "Account Verification"
+		},
 		"language": {
 			"title": "Language",
 			"subtitle": "Choose display language",

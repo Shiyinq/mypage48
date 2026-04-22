@@ -12,6 +12,7 @@ from src.users.schemas import (
     PublicUserResponse,
     UpdateOshiRequest,
     UpdateProfilePictureRequest,
+    UpdateProfileRequest,
     UpdatePublicStatusRequest,
     UserCreatedWithEmail,
     UserCreateRequest,
@@ -112,6 +113,18 @@ async def update_profile_picture(
     return await user_service.update_profile_picture(
         current_user.userId, request.profilePicture
     )
+
+
+@router.patch("/users/profile", status_code=200, response_model=MessageResponse)
+async def update_profile(
+    request: UpdateProfileRequest,
+    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    user_service: UserService = Depends(get_user_service),
+):
+    """
+    Update the user's profile information (name, username, email).
+    """
+    return await user_service.update_profile(current_user.userId, request)
 
 
 @router.get("/u/{username}", response_model=PublicUserResponse)

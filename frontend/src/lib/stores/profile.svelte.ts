@@ -115,6 +115,25 @@ function createUserProfileStore() {
 		},
 
 		/**
+		 * Update user profile information (name, username, email)
+		 */
+		updateProfile: async (payload: { name?: string; username?: string; email?: string }) => {
+			await client('/users/profile', {
+				method: 'PATCH',
+				body: payload
+			});
+
+			if (state.data) {
+				if (payload.name) state.data.name = payload.name;
+				if (payload.username) state.data.username = payload.username;
+				if (payload.email) {
+					state.data.email = payload.email;
+					state.data.isEmailVerified = false;
+				}
+			}
+		},
+
+		/**
 		 * Legacy set method for manual updates (e.g. from layout)
 		 */
 		set: (val: Partial<UserProfileStoreState>) => {
@@ -143,7 +162,7 @@ function createUserProfileStore() {
 					fn({ data: state.data, error: state.error });
 				});
 			});
-			return () => {};
+			return () => { };
 		}
 	};
 }
@@ -164,6 +183,6 @@ export const isUserProfileLoading = {
 				fn(state.isLoading);
 			});
 		});
-		return () => {};
+		return () => { };
 	}
 };
