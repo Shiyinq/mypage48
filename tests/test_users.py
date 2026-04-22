@@ -76,20 +76,15 @@ async def test_update_profile_picture(client: AsyncClient, db, create_user):
     """Test updating user's profile picture."""
     token, user_id, headers = await create_user("picuser")
 
-    # Use a minimal valid PNG image (1x1 pixel transparent)
-    valid_png_base64 = (
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAA"
-        "DUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
-    )
-    
-    # Update Profile Picture
-    pic_payload = {"profilePicture": valid_png_base64}
+    # Update Profile Picture (simulating saving a storage path)
+    dummy_path = "avatar/user_id/test_image.webp"
+    pic_payload = {"profilePicture": dummy_path}
     response = await client.post("/api/users/profile-picture", json=pic_payload, headers=headers)
     assert response.status_code == 200
     
-    # Verify in DB directly (profile endpoint uses stale current_user from JWT)
+    # Verify in DB directly
     user = await db["users"].find_one({"userId": user_id})
-    assert user["profilePicture"] == valid_png_base64
+    assert user["profilePicture"] == dummy_path
 
 @pytest.mark.asyncio
 async def test_get_public_profile(client: AsyncClient, db):
