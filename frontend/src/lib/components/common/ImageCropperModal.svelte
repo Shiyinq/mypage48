@@ -409,6 +409,7 @@
 	<!-- Top Bar -->
 	<div class="relative flex items-center justify-between p-4 bg-black/50 text-white z-10">
 		<button
+			type="button"
 			class="p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer z-20"
 			onclick={onClose}
 			aria-label={t('common.close')}
@@ -424,6 +425,7 @@
 
 		<div class="flex items-center gap-2 sm:gap-4 z-20">
 			<button
+				type="button"
 				class="p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
 				onclick={() => {
 					panX = 0;
@@ -555,6 +557,7 @@
 	>
 		{#each ratios as r}
 			<button
+				type="button"
 				class="flex flex-col items-center gap-2 shrink-0 group transition-all cursor-pointer"
 				onclick={() => {
 					activeRatio = r.value;
