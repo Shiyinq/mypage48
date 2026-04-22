@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Trophy, ChevronLeft } from 'lucide-svelte';
+		import { Trophy, ChevronLeft, Music } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { OptimizedImage } from '$lib/components/common';
 
@@ -35,15 +35,24 @@
 >
 	<!-- Background Image (Mobile: Left side, Desktop: Full bg) -->
 	<div class="relative w-[38%] sm:w-full sm:h-full sm:absolute sm:inset-0 shrink-0 overflow-hidden">
-		<OptimizedImage
-			src={show.image}
-			srcMedium={show.imageMedium}
-			srcSmall={show.imageSmall}
-			blurHash={show.blurHash}
-			alt={show.title}
-			sizes="(max-width: 640px) 38vw, (max-width: 1024px) 50vw, 25vw"
-			class="w-full h-full transition-transform duration-700 group-hover:scale-105"
-		/>
+		{#if show.image}
+			<OptimizedImage
+				src={show.image}
+				srcMedium={show.imageMedium}
+				srcSmall={show.imageSmall}
+				blurHash={show.blurHash}
+				alt={show.title}
+				sizes="(max-width: 640px) 38vw, (max-width: 1024px) 50vw, 25vw"
+				class="w-full h-full transition-transform duration-700 group-hover:scale-105"
+			/>
+		{:else}
+			<div class="w-full h-full bg-zinc-900 flex items-center justify-center">
+				<div
+					class="w-full h-full idol-gradient opacity-40 absolute inset-0 transition-opacity group-hover:opacity-60"
+				></div>
+				<Music class="w-12 h-12 text-white/20 relative z-10 transform group-hover:scale-110 transition-transform duration-500" />
+			</div>
+		{/if}
 		<!-- Mobile Gradient Overlay (Right to Left) -->
 		<div
 			class="absolute inset-0 sm:hidden bg-gradient-to-r from-black/20 via-transparent to-black/10"

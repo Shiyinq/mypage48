@@ -12,7 +12,7 @@
 		member?: Partial<Member>;
 		isCreating?: boolean;
 		isSubmitting?: boolean;
-		onsubmit?: (data: Partial<Member>) => void;
+		onsubmit?: (data: Partial<Member>) => Promise<void> | void;
 	}
 
 	let {
@@ -25,6 +25,7 @@
 
 	const { t } = useTranslation();
 
+	let localLoading = $state(false);
 	let formData = $state({
 		name: '',
 		nickname: '',
@@ -82,26 +83,32 @@
 	}
 
 	async function handleSubmit() {
-		if (!isFormValid) return;
+		if (!isFormValid || localLoading) return;
+		localLoading = true;
 
-		let finalData = { ...formData };
+		try {
+			let finalData = { ...formData };
 
-		if (formData.img && formData.img.startsWith('data:image/')) {
-			try {
-				const uploadResult = await storageStore.uploadImage(
-					formData.img,
-					'member',
-					generateSlug(formData.name)
-				);
-				finalData.img = cleanseStorageUrl(uploadResult.filename);
-				finalData.blurHash = uploadResult.blurHash;
-			} catch (error) {
-				console.error('Failed to upload member image:', error);
-				return;
+			if (formData.img && formData.img.startsWith('data:image/')) {
+				try {
+					const uploadResult = await storageStore.uploadImage(
+						formData.img,
+						'member',
+						generateSlug(formData.name)
+					);
+					finalData.img = cleanseStorageUrl(uploadResult.filename);
+					finalData.blurHash = uploadResult.blurHash;
+				} catch (error) {
+					console.error('Failed to upload member image:', error);
+					localLoading = false;
+					return;
+				}
 			}
-		}
 
-		onsubmit?.(finalData);
+			await onsubmit?.(finalData);
+		} finally {
+			localLoading = false;
+		}
 	}
 
 	function handleClose() {
@@ -355,10 +362,10 @@
 						</button>
 						<button
 							type="submit"
-							disabled={!isFormValid || isSubmitting}
+							disabled={!isFormValid || isSubmitting || localLoading}
 							class="flex-[2] px-4 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 shadow-lg shadow-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all cursor-pointer"
 						>
-							{#if isSubmitting}
+							{#if isSubmitting || localLoading}
 								<LoaderCircle class="w-5 h-5 animate-spin" />
 								{t('admin.members.modal.saving')}
 							{:else}

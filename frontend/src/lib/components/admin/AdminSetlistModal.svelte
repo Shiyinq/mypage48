@@ -13,7 +13,7 @@
 		isCreating?: boolean;
 		isSubmitting?: boolean;
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		onsubmit?: (data: any) => void;
+		onsubmit?: (data: any) => Promise<void> | void;
 	}
 
 	let {
@@ -26,6 +26,7 @@
 
 	const { t } = useTranslation();
 
+	let localLoading = $state(false);
 	let formData = $state({
 		title: '',
 		titleJapanese: '',
@@ -67,26 +68,32 @@
 	}
 
 	async function handleSubmit() {
-		if (!isFormValid) return;
+		if (!isFormValid || localLoading) return;
+		localLoading = true;
 
-		let finalData = { ...formData };
+		try {
+			let finalData = { ...formData };
 
-		if (formData.imageUrl && formData.imageUrl.startsWith('data:image/')) {
-			try {
-				const uploadResult = await storageStore.uploadImage(
-					formData.imageUrl,
-					'setlist',
-					generateSlug(formData.title)
-				);
-				finalData.imageUrl = cleanseStorageUrl(uploadResult.filename);
-				finalData.blurHash = uploadResult.blurHash;
-			} catch (error) {
-				console.error('Failed to upload setlist image:', error);
-				return;
+			if (formData.imageUrl && formData.imageUrl.startsWith('data:image/')) {
+				try {
+					const uploadResult = await storageStore.uploadImage(
+						formData.imageUrl,
+						'setlist',
+						generateSlug(formData.title)
+					);
+					finalData.imageUrl = cleanseStorageUrl(uploadResult.filename);
+					finalData.blurHash = uploadResult.blurHash;
+				} catch (error) {
+					console.error('Failed to upload setlist image:', error);
+					localLoading = false;
+					return;
+				}
 			}
-		}
 
-		onsubmit?.(finalData);
+			await onsubmit?.(finalData);
+		} finally {
+			localLoading = false;
+		}
 	}
 
 	function handleClose() {
@@ -276,10 +283,10 @@
 						</button>
 						<button
 							type="submit"
-							disabled={!isFormValid || isSubmitting}
+							disabled={!isFormValid || isSubmitting || localLoading}
 							class="flex-[2] px-4 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all cursor-pointer"
 						>
-							{#if isSubmitting}
+							{#if isSubmitting || localLoading}
 								<LoaderCircle class="w-5 h-5 animate-spin" />
 								{t('admin.setlists.modal.saving')}
 							{:else}
