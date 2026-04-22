@@ -17,6 +17,7 @@
 	import { logger } from '$lib/utils/logger';
 	import { fade, slide } from 'svelte/transition';
 	import { ErrorState, EmptyState } from '$lib/components';
+	import { OptimizedImage } from '$lib/components/common';
 	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 
 	const { t } = useTranslation();
@@ -102,7 +103,7 @@
 		try {
 			const uploadRes = await storageStore.uploadImage(base64, 'avatar');
 
-			await userProfile.updateAvatar(uploadRes.filename);
+			await userProfile.updateAvatar(uploadRes.filename, uploadRes.blurHash);
 
 			showToast(t('settings.publicProfile.uploadSuccess'), 'success');
 		} catch (err) {
@@ -234,11 +235,15 @@
 						<div
 							class="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-inner border-4 border-white dark:border-zinc-700 relative"
 						>
-							{#if userProfile.data.profilePicture_medium || userProfile.data.profilePicture}
-								<img
-									src={userProfile.data.profilePicture_medium || userProfile.data.profilePicture}
+							{#if userProfile.data.profilePicture}
+								<OptimizedImage
+									src={userProfile.data.profilePicture}
+									srcMedium={userProfile.data.profilePicture_medium}
+									srcSmall={userProfile.data.profilePicture_small}
+									blurHash={userProfile.data.blurHash}
 									alt={userProfile.data.name}
 									class="w-full h-full object-cover transition-transform group-hover:scale-110"
+									sizes="(max-width: 640px) 96px, 128px"
 								/>
 							{:else}
 								<div class="w-full h-full flex items-center justify-center text-gray-400">

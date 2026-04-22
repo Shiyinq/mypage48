@@ -143,6 +143,7 @@
 												srcMedium={user.profilePicture_medium}
 												srcSmall={user.profilePicture_small}
 												alt={user.name || ''}
+												blurHash={user.blurHash}
 												sizes="40px"
 												class="w-10 h-10 rounded-full object-cover"
 											/>

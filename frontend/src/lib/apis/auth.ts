@@ -67,10 +67,10 @@ export const auth = {
 		});
 	},
 
-	updateProfilePicture: async (profilePicture: string) => {
+	updateProfilePicture: async (profilePicture: string, blurHash?: string | null) => {
 		return client<GenericResponse>('/users/profile-picture', {
 			method: 'POST',
-			body: { profilePicture } as unknown as Record<string, unknown>
+			body: { profilePicture, blurHash } as unknown as Record<string, unknown>
 		});
 	},
 

@@ -5,7 +5,6 @@
 	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
-	import { getExternalMediaUrl } from '$lib/utils/media';
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
 	import NavPills from '$lib/components/navigation/NavPills.svelte';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
@@ -104,6 +103,7 @@
 								userProfile.data?.oshi?.profilePicture_medium}
 							srcSmall={userProfile.data?.profilePicture_small ||
 								userProfile.data?.oshi?.profilePicture_small}
+							blurHash={userProfile.data?.blurHash}
 							alt="Profile"
 							class="w-full h-full object-cover"
 							sizes="40px"

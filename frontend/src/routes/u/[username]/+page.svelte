@@ -103,7 +103,7 @@
 			const uploadResult = await storageStore.uploadImage(croppedBase64, 'avatar');
 
 			// Save filename to profile
-			await userProfile.updateAvatar(uploadResult.filename);
+			await userProfile.updateAvatar(uploadResult.filename, uploadResult.blurHash);
 
 			// Refresh page data to show new avatar
 			await invalidateAll();

@@ -57,6 +57,7 @@
 					srcMedium={profile.profilePicture_medium}
 					srcSmall={profile.profilePicture_small}
 					alt={profile.name}
+					blurHash={profile.blurHash}
 					sizes="128px"
 					class="w-full h-full object-cover"
 				/>
@@ -91,6 +92,7 @@
 						srcMedium={getExternalMediaUrl(profile.oshi.profilePicture_medium)}
 						srcSmall={getExternalMediaUrl(profile.oshi.profilePicture_small)}
 						alt={profile.oshi.name}
+						blurHash={profile.oshi.blurHash}
 						sizes="40px"
 						class="w-full h-full object-cover"
 					/>

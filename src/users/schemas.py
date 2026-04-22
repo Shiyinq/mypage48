@@ -71,6 +71,7 @@ class UserInDB(BaseModel):
 
     userId: str = Field(default_factory=lambda: str(uuid4()))
     profilePicture: Optional[str] = Field(default=None)
+    blurHash: Optional[str] = Field(default=None)
     name: str = Field(max_length=100)  # Stores fullName or OAuth name
     memberId: Optional[str] = Field(
         max_length=20, default=None
@@ -135,6 +136,7 @@ class PublicUserResponse(BaseModel):
     profilePicture: Optional[str] = None
     profilePicture_medium: Optional[str] = None
     profilePicture_small: Optional[str] = None
+    blurHash: Optional[str] = None
     oshi: Optional[OshiResponse] = None
     createdAt: datetime
     publicYear: Optional[int] = None
@@ -143,6 +145,7 @@ class PublicUserResponse(BaseModel):
 
 class UpdateProfilePictureRequest(BaseModel):
     profilePicture: str
+    blurHash: Optional[str] = None
 
     @field_validator("profilePicture")
     @classmethod
@@ -225,6 +228,7 @@ class UserListItem(BaseModel):
     profilePicture: Optional[str] = None
     profilePicture_medium: Optional[str] = None
     profilePicture_small: Optional[str] = None
+    blurHash: Optional[str] = None
     isAdmin: bool = False
     isEmailVerified: bool = False
     isAccountLocked: bool = False
