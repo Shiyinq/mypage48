@@ -405,7 +405,7 @@
 	onkeydown={onKeyDown}
 />
 
-<div class="fixed inset-0 z-[2000] flex flex-col bg-black">
+<div class="fixed top-0 left-0 w-full h-[100dvh] z-[9999] flex flex-col bg-black overflow-hidden">
 	<!-- Top Bar -->
 	<div class="relative flex items-center justify-between p-4 bg-black/50 text-white z-10">
 		<button
