@@ -19,8 +19,12 @@ function createStorageStore() {
 			return cache;
 		},
 
-		uploadImage: async (image: string, category: ImageCategory): Promise<ImageUploadResponse> => {
-			const res = await storageApi.uploadImage(image, category);
+		uploadImage: async (
+			image: string,
+			category: ImageCategory,
+			slug?: string
+		): Promise<ImageUploadResponse> => {
+			const res = await storageApi.uploadImage(image, category, slug);
 			// Cache the URL immediately
 			cache[res.filename] = res.url;
 			return res;

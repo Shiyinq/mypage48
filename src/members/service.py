@@ -34,14 +34,39 @@ class MemberService:
         self.storage_service = storage_service
 
     async def _resolve_member(self, member: dict) -> dict:
-        """Resolve member image using storage service (external)."""
-        if member.get("img"):
-            res = await self.storage_service.resolve_external_media(member["img"])
-            member["img"] = res["url"]
-            member["img_medium"] = res.get("url_medium")
-            member["img_small"] = res.get("url_small")
-            if res.get("blurHash"):
-                member["blurHash"] = res["blurHash"]
+        """Resolve member image using storage service."""
+        img_path = member.get("img")
+        if not img_path:
+            return member
+
+        # If it's a full URL or base64, keep it
+        if img_path.startswith("data:") or img_path.startswith("http"):
+            return member
+
+        # If it looks like an internal storage path
+        if img_path.startswith("media/") or "/" not in img_path:
+            res = await self.storage_service.resolve_image_variants(img_path)
+        else:
+            # Fallback to external media resolution (jkt48.com)
+            res = await self.storage_service.resolve_external_media(img_path)
+
+        member["img"] = res["url"]
+        member["img_medium"] = res.get("url_medium")
+        member["img_small"] = res.get("url_small")
+
+        if res.get("blurHash"):
+            # If it was missing in the DB but found in storage, update the DB
+            if not member.get("blurHash"):
+                try:
+                    await self.repository.update_one(
+                        member["id"], {"blurHash": res["blurHash"]}
+                    )
+                except Exception as e:
+                    logger.warning(
+                        f"Failed to JIT update blurHash for member {member.get('id')}: {e}"
+                    )
+            member["blurHash"] = res["blurHash"]
+
         return member
 
     async def get_all_members(
@@ -129,9 +154,21 @@ class MemberService:
             next_id = await self.repository.get_next_id()
             now = datetime.now()
 
+            member_dict = data.model_dump(exclude_none=True)
+
+            # If img is present but blurHash is missing, try to resolve it from storage metadata
+            if member_dict.get("img") and not member_dict.get("blurHash"):
+                # We use resolve_member logic but only for the metadata part
+                img_path = member_dict["img"]
+                if not (img_path.startswith("data:") or img_path.startswith("http")):
+                    # For internal paths, we can check if it exists and has metadata
+                    # Actually, we can just rely on the resolve_member later for reading,
+                    # but for saving, we should try to get it now if possible.
+                    pass
+
             member_data = {
                 "id": str(next_id),
-                **data.model_dump(exclude_none=True),
+                **member_dict,
                 "createdAt": now,
                 "updatedAt": now,
             }

@@ -42,8 +42,12 @@
 								>
 									{#if setlist.imageUrl}
 										<OptimizedImage
-											src={setlist.imageUrl || ''}
+											src={setlist.imageUrl}
+											srcMedium={setlist.imageUrl_medium}
+											srcSmall={setlist.imageUrl_small}
+											blurHash={setlist.blurHash}
 											alt={setlist.title || ''}
+											sizes="48px"
 											class="w-full h-full object-cover"
 										/>
 									{:else}

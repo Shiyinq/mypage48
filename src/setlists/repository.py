@@ -263,7 +263,7 @@ class SetlistsRepository:
         result = await self.collection.update_one(
             {"setlistId": setlist_id}, {"$set": update_data}
         )
-        if result.modified_count == 0:
+        if result.matched_count == 0:
             return None
         return await self.find_by_setlist_id(setlist_id)
 

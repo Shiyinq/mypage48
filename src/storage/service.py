@@ -6,7 +6,9 @@ import os
 import re
 import time
 import uuid
+from email.header import decode_header
 from typing import TYPE_CHECKING, Any, Optional
+from urllib.parse import quote
 
 import httpx
 
@@ -42,7 +44,7 @@ logger = create_logger("storage_service", __name__)
 BASE64_PATTERN = re.compile(r"^data:image/(\w+);base64,(.+)$", re.DOTALL)
 
 MARKDOWN_IMAGE_PATTERN = re.compile(
-    r"!\[(.*?)\]\(((journal|ticket|twoshot|avatar)\/[^)]+)\)"
+    r"!\[(.*?)\]\(((journal|ticket|twoshot|avatar|member|setlist)\/[^)]+)\)"
 )
 
 
@@ -84,10 +86,20 @@ class StorageService:
 
         return image_bytes, content_type
 
-    def _generate_filename(self, user_id: str, category: str, content_type: str) -> str:
+    def _generate_filename(
+        self, user_id: str, category: str, content_type: str, slug: Optional[str] = None
+    ) -> str:
         """Generate unique filename for storage."""
         # We now standardize on webp for all uploads via the upload API
         extension = "webp"
+
+        if (category == "member" or category == "setlist") and slug:
+            # Sanitize slug: lowercase, replace spaces with underscore
+            # Keep other characters 
+            sanitized_slug = slug.lower().strip().replace(" ", "_")
+            folder = "jkt48-member" if category == "member" else "setlists"
+            return f"media/{folder}/{sanitized_slug}.{extension}"
+
         unique_id = uuid.uuid4().hex[:12]
         return f"{category}/{user_id}/{unique_id}.{extension}"
 
@@ -133,6 +145,7 @@ class StorageService:
         user_id: str,
         base64_image: str,
         category: ImageCategory,
+        slug: Optional[str] = None,
     ) -> ImageUploadResponse:
         """Upload base64 image to storage."""
         if category not in VALID_CATEGORIES:
@@ -143,7 +156,9 @@ class StorageService:
 
             with Image.open(BytesIO(original_bytes)) as img:
                 blurHash = self._generate_blurhash_from_image(img)
-                filename = self._generate_filename(user_id, category, "image/webp")
+                filename = self._generate_filename(
+                    user_id, category, "image/webp", slug
+                )
 
                 output = BytesIO()
                 if img.mode in ("RGBA", "LA", "P"):
@@ -164,7 +179,10 @@ class StorageService:
                 await self._generate_and_upload_variants(img, filename)
 
             content_type = "image/webp"
-            await self.repository.upload_file(webp_bytes, filename, content_type)
+            metadata = {"blurHash": blurHash} if blurHash else None
+            await self.repository.upload_file(
+                webp_bytes, filename, content_type, metadata=metadata
+            )
 
             variants = await self.resolve_image_variants(filename)
 
@@ -309,24 +327,54 @@ class StorageService:
 
         # Strategy 2: Proxy URL (Secure, handles signature mismatch in local dev)
         signature, expires = self._create_signed_params(path)
-        return f"{self.config.api_base_url}/storage/m/{path}?expires={expires}&signature={signature}"
+        encoded_path = quote(path)
+        return f"{self.config.api_base_url}/storage/m/{encoded_path}?expires={expires}&signature={signature}"
 
     async def resolve_image_variants(
         self, path: Optional[str]
     ) -> dict[str, Optional[str]]:
         """
         Resolve all image variants (Original, Medium, Small) for a given path.
-        Returns a dict with 'url', 'url_medium', and 'url_small'.
+        Returns a dict with 'url', 'url_medium', 'url_small', and 'blurHash'.
         """
-        url, url_medium, url_small = await asyncio.gather(
+        # Gather URLs and metadata
+        results = await asyncio.gather(
             self.resolve_url(path),
             self.resolve_url(path, variant="medium"),
             self.resolve_url(path, variant="small"),
+            self.repository.get_metadata(path.lstrip("/") if path else None),
         )
+
+        url, url_medium, url_small, metadata = results
+
+        blurHash = None
+        if metadata:
+            # MinIO/S3 metadata is usually prefixed, but the library might normalize it.
+            # We check both common patterns.
+            raw_blurHash = metadata.get("x-amz-meta-blurhash") or metadata.get(
+                "blurhash"
+            )
+
+            if raw_blurHash:
+                try:
+                    # Handle RFC 2047 encoding (MIME encoded-word)
+                    # Library minio might encode metadata containing special characters
+                    decoded_parts = decode_header(raw_blurHash)
+                    blurHash = ""
+                    for content, encoding in decoded_parts:
+                        if isinstance(content, bytes):
+                            blurHash += content.decode(encoding or "utf-8")
+                        else:
+                            blurHash += content
+                except Exception as e:
+                    logger.warning(f"Failed to decode blurHash metadata: {e}")
+                    blurHash = raw_blurHash  # Fallback to raw if decoding fails
+
         return {
             "url": url,
             "url_medium": url_medium,
             "url_small": url_small,
+            "blurHash": blurHash,
         }
 
     async def resolve_external_url(self, value: Optional[str]) -> Optional[str]:
@@ -406,7 +454,10 @@ class StorageService:
 
         # Guaranteed to be in R2 (either previously or just now)
         variants = await self.resolve_image_variants(cache_key)
-        return {**variants, "blurHash": blurHash}
+
+        # If we just cached it, blurHash is from _cache_external_media.
+        # Otherwise, it will be in variants["blurHash"] from metadata.
+        return {**variants, "blurHash": blurHash or variants.get("blurHash")}
 
     async def _cache_external_media(self, path: str) -> Optional[str]:
         """
@@ -445,8 +496,9 @@ class StorageService:
                     # Generate and upload variants
                     await self._generate_and_upload_variants(img, cache_key)
 
+                    metadata = {"blurHash": blurHash} if blurHash else None
                     await self.repository.upload_file(
-                        webp_data, cache_key, content_type
+                        webp_data, cache_key, content_type, metadata=metadata
                     )
                     logger.info(f"Successfully cached {path} to R2 as WebP")
                     return blurHash

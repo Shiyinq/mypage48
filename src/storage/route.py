@@ -102,6 +102,7 @@ async def upload_image(
         user_id=current_user.userId,
         base64_image=request.image,
         category=request.category,
+        slug=request.slug,
     )
     logger.info(f"Image uploaded: {result.filename}")
     return result

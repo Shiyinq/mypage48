@@ -86,6 +86,7 @@ class StorageRepository:
         data: bytes,
         object_name: str,
         content_type: str = "image/jpeg",
+        metadata: Optional[dict] = None,
     ) -> str:
         """Upload file to storage and return the object name."""
         await self._ensure_bucket()
@@ -101,6 +102,7 @@ class StorageRepository:
                     file_stream,
                     file_size,
                     content_type=content_type,
+                    metadata=metadata,
                 )
 
             await asyncio.to_thread(_upload)
@@ -163,6 +165,22 @@ class StorageRepository:
             return True
         except S3Error:
             return False
+
+    async def get_metadata(self, object_name: str) -> Optional[dict]:
+        """Get object metadata from storage."""
+        await self._ensure_bucket()
+        try:
+
+            def _stat():
+                return self.client.stat_object(self.config.storage_bucket, object_name)
+
+            stat = await asyncio.to_thread(_stat)
+            return stat.metadata
+        except S3Error:
+            return None
+        except Exception as e:
+            logger.error(f"Error getting metadata for {object_name}: {e}")
+            return None
 
     async def check_connection(self) -> bool:
         """Check storage connection."""

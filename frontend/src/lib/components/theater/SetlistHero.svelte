@@ -20,7 +20,11 @@
 	<div class="absolute inset-0">
 		<OptimizedImage
 			src={detail.imageUrl}
+			srcMedium={detail.imageUrl_medium}
+			srcSmall={detail.imageUrl_small}
+			blurHash={detail.blurHash}
 			alt={detail.title}
+			sizes="100vw"
 			class="w-full h-full transition-transform duration-1000 group-hover:scale-105"
 		/>
 		<!-- Gradient Mesh Overlay -->

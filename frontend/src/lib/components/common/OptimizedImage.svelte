@@ -138,8 +138,8 @@
 					width="32"
 					height="32"
 					class="absolute inset-0 w-full h-full rounded-[inherit] transition-opacity duration-700 {isLoaded
-						? 'opacity-0'
-						: 'opacity-100'}"
+						? 'opacity-0 pointer-events-none'
+						: 'opacity-100'} z-10"
 				></canvas>
 			{/if}
 
