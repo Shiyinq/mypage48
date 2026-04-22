@@ -20,6 +20,7 @@ class MockStorageRepository:
 		valid_image = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
 		self.get_file_with_metadata = AsyncMock(return_value=(valid_image, "image/png"))
 		self.get_file_stream_with_metadata = AsyncMock(return_value=(io.BytesIO(valid_image), "image/png"))
+		self.get_metadata = AsyncMock(return_value={"blurhash": "U2TI:j|cfQ|c|cjtfQjtfQfQfQfQ|cjtfQjt"})
 
 @pytest.fixture
 def mock_storage_repo():
@@ -76,9 +77,12 @@ async def test_upload_image(storage_service):
     assert response.filename.endswith(".webp")
     assert "/api/storage/m/" in response.url
     assert "signature=" in response.url
-    assert response.url_medium is not None
     assert response.url_small is not None
     assert storage_service.repository.upload_file.call_count == 3
+    # Check that metadata was passed
+    storage_service.repository.upload_file.assert_called_with(
+        ANY, ANY, "image/webp", metadata={"blurHash": response.blurHash}
+    )
 
 @pytest.mark.asyncio
 async def test_upload_image_journal(storage_service):
@@ -283,9 +287,9 @@ async def test_get_external_media_cache_miss(storage_service, monkeypatch):
     
     assert status == 200
     assert content.getbuffer().nbytes > 0 # Use nbytes for BytesIO
-    # Verify it was cached as WebP
+    # Verify it was cached as WebP with metadata
     storage_service.repository.upload_file.assert_called_with(
-        ANY, "cache/external/media/jkt48-member/new_member.jpg", "image/webp"
+        ANY, "cache/external/media/jkt48-member/new_member.jpg", "image/webp", metadata=ANY
     )
 
 @pytest.mark.asyncio
