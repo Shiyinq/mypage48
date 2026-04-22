@@ -497,6 +497,27 @@
 	"settings": {
 		"title": "設定",
 		"subtitle": "設定を管理",
+		"account": {
+			"title": "アカウント情報",
+			"subtitle": "プロフィールの管理",
+			"fullName": "氏名",
+			"username": "ユーザー名",
+			"email": "メールアドレス",
+			"memberId": "会員ID",
+			"ofcStatus": "OFCステータス",
+			"memberSince": "入会日",
+			"type": "アカウントタイプ",
+			"admin": "管理者",
+			"verified": "認証済み",
+			"unverified": "未認証",
+			"saveSuccess": "プロフィールを更新しました！",
+			"saveError": "プロフィールの更新に失敗しました",
+			"noChanges": "変更はありません",
+			"emailWarning": "メールアドレスを変更すると再認証が必要になります。",
+			"systemInfo": "会員情報",
+			"systemSubtitle": "メンバーシップの詳細",
+			"verification": "アカウント認証"
+		},
 		"language": {
 			"title": "言語",
 			"subtitle": "表示言語を選択",

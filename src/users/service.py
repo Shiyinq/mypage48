@@ -47,6 +47,7 @@ from src.users.schemas import (
     ProviderUserCreateRequest,
     PublicShowEntry,
     PublicUserResponse,
+    UpdateProfileRequest,
     UserCreated,
     UserCreatedWithEmail,
     UserCreateRequest,
@@ -242,6 +243,73 @@ class UserService:
             raise InvalidImageError()
         except Exception as e:
             logger.exception(f"Error updating profile picture: {str(e)}")
+            raise UserUpdateError()
+
+    async def update_profile(
+        self, user_id: str, request: UpdateProfileRequest
+    ) -> MessageResponse:
+        """Update user profile information (name, username, email)"""
+        try:
+            # Get current user data
+            user_data = await self.repository.get_user_by_id(user_id)
+            if not user_data:
+                raise UserFetchError()
+
+            current_user = UserInDB(**user_data)
+            update_data = {"updatedAt": datetime.now()}
+
+            # Handle Name Update
+            if request.name is not None:
+                update_data["name"] = request.name
+
+            # Handle Username Update
+            if request.username is not None:
+                new_username = request.username.lower()
+                if new_username != current_user.username:
+                    # Duplicate check is handled by repository unique index + our _handle_duplicate_key_error
+                    update_data["username"] = new_username
+
+            # Handle Email Update
+            email_changed = False
+            if request.email is not None:
+                new_email = request.email.lower()
+                if new_email != current_user.email:
+                    update_data["email"] = new_email
+                    update_data["isEmailVerified"] = False
+                    email_changed = True
+
+            if len(update_data) > 1:  # More than just updatedAt
+                try:
+                    await self.repository.update_one(
+                        {"userId": user_id}, {"$set": update_data}
+                    )
+                except DuplicateKeyError as dk:
+                    self._handle_duplicate_key_error(dk)
+
+            # Send verification email if changed
+            if email_changed:
+                try:
+                    token = await self.security_service.create_and_save_token(
+                        user_id,
+                        "email_verification",
+                        self.config.email_verification_expire_hours,
+                    )
+                    await self.email_service.send_email_verification(
+                        update_data["email"],
+                        token,
+                        update_data.get("username", current_user.username),
+                    )
+                except Exception as e:
+                    logger.warning(
+                        f"Profile updated but error sending verification email: {e}"
+                    )
+
+            return MessageResponse(detail=Info.PROFILE_UPDATED)
+
+        except (UsernameAlreadyExistsError, EmailAlreadyExistsError):
+            raise
+        except Exception as e:
+            logger.exception(f"Error updating profile: {str(e)}")
             raise UserUpdateError()
 
     async def get_public_profile(
@@ -555,6 +623,8 @@ class UserService:
                 "isPublic": current_user.isPublic,
                 "publicYear": current_user.publicYear,
                 "isAdmin": current_user.isAdmin,
+                "isEmailVerified": current_user.isEmailVerified,
+                "createdAt": current_user.createdAt,
             }
 
             return ProfileFullResponse(

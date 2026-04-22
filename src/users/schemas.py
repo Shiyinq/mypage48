@@ -166,6 +166,12 @@ class UpdatePublicStatusRequest(BaseModel):
     publicYear: Optional[int] = None  # None means "All Time"
 
 
+class UpdateProfileRequest(BaseModel):
+    name: Optional[str] = Field(None, max_length=100)
+    username: Optional[str] = Field(None, max_length=50)
+    email: Optional[EmailStr] = None
+
+
 class MessageResponse(BaseModel):
     detail: str
 

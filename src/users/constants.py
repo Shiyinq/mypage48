@@ -43,6 +43,7 @@ class Info:
     OSHI_UPDATED = "Oshi updated successfully."
     PUBLIC_STATUS_UPDATED = "Public status updated successfully."
     PROFILE_PICTURE_UPDATED = "Profile picture updated successfully."
+    PROFILE_UPDATED = "Profile updated successfully."
 
 
 class RankConfig:

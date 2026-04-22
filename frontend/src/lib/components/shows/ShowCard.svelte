@@ -1,5 +1,5 @@
 <script lang="ts">
-		import { Trophy, ChevronLeft, Music } from 'lucide-svelte';
+	import { Trophy, ChevronLeft, Music } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { OptimizedImage } from '$lib/components/common';
 
@@ -50,7 +50,9 @@
 				<div
 					class="w-full h-full idol-gradient opacity-40 absolute inset-0 transition-opacity group-hover:opacity-60"
 				></div>
-				<Music class="w-12 h-12 text-white/20 relative z-10 transform group-hover:scale-110 transition-transform duration-500" />
+				<Music
+					class="w-12 h-12 text-white/20 relative z-10 transform group-hover:scale-110 transition-transform duration-500"
+				/>
 			</div>
 		{/if}
 		<!-- Mobile Gradient Overlay (Right to Left) -->
