@@ -301,6 +301,7 @@ async def test_dashboard_stats_resolves_minio_urls(client: AsyncClient, db, crea
     mock_repo = AsyncMock()
     # Mock resolve_url logic via repository
     mock_repo.get_presigned_url.side_effect = lambda x, expires=3600: f"https://minio.example.com/{x}?signed=true"
+    mock_repo.get_metadata.return_value = {"blurhash": "U2TI:j|cfQ|c|cjtfQjtfQfQfQfQ|cjtfQjt"}
 
     # Use real service with mocked repo and config
     mock_config = MagicMock()
