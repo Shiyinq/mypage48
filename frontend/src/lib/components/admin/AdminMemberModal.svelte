@@ -3,6 +3,9 @@
 	import type { Member } from '$lib/apis/members';
 	import { fade } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { storageStore } from '$lib/stores';
+	import AdminImageUpload from './AdminImageUpload.svelte';
+	import { cleanseStorageUrl } from '$lib/utils/markdown';
 
 	interface Props {
 		show?: boolean;
@@ -28,6 +31,7 @@
 		generation: '',
 		jiko: '',
 		img: '',
+		blurHash: '' as string | undefined,
 		active: true,
 		socials: {
 			twitter: '',
@@ -51,6 +55,7 @@
 					generation: member.generation || '',
 					jiko: member.jiko || '',
 					img: member.img || '',
+					blurHash: member.blurHash,
 					active: member.active ?? true,
 					socials: {
 						twitter: member.socials?.twitter || '',
@@ -72,9 +77,31 @@
 	let isGenValid = $derived(formData.generation.length > 0);
 	let isFormValid = $derived(isNameValid && isNicknameValid && isGenValid);
 
-	function handleSubmit() {
+	function generateSlug(name: string): string {
+		return name.toLowerCase().trim().replace(/\s+/g, '_');
+	}
+
+	async function handleSubmit() {
 		if (!isFormValid) return;
-		onsubmit?.(formData);
+
+		let finalData = { ...formData };
+
+		if (formData.img && formData.img.startsWith('data:image/')) {
+			try {
+				const uploadResult = await storageStore.uploadImage(
+					formData.img,
+					'member',
+					generateSlug(formData.name)
+				);
+				finalData.img = cleanseStorageUrl(uploadResult.filename);
+				finalData.blurHash = uploadResult.blurHash;
+			} catch (error) {
+				console.error('Failed to upload member image:', error);
+				return;
+			}
+		}
+
+		onsubmit?.(finalData);
 	}
 
 	function handleClose() {
@@ -138,68 +165,61 @@
 				>
 					<!-- Basic Info -->
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div class="space-y-2">
-							<label
-								for="member-name"
-								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{t('admin.members.modal.name')}</label
-							>
-							<input
-								id="member-name"
-								type="text"
-								bind:value={formData.name}
-								placeholder="e.g. Feni Fitriyanti"
-								class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
-							/>
-							{#if !isNameValid && formData.name.length > 0}
-								<p class="text-xs text-red-500 ml-1">{t('admin.members.modal.nameRequired')}</p>
-							{/if}
+						<div class="space-y-6">
+							<div class="space-y-2">
+								<label
+									for="member-name"
+									class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+									>{t('admin.members.modal.name')}</label
+								>
+								<input
+									id="member-name"
+									type="text"
+									bind:value={formData.name}
+									placeholder="e.g. Feni Fitriyanti"
+									class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
+								/>
+								{#if !isNameValid && formData.name.length > 0}
+									<p class="text-xs text-red-500 ml-1">{t('admin.members.modal.nameRequired')}</p>
+								{/if}
+							</div>
+
+							<div class="space-y-2">
+								<label
+									for="member-nickname"
+									class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+									>{t('admin.members.modal.nickname')}</label
+								>
+								<input
+									id="member-nickname"
+									type="text"
+									bind:value={formData.nickname}
+									placeholder="e.g. Feni"
+									class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
+								/>
+							</div>
+
+							<div class="space-y-2">
+								<label
+									for="member-gen"
+									class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+									>{t('admin.members.modal.generation')}</label
+								>
+								<input
+									id="member-gen"
+									type="text"
+									bind:value={formData.generation}
+									placeholder="e.g. 3"
+									class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
+								/>
+							</div>
 						</div>
 
-						<div class="space-y-2">
-							<label
-								for="member-nickname"
-								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{t('admin.members.modal.nickname')}</label
-							>
-							<input
-								id="member-nickname"
-								type="text"
-								bind:value={formData.nickname}
-								placeholder="e.g. Feni"
-								class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
-							/>
-						</div>
-
-						<div class="space-y-2">
-							<label
-								for="member-gen"
-								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{t('admin.members.modal.generation')}</label
-							>
-							<input
-								id="member-gen"
-								type="text"
-								bind:value={formData.generation}
-								placeholder="e.g. 3"
-								class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
-							/>
-						</div>
-
-						<div class="space-y-2">
-							<label
-								for="member-img"
-								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{t('admin.members.modal.imageUrl')}</label
-							>
-							<input
-								id="member-img"
-								type="text"
-								bind:value={formData.img}
-								placeholder="https://..."
-								class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
-							/>
-						</div>
+						<AdminImageUpload
+							image={formData.img}
+							label={t('admin.members.modal.imageUrl')}
+							onSelect={(base64) => (formData.img = base64)}
+						/>
 					</div>
 
 					<!-- Jikoshoukai -->

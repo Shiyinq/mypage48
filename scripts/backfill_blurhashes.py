@@ -40,12 +40,24 @@ async def download_image(url: str) -> bytes:
         return response.content
 
 
-async def process_tickets(db, storage_resolver):
+def is_valid_blurhash(bh: str) -> bool:
+    """Check if the given string is a potentially valid BlurHash."""
+    if not bh:
+        return False
+    # If it contains MIME encoding format, it's invalid for our frontend
+    if "=?utf-8?Q?" in bh:
+        return False
+    # Simple length check (BlurHash is usually > 10 chars)
+    return len(bh) > 5
+
+
+async def process_tickets(db, storage_service):
     """Backfill BlurHashes for tickets."""
     collection = db["tickets"]
+    # Update query to include records where blurHash is missing, null, or invalid
     query = {"$or": [
-        {"imageUrl": {"$exists": True, "$ne": None}, "blurHash": {"$exists": False}},
-        {"two_shot.imageUrl": {"$exists": True, "$ne": None}, "two_shot.blurHash": {"$exists": False}}
+        {"imageUrl": {"$exists": True, "$ne": None}, "$or": [{"blurHash": {"$exists": False}}, {"blurHash": None}, {"blurHash": {"$regex": "=\\?utf-8\\?Q\\?"}}]},
+        {"two_shot.imageUrl": {"$exists": True, "$ne": None}, "$or": [{"two_shot.blurHash": {"$exists": False}}, {"two_shot.blurHash": None}, {"two_shot.blurHash": {"$regex": "=\\?utf-8\\?Q\\?"}}]}
     ]}
     
     count = await collection.count_documents(query)
@@ -56,22 +68,31 @@ async def process_tickets(db, storage_resolver):
         updates = {}
         
         # Process main image
-        if ticket.get("imageUrl") and not ticket.get("blurHash"):
+        if ticket.get("imageUrl") and not is_valid_blurhash(ticket.get("blurHash")):
             try:
-                url = await storage_resolver(ticket["imageUrl"])
-                logger.info(f"Processing ticket {ticket['_id']} main image...")
-                img_bytes = await download_image(url)
-                updates["blurHash"] = generate_blurhash(img_bytes)
+                # Use resolve_image_variants as it now returns blurHash from S3 if available
+                res = await storage_service.resolve_image_variants(ticket["imageUrl"])
+                if is_valid_blurhash(res.get("blurHash")):
+                    updates["blurHash"] = res["blurHash"]
+                else:
+                    url = res["url"]
+                    logger.info(f"Processing ticket {ticket['_id']} main image (downloading)...")
+                    img_bytes = await download_image(url)
+                    updates["blurHash"] = generate_blurhash(img_bytes)
             except Exception as e:
                 logger.error(f"Failed to process ticket {ticket['_id']} main image: {e}")
 
         # Process two_shot image
-        if ticket.get("two_shot") and ticket["two_shot"].get("imageUrl") and not ticket["two_shot"].get("blurHash"):
+        if ticket.get("two_shot") and ticket["two_shot"].get("imageUrl") and not is_valid_blurhash(ticket["two_shot"].get("blurHash")):
             try:
-                url = await storage_resolver(ticket["two_shot"]["imageUrl"])
-                logger.info(f"Processing ticket {ticket['_id']} 2-shot image...")
-                img_bytes = await download_image(url)
-                updates["two_shot.blurHash"] = generate_blurhash(img_bytes)
+                res = await storage_service.resolve_image_variants(ticket["two_shot"]["imageUrl"])
+                if is_valid_blurhash(res.get("blurHash")):
+                    updates["two_shot.blurHash"] = res["blurHash"]
+                else:
+                    url = res["url"]
+                    logger.info(f"Processing ticket {ticket['_id']} 2-shot image (downloading)...")
+                    img_bytes = await download_image(url)
+                    updates["two_shot.blurHash"] = generate_blurhash(img_bytes)
             except Exception as e:
                 logger.error(f"Failed to process ticket {ticket['_id']} 2-shot image: {e}")
         
@@ -80,50 +101,62 @@ async def process_tickets(db, storage_resolver):
             logger.info(f"Updated ticket {ticket['_id']}")
 
 
-async def process_members(db, storage_resolver):
+async def process_members(db, storage_service):
     """Backfill BlurHashes for members."""
     collection = db["members"]
-    query = {"img": {"$exists": True, "$ne": None, "$ne": "-"}, "blurHash": {"$exists": False}}
+    query = {"img": {"$exists": True, "$ne": None, "$ne": "-"}, "$or": [{"blurHash": {"$exists": False}}, {"blurHash": None}, {"blurHash": {"$regex": "=\\?utf-8\\?Q\\?"}}]}
     
     count = await collection.count_documents(query)
     logger.info(f"Found {count} members to process")
     
     cursor = collection.find(query)
     async for member in cursor:
-        if member.get("img"):
+        if member.get("img") and not is_valid_blurhash(member.get("blurHash")):
             try:
-                # Handle potential external URL resolve if needed
-                # For members, resolve_external_url usually handles this
-                url = await storage_resolver(member["img"])
-                logger.info(f"Processing member {member['name']}...")
-                img_bytes = await download_image(url)
-                bh = generate_blurhash(img_bytes)
+                # Try to resolve first (might be cached in S3 with metadata)
+                img_path = member["img"]
+                if img_path.startswith("media/") or "/" not in img_path:
+                    res = await storage_service.resolve_image_variants(img_path)
+                else:
+                    res = await storage_service.resolve_external_media(img_path)
+                
+                if is_valid_blurhash(res.get("blurHash")):
+                    bh = res["blurHash"]
+                else:
+                    logger.info(f"Processing member {member['name']} (downloading)...")
+                    img_bytes = await download_image(res["url"])
+                    bh = generate_blurhash(img_bytes)
+                
                 await collection.update_one({"_id": member["_id"]}, {"$set": {"blurHash": bh}})
                 logger.info(f"Updated member {member['name']}")
             except Exception as e:
                 logger.error(f"Failed to process member {member.get('name')}: {e}")
 
 
-async def process_news(db, storage_resolver):
-    """Backfill BlurHashes for news."""
-    collection = db["news"]
-    query = {"background_image": {"$exists": True, "$ne": None}, "blurHash": {"$exists": False}}
+async def process_setlists(db, storage_service):
+    """Backfill BlurHashes for setlists."""
+    collection = db["setlists"]
+    query = {"imageUrl": {"$exists": True, "$ne": None}, "$or": [{"blurHash": {"$exists": False}}, {"blurHash": None}, {"blurHash": {"$regex": "=\\?utf-8\\?Q\\?"}}]}
     
     count = await collection.count_documents(query)
-    logger.info(f"Found {count} news items to process")
+    logger.info(f"Found {count} setlists to process")
     
     cursor = collection.find(query)
-    async for news in cursor:
-        if news.get("background_image"):
+    async for setlist in cursor:
+        if setlist.get("imageUrl") and not is_valid_blurhash(setlist.get("blurHash")):
             try:
-                url = await storage_resolver(news["background_image"])
-                logger.info(f"Processing news {news['news_id']}...")
-                img_bytes = await download_image(url)
-                bh = generate_blurhash(img_bytes)
-                await collection.update_one({"_id": news["_id"]}, {"$set": {"blurHash": bh}})
-                logger.info(f"Updated news {news['news_id']}")
+                res = await storage_service.resolve_image_variants(setlist["imageUrl"])
+                if is_valid_blurhash(res.get("blurHash")):
+                    bh = res["blurHash"]
+                else:
+                    logger.info(f"Processing setlist {setlist['title']} (downloading)...")
+                    img_bytes = await download_image(res["url"])
+                    bh = generate_blurhash(img_bytes)
+                
+                await collection.update_one({"_id": setlist["_id"]}, {"$set": {"blurHash": bh}})
+                logger.info(f"Updated setlist {setlist['title']}")
             except Exception as e:
-                logger.error(f"Failed to process news {news.get('news_id')}: {e}")
+                logger.error(f"Failed to process setlist {setlist.get('title')}: {e}")
 
 
 async def main():
@@ -140,14 +173,14 @@ async def main():
     
     logger.info("Starting backfill process...")
     
-    # 1. Tickets (Internal images)
-    await process_tickets(db, storage_service.resolve_url)
+    # 1. Tickets
+    await process_tickets(db, storage_service)
     
-    # 2. Members (External images)
-    await process_members(db, storage_service.resolve_external_url)
+    # 2. Members
+    await process_members(db, storage_service)
     
-    # 3. News (External images)
-    # await process_news(db, storage_service.resolve_external_url)
+    # 3. Setlists
+    await process_setlists(db, storage_service)
     
     logger.info("Backfill process completed!")
     client.close()

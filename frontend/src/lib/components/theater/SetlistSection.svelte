@@ -16,6 +16,9 @@
 		return {
 			title: s.title,
 			image: s.imageUrl,
+			imageMedium: s.imageUrl_medium,
+			imageSmall: s.imageUrl_small,
+			blurHash: s.blurHash,
 			count: s.watched.count,
 			percentage: s.watched.percentage,
 			isMostWatched: s.watched.isMostWatched

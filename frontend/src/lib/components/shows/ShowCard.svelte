@@ -6,6 +6,9 @@
 	interface ShowInfo {
 		title: string;
 		image: string;
+		imageMedium?: string;
+		imageSmall?: string;
+		blurHash?: string;
 	}
 
 	interface Props {
@@ -34,7 +37,11 @@
 	<div class="relative w-[38%] sm:w-full sm:h-full sm:absolute sm:inset-0 shrink-0 overflow-hidden">
 		<OptimizedImage
 			src={show.image}
+			srcMedium={show.imageMedium}
+			srcSmall={show.imageSmall}
+			blurHash={show.blurHash}
 			alt={show.title}
+			sizes="(max-width: 640px) 38vw, (max-width: 1024px) 50vw, 25vw"
 			class="w-full h-full transition-transform duration-700 group-hover:scale-105"
 		/>
 		<!-- Mobile Gradient Overlay (Right to Left) -->

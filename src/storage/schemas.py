@@ -2,12 +2,13 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel
 
-ImageCategory = Literal["ticket", "twoshot", "avatar", "journal"]
+ImageCategory = Literal["ticket", "twoshot", "avatar", "journal", "member", "setlist"]
 
 
 class ImageUploadRequest(BaseModel):
     image: str  # base64 encoded
     category: ImageCategory
+    slug: Optional[str] = None
 
 
 class ImageUploadResponse(BaseModel):

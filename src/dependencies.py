@@ -303,8 +303,9 @@ def get_setlists_repository(db=Depends(get_db)) -> SetlistsRepository:
 def get_setlists_service(
     repo: SetlistsRepository = Depends(get_setlists_repository),
     config: Settings = Depends(get_settings),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> SetlistsService:
-    return SetlistsService(repo, config)
+    return SetlistsService(repo, config, storage_service)
 
 
 def get_health_service(

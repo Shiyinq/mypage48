@@ -46,6 +46,7 @@
 											src={getExternalMediaUrl(member.img) || ''}
 											srcMedium={getExternalMediaUrl(member.img_medium)}
 											srcSmall={getExternalMediaUrl(member.img_small)}
+											blurHash={member.blurHash}
 											alt={member.name || ''}
 											sizes="40px"
 											class="w-full h-full object-cover"

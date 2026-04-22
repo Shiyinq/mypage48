@@ -9,7 +9,7 @@ export interface PresignedUrlResponse {
 	expires_in: number;
 }
 
-export type ImageCategory = 'ticket' | 'twoshot' | 'avatar' | 'journal';
+export type ImageCategory = 'ticket' | 'twoshot' | 'avatar' | 'journal' | 'member' | 'setlist';
 
 export interface BatchPresignedUrlRequest {
 	filenames: string[];
