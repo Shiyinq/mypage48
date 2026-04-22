@@ -2,6 +2,7 @@ import asyncio
 import math
 import time
 from datetime import datetime
+from typing import Optional
 
 from pymongo.errors import DuplicateKeyError
 
@@ -224,7 +225,7 @@ class UserService:
             raise UserFetchError()
 
     async def update_profile_picture(
-        self, user_id: str, profile_picture: str
+        self, user_id: str, profile_picture: str, blur_hash: Optional[str] = None
     ) -> MessageResponse:
         """Update the user's profile picture"""
         try:
@@ -233,7 +234,9 @@ class UserService:
             if profile_picture.startswith("data:"):
                 validate_base64_image(profile_picture)
 
-            await self.repository.set_profile_picture(user_id, profile_picture)
+            await self.repository.set_profile_picture(
+                user_id, profile_picture, blur_hash
+            )
             return MessageResponse(detail=Info.PROFILE_PICTURE_UPDATED)
         except ImageTooLargeValidationError:
             raise ImageTooLargeError()
@@ -340,6 +343,7 @@ class UserService:
                     profilePicture=member.img,
                     profilePicture_medium=member.img_medium,
                     profilePicture_small=member.img_small,
+                    blurHash=member.blurHash,
                     catchphrase=member.jiko or "-",
                     socials=member.socials.model_dump() if member.socials else None,
                 )
@@ -437,9 +441,11 @@ class UserService:
             profile_picture = variants["url"]
             profile_picture_medium = variants["url_medium"]
             profile_picture_small = variants["url_small"]
+            blur_hash = variants["blurHash"]
         else:
             profile_picture_medium = None
             profile_picture_small = None
+            blur_hash = None
 
         return PublicUserResponse(
             name=user.name,
@@ -447,6 +453,7 @@ class UserService:
             profilePicture=profile_picture,
             profilePicture_medium=profile_picture_medium,
             profilePicture_small=profile_picture_small,
+            blurHash=blur_hash,
             oshi=oshi_response,
             createdAt=user.createdAt,
             publicYear=display_year,  # Show actual year for "This Year" option
@@ -479,6 +486,7 @@ class UserService:
                         profilePicture=member.img,
                         profilePicture_medium=member.img_medium,
                         profilePicture_small=member.img_small,
+                        blurHash=member.blurHash,
                         catchphrase=member.jiko or "-",
                         socials=member.socials.model_dump() if member.socials else None,
                     )
@@ -607,6 +615,9 @@ class UserService:
                 profile_pic = variants["url"]
                 profile_pic_medium = variants["url_medium"]
                 profile_pic_small = variants["url_small"]
+                blur_hash = variants["blurHash"]
+            else:
+                blur_hash = getattr(current_user, "blurHash", None)
 
             # Build profile dict from current_user
             profile_dict = {
@@ -614,6 +625,7 @@ class UserService:
                 "profilePicture": profile_pic,
                 "profilePicture_medium": profile_pic_medium,
                 "profilePicture_small": profile_pic_small,
+                "blurHash": blur_hash,
                 "name": current_user.name,
                 "email": current_user.email,
                 "username": current_user.username,
@@ -668,6 +680,9 @@ class UserService:
                     profile_pic = variants["url"]
                     profile_pic_medium = variants["url_medium"]
                     profile_pic_small = variants["url_small"]
+                    blur_hash = variants["blurHash"]
+                else:
+                    blur_hash = u.get("blurHash")
 
                 return UserListItem(
                     userId=u.get("userId", ""),
@@ -677,6 +692,7 @@ class UserService:
                     profilePicture=profile_pic,
                     profilePicture_medium=profile_pic_medium,
                     profilePicture_small=profile_pic_small,
+                    blurHash=blur_hash,
                     isAdmin=u.get("isAdmin", False),
                     isEmailVerified=u.get("isEmailVerified", False),
                     isAccountLocked=u.get("isAccountLocked", False),

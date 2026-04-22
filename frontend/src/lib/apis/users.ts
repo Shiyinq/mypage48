@@ -8,6 +8,7 @@ export interface UserListItem {
 	profilePicture?: string | null;
 	profilePicture_medium?: string | null;
 	profilePicture_small?: string | null;
+	blurHash?: string | null;
 	isAdmin: boolean;
 	isEmailVerified: boolean;
 	isAccountLocked: boolean;

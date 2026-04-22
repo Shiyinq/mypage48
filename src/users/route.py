@@ -111,7 +111,7 @@ async def update_profile_picture(
     Update the user's profile picture.
     """
     return await user_service.update_profile_picture(
-        current_user.userId, request.profilePicture
+        current_user.userId, request.profilePicture, request.blurHash
     )
 
 

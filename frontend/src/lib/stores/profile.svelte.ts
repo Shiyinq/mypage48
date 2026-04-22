@@ -94,8 +94,8 @@ function createUserProfileStore() {
 		/**
 		 * Update the user's avatar
 		 */
-		updateAvatar: async (profilePicture: string) => {
-			await auth.updateProfilePicture(profilePicture);
+		updateAvatar: async (profilePicture: string, blurHash?: string | null) => {
+			await auth.updateProfilePicture(profilePicture, blurHash);
 			await userProfile.load({ force: true });
 		},
 
@@ -154,7 +154,7 @@ function createUserProfileStore() {
 					fn({ data: state.data, error: state.error });
 				});
 			});
-			return () => { };
+			return () => {};
 		}
 	};
 }
@@ -175,6 +175,6 @@ export const isUserProfileLoading = {
 				fn(state.isLoading);
 			});
 		});
-		return () => { };
+		return () => {};
 	}
 };

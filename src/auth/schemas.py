@@ -31,6 +31,7 @@ class OshiResponse(BaseModel):
     )
     profilePicture_medium: Optional[str] = None
     profilePicture_small: Optional[str] = None
+    blurHash: Optional[str] = None
     catchphrase: str = "-"
     socials: Optional[OshiSocials] = None
     totalShows: int = 0
@@ -43,6 +44,7 @@ class UserLoginBase(BaseModel):
     profilePicture: str | None = None
     profilePicture_medium: str | None = None
     profilePicture_small: str | None = None
+    blurHash: str | None = None
     name: str
     email: str
     username: str
