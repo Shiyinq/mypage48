@@ -94,15 +94,16 @@
 				>
 					{#if isLoading}
 						<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
-					{:else if userProfile.data?.oshi?.profilePicture || userProfile.data?.profilePicture}
+					{:else if userProfile.data?.profilePicture || userProfile.data?.oshi?.profilePicture}
 						<OptimizedImage
-							src={userProfile.data?.oshi?.profilePicture
-								? getExternalMediaUrl(userProfile.data.oshi.profilePicture)
-								: userProfile.data?.profilePicture || ''}
-							srcMedium={userProfile.data?.oshi?.profilePicture_medium ||
-								userProfile.data?.profilePicture_medium}
-							srcSmall={userProfile.data?.oshi?.profilePicture_small ||
-								userProfile.data?.profilePicture_small}
+							src={userProfile.data?.profilePicture ||
+								(userProfile.data?.oshi?.profilePicture
+									? userProfile.data.oshi.profilePicture
+									: '')}
+							srcMedium={userProfile.data?.profilePicture_medium ||
+								userProfile.data?.oshi?.profilePicture_medium}
+							srcSmall={userProfile.data?.profilePicture_small ||
+								userProfile.data?.oshi?.profilePicture_small}
 							alt="Profile"
 							class="w-full h-full object-cover"
 							sizes="40px"
