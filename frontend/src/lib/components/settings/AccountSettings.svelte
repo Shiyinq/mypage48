@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { userProfile, showToast } from '$lib/stores';
+	import { userProfile, storageStore, showToast } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		User,
@@ -100,7 +100,10 @@
 	const onCropDone = async (base64: string) => {
 		showCropper = false;
 		try {
-			await userProfile.updateAvatar(base64);
+			const uploadRes = await storageStore.uploadImage(base64, 'avatar');
+
+			await userProfile.updateAvatar(uploadRes.filename);
+
 			showToast(t('settings.publicProfile.uploadSuccess'), 'success');
 		} catch (err) {
 			logger.error('Failed to upload profile picture', err);
@@ -121,7 +124,7 @@
 
 	const retryFetch = async () => {
 		try {
-			await userProfile.load();
+			await userProfile.load({ force: true });
 		} catch (_e) {
 			showToast(t('profile.errorTitle'), 'error');
 		}

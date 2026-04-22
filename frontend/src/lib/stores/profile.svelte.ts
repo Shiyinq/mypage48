@@ -35,10 +35,11 @@ function createUserProfileStore() {
 		},
 
 		/**
-		 * Load profile data from API if not already loaded
+		 * Load profile data from API if not already loaded.
+		 * Use { force: true } to bypass cache and re-fetch from server.
 		 */
-		load: async () => {
-			if (state.data) return state.data;
+		load: async (options?: { force?: boolean }) => {
+			if (state.data && !options?.force) return state.data;
 
 			// Deduplicate concurrent requests (e.g. layout + page race on refresh)
 			return dedup.execute('profile', async () => {
@@ -93,11 +94,9 @@ function createUserProfileStore() {
 		/**
 		 * Update the user's avatar
 		 */
-		updateAvatar: async (base64Image: string) => {
-			await auth.updateProfilePicture(base64Image);
-			if (state.data) {
-				state.data.profilePicture = base64Image;
-			}
+		updateAvatar: async (profilePicture: string) => {
+			await auth.updateProfilePicture(profilePicture);
+			await userProfile.load({ force: true });
 		},
 
 		/**
@@ -123,14 +122,7 @@ function createUserProfileStore() {
 				body: payload
 			});
 
-			if (state.data) {
-				if (payload.name) state.data.name = payload.name;
-				if (payload.username) state.data.username = payload.username;
-				if (payload.email) {
-					state.data.email = payload.email;
-					state.data.isEmailVerified = false;
-				}
-			}
+			await userProfile.load({ force: true });
 		},
 
 		/**
