@@ -230,11 +230,15 @@
 								<div class="relative w-20 h-20 mb-3">
 									<OptimizedImage
 										src={getExternalMediaUrl(member.img)}
+										srcMedium={getExternalMediaUrl(member.img_medium)}
+										srcSmall={getExternalMediaUrl(member.img_small)}
+										blurHash={member.blurHash}
 										alt={member.name}
 										class="w-full h-full rounded-full object-cover shadow-sm group-hover:shadow-md transition-shadow {selectedMember?.id ===
 										member.id
 											? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-zinc-900'
 											: ''}"
+										sizes="80px"
 									/>
 									{#if selectedMember?.id === member.id}
 										<div
