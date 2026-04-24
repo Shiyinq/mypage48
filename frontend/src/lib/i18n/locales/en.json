@@ -508,6 +508,7 @@
 			"memberSince": "Member Since",
 			"type": "Account Type",
 			"admin": "Administrator",
+			"wota": "Wota",
 			"verified": "Verified",
 			"unverified": "Unverified",
 			"saveSuccess": "Profile updated successfully!",

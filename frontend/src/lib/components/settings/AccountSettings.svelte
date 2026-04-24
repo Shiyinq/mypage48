@@ -483,22 +483,29 @@
 						</div>
 					</div>
 
-					<!-- Admin Status (Conditional) -->
-					{#if userProfile.data.isAdmin}
-						<div class="space-y-1">
-							<p
-								class="text-[9px] font-black text-amber-600/60 dark:text-amber-400/60 uppercase tracking-widest pl-1"
-							>
-								{t('settings.account.type')}
-							</p>
-							<div class="flex items-center gap-1.5 px-1">
+					<!-- Account Type -->
+					<div class="space-y-1">
+						<p
+							class="text-[9px] font-black {userProfile.data.isAdmin
+								? 'text-amber-600/60 dark:text-amber-400/60'
+								: 'text-gray-400 dark:text-gray-500'} uppercase tracking-widest pl-1"
+						>
+							{t('settings.account.type')}
+						</p>
+						<div class="flex items-center gap-1.5 px-1">
+							{#if userProfile.data.isAdmin}
 								<BadgeCheck class="w-3.5 h-3.5 text-amber-500" />
 								<p class="text-xs font-black text-amber-600 dark:text-amber-400">
 									{t('settings.account.admin')}
 								</p>
-							</div>
+							{:else}
+								<User class="w-3.5 h-3.5 text-red-500" />
+								<p class="text-xs font-black text-red-600 dark:text-red-400">
+									{t('settings.account.wota')}
+								</p>
+							{/if}
 						</div>
-					{/if}
+					</div>
 				</div>
 			</div>
 		</div>
