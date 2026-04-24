@@ -508,6 +508,7 @@
 			"memberSince": "入会日",
 			"type": "アカウントタイプ",
 			"admin": "管理者",
+			"wota": "ヲタ",
 			"verified": "認証済み",
 			"unverified": "未認証",
 			"saveSuccess": "プロフィールを更新しました！",

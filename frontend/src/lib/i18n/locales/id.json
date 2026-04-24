@@ -508,6 +508,7 @@
 			"memberSince": "Member Sejak",
 			"type": "Tipe Akun",
 			"admin": "Administrator",
+			"wota": "Wota",
 			"verified": "Terverifikasi",
 			"unverified": "Belum Verifikasi",
 			"saveSuccess": "Profil berhasil diperbarui!",
