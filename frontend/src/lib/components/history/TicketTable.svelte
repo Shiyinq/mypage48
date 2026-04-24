@@ -83,7 +83,15 @@
 									class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-zinc-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-zinc-700"
 								>
 									{#if ticket.imageUrl}
-										<OptimizedImage src={ticket.imageUrl} alt="" class="w-full h-full" />
+										<OptimizedImage
+											src={ticket.imageUrl}
+											srcMedium={ticket.imageUrl_medium}
+											srcSmall={ticket.imageUrl_small}
+											blurHash={ticket.blurHash}
+											alt={ticket.event.title}
+											class="w-full h-full"
+											sizes="40px"
+										/>
 									{:else}
 										<div
 											class="w-full h-full idol-gradient flex items-center justify-center relative overflow-hidden"
