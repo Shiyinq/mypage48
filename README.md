@@ -40,7 +40,7 @@
 | **Backend** | FastAPI |
 | **Frontend** | Svelte & SvelteKit |
 | **Database** | MongoDB |
-| **Storage** | MinIO |
+| **Storage** | MinIO & Cloudflare R2 |
 | **Reverse Proxy**| Nginx |
 | **Analytics** | Umami |
 | **LLM** | Google Gemini |
@@ -89,6 +89,8 @@ mypage48/
    ```bash
    sh scripts/start-all-dev.sh
    ```
+
+   *Tip: Use `--open` to automatically open the app in your browser.*
 
    - App: http://localhost:5173
    - API: http://localhost:8000/docs
