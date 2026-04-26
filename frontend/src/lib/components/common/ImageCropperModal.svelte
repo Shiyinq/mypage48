@@ -2,6 +2,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Maximize, RefreshCcw, X, Check, Image } from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { portal } from '$lib/actions/portal';
 
 	interface Props {
 		imageUrl: string;
@@ -405,7 +406,10 @@
 	onkeydown={onKeyDown}
 />
 
-<div class="fixed top-0 left-0 w-full h-[100dvh] z-[9999] flex flex-col bg-black overflow-hidden">
+<div
+	use:portal
+	class="fixed top-0 left-0 w-full h-[100dvh] z-[9999] flex flex-col bg-black overflow-hidden"
+>
 	<!-- Top Bar -->
 	<div class="relative flex items-center justify-between p-4 bg-black/50 text-white z-10">
 		<button
