@@ -27,6 +27,11 @@ async def process_image(
 
     # Standardize path
     path = path.lstrip("/")
+    
+    # Skip if path looks like base64 data or is suspiciously long (URI Too Long protection)
+    if len(path) > 1000 or path.startswith("data:"):
+        # logger.warning(f"Skipping invalid path (too long or base64): {path[:50]}...")
+        return
 
     # For external media, we need to check the cache path
     storage_path = f"cache/external/{path}" if is_external else path
