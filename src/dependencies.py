@@ -278,11 +278,7 @@ def get_user_service(
     )
 
 
-def get_dashboard_service(
-    tickets_repo: TicketsRepository = Depends(get_tickets_repository),
-    config: Settings = Depends(get_settings),
-) -> DashboardService:
-    return DashboardService(tickets_repo, config)
+
 
 
 def get_memories_repository(db=Depends(get_db)) -> MemoriesRepository:
@@ -307,6 +303,15 @@ def get_setlists_service(
     storage_service: StorageService = Depends(get_storage_service),
 ) -> SetlistsService:
     return SetlistsService(repo, config, storage_service)
+
+
+def get_dashboard_service(
+    tickets_repo: TicketsRepository = Depends(get_tickets_repository),
+    setlists_repo: SetlistsRepository = Depends(get_setlists_repository),
+    events_repo: EventsRepository = Depends(get_events_repository),
+    config: Settings = Depends(get_settings),
+) -> DashboardService:
+    return DashboardService(tickets_repo, setlists_repo, events_repo, config)
 
 
 def get_health_service(

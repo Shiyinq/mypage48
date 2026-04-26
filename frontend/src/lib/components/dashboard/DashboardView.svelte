@@ -113,7 +113,8 @@
 		count: dashboardStats?.theater.top_show.count ?? 0,
 		image: dashboardStats?.theater.top_show.image ?? null,
 		image_medium: dashboardStats?.theater.top_show.image_medium ?? null,
-		image_small: dashboardStats?.theater.top_show.image_small ?? null
+		image_small: dashboardStats?.theater.top_show.image_small ?? null,
+		blurHash: dashboardStats?.theater.top_show.blurHash ?? null
 	});
 
 	// Two Shot Stats
@@ -127,7 +128,8 @@
 					count: dashboardStats.two_shot.top_2_shot.count,
 					image: dashboardStats.two_shot.top_2_shot.image ?? undefined,
 					image_medium: dashboardStats.two_shot.top_2_shot.image_medium ?? undefined,
-					image_small: dashboardStats.two_shot.top_2_shot.image_small ?? undefined
+					image_small: dashboardStats.two_shot.top_2_shot.image_small ?? undefined,
+					blurHash: dashboardStats.two_shot.top_2_shot.blurHash ?? undefined
 				}
 			: null
 	});
@@ -143,6 +145,7 @@
 					image: dashboardStats.theater.extremes.first.image,
 					image_medium: dashboardStats.theater.extremes.first.image_medium,
 					image_small: dashboardStats.theater.extremes.first.image_small,
+					blurHash: dashboardStats.theater.extremes.first.blurHash,
 					title: dashboardStats.theater.extremes.first.title,
 					date: dashboardStats.theater.extremes.first.date,
 					detail: dashboardStats.theater.extremes.first.detail ?? undefined
@@ -153,6 +156,7 @@
 					image: dashboardStats.theater.extremes.last.image,
 					image_medium: dashboardStats.theater.extremes.last.image_medium,
 					image_small: dashboardStats.theater.extremes.last.image_small,
+					blurHash: dashboardStats.theater.extremes.last.blurHash,
 					title: dashboardStats.theater.extremes.last.title,
 					date: dashboardStats.theater.extremes.last.date,
 					detail: dashboardStats.theater.extremes.last.detail ?? undefined
@@ -167,6 +171,7 @@
 					image: dashboardStats.two_shot.extremes.first.image,
 					image_medium: dashboardStats.two_shot.extremes.first.image_medium,
 					image_small: dashboardStats.two_shot.extremes.first.image_small,
+					blurHash: dashboardStats.two_shot.extremes.first.blurHash,
 					title: dashboardStats.two_shot.extremes.first.title,
 					date: dashboardStats.two_shot.extremes.first.date
 				}
@@ -176,6 +181,7 @@
 					image: dashboardStats.two_shot.extremes.last.image,
 					image_medium: dashboardStats.two_shot.extremes.last.image_medium,
 					image_small: dashboardStats.two_shot.extremes.last.image_small,
+					blurHash: dashboardStats.two_shot.extremes.last.blurHash,
 					title: dashboardStats.two_shot.extremes.last.title,
 					date: dashboardStats.two_shot.extremes.last.date
 				}
@@ -272,6 +278,7 @@
 					image={topShowStats.image}
 					image_medium={topShowStats.image_medium}
 					image_small={topShowStats.image_small}
+					blurHash={topShowStats.blurHash}
 					{loading}
 				/>
 
@@ -333,6 +340,7 @@
 					image={twoShotStats.mostCollected?.image || undefined}
 					image_medium={twoShotStats.mostCollected?.image_medium || undefined}
 					image_small={twoShotStats.mostCollected?.image_small || undefined}
+					blurHash={twoShotStats.mostCollected?.blurHash || undefined}
 					{loading}
 				/>
 
