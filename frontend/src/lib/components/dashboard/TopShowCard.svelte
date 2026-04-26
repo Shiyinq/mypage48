@@ -12,10 +12,12 @@
 		title: string;
 		count: number;
 		image: string | null;
+		image_medium?: string | null;
+		image_small?: string | null;
 		loading?: boolean;
 	}
 
-	let { title, count, image, loading = false }: Props = $props();
+	let { title, count, image, image_medium, image_small, loading = false }: Props = $props();
 </script>
 
 <div
@@ -51,7 +53,14 @@
 					class="w-full h-full rounded-full border-2 border-white dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center"
 				>
 					{#if image}
-						<OptimizedImage src={image} alt={title} class="w-full h-full" />
+						<OptimizedImage
+							src={image}
+							srcMedium={image_medium}
+							srcSmall={image_small}
+							alt={title}
+							class="w-full h-full"
+							sizes="56px"
+						/>
 					{:else}
 						<Star class="w-6 h-6 text-purple-500 fill-purple-100" />
 					{/if}

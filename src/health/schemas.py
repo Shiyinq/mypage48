@@ -8,5 +8,5 @@ from src.health.constants import DatabaseStatus, HealthStatus
 class HealthCheckResponse(BaseModel):
     status: HealthStatus
     database: DatabaseStatus
-    minio: DatabaseStatus
+    storage: DatabaseStatus
     detail: Optional[str] = None

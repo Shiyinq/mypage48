@@ -13,12 +13,16 @@
 		type: 'theater' | 'twoShot';
 		first: {
 			image?: string | null;
+			image_medium?: string | null;
+			image_small?: string | null;
 			title: string;
 			date: string;
 			detail?: string;
 		} | null;
 		last: {
 			image?: string | null;
+			image_medium?: string | null;
+			image_small?: string | null;
 			title: string;
 			date: string;
 			detail?: string;
@@ -128,8 +132,11 @@
 							{#if first.image}
 								<OptimizedImage
 									src={first.image}
+									srcMedium={first.image_medium}
+									srcSmall={first.image_small}
 									alt={first.title}
 									class="w-full h-full transition-transform duration-700 group-hover:scale-110"
+									sizes="(max-width: 768px) 192px, 256px"
 								/>
 								<div
 									class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
@@ -171,8 +178,11 @@
 							{#if last.image}
 								<OptimizedImage
 									src={last.image}
+									srcMedium={last.image_medium}
+									srcSmall={last.image_small}
 									alt={last.title}
 									class="w-full h-full transition-transform duration-700 group-hover:scale-110"
+									sizes="(max-width: 768px) 192px, 256px"
 								/>
 								<div
 									class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"

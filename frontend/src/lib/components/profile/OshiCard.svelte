@@ -76,8 +76,12 @@
 					>
 						<OptimizedImage
 							src={getExternalMediaUrl(profile?.oshi?.profilePicture) || '/placeholder-user.jpg'}
+							srcMedium={profile?.oshi?.profilePicture_medium}
+							srcSmall={profile?.oshi?.profilePicture_small}
 							alt={profile?.oshi?.name}
+							blurHash={profile?.oshi?.blurHash}
 							class="w-full h-full object-cover"
+							sizes="112px"
 						/>
 						<div
 							class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100"

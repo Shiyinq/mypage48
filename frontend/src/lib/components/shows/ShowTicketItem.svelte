@@ -19,7 +19,15 @@
 >
 	<div class="w-20 h-20 rounded-xl bg-gray-100 dark:bg-zinc-800 flex-shrink-0 overflow-hidden">
 		{#if ticket.imageUrl}
-			<OptimizedImage src={ticket.imageUrl} alt="" class="w-full h-full object-cover" />
+			<OptimizedImage
+				src={ticket.imageUrl}
+				srcMedium={ticket.imageUrl_medium}
+				srcSmall={ticket.imageUrl_small}
+				blurHash={ticket.blurHash}
+				alt={ticket.event.title}
+				class="w-full h-full object-cover"
+				sizes="80px"
+			/>
 		{:else}
 			<div class="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600">
 				<TicketIcon class="w-8 h-8" />

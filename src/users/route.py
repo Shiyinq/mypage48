@@ -4,15 +4,15 @@ from fastapi import APIRouter, Depends, Query
 
 from src import dependencies
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_storage_service, get_user_service, require_admin
+from src.dependencies import get_user_service, require_admin
 from src.logging_config import create_logger
-from src.storage.service import StorageService
 from src.users.schemas import (
     MessageResponse,
     ProfileFullResponse,
     PublicUserResponse,
     UpdateOshiRequest,
     UpdateProfilePictureRequest,
+    UpdateProfileRequest,
     UpdatePublicStatusRequest,
     UserCreatedWithEmail,
     UserCreateRequest,
@@ -35,7 +35,6 @@ async def get_all_users(
     ),
     _: UserCurrent = Depends(require_admin),
     service: UserService = Depends(get_user_service),
-    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Get all registered users (admin only).
@@ -44,14 +43,7 @@ async def get_all_users(
     - **limit**: Items per page (default 20, max 100)
     - **search**: Search by name, email, or username
     """
-    result = await service.get_all_users(page, limit, search)
-
-    # Resolve profile pictures to presigned URLs
-    for user in result.data:
-        if user.profilePicture:
-            user.profilePicture = storage_service.resolve_url(user.profilePicture)
-
-    return result
+    return await service.get_all_users(page, limit, search)
 
 
 @router.post("/users/signup", status_code=201, response_model=UserCreateResponse)
@@ -76,13 +68,11 @@ async def signup(
 async def user_profile(
     current_user: UserCurrent = Depends(dependencies.get_current_user),
     user_service: UserService = Depends(get_user_service),
-    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Get the complete profile information of the currently logged-in user.
     """
-    profile = await user_service.get_profile_full(current_user)
-    return storage_service.resolve_profile_full_images(profile)
+    return await user_service.get_profile_full(current_user)
 
 
 @router.post("/users/oshi", status_code=200, response_model=MessageResponse)
@@ -121,18 +111,28 @@ async def update_profile_picture(
     Update the user's profile picture.
     """
     return await user_service.update_profile_picture(
-        current_user.userId, request.profilePicture
+        current_user.userId, request.profilePicture, request.blurHash
     )
+
+
+@router.patch("/users/profile", status_code=200, response_model=MessageResponse)
+async def update_profile(
+    request: UpdateProfileRequest,
+    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    user_service: UserService = Depends(get_user_service),
+):
+    """
+    Update the user's profile information (name, username, email).
+    """
+    return await user_service.update_profile(current_user.userId, request)
 
 
 @router.get("/u/{username}", response_model=PublicUserResponse)
 async def get_public_profile(
     username: str,
     user_service: UserService = Depends(get_user_service),
-    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Get a user's public profile by username.
     """
-    profile = await user_service.get_public_profile(username)
-    return storage_service.resolve_public_user_images(profile)
+    return await user_service.get_public_profile(username)

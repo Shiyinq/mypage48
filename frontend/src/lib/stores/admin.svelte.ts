@@ -83,7 +83,10 @@ function createAdminStore() {
 					search: state.members.search
 				});
 
-				state.members.data = reset ? res.data : [...state.members.data, ...res.data];
+				const combinedData = reset ? res.data : [...state.members.data, ...res.data];
+				state.members.data = combinedData.filter(
+					(v, i, a) => a.findIndex((t) => t.id === v.id) === i
+				);
 				state.members.page = state.members.page + 1;
 				state.members.total = res.meta.total_data;
 				state.members.hasMore = res.data.length === 20;
@@ -102,24 +105,23 @@ function createAdminStore() {
 		},
 
 		async createMember(data: Omit<Member, 'id'>) {
-			isMembersLoading = true;
 			try {
-				await membersApi.create(data);
+				const newMember = await membersApi.create(data);
+				// We still reload to ensure everything is in sync,
+				// but we could also manually insert newMember if we want instant feedback
 				await this.loadMembers(true);
-				return true;
+				return newMember;
 			} catch (e) {
 				console.error(e);
 				throw e;
-			} finally {
-				isMembersLoading = false;
 			}
 		},
 
 		async updateMember(id: string | number, data: Partial<Member>) {
 			try {
-				await membersApi.update(id, data);
-				state.members.data = state.members.data.map((m) => (m.id === id ? { ...m, ...data } : m));
-				return true;
+				const updated = await membersApi.update(id, data);
+				state.members.data = state.members.data.map((m) => (m.id === id ? updated : m));
+				return updated;
 			} catch (e) {
 				console.error(e);
 				throw e;
@@ -155,7 +157,10 @@ function createAdminStore() {
 					search: state.setlists.search
 				});
 
-				state.setlists.data = reset ? res.setlists : [...state.setlists.data, ...res.setlists];
+				const combinedData = reset ? res.setlists : [...state.setlists.data, ...res.setlists];
+				state.setlists.data = combinedData.filter(
+					(v, i, a) => a.findIndex((t) => t.setlistId === v.setlistId) === i
+				);
 				state.setlists.skip = state.setlists.skip + res.setlists.length;
 				state.setlists.total = res.total;
 				state.setlists.hasMore = res.setlists.length === state.setlists.limit;
@@ -174,26 +179,23 @@ function createAdminStore() {
 		},
 
 		async createSetlist(data: Omit<Setlist, 'setlistId' | 'watched'>) {
-			isSetlistsLoading = true;
 			try {
-				await setlistsApi.create(data);
+				const newSetlist = await setlistsApi.create(data);
 				await this.loadSetlists(true);
-				return true;
+				return newSetlist;
 			} catch (e) {
 				console.error(e);
 				throw e;
-			} finally {
-				isSetlistsLoading = false;
 			}
 		},
 
 		async updateSetlist(id: string, data: Partial<Omit<Setlist, 'setlistId' | 'watched'>>) {
 			try {
-				await setlistsApi.update(id, data);
+				const updated = await setlistsApi.update(id, data);
 				state.setlists.data = state.setlists.data.map((item) =>
-					item.setlistId === id ? { ...item, ...data } : item
+					item.setlistId === id ? updated : item
 				);
-				return true;
+				return updated;
 			} catch (e) {
 				console.error(e);
 				throw e;
@@ -229,7 +231,10 @@ function createAdminStore() {
 					search: state.users.search
 				});
 
-				state.users.data = reset ? res.data : [...state.users.data, ...res.data];
+				const combinedData = reset ? res.data : [...state.users.data, ...res.data];
+				state.users.data = combinedData.filter(
+					(v, i, a) => a.findIndex((t) => t.userId === v.userId) === i
+				);
 				state.users.page = state.users.page + 1;
 				state.users.total = res.meta.total_data;
 				state.users.hasMore = res.meta.next_page !== null;

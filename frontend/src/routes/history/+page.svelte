@@ -12,7 +12,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	// Shared components and utils
-	import { PageHeader, EmptyState, ErrorState } from '$lib/components';
+	import { PageHeader, EmptyState, ErrorState, NoMoreData } from '$lib/components';
 	import { TableSkeleton, TicketCardSkeleton } from '$lib/components/skeletons';
 	import {
 		DeleteConfirmationModal,
@@ -234,6 +234,8 @@
 					{/if}
 				{/if}
 			</div>
+		{:else if filteredTickets.length > 0}
+			<NoMoreData theme="blue" />
 		{/if}
 	{/if}
 </div>

@@ -40,7 +40,8 @@
 		"fromShort": "Dari",
 		"toShort": "Ke",
 		"copyLink": "Salin Tautan",
-		"copied": "Tautan disalin ke clipboard!"
+		"copied": "Tautan disalin ke clipboard!",
+		"noMoreData": "Seluruh data telah dimuat"
 	},
 	"validation": {
 		"alert": {
@@ -48,6 +49,20 @@
 			"fileTooLarge": "File terlalu besar. Maksimum 3MB.",
 			"invalidType": "Format file tidak didukung. Gunakan JPEG, PNG, atau WebP.",
 			"noFile": "Tidak ada file yang dipilih."
+		}
+	},
+	"imageEditor": {
+		"title": "Edit Gambar",
+		"done": "Selesai",
+		"aspectRatio": "Rasio Aspek",
+		"ratios": {
+			"free": "Bebas",
+			"original": "Asli",
+			"square": "1:1",
+			"sixteenNine": "16:9",
+			"nineSixteen": "9:16",
+			"fourThree": "4:3",
+			"threeFour": "3:4"
 		}
 	},
 	"seo": {
@@ -467,6 +482,8 @@
 		},
 		"publicActivity": {
 			"wrapped": "Theater JKT48 Wrapped {year}",
+			"allTime": "Theater JKT48 Wrapped",
+			"summary": "Ringkasan",
 			"yearSummary": "Ringkasan {year}",
 			"watchedTimes": "Ditonton {count} kali"
 		},
@@ -480,6 +497,28 @@
 	"settings": {
 		"title": "Pengaturan",
 		"subtitle": "Kelola preferensi kamu",
+		"account": {
+			"title": "Informasi Akun",
+			"subtitle": "Lihat dan kelola identitas Anda",
+			"fullName": "Nama Lengkap",
+			"username": "Username",
+			"email": "Alamat Email",
+			"memberId": "ID Member",
+			"ofcStatus": "Status OFC",
+			"memberSince": "Member Sejak",
+			"type": "Tipe Akun",
+			"admin": "Administrator",
+			"wota": "Wota",
+			"verified": "Terverifikasi",
+			"unverified": "Belum Verifikasi",
+			"saveSuccess": "Profil berhasil diperbarui!",
+			"saveError": "Gagal memperbarui profil",
+			"noChanges": "Tidak ada perubahan",
+			"emailWarning": "Mengubah email akan memerlukan verifikasi ulang.",
+			"systemInfo": "Informasi Anggota",
+			"systemSubtitle": "Detail data keanggotaan Anda",
+			"verification": "Verifikasi Akun"
+		},
 		"language": {
 			"title": "Bahasa",
 			"subtitle": "Pilih bahasa tampilan",

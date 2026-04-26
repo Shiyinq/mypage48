@@ -94,7 +94,7 @@ class MemberRepository:
         result = await self.collection.update_one(
             {"id": member_id}, {"$set": update_data}
         )
-        if result.modified_count == 0:
+        if result.matched_count == 0:
             return None
         return await self.find_by_id(member_id)
 

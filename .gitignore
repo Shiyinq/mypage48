@@ -12,3 +12,5 @@ certbot/
 mongodb_data/
 minio_data/
 umami_data/
+*.zip
+temp_backup_*

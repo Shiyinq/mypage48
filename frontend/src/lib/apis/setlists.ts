@@ -9,6 +9,9 @@ export interface WatchedStats {
 export interface Setlist {
 	setlistId: string;
 	imageUrl: string;
+	imageUrl_medium?: string;
+	imageUrl_small?: string;
+	blurHash?: string;
 	title: string;
 	titleJapanese?: string;
 	description: string;
@@ -61,6 +64,9 @@ export interface SetlistDetailStats {
 export interface SetlistDetailResponse {
 	setlistId: string;
 	imageUrl: string;
+	imageUrl_medium?: string;
+	imageUrl_small?: string;
+	blurHash?: string;
 	title: string;
 	titleJapanese?: string;
 	description: string;
@@ -87,11 +93,13 @@ export const setlistsApi = {
 	},
 
 	getById: async (setlistId: string) => {
-		return client<Setlist>(`/theater/setlists/id/${setlistId}`);
+		return client<Setlist>(`/theater/setlists/id/${encodeURIComponent(setlistId)}`);
 	},
 
 	getDetail: async (setlistId: string) => {
-		return client<SetlistDetailResponse>(`/theater/setlists/detail/${setlistId}`);
+		return client<SetlistDetailResponse>(
+			`/theater/setlists/detail/${encodeURIComponent(setlistId)}`
+		);
 	},
 
 	getByTitle: async (title: string) => {
@@ -107,14 +115,14 @@ export const setlistsApi = {
 	},
 
 	update: async (setlistId: string, data: Partial<Omit<Setlist, 'setlistId' | 'watched'>>) => {
-		return client<Setlist>(`/theater/setlists/${setlistId}`, {
+		return client<Setlist>(`/theater/setlists/${encodeURIComponent(setlistId)}`, {
 			method: 'PUT',
 			body: JSON.stringify(data)
 		});
 	},
 
 	delete: async (setlistId: string) => {
-		return client<{ message: string }>(`/theater/setlists/${setlistId}`, {
+		return client<{ message: string }>(`/theater/setlists/${encodeURIComponent(setlistId)}`, {
 			method: 'DELETE'
 		});
 	}

@@ -39,7 +39,8 @@
 		"fromShort": "Fr",
 		"toShort": "To",
 		"copyLink": "Copy Link",
-		"copied": "Link copied to clipboard!"
+		"copied": "Link copied to clipboard!",
+		"noMoreData": "All data has been loaded"
 	},
 	"validation": {
 		"alert": {
@@ -47,6 +48,20 @@
 			"fileTooLarge": "File is too large. Maximum 3MB allowed.",
 			"invalidType": "File format not supported. Please use JPEG, PNG, or WebP.",
 			"noFile": "No file selected."
+		}
+	},
+	"imageEditor": {
+		"title": "Edit Image",
+		"done": "Done",
+		"aspectRatio": "Aspect Ratio",
+		"ratios": {
+			"free": "Free",
+			"original": "Original",
+			"square": "1:1",
+			"sixteenNine": "16:9",
+			"nineSixteen": "9:16",
+			"fourThree": "4:3",
+			"threeFour": "3:4"
 		}
 	},
 	"seo": {
@@ -467,6 +482,8 @@
 		},
 		"publicActivity": {
 			"wrapped": "Theater JKT48 Wrapped {year}",
+			"allTime": "Theater JKT48 Wrapped",
+			"summary": "Summary",
 			"yearSummary": "{year} Summary",
 			"watchedTimes": "Watched {count} times"
 		},
@@ -480,6 +497,28 @@
 	"settings": {
 		"title": "Settings",
 		"subtitle": "Manage your preferences",
+		"account": {
+			"title": "Account Information",
+			"subtitle": "View and manage your identity",
+			"fullName": "Full Name",
+			"username": "Username",
+			"email": "Email Address",
+			"memberId": "Member ID",
+			"ofcStatus": "OFC Status",
+			"memberSince": "Member Since",
+			"type": "Account Type",
+			"admin": "Administrator",
+			"wota": "Wota",
+			"verified": "Verified",
+			"unverified": "Unverified",
+			"saveSuccess": "Profile updated successfully!",
+			"saveError": "Failed to update profile",
+			"noChanges": "No changes to save",
+			"emailWarning": "Changing your email will require re-verification.",
+			"systemInfo": "Member Information",
+			"systemSubtitle": "Membership details",
+			"verification": "Account Verification"
+		},
 		"language": {
 			"title": "Language",
 			"subtitle": "Choose display language",

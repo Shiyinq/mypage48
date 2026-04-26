@@ -19,6 +19,7 @@
 	import EventSection from './tickets/edit/EventSection.svelte';
 	import SeatSection from './tickets/edit/SeatSection.svelte';
 	import TwoShotSection from './tickets/edit/TwoShotSection.svelte';
+	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 
 	interface Props {
 		ticket: Ticket;
@@ -93,6 +94,10 @@
 	let showValidationAlert = $state(false);
 	let validationAlertMessage = $state('');
 
+	// Cropper state
+	let cropTarget = $state<'TICKET' | 'TWOSHOT' | null>(null);
+	let imageToCrop = $state<string | null>(null);
+
 	// Validation
 	let isFormValid = $derived(
 		!!(
@@ -156,8 +161,39 @@
 		const file = target.files?.[0];
 		if (!file) return;
 
+		// Skip basic read and push to cropper instead if desired, but we already have `processFile`
+		// which sets `image` state directly. To be consistent with upload, we can let them select existing for crop.
 		processFile(file);
 		target.value = ''; // Reset input
+	};
+
+	const handleEditTicketImage = () => {
+		if (image) {
+			imageToCrop = image;
+			cropTarget = 'TICKET';
+		}
+	};
+
+	const handleEditTwoShotImage = () => {
+		if (twoShotImage) {
+			imageToCrop = twoShotImage;
+			cropTarget = 'TWOSHOT';
+		}
+	};
+
+	const handleCropSave = (croppedBase64: string) => {
+		if (cropTarget === 'TICKET') {
+			image = croppedBase64;
+		} else if (cropTarget === 'TWOSHOT') {
+			twoShotImage = croppedBase64;
+		}
+		cropTarget = null;
+		imageToCrop = null;
+	};
+
+	const handleCropCancel = () => {
+		cropTarget = null;
+		imageToCrop = null;
 	};
 
 	// Helper to check if image is base64 (new upload) vs storage filename
@@ -199,16 +235,20 @@
 		try {
 			// Upload new images to storage
 			let ticketImageUrl: string | undefined;
+			let ticketBlurHash: string | undefined;
 			let twoShotImageUrl: string | undefined;
+			let twoShotBlurHash: string | undefined;
 
 			if (image) {
 				if (isBase64Image(image)) {
 					// New image - upload to storage
 					const uploadResult = await storageStore.uploadImage(image, 'ticket');
 					ticketImageUrl = uploadResult.filename;
+					ticketBlurHash = uploadResult.blurHash;
 				} else {
 					// Existing storage filename - keep as-is
 					ticketImageUrl = image;
+					ticketBlurHash = ticket.blurHash;
 				}
 			}
 
@@ -217,9 +257,11 @@
 					// New image - upload to storage
 					const uploadResult = await storageStore.uploadImage(twoShotImage, 'twoshot');
 					twoShotImageUrl = uploadResult.filename;
+					twoShotBlurHash = uploadResult.blurHash;
 				} else {
 					// Existing storage filename - keep as-is
 					twoShotImageUrl = twoShotImage;
+					twoShotBlurHash = ticket.two_shot?.blurHash;
 				}
 			}
 
@@ -231,10 +273,12 @@
 				currency: 'IDR',
 				rules: formData.rules,
 				imageUrl: cleanseStorageUrl(ticketImageUrl),
+				blurHash: ticketBlurHash,
 				notes: cleanseMarkdown(formData.notes),
 				two_shot: showTwoShot
 					? {
 							imageUrl: cleanseStorageUrl(twoShotImageUrl),
+							blurHash: twoShotBlurHash,
 							member_name: formData.two_shot.member_name,
 							type: formData.two_shot.type,
 							price: Number(formData.two_shot.price)
@@ -307,6 +351,7 @@
 					onSelect={() => {
 						fileInputRef?.click();
 					}}
+					onEdit={handleEditTicketImage}
 				/>
 
 				<!-- Right: Form -->
@@ -345,6 +390,7 @@
 							bind:type={formData.two_shot.type}
 							bind:price={formData.two_shot.price}
 							onSelectImage={() => twoShotInputRef?.click()}
+							onEdit={handleEditTwoShotImage}
 							ondrop={handleTwoShotDrop}
 						/>
 
@@ -398,6 +444,10 @@
 	accept="image/*"
 	onchange={handleTwoShotFileChange}
 />
+
+{#if cropTarget && imageToCrop}
+	<ImageCropperModal imageUrl={imageToCrop} onClose={handleCropCancel} onSave={handleCropSave} />
+{/if}
 
 <!-- Validation Alert Modal -->
 <ValidationAlertModal

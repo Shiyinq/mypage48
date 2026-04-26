@@ -14,7 +14,7 @@ class HealthService:
 
     async def check_health(self) -> HealthCheckResponse:
         database_status = DatabaseStatus.UNKNOWN
-        minio_status = DatabaseStatus.UNKNOWN
+        storage_status = DatabaseStatus.UNKNOWN
         overall_status = HealthStatus.OK
         detail_messages = []
 
@@ -33,24 +33,24 @@ class HealthService:
             overall_status = HealthStatus.ERROR
             detail_messages.append(f"Database: {str(e)}")
 
-        # Check MinIO connection
+        # Check Storage connection
         try:
-            if self.storage_repo.check_connection():
-                minio_status = DatabaseStatus.CONNECTED
+            if await self.storage_repo.check_connection():
+                storage_status = DatabaseStatus.CONNECTED
             else:
-                minio_status = DatabaseStatus.DISCONNECTED
+                storage_status = DatabaseStatus.DISCONNECTED
                 overall_status = HealthStatus.ERROR
         except Exception as e:
-            logger.error(f"Health check failed (MinIO Connection): {e}")
-            minio_status = DatabaseStatus.ERROR
+            logger.error(f"Health check failed (Storage Connection): {e}")
+            storage_status = DatabaseStatus.ERROR
             overall_status = HealthStatus.ERROR
-            detail_messages.append(f"MinIO: {str(e)}")
+            detail_messages.append(f"Storage: {str(e)}")
 
         detail = "; ".join(detail_messages) if detail_messages else None
 
         return HealthCheckResponse(
             status=overall_status,
             database=database_status,
-            minio=minio_status,
+            storage=storage_status,
             detail=detail,
         )

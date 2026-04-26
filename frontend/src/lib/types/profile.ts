@@ -59,6 +59,9 @@ export interface PublicProfileData {
 	name: string;
 	username: string;
 	profilePicture?: string | null;
+	profilePicture_medium?: string | null;
+	profilePicture_small?: string | null;
+	blurHash?: string | null;
 	oshi?: UserOshi | null;
 	publicYear?: number | null;
 }

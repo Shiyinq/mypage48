@@ -6,6 +6,9 @@ from pydantic import BaseModel
 class SetlistBase(BaseModel):
     setlistId: str
     imageUrl: str
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
+    blurHash: Optional[str] = None
     title: str
     titleJapanese: Optional[str] = None
     description: str
@@ -94,6 +97,7 @@ class SetlistCreateRequest(BaseModel):
     """Request schema for creating a setlist"""
 
     imageUrl: str
+    blurHash: Optional[str] = None
     title: str
     titleJapanese: Optional[str] = None
     description: str
@@ -106,6 +110,7 @@ class SetlistUpdateRequest(BaseModel):
     """Request schema for updating a setlist (all fields optional)"""
 
     imageUrl: Optional[str] = None
+    blurHash: Optional[str] = None
     title: Optional[str] = None
     titleJapanese: Optional[str] = None
     description: Optional[str] = None
