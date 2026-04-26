@@ -183,7 +183,9 @@ async def test_get_events_with_aggregation(client, create_event, db, create_user
     event = next(e for e in data if e["id"] == "event-agg")
     
     # Verify flattened aggregation
-    assert event.get("imageUrl") == "img"
+    assert "img" in event.get("imageUrl")
+    assert event.get("imageUrl_medium") is not None
+    assert event.get("imageUrl_small") is not None
     assert event.get("totalMembers") == 1
     
     assert event.get("memberIds") is None or event.get("memberIds") == []
