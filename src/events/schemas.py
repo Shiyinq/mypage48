@@ -19,6 +19,9 @@ class Event(BaseModel):
 
     # List View Fields
     imageUrl: Optional[str] = None
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
+    blurHash: Optional[str] = None
     totalMembers: int = 0
     seitansaiMembers: Optional[List[str]] = None
     graduationMembers: Optional[List[str]] = None

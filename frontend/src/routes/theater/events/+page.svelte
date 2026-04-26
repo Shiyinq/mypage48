@@ -113,7 +113,11 @@
 							{#if event.imageUrl}
 								<OptimizedImage
 									src={event.imageUrl}
+									srcMedium={event.imageUrl_medium}
+									srcSmall={event.imageUrl_small}
+									blurHash={event.blurHash}
 									alt={event.title}
+									sizes="(max-width: 640px) 40vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
 									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
 								/>
 								<!-- Mobile Gradient: Right to Left -->
