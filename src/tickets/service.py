@@ -32,6 +32,7 @@ from src.tickets.schemas import (
     TicketResponse,
     TicketUpdateRequest,
 )
+from src.utils import cleanse_image_url
 
 logger = create_logger("theater_service", __name__)
 
@@ -219,6 +220,11 @@ class TicketsService:
             existing = await self.repository.get_ticket(ticket_id, user_id)
             if not existing:
                 raise TicketNotFoundError()
+
+            if data.imageUrl:
+                data.imageUrl = cleanse_image_url(data.imageUrl)
+            if data.two_shot and data.two_shot.imageUrl:
+                data.two_shot.imageUrl = cleanse_image_url(data.two_shot.imageUrl)
 
             # Validate images if provided
             two_shot_image = data.two_shot.imageUrl if data.two_shot else None
