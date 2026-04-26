@@ -215,6 +215,11 @@ class TicketsService:
         self, user_id: str, ticket_id: str, data: TicketUpdateRequest
     ) -> TicketResponse:
         try:
+            # Fetch existing to compare images
+            existing = await self.repository.get_ticket(ticket_id, user_id)
+            if not existing:
+                raise TicketNotFoundError()
+
             # Validate images if provided
             two_shot_image = data.two_shot.imageUrl if data.two_shot else None
             self._validate_images(data.imageUrl, two_shot_image)
@@ -224,6 +229,36 @@ class TicketsService:
             )
             if not updated_ticket:
                 raise TicketNotFoundError()
+
+            # Cleanup old images if they were replaced or removed
+            old_images = []
+            
+            # Main image cleanup
+            if "imageUrl" in data.model_fields_set:
+                old_img = existing.get("imageUrl")
+                if old_img and data.imageUrl != old_img:
+                    old_images.append(old_img)
+
+            # Two shot image cleanup
+            if "two_shot" in data.model_fields_set:
+                existing_ts = existing.get("two_shot")
+                old_ts_img = existing_ts.get("imageUrl") if existing_ts else None
+                
+                if data.two_shot is None:
+                    # Two shot removed completely
+                    if old_ts_img:
+                        old_images.append(old_ts_img)
+                elif data.two_shot.imageUrl and old_ts_img and data.two_shot.imageUrl != old_ts_img:
+                    # Image replaced
+                    old_images.append(old_ts_img)
+
+            if old_images:
+                # Fire and forget or await? Let's await to be sure.
+                await asyncio.gather(
+                    *(self.storage_service.delete_image(img) for img in old_images),
+                    return_exceptions=True,
+                )
+
             return TicketResponse(**(await self._resolve_ticket(updated_ticket)))
         except TicketNotFoundError:
             raise
@@ -235,9 +270,28 @@ class TicketsService:
 
     async def delete_ticket(self, user_id: str, ticket_id: str) -> MessageResponse:
         try:
+            # Fetch ticket first to get image URLs for cleanup
+            ticket = await self.repository.get_ticket(ticket_id, user_id)
+            if not ticket:
+                raise TicketNotFoundError()
+
             success = await self.repository.delete_ticket(ticket_id, user_id)
             if not success:
                 raise TicketNotFoundError()
+
+            # Cleanup images from R2
+            images_to_delete = []
+            if ticket.get("imageUrl"):
+                images_to_delete.append(ticket["imageUrl"])
+            if ticket.get("two_shot") and ticket["two_shot"].get("imageUrl"):
+                images_to_delete.append(ticket["two_shot"]["imageUrl"])
+
+            if images_to_delete:
+                await asyncio.gather(
+                    *(self.storage_service.delete_image(img) for img in images_to_delete),
+                    return_exceptions=True,
+                )
+
             return MessageResponse(detail=Info.TICKET_DELETED)
         except TicketNotFoundError:
             raise

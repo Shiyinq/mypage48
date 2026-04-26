@@ -242,17 +242,44 @@ class StorageService:
         return BatchPresignedUrlResponse(urls=urls, expires_in=expires)
 
     async def delete_image(self, filename: str) -> bool:
-        """Delete image from storage."""
-        try:
-            if not await self.repository.file_exists(filename):
-                raise ImageNotFoundError()
+        """Delete image and its variants from storage."""
+        if not filename:
+            return False
 
-            return await self.repository.delete_file(filename)
-        except S3Error as e:
-            logger.error(f"MinIO error during delete: {e}")
-            raise StorageConnectionError()
-        except ImageNotFoundError:
-            raise
+        # Don't try to delete external URLs or base64
+        if filename.startswith("http") or filename.startswith("data:"):
+            logger.debug(f"Skipping deletion for non-internal path: {filename[:50]}...")
+            return False
+
+        path = filename.lstrip("/")
+        
+        try:
+            # Main file
+            exists = await self.repository.file_exists(path)
+            if not exists:
+                logger.warning(f"File not found for deletion: {path}")
+                # We return True because the goal (file not being there) is achieved
+                return True
+
+            # Delete original and variants (best effort for variants)
+            variant_paths = [
+                path,
+                self._get_variant_path(path, "medium"),
+                self._get_variant_path(path, "small"),
+            ]
+            
+            tasks = []
+            for p in variant_paths:
+                tasks.append(self.repository.delete_file(p))
+            
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            # Check if original file was deleted (first item in tasks)
+            if isinstance(results[0], Exception):
+                logger.error(f"Failed to delete original file {path}: {results[0]}")
+                return False
+            
+            return True
         except Exception as e:
             logger.exception(f"Unexpected error during delete: {e}")
             return False

@@ -193,6 +193,10 @@ class MemberService:
             if update_data:
                 update_data["updatedAt"] = datetime.now()
                 member = await self.repository.update_one(member_id, update_data)
+                
+                # Cleanup old image if replaced
+                if "img" in update_data and existing.get("img") and update_data["img"] != existing["img"]:
+                    await self.storage_service.delete_image(existing["img"])
             else:
                 member = existing
 
@@ -214,6 +218,10 @@ class MemberService:
             deleted = await self.repository.delete_one(member_id)
             if not deleted:
                 raise MemberFetchError()
+
+            # Cleanup image from R2
+            if existing.get("img"):
+                await self.storage_service.delete_image(existing["img"])
 
             return MessageResponse(message=Info.MEMBER_DELETED)
         except MemberNotFoundError:
