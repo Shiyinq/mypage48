@@ -20,6 +20,7 @@ from src.setlists.schemas import (
     WatchedStats,
 )
 from src.storage.service import StorageService
+from src.utils import cleanse_image_url
 
 logger = create_logger("setlists_service", __name__)
 
@@ -287,11 +288,26 @@ class SetlistsService:
 
             update_data = data.model_dump(exclude_none=True)
             if update_data:
-                setlist = await self.repository.update_one(setlist_id, update_data)
-                
-                # Cleanup old image if replaced
-                if "imageUrl" in update_data and existing.get("imageUrl") and update_data["imageUrl"] != existing["imageUrl"]:
+                # Cleanse image URL if provided (convert full URL to relative path)
+                if "imageUrl" in update_data:
+                    update_data["imageUrl"] = cleanse_image_url(update_data["imageUrl"])
+
+                # 1. Handle image cleanup or rename
+                has_new_img = "imageUrl" in update_data and existing.get("imageUrl") and update_data["imageUrl"] != existing["imageUrl"]
+                title_changed = "title" in update_data and update_data["title"] != existing["title"]
+
+                if has_new_img:
+                    # New image uploaded - delete the old one
                     await self.storage_service.delete_image(existing["imageUrl"])
+                elif title_changed and existing.get("imageUrl"):
+                    # No new image, but title changed - rename the existing image file
+                    new_img_path = await self.storage_service.rename_image(
+                        existing["imageUrl"], update_data["title"], "setlist"
+                    )
+                    if new_img_path != existing["imageUrl"]:
+                        update_data["imageUrl"] = new_img_path
+
+                setlist = await self.repository.update_one(setlist_id, update_data)
             else:
                 setlist = existing
 
