@@ -36,6 +36,7 @@ export interface TopShowResponse {
 	image: string | null;
 	image_medium?: string | null;
 	image_small?: string | null;
+	blurHash?: string | null;
 }
 
 export interface TopMemberResponse {
@@ -44,6 +45,7 @@ export interface TopMemberResponse {
 	image?: string | null;
 	image_medium?: string | null;
 	image_small?: string | null;
+	blurHash?: string | null;
 }
 
 export interface TwoShotStatsResponse {
@@ -58,6 +60,7 @@ export interface ExtremeItem {
 	image: string | null;
 	image_medium?: string | null;
 	image_small?: string | null;
+	blurHash?: string | null;
 	title: string;
 	date: string;
 	time: string;

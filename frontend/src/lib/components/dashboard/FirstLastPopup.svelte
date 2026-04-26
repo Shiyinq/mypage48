@@ -15,6 +15,7 @@
 			image?: string | null;
 			image_medium?: string | null;
 			image_small?: string | null;
+			blurHash?: string | null;
 			title: string;
 			date: string;
 			detail?: string;
@@ -23,6 +24,7 @@
 			image?: string | null;
 			image_medium?: string | null;
 			image_small?: string | null;
+			blurHash?: string | null;
 			title: string;
 			date: string;
 			detail?: string;
@@ -134,6 +136,7 @@
 									src={first.image}
 									srcMedium={first.image_medium}
 									srcSmall={first.image_small}
+									blurHash={first.blurHash}
 									alt={first.title}
 									class="w-full h-full transition-transform duration-700 group-hover:scale-110"
 									sizes="(max-width: 768px) 192px, 256px"
@@ -180,6 +183,7 @@
 									src={last.image}
 									srcMedium={last.image_medium}
 									srcSmall={last.image_small}
+									blurHash={last.blurHash}
 									alt={last.title}
 									class="w-full h-full transition-transform duration-700 group-hover:scale-110"
 									sizes="(max-width: 768px) 192px, 256px"

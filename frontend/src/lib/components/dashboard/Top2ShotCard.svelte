@@ -14,10 +14,19 @@
 		image: string | undefined;
 		image_medium?: string | undefined;
 		image_small?: string | undefined;
+		blurHash?: string | null;
 		loading?: boolean;
 	}
 
-	let { name, count, image, image_medium, image_small, loading = false }: Props = $props();
+	let {
+		name,
+		count,
+		image,
+		image_medium,
+		image_small,
+		blurHash,
+		loading = false
+	}: Props = $props();
 </script>
 
 <div
@@ -57,6 +66,7 @@
 							src={image}
 							srcMedium={image_medium}
 							srcSmall={image_small}
+							{blurHash}
 							alt={name || ''}
 							class="w-full h-full"
 							sizes="56px"

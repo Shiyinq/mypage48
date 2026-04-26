@@ -50,6 +50,7 @@ class TopShowResponse(BaseModel):
     image: Optional[str] = None
     image_medium: Optional[str] = None
     image_small: Optional[str] = None
+    blurHash: Optional[str] = None
 
 
 class TopMemberResponse(BaseModel):
@@ -60,6 +61,7 @@ class TopMemberResponse(BaseModel):
     image: Optional[str] = None
     image_medium: Optional[str] = None
     image_small: Optional[str] = None
+    blurHash: Optional[str] = None
 
 
 class TwoShotStatsResponse(BaseModel):
@@ -78,6 +80,7 @@ class ExtremeItem(BaseModel):
     image: Optional[str] = None
     image_medium: Optional[str] = None
     image_small: Optional[str] = None
+    blurHash: Optional[str] = None
     title: str
     date: str
     time: str
