@@ -36,6 +36,7 @@ class MemoriesService:
             item.imageUrl = variants["url"]
             item.imageUrl_medium = variants["url_medium"]
             item.imageUrl_small = variants["url_small"]
+            item.blurHash = variants.get("blurHash") or item.blurHash
 
         if item.notes:
             item.notes = await self.storage_service.resolve_markdown_images(item.notes)
@@ -138,6 +139,7 @@ class MemoriesService:
                 image_url = item.get("image")
                 img_medium = None
                 img_small = None
+                blur_hash = None
                 if image_url:
                     variants = await self.storage_service.resolve_image_variants(
                         image_url
@@ -145,6 +147,7 @@ class MemoriesService:
                     image_url = variants["url"]
                     img_medium = variants["url_medium"]
                     img_small = variants["url_small"]
+                    blur_hash = variants.get("blurHash") or item.get("blurHash")
 
                 return TopTwoShotMember(
                     name=item["name"],
@@ -154,6 +157,7 @@ class MemoriesService:
                     image=image_url,
                     image_medium=img_medium,
                     image_small=img_small,
+                    blurHash=blur_hash,
                 )
 
             tasks = [_resolve_stat(item) for item in stats.get("ranking", [])]

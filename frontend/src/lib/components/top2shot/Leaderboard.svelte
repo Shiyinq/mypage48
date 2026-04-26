@@ -74,6 +74,7 @@
 							src={member.image}
 							srcMedium={member.image_medium}
 							srcSmall={member.image_small}
+							blurHash={member.blurHash}
 							alt={member.name}
 							sizes="48px"
 							class="w-full h-full object-cover"

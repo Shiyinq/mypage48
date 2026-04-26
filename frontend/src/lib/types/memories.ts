@@ -35,6 +35,7 @@ export interface TopTwoShotMember {
 	image?: string | null;
 	image_medium?: string | null;
 	image_small?: string | null;
+	blurHash?: string | null;
 }
 
 export interface TopTwoShotResponse {

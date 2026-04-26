@@ -296,6 +296,7 @@ class MemoriesRepository:
                                 "spend": {"$sum": "$two_shot.price"},
                                 "lastDate": {"$first": "$event.date"},
                                 "image": {"$first": "$two_shot.imageUrl"},
+                                "blurHash": {"$first": "$two_shot.blurHash"},
                             }
                         },
                         {
@@ -306,6 +307,7 @@ class MemoriesRepository:
                                 "spend": 1,
                                 "lastDate": 1,
                                 "image": 1,
+                                "blurHash": 1,
                             }
                         },
                         {"$sort": {"count": -1, "spend": -1}},

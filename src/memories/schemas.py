@@ -46,6 +46,7 @@ class TopTwoShotMember(BaseModel):
     image: Optional[str] = None
     image_medium: Optional[str] = None
     image_small: Optional[str] = None
+    blurHash: Optional[str] = None
 
 
 class TopTwoShotResponse(BaseModel):
