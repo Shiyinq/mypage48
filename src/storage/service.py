@@ -284,6 +284,56 @@ class StorageService:
             logger.exception(f"Unexpected error during delete: {e}")
             return False
 
+    async def rename_image(
+        self, old_path: str, new_slug: str, category: str, user_id: str = "admin"
+    ) -> str:
+        """
+        Rename (Move) image and its variants to a new slug.
+        Returns the new path.
+        """
+        if not old_path or not new_slug:
+            return old_path
+
+        # Don't rename if it's an external URL
+        if old_path.startswith("http") or "data:image" in old_path:
+            return old_path
+
+        new_path = self._generate_filename(user_id, category, "image/webp", new_slug)
+        if old_path == new_path:
+            return old_path
+
+        # Define suffixes for variants (Main file first)
+        suffixes = ["", "medium", "small"]
+
+        async def move_single(suffix: str) -> bool:
+            # Helper to move a single variant
+            o_path = self._get_variant_path(old_path, suffix) if suffix else old_path
+            n_path = self._get_variant_path(new_path, suffix) if suffix else new_path
+
+            try:
+                if await self.repository.file_exists(o_path):
+                    if await self.repository.copy_file(o_path, n_path):
+                        await self.repository.delete_file(o_path)
+                        logger.debug(f"Successfully moved variant [{suffix if suffix else 'original'}]")
+                        return True
+                else:
+                    logger.debug(f"Variant [{suffix if suffix else 'original'}] not found at {o_path}, skipping.")
+                return False
+            except Exception as e:
+                logger.error(f"Failed to move variant {suffix} from {o_path}: {e}")
+                return False
+
+        # Move all variants in parallel
+        results = await asyncio.gather(*(move_single(s) for s in suffixes), return_exceptions=True)
+
+        # Only return new_path if the main file (index 0) was successfully moved
+        if results and results[0] is True:
+            logger.info(f"SUCCESS: Renamed image from [{old_path}] to [{new_path}]")
+            return new_path
+        
+        logger.warning(f"FAILED: Could not rename image from [{old_path}] to [{new_path}]. Keeping old path.")
+        return old_path
+
     def _generate_signature(self, path: str, expires: int) -> str:
         """
         Generate a secure HMAC signature for a path and expiration timestamp.
