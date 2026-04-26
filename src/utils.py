@@ -115,9 +115,7 @@ def cleanse_image_url(url: Optional[str]) -> Optional[str]:
         return proxy_match.group(1)
 
     # Handle the /media/ paths used by members and setlists
-    media_match = re.search(
-        r"/((media/(jkt48-member|setlists)/)[^?\s]+)", url
-    )
+    media_match = re.search(r"/((media/(jkt48-member|setlists)/)[^?\s]+)", url)
     if media_match:
         return media_match.group(1)
 
