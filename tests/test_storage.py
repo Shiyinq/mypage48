@@ -1,6 +1,7 @@
 import pytest
 import io
-from unittest.mock import AsyncMock, MagicMock
+import base64
+from unittest.mock import AsyncMock, MagicMock, ANY
 from src.storage.service import StorageService
 from src.storage.schemas import ImageCategory
 from src.dependencies import get_storage_service
@@ -10,12 +11,16 @@ from src.tickets.schemas import TicketResponse
 # Mock Repository
 class MockStorageRepository:
 	def __init__(self):
-		self.upload_file = MagicMock()
-		self.get_presigned_url = MagicMock(return_value="https://minio.example.com/bucket/file.jpg")
-		self.file_exists = MagicMock(return_value=True)
-		self.delete_file = MagicMock(return_value=True)
-		self.get_file_with_metadata = MagicMock(return_value=(b"fake_image_content", "image/jpeg"))
-		self.get_file_stream_with_metadata = MagicMock(return_value=(io.BytesIO(b"fake_image_content"), "image/jpeg"))
+		self.upload_file = AsyncMock()
+		self.get_presigned_url = AsyncMock(return_value="https://minio.example.com/bucket/file.jpg")
+		self.file_exists = AsyncMock(return_value=True)
+		self.delete_file = AsyncMock(return_value=True)
+		self.check_connection = AsyncMock(return_value=True)
+		# Use valid 1x1 PNG bytes instead of "fake_image_content"
+		valid_image = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
+		self.get_file_with_metadata = AsyncMock(return_value=(valid_image, "image/png"))
+		self.get_file_stream_with_metadata = AsyncMock(return_value=(io.BytesIO(valid_image), "image/png"))
+		self.get_metadata = AsyncMock(return_value={"blurhash": "U2TI:j|cfQ|c|cjtfQjtfQfQfQfQ|cjtfQjt"})
 
 @pytest.fixture
 def mock_storage_repo():
@@ -29,27 +34,36 @@ def storage_service(mock_storage_repo):
     mock_config.secret_key = "test-secret-key-for-hmac-signing-purposes"
     mock_config.algorithm = "HS256"
     mock_config.api_base_url = "http://localhost:8080/api"
+    mock_config.storage_use_presigned = False
     return StorageService(repository=mock_storage_repo, config=mock_config)
 
 @pytest.mark.asyncio
 async def test_resolve_url(storage_service):
     # Test None
-    assert storage_service.resolve_url(None) is None
+    assert await storage_service.resolve_url(None) is None
     
     # Test Base64
     base64_img = "data:image/png;base64,aaaa"
-    assert storage_service.resolve_url(base64_img) == base64_img
+    assert await storage_service.resolve_url(base64_img) == base64_img
     
     # Test HTTP URL
     http_url = "http://example.com/image.jpg"
-    assert storage_service.resolve_url(http_url) == http_url
+    assert await storage_service.resolve_url(http_url) == http_url
     
     # Test Storage Filename
     filename = "tickets/user1/abc.jpg"
-    url = storage_service.resolve_url(filename)
+    url = await storage_service.resolve_url(filename)
     assert "/api/storage/m/tickets/user1/abc.jpg" in url
     assert "expires=" in url
     assert "signature=" in url
+
+@pytest.mark.asyncio
+async def test_resolve_url_presigned(storage_service):
+    # Test Storage Filename with presigned mode enabled
+    storage_service.config.storage_use_presigned = True
+    filename = "tickets/user1/abc.jpg"
+    url = await storage_service.resolve_url(filename)
+    assert url == "https://minio.example.com/bucket/file.jpg"
 
 @pytest.mark.asyncio
 async def test_upload_image(storage_service):
@@ -57,13 +71,18 @@ async def test_upload_image(storage_service):
     category = "ticket"
     base64_img = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
     
-    response = storage_service.upload_image(user_id, base64_img, category)
+    response = await storage_service.upload_image(user_id, base64_img, category)
     
     assert response.filename.startswith("ticket/user123/")
-    assert response.filename.endswith(".png")
+    assert response.filename.endswith(".webp")
     assert "/api/storage/m/" in response.url
     assert "signature=" in response.url
-    storage_service.repository.upload_file.assert_called_once()
+    assert response.url_small is not None
+    assert storage_service.repository.upload_file.call_count == 3
+    # Check that metadata was passed
+    storage_service.repository.upload_file.assert_called_with(
+        ANY, ANY, "image/webp", metadata={"blurHash": response.blurHash}
+    )
 
 @pytest.mark.asyncio
 async def test_upload_image_journal(storage_service):
@@ -71,17 +90,17 @@ async def test_upload_image_journal(storage_service):
     category = "journal"
     base64_img = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
     
-    response = storage_service.upload_image(user_id, base64_img, category)
+    response = await storage_service.upload_image(user_id, base64_img, category)
     
     assert response.filename.startswith("journal/user123/")
-    assert response.filename.endswith(".png")
+    assert response.filename.endswith(".webp")
     assert "/api/storage/m/" in response.url
 
 @pytest.mark.asyncio
 async def test_get_bulk_presigned_urls(storage_service):
     filenames = ["journal/u1/1.jpg", "ticket/u1/2.png"]
     
-    response = storage_service.get_bulk_presigned_urls(filenames)
+    response = await storage_service.get_bulk_presigned_urls(filenames)
     
     assert len(response.urls) == 2
     assert "/api/storage/m/" in response.urls["journal/u1/1.jpg"]
@@ -120,10 +139,14 @@ async def test_resolve_ticket_images(storage_service):
     # Use actual class
     ticket = TicketResponse(**ticket_data)
     
-    resolved = storage_service.resolve_ticket_images(ticket)
+    resolved = await storage_service.resolve_ticket_images(ticket)
     
     assert "/api/storage/m/tickets/u1/img1.jpg" in resolved.imageUrl
+    assert "/api/storage/m/tickets/u1/img1_medium.jpg" in resolved.imageUrl_medium
+    assert "/api/storage/m/tickets/u1/img1_small.jpg" in resolved.imageUrl_small
     assert "/api/storage/m/twoshot/u1/img2.jpg" in resolved.two_shot.imageUrl
+    assert "/api/storage/m/twoshot/u1/img2_medium.jpg" in resolved.two_shot.imageUrl_medium
+    assert "/api/storage/m/twoshot/u1/img2_small.jpg" in resolved.two_shot.imageUrl_small
 
 # API Tests
 @pytest.mark.asyncio
@@ -237,8 +260,12 @@ async def test_get_external_media_cache_hit(storage_service):
 async def test_get_external_media_cache_miss(storage_service, monkeypatch):
     path = "media/jkt48-member/new_member.jpg"
     
-    # Mock cache miss (returns None)
-    storage_service.repository.get_file_stream_with_metadata.return_value = (None, None)
+    # Mock cache miss then hit
+    valid_image = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
+    storage_service.repository.get_file_stream_with_metadata.side_effect = [
+        (None, None),
+        (io.BytesIO(valid_image), "image/png")
+    ]
     
     # Mock httpx.AsyncClient
     mock_client_instance = AsyncMock()
@@ -246,8 +273,8 @@ async def test_get_external_media_cache_miss(storage_service, monkeypatch):
     class MockResponse:
         def __init__(self):
             self.status_code = 200
-            self.content = b"new_image_content"
-            self.headers = {"content-type": "image/jpeg"}
+            self.content = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
+            self.headers = {"content-type": "image/png"}
 
     mock_client_instance.get.return_value = MockResponse()
     
@@ -259,10 +286,10 @@ async def test_get_external_media_cache_miss(storage_service, monkeypatch):
         content, media_type, status = await storage_service.get_external_media(path)
     
     assert status == 200
-    assert content == b"new_image_content"
-    # Verify it was cached
+    assert content.getbuffer().nbytes > 0 # Use nbytes for BytesIO
+    # Verify it was cached as WebP with metadata
     storage_service.repository.upload_file.assert_called_with(
-        b"new_image_content", "cache/external/media/jkt48-member/new_member.jpg", "image/jpeg"
+        ANY, "cache/external/media/jkt48-member/new_member.jpg", "image/webp", metadata=ANY
     )
 
 @pytest.mark.asyncio
@@ -300,7 +327,8 @@ async def test_api_proxy_internal_media(client, storage_service):
         # 2. Test Success (Valid Signature)
         response = await client.get(f"/api/storage/m/{path}?expires={expires}&signature={signature}")
         assert response.status_code == 200
-        assert response.content == b"fake_image_content"
+        # Check we got some bytes (the valid PNG)
+        assert len(response.content) > 0
         assert response.headers["X-Robots-Tag"] == "noindex, nofollow, noarchive"
         
         # 3. Test Failure (Invalid Signature)

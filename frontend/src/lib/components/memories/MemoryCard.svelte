@@ -36,7 +36,15 @@
 		<div
 			class="aspect-[4/5] w-full bg-gray-100 mb-4 overflow-hidden relative border border-gray-50 grayscale-[20%] group-hover:grayscale-0 transition-all duration-500"
 		>
-			<OptimizedImage src={item.imageUrl} alt={item.title} class="w-full h-full" />
+			<OptimizedImage
+				src={item.imageUrl}
+				srcMedium={item.imageUrl_medium}
+				srcSmall={item.imageUrl_small}
+				sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 256px"
+				blurHash={item.blurHash}
+				alt={item.title}
+				class="w-full h-full"
+			/>
 
 			<!-- Date Stamp -->
 			<div

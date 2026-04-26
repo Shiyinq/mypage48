@@ -94,7 +94,7 @@ def validate_password_strength(password: str) -> bool:
 
 def cleanse_image_url(url: Optional[str]) -> Optional[str]:
     """
-    Strip API base URL, MinIO endpoint, and signatures from a storage URL to get the internal path.
+    Strip API base URL, Storage endpoint, and signatures from a storage URL to get the internal path.
     Example: http://localhost:8080/api/storage/m/ticket/xyz.png?expires=...
     becomes: ticket/xyz.png
     """
@@ -117,8 +117,8 @@ def cleanse_image_url(url: Optional[str]) -> Optional[str]:
     try:
         parsed = urlparse(url)
         path = parsed.path.lstrip("/")
-        if path.startswith(f"{config.minio_bucket}/"):
-            return path[len(config.minio_bucket) + 1 :]
+        if path.startswith(f"{config.storage_bucket}/"):
+            return path[len(config.storage_bucket) + 1 :]
     except Exception:
         pass
 
@@ -147,16 +147,20 @@ def cleanse_image_markdown(content: Optional[str]) -> Optional[str]:
 
 
 def resolve_minio_public_url(url: str) -> str:
-    """Replace internal MinIO host with public URL if configured."""
-    if not config.minio_public_url:
+    """Replace internal storage host with public URL if configured."""
+    if not config.storage_public_url:
         return url
 
-    internal_host = config.minio_endpoint
-    public_url = config.minio_public_url
+    internal_host = config.storage_endpoint
+    public_url = config.storage_public_url
 
     # Extract only the host:port part from public_url if it contains http://
     public_host = public_url
     if "://" in public_url:
         public_host = public_url.split("://")[1]
+
+    # For R2, sometimes the internal host is already the public one
+    if internal_host == public_host:
+        return url
 
     return url.replace(internal_host, public_host)

@@ -1,6 +1,7 @@
 import { ticketsApi } from '$lib/apis/tickets';
 import { logger } from '$lib/utils/logger';
 import { isCacheExpired } from '$lib/utils/cache';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 import type { Ticket, PaginationMeta, TicketFilters } from '$lib/types';
 
 /**
@@ -37,6 +38,7 @@ const initialState: TicketsState = {
 };
 
 const state = $state<TicketsState>(initialState);
+const dedup = createRequestDedup();
 
 function createTicketsStore() {
 	return {
@@ -60,9 +62,9 @@ function createTicketsStore() {
 		},
 
 		load: async (page = 1, filters: TicketFilters = {}) => {
-			const nowVal = Date.now();
 			const isDefaultFilter = Object.keys(filters).length === 0;
 
+			// Serve from cache if available and fresh
 			if (
 				page === 1 &&
 				isDefaultFilter &&
@@ -76,40 +78,45 @@ function createTicketsStore() {
 				return;
 			}
 
-			state.filters = filters;
-			state.error = null;
-			state.isLoading = true;
-
-			try {
-				const cleanFilters = Object.fromEntries(
-					Object.entries(filters).filter(([, v]) => v !== null && v !== undefined && v !== '')
-				);
-
-				const res = await ticketsApi.getMyTickets(page, 20, cleanFilters);
-
-				const newItems = res.data.filter(
-					(newItem) => !state.list.some((existingItem) => existingItem._id === newItem._id)
-				);
-
-				state.list = page === 1 ? res.data : [...state.list, ...newItems];
-				state.pagination = res.meta;
-				state.lastUpdated = nowVal;
+			// Deduplicate concurrent requests with the same page + filters
+			const key = JSON.stringify({ page, filters });
+			return dedup.execute(key, async () => {
+				const nowVal = Date.now();
+				state.filters = filters;
 				state.error = null;
+				state.isLoading = true;
 
-				if (page === 1 && isDefaultFilter) {
-					state.defaultCache = {
-						list: res.data,
-						pagination: res.meta,
-						lastUpdated: nowVal
-					};
+				try {
+					const cleanFilters = Object.fromEntries(
+						Object.entries(filters).filter(([, v]) => v !== null && v !== undefined && v !== '')
+					);
+
+					const res = await ticketsApi.getMyTickets(page, 20, cleanFilters);
+
+					const newItems = res.data.filter(
+						(newItem) => !state.list.some((existingItem) => existingItem._id === newItem._id)
+					);
+
+					state.list = page === 1 ? res.data : [...state.list, ...newItems];
+					state.pagination = res.meta;
+					state.lastUpdated = nowVal;
+					state.error = null;
+
+					if (page === 1 && isDefaultFilter) {
+						state.defaultCache = {
+							list: res.data,
+							pagination: res.meta,
+							lastUpdated: nowVal
+						};
+					}
+				} catch (e) {
+					logger.error('Failed to load tickets', e, { context: 'TicketsStore' });
+					state.error = 'Failed to load tickets';
+					throw e;
+				} finally {
+					state.isLoading = false;
 				}
-			} catch (e) {
-				logger.error('Failed to load tickets', e, { context: 'TicketsStore' });
-				state.error = 'Failed to load tickets';
-				throw e;
-			} finally {
-				state.isLoading = false;
-			}
+			});
 		},
 
 		deleteTicket: async (ticketId: string) => {
@@ -195,6 +202,7 @@ function createTicketsStore() {
 
 		reset: () => {
 			Object.assign(state, initialState);
+			dedup.clear();
 		},
 
 		/**

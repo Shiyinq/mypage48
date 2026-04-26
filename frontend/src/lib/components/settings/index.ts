@@ -1,3 +1,4 @@
+export { default as AccountSettings } from './AccountSettings.svelte';
 export { default as PublicProfileSettings } from './PublicProfileSettings.svelte';
 export { default as ThemeSettings } from './ThemeSettings.svelte';
 export { default as LanguageSettings } from './LanguageSettings.svelte';

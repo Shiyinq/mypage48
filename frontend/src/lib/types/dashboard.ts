@@ -34,12 +34,16 @@ export interface TopShowResponse {
 	title: string;
 	count: number;
 	image: string | null;
+	image_medium?: string | null;
+	image_small?: string | null;
 }
 
 export interface TopMemberResponse {
 	name: string;
 	count: number;
 	image?: string | null;
+	image_medium?: string | null;
+	image_small?: string | null;
 }
 
 export interface TwoShotStatsResponse {
@@ -52,6 +56,8 @@ export interface TwoShotStatsResponse {
 export interface ExtremeItem {
 	ticket_id: string;
 	image: string | null;
+	image_medium?: string | null;
+	image_small?: string | null;
 	title: string;
 	date: string;
 	time: string;

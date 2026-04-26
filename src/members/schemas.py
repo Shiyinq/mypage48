@@ -24,6 +24,9 @@ class MemberBase(BaseModel):
     active: bool = True
     href: Optional[str] = None
     img: Optional[str] = None
+    img_medium: Optional[str] = None
+    img_small: Optional[str] = None
+    blurHash: Optional[str] = None
     birthdate: Optional[str] = None
     bloodType: Optional[str] = None
     horoscope: Optional[str] = None
@@ -95,6 +98,7 @@ class MemberCreateRequest(BaseModel):
     active: bool = True
     href: Optional[str] = None
     img: Optional[str] = None
+    blurHash: Optional[str] = None
     birthdate: Optional[str] = None
     bloodType: Optional[str] = None
     horoscope: Optional[str] = None
@@ -114,6 +118,7 @@ class MemberUpdateRequest(BaseModel):
     active: Optional[bool] = None
     href: Optional[str] = None
     img: Optional[str] = None
+    blurHash: Optional[str] = None
     birthdate: Optional[str] = None
     bloodType: Optional[str] = None
     horoscope: Optional[str] = None
@@ -136,6 +141,9 @@ class BirthdayResponse(BaseModel):
     name: str
     active: bool
     img: Optional[str] = None
+    img_medium: Optional[str] = None
+    img_small: Optional[str] = None
+    blurHash: Optional[str] = None
     birthdate: str
     days_until: int
     age: int

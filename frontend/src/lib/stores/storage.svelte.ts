@@ -19,8 +19,12 @@ function createStorageStore() {
 			return cache;
 		},
 
-		uploadImage: async (image: string, category: ImageCategory): Promise<ImageUploadResponse> => {
-			const res = await storageApi.uploadImage(image, category);
+		uploadImage: async (
+			image: string,
+			category: ImageCategory,
+			slug?: string
+		): Promise<ImageUploadResponse> => {
+			const res = await storageApi.uploadImage(image, category, slug);
 			// Cache the URL immediately
 			cache[res.filename] = res.url;
 			return res;
@@ -51,18 +55,6 @@ function createStorageStore() {
 
 		updateCache: (signatures: Record<string, string>) => {
 			Object.assign(cache, signatures);
-		},
-
-		/**
-		 * Legacy subscribe method for backward compatibility
-		 */
-		subscribe: (fn: (val: Record<string, string>) => void) => {
-			$effect.root(() => {
-				$effect(() => {
-					fn(cache);
-				});
-			});
-			return () => {};
 		}
 	};
 }

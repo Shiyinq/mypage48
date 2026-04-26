@@ -71,9 +71,15 @@ class UserRepository:
             {"userId": user_id}, {"$set": update_data}
         )
 
-    async def set_profile_picture(self, user_id: str, profile_picture: str):
+    async def set_profile_picture(
+        self, user_id: str, profile_picture: str, blur_hash: Optional[str] = None
+    ):
+        update_data = {"profilePicture": profile_picture}
+        if blur_hash:
+            update_data["blurHash"] = blur_hash
+
         return await self.collection.update_one(
-            {"userId": user_id}, {"$set": {"profilePicture": profile_picture}}
+            {"userId": user_id}, {"$set": update_data}
         )
 
     async def get_all_paginated(

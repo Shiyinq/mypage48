@@ -2,6 +2,7 @@ import { live as liveApi } from '$lib/apis/live';
 import type { LiveStatus, LiveStreamingResponse } from '$lib/types';
 import { isCacheExpired } from '$lib/utils/cache';
 import { logger } from '$lib/utils/logger';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 
 /**
  * Live store - migrated to Svelte 5 Shared Rune State.
@@ -27,6 +28,7 @@ const initialState: LiveState = {
 };
 
 const state = $state<LiveState>(initialState);
+const dedup = createRequestDedup();
 
 // Centralized ticker for the global 'now' time
 let currentTime = $state(Date.now());
@@ -61,6 +63,7 @@ function createLiveStore() {
 			state.otherLive = [];
 			state.error = null;
 			state.isLoading = false;
+			dedup.clear();
 		},
 
 		loadLiveList: async (forceRefresh = false) => {
@@ -69,20 +72,24 @@ function createLiveStore() {
 				return;
 			}
 
-			state.error = null;
-			state.isLoading = true;
-
-			try {
-				const res = await liveApi.getLiveStatus();
-				state.list = res.data || [];
+			// Deduplicate concurrent requests
+			const key = `live:${forceRefresh}`;
+			return dedup.execute(key, async () => {
 				state.error = null;
-				state.lastUpdated = nowVal;
-			} catch (e) {
-				logger.error('Failed to load live status', e);
-				state.error = 'Failed to load live status';
-			} finally {
-				state.isLoading = false;
-			}
+				state.isLoading = true;
+
+				try {
+					const res = await liveApi.getLiveStatus();
+					state.list = res.data || [];
+					state.error = null;
+					state.lastUpdated = nowVal;
+				} catch (e) {
+					logger.error('Failed to load live status', e);
+					state.error = 'Failed to load live status';
+				} finally {
+					state.isLoading = false;
+				}
+			});
 		},
 
 		loadStream: async (platform: string, id: string) => {

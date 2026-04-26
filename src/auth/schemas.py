@@ -29,6 +29,9 @@ class OshiResponse(BaseModel):
     profilePicture: str = (
         "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg"
     )
+    profilePicture_medium: Optional[str] = None
+    profilePicture_small: Optional[str] = None
+    blurHash: Optional[str] = None
     catchphrase: str = "-"
     socials: Optional[OshiSocials] = None
     totalShows: int = 0
@@ -39,6 +42,9 @@ class OshiResponse(BaseModel):
 class UserLoginBase(BaseModel):
     userId: str
     profilePicture: str | None = None
+    profilePicture_medium: str | None = None
+    profilePicture_small: str | None = None
+    blurHash: str | None = None
     name: str
     email: str
     username: str
@@ -48,6 +54,8 @@ class UserLoginBase(BaseModel):
     isPublic: bool = False
     publicYear: int | None = None
     isAdmin: bool = False
+    isEmailVerified: bool = False
+    createdAt: datetime | None = None
 
     @field_validator("oshiId", mode="before")
     @classmethod
@@ -59,7 +67,6 @@ class UserLoginBase(BaseModel):
 
 class UserLogin(UserLoginBase):
     password: Optional[str] = None
-    isEmailVerified: bool = False
     failedLoginAttempts: int = 0
     isAccountLocked: bool = False
     accountLockedUntil: Optional[datetime] = None

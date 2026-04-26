@@ -12,6 +12,8 @@
 		onExpand: () => void;
 		first: {
 			image?: string | null;
+			image_medium?: string | null;
+			image_small?: string | null;
 			title: string;
 			subtitle?: string | null;
 			date: string;
@@ -19,6 +21,8 @@
 		} | null;
 		last: {
 			image?: string | null;
+			image_medium?: string | null;
+			image_small?: string | null;
 			title: string;
 			subtitle?: string | null;
 			date: string;
@@ -117,7 +121,14 @@
 						class={`w-12 h-16 rounded-lg overflow-hidden flex-shrink-0 shadow-sm border ${themeClasses.border} ${themeClasses.placeholderBg}`}
 					>
 						{#if first.image}
-							<OptimizedImage src={first.image} alt={first.title} class="w-full h-full" />
+							<OptimizedImage
+								src={first.image}
+								srcMedium={first.image_medium}
+								srcSmall={first.image_small}
+								alt={first.title}
+								class="w-full h-full"
+								sizes="48px"
+							/>
 						{:else}
 							<div
 								class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderText}`}
@@ -173,7 +184,14 @@
 						class={`w-12 h-16 rounded-lg overflow-hidden flex-shrink-0 shadow-sm border ${themeClasses.border} ${themeClasses.placeholderBg}`}
 					>
 						{#if last.image}
-							<OptimizedImage src={last.image} alt={last.title} class="w-full h-full" />
+							<OptimizedImage
+								src={last.image}
+								srcMedium={last.image_medium}
+								srcSmall={last.image_small}
+								alt={last.title}
+								class="w-full h-full"
+								sizes="48px"
+							/>
 						{:else}
 							<div
 								class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderText}`}

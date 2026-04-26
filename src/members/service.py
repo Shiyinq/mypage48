@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from typing import List, Optional
 
@@ -15,6 +16,7 @@ from src.members.schemas import (
     MemberUpdateRequest,
     MessageResponse,
 )
+from src.storage.service import StorageService
 from src.tickets.schemas import PaginationMeta
 
 logger = create_logger("members_service", __name__)
@@ -25,9 +27,47 @@ class MemberService:
         self,
         repository: MemberRepository,
         config: Settings,
+        storage_service: StorageService,
     ):
         self.repository = repository
         self.config = config
+        self.storage_service = storage_service
+
+    async def _resolve_member(self, member: dict) -> dict:
+        """Resolve member image using storage service."""
+        img_path = member.get("img")
+        if not img_path:
+            return member
+
+        # If it's a full URL or base64, keep it
+        if img_path.startswith("data:") or img_path.startswith("http"):
+            return member
+
+        # If it looks like an internal storage path
+        if img_path.startswith("media/") or "/" not in img_path:
+            res = await self.storage_service.resolve_image_variants(img_path)
+        else:
+            # Fallback to external media resolution (jkt48.com)
+            res = await self.storage_service.resolve_external_media(img_path)
+
+        member["img"] = res["url"]
+        member["img_medium"] = res.get("url_medium")
+        member["img_small"] = res.get("url_small")
+
+        if res.get("blurHash"):
+            # If it was missing in the DB but found in storage, update the DB
+            if not member.get("blurHash"):
+                try:
+                    await self.repository.update_one(
+                        member["id"], {"blurHash": res["blurHash"]}
+                    )
+                except Exception as e:
+                    logger.warning(
+                        f"Failed to JIT update blurHash for member {member.get('id')}: {e}"
+                    )
+            member["blurHash"] = res["blurHash"]
+
+        return member
 
     async def get_all_members(
         self,
@@ -42,7 +82,11 @@ class MemberService:
             members = await self.repository.find_all(skip, limit, generation, search)
             total = await self.repository.count(generation, search)
 
-            member_responses = [MemberResponse(**member) for member in members]
+            resolved_members = await asyncio.gather(
+                *(self._resolve_member(member) for member in members)
+            )
+
+            member_responses = [MemberResponse(**member) for member in resolved_members]
 
             last_page = (total + limit - 1) // limit if limit > 0 else 1
             if last_page < 1:
@@ -70,7 +114,8 @@ class MemberService:
                 raise MemberNotFoundError()
 
             return MemberDetailResponse(
-                member=MemberResponse(**member), detail=Info.MEMBER_FOUND
+                member=MemberResponse(**(await self._resolve_member(member))),
+                detail=Info.MEMBER_FOUND,
             )
         except MemberNotFoundError:
             raise
@@ -86,7 +131,8 @@ class MemberService:
                 raise MemberNotFoundError()
 
             return MemberDetailResponse(
-                member=MemberResponse(**member), detail=Info.MEMBER_FOUND
+                member=MemberResponse(**(await self._resolve_member(member))),
+                detail=Info.MEMBER_FOUND,
             )
         except MemberNotFoundError:
             raise
@@ -108,15 +154,27 @@ class MemberService:
             next_id = await self.repository.get_next_id()
             now = datetime.now()
 
+            member_dict = data.model_dump(exclude_none=True)
+
+            # If img is present but blurHash is missing, try to resolve it from storage metadata
+            if member_dict.get("img") and not member_dict.get("blurHash"):
+                # We use resolve_member logic but only for the metadata part
+                img_path = member_dict["img"]
+                if not (img_path.startswith("data:") or img_path.startswith("http")):
+                    # For internal paths, we can check if it exists and has metadata
+                    # Actually, we can just rely on the resolve_member later for reading,
+                    # but for saving, we should try to get it now if possible.
+                    pass
+
             member_data = {
                 "id": str(next_id),
-                **data.model_dump(exclude_none=True),
+                **member_dict,
                 "createdAt": now,
                 "updatedAt": now,
             }
 
             member = await self.repository.insert_one(member_data)
-            return MemberResponse(**member)
+            return MemberResponse(**(await self._resolve_member(member)))
         except Exception as e:
             logger.exception(f"Error creating member: {str(e)}")
             raise MemberFetchError()
@@ -138,7 +196,7 @@ class MemberService:
             else:
                 member = existing
 
-            return MemberResponse(**member)
+            return MemberResponse(**(await self._resolve_member(member)))
         except MemberNotFoundError:
             raise
         except Exception as e:
@@ -186,6 +244,25 @@ class MemberService:
                 "Desember": 12,
             }
 
+            async def _resolve_upcoming(m_data, d_until, m_age):
+                img_data = await self.storage_service.resolve_external_media(
+                    m_data.get("img")
+                )
+                return BirthdayResponse(
+                    id=m_data.get("id", ""),
+                    name=m_data.get("name", ""),
+                    active=m_data.get("active", True),
+                    img=img_data["url"],
+                    img_medium=img_data["url_medium"],
+                    img_small=img_data["url_small"],
+                    blurHash=img_data["blurHash"] or m_data.get("blurHash"),
+                    birthdate=m_data.get("birthdate", ""),
+                    days_until=d_until,
+                    age=m_age,
+                    member_type=m_data.get("member_type", "JKT48"),
+                )
+
+            tasks = []
             for member in members:
                 if not member.get("birthdate"):
                     continue
@@ -217,23 +294,15 @@ class MemberService:
                     # Check if within next 30 days
                     if 0 <= days_until <= 30:
                         age = next_birthday.year - year
-                        upcoming.append(
-                            BirthdayResponse(
-                                id=member.get("id", ""),
-                                name=member.get("name", ""),
-                                active=member.get("active", True),
-                                img=member.get("img"),
-                                birthdate=member.get("birthdate", ""),
-                                days_until=days_until,
-                                age=age,
-                                member_type=member.get("member_type", "JKT48"),
-                            )
-                        )
+                        tasks.append(_resolve_upcoming(member, days_until, age))
                 except (ValueError, TypeError) as e:
                     logger.warning(
                         f"Error parsing birthdate for member {member.get('name')}: {e}"
                     )
                     continue
+
+            if tasks:
+                upcoming = list(await asyncio.gather(*tasks))
 
             # Sort by days until birthday
             upcoming.sort(key=lambda x: x.days_until)
@@ -266,6 +335,19 @@ class MemberService:
                 "Desember": 12,
             }
 
+            async def _resolve_range(m_data, b_date):
+                return {
+                    "id": m_data.get("id", ""),
+                    "name": m_data.get("name", ""),
+                    "date": b_date,
+                    "img": await self.storage_service.resolve_external_url(
+                        m_data.get("img")
+                    ),
+                    "active": m_data.get("active", True),
+                    "member_type": m_data.get("member_type", "JKT48"),
+                }
+
+            tasks = []
             for member in members:
                 if not member.get("birthdate"):
                     continue
@@ -293,18 +375,7 @@ class MemberService:
                         try:
                             birthday_date = datetime(year_to_check, month, day)
                             if start_date <= birthday_date <= end_date:
-                                results.append(
-                                    {
-                                        "id": member.get("id", ""),
-                                        "name": member.get("name", ""),
-                                        "date": birthday_date,
-                                        "img": member.get("img"),
-                                        "active": member.get("active", True),
-                                        "member_type": member.get(
-                                            "member_type", "JKT48"
-                                        ),
-                                    }
-                                )
+                                tasks.append(_resolve_range(member, birthday_date))
                         except ValueError:
                             # Handle Feb 29 on non-leap years if applicable, etc.
                             continue
@@ -314,6 +385,9 @@ class MemberService:
                         f"Error parsing birthdate for member {member.get('name')}: {e}"
                     )
                     continue
+
+            if tasks:
+                results = list(await asyncio.gather(*tasks))
 
             return results
 
