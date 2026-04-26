@@ -14,6 +14,7 @@
 			image?: string | null;
 			image_medium?: string | null;
 			image_small?: string | null;
+			blurHash?: string | null;
 			title: string;
 			subtitle?: string | null;
 			date: string;
@@ -23,6 +24,7 @@
 			image?: string | null;
 			image_medium?: string | null;
 			image_small?: string | null;
+			blurHash?: string | null;
 			title: string;
 			subtitle?: string | null;
 			date: string;
@@ -125,6 +127,7 @@
 								src={first.image}
 								srcMedium={first.image_medium}
 								srcSmall={first.image_small}
+								blurHash={first.blurHash}
 								alt={first.title}
 								class="w-full h-full"
 								sizes="48px"
@@ -188,6 +191,7 @@
 								src={last.image}
 								srcMedium={last.image_medium}
 								srcSmall={last.image_small}
+								blurHash={last.blurHash}
 								alt={last.title}
 								class="w-full h-full"
 								sizes="48px"

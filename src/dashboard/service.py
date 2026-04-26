@@ -21,7 +21,9 @@ from src.dashboard.schemas import (
     TwoShotStatsGroup,
     TwoShotStatsResponse,
 )
+from src.events.repository import EventsRepository
 from src.logging_config import create_logger
+from src.setlists.repository import SetlistsRepository
 from src.tickets.repository import TicketsRepository
 
 logger = create_logger("dashboard_service", __name__)
@@ -33,19 +35,16 @@ class DashboardService:
     def __init__(
         self,
         tickets_repository: TicketsRepository,
+        setlists_repository: SetlistsRepository,
+        events_repository: EventsRepository,
         config: Settings,
     ):
         self.tickets_repository = tickets_repository
+        self.setlists_repository = setlists_repository
+        self.events_repository = events_repository
         self.config = config
 
-    @staticmethod
-    def _get_show_image(title: str) -> Optional[str]:
-        """Get show image URL based on title."""
-        title_lower = title.lower()
-        for show in DashboardConstants.SHOW_IMAGES:
-            if show["title"].lower() in title_lower:
-                return show["image"]
-        return None
+
 
     @staticmethod
     def _format_date(date_str: str, include_year: bool = False) -> str:
@@ -161,12 +160,13 @@ class DashboardService:
         max_count = max((s.count for s in stats_list), default=1) or 1
         return MonthlyStatsResponse(stats=stats_list, max_count=max_count)
 
-    def _calculate_top_show(self, tickets: List[Dict[str, Any]]) -> TopShowResponse:
+    async def _calculate_top_show(self, tickets: List[Dict[str, Any]]) -> TopShowResponse:
         """Calculate top show statistics."""
         if not tickets:
             return TopShowResponse(title="-", count=0, image=None)
 
         counts: Dict[str, int] = {}
+
         for t in tickets:
             title = t.get("event", {}).get("title", "").strip()
             if title:
@@ -176,10 +176,29 @@ class DashboardService:
             return TopShowResponse(title="-", count=0, image=None)
 
         top_title = max(counts.keys(), key=lambda k: counts[k])
+
+        # Priority: Setlist Database > Event Database > Constants
+        image = None
+        blur_hash = None
+        setlist = await self.setlists_repository.find_by_title(top_title)
+        if setlist and (setlist.get("imageUrl") or setlist.get("img")):
+            image = setlist.get("imageUrl") or setlist.get("img")
+            blur_hash = setlist.get("blurHash")
+        else:
+            # Try events collection
+            event = await self.events_repository.collection.find_one(
+                {"title": {"$regex": f"^{top_title}$", "$options": "i"}, "imageUrl": {"$ne": None}},
+                sort=[("date", -1)]
+            )
+            if event and event.get("imageUrl"):
+                image = event["imageUrl"]
+                blur_hash = event.get("blurHash")
+
         return TopShowResponse(
             title=top_title,
             count=counts[top_title],
-            image=self._get_show_image(top_title),
+            image=image,
+            blurHash=blur_hash,
         )
 
     def _calculate_two_shot_stats(
@@ -221,7 +240,7 @@ class DashboardService:
             top_2_shot=top_member,
         )
 
-    def _calculate_show_extremes(
+    async def _calculate_show_extremes(
         self, tickets: List[Dict[str, Any]], include_year: bool
     ) -> ExtremesResponse:
         """Calculate first and last show."""
@@ -239,24 +258,44 @@ class DashboardService:
         first = sorted_tickets[0]
         last = sorted_tickets[-1]
 
-        def to_extreme_item(t: Dict[str, Any]) -> ExtremeItem:
+        async def to_extreme_item(t: Dict[str, Any]) -> ExtremeItem:
             event = t.get("event", {})
             seat = t.get("seat", {})
             section = seat.get("section", "").strip().upper()
             row = section[0] if section else ""
             number = seat.get("number", "")
+
+            # Priority: Setlist Database > Event Database > Constants
+            image = None
+            blur_hash = None
+            title = event.get("title", "")
+            setlist = await self.setlists_repository.find_by_title(title)
+            if setlist and (setlist.get("imageUrl") or setlist.get("img")):
+                image = setlist.get("imageUrl") or setlist.get("img")
+                blur_hash = setlist.get("blurHash")
+            else:
+                # Try events collection
+                evt_doc = await self.events_repository.collection.find_one(
+                    {"title": {"$regex": f"^{title}$", "$options": "i"}, "imageUrl": {"$ne": None}},
+                    sort=[("date", -1)]
+                )
+                if evt_doc and evt_doc.get("imageUrl"):
+                    image = evt_doc["imageUrl"]
+                    blur_hash = evt_doc.get("blurHash")
+
             return ExtremeItem(
                 ticket_id=str(t.get("_id", "")),
-                image=self._get_show_image(event.get("title", "")),
-                title=event.get("title", "-"),
+                image=image,
+                blurHash=blur_hash,
+                title=title or "-",
                 date=self._format_date(event.get("date", ""), include_year),
                 time=event.get("time", ""),
                 detail=f"Row {row} - {number}" if row and number else None,
             )
 
         return ExtremesResponse(
-            first=to_extreme_item(first),
-            last=to_extreme_item(last),
+            first=await to_extreme_item(first),
+            last=await to_extreme_item(last),
         )
 
     def _calculate_two_shot_extremes(
@@ -338,9 +377,11 @@ class DashboardService:
             monthly_stats = self._calculate_monthly_stats(
                 filtered_tickets, start_month, end_month, is_all_data
             )
-            top_show = self._calculate_top_show(filtered_tickets)
+            top_show = await self._calculate_top_show(filtered_tickets)
             two_shot_stats = self._calculate_two_shot_stats(filtered_tickets)
-            show_extremes = self._calculate_show_extremes(filtered_tickets, is_all_data)
+            show_extremes = await self._calculate_show_extremes(
+                filtered_tickets, is_all_data
+            )
             two_shot_extremes = self._calculate_two_shot_extremes(
                 filtered_tickets, is_all_data
             )

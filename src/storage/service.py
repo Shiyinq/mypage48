@@ -557,6 +557,7 @@ class StorageService:
                 "url_medium"
             ]
             stats_dict["two_shot"]["top_2_shot"]["image_small"] = variants["url_small"]
+            stats_dict["two_shot"]["top_2_shot"]["blurHash"] = variants.get("blurHash") or stats_dict["two_shot"]["top_2_shot"].get("blurHash")
 
         # 2. Resolve Extremes (First/Last) in Two Shot
         if stats_dict.get("two_shot") and stats_dict["two_shot"].get("extremes"):
@@ -564,9 +565,10 @@ class StorageService:
             for key in ["first", "last"]:
                 if extremes.get(key) and extremes[key].get("image"):
                     variants = await self.resolve_image_variants(extremes[key]["image"])
-                    extremes[key]["image"] = variants["url"]
-                    extremes[key]["image_medium"] = variants["url_medium"]
-                    extremes[key]["image_small"] = variants["url_small"]
+                    stats_dict["two_shot"]["extremes"][key]["image"] = variants["url"]
+                    stats_dict["two_shot"]["extremes"][key]["image_medium"] = variants["url_medium"]
+                    stats_dict["two_shot"]["extremes"][key]["image_small"] = variants["url_small"]
+                    stats_dict["two_shot"]["extremes"][key]["blurHash"] = variants.get("blurHash") or stats_dict["two_shot"]["extremes"][key].get("blurHash")
 
         # 3. Resolve Top Show image
         if (
@@ -580,6 +582,7 @@ class StorageService:
             stats_dict["theater"]["top_show"]["image"] = variants["url"]
             stats_dict["theater"]["top_show"]["image_medium"] = variants["url_medium"]
             stats_dict["theater"]["top_show"]["image_small"] = variants["url_small"]
+            stats_dict["theater"]["top_show"]["blurHash"] = variants.get("blurHash") or stats_dict["theater"]["top_show"].get("blurHash")
 
         # 4. Resolve Theater Extremes
         if stats_dict.get("theater") and stats_dict["theater"].get("extremes"):
@@ -587,9 +590,10 @@ class StorageService:
             for key in ["first", "last"]:
                 if extremes.get(key) and extremes[key].get("image"):
                     variants = await self.resolve_image_variants(extremes[key]["image"])
-                    extremes[key]["image"] = variants["url"]
-                    extremes[key]["image_medium"] = variants["url_medium"]
-                    extremes[key]["image_small"] = variants["url_small"]
+                    stats_dict["theater"]["extremes"][key]["image"] = variants["url"]
+                    stats_dict["theater"]["extremes"][key]["image_medium"] = variants["url_medium"]
+                    stats_dict["theater"]["extremes"][key]["image_small"] = variants["url_small"]
+                    stats_dict["theater"]["extremes"][key]["blurHash"] = variants.get("blurHash") or stats_dict["theater"]["extremes"][key].get("blurHash")
 
         return type(stats)(**stats_dict)
 
