@@ -14,6 +14,7 @@ from src.events.schemas import (
 from src.interfaces import BackgroundTaskRunner
 from src.logging_config import create_logger
 from src.members.service import MemberService
+from src.storage.service import StorageService
 
 logger = create_logger("events_service", __name__)
 
@@ -25,11 +26,27 @@ class EventsService:
         background_tasks: BackgroundTaskRunner,
         config: Settings,
         member_service: MemberService,
+        storage_service: StorageService,
     ):
         self.repository = repository
         self.background_tasks = background_tasks
         self.config = config
         self.member_service = member_service
+        self.storage_service = storage_service
+
+    async def _resolve_event(self, event: dict) -> dict:
+        """Resolve event image using storage service."""
+        img_url = event.get("imageUrl")
+        if img_url:
+            if not (img_url.startswith("http") or img_url.startswith("https")):
+                res = await self.storage_service.resolve_image_variants(img_url)
+                event["imageUrl"] = res["url"]
+                event["imageUrl_medium"] = res.get("url_medium")
+                event["imageUrl_small"] = res.get("url_small")
+
+                if res.get("blurHash"):
+                    event["blurHash"] = res["blurHash"]
+        return event
 
     async def get_events_paginated(
         self, page: int = 1, limit: int = 20, current_only: bool = False
@@ -64,7 +81,10 @@ class EventsService:
                 skip, limit, query, sort_direction
             )
 
-            events_data = [Event(**e) for e in raw_events]
+            events_data = []
+            for e in raw_events:
+                resolved = await self._resolve_event(e)
+                events_data.append(Event(**resolved))
 
             next_page = page + 1 if page < last_page else None
 

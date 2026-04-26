@@ -15,6 +15,9 @@ export interface Event {
 	url: string;
 	label: string;
 	imageUrl?: string;
+	imageUrl_medium?: string;
+	imageUrl_small?: string;
+	blurHash?: string;
 	totalMembers: number;
 	seitansaiMembers?: string[];
 	graduationMembers?: string[];
