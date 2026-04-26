@@ -147,8 +147,12 @@
 											{#if event.imageUrl}
 												<OptimizedImage
 													src={event.imageUrl}
+													srcMedium={event.imageUrl_medium}
+													srcSmall={event.imageUrl_small}
+													blurHash={event.blurHash}
 													alt="Event"
 													class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+													sizes="64px"
 												/>
 											{:else}
 												<div

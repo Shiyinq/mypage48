@@ -158,8 +158,12 @@
 											{#if event.imageUrl}
 												<OptimizedImage
 													src={event.imageUrl}
+													srcMedium={event.imageUrl_medium}
+													srcSmall={event.imageUrl_small}
+													blurHash={event.blurHash}
 													alt="Setlist"
 													class="w-full h-full object-cover"
+													sizes="48px"
 												/>
 											{:else}
 												<div class="w-full h-full flex items-center justify-center">

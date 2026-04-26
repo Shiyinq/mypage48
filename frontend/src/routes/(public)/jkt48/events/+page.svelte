@@ -232,8 +232,12 @@
 								{#if event.imageUrl}
 									<OptimizedImage
 										src={event.imageUrl}
+										srcMedium={event.imageUrl_medium}
+										srcSmall={event.imageUrl_small}
+										blurHash={event.blurHash}
 										alt={event.title}
 										class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+										sizes="(max-width: 640px) 40vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
 									/>
 									<div
 										class="absolute inset-0 sm:hidden bg-gradient-to-r from-black/10 via-transparent to-black/5"
