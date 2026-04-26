@@ -10,7 +10,7 @@ from src.dependencies import get_storage_repository
 
 @pytest.fixture
 def mock_storage_repo():
-    mock = MagicMock()
+    mock = AsyncMock()
     mock.check_connection.return_value = True
     return mock
 
@@ -28,7 +28,7 @@ async def test_health_check_success(client, mock_storage_repo):
         data = response.json()
         assert data["status"] == HealthStatus.OK
         assert data["database"] == DatabaseStatus.CONNECTED
-        assert data["minio"] == DatabaseStatus.CONNECTED
+        assert data["storage"] == DatabaseStatus.CONNECTED
         assert data["detail"] is None
     finally:
         app.dependency_overrides.pop(get_storage_repository, None)
@@ -60,7 +60,7 @@ async def test_health_check_db_failure(client, mock_storage_repo):
         data = response.json()
         assert data["status"] == HealthStatus.ERROR
         assert data["database"] == DatabaseStatus.ERROR
-        assert data["minio"] == DatabaseStatus.CONNECTED
+        assert data["storage"] == DatabaseStatus.CONNECTED
         assert "Database: Mock connection failure" in data["detail"]
         
     finally:
@@ -71,9 +71,9 @@ async def test_health_check_db_failure(client, mock_storage_repo):
 @pytest.mark.asyncio
 async def test_health_check_minio_failure(client):
     """
-    Test health check endpoint returns 503 when MinIO check fails.
+    Test health check endpoint returns 503 when Storage check fails.
     """
-    mock_storage_fail = MagicMock()
+    mock_storage_fail = AsyncMock()
     mock_storage_fail.check_connection.return_value = False
     
     app.dependency_overrides[get_storage_repository] = lambda: mock_storage_fail
@@ -85,7 +85,7 @@ async def test_health_check_minio_failure(client):
         data = response.json()
         assert data["status"] == HealthStatus.ERROR
         assert data["database"] == DatabaseStatus.CONNECTED
-        assert data["minio"] == DatabaseStatus.DISCONNECTED
+        assert data["storage"] == DatabaseStatus.DISCONNECTED
         # Detail might differ depending on implementation, for now let's just check status
         
     finally:

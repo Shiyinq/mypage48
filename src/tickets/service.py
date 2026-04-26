@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -9,6 +10,7 @@ from src.image_validation import (
 )
 from src.image_validation import validate_base64_image
 from src.logging_config import create_logger
+from src.storage.service import StorageService
 from src.tickets.constants import Info
 from src.tickets.exceptions import (
     ImageTooLargeError,
@@ -39,9 +41,36 @@ class TicketsService:
         self,
         repository: TicketsRepository,
         config: Settings,
+        storage_service: StorageService,
     ):
         self.repository = repository
         self.config = config
+        self.storage_service = storage_service
+
+    async def _resolve_ticket(self, ticket: dict) -> dict:
+        """Resolve storage paths for ticket images and notes."""
+        if ticket.get("imageUrl"):
+            variants = await self.storage_service.resolve_image_variants(
+                ticket["imageUrl"]
+            )
+            ticket["imageUrl"] = variants["url"]
+            ticket["imageUrl_medium"] = variants["url_medium"]
+            ticket["imageUrl_small"] = variants["url_small"]
+
+        if ticket.get("two_shot") and ticket["two_shot"].get("imageUrl"):
+            variants = await self.storage_service.resolve_image_variants(
+                ticket["two_shot"]["imageUrl"]
+            )
+            ticket["two_shot"]["imageUrl"] = variants["url"]
+            ticket["two_shot"]["imageUrl_medium"] = variants["url_medium"]
+            ticket["two_shot"]["imageUrl_small"] = variants["url_small"]
+
+        if ticket.get("notes"):
+            ticket["notes"] = await self.storage_service.resolve_markdown_images(
+                ticket.get("notes")
+            )
+
+        return ticket
 
     @staticmethod
     def _validate_images(
@@ -79,7 +108,7 @@ class TicketsService:
             ticket_dict = ticket_in_db.model_dump()
             ticket_dict["_id"] = result.inserted_id
 
-            return TicketResponse(**ticket_dict)
+            return TicketResponse(**(await self._resolve_ticket(ticket_dict)))
         except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):
             raise
         except Exception as e:
@@ -119,9 +148,10 @@ class TicketsService:
                 end_date=end_date,
             )
 
-            results = []
-            for t in tickets_data:
-                results.append(TicketResponse(**t))
+            resolved_tickets = await asyncio.gather(
+                *(self._resolve_ticket(t) for t in tickets_data)
+            )
+            results = [TicketResponse(**t) for t in resolved_tickets]
 
             # Calculate total pages
             last_page = (total_count + per_page - 1) // per_page if per_page > 0 else 1
@@ -160,9 +190,10 @@ class TicketsService:
             tickets_data, _ = await self.repository.get_tickets(
                 user_id, year, page=None, limit=None
             )
-            results = []
-            for t in tickets_data:
-                results.append(TicketResponse(**t))
+            resolved_tickets = await asyncio.gather(
+                *(self._resolve_ticket(t) for t in tickets_data)
+            )
+            results = [TicketResponse(**t) for t in resolved_tickets]
             return results
         except Exception as e:
             logger.exception(f"Error fetching tickets: {str(e)}")
@@ -173,7 +204,7 @@ class TicketsService:
             ticket = await self.repository.get_ticket(ticket_id, user_id)
             if not ticket:
                 raise TicketNotFoundError()
-            return TicketResponse(**ticket)
+            return TicketResponse(**(await self._resolve_ticket(ticket)))
         except TicketNotFoundError:
             raise
         except Exception as e:
@@ -193,7 +224,7 @@ class TicketsService:
             )
             if not updated_ticket:
                 raise TicketNotFoundError()
-            return TicketResponse(**updated_ticket)
+            return TicketResponse(**(await self._resolve_ticket(updated_ticket)))
         except TicketNotFoundError:
             raise
         except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):

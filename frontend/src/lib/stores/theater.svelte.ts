@@ -1,6 +1,7 @@
 import { setlistsApi, type Setlist, type SetlistDetailResponse } from '$lib/apis/setlists';
 import { members as membersApi, type Member, type BirthdayResponse } from '$lib/apis/members';
 import { logger } from '$lib/utils/logger';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 
 /**
  * Theater store - migrated to Svelte 5 Shared Rune State.
@@ -29,6 +30,7 @@ const initialSetlistsState: SetlistsState = {
 };
 
 const setlistsState = $state<SetlistsState>(initialSetlistsState);
+const setlistsDedup = createRequestDedup();
 
 function createSetlistsStore() {
 	return {
@@ -56,44 +58,53 @@ function createSetlistsStore() {
 
 		load: async () => {
 			if (setlistsState.data) return;
-			setlistsState.error = null;
-			setlistsState.isSetlistsLoading = true;
 
-			try {
-				const response = await setlistsApi.getAll();
-				setlistsState.data = response.setlists;
-				setlistsState.maxAttendance = response.maxAttendance || 1;
+			// Deduplicate concurrent requests (hover-prefetch + onMount)
+			return setlistsDedup.execute('setlists', async () => {
 				setlistsState.error = null;
-			} catch (e) {
-				logger.error('Failed to load setlists', e, { context: 'SetlistsStore' });
-				setlistsState.error = 'Failed to load setlists';
-				throw e;
-			} finally {
-				setlistsState.isSetlistsLoading = false;
-			}
+				setlistsState.isSetlistsLoading = true;
+
+				try {
+					const response = await setlistsApi.getAll();
+					setlistsState.data = response.setlists;
+					setlistsState.maxAttendance = response.maxAttendance || 1;
+					setlistsState.error = null;
+				} catch (e) {
+					logger.error('Failed to load setlists', e, { context: 'SetlistsStore' });
+					setlistsState.error = 'Failed to load setlists';
+					throw e;
+				} finally {
+					setlistsState.isSetlistsLoading = false;
+				}
+			});
 		},
 
 		loadDetail: async (id: string) => {
 			if (setlistsState.detailCache[id]) return setlistsState.detailCache[id];
-			setlistsState.detailError = null;
-			setlistsState.isSetlistDetailLoading = true;
 
-			try {
-				const detail = await setlistsApi.getDetail(id);
-				setlistsState.detailCache[id] = detail;
+			// Deduplicate concurrent requests for the same detail id
+			return setlistsDedup.execute(`detail:${id}`, async () => {
 				setlistsState.detailError = null;
-				return detail;
-			} catch (e) {
-				logger.error('Failed to load details', e, { context: 'SetlistsStore' });
-				setlistsState.detailError = 'Failed to load detail';
-				throw e;
-			} finally {
-				setlistsState.isSetlistDetailLoading = false;
-			}
+				setlistsState.isSetlistDetailLoading = true;
+
+				try {
+					const detail = await setlistsApi.getDetail(id);
+					setlistsState.detailCache[id] = detail;
+					setlistsState.detailError = null;
+					return detail;
+				} catch (e) {
+					logger.error('Failed to load details', e, { context: 'SetlistsStore' });
+					setlistsState.detailError = 'Failed to load detail';
+					throw e;
+				} finally {
+					setlistsState.isSetlistDetailLoading = false;
+				}
+			});
 		},
 
 		reset: () => {
 			Object.assign(setlistsState, initialSetlistsState);
+			setlistsDedup.clear();
 		},
 
 		/**
@@ -173,6 +184,7 @@ const initialMembersState: MembersState = {
 };
 
 const membersState = $state<MembersState>(initialMembersState);
+const membersDedup = createRequestDedup();
 
 function createMembersStore() {
 	return {
@@ -200,15 +212,19 @@ function createMembersStore() {
 
 		loadBirthdays: async () => {
 			if (membersState.birthdays.length > 0) return;
-			membersState.isBirthdaysLoading = true;
-			try {
-				const results = await membersApi.getBirthdays();
-				membersState.birthdays = results;
-			} catch (e) {
-				logger.error('Failed to load birthdays', e, { context: 'MembersStore' });
-			} finally {
-				membersState.isBirthdaysLoading = false;
-			}
+
+			// Deduplicate concurrent requests
+			return membersDedup.execute('birthdays', async () => {
+				membersState.isBirthdaysLoading = true;
+				try {
+					const results = await membersApi.getBirthdays();
+					membersState.birthdays = results;
+				} catch (e) {
+					logger.error('Failed to load birthdays', e, { context: 'MembersStore' });
+				} finally {
+					membersState.isBirthdaysLoading = false;
+				}
+			});
 		},
 
 		load: async (
@@ -228,45 +244,52 @@ function createMembersStore() {
 
 			if (!reset && !membersState.pagination.hasMore) return;
 
-			membersState.error = null;
-			membersState.isMembersLoading = true;
+			// Deduplicate concurrent requests with the same params
+			const dedupKey = JSON.stringify({ params, reset });
+			return membersDedup.execute(dedupKey, async () => {
+				membersState.error = null;
+				membersState.isMembersLoading = true;
 
-			try {
-				const pageToLoad = reset ? 1 : membersState.pagination.page + 1;
-				const res = await membersApi.getAll({
-					...params,
-					page: pageToLoad,
-					limit: params.limit || 100
-				});
+				try {
+					const pageToLoad = reset ? 1 : membersState.pagination.page + 1;
+					const res = await membersApi.getAll({
+						...params,
+						page: pageToLoad,
+						limit: params.limit || 100
+					});
 
-				const newList = reset ? res.data : [...membersState.list, ...res.data];
-				const newPagination = {
-					page: pageToLoad,
-					hasMore: !!res.meta.next_page
-				};
+					const newList = reset ? res.data : [...membersState.list, ...res.data];
+					const newPagination = {
+						page: pageToLoad,
+						hasMore: !!res.meta.next_page
+					};
 
-				membersState.list = newList;
-				membersState.pagination = newPagination;
-				membersState.currentFilter = { generation: params.generation, search: params.search };
-				membersState.cache[cacheKey] = { members: newList, pagination: newPagination };
-			} catch (e) {
-				logger.error('Failed to load members', e, { context: 'MembersStore' });
-				membersState.error = 'Failed to load members';
-				throw e;
-			} finally {
-				membersState.isMembersLoading = false;
-			}
+					membersState.list = newList;
+					membersState.pagination = newPagination;
+					membersState.currentFilter = { generation: params.generation, search: params.search };
+					membersState.cache[cacheKey] = { members: newList, pagination: newPagination };
+				} catch (e) {
+					logger.error('Failed to load members', e, { context: 'MembersStore' });
+					membersState.error = 'Failed to load members';
+					throw e;
+				} finally {
+					membersState.isMembersLoading = false;
+				}
+			});
 		},
 
 		getGenerations: async () => {
 			if (membersState.generationsCache) return membersState.generationsCache;
-			const generations = await membersApi.getGenerations();
-			membersState.generationsCache = generations;
-			return generations;
+			return membersDedup.execute('generations', async () => {
+				const generations = await membersApi.getGenerations();
+				membersState.generationsCache = generations;
+				return generations;
+			});
 		},
 
 		reset: () => {
 			Object.assign(membersState, initialMembersState);
+			membersDedup.clear();
 		},
 
 		/**
@@ -300,7 +323,18 @@ export const isMembersLoading = {
 	}
 };
 
-export const isBirthdaysLoading = isMembersLoading;
+export const isBirthdaysLoading = {
+	get value() {
+		return membersState.isBirthdaysLoading;
+	},
+	subscribe: (fn: (val: boolean) => void) => {
+		fn(membersState.isBirthdaysLoading);
+		$effect.root(() => {
+			$effect(() => fn(membersState.isBirthdaysLoading));
+		});
+		return () => {};
+	}
+};
 
 export const membersPagination = {
 	get value() {

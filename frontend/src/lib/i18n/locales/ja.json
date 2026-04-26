@@ -39,7 +39,8 @@
 		"fromShort": "から",
 		"toShort": "まで",
 		"copyLink": "リンクをコピー",
-		"copied": "リンクをクリップボードにコピーしました！"
+		"copied": "リンクをクリップボードにコピーしました！",
+		"noMoreData": "すべてのデータが読み込まれました"
 	},
 	"validation": {
 		"alert": {
@@ -47,6 +48,20 @@
 			"fileTooLarge": "ファイルが大きすぎます。最大3MBです。",
 			"invalidType": "対応していないファイル形式です。JPEG、PNG、またはWebPを使用してください。",
 			"noFile": "ファイルが選択されていません。"
+		}
+	},
+	"imageEditor": {
+		"title": "画像編集",
+		"done": "完了",
+		"aspectRatio": "アスペクト比",
+		"ratios": {
+			"free": "自由",
+			"original": "オリジナル",
+			"square": "1:1",
+			"sixteenNine": "16:9",
+			"nineSixteen": "9:16",
+			"fourThree": "4:3",
+			"threeFour": "3:4"
 		}
 	},
 	"seo": {
@@ -467,6 +482,8 @@
 		},
 		"publicActivity": {
 			"wrapped": "JKT48劇場 Wrapped {year}",
+			"allTime": "Theater JKT48 Wrapped",
+			"summary": "まとめ",
 			"yearSummary": "{year}年まとめ",
 			"watchedTimes": "{count}回観覧"
 		},
@@ -480,6 +497,28 @@
 	"settings": {
 		"title": "設定",
 		"subtitle": "設定を管理",
+		"account": {
+			"title": "アカウント情報",
+			"subtitle": "プロフィールの管理",
+			"fullName": "氏名",
+			"username": "ユーザー名",
+			"email": "メールアドレス",
+			"memberId": "会員ID",
+			"ofcStatus": "OFCステータス",
+			"memberSince": "入会日",
+			"type": "アカウントタイプ",
+			"admin": "管理者",
+			"wota": "ヲタ",
+			"verified": "認証済み",
+			"unverified": "未認証",
+			"saveSuccess": "プロフィールを更新しました！",
+			"saveError": "プロフィールの更新に失敗しました",
+			"noChanges": "変更はありません",
+			"emailWarning": "メールアドレスを変更すると再認証が必要になります。",
+			"systemInfo": "会員情報",
+			"systemSubtitle": "メンバーシップの詳細",
+			"verification": "アカウント認証"
+		},
 		"language": {
 			"title": "言語",
 			"subtitle": "表示言語を選択",

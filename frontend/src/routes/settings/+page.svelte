@@ -9,6 +9,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { PageHeader } from '$lib/components';
 	import {
+		AccountSettings,
 		PublicProfileSettings,
 		ThemeSettings,
 		LanguageSettings,
@@ -79,6 +80,9 @@
 
 	<!-- Settings Content -->
 	<div class="space-y-6">
+		<!-- ACCOUNT SETTINGS -->
+		<AccountSettings />
+
 		<!-- PUBLIC PROFILE SETTINGS -->
 		<PublicProfileSettings />
 

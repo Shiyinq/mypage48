@@ -4,7 +4,7 @@
  * Captures the internal path in group 1 (e.g., journal/filename.png).
  */
 export const STORAGE_URL_REGEX =
-	/https?:\/\/[^/)]+\/(?:[^/)]+\/)*?((journal|ticket|twoshot|avatar)\/[^?\s)]+)(?:\?[^)\s]*)?/g;
+	/https?:\/\/[^/)]+\/(?:[^/)]+\/)*?((?:media\/)?(journal|ticket|twoshot|avatar|member|setlist|jkt48-member|setlists)\/[^?\s)]+)(?:\?[^)\s]*)?/g;
 
 /**
  * Cleanses markdown content by converting full presigned storage URLs

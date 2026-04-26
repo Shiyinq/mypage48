@@ -155,7 +155,7 @@
 
 	let resolvedContent = $derived(
 		content.replace(internalPathRegex, (match, path) => {
-			const presignedUrl = $storageStore[path];
+			const presignedUrl = storageStore.cache[path];
 			if (presignedUrl) {
 				// Extract alt text from the match
 				const altMatch = match.match(/!\[(.*?)\]/);

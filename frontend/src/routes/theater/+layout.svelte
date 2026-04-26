@@ -5,6 +5,7 @@
 	import { AudioLines, Users, Calendar, Newspaper, ArrowUpDown, Tv } from 'lucide-svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { liveList } from '$lib/stores';
+	import { newsStore } from '$lib/stores/news.svelte';
 
 	interface Props {
 		children?: import('svelte').Snippet;
@@ -137,7 +138,7 @@
 		{actionItems}
 		showBackButton={isLiveDetailPage || isNewsDetailPage || isDetailPage}
 		backUrl={isNewsDetailPage
-			? '/theater/news'
+			? `/theater/news${newsStore.pagination.current_page > 1 ? `?page=${newsStore.pagination.current_page}` : ''}`
 			: isLiveDetailPage
 				? '/theater/live'
 				: isDetailPage

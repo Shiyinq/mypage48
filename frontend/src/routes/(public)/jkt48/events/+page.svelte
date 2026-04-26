@@ -31,15 +31,18 @@
 		);
 	}
 
+	let mounted = $state(false);
 	onMount(async () => {
 		await eventsStore.loadUpcoming();
 		await membersStore.loadBirthdays();
+		mounted = true;
 	});
 
 	let eventsList = $derived(upcomingEvents.value);
 	let loading = $derived(isUpcomingEventsLoading.value);
 	let error = $derived(upcomingError.value);
 	let birthdays = $derived(membersStore.birthdays || []);
+	let birthdaysLoading = $derived(membersStore.isBirthdaysLoading);
 
 	function getBirthdayText(
 		daysUntil: number,
@@ -81,7 +84,7 @@
 			</h2>
 		</div>
 
-		{#if loading && birthdays.length === 0}
+		{#if !mounted || (birthdaysLoading && birthdays.length === 0)}
 			<div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide">
 				{#each Array(6) as _}
 					<div class="flex-none w-44 snap-start">
@@ -105,8 +108,12 @@
 							{#if member.img}
 								<OptimizedImage
 									src={getExternalMediaUrl(member.img)}
+									srcMedium={getExternalMediaUrl(member.img_medium)}
+									srcSmall={getExternalMediaUrl(member.img_small)}
+									blurHash={member.blurHash}
 									alt={member.name}
 									class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+									sizes="(max-width: 640px) 44vw, 176px"
 								/>
 							{:else}
 								<div

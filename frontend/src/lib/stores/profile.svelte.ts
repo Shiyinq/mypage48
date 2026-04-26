@@ -2,6 +2,7 @@ import type { UserWithProfileStats } from '$lib/types';
 import { auth } from '$lib/apis/auth';
 import { client } from '$lib/apis/client';
 import { logger } from '$lib/utils/logger';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 
 /**
  * User profile store - migrated to Svelte 5 Shared Rune State.
@@ -19,6 +20,7 @@ const state = $state<UserProfileStoreState>({
 	error: null,
 	isLoading: false
 });
+const dedup = createRequestDedup();
 
 function createUserProfileStore() {
 	return {
@@ -33,33 +35,37 @@ function createUserProfileStore() {
 		},
 
 		/**
-		 * Load profile data from API if not already loaded
+		 * Load profile data from API if not already loaded.
+		 * Use { force: true } to bypass cache and re-fetch from server.
 		 */
-		load: async () => {
-			if (state.data) return state.data;
+		load: async (options?: { force?: boolean }) => {
+			if (state.data && !options?.force) return state.data;
 
-			state.isLoading = true;
-			state.error = null;
-			try {
-				const data = await auth.getProfile();
-				const userWithStats: UserWithProfileStats = {
-					...data.profile,
-					oshi: data.oshi,
-					profileRank: data.rank,
-					profileStats: data.stats,
-					profileOshiTwoShots: data.oshiTwoShots,
-					profileRecentActivity: data.recentActivity
-				};
-				state.data = userWithStats;
+			// Deduplicate concurrent requests (e.g. layout + page race on refresh)
+			return dedup.execute('profile', async () => {
+				state.isLoading = true;
 				state.error = null;
-				return userWithStats;
-			} catch (e) {
-				logger.error('Failed to load profile', e, { context: 'UserProfileStore' });
-				state.error = 'Failed to load profile';
-				throw e;
-			} finally {
-				state.isLoading = false;
-			}
+				try {
+					const data = await auth.getProfile();
+					const userWithStats: UserWithProfileStats = {
+						...data.profile,
+						oshi: data.oshi,
+						profileRank: data.rank,
+						profileStats: data.stats,
+						profileOshiTwoShots: data.oshiTwoShots,
+						profileRecentActivity: data.recentActivity
+					};
+					state.data = userWithStats;
+					state.error = null;
+					return userWithStats;
+				} catch (e) {
+					logger.error('Failed to load profile', e, { context: 'UserProfileStore' });
+					state.error = 'Failed to load profile';
+					throw e;
+				} finally {
+					state.isLoading = false;
+				}
+			});
 		},
 
 		/**
@@ -88,11 +94,9 @@ function createUserProfileStore() {
 		/**
 		 * Update the user's avatar
 		 */
-		updateAvatar: async (base64Image: string) => {
-			await auth.updateProfilePicture(base64Image);
-			if (state.data) {
-				state.data.profilePicture = base64Image;
-			}
+		updateAvatar: async (profilePicture: string, blurHash?: string | null) => {
+			await auth.updateProfilePicture(profilePicture, blurHash);
+			await userProfile.load({ force: true });
 		},
 
 		/**
@@ -107,6 +111,18 @@ function createUserProfileStore() {
 				state.data.isPublic = isPublic;
 				state.data.publicYear = publicYear;
 			}
+		},
+
+		/**
+		 * Update user profile information (name, username, email)
+		 */
+		updateProfile: async (payload: { name?: string; username?: string; email?: string }) => {
+			await client('/users/profile', {
+				method: 'PATCH',
+				body: payload
+			});
+
+			await userProfile.load({ force: true });
 		},
 
 		/**
@@ -125,6 +141,7 @@ function createUserProfileStore() {
 			state.data = null;
 			state.error = null;
 			state.isLoading = false;
+			dedup.clear();
 		},
 
 		/**

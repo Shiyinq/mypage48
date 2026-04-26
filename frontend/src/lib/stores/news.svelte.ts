@@ -8,15 +8,22 @@ import { logger } from '$lib/utils/logger';
  * Manages the fetching and pagination of news articles.
  */
 
+interface NewsPageCache {
+	list: News[];
+	pagination: PaginationMeta;
+	lastUpdated: number;
+}
+
 interface NewsState {
 	list: News[];
 	pagination: PaginationMeta;
 	error: string | null;
 	lastUpdated: number;
 	isLoading: boolean;
+	cache: Record<number, NewsPageCache>;
 }
 
-const initialState: NewsState = {
+const getInitialState = (): NewsState => ({
 	list: [],
 	pagination: {
 		current_page: 1,
@@ -27,12 +34,15 @@ const initialState: NewsState = {
 	},
 	error: null,
 	lastUpdated: 0,
-	isLoading: false
-};
+	isLoading: false,
+	cache: {}
+});
 
-const state = $state<NewsState>(initialState);
+const state = $state<NewsState>(getInitialState());
 
 function createNewsStore() {
+	let currentRequestId = 0;
+
 	return {
 		get list() {
 			return state.list;
@@ -48,27 +58,50 @@ function createNewsStore() {
 		},
 
 		reset: () => {
-			Object.assign(state, initialState);
+			const freshState = getInitialState();
+			state.list = freshState.list;
+			state.pagination = freshState.pagination;
+			state.error = freshState.error;
+			state.lastUpdated = freshState.lastUpdated;
+			state.isLoading = freshState.isLoading;
+			state.cache = freshState.cache;
+			currentRequestId++;
 		},
 
 		load: async (page = 1, limit = 12, forceRefresh = false) => {
 			const now = Date.now();
+			const requestId = ++currentRequestId;
 
-			// Cache check: if we already have this page and it's not expired, don't re-fetch
-			if (
-				page === state.pagination.current_page &&
-				!forceRefresh &&
-				state.list.length > 0 &&
-				!isCacheExpired(state.lastUpdated)
-			) {
+			// Check multi-page cache first
+			const cachedPage = state.cache[page];
+			if (cachedPage && !forceRefresh && !isCacheExpired(cachedPage.lastUpdated)) {
+				// Immediate cache hit: update current state and return
+				state.list = cachedPage.list;
+				state.pagination = cachedPage.pagination;
+				state.lastUpdated = cachedPage.lastUpdated;
+				state.isLoading = false;
+				state.error = null;
 				return;
 			}
 
+			// If no valid cache or forceRefresh, proceed with loading
 			state.error = null;
 			state.isLoading = true;
 
+			// REPLACE rather than mutate to avoid bleeding state into cache
+			state.pagination = {
+				...state.pagination,
+				current_page: page
+			};
+
 			try {
 				const res = await news.getNews(page, limit);
+
+				// Race condition check: only update if this is still the latest request
+				if (requestId !== currentRequestId) {
+					logger.warn(`Ignoring stale news response for page ${page}`);
+					return;
+				}
 
 				const standardizedMeta: PaginationMeta = {
 					current_page: res.meta.page,
@@ -82,11 +115,22 @@ function createNewsStore() {
 				state.pagination = standardizedMeta;
 				state.error = null;
 				state.lastUpdated = now;
+
+				// Update multi-page cache
+				state.cache[page] = {
+					list: res.data,
+					pagination: standardizedMeta,
+					lastUpdated: now
+				};
 			} catch (e) {
-				logger.error('Failed to load news', e);
-				state.error = 'Failed to load news';
+				if (requestId === currentRequestId) {
+					logger.error('Failed to load news', e);
+					state.error = 'Failed to load news';
+				}
 			} finally {
-				state.isLoading = false;
+				if (requestId === currentRequestId) {
+					state.isLoading = false;
+				}
 			}
 		},
 

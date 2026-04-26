@@ -29,9 +29,15 @@ export interface Ticket {
 	created_at: string;
 	updated_at: string;
 	imageUrl?: string; // Kept for local UI display functionality
+	imageUrl_medium?: string;
+	imageUrl_small?: string;
+	blurHash?: string;
 	notes?: string; // User's personal notes/diary for the show
 	two_shot?: {
 		imageUrl?: string;
+		imageUrl_medium?: string;
+		imageUrl_small?: string;
+		blurHash?: string;
 		member_name: string;
 		type: 'Roulette' | 'Birthday';
 		price: number;

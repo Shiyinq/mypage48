@@ -1,8 +1,11 @@
 <script lang="ts">
-	import { X, Music, LoaderCircle, CircleCheck, Image as ImageIcon } from 'lucide-svelte';
+	import { X, Music, LoaderCircle, CircleCheck } from 'lucide-svelte';
 	import type { Setlist } from '$lib/apis/setlists';
 	import { fade } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { storageStore } from '$lib/stores';
+	import AdminImageUpload from './AdminImageUpload.svelte';
+	import { cleanseStorageUrl } from '$lib/utils/markdown';
 
 	interface Props {
 		show?: boolean;
@@ -10,7 +13,7 @@
 		isCreating?: boolean;
 		isSubmitting?: boolean;
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		onsubmit?: (data: any) => void;
+		onsubmit?: (data: any) => Promise<void> | void;
 	}
 
 	let {
@@ -23,12 +26,14 @@
 
 	const { t } = useTranslation();
 
+	let localLoading = $state(false);
 	let formData = $state({
 		title: '',
 		titleJapanese: '',
 		description: '',
 		type: 'setlist' as 'setlist' | 'event',
 		imageUrl: '',
+		blurHash: '' as string | undefined,
 		active: true,
 		songs: [] as string[]
 	});
@@ -45,6 +50,7 @@
 					description: setlist.description || '',
 					type: setlist.type || 'setlist',
 					imageUrl: setlist.imageUrl || '',
+					blurHash: setlist.blurHash,
 					active: setlist.active ?? true,
 					songs: setlist.songs || []
 				};
@@ -57,9 +63,37 @@
 	let isTitleValid = $derived(formData.title.length > 0);
 	let isFormValid = $derived(isTitleValid);
 
-	function handleSubmit() {
-		if (!isFormValid) return;
-		onsubmit?.(formData);
+	function generateSlug(name: string): string {
+		return name.toLowerCase().trim().replace(/\s+/g, '_');
+	}
+
+	async function handleSubmit() {
+		if (!isFormValid || localLoading) return;
+		localLoading = true;
+
+		try {
+			let finalData = { ...formData };
+
+			if (formData.imageUrl && formData.imageUrl.startsWith('data:image/')) {
+				try {
+					const uploadResult = await storageStore.uploadImage(
+						formData.imageUrl,
+						'setlist',
+						generateSlug(formData.title)
+					);
+					finalData.imageUrl = cleanseStorageUrl(uploadResult.filename);
+					finalData.blurHash = uploadResult.blurHash;
+				} catch (error) {
+					console.error('Failed to upload setlist image:', error);
+					localLoading = false;
+					return;
+				}
+			}
+
+			await onsubmit?.(finalData);
+		} finally {
+			localLoading = false;
+		}
 	}
 
 	function handleClose() {
@@ -157,92 +191,85 @@
 								class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
 							/>
 						</div>
-
-						<div class="space-y-2">
-							<span class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-								>{t('admin.setlists.modal.type')}</span
-							>
-							<div class="flex gap-4">
-								<label class="flex items-center gap-2 cursor-pointer">
-									<input
-										type="radio"
-										bind:group={formData.type}
-										value="setlist"
-										class="w-5 h-5 text-purple-600 focus:ring-purple-500 border-gray-300"
-									/>
-									<span class="text-sm font-medium text-gray-800 dark:text-gray-200"
-										>{t('admin.setlists.table.theaterSetlist')}</span
-									>
-								</label>
-								<label class="flex items-center gap-2 cursor-pointer">
-									<input
-										type="radio"
-										bind:group={formData.type}
-										value="event"
-										class="w-5 h-5 text-purple-600 focus:ring-purple-500 border-gray-300"
-									/>
-									<span class="text-sm font-medium text-gray-800 dark:text-gray-200"
-										>{t('admin.setlists.table.specialEvent')}</span
-									>
-								</label>
-							</div>
-						</div>
 					</div>
 
 					<!-- Description -->
-					<div class="space-y-2">
-						<label
-							for="setlist-desc"
-							class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
-							>{t('admin.setlists.modal.description')}</label
-						>
-						<textarea
-							id="setlist-desc"
-							bind:value={formData.description}
-							placeholder="Brief description of the setlist or event..."
-							class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all min-h-[100px] text-sm"
-						></textarea>
-					</div>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<div class="space-y-6">
+							<div class="space-y-2">
+								<label
+									for="setlist-desc"
+									class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+									>{t('admin.setlists.modal.description')}</label
+								>
+								<textarea
+									id="setlist-desc"
+									bind:value={formData.description}
+									placeholder="Brief description of the setlist or event..."
+									class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all min-h-[100px] text-sm"
+								></textarea>
+							</div>
 
-					<!-- Images -->
-					<div class="space-y-2">
-						<label
-							for="setlist-image"
-							class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1 flex items-center gap-2"
-						>
-							<ImageIcon class="w-4 h-4" />
-							{t('admin.setlists.modal.posterUrl')}
-						</label>
-						<input
-							id="setlist-image"
-							type="text"
-							bind:value={formData.imageUrl}
-							placeholder="https://..."
-							class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+							<div class="space-y-2">
+								<span class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+									>{t('admin.setlists.modal.type')}</span
+								>
+								<div class="flex gap-4">
+									<label class="flex items-center gap-2 cursor-pointer">
+										<input
+											type="radio"
+											bind:group={formData.type}
+											value="setlist"
+											class="w-5 h-5 text-purple-600 focus:ring-purple-500 border-gray-300"
+										/>
+										<span class="text-sm font-medium text-gray-800 dark:text-gray-200"
+											>{t('admin.setlists.table.theaterSetlist')}</span
+										>
+									</label>
+									<label class="flex items-center gap-2 cursor-pointer">
+										<input
+											type="radio"
+											bind:group={formData.type}
+											value="event"
+											class="w-5 h-5 text-purple-600 focus:ring-purple-500 border-gray-300"
+										/>
+										<span class="text-sm font-medium text-gray-800 dark:text-gray-200"
+											>{t('admin.setlists.table.specialEvent')}</span
+										>
+									</label>
+								</div>
+							</div>
+
+							<div class="space-y-2 pt-2">
+								<div class="flex items-center gap-3">
+									<button
+										type="button"
+										aria-label="Toggle active status"
+										class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 {formData.active
+											? 'bg-green-500'
+											: 'bg-gray-200 dark:bg-zinc-700'}"
+										onclick={() => (formData.active = !formData.active)}
+									>
+										<span
+											class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {formData.active
+												? 'translate-x-6'
+												: 'translate-x-1'}"
+										></span>
+									</button>
+									<span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+										{t('admin.setlists.modal.setlistStatus')}: {formData.active
+											? t('admin.setlists.table.active')
+											: t('admin.setlists.table.inactive')}
+									</span>
+								</div>
+							</div>
+						</div>
+
+						<AdminImageUpload
+							image={formData.imageUrl}
+							label={t('admin.setlists.modal.posterUrl')}
+							onSelect={(base64) => (formData.imageUrl = base64)}
 						/>
-					</div>
-
-					<!-- Active Status -->
-					<div class="flex items-center gap-3 pt-2">
-						<button
-							type="button"
-							aria-label="Toggle active status"
-							class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 {formData.active
-								? 'bg-green-500'
-								: 'bg-gray-200 dark:bg-zinc-700'}"
-							onclick={() => (formData.active = !formData.active)}
-						>
-							<span
-								class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {formData.active
-									? 'translate-x-6'
-									: 'translate-x-1'}"
-							></span>
-						</button>
-						<span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-							{t('admin.setlists.modal.setlistStatus')}: {formData.active
-								? t('admin.setlists.table.active')
-								: t('admin.setlists.table.inactive')}
-						</span>
 					</div>
 
 					<!-- Actions -->
@@ -256,10 +283,10 @@
 						</button>
 						<button
 							type="submit"
-							disabled={!isFormValid || isSubmitting}
+							disabled={!isFormValid || isSubmitting || localLoading}
 							class="flex-[2] px-4 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all cursor-pointer"
 						>
-							{#if isSubmitting}
+							{#if isSubmitting || localLoading}
 								<LoaderCircle class="w-5 h-5 animate-spin" />
 								{t('admin.setlists.modal.saving')}
 							{:else}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { Newspaper, Calendar, ChevronLeft, ChevronRight } from 'lucide-svelte';
@@ -23,16 +24,16 @@
 	let mounted = $state(false);
 
 	onMount(async () => {
-		await newsStore.load();
 		mounted = true;
 	});
 
 	let list = $derived(newsList.value);
+	let pagination = $derived(newsPagination.value);
 	let isLoading = $derived(newsLoading.value);
 	let error = $derived(newsError.value);
 
 	async function handlePageChange(page: number) {
-		newsStore.load(page);
+		goto(`/theater/news?page=${page}`);
 		await tick();
 		setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 10);
 	}
@@ -76,7 +77,7 @@
 />
 
 <div class="space-y-6">
-	{#if (!mounted || isLoading) && list.length === 0}
+	{#if !mounted || isLoading}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
 			{#each Array(8)}
 				<EventCardSkeleton />
@@ -174,20 +175,20 @@
 		</div>
 
 		<!-- Numbered Pagination -->
-		{#if $newsPagination && $newsPagination.last_page > 1}
+		{#if pagination && pagination.last_page > 1}
 			<div class="flex items-center justify-center mt-8 mb-20 md:mb-8 w-full">
 				<div class="flex flex-wrap justify-center gap-1.5 md:gap-2 max-w-full">
 					<!-- Previous Button -->
 					<button
 						class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-md bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
-						disabled={$newsPagination.current_page === 1}
-						onclick={() => handlePageChange($newsPagination.current_page - 1)}
+						disabled={pagination.current_page === 1}
+						onclick={() => handlePageChange(pagination.current_page - 1)}
 					>
 						<ChevronLeft class="w-4 h-4 md:w-5 md:h-5" />
 					</button>
 
 					<!-- Page Numbers -->
-					{#each generatePagination($newsPagination.current_page, $newsPagination.last_page) as page}
+					{#each generatePagination(pagination.current_page, pagination.last_page) as page}
 						{#if page === '...'}
 							<span
 								class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-xs md:text-sm text-gray-400"
@@ -196,7 +197,7 @@
 						{:else}
 							<button
 								class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-xs md:text-sm rounded-md border transition-colors cursor-pointer {page ===
-								$newsPagination.current_page
+								pagination.current_page
 									? 'bg-red-500 text-white border-red-500'
 									: 'bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700'}"
 								onclick={() => handlePageChange(Number(page))}
@@ -209,8 +210,8 @@
 					<!-- Next Button -->
 					<button
 						class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-md bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
-						disabled={$newsPagination.current_page === $newsPagination.last_page}
-						onclick={() => handlePageChange($newsPagination.current_page + 1)}
+						disabled={pagination.current_page === pagination.last_page}
+						onclick={() => handlePageChange(pagination.current_page + 1)}
 					>
 						<ChevronRight class="w-4 h-4 md:w-5 md:h-5" />
 					</button>

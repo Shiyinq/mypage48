@@ -98,10 +98,11 @@ async def upload_image(
     Accepts base64 encoded image and category.
     Returns filename and presigned URL.
     """
-    result = storage_service.upload_image(
+    result = await storage_service.upload_image(
         user_id=current_user.userId,
         base64_image=request.image,
         category=request.category,
+        slug=request.slug,
     )
     logger.info(f"Image uploaded: {result.filename}")
     return result
@@ -118,7 +119,7 @@ async def get_presigned_url(
 
     Returns URL with expiration time.
     """
-    return storage_service.get_presigned_url(filename)
+    return await storage_service.get_presigned_url(filename)
 
 
 @router.post("/storage/presign/bulk", response_model=BatchPresignedUrlResponse)
@@ -130,4 +131,4 @@ async def get_bulk_presigned_urls(
     """
     Get presigned URLs for multiple images in bulk.
     """
-    return storage_service.get_bulk_presigned_urls(request.filenames)
+    return await storage_service.get_bulk_presigned_urls(request.filenames)

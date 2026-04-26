@@ -3,7 +3,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import MemberSelector from '$lib/components/MemberSelector.svelte';
 	import { dragDrop } from '$lib/actions/dragDrop';
-	import { OptimizedImage } from '$lib/components/common';
+	import { OptimizedImage, ImageOverlayActions } from '$lib/components/common';
 
 	interface Props {
 		showTwoShot: boolean;
@@ -12,6 +12,7 @@
 		type: 'Roulette' | 'Birthday';
 		price: number;
 		onSelectImage: () => void;
+		onEdit?: () => void;
 		ondrop?: (file: File) => void;
 	}
 
@@ -22,6 +23,7 @@
 		type = $bindable(),
 		price = $bindable(),
 		onSelectImage,
+		onEdit,
 		ondrop
 	}: Props = $props();
 
@@ -59,15 +61,13 @@
 					class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1"
 					for="twoshot-upload">{t('forms.twoShotPhoto')}</label
 				>
-				<button
+				<div
 					id="twoshot-upload"
-					type="button"
-					onclick={onSelectImage}
 					use:dragDrop={{
 						onDrop: (file) => ondrop?.(file),
 						onDragChange: (state) => (isDragging = state)
 					}}
-					class="w-full h-32 border-2 border-dashed rounded-xl transition-all cursor-pointer flex items-center justify-center overflow-hidden relative group
+					class="w-full h-32 border-2 border-dashed rounded-xl transition-all flex items-center justify-center overflow-hidden relative group
 					{isDragging
 						? 'border-red-500 bg-red-50 dark:bg-red-900/10 scale-[1.02] ring-4 ring-red-500/20'
 						: 'border-red-200 dark:border-red-900/30 bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/10'}"
@@ -79,22 +79,20 @@
 							class="w-full h-full"
 							objectFit="contain"
 						/>
-						<div
-							class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs"
-						>
-							{t('forms.changePhoto')}
-						</div>
+						<ImageOverlayActions onSelect={onSelectImage} {onEdit} variant="twoshot" />
 					{:else}
-						<div
-							class="flex flex-col items-center {isDragging
+						<button
+							type="button"
+							onclick={onSelectImage}
+							class="w-full h-full flex flex-col items-center justify-center cursor-pointer {isDragging
 								? 'text-red-500'
 								: 'text-red-400 dark:text-red-500'}"
 						>
 							<Camera class="w-6 h-6 mb-1" />
 							<span class="text-xs font-medium">{t('forms.uploadPhoto')}</span>
-						</div>
+						</button>
 					{/if}
-				</button>
+				</div>
 			</div>
 
 			<div>

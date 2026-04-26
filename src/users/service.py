@@ -2,6 +2,7 @@ import asyncio
 import math
 import time
 from datetime import datetime
+from typing import Optional
 
 from pymongo.errors import DuplicateKeyError
 
@@ -19,6 +20,7 @@ from src.image_validation import (
 from src.image_validation import validate_base64_image
 from src.logging_config import create_logger
 from src.members.service import MemberService
+from src.storage.service import StorageService
 from src.tickets.service import TicketsService
 from src.users.constants import Info
 from src.users.exceptions import (
@@ -46,6 +48,7 @@ from src.users.schemas import (
     ProviderUserCreateRequest,
     PublicShowEntry,
     PublicUserResponse,
+    UpdateProfileRequest,
     UserCreated,
     UserCreatedWithEmail,
     UserCreateRequest,
@@ -70,6 +73,7 @@ class UserService:
         member_service: MemberService,
         achievements_service: AchievementsService,
         events_service: EventsService,
+        storage_service: StorageService,
     ):
         self.repository = repository
         self.security_service = security_service
@@ -79,6 +83,7 @@ class UserService:
         self.member_service = member_service
         self.achievements_service = achievements_service
         self.events_service = events_service
+        self.storage_service = storage_service
 
     def _handle_duplicate_key_error(self, dk: DuplicateKeyError):
         """Handle DuplicateKeyError and raise appropriate domain exception."""
@@ -220,7 +225,7 @@ class UserService:
             raise UserFetchError()
 
     async def update_profile_picture(
-        self, user_id: str, profile_picture: str
+        self, user_id: str, profile_picture: str, blur_hash: Optional[str] = None
     ) -> MessageResponse:
         """Update the user's profile picture"""
         try:
@@ -229,7 +234,9 @@ class UserService:
             if profile_picture.startswith("data:"):
                 validate_base64_image(profile_picture)
 
-            await self.repository.set_profile_picture(user_id, profile_picture)
+            await self.repository.set_profile_picture(
+                user_id, profile_picture, blur_hash
+            )
             return MessageResponse(detail=Info.PROFILE_PICTURE_UPDATED)
         except ImageTooLargeValidationError:
             raise ImageTooLargeError()
@@ -239,6 +246,73 @@ class UserService:
             raise InvalidImageError()
         except Exception as e:
             logger.exception(f"Error updating profile picture: {str(e)}")
+            raise UserUpdateError()
+
+    async def update_profile(
+        self, user_id: str, request: UpdateProfileRequest
+    ) -> MessageResponse:
+        """Update user profile information (name, username, email)"""
+        try:
+            # Get current user data
+            user_data = await self.repository.get_user_by_id(user_id)
+            if not user_data:
+                raise UserFetchError()
+
+            current_user = UserInDB(**user_data)
+            update_data = {"updatedAt": datetime.now()}
+
+            # Handle Name Update
+            if request.name is not None:
+                update_data["name"] = request.name
+
+            # Handle Username Update
+            if request.username is not None:
+                new_username = request.username.lower()
+                if new_username != current_user.username:
+                    # Duplicate check is handled by repository unique index + our _handle_duplicate_key_error
+                    update_data["username"] = new_username
+
+            # Handle Email Update
+            email_changed = False
+            if request.email is not None:
+                new_email = request.email.lower()
+                if new_email != current_user.email:
+                    update_data["email"] = new_email
+                    update_data["isEmailVerified"] = False
+                    email_changed = True
+
+            if len(update_data) > 1:  # More than just updatedAt
+                try:
+                    await self.repository.update_one(
+                        {"userId": user_id}, {"$set": update_data}
+                    )
+                except DuplicateKeyError as dk:
+                    self._handle_duplicate_key_error(dk)
+
+            # Send verification email if changed
+            if email_changed:
+                try:
+                    token = await self.security_service.create_and_save_token(
+                        user_id,
+                        "email_verification",
+                        self.config.email_verification_expire_hours,
+                    )
+                    await self.email_service.send_email_verification(
+                        update_data["email"],
+                        token,
+                        update_data.get("username", current_user.username),
+                    )
+                except Exception as e:
+                    logger.warning(
+                        f"Profile updated but error sending verification email: {e}"
+                    )
+
+            return MessageResponse(detail=Info.PROFILE_UPDATED)
+
+        except (UsernameAlreadyExistsError, EmailAlreadyExistsError):
+            raise
+        except Exception as e:
+            logger.exception(f"Error updating profile: {str(e)}")
             raise UserUpdateError()
 
     async def get_public_profile(
@@ -266,8 +340,10 @@ class UserService:
                     name=member.name,
                     nickname=member.nickname,
                     generation=member.generation or "-",
-                    profilePicture=member.img
-                    or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
+                    profilePicture=member.img,
+                    profilePicture_medium=member.img_medium,
+                    profilePicture_small=member.img_small,
+                    blurHash=member.blurHash,
                     catchphrase=member.jiko or "-",
                     socials=member.socials.model_dump() if member.socials else None,
                 )
@@ -357,10 +433,27 @@ class UserService:
         except Exception as e:
             logger.warning(f"Failed to calculate stats for user {user.userId}: {e}")
 
+        profile_picture = user.profilePicture
+        if profile_picture:
+            variants = await self.storage_service.resolve_image_variants(
+                profile_picture
+            )
+            profile_picture = variants["url"]
+            profile_picture_medium = variants["url_medium"]
+            profile_picture_small = variants["url_small"]
+            blur_hash = variants["blurHash"]
+        else:
+            profile_picture_medium = None
+            profile_picture_small = None
+            blur_hash = None
+
         return PublicUserResponse(
             name=user.name,
             username=user.username,
-            profilePicture=user.profilePicture,
+            profilePicture=profile_picture,
+            profilePicture_medium=profile_picture_medium,
+            profilePicture_small=profile_picture_small,
+            blurHash=blur_hash,
             oshi=oshi_response,
             createdAt=user.createdAt,
             publicYear=display_year,  # Show actual year for "This Year" option
@@ -390,8 +483,10 @@ class UserService:
                         name=member.name,
                         nickname=member.nickname,
                         generation=member.generation or "-",
-                        profilePicture=member.img
-                        or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
+                        profilePicture=member.img,
+                        profilePicture_medium=member.img_medium,
+                        profilePicture_small=member.img_small,
+                        blurHash=member.blurHash,
                         catchphrase=member.jiko or "-",
                         socials=member.socials.model_dump() if member.socials else None,
                     )
@@ -509,10 +604,28 @@ class UserService:
                     )
                 )
 
+            # Resolve profile picture if it's a storage path
+            profile_pic = current_user.profilePicture
+            profile_pic_medium = None
+            profile_pic_small = None
+            if profile_pic:
+                variants = await self.storage_service.resolve_image_variants(
+                    profile_pic
+                )
+                profile_pic = variants["url"]
+                profile_pic_medium = variants["url_medium"]
+                profile_pic_small = variants["url_small"]
+                blur_hash = variants["blurHash"]
+            else:
+                blur_hash = getattr(current_user, "blurHash", None)
+
             # Build profile dict from current_user
             profile_dict = {
                 "userId": current_user.userId,
-                "profilePicture": current_user.profilePicture,
+                "profilePicture": profile_pic,
+                "profilePicture_medium": profile_pic_medium,
+                "profilePicture_small": profile_pic_small,
+                "blurHash": blur_hash,
                 "name": current_user.name,
                 "email": current_user.email,
                 "username": current_user.username,
@@ -522,6 +635,8 @@ class UserService:
                 "isPublic": current_user.isPublic,
                 "publicYear": current_user.publicYear,
                 "isAdmin": current_user.isAdmin,
+                "isEmailVerified": current_user.isEmailVerified,
+                "createdAt": current_user.createdAt,
             }
 
             return ProfileFullResponse(
@@ -554,20 +669,42 @@ class UserService:
             users = await self.repository.get_all_paginated(page, limit, search)
             total = await self.repository.count_all(search)
 
-            user_list = [
-                UserListItem(
+            async def _resolve_user(u):
+                profile_pic = u.get("profilePicture")
+                profile_pic_medium = None
+                profile_pic_small = None
+                if profile_pic:
+                    variants = await self.storage_service.resolve_image_variants(
+                        profile_pic
+                    )
+                    profile_pic = variants["url"]
+                    profile_pic_medium = variants["url_medium"]
+                    profile_pic_small = variants["url_small"]
+                    blur_hash = variants["blurHash"]
+                else:
+                    blur_hash = u.get("blurHash")
+
+                return UserListItem(
                     userId=u.get("userId", ""),
                     name=u.get("name", ""),
                     username=u.get("username", ""),
                     email=u.get("email", ""),
-                    profilePicture=u.get("profilePicture"),
+                    profilePicture=profile_pic,
+                    profilePicture_medium=profile_pic_medium,
+                    profilePicture_small=profile_pic_small,
+                    blurHash=blur_hash,
                     isAdmin=u.get("isAdmin", False),
                     isEmailVerified=u.get("isEmailVerified", False),
                     isAccountLocked=u.get("isAccountLocked", False),
                     createdAt=u.get("createdAt"),
                 )
-                for u in users
-            ]
+
+            if users:
+                user_list = list(
+                    await asyncio.gather(*(_resolve_user(u) for u in users))
+                )
+            else:
+                user_list = []
 
             last_page = math.ceil(total / limit) if total > 0 else 1
             next_page = page + 1 if page < last_page else None

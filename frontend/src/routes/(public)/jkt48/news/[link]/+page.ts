@@ -6,15 +6,10 @@ export const load: PageLoad = async ({ params }) => {
 	const { link } = params;
 
 	try {
-		// Fetch current news and latest news concurrent
-		const [item, recentNewsResponse] = await Promise.all([
-			news.getNewsByLink(link),
-			news.getNews(1, 10)
-		]);
+		const item = await news.getNewsByLink(link);
 
 		return {
-			item,
-			recentNews: recentNewsResponse.data
+			item
 		};
 	} catch (err) {
 		const e = err as { detail?: string };

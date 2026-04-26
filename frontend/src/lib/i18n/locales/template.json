@@ -50,6 +50,20 @@
 			"noFile": ""
 		}
 	},
+	"imageEditor": {
+		"title": "",
+		"done": "",
+		"aspectRatio": "",
+		"ratios": {
+			"free": "",
+			"original": "",
+			"square": "",
+			"sixteenNine": "",
+			"nineSixteen": "",
+			"fourThree": "",
+			"threeFour": ""
+		}
+	},
 	"seo": {
 		"default": "",
 		"dashboard": "",

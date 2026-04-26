@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional
 
 from src.config import Settings
@@ -11,6 +12,7 @@ from src.memories.schemas import (
     TopTwoShotMember,
     TopTwoShotResponse,
 )
+from src.storage.service import StorageService
 from src.tickets.schemas import PaginationMeta
 
 logger = create_logger("memories_service", __name__)
@@ -21,9 +23,24 @@ class MemoriesService:
         self,
         repository: MemoriesRepository,
         config: Settings,
+        storage_service: StorageService,
     ):
         self.repository = repository
         self.config = config
+        self.storage_service = storage_service
+
+    async def _resolve_memory_item(self, item: MemoryItem) -> MemoryItem:
+        """Resolve storage paths for a memory item."""
+        if item.imageUrl:
+            variants = await self.storage_service.resolve_image_variants(item.imageUrl)
+            item.imageUrl = variants["url"]
+            item.imageUrl_medium = variants["url_medium"]
+            item.imageUrl_small = variants["url_small"]
+
+        if item.notes:
+            item.notes = await self.storage_service.resolve_markdown_images(item.notes)
+
+        return item
 
     async def get_memories_paginated(
         self,
@@ -70,19 +87,25 @@ class MemoriesService:
                     subtitle = item.get("twoShotType", "Roulette")
 
                 memory_items.append(
-                    MemoryItem(
-                        uniqueId=f"{item['ticketId']}-{item['type'].lower()}",
-                        type=MemoryType(item["type"]),
-                        imageUrl=item["imageUrl"],
-                        date=item["date"],
-                        time=item["time"],
-                        title=item["title"],
-                        subtitle=subtitle,
-                        notes=item.get("notes"),
-                        eventTitle=item.get("eventTitle"),
-                        twoShotMemberName=item.get("twoShotMemberName"),
+                    self._resolve_memory_item(
+                        MemoryItem(
+                            uniqueId=f"{item['ticketId']}-{item['type'].lower()}",
+                            type=MemoryType(item["type"]),
+                            imageUrl=item["imageUrl"],
+                            blurHash=item.get("blurHash"),
+                            date=item["date"],
+                            time=item["time"],
+                            title=item["title"],
+                            subtitle=subtitle,
+                            notes=item.get("notes"),
+                            eventTitle=item.get("eventTitle"),
+                            twoShotMemberName=item.get("twoShotMemberName"),
+                        )
                     )
                 )
+
+            if memory_items:
+                memory_items = list(await asyncio.gather(*memory_items))
 
             # Calculate pagination meta
             last_page = (total_count + limit - 1) // limit if limit > 0 else 1
@@ -111,17 +134,33 @@ class MemoriesService:
             stats = await self.repository.get_top_two_shot_stats(user_id)
 
             # Map to response model
-            ranking = []
-            for item in stats.get("ranking", []):
-                ranking.append(
-                    TopTwoShotMember(
-                        name=item["name"],
-                        count=item["count"],
-                        spend=item["spend"],
-                        lastDate=item["lastDate"],
-                        image=item.get("image"),
+            async def _resolve_stat(item: dict):
+                image_url = item.get("image")
+                img_medium = None
+                img_small = None
+                if image_url:
+                    variants = await self.storage_service.resolve_image_variants(
+                        image_url
                     )
+                    image_url = variants["url"]
+                    img_medium = variants["url_medium"]
+                    img_small = variants["url_small"]
+
+                return TopTwoShotMember(
+                    name=item["name"],
+                    count=item["count"],
+                    spend=item["spend"],
+                    lastDate=item["lastDate"],
+                    image=image_url,
+                    image_medium=img_medium,
+                    image_small=img_small,
                 )
+
+            tasks = [_resolve_stat(item) for item in stats.get("ranking", [])]
+            if tasks:
+                ranking = list(await asyncio.gather(*tasks))
+            else:
+                ranking = []
 
             return TopTwoShotResponse(
                 ranking=ranking,
