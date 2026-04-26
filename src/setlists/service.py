@@ -293,8 +293,14 @@ class SetlistsService:
                     update_data["imageUrl"] = cleanse_image_url(update_data["imageUrl"])
 
                 # 1. Handle image cleanup or rename
-                has_new_img = "imageUrl" in update_data and existing.get("imageUrl") and update_data["imageUrl"] != existing["imageUrl"]
-                title_changed = "title" in update_data and update_data["title"] != existing["title"]
+                has_new_img = (
+                    "imageUrl" in update_data
+                    and existing.get("imageUrl")
+                    and update_data["imageUrl"] != existing["imageUrl"]
+                )
+                title_changed = (
+                    "title" in update_data and update_data["title"] != existing["title"]
+                )
 
                 if has_new_img:
                     # New image uploaded - delete the old one

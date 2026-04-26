@@ -276,11 +276,11 @@ class StorageRepository:
     async def copy_file(self, source_path: str, destination_path: str) -> bool:
         """Copy file from one path to another within the same bucket."""
         await self._ensure_bucket()
-        
+
         # Ensure paths don't have leading slashes
         source_path = source_path.lstrip("/")
         destination_path = destination_path.lstrip("/")
-        
+
         try:
             from minio.commonconfig import CopySource
 
@@ -295,7 +295,9 @@ class StorageRepository:
             logger.info(f"Successfully copied {source_path} to {destination_path}")
             return True
         except S3Error as e:
-            logger.error(f"S3 Error copying file from {source_path} to {destination_path}: {e}")
+            logger.error(
+                f"S3 Error copying file from {source_path} to {destination_path}: {e}"
+            )
             return False
         except Exception as e:
             logger.error(f"Unexpected error copying file: {str(e)}")

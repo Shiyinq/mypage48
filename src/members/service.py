@@ -197,8 +197,14 @@ class MemberService:
                     update_data["img"] = cleanse_image_url(update_data["img"])
 
                 # 1. Handle image cleanup or rename
-                has_new_img = "img" in update_data and existing.get("img") and update_data["img"] != existing["img"]
-                name_changed = "name" in update_data and update_data["name"] != existing["name"]
+                has_new_img = (
+                    "img" in update_data
+                    and existing.get("img")
+                    and update_data["img"] != existing["img"]
+                )
+                name_changed = (
+                    "name" in update_data and update_data["name"] != existing["name"]
+                )
 
                 if has_new_img:
                     # New image uploaded - delete the old one

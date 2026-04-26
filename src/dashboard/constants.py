@@ -16,7 +16,6 @@ class DashboardConstants:
     THEATER_ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 
 
-
 class Info:
     """Informational messages."""
 

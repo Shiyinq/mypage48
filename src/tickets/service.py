@@ -232,7 +232,7 @@ class TicketsService:
 
             # Cleanup old images if they were replaced or removed
             old_images = []
-            
+
             # Main image cleanup
             if "imageUrl" in data.model_fields_set:
                 old_img = existing.get("imageUrl")
@@ -243,12 +243,16 @@ class TicketsService:
             if "two_shot" in data.model_fields_set:
                 existing_ts = existing.get("two_shot")
                 old_ts_img = existing_ts.get("imageUrl") if existing_ts else None
-                
+
                 if data.two_shot is None:
                     # Two shot removed completely
                     if old_ts_img:
                         old_images.append(old_ts_img)
-                elif data.two_shot.imageUrl and old_ts_img and data.two_shot.imageUrl != old_ts_img:
+                elif (
+                    data.two_shot.imageUrl
+                    and old_ts_img
+                    and data.two_shot.imageUrl != old_ts_img
+                ):
                     # Image replaced
                     old_images.append(old_ts_img)
 
@@ -288,7 +292,10 @@ class TicketsService:
 
             if images_to_delete:
                 await asyncio.gather(
-                    *(self.storage_service.delete_image(img) for img in images_to_delete),
+                    *(
+                        self.storage_service.delete_image(img)
+                        for img in images_to_delete
+                    ),
                     return_exceptions=True,
                 )
 
