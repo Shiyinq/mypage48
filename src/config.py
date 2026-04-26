@@ -86,10 +86,10 @@ class Settings(BaseSettings):
                         f"{field} cannot contain 'localhost' or '127.0.0.1' in production. Value was: {val}"
                     )
 
-            # 2. Force MinIO Secure if not explicitly overridden to False
+            # 2. Force Storage Secure if not explicitly overridden to False
             # (though explicitly False in prod is also suspicious unless behind a very specific internal proxy)
             # For now, let's just warn or nudge.
-            if not self.MINIO_SECURE:
+            if not self.storage_secure:
                 # We could raise an error, but let's allow it if they really know what they are doing (e.g. internal network)
                 # but default it to True in our recommended template.
                 pass
