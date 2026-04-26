@@ -27,6 +27,7 @@
 	let editingSetlist: Partial<Setlist> = $state({});
 	let isCreatingSetlist = $state(false);
 	let isSubmitting = $state(false);
+	let isDeleting = $derived(adminStore.isDeletingSetlist);
 	let deletingId: string | null = null;
 
 	// Initial load state
@@ -218,6 +219,7 @@
 <!-- Delete Confirmation Modal -->
 <AdminDeleteModal
 	bind:show={showDeleteModal}
+	{isDeleting}
 	onCancel={() => (showDeleteModal = false)}
 	onConfirm={handleDeleteConfirm}
 	title={t('admin.setlists.modal.deleteTitle')}

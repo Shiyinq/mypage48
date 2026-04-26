@@ -288,6 +288,10 @@ class SetlistsService:
             update_data = data.model_dump(exclude_none=True)
             if update_data:
                 setlist = await self.repository.update_one(setlist_id, update_data)
+                
+                # Cleanup old image if replaced
+                if "imageUrl" in update_data and existing.get("imageUrl") and update_data["imageUrl"] != existing["imageUrl"]:
+                    await self.storage_service.delete_image(existing["imageUrl"])
             else:
                 setlist = existing
 
@@ -314,6 +318,10 @@ class SetlistsService:
             deleted = await self.repository.delete_one(setlist_id)
             if not deleted:
                 raise SetlistFetchError()
+
+            # Cleanup image from R2
+            if existing.get("imageUrl"):
+                await self.storage_service.delete_image(existing["imageUrl"])
 
             return MessageResponse(message=Info.SETLIST_DELETED)
         except SetlistNotFoundError:
