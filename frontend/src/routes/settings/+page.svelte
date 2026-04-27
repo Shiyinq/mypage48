@@ -18,6 +18,7 @@
 		ConfirmApiKeyModal,
 		ExportData
 	} from '$lib/components/settings';
+	import VersionDisplay from '$lib/components/common/VersionDisplay.svelte';
 
 	const { t } = useTranslation();
 
@@ -124,6 +125,9 @@
 				/>
 			</div>
 		</a>
+		<div class="pt-4 pb-8 text-center">
+			<VersionDisplay />
+		</div>
 	</div>
 </div>
 
