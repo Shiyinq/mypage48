@@ -19,6 +19,7 @@
 	import { ErrorState, EmptyState } from '$lib/components';
 	import { OptimizedImage } from '$lib/components/common';
 	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
+	import { getErrorMessage } from '$lib/utils/api';
 
 	const { t } = useTranslation();
 
@@ -61,14 +62,8 @@
 			isEditing = false;
 		} catch (e: unknown) {
 			logger.error('Failed to update account settings', e, { context: 'AccountSettings' });
-			let errorMsg = t('settings.account.saveError');
-			if (e && typeof e === 'object' && 'response' in e) {
-				const response = (e as { response?: { data?: { detail?: string } } }).response;
-				if (response?.data?.detail) {
-					errorMsg = response.data.detail;
-				}
-			}
-			showToast(errorMsg, 'error');
+			const errorMessage = getErrorMessage(e);
+			showToast(errorMessage || t('settings.account.saveError'), 'error');
 		} finally {
 			isSaving = false;
 		}
@@ -105,7 +100,8 @@
 			showToast(t('settings.publicProfile.uploadSuccess'), 'success');
 		} catch (err) {
 			logger.error('Failed to upload profile picture', err);
-			showToast(t('settings.publicProfile.uploadError'), 'error');
+			const errorMessage = getErrorMessage(err);
+			showToast(errorMessage || t('settings.publicProfile.uploadError'), 'error');
 		}
 	};
 
