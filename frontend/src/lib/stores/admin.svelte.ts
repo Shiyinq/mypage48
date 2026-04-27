@@ -43,6 +43,8 @@ const state = $state<AdminState>(initialState);
 let isMembersLoading = $state(false);
 let isSetlistsLoading = $state(false);
 let isUsersLoading = $state(false);
+let isDeletingMember = $state(false);
+let isDeletingSetlist = $state(false);
 
 function createAdminStore() {
 	return {
@@ -63,6 +65,12 @@ function createAdminStore() {
 		},
 		get isUsersLoading() {
 			return isUsersLoading;
+		},
+		get isDeletingMember() {
+			return isDeletingMember;
+		},
+		get isDeletingSetlist() {
+			return isDeletingSetlist;
 		},
 
 		// --- Members Actions ---
@@ -129,6 +137,7 @@ function createAdminStore() {
 		},
 
 		async deleteMember(id: string | number) {
+			isDeletingMember = true;
 			try {
 				await membersApi.delete(id);
 				state.members.data = state.members.data.filter((m) => m.id !== id);
@@ -136,6 +145,8 @@ function createAdminStore() {
 			} catch (e) {
 				console.error(e);
 				throw e;
+			} finally {
+				isDeletingMember = false;
 			}
 		},
 
@@ -203,6 +214,7 @@ function createAdminStore() {
 		},
 
 		async deleteSetlist(id: string) {
+			isDeletingSetlist = true;
 			try {
 				await setlistsApi.delete(id);
 				state.setlists.data = state.setlists.data.filter((item) => item.setlistId !== id);
@@ -210,6 +222,8 @@ function createAdminStore() {
 			} catch (e) {
 				console.error(e);
 				throw e;
+			} finally {
+				isDeletingSetlist = false;
 			}
 		},
 

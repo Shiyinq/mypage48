@@ -109,10 +109,15 @@ def cleanse_image_url(url: Optional[str]) -> Optional[str]:
         return url
 
     proxy_match = re.search(
-        r"/storage/m/((journal|ticket|twoshot|avatar)/[^?\s]+)", url
+        r"/storage/m/((journal|ticket|twoshot|avatar|member|setlist)/[^?\s]+)", url
     )
     if proxy_match:
         return proxy_match.group(1)
+
+    # Handle the /media/ paths used by members and setlists
+    media_match = re.search(r"/((media/(jkt48-member|setlists)/)[^?\s]+)", url)
+    if media_match:
+        return media_match.group(1)
 
     try:
         parsed = urlparse(url)

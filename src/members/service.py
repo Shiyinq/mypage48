@@ -18,6 +18,7 @@ from src.members.schemas import (
 )
 from src.storage.service import StorageService
 from src.tickets.schemas import PaginationMeta
+from src.utils import cleanse_image_url
 
 logger = create_logger("members_service", __name__)
 
@@ -191,6 +192,31 @@ class MemberService:
 
             update_data = data.model_dump(exclude_none=True)
             if update_data:
+                # Cleanse image URL if provided (convert full URL to relative path)
+                if "img" in update_data:
+                    update_data["img"] = cleanse_image_url(update_data["img"])
+
+                # 1. Handle image cleanup or rename
+                has_new_img = (
+                    "img" in update_data
+                    and existing.get("img")
+                    and update_data["img"] != existing["img"]
+                )
+                name_changed = (
+                    "name" in update_data and update_data["name"] != existing["name"]
+                )
+
+                if has_new_img:
+                    # New image uploaded - delete the old one
+                    await self.storage_service.delete_image(existing["img"])
+                elif name_changed and existing.get("img"):
+                    # No new image, but name changed - rename the existing image file
+                    new_img_path = await self.storage_service.rename_image(
+                        existing["img"], update_data["name"], "member"
+                    )
+                    if new_img_path != existing["img"]:
+                        update_data["img"] = new_img_path
+
                 update_data["updatedAt"] = datetime.now()
                 member = await self.repository.update_one(member_id, update_data)
             else:
@@ -214,6 +240,10 @@ class MemberService:
             deleted = await self.repository.delete_one(member_id)
             if not deleted:
                 raise MemberFetchError()
+
+            # Cleanup image from R2
+            if existing.get("img"):
+                await self.storage_service.delete_image(existing["img"])
 
             return MessageResponse(message=Info.MEMBER_DELETED)
         except MemberNotFoundError:

@@ -44,8 +44,6 @@ class DashboardService:
         self.events_repository = events_repository
         self.config = config
 
-
-
     @staticmethod
     def _format_date(date_str: str, include_year: bool = False) -> str:
         """Format date string for display."""
@@ -160,7 +158,9 @@ class DashboardService:
         max_count = max((s.count for s in stats_list), default=1) or 1
         return MonthlyStatsResponse(stats=stats_list, max_count=max_count)
 
-    async def _calculate_top_show(self, tickets: List[Dict[str, Any]]) -> TopShowResponse:
+    async def _calculate_top_show(
+        self, tickets: List[Dict[str, Any]]
+    ) -> TopShowResponse:
         """Calculate top show statistics."""
         if not tickets:
             return TopShowResponse(title="-", count=0, image=None)
@@ -187,8 +187,11 @@ class DashboardService:
         else:
             # Try events collection
             event = await self.events_repository.collection.find_one(
-                {"title": {"$regex": f"^{top_title}$", "$options": "i"}, "imageUrl": {"$ne": None}},
-                sort=[("date", -1)]
+                {
+                    "title": {"$regex": f"^{top_title}$", "$options": "i"},
+                    "imageUrl": {"$ne": None},
+                },
+                sort=[("date", -1)],
             )
             if event and event.get("imageUrl"):
                 image = event["imageUrl"]
@@ -276,8 +279,11 @@ class DashboardService:
             else:
                 # Try events collection
                 evt_doc = await self.events_repository.collection.find_one(
-                    {"title": {"$regex": f"^{title}$", "$options": "i"}, "imageUrl": {"$ne": None}},
-                    sort=[("date", -1)]
+                    {
+                        "title": {"$regex": f"^{title}$", "$options": "i"},
+                        "imageUrl": {"$ne": None},
+                    },
+                    sort=[("date", -1)],
                 )
                 if evt_doc and evt_doc.get("imageUrl"):
                     image = evt_doc["imageUrl"]
