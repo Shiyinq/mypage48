@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { userProfile, storageStore, showToast } from '$lib/stores';
+	import { userProfile, showToast } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		User,
@@ -101,10 +101,7 @@
 	const onCropDone = async (base64: string) => {
 		showCropper = false;
 		try {
-			const uploadRes = await storageStore.uploadImage(base64, 'avatar');
-
-			await userProfile.updateAvatar(uploadRes.filename, uploadRes.blurHash);
-
+			await userProfile.updateAvatar(base64);
 			showToast(t('settings.publicProfile.uploadSuccess'), 'success');
 		} catch (err) {
 			logger.error('Failed to upload profile picture', err);
@@ -268,8 +265,22 @@
 									accept="image/*"
 									class="hidden"
 									onchange={onFileSelected}
+									disabled={userProfile.isUpdatingAvatar}
 								/>
 							</label>
+
+							<!-- Loading Indicator -->
+							{#if userProfile.isUpdatingAvatar}
+								<div
+									class="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center z-10"
+									in:fade={{ duration: 200 }}
+								>
+									<LoaderCircle class="w-8 h-8 text-white animate-spin mb-2" />
+									<span class="text-[10px] text-white font-bold uppercase tracking-widest"
+										>{t('common.loading')}</span
+									>
+								</div>
+							{/if}
 						</div>
 					</div>
 				</div>

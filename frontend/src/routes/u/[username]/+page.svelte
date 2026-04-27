@@ -7,7 +7,7 @@
 	import { spring } from 'svelte/motion';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 
-	import { userProfile, showToast, storageStore } from '$lib/stores';
+	import { userProfile, showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import {
 		validateImageFile,
@@ -32,7 +32,6 @@
 	let { profile } = $derived(data);
 
 	let fileInput: HTMLInputElement | undefined = $state();
-	let isUploading = $state(false);
 
 	// Preview modal state
 	let showPreviewModal = $state(false);
@@ -96,14 +95,10 @@
 
 		// Close modal immediately so user sees the loading state on the avatar
 		closePreviewModal();
-		isUploading = true;
 
 		try {
-			// Upload image to storage first
-			const uploadResult = await storageStore.uploadImage(croppedBase64, 'avatar');
-
-			// Save filename to profile
-			await userProfile.updateAvatar(uploadResult.filename, uploadResult.blurHash);
+			// Update avatar using the store (handles upload and profile update)
+			await userProfile.updateAvatar(croppedBase64);
 
 			// Refresh page data to show new avatar
 			await invalidateAll();
@@ -113,8 +108,6 @@
 			logger.error('Failed to upload profile picture', error, { context: 'PublicProfilePage' });
 			const errorMessage = getErrorMessage(error);
 			showToast(errorMessage || t('settings.publicProfile.uploadError'), 'error');
-		} finally {
-			isUploading = false;
 		}
 	}
 
@@ -167,7 +160,7 @@
 		<PublicProfileHeader
 			{profile}
 			isCurrentUser={!!(userProfile.data && userProfile.data.username === profile.username)}
-			{isUploading}
+			isUploading={userProfile.isUpdatingAvatar}
 			ontriggerUpload={() => fileInput?.click()}
 		/>
 
