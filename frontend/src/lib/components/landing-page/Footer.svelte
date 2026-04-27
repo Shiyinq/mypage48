@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Ticket, Github } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import VersionDisplay from '$lib/components/common/VersionDisplay.svelte';
 
 	const { t } = useTranslation();
 </script>
@@ -63,5 +64,7 @@
 		<p class="text-[9px] text-slate-300 max-w-md mx-auto px-6">
 			{t('landing.footer.disclaimer')}
 		</p>
+
+		<VersionDisplay />
 	</div>
 </footer>

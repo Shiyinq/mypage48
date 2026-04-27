@@ -4,7 +4,9 @@
 	import { Heart, Users, Github } from 'lucide-svelte';
 	import LandingNavbar from '$lib/components/landing-page/LandingNavbar.svelte';
 	import Footer from '$lib/components/landing-page/Footer.svelte';
+	import VersionDisplay from '$lib/components/common/VersionDisplay.svelte';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+
 	import { spring } from 'svelte/motion';
 
 	import { isAuthenticated } from '$lib/stores';
@@ -102,7 +104,11 @@
 	</div>
 
 	<!-- FOOTER -->
-	{#if !isAuthenticated.value}
+	{#if isAuthenticated.value}
+		<div class="pb-12 opacity-50">
+			<VersionDisplay />
+		</div>
+	{:else}
 		<Footer />
 	{/if}
 </div>
