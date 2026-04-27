@@ -242,20 +242,105 @@ class StorageService:
         return BatchPresignedUrlResponse(urls=urls, expires_in=expires)
 
     async def delete_image(self, filename: str) -> bool:
-        """Delete image from storage."""
-        try:
-            if not await self.repository.file_exists(filename):
-                raise ImageNotFoundError()
+        """Delete image and its variants from storage."""
+        if not filename:
+            return False
 
-            return await self.repository.delete_file(filename)
-        except S3Error as e:
-            logger.error(f"MinIO error during delete: {e}")
-            raise StorageConnectionError()
-        except ImageNotFoundError:
-            raise
+        # Don't try to delete external URLs or base64
+        if filename.startswith("http") or filename.startswith("data:"):
+            logger.debug(f"Skipping deletion for non-internal path: {filename[:50]}...")
+            return False
+
+        path = filename.lstrip("/")
+
+        try:
+            # Main file
+            exists = await self.repository.file_exists(path)
+            if not exists:
+                logger.warning(f"File not found for deletion: {path}")
+                # We return True because the goal (file not being there) is achieved
+                return True
+
+            # Delete original and variants (best effort for variants)
+            variant_paths = [
+                path,
+                self._get_variant_path(path, "medium"),
+                self._get_variant_path(path, "small"),
+            ]
+
+            tasks = []
+            for p in variant_paths:
+                tasks.append(self.repository.delete_file(p))
+
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            # Check if original file was deleted (first item in tasks)
+            if isinstance(results[0], Exception):
+                logger.error(f"Failed to delete original file {path}: {results[0]}")
+                return False
+
+            return True
         except Exception as e:
             logger.exception(f"Unexpected error during delete: {e}")
             return False
+
+    async def rename_image(
+        self, old_path: str, new_slug: str, category: str, user_id: str = "admin"
+    ) -> str:
+        """
+        Rename (Move) image and its variants to a new slug.
+        Returns the new path.
+        """
+        if not old_path or not new_slug:
+            return old_path
+
+        # Don't rename if it's an external URL
+        if old_path.startswith("http") or "data:image" in old_path:
+            return old_path
+
+        new_path = self._generate_filename(user_id, category, "image/webp", new_slug)
+        if old_path == new_path:
+            return old_path
+
+        # Define suffixes for variants (Main file first)
+        suffixes = ["", "medium", "small"]
+
+        async def move_single(suffix: str) -> bool:
+            # Helper to move a single variant
+            o_path = self._get_variant_path(old_path, suffix) if suffix else old_path
+            n_path = self._get_variant_path(new_path, suffix) if suffix else new_path
+
+            try:
+                if await self.repository.file_exists(o_path):
+                    if await self.repository.copy_file(o_path, n_path):
+                        await self.repository.delete_file(o_path)
+                        logger.debug(
+                            f"Successfully moved variant [{suffix if suffix else 'original'}]"
+                        )
+                        return True
+                else:
+                    logger.debug(
+                        f"Variant [{suffix if suffix else 'original'}] not found at {o_path}, skipping."
+                    )
+                return False
+            except Exception as e:
+                logger.error(f"Failed to move variant {suffix} from {o_path}: {e}")
+                return False
+
+        # Move all variants in parallel
+        results = await asyncio.gather(
+            *(move_single(s) for s in suffixes), return_exceptions=True
+        )
+
+        # Only return new_path if the main file (index 0) was successfully moved
+        if results and results[0] is True:
+            logger.info(f"SUCCESS: Renamed image from [{old_path}] to [{new_path}]")
+            return new_path
+
+        logger.warning(
+            f"FAILED: Could not rename image from [{old_path}] to [{new_path}]. Keeping old path."
+        )
+        return old_path
 
     def _generate_signature(self, path: str, expires: int) -> str:
         """
@@ -557,7 +642,9 @@ class StorageService:
                 "url_medium"
             ]
             stats_dict["two_shot"]["top_2_shot"]["image_small"] = variants["url_small"]
-            stats_dict["two_shot"]["top_2_shot"]["blurHash"] = variants.get("blurHash") or stats_dict["two_shot"]["top_2_shot"].get("blurHash")
+            stats_dict["two_shot"]["top_2_shot"]["blurHash"] = variants.get(
+                "blurHash"
+            ) or stats_dict["two_shot"]["top_2_shot"].get("blurHash")
 
         # 2. Resolve Extremes (First/Last) in Two Shot
         if stats_dict.get("two_shot") and stats_dict["two_shot"].get("extremes"):
@@ -566,9 +653,15 @@ class StorageService:
                 if extremes.get(key) and extremes[key].get("image"):
                     variants = await self.resolve_image_variants(extremes[key]["image"])
                     stats_dict["two_shot"]["extremes"][key]["image"] = variants["url"]
-                    stats_dict["two_shot"]["extremes"][key]["image_medium"] = variants["url_medium"]
-                    stats_dict["two_shot"]["extremes"][key]["image_small"] = variants["url_small"]
-                    stats_dict["two_shot"]["extremes"][key]["blurHash"] = variants.get("blurHash") or stats_dict["two_shot"]["extremes"][key].get("blurHash")
+                    stats_dict["two_shot"]["extremes"][key]["image_medium"] = variants[
+                        "url_medium"
+                    ]
+                    stats_dict["two_shot"]["extremes"][key]["image_small"] = variants[
+                        "url_small"
+                    ]
+                    stats_dict["two_shot"]["extremes"][key]["blurHash"] = variants.get(
+                        "blurHash"
+                    ) or stats_dict["two_shot"]["extremes"][key].get("blurHash")
 
         # 3. Resolve Top Show image
         if (
@@ -582,7 +675,9 @@ class StorageService:
             stats_dict["theater"]["top_show"]["image"] = variants["url"]
             stats_dict["theater"]["top_show"]["image_medium"] = variants["url_medium"]
             stats_dict["theater"]["top_show"]["image_small"] = variants["url_small"]
-            stats_dict["theater"]["top_show"]["blurHash"] = variants.get("blurHash") or stats_dict["theater"]["top_show"].get("blurHash")
+            stats_dict["theater"]["top_show"]["blurHash"] = variants.get(
+                "blurHash"
+            ) or stats_dict["theater"]["top_show"].get("blurHash")
 
         # 4. Resolve Theater Extremes
         if stats_dict.get("theater") and stats_dict["theater"].get("extremes"):
@@ -591,9 +686,15 @@ class StorageService:
                 if extremes.get(key) and extremes[key].get("image"):
                     variants = await self.resolve_image_variants(extremes[key]["image"])
                     stats_dict["theater"]["extremes"][key]["image"] = variants["url"]
-                    stats_dict["theater"]["extremes"][key]["image_medium"] = variants["url_medium"]
-                    stats_dict["theater"]["extremes"][key]["image_small"] = variants["url_small"]
-                    stats_dict["theater"]["extremes"][key]["blurHash"] = variants.get("blurHash") or stats_dict["theater"]["extremes"][key].get("blurHash")
+                    stats_dict["theater"]["extremes"][key]["image_medium"] = variants[
+                        "url_medium"
+                    ]
+                    stats_dict["theater"]["extremes"][key]["image_small"] = variants[
+                        "url_small"
+                    ]
+                    stats_dict["theater"]["extremes"][key]["blurHash"] = variants.get(
+                        "blurHash"
+                    ) or stats_dict["theater"]["extremes"][key].get("blurHash")
 
         return type(stats)(**stats_dict)
 

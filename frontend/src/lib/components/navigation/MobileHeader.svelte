@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ChevronLeft } from 'lucide-svelte';
+	import { ChevronLeft, LoaderCircle } from 'lucide-svelte';
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
 	import { pageHeaderStore, isImmersive } from '$lib/stores';
 
@@ -86,15 +86,22 @@
 							{#each headerInfo.actions as action}
 								<button
 									onclick={action.onClick}
+									disabled={action.loading}
 									data-filter-toggle="true"
 									class={`rounded-full transition-colors cursor-pointer flex items-center justify-center ${
 										action.theme === 'red'
 											? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800'
 											: 'bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700'
-									} ${action.icon && !action.showLabel ? 'p-1.5' : 'px-3 py-1.5'}`}
+									} ${action.icon && !action.showLabel ? 'p-1.5' : 'px-3 py-1.5'} ${action.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
 									title={action.label}
 								>
-									{#if action.icon}
+									{#if action.loading}
+										<LoaderCircle
+											class="w-4 h-4 animate-spin {action.showLabel && action.label
+												? 'mr-1.5'
+												: ''}"
+										/>
+									{:else if action.icon}
 										<action.icon
 											class="w-4 h-4 {action.showLabel && action.label ? 'mr-1.5' : ''}"
 										/>

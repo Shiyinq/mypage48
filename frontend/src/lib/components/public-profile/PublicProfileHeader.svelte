@@ -70,12 +70,19 @@
 			<!-- Edit Overlay -->
 			{#if isCurrentUser}
 				<button
-					class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+					class="absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity cursor-pointer disabled:cursor-not-allowed {isUploading
+						? 'opacity-100'
+						: 'opacity-0 group-hover:opacity-100'}"
 					onclick={() => ontriggerUpload?.()}
 					disabled={isUploading}
 				>
 					{#if isUploading}
-						<LoaderCircle class="w-7 h-7 sm:w-8 sm:h-8 text-white animate-spin" />
+						<div class="flex flex-col items-center gap-1.5">
+							<LoaderCircle class="w-7 h-7 sm:w-8 sm:h-8 text-white animate-spin" />
+							<span class="text-[8px] sm:text-[10px] text-white font-bold uppercase tracking-widest"
+								>{t('common.loading')}</span
+							>
+						</div>
 					{:else}
 						<Camera class="w-7 h-7 sm:w-8 sm:h-8 text-white" />
 					{/if}

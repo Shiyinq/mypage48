@@ -3,6 +3,7 @@ import { auth } from '$lib/apis/auth';
 import { client } from '$lib/apis/client';
 import { logger } from '$lib/utils/logger';
 import { createRequestDedup } from '$lib/utils/requestDedup';
+import { storageStore } from '$lib/stores/storage.svelte';
 
 /**
  * User profile store - migrated to Svelte 5 Shared Rune State.
@@ -13,12 +14,14 @@ interface UserProfileStoreState {
 	data: UserWithProfileStats | null;
 	error: string | null;
 	isLoading: boolean;
+	isUpdatingAvatar: boolean;
 }
 
 const state = $state<UserProfileStoreState>({
 	data: null,
 	error: null,
-	isLoading: false
+	isLoading: false,
+	isUpdatingAvatar: false
 });
 const dedup = createRequestDedup();
 
@@ -32,6 +35,9 @@ function createUserProfileStore() {
 		},
 		get isLoading() {
 			return state.isLoading;
+		},
+		get isUpdatingAvatar() {
+			return state.isUpdatingAvatar;
 		},
 
 		/**
@@ -94,9 +100,16 @@ function createUserProfileStore() {
 		/**
 		 * Update the user's avatar
 		 */
-		updateAvatar: async (profilePicture: string, blurHash?: string | null) => {
-			await auth.updateProfilePicture(profilePicture, blurHash);
-			await userProfile.load({ force: true });
+		updateAvatar: async (base64: string) => {
+			state.isUpdatingAvatar = true;
+			try {
+				const uploadRes = await storageStore.uploadImage(base64, 'avatar');
+				await auth.updateProfilePicture(uploadRes.filename, uploadRes.blurHash);
+				await userProfile.load({ force: true });
+				return uploadRes;
+			} finally {
+				state.isUpdatingAvatar = false;
+			}
 		},
 
 		/**
@@ -132,6 +145,7 @@ function createUserProfileStore() {
 			if (val.data !== undefined) state.data = val.data;
 			if (val.error !== undefined) state.error = val.error;
 			if (val.isLoading !== undefined) state.isLoading = val.isLoading;
+			if (val.isUpdatingAvatar !== undefined) state.isUpdatingAvatar = val.isUpdatingAvatar;
 		},
 
 		/**
@@ -141,6 +155,7 @@ function createUserProfileStore() {
 			state.data = null;
 			state.error = null;
 			state.isLoading = false;
+			state.isUpdatingAvatar = false;
 			dedup.clear();
 		},
 

@@ -244,7 +244,9 @@ def get_events_service(
     storage_service: StorageService = Depends(get_storage_service),
 ) -> EventsService:
     background_runner = AsyncBackgroundRunner()
-    return EventsService(repo, background_runner, config, member_service, storage_service)
+    return EventsService(
+        repo, background_runner, config, member_service, storage_service
+    )
 
 
 def get_achievements_service(
@@ -276,9 +278,6 @@ def get_user_service(
         events_service,
         storage_service,
     )
-
-
-
 
 
 def get_memories_repository(db=Depends(get_db)) -> MemoriesRepository:

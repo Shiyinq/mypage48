@@ -139,6 +139,7 @@ class StorageRepository:
     async def delete_file(self, object_name: str) -> bool:
         """Delete file from storage."""
         await self._ensure_bucket()
+        object_name = object_name.lstrip("/")
 
         try:
 
@@ -149,12 +150,13 @@ class StorageRepository:
             logger.info(f"Deleted file: {object_name}")
             return True
         except S3Error as e:
-            logger.error(f"Failed to delete file: {e}")
+            logger.error(f"Failed to delete file {object_name}: {e}")
             raise
 
     async def file_exists(self, object_name: str) -> bool:
         """Check if file exists in storage."""
         await self._ensure_bucket()
+        object_name = object_name.lstrip("/")
 
         try:
 
@@ -270,3 +272,33 @@ class StorageRepository:
         except S3Error as e:
             logger.error(f"Failed to get file stream: {e}")
             return None
+
+    async def copy_file(self, source_path: str, destination_path: str) -> bool:
+        """Copy file from one path to another within the same bucket."""
+        await self._ensure_bucket()
+
+        # Ensure paths don't have leading slashes
+        source_path = source_path.lstrip("/")
+        destination_path = destination_path.lstrip("/")
+
+        try:
+            from minio.commonconfig import CopySource
+
+            def _copy():
+                self.client.copy_object(
+                    self.config.storage_bucket,
+                    destination_path,
+                    CopySource(self.config.storage_bucket, source_path),
+                )
+
+            await asyncio.to_thread(_copy)
+            logger.info(f"Successfully copied {source_path} to {destination_path}")
+            return True
+        except S3Error as e:
+            logger.error(
+                f"S3 Error copying file from {source_path} to {destination_path}: {e}"
+            )
+            return False
+        except Exception as e:
+            logger.error(f"Unexpected error copying file: {str(e)}")
+            return False

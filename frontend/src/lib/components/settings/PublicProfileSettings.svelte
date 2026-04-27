@@ -4,6 +4,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Share2, Copy, ExternalLink, LoaderCircle } from 'lucide-svelte';
 	import { ErrorState } from '$lib/components';
+	import { getErrorMessage } from '$lib/utils/api';
 
 	const { t } = useTranslation();
 
@@ -24,7 +25,8 @@
 			showToast(t('common.success'), 'success');
 		} catch (e) {
 			logger.error('Failed to update public status', e, { context: 'PublicProfileSettings' });
-			showToast(t('common.error'), 'error');
+			const errorMessage = getErrorMessage(e);
+			showToast(errorMessage || t('common.error'), 'error');
 		} finally {
 			updatingStatus = false;
 		}
@@ -62,7 +64,8 @@
 			await userProfile.load();
 		} catch (e) {
 			logger.error('Failed to retry profile fetch', e, { context: 'PublicProfileSettings' });
-			showToast(t('profile.errorTitle'), 'error');
+			const errorMessage = getErrorMessage(e);
+			showToast(errorMessage || t('profile.errorTitle'), 'error');
 		}
 	};
 </script>

@@ -6,6 +6,9 @@
 	import { storageStore } from '$lib/stores';
 	import AdminImageUpload from './AdminImageUpload.svelte';
 	import { cleanseStorageUrl } from '$lib/utils/markdown';
+	import { getErrorMessage } from '$lib/utils/api';
+	import { showToast } from '$lib/stores';
+	import { logger } from '$lib/utils/logger';
 
 	interface Props {
 		show?: boolean;
@@ -84,7 +87,9 @@
 					finalData.imageUrl = cleanseStorageUrl(uploadResult.filename);
 					finalData.blurHash = uploadResult.blurHash;
 				} catch (error) {
-					console.error('Failed to upload setlist image:', error);
+					logger.error('Failed to upload setlist image:', error);
+					const errorMessage = getErrorMessage(error);
+					showToast(errorMessage || 'Failed to upload image', 'error');
 					localLoading = false;
 					return;
 				}
