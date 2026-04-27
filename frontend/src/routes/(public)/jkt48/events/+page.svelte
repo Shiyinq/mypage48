@@ -18,8 +18,9 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { getMemberFrame } from '$lib/constants';
 	import { OptimizedImage } from '$lib/components/common';
+	import { parseIndonesianDate } from '$lib/utils/time';
 
-	const { t } = useTranslation();
+	const { t, locale } = useTranslation();
 
 	function isToday(dateStr: string): boolean {
 		const eventDate = new Date(dateStr);
@@ -152,8 +153,10 @@
 									{member.name}
 								</div>
 								<div class="text-white/70 text-[10px] font-bold drop-shadow-md">
-									{new Date(member.birthdate).getDate()}
-									{new Date(member.birthdate).toLocaleString('id-ID', { month: 'short' })}
+									{parseIndonesianDate(member.birthdate).getDate()}
+									{parseIndonesianDate(member.birthdate).toLocaleString(locale.value, {
+										month: 'short'
+									})}
 									•
 									{member.age}
 									{t('member.yearsOld')}
