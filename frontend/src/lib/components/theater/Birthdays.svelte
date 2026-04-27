@@ -6,6 +6,7 @@
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { getMemberFrame } from '$lib/constants';
 	import { OptimizedImage } from '$lib/components/common';
+	import { parseIndonesianDate } from '$lib/utils/time';
 
 	const { t, locale } = useTranslation();
 
@@ -109,8 +110,10 @@
 								{member.name}
 							</div>
 							<div class="text-gray-200 text-xs font-medium drop-shadow-sm">
-								{new Date(member.birthdate).getDate()}
-								{new Date(member.birthdate).toLocaleString(locale.value, { month: 'short' })}
+								{parseIndonesianDate(member.birthdate).getDate()}
+								{parseIndonesianDate(member.birthdate).toLocaleString(locale.value, {
+									month: 'short'
+								})}
 								•
 								{member.age}
 								{t('member.yearsOld') || 'years old'}
