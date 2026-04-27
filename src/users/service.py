@@ -229,6 +229,11 @@ class UserService:
     ) -> MessageResponse:
         """Update the user's profile picture"""
         try:
+            # Fetch current user to get old profile picture for cleanup
+            current_user = await self.repository.get_user_by_id(user_id)
+            if not current_user:
+                raise UserFetchError()
+
             # Only validate if it's a base64 image (legacy upload)
             # Storage filenames (category/user_id/filename) skip validation
             if profile_picture.startswith("data:"):
@@ -237,6 +242,12 @@ class UserService:
             await self.repository.set_profile_picture(
                 user_id, profile_picture, blur_hash
             )
+
+            # Cleanup old profile picture from R2 if it changed
+            old_pic = current_user.get("profilePicture")
+            if old_pic and old_pic != profile_picture:
+                await self.storage_service.delete_image(old_pic)
+
             return MessageResponse(detail=Info.PROFILE_PICTURE_UPDATED)
         except ImageTooLargeValidationError:
             raise ImageTooLargeError()

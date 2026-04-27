@@ -27,6 +27,7 @@
 	let editingMember: Partial<Member> = $state({});
 	let isCreatingMember = $state(false);
 	let isSubmitting = $state(false);
+	let isDeleting = $derived(adminStore.isDeletingMember);
 	let deletingId: string | number | null = null;
 
 	// Initial load state
@@ -210,6 +211,7 @@
 <!-- Delete Confirmation Modal -->
 <AdminDeleteModal
 	bind:show={showDeleteModal}
+	{isDeleting}
 	onCancel={() => (showDeleteModal = false)}
 	onConfirm={handleDeleteConfirm}
 	title={t('admin.members.modal.deleteTitle')}
