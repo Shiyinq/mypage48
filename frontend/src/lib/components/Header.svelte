@@ -93,16 +93,11 @@
 				>
 					{#if isLoading}
 						<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
-					{:else if userProfile.data?.profilePicture || userProfile.data?.oshi?.profilePicture}
+					{:else if userProfile.data?.profilePicture}
 						<OptimizedImage
-							src={userProfile.data?.profilePicture ||
-								(userProfile.data?.oshi?.profilePicture
-									? userProfile.data.oshi.profilePicture
-									: '')}
-							srcMedium={userProfile.data?.profilePicture_medium ||
-								userProfile.data?.oshi?.profilePicture_medium}
-							srcSmall={userProfile.data?.profilePicture_small ||
-								userProfile.data?.oshi?.profilePicture_small}
+							src={userProfile.data.profilePicture}
+							srcMedium={userProfile.data.profilePicture_medium}
+							srcSmall={userProfile.data.profilePicture_small}
 							blurHash={userProfile.data?.blurHash}
 							alt="Profile"
 							class="w-full h-full object-cover"
