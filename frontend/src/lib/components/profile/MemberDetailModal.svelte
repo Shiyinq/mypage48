@@ -10,6 +10,7 @@
 	import { tick } from 'svelte';
 	import { getMemberFrame } from '$lib/constants';
 	import { OptimizedImage } from '$lib/components/common';
+	import { parseIndonesianDate } from '$lib/utils/time';
 
 	let sidebarScrollContainer: HTMLDivElement | undefined = $state();
 	interface Props {
@@ -103,33 +104,6 @@
 				}
 			}
 		};
-	}
-
-	function parseIndonesianDate(dateStr: string): Date {
-		const monthMap: { [key: string]: string } = {
-			januari: 'January',
-			februari: 'February',
-			maret: 'March',
-			april: 'April',
-			mei: 'May',
-			juni: 'June',
-			juli: 'July',
-			agustus: 'August',
-			september: 'September',
-			oktober: 'October',
-			november: 'November',
-			desember: 'December'
-		};
-
-		const parts = dateStr.split(' ');
-		if (parts.length >= 3) {
-			const day = parts[0];
-			const month = parts[1].toLowerCase();
-			const year = parts[2];
-			const engMonth = monthMap[month] || month;
-			return new Date(`${engMonth} ${day}, ${year}`);
-		}
-		return new Date(dateStr);
 	}
 
 	function calculateAge(birthdateStr: string): number | string {

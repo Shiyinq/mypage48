@@ -41,3 +41,38 @@ export function formatDuration(
 	}
 	return `${m}m ${s.toString().padStart(2, '0')}s`;
 }
+
+/**
+ * Parses an Indonesian date string (e.g., "28 Mei 2009") into a JavaScript Date object.
+ *
+ * @param dateStr Indonesian date string
+ * @returns Date object
+ */
+export function parseIndonesianDate(dateStr: string | undefined | null): Date {
+	if (!dateStr) return new Date(NaN);
+
+	const monthMap: { [key: string]: string } = {
+		januari: 'January',
+		februari: 'February',
+		maret: 'March',
+		april: 'April',
+		mei: 'May',
+		juni: 'June',
+		juli: 'July',
+		agustus: 'August',
+		september: 'September',
+		oktober: 'October',
+		november: 'November',
+		desember: 'December'
+	};
+
+	const parts = dateStr.split(' ');
+	if (parts.length >= 3) {
+		const day = parts[0];
+		const month = parts[1].toLowerCase();
+		const year = parts[2];
+		const engMonth = monthMap[month] || month;
+		return new Date(`${engMonth} ${day}, ${year}`);
+	}
+	return new Date(dateStr);
+}
