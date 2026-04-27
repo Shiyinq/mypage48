@@ -9,6 +9,7 @@
 	import AdminSetlistModal from '$lib/components/admin/AdminSetlistModal.svelte';
 	import AdminDeleteModal from '$lib/components/admin/AdminDeleteModal.svelte';
 	import { Plus, Music, Search, X } from 'lucide-svelte';
+	import { getErrorMessage } from '$lib/utils/api';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -101,8 +102,9 @@
 				showToast(t('admin.setlists.modal.updated'), 'success');
 			}
 			showSetlistModal = false;
-		} catch {
-			showToast(t('admin.setlists.modal.failedSave'), 'error');
+		} catch (e) {
+			const errorMessage = getErrorMessage(e);
+			showToast(errorMessage || t('admin.setlists.modal.failedSave'), 'error');
 		} finally {
 			isSubmitting = false;
 		}
@@ -114,8 +116,9 @@
 			await adminStore.deleteSetlist(deletingId);
 			showToast(t('admin.setlists.modal.deleted'), 'success');
 			showDeleteModal = false;
-		} catch {
-			showToast(t('admin.setlists.modal.failedDelete'), 'error');
+		} catch (e) {
+			const errorMessage = getErrorMessage(e);
+			showToast(errorMessage || t('admin.setlists.modal.failedDelete'), 'error');
 		}
 	}
 </script>

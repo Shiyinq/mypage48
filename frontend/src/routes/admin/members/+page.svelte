@@ -9,6 +9,7 @@
 	import AdminMemberModal from '$lib/components/admin/AdminMemberModal.svelte';
 	import AdminDeleteModal from '$lib/components/admin/AdminDeleteModal.svelte';
 	import { Plus, Users, Search, X } from 'lucide-svelte';
+	import { getErrorMessage } from '$lib/utils/api';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -99,8 +100,9 @@
 				showToast(t('admin.members.modal.updated'), 'success');
 			}
 			showMemberModal = false;
-		} catch {
-			showToast(t('admin.members.modal.failedSave'), 'error');
+		} catch (e) {
+			const errorMessage = getErrorMessage(e);
+			showToast(errorMessage || t('admin.members.modal.failedSave'), 'error');
 		} finally {
 			isSubmitting = false;
 		}
@@ -112,8 +114,9 @@
 			await adminStore.deleteMember(deletingId);
 			showToast(t('admin.members.modal.deleted'), 'success');
 			showDeleteModal = false;
-		} catch {
-			showToast(t('admin.members.modal.failedDelete'), 'error');
+		} catch (e) {
+			const errorMessage = getErrorMessage(e);
+			showToast(errorMessage || t('admin.members.modal.failedDelete'), 'error');
 		}
 	}
 </script>
