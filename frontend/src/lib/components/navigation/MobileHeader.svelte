@@ -96,7 +96,11 @@
 									title={action.label}
 								>
 									{#if action.loading}
-										<LoaderCircle class="w-4 h-4 animate-spin {action.showLabel && action.label ? 'mr-1.5' : ''}" />
+										<LoaderCircle
+											class="w-4 h-4 animate-spin {action.showLabel && action.label
+												? 'mr-1.5'
+												: ''}"
+										/>
 									{:else if action.icon}
 										<action.icon
 											class="w-4 h-4 {action.showLabel && action.label ? 'mr-1.5' : ''}"
