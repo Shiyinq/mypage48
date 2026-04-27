@@ -14,8 +14,13 @@ import { isAuthenticated } from '$lib/stores/authStatus.svelte';
  * Provides methods for login, logout, registration and password management.
  */
 
+let isLoggingOut = $state(false);
+
 function createAuthStore() {
 	return {
+		get isLoggingOut() {
+			return isLoggingOut;
+		},
 		/**
 		 * Handle login and set initial auth status
 		 */
@@ -37,12 +42,15 @@ function createAuthStore() {
 		 * Handle logout and clear auth status
 		 */
 		logout: async () => {
+			if (isLoggingOut) return;
+			isLoggingOut = true;
 			try {
 				const response = await authApi.logout();
 				return response;
 			} finally {
 				accessToken.set('');
 				isAuthenticated.set(false);
+				isLoggingOut = false;
 			}
 		},
 
