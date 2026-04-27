@@ -214,9 +214,54 @@
 				}
 			: null
 	);
+	const navigationJsonLd = {
+		'@context': 'https://schema.org',
+		'@type': 'ItemList',
+		name: 'Main Navigation',
+		itemListElement: [
+			{
+				'@type': 'SiteNavigationElement',
+				position: 1,
+				name: 'Login',
+				url: `${baseUrl}/login`
+			},
+			{
+				'@type': 'SiteNavigationElement',
+				position: 2,
+				name: 'Register',
+				url: `${baseUrl}/register`
+			},
+			{
+				'@type': 'SiteNavigationElement',
+				position: 3,
+				name: 'Live',
+				url: `${baseUrl}/jkt48/live`
+			},
+			{
+				'@type': 'SiteNavigationElement',
+				position: 4,
+				name: 'News',
+				url: `${baseUrl}/jkt48/news`
+			},
+			{
+				'@type': 'SiteNavigationElement',
+				position: 5,
+				name: 'Events',
+				url: `${baseUrl}/jkt48/events`
+			},
+			{
+				'@type': 'SiteNavigationElement',
+				position: 6,
+				name: 'Sorter',
+				url: `${baseUrl}/jkt48/sorter`
+			}
+		]
+	};
+
 	let allSchemas = $derived(
 		[
 			path === '/' ? jsonLd : webPageJsonLd,
+			path === '/' ? navigationJsonLd : null,
 			organizationJsonLd,
 			breadcrumbJsonLd,
 			...(eventJsonLd || []),
