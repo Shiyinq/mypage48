@@ -13,6 +13,7 @@
 	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
 	import { setlistsStore } from '$lib/stores/theater.svelte';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
+	import { getErrorMessage } from '$lib/utils/api';
 
 	// Sub-components
 	import ImagePreview from './tickets/edit/ImagePreview.svelte';
@@ -297,7 +298,8 @@
 			onclose?.();
 		} catch (e) {
 			logger.error('Failed to update ticket', e, { context: 'EditTicketModal' });
-			showToast(t('forms.ticketUpdateError'), 'error');
+			const errorMessage = getErrorMessage(e);
+			showToast(errorMessage || t('forms.ticketUpdateError'), 'error');
 		} finally {
 			isSubmitting = false;
 		}

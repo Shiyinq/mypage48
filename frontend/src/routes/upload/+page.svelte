@@ -21,6 +21,7 @@
 	import TicketForm from '$lib/components/upload/TicketForm.svelte';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
+	import { getErrorMessage } from '$lib/utils/api';
 
 	const { t } = useTranslation();
 
@@ -332,7 +333,8 @@
 			goto('/');
 		} catch (e) {
 			logger.error('Ticket upload failed', e, { context: 'UploadPage' });
-			showToast(t('upload.uploadError'), 'error');
+			const errorMessage = getErrorMessage(e);
+			showToast(errorMessage || t('upload.uploadError'), 'error');
 		} finally {
 			isSubmitting = false;
 		}
