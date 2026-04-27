@@ -5,7 +5,6 @@
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
 	import { User as UserIcon, LogOut, Settings, LoaderCircle } from 'lucide-svelte';
-	import { auth } from '$lib/apis/auth';
 	import SEO from '$lib/components/SEO.svelte';
 	import { PageHeader, ErrorState } from '$lib/components';
 
