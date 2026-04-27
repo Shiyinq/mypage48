@@ -30,6 +30,7 @@ export interface PageHeaderState {
 		onClick: () => void;
 		theme?: string;
 		showLabel?: boolean;
+		loading?: boolean;
 	}>;
 }
 

@@ -18,6 +18,7 @@
 			label?: string;
 			onClick: () => void;
 			theme?: string;
+			loading?: boolean;
 		}>;
 		rotation?: number;
 		theme?:
