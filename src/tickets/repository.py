@@ -12,7 +12,7 @@ class TicketsRepository:
         self.collection = db["tickets"]
 
     async def create_ticket(self, ticket: TicketInDB):
-        return await self.collection.insert_one(ticket.model_dump())
+        return await self.collection.insert_one(ticket.model_dump(exclude_none=True))
 
     async def get_ticket(self, ticket_id: str, user_id: str) -> Optional[dict]:
         try:
