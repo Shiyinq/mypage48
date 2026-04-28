@@ -7,7 +7,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator, model_validato
 from src.achievements.schemas import RankInfo
 from src.auth.schemas import OshiResponse
 from src.users.constants import ErrorCode, Info
-from src.utils import cleanse_image_url, validate_password_strength
+from src.utils import cleanse_image_url, validate_image_path, validate_password_strength
 
 
 class UserCreateRequest(BaseModel):
@@ -144,13 +144,13 @@ class PublicUserResponse(BaseModel):
 
 
 class UpdateProfilePictureRequest(BaseModel):
-    profilePicture: str
-    blurHash: Optional[str] = None
+    profilePicture: str = Field(max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
 
     @field_validator("profilePicture")
     @classmethod
     def validate_profile_picture(cls, v: str) -> str:
-        return cleanse_image_url(v)
+        return validate_image_path(v, "avatar/", "Profile picture")
 
 
 class UpdateOshiRequest(BaseModel):

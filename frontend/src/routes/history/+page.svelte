@@ -116,17 +116,9 @@
 
 	let editingTicket: TicketType | null = $state(null);
 
-	const handleTicketUpdate = async (updated: TicketType) => {
-		try {
-			// Synchronize via store update action
-			await ticketsStore.updateTicket(updated._id, updated);
-
-			// Invalidate dashboard cache
-			invalidateDashboard();
-			editingTicket = null;
-		} catch (e) {
-			console.error(e);
-		}
+	const handleTicketUpdate = () => {
+		// API call, store sync, and cache invalidation are already handled inside EditTicketModal
+		editingTicket = null;
 	};
 </script>
 

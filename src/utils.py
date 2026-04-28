@@ -169,3 +169,14 @@ def resolve_minio_public_url(url: str) -> str:
         return url
 
     return url.replace(internal_host, public_host)
+
+
+def validate_image_path(v: Optional[str], prefix: str, entity_name: str) -> Optional[str]:
+    """
+    Cleanses an image URL and validates that it starts with the required prefix.
+    Used as a DRY utility inside Pydantic field validators.
+    """
+    cleansed = cleanse_image_url(v)
+    if cleansed and not cleansed.startswith(prefix):
+        raise ValueError(f"{entity_name} image path must start with '{prefix}'")
+    return cleansed

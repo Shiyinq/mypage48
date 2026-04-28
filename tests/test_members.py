@@ -175,3 +175,25 @@ async def test_delete_member_forbidden(client: AsyncClient, db, create_user):
     response = await client.delete(f"/api/members/{member_id}", headers=headers)
     assert response.status_code == 403
 
+@pytest.mark.asyncio
+async def test_member_validation(client: AsyncClient, db, create_user):
+    """Test validation of member img prefix and string lengths."""
+    token, user_id, headers = await create_user("memberval", is_admin=True)
+
+    # 1. Invalid image prefix
+    payload = {
+        "name": "New Member",
+        "nickname": "New",
+        "generation": "10",
+        "img": "wrong/prefix.jpg"
+    }
+    res = await client.post("/api/members", json=payload, headers=headers)
+    assert res.status_code == 422
+    assert "Member image path must start with 'media/jkt48-member/'" in res.text
+
+    # 2. Test max length for name
+    payload["img"] = "media/jkt48-member/ok.jpg"
+    payload["name"] = "a" * 101
+    res = await client.post("/api/members", json=payload, headers=headers)
+    assert res.status_code == 422
+

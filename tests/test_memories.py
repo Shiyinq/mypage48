@@ -45,7 +45,7 @@ async def test_get_memories_with_images(client: AsyncClient, db, create_user):
         seat=TicketSeat(section="A", number=5),
         price=200000,
         currency="IDR",
-        imageUrl="data:image/png;base64,iVBORw0KGgo=",
+        imageUrl="ticket/test.webp",
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
     )
@@ -81,12 +81,12 @@ async def test_get_memories_with_2shot(client: AsyncClient, db, create_user):
         seat=TicketSeat(section="B", number=10),
         price=200000,
         currency="IDR",
-        imageUrl="data:image/png;base64,iVBORw0KGgo=",
+        imageUrl="ticket/test.webp",
         two_shot=TicketTwoShot(
             member_name="Freya Jayawardana",
             type="Roulette",
             price=50000,
-            imageUrl="data:image/png;base64,iVBORw0KGgo="
+            imageUrl="twoshot/test.webp"
         ),
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
