@@ -93,6 +93,9 @@
 					localLoading = false;
 					return;
 				}
+			} else if (finalData.imageUrl) {
+				// Cleanse existing URL to remove domain/proxy part before sending to API
+				finalData.imageUrl = cleanseStorageUrl(finalData.imageUrl);
 			}
 
 			await onsubmit?.(finalData);

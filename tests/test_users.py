@@ -87,6 +87,23 @@ async def test_update_profile_picture(client: AsyncClient, db, create_user):
     assert user["profilePicture"] == dummy_path
 
 @pytest.mark.asyncio
+async def test_update_profile_picture_validation(client: AsyncClient, db, create_user):
+    """Test validation of profile picture path and length."""
+    token, user_id, headers = await create_user("valuser")
+
+    # 1. Test missing prefix
+    pic_payload = {"profilePicture": "wrong/path/image.webp"}
+    response = await client.post("/api/users/profile-picture", json=pic_payload, headers=headers)
+    assert response.status_code == 422
+    assert "Profile picture image path must start with 'avatar/'" in response.text
+
+    # 2. Test exceeding length (100)
+    long_path = "avatar/" + "a" * 100
+    pic_payload = {"profilePicture": long_path}
+    response = await client.post("/api/users/profile-picture", json=pic_payload, headers=headers)
+    assert response.status_code == 422
+
+@pytest.mark.asyncio
 async def test_get_public_profile(client: AsyncClient, db):
     # Register a user who is public
     register_payload = {
