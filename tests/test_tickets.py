@@ -142,3 +142,36 @@ async def test_delete_ticket(client: AsyncClient, db, create_user):
     # Verify deletion.
     get_res = await client.get(f"/api/theater/tickets/{ticket_id}", headers=headers)
     assert get_res.status_code == 404
+
+@pytest.mark.asyncio
+async def test_ticket_image_validation(client: AsyncClient, db, create_user):
+    """Test validation of ticket and two-shot image paths/lengths."""
+    token, user_id, headers = await create_user("ticketval")
+
+    # 1. Invalid ticket image prefix
+    payload = {
+        "ticket_id": "T-ERR",
+        "event": {"title": "Test", "date": "2024-01-01", "day": "Mon", "time": "19:00"},
+        "seat": {"section": "A", "number": 1},
+        "price": 1,
+        "imageUrl": "wrong/prefix.jpg"
+    }
+    res = await client.post("/api/theater/tickets", json=payload, headers=headers)
+    assert res.status_code == 422
+    assert "Ticket image path must start with 'ticket/'" in res.text
+
+    # 2. Invalid two-shot image prefix
+    payload["imageUrl"] = "ticket/ok.jpg"
+    payload["two_shot"] = {
+        "member_name": "Feni",
+        "price": 50000,
+        "imageUrl": "wrong/two.jpg"
+    }
+    res = await client.post("/api/theater/tickets", json=payload, headers=headers)
+    assert res.status_code == 422
+    assert "Two-shot image path must start with 'twoshot/'" in res.text
+
+    # 3. Test max length
+    payload["imageUrl"] = "ticket/" + "a" * 100
+    res = await client.post("/api/theater/tickets", json=payload, headers=headers)
+    assert res.status_code == 422

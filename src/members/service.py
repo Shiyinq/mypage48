@@ -157,6 +157,12 @@ class MemberService:
 
             member_dict = data.model_dump(exclude_none=True)
 
+            # Automatically generate member_code from name
+            if "name" in member_dict:
+                member_dict["member_code"] = (
+                    member_dict["name"].upper().strip().replace(" ", "_")
+                )
+
             # If img is present but blurHash is missing, try to resolve it from storage metadata
             if member_dict.get("img") and not member_dict.get("blurHash"):
                 # We use resolve_member logic but only for the metadata part
@@ -192,6 +198,12 @@ class MemberService:
 
             update_data = data.model_dump(exclude_none=True)
             if update_data:
+                # Automatically generate member_code if name is being updated
+                if "name" in update_data:
+                    update_data["member_code"] = (
+                        update_data["name"].upper().strip().replace(" ", "_")
+                    )
+
                 # Cleanse image URL if provided (convert full URL to relative path)
                 if "img" in update_data:
                     update_data["img"] = cleanse_image_url(update_data["img"])
@@ -275,21 +287,19 @@ class MemberService:
             }
 
             async def _resolve_upcoming(m_data, d_until, m_age):
-                img_data = await self.storage_service.resolve_external_media(
-                    m_data.get("img")
-                )
+                resolved = await self._resolve_member(m_data)
                 return BirthdayResponse(
-                    id=m_data.get("id", ""),
-                    name=m_data.get("name", ""),
-                    active=m_data.get("active", True),
-                    img=img_data["url"],
-                    img_medium=img_data["url_medium"],
-                    img_small=img_data["url_small"],
-                    blurHash=img_data["blurHash"] or m_data.get("blurHash"),
-                    birthdate=m_data.get("birthdate", ""),
+                    id=resolved.get("id", ""),
+                    name=resolved.get("name", ""),
+                    active=resolved.get("active", True),
+                    img=resolved.get("img"),
+                    img_medium=resolved.get("img_medium"),
+                    img_small=resolved.get("img_small"),
+                    blurHash=resolved.get("blurHash"),
+                    birthdate=resolved.get("birthdate", ""),
                     days_until=d_until,
                     age=m_age,
-                    member_type=m_data.get("member_type", "JKT48"),
+                    member_type=resolved.get("member_type", "JKT48"),
                 )
 
             tasks = []
@@ -366,15 +376,14 @@ class MemberService:
             }
 
             async def _resolve_range(m_data, b_date):
+                resolved = await self._resolve_member(m_data)
                 return {
-                    "id": m_data.get("id", ""),
-                    "name": m_data.get("name", ""),
+                    "id": resolved.get("id", ""),
+                    "name": resolved.get("name", ""),
                     "date": b_date,
-                    "img": await self.storage_service.resolve_external_url(
-                        m_data.get("img")
-                    ),
-                    "active": m_data.get("active", True),
-                    "member_type": m_data.get("member_type", "JKT48"),
+                    "img": resolved.get("img"),
+                    "active": resolved.get("active", True),
+                    "member_type": resolved.get("member_type", "JKT48"),
                 }
 
             tasks = []

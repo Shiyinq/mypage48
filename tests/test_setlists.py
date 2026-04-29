@@ -264,3 +264,31 @@ async def test_delete_setlist_forbidden(client: AsyncClient, db, create_user):
     setlist_id = "pajamadrive"
     response = await client.delete(f"/api/theater/setlists/{setlist_id}", headers=headers)
     assert response.status_code == 403
+
+@pytest.mark.asyncio
+async def test_setlist_validation(client: AsyncClient, db, create_user):
+    """Test validation of setlist imageUrl, title, type, and description."""
+    token, user_id, headers = await create_user("setlistval", is_admin=True)
+
+    # 1. Invalid image prefix
+    payload = {
+        "title": "New",
+        "description": "Desc",
+        "type": "setlist",
+        "imageUrl": "wrong/prefix.jpg"
+    }
+    res = await client.post("/api/theater/setlists", json=payload, headers=headers)
+    assert res.status_code == 422
+    assert "Setlist image path must start with 'media/setlists/'" in res.text
+
+    # 2. Invalid type
+    payload["imageUrl"] = "media/setlists/ok.jpg"
+    payload["type"] = "concert" # only 'setlist' or 'event' allowed
+    res = await client.post("/api/theater/setlists", json=payload, headers=headers)
+    assert res.status_code == 422
+
+    # 3. Test max length for title
+    payload["type"] = "setlist"
+    payload["title"] = "a" * 101
+    res = await client.post("/api/theater/setlists", json=payload, headers=headers)
+    assert res.status_code == 422

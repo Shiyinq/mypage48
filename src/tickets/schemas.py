@@ -3,7 +3,7 @@ from typing import Annotated, List, Optional, Union
 
 from pydantic import BaseModel, BeforeValidator, Field, field_validator
 
-from src.utils import cleanse_image_markdown, cleanse_image_url
+from src.utils import cleanse_image_markdown, validate_image_path
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
@@ -38,10 +38,13 @@ class TicketTwoShotBase(BaseModel):
 
 
 class TicketTwoShot(TicketTwoShotBase):
+    imageUrl: Optional[str] = Field(default=None, max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
+
     @field_validator("imageUrl")
     @classmethod
     def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
-        return cleanse_image_url(v)
+        return validate_image_path(v, "twoshot/", "Two-shot")
 
 
 class TicketBase(BaseModel):
@@ -60,11 +63,13 @@ class TicketBase(BaseModel):
 
 class TicketCreateRequest(TicketBase):
     two_shot: Optional[TicketTwoShot] = None
+    imageUrl: Optional[str] = Field(default=None, max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
 
     @field_validator("imageUrl")
     @classmethod
     def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
-        return cleanse_image_url(v)
+        return validate_image_path(v, "ticket/", "Ticket")
 
     @field_validator("notes")
     @classmethod
@@ -78,15 +83,15 @@ class TicketUpdateRequest(BaseModel):
     seat: Optional[TicketSeat] = None
     price: Optional[float] = None
     rules: Optional[TicketRules] = None
-    imageUrl: Optional[str] = None
-    blurHash: Optional[str] = None
+    imageUrl: Optional[str] = Field(default=None, max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
     notes: Optional[str] = None
     two_shot: Optional[TicketTwoShot] = None
 
     @field_validator("imageUrl")
     @classmethod
     def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
-        return cleanse_image_url(v)
+        return validate_image_path(v, "ticket/", "Ticket")
 
     @field_validator("notes")
     @classmethod
