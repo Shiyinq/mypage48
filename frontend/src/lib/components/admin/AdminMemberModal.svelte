@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { X, User, LoaderCircle, CircleCheck, Sparkles } from 'lucide-svelte';
+	import { X, User, LoaderCircle, CircleCheck, Sparkles, ChevronDown } from 'lucide-svelte';
 	import type { Member } from '$lib/apis/members';
 	import { fade } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -37,6 +37,11 @@
 		img: '',
 		blurHash: '' as string | undefined,
 		active: true,
+		member_type: 'DREAM',
+		birthdate: '',
+		bloodType: '',
+		height: '',
+		horoscope: '',
 		socials: {
 			twitter: '',
 			instagram: '',
@@ -61,6 +66,11 @@
 					img: member.img || '',
 					blurHash: member.blurHash,
 					active: member.active ?? true,
+					member_type: member.member_type || 'DREAM',
+					birthdate: parseIndoDateToISO(member.birthdate || ''),
+					bloodType: member.bloodType || '',
+					height: member.height ? member.height.replace('cm', '') : '',
+					horoscope: member.horoscope || '',
 					socials: {
 						twitter: member.socials?.twitter || '',
 						instagram: member.socials?.instagram || '',
@@ -85,12 +95,64 @@
 		return name.toLowerCase().trim().replace(/\s+/g, '_');
 	}
 
+	const monthsMapIndo = [
+		'Januari',
+		'Februari',
+		'Maret',
+		'April',
+		'Mei',
+		'Juni',
+		'Juli',
+		'Agustus',
+		'September',
+		'Oktober',
+		'November',
+		'Desember'
+	];
+
+	function formatDateToIndo(dateStr: string): string {
+		if (!dateStr) return '';
+		const date = new Date(dateStr);
+		const day = date.getDate();
+		const month = monthsMapIndo[date.getMonth()];
+		const year = date.getFullYear();
+		return `${day} ${month} ${year}`;
+	}
+
+	function parseIndoDateToISO(indoDate: string): string {
+		if (!indoDate || indoDate === '-') return '';
+		const parts = indoDate.split(' ');
+		if (parts.length !== 3) return '';
+
+		const day = parts[0].padStart(2, '0');
+		const monthStr = parts[1];
+		const year = parts[2];
+
+		const monthIndex = monthsMapIndo.indexOf(monthStr);
+		if (monthIndex === -1) return '';
+
+		const month = (monthIndex + 1).toString().padStart(2, '0');
+		return `${year}-${month}-${day}`;
+	}
+
 	async function handleSubmit() {
 		if (!isFormValid || localLoading) return;
 		localLoading = true;
 
 		try {
 			let finalData = { ...formData };
+
+			// Format physical details
+			if (finalData.birthdate && finalData.birthdate.includes('-')) {
+				finalData.birthdate = formatDateToIndo(finalData.birthdate);
+			}
+
+			if (finalData.height) {
+				const heightStr = String(finalData.height);
+				if (!heightStr.endsWith('cm')) {
+					finalData.height = `${heightStr}cm`;
+				}
+			}
 
 			if (formData.img && formData.img.startsWith('data:image/')) {
 				try {
@@ -220,13 +282,45 @@
 									class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 									>{t('admin.members.modal.generation')}</label
 								>
-								<input
-									id="member-gen"
-									type="text"
-									bind:value={formData.generation}
-									placeholder="e.g. 3"
-									class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
-								/>
+								<div class="relative">
+									<select
+										id="member-gen"
+										bind:value={formData.generation}
+										class="w-full px-4 pr-10 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all cursor-pointer appearance-none"
+									>
+										<option value="">{t('admin.members.modal.selectPlaceholder')}</option>
+										{#each Array.from({ length: 20 }, (_, i) => i + 1) as gen}
+											<option value={gen.toString()}>Gen {gen}</option>
+										{/each}
+									</select>
+									<ChevronDown
+										class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+									/>
+								</div>
+							</div>
+
+							<div class="space-y-2">
+								<label
+									for="member-type"
+									class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+									>{t('admin.members.modal.memberType')}</label
+								>
+								<div class="relative">
+									<select
+										id="member-type"
+										bind:value={formData.member_type}
+										class="w-full px-4 pr-10 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all cursor-pointer appearance-none"
+									>
+										<option value="DREAM">DREAM</option>
+										<option value="PASSION">PASSION</option>
+										<option value="LOVE">LOVE</option>
+										<option value="TRAINEE">TRAINEE</option>
+										<option value="JKT48_VIRTUAL">JKT48 VIRTUAL</option>
+									</select>
+									<ChevronDown
+										class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+									/>
+								</div>
 							</div>
 						</div>
 
@@ -235,6 +329,87 @@
 							label={t('admin.members.modal.imageUrl')}
 							onSelect={(base64) => (formData.img = base64)}
 						/>
+					</div>
+
+					<!-- Physical Details -->
+					<div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
+						<div class="space-y-2">
+							<label for="member-birthdate" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+								>{t('admin.members.modal.birthdate')}</label
+							>
+							<input
+								id="member-birthdate"
+								type="date"
+								bind:value={formData.birthdate}
+								class="w-full px-4 py-2 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm cursor-pointer"
+							/>
+						</div>
+						<div class="space-y-2">
+							<label for="member-blood" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+								>{t('admin.members.modal.bloodType')}</label
+							>
+							<div class="relative">
+								<select
+									id="member-blood"
+									bind:value={formData.bloodType}
+									class="w-full px-4 pr-10 py-2 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm cursor-pointer appearance-none"
+								>
+									<option value="">{t('admin.members.modal.selectPlaceholder')}</option>
+									<option value="A">A</option>
+									<option value="B">B</option>
+									<option value="AB">AB</option>
+									<option value="O">O</option>
+								</select>
+								<ChevronDown
+									class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+								/>
+							</div>
+						</div>
+						<div class="space-y-2">
+							<label for="member-height" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+								>{t('admin.members.modal.height')}</label
+							>
+							<div class="relative">
+								<input
+									id="member-height"
+									type="number"
+									min="0"
+									bind:value={formData.height}
+									placeholder="e.g. 162"
+									class="w-full px-4 py-2 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm"
+								/>
+								<span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">cm</span>
+							</div>
+						</div>
+						<div class="space-y-2">
+							<label for="member-horoscope" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+								>{t('admin.members.modal.horoscope')}</label
+							>
+							<div class="relative">
+								<select
+									id="member-horoscope"
+									bind:value={formData.horoscope}
+									class="w-full px-4 pr-10 py-2 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm cursor-pointer appearance-none"
+								>
+									<option value="">{t('admin.members.modal.selectPlaceholder')}</option>
+									<option value="Aries">Aries</option>
+									<option value="Taurus">Taurus</option>
+									<option value="Gemini">Gemini</option>
+									<option value="Cancer">Cancer</option>
+									<option value="Leo">Leo</option>
+									<option value="Virgo">Virgo</option>
+									<option value="Libra">Libra</option>
+									<option value="Scorpio">Scorpio</option>
+									<option value="Sagittarius">Sagittarius</option>
+									<option value="Capricorn">Capricorn</option>
+									<option value="Aquarius">Aquarius</option>
+									<option value="Pisces">Pisces</option>
+								</select>
+								<ChevronDown
+									class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+								/>
+							</div>
+						</div>
 					</div>
 
 					<!-- Jikoshoukai -->

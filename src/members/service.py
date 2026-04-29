@@ -157,6 +157,12 @@ class MemberService:
 
             member_dict = data.model_dump(exclude_none=True)
 
+            # Automatically generate member_code from name
+            if "name" in member_dict:
+                member_dict["member_code"] = (
+                    member_dict["name"].upper().strip().replace(" ", "_")
+                )
+
             # If img is present but blurHash is missing, try to resolve it from storage metadata
             if member_dict.get("img") and not member_dict.get("blurHash"):
                 # We use resolve_member logic but only for the metadata part
@@ -192,6 +198,12 @@ class MemberService:
 
             update_data = data.model_dump(exclude_none=True)
             if update_data:
+                # Automatically generate member_code if name is being updated
+                if "name" in update_data:
+                    update_data["member_code"] = (
+                        update_data["name"].upper().strip().replace(" ", "_")
+                    )
+
                 # Cleanse image URL if provided (convert full URL to relative path)
                 if "img" in update_data:
                     update_data["img"] = cleanse_image_url(update_data["img"])
