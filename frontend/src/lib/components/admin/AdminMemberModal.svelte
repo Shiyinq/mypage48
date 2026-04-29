@@ -332,9 +332,13 @@
 					</div>
 
 					<!-- Physical Details -->
-					<div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
+					<div
+						class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-100 dark:border-zinc-800"
+					>
 						<div class="space-y-2">
-							<label for="member-birthdate" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+							<label
+								for="member-birthdate"
+								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 								>{t('admin.members.modal.birthdate')}</label
 							>
 							<input
@@ -345,7 +349,9 @@
 							/>
 						</div>
 						<div class="space-y-2">
-							<label for="member-blood" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+							<label
+								for="member-blood"
+								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 								>{t('admin.members.modal.bloodType')}</label
 							>
 							<div class="relative">
@@ -366,7 +372,9 @@
 							</div>
 						</div>
 						<div class="space-y-2">
-							<label for="member-height" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+							<label
+								for="member-height"
+								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 								>{t('admin.members.modal.height')}</label
 							>
 							<div class="relative">
@@ -378,11 +386,16 @@
 									placeholder="e.g. 162"
 									class="w-full px-4 py-2 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm"
 								/>
-								<span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">cm</span>
+								<span
+									class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none"
+									>cm</span
+								>
 							</div>
 						</div>
 						<div class="space-y-2">
-							<label for="member-horoscope" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
+							<label
+								for="member-horoscope"
+								class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1"
 								>{t('admin.members.modal.horoscope')}</label
 							>
 							<div class="relative">
