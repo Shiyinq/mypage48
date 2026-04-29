@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from src.tickets.schemas import PaginationMeta
-from src.utils import cleanse_image_url, validate_image_path
+from src.utils import validate_image_path
 
 
 class SocialMedia(BaseModel):

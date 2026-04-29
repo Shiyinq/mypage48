@@ -41,6 +41,7 @@ from src.dependencies import (
     get_google_sso,
     get_settings,
     get_user_service,
+    require_csrf_protection,
 )
 from src.limiter import limiter
 from src.logging_config import create_logger
@@ -150,6 +151,7 @@ async def signin_with_email_and_password(
 async def refresh_access_token(
     request: Request,
     response: Response,
+    _=Depends(require_csrf_protection),
     auth_service: AuthService = Depends(get_auth_service),
     config: Settings = Depends(get_settings),
 ):
@@ -335,6 +337,7 @@ async def github_auth_callback(
 async def logout(
     request: Request,
     response: Response,
+    _=Depends(require_csrf_protection),
     auth_service: AuthService = Depends(get_auth_service),
     config: Settings = Depends(get_settings),
 ):

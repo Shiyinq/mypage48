@@ -3,7 +3,7 @@ from typing import Annotated, List, Optional, Union
 
 from pydantic import BaseModel, BeforeValidator, Field, field_validator
 
-from src.utils import cleanse_image_markdown, cleanse_image_url, validate_image_path
+from src.utils import cleanse_image_markdown, validate_image_path
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 

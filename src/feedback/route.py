@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Depends, status
 
-from src.dependencies import get_current_user, get_feedback_service, require_admin
+from src.dependencies import (
+    get_current_user,
+    get_feedback_service,
+    require_admin,
+    require_csrf_protection,
+)
 from src.feedback.schemas import (
     FeedbackCreate,
     FeedbackPaginationResponse,
@@ -20,6 +25,7 @@ async def submit_feedback(
     feedback: FeedbackCreate,
     current_user=Depends(get_current_user),
     service: FeedbackService = Depends(get_feedback_service),
+    _=Depends(require_csrf_protection),
 ):
     """Submit new feedback"""
     return await service.create_feedback(feedback)

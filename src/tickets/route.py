@@ -3,7 +3,11 @@ from typing import List
 from fastapi import APIRouter, Depends, Query, status
 
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_current_user, get_tickets_service
+from src.dependencies import (
+    get_current_user,
+    get_tickets_service,
+    require_csrf_protection,
+)
 from src.tickets.schemas import (
     MessageResponse,
     TicketCreateRequest,
@@ -26,6 +30,7 @@ async def create_ticket(
     ticket_data: TicketCreateRequest,
     current_user: UserCurrent = Depends(get_current_user),
     service: TicketsService = Depends(get_tickets_service),
+    _=Depends(require_csrf_protection),
 ):
     """
     Create a new ticket.
@@ -108,6 +113,7 @@ async def update_ticket(
     ticket_data: TicketUpdateRequest,
     current_user: UserCurrent = Depends(get_current_user),
     service: TicketsService = Depends(get_tickets_service),
+    _=Depends(require_csrf_protection),
 ):
     """
     Update a ticket.
@@ -124,6 +130,7 @@ async def delete_ticket(
     ticket_id: str,
     current_user: UserCurrent = Depends(get_current_user),
     service: TicketsService = Depends(get_tickets_service),
+    _=Depends(require_csrf_protection),
 ):
     """
     Delete a ticket.

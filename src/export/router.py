@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_current_user, get_export_service
+from src.dependencies import (
+    get_current_user,
+    get_export_service,
+    require_csrf_protection,
+)
 from src.export.schemas import ExportResponse
 from src.export.service import ExportService
 
@@ -22,6 +26,7 @@ async def get_export_status(
 async def initiate_export(
     current_user: UserCurrent = Depends(get_current_user),
     service: ExportService = Depends(get_export_service),
+    _=Depends(require_csrf_protection),
 ):
     """Initiate a data export job."""
     return await service.initiate_export(current_user.userId)
