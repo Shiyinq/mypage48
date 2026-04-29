@@ -3,7 +3,12 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_current_user, get_setlists_service, require_admin
+from src.dependencies import (
+    get_current_user,
+    get_setlists_service,
+    require_admin,
+    require_csrf_protection,
+)
 from src.logging_config import create_logger
 from src.setlists.schemas import (
     MessageResponse,
@@ -102,7 +107,7 @@ async def get_setlist_by_title(
     "",
     status_code=status.HTTP_201_CREATED,
     response_model=SetlistResponse,
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_admin), Depends(require_csrf_protection)],
 )
 async def create_setlist(
     data: SetlistCreateRequest,
@@ -117,7 +122,7 @@ async def create_setlist(
 @router.put(
     "/{setlist_id}",
     response_model=SetlistResponse,
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_admin), Depends(require_csrf_protection)],
 )
 async def update_setlist(
     setlist_id: str,
@@ -133,7 +138,7 @@ async def update_setlist(
 @router.delete(
     "/{setlist_id}",
     response_model=MessageResponse,
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_admin), Depends(require_csrf_protection)],
 )
 async def delete_setlist(
     setlist_id: str,

@@ -2,7 +2,7 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from src.utils import cleanse_image_url, validate_image_path
+from src.utils import validate_image_path
 
 
 class SetlistBase(BaseModel):

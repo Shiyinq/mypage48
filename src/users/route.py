@@ -2,9 +2,13 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 
-from src import dependencies
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_user_service, require_admin
+from src.dependencies import (
+    get_current_user,
+    get_user_service,
+    require_admin,
+    require_csrf_protection,
+)
 from src.logging_config import create_logger
 from src.users.schemas import (
     MessageResponse,
@@ -66,7 +70,7 @@ async def signup(
 
 @router.get("/users/profile", response_model=ProfileFullResponse)
 async def user_profile(
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
     user_service: UserService = Depends(get_user_service),
 ):
     """
@@ -78,7 +82,8 @@ async def user_profile(
 @router.post("/users/oshi", status_code=200, response_model=MessageResponse)
 async def update_oshi(
     request: UpdateOshiRequest,
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
+    _=Depends(require_csrf_protection),
     user_service: UserService = Depends(get_user_service),
 ):
     """
@@ -90,7 +95,8 @@ async def update_oshi(
 @router.post("/users/public-status", status_code=200, response_model=MessageResponse)
 async def update_public_status(
     request: UpdatePublicStatusRequest,
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
+    _=Depends(require_csrf_protection),
     user_service: UserService = Depends(get_user_service),
 ):
     """
@@ -104,7 +110,8 @@ async def update_public_status(
 @router.post("/users/profile-picture", status_code=200, response_model=MessageResponse)
 async def update_profile_picture(
     request: UpdateProfilePictureRequest,
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
+    _=Depends(require_csrf_protection),
     user_service: UserService = Depends(get_user_service),
 ):
     """
@@ -118,7 +125,8 @@ async def update_profile_picture(
 @router.patch("/users/profile", status_code=200, response_model=MessageResponse)
 async def update_profile(
     request: UpdateProfileRequest,
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
+    _=Depends(require_csrf_protection),
     user_service: UserService = Depends(get_user_service),
 ):
     """

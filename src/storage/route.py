@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response, StreamingResponse
 
-from src import dependencies
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_storage_service
+from src.dependencies import (
+    get_current_user,
+    get_storage_service,
+    require_csrf_protection,
+)
 from src.logging_config import create_logger
 from src.storage.schemas import (
     BatchPresignedUrlRequest,
@@ -89,8 +92,9 @@ async def proxy_external_media(
 @router.post("/storage/upload", status_code=201, response_model=ImageUploadResponse)
 async def upload_image(
     request: ImageUploadRequest,
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
     storage_service: StorageService = Depends(get_storage_service),
+    _=Depends(require_csrf_protection),
 ):
     """
     Upload an image to storage.
@@ -111,7 +115,7 @@ async def upload_image(
 @router.get("/storage/url/{filename:path}", response_model=PresignedUrlResponse)
 async def get_presigned_url(
     filename: str,
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
     storage_service: StorageService = Depends(get_storage_service),
 ):
     """
@@ -125,8 +129,9 @@ async def get_presigned_url(
 @router.post("/storage/presign/bulk", response_model=BatchPresignedUrlResponse)
 async def get_bulk_presigned_urls(
     request: BatchPresignedUrlRequest,
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
     storage_service: StorageService = Depends(get_storage_service),
+    _=Depends(require_csrf_protection),
 ):
     """
     Get presigned URLs for multiple images in bulk.
