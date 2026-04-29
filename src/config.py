@@ -59,6 +59,7 @@ class Settings(BaseSettings):
     STORAGE_USE_PRESIGNED: bool = False
 
     API_BASE_URL: str = "http://localhost:8080/api"
+    COOKIE_DOMAIN: Optional[str] = None
 
     # Analytics (Optional, mainly for frontend build but added here for central config)
     PUBLIC_UMAMI_WEBSITE_ID: Optional[str] = None
@@ -329,6 +330,10 @@ class Settings(BaseSettings):
     @property
     def api_base_url(self) -> str:
         return self.API_BASE_URL.rstrip("/")
+
+    @property
+    def cookie_domain(self) -> Optional[str]:
+        return self.COOKIE_DOMAIN
 
 
 config = Settings()
