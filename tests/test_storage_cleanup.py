@@ -1,17 +1,10 @@
-import asyncio
-import os
-import sys
+import pytest
 from unittest.mock import AsyncMock, MagicMock
-
-# Add src to path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 from src.storage.service import StorageService
 from src.config import Settings
 
+@pytest.mark.asyncio
 async def test_delete_image_with_variants():
-    print("Testing delete_image with variants...")
-    
     # Mock repository
     repo = AsyncMock()
     repo.file_exists.return_value = True
@@ -25,7 +18,7 @@ async def test_delete_image_with_variants():
     filename = "ticket/user123/test_image.webp"
     success = await service.delete_image(filename)
     
-    print(f"Delete success: {success}")
+    assert success is True
     
     # Verify calls
     expected_calls = [
@@ -35,19 +28,12 @@ async def test_delete_image_with_variants():
     ]
     
     called_paths = [call.args[0] for call in repo.delete_file.call_args_list]
-    print(f"Deleted paths: {called_paths}")
     
     for path in expected_calls:
-        if path in called_paths:
-            print(f"✓ {path} was deleted")
-        else:
-            print(f"✗ {path} was NOT deleted")
-            return False
-            
-    return True
+        assert path in called_paths, f"{path} was NOT deleted"
 
+@pytest.mark.asyncio
 async def test_skip_external_urls():
-    print("\nTesting skip deletion for external URLs...")
     repo = AsyncMock()
     config = MagicMock(spec=Settings)
     service = StorageService(repo, config)
@@ -60,21 +46,6 @@ async def test_skip_external_urls():
     
     for url in urls:
         success = await service.delete_image(url)
-        if not success and repo.delete_file.call_count == 0:
-            print(f"✓ Correctly skipped: {url[:30]}...")
-        else:
-            print(f"✗ Failed to skip: {url}")
-            return False
-    return True
-
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    s1 = loop.run_until_complete(test_delete_image_with_variants())
-    s2 = loop.run_until_complete(test_skip_external_urls())
-    
-    if s1 and s2:
-        print("\nALL STORAGE TESTS PASSED")
-        sys.exit(0)
-    else:
-        print("\nSOME TESTS FAILED")
-        sys.exit(1)
+        # Should return False because it skipped deletion for non-internal path
+        assert success is False
+        assert repo.delete_file.call_count == 0, f"Failed to skip: {url}"
