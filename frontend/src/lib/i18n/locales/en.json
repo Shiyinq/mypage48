@@ -67,7 +67,7 @@
 	"seo": {
 		"default": "MyPage48 - Your ultimate JKT48 theater companion. Track your theater visits, 2-shots, and achievements.",
 		"dashboard": "View your JKT48 theater attendance statistics, spending analysis, and seat map visualization.",
-		"login": "Log in to your MyPage48 account to track your JKT48 theater journey.",
+		"login": "Login to your MyPage48 account to track your JKT48 theater journey.",
 		"register": "Create a new MyPage48 account to track your JKT48 theater journey.",
 		"forgotPassword": "Reset your MyPage48 password to regain access to your account.",
 		"resetPassword": "Set a new secure password for your MyPage48 account.",
@@ -277,19 +277,19 @@
 	},
 	"auth": {
 		"login": {
-			"title": "Sign In",
+			"title": "Login",
 			"subtitle": "Welcome back, Wota!",
 			"emailLabel": "Email or Username",
 			"emailPlaceholder": "Email or Username",
 			"passwordLabel": "Password",
 			"passwordPlaceholder": "••••••••",
 			"forgotPassword": "Forgot Password?",
-			"signIn": "Sign In",
+			"signIn": "Login",
 			"noAccount": "Don't have an account?",
 			"registerCta": "Register account",
 			"welcomeBack": "Welcome back!",
 			"invalidCredentials": "Invalid email or password",
-			"sessionInvalid": "Your session has expired or is invalid. Please sign in again."
+			"sessionInvalid": "Your session has expired or is invalid. Please Login again."
 		},
 		"register": {
 			"title": "Join the Fandom",
@@ -307,7 +307,7 @@
 			"submit": "Create Account",
 			"submitting": "Creating Account...",
 			"hasAccount": "Already have an account?",
-			"signIn": "Sign In to MyPage48",
+			"signIn": "Login to MyPage48",
 			"passwordsMismatch": "Passwords do not match",
 			"success": "Account created! Please check your email to verify your account.",
 			"failed": "Registration failed. Please try again."
@@ -944,7 +944,7 @@
 		},
 		"401": {
 			"title": "Unauthorized",
-			"subtitle": "Please sign in to continue.",
+			"subtitle": "Please login to continue.",
 			"description": "You need to be authenticated to access this page."
 		},
 		"default": {
