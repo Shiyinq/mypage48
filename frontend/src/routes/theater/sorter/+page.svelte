@@ -8,6 +8,7 @@
 	import SorterGenerationSelect from '$lib/components/sorter/SorterGenerationSelect.svelte';
 	import SorterProcess from '$lib/components/sorter/SorterProcess.svelte';
 	import SorterResults from '$lib/components/sorter/SorterResults.svelte';
+	import { calculateTotalMoves } from '$lib/utils/sorter';
 
 	const { t } = useTranslation();
 
@@ -33,6 +34,7 @@
 	let numQuestion = $state(0);
 	let finishSize = $state(0);
 	let finishFlag = $state(0);
+	let totalMoves = $state(0);
 
 	// Results
 	interface ResultMember extends Member {
@@ -126,6 +128,7 @@
 		head2 = 0;
 		finishSize = 0;
 		finishFlag = 0;
+		totalMoves = calculateTotalMoves(selectedMembers.length);
 		history = [];
 		currentState = 'sorting';
 	}
@@ -250,9 +253,9 @@
 	let progress = $derived(
 		finishFlag
 			? 100
-			: Math.floor(
-					(finishSize / (selectedMembers.length * Math.log2(selectedMembers.length) * 0.7)) * 100
-				)
+			: totalMoves > 0
+				? Math.floor((finishSize / totalMoves) * 100)
+				: 0
 	);
 	let displayProgress = $derived(Math.min(progress, 99));
 
