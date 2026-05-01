@@ -2,325 +2,19 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import type { Member } from '$lib/apis/members';
-	import { membersStore } from '$lib/stores/theater.svelte';
-	import { showToast } from '$lib/stores';
 	import SorterGenerationSelect from '$lib/components/sorter/SorterGenerationSelect.svelte';
 	import SorterProcess from '$lib/components/sorter/SorterProcess.svelte';
 	import SorterResults from '$lib/components/sorter/SorterResults.svelte';
-	import { calculateTotalMoves } from '$lib/utils/sorter';
+	import { createSorter } from '$lib/stores/sorter.svelte';
 
 	const { t } = useTranslation();
+	const sorter = createSorter(t, '/theater/sorter');
 
-	// Sorter State
-	type SorterState = 'landing' | 'sorting' | 'results';
-	let currentState: SorterState = $state('landing');
-
-	let allMembers: Member[] = $state([]);
-	let selectedMembers: Member[] = $state([]);
-	let generations: string[] = $state([]);
-	let selectedGenerations: Set<string> = $state(new Set());
-	let loadingGenerations = $state(true);
-
-	// Sorting Logic State
-	let lstMember: number[][] = $state([]);
-	let parent: number[] = [];
-	let rec: number[] = [];
-	let cmp1 = $state(0);
-	let cmp2 = $state(0);
-	let head1 = $state(0);
-	let head2 = $state(0);
-	let nrec = 0;
-	let numQuestion = $state(0);
-	let finishSize = $state(0);
-	let finishFlag = $state(0);
-	let totalMoves = $state(0);
-
-	// Results
-	interface ResultMember extends Member {
-		rank: number;
-	}
-	let results: ResultMember[] = $state([]);
 	let layoutMode: 'card' | 'list' = $state('card');
 
-	// History for Undo
-	interface SorterHistoryState {
-		lstMember: number[][];
-		parent: number[];
-		rec: number[];
-		cmp1: number;
-		cmp2: number;
-		head1: number;
-		head2: number;
-		nrec: number;
-		numQuestion: number;
-		finishSize: number;
-		finishFlag: number;
-	}
-	let history: SorterHistoryState[] = $state([]);
-
-	// Animation State
-	let isAnimating = $state(false);
-	let lastSelectedSide: 'left' | 'right' | 'tie' | null = $state(null);
-
-	async function handleSelect(flag: number) {
-		if (isAnimating) return;
-
-		lastSelectedSide = flag === 1 ? 'left' : flag === -1 ? 'right' : 'tie';
-		isAnimating = true;
-
-		// Wait for animation to play
-		await new Promise((resolve) => setTimeout(resolve, 450));
-
-		sortList(flag);
-		
-		if (finishFlag) {
-			// Wait for progress bar to animate to 100%
-			await new Promise((resolve) => setTimeout(resolve, 800));
-			showResults();
-		}
-
-		isAnimating = false;
-		lastSelectedSide = null;
-	}
-
-	async function fetchMembers() {
-		try {
-			await membersStore.load({ limit: 100 }, true);
-			allMembers = membersStore.list;
-			const gens = await membersStore.getGenerations();
-			generations = gens.sort((a: string, b: string) => parseInt(a) - parseInt(b));
-			selectedGenerations = new Set();
-		} catch {
-			showToast(t('theater.members.errorTitle') || 'Failed to load members', 'error');
-		} finally {
-			loadingGenerations = false;
-		}
-	}
-
-	function toggleGeneration(gen: string) {
-		const next = new Set(selectedGenerations);
-		if (next.has(gen)) {
-			next.delete(gen);
-		} else {
-			next.add(gen);
-		}
-		selectedGenerations = next;
-	}
-
-	function selectAllGenerations() {
-		selectedGenerations = new Set(generations);
-	}
-
-	function deselectAllGenerations() {
-		selectedGenerations = new Set();
-	}
-
-	function startSort() {
-		selectedMembers = allMembers.filter((m) => selectedGenerations.has(m.generation));
-		if (selectedMembers.length < 2) {
-			showToast(t('theater.sorter.minSelection'), 'error');
-			return;
-		}
-		selectedMembers = [...selectedMembers].sort(() => Math.random() - 0.5);
-		lstMember = selectedMembers.map((_, i) => [i]);
-		parent = [];
-		rec = [];
-		nrec = 0;
-		numQuestion = 1;
-		cmp1 = 0;
-		cmp2 = 1;
-		head1 = 0;
-		head2 = 0;
-		finishSize = 0;
-		finishFlag = 0;
-		totalMoves = calculateTotalMoves(selectedMembers.length);
-		history = [];
-		currentState = 'sorting';
-	}
-
-	function saveHistory() {
-		history = [
-			...history,
-			JSON.parse(
-				JSON.stringify({
-					lstMember,
-					parent,
-					rec,
-					cmp1,
-					cmp2,
-					head1,
-					head2,
-					nrec,
-					numQuestion,
-					finishSize,
-					finishFlag
-				})
-			)
-		];
-		if (history.length > 30) history = history.slice(1);
-	}
-
-	function undo() {
-		if (history.length === 0) return;
-		const last = history[history.length - 1];
-		history = history.slice(0, -1);
-		lstMember = last.lstMember;
-		parent = last.parent;
-		rec = last.rec;
-		cmp1 = last.cmp1;
-		cmp2 = last.cmp2;
-		head1 = last.head1;
-		head2 = last.head2;
-		nrec = last.nrec;
-		numQuestion = last.numQuestion;
-		finishSize = last.finishSize;
-		finishFlag = last.finishFlag;
-	}
-
-	function sortList(flag: number) {
-		saveHistory();
-		if (flag === 1) {
-			rec[nrec] = lstMember[cmp1][head1];
-			head1++;
-			nrec++;
-			finishSize++;
-		} else if (flag === -1) {
-			rec[nrec] = lstMember[cmp2][head2];
-			head2++;
-			nrec++;
-			finishSize++;
-		} else {
-			rec[nrec] = lstMember[cmp1][head1];
-			head1++;
-			nrec++;
-			finishSize++;
-			rec[nrec] = lstMember[cmp2][head2];
-			head2++;
-			nrec++;
-			finishSize++;
-		}
-
-		if (head1 < lstMember[cmp1].length && head2 < lstMember[cmp2].length) {
-			numQuestion++;
-		} else {
-			while (head1 < lstMember[cmp1].length) {
-				rec[nrec] = lstMember[cmp1][head1];
-				head1++;
-				nrec++;
-				finishSize++;
-			}
-			while (head2 < lstMember[cmp2].length) {
-				rec[nrec] = lstMember[cmp2][head2];
-				head2++;
-				nrec++;
-				finishSize++;
-			}
-			lstMember.splice(cmp1, 2, [...rec]);
-			cmp1 = cmp1 + 1;
-			cmp2 = cmp1 + 1;
-			head1 = 0;
-			head2 = 0;
-			rec = [];
-			nrec = 0;
-			if (cmp1 >= lstMember.length - 1) {
-				if (lstMember.length === 1) {
-					finishFlag = 1;
-					return;
-				}
-				cmp1 = 0;
-				cmp2 = 1;
-			}
-			numQuestion++;
-		}
-	}
-
-	function showResults() {
-		const finalOrder = lstMember[0];
-		results = finalOrder.map((idxVal: number, i: number) => ({
-			...selectedMembers[idxVal],
-			rank: i + 1
-		}));
-		currentState = 'results';
-	}
-
-	function restart() {
-		currentState = 'landing';
-		history = [];
-	}
-
 	onMount(() => {
-		fetchMembers();
+		sorter.fetchMembers();
 	});
-
-	let currentLeft = $derived(selectedMembers[lstMember[cmp1]?.[head1]]);
-	let currentRight = $derived(selectedMembers[lstMember[cmp2]?.[head2]]);
-
-	let leftMember = $state<Member | null>(null);
-	let rightMember = $state<Member | null>(null);
-
-	$effect(() => {
-		if (currentLeft && currentRight) {
-			leftMember = currentLeft;
-			rightMember = currentRight;
-		}
-	});
-	let progress = $derived(
-		finishFlag
-			? 100
-			: totalMoves > 0
-				? Math.floor((finishSize / totalMoves) * 100)
-				: 0
-	);
-	let displayProgress = $derived(finishFlag ? 100 : Math.min(progress, 99));
-
-	async function copyToClipboard(text: string): Promise<boolean> {
-		try {
-			if (navigator.clipboard?.writeText) {
-				await navigator.clipboard.writeText(text);
-				return true;
-			}
-		} catch {
-			// Fallback to execCommand if clipboard API fails
-		}
-		try {
-			const textarea = document.createElement('textarea');
-			textarea.value = text;
-			textarea.setAttribute('readonly', '');
-			textarea.style.position = 'fixed';
-			textarea.style.left = '-9999px';
-			document.body.appendChild(textarea);
-			textarea.select();
-			const ok = document.execCommand('copy');
-			document.body.removeChild(textarea);
-			return ok;
-		} catch {
-			return false;
-		}
-	}
-
-	async function shareResults() {
-		const textList = results
-			.slice(0, 10)
-			.map((r) => `#${r.rank} ${r.name}`)
-			.join('\n');
-		const shareText = `${t('theater.sorter.shareTextHeader')}\n${textList}\n\n${t('theater.sorter.shareTextFooter')} ${window.location.origin}/theater/sorter`;
-		if (navigator.share) {
-			try {
-				await navigator.share({
-					title: t('theater.sorter.shareTitle'),
-					text: shareText,
-					url: window.location.href
-				});
-				return;
-			} catch (err) {
-				if (err instanceof DOMException && err.name === 'AbortError') return;
-			}
-		}
-		const copied = await copyToClipboard(shareText);
-		if (copied) showToast(t('theater.sorter.copySuccess'), 'success');
-		else showToast(t('theater.sorter.copyFailed'), 'error');
-	}
 </script>
 
 <SEO
@@ -344,40 +38,42 @@
 </svelte:head>
 
 <div
-	class={`w-full flex flex-col items-center justify-start min-h-[calc(100svh-120px)] ${currentState === 'results' ? 'pt-0 pb-12' : 'pt-0 pb-4 overflow-hidden'}`}
+	class={`w-full flex flex-col items-center justify-start min-h-[calc(100svh-120px)] ${sorter.currentState === 'results' ? 'pt-0 pb-12' : 'pt-0 pb-4 overflow-hidden'}`}
 >
-	{#if currentState === 'landing'}
+	{#if sorter.currentState === 'landing'}
 		<SorterGenerationSelect
-			{generations}
-			{selectedGenerations}
-			{loadingGenerations}
-			selectedMembersCount={allMembers.filter((m) => selectedGenerations.has(m.generation)).length}
-			ontoggle={toggleGeneration}
-			onselectAll={selectAllGenerations}
-			ondeselectAll={deselectAllGenerations}
-			onstart={startSort}
+			generations={sorter.generations}
+			selectedGenerations={sorter.selectedGenerations}
+			loadingGenerations={sorter.loadingGenerations}
+			selectedMembersCount={sorter.allMembers.filter((m) =>
+				sorter.selectedGenerations.has(m.generation)
+			).length}
+			ontoggle={sorter.toggleGeneration}
+			onselectAll={sorter.selectAllGenerations}
+			ondeselectAll={sorter.deselectAllGenerations}
+			onstart={sorter.startSort}
 			variant="theater"
 		/>
-	{:else if currentState === 'sorting'}
+	{:else if sorter.currentState === 'sorting'}
 		<SorterProcess
-			{numQuestion}
-			{displayProgress}
-			{leftMember}
-			{rightMember}
-			{isAnimating}
-			{lastSelectedSide}
-			hasHistory={history.length > 0}
-			onselect={handleSelect}
-			onundo={undo}
-			onexit={restart}
+			numQuestion={sorter.numQuestion}
+			displayProgress={sorter.displayProgress}
+			leftMember={sorter.leftMember}
+			rightMember={sorter.rightMember}
+			isAnimating={sorter.isAnimating}
+			lastSelectedSide={sorter.lastSelectedSide}
+			hasHistory={sorter.history.length > 0}
+			onselect={sorter.handleSelect}
+			onundo={sorter.undo}
+			onexit={sorter.restart}
 			variant="theater"
 		/>
-	{:else if currentState === 'results'}
+	{:else if sorter.currentState === 'results'}
 		<SorterResults
-			{results}
+			results={sorter.results}
 			{layoutMode}
-			onshare={shareResults}
-			onrestart={restart}
+			onshare={sorter.shareResults}
+			onrestart={sorter.restart}
 			onchangeLayout={(modeVal) => (layoutMode = modeVal)}
 			variant="theater"
 		/>
