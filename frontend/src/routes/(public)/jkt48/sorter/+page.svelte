@@ -74,6 +74,12 @@
 
 		sortList(flag);
 
+		if (finishFlag) {
+			// Wait for progress bar to animate to 100%
+			await new Promise((resolve) => setTimeout(resolve, 800));
+			showResults();
+		}
+
 		isAnimating = false;
 		lastSelectedSide = null;
 	}
@@ -220,7 +226,6 @@
 			if (cmp1 >= lstMember.length - 1) {
 				if (lstMember.length === 1) {
 					finishFlag = 1;
-					showResults();
 					return;
 				}
 				cmp1 = 0;
@@ -248,8 +253,18 @@
 		fetchMembers();
 	});
 
-	let leftMember = $derived(selectedMembers[lstMember[cmp1]?.[head1]]);
-	let rightMember = $derived(selectedMembers[lstMember[cmp2]?.[head2]]);
+	let currentLeft = $derived(selectedMembers[lstMember[cmp1]?.[head1]]);
+	let currentRight = $derived(selectedMembers[lstMember[cmp2]?.[head2]]);
+
+	let leftMember = $state<Member | null>(null);
+	let rightMember = $state<Member | null>(null);
+
+	$effect(() => {
+		if (currentLeft && currentRight) {
+			leftMember = currentLeft;
+			rightMember = currentRight;
+		}
+	});
 	let progress = $derived(
 		finishFlag
 			? 100
@@ -257,7 +272,7 @@
 				? Math.floor((finishSize / totalMoves) * 100)
 				: 0
 	);
-	let displayProgress = $derived(Math.min(progress, 99));
+	let displayProgress = $derived(finishFlag ? 100 : Math.min(progress, 99));
 
 	async function copyToClipboard(text: string): Promise<boolean> {
 		try {
