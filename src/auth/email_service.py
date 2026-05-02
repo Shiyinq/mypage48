@@ -135,6 +135,8 @@ class EmailService:
         self, email: str, username: str, lockout_duration: int
     ):
         """Send account locked notification"""
+        forgot_password_url = f"{self.config.frontend_url}/auth/forgot-password"
+        
         html_content = f"""
         <div style="background-color: #fdf2f8; padding: 60px 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
             <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 28px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); border: 1px solid rgba(236, 72, 153, 0.1);">
@@ -153,9 +155,9 @@ class EmailService:
                         </p>
                     </div>
                     
-                    <p style="color: #475569; line-height: 1.8; margin: 0 0 24px; font-size: 16px;">Once the lockout period expires, you can use the "Forgot Password" feature to regain access.</p>
+                    <p style="color: #475569; line-height: 1.8; margin: 0 0 24px; font-size: 16px;">If you forgot your password, you can regain access immediately by using the <a href="{forgot_password_url}" style="color: #ef4444; text-decoration: underline; font-weight: 700;">Forgot Password</a> feature. Otherwise, your account will be automatically unlocked once the lockout period expires.</p>
                     
-                    <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; text-align: center; font-weight: 500;">If this wasn't you, please review your security settings once access is restored.</p>
+                    <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; text-align: center; font-weight: 500;">If this wasn't you, we recommend ensuring your email account (e.g., Gmail, Outlook) is secure, as it is the primary way to recover your MyPage48 account.</p>
                 </div>
                 <div style="background-color: #f1f5f9; padding: 32px; text-align: center;">
                     <p style="color: #0f172a; font-weight: 900; font-size: 14px; margin: 0;">MyPage48</p>
