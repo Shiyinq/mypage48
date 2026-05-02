@@ -137,9 +137,6 @@ class AuthService:
         if lock_status["is_locked"]:
             raise AccountLocked()
 
-        if not user.isEmailVerified:
-            raise EmailNotVerified()
-
         if not is_valid_password:
             # Handle failed login
             await self.security_service.handle_failed_login(
@@ -147,7 +144,12 @@ class AuthService:
             )
             raise IncorrectCredentialsError()
 
-        await self.security_service.reset_failed_login_attempts(user.userId)
+        if not user.isEmailVerified:
+            raise EmailNotVerified()
+
+        if user.failedLoginAttempts > 0:
+            await self.security_service.reset_failed_login_attempts(user.userId)
+
         return user
 
     def extract_user_provider(self, user) -> Dict[str, str]:

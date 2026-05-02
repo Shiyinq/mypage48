@@ -289,6 +289,11 @@
 			"registerCta": "Register account",
 			"welcomeBack": "Welcome back!",
 			"invalidCredentials": "Invalid email or password",
+			"emailNotVerified": "Your email is not verified yet. Please check your inbox or spam folder.",
+			"resendVerification": "Resend verification link",
+			"resendWait": "Wait {seconds}s to resend",
+			"resendSuccess": "Verification link has been sent to your email.",
+			"resendError": "Failed to send verification link. Please try again later.",
 			"sessionInvalid": "Your session has expired or is invalid. Please Login again."
 		},
 		"register": {
