@@ -289,6 +289,11 @@
 			"registerCta": "アカウント登録",
 			"welcomeBack": "おかえりなさい！",
 			"invalidCredentials": "メールアドレスまたはパスワードが間違っています",
+			"emailNotVerified": "メールアドレスがまだ認証されていません。受信トレイまたは迷惑メールフォルダを確認してください。",
+			"resendVerification": "認証リンクを再送する",
+			"resendWait": "再送まであと {seconds} 秒",
+			"resendSuccess": "認証リンクをメールで送信しました。",
+			"resendError": "認証リンクの送信に失敗しました。後でもう一度お試しください。",
 			"sessionInvalid": "セッションの有効期限が切れたか、無効です。再度ログインしてください。"
 		},
 		"register": {

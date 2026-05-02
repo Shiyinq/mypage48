@@ -260,3 +260,50 @@ async def test_reset_password(client: AsyncClient, db):
     }
     response = await client.post("/api/auth/signin", data=login_data)
     assert response.status_code == 200
+
+@pytest.mark.asyncio
+async def test_auth_security_check_order(client: AsyncClient, db):
+    """
+    Test that password is checked BEFORE email verification status (Security fix).
+    """
+    user_id = str(uuid.uuid4())
+    username = "securitytest"
+    email = "security@test.com"
+    correct_password = "CorrectPassword123!"
+    wrong_password = "WrongPassword123!"
+    
+    # Create an UNVERIFIED user
+    user_data = {
+        "userId": user_id,
+        "name": "Security Test",
+        "username": username,
+        "email": email,
+        "password": pwd_context.hash(correct_password),
+        "isEmailVerified": False,
+        "failedLoginAttempts": 0,
+        "isAccountLocked": False
+    }
+    await db["users"].insert_one(user_data)
+    
+    # 1. TEST: Correct Username + WRONG Password
+    # Should return Incorrect Credentials, NOT Email Not Verified
+    login_wrong_pass = {
+        "username": username,
+        "password": wrong_password
+    }
+    response = await client.post("/api/auth/signin", data=login_wrong_pass)
+    # Backend returns 401 Unauthorized for IncorrectCredentialsError
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Incorrect email or password."
+    
+    # 2. TEST: Correct Username + CORRECT Password
+    # Only now it should reveal that the email is not verified
+    login_correct_pass = {
+        "username": username,
+        "password": correct_password
+    }
+    response = await client.post("/api/auth/signin", data=login_correct_pass)
+    # EmailNotVerified usually returns 400 Bad Request
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Email is not verified."
+
