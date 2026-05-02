@@ -179,9 +179,7 @@
 			{:else}
 				<div class="flex flex-col gap-0 max-w-3xl mx-auto w-full">
 					<!-- Top 3 Podium -->
-					<div
-						class="grid grid-cols-3 items-end gap-2 sm:gap-4 mb-3 px-1 sm:px-4 max-w-xl mx-auto"
-					>
+					<div class="grid grid-cols-3 items-end gap-2 sm:gap-4 mb-3 px-1 sm:px-4 max-w-xl mx-auto">
 						<!-- Rank 1 -->
 						{#if results[0]}
 							<div
@@ -209,13 +207,17 @@
 									>
 										1
 									</div>
-									<div class="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 z-30 scale-90 sm:scale-110">
+									<div
+										class="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 z-30 scale-90 sm:scale-110"
+									>
 										<Trophy
 											size={16}
 											class="sm:size-[18px] text-yellow-400 fill-current drop-shadow-lg"
 										/>
 									</div>
-									<div class="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-30 text-left">
+									<div
+										class="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-30 text-left"
+									>
 										<h4
 											class="font-black text-white text-[11px] leading-tight line-clamp-2 drop-shadow-md"
 										>
@@ -257,7 +259,9 @@
 									>
 										2
 									</div>
-									<div class="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-30 text-left">
+									<div
+										class="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-30 text-left"
+									>
 										<h4
 											class="font-black text-white text-[11px] leading-tight line-clamp-2 drop-shadow-md"
 										>
@@ -299,7 +303,9 @@
 									>
 										3
 									</div>
-									<div class="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-30 text-left">
+									<div
+										class="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-30 text-left"
+									>
 										<h4
 											class="font-black text-white text-[11px] leading-tight line-clamp-2 drop-shadow-md"
 										>
