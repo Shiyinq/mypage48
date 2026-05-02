@@ -65,6 +65,9 @@ function createAuthStore() {
 		verifyEmail: async (data: VerifyEmailRequest) => {
 			return await authApi.verifyEmail(data);
 		},
+		sendVerificationEmail: async (data: { email: string }) => {
+			return await authApi.sendVerificationEmail(data);
+		},
 
 		// Social login URLs
 		get googleLoginUrl() {

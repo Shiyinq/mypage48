@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { onDestroy } from 'svelte';
 	import { isAuthenticated, showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { getErrorMessage } from '$lib/utils/api';
@@ -18,6 +19,10 @@
 	let email = $state('');
 	let password = $state('');
 	let isLoading = $state(false);
+	let isResending = $state(false);
+	let showResendVerification = $state(false);
+	let resendCountdown = $state(0);
+	let countdownTimer: ReturnType<typeof setInterval> | null = null;
 	let error: string | null = null;
 	let errors: Record<string, string> = $state({});
 
@@ -67,11 +72,52 @@
 			const errorMsg = getErrorMessage(err);
 			logger.error('Login failed', err, { context: 'LoginPage' });
 			error = errorMsg || t('auth.login.failed');
+
+			// Detect if email is not verified
+			if (errorMsg === 'Email is not verified.') {
+				showResendVerification = true;
+			}
+
 			showToast(error, 'error');
 		} finally {
 			isLoading = false;
 		}
 	};
+
+	const handleResendVerification = async () => {
+		if (isResending) return;
+		isResending = true;
+
+		try {
+			await authStore.sendVerificationEmail({ email });
+			showToast(t('auth.login.resendSuccess'), 'success');
+			startCountdown();
+		} catch (err) {
+			logger.error('Failed to resend verification email', err, { context: 'LoginPage' });
+			showToast(getErrorMessage(err), 'error');
+		} finally {
+			isResending = false;
+		}
+	};
+
+	const startCountdown = () => {
+		resendCountdown = 60;
+		if (countdownTimer) clearInterval(countdownTimer);
+		countdownTimer = setInterval(() => {
+			if (resendCountdown > 0) {
+				resendCountdown--;
+			} else {
+				if (countdownTimer) {
+					clearInterval(countdownTimer);
+					countdownTimer = null;
+				}
+			}
+		}, 1000);
+	};
+
+	onDestroy(() => {
+		if (countdownTimer) clearInterval(countdownTimer);
+	});
 </script>
 
 <SEO title={t('auth.login.title')} path="/login" description={t('seo.login')} />
@@ -132,6 +178,38 @@
 				{t('auth.login.forgotPassword')}
 			</a>
 		</div>
+
+		{#if showResendVerification}
+			<div
+				class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 p-4 rounded-2xl space-y-2 animate-in fade-in slide-in-from-top-2 duration-300 text-center"
+			>
+				<p class="text-xs text-red-800 dark:text-red-200 font-medium leading-relaxed">
+					{t('auth.login.emailNotVerified')}
+				</p>
+
+				{#if resendCountdown > 0}
+					<p
+						class="text-[10px] text-red-600/70 dark:text-red-400/70 font-bold uppercase tracking-wider animate-pulse"
+					>
+						{t('auth.login.resendWait', { seconds: resendCountdown })}
+					</p>
+				{:else}
+					<button
+						type="button"
+						onclick={handleResendVerification}
+						disabled={isResending}
+						class="text-xs font-bold text-red-600 dark:text-red-400 hover:underline inline-flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:no-underline mx-auto"
+					>
+						{t('auth.login.resendVerification')}
+						{#if isResending}
+							<span
+								class="w-3 h-3 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin"
+							></span>
+						{/if}
+					</button>
+				{/if}
+			</div>
+		{/if}
 
 		<button
 			type="submit"

@@ -290,6 +290,11 @@
 			"registerCta": "Daftar akun",
 			"welcomeBack": "Selamat datang kembali!",
 			"invalidCredentials": "Email atau kata sandi salah",
+			"emailNotVerified": "Email Anda belum diverifikasi. Silakan cek kotak masuk atau folder spam Anda.",
+			"resendVerification": "Kirim ulang link verifikasi",
+			"resendWait": "Tunggu {seconds}d untuk kirim ulang",
+			"resendSuccess": "Link verifikasi telah dikirim ke email Anda.",
+			"resendError": "Gagal mengirim link verifikasi. Silakan coba lagi nanti.",
 			"sessionInvalid": "Sesi Anda telah berakhir atau tidak valid. Silakan masuk kembali."
 		},
 		"register": {
