@@ -98,19 +98,19 @@
 
 			<button
 				onclick={shareResults}
-				class={`h-9 sm:h-11 px-3 sm:px-6 text-white font-black rounded-full transition-all shadow-lg flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs cursor-pointer whitespace-nowrap overflow-hidden ${isPublic ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20'}`}
+				class={`w-9 h-9 sm:w-11 sm:h-11 text-white font-black rounded-full transition-all shadow-lg flex items-center justify-center cursor-pointer overflow-hidden ${isPublic ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20'}`}
+				title={t('theater.sorter.share')}
 			>
 				<Share2 size={14} class="sm:hidden" />
-				<Share2 size={16} class="hidden sm:block" />
-				{t('theater.sorter.share')}
+				<Share2 size={18} class="hidden sm:block" />
 			</button>
 			<button
 				onclick={restart}
-				class={`h-9 sm:h-11 px-3 sm:px-6 bg-white dark:bg-zinc-800 font-black rounded-full transition-all shadow-md border flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs cursor-pointer whitespace-nowrap overflow-hidden ${isPublic ? 'text-slate-900 dark:text-white border-gray-100 dark:border-zinc-700' : 'text-themed border-zinc-100 dark:border-zinc-700'}`}
+				class={`w-9 h-9 sm:w-11 sm:h-11 bg-white dark:bg-zinc-800 font-black rounded-full transition-all shadow-md border flex items-center justify-center cursor-pointer overflow-hidden ${isPublic ? 'text-slate-900 dark:text-white border-gray-100 dark:border-zinc-700' : 'text-themed border-zinc-100 dark:border-zinc-700'}`}
+				title={t('theater.sorter.restart')}
 			>
 				<RotateCcw size={14} class="sm:hidden" />
-				<RotateCcw size={16} class="hidden sm:block" />
-				{t('theater.sorter.restart')}
+				<RotateCcw size={18} class="hidden sm:block" />
 			</button>
 		</div>
 	</div>
@@ -156,14 +156,20 @@
 										<span class="sm:hidden">{member.nickname}</span>
 										<span class="hidden sm:inline">{member.name}</span>
 									</h4>
-									<span class="text-[7px] sm:text-[8px] font-black text-white/70 uppercase tracking-widest block -mt-0.5"
+									<span
+										class="text-[7px] sm:text-[8px] font-black text-white/70 uppercase tracking-widest block -mt-0.5"
 										>{t('theater.sorter.genLabel', { gen: member.generation })}</span
 									>
 								</div>
 
 								{#if i === 0}
-									<div class="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 z-30 scale-90 sm:scale-110">
-										<Trophy size={16} class="sm:size-[18px] text-yellow-400 fill-current drop-shadow-lg" />
+									<div
+										class="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 z-30 scale-90 sm:scale-110"
+									>
+										<Trophy
+											size={16}
+											class="sm:size-[18px] text-yellow-400 fill-current drop-shadow-lg"
+										/>
 									</div>
 								{/if}
 							</div>
@@ -171,65 +177,146 @@
 					{/each}
 				</div>
 			{:else}
-				<div class="flex flex-col gap-3 max-w-3xl mx-auto w-full">
-					<!-- Top 3 -->
-					{#each results.slice(0, 3) as member, i (member.id)}
-						<div
-							in:fly={{ y: 20, delay: i * 30, duration: 500, easing: quintOut }}
-							class={`flex items-center gap-4 bg-white dark:bg-zinc-900 rounded-xl p-3 border-2 transition-all hover:scale-105 hover:shadow-2xl group relative overflow-hidden shadow-sm cursor-pointer mx-auto w-full max-w-2xl ${isPublic ? 'hover:border-red-600' : 'hover:border-rose-500'} ${i === 0 ? 'border-yellow-400 shadow-xl shadow-yellow-400/20' : i === 1 ? 'border-slate-300 shadow-xl shadow-slate-300/20' : 'border-amber-600 shadow-xl shadow-amber-700/10'}`}
-						>
+				<div class="flex flex-col gap-0 max-w-3xl mx-auto w-full">
+					<!-- Top 3 Podium -->
+					<div
+						class="grid grid-cols-3 items-end gap-2 sm:gap-4 mb-3 px-1 sm:px-4 max-w-xl mx-auto"
+					>
+						<!-- Rank 1 -->
+						{#if results[0]}
 							<div
-								class={`rank-badge w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-black text-sm md:text-base shrink-0 z-30 shadow-sm ${i === 0 ? 'bg-yellow-400 text-yellow-900' : i === 1 ? 'bg-slate-300 text-slate-800' : 'bg-amber-700 text-white'}`}
+								in:fly={{ y: 20, delay: 0, duration: 500, easing: quintOut }}
+								class="flex flex-col items-center group cursor-pointer -mt-12 sm:-mt-16 z-40 relative"
 							>
-								{i + 1}
+								<div
+									class={`relative w-full aspect-[3/4] rounded-xl overflow-hidden border-2 border-yellow-400 shadow-2xl shadow-yellow-400/30 transition-all group-hover:scale-105 group-hover:shadow-yellow-400/50 shiny-card`}
+								>
+									<OptimizedImage
+										src={getExternalMediaUrl(results[0].img) || ''}
+										alt={results[0].name}
+										class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+									/>
+									<img
+										src={getMemberFrame(results[0].member_type) || ''}
+										alt="frame"
+										class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
+									/>
+									<div
+										class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
+									></div>
+									<div
+										class="absolute top-1.5 left-1.5 sm:top-3 sm:left-3 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-yellow-400 text-yellow-900 flex items-center justify-center font-black text-[10px] sm:text-sm z-30 border-2 border-yellow-200 shadow-lg"
+									>
+										1
+									</div>
+									<div class="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 z-30 scale-90 sm:scale-110">
+										<Trophy
+											size={16}
+											class="sm:size-[18px] text-yellow-400 fill-current drop-shadow-lg"
+										/>
+									</div>
+									<div class="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-30 text-left">
+										<h4
+											class="font-black text-white text-[11px] leading-tight line-clamp-2 drop-shadow-md"
+										>
+											{results[0].name}
+										</h4>
+										<span
+											class="text-[7px] sm:text-[8px] font-black text-white/70 uppercase tracking-widest block -mt-0.5"
+											>{t('theater.sorter.genLabel', { gen: results[0].generation })}</span
+										>
+									</div>
+								</div>
 							</div>
+						{/if}
 
+						<!-- Rank 2 -->
+						{#if results[1]}
 							<div
-								class={`relative w-12 sm:w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 border border-slate-100 dark:border-zinc-800 transition-transform duration-500 z-30 shadow-sm ${i <= 2 ? 'shiny-card' : ''}`}
+								in:fly={{ y: 20, delay: 100, duration: 500, easing: quintOut }}
+								class="flex flex-col items-center group cursor-pointer"
 							>
-								<OptimizedImage
-									src={getExternalMediaUrl(member.img) || ''}
-									alt={member.name}
-									class="w-full h-full object-cover"
-								/>
-								<img
-									src={getMemberFrame(member.member_type) || ''}
-									alt="member frame"
-									class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
-								/>
-							</div>
-
-							<div class="flex flex-col gap-0.5 z-30 min-w-0">
-								<h4
-									class={`font-black text-sm md:text-lg tracking-tight leading-tight line-clamp-2 ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
+								<div
+									class={`relative w-full aspect-[3/4] rounded-xl overflow-hidden border-2 border-slate-300 shadow-xl shadow-slate-300/20 transition-all group-hover:scale-105 shiny-card`}
 								>
-									{member.name}
-								</h4>
-								<span
-									class={`text-[9px] md:text-xs font-bold uppercase tracking-widest truncate ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
-									>{t('theater.sorter.genLabel', { gen: member.generation })}</span
-								>
+									<OptimizedImage
+										src={getExternalMediaUrl(results[1].img) || ''}
+										alt={results[1].name}
+										class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+									/>
+									<img
+										src={getMemberFrame(results[1].member_type) || ''}
+										alt="frame"
+										class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
+									/>
+									<div
+										class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
+									></div>
+									<div
+										class="absolute top-1.5 left-1.5 sm:top-3 sm:left-3 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-slate-300 text-slate-800 flex items-center justify-center font-black text-[10px] sm:text-sm z-30 border-2 border-slate-100 shadow-lg"
+									>
+										2
+									</div>
+									<div class="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-30 text-left">
+										<h4
+											class="font-black text-white text-[11px] leading-tight line-clamp-2 drop-shadow-md"
+										>
+											{results[1].name}
+										</h4>
+										<span
+											class="text-[7px] sm:text-[8px] font-black text-white/70 uppercase tracking-widest block -mt-0.5"
+											>{t('theater.sorter.genLabel', { gen: results[1].generation })}</span
+										>
+									</div>
+								</div>
 							</div>
+						{/if}
 
-							{#if i === 0}
-								<div class="ml-auto mr-4 z-30">
-									<Trophy size={22} class="text-yellow-400 fill-current drop-shadow-md" />
+						<!-- Rank 3 -->
+						{#if results[2]}
+							<div
+								in:fly={{ y: 20, delay: 200, duration: 500, easing: quintOut }}
+								class="flex flex-col items-center group cursor-pointer"
+							>
+								<div
+									class={`relative w-full aspect-[3/4] rounded-xl overflow-hidden border-2 border-amber-600 shadow-xl shadow-amber-700/10 transition-all group-hover:scale-105 group-hover:shadow-2xl shiny-card`}
+								>
+									<OptimizedImage
+										src={getExternalMediaUrl(results[2].img) || ''}
+										alt={results[2].name}
+										class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+									/>
+									<img
+										src={getMemberFrame(results[2].member_type) || ''}
+										alt="frame"
+										class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
+									/>
+									<div
+										class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
+									></div>
+									<div
+										class="absolute top-1.5 left-1.5 sm:top-3 sm:left-3 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-700 text-white flex items-center justify-center font-black text-[10px] sm:text-sm z-30 border-2 border-amber-500 shadow-lg"
+									>
+										3
+									</div>
+									<div class="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-30 text-left">
+										<h4
+											class="font-black text-white text-[11px] leading-tight line-clamp-2 drop-shadow-md"
+										>
+											{results[2].name}
+										</h4>
+										<span
+											class="text-[7px] sm:text-[8px] font-black text-white/70 uppercase tracking-widest block -mt-0.5"
+											>{t('theater.sorter.genLabel', { gen: results[2].generation })}</span
+										>
+									</div>
 								</div>
-							{:else if i === 1}
-								<div class="ml-auto mr-4 z-30">
-									<Trophy size={20} class="text-slate-300 fill-current drop-shadow-md" />
-								</div>
-							{:else if i === 2}
-								<div class="ml-auto mr-4 z-30">
-									<Trophy size={20} class="text-amber-600 fill-current drop-shadow-md" />
-								</div>
-							{/if}
-						</div>
-					{/each}
+							</div>
+						{/if}
+					</div>
 
-					<!-- Rank 4+ (2 Columns) -->
 					{#if results.length > 3}
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full mt-1">
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
 							{#each results.slice(3) as member, i (member.id)}
 								<div
 									in:fly={{ y: 20, delay: (i + 3) * 30, duration: 500, easing: quintOut }}
