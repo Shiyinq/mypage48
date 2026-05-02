@@ -118,7 +118,7 @@
 	{#key layoutMode}
 		<div in:fade={{ duration: 400 }}>
 			{#if layoutMode === 'card'}
-				<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
+				<div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-4">
 					{#each results as member, i (member.id)}
 						<div
 							in:fly={{ y: 20, delay: i * 30, duration: 500, easing: quintOut }}
@@ -144,25 +144,26 @@
 								></div>
 
 								<div
-									class={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm z-30 shadow-lg ${i === 0 ? 'bg-yellow-400 text-yellow-900 border-2 border-yellow-200' : i === 1 ? 'bg-slate-300 text-slate-800 border-2 border-slate-100' : i === 2 ? 'bg-amber-700 text-white border-2 border-amber-500' : isPublic ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white border-2 border-slate-50 dark:border-zinc-800' : 'bg-white dark:bg-zinc-900 text-themed border-2 border-zinc-50 dark:border-zinc-800'}`}
+									class={`absolute top-1.5 left-1.5 sm:top-3 sm:left-3 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-black text-[10px] sm:text-sm z-30 shadow-lg ${i === 0 ? 'bg-yellow-400 text-yellow-900 border-2 border-yellow-200' : i === 1 ? 'bg-slate-300 text-slate-800 border-2 border-slate-100' : i === 2 ? 'bg-amber-700 text-white border-2 border-amber-500' : isPublic ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white border-2 border-slate-50 dark:border-zinc-800' : 'bg-white dark:bg-zinc-900 text-themed border-2 border-zinc-50 dark:border-zinc-800'}`}
 								>
 									{i + 1}
 								</div>
 
-								<div class="absolute bottom-4 left-4 right-4 z-30">
+								<div class="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-30">
 									<h4
-										class="font-black text-white text-[11px] leading-tight line-clamp-2 drop-shadow-md mb-0.5 uppercase"
+										class="font-black text-white text-[11px] leading-tight line-clamp-2 drop-shadow-md"
 									>
-										{member.name}
+										<span class="sm:hidden">{member.nickname}</span>
+										<span class="hidden sm:inline">{member.name}</span>
 									</h4>
-									<span class="text-[8px] font-black text-white/70 uppercase tracking-widest"
+									<span class="text-[7px] sm:text-[8px] font-black text-white/70 uppercase tracking-widest block -mt-0.5"
 										>{t('theater.sorter.genLabel', { gen: member.generation })}</span
 									>
 								</div>
 
 								{#if i === 0}
-									<div class="absolute top-3 right-3 z-30 scale-110">
-										<Trophy size={18} class="text-yellow-400 fill-current drop-shadow-lg" />
+									<div class="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 z-30 scale-90 sm:scale-110">
+										<Trophy size={16} class="sm:size-[18px] text-yellow-400 fill-current drop-shadow-lg" />
 									</div>
 								{/if}
 							</div>
@@ -200,7 +201,7 @@
 
 							<div class="flex flex-col gap-0.5 z-30 min-w-0">
 								<h4
-									class={`font-black text-sm md:text-lg uppercase tracking-tight leading-none truncate ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
+									class={`font-black text-sm md:text-lg tracking-tight leading-tight line-clamp-2 ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
 								>
 									{member.name}
 								</h4>
@@ -257,7 +258,7 @@
 
 									<div class="flex flex-col gap-0.5 z-30 min-w-0">
 										<h4
-											class={`font-black text-xs sm:text-sm uppercase tracking-tight leading-none truncate ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
+											class={`font-black text-xs sm:text-sm tracking-tight leading-tight line-clamp-2 ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
 										>
 											{member.name}
 										</h4>
