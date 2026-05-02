@@ -123,7 +123,9 @@
 					class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
 					>{t('theater.sorter.genLabel', { gen: leftMember?.generation ?? '' })}</span
 				>
-				<h3 class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md line-clamp-2">
+				<h3
+					class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md line-clamp-2"
+				>
 					{leftMember?.name}
 				</h3>
 			</div>
@@ -199,7 +201,9 @@
 					class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
 					>{t('theater.sorter.genLabel', { gen: rightMember?.generation ?? '' })}</span
 				>
-				<h3 class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md line-clamp-2">
+				<h3
+					class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md line-clamp-2"
+				>
 					{rightMember?.name}
 				</h3>
 			</div>
