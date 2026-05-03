@@ -20,6 +20,8 @@
 	// Initial load state
 	let isInitialLoad = $state(true);
 
+	let revealedEmails = $state<Record<string, boolean>>({});
+
 	$effect(() => {
 		// Only load if data is not already cached
 		if (usersList.length === 0) {
@@ -62,15 +64,8 @@
 		return `${local.slice(0, 2)}***@${domain}`;
 	}
 
-	let revealedEmails = $state(new Set<string>());
-
 	function toggleEmail(userId: string) {
-		if (revealedEmails.has(userId)) {
-			revealedEmails.delete(userId);
-		} else {
-			revealedEmails.add(userId);
-		}
-		revealedEmails = revealedEmails;
+		revealedEmails[userId] = !revealedEmails[userId];
 	}
 </script>
 
@@ -170,14 +165,14 @@
 								<td class="p-4">
 									<div class="flex items-center gap-2">
 										<span class="text-gray-700 dark:text-gray-300 font-mono text-sm">
-											{revealedEmails.has(user.userId) ? user.email : maskEmail(user.email)}
+											{revealedEmails[user.userId] ? user.email : maskEmail(user.email)}
 										</span>
 										<button
 											class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none transition-colors cursor-pointer"
 											onclick={() => toggleEmail(user.userId)}
-											title={revealedEmails.has(user.userId) ? 'Hide email' : 'Show email'}
+											title={revealedEmails[user.userId] ? 'Hide email' : 'Show email'}
 										>
-											{#if revealedEmails.has(user.userId)}
+											{#if revealedEmails[user.userId]}
 												<EyeOff class="w-4 h-4" />
 											{:else}
 												<Eye class="w-4 h-4" />
