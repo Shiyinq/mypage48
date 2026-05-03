@@ -14,7 +14,9 @@
 
 {#if isLoading}
 	<!-- Skeleton Loading for Rows -->
-	<div class="grid grid-cols-2 gap-x-6 md:gap-x-16 gap-y-4 max-w-4xl mx-auto mt-2 pt-4 pb-4 px-4">
+	<div
+		class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 md:gap-x-16 gap-y-4 max-w-4xl mx-auto mt-2 pt-4 pb-4 px-4"
+	>
 		<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 		{#each rows as row}
 			<div class="flex items-center gap-3">
@@ -26,7 +28,9 @@
 		{/each}
 	</div>
 {:else}
-	<div class="grid grid-cols-2 gap-x-6 md:gap-x-16 gap-y-4 max-w-4xl mx-auto mt-2 pt-4 pb-4 px-4">
+	<div
+		class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 md:gap-x-16 gap-y-4 max-w-4xl mx-auto mt-2 pt-4 pb-4 px-4"
+	>
 		{#each rows as row}
 			{@const count = rowStats.counts[row] || 0}
 			{@const intensity = rowStats.maxCount > 0 ? count / rowStats.maxCount : 0}
