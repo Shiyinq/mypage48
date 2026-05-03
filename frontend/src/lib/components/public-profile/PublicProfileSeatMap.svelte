@@ -185,7 +185,7 @@
 						{/each}
 					</div>
 				{:else}
-					<div class="grid grid-cols-2 gap-x-4 gap-y-3">
+					<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
 						{#each THEATER_ROWS as row}
 							{@const count = rowStats.counts[row] || 0}
 							{@const intensity = rowStats.maxCount > 0 ? count / rowStats.maxCount : 0}
@@ -195,7 +195,7 @@
 								<div
 									class={`w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg text-xs font-black transition-all ${!hasData ? 'bg-gray-100 dark:bg-zinc-800/50 text-gray-300 dark:text-zinc-700' : ''}`}
 									style={hasData
-										? `background-color: rgba(220, 38, 38, ${0.1 + intensity * 0.9}); color: ${intensity > 0.5 ? 'white' : '#dc2626'};`
+										? `background-color: rgba(220, 38, 38, ${0.2 + intensity * 0.8}); color: ${intensity > 0.4 ? 'white' : '#dc2626'};`
 										: ''}
 								>
 									{row}
@@ -205,18 +205,24 @@
 								>
 									<!-- Bar -->
 									<div
-										class="absolute inset-y-0 left-0 bg-red-500/10 transition-all duration-1000"
-										style={`width: ${intensity * 100}%`}
+										class="absolute inset-y-0 left-0 transition-all duration-1000"
+										style={`width: ${intensity * 100}%; background-color: rgba(220, 38, 38, ${0.1 + intensity * 0.9});`}
 									></div>
 									<!-- Label -->
 									<div
 										class="absolute inset-0 flex items-center justify-between px-3 text-xs font-medium"
 									>
-										<span class="text-gray-400 dark:text-zinc-500">Row {row}</span>
 										<span
-											class="font-bold {hasData
-												? 'text-gray-900 dark:text-white'
-												: 'text-gray-300 dark:text-zinc-700'}"
+											class={`transition-colors duration-300 ${hasData && intensity <= 0.3 ? 'text-gray-600 dark:text-gray-300' : ''} ${!hasData ? 'text-gray-400 dark:text-zinc-500' : ''}`}
+											style={hasData && intensity > 0.3
+												? 'color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3)'
+												: ''}>{t('dashboard.seatMap.row')} {row}</span
+										>
+										<span
+											class={`font-bold transition-colors duration-300 ${hasData && intensity <= 0.85 ? 'text-red-600 dark:text-red-400' : ''} ${!hasData ? 'text-gray-300 dark:text-zinc-700' : ''}`}
+											style={hasData && intensity > 0.85
+												? 'color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3)'
+												: ''}
 										>
 											{count}
 										</span>
