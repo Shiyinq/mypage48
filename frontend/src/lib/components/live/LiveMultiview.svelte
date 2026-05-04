@@ -367,6 +367,7 @@
 	title={t('theater.live.multiview.live.seoTitle')}
 	path={$page.url.pathname}
 	description={t('theater.live.multiview.live.seoDescription')}
+	keywords="JKT48 Multi-view, JKT48 Live, JKT48 Showroom, JKT48 IDN Live, Multi Room Live JKT48, Multi View Live JKT48"
 />
 
 <div
