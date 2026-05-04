@@ -1,7 +1,7 @@
 import asyncio
 import math
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from pymongo.errors import DuplicateKeyError
@@ -695,6 +695,14 @@ class UserService:
                 else:
                     blur_hash = u.get("blurHash")
 
+                last_active = u.get("lastActiveAt")
+                if last_active and last_active.tzinfo is None:
+                    last_active = last_active.replace(tzinfo=timezone.utc)
+
+                created_at = u.get("createdAt")
+                if created_at and created_at.tzinfo is None:
+                    created_at = created_at.replace(tzinfo=timezone.utc)
+
                 return UserListItem(
                     userId=u.get("userId", ""),
                     name=u.get("name", ""),
@@ -707,7 +715,8 @@ class UserService:
                     isAdmin=u.get("isAdmin", False),
                     isEmailVerified=u.get("isEmailVerified", False),
                     isAccountLocked=u.get("isAccountLocked", False),
-                    createdAt=u.get("createdAt"),
+                    createdAt=created_at,
+                    lastActiveAt=last_active,
                 )
 
             if users:

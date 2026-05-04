@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -80,6 +81,11 @@ class UserRepository:
 
         return await self.collection.update_one(
             {"userId": user_id}, {"$set": update_data}
+        )
+
+    async def update_last_active(self, user_id: str):
+        return await self.collection.update_one(
+            {"userId": user_id}, {"$set": {"lastActiveAt": datetime.now(timezone.utc)}}
         )
 
     async def get_all_paginated(

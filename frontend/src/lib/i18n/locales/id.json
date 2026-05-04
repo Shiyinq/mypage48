@@ -718,6 +718,9 @@
 		"relative": {
 			"today": "Hari ini",
 			"yesterday": "Kemarin",
+			"justNow": "Baru saja",
+			"minsAgo": "{count}m yang lalu",
+			"hoursAgo": "{count}j yang lalu",
 			"daysAgo": "{count} hari yang lalu",
 			"weeksAgo": "{count} minggu yang lalu"
 		}
@@ -1083,7 +1086,8 @@
 				"userInfo": "Info Pengguna",
 				"email": "Email",
 				"status": "Status",
-				"created": "Dibuat"
+				"created": "Dibuat",
+				"lastActive": "Terakhir Aktif"
 			},
 			"status": {
 				"verified": "Terverifikasi",

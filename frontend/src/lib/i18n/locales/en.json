@@ -1010,6 +1010,9 @@
 		"relative": {
 			"today": "Today",
 			"yesterday": "Yesterday",
+			"justNow": "Just now",
+			"minsAgo": "{count}m ago",
+			"hoursAgo": "{count}h ago",
 			"daysAgo": "{count} days ago",
 			"weeksAgo": "{count} weeks ago"
 		}
@@ -1081,7 +1084,8 @@
 				"userInfo": "User Info",
 				"email": "Email",
 				"status": "Status",
-				"created": "Created"
+				"created": "Created",
+				"lastActive": "Last Active"
 			},
 			"status": {
 				"verified": "Verified",
