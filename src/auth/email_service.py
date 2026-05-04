@@ -136,7 +136,7 @@ class EmailService:
     ):
         """Send account locked notification"""
         forgot_password_url = f"{self.config.frontend_url}/auth/forgot-password"
-        
+
         html_content = f"""
         <div style="background-color: #fdf2f8; padding: 60px 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
             <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 28px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); border: 1px solid rgba(236, 72, 153, 0.1);">

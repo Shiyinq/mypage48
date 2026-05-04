@@ -117,15 +117,18 @@ def get_auth_service(
 
 
 async def get_current_user(
+    background_tasks: BackgroundTasks,
     token: str = Depends(oauth2_scheme),
     api_key_service: ApiKeyService = Depends(get_api_key_service),
     auth_service: AuthService = Depends(get_auth_service),
-    background_tasks: BackgroundTasks = None,
+    user_repo: UserRepository = Depends(get_user_repository),
     config: Settings = Depends(get_settings),
 ):
     if token.startswith(config.api_key_prefix):
         try:
             user = await api_key_service.validate_api_key(token)
+            if background_tasks:
+                background_tasks.add_task(user_repo.update_last_active, user["userId"])
             return UserCurrent(**user)
         except Exception as e:
             logger.warning(f"API Key validation failed: {str(e)}")
@@ -136,6 +139,10 @@ async def get_current_user(
     if user is None:
         logger.warning("User not found for provided token")
         raise InvalidJWTToken()
+
+    if background_tasks:
+        background_tasks.add_task(user_repo.update_last_active, user.userId)
+
     return UserCurrent(**user.model_dump())
 
 

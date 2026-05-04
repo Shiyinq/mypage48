@@ -108,7 +108,8 @@
 				t('admin.users.table.userInfo'),
 				t('admin.users.table.email'),
 				t('admin.users.table.status'),
-				t('admin.users.table.created')
+				t('admin.users.table.created'),
+				t('admin.users.table.lastActive')
 			]}
 		/>
 	{:else}
@@ -123,6 +124,7 @@
 							<th class="p-4">{t('admin.users.table.email')}</th>
 							<th class="p-4">{t('admin.users.table.status')}</th>
 							<th class="p-4">{t('admin.users.table.created')}</th>
+							<th class="p-4">{t('admin.users.table.lastActive')}</th>
 						</tr>
 					</thead>
 					<tbody
@@ -216,6 +218,37 @@
 										})}</span
 									>
 								</td>
+								<td class="p-4">
+									<span class="text-gray-600 dark:text-gray-400 text-sm">
+										{#if user.lastActiveAt}
+											{@const lastActive = new Date(user.lastActiveAt)}
+											{@const now = new Date()}
+											{@const diffMs = now.getTime() - lastActive.getTime()}
+											{@const diffMins = Math.floor(diffMs / (1000 * 60))}
+											{@const diffHours = Math.floor(diffMs / (1000 * 60 * 60))}
+											{@const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))}
+
+											{#if diffMins < 1}
+												{t('time.relative.justNow')}
+											{:else if diffMins < 60}
+												{t('time.relative.minsAgo', { count: diffMins })}
+											{:else if diffHours < 24}
+												{t('time.relative.hoursAgo', { count: diffHours })}
+											{:else if diffDays === 1}
+												{t('time.relative.yesterday')}
+											{:else if diffDays < 7}
+												{t('time.relative.daysAgo', { count: diffDays })}
+											{:else}
+												{formatDate(lastActive, {
+													month: 'short',
+													day: 'numeric'
+												})}
+											{/if}
+										{:else}
+											-
+										{/if}
+									</span>
+								</td>
 							</tr>
 						{/each}
 					</tbody>
@@ -233,7 +266,8 @@
 							t('admin.users.table.userInfo'),
 							t('admin.users.table.email'),
 							t('admin.users.table.status'),
-							t('admin.users.table.created')
+							t('admin.users.table.created'),
+							t('admin.users.table.lastActive')
 						]}
 						showHeader={false}
 					/>

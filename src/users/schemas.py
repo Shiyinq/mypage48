@@ -90,6 +90,7 @@ class UserInDB(BaseModel):
     failedLoginAttempts: int = Field(default=0)
     isAccountLocked: bool = Field(default=False)
     accountLockedUntil: Optional[datetime] = Field(default=None)
+    lastActiveAt: Optional[datetime] = Field(default=None)
 
     @field_validator("oshiId", mode="before")
     @classmethod
@@ -139,6 +140,7 @@ class PublicUserResponse(BaseModel):
     blurHash: Optional[str] = None
     oshi: Optional[OshiResponse] = None
     createdAt: datetime
+    lastActiveAt: Optional[datetime] = None
     publicYear: Optional[int] = None
     stats: Optional[UserStats] = None
 
@@ -233,6 +235,7 @@ class UserListItem(BaseModel):
     isEmailVerified: bool = False
     isAccountLocked: bool = False
     createdAt: datetime
+    lastActiveAt: Optional[datetime] = None
 
 
 class UserPaginationMeta(BaseModel):

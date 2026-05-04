@@ -913,7 +913,8 @@
 				"userInfo": "ユーザー情報",
 				"email": "メール",
 				"status": "ステータス",
-				"created": "作成日"
+				"created": "作成日",
+				"lastActive": "最終アクティブ"
 			},
 			"status": {
 				"verified": "認証済み",
@@ -1108,6 +1109,9 @@
 		"relative": {
 			"today": "今日",
 			"yesterday": "昨日",
+			"justNow": "たった今",
+			"minsAgo": "{count}分前",
+			"hoursAgo": "{count}時間前",
 			"daysAgo": "{count}日前",
 			"weeksAgo": "{count}週間前"
 		}
