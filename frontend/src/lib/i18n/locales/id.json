@@ -835,9 +835,9 @@
 			"viewer": "Penonton",
 			"startedAt": "Mulai sejak",
 			"liveDuration": "Sudah Live",
-			"seoTitle": "Live Streaming",
-			"seoDescription": "Tonton member JKT48 yang sedang siaran langsung di Showroom atau IDN Live melalui MyPage48.",
-			"seoMemberDescription": "Tonton siaran langsung {name} di MyPage48.",
+			"seoTitle": "JKT48 Live Streaming - Showroom & IDN Live",
+			"seoDescription": "Tonton member JKT48 Live Streaming hari ini di Showroom atau IDN Live melalui MyPage48.",
+			"seoMemberDescription": "Tonton JKT48 Live Streaming {name} di MyPage48. Ikuti siaran langsung member JKT48 favoritmu di Showroom atau IDN Live.",
 			"empty": "Tidak ada member yang sedang siaran langsung saat ini.",
 			"emptyTitle": "Belum Ada Live",
 			"back": "Kembali",
@@ -871,8 +871,8 @@
 			"multiview": {
 				"title": "Multi-view",
 				"live": {
-					"seoTitle": "Multi-view Live",
-					"seoDescription": "Tonton beberapa member JKT48 live secara bersamaan. Ganti, atur ulang, dan chat di beberapa live stream sekaligus."
+					"seoTitle": "JKT48 Multi-view Live - Tonton Banyak Live Sekaligus",
+					"seoDescription": "Nonton banyak member JKT48 live sekaligus dalam satu layar. Fitur Multi-view terbaik untuk fans JKT48 di MyPage48."
 				},
 				"tap_to_play": "Ketuk untuk Memutar",
 				"clear_all": "Hapus Semua",

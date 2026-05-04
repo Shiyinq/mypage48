@@ -663,9 +663,9 @@
 			"viewer": "視聴者",
 			"startedAt": "開始時間",
 			"liveDuration": "配信時間",
-			"seoTitle": "ライブ配信",
-			"seoDescription": "MyPage48でJKT48メンバーのShowroomやIDN Liveの配信を視聴しましょう。",
-			"seoMemberDescription": "MyPage48で{name}のライブ配信を視聴しましょう。",
+			"seoTitle": "JKT48 ライブ配信 - Showroom & IDN Live",
+			"seoDescription": "MyPage48でJKT48メンバーの今日のShowroomやIDN Live配信を視聴しましょう。",
+			"seoMemberDescription": "MyPage48で{name}のJKT48ライブ配信を視聴しましょう。ShowroomやIDN Liveでお気に入りのJKT48メンバーの生配信をチェック。",
 			"empty": "現在配信中のメンバーはいません。",
 			"emptyTitle": "オフライン",
 			"back": "戻る",
@@ -699,8 +699,8 @@
 			"multiview": {
 				"title": "マルチビュー",
 				"live": {
-					"seoTitle": "マルチビュー配信",
-					"seoDescription": "複数のJKT48ライブ配信を同時に視聴できます。複数の配信を切り替え、並べ替え、チャットを同時に楽しめます。"
+					"seoTitle": "JKT48 マルチビュー配信 - 複数同時視聴",
+					"seoDescription": "複数のJKT48ライブ配信を1つの画面で同時に視聴。MyPage48で究極のマルチビュー体験を楽しみましょう。"
 				},
 				"tap_to_play": "タップして再生",
 				"clear_all": "すべてクリア",

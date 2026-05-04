@@ -711,9 +711,9 @@
 			"viewer": "Viewers",
 			"startedAt": "Started at",
 			"liveDuration": "Live for",
-			"seoTitle": "Live Streaming",
-			"seoDescription": "Watch JKT48 members live on Showroom or IDN Live via MyPage48.",
-			"seoMemberDescription": "Watch {name}'s live stream on MyPage48.",
+			"seoTitle": "JKT48 Live Streaming - Showroom & IDN Live",
+			"seoDescription": "Watch JKT48 members live today on Showroom or IDN Live via MyPage48.",
+			"seoMemberDescription": "Watch {name}'s JKT48 Live stream on MyPage48. Follow your favorite JKT48 member's live broadcast on Showroom or IDN Live.",
 			"empty": "No members are currently live.",
 			"emptyTitle": "OFFLINE",
 			"back": "Back",
@@ -747,8 +747,8 @@
 			"multiview": {
 				"title": "Multi-view",
 				"live": {
-					"seoTitle": "Multi-view Live",
-					"seoDescription": "Watch multiple JKT48 live streams simultaneously. Switch, rearrange, and chat on multiple lives at once."
+					"seoTitle": "JKT48 Multi-view Live - Watch Multiple Streams",
+					"seoDescription": "Watch multiple JKT48 live streams simultaneously on one screen. The ultimate Multi-view experience for JKT48 fans on MyPage48."
 				},
 				"tap_to_play": "Tap to Play",
 				"clear_all": "Clear All",

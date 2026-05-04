@@ -24,7 +24,7 @@
 		description = 'MyPage48 - Your ultimate JKT48 theater companion. Track your theater visits, 2-shots, and achievements.',
 		image = '/favicon.png',
 		path = '/',
-		keywords = 'JKT48, Theater, MyPage48, JKT48 Fan, 2shot, Sorter, News',
+		keywords = 'MyPage48, My Page JKT48, JKT48 Fan, Oshi Sorter, JKT48, JKT48 Theater, JKT48 News, JKT48 Live, JKT48 Showroom, JKT48 IDN Live',
 		events = [],
 		article = null,
 		articles = []
