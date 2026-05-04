@@ -13,6 +13,7 @@ export interface UserListItem {
 	isEmailVerified: boolean;
 	isAccountLocked: boolean;
 	createdAt: string;
+	lastActiveAt: string;
 }
 
 export interface UserPaginationMeta {
