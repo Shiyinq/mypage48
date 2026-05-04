@@ -37,6 +37,7 @@
 	title={t('theater.live.seoTitle')}
 	description={t('theater.live.seoDescription')}
 	path="/jkt48/live"
+	keywords="JKT48 Live, JKT48 Showroom, JKT48 IDN Live, JKT48 Live Streaming, Multi-view JKT48"
 />
 
 <div class="py-12 min-h-screen">

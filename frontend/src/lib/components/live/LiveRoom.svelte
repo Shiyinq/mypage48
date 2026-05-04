@@ -470,11 +470,14 @@
 </script>
 
 <SEO
-	title={memberName ? `${memberName} - Live` : t('theater.live.seoTitle')}
+	title={memberName ? `${memberName} - JKT48 Live` : t('theater.live.seoTitle')}
 	path={$page.url.pathname}
 	description={memberName
 		? t('theater.live.seoMemberDescription', { name: memberName })
 		: t('theater.live.seoDescription')}
+	keywords={memberName
+		? `${memberName}, ${memberName} Live, JKT48 Live, JKT48 ${platform === 'showroom' ? 'Showroom' : 'IDN Live'}`
+		: `JKT48 Live, JKT48 ${platform === 'showroom' ? 'Showroom' : 'IDN Live'}`}
 />
 
 <div
