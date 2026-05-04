@@ -105,8 +105,25 @@ class LiveService:
                 results = []
                 for room in all_rooms:
                     key = room.get("room_url_key")
-                    if key in member_map:
-                        member = member_map[key]
+                    if key in member_map or key == "officialJKT48":
+                        if key in member_map:
+                            member_data = member_map[key]
+                            member = LiveMember(
+                                id=member_data["id"],
+                                name=member_data["name"],
+                                nickname=member_data.get("nickname"),
+                                img=member_data.get("img"),
+                            )
+                        else:
+                            # Fallback for official account
+                            member = LiveMember(
+                                id=f"temp_sr_{key}",
+                                name=room.get("main_name", "JKT48 Official"),
+                                nickname="officialJKT48",
+                                img=room.get("image")
+                                or "/media/news/migrated/jkt48logo.jpg",
+                            )
+
                         results.append(
                             LiveStatus(
                                 platform="showroom",
@@ -120,12 +137,7 @@ class LiveService:
                                 )
                                 if room.get("started_at")
                                 else None,
-                                member=LiveMember(
-                                    id=member["id"],
-                                    name=member["name"],
-                                    nickname=member.get("nickname"),
-                                    img=member.get("img"),
-                                ),
+                                member=member,
                             )
                         )
 
