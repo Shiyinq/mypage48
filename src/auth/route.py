@@ -87,7 +87,7 @@ def _set_csrf_cookie(response: Response, config: Settings):
         key=CSRFService.CSRF_TOKEN_COOKIE,
         value=csrf_token,
         httponly=False,
-        max_age=3600,
+        max_age=REFRESH_TOKEN_MAX_AGE,
         path="/",
         samesite="lax",
         secure=not config.is_env_dev,
@@ -203,24 +203,32 @@ async def refresh_access_token(
     if created_at.tzinfo is None:
         created_at = created_at.replace(tzinfo=timezone.utc)
 
-    if (
-        datetime.now(timezone.utc) - created_at
-    ).days >= config.refresh_token_max_age_days:
+    age_days = (datetime.now(timezone.utc) - created_at).days
+    if age_days >= config.refresh_token_max_age_days:
         await auth_service.delete_refresh_token(hash_refresh_token)
         raise RefreshTokenExpiredError()
 
-    await auth_service.update_refresh_token_last_used(hash_refresh_token)
-    await auth_service.save_login_history(
-        token_data["userId"],
-        device,
-        ip,
-        browser,
-        user_agent_raw=user_agent,
-    )
+    threshold_days = 7
+    should_rotate = age_days >= (config.refresh_token_max_age_days - threshold_days)
+
+    if should_rotate:
+        await auth_service.delete_refresh_token(hash_refresh_token)
+        refresh_token = await auth_service.register_refresh_token_activity(
+            token_data["userId"], device, ip, browser, user_agent
+        )
+        _set_auth_cookies(response, refresh_token, config)
+    else:
+        await auth_service.update_refresh_token_last_used(hash_refresh_token)
+        await auth_service.save_login_history(
+            token_data["userId"],
+            device,
+            ip,
+            browser,
+            user_agent_raw=user_agent,
+        )
+
     access_token = auth_service.create_access_token(data={"sub": token_data["userId"]})
     _set_access_token_cookie(response, access_token, config)
-
-    _set_csrf_cookie(response, config)
 
     return {"access_token": access_token, "token_type": "bearer"}
 
