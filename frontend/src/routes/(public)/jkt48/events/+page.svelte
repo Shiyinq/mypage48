@@ -76,99 +76,6 @@
 		</p>
 	</div>
 
-	<!-- Birthdays Section -->
-	<div class="space-y-8">
-		<div class="flex items-center gap-4 mb-8 group/header">
-			<div class="h-10 w-2 bg-red-600 rounded-full shadow-lg shadow-red-500/20"></div>
-			<h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
-				{t('theater.birthdays.title') || 'Upcoming Birthdays'}
-			</h2>
-		</div>
-
-		{#if !mounted || (birthdaysLoading && birthdays.length === 0)}
-			<div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide">
-				{#each Array(6) as _}
-					<div class="flex-none w-44 snap-start">
-						<MemberCardSkeleton />
-					</div>
-				{/each}
-			</div>
-		{:else if birthdays.length === 0}
-			<div
-				class="p-12 rounded-[2.5rem] bg-slate-50 dark:bg-zinc-900/50 border-2 border-dashed border-slate-200 dark:border-zinc-800 text-center text-slate-400 font-bold uppercase tracking-widest text-sm"
-			>
-				{t('theater.birthdays.empty') || 'No upcoming birthdays'}
-			</div>
-		{:else}
-			<div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory">
-				{#each birthdays as member}
-					<div class="flex-none w-44 snap-start">
-						<div
-							class="relative group aspect-[3/4] rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-300"
-						>
-							{#if member.img}
-								<OptimizedImage
-									src={getExternalMediaUrl(member.img)}
-									srcMedium={getExternalMediaUrl(member.img_medium)}
-									srcSmall={getExternalMediaUrl(member.img_small)}
-									blurHash={member.blurHash}
-									alt={member.name}
-									class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-									sizes="(max-width: 640px) 44vw, 176px"
-								/>
-							{:else}
-								<div
-									class="w-full h-full flex items-center justify-center bg-slate-100 text-slate-300"
-								>
-									<Cake class="w-12 h-12" />
-								</div>
-							{/if}
-
-							<div
-								class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-20"
-							></div>
-
-							<img
-								src={getMemberFrame(member.member_type)}
-								alt="member frame"
-								class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
-							/>
-
-							<!-- Countdown -->
-							<div class="absolute top-4 left-0 right-0 flex justify-center z-30">
-								<span
-									class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl backdrop-blur-md border border-white/20 {member.days_until ===
-									0
-										? 'bg-red-600 text-white animate-pulse'
-										: 'bg-black/60 text-white'}"
-								>
-									{getBirthdayText(member.days_until, t)}
-								</span>
-							</div>
-
-							<div class="absolute bottom-6 left-5 right-5 z-30 text-left">
-								<div
-									class="text-white font-black text-sm leading-tight mb-1 truncate drop-shadow-md"
-								>
-									{member.name}
-								</div>
-								<div class="text-white/70 text-[10px] font-bold drop-shadow-md">
-									{parseIndonesianDate(member.birthdate).getDate()}
-									{parseIndonesianDate(member.birthdate).toLocaleString(locale.value, {
-										month: 'short'
-									})}
-									•
-									{member.age}
-									{t('member.yearsOld')}
-								</div>
-							</div>
-						</div>
-					</div>
-				{/each}
-			</div>
-		{/if}
-	</div>
-
 	<div class="space-y-8">
 		<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
 			<div class="flex items-center gap-4 group/header">
@@ -360,6 +267,100 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Birthdays Section -->
+	<div class="space-y-8">
+		<div class="flex items-center gap-4 mb-8 group/header">
+			<div class="h-10 w-2 bg-red-600 rounded-full shadow-lg shadow-red-500/20"></div>
+			<h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+				{t('theater.birthdays.title') || 'Upcoming Birthdays'}
+			</h2>
+		</div>
+
+		{#if !mounted || (birthdaysLoading && birthdays.length === 0)}
+			<div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide">
+				{#each Array(6) as _}
+					<div class="flex-none w-44 snap-start">
+						<MemberCardSkeleton />
+					</div>
+				{/each}
+			</div>
+		{:else if birthdays.length === 0}
+			<div
+				class="p-12 rounded-[2.5rem] bg-slate-50 dark:bg-zinc-900/50 border-2 border-dashed border-slate-200 dark:border-zinc-800 text-center text-slate-400 font-bold uppercase tracking-widest text-sm"
+			>
+				{t('theater.birthdays.empty') || 'No upcoming birthdays'}
+			</div>
+		{:else}
+			<div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory">
+				{#each birthdays as member}
+					<div class="flex-none w-44 snap-start">
+						<div
+							class="relative group aspect-[3/4] rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-300"
+						>
+							{#if member.img}
+								<OptimizedImage
+									src={getExternalMediaUrl(member.img)}
+									srcMedium={getExternalMediaUrl(member.img_medium)}
+									srcSmall={getExternalMediaUrl(member.img_small)}
+									blurHash={member.blurHash}
+									alt={member.name}
+									class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+									sizes="(max-width: 640px) 44vw, 176px"
+								/>
+							{:else}
+								<div
+									class="w-full h-full flex items-center justify-center bg-slate-100 text-slate-300"
+								>
+									<Cake class="w-12 h-12" />
+								</div>
+							{/if}
+
+							<div
+								class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-20"
+							></div>
+
+							<img
+								src={getMemberFrame(member.member_type)}
+								alt="member frame"
+								class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
+							/>
+
+							<!-- Countdown -->
+							<div class="absolute top-4 left-0 right-0 flex justify-center z-30">
+								<span
+									class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl backdrop-blur-md border border-white/20 {member.days_until ===
+									0
+										? 'bg-red-600 text-white animate-pulse'
+										: 'bg-black/60 text-white'}"
+								>
+									{getBirthdayText(member.days_until, t)}
+								</span>
+							</div>
+
+							<div class="absolute bottom-6 left-5 right-5 z-30 text-left">
+								<div
+									class="text-white font-black text-sm leading-tight mb-1 truncate drop-shadow-md"
+								>
+									{member.name}
+								</div>
+								<div class="text-white/70 text-[10px] font-bold drop-shadow-md">
+									{parseIndonesianDate(member.birthdate).getDate()}
+									{parseIndonesianDate(member.birthdate).toLocaleString(locale.value, {
+										month: 'short'
+									})}
+									•
+									{member.age}
+									{t('member.yearsOld')}
+								</div>
+							</div>
+						</div>
+					</div>
+				{/each}
+			</div>
+		{/if}
+	</div>
+
 </div>
 
 <style>
