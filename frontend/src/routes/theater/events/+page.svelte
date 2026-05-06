@@ -49,12 +49,6 @@
 />
 
 <div class="space-y-6">
-	<!-- Birthdays Section -->
-	<Birthdays
-		birthdays={$membersStore.birthdays || []}
-		isLoading={!mounted || $isBirthdaysLoading}
-	/>
-
 	<div class="flex items-center gap-3 mb-4">
 		<div class="h-8 w-1.5 bg-red-500 rounded-full"></div>
 		<h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
@@ -296,6 +290,12 @@
 			{/each}
 		</div>
 	{/if}
+
+	<!-- Birthdays Section -->
+	<Birthdays
+		birthdays={$membersStore.birthdays || []}
+		isLoading={!mounted || $isBirthdaysLoading}
+	/>
 </div>
 
 <style>
