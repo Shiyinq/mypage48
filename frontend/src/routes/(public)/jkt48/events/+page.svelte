@@ -360,7 +360,6 @@
 			</div>
 		{/if}
 	</div>
-
 </div>
 
 <style>

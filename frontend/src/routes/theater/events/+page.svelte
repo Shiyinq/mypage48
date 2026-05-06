@@ -296,7 +296,6 @@
 		birthdays={$membersStore.birthdays || []}
 		isLoading={!mounted || $isBirthdaysLoading}
 	/>
-
 </div>
 
 <style>
