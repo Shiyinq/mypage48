@@ -73,10 +73,38 @@ mypage48/
 
 ### Local Development
 
+The easiest way to get started is using the provided `Makefile`:
+
+1. **Install Dependencies**
+   ```bash
+   make install
+   ```
+
+2. **Setup Environment Variables**
+   ```bash
+   cp .env.example .env
+   cp frontend/.env.example frontend/.env
+   ```
+
+3. **Run All Services**
+   ```bash
+   make dev
+   ```
+
+   *Tip: Use `make help` to see all available management commands.*
+
+   - **App:** http://localhost:5173
+   - **API:** http://localhost:8000/docs
+   - **MinIO:** http://localhost:9001
+
+#### Alternative: Manual Setup
+
+If you prefer not to use `make`, you can set up the project manually:
+
 1. **Setup Backend**
    ```bash
    python -m venv .venv && source .venv/bin/activate
-   pip install -r requirements/dev.txt
+   pip install -r requirements/base.txt -r requirements/dev.txt
    cp .env.example .env
    ```
 
@@ -89,12 +117,6 @@ mypage48/
    ```bash
    sh scripts/start-all-dev.sh
    ```
-
-   *Tip: Use `--open` to automatically open the app in your browser.*
-
-   - App: http://localhost:5173
-   - API: http://localhost:8000/docs
-   - MinIO: http://localhost:9001
 
 ## 🐳 Production Deployment
 
