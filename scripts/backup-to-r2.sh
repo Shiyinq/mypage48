@@ -75,12 +75,14 @@ export RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY"
 export RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_KEY"
 export RCLONE_CONFIG_R2_REGION=auto
 export RCLONE_CONFIG_R2_ENDPOINT="https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com"
+export RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true
 
 rclone copy "$ENCRYPTED_FILE" "R2:$R2_BUCKET/backups/"
 
 # 6. Lifecycle: Clean up old backups in R2 (Keep only last 7 days)
 echo "🧹 Cleaning up old backups in Cloudflare R2 (7-day retention)..."
 rclone delete "R2:$R2_BUCKET/backups/" --min-age 7d --rmdirs
+
 
 # 7. Cleanup local temp files
 echo "🗑️ Cleaning up local temporary files..."
