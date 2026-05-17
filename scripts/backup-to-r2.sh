@@ -39,7 +39,8 @@ mkdir -p "$TEMP_BACKUP_DIR"
 
 # 2. Backup MongoDB
 echo "🍃 Dumping MongoDB..."
-docker exec mypage48-mongodb mongodump --username "$MONGO_ROOT_USER" --password "$MONGO_ROOT_PASSWORD" --archive="$TEMP_BACKUP_DIR/mongodb.archive"
+docker exec mypage48-mongodb mongodump --username "$MONGO_ROOT_USER" --password "$MONGO_ROOT_PASSWORD" --archive > "$TEMP_BACKUP_DIR/mongodb.archive"
+
 
 # 3. Archive .env and SSL Certs
 echo "📸 Archiving configurations and secrets..."
