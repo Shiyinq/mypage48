@@ -31,8 +31,21 @@ ENCRYPTED_FILE="/tmp/$BACKUP_NAME.7z"
 # Ensure all backup config is present
 if [ -z "$BACKUP_PASSWORD" ] || [ -z "$R2_ACCESS_KEY" ] || [ -z "$R2_SECRET_KEY" ] || [ -z "$R2_BUCKET" ] || [ -z "$R2_ACCOUNT_ID" ]; then
     echo "❌ Error: Missing backup configuration in .env"
+    echo "🔍 Loaded state:"
+    echo "R2_BUCKET     : $R2_BUCKET"
+    echo "R2_ACCOUNT_ID : $R2_ACCOUNT_ID"
+    echo "R2_ACCESS_KEY : ${R2_ACCESS_KEY:0:4}... (Len: ${#R2_ACCESS_KEY})"
+    echo "R2_SECRET_KEY : ${R2_SECRET_KEY:0:4}... (Len: ${#R2_SECRET_KEY})"
     exit 1
 fi
+
+echo "🔍 Active Environment Check:"
+echo "------------------------------------------------"
+echo "R2_BUCKET     : $R2_BUCKET"
+echo "R2_ACCOUNT_ID : $R2_ACCOUNT_ID"
+echo "R2_ACCESS_KEY : ${R2_ACCESS_KEY:0:4}*** (Len: ${#R2_ACCESS_KEY})"
+echo "R2_SECRET_KEY : ${R2_SECRET_KEY:0:4}*** (Len: ${#R2_SECRET_KEY})"
+echo "------------------------------------------------"
 
 echo "🚀 Starting backup: $BACKUP_NAME"
 
