@@ -3,7 +3,7 @@
 # =================================================================
 # MYPAGE48 - AUTOMATED ENCRYPTED OFF-SITE BACKUP (R2)
 # =================================================================
-# This script dumps database, archives photos & secrets,
+# This script dumps database, configs & secrets,
 # encrypts with a password, and uploads to Cloudflare R2.
 
 set -e
@@ -41,9 +41,9 @@ mkdir -p "$TEMP_BACKUP_DIR"
 echo "🍃 Dumping MongoDB..."
 docker exec mypage48-mongodb mongodump --username "$MONGO_ROOT_USER" --password "$MONGO_ROOT_PASSWORD" --archive="$TEMP_BACKUP_DIR/mongodb.archive"
 
-# 3. Archive MinIO Data, .env, and SSL Certs
-echo "📸 Archiving photos and secrets..."
-tar -czf "$TEMP_BACKUP_DIR/data_assets.tar.gz" .env certbot/ minio_data/ --exclude='*.7z' --exclude='logs/*'
+# 3. Archive .env and SSL Certs
+echo "📸 Archiving configurations and secrets..."
+tar -czf "$TEMP_BACKUP_DIR/data_assets.tar.gz" .env certbot/ --exclude='*.7z' --exclude='logs/*'
 
 # 4. Encrypt everything into a 7z archive
 echo "🔐 Encrypting backup with password..."
