@@ -57,7 +57,12 @@ class LLMService:
 
             image_bytes = base64.b64decode(base64_image)
 
-            prompt = """
+            # Fetch known show titles for context
+            show_titles = await self.repository.get_show_titles()
+            show_titles_list = "\n".join(f"- {title}" for title in show_titles)
+
+            print(show_titles_list)
+            prompt = f"""
             Analyze this JKT48 theater ticket image. 
             Extract the following details:
             1. Title of the show.
@@ -69,6 +74,14 @@ class LLMService:
             7. Seat Number (The number part, e.g., "3" from "G-3").
             8. Price (Numeric only).
             9. Ticket Number (The large ID number).
+
+            IMPORTANT RULES:
+            - NEVER include newlines, line breaks, or extra whitespace in any extracted field.
+            - For the title, you MUST match it to one of the following known show titles:
+            {show_titles_list}
+
+            The text on the ticket may be split across multiple lines or contain apostrophes/special characters.
+            Always use the EXACT title from the list above. Do not modify casing, punctuation, or spacing.
             """
 
             # Prepare content for Gemini
