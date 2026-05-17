@@ -59,7 +59,7 @@ docker exec mypage48-mongodb mongodump --username "$MONGO_ROOT_USER" --password 
 
 # 3. Archive .env and SSL Certs
 echo "📸 Archiving configurations and secrets..."
-tar --exclude='*.7z' --exclude='logs/*' -czf "$TEMP_BACKUP_DIR/data_assets.tar.gz" .env certbot/conf/live/
+tar --exclude='*.7z' --exclude='logs/*' --transform='s/^\.env$/env_backup/' -czf "$TEMP_BACKUP_DIR/data_assets.tar.gz" .env certbot/conf/live/
 
 
 
