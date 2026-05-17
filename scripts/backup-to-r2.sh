@@ -28,24 +28,19 @@ BACKUP_NAME="mypage48_backup_$TIMESTAMP"
 TEMP_BACKUP_DIR="/tmp/$BACKUP_NAME"
 ENCRYPTED_FILE="/tmp/$BACKUP_NAME.7z"
 
+# Cleanup trap: always remove temp files, even on failure
+cleanup() {
+    echo "🗑️ Cleaning up local temporary files..."
+    rm -rf "$TEMP_BACKUP_DIR"
+    rm -f "$ENCRYPTED_FILE"
+}
+trap cleanup EXIT
+
 # Ensure all backup config is present
 if [ -z "$BACKUP_PASSWORD" ] || [ -z "$R2_ACCESS_KEY" ] || [ -z "$R2_SECRET_KEY" ] || [ -z "$R2_BUCKET" ] || [ -z "$R2_ACCOUNT_ID" ]; then
     echo "❌ Error: Missing backup configuration in .env"
-    echo "🔍 Loaded state:"
-    echo "R2_BUCKET     : $R2_BUCKET"
-    echo "R2_ACCOUNT_ID : $R2_ACCOUNT_ID"
-    echo "R2_ACCESS_KEY : ${R2_ACCESS_KEY:0:4}... (Len: ${#R2_ACCESS_KEY})"
-    echo "R2_SECRET_KEY : ${R2_SECRET_KEY:0:4}... (Len: ${#R2_SECRET_KEY})"
     exit 1
 fi
-
-echo "🔍 Active Environment Check:"
-echo "------------------------------------------------"
-echo "R2_BUCKET     : $R2_BUCKET"
-echo "R2_ACCOUNT_ID : $R2_ACCOUNT_ID"
-echo "R2_ACCESS_KEY : ${R2_ACCESS_KEY:0:4}*** (Len: ${#R2_ACCESS_KEY})"
-echo "R2_SECRET_KEY : ${R2_SECRET_KEY:0:4}*** (Len: ${#R2_SECRET_KEY})"
-echo "------------------------------------------------"
 
 echo "🚀 Starting backup: $BACKUP_NAME"
 
@@ -56,12 +51,9 @@ mkdir -p "$TEMP_BACKUP_DIR"
 echo "🍃 Dumping MongoDB..."
 docker exec mypage48-mongodb mongodump --username "$MONGO_ROOT_USER" --password "$MONGO_ROOT_PASSWORD" --archive > "$TEMP_BACKUP_DIR/mongodb.archive"
 
-
 # 3. Archive .env and SSL Certs
 echo "📸 Archiving configurations and secrets..."
 tar --exclude='*.7z' --exclude='logs/*' --transform='s/^\.env$/env_backup/' -czf "$TEMP_BACKUP_DIR/data_assets.tar.gz" .env certbot/conf/live/
-
-
 
 # 4. Encrypt everything into a 7z archive
 echo "🔐 Encrypting backup with password..."
@@ -82,11 +74,5 @@ rclone copy "$ENCRYPTED_FILE" "R2:$R2_BUCKET/backups/"
 # 6. Lifecycle: Clean up old backups in R2 (Keep only last 7 days)
 echo "🧹 Cleaning up old backups in Cloudflare R2 (7-day retention)..."
 rclone delete "R2:$R2_BUCKET/backups/" --min-age 7d --rmdirs
-
-
-# 7. Cleanup local temp files
-echo "🗑️ Cleaning up local temporary files..."
-rm -rf "$TEMP_BACKUP_DIR"
-rm -f "$ENCRYPTED_FILE"
 
 echo "✅ BACKUP COMPLETED & UPLOADED SUCCESSFULLY!"
