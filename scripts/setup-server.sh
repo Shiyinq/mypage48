@@ -171,11 +171,11 @@ touch "$CERT_DIR/privkey.pem"
 echo "✅ SSL directory and empty files created."
 
 # 10. Automated Backup Setup (Cron Job)
-echo "⏰ Setting up daily automated backup (00:00)..."
+echo "⏰ Setting up daily automated backup (02:00 AM)..."
 chmod +x scripts/backup-to-r2.sh
 # Check if cron job already exists to avoid duplication
-(crontab -l 2>/dev/null | grep -F "scripts/backup-to-r2.sh") || (crontab -l 2>/dev/null; echo "0 0 * * * $PROJECT_DIR/scripts/backup-to-r2.sh >> $PROJECT_DIR/logs/backup.log 2>&1") | crontab -
-echo "✅ Cron job for daily backup at midnight created."
+(crontab -l 2>/dev/null | grep -F "scripts/backup-to-r2.sh") || (crontab -l 2>/dev/null; echo "0 2 * * * $PROJECT_DIR/scripts/backup-to-r2.sh >> $PROJECT_DIR/logs/backup.log 2>&1") | crontab -
+echo "✅ Cron job for daily backup at 02:00 AM created."
 
 echo "--------------------------------------------------------"
 echo "🎉 SETUP COMPLETE!"
