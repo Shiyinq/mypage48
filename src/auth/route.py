@@ -169,7 +169,10 @@ async def refresh_access_token(
     # Diagnostic: log all cookies received to debug missing refresh_token
     all_cookies = dict(request.cookies)
     cookie_keys = list(all_cookies.keys())
-    masked = {k: f"{v[:8]}..." if v and len(v) > 8 else "SHORT" for k, v in all_cookies.items()}
+    masked = {
+        k: f"{v[:8]}..." if v and len(v) > 8 else "SHORT"
+        for k, v in all_cookies.items()
+    }
     logger.info(f"Cookies on /auth/refresh: keys={cookie_keys}, values={masked}")
 
     refresh_token = request.cookies.get("refresh_token")
