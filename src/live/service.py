@@ -193,18 +193,48 @@ class LiveService:
           }
         }
         """
-        variables = {"page": 1}
         try:
             async with httpx.AsyncClient() as client:
-                res = await client.post(
-                    url, json={"query": query, "variables": variables}, timeout=30.0
-                )
-                res.raise_for_status()
-                data = res.json()
+                # Fetch first 4 pages concurrently to ensure we capture all active streams
+                tasks = []
+                for page in range(1, 5):
+                    tasks.append(
+                        client.post(
+                            url,
+                            json={"query": query, "variables": {"page": page}},
+                            timeout=30.0,
+                        )
+                    )
 
-                streams = data.get("data", {}).get("getLivestreams", [])
-                if not streams:
+                responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+                raw_streams = []
+                for res in responses:
+                    if isinstance(res, Exception):
+                        logger.warning(f"Failed to fetch IDN page: {res}")
+                        continue
+                    try:
+                        res.raise_for_status()
+                        res_data = res.json()
+                        page_streams = res_data.get("data", {}).get(
+                            "getLivestreams", []
+                        )
+                        if page_streams:
+                            raw_streams.extend(page_streams)
+                    except Exception as parse_err:
+                        logger.warning(f"Error parsing IDN response page: {parse_err}")
+
+                if not raw_streams:
                     return []
+
+                # Deduplicate streams by slug
+                seen_slugs = set()
+                streams = []
+                for s in raw_streams:
+                    slug = s.get("slug")
+                    if slug and slug not in seen_slugs:
+                        seen_slugs.add(slug)
+                        streams.append(s)
 
                 # Fetch all members to match
                 active_members = await self.member_repository.find_all(limit=500)
