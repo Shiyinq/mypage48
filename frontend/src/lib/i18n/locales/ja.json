@@ -737,8 +737,16 @@
 			"connecting": "接続中...",
 			"disconnected": "切断されました",
 			"reconnect_idn": "接続が切れました。数秒後に再試行します...",
-			"reconnect_showroom": "接続が切れました।数秒後に再試行します...",
-			"switchMultiview": "マルチビューに切り替え"
+			"switchMultiview": "マルチビューに切り替え",
+			"share": {
+				"title": "mypage48を応援しよう！🚀",
+				"description": "このウェブサイトがお気に入りですか？このプラットフォームを他のJKT48ファンと共有して、私たちの継続と成長をサポートしてください！",
+				"shareToX": "Xで共有",
+				"copyLink": "リンクをコピー",
+				"shareText": "mypage48で最新のJKT48メンバーのライブ配信をチェックしよう！🌟",
+				"toastSuccess": "ウェブサイトのリンクがコピーされました！",
+				"toastError": "リンクのコピーに失敗しました。"
+			}
 		},
 		"news": {
 			"title": "ニュース",

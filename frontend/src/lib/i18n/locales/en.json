@@ -785,8 +785,16 @@
 			"connecting": "Connecting...",
 			"disconnected": "Disconnected",
 			"reconnect_idn": "Connection lost. Retrying in a few seconds...",
-			"reconnect_showroom": "Connection lost. Retrying in a few seconds...",
-			"switchMultiview": "Switch to Multi-view"
+			"switchMultiview": "Switch to Multi-view",
+			"share": {
+				"title": "Support mypage48! 🚀",
+				"description": "Love this website? Help us stay alive and grow by sharing this platform with fellow JKT48 fans!",
+				"shareToX": "Share on X",
+				"copyLink": "Copy Link",
+				"shareText": "Check out the latest JKT48 members live streams on mypage48! 🌟",
+				"toastSuccess": "Website link copied successfully!",
+				"toastError": "Failed to copy link."
+			}
 		},
 		"news": {
 			"title": "News",

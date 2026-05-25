@@ -858,7 +858,16 @@
 				"sending_gift": "",
 				"seoDescription": ""
 			},
-			"switchMultiview": ""
+			"switchMultiview": "",
+			"share": {
+				"title": "",
+				"description": "",
+				"shareToX": "",
+				"copyLink": "",
+				"shareText": "",
+				"toastSuccess": "",
+				"toastError": ""
+			}
 		},
 		"news": {
 			"title": "",
