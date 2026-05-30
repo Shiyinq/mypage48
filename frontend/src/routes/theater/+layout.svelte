@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { AudioLines, Users, Calendar, Newspaper, ArrowUpDown, Tv } from 'lucide-svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
-	import { liveList } from '$lib/stores';
+	import { liveList, isImmersive } from '$lib/stores';
 	import { newsStore } from '$lib/stores/news.svelte';
 
 	interface Props {
@@ -123,11 +123,11 @@
 </script>
 
 <div
-	class="{isLiveDetailPage || isNewsDetailPage || isDetailPage
-		? 'max-w-5xl'
-		: 'max-w-6xl'} mx-auto {isLiveDetailPage
-		? 'pt-0 sm:pt-0 px-1.5 sm:px-4'
-		: 'pt-4 sm:pt-6 px-4'} pb-24"
+	class="{isLiveDetailPage || isNewsDetailPage || isDetailPage || isImmersive.value
+		? 'max-w-none w-full'
+		: 'max-w-6xl'} mx-auto {isLiveDetailPage || isImmersive.value
+		? 'pt-0 sm:pt-0 px-0'
+		: 'pt-4 sm:pt-6 px-4'} {isImmersive.value ? 'pb-0' : 'pb-24'}"
 >
 	<!-- Unified Page Header (Standard or Background Live Sync) -->
 	<PageHeader
@@ -144,7 +144,7 @@
 				: isDetailPage
 					? '/theater'
 					: undefined}
-		hidden={isLiveDetailPage}
+		hidden={isLiveDetailPage || isImmersive.value}
 	></PageHeader>
 	{#if !isLiveDetailPage}
 		<div class="mb-4 sm:mb-6"></div>
