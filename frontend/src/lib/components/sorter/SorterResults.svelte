@@ -18,6 +18,7 @@
 		results: ResultMember[];
 		layoutMode?: 'card' | 'list';
 		variant?: 'public' | 'theater';
+		selectedGenerations?: Set<string>;
 		onshare?: (customTitle?: string, customSubtitle?: string) => void;
 		onrestart?: () => void;
 		onchangeLayout?: (mode: 'card' | 'list') => void;
@@ -27,10 +28,16 @@
 		results,
 		layoutMode = 'card',
 		variant = 'public',
+		selectedGenerations = new Set(),
 		onshare,
 		onrestart,
 		onchangeLayout
 	}: Props = $props();
+
+	// Derived Sorted Generations for display
+	let sortedSelectedGens = $derived(
+		[...selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b))
+	);
 
 	// Custom Title & Subtitle State
 	let customTitle = $state(t('theater.sorter.results'));
@@ -103,11 +110,6 @@
 >
 	<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 		<div class="flex items-center gap-4 flex-1 min-w-0 w-full">
-			<div
-				class={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-xl shrink-0 ${isPublic ? 'bg-red-600 shadow-red-500/20' : 'bg-rose-500 shadow-rose-500/20'}`}
-			>
-				<Trophy size={22} />
-			</div>
 			<div class="space-y-1 min-w-0 flex-1 w-full">
 				{#if isEditingTitle}
 					<div class="flex items-start gap-2 w-full sm:max-w-md">
@@ -212,6 +214,18 @@
 						</button>
 					</div>
 				{/if}
+
+				{#if sortedSelectedGens.length > 0}
+					<div class="flex flex-wrap gap-1.5 pt-2">
+						{#each sortedSelectedGens as gen}
+							<span
+								class={`px-2.5 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase border transition-all hover:scale-105 select-none ${isPublic ? 'bg-red-50/50 dark:bg-red-950/20 border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400' : 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30 text-rose-500 dark:text-rose-400'}`}
+							>
+								{t('theater.sorter.genLabel', { gen })}
+							</span>
+						{/each}
+					</div>
+				{/if}
 			</div>
 		</div>
 
@@ -304,17 +318,6 @@
 										>{t('theater.sorter.genLabel', { gen: member.generation })}</span
 									>
 								</div>
-
-								{#if i === 0}
-									<div
-										class="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 z-30 scale-90 sm:scale-110"
-									>
-										<Trophy
-											size={16}
-											class="sm:size-[18px] text-yellow-400 fill-current drop-shadow-lg"
-										/>
-									</div>
-								{/if}
 							</div>
 						</div>
 					{/each}
@@ -350,14 +353,7 @@
 									>
 										1
 									</div>
-									<div
-										class="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 z-30 scale-90 sm:scale-110"
-									>
-										<Trophy
-											size={16}
-											class="sm:size-[18px] text-yellow-400 fill-current drop-shadow-lg"
-										/>
-									</div>
+
 									<div
 										class="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-30 text-left"
 									>
