@@ -917,7 +917,11 @@
 			"shareTextHeader": "My JKT48 Oshi Sorter Results:",
 			"shareTextFooter": "Sort yours at",
 			"copySuccess": "Results copied to clipboard!",
-			"copyFailed": "Failed to copy results. Please copy manually."
+			"copyFailed": "Failed to copy results. Please copy manually.",
+			"editTitle": "Edit Title",
+			"editSubtitle": "Edit Description",
+			"save": "Save",
+			"cancel": "Cancel"
 		}
 	},
 	"memories": {

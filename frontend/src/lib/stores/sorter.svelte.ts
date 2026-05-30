@@ -301,12 +301,15 @@ export function createSorter(
 		}
 	}
 
-	async function shareResults() {
+	async function shareResults(customTitle?: string, customSubtitle?: string) {
 		const textList = results
 			.slice(0, 10)
 			.map((r) => `#${r.rank} ${r.name}`)
 			.join('\n');
-		const shareText = `${t('theater.sorter.shareTextHeader')}\n${textList}\n\n${t('theater.sorter.shareTextFooter')} ${window.location.origin}${path}`;
+		const headerText = customTitle
+			? `${customTitle}${customSubtitle ? ` (${customSubtitle})` : ''}:`
+			: t('theater.sorter.shareTextHeader');
+		const shareText = `${headerText}\n${textList}\n\n${t('theater.sorter.shareTextFooter')} ${window.location.origin}${path}`;
 		if (navigator.share) {
 			try {
 				await navigator.share({
