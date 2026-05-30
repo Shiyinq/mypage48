@@ -6,6 +6,7 @@
 	import { page } from '$app/stores';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 	import ScrollToTop from '$lib/components/common/ScrollToTop.svelte';
+	import { isImmersive } from '$lib/stores';
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
@@ -35,19 +36,21 @@
 	<AnimatedBackground interactive={true} bind:mouse {scrollY} />
 
 	<!-- NAV -->
-	{#if !isFullScreenRoute}
+	{#if !isFullScreenRoute && !isImmersive.value}
 		<LandingNavbar mouse={$mouse} showLogin={true} />
 	{/if}
 
 	<!-- CONTENT -->
 	<main
-		class={isFullScreenRoute ? 'relative w-full h-full' : 'relative max-w-7xl mx-auto px-3 sm:px-6'}
+		class={isFullScreenRoute || isImmersive.value
+			? 'relative w-full h-full'
+			: 'relative max-w-7xl mx-auto px-3 sm:px-6'}
 	>
 		{@render children?.()}
 	</main>
 
 	<!-- FOOTER -->
-	{#if !isFullScreenRoute}
+	{#if !isFullScreenRoute && !isImmersive.value}
 		<Footer />
 	{/if}
 </div>
