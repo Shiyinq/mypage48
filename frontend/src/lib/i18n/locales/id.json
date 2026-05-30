@@ -1042,7 +1042,11 @@
 			"shareTextHeader": "Hasil JKT48 Oshi Sorter-ku:",
 			"shareTextFooter": "Coba punya kamu di",
 			"copySuccess": "Hasil berhasil disalin ke clipboard!",
-			"copyFailed": "Gagal menyalin hasil. Silakan salin manual."
+			"copyFailed": "Gagal menyalin hasil. Silakan salin manual.",
+			"editTitle": "Edit Judul",
+			"editSubtitle": "Edit Deskripsi",
+			"save": "Simpan",
+			"cancel": "Batal"
 		}
 	},
 	"top2shot": {
