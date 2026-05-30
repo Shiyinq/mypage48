@@ -1,6 +1,12 @@
 <script lang="ts">
 	import '../app.css';
-	import { isAuthenticated, toast, userProfile, isInitialDataLoaded } from '$lib/stores';
+	import {
+		isAuthenticated,
+		toast,
+		userProfile,
+		isInitialDataLoaded,
+		isImmersive
+	} from '$lib/stores';
 	import { locale, type Locale } from '$lib/i18n';
 	import { initTheme } from '$lib/stores';
 	import { onMount } from 'svelte';
@@ -186,7 +192,7 @@
 			? 'selection:bg-red-500/20'
 			: ''}"
 	>
-		{#if isAuthenticated.value && !isFullScreenRoute}
+		{#if isAuthenticated.value && !isFullScreenRoute && !isImmersive.value}
 			<AnimatedBackground hideDecorationsOnMobile={true} />
 		{/if}
 		{#if toast.current}
@@ -236,13 +242,13 @@
 			{#if $page.url.pathname === '/'}
 				{@render children?.()}
 			{:else}
-				{#if !isFullScreenRoute}
+				{#if !isFullScreenRoute && !isImmersive.value}
 					<LandingNavbar showLogin={false} />
 				{/if}
 				{@const isLivePublicDetailPage =
 					$page.url.pathname.startsWith('/jkt48/live/') && $page.params.id}
 				<div
-					class={isFullScreenRoute
+					class={isFullScreenRoute || isImmersive.value
 						? 'w-full h-full'
 						: isLivePublicDetailPage
 							? 'max-w-7xl mx-auto p-0 sm:p-2 sm:px-4 flex-1'
@@ -250,7 +256,7 @@
 				>
 					{@render children?.()}
 				</div>
-				{#if !isFullScreenRoute}
+				{#if !isFullScreenRoute && !isImmersive.value}
 					<Footer />
 				{/if}
 			{/if}
@@ -258,7 +264,7 @@
 			<!-- Protected pages: user authenticated, show full content -->
 			{#if isPlaygroundRoute}
 				<PlaygroundHeader />
-			{:else if !isFullScreenRoute}
+			{:else if !isFullScreenRoute && !isImmersive.value}
 				<div class="hidden md:block">
 					<Header />
 				</div>
@@ -269,7 +275,7 @@
 			<main class="flex-1 w-full relative">
 				{@render children?.()}
 			</main>
-			{#if !isFullScreenRoute && !isPlaygroundRoute}
+			{#if !isFullScreenRoute && !isPlaygroundRoute && !isImmersive.value}
 				<MobileNav />
 			{/if}
 		{:else}

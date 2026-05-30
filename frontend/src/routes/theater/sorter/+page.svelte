@@ -72,9 +72,10 @@
 		<SorterResults
 			results={sorter.results}
 			{layoutMode}
+			selectedGenerations={sorter.selectedGenerations}
 			onshare={sorter.shareResults}
 			onrestart={sorter.restart}
-			onchangeLayout={(modeVal) => (layoutMode = modeVal)}
+			onchangeLayout={(modeVal: 'card' | 'list') => (layoutMode = modeVal)}
 			variant="theater"
 		/>
 	{/if}
