@@ -991,7 +991,11 @@
 			"shareTextHeader": "",
 			"shareTextFooter": "",
 			"copySuccess": "",
-			"copyFailed": ""
+			"copyFailed": "",
+			"editTitle": "",
+			"editSubtitle": "",
+			"save": "",
+			"cancel": ""
 		}
 	},
 	"top2shot": {

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Trophy, LayoutGrid, List, Share2, RotateCcw } from 'lucide-svelte';
+	import { Trophy, LayoutGrid, List, Share2, RotateCcw, Pencil, Check, X } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import type { Member } from '$lib/apis/members';
@@ -18,7 +18,7 @@
 		results: ResultMember[];
 		layoutMode?: 'card' | 'list';
 		variant?: 'public' | 'theater';
-		onshare?: () => void;
+		onshare?: (customTitle?: string, customSubtitle?: string) => void;
 		onrestart?: () => void;
 		onchangeLayout?: (mode: 'card' | 'list') => void;
 	}
@@ -32,8 +32,58 @@
 		onchangeLayout
 	}: Props = $props();
 
+	// Custom Title & Subtitle State
+	let customTitle = $state(t('theater.sorter.results'));
+	let customSubtitle = $state(t('theater.sorter.resultsSubtitle'));
+
+	let isEditingTitle = $state(false);
+	let isEditingSubtitle = $state(false);
+
+	let tempTitle = $state('');
+	let tempSubtitle = $state('');
+
+	const TITLE_LIMIT = 50;
+	const SUBTITLE_LIMIT = 100;
+
+	function startEditTitle() {
+		tempTitle = customTitle;
+		isEditingTitle = true;
+	}
+
+	function saveTitle() {
+		if (tempTitle.trim()) {
+			customTitle = tempTitle.trim().slice(0, TITLE_LIMIT);
+		}
+		isEditingTitle = false;
+	}
+
+	function cancelTitle() {
+		isEditingTitle = false;
+	}
+
+	function startEditSubtitle() {
+		tempSubtitle = customSubtitle;
+		isEditingSubtitle = true;
+	}
+
+	function saveSubtitle() {
+		if (tempSubtitle.trim()) {
+			customSubtitle = tempSubtitle.trim().slice(0, SUBTITLE_LIMIT);
+		}
+		isEditingSubtitle = false;
+	}
+
+	function cancelSubtitle() {
+		isEditingSubtitle = false;
+	}
+
+	function autofocus(node: HTMLInputElement) {
+		node.focus();
+		node.select();
+	}
+
 	function shareResults() {
-		onshare?.();
+		onshare?.(customTitle, customSubtitle);
 	}
 
 	function restart() {
@@ -52,23 +102,116 @@
 	class={`w-full space-y-8 px-1.5 sm:px-4 mx-auto ${layoutMode === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}
 >
 	<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-		<div class="flex items-center gap-4">
+		<div class="flex items-center gap-4 flex-1 min-w-0 w-full">
 			<div
 				class={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-xl shrink-0 ${isPublic ? 'bg-red-600 shadow-red-500/20' : 'bg-rose-500 shadow-rose-500/20'}`}
 			>
 				<Trophy size={22} />
 			</div>
-			<div class="space-y-0.5">
-				<h1
-					class={`text-2xl md:text-3xl font-black tracking-tighter uppercase leading-none ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
-				>
-					{t('theater.sorter.results')}
-				</h1>
-				<p
-					class={`text-[10px] font-bold uppercase tracking-widest ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
-				>
-					{t('theater.sorter.resultsSubtitle')}
-				</p>
+			<div class="space-y-1 min-w-0 flex-1 w-full">
+				{#if isEditingTitle}
+					<div class="flex items-start gap-2 w-full sm:max-w-md">
+						<div class="flex flex-col gap-0.5 flex-1 min-w-0">
+							<input
+								type="text"
+								bind:value={tempTitle}
+								maxlength={TITLE_LIMIT}
+								class={`w-full text-lg sm:text-2xl font-black tracking-tighter uppercase bg-slate-100/80 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-lg px-2.5 py-0.5 focus:outline-none focus:ring-2 ${isPublic ? 'focus:ring-red-500/25 focus:border-red-600 text-slate-900 dark:text-white' : 'focus:ring-rose-500/25 focus:border-rose-500 text-themed'}`}
+								onkeydown={(e) => {
+									if (e.key === 'Enter') saveTitle();
+									if (e.key === 'Escape') cancelTitle();
+								}}
+								use:autofocus
+							/>
+							<span class="text-[9px] font-bold text-slate-400 self-end px-1">
+								{tempTitle.length}/{TITLE_LIMIT}
+							</span>
+						</div>
+						<div class="flex items-center gap-1 shrink-0 mt-0.5">
+							<button
+								onclick={saveTitle}
+								class="p-1.5 rounded-lg bg-green-500 hover:bg-green-600 text-white shadow-sm transition-all cursor-pointer"
+								title={t('theater.sorter.save')}
+							>
+								<Check size={14} />
+							</button>
+							<button
+								onclick={cancelTitle}
+								class="p-1.5 rounded-lg bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition-all cursor-pointer"
+								title={t('theater.sorter.cancel')}
+							>
+								<X size={14} />
+							</button>
+						</div>
+					</div>
+				{:else}
+					<div class="flex items-center gap-2 group/title w-full min-w-0">
+						<h1
+							class={`text-2xl md:text-3xl font-black tracking-tighter uppercase leading-tight break-words min-w-0 ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
+						>
+							{customTitle}
+						</h1>
+						<button
+							onclick={startEditTitle}
+							class={`p-1 rounded-md transition-all cursor-pointer shrink-0 ${isPublic ? 'text-slate-400 hover:text-red-600 hover:bg-slate-100 dark:hover:bg-zinc-800' : 'text-zinc-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-zinc-800'}`}
+							title={t('theater.sorter.editTitle')}
+						>
+							<Pencil size={14} />
+						</button>
+					</div>
+				{/if}
+
+				{#if isEditingSubtitle}
+					<div class="flex items-start gap-2 w-full sm:max-w-xl">
+						<div class="flex flex-col gap-0.5 flex-1 min-w-0">
+							<input
+								type="text"
+								bind:value={tempSubtitle}
+								maxlength={SUBTITLE_LIMIT}
+								class={`w-full text-[10px] font-bold uppercase tracking-widest bg-slate-100/80 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-lg px-2.5 py-0.5 focus:outline-none focus:ring-2 ${isPublic ? 'focus:ring-red-500/25 focus:border-red-600 text-slate-500 dark:text-slate-400' : 'focus:ring-rose-500/25 focus:border-rose-500 text-themed-secondary'}`}
+								onkeydown={(e) => {
+									if (e.key === 'Enter') saveSubtitle();
+									if (e.key === 'Escape') cancelSubtitle();
+								}}
+								use:autofocus
+							/>
+							<span class="text-[9px] font-bold text-slate-400 self-end px-1">
+								{tempSubtitle.length}/{SUBTITLE_LIMIT}
+							</span>
+						</div>
+						<div class="flex items-center gap-1 shrink-0 mt-0.5">
+							<button
+								onclick={saveSubtitle}
+								class="p-1.5 rounded-lg bg-green-500 hover:bg-green-600 text-white shadow-sm transition-all cursor-pointer"
+								title={t('theater.sorter.save')}
+							>
+								<Check size={12} />
+							</button>
+							<button
+								onclick={cancelSubtitle}
+								class="p-1.5 rounded-lg bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition-all cursor-pointer"
+								title={t('theater.sorter.cancel')}
+							>
+								<X size={12} />
+							</button>
+						</div>
+					</div>
+				{:else}
+					<div class="flex items-center gap-2 group/subtitle w-full min-w-0">
+						<p
+							class={`text-[10px] font-bold uppercase tracking-widest break-words min-w-0 leading-tight ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
+						>
+							{customSubtitle}
+						</p>
+						<button
+							onclick={startEditSubtitle}
+							class={`p-1 rounded-md transition-all cursor-pointer shrink-0 ${isPublic ? 'text-slate-400 hover:text-red-600 hover:bg-slate-100 dark:hover:bg-zinc-800' : 'text-zinc-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-zinc-800'}`}
+							title={t('theater.sorter.editSubtitle')}
+						>
+							<Pencil size={12} />
+						</button>
+					</div>
+				{/if}
 			</div>
 		</div>
 
