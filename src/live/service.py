@@ -531,22 +531,28 @@ class LiveService:
         """Proxy HLS playlist and segments to bypass CORS"""
         try:
             headers = self.showroom_headers if "showroom-live.com" in url else {}
-            async with httpx.AsyncClient(
-                headers=headers, follow_redirects=True, timeout=30.0
-            ) as client:
-                resp = await client.get(url)
 
-            if resp.status_code != 200:
-                return {
-                    "content": resp.content,
-                    "media_type": None,
-                    "status_code": resp.status_code,
-                }
+            # If it's a playlist (.m3u8), we need to fetch and rewrite it
+            is_playlist = (
+                url.endswith(".m3u8")
+                or "playlist" in url.lower()
+                or "chunklist" in url.lower()
+            )
 
-            content_type = resp.headers.get("content-type", "")
+            if is_playlist:
+                async with httpx.AsyncClient(
+                    headers=headers, follow_redirects=True, timeout=30.0
+                ) as client:
+                    resp = await client.get(url)
 
-            # If it's an m3u8 playlist, rewrite internal URLs
-            if url.endswith(".m3u8") or "mpegurl" in content_type.lower():
+                if resp.status_code != 200:
+                    return {
+                        "content": resp.content,
+                        "media_type": None,
+                        "status_code": resp.status_code,
+                    }
+
+                resp.headers.get("content-type", "")
                 content = resp.text
                 lines = content.splitlines()
                 rewritten_lines = []
@@ -592,10 +598,19 @@ class LiveService:
                     },
                 }
 
-            # For segments (.ts), just return the content
+            # For segments (.ts, .m4s), stream the content directly
+            async def stream_generator():
+                async with httpx.AsyncClient(
+                    headers=headers, follow_redirects=True, timeout=30.0
+                ) as client:
+                    async with client.stream("GET", url) as response:
+                        async for chunk in response.aiter_bytes(chunk_size=65536):
+                            yield chunk
+
             return {
-                "content": resp.content,
-                "media_type": content_type,
+                "content": stream_generator(),
+                "is_stream": True,
+                "media_type": "video/mp2t",
                 "headers": {
                     "Access-Control-Allow-Origin": "*",
                     "Cache-Control": "public, max-age=3600",
