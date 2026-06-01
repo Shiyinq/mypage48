@@ -125,7 +125,27 @@
 					hls = new Hls({
 						enableWorker: true,
 						lowLatencyMode: true,
-						backBufferLength: 60
+						backBufferLength: 60,
+						// Tuned for proxied live streams
+						liveSyncDurationCount: 3,
+						liveMaxLatencyDurationCount: 6,
+						liveDurationInfinity: true,
+						// Aggressive retry for network errors (proxy can be flaky)
+						manifestLoadingMaxRetry: 6,
+						manifestLoadingRetryDelay: 1000,
+						levelLoadingMaxRetry: 6,
+						levelLoadingRetryDelay: 1000,
+						fragLoadingMaxRetry: 6,
+						fragLoadingRetryDelay: 1000,
+						// Lower buffer thresholds for faster start
+						maxBufferLength: 10,
+						maxMaxBufferLength: 30,
+						maxBufferSize: 30 * 1000 * 1000, // 30MB
+						maxBufferHole: 0.5,
+						// Increase timeouts for slow proxy
+						fragLoadingTimeOut: 30000,
+						manifestLoadingTimeOut: 15000,
+						levelLoadingTimeOut: 15000
 					});
 
 					hls.loadSource(streamUrl);

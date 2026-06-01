@@ -163,7 +163,28 @@
 				if (typeof window !== 'undefined' && videoElement) {
 					if (Hls.isSupported()) {
 						if (hls) hls.destroy();
-						hls = new Hls();
+						hls = new Hls({
+							// Tuned for proxied live streams
+							liveSyncDurationCount: 3,
+							liveMaxLatencyDurationCount: 6,
+							liveDurationInfinity: true,
+							// Aggressive retry for network errors (proxy can be flaky)
+							manifestLoadingMaxRetry: 6,
+							manifestLoadingRetryDelay: 1000,
+							levelLoadingMaxRetry: 6,
+							levelLoadingRetryDelay: 1000,
+							fragLoadingMaxRetry: 6,
+							fragLoadingRetryDelay: 1000,
+							// Lower buffer thresholds for faster start
+							maxBufferLength: 10,
+							maxMaxBufferLength: 30,
+							maxBufferSize: 30 * 1000 * 1000, // 30MB
+							maxBufferHole: 0.5,
+							// Increase timeouts for slow proxy
+							fragLoadingTimeOut: 30000,
+							manifestLoadingTimeOut: 15000,
+							levelLoadingTimeOut: 15000
+						});
 						hls.loadSource(streamUrl);
 						hls.attachMedia(videoElement);
 						hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -178,11 +199,32 @@
 
 						hls.on(
 							Hls.Events.ERROR,
-							(event: unknown, data: { type: string; response?: { code: number } }) => {
+							(
+								event: unknown,
+								data: { type: string; fatal: boolean; response?: { code: number } }
+							) => {
 								if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
 									console.log('Proxy/Stream 404 detected, redirecting to list');
 									showToast(t('theater.live.offline'), 'error');
 									goto(basePath);
+									return;
+								}
+								// Auto-recover from fatal errors
+								if (data.fatal) {
+									switch (data.type) {
+										case Hls.ErrorTypes.NETWORK_ERROR:
+											console.warn('Fatal network error, attempting recovery...');
+											hls.startLoad();
+											break;
+										case Hls.ErrorTypes.MEDIA_ERROR:
+											console.warn('Fatal media error, attempting recovery...');
+											hls.recoverMediaError();
+											break;
+										default:
+											console.error('Unrecoverable error, reinitializing player...');
+											refreshStream();
+											break;
+									}
 								}
 							}
 						);
