@@ -9,7 +9,8 @@
 		RotateCcw,
 		Pencil,
 		Check,
-		X
+		X,
+		Save
 	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -33,6 +34,7 @@
 		onshare?: (customTitle?: string, customSubtitle?: string) => void;
 		onrestart?: () => void;
 		onchangeLayout?: (mode: 'card' | 'list') => void;
+		onsave?: (title: string, description: string) => Promise<void>;
 	}
 
 	let {
@@ -42,7 +44,8 @@
 		selectedGenerations = new Set(),
 		onshare,
 		onrestart,
-		onchangeLayout
+		onchangeLayout,
+		onsave
 	}: Props = $props();
 
 	// Derived Sorted Generations for display
@@ -98,6 +101,18 @@
 	function autofocus(node: HTMLInputElement) {
 		node.focus();
 		node.select();
+	}
+
+	let isSaving = $state(false);
+
+	async function saveResults() {
+		if (isSaving) return;
+		isSaving = true;
+		try {
+			await onsave?.(customTitle, customSubtitle);
+		} finally {
+			isSaving = false;
+		}
 	}
 
 	function shareResults() {
@@ -167,18 +182,35 @@
 				<button
 					onclick={() => setLayout('card')}
 					class={`p-1.5 rounded-full transition-all cursor-pointer ${layoutMode === 'card' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
-					title="Grid View"
+					title={t('theater.sorter.gridView')}
 				>
 					<LayoutGrid size={16} />
 				</button>
 				<button
 					onclick={() => setLayout('list')}
 					class={`p-1.5 rounded-full transition-all cursor-pointer ${layoutMode === 'list' ? (isPublic ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20') : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
-					title="List View"
+					title={t('theater.sorter.listView')}
 				>
 					<List size={16} />
 				</button>
 			</div>
+
+			{#if !isPublic && onsave}
+				<button
+					onclick={saveResults}
+					disabled={isSaving}
+					class="w-8 h-8 bg-green-600 hover:bg-green-700 text-white font-black rounded-full transition-all shadow-lg flex items-center justify-center cursor-pointer disabled:opacity-50"
+					title={t('theater.sorter.save') || 'Save Results'}
+				>
+					{#if isSaving}
+						<div
+							class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+						></div>
+					{:else}
+						<Save size={14} />
+					{/if}
+				</button>
+			{/if}
 
 			<button
 				onclick={shareResults}

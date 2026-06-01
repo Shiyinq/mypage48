@@ -15,6 +15,7 @@ from src.memories.route import router as memories_router
 from src.news.route import router as news_router
 from src.playground.route import router as playground_router
 from src.setlists.route import router as setlists_router
+from src.sorter.route import router as sorter_router
 from src.storage.route import router as storage_router
 from src.tickets.route import router as theater_router
 from src.users.route import router as user_router
@@ -27,6 +28,7 @@ router.include_router(user_router, tags=["Users"])
 router.include_router(health_router, tags=["Health"])
 router.include_router(llm_router, prefix="/llm", tags=["LLM"])
 router.include_router(theater_router, prefix="/theater", tags=["Theater"])
+router.include_router(sorter_router, prefix="/theater/sorter", tags=["Sorter"])
 router.include_router(members_router, prefix="/members", tags=["Members"])
 router.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
 router.include_router(

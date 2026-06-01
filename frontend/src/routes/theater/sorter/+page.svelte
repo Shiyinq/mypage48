@@ -5,6 +5,8 @@
 	import SorterGenerationSelect from '$lib/components/sorter/SorterGenerationSelect.svelte';
 	import SorterProcess from '$lib/components/sorter/SorterProcess.svelte';
 	import SorterResults from '$lib/components/sorter/SorterResults.svelte';
+	import SorterHistory from '$lib/components/sorter/SorterHistory.svelte';
+	import SorterHistoryDetail from '$lib/components/sorter/SorterHistoryDetail.svelte';
 	import { createSorter } from '$lib/stores/sorter.svelte';
 
 	const { t } = useTranslation();
@@ -40,6 +42,28 @@
 <div
 	class={`w-full flex flex-col items-center justify-start min-h-[calc(100svh-120px)] ${sorter.currentState === 'results' ? 'pt-0 pb-12' : 'pt-0 pb-4 overflow-hidden'}`}
 >
+	<!-- Sub Navbar for switching between landing and history views -->
+	{#if sorter.currentState === 'landing' || sorter.currentState === 'history'}
+		<div class="flex items-center justify-center gap-3 sm:gap-4 mb-8">
+			<button
+				onclick={() => {
+					sorter.currentState = 'landing';
+				}}
+				class={`px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all cursor-pointer ${sorter.currentState === 'landing' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'bg-white dark:bg-zinc-900 text-zinc-500 border border-zinc-200 dark:border-zinc-800 hover:text-rose-500'}`}
+			>
+				{t('theater.sorter.startNew') || 'Mulai Sorter'}
+			</button>
+			<button
+				onclick={() => {
+					sorter.goToHistory();
+				}}
+				class={`px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all cursor-pointer ${sorter.currentState === 'history' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'bg-white dark:bg-zinc-900 text-zinc-500 border border-zinc-200 dark:border-zinc-800 hover:text-rose-500'}`}
+			>
+				{t('theater.sorter.history') || 'Riwayat Sorter'}
+			</button>
+		</div>
+	{/if}
+
 	{#if sorter.currentState === 'landing'}
 		<SorterGenerationSelect
 			generations={sorter.generations}
@@ -76,8 +100,25 @@
 			onshare={sorter.shareResults}
 			onrestart={sorter.restart}
 			onchangeLayout={(modeVal: 'card' | 'list') => (layoutMode = modeVal)}
+			onsave={sorter.saveCurrentResult}
 			variant="theater"
 		/>
+	{:else if sorter.currentState === 'history'}
+		<SorterHistory
+			histories={sorter.savedHistories}
+			loading={sorter.loadingHistory}
+			onview={sorter.viewHistoryDetail}
+			ondelete={sorter.deleteSavedHistory}
+		/>
+	{:else if sorter.currentState === 'history-detail'}
+		{#if sorter.selectedHistory}
+			<SorterHistoryDetail
+				historyItem={sorter.selectedHistory}
+				onback={() => {
+					sorter.currentState = 'history';
+				}}
+			/>
+		{/if}
 	{/if}
 </div>
 
