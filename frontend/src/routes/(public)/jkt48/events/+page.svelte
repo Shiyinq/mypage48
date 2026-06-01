@@ -17,7 +17,7 @@
 	import { formatDate, formatTime } from '$lib/i18n';
 	import SEO from '$lib/components/SEO.svelte';
 	import { getMemberFrame } from '$lib/constants';
-	import { OptimizedImage } from '$lib/components/common';
+	import { OptimizedImage, PromoBanner } from '$lib/components/common';
 	import { parseIndonesianDate } from '$lib/utils/time';
 
 	const { t, locale } = useTranslation();
@@ -75,6 +75,12 @@
 			{t('theater.events.subtitle')}
 		</p>
 	</div>
+
+	<PromoBanner
+		title={t('theater.events.promoTitle')}
+		desc={t('theater.events.promoDesc')}
+		actionText={t('theater.events.promoAction')}
+	/>
 
 	<div class="space-y-8">
 		<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">

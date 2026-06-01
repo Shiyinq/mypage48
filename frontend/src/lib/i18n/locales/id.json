@@ -997,7 +997,10 @@
 			"setlist": "Setlist",
 			"eventType": "Event",
 			"birthday": "Ulang Tahun",
-			"tba": "TBA"
+			"tba": "TBA",
+			"promoTitle": "Fitur Scan Tiket",
+			"promoDesc": "Kalau kamu verif teater jangan lupa tiket teaternya disimpan atau dicatet, di web ini bisa pakai fitur scan tiket teater loh, nanti kamu bisa tau kamu sering duduk di row belakang atau depan, yuk buat akun sekarang.",
+			"promoAction": "Daftar"
 		},
 		"eventHistory": {
 			"title": "Riwayat Event",
@@ -1070,7 +1073,7 @@
 			"detail": "Detail",
 			"loginNow": "Daftar",
 			"historyFeatures": "Fitur Riwayat Sorter",
-			"landingPromo": "Ingin menyimpan dan melihat riwayat lengkap urutan oshi-mu? Daftar akun-mu sekarang."
+			"landingPromo": "Ingin menyimpan dan melihat riwayat lengkap urutan oshi-mu? Yuk buat akun sekarang."
 		}
 	},
 	"top2shot": {

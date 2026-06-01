@@ -4,3 +4,4 @@ export { default as AnimatedBackground } from './AnimatedBackground.svelte';
 export { default as ScrollToTop } from './ScrollToTop.svelte';
 export { default as ImageLightbox } from './ImageLightbox.svelte';
 export { default as ImageOverlayActions } from './ImageOverlayActions.svelte';
+export { default as PromoBanner } from './PromoBanner.svelte';
