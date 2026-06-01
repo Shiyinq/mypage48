@@ -598,45 +598,20 @@ class LiveService:
                     },
                 }
 
-            # For segments (.ts, .m4s), stream the content directly and preserve Content-Length
-            client = httpx.AsyncClient(headers=headers, follow_redirects=True, timeout=120.0)
-            req = client.build_request("GET", url)
-            response = await client.send(req, stream=True)
-
-            if response.status_code != 200:
-                await response.aclose()
-                await client.aclose()
-                return {
-                    "content": b"",
-                    "media_type": None,
-                    "status_code": response.status_code,
-                }
-
-            headers_to_return = {
-                "Access-Control-Allow-Origin": "*",
-                "Cache-Control": "public, max-age=3600",
-            }
-            
-            # Crucial: Pass Content-Length so FastAPI doesn't use Transfer-Encoding: chunked
-            # which can confuse hls.js bandwidth estimators and Nginx proxy buffers.
-            if "content-length" in response.headers:
-                headers_to_return["Content-Length"] = response.headers["content-length"]
-
-            async def stream_generator():
-                try:
-                    async for chunk in response.aiter_bytes(chunk_size=131072):
-                        yield chunk
-                except Exception as e:
-                    logger.warning(f"Stream interrupted for {url}: {e}")
-                finally:
-                    await response.aclose()
-                    await client.aclose()
+            # For segments (.ts, .m4s), fetch fully and return
+            async with httpx.AsyncClient(
+                headers=headers, follow_redirects=True, timeout=30.0
+            ) as client:
+                resp = await client.get(url)
 
             return {
-                "content": stream_generator(),
-                "is_stream": True,
-                "media_type": response.headers.get("content-type", "video/mp2t"),
-                "headers": headers_to_return,
+                "content": resp.content,
+                "media_type": resp.headers.get("content-type", "video/mp2t"),
+                "status_code": resp.status_code,
+                "headers": {
+                    "Access-Control-Allow-Origin": "*",
+                    "Cache-Control": "public, max-age=3600",
+                },
             }
         except Exception as e:
             logger.exception(f"Error proxying HLS request for {url}: {e}")
