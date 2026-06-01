@@ -198,33 +198,36 @@
 						});
 
 						hls.on(
-						Hls.Events.ERROR,
-						(event: unknown, data: { type: string; fatal: boolean; response?: { code: number } }) => {
-							if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
-								console.log('Proxy/Stream 404 detected, redirecting to list');
-								showToast(t('theater.live.offline'), 'error');
-								goto(basePath);
-								return;
-							}
-							// Auto-recover from fatal errors
-							if (data.fatal) {
-								switch (data.type) {
-									case Hls.ErrorTypes.NETWORK_ERROR:
-										console.warn('Fatal network error, attempting recovery...');
-										hls.startLoad();
-										break;
-									case Hls.ErrorTypes.MEDIA_ERROR:
-										console.warn('Fatal media error, attempting recovery...');
-										hls.recoverMediaError();
-										break;
-									default:
-										console.error('Unrecoverable error, reinitializing player...');
-										refreshStream();
-										break;
+							Hls.Events.ERROR,
+							(
+								event: unknown,
+								data: { type: string; fatal: boolean; response?: { code: number } }
+							) => {
+								if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 404) {
+									console.log('Proxy/Stream 404 detected, redirecting to list');
+									showToast(t('theater.live.offline'), 'error');
+									goto(basePath);
+									return;
+								}
+								// Auto-recover from fatal errors
+								if (data.fatal) {
+									switch (data.type) {
+										case Hls.ErrorTypes.NETWORK_ERROR:
+											console.warn('Fatal network error, attempting recovery...');
+											hls.startLoad();
+											break;
+										case Hls.ErrorTypes.MEDIA_ERROR:
+											console.warn('Fatal media error, attempting recovery...');
+											hls.recoverMediaError();
+											break;
+										default:
+											console.error('Unrecoverable error, reinitializing player...');
+											refreshStream();
+											break;
+									}
 								}
 							}
-						}
-					);
+						);
 					} else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
 						videoElement.src = streamUrl;
 						videoElement.addEventListener('loadedmetadata', () => {
