@@ -37,6 +37,8 @@ from src.news.repository import NewsRepository
 from src.news.service import NewsService
 from src.setlists.repository import SetlistsRepository
 from src.setlists.service import SetlistsService
+from src.sorter.repository import SortersRepository
+from src.sorter.service import SortersService
 from src.storage.repository import StorageRepository
 from src.storage.service import StorageService
 from src.tickets.repository import TicketsRepository
@@ -379,3 +381,14 @@ def get_live_service(
     config: Settings = Depends(get_settings),
 ) -> LiveService:
     return LiveService(member_repo, config)
+
+
+def get_sorters_repository(db=Depends(get_db)) -> SortersRepository:
+    return SortersRepository(db)
+
+
+def get_sorters_service(
+    repo: SortersRepository = Depends(get_sorters_repository),
+    config: Settings = Depends(get_settings),
+) -> SortersService:
+    return SortersService(repo, config)

@@ -97,6 +97,16 @@ from src.news.http_exceptions import (
 from src.setlists.exceptions import SetlistFetchError, SetlistNotFoundError
 from src.setlists.http_exceptions import SetlistFetchError as SetlistFetchHTTPException
 from src.setlists.http_exceptions import SetlistNotFound
+from src.sorter.exceptions import (
+    SorterDeleteError,
+    SorterNotFoundError,
+    SorterSaveError,
+)
+from src.sorter.http_exceptions import (
+    SorterDeleteFailed,
+    SorterNotFound,
+    SorterSaveFailed,
+)
 from src.storage.exceptions import ImageNotFoundError as StorageImageNotFoundError
 from src.storage.exceptions import ImageUploadError as StorageImageUploadError
 from src.storage.exceptions import (
@@ -327,6 +337,14 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, NewsFetchHTTPError())
     if isinstance(exc, NewsItemFetchError):
         return await detailed_http_exception_handler(request, NewsItemFetchHTTPError())
+
+    # Sorter exceptions
+    if isinstance(exc, SorterNotFoundError):
+        return await detailed_http_exception_handler(request, SorterNotFound())
+    if isinstance(exc, SorterSaveError):
+        return await detailed_http_exception_handler(request, SorterSaveFailed())
+    if isinstance(exc, SorterDeleteError):
+        return await detailed_http_exception_handler(request, SorterDeleteFailed())
 
     # Live exceptions
     if isinstance(exc, FetchShowroomError):

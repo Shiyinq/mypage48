@@ -1050,7 +1050,24 @@
 			"editTitle": "Edit Judul",
 			"editSubtitle": "Edit Deskripsi",
 			"save": "Simpan",
-			"cancel": "Batal"
+			"cancel": "Batal",
+			"startNew": "Mulai Sorter",
+			"history": "Riwayat Sorter",
+			"loadingHistory": "Memuat Riwayat Sorter...",
+			"noHistoryTitle": "Belum Ada Riwayat",
+			"noHistoryDesc": "Selesaikan sorter dan simpan hasilnya untuk melihat riwayat peringkat oshi terbaikmu di sini.",
+			"loadHistoryFailed": "Gagal memuat riwayat sorter",
+			"saveSuccess": "Hasil berhasil disimpan ke riwayat!",
+			"saveFailed": "Gagal menyimpan hasil",
+			"deleteSuccess": "Entri riwayat berhasil dihapus",
+			"deleteFailed": "Gagal menghapus entri riwayat",
+			"deleteHistory": "Hapus Riwayat",
+			"backToHistory": "Kembali ke Riwayat",
+			"gridView": "Tampilan Grid",
+			"listView": "Tampilan List",
+			"confirmYes": "Ya",
+			"confirmCancel": "Batal",
+			"detail": "Detail"
 		}
 	},
 	"top2shot": {
