@@ -1067,7 +1067,10 @@
 			"listView": "Tampilan List",
 			"confirmYes": "Ya",
 			"confirmCancel": "Batal",
-			"detail": "Detail"
+			"detail": "Detail",
+			"loginNow": "Daftar",
+			"historyFeatures": "Fitur Riwayat Sorter",
+			"landingPromo": "Ingin menyimpan dan melihat riwayat lengkap urutan oshi-mu? Daftar akun-mu sekarang."
 		}
 	},
 	"top2shot": {

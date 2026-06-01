@@ -890,7 +890,10 @@
 			"listView": "リスト表示",
 			"confirmYes": "はい",
 			"confirmCancel": "キャンセル",
-			"detail": "詳細"
+			"detail": "詳細",
+			"loginNow": "新規登録",
+			"historyFeatures": "ソーター履歴機能",
+			"landingPromo": "推しランキングの完全な履歴を保存して確認したいですか？今すぐアカウントを新規登録してください。"
 		}
 	},
 	"top2shot": {
