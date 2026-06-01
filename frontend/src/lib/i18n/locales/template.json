@@ -942,7 +942,10 @@
 			"setlist": "",
 			"eventType": "",
 			"birthday": "",
-			"tba": ""
+			"tba": "",
+			"promoTitle": "",
+			"promoDesc": "",
+			"promoAction": ""
 		},
 		"eventHistory": {
 			"title": "",
