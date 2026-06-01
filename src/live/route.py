@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, Request, Response
-from fastapi.responses import StreamingResponse
 
 from src.config import config
 from src.dependencies import get_live_service
@@ -25,15 +24,6 @@ async def proxy_streaming_data(
 ):
     """Proxy streaming data (m3u8, ts) to bypass CORS"""
     proxy_res = await service.proxy_hls_request(url)
-
-    if proxy_res.get("is_stream"):
-        return StreamingResponse(
-            content=proxy_res.get("content"),
-            status_code=proxy_res.get("status_code", 200),
-            media_type=proxy_res.get("media_type"),
-            headers=proxy_res.get("headers"),
-        )
-
     return Response(
         content=proxy_res.get("content"),
         status_code=proxy_res.get("status_code", 200),

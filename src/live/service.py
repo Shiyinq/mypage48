@@ -531,28 +531,22 @@ class LiveService:
         """Proxy HLS playlist and segments to bypass CORS"""
         try:
             headers = self.showroom_headers if "showroom-live.com" in url else {}
+            async with httpx.AsyncClient(
+                headers=headers, follow_redirects=True, timeout=30.0
+            ) as client:
+                resp = await client.get(url)
 
-            # If it's a playlist (.m3u8), we need to fetch and rewrite it
-            is_playlist = (
-                url.endswith(".m3u8")
-                or "playlist" in url.lower()
-                or "chunklist" in url.lower()
-            )
+            if resp.status_code != 200:
+                return {
+                    "content": resp.content,
+                    "media_type": None,
+                    "status_code": resp.status_code,
+                }
 
-            if is_playlist:
-                async with httpx.AsyncClient(
-                    headers=headers, follow_redirects=True, timeout=30.0
-                ) as client:
-                    resp = await client.get(url)
+            content_type = resp.headers.get("content-type", "")
 
-                if resp.status_code != 200:
-                    return {
-                        "content": resp.content,
-                        "media_type": None,
-                        "status_code": resp.status_code,
-                    }
-
-                resp.headers.get("content-type", "")
+            # If it's an m3u8 playlist, rewrite internal URLs
+            if url.endswith(".m3u8") or "mpegurl" in content_type.lower():
                 content = resp.text
                 lines = content.splitlines()
                 rewritten_lines = []
@@ -598,21 +592,16 @@ class LiveService:
                     },
                 }
 
-            # For segments (.ts, .m4s), fetch fully and return
-            async with httpx.AsyncClient(
-                headers=headers, follow_redirects=True, timeout=30.0
-            ) as client:
-                resp = await client.get(url)
-
+            # For segments (.ts), just return the content
             return {
                 "content": resp.content,
-                "media_type": resp.headers.get("content-type", "video/mp2t"),
-                "status_code": resp.status_code,
+                "media_type": content_type,
                 "headers": {
                     "Access-Control-Allow-Origin": "*",
                     "Cache-Control": "public, max-age=3600",
                 },
             }
+
         except Exception as e:
             logger.exception(f"Error proxying HLS request for {url}: {e}")
             raise ProxyError()
