@@ -107,7 +107,9 @@
 								autoplay
 								onready={startGiftTimer}
 								onerror={() => {
-									activeGift = null;
+									setTimeout(() => {
+										activeGift = null;
+									}, 100);
 								}}
 							></lottie-player>
 						{:else}
@@ -119,7 +121,9 @@
 								class="object-contain drop-shadow-2xl"
 								onload={startGiftTimer}
 								onerror={() => {
-									activeGift = null;
+									setTimeout(() => {
+										activeGift = null;
+									}, 100);
 								}}
 							/>
 						{/if}
