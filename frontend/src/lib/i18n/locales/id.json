@@ -736,7 +736,11 @@
 		"uploadSuccess": "Tiket berhasil diunggah",
 		"uploadError": "Gagal mengunggah tiket",
 		"analyzingTitle": "Menganalisis Tiket",
-		"analyzingDescription": "Mengekstrak info pertunjukan..."
+		"analyzingDescription": "Mengekstrak info pertunjukan...",
+		"viewExample": "Lihat Contoh Tiket",
+		"exampleTitle": "Contoh Tiket Teater JKT48",
+		"exampleSubtitle": "Gunakan screenshot tiket teater JKT48 yang jelas",
+		"exampleDescription": "Pindai AI bekerja paling optimal dengan gambar/screenshot tiket teater JKT48 seperti di atas. AI akan membaca otomatis: Judul Setlist, Tanggal, Waktu Show, Nomor Kursi, ID Tiket, dan Harga."
 	},
 	"forms": {
 		"analysisFailed": "Gagal membaca detail tiket secara otomatis.",

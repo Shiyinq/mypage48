@@ -1139,7 +1139,11 @@
 		"uploadSuccess": "チケットが正常にアップロードされました",
 		"uploadError": "チケットのアップロードに失敗しました",
 		"analyzingTitle": "チケットを分析中",
-		"analyzingDescription": "公演情報を抽出しています..."
+		"analyzingDescription": "公演情報を抽出しています...",
+		"viewExample": "チケットの見本を見る",
+		"exampleTitle": "劇場チケットの見本",
+		"exampleSubtitle": "JKT48劇場チケットの鮮明なスクリーンショットを使用してください",
+		"exampleDescription": "AIスキャンは、上記のようなJKT48劇場チケットのスクリーンショットで最も効果的に機能します。AIは自動的に以下を抽出します：公演タイトル、日付、開演時間、座席番号、チケットID、価格。"
 	},
 	"forms": {
 		"analysisFailed": "チケットの詳細を自動的に読み取れませんでした。",

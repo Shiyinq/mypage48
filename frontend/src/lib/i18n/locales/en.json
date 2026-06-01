@@ -666,7 +666,11 @@
 		"uploadSuccess": "Ticket uploaded successfully",
 		"uploadError": "Failed to upload ticket",
 		"analyzingTitle": "Analyzing Ticket",
-		"analyzingDescription": "Extracting show info..."
+		"analyzingDescription": "Extracting show info...",
+		"viewExample": "View Ticket Example",
+		"exampleTitle": "Theater Ticket Example",
+		"exampleSubtitle": "Use a clear screenshot of your JKT48 theater ticket",
+		"exampleDescription": "AI scanning works best with JKT48 theater ticket screenshots like the one above. The AI will automatically extract: Show Title, Date, Show Time, Seat Number, Ticket ID, and Price."
 	},
 	"shows": {
 		"backTitle": "Back to Shows",
