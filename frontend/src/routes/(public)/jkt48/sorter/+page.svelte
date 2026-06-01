@@ -37,13 +37,6 @@
 			</p>
 		</div>
 
-		<PromoBanner
-			title={t('theater.sorter.historyFeatures')}
-			desc={t('theater.sorter.landingPromo')}
-			actionText={t('theater.sorter.loginNow')}
-			class="max-w-2xl mb-6"
-		/>
-
 		<SorterGenerationSelect
 			generations={sorter.generations}
 			selectedGenerations={sorter.selectedGenerations}
@@ -56,6 +49,13 @@
 			ondeselectAll={sorter.deselectAllGenerations}
 			onstart={sorter.startSort}
 			variant="public"
+		/>
+
+		<PromoBanner
+			title={t('theater.sorter.historyFeatures')}
+			desc={t('theater.sorter.landingPromo')}
+			actionText={t('theater.sorter.loginNow')}
+			class="max-w-2xl mt-6 mb-6"
 		/>
 	{:else if sorter.currentState === 'sorting'}
 		<SorterProcess
