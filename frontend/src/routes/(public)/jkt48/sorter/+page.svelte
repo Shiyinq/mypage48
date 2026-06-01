@@ -6,6 +6,7 @@
 	import SorterProcess from '$lib/components/sorter/SorterProcess.svelte';
 	import SorterResults from '$lib/components/sorter/SorterResults.svelte';
 	import { createSorter } from '$lib/stores/sorter.svelte';
+	import { PromoBanner } from '$lib/components/common';
 
 	const { t } = useTranslation();
 	const sorter = createSorter(t, '/jkt48/sorter');
@@ -36,6 +37,13 @@
 			</p>
 		</div>
 
+		<PromoBanner
+			title={t('theater.sorter.historyFeatures')}
+			desc={t('theater.sorter.landingPromo')}
+			actionText={t('theater.sorter.loginNow')}
+			class="max-w-2xl mb-6"
+		/>
+
 		<SorterGenerationSelect
 			generations={sorter.generations}
 			selectedGenerations={sorter.selectedGenerations}
@@ -49,27 +57,6 @@
 			onstart={sorter.startSort}
 			variant="public"
 		/>
-
-		<div
-			class="w-full max-w-2xl bg-gradient-to-r from-red-500/10 via-pink-500/5 to-transparent border border-red-200/50 dark:border-red-900/30 rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm mt-6 text-left"
-		>
-			<div class="space-y-1">
-				<h4
-					class="font-black text-red-600 dark:text-red-400 text-sm sm:text-base tracking-tight uppercase"
-				>
-					🔒 {t('theater.sorter.historyFeatures')}
-				</h4>
-				<p class="text-xs font-semibold text-slate-500 dark:text-zinc-400 leading-relaxed max-w-md">
-					{t('theater.sorter.landingPromo')}
-				</p>
-			</div>
-			<a
-				href="/register"
-				class="px-5 py-2.5 rounded-full bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase tracking-widest text-center shadow-lg shadow-red-500/20 hover:shadow-red-500/30 hover:-translate-y-0.5 transition-all shrink-0 cursor-pointer"
-			>
-				{t('theater.sorter.loginNow')}
-			</a>
-		</div>
 	{:else if sorter.currentState === 'sorting'}
 		<SorterProcess
 			numQuestion={sorter.numQuestion}

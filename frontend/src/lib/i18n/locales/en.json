@@ -850,7 +850,10 @@
 			"setlist": "Setlist",
 			"eventType": "Event",
 			"birthday": "Birthday",
-			"tba": "TBA"
+			"tba": "TBA",
+			"promoTitle": "Ticket Scan Feature",
+			"promoDesc": "When you verify your theater visit, don't forget to save your theater ticket! On this website, you can use the ticket scan feature to find out whether you usually sit in the front or back rows. Create your account now.",
+			"promoAction": "Register"
 		},
 		"calendar": {
 			"subtitle": "Theater Schedule Calendar",
@@ -945,7 +948,7 @@
 			"detail": "Detail",
 			"loginNow": "Register",
 			"historyFeatures": "Sorter History Feature",
-			"landingPromo": "Want to save and view a complete history of your oshi rankings? Register your account now."
+			"landingPromo": "Want to save and view a complete history of your oshi rankings? Create your account now."
 		}
 	},
 	"memories": {

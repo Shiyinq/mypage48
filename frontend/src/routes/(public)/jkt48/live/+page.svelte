@@ -1,26 +1,17 @@
 <script lang="ts">
-	import { untrack, onMount } from 'svelte';
+	import { untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Users, Share2, X } from 'lucide-svelte';
+	import { Users, Share2 } from 'lucide-svelte';
 	import LiveGrid from '$lib/components/live/LiveGrid.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { showToast } from '$lib/stores';
+	import { PromoBanner } from '$lib/components/common';
 
 	const { t } = useTranslation();
 
 	let initialLoading = $state(liveList.value.length === 0);
-	let isBannerDismissed = $state(true); // Default to true until checked in onMount
-
-	onMount(() => {
-		isBannerDismissed = localStorage.getItem('mypage48_share_banner_dismissed') === 'true';
-	});
-
-	function dismissBanner() {
-		localStorage.setItem('mypage48_share_banner_dismissed', 'true');
-		isBannerDismissed = true;
-	}
 
 	async function copyLink() {
 		try {
@@ -129,68 +120,32 @@
 		</div>
 	</header>
 
-	{#if !isBannerDismissed}
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 mb-10" transition:fly={{ y: -10, duration: 400 }}>
+	<PromoBanner
+		title={t('theater.live.share.title')}
+		desc={t('theater.live.share.description')}
+		icon={Share2}
+		storageKey="mypage48_share_banner_dismissed"
+		class="max-w-7xl mx-auto px-4 sm:px-6 mb-10"
+	>
+		{#snippet actions()}
 			<div
-				class="relative overflow-hidden bg-gradient-to-r from-red-500/10 via-rose-500/5 to-white dark:to-zinc-950 backdrop-blur-md border border-red-500/15 dark:border-red-500/10 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-slate-100 dark:shadow-none"
+				class="grid grid-cols-2 gap-3.5 w-full sm:flex sm:items-center sm:gap-2.5 sm:w-auto z-10 shrink-0 mt-1 sm:mt-0"
 			>
 				<button
-					class="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900 transition-all cursor-pointer z-20 border border-transparent hover:border-slate-100 dark:hover:border-zinc-850"
-					onclick={dismissBanner}
-					title={t('common.close')}
+					class="w-full sm:w-auto py-2 px-5 bg-slate-900 dark:bg-white text-white dark:text-zinc-950 hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95 font-black uppercase tracking-widest text-[9px] rounded-2xl transition-all shadow-md cursor-pointer text-center"
+					onclick={shareToX}
 				>
-					<X size={16} />
+					{t('theater.live.share.shareToX')}
 				</button>
-
-				<!-- Blur decoration -->
-				<div
-					class="absolute -right-24 -bottom-24 w-64 h-64 bg-red-500/20 rounded-full blur-3xl pointer-events-none"
-				></div>
-				<div
-					class="absolute -left-24 -top-24 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"
-				></div>
-
-				<div
-					class="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left z-10 flex-1 w-full"
+				<button
+					class="w-full sm:w-auto py-2 px-5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-black uppercase tracking-widest text-[9px] rounded-2xl transition-all shadow-md shadow-red-500/20 cursor-pointer text-center"
+					onclick={copyLink}
 				>
-					<div
-						class="w-12 h-12 rounded-2xl bg-red-600/10 dark:bg-red-500/10 flex items-center justify-center text-red-600 dark:text-red-400 flex-shrink-0 animate-pulse"
-					>
-						<Share2 size={22} />
-					</div>
-					<div class="flex-1 min-w-0">
-						<h3
-							class="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white mb-1 uppercase tracking-wider"
-						>
-							{t('theater.live.share.title')}
-						</h3>
-						<p
-							class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl"
-						>
-							{t('theater.live.share.description')}
-						</p>
-					</div>
-				</div>
-
-				<div
-					class="grid grid-cols-2 gap-3 w-full sm:flex sm:items-center sm:gap-3 sm:w-auto z-10 shrink-0 mt-2 sm:mt-0"
-				>
-					<button
-						class="w-full sm:w-auto py-2.5 px-4 bg-slate-900 dark:bg-white text-white dark:text-zinc-950 hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-md cursor-pointer text-center"
-						onclick={shareToX}
-					>
-						{t('theater.live.share.shareToX')}
-					</button>
-					<button
-						class="w-full sm:w-auto py-2.5 px-4 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-md shadow-red-500/20 cursor-pointer text-center"
-						onclick={copyLink}
-					>
-						{t('theater.live.share.copyLink')}
-					</button>
-				</div>
+					{t('theater.live.share.copyLink')}
+				</button>
 			</div>
-		</div>
-	{/if}
+		{/snippet}
+	</PromoBanner>
 
 	<div class="max-w-7xl mx-auto px-0 md:px-0">
 		<LiveGrid liveList={liveList.value} loading={liveLoading.value} {initialLoading} />
