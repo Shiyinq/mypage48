@@ -873,7 +873,24 @@
 			"editTitle": "タイトルを編集",
 			"editSubtitle": "説明を編集",
 			"save": "保存",
-			"cancel": "キャンセル"
+			"cancel": "キャンセル",
+			"startNew": "ソーターを開始",
+			"history": "ソーター履歴",
+			"loadingHistory": "ソーター履歴を読み込み中...",
+			"noHistoryTitle": "履歴がありません",
+			"noHistoryDesc": "ソーターを完了し、結果を保存して、ここに推しランキング履歴を表示します。",
+			"loadHistoryFailed": "ソーター履歴の読み込みに失敗しました",
+			"saveSuccess": "結果が履歴に保存されました！",
+			"saveFailed": "結果の保存に失敗しました",
+			"deleteSuccess": "履歴のエントリが削除されました",
+			"deleteFailed": "履歴のエントリの削除に失敗しました",
+			"deleteHistory": "履歴を削除",
+			"backToHistory": "履歴に戻る",
+			"gridView": "グリッド表示",
+			"listView": "リスト表示",
+			"confirmYes": "はい",
+			"confirmCancel": "キャンセル",
+			"detail": "詳細"
 		}
 	},
 	"top2shot": {

@@ -1,6 +1,7 @@
 import type { Member } from '$lib/apis/members';
 import { membersStore } from '$lib/stores/theater.svelte';
 import { showToast } from '$lib/stores';
+import { sorterApi, type SorterResponse } from '$lib/apis/sorter';
 
 /**
  * Calculates the total number of element moves in the sorter's merge sort implementation.
@@ -25,7 +26,7 @@ export function calculateTotalMoves(n: number): number {
 	return moves;
 }
 
-export type SorterState = 'landing' | 'sorting' | 'results';
+export type SorterState = 'landing' | 'sorting' | 'results' | 'history' | 'history-detail';
 
 export interface ResultMember extends Member {
 	rank: number;
@@ -70,6 +71,10 @@ export function createSorter(
 	let totalMoves = $state(0);
 	let history = $state<SorterHistoryState[]>([]);
 	let results = $state<ResultMember[]>([]);
+
+	let savedHistories = $state<SorterResponse[]>([]);
+	let selectedHistory = $state<SorterResponse | null>(null);
+	let loadingHistory = $state(false);
 
 	// Animation State
 	let isAnimating = $state(false);
@@ -327,9 +332,68 @@ export function createSorter(
 		else showToast(t('theater.sorter.copyFailed'), 'error');
 	}
 
+	async function loadSavedHistories() {
+		loadingHistory = true;
+		try {
+			savedHistories = await sorterApi.getSorterHistories();
+		} catch {
+			showToast(t('theater.sorter.loadHistoryFailed') || 'Failed to load sorter history', 'error');
+		} finally {
+			loadingHistory = false;
+		}
+	}
+
+	async function saveCurrentResult(title: string, description: string) {
+		try {
+			const reqFilters = [...selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b));
+			const reqResults = results.map((r) => ({
+				id: String(r.id),
+				name: r.name,
+				rank: r.rank
+			}));
+			await sorterApi.saveSorterHistory({
+				title,
+				description,
+				filters: reqFilters,
+				results: reqResults
+			});
+			showToast(t('theater.sorter.saveSuccess') || 'Results saved to history!', 'success');
+		} catch (err) {
+			showToast(t('theater.sorter.saveFailed') || 'Failed to save results', 'error');
+			throw err;
+		}
+	}
+
+	async function deleteSavedHistory(id: string) {
+		try {
+			await sorterApi.deleteSorterHistory(id);
+			savedHistories = savedHistories.filter((h) => h._id !== id);
+			showToast(t('theater.sorter.deleteSuccess') || 'History entry deleted', 'success');
+			if (selectedHistory?._id === id) {
+				selectedHistory = null;
+				currentState = 'history';
+			}
+		} catch {
+			showToast(t('theater.sorter.deleteFailed') || 'Failed to delete history entry', 'error');
+		}
+	}
+
+	function viewHistoryDetail(historyItem: SorterResponse) {
+		selectedHistory = historyItem;
+		currentState = 'history-detail';
+	}
+
+	function goToHistory() {
+		currentState = 'history';
+		loadSavedHistories();
+	}
+
 	return {
 		get currentState() {
 			return currentState;
+		},
+		set currentState(val: SorterState) {
+			currentState = val;
 		},
 		get allMembers() {
 			return allMembers;
@@ -377,6 +441,19 @@ export function createSorter(
 			return history;
 		},
 
+		get savedHistories() {
+			return savedHistories;
+		},
+		get selectedHistory() {
+			return selectedHistory;
+		},
+		set selectedHistory(val: SorterResponse | null) {
+			selectedHistory = val;
+		},
+		get loadingHistory() {
+			return loadingHistory;
+		},
+
 		fetchMembers,
 		toggleGeneration,
 		selectAllGenerations,
@@ -385,6 +462,11 @@ export function createSorter(
 		handleSelect,
 		undo,
 		restart,
-		shareResults
+		shareResults,
+		loadSavedHistories,
+		saveCurrentResult,
+		deleteSavedHistory,
+		viewHistoryDetail,
+		goToHistory
 	};
 }

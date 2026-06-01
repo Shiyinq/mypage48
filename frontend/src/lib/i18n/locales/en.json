@@ -925,7 +925,24 @@
 			"editTitle": "Edit Title",
 			"editSubtitle": "Edit Description",
 			"save": "Save",
-			"cancel": "Cancel"
+			"cancel": "Cancel",
+			"startNew": "Start Sorter",
+			"history": "Sorter History",
+			"loadingHistory": "Loading Sorter History...",
+			"noHistoryTitle": "No History Yet",
+			"noHistoryDesc": "Complete a sorter run and save the results to see your oshi ranking history here.",
+			"loadHistoryFailed": "Failed to load sorter history",
+			"saveSuccess": "Results saved to history!",
+			"saveFailed": "Failed to save results",
+			"deleteSuccess": "History entry deleted",
+			"deleteFailed": "Failed to delete history entry",
+			"deleteHistory": "Delete History",
+			"backToHistory": "Back to History",
+			"gridView": "Grid View",
+			"listView": "List View",
+			"confirmYes": "Yes",
+			"confirmCancel": "Cancel",
+			"detail": "Detail"
 		}
 	},
 	"memories": {
