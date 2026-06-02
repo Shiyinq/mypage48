@@ -1,10 +1,10 @@
-from fastapi import status
-from src.http_exceptions import DetailedHTTPException
+from src.http_exceptions import InternalServerError, NotFound
+from src.live_history.constants import ErrorCode
 
-class LiveHistoryNotFound(DetailedHTTPException):
-    STATUS_CODE = status.HTTP_404_NOT_FOUND
-    DETAIL = "Live history not found"
 
-class LiveHistoryUpdateFailed(DetailedHTTPException):
-    STATUS_CODE = status.HTTP_500_INTERNAL_SERVER_ERROR
-    DETAIL = "Failed to update live history"
+class LiveHistoryNotFound(NotFound):
+    DETAIL = ErrorCode.LIVE_HISTORY_NOT_FOUND
+
+
+class LiveHistoryUpdateFailed(InternalServerError):
+    DETAIL = ErrorCode.LIVE_HISTORY_UPDATE_FAILED

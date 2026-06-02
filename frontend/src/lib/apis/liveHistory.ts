@@ -20,7 +20,7 @@ export const liveHistoryApi = {
 		limit: number = 20,
 		memberId?: string
 	): Promise<LiveHistoryResponse> => {
-		let url = `/history/lives?page=${page}&limit=${limit}`;
+		let url = `/history/lives/watched?page=${page}&limit=${limit}`;
 		if (memberId) {
 			url += `&member_id=${memberId}`;
 		}
@@ -28,10 +28,10 @@ export const liveHistoryApi = {
 	},
 
 	getOverallStats: async (): Promise<LiveHistoryStats> => {
-		return client<LiveHistoryStats>('/history/lives/stats');
+		return client<LiveHistoryStats>('/history/lives/watched/stats');
 	},
 
 	getMemberStats: async (memberId: string): Promise<MemberLiveHistoryStats> => {
-		return client<MemberLiveHistoryStats>(`/history/lives/members/${memberId}/stats`);
+		return client<MemberLiveHistoryStats>(`/history/lives/watched/members/${memberId}/stats`);
 	}
 };

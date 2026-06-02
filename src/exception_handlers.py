@@ -60,8 +60,6 @@ from src.feedback.exceptions import (
 from src.feedback.http_exceptions import FeedbackCreateError, FeedbackFetchFailed
 from src.feedback.http_exceptions import FeedbackNotFound as HttpFeedbackNotFound
 from src.http_exceptions import DetailedHTTPException
-from src.live_history.exceptions import LiveHistoryNotFoundError, LiveHistoryUpdateError
-from src.live_history.http_exceptions import LiveHistoryNotFound, LiveHistoryUpdateFailed
 from src.live.exceptions import (
     CommentsFetchError,
     FetchIdnError,
@@ -75,6 +73,11 @@ from src.live.http_exceptions import (
     ProxyRequestFailed,
     ShowroomFetchFailed,
     StreamingUrlNotFound,
+)
+from src.live_history.exceptions import LiveHistoryNotFoundError, LiveHistoryUpdateError
+from src.live_history.http_exceptions import (
+    LiveHistoryNotFound,
+    LiveHistoryUpdateFailed,
 )
 from src.llm.exceptions import ImageAnalysisError
 from src.llm.exceptions import ImageTooLargeError as LLMImageTooLargeError

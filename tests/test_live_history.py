@@ -22,7 +22,7 @@ async def test_update_live_history_success(client: AsyncClient, db, create_user)
     assert response.status_code == 204
 
     # Verify that the history was saved by fetching it
-    response_get = await client.get("/api/history/lives", headers=headers)
+    response_get = await client.get("/api/history/lives/watched", headers=headers)
     assert response_get.status_code == 200
     data = response_get.json()
     assert "data" in data
@@ -72,7 +72,7 @@ async def test_get_live_history(client: AsyncClient, db, create_user):
     await client.post("/api/history/lives/update", json=payload1, headers=headers)
     await client.post("/api/history/lives/update", json=payload2, headers=headers)
 
-    response = await client.get("/api/history/lives", headers=headers)
+    response = await client.get("/api/history/lives/watched", headers=headers)
     assert response.status_code == 200
     data = response.json()
     
@@ -95,7 +95,7 @@ async def test_get_live_history_stats(client: AsyncClient, db, create_user):
     await client.post("/api/history/lives/update", json={"live_id": "l2", "member_id": "m1", "member_name": "Member 1", "platform": "idn", "ping_duration": 60}, headers=headers)
     await client.post("/api/history/lives/update", json={"live_id": "l3", "member_id": "m2", "member_name": "Member 2", "platform": "showroom", "ping_duration": 30}, headers=headers)
 
-    response = await client.get("/api/history/lives/stats", headers=headers)
+    response = await client.get("/api/history/lives/watched/stats", headers=headers)
     assert response.status_code == 200
     data = response.json()
     
@@ -121,7 +121,7 @@ async def test_get_member_stats(client: AsyncClient, db, create_user):
     await client.post("/api/history/lives/update", json={"live_id": "l1", "member_id": "m1", "member_name": "Member 1", "platform": "showroom", "ping_duration": 45}, headers=headers)
     await client.post("/api/history/lives/update", json={"live_id": "l2", "member_id": "m1", "member_name": "Member 1", "platform": "idn", "ping_duration": 15}, headers=headers)
     
-    response = await client.get("/api/history/lives/members/m1/stats", headers=headers)
+    response = await client.get("/api/history/lives/watched/members/m1/stats", headers=headers)
     assert response.status_code == 200
     data = response.json()
     

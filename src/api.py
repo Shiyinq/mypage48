@@ -43,5 +43,7 @@ router.include_router(export_router, prefix="/export", tags=["Export"])
 router.include_router(feedback_router, prefix="/feedback", tags=["Feedback"])
 router.include_router(news_router, prefix="/theater/news", tags=["News"])
 router.include_router(live_router, prefix="/jkt48/live", tags=["Live"])
-router.include_router(live_history_router, prefix="/history/lives", tags=["Live History"])
+router.include_router(
+    live_history_router, prefix="/history/lives", tags=["Live History"]
+)
 router.include_router(playground_router, prefix="/playground", tags=["Playground"])

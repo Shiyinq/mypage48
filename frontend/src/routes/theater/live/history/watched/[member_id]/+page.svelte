@@ -101,7 +101,7 @@
 	}
 </script>
 
-<SEO title={`Live History: ${memberName}`} path={`/theater/live/history/${memberId}`} />
+<SEO title={`Live History: ${memberName}`} path={`/theater/live/history/watched/${memberId}`} />
 
 <div
 	role="presentation"
@@ -122,7 +122,7 @@
 	>
 		<div class="flex items-center gap-4">
 			<a
-				href="/theater/live/history"
+				href="/theater/live/history/watched"
 				class="flex items-center gap-2 text-slate-900 dark:text-white hover:text-red-600 transition-colors"
 			>
 				<ChevronLeft size={20} />
