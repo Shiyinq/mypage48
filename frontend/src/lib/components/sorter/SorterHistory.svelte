@@ -17,9 +17,17 @@
 
 	let deleteConfirmId = $state<string | null>(null);
 
+	function parseUTCDate(dateStr: string) {
+		const timePart = dateStr.split('T')[1] || '';
+		if (!dateStr.endsWith('Z') && !timePart.includes('+') && !timePart.includes('-')) {
+			return new Date(dateStr + 'Z');
+		}
+		return new Date(dateStr);
+	}
+
 	function formatDate(dateStr: string) {
 		try {
-			const d = new Date(dateStr);
+			const d = parseUTCDate(dateStr);
 			const localeMap: Record<string, string> = {
 				id: 'id-ID',
 				en: 'en-US',
