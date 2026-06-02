@@ -14,6 +14,8 @@
 		variant?: 'default' | 'theater';
 		/** When set, show a multiview shortcut button above the grid */
 		multiviewHref?: string;
+		/** When set, show a live history shortcut button above the grid */
+		historyHref?: string;
 	}
 
 	let {
@@ -21,7 +23,8 @@
 		loading = false,
 		initialLoading = false,
 		variant = 'default',
-		multiviewHref = ''
+		multiviewHref = '',
+		historyHref = ''
 	}: Props = $props();
 
 	let isTheater = $derived(variant === 'theater');
@@ -63,35 +66,61 @@
 		</p>
 	</div>
 {:else}
-	{#if multiviewHref && liveList.length > 0}
-		<div class="flex justify-end mb-4 {isTheater ? 'hidden sm:flex px-0' : 'px-4'}" in:fade>
-			<a
-				href={multiviewHref}
-				class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
-			>
-				<div
-					class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
-				></div>
-				<div
-					class="w-7 h-7 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300"
+	{#if (multiviewHref || historyHref) && liveList.length > 0}
+		<div class="flex justify-end gap-3 mb-4 {isTheater ? 'hidden sm:flex px-0' : 'px-4'}" in:fade>
+			{#if multiviewHref}
+				<a
+					href={multiviewHref}
+					class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
 				>
-					<Users size={16} />
-				</div>
-				<div class="flex flex-col items-start leading-none gap-0.5">
-					<span
-						class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors"
-						>{t('theater.live.multiview.title')}</span
+					<div
+						class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
+					></div>
+					<div
+						class="w-7 h-7 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300"
 					>
-					<span class="text-xs font-black tracking-tight text-slate-900 dark:text-white"
-						>{t('theater.live.switchMultiview')}</span
+						<Users size={16} />
+					</div>
+					<div class="flex flex-col items-start leading-none gap-0.5">
+						<span
+							class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors"
+							>{t('theater.live.multiview.title')}</span
+						>
+						<span class="text-xs font-black tracking-tight text-slate-900 dark:text-white"
+							>{t('theater.live.switchMultiview')}</span
+						>
+					</div>
+					<div
+						class="ml-1 w-5 h-5 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-black text-slate-500"
 					>
-				</div>
-				<div
-					class="ml-1 w-5 h-5 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-black text-slate-500"
+						{liveList.length}
+					</div>
+				</a>
+			{/if}
+			{#if historyHref}
+				<a
+					href={historyHref}
+					class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
 				>
-					{liveList.length}
-				</div>
-			</a>
+					<div
+						class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
+					></div>
+					<div
+						class="w-7 h-7 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300"
+					>
+						<Tv size={16} />
+					</div>
+					<div class="flex flex-col items-start leading-none gap-0.5">
+						<span
+							class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors"
+							>{t('liveHistory.buttonSubtitle') || 'Live History'}</span
+						>
+						<span class="text-xs font-black tracking-tight text-slate-900 dark:text-white"
+							>{t('liveHistory.viewHistory') || 'Lihat Riwayat'}</span
+						>
+					</div>
+				</a>
+			{/if}
 		</div>
 	{/if}
 	<div

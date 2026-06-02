@@ -1311,5 +1311,22 @@
 		"showSidebar": "リストを表示",
 		"uploadingImage": "画像をアップロード中...",
 		"cancelImage": "キャンセル"
+	},
+	"liveHistory": {
+		"title": "ライブ視聴履歴",
+		"subtitle": "JKT48メンバーのライブ視聴履歴",
+		"totalWatches": "総視聴回数",
+		"totalDuration": "総視聴時間",
+		"membersWatched": "視聴したメンバー",
+		"mostFrequent": "最もよく視聴する",
+		"recentHistory": "最近の履歴",
+		"noHistory": "履歴はまだありません",
+		"noHistoryDesc": "記録されたJKT48のライブストリームをまだ視聴していません。",
+		"times": "回",
+		"buttonSubtitle": "マイ統計",
+		"longestWatch": "最長視聴",
+		"platformWatches": "視聴プラットフォーム",
+		"viewHistory": "視聴履歴",
+		"watchedFor": "視聴時間"
 	}
 }

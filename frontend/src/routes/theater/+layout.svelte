@@ -21,7 +21,7 @@
 	let isLiveListingPage = $derived(currentPath === '/theater/live');
 
 	// Check if on live single detail or multiview page — hide header for immersive player
-	let isLiveDetailPage = $derived(/^\/theater\/live\/.+/.test(currentPath));
+	let isLiveDetailPage = $derived(/^\/theater\/live\/(?!history).+/.test(currentPath));
 
 	// Check if on news detail page
 	let isNewsDetailPage = $derived(/^\/theater\/news\/.+/.test(currentPath));
@@ -110,6 +110,13 @@
 	let actionItems = $derived(
 		isLiveListingPage && liveList.value.length > 0
 			? [
+					{
+						icon: Tv,
+						label: 'Live History',
+						onClick: () => goto('/theater/live/history'),
+						showLabel: true,
+						theme: 'red'
+					},
 					{
 						icon: Users,
 						label: 'Multi-View',

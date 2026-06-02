@@ -1,5 +1,7 @@
 export interface LiveMember {
+	id?: string;
 	name: string;
+	nickname?: string;
 	img: string;
 	member_type?: string;
 }

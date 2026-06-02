@@ -40,5 +40,6 @@
 		{initialLoading}
 		variant="theater"
 		multiviewHref="/theater/live/multiview"
+		historyHref="/theater/live/history"
 	/>
 </div>
