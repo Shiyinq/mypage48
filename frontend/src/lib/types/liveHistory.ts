@@ -1,0 +1,61 @@
+export interface LiveHistoryUpdateRequest {
+	live_id: string;
+	member_id: string;
+	member_name: string;
+	member_nickname?: string;
+	platform: string;
+	ping_duration: number;
+	live_title?: string;
+}
+
+export interface LiveHistory {
+	_id: string;
+	live_id: string;
+	member_id: string;
+	member_name: string;
+	member_nickname?: string;
+	platform: string;
+	live_title?: string;
+	duration: number;
+	started_at: string;
+	last_updated_at: string;
+}
+
+export interface LiveHistoryStats {
+	total_duration: number;
+	total_watches: number;
+	top_member_id: string | null;
+	top_member_name: string | null;
+	top_member_watches: number;
+	member_counts: Record<string, number>;
+	member_durations: Record<string, number>;
+	platform_counts: Record<string, number>;
+	longest_watch?: LongestWatchInfo | null;
+}
+
+export interface LongestWatchInfo {
+	duration: number;
+	live_title?: string;
+	platform?: string;
+	started_at?: string;
+	member_name?: string;
+}
+
+export interface MemberLiveHistoryStats {
+	member_id: string;
+	total_watches: number;
+	total_duration: number;
+	platform_counts?: Record<string, number>;
+	longest_watch?: LongestWatchInfo | null;
+}
+
+export interface LiveHistoryResponse {
+	data: LiveHistory[];
+	meta: {
+		current_page: number;
+		last_page: number;
+		total_data: number;
+		per_page: number;
+		next_page: number | null;
+	};
+}

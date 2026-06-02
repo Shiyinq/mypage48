@@ -1313,5 +1313,22 @@
 		"showSidebar": "Tampilkan Daftar",
 		"uploadingImage": "Mengunggah gambar...",
 		"cancelImage": "Batal"
+	},
+	"liveHistory": {
+		"title": "Riwayat Nonton Live",
+		"subtitle": "Riwayat menonton live member JKT48",
+		"totalWatches": "Total Menonton",
+		"totalDuration": "Total Durasi",
+		"membersWatched": "Member Ditonton",
+		"mostFrequent": "Paling Sering",
+		"recentHistory": "Riwayat Terakhir",
+		"noHistory": "Belum Ada Riwayat",
+		"noHistoryDesc": "Kamu belum pernah menonton live stream JKT48 yang tercatat.",
+		"times": "kali",
+		"buttonSubtitle": "Statistik Saya",
+		"longestWatch": "Nonton Terlama",
+		"platformWatches": "Platform Menonton",
+		"viewHistory": "Riwayat Menonton",
+		"watchedFor": "Menonton"
 	}
 }

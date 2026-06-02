@@ -693,6 +693,23 @@
 		"viewHistory": "View History",
 		"top": "Top"
 	},
+	"liveHistory": {
+		"title": "Live Watch History",
+		"subtitle": "Your JKT48 member live watch history",
+		"totalWatches": "Total Watches",
+		"totalDuration": "Total Duration",
+		"membersWatched": "Members Watched",
+		"mostFrequent": "Most Frequent",
+		"recentHistory": "Recent History",
+		"noHistory": "No History Yet",
+		"noHistoryDesc": "You haven't watched any recorded JKT48 live streams.",
+		"times": "times",
+		"buttonSubtitle": "My Statistics",
+		"longestWatch": "Longest Watch",
+		"platformWatches": "Platform Watches",
+		"viewHistory": "Watch History",
+		"watchedFor": "Watched for"
+	},
 	"theater": {
 		"title": "Theater",
 		"subtitle": "Your theater journey",

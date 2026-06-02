@@ -60,6 +60,8 @@ from src.feedback.exceptions import (
 from src.feedback.http_exceptions import FeedbackCreateError, FeedbackFetchFailed
 from src.feedback.http_exceptions import FeedbackNotFound as HttpFeedbackNotFound
 from src.http_exceptions import DetailedHTTPException
+from src.live_history.exceptions import LiveHistoryNotFoundError, LiveHistoryUpdateError
+from src.live_history.http_exceptions import LiveHistoryNotFound, LiveHistoryUpdateFailed
 from src.live.exceptions import (
     CommentsFetchError,
     FetchIdnError,
@@ -357,6 +359,12 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, ProxyRequestFailed())
     if isinstance(exc, CommentsFetchError):
         return await detailed_http_exception_handler(request, CommentsFetchFailed())
+
+    # Live History exceptions
+    if isinstance(exc, LiveHistoryNotFoundError):
+        return await detailed_http_exception_handler(request, LiveHistoryNotFound())
+    if isinstance(exc, LiveHistoryUpdateError):
+        return await detailed_http_exception_handler(request, LiveHistoryUpdateFailed())
 
     # Export errors
     if isinstance(exc, ExportInProgressError):
