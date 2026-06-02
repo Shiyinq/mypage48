@@ -404,4 +404,3 @@ def get_live_history_service(
     repo: LiveHistoryRepository = Depends(get_live_history_repository),
 ) -> LiveHistoryService:
     return LiveHistoryService(repo)
-

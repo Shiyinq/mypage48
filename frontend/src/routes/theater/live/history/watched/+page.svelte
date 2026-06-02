@@ -395,7 +395,7 @@
 					{#each list as item (item._id)}
 						<button
 							class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col gap-3 hover:border-red-500/50 hover:shadow-lg transition-all text-left cursor-pointer w-full"
-							onclick={() => goto(`/theater/live/history/${item.member_id}`)}
+							onclick={() => goto(`/theater/live/history/watched/${item.member_id}`)}
 						>
 							<div class="flex items-center justify-between">
 								<div class="flex flex-col">

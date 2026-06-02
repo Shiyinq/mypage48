@@ -113,7 +113,7 @@
 					{
 						icon: Tv,
 						label: 'Live History',
-						onClick: () => goto('/theater/live/history'),
+						onClick: () => goto('/theater/live/history/watched'),
 						showLabel: true,
 						theme: 'red'
 					},
