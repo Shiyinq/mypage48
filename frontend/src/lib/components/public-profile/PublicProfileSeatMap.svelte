@@ -15,114 +15,47 @@
 
 	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
-	const SEAT_LAYOUT = {
-		A: {
-			start: 3,
-			seats: 22,
-			groups: [
-				[3, 6],
-				[7, 12],
-				[13, 18],
-				[19, 24]
-			]
-		},
-		B: {
-			start: 3,
-			seats: 23,
-			groups: [
-				[3, 6],
-				[7, 12],
-				[13, 18],
-				[19, 25]
-			]
-		},
-		C: {
-			start: 2,
-			seats: 25,
-			groups: [
-				[2, 6],
-				[7, 12],
-				[13, 18],
-				[19, 26]
-			]
-		},
-		D: {
-			start: 2,
-			seats: 26,
-			groups: [
-				[2, 6],
-				[7, 12],
-				[13, 18],
-				[19, 27]
-			]
-		},
-		E: {
-			start: 2,
-			seats: 26,
-			groups: [
-				[2, 6],
-				[7, 12],
-				[13, 18],
-				[19, 27]
-			]
-		},
-		F: {
-			start: 1,
-			seats: 28,
-			groups: [
-				[1, 6],
-				[7, 12],
-				[13, 18],
-				[19, 28]
-			]
-		},
-		G: {
-			start: 1,
-			seats: 28,
-			groups: [
-				[1, 6],
-				[7, 12],
-				[13, 18],
-				[19, 28]
-			]
-		},
-		H: {
-			start: 1,
-			seats: 27,
-			groups: [
-				[1, 6],
-				[7, 12],
-				[13, 18],
-				[19, 27]
-			]
-		},
-		I: {
-			start: 2,
-			seats: 26,
-			groups: [
-				[2, 6],
-				[7, 12],
-				[13, 18],
-				[19, 27]
-			]
-		},
-		J: {
-			start: 2,
-			seats: 26,
-			groups: [
-				[2, 6],
-				[7, 12],
-				[13, 18],
-				[19, 27]
-			]
+	const ROW_COUNTS: Record<string, number> = {
+		A: 22,
+		B: 23,
+		C: 25,
+		D: 26,
+		E: 26,
+		F: 28,
+		G: 28,
+		H: 27,
+		I: 26,
+		J: 26
+	};
+	const LEFT_COUNTS: Record<string, number> = {
+		A: 4,
+		B: 5,
+		C: 6,
+		D: 7,
+		E: 7,
+		F: 8,
+		G: 8,
+		H: 8,
+		I: 8,
+		J: 8
+	};
+
+	function getGridColumn(rowChar: string, seatNum: number): number {
+		const leftCount = LEFT_COUNTS[rowChar];
+		if (!leftCount) return 2; // fallback
+
+		if (seatNum <= leftCount) {
+			return 9 - leftCount + seatNum + 1;
+		} else if (seatNum <= leftCount + 6) {
+			return 11 + (seatNum - leftCount - 1) + 1;
+		} else if (seatNum <= leftCount + 12) {
+			return 18 + (seatNum - leftCount - 7) + 1;
+		} else {
+			return 25 + (seatNum - leftCount - 13) + 1;
 		}
-	} as const;
+	}
 
 	let maxSeatCount = $derived(seatStats ? Math.max(...Object.values(seatStats), 1) : 1);
-
-	function getLayout(row: string) {
-		return SEAT_LAYOUT[row as keyof typeof SEAT_LAYOUT];
-	}
 </script>
 
 <div
@@ -165,16 +98,6 @@
 		</div>
 
 		<div class="w-full">
-			{#if mapView === 'SEATS'}
-				<div class="w-full flex justify-center mb-6">
-					<div
-						class="px-8 py-1 bg-gray-100 dark:bg-zinc-800 rounded-full text-[10px] uppercase font-black tracking-[0.3em] text-gray-300 dark:text-zinc-600"
-					>
-						Stage
-					</div>
-				</div>
-			{/if}
-
 			{#if mapView === 'ROWS'}
 				<!-- Rows View -->
 				{#if isLoading}
@@ -232,156 +155,53 @@
 						{/each}
 					</div>
 				{/if}
-			{:else}
+			{:else if mapView === 'SEATS'}
 				<!-- Seats View -->
 				{#if isLoading}
 					<div class="h-64 flex items-center justify-center text-gray-400">Loading map...</div>
 				{:else}
 					<div class="w-full overflow-x-auto pb-4 hide-scrollbar">
 						<div class="seat-map-grid w-full max-w-full mx-auto">
-							{#each THEATER_ROWS as row}
-								{@const layout = getLayout(row)}
-								<div class="grid-row">
-									<div class="row-label">{row}</div>
-
-									<!-- Group 1 -->
-									{#each [1, 2, 3, 4, 5, 6] as col}
-										{@const seatNum = col - layout.start + 1}
-										{@const isValidSeat = col >= layout.groups[0][0] && col <= layout.groups[0][1]}
-										{@const seatKey = `${row}-${seatNum}`}
-										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
-										{@const hasVisit = count > 0}
-										{@const intensity = hasVisit ? Math.max(0.2, count / maxSeatCount) : 0}
-
-										{#if isValidSeat}
-											<div
-												class="map-seat {hasVisit
-													? 'active'
-													: ''} group/seat relative cursor-default"
-												style={hasVisit
-													? `--intensity: ${intensity}; background-color: rgba(220, 38, 38, ${intensity});`
-													: ''}
-											>
-												{row}-{seatNum}
-												<div
-													class="absolute opacity-0 group-hover/seat:opacity-100 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded shadow-xl whitespace-nowrap pointer-events-none z-[100] transition-opacity duration-200 {row ===
-													'A'
-														? 'top-full mt-1.5'
-														: 'bottom-full mb-1.5'}"
-												>
-													{row}-{seatNum} ({count}x)
-												</div>
-											</div>
-										{:else}
-											<div class="empty-cell"></div>
-										{/if}
-									{/each}
-
-									<div class="aisle-gap"></div>
-
-									<!-- Group 2 -->
-									{#each [7, 8, 9, 10, 11, 12] as col}
-										{@const seatNum = col - layout.start + 1}
-										{@const isValidSeat = col >= layout.groups[1][0] && col <= layout.groups[1][1]}
-										{@const seatKey = `${row}-${seatNum}`}
-										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
-										{@const hasVisit = count > 0}
-										{@const intensity = hasVisit ? Math.max(0.2, count / maxSeatCount) : 0}
-
-										{#if isValidSeat}
-											<div
-												class="map-seat {hasVisit
-													? 'active'
-													: ''} group/seat relative cursor-default"
-												style={hasVisit
-													? `--intensity: ${intensity}; background-color: rgba(220, 38, 38, ${intensity});`
-													: ''}
-											>
-												{row}-{seatNum}
-												<div
-													class="absolute opacity-0 group-hover/seat:opacity-100 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded shadow-xl whitespace-nowrap pointer-events-none z-[100] transition-opacity duration-200 {row ===
-													'A'
-														? 'top-full mt-1.5'
-														: 'bottom-full mb-1.5'}"
-												>
-													{row}-{seatNum} ({count}x)
-												</div>
-											</div>
-										{:else}
-											<div class="empty-cell"></div>
-										{/if}
-									{/each}
-
-									<div class="aisle-gap"></div>
-
-									<!-- Group 3 -->
-									{#each [13, 14, 15, 16, 17, 18] as col}
-										{@const seatNum = col - layout.start + 1}
-										{@const isValidSeat = col >= layout.groups[2][0] && col <= layout.groups[2][1]}
-										{@const seatKey = `${row}-${seatNum}`}
-										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
-										{@const hasVisit = count > 0}
-										{@const intensity = hasVisit ? Math.max(0.2, count / maxSeatCount) : 0}
-
-										{#if isValidSeat}
-											<div
-												class="map-seat {hasVisit
-													? 'active'
-													: ''} group/seat relative cursor-default"
-												style={hasVisit
-													? `--intensity: ${intensity}; background-color: rgba(220, 38, 38, ${intensity});`
-													: ''}
-											>
-												{row}-{seatNum}
-												<div
-													class="absolute opacity-0 group-hover/seat:opacity-100 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded shadow-xl whitespace-nowrap pointer-events-none z-[100] transition-opacity duration-200 {row ===
-													'A'
-														? 'top-full mt-1.5'
-														: 'bottom-full mb-1.5'}"
-												>
-													{row}-{seatNum} ({count}x)
-												</div>
-											</div>
-										{:else}
-											<div class="empty-cell"></div>
-										{/if}
-									{/each}
-
-									<div class="aisle-gap"></div>
-
-									<!-- Group 4 -->
-									{#each [19, 20, 21, 22, 23, 24, 25, 26, 27, 28] as col}
-										{@const seatNum = col - layout.start + 1}
-										{@const isValidSeat = col >= layout.groups[3][0] && col <= layout.groups[3][1]}
-										{@const seatKey = `${row}-${seatNum}`}
-										{@const count = isValidSeat ? seatStats[seatKey] || 0 : 0}
-										{@const hasVisit = count > 0}
-										{@const intensity = hasVisit ? Math.max(0.2, count / maxSeatCount) : 0}
-
-										{#if isValidSeat}
-											<div
-												class="map-seat {hasVisit
-													? 'active'
-													: ''} group/seat relative cursor-default"
-												style={hasVisit
-													? `--intensity: ${intensity}; background-color: rgba(220, 38, 38, ${intensity});`
-													: ''}
-											>
-												{row}-{seatNum}
-												<div
-													class="absolute opacity-0 group-hover/seat:opacity-100 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded shadow-xl whitespace-nowrap pointer-events-none z-[100] transition-opacity duration-200 {row ===
-													'A'
-														? 'top-full mt-1.5'
-														: 'bottom-full mb-1.5'}"
-												>
-													{row}-{seatNum} ({count}x)
-												</div>
-											</div>
-										{:else}
-											<div class="empty-cell"></div>
-										{/if}
-									{/each}
+							<!-- Stage Pill -->
+							<div
+								style="grid-column: 12 / 25; grid-row: 1; display: flex; justify-content: center; margin-bottom: 1.5rem;"
+							>
+								<div
+									class="px-8 py-1 bg-gray-100 dark:bg-zinc-800 rounded-full text-[10px] uppercase font-black tracking-[0.3em] text-gray-300 dark:text-zinc-600 h-fit"
+								>
+									{t('dashboard.seatMap.stage')}
 								</div>
+							</div>
+
+							{#each THEATER_ROWS as row, rowIndex}
+								<div class="row-label" style="grid-column: 1; grid-row: {rowIndex + 2};">{row}</div>
+
+								<!-- Seats -->
+								{#each Array(ROW_COUNTS[row] || 0) as _, i}
+									{@const seatNum = i + 1}
+									{@const gridCol = getGridColumn(row, seatNum)}
+									{@const seatKey = `${row}-${seatNum}`}
+									{@const count = seatStats[seatKey] || 0}
+									{@const hasVisit = count > 0}
+									{@const intensity = hasVisit ? Math.max(0.2, count / maxSeatCount) : 0}
+
+									<div
+										class="map-seat {hasVisit ? 'active' : ''} group/seat relative cursor-default"
+										style="grid-column: {gridCol}; grid-row: {rowIndex + 2}; {hasVisit
+											? `--intensity: ${intensity}; background-color: rgba(220, 38, 38, ${intensity});`
+											: ''}"
+									>
+										{row}-{seatNum}
+										<div
+											class="absolute opacity-0 group-hover/seat:opacity-100 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded shadow-xl whitespace-nowrap pointer-events-none z-[100] transition-opacity duration-200 {row ===
+											'A'
+												? 'top-full mt-1.5'
+												: 'bottom-full mb-1.5'}"
+										>
+											{row}-{seatNum} ({count}x)
+										</div>
+									</div>
+								{/each}
 							{/each}
 						</div>
 					</div>
@@ -419,16 +239,13 @@
 	}
 
 	.seat-map-grid {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-
-	.grid-row {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 1px;
+		--seat-w: 20px;
+		--aisle-w: 8px;
+		display: grid;
+		grid-template-columns:
+			auto repeat(9, var(--seat-w)) var(--aisle-w) repeat(6, var(--seat-w))
+			var(--aisle-w) repeat(6, var(--seat-w)) var(--aisle-w) repeat(10, var(--seat-w));
+		gap: 2px 2px;
 	}
 
 	.row-label {
@@ -436,19 +253,10 @@
 		font-size: 7px;
 		font-weight: 900;
 		color: #9ca3af;
-		text-align: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		margin-right: 1px;
-	}
-
-	.empty-cell {
-		width: 20px;
-		height: 16px;
-		flex-shrink: 0;
-	}
-
-	.aisle-gap {
-		width: 6px;
-		flex-shrink: 0;
 	}
 
 	.map-seat {
@@ -480,19 +288,19 @@
 	}
 
 	@media (min-width: 768px) {
+		.seat-map-grid {
+			--seat-w: 24px;
+			--aisle-w: 10px;
+		}
 		.row-label {
 			width: 14px;
 			font-size: 8px;
 			margin-right: 2px;
 		}
-		.empty-cell,
 		.map-seat {
 			width: 24px;
 			height: 18px;
 			font-size: 8px;
-		}
-		.aisle-gap {
-			width: 8px;
 		}
 	}
 </style>
