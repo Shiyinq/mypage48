@@ -61,6 +61,14 @@ class MemberLiveHistoryStatsResponse(BaseModel):
     longest_watch: Optional[LongestWatchInfo] = None
 
 
+class GlobalSingleMemberLiveHistoryStatsResponse(BaseModel):
+    member_id: str
+    total_lives: int
+    total_duration: int
+    platform_counts: dict[str, int]
+    longest_live: Optional[LongestWatchInfo] = None
+
+
 class PaginationMeta(BaseModel):
     current_page: int
     last_page: int
@@ -106,4 +114,28 @@ class WatchedLiveMemberRankingItem(BaseModel):
 
 class WatchedLiveMemberRankingResponse(BaseModel):
     data: List[WatchedLiveMemberRankingItem]
+    meta: PaginationMeta
+
+
+class GlobalLiveHistoryStatsResponse(BaseModel):
+    total_lives: int
+    total_duration: int
+    unique_members_count: int
+    top_member_id: Optional[str] = None
+    top_member_name: Optional[str] = None
+    top_member_watches: int = 0
+    top_member_duration: int = 0
+    platform_counts: dict[str, int]
+    highest_view_live: Optional["LongestWatchInfo"] = None
+
+
+class GlobalLiveMemberRankingItem(BaseModel):
+    member_id: str
+    member_name: Optional[str] = None
+    total_watches: int
+    total_duration: int
+
+
+class GlobalLiveMemberRankingResponse(BaseModel):
+    data: List[GlobalLiveMemberRankingItem]
     meta: PaginationMeta

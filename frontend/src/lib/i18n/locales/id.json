@@ -1348,6 +1348,16 @@
 		"globalButtonSubtitle": "Semua Live",
 		"globalButton": "Riwayat Live",
 		"rankingTitle": "Peringkat Member",
-		"rankingSubtitle": "Member paling sering kamu tonton"
+		"rankingSubtitle": "Member paling sering kamu tonton",
+		"globalStatsTitle": "Statistik Live",
+		"totalLives": "Total Live",
+		"uniqueMembers": "Member Unik",
+		"mostFrequentLive": "Paling Sering Live",
+		"highestViews": "Views Tertinggi",
+		"globalRankingTitle": "Peringkat Member Live",
+		"globalRankingSubtitle": "Member paling sering live",
+		"liveHistory": "Riwayat Live",
+		"totalLivePlatform": "Total Live Platform",
+		"views": "Views"
 	}
 }

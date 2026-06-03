@@ -134,54 +134,57 @@
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-32 relative z-10">
 			<!-- Member Stats -->
 			{#if stats}
-				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
 					<div
 						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
 					>
 						<div
-							class="w-12 h-12 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center shrink-0"
+							class="w-11 h-11 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center shrink-0"
 						>
-							<PlaySquare size={24} />
+							<PlaySquare size={22} />
 						</div>
 						<div>
 							<p
-								class="text-sm text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider"
+								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider"
 							>
 								{t('liveHistory.totalWatches')}
 							</p>
-							<p class="text-2xl font-black">{stats.total_watches} {t('liveHistory.times')}</p>
+							<p class="text-xl font-black truncate">
+								{stats.total_watches}
+								{t('liveHistory.times')}
+							</p>
 						</div>
 					</div>
 
 					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
 					>
 						<div
-							class="w-12 h-12 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center shrink-0"
+							class="w-11 h-11 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center shrink-0"
 						>
-							<Clock size={24} />
+							<Clock size={22} />
 						</div>
 						<div>
 							<p
-								class="text-sm text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider"
+								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider"
 							>
 								{t('liveHistory.totalDuration')}
 							</p>
-							<p class="text-2xl font-black">{formatDuration(stats.total_duration)}</p>
+							<p class="text-xl font-black truncate">{formatDuration(stats.total_duration)}</p>
 						</div>
 					</div>
 
 					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
 					>
 						<div
-							class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shrink-0"
+							class="w-11 h-11 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shrink-0"
 						>
-							<Smartphone size={24} />
+							<Smartphone size={22} />
 						</div>
 						<div class="min-w-0">
 							<p
-								class="text-sm text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
+								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
 							>
 								{t('liveHistory.platformWatches')}
 							</p>
@@ -198,43 +201,35 @@
 					</div>
 
 					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
 					>
 						<div
-							class="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center shrink-0"
+							class="w-11 h-11 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center shrink-0"
 						>
-							<Activity size={24} />
+							<Activity size={22} />
 						</div>
 						<div class="min-w-0">
 							<p
-								class="text-sm text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider"
+								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider"
 							>
 								{t('liveHistory.longestWatch')}
 							</p>
-							<p class="text-2xl font-black">
+							<p class="text-xl font-black truncate">
 								{stats.longest_watch ? formatDuration(stats.longest_watch.duration) : '-'}
 							</p>
 							{#if stats.longest_watch}
-								<div class="flex items-center gap-1.5 mt-1 min-w-0">
-									{#if stats.longest_watch.live_title}
-										<span
-											class="text-xs font-medium text-zinc-500 dark:text-zinc-400 truncate"
-											title={stats.longest_watch.live_title}>{stats.longest_watch.live_title}</span
-										>
-									{/if}
+								<div class="flex items-center gap-2 mt-1 min-w-0">
 									{#if stats.longest_watch.platform}
 										<div class="shrink-0">
 											<PlatformLogo platform={stats.longest_watch.platform} size="sm" />
 										</div>
 									{/if}
-								</div>
-								{#if stats.longest_watch.started_at}
-									<div class="mt-0.5">
-										<span class="text-[10px] text-zinc-400 dark:text-zinc-500"
+									{#if stats.longest_watch.started_at}
+										<span class="text-[10px] text-zinc-400 dark:text-zinc-500 truncate"
 											>{formatDate(stats.longest_watch.started_at)}</span
 										>
-									</div>
-								{/if}
+									{/if}
+								</div>
 							{/if}
 						</div>
 					</div>

@@ -5,6 +5,9 @@ import type {
 	MemberLiveHistoryStats,
 	LiveHistoryUpdateRequest,
 	GlobalLiveHistoryResponse,
+	GlobalLiveHistoryStats,
+	GlobalLiveMemberRankingResponse,
+	GlobalSingleMemberLiveHistoryStats,
 	WatchedLiveMemberRankingResponse
 } from '$lib/types/liveHistory';
 
@@ -51,5 +54,32 @@ export const liveHistoryApi = {
 		return client<WatchedLiveMemberRankingResponse>(
 			`/history/lives/watched/members/ranking?page=${page}&limit=${limit}`
 		);
+	},
+
+	getGlobalStats: async (): Promise<GlobalLiveHistoryStats> => {
+		return client<GlobalLiveHistoryStats>('/history/lives/stats');
+	},
+
+	getGlobalMembersRanking: async (
+		page: number = 1,
+		limit: number = 20
+	): Promise<GlobalLiveMemberRankingResponse> => {
+		return client<GlobalLiveMemberRankingResponse>(
+			`/history/lives/members/ranking?page=${page}&limit=${limit}`
+		);
+	},
+
+	getGlobalMemberHistory: async (
+		memberId: string,
+		page: number = 1,
+		limit: number = 20
+	): Promise<GlobalLiveHistoryResponse> => {
+		return client<GlobalLiveHistoryResponse>(
+			`/history/lives/members/${memberId}?page=${page}&limit=${limit}`
+		);
+	},
+
+	getGlobalMemberStats: async (memberId: string): Promise<GlobalSingleMemberLiveHistoryStats> => {
+		return client<GlobalSingleMemberLiveHistoryStats>(`/history/lives/members/${memberId}/stats`);
 	}
 };

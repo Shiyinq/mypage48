@@ -722,7 +722,18 @@
 		"globalButtonSubtitle": "All Lives",
 		"globalButton": "Live History",
 		"rankingTitle": "Member Ranking",
-		"rankingSubtitle": "Members you watch the most"
+		"rankingSubtitle": "Members you watch the most",
+		"globalStatsTitle": "Live Statistics",
+		"totalLives": "Total Lives",
+		"uniqueMembers": "Unique Members",
+		"mostFrequentLive": "Most Frequent Live",
+		"highestViews": "Highest Views",
+		"globalRankingTitle": "Live Member Ranking",
+		"globalRankingSubtitle": "Members who go live the most",
+		"liveHistory": "Live History",
+		"longestLive": "Longest Live",
+		"totalLivePlatform": "Total Live Platform",
+		"views": "Views"
 	},
 	"theater": {
 		"title": "Theater",

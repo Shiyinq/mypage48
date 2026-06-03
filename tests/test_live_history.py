@@ -1,3 +1,5 @@
+import datetime
+
 import pytest
 from httpx import AsyncClient
 
@@ -184,3 +186,156 @@ async def test_get_watched_live_members_ranking(client: AsyncClient, db, create_
     assert ranking[1]["member_id"] == "m2"
     assert ranking[1]["total_watches"] == 1
     assert ranking[1]["total_duration"] == 60
+
+
+@pytest.fixture
+async def seed_global_live_history(db):
+    """Seed the live_history collection with sample global live data."""
+    now = datetime.datetime.now(datetime.timezone.utc)
+    docs = [
+        {
+            "live_id": "gl1",
+            "platform": "showroom",
+            "title": "Showroom Live 1",
+            "image": None,
+            "view_num": 5000,
+            "start_at": now - datetime.timedelta(hours=3),
+            "end_at": now - datetime.timedelta(hours=2),
+            "last_seen_at": now - datetime.timedelta(hours=2),
+            "status": "ended",
+            "member": {"id": "gm1", "name": "Member Alpha"},
+            "duration": 3600,
+        },
+        {
+            "live_id": "gl2",
+            "platform": "idn",
+            "title": "IDN Live 1",
+            "image": None,
+            "view_num": 12000,
+            "start_at": now - datetime.timedelta(hours=2),
+            "end_at": now - datetime.timedelta(hours=1),
+            "last_seen_at": now - datetime.timedelta(hours=1),
+            "status": "ended",
+            "member": {"id": "gm1", "name": "Member Alpha"},
+            "duration": 3600,
+        },
+        {
+            "live_id": "gl3",
+            "platform": "showroom",
+            "title": "Showroom Live 2",
+            "image": None,
+            "view_num": 8000,
+            "start_at": now - datetime.timedelta(hours=1),
+            "end_at": now,
+            "last_seen_at": now,
+            "status": "ended",
+            "member": {"id": "gm2", "name": "Member Beta"},
+            "duration": 1800,
+        },
+    ]
+    await db["live_history"].insert_many(docs)
+    return docs
+
+
+@pytest.mark.asyncio
+async def test_get_global_live_stats(client: AsyncClient, db, seed_global_live_history):
+    """Test getting global live history statistics."""
+    response = await client.get("/api/history/lives/stats")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total_lives"] == 3
+    assert data["total_duration"] == 9000  # 3600 + 3600 + 1800
+    assert data["unique_members_count"] == 2
+
+    # Top member should be Member Alpha (2 lives)
+    assert data["top_member_id"] == "gm1"
+    assert data["top_member_name"] == "Member Alpha"
+    assert data["top_member_watches"] == 2
+
+    # Platform counts
+    assert data["platform_counts"]["showroom"] == 2
+    assert data["platform_counts"]["idn"] == 1
+
+    # Highest view live should be IDN Live 1 with 12000 views
+    hvl = data["highest_view_live"]
+    assert hvl is not None
+    assert hvl["duration"] == 12000  # view_num stored in duration field
+    assert hvl["live_title"] == "IDN Live 1"
+    assert hvl["platform"] == "idn"
+    assert hvl["member_name"] == "Member Alpha"
+
+
+@pytest.mark.asyncio
+async def test_get_global_members_ranking(client: AsyncClient, db, seed_global_live_history):
+    """Test getting global live members ranking."""
+    response = await client.get("/api/history/lives/members/ranking")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "data" in data
+    assert "meta" in data
+
+    ranking = data["data"]
+    assert len(ranking) == 2
+
+    # Member Alpha should be first (2 lives, 7200s total)
+    assert ranking[0]["member_id"] == "gm1"
+    assert ranking[0]["member_name"] == "Member Alpha"
+    assert ranking[0]["total_watches"] == 2
+    assert ranking[0]["total_duration"] == 7200
+
+    # Member Beta should be second (1 live, 1800s total)
+    assert ranking[1]["member_id"] == "gm2"
+    assert ranking[1]["member_name"] == "Member Beta"
+    assert ranking[1]["total_watches"] == 1
+    assert ranking[1]["total_duration"] == 1800
+
+
+@pytest.mark.asyncio
+async def test_get_global_member_history(client: AsyncClient, db, seed_global_live_history):
+    """Test getting global live history for a specific member."""
+    response = await client.get("/api/history/lives/members/gm1")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "data" in data
+    assert data["total"] == 2
+    assert len(data["data"]) == 2
+
+    # Should be sorted by start_at descending (most recent first)
+    assert data["data"][0]["live_id"] == "gl2"
+    assert data["data"][1]["live_id"] == "gl1"
+
+
+@pytest.mark.asyncio
+async def test_get_global_member_history_empty(client: AsyncClient, db, seed_global_live_history):
+    """Test getting global live history for a non-existent member."""
+    response = await client.get("/api/history/lives/members/nonexistent")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total"] == 0
+    assert len(data["data"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_get_global_member_stats(client, db, seed_global_live_history):
+    # Make request for "gm1" which has two lives in the seed
+    response = await client.get("/api/history/lives/members/gm1/stats")
+
+    # Assert response
+    assert response.status_code == 200
+    data = response.json()
+    assert data["member_id"] == "gm1"
+    assert data["total_duration"] == 7200  # 3600 * 2
+    assert data["total_lives"] == 2
+    assert "showroom" in data["platform_counts"]
+    assert data["platform_counts"]["showroom"] == 1
+    assert "idn" in data["platform_counts"]
+    assert data["platform_counts"]["idn"] == 1
+    
+    # Check longest live
+    assert data["longest_live"] is not None
+    assert data["longest_live"]["duration"] == 3600
+    # Both gl1 and gl2 have duration 3600, so longest platform will be one of them (likely IDN or showroom)

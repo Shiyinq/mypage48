@@ -5,6 +5,9 @@ from src.live_history.exceptions import LiveHistoryUpdateError
 from src.live_history.repository import LiveHistoryRepository
 from src.live_history.schemas import (
     GlobalLiveHistoryPaginationResponse,
+    GlobalLiveHistoryStatsResponse,
+    GlobalLiveMemberRankingResponse,
+    GlobalSingleMemberLiveHistoryStatsResponse,
     LiveHistoryResponse,
     LiveHistoryStatsResponse,
     LiveHistoryUpdateRequest,
@@ -118,3 +121,49 @@ class LiveHistoryService:
                 "next_page": next_page,
             },
         )
+
+    async def get_global_stats(self) -> GlobalLiveHistoryStatsResponse:
+        stats = await self.repository.get_global_overall_stats()
+        return GlobalLiveHistoryStatsResponse(**stats)
+
+    async def get_global_members_ranking(
+        self, page: int = 1, limit: int = 20
+    ) -> GlobalLiveMemberRankingResponse:
+        skip = (page - 1) * limit
+        ranking = await self.repository.get_global_live_members_ranking(skip, limit)
+        total_count = await self.repository.get_total_global_live_members_count()
+        last_page = math.ceil(total_count / limit) if limit > 0 else 1
+        next_page = page + 1 if page < last_page else None
+
+        return GlobalLiveMemberRankingResponse(
+            data=ranking,
+            meta={
+                "current_page": page,
+                "last_page": last_page,
+                "total_data": total_count,
+                "per_page": limit,
+                "next_page": next_page,
+            },
+        )
+
+    async def get_global_member_history(
+        self, member_id: str, page: int = 1, limit: int = 20
+    ) -> GlobalLiveHistoryPaginationResponse:
+        skip = (page - 1) * limit
+        lives = await self.repository.get_global_history_by_member(
+            member_id, skip, limit
+        )
+        total = await self.repository.get_total_global_history_count_by_member(
+            member_id
+        )
+        total_pages = math.ceil(total / limit) if limit > 0 else 1
+
+        return GlobalLiveHistoryPaginationResponse(
+            data=lives, total=total, page=page, limit=limit, total_pages=total_pages
+        )
+
+    async def get_global_member_stats(
+        self, member_id: str
+    ) -> GlobalSingleMemberLiveHistoryStatsResponse:
+        stats = await self.repository.get_global_member_stats(member_id)
+        return GlobalSingleMemberLiveHistoryStatsResponse(**stats)
