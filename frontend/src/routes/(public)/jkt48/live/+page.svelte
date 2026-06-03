@@ -150,4 +150,14 @@
 	<div class="max-w-7xl mx-auto px-0 md:px-0">
 		<LiveGrid liveList={liveList.value} loading={liveLoading.value} {initialLoading} />
 	</div>
+
+	<div class="mt-10">
+		<PromoBanner
+			title={t('theater.live.promo.historyTitle')}
+			desc={t('theater.live.promo.historyDesc')}
+			actionText={t('theater.live.promo.historyAction')}
+			href="/register"
+			class="max-w-7xl mx-auto px-4 sm:px-6 mb-10"
+		/>
+	</div>
 </div>

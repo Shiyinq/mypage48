@@ -922,6 +922,11 @@
 				"shareText": "Yuk pantau live streaming member JKT48 terupdate di mypage48! 🌟",
 				"toastSuccess": "Link website berhasil disalin!",
 				"toastError": "Gagal menyalin link."
+			},
+			"promo": {
+				"historyTitle": "Fitur Live History",
+				"historyDesc": "Kini kamu bisa melihat statistik riwayat tontonan live-mu sendiri lho! Yuk buat akun sekarang.",
+				"historyAction": "Daftar"
 			}
 		},
 		"news": {

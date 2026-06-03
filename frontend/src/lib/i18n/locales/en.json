@@ -819,6 +819,11 @@
 				"shareText": "Check out the latest JKT48 members live streams on mypage48! 🌟",
 				"toastSuccess": "Website link copied successfully!",
 				"toastError": "Failed to copy link."
+			},
+			"promo": {
+				"historyTitle": "Live History Feature",
+				"historyDesc": "You can now view your personal live watch history and statistics! Create your account now.",
+				"historyAction": "Register"
 			}
 		},
 		"news": {

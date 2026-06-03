@@ -746,6 +746,11 @@
 				"shareText": "mypage48で最新のJKT48メンバーのライブ配信をチェックしよう！🌟",
 				"toastSuccess": "ウェブサイトのリンクがコピーされました！",
 				"toastError": "リンクのコピーに失敗しました。"
+			},
+			"promo": {
+				"historyTitle": "ライブ履歴機能",
+				"historyDesc": "あなたの個人的なライブ視聴履歴や統計が見られるようになりました！今すぐアカウントを作成しましょう。",
+				"historyAction": "新規登録"
 			}
 		},
 		"news": {
