@@ -97,7 +97,7 @@
 	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
 
 	<HistoryTopBar
-		title={t('liveHistory.jkt48Title')}
+		title={t('liveHistory.globalTitle')}
 		subtitle={t('liveHistory.globalSubtitle')}
 		icon={History}
 		iconColor="text-red-500"
