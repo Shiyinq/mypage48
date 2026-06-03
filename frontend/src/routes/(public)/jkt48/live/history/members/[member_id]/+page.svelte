@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
-	import { History, ChevronLeft, Clock, PlaySquare, Smartphone, Activity } from 'lucide-svelte';
+	import { History, Clock, PlaySquare, Smartphone, Activity } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -12,8 +12,10 @@
 	import { membersStore } from '$lib/stores/theater.svelte';
 	import { EmptyState } from '$lib/components';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
-	import { formatTimeAgo } from '$lib/utils/time';
+	import { formatTimeAgo, formatLiveDate, formatDurationSeconds } from '$lib/utils/time';
 
+	import HistoryTopBar from '$lib/components/live/history/shared/HistoryTopBar.svelte';
+	import LiveHistoryItemSkeleton from '$lib/components/live/history/shared/LiveHistoryItemSkeleton.svelte';
 	import LiveStatCard from '$lib/components/live/history/shared/LiveStatCard.svelte';
 	import LiveHistoryItemCard from '$lib/components/live/history/shared/LiveHistoryItemCard.svelte';
 
@@ -69,29 +71,8 @@
 		liveHistoryStore.loadGlobalMemberHistory(memberId, pagination.page + 1);
 	}
 
-	function parseUTCDate(dateStr: string) {
-		const timePart = dateStr.split('T')[1] || '';
-		if (!dateStr.endsWith('Z') && !timePart.includes('+') && !timePart.includes('-')) {
-			return new Date(dateStr + 'Z');
-		}
-		return new Date(dateStr);
-	}
-
 	function formatDate(dateStr: string) {
-		const localeMap: Record<string, string> = { id: 'id-ID', en: 'en-US', ja: 'ja-JP' };
-		return new Intl.DateTimeFormat(localeMap[locale.value] || 'id-ID', {
-			dateStyle: 'medium',
-			timeStyle: 'short'
-		}).format(parseUTCDate(dateStr));
-	}
-
-	function formatDuration(seconds: number) {
-		const h = Math.floor(seconds / 3600);
-		const m = Math.floor((seconds % 3600) / 60);
-		const s = Math.floor(seconds % 60);
-		if (h > 0) return `${h}h ${m}m ${s}s`;
-		if (m > 0) return `${m}m ${s}s`;
-		return `${s}s`;
+		return formatLiveDate(dateStr, locale.value);
 	}
 </script>
 
@@ -108,33 +89,14 @@
 >
 	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
 
-	<!-- Top Bar -->
-	<div
-		class="h-14 border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between px-4 z-[10000] shrink-0"
-	>
-		<button
-			onclick={() => history.back()}
-			class="flex items-center gap-3 cursor-pointer group text-left"
-		>
-			<div
-				class="flex items-center justify-center w-8 h-8 rounded-full group-hover:bg-gray-100 dark:group-hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition-colors shrink-0"
-			>
-				<ChevronLeft size={20} />
-			</div>
-			<div class="flex flex-col min-w-0">
-				<h1
-					class="text-sm font-bold text-slate-900 dark:text-white truncate flex items-center gap-1.5"
-				>
-					<History size={14} class="text-red-500" />
-					{displayName()}
-				</h1>
-				<p class="text-[10px] text-slate-500 dark:text-zinc-400 truncate font-medium">
-					{t('liveHistory.liveHistory')} · {pagination.total}
-					{t('liveHistory.times')}
-				</p>
-			</div>
-		</button>
-	</div>
+	<HistoryTopBar
+		title={displayName()}
+		subtitle={t('liveHistory.liveHistory')}
+		total={pagination.total}
+		totalLabel={t('liveHistory.times')}
+		icon={History}
+		iconColor="text-red-500"
+	/>
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
@@ -150,7 +112,7 @@
 					/>
 					<LiveStatCard
 						title={t('liveHistory.totalDuration')}
-						value={formatDuration(stats.total_duration)}
+						value={formatDurationSeconds(stats.total_duration, true)}
 						icon={Clock}
 						color="amber"
 					/>
@@ -171,7 +133,9 @@
 
 					<LiveStatCard
 						title={t('liveHistory.longestLive')}
-						value={stats.longest_live ? formatDuration(stats.longest_live.duration) : '-'}
+						value={stats.longest_live
+							? formatDurationSeconds(stats.longest_live.duration, true)
+							: '-'}
 						icon={Activity}
 						color="emerald"
 					>
@@ -205,23 +169,7 @@
 			{#if isLoading && historyList.length === 0}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each Array(6) as _}
-						<div
-							class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col gap-3"
-						>
-							<div class="flex items-center justify-between">
-								<div class="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-24 animate-pulse"></div>
-								<div class="w-16 h-4 bg-zinc-200 dark:bg-zinc-800 rounded animate-pulse"></div>
-							</div>
-							<div class="flex items-center gap-3 mt-2">
-								<div
-									class="w-16 h-16 rounded-xl bg-zinc-200 dark:bg-zinc-800 animate-pulse shrink-0"
-								></div>
-								<div class="flex flex-col gap-2 w-full">
-									<div class="h-5 bg-zinc-200 dark:bg-zinc-800 rounded w-2/3 animate-pulse"></div>
-									<div class="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-1/3 animate-pulse"></div>
-								</div>
-							</div>
-						</div>
+						<LiveHistoryItemSkeleton />
 					{/each}
 				</div>
 			{:else if historyList.length === 0}

@@ -133,3 +133,27 @@ export function formatTimeAgo(
 		return t('time.relative.weeksAgo', { count: Math.floor(diffDays / 7) });
 	}
 }
+
+/**
+ * Ensures a date string is treated as UTC if it lacks timezone info.
+ */
+export function parseUTCDate(dateStr: string): Date {
+	if (!dateStr) return new Date(NaN);
+	const timePart = dateStr.split('T')[1] || '';
+	if (!dateStr.endsWith('Z') && !timePart.includes('+') && !timePart.includes('-')) {
+		return new Date(dateStr + 'Z');
+	}
+	return new Date(dateStr);
+}
+
+/**
+ * Format a date for Live History with the given locale.
+ */
+export function formatLiveDate(dateStr: string, locale: string = 'id'): string {
+	if (!dateStr) return '';
+	const localeMap: Record<string, string> = { id: 'id-ID', en: 'en-US', ja: 'ja-JP' };
+	return new Intl.DateTimeFormat(localeMap[locale] || 'id-ID', {
+		dateStyle: 'medium',
+		timeStyle: 'short'
+	}).format(parseUTCDate(dateStr));
+}
