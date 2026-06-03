@@ -87,3 +87,21 @@ export interface GlobalLiveHistoryResponse {
 	limit: number;
 	total_pages: number;
 }
+
+export interface WatchedLiveMemberRankingItem {
+	member_id: string;
+	member_name?: string;
+	total_watches: number;
+	total_duration: number;
+}
+
+export interface WatchedLiveMemberRankingResponse {
+	data: WatchedLiveMemberRankingItem[];
+	meta: {
+		current_page: number;
+		last_page: number;
+		total_data: number;
+		per_page: number;
+		next_page: number | null;
+	};
+}

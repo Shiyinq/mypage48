@@ -3,7 +3,8 @@ import type {
 	LiveHistory,
 	LiveHistoryStats,
 	MemberLiveHistoryStats,
-	GlobalLiveHistory
+	GlobalLiveHistory,
+	WatchedLiveMemberRankingItem
 } from '$lib/types/liveHistory';
 import { logger } from '$lib/utils/logger';
 
@@ -13,6 +14,7 @@ class LiveHistoryStore {
 	globalList = $state<GlobalLiveHistory[]>([]);
 	overallStats = $state<LiveHistoryStats | null>(null);
 	memberStats = $state<Record<string, MemberLiveHistoryStats>>({});
+	membersRanking = $state<WatchedLiveMemberRankingItem[]>([]);
 	isLoading = $state(false);
 	error = $state<string | null>(null);
 	lastUpdated = $state<number>(0);
@@ -25,6 +27,14 @@ class LiveHistoryStore {
 	});
 
 	pagination = $state({
+		current_page: 1,
+		per_page: 20,
+		total_data: 0,
+		last_page: 1,
+		next_page: null as number | null
+	});
+
+	rankingPagination = $state({
 		current_page: 1,
 		per_page: 20,
 		total_data: 0,
@@ -137,6 +147,43 @@ class LiveHistoryStore {
 		}
 	}
 
+	async loadMembersRanking(page: number = 1, force: boolean = false) {
+		if (this.isLoading) return;
+
+		if (force) {
+			this.membersRanking = [];
+			this.rankingPagination = {
+				current_page: 1,
+				per_page: 20,
+				total_data: 0,
+				last_page: 1,
+				next_page: null
+			};
+		}
+
+		try {
+			this.isLoading = true;
+			const response = await liveHistoryApi.getWatchedLiveMembersRanking(page, 20);
+
+			if (page === 1) {
+				this.membersRanking = response.data;
+			} else {
+				const newItems = response.data.filter(
+					(newItem) =>
+						!this.membersRanking.some(
+							(existingItem) => existingItem.member_id === newItem.member_id
+						)
+				);
+				this.membersRanking = [...this.membersRanking, ...newItems];
+			}
+			this.rankingPagination = response.meta;
+		} catch (err) {
+			logger.error('Failed to load members ranking:', err);
+		} finally {
+			this.isLoading = false;
+		}
+	}
+
 	async updateWatchDuration(
 		live_id: string,
 		member_id: string,
@@ -167,9 +214,17 @@ class LiveHistoryStore {
 		this.list = [];
 		this.overallStats = null;
 		this.memberStats = {};
+		this.membersRanking = [];
 		this.error = null;
 		this.lastUpdated = 0;
 		this.pagination = {
+			current_page: 1,
+			per_page: 20,
+			total_data: 0,
+			last_page: 1,
+			next_page: null
+		};
+		this.rankingPagination = {
 			current_page: 1,
 			per_page: 20,
 			total_data: 0,

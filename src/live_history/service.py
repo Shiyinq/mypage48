@@ -9,6 +9,7 @@ from src.live_history.schemas import (
     LiveHistoryStatsResponse,
     LiveHistoryUpdateRequest,
     MemberLiveHistoryStatsResponse,
+    WatchedLiveMemberRankingResponse,
 )
 
 
@@ -93,3 +94,27 @@ class LiveHistoryService:
     ) -> MemberLiveHistoryStatsResponse:
         stats = await self.repository.get_member_stats(user_id, member_id)
         return MemberLiveHistoryStatsResponse(**stats)
+
+    async def get_watched_live_members_ranking(
+        self, user_id: str, page: int = 1, limit: int = 20
+    ) -> WatchedLiveMemberRankingResponse:
+        skip = (page - 1) * limit
+        ranking = await self.repository.get_watched_live_members_ranking(
+            user_id, skip, limit
+        )
+        total_count = await self.repository.get_total_watched_live_members_count(
+            user_id
+        )
+        last_page = math.ceil(total_count / limit) if limit > 0 else 1
+        next_page = page + 1 if page < last_page else None
+
+        return WatchedLiveMemberRankingResponse(
+            data=ranking,
+            meta={
+                "current_page": page,
+                "last_page": last_page,
+                "total_data": total_count,
+                "per_page": limit,
+                "next_page": next_page,
+            },
+        )

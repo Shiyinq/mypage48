@@ -258,22 +258,27 @@
 						</div>
 					</div>
 
-					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0 sm:col-span-1 lg:col-span-2"
+					<a
+						href="/theater/live/history/watched/members"
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:border-purple-500/50 hover:-translate-y-1 transition-all duration-300 min-w-0 sm:col-span-1 lg:col-span-2 group"
 					>
 						<div
-							class="w-12 h-12 bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center shrink-0"
+							class="w-12 h-12 bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
 						>
 							<Trophy size={24} />
 						</div>
-						<div class="min-w-0">
+						<div class="min-w-0 flex-1">
 							<p
 								class="text-sm text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
 							>
 								{t('liveHistory.mostFrequent')}
 							</p>
 							<div class="flex items-baseline gap-1.5 truncate">
-								<p class="text-xl sm:text-2xl font-black truncate">{topMemberName}</p>
+								<p
+									class="text-xl sm:text-2xl font-black truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors"
+								>
+									{topMemberName}
+								</p>
 								{#if topMemberCount > 0}
 									<span class="text-xs font-bold text-purple-600 dark:text-purple-400 shrink-0"
 										>({topMemberCount}x)</span
@@ -281,7 +286,11 @@
 								{/if}
 							</div>
 						</div>
-					</div>
+						<ChevronRight
+							size={20}
+							class="text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2"
+						/>
+					</a>
 
 					<div
 						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0 sm:col-span-1 lg:col-span-2"

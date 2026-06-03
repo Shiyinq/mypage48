@@ -720,7 +720,9 @@
 		"globalTitle": "Live History",
 		"globalSubtitle": "History of all recorded lives",
 		"globalButtonSubtitle": "All Lives",
-		"globalButton": "Live History"
+		"globalButton": "Live History",
+		"rankingTitle": "Member Ranking",
+		"rankingSubtitle": "Members you watch the most"
 	},
 	"theater": {
 		"title": "Theater",

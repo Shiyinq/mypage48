@@ -4,7 +4,8 @@ import type {
 	LiveHistoryStats,
 	MemberLiveHistoryStats,
 	LiveHistoryUpdateRequest,
-	GlobalLiveHistoryResponse
+	GlobalLiveHistoryResponse,
+	WatchedLiveMemberRankingResponse
 } from '$lib/types/liveHistory';
 
 export const liveHistoryApi = {
@@ -41,5 +42,14 @@ export const liveHistoryApi = {
 
 	getMemberStats: async (memberId: string): Promise<MemberLiveHistoryStats> => {
 		return client<MemberLiveHistoryStats>(`/history/lives/watched/members/${memberId}/stats`);
+	},
+
+	getWatchedLiveMembersRanking: async (
+		page: number = 1,
+		limit: number = 20
+	): Promise<WatchedLiveMemberRankingResponse> => {
+		return client<WatchedLiveMemberRankingResponse>(
+			`/history/lives/watched/members/ranking?page=${page}&limit=${limit}`
+		);
 	}
 };

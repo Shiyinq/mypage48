@@ -12,6 +12,7 @@ from src.live_history.schemas import (
     LiveHistoryStatsResponse,
     LiveHistoryUpdateRequest,
     MemberLiveHistoryStatsResponse,
+    WatchedLiveMemberRankingResponse,
 )
 from src.live_history.service import LiveHistoryService
 
@@ -71,4 +72,16 @@ async def get_member_stats(
 ):
     return await service.get_member_stats(
         user_id=current_user.userId, member_id=member_id
+    )
+
+
+@router.get("/watched/members/ranking", response_model=WatchedLiveMemberRankingResponse)
+async def get_watched_live_members_ranking(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    current_user: UserCurrent = Depends(get_current_user),
+    service: LiveHistoryService = Depends(get_live_history_service),
+):
+    return await service.get_watched_live_members_ranking(
+        user_id=current_user.userId, page=page, limit=limit
     )

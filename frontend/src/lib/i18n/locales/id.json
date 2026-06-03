@@ -1346,6 +1346,8 @@
 		"globalTitle": "Riwayat Live",
 		"globalSubtitle": "Riwayat seluruh live yang tercatat",
 		"globalButtonSubtitle": "Semua Live",
-		"globalButton": "Riwayat Live"
+		"globalButton": "Riwayat Live",
+		"rankingTitle": "Peringkat Member",
+		"rankingSubtitle": "Member paling sering kamu tonton"
 	}
 }
