@@ -27,7 +27,7 @@ export const liveHistoryApi = {
 		});
 	},
 
-	getHistory: async (
+	getWatchedHistory: async (
 		page: number = 1,
 		limit: number = 20,
 		memberId?: string
@@ -39,11 +39,11 @@ export const liveHistoryApi = {
 		return client<LiveHistoryResponse>(url);
 	},
 
-	getOverallStats: async (): Promise<LiveHistoryStats> => {
+	getWatchedStats: async (): Promise<LiveHistoryStats> => {
 		return client<LiveHistoryStats>('/history/lives/watched/stats');
 	},
 
-	getMemberStats: async (memberId: string): Promise<MemberLiveHistoryStats> => {
+	getWatchedMemberStats: async (memberId: string): Promise<MemberLiveHistoryStats> => {
 		return client<MemberLiveHistoryStats>(`/history/lives/watched/members/${memberId}/stats`);
 	},
 
