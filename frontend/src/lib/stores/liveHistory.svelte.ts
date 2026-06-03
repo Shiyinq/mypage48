@@ -87,7 +87,7 @@ class LiveHistoryStore {
 			this.error = null;
 			this.currentMemberFilter = memberId;
 
-			const response = await liveHistoryApi.getHistory(page, 20, memberId);
+			const response = await liveHistoryApi.getWatchedHistory(page, 20, memberId);
 
 			if (page === 1) {
 				this.list = response.data;
@@ -155,7 +155,7 @@ class LiveHistoryStore {
 
 	async loadOverallStats() {
 		try {
-			this.overallStats = await liveHistoryApi.getOverallStats();
+			this.overallStats = await liveHistoryApi.getWatchedStats();
 		} catch (err) {
 			logger.error('Failed to load overall live stats:', err);
 		}
@@ -163,7 +163,7 @@ class LiveHistoryStore {
 
 	async loadMemberStats(memberId: string) {
 		try {
-			const stats = await liveHistoryApi.getMemberStats(memberId);
+			const stats = await liveHistoryApi.getWatchedMemberStats(memberId);
 			this.memberStats[memberId] = stats;
 		} catch (err) {
 			logger.error(`Failed to load stats for member ${memberId}:`, err);
