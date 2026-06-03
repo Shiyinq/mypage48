@@ -12,6 +12,20 @@
 			rel="stylesheet"
 		/>
 		<script>
+			// Fix malformed URIs (naked % characters) on the client side before SvelteKit starts
+			if (window.location.pathname.includes('%')) {
+				try {
+					decodeURI(window.location.pathname);
+				} catch (e) {
+					const newPath = window.location.pathname.replace(/%(?![0-9a-fA-F]{2})/g, '%25');
+					window.history.replaceState(
+						null,
+						'',
+						newPath + window.location.search + window.location.hash
+					);
+				}
+			}
+
 			(function () {
 				const theme = localStorage.getItem('mypage48_theme') || 'auto';
 				let isDark = false;
