@@ -42,7 +42,7 @@
 
 	// Navigate to detail page
 	function goToDetail(setlistId: string) {
-		goto(`/theater/${setlistId}`);
+		goto(`/theater/${encodeURIComponent(setlistId)}`);
 	}
 </script>
 
