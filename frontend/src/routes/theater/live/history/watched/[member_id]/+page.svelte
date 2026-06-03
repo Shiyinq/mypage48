@@ -108,7 +108,7 @@
 	<div
 		class="h-14 border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between px-4 z-[10000] shrink-0"
 	>
-		<a href="/theater/live/history/watched" class="flex items-center gap-3 cursor-pointer group">
+		<button onclick={() => history.back()} class="flex items-center gap-3 cursor-pointer group text-left">
 			<div
 				class="flex items-center justify-center w-8 h-8 rounded-full group-hover:bg-gray-100 dark:group-hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition-colors shrink-0"
 			>
@@ -125,7 +125,7 @@
 					{t('liveHistory.subtitle')}
 				</p>
 			</div>
-		</a>
+		</button>
 	</div>
 
 	<!-- Main Content -->
