@@ -149,6 +149,14 @@
 			"achievements": {
 				"title": "PENCAPAIAN",
 				"description": "Buka lencana dan pencapaian saat kamu mendukung JKT48. Dari \"Pertunjukan Pertama\" hingga \"Fans Legendaris\", lacak kemajuanmu dan tunjukkan loyalitasmu."
+			},
+			"sorter": {
+				"title": "SORTER",
+				"description": "Urutkan member JKT48 favoritmu untuk mengetahui urutan oshi yang sebenarnya. Bagikan hasil sorter-mu ke media sosial."
+			},
+			"live": {
+				"title": "LIVE",
+				"description": "Tonton member JKT48 yang sedang siaran langsung di Showroom atau IDN Live. Tonton beberapa member sekaligus dengan fitur Multi-view."
 			}
 		},
 		"footer": {

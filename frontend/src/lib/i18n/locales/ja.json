@@ -148,6 +148,14 @@
 			"achievements": {
 				"title": "ACHIEVEMENTS",
 				"description": "JKT48を応援しながらバッジやマイルストーンを解除します。「初公演」から「伝説のファン」まで、進捗を追跡し、忠誠心を示しましょう。"
+			},
+			"sorter": {
+				"title": "SORTER",
+				"description": "お気に入りのJKT48メンバーをソートして、本当の推し順位を見つけましょう。ソート結果はSNSでシェアできます。"
+			},
+			"live": {
+				"title": "LIVE",
+				"description": "SHOWROOMやIDN Liveで配信中のJKT48メンバーをリアルタイムで視聴しましょう。マルチビュー機能を使えば、複数のメンバーを同時に視聴できます。"
 			}
 		},
 		"footer": {

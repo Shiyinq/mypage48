@@ -148,6 +148,14 @@
 			"achievements": {
 				"title": "ACHIEVEMENTS",
 				"description": "Unlock badges and milestones as you support JKT48. From \"First Show\" to \"Legendary Fan\", track your progress and show off your loyalty."
+			},
+			"sorter": {
+				"title": "SORTER",
+				"description": "Sort your favorite JKT48 members to find out your true oshi ranking. Share your sorter results to social media."
+			},
+			"live": {
+				"title": "LIVE",
+				"description": "Watch JKT48 members streaming live on Showroom or IDN Live. Watch multiple members at once with the Multi-view feature."
 			}
 		},
 		"footer": {
