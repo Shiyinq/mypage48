@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { ChevronLeft } from 'lucide-svelte';
 	import type { ComponentType } from 'svelte';
+	import HistoryDateFilter from './HistoryDateFilter.svelte';
 
 	interface Props {
 		title: string;
 		subtitle?: string;
 		icon: ComponentType;
 		iconColor?: string;
-		total?: number;
-		totalLabel?: string;
+		showDateFilter?: boolean;
 		onBack?: () => void;
 	}
 
@@ -17,8 +17,7 @@
 		subtitle = '',
 		icon: Icon,
 		iconColor = 'text-red-500',
-		total = 0,
-		totalLabel = '',
+		showDateFilter = false,
 		onBack
 	}: Props = $props();
 
@@ -47,19 +46,15 @@
 				<Icon size={14} class={iconColor} />
 				{title}
 			</h1>
-			{#if subtitle || (total > 0 && totalLabel)}
+			{#if subtitle}
 				<p class="text-[10px] text-slate-500 dark:text-zinc-400 truncate font-medium">
-					{#if subtitle}
-						{subtitle}
-						{#if total > 0 && totalLabel}
-							{' · '}
-						{/if}
-					{/if}
-					{#if total > 0 && totalLabel}
-						{total} {totalLabel}
-					{/if}
+					{subtitle}
 				</p>
 			{/if}
 		</div>
 	</button>
+
+	{#if showDateFilter}
+		<HistoryDateFilter />
+	{/if}
 </div>

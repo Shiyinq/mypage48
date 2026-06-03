@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { page } from '$app/stores';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
+	import { liveHistoryFilterStore } from '$lib/stores/liveHistoryFilter.svelte';
 	import { History, Clock, PlaySquare, Smartphone, Activity } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { isImmersive } from '$lib/stores';
@@ -51,7 +52,10 @@
 		return memberId;
 	});
 
+	let mounted = $state(false);
+
 	onMount(() => {
+		mounted = true;
 		isImmersive.set(true);
 		document.body.style.overflow = 'hidden';
 		if (memberId) {
@@ -64,6 +68,19 @@
 			isImmersive.set(false);
 			document.body.style.overflow = '';
 		};
+	});
+
+	$effect(() => {
+		const _trigger =
+			liveHistoryFilterStore.filterType +
+			liveHistoryFilterStore.customRange.start +
+			liveHistoryFilterStore.customRange.end;
+		if (mounted && memberId) {
+			untrack(() => {
+				liveHistoryStore.loadGlobalMemberHistory(memberId, 1, true);
+				liveHistoryStore.loadGlobalMemberStats(memberId);
+			});
+		}
 	});
 
 	function handleIntersect() {
@@ -92,10 +109,9 @@
 	<HistoryTopBar
 		title={displayName()}
 		subtitle={t('liveHistory.liveHistory')}
-		total={pagination.total}
-		totalLabel={t('liveHistory.times')}
 		icon={History}
 		iconColor="text-red-500"
+		showDateFilter={true}
 	/>
 
 	<!-- Main Content -->

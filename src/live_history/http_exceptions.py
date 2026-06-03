@@ -1,4 +1,4 @@
-from src.http_exceptions import InternalServerError, NotFound
+from src.http_exceptions import BadRequest, InternalServerError, NotFound
 from src.live_history.constants import ErrorCode
 
 
@@ -8,3 +8,7 @@ class LiveHistoryNotFound(NotFound):
 
 class LiveHistoryUpdateFailed(InternalServerError):
     DETAIL = ErrorCode.LIVE_HISTORY_UPDATE_FAILED
+
+
+class LiveHistoryInvalidDate(BadRequest):
+    DETAIL = ErrorCode.INVALID_DATE_FORMAT

@@ -12,6 +12,23 @@ class LiveHistoryRepository:
         self.history_col = db.live_history
         self.logger = create_logger("live_history_repository", __name__)
 
+    def _build_date_query(
+        self,
+        base_query: Dict[str, Any],
+        start_date: Optional[datetime.datetime],
+        end_date: Optional[datetime.datetime],
+        date_field: str = "start_at",
+    ) -> Dict[str, Any]:
+        query = base_query.copy()
+        if start_date or end_date:
+            date_query = {}
+            if start_date:
+                date_query["$gte"] = start_date
+            if end_date:
+                date_query["$lte"] = end_date
+            query[date_field] = date_query
+        return query
+
     async def update_watch_duration(
         self,
         user_id: str,
@@ -52,10 +69,18 @@ class LiveHistoryRepository:
             return False
 
     async def get_history_by_user(
-        self, user_id: str, skip: int = 0, limit: int = 20
+        self,
+        user_id: str,
+        skip: int = 0,
+        limit: int = 20,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
     ) -> List[Dict[str, Any]]:
+        query = self._build_date_query(
+            {"user_id": user_id}, start_date, end_date, "started_at"
+        )
         cursor = (
-            self.watched_col.find({"user_id": user_id})
+            self.watched_col.find(query)
             .sort("last_updated_at", -1)
             .skip(skip)
             .limit(limit)
@@ -63,10 +88,22 @@ class LiveHistoryRepository:
         return [doc async for doc in cursor]
 
     async def get_history_by_user_and_member(
-        self, user_id: str, member_id: str, skip: int = 0, limit: int = 20
+        self,
+        user_id: str,
+        member_id: str,
+        skip: int = 0,
+        limit: int = 20,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
     ) -> List[Dict[str, Any]]:
+        query = self._build_date_query(
+            {"user_id": user_id, "member_id": member_id},
+            start_date,
+            end_date,
+            "started_at",
+        )
         cursor = (
-            self.watched_col.find({"user_id": user_id, "member_id": member_id})
+            self.watched_col.find(query)
             .sort("last_updated_at", -1)
             .skip(skip)
             .limit(limit)
@@ -74,16 +111,29 @@ class LiveHistoryRepository:
         return [doc async for doc in cursor]
 
     async def get_total_history_count(
-        self, user_id: str, member_id: Optional[str] = None
+        self,
+        user_id: str,
+        member_id: Optional[str] = None,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
     ) -> int:
         query = {"user_id": user_id}
         if member_id:
             query["member_id"] = member_id
+        query = self._build_date_query(query, start_date, end_date, "started_at")
         return await self.watched_col.count_documents(query)
 
-    async def get_overall_stats(self, user_id: str) -> Dict[str, Any]:
+    async def get_overall_stats(
+        self,
+        user_id: str,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+    ) -> Dict[str, Any]:
+        match_query = self._build_date_query(
+            {"user_id": user_id}, start_date, end_date, "started_at"
+        )
         pipeline = [
-            {"$match": {"user_id": user_id}},
+            {"$match": match_query},
             {
                 "$group": {
                     "_id": "$member_id",
@@ -125,7 +175,7 @@ class LiveHistoryRepository:
                 is_first = False
 
         platform_pipeline = [
-            {"$match": {"user_id": user_id}},
+            {"$match": match_query},
             {"$group": {"_id": "$platform", "count": {"$sum": 1}}},
         ]
         platform_cursor = self.watched_col.aggregate(platform_pipeline)
@@ -143,11 +193,16 @@ class LiveHistoryRepository:
         }
 
     async def get_longest_watch(
-        self, user_id: str, member_id: str = None
+        self,
+        user_id: str,
+        member_id: str = None,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
     ) -> Optional[Dict[str, Any]]:
         query = {"user_id": user_id}
         if member_id:
             query["member_id"] = member_id
+        query = self._build_date_query(query, start_date, end_date, "started_at")
 
         longest_doc = await self.watched_col.find_one(query, sort=[("duration", -1)])
 
@@ -162,9 +217,21 @@ class LiveHistoryRepository:
             "member_name": longest_doc.get("member_name"),
         }
 
-    async def get_member_stats(self, user_id: str, member_id: str) -> Dict[str, Any]:
+    async def get_member_stats(
+        self,
+        user_id: str,
+        member_id: str,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+    ) -> Dict[str, Any]:
+        match_query = self._build_date_query(
+            {"user_id": user_id, "member_id": member_id},
+            start_date,
+            end_date,
+            "started_at",
+        )
         pipeline = [
-            {"$match": {"user_id": user_id, "member_id": member_id}},
+            {"$match": match_query},
             {
                 "$group": {
                     "_id": None,
@@ -188,7 +255,7 @@ class LiveHistoryRepository:
         longest_watch = await self.get_longest_watch(user_id, member_id)
 
         platform_pipeline = [
-            {"$match": {"user_id": user_id, "member_id": member_id}},
+            {"$match": match_query},
             {"$group": {"_id": "$platform", "count": {"$sum": 1}}},
         ]
         platform_cursor = self.watched_col.aggregate(platform_pipeline)
@@ -277,17 +344,37 @@ class LiveHistoryRepository:
             self.logger.error(f"Failed to mark missing lives as ended: {e}")
 
     async def get_global_history(
-        self, skip: int = 0, limit: int = 20
+        self,
+        skip: int = 0,
+        limit: int = 20,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
     ) -> List[Dict[str, Any]]:
-        cursor = self.history_col.find().sort("start_at", -1).skip(skip).limit(limit)
+        query = self._build_date_query({}, start_date, end_date)
+        cursor = (
+            self.history_col.find(query).sort("start_at", -1).skip(skip).limit(limit)
+        )
         return [doc async for doc in cursor]
 
-    async def get_total_global_history_count(self) -> int:
-        return await self.history_col.count_documents({})
+    async def get_total_global_history_count(
+        self,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+    ) -> int:
+        query = self._build_date_query({}, start_date, end_date)
+        return await self.history_col.count_documents(query)
 
-    async def get_total_watched_live_members_count(self, user_id: str) -> int:
+    async def get_total_watched_live_members_count(
+        self,
+        user_id: str,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+    ) -> int:
+        match_query = self._build_date_query(
+            {"user_id": user_id}, start_date, end_date, "started_at"
+        )
         pipeline = [
-            {"$match": {"user_id": user_id}},
+            {"$match": match_query},
             {"$group": {"_id": "$member_id"}},
             {"$count": "total_members"},
         ]
@@ -296,10 +383,18 @@ class LiveHistoryRepository:
         return results[0]["total_members"] if results else 0
 
     async def get_watched_live_members_ranking(
-        self, user_id: str, skip: int = 0, limit: int = 20
+        self,
+        user_id: str,
+        skip: int = 0,
+        limit: int = 20,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
     ) -> List[Dict[str, Any]]:
+        match_query = self._build_date_query(
+            {"user_id": user_id}, start_date, end_date, "started_at"
+        )
         pipeline = [
-            {"$match": {"user_id": user_id}},
+            {"$match": match_query},
             {
                 "$group": {
                     "_id": "$member_id",
@@ -324,9 +419,16 @@ class LiveHistoryRepository:
         cursor = self.watched_col.aggregate(pipeline)
         return [doc async for doc in cursor]
 
-    async def get_global_overall_stats(self) -> Dict[str, Any]:
+    async def get_global_overall_stats(
+        self,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+    ) -> Dict[str, Any]:
+        match_stage = self._build_date_query({}, start_date, end_date)
+        match_pipeline = [{"$match": match_stage}] if match_stage else []
+
         # unique_members_count
-        unique_members_pipeline = [
+        unique_members_pipeline = match_pipeline + [
             {"$group": {"_id": "$member.id"}},
             {"$count": "count"},
         ]
@@ -335,12 +437,14 @@ class LiveHistoryRepository:
         unique_members_count = um_results[0]["count"] if um_results else 0
 
         # platform counts
-        platform_pipeline = [{"$group": {"_id": "$platform", "count": {"$sum": 1}}}]
+        platform_pipeline = match_pipeline + [
+            {"$group": {"_id": "$platform", "count": {"$sum": 1}}}
+        ]
         platform_cursor = self.history_col.aggregate(platform_pipeline)
         platform_counts = {doc["_id"]: doc["count"] async for doc in platform_cursor}
 
         # total duration and total lives
-        totals_pipeline = [
+        totals_pipeline = match_pipeline + [
             {
                 "$group": {
                     "_id": None,
@@ -355,7 +459,7 @@ class LiveHistoryRepository:
         total_lives = totals_results[0]["total_lives"] if totals_results else 0
 
         # top member by frequency
-        top_member_pipeline = [
+        top_member_pipeline = match_pipeline + [
             {
                 "$group": {
                     "_id": "$member.id",
@@ -376,7 +480,9 @@ class LiveHistoryRepository:
         top_member_duration = tm_results[0]["total_duration"] if tm_results else 0
 
         # highest view live
-        highest_view_doc = await self.history_col.find_one({}, sort=[("view_num", -1)])
+        highest_view_doc = await self.history_col.find_one(
+            match_stage, sort=[("view_num", -1)]
+        )
         highest_view_live = None
         if highest_view_doc:
             highest_view_live = {
@@ -402,9 +508,16 @@ class LiveHistoryRepository:
         }
 
     async def get_global_live_members_ranking(
-        self, skip: int = 0, limit: int = 20
+        self,
+        skip: int = 0,
+        limit: int = 20,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
     ) -> List[Dict[str, Any]]:
-        pipeline = [
+        match_stage = self._build_date_query({}, start_date, end_date)
+        match_pipeline = [{"$match": match_stage}] if match_stage else []
+
+        pipeline = match_pipeline + [
             {
                 "$group": {
                     "_id": "$member.id",
@@ -429,8 +542,15 @@ class LiveHistoryRepository:
         cursor = self.history_col.aggregate(pipeline)
         return [doc async for doc in cursor]
 
-    async def get_total_global_live_members_count(self) -> int:
-        pipeline = [
+    async def get_total_global_live_members_count(
+        self,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+    ) -> int:
+        match_stage = self._build_date_query({}, start_date, end_date)
+        match_pipeline = [{"$match": match_stage}] if match_stage else []
+
+        pipeline = match_pipeline + [
             {"$group": {"_id": "$member.id"}},
             {"$count": "total_members"},
         ]
@@ -439,22 +559,39 @@ class LiveHistoryRepository:
         return results[0]["total_members"] if results else 0
 
     async def get_global_history_by_member(
-        self, member_id: str, skip: int = 0, limit: int = 20
+        self,
+        member_id: str,
+        skip: int = 0,
+        limit: int = 20,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
     ) -> List[Dict[str, Any]]:
+        query = self._build_date_query({"member.id": member_id}, start_date, end_date)
         cursor = (
-            self.history_col.find({"member.id": member_id})
-            .sort("start_at", -1)
-            .skip(skip)
-            .limit(limit)
+            self.history_col.find(query).sort("start_at", -1).skip(skip).limit(limit)
         )
         return [doc async for doc in cursor]
 
-    async def get_total_global_history_count_by_member(self, member_id: str) -> int:
-        return await self.history_col.count_documents({"member.id": member_id})
+    async def get_total_global_history_count_by_member(
+        self,
+        member_id: str,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+    ) -> int:
+        query = self._build_date_query({"member.id": member_id}, start_date, end_date)
+        return await self.history_col.count_documents(query)
 
-    async def get_global_member_stats(self, member_id: str) -> Dict[str, Any]:
+    async def get_global_member_stats(
+        self,
+        member_id: str,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+    ) -> Dict[str, Any]:
+        match_stage = self._build_date_query(
+            {"member.id": member_id}, start_date, end_date
+        )
         pipeline = [
-            {"$match": {"member.id": member_id}},
+            {"$match": match_stage},
             {
                 "$group": {
                     "_id": "$platform",
@@ -480,8 +617,11 @@ class LiveHistoryRepository:
             platform_counts[platform] = watches
 
         # Get longest watch
+        longest_watch_query = self._build_date_query(
+            {"member.id": member_id}, start_date, end_date
+        )
         longest_watch_doc = await self.history_col.find_one(
-            {"member.id": member_id}, sort=[("duration", -1)]
+            longest_watch_query, sort=[("duration", -1)]
         )
 
         longest_watch = None

@@ -1,4 +1,5 @@
 import { liveHistoryApi } from '$lib/apis/liveHistory';
+import { liveHistoryFilterStore } from '$lib/stores/liveHistoryFilter.svelte';
 import type {
 	LiveHistory,
 	LiveHistoryStats,
@@ -87,7 +88,15 @@ class LiveHistoryStore {
 			this.error = null;
 			this.currentMemberFilter = memberId;
 
-			const response = await liveHistoryApi.getWatchedHistory(page, 20, memberId);
+			const range = liveHistoryFilterStore.dateRange;
+
+			const response = await liveHistoryApi.getWatchedHistory(
+				page,
+				20,
+				memberId,
+				range?.start,
+				range?.end
+			);
 
 			if (page === 1) {
 				this.list = response.data;
@@ -127,7 +136,9 @@ class LiveHistoryStore {
 			this.isLoading = true;
 			this.error = null;
 
-			const response = await liveHistoryApi.getGlobalHistory(page, 20);
+			const range = liveHistoryFilterStore.dateRange;
+
+			const response = await liveHistoryApi.getGlobalHistory(page, 20, range?.start, range?.end);
 
 			if (page === 1) {
 				this.globalList = response.data;
@@ -155,7 +166,8 @@ class LiveHistoryStore {
 
 	async loadOverallStats() {
 		try {
-			this.overallStats = await liveHistoryApi.getWatchedStats();
+			const range = liveHistoryFilterStore.dateRange;
+			this.overallStats = await liveHistoryApi.getWatchedStats(range?.start, range?.end);
 		} catch (err) {
 			logger.error('Failed to load overall live stats:', err);
 		}
@@ -163,7 +175,8 @@ class LiveHistoryStore {
 
 	async loadMemberStats(memberId: string) {
 		try {
-			const stats = await liveHistoryApi.getWatchedMemberStats(memberId);
+			const range = liveHistoryFilterStore.dateRange;
+			const stats = await liveHistoryApi.getWatchedMemberStats(memberId, range?.start, range?.end);
 			this.memberStats[memberId] = stats;
 		} catch (err) {
 			logger.error(`Failed to load stats for member ${memberId}:`, err);
@@ -186,7 +199,13 @@ class LiveHistoryStore {
 
 		try {
 			this.isLoading = true;
-			const response = await liveHistoryApi.getWatchedLiveMembersRanking(page, 20);
+			const range = liveHistoryFilterStore.dateRange;
+			const response = await liveHistoryApi.getWatchedLiveMembersRanking(
+				page,
+				20,
+				range?.start,
+				range?.end
+			);
 
 			if (page === 1) {
 				this.membersRanking = response.data;
@@ -210,7 +229,8 @@ class LiveHistoryStore {
 	async loadGlobalStats() {
 		try {
 			this.isLoadingGlobalStats = true;
-			this.globalStats = await liveHistoryApi.getGlobalStats();
+			const range = liveHistoryFilterStore.dateRange;
+			this.globalStats = await liveHistoryApi.getGlobalStats(range?.start, range?.end);
 		} catch (err) {
 			logger.error('Failed to load global live stats:', err);
 		} finally {
@@ -234,7 +254,13 @@ class LiveHistoryStore {
 
 		try {
 			this.isLoading = true;
-			const response = await liveHistoryApi.getGlobalMembersRanking(page, 20);
+			const range = liveHistoryFilterStore.dateRange;
+			const response = await liveHistoryApi.getGlobalMembersRanking(
+				page,
+				20,
+				range?.start,
+				range?.end
+			);
 
 			if (page === 1) {
 				this.globalMembersRanking = response.data;
@@ -257,7 +283,8 @@ class LiveHistoryStore {
 
 	async loadGlobalMemberStats(memberId: string) {
 		try {
-			const stats = await liveHistoryApi.getGlobalMemberStats(memberId);
+			const range = liveHistoryFilterStore.dateRange;
+			const stats = await liveHistoryApi.getGlobalMemberStats(memberId, range?.start, range?.end);
 			this.globalMemberStats[memberId] = stats;
 		} catch (err) {
 			logger.error(`Failed to load global stats for member ${memberId}:`, err);
@@ -279,7 +306,14 @@ class LiveHistoryStore {
 
 		try {
 			this.isLoading = true;
-			const response = await liveHistoryApi.getGlobalMemberHistory(memberId, page, 20);
+			const range = liveHistoryFilterStore.dateRange;
+			const response = await liveHistoryApi.getGlobalMemberHistory(
+				memberId,
+				page,
+				20,
+				range?.start,
+				range?.end
+			);
 
 			if (page === 1) {
 				this.globalMemberHistory = response.data;

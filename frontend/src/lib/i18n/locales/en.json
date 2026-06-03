@@ -733,7 +733,12 @@
 		"liveHistory": "Live History",
 		"longestLive": "Longest Live",
 		"totalLivePlatform": "Total Live Platform",
-		"views": "Views"
+		"views": "Views",
+		"thisWeek": "This Week",
+		"thisMonth": "This Month",
+		"thisYear": "This Year",
+		"allTime": "All Time",
+		"customRange": "Custom Range"
 	},
 	"theater": {
 		"title": "Theater",
