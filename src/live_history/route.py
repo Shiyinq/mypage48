@@ -8,6 +8,9 @@ from src.live_history.exceptions import LiveHistoryUpdateError
 from src.live_history.http_exceptions import LiveHistoryUpdateFailed
 from src.live_history.schemas import (
     GlobalLiveHistoryPaginationResponse,
+    GlobalLiveHistoryStatsResponse,
+    GlobalLiveMemberRankingResponse,
+    GlobalSingleMemberLiveHistoryStatsResponse,
     LiveHistoryPaginationResponse,
     LiveHistoryStatsResponse,
     LiveHistoryUpdateRequest,
@@ -84,4 +87,47 @@ async def get_watched_live_members_ranking(
 ):
     return await service.get_watched_live_members_ranking(
         user_id=current_user.userId, page=page, limit=limit
+    )
+
+
+@router.get("/stats", response_model=GlobalLiveHistoryStatsResponse)
+async def get_global_stats(
+    service: LiveHistoryService = Depends(get_live_history_service),
+):
+    """Get global live history statistics."""
+    return await service.get_global_stats()
+
+
+@router.get("/members/ranking", response_model=GlobalLiveMemberRankingResponse)
+async def get_global_members_ranking(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    service: LiveHistoryService = Depends(get_live_history_service),
+):
+    """Get global live members ranking by frequency."""
+    return await service.get_global_members_ranking(page=page, limit=limit)
+
+
+@router.get(
+    "/members/{member_id}/stats",
+    response_model=GlobalSingleMemberLiveHistoryStatsResponse,
+)
+async def get_global_member_stats(
+    member_id: str,
+    service: LiveHistoryService = Depends(get_live_history_service),
+):
+    """Get global live history statistics for a specific member."""
+    return await service.get_global_member_stats(member_id=member_id)
+
+
+@router.get("/members/{member_id}", response_model=GlobalLiveHistoryPaginationResponse)
+async def get_global_member_history(
+    member_id: str,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    service: LiveHistoryService = Depends(get_live_history_service),
+):
+    """Get global live history for a specific member."""
+    return await service.get_global_member_history(
+        member_id=member_id, page=page, limit=limit
     )

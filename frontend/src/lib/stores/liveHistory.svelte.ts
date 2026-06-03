@@ -4,7 +4,10 @@ import type {
 	LiveHistoryStats,
 	MemberLiveHistoryStats,
 	GlobalLiveHistory,
-	WatchedLiveMemberRankingItem
+	WatchedLiveMemberRankingItem,
+	GlobalLiveHistoryStats,
+	GlobalLiveMemberRankingItem,
+	GlobalSingleMemberLiveHistoryStats
 } from '$lib/types/liveHistory';
 import { logger } from '$lib/utils/logger';
 
@@ -15,7 +18,12 @@ class LiveHistoryStore {
 	overallStats = $state<LiveHistoryStats | null>(null);
 	memberStats = $state<Record<string, MemberLiveHistoryStats>>({});
 	membersRanking = $state<WatchedLiveMemberRankingItem[]>([]);
+	globalStats = $state<GlobalLiveHistoryStats | null>(null);
+	globalMembersRanking = $state<GlobalLiveMemberRankingItem[]>([]);
+	globalMemberHistory = $state<GlobalLiveHistory[]>([]);
+	globalMemberStats = $state<Record<string, GlobalSingleMemberLiveHistoryStats>>({});
 	isLoading = $state(false);
+	isLoadingGlobalStats = $state(false);
 	error = $state<string | null>(null);
 	lastUpdated = $state<number>(0);
 
@@ -42,6 +50,21 @@ class LiveHistoryStore {
 		next_page: null as number | null
 	});
 
+	globalRankingPagination = $state({
+		current_page: 1,
+		per_page: 20,
+		total_data: 0,
+		last_page: 1,
+		next_page: null as number | null
+	});
+
+	globalMemberHistoryPagination = $state({
+		page: 1,
+		limit: 20,
+		total: 0,
+		total_pages: 1
+	});
+
 	currentMemberFilter = $state<string | undefined>(undefined);
 
 	async load(page: number = 1, memberId?: string, force: boolean = false) {
@@ -64,7 +87,7 @@ class LiveHistoryStore {
 			this.error = null;
 			this.currentMemberFilter = memberId;
 
-			const response = await liveHistoryApi.getHistory(page, 10, memberId);
+			const response = await liveHistoryApi.getHistory(page, 20, memberId);
 
 			if (page === 1) {
 				this.list = response.data;
@@ -179,6 +202,103 @@ class LiveHistoryStore {
 			this.rankingPagination = response.meta;
 		} catch (err) {
 			logger.error('Failed to load members ranking:', err);
+		} finally {
+			this.isLoading = false;
+		}
+	}
+
+	async loadGlobalStats() {
+		try {
+			this.isLoadingGlobalStats = true;
+			this.globalStats = await liveHistoryApi.getGlobalStats();
+		} catch (err) {
+			logger.error('Failed to load global live stats:', err);
+		} finally {
+			this.isLoadingGlobalStats = false;
+		}
+	}
+
+	async loadGlobalMembersRanking(page: number = 1, force: boolean = false) {
+		if (this.isLoading) return;
+
+		if (force) {
+			this.globalMembersRanking = [];
+			this.globalRankingPagination = {
+				current_page: 1,
+				per_page: 20,
+				total_data: 0,
+				last_page: 1,
+				next_page: null
+			};
+		}
+
+		try {
+			this.isLoading = true;
+			const response = await liveHistoryApi.getGlobalMembersRanking(page, 20);
+
+			if (page === 1) {
+				this.globalMembersRanking = response.data;
+			} else {
+				const newItems = response.data.filter(
+					(newItem) =>
+						!this.globalMembersRanking.some(
+							(existingItem) => existingItem.member_id === newItem.member_id
+						)
+				);
+				this.globalMembersRanking = [...this.globalMembersRanking, ...newItems];
+			}
+			this.globalRankingPagination = response.meta;
+		} catch (err) {
+			logger.error('Failed to load global members ranking:', err);
+		} finally {
+			this.isLoading = false;
+		}
+	}
+
+	async loadGlobalMemberStats(memberId: string) {
+		try {
+			const stats = await liveHistoryApi.getGlobalMemberStats(memberId);
+			this.globalMemberStats[memberId] = stats;
+		} catch (err) {
+			logger.error(`Failed to load global stats for member ${memberId}:`, err);
+		}
+	}
+
+	async loadGlobalMemberHistory(memberId: string, page: number = 1, force: boolean = false) {
+		if (this.isLoading) return;
+
+		if (force) {
+			this.globalMemberHistory = [];
+			this.globalMemberHistoryPagination = {
+				page: 1,
+				limit: 20,
+				total: 0,
+				total_pages: 1
+			};
+		}
+
+		try {
+			this.isLoading = true;
+			const response = await liveHistoryApi.getGlobalMemberHistory(memberId, page, 20);
+
+			if (page === 1) {
+				this.globalMemberHistory = response.data;
+			} else {
+				const newItems = response.data.filter(
+					(newItem) =>
+						!this.globalMemberHistory.some((existingItem) => existingItem._id === newItem._id)
+				);
+				this.globalMemberHistory = [...this.globalMemberHistory, ...newItems];
+			}
+
+			this.globalMemberHistoryPagination = {
+				page: response.page,
+				limit: response.limit,
+				total: response.total,
+				total_pages: response.total_pages
+			};
+		} catch (err) {
+			logger.error('Failed to load global member history:', err);
 		} finally {
 			this.isLoading = false;
 		}

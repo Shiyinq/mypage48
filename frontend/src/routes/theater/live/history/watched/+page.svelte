@@ -170,22 +170,22 @@
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-32 relative z-10">
 			<!-- Overall Stats -->
 			{#if overallStats}
-				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
 					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
 					>
 						<div
-							class="w-12 h-12 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center shrink-0"
+							class="w-11 h-11 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center shrink-0"
 						>
-							<PlaySquare size={24} />
+							<PlaySquare size={22} />
 						</div>
 						<div class="min-w-0">
 							<p
-								class="text-sm text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
+								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
 							>
 								{t('liveHistory.totalWatches')}
 							</p>
-							<p class="text-xl sm:text-2xl font-black truncate">
+							<p class="text-xl font-black truncate">
 								{totalWatches}
 								{t('liveHistory.times')}
 							</p>
@@ -193,56 +193,56 @@
 					</div>
 
 					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
 					>
 						<div
-							class="w-12 h-12 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center shrink-0"
+							class="w-11 h-11 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center shrink-0"
 						>
-							<Clock size={24} />
+							<Clock size={22} />
 						</div>
 						<div class="min-w-0">
 							<p
-								class="text-sm text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
+								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
 							>
 								{t('liveHistory.totalDuration')}
 							</p>
-							<p class="text-xl sm:text-2xl font-black truncate">
+							<p class="text-xl font-black truncate">
 								{formatDuration(overallStats.total_duration)}
 							</p>
 						</div>
 					</div>
 
 					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
 					>
 						<div
-							class="w-12 h-12 bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center shrink-0"
+							class="w-11 h-11 bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center shrink-0"
 						>
-							<Users size={24} />
+							<Users size={22} />
 						</div>
 						<div class="min-w-0">
 							<p
-								class="text-sm text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
+								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
 							>
 								{t('liveHistory.membersWatched')}
 							</p>
-							<p class="text-xl sm:text-2xl font-black truncate">
+							<p class="text-xl font-black truncate">
 								{Object.keys(overallStats.member_counts).length}
 							</p>
 						</div>
 					</div>
 
 					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
 					>
 						<div
-							class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shrink-0"
+							class="w-11 h-11 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shrink-0"
 						>
-							<Smartphone size={24} />
+							<Smartphone size={22} />
 						</div>
 						<div class="min-w-0">
 							<p
-								class="text-sm text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
+								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
 							>
 								{t('liveHistory.platformWatches')}
 							</p>
@@ -260,22 +260,22 @@
 
 					<a
 						href="/theater/live/history/watched/members"
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:border-purple-500/50 hover:-translate-y-1 transition-all duration-300 min-w-0 sm:col-span-1 lg:col-span-2 group"
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:border-purple-500/50 hover:-translate-y-1 transition-all duration-300 min-w-0 sm:col-span-1 lg:col-span-2 group"
 					>
 						<div
-							class="w-12 h-12 bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
+							class="w-11 h-11 bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
 						>
-							<Trophy size={24} />
+							<Trophy size={22} />
 						</div>
 						<div class="min-w-0 flex-1">
 							<p
-								class="text-sm text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
+								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
 							>
 								{t('liveHistory.mostFrequent')}
 							</p>
 							<div class="flex items-baseline gap-1.5 truncate">
 								<p
-									class="text-xl sm:text-2xl font-black truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors"
+									class="text-xl font-black truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors"
 								>
 									{topMemberName}
 								</p>
@@ -293,20 +293,20 @@
 					</a>
 
 					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0 sm:col-span-1 lg:col-span-2"
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0 sm:col-span-1 lg:col-span-2"
 					>
 						<div
-							class="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center shrink-0"
+							class="w-11 h-11 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center shrink-0"
 						>
-							<Activity size={24} />
+							<Activity size={22} />
 						</div>
 						<div class="min-w-0">
 							<p
-								class="text-sm text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
+								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
 							>
 								{t('liveHistory.longestWatch')}
 							</p>
-							<p class="text-xl sm:text-2xl font-black truncate">
+							<p class="text-xl font-black truncate">
 								{overallStats.longest_watch
 									? formatDuration(overallStats.longest_watch.duration)
 									: '-'}

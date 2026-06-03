@@ -1346,6 +1346,17 @@
 		"globalButtonSubtitle": "すべてのライブ",
 		"globalButton": "ライブ履歴",
 		"rankingTitle": "メンバーランキング",
-		"rankingSubtitle": "あなたが最もよく見るメンバー"
+		"rankingSubtitle": "あなたが最もよく見るメンバー",
+		"globalStatsTitle": "ライブ統計",
+		"totalLives": "ライブ合計",
+		"uniqueMembers": "ユニークメンバー",
+		"mostFrequentLive": "最多ライブ",
+		"highestViews": "最高視聴数",
+		"globalRankingTitle": "ライブメンバーランキング",
+		"globalRankingSubtitle": "最もライブが多いメンバー",
+		"liveHistory": "ライブ履歴",
+		"longestLive": "最長ライブ",
+		"totalLivePlatform": "総ライブプラットフォーム",
+		"views": "視聴"
 	}
 }

@@ -323,3 +323,181 @@ class LiveHistoryRepository:
         ]
         cursor = self.watched_col.aggregate(pipeline)
         return [doc async for doc in cursor]
+
+    async def get_global_overall_stats(self) -> Dict[str, Any]:
+        # unique_members_count
+        unique_members_pipeline = [
+            {"$group": {"_id": "$member.id"}},
+            {"$count": "count"},
+        ]
+        um_cursor = self.history_col.aggregate(unique_members_pipeline)
+        um_results = [doc async for doc in um_cursor]
+        unique_members_count = um_results[0]["count"] if um_results else 0
+
+        # platform counts
+        platform_pipeline = [{"$group": {"_id": "$platform", "count": {"$sum": 1}}}]
+        platform_cursor = self.history_col.aggregate(platform_pipeline)
+        platform_counts = {doc["_id"]: doc["count"] async for doc in platform_cursor}
+
+        # total duration and total lives
+        totals_pipeline = [
+            {
+                "$group": {
+                    "_id": None,
+                    "total_duration": {"$sum": "$duration"},
+                    "total_lives": {"$sum": 1},
+                }
+            }
+        ]
+        totals_cursor = self.history_col.aggregate(totals_pipeline)
+        totals_results = [doc async for doc in totals_cursor]
+        total_duration = totals_results[0]["total_duration"] if totals_results else 0
+        total_lives = totals_results[0]["total_lives"] if totals_results else 0
+
+        # top member by frequency
+        top_member_pipeline = [
+            {
+                "$group": {
+                    "_id": "$member.id",
+                    "member_name": {"$first": "$member.name"},
+                    "total_watches": {"$sum": 1},
+                    "total_duration": {"$sum": "$duration"},
+                }
+            },
+            {"$sort": {"total_watches": -1, "total_duration": -1, "member_name": 1}},
+            {"$limit": 1},
+        ]
+        tm_cursor = self.history_col.aggregate(top_member_pipeline)
+        tm_results = [doc async for doc in tm_cursor]
+
+        top_member_id = tm_results[0]["_id"] if tm_results else None
+        top_member_name = tm_results[0]["member_name"] if tm_results else None
+        top_member_watches = tm_results[0]["total_watches"] if tm_results else 0
+        top_member_duration = tm_results[0]["total_duration"] if tm_results else 0
+
+        # highest view live
+        highest_view_doc = await self.history_col.find_one({}, sort=[("view_num", -1)])
+        highest_view_live = None
+        if highest_view_doc:
+            highest_view_live = {
+                "duration": highest_view_doc.get(
+                    "view_num", 0
+                ),  # re-using duration field for view_num count
+                "live_title": highest_view_doc.get("title"),
+                "platform": highest_view_doc.get("platform"),
+                "started_at": highest_view_doc.get("start_at"),
+                "member_name": highest_view_doc.get("member", {}).get("name"),
+            }
+
+        return {
+            "total_lives": total_lives,
+            "total_duration": total_duration,
+            "unique_members_count": unique_members_count,
+            "top_member_id": top_member_id,
+            "top_member_name": top_member_name,
+            "top_member_watches": top_member_watches,
+            "top_member_duration": top_member_duration,
+            "platform_counts": platform_counts,
+            "highest_view_live": highest_view_live,
+        }
+
+    async def get_global_live_members_ranking(
+        self, skip: int = 0, limit: int = 20
+    ) -> List[Dict[str, Any]]:
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$member.id",
+                    "member_name": {"$first": "$member.name"},
+                    "total_duration": {"$sum": "$duration"},
+                    "total_watches": {"$sum": 1},
+                }
+            },
+            {"$sort": {"total_watches": -1, "total_duration": -1, "member_name": 1}},
+            {
+                "$project": {
+                    "_id": 0,
+                    "member_id": "$_id",
+                    "member_name": 1,
+                    "total_duration": 1,
+                    "total_watches": 1,
+                }
+            },
+            {"$skip": skip},
+            {"$limit": limit},
+        ]
+        cursor = self.history_col.aggregate(pipeline)
+        return [doc async for doc in cursor]
+
+    async def get_total_global_live_members_count(self) -> int:
+        pipeline = [
+            {"$group": {"_id": "$member.id"}},
+            {"$count": "total_members"},
+        ]
+        cursor = self.history_col.aggregate(pipeline)
+        results = [doc async for doc in cursor]
+        return results[0]["total_members"] if results else 0
+
+    async def get_global_history_by_member(
+        self, member_id: str, skip: int = 0, limit: int = 20
+    ) -> List[Dict[str, Any]]:
+        cursor = (
+            self.history_col.find({"member.id": member_id})
+            .sort("start_at", -1)
+            .skip(skip)
+            .limit(limit)
+        )
+        return [doc async for doc in cursor]
+
+    async def get_total_global_history_count_by_member(self, member_id: str) -> int:
+        return await self.history_col.count_documents({"member.id": member_id})
+
+    async def get_global_member_stats(self, member_id: str) -> Dict[str, Any]:
+        pipeline = [
+            {"$match": {"member.id": member_id}},
+            {
+                "$group": {
+                    "_id": "$platform",
+                    "total_duration": {"$sum": "$duration"},
+                    "watches": {"$sum": 1},
+                }
+            },
+        ]
+
+        cursor = self.history_col.aggregate(pipeline)
+
+        total_duration = 0
+        total_watches = 0
+        platform_counts = {}
+
+        async for doc in cursor:
+            platform = doc["_id"]
+            duration = doc["total_duration"]
+            watches = doc["watches"]
+
+            total_duration += duration
+            total_watches += watches
+            platform_counts[platform] = watches
+
+        # Get longest watch
+        longest_watch_doc = await self.history_col.find_one(
+            {"member.id": member_id}, sort=[("duration", -1)]
+        )
+
+        longest_watch = None
+        if longest_watch_doc:
+            longest_watch = {
+                "duration": longest_watch_doc.get("duration", 0),
+                "live_title": longest_watch_doc.get("title"),
+                "platform": longest_watch_doc.get("platform"),
+                "started_at": longest_watch_doc.get("start_at"),
+                "member_name": longest_watch_doc.get("member", {}).get("name"),
+            }
+
+        return {
+            "member_id": member_id,
+            "total_duration": total_duration,
+            "total_lives": total_watches,
+            "platform_counts": platform_counts,
+            "longest_live": longest_watch,
+        }

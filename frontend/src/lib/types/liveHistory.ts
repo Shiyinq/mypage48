@@ -49,6 +49,14 @@ export interface MemberLiveHistoryStats {
 	longest_watch?: LongestWatchInfo | null;
 }
 
+export interface GlobalSingleMemberLiveHistoryStats {
+	member_id: string;
+	total_lives: number;
+	total_duration: number;
+	platform_counts?: Record<string, number>;
+	longest_live?: LongestWatchInfo | null;
+}
+
 export interface LiveHistoryResponse {
 	data: LiveHistory[];
 	meta: {
@@ -97,6 +105,36 @@ export interface WatchedLiveMemberRankingItem {
 
 export interface WatchedLiveMemberRankingResponse {
 	data: WatchedLiveMemberRankingItem[];
+	meta: {
+		current_page: number;
+		last_page: number;
+		total_data: number;
+		per_page: number;
+		next_page: number | null;
+	};
+}
+
+export interface GlobalLiveHistoryStats {
+	total_lives: number;
+	total_duration: number;
+	unique_members_count: number;
+	top_member_id: string | null;
+	top_member_name: string | null;
+	top_member_watches: number;
+	top_member_duration: number;
+	platform_counts: Record<string, number>;
+	highest_view_live?: LongestWatchInfo | null;
+}
+
+export interface GlobalLiveMemberRankingItem {
+	member_id: string;
+	member_name?: string;
+	total_watches: number;
+	total_duration: number;
+}
+
+export interface GlobalLiveMemberRankingResponse {
+	data: GlobalLiveMemberRankingItem[];
 	meta: {
 		current_page: number;
 		last_page: number;
