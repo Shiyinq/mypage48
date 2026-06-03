@@ -12,8 +12,6 @@
 	import { spring } from 'svelte/motion';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 	import { membersStore } from '$lib/stores/theater.svelte';
-	import { getExternalMediaUrl } from '$lib/utils/media';
-	import { OptimizedImage } from '$lib/components/common';
 
 	let memberId = $derived($page.params.member_id as string);
 	let mounted = $state(false);
@@ -28,16 +26,6 @@
 	let isLoading = $derived(liveHistoryStore.isLoading);
 	let hasMore = $derived(pagination.current_page < pagination.last_page);
 	let memberName = $derived(list.length > 0 ? list[0].member_name : memberId);
-	let memberInfo = $derived(
-		membersStore.list.find(
-			(m) =>
-				String(m.id) === String(memberId) ||
-				m.name === memberName ||
-				m.nickname === memberName ||
-				(m.socials?.idn_app && String(memberId).includes(m.socials.idn_app)) ||
-				(m.socials?.showroom && String(memberId) === String(m.socials.showroom))
-		)
-	);
 
 	onMount(() => {
 		mounted = true;
