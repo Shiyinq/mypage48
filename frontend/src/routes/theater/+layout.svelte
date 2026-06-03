@@ -146,9 +146,11 @@
 </script>
 
 <div
-	class="{isLiveDetailPage || isNewsDetailPage || isDetailPage || isImmersive.value
+	class="{isLiveDetailPage || isImmersive.value
 		? 'max-w-none w-full'
-		: 'max-w-6xl'} mx-auto {isLiveDetailPage || isImmersive.value
+		: isNewsDetailPage || isDetailPage
+			? 'max-w-5xl w-full'
+			: 'max-w-6xl'} mx-auto {isLiveDetailPage || isImmersive.value
 		? 'pt-0 sm:pt-0 px-0'
 		: 'pt-4 sm:pt-6 px-4'} {isImmersive.value ? 'pb-0' : 'pb-24'}"
 >
