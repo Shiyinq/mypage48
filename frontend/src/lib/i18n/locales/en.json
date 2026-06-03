@@ -702,8 +702,8 @@
 		"top": "Top"
 	},
 	"liveHistory": {
-		"title": "Live Watch History",
-		"subtitle": "Your JKT48 member live watch history",
+		"title": "Watch History",
+		"subtitle": "Your live watch history",
 		"totalWatches": "Total Watches",
 		"totalDuration": "Total Duration",
 		"membersWatched": "Members Watched",
@@ -717,9 +717,9 @@
 		"platformWatches": "Platform Watches",
 		"viewHistory": "Watch History",
 		"watchedFor": "Watched for",
-		"globalTitle": "All Live History",
-		"globalSubtitle": "Archive of all recorded JKT48 member lives",
-		"globalButtonSubtitle": "All History",
+		"globalTitle": "Live History",
+		"globalSubtitle": "History of all recorded lives",
+		"globalButtonSubtitle": "All Lives",
 		"globalButton": "Live History"
 	},
 	"theater": {
