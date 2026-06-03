@@ -1,18 +1,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
-	import { History, ChevronLeft, Tv, Trophy, Clock, ChevronRight } from 'lucide-svelte';
+	import { History, ChevronLeft, Trophy } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
-	import { goto } from '$app/navigation';
 	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { spring } from 'svelte/motion';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 	import { membersStore } from '$lib/stores/theater.svelte';
-	import { getExternalMediaUrl } from '$lib/utils/media';
-	import { OptimizedImage } from '$lib/components/common';
 	import { EmptyState } from '$lib/components';
+	import LiveRankingCard from '$lib/components/live/history/shared/LiveRankingCard.svelte';
+
+	const basePath = '/theater/live/history/members';
 
 	let scrollY = $state(0);
 	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
@@ -45,16 +45,7 @@
 		loadRanking(pagination.current_page + 1);
 	}
 
-	function formatDuration(seconds: number) {
-		const h = Math.floor(seconds / 3600);
-		const m = Math.floor((seconds % 3600) / 60);
-		const s = Math.floor(seconds % 60);
-		if (h > 0) return `${h}h ${m}m ${s}s`;
-		if (m > 0) return `${m}m ${s}s`;
-		return `${s}s`;
-	}
-
-	function getMemberImage(memberId: string, memberName?: string) {
+	function getMemberImageStr(memberId: string, memberName?: string) {
 		const member = membersStore.list.find(
 			(m) =>
 				String(m.id) === String(memberId) ||
@@ -63,11 +54,11 @@
 				(m.socials?.idn_app && String(memberId).includes(m.socials.idn_app)) ||
 				(m.socials?.showroom && String(memberId) === String(m.socials.showroom))
 		);
-		return member?.img;
+		return member?.img || '';
 	}
 </script>
 
-<SEO title={t('liveHistory.globalRankingTitle')} path="/theater/live/history/members" />
+<SEO title={t('liveHistory.globalRankingTitle')} path={basePath} />
 
 <div
 	role="presentation"
@@ -75,9 +66,7 @@
 	onmousemove={(e) => {
 		const { clientX, clientY } = e;
 		const { innerWidth, innerHeight } = window;
-		const x = clientX / innerWidth - 0.5;
-		const y = clientY / innerHeight - 0.5;
-		mouse.set({ x, y });
+		mouse.set({ x: clientX / innerWidth - 0.5, y: clientY / innerHeight - 0.5 });
 	}}
 >
 	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
@@ -137,67 +126,14 @@
 			{:else}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each rankingList as item, index}
-						<button
-							class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex items-center gap-4 hover:border-purple-500/50 hover:shadow-lg transition-all text-left cursor-pointer w-full group overflow-hidden relative"
-							onclick={() => goto(`/theater/live/history/members/${item.member_id}`)}
-						>
-							<!-- Rank Number -->
-							<div
-								class="flex-shrink-0 w-8 flex items-center justify-center font-black text-xl
-								{index === 0
-									? 'text-yellow-500 drop-shadow-sm'
-									: index === 1
-										? 'text-gray-400 drop-shadow-sm'
-										: index === 2
-											? 'text-amber-700 drop-shadow-sm'
-											: 'text-zinc-300 dark:text-zinc-700'}"
-							>
-								#{index + 1}
-							</div>
-
-							<!-- Member Image -->
-							<div
-								class="w-16 h-20 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden shadow-sm border border-zinc-200 dark:border-zinc-700 group-hover:border-purple-200 dark:group-hover:border-purple-800 transition-colors"
-							>
-								{#if getMemberImage(item.member_id, item.member_name)}
-									<OptimizedImage
-										src={getExternalMediaUrl(
-											getMemberImage(item.member_id, item.member_name) || ''
-										)}
-										alt={item.member_name || item.member_id}
-										class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-									/>
-								{:else}
-									<Tv size={24} class="text-zinc-400" />
-								{/if}
-							</div>
-
-							<!-- Info -->
-							<div class="flex-1 min-w-0 py-1">
-								<h3
-									class="font-black text-base text-slate-900 dark:text-white truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors"
-								>
-									{item.member_name || item.member_id}
-								</h3>
-
-								<div class="flex flex-col gap-1 mt-1.5">
-									<div class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-										<Tv size={12} class={index < 3 ? 'text-red-500' : ''} />
-										<span class="font-bold {index < 3 ? 'text-red-600 dark:text-red-400' : ''}"
-											>{item.total_watches} {t('liveHistory.times')}</span
-										>
-									</div>
-									<div class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-										<Clock size={12} class={index < 3 ? 'text-amber-500' : ''} />
-										<span class="font-medium">{formatDuration(item.total_duration)}</span>
-									</div>
-								</div>
-							</div>
-							<ChevronRight
-								size={20}
-								class="text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2"
-							/>
-						</button>
+						<LiveRankingCard
+							{item}
+							{index}
+							href={`${basePath}/${item.member_id}`}
+							mode="global"
+							memberImage={getMemberImageStr(item.member_id, item.member_name)}
+							timesLabel={t('liveHistory.times')}
+						/>
 					{/each}
 				</div>
 

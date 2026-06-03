@@ -70,11 +70,16 @@
 	</div>
 {:else}
 	{#if (multiviewHref || historyHref) && liveList.length > 0}
-		<div class="flex justify-end gap-3 mb-4 {isTheater ? 'hidden sm:flex px-0' : 'px-4'}" in:fade>
+		<div
+			class="flex flex-col sm:flex-row justify-end items-center gap-3 mb-4 w-full sm:w-auto {isTheater
+				? 'hidden sm:flex px-0'
+				: 'px-4'}"
+			in:fade
+		>
 			{#if multiviewHref}
 				<a
 					href={multiviewHref}
-					class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
+					class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden sm:w-auto"
 				>
 					<div
 						class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
@@ -103,7 +108,7 @@
 			{#if globalHistoryHref}
 				<a
 					href={globalHistoryHref}
-					class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
+					class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden sm:w-auto"
 				>
 					<div
 						class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
@@ -127,7 +132,7 @@
 			{#if historyHref}
 				<a
 					href={historyHref}
-					class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
+					class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden sm:w-auto"
 				>
 					<div
 						class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"

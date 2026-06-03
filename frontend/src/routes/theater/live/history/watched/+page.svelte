@@ -11,20 +11,18 @@
 		Trophy,
 		Activity,
 		Smartphone,
-		Users,
-		ChevronRight
+		Users
 	} from 'lucide-svelte';
+	import LiveStatCard from '$lib/components/live/history/shared/LiveStatCard.svelte';
+	import LiveHistoryItemCard from '$lib/components/live/history/shared/LiveHistoryItemCard.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
-	import { goto } from '$app/navigation';
 	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { spring } from 'svelte/motion';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 	import { membersStore } from '$lib/stores/theater.svelte';
-	import { getExternalMediaUrl } from '$lib/utils/media';
-	import { OptimizedImage } from '$lib/components/common';
 	import type { LiveHistory } from '$lib/types/liveHistory';
 
 	let mounted = $state(false);
@@ -112,7 +110,7 @@
 		}).format(parseUTCDate(dateStr));
 	}
 
-	function getMemberImage(item: LiveHistory) {
+	function getMemberImageStr(item: LiveHistory) {
 		const member = membersStore.list.find(
 			(m) =>
 				String(m.id) === String(item.member_id) ||
@@ -121,7 +119,7 @@
 				(m.socials?.idn_app && String(item.member_id).includes(m.socials.idn_app)) ||
 				(m.socials?.showroom && String(item.member_id) === String(m.socials.showroom))
 		);
-		return member?.img;
+		return member?.img || '';
 	}
 </script>
 
@@ -173,81 +171,29 @@
 			<!-- Overall Stats -->
 			{#if overallStats}
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
-					>
-						<div
-							class="w-11 h-11 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center shrink-0"
-						>
-							<PlaySquare size={22} />
-						</div>
-						<div class="min-w-0">
-							<p
-								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
-							>
-								{t('liveHistory.totalWatches')}
-							</p>
-							<p class="text-xl font-black truncate">
-								{totalWatches}
-								{t('liveHistory.times')}
-							</p>
-						</div>
-					</div>
+					<LiveStatCard
+						title={t('liveHistory.totalWatches')}
+						value={`${totalWatches} ${t('liveHistory.times')}`}
+						icon={PlaySquare}
+						color="red"
+					/>
 
-					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
-					>
-						<div
-							class="w-11 h-11 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center shrink-0"
-						>
-							<Clock size={22} />
-						</div>
-						<div class="min-w-0">
-							<p
-								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
-							>
-								{t('liveHistory.totalDuration')}
-							</p>
-							<p class="text-xl font-black truncate">
-								{formatDuration(overallStats.total_duration)}
-							</p>
-						</div>
-					</div>
+					<LiveStatCard
+						title={t('liveHistory.totalDuration')}
+						value={formatDuration(overallStats.total_duration)}
+						icon={Clock}
+						color="amber"
+					/>
 
-					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
-					>
-						<div
-							class="w-11 h-11 bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center shrink-0"
-						>
-							<Users size={22} />
-						</div>
-						<div class="min-w-0">
-							<p
-								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
-							>
-								{t('liveHistory.membersWatched')}
-							</p>
-							<p class="text-xl font-black truncate">
-								{Object.keys(overallStats.member_counts).length}
-							</p>
-						</div>
-					</div>
+					<LiveStatCard
+						title={t('liveHistory.membersWatched')}
+						value={Object.keys(overallStats.member_counts).length}
+						icon={Users}
+						color="pink"
+					/>
 
-					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
-					>
-						<div
-							class="w-11 h-11 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shrink-0"
-						>
-							<Smartphone size={22} />
-						</div>
-						<div class="min-w-0">
-							<p
-								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
-							>
-								{t('liveHistory.platformWatches')}
-							</p>
+					<LiveStatCard title={t('liveHistory.platformWatches')} icon={Smartphone} color="blue">
+						{#snippet subtitle()}
 							<div class="flex items-center gap-3 flex-wrap mt-1">
 								{#each Object.entries(overallStats.platform_counts || {}) as [platform, count]}
 									<div class="flex items-center gap-1.5">
@@ -257,62 +203,36 @@
 									</div>
 								{/each}
 							</div>
-						</div>
-					</div>
+						{/snippet}
+					</LiveStatCard>
 
-					<a
+					<LiveStatCard
+						title={t('liveHistory.mostFrequent')}
+						value={topMemberName}
+						icon={Trophy}
+						color="purple"
 						href="/theater/live/history/watched/members"
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:border-purple-500/50 hover:-translate-y-1 transition-all duration-300 min-w-0 sm:col-span-1 lg:col-span-2 group"
+						class="sm:col-span-1 lg:col-span-2"
 					>
-						<div
-							class="w-11 h-11 bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
-						>
-							<Trophy size={22} />
-						</div>
-						<div class="min-w-0 flex-1">
-							<p
-								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
-							>
-								{t('liveHistory.mostFrequent')}
-							</p>
-							<div class="flex items-baseline gap-1.5 truncate">
-								<p
-									class="text-xl font-black truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors"
+						{#snippet subtitle()}
+							{#if topMemberCount > 0}
+								<span class="text-xs font-bold text-purple-600 dark:text-purple-400 shrink-0"
+									>({topMemberCount}x)</span
 								>
-									{topMemberName}
-								</p>
-								{#if topMemberCount > 0}
-									<span class="text-xs font-bold text-purple-600 dark:text-purple-400 shrink-0"
-										>({topMemberCount}x)</span
-									>
-								{/if}
-							</div>
-						</div>
-						<ChevronRight
-							size={20}
-							class="text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2"
-						/>
-					</a>
+							{/if}
+						{/snippet}
+					</LiveStatCard>
 
-					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0 sm:col-span-1 lg:col-span-2"
+					<LiveStatCard
+						title={t('liveHistory.longestWatch')}
+						value={overallStats.longest_watch
+							? formatDuration(overallStats.longest_watch.duration)
+							: '-'}
+						icon={Activity}
+						color="emerald"
+						class="sm:col-span-1 lg:col-span-2"
 					>
-						<div
-							class="w-11 h-11 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center shrink-0"
-						>
-							<Activity size={22} />
-						</div>
-						<div class="min-w-0">
-							<p
-								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
-							>
-								{t('liveHistory.longestWatch')}
-							</p>
-							<p class="text-xl font-black truncate">
-								{overallStats.longest_watch
-									? formatDuration(overallStats.longest_watch.duration)
-									: '-'}
-							</p>
+						{#snippet subtitle()}
 							{#if overallStats.longest_watch}
 								<div class="flex items-center gap-1.5 mt-0.5 min-w-0">
 									{#if overallStats.longest_watch.member_name}
@@ -343,8 +263,8 @@
 									{/if}
 								</div>
 							{/if}
-						</div>
-					</div>
+						{/snippet}
+					</LiveStatCard>
 				</div>
 			{/if}
 
@@ -387,66 +307,19 @@
 			{:else}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each list as item (item._id)}
-						<button
-							class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col gap-3 hover:border-red-500/50 hover:shadow-lg transition-all text-left cursor-pointer w-full"
-							onclick={() => goto(`/theater/live/history/watched/${item.member_id}`)}
-						>
-							<div class="flex items-center justify-between">
-								<div class="flex flex-col">
-									<span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-										{formatDate(item.last_updated_at)}
-									</span>
-								</div>
-								<PlatformLogo platform={item.platform} size="sm" />
-							</div>
-
-							<div class="flex items-center justify-between mt-2">
-								<div class="flex items-center gap-3">
-									<div
-										class="w-12 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden shadow-sm"
-									>
-										{#if getMemberImage(item)}
-											<OptimizedImage
-												src={getExternalMediaUrl(getMemberImage(item) || '')}
-												alt={item.member_name}
-												class="w-full h-full object-cover"
-											/>
-										{:else}
-											<Tv size={20} class="text-red-500" />
-										{/if}
-									</div>
-									<div class="flex flex-col">
-										<span class="text-lg font-black">{item.member_name}</span>
-										{#if item.live_title}
-											<span
-												class="text-sm font-medium text-zinc-600 dark:text-zinc-300 line-clamp-1"
-												>{item.live_title}</span
-											>
-										{/if}
-									</div>
-								</div>
-								<ChevronRight size={20} class="text-zinc-400 shrink-0 ml-2" />
-							</div>
-
-							<div
-								class="mt-auto pt-2 flex items-center justify-between border-t border-gray-100 dark:border-zinc-800"
-							>
-								<div
-									class="flex items-center gap-1.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-1 rounded-md"
-								>
-									<Clock size={14} />
-									<div class="flex items-center gap-1 text-xs">
-										<span class="font-medium opacity-70">{t('liveHistory.watchedFor')}</span>
-										<span class="font-bold">{formatDuration(item.duration)}</span>
-									</div>
-								</div>
-								<span class="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-									{parseUTCDate(item.last_updated_at).toLocaleTimeString(
-										locale.value === 'en' ? 'en-US' : locale.value === 'ja' ? 'ja-JP' : 'id-ID'
-									)}
-								</span>
-							</div>
-						</button>
+						<LiveHistoryItemCard
+							href={`/theater/live/history/watched/${item.member_id}`}
+							mode="watched"
+							memberImage={getMemberImageStr(item)}
+							memberName={item.member_name}
+							liveTitle={item.live_title}
+							platform={item.platform}
+							dateStr={formatDate(item.last_updated_at)}
+							timeStr={parseUTCDate(item.last_updated_at).toLocaleTimeString(
+								locale.value === 'en' ? 'en-US' : locale.value === 'ja' ? 'ja-JP' : 'id-ID'
+							)}
+							duration={item.duration}
+						/>
 					{/each}
 				</div>
 
