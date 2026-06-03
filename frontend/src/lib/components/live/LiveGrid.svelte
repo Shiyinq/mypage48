@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { Tv, Users } from 'lucide-svelte';
+	import { Tv, Users, Globe, History } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveStatus } from '$lib/types';
 	import LiveCard from './LiveCard.svelte';
@@ -14,7 +14,9 @@
 		variant?: 'default' | 'theater';
 		/** When set, show a multiview shortcut button above the grid */
 		multiviewHref?: string;
-		/** When set, show a live history shortcut button above the grid */
+		/** When set, show a global live history shortcut button above the grid */
+		globalHistoryHref?: string;
+		/** When set, show a personal live history shortcut button above the grid */
 		historyHref?: string;
 	}
 
@@ -24,6 +26,7 @@
 		initialLoading = false,
 		variant = 'default',
 		multiviewHref = '',
+		globalHistoryHref = '',
 		historyHref = ''
 	}: Props = $props();
 
@@ -97,6 +100,30 @@
 					</div>
 				</a>
 			{/if}
+			{#if globalHistoryHref}
+				<a
+					href={globalHistoryHref}
+					class="group relative flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
+				>
+					<div
+						class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
+					></div>
+					<div
+						class="w-7 h-7 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300"
+					>
+						<Globe size={16} />
+					</div>
+					<div class="flex flex-col items-start leading-none gap-0.5">
+						<span
+							class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors"
+							>{t('liveHistory.globalButtonSubtitle') || 'Global Archive'}</span
+						>
+						<span class="text-xs font-black tracking-tight text-slate-900 dark:text-white"
+							>{t('liveHistory.globalButton') || 'Live History'}</span
+						>
+					</div>
+				</a>
+			{/if}
 			{#if historyHref}
 				<a
 					href={historyHref}
@@ -108,7 +135,7 @@
 					<div
 						class="w-7 h-7 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300"
 					>
-						<Tv size={16} />
+						<History size={16} />
 					</div>
 					<div class="flex flex-col items-start leading-none gap-0.5">
 						<span

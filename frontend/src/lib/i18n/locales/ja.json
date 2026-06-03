@@ -1327,6 +1327,10 @@
 		"longestWatch": "最長視聴",
 		"platformWatches": "視聴プラットフォーム",
 		"viewHistory": "視聴履歴",
-		"watchedFor": "視聴時間"
+		"watchedFor": "視聴時間",
+		"globalTitle": "全ライブ履歴",
+		"globalSubtitle": "記録されたすべてのJKT48メンバーライブのアーカイブ",
+		"globalButtonSubtitle": "すべての履歴",
+		"globalButton": "ライブ履歴"
 	}
 }

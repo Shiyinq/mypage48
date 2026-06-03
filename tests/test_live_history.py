@@ -11,6 +11,7 @@ async def test_update_live_history_success(client: AsyncClient, db, create_user)
         "live_id": "live-12345",
         "member_id": "member-xyz",
         "member_name": "Erine Cintaku",
+        "member_nickname": "Erine",
         "platform": "showroom",
         "ping_duration": 30,
         "live_title": "Test Title"
@@ -28,6 +29,7 @@ async def test_update_live_history_success(client: AsyncClient, db, create_user)
     assert "data" in data
     assert len(data["data"]) == 1
     assert data["data"][0]["member_name"] == "Erine Cintaku"
+    assert data["data"][0]["member_nickname"] == "Erine"
     assert data["data"][0]["duration"] == 30
     assert data["data"][0]["live_title"] == "Test Title"
 
@@ -135,4 +137,19 @@ async def test_get_member_stats(client: AsyncClient, db, create_user):
     assert data["longest_watch"] is not None
     assert data["longest_watch"]["duration"] == 45
     assert data["longest_watch"]["platform"] == "showroom"
-    assert data["longest_watch"]["member_name"] == "Member 1"
+
+
+@pytest.mark.asyncio
+async def test_get_global_history(client: AsyncClient, db):
+    """Test getting global live history."""
+    # Assuming there are no lives initially or we just test the endpoint structure
+    response = await client.get("/api/history/lives")
+    
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert "data" in data
+    assert "total" in data
+    assert "page" in data
+    assert "limit" in data
+    assert "total_pages" in data

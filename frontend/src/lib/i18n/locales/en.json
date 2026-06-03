@@ -708,7 +708,11 @@
 		"longestWatch": "Longest Watch",
 		"platformWatches": "Platform Watches",
 		"viewHistory": "Watch History",
-		"watchedFor": "Watched for"
+		"watchedFor": "Watched for",
+		"globalTitle": "All Live History",
+		"globalSubtitle": "Archive of all recorded JKT48 member lives",
+		"globalButtonSubtitle": "All History",
+		"globalButton": "Live History"
 	},
 	"theater": {
 		"title": "Theater",

@@ -59,3 +59,31 @@ export interface LiveHistoryResponse {
 		next_page: number | null;
 	};
 }
+
+export interface GlobalLiveHistory {
+	_id: string;
+	live_id: string;
+	platform: string;
+	title?: string;
+	image?: string;
+	view_num: number;
+	start_at: string;
+	end_at?: string;
+	last_seen_at: string;
+	status: string;
+	member: {
+		id: string;
+		name: string;
+		nickname?: string;
+		img?: string;
+	};
+	duration: number;
+}
+
+export interface GlobalLiveHistoryResponse {
+	data: GlobalLiveHistory[];
+	total: number;
+	page: number;
+	limit: number;
+	total_pages: number;
+}

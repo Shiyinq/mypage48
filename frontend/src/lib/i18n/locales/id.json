@@ -1329,6 +1329,10 @@
 		"longestWatch": "Nonton Terlama",
 		"platformWatches": "Platform Menonton",
 		"viewHistory": "Riwayat Menonton",
-		"watchedFor": "Menonton"
+		"watchedFor": "Menonton",
+		"globalTitle": "Semua Riwayat Live",
+		"globalSubtitle": "Arsip seluruh live member JKT48 yang pernah tercatat",
+		"globalButtonSubtitle": "Semua Riwayat",
+		"globalButton": "Live History"
 	}
 }

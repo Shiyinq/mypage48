@@ -7,6 +7,7 @@ from src.dependencies import get_current_user, get_live_history_service
 from src.live_history.exceptions import LiveHistoryUpdateError
 from src.live_history.http_exceptions import LiveHistoryUpdateFailed
 from src.live_history.schemas import (
+    GlobalLiveHistoryPaginationResponse,
     LiveHistoryPaginationResponse,
     LiveHistoryStatsResponse,
     LiveHistoryUpdateRequest,
@@ -15,6 +16,16 @@ from src.live_history.schemas import (
 from src.live_history.service import LiveHistoryService
 
 router = APIRouter()
+
+
+@router.get("", response_model=GlobalLiveHistoryPaginationResponse)
+async def get_global_history(
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Items per page"),
+    service: LiveHistoryService = Depends(get_live_history_service),
+):
+    """Get global live history of all members."""
+    return await service.get_global_history(page=page, limit=limit)
 
 
 @router.post("/update", status_code=status.HTTP_204_NO_CONTENT)

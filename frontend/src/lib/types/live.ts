@@ -15,6 +15,9 @@ export interface LiveStatus {
 	view_num: number;
 	title: string;
 	start_at?: string;
+	end_at?: string;
+	status?: string;
+	duration?: number;
 	member: LiveMember;
 	image?: string;
 }

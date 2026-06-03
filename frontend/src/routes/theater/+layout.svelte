@@ -2,7 +2,16 @@
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { goto } from '$app/navigation';
-	import { AudioLines, Users, Calendar, Newspaper, ArrowUpDown, Tv } from 'lucide-svelte';
+	import {
+		AudioLines,
+		Users,
+		Calendar,
+		Newspaper,
+		ArrowUpDown,
+		Tv,
+		Globe,
+		History
+	} from 'lucide-svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { liveList, isImmersive } from '$lib/stores';
 	import { newsStore } from '$lib/stores/news.svelte';
@@ -111,17 +120,24 @@
 		isLiveListingPage && liveList.value.length > 0
 			? [
 					{
-						icon: Tv,
-						label: 'Live History',
-						onClick: () => goto('/theater/live/history/watched'),
-						showLabel: true,
-						theme: 'red'
-					},
-					{
 						icon: Users,
 						label: 'Multi-View',
 						onClick: () => goto('/theater/live/multiview'),
 						showLabel: true,
+						theme: 'gray'
+					},
+					{
+						icon: Globe,
+						label: t('liveHistory.globalButtonSubtitle') || 'Global',
+						onClick: () => goto('/theater/live/history'),
+						showLabel: false,
+						theme: 'gray'
+					},
+					{
+						icon: History,
+						label: t('liveHistory.buttonSubtitle') || 'History',
+						onClick: () => goto('/theater/live/history/watched'),
+						showLabel: false,
 						theme: 'gray'
 					}
 				]

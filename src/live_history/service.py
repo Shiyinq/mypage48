@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 from src.live_history.exceptions import LiveHistoryUpdateError
 from src.live_history.repository import LiveHistoryRepository
 from src.live_history.schemas import (
+    GlobalLiveHistoryPaginationResponse,
     LiveHistoryResponse,
     LiveHistoryStatsResponse,
     LiveHistoryUpdateRequest,
@@ -14,6 +15,18 @@ from src.live_history.schemas import (
 class LiveHistoryService:
     def __init__(self, repository: LiveHistoryRepository):
         self.repository = repository
+
+    async def get_global_history(
+        self, page: int = 1, limit: int = 20
+    ) -> GlobalLiveHistoryPaginationResponse:
+        skip = (page - 1) * limit
+        lives = await self.repository.get_global_history(skip=skip, limit=limit)
+        total = await self.repository.get_total_global_history_count()
+        total_pages = math.ceil(total / limit) if limit > 0 else 1
+
+        return GlobalLiveHistoryPaginationResponse(
+            data=lives, total=total, page=page, limit=limit, total_pages=total_pages
+        )
 
     async def update_watch_duration(
         self, user_id: str, data: LiveHistoryUpdateRequest

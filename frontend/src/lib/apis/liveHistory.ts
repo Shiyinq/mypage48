@@ -3,10 +3,18 @@ import type {
 	LiveHistoryResponse,
 	LiveHistoryStats,
 	MemberLiveHistoryStats,
-	LiveHistoryUpdateRequest
+	LiveHistoryUpdateRequest,
+	GlobalLiveHistoryResponse
 } from '$lib/types/liveHistory';
 
 export const liveHistoryApi = {
+	getGlobalHistory: async (
+		page: number = 1,
+		limit: number = 20
+	): Promise<GlobalLiveHistoryResponse> => {
+		return client<GlobalLiveHistoryResponse>(`/history/lives?page=${page}&limit=${limit}`);
+	},
+
 	updateWatchDuration: async (data: LiveHistoryUpdateRequest): Promise<void> => {
 		await client('/history/lives/update', {
 			method: 'POST',
