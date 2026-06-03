@@ -1,5 +1,15 @@
 <script lang="ts">
-	import { Ticket, Camera, Users, Trophy, Star, Rocket, ChevronDown } from 'lucide-svelte';
+	import {
+		Ticket,
+		Camera,
+		Users,
+		Trophy,
+		Star,
+		Rocket,
+		ChevronDown,
+		ListOrdered,
+		MonitorPlay
+	} from 'lucide-svelte';
 	import { spring } from 'svelte/motion';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
@@ -45,6 +55,22 @@
 			color: 'text-yellow-500',
 			iconBg: 'bg-yellow-50 dark:bg-yellow-500/10',
 			type: 'achievements'
+		},
+		{
+			title: t('landing.features.sorter.title'),
+			description: t('landing.features.sorter.description'),
+			icon: ListOrdered,
+			color: 'text-rose-500',
+			iconBg: 'bg-rose-50 dark:bg-rose-500/10',
+			type: 'sorter'
+		},
+		{
+			title: t('landing.features.live.title'),
+			description: t('landing.features.live.description'),
+			icon: MonitorPlay,
+			color: 'text-red-500',
+			iconBg: 'bg-red-50 dark:bg-red-500/10',
+			type: 'live'
 		}
 	]);
 
@@ -250,6 +276,77 @@
 									</div>
 								</div>
 							{/if}
+
+							<!-- SORTER MOCKUP -->
+							{#if feature.type === 'sorter'}
+								<div
+									class="relative w-[300px] mx-auto space-y-4 transform transition-transform group-hover:scale-105"
+								>
+									<div
+										class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-lg dark:shadow-none border border-slate-100 dark:border-zinc-800 flex items-center gap-4"
+									>
+										<div
+											class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/30 flex-shrink-0"
+										></div>
+										<div class="flex-1 space-y-2">
+											<div class="h-2 w-3/4 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											<div class="h-2 w-1/2 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+										</div>
+										<div class="text-rose-500 font-bold">1</div>
+									</div>
+									<div
+										class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-lg dark:shadow-none border border-slate-100 dark:border-zinc-800 flex items-center gap-4 scale-95 opacity-80"
+									>
+										<div
+											class="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-900/20 flex-shrink-0"
+										></div>
+										<div class="flex-1 space-y-2">
+											<div class="h-2 w-2/3 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											<div class="h-2 w-1/3 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+										</div>
+										<div class="text-rose-400 font-bold">2</div>
+									</div>
+									<div
+										class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-lg dark:shadow-none border border-slate-100 dark:border-zinc-800 flex items-center gap-4 scale-90 opacity-60"
+									>
+										<div
+											class="w-12 h-12 rounded-full bg-rose-50/50 dark:bg-rose-900/10 flex-shrink-0"
+										></div>
+										<div class="flex-1 space-y-2">
+											<div class="h-2 w-1/2 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											<div class="h-2 w-1/4 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+										</div>
+										<div class="text-rose-300 font-bold">3</div>
+									</div>
+								</div>
+							{/if}
+
+							<!-- LIVE MOCKUP -->
+							{#if feature.type === 'live'}
+								<div
+									class="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] dark:shadow-none border border-red-100 dark:border-red-900/20 transform transition-transform duration-500 group-hover:scale-105"
+								>
+									<div
+										class="aspect-video bg-red-50 dark:bg-red-900/20 rounded-xl relative overflow-hidden mb-4"
+									>
+										<div
+											class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md animate-pulse"
+										>
+											LIVE
+										</div>
+										<div class="absolute inset-0 flex items-center justify-center">
+											<MonitorPlay size={48} class="text-red-300 dark:text-red-700/50" />
+										</div>
+									</div>
+									<div class="flex gap-3 px-2">
+										<div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30"></div>
+										<div class="flex-1 space-y-2 py-1">
+											<div class="h-2 w-3/4 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											<div class="h-2 w-1/2 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+										</div>
+									</div>
+								</div>
+							{/if}
 						</div>
 
 						<!-- Hover Background Blob -->
@@ -261,7 +358,11 @@
 									? 'pink'
 									: feature.type === 'memories'
 										? 'blue'
-										: 'yellow'}-50/50 rounded-[3rem] -z-10 transition-colors duration-500"
+										: feature.type === 'achievements'
+											? 'yellow'
+											: feature.type === 'sorter'
+												? 'rose'
+												: 'red'}-50/50 rounded-[3rem] -z-10 transition-colors duration-500"
 						></div>
 					</div>
 
