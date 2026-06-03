@@ -120,25 +120,23 @@
 	<div
 		class="h-14 border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between px-4 z-[10000] shrink-0"
 	>
-		<div class="flex items-center gap-4">
+		<div class="flex items-center gap-3">
 			<a
 				href="/theater/live/history/watched"
-				class="flex items-center gap-2 text-slate-900 dark:text-white hover:text-red-600 transition-colors"
+				class="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition-colors shrink-0"
 			>
 				<ChevronLeft size={20} />
-				<span class="font-black tracking-tighter text-lg"
-					>Watch <span class="text-red-600 italic">History</span></span
-				>
 			</a>
-			<div class="hidden sm:block h-4 w-px bg-gray-200 dark:bg-zinc-800"></div>
-			<div
-				class="hidden xs:flex items-center gap-2 px-3 py-1 bg-red-50 dark:bg-red-500/10 rounded-full"
-			>
-				<Tv size={14} class="text-red-600" />
-				<span
-					class="text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400"
-					>{memberName}</span
+			<div class="flex flex-col min-w-0">
+				<h1
+					class="text-sm font-bold text-slate-900 dark:text-white truncate flex items-center gap-1.5"
 				>
+					<History size={14} class="text-red-500" />
+					{memberName}
+				</h1>
+				<p class="text-[10px] text-slate-500 dark:text-zinc-400 truncate font-medium">
+					{t('liveHistory.subtitle')}
+				</p>
 			</div>
 		</div>
 	</div>
@@ -146,31 +144,6 @@
 	<!-- Main Content -->
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-32 relative z-10">
-			<!-- Header Title -->
-			<div class="flex items-center gap-4 mb-8">
-				<div
-					class="w-16 h-16 rounded-2xl bg-white dark:bg-zinc-900 shadow-xl border border-gray-100 dark:border-zinc-800 flex items-center justify-center shrink-0 -rotate-6 overflow-hidden"
-				>
-					{#if memberInfo?.img}
-						<OptimizedImage
-							src={getExternalMediaUrl(memberInfo.img)}
-							alt={memberName}
-							class="w-full h-full object-cover"
-						/>
-					{:else}
-						<Tv size={32} class="text-red-500" />
-					{/if}
-				</div>
-				<div>
-					<h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-						{memberName}
-					</h1>
-					<p class="text-slate-500 dark:text-zinc-400 text-sm font-medium mt-1">
-						{t('liveHistory.subtitle')}
-					</p>
-				</div>
-			</div>
-
 			<!-- Member Stats -->
 			{#if stats}
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
