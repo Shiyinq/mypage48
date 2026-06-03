@@ -4,6 +4,8 @@
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
 	import { EmptyState } from '$lib/components';
 	import { Tv, History, Clock, Activity, PlaySquare, ChevronLeft, Smartphone } from 'lucide-svelte';
+	import LiveStatCard from '$lib/components/live/history/shared/LiveStatCard.svelte';
+	import LiveHistoryItemCard from '$lib/components/live/history/shared/LiveHistoryItemCard.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
@@ -137,59 +139,22 @@
 			<!-- Member Stats -->
 			{#if stats}
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-					>
-						<div
-							class="w-11 h-11 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center shrink-0"
-						>
-							<PlaySquare size={22} />
-						</div>
-						<div>
-							<p
-								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider"
-							>
-								{t('liveHistory.totalWatches')}
-							</p>
-							<p class="text-xl font-black truncate">
-								{stats.total_watches}
-								{t('liveHistory.times')}
-							</p>
-						</div>
-					</div>
+					<LiveStatCard
+						title={t('liveHistory.totalWatches')}
+						value={`${stats.total_watches} ${t('liveHistory.times')}`}
+						icon={PlaySquare}
+						color="red"
+					/>
 
-					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-					>
-						<div
-							class="w-11 h-11 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center shrink-0"
-						>
-							<Clock size={22} />
-						</div>
-						<div>
-							<p
-								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider"
-							>
-								{t('liveHistory.totalDuration')}
-							</p>
-							<p class="text-xl font-black truncate">{formatDuration(stats.total_duration)}</p>
-						</div>
-					</div>
+					<LiveStatCard
+						title={t('liveHistory.totalDuration')}
+						value={formatDuration(stats.total_duration)}
+						icon={Clock}
+						color="amber"
+					/>
 
-					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
-					>
-						<div
-							class="w-11 h-11 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shrink-0"
-						>
-							<Smartphone size={22} />
-						</div>
-						<div class="min-w-0">
-							<p
-								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider truncate"
-							>
-								{t('liveHistory.platformWatches')}
-							</p>
+					<LiveStatCard title={t('liveHistory.platformWatches')} icon={Smartphone} color="blue">
+						{#snippet subtitle()}
 							<div class="flex items-center gap-3 flex-wrap mt-1">
 								{#each Object.entries(stats.platform_counts || {}) as [platform, count]}
 									<div class="flex items-center gap-1.5">
@@ -199,26 +164,16 @@
 									</div>
 								{/each}
 							</div>
-						</div>
-					</div>
+						{/snippet}
+					</LiveStatCard>
 
-					<div
-						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-w-0"
+					<LiveStatCard
+						title={t('liveHistory.longestWatch')}
+						value={stats.longest_watch ? formatDuration(stats.longest_watch.duration) : '-'}
+						icon={Activity}
+						color="emerald"
 					>
-						<div
-							class="w-11 h-11 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center shrink-0"
-						>
-							<Activity size={22} />
-						</div>
-						<div class="min-w-0">
-							<p
-								class="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider"
-							>
-								{t('liveHistory.longestWatch')}
-							</p>
-							<p class="text-xl font-black truncate">
-								{stats.longest_watch ? formatDuration(stats.longest_watch.duration) : '-'}
-							</p>
+						{#snippet subtitle()}
 							{#if stats.longest_watch}
 								<div class="flex items-center gap-2 mt-1 min-w-0">
 									{#if stats.longest_watch.platform}
@@ -233,8 +188,8 @@
 									{/if}
 								</div>
 							{/if}
-						</div>
-					</div>
+						{/snippet}
+					</LiveStatCard>
 				</div>
 			{/if}
 
@@ -273,41 +228,18 @@
 			{:else}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each list as item (item._id)}
-						<div
-							class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col gap-3 hover:border-red-500/50 hover:shadow-lg transition-all"
-						>
-							<div class="flex items-center justify-between">
-								<span class="text-xs font-bold text-zinc-500 dark:text-zinc-400"
-									>{formatDate(item.started_at)}</span
-								>
-								<PlatformLogo platform={item.platform} size="sm" />
-							</div>
-
-							{#if item.live_title}
-								<span class="text-sm font-black text-slate-900 dark:text-white line-clamp-2"
-									>{item.live_title}</span
-								>
-							{/if}
-
-							<div
-								class="mt-auto pt-2 flex items-center justify-between border-t border-gray-100 dark:border-zinc-800"
-							>
-								<div
-									class="flex items-center gap-1.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-1 rounded-md"
-								>
-									<Clock size={14} />
-									<div class="flex items-center gap-1 text-xs">
-										<span class="font-medium opacity-70">{t('liveHistory.watchedFor')}</span>
-										<span class="font-bold">{formatDuration(item.duration)}</span>
-									</div>
-								</div>
-								<span class="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-									{parseUTCDate(item.last_updated_at).toLocaleTimeString(
-										locale.value === 'en' ? 'en-US' : locale.value === 'ja' ? 'ja-JP' : 'id-ID'
-									)}
-								</span>
-							</div>
-						</div>
+						<LiveHistoryItemCard
+							href="#"
+							mode="watched"
+							memberName={item.member_name}
+							liveTitle={item.live_title}
+							platform={item.platform}
+							dateStr={formatDate(item.last_updated_at)}
+							timeStr={parseUTCDate(item.last_updated_at).toLocaleTimeString(
+								locale.value === 'en' ? 'en-US' : locale.value === 'ja' ? 'ja-JP' : 'id-ID'
+							)}
+							duration={item.duration}
+						/>
 					{/each}
 				</div>
 

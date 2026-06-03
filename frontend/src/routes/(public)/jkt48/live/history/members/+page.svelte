@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
-	import { Trophy, History, ChevronLeft } from 'lucide-svelte';
+	import { History, ChevronLeft, Trophy } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -12,13 +12,15 @@
 	import { EmptyState } from '$lib/components';
 	import LiveRankingCard from '$lib/components/live/history/shared/LiveRankingCard.svelte';
 
+	const basePath = '/jkt48/live/history/members';
+
 	let scrollY = $state(0);
 	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
 
 	const { t } = useTranslation();
 
-	let rankingList = $derived(liveHistoryStore.membersRanking);
-	let pagination = $derived(liveHistoryStore.rankingPagination);
+	let rankingList = $derived(liveHistoryStore.globalMembersRanking);
+	let pagination = $derived(liveHistoryStore.globalRankingPagination);
 	let isLoading = $derived(liveHistoryStore.isLoading);
 	let hasMore = $derived(pagination.current_page < pagination.last_page);
 
@@ -35,7 +37,7 @@
 	});
 
 	async function loadRanking(page: number) {
-		await liveHistoryStore.loadMembersRanking(page);
+		await liveHistoryStore.loadGlobalMembersRanking(page);
 	}
 
 	function handleIntersect() {
@@ -56,7 +58,7 @@
 	}
 </script>
 
-<SEO title={t('liveHistory.rankingTitle')} path="/theater/live/history/watched/members" />
+<SEO title={t('liveHistory.globalRankingTitle')} path={basePath} />
 
 <div
 	role="presentation"
@@ -64,9 +66,7 @@
 	onmousemove={(e) => {
 		const { clientX, clientY } = e;
 		const { innerWidth, innerHeight } = window;
-		const x = clientX / innerWidth - 0.5;
-		const y = clientY / innerHeight - 0.5;
-		mouse.set({ x, y });
+		mouse.set({ x: clientX / innerWidth - 0.5, y: clientY / innerHeight - 0.5 });
 	}}
 >
 	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
@@ -89,10 +89,10 @@
 					class="text-sm font-bold text-slate-900 dark:text-white truncate flex items-center gap-1.5"
 				>
 					<Trophy size={14} class="text-purple-500" />
-					{t('liveHistory.rankingTitle')}
+					{t('liveHistory.globalRankingTitle')}
 				</h1>
 				<p class="text-[10px] text-slate-500 dark:text-zinc-400 truncate font-medium">
-					{t('liveHistory.rankingSubtitle')}
+					{t('liveHistory.globalRankingSubtitle')}
 				</p>
 			</div>
 		</button>
@@ -129,8 +129,8 @@
 						<LiveRankingCard
 							{item}
 							{index}
-							href={`/theater/live/history/watched/${item.member_id}`}
-							mode="watched"
+							href={`${basePath}/${item.member_id}`}
+							mode="global"
 							memberImage={getMemberImageStr(item.member_id, item.member_name)}
 							timesLabel={t('liveHistory.times')}
 						/>

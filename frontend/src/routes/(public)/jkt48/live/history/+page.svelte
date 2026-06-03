@@ -1,62 +1,53 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
-	import { History, ChevronLeft, Clock, PlaySquare, Smartphone, Activity } from 'lucide-svelte';
-	import SEO from '$lib/components/SEO.svelte';
-	import { isImmersive } from '$lib/stores';
-	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { infiniteScroll } from '$lib/actions/infiniteScroll';
-	import { spring } from 'svelte/motion';
-	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
-	import { membersStore } from '$lib/stores/theater.svelte';
 	import { EmptyState } from '$lib/components';
-	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
+	import { useTranslation } from '$lib/i18n/useTranslation';
+	import SEO from '$lib/components/SEO.svelte';
+	import {
+		History,
+		Clock,
+		ChevronLeft,
+		Trophy,
+		Users,
+		Smartphone,
+		Eye,
+		PlaySquare
+	} from 'lucide-svelte';
+	import { isImmersive } from '$lib/stores';
+	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import { spring } from 'svelte/motion';
+	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { formatTimeAgo } from '$lib/utils/time';
 
 	import LiveStatCard from '$lib/components/live/history/shared/LiveStatCard.svelte';
 	import LiveHistoryItemCard from '$lib/components/live/history/shared/LiveHistoryItemCard.svelte';
+	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 
-	const basePath = '/theater/live/history/members';
-	const baseLivePath = '/theater/live';
-
-	let scrollY = $state(0);
-	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
+	const basePath = '/jkt48/live/history';
+	const baseLivePath = '/jkt48/live';
 
 	const { t, locale } = useTranslation();
 
-	let memberId = $derived($page.params.member_id || '');
-	let historyList = $derived(liveHistoryStore.globalMemberHistory);
-	let pagination = $derived(liveHistoryStore.globalMemberHistoryPagination);
+	let mounted = $state(false);
+	let scrollY = $state(0);
+	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
+
+	let list = $derived(liveHistoryStore.globalList);
+	let pagination = $derived(liveHistoryStore.globalPagination);
 	let isLoading = $derived(liveHistoryStore.isLoading);
 	let hasMore = $derived(pagination.page < pagination.total_pages);
-	let stats = $derived(liveHistoryStore.globalMemberStats[memberId]);
+	let initialLoading = $state(true);
 
-	let memberInfo = $derived(() => {
-		const member = membersStore.list.find(
-			(m) =>
-				String(m.id) === String(memberId) ||
-				(m.socials?.idn_app && String(memberId).includes(m.socials.idn_app)) ||
-				(m.socials?.showroom && String(memberId) === String(m.socials.showroom))
-		);
-		return member;
-	});
-
-	let displayName = $derived(() => {
-		const m = memberInfo();
-		if (m) return m.name;
-		if (historyList.length > 0) return historyList[0].member?.name || memberId;
-		return memberId;
-	});
+	let globalStats = $derived(liveHistoryStore.globalStats);
+	let isLoadingStats = $derived(liveHistoryStore.isLoadingGlobalStats);
 
 	onMount(() => {
+		mounted = true;
 		isImmersive.set(true);
 		document.body.style.overflow = 'hidden';
-		if (memberId) {
-			liveHistoryStore.loadGlobalMemberHistory(memberId, 1, true);
-			liveHistoryStore.loadGlobalMemberStats(memberId);
-		}
-		membersStore.load({ limit: 100 });
+		loadHistory(1, true);
+		liveHistoryStore.loadGlobalStats();
 
 		return () => {
 			isImmersive.set(false);
@@ -64,9 +55,14 @@
 		};
 	});
 
+	async function loadHistory(page: number, force: boolean = false) {
+		await liveHistoryStore.loadGlobal(page, force);
+		if (force) initialLoading = false;
+	}
+
 	function handleIntersect() {
-		if (isLoading || !hasMore || !memberId) return;
-		liveHistoryStore.loadGlobalMemberHistory(memberId, pagination.page + 1);
+		if (!mounted || isLoading || !hasMore) return;
+		loadHistory(pagination.page + 1);
 	}
 
 	function parseUTCDate(dateStr: string) {
@@ -95,11 +91,15 @@
 	}
 </script>
 
-<SEO title={displayName()} path={`${basePath}/${memberId}`} />
+<SEO
+	title={t('liveHistory.globalTitle')}
+	path={basePath}
+	description={t('liveHistory.globalSubtitle')}
+/>
 
 <div
 	role="presentation"
-	class="fixed inset-0 bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 flex flex-col overflow-hidden z-[9999]"
+	class="fixed inset-0 bg-gradient-to-b from-slate-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 flex flex-col overflow-hidden z-[9999]"
 	onmousemove={(e) => {
 		const { clientX, clientY } = e;
 		const { innerWidth, innerHeight } = window;
@@ -126,11 +126,10 @@
 					class="text-sm font-bold text-slate-900 dark:text-white truncate flex items-center gap-1.5"
 				>
 					<History size={14} class="text-red-500" />
-					{displayName()}
+					{t('liveHistory.globalTitle')}
 				</h1>
 				<p class="text-[10px] text-slate-500 dark:text-zinc-400 truncate font-medium">
-					{t('liveHistory.liveHistory')} · {pagination.total}
-					{t('liveHistory.times')}
+					{t('liveHistory.globalSubtitle')}
 				</p>
 			</div>
 		</button>
@@ -139,26 +138,32 @@
 	<!-- Main Content -->
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-32 relative z-10">
-			<!-- Member Stats -->
-			{#if stats}
+			<!-- Stats Section -->
+			{#if globalStats && !isLoadingStats}
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
 					<LiveStatCard
 						title={t('liveHistory.totalLives')}
-						value={`${stats.total_lives} ${t('liveHistory.times')}`}
+						value={globalStats.total_lives.toLocaleString()}
 						icon={PlaySquare}
 						color="red"
 					/>
 					<LiveStatCard
 						title={t('liveHistory.totalDuration')}
-						value={formatDuration(stats.total_duration)}
+						value={formatDuration(globalStats.total_duration)}
 						icon={Clock}
 						color="amber"
+					/>
+					<LiveStatCard
+						title={t('liveHistory.uniqueMembers')}
+						value={globalStats.unique_members_count}
+						icon={Users}
+						color="pink"
 					/>
 
 					<LiveStatCard title={t('liveHistory.totalLivePlatform')} icon={Smartphone} color="blue">
 						{#snippet subtitle()}
-							<div class="flex items-center gap-3 flex-wrap mt-1">
-								{#each Object.entries(stats.platform_counts || {}) as [platform, count]}
+							<div class="flex items-center gap-2 flex-wrap mt-1">
+								{#each Object.entries(globalStats.platform_counts || {}) as [platform, count]}
 									<div class="flex items-center gap-1.5">
 										<PlatformLogo {platform} size="sm" />
 										<span class="text-sm font-bold text-slate-700 dark:text-zinc-300">{count}x</span
@@ -168,41 +173,77 @@
 							</div>
 						{/snippet}
 					</LiveStatCard>
+				</div>
 
+				<!-- Ranking & Views Cards -->
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
 					<LiveStatCard
-						title={t('liveHistory.longestLive')}
-						value={stats.longest_live ? formatDuration(stats.longest_live.duration) : '-'}
-						icon={Activity}
-						color="emerald"
+						title={t('liveHistory.mostFrequentLive')}
+						value={globalStats.top_member_name || '-'}
+						icon={Trophy}
+						color="purple"
+						href="{basePath}/members"
 					>
 						{#snippet subtitle()}
-							{#if stats.longest_live}
-								<div class="flex items-center gap-2 mt-1 min-w-0">
-									{#if stats.longest_live.platform}
-										<div class="shrink-0">
-											<PlatformLogo platform={stats.longest_live.platform} size="sm" />
-										</div>
-									{/if}
-									{#if stats.longest_live.started_at}
-										<span class="text-[10px] text-zinc-400 dark:text-zinc-500 truncate"
-											>{formatDate(stats.longest_live.started_at)}</span
-										>
-									{/if}
-								</div>
+							{#if globalStats.top_member_watches > 0}
+								<span class="text-xs font-bold text-purple-600 dark:text-purple-400 shrink-0"
+									>({globalStats.top_member_watches}x)</span
+								>
 							{/if}
 						{/snippet}
 					</LiveStatCard>
+
+					{#if globalStats.highest_view_live}
+						<LiveStatCard
+							title={t('liveHistory.highestViews')}
+							value={`${globalStats.highest_view_live.duration.toLocaleString()} ${t('liveHistory.views')}`}
+							icon={Eye}
+							color="emerald"
+						>
+							{#snippet subtitle()}
+								<div class="flex items-center gap-1.5 mt-0.5 min-w-0">
+									{#if globalStats.highest_view_live?.member_name}
+										<span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 truncate"
+											>{globalStats.highest_view_live.member_name}</span
+										>
+									{/if}
+									{#if globalStats.highest_view_live?.platform}
+										<PlatformLogo platform={globalStats.highest_view_live.platform} size="sm" />
+									{/if}
+								</div>
+							{/snippet}
+						</LiveStatCard>
+					{/if}
+				</div>
+			{:else if isLoadingStats}
+				<div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+					{#each Array(4) as _}
+						<div
+							class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 animate-pulse"
+						>
+							<div class="flex items-center gap-4">
+								<div class="w-11 h-11 bg-zinc-200 dark:bg-zinc-800 rounded-full shrink-0"></div>
+								<div class="flex flex-col gap-2 flex-1">
+									<div class="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-16"></div>
+									<div class="h-5 bg-zinc-200 dark:bg-zinc-800 rounded w-12"></div>
+								</div>
+							</div>
+						</div>
+					{/each}
 				</div>
 			{/if}
 
-			<div class="flex items-center gap-2 mb-6">
-				<History class="w-6 h-6 text-red-500" />
-				<h2 class="text-2xl font-black text-slate-800 dark:text-white">
-					{t('liveHistory.recentHistory')}
-				</h2>
-			</div>
+			<!-- Recent History Title -->
+			{#if list.length > 0}
+				<div class="flex items-center gap-2 mb-4">
+					<History size={18} class="text-red-500" />
+					<h2 class="text-lg font-black text-slate-900 dark:text-white">
+						{t('liveHistory.recentHistory')}
+					</h2>
+				</div>
+			{/if}
 
-			{#if isLoading && historyList.length === 0}
+			{#if initialLoading}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each Array(6) as _}
 						<div
@@ -224,7 +265,7 @@
 						</div>
 					{/each}
 				</div>
-			{:else if historyList.length === 0}
+			{:else if list.length === 0}
 				<EmptyState
 					icon={History}
 					title={t('liveHistory.noHistory')}
@@ -232,11 +273,11 @@
 				/>
 			{:else}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-					{#each historyList as item (item._id)}
+					{#each list as item (item._id)}
 						<LiveHistoryItemCard
 							href={item.status === 'live'
 								? `${baseLivePath}/${item.platform}/${item.live_id}`
-								: `${basePath}/${item.member?.id || ''}`}
+								: `${basePath}/members/${item.member?.id || ''}`}
 							mode="global"
 							memberImage={item.platform === 'showroom'
 								? item.member?.img || item.image

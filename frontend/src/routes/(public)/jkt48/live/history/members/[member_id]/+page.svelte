@@ -17,8 +17,8 @@
 	import LiveStatCard from '$lib/components/live/history/shared/LiveStatCard.svelte';
 	import LiveHistoryItemCard from '$lib/components/live/history/shared/LiveHistoryItemCard.svelte';
 
-	const basePath = '/theater/live/history/members';
-	const baseLivePath = '/theater/live';
+	const basePath = '/jkt48/live/history/members';
+	const baseLivePath = '/jkt48/live';
 
 	let scrollY = $state(0);
 	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
