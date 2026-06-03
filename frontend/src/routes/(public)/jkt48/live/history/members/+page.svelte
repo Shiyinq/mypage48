@@ -90,7 +90,7 @@
 	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
 
 	<HistoryTopBar
-		title={t('liveHistory.jkt48RankingTitle')}
+		title={t('liveHistory.globalRankingTitle')}
 		subtitle={t('liveHistory.globalRankingSubtitle')}
 		icon={Trophy}
 		iconColor="text-purple-500"
