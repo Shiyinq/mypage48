@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
-	import { History, ChevronLeft, Trophy } from 'lucide-svelte';
+	import { History, Trophy } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -10,6 +10,8 @@
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
 	import { membersStore } from '$lib/stores/theater.svelte';
 	import { EmptyState } from '$lib/components';
+	import HistoryTopBar from '$lib/components/live/history/shared/HistoryTopBar.svelte';
+	import LiveRankingSkeleton from '$lib/components/live/history/shared/LiveRankingSkeleton.svelte';
 	import LiveRankingCard from '$lib/components/live/history/shared/LiveRankingCard.svelte';
 
 	const basePath = '/jkt48/live/history/members';
@@ -71,32 +73,12 @@
 >
 	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
 
-	<!-- Top Bar -->
-	<div
-		class="h-14 border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between px-4 z-[10000] shrink-0"
-	>
-		<button
-			onclick={() => history.back()}
-			class="flex items-center gap-3 cursor-pointer group text-left"
-		>
-			<div
-				class="flex items-center justify-center w-8 h-8 rounded-full group-hover:bg-gray-100 dark:group-hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition-colors shrink-0"
-			>
-				<ChevronLeft size={20} />
-			</div>
-			<div class="flex flex-col min-w-0">
-				<h1
-					class="text-sm font-bold text-slate-900 dark:text-white truncate flex items-center gap-1.5"
-				>
-					<Trophy size={14} class="text-purple-500" />
-					{t('liveHistory.globalRankingTitle')}
-				</h1>
-				<p class="text-[10px] text-slate-500 dark:text-zinc-400 truncate font-medium">
-					{t('liveHistory.globalRankingSubtitle')}
-				</p>
-			</div>
-		</button>
-	</div>
+	<HistoryTopBar
+		title={t('liveHistory.globalRankingTitle')}
+		subtitle={t('liveHistory.globalRankingSubtitle')}
+		icon={Trophy}
+		iconColor="text-purple-500"
+	/>
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
@@ -104,17 +86,7 @@
 			{#if isLoading && rankingList.length === 0}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each Array(6) as _}
-						<div
-							class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex items-center gap-4 animate-pulse"
-						>
-							<div class="w-8 h-8 bg-zinc-200 dark:bg-zinc-800 rounded-full shrink-0"></div>
-							<div class="w-16 h-20 bg-zinc-200 dark:bg-zinc-800 rounded-xl shrink-0"></div>
-							<div class="flex-1 min-w-0 flex flex-col gap-2">
-								<div class="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-24"></div>
-								<div class="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-16"></div>
-								<div class="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-20"></div>
-							</div>
-						</div>
+						<LiveRankingSkeleton />
 					{/each}
 				</div>
 			{:else if rankingList.length === 0}
