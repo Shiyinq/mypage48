@@ -95,3 +95,15 @@ class GlobalLiveHistoryPaginationResponse(BaseModel):
     page: int
     limit: int
     total_pages: int
+
+
+class WatchedLiveMemberRankingItem(BaseModel):
+    member_id: str
+    member_name: Optional[str] = None
+    total_watches: int
+    total_duration: int
+
+
+class WatchedLiveMemberRankingResponse(BaseModel):
+    data: List[WatchedLiveMemberRankingItem]
+    meta: PaginationMeta

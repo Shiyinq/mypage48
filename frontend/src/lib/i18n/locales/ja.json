@@ -1342,8 +1342,10 @@
 		"viewHistory": "視聴履歴",
 		"watchedFor": "視聴時間",
 		"globalTitle": "ライブ履歴",
-		"globalSubtitle": "記録されたすべてのライブ履歴",
+		"globalSubtitle": "記録されたすべてのライブの履歴",
 		"globalButtonSubtitle": "すべてのライブ",
-		"globalButton": "ライブ履歴"
+		"globalButton": "ライブ履歴",
+		"rankingTitle": "メンバーランキング",
+		"rankingSubtitle": "あなたが最もよく見るメンバー"
 	}
 }

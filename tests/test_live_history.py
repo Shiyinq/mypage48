@@ -153,3 +153,34 @@ async def test_get_global_history(client: AsyncClient, db):
     assert "page" in data
     assert "limit" in data
     assert "total_pages" in data
+
+
+@pytest.mark.asyncio
+async def test_get_watched_live_members_ranking(client: AsyncClient, db, create_user):
+    """Test getting watched members ranking."""
+    token, user_id, headers = await create_user("ranking_user")
+
+    # Add durations
+    await client.post("/api/history/lives/update", json={"live_id": "l1", "member_id": "m1", "member_name": "Member 1", "platform": "showroom", "ping_duration": 30}, headers=headers)
+    await client.post("/api/history/lives/update", json={"live_id": "l2", "member_id": "m2", "member_name": "Member 2", "platform": "idn", "ping_duration": 60}, headers=headers)
+    await client.post("/api/history/lives/update", json={"live_id": "l3", "member_id": "m1", "member_name": "Member 1", "platform": "showroom", "ping_duration": 30}, headers=headers)
+
+    response = await client.get("/api/history/lives/watched/members/ranking", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert "data" in data
+    assert "meta" in data
+    
+    ranking = data["data"]
+    assert len(ranking) == 2
+    
+    # Member 1 should be first (2 watches)
+    assert ranking[0]["member_id"] == "m1"
+    assert ranking[0]["total_watches"] == 2
+    assert ranking[0]["total_duration"] == 60
+    
+    # Member 2 should be second (1 watch)
+    assert ranking[1]["member_id"] == "m2"
+    assert ranking[1]["total_watches"] == 1
+    assert ranking[1]["total_duration"] == 60

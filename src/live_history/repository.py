@@ -92,6 +92,7 @@ class LiveHistoryRepository:
                     "watch_count": {"$sum": 1},
                 }
             },
+            {"$sort": {"watch_count": -1, "total_duration": -1, "member_name": 1}},
         ]
         cursor = self.watched_col.aggregate(pipeline)
 
@@ -104,6 +105,7 @@ class LiveHistoryRepository:
         member_counts = {}
         member_durations = {}
 
+        is_first = True
         async for doc in cursor:
             member_id = doc["_id"]
             dur = doc["total_duration"]
@@ -116,10 +118,11 @@ class LiveHistoryRepository:
             member_counts[member_id] = watches
             member_durations[member_id] = dur
 
-            if watches > top_member_watches:
+            if is_first:
                 top_member_watches = watches
                 top_member_id = member_id
                 top_member_name = m_name
+                is_first = False
 
         platform_pipeline = [
             {"$match": {"user_id": user_id}},
@@ -281,3 +284,42 @@ class LiveHistoryRepository:
 
     async def get_total_global_history_count(self) -> int:
         return await self.history_col.count_documents({})
+
+    async def get_total_watched_live_members_count(self, user_id: str) -> int:
+        pipeline = [
+            {"$match": {"user_id": user_id}},
+            {"$group": {"_id": "$member_id"}},
+            {"$count": "total_members"},
+        ]
+        cursor = self.watched_col.aggregate(pipeline)
+        results = [doc async for doc in cursor]
+        return results[0]["total_members"] if results else 0
+
+    async def get_watched_live_members_ranking(
+        self, user_id: str, skip: int = 0, limit: int = 20
+    ) -> List[Dict[str, Any]]:
+        pipeline = [
+            {"$match": {"user_id": user_id}},
+            {
+                "$group": {
+                    "_id": "$member_id",
+                    "member_name": {"$first": "$member_name"},
+                    "total_duration": {"$sum": "$duration"},
+                    "total_watches": {"$sum": 1},
+                }
+            },
+            {"$sort": {"total_watches": -1, "total_duration": -1, "member_name": 1}},
+            {
+                "$project": {
+                    "_id": 0,
+                    "member_id": "$_id",
+                    "member_name": 1,
+                    "total_duration": 1,
+                    "total_watches": 1,
+                }
+            },
+            {"$skip": skip},
+            {"$limit": limit},
+        ]
+        cursor = self.watched_col.aggregate(pipeline)
+        return [doc async for doc in cursor]
