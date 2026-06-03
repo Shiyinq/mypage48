@@ -80,9 +80,7 @@
 				>
 					{title}
 				</h3>
-				<p
-					class="text-xs font-semibold text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl"
-				>
+				<p class="text-xs font-semibold text-slate-500 dark:text-slate-400 leading-relaxed">
 					{desc}
 				</p>
 			</div>
