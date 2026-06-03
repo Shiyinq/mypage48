@@ -8,8 +8,8 @@ from src.logging_config import create_logger
 
 class LiveHistoryRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
-        self.db = db
-        self.collection = db.live_history
+        self.watched_col = db.watched_live_history
+        self.history_col = db.live_history
         self.logger = create_logger("live_history_repository", __name__)
 
     async def update_watch_duration(
@@ -32,7 +32,7 @@ class LiveHistoryRepository:
             if live_title:
                 set_fields["live_title"] = live_title
 
-            result = await self.collection.update_one(
+            result = await self.watched_col.update_one(
                 {
                     "user_id": user_id,
                     "live_id": live_id,
@@ -55,7 +55,7 @@ class LiveHistoryRepository:
         self, user_id: str, skip: int = 0, limit: int = 20
     ) -> List[Dict[str, Any]]:
         cursor = (
-            self.collection.find({"user_id": user_id})
+            self.watched_col.find({"user_id": user_id})
             .sort("last_updated_at", -1)
             .skip(skip)
             .limit(limit)
@@ -66,7 +66,7 @@ class LiveHistoryRepository:
         self, user_id: str, member_id: str, skip: int = 0, limit: int = 20
     ) -> List[Dict[str, Any]]:
         cursor = (
-            self.collection.find({"user_id": user_id, "member_id": member_id})
+            self.watched_col.find({"user_id": user_id, "member_id": member_id})
             .sort("last_updated_at", -1)
             .skip(skip)
             .limit(limit)
@@ -79,7 +79,7 @@ class LiveHistoryRepository:
         query = {"user_id": user_id}
         if member_id:
             query["member_id"] = member_id
-        return await self.collection.count_documents(query)
+        return await self.watched_col.count_documents(query)
 
     async def get_overall_stats(self, user_id: str) -> Dict[str, Any]:
         pipeline = [
@@ -93,7 +93,7 @@ class LiveHistoryRepository:
                 }
             },
         ]
-        cursor = self.collection.aggregate(pipeline)
+        cursor = self.watched_col.aggregate(pipeline)
 
         total_duration = 0
         total_watches = 0
@@ -125,7 +125,7 @@ class LiveHistoryRepository:
             {"$match": {"user_id": user_id}},
             {"$group": {"_id": "$platform", "count": {"$sum": 1}}},
         ]
-        platform_cursor = self.collection.aggregate(platform_pipeline)
+        platform_cursor = self.watched_col.aggregate(platform_pipeline)
         platform_counts = {doc["_id"]: doc["count"] async for doc in platform_cursor}
 
         return {
@@ -146,7 +146,7 @@ class LiveHistoryRepository:
         if member_id:
             query["member_id"] = member_id
 
-        longest_doc = await self.collection.find_one(query, sort=[("duration", -1)])
+        longest_doc = await self.watched_col.find_one(query, sort=[("duration", -1)])
 
         if not longest_doc:
             return None
@@ -170,7 +170,7 @@ class LiveHistoryRepository:
                 }
             },
         ]
-        cursor = self.collection.aggregate(pipeline)
+        cursor = self.watched_col.aggregate(pipeline)
         results = [doc async for doc in cursor]
 
         if not results:
@@ -188,7 +188,7 @@ class LiveHistoryRepository:
             {"$match": {"user_id": user_id, "member_id": member_id}},
             {"$group": {"_id": "$platform", "count": {"$sum": 1}}},
         ]
-        platform_cursor = self.collection.aggregate(platform_pipeline)
+        platform_cursor = self.watched_col.aggregate(platform_pipeline)
         platform_counts = {doc["_id"]: doc["count"] async for doc in platform_cursor}
 
         return {
@@ -206,7 +206,7 @@ class LiveHistoryRepository:
             platform = live_data["platform"]
 
             # Find existing
-            existing = await self.db.global_live_history.find_one(
+            existing = await self.history_col.find_one(
                 {"live_id": live_id, "platform": platform}
             )
             now = datetime.datetime.now(datetime.timezone.utc)
@@ -216,7 +216,7 @@ class LiveHistoryRepository:
                 view_num = max(
                     existing.get("view_num", 0), live_data.get("view_num", 0)
                 )
-                await self.db.global_live_history.update_one(
+                await self.history_col.update_one(
                     {"_id": existing["_id"]},
                     {
                         "$set": {
@@ -234,7 +234,7 @@ class LiveHistoryRepository:
                 live_data["status"] = "live"
                 if not live_data.get("start_at"):
                     live_data["start_at"] = now
-                await self.db.global_live_history.insert_one(live_data)
+                await self.history_col.insert_one(live_data)
         except Exception as e:
             self.logger.error(f"Failed to upsert global live: {e}")
 
@@ -242,7 +242,7 @@ class LiveHistoryRepository:
         """Mark lives that are currently 'live' but not in current_live_ids as 'ended'."""
         try:
             # Find all lives currently marked as 'live'
-            cursor = self.db.global_live_history.find({"status": "live"})
+            cursor = self.history_col.find({"status": "live"})
             async for doc in cursor:
                 live_id = doc.get("live_id")
                 if live_id not in current_live_ids:
@@ -260,7 +260,7 @@ class LiveHistoryRepository:
                             )
                         duration = int((last_seen_at - start_at).total_seconds())
 
-                    await self.db.global_live_history.update_one(
+                    await self.history_col.update_one(
                         {"_id": doc["_id"]},
                         {
                             "$set": {
@@ -276,13 +276,8 @@ class LiveHistoryRepository:
     async def get_global_history(
         self, skip: int = 0, limit: int = 20
     ) -> List[Dict[str, Any]]:
-        cursor = (
-            self.db.global_live_history.find()
-            .sort("start_at", -1)
-            .skip(skip)
-            .limit(limit)
-        )
+        cursor = self.history_col.find().sort("start_at", -1).skip(skip).limit(limit)
         return [doc async for doc in cursor]
 
     async def get_total_global_history_count(self) -> int:
-        return await self.db.global_live_history.count_documents({})
+        return await self.history_col.count_documents({})
