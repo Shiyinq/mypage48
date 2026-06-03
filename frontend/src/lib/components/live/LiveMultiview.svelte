@@ -32,7 +32,8 @@
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import MultiPlayer from '$lib/components/live/MultiPlayer.svelte';
-	import { showToast, isImmersive } from '$lib/stores';
+	import { showToast, isImmersive, isAuthenticated } from '$lib/stores';
+	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
@@ -171,6 +172,39 @@
 				document.body.style.overflow = '';
 				isImmersive.set(false);
 			}
+		};
+	});
+
+	// Heartbeat for live history tracking
+	$effect(() => {
+		const heartbeatInterval = setInterval(() => {
+			if (!isAuthenticated.value) return;
+
+			// Track all active streams in multiview slots
+			slots.forEach((slot) => {
+				const platform = slot.platform || '';
+				const liveId = slot.live_id || slot.room_url_key || slot.room_id || '';
+				const memberId = slot.member?.id || slot.room_url_key || '';
+				const memberName = slot.member?.name || slot.title || 'Unknown';
+				const memberNickname = slot.member?.nickname || undefined;
+				const title = slot.title;
+
+				if (liveId && platform) {
+					liveHistoryStore.updateWatchDuration(
+						liveId,
+						memberId,
+						memberName,
+						memberNickname,
+						platform,
+						30,
+						title
+					);
+				}
+			});
+		}, 30000);
+
+		return () => {
+			clearInterval(heartbeatInterval);
 		};
 	});
 
