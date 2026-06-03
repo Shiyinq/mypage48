@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, Field
+
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
 
 class LiveHistoryUpdateRequest(BaseModel):
@@ -70,3 +72,26 @@ class PaginationMeta(BaseModel):
 class LiveHistoryPaginationResponse(BaseModel):
     data: List[LiveHistoryResponse]
     meta: PaginationMeta
+
+
+class GlobalLiveHistory(BaseModel):
+    id: PyObjectId = Field(..., alias="_id")
+    live_id: str
+    platform: str
+    title: Optional[str] = None
+    image: Optional[str] = None
+    view_num: int = 0
+    start_at: datetime
+    end_at: Optional[datetime] = None
+    last_seen_at: datetime
+    status: str = "live"
+    member: dict
+    duration: int = 0
+
+
+class GlobalLiveHistoryPaginationResponse(BaseModel):
+    data: List[GlobalLiveHistory]
+    total: int
+    page: int
+    limit: int
+    total_pages: int

@@ -1,15 +1,28 @@
 import { liveHistoryApi } from '$lib/apis/liveHistory';
-import type { LiveHistory, LiveHistoryStats, MemberLiveHistoryStats } from '$lib/types/liveHistory';
+import type {
+	LiveHistory,
+	LiveHistoryStats,
+	MemberLiveHistoryStats,
+	GlobalLiveHistory
+} from '$lib/types/liveHistory';
 import { logger } from '$lib/utils/logger';
 
 class LiveHistoryStore {
 	// State
 	list = $state<LiveHistory[]>([]);
+	globalList = $state<GlobalLiveHistory[]>([]);
 	overallStats = $state<LiveHistoryStats | null>(null);
 	memberStats = $state<Record<string, MemberLiveHistoryStats>>({});
 	isLoading = $state(false);
 	error = $state<string | null>(null);
 	lastUpdated = $state<number>(0);
+
+	globalPagination = $state({
+		page: 1,
+		limit: 20,
+		total: 0,
+		total_pages: 1
+	});
 
 	pagination = $state({
 		current_page: 1,
@@ -59,6 +72,49 @@ class LiveHistoryStore {
 			this.error = (err as Error).message || 'Failed to load live history';
 			logger.error('LiveHistoryStore load error:', err);
 			throw err;
+		} finally {
+			this.isLoading = false;
+		}
+	}
+
+	async loadGlobal(page: number = 1, force: boolean = false) {
+		if (this.isLoading) return;
+
+		if (force) {
+			this.globalList = [];
+			this.globalPagination = {
+				page: 1,
+				limit: 20,
+				total: 0,
+				total_pages: 1
+			};
+		}
+
+		try {
+			this.isLoading = true;
+			this.error = null;
+
+			const response = await liveHistoryApi.getGlobalHistory(page, 20);
+
+			if (page === 1) {
+				this.globalList = response.data;
+			} else {
+				const newItems = response.data.filter(
+					(newItem) => !this.globalList.some((existingItem) => existingItem._id === newItem._id)
+				);
+				this.globalList = [...this.globalList, ...newItems];
+			}
+
+			this.globalPagination = {
+				page: response.page,
+				limit: response.limit,
+				total: response.total,
+				total_pages: response.total_pages
+			};
+			this.lastUpdated = Date.now();
+		} catch (e: unknown) {
+			logger.error('Failed to load global live history', e);
+			this.error = (e as Error).message || 'Failed to load global live history';
 		} finally {
 			this.isLoading = false;
 		}

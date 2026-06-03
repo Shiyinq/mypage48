@@ -8,6 +8,7 @@ from src.logging_config import create_logger
 
 class LiveHistoryRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
+        self.db = db
         self.collection = db.live_history
         self.logger = create_logger("live_history_repository", __name__)
 
@@ -197,3 +198,91 @@ class LiveHistoryRepository:
             "platform_counts": platform_counts,
             "longest_watch": longest_watch,
         }
+
+    async def upsert_global_live(self, live_data: Dict[str, Any]) -> None:
+        """Upsert a live stream into the global history."""
+        try:
+            live_id = live_data["live_id"]
+            platform = live_data["platform"]
+
+            # Find existing
+            existing = await self.db.global_live_history.find_one(
+                {"live_id": live_id, "platform": platform}
+            )
+            now = datetime.datetime.now(datetime.timezone.utc)
+
+            if existing:
+                # Update max view_num
+                view_num = max(
+                    existing.get("view_num", 0), live_data.get("view_num", 0)
+                )
+                await self.db.global_live_history.update_one(
+                    {"_id": existing["_id"]},
+                    {
+                        "$set": {
+                            "view_num": view_num,
+                            "last_seen_at": now,
+                            "title": live_data.get("title"),
+                            "image": live_data.get("image"),
+                            "status": "live",
+                        }
+                    },
+                )
+            else:
+                # Insert new
+                live_data["last_seen_at"] = now
+                live_data["status"] = "live"
+                if not live_data.get("start_at"):
+                    live_data["start_at"] = now
+                await self.db.global_live_history.insert_one(live_data)
+        except Exception as e:
+            self.logger.error(f"Failed to upsert global live: {e}")
+
+    async def mark_missing_lives_as_ended(self, current_live_ids: List[str]) -> None:
+        """Mark lives that are currently 'live' but not in current_live_ids as 'ended'."""
+        try:
+            # Find all lives currently marked as 'live'
+            cursor = self.db.global_live_history.find({"status": "live"})
+            async for doc in cursor:
+                live_id = doc.get("live_id")
+                if live_id not in current_live_ids:
+                    # Calculate duration
+                    start_at = doc.get("start_at")
+                    last_seen_at = doc.get("last_seen_at")
+                    duration = 0
+                    if start_at and last_seen_at:
+                        # Ensure both are offset-aware for subtraction
+                        if start_at.tzinfo is None:
+                            start_at = start_at.replace(tzinfo=datetime.timezone.utc)
+                        if last_seen_at.tzinfo is None:
+                            last_seen_at = last_seen_at.replace(
+                                tzinfo=datetime.timezone.utc
+                            )
+                        duration = int((last_seen_at - start_at).total_seconds())
+
+                    await self.db.global_live_history.update_one(
+                        {"_id": doc["_id"]},
+                        {
+                            "$set": {
+                                "status": "ended",
+                                "end_at": last_seen_at,
+                                "duration": duration,
+                            }
+                        },
+                    )
+        except Exception as e:
+            self.logger.error(f"Failed to mark missing lives as ended: {e}")
+
+    async def get_global_history(
+        self, skip: int = 0, limit: int = 20
+    ) -> List[Dict[str, Any]]:
+        cursor = (
+            self.db.global_live_history.find()
+            .sort("start_at", -1)
+            .skip(skip)
+            .limit(limit)
+        )
+        return [doc async for doc in cursor]
+
+    async def get_total_global_history_count(self) -> int:
+        return await self.db.global_live_history.count_documents({})

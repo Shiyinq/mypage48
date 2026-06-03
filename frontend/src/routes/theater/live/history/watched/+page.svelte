@@ -317,7 +317,9 @@
 								{t('liveHistory.longestWatch')}
 							</p>
 							<p class="text-xl sm:text-2xl font-black truncate">
-								{overallStats.longest_watch ? formatDuration(overallStats.longest_watch.duration) : '-'}
+								{overallStats.longest_watch
+									? formatDuration(overallStats.longest_watch.duration)
+									: '-'}
 							</p>
 							{#if overallStats.longest_watch}
 								<div class="flex items-center gap-1.5 mt-0.5 min-w-0">
