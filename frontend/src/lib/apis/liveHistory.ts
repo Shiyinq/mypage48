@@ -14,9 +14,14 @@ import type {
 export const liveHistoryApi = {
 	getGlobalHistory: async (
 		page: number = 1,
-		limit: number = 20
+		limit: number = 20,
+		startDate?: string,
+		endDate?: string
 	): Promise<GlobalLiveHistoryResponse> => {
-		return client<GlobalLiveHistoryResponse>(`/history/lives?page=${page}&limit=${limit}`);
+		let url = `/history/lives?page=${page}&limit=${limit}`;
+		if (startDate) url += `&start_date=${startDate}`;
+		if (endDate) url += `&end_date=${endDate}`;
+		return client<GlobalLiveHistoryResponse>(url);
 	},
 
 	updateWatchDuration: async (data: LiveHistoryUpdateRequest): Promise<void> => {
@@ -30,56 +35,95 @@ export const liveHistoryApi = {
 	getWatchedHistory: async (
 		page: number = 1,
 		limit: number = 20,
-		memberId?: string
+		memberId?: string,
+		startDate?: string,
+		endDate?: string
 	): Promise<LiveHistoryResponse> => {
 		let url = `/history/lives/watched?page=${page}&limit=${limit}`;
 		if (memberId) {
 			url += `&member_id=${memberId}`;
 		}
+		if (startDate) url += `&start_date=${startDate}`;
+		if (endDate) url += `&end_date=${endDate}`;
 		return client<LiveHistoryResponse>(url);
 	},
 
-	getWatchedStats: async (): Promise<LiveHistoryStats> => {
-		return client<LiveHistoryStats>('/history/lives/watched/stats');
+	getWatchedStats: async (startDate?: string, endDate?: string): Promise<LiveHistoryStats> => {
+		let url = '/history/lives/watched/stats?';
+		if (startDate) url += `&start_date=${startDate}`;
+		if (endDate) url += `&end_date=${endDate}`;
+		return client<LiveHistoryStats>(url);
 	},
 
-	getWatchedMemberStats: async (memberId: string): Promise<MemberLiveHistoryStats> => {
-		return client<MemberLiveHistoryStats>(`/history/lives/watched/members/${memberId}/stats`);
+	getWatchedMemberStats: async (
+		memberId: string,
+		startDate?: string,
+		endDate?: string
+	): Promise<MemberLiveHistoryStats> => {
+		let url = `/history/lives/watched/members/${memberId}/stats?`;
+		if (startDate) url += `&start_date=${startDate}`;
+		if (endDate) url += `&end_date=${endDate}`;
+		return client<MemberLiveHistoryStats>(url);
 	},
 
 	getWatchedLiveMembersRanking: async (
 		page: number = 1,
-		limit: number = 20
+		limit: number = 20,
+		startDate?: string,
+		endDate?: string
 	): Promise<WatchedLiveMemberRankingResponse> => {
-		return client<WatchedLiveMemberRankingResponse>(
-			`/history/lives/watched/members/ranking?page=${page}&limit=${limit}`
-		);
+		let url = `/history/lives/watched/members/ranking?page=${page}&limit=${limit}`;
+		if (startDate) url += `&start_date=${startDate}`;
+		if (endDate) url += `&end_date=${endDate}`;
+		return client<WatchedLiveMemberRankingResponse>(url);
 	},
 
-	getGlobalStats: async (): Promise<GlobalLiveHistoryStats> => {
-		return client<GlobalLiveHistoryStats>('/history/lives/stats');
+	getGlobalStats: async (startDate?: string, endDate?: string): Promise<GlobalLiveHistoryStats> => {
+		let url = '/history/lives/stats';
+		const params = new URLSearchParams();
+		if (startDate) params.append('start_date', startDate);
+		if (endDate) params.append('end_date', endDate);
+		const qs = params.toString();
+		if (qs) url += `?${qs}`;
+		return client<GlobalLiveHistoryStats>(url);
 	},
 
 	getGlobalMembersRanking: async (
 		page: number = 1,
-		limit: number = 20
+		limit: number = 20,
+		startDate?: string,
+		endDate?: string
 	): Promise<GlobalLiveMemberRankingResponse> => {
-		return client<GlobalLiveMemberRankingResponse>(
-			`/history/lives/members/ranking?page=${page}&limit=${limit}`
-		);
+		let url = `/history/lives/members/ranking?page=${page}&limit=${limit}`;
+		if (startDate) url += `&start_date=${startDate}`;
+		if (endDate) url += `&end_date=${endDate}`;
+		return client<GlobalLiveMemberRankingResponse>(url);
 	},
 
 	getGlobalMemberHistory: async (
 		memberId: string,
 		page: number = 1,
-		limit: number = 20
+		limit: number = 20,
+		startDate?: string,
+		endDate?: string
 	): Promise<GlobalLiveHistoryResponse> => {
-		return client<GlobalLiveHistoryResponse>(
-			`/history/lives/members/${memberId}?page=${page}&limit=${limit}`
-		);
+		let url = `/history/lives/members/${memberId}?page=${page}&limit=${limit}`;
+		if (startDate) url += `&start_date=${startDate}`;
+		if (endDate) url += `&end_date=${endDate}`;
+		return client<GlobalLiveHistoryResponse>(url);
 	},
 
-	getGlobalMemberStats: async (memberId: string): Promise<GlobalSingleMemberLiveHistoryStats> => {
-		return client<GlobalSingleMemberLiveHistoryStats>(`/history/lives/members/${memberId}/stats`);
+	getGlobalMemberStats: async (
+		memberId: string,
+		startDate?: string,
+		endDate?: string
+	): Promise<GlobalSingleMemberLiveHistoryStats> => {
+		let url = `/history/lives/members/${memberId}/stats`;
+		const params = new URLSearchParams();
+		if (startDate) params.append('start_date', startDate);
+		if (endDate) params.append('end_date', endDate);
+		const qs = params.toString();
+		if (qs) url += `?${qs}`;
+		return client<GlobalSingleMemberLiveHistoryStats>(url);
 	}
 };

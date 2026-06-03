@@ -8,3 +8,7 @@ class LiveHistoryNotFoundError(DomainException):
 
 class LiveHistoryUpdateError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.LIVE_HISTORY_UPDATE_ERROR
+
+
+class InvalidDateError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_DATE_FORMAT_ERROR

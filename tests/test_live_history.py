@@ -339,3 +339,28 @@ async def test_get_global_member_stats(client, db, seed_global_live_history):
     assert data["longest_live"] is not None
     assert data["longest_live"]["duration"] == 3600
     # Both gl1 and gl2 have duration 3600, so longest platform will be one of them (likely IDN or showroom)
+
+@pytest.mark.asyncio
+async def test_invalid_date_format(client: AsyncClient, db, create_user):
+    """Test getting history with invalid date formats."""
+    token, user_id, headers = await create_user("invalid_date_user")
+
+    # Invalid format completely
+    response = await client.get("/api/history/lives/watched?start_date=invalid-date", headers=headers)
+    assert response.status_code == 400
+    assert "INVALID_DATE_FORMAT" in response.json()["detail"]
+
+    # Invalid calendar date (e.g., June 31st)
+    response2 = await client.get("/api/history/lives/watched?start_date=2025-06-31", headers=headers)
+    assert response2.status_code == 400
+    assert "INVALID_DATE_FORMAT" in response2.json()["detail"]
+
+    # Invalid end_date
+    response3 = await client.get("/api/history/lives/watched?end_date=2025-13-01", headers=headers)
+    assert response3.status_code == 400
+    assert "INVALID_DATE_FORMAT" in response3.json()["detail"]
+
+    # Global stats invalid date
+    response4 = await client.get("/api/history/lives/stats?start_date=31-juni-2025")
+    assert response4.status_code == 400
+    assert "INVALID_DATE_FORMAT" in response4.json()["detail"]

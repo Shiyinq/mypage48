@@ -1358,6 +1358,11 @@
 		"globalRankingSubtitle": "Member paling sering live",
 		"liveHistory": "Riwayat Live",
 		"totalLivePlatform": "Total Live Platform",
-		"views": "Views"
+		"views": "Views",
+		"thisWeek": "Minggu Ini",
+		"thisMonth": "Bulan Ini",
+		"thisYear": "Tahun Ini",
+		"allTime": "Semua Waktu",
+		"customRange": "Rentang Kustom"
 	}
 }

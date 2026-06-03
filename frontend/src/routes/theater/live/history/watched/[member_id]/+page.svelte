@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
+	import { untrack, onMount } from 'svelte';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
+	import { liveHistoryFilterStore } from '$lib/stores/liveHistoryFilter.svelte';
 	import { EmptyState } from '$lib/components';
 	import { History, Clock, Activity, PlaySquare, Smartphone } from 'lucide-svelte';
 	import { formatLiveDate, formatDurationSeconds, parseUTCDate } from '$lib/utils/time';
@@ -36,8 +37,6 @@
 		mounted = true;
 		isImmersive.set(true);
 		document.body.style.overflow = 'hidden';
-		loadHistory(1);
-		liveHistoryStore.loadMemberStats(memberId);
 		membersStore.load({ limit: 100 });
 
 		return () => {
@@ -47,11 +46,14 @@
 		};
 	});
 
-	// Re-load if memberId changes
 	$effect(() => {
-		if (mounted && liveHistoryStore.currentMemberFilter !== memberId) {
-			loadHistory(1, true);
-			liveHistoryStore.loadMemberStats(memberId);
+		// React to dateRange or memberId changes
+		const _range = liveHistoryFilterStore.dateRange;
+		if (mounted) {
+			untrack(() => {
+				loadHistory(1, true);
+				liveHistoryStore.loadMemberStats(memberId);
+			});
 		}
 	});
 
@@ -89,6 +91,7 @@
 		subtitle={t('liveHistory.subtitle')}
 		icon={History}
 		iconColor="text-red-500"
+		showDateFilter={true}
 	/>
 
 	<!-- Main Content -->

@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
+	import { liveHistoryFilterStore } from '$lib/stores/liveHistoryFilter.svelte';
 	import { EmptyState } from '$lib/components';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
@@ -54,6 +55,20 @@
 		if (force) initialLoading = false;
 	}
 
+	$effect(() => {
+		// This will re-trigger whenever filterType or customRange changes
+		const _trigger =
+			liveHistoryFilterStore.filterType +
+			liveHistoryFilterStore.customRange.start +
+			liveHistoryFilterStore.customRange.end;
+		if (mounted) {
+			untrack(() => {
+				loadHistory(1, true);
+				liveHistoryStore.loadGlobalStats();
+			});
+		}
+	});
+
 	function handleIntersect() {
 		if (!mounted || isLoading || !hasMore) return;
 		loadHistory(pagination.page + 1);
@@ -82,10 +97,11 @@
 	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
 
 	<HistoryTopBar
-		title={t('liveHistory.globalTitle')}
+		title={t('liveHistory.jkt48Title')}
 		subtitle={t('liveHistory.globalSubtitle')}
 		icon={History}
 		iconColor="text-red-500"
+		showDateFilter={true}
 	/>
 
 	<!-- Main Content -->
@@ -146,14 +162,16 @@
 						{/snippet}
 					</LiveStatCard>
 
-					{#if globalStats.highest_view_live}
-						<LiveStatCard
-							title={t('liveHistory.highestViews')}
-							value={`${globalStats.highest_view_live.duration.toLocaleString()} ${t('liveHistory.views')}`}
-							icon={Eye}
-							color="emerald"
-						>
-							{#snippet subtitle()}
+					<LiveStatCard
+						title={t('liveHistory.highestViews')}
+						value={globalStats.highest_view_live
+							? `${globalStats.highest_view_live.duration.toLocaleString()} ${t('liveHistory.views')}`
+							: '-'}
+						icon={Eye}
+						color="emerald"
+					>
+						{#snippet subtitle()}
+							{#if globalStats.highest_view_live}
 								<div class="flex items-center gap-1.5 mt-0.5 min-w-0">
 									{#if globalStats.highest_view_live?.member_name}
 										<span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 truncate"
@@ -164,9 +182,9 @@
 										<PlatformLogo platform={globalStats.highest_view_live.platform} size="sm" />
 									{/if}
 								</div>
-							{/snippet}
-						</LiveStatCard>
-					{/if}
+							{/if}
+						{/snippet}
+					</LiveStatCard>
 				</div>
 			{:else if isLoadingStats}
 				<div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
@@ -186,7 +204,7 @@
 				</div>
 			{/if}
 
-			{#if initialLoading}
+			{#if initialLoading || (isLoading && list.length === 0)}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each Array(6) as _}
 						<LiveHistoryItemSkeleton />

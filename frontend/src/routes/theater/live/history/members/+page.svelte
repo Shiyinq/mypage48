@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
+	import { liveHistoryFilterStore } from '$lib/stores/liveHistoryFilter.svelte';
 	import { History, Trophy } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { isImmersive } from '$lib/stores';
@@ -26,10 +27,13 @@
 	let isLoading = $derived(liveHistoryStore.isLoading);
 	let hasMore = $derived(pagination.current_page < pagination.last_page);
 
+	let mounted = $state(false);
+
 	onMount(() => {
+		mounted = true;
 		isImmersive.set(true);
 		document.body.style.overflow = 'hidden';
-		loadRanking(1);
+		loadRanking(1, true);
 		membersStore.load({ limit: 100 });
 
 		return () => {
@@ -38,9 +42,21 @@
 		};
 	});
 
-	async function loadRanking(page: number) {
-		await liveHistoryStore.loadGlobalMembersRanking(page);
+	async function loadRanking(page: number, force: boolean = false) {
+		await liveHistoryStore.loadGlobalMembersRanking(page, force);
 	}
+
+	$effect(() => {
+		const _trigger =
+			liveHistoryFilterStore.filterType +
+			liveHistoryFilterStore.customRange.start +
+			liveHistoryFilterStore.customRange.end;
+		if (mounted) {
+			untrack(() => {
+				loadRanking(1, true);
+			});
+		}
+	});
 
 	function handleIntersect() {
 		if (isLoading || !hasMore) return;
@@ -78,6 +94,7 @@
 		subtitle={t('liveHistory.globalRankingSubtitle')}
 		icon={Trophy}
 		iconColor="text-purple-500"
+		showDateFilter={true}
 	/>
 
 	<!-- Main Content -->

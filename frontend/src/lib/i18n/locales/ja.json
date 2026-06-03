@@ -1357,6 +1357,11 @@
 		"liveHistory": "ライブ履歴",
 		"longestLive": "最長ライブ",
 		"totalLivePlatform": "総ライブプラットフォーム",
-		"views": "視聴"
+		"views": "回視聴",
+		"thisWeek": "今週",
+		"thisMonth": "今月",
+		"thisYear": "今年",
+		"allTime": "全期間",
+		"customRange": "カスタム期間"
 	}
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { untrack, onMount } from 'svelte';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
+	import { liveHistoryFilterStore } from '$lib/stores/liveHistoryFilter.svelte';
 	import { Trophy, History } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { isImmersive } from '$lib/stores';
@@ -24,10 +25,12 @@
 	let isLoading = $derived(liveHistoryStore.isLoading);
 	let hasMore = $derived(pagination.current_page < pagination.last_page);
 
+	let mounted = $state(false);
+
 	onMount(() => {
+		mounted = true;
 		isImmersive.set(true);
 		document.body.style.overflow = 'hidden';
-		loadRanking(1);
 		membersStore.load({ limit: 100 });
 
 		return () => {
@@ -36,12 +39,22 @@
 		};
 	});
 
+	$effect(() => {
+		// React to dateRange changes
+		const _range = liveHistoryFilterStore.dateRange;
+		if (mounted) {
+			untrack(() => {
+				loadRanking(1);
+			});
+		}
+	});
+
 	async function loadRanking(page: number) {
 		await liveHistoryStore.loadMembersRanking(page);
 	}
 
 	function handleIntersect() {
-		if (isLoading || !hasMore) return;
+		if (!mounted || isLoading || !hasMore) return;
 		loadRanking(pagination.current_page + 1);
 	}
 
@@ -78,6 +91,7 @@
 		subtitle={t('liveHistory.rankingSubtitle')}
 		icon={Trophy}
 		iconColor="text-purple-500"
+		showDateFilter={true}
 	/>
 
 	<!-- Main Content -->
