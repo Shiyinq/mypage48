@@ -1326,8 +1326,8 @@
 		"cancelImage": "キャンセル"
 	},
 	"liveHistory": {
-		"title": "ライブ視聴履歴",
-		"subtitle": "JKT48メンバーのライブ視聴履歴",
+		"title": "視聴履歴",
+		"subtitle": "あなたのライブ視聴履歴",
 		"totalWatches": "総視聴回数",
 		"totalDuration": "総視聴時間",
 		"membersWatched": "視聴したメンバー",
@@ -1341,9 +1341,9 @@
 		"platformWatches": "視聴プラットフォーム",
 		"viewHistory": "視聴履歴",
 		"watchedFor": "視聴時間",
-		"globalTitle": "全ライブ履歴",
-		"globalSubtitle": "記録されたすべてのJKT48メンバーライブのアーカイブ",
-		"globalButtonSubtitle": "すべての履歴",
+		"globalTitle": "ライブ履歴",
+		"globalSubtitle": "記録されたすべてのライブ履歴",
+		"globalButtonSubtitle": "すべてのライブ",
 		"globalButton": "ライブ履歴"
 	}
 }

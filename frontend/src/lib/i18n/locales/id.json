@@ -1328,8 +1328,8 @@
 		"cancelImage": "Batal"
 	},
 	"liveHistory": {
-		"title": "Riwayat Nonton Live",
-		"subtitle": "Riwayat menonton live member JKT48",
+		"title": "Riwayat Nonton",
+		"subtitle": "Riwayat menonton live kamu",
 		"totalWatches": "Total Menonton",
 		"totalDuration": "Total Durasi",
 		"membersWatched": "Member Ditonton",
@@ -1343,9 +1343,9 @@
 		"platformWatches": "Platform Menonton",
 		"viewHistory": "Riwayat Menonton",
 		"watchedFor": "Menonton",
-		"globalTitle": "Semua Riwayat Live",
-		"globalSubtitle": "Arsip seluruh live member JKT48 yang pernah tercatat",
-		"globalButtonSubtitle": "Semua Riwayat",
-		"globalButton": "Live History"
+		"globalTitle": "Riwayat Live",
+		"globalSubtitle": "Riwayat seluruh live yang tercatat",
+		"globalButtonSubtitle": "Semua Live",
+		"globalButton": "Riwayat Live"
 	}
 }
