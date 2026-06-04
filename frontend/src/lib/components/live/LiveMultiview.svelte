@@ -490,7 +490,7 @@
 		<!-- Member Picker Sidebar -->
 		{#if showPicker}
 			<div
-				class="fixed md:relative top-14 md:top-0 left-0 w-full md:w-72 h-[calc(100vh-56px)] md:h-auto border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col z-[5000]"
+				class="fixed md:relative top-14 md:top-0 left-0 w-full md:w-72 h-[calc(100dvh-56px)] md:h-auto border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col z-[5000]"
 				transition:fly={{ x: isMobile ? -500 : -288, duration: 300 }}
 			>
 				<div class="p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center gap-2">
@@ -600,7 +600,7 @@
 							: ''} {draggedIndex === i
 							? 'opacity-20 translate-y-2'
 							: ''} group shadow-sm transition-all hover:shadow-md text-left cursor-pointer transition-[aspect-ratio,transform,opacity] duration-500 {isPortrait
-							? 'max-h-[calc(100vh-140px)]'
+							? 'max-h-[calc(100dvh-140px)]'
 							: ''} mx-auto w-full"
 						draggable="true"
 						ondragstart={() => handleDragStart(i)}
@@ -776,7 +776,7 @@
 		<!-- Switchable Chat Sidebar -->
 		{#if showChat}
 			<div
-				class="fixed md:relative top-14 md:top-0 right-0 w-full md:w-80 h-[calc(100vh-56px)] md:h-auto border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col z-[5000]"
+				class="fixed md:relative top-14 md:top-0 right-0 w-full md:w-80 h-[calc(100dvh-56px)] md:h-auto border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col z-[5000]"
 				transition:fly={{ x: isMobile ? 500 : 320, duration: 300 }}
 			>
 				{#if focusedStream}
