@@ -630,7 +630,7 @@
 
 						<!-- Slot Header (Overlay) -->
 						<div
-							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-gradient-to-b from-black/60 to-transparent"
+							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-b from-black/60 to-transparent"
 						>
 							<div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
 								<OptimizedImage
@@ -665,7 +665,7 @@
 
 						<!-- Slot Controls (Bottom Overlay) -->
 						<div
-							class="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-gradient-to-t from-black/60 to-transparent"
+							class="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-t from-black/60 to-transparent"
 						>
 							<div class="flex items-center gap-0 group/volume relative h-8">
 								<button
