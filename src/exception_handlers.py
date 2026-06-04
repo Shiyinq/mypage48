@@ -74,6 +74,16 @@ from src.live.http_exceptions import (
     ShowroomFetchFailed,
     StreamingUrlNotFound,
 )
+from src.live_history.exceptions import (
+    InvalidDateError,
+    LiveHistoryNotFoundError,
+    LiveHistoryUpdateError,
+)
+from src.live_history.http_exceptions import (
+    LiveHistoryInvalidDate,
+    LiveHistoryNotFound,
+    LiveHistoryUpdateFailed,
+)
 from src.llm.exceptions import ImageAnalysisError
 from src.llm.exceptions import ImageTooLargeError as LLMImageTooLargeError
 from src.llm.exceptions import InvalidImageError as LLMInvalidImageError
@@ -357,6 +367,14 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, ProxyRequestFailed())
     if isinstance(exc, CommentsFetchError):
         return await detailed_http_exception_handler(request, CommentsFetchFailed())
+
+    # Live History exceptions
+    if isinstance(exc, LiveHistoryNotFoundError):
+        return await detailed_http_exception_handler(request, LiveHistoryNotFound())
+    if isinstance(exc, LiveHistoryUpdateError):
+        return await detailed_http_exception_handler(request, LiveHistoryUpdateFailed())
+    if isinstance(exc, InvalidDateError):
+        return await detailed_http_exception_handler(request, LiveHistoryInvalidDate())
 
     # Export errors
     if isinstance(exc, ExportInProgressError):

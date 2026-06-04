@@ -2,7 +2,16 @@
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { goto } from '$app/navigation';
-	import { AudioLines, Users, Calendar, Newspaper, ArrowUpDown, Tv } from 'lucide-svelte';
+	import {
+		AudioLines,
+		Users,
+		Calendar,
+		Newspaper,
+		ArrowUpDown,
+		Tv,
+		Globe,
+		History
+	} from 'lucide-svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { liveList, isImmersive } from '$lib/stores';
 	import { newsStore } from '$lib/stores/news.svelte';
@@ -21,7 +30,7 @@
 	let isLiveListingPage = $derived(currentPath === '/theater/live');
 
 	// Check if on live single detail or multiview page — hide header for immersive player
-	let isLiveDetailPage = $derived(/^\/theater\/live\/.+/.test(currentPath));
+	let isLiveDetailPage = $derived(/^\/theater\/live\/(?!history).+/.test(currentPath));
 
 	// Check if on news detail page
 	let isNewsDetailPage = $derived(/^\/theater\/news\/.+/.test(currentPath));
@@ -116,6 +125,20 @@
 						onClick: () => goto('/theater/live/multiview'),
 						showLabel: true,
 						theme: 'gray'
+					},
+					{
+						icon: Globe,
+						label: t('liveHistory.globalButtonSubtitle') || 'Global',
+						onClick: () => goto('/theater/live/history'),
+						showLabel: false,
+						theme: 'gray'
+					},
+					{
+						icon: History,
+						label: t('liveHistory.buttonSubtitle') || 'History',
+						onClick: () => goto('/theater/live/history/watched'),
+						showLabel: false,
+						theme: 'gray'
 					}
 				]
 			: []
@@ -123,9 +146,11 @@
 </script>
 
 <div
-	class="{isLiveDetailPage || isNewsDetailPage || isDetailPage || isImmersive.value
+	class="{isLiveDetailPage || isImmersive.value
 		? 'max-w-none w-full'
-		: 'max-w-6xl'} mx-auto {isLiveDetailPage || isImmersive.value
+		: isNewsDetailPage || isDetailPage
+			? 'max-w-5xl w-full'
+			: 'max-w-6xl'} mx-auto {isLiveDetailPage || isImmersive.value
 		? 'pt-0 sm:pt-0 px-0'
 		: 'pt-4 sm:pt-6 px-4'} {isImmersive.value ? 'pb-0' : 'pb-24'}"
 >

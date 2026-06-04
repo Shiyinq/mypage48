@@ -79,7 +79,10 @@ export async function client<T>(
 		'/theater/setlists',
 		'/members',
 		'/events',
-		'/health'
+		'/health',
+		'/history/lives?page=',
+		'/history/lives/stats',
+		'/history/lives/members'
 	];
 
 	const isPublic = publicEndpoints.some((p) => endpoint.startsWith(p));

@@ -29,9 +29,19 @@ export function formatDuration(
 	if (isNaN(start)) return '';
 
 	const diff = Math.max(0, Math.floor((currentNow - start) / 1000));
-	const h = Math.floor(diff / 3600);
-	const m = Math.floor((diff % 3600) / 60);
-	const s = diff % 60;
+	return formatDurationSeconds(diff, showSeconds);
+}
+
+/**
+ * Format a duration in seconds into a human readable string.
+ * @param seconds Duration in seconds
+ * @param showSeconds If true, show seconds even when hours are present (default true)
+ * @returns Formatted duration string
+ */
+export function formatDurationSeconds(seconds: number, showSeconds: boolean = true): string {
+	const h = Math.floor(seconds / 3600);
+	const m = Math.floor((seconds % 3600) / 60);
+	const s = seconds % 60;
 
 	if (h > 0) {
 		if (showSeconds) {
@@ -75,4 +85,75 @@ export function parseIndonesianDate(dateStr: string | undefined | null): Date {
 		return new Date(`${engMonth} ${day}, ${year}`);
 	}
 	return new Date(dateStr);
+}
+
+/**
+ * Format a date into a relative time ago string using i18n.
+ *
+ * @param dateStr ISO date string
+ * @param t Translation function
+ * @returns Relative time string
+ */
+export function formatTimeAgo(
+	dateStr: string | undefined | null,
+	t: (key: string, vars?: Record<string, string | number>) => string
+): string {
+	if (!dateStr) return '';
+
+	let parsedDateStr = dateStr;
+	const timePart = dateStr.split('T')[1] || '';
+	if (!dateStr.endsWith('Z') && !timePart.includes('+') && !timePart.includes('-')) {
+		parsedDateStr = dateStr.trim().replace(' ', 'T');
+		if (!parsedDateStr.includes('T')) {
+			// fallback if it's just a date without time but no 'T'
+			parsedDateStr = parsedDateStr + 'T00:00:00';
+		}
+		parsedDateStr += 'Z';
+	}
+
+	const date = new Date(parsedDateStr).getTime();
+	if (isNaN(date)) return '';
+
+	const diffMs = new Date().getTime() - date;
+	const diffMins = Math.floor(diffMs / (1000 * 60));
+	const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+	if (diffMins < 1) {
+		return t('time.relative.justNow');
+	} else if (diffMins < 60) {
+		return t('time.relative.minsAgo', { count: diffMins });
+	} else if (diffHours < 24) {
+		return t('time.relative.hoursAgo', { count: diffHours });
+	} else if (diffDays === 1) {
+		return t('time.relative.yesterday');
+	} else if (diffDays < 7) {
+		return t('time.relative.daysAgo', { count: diffDays });
+	} else {
+		return t('time.relative.weeksAgo', { count: Math.floor(diffDays / 7) });
+	}
+}
+
+/**
+ * Ensures a date string is treated as UTC if it lacks timezone info.
+ */
+export function parseUTCDate(dateStr: string): Date {
+	if (!dateStr) return new Date(NaN);
+	const timePart = dateStr.split('T')[1] || '';
+	if (!dateStr.endsWith('Z') && !timePart.includes('+') && !timePart.includes('-')) {
+		return new Date(dateStr + 'Z');
+	}
+	return new Date(dateStr);
+}
+
+/**
+ * Format a date for Live History with the given locale.
+ */
+export function formatLiveDate(dateStr: string, locale: string = 'id'): string {
+	if (!dateStr) return '';
+	const localeMap: Record<string, string> = { id: 'id-ID', en: 'en-US', ja: 'ja-JP' };
+	return new Intl.DateTimeFormat(localeMap[locale] || 'id-ID', {
+		dateStyle: 'medium',
+		timeStyle: 'short'
+	}).format(parseUTCDate(dateStr));
 }

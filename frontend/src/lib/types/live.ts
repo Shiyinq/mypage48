@@ -1,5 +1,7 @@
 export interface LiveMember {
+	id?: string;
 	name: string;
+	nickname?: string;
 	img: string;
 	member_type?: string;
 }
@@ -13,6 +15,9 @@ export interface LiveStatus {
 	view_num: number;
 	title: string;
 	start_at?: string;
+	end_at?: string;
+	status?: string;
+	duration?: number;
 	member: LiveMember;
 	image?: string;
 }
