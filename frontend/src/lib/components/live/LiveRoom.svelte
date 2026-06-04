@@ -9,8 +9,9 @@
 		liveList,
 		liveStore
 	} from '$lib/stores/live.svelte';
+	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
 	import { OptimizedImage } from '$lib/components/common';
-	import { showToast, isImmersive, theme, setTheme } from '$lib/stores';
+	import { showToast, isImmersive, theme, setTheme, isAuthenticated } from '$lib/stores';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveStatus } from '$lib/types';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
@@ -144,6 +145,9 @@
 			const i = id as string;
 			if (!p || !i) throw new Error('Missing params');
 
+			if (liveList.value.length === 0) {
+				await liveStore.loadLiveList();
+			}
 			await liveStore.loadStream(p, i);
 
 			if (currentInit !== initCount) return;
@@ -307,8 +311,54 @@
 			}
 		}, 30000);
 
+		// Heartbeat for live history tracking
+		const heartbeatInterval = setInterval(() => {
+			if (
+				isAuthenticated.value &&
+				platform &&
+				id &&
+				videoElement &&
+				!videoElement.paused &&
+				!autoplayBlocked &&
+				currentStream.value
+			) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const currentStreamAny = currentStream.value as any;
+				const liveId =
+					streamFromList?.live_id ||
+					currentStreamAny.live_id ||
+					streamFromList?.room_url_key ||
+					currentStreamAny.room_url_key ||
+					id;
+				const memberId =
+					streamFromList?.member?.id ||
+					currentStream.value.member?.id ||
+					streamFromList?.room_url_key ||
+					currentStreamAny.room_url_key ||
+					id;
+				const memberName =
+					streamFromList?.member?.name ||
+					currentStream.value.member?.name ||
+					streamTitle ||
+					'Unknown';
+				const memberNickname =
+					streamFromList?.member?.nickname || currentStream.value.member?.nickname || undefined;
+
+				liveHistoryStore.updateWatchDuration(
+					liveId,
+					memberId,
+					memberName,
+					memberNickname,
+					platform,
+					30,
+					streamTitle
+				);
+			}
+		}, 30000);
+
 		return () => {
 			clearInterval(refreshInterval);
+			clearInterval(heartbeatInterval);
 			if (hls) hls.destroy();
 			if (recordingTimer) clearInterval(recordingTimer);
 			liveStore.reset();

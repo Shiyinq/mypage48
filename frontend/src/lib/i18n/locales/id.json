@@ -149,6 +149,14 @@
 			"achievements": {
 				"title": "PENCAPAIAN",
 				"description": "Buka lencana dan pencapaian saat kamu mendukung JKT48. Dari \"Pertunjukan Pertama\" hingga \"Fans Legendaris\", lacak kemajuanmu dan tunjukkan loyalitasmu."
+			},
+			"sorter": {
+				"title": "SORTER",
+				"description": "Urutkan member JKT48 favoritmu untuk mengetahui urutan oshi yang sebenarnya. Bagikan hasil sorter-mu ke media sosial."
+			},
+			"live": {
+				"title": "LIVE",
+				"description": "Tonton member JKT48 yang sedang siaran langsung di Showroom atau IDN Live. Tonton beberapa member sekaligus dengan fitur Multi-view."
 			}
 		},
 		"footer": {
@@ -922,6 +930,11 @@
 				"shareText": "Yuk pantau live streaming member JKT48 terupdate di mypage48! 🌟",
 				"toastSuccess": "Link website berhasil disalin!",
 				"toastError": "Gagal menyalin link."
+			},
+			"promo": {
+				"historyTitle": "Fitur Live History",
+				"historyDesc": "Kini kamu bisa melihat statistik riwayat tontonan live-mu sendiri lho! Yuk buat akun sekarang.",
+				"historyAction": "Daftar"
 			}
 		},
 		"news": {
@@ -1313,5 +1326,44 @@
 		"showSidebar": "Tampilkan Daftar",
 		"uploadingImage": "Mengunggah gambar...",
 		"cancelImage": "Batal"
+	},
+	"liveHistory": {
+		"title": "Riwayat Nonton",
+		"subtitle": "Riwayat menonton live kamu",
+		"totalWatches": "Total Menonton",
+		"totalDuration": "Total Durasi",
+		"membersWatched": "Member Ditonton",
+		"mostFrequent": "Paling Sering",
+		"recentHistory": "Riwayat Terakhir",
+		"noHistory": "Belum Ada Riwayat",
+		"noHistoryDesc": "Kamu belum pernah menonton live stream JKT48 yang tercatat.",
+		"times": "kali",
+		"buttonSubtitle": "Statistik Saya",
+		"longestWatch": "Nonton Terlama",
+		"platformWatches": "Platform Menonton",
+		"viewHistory": "Riwayat Menonton",
+		"watchedFor": "Menonton",
+		"globalTitle": "Riwayat Live",
+		"globalSubtitle": "Riwayat seluruh live yang tercatat",
+		"globalButtonSubtitle": "Semua Live",
+		"globalButton": "Riwayat Live",
+		"rankingTitle": "Peringkat Member",
+		"rankingSubtitle": "Member paling sering kamu tonton",
+		"globalStatsTitle": "Statistik Live",
+		"totalLives": "Total Live",
+		"uniqueMembers": "Member Unik",
+		"mostFrequentLive": "Paling Sering Live",
+		"highestViews": "Views Tertinggi",
+		"globalRankingTitle": "Peringkat Member Live",
+		"globalRankingSubtitle": "Member paling sering live",
+		"liveHistory": "Riwayat Live",
+		"longestLive": "Live Terlama",
+		"totalLivePlatform": "Total Live Platform",
+		"views": "Views",
+		"thisWeek": "Minggu Ini",
+		"thisMonth": "Bulan Ini",
+		"thisYear": "Tahun Ini",
+		"allTime": "Semua Waktu",
+		"customRange": "Rentang Kustom"
 	}
 }

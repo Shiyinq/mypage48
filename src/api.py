@@ -9,6 +9,7 @@ from src.export.router import router as export_router
 from src.feedback.route import router as feedback_router
 from src.health.route import router as health_router
 from src.live.route import router as live_router
+from src.live_history.route import router as live_history_router
 from src.llm.route import router as llm_router
 from src.members.route import router as members_router
 from src.memories.route import router as memories_router
@@ -42,4 +43,7 @@ router.include_router(export_router, prefix="/export", tags=["Export"])
 router.include_router(feedback_router, prefix="/feedback", tags=["Feedback"])
 router.include_router(news_router, prefix="/theater/news", tags=["News"])
 router.include_router(live_router, prefix="/jkt48/live", tags=["Live"])
+router.include_router(
+    live_history_router, prefix="/history/lives", tags=["Live History"]
+)
 router.include_router(playground_router, prefix="/playground", tags=["Playground"])
