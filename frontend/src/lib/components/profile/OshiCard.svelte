@@ -29,10 +29,10 @@
 	const { t } = useTranslation();
 </script>
 
-<div class="glass-panel p-0 rounded-3xl overflow-hidden relative">
+<div class="glass-panel p-0 rounded-3xl relative">
 	<!-- Banner -->
 	<div
-		class="h-32 w-full bg-[url('https://upload.wikimedia.org/wikipedia/commons/c/c7/JKT48_FIGHT_Logo_%282026%29.png')] bg-cover bg-[center_30%] relative"
+		class="h-32 w-full rounded-t-3xl overflow-hidden bg-[url('https://upload.wikimedia.org/wikipedia/commons/c/c7/JKT48_FIGHT_Logo_%282026%29.png')] bg-cover bg-[center_30%] relative"
 	>
 		<div
 			class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent dark:from-zinc-900 dark:via-zinc-900/50"
@@ -124,8 +124,9 @@
 							>
 								{t('profile.oshi.generationPattern', { gen: profile?.oshi?.generation })}
 							</span>
-							<div
-								class="group relative px-2 py-0.5 bg-blue-100 text-blue-600 rounded-md border border-blue-200 cursor-help flex items-center gap-1"
+							<button
+								type="button"
+								class="group relative px-2 py-0.5 bg-blue-100 text-blue-600 rounded-md border border-blue-200 cursor-help flex items-center gap-1 focus:outline-none"
 							>
 								<span class="text-[10px] font-bold uppercase tracking-wide whitespace-nowrap">
 									{t('profile.oshi.totalShowsPattern', { count: profile?.oshi?.totalShows || 0 })}
@@ -134,7 +135,7 @@
 
 								<!-- Tooltip -->
 								<div
-									class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-center pointer-events-none"
+									class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus:opacity-100 group-focus:visible transition-all z-50 text-center pointer-events-none"
 								>
 									{t('profile.oshi.showsTooltip')}
 									<!-- Triangle -->
@@ -142,7 +143,7 @@
 										class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-800"
 									></div>
 								</div>
-							</div>
+							</button>
 						</div>
 					</div>
 
