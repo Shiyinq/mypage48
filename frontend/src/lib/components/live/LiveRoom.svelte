@@ -285,18 +285,11 @@
 
 	$effect(() => {
 		const isLaptop = typeof window !== 'undefined' && window.innerWidth >= 1024;
-		if (isLaptop) {
-			isFocusMode = true;
-			isImmersive.set(true);
-			if (typeof document !== 'undefined') {
-				document.body.style.overflow = 'hidden';
-			}
-		} else {
-			isFocusMode = false;
-			isImmersive.set(false);
-			if (typeof document !== 'undefined') {
-				document.body.style.overflow = 'auto';
-			}
+		// Always enable immersive mode for live player to match public layout
+		isFocusMode = true;
+		isImmersive.set(true);
+		if (typeof document !== 'undefined') {
+			document.body.style.overflow = 'hidden';
 		}
 
 		const refreshInterval = setInterval(() => {
@@ -574,8 +567,8 @@
 
 <div
 	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out overflow-x-hidden {isFocusMode
-		? 'fixed inset-0 !top-0 !mt-0 z-[7000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-screen w-screen'
-		: 'h-[calc(100vh-72px)] sm:h-[calc(100vh-76px)] mt-2 sm:mt-3 px-0 sm:px-4 pb-2 sm:pb-4'}"
+		? 'fixed inset-0 !top-0 !mt-0 z-[7000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-[100dvh] w-screen'
+		: 'h-[calc(100dvh-72px)] sm:h-[calc(100dvh-76px)] mt-2 sm:mt-3 px-0 sm:px-4 pb-2 sm:pb-4'}"
 >
 	<!-- Main Player Area -->
 	<div class="flex-[1.5] lg:flex-1 flex flex-col gap-3 min-h-0 p-0">
@@ -593,7 +586,7 @@
 
 		<!-- Back Button & Info -->
 		<div
-			class="{isTheater ? 'hidden sm:flex' : 'flex'} items-center justify-between {isTheater
+			class="flex items-center justify-between {isTheater
 				? ''
 				: 'px-4 sm:px-0'}"
 		>
