@@ -2,6 +2,7 @@ import type { Member } from '$lib/apis/members';
 import { membersStore } from '$lib/stores/theater.svelte';
 import { showToast } from '$lib/stores';
 import { sorterApi, type SorterResponse } from '$lib/apis/sorter';
+import { goto } from '$app/navigation';
 
 /**
  * Calculates the total number of element moves in the sorter's merge sort implementation.
@@ -26,7 +27,7 @@ export function calculateTotalMoves(n: number): number {
 	return moves;
 }
 
-export type SorterState = 'landing' | 'sorting' | 'results' | 'history' | 'history-detail';
+export type SorterState = 'landing' | 'sorting' | 'results' | 'history';
 
 export interface ResultMember extends Member {
 	rank: number;
@@ -75,6 +76,8 @@ export function createSorter(
 	let savedHistories = $state<SorterResponse[]>([]);
 	let selectedHistory = $state<SorterResponse | null>(null);
 	let loadingHistory = $state(false);
+	let historyPage = $state(1);
+	let historyHasMore = $state(true);
 
 	// Animation State
 	let isAnimating = $state(false);
@@ -332,10 +335,28 @@ export function createSorter(
 		else showToast(t('theater.sorter.copyFailed'), 'error');
 	}
 
-	async function loadSavedHistories() {
+	async function loadSavedHistories(reset: boolean = false) {
+		if (reset) {
+			historyPage = 1;
+			historyHasMore = true;
+			savedHistories = [];
+		}
+		if (!historyHasMore || loadingHistory) return;
+
 		loadingHistory = true;
 		try {
-			savedHistories = await sorterApi.getSorterHistories();
+			const res = await sorterApi.getSorterHistories(historyPage, 15);
+			if (reset) {
+				savedHistories = res.data;
+			} else {
+				savedHistories = [...savedHistories, ...res.data];
+			}
+			if (res.meta.next_page) {
+				historyPage = res.meta.next_page;
+				historyHasMore = true;
+			} else {
+				historyHasMore = false;
+			}
 		} catch {
 			showToast(t('theater.sorter.loadHistoryFailed') || 'Failed to load sorter history', 'error');
 		} finally {
@@ -351,13 +372,14 @@ export function createSorter(
 				name: r.name,
 				rank: r.rank
 			}));
-			await sorterApi.saveSorterHistory({
+			const saved = await sorterApi.saveSorterHistory({
 				title,
 				description,
 				filters: reqFilters,
 				results: reqResults
 			});
 			showToast(t('theater.sorter.saveSuccess') || 'Results saved to history!', 'success');
+			return saved;
 		} catch (err) {
 			showToast(t('theater.sorter.saveFailed') || 'Failed to save results', 'error');
 			throw err;
@@ -380,7 +402,7 @@ export function createSorter(
 
 	function viewHistoryDetail(historyItem: SorterResponse) {
 		selectedHistory = historyItem;
-		currentState = 'history-detail';
+		goto(`/theater/sorter/history/${historyItem._id}`);
 	}
 
 	function goToHistory() {
@@ -443,6 +465,9 @@ export function createSorter(
 
 		get savedHistories() {
 			return savedHistories;
+		},
+		get historyHasMore() {
+			return historyHasMore;
 		},
 		get selectedHistory() {
 			return selectedHistory;

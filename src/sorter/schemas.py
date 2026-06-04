@@ -19,6 +19,11 @@ class SorterCreateRequest(BaseModel):
     results: List[SorterResultItem]
 
 
+class SorterUpdateRequest(BaseModel):
+    title: Optional[str] = Field(None, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+
+
 class SorterInDB(BaseModel):
     user_id: str
     title: str
@@ -41,3 +46,16 @@ class SorterResponse(BaseModel):
 
     class Config:
         populate_by_name = True
+
+
+class PaginationMeta(BaseModel):
+    current_page: int
+    last_page: int
+    total_data: int
+    per_page: int
+    next_page: Optional[int] = None
+
+
+class SorterPaginationResponse(BaseModel):
+    data: List[SorterResponse]
+    meta: PaginationMeta

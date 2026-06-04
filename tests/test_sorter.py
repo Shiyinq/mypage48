@@ -62,10 +62,12 @@ async def test_get_sorters(client: AsyncClient, db, create_user):
     response = await client.get("/api/theater/sorter", headers=headers)
     assert response.status_code == 200
     data = response.json()
-    assert isinstance(data, list)
-    assert len(data) >= 2
-    assert data[0]["title"] == "Sorter 2"
-    assert data[1]["title"] == "Sorter 1"
+    assert "data" in data
+    assert "meta" in data
+    assert isinstance(data["data"], list)
+    assert len(data["data"]) >= 2
+    assert data["data"][0]["title"] == "Sorter 2"
+    assert data["data"][1]["title"] == "Sorter 1"
 
 
 @pytest.mark.asyncio
@@ -120,3 +122,40 @@ async def test_delete_sorter(client: AsyncClient, db, create_user):
         f"/api/theater/sorter/{sorter_id}", headers=headers
     )
     assert response_get.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_update_sorter(client: AsyncClient, db, create_user):
+    """Test updating a sorter."""
+    token, user_id, headers = await create_user("updateuser")
+
+    payload = {"title": "Original Title", "description": "Original description", "results": []}
+    res = await client.post(
+        "/api/theater/sorter", json=payload, headers=headers
+    )
+    sorter_id = res.json()["_id"]
+
+    # Update title and description
+    update_payload = {"title": "Updated Title", "description": "Updated description"}
+    response = await client.patch(
+        f"/api/theater/sorter/{sorter_id}", json=update_payload, headers=headers
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "Updated Title"
+    assert data["description"] == "Updated description"
+
+    # Verify update in get
+    response_get = await client.get(
+        f"/api/theater/sorter/{sorter_id}", headers=headers
+    )
+    assert response_get.status_code == 200
+    assert response_get.json()["title"] == "Updated Title"
+
+    # Unauthorized access check
+    token2, user_id2, headers2 = await create_user("anotheruser2")
+    response2 = await client.patch(
+        f"/api/theater/sorter/{sorter_id}", json=update_payload, headers=headers2
+    )
+    assert response2.status_code == 404
+

@@ -901,7 +901,7 @@
 			"deleteSuccess": "履歴のエントリが削除されました",
 			"deleteFailed": "履歴のエントリの削除に失敗しました",
 			"deleteHistory": "履歴を削除",
-			"backToHistory": "履歴に戻る",
+			"backToHistory": "ソーター履歴",
 			"gridView": "グリッド表示",
 			"listView": "リスト表示",
 			"confirmYes": "はい",

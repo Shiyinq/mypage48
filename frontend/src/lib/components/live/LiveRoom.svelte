@@ -284,7 +284,6 @@
 	});
 
 	$effect(() => {
-		const isLaptop = typeof window !== 'undefined' && window.innerWidth >= 1024;
 		// Always enable immersive mode for live player to match public layout
 		isFocusMode = true;
 		isImmersive.set(true);
@@ -585,11 +584,7 @@
 		{/if}
 
 		<!-- Back Button & Info -->
-		<div
-			class="flex items-center justify-between {isTheater
-				? ''
-				: 'px-4 sm:px-0'}"
-		>
+		<div class="flex items-center justify-between {isTheater ? '' : 'px-4 sm:px-0'}">
 			<div class="flex items-center gap-3">
 				<a
 					href={basePath}

@@ -992,7 +992,7 @@
 			"deleteSuccess": "History entry deleted",
 			"deleteFailed": "Failed to delete history entry",
 			"deleteHistory": "Delete History",
-			"backToHistory": "Back to History",
+			"backToHistory": "Sorter History",
 			"gridView": "Grid View",
 			"listView": "List View",
 			"confirmYes": "Yes",
