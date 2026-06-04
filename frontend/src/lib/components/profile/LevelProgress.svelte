@@ -29,19 +29,23 @@
 				>
 					{t('profile.level.currentRank')}
 				</p>
-				<div class="relative group flex-shrink-0">
+				<button
+					type="button"
+					class="relative group flex-shrink-0 focus:outline-none"
+					aria-label="Information"
+				>
 					<Info
-						class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-300 cursor-help hover:text-red-400 transition-colors"
+						class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-300 cursor-help group-hover:text-red-400 group-focus:text-red-400 transition-colors"
 					/>
 					<div
-						class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2.5 py-1 bg-gray-800 text-white text-[10px] font-medium rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20"
+						class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2.5 py-1 bg-gray-800 text-white text-[10px] font-medium rounded-md shadow-lg opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20"
 					>
 						1 XP = 1 Show
 						<div
 							class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-4 border-transparent border-t-gray-800"
 						></div>
 					</div>
-				</div>
+				</button>
 			</div>
 			{#if loading}
 				<div
