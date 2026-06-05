@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { crossfade } from 'svelte/transition';
+	import { safeCrossfade } from '$lib/utils/transitions';
 	import { cubicInOut } from 'svelte/easing';
 	import type { Snippet } from 'svelte';
 
-	const [send, receive] = crossfade({
+	const [send, receive] = safeCrossfade({
 		duration: 300,
 		easing: cubicInOut
 	});

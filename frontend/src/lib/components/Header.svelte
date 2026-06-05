@@ -9,11 +9,11 @@
 	import NavPills from '$lib/components/navigation/NavPills.svelte';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
-	import { crossfade } from 'svelte/transition';
+	import { safeCrossfade } from '$lib/utils/transitions';
 	import { cubicInOut } from 'svelte/easing';
 	import { OptimizedImage } from '$lib/components/common';
 
-	const [send, receive] = crossfade({
+	const [send, receive] = safeCrossfade({
 		duration: 300,
 		easing: cubicInOut
 	});

@@ -131,80 +131,80 @@
 
 <div class="flex flex-col gap-4 w-full relative">
 	{#if !cardOnly}
-	<div class="flex items-center gap-3 w-full">
-		<!-- Title Dropdown -->
-		<div class="relative flex-1 group">
-			<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
-				{#if isLoadingTitles}
-					<div
-						class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"
-					></div>
-				{:else}
-					<Search class="w-4 h-4" />
-				{/if}
+		<div class="flex items-center gap-3 w-full">
+			<!-- Title Dropdown -->
+			<div class="relative flex-1 group">
+				<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+					{#if isLoadingTitles}
+						<div
+							class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"
+						></div>
+					{:else}
+						<Search class="w-4 h-4" />
+					{/if}
+				</div>
+
+				<select
+					bind:value={title}
+					onchange={updateFilters}
+					class="w-full pl-10 pr-10 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full text-sm font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all appearance-none cursor-pointer"
+				>
+					<option value="">{t('common.allSetlists') || 'All Setlists'}</option>
+					{#each availableTitles as t}
+						<option value={t}>{t}</option>
+					{/each}
+				</select>
+
+				<ChevronDown
+					class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+				/>
 			</div>
 
-			<select
-				bind:value={title}
-				onchange={updateFilters}
-				class="w-full pl-10 pr-10 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full text-sm font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all appearance-none cursor-pointer"
+			<!-- Filter Toggle Button -->
+			<!-- Filter Toggle Button (Hidden on Mobile) -->
+			<button
+				bind:this={filterButton}
+				onclick={() => (showFilters = !showFilters)}
+				data-filter-toggle="true"
+				class={`hidden md:flex items-center gap-2 px-4 py-2 h-9 rounded-full transition-all border shadow-sm cursor-pointer relative font-bold text-xs ${showFilters || activeFilterCount > 0 ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-500 hover:text-gray-700'}`}
+				title="Advanced Filters"
 			>
-				<option value="">{t('common.allSetlists') || 'All Setlists'}</option>
-				{#each availableTitles as t}
-					<option value={t}>{t}</option>
-				{/each}
-			</select>
-
-			<ChevronDown
-				class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-			/>
-		</div>
-
-		<!-- Filter Toggle Button -->
-		<!-- Filter Toggle Button (Hidden on Mobile) -->
-		<button
-			bind:this={filterButton}
-			onclick={() => (showFilters = !showFilters)}
-			data-filter-toggle="true"
-			class={`hidden md:flex items-center gap-2 px-4 py-2 h-9 rounded-full transition-all border shadow-sm cursor-pointer relative font-bold text-xs ${showFilters || activeFilterCount > 0 ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-500 hover:text-gray-700'}`}
-			title="Advanced Filters"
-		>
-			<Filter class="w-4 h-4" />
-			<span>{t('common.filters') || 'Filters'}</span>
-			{#if activeFilterCount > 0}
-				<span
-					class="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500"
-				>
+				<Filter class="w-4 h-4" />
+				<span>{t('common.filters') || 'Filters'}</span>
+				{#if activeFilterCount > 0}
 					<span
-						class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
-					></span>
-					<span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-				</span>
-			{/if}
-		</button>
+						class="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500"
+					>
+						<span
+							class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
+						></span>
+						<span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+					</span>
+				{/if}
+			</button>
 
-		<!-- View Toggle -->
-		{#if showViewToggle}
-			<div
-				class={`flex bg-white dark:bg-zinc-900 p-1 rounded-full border border-gray-200 dark:border-zinc-700 shadow-sm shrink-0 ${hideViewToggleOnMobile ? 'hidden md:flex' : ''}`}
-			>
-				<button
-					onclick={() => (viewMode = 'GRID')}
-					class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'GRID' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-					title="Grid View"
+			<!-- View Toggle -->
+			{#if showViewToggle}
+				<div
+					class={`flex bg-white dark:bg-zinc-900 p-1 rounded-full border border-gray-200 dark:border-zinc-700 shadow-sm shrink-0 ${hideViewToggleOnMobile ? 'hidden md:flex' : ''}`}
 				>
-					<LayoutGrid class="w-4 h-4" />
-				</button>
-				<button
-					onclick={() => (viewMode = 'TABLE')}
-					class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'TABLE' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-					title="Table View"
-				>
-					<List class="w-4 h-4" />
-				</button>
-			</div>
-		{/if}
-	</div>
+					<button
+						onclick={() => (viewMode = 'GRID')}
+						class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'GRID' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+						title="Grid View"
+					>
+						<LayoutGrid class="w-4 h-4" />
+					</button>
+					<button
+						onclick={() => (viewMode = 'TABLE')}
+						class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'TABLE' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+						title="Table View"
+					>
+						<List class="w-4 h-4" />
+					</button>
+				</div>
+			{/if}
+		</div>
 	{/if}
 
 	<!-- Advanced Filters Panel -->
@@ -289,7 +289,8 @@
 						<div
 							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 min-w-0 px-2 py-1.5 sm:px-3 sm:py-2 gap-1.5 sm:gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-blue-500'}`}
 						>
-							<span class="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
+							<span
+								class="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
 								>{t('common.fromShort') || 'Dari'}</span
 							>
 							<div class="relative w-full flex items-center min-w-0">
@@ -299,7 +300,9 @@
 									onchange={updateFilters}
 									class="w-full min-w-0 pr-4 sm:pr-0 bg-transparent text-[10px] sm:text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer color-scheme-dark z-10"
 								/>
-								<Calendar class="absolute right-0 w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400 pointer-events-none" />
+								<Calendar
+									class="absolute right-0 w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400 pointer-events-none"
+								/>
 							</div>
 						</div>
 
@@ -307,7 +310,8 @@
 						<div
 							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 min-w-0 px-2 py-1.5 sm:px-3 sm:py-2 gap-1.5 sm:gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-blue-500'}`}
 						>
-							<span class="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
+							<span
+								class="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
 								>{t('common.toShort') || 'Ke'}</span
 							>
 							<div class="relative w-full flex items-center min-w-0">
@@ -317,7 +321,9 @@
 									onchange={updateFilters}
 									class="w-full min-w-0 pr-4 sm:pr-0 bg-transparent text-[10px] sm:text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer color-scheme-dark z-10"
 								/>
-								<Calendar class="absolute right-0 w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400 pointer-events-none" />
+								<Calendar
+									class="absolute right-0 w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400 pointer-events-none"
+								/>
 							</div>
 						</div>
 					</div>
