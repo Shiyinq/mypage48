@@ -54,7 +54,10 @@ class MemoriesRepository:
                 match_conditions["event.date"] = date_query
 
         if days:
-            match_conditions["event.day"] = {"$in": days}
+            upper_days = [d.upper() for d in days]
+            match_conditions["$expr"] = {
+                "$in": [{"$toUpper": "$event.day"}, upper_days]
+            }
 
         base_match = {"$match": match_conditions}
 
