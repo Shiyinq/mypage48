@@ -79,7 +79,6 @@ function createNewsStore() {
 
 		load: async (page = 1, limit = 12, forceRefresh = false, filter?: NewsFilter) => {
 			const now = Date.now();
-			const requestId = ++currentRequestId;
 			const currentFilter = filter || newsFilter;
 			const filterKey = JSON.stringify(currentFilter);
 			const cacheKey = `${page}-${filterKey}`;
@@ -96,6 +95,9 @@ function createNewsStore() {
 				return;
 			}
 
+			// Capture the request id at the start so we can detect resets
+			const requestId = currentRequestId;
+
 			// If no valid cache or forceRefresh, proceed with loading
 			state.error = null;
 			state.isLoading = true;
@@ -111,9 +113,8 @@ function createNewsStore() {
 					return await news.getNews(page, limit, currentFilter.startDate, currentFilter.endDate);
 				});
 
-				// Race condition check: only update if this is still the latest request
+				// Race condition check: only update if store hasn't been reset
 				if (requestId !== currentRequestId) {
-					logger.warn(`Ignoring stale news response for page ${page}`);
 					return;
 				}
 
