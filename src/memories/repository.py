@@ -297,7 +297,14 @@ class MemoriesRepository:
             results = await self.collection.aggregate(pipeline).to_list(length=None)
             return results, total_count
 
-    async def get_top_two_shot_stats(self, user_id: str) -> dict:
+    async def get_top_two_shot_stats(
+        self,
+        user_id: str,
+        year: Optional[int] = None,
+        start_month: int = 0,
+        end_month: int = 11,
+        is_all_data: bool = True,
+    ) -> dict:
         """
         Calculate Top 2-Shot stats using aggregation.
         """
@@ -307,47 +314,92 @@ class MemoriesRepository:
                     "user_id": user_id,
                     "two_shot.member_name": {"$exists": True, "$ne": None, "$ne": ""},
                 }
-            },
-            # Sort by date descending first to help finding the latest image in grouping
-            {"$sort": {"event.date": -1}},
-            {
-                "$facet": {
-                    "ranking": [
-                        {
-                            "$group": {
-                                "_id": {"$trim": {"input": "$two_shot.member_name"}},
-                                "count": {"$sum": 1},
-                                "spend": {"$sum": "$two_shot.price"},
-                                "lastDate": {"$first": "$event.date"},
-                                "image": {"$first": "$two_shot.imageUrl"},
-                                "blurHash": {"$first": "$two_shot.blurHash"},
-                            }
-                        },
-                        {
-                            "$project": {
-                                "_id": 0,
-                                "name": "$_id",
-                                "count": 1,
-                                "spend": 1,
-                                "lastDate": 1,
-                                "image": 1,
-                                "blurHash": 1,
-                            }
-                        },
-                        {"$sort": {"count": -1, "spend": -1}},
-                    ],
-                    "totals": [
-                        {
-                            "$group": {
-                                "_id": None,
-                                "totalSpend": {"$sum": "$two_shot.price"},
-                                "totalCount": {"$sum": 1},
+            }
+        ]
+
+        if not is_all_data and year is not None:
+            pipeline.extend(
+                [
+                    {
+                        "$match": {
+                            "event.date": {
+                                "$exists": True,
+                                "$type": "string",
+                                "$regex": r"^\d{4}-\d{2}-\d{2}",
                             }
                         }
-                    ],
-                }
-            },
-        ]
+                    },
+                    {
+                        "$addFields": {
+                            "parsedDate": {
+                                "$dateFromString": {
+                                    "dateString": "$event.date",
+                                    "format": "%Y-%m-%d",
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "$addFields": {
+                            "year": {"$year": "$parsedDate"},
+                            "month": {"$month": "$parsedDate"},
+                        }
+                    },
+                    {
+                        "$match": {
+                            "year": year,
+                            "month": {"$gte": start_month + 1, "$lte": end_month + 1},
+                        }
+                    },
+                    {"$project": {"parsedDate": 0, "year": 0, "month": 0}},
+                ]
+            )
+
+        pipeline.extend(
+            [
+                {
+                    "$facet": {
+                        "ranking": [
+                            # Sort descending inside the facet before grouping to guarantee $first picks the newest
+                            {"$sort": {"event.date": -1}},
+                            {
+                                "$group": {
+                                    "_id": {
+                                        "$trim": {"input": "$two_shot.member_name"}
+                                    },
+                                    "count": {"$sum": 1},
+                                    "spend": {"$sum": "$two_shot.price"},
+                                    "lastDate": {"$first": "$event.date"},
+                                    "image": {"$first": "$two_shot.imageUrl"},
+                                    "blurHash": {"$first": "$two_shot.blurHash"},
+                                }
+                            },
+                            {
+                                "$project": {
+                                    "_id": 0,
+                                    "name": "$_id",
+                                    "count": 1,
+                                    "spend": 1,
+                                    "lastDate": 1,
+                                    "image": 1,
+                                    "blurHash": 1,
+                                }
+                            },
+                            {"$sort": {"count": -1, "spend": -1, "lastDate": -1}},
+                        ],
+                        "totals": [
+                            {
+                                "$group": {
+                                    "_id": None,
+                                    "totalSpend": {"$sum": "$two_shot.price"},
+                                    "totalCount": {"$sum": 1},
+                                }
+                            }
+                        ],
+                    }
+                },
+            ]
+        )
 
         result = await self.collection.aggregate(pipeline).to_list(length=1)
 

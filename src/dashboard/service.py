@@ -222,16 +222,33 @@ class DashboardService:
                 total_count += 1
                 unique_members.add(name)
 
+                event = t.get("event", {})
+                date = event.get("date", "")
+
                 if name not in member_stats:
-                    member_stats[name] = {"count": 0, "image": two_shot.get("imageUrl")}
+                    member_stats[name] = {
+                        "count": 0,
+                        "spend": 0,
+                        "lastDate": date,
+                        "image": two_shot.get("imageUrl"),
+                    }
                 member_stats[name]["count"] += 1
-                if two_shot.get("imageUrl"):
-                    member_stats[name]["image"] = two_shot["imageUrl"]
+                member_stats[name]["spend"] += price
+                if date > member_stats[name]["lastDate"]:
+                    member_stats[name]["lastDate"] = date
+                    if two_shot.get("imageUrl"):
+                        member_stats[name]["image"] = two_shot["imageUrl"]
 
         top_member = None
         if member_stats:
-            top_name = max(member_stats.keys(), key=lambda k: member_stats[k]["count"])
-            top_data = member_stats[top_name]
+            # Sort by name asc first for stability
+            sorted_members = sorted(member_stats.items(), key=lambda x: x[0])
+            # Then sort by count desc, spend desc, lastDate desc
+            sorted_members.sort(
+                key=lambda x: (x[1]["count"], x[1]["spend"], x[1]["lastDate"] or ""),
+                reverse=True,
+            )
+            top_name, top_data = sorted_members[0]
             top_member = TopMemberResponse(
                 name=top_name, count=top_data["count"], image=top_data.get("image")
             )

@@ -166,16 +166,24 @@ interface TopTwoShotState {
 	lastUpdated: number;
 	error: string | null;
 	isLoading: boolean;
+	filter: {
+		selectedYear?: number;
+		startMonth?: number;
+		endMonth?: number;
+		isAllData?: boolean;
+	};
 }
 
 const initialTopTwoShotState: TopTwoShotState = {
 	data: null,
 	lastUpdated: 0,
 	error: null,
-	isLoading: false
+	isLoading: false,
+	filter: {}
 };
 
 const topTwoShotState = $state<TopTwoShotState>(initialTopTwoShotState);
+let lastFetchedTwoShotFilterKey = $state('');
 const topTwoShotDedup = createRequestDedup();
 
 function createTopTwoShotStore() {
@@ -193,19 +201,34 @@ function createTopTwoShotStore() {
 			return topTwoShotState.isLoading;
 		},
 
-		load: async () => {
-			if (topTwoShotState.data && !isCacheExpired(topTwoShotState.lastUpdated)) return;
+		load: async (filter?: {
+			selectedYear?: number;
+			startMonth?: number;
+			endMonth?: number;
+			isAllData?: boolean;
+		}) => {
+			const currentFilterKey = filter ? JSON.stringify(filter) : '{}';
+
+			if (
+				topTwoShotState.data &&
+				!isCacheExpired(topTwoShotState.lastUpdated) &&
+				lastFetchedTwoShotFilterKey === currentFilterKey
+			) {
+				return;
+			}
 
 			// Deduplicate concurrent requests
-			return topTwoShotDedup.execute('top-2shot', async () => {
+			return topTwoShotDedup.execute('top-2shot-' + currentFilterKey, async () => {
 				topTwoShotState.error = null;
 				topTwoShotState.isLoading = true;
 
 				try {
-					const res = await memoriesApi.getTopTwoShot();
+					const res = await memoriesApi.getTopTwoShot(filter);
 					topTwoShotState.data = res;
 					topTwoShotState.lastUpdated = Date.now();
 					topTwoShotState.error = null;
+					if (filter) topTwoShotState.filter = { ...filter };
+					lastFetchedTwoShotFilterKey = currentFilterKey;
 				} catch (e) {
 					logger.error('Failed to load top 2-shot', e, { context: 'TopTwoShotStore' });
 					topTwoShotState.error = 'Failed to load top 2-shot';
@@ -219,6 +242,7 @@ function createTopTwoShotStore() {
 		reset: () => {
 			Object.assign(topTwoShotState, initialTopTwoShotState);
 			topTwoShotDedup.clear();
+			lastFetchedTwoShotFilterKey = '';
 		},
 
 		/**

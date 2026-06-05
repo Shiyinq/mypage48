@@ -299,8 +299,9 @@ def get_memories_service(
     repo: MemoriesRepository = Depends(get_memories_repository),
     config: Settings = Depends(get_settings),
     storage_service: StorageService = Depends(get_storage_service),
+    tickets_repo: TicketsRepository = Depends(get_tickets_repository),
 ) -> MemoriesService:
-    return MemoriesService(repo, config, storage_service)
+    return MemoriesService(repo, config, storage_service, tickets_repo)
 
 
 def get_setlists_repository(db=Depends(get_db)) -> SetlistsRepository:
