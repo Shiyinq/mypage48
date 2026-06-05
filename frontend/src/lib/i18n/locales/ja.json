@@ -24,6 +24,8 @@
 		"allData": "全データ",
 		"hasTwoShot": "2ショットあり",
 		"clearFilters": "フィルターをクリア",
+		"startDate": "開始日",
+		"endDate": "終了日",
 		"days": "曜日",
 		"dateRange": "日付範囲",
 		"viewDetails": "詳細を見る",

@@ -2,6 +2,7 @@ import { news } from '$lib/apis/news';
 import type { News, PaginationMeta } from '$lib/types';
 import { isCacheExpired } from '$lib/utils/cache';
 import { logger } from '$lib/utils/logger';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 
 /**
  * News store - migrated to Svelte 5 Shared Rune State.
@@ -20,7 +21,12 @@ interface NewsState {
 	error: string | null;
 	lastUpdated: number;
 	isLoading: boolean;
-	cache: Record<number, NewsPageCache>;
+	cache: Record<string, NewsPageCache>;
+}
+
+export interface NewsFilter {
+	startDate?: string;
+	endDate?: string;
 }
 
 const getInitialState = (): NewsState => ({
@@ -39,6 +45,8 @@ const getInitialState = (): NewsState => ({
 });
 
 const state = $state<NewsState>(getInitialState());
+export const newsFilter = $state<NewsFilter>({});
+const newsDedup = createRequestDedup();
 
 function createNewsStore() {
 	let currentRequestId = 0;
@@ -66,14 +74,18 @@ function createNewsStore() {
 			state.isLoading = freshState.isLoading;
 			state.cache = freshState.cache;
 			currentRequestId++;
+			newsDedup.clear();
 		},
 
-		load: async (page = 1, limit = 12, forceRefresh = false) => {
+		load: async (page = 1, limit = 12, forceRefresh = false, filter?: NewsFilter) => {
 			const now = Date.now();
 			const requestId = ++currentRequestId;
+			const currentFilter = filter || newsFilter;
+			const filterKey = JSON.stringify(currentFilter);
+			const cacheKey = `${page}-${filterKey}`;
 
 			// Check multi-page cache first
-			const cachedPage = state.cache[page];
+			const cachedPage = state.cache[cacheKey];
 			if (cachedPage && !forceRefresh && !isCacheExpired(cachedPage.lastUpdated)) {
 				// Immediate cache hit: update current state and return
 				state.list = cachedPage.list;
@@ -95,7 +107,9 @@ function createNewsStore() {
 			};
 
 			try {
-				const res = await news.getNews(page, limit);
+				const res = await newsDedup.execute(`news-${cacheKey}`, async () => {
+					return await news.getNews(page, limit, currentFilter.startDate, currentFilter.endDate);
+				});
 
 				// Race condition check: only update if this is still the latest request
 				if (requestId !== currentRequestId) {
@@ -117,7 +131,7 @@ function createNewsStore() {
 				state.lastUpdated = now;
 
 				// Update multi-page cache
-				state.cache[page] = {
+				state.cache[cacheKey] = {
 					list: res.data,
 					pagination: standardizedMeta,
 					lastUpdated: now

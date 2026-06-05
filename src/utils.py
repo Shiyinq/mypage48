@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import math
 import re
@@ -7,6 +8,7 @@ from urllib.parse import urlparse
 from password_validator import PasswordValidator
 
 from src.config import config
+from src.exceptions import InvalidDateError
 
 
 def pagination(total: int, page: int, limit: int) -> Dict[str, Any]:
@@ -182,3 +184,27 @@ def validate_image_path(
     if cleansed and not cleansed.startswith(prefix):
         raise ValueError(f"{entity_name} image path must start with '{prefix}'")
     return cleansed
+
+
+def parse_date_range(start_date: Optional[str], end_date: Optional[str]):
+    """
+    Parses start_date and end_date strings (YYYY-MM-DD) into datetime objects.
+    Raises InvalidDateError if format is invalid.
+    """
+    parsed_start = None
+    parsed_end = None
+    if start_date:
+        try:
+            parsed_start = datetime.datetime.strptime(start_date, "%Y-%m-%d").replace(
+                tzinfo=datetime.timezone.utc
+            )
+        except ValueError:
+            raise InvalidDateError()
+    if end_date:
+        try:
+            parsed_end = datetime.datetime.strptime(end_date, "%Y-%m-%d").replace(
+                hour=23, minute=59, second=59, tzinfo=datetime.timezone.utc
+            )
+        except ValueError:
+            raise InvalidDateError()
+    return parsed_start, parsed_end

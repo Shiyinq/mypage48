@@ -1,8 +1,7 @@
-import datetime
 import math
 from typing import Any, Dict, Optional
 
-from src.live_history.exceptions import InvalidDateError, LiveHistoryUpdateError
+from src.live_history.exceptions import LiveHistoryUpdateError
 from src.live_history.repository import LiveHistoryRepository
 from src.live_history.schemas import (
     GlobalLiveHistoryPaginationResponse,
@@ -15,6 +14,7 @@ from src.live_history.schemas import (
     MemberLiveHistoryStatsResponse,
     WatchedLiveMemberRankingResponse,
 )
+from src.utils import parse_date_range
 
 
 class LiveHistoryService:
@@ -29,7 +29,7 @@ class LiveHistoryService:
         end_date: Optional[str] = None,
     ) -> GlobalLiveHistoryPaginationResponse:
         skip = (page - 1) * limit
-        parsed_start, parsed_end = self._parse_date_range(start_date, end_date)
+        parsed_start, parsed_end = parse_date_range(start_date, end_date)
         lives = await self.repository.get_global_history(
             skip=skip, limit=limit, start_date=parsed_start, end_date=parsed_end
         )
@@ -70,7 +70,7 @@ class LiveHistoryService:
     ) -> Dict[str, Any]:
         skip = (page - 1) * limit
 
-        parsed_start, parsed_end = self._parse_date_range(start_date, end_date)
+        parsed_start, parsed_end = parse_date_range(start_date, end_date)
 
         if member_id:
             docs = await self.repository.get_history_by_user_and_member(
@@ -110,7 +110,7 @@ class LiveHistoryService:
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
     ) -> LiveHistoryStatsResponse:
-        parsed_start, parsed_end = self._parse_date_range(start_date, end_date)
+        parsed_start, parsed_end = parse_date_range(start_date, end_date)
         stats = await self.repository.get_overall_stats(
             user_id, parsed_start, parsed_end
         )
@@ -127,7 +127,7 @@ class LiveHistoryService:
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
     ) -> MemberLiveHistoryStatsResponse:
-        parsed_start, parsed_end = self._parse_date_range(start_date, end_date)
+        parsed_start, parsed_end = parse_date_range(start_date, end_date)
         stats = await self.repository.get_member_stats(
             user_id, member_id, parsed_start, parsed_end
         )
@@ -142,7 +142,7 @@ class LiveHistoryService:
         end_date: Optional[str] = None,
     ) -> WatchedLiveMemberRankingResponse:
         skip = (page - 1) * limit
-        parsed_start, parsed_end = self._parse_date_range(start_date, end_date)
+        parsed_start, parsed_end = parse_date_range(start_date, end_date)
         ranking = await self.repository.get_watched_live_members_ranking(
             user_id, skip, limit, parsed_start, parsed_end
         )
@@ -163,30 +163,10 @@ class LiveHistoryService:
             },
         )
 
-    def _parse_date_range(self, start_date: Optional[str], end_date: Optional[str]):
-        parsed_start = None
-        parsed_end = None
-        if start_date:
-            try:
-                # Expecting YYYY-MM-DD
-                parsed_start = datetime.datetime.strptime(
-                    start_date, "%Y-%m-%d"
-                ).replace(tzinfo=datetime.timezone.utc)
-            except ValueError:
-                raise InvalidDateError()
-        if end_date:
-            try:
-                parsed_end = datetime.datetime.strptime(end_date, "%Y-%m-%d").replace(
-                    hour=23, minute=59, second=59, tzinfo=datetime.timezone.utc
-                )
-            except ValueError:
-                raise InvalidDateError()
-        return parsed_start, parsed_end
-
     async def get_global_stats(
         self, start_date: Optional[str] = None, end_date: Optional[str] = None
     ) -> GlobalLiveHistoryStatsResponse:
-        parsed_start, parsed_end = self._parse_date_range(start_date, end_date)
+        parsed_start, parsed_end = parse_date_range(start_date, end_date)
         stats = await self.repository.get_global_overall_stats(
             start_date=parsed_start, end_date=parsed_end
         )
@@ -200,7 +180,7 @@ class LiveHistoryService:
         end_date: Optional[str] = None,
     ) -> GlobalLiveMemberRankingResponse:
         skip = (page - 1) * limit
-        parsed_start, parsed_end = self._parse_date_range(start_date, end_date)
+        parsed_start, parsed_end = parse_date_range(start_date, end_date)
         ranking = await self.repository.get_global_live_members_ranking(
             skip, limit, start_date=parsed_start, end_date=parsed_end
         )
@@ -230,7 +210,7 @@ class LiveHistoryService:
         end_date: Optional[str] = None,
     ) -> GlobalLiveHistoryPaginationResponse:
         skip = (page - 1) * limit
-        parsed_start, parsed_end = self._parse_date_range(start_date, end_date)
+        parsed_start, parsed_end = parse_date_range(start_date, end_date)
         lives = await self.repository.get_global_history_by_member(
             member_id, skip, limit, start_date=parsed_start, end_date=parsed_end
         )
@@ -249,7 +229,7 @@ class LiveHistoryService:
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
     ) -> GlobalSingleMemberLiveHistoryStatsResponse:
-        parsed_start, parsed_end = self._parse_date_range(start_date, end_date)
+        parsed_start, parsed_end = parse_date_range(start_date, end_date)
         stats = await self.repository.get_global_member_stats(
             member_id, start_date=parsed_start, end_date=parsed_end
         )

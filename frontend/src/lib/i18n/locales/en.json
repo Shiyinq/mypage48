@@ -24,6 +24,8 @@
 		"allData": "All Data",
 		"hasTwoShot": "Has 2-Shot",
 		"clearFilters": "Clear Filters",
+		"startDate": "Start Date",
+		"endDate": "End Date",
 		"days": "Days",
 		"dateRange": "Date Range",
 		"viewDetails": "View Details",
