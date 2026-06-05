@@ -79,21 +79,6 @@
 <div
 	class="w-full flex flex-col items-center justify-start min-h-[calc(100svh-120px)] pt-0 pb-4 overflow-hidden"
 >
-	<!-- Sub Navbar for switching between landing and history views -->
-	<div class="flex items-center justify-center gap-3 sm:gap-4 mb-8">
-		<a
-			href="/theater/sorter"
-			class="px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all bg-white dark:bg-zinc-900 text-zinc-500 border border-zinc-200 dark:border-zinc-800 hover:text-rose-500 text-center"
-		>
-			{t('theater.sorter.startNew') || 'Mulai Sorter'}
-		</a>
-		<button
-			class="px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all bg-rose-500 text-white shadow-lg shadow-rose-500/20 text-center cursor-default"
-		>
-			{t('theater.sorter.history') || 'Riwayat Sorter'}
-		</button>
-	</div>
-
 	<div in:fade={{ duration: 300 }} class="w-full max-w-5xl mx-auto px-1 pb-12">
 		{#if sorter.loadingHistory}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -19,6 +19,8 @@
 			onClick: () => void;
 			theme?: string;
 			loading?: boolean;
+			showLabel?: boolean;
+			badge?: number | string;
 		}>;
 		rotation?: number;
 		theme?:
@@ -198,6 +200,53 @@
 				class={`flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-2 overflow-visible max-w-full ${actionItems ? 'hidden sm:flex' : ''}`}
 			>
 				{@render actions()}
+			</div>
+		{:else if actionItems && actionItems.length > 0}
+			<div
+				class="hidden sm:flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-2 overflow-visible max-w-full"
+			>
+				{#each actionItems as action}
+					<button
+						onclick={action.onClick}
+						disabled={action.loading}
+						class={`flex items-center gap-2 px-3 py-1.5 sm:py-2 rounded-full font-bold text-[10px] sm:text-xs shadow-sm border transition-all cursor-pointer h-8 sm:h-9 ${
+							action.theme === 'rose'
+								? 'bg-rose-500 text-white border-transparent shadow-md shadow-rose-500/20 hover:bg-rose-600'
+								: action.theme === 'red'
+									? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800'
+									: action.theme === 'blue'
+										? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+										: 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-zinc-700 hover:border-red-200 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400'
+						}`}
+					>
+						{#if action.icon}
+							{@const ActionIcon = action.icon}
+							<ActionIcon class="w-4 h-4" />
+						{/if}
+						{#if action.label}
+							<span class="hidden md:inline">{action.label}</span>
+							{#if action.showLabel !== false}
+								<span class="md:hidden">{action.label}</span>
+							{/if}
+						{/if}
+						{#if action.badge}
+							<span
+								class="ml-1 px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-black text-[9px] dark:bg-zinc-800 dark:text-zinc-400"
+							>
+								{action.badge}
+							</span>
+						{/if}
+					</button>
+					{#if action.loading}
+						<div
+							class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 flex items-center justify-center rounded-full"
+						>
+							<div
+								class="w-4 h-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin"
+							></div>
+						</div>
+					{/if}
+				{/each}
 			</div>
 		{/if}
 	</div>

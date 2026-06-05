@@ -128,27 +128,45 @@
 			? [
 					{
 						icon: Users,
-						label: 'Multi-View',
+						label: t('theater.live.switchMultiview') || 'Multi-View',
 						onClick: () => goto('/theater/live/multiview'),
 						showLabel: true,
-						theme: 'gray'
+						theme: 'gray',
+						badge: liveList.value.length
 					},
 					{
 						icon: Globe,
-						label: t('liveHistory.globalButtonSubtitle') || 'Global',
+						label: t('liveHistory.globalButton') || 'Riwayat Live',
 						onClick: () => goto('/theater/live/history'),
 						showLabel: false,
 						theme: 'gray'
 					},
 					{
 						icon: History,
-						label: t('liveHistory.buttonSubtitle') || 'History',
+						label: t('liveHistory.viewHistory') || 'Riwayat Menonton',
 						onClick: () => goto('/theater/live/history/watched'),
 						showLabel: false,
 						theme: 'gray'
 					}
 				]
-			: []
+			: currentPath === '/theater/sorter' || currentPath === '/theater/sorter/history'
+				? [
+						{
+							icon: ArrowUpDown,
+							label: t('theater.sorter.startNew') || 'Mulai Sorter',
+							onClick: () => goto('/theater/sorter'),
+							showLabel: false,
+							theme: currentPath === '/theater/sorter' ? 'rose' : 'gray'
+						},
+						{
+							icon: History,
+							label: t('theater.sorter.history') || 'Riwayat Sorter',
+							onClick: () => goto('/theater/sorter/history'),
+							showLabel: false,
+							theme: currentPath === '/theater/sorter/history' ? 'rose' : 'gray'
+						}
+					]
+				: []
 	);
 	let isHeaderHidden = $derived(
 		isLiveDetailPage ||
