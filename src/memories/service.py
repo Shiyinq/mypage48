@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from typing import Optional
 
 from src.config import Settings
@@ -14,6 +15,7 @@ from src.memories.schemas import (
     TopTwoShotResponse,
 )
 from src.storage.service import StorageService
+from src.tickets.repository import TicketsRepository
 from src.tickets.schemas import PaginationMeta
 from src.utils import parse_date_range
 
@@ -26,10 +28,12 @@ class MemoriesService:
         repository: MemoriesRepository,
         config: Settings,
         storage_service: StorageService,
+        tickets_repository: TicketsRepository,
     ):
         self.repository = repository
         self.config = config
         self.storage_service = storage_service
+        self.tickets_repository = tickets_repository
 
     async def _resolve_memory_item(self, item: MemoryItem) -> MemoryItem:
         """Resolve storage paths for a memory item."""
@@ -144,10 +148,35 @@ class MemoriesService:
             logger.exception(f"Error fetching memories: {str(e)}")
             raise MemoriesFetchError()
 
-    async def get_top_two_shot(self, user_id: str) -> TopTwoShotResponse:
+    async def get_top_two_shot(
+        self,
+        user_id: str,
+        year: Optional[int] = None,
+        start_month: int = 0,
+        end_month: int = 11,
+        is_all_data: bool = True,
+    ) -> TopTwoShotResponse:
         """Get top 2-shot statistics."""
         try:
-            stats = await self.repository.get_top_two_shot_stats(user_id)
+            available_years = await self.tickets_repository.get_available_years(user_id)
+
+            # Ensure current year is always in the list
+            current_year = datetime.now().year
+            if current_year not in available_years:
+                available_years.append(current_year)
+
+            available_years.sort(reverse=True)
+
+            if year is None:
+                year = current_year
+
+            stats = await self.repository.get_top_two_shot_stats(
+                user_id,
+                year=year,
+                start_month=start_month,
+                end_month=end_month,
+                is_all_data=is_all_data,
+            )
 
             # Map to response model
             async def _resolve_stat(item: dict):
@@ -182,6 +211,7 @@ class MemoriesService:
                 ranking = []
 
             return TopTwoShotResponse(
+                available_years=available_years,
                 ranking=ranking,
                 totalTwoShotSpend=stats.get("totalTwoShotSpend", 0),
                 totalTwoShotCount=stats.get("totalTwoShotCount", 0),

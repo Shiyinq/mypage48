@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { isAuthenticated, showToast } from '$lib/stores';
-	import { isCacheExpired } from '$lib/utils/cache';
 	import { Heart, Camera } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
-	import { PageHeader, EmptyState, ErrorState } from '$lib/components';
+	import { EmptyState, ErrorState } from '$lib/components';
 	import { KamiOshiCard, Leaderboard } from '$lib/components/top2shot';
 	import { Top2ShotSkeleton } from '$lib/components/skeletons';
 	import type { TopTwoShotResponse } from '$lib/types';
 	import { topTwoShotStore, isTopTwoShotLoading } from '$lib/stores/memories.svelte';
+	import { TheaterHeader, TheaterFilters } from '$lib/components/theater';
+	import { dashboardFilter } from '$lib/stores/dashboard.svelte';
+	import { slide } from 'svelte/transition';
 
 	const { t } = useTranslation();
 
@@ -18,6 +20,7 @@
 
 	// Default stats if store is null
 	let defaultStats: TopTwoShotResponse = {
+		available_years: [new Date().getFullYear()],
 		ranking: [],
 		totalTwoShotSpend: 0,
 		totalTwoShotCount: 0
@@ -26,25 +29,49 @@
 	let stats = $derived(topTwoShotStore.data || defaultStats);
 	let error = $derived(topTwoShotStore.error);
 
+	let isFilterOpen = $state(false);
+	let availableYears = $derived(stats.available_years ?? [new Date().getFullYear()]);
+
+	function clickOutside(node: HTMLElement) {
+		const handleClick = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (node && !node.contains(target) && !target.closest('[data-filter-toggle="true"]')) {
+				isFilterOpen = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
+
 	onMount(async () => {
 		mounted = true;
-		if (isAuthenticated.value) {
-			loadData();
-		}
 	});
 
 	async function loadData() {
-		// If data exists and is not expired, no need to show loading
-		// Store load check handles cache expiration check too, but we can double check here or just call load()
-		if (topTwoShotStore.data && !isCacheExpired(topTwoShotStore.lastUpdated)) return;
-
 		try {
-			await topTwoShotStore.load();
+			await topTwoShotStore.load({
+				selectedYear: dashboardFilter.selectedYear,
+				startMonth: dashboardFilter.startMonth,
+				endMonth: dashboardFilter.endMonth,
+				isAllData: dashboardFilter.isAllData
+			});
 		} catch {
 			// Error state is handled by store, we just show toast
 			showToast(t('top2shot.errorTitle') || 'Failed to load data', 'error');
 		}
 	}
+
+	$effect(() => {
+		if (isAuthenticated.value && mounted && dashboardFilter) {
+			loadData();
+		}
+	});
 
 	let mostCollected = $derived(stats.ranking.length > 0 ? stats.ranking[0] : undefined);
 </script>
@@ -54,12 +81,30 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32">
 	<!-- Header -->
 	<div class="mb-0 sm:mb-8 relative z-30">
-		<PageHeader
-			icon={Heart}
+		<TheaterHeader
+			filter={dashboardFilter}
+			onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
+			isOpen={isFilterOpen}
 			title={t('top2shot.title')}
 			subtitle={t('top2shot.subtitle')}
+			icon={Heart}
 			theme="pink"
 		/>
+		{#if isFilterOpen}
+			<div
+				use:clickOutside
+				transition:slide={{ duration: 200 }}
+				class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
+			>
+				<TheaterFilters
+					bind:isAllData={dashboardFilter.isAllData}
+					bind:selectedYear={dashboardFilter.selectedYear}
+					bind:startMonth={dashboardFilter.startMonth}
+					bind:endMonth={dashboardFilter.endMonth}
+					{availableYears}
+				/>
+			</div>
+		{/if}
 	</div>
 
 	{#if isTopTwoShotLoading.value || !mounted}

@@ -47,6 +47,7 @@ export interface TopTwoShotMember {
 }
 
 export interface TopTwoShotResponse {
+	available_years: number[];
 	ranking: TopTwoShotMember[];
 	totalTwoShotSpend: number;
 	totalTwoShotCount: number;

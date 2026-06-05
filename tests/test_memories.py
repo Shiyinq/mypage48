@@ -199,15 +199,35 @@ async def test_get_top_two_shot(client: AsyncClient, db, create_user):
     ranking = data["ranking"]
     assert len(ranking) >= 2
     
-    # Freya should be #1
+    # Verify Freya should be #1 with all data
     assert ranking[0]["name"] == "Freya Jayawardana"
     assert ranking[0]["count"] == 2
     assert ranking[0]["spend"] == 110000
     
-    # Christy should be #2
+    # Verify Christy should be #2
     assert ranking[1]["name"] == "Angelina Christy"
     assert ranking[1]["count"] == 1
     assert ranking[1]["spend"] == 50000
+
+    # Test filtering by year/month (Jan 2023)
+    response_filtered = await client.get(
+        "/api/memories/top-two-shot?year=2023&start_month=0&end_month=0&is_all_data=false", 
+        headers=headers
+    )
+    assert response_filtered.status_code == 200
+    data_filtered = response_filtered.json()
+    assert data_filtered["totalTwoShotCount"] == 3
+    assert "available_years" in data_filtered
+
+    # Test filtering by a month with no data (Feb 2023)
+    response_empty = await client.get(
+        "/api/memories/top-two-shot?year=2023&start_month=1&end_month=1&is_all_data=false", 
+        headers=headers
+    )
+    assert response_empty.status_code == 200
+    data_empty = response_empty.json()
+    assert data_empty["totalTwoShotCount"] == 0
+    assert len(data_empty["ranking"]) == 0
 
 
 @pytest.mark.asyncio
