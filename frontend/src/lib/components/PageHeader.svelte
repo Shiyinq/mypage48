@@ -130,7 +130,7 @@
 	};
 
 	$effect(() => {
-		if (title) {
+		if (title && !hidden) {
 			pageHeaderStore.set({
 				title,
 				subtitle,

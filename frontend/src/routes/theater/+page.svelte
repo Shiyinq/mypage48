@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/stores';
-	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { Calendar } from 'lucide-svelte';
 	import SetlistSection from '$lib/components/theater/SetlistSection.svelte';
+	import { slide } from 'svelte/transition';
+
+	// Import theater components and stores
+	import { TheaterHeader, TheaterFilters } from '$lib/components/theater';
+	import { dashboardFilter, dashboardStatsData } from '$lib/stores/dashboard.svelte';
+	import { AudioLines } from 'lucide-svelte';
 
 	import { setlistsStore, maxAttendanceStore, isSetlistsLoading } from '$lib/stores/theater.svelte';
 
@@ -27,17 +32,46 @@
 	let activeEvents = $derived(eventItems.filter((s) => s.active));
 	let inactiveEvents = $derived(eventItems.filter((s) => !s.active));
 
+	// Filter state
+	let isFilterOpen = $state(false);
+	const currentYear: number = new Date().getFullYear();
+	let availableYears = $derived(dashboardStatsData.data?.available_years ?? [currentYear]);
+
+	function clickOutside(node: HTMLElement) {
+		const handleClick = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (node && !node.contains(target) && !target.closest('[data-filter-toggle="true"]')) {
+				isFilterOpen = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
+
 	async function fetchSetlists() {
 		try {
-			await setlistsStore.load();
+			await setlistsStore.load({
+				year: dashboardFilter.selectedYear,
+				startMonth: dashboardFilter.startMonth,
+				endMonth: dashboardFilter.endMonth,
+				isAllData: dashboardFilter.isAllData
+			});
 		} catch {
 			// Error is handled by store
 			showToast(t('theater.setlists.listErrorTitle') || 'Failed to load setlists', 'error');
 		}
 	}
 
-	onMount(() => {
-		fetchSetlists();
+	$effect(() => {
+		if (dashboardFilter) {
+			fetchSetlists();
+		}
 	});
 
 	// Navigate to detail page
@@ -48,8 +82,37 @@
 
 <SEO title={t('theater.title')} path="/theater" description={t('seo.shows')} />
 
+<div class="mb-6 relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+	<TheaterHeader
+		filter={dashboardFilter}
+		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
+		isOpen={isFilterOpen}
+		title={t('theater.title')}
+		subtitle={t('theater.subtitle') || 'Perjalanan teatermu'}
+		icon={AudioLines}
+		theme="purple"
+	/>
+	{#if isFilterOpen}
+		<div
+			use:clickOutside
+			transition:slide={{ duration: 200 }}
+			class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
+		>
+			<TheaterFilters
+				bind:isAllData={dashboardFilter.isAllData}
+				bind:selectedYear={dashboardFilter.selectedYear}
+				bind:startMonth={dashboardFilter.startMonth}
+				bind:endMonth={dashboardFilter.endMonth}
+				{availableYears}
+			/>
+		</div>
+	{/if}
+</div>
+
 {#if isSetlistsLoading.value}
-	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+	<div
+		class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+	>
 		{#each Array(6)}
 			<div
 				class="relative flex flex-row sm:block h-[8.5rem] sm:h-auto sm:aspect-[2/3] bg-white dark:bg-zinc-900 shadow-sm rounded-[20px] sm:rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 animate-pulse"
@@ -75,81 +138,87 @@
 		{/each}
 	</div>
 {:else if error}
-	<ErrorState
-		title={t('theater.setlists.listErrorTitle')}
-		description={error || t('theater.setlists.listErrorDesc')}
-		onRetry={fetchSetlists}
-	/>
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<ErrorState
+			title={t('theater.setlists.listErrorTitle')}
+			description={error || t('theater.setlists.listErrorDesc')}
+			onRetry={fetchSetlists}
+		/>
+	</div>
 {:else if setlists.length === 0}
-	<EmptyState
-		icon={Calendar}
-		title={t('theater.setlists.emptyTitle')}
-		description={t('theater.setlists.emptyDesc')}
-	/>
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<EmptyState
+			icon={Calendar}
+			title={t('theater.setlists.emptyTitle')}
+			description={t('theater.setlists.emptyDesc')}
+		/>
+	</div>
 {:else}
-	<!-- Setlists -->
-	{#if setlistItems.length > 0}
-		<div class="mb-12">
-			<div class="flex items-center gap-3 mb-6">
-				<div class="h-8 w-1.5 bg-red-500 rounded-full"></div>
-				<h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-					{t('theater.setlists.section')}
-				</h2>
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+		<!-- Setlists -->
+		{#if setlistItems.length > 0}
+			<div class="mb-12">
+				<div class="flex items-center gap-3 mb-6">
+					<div class="h-8 w-1.5 bg-red-500 rounded-full"></div>
+					<h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+						{t('theater.setlists.section')}
+					</h2>
+				</div>
+
+				<!-- Active Setlists -->
+				{#if activeSetlists.length > 0}
+					<SetlistSection
+						title={t('theater.setlists.active')}
+						items={activeSetlists}
+						{maxAttendance}
+						isActive={true}
+						onclick={goToDetail}
+					/>
+				{/if}
+
+				<!-- Inactive Setlists -->
+				{#if inactiveSetlists.length > 0}
+					<SetlistSection
+						title={t('theater.setlists.inactive')}
+						items={inactiveSetlists}
+						{maxAttendance}
+						onclick={goToDetail}
+					/>
+				{/if}
 			</div>
+		{/if}
 
-			<!-- Active Setlists -->
-			{#if activeSetlists.length > 0}
-				<SetlistSection
-					title={t('theater.setlists.active')}
-					items={activeSetlists}
-					{maxAttendance}
-					isActive={true}
-					onclick={goToDetail}
-				/>
-			{/if}
+		<!-- Events -->
+		{#if eventItems.length > 0}
+			<div>
+				<div class="flex items-center gap-3 mb-6">
+					<div class="h-8 w-1.5 bg-purple-500 rounded-full"></div>
+					<h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+						{t('theater.setlists.events')}
+					</h2>
+				</div>
 
-			<!-- Inactive Setlists -->
-			{#if inactiveSetlists.length > 0}
-				<SetlistSection
-					title={t('theater.setlists.inactive')}
-					items={inactiveSetlists}
-					{maxAttendance}
-					onclick={goToDetail}
-				/>
-			{/if}
-		</div>
-	{/if}
+				<!-- Active Events -->
+				{#if activeEvents.length > 0}
+					<SetlistSection
+						title={t('theater.setlists.activeEvents')}
+						items={activeEvents}
+						{maxAttendance}
+						isActive={true}
+						onclick={goToDetail}
+					/>
+				{/if}
 
-	<!-- Events -->
-	{#if eventItems.length > 0}
-		<div>
-			<div class="flex items-center gap-3 mb-6">
-				<div class="h-8 w-1.5 bg-purple-500 rounded-full"></div>
-				<h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-					{t('theater.setlists.events')}
-				</h2>
+				<!-- Inactive Events -->
+				{#if inactiveEvents.length > 0}
+					<SetlistSection
+						title={t('theater.setlists.inactiveEvents')}
+						items={inactiveEvents}
+						{maxAttendance}
+						onclick={goToDetail}
+					/>
+				{/if}
 			</div>
-
-			<!-- Active Events -->
-			{#if activeEvents.length > 0}
-				<SetlistSection
-					title={t('theater.setlists.activeEvents')}
-					items={activeEvents}
-					{maxAttendance}
-					isActive={true}
-					onclick={goToDetail}
-				/>
-			{/if}
-
-			<!-- Inactive Events -->
-			{#if inactiveEvents.length > 0}
-				<SetlistSection
-					title={t('theater.setlists.inactiveEvents')}
-					items={inactiveEvents}
-					{maxAttendance}
-					onclick={goToDetail}
-				/>
-			{/if}
-		</div>
-	{/if}
+		{/if}
+	</div>
 {/if}
