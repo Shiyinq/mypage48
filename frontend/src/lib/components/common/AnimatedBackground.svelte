@@ -107,7 +107,9 @@
 			style="
                 left: {d.x}%;
                 top: {d.y}%;
-                transform: scale({d.scale}) translate({($mouse.x || 0) * d.depth}px, {($mouse.y || 0) * d.depth +
+                transform: scale({d.scale}) translate({($mouse.x || 0) * d.depth}px, {($mouse.y ||
+				0) *
+				d.depth +
 				(scrollY || 0) * d.depth * 0.002}px);
             "
 		>
