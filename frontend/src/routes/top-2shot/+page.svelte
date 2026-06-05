@@ -51,9 +51,9 @@
 
 <SEO title={t('top2shot.title')} path="/top-2shot" description={t('seo.top2shot')} />
 
-<div class="max-w-6xl mx-auto pt-4 sm:pt-6 px-4 pb-24">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32">
 	<!-- Header -->
-	<div class="mb-8">
+	<div class="mb-0 sm:mb-8 relative z-30">
 		<PageHeader
 			icon={Heart}
 			title={t('top2shot.title')}

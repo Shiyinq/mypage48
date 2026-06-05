@@ -204,9 +204,9 @@
 
 <SEO title={t('profile.title')} path="/profile" description={t('seo.profile')} />
 
-<div class="max-w-5xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32">
-	<!-- Page Header -->
-	<div class="mb-8">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32 space-y-4 sm:space-y-8">
+	<!-- Top Section: Header & Quick Stats -->
+	<div class="mb-0 sm:mb-8">
 		<PageHeader
 			title={t('profile.title')}
 			subtitle={t('profile.subtitle')}

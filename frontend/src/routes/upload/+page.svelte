@@ -349,7 +349,7 @@
 <SEO title={t('upload.title')} path="/upload" description={t('seo.upload')} />
 
 <!-- Page Header (Hidden visually but kept for MobileHeader store sync) -->
-<div class="hidden max-w-5xl mx-auto pt-4 sm:pt-6 px-4 mb-4">
+<div class="hidden max-w-5xl mx-auto pt-4 sm:pt-6 px-4 mb-0 sm:mb-4">
 	<PageHeader
 		title={t('upload.title')}
 		subtitle={t('upload.subtitle')}

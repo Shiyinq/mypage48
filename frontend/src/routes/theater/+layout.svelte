@@ -205,7 +205,7 @@
 		hidden={isHeaderHidden}
 	></PageHeader>
 	{#if !isHeaderHidden}
-		<div class="mb-4 sm:mb-6"></div>
+		<div class="mb-0 sm:mb-6"></div>
 	{/if}
 
 	<!-- Page Content -->
