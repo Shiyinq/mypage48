@@ -82,7 +82,7 @@
 
 <SEO title={t('theater.title')} path="/theater" description={t('seo.shows')} />
 
-<div class="mb-6 relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="mb-6 relative z-30">
 	<TheaterHeader
 		filter={dashboardFilter}
 		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
@@ -110,9 +110,7 @@
 </div>
 
 {#if isSetlistsLoading.value}
-	<div
-		class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-	>
+	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 		{#each Array(6)}
 			<div
 				class="relative flex flex-row sm:block h-[8.5rem] sm:h-auto sm:aspect-[2/3] bg-white dark:bg-zinc-900 shadow-sm rounded-[20px] sm:rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 animate-pulse"
@@ -138,7 +136,7 @@
 		{/each}
 	</div>
 {:else if error}
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+	<div>
 		<ErrorState
 			title={t('theater.setlists.listErrorTitle')}
 			description={error || t('theater.setlists.listErrorDesc')}
@@ -146,7 +144,7 @@
 		/>
 	</div>
 {:else if setlists.length === 0}
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+	<div>
 		<EmptyState
 			icon={Calendar}
 			title={t('theater.setlists.emptyTitle')}
@@ -154,7 +152,7 @@
 		/>
 	</div>
 {:else}
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+	<div>
 		<!-- Setlists -->
 		{#if setlistItems.length > 0}
 			<div class="mb-12">

@@ -114,7 +114,7 @@
 	onConfirm={confirmDelete}
 />
 
-<div class="mb-6 relative z-30 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+<div class="mb-6 relative z-30">
 	<TheaterHeader
 		filter={dashboardFilter}
 		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
@@ -144,7 +144,7 @@
 </div>
 
 {#if $isSetlistDetailLoading}
-	<div class="animate-pulse space-y-8 max-w-5xl mx-auto">
+	<div class="animate-pulse space-y-8">
 		<!-- New Hero Skeleton -->
 		<div class="h-[400px] w-full bg-gray-200 dark:bg-zinc-800 rounded-3xl"></div>
 		<!-- Grid Skeleton -->
@@ -163,7 +163,7 @@
 		onRetry={fetchDetail}
 	/>
 {:else if detail}
-	<div class="max-w-5xl mx-auto pb-20 px-4 sm:px-6 lg:px-8">
+	<div>
 		<!-- Immersive Hero Section -->
 		<SetlistHero {detail} />
 
