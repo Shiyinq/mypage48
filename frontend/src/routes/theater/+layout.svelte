@@ -42,6 +42,9 @@
 	// Check if on events history page
 	let isEventsHistoryPage = $derived(currentPath === '/theater/events/history');
 
+	// Check if on members page
+	let isMembersPage = $derived(currentPath === '/theater/members');
+
 	// Check if on setlist detail page
 	let isDetailPage = $derived(
 		(() => {
@@ -174,7 +177,8 @@
 			isTheaterRoot ||
 			isDetailPage ||
 			isEventsHistoryPage ||
-			isNewsListingPage
+			isNewsListingPage ||
+			isMembersPage
 	);
 </script>
 

@@ -919,7 +919,9 @@
 			"subtitle": "JKT48 member data",
 			"comingSoon": "Member data coming soon!",
 			"errorTitle": "Failed to load members",
-			"errorDesc": "Something went wrong while fetching the member list."
+			"errorDesc": "Something went wrong while fetching the member list.",
+			"team": "Team",
+			"allTeams": "All Teams"
 		},
 		"shows": {
 			"title": "Show Schedule",

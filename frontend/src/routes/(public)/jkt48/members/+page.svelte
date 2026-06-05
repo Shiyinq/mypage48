@@ -42,14 +42,14 @@
 		JKT48: 'bg-red-600 shadow-red-500/20'
 	};
 
-	const teamNames: Record<string, string> = {
-		LOVE: 'Team Love',
-		DREAM: 'Team Dream',
-		PASSION: 'Team Passion',
-		TRAINEE: 'Trainee',
+	let teamNames = $derived<Record<string, string>>({
+		LOVE: `${t('theater.members.team')} Love`,
+		DREAM: `${t('theater.members.team')} Dream`,
+		PASSION: `${t('theater.members.team')} Passion`,
+		TRAINEE: t('member.type.trainee'),
 		JKT48_VIRTUAL: 'JKT48 Virtual',
-		JKT48: 'Member'
-	};
+		JKT48: t('member.type.member')
+	});
 
 	// Store data via derived runes
 	let membersList = $derived(membersStore.list);
@@ -239,7 +239,7 @@
 							: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-zinc-800 hover:border-red-500/50'
 					}`}
 				>
-					Semua Member
+					{t('theater.members.allTeams')}
 				</button>
 				{#each teamOrder as type}
 					<button

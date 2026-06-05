@@ -986,7 +986,9 @@
 			"subtitle": "Data member JKT48",
 			"comingSoon": "Data member akan segera hadir!",
 			"errorTitle": "Gagal memuat member",
-			"errorDesc": "Terjadi kesalahan saat mengambil daftar member."
+			"errorDesc": "Terjadi kesalahan saat mengambil daftar member.",
+			"team": "Tim",
+			"allTeams": "Semua Tim"
 		},
 		"upcomingEvents": {
 			"title": "Jadwal Mendatang",
