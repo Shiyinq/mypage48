@@ -1,15 +1,7 @@
 <script lang="ts">
-	import {
-		LayoutGrid,
-		List,
-		Calendar,
-		X,
-		ChevronDown,
-		Search,
-		SlidersHorizontal
-	} from 'lucide-svelte';
+	import { LayoutGrid, List, Calendar, X, ChevronDown, Search, Filter } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { slide } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import { ticketsStore } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
@@ -21,7 +13,12 @@
 		dropdownPlacement?: 'left' | 'right';
 		isSidebar?: boolean;
 		showTwoShotToggle?: boolean;
+		showFilters?: boolean;
+		hideFilterButton?: boolean;
+		hideViewToggleOnMobile?: boolean;
+		activeFilterCount?: number;
 		onfilterChange?: (filters: import('$lib/types').TicketFilters) => void;
+		cardOnly?: boolean;
 	}
 
 	let {
@@ -31,12 +28,15 @@
 		dropdownPlacement = 'right',
 		isSidebar = false,
 		showTwoShotToggle = true,
-		onfilterChange
+		showFilters = $bindable(false),
+		hideViewToggleOnMobile = false,
+		activeFilterCount = $bindable(0),
+		onfilterChange,
+		cardOnly = false
 	}: Props = $props();
 
 	const { t } = useTranslation();
 
-	let showFilters = $state(false);
 	let availableTitles: string[] = $state([]);
 	let isLoadingTitles = $state(false);
 
@@ -104,7 +104,9 @@
 			if (
 				node &&
 				!node.contains(event.target as Node) &&
-				!filterButton?.contains(event.target as Node)
+				!filterButton?.contains(event.target as Node) &&
+				!(event.target as Element).closest('[data-filter-toggle="true"]') &&
+				!(event.target as Element).closest('[data-filter-card="true"]')
 			) {
 				showFilters = false;
 			}
@@ -121,12 +123,14 @@
 
 	let filterButton: HTMLButtonElement | undefined = $state();
 
-	let activeFilterCount = $derived(
-		(hasTwoShot ? 1 : 0) + (startDate ? 1 : 0) + (endDate ? 1 : 0) + selectedDays.length
-	);
+	$effect(() => {
+		activeFilterCount =
+			(hasTwoShot ? 1 : 0) + (startDate ? 1 : 0) + (endDate ? 1 : 0) + selectedDays.length;
+	});
 </script>
 
 <div class="flex flex-col gap-4 w-full relative">
+	{#if !cardOnly}
 	<div class="flex items-center gap-3 w-full">
 		<!-- Title Dropdown -->
 		<div class="relative flex-1 group">
@@ -157,13 +161,16 @@
 		</div>
 
 		<!-- Filter Toggle Button -->
+		<!-- Filter Toggle Button (Hidden on Mobile) -->
 		<button
 			bind:this={filterButton}
 			onclick={() => (showFilters = !showFilters)}
-			class={`p-2 rounded-full transition-all border shadow-sm cursor-pointer relative ${showFilters || activeFilterCount > 0 ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-500 hover:text-gray-700'}`}
+			data-filter-toggle="true"
+			class={`hidden md:flex items-center gap-2 px-4 py-2 h-9 rounded-full transition-all border shadow-sm cursor-pointer relative font-bold text-xs ${showFilters || activeFilterCount > 0 ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-500 hover:text-gray-700'}`}
 			title="Advanced Filters"
 		>
-			<SlidersHorizontal class="w-4 h-4" />
+			<Filter class="w-4 h-4" />
+			<span>{t('common.filters') || 'Filters'}</span>
 			{#if activeFilterCount > 0}
 				<span
 					class="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500"
@@ -179,7 +186,7 @@
 		<!-- View Toggle -->
 		{#if showViewToggle}
 			<div
-				class="flex bg-white dark:bg-zinc-900 p-1 rounded-full border border-gray-200 dark:border-zinc-700 shadow-sm shrink-0"
+				class={`flex bg-white dark:bg-zinc-900 p-1 rounded-full border border-gray-200 dark:border-zinc-700 shadow-sm shrink-0 ${hideViewToggleOnMobile ? 'hidden md:flex' : ''}`}
 			>
 				<button
 					onclick={() => (viewMode = 'GRID')}
@@ -198,17 +205,51 @@
 			</div>
 		{/if}
 	</div>
+	{/if}
 
 	<!-- Advanced Filters Panel -->
 	{#if showFilters}
 		<div
 			use:clickOutside
-			transition:slide={{ duration: 200 }}
-			class={`absolute top-full mt-2 p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg flex flex-col gap-5 z-50 
-                ${isSidebar ? 'left-0 right-0 w-auto' : 'w-[calc(100vw-2rem)] md:w-auto md:min-w-[400px]'} 
-                ${!isSidebar && dropdownPlacement === 'right' ? 'right-0' : 'left-0'}`}
+			data-filter-card="true"
+			transition:fly={{ y: -10, duration: 200 }}
+			class={`fixed md:absolute top-[72px] md:top-full left-4 right-4 md:left-auto md:right-0 mt-0 md:mt-2 p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-2xl md:rounded-xl shadow-lg flex flex-col gap-5 z-[7000] 
+                ${isSidebar ? 'md:left-0 md:right-0 w-auto' : 'md:w-auto md:min-w-[400px]'} 
+                ${!isSidebar && dropdownPlacement === 'right' ? 'md:right-0' : 'md:left-0'}`}
 		>
-			<div class={`flex gap-4 ${isSidebar ? 'flex-col' : 'flex-wrap items-center'}`}>
+			<div
+				class={`flex gap-4 ${isSidebar ? 'flex-col' : 'flex-col sm:flex-row sm:flex-wrap sm:items-center items-start'}`}
+			>
+				{#if cardOnly}
+					<!-- Title Dropdown (Mobile Card Only) -->
+					<div class="relative flex-1 w-full group">
+						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+							{#if isLoadingTitles}
+								<div
+									class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"
+								></div>
+							{:else}
+								<Search class="w-4 h-4" />
+							{/if}
+						</div>
+
+						<select
+							bind:value={title}
+							onchange={updateFilters}
+							class="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all appearance-none cursor-pointer"
+						>
+							<option value="">{t('common.allSetlists') || 'All Setlists'}</option>
+							{#each availableTitles as listTitle}
+								<option value={listTitle}>{listTitle}</option>
+							{/each}
+						</select>
+
+						<ChevronDown
+							class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+						/>
+					</div>
+				{/if}
+
 				<!-- 2-Shot Toggle -->
 				{#if showTwoShotToggle}
 					<label class="flex items-center gap-3 cursor-pointer select-none group">
@@ -233,7 +274,7 @@
 				{/if}
 
 				<!-- Date Range -->
-				<div class={isSidebar ? 'flex flex-col gap-2 w-full' : 'flex flex-col gap-1'}>
+				<div class={isSidebar ? 'flex flex-col gap-2 w-full' : 'flex flex-col gap-1 w-full'}>
 					{#if isSidebar}
 						<div class="text-[10px] uppercase font-black text-gray-400 tracking-wider mb-0.5">
 							{t('common.dateRange')}
@@ -242,41 +283,41 @@
 					<div
 						class={isSidebar
 							? 'flex flex-col items-stretch gap-2'
-							: 'flex flex-col sm:flex-row items-center gap-2'}
+							: 'flex flex-row items-center gap-2 w-full'}
 					>
 						<!-- Start Date -->
 						<div
-							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 w-full px-3 py-2 gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-blue-500'}`}
+							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 min-w-0 px-2 py-1.5 sm:px-3 sm:py-2 gap-1.5 sm:gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-blue-500'}`}
 						>
-							<span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
+							<span class="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
 								>{t('common.fromShort') || 'Dari'}</span
 							>
-							<div class="relative w-full flex items-center">
+							<div class="relative w-full flex items-center min-w-0">
 								<input
 									type="date"
 									bind:value={startDate}
 									onchange={updateFilters}
-									class="w-full bg-transparent text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer color-scheme-dark z-10"
+									class="w-full min-w-0 pr-4 sm:pr-0 bg-transparent text-[10px] sm:text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer color-scheme-dark z-10"
 								/>
-								<Calendar class="absolute right-0 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+								<Calendar class="absolute right-0 w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400 pointer-events-none" />
 							</div>
 						</div>
 
 						<!-- End Date -->
 						<div
-							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 w-full px-3 py-2 gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-blue-500'}`}
+							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 min-w-0 px-2 py-1.5 sm:px-3 sm:py-2 gap-1.5 sm:gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-blue-500'}`}
 						>
-							<span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
+							<span class="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
 								>{t('common.toShort') || 'Ke'}</span
 							>
-							<div class="relative w-full flex items-center">
+							<div class="relative w-full flex items-center min-w-0">
 								<input
 									type="date"
 									bind:value={endDate}
 									onchange={updateFilters}
-									class="w-full bg-transparent text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer color-scheme-dark z-10"
+									class="w-full min-w-0 pr-4 sm:pr-0 bg-transparent text-[10px] sm:text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer color-scheme-dark z-10"
 								/>
-								<Calendar class="absolute right-0 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+								<Calendar class="absolute right-0 w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400 pointer-events-none" />
 							</div>
 						</div>
 					</div>

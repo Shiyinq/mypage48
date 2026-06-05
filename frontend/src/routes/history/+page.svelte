@@ -6,7 +6,7 @@
 
 	import type { Ticket as TicketType, TicketFilters } from '$lib/types';
 	import EditTicketModal from '$lib/components/EditTicketModal.svelte';
-	import { History, Ticket } from 'lucide-svelte';
+	import { History, Ticket, Filter as FilterIcon } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -39,6 +39,8 @@
 
 	/* Loading State */
 	let mounted = $state(false);
+	let isFilterOpen = $state(false);
+	let filterCount = $state(0);
 
 	onMount(() => {
 		mounted = true;
@@ -132,24 +134,49 @@
 />
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32">
-	<!-- Page Header -->
-	<div class="mb-8">
+	<div class="mb-8 relative z-30">
 		<PageHeader
 			title={t('history.title')}
 			subtitle={t('history.subtitle')}
 			icon={History}
 			theme="blue"
+			actionItems={[
+				{
+					icon: FilterIcon,
+					label: t('common.filters') || 'Filter',
+					onClick: () => (isFilterOpen = !isFilterOpen),
+					theme: isFilterOpen || filterCount > 0 ? 'blue' : 'gray',
+					badge: filterCount > 0 ? filterCount : undefined
+				}
+			]}
 		>
 			{#snippet actions()}
-				<div class="flex items-center gap-3">
+				<div class="flex items-center gap-3 w-full md:w-auto">
 					<HistoryFilter
 						{filters}
 						onfilterChange={(newFilters) => handleFilterChange(newFilters)}
 						bind:viewMode
+						bind:showFilters={isFilterOpen}
+						bind:activeFilterCount={filterCount}
+						hideViewToggleOnMobile={true}
 					/>
 				</div>
 			{/snippet}
 		</PageHeader>
+
+		<!-- Mobile filter card (since actions snippet is hidden on mobile) -->
+		{#if isFilterOpen}
+			<div class="block sm:hidden">
+				<HistoryFilter
+					{filters}
+					onfilterChange={(newFilters) => handleFilterChange(newFilters)}
+					bind:viewMode
+					bind:showFilters={isFilterOpen}
+					bind:activeFilterCount={filterCount}
+					cardOnly={true}
+				/>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Content Area -->

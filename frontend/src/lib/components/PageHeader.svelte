@@ -195,16 +195,12 @@
 			</div>
 		</div>
 
-		{#if actions}
-			<div
-				class={`flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-2 overflow-visible max-w-full ${actionItems ? 'hidden sm:flex' : ''}`}
-			>
+		<div
+			class="hidden sm:flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-2 overflow-visible w-full sm:max-w-full sm:w-auto"
+		>
+			{#if actions}
 				{@render actions()}
-			</div>
-		{:else if actionItems && actionItems.length > 0}
-			<div
-				class="hidden sm:flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-2 overflow-visible max-w-full"
-			>
+			{:else if actionItems && actionItems.length > 0}
 				{#each actionItems as action}
 					<button
 						onclick={action.onClick}
@@ -247,7 +243,7 @@
 						</div>
 					{/if}
 				{/each}
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
 {/if}
