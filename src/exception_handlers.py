@@ -49,7 +49,7 @@ from src.events.exceptions import (
     EventNotFoundError,
 )
 from src.events.http_exceptions import EventCreateError, EventFetchFailed, EventNotFound
-from src.exceptions import DomainException
+from src.exceptions import DomainException, InvalidDateError
 from src.export.exceptions import ExportInProgressError, ExportNotFoundError
 from src.export.http_exceptions import ExportInProgress, ExportNotFound
 from src.feedback.exceptions import (
@@ -74,11 +74,7 @@ from src.live.http_exceptions import (
     ShowroomFetchFailed,
     StreamingUrlNotFound,
 )
-from src.live_history.exceptions import (
-    InvalidDateError,
-    LiveHistoryNotFoundError,
-    LiveHistoryUpdateError,
-)
+from src.live_history.exceptions import LiveHistoryNotFoundError, LiveHistoryUpdateError
 from src.live_history.http_exceptions import (
     LiveHistoryInvalidDate,
     LiveHistoryNotFound,

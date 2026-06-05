@@ -36,6 +36,9 @@
 	// Check if on news detail page
 	let isNewsDetailPage = $derived(/^\/theater\/news\/.+/.test(currentPath));
 
+	// Check if on news listing page
+	let isNewsListingPage = $derived(currentPath === '/theater/news');
+
 	// Check if on setlist detail page
 	let isDetailPage = $derived(
 		(() => {
@@ -170,7 +173,11 @@
 				: isDetailPage
 					? '/theater'
 					: undefined}
-		hidden={isLiveDetailPage || isImmersive.value || isTheaterRoot || isDetailPage}
+		hidden={isLiveDetailPage ||
+			isImmersive.value ||
+			isTheaterRoot ||
+			isDetailPage ||
+			isNewsListingPage}
 	></PageHeader>
 	{#if !isLiveDetailPage && !isTheaterRoot && !isDetailPage}
 		<div class="mb-4 sm:mb-6"></div>

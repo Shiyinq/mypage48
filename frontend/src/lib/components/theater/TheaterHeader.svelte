@@ -12,7 +12,8 @@
 		/**
 		 * Dashboard header component when filter panel is closed
 		 */
-		filter: DashboardFilterState;
+		filter?: DashboardFilterState;
+		filterLabel?: string;
 		onOpenFilter: () => void;
 		isOpen?: boolean;
 		title?: string;
@@ -35,6 +36,7 @@
 
 	let {
 		filter,
+		filterLabel,
 		onOpenFilter,
 		isOpen = false,
 		title = t('dashboard.title'),
@@ -60,7 +62,7 @@
 
 		return `${startMonthStr} - ${endMonthStr} ${filter.selectedYear}`;
 	}
-	let displayLabel = $derived(filter ? getFilterLabel(filter, t) : '');
+	let displayLabel = $derived(filterLabel ? filterLabel : filter ? getFilterLabel(filter, t) : '');
 </script>
 
 <PageHeader
