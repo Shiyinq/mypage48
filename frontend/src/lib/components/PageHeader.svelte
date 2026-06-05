@@ -38,6 +38,7 @@
 		backUrl?: string;
 		loading?: boolean;
 		hidden?: boolean;
+		mobileActions?: boolean;
 		actions?: import('svelte').Snippet;
 		onback?: () => void;
 	}
@@ -54,6 +55,7 @@
 		backUrl,
 		loading = false,
 		hidden = false,
+		mobileActions = false,
 		actions,
 		onback
 	}: Props = $props();
@@ -196,7 +198,9 @@
 		</div>
 
 		<div
-			class="hidden sm:flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-2 overflow-visible w-full sm:max-w-full sm:w-auto"
+			class="{mobileActions
+				? 'flex w-full sm:mt-0'
+				: 'hidden sm:flex'} items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-0 sm:py-2 overflow-visible sm:max-w-full sm:w-auto"
 		>
 			{#if actions}
 				{@render actions()}
