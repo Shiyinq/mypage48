@@ -6,6 +6,14 @@ import type { PaginationMeta } from './common';
 
 export type MemoryFilterType = 'ALL' | 'TICKET' | '2SHOT';
 
+export interface MemoryFilters {
+	type?: MemoryFilterType;
+	title?: string;
+	startDate?: string;
+	endDate?: string;
+	days?: string[];
+}
+
 export interface MemoryItem {
 	uniqueId: string;
 	type: 'TICKET' | '2SHOT';

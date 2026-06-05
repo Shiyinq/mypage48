@@ -18,6 +18,7 @@
 		"info": "Information",
 		"search": "Search",
 		"filter": "Filter",
+		"setlist": "Setlist",
 		"filters": "Filters",
 		"all": "All",
 		"allSetlists": "All Setlists",
@@ -1008,6 +1009,7 @@
 	"memories": {
 		"title": "Memories",
 		"subtitle": "Your photo and ticket gallery",
+		"photoType": "Photo Type",
 		"allPhotos": "All Photos",
 		"tickets": "Tickets",
 		"twoShots": "2-Shots",

@@ -15,6 +15,10 @@ class MemoriesRepository:
         page: int,
         limit: int,
         type_filter: Optional[str] = None,
+        title: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        days: Optional[List[str]] = None,
     ) -> Tuple[List[dict], int]:
         """
         Get paginated memory items from tickets.
@@ -35,7 +39,24 @@ class MemoriesRepository:
         # Use $facet to get both ticket images and 2-shot images separately
         # Then combine them with $unionWith or process separately
 
-        base_match = {"$match": {"user_id": user_id}}
+        match_conditions = {"user_id": user_id}
+
+        if title:
+            match_conditions["event.title"] = title
+
+        if start_date or end_date:
+            date_query = {}
+            if start_date:
+                date_query["$gte"] = start_date
+            if end_date:
+                date_query["$lte"] = end_date
+            if date_query:
+                match_conditions["event.date"] = date_query
+
+        if days:
+            match_conditions["event.day"] = {"$in": days}
+
+        base_match = {"$match": match_conditions}
 
         # Pipeline for ticket images
         ticket_pipeline = [

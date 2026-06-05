@@ -2,6 +2,7 @@ import asyncio
 from typing import Optional
 
 from src.config import Settings
+from src.exceptions import InvalidDateError
 from src.logging_config import create_logger
 from src.memories.exceptions import MemoriesFetchError
 from src.memories.repository import MemoriesRepository
@@ -14,6 +15,7 @@ from src.memories.schemas import (
 )
 from src.storage.service import StorageService
 from src.tickets.schemas import PaginationMeta
+from src.utils import parse_date_range
 
 logger = create_logger("memories_service", __name__)
 
@@ -49,6 +51,10 @@ class MemoriesService:
         page: int = 1,
         limit: int = 20,
         type_filter: Optional[str] = None,
+        title: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        days: Optional[list[str]] = None,
     ) -> MemoriesPaginationResponse:
         """
         Get paginated memories for a user.
@@ -69,11 +75,18 @@ class MemoriesService:
             if page < 1:
                 page = 1
 
+            # Validate date formats
+            parse_date_range(start_date, end_date)
+
             items_data, total_count = await self.repository.get_memories_paginated(
                 user_id=user_id,
                 page=page,
                 limit=limit,
                 type_filter=type_filter,
+                title=title,
+                start_date=start_date,
+                end_date=end_date,
+                days=days,
             )
 
             # Transform raw data to MemoryItem models
@@ -125,6 +138,8 @@ class MemoriesService:
                 ),
             )
 
+        except InvalidDateError:
+            raise
         except Exception as e:
             logger.exception(f"Error fetching memories: {str(e)}")
             raise MemoriesFetchError()

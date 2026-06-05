@@ -18,6 +18,7 @@
 		"info": "Informasi",
 		"search": "Cari",
 		"filter": "Filter",
+		"setlist": "Setlist",
 		"filters": "Filter",
 		"all": "Semua",
 		"allSetlists": "Semua Setlist",
@@ -633,6 +634,7 @@
 	"memories": {
 		"title": "Kenangan",
 		"subtitle": "Galeri foto dan tiket kamu",
+		"photoType": "Jenis Foto",
 		"allPhotos": "Semua Foto",
 		"tickets": "Tiket",
 		"twoShots": "2-Shot",

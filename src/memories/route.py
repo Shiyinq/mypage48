@@ -15,6 +15,10 @@ async def get_memories(
     page: int = 1,
     limit: int = 20,
     type: Optional[str] = None,
+    title: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    days: Optional[str] = None,
     current_user: UserCurrent = Depends(get_current_user),
     memories_service: MemoriesService = Depends(get_memories_service),
 ):
@@ -34,6 +38,10 @@ async def get_memories(
         page=page,
         limit=limit,
         type_filter=type,
+        title=title,
+        start_date=start_date,
+        end_date=end_date,
+        days=days.split(",") if days else None,
     )
 
 

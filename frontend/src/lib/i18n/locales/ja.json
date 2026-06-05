@@ -18,6 +18,7 @@
 		"info": "情報",
 		"search": "検索",
 		"filter": "フィルター",
+		"setlist": "セットリスト",
 		"filters": "フィルター",
 		"all": "すべて",
 		"allSetlists": "全セットリスト",
@@ -1064,6 +1065,7 @@
 	"memories": {
 		"title": "思い出",
 		"subtitle": "写真とチケットのギャラリー",
+		"photoType": "写真の種類",
 		"allPhotos": "すべての写真",
 		"tickets": "チケット",
 		"twoShots": "2ショット",
