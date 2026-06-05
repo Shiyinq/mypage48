@@ -18,12 +18,15 @@
 	import { OptimizedImage } from '$lib/components/common';
 
 	import { EventHistorySkeleton } from '$lib/components/skeletons';
+	import { TheaterHeader } from '$lib/components/theater';
+	import { DateRangeFilter } from '$lib/components/common';
 	import {
 		eventsStore,
 		historyEvents,
 		isHistoryEventsLoading,
 		historyPagination,
-		historyError
+		historyError,
+		historyFilter
 	} from '$lib/stores/events.svelte';
 
 	const { t } = useTranslation();
@@ -36,6 +39,51 @@
 	let eventsList = $derived(historyEvents.value);
 	let loading = $derived(isHistoryEventsLoading.value);
 	let paginationObj = $derived(historyPagination.value);
+	let isFilterOpen = $state(false);
+
+	function clickOutside(node: HTMLElement) {
+		const handleClick = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (node && !node.contains(target) && !target.closest('[data-filter-toggle="true"]')) {
+				isFilterOpen = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
+
+	$effect(() => {
+		// Track only startDate and endDate
+		const trackStart = historyFilter.startDate;
+		const trackEnd = historyFilter.endDate;
+
+		import('svelte').then(({ untrack }) => {
+			untrack(() => {
+				// Do not fetch if only one of the dates is set
+				if ((trackStart && !trackEnd) || (!trackStart && trackEnd)) {
+					return;
+				}
+				eventsStore.loadHistory(1, false, historyFilter);
+			});
+		});
+	});
+
+	function formatFilterDate(dateStr?: string) {
+		if (!dateStr) return '';
+		return formatDate(dateStr, { day: 'numeric', month: 'short', year: 'numeric' });
+	}
+
+	let filterLabel = $derived(
+		historyFilter.startDate || historyFilter.endDate
+			? `${formatFilterDate(historyFilter.startDate)} - ${formatFilterDate(historyFilter.endDate)}`
+			: t('common.allData') || 'Semua Data'
+	);
 
 	async function handlePageChange(page: number) {
 		eventsStore.loadHistory(page);
@@ -87,7 +135,34 @@
 	description={t('theater.eventHistory.subtitle')}
 />
 
-<div class="space-y-6">
+<div class="mb-6 relative z-30">
+	<TheaterHeader
+		{filterLabel}
+		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
+		isOpen={isFilterOpen}
+		title={t('theater.eventHistory.title') || 'Event History'}
+		subtitle={t('theater.eventHistory.subtitle') || 'Past events'}
+		icon={History}
+		theme="orange"
+	/>
+	{#if isFilterOpen}
+		<div
+			use:clickOutside
+			transition:fade={{ duration: 200 }}
+			class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
+		>
+			<DateRangeFilter
+				bind:startDate={historyFilter.startDate}
+				bind:endDate={historyFilter.endDate}
+				onClear={() => {
+					isFilterOpen = false;
+				}}
+			/>
+		</div>
+	{/if}
+</div>
+
+<div class="space-y-6 pb-20">
 	{#if loading && eventsList.length === 0}
 		<EventHistorySkeleton rows={10} />
 	{:else if error}

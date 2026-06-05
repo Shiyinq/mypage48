@@ -1,4 +1,5 @@
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
 
@@ -9,16 +10,22 @@ from src.events.service import EventsService
 router = APIRouter()
 
 
-@router.get("/", response_model=EventPaginationResponse)
+@router.get("", response_model=EventPaginationResponse)
 async def get_events(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
+    start_date: Optional[datetime] = Query(
+        None, description="Start date for filtering"
+    ),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering"),
     service: EventsService = Depends(get_events_service),
 ):
     """
     Get all events with pagination.
     """
-    return await service.get_events_paginated(page=page, limit=limit)
+    return await service.get_events_paginated(
+        page=page, limit=limit, start_date=start_date, end_date=end_date
+    )
 
 
 @router.get("/current", response_model=EventPaginationResponse)

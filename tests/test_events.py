@@ -364,3 +364,45 @@ async def test_get_calendar_events_with_cross_month_birthdays(client, create_use
     
     titles = [e["title"] for e in data]
     assert "March Baby" in titles
+
+
+@pytest.mark.asyncio
+async def test_get_events_with_date_range(client, create_event, create_user):
+    # Auth
+    _, _, headers = await create_user("testuser")
+
+    # Create events with specific dates
+    await create_event({
+        "id": "event-1",
+        "title": "Jan Event",
+        "date": "2026-01-15T00:00:00",
+        "url": "/link1",
+        "label": "lbl1"
+    })
+    await create_event({
+        "id": "event-2",
+        "title": "Feb Event",
+        "date": "2026-02-15T00:00:00",
+        "url": "/link2",
+        "label": "lbl2"
+    })
+    await create_event({
+        "id": "event-3",
+        "title": "Mar Event",
+        "date": "2026-03-15T00:00:00",
+        "url": "/link3",
+        "label": "lbl3"
+    })
+
+    # Filter for Feb only
+    response = await client.get(
+        "/api/events/?start_date=2026-02-01T00:00:00&end_date=2026-02-28T23:59:59",
+        headers=headers
+    )
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["meta"]["total_data"] == 1
+    assert len(data["data"]) == 1
+    assert data["data"][0]["id"] == "event-2"
+

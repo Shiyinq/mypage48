@@ -82,7 +82,7 @@
 
 <SEO title={t('theater.title')} path="/theater" description={t('seo.shows')} />
 
-<div class="mb-6 relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+<div class="mb-6 relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 	<TheaterHeader
 		filter={dashboardFilter}
 		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}

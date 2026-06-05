@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from math import ceil
-from typing import List
+from typing import List, Optional
 
 from src.config import Settings
 from src.events.exceptions import EventFetchError
@@ -49,7 +49,12 @@ class EventsService:
         return event
 
     async def get_events_paginated(
-        self, page: int = 1, limit: int = 20, current_only: bool = False
+        self,
+        page: int = 1,
+        limit: int = 20,
+        current_only: bool = False,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
     ) -> EventPaginationResponse:
         query = {}
         if current_only:
@@ -65,6 +70,13 @@ class EventsService:
                 # 2. General events (no setlistId): must be after today midnight
                 {"date": {"$gte": today_midnight}, "setlistId": None},
             ]
+        elif start_date or end_date:
+            date_filter = {}
+            if start_date:
+                date_filter["$gte"] = start_date
+            if end_date:
+                date_filter["$lte"] = end_date
+            query["date"] = date_filter
 
         try:
             total_data = await self.repository.count_events(query)

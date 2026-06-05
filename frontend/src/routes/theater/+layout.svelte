@@ -39,6 +39,9 @@
 	// Check if on news listing page
 	let isNewsListingPage = $derived(currentPath === '/theater/news');
 
+	// Check if on events history page
+	let isEventsHistoryPage = $derived(currentPath === '/theater/events/history');
+
 	// Check if on setlist detail page
 	let isDetailPage = $derived(
 		(() => {
@@ -147,6 +150,14 @@
 				]
 			: []
 	);
+	let isHeaderHidden = $derived(
+		isLiveDetailPage ||
+			isImmersive.value ||
+			isTheaterRoot ||
+			isDetailPage ||
+			isEventsHistoryPage ||
+			isNewsListingPage
+	);
 </script>
 
 <div
@@ -173,13 +184,9 @@
 				: isDetailPage
 					? '/theater'
 					: undefined}
-		hidden={isLiveDetailPage ||
-			isImmersive.value ||
-			isTheaterRoot ||
-			isDetailPage ||
-			isNewsListingPage}
+		hidden={isHeaderHidden}
 	></PageHeader>
-	{#if !isLiveDetailPage && !isTheaterRoot && !isDetailPage}
+	{#if !isHeaderHidden}
 		<div class="mb-4 sm:mb-6"></div>
 	{/if}
 
