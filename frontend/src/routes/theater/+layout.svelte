@@ -25,6 +25,7 @@
 	const { t } = useTranslation();
 
 	let currentPath = $derived($page.url.pathname);
+	let isTheaterRoot = $derived(currentPath === '/theater');
 
 	// Check if on live listing page
 	let isLiveListingPage = $derived(currentPath === '/theater/live');
@@ -169,9 +170,9 @@
 				: isDetailPage
 					? '/theater'
 					: undefined}
-		hidden={isLiveDetailPage || isImmersive.value}
+		hidden={isLiveDetailPage || isImmersive.value || isTheaterRoot || isDetailPage}
 	></PageHeader>
-	{#if !isLiveDetailPage}
+	{#if !isLiveDetailPage && !isTheaterRoot && !isDetailPage}
 		<div class="mb-4 sm:mb-6"></div>
 	{/if}
 

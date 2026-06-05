@@ -68,6 +68,10 @@ class SetlistsService:
         setlist_type: Optional[str] = None,
         active: Optional[bool] = None,
         search: Optional[str] = None,
+        year: Optional[int] = None,
+        start_month: Optional[int] = None,
+        end_month: Optional[int] = None,
+        is_all_data: bool = False,
     ) -> SetlistListResponse:
         """Get all setlists with optional filtering and user statistics"""
         try:
@@ -79,6 +83,10 @@ class SetlistsService:
                 setlist_type=setlist_type,
                 active=active,
                 search=search,
+                year=year,
+                start_month=start_month,
+                end_month=end_month,
+                is_all_data=is_all_data,
             )
             total = await self.repository.count(setlist_type, active, search)
 
@@ -163,16 +171,33 @@ class SetlistsService:
         self,
         setlist_id: str,
         user_id: str,
+        year: Optional[int] = None,
+        start_month: Optional[int] = None,
+        end_month: Optional[int] = None,
+        is_all_data: bool = False,
     ) -> SetlistDetailResponse:
         """Get setlist detail with user's tickets and computed statistics"""
         try:
             # Get setlist with matched tickets
-            result = await self.repository.find_with_tickets(setlist_id, user_id)
+            result = await self.repository.find_with_tickets(
+                setlist_id,
+                user_id,
+                year=year,
+                start_month=start_month,
+                end_month=end_month,
+                is_all_data=is_all_data,
+            )
             if not result:
                 raise SetlistNotFoundError()
 
             # Get max attendance for percentage calculation
-            max_attendance = await self.repository.get_max_attendance(user_id)
+            max_attendance = await self.repository.get_max_attendance(
+                user_id,
+                year=year,
+                start_month=start_month,
+                end_month=end_month,
+                is_all_data=is_all_data,
+            )
 
             # Extract tickets from result
             matched_tickets = result.get("matched_tickets", [])

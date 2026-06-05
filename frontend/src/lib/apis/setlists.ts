@@ -80,7 +80,17 @@ export interface SetlistDetailResponse {
 
 export const setlistsApi = {
 	getAll: async (
-		params: { skip?: number; limit?: number; type?: string; active?: boolean; search?: string } = {}
+		params: {
+			skip?: number;
+			limit?: number;
+			type?: string;
+			active?: boolean;
+			search?: string;
+			year?: number;
+			startMonth?: number;
+			endMonth?: number;
+			isAllData?: boolean;
+		} = {}
 	) => {
 		const query = new URLSearchParams();
 		if (params.skip) query.append('skip', params.skip.toString());
@@ -89,6 +99,11 @@ export const setlistsApi = {
 		if (params.active !== undefined) query.append('active', params.active.toString());
 		if (params.search) query.append('search', params.search);
 
+		if (params.year !== undefined) query.append('year', params.year.toString());
+		if (params.startMonth !== undefined) query.append('startMonth', params.startMonth.toString());
+		if (params.endMonth !== undefined) query.append('endMonth', params.endMonth.toString());
+		if (params.isAllData !== undefined) query.append('isAllData', params.isAllData.toString());
+
 		return client<SetlistListResponse>(`/theater/setlists?${query.toString()}`);
 	},
 
@@ -96,9 +111,24 @@ export const setlistsApi = {
 		return client<Setlist>(`/theater/setlists/id/${encodeURIComponent(setlistId)}`);
 	},
 
-	getDetail: async (setlistId: string) => {
+	getDetail: async (
+		setlistId: string,
+		params: {
+			year?: number;
+			startMonth?: number;
+			endMonth?: number;
+			isAllData?: boolean;
+		} = {}
+	) => {
+		const query = new URLSearchParams();
+		if (params.year !== undefined) query.append('year', params.year.toString());
+		if (params.startMonth !== undefined) query.append('startMonth', params.startMonth.toString());
+		if (params.endMonth !== undefined) query.append('endMonth', params.endMonth.toString());
+		if (params.isAllData !== undefined) query.append('isAllData', params.isAllData.toString());
+
+		const queryString = query.toString() ? `?${query.toString()}` : '';
 		return client<SetlistDetailResponse>(
-			`/theater/setlists/detail/${encodeURIComponent(setlistId)}`
+			`/theater/setlists/detail/${encodeURIComponent(setlistId)}${queryString}`
 		);
 	},
 
