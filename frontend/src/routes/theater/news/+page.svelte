@@ -18,7 +18,8 @@
 		newsFilter
 	} from '$lib/stores/news.svelte';
 
-	import { TheaterHeader, NewsFilters } from '$lib/components/theater';
+	import { TheaterHeader } from '$lib/components/theater';
+	import { DateRangeFilter } from '$lib/components/common';
 
 	import { formatDate } from '$lib/i18n';
 	import { OptimizedImage } from '$lib/components/common';
@@ -122,7 +123,7 @@
 	description={t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
 />
 
-<div class="mb-6 relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+<div class="mb-6 relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 	<TheaterHeader
 		{filterLabel}
 		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
@@ -138,7 +139,7 @@
 			transition:slide={{ duration: 200 }}
 			class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
 		>
-			<NewsFilters
+			<DateRangeFilter
 				bind:startDate={newsFilter.startDate}
 				bind:endDate={newsFilter.endDate}
 				onClear={() => {

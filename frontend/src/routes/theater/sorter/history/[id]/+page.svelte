@@ -14,8 +14,7 @@
 	import SorterEditableHeader from '$lib/components/sorter/SorterEditableHeader.svelte';
 
 	let { data }: { data: PageData } = $props();
-	// eslint-disable-next-line svelte/valid-compile
-	let historyItem = $state(data.historyItem);
+	let historyItem = $derived(data.historyItem);
 
 	$effect(() => {
 		historyItem = data.historyItem;
