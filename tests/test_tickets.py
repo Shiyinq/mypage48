@@ -175,3 +175,13 @@ async def test_ticket_image_validation(client: AsyncClient, db, create_user):
     payload["imageUrl"] = "ticket/" + "a" * 100
     res = await client.post("/api/theater/tickets", json=payload, headers=headers)
     assert res.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_get_tickets_invalid_date(client: AsyncClient, create_user):
+    """Test getting tickets with invalid date format."""
+    token, user_id, headers = await create_user("ticketsuser_invalid")
+
+    response = await client.get("/api/theater/tickets?end_date=invalid-date", headers=headers)
+    assert response.status_code == 400
+    assert "INVALID_DATE_FORMAT" in response.text

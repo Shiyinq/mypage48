@@ -2,8 +2,7 @@ import { memoriesApi } from '$lib/apis/memories';
 import { logger } from '$lib/utils/logger';
 import { isCacheExpired } from '$lib/utils/cache';
 import { createRequestDedup } from '$lib/utils/requestDedup';
-import type { FilterType } from '$lib/components/memories';
-import type { TopTwoShotResponse, MemoryItem } from '$lib/types';
+import type { TopTwoShotResponse, MemoryItem, MemoryFilters } from '$lib/types';
 
 /**
  * Memories store - migrated to Svelte 5 Shared Rune State.
@@ -14,9 +13,9 @@ import type { TopTwoShotResponse, MemoryItem } from '$lib/types';
 interface GalleryState {
 	list: MemoryItem[];
 	pagination: { page: number; hasMore: boolean };
-	filter: FilterType;
+	filter: MemoryFilters;
 	cache: Record<
-		FilterType,
+		string,
 		{ list: MemoryItem[]; pagination: { page: number; hasMore: boolean }; lastUpdated: number }
 	>;
 	error: string | null;
@@ -26,11 +25,11 @@ interface GalleryState {
 const initialGalleryState: GalleryState = {
 	list: [],
 	pagination: { page: 0, hasMore: true },
-	filter: 'ALL',
+	filter: { type: 'ALL' },
 	cache: {
-		ALL: { list: [], pagination: { page: 0, hasMore: true }, lastUpdated: 0 },
-		TICKET: { list: [], pagination: { page: 0, hasMore: true }, lastUpdated: 0 },
-		'2SHOT': { list: [], pagination: { page: 0, hasMore: true }, lastUpdated: 0 }
+		'{"type":"ALL"}': { list: [], pagination: { page: 0, hasMore: true }, lastUpdated: 0 },
+		'{"type":"TICKET"}': { list: [], pagination: { page: 0, hasMore: true }, lastUpdated: 0 },
+		'{"type":"2SHOT"}': { list: [], pagination: { page: 0, hasMore: true }, lastUpdated: 0 }
 	},
 	error: null,
 	isLoading: false
@@ -60,16 +59,19 @@ function createGalleryStore() {
 			return galleryState.cache;
 		},
 		get lastUpdated() {
-			const cached = galleryState.cache[galleryState.filter];
+			const cacheKey = JSON.stringify(galleryState.filter);
+			const cached = galleryState.cache[cacheKey];
 			return cached ? cached.lastUpdated : 0;
 		},
 
-		load: async (page: number, filter: FilterType) => {
+		load: async (page: number, filter: MemoryFilters) => {
+			const cacheKey = JSON.stringify(filter);
+
 			if (page === 1) {
-				const cached = galleryState.cache[filter];
-				if (!isCacheExpired(cached.lastUpdated) && cached.list.length > 0) {
-					if (filter !== galleryState.filter) {
-						galleryState.filter = filter;
+				const cached = galleryState.cache[cacheKey];
+				if (cached && !isCacheExpired(cached.lastUpdated) && cached.list.length > 0) {
+					if (JSON.stringify(filter) !== JSON.stringify(galleryState.filter)) {
+						galleryState.filter = { ...filter };
 						galleryState.list = cached.list;
 						galleryState.pagination = cached.pagination;
 						galleryState.error = null;
@@ -81,8 +83,8 @@ function createGalleryStore() {
 			// Deduplicate concurrent requests with the same page + filter
 			const key = JSON.stringify({ page, filter });
 			return galleryDedup.execute(key, async () => {
-				if (filter !== galleryState.filter) {
-					galleryState.filter = filter;
+				if (JSON.stringify(filter) !== JSON.stringify(galleryState.filter)) {
+					galleryState.filter = { ...filter };
 					galleryState.list = [];
 					galleryState.pagination = { page: 0, hasMore: true };
 				}
@@ -106,7 +108,7 @@ function createGalleryStore() {
 
 					galleryState.list = newList;
 					galleryState.pagination = newPagination;
-					galleryState.cache[filter] = {
+					galleryState.cache[cacheKey] = {
 						list: newList,
 						pagination: newPagination,
 						lastUpdated: now

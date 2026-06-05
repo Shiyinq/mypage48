@@ -1,15 +1,29 @@
 import { client } from './client';
-import type { MemoriesPaginationResponse, MemoryFilterType, TopTwoShotResponse } from '../types';
+import type { MemoriesPaginationResponse, MemoryFilters, TopTwoShotResponse } from '../types';
 
 export const memoriesApi = {
-	getMemories: async (page = 1, limit = 20, type?: MemoryFilterType) => {
+	getMemories: async (page = 1, limit = 20, filters?: MemoryFilters) => {
 		const query = new URLSearchParams({
 			page: page.toString(),
 			limit: limit.toString()
 		});
 
-		if (type && type !== 'ALL') {
-			query.append('type', type);
+		if (filters) {
+			if (filters.type && filters.type !== 'ALL') {
+				query.append('type', filters.type);
+			}
+			if (filters.title) {
+				query.append('title', filters.title);
+			}
+			if (filters.startDate) {
+				query.append('start_date', filters.startDate);
+			}
+			if (filters.endDate) {
+				query.append('end_date', filters.endDate);
+			}
+			if (filters.days && filters.days.length > 0) {
+				query.append('days', filters.days.join(','));
+			}
 		}
 
 		return await client<MemoriesPaginationResponse>(`/memories?${query.toString()}`, {

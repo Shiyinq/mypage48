@@ -20,6 +20,7 @@
 		showViewToggle?: boolean;
 		dropdownPlacement?: 'left' | 'right';
 		isSidebar?: boolean;
+		showTwoShotToggle?: boolean;
 		onfilterChange?: (filters: import('$lib/types').TicketFilters) => void;
 	}
 
@@ -29,6 +30,7 @@
 		showViewToggle = true,
 		dropdownPlacement = 'right',
 		isSidebar = false,
+		showTwoShotToggle = true,
 		onfilterChange
 	}: Props = $props();
 
@@ -208,25 +210,27 @@
 		>
 			<div class={`flex gap-4 ${isSidebar ? 'flex-col' : 'flex-wrap items-center'}`}>
 				<!-- 2-Shot Toggle -->
-				<label class="flex items-center gap-3 cursor-pointer select-none group">
-					<div class="relative">
-						<input
-							type="checkbox"
-							class="sr-only"
-							bind:checked={hasTwoShot}
-							onchange={updateFilters}
-						/>
-						<div
-							class={`w-10 h-6 rounded-full transition-colors ${hasTwoShot ? (isSidebar ? 'bg-red-500' : 'bg-blue-500') : 'bg-gray-200 dark:bg-zinc-700 group-hover:bg-gray-300'}`}
-						></div>
-						<div
-							class={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${hasTwoShot ? 'translate-x-4' : 'translate-x-0'}`}
-						></div>
-					</div>
-					<span class="text-sm font-bold text-gray-700 dark:text-gray-300"
-						>{t('common.hasTwoShot')}</span
-					>
-				</label>
+				{#if showTwoShotToggle}
+					<label class="flex items-center gap-3 cursor-pointer select-none group">
+						<div class="relative">
+							<input
+								type="checkbox"
+								class="sr-only"
+								bind:checked={hasTwoShot}
+								onchange={updateFilters}
+							/>
+							<div
+								class={`w-10 h-6 rounded-full transition-colors ${hasTwoShot ? (isSidebar ? 'bg-red-500' : 'bg-blue-500') : 'bg-gray-200 dark:bg-zinc-700 group-hover:bg-gray-300'}`}
+							></div>
+							<div
+								class={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${hasTwoShot ? 'translate-x-4' : 'translate-x-0'}`}
+							></div>
+						</div>
+						<span class="text-sm font-bold text-gray-700 dark:text-gray-300"
+							>{t('common.hasTwoShot')}</span
+						>
+					</label>
+				{/if}
 
 				<!-- Date Range -->
 				<div class={isSidebar ? 'flex flex-col gap-2 w-full' : 'flex flex-col gap-1'}>
@@ -235,31 +239,45 @@
 							{t('common.dateRange')}
 						</div>
 					{/if}
-					<div class={isSidebar ? 'flex flex-col items-stretch gap-2' : 'flex items-center gap-2'}>
-						<div class="relative flex-1">
-							<Calendar
-								class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"
-							/>
-							<input
-								type="date"
-								bind:value={startDate}
-								onchange={updateFilters}
-								class={`w-full text-xs bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 rounded-lg pl-8 pr-2 py-2 focus:ring-2 outline-none cursor-pointer transition-all placeholder:text-gray-300 ${isSidebar ? 'focus:ring-red-500/20 focus:border-red-500' : 'focus:ring-blue-500/20 focus:border-blue-500'}`}
-							/>
+					<div
+						class={isSidebar
+							? 'flex flex-col items-stretch gap-2'
+							: 'flex flex-col sm:flex-row items-center gap-2'}
+					>
+						<!-- Start Date -->
+						<div
+							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 w-full px-3 py-2 gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-blue-500'}`}
+						>
+							<span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
+								>{t('common.fromShort') || 'Dari'}</span
+							>
+							<div class="relative w-full flex items-center">
+								<input
+									type="date"
+									bind:value={startDate}
+									onchange={updateFilters}
+									class="w-full bg-transparent text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer color-scheme-dark z-10"
+								/>
+								<Calendar class="absolute right-0 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+							</div>
 						</div>
-						{#if !isSidebar}
-							<span class="text-gray-400 px-1">-</span>
-						{/if}
-						<div class="relative flex-1">
-							<Calendar
-								class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"
-							/>
-							<input
-								type="date"
-								bind:value={endDate}
-								onchange={updateFilters}
-								class={`w-full text-xs bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 rounded-lg pl-8 pr-2 py-2 focus:ring-2 outline-none cursor-pointer transition-all placeholder:text-gray-300 ${isSidebar ? 'focus:ring-red-500/20 focus:border-red-500' : 'focus:ring-blue-500/20 focus:border-blue-500'}`}
-							/>
+
+						<!-- End Date -->
+						<div
+							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 w-full px-3 py-2 gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-blue-500'}`}
+						>
+							<span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
+								>{t('common.toShort') || 'Ke'}</span
+							>
+							<div class="relative w-full flex items-center">
+								<input
+									type="date"
+									bind:value={endDate}
+									onchange={updateFilters}
+									class="w-full bg-transparent text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer color-scheme-dark z-10"
+								/>
+								<Calendar class="absolute right-0 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+							</div>
 						</div>
 					</div>
 				</div>
@@ -309,3 +327,21 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	input[type='date'].color-scheme-dark {
+		color-scheme: light dark;
+	}
+
+	input[type='date']::-webkit-calendar-picker-indicator {
+		cursor: pointer;
+		opacity: 0;
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		right: 0;
+		top: 0;
+		margin: 0;
+		padding: 0;
+	}
+</style>
