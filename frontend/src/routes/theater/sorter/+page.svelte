@@ -164,20 +164,6 @@
 	class={`w-full flex flex-col items-center justify-start min-h-[calc(100svh-120px)] ${sorter.currentState === 'results' ? 'pt-0 pb-12' : 'pt-0 pb-4 overflow-hidden'}`}
 >
 	{#if sorter.currentState === 'landing'}
-		<div class="flex items-center justify-center gap-3 sm:gap-4 mb-8">
-			<button
-				class="px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all bg-rose-500 text-white shadow-lg shadow-rose-500/20 text-center cursor-default"
-			>
-				{t('theater.sorter.startNew') || 'Mulai Sorter'}
-			</button>
-			<a
-				href="/theater/sorter/history"
-				class="px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all bg-white dark:bg-zinc-900 text-zinc-500 border border-zinc-200 dark:border-zinc-800 hover:text-rose-500 text-center"
-			>
-				{t('theater.sorter.history') || 'Riwayat Sorter'}
-			</a>
-		</div>
-
 		<SorterGenerationSelect
 			generations={sorter.generations}
 			selectedGenerations={sorter.selectedGenerations}

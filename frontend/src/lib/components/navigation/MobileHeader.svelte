@@ -88,10 +88,14 @@
 									onclick={action.onClick}
 									disabled={action.loading}
 									data-filter-toggle="true"
-									class={`rounded-full transition-colors cursor-pointer flex items-center justify-center ${
-										action.theme === 'red'
-											? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800'
-											: 'bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700'
+									class={`rounded-full transition-colors cursor-pointer flex items-center justify-center border ${
+										action.theme === 'rose'
+											? 'bg-rose-500 text-white border-transparent shadow-md shadow-rose-500/20'
+											: action.theme === 'red'
+												? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-800'
+												: action.theme === 'blue'
+													? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800'
+													: 'bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-zinc-700'
 									} ${action.icon && !action.showLabel ? 'p-1.5' : 'px-3 py-1.5'} ${action.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
 									title={action.label}
 								>

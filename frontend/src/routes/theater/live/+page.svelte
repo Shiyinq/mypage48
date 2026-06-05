@@ -39,8 +39,5 @@
 		loading={liveLoading.value}
 		{initialLoading}
 		variant="theater"
-		multiviewHref="/theater/live/multiview"
-		globalHistoryHref="/theater/live/history"
-		historyHref="/theater/live/history/watched"
 	/>
 </div>
