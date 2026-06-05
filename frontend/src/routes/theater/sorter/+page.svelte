@@ -283,7 +283,7 @@
 			</div>
 
 			<!-- Scrollable content area -->
-			<div class="flex-1 overflow-y-auto px-4 py-8 flex flex-col items-center">
+			<div class="flex-1 overflow-y-auto px-4 pt-4 pb-8 sm:py-8 flex flex-col items-center">
 				<div
 					class={`w-full space-y-8 px-1.5 sm:px-4 mx-auto pb-24 ${layoutMode === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}
 				>

@@ -134,7 +134,7 @@
 />
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32">
-	<div class="mb-8 relative z-30">
+	<div class="mb-0 sm:mb-8 relative z-30">
 		<PageHeader
 			title={t('history.title')}
 			subtitle={t('history.subtitle')}

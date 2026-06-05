@@ -62,7 +62,7 @@
 	<!-- Date if available -->
 	{#if date}
 		<div
-			class="flex items-center justify-center sm:justify-start gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2"
+			class="flex items-center justify-start gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2"
 		>
 			<Calendar size={12} class="text-rose-500" />
 			<span>{date}</span>

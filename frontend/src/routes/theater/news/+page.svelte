@@ -123,7 +123,7 @@
 	description={t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
 />
 
-<div class="mb-6 relative z-30">
+<div class="mb-0 sm:mb-6 relative z-30">
 	<TheaterHeader
 		{filterLabel}
 		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}

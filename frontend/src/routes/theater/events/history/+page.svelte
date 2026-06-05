@@ -135,7 +135,7 @@
 	description={t('theater.eventHistory.subtitle')}
 />
 
-<div class="mb-6 relative z-30">
+<div class="mb-0 sm:mb-6 relative z-30">
 	<TheaterHeader
 		{filterLabel}
 		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}

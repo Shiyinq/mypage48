@@ -106,7 +106,7 @@
 		</div>
 	{:else}
 		<!-- Page Header (Hidden visually but kept for MobileHeader store sync) -->
-		<div class="hidden max-w-7xl mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-6 mb-6">
+		<div class="hidden max-w-7xl mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-6 mb-0 sm:mb-8">
 			<PageHeader
 				title={t('journal.title')}
 				subtitle={t('journal.subtitle')}
