@@ -123,7 +123,7 @@
 	description={t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
 />
 
-<div class="mb-6 relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="mb-6 relative z-30">
 	<TheaterHeader
 		{filterLabel}
 		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
@@ -150,7 +150,7 @@
 	{/if}
 </div>
 
-<div class="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+<div class="space-y-6">
 	{#if !mounted || isLoading}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
 			{#each Array(8)}
