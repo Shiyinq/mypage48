@@ -1134,7 +1134,7 @@
 	},
 	"top2shot": {
 		"title": "Roulette & Birthday",
-		"subtitle": "Member analytics & spending breakdown",
+		"subtitle": "Member with the most 2-Shot photos",
 		"noData": "No 2-Shot Data Yet",
 		"noDataDesc": "Start adding 2-shot details when creating or editing tickets to see your Oshi rankings!",
 		"mostCollected": "Most Collected",
