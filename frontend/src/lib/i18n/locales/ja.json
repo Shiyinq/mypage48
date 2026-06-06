@@ -112,7 +112,7 @@
 		"settings": "設定",
 		"newTicket": "新規チケット",
 		"journal": "ジャーナル",
-		"top2shot": "2ショットメンバー"
+		"top2shot": "ルーレット＆バースデー"
 	},
 	"header": {
 		"tagline": "JKT48劇場トラッカー"
@@ -408,7 +408,7 @@
 			"totalExpenses": "総支出",
 			"members": "メンバー",
 			"uniqueIdols": "ユニークアイドル",
-			"topTwoShot": "2ショットメンバー",
+			"topTwoShot": "ルーレット＆バースデー",
 			"mostCollected": "最多コレクション",
 			"photos": "枚",
 			"firstLast": "初・最終2ショット",
@@ -918,7 +918,7 @@
 		}
 	},
 	"top2shot": {
-		"title": "2ショットメンバー",
+		"title": "ルーレット＆バースデー",
 		"subtitle": "メンバー分析と支出内訳",
 		"noData": "2ショットデータがありません",
 		"noDataDesc": "チケットを作成または編集する際に2ショットの詳細を追加して、推しランキングを確認しましょう！",

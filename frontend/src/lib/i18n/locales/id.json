@@ -113,7 +113,7 @@
 		"settings": "Pengaturan",
 		"newTicket": "Tiket Baru",
 		"journal": "Jurnal",
-		"top2shot": "2-Shot Member"
+		"top2shot": "Roulette & Birthday"
 	},
 	"header": {
 		"tagline": "PELACAK TEATER JKT48"
@@ -408,7 +408,7 @@
 			"totalExpenses": "Total Pengeluaran",
 			"members": "Member",
 			"uniqueIdols": "Idola Unik",
-			"topTwoShot": "2-Shot Member",
+			"topTwoShot": "Roulette & Birthday",
 			"mostCollected": "Koleksi Terbanyak",
 			"photos": "Foto",
 			"firstLast": "2-Shot Pertama & Terakhir",
@@ -1096,7 +1096,7 @@
 		}
 	},
 	"top2shot": {
-		"title": "2-Shot Member",
+		"title": "Roulette & Birthday",
 		"subtitle": "Analisis member & rincian pengeluaran",
 		"noData": "Belum Ada Data 2-Shot",
 		"noDataDesc": "Mulai tambahkan detail 2-shot saat membuat atau mengedit tiket untuk melihat peringkat Oshi kamu!",
