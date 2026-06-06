@@ -18,3 +18,7 @@ class DomainException(Exception):
         """
         self.message = message or self.ERROR_MESSAGE or "An error occurred"
         super().__init__(self.message)
+
+
+class InvalidDateError(DomainException):
+    ERROR_MESSAGE = "Invalid date format."

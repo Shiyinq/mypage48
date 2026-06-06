@@ -28,6 +28,10 @@ interface EventsState {
 			pagination: PaginationMeta;
 			lastUpdated: number;
 		} | null;
+		filter: {
+			startDate?: string;
+			endDate?: string;
+		};
 	};
 	calendar: {
 		list: CalendarEvent[];
@@ -59,7 +63,11 @@ const initialState: EventsState = {
 		error: null,
 		lastUpdated: 0,
 		isLoading: false,
-		defaultCache: null
+		defaultCache: null,
+		filter: {
+			startDate: undefined,
+			endDate: undefined
+		}
 	},
 	calendar: {
 		list: [],
@@ -166,29 +174,47 @@ function createEventsStore() {
 			});
 		},
 
-		loadHistory: async (page = 1) => {
-			// Short-circuit with cached data for page 1 (prevents hover-prefetch + click double request)
+		loadHistory: async (
+			page = 1,
+			forceRefresh = false,
+			customFilter?: { startDate?: string; endDate?: string }
+		) => {
+			const currentFilter = customFilter || state.history.filter;
+
+			// Short-circuit with cached data for page 1 if no custom filter
 			if (
+				!forceRefresh &&
 				page === 1 &&
+				!currentFilter.startDate &&
+				!currentFilter.endDate &&
 				state.history.defaultCache &&
 				!isCacheExpired(state.history.defaultCache.lastUpdated)
 			) {
-				if (state.history.list.length === 0) {
-					state.history.list = state.history.defaultCache.list;
-					state.history.pagination = state.history.defaultCache.pagination;
-				}
+				state.history.list = state.history.defaultCache.list;
+				state.history.pagination = state.history.defaultCache.pagination;
 				state.history.error = null;
 				return;
 			}
 
-			// Deduplicate concurrent requests for the same page
-			return dedup.execute(`history:${page}`, async () => {
+			// Generate a cache key that includes filter state
+			let cacheKey = `history:${page}`;
+			if (currentFilter.startDate || currentFilter.endDate) {
+				cacheKey += `:${currentFilter.startDate || ''}:${currentFilter.endDate || ''}`;
+			}
+
+			// Deduplicate concurrent requests for the same page and filter
+			return dedup.execute(cacheKey, async () => {
 				const now = Date.now();
 				state.history.error = null;
 				state.history.isLoading = true;
 
 				try {
-					const res = await events.getEvents(page, 20);
+					const res = await events.getEvents(
+						page,
+						20,
+						currentFilter.startDate,
+						currentFilter.endDate
+					);
 					const translatedData = res.data.map(translateLegacyEvent);
 
 					state.history.list = translatedData;
@@ -196,9 +222,10 @@ function createEventsStore() {
 					state.history.lastUpdated = now;
 					state.history.error = null;
 
-					if (page === 1) {
+					// Only cache page 1 of unfiltered results
+					if (page === 1 && !currentFilter.startDate && !currentFilter.endDate) {
 						state.history.defaultCache = {
-							list: res.data,
+							list: translatedData,
 							pagination: res.meta,
 							lastUpdated: now
 						};
@@ -349,6 +376,8 @@ export const historyLoading = {
 		});
 	}
 };
+
+export const historyFilter = state.history.filter;
 
 export const calendarEvents = {
 	get value() {

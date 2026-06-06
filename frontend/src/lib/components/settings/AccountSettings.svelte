@@ -175,11 +175,13 @@
 		<EmptyState icon={User} title={t('common.noResults')} description={t('profile.errorDesc')} />
 	</div>
 {:else}
-	<div class="glass-panel p-6 rounded-3xl relative overflow-hidden" in:fade>
+	<div class="glass-panel p-6 rounded-3xl relative" in:fade>
 		<!-- Subtle background decoration -->
-		<div
-			class="absolute top-0 right-0 w-48 h-48 bg-blue-50 dark:bg-blue-900/5 rounded-full -mr-24 -mt-24 blur-3xl opacity-50"
-		></div>
+		<div class="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+			<div
+				class="absolute top-0 right-0 w-48 h-48 bg-blue-50 dark:bg-blue-900/5 rounded-full -mr-24 -mt-24 blur-3xl opacity-50"
+			></div>
+		</div>
 
 		<!-- Header -->
 		<div class="flex items-center justify-between mb-8 relative">
@@ -382,11 +384,17 @@
 								<p class="text-base font-bold text-gray-800 dark:text-gray-200">
 									{userProfile.data.email || '-'}
 								</p>
-								<div class="relative group/tooltip">
+								<button
+									type="button"
+									class="relative group/tooltip focus:outline-none"
+									tabindex="0"
+								>
 									{#if userProfile.data.isEmailVerified}
-										<ShieldCheck class="w-4 h-4 text-blue-500 cursor-help" />
+										<ShieldCheck
+											class="w-4 h-4 text-blue-500 cursor-help group-focus/tooltip:text-blue-600 transition-colors"
+										/>
 										<div
-											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-zinc-800 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20 shadow-xl border border-white/10"
+											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-zinc-800 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 group-focus/tooltip:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20 shadow-xl border border-white/10"
 										>
 											{t('settings.account.verified')}
 											<div
@@ -394,9 +402,11 @@
 											></div>
 										</div>
 									{:else}
-										<Info class="w-4 h-4 text-amber-500 cursor-help" />
+										<Info
+											class="w-4 h-4 text-amber-500 cursor-help group-focus/tooltip:text-amber-600 transition-colors"
+										/>
 										<div
-											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-zinc-800 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20 shadow-xl border border-white/10"
+											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-zinc-800 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 group-focus/tooltip:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20 shadow-xl border border-white/10"
 										>
 											{t('settings.account.unverified')}
 											<div
@@ -404,7 +414,7 @@
 											></div>
 										</div>
 									{/if}
-								</div>
+								</button>
 							</div>
 						{/if}
 					</div>

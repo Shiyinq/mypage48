@@ -75,9 +75,9 @@
 
 <SEO title={t('feedback.title')} />
 
-<div class="max-w-2xl mx-auto p-4 pb-24">
+<div class="max-w-3xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32">
 	<!-- Page Header -->
-	<div class="mb-8">
+	<div class="mb-0 sm:mb-6 text-center sm:text-left">
 		<PageHeader
 			title={t('feedback.title')}
 			subtitle={t('feedback.subtitle')}

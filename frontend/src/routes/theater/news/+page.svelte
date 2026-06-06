@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { Newspaper, Calendar, ChevronLeft, ChevronRight } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
-	import { fade } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	import { EventCardSkeleton } from '$lib/components/skeletons';
@@ -14,8 +14,12 @@
 		newsPagination,
 		newsLoading,
 		newsError,
-		newsStore
+		newsStore,
+		newsFilter
 	} from '$lib/stores/news.svelte';
+
+	import { TheaterHeader } from '$lib/components/theater';
+	import { DateRangeFilter } from '$lib/components/common';
 
 	import { formatDate } from '$lib/i18n';
 	import { OptimizedImage } from '$lib/components/common';
@@ -31,6 +35,49 @@
 	let pagination = $derived(newsPagination.value);
 	let isLoading = $derived(newsLoading.value);
 	let error = $derived(newsError.value);
+	let isFilterOpen = $state(false);
+
+	function clickOutside(node: HTMLElement) {
+		const handleClick = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (node && !node.contains(target) && !target.closest('[data-filter-toggle="true"]')) {
+				isFilterOpen = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
+
+	$effect(() => {
+		// Track only startDate and endDate
+		const trackStart = newsFilter.startDate;
+		const trackEnd = newsFilter.endDate;
+
+		untrack(() => {
+			// Do not fetch if only one of the dates is set
+			if ((trackStart && !trackEnd) || (!trackStart && trackEnd)) {
+				return;
+			}
+			newsStore.load(1, 12, false, newsFilter);
+		});
+	});
+
+	function formatFilterDate(dateStr?: string) {
+		if (!dateStr) return '';
+		return formatDate(dateStr, { day: 'numeric', month: 'short', year: 'numeric' });
+	}
+
+	let filterLabel = $derived(
+		newsFilter.startDate || newsFilter.endDate
+			? `${formatFilterDate(newsFilter.startDate)} - ${formatFilterDate(newsFilter.endDate)}`
+			: t('common.allData') || 'Semua Data'
+	);
 
 	async function handlePageChange(page: number) {
 		goto(`/theater/news?page=${page}`);
@@ -76,6 +123,33 @@
 	description={t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
 />
 
+<div class="mb-0 sm:mb-6 relative z-30">
+	<TheaterHeader
+		{filterLabel}
+		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
+		isOpen={isFilterOpen}
+		title={t('theater.news.title')}
+		subtitle={t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
+		icon={Newspaper}
+		theme="purple"
+	/>
+	{#if isFilterOpen}
+		<div
+			use:clickOutside
+			transition:slide={{ duration: 200 }}
+			class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
+		>
+			<DateRangeFilter
+				bind:startDate={newsFilter.startDate}
+				bind:endDate={newsFilter.endDate}
+				onClear={() => {
+					isFilterOpen = false;
+				}}
+			/>
+		</div>
+	{/if}
+</div>
+
 <div class="space-y-6">
 	{#if !mounted || isLoading}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
@@ -87,7 +161,7 @@
 		<ErrorState
 			title={t('theater.news.errorTitle')}
 			description={t('theater.news.errorDesc')}
-			onRetry={() => newsStore.load(1, 12, true)}
+			onRetry={() => newsStore.load(1, 12, true, newsFilter)}
 		/>
 	{:else if list.length === 0}
 		<EmptyState

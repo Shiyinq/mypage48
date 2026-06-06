@@ -5,6 +5,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { OptimizedImage } from '$lib/components/common';
+	import { getOshiBanner } from '$lib/constants';
 
 	interface Props {
 		profile?: User | null;
@@ -29,10 +30,11 @@
 	const { t } = useTranslation();
 </script>
 
-<div class="glass-panel p-0 rounded-3xl overflow-hidden relative">
+<div class="glass-panel p-0 rounded-3xl relative">
 	<!-- Banner -->
 	<div
-		class="h-32 w-full bg-[url('https://upload.wikimedia.org/wikipedia/commons/c/c7/JKT48_FIGHT_Logo_%282026%29.png')] bg-cover bg-[center_30%] relative"
+		class="h-32 w-full rounded-t-3xl overflow-hidden bg-cover bg-[center_30%] relative transition-all duration-500 ease-in-out"
+		style="background-image: url('{getOshiBanner(profile?.oshi?.memberType)}')"
 	>
 		<div
 			class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent dark:from-zinc-900 dark:via-zinc-900/50"
@@ -42,10 +44,10 @@
 	<div class="px-6 md:px-8 pb-6 relative">
 		{#if loading}
 			<!-- Oshi Skeleton Loading -->
-			<div class="flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16">
+			<div class="flex flex-col md:flex-row items-center gap-6 -mt-16">
 				<!-- Avatar Skeleton -->
 				<div
-					class="w-32 h-32 rounded-full bg-gray-200 dark:bg-zinc-700 border-4 border-white dark:border-zinc-900 shadow-xl animate-pulse relative z-10"
+					class="w-28 h-28 rounded-full bg-gray-200 dark:bg-zinc-700 border-4 border-white dark:border-zinc-900 shadow-xl animate-pulse relative z-10 md:self-start"
 				></div>
 
 				<!-- Info Skeleton -->
@@ -67,9 +69,9 @@
 				</div>
 			</div>
 		{:else if profile?.oshi}
-			<div class="flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16">
+			<div class="flex flex-col md:flex-row items-center gap-6 -mt-16">
 				<!-- Avatar with Glow -->
-				<div class="relative">
+				<div class="relative md:self-start">
 					<button
 						class="relative w-28 h-28 rounded-full border-4 border-white shadow-xl overflow-hidden flex-shrink-0 cursor-pointer transition-transform hover:scale-105 active:scale-95"
 						onclick={onOpenMemberDetail}
@@ -124,8 +126,9 @@
 							>
 								{t('profile.oshi.generationPattern', { gen: profile?.oshi?.generation })}
 							</span>
-							<div
-								class="group relative px-2 py-0.5 bg-blue-100 text-blue-600 rounded-md border border-blue-200 cursor-help flex items-center gap-1"
+							<button
+								type="button"
+								class="group relative px-2 py-0.5 bg-blue-100 text-blue-600 rounded-md border border-blue-200 cursor-help flex items-center gap-1 focus:outline-none"
 							>
 								<span class="text-[10px] font-bold uppercase tracking-wide whitespace-nowrap">
 									{t('profile.oshi.totalShowsPattern', { count: profile?.oshi?.totalShows || 0 })}
@@ -134,7 +137,7 @@
 
 								<!-- Tooltip -->
 								<div
-									class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-center pointer-events-none"
+									class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus:opacity-100 group-focus:visible transition-all z-50 text-center pointer-events-none"
 								>
 									{t('profile.oshi.showsTooltip')}
 									<!-- Triangle -->
@@ -142,7 +145,7 @@
 										class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-800"
 									></div>
 								</div>
-							</div>
+							</button>
 						</div>
 					</div>
 

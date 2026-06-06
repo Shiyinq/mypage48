@@ -32,7 +32,8 @@
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import MultiPlayer from '$lib/components/live/MultiPlayer.svelte';
-	import { showToast, isImmersive } from '$lib/stores';
+	import { showToast, isImmersive, isAuthenticated } from '$lib/stores';
+	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
 	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
@@ -171,6 +172,39 @@
 				document.body.style.overflow = '';
 				isImmersive.set(false);
 			}
+		};
+	});
+
+	// Heartbeat for live history tracking
+	$effect(() => {
+		const heartbeatInterval = setInterval(() => {
+			if (!isAuthenticated.value) return;
+
+			// Track all active streams in multiview slots
+			slots.forEach((slot) => {
+				const platform = slot.platform || '';
+				const liveId = slot.live_id || slot.room_url_key || slot.room_id || '';
+				const memberId = slot.member?.id || slot.room_url_key || '';
+				const memberName = slot.member?.name || slot.title || 'Unknown';
+				const memberNickname = slot.member?.nickname || undefined;
+				const title = slot.title;
+
+				if (liveId && platform) {
+					liveHistoryStore.updateWatchDuration(
+						liveId,
+						memberId,
+						memberName,
+						memberNickname,
+						platform,
+						30,
+						title
+					);
+				}
+			});
+		}, 30000);
+
+		return () => {
+			clearInterval(heartbeatInterval);
 		};
 	});
 
@@ -456,7 +490,7 @@
 		<!-- Member Picker Sidebar -->
 		{#if showPicker}
 			<div
-				class="fixed md:relative top-14 md:top-0 left-0 w-full md:w-72 h-[calc(100vh-56px)] md:h-auto border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col z-[5000]"
+				class="fixed md:relative top-14 md:top-0 left-0 w-full md:w-72 h-[calc(100dvh-56px)] md:h-auto border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col z-[5000]"
 				transition:fly={{ x: isMobile ? -500 : -288, duration: 300 }}
 			>
 				<div class="p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center gap-2">
@@ -566,7 +600,7 @@
 							: ''} {draggedIndex === i
 							? 'opacity-20 translate-y-2'
 							: ''} group shadow-sm transition-all hover:shadow-md text-left cursor-pointer transition-[aspect-ratio,transform,opacity] duration-500 {isPortrait
-							? 'max-h-[calc(100vh-140px)]'
+							? 'max-h-[calc(100dvh-140px)]'
 							: ''} mx-auto w-full"
 						draggable="true"
 						ondragstart={() => handleDragStart(i)}
@@ -596,7 +630,7 @@
 
 						<!-- Slot Header (Overlay) -->
 						<div
-							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-gradient-to-b from-black/60 to-transparent"
+							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-b from-black/60 to-transparent"
 						>
 							<div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
 								<OptimizedImage
@@ -631,7 +665,7 @@
 
 						<!-- Slot Controls (Bottom Overlay) -->
 						<div
-							class="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-gradient-to-t from-black/60 to-transparent"
+							class="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-t from-black/60 to-transparent"
 						>
 							<div class="flex items-center gap-0 group/volume relative h-8">
 								<button
@@ -742,7 +776,7 @@
 		<!-- Switchable Chat Sidebar -->
 		{#if showChat}
 			<div
-				class="fixed md:relative top-14 md:top-0 right-0 w-full md:w-80 h-[calc(100vh-56px)] md:h-auto border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col z-[5000]"
+				class="fixed md:relative top-14 md:top-0 right-0 w-full md:w-80 h-[calc(100dvh-56px)] md:h-auto border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col z-[5000]"
 				transition:fly={{ x: isMobile ? 500 : 320, duration: 300 }}
 			>
 				{#if focusedStream}

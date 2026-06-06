@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
 	import { type SetlistDetailResponse } from '$lib/apis/setlists';
 
 	import { ticketsStore, showToast } from '$lib/stores';
@@ -15,6 +14,12 @@
 	import SetlistStats from '$lib/components/theater/SetlistStats.svelte';
 	import Timeline from '$lib/components/history/Timeline.svelte';
 	import SetlistTicketItem from '$lib/components/theater/SetlistTicketItem.svelte';
+	import { slide } from 'svelte/transition';
+
+	// Import theater components and stores
+	import { TheaterHeader, TheaterFilters } from '$lib/components/theater';
+	import { dashboardFilter, dashboardStatsData } from '$lib/stores/dashboard.svelte';
+	import { AudioLines } from 'lucide-svelte';
 
 	let { data: _data } = $props();
 
@@ -29,11 +34,38 @@
 	let deleteId: string | null = $state(null);
 	let isDeleting = $state(false);
 
+	// Filter state
+	let isFilterOpen = $state(false);
+	const currentYear: number = new Date().getFullYear();
+	let availableYears = $derived(dashboardStatsData.data?.available_years ?? [currentYear]);
+
+	function clickOutside(node: HTMLElement) {
+		const handleClick = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (node && !node.contains(target) && !target.closest('[data-filter-toggle="true"]')) {
+				isFilterOpen = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
+
 	async function fetchDetail() {
 		if (!setlistId) return;
 		try {
 			// Use store loadDetail which handles caching
-			detail = await setlistsStore.loadDetail(setlistId);
+			detail = await setlistsStore.loadDetail(setlistId, {
+				year: dashboardFilter.selectedYear,
+				startMonth: dashboardFilter.startMonth,
+				endMonth: dashboardFilter.endMonth,
+				isAllData: dashboardFilter.isAllData
+			});
 		} catch {
 			// Error is handled by store
 			showToast(t('theater.setlists.errorTitle') || 'Failed to load detail', 'error');
@@ -62,8 +94,10 @@
 		}
 	}
 
-	onMount(() => {
-		fetchDetail();
+	$effect(() => {
+		if (setlistId && dashboardFilter) {
+			fetchDetail();
+		}
 	});
 </script>
 
@@ -80,8 +114,37 @@
 	onConfirm={confirmDelete}
 />
 
+<div class="mb-0 sm:mb-6 relative z-30">
+	<TheaterHeader
+		filter={dashboardFilter}
+		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
+		isOpen={isFilterOpen}
+		title={detail?.title || 'Theater Detail'}
+		subtitle={t('theater.subtitle') || 'Perjalanan teatermu'}
+		icon={AudioLines}
+		theme="purple"
+		showBackButton={true}
+		backUrl="/theater"
+	/>
+	{#if isFilterOpen}
+		<div
+			use:clickOutside
+			transition:slide={{ duration: 200 }}
+			class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
+		>
+			<TheaterFilters
+				bind:isAllData={dashboardFilter.isAllData}
+				bind:selectedYear={dashboardFilter.selectedYear}
+				bind:startMonth={dashboardFilter.startMonth}
+				bind:endMonth={dashboardFilter.endMonth}
+				{availableYears}
+			/>
+		</div>
+	{/if}
+</div>
+
 {#if $isSetlistDetailLoading}
-	<div class="animate-pulse space-y-8 max-w-5xl mx-auto">
+	<div class="animate-pulse space-y-8">
 		<!-- New Hero Skeleton -->
 		<div class="h-[400px] w-full bg-gray-200 dark:bg-zinc-800 rounded-3xl"></div>
 		<!-- Grid Skeleton -->
@@ -100,7 +163,7 @@
 		onRetry={fetchDetail}
 	/>
 {:else if detail}
-	<div class="max-w-5xl mx-auto pb-20">
+	<div>
 		<!-- Immersive Hero Section -->
 		<SetlistHero {detail} />
 

@@ -48,7 +48,8 @@ class TicketsRepository:
         if days:
             # days is a list of strings like ["Saturday", "Sunday"]
             # event.day stores the day name
-            query["event.day"] = {"$in": days}
+            upper_days = [d.upper() for d in days]
+            query["$expr"] = {"$in": [{"$toUpper": "$event.day"}, upper_days]}
 
         if start_date or end_date:
             date_query = {}

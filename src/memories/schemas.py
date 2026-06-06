@@ -50,6 +50,7 @@ class TopTwoShotMember(BaseModel):
 
 
 class TopTwoShotResponse(BaseModel):
+    available_years: list[int]
     ranking: list[TopTwoShotMember]
     totalTwoShotSpend: int
     totalTwoShotCount: int

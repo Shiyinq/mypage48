@@ -26,6 +26,8 @@ from src.health.service import HealthService
 from src.http_exceptions import AdminRequired
 from src.infrastructure import AsyncBackgroundRunner
 from src.live.service import LiveService
+from src.live_history.repository import LiveHistoryRepository
+from src.live_history.service import LiveHistoryService
 from src.llm.repository import LLMRepository
 from src.llm.service import LLMService
 from src.logging_config import create_logger
@@ -297,8 +299,9 @@ def get_memories_service(
     repo: MemoriesRepository = Depends(get_memories_repository),
     config: Settings = Depends(get_settings),
     storage_service: StorageService = Depends(get_storage_service),
+    tickets_repo: TicketsRepository = Depends(get_tickets_repository),
 ) -> MemoriesService:
-    return MemoriesService(repo, config, storage_service)
+    return MemoriesService(repo, config, storage_service, tickets_repo)
 
 
 def get_setlists_repository(db=Depends(get_db)) -> SetlistsRepository:
@@ -392,3 +395,13 @@ def get_sorters_service(
     config: Settings = Depends(get_settings),
 ) -> SortersService:
     return SortersService(repo, config)
+
+
+def get_live_history_repository(db=Depends(get_db)) -> LiveHistoryRepository:
+    return LiveHistoryRepository(db)
+
+
+def get_live_history_service(
+    repo: LiveHistoryRepository = Depends(get_live_history_repository),
+) -> LiveHistoryService:
+    return LiveHistoryService(repo)

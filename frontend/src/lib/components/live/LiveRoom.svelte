@@ -9,8 +9,9 @@
 		liveList,
 		liveStore
 	} from '$lib/stores/live.svelte';
+	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
 	import { OptimizedImage } from '$lib/components/common';
-	import { showToast, isImmersive, theme, setTheme } from '$lib/stores';
+	import { showToast, isImmersive, theme, setTheme, isAuthenticated } from '$lib/stores';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveStatus } from '$lib/types';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
@@ -144,6 +145,9 @@
 			const i = id as string;
 			if (!p || !i) throw new Error('Missing params');
 
+			if (liveList.value.length === 0) {
+				await liveStore.loadLiveList();
+			}
 			await liveStore.loadStream(p, i);
 
 			if (currentInit !== initCount) return;
@@ -280,19 +284,11 @@
 	});
 
 	$effect(() => {
-		const isLaptop = typeof window !== 'undefined' && window.innerWidth >= 1024;
-		if (isLaptop) {
-			isFocusMode = true;
-			isImmersive.set(true);
-			if (typeof document !== 'undefined') {
-				document.body.style.overflow = 'hidden';
-			}
-		} else {
-			isFocusMode = false;
-			isImmersive.set(false);
-			if (typeof document !== 'undefined') {
-				document.body.style.overflow = 'auto';
-			}
+		// Always enable immersive mode for live player to match public layout
+		isFocusMode = true;
+		isImmersive.set(true);
+		if (typeof document !== 'undefined') {
+			document.body.style.overflow = 'hidden';
 		}
 
 		const refreshInterval = setInterval(() => {
@@ -307,8 +303,54 @@
 			}
 		}, 30000);
 
+		// Heartbeat for live history tracking
+		const heartbeatInterval = setInterval(() => {
+			if (
+				isAuthenticated.value &&
+				platform &&
+				id &&
+				videoElement &&
+				!videoElement.paused &&
+				!autoplayBlocked &&
+				currentStream.value
+			) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const currentStreamAny = currentStream.value as any;
+				const liveId =
+					streamFromList?.live_id ||
+					currentStreamAny.live_id ||
+					streamFromList?.room_url_key ||
+					currentStreamAny.room_url_key ||
+					id;
+				const memberId =
+					streamFromList?.member?.id ||
+					currentStream.value.member?.id ||
+					streamFromList?.room_url_key ||
+					currentStreamAny.room_url_key ||
+					id;
+				const memberName =
+					streamFromList?.member?.name ||
+					currentStream.value.member?.name ||
+					streamTitle ||
+					'Unknown';
+				const memberNickname =
+					streamFromList?.member?.nickname || currentStream.value.member?.nickname || undefined;
+
+				liveHistoryStore.updateWatchDuration(
+					liveId,
+					memberId,
+					memberName,
+					memberNickname,
+					platform,
+					30,
+					streamTitle
+				);
+			}
+		}, 30000);
+
 		return () => {
 			clearInterval(refreshInterval);
+			clearInterval(heartbeatInterval);
 			if (hls) hls.destroy();
 			if (recordingTimer) clearInterval(recordingTimer);
 			liveStore.reset();
@@ -524,8 +566,8 @@
 
 <div
 	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out overflow-x-hidden {isFocusMode
-		? 'fixed inset-0 !top-0 !mt-0 z-[7000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-screen w-screen'
-		: 'h-[calc(100vh-72px)] sm:h-[calc(100vh-76px)] mt-2 sm:mt-3 px-0 sm:px-4 pb-2 sm:pb-4'}"
+		? 'fixed inset-0 !top-0 !mt-0 z-[7000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-[100dvh] w-screen'
+		: 'h-[calc(100dvh-72px)] sm:h-[calc(100dvh-76px)] mt-2 sm:mt-3 px-0 sm:px-4 pb-2 sm:pb-4'}"
 >
 	<!-- Main Player Area -->
 	<div class="flex-[1.5] lg:flex-1 flex flex-col gap-3 min-h-0 p-0">
@@ -542,11 +584,7 @@
 		{/if}
 
 		<!-- Back Button & Info -->
-		<div
-			class="{isTheater ? 'hidden sm:flex' : 'flex'} items-center justify-between {isTheater
-				? ''
-				: 'px-4 sm:px-0'}"
-		>
+		<div class="flex items-center justify-between {isTheater ? '' : 'px-4 sm:px-0'}">
 			<div class="flex items-center gap-3">
 				<a
 					href={basePath}

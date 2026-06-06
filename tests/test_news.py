@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 
 @pytest.fixture
 def create_news(db):
@@ -41,7 +41,7 @@ async def test_get_news_paginated(client, create_news, create_user):
     })
 
     # Test without category filter
-    response = await client.get("/api/theater/news/?page=1&limit=10", headers=headers)
+    response = await client.get("/api/theater/news?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()
     
@@ -56,6 +56,50 @@ async def test_get_news_paginated(client, create_news, create_user):
     news_titles = [n["title"] for n in data["data"]]
     assert "Recent News 1" in news_titles
     assert "Older News 2" in news_titles
+
+
+@pytest.mark.asyncio
+async def test_get_news_with_date_filter(client, create_news, create_user):
+    # Auth
+    _, _, headers = await create_user("testuser_date")
+
+    # The datetime should match valid_date_from storage format (which is a string or ISODate in Mongo, but in test setup we pass strings, and schema converts to datetime if we go through service. Since create_news bypasses service, we must insert datetime objects, or if schema parses it, let's look at create_news: it inserts dict directly to DB).
+    # Wait, the repository queries valid_date_from with datetime objects (because utils.parse_date_range returns datetime objects).
+    # If the test fixture inserts string "2026-03-22T10:00:00+07:00", then `$gte` with datetime might fail in MongoDB because types don't match!
+    # Let's fix the fixture insertion to use datetime or ensure the test passes.
+    # Actually, in real app, News schemas validate and store as datetime in Mongo.
+    
+    await create_news({
+        "news_id": 10,
+        "title": "News Jan",
+        "category": "Event",
+        "link": "news-jan",
+        "is_published": True,
+        "content_body": "<p>Content</p>",
+        "valid_date_from": datetime(2026, 1, 15, tzinfo=timezone.utc)
+    })
+    
+    await create_news({
+        "news_id": 11,
+        "title": "News Feb",
+        "category": "Event",
+        "link": "news-feb",
+        "is_published": True,
+        "content_body": "<p>Content</p>",
+        "valid_date_from": datetime(2026, 2, 15, tzinfo=timezone.utc)
+    })
+
+    # Test filtering by start_date and end_date
+    res1 = await client.get("/api/theater/news?start_date=2026-02-01&end_date=2026-02-28", headers=headers)
+    assert res1.status_code == 200
+    data1 = res1.json()
+    assert data1["meta"]["count_total"] == 1
+    assert data1["data"][0]["title"] == "News Feb"
+
+    # Test invalid date
+    res2 = await client.get("/api/theater/news?start_date=invalid", headers=headers)
+    assert res2.status_code == 400
+    assert res2.json()["detail"] == "INVALID_DATE_FORMAT"
 
 
 
@@ -102,7 +146,7 @@ async def test_get_news_service_error(client, monkeypatch, create_user):
     monkeypatch.setattr("src.news.repository.NewsRepository.get_news", mock_find)
     
     # Test error handling on paginated list
-    response = await client.get("/api/theater/news/", headers=headers)
+    response = await client.get("/api/theater/news", headers=headers)
     assert response.status_code == 500
     assert response.json()["detail"] == "Failed to fetch news."
     

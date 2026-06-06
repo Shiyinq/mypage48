@@ -18,12 +18,15 @@
 		"info": "Information",
 		"search": "Search",
 		"filter": "Filter",
+		"setlist": "Setlist",
 		"filters": "Filters",
 		"all": "All",
 		"allSetlists": "All Setlists",
 		"allData": "All Data",
 		"hasTwoShot": "Has 2-Shot",
 		"clearFilters": "Clear Filters",
+		"startDate": "Start Date",
+		"endDate": "End Date",
 		"days": "Days",
 		"dateRange": "Date Range",
 		"viewDetails": "View Details",
@@ -148,6 +151,14 @@
 			"achievements": {
 				"title": "ACHIEVEMENTS",
 				"description": "Unlock badges and milestones as you support JKT48. From \"First Show\" to \"Legendary Fan\", track your progress and show off your loyalty."
+			},
+			"sorter": {
+				"title": "SORTER",
+				"description": "Sort your favorite JKT48 members to find out your true oshi ranking. Share your sorter results to social media."
+			},
+			"live": {
+				"title": "LIVE",
+				"description": "Watch JKT48 members streaming live on Showroom or IDN Live. Watch multiple members at once with the Multi-view feature."
 			}
 		},
 		"footer": {
@@ -693,6 +704,45 @@
 		"viewHistory": "View History",
 		"top": "Top"
 	},
+	"liveHistory": {
+		"title": "Watch History",
+		"subtitle": "Your live watch history",
+		"totalWatches": "Total Watches",
+		"totalDuration": "Total Duration",
+		"membersWatched": "Members Watched",
+		"mostFrequent": "Most Frequent",
+		"recentHistory": "Recent History",
+		"noHistory": "No History Yet",
+		"noHistoryDesc": "You haven't watched any recorded JKT48 live streams.",
+		"times": "times",
+		"buttonSubtitle": "My Statistics",
+		"longestWatch": "Longest Watch",
+		"platformWatches": "Platform Watches",
+		"viewHistory": "Watch History",
+		"watchedFor": "Watched for",
+		"globalTitle": "Live History",
+		"globalSubtitle": "History of all recorded lives",
+		"globalButtonSubtitle": "All Lives",
+		"globalButton": "Live History",
+		"rankingTitle": "Member Ranking",
+		"rankingSubtitle": "Members you watch the most",
+		"globalStatsTitle": "Live Statistics",
+		"totalLives": "Total Lives",
+		"uniqueMembers": "Unique Members",
+		"mostFrequentLive": "Most Frequent Live",
+		"highestViews": "Highest Views",
+		"globalRankingTitle": "Live Member Ranking",
+		"globalRankingSubtitle": "Members who go live the most",
+		"liveHistory": "Live History",
+		"longestLive": "Longest Live",
+		"totalLivePlatform": "Total Live Platform",
+		"views": "Views",
+		"thisWeek": "This Week",
+		"thisMonth": "This Month",
+		"thisYear": "This Year",
+		"allTime": "All Time",
+		"customRange": "Custom Range"
+	},
 	"theater": {
 		"title": "Theater",
 		"subtitle": "Your theater journey",
@@ -789,7 +839,7 @@
 			"connecting": "Connecting...",
 			"disconnected": "Disconnected",
 			"reconnect_idn": "Connection lost. Retrying in a few seconds...",
-			"switchMultiview": "Switch to Multi-view",
+			"switchMultiview": "Multi-view",
 			"share": {
 				"title": "Support mypage48! 🚀",
 				"description": "Love this website? Help us stay alive and grow by sharing this platform with fellow JKT48 fans!",
@@ -798,6 +848,11 @@
 				"shareText": "Check out the latest JKT48 members live streams on mypage48! 🌟",
 				"toastSuccess": "Website link copied successfully!",
 				"toastError": "Failed to copy link."
+			},
+			"promo": {
+				"historyTitle": "Live History Feature",
+				"historyDesc": "You can now view your personal live watch history and statistics! Create your account now.",
+				"historyAction": "Register"
 			}
 		},
 		"news": {
@@ -864,7 +919,9 @@
 			"subtitle": "JKT48 member data",
 			"comingSoon": "Member data coming soon!",
 			"errorTitle": "Failed to load members",
-			"errorDesc": "Something went wrong while fetching the member list."
+			"errorDesc": "Something went wrong while fetching the member list.",
+			"team": "Team",
+			"allTeams": "All Teams"
 		},
 		"shows": {
 			"title": "Show Schedule",
@@ -940,7 +997,7 @@
 			"deleteSuccess": "History entry deleted",
 			"deleteFailed": "Failed to delete history entry",
 			"deleteHistory": "Delete History",
-			"backToHistory": "Back to History",
+			"backToHistory": "Sorter History",
 			"gridView": "Grid View",
 			"listView": "List View",
 			"confirmYes": "Yes",
@@ -954,6 +1011,7 @@
 	"memories": {
 		"title": "Memories",
 		"subtitle": "Your photo and ticket gallery",
+		"photoType": "Photo Type",
 		"allPhotos": "All Photos",
 		"tickets": "Tickets",
 		"twoShots": "2-Shots",

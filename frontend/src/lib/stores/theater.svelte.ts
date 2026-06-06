@@ -17,6 +17,7 @@ interface SetlistsState {
 	isSetlistsLoading: boolean;
 	isSetlistDetailLoading: boolean;
 	maxAttendance: number;
+	lastFilterKey: string | null;
 }
 
 const initialSetlistsState: SetlistsState = {
@@ -26,7 +27,8 @@ const initialSetlistsState: SetlistsState = {
 	detailError: null,
 	isSetlistsLoading: false,
 	isSetlistDetailLoading: false,
-	maxAttendance: 1
+	maxAttendance: 1,
+	lastFilterKey: null
 };
 
 const setlistsState = $state<SetlistsState>(initialSetlistsState);
@@ -56,18 +58,29 @@ function createSetlistsStore() {
 			return setlistsState.maxAttendance;
 		},
 
-		load: async () => {
-			if (setlistsState.data) return;
+		load: async (filter?: {
+			year: number;
+			startMonth: number;
+			endMonth: number;
+			isAllData: boolean;
+		}) => {
+			const filterKey = filter ? JSON.stringify(filter) : 'none';
 
-			// Deduplicate concurrent requests (hover-prefetch + onMount)
-			return setlistsDedup.execute('setlists', async () => {
+			// Return cached data if filter hasn't changed
+			if (setlistsState.data && setlistsState.lastFilterKey === filterKey) {
+				return;
+			}
+
+			// Deduplicate concurrent requests
+			return setlistsDedup.execute(`setlists-${filterKey}`, async () => {
 				setlistsState.error = null;
 				setlistsState.isSetlistsLoading = true;
 
 				try {
-					const response = await setlistsApi.getAll();
+					const response = await setlistsApi.getAll(filter);
 					setlistsState.data = response.setlists;
 					setlistsState.maxAttendance = response.maxAttendance || 1;
+					setlistsState.lastFilterKey = filterKey;
 					setlistsState.error = null;
 				} catch (e) {
 					logger.error('Failed to load setlists', e, { context: 'SetlistsStore' });
@@ -79,17 +92,28 @@ function createSetlistsStore() {
 			});
 		},
 
-		loadDetail: async (id: string) => {
-			if (setlistsState.detailCache[id]) return setlistsState.detailCache[id];
+		loadDetail: async (
+			id: string,
+			filter?: {
+				year: number;
+				startMonth: number;
+				endMonth: number;
+				isAllData: boolean;
+			}
+		) => {
+			const filterKey = filter ? JSON.stringify(filter) : 'none';
+			const cacheKey = `${id}-${filterKey}`;
 
-			// Deduplicate concurrent requests for the same detail id
-			return setlistsDedup.execute(`detail:${id}`, async () => {
+			if (setlistsState.detailCache[cacheKey]) return setlistsState.detailCache[cacheKey];
+
+			// Deduplicate concurrent requests for the same detail id and filter
+			return setlistsDedup.execute(`detail:${cacheKey}`, async () => {
 				setlistsState.detailError = null;
 				setlistsState.isSetlistDetailLoading = true;
 
 				try {
-					const detail = await setlistsApi.getDetail(id);
-					setlistsState.detailCache[id] = detail;
+					const detail = await setlistsApi.getDetail(id, filter);
+					setlistsState.detailCache[cacheKey] = detail;
 					setlistsState.detailError = null;
 					return detail;
 				} catch (e) {

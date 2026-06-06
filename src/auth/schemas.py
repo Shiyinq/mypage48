@@ -26,6 +26,7 @@ class OshiResponse(BaseModel):
     name: str = "Unknown"
     nickname: str = "-"
     generation: str = "-"
+    memberType: Optional[str] = None
     profilePicture: str = (
         "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg"
     )

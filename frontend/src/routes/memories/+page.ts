@@ -7,7 +7,7 @@ export const load = async () => {
 		// Prefetch first page with default filter
 		// Defer store loading to next tick to avoid SvelteKit warning about using window.fetch during load
 		setTimeout(() => {
-			galleryStore.load(1, 'ALL');
+			galleryStore.load(1, { type: 'ALL' });
 		}, 0);
 	}
 };

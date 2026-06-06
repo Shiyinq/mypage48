@@ -6,6 +6,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { OptimizedImage } from '$lib/components/common';
 	import { formatDate } from '$lib/i18n';
+	import { formatTimeAgo } from '$lib/utils/time';
 
 	const { t } = useTranslation();
 
@@ -224,20 +225,10 @@
 											{@const lastActive = new Date(user.lastActiveAt)}
 											{@const now = new Date()}
 											{@const diffMs = now.getTime() - lastActive.getTime()}
-											{@const diffMins = Math.floor(diffMs / (1000 * 60))}
-											{@const diffHours = Math.floor(diffMs / (1000 * 60 * 60))}
 											{@const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))}
 
-											{#if diffMins < 1}
-												{t('time.relative.justNow')}
-											{:else if diffMins < 60}
-												{t('time.relative.minsAgo', { count: diffMins })}
-											{:else if diffHours < 24}
-												{t('time.relative.hoursAgo', { count: diffHours })}
-											{:else if diffDays === 1}
-												{t('time.relative.yesterday')}
-											{:else if diffDays < 7}
-												{t('time.relative.daysAgo', { count: diffDays })}
+											{#if diffDays < 7}
+												{formatTimeAgo(user.lastActiveAt, t)}
 											{:else}
 												{formatDate(lastActive, {
 													month: 'short',

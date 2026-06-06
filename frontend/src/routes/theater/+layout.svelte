@@ -2,7 +2,16 @@
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { goto } from '$app/navigation';
-	import { AudioLines, Users, Calendar, Newspaper, ArrowUpDown, Tv } from 'lucide-svelte';
+	import {
+		AudioLines,
+		Users,
+		Calendar,
+		Newspaper,
+		ArrowUpDown,
+		Tv,
+		Globe,
+		History
+	} from 'lucide-svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { liveList, isImmersive } from '$lib/stores';
 	import { newsStore } from '$lib/stores/news.svelte';
@@ -16,15 +25,25 @@
 	const { t } = useTranslation();
 
 	let currentPath = $derived($page.url.pathname);
+	let isTheaterRoot = $derived(currentPath === '/theater');
 
 	// Check if on live listing page
 	let isLiveListingPage = $derived(currentPath === '/theater/live');
 
 	// Check if on live single detail or multiview page — hide header for immersive player
-	let isLiveDetailPage = $derived(/^\/theater\/live\/.+/.test(currentPath));
+	let isLiveDetailPage = $derived(/^\/theater\/live\/(?!history).+/.test(currentPath));
 
 	// Check if on news detail page
 	let isNewsDetailPage = $derived(/^\/theater\/news\/.+/.test(currentPath));
+
+	// Check if on news listing page
+	let isNewsListingPage = $derived(currentPath === '/theater/news');
+
+	// Check if on events history page
+	let isEventsHistoryPage = $derived(currentPath === '/theater/events/history');
+
+	// Check if on members page
+	let isMembersPage = $derived(currentPath === '/theater/members');
 
 	// Check if on setlist detail page
 	let isDetailPage = $derived(
@@ -112,20 +131,63 @@
 			? [
 					{
 						icon: Users,
-						label: 'Multi-View',
+						label: t('theater.live.switchMultiview') || 'Multi-View',
 						onClick: () => goto('/theater/live/multiview'),
 						showLabel: true,
+						theme: 'gray',
+						badge: liveList.value.length
+					},
+					{
+						icon: Globe,
+						label: t('liveHistory.globalButton') || 'Riwayat Live',
+						onClick: () => goto('/theater/live/history'),
+						showLabel: false,
+						theme: 'gray'
+					},
+					{
+						icon: History,
+						label: t('liveHistory.viewHistory') || 'Riwayat Menonton',
+						onClick: () => goto('/theater/live/history/watched'),
+						showLabel: false,
 						theme: 'gray'
 					}
 				]
-			: []
+			: currentPath === '/theater/sorter' || currentPath === '/theater/sorter/history'
+				? [
+						{
+							icon: ArrowUpDown,
+							label: t('theater.sorter.startNew') || 'Mulai Sorter',
+							onClick: () => goto('/theater/sorter'),
+							showLabel: false,
+							theme: currentPath === '/theater/sorter' ? 'rose' : 'gray'
+						},
+						{
+							icon: History,
+							label: t('theater.sorter.history') || 'Riwayat Sorter',
+							onClick: () => goto('/theater/sorter/history'),
+							showLabel: false,
+							theme: currentPath === '/theater/sorter/history' ? 'rose' : 'gray'
+						}
+					]
+				: []
+	);
+	let isHeaderHidden = $derived(
+		isLiveDetailPage ||
+			isImmersive.value ||
+			isTheaterRoot ||
+			isDetailPage ||
+			isEventsHistoryPage ||
+			isNewsListingPage ||
+			isMembersPage
 	);
 </script>
 
 <div
-	class="{isLiveDetailPage || isNewsDetailPage || isDetailPage || isImmersive.value
+	class="{isLiveDetailPage || isImmersive.value
 		? 'max-w-none w-full'
-		: 'max-w-6xl'} mx-auto {isLiveDetailPage || isImmersive.value
+		: isNewsDetailPage || isDetailPage
+			? 'max-w-5xl w-full'
+			: 'max-w-6xl'} mx-auto {isLiveDetailPage || isImmersive.value
 		? 'pt-0 sm:pt-0 px-0'
 		: 'pt-4 sm:pt-6 px-4'} {isImmersive.value ? 'pb-0' : 'pb-24'}"
 >
@@ -144,10 +206,10 @@
 				: isDetailPage
 					? '/theater'
 					: undefined}
-		hidden={isLiveDetailPage || isImmersive.value}
+		hidden={isHeaderHidden}
 	></PageHeader>
-	{#if !isLiveDetailPage}
-		<div class="mb-4 sm:mb-6"></div>
+	{#if !isHeaderHidden}
+		<div class="mb-0 sm:mb-6"></div>
 	{/if}
 
 	<!-- Page Content -->

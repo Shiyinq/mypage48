@@ -18,12 +18,15 @@
 		"info": "情報",
 		"search": "検索",
 		"filter": "フィルター",
+		"setlist": "セットリスト",
 		"filters": "フィルター",
 		"all": "すべて",
 		"allSetlists": "全セットリスト",
 		"allData": "全データ",
 		"hasTwoShot": "2ショットあり",
 		"clearFilters": "フィルターをクリア",
+		"startDate": "開始日",
+		"endDate": "終了日",
 		"days": "曜日",
 		"dateRange": "日付範囲",
 		"viewDetails": "詳細を見る",
@@ -148,6 +151,14 @@
 			"achievements": {
 				"title": "ACHIEVEMENTS",
 				"description": "JKT48を応援しながらバッジやマイルストーンを解除します。「初公演」から「伝説のファン」まで、進捗を追跡し、忠誠心を示しましょう。"
+			},
+			"sorter": {
+				"title": "SORTER",
+				"description": "お気に入りのJKT48メンバーをソートして、本当の推し順位を見つけましょう。ソート結果はSNSでシェアできます。"
+			},
+			"live": {
+				"title": "LIVE",
+				"description": "SHOWROOMやIDN Liveで配信中のJKT48メンバーをリアルタイムで視聴しましょう。マルチビュー機能を使えば、複数のメンバーを同時に視聴できます。"
 			}
 		},
 		"footer": {
@@ -737,7 +748,7 @@
 			"connecting": "接続中...",
 			"disconnected": "切断されました",
 			"reconnect_idn": "接続が切れました。数秒後に再試行します...",
-			"switchMultiview": "マルチビューに切り替え",
+			"switchMultiview": "マルチビュー",
 			"share": {
 				"title": "mypage48を応援しよう！🚀",
 				"description": "このウェブサイトがお気に入りですか？このプラットフォームを他のJKT48ファンと共有して、私たちの継続と成長をサポートしてください！",
@@ -746,6 +757,11 @@
 				"shareText": "mypage48で最新のJKT48メンバーのライブ配信をチェックしよう！🌟",
 				"toastSuccess": "ウェブサイトのリンクがコピーされました！",
 				"toastError": "リンクのコピーに失敗しました。"
+			},
+			"promo": {
+				"historyTitle": "ライブ履歴機能",
+				"historyDesc": "あなたの個人的なライブ視聴履歴や統計が見られるようになりました！今すぐアカウントを作成しましょう。",
+				"historyAction": "新規登録"
 			}
 		},
 		"news": {
@@ -808,7 +824,9 @@
 			"subtitle": "JKT48メンバーデータ",
 			"comingSoon": "メンバーデータは近日公開予定！",
 			"errorTitle": "メンバーの読み込みに失敗しました",
-			"errorDesc": "メンバーリストの取得中にエラーが発生しました。"
+			"errorDesc": "メンバーリストの取得中にエラーが発生しました。",
+			"team": "チーム",
+			"allTeams": "すべてのチーム"
 		},
 		"shows": {
 			"title": "公演スケジュール",
@@ -888,7 +906,7 @@
 			"deleteSuccess": "履歴のエントリが削除されました",
 			"deleteFailed": "履歴のエントリの削除に失敗しました",
 			"deleteHistory": "履歴を削除",
-			"backToHistory": "履歴に戻る",
+			"backToHistory": "ソーター履歴",
 			"gridView": "グリッド表示",
 			"listView": "リスト表示",
 			"confirmYes": "はい",
@@ -1049,6 +1067,7 @@
 	"memories": {
 		"title": "思い出",
 		"subtitle": "写真とチケットのギャラリー",
+		"photoType": "写真の種類",
 		"allPhotos": "すべての写真",
 		"tickets": "チケット",
 		"twoShots": "2ショット",
@@ -1311,5 +1330,44 @@
 		"showSidebar": "リストを表示",
 		"uploadingImage": "画像をアップロード中...",
 		"cancelImage": "キャンセル"
+	},
+	"liveHistory": {
+		"title": "視聴履歴",
+		"subtitle": "あなたのライブ視聴履歴",
+		"totalWatches": "総視聴回数",
+		"totalDuration": "総視聴時間",
+		"membersWatched": "視聴したメンバー",
+		"mostFrequent": "最もよく視聴する",
+		"recentHistory": "最近の履歴",
+		"noHistory": "履歴はまだありません",
+		"noHistoryDesc": "記録されたJKT48のライブストリームをまだ視聴していません。",
+		"times": "回",
+		"buttonSubtitle": "マイ統計",
+		"longestWatch": "最長視聴",
+		"platformWatches": "視聴プラットフォーム",
+		"viewHistory": "視聴履歴",
+		"watchedFor": "視聴時間",
+		"globalTitle": "ライブ履歴",
+		"globalSubtitle": "記録されたすべてのライブの履歴",
+		"globalButtonSubtitle": "すべてのライブ",
+		"globalButton": "ライブ履歴",
+		"rankingTitle": "メンバーランキング",
+		"rankingSubtitle": "あなたが最もよく見るメンバー",
+		"globalStatsTitle": "ライブ統計",
+		"totalLives": "ライブ合計",
+		"uniqueMembers": "ユニークメンバー",
+		"mostFrequentLive": "最多ライブ",
+		"highestViews": "最高視聴数",
+		"globalRankingTitle": "ライブメンバーランキング",
+		"globalRankingSubtitle": "最もライブが多いメンバー",
+		"liveHistory": "ライブ履歴",
+		"longestLive": "最長ライブ",
+		"totalLivePlatform": "総ライブプラットフォーム",
+		"views": "回視聴",
+		"thisWeek": "今週",
+		"thisMonth": "今月",
+		"thisYear": "今年",
+		"allTime": "全期間",
+		"customRange": "カスタム期間"
 	}
 }

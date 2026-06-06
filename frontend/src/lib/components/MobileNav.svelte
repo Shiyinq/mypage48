@@ -80,19 +80,19 @@
 				<X class="w-6 h-6" />
 			</button>
 		</div>
-		<div class="p-4 grid grid-cols-1 gap-2">
+		<div class="p-3 grid grid-cols-1 gap-1.5 max-h-[75vh] overflow-y-auto">
 			{#each secondaryLinks as link}
 				{@const isActive = $page.url.pathname.startsWith(link.href)}
 				<a
 					href={link.href}
-					class={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+					class={`flex items-center justify-between p-3 rounded-2xl transition-all group ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
 					onclick={closeAllMenus}
 				>
-					<div class="flex items-center gap-4">
+					<div class="flex items-center gap-3">
 						<div
-							class={`p-3 rounded-xl transition-transform ${isActive ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 ' + link.color : 'bg-gray-50 dark:bg-white/5 ' + link.color} group-hover:scale-110`}
+							class={`p-2.5 rounded-xl transition-transform ${isActive ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 ' + link.color : 'bg-gray-50 dark:bg-white/5 ' + link.color} group-hover:scale-110`}
 						>
-							<link.icon class="w-6 h-6" />
+							<link.icon class="w-5 h-5" />
 						</div>
 						<span
 							class={`font-bold transition-colors ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-200'}`}
@@ -100,7 +100,7 @@
 						>
 					</div>
 					<ChevronRight
-						class={`w-5 h-5 transition-all ${isActive ? 'text-indigo-500 transform translate-x-1' : 'text-gray-300'}`}
+						class={`w-4 h-4 transition-all ${isActive ? 'text-indigo-500 transform translate-x-1' : 'text-gray-300'}`}
 					/>
 				</a>
 			{/each}
@@ -132,21 +132,21 @@
 				<X class="w-6 h-6" />
 			</button>
 		</div>
-		<div class="p-4 grid grid-cols-1 gap-2 max-h-[60vh] overflow-y-auto">
+		<div class="p-3 grid grid-cols-1 gap-1.5 max-h-[75vh] overflow-y-auto pb-4 relative">
 			{#each theaterNavItems as link}
 				{@const isActive = link.exact
 					? $page.url.pathname === link.href
 					: $page.url.pathname.startsWith(link.href)}
 				<a
 					href={link.href}
-					class={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive ? 'bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+					class={`flex items-center justify-between p-3 rounded-2xl transition-all group ${isActive ? 'bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
 					onclick={closeAllMenus}
 				>
-					<div class="flex items-center gap-4">
+					<div class="flex items-center gap-3">
 						<div
-							class={`p-3 rounded-xl transition-transform ${isActive ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 ' + link.color : 'bg-gray-50 dark:bg-white/5 ' + link.color} group-hover:scale-110`}
+							class={`p-2.5 rounded-xl transition-transform ${isActive ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 ' + link.color : 'bg-gray-50 dark:bg-white/5 ' + link.color} group-hover:scale-110`}
 						>
-							<link.icon class="w-6 h-6" />
+							<link.icon class="w-5 h-5" />
 						</div>
 						<span
 							class={`font-bold transition-colors ${isActive ? 'text-purple-600 dark:text-purple-400' : 'text-gray-700 dark:text-gray-200'}`}
@@ -154,7 +154,7 @@
 						>
 					</div>
 					<ChevronRight
-						class={`w-5 h-5 transition-all ${isActive ? 'text-purple-500 transform translate-x-1' : 'text-gray-300'}`}
+						class={`w-4 h-4 transition-all ${isActive ? 'text-purple-500 transform translate-x-1' : 'text-gray-300'}`}
 					/>
 				</a>
 			{/each}

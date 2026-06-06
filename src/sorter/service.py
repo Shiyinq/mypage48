@@ -1,11 +1,17 @@
 from datetime import datetime, timezone
-from typing import List
 
 from src.config import Settings
 from src.logging_config import create_logger
 from src.sorter.exceptions import SorterNotFoundError, SorterSaveError
 from src.sorter.repository import SortersRepository
-from src.sorter.schemas import SorterCreateRequest, SorterInDB, SorterResponse
+from src.sorter.schemas import (
+    PaginationMeta,
+    SorterCreateRequest,
+    SorterInDB,
+    SorterPaginationResponse,
+    SorterResponse,
+    SorterUpdateRequest,
+)
 
 logger = create_logger("sorter_service", __name__)
 
@@ -46,12 +52,43 @@ class SortersService:
             raise SorterNotFoundError()
         return SorterResponse(**sorter)
 
-    async def get_sorters(self, user_id: str) -> List[SorterResponse]:
-        sorters = await self.repository.get_sorters(user_id)
-        return [SorterResponse(**s) for s in sorters]
+    async def get_sorters(
+        self, user_id: str, page: int = 1, limit: int = 15
+    ) -> SorterPaginationResponse:
+        sorters, total = await self.repository.get_sorters(user_id, page, limit)
+
+        last_page = (total + limit - 1) // limit if limit > 0 else 1
+        if last_page == 0:
+            last_page = 1
+        next_page = page + 1 if page < last_page else None
+
+        return SorterPaginationResponse(
+            data=[SorterResponse(**s) for s in sorters],
+            meta=PaginationMeta(
+                current_page=page,
+                last_page=last_page,
+                total_data=total,
+                per_page=limit,
+                next_page=next_page,
+            ),
+        )
 
     async def delete_sorter(self, sorter_id: str, user_id: str) -> bool:
         success = await self.repository.delete_sorter(sorter_id, user_id)
         if not success:
             raise SorterNotFoundError()
         return True
+
+    async def update_sorter(
+        self, sorter_id: str, user_id: str, data: SorterUpdateRequest
+    ) -> SorterResponse:
+        update_data = data.model_dump(exclude_unset=True)
+        if update_data:
+            update_data["updated_at"] = datetime.now(timezone.utc)
+            success = await self.repository.update_sorter(
+                sorter_id, user_id, update_data
+            )
+            if not success:
+                raise SorterNotFoundError()
+
+        return await self.get_sorter(sorter_id, user_id)

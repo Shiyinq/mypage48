@@ -66,9 +66,9 @@
 
 <SEO title={t('settings.title')} path="/settings" description={t('seo.settings')} />
 
-<div class="max-w-2xl mx-auto pt-4 sm:pt-6 px-4 pb-24">
-	<!-- Page Header -->
-	<div class="mb-6">
+<div class="max-w-2xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32 space-y-4 sm:space-y-8">
+	<!-- Header -->
+	<div class="mb-0 sm:mb-8">
 		<PageHeader
 			title={t('settings.title')}
 			subtitle={t('settings.subtitle')}

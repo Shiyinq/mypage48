@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from src.config import Settings
+from src.exceptions import InvalidDateError
 from src.image_validation import ImageTooLargeError as ImageTooLargeValidationError
 from src.image_validation import ImageValidationError
 from src.image_validation import (
@@ -32,7 +33,7 @@ from src.tickets.schemas import (
     TicketResponse,
     TicketUpdateRequest,
 )
-from src.utils import cleanse_image_url
+from src.utils import cleanse_image_url, parse_date_range
 
 logger = create_logger("theater_service", __name__)
 
@@ -137,6 +138,9 @@ class TicketsService:
             current_page = page if page else 1
             per_page = limit if limit else 20
 
+            # Validate dates
+            parse_date_range(start_date, end_date)
+
             tickets_data, total_count = await self.repository.get_tickets(
                 user_id,
                 year,
@@ -171,6 +175,8 @@ class TicketsService:
                     next_page=next_page,
                 ),
             )
+        except InvalidDateError:
+            raise
         except Exception:
             raise TicketFetchError()
 
@@ -196,6 +202,8 @@ class TicketsService:
             )
             results = [TicketResponse(**t) for t in resolved_tickets]
             return results
+        except InvalidDateError:
+            raise
         except Exception as e:
             logger.exception(f"Error fetching tickets: {str(e)}")
             raise TicketFetchError()

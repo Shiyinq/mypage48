@@ -84,7 +84,7 @@
 </svelte:head>
 
 {#if authState === 'authorized'}
-	<div class="max-w-7xl mx-auto p-4 pb-24">
+	<div class="max-w-7xl mx-auto pt-4 sm:pt-6 pb-24">
 		<PageHeader
 			title={t('admin.dashboard.title')}
 			subtitle={t('admin.dashboard.subtitle')}
@@ -92,19 +92,33 @@
 			theme="red"
 		>
 			{#snippet actions()}
-				<NavPills items={tabs} {currentPath}>
-					{#snippet item({ item })}
-						<div>
-							<div class="flex items-center justify-center px-0.5">
-								<span>{item.label}</span>
+				<div class="hidden sm:block">
+					<NavPills items={tabs} {currentPath}>
+						{#snippet item({ item })}
+							<div>
+								<div class="flex items-center justify-center px-0.5">
+									<span>{item.label}</span>
+								</div>
 							</div>
-						</div>
-					{/snippet}
-				</NavPills>
+						{/snippet}
+					</NavPills>
+				</div>
 			{/snippet}
 		</PageHeader>
 
-		<div class="mt-8">
+		<div class="sm:hidden px-4 mb-2 -mx-2 overflow-x-auto scrollbar-hide">
+			<NavPills items={tabs} {currentPath}>
+				{#snippet item({ item })}
+					<div>
+						<div class="flex items-center justify-center px-0.5">
+							<span>{item.label}</span>
+						</div>
+					</div>
+				{/snippet}
+			</NavPills>
+		</div>
+
+		<div class="mt-2 sm:mt-8 px-4">
 			{@render children?.()}
 		</div>
 	</div>

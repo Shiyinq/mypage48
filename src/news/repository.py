@@ -1,4 +1,5 @@
 import math
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -8,16 +9,34 @@ class NewsRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["news"]
 
-    async def get_news(self, page: int = 1, limit: int = 10) -> Dict[str, Any]:
+    async def get_news(
+        self,
+        page: int = 1,
+        limit: int = 10,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+    ) -> Dict[str, Any]:
         """Get paginated news."""
         skip = (page - 1) * limit
+        query = {}
+        if start_date or end_date:
+            date_filter = {}
+            if start_date:
+                date_filter["$gte"] = start_date
+            if end_date:
+                date_filter["$lte"] = end_date
+            query["valid_date_from"] = date_filter
+
         # Sort by valid_date_from descending
         cursor = (
-            self.collection.find({}).sort("valid_date_from", -1).skip(skip).limit(limit)
+            self.collection.find(query)
+            .sort("valid_date_from", -1)
+            .skip(skip)
+            .limit(limit)
         )
         items = await cursor.to_list(length=limit)
 
-        total = await self.collection.count_documents({})
+        total = await self.collection.count_documents(query)
         total_page = math.ceil(total / limit) if limit > 0 else 0
 
         return {

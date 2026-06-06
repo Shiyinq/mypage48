@@ -35,6 +35,12 @@ async def get_setlists(
     search: Optional[str] = Query(
         None, description="Search by title or Japanese title"
     ),
+    year: Optional[int] = Query(None, description="Filter by year"),
+    startMonth: Optional[int] = Query(None, description="Filter by start month (0-11)"),
+    endMonth: Optional[int] = Query(None, description="Filter by end month (0-11)"),
+    isAllData: bool = Query(
+        False, description="Whether to include all data ignoring date filters"
+    ),
     service: SetlistsService = Depends(get_setlists_service),
     current_user: UserCurrent = Depends(get_current_user),
 ):
@@ -48,7 +54,16 @@ async def get_setlists(
     - **active**: Filter by active status
     """
     return await service.get_all_setlists(
-        current_user.userId, skip, limit, type, active, search
+        current_user.userId,
+        skip,
+        limit,
+        type,
+        active,
+        search,
+        year=year,
+        start_month=startMonth,
+        end_month=endMonth,
+        is_all_data=isAllData,
     )
 
 
@@ -78,6 +93,12 @@ async def get_setlist_by_id(
 @router.get("/detail/{setlist_id}", response_model=SetlistDetailResponse)
 async def get_setlist_detail(
     setlist_id: str,
+    year: Optional[int] = Query(None, description="Filter by year"),
+    startMonth: Optional[int] = Query(None, description="Filter by start month (0-11)"),
+    endMonth: Optional[int] = Query(None, description="Filter by end month (0-11)"),
+    isAllData: bool = Query(
+        False, description="Whether to include all data ignoring date filters"
+    ),
     service: SetlistsService = Depends(get_setlists_service),
     current_user: UserCurrent = Depends(get_current_user),
 ):
@@ -85,7 +106,14 @@ async def get_setlist_detail(
     Get setlist detail with user's tickets and computed statistics.
     Includes attendance stats, spending info, and ticket history.
     """
-    return await service.get_setlist_detail(setlist_id, current_user.userId)
+    return await service.get_setlist_detail(
+        setlist_id,
+        current_user.userId,
+        year=year,
+        start_month=startMonth,
+        end_month=endMonth,
+        is_all_data=isAllData,
+    )
 
 
 @router.get("/title/{title}", response_model=SetlistResponse)
