@@ -1097,7 +1097,7 @@
 	},
 	"top2shot": {
 		"title": "Roulette & Birthday",
-		"subtitle": "Analisis member & rincian pengeluaran",
+		"subtitle": "2-Shot dengan member terbanyak",
 		"noData": "Belum Ada Data 2-Shot",
 		"noDataDesc": "Mulai tambahkan detail 2-shot saat membuat atau mengedit tiket untuk melihat peringkat Oshi kamu!",
 		"mostCollected": "KOLEKSI TERBANYAK",
