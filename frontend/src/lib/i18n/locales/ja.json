@@ -112,7 +112,7 @@
 		"settings": "設定",
 		"newTicket": "新規チケット",
 		"journal": "ジャーナル",
-		"top2shot": "トップ2ショット"
+		"top2shot": "ルーレット＆バースデー"
 	},
 	"header": {
 		"tagline": "JKT48劇場トラッカー"
@@ -388,9 +388,9 @@
 			"tickets": "チケット",
 			"spending": "支出",
 			"totalExpenses": "総支出",
-			"topRow": "トップ列",
+			"topRow": "劇場席",
 			"mostFrequentSeat": "最も多い席",
-			"topShow": "トップ公演",
+			"topShow": "セットリスト",
 			"mostWatched": "最も観た",
 			"inYear": "{year}年",
 			"firstLast": "初・最終公演",
@@ -408,7 +408,7 @@
 			"totalExpenses": "総支出",
 			"members": "メンバー",
 			"uniqueIdols": "ユニークアイドル",
-			"topTwoShot": "トップ2ショット",
+			"topTwoShot": "ルーレット＆バースデー",
 			"mostCollected": "最多コレクション",
 			"photos": "枚",
 			"firstLast": "初・最終2ショット",
@@ -455,12 +455,12 @@
 		},
 		"level": {
 			"currentRank": "現在のランク",
-			"xpInfo": "1 XP = 1 公演",
+			"xpInfo": "1 XP = 1 観覧",
 			"needed": "必要",
 			"for": "まで"
 		},
 		"stats": {
-			"totalShows": "総公演数",
+			"totalShows": "総観覧数",
 			"achievements": "実績",
 			"oshiMeetings": "会った"
 		},
@@ -646,11 +646,11 @@
 		"firstAttended": "初回観覧",
 		"lastAttended": "最終観覧",
 		"avgPrice": "平均価格",
-		"topRow": "トップ列",
+		"topRow": "劇場席",
 		"mostFrequentedRow": "最もよく座る列",
 		"investmentInMemories": "思い出への投資",
 		"row": "列",
-		"unit": "公演"
+		"unit": "観覧"
 	},
 	"theater": {
 		"title": "シアター",
@@ -918,12 +918,11 @@
 		}
 	},
 	"top2shot": {
-		"title": "トップ2ショット",
-		"subtitle": "メンバー分析と支出内訳",
+		"title": "ルーレット＆バースデー",
+		"subtitle": "最も2ショット写真が多いメンバー",
 		"noData": "2ショットデータがありません",
 		"noDataDesc": "チケットを作成または編集する際に2ショットの詳細を追加して、推しランキングを確認しましょう！",
 		"mostCollected": "最多コレクション",
-		"cherished": "あなたの一番大切なメンバー",
 		"stats2shots": "2ショット",
 		"statsSpent": "支出",
 		"budgetSplit": "予算内訳",

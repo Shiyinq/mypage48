@@ -113,7 +113,7 @@
 		"settings": "Pengaturan",
 		"newTicket": "Tiket Baru",
 		"journal": "Jurnal",
-		"top2shot": "Top 2-Shot"
+		"top2shot": "Roulette & Birthday"
 	},
 	"header": {
 		"tagline": "PELACAK TEATER JKT48"
@@ -382,18 +382,18 @@
 		"filterTitle": "Filter Dasbor",
 		"filterSubtitle": "Atur rentang visualisasi",
 		"theater": {
-			"title": "Show",
+			"title": "Pertunjukan",
 			"subtitle": "Ringkasan kehadiran kamu",
 			"shows": "Pertunjukan",
 			"tickets": "Tiket",
 			"spending": "Pengeluaran",
 			"totalExpenses": "Total Pengeluaran",
-			"topRow": "Baris Favorit",
+			"topRow": "Kursi Teater",
 			"mostFrequentSeat": "Kursi Tersering",
-			"topShow": "Pertunjukan Favorit",
+			"topShow": "Setlist",
 			"mostWatched": "Paling Sering Ditonton",
 			"inYear": "Pada {year}",
-			"firstLast": "Show Pertama & Terakhir",
+			"firstLast": "Pertunjukan Pertama & Terakhir",
 			"first": "Pertama",
 			"last": "Terakhir",
 			"times": "Kali",
@@ -408,7 +408,7 @@
 			"totalExpenses": "Total Pengeluaran",
 			"members": "Member",
 			"uniqueIdols": "Idola Unik",
-			"topTwoShot": "Top 2-Shot",
+			"topTwoShot": "Roulette & Birthday",
 			"mostCollected": "Koleksi Terbanyak",
 			"photos": "Foto",
 			"firstLast": "2-Shot Pertama & Terakhir",
@@ -455,12 +455,12 @@
 		},
 		"level": {
 			"currentRank": "Peringkat Saat Ini",
-			"xpInfo": "1 XP = 1 Pertunjukan",
+			"xpInfo": "1 XP = 1 Kehadiran",
 			"needed": "dibutuhkan",
 			"for": "untuk"
 		},
 		"stats": {
-			"totalShows": "Total Pertunjukan",
+			"totalShows": "Total Kehadiran",
 			"achievements": "Pencapaian",
 			"oshiMeetings": "Bertemu"
 		},
@@ -469,7 +469,7 @@
 			"generation": "Generasi",
 			"generationPattern": "Generasi {gen}",
 			"totalShowsPattern": "{count} Show",
-			"showsTooltip": "Data yang tercatat tidak termasuk Shonichi setlist dan menggantikan member lain (under) untuk show, serta keterbatasan data hasil scraping.",
+			"showsTooltip": "Data yang tercatat tidak termasuk Shonichi setlist dan menggantikan member lain (under) untuk show, serta keterbatasan data hasil scrape.",
 			"emptyTitle": "Siapa Oshi kamu?",
 			"emptyDescription": "Pilih member favoritmu untuk ditampilkan di kartu profilmu.",
 			"selectBadge": "Pilih Oshi",
@@ -821,11 +821,11 @@
 		"firstAttended": "Pertama Nonton",
 		"lastAttended": "Terakhir Nonton",
 		"avgPrice": "Rata-rata Harga",
-		"topRow": "Baris Favorit",
+		"topRow": "Kursi Teater",
 		"mostFrequentedRow": "Baris yang paling sering ditempati",
 		"investmentInMemories": "Investasi kenangan",
 		"row": "Baris",
-		"unit": "Pertunjukan",
+		"unit": "Kehadiran",
 		"totalShows": "Total Pertunjukan",
 		"uniqueShows": "Pertunjukan Unik"
 	},
@@ -1096,12 +1096,11 @@
 		}
 	},
 	"top2shot": {
-		"title": "Top 2-Shot",
-		"subtitle": "Analisis member & rincian pengeluaran",
+		"title": "Roulette & Birthday",
+		"subtitle": "2-Shot dengan member terbanyak",
 		"noData": "Belum Ada Data 2-Shot",
 		"noDataDesc": "Mulai tambahkan detail 2-shot saat membuat atau mengedit tiket untuk melihat peringkat Oshi kamu!",
 		"mostCollected": "KOLEKSI TERBANYAK",
-		"cherished": "Member paling kamu sayangi",
 		"stats2shots": "2-Shot",
 		"statsSpent": "Pengeluaran",
 		"budgetSplit": "Pembagian Anggaran",

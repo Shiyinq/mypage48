@@ -112,7 +112,7 @@
 		"newTicket": "New Ticket",
 		"journal": "Journal",
 		"journey": "Journey",
-		"top2shot": "Top 2-Shot"
+		"top2shot": "Roulette & Birthday"
 	},
 	"header": {
 		"tagline": "JKT48 THEATER TRACKER"
@@ -388,9 +388,9 @@
 			"tickets": "Tickets",
 			"spending": "Expenses",
 			"totalExpenses": "Total Expenses",
-			"topRow": "Top Row",
+			"topRow": "Theater Seat",
 			"mostFrequentSeat": "Most Frequent Seat",
-			"topShow": "Top Show",
+			"topShow": "Setlist",
 			"mostWatched": "Most Watched",
 			"inYear": "In {year}",
 			"firstLast": "First & Last Show",
@@ -408,7 +408,7 @@
 			"totalExpenses": "Total Expenses",
 			"members": "Members",
 			"uniqueIdols": "Unique Idols",
-			"topTwoShot": "Top 2-Shot",
+			"topTwoShot": "Roulette & Birthday",
 			"mostCollected": "Most Collected",
 			"photos": "Photos",
 			"firstLast": "First & Last 2-Shot",
@@ -445,12 +445,12 @@
 		},
 		"level": {
 			"currentRank": "Current Rank",
-			"xpInfo": "1 XP = 1 Show",
+			"xpInfo": "1 XP = 1 Attendance",
 			"needed": "needed",
 			"for": "for"
 		},
 		"stats": {
-			"totalShows": "Total Shows",
+			"totalShows": "Total Attendance",
 			"achievements": "Achievements",
 			"oshiMeetings": "Met"
 		},
@@ -459,7 +459,7 @@
 			"generation": "Generation",
 			"generationPattern": "Generation {gen}",
 			"totalShowsPattern": "{count} Shows",
-			"showsTooltip": "Recorded data excludes Shonichi setlists and member substitutions, subject to scraping limitations.",
+			"showsTooltip": "Recorded data excludes Shonichi setlists and member substitutions, subject to scrape limitations.",
 			"emptyTitle": "Who is your Oshi?",
 			"emptyDescription": "Select your favorite member to display them on your profile card.",
 			"selectBadge": "Select Oshi",
@@ -690,12 +690,12 @@
 		"subtitle": "Statistics of visited shows",
 		"totalShows": "Total Shows",
 		"uniqueShows": "Unique Shows",
-		"unit": "Shows",
+		"unit": "Attendance",
 		"performancesAttended": "performances attended",
 		"firstAttended": "First Attended",
 		"lastAttended": "Last Attended",
 		"avgPrice": "Avg Price",
-		"topRow": "Top Row",
+		"topRow": "Theater Seat",
 		"mostFrequentedRow": "Most frequented row",
 		"investmentInMemories": "Investment in memories",
 		"row": "Row",
@@ -1133,12 +1133,11 @@
 		}
 	},
 	"top2shot": {
-		"title": "Top 2-Shot",
-		"subtitle": "Member analytics & spending breakdown",
+		"title": "Roulette & Birthday",
+		"subtitle": "Member with the most 2-Shot photos",
 		"noData": "No 2-Shot Data Yet",
 		"noDataDesc": "Start adding 2-shot details when creating or editing tickets to see your Oshi rankings!",
 		"mostCollected": "Most Collected",
-		"cherished": "Your most cherished member",
 		"stats2shots": "2-Shots",
 		"statsSpent": "Spent",
 		"budgetSplit": "Budget Split",
