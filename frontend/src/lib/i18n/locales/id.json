@@ -113,7 +113,7 @@
 		"settings": "Pengaturan",
 		"newTicket": "Tiket Baru",
 		"journal": "Jurnal",
-		"top2shot": "Top 2-Shot"
+		"top2shot": "2-Shot Member"
 	},
 	"header": {
 		"tagline": "PELACAK TEATER JKT48"
@@ -388,9 +388,9 @@
 			"tickets": "Tiket",
 			"spending": "Pengeluaran",
 			"totalExpenses": "Total Pengeluaran",
-			"topRow": "Baris Favorit",
+			"topRow": "Kursi Teater",
 			"mostFrequentSeat": "Kursi Tersering",
-			"topShow": "Pertunjukan Favorit",
+			"topShow": "Setlist",
 			"mostWatched": "Paling Sering Ditonton",
 			"inYear": "Pada {year}",
 			"firstLast": "Show Pertama & Terakhir",
@@ -408,7 +408,7 @@
 			"totalExpenses": "Total Pengeluaran",
 			"members": "Member",
 			"uniqueIdols": "Idola Unik",
-			"topTwoShot": "Top 2-Shot",
+			"topTwoShot": "2-Shot Member",
 			"mostCollected": "Koleksi Terbanyak",
 			"photos": "Foto",
 			"firstLast": "2-Shot Pertama & Terakhir",
@@ -821,7 +821,7 @@
 		"firstAttended": "Pertama Nonton",
 		"lastAttended": "Terakhir Nonton",
 		"avgPrice": "Rata-rata Harga",
-		"topRow": "Baris Favorit",
+		"topRow": "Kursi Teater",
 		"mostFrequentedRow": "Baris yang paling sering ditempati",
 		"investmentInMemories": "Investasi kenangan",
 		"row": "Baris",
@@ -1096,12 +1096,11 @@
 		}
 	},
 	"top2shot": {
-		"title": "Top 2-Shot",
+		"title": "2-Shot Member",
 		"subtitle": "Analisis member & rincian pengeluaran",
 		"noData": "Belum Ada Data 2-Shot",
 		"noDataDesc": "Mulai tambahkan detail 2-shot saat membuat atau mengedit tiket untuk melihat peringkat Oshi kamu!",
 		"mostCollected": "KOLEKSI TERBANYAK",
-		"cherished": "Member paling kamu sayangi",
 		"stats2shots": "2-Shot",
 		"statsSpent": "Pengeluaran",
 		"budgetSplit": "Pembagian Anggaran",
