@@ -445,12 +445,12 @@
 		},
 		"level": {
 			"currentRank": "Current Rank",
-			"xpInfo": "1 XP = 1 Show",
+			"xpInfo": "1 XP = 1 Attendance",
 			"needed": "needed",
 			"for": "for"
 		},
 		"stats": {
-			"totalShows": "Total Shows",
+			"totalShows": "Total Attendance",
 			"achievements": "Achievements",
 			"oshiMeetings": "Met"
 		},
@@ -459,7 +459,7 @@
 			"generation": "Generation",
 			"generationPattern": "Generation {gen}",
 			"totalShowsPattern": "{count} Shows",
-			"showsTooltip": "Recorded data excludes Shonichi setlists and member substitutions, subject to scraping limitations.",
+			"showsTooltip": "Recorded data excludes Shonichi setlists and member substitutions, subject to scrape limitations.",
 			"emptyTitle": "Who is your Oshi?",
 			"emptyDescription": "Select your favorite member to display them on your profile card.",
 			"selectBadge": "Select Oshi",

@@ -455,12 +455,12 @@
 		},
 		"level": {
 			"currentRank": "Peringkat Saat Ini",
-			"xpInfo": "1 XP = 1 Pertunjukan",
+			"xpInfo": "1 XP = 1 Kehadiran",
 			"needed": "dibutuhkan",
 			"for": "untuk"
 		},
 		"stats": {
-			"totalShows": "Total Pertunjukan",
+			"totalShows": "Total Kehadiran",
 			"achievements": "Pencapaian",
 			"oshiMeetings": "Bertemu"
 		},
@@ -469,7 +469,7 @@
 			"generation": "Generasi",
 			"generationPattern": "Generasi {gen}",
 			"totalShowsPattern": "{count} Show",
-			"showsTooltip": "Data yang tercatat tidak termasuk Shonichi setlist dan menggantikan member lain (under) untuk show, serta keterbatasan data hasil scraping.",
+			"showsTooltip": "Data yang tercatat tidak termasuk Shonichi setlist dan menggantikan member lain (under) untuk show, serta keterbatasan data hasil scrape.",
 			"emptyTitle": "Siapa Oshi kamu?",
 			"emptyDescription": "Pilih member favoritmu untuk ditampilkan di kartu profilmu.",
 			"selectBadge": "Pilih Oshi",
