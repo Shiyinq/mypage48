@@ -382,7 +382,7 @@
 		"filterTitle": "Filter Dasbor",
 		"filterSubtitle": "Atur rentang visualisasi",
 		"theater": {
-			"title": "Show",
+			"title": "Pertunjukan",
 			"subtitle": "Ringkasan kehadiran kamu",
 			"shows": "Pertunjukan",
 			"tickets": "Tiket",
@@ -393,7 +393,7 @@
 			"topShow": "Setlist",
 			"mostWatched": "Paling Sering Ditonton",
 			"inYear": "Pada {year}",
-			"firstLast": "Show Pertama & Terakhir",
+			"firstLast": "Pertunjukan Pertama & Terakhir",
 			"first": "Pertama",
 			"last": "Terakhir",
 			"times": "Kali",
