@@ -65,5 +65,5 @@ async def live_monitor_loop():
         except Exception as e:
             logger.error(f"Error in live monitor loop: {e}")
 
-        # Wait 2 minutes before the next poll
-        await asyncio.sleep(120)
+        # Wait 1 minute before the next poll
+        await asyncio.sleep(60)
