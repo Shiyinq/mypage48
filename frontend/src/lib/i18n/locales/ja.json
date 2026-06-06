@@ -455,12 +455,12 @@
 		},
 		"level": {
 			"currentRank": "現在のランク",
-			"xpInfo": "1 XP = 1 公演",
+			"xpInfo": "1 XP = 1 観覧",
 			"needed": "必要",
 			"for": "まで"
 		},
 		"stats": {
-			"totalShows": "総公演数",
+			"totalShows": "総観覧数",
 			"achievements": "実績",
 			"oshiMeetings": "会った"
 		},
