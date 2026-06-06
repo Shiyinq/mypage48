@@ -210,6 +210,8 @@
 							platform={item.platform}
 							dateStr={formatDate(item.start_at)}
 							timeStr={formatTimeAgo(item.start_at, t)}
+							startAt={item.start_at}
+							endAt={item.end_at}
 							duration={item.duration}
 							peakViewers={item.view_num}
 							isLive={item.status === 'live'}
