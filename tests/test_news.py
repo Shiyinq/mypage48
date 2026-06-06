@@ -41,7 +41,7 @@ async def test_get_news_paginated(client, create_news, create_user):
     })
 
     # Test without category filter
-    response = await client.get("/api/theater/news/?page=1&limit=10", headers=headers)
+    response = await client.get("/api/theater/news?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()
     
@@ -90,14 +90,14 @@ async def test_get_news_with_date_filter(client, create_news, create_user):
     })
 
     # Test filtering by start_date and end_date
-    res1 = await client.get("/api/theater/news/?start_date=2026-02-01&end_date=2026-02-28", headers=headers)
+    res1 = await client.get("/api/theater/news?start_date=2026-02-01&end_date=2026-02-28", headers=headers)
     assert res1.status_code == 200
     data1 = res1.json()
     assert data1["meta"]["count_total"] == 1
     assert data1["data"][0]["title"] == "News Feb"
 
     # Test invalid date
-    res2 = await client.get("/api/theater/news/?start_date=invalid", headers=headers)
+    res2 = await client.get("/api/theater/news?start_date=invalid", headers=headers)
     assert res2.status_code == 400
     assert res2.json()["detail"] == "INVALID_DATE_FORMAT"
 
@@ -146,7 +146,7 @@ async def test_get_news_service_error(client, monkeypatch, create_user):
     monkeypatch.setattr("src.news.repository.NewsRepository.get_news", mock_find)
     
     # Test error handling on paginated list
-    response = await client.get("/api/theater/news/", headers=headers)
+    response = await client.get("/api/theater/news", headers=headers)
     assert response.status_code == 500
     assert response.json()["detail"] == "Failed to fetch news."
     

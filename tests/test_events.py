@@ -44,7 +44,7 @@ async def test_get_events_paginated(client, create_event, create_user):
         "label": "/images/icon.cat17.png"
     })
 
-    response = await client.get("/api/events/?page=1&limit=10", headers=headers)
+    response = await client.get("/api/events?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()
     
@@ -123,7 +123,7 @@ async def test_events_sorting(client, create_event, create_user):
     
     # 1. Test History (All events) -> Should be Descending (Latest first)
     # Expected order: future-later, future-soon, past-recent, past-old
-    response = await client.get("/api/events/?page=1&limit=10", headers=headers)
+    response = await client.get("/api/events?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()["data"]
     ids = [e["id"] for e in data]
@@ -176,7 +176,7 @@ async def test_get_events_with_aggregation(client, create_event, db, create_user
         "memberIds": ["member-1"]
     })
     
-    response = await client.get("/api/events/?page=1&limit=10", headers=headers)
+    response = await client.get("/api/events?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()["data"]
     
@@ -284,7 +284,7 @@ async def test_get_events_paginated_error(client, monkeypatch, create_user):
     monkeypatch.setattr("src.events.repository.EventsRepository.count_events", mock_find)
     
     # Depending on where count is called first
-    response = await client.get("/api/events/", headers=headers)
+    response = await client.get("/api/events", headers=headers)
     assert response.status_code == 500
     assert response.json()["detail"] == "Failed to fetch event data."
 
@@ -396,7 +396,7 @@ async def test_get_events_with_date_range(client, create_event, create_user):
 
     # Filter for Feb only
     response = await client.get(
-        "/api/events/?start_date=2026-02-01T00:00:00&end_date=2026-02-28T23:59:59",
+        "/api/events?start_date=2026-02-01T00:00:00&end_date=2026-02-28T23:59:59",
         headers=headers
     )
     assert response.status_code == 200
