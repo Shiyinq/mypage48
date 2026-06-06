@@ -127,16 +127,20 @@
 	);
 
 	let actionItems = $derived(
-		isLiveListingPage && liveList.value.length > 0
+		isLiveListingPage
 			? [
-					{
-						icon: Users,
-						label: t('theater.live.switchMultiview') || 'Multi-View',
-						onClick: () => goto('/theater/live/multiview'),
-						showLabel: true,
-						theme: 'gray',
-						badge: liveList.value.length
-					},
+					...(liveList.value.length > 0
+						? [
+								{
+									icon: Users,
+									label: t('theater.live.switchMultiview') || 'Multi-View',
+									onClick: () => goto('/theater/live/multiview'),
+									showLabel: true,
+									theme: 'gray',
+									badge: liveList.value.length
+								}
+							]
+						: []),
 					{
 						icon: Globe,
 						label: t('liveHistory.globalButton') || 'Riwayat Live',
