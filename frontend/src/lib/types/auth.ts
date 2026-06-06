@@ -12,6 +12,7 @@ export interface UserOshi {
 	name: string;
 	nickname: string;
 	generation: string;
+	memberType?: string;
 	profilePicture: string;
 	profilePicture_medium?: string | null;
 	profilePicture_small?: string | null;
