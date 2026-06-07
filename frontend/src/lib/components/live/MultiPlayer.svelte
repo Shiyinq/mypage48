@@ -44,6 +44,8 @@
 	let mediaRecorder: MediaRecorder | null = null;
 	let recordedChunks: Blob[] = [];
 
+	let rotation = $state(0);
+
 	let isEffectivelyMuted = $state(false);
 	$effect(() => {
 		isEffectivelyMuted = muted || (isNaN(Number(volume)) ? false : Number(volume) === 0);
@@ -262,6 +264,10 @@
 		if (videoElement) captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
 	}
 
+	export function rotateVideo() {
+		rotation += 90;
+	}
+
 	export async function toggleRecording(memberName?: string) {
 		if (!videoElement) return;
 
@@ -324,7 +330,8 @@
 <div class="relative w-full h-full bg-black group/player overflow-hidden">
 	<video
 		bind:this={videoElement}
-		class="w-full h-full object-contain"
+		class="w-full h-full object-contain transition-transform duration-300"
+		style="transform: rotate({rotation}deg);"
 		playsinline
 		muted={isEffectivelyMuted}
 		onplay={syncAudioState}
