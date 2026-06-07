@@ -1,16 +1,22 @@
 <script lang="ts">
-	import { Calendar, History, Clock } from 'lucide-svelte';
+	import { Calendar, ListMusic, Eye } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { formatDate } from '$lib/i18n';
-	import type { PublicRecentActivity } from '$lib/types';
 
 	interface Props {
-		recentActivity: PublicRecentActivity[];
+		showCounts?: Record<string, number>;
 	}
 
-	let { recentActivity }: Props = $props();
+	let { showCounts }: Props = $props();
 
 	const { t } = useTranslation();
+
+	// Convert Record to sorted Array, take top 5
+	let topSetlists = $derived(
+		Object.entries(showCounts || {})
+			.sort((a, b) => b[1] - a[1])
+			.slice(0, 5)
+			.map(([title, count]) => ({ title, count }))
+	);
 </script>
 
 <div
@@ -19,43 +25,39 @@
 	<h3
 		class="font-black text-sm uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2"
 	>
-		<History class="w-4 h-4" />
-		{t('profile.recentActivity.title')}
+		<ListMusic class="w-4 h-4" />
+		{t('profile.publicActivity.topSetlists')}
 	</h3>
 
 	<div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-		{#if recentActivity && recentActivity.length > 0}
+		{#if topSetlists && topSetlists.length > 0}
 			<div class="space-y-4 sm:space-y-6">
-				{#each recentActivity as activity}
-					<div class="flex gap-4 group">
-						<!-- Timeline Column -->
-						<div class="flex-shrink-0 relative flex flex-col items-center">
-							<!-- Dot -->
-							<div
-								class="w-3 h-3 rounded-full mt-1.5 relative z-10
-                {activity.type === '2-Shot'
-									? 'bg-gradient-to-br from-pink-400 to-pink-600 shadow-md shadow-pink-500/30'
-									: 'bg-gradient-to-br from-red-500 to-red-700 shadow-md shadow-red-500/30'}"
-							></div>
-
-							<!-- Line -->
-							<div class="flex-1 w-[1px] bg-gray-200 dark:bg-zinc-800 my-1 group-last:hidden"></div>
+				{#each topSetlists as setlist, index}
+					<div class="flex gap-4 items-center group">
+						<!-- Rank Column -->
+						<div
+							class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full font-black text-sm {index ===
+							0
+								? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-500'
+								: index === 1
+									? 'bg-gray-200 text-gray-600 dark:bg-zinc-800 dark:text-gray-400'
+									: index === 2
+										? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-500'
+										: 'bg-red-50 text-red-500 dark:bg-red-900/20'}"
+						>
+							{index + 1}
 						</div>
 
 						<!-- Content Column -->
-						<div class="flex-1 min-w-0 pb-1 group-last:pb-0">
+						<div class="flex-1 min-w-0">
 							<p
-								class="text-sm font-bold text-gray-900 dark:text-gray-100 line-clamp-1 leading-tight mb-1"
+								class="text-sm font-bold text-gray-900 dark:text-gray-100 break-words leading-tight mb-1"
 							>
-								{activity.title}
+								{setlist.title}
 							</p>
 							<div class="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
-								<Clock class="w-3 h-3" />
-								{formatDate(activity.date, {
-									day: 'numeric',
-									month: 'short',
-									year: 'numeric'
-								})}
+								<Eye class="w-3 h-3" />
+								{t('profile.publicActivity.watchedTimes', { count: setlist.count })}
 							</div>
 						</div>
 					</div>

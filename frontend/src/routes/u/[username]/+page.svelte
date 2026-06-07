@@ -18,7 +18,7 @@
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import PublicProfileHeader from '$lib/components/public-profile/PublicProfileHeader.svelte';
 	import PublicProfileStats from '$lib/components/public-profile/PublicProfileStats.svelte';
-	import PublicProfileRecentActivity from '$lib/components/public-profile/PublicProfileRecentActivity.svelte';
+	import PublicProfileTopSetlists from '$lib/components/public-profile/PublicProfileTopSetlists.svelte';
 	import PublicProfileSeatMap from '$lib/components/public-profile/PublicProfileSeatMap.svelte';
 	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 
@@ -170,8 +170,8 @@
 				<!-- Main Stats Grid -->
 				<PublicProfileStats stats={profile.stats} year={profile.publicYear} />
 
-				<!-- Activity Feed -->
-				<PublicProfileRecentActivity recentActivity={profile.stats.recentActivity} />
+				<!-- Top Setlists -->
+				<PublicProfileTopSetlists showCounts={profile.stats.showCounts} />
 			</div>
 
 			<!-- Theater Seat Map -->
