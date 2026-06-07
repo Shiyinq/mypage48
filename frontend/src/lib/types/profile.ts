@@ -85,4 +85,13 @@ export interface PublicProfileStats {
 	topRowCount?: number;
 	topShow: string | null;
 	topShowCount?: number;
+	showCounts?: Record<string, number>;
+	topTwoShots?: Array<{
+		name: string;
+		count: number;
+		imageUrl?: string | null;
+		imageUrl_medium?: string | null;
+		imageUrl_small?: string | null;
+		blurHash?: string | null;
+	}>;
 }

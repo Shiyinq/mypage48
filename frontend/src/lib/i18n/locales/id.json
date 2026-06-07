@@ -501,7 +501,9 @@
 			"allTime": "Theater JKT48 Wrapped",
 			"summary": "Ringkasan",
 			"yearSummary": "Ringkasan {year}",
-			"watchedTimes": "Ditonton {count} kali"
+			"watchedTimes": "Ditonton {count} kali",
+			"topSetlists": "Top Setlist",
+			"topTwoShotMembers": "Top 2-Shot"
 		},
 		"profilePicture": {
 			"previewTitle": "Preview Foto Profil",

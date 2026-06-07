@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Ticket, Camera, Armchair, Heart, TrendingUp } from 'lucide-svelte';
+	import { Ticket, Camera, Armchair, TrendingUp } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { PublicProfileStats } from '$lib/types';
 
@@ -122,34 +122,76 @@
 			</div>
 		</div>
 
-		<!-- BOTTOM SECTION: TOP SHOW (Unified Row) -->
-		<div class="relative z-10 border-t border-gray-100 dark:border-white/5 p-4 sm:p-6 group/bottom">
-			<div class="flex items-center gap-4 sm:gap-6">
-				<div
-					class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-yellow-50 to-white dark:from-yellow-900/20 dark:to-zinc-800 shadow-sm flex-shrink-0 flex items-center justify-center"
-				>
-					<Heart class="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500 fill-yellow-500 ml-0.5 mt-0.5" />
-				</div>
-				<div class="flex-1 min-w-0">
-					<div
-						class="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1"
-					>
-						{t('dashboard.theater.topShow')}
-					</div>
-					<div
-						class="font-black leading-none text-lg sm:text-xl lg:text-2xl mb-0.5 text-gray-900 dark:text-white"
-						title={stats.topShow || 'No Data'}
-					>
-						{stats.topShow || '-'}
-					</div>
-					{#if stats.topShowCount}
+		<!-- BOTTOM SECTION: TOP 2-SHOT -->
+		<div class="relative z-10 border-t border-gray-100 dark:border-white/5 p-4 sm:p-5 group/bottom">
+			<div class="flex items-center gap-2 mb-3">
+				<Camera class="w-4 h-4 text-pink-500" />
+				<h4 class="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-gray-400">
+					{t('profile.publicActivity.topTwoShotMembers')}
+				</h4>
+			</div>
+
+			<div class="flex flex-row items-center gap-3 overflow-x-auto pb-2 custom-scrollbar">
+				{#if stats.topTwoShots && stats.topTwoShots.length > 0}
+					{#each stats.topTwoShots as twoshot, index}
 						<div
-							class="inline-flex items-center px-2 py-0.5 rounded-full bg-white dark:bg-zinc-800 text-[9px] sm:text-[10px] font-bold text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-700"
+							class="flex-shrink-0 flex items-center gap-2 bg-white/50 dark:bg-zinc-800/50 rounded-full pr-4 p-1 border border-gray-100 dark:border-white/5 relative shadow-sm hover:shadow-md transition-shadow"
 						>
-							{t('profile.publicActivity.watchedTimes', { count: stats.topShowCount })}
+							<!-- Ranking badge -->
+							<div
+								class="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center shadow-sm z-10 text-[9px] font-black
+								{index === 0
+									? 'text-yellow-500 border border-yellow-200 dark:border-yellow-900/50'
+									: index === 1
+										? 'text-gray-400 border border-gray-200 dark:border-gray-700'
+										: index === 2
+											? 'text-orange-500 border border-orange-200 dark:border-orange-900/50'
+											: 'text-gray-400 border border-gray-200 dark:border-gray-700'}"
+							>
+								{index + 1}
+							</div>
+
+							<!-- Image -->
+							<div
+								class="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-900/20 dark:to-zinc-800 flex-shrink-0 shadow-inner"
+							>
+								{#if twoshot.imageUrl}
+									<img
+										src={twoshot.imageUrl_small || twoshot.imageUrl}
+										alt={twoshot.name}
+										class="w-full h-full object-cover"
+									/>
+								{:else}
+									<div
+										class="w-full h-full flex items-center justify-center text-sm font-black text-pink-400/50"
+									>
+										{twoshot.name.charAt(0)}
+									</div>
+								{/if}
+							</div>
+
+							<!-- Info -->
+							<div class="flex flex-col min-w-0 max-w-[90px] sm:max-w-[110px]">
+								<span
+									class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white truncate"
+									title={twoshot.name}
+								>
+									{twoshot.name}
+								</span>
+								<span class="text-[10px] font-black text-pink-500 flex items-center gap-1">
+									<Camera class="w-3 h-3" />
+									{twoshot.count}x
+								</span>
+							</div>
 						</div>
-					{/if}
-				</div>
+					{/each}
+				{:else}
+					<div
+						class="text-xs font-bold text-gray-400 uppercase tracking-widest opacity-50 px-2 py-4"
+					>
+						{t('profile.recentActivity.noActivity')}
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>

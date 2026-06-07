@@ -128,6 +128,8 @@ class UserStats(BaseModel):
     topShowCount: Optional[int] = 0
     rowCounts: Optional[dict] = None
     seatCounts: Optional[dict] = None
+    showCounts: Optional[dict] = None
+    topTwoShots: Optional[list[dict]] = None
     recentActivity: Optional[list[PublicShowEntry]] = None
 
 
