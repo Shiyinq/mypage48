@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy, untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { live as liveApi } from '$lib/apis/live';
 	import { API_BASE } from '$lib/apis/client';
@@ -91,12 +92,14 @@
 
 	// Floating Gift Logic - Handled by GiftOverlay component
 
-	async function initPlayer() {
+	async function initPlayer(force = false) {
 		if (typeof window === 'undefined' || initializing) return;
 		if (!videoElement || !platform || !id) return;
 
 		// Prevent redundant re-init if source hasn't changed
-		if (platform === currentPlatform && id === currentId && (hls || videoElement.src)) return;
+		if (!force && platform === currentPlatform && id === currentId && (hls || videoElement.src)) {
+			return;
+		}
 
 		initializing = true;
 		loading = true;
@@ -239,7 +242,9 @@
 		// React to hlsSettings.mode changes
 		if (hlsSettings.mode && hls) {
 			console.log('HLS mode changed, re-initializing player to flush buffers...');
-			setTimeout(initPlayer, 100);
+			untrack(() => {
+				setTimeout(() => initPlayer(true), 100);
+			});
 		}
 	});
 
@@ -283,7 +288,7 @@
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const w = window as any;
 			if (w.Hls) {
-				initPlayer();
+				untrack(() => initPlayer());
 			} else {
 				// Checklist to ensure only one script is added
 				if (!document.getElementById('hls-js-script')) {
@@ -293,26 +298,26 @@
 					script.onload = () => {
 						// Trigger init for all players waiting
 						window.dispatchEvent(new CustomEvent('hls-js-loaded'));
-						initPlayer();
+						untrack(() => initPlayer());
 					};
 					document.head.appendChild(script);
 				} else {
 					// Wait for the script to load if already added by another component
-					const handleLoaded = () => initPlayer();
+					const handleLoaded = () => untrack(() => initPlayer());
 					window.addEventListener('hls-js-loaded', handleLoaded, { once: true });
 				}
 			}
 		}
+	});
 
-		return () => {
-			if (hls) {
-				hls.destroy();
-				hls = null;
-			}
-			if (hammerInterval) {
-				clearInterval(hammerInterval);
-			}
-		};
+	onDestroy(() => {
+		if (hls) {
+			hls.destroy();
+			hls = null;
+		}
+		if (hammerInterval) {
+			clearInterval(hammerInterval);
+		}
 	});
 </script>
 
@@ -381,7 +386,7 @@
 			<AlertCircle class="w-8 h-8 text-red-500 mb-2 opacity-50" />
 			<p class="text-[10px] font-black uppercase tracking-widest text-zinc-500">{error}</p>
 			<button
-				onclick={initPlayer}
+				onclick={() => initPlayer(true)}
 				class="mt-4 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold rounded-lg transition-colors"
 			>
 				{t('theater.live.multiview.retry')}
