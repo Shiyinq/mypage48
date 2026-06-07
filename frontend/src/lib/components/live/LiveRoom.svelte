@@ -606,20 +606,22 @@
 
 		<!-- Back Button & Info -->
 		<div class="flex items-center justify-between {isTheater ? '' : 'px-4 sm:px-0'}">
-			<div class="flex items-center gap-3">
-				<a
-					href={basePath}
-					class="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
-					title={t('theater.live.back')}
+			<a
+				href={basePath}
+				class="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+				title={t('theater.live.back')}
+			>
+				<div
+					class="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800"
 				>
 					<ArrowLeft size={20} />
-				</a>
+				</div>
 				<div class="h-4 w-px bg-slate-200 dark:bg-zinc-800 ml-1 hidden sm:block"></div>
 				{#if memberName}
 					<div class="flex flex-col gap-0.5">
 						<div class="flex flex-col sm:flex-row items-baseline gap-1 sm:gap-2">
 							<span
-								class="text-xs font-black uppercase tracking-[0.15em] text-slate-900 dark:text-white leading-none truncate max-w-[200px] sm:max-w-none"
+								class="text-xs font-black uppercase tracking-[0.15em] text-slate-900 dark:text-white leading-none truncate max-w-[200px] sm:max-w-none hover:text-red-600 transition-colors"
 								>{memberName}</span
 							>
 							<span
@@ -629,7 +631,7 @@
 						</div>
 					</div>
 				{/if}
-			</div>
+			</a>
 
 			{#if !isFullscreen}
 				<div class="hidden sm:flex items-center gap-3 flex-shrink-0">
