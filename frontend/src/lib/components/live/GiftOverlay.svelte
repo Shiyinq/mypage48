@@ -54,7 +54,7 @@
 	{#key activeGift.timestamp}
 		<div
 			transition:fade={{ duration: 300 }}
-			class="absolute inset-0 z-30 pointer-events-none p-4 rounded-2xl overflow-hidden"
+			class="absolute inset-0 z-[5600] pointer-events-none p-4 rounded-2xl overflow-hidden"
 		>
 			<!-- Official IDN Style Top Toast -->
 			<div
