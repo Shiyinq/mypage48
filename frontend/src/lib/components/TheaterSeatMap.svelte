@@ -3,6 +3,7 @@
 	import SeatMapHeader from './theater/seatmap/SeatMapHeader.svelte';
 	import SeatMapRows from './theater/seatmap/SeatMapRows.svelte';
 	import SeatMapGrid from './theater/seatmap/SeatMapGrid.svelte';
+	import SeatMapFitScaler from './theater/seatmap/SeatMapFitScaler.svelte';
 
 	interface Props {
 		rowStats: { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
@@ -10,6 +11,7 @@
 		isLoading?: boolean;
 		showSubtitle?: boolean;
 		compact?: boolean;
+		embedded?: boolean;
 	}
 
 	let {
@@ -17,7 +19,8 @@
 		seatStats,
 		isLoading = false,
 		showSubtitle = true,
-		compact = false
+		compact = false,
+		embedded = false
 	}: Props = $props();
 
 	const { t } = useTranslation();
@@ -26,9 +29,23 @@
 	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'] as const;
 
 	let maxSeatCount = $derived(seatStats ? Math.max(...Object.values(seatStats), 1) : 1);
+
+	let isMobile = $state(false);
+
+	$effect(() => {
+		const mq = window.matchMedia('(max-width: 767px)');
+		const update = () => {
+			isMobile = mq.matches;
+		};
+		update();
+		mq.addEventListener('change', update);
+		return () => mq.removeEventListener('change', update);
+	});
+
+	let useFitScaler = $derived(embedded && !isMobile);
 </script>
 
-<div class="glass-panel p-6 rounded-3xl">
+{#snippet seatMapContent()}
 	<SeatMapHeader {showSubtitle} {rowStats} totalRows={THEATER_ROWS.length} bind:mapView />
 
 	<div class="w-full">
@@ -55,19 +72,43 @@
 							</div>
 						</div>
 					{/snippet}
-					<SeatMapGrid
-						rows={THEATER_ROWS}
-						{seatStats}
-						{maxSeatCount}
-						{isLoading}
-						{compact}
-						{stage}
-					/>
+					{#if useFitScaler}
+						<SeatMapFitScaler>
+							{#snippet children()}
+								<SeatMapGrid
+									rows={THEATER_ROWS}
+									{seatStats}
+									{maxSeatCount}
+									{isLoading}
+									{compact}
+									fitParent={true}
+									{stage}
+								/>
+							{/snippet}
+						</SeatMapFitScaler>
+					{:else}
+						<SeatMapGrid
+							rows={THEATER_ROWS}
+							{seatStats}
+							{maxSeatCount}
+							{isLoading}
+							{compact}
+							{stage}
+						/>
+					{/if}
 				{/if}
 			</div>
 		</div>
 	</div>
-</div>
+{/snippet}
+
+{#if embedded}
+	{@render seatMapContent()}
+{:else}
+	<div class="glass-panel p-6 rounded-3xl">
+		{@render seatMapContent()}
+	</div>
+{/if}
 
 <style>
 </style>

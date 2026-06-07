@@ -18,6 +18,7 @@
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import PublicProfileHeader from '$lib/components/public-profile/PublicProfileHeader.svelte';
 	import PublicProfileStats from '$lib/components/public-profile/PublicProfileStats.svelte';
+	import PublicProfileTopTwoShot from '$lib/components/public-profile/PublicProfileTopTwoShot.svelte';
 	import PublicProfileTopSetlists from '$lib/components/public-profile/PublicProfileTopSetlists.svelte';
 	import PublicProfileSeatMap from '$lib/components/public-profile/PublicProfileSeatMap.svelte';
 	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
@@ -146,7 +147,7 @@
 >
 	<AnimatedBackground hideDecorationsOnMobile={true} interactive={true} bind:mouse bind:scrollY />
 
-	<div class="relative max-w-4xl mx-auto p-4 md:p-8 pb-24 z-10 animate-fade-in space-y-8">
+	<div class="relative max-w-6xl mx-auto p-4 md:p-8 pb-24 z-10 animate-fade-in space-y-8">
 		<!-- Hidden File Input -->
 		<input
 			type="file"
@@ -166,12 +167,12 @@
 
 		<!-- Stats Section -->
 		{#if profile.stats}
-			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				<!-- Main Stats Grid -->
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 items-stretch">
 				<PublicProfileStats stats={profile.stats} year={profile.publicYear} />
-
-				<!-- Top Setlists -->
-				<PublicProfileTopSetlists showCounts={profile.stats.showCounts} />
+				<PublicProfileTopTwoShot topTwoShots={profile.stats.topTwoShots} />
+				<div class="md:col-span-2 lg:col-span-1">
+					<PublicProfileTopSetlists showCounts={profile.stats.showCounts} />
+				</div>
 			</div>
 
 			<!-- Theater Seat Map -->
