@@ -66,7 +66,7 @@
 
 {#if isLoading}
 	<!-- Skeleton Loading for Seats -->
-	<div class="w-full overflow-x-auto pt-8 pb-4">
+	<div class="w-full overflow-x-auto lg:overflow-x-visible pt-8 pb-4 hide-scrollbar">
 		<div class="seat-map-grid min-w-[700px] md:min-w-0 {compact ? 'is-compact' : ''}">
 			{#if stage}
 				<div
@@ -93,7 +93,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="w-full overflow-x-auto pt-8 pb-4">
+	<div class="w-full overflow-x-auto lg:overflow-x-visible pt-8 pb-4 hide-scrollbar">
 		<div class="seat-map-grid min-w-[700px] md:min-w-0 {compact ? 'is-compact' : ''}">
 			{#if stage}
 				<div
