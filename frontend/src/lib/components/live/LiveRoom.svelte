@@ -588,7 +588,7 @@
 <div
 	class="flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out overflow-x-hidden {isFocusMode
 		? 'fixed inset-0 !top-0 !mt-0 z-[7000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-[100dvh] w-screen'
-		: 'h-[calc(100dvh-72px)] sm:h-[calc(100dvh-76px)] mt-2 sm:mt-3 px-0 sm:px-4 pb-2 sm:pb-4'}"
+		: 'isolate overflow-y-auto h-[calc(100dvh-72px)] sm:h-[calc(100dvh-76px)] mt-2 sm:mt-3 px-0 sm:px-4 pb-2 sm:pb-4'}"
 >
 	<!-- Main Player Area -->
 	<div class="flex-[1.5] lg:flex-1 flex flex-col gap-3 min-h-0 p-0">
