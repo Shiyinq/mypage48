@@ -4,8 +4,9 @@
 	import { OptimizedImage } from '$lib/components/common';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { formatLiveStartEnd } from '$lib/utils/time';
 
-	const { t } = useTranslation();
+	const { t, locale } = useTranslation();
 
 	interface Props {
 		href: string;
@@ -19,6 +20,8 @@
 		peakViewers?: number;
 		mode?: 'watched' | 'global';
 		isLive?: boolean;
+		startAt?: string;
+		endAt?: string;
 	}
 
 	let {
@@ -32,7 +35,9 @@
 		duration,
 		peakViewers,
 		mode = 'watched',
-		isLive = false
+		isLive = false,
+		startAt,
+		endAt
 	}: Props = $props();
 
 	function formatDuration(seconds: number) {
@@ -145,7 +150,7 @@
 					class="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-0.5"
 				>
 					<Calendar size={12} />
-					<span>{dateStr}</span>
+					<span>{startAt ? formatLiveStartEnd(startAt, endAt, locale.value) : dateStr}</span>
 				</div>
 				<span
 					class="text-lg font-black text-slate-900 dark:text-white truncate leading-tight"

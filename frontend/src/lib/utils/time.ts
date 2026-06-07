@@ -157,3 +157,40 @@ export function formatLiveDate(dateStr: string, locale: string = 'id'): string {
 		timeStyle: 'short'
 	}).format(parseUTCDate(dateStr));
 }
+
+/**
+ * Format start and end date/time for live history.
+ * If they are on the same day, only show the time for the end date.
+ * If they are on different days, show the full date and time for the end date.
+ */
+export function formatLiveStartEnd(
+	startAtStr: string | undefined | null,
+	endAtStr: string | undefined | null,
+	locale: string = 'id'
+): string {
+	if (!startAtStr) return '';
+	const start = parseUTCDate(startAtStr);
+	const formattedStart = formatLiveDate(startAtStr, locale);
+
+	if (!endAtStr) return formattedStart;
+	const end = parseUTCDate(endAtStr);
+	if (isNaN(start.getTime()) || isNaN(end.getTime())) return formattedStart;
+
+	const isSameDay =
+		start.getFullYear() === end.getFullYear() &&
+		start.getMonth() === end.getMonth() &&
+		start.getDate() === end.getDate();
+
+	const localeMap: Record<string, string> = { id: 'id-ID', en: 'en-US', ja: 'ja-JP' };
+	const loc = localeMap[locale] || 'id-ID';
+
+	if (isSameDay) {
+		const formattedEndTime = new Intl.DateTimeFormat(loc, {
+			timeStyle: 'short'
+		}).format(end);
+		return `${formattedStart} - ${formattedEndTime}`;
+	} else {
+		const formattedEndFull = formatLiveDate(endAtStr, locale);
+		return `${formattedStart} - ${formattedEndFull}`;
+	}
+}
