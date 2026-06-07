@@ -32,6 +32,7 @@
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
 	import MultiPlayer from '$lib/components/live/MultiPlayer.svelte';
+	import HlsSettingsDropdown from '$lib/components/live/HlsSettingsDropdown.svelte';
 	import { showToast, isImmersive, isAuthenticated } from '$lib/stores';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
@@ -483,6 +484,10 @@
 			>
 				<MessageCircle size={20} />
 			</button>
+			<div class="w-px h-5 bg-slate-200 dark:bg-zinc-800 mx-1"></div>
+			<div class="flex items-center justify-center -ml-1">
+				<HlsSettingsDropdown variant="multiview" />
+			</div>
 		</div>
 	</div>
 

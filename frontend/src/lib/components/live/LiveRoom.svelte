@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -52,7 +53,9 @@
 	} from '$lib/utils/media';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
+	import HlsSettingsDropdown from '$lib/components/live/HlsSettingsDropdown.svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
+	import { hlsSettings } from '$lib/stores/hlsSettings.svelte';
 
 	interface Props {
 		/** Base path determines back-links and other-live member hrefs.
@@ -89,7 +92,8 @@
 	let peakDuration = $state(0);
 	let isFullscreen = $state(false);
 	let showControls = $state(true);
-	let controlsTimeout: ReturnType<typeof setTimeout> | undefined = $state();
+	let isSettingsOpen = $state(false);
+	let controlsTimeout: ReturnType<typeof setTimeout> | undefined;
 	let playerContainer: HTMLDivElement | undefined = $state();
 	let chatStatus: 'connecting' | 'connected' | 'disconnected' = $state('connecting');
 	let recordingDuration = $state(0);
@@ -114,9 +118,19 @@
 		showControls = true;
 		clearTimeout(controlsTimeout);
 		controlsTimeout = setTimeout(() => {
-			showControls = false;
+			if (!isSettingsOpen) {
+				showControls = false;
+			}
 		}, 5000);
 	}
+
+	$effect(() => {
+		if (isSettingsOpen) {
+			clearTimeout(controlsTimeout);
+		} else {
+			untrack(() => resetControlsTimeout());
+		}
+	});
 
 	function handleFullscreenChange() {
 		isFullscreen = document.fullscreenElement !== null;
@@ -169,8 +183,8 @@
 						if (hls) hls.destroy();
 						hls = new Hls({
 							// Tuned for proxied live streams
-							liveSyncDurationCount: 3,
-							liveMaxLatencyDurationCount: 6,
+							liveSyncDurationCount: hlsSettings.config.liveSyncDurationCount,
+							liveMaxLatencyDurationCount: hlsSettings.config.liveMaxLatencyDurationCount,
 							liveDurationInfinity: true,
 							// Aggressive retry for network errors (proxy can be flaky)
 							manifestLoadingMaxRetry: 6,
@@ -406,6 +420,13 @@
 	function takeScreenshot() {
 		if (videoElement) captureVideoScreenshot(videoElement, memberName || 'JKT48_Live');
 	}
+
+	$effect(() => {
+		if (hlsSettings.mode && hls) {
+			console.log('HLS mode changed, re-initializing player to flush buffers...');
+			setTimeout(refreshStream, 100);
+		}
+	});
 
 	async function toggleRecording() {
 		if (!videoElement) return;
@@ -713,8 +734,10 @@
 				onfullscreenchange={handleFullscreenChange}
 				onmousemove={() => resetControlsTimeout(false)}
 				onmouseleave={() => {
-					showControls = false;
-					clearTimeout(controlsTimeout);
+					if (!isSettingsOpen) {
+						showControls = false;
+						clearTimeout(controlsTimeout);
+					}
 				}}
 				onclick={() => resetControlsTimeout(false)}
 				ontouchstart={() => resetControlsTimeout(true)}
@@ -1079,6 +1102,14 @@
 								</button>
 
 								<div class="w-px h-4 bg-white/20 mx-1"></div>
+
+								<div class="flex items-center justify-center">
+									<HlsSettingsDropdown
+										variant="liveroom"
+										{showControls}
+										bind:isOpen={isSettingsOpen}
+									/>
+								</div>
 
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center {sidebarMode ===
