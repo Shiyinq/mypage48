@@ -5,6 +5,7 @@
 	import { captureVideoScreenshot, startVideoRecording, downloadRecording } from '$lib/utils/media';
 	import { RefreshCw, AlertCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { hlsSettings } from '$lib/stores/hlsSettings.svelte';
 	import GiftOverlay from './GiftOverlay.svelte';
 
 	const { t } = useTranslation();
@@ -108,6 +109,11 @@
 			hls.destroy();
 			hls = null;
 		}
+		if (videoElement) {
+			videoElement.pause();
+			videoElement.src = '';
+			videoElement.load();
+		}
 
 		try {
 			const res = await liveApi.getStreamingUrl(platform, id);
@@ -127,8 +133,8 @@
 						lowLatencyMode: true,
 						backBufferLength: 60,
 						// Tuned for proxied live streams
-						liveSyncDurationCount: 3,
-						liveMaxLatencyDurationCount: 6,
+						liveSyncDurationCount: hlsSettings.config.liveSyncDurationCount,
+						liveMaxLatencyDurationCount: hlsSettings.config.liveMaxLatencyDurationCount,
 						liveDurationInfinity: true,
 						// Aggressive retry for network errors (proxy can be flaky)
 						manifestLoadingMaxRetry: 6,
@@ -228,6 +234,14 @@
 			initializing = false;
 		}
 	}
+
+	$effect(() => {
+		// React to hlsSettings.mode changes
+		if (hlsSettings.mode && hls) {
+			console.log('HLS mode changed, re-initializing player to flush buffers...');
+			setTimeout(initPlayer, 100);
+		}
+	});
 
 	function retryPlayback() {
 		if (!videoElement) return;

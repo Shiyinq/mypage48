@@ -853,6 +853,12 @@
 				"historyTitle": "Live History Feature",
 				"historyDesc": "You can now view your personal live watch history and statistics! Create your account now.",
 				"historyAction": "Register"
+			},
+			"video_stability": {
+				"title": "Video Stability",
+				"realtime": "Real-time",
+				"balanced": "Balanced",
+				"stable": "Ultra Stable"
 			}
 		},
 		"news": {

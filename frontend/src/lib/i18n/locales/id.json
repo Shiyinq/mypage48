@@ -939,6 +939,12 @@
 				"historyTitle": "Fitur Live History",
 				"historyDesc": "Kini kamu bisa melihat statistik riwayat tontonan live-mu sendiri lho! Yuk buat akun sekarang.",
 				"historyAction": "Daftar"
+			},
+			"video_stability": {
+				"title": "Stabilitas Video",
+				"realtime": "Real-time",
+				"balanced": "Seimbang",
+				"stable": "Ultra Stabil"
 			}
 		},
 		"news": {
