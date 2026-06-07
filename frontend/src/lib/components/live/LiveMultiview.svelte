@@ -689,7 +689,7 @@
 										/>{/if}
 								</button>
 								<div
-									class="w-0 group-hover/volume:w-24 h-8 overflow-hidden transition-all duration-500 bg-white/10 backdrop-blur-md rounded-r-xl -ml-2 pl-4 flex items-center"
+									class="hidden md:flex w-0 group-hover/volume:w-24 h-8 overflow-hidden transition-all duration-500 bg-white/10 backdrop-blur-md rounded-r-xl -ml-2 pl-4 items-center"
 								>
 									<input
 										type="range"
