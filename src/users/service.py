@@ -429,6 +429,26 @@ class UserService:
                     )
                 )
 
+            # Top 2-Shots
+            two_shot_counts = {}
+            for t in tickets:
+                if t.two_shot and t.two_shot.member_name:
+                    name = t.two_shot.member_name
+                    if name not in two_shot_counts:
+                        two_shot_counts[name] = {
+                            "name": name,
+                            "count": 0,
+                            "imageUrl": t.two_shot.imageUrl,
+                            "imageUrl_medium": t.two_shot.imageUrl_medium,
+                            "imageUrl_small": t.two_shot.imageUrl_small,
+                            "blurHash": t.two_shot.blurHash,
+                        }
+                    two_shot_counts[name]["count"] += 1
+
+            top_two_shots = sorted(
+                two_shot_counts.values(), key=lambda x: x["count"], reverse=True
+            )[:5]
+
             # Create Stats Object
             stats = UserStats(
                 totalShows=total_shows,
@@ -440,6 +460,8 @@ class UserService:
                 topShowCount=top_show_count,
                 rowCounts=row_counts,
                 seatCounts=seat_counts,
+                showCounts=show_counts,
+                topTwoShots=top_two_shots,
                 recentActivity=recent_activity,
             )
         except Exception as e:

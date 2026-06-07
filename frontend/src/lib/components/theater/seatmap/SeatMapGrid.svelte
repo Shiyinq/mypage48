@@ -11,10 +11,19 @@
 		maxSeatCount: number;
 		isLoading: boolean;
 		compact: boolean;
+		fitParent?: boolean;
 		stage?: import('svelte').Snippet;
 	}
 
-	let { rows, seatStats, maxSeatCount, isLoading, compact, stage }: Props = $props();
+	let {
+		rows,
+		seatStats,
+		maxSeatCount,
+		isLoading,
+		compact,
+		fitParent = false,
+		stage
+	}: Props = $props();
 
 	// Exact configuration from row-theater
 	const ROW_COUNTS: Record<string, number> = {
@@ -66,8 +75,16 @@
 
 {#if isLoading}
 	<!-- Skeleton Loading for Seats -->
-	<div class="w-full overflow-x-auto pt-8 pb-4">
-		<div class="seat-map-grid min-w-[700px] md:min-w-0 {compact ? 'is-compact' : ''}">
+	<div
+		class={fitParent
+			? 'w-fit pt-8 pb-4'
+			: 'w-full overflow-x-auto lg:overflow-x-visible pt-8 pb-4 hide-scrollbar'}
+	>
+		<div
+			class="seat-map-grid {fitParent ? 'is-fit-parent' : 'min-w-[700px] md:min-w-0'} {compact
+				? 'is-compact'
+				: ''}"
+		>
 			{#if stage}
 				<div
 					style="grid-column: 7 / 32; grid-row: 1; display: flex; justify-content: center; margin-bottom: 2rem;"
@@ -93,8 +110,16 @@
 		</div>
 	</div>
 {:else}
-	<div class="w-full overflow-x-auto pt-8 pb-4">
-		<div class="seat-map-grid min-w-[700px] md:min-w-0 {compact ? 'is-compact' : ''}">
+	<div
+		class={fitParent
+			? 'w-fit pt-8 pb-4'
+			: 'w-full overflow-x-auto lg:overflow-x-visible pt-8 pb-4 hide-scrollbar'}
+	>
+		<div
+			class="seat-map-grid {fitParent ? 'is-fit-parent' : 'min-w-[700px] md:min-w-0'} {compact
+				? 'is-compact'
+				: ''}"
+		>
 			{#if stage}
 				<div
 					style="grid-column: 7 / 32; grid-row: 1; display: flex; justify-content: center; align-items: end; margin-bottom: 2rem; position: relative;"
@@ -148,6 +173,10 @@
 		gap: 2px 2px;
 		width: fit-content;
 		margin: 0 auto;
+	}
+
+	.is-fit-parent.seat-map-grid {
+		margin: 0;
 	}
 
 	.row-label {
