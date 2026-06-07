@@ -23,6 +23,7 @@
 		Smartphone,
 		Check,
 		Camera,
+		RotateCw,
 		Circle,
 		Square,
 		Trash2
@@ -715,6 +716,21 @@
 							</div>
 
 							<div class="flex items-center gap-2">
+								<!-- Rotate Button -->
+								<button
+									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-zinc-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/rot cursor-pointer"
+									onclick={(e) => {
+										e.stopPropagation();
+										playerRefs[i]?.rotateVideo();
+									}}
+									title={t('theater.live.rotate') || 'Rotate Video'}
+								>
+									<RotateCw
+										size={16}
+										class="group-hover/rot:rotate-90 transition-transform duration-300"
+									/>
+								</button>
+
 								<!-- Screenshot Button -->
 								<button
 									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-blue-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/cam cursor-pointer"
