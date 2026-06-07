@@ -427,10 +427,10 @@
 		<div class="flex items-center gap-4">
 			<a
 				href={basePath}
-				class="flex items-center gap-2 text-slate-900 dark:text-white hover:text-red-600 transition-colors"
+				class="flex items-center gap-1 sm:gap-2 text-slate-900 dark:text-white hover:text-red-600 transition-colors"
 			>
-				<ChevronLeft size={20} />
-				<span class="font-black tracking-tighter text-lg"
+				<ChevronLeft size={20} class="shrink-0" />
+				<span class="font-black tracking-tighter text-lg whitespace-nowrap"
 					>JKT48 <span class="text-red-600 italic">LIVE</span></span
 				>
 			</a>
@@ -446,7 +446,7 @@
 			</div>
 		</div>
 
-		<div class="flex items-center gap-2">
+		<div class="flex items-center gap-0.5 sm:gap-2 shrink-0">
 			<button
 				onclick={clearAll}
 				class="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
@@ -689,7 +689,7 @@
 										/>{/if}
 								</button>
 								<div
-									class="w-0 group-hover/volume:w-24 h-8 overflow-hidden transition-all duration-500 bg-white/10 backdrop-blur-md rounded-r-xl -ml-2 pl-4 flex items-center"
+									class="hidden md:flex w-0 group-hover/volume:w-24 h-8 overflow-hidden transition-all duration-500 bg-white/10 backdrop-blur-md rounded-r-xl -ml-2 pl-4 items-center"
 								>
 									<input
 										type="range"
