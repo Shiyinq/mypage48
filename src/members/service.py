@@ -1,4 +1,5 @@
 import asyncio
+import re
 from datetime import datetime
 from typing import List, Optional
 
@@ -139,6 +140,33 @@ class MemberService:
             raise
         except Exception as e:
             logger.exception(f"Error fetching member {nickname}: {str(e)}")
+            raise MemberFetchError()
+
+    async def get_member_by_name(self, name: str) -> MemberDetailResponse:
+        """Get a single member by full name or nickname with robust matching"""
+        try:
+            # Clean name (remove JKT48, Trainee, parentheses, and anything after -)
+            clean_name = re.sub(r"\(.*?\)|JKT48|Trainee|-.*", "", name).strip()
+
+            member = await self.repository.find_by_name(clean_name)
+            if not member:
+                # Fallback to broader search
+                search_results = await self.repository.find_all(
+                    limit=1, search=clean_name
+                )
+                if search_results:
+                    member = search_results[0]
+                else:
+                    raise MemberNotFoundError()
+
+            return MemberDetailResponse(
+                member=MemberResponse(**(await self._resolve_member(member))),
+                detail=Info.MEMBER_FOUND,
+            )
+        except MemberNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error fetching member {name}: {str(e)}")
             raise MemberFetchError()
 
     async def get_generations(self) -> List[str]:
