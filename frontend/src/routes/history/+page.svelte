@@ -139,13 +139,13 @@
 			title={t('history.title')}
 			subtitle={t('history.subtitle')}
 			icon={History}
-			theme="blue"
+			theme="red"
 			actionItems={[
 				{
 					icon: FilterIcon,
 					label: t('common.filters') || 'Filter',
 					onClick: () => (isFilterOpen = !isFilterOpen),
-					theme: isFilterOpen || filterCount > 0 ? 'blue' : 'gray',
+					theme: isFilterOpen || filterCount > 0 ? 'red' : 'gray',
 					badge: filterCount > 0 ? filterCount : undefined
 				}
 			]}

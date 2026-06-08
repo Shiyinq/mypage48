@@ -28,7 +28,7 @@
 		{ href: '/top-2shot', icon: Crown, label: 'nav.top2shot', color: 'text-indigo-500' },
 		{ href: '/journal', icon: BookOpen, label: 'nav.journal', color: 'text-green-500' },
 		{ href: '/achievements', icon: Trophy, label: 'nav.achievements', color: 'text-amber-500' },
-		{ href: '/history', icon: History, label: 'nav.history', color: 'text-blue-500' }
+		{ href: '/history', icon: History, label: 'nav.history', color: 'text-red-500' }
 	];
 
 	function toggleMenu() {

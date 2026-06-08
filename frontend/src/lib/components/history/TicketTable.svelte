@@ -178,7 +178,7 @@
 							<div class="flex items-center justify-end gap-2">
 								<button
 									onclick={() => oneditTicket?.(ticket)}
-									class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-colors cursor-pointer"
+									class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Pencil class="w-4 h-4" />
 								</button>
