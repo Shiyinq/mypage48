@@ -12,6 +12,21 @@
 	let { achievement, icon = Trophy }: Props = $props();
 
 	const { t } = useTranslation();
+
+	function tl(key: string, fallback: string): string {
+		const translated = t(key);
+		return translated !== key ? translated : fallback;
+	}
+
+	function progressText(): string {
+		if (!achievement.progress) return '';
+		const key = `achievements.items.${achievement.id}.progress`;
+		const translated = t(key);
+		if (translated !== key) {
+			return translated.replace(/\{current\}/g, achievement.progress.split('/')[0] || '');
+		}
+		return achievement.progress;
+	}
 </script>
 
 <div
@@ -39,15 +54,17 @@
 
 	<div class="flex-1">
 		<h3 class={`text-lg font-bold ${achievement.isUnlocked ? 'text-themed' : 'text-themed-muted'}`}>
-			{achievement.title}
+			{tl(`achievements.items.${achievement.id}.title`, achievement.title)}
 		</h3>
-		<p class="text-xs text-themed-secondary font-medium">{achievement.description}</p>
+		<p class="text-xs text-themed-secondary font-medium">
+			{tl(`achievements.items.${achievement.id}.description`, achievement.description)}
+		</p>
 
 		<!-- Progress Bar for Locked Items -->
 		{#if !achievement.isUnlocked && achievement.progress}
 			<div class="mt-2">
 				<div class="text-[10px] font-bold text-gray-400 mb-1 text-right">
-					{achievement.progress}
+					{progressText()}
 				</div>
 				<div class="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
 					<div

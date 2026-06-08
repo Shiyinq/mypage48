@@ -1041,7 +1041,96 @@
 		"locked": "Locked",
 		"progress": "Progress",
 		"errorTitle": "Failed to load achievements",
-		"errorDesc": "Something went wrong while fetching your achievements."
+		"errorDesc": "Something went wrong while fetching your achievements.",
+		"items": {
+			"first_show": {
+				"title": "First Step",
+				"description": "Attended your first theater show"
+			},
+			"regular_visitor": {
+				"title": "Regular Visitor",
+				"description": "Attended 10 shows",
+				"progress": "{current}/10 shows"
+			},
+			"dedicated_fan_50": {
+				"title": "Dedicated Fan",
+				"description": "Attended 50 shows",
+				"progress": "{current}/50 shows"
+			},
+			"century_club_100": {
+				"title": "Century Club",
+				"description": "Attended 100 shows",
+				"progress": "{current}/100 shows"
+			},
+			"theater_icon_150": {
+				"title": "Theater Icon",
+				"description": "Attended 150 shows",
+				"progress": "{current}/150 shows"
+			},
+			"legendary_wota_200": {
+				"title": "Legendary Wota",
+				"description": "Attended 200 shows",
+				"progress": "{current}/200 shows"
+			},
+			"theater_kami_300": {
+				"title": "Theater Kami",
+				"description": "Attended 300 shows",
+				"progress": "{current}/300 shows"
+			},
+			"absolute_legend_500": {
+				"title": "Absolute Legend",
+				"description": "Attended 500 shows",
+				"progress": "{current}/500 shows"
+			},
+			"super_fan": {
+				"title": "Super Fan",
+				"description": "Watched the same event 10 times",
+				"progress": "{current}/10 times"
+			},
+			"mega_fan": {
+				"title": "Mega Fan",
+				"description": "Watched the same event 20 times",
+				"progress": "{current}/20 times"
+			},
+			"ultra_fan": {
+				"title": "Ultra Fan",
+				"description": "Watched the same event 30 times",
+				"progress": "{current}/30 times"
+			},
+			"theater_enthusiast": {
+				"title": "Theater Enthusiast",
+				"description": "1 year anniversary since first show",
+				"progress": "{current}/365 days"
+			},
+			"theater_veteran": {
+				"title": "Theater Veteran",
+				"description": "2 year anniversary since first show",
+				"progress": "{current}/730 days"
+			},
+			"theater_legend": {
+				"title": "Theater Legend",
+				"description": "3 year anniversary since first show",
+				"progress": "{current}/1095 days"
+			},
+			"elite_row": {
+				"title": "Elite Seat",
+				"description": "Sat in the legendary Row A"
+			},
+			"back_row_warrior": {
+				"title": "Back Row Warrior",
+				"description": "Watched from the furthest row (Row J)"
+			},
+			"seat_explorer": {
+				"title": "Seat Explorer",
+				"description": "Collected a ticket for every row (A-J)",
+				"progress": "{current}/10 rows"
+			},
+			"supporter": {
+				"title": "Top Supporter",
+				"description": "Spent over 5 Million IDR on tickets",
+				"progress": "{current}/5M IDR"
+			}
+		}
 	},
 	"errors": {
 		"404": {
