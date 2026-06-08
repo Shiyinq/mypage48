@@ -32,6 +32,7 @@
 	let name = $state(userProfile.data?.name || '');
 	let username = $state(userProfile.data?.username || '');
 	let email = $state(userProfile.data?.email || '');
+	let bio = $state(userProfile.data?.bio || '');
 
 	// Reset form when store data changes or when canceling
 	$effect(() => {
@@ -39,6 +40,7 @@
 			name = userProfile.data.name || '';
 			username = userProfile.data.username || '';
 			email = userProfile.data.email || '';
+			bio = userProfile.data.bio || '';
 		}
 	});
 
@@ -47,10 +49,11 @@
 
 		isSaving = true;
 		try {
-			const payload: { name?: string; username?: string; email?: string } = {};
+			const payload: { name?: string; username?: string; email?: string; bio?: string } = {};
 			if (name !== userProfile.data?.name) payload.name = name;
 			if (username !== userProfile.data?.username) payload.username = username;
 			if (email !== userProfile.data?.email) payload.email = email;
+			if (bio !== userProfile.data?.bio) payload.bio = bio;
 
 			if (Object.keys(payload).length === 0) {
 				isEditing = false;
@@ -75,6 +78,7 @@
 			name = userProfile.data?.name || '';
 			username = userProfile.data?.username || '';
 			email = userProfile.data?.email || '';
+			bio = userProfile.data?.bio || '';
 		}
 		isEditing = !isEditing;
 	};
@@ -415,6 +419,43 @@
 										</div>
 									{/if}
 								</button>
+							</div>
+						{/if}
+					</div>
+
+					<!-- Bio -->
+					<div class="space-y-1.5 md:col-span-2">
+						<label
+							for="acc-bio"
+							class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] pl-1"
+						>
+							{t('settings.account.bio')}
+						</label>
+						{#if isEditing}
+							<div class="relative group" in:slide={{ duration: 200 }}>
+								<textarea
+									id="acc-bio"
+									bind:value={bio}
+									class="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white resize-none"
+									rows="3"
+									maxlength="300"
+									placeholder={t('settings.publicProfile.bioPlaceholder')}
+								></textarea>
+								<div
+									class="absolute bottom-3 right-4 text-[10px] font-bold {bio.length >= 300
+										? 'text-red-500'
+										: 'text-gray-400'}"
+								>
+									{bio.length}/300
+								</div>
+							</div>
+						{:else}
+							<div class="px-1" in:fade>
+								<p
+									class="text-base font-bold text-gray-800 dark:text-gray-200 whitespace-pre-wrap line-clamp-2"
+								>
+									{userProfile.data.bio || '-'}
+								</p>
 							</div>
 						{/if}
 					</div>

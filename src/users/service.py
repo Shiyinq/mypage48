@@ -292,6 +292,10 @@ class UserService:
                     update_data["isEmailVerified"] = False
                     email_changed = True
 
+            # Handle Bio Update
+            if request.bio is not None:
+                update_data["bio"] = request.bio
+
             if len(update_data) > 1:  # More than just updatedAt
                 try:
                     await self.repository.update_one(
@@ -492,6 +496,7 @@ class UserService:
         return PublicUserResponse(
             name=user.name,
             username=user.username,
+            bio=user.bio,
             profilePicture=profile_picture,
             profilePicture_medium=profile_picture_medium,
             profilePicture_small=profile_picture_small,
@@ -672,6 +677,7 @@ class UserService:
                 "name": current_user.name,
                 "email": current_user.email,
                 "username": current_user.username,
+                "bio": current_user.bio,
                 "memberId": current_user.memberId,
                 "oshiId": current_user.oshiId,
                 "ofcStatus": current_user.ofcStatus,

@@ -531,6 +531,7 @@
 			"unverified": "Belum Verifikasi",
 			"saveSuccess": "Profil berhasil diperbarui!",
 			"saveError": "Gagal memperbarui profil",
+			"bio": "Bio",
 			"noChanges": "Tidak ada perubahan",
 			"emailWarning": "Mengubah email akan memerlukan verifikasi ulang.",
 			"systemInfo": "Informasi Anggota",
@@ -557,7 +558,11 @@
 			"uploadSuccess": "Foto profil berhasil diperbarui!",
 			"loadErrorTitle": "Gagal Memuat Konfigurasi",
 			"loadErrorDesc": "Kami tidak dapat memuat pengaturan profil publik Anda. Silakan coba lagi.",
-			"viewProfile": "Lihat Profil"
+			"viewProfile": "Lihat Profil",
+			"bioPlaceholder": "Ceritakan sedikit tentang dirimu...",
+			"noBio": "Tambahkan bio ke profil publikmu...",
+			"updateSuccess": "Bio berhasil diperbarui",
+			"updateError": "Gagal memperbarui bio"
 		},
 		"developer": {
 			"title": "Akses Developer",
