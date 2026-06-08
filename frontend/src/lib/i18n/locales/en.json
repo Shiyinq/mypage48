@@ -716,6 +716,8 @@
 		"recentHistory": "Recent History",
 		"noHistory": "No History Yet",
 		"noHistoryDesc": "You haven't watched any recorded JKT48 live streams.",
+		"noGlobalHistory": "No Live History",
+		"noGlobalHistoryDesc": "No recorded JKT48 live streams found.",
 		"times": "times",
 		"buttonSubtitle": "My Statistics",
 		"longestWatch": "Longest Watch",
