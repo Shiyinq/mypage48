@@ -377,12 +377,12 @@
 	"dashboard": {
 		"title": "概要",
 		"error": "概要データの読み込みに失敗しました",
-		"subtitle": "劇場活動の概要",
+		"subtitle": "劇場活動",
 		"filterTitle": "概要フィルター",
 		"filterSubtitle": "表示範囲を調整",
 		"theater": {
 			"title": "公演",
-			"subtitle": "観覧履歴の概要",
+			"subtitle": "観覧履歴",
 			"shows": "公演",
 			"events": "イベント",
 			"tickets": "チケット",

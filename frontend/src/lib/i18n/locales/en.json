@@ -377,12 +377,12 @@
 	"dashboard": {
 		"title": "Overview",
 		"error": "Failed to load overview data",
-		"subtitle": "Your theater activity overview",
+		"subtitle": "Your theater activity",
 		"filterTitle": "Overview Filter",
 		"filterSubtitle": "Adjust visualization range",
 		"theater": {
 			"title": "Shows",
-			"subtitle": "Your attendance overview",
+			"subtitle": "Your attendance",
 			"shows": "Shows",
 			"events": "Events",
 			"tickets": "Tickets",
