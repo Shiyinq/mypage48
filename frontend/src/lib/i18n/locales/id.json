@@ -1350,6 +1350,8 @@
 		"recentHistory": "Riwayat Terakhir",
 		"noHistory": "Belum Ada Riwayat",
 		"noHistoryDesc": "Kamu belum pernah menonton live stream JKT48 yang tercatat.",
+		"noGlobalHistory": "Tidak Ada Riwayat Live",
+		"noGlobalHistoryDesc": "Tidak ada riwayat live stream JKT48 yang ditemukan.",
 		"times": "kali",
 		"buttonSubtitle": "Statistik Saya",
 		"longestWatch": "Nonton Terlama",
