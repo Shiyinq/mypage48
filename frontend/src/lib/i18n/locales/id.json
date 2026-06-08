@@ -656,7 +656,96 @@
 		"locked": "Terkunci",
 		"progress": "Progres",
 		"errorTitle": "Gagal memuat pencapaian",
-		"errorDesc": "Terjadi kesalahan saat mengambil pencapaian kamu."
+		"errorDesc": "Terjadi kesalahan saat mengambil pencapaian kamu.",
+		"items": {
+			"first_show": {
+				"title": "Langkah Pertama",
+				"description": "Menghadiri pertunjukan teater pertamamu"
+			},
+			"regular_visitor": {
+				"title": "Pengunjung Tetap",
+				"description": "Menghadiri 10 pertunjukan",
+				"progress": "{current}/10 pertunjukan"
+			},
+			"dedicated_fan_50": {
+				"title": "Penggemar Berdedikasi",
+				"description": "Menghadiri 50 pertunjukan",
+				"progress": "{current}/50 pertunjukan"
+			},
+			"century_club_100": {
+				"title": "Klub Century",
+				"description": "Menghadiri 100 pertunjukan",
+				"progress": "{current}/100 pertunjukan"
+			},
+			"theater_icon_150": {
+				"title": "Ikon Teater",
+				"description": "Menghadiri 150 pertunjukan",
+				"progress": "{current}/150 pertunjukan"
+			},
+			"legendary_wota_200": {
+				"title": "Wota Legendaris",
+				"description": "Menghadiri 200 pertunjukan",
+				"progress": "{current}/200 pertunjukan"
+			},
+			"theater_kami_300": {
+				"title": "Teater Kami",
+				"description": "Menghadiri 300 pertunjukan",
+				"progress": "{current}/300 pertunjukan"
+			},
+			"absolute_legend_500": {
+				"title": "Legenda Sejati",
+				"description": "Menghadiri 500 pertunjukan",
+				"progress": "{current}/500 pertunjukan"
+			},
+			"super_fan": {
+				"title": "Super Penggemar",
+				"description": "Menonton acara yang sama 10 kali",
+				"progress": "{current}/10 kali"
+			},
+			"mega_fan": {
+				"title": "Mega Penggemar",
+				"description": "Menonton acara yang sama 20 kali",
+				"progress": "{current}/20 kali"
+			},
+			"ultra_fan": {
+				"title": "Ultra Penggemar",
+				"description": "Menonton acara yang sama 30 kali",
+				"progress": "{current}/30 kali"
+			},
+			"theater_enthusiast": {
+				"title": "Pecinta Teater",
+				"description": "1 tahun anniversary sejak pertunjukan pertama",
+				"progress": "{current}/365 hari"
+			},
+			"theater_veteran": {
+				"title": "Veteran Teater",
+				"description": "2 tahun anniversary sejak pertunjukan pertama",
+				"progress": "{current}/730 hari"
+			},
+			"theater_legend": {
+				"title": "Legenda Teater",
+				"description": "3 tahun anniversary sejak pertunjukan pertama",
+				"progress": "{current}/1095 hari"
+			},
+			"elite_row": {
+				"title": "Kursi Elite",
+				"description": "Duduk di Baris A yang legendaris"
+			},
+			"back_row_warrior": {
+				"title": "Prajurit Baris Belakang",
+				"description": "Menonton dari baris terjauh (Baris J)"
+			},
+			"seat_explorer": {
+				"title": "Penjelajah Kursi",
+				"description": "Mengoleksi tiket untuk semua baris (A-J)",
+				"progress": "{current}/10 baris"
+			},
+			"supporter": {
+				"title": "Top Supporter",
+				"description": "Menghabiskan lebih dari 5 Juta Rupiah untuk tiket",
+				"progress": "{current}/5 jt"
+			}
+		}
 	},
 	"errors": {
 		"404": {
