@@ -118,7 +118,7 @@
 			<div class="min-w-0 flex-1">
 				<div class="flex items-baseline gap-1.5">
 					<div
-						class="text-sm sm:text-base font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-amber-700 to-amber-500 leading-tight truncate"
+						class="text-sm sm:text-base font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-amber-700 to-amber-500 leading-tight"
 						title={stats.topShow || undefined}
 					>
 						{stats.topShow || '-'}
