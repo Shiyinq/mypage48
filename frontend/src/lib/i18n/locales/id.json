@@ -378,12 +378,12 @@
 	"dashboard": {
 		"title": "Ringkasan",
 		"error": "Gagal memuat data ringkasan",
-		"subtitle": "Ringkasan aktivitas teater kamu",
+		"subtitle": "Aktivitas teater kamu",
 		"filterTitle": "Filter Ringkasan",
 		"filterSubtitle": "Atur rentang visualisasi",
 		"theater": {
 			"title": "Pertunjukan",
-			"subtitle": "Ringkasan kehadiran kamu",
+			"subtitle": "Kehadiran kamu",
 			"shows": "Pertunjukan",
 			"tickets": "Tiket",
 			"spending": "Pengeluaran",
