@@ -137,7 +137,7 @@
 				<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
 					{#if isLoadingTitles}
 						<div
-							class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"
+							class="w-4 h-4 border-2 border-gray-300 border-t-red-500 rounded-full animate-spin"
 						></div>
 					{:else}
 						<Search class="w-4 h-4" />
@@ -147,7 +147,7 @@
 				<select
 					bind:value={title}
 					onchange={updateFilters}
-					class="w-full pl-10 pr-10 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full text-sm font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all appearance-none cursor-pointer"
+					class="w-full pl-10 pr-10 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full text-sm font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm transition-all appearance-none cursor-pointer"
 				>
 					<option value="">{t('common.allSetlists') || 'All Setlists'}</option>
 					{#each availableTitles as t}
@@ -166,7 +166,7 @@
 				bind:this={filterButton}
 				onclick={() => (showFilters = !showFilters)}
 				data-filter-toggle="true"
-				class={`hidden md:flex items-center gap-2 px-4 py-2 h-9 rounded-full transition-all border shadow-sm cursor-pointer relative font-bold text-xs ${showFilters || activeFilterCount > 0 ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-500 hover:text-gray-700'}`}
+				class={`hidden md:flex items-center gap-2 px-4 py-2 h-9 rounded-full transition-all border shadow-sm cursor-pointer relative font-bold text-xs ${showFilters || activeFilterCount > 0 ? 'bg-red-50 border-red-200 text-red-600' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-500 hover:text-gray-700'}`}
 				title="Advanced Filters"
 			>
 				<Filter class="w-4 h-4" />
@@ -190,14 +190,14 @@
 				>
 					<button
 						onclick={() => (viewMode = 'GRID')}
-						class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'GRID' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+						class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'GRID' ? 'bg-red-50 dark:bg-red-500/20 text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
 						title="Grid View"
 					>
 						<LayoutGrid class="w-4 h-4" />
 					</button>
 					<button
 						onclick={() => (viewMode = 'TABLE')}
-						class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'TABLE' ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+						class={`p-2 rounded-full transition-all cursor-pointer ${viewMode === 'TABLE' ? 'bg-red-50 dark:bg-red-500/20 text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
 						title="Table View"
 					>
 						<List class="w-4 h-4" />
@@ -226,7 +226,7 @@
 						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
 							{#if isLoadingTitles}
 								<div
-									class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"
+									class="w-4 h-4 border-2 border-gray-300 border-t-red-500 rounded-full animate-spin"
 								></div>
 							{:else}
 								<Search class="w-4 h-4" />
@@ -236,7 +236,7 @@
 						<select
 							bind:value={title}
 							onchange={updateFilters}
-							class="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all appearance-none cursor-pointer"
+							class="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm transition-all appearance-none cursor-pointer"
 						>
 							<option value="">{t('common.allSetlists') || 'All Setlists'}</option>
 							{#each availableTitles as listTitle}
@@ -261,7 +261,7 @@
 								onchange={updateFilters}
 							/>
 							<div
-								class={`w-10 h-6 rounded-full transition-colors ${hasTwoShot ? (isSidebar ? 'bg-red-500' : 'bg-blue-500') : 'bg-gray-200 dark:bg-zinc-700 group-hover:bg-gray-300'}`}
+								class={`w-10 h-6 rounded-full transition-colors ${hasTwoShot ? (isSidebar ? 'bg-red-500' : 'bg-red-500') : 'bg-gray-200 dark:bg-zinc-700 group-hover:bg-gray-300'}`}
 							></div>
 							<div
 								class={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${hasTwoShot ? 'translate-x-4' : 'translate-x-0'}`}
@@ -287,7 +287,7 @@
 					>
 						<!-- Start Date -->
 						<div
-							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 min-w-0 px-2 py-1.5 sm:px-3 sm:py-2 gap-1.5 sm:gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-blue-500'}`}
+							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 min-w-0 px-2 py-1.5 sm:px-3 sm:py-2 gap-1.5 sm:gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-red-500'}`}
 						>
 							<span
 								class="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
@@ -308,7 +308,7 @@
 
 						<!-- End Date -->
 						<div
-							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 min-w-0 px-2 py-1.5 sm:px-3 sm:py-2 gap-1.5 sm:gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-blue-500'}`}
+							class={`flex items-center bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden flex-1 min-w-0 px-2 py-1.5 sm:px-3 sm:py-2 gap-1.5 sm:gap-2 transition-all focus-within:ring-2 focus-within:border-transparent ${isSidebar ? 'focus-within:ring-red-500' : 'focus-within:ring-red-500'}`}
 						>
 							<span
 								class="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider shrink-0"
@@ -347,7 +347,7 @@
 								selectedDays.includes(day)
 									? isSidebar
 										? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
-										: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400'
+										: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
 									: 'bg-transparent border-gray-100 dark:border-zinc-800 text-gray-500 dark:text-gray-400 hover:border-gray-200 hover:text-gray-700 dark:hover:text-gray-200'
 							}`}
 						>
