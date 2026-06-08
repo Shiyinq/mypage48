@@ -18,6 +18,37 @@
 	let { level, progressPercent, loading = true }: Props = $props();
 
 	const { t } = useTranslation();
+
+	const rankTitleToId: Record<string, string> = {
+		'First Step': 'first_show',
+		'Regular Visitor': 'regular_visitor',
+		'Dedicated Fan': 'dedicated_fan_50',
+		'Century Club': 'century_club_100',
+		'Theater Icon': 'theater_icon_150',
+		'Legendary Wota': 'legendary_wota_200',
+		'Theater Kami': 'theater_kami_300',
+		'Absolute Legend': 'absolute_legend_500',
+		'Super Fan': 'super_fan',
+		'Mega Fan': 'mega_fan',
+		'Ultra Fan': 'ultra_fan',
+		'Theater Enthusiast': 'theater_enthusiast',
+		'Theater Veteran': 'theater_veteran',
+		'Theater Legend': 'theater_legend',
+		'Elite Seat': 'elite_row',
+		'Back Row Warrior': 'back_row_warrior',
+		'Seat Explorer': 'seat_explorer',
+		'Top Supporter': 'supporter'
+	};
+
+	function translateRank(title: string): string {
+		const id = rankTitleToId[title];
+		if (id) {
+			const key = `achievements.items.${id}.title`;
+			const translated = t(key);
+			return translated !== key ? translated : title;
+		}
+		return title;
+	}
 </script>
 
 <div class="glass-panel p-4 sm:p-6 rounded-3xl relative">
@@ -52,7 +83,9 @@
 					class="h-6 sm:h-8 w-24 sm:w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mt-1"
 				></div>
 			{:else}
-				<h3 class="text-xl sm:text-2xl font-black idol-text-gradient truncate">{level.current}</h3>
+				<h3 class="text-xl sm:text-2xl font-black idol-text-gradient truncate">
+					{translateRank(level.current)}
+				</h3>
 			{/if}
 		</div>
 		<div class="text-right flex-shrink min-w-0">
@@ -95,7 +128,9 @@
 				>
 				{t('profile.level.needed')}
 				{t('profile.level.for')}
-				<span class="font-bold text-gray-700 dark:text-gray-200">{level.nextRankTitle}</span>
+				<span class="font-bold text-gray-700 dark:text-gray-200"
+					>{translateRank(level.nextRankTitle)}</span
+				>
 			</span>
 		</div>
 	{/if}

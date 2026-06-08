@@ -99,17 +99,19 @@
 							></div>
 						{:else}
 							<div
-							class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full backdrop-blur-md mt-1 {profile?.ofcStatus ===
-							'Active'
-								? 'bg-[var(--team-badge-bg)]/20 border border-[var(--team-badge-border)]/30'
-								: 'bg-white/10 border border-white/20'} flex-shrink"
+								class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full backdrop-blur-md mt-1 {profile?.ofcStatus ===
+								'Active'
+									? 'bg-[var(--team-badge-bg)]/20 border border-[var(--team-badge-border)]/30'
+									: 'bg-white/10 border border-white/20'} flex-shrink"
 							>
 								<span
 									class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full flex-shrink-0 {profile?.ofcStatus ===
 									'Active'
 										? 'bg-[var(--team-badge-dot)] animate-pulse'
 										: 'bg-gray-400'}"
-									style={profile?.ofcStatus === 'Active' ? `box-shadow: 0 0 6px ${teamColors.badgeDot}` : ''}
+									style={profile?.ofcStatus === 'Active'
+										? `box-shadow: 0 0 6px ${teamColors.badgeDot}`
+										: ''}
 								></span>
 								<span
 									class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider {profile?.ofcStatus ===
