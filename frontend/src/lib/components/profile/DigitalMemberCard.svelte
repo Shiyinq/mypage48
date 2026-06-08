@@ -2,6 +2,7 @@
 	import { Crown, QrCode } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { User } from '$lib/types';
+	import { getTeamColors } from '$lib/constants';
 
 	interface Props {
 		profile?: User | null;
@@ -11,6 +12,8 @@
 	let { profile = null, loading = true }: Props = $props();
 
 	const { t } = useTranslation();
+
+	let teamColors = $derived(getTeamColors(profile?.oshi?.memberType));
 </script>
 
 <div class="relative group perspective-1000 w-full min-w-0">
@@ -18,8 +21,9 @@
 	<div
 		class="relative h-56 w-full rounded-3xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.02] {profile?.ofcStatus ===
 		'Active'
-			? 'ring-2 ring-green-400/50 ring-offset-2 ring-offset-white'
+			? 'ring-2 ring-[var(--team-ring)]/50 ring-offset-2 ring-offset-white'
 			: ''} max-w-full"
+		style="--team-ring: {teamColors.ring}; --team-glow: {teamColors.glow}; --team-badge-bg: {teamColors.badgeBg}; --team-badge-border: {teamColors.badgeBorder}; --team-badge-dot: {teamColors.badgeDot}; --team-badge-text: {teamColors.badgeText};"
 	>
 		<div class="absolute inset-0 rounded-3xl overflow-hidden">
 			<!-- Background -->
@@ -36,7 +40,8 @@
 			<!-- Active OFC Glow Effect -->
 			{#if profile?.ofcStatus === 'Active'}
 				<div
-					class="absolute -top-2 -right-2 w-20 h-20 bg-green-400 rounded-full blur-2xl opacity-30 animate-pulse"
+					class="absolute -top-2 -right-2 w-20 h-20 rounded-full blur-2xl opacity-30 animate-pulse"
+					style="background-color: {teamColors.glow}"
 				></div>
 			{/if}
 
@@ -94,21 +99,22 @@
 							></div>
 						{:else}
 							<div
-								class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full backdrop-blur-md mt-1 {profile?.ofcStatus ===
-								'Active'
-									? 'bg-green-500/20 border border-green-400/30'
-									: 'bg-white/10 border border-white/20'} flex-shrink"
+							class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full backdrop-blur-md mt-1 {profile?.ofcStatus ===
+							'Active'
+								? 'bg-[var(--team-badge-bg)]/20 border border-[var(--team-badge-border)]/30'
+								: 'bg-white/10 border border-white/20'} flex-shrink"
 							>
 								<span
 									class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full flex-shrink-0 {profile?.ofcStatus ===
 									'Active'
-										? 'bg-green-400 animate-pulse shadow-[0_0_6px_rgba(74,222,128,0.6)]'
+										? 'bg-[var(--team-badge-dot)] animate-pulse'
 										: 'bg-gray-400'}"
+									style={profile?.ofcStatus === 'Active' ? `box-shadow: 0 0 6px ${teamColors.badgeDot}` : ''}
 								></span>
 								<span
 									class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider {profile?.ofcStatus ===
 									'Active'
-										? 'text-green-300'
+										? 'text-[var(--team-badge-text)]'
 										: 'text-gray-400'} truncate"
 								>
 									{profile?.ofcStatus === 'Active'
