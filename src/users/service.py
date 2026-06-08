@@ -292,6 +292,10 @@ class UserService:
                     update_data["isEmailVerified"] = False
                     email_changed = True
 
+            # Handle Bio Update
+            if request.bio is not None:
+                update_data["bio"] = request.bio
+
             if len(update_data) > 1:  # More than just updatedAt
                 try:
                     await self.repository.update_one(
@@ -435,14 +439,22 @@ class UserService:
                 if t.two_shot and t.two_shot.member_name:
                     name = t.two_shot.member_name
                     if name not in two_shot_counts:
-                        two_shot_counts[name] = {
-                            "name": name,
-                            "count": 0,
-                            "imageUrl": t.two_shot.imageUrl,
-                            "imageUrl_medium": t.two_shot.imageUrl_medium,
-                            "imageUrl_small": t.two_shot.imageUrl_small,
-                            "blurHash": t.two_shot.blurHash,
-                        }
+                        two_shot_counts[name] = {"name": name, "count": 0}
+                        try:
+                            member = (
+                                await self.member_service.get_member_by_name(name)
+                            ).member
+                            two_shot_counts[name].update(
+                                {
+                                    "imageUrl": member.img,
+                                    "imageUrl_medium": member.img_medium,
+                                    "imageUrl_small": member.img_small,
+                                    "blurHash": member.blurHash,
+                                }
+                            )
+                        except Exception:
+                            pass
+
                     two_shot_counts[name]["count"] += 1
 
             top_two_shots = sorted(
@@ -484,6 +496,7 @@ class UserService:
         return PublicUserResponse(
             name=user.name,
             username=user.username,
+            bio=user.bio,
             profilePicture=profile_picture,
             profilePicture_medium=profile_picture_medium,
             profilePicture_small=profile_picture_small,
@@ -664,6 +677,7 @@ class UserService:
                 "name": current_user.name,
                 "email": current_user.email,
                 "username": current_user.username,
+                "bio": current_user.bio,
                 "memberId": current_user.memberId,
                 "oshiId": current_user.oshiId,
                 "ofcStatus": current_user.ofcStatus,

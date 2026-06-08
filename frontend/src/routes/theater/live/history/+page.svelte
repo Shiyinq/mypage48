@@ -213,8 +213,8 @@
 			{:else if list.length === 0}
 				<EmptyState
 					icon={History}
-					title={t('liveHistory.noHistory')}
-					description={t('liveHistory.noHistoryDesc')}
+					title={t('liveHistory.noGlobalHistory')}
+					description={t('liveHistory.noGlobalHistoryDesc')}
 				/>
 			{:else}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

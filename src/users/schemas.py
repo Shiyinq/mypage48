@@ -80,6 +80,7 @@ class UserInDB(BaseModel):
     username: str = Field(max_length=50)
     email: EmailStr
     ofcStatus: str = Field(default="Active")
+    bio: Optional[str] = Field(default=None, max_length=300)
     password: Optional[str] = Field(default=None)
     provider: Optional[str] = Field(default=None)
     createdAt: datetime = Field(default_factory=datetime.now)
@@ -136,6 +137,7 @@ class UserStats(BaseModel):
 class PublicUserResponse(BaseModel):
     name: str
     username: str
+    bio: Optional[str] = None
     profilePicture: Optional[str] = None
     profilePicture_medium: Optional[str] = None
     profilePicture_small: Optional[str] = None
@@ -177,6 +179,7 @@ class UpdateProfileRequest(BaseModel):
     name: Optional[str] = Field(None, max_length=100)
     username: Optional[str] = Field(None, max_length=50)
     email: Optional[EmailStr] = None
+    bio: Optional[str] = Field(None, max_length=300)
 
 
 class MessageResponse(BaseModel):

@@ -58,6 +58,7 @@ export interface UserWithProfileStats extends User {
 export interface PublicProfileData {
 	name: string;
 	username: string;
+	bio?: string | null;
 	profilePicture?: string | null;
 	profilePicture_medium?: string | null;
 	profilePicture_small?: string | null;

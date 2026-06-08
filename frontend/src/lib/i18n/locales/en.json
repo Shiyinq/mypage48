@@ -531,6 +531,7 @@
 			"unverified": "Unverified",
 			"saveSuccess": "Profile updated successfully!",
 			"saveError": "Failed to update profile",
+			"bio": "Bio",
 			"noChanges": "No changes to save",
 			"emailWarning": "Changing your email will require re-verification.",
 			"systemInfo": "Member Information",
@@ -557,7 +558,11 @@
 			"uploadSuccess": "Profile picture updated successfully!",
 			"loadErrorTitle": "Failed to Load Configuration",
 			"loadErrorDesc": "We couldn't load your public profile settings. Please try again.",
-			"viewProfile": "View Profile"
+			"viewProfile": "View Profile",
+			"bioPlaceholder": "Tell us about yourself...",
+			"noBio": "Add a bio to your public profile...",
+			"updateSuccess": "Bio updated successfully",
+			"updateError": "Failed to update bio"
 		},
 		"developer": {
 			"title": "Developer Access",
@@ -716,6 +721,8 @@
 		"recentHistory": "Recent History",
 		"noHistory": "No History Yet",
 		"noHistoryDesc": "You haven't watched any recorded JKT48 live streams.",
+		"noGlobalHistory": "No Live History",
+		"noGlobalHistoryDesc": "No recorded JKT48 live streams found.",
 		"times": "times",
 		"buttonSubtitle": "My Statistics",
 		"longestWatch": "Longest Watch",

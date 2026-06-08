@@ -9,22 +9,27 @@
 		rowStats: { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
 		seatStats: Record<string, number>;
 		isLoading?: boolean;
+		showHeader?: boolean;
 		showSubtitle?: boolean;
+		showRowStats?: boolean;
 		compact?: boolean;
 		embedded?: boolean;
+		mapView?: 'ROWS' | 'SEATS';
 	}
 
 	let {
 		rowStats,
 		seatStats,
 		isLoading = false,
+		showHeader = true,
 		showSubtitle = true,
+		showRowStats = true,
 		compact = false,
-		embedded = false
+		embedded = false,
+		mapView = $bindable('SEATS')
 	}: Props = $props();
 
 	const { t } = useTranslation();
-	let mapView: 'ROWS' | 'SEATS' = $state('SEATS');
 
 	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'] as const;
 
@@ -46,7 +51,15 @@
 </script>
 
 {#snippet seatMapContent()}
-	<SeatMapHeader {showSubtitle} {rowStats} totalRows={THEATER_ROWS.length} bind:mapView />
+	{#if showHeader}
+		<SeatMapHeader
+			{showSubtitle}
+			{showRowStats}
+			{rowStats}
+			totalRows={THEATER_ROWS.length}
+			bind:mapView
+		/>
+	{/if}
 
 	<div class="w-full">
 		<div class="w-full mx-auto px-1 sm:px-2">

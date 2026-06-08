@@ -52,6 +52,7 @@ class UserLoginBase(BaseModel):
     memberId: str | None = None
     oshiId: str | None = None
     ofcStatus: str | None = None
+    bio: str | None = None
     isPublic: bool = False
     publicYear: int | None = None
     isAdmin: bool = False
