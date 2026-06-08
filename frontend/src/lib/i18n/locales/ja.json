@@ -527,10 +527,11 @@
 			"type": "アカウントタイプ",
 			"admin": "管理者",
 			"wota": "ヲタ",
-			"verified": "認証済み",
-			"unverified": "未認証",
-			"saveSuccess": "プロフィールを更新しました！",
+			"verified": "確認済み",
+			"unverified": "未確認",
+			"saveSuccess": "プロフィールが正常に更新されました！",
 			"saveError": "プロフィールの更新に失敗しました",
+			"bio": "自己紹介",
 			"noChanges": "変更はありません",
 			"emailWarning": "メールアドレスを変更すると再認証が必要になります。",
 			"systemInfo": "会員情報",
@@ -557,7 +558,11 @@
 			"uploadSuccess": "プロフィール写真が正常に更新されました！",
 			"loadErrorTitle": "設定の読み込みに失敗しました",
 			"loadErrorDesc": "公開プロフィールの設定を読み込めませんでした。もう一度お試しください。",
-			"viewProfile": "プロフィールを表示"
+			"viewProfile": "プロフィールを表示",
+			"bioPlaceholder": "自己紹介をしてください...",
+			"noBio": "公開プロフィールに自己紹介を追加する...",
+			"updateSuccess": "自己紹介が正常に更新されました",
+			"updateError": "自己紹介の更新に失敗しました"
 		},
 		"developer": {
 			"title": "開発者アクセス",

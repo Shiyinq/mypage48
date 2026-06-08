@@ -127,9 +127,14 @@ function createUserProfileStore() {
 		},
 
 		/**
-		 * Update user profile information (name, username, email)
+		 * Update user profile information (name, username, email, bio)
 		 */
-		updateProfile: async (payload: { name?: string; username?: string; email?: string }) => {
+		updateProfile: async (payload: {
+			name?: string;
+			username?: string;
+			email?: string;
+			bio?: string;
+		}) => {
 			await client('/users/profile', {
 				method: 'PATCH',
 				body: payload
