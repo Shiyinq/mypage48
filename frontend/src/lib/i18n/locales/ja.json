@@ -33,7 +33,7 @@
 		"logout": "ログアウト",
 		"settings": "設定",
 		"profile": "プロフィール",
-		"dashboard": "ダッシュボード",
+		"dashboard": "概要",
 		"language": "言語",
 		"noResults": "結果が見つかりません",
 		"date": "日付",
@@ -98,8 +98,8 @@
 		"journal": "あなたが参加したすべての公演の個人的なデジタルジャーナル。"
 	},
 	"nav": {
-		"home": "ホーム",
-		"dashboard": "ダッシュボード",
+		"home": "概要",
+		"dashboard": "概要",
 		"setlists": "セットリスト",
 		"events": "イベント",
 		"theater": "シアター",
@@ -375,14 +375,14 @@
 		}
 	},
 	"dashboard": {
-		"title": "ダッシュボード",
-		"error": "ダッシュボードデータの読み込みに失敗しました",
-		"subtitle": "劇場活動の概要",
-		"filterTitle": "ダッシュボードフィルター",
+		"title": "概要",
+		"error": "概要データの読み込みに失敗しました",
+		"subtitle": "劇場活動",
+		"filterTitle": "概要フィルター",
 		"filterSubtitle": "表示範囲を調整",
 		"theater": {
 			"title": "公演",
-			"subtitle": "観覧履歴の概要",
+			"subtitle": "観覧履歴",
 			"shows": "公演",
 			"events": "イベント",
 			"tickets": "チケット",
@@ -1269,7 +1269,7 @@
 			"admin": "管理"
 		},
 		"actions": {
-			"home": "ホームへ移動",
+			"home": "概要へ移動",
 			"theater": "シアターへ移動",
 			"events": "イベント一覧へ移動",
 			"members": "メンバー一覧へ移動",

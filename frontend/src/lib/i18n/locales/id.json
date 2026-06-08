@@ -34,7 +34,7 @@
 		"events": "Event",
 		"settings": "Pengaturan",
 		"profile": "Profil",
-		"dashboard": "Dasbor",
+		"dashboard": "Ringkasan",
 		"language": "Bahasa",
 		"noResults": "Tidak ada hasil ditemukan",
 		"date": "Tanggal",
@@ -99,8 +99,8 @@
 		"journal": "Jurnal digital personal dari setiap pertunjukan yang telah kamu hadiri."
 	},
 	"nav": {
-		"home": "Beranda",
-		"dashboard": "Dasbor",
+		"home": "Ringkasan",
+		"dashboard": "Ringkasan",
 		"setlists": "Setlists",
 		"events": "Event",
 		"theater": "Theater",
@@ -376,14 +376,14 @@
 		}
 	},
 	"dashboard": {
-		"title": "Dasbor",
-		"error": "Gagal memuat data dasbor",
-		"subtitle": "Ringkasan aktivitas teater kamu",
-		"filterTitle": "Filter Dasbor",
+		"title": "Ringkasan",
+		"error": "Gagal memuat data ringkasan",
+		"subtitle": "Aktivitas teater kamu",
+		"filterTitle": "Filter Ringkasan",
 		"filterSubtitle": "Atur rentang visualisasi",
 		"theater": {
 			"title": "Pertunjukan",
-			"subtitle": "Ringkasan kehadiran kamu",
+			"subtitle": "Kehadiran kamu",
 			"shows": "Pertunjukan",
 			"tickets": "Tiket",
 			"spending": "Pengeluaran",
