@@ -33,7 +33,7 @@
 		"logout": "Logout",
 		"settings": "Settings",
 		"profile": "Profile",
-		"dashboard": "Dashboard",
+		"dashboard": "Overview",
 		"language": "Language",
 		"noResults": "No results found",
 		"date": "Date",
@@ -98,8 +98,8 @@
 		"journal": "Your personal digital journal of every show you've attended."
 	},
 	"nav": {
-		"home": "Home",
-		"dashboard": "Dashboard",
+		"home": "Overview",
+		"dashboard": "Overview",
 		"setlists": "Setlists",
 		"events": "Events",
 		"theater": "Theater",
@@ -375,10 +375,10 @@
 		}
 	},
 	"dashboard": {
-		"title": "Dashboard",
-		"error": "Failed to load dashboard data",
+		"title": "Overview",
+		"error": "Failed to load overview data",
 		"subtitle": "Your theater activity overview",
-		"filterTitle": "Dashboard Filter",
+		"filterTitle": "Overview Filter",
 		"filterSubtitle": "Adjust visualization range",
 		"theater": {
 			"title": "Shows",
@@ -1308,7 +1308,7 @@
 			"admin": "Admin"
 		},
 		"actions": {
-			"home": "Go to Home",
+			"home": "Go to Overview",
 			"theater": "Go to Theater",
 			"events": "Go to Events",
 			"members": "Go to Members",
