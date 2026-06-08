@@ -61,6 +61,16 @@ class MemberRepository:
             {"nickname": {"$regex": f"^{nickname}$", "$options": "i"}}
         )
 
+    async def find_by_name(self, name: str) -> Optional[dict]:
+        return await self.collection.find_one(
+            {
+                "$or": [
+                    {"name": {"$regex": f"^{name}$", "$options": "i"}},
+                    {"nickname": {"$regex": f"^{name}$", "$options": "i"}},
+                ]
+            }
+        )
+
     async def delete_all(self) -> int:
         result = await self.collection.delete_many({})
         return result.deleted_count

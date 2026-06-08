@@ -435,14 +435,22 @@ class UserService:
                 if t.two_shot and t.two_shot.member_name:
                     name = t.two_shot.member_name
                     if name not in two_shot_counts:
-                        two_shot_counts[name] = {
-                            "name": name,
-                            "count": 0,
-                            "imageUrl": t.two_shot.imageUrl,
-                            "imageUrl_medium": t.two_shot.imageUrl_medium,
-                            "imageUrl_small": t.two_shot.imageUrl_small,
-                            "blurHash": t.two_shot.blurHash,
-                        }
+                        two_shot_counts[name] = {"name": name, "count": 0}
+                        try:
+                            member = (
+                                await self.member_service.get_member_by_name(name)
+                            ).member
+                            two_shot_counts[name].update(
+                                {
+                                    "imageUrl": member.img,
+                                    "imageUrl_medium": member.img_medium,
+                                    "imageUrl_small": member.img_small,
+                                    "blurHash": member.blurHash,
+                                }
+                            )
+                        except Exception:
+                            pass
+
                     two_shot_counts[name]["count"] += 1
 
             top_two_shots = sorted(
