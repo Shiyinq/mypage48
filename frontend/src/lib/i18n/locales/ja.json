@@ -1094,7 +1094,96 @@
 		"locked": "未解除",
 		"progress": "進捗",
 		"errorTitle": "実績の読み込みに失敗しました",
-		"errorDesc": "実績の取得中にエラーが発生しました。"
+		"errorDesc": "実績の取得中にエラーが発生しました。",
+		"items": {
+			"first_show": {
+				"title": "初めての一歩",
+				"description": "初めて劇場公演に参加した"
+			},
+			"regular_visitor": {
+				"title": "常連",
+				"description": "10公演に参加した",
+				"progress": "{current}/10公演"
+			},
+			"dedicated_fan_50": {
+				"title": "熱心なファン",
+				"description": "50公演に参加した",
+				"progress": "{current}/50公演"
+			},
+			"century_club_100": {
+				"title": "センチュリークラブ",
+				"description": "100公演に参加した",
+				"progress": "{current}/100公演"
+			},
+			"theater_icon_150": {
+				"title": "シアターアイコン",
+				"description": "150公演に参加した",
+				"progress": "{current}/150公演"
+			},
+			"legendary_wota_200": {
+				"title": "伝説のヲタ",
+				"description": "200公演に参加した",
+				"progress": "{current}/200公演"
+			},
+			"theater_kami_300": {
+				"title": "シアターの神",
+				"description": "300公演に参加した",
+				"progress": "{current}/300公演"
+			},
+			"absolute_legend_500": {
+				"title": "絶対的レジェンド",
+				"description": "500公演に参加した",
+				"progress": "{current}/500公演"
+			},
+			"super_fan": {
+				"title": "スーパーファン",
+				"description": "同じイベントを10回視聴した",
+				"progress": "{current}/10回"
+			},
+			"mega_fan": {
+				"title": "メガファン",
+				"description": "同じイベントを20回視聴した",
+				"progress": "{current}/20回"
+			},
+			"ultra_fan": {
+				"title": "ウルトラファン",
+				"description": "同じイベントを30回視聴した",
+				"progress": "{current}/30回"
+			},
+			"theater_enthusiast": {
+				"title": "劇場愛好家",
+				"description": "初参戦から1周年",
+				"progress": "{current}/365日"
+			},
+			"theater_veteran": {
+				"title": "劇場ベテラン",
+				"description": "初参戦から2周年",
+				"progress": "{current}/730日"
+			},
+			"theater_legend": {
+				"title": "劇場レジェンド",
+				"description": "初参戦から3周年",
+				"progress": "{current}/1095日"
+			},
+			"elite_row": {
+				"title": "エリートシート",
+				"description": "伝説のA列に座った"
+			},
+			"back_row_warrior": {
+				"title": "後列の戦士",
+				"description": "最前列（J列）から観戦した"
+			},
+			"seat_explorer": {
+				"title": "シートエクスプローラー",
+				"description": "全列（A-J）のチケットを集めた",
+				"progress": "{current}/10列"
+			},
+			"supporter": {
+				"title": "トップサポーター",
+				"description": "チケットに500万ルピア以上を使った",
+				"progress": "{current}/500万"
+			}
+		}
 	},
 	"errors": {
 		"404": {
