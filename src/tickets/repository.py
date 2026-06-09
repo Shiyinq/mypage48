@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from bson import ObjectId
@@ -32,6 +33,7 @@ class TicketsRepository:
         days: Optional[List[str]] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
+        is_favorite: Optional[bool] = None,
     ) -> tuple[List[dict], int]:
         query = {"user_id": user_id}
 
@@ -44,6 +46,9 @@ class TicketsRepository:
 
         if has_two_shot:
             query["two_shot"] = {"$ne": None}
+
+        if is_favorite is not None:
+            query["is_favorite"] = is_favorite if is_favorite else {"$ne": True}
 
         if days:
             # days is a list of strings like ["Saturday", "Sunday"]
@@ -108,8 +113,6 @@ class TicketsRepository:
             return await self.get_ticket(ticket_id, user_id)
 
         # Update updated_at
-        from datetime import datetime, timezone
-
         update_dict["updated_at"] = datetime.now(timezone.utc)
 
         # Use $set to update specific fields
@@ -218,3 +221,26 @@ class TicketsRepository:
 
     async def get_distinct_titles(self, user_id: str) -> List[str]:
         return await self.collection.distinct("event.title", {"user_id": user_id})
+
+    async def toggle_favorite(self, ticket_id: str, user_id: str) -> Optional[dict]:
+        try:
+            oid = ObjectId(ticket_id)
+        except:
+            return None
+
+        ticket = await self.get_ticket(ticket_id, user_id)
+        if not ticket:
+            return None
+
+        new_value = not ticket.get("is_favorite", False)
+
+        return await self.collection.find_one_and_update(
+            {"_id": oid, "user_id": user_id},
+            {
+                "$set": {
+                    "is_favorite": new_value,
+                    "updated_at": datetime.now(timezone.utc),
+                }
+            },
+            return_document=ReturnDocument.AFTER,
+        )

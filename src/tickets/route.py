@@ -46,6 +46,7 @@ async def get_my_tickets(
     limit: int = 20,
     title: str | None = None,
     has_two_shot: bool | None = None,
+    is_favorite: bool | None = None,
     # FastAPI handles list query params as ?days=Sat&days=Sun
     days: List[str] | None = Query(default=None),
     start_date: str | None = None,
@@ -74,6 +75,7 @@ async def get_my_tickets(
         limit=limit,
         title=title,
         has_two_shot=has_two_shot,
+        is_favorite=is_favorite,
         days=days,
         start_date=start_date,
         end_date=end_date,
@@ -103,6 +105,23 @@ async def get_ticket(
     Get a specific ticket by ID.
     """
     return await service.get_ticket(current_user.userId, ticket_id)
+
+
+@router.patch(
+    "/tickets/{ticket_id}/favorite",
+    response_model=TicketResponse,
+    response_model_by_alias=True,
+)
+async def toggle_ticket_favorite(
+    ticket_id: str,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: TicketsService = Depends(get_tickets_service),
+    _=Depends(require_csrf_protection),
+):
+    """
+    Toggle the favorite status of a ticket.
+    """
+    return await service.toggle_favorite(current_user.userId, ticket_id)
 
 
 @router.put(

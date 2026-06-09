@@ -128,6 +128,7 @@ class TicketsService:
         days: Optional[List[str]] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
+        is_favorite: Optional[bool] = None,
     ) -> TicketPaginationResponse:
         try:
             # Enforce max limit of 100
@@ -151,6 +152,7 @@ class TicketsService:
                 days=days,
                 start_date=start_date,
                 end_date=end_date,
+                is_favorite=is_favorite,
             )
 
             resolved_tickets = await asyncio.gather(
@@ -284,6 +286,18 @@ class TicketsService:
             raise
         except Exception as e:
             logger.exception(f"Error updating ticket: {str(e)}")
+            raise TicketUpdateError()
+
+    async def toggle_favorite(self, user_id: str, ticket_id: str) -> TicketResponse:
+        try:
+            ticket = await self.repository.toggle_favorite(ticket_id, user_id)
+            if not ticket:
+                raise TicketNotFoundError()
+            return TicketResponse(**(await self._resolve_ticket(ticket)))
+        except TicketNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error toggling favorite: {str(e)}")
             raise TicketUpdateError()
 
     async def delete_ticket(self, user_id: str, ticket_id: str) -> MessageResponse:

@@ -59,6 +59,7 @@ class TicketBase(BaseModel):
     imageUrl_small: Optional[str] = None
     blurHash: Optional[str] = None
     notes: Optional[str] = None
+    is_favorite: bool = False
 
 
 class TicketCreateRequest(TicketBase):
@@ -87,6 +88,7 @@ class TicketUpdateRequest(BaseModel):
     blurHash: Optional[str] = Field(default=None, max_length=100)
     notes: Optional[str] = None
     two_shot: Optional[TicketTwoShot] = None
+    is_favorite: Optional[bool] = None
 
     @field_validator("imageUrl")
     @classmethod

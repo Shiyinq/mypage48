@@ -2,6 +2,7 @@
 	import {
 		Calendar,
 		Clock,
+		Heart,
 		MapPin,
 		NotebookPen,
 		Pencil,
@@ -18,12 +19,13 @@
 	import { OptimizedImage } from '$lib/components/common';
 	interface Props {
 		ticket: Ticket;
+		onfavoriteToggle?: (ticketId: string) => void;
 		onupdateNote?: (ticketId: string, note: string) => void;
 		oneditTicket?: (ticket: Ticket) => void;
 		ondeleteTicket?: (ticketId: string) => void;
 	}
 
-	let { ticket, onupdateNote, oneditTicket, ondeleteTicket }: Props = $props();
+	let { ticket, onfavoriteToggle, onupdateNote, oneditTicket, ondeleteTicket }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -93,6 +95,16 @@
 				{ticket.event.day ? t('time.days.' + ticket.event.day.toLowerCase()) : t('history.show')}
 			</span>
 		</div>
+
+		<button
+			onclick={() => onfavoriteToggle?.(ticket._id)}
+			class="absolute top-2 right-2 z-10 cursor-pointer transition-transform hover:scale-110"
+			aria-label="Toggle favorite"
+		>
+			<Heart
+				class={`w-4 h-4 drop-shadow-lg ${ticket.is_favorite ? 'text-red-500 fill-red-500' : 'text-white/60'}`}
+			/>
+		</button>
 	</div>
 
 	<!-- Content Section (Right) -->
