@@ -3,7 +3,7 @@
 	import { type SetlistDetailResponse } from '$lib/apis/setlists';
 
 	import { ticketsStore, showToast } from '$lib/stores';
-	import { setlistsStore, isSetlistDetailLoading } from '$lib/stores/theater.svelte';
+	import { setlistsStore } from '$lib/stores/theater.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Ticket, DollarSign, Trophy } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -14,6 +14,7 @@
 	import SetlistStats from '$lib/components/theater/SetlistStats.svelte';
 	import Timeline from '$lib/components/history/Timeline.svelte';
 	import SetlistTicketItem from '$lib/components/theater/SetlistTicketItem.svelte';
+	import SetlistDetailSkeleton from '$lib/components/theater/SetlistDetailSkeleton.svelte';
 	import { slide } from 'svelte/transition';
 
 	// Import theater components and stores
@@ -31,6 +32,7 @@
 	// State from store
 	let detail: SetlistDetailResponse | null = $state(null);
 	let error = $derived($setlistsStore.detailError);
+	let isLoading = $state(true);
 	let deleteId: string | null = $state(null);
 	let isDeleting = $state(false);
 
@@ -58,6 +60,7 @@
 
 	async function fetchDetail() {
 		if (!setlistId) return;
+		isLoading = true;
 		try {
 			// Use store loadDetail which handles caching
 			detail = await setlistsStore.loadDetail(setlistId, {
@@ -69,6 +72,8 @@
 		} catch {
 			// Error is handled by store
 			showToast(t('theater.setlists.errorTitle') || 'Failed to load detail', 'error');
+		} finally {
+			isLoading = false;
 		}
 	}
 
@@ -143,17 +148,8 @@
 	{/if}
 </div>
 
-{#if $isSetlistDetailLoading}
-	<div class="animate-pulse space-y-8">
-		<!-- New Hero Skeleton -->
-		<div class="h-[400px] w-full bg-gray-200 dark:bg-zinc-800 rounded-3xl"></div>
-		<!-- Grid Skeleton -->
-		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-			{#each Array(4)}
-				<div class="h-32 bg-gray-200 dark:bg-zinc-800 rounded-2xl"></div>
-			{/each}
-		</div>
-	</div>
+{#if isLoading}
+	<SetlistDetailSkeleton />
 {:else if error}
 	<ErrorState
 		title={t('theater.setlists.errorTitle') || 'Failed to load detail'}
