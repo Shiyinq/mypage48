@@ -59,6 +59,7 @@ class MemoriesService:
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         days: Optional[list[str]] = None,
+        is_favorite: Optional[bool] = None,
     ) -> MemoriesPaginationResponse:
         """
         Get paginated memories for a user.
@@ -91,6 +92,7 @@ class MemoriesService:
                 start_date=start_date,
                 end_date=end_date,
                 days=days,
+                is_favorite=is_favorite,
             )
 
             # Transform raw data to MemoryItem models
@@ -116,6 +118,8 @@ class MemoriesService:
                             title=item["title"],
                             subtitle=subtitle,
                             notes=item.get("notes"),
+                            is_favorite=item.get("is_favorite", False),
+                            ticketRef=item.get("ticketId"),
                             eventTitle=item.get("eventTitle"),
                             twoShotMemberName=item.get("twoShotMemberName"),
                         )

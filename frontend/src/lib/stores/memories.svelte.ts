@@ -124,6 +124,22 @@ function createGalleryStore() {
 			});
 		},
 
+		toggleFavorite: (uniqueId: string) => {
+			galleryState.list = galleryState.list.map((item) =>
+				item.uniqueId === uniqueId ? { ...item, is_favorite: !item.is_favorite } : item
+			);
+			Object.keys(galleryState.cache).forEach((key) => {
+				if (galleryState.cache[key]) {
+					galleryState.cache[key] = {
+						...galleryState.cache[key],
+						list: galleryState.cache[key].list.map((item) =>
+							item.uniqueId === uniqueId ? { ...item, is_favorite: !item.is_favorite } : item
+						)
+					};
+				}
+			});
+		},
+
 		reset: () => {
 			Object.assign(galleryState, initialGalleryState);
 			galleryDedup.clear();

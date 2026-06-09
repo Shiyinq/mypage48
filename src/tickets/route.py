@@ -108,6 +108,23 @@ async def get_ticket(
 
 
 @router.patch(
+    "/tickets/{ticket_id}/two-shot/favorite",
+    response_model=TicketResponse,
+    response_model_by_alias=True,
+)
+async def toggle_two_shot_favorite(
+    ticket_id: str,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: TicketsService = Depends(get_tickets_service),
+    _=Depends(require_csrf_protection),
+):
+    """
+    Toggle the favorite status of a ticket's two-shot.
+    """
+    return await service.toggle_two_shot_favorite(current_user.userId, ticket_id)
+
+
+@router.patch(
     "/tickets/{ticket_id}/favorite",
     response_model=TicketResponse,
     response_model_by_alias=True,

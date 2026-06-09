@@ -288,6 +288,20 @@ class TicketsService:
             logger.exception(f"Error updating ticket: {str(e)}")
             raise TicketUpdateError()
 
+    async def toggle_two_shot_favorite(
+        self, user_id: str, ticket_id: str
+    ) -> TicketResponse:
+        try:
+            ticket = await self.repository.toggle_two_shot_favorite(ticket_id, user_id)
+            if not ticket:
+                raise TicketNotFoundError()
+            return TicketResponse(**(await self._resolve_ticket(ticket)))
+        except TicketNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error toggling two-shot favorite: {str(e)}")
+            raise TicketUpdateError()
+
     async def toggle_favorite(self, user_id: str, ticket_id: str) -> TicketResponse:
         try:
             ticket = await self.repository.toggle_favorite(ticket_id, user_id)

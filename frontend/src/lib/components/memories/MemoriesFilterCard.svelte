@@ -44,6 +44,7 @@
 		filters.startDate = undefined;
 		filters.endDate = undefined;
 		filters.title = undefined;
+		filters.isFavorite = undefined;
 		onClear();
 	}
 </script>
@@ -116,6 +117,29 @@
 				<Camera class="w-3.5 h-3.5" />
 				{t('memories.twoShots') || '2-Shot'}
 			</button>
+		</div>
+	</div>
+
+	<!-- Favorite Toggle -->
+	<div class="mb-5">
+		<span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+			>{t('common.favorite') || 'Favorite'}</span
+		>
+		<div class="flex items-center gap-3">
+			<div
+				onclick={() => (filters.isFavorite = !filters.isFavorite)}
+				onkeydown={(e) => e.key === 'Enter' && (filters.isFavorite = !filters.isFavorite)}
+				role="switch"
+				aria-checked={!!filters.isFavorite}
+				tabindex="0"
+				class={'relative w-10 h-6 rounded-full transition-colors cursor-pointer ' +
+					(filters.isFavorite ? 'bg-red-500' : 'bg-gray-300 dark:bg-zinc-600')}
+			>
+				<div
+					class={'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ' +
+						(filters.isFavorite ? 'translate-x-4' : '')}
+				></div>
+			</div>
 		</div>
 	</div>
 

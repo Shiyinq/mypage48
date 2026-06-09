@@ -222,6 +222,35 @@ class TicketsRepository:
     async def get_distinct_titles(self, user_id: str) -> List[str]:
         return await self.collection.distinct("event.title", {"user_id": user_id})
 
+    async def toggle_two_shot_favorite(
+        self, ticket_id: str, user_id: str
+    ) -> Optional[dict]:
+        try:
+            oid = ObjectId(ticket_id)
+        except:
+            return None
+
+        ticket = await self.get_ticket(ticket_id, user_id)
+        if not ticket:
+            return None
+
+        current = ticket.get("two_shot", {})
+        if not current:
+            return None
+
+        new_value = not current.get("is_favorite", False)
+
+        return await self.collection.find_one_and_update(
+            {"_id": oid, "user_id": user_id},
+            {
+                "$set": {
+                    "two_shot.is_favorite": new_value,
+                    "updated_at": datetime.now(timezone.utc),
+                }
+            },
+            return_document=ReturnDocument.AFTER,
+        )
+
     async def toggle_favorite(self, ticket_id: str, user_id: str) -> Optional[dict]:
         try:
             oid = ObjectId(ticket_id)

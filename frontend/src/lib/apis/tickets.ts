@@ -51,6 +51,12 @@ export const ticketsApi = {
 		});
 	},
 
+	toggleTwoShotFavorite: async (ticketId: string) => {
+		return await client<Ticket>(`/theater/tickets/${ticketId}/two-shot/favorite`, {
+			method: 'PATCH'
+		});
+	},
+
 	deleteTicket: async (ticketId: string) => {
 		return await client<void>(`/theater/tickets/${ticketId}`, {
 			method: 'DELETE'
