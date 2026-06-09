@@ -9,6 +9,7 @@
 	// Icons
 	import {
 		Bold,
+		Heart,
 		Italic,
 		List,
 		ListOrdered,
@@ -32,9 +33,10 @@
 		ticket: Ticket;
 		onsave?: (ticketId: string, note: string) => void;
 		ontoggleSidebar?: () => void;
+		onfavoriteToggle?: (ticketId: string) => void;
 	}
 
-	let { ticket, onsave }: Props = $props();
+	let { ticket, onsave, onfavoriteToggle }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -209,6 +211,18 @@
 
 			<!-- Action Buttons -->
 			<div class="flex items-center gap-2 shrink-0 pt-1">
+				<div
+					onclick={() => onfavoriteToggle?.(ticket._id)}
+					onkeydown={(e) => e.key === 'Enter' && onfavoriteToggle?.(ticket._id)}
+					class="cursor-pointer transition-transform hover:scale-110"
+					role="button"
+					tabindex="0"
+					aria-label="Toggle favorite"
+				>
+					<Heart
+						class={`w-5 h-5 ${ticket.is_favorite ? 'text-red-500 fill-red-500' : 'text-gray-300 dark:text-gray-600 hover:text-gray-400'}`}
+					/>
+				</div>
 				{#if isEditing}
 					<button
 						onclick={toggleMode}

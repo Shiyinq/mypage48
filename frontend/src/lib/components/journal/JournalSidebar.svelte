@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { Ticket } from '$lib/types';
-	import { CalendarDays, MapPin, PanelLeftClose } from 'lucide-svelte';
+	import { CalendarDays, Heart, MapPin, PanelLeftClose } from 'lucide-svelte';
 	import { formatDate } from '$lib/i18n';
 	import { HistoryFilter } from '$lib/components/history';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
@@ -18,6 +18,7 @@
 		onloadMore?: () => void;
 		onfilterChange?: (filters: import('$lib/types').TicketFilters) => void;
 		ontoggleSidebar?: () => void;
+		onfavoriteToggle?: (ticketId: string) => void;
 	}
 
 	let {
@@ -30,7 +31,8 @@
 		onselect,
 		onloadMore,
 		onfilterChange,
-		ontoggleSidebar
+		ontoggleSidebar,
+		onfavoriteToggle
 	}: Props = $props();
 
 	const { t } = useTranslation();
@@ -137,12 +139,29 @@
 							>
 								{ticket.event.title}
 							</h3>
-							{#if ticket.notes}
-								<span
-									class="mt-1 w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.4)]"
-									title="Journal Written"
-								></span>
-							{/if}
+							<div class="flex items-center gap-1.5 shrink-0 mt-0.5">
+								<div
+									onclick={(e) => {
+										e.stopPropagation();
+										onfavoriteToggle?.(ticket._id);
+									}}
+									onkeydown={(e) => e.key === 'Enter' && onfavoriteToggle?.(ticket._id)}
+									class="cursor-pointer transition-transform hover:scale-110"
+									role="button"
+									tabindex="0"
+									aria-label="Toggle favorite"
+								>
+									<Heart
+										class={`w-3 h-3 ${ticket.is_favorite ? 'text-red-500 fill-red-500' : 'text-gray-300 dark:text-gray-600'}`}
+									/>
+								</div>
+								{#if ticket.notes}
+									<span
+										class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.4)]"
+										title="Journal Written"
+									></span>
+								{/if}
+							</div>
 						</div>
 					</button>
 				{/each}

@@ -67,6 +67,14 @@
 	function handleFilterChange(newFilters: import('$lib/types').TicketFilters) {
 		ticketsStore.load(1, newFilters);
 	}
+
+	async function handleToggleFavorite(ticketId: string) {
+		try {
+			await ticketsStore.toggleFavorite(ticketId);
+		} catch {
+			showToast(t('common.error'), 'error');
+		}
+	}
 </script>
 
 <svelte:window bind:innerWidth />
@@ -146,6 +154,7 @@
 						onloadMore={handleLoadMore}
 						onfilterChange={handleFilterChange}
 						ontoggleSidebar={handleToggleSidebar}
+						onfavoriteToggle={handleToggleFavorite}
 					/>
 				</div>
 			</div>
@@ -190,6 +199,7 @@
 							ticket={selectedTicket}
 							onsave={handleSaveNote}
 							ontoggleSidebar={handleToggleSidebar}
+							onfavoriteToggle={handleToggleFavorite}
 						/>
 					{/if}
 				</div>

@@ -129,7 +129,11 @@
 
 	$effect(() => {
 		activeFilterCount =
-			(hasTwoShot ? 1 : 0) + (isFavorite ? 1 : 0) + (startDate ? 1 : 0) + (endDate ? 1 : 0) + selectedDays.length;
+			(hasTwoShot ? 1 : 0) +
+			(isFavorite ? 1 : 0) +
+			(startDate ? 1 : 0) +
+			(endDate ? 1 : 0) +
+			selectedDays.length;
 	});
 </script>
 
