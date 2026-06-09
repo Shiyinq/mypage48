@@ -189,7 +189,7 @@
 									class:text-gray-400={!ticket.is_favorite}
 									class:text-red-500={ticket.is_favorite}
 								>
-									<Heart class="w-4 h-4" fill={ticket.is_favorite ? 'currentColor' : 'none'} />
+									<Heart class="w-5 h-5" fill={ticket.is_favorite ? 'currentColor' : 'none'} />
 								</button>
 								<button
 									onclick={() => oneditTicket?.(ticket)}
