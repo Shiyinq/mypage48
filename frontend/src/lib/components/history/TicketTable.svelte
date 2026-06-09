@@ -15,7 +15,13 @@
 		ondeleteTicket?: (ticketId: string) => void;
 	}
 
-	let { tickets = [], onfavoriteToggle, onupdateNote, oneditTicket, ondeleteTicket }: Props = $props();
+	let {
+		tickets = [],
+		onfavoriteToggle,
+		onupdateNote,
+		oneditTicket,
+		ondeleteTicket
+	}: Props = $props();
 
 	const { t } = useTranslation();
 
