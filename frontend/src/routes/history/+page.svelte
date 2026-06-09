@@ -80,6 +80,14 @@
 
 	// Actions
 	// Logic for note update
+	const handleToggleFavorite = async (ticketId: string) => {
+		try {
+			await ticketsStore.toggleFavorite(ticketId);
+		} catch {
+			showToast(t('common.error'), 'error');
+		}
+	};
+
 	const handleNoteUpdate = async (ticketId: string, note: string) => {
 		try {
 			// Use store action (handles API + optimistic update)
@@ -211,6 +219,7 @@
 				{#each filteredTickets as ticket (ticket._id)}
 					<TicketCard
 						{ticket}
+						onfavoriteToggle={handleToggleFavorite}
 						onupdateNote={handleNoteUpdate}
 						oneditTicket={(t_val) => (editingTicket = t_val)}
 						ondeleteTicket={(id) => openDeleteModal(id)}
@@ -221,6 +230,7 @@
 			<!-- Table View -->
 			<TicketTable
 				tickets={filteredTickets}
+				onfavoriteToggle={handleToggleFavorite}
 				onupdateNote={handleNoteUpdate}
 				oneditTicket={(t_val) => (editingTicket = t_val)}
 				ondeleteTicket={(id) => openDeleteModal(id)}

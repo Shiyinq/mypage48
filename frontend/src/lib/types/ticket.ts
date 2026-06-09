@@ -33,6 +33,7 @@ export interface Ticket {
 	imageUrl_small?: string;
 	blurHash?: string;
 	notes?: string; // User's personal notes/diary for the show
+	is_favorite?: boolean;
 	two_shot?: {
 		imageUrl?: string;
 		imageUrl_medium?: string;
@@ -47,6 +48,7 @@ export interface Ticket {
 export interface TicketFilters {
 	title?: string;
 	hasTwoShot?: boolean;
+	isFavorite?: boolean;
 	days?: string[];
 	startDate?: string;
 	endDate?: string;
