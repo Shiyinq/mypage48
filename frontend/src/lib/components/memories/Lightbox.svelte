@@ -75,7 +75,7 @@
 						aria-label="Toggle favorite"
 					>
 						<Heart
-							class={'w-3.5 h-3.5 ' +
+							class={'w-4 h-4 ' +
 								(image.is_favorite ? 'fill-current text-red-400' : 'text-white/70')}
 						/>
 					</div>

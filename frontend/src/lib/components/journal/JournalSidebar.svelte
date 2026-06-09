@@ -152,7 +152,7 @@
 									aria-label="Toggle favorite"
 								>
 									<Heart
-										class={`w-3 h-3 ${ticket.is_favorite ? 'text-red-500 fill-red-500' : 'text-gray-300 dark:text-gray-600'}`}
+										class={`w-4 h-4 ${ticket.is_favorite ? 'text-red-500 fill-red-500' : 'text-gray-300 dark:text-gray-600'}`}
 									/>
 								</div>
 								{#if ticket.notes}
