@@ -10,9 +10,12 @@ import type {
 	GlobalLiveMemberRankingItem,
 	GlobalSingleMemberLiveHistoryStats
 } from '$lib/types/liveHistory';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 import { logger } from '$lib/utils/logger';
 
 class LiveHistoryStore {
+	dedup = createRequestDedup();
+
 	// State
 	list = $state<LiveHistory[]>([]);
 	globalList = $state<GlobalLiveHistory[]>([]);
@@ -165,22 +168,34 @@ class LiveHistoryStore {
 	}
 
 	async loadOverallStats() {
-		try {
-			const range = liveHistoryFilterStore.dateRange;
-			this.overallStats = await liveHistoryApi.getWatchedStats(range?.start, range?.end);
-		} catch (err) {
-			logger.error('Failed to load overall live stats:', err);
-		}
+		const range = liveHistoryFilterStore.dateRange;
+		const key = JSON.stringify({ method: 'loadOverallStats', range });
+
+		return this.dedup.execute(key, async () => {
+			try {
+				this.overallStats = await liveHistoryApi.getWatchedStats(range?.start, range?.end);
+			} catch (err) {
+				logger.error('Failed to load overall live stats:', err);
+			}
+		});
 	}
 
 	async loadMemberStats(memberId: string) {
-		try {
-			const range = liveHistoryFilterStore.dateRange;
-			const stats = await liveHistoryApi.getWatchedMemberStats(memberId, range?.start, range?.end);
-			this.memberStats[memberId] = stats;
-		} catch (err) {
-			logger.error(`Failed to load stats for member ${memberId}:`, err);
-		}
+		const range = liveHistoryFilterStore.dateRange;
+		const key = JSON.stringify({ method: 'loadMemberStats', memberId, range });
+
+		return this.dedup.execute(key, async () => {
+			try {
+				const stats = await liveHistoryApi.getWatchedMemberStats(
+					memberId,
+					range?.start,
+					range?.end
+				);
+				this.memberStats[memberId] = stats;
+			} catch (err) {
+				logger.error(`Failed to load stats for member ${memberId}:`, err);
+			}
+		});
 	}
 
 	async loadMembersRanking(page: number = 1, force: boolean = false) {
@@ -227,15 +242,19 @@ class LiveHistoryStore {
 	}
 
 	async loadGlobalStats() {
-		try {
-			this.isLoadingGlobalStats = true;
-			const range = liveHistoryFilterStore.dateRange;
-			this.globalStats = await liveHistoryApi.getGlobalStats(range?.start, range?.end);
-		} catch (err) {
-			logger.error('Failed to load global live stats:', err);
-		} finally {
-			this.isLoadingGlobalStats = false;
-		}
+		const range = liveHistoryFilterStore.dateRange;
+		const key = JSON.stringify({ method: 'loadGlobalStats', range });
+
+		return this.dedup.execute(key, async () => {
+			try {
+				this.isLoadingGlobalStats = true;
+				this.globalStats = await liveHistoryApi.getGlobalStats(range?.start, range?.end);
+			} catch (err) {
+				logger.error('Failed to load global live stats:', err);
+			} finally {
+				this.isLoadingGlobalStats = false;
+			}
+		});
 	}
 
 	async loadGlobalMembersRanking(page: number = 1, force: boolean = false) {
@@ -282,13 +301,17 @@ class LiveHistoryStore {
 	}
 
 	async loadGlobalMemberStats(memberId: string) {
-		try {
-			const range = liveHistoryFilterStore.dateRange;
-			const stats = await liveHistoryApi.getGlobalMemberStats(memberId, range?.start, range?.end);
-			this.globalMemberStats[memberId] = stats;
-		} catch (err) {
-			logger.error(`Failed to load global stats for member ${memberId}:`, err);
-		}
+		const range = liveHistoryFilterStore.dateRange;
+		const key = JSON.stringify({ method: 'loadGlobalMemberStats', memberId, range });
+
+		return this.dedup.execute(key, async () => {
+			try {
+				const stats = await liveHistoryApi.getGlobalMemberStats(memberId, range?.start, range?.end);
+				this.globalMemberStats[memberId] = stats;
+			} catch (err) {
+				logger.error(`Failed to load global stats for member ${memberId}:`, err);
+			}
+		});
 	}
 
 	async loadGlobalMemberHistory(memberId: string, page: number = 1, force: boolean = false) {

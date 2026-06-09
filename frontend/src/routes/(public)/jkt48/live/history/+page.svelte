@@ -41,9 +41,6 @@
 		mounted = true;
 		isImmersive.set(true);
 		document.body.style.overflow = 'hidden';
-		loadHistory(1, true);
-		liveHistoryStore.loadGlobalStats();
-
 		return () => {
 			isImmersive.set(false);
 			document.body.style.overflow = '';
