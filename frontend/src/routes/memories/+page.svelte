@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { showToast } from '$lib/stores';
+	import { showToast, ticketsStore } from '$lib/stores';
 	import { onMount, untrack } from 'svelte';
 	import { Image as ImageIcon } from 'lucide-svelte';
 	import { Filter as FilterIcon } from 'lucide-svelte';
@@ -29,6 +29,7 @@
 	let isFilterOpen = $state(false);
 	let localFilters: MemoryFiltersType = $state({
 		type: 'ALL',
+		isFavorite: undefined,
 		startDate: undefined,
 		endDate: undefined,
 		days: [],
@@ -46,6 +47,7 @@
 		const trackStart = localFilters.startDate;
 		const trackEnd = localFilters.endDate;
 		const _trackTitle = localFilters.title;
+		const _trackFavorite = localFilters.isFavorite;
 
 		untrack(() => {
 			if ((trackStart && !trackEnd) || (!trackStart && trackEnd)) {
@@ -139,12 +141,30 @@
 			document.body.style.overflow = selectedImage ? 'hidden' : 'unset';
 		}
 	});
+
+	async function handleToggleFavorite(item: MemoryItem) {
+		galleryStore.toggleFavorite(item.uniqueId);
+		try {
+			if (item.type === '2SHOT') {
+				await ticketsStore.toggleTwoShotFavorite(item.ticketRef!);
+			} else {
+				await ticketsStore.toggleFavorite(item.ticketRef!);
+			}
+		} catch {
+			galleryStore.toggleFavorite(item.uniqueId);
+			showToast(t('common.error'), 'error');
+		}
+	}
 </script>
 
 <SEO title={t('memories.title')} path="/memories" description={t('seo.memories')} />
 
 <!-- Lightbox -->
-<Lightbox {selectedImage} onClose={() => (selectedImage = null)} />
+<Lightbox
+	{selectedImage}
+	onClose={() => (selectedImage = null)}
+	onfavoriteToggle={handleToggleFavorite}
+/>
 
 <div class="max-w-[1600px] mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32">
 	<!-- Header -->
@@ -158,13 +178,15 @@
 				{
 					label: filterLabel,
 					onClick: () => (isFilterOpen = !isFilterOpen),
-					theme: isFilterOpen ? 'pink' : 'gray'
+					theme: isFilterOpen ? 'pink' : 'gray',
+					filterToggle: true
 				},
 				{
 					icon: FilterIcon,
 					label: t('common.filters') || 'Filter',
 					onClick: () => (isFilterOpen = !isFilterOpen),
-					theme: isFilterOpen ? 'pink' : 'gray'
+					theme: isFilterOpen ? 'pink' : 'gray',
+					filterToggle: true
 				}
 			]}
 		/>
@@ -216,7 +238,12 @@
 		>
 			{#each memories as item, index (item.uniqueId)}
 				{@const rotation = (index % 5) - 2}
-				<MemoryCard {item} {rotation} onClick={(i) => (selectedImage = i)} />
+				<MemoryCard
+					{item}
+					{rotation}
+					onClick={(i) => (selectedImage = i)}
+					onfavoriteToggle={handleToggleFavorite}
+				/>
 			{/each}
 		</div>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Clock, Pencil, Save, Trash2, X, Ticket as TicketIcon } from 'lucide-svelte';
+	import { Clock, Heart, Pencil, Save, Trash2, X, Ticket as TicketIcon } from 'lucide-svelte';
 	import type { Ticket } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatCurrency } from '$lib/utils/formatting';
@@ -9,12 +9,19 @@
 
 	interface Props {
 		tickets?: Ticket[];
+		onfavoriteToggle?: (ticketId: string) => void;
 		onupdateNote?: (ticketId: string, note: string) => void;
 		oneditTicket?: (ticket: Ticket) => void;
 		ondeleteTicket?: (ticketId: string) => void;
 	}
 
-	let { tickets = [], onupdateNote, oneditTicket, ondeleteTicket }: Props = $props();
+	let {
+		tickets = [],
+		onfavoriteToggle,
+		onupdateNote,
+		oneditTicket,
+		ondeleteTicket
+	}: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -176,6 +183,14 @@
 						</td>
 						<td class="p-4 text-right">
 							<div class="flex items-center justify-end gap-2">
+								<button
+									onclick={() => onfavoriteToggle?.(ticket._id)}
+									class="p-2 rounded-full transition-colors cursor-pointer hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
+									class:text-gray-400={!ticket.is_favorite}
+									class:text-red-500={ticket.is_favorite}
+								>
+									<Heart class="w-5 h-5" fill={ticket.is_favorite ? 'currentColor' : 'none'} />
+								</button>
 								<button
 									onclick={() => oneditTicket?.(ticket)}
 									class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors cursor-pointer"

@@ -15,6 +15,9 @@ export const memoriesApi = {
 			if (filters.title) {
 				query.append('title', filters.title);
 			}
+			if (filters.isFavorite) {
+				query.append('is_favorite', 'true');
+			}
 			if (filters.startDate) {
 				query.append('start_date', filters.startDate);
 			}

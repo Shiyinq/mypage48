@@ -9,6 +9,7 @@ export type MemoryFilterType = 'ALL' | 'TICKET' | '2SHOT';
 export interface MemoryFilters {
 	type?: MemoryFilterType;
 	title?: string;
+	isFavorite?: boolean;
 	startDate?: string;
 	endDate?: string;
 	days?: string[];
@@ -26,6 +27,8 @@ export interface MemoryItem {
 	title: string;
 	subtitle: string;
 	notes?: string;
+	is_favorite?: boolean;
+	ticketRef?: string;
 	eventTitle?: string;
 	twoShotMemberName?: string;
 }

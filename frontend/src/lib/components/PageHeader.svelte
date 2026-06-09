@@ -21,6 +21,7 @@
 			loading?: boolean;
 			showLabel?: boolean;
 			badge?: number | string;
+			filterToggle?: boolean;
 		}>;
 		rotation?: number;
 		theme?:
@@ -209,6 +210,7 @@
 					<button
 						onclick={action.onClick}
 						disabled={action.loading}
+						data-filter-toggle={action.filterToggle ? 'true' : undefined}
 						class={`flex items-center gap-2 px-3 py-1.5 sm:py-2 rounded-full font-bold text-[10px] sm:text-xs shadow-sm border transition-all cursor-pointer h-8 sm:h-9 ${
 							action.theme === 'rose'
 								? 'bg-rose-500 text-white border-transparent shadow-md shadow-rose-500/20 hover:bg-rose-600'

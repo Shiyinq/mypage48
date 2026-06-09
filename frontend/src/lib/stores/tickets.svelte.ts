@@ -180,6 +180,64 @@ function createTicketsStore() {
 			return updated;
 		},
 
+		toggleTwoShotFavorite: async (ticketId: string) => {
+			const oldList = [...state.list];
+			const oldCache = state.defaultCache ? { ...state.defaultCache } : null;
+
+			state.list = state.list.map((t) =>
+				t._id === ticketId
+					? {
+							...t,
+							two_shot: t.two_shot ? { ...t.two_shot, is_favorite: !t.two_shot.is_favorite } : null
+						}
+					: t
+			);
+			if (state.defaultCache) {
+				state.defaultCache.list = state.defaultCache.list.map((t) =>
+					t._id === ticketId
+						? {
+								...t,
+								two_shot: t.two_shot
+									? { ...t.two_shot, is_favorite: !t.two_shot.is_favorite }
+									: null
+							}
+						: t
+				);
+			}
+
+			try {
+				await ticketsApi.toggleTwoShotFavorite(ticketId);
+			} catch (e) {
+				state.list = oldList;
+				state.defaultCache = oldCache;
+				logger.error('Failed to toggle two-shot favorite', e);
+				throw e;
+			}
+		},
+
+		toggleFavorite: async (ticketId: string) => {
+			const oldList = [...state.list];
+			const oldCache = state.defaultCache ? { ...state.defaultCache } : null;
+
+			state.list = state.list.map((t) =>
+				t._id === ticketId ? { ...t, is_favorite: !t.is_favorite } : t
+			);
+			if (state.defaultCache) {
+				state.defaultCache.list = state.defaultCache.list.map((t) =>
+					t._id === ticketId ? { ...t, is_favorite: !t.is_favorite } : t
+				);
+			}
+
+			try {
+				await ticketsApi.toggleFavorite(ticketId);
+			} catch (e) {
+				state.list = oldList;
+				state.defaultCache = oldCache;
+				logger.error('Failed to toggle favorite', e);
+				throw e;
+			}
+		},
+
 		updateNote: async (ticketId: string, note: string) => {
 			const updated = await ticketsApi.updateTicket(ticketId, { notes: note });
 			const nowVal = Date.now();

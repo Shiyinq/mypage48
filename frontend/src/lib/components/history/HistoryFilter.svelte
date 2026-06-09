@@ -43,6 +43,7 @@
 	// Local state for debouncing
 	let title = $state('');
 	let hasTwoShot = $state(false);
+	let isFavorite = $state(false);
 	let startDate = $state('');
 	let endDate = $state('');
 	let selectedDays: string[] = $state([]);
@@ -51,6 +52,7 @@
 	$effect.pre(() => {
 		title = filters.title || '';
 		hasTwoShot = filters.hasTwoShot || false;
+		isFavorite = filters.isFavorite || false;
 		startDate = filters.startDate || '';
 		endDate = filters.endDate || '';
 		selectedDays = filters.days || [];
@@ -73,6 +75,7 @@
 		const newFilters: import('$lib/types').TicketFilters = {};
 		if (title) newFilters.title = title;
 		if (hasTwoShot) newFilters.hasTwoShot = true;
+		if (isFavorite) newFilters.isFavorite = true;
 		if (startDate) newFilters.startDate = startDate;
 		if (endDate) newFilters.endDate = endDate;
 		if (selectedDays.length > 0) newFilters.days = selectedDays;
@@ -92,6 +95,7 @@
 	function clearFilters() {
 		title = '';
 		hasTwoShot = false;
+		isFavorite = false;
 		startDate = '';
 		endDate = '';
 		selectedDays = [];
@@ -125,7 +129,11 @@
 
 	$effect(() => {
 		activeFilterCount =
-			(hasTwoShot ? 1 : 0) + (startDate ? 1 : 0) + (endDate ? 1 : 0) + selectedDays.length;
+			(hasTwoShot ? 1 : 0) +
+			(isFavorite ? 1 : 0) +
+			(startDate ? 1 : 0) +
+			(endDate ? 1 : 0) +
+			selectedDays.length;
 	});
 </script>
 
@@ -272,6 +280,26 @@
 						>
 					</label>
 				{/if}
+
+				<label class="flex items-center gap-3 cursor-pointer select-none group">
+					<div class="relative">
+						<input
+							type="checkbox"
+							class="sr-only"
+							bind:checked={isFavorite}
+							onchange={updateFilters}
+						/>
+						<div
+							class={`w-10 h-6 rounded-full transition-colors ${isFavorite ? (isSidebar ? 'bg-red-500' : 'bg-red-500') : 'bg-gray-200 dark:bg-zinc-700 group-hover:bg-gray-300'}`}
+						></div>
+						<div
+							class={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${isFavorite ? 'translate-x-4' : 'translate-x-0'}`}
+						></div>
+					</div>
+					<span class="text-sm font-bold text-gray-700 dark:text-gray-300">
+						{t('common.favorite') || 'Favorite'}
+					</span>
+				</label>
 
 				<!-- Date Range -->
 				<div class={isSidebar ? 'flex flex-col gap-2 w-full' : 'flex flex-col gap-1 w-full'}>
