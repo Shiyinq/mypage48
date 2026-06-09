@@ -35,6 +35,7 @@ class TicketTwoShotBase(BaseModel):
     imageUrl_medium: Optional[str] = None
     imageUrl_small: Optional[str] = None
     blurHash: Optional[str] = None
+    is_favorite: bool = False
 
 
 class TicketTwoShot(TicketTwoShotBase):

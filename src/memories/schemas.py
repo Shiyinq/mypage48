@@ -26,6 +26,8 @@ class MemoryItem(BaseModel):
     title: str
     subtitle: str
     notes: Optional[str] = None
+    is_favorite: bool = False
+    ticketRef: Optional[str] = None
     # Additional fields needed by frontend MemoryCard for 2SHOT display
     eventTitle: Optional[str] = None  # Original event title for 2SHOT
     twoShotMemberName: Optional[str] = None  # Member name for 2SHOT

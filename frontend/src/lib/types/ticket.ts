@@ -42,6 +42,7 @@ export interface Ticket {
 		member_name: string;
 		type: 'Roulette' | 'Birthday';
 		price: number;
+		is_favorite?: boolean;
 	} | null;
 }
 

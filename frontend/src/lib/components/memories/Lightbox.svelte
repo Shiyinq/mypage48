@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { X, Calendar, MapPin, Sparkles } from 'lucide-svelte';
+	import { Heart, X, Calendar, MapPin, Sparkles } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { formatDate } from '$lib/i18n';
 	import type { MemoryItem } from '$lib/types';
@@ -8,9 +8,10 @@
 	interface Props {
 		selectedImage?: MemoryItem | null;
 		onClose: () => void;
+		onfavoriteToggle?: (item: MemoryItem) => void;
 	}
 
-	let { selectedImage = null, onClose }: Props = $props();
+	let { selectedImage = null, onClose, onfavoriteToggle }: Props = $props();
 </script>
 
 {#if selectedImage}
@@ -59,6 +60,25 @@
 				<div
 					class="flex flex-wrap items-center justify-center gap-2 text-sm font-medium text-white/90 mt-3"
 				>
+					<div
+						onclick={(e: MouseEvent) => {
+							e.stopPropagation();
+							onfavoriteToggle?.(image);
+						}}
+						onkeydown={(e: KeyboardEvent) => {
+							if (e.key === 'Enter') onfavoriteToggle?.(image);
+						}}
+						class={'flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md border border-white/10 cursor-pointer transition-transform hover:scale-105 ' +
+							(image.is_favorite ? 'bg-red-500/20' : 'bg-white/10')}
+						role="button"
+						tabindex="0"
+						aria-label="Toggle favorite"
+					>
+						<Heart
+							class={'w-3.5 h-3.5 ' +
+								(image.is_favorite ? 'fill-current text-red-400' : 'text-white/70')}
+						/>
+					</div>
 					<span
 						class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-md border border-white/10"
 					>

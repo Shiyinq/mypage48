@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Image as ImageIcon, MapPin, Calendar, Sparkles, User } from 'lucide-svelte';
+	import { Heart, Image as ImageIcon, MapPin, Calendar, Sparkles, User } from 'lucide-svelte';
 	import { formatDate } from '$lib/i18n';
 	import type { MemoryItem } from '$lib/types';
 	import { OptimizedImage } from '$lib/components/common';
@@ -8,9 +8,10 @@
 		item: MemoryItem;
 		rotation?: number;
 		onClick: (item: MemoryItem) => void;
+		onfavoriteToggle?: (item: MemoryItem) => void;
 	}
 
-	let { item, rotation = 0, onClick }: Props = $props();
+	let { item, rotation = 0, onClick, onfavoriteToggle }: Props = $props();
 
 	let tapeColor = $derived(item.type === '2SHOT' ? 'bg-purple-200/80' : 'bg-red-200/80');
 </script>
@@ -45,6 +46,23 @@
 				alt={item.title}
 				class="w-full h-full"
 			/>
+
+			<!-- Heart Icon -->
+			<div
+				onclick={(e) => {
+					e.stopPropagation();
+					onfavoriteToggle?.(item);
+				}}
+				onkeydown={(e) => e.key === 'Enter' && onfavoriteToggle?.(item)}
+				class="absolute top-2 right-2 z-10 cursor-pointer transition-transform hover:scale-110"
+				role="button"
+				tabindex="0"
+				aria-label="Toggle favorite"
+			>
+				<Heart
+					class={`w-4 h-4 drop-shadow-lg ${item.is_favorite ? 'text-red-500 fill-red-500' : 'text-white/60'}`}
+				/>
+			</div>
 
 			<!-- Date Stamp -->
 			<div

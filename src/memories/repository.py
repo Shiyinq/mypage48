@@ -19,6 +19,7 @@ class MemoriesRepository:
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         days: Optional[List[str]] = None,
+        is_favorite: Optional[bool] = None,
     ) -> Tuple[List[dict], int]:
         """
         Get paginated memory items from tickets.
@@ -62,9 +63,13 @@ class MemoriesRepository:
         base_match = {"$match": match_conditions}
 
         # Pipeline for ticket images
+        ticket_favorite_match = (
+            [{"$match": {"is_favorite": True}}] if is_favorite else []
+        )
         ticket_pipeline = [
             base_match,
             {"$match": {"imageUrl": {"$exists": True, "$ne": None, "$ne": ""}}},
+            *ticket_favorite_match,
             {
                 "$project": {
                     "_id": 0,
@@ -81,11 +86,15 @@ class MemoriesRepository:
                     "eventTitle": "$event.title",
                     "twoShotMemberName": {"$literal": None},
                     "twoShotType": {"$literal": None},
+                    "is_favorite": {"$ifNull": ["$is_favorite", False]},
                 }
             },
         ]
 
         # Pipeline for 2-shot images
+        twoshot_favorite_match = (
+            [{"$match": {"two_shot.is_favorite": True}}] if is_favorite else []
+        )
         twoshot_pipeline = [
             base_match,
             {
@@ -93,6 +102,7 @@ class MemoriesRepository:
                     "two_shot.imageUrl": {"$exists": True, "$ne": None, "$ne": ""}
                 }
             },
+            *twoshot_favorite_match,
             {
                 "$project": {
                     "_id": 0,
@@ -114,19 +124,17 @@ class MemoriesRepository:
                     "eventTitle": "$event.title",
                     "twoShotMemberName": "$two_shot.member_name",
                     "twoShotType": "$two_shot.type",
+                    "is_favorite": {"$ifNull": ["$two_shot.is_favorite", False]},
                 }
             },
         ]
 
         # Apply type filter
         if type_filter == "TICKET":
-            # Only get ticket images
             pipeline = ticket_pipeline
         elif type_filter == "2SHOT":
-            # Only get 2-shot images
             pipeline = twoshot_pipeline
         else:
-            # Get both and union them using $facet
             pipeline = [
                 base_match,
                 {
@@ -141,6 +149,7 @@ class MemoriesRepository:
                                     }
                                 }
                             },
+                            *ticket_favorite_match,
                             {
                                 "$project": {
                                     "_id": 0,
@@ -157,6 +166,7 @@ class MemoriesRepository:
                                     "eventTitle": "$event.title",
                                     "twoShotMemberName": {"$literal": None},
                                     "twoShotType": {"$literal": None},
+                                    "is_favorite": {"$ifNull": ["$is_favorite", False]},
                                 }
                             },
                         ],
@@ -170,6 +180,7 @@ class MemoriesRepository:
                                     }
                                 }
                             },
+                            *twoshot_favorite_match,
                             {
                                 "$project": {
                                     "_id": 0,
@@ -196,20 +207,20 @@ class MemoriesRepository:
                                     "eventTitle": "$event.title",
                                     "twoShotMemberName": "$two_shot.member_name",
                                     "twoShotType": "$two_shot.type",
+                                    "is_favorite": {
+                                        "$ifNull": ["$two_shot.is_favorite", False]
+                                    },
                                 }
                             },
                         ],
                     }
                 },
-                # Combine both arrays
                 {
                     "$project": {
                         "combined": {"$concatArrays": ["$tickets", "$twoshots"]}
                     }
                 },
-                # Unwind the combined array
                 {"$unwind": "$combined"},
-                # Replace root with item
                 {"$replaceRoot": {"newRoot": "$combined"}},
             ]
 
@@ -251,6 +262,7 @@ class MemoriesRepository:
                                     }
                                 }
                             },
+                            *ticket_favorite_match,
                             {"$count": "count"},
                         ],
                         "twoshotCount": [
@@ -263,6 +275,7 @@ class MemoriesRepository:
                                     }
                                 }
                             },
+                            *twoshot_favorite_match,
                             {"$count": "count"},
                         ],
                     }

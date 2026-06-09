@@ -286,3 +286,86 @@ async def test_filter_favorite_tickets(client: AsyncClient, db, create_user):
     data = response.json()
     for t in data["data"]:
         assert t.get("is_favorite") is not True
+
+
+@pytest.mark.asyncio
+async def test_create_ticket_default_two_shot_favorite(client: AsyncClient, db, create_user):
+    """Test that a new ticket with two_shot has is_favorite set to false by default."""
+    token, user_id, headers = await create_user("tsfavdef")
+
+    payload = {
+        "ticket_id": "T-2FAV0",
+        "event": {"title": "2Shot Test", "date": "2024-08-01", "day": "Thursday", "time": "19:00"},
+        "seat": {"section": "A", "number": "1"},
+        "price": 100000,
+        "two_shot": {
+            "member_name": "Feni",
+            "price": 50000,
+            "imageUrl": "twoshot/test.jpg",
+        },
+    }
+    response = await client.post("/api/theater/tickets", json=payload, headers=headers)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["two_shot"]["is_favorite"] is False
+
+
+@pytest.mark.asyncio
+async def test_toggle_two_shot_favorite(client: AsyncClient, db, create_user):
+    """Test toggling the favorite status of a two-shot."""
+    token, user_id, headers = await create_user("tsfavtoggle")
+
+    payload = {
+        "ticket_id": "T-2FAV1",
+        "event": {"title": "2Shot Fav", "date": "2024-08-15", "day": "Thursday", "time": "18:00"},
+        "seat": {"section": "B", "number": "2"},
+        "price": 150000,
+        "two_shot": {
+            "member_name": "Feni",
+            "price": 50000,
+            "imageUrl": "twoshot/test.jpg",
+        },
+    }
+    create_res = await client.post("/api/theater/tickets", json=payload, headers=headers)
+    ticket_data = create_res.json()
+    ticket_id = ticket_data["_id"]
+
+    # Toggle to favorite (false -> true)
+    response = await client.patch(f"/api/theater/tickets/{ticket_id}/two-shot/favorite", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["two_shot"]["is_favorite"] is True
+
+    # Toggle again (true -> false)
+    response = await client.patch(f"/api/theater/tickets/{ticket_id}/two-shot/favorite", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["two_shot"]["is_favorite"] is False
+
+
+@pytest.mark.asyncio
+async def test_toggle_two_shot_favorite_nonexistent_ticket(client: AsyncClient, db, create_user):
+    """Test toggling two-shot favorite on a non-existent ticket returns 404."""
+    token, user_id, headers = await create_user("tsfavnonexist")
+    fake_id = "000000000000000000000000"
+
+    response = await client.patch(f"/api/theater/tickets/{fake_id}/two-shot/favorite", headers=headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_toggle_two_shot_favorite_no_two_shot(client: AsyncClient, db, create_user):
+    """Test toggling two-shot favorite on a ticket without two_shot returns 404."""
+    token, user_id, headers = await create_user("tsfavnotwo")
+
+    payload = {
+        "ticket_id": "T-2FAVX",
+        "event": {"title": "No 2Shot", "date": "2024-09-01", "day": "Sunday", "time": "19:00"},
+        "seat": {"section": "A", "number": "1"},
+        "price": 100000,
+    }
+    create_res = await client.post("/api/theater/tickets", json=payload, headers=headers)
+    ticket_id = create_res.json()["_id"]
+
+    response = await client.patch(f"/api/theater/tickets/{ticket_id}/two-shot/favorite", headers=headers)
+    assert response.status_code == 404
