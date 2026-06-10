@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Ticket } from 'lucide-svelte';
-	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 	interface Props {
 		title: string;
 		subtitle: string;
@@ -27,7 +27,7 @@
 	class="min-h-screen flex items-center justify-center p-3 relative overflow-hidden py-4 sm:py-6 bg-gradient-to-b from-pink-50/20 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 font-sans selection:bg-red-500/20"
 >
 	<!-- Background Elements -->
-	<AnimatedBackground hideDecorationsOnMobile={true} />
+	<AppBackground hideDecorationsOnMobile={true} />
 
 	<div class="w-full {cardWidth} px-1">
 		<!-- Card -->

@@ -7,7 +7,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { History, Clock, Trophy, Users, Smartphone, Eye, PlaySquare } from 'lucide-svelte';
 	import { isImmersive } from '$lib/stores';
-	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 	import { spring } from 'svelte/motion';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { formatTimeAgo, formatLiveDate, formatDurationSeconds } from '$lib/utils/time';
@@ -91,7 +91,7 @@
 		mouse.set({ x: clientX / innerWidth - 0.5, y: clientY / innerHeight - 0.5 });
 	}}
 >
-	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
+	<AppBackground interactive={true} bind:mouse bind:scrollY />
 
 	<HistoryTopBar
 		title={t('liveHistory.globalTitle')}

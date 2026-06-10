@@ -26,7 +26,7 @@
 	import ScrollToTop from '$lib/components/common/ScrollToTop.svelte';
 	import LandingNavbar from '$lib/components/landing-page/LandingNavbar.svelte';
 	import Footer from '$lib/components/landing-page/Footer.svelte';
-	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 
 	interface Props {
 		data: { locale?: string };
@@ -193,7 +193,7 @@
 			: ''}"
 	>
 		{#if isAuthenticated.value && !isFullScreenRoute && !isImmersive.value}
-			<AnimatedBackground hideDecorationsOnMobile={true} />
+			<AppBackground hideDecorationsOnMobile={true} />
 		{/if}
 		{#if toast.current}
 			<div class="fixed top-4 left-0 right-0 z-[10000] flex justify-center pointer-events-none">
