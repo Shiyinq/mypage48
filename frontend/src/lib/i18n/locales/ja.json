@@ -463,6 +463,8 @@
 		"stats": {
 			"totalShows": "総観覧数",
 			"achievements": "実績",
+			"totalTwoShots": "2ショット合計",
+			"totalLiveWatched": "ライブ視聴",
 			"oshiMeetings": "会った"
 		},
 		"oshi": {

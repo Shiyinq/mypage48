@@ -234,3 +234,85 @@ async def test_oshi_meetings_logic(client: AsyncClient, db, create_user, create_
     past_titles = [s["title"] for s in oshi_data["pastSchedule"]]
     assert "Event A" in past_titles
     assert "Event C" in past_titles
+
+
+@pytest.mark.asyncio
+async def test_total_two_shots(client: AsyncClient, db, create_user, create_ticket):
+    """Test calculation of totalTwoShots in profile stats."""
+    token, user_id, headers = await create_user("twoshotuser")
+
+    # Create tickets: 3 with two_shot, 2 without
+    await create_ticket(user_id, {
+        "title": "Show A",
+        "date": "2024-01-01",
+        "two_shot": {"member_name": "Member A", "type": "Roulette", "price": 50000, "imageUrl": "http://example.com/a.jpg"}
+    })
+    await create_ticket(user_id, {
+        "title": "Show B",
+        "date": "2024-01-02",
+        "two_shot": {"member_name": "Member B", "type": "Birthday", "price": 50000, "imageUrl": "http://example.com/b.jpg"}
+    })
+    await create_ticket(user_id, {
+        "title": "Show C",
+        "date": "2024-01-03",
+        "two_shot": {"member_name": "Member A", "type": "Roulette", "price": 50000, "imageUrl": "http://example.com/c.jpg"}
+    })
+    await create_ticket(user_id, {
+        "title": "Show D",
+        "date": "2024-01-04",
+        "two_shot": None
+    })
+    await create_ticket(user_id, {
+        "title": "Show E",
+        "date": "2024-01-05",
+        "two_shot": None
+    })
+
+    response = await client.get("/api/users/profile", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["stats"]["totalShows"] == 5
+    assert data["stats"]["totalTwoShots"] == 3
+
+
+@pytest.mark.asyncio
+async def test_total_live_watched(client: AsyncClient, db, create_user):
+    """Test calculation of totalLiveWatched from watched_live_history."""
+    from datetime import datetime
+
+    token, user_id, headers = await create_user("livewatcher")
+
+    # Insert watched live history entries for this user
+    watched_entries = [
+        {
+            "user_id": user_id,
+            "live_id": f"live_{i}",
+            "member_id": f"member_{i}",
+            "member_name": f"Member {i}",
+            "platform": "showroom",
+            "duration": 300,
+            "started_at": datetime(2024, 6, 1, 10, 0, 0),
+            "last_updated_at": datetime(2024, 6, 1, 10, 5, 0),
+        }
+        for i in range(5)
+    ]
+    await db["watched_live_history"].insert_many(watched_entries)
+
+    # Insert an entry for a different user (should not be counted)
+    await db["watched_live_history"].insert_one({
+        "user_id": "other_user",
+        "live_id": "live_other",
+        "member_id": "member_other",
+        "member_name": "Other",
+        "platform": "idn",
+        "duration": 600,
+        "started_at": datetime(2024, 6, 1, 11, 0, 0),
+        "last_updated_at": datetime(2024, 6, 1, 11, 10, 0),
+    })
+
+    response = await client.get("/api/users/profile", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["stats"]["totalLiveWatched"] == 5

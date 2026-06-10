@@ -445,6 +445,8 @@
 		"stats": {
 			"totalShows": "",
 			"achievements": "",
+			"totalTwoShots": "",
+			"totalLiveWatched": "",
 			"oshiMeetings": ""
 		},
 		"oshi": {

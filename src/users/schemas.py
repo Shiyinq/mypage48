@@ -191,6 +191,8 @@ class ProfileStats(BaseModel):
 
     totalShows: int
     totalAchievements: int
+    totalTwoShots: int = 0
+    totalLiveWatched: int = 0
     oshiMeetings: int = 0
 
 
