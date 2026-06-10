@@ -3,8 +3,9 @@
 	import { goto } from '$app/navigation';
 	import { membersStore } from '$lib/stores/theater.svelte';
 	import { pageHeaderStore } from '$lib/stores';
-	import { LoaderCircle, Users } from 'lucide-svelte';
+	import { Users } from 'lucide-svelte';
 	import MemberDetailPage from '$lib/components/theater/MemberDetailPage.svelte';
+	import { MemberDetailSkeleton } from '$lib/components/skeletons';
 
 	$effect(() => {
 		pageHeaderStore.set({
@@ -25,9 +26,5 @@
 		basePath="/theater/members"
 	/>
 {:else}
-	<div
-		class="h-[calc(100vh-64px)] flex flex-col items-center justify-center space-y-4 bg-slate-50/50 dark:bg-zinc-900/40"
-	>
-		<LoaderCircle class="w-10 h-10 animate-spin text-red-500" />
-	</div>
+	<MemberDetailSkeleton />
 {/if}
