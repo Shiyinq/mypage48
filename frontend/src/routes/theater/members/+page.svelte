@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import type { Member } from '$lib/apis/members';
-	import { MemberDetailModal } from '$lib/components/profile';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { showToast } from '$lib/stores';
 	import { Search, ChevronDown, Users } from 'lucide-svelte';
@@ -20,8 +20,6 @@
 	let selectedGeneration: string | null = $state(null);
 	let selectedType: string | null = $state(null);
 	let generations: string[] = $state([]);
-	let showMemberDetail = $state(false);
-	let selectedMember: Member | null = $state(null);
 
 	const teamOrder = ['LOVE', 'DREAM', 'PASSION', 'TRAINEE', 'JKT48_VIRTUAL'];
 	const accentColors: Record<string, string> = {
@@ -96,12 +94,7 @@
 	}
 
 	function openMemberDetail(member: Member) {
-		selectedMember = member;
-		showMemberDetail = true;
-	}
-
-	function closeMemberDetail() {
-		showMemberDetail = false;
+		goto(`/theater/members/${member.id}`);
 	}
 
 	let mounted = $state(false);
@@ -308,12 +301,3 @@
 		class="h-8 w-full flex justify-center items-center py-2"
 	></div>
 {/if}
-
-<!-- Member Detail Modal -->
-<MemberDetailModal
-	show={showMemberDetail}
-	member={selectedMember}
-	members={membersList}
-	loading={false}
-	onClose={closeMemberDetail}
-/>

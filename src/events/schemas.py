@@ -55,6 +55,14 @@ class PaginationMeta(BaseModel):
     next_page: Optional[int] = None
 
 
+class MemberEventStats(BaseModel):
+    total_shows: int = 0
+    top_setlist_id: Optional[str] = None
+    top_setlist_title: Optional[str] = None
+    top_setlist_count: int = 0
+    unique_setlists: int = 0
+
+
 class EventPaginationResponse(BaseModel):
     data: List[Event]
     meta: PaginationMeta

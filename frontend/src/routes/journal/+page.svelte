@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { LoaderCircle, AlertTriangle, PenLine, PanelLeft } from 'lucide-svelte';
+	import { AlertTriangle, PenLine, PanelLeft, BookOpen } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
-	import { ticketsStore, showToast, isTicketsLoading } from '$lib/stores';
+	import { ticketsStore, showToast, isTicketsLoading, pageHeaderStore } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import JournalSidebar from '$lib/components/journal/JournalSidebar.svelte';
 	import JournalEditor from '$lib/components/journal/JournalEditor.svelte';
+	import { JournalDetailSkeleton } from '$lib/components/skeletons';
 	import { isCacheExpired } from '$lib/utils/cache';
 	import { CalendarDays } from 'lucide-svelte';
 	import { PageHeader } from '$lib/components';
@@ -31,6 +32,17 @@
 			: false
 	);
 	let totalData = $derived(ticketsStore.pagination?.total_data || tickets.length);
+
+	$effect(() => {
+		pageHeaderStore.set({
+			title: t('journal.title'),
+			icon: BookOpen,
+			theme: 'green',
+			badge: `${totalData || tickets.length} ${t('shows.unit')}`,
+			loading: loading
+		});
+		return () => pageHeaderStore.reset();
+	});
 
 	onMount(() => {
 		if (tickets.length === 0 || isCacheExpired(ticketsStore.lastUpdated)) {
@@ -85,12 +97,7 @@
 	class="h-[calc(100vh-64px)] flex flex-col bg-slate-50/50 dark:bg-zinc-900/40 overflow-hidden relative overscroll-none"
 >
 	{#if loading && tickets.length === 0}
-		<div class="flex-1 flex flex-col items-center justify-center space-y-4 pb-32" in:fade>
-			<LoaderCircle class="w-10 h-10 animate-spin text-red-500" />
-			<p class="text-sm font-bold text-gray-500 uppercase tracking-widest">
-				{t('common.loading')}
-			</p>
-		</div>
+		<JournalDetailSkeleton />
 	{:else if error && tickets.length === 0}
 		<div
 			class="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6 pb-32"

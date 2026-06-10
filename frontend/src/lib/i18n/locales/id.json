@@ -903,6 +903,40 @@
 		"emptyState": {
 			"title": "Tidak Ada Member",
 			"description": "Coba sesuaikan pencarian atau filter untuk menemukan member yang kamu cari."
+		},
+		"loadMore": "Muat Lebih Banyak",
+		"upcoming": "Akan Datang",
+		"past": "Sebelumnya",
+		"pastShows": "Pertunjukan Sebelumnya",
+		"shows": "Pertunjukan",
+		"liveTitle": "Live",
+		"generation": "Gen",
+		"cm": "cm",
+		"count": "x",
+		"viewers": "Views",
+		"liveFallback": "Live Stream",
+		"eventEmpty": "Tidak ada pertunjukan untuk member ini",
+		"liveEmpty": "Tidak ada riwayat live untuk member ini",
+		"showSidebar": "Tampilkan sidebar",
+		"closeSidebar": "Tutup Sidebar",
+		"memberFrame": "bingkai member",
+		"officialProfile": "Profil Resmi",
+		"twitterProfile": "Profil Twitter / X",
+		"tiktokProfile": "Profil TikTok",
+		"showStats": {
+			"title": "Statistik Show",
+			"totalShows": "Total Show",
+			"topSetlist": "Paling Sering Dibawakan",
+			"uniqueSetlists": "Setlist Unik",
+			"disclaimer": "Data ini berdasarkan hasil scraping dan mungkin berbeda dengan data asli."
+		},
+		"liveStats": {
+			"title": "Statistik Live",
+			"totalLives": "Total Live",
+			"totalDuration": "Total Durasi",
+			"topPlatform": "Platform Teratas",
+			"longestLive": "Live Terlama",
+			"disclaimer": "Data ini berdasarkan hasil scraping dan mungkin berbeda dengan data asli."
 		}
 	},
 	"shows": {

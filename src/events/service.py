@@ -9,6 +9,7 @@ from src.events.schemas import (
     CalendarEvent,
     Event,
     EventPaginationResponse,
+    MemberEventStats,
     PaginationMeta,
 )
 from src.interfaces import BackgroundTaskRunner
@@ -80,7 +81,7 @@ class EventsService:
 
         try:
             total_data = await self.repository.count_events(query)
-            last_page = ceil(total_data / limit) if limit > 0 else 1
+            last_page = max(1, ceil(total_data / limit)) if limit > 0 else 1
 
             # Ensure page is within bounds
             if page < 1:
@@ -166,4 +167,80 @@ class EventsService:
             return await self.repository.find_events_by_member_id(member_id)
         except Exception as e:
             logger.exception(f"Failed to fetch events for member {member_id}: {str(e)}")
+            return []
+
+    async def get_member_event_stats(self, member_id: str) -> MemberEventStats:
+        """Get show statistics for a member."""
+        try:
+            stats_data = await self.repository.get_member_event_stats(member_id)
+            return MemberEventStats(**stats_data)
+        except Exception as e:
+            logger.exception(
+                f"Failed to fetch event stats for member {member_id}: {str(e)}"
+            )
+            return MemberEventStats()
+
+    async def get_member_events_paginated(
+        self, member_id: str, page: int = 1, limit: int = 20
+    ) -> EventPaginationResponse:
+        """Get events for a member with pagination."""
+        try:
+            total_data = await self.repository.count_member_events(member_id)
+            last_page = max(1, ceil(total_data / limit)) if limit > 0 else 1
+
+            if page < 1:
+                page = 1
+
+            skip = (page - 1) * limit
+
+            raw_events = await self.repository.find_events_by_member_id_detailed(
+                member_id, skip=skip, limit=limit
+            )
+
+            events_data = []
+            for e in raw_events:
+                resolved = await self._resolve_event(e)
+                events_data.append(Event(**resolved))
+
+            next_page = page + 1 if page < last_page else None
+
+            meta = PaginationMeta(
+                current_page=page,
+                last_page=last_page,
+                total_data=total_data,
+                per_page=limit,
+                next_page=next_page,
+            )
+
+            return EventPaginationResponse(data=events_data, meta=meta)
+        except Exception as e:
+            logger.exception(
+                f"Failed to fetch paginated events for member {member_id}: {str(e)}"
+            )
+            return EventPaginationResponse(
+                data=[],
+                meta=PaginationMeta(
+                    current_page=page,
+                    last_page=1,
+                    total_data=0,
+                    per_page=limit,
+                    next_page=None,
+                ),
+            )
+
+    async def get_member_events_detailed(self, member_id: str) -> List[Event]:
+        """Get all events for a member with full detail (images, resolved)."""
+        try:
+            raw_events = await self.repository.find_events_by_member_id_detailed(
+                member_id
+            )
+            events_data = []
+            for e in raw_events:
+                resolved = await self._resolve_event(e)
+                events_data.append(Event(**resolved))
+            return events_data
+        except Exception as e:
+            logger.exception(
+                f"Failed to fetch detailed events for member {member_id}: {str(e)}"
+            )
             return []

@@ -187,3 +187,141 @@ class EventsRepository:
 
         cursor = self.collection.find(query, projection)
         return await cursor.to_list(length=None)
+
+    async def get_member_event_stats(self, member_id: str) -> dict:
+        pipeline = [
+            {"$match": {"memberIds": member_id}},
+            {
+                "$facet": {
+                    "total": [{"$count": "count"}],
+                    "top_setlist": [
+                        {
+                            "$match": {
+                                "setlistId": {"$exists": True, "$nin": [None, ""]}
+                            }
+                        },
+                        {"$group": {"_id": "$setlistId", "count": {"$sum": 1}}},
+                        {"$sort": {"count": -1}},
+                        {"$limit": 1},
+                    ],
+                    "unique_setlists": [
+                        {
+                            "$match": {
+                                "setlistId": {"$exists": True, "$nin": [None, ""]}
+                            }
+                        },
+                        {"$group": {"_id": "$setlistId"}},
+                        {"$count": "count"},
+                    ],
+                }
+            },
+        ]
+        cursor = self.collection.aggregate(pipeline)
+        result = await cursor.to_list(length=1)
+        if not result:
+            return {
+                "total_shows": 0,
+                "top_setlist_id": None,
+                "top_setlist_title": None,
+                "top_setlist_count": 0,
+                "unique_setlists": 0,
+            }
+        facet = result[0]
+        total = facet.get("total", [])
+        top = facet.get("top_setlist", [])
+        unique = facet.get("unique_setlists", [])
+        top_setlist_id = top[0]["_id"] if top else None
+        top_setlist_title = None
+        if top_setlist_id:
+            setlist = await self.collection.database["setlists"].find_one(
+                {"setlistId": top_setlist_id}, {"title": 1}
+            )
+            top_setlist_title = setlist["title"] if setlist else None
+        return {
+            "total_shows": total[0]["count"] if total else 0,
+            "top_setlist_id": top_setlist_id,
+            "top_setlist_title": top_setlist_title,
+            "top_setlist_count": top[0]["count"] if top else 0,
+            "unique_setlists": unique[0]["count"] if unique else 0,
+        }
+
+    async def count_member_events(self, member_id: str) -> int:
+        """Count events for a specific member."""
+        return await self.collection.count_documents({"memberIds": member_id})
+
+    async def find_events_by_member_id_detailed(
+        self, member_id: str, skip: int = 0, limit: int = 500
+    ) -> List[dict]:
+        """Find all events for a member with full detail (images, lookups)."""
+        query = {"memberIds": member_id}
+
+        pipeline = [
+            {"$match": query},
+            {"$sort": {"date": -1}},
+            {"$skip": skip},
+            {"$limit": limit},
+            {
+                "$lookup": {
+                    "from": "setlists",
+                    "localField": "setlistId",
+                    "foreignField": "setlistId",
+                    "as": "setlist_docs",
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "members",
+                    "localField": "seitansaiIds",
+                    "foreignField": "id",
+                    "as": "seitansai_members",
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "members",
+                    "localField": "graduationIds",
+                    "foreignField": "id",
+                    "as": "graduation_members",
+                }
+            },
+            {
+                "$addFields": {
+                    "setlist_temp": {"$arrayElemAt": ["$setlist_docs", 0]},
+                    "totalMembers": {
+                        "$cond": {
+                            "if": {"$isArray": "$memberIds"},
+                            "then": {"$size": "$memberIds"},
+                            "else": 0,
+                        }
+                    },
+                    "seitansaiMembers": {
+                        "$map": {
+                            "input": "$seitansai_members",
+                            "as": "member",
+                            "in": "$$member.name",
+                        }
+                    },
+                    "graduationMembers": {
+                        "$map": {
+                            "input": "$graduation_members",
+                            "as": "member",
+                            "in": "$$member.name",
+                        }
+                    },
+                }
+            },
+            {"$addFields": {"imageUrl": "$setlist_temp.imageUrl"}},
+            {
+                "$project": {
+                    "setlist_docs": 0,
+                    "setlist_temp": 0,
+                    "graduation_members": 0,
+                    "memberIds": 0,
+                    "graduationIds": 0,
+                    "seitansaiIds": 0,
+                }
+            },
+        ]
+
+        cursor = self.collection.aggregate(pipeline)
+        return await cursor.to_list(length=limit)
