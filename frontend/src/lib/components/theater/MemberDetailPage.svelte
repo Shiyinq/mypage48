@@ -14,7 +14,7 @@
 		GlobalSingleMemberLiveHistoryStats
 	} from '$lib/types/liveHistory';
 	import { getExternalMediaUrl } from '$lib/utils/media';
-	import { getMemberFrame } from '$lib/constants';
+	import { getMemberFrame, getTeamColors } from '$lib/constants';
 	import { OptimizedImage } from '$lib/components/common';
 	import { parseIndonesianDate, formatDurationSeconds, formatLiveDate } from '$lib/utils/time';
 	import {
@@ -33,7 +33,12 @@
 		BarChart3,
 		Info,
 		Activity,
-		Users
+		Users,
+		Heart,
+		Flame,
+		Star,
+		Sprout,
+		Bot
 	} from 'lucide-svelte';
 
 	import SEO from '$lib/components/SEO.svelte';
@@ -357,7 +362,7 @@
 			{/if}
 			<div
 				bind:this={mainContentEl}
-				class="flex-1 flex flex-col overflow-y-auto md:overflow-y-auto custom-scrollbar bg-white dark:bg-zinc-900 relative pb-16 md:pb-0"
+				class="flex-1 flex flex-col overflow-y-auto md:overflow-y-auto custom-scrollbar bg-white dark:bg-zinc-900 relative pb-48 md:pb-24"
 				style="overscroll-behavior: contain;"
 			>
 				<!-- Floating Toggle Button -->
@@ -400,7 +405,8 @@
 								<div class="space-y-1">
 									<div class="flex items-center gap-3">
 										<span
-											class="px-2 py-0.5 rounded-md bg-red-600 text-[10px] font-black text-white uppercase tracking-wider"
+											class="px-2 py-0.5 rounded-md text-[10px] font-black text-white uppercase tracking-wider"
+											style:background-color={getTeamColors(currentMember.member_type).badgeBg}
 										>
 											{currentMember.member_type || t('member.type.member')}
 										</span>
@@ -411,9 +417,28 @@
 											{currentMember.generation}
 										</span>
 									</div>
-									<h2 class="text-3xl font-black text-themed tracking-tight">
-										{currentMember.name}
-										<span class="text-red-500 text-xl ml-1">✦</span>
+									<h2
+										class="text-3xl font-black text-themed tracking-tight flex items-center flex-wrap gap-2"
+									>
+										<span>{currentMember.name}</span>
+										<span
+											class="flex items-center mt-1"
+											style:color={getTeamColors(currentMember.member_type).badgeText}
+										>
+											{#if currentMember.member_type?.toUpperCase() === 'LOVE'}
+												<Heart class="w-6 h-6 fill-current" />
+											{:else if currentMember.member_type?.toUpperCase() === 'PASSION'}
+												<Flame class="w-6 h-6 fill-current" />
+											{:else if currentMember.member_type?.toUpperCase() === 'DREAM'}
+												<Star class="w-6 h-6 fill-current" />
+											{:else if currentMember.member_type?.toUpperCase() === 'TRAINEE'}
+												<Sprout class="w-7 h-7" />
+											{:else if currentMember.member_type?.toUpperCase() === 'JKT48_VIRTUAL'}
+												<Bot class="w-7 h-7" />
+											{:else}
+												<Star class="w-6 h-6 fill-current" />
+											{/if}
+										</span>
 									</h2>
 									<p class="text-lg font-bold text-gray-500 dark:text-zinc-400">
 										({currentMember.nickname})

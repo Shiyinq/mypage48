@@ -5,12 +5,13 @@
 	import { MemberDetailModal } from '$lib/components/profile';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { showToast } from '$lib/stores';
-	import { Search } from 'lucide-svelte';
+	import { Search, Heart, Flame, Star, Sprout, Bot } from 'lucide-svelte';
 	import { membersStore, isMembersLoading } from '$lib/stores/theater.svelte';
 	import MemberCard from '$lib/components/theater/MemberCard.svelte';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import SEO from '$lib/components/SEO.svelte';
+	import { getTeamColors } from '$lib/constants/teamColors';
 
 	const { t } = useTranslation();
 
@@ -24,23 +25,6 @@
 	let selectedMember: Member | null = $state(null);
 
 	const teamOrder = ['LOVE', 'DREAM', 'PASSION', 'TRAINEE', 'JKT48_VIRTUAL'];
-	const teamColors: Record<string, string> = {
-		LOVE: 'text-pink-600 border-pink-500 bg-pink-50 dark:bg-pink-900/10',
-		DREAM: 'text-cyan-600 border-cyan-500 bg-cyan-50 dark:bg-cyan-900/10',
-		PASSION: 'text-orange-600 border-orange-500 bg-orange-50 dark:bg-orange-900/10',
-		TRAINEE: 'text-[#c08081] border-[#c08081] bg-rose-50 dark:bg-rose-900/10',
-		JKT48_VIRTUAL: 'text-blue-600 border-blue-500 bg-blue-50 dark:bg-blue-900/10',
-		JKT48: 'text-red-600 border-red-500 bg-red-50 dark:bg-red-900/10'
-	};
-
-	const accentColors: Record<string, string> = {
-		LOVE: 'bg-pink-500 shadow-pink-500/20',
-		DREAM: 'bg-cyan-500 shadow-cyan-500/20',
-		PASSION: 'bg-orange-500 shadow-orange-500/20',
-		TRAINEE: 'bg-[#c08081] shadow-[#c08081]/20',
-		JKT48_VIRTUAL: 'bg-blue-600 shadow-blue-600/20',
-		JKT48: 'bg-red-600 shadow-red-500/20'
-	};
 
 	let teamNames = $derived<Record<string, string>>({
 		LOVE: `${t('theater.members.team')} Love`,
@@ -246,12 +230,16 @@
 						onclick={() => setType(type)}
 						class={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer border ${
 							selectedType === type
-								? teamColors[type].replace(
-										'bg-pink-50',
-										'bg-red-50 text-red-600 ring-1 ring-red-100 shadow-sm border-0'
-									)
+								? 'shadow-sm border-0 ring-1'
 								: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-zinc-800 hover:border-themed'
 						}`}
+						style:color={selectedType === type ? getTeamColors(type).badgeText : undefined}
+						style:background-color={selectedType === type
+							? getTeamColors(type).badgeBg + '1A'
+							: undefined}
+						style:--tw-ring-color={selectedType === type
+							? getTeamColors(type).badgeBorder + '33'
+							: undefined}
 					>
 						{teamNames[type] || type}
 					</button>
@@ -298,11 +286,29 @@
 		{#each allSortedTypes as type}
 			<div class="mb-10 last:mb-0">
 				<!-- Group Header -->
-				<div class="flex items-center gap-4 mb-2 group/header">
-					<div
-						class={`h-10 w-2 rounded-full shadow-lg ${accentColors[type] || 'bg-red-600 shadow-red-500/20'}`}
-					></div>
-					<h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+				<div class="flex items-center gap-3 mb-2 group/header">
+					<span
+						class="flex items-center drop-shadow-md"
+						style:color={getTeamColors(type).badgeText}
+					>
+						{#if type?.toUpperCase() === 'LOVE'}
+							<Heart class="w-8 h-8 fill-current" />
+						{:else if type?.toUpperCase() === 'PASSION'}
+							<Flame class="w-8 h-8 fill-current" />
+						{:else if type?.toUpperCase() === 'DREAM'}
+							<Star class="w-8 h-8 fill-current" />
+						{:else if type?.toUpperCase() === 'TRAINEE'}
+							<Sprout class="w-8 h-8" />
+						{:else if type?.toUpperCase() === 'JKT48_VIRTUAL'}
+							<Bot class="w-8 h-8" />
+						{:else}
+							<Star class="w-8 h-8 fill-current" />
+						{/if}
+					</span>
+					<h2
+						class="text-2xl font-black tracking-tight uppercase"
+						style:color={getTeamColors(type).badgeText}
+					>
 						{teamNames[type] || type}
 					</h2>
 					<span

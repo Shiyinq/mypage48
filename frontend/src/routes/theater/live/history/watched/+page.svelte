@@ -16,7 +16,7 @@
 	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { spring } from 'svelte/motion';
-	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 	import { membersStore } from '$lib/stores/theater.svelte';
 	import type { LiveHistory } from '$lib/types/liveHistory';
 
@@ -114,7 +114,7 @@
 		mouse.set({ x, y });
 	}}
 >
-	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
+	<AppBackground interactive={true} bind:mouse bind:scrollY />
 
 	<HistoryTopBar
 		title={t('liveHistory.title')}

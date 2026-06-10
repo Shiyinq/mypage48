@@ -7,11 +7,12 @@
 	import type { Member } from '$lib/apis/members';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { showToast } from '$lib/stores';
-	import { Search, ChevronDown, Users } from 'lucide-svelte';
+	import { Search, ChevronDown, Users, Heart, Flame, Star, Sprout, Bot } from 'lucide-svelte';
 	import { membersStore, isMembersLoading } from '$lib/stores/theater.svelte';
 	import MemberCard from '$lib/components/theater/MemberCard.svelte';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
+	import { getTeamColors } from '$lib/constants/teamColors';
 
 	const { t } = useTranslation();
 
@@ -22,14 +23,6 @@
 	let generations: string[] = $state([]);
 
 	const teamOrder = ['LOVE', 'DREAM', 'PASSION', 'TRAINEE', 'JKT48_VIRTUAL'];
-	const accentColors: Record<string, string> = {
-		LOVE: 'bg-pink-500 shadow-pink-500/20',
-		DREAM: 'bg-cyan-500 shadow-cyan-500/20',
-		PASSION: 'bg-orange-500 shadow-orange-500/20',
-		TRAINEE: 'bg-[#c08081] shadow-[#c08081]/20',
-		JKT48_VIRTUAL: 'bg-blue-600 shadow-blue-600/20',
-		JKT48: 'bg-pink-500 shadow-pink-500/20'
-	};
 
 	let teamNames = $derived<Record<string, string>>({
 		LOVE: `${t('theater.members.team')} Love`,
@@ -257,11 +250,23 @@
 	{#each allSortedTypes as type}
 		<div class="mb-8 last:mb-0">
 			<!-- Group Header -->
-			<div class="flex items-center gap-3 mb-2 group/header">
-				<div
-					class={`h-8 w-1.5 rounded-full group-hover/header:h-10 transition-all duration-300 shadow-lg ${accentColors[type] || 'bg-pink-500 shadow-pink-500/20'}`}
-				></div>
-				<h2 class="text-xl font-bold text-themed tracking-tight">
+			<div class="flex items-center gap-2.5 mb-2 group/header">
+				<span class="flex items-center drop-shadow-md" style:color={getTeamColors(type).badgeText}>
+					{#if type?.toUpperCase() === 'LOVE'}
+						<Heart class="w-7 h-7 fill-current" />
+					{:else if type?.toUpperCase() === 'PASSION'}
+						<Flame class="w-7 h-7 fill-current" />
+					{:else if type?.toUpperCase() === 'DREAM'}
+						<Star class="w-7 h-7 fill-current" />
+					{:else if type?.toUpperCase() === 'TRAINEE'}
+						<Sprout class="w-7 h-7" />
+					{:else if type?.toUpperCase() === 'JKT48_VIRTUAL'}
+						<Bot class="w-7 h-7" />
+					{:else}
+						<Star class="w-7 h-7 fill-current" />
+					{/if}
+				</span>
+				<h2 class="text-xl font-bold tracking-tight" style:color={getTeamColors(type).badgeText}>
 					{teamNames[type] || type}
 				</h2>
 				<span

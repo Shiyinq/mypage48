@@ -8,7 +8,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { spring } from 'svelte/motion';
-	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 	import { membersStore } from '$lib/stores/theater.svelte';
 	import { EmptyState } from '$lib/components';
 	import HistoryTopBar from '$lib/components/live/history/shared/HistoryTopBar.svelte';
@@ -87,7 +87,7 @@
 		mouse.set({ x: clientX / innerWidth - 0.5, y: clientY / innerHeight - 0.5 });
 	}}
 >
-	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
+	<AppBackground interactive={true} bind:mouse bind:scrollY />
 
 	<HistoryTopBar
 		title={t('liveHistory.globalRankingTitle')}
