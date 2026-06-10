@@ -16,6 +16,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { OptimizedImage } from '$lib/components/common';
+	import { fade } from 'svelte/transition';
 	import { getOshiBanner } from '$lib/constants';
 	import type { UserOshi, OshiTwoShotCounts } from '$lib/types';
 
@@ -162,13 +163,18 @@
 	aria-label="Oshi card"
 >
 	<!-- Banner -->
-	<div
-		class="h-32 w-full rounded-t-3xl overflow-hidden bg-cover bg-[center_30%] relative transition-all duration-500 ease-in-out"
-		style="background-image: url('{currentOshi ? getOshiBanner(currentOshi.memberType) : ''}')"
-	>
-		<div
-			class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent dark:from-zinc-900 dark:via-zinc-900/50"
-		></div>
+	<div class="h-32 w-full rounded-t-3xl overflow-hidden relative">
+		{#key currentOshi?.memberType}
+			<div
+				transition:fade={{ duration: 400 }}
+				class="absolute inset-0 bg-cover bg-[center_30%]"
+				style="background-image: url('{getOshiBanner(currentOshi?.memberType)}')"
+			>
+				<div
+					class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent dark:from-zinc-900 dark:via-zinc-900/50"
+				></div>
+			</div>
+		{/key}
 	</div>
 
 	<div class="px-6 md:px-8 pb-6 relative">
