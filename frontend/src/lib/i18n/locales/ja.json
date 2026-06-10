@@ -449,7 +449,11 @@
 			"newSelected": "{count}件 新規選択",
 			"confirmTitle": "推しを削除しますか？",
 			"confirmDesc": "この推しをリストから削除してもよろしいですか？",
-			"confirmRemove": "削除"
+			"confirmRemove": "削除",
+			"addedToast": "推しを追加しました！",
+			"removedToast": "推しを削除しました！",
+			"addErrorToast": "推しの追加に失敗しました",
+			"removeErrorToast": "推しの削除に失敗しました"
 		},
 		"title": "マイプロフィール",
 		"subtitle": "ファンアイデンティティ＆統計",

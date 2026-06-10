@@ -203,11 +203,11 @@
 		savingOshi = true;
 		try {
 			await userProfile.addOshi(members.map((m) => String(m.id)));
-			showToast('Oshi added successfully!', 'success');
+			showToast(t('profile.oshiModal.addedToast'), 'success');
 			closeOshiModal();
 		} catch (e) {
 			logger.error('Failed to add oshi', e, { context: 'ProfilePage' });
-			showToast('Failed to add oshi', 'error');
+			showToast(t('profile.oshiModal.addErrorToast'), 'error');
 		} finally {
 			savingOshi = false;
 		}
@@ -223,12 +223,12 @@
 		savingOshi = true;
 		try {
 			await userProfile.removeOshi(removeTargetId);
-			showToast('Oshi removed successfully!', 'success');
+			showToast(t('profile.oshiModal.removedToast'), 'success');
 			showRemoveConfirm = false;
 			removeTargetId = null;
 		} catch (e) {
 			logger.error('Failed to remove oshi', e, { context: 'ProfilePage' });
-			showToast('Failed to remove oshi', 'error');
+			showToast(t('profile.oshiModal.removeErrorToast'), 'error');
 		} finally {
 			savingOshi = false;
 		}

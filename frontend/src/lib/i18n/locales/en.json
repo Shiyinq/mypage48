@@ -492,7 +492,11 @@
 			"newSelected": "{count} new selected",
 			"confirmTitle": "Remove Oshi?",
 			"confirmDesc": "Are you sure you want to remove this oshi from your list?",
-			"confirmRemove": "Remove"
+			"confirmRemove": "Remove",
+			"addedToast": "Oshi added successfully!",
+			"removedToast": "Oshi removed successfully!",
+			"addErrorToast": "Failed to add oshi",
+			"removeErrorToast": "Failed to remove oshi"
 		},
 		"recentActivity": {
 			"title": "Recent Activity",

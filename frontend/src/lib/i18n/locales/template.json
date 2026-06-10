@@ -431,7 +431,11 @@
 			"newSelected": "",
 			"confirmTitle": "",
 			"confirmDesc": "",
-			"confirmRemove": ""
+			"confirmRemove": "",
+			"addedToast": "",
+			"removedToast": "",
+			"addErrorToast": "",
+			"removeErrorToast": ""
 		},
 		"title": "",
 		"subtitle": "",
