@@ -8,3 +8,4 @@ export { default as Top2ShotSkeleton } from './Top2ShotSkeleton.svelte';
 export { default as PolaroidSkeleton } from './PolaroidSkeleton.svelte';
 export { default as EventCardSkeleton } from './EventCardSkeleton.svelte';
 export { default as EventHistorySkeleton } from './EventHistorySkeleton.svelte';
+export { default as MemberDetailSkeleton } from './MemberDetailSkeleton.svelte';
