@@ -423,6 +423,15 @@
 			"stage": "ステージ",
 			"row": "列"
 		},
+		"heatmap": {
+			"title": "観覧履歴",
+			"subtitle": "年間の毎日の活動",
+			"noAttendance": "観覧なし：",
+			"attendance": "回",
+			"on": "日：",
+			"less": "少ない",
+			"more": "多い"
+		},
 		"monthlyAttendance": {
 			"title": "月別観覧",
 			"subtitle": "内訳",

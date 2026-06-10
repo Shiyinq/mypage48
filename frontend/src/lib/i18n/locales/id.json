@@ -423,6 +423,15 @@
 			"stage": "Panggung",
 			"row": "Baris"
 		},
+		"heatmap": {
+			"title": "Riwayat Kehadiran",
+			"subtitle": "Aktivitas harian tahun",
+			"noAttendance": "Tidak ada kehadiran pada",
+			"attendance": "kehadiran",
+			"on": "pada",
+			"less": "Kurang",
+			"more": "Lebih"
+		},
 		"monthlyAttendance": {
 			"title": "Kehadiran Bulanan",
 			"subtitle": "Rincian untuk",

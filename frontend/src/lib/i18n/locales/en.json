@@ -423,6 +423,15 @@
 			"stage": "Stage",
 			"row": "Row"
 		},
+		"heatmap": {
+			"title": "Attendance History",
+			"subtitle": "Daily activity for",
+			"noAttendance": "No attendance on",
+			"attendance": "attendance",
+			"on": "on",
+			"less": "Less",
+			"more": "More"
+		},
 		"monthlyAttendance": {
 			"title": "Monthly Attendance",
 			"subtitle": "Breakdown for",

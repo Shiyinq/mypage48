@@ -42,6 +42,12 @@ class MonthlyStatsResponse(BaseModel):
     max_count: int
 
 
+class HeatmapStatsResponse(BaseModel):
+    """Response for heatmap statistics."""
+
+    data: Dict[str, int]
+
+
 class TopShowResponse(BaseModel):
     """Response for top show statistics."""
 
@@ -130,6 +136,7 @@ class PeriodStatsGroup(BaseModel):
 
     monthly_stats: MonthlyStatsResponse
     day_stats: DayStatsResponse
+    heatmap_stats: HeatmapStatsResponse
 
 
 class DashboardStatsResponse(BaseModel):

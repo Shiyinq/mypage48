@@ -16,7 +16,8 @@
 		FirstLastCard,
 		MonthlyAttendance,
 		DayPreference,
-		FirstLastPopup
+		FirstLastPopup,
+		HeatmapCalendar
 	} from '$lib/components/dashboard';
 
 	// Import dashboard store
@@ -373,6 +374,17 @@
 		/>
 
 		<DayPreference stats={dayStats.stats} maxCount={dayStats.maxCount} {loading} />
+	</div>
+
+	<!-- HEATMAPS -->
+	<div class="flex flex-col gap-6 mt-6">
+		{#each dashboardFilter.isAllData ? [...availableYears].sort((a, b) => b - a) : [dashboardFilter.selectedYear] as year}
+			<HeatmapCalendar
+				{year}
+				data={dashboardStats?.period.heatmap_stats.data ?? {}}
+				isLoading={loading}
+			/>
+		{/each}
 	</div>
 </div>
 
