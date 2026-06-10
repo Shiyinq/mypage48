@@ -943,7 +943,7 @@
 														<span>{formatLiveDate(live.start_at, locale.value)}</span>
 														{#if live.duration}
 															<span
-																class="md:ml-2 px-1.5 py-0.5 rounded bg-gray-200 dark:bg-zinc-700 text-[9px] font-bold w-fit"
+																class="md:ml-2 px-1.5 py-0.5 rounded bg-gray-200/50 dark:bg-zinc-700/50 text-[9px] font-bold text-gray-500 dark:text-zinc-400 w-fit"
 															>
 																{formatDuration(live.duration)}
 															</span>
@@ -960,7 +960,7 @@
 														{live.platform}
 													</span>
 													<span
-														class="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-zinc-700 text-[9px] font-bold text-gray-500"
+														class="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-zinc-700/50 text-[9px] font-bold text-gray-500 dark:text-zinc-400"
 													>
 														{live.view_num}
 														{t('member.viewers')}
