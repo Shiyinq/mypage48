@@ -443,7 +443,13 @@
 			"save": "Simpan Oshi",
 			"loading": "Memuat member...",
 			"noMembers": "Tidak ada member yang cocok dengan \"{query}\"",
-			"generation": "Generasi {gen}"
+			"generation": "Generasi {gen}",
+			"selectHint": "Pilih hingga {count} lagi",
+			"maxReached": "Maksimal {max} oshi tercapai",
+			"newSelected": "{count} baru dipilih",
+			"confirmTitle": "Hapus Oshi?",
+			"confirmDesc": "Yakin ingin menghapus oshi ini dari daftar?",
+			"confirmRemove": "Hapus"
 		},
 		"title": "Profil Saya",
 		"subtitle": "Identitas & Stats Penggemar",
@@ -484,7 +490,9 @@
 			"birthday": "Birthday",
 			"upcomingSchedule": "Jadwal Oshi selanjutnya",
 			"pastSchedule": "Jadwal Oshi sebelumnya",
-			"noSchedule": "Tidak ada jadwal"
+			"noSchedule": "Tidak ada jadwal",
+			"addOshi": "Tambah Oshi",
+			"removeOshi": "Hapus Oshi"
 		},
 		"recentActivity": {
 			"title": "Aktivitas Terbaru",

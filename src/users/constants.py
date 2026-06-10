@@ -12,6 +12,9 @@ class ErrorCode:
     OSHI_UPDATE_FAILED = "Failed to update oshi."
     PUBLIC_STATUS_UPDATE_FAILED = "Failed to update public status."
     PROFILE_STATS_FETCH_ERROR = "Failed to fetch profile statistics."
+    OSHI_LIMIT_REACHED = "You can only have up to 5 oshis."
+    OSHI_ALREADY_EXISTS = "This oshi is already in your list."
+    OSHI_NOT_FOUND = "Oshi not found in your list."
 
 
 class DomainErrorCode:
@@ -31,6 +34,9 @@ class DomainErrorCode:
     USER_UPDATE_FAILED = "Failed to update user"
     USER_FETCH_FAILED = "Failed to fetch user"
     OSHI_UPDATE_FAILED = "Failed to update oshi"
+    OSHI_LIMIT_REACHED = "You can only have up to 5 oshis"
+    OSHI_ALREADY_EXISTS = "This oshi is already in your list"
+    OSHI_NOT_FOUND = "Oshi not found in your list"
     PUBLIC_STATUS_UPDATE_FAILED = "Failed to update public status"
     PROFILE_STATS_FETCH_FAILED = "Failed to fetch profile statistics"
 
@@ -40,7 +46,8 @@ class Info:
     USER_CREATED_WITH_EMAIL = (
         "Register success. Please check your email for verification link."
     )
-    OSHI_UPDATED = "Oshi updated successfully."
+    OSHI_ADDED = "Oshi added successfully."
+    OSHI_REMOVED = "Oshi removed successfully."
     PUBLIC_STATUS_UPDATED = "Public status updated successfully."
     PROFILE_PICTURE_UPDATED = "Profile picture updated successfully."
     PROFILE_UPDATED = "Profile updated successfully."

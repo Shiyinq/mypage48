@@ -11,10 +11,11 @@ from src.dependencies import (
 )
 from src.logging_config import create_logger
 from src.users.schemas import (
+    BatchAddOshiRequest,
     MessageResponse,
     ProfileFullResponse,
     PublicUserResponse,
-    UpdateOshiRequest,
+    RemoveOshiRequest,
     UpdateProfilePictureRequest,
     UpdateProfileRequest,
     UpdatePublicStatusRequest,
@@ -79,17 +80,30 @@ async def user_profile(
     return await user_service.get_profile_full(current_user)
 
 
-@router.post("/users/oshi", status_code=200, response_model=MessageResponse)
-async def update_oshi(
-    request: UpdateOshiRequest,
+@router.post("/users/oshi/batch-add", status_code=200, response_model=MessageResponse)
+async def batch_add_oshi(
+    request: BatchAddOshiRequest,
     current_user: UserCurrent = Depends(get_current_user),
     _=Depends(require_csrf_protection),
     user_service: UserService = Depends(get_user_service),
 ):
     """
-    Update the user's Oshi.
+    Add multiple oshis at once (max 5 total).
     """
-    return await user_service.update_oshi(current_user.userId, request.oshiId)
+    return await user_service.batch_add_oshi(current_user.userId, request.oshiIds)
+
+
+@router.post("/users/oshi/remove", status_code=200, response_model=MessageResponse)
+async def remove_oshi(
+    request: RemoveOshiRequest,
+    current_user: UserCurrent = Depends(get_current_user),
+    _=Depends(require_csrf_protection),
+    user_service: UserService = Depends(get_user_service),
+):
+    """
+    Remove an oshi from the user's list.
+    """
+    return await user_service.remove_oshi(current_user.userId, request.oshiId)
 
 
 @router.post("/users/public-status", status_code=200, response_model=MessageResponse)

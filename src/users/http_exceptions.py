@@ -50,6 +50,18 @@ class OshiUpdateFailed(InternalServerError):
     DETAIL = ErrorCode.OSHI_UPDATE_FAILED
 
 
+class OshiLimitReached(BadRequest):
+    DETAIL = ErrorCode.OSHI_LIMIT_REACHED
+
+
+class OshiAlreadyExists(Conflict):
+    DETAIL = ErrorCode.OSHI_ALREADY_EXISTS
+
+
+class OshiNotFound(NotFound):
+    DETAIL = ErrorCode.OSHI_NOT_FOUND
+
+
 class PublicStatusUpdateFailed(InternalServerError):
     DETAIL = ErrorCode.PUBLIC_STATUS_UPDATE_FAILED
 

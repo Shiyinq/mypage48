@@ -56,10 +56,10 @@
 			>
 				{#if isLoading}
 					<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
-				{:else if userProfile.data?.oshi?.profilePicture || userProfile.data?.profilePicture}
+				{:else if userProfile.data?.oshis?.[0]?.profilePicture || userProfile.data?.profilePicture}
 					<OptimizedImage
-						src={userProfile.data?.oshi?.profilePicture
-							? getExternalMediaUrl(userProfile.data.oshi.profilePicture)
+						src={userProfile.data?.oshis?.[0]?.profilePicture
+							? getExternalMediaUrl(userProfile.data.oshis[0].profilePicture)
 							: userProfile.data?.profilePicture || ''}
 						alt="Profile"
 						class="w-full h-full object-cover"

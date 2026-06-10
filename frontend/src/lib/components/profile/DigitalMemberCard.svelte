@@ -7,13 +7,14 @@
 	interface Props {
 		profile?: User | null;
 		loading?: boolean;
+		activeOshiMemberType?: string;
 	}
 
-	let { profile = null, loading = true }: Props = $props();
+	let { profile = null, loading = true, activeOshiMemberType = undefined }: Props = $props();
 
 	const { t } = useTranslation();
 
-	let teamColors = $derived(getTeamColors(profile?.oshi?.memberType));
+	let teamColors = $derived(getTeamColors(activeOshiMemberType ?? profile?.oshis?.[0]?.memberType));
 </script>
 
 <div class="relative group perspective-1000 w-full min-w-0">

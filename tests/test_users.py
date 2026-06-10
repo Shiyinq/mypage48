@@ -43,18 +43,58 @@ async def test_get_all_users_forbidden(client: AsyncClient, db, create_user):
     response = await client.get("/api/users", headers=headers)
     assert response.status_code == 403
 @pytest.mark.asyncio
-async def test_update_oshi(client: AsyncClient, db, create_user):
-    """Test updating user's oshi."""
+async def test_batch_add_oshi(client: AsyncClient, db, create_user):
+    """Test batch adding oshis."""
     token, user_id, headers = await create_user("oshiuser")
 
-    # Update Oshi
-    oshi_payload = {"oshiId": 1}
-    response = await client.post("/api/users/oshi", json=oshi_payload, headers=headers)
+    # Batch add 2 oshis
+    oshi_payload = {"oshiIds": [1, 2]}
+    response = await client.post("/api/users/oshi/batch-add", json=oshi_payload, headers=headers)
     assert response.status_code == 200
     
-    # Verify in DB directly (profile endpoint uses stale current_user from JWT)
+    # Verify in DB directly
     user = await db["users"].find_one({"userId": user_id})
-    assert user["oshiId"] == "1"
+    assert user["oshiIds"] == ["1", "2"]
+
+@pytest.mark.asyncio
+async def test_remove_oshi(client: AsyncClient, db, create_user):
+    """Test removing an oshi."""
+    token, user_id, headers = await create_user("removeoshiuser")
+
+    # Setup: add 2 oshis first
+    await db["users"].update_one(
+        {"userId": user_id},
+        {"$set": {"oshiIds": ["1", "2"]}}
+    )
+
+    # Remove one oshi
+    remove_payload = {"oshiId": 1}
+    response = await client.post("/api/users/oshi/remove", json=remove_payload, headers=headers)
+    assert response.status_code == 200
+
+    # Verify in DB
+    user = await db["users"].find_one({"userId": user_id})
+    assert user["oshiIds"] == ["2"]
+
+@pytest.mark.asyncio
+async def test_batch_add_oshi_limit(client: AsyncClient, db, create_user):
+    """Test batch add exceeding max 5 limit."""
+    token, user_id, headers = await create_user("limituser")
+
+    # Setup: already has 4 oshis
+    await db["users"].update_one(
+        {"userId": user_id},
+        {"$set": {"oshiIds": ["1", "2", "3", "4"]}}
+    )
+
+    # Try adding 2 more (would exceed limit of 5)
+    oshi_payload = {"oshiIds": [5, 6]}
+    response = await client.post("/api/users/oshi/batch-add", json=oshi_payload, headers=headers)
+    assert response.status_code == 400
+
+    # Verify DB unchanged
+    user = await db["users"].find_one({"userId": user_id})
+    assert len(user["oshiIds"]) == 4
 
 @pytest.mark.asyncio
 async def test_update_public_status(client: AsyncClient, db, create_user):
@@ -140,7 +180,7 @@ async def test_oshi_meetings_logic(client: AsyncClient, db, create_user, create_
     oshi_id = "123"
     await db["users"].update_one(
         {"userId": user_id},
-        {"$set": {"oshiId": oshi_id}}
+        {"$set": {"oshiIds": [oshi_id]}}
     )
     
     # Mock Oshi Member Data (needed for profile endpoint to resolve Oshi name)
@@ -218,7 +258,7 @@ async def test_oshi_meetings_logic(client: AsyncClient, db, create_user, create_
     assert stats["totalShows"] == 3
 
     # Verify Oshi Schedule Structure
-    oshi_data = data["oshi"]
+    oshi_data = data["oshis"][0]
     assert oshi_data is not None
     assert "upcomingSchedule" in oshi_data
     assert "pastSchedule" in oshi_data

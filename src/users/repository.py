@@ -54,9 +54,14 @@ class UserRepository:
             {"userId": user_id}, {"$set": {"isEmailVerified": True}}
         )
 
-    async def set_oshi_id(self, user_id: str, oshi_id: str):
+    async def add_oshi_id(self, user_id: str, oshi_id: str):
         return await self.collection.update_one(
-            {"userId": user_id}, {"$set": {"oshiId": oshi_id}}
+            {"userId": user_id}, {"$addToSet": {"oshiIds": oshi_id}}
+        )
+
+    async def remove_oshi_id(self, user_id: str, oshi_id: str):
+        return await self.collection.update_one(
+            {"userId": user_id}, {"$pull": {"oshiIds": oshi_id}}
         )
 
     async def set_public_status(

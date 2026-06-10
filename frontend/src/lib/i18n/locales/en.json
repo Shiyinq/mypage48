@@ -474,7 +474,9 @@
 			"birthday": "Birthday",
 			"upcomingSchedule": "Oshi's Next Schedule",
 			"pastSchedule": "Oshi's Previous Schedule",
-			"noSchedule": "No schedule"
+			"noSchedule": "No schedule",
+			"addOshi": "Add Oshi",
+			"removeOshi": "Remove Oshi"
 		},
 		"oshiModal": {
 			"title": "Select Your Oshi",
@@ -484,7 +486,13 @@
 			"noMembers": "No members found matching \"{query}\"",
 			"generation": "Generation {gen}",
 			"cancel": "Cancel",
-			"save": "Save Oshi"
+			"save": "Save Oshi",
+			"selectHint": "Select up to {count} more",
+			"maxReached": "Maximum {max} oshis reached",
+			"newSelected": "{count} new selected",
+			"confirmTitle": "Remove Oshi?",
+			"confirmDesc": "Are you sure you want to remove this oshi from your list?",
+			"confirmRemove": "Remove"
 		},
 		"recentActivity": {
 			"title": "Recent Activity",

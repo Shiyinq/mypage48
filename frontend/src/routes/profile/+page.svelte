@@ -5,10 +5,17 @@
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
 	import { User as UserIcon, LogOut, Settings, LoaderCircle } from 'lucide-svelte';
+	import { scale } from 'svelte/transition';
 	import SEO from '$lib/components/SEO.svelte';
 	import { PageHeader, ErrorState } from '$lib/components';
 
-	import type { ProfileRecentActivity, RankInfo, User, UserOshi, OshiShow } from '$lib/types';
+	import type {
+		ProfileRecentActivity,
+		RankInfo,
+		User,
+		UserOshi,
+		OshiTwoShotCounts
+	} from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		DigitalMemberCard,
@@ -37,10 +44,14 @@
 		username: string;
 		memberId?: string;
 		ofcStatus?: string;
-		oshi: UserOshi | null;
+		oshis?: UserOshi[];
 	}
 
 	let profile: ProfileData | null = $state(null);
+	let oshis: UserOshi[] = $state([]);
+	let oshiTwoShotsList: OshiTwoShotCounts[] = $state([]);
+	let oshiMeetingsList: number[] = $state([]);
+	let currentOshiIndex = $state(0);
 	let recentActivity: ProfileRecentActivity[] = $state([]);
 	let level: RankInfo = $state({
 		current: 'Newcomer',
@@ -52,11 +63,6 @@
 	let totalAchievements = $state(0);
 	let totalTwoShots = $state(0);
 	let totalLiveWatched = $state(0);
-	let twoShotRouletteCount = $state(0);
-	let twoShotBirthdayCount = $state(0);
-	let oshiMeetings = $state(0);
-	let upcomingSchedule: OshiShow[] = $state([]);
-	let pastSchedule: OshiShow[] = $state([]);
 
 	let error = $derived(userProfile.error);
 
@@ -64,12 +70,20 @@
 	let showOshiModal = $state(false);
 	let savingOshi = $state(false);
 
+	// Confirm remove state
+	let showRemoveConfirm = $state(false);
+	let removeTargetId = $state<string | null>(null);
+
 	let isLoggingOut = $derived(authStore.isLoggingOut);
 
 	// Progress percent derived from level
 	let progressPercent = $derived(
 		level.nextLevelXp > 0 ? Math.min((level.xp / level.nextLevelXp) * 100, 100) : 0
 	);
+
+	// Current oshi schedule for OshiShows
+	let currentUpcomingSchedule = $derived(oshis[currentOshiIndex]?.upcomingSchedule || []);
+	let currentPastSchedule = $derived(oshis[currentOshiIndex]?.pastSchedule || []);
 
 	// Helper to map profile data from User store to local ProfileData
 	function mapProfileData(profileData: User): ProfileData {
@@ -81,7 +95,7 @@
 			username: profileData.username || '',
 			memberId: profileData.memberId || undefined,
 			ofcStatus: profileData.ofcStatus || undefined,
-			oshi: profileData.oshi || null
+			oshis: profileData.oshis || []
 		};
 	}
 
@@ -95,13 +109,20 @@
 	});
 
 	// Subscribe to store changes to keep local state in sync
-	// The userProfile store now contains UserWithProfileStats with profile stats
 	$effect(() => {
 		const storeProfile = userProfile.data;
-		// loading state is handled by top-level reactive declaration
 
 		if (storeProfile) {
 			profile = mapProfileData(storeProfile);
+
+			oshis = storeProfile.oshis || [];
+			oshiTwoShotsList = storeProfile.profileOshiTwoShotsList || [];
+			oshiMeetingsList = storeProfile.profileOshiMeetingsList || [];
+
+			// Reset index if out of bounds
+			if (currentOshiIndex >= oshis.length) {
+				currentOshiIndex = 0;
+			}
 
 			// Extract profile stats from typed store
 			if (storeProfile.profileRank) {
@@ -112,15 +133,6 @@
 				totalAchievements = storeProfile.profileStats.totalAchievements;
 				totalTwoShots = storeProfile.profileStats.totalTwoShots || 0;
 				totalLiveWatched = storeProfile.profileStats.totalLiveWatched || 0;
-				oshiMeetings = storeProfile.profileStats.oshiMeetings || 0;
-			}
-			if (storeProfile.profileOshiTwoShots) {
-				twoShotRouletteCount = storeProfile.profileOshiTwoShots.roulette;
-				twoShotBirthdayCount = storeProfile.profileOshiTwoShots.birthday;
-			}
-			if (storeProfile.oshi) {
-				upcomingSchedule = storeProfile.oshi.upcomingSchedule || [];
-				pastSchedule = storeProfile.oshi.pastSchedule || [];
 			}
 			if (storeProfile.profileRecentActivity) {
 				recentActivity = storeProfile.profileRecentActivity;
@@ -130,7 +142,6 @@
 
 	async function fetchProfile() {
 		try {
-			// Use store action
 			await userProfile.load();
 		} catch {
 			showToast(t('profile.errorTitle'), 'error');
@@ -160,22 +171,20 @@
 	let showMemberDetail = $state(false);
 	let loadingMemberDetail = $state(false);
 
-	const openMemberDetail = async () => {
-		if (!profile?.oshi?.name) return;
+	const openMemberDetail = async (memberName: string) => {
+		if (!memberName) return;
 		showMemberDetail = true;
 
-		// If we already have the detail loaded and it matches
-		if (memberDetail && memberDetail.name === profile.oshi.name) {
+		if (memberDetail && memberDetail.name === memberName) {
 			return;
 		}
 
 		memberDetail = null;
 		loadingMemberDetail = true;
 		try {
-			const res = await members.getAll({ search: profile!.oshi!.name });
+			const res = await members.getAll({ search: memberName });
 			if (res.data.length > 0) {
-				// Fuzzy match might return others, try to find exact name match first
-				const exact = res.data.find((m) => m.name === profile!.oshi!.name);
+				const exact = res.data.find((m) => m.name === memberName);
 				memberDetail = exact || res.data[0];
 			}
 		} catch (e) {
@@ -190,16 +199,36 @@
 		showMemberDetail = false;
 	};
 
-	const saveOshi = async (member: Member) => {
+	const saveOshi = async (members: Member[]) => {
 		savingOshi = true;
 		try {
-			// Use store action
-			await userProfile.updateOshi(String(member.id));
-			showToast('Oshi updated successfully!', 'success');
+			await userProfile.addOshi(members.map((m) => String(m.id)));
+			showToast('Oshi added successfully!', 'success');
 			closeOshiModal();
 		} catch (e) {
-			logger.error('Failed to save oshi', e, { context: 'ProfilePage' });
-			showToast('Failed to save oshi', 'error');
+			logger.error('Failed to add oshi', e, { context: 'ProfilePage' });
+			showToast('Failed to add oshi', 'error');
+		} finally {
+			savingOshi = false;
+		}
+	};
+
+	const confirmRemoveOshi = (oshiId: string) => {
+		removeTargetId = oshiId;
+		showRemoveConfirm = true;
+	};
+
+	const handleRemoveOshi = async () => {
+		if (!removeTargetId) return;
+		savingOshi = true;
+		try {
+			await userProfile.removeOshi(removeTargetId);
+			showToast('Oshi removed successfully!', 'success');
+			showRemoveConfirm = false;
+			removeTargetId = null;
+		} catch (e) {
+			logger.error('Failed to remove oshi', e, { context: 'ProfilePage' });
+			showToast('Failed to remove oshi', 'error');
 		} finally {
 			savingOshi = false;
 		}
@@ -268,7 +297,11 @@
 		<div class="grid lg:grid-cols-12 gap-8 min-w-0">
 			<!-- LEFT COLUMN: Identity & Level (Span 5) -->
 			<div class="lg:col-span-5 space-y-6 min-w-0">
-				<DigitalMemberCard {profile} loading={userProfile.isLoading} />
+				<DigitalMemberCard
+					{profile}
+					loading={userProfile.isLoading}
+					activeOshiMemberType={oshis[currentOshiIndex]?.memberType}
+				/>
 				<LevelProgress {level} {progressPercent} loading={userProfile.isLoading} />
 				<QuickStats
 					{totalShows}
@@ -283,15 +316,20 @@
 			<!-- RIGHT COLUMN: Oshimen & Feed (Span 7) -->
 			<div class="lg:col-span-7 space-y-6 min-w-0">
 				<OshiCard
-					{profile}
+					{oshis}
+					{oshiTwoShotsList}
+					{oshiMeetingsList}
+					bind:currentIndex={currentOshiIndex}
 					loading={userProfile.isLoading}
-					rouletteCount={twoShotRouletteCount}
-					birthdayCount={twoShotBirthdayCount}
-					{oshiMeetings}
 					onOpenOshiModal={openOshiModal}
 					onOpenMemberDetail={openMemberDetail}
+					onRemoveOshi={confirmRemoveOshi}
 				/>
-				<OshiShows {upcomingSchedule} {pastSchedule} loading={userProfile.isLoading} />
+				<OshiShows
+					upcomingSchedule={currentUpcomingSchedule}
+					pastSchedule={currentPastSchedule}
+					loading={userProfile.isLoading}
+				/>
 			</div>
 		</div>
 	{/if}
@@ -301,6 +339,8 @@
 <OshiSelectionModal
 	show={showOshiModal}
 	saving={savingOshi}
+	currentOshiIds={oshis.map((o) => o.id)}
+	maxCount={5}
 	onClose={closeOshiModal}
 	onSave={saveOshi}
 />
@@ -312,3 +352,54 @@
 	loading={loadingMemberDetail}
 	onClose={closeMemberDetail}
 />
+
+<!-- Remove Oshi Confirmation -->
+{#if showRemoveConfirm}
+	<div class="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+		<div
+			class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+			onclick={() => {
+				showRemoveConfirm = false;
+				removeTargetId = null;
+			}}
+			onkeydown={(e) =>
+				e.key === 'Escape' && (showRemoveConfirm = false) && (removeTargetId = null)}
+			role="button"
+			tabindex="-1"
+			aria-label={t('common.close')}
+		></div>
+		<div
+			class="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl p-6"
+			transition:scale={{ duration: 200, start: 0.95 }}
+		>
+			<h3 class="text-lg font-black text-gray-800 dark:text-white mb-2">
+				{t('profile.oshiModal.confirmTitle')}
+			</h3>
+			<p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+				{t('profile.oshiModal.confirmDesc')}
+			</p>
+			<div class="flex justify-end gap-3">
+				<button
+					onclick={() => {
+						showRemoveConfirm = false;
+						removeTargetId = null;
+					}}
+					class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-700 font-bold text-sm transition-colors cursor-pointer"
+				>
+					{t('profile.oshiModal.cancel')}
+				</button>
+				<button
+					onclick={handleRemoveOshi}
+					disabled={savingOshi}
+					class="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm transition-colors cursor-pointer disabled:opacity-50"
+				>
+					{#if savingOshi}
+						<LoaderCircle class="w-4 h-4 animate-spin" />
+					{:else}
+						{t('profile.oshiModal.confirmRemove')}
+					{/if}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}

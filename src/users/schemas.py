@@ -76,7 +76,7 @@ class UserInDB(BaseModel):
     memberId: Optional[str] = Field(
         max_length=20, default=None
     )  # Optional for OAuth users
-    oshiId: Optional[str] = Field(default=None)
+    oshiIds: list[str] = Field(default_factory=list)
     username: str = Field(max_length=50)
     email: EmailStr
     ofcStatus: str = Field(default="Active")
@@ -92,13 +92,6 @@ class UserInDB(BaseModel):
     isAccountLocked: bool = Field(default=False)
     accountLockedUntil: Optional[datetime] = Field(default=None)
     lastActiveAt: Optional[datetime] = Field(default=None)
-
-    @field_validator("oshiId", mode="before")
-    @classmethod
-    def allow_int_oshi_id(cls, v):
-        if v is None:
-            return None
-        return str(v)
 
 
 class UserCreateResponse(BaseModel):
@@ -159,7 +152,18 @@ class UpdateProfilePictureRequest(BaseModel):
         return validate_image_path(v, "avatar/", "Profile picture")
 
 
-class UpdateOshiRequest(BaseModel):
+class BatchAddOshiRequest(BaseModel):
+    oshiIds: list[str]
+
+    @field_validator("oshiIds", mode="before")
+    @classmethod
+    def allow_int_oshi_ids(cls, v):
+        if v is None:
+            return None
+        return [str(x) for x in v]
+
+
+class RemoveOshiRequest(BaseModel):
     oshiId: str
 
     @field_validator("oshiId", mode="before")
@@ -219,10 +223,12 @@ class ProfileFullResponse(BaseModel):
     """Complete profile response with all sections."""
 
     profile: dict  # UserCurrent as dict to avoid circular import
-    oshi: Optional[OshiResponse] = None
+    oshis: list[OshiResponse] = []
     rank: RankInfo
     stats: ProfileStats
     oshiTwoShots: OshiTwoShotCounts
+    oshiTwoShotsList: list[OshiTwoShotCounts] = []
+    oshiMeetingsList: list[int] = []
     recentActivity: list[ProfileRecentActivity]
 
 
