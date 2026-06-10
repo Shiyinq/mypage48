@@ -405,6 +405,15 @@
 			"stage": "",
 			"row": ""
 		},
+		"heatmap": {
+			"title": "",
+			"subtitle": "",
+			"noAttendance": "",
+			"attendance": "",
+			"on": "",
+			"less": "",
+			"more": ""
+		},
 		"monthlyAttendance": {
 			"title": "",
 			"subtitle": "",
