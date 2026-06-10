@@ -9,3 +9,4 @@ export { default as PolaroidSkeleton } from './PolaroidSkeleton.svelte';
 export { default as EventCardSkeleton } from './EventCardSkeleton.svelte';
 export { default as EventHistorySkeleton } from './EventHistorySkeleton.svelte';
 export { default as MemberDetailSkeleton } from './MemberDetailSkeleton.svelte';
+export { default as JournalDetailSkeleton } from './JournalDetailSkeleton.svelte';
