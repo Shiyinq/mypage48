@@ -9,6 +9,7 @@ export interface OshiShow {
 }
 
 export interface UserOshi {
+	id: string;
 	name: string;
 	nickname: string;
 	generation: string;
@@ -43,7 +44,7 @@ export interface User {
 	profilePicture_medium?: string | null;
 	profilePicture_small?: string | null;
 	blurHash?: string | null;
-	oshi?: UserOshi | null;
+	oshis?: UserOshi[];
 	isPublic?: boolean;
 	publicYear?: number | null;
 	provider?: string;

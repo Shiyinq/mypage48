@@ -425,7 +425,13 @@
 			"save": "",
 			"loading": "",
 			"noMembers": "",
-			"generation": ""
+			"generation": "",
+			"selectHint": "",
+			"maxReached": "",
+			"newSelected": "",
+			"confirmTitle": "",
+			"confirmDesc": "",
+			"confirmRemove": ""
 		},
 		"title": "",
 		"subtitle": "",
@@ -466,7 +472,9 @@
 			"birthday": "",
 			"upcomingSchedule": "",
 			"pastSchedule": "",
-			"noSchedule": ""
+			"noSchedule": "",
+			"addOshi": "",
+			"removeOshi": ""
 		},
 		"recentActivity": {
 			"title": "",

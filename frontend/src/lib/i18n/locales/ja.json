@@ -443,7 +443,13 @@
 			"save": "推しを保存",
 			"loading": "メンバーを読み込み中...",
 			"noMembers": "\"{query}\" に一致するメンバーが見つかりません",
-			"generation": "{gen}期生"
+			"generation": "{gen}期生",
+			"selectHint": "あと{count}人まで選択可能",
+			"maxReached": "最大{max}推しに達しました",
+			"newSelected": "{count}件 新規選択",
+			"confirmTitle": "推しを削除しますか？",
+			"confirmDesc": "この推しをリストから削除してもよろしいですか？",
+			"confirmRemove": "削除"
 		},
 		"title": "マイプロフィール",
 		"subtitle": "ファンアイデンティティ＆統計",
@@ -484,7 +490,9 @@
 			"birthday": "バースデー",
 			"upcomingSchedule": "推しの次のスケジュール",
 			"pastSchedule": "推しの以前のスケジュール",
-			"noSchedule": "スケジュールはありません"
+			"noSchedule": "スケジュールはありません",
+			"addOshi": "推しを追加",
+			"removeOshi": "推しを削除"
 		},
 		"recentActivity": {
 			"title": "最近の活動",

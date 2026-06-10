@@ -29,6 +29,9 @@ from src.users.exceptions import (
     ImageTooLargeError,
     InvalidImageError,
     InvalidImageTypeError,
+    OshiAlreadyExistsError,
+    OshiLimitReachedError,
+    OshiNotFoundError,
     OshiUpdateError,
     ProfileStatsFetchError,
     ProviderUserCreationError,
@@ -191,13 +194,53 @@ class UserService:
             logger.exception(f"Unexpected error in create_user_provider: {str(e)}")
             raise ProviderUserCreationError()
 
-    async def update_oshi(self, user_id: str, oshi_id: str) -> "MessageResponse":
-        """Update the user's Oshi ID"""
+    async def batch_add_oshi(
+        self, user_id: str, new_oshi_ids: list[str]
+    ) -> "MessageResponse":
+        """Add multiple oshis at once (max 5 total)."""
         try:
-            await self.repository.set_oshi_id(user_id, oshi_id)
-            return MessageResponse(detail=Info.OSHI_UPDATED)
+            user_data = await self.repository.get_user_by_id(user_id)
+            if not user_data:
+                raise UserFetchError()
+
+            current_ids = user_data.get("oshiIds") or []
+
+            if len(current_ids) + len(new_oshi_ids) > 5:
+                raise OshiLimitReachedError()
+
+            already_exists = [oid for oid in new_oshi_ids if oid in current_ids]
+            if already_exists:
+                raise OshiAlreadyExistsError()
+
+            for oshi_id in new_oshi_ids:
+                await self.repository.add_oshi_id(user_id, oshi_id)
+
+            return MessageResponse(detail=Info.OSHI_ADDED)
+        except (OshiLimitReachedError, OshiAlreadyExistsError):
+            raise
         except Exception as e:
-            logger.exception(f"Error updating oshi: {str(e)}")
+            logger.exception(f"Error batch adding oshis: {str(e)}")
+            raise OshiUpdateError()
+
+    async def remove_oshi(self, user_id: str, oshi_id: str) -> "MessageResponse":
+        """Remove an oshi from user's list."""
+        try:
+            user_data = await self.repository.get_user_by_id(user_id)
+            if not user_data:
+                raise UserFetchError()
+
+            oshi_ids = user_data.get("oshiIds") or []
+
+            if oshi_id not in oshi_ids:
+                raise OshiNotFoundError()
+
+            await self.repository.remove_oshi_id(user_id, oshi_id)
+
+            return MessageResponse(detail=Info.OSHI_REMOVED)
+        except OshiNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error removing oshi: {str(e)}")
             raise OshiUpdateError()
 
     async def update_public_status(
@@ -347,14 +390,15 @@ class UserService:
             raise PublicUserNotFoundError()
 
         oshi_response = None
-        if user.oshiId:
+        if user.oshiIds:
+            primary_oshi_id = user.oshiIds[0]
             try:
-                # Ensure oshiId is string provided to MemberService
                 member_detail = await self.member_service.get_member_by_id(
-                    str(user.oshiId)
+                    str(primary_oshi_id)
                 )
                 member = member_detail.member
                 oshi_response = OshiResponse(
+                    id=str(primary_oshi_id),
                     name=member.name,
                     nickname=member.nickname,
                     generation=member.generation or "-",
@@ -367,7 +411,9 @@ class UserService:
                     socials=member.socials.model_dump() if member.socials else None,
                 )
             except Exception as e:
-                logger.warning(f"Failed to fetch oshi data for id {user.oshiId}: {e}")
+                logger.warning(
+                    f"Failed to fetch oshi data for id {primary_oshi_id}: {e}"
+                )
 
         # Calculate Stats
         stats = None
@@ -510,41 +556,110 @@ class UserService:
             stats=stats,
         )
 
+    async def _get_single_oshi_data(
+        self, oshi_id: str, tickets
+    ) -> tuple[Optional[OshiResponse], int, int, int]:
+        """Fetch oshi data and calculate per-oshi stats for a single oshi ID.
+
+        Returns (oshi_response, roulette_count, birthday_count, oshi_meetings).
+        """
+        try:
+            member_detail = await self.member_service.get_member_by_id(str(oshi_id))
+            member = member_detail.member
+            oshi_name = member.name
+
+            oshi_response = OshiResponse(
+                id=str(oshi_id),
+                name=member.name,
+                nickname=member.nickname,
+                generation=member.generation or "-",
+                memberType=member.member_type,
+                profilePicture=member.img,
+                profilePicture_medium=member.img_medium,
+                profilePicture_small=member.img_small,
+                blurHash=member.blurHash,
+                catchphrase=member.jiko or "-",
+                socials=member.socials.model_dump() if member.socials else None,
+            )
+
+            roulette_count = 0
+            birthday_count = 0
+            oshi_meetings = 0
+
+            for t in tickets:
+                if t.two_shot and t.two_shot.member_name == oshi_name:
+                    if t.two_shot.type == "Roulette":
+                        roulette_count += 1
+                    elif t.two_shot.type == "Birthday":
+                        birthday_count += 1
+
+            oshi_events = await self.events_service.get_events_for_member(str(oshi_id))
+            oshi_total_shows = len(oshi_events)
+
+            if oshi_response:
+                oshi_response.totalShows = oshi_total_shows
+
+                now = datetime.now()
+                upcoming_events = []
+                past_events = []
+
+                for e in oshi_events:
+                    event_date = e.get("date")
+                    if not isinstance(event_date, datetime):
+                        try:
+                            event_date = datetime.fromisoformat(str(event_date))
+                        except:
+                            continue
+
+                    show_data = OshiShowResponse(
+                        title=e.get("title", "Unknown"),
+                        date=event_date,
+                        url=e.get("url"),
+                    )
+
+                    if event_date >= now:
+                        upcoming_events.append(show_data)
+                    else:
+                        past_events.append(show_data)
+
+                oshi_response.upcomingSchedule = sorted(
+                    upcoming_events, key=lambda x: x.date
+                )
+                oshi_response.pastSchedule = sorted(
+                    past_events, key=lambda x: x.date, reverse=True
+                )[:5]
+
+            oshi_event_keys = set()
+            for e in oshi_events:
+                d = e.get("date")
+                if isinstance(d, datetime):
+                    d = d.strftime("%Y-%m-%d")
+                elif isinstance(d, str):
+                    d = d.split("T")[0]
+                oshi_event_keys.add(f"{e.get('title')}|{d}")
+
+            for t in tickets:
+                ticket_key = f"{t.event.title}|{t.event.date}"
+                if ticket_key in oshi_event_keys:
+                    oshi_meetings += 1
+
+            return oshi_response, roulette_count, birthday_count, oshi_meetings
+
+        except Exception as e:
+            logger.warning(f"Failed to fetch oshi data for id {oshi_id}: {e}")
+            return None, 0, 0, 0
+
     async def get_profile_full(
         self,
         current_user,
     ) -> ProfileFullResponse:
         """
         Get complete profile with all stats for Profile page.
-        Returns profile, oshi, rank, stats, oshi 2-shots, and recent activity.
+        Returns profile, oshi list, rank, stats, oshi 2-shots, and recent activity.
         """
         try:
-            # Get oshi data
-            oshi_response = None
-            oshi_name = None
-            if current_user.oshiId:
-                try:
-                    member_detail = await self.member_service.get_member_by_id(
-                        str(current_user.oshiId)
-                    )
-                    member = member_detail.member
-                    oshi_name = member.name
-                    oshi_response = OshiResponse(
-                        name=member.name,
-                        nickname=member.nickname,
-                        generation=member.generation or "-",
-                        memberType=member.member_type,
-                        profilePicture=member.img,
-                        profilePicture_medium=member.img_medium,
-                        profilePicture_small=member.img_small,
-                        blurHash=member.blurHash,
-                        catchphrase=member.jiko or "-",
-                        socials=member.socials.model_dump() if member.socials else None,
-                    )
-                except Exception as e:
-                    logger.warning(
-                        f"Failed to fetch oshi data for id {current_user.oshiId}: {e}"
-                    )
+            # Get oshi IDs list
+            oshi_ids = list(current_user.oshiIds) if current_user.oshiIds else []
 
             # Get tickets for stats calculation
             tickets = await self.tickets_service.get_my_tickets(
@@ -563,86 +678,22 @@ class UserService:
                 current_user.userId
             )
 
-            # Calculate oshi 2-shot counts and meetings
-            roulette_count = 0
-            birthday_count = 0
-            oshi_meetings = 0
+            # Per-oshi data
+            oshi_responses = []
+            oshi_two_shots_list = []
+            oshi_meetings_list = []
 
-            if oshi_name:
-                # 1. 2-Shot Counts
-                for t in tickets:
-                    if t.two_shot and t.two_shot.member_name == oshi_name:
-                        if t.two_shot.type == "Roulette":
-                            roulette_count += 1
-                        elif t.two_shot.type == "Birthday":
-                            birthday_count += 1
-
-                # 2. Oshi Meetings (Attendance at events where Oshi was present)
-                # Fetch all events where Oshi was a member
-                oshi_events = await self.events_service.get_events_for_member(
-                    str(current_user.oshiId)
-                )
-                # Create a set of unique event identifiers (title + date) for O5 events
-                oshi_event_keys = set()
-                for e in oshi_events:
-                    # e is a dict from find_events_by_member_id projection
-                    # key format: "Title|YYYY-MM-DD"
-                    # Ensure date is string YYYY-MM-DD if it's datetime
-                    d = e.get("date")
-                    if isinstance(d, datetime):
-                        d = d.strftime("%Y-%m-%d")
-                    elif isinstance(d, str):
-                        # If date includes time, take only YYYY-MM-DD part
-                        d = d.split("T")[0]
-
-                    oshi_event_keys.add(f"{e.get('title')}|{d}")
-
-                # Check user tickets against these events
-                for t in tickets:
-                    # t.event.date is "YYYY-MM-DD" string
-                    ticket_key = f"{t.event.title}|{t.event.date}"
-                    if ticket_key in oshi_event_keys:
-                        oshi_meetings += 1
-
-                # 3. Calculate oshi total shows
-                oshi_total_shows = len(oshi_events)
-
-                if oshi_response:
-                    oshi_response.totalShows = oshi_total_shows
-
-                    # Split oshi_events into upcoming and history
-                    now = datetime.now()
-                    upcoming_events = []
-                    past_events = []
-
-                    for e in oshi_events:
-                        event_date = e.get("date")
-                        if not isinstance(event_date, datetime):
-                            try:
-                                event_date = datetime.fromisoformat(str(event_date))
-                            except:
-                                continue
-
-                        show_data = OshiShowResponse(
-                            title=e.get("title", "Unknown"),
-                            date=event_date,
-                            url=e.get("url"),
-                        )
-
-                        if event_date >= now:
-                            upcoming_events.append(show_data)
-                        else:
-                            past_events.append(show_data)
-
-                    # Sort and limit
-                    # Upcoming: Ascending (soonest first) - No limit
-                    # History: Descending (most recent first) - Limit 5
-                    oshi_response.upcomingSchedule = sorted(
-                        upcoming_events, key=lambda x: x.date
+            for oshi_id in oshi_ids:
+                result = await self._get_single_oshi_data(oshi_id, tickets)
+                if result and result[0] is not None:
+                    oshi_resp, roulette, birthday, meetings = result
+                    oshi_responses.append(oshi_resp)
+                    oshi_two_shots_list.append(
+                        OshiTwoShotCounts(roulette=roulette, birthday=birthday)
                     )
-                    oshi_response.pastSchedule = sorted(
-                        past_events, key=lambda x: x.date, reverse=True
-                    )[:5]
+                    oshi_meetings_list.append(meetings)
+
+            total_oshi_meetings = sum(oshi_meetings_list)
 
             # Get recent activity (5 most recent shows)
             sorted_tickets = sorted(tickets, key=lambda x: x.event.date, reverse=True)
@@ -687,7 +738,6 @@ class UserService:
                 "username": current_user.username,
                 "bio": current_user.bio,
                 "memberId": current_user.memberId,
-                "oshiId": current_user.oshiId,
                 "ofcStatus": current_user.ofcStatus,
                 "isPublic": current_user.isPublic,
                 "publicYear": current_user.publicYear,
@@ -698,18 +748,20 @@ class UserService:
 
             return ProfileFullResponse(
                 profile=profile_dict,
-                oshi=oshi_response,
+                oshis=oshi_responses,
                 rank=rank,
                 stats=ProfileStats(
                     totalShows=total_shows,
                     totalAchievements=total_achievements,
                     totalTwoShots=total_two_shots,
                     totalLiveWatched=total_live_watched,
-                    oshiMeetings=oshi_meetings,
+                    oshiMeetings=total_oshi_meetings,
                 ),
-                oshiTwoShots=OshiTwoShotCounts(
-                    roulette=roulette_count, birthday=birthday_count
-                ),
+                oshiTwoShots=oshi_two_shots_list[0]
+                if oshi_two_shots_list
+                else OshiTwoShotCounts(roulette=0, birthday=0),
+                oshiTwoShotsList=oshi_two_shots_list,
+                oshiMeetingsList=oshi_meetings_list,
                 recentActivity=recent_activity,
             )
 

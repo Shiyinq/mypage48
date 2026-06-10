@@ -152,6 +152,9 @@ from src.users.exceptions import ImageTooLargeError as UserImageTooLargeError
 from src.users.exceptions import InvalidImageError as UserInvalidImageError
 from src.users.exceptions import InvalidImageTypeError as UserInvalidImageTypeError
 from src.users.exceptions import (
+    OshiAlreadyExistsError,
+    OshiLimitReachedError,
+    OshiNotFoundError,
     OshiUpdateError,
     ProfileStatsFetchError,
     ProviderUserCreationError,
@@ -167,6 +170,9 @@ from src.users.http_exceptions import ImageTooLarge as UserImageTooLarge
 from src.users.http_exceptions import InvalidImage as UserInvalidImage
 from src.users.http_exceptions import InvalidImageType as UserInvalidImageType
 from src.users.http_exceptions import (
+    OshiAlreadyExists,
+    OshiLimitReached,
+    OshiNotFound,
     OshiUpdateFailed,
     ProfileStatsFetchFailed,
     PublicStatusUpdateFailed,
@@ -243,6 +249,12 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, UserFetchFailed())
     if isinstance(exc, OshiUpdateError):
         return await detailed_http_exception_handler(request, OshiUpdateFailed())
+    if isinstance(exc, OshiLimitReachedError):
+        return await detailed_http_exception_handler(request, OshiLimitReached())
+    if isinstance(exc, OshiAlreadyExistsError):
+        return await detailed_http_exception_handler(request, OshiAlreadyExists())
+    if isinstance(exc, OshiNotFoundError):
+        return await detailed_http_exception_handler(request, OshiNotFound())
     if isinstance(exc, PublicStatusUpdateError):
         return await detailed_http_exception_handler(
             request, PublicStatusUpdateFailed()
