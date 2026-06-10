@@ -406,3 +406,186 @@ async def test_get_events_with_date_range(client, create_event, create_user):
     assert len(data["data"]) == 1
     assert data["data"][0]["id"] == "event-2"
 
+
+@pytest.mark.asyncio
+async def test_get_member_events_paginated(client, create_event, create_user, db):
+    _, _, headers = await create_user("testuser")
+
+    # Insert a setlist for image lookup
+    await db["setlists"].insert_one({
+        "setlistId": "sl-member",
+        "title": "Member Setlist",
+        "imageUrl": "/images/setlist.jpg",
+        "description": "desc",
+        "type": "setlist",
+        "active": True
+    })
+
+    # Create events for member "mem-1"
+    for i in range(5):
+        month = i + 1
+        await create_event({
+            "id": f"mem-event-{i}",
+            "title": f"Member Event {i}",
+            "date": f"2026-{month:02d}-15T00:00:00",
+            "url": f"/event/{i}",
+            "label": "/images/icon.cat2.png",
+            "memberIds": ["mem-1"],
+            "setlistId": "sl-member" if i == 0 else None
+        })
+
+    # Create event for another member (should NOT be returned)
+    await create_event({
+        "id": "other-event",
+        "title": "Other Member Event",
+        "date": "2026-06-15T00:00:00",
+        "url": "/other",
+        "label": "lbl",
+        "memberIds": ["mem-2"]
+    })
+
+    # Fetch first page (limit=2)
+    response = await client.get("/api/events/member/mem-1?page=1&limit=2", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "data" in data
+    assert "meta" in data
+    assert data["meta"]["total_data"] == 5
+    assert data["meta"]["current_page"] == 1
+    assert data["meta"]["per_page"] == 2
+    assert data["meta"]["last_page"] == 3
+    assert data["meta"]["next_page"] == 2
+    assert len(data["data"]) == 2
+
+    event = data["data"][0]
+    assert event["id"] == "mem-event-4"
+    assert event["title"] == "Member Event 4"
+    assert event["totalMembers"] == 1
+
+    # Fetch second page
+    response = await client.get("/api/events/member/mem-1?page=2&limit=2", headers=headers)
+    data = response.json()
+    assert len(data["data"]) == 2
+    assert data["data"][0]["id"] == "mem-event-2"
+
+    # Fetch last page
+    response = await client.get("/api/events/member/mem-1?page=3&limit=2", headers=headers)
+    data = response.json()
+    assert len(data["data"]) == 1
+    assert data["meta"]["next_page"] is None
+
+
+@pytest.mark.asyncio
+async def test_get_member_events_paginated_empty(client, create_user):
+    _, _, headers = await create_user("testuser")
+
+    response = await client.get("/api/events/member/nonexistent?page=1&limit=10", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["meta"]["total_data"] == 0
+    assert len(data["data"]) == 0
+    assert data["meta"]["last_page"] == 1
+    assert data["meta"]["next_page"] is None
+
+
+@pytest.mark.asyncio
+async def test_get_member_events_paginated_error(client, monkeypatch, create_user):
+    _, _, headers = await create_user("testuser")
+
+    async def mock_count(*args, **kwargs):
+        raise Exception("DB Error")
+
+    monkeypatch.setattr("src.events.repository.EventsRepository.count_member_events", mock_count)
+
+    response = await client.get("/api/events/member/mem-1?page=1&limit=10", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["meta"]["total_data"] == 0
+    assert len(data["data"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_get_member_event_stats(client, create_event, create_user, db):
+    _, _, headers = await create_user("testuser")
+
+    # Insert setlists
+    await db["setlists"].insert_one({
+        "setlistId": "sl-top",
+        "title": "Top Setlist",
+        "imageUrl": "",
+        "description": "",
+        "type": "setlist",
+        "active": True
+    })
+    await db["setlists"].insert_one({
+        "setlistId": "sl-other",
+        "title": "Other Setlist",
+        "imageUrl": "",
+        "description": "",
+        "type": "setlist",
+        "active": True
+    })
+
+    # Create events with setlistIds
+    for i in range(5):
+        month = i + 1
+        await create_event({
+            "id": f"stats-event-{i}",
+            "title": f"Stats Event {i}",
+            "date": f"2026-{month:02d}-10T00:00:00",
+            "url": "/stats",
+            "label": "lbl",
+            "memberIds": ["mem-stats"],
+            "setlistId": "sl-top" if i < 3 else "sl-other"
+        })
+
+    # Create event without setlistId (should not count in unique/top)
+    await create_event({
+        "id": "stats-event-no-sl",
+        "title": "No Setlist Event",
+        "date": "2026-06-10T00:00:00",
+        "url": "/stats",
+        "label": "lbl",
+        "memberIds": ["mem-stats"]
+    })
+
+    response = await client.get("/api/events/member/mem-stats/stats", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total_shows"] == 6
+    assert data["unique_setlists"] == 2
+    assert data["top_setlist_title"] == "Top Setlist"
+    assert data["top_setlist_count"] == 3
+
+
+@pytest.mark.asyncio
+async def test_get_member_event_stats_no_data(client, create_user):
+    _, _, headers = await create_user("testuser")
+
+    response = await client.get("/api/events/member/no-data/stats", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total_shows"] == 0
+    assert data["unique_setlists"] == 0
+    assert data["top_setlist_title"] is None
+    assert data["top_setlist_count"] == 0
+
+
+@pytest.mark.asyncio
+async def test_get_member_event_stats_error(client, monkeypatch, create_user):
+    _, _, headers = await create_user("testuser")
+
+    async def mock_stats(*args, **kwargs):
+        raise Exception("DB Error")
+
+    monkeypatch.setattr("src.events.repository.EventsRepository.get_member_event_stats", mock_stats)
+
+    response = await client.get("/api/events/member/mem-1/stats", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_shows"] == 0
+    assert data["unique_setlists"] == 0
+

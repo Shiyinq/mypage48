@@ -1341,6 +1341,40 @@
 		"emptyState": {
 			"title": "メンバーが見つかりません",
 			"description": "検索条件やフィルターを変更して、お探しのメンバーを見つけてください。"
+		},
+		"loadMore": "もっと読み込む",
+		"upcoming": " upcoming",
+		"past": "過去",
+		"pastShows": "過去の公演",
+		"shows": "公演",
+		"liveTitle": "ライブ",
+		"generation": "期",
+		"cm": "cm",
+		"count": "回",
+		"viewers": "視聴者",
+		"liveFallback": "ライブ配信",
+		"eventEmpty": "このメンバーの公演は見つかりませんでした",
+		"liveEmpty": "このメンバーのライブ履歴は見つかりませんでした",
+		"showSidebar": "サイドバーを表示",
+		"closeSidebar": "サイドバーを閉じる",
+		"memberFrame": "メンバーフレーム",
+		"officialProfile": "公式プロフィール",
+		"twitterProfile": "Twitter / X プロフィール",
+		"tiktokProfile": "TikTok プロフィール",
+		"showStats": {
+			"title": "公演統計",
+			"totalShows": "総公演数",
+			"topSetlist": "最多公演セットリスト",
+			"uniqueSetlists": "ユニークセットリスト数",
+			"disclaimer": "このデータはスクレイピング結果に基づいており、実際のデータと異なる場合があります。"
+		},
+		"liveStats": {
+			"title": "ライブ統計",
+			"totalLives": "総ライブ数",
+			"totalDuration": "総時間",
+			"topPlatform": "トッププラットフォーム",
+			"longestLive": "最長ライブ",
+			"disclaimer": "このデータはスクレイピング結果に基づいており、実際のデータと異なる場合があります。"
 		}
 	},
 	"command": {
