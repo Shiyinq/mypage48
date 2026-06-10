@@ -31,9 +31,13 @@
 	const { t } = useTranslation();
 
 	let searchQuery = $state('');
-	let selectedOshiIds: Set<string | number> = $state(new Set());
+	let selectedMembers: Member[] = $state([]);
 	let existingSet = $derived(new Set(currentOshiIds));
-	let totalSelected = $derived(selectedOshiIds.size);
+	let totalSelected = $derived(selectedMembers.length + currentOshiIds.length);
+
+	function isSelected(id: string | number) {
+		return existingSet.has(id) || selectedMembers.some((m) => m.id === id);
+	}
 
 	let memberList: Member[] = $state([]);
 	let loading = $state(false);
@@ -108,31 +112,25 @@
 	}
 
 	function handleSave() {
-		if (selectedOshiIds.size > 0) {
-			const newMembers: Member[] = [];
-			for (const id of selectedOshiIds) {
-				if (existingSet.has(id)) continue;
-				const member = memberList.find((m) => m.id === id);
-				if (member) newMembers.push(member);
-			}
-			if (newMembers.length > 0) onSave(newMembers);
+		if (selectedMembers.length > 0) {
+			onSave(selectedMembers);
 		}
 	}
 
-	function toggleMember(id: string | number) {
-		if (existingSet.has(id)) return;
-		if (selectedOshiIds.has(id)) {
-			selectedOshiIds.delete(id);
-			selectedOshiIds = new Set(selectedOshiIds);
-		} else if (selectedOshiIds.size < maxCount) {
-			selectedOshiIds = new Set([...selectedOshiIds, id]);
+	function toggleMember(member: Member) {
+		if (existingSet.has(member.id)) return;
+		const idx = selectedMembers.findIndex((m) => m.id === member.id);
+		if (idx >= 0) {
+			selectedMembers = selectedMembers.filter((m) => m.id !== member.id);
+		} else if (selectedMembers.length < maxCount) {
+			selectedMembers = [...selectedMembers, member];
 		}
 	}
 	// Reset/Fetch when modal opens
 	$effect(() => {
 		if (show) {
 			untrack(() => {
-				selectedOshiIds = new Set(currentOshiIds);
+				selectedMembers = [];
 				if (memberList.length === 0) {
 					fetchMembers(true);
 				}
@@ -140,7 +138,7 @@
 		} else {
 			untrack(() => {
 				searchQuery = '';
-				selectedOshiIds = new Set();
+				selectedMembers = [];
 				memberList = [];
 			});
 		}
@@ -241,10 +239,10 @@
 						{#each memberList as member}
 							<button
 								class="group relative flex flex-col items-center text-center p-2 md:p-3 rounded-2xl transition-all duration-200 border-2 cursor-pointer
-								{selectedOshiIds.has(member.id)
+								{isSelected(member.id)
 									? 'border-red-500 bg-red-50/50 dark:bg-red-900/20'
 									: 'border-transparent hover:bg-gray-50 dark:hover:bg-zinc-800 hover:border-gray-100 dark:hover:border-zinc-700'}"
-								onclick={() => toggleMember(member.id)}
+								onclick={() => toggleMember(member)}
 							>
 								<div class="relative w-14 h-14 md:w-20 md:h-20 mb-2 md:mb-3">
 									<OptimizedImage
@@ -253,14 +251,14 @@
 										srcSmall={getExternalMediaUrl(member.img_small)}
 										blurHash={member.blurHash}
 										alt={member.name}
-										class="w-full h-full rounded-full object-cover shadow-sm group-hover:shadow-md transition-shadow {selectedOshiIds.has(
+										class="w-full h-full rounded-full object-cover shadow-sm group-hover:shadow-md transition-shadow {isSelected(
 											member.id
 										)
 											? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-zinc-900'
 											: ''}"
 										sizes="56px 80px"
 									/>
-									{#if selectedOshiIds.has(member.id)}
+									{#if isSelected(member.id)}
 										<div
 											class="absolute -right-0.5 -top-0.5 w-5 h-5 md:w-6 md:h-6 bg-red-500 rounded-full flex items-center justify-center text-white shadow-sm"
 											transition:scale={{ duration: 200 }}
@@ -296,9 +294,9 @@
 				class="p-4 md:p-6 border-t border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col md:flex-row items-center gap-2 md:gap-3 z-10"
 			>
 				<p class="text-xs text-gray-400 text-center md:self-center md:flex-1 md:text-left">
-					{#if selectedOshiIds.size > 0}
+					{#if selectedMembers.length > 0}
 						{t('profile.oshiModal.newSelected', {
-							count: selectedOshiIds.size - currentOshiIds.length
+							count: selectedMembers.length
 						})}
 					{/if}
 				</p>
@@ -308,7 +306,7 @@
 					>
 					<Button
 						variant="primary"
-						disabled={selectedOshiIds.size <= currentOshiIds.length || saving}
+						disabled={selectedMembers.length === 0 || saving}
 						loading={saving}
 						onclick={handleSave}
 						class="cursor-pointer flex-1 md:flex-none"

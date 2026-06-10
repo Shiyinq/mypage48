@@ -449,7 +449,11 @@
 			"newSelected": "{count} baru dipilih",
 			"confirmTitle": "Hapus Oshi?",
 			"confirmDesc": "Yakin ingin menghapus oshi ini dari daftar?",
-			"confirmRemove": "Hapus"
+			"confirmRemove": "Hapus",
+			"addedToast": "Oshi berhasil ditambahkan!",
+			"removedToast": "Oshi berhasil dihapus!",
+			"addErrorToast": "Gagal menambah oshi",
+			"removeErrorToast": "Gagal menghapus oshi"
 		},
 		"title": "Profil Saya",
 		"subtitle": "Identitas & Stats Penggemar",
