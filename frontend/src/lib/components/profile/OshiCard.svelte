@@ -163,7 +163,10 @@
 	aria-label="Oshi card"
 >
 	<!-- Banner -->
-	<div class="h-32 w-full rounded-t-3xl overflow-hidden relative">
+	<div
+		class="h-32 w-full rounded-t-3xl overflow-hidden relative"
+		style="mask-image: linear-gradient(to bottom, black 50%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);"
+	>
 		{#key currentOshi?.memberType}
 			<div
 				transition:fade={{ duration: 400 }}
