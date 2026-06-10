@@ -38,7 +38,7 @@
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import LiveStats from '$lib/components/live/LiveStats.svelte';
-	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 
 	const { t } = useTranslation();
 
@@ -418,7 +418,7 @@
 	}}
 >
 	<!-- Background Decor (Stars, Dots, Glows) -->
-	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
+	<AppBackground interactive={true} bind:mouse bind:scrollY />
 
 	<!-- Top Bar -->
 	<div

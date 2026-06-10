@@ -15,7 +15,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import LandingNavbar from './LandingNavbar.svelte';
 	import Footer from './Footer.svelte';
-	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 
 	const { t } = useTranslation();
 
@@ -93,7 +93,7 @@
 	role="presentation"
 	class="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 relative overflow-hidden font-sans selection:bg-red-500/20"
 >
-	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
+	<AppBackground interactive={true} bind:mouse bind:scrollY />
 
 	<!-- NAV -->
 	<LandingNavbar mouse={$mouse} />
