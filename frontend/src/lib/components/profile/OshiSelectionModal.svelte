@@ -2,6 +2,7 @@
 	import { Search, X, Check } from 'lucide-svelte';
 	import { logger } from '$lib/utils/logger';
 	import Button from '$lib/components/Button.svelte';
+	import { untrack } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { members as membersApi, type Member } from '$lib/apis/members';
 	import { fade, scale } from 'svelte/transition';
@@ -43,19 +44,6 @@
 
 	let observer: IntersectionObserver | undefined = $state();
 	let sentinel: HTMLElement | undefined = $state();
-
-	function handleVisibilityChange(isVisible: boolean) {
-		if (isVisible) {
-			selectedOshiIds = new Set(currentOshiIds);
-			if (memberList.length === 0) {
-				fetchMembers(true);
-			}
-		} else {
-			searchQuery = '';
-			selectedOshiIds = new Set();
-			memberList = [];
-		}
-	}
 
 	function initObserver() {
 		if (observer) observer.disconnect();
@@ -142,7 +130,20 @@
 	}
 	// Reset/Fetch when modal opens
 	$effect(() => {
-		handleVisibilityChange(show);
+		if (show) {
+			untrack(() => {
+				selectedOshiIds = new Set(currentOshiIds);
+				if (memberList.length === 0) {
+					fetchMembers(true);
+				}
+			});
+		} else {
+			untrack(() => {
+				searchQuery = '';
+				selectedOshiIds = new Set();
+				memberList = [];
+			});
+		}
 	});
 	$effect(() => {
 		if (sentinel && observer) {
