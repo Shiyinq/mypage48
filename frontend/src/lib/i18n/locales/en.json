@@ -453,6 +453,8 @@
 		"stats": {
 			"totalShows": "Total Attendance",
 			"achievements": "Achievements",
+			"totalTwoShots": "Total 2-Shot",
+			"totalLiveWatched": "Live Watched",
 			"oshiMeetings": "Met"
 		},
 		"oshi": {

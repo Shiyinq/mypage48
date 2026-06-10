@@ -18,6 +18,7 @@ from src.image_validation import (
     InvalidImageTypeError as InvalidImageTypeValidationError,
 )
 from src.image_validation import validate_base64_image
+from src.live_history.repository import LiveHistoryRepository
 from src.logging_config import create_logger
 from src.members.service import MemberService
 from src.storage.service import StorageService
@@ -74,6 +75,7 @@ class UserService:
         achievements_service: AchievementsService,
         events_service: EventsService,
         storage_service: StorageService,
+        live_history_repo: LiveHistoryRepository,
     ):
         self.repository = repository
         self.security_service = security_service
@@ -84,6 +86,7 @@ class UserService:
         self.achievements_service = achievements_service
         self.events_service = events_service
         self.storage_service = storage_service
+        self.live_history_repo = live_history_repo
 
     def _handle_duplicate_key_error(self, dk: DuplicateKeyError):
         """Handle DuplicateKeyError and raise appropriate domain exception."""
@@ -555,6 +558,11 @@ class UserService:
                 tickets
             )
 
+            total_two_shots = sum(1 for t in tickets if t.two_shot is not None)
+            total_live_watched = await self.live_history_repo.get_total_history_count(
+                current_user.userId
+            )
+
             # Calculate oshi 2-shot counts and meetings
             roulette_count = 0
             birthday_count = 0
@@ -695,6 +703,8 @@ class UserService:
                 stats=ProfileStats(
                     totalShows=total_shows,
                     totalAchievements=total_achievements,
+                    totalTwoShots=total_two_shots,
+                    totalLiveWatched=total_live_watched,
                     oshiMeetings=oshi_meetings,
                 ),
                 oshiTwoShots=OshiTwoShotCounts(

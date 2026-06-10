@@ -463,6 +463,8 @@
 		"stats": {
 			"totalShows": "Total Kehadiran",
 			"achievements": "Pencapaian",
+			"totalTwoShots": "Total 2-Shot",
+			"totalLiveWatched": "Live Ditonton",
 			"oshiMeetings": "Bertemu"
 		},
 		"oshi": {

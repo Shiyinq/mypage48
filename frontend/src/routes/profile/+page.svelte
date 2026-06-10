@@ -50,6 +50,8 @@
 	});
 	let totalShows = $state(0);
 	let totalAchievements = $state(0);
+	let totalTwoShots = $state(0);
+	let totalLiveWatched = $state(0);
 	let twoShotRouletteCount = $state(0);
 	let twoShotBirthdayCount = $state(0);
 	let oshiMeetings = $state(0);
@@ -108,6 +110,8 @@
 			if (storeProfile.profileStats) {
 				totalShows = storeProfile.profileStats.totalShows;
 				totalAchievements = storeProfile.profileStats.totalAchievements;
+				totalTwoShots = storeProfile.profileStats.totalTwoShots || 0;
+				totalLiveWatched = storeProfile.profileStats.totalLiveWatched || 0;
 				oshiMeetings = storeProfile.profileStats.oshiMeetings || 0;
 			}
 			if (storeProfile.profileOshiTwoShots) {
@@ -266,7 +270,13 @@
 			<div class="lg:col-span-5 space-y-6 min-w-0">
 				<DigitalMemberCard {profile} loading={userProfile.isLoading} />
 				<LevelProgress {level} {progressPercent} loading={userProfile.isLoading} />
-				<QuickStats {totalShows} {totalAchievements} loading={userProfile.isLoading} />
+				<QuickStats
+					{totalShows}
+					{totalAchievements}
+					{totalTwoShots}
+					{totalLiveWatched}
+					loading={userProfile.isLoading}
+				/>
 				<RecentActivity {recentActivity} loading={userProfile.isLoading} />
 			</div>
 
