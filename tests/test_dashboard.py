@@ -38,6 +38,9 @@ async def test_get_dashboard_stats_empty(client: AsyncClient, db, create_user):
     assert data["two_shot"]["total_count"] == 0
     assert data["two_shot"]["total_spend"] == 0
 
+    # Verify empty heatmap
+    assert data["period"]["heatmap_stats"]["data"] == {}
+
 
 @pytest.mark.asyncio
 async def test_get_dashboard_stats_with_tickets(client: AsyncClient, db, create_user, create_ticket):
@@ -81,6 +84,15 @@ async def test_get_dashboard_stats_with_tickets(client: AsyncClient, db, create_
     # Verify seat map stats
     assert data["seat_map"]["row_stats"]["counts"]["A"] == 2
     assert data["seat_map"]["row_stats"]["counts"]["B"] == 1
+
+    # Verify heatmap stats
+    heatmap_data = data["period"]["heatmap_stats"]["data"]
+    assert "2024-06-15" in heatmap_data
+    assert "2024-07-20" in heatmap_data
+    assert "2024-08-10" in heatmap_data
+    assert heatmap_data["2024-06-15"] == 1
+    assert heatmap_data["2024-07-20"] == 1
+    assert heatmap_data["2024-08-10"] == 1
 
 
 @pytest.mark.asyncio

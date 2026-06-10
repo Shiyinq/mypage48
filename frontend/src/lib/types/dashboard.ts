@@ -30,6 +30,10 @@ export interface MonthlyStatsResponse {
 	max_count: number;
 }
 
+export interface HeatmapStatsResponse {
+	data: Record<string, number>;
+}
+
 export interface TopShowResponse {
 	title: string;
 	count: number;
@@ -97,6 +101,7 @@ export interface SeatMapStatsGroup {
 export interface PeriodStatsGroup {
 	monthly_stats: MonthlyStatsResponse;
 	day_stats: DayStatsResponse;
+	heatmap_stats: HeatmapStatsResponse;
 }
 
 export interface DashboardStats {

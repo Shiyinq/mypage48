@@ -10,6 +10,7 @@ from src.dashboard.schemas import (
     DayStatsResponse,
     ExtremeItem,
     ExtremesResponse,
+    HeatmapStatsResponse,
     MonthlyStat,
     MonthlyStatsResponse,
     PeriodStatsGroup,
@@ -157,6 +158,22 @@ class DashboardService:
         ]
         max_count = max((s.count for s in stats_list), default=1) or 1
         return MonthlyStatsResponse(stats=stats_list, max_count=max_count)
+
+    def _calculate_heatmap_stats(
+        self, tickets: List[Dict[str, Any]]
+    ) -> HeatmapStatsResponse:
+        """Calculate heatmap statistics based on theater attendance."""
+        heatmap_data: Dict[str, int] = {}
+        for t in tickets:
+            try:
+                date_str = t.get("event", {}).get("date", "")
+                if date_str:
+                    # Validate date format (YYYY-MM-DD)
+                    datetime.strptime(date_str, "%Y-%m-%d")
+                    heatmap_data[date_str] = heatmap_data.get(date_str, 0) + 1
+            except (ValueError, TypeError):
+                continue
+        return HeatmapStatsResponse(data=heatmap_data)
 
     async def _calculate_top_show(
         self, tickets: List[Dict[str, Any]]
@@ -400,6 +417,7 @@ class DashboardService:
             monthly_stats = self._calculate_monthly_stats(
                 filtered_tickets, start_month, end_month, is_all_data
             )
+            heatmap_stats = self._calculate_heatmap_stats(filtered_tickets)
             top_show = await self._calculate_top_show(filtered_tickets)
             two_shot_stats = self._calculate_two_shot_stats(filtered_tickets)
             show_extremes = await self._calculate_show_extremes(
@@ -444,6 +462,7 @@ class DashboardService:
             period_stats = PeriodStatsGroup(
                 monthly_stats=monthly_stats,
                 day_stats=day_stats,
+                heatmap_stats=heatmap_stats,
             )
 
             return DashboardStatsResponse(
