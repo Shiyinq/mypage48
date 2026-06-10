@@ -1235,6 +1235,40 @@
 		"emptyState": {
 			"title": "No Members Found",
 			"description": "Try adjusting your search or filter to find who you're looking for."
+		},
+		"loadMore": "Load More",
+		"upcoming": "Upcoming",
+		"past": "Past",
+		"pastShows": "Past Shows",
+		"shows": "Shows",
+		"liveTitle": "Live",
+		"generation": "Gen",
+		"cm": "cm",
+		"count": "x",
+		"viewers": "viewers",
+		"liveFallback": "Live Stream",
+		"eventEmpty": "No shows found for this member",
+		"liveEmpty": "No live history found for this member",
+		"showSidebar": "Show sidebar",
+		"closeSidebar": "Close Sidebar",
+		"memberFrame": "member frame",
+		"officialProfile": "Official Profile",
+		"twitterProfile": "Twitter / X profile",
+		"tiktokProfile": "TikTok profile",
+		"showStats": {
+			"title": "Show Statistics",
+			"totalShows": "Total Shows",
+			"topSetlist": "Most Performed",
+			"uniqueSetlists": "Unique Setlists",
+			"disclaimer": "This data is based on scraping results and may differ from actual data."
+		},
+		"liveStats": {
+			"title": "Live Statistics",
+			"totalLives": "Total Lives",
+			"totalDuration": "Total Duration",
+			"topPlatform": "Top Platform",
+			"longestLive": "Longest Live",
+			"disclaimer": "This data is based on scraping results and may differ from actual data."
 		}
 	},
 	"top2shot": {

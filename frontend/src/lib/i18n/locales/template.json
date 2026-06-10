@@ -756,7 +756,9 @@
 		"emptyState": {
 			"title": "",
 			"description": ""
-		}
+		},
+		"shows": "",
+		"liveTitle": ""
 	},
 	"shows": {
 		"backTitle": "",

@@ -153,8 +153,11 @@ export function formatLiveDate(dateStr: string, locale: string = 'id'): string {
 	if (!dateStr) return '';
 	const localeMap: Record<string, string> = { id: 'id-ID', en: 'en-US', ja: 'ja-JP' };
 	return new Intl.DateTimeFormat(localeMap[locale] || 'id-ID', {
-		dateStyle: 'medium',
-		timeStyle: 'short'
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit'
 	}).format(parseUTCDate(dateStr));
 }
 
