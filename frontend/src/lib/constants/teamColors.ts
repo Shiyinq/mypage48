@@ -40,6 +40,30 @@ const TEAM_COLORS: Record<string, TeamColors> = {
 		badgeBorder: '#F18921',
 		badgeDot: '#F18921',
 		badgeText: '#F18921'
+	},
+	TRAINEE: {
+		ring: '#c08081',
+		glow: '#c08081',
+		badgeBg: '#c08081',
+		badgeBorder: '#c08081',
+		badgeDot: '#c08081',
+		badgeText: '#c08081'
+	},
+	JKT48_VIRTUAL: {
+		ring: '#2563eb',
+		glow: '#2563eb',
+		badgeBg: '#2563eb',
+		badgeBorder: '#2563eb',
+		badgeDot: '#2563eb',
+		badgeText: '#2563eb'
+	},
+	JKT48: {
+		ring: '#dc2626',
+		glow: '#dc2626',
+		badgeBg: '#dc2626',
+		badgeBorder: '#dc2626',
+		badgeDot: '#dc2626',
+		badgeText: '#dc2626'
 	}
 };
 
