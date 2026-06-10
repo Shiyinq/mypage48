@@ -14,6 +14,8 @@ export interface RankInfo {
 export interface ProfileStats {
 	totalShows: number;
 	totalAchievements: number;
+	totalTwoShots: number;
+	totalLiveWatched: number;
 	oshiMeetings: number;
 }
 
@@ -34,10 +36,12 @@ export interface OshiTwoShotCounts {
 
 export interface ProfileFullResponse {
 	profile: User;
-	oshi: UserOshi | null;
+	oshis: UserOshi[];
 	rank: RankInfo;
 	stats: ProfileStats;
 	oshiTwoShots: OshiTwoShotCounts;
+	oshiTwoShotsList: OshiTwoShotCounts[];
+	oshiMeetingsList: number[];
 	recentActivity: ProfileRecentActivity[];
 }
 
@@ -49,6 +53,8 @@ export interface UserWithProfileStats extends User {
 	profileRank?: RankInfo;
 	profileStats?: ProfileStats;
 	profileOshiTwoShots?: OshiTwoShotCounts;
+	profileOshiTwoShotsList?: OshiTwoShotCounts[];
+	profileOshiMeetingsList?: number[];
 	profileRecentActivity?: ProfileRecentActivity[];
 }
 

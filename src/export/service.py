@@ -117,8 +117,8 @@ class ExportService:
             profile_pic_url = user_doc.get("profilePicture")
 
             oshi_img_url = None
-            # Try multiple keys for Oshi ID
-            oshi_id = user_doc.get("oshiId")
+            oshi_ids = user_doc.get("oshiIds") or []
+            oshi_id = oshi_ids[0] if oshi_ids else None
 
             if oshi_id:
                 # Oshi ID is stored as string in user doc, matches 'id' in members collection

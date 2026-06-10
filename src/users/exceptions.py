@@ -60,3 +60,15 @@ class PublicStatusUpdateError(DomainException):
 
 class ProfileStatsFetchError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.PROFILE_STATS_FETCH_FAILED
+
+
+class OshiLimitReachedError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.OSHI_LIMIT_REACHED
+
+
+class OshiAlreadyExistsError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.OSHI_ALREADY_EXISTS
+
+
+class OshiNotFoundError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.OSHI_NOT_FOUND

@@ -1,66 +1,195 @@
 <script lang="ts">
-	import { Dices, Cake, Search, Plus, Heart, Info, Instagram, Smartphone, Tv } from 'lucide-svelte';
+	import {
+		Dices,
+		Cake,
+		Plus,
+		Heart,
+		Info,
+		Instagram,
+		Smartphone,
+		Tv,
+		X,
+		ChevronLeft,
+		ChevronRight
+	} from 'lucide-svelte';
 	import Button from '$lib/components/Button.svelte';
-	import type { User } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { OptimizedImage } from '$lib/components/common';
+	import { fade } from 'svelte/transition';
 	import { getOshiBanner } from '$lib/constants';
+	import type { UserOshi, OshiTwoShotCounts } from '$lib/types';
 
 	interface Props {
-		profile?: User | null;
+		oshis?: UserOshi[];
+		oshiTwoShotsList?: OshiTwoShotCounts[];
+		oshiMeetingsList?: number[];
 		loading?: boolean;
-		rouletteCount?: number;
-		birthdayCount?: number;
-		oshiMeetings?: number;
+		currentIndex?: number;
 		onOpenOshiModal: () => void;
-		onOpenMemberDetail: () => void;
+		onOpenMemberDetail: (memberName: string) => void;
+		onRemoveOshi?: (oshiId: string) => void;
 	}
 
 	let {
-		profile = null,
+		oshis = [],
+		oshiTwoShotsList = [],
+		oshiMeetingsList = [],
 		loading = true,
-		rouletteCount = 0,
-		birthdayCount = 0,
-		oshiMeetings = 0,
+		currentIndex = $bindable(0),
 		onOpenOshiModal,
-		onOpenMemberDetail
+		onOpenMemberDetail,
+		onRemoveOshi
 	}: Props = $props();
 
 	const { t } = useTranslation();
+
+	let isHovering = $state(false);
+	let isDesktop = $state(false);
+	let autoRotateInterval: ReturnType<typeof setInterval> | undefined;
+	let cardEl: HTMLElement | undefined = $state();
+	let mobileHideTimer: ReturnType<typeof setTimeout> | undefined;
+
+	let currentOshi = $derived(oshis[currentIndex] || null);
+	let rouletteCount = $derived(oshiTwoShotsList[currentIndex]?.roulette || 0);
+	let birthdayCount = $derived(oshiTwoShotsList[currentIndex]?.birthday || 0);
+	let oshiMeetings = $derived(oshiMeetingsList[currentIndex] || 0);
+
+	function startAutoRotate() {
+		stopAutoRotate();
+		if (oshis.length > 1) {
+			autoRotateInterval = setInterval(() => {
+				currentIndex = (currentIndex + 1) % oshis.length;
+			}, 3000);
+		}
+	}
+
+	function stopAutoRotate() {
+		if (autoRotateInterval) {
+			clearInterval(autoRotateInterval);
+			autoRotateInterval = undefined;
+		}
+	}
+
+	function goNext() {
+		if (oshis.length > 1) {
+			currentIndex = (currentIndex + 1) % oshis.length;
+			resetAutoRotate();
+		}
+	}
+
+	function goPrev() {
+		if (oshis.length > 1) {
+			currentIndex = (currentIndex - 1 + oshis.length) % oshis.length;
+			resetAutoRotate();
+		}
+	}
+
+	function resetAutoRotate() {
+		stopAutoRotate();
+		startAutoRotate();
+	}
+
+	function clearMobileTimer() {
+		if (mobileHideTimer) {
+			clearTimeout(mobileHideTimer);
+			mobileHideTimer = undefined;
+		}
+	}
+
+	function handleCardPointerDown() {
+		if (isDesktop) return;
+		clearMobileTimer();
+		isHovering = true;
+		stopAutoRotate();
+		mobileHideTimer = setTimeout(() => {
+			isHovering = false;
+			startAutoRotate();
+		}, 3000);
+	}
+
+	function handleOutsideClick(e: Event) {
+		if (isDesktop) return;
+		if (cardEl && !cardEl.contains(e.target as Node)) {
+			clearMobileTimer();
+			isHovering = false;
+			startAutoRotate();
+		}
+	}
+
+	$effect(() => {
+		if (typeof window !== 'undefined') {
+			const mql = window.matchMedia('(min-width: 768px)');
+			isDesktop = mql.matches;
+			const handler = (e: MediaQueryListEvent) => {
+				isDesktop = e.matches;
+			};
+			mql.addEventListener('change', handler);
+			document.addEventListener('mousedown', handleOutsideClick);
+			return () => {
+				mql.removeEventListener('change', handler);
+				document.removeEventListener('mousedown', handleOutsideClick);
+				clearMobileTimer();
+			};
+		}
+	});
+
+	$effect(() => {
+		startAutoRotate();
+		return () => stopAutoRotate();
+	});
+
+	$effect(() => {
+		if (oshis.length <= 1) {
+			stopAutoRotate();
+		}
+	});
 </script>
 
-<div class="glass-panel p-0 rounded-3xl relative">
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+<div
+	bind:this={cardEl}
+	class="glass-panel p-0 rounded-3xl relative"
+	onmouseenter={() => {
+		isHovering = true;
+		stopAutoRotate();
+	}}
+	onmouseleave={() => {
+		isHovering = false;
+		startAutoRotate();
+	}}
+	onmousedown={handleCardPointerDown}
+	role="region"
+	aria-label="Oshi card"
+>
 	<!-- Banner -->
-	<div
-		class="h-32 w-full rounded-t-3xl overflow-hidden bg-cover bg-[center_30%] relative transition-all duration-500 ease-in-out"
-		style="background-image: url('{getOshiBanner(profile?.oshi?.memberType)}')"
-	>
-		<div
-			class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent dark:from-zinc-900 dark:via-zinc-900/50"
-		></div>
+	<div class="h-32 w-full rounded-t-3xl overflow-hidden relative">
+		{#key currentOshi?.memberType}
+			<div
+				transition:fade={{ duration: 400 }}
+				class="absolute inset-0 bg-cover bg-[center_30%]"
+				style="background-image: url('{getOshiBanner(currentOshi?.memberType)}')"
+			>
+				<div
+					class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent dark:from-zinc-900 dark:via-zinc-900/50"
+				></div>
+			</div>
+		{/key}
 	</div>
 
 	<div class="px-6 md:px-8 pb-6 relative">
 		{#if loading}
 			<!-- Oshi Skeleton Loading -->
 			<div class="flex flex-col md:flex-row items-center gap-6 -mt-16">
-				<!-- Avatar Skeleton -->
 				<div
 					class="w-28 h-28 rounded-full bg-gray-200 dark:bg-zinc-700 border-4 border-white dark:border-zinc-900 shadow-xl animate-pulse relative z-10 md:self-start"
 				></div>
-
-				<!-- Info Skeleton -->
 				<div class="text-center md:text-left flex-1 w-full max-w-sm">
 					<div class="flex flex-col md:flex-row items-center gap-2 mb-2">
 						<div class="h-8 w-48 bg-gray-200 dark:bg-zinc-700 rounded-lg animate-pulse"></div>
 						<div class="h-5 w-24 bg-gray-200 dark:bg-zinc-700 rounded-md animate-pulse"></div>
 					</div>
-
-					<!-- Catchphrase Skeleton -->
 					<div class="h-16 w-full bg-gray-100 dark:bg-zinc-800 rounded-xl animate-pulse mt-2"></div>
-
-					<!-- Socials Skeleton -->
 					<div class="flex gap-2 mt-3 justify-center md:justify-start">
 						<div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
 						<div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
@@ -68,20 +197,20 @@
 					</div>
 				</div>
 			</div>
-		{:else if profile?.oshi}
+		{:else if currentOshi}
 			<div class="flex flex-col md:flex-row items-center gap-6 -mt-16">
 				<!-- Avatar with Glow -->
 				<div class="relative md:self-start">
 					<button
 						class="relative w-28 h-28 rounded-full border-4 border-white shadow-xl overflow-hidden flex-shrink-0 cursor-pointer transition-transform hover:scale-105 active:scale-95"
-						onclick={onOpenMemberDetail}
+						onclick={() => onOpenMemberDetail(currentOshi.name)}
 					>
 						<OptimizedImage
-							src={getExternalMediaUrl(profile?.oshi?.profilePicture) || '/placeholder-user.jpg'}
-							srcMedium={profile?.oshi?.profilePicture_medium}
-							srcSmall={profile?.oshi?.profilePicture_small}
-							alt={profile?.oshi?.name}
-							blurHash={profile?.oshi?.blurHash}
+							src={getExternalMediaUrl(currentOshi.profilePicture) || '/placeholder-user.jpg'}
+							srcMedium={currentOshi.profilePicture_medium}
+							srcSmall={currentOshi.profilePicture_small}
+							alt={currentOshi.name}
+							blurHash={currentOshi.blurHash}
 							class="w-full h-full object-cover"
 							sizes="112px"
 						/>
@@ -101,6 +230,18 @@
 							<span>My Oshi</span>
 						</div>
 					</div>
+					<!-- Remove Oshi Button -->
+					{#if onRemoveOshi}
+						<button
+							onclick={() => onRemoveOshi(currentOshi.id)}
+							class="absolute -top-2 -right-2 z-30 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer {!isHovering
+								? 'opacity-0'
+								: 'opacity-100'}"
+							title={t('profile.oshi.removeOshi')}
+						>
+							<X class="w-3 h-3" />
+						</button>
+					{/if}
 				</div>
 
 				<!-- Info -->
@@ -110,37 +251,27 @@
 							<h3
 								class="text-2xl font-black text-gray-800 dark:text-gray-100 leading-tight drop-shadow-md dark:drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]"
 							>
-								{profile?.oshi?.name}
+								{currentOshi.name}
 							</h3>
-							<button
-								onclick={onOpenOshiModal}
-								class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
-								title="Change Oshi"
-							>
-								<Search class="w-4 h-4" />
-							</button>
 						</div>
 						<div class="flex items-center gap-2">
 							<span
 								class="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-md uppercase tracking-wide border border-red-200 whitespace-nowrap"
 							>
-								{t('profile.oshi.generationPattern', { gen: profile?.oshi?.generation })}
+								{t('profile.oshi.generationPattern', { gen: currentOshi.generation })}
 							</span>
 							<button
 								type="button"
 								class="group relative px-2 py-0.5 bg-blue-100 text-blue-600 rounded-md border border-blue-200 cursor-help flex items-center gap-1 focus:outline-none"
 							>
 								<span class="text-[10px] font-bold uppercase tracking-wide whitespace-nowrap">
-									{t('profile.oshi.totalShowsPattern', { count: profile?.oshi?.totalShows || 0 })}
+									{t('profile.oshi.totalShowsPattern', { count: currentOshi.totalShows || 0 })}
 								</span>
 								<Info class="w-3 h-3" />
-
-								<!-- Tooltip -->
 								<div
 									class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus:opacity-100 group-focus:visible transition-all z-50 text-center pointer-events-none"
 								>
 									{t('profile.oshi.showsTooltip')}
-									<!-- Triangle -->
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-800"
 									></div>
@@ -154,16 +285,16 @@
 						class="relative bg-gray-50 dark:bg-zinc-900 p-3 rounded-xl rounded-tl-none border border-gray-100 dark:border-zinc-800 shadow-sm mt-2 inline-block"
 					>
 						<p class="text-xs text-gray-600 dark:text-gray-400 italic font-medium">
-							"{profile?.oshi?.catchphrase}"
+							"{currentOshi.catchphrase}"
 						</p>
 					</div>
 
 					<!-- Socials -->
-					{#if profile?.oshi?.socials}
+					{#if currentOshi.socials}
 						<div class="flex flex-wrap justify-center md:justify-start gap-2 mt-3">
-							{#if profile?.oshi?.socials?.twitter}
+							{#if currentOshi.socials.twitter}
 								<a
-									href={profile.oshi.socials.twitter}
+									href={currentOshi.socials.twitter}
 									target="_blank"
 									rel="noopener noreferrer"
 									class="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-black hover:text-white transition-colors cursor-pointer"
@@ -181,9 +312,9 @@
 									</svg>
 								</a>
 							{/if}
-							{#if profile?.oshi?.socials?.instagram}
+							{#if currentOshi.socials.instagram}
 								<a
-									href={profile.oshi.socials.instagram}
+									href={currentOshi.socials.instagram}
 									target="_blank"
 									rel="noopener noreferrer"
 									class="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-pink-100 dark:hover:bg-pink-900/30 hover:text-pink-600 transition-colors cursor-pointer"
@@ -192,9 +323,9 @@
 									<Instagram class="w-3.5 h-3.5" />
 								</a>
 							{/if}
-							{#if profile?.oshi?.socials?.tiktok}
+							{#if currentOshi.socials.tiktok}
 								<a
-									href={profile.oshi.socials.tiktok}
+									href={currentOshi.socials.tiktok}
 									target="_blank"
 									rel="noopener noreferrer"
 									class="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-black hover:text-white transition-colors cursor-pointer"
@@ -212,9 +343,9 @@
 									</svg>
 								</a>
 							{/if}
-							{#if profile?.oshi?.socials?.idn_app}
+							{#if currentOshi.socials.idn_app}
 								<a
-									href={profile.oshi.socials.idn_app}
+									href={currentOshi.socials.idn_app}
 									target="_blank"
 									rel="noopener noreferrer"
 									class="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors cursor-pointer"
@@ -223,9 +354,9 @@
 									<Smartphone class="w-3.5 h-3.5" />
 								</a>
 							{/if}
-							{#if profile?.oshi?.socials?.showroom}
+							{#if currentOshi.socials.showroom}
 								<a
-									href={profile.oshi.socials.showroom}
+									href={currentOshi.socials.showroom}
 									target="_blank"
 									rel="noopener noreferrer"
 									class="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 transition-colors cursor-pointer"
@@ -236,6 +367,61 @@
 							{/if}
 						</div>
 					{/if}
+				</div>
+			</div>
+
+			<!-- Stats Grid -->
+			<div class="mt-6 grid grid-cols-3 gap-2 md:gap-3 border-t border-gray-100 pt-4">
+				<div
+					class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
+				>
+					<div
+						class="p-2 rounded-full bg-red-50 dark:bg-red-900/20 shadow-sm text-red-600 dark:text-red-400"
+					>
+						<Heart class="w-4 h-4" />
+					</div>
+					<div class="text-center md:text-left">
+						<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
+							{oshiMeetings}
+						</p>
+						<p class="text-[10px] font-bold text-gray-400 uppercase">
+							{t('profile.stats.oshiMeetings')}
+						</p>
+					</div>
+				</div>
+				<div
+					class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
+				>
+					<div
+						class="p-2 rounded-full bg-yellow-50 dark:bg-yellow-900/20 shadow-sm text-yellow-600 dark:text-yellow-400"
+					>
+						<Dices class="w-4 h-4" />
+					</div>
+					<div class="text-center md:text-left">
+						<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
+							{rouletteCount}
+						</p>
+						<p class="text-[10px] font-bold text-gray-400 uppercase">
+							{t('profile.oshi.roulette')}
+						</p>
+					</div>
+				</div>
+				<div
+					class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
+				>
+					<div
+						class="p-2 rounded-full bg-pink-50 dark:bg-pink-900/20 shadow-sm text-pink-600 dark:text-pink-400"
+					>
+						<Cake class="w-4 h-4" />
+					</div>
+					<div class="text-center md:text-left">
+						<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
+							{birthdayCount}
+						</p>
+						<p class="text-[10px] font-bold text-gray-400 uppercase">
+							{t('profile.oshi.birthday')}
+						</p>
+					</div>
 				</div>
 			</div>
 		{:else}
@@ -267,82 +453,50 @@
 				</div>
 			</div>
 		{/if}
-
-		{#if profile?.oshi}
-			<div class="mt-6 grid grid-cols-3 gap-2 md:gap-3 border-t border-gray-100 pt-4">
-				<!-- Oshi Meetings -->
-				<div
-					class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
-				>
-					<div
-						class="p-2 rounded-full bg-red-50 dark:bg-red-900/20 shadow-sm text-red-600 dark:text-red-400"
-					>
-						<Heart class="w-4 h-4" />
-					</div>
-					<div class="text-center md:text-left">
-						<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
-							{#if loading}
-								<span
-									class="inline-block w-6 h-5 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
-								></span>
-							{:else}
-								{oshiMeetings}
-							{/if}
-						</p>
-						<p class="text-[10px] font-bold text-gray-400 uppercase">
-							{t('profile.stats.oshiMeetings')}
-						</p>
-					</div>
-				</div>
-				<!-- 2-Shot Roulette -->
-				<div
-					class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
-				>
-					<div
-						class="p-2 rounded-full bg-yellow-50 dark:bg-yellow-900/20 shadow-sm text-yellow-600 dark:text-yellow-400"
-					>
-						<Dices class="w-4 h-4" />
-					</div>
-					<div class="text-center md:text-left">
-						<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
-							{#if loading}
-								<span
-									class="inline-block w-6 h-5 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
-								></span>
-							{:else}
-								{rouletteCount}
-							{/if}
-						</p>
-						<p class="text-[10px] font-bold text-gray-400 uppercase">
-							{t('profile.oshi.roulette')}
-						</p>
-					</div>
-				</div>
-				<!-- 2-Shot Birthday -->
-				<div
-					class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
-				>
-					<div
-						class="p-2 rounded-full bg-pink-50 dark:bg-pink-900/20 shadow-sm text-pink-600 dark:text-pink-400"
-					>
-						<Cake class="w-4 h-4" />
-					</div>
-					<div class="text-center md:text-left">
-						<p class="text-lg font-black text-gray-800 dark:text-gray-200 leading-none">
-							{#if loading}
-								<span
-									class="inline-block w-6 h-5 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"
-								></span>
-							{:else}
-								{birthdayCount}
-							{/if}
-						</p>
-						<p class="text-[10px] font-bold text-gray-400 uppercase">
-							{t('profile.oshi.birthday')}
-						</p>
-					</div>
-				</div>
-			</div>
-		{/if}
 	</div>
+
+	<!-- Oshi Counter / Indicator -->
+	{#if oshis.length > 0}
+		<div
+			class="absolute top-3 left-3 z-10 bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5"
+		>
+			<span>{currentIndex + 1}/{oshis.length}</span>
+			<span class="opacity-70">Oshi</span>
+		</div>
+	{/if}
+
+	<!-- Add Oshi Button (when < 5 and not empty) -->
+	{#if oshis.length > 0 && oshis.length < 5}
+		<button
+			onclick={onOpenOshiModal}
+			class="absolute top-3 right-3 z-10 bg-white/80 dark:bg-zinc-800/80 hover:bg-white dark:hover:bg-zinc-800 text-red-500 hover:text-red-600 backdrop-blur-sm rounded-full p-1.5 shadow-lg transition-all duration-200 cursor-pointer {!isHovering
+				? 'opacity-0'
+				: 'opacity-100'}"
+			title={t('profile.oshi.addOshi')}
+		>
+			<Plus class="w-4 h-4" />
+		</button>
+	{/if}
+
+	<!-- Prev/Next Buttons -->
+	{#if oshis.length > 1}
+		<button
+			onclick={goPrev}
+			class="absolute left-2 top-[140px] -translate-y-1/2 z-10 bg-black/30 hover:bg-black/50 text-white rounded-full p-1.5 transition-all duration-200 cursor-pointer {!isHovering
+				? 'opacity-0'
+				: 'opacity-100'}"
+			aria-label="Previous oshi"
+		>
+			<ChevronLeft class="w-5 h-5" />
+		</button>
+		<button
+			onclick={goNext}
+			class="absolute right-2 top-[140px] -translate-y-1/2 z-10 bg-black/30 hover:bg-black/50 text-white rounded-full p-1.5 transition-all duration-200 cursor-pointer {!isHovering
+				? 'opacity-0'
+				: 'opacity-100'}"
+			aria-label="Next oshi"
+		>
+			<ChevronRight class="w-5 h-5" />
+		</button>
+	{/if}
 </div>

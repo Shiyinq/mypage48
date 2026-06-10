@@ -55,10 +55,12 @@ function createUserProfileStore() {
 					const data = await auth.getProfile();
 					const userWithStats: UserWithProfileStats = {
 						...data.profile,
-						oshi: data.oshi,
+						oshis: data.oshis || [],
 						profileRank: data.rank,
 						profileStats: data.stats,
 						profileOshiTwoShots: data.oshiTwoShots,
+						profileOshiTwoShotsList: data.oshiTwoShotsList || [],
+						profileOshiMeetingsList: data.oshiMeetingsList || [],
 						profileRecentActivity: data.recentActivity
 					};
 					state.data = userWithStats;
@@ -75,20 +77,47 @@ function createUserProfileStore() {
 		},
 
 		/**
-		 * Update the user's oshi preference
+		 * Add oshi(s) to user's list (max 5)
 		 */
-		updateOshi: async (memberId: string) => {
+		addOshi: async (memberIds: string[]) => {
 			state.isLoading = true;
 			try {
-				await auth.updateOshi(parseInt(memberId));
+				await auth.batchAddOshi(memberIds);
 				const data = await auth.getProfile();
 				if (state.data) {
 					state.data = {
 						...state.data,
-						oshi: data.oshi,
+						oshis: data.oshis || [],
 						profileRank: data.rank,
 						profileStats: data.stats,
 						profileOshiTwoShots: data.oshiTwoShots,
+						profileOshiTwoShotsList: data.oshiTwoShotsList || [],
+						profileOshiMeetingsList: data.oshiMeetingsList || [],
+						profileRecentActivity: data.recentActivity
+					};
+				}
+			} finally {
+				state.isLoading = false;
+			}
+		},
+
+		/**
+		 * Remove an oshi from user's list
+		 */
+		removeOshi: async (memberId: string) => {
+			state.isLoading = true;
+			try {
+				await auth.removeOshi(memberId);
+				const data = await auth.getProfile();
+				if (state.data) {
+					state.data = {
+						...state.data,
+						oshis: data.oshis || [],
+						profileRank: data.rank,
+						profileStats: data.stats,
+						profileOshiTwoShots: data.oshiTwoShots,
+						profileOshiTwoShotsList: data.oshiTwoShotsList || [],
+						profileOshiMeetingsList: data.oshiMeetingsList || [],
 						profileRecentActivity: data.recentActivity
 					};
 				}

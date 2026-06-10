@@ -425,7 +425,17 @@
 			"save": "",
 			"loading": "",
 			"noMembers": "",
-			"generation": ""
+			"generation": "",
+			"selectHint": "",
+			"maxReached": "",
+			"newSelected": "",
+			"confirmTitle": "",
+			"confirmDesc": "",
+			"confirmRemove": "",
+			"addedToast": "",
+			"removedToast": "",
+			"addErrorToast": "",
+			"removeErrorToast": ""
 		},
 		"title": "",
 		"subtitle": "",
@@ -445,6 +455,8 @@
 		"stats": {
 			"totalShows": "",
 			"achievements": "",
+			"totalTwoShots": "",
+			"totalLiveWatched": "",
 			"oshiMeetings": ""
 		},
 		"oshi": {
@@ -464,7 +476,9 @@
 			"birthday": "",
 			"upcomingSchedule": "",
 			"pastSchedule": "",
-			"noSchedule": ""
+			"noSchedule": "",
+			"addOshi": "",
+			"removeOshi": ""
 		},
 		"recentActivity": {
 			"title": "",

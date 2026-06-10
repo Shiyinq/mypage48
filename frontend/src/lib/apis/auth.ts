@@ -60,10 +60,17 @@ export const auth = {
 		return client<GenericResponse>('/auth/logout', { method: 'POST' });
 	},
 
-	updateOshi: async (oshiId: number) => {
-		return client<GenericResponse>('/users/oshi', {
+	batchAddOshi: async (oshiIds: (string | number)[]) => {
+		return client<GenericResponse>('/users/oshi/batch-add', {
 			method: 'POST',
-			body: { oshiId } as unknown as Record<string, unknown>
+			body: { oshiIds: oshiIds.map(String) } as unknown as Record<string, unknown>
+		});
+	},
+
+	removeOshi: async (oshiId: string | number) => {
+		return client<GenericResponse>('/users/oshi/remove', {
+			method: 'POST',
+			body: { oshiId: String(oshiId) } as unknown as Record<string, unknown>
 		});
 	},
 

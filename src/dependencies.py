@@ -267,6 +267,16 @@ def get_achievements_service(
     return AchievementsService(tickets_service, config)
 
 
+def get_live_history_repository(db=Depends(get_db)) -> LiveHistoryRepository:
+    return LiveHistoryRepository(db)
+
+
+def get_live_history_service(
+    repo: LiveHistoryRepository = Depends(get_live_history_repository),
+) -> LiveHistoryService:
+    return LiveHistoryService(repo)
+
+
 def get_user_service(
     repo: UserRepository = Depends(get_user_repository),
     security_service: SecurityService = Depends(get_security_service),
@@ -277,6 +287,7 @@ def get_user_service(
     achievements_service: AchievementsService = Depends(get_achievements_service),
     events_service: EventsService = Depends(get_events_service),
     storage_service: StorageService = Depends(get_storage_service),
+    live_history_repo: LiveHistoryRepository = Depends(get_live_history_repository),
 ) -> UserService:
     return UserService(
         repo,
@@ -288,6 +299,7 @@ def get_user_service(
         achievements_service,
         events_service,
         storage_service,
+        live_history_repo,
     )
 
 
@@ -395,13 +407,3 @@ def get_sorters_service(
     config: Settings = Depends(get_settings),
 ) -> SortersService:
     return SortersService(repo, config)
-
-
-def get_live_history_repository(db=Depends(get_db)) -> LiveHistoryRepository:
-    return LiveHistoryRepository(db)
-
-
-def get_live_history_service(
-    repo: LiveHistoryRepository = Depends(get_live_history_repository),
-) -> LiveHistoryService:
-    return LiveHistoryService(repo)
