@@ -40,7 +40,8 @@ async def get_showroom_comments(
     request: Request, room_id: str, service: LiveService = Depends(get_live_service)
 ):
     """Get showroom comments via proxy to bypass CORS"""
-    return await service.get_showroom_comments(room_id)
+    actual_room_id = room_id.split("-")[0] if "-" in room_id else room_id
+    return await service.get_showroom_comments(actual_room_id)
 
 
 @router.get("/{platform}/{id}/streaming-url", response_model=LiveStreamInfo)
