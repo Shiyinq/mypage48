@@ -129,6 +129,9 @@ class LiveService:
                                 platform="showroom",
                                 room_id=str(room.get("room_id")),
                                 room_url_key=key,
+                                live_id=f"{room.get('room_id')}-{room.get('started_at')}"
+                                if room.get("started_at")
+                                else None,
                                 title=room.get("main_name"),
                                 view_num=room.get("view_num", 0),
                                 image=room.get("image"),
@@ -143,12 +146,15 @@ class LiveService:
 
                 # DEBUG MOCK: If no JKT48 members are live, take up to 8 Showroom lives for testing multi-view
                 if self.config.is_env_dev and not results and all_rooms:
-                    for room in all_rooms[:8]:
+                    for room in all_rooms[:1]:
                         results.append(
                             LiveStatus(
                                 platform="showroom",
                                 room_id=str(room.get("room_id")),
                                 room_url_key=room.get("room_url_key"),
+                                live_id=f"{room.get('room_id')}-{room.get('started_at')}"
+                                if room.get("started_at")
+                                else None,
                                 title=f"[DEBUG] {room.get('main_name')}",
                                 view_num=room.get("view_num", 0),
                                 image=room.get("image"),
@@ -334,7 +340,7 @@ class LiveService:
                                         "username"
                                     ),
                                     member=LiveMember(
-                                        id=f"temp_{username}",
+                                        id=username,
                                         name=creator_name,
                                         nickname=creator_name.split(" ")[0],
                                         img=stream.get("creator", {}).get("avatar")
@@ -391,8 +397,9 @@ class LiveService:
     async def get_streaming_url(self, platform: str, id: str) -> LiveStreamInfo:
         """Get streaming URL and room info for a specific platform and ID"""
         if platform == "showroom":
-            urls = await self.fetch_showroom_streaming_url(id)
-            profile = await self.fetch_showroom_profile(id)
+            actual_room_id = id.split("-")[0] if "-" in id else id
+            urls = await self.fetch_showroom_streaming_url(actual_room_id)
+            profile = await self.fetch_showroom_profile(actual_room_id)
             if not urls:
                 raise StreamingUrlNotFoundError()
             # Get view_num and start_at from unified list
@@ -401,7 +408,7 @@ class LiveService:
             image = None
             lives = await self.fetch_showroom_lives()
             for live in lives:
-                if live.room_id == id:
+                if live.room_id == actual_room_id:
                     view_num = live.view_num
                     start_at = live.start_at
                     image = live.image
