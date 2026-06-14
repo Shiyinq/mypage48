@@ -55,7 +55,7 @@
 </script>
 
 <div
-	class="flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-gray-100 dark:border-white/5 w-80 shrink-0"
+	class="flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-gray-100 dark:border-white/5 w-full shrink-0"
 >
 	<div
 		class="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-zinc-800/30 shrink-0"

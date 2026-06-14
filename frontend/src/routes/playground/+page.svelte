@@ -117,7 +117,7 @@
 			{#if playgroundStore.isSidebarVisible && innerWidth < 768}
 				<button
 					onclick={() => playgroundStore.toggleSidebar()}
-					class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[55] md:hidden transition-opacity"
+					class="absolute inset-0 w-full h-full bg-black/40 backdrop-blur-sm z-[30] md:hidden transition-opacity"
 					aria-label="Close Sidebar"
 					transition:fade={{ duration: 200 }}
 				></button>
@@ -136,12 +136,12 @@
 			<!-- Sidebar Drawer: Consistent translateX animation for all devices -->
 			<div
 				class="h-full overflow-hidden border-r border-gray-100 dark:border-white/5 shrink-0
-					   absolute inset-y-0 left-0 z-[60] bg-white dark:bg-zinc-900
-					   transition-transform duration-300 ease-in-out w-80 shadow-2xl md:shadow-none
+					   absolute inset-y-0 left-0 z-[40] bg-white dark:bg-zinc-900
+					   transition-transform duration-300 ease-in-out w-full md:w-80 shadow-2xl md:shadow-none
 					   {playgroundStore.isSidebarVisible ? 'translate-x-0' : '-translate-x-full'}"
 			>
 				<!-- Fixed width inner container to prevent layout shifts during animation -->
-				<div class="w-80 h-full">
+				<div class="w-full md:w-80 h-full">
 					<PlaygroundSidebar
 						groupedEndpoints={playgroundStore.groupedEndpoints}
 						selectedId={playgroundStore.selectedEndpointId}
