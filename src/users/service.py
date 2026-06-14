@@ -389,31 +389,30 @@ class UserService:
         if not user:
             raise PublicUserNotFoundError()
 
-        oshi_response = None
+        oshis = []
         if user.oshiIds:
-            primary_oshi_id = user.oshiIds[0]
-            try:
-                member_detail = await self.member_service.get_member_by_id(
-                    str(primary_oshi_id)
-                )
-                member = member_detail.member
-                oshi_response = OshiResponse(
-                    id=str(primary_oshi_id),
-                    name=member.name,
-                    nickname=member.nickname,
-                    generation=member.generation or "-",
-                    memberType=member.member_type,
-                    profilePicture=member.img,
-                    profilePicture_medium=member.img_medium,
-                    profilePicture_small=member.img_small,
-                    blurHash=member.blurHash,
-                    catchphrase=member.jiko or "-",
-                    socials=member.socials.model_dump() if member.socials else None,
-                )
-            except Exception as e:
-                logger.warning(
-                    f"Failed to fetch oshi data for id {primary_oshi_id}: {e}"
-                )
+            for oshi_id in user.oshiIds:
+                try:
+                    member_detail = await self.member_service.get_member_by_id(
+                        str(oshi_id)
+                    )
+                    member = member_detail.member
+                    oshi_data = OshiResponse(
+                        id=str(oshi_id),
+                        name=member.name,
+                        nickname=member.nickname,
+                        generation=member.generation or "-",
+                        memberType=member.member_type,
+                        profilePicture=member.img,
+                        profilePicture_medium=member.img_medium,
+                        profilePicture_small=member.img_small,
+                        blurHash=member.blurHash,
+                        catchphrase=member.jiko or "-",
+                        socials=member.socials.model_dump() if member.socials else None,
+                    )
+                    oshis.append(oshi_data)
+                except Exception as e:
+                    logger.warning(f"Failed to fetch oshi data for id {oshi_id}: {e}")
 
         # Calculate Stats
         stats = None
@@ -550,7 +549,7 @@ class UserService:
             profilePicture_medium=profile_picture_medium,
             profilePicture_small=profile_picture_small,
             blurHash=blur_hash,
-            oshi=oshi_response,
+            oshis=oshis,
             createdAt=user.createdAt,
             publicYear=display_year,  # Show actual year for "This Year" option
             stats=stats,

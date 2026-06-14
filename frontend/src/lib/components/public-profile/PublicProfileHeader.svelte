@@ -27,6 +27,15 @@
 
 	const { t } = useTranslation();
 
+	const currentYear = new Date().getFullYear();
+	const currentMonth = new Date().getMonth();
+
+	let isWrappedSeason = $derived(
+		!profile.publicYear || // All data
+			profile.publicYear < currentYear || // Past year
+			(profile.publicYear === currentYear && currentMonth >= 10) // Nov-Dec
+	);
+
 	let isEditingBio = $state(false);
 	let isBioExpanded = $state(false);
 	let bioValue = $state('');
@@ -60,13 +69,15 @@
 </script>
 
 <div
-	class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 relative overflow-hidden group flex flex-col md:flex-row items-center gap-6 mb-6 sm:mb-8 shadow-2xl shadow-red-500/10 dark:shadow-red-950/40 transition-all duration-300 hover:shadow-red-500/15"
+	class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 relative group flex flex-col md:flex-row items-center gap-6 mb-6 sm:mb-8 shadow-2xl shadow-red-500/10 dark:shadow-red-950/40 transition-all duration-300 hover:shadow-red-500/15"
 	role="region"
 >
 	<!-- Background decoration -->
-	<div
-		class="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"
-	></div>
+	<div class="absolute inset-0 rounded-3xl sm:rounded-[2rem] overflow-hidden pointer-events-none">
+		<div
+			class="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"
+		></div>
+	</div>
 
 	<!-- JKT48 Wrapped Badge (Top Right) -->
 	<div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
@@ -80,7 +91,11 @@
 				class="text-[10px] sm:text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600 dark:from-red-400 dark:to-pink-400 uppercase tracking-wider"
 			>
 				{#if profile.publicYear}
-					{t('profile.publicActivity.wrapped', { year: profile.publicYear })}
+					{#if isWrappedSeason}
+						{t('profile.publicActivity.wrapped', { year: profile.publicYear })}
+					{:else}
+						{t('profile.publicActivity.yearSummaryBadge', { year: profile.publicYear })}
+					{/if}
 				{:else}
 					{t('profile.publicActivity.allTime')}
 				{/if}
@@ -131,21 +146,34 @@
 				</button>
 			{/if}
 		</div>
-		{#if profile.oshi}
+
+		<!-- Single Oshi Avatar overlay -->
+		{#if profile.oshis && profile.oshis.length === 1}
 			<div
-				class="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 bg-white dark:bg-zinc-800 rounded-full p-1 sm:p-1.5 shadow-md border border-gray-100 dark:border-zinc-700 tooltip-container"
+				class="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 bg-white dark:bg-zinc-800 rounded-full p-px sm:p-0.5 shadow-md border border-gray-100 dark:border-zinc-700 flex items-center justify-center aspect-square"
 			>
-				<div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-pink-400">
+				<button
+					type="button"
+					class="block p-0 m-0 shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-pink-400 bg-gray-100 dark:bg-zinc-800 cursor-help group/oshi relative focus:outline-none aspect-square flex items-center justify-center"
+				>
 					<OptimizedImage
-						src={getExternalMediaUrl(profile.oshi.profilePicture)}
-						srcMedium={getExternalMediaUrl(profile.oshi.profilePicture_medium)}
-						srcSmall={getExternalMediaUrl(profile.oshi.profilePicture_small)}
-						alt={profile.oshi.name}
-						blurHash={profile.oshi.blurHash}
-						sizes="40px"
+						src={getExternalMediaUrl(profile.oshis[0].profilePicture)}
+						srcMedium={getExternalMediaUrl(profile.oshis[0].profilePicture_medium)}
+						srcSmall={getExternalMediaUrl(profile.oshis[0].profilePicture_small)}
+						alt={profile.oshis[0].name}
+						blurHash={profile.oshis[0].blurHash}
+						sizes="48px"
 						class="w-full h-full object-cover"
 					/>
-				</div>
+					<div
+						class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-gray-800 text-white text-[10px] font-medium rounded shadow-lg opacity-0 invisible group-hover/oshi:opacity-100 group-hover/oshi:visible group-focus/oshi:opacity-100 group-focus/oshi:visible transition-all z-50 text-center whitespace-nowrap pointer-events-none"
+					>
+						{profile.oshis[0].name}
+						<div
+							class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-800"
+						></div>
+					</div>
+				</button>
 			</div>
 		{/if}
 	</div>
@@ -165,14 +193,66 @@
 				@{profile.username}
 			</p>
 
-			{#if profile.oshi}
+			{#if profile.oshis && profile.oshis.length > 0}
 				<div class="flex flex-wrap justify-center md:justify-start gap-3">
-					<div
-						class="flex items-center gap-2 px-3 py-1.5 bg-pink-50 dark:bg-pink-900/20 rounded-full text-[10px] sm:text-xs font-bold text-pink-600 dark:text-pink-400 border border-pink-100/50 dark:border-pink-900/30"
-					>
-						<Heart class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" />
-						Oshi: {profile.oshi.name}
-					</div>
+					{#if profile.oshis.length === 1}
+						<div
+							class="flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400 text-xs font-bold rounded-full border border-pink-100 dark:border-pink-900/30"
+						>
+							<Heart class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 fill-pink-500" />
+							<span>Oshi: {profile.oshis[0].name}</span>
+						</div>
+					{:else}
+						<div
+							class="flex items-center gap-2.5 pr-1.5 pl-3 py-1 bg-pink-50 dark:bg-pink-900/20 rounded-full border border-pink-100/50 dark:border-pink-900/30 transition-all duration-300"
+						>
+							<button type="button" class="group/heart relative cursor-help focus:outline-none">
+								<Heart class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 fill-pink-500" />
+								<div
+									class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-gray-800 text-white text-[10px] font-medium rounded shadow-lg opacity-0 invisible group-hover/heart:opacity-100 group-hover/heart:visible group-focus/heart:opacity-100 group-focus/heart:visible transition-all z-50 text-center whitespace-nowrap pointer-events-none"
+								>
+									Oshi
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-800"
+									></div>
+								</div>
+							</button>
+							<div class="flex items-center">
+								{#each profile.oshis as oshi, index}
+									<button
+										type="button"
+										class="group/oshi relative cursor-help transition-all duration-300 hover:z-20 focus:z-20 focus:outline-none {index >
+										0
+											? '-ml-2'
+											: ''}"
+										style="z-index: {profile.oshis.length - index};"
+									>
+										<div
+											class="relative w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden border-2 border-white dark:border-zinc-900 transition-transform duration-300 group-hover/oshi:scale-125 group-focus/oshi:scale-125 bg-gray-100 dark:bg-zinc-800"
+										>
+											<OptimizedImage
+												src={getExternalMediaUrl(oshi.profilePicture)}
+												srcMedium={getExternalMediaUrl(oshi.profilePicture_medium)}
+												srcSmall={getExternalMediaUrl(oshi.profilePicture_small)}
+												alt={oshi.name}
+												blurHash={oshi.blurHash}
+												sizes="28px"
+												class="w-full h-full object-cover"
+											/>
+										</div>
+										<div
+											class="absolute top-full left-1/2 -translate-x-1/2 mt-3 px-2 py-1 bg-gray-800 text-white text-[10px] rounded shadow-lg opacity-0 invisible group-hover/oshi:opacity-100 group-hover/oshi:visible group-focus/oshi:opacity-100 group-focus/oshi:visible transition-all z-50 whitespace-nowrap pointer-events-none"
+										>
+											{oshi.name}
+											<div
+												class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-800"
+											></div>
+										</div>
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
 				</div>
 			{/if}
 		</div>

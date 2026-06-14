@@ -521,10 +521,11 @@
 			"weeksAgo": "minggu yang lalu"
 		},
 		"publicActivity": {
-			"wrapped": "Theater JKT48 Wrapped {year}",
-			"allTime": "Theater JKT48 Wrapped",
+			"wrapped": "JKT48 Theater Wrapped {year}",
+			"allTime": "JKT48 Theater Wrapped",
 			"summary": "Ringkasan",
 			"yearSummary": "Ringkasan {year}",
+			"yearSummaryBadge": "JKT48 Theater {year}",
 			"watchedTimes": "Ditonton {count} kali",
 			"topSetlists": "Top Setlist",
 			"topTwoShotMembers": "Top 2-Shot"
