@@ -94,10 +94,15 @@
 
 {#if showExample}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md transition-opacity duration-300"
-		onclick={() => (showExample = false)}
+		class="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 gap-8"
 		role="presentation"
 	>
+		<button
+			class="absolute inset-0 w-full h-full bg-black/75 backdrop-blur-md border-none cursor-default transition-opacity duration-300"
+			onclick={() => (showExample = false)}
+			aria-label="Close modal"
+		></button>
+
 		<div
 			class="relative bg-white dark:bg-zinc-900 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-gray-100 dark:border-zinc-800 p-6 flex flex-col items-center gap-4 transition-transform duration-300 scale-100"
 			onclick={(e) => e.stopPropagation()}
@@ -120,13 +125,6 @@
 						{t('upload.exampleSubtitle')}
 					</p>
 				</div>
-				<button
-					onclick={() => (showExample = false)}
-					class="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors cursor-pointer shrink-0"
-					aria-label="Close"
-				>
-					<X class="w-4 h-4" />
-				</button>
 			</div>
 
 			<!-- Image container with premium glow -->
@@ -148,5 +146,17 @@
 				</p>
 			</div>
 		</div>
+
+		<!-- Close Button Below Card -->
+		<button
+			onclick={(e) => {
+				e.stopPropagation();
+				showExample = false;
+			}}
+			class="relative p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all cursor-pointer text-white shadow-xl hover:scale-110 active:scale-95"
+			aria-label="Close"
+		>
+			<X class="w-6 h-6" />
+		</button>
 	</div>
 {/if}

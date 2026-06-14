@@ -60,7 +60,7 @@
 		if (oshis.length > 1) {
 			autoRotateInterval = setInterval(() => {
 				currentIndex = (currentIndex + 1) % oshis.length;
-			}, 3000);
+			}, 10000);
 		}
 	}
 
@@ -105,7 +105,7 @@
 		mobileHideTimer = setTimeout(() => {
 			isHovering = false;
 			startAutoRotate();
-		}, 3000);
+		}, 10000);
 	}
 
 	function handleOutsideClick(e: Event) {
