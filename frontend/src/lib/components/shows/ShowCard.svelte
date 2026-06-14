@@ -33,6 +33,18 @@
 	role="button"
 	tabindex="0"
 >
+	<!-- Top Badge -->
+	{#if isMostWatched}
+		<div class="absolute top-2 left-2 sm:top-3 sm:left-3 z-20">
+			<span
+				class="bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1 border border-white/20"
+			>
+				<Trophy class="w-2.5 h-2.5" />
+				<span class="uppercase tracking-wider">{t('shows.top')}</span>
+			</span>
+		</div>
+	{/if}
+
 	<!-- Background Image (Mobile: Left side, Desktop: Full bg) -->
 	<div class="relative w-[38%] sm:w-full sm:h-full sm:absolute sm:inset-0 shrink-0 overflow-hidden">
 		{#if show.image}
@@ -71,18 +83,6 @@
 		class="relative z-10 flex flex-col justify-between p-3.5 sm:p-5 w-full sm:h-full bg-white dark:bg-transparent sm:bg-transparent"
 	>
 		<div class="flex flex-col gap-1">
-			<!-- Top Tags -->
-			<div class="flex items-center gap-2">
-				{#if isMostWatched}
-					<span
-						class="bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1 self-start border border-white/20"
-					>
-						<Trophy class="w-2.5 h-2.5" />
-						<span class="uppercase tracking-wider">{t('shows.top')}</span>
-					</span>
-				{/if}
-			</div>
-
 			<!-- Title -->
 			<h3
 				class="text-[15px] sm:text-xl font-bold leading-tight line-clamp-2 sm:line-clamp-3 text-gray-900 dark:text-gray-100 sm:text-white sm:drop-shadow-lg"
