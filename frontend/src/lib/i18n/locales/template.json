@@ -503,8 +503,9 @@
 			"weeksAgo": ""
 		},
 		"publicActivity": {
-			"wrapped": "",
+			"summary": "",
 			"yearSummary": "",
+			"yearSummaryBadge": "",
 			"watchedTimes": ""
 		},
 		"profilePicture": {

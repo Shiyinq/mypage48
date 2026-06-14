@@ -27,6 +27,15 @@
 
 	const { t } = useTranslation();
 
+	const currentYear = new Date().getFullYear();
+	const currentMonth = new Date().getMonth();
+
+	let isWrappedSeason = $derived(
+		!profile.publicYear || // All data
+			profile.publicYear < currentYear || // Past year
+			(profile.publicYear === currentYear && currentMonth >= 10) // Nov-Dec
+	);
+
 	let isEditingBio = $state(false);
 	let isBioExpanded = $state(false);
 	let bioValue = $state('');
@@ -82,7 +91,11 @@
 				class="text-[10px] sm:text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600 dark:from-red-400 dark:to-pink-400 uppercase tracking-wider"
 			>
 				{#if profile.publicYear}
-					{t('profile.publicActivity.wrapped', { year: profile.publicYear })}
+					{#if isWrappedSeason}
+						{t('profile.publicActivity.wrapped', { year: profile.publicYear })}
+					{:else}
+						{t('profile.publicActivity.yearSummaryBadge', { year: profile.publicYear })}
+					{/if}
 				{:else}
 					{t('profile.publicActivity.allTime')}
 				{/if}

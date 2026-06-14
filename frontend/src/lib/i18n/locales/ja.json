@@ -522,9 +522,10 @@
 		},
 		"publicActivity": {
 			"wrapped": "JKT48劇場 Wrapped {year}",
-			"allTime": "Theater JKT48 Wrapped",
+			"allTime": "JKT48劇場 Wrapped",
 			"summary": "まとめ",
 			"yearSummary": "{year}年まとめ",
+			"yearSummaryBadge": "JKT48劇場 {year}",
 			"watchedTimes": "{count}回観覧",
 			"topSetlists": "トップセットリスト",
 			"topTwoShotMembers": "Top 2-Shot"
