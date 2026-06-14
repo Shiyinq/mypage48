@@ -7,6 +7,7 @@
 	import { OptimizedImage } from '$lib/components/common';
 	import { formatDate } from '$lib/i18n';
 	import { formatTimeAgo } from '$lib/utils/time';
+	import { maskEmail } from '$lib/utils/formatting';
 
 	const { t } = useTranslation();
 
@@ -56,13 +57,6 @@
 		if (usersHasMore && !isAdminUsersLoading.value) {
 			adminStore.loadUsers();
 		}
-	}
-
-	function maskEmail(email: string) {
-		const [local, domain] = email.split('@');
-		if (!local || !domain) return email;
-		if (local.length <= 2) return `${local.slice(0, 1)}***@${domain}`;
-		return `${local.slice(0, 2)}***@${domain}`;
 	}
 
 	function toggleEmail(userId: string) {

@@ -12,7 +12,9 @@
 		Pencil,
 		X,
 		Camera,
-		IdCard
+		IdCard,
+		Eye,
+		EyeOff
 	} from 'lucide-svelte';
 	import { logger } from '$lib/utils/logger';
 	import { fade, slide } from 'svelte/transition';
@@ -20,6 +22,7 @@
 	import { OptimizedImage } from '$lib/components/common';
 	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 	import { getErrorMessage } from '$lib/utils/api';
+	import { maskEmail } from '$lib/utils/formatting';
 
 	const { t } = useTranslation();
 
@@ -27,6 +30,7 @@
 	let isEditing = $state(false);
 	let showCropper = $state(false);
 	let previewImage = $state<string | null>(null);
+	let showEmail = $state(false);
 
 	// Form state
 	let name = $state(userProfile.data?.name || '');
@@ -386,8 +390,20 @@
 						{:else}
 							<div class="px-1 flex items-center gap-2" in:fade>
 								<p class="text-base font-bold text-gray-800 dark:text-gray-200">
-									{userProfile.data.email || '-'}
+									{showEmail ? userProfile.data.email || '-' : maskEmail(userProfile.data.email)}
 								</p>
+								<button
+									type="button"
+									onclick={() => (showEmail = !showEmail)}
+									class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
+									title={showEmail ? t('common.hide') : t('common.show')}
+								>
+									{#if showEmail}
+										<EyeOff class="w-4 h-4" />
+									{:else}
+										<Eye class="w-4 h-4" />
+									{/if}
+								</button>
 								<button
 									type="button"
 									class="relative group/tooltip focus:outline-none"
