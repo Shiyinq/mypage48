@@ -67,7 +67,7 @@
 	></div>
 
 	<div
-		class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[70] shadow-2xl border-t border-gray-100 dark:border-white/5 pb-8 overflow-hidden"
+		class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[70] shadow-2xl border-t border-gray-100 dark:border-white/5 overflow-hidden"
 		transition:fly={{ y: 300, duration: 300 }}
 	>
 		<div
@@ -80,7 +80,7 @@
 				<X class="w-6 h-6" />
 			</button>
 		</div>
-		<div class="p-3 grid grid-cols-1 gap-1.5 max-h-[75vh] overflow-y-auto">
+		<div class="p-3 grid grid-cols-1 gap-1.5 max-h-[calc(100dvh-12rem)] overflow-y-auto">
 			{#each secondaryLinks as link}
 				{@const isActive = $page.url.pathname.startsWith(link.href)}
 				<a
@@ -119,7 +119,7 @@
 	></div>
 
 	<div
-		class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[70] shadow-2xl border-t border-gray-100 dark:border-white/5 pb-8 overflow-hidden"
+		class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[70] shadow-2xl border-t border-gray-100 dark:border-white/5 overflow-hidden"
 		transition:fly={{ y: 300, duration: 300 }}
 	>
 		<div
@@ -132,7 +132,7 @@
 				<X class="w-6 h-6" />
 			</button>
 		</div>
-		<div class="p-3 grid grid-cols-1 gap-1.5 max-h-[75vh] overflow-y-auto pb-4 relative">
+		<div class="p-3 grid grid-cols-1 gap-1.5 max-h-[calc(100dvh-12rem)] overflow-y-auto relative">
 			{#each theaterNavItems as link}
 				{@const isActive = link.exact
 					? $page.url.pathname === link.href
