@@ -282,7 +282,7 @@
 		{#if members.length > 0}
 			<div
 				class="h-full overflow-hidden border-r border-gray-100 dark:border-white/5 shrink-0
-					   fixed md:absolute inset-0 md:inset-y-0 md:left-0 z-[60] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md
+					   fixed md:absolute inset-0 md:inset-y-0 md:left-0 z-[60] md:z-[40] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md
 					   transition-transform duration-300 ease-in-out w-full md:w-64 shadow-2xl md:shadow-none
 					   {isSidebarVisible ? 'translate-x-0' : '-translate-x-full'}"
 			>

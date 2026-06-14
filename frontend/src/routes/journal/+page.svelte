@@ -145,7 +145,7 @@
 			<!-- Sidebar Drawer -->
 			<div
 				class="h-full overflow-hidden border-r border-gray-100 dark:border-white/5 shrink-0
-					   absolute inset-y-0 left-0 z-30 md:z-[60] bg-white dark:bg-zinc-900/60 backdrop-blur-md
+					   absolute inset-y-0 left-0 z-30 md:z-[40] bg-white dark:bg-zinc-900/60 backdrop-blur-md
 					   transition-transform duration-300 ease-in-out w-full md:w-[320px] md:shadow-none
 					   {isSidebarVisible ? 'translate-x-0' : '-translate-x-full'}"
 			>
