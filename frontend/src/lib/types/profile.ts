@@ -69,7 +69,7 @@ export interface PublicProfileData {
 	profilePicture_medium?: string | null;
 	profilePicture_small?: string | null;
 	blurHash?: string | null;
-	oshi?: UserOshi | null;
+	oshis: UserOshi[];
 	publicYear?: number | null;
 }
 

@@ -135,7 +135,7 @@ class PublicUserResponse(BaseModel):
     profilePicture_medium: Optional[str] = None
     profilePicture_small: Optional[str] = None
     blurHash: Optional[str] = None
-    oshi: Optional[OshiResponse] = None
+    oshis: list[OshiResponse] = []
     createdAt: datetime
     lastActiveAt: Optional[datetime] = None
     publicYear: Optional[int] = None
