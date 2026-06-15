@@ -118,7 +118,7 @@
 		{#if isAuthenticated.value}
 			<a
 				href="/"
-				class="flex px-4 sm:px-6 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-bold text-xs sm:text-sm hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all items-center gap-2 group"
+				class="hidden lg:flex px-4 sm:px-6 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-bold text-xs sm:text-sm hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all items-center gap-2 group"
 			>
 				{t('nav.dashboard')}
 				<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
@@ -126,7 +126,7 @@
 		{:else if showLogin}
 			<a
 				href="/login"
-				class="flex px-4 sm:px-6 py-2 rounded-full bg-red-600 text-white font-bold text-xs sm:text-sm shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-0.5 transition-all items-center gap-2 group"
+				class="hidden lg:flex px-4 sm:px-6 py-2 rounded-full bg-red-600 text-white font-bold text-xs sm:text-sm shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-0.5 transition-all items-center gap-2 group"
 			>
 				{t('auth.login.signIn')}
 				<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
@@ -204,7 +204,7 @@
 				<div class="flex items-center justify-between px-2">
 					<div class="flex items-center gap-4">
 						<!-- <MobileRadioWidget /> -->
-						<LanguageToggle />
+						<LanguageToggle align="left" />
 						<LandingPageThemeToggle />
 					</div>
 

@@ -134,6 +134,7 @@
 			"description": "あなたのヲタ活のあらゆる軌跡を、ひとつの個人的な{highlight}に保存しましょう。単なる記録だけではなく、あなたの活動を静かに見守る証となります。",
 			"highlight": "デジタルアーカイブ",
 			"getStarted": "始める",
+			"alreadyHaveAccount": "すでにアカウントをお持ちですか？ ",
 			"openSource": "オープンソース • 広告なし • ファンメイド"
 		},
 		"features": {

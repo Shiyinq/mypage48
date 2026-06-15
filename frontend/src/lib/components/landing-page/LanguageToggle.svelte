@@ -5,6 +5,11 @@
 
 	const { locale, changeLocale } = useTranslation();
 
+	interface Props {
+		align?: 'left' | 'right';
+	}
+	let { align = 'right' }: Props = $props();
+
 	let isOpen = $state(false);
 
 	const locales: { code: Locale; label: string; flag: string }[] = [
@@ -52,7 +57,9 @@
 		<div
 			in:scale={{ duration: 150, start: 0.95 }}
 			out:fade={{ duration: 100 }}
-			class="absolute right-0 top-full mt-2 w-40 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-xl backdrop-blur-xl z-50 overflow-hidden"
+			class="absolute {align === 'right'
+				? 'right-0'
+				: 'left-0'} top-full mt-2 w-40 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-xl backdrop-blur-xl z-50 overflow-hidden"
 		>
 			<div class="p-1">
 				{#each locales as l}

@@ -136,6 +136,13 @@
 				{t('landing.hero.getStarted')}
 				<Rocket size={20} class="group-hover:rotate-12 transition-transform" />
 			</a>
+			<a
+				href="/login"
+				class="mt-4 lg:hidden text-sm text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+			>
+				{t('landing.hero.alreadyHaveAccount')}
+				<span class="font-semibold underline underline-offset-2">{t('auth.login.signIn')}</span>
+			</a>
 			<p class="mt-6 text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">
 				{t('landing.hero.openSource')}
 			</p>
