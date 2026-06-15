@@ -8,9 +8,9 @@
 	import { fade, fly } from 'svelte/transition';
 	import { liveStore, liveList } from '$lib/stores/live.svelte';
 	import { onMount } from 'svelte';
-	import RadioEngine from './radio-player/RadioEngine.svelte';
-	import RadioWidget from './radio-player/RadioWidget.svelte';
-	import MobileRadioWidget from './radio-player/MobileRadioWidget.svelte';
+	// import RadioEngine from './radio-player/RadioEngine.svelte';
+	// import RadioWidget from './radio-player/RadioWidget.svelte';
+	// import MobileRadioWidget from './radio-player/MobileRadioWidget.svelte';
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
 	import NavPills from '$lib/components/navigation/NavPills.svelte';
 
@@ -109,7 +109,7 @@
 
 	<!-- Right: Actions -->
 	<div class="flex-1 flex items-center justify-end gap-2 sm:gap-3 pointer-events-auto">
-		<RadioWidget />
+		<!-- <RadioWidget /> -->
 		<div class="hidden sm:flex items-center gap-2 sm:gap-3">
 			<LanguageToggle />
 			<LandingPageThemeToggle />
@@ -203,7 +203,7 @@
 
 				<div class="flex items-center justify-between px-2">
 					<div class="flex items-center gap-4">
-						<MobileRadioWidget />
+						<!-- <MobileRadioWidget /> -->
 						<LanguageToggle />
 						<LandingPageThemeToggle />
 					</div>
@@ -232,4 +232,4 @@
 {/if}
 
 <!-- Persistent Audio Engine -->
-<RadioEngine />
+<!-- <RadioEngine /> -->
