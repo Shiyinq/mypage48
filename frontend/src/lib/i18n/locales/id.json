@@ -135,6 +135,7 @@
 			"description": "Simpan setiap jejak perjalanan-mu menjadi wota dalam satu {highlight} yang personal. Bukan sekadar pelacak, tapi saksi bisu dedikasi kamu.",
 			"highlight": "arsip digital",
 			"getStarted": "Mulai Sekarang",
+			"alreadyHaveAccount": "Sudah punya akun? ",
 			"openSource": "Open Source • Tanpa Iklan • Buatan Fans"
 		},
 		"features": {

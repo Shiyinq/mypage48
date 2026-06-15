@@ -134,6 +134,7 @@
 			"description": "Save every trace of your wota journey in one personal {highlight}. More than just a tracker—a silent witness to your dedication.",
 			"highlight": "digital archive",
 			"getStarted": "Get Started",
+			"alreadyHaveAccount": "Already have an account? ",
 			"openSource": "Open Source • No Ads • Fan Made"
 		},
 		"features": {
