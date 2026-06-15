@@ -13,7 +13,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { PublicProfileData } from '$lib/types';
 	import { getExternalMediaUrl } from '$lib/utils/media';
-	import { OptimizedImage } from '$lib/components/common';
+	import { OptimizedImage, FlyingOshiIcons } from '$lib/components/common';
 	import { userProfile, showToast } from '$lib/stores';
 
 	interface Props {
@@ -66,6 +66,10 @@
 		bioValue = profile.bio || '';
 		isEditingBio = false;
 	}
+
+	// Flying hearts logic
+	let isHoveringBadge = $state(false);
+	let flyingIconsComponent = $state<ReturnType<typeof FlyingOshiIcons>>();
 </script>
 
 <div
@@ -196,17 +200,54 @@
 			{#if profile.oshis && profile.oshis.length > 0}
 				<div class="flex flex-wrap justify-center md:justify-start gap-3">
 					{#if profile.oshis.length === 1}
+						<!-- svelte-ignore a11y_no_static_element_interactions -->
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<div
-							class="flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400 text-xs font-bold rounded-full border border-pink-100 dark:border-pink-900/30"
+							class="flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400 text-xs font-bold rounded-full border border-pink-100 dark:border-pink-900/30 relative cursor-pointer"
+							onclick={() => {
+								flyingIconsComponent?.burst(3);
+							}}
+							onmouseenter={() => (isHoveringBadge = true)}
+							onmouseleave={() => (isHoveringBadge = false)}
+							ontouchstart={() => (isHoveringBadge = true)}
+							ontouchend={() => (isHoveringBadge = false)}
+							ontouchcancel={() => (isHoveringBadge = false)}
 						>
-							<Heart class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 fill-pink-500" />
-							<span>Oshi: {profile.oshis[0].name}</span>
+							<Heart class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 fill-pink-500 z-10 relative" />
+							<span class="z-10 relative">Oshi: {profile.oshis[0].name}</span>
+
+							<!-- Flying Hearts -->
+							<FlyingOshiIcons
+								bind:this={flyingIconsComponent}
+								active={isHoveringBadge}
+								memberType={profile.oshis[0].memberType}
+							/>
 						</div>
 					{:else}
+						<!-- svelte-ignore a11y_no_static_element_interactions -->
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<div
-							class="flex items-center gap-2.5 pr-1.5 pl-3 py-1 bg-pink-50 dark:bg-pink-900/20 rounded-full border border-pink-100/50 dark:border-pink-900/30 transition-all duration-300"
+							class="flex items-center gap-2.5 pr-1.5 pl-3 py-1 bg-pink-50 dark:bg-pink-900/20 rounded-full border border-pink-100/50 dark:border-pink-900/30 transition-all duration-300 relative cursor-pointer"
+							onclick={() => {
+								flyingIconsComponent?.burst(3);
+							}}
+							onmouseenter={() => (isHoveringBadge = true)}
+							onmouseleave={() => (isHoveringBadge = false)}
+							ontouchstart={() => (isHoveringBadge = true)}
+							ontouchend={() => (isHoveringBadge = false)}
+							ontouchcancel={() => (isHoveringBadge = false)}
 						>
-							<button type="button" class="group/heart relative cursor-help focus:outline-none">
+							<!-- Flying Hearts -->
+							<FlyingOshiIcons
+								bind:this={flyingIconsComponent}
+								active={isHoveringBadge}
+								oshis={profile.oshis}
+							/>
+
+							<button
+								type="button"
+								class="group/heart relative cursor-help focus:outline-none z-10"
+							>
 								<Heart class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 fill-pink-500" />
 								<div
 									class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-gray-800 text-white text-[10px] font-medium rounded shadow-lg opacity-0 invisible group-hover/heart:opacity-100 group-hover/heart:visible group-focus/heart:opacity-100 group-focus/heart:visible transition-all z-50 text-center whitespace-nowrap pointer-events-none"

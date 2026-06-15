@@ -15,7 +15,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
-	import { OptimizedImage } from '$lib/components/common';
+	import { OptimizedImage, FlyingOshiIcons } from '$lib/components/common';
 	import { fade } from 'svelte/transition';
 	import { getOshiBanner } from '$lib/constants';
 	import type { UserOshi, OshiTwoShotCounts } from '$lib/types';
@@ -144,6 +144,10 @@
 			stopAutoRotate();
 		}
 	});
+
+	// Flying hearts logic
+	let isHoveringAvatar = $state(false);
+	let flyingIconsComponent = $state<ReturnType<typeof FlyingOshiIcons>>();
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -220,23 +224,40 @@
 					<!-- Avatar with Glow -->
 					<div class="relative md:self-start">
 						<button
-							class="relative w-28 h-28 rounded-full border-4 border-white shadow-xl overflow-hidden flex-shrink-0 cursor-pointer transition-transform hover:scale-105 active:scale-95"
-							onclick={() => onOpenMemberDetail(currentOshi.name)}
+							class="relative w-28 h-28 rounded-full border-4 border-white shadow-xl flex-shrink-0 cursor-pointer transition-transform hover:scale-105 active:scale-95"
+							onclick={() => {
+								flyingIconsComponent?.burst(3);
+								onOpenMemberDetail(currentOshi.name);
+							}}
+							onmouseenter={() => (isHoveringAvatar = true)}
+							onmouseleave={() => (isHoveringAvatar = false)}
+							ontouchstart={() => (isHoveringAvatar = true)}
+							ontouchend={() => (isHoveringAvatar = false)}
+							ontouchcancel={() => (isHoveringAvatar = false)}
 						>
-							<OptimizedImage
-								src={getExternalMediaUrl(currentOshi.profilePicture) || '/placeholder-user.jpg'}
-								srcMedium={currentOshi.profilePicture_medium}
-								srcSmall={currentOshi.profilePicture_small}
-								alt={currentOshi.name}
-								blurHash={currentOshi.blurHash}
-								class="w-full h-full object-cover"
-								sizes="112px"
-							/>
-							<div
-								class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100"
-							>
-								<Info class="w-8 h-8 text-white drop-shadow-md" />
+							<div class="w-full h-full rounded-full overflow-hidden relative">
+								<OptimizedImage
+									src={getExternalMediaUrl(currentOshi.profilePicture) || '/placeholder-user.jpg'}
+									srcMedium={currentOshi.profilePicture_medium}
+									srcSmall={currentOshi.profilePicture_small}
+									alt={currentOshi.name}
+									blurHash={currentOshi.blurHash}
+									class="w-full h-full object-cover"
+									sizes="112px"
+								/>
+								<div
+									class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100"
+								>
+									<Info class="w-8 h-8 text-white drop-shadow-md" />
+								</div>
 							</div>
+
+							<!-- Flying Hearts -->
+							<FlyingOshiIcons
+								bind:this={flyingIconsComponent}
+								active={isHoveringAvatar}
+								memberType={currentOshi?.memberType}
+							/>
 						</button>
 						<div
 							class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
