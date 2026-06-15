@@ -252,7 +252,9 @@ class LiveHistoryRepository:
                 "longest_watch": None,
             }
 
-        longest_watch = await self.get_longest_watch(user_id, member_id)
+        longest_watch = await self.get_longest_watch(
+            user_id, member_id, start_date=start_date, end_date=end_date
+        )
 
         platform_pipeline = [
             {"$match": match_query},
