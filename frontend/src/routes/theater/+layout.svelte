@@ -10,7 +10,8 @@
 		ArrowUpDown,
 		Tv,
 		Globe,
-		History
+		History,
+		Image
 	} from 'lucide-svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { liveList, isImmersive } from '$lib/stores';
@@ -159,6 +160,13 @@
 						onClick: () => goto('/theater/live/history/watched'),
 						showLabel: false,
 						theme: 'gray'
+					},
+					{
+						icon: Image,
+						label: 'PC Live',
+						onClick: () => goto('/theater/live/pc'),
+						showLabel: false,
+						theme: 'pink'
 					}
 				]
 			: currentPath === '/theater/sorter' || currentPath === '/theater/sorter/history'

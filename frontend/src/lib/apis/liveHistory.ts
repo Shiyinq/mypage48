@@ -8,7 +8,8 @@ import type {
 	GlobalLiveHistoryStats,
 	GlobalLiveMemberRankingResponse,
 	GlobalSingleMemberLiveHistoryStats,
-	WatchedLiveMemberRankingResponse
+	WatchedLiveMemberRankingResponse,
+	PCLiveHistoryResponse
 } from '$lib/types/liveHistory';
 
 export const liveHistoryApi = {
@@ -22,6 +23,21 @@ export const liveHistoryApi = {
 		if (startDate) url += `&start_date=${startDate}`;
 		if (endDate) url += `&end_date=${endDate}`;
 		return client<GlobalLiveHistoryResponse>(url);
+	},
+
+	getPCCollection: async (
+		collectionType: 'owned' | 'unowned' | 'all' = 'all',
+		page: number = 1,
+		limit: number = 20,
+		startDate?: string,
+		endDate?: string,
+		sortBy?: string
+	): Promise<PCLiveHistoryResponse> => {
+		let url = `/history/lives/pc?collection_type=${collectionType}&page=${page}&limit=${limit}`;
+		if (startDate) url += `&start_date=${startDate}`;
+		if (endDate) url += `&end_date=${endDate}`;
+		if (sortBy) url += `&sort_by=${sortBy}`;
+		return client<PCLiveHistoryResponse>(url);
 	},
 
 	updateWatchDuration: async (data: LiveHistoryUpdateRequest): Promise<void> => {

@@ -96,6 +96,18 @@ export interface GlobalLiveHistoryResponse {
 	total_pages: number;
 }
 
+export interface PCLiveHistory extends GlobalLiveHistory {
+	is_owned: boolean;
+}
+
+export interface PCLiveHistoryResponse {
+	data: PCLiveHistory[];
+	total: number;
+	page: number;
+	limit: number;
+	total_pages: number;
+}
+
 export interface WatchedLiveMemberRankingItem {
 	member_id: string;
 	member_name?: string;

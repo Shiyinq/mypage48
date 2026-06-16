@@ -1533,6 +1533,34 @@
 		"thisMonth": "Bulan Ini",
 		"thisYear": "Tahun Ini",
 		"allTime": "Semua Waktu",
-		"customRange": "Rentang Kustom"
+		"customRange": "Rentang Kustom",
+		"pcLive": {
+			"title": "PC Live",
+			"buttonSubtitle": "KOLEKSI",
+			"description": "Koleksi Photo Card Live",
+			"tabs": {
+				"all": "Semua Kartu",
+				"owned": "Dimiliki",
+				"notOwned": "Belum Dimiliki"
+			},
+			"emptyTitle": "Tidak Ada Riwayat",
+			"emptyDesc": "Tidak ada data histori live untuk ditampilkan sebagai Photo Card.",
+			"sort": {
+				"dateDesc": "Terbaru",
+				"dateAsc": "Terlama",
+				"tierDesc": "Kelangkaan Tertinggi",
+				"tierAsc": "Kelangkaan Terendah"
+			}
+		},
+		"tier": {
+			"ultraRare": "ULTRA RARE",
+			"rare": "RARE",
+			"legendary": "LEGENDARY",
+			"epic": "EPIC",
+			"normal": "NORMAL",
+			"common": "COMMON",
+			"premium": "PREMIUM",
+			"notOwned": "BELUM DIMILIKI"
+		}
 	}
 }

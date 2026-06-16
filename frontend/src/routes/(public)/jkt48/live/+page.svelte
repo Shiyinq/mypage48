@@ -3,7 +3,7 @@
 	import { fly } from 'svelte/transition';
 	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Users, Share2, Globe } from 'lucide-svelte';
+	import { Users, Share2, Globe, Image } from 'lucide-svelte';
 	import LiveGrid from '$lib/components/live/LiveGrid.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { showToast } from '$lib/stores';
@@ -82,7 +82,9 @@
 					</p>
 				</div>
 
-				<div class="shrink-0 flex flex-col sm:flex-row items-center w-full sm:w-auto gap-3">
+				<div
+					class="shrink-0 flex flex-row justify-center sm:justify-end items-center w-full sm:w-auto gap-3"
+				>
 					{#if liveList.value.length > 0}
 						<a
 							href="/jkt48/live/multiview"
@@ -116,30 +118,60 @@
 						</a>
 					{/if}
 
-					<a
-						href="/jkt48/live/history"
-						class="group relative flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden sm:w-auto"
-					>
-						<div
-							class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
-						></div>
-
-						<div
-							class="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300"
+					<div class="flex flex-row items-center justify-center gap-3">
+						<a
+							href="/jkt48/live/history"
+							class="group relative flex items-center justify-center gap-2 p-2.5 sm:px-5 sm:py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden shrink-0"
+							title={t('liveHistory.globalButton') || 'Live History'}
 						>
-							<Globe size={18} />
-						</div>
+							<div
+								class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
+							></div>
 
-						<div class="flex flex-col items-start leading-none gap-0.5">
-							<span
-								class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors"
-								>{t('liveHistory.globalButtonSubtitle') || 'Global Archive'}</span
+							<div
+								class="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300 shrink-0"
 							>
-							<span class="text-sm font-black tracking-tight text-slate-900 dark:text-white"
-								>{t('liveHistory.globalButton') || 'Live History'}</span
+								<Globe size={18} />
+							</div>
+
+							<div class="hidden sm:flex flex-col items-start leading-none gap-0.5">
+								<span
+									class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors whitespace-nowrap"
+									>{t('liveHistory.globalButtonSubtitle') || 'Global Archive'}</span
+								>
+								<span
+									class="text-sm font-black tracking-tight text-slate-900 dark:text-white whitespace-nowrap"
+									>{t('liveHistory.globalButton') || 'Live History'}</span
+								>
+							</div>
+						</a>
+						<a
+							href="/jkt48/live/pc"
+							class="group relative flex items-center justify-center gap-2 p-2.5 sm:px-5 sm:py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden shrink-0"
+							title={t('liveHistory.pcLive.title') || 'PC Live'}
+						>
+							<div
+								class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
+							></div>
+
+							<div
+								class="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300 shrink-0"
 							>
-						</div>
-					</a>
+								<Image size={18} />
+							</div>
+
+							<div class="hidden sm:flex flex-col items-start leading-none gap-0.5">
+								<span
+									class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors whitespace-nowrap"
+									>{t('liveHistory.pcLive.buttonSubtitle') || 'COLLECTION'}</span
+								>
+								<span
+									class="text-sm font-black tracking-tight text-slate-900 dark:text-white whitespace-nowrap"
+									>{t('liveHistory.pcLive.title') || 'PC Live'}</span
+								>
+							</div>
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>

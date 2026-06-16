@@ -105,6 +105,18 @@ class GlobalLiveHistoryPaginationResponse(BaseModel):
     total_pages: int
 
 
+class PCLiveHistory(GlobalLiveHistory):
+    is_owned: bool = Field(False, description="Whether the user owns this PC card")
+
+
+class PCLiveHistoryPaginationResponse(BaseModel):
+    data: List[PCLiveHistory]
+    total: int
+    page: int
+    limit: int
+    total_pages: int
+
+
 class WatchedLiveMemberRankingItem(BaseModel):
     member_id: str
     member_name: Optional[str] = None

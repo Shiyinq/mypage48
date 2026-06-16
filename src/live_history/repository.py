@@ -643,3 +643,70 @@ class LiveHistoryRepository:
             "platform_counts": platform_counts,
             "longest_live": longest_watch,
         }
+
+    async def get_pc_collection(
+        self,
+        user_id: Optional[str],
+        collection_type: str = "all",
+        skip: int = 0,
+        limit: int = 20,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+        sort_by: str = "date_desc",
+    ) -> List[Dict[str, Any]]:
+        query = self._build_date_query({}, start_date, end_date)
+
+        watched_live_ids = []
+        if user_id and collection_type in ["owned", "unowned", "all"]:
+            watched_live_ids = await self.watched_col.distinct(
+                "live_id", {"user_id": user_id}
+            )
+
+        if user_id and collection_type == "owned":
+            query["live_id"] = {"$in": watched_live_ids}
+        elif user_id and collection_type == "unowned":
+            query["live_id"] = {"$nin": watched_live_ids}
+
+        sort_stage = [("start_at", -1)]
+        if sort_by == "date_asc":
+            sort_stage = [("start_at", 1)]
+        elif sort_by == "tier_desc":
+            sort_stage = [("view_num", -1), ("start_at", -1)]
+        elif sort_by == "tier_asc":
+            sort_stage = [("view_num", 1), ("start_at", 1)]
+
+        cursor = self.history_col.find(query).sort(sort_stage).skip(skip).limit(limit)
+        results = [doc async for doc in cursor]
+
+        if user_id and collection_type == "owned":
+            for r in results:
+                r["is_owned"] = True
+        elif user_id and collection_type == "unowned":
+            for r in results:
+                r["is_owned"] = False
+        else:
+            watched_set = set(watched_live_ids)
+            for r in results:
+                r["is_owned"] = r.get("live_id") in watched_set if user_id else False
+
+        return results
+
+    async def get_total_pc_collection_count(
+        self,
+        user_id: Optional[str],
+        collection_type: str = "all",
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+    ) -> int:
+        query = self._build_date_query({}, start_date, end_date)
+
+        if user_id and collection_type in ["owned", "unowned"]:
+            watched_live_ids = await self.watched_col.distinct(
+                "live_id", {"user_id": user_id}
+            )
+            if collection_type == "owned":
+                query["live_id"] = {"$in": watched_live_ids}
+            else:
+                query["live_id"] = {"$nin": watched_live_ids}
+
+        return await self.history_col.count_documents(query)
