@@ -1,31 +1,86 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { Newspaper, Calendar, ChevronLeft, ChevronRight } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
-	import { fade } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	import { EventCardSkeleton } from '$lib/components/skeletons';
-	import { newsStore, newsList, newsLoading, newsError, newsPagination } from '$lib/stores/news';
+	import {
+		newsList,
+		newsPagination,
+		newsLoading,
+		newsError,
+		newsStore,
+		newsFilter
+	} from '$lib/stores/news.svelte';
+
+	import { TheaterHeader } from '$lib/components/theater';
+	import { DateRangeFilter } from '$lib/components/common';
 
 	import { formatDate } from '$lib/i18n';
-	const { t, locale } = useTranslation();
+	import { OptimizedImage } from '$lib/components/common';
+	const { t } = useTranslation();
 
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(async () => {
-		await newsStore.load();
 		mounted = true;
 	});
 
-	$: error = $newsError;
-	$: list = $newsList;
-	$: loading = $newsLoading;
+	let list = $derived(newsList.value);
+	let pagination = $derived(newsPagination.value);
+	let isLoading = $derived(newsLoading.value);
+	let error = $derived(newsError.value);
+	let isFilterOpen = $state(false);
+
+	function clickOutside(node: HTMLElement) {
+		const handleClick = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (node && !node.contains(target) && !target.closest('[data-filter-toggle="true"]')) {
+				isFilterOpen = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
+
+	$effect(() => {
+		// Track only startDate and endDate
+		const trackStart = newsFilter.startDate;
+		const trackEnd = newsFilter.endDate;
+
+		untrack(() => {
+			// Do not fetch if only one of the dates is set
+			if ((trackStart && !trackEnd) || (!trackStart && trackEnd)) {
+				return;
+			}
+			newsStore.load(1, 12, false, newsFilter);
+		});
+	});
+
+	function formatFilterDate(dateStr?: string) {
+		if (!dateStr) return '';
+		return formatDate(dateStr, { day: 'numeric', month: 'short', year: 'numeric' });
+	}
+
+	let filterLabel = $derived(
+		newsFilter.startDate || newsFilter.endDate
+			? `${formatFilterDate(newsFilter.startDate)} - ${formatFilterDate(newsFilter.endDate)}`
+			: t('common.allData') || 'Semua Data'
+	);
 
 	async function handlePageChange(page: number) {
-		newsStore.load(page);
+		goto(`/theater/news?page=${page}`);
 		await tick();
 		setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 10);
 	}
@@ -63,29 +118,56 @@
 </script>
 
 <SEO
-	title={$t('theater.news.title') || 'News'}
+	title={t('theater.news.title') || 'News'}
 	path="/theater/news"
-	description={$t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
+	description={t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
 />
 
+<div class="mb-0 sm:mb-6 relative z-30">
+	<TheaterHeader
+		{filterLabel}
+		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
+		isOpen={isFilterOpen}
+		title={t('theater.news.title')}
+		subtitle={t('theater.news.subtitle') || 'Latest news and updates from JKT48'}
+		icon={Newspaper}
+		theme="purple"
+	/>
+	{#if isFilterOpen}
+		<div
+			use:clickOutside
+			transition:slide={{ duration: 200 }}
+			class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
+		>
+			<DateRangeFilter
+				bind:startDate={newsFilter.startDate}
+				bind:endDate={newsFilter.endDate}
+				onClear={() => {
+					isFilterOpen = false;
+				}}
+			/>
+		</div>
+	{/if}
+</div>
+
 <div class="space-y-6">
-	{#if (!mounted || loading) && list.length === 0}
+	{#if !mounted || isLoading}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-			{#each Array(8) as _}
+			{#each Array(8)}
 				<EventCardSkeleton />
 			{/each}
 		</div>
 	{:else if error && list.length === 0}
 		<ErrorState
-			title={$t('theater.news.errorTitle')}
-			description={$t('theater.news.errorDesc')}
-			onRetry={() => newsStore.load(1, 12, true)}
+			title={t('theater.news.errorTitle')}
+			description={t('theater.news.errorDesc')}
+			onRetry={() => newsStore.load(1, 12, true, newsFilter)}
 		/>
 	{:else if list.length === 0}
 		<EmptyState
 			icon={Newspaper}
-			title={$t('theater.news.emptyTitle')}
-			description={$t('theater.news.empty')}
+			title={t('theater.news.emptyTitle')}
+			description={t('theater.news.empty')}
 		/>
 	{:else}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
@@ -100,11 +182,10 @@
 						class="relative w-[38%] md:w-full shrink-0 overflow-hidden bg-gray-100 dark:bg-zinc-800 aspect-square md:aspect-[4/3]"
 					>
 						{#if item.background_image}
-							<img
+							<OptimizedImage
 								src={getExternalMediaUrl(item.background_image)}
 								alt={item.title}
 								class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-								loading="lazy"
 							/>
 						{:else}
 							<div
@@ -139,7 +220,7 @@
 							>
 								<Calendar class="w-3.5 h-3.5" />
 								<span
-									>{$formatDate(item.valid_date_from, {
+									>{formatDate(item.valid_date_from, {
 										day: 'numeric',
 										month: 'short',
 										year: 'numeric'
@@ -158,7 +239,7 @@
 							class="mt-auto md:pt-4 md:border-t flex items-center justify-between text-[11px] md:text-xs text-gray-500 dark:text-gray-400 font-medium md:border-gray-100 dark:border-white/5"
 						>
 							<span class="flex items-center gap-1 hover:text-red-500 transition-colors">
-								{$t('theater.news.readMore')}
+								{t('theater.news.readMore')}
 								<ChevronRight class="w-3 h-3" />
 							</span>
 						</div>
@@ -168,20 +249,20 @@
 		</div>
 
 		<!-- Numbered Pagination -->
-		{#if $newsPagination && $newsPagination.last_page > 1}
+		{#if pagination && pagination.last_page > 1}
 			<div class="flex items-center justify-center mt-8 mb-20 md:mb-8 w-full">
 				<div class="flex flex-wrap justify-center gap-1.5 md:gap-2 max-w-full">
 					<!-- Previous Button -->
 					<button
 						class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-md bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
-						disabled={$newsPagination.current_page === 1}
-						on:click={() => handlePageChange($newsPagination.current_page - 1)}
+						disabled={pagination.current_page === 1}
+						onclick={() => handlePageChange(pagination.current_page - 1)}
 					>
 						<ChevronLeft class="w-4 h-4 md:w-5 md:h-5" />
 					</button>
 
 					<!-- Page Numbers -->
-					{#each generatePagination($newsPagination.current_page, $newsPagination.last_page) as page}
+					{#each generatePagination(pagination.current_page, pagination.last_page) as page}
 						{#if page === '...'}
 							<span
 								class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-xs md:text-sm text-gray-400"
@@ -190,10 +271,10 @@
 						{:else}
 							<button
 								class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-xs md:text-sm rounded-md border transition-colors cursor-pointer {page ===
-								$newsPagination.current_page
+								pagination.current_page
 									? 'bg-red-500 text-white border-red-500'
 									: 'bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700'}"
-								on:click={() => handlePageChange(Number(page))}
+								onclick={() => handlePageChange(Number(page))}
 							>
 								{page}
 							</button>
@@ -203,8 +284,8 @@
 					<!-- Next Button -->
 					<button
 						class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-md bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
-						disabled={$newsPagination.current_page === $newsPagination.last_page}
-						on:click={() => handlePageChange($newsPagination.current_page + 1)}
+						disabled={pagination.current_page === pagination.last_page}
+						onclick={() => handlePageChange(pagination.current_page + 1)}
 					>
 						<ChevronRight class="w-4 h-4 md:w-5 md:h-5" />
 					</button>

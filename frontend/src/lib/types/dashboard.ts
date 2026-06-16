@@ -30,16 +30,26 @@ export interface MonthlyStatsResponse {
 	max_count: number;
 }
 
+export interface HeatmapStatsResponse {
+	data: Record<string, number>;
+}
+
 export interface TopShowResponse {
 	title: string;
 	count: number;
 	image: string | null;
+	image_medium?: string | null;
+	image_small?: string | null;
+	blurHash?: string | null;
 }
 
 export interface TopMemberResponse {
 	name: string;
 	count: number;
 	image?: string | null;
+	image_medium?: string | null;
+	image_small?: string | null;
+	blurHash?: string | null;
 }
 
 export interface TwoShotStatsResponse {
@@ -52,6 +62,9 @@ export interface TwoShotStatsResponse {
 export interface ExtremeItem {
 	ticket_id: string;
 	image: string | null;
+	image_medium?: string | null;
+	image_small?: string | null;
+	blurHash?: string | null;
 	title: string;
 	date: string;
 	time: string;
@@ -88,6 +101,7 @@ export interface SeatMapStatsGroup {
 export interface PeriodStatsGroup {
 	monthly_stats: MonthlyStatsResponse;
 	day_stats: DayStatsResponse;
+	heatmap_stats: HeatmapStatsResponse;
 }
 
 export interface DashboardStats {

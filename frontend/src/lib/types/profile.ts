@@ -14,6 +14,8 @@ export interface RankInfo {
 export interface ProfileStats {
 	totalShows: number;
 	totalAchievements: number;
+	totalTwoShots: number;
+	totalLiveWatched: number;
 	oshiMeetings: number;
 }
 
@@ -34,10 +36,12 @@ export interface OshiTwoShotCounts {
 
 export interface ProfileFullResponse {
 	profile: User;
-	oshi: UserOshi | null;
+	oshis: UserOshi[];
 	rank: RankInfo;
 	stats: ProfileStats;
 	oshiTwoShots: OshiTwoShotCounts;
+	oshiTwoShotsList: OshiTwoShotCounts[];
+	oshiMeetingsList: number[];
 	recentActivity: ProfileRecentActivity[];
 }
 
@@ -49,6 +53,8 @@ export interface UserWithProfileStats extends User {
 	profileRank?: RankInfo;
 	profileStats?: ProfileStats;
 	profileOshiTwoShots?: OshiTwoShotCounts;
+	profileOshiTwoShotsList?: OshiTwoShotCounts[];
+	profileOshiMeetingsList?: number[];
 	profileRecentActivity?: ProfileRecentActivity[];
 }
 
@@ -58,8 +64,12 @@ export interface UserWithProfileStats extends User {
 export interface PublicProfileData {
 	name: string;
 	username: string;
+	bio?: string | null;
 	profilePicture?: string | null;
-	oshi?: UserOshi | null;
+	profilePicture_medium?: string | null;
+	profilePicture_small?: string | null;
+	blurHash?: string | null;
+	oshis: UserOshi[];
 	publicYear?: number | null;
 }
 
@@ -82,4 +92,13 @@ export interface PublicProfileStats {
 	topRowCount?: number;
 	topShow: string | null;
 	topShowCount?: number;
+	showCounts?: Record<string, number>;
+	topTwoShots?: Array<{
+		name: string;
+		count: number;
+		imageUrl?: string | null;
+		imageUrl_medium?: string | null;
+		imageUrl_small?: string | null;
+		blurHash?: string | null;
+	}>;
 }

@@ -1,36 +1,63 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { goto } from '$app/navigation';
 	import {
 		AudioLines,
 		Users,
 		Calendar,
-		ChevronRight,
-		History,
 		Newspaper,
 		ArrowUpDown,
-		Tv
+		Tv,
+		Globe,
+		History
 	} from 'lucide-svelte';
-	import { getThemeStyles } from '$lib/constants/theaterTheme';
-	import { theaterNavItems } from '$lib/constants/theaterNav';
 	import PageHeader from '$lib/components/PageHeader.svelte';
+	import { liveList, isImmersive } from '$lib/stores';
+	import { newsStore } from '$lib/stores/news.svelte';
+
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
 
 	const { t } = useTranslation();
 
-	$: currentPath = $page.url.pathname;
+	let currentPath = $derived($page.url.pathname);
+	let isTheaterRoot = $derived(currentPath === '/theater');
+
+	// Check if on live listing page
+	let isLiveListingPage = $derived(currentPath === '/theater/live');
 
 	// Check if on live single detail or multiview page — hide header for immersive player
-	$: isLiveDetailPage = /^\/theater\/live\/.+/.test(currentPath);
+	let isLiveDetailPage = $derived(/^\/theater\/live\/(?!history).+/.test(currentPath));
 
 	// Check if on news detail page
-	$: isNewsDetailPage = /^\/theater\/news\/.+/.test(currentPath);
+	let isNewsDetailPage = $derived(/^\/theater\/news\/.+/.test(currentPath));
+
+	// Check if on news listing page
+	let isNewsListingPage = $derived(currentPath === '/theater/news');
+
+	// Check if on events history page
+	let isEventsHistoryPage = $derived(currentPath === '/theater/events/history');
+
+	// Check if on members page
+	let isMembersPage = $derived(currentPath === '/theater/members');
+
+	// Check if on member detail page
+	let isMembersDetailPage = $derived(
+		currentPath.startsWith('/theater/members/') && !isNewsListingPage && !isMembersPage
+	);
 
 	// Check if on setlist detail page
-	$: isDetailPage = (() => {
-		const parts = currentPath.split('/').filter(Boolean);
-		if (parts.length !== 2 || parts[0] !== 'theater') return false;
-		return !['news', 'members', 'sorter', 'events', 'live'].includes(parts[1]);
-	})();
+	let isDetailPage = $derived(
+		(() => {
+			const parts = currentPath.split('/').filter(Boolean);
+			if (parts.length !== 2 || parts[0] !== 'theater') return false;
+			return !['news', 'members', 'sorter', 'events', 'live'].includes(parts[1]);
+		})()
+	);
 
 	type PageTheme =
 		| 'red'
@@ -45,79 +72,134 @@
 		| 'indigo';
 
 	// Dynamic Title, Subtitle & Theme
-	$: pageInfo = (() => {
-		if (currentPath.includes('/theater/news')) {
+	let pageInfo = $derived(
+		(() => {
+			if (currentPath.includes('/theater/news')) {
+				return {
+					title: t('theater.news.title') || 'News',
+					subtitle: t('theater.news.subtitle') || 'Latest updates and announcements',
+					icon: Newspaper,
+					theme: 'red' as PageTheme
+				};
+			}
+			if (currentPath.includes('/theater/members')) {
+				return {
+					title: t('theater.members.title'),
+					subtitle: t('theater.members.subtitle'),
+					icon: Users,
+					theme: 'pink' as PageTheme
+				};
+			}
+			if (currentPath.includes('/theater/sorter')) {
+				return {
+					title: t('theater.sorter.title'),
+					subtitle: t('theater.sorter.subtitle'),
+					icon: ArrowUpDown,
+					theme: 'rose' as PageTheme
+				};
+			}
+			if (currentPath.includes('/theater/events/history')) {
+				return {
+					title: t('theater.eventHistory.title') || 'Event History',
+					subtitle: t('theater.eventHistory.subtitle') || 'Past events',
+					icon: Calendar,
+					theme: 'orange' as PageTheme
+				};
+			}
+			if (currentPath.includes('/theater/events')) {
+				return {
+					title: t('theater.events.title') || 'Events',
+					subtitle: t('theater.events.subtitle') || 'Browse theater events',
+					icon: Calendar,
+					theme: 'blue' as PageTheme
+				};
+			}
+			if (currentPath.includes('/theater/live')) {
+				return {
+					title: 'JKT48 LIVE',
+					subtitle: t('theater.live.subtitle'),
+					icon: Tv,
+					theme: 'red' as PageTheme
+				};
+			}
 			return {
-				title: $t('theater.news.title') || 'News',
-				subtitle: $t('theater.news.subtitle') || 'Latest updates and announcements',
-				icon: Newspaper,
-				theme: 'red' as PageTheme
+				title: t('theater.title'),
+				subtitle: t('theater.subtitle'),
+				icon: AudioLines,
+				theme: 'purple' as PageTheme
 			};
-		}
-		if (currentPath.includes('/theater/members')) {
-			return {
-				title: $t('theater.members.title'),
-				subtitle: $t('theater.members.subtitle'),
-				icon: Users,
-				theme: 'pink' as PageTheme
-			};
-		}
-		if (currentPath.includes('/theater/sorter')) {
-			return {
-				title: $t('theater.sorter.title'),
-				subtitle: $t('theater.sorter.subtitle'),
-				icon: ArrowUpDown,
-				theme: 'rose' as PageTheme
-			};
-		}
-		if (currentPath.includes('/theater/events/history')) {
-			return {
-				title: $t('theater.eventHistory.title') || 'Event History',
-				subtitle: $t('theater.eventHistory.subtitle') || 'Past events',
-				icon: Calendar,
-				theme: 'orange' as PageTheme
-			};
-		}
-		if (currentPath.includes('/theater/events')) {
-			return {
-				title: $t('theater.events.title') || 'Events',
-				subtitle: $t('theater.events.subtitle') || 'Browse theater events',
-				icon: Calendar,
-				theme: 'blue' as PageTheme
-			};
-		}
-		if (currentPath.includes('/theater/live')) {
-			return {
-				title: 'JKT48 LIVE',
-				subtitle: $t('theater.live.subtitle'),
-				icon: Tv,
-				theme: 'red' as PageTheme
-			};
-		}
-		return {
-			title: $t('theater.title'),
-			subtitle: $t('theater.subtitle'),
-			icon: AudioLines,
-			theme: 'purple' as PageTheme
-		};
-	})();
+		})()
+	);
 
-	$: currentThemeStyles = getThemeStyles(pageInfo.theme);
-
-	// Check if current path matches nav item
-	// (Keeping this helper if needed for other logic, but subNav moved to Header)
-	$: isActive = (href: string, exact: boolean = false) => {
-		if (exact) {
-			return currentPath === href;
-		}
-		return currentPath.startsWith(href);
-	};
+	let actionItems = $derived(
+		isLiveListingPage
+			? [
+					...(liveList.value.length > 0
+						? [
+								{
+									icon: Users,
+									label: t('theater.live.switchMultiview') || 'Multi-View',
+									onClick: () => goto('/theater/live/multiview'),
+									showLabel: true,
+									theme: 'gray',
+									badge: liveList.value.length
+								}
+							]
+						: []),
+					{
+						icon: Globe,
+						label: t('liveHistory.globalButton') || 'Riwayat Live',
+						onClick: () => goto('/theater/live/history'),
+						showLabel: false,
+						theme: 'gray'
+					},
+					{
+						icon: History,
+						label: t('liveHistory.viewHistory') || 'Riwayat Menonton',
+						onClick: () => goto('/theater/live/history/watched'),
+						showLabel: false,
+						theme: 'gray'
+					}
+				]
+			: currentPath === '/theater/sorter' || currentPath === '/theater/sorter/history'
+				? [
+						{
+							icon: ArrowUpDown,
+							label: t('theater.sorter.startNew') || 'Mulai Sorter',
+							onClick: () => goto('/theater/sorter'),
+							showLabel: false,
+							theme: currentPath === '/theater/sorter' ? 'rose' : 'gray'
+						},
+						{
+							icon: History,
+							label: t('theater.sorter.history') || 'Riwayat Sorter',
+							onClick: () => goto('/theater/sorter/history'),
+							showLabel: false,
+							theme: currentPath === '/theater/sorter/history' ? 'rose' : 'gray'
+						}
+					]
+				: []
+	);
+	let isHeaderHidden = $derived(
+		isLiveDetailPage ||
+			isImmersive.value ||
+			isTheaterRoot ||
+			isDetailPage ||
+			isEventsHistoryPage ||
+			isNewsListingPage ||
+			isMembersPage ||
+			isMembersDetailPage
+	);
 </script>
 
 <div
-	class="{(isLiveDetailPage || isNewsDetailPage || isDetailPage) ? 'max-w-5xl' : 'max-w-6xl'} mx-auto {isLiveDetailPage
-		? 'pt-0 sm:pt-0 px-1.5 sm:px-4'
-		: 'pt-4 sm:pt-6 px-4'} pb-24"
+	class="{isLiveDetailPage || isImmersive.value || isMembersDetailPage
+		? 'max-w-none w-full'
+		: isNewsDetailPage || isDetailPage
+			? 'max-w-5xl w-full'
+			: 'max-w-6xl'} mx-auto {isLiveDetailPage || isImmersive.value || isMembersDetailPage
+		? 'pt-0 sm:pt-0 px-0'
+		: 'pt-4 sm:pt-6 px-4'} {isImmersive.value ? 'pb-0' : isMembersDetailPage ? 'pb-0' : 'pb-24'}"
 >
 	<!-- Unified Page Header (Standard or Background Live Sync) -->
 	<PageHeader
@@ -125,20 +207,21 @@
 		subtitle={isLiveDetailPage ? '' : pageInfo.subtitle}
 		icon={isLiveDetailPage ? Tv : pageInfo.icon}
 		theme={isLiveDetailPage ? 'red' : pageInfo.theme}
+		{actionItems}
 		showBackButton={isLiveDetailPage || isNewsDetailPage || isDetailPage}
 		backUrl={isNewsDetailPage
-			? '/theater/news'
+			? `/theater/news${newsStore.pagination.current_page > 1 ? `?page=${newsStore.pagination.current_page}` : ''}`
 			: isLiveDetailPage
 				? '/theater/live'
 				: isDetailPage
 					? '/theater'
 					: undefined}
-		hidden={isLiveDetailPage}
+		hidden={isHeaderHidden}
 	></PageHeader>
-	{#if !isLiveDetailPage}
-		<div class="mb-4 sm:mb-6"></div>
+	{#if !isHeaderHidden}
+		<div class="mb-0 sm:mb-6"></div>
 	{/if}
 
 	<!-- Page Content -->
-	<slot />
+	{@render children?.()}
 </div>

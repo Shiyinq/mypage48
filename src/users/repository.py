@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -53,9 +54,14 @@ class UserRepository:
             {"userId": user_id}, {"$set": {"isEmailVerified": True}}
         )
 
-    async def set_oshi_id(self, user_id: str, oshi_id: str):
+    async def add_oshi_id(self, user_id: str, oshi_id: str):
         return await self.collection.update_one(
-            {"userId": user_id}, {"$set": {"oshiId": oshi_id}}
+            {"userId": user_id}, {"$addToSet": {"oshiIds": oshi_id}}
+        )
+
+    async def remove_oshi_id(self, user_id: str, oshi_id: str):
+        return await self.collection.update_one(
+            {"userId": user_id}, {"$pull": {"oshiIds": oshi_id}}
         )
 
     async def set_public_status(
@@ -71,9 +77,20 @@ class UserRepository:
             {"userId": user_id}, {"$set": update_data}
         )
 
-    async def set_profile_picture(self, user_id: str, profile_picture: str):
+    async def set_profile_picture(
+        self, user_id: str, profile_picture: str, blur_hash: Optional[str] = None
+    ):
+        update_data = {"profilePicture": profile_picture}
+        if blur_hash:
+            update_data["blurHash"] = blur_hash
+
         return await self.collection.update_one(
-            {"userId": user_id}, {"$set": {"profilePicture": profile_picture}}
+            {"userId": user_id}, {"$set": update_data}
+        )
+
+    async def update_last_active(self, user_id: str):
+        return await self.collection.update_one(
+            {"userId": user_id}, {"$set": {"lastActiveAt": datetime.now(timezone.utc)}}
         )
 
     async def get_all_paginated(

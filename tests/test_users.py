@@ -43,18 +43,58 @@ async def test_get_all_users_forbidden(client: AsyncClient, db, create_user):
     response = await client.get("/api/users", headers=headers)
     assert response.status_code == 403
 @pytest.mark.asyncio
-async def test_update_oshi(client: AsyncClient, db, create_user):
-    """Test updating user's oshi."""
+async def test_batch_add_oshi(client: AsyncClient, db, create_user):
+    """Test batch adding oshis."""
     token, user_id, headers = await create_user("oshiuser")
 
-    # Update Oshi
-    oshi_payload = {"oshiId": 1}
-    response = await client.post("/api/users/oshi", json=oshi_payload, headers=headers)
+    # Batch add 2 oshis
+    oshi_payload = {"oshiIds": [1, 2]}
+    response = await client.post("/api/users/oshi/batch-add", json=oshi_payload, headers=headers)
     assert response.status_code == 200
     
-    # Verify in DB directly (profile endpoint uses stale current_user from JWT)
+    # Verify in DB directly
     user = await db["users"].find_one({"userId": user_id})
-    assert user["oshiId"] == "1"
+    assert user["oshiIds"] == ["1", "2"]
+
+@pytest.mark.asyncio
+async def test_remove_oshi(client: AsyncClient, db, create_user):
+    """Test removing an oshi."""
+    token, user_id, headers = await create_user("removeoshiuser")
+
+    # Setup: add 2 oshis first
+    await db["users"].update_one(
+        {"userId": user_id},
+        {"$set": {"oshiIds": ["1", "2"]}}
+    )
+
+    # Remove one oshi
+    remove_payload = {"oshiId": 1}
+    response = await client.post("/api/users/oshi/remove", json=remove_payload, headers=headers)
+    assert response.status_code == 200
+
+    # Verify in DB
+    user = await db["users"].find_one({"userId": user_id})
+    assert user["oshiIds"] == ["2"]
+
+@pytest.mark.asyncio
+async def test_batch_add_oshi_limit(client: AsyncClient, db, create_user):
+    """Test batch add exceeding max 5 limit."""
+    token, user_id, headers = await create_user("limituser")
+
+    # Setup: already has 4 oshis
+    await db["users"].update_one(
+        {"userId": user_id},
+        {"$set": {"oshiIds": ["1", "2", "3", "4"]}}
+    )
+
+    # Try adding 2 more (would exceed limit of 5)
+    oshi_payload = {"oshiIds": [5, 6]}
+    response = await client.post("/api/users/oshi/batch-add", json=oshi_payload, headers=headers)
+    assert response.status_code == 400
+
+    # Verify DB unchanged
+    user = await db["users"].find_one({"userId": user_id})
+    assert len(user["oshiIds"]) == 4
 
 @pytest.mark.asyncio
 async def test_update_public_status(client: AsyncClient, db, create_user):
@@ -76,20 +116,32 @@ async def test_update_profile_picture(client: AsyncClient, db, create_user):
     """Test updating user's profile picture."""
     token, user_id, headers = await create_user("picuser")
 
-    # Use a minimal valid PNG image (1x1 pixel transparent)
-    valid_png_base64 = (
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAA"
-        "DUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
-    )
-    
-    # Update Profile Picture
-    pic_payload = {"profilePicture": valid_png_base64}
+    # Update Profile Picture (simulating saving a storage path)
+    dummy_path = "avatar/user_id/test_image.webp"
+    pic_payload = {"profilePicture": dummy_path}
     response = await client.post("/api/users/profile-picture", json=pic_payload, headers=headers)
     assert response.status_code == 200
     
-    # Verify in DB directly (profile endpoint uses stale current_user from JWT)
+    # Verify in DB directly
     user = await db["users"].find_one({"userId": user_id})
-    assert user["profilePicture"] == valid_png_base64
+    assert user["profilePicture"] == dummy_path
+
+@pytest.mark.asyncio
+async def test_update_profile_picture_validation(client: AsyncClient, db, create_user):
+    """Test validation of profile picture path and length."""
+    token, user_id, headers = await create_user("valuser")
+
+    # 1. Test missing prefix
+    pic_payload = {"profilePicture": "wrong/path/image.webp"}
+    response = await client.post("/api/users/profile-picture", json=pic_payload, headers=headers)
+    assert response.status_code == 422
+    assert "Profile picture image path must start with 'avatar/'" in response.text
+
+    # 2. Test exceeding length (100)
+    long_path = "avatar/" + "a" * 100
+    pic_payload = {"profilePicture": long_path}
+    response = await client.post("/api/users/profile-picture", json=pic_payload, headers=headers)
+    assert response.status_code == 422
 
 @pytest.mark.asyncio
 async def test_get_public_profile(client: AsyncClient, db):
@@ -128,7 +180,7 @@ async def test_oshi_meetings_logic(client: AsyncClient, db, create_user, create_
     oshi_id = "123"
     await db["users"].update_one(
         {"userId": user_id},
-        {"$set": {"oshiId": oshi_id}}
+        {"$set": {"oshiIds": [oshi_id]}}
     )
     
     # Mock Oshi Member Data (needed for profile endpoint to resolve Oshi name)
@@ -206,7 +258,7 @@ async def test_oshi_meetings_logic(client: AsyncClient, db, create_user, create_
     assert stats["totalShows"] == 3
 
     # Verify Oshi Schedule Structure
-    oshi_data = data["oshi"]
+    oshi_data = data["oshis"][0]
     assert oshi_data is not None
     assert "upcomingSchedule" in oshi_data
     assert "pastSchedule" in oshi_data
@@ -222,3 +274,85 @@ async def test_oshi_meetings_logic(client: AsyncClient, db, create_user, create_
     past_titles = [s["title"] for s in oshi_data["pastSchedule"]]
     assert "Event A" in past_titles
     assert "Event C" in past_titles
+
+
+@pytest.mark.asyncio
+async def test_total_two_shots(client: AsyncClient, db, create_user, create_ticket):
+    """Test calculation of totalTwoShots in profile stats."""
+    token, user_id, headers = await create_user("twoshotuser")
+
+    # Create tickets: 3 with two_shot, 2 without
+    await create_ticket(user_id, {
+        "title": "Show A",
+        "date": "2024-01-01",
+        "two_shot": {"member_name": "Member A", "type": "Roulette", "price": 50000, "imageUrl": "http://example.com/a.jpg"}
+    })
+    await create_ticket(user_id, {
+        "title": "Show B",
+        "date": "2024-01-02",
+        "two_shot": {"member_name": "Member B", "type": "Birthday", "price": 50000, "imageUrl": "http://example.com/b.jpg"}
+    })
+    await create_ticket(user_id, {
+        "title": "Show C",
+        "date": "2024-01-03",
+        "two_shot": {"member_name": "Member A", "type": "Roulette", "price": 50000, "imageUrl": "http://example.com/c.jpg"}
+    })
+    await create_ticket(user_id, {
+        "title": "Show D",
+        "date": "2024-01-04",
+        "two_shot": None
+    })
+    await create_ticket(user_id, {
+        "title": "Show E",
+        "date": "2024-01-05",
+        "two_shot": None
+    })
+
+    response = await client.get("/api/users/profile", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["stats"]["totalShows"] == 5
+    assert data["stats"]["totalTwoShots"] == 3
+
+
+@pytest.mark.asyncio
+async def test_total_live_watched(client: AsyncClient, db, create_user):
+    """Test calculation of totalLiveWatched from watched_live_history."""
+    from datetime import datetime
+
+    token, user_id, headers = await create_user("livewatcher")
+
+    # Insert watched live history entries for this user
+    watched_entries = [
+        {
+            "user_id": user_id,
+            "live_id": f"live_{i}",
+            "member_id": f"member_{i}",
+            "member_name": f"Member {i}",
+            "platform": "showroom",
+            "duration": 300,
+            "started_at": datetime(2024, 6, 1, 10, 0, 0),
+            "last_updated_at": datetime(2024, 6, 1, 10, 5, 0),
+        }
+        for i in range(5)
+    ]
+    await db["watched_live_history"].insert_many(watched_entries)
+
+    # Insert an entry for a different user (should not be counted)
+    await db["watched_live_history"].insert_one({
+        "user_id": "other_user",
+        "live_id": "live_other",
+        "member_id": "member_other",
+        "member_name": "Other",
+        "platform": "idn",
+        "duration": 600,
+        "started_at": datetime(2024, 6, 1, 11, 0, 0),
+        "last_updated_at": datetime(2024, 6, 1, 11, 10, 0),
+    })
+
+    response = await client.get("/api/users/profile", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["stats"]["totalLiveWatched"] == 5

@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:20.10.0-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Set the working directory
 WORKDIR /app
@@ -30,7 +30,7 @@ ENV PUBLIC_UMAMI_URL=$PUBLIC_UMAMI_URL
 RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build
 
 # Stage 2: Runtime
-FROM node:20.10.0-alpine AS runtime
+FROM node:24-alpine AS runtime
 
 WORKDIR /app
 

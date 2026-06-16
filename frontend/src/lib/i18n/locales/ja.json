@@ -18,19 +18,23 @@
 		"info": "情報",
 		"search": "検索",
 		"filter": "フィルター",
+		"setlist": "セットリスト",
 		"filters": "フィルター",
 		"all": "すべて",
 		"allSetlists": "全セットリスト",
 		"allData": "全データ",
 		"hasTwoShot": "2ショットあり",
+		"favorite": "お気に入り",
 		"clearFilters": "フィルターをクリア",
+		"startDate": "開始日",
+		"endDate": "終了日",
 		"days": "曜日",
 		"dateRange": "日付範囲",
 		"viewDetails": "詳細を見る",
 		"logout": "ログアウト",
 		"settings": "設定",
 		"profile": "プロフィール",
-		"dashboard": "ダッシュボード",
+		"dashboard": "概要",
 		"language": "言語",
 		"noResults": "結果が見つかりません",
 		"date": "日付",
@@ -39,7 +43,8 @@
 		"fromShort": "から",
 		"toShort": "まで",
 		"copyLink": "リンクをコピー",
-		"copied": "リンクをクリップボードにコピーしました！"
+		"copied": "リンクをクリップボードにコピーしました！",
+		"noMoreData": "すべてのデータが読み込まれました"
 	},
 	"validation": {
 		"alert": {
@@ -47,6 +52,20 @@
 			"fileTooLarge": "ファイルが大きすぎます。最大3MBです。",
 			"invalidType": "対応していないファイル形式です。JPEG、PNG、またはWebPを使用してください。",
 			"noFile": "ファイルが選択されていません。"
+		}
+	},
+	"imageEditor": {
+		"title": "画像編集",
+		"done": "完了",
+		"aspectRatio": "アスペクト比",
+		"ratios": {
+			"free": "自由",
+			"original": "オリジナル",
+			"square": "1:1",
+			"sixteenNine": "16:9",
+			"nineSixteen": "9:16",
+			"fourThree": "4:3",
+			"threeFour": "3:4"
 		}
 	},
 	"seo": {
@@ -80,8 +99,8 @@
 		"journal": "あなたが参加したすべての公演の個人的なデジタルジャーナル。"
 	},
 	"nav": {
-		"home": "ホーム",
-		"dashboard": "ダッシュボード",
+		"home": "概要",
+		"dashboard": "概要",
 		"setlists": "セットリスト",
 		"events": "イベント",
 		"theater": "シアター",
@@ -94,7 +113,7 @@
 		"settings": "設定",
 		"newTicket": "新規チケット",
 		"journal": "ジャーナル",
-		"top2shot": "トップ2ショット"
+		"top2shot": "ルーレット＆バースデー"
 	},
 	"header": {
 		"tagline": "JKT48劇場トラッカー"
@@ -115,6 +134,7 @@
 			"description": "あなたのヲタ活のあらゆる軌跡を、ひとつの個人的な{highlight}に保存しましょう。単なる記録だけではなく、あなたの活動を静かに見守る証となります。",
 			"highlight": "デジタルアーカイブ",
 			"getStarted": "始める",
+			"alreadyHaveAccount": "すでにアカウントをお持ちですか？ ",
 			"openSource": "オープンソース • 広告なし • ファンメイド"
 		},
 		"features": {
@@ -133,6 +153,14 @@
 			"achievements": {
 				"title": "ACHIEVEMENTS",
 				"description": "JKT48を応援しながらバッジやマイルストーンを解除します。「初公演」から「伝説のファン」まで、進捗を追跡し、忠誠心を示しましょう。"
+			},
+			"sorter": {
+				"title": "SORTER",
+				"description": "お気に入りのJKT48メンバーをソートして、本当の推し順位を見つけましょう。ソート結果はSNSでシェアできます。"
+			},
+			"live": {
+				"title": "LIVE",
+				"description": "SHOWROOMやIDN Liveで配信中のJKT48メンバーをリアルタイムで視聴しましょう。マルチビュー機能を使えば、複数のメンバーを同時に視聴できます。"
 			}
 		},
 		"footer": {
@@ -274,6 +302,11 @@
 			"registerCta": "アカウント登録",
 			"welcomeBack": "おかえりなさい！",
 			"invalidCredentials": "メールアドレスまたはパスワードが間違っています",
+			"emailNotVerified": "メールアドレスがまだ認証されていません。受信トレイまたは迷惑メールフォルダを確認してください。",
+			"resendVerification": "認証リンクを再送する",
+			"resendWait": "再送まであと {seconds} 秒",
+			"resendSuccess": "認証リンクをメールで送信しました。",
+			"resendError": "認証リンクの送信に失敗しました。後でもう一度お試しください。",
 			"sessionInvalid": "セッションの有効期限が切れたか、無効です。再度ログインしてください。"
 		},
 		"register": {
@@ -344,22 +377,22 @@
 		}
 	},
 	"dashboard": {
-		"title": "ダッシュボード",
-		"error": "ダッシュボードデータの読み込みに失敗しました",
-		"subtitle": "劇場活動の概要",
-		"filterTitle": "ダッシュボードフィルター",
+		"title": "概要",
+		"error": "概要データの読み込みに失敗しました",
+		"subtitle": "劇場活動",
+		"filterTitle": "概要フィルター",
 		"filterSubtitle": "表示範囲を調整",
 		"theater": {
 			"title": "公演",
-			"subtitle": "観覧履歴の概要",
+			"subtitle": "観覧履歴",
 			"shows": "公演",
 			"events": "イベント",
 			"tickets": "チケット",
 			"spending": "支出",
 			"totalExpenses": "総支出",
-			"topRow": "トップ列",
+			"topRow": "劇場席",
 			"mostFrequentSeat": "最も多い席",
-			"topShow": "トップ公演",
+			"topShow": "セットリスト",
 			"mostWatched": "最も観た",
 			"inYear": "{year}年",
 			"firstLast": "初・最終公演",
@@ -377,7 +410,7 @@
 			"totalExpenses": "総支出",
 			"members": "メンバー",
 			"uniqueIdols": "ユニークアイドル",
-			"topTwoShot": "トップ2ショット",
+			"topTwoShot": "ルーレット＆バースデー",
 			"mostCollected": "最多コレクション",
 			"photos": "枚",
 			"firstLast": "初・最終2ショット",
@@ -390,6 +423,15 @@
 			"rowsCollected": "収集済み列",
 			"stage": "ステージ",
 			"row": "列"
+		},
+		"heatmap": {
+			"title": "観覧履歴",
+			"subtitle": "年間の毎日の活動",
+			"noAttendance": "観覧なし：",
+			"attendance": "回",
+			"on": "日：",
+			"less": "少ない",
+			"more": "多い"
 		},
 		"monthlyAttendance": {
 			"title": "月別観覧",
@@ -411,7 +453,17 @@
 			"save": "推しを保存",
 			"loading": "メンバーを読み込み中...",
 			"noMembers": "\"{query}\" に一致するメンバーが見つかりません",
-			"generation": "{gen}期生"
+			"generation": "{gen}期生",
+			"selectHint": "あと{count}人まで選択可能",
+			"maxReached": "最大{max}推しに達しました",
+			"newSelected": "{count}件 新規選択",
+			"confirmTitle": "推しを削除しますか？",
+			"confirmDesc": "この推しをリストから削除してもよろしいですか？",
+			"confirmRemove": "削除",
+			"addedToast": "推しを追加しました！",
+			"removedToast": "推しを削除しました！",
+			"addErrorToast": "推しの追加に失敗しました",
+			"removeErrorToast": "推しの削除に失敗しました"
 		},
 		"title": "マイプロフィール",
 		"subtitle": "ファンアイデンティティ＆統計",
@@ -424,13 +476,15 @@
 		},
 		"level": {
 			"currentRank": "現在のランク",
-			"xpInfo": "1 XP = 1 公演",
+			"xpInfo": "1 XP = 1 観覧",
 			"needed": "必要",
 			"for": "まで"
 		},
 		"stats": {
-			"totalShows": "総公演数",
+			"totalShows": "総観覧数",
 			"achievements": "実績",
+			"totalTwoShots": "2ショット合計",
+			"totalLiveWatched": "ライブ視聴",
 			"oshiMeetings": "会った"
 		},
 		"oshi": {
@@ -450,7 +504,9 @@
 			"birthday": "バースデー",
 			"upcomingSchedule": "推しの次のスケジュール",
 			"pastSchedule": "推しの以前のスケジュール",
-			"noSchedule": "スケジュールはありません"
+			"noSchedule": "スケジュールはありません",
+			"addOshi": "推しを追加",
+			"removeOshi": "推しを削除"
 		},
 		"recentActivity": {
 			"title": "最近の活動",
@@ -467,8 +523,13 @@
 		},
 		"publicActivity": {
 			"wrapped": "JKT48劇場 Wrapped {year}",
+			"allTime": "JKT48劇場 Wrapped",
+			"summary": "まとめ",
 			"yearSummary": "{year}年まとめ",
-			"watchedTimes": "{count}回観覧"
+			"yearSummaryBadge": "JKT48劇場 {year}",
+			"watchedTimes": "{count}回観覧",
+			"topSetlists": "トップセットリスト",
+			"topTwoShotMembers": "Top 2-Shot"
 		},
 		"profilePicture": {
 			"previewTitle": "プロフィール写真プレビュー",
@@ -480,6 +541,29 @@
 	"settings": {
 		"title": "設定",
 		"subtitle": "設定を管理",
+		"account": {
+			"title": "アカウント情報",
+			"subtitle": "プロフィールの管理",
+			"fullName": "氏名",
+			"username": "ユーザー名",
+			"email": "メールアドレス",
+			"memberId": "会員ID",
+			"ofcStatus": "OFCステータス",
+			"memberSince": "入会日",
+			"type": "アカウントタイプ",
+			"admin": "管理者",
+			"wota": "ヲタ",
+			"verified": "確認済み",
+			"unverified": "未確認",
+			"saveSuccess": "プロフィールが正常に更新されました！",
+			"saveError": "プロフィールの更新に失敗しました",
+			"bio": "自己紹介",
+			"noChanges": "変更はありません",
+			"emailWarning": "メールアドレスを変更すると再認証が必要になります。",
+			"systemInfo": "会員情報",
+			"systemSubtitle": "メンバーシップの詳細",
+			"verification": "アカウント認証"
+		},
 		"language": {
 			"title": "言語",
 			"subtitle": "表示言語を選択",
@@ -499,7 +583,12 @@
 			"uploadError": "プロフィール写真のアップロードに失敗しました。もう一度お試しください。",
 			"uploadSuccess": "プロフィール写真が正常に更新されました！",
 			"loadErrorTitle": "設定の読み込みに失敗しました",
-			"loadErrorDesc": "公開プロフィールの設定を読み込めませんでした。もう一度お試しください。"
+			"loadErrorDesc": "公開プロフィールの設定を読み込めませんでした。もう一度お試しください。",
+			"viewProfile": "プロフィールを表示",
+			"bioPlaceholder": "自己紹介をしてください...",
+			"noBio": "公開プロフィールに自己紹介を追加する...",
+			"updateSuccess": "自己紹介が正常に更新されました",
+			"updateError": "自己紹介の更新に失敗しました"
 		},
 		"developer": {
 			"title": "開発者アクセス",
@@ -590,11 +679,11 @@
 		"firstAttended": "初回観覧",
 		"lastAttended": "最終観覧",
 		"avgPrice": "平均価格",
-		"topRow": "トップ列",
+		"topRow": "劇場席",
 		"mostFrequentedRow": "最もよく座る列",
 		"investmentInMemories": "思い出への投資",
 		"row": "列",
-		"unit": "公演"
+		"unit": "観覧"
 	},
 	"theater": {
 		"title": "シアター",
@@ -618,6 +707,9 @@
 			"viewer": "視聴者",
 			"startedAt": "開始時間",
 			"liveDuration": "配信時間",
+			"seoTitle": "JKT48 ライブ配信 - Showroom & IDN Live",
+			"seoDescription": "MyPage48でJKT48メンバーの今日のShowroomやIDN Live配信を視聴しましょう。",
+			"seoMemberDescription": "MyPage48で{name}のJKT48ライブ配信を視聴しましょう。ShowroomやIDN Liveでお気に入りのJKT48メンバーの生配信をチェック。",
 			"empty": "現在配信中のメンバーはいません。",
 			"emptyTitle": "オフライン",
 			"back": "戻る",
@@ -639,6 +731,9 @@
 			"liveBadge": "ライブ",
 			"chat": "チャット",
 			"connected": "接続中",
+			"offline_title": "ストリームはオフラインです",
+			"offline_description": "{name}は現在配信していません。配信が終了したか、現在利用できない可能性があります。",
+			"return_home": "ホームに戻る",
 			"toggleTheme": "テーマ切替",
 			"volume": "音量",
 			"mute": "ミュート",
@@ -647,6 +742,10 @@
 			"openOriginal": "オリジナル配信を開く",
 			"multiview": {
 				"title": "マルチビュー",
+				"live": {
+					"seoTitle": "JKT48 マルチビュー配信 - 複数同時視聴",
+					"seoDescription": "複数のJKT48ライブ配信を1つの画面で同時に視聴。MyPage48で究極のマルチビュー体験を楽しみましょう。"
+				},
 				"tap_to_play": "タップして再生",
 				"clear_all": "すべてクリア",
 				"switch_to_landscape": "横画面に切り替え",
@@ -668,18 +767,41 @@
 				"loading_chat": "チャットを読み込み中...",
 				"select_stream_to_chat": "配信を選択してチャットを表示",
 				"member_offline": "{name} がオフラインです",
-				"showroom_chat": "SHOWROOMチャット",
-				"chat_started": "チャット開始",
 				"no_messages": "メッセージはまだありません",
 				"stream_error": "ストリームエラー: {details}",
 				"hls_not_supported": "HLSはサポートされていません",
 				"no_stream_found": "ストリームが見つかりません",
 				"failed_load_stream": "ストリームの読み込みに失敗しました",
 				"retry": "再試行",
-				"sending_gift": "ギフト送信中",
-				"seoDescription": "複数のJKT48メンバーのライブを同時に視聴。複数のライブストリームを切り替え、サイズ変更、チャットしながら楽しめます。"
+				"sending_gift": "ギフト送信中"
 			},
-			"switchMultiview": "マルチビューに切り替え"
+			"joined": "{name}さんが参加しました",
+			"group_joined": "{name}さんと他{count}人が参加しました",
+			"chat_started": "チャット開始",
+			"connecting": "接続中...",
+			"disconnected": "切断されました",
+			"reconnect_idn": "接続が切れました。数秒後に再試行します...",
+			"switchMultiview": "マルチビュー",
+			"share": {
+				"title": "mypage48を応援しよう！🚀",
+				"description": "このウェブサイトがお気に入りですか？このプラットフォームを他のJKT48ファンと共有して、私たちの継続と成長をサポートしてください！",
+				"shareToX": "Xで共有",
+				"copyLink": "リンクをコピー",
+				"shareText": "mypage48で最新のJKT48メンバーのライブ配信をチェックしよう！🌟",
+				"toastSuccess": "ウェブサイトのリンクがコピーされました！",
+				"toastError": "リンクのコピーに失敗しました。"
+			},
+			"promo": {
+				"historyTitle": "ライブ履歴機能",
+				"historyDesc": "あなたの個人的なライブ視聴履歴や統計が見られるようになりました！今すぐアカウントを作成しましょう。",
+				"historyAction": "新規登録"
+			},
+			"video_stability": {
+				"title": "映像安定性",
+				"realtime": "リアルタイム",
+				"balanced": "バランス",
+				"stable": "超安定"
+			}
 		},
 		"news": {
 			"title": "ニュース",
@@ -731,14 +853,19 @@
 			"setlist": "セットリスト",
 			"eventType": "イベント",
 			"birthday": "生誕祭",
-			"tba": "未定"
+			"tba": "未定",
+			"promoTitle": "チケットスキャン機能",
+			"promoDesc": "劇場に行ったら、劇場チケットを保存またはメモするのをお忘れなく！このサイトのチケットスキャン機能を使えば、前方席か後方席のどちらに座ることが多いか確認できます。今すぐアカウントを作成しましょう。",
+			"promoAction": "新規登録"
 		},
 		"members": {
 			"title": "メンバー",
 			"subtitle": "JKT48メンバーデータ",
 			"comingSoon": "メンバーデータは近日公開予定！",
 			"errorTitle": "メンバーの読み込みに失敗しました",
-			"errorDesc": "メンバーリストの取得中にエラーが発生しました。"
+			"errorDesc": "メンバーリストの取得中にエラーが発生しました。",
+			"team": "チーム",
+			"allTeams": "すべてのチーム"
 		},
 		"shows": {
 			"title": "公演スケジュール",
@@ -802,16 +929,39 @@
 			"shareTextHeader": "私のJKT48推しソーター結果:",
 			"shareTextFooter": "あなたも試してみよう:",
 			"copySuccess": "結果をクリップボードにコピーしました！",
-			"copyFailed": "結果のコピーに失敗しました。手動でコピーしてください。"
+			"copyFailed": "結果のコピーに失敗しました。手動でコピーしてください。",
+			"editTitle": "タイトルを編集",
+			"editSubtitle": "説明を編集",
+			"save": "保存",
+			"cancel": "キャンセル",
+			"startNew": "ソーターを開始",
+			"history": "ソーター履歴",
+			"loadingHistory": "ソーター履歴を読み込み中...",
+			"noHistoryTitle": "履歴がありません",
+			"noHistoryDesc": "ソーターを完了し、結果を保存して、ここに推しランキング履歴を表示します。",
+			"loadHistoryFailed": "ソーター履歴の読み込みに失敗しました",
+			"saveSuccess": "結果が履歴に保存されました！",
+			"saveFailed": "結果の保存に失敗しました",
+			"deleteSuccess": "履歴のエントリが削除されました",
+			"deleteFailed": "履歴のエントリの削除に失敗しました",
+			"deleteHistory": "履歴を削除",
+			"backToHistory": "ソーター履歴",
+			"gridView": "グリッド表示",
+			"listView": "リスト表示",
+			"confirmYes": "はい",
+			"confirmCancel": "キャンセル",
+			"detail": "詳細",
+			"loginNow": "新規登録",
+			"historyFeatures": "ソーター履歴機能",
+			"landingPromo": "推しランキングの完全な履歴を保存して確認したいですか？今すぐアカウントを作成しましょう。"
 		}
 	},
 	"top2shot": {
-		"title": "トップ2ショット",
-		"subtitle": "メンバー分析と支出内訳",
+		"title": "ルーレット＆バースデー",
+		"subtitle": "最も2ショット写真が多いメンバー",
 		"noData": "2ショットデータがありません",
 		"noDataDesc": "チケットを作成または編集する際に2ショットの詳細を追加して、推しランキングを確認しましょう！",
 		"mostCollected": "最多コレクション",
-		"cherished": "あなたの一番大切なメンバー",
 		"stats2shots": "2ショット",
 		"statsSpent": "支出",
 		"budgetSplit": "予算内訳",
@@ -854,7 +1004,8 @@
 				"userInfo": "ユーザー情報",
 				"email": "メール",
 				"status": "ステータス",
-				"created": "作成日"
+				"created": "作成日",
+				"lastActive": "最終アクティブ"
 			},
 			"status": {
 				"verified": "認証済み",
@@ -885,6 +1036,12 @@
 				"nameRequired": "名前は必須です",
 				"nickname": "ニックネーム",
 				"generation": "期生",
+				"memberType": "メンバータイプ",
+				"birthdate": "生年月日",
+				"bloodType": "血液型",
+				"height": "身長",
+				"horoscope": "星座",
+				"selectPlaceholder": "選択",
 				"imageUrl": "画像URL",
 				"jikoshoukai": "自己紹介",
 				"socials": "SNS",
@@ -948,6 +1105,7 @@
 	"memories": {
 		"title": "思い出",
 		"subtitle": "写真とチケットのギャラリー",
+		"photoType": "写真の種類",
 		"allPhotos": "すべての写真",
 		"tickets": "チケット",
 		"twoShots": "2ショット",
@@ -962,7 +1120,96 @@
 		"locked": "未解除",
 		"progress": "進捗",
 		"errorTitle": "実績の読み込みに失敗しました",
-		"errorDesc": "実績の取得中にエラーが発生しました。"
+		"errorDesc": "実績の取得中にエラーが発生しました。",
+		"items": {
+			"first_show": {
+				"title": "初めての一歩",
+				"description": "初めて劇場公演に参加した"
+			},
+			"regular_visitor": {
+				"title": "常連",
+				"description": "10公演に参加した",
+				"progress": "{current}/10公演"
+			},
+			"dedicated_fan_50": {
+				"title": "熱心なファン",
+				"description": "50公演に参加した",
+				"progress": "{current}/50公演"
+			},
+			"century_club_100": {
+				"title": "センチュリークラブ",
+				"description": "100公演に参加した",
+				"progress": "{current}/100公演"
+			},
+			"theater_icon_150": {
+				"title": "シアターアイコン",
+				"description": "150公演に参加した",
+				"progress": "{current}/150公演"
+			},
+			"legendary_wota_200": {
+				"title": "伝説のヲタ",
+				"description": "200公演に参加した",
+				"progress": "{current}/200公演"
+			},
+			"theater_kami_300": {
+				"title": "シアターの神",
+				"description": "300公演に参加した",
+				"progress": "{current}/300公演"
+			},
+			"absolute_legend_500": {
+				"title": "絶対的レジェンド",
+				"description": "500公演に参加した",
+				"progress": "{current}/500公演"
+			},
+			"super_fan": {
+				"title": "スーパーファン",
+				"description": "同じイベントを10回視聴した",
+				"progress": "{current}/10回"
+			},
+			"mega_fan": {
+				"title": "メガファン",
+				"description": "同じイベントを20回視聴した",
+				"progress": "{current}/20回"
+			},
+			"ultra_fan": {
+				"title": "ウルトラファン",
+				"description": "同じイベントを30回視聴した",
+				"progress": "{current}/30回"
+			},
+			"theater_enthusiast": {
+				"title": "劇場愛好家",
+				"description": "初参戦から1周年",
+				"progress": "{current}/365日"
+			},
+			"theater_veteran": {
+				"title": "劇場ベテラン",
+				"description": "初参戦から2周年",
+				"progress": "{current}/730日"
+			},
+			"theater_legend": {
+				"title": "劇場レジェンド",
+				"description": "初参戦から3周年",
+				"progress": "{current}/1095日"
+			},
+			"elite_row": {
+				"title": "エリートシート",
+				"description": "伝説のA列に座った"
+			},
+			"back_row_warrior": {
+				"title": "後列の戦士",
+				"description": "最前列（J列）から観戦した"
+			},
+			"seat_explorer": {
+				"title": "シートエクスプローラー",
+				"description": "全列（A-J）のチケットを集めた",
+				"progress": "{current}/10列"
+			},
+			"supporter": {
+				"title": "トップサポーター",
+				"description": "チケットに500万ルピア以上を使った",
+				"progress": "{current}/500万"
+			}
+		}
 	},
 	"errors": {
 		"404": {
@@ -1043,6 +1290,9 @@
 		"relative": {
 			"today": "今日",
 			"yesterday": "昨日",
+			"justNow": "たった今",
+			"minsAgo": "{count}分前",
+			"hoursAgo": "{count}時間前",
 			"daysAgo": "{count}日前",
 			"weeksAgo": "{count}週間前"
 		}
@@ -1050,15 +1300,19 @@
 	"upload": {
 		"title": "チケットのアップロード",
 		"subtitle": "新しいチケットをコレクションに追加",
-		"scanTicket": "チケットをスキャン",
-		"scanDescription": "画像をアップロードしてAIに詳細を抽出させます。",
+		"scanTicket": "劇場チケットをスキャン",
+		"scanDescription": "劇場チケットの画像をアップロードしてAIに詳細を抽出させます。",
 		"manualEntry": "手動入力",
 		"manualDescription": "詳細を自分で入力します。",
 		"saveTicket": "チケットを保存",
 		"uploadSuccess": "チケットが正常にアップロードされました",
 		"uploadError": "チケットのアップロードに失敗しました",
 		"analyzingTitle": "チケットを分析中",
-		"analyzingDescription": "公演情報を抽出しています..."
+		"analyzingDescription": "公演情報を抽出しています...",
+		"viewExample": "チケットの見本を見る",
+		"exampleTitle": "劇場チケットの見本",
+		"exampleSubtitle": "JKT48劇場チケットの鮮明なスクリーンショットを使用してください",
+		"exampleDescription": "AIスキャンは、上記のようなJKT48劇場チケットのスクリーンショットで最も効果的に機能します。AIは自動的に以下を抽出します：公演タイトル、日付、開演時間、座席番号、チケットID、価格。"
 	},
 	"forms": {
 		"analysisFailed": "チケットの詳細を自動的に読み取れませんでした。",
@@ -1112,6 +1366,40 @@
 		"emptyState": {
 			"title": "メンバーが見つかりません",
 			"description": "検索条件やフィルターを変更して、お探しのメンバーを見つけてください。"
+		},
+		"loadMore": "もっと読み込む",
+		"upcoming": " upcoming",
+		"past": "過去",
+		"pastShows": "過去の公演",
+		"shows": "公演",
+		"liveTitle": "ライブ",
+		"generation": "期",
+		"cm": "cm",
+		"count": "回",
+		"viewers": "視聴者",
+		"liveFallback": "ライブ配信",
+		"eventEmpty": "このメンバーの公演は見つかりませんでした",
+		"liveEmpty": "このメンバーのライブ履歴は見つかりませんでした",
+		"showSidebar": "サイドバーを表示",
+		"closeSidebar": "サイドバーを閉じる",
+		"memberFrame": "メンバーフレーム",
+		"officialProfile": "公式プロフィール",
+		"twitterProfile": "Twitter / X プロフィール",
+		"tiktokProfile": "TikTok プロフィール",
+		"showStats": {
+			"title": "公演統計",
+			"totalShows": "総公演数",
+			"topSetlist": "最多公演セットリスト",
+			"uniqueSetlists": "ユニークセットリスト数",
+			"disclaimer": "このデータはスクレイピング結果に基づいており、実際のデータと異なる場合があります。"
+		},
+		"liveStats": {
+			"title": "ライブ統計",
+			"totalLives": "総ライブ数",
+			"totalDuration": "総時間",
+			"topPlatform": "トッププラットフォーム",
+			"longestLive": "最長ライブ",
+			"disclaimer": "このデータはスクレイピング結果に基づいており、実際のデータと異なる場合があります。"
 		}
 	},
 	"command": {
@@ -1130,7 +1418,7 @@
 			"admin": "管理"
 		},
 		"actions": {
-			"home": "ホームへ移動",
+			"home": "概要へ移動",
 			"theater": "シアターへ移動",
 			"events": "イベント一覧へ移動",
 			"members": "メンバー一覧へ移動",
@@ -1139,7 +1427,7 @@
 			"memories": "思い出へ移動",
 			"profile": "プロフィールへ移動",
 			"settings": "設定へ移動",
-			"scanTicket": "チケットをスキャン",
+			"scanTicket": "劇場チケットをスキャン",
 			"manualTicket": "チケットを手動追加",
 			"lightMode": "ライトモードに切り替え",
 			"darkMode": "ダークモードに切り替え",
@@ -1203,5 +1491,46 @@
 		"showSidebar": "リストを表示",
 		"uploadingImage": "画像をアップロード中...",
 		"cancelImage": "キャンセル"
+	},
+	"liveHistory": {
+		"title": "視聴履歴",
+		"subtitle": "あなたのライブ視聴履歴",
+		"totalWatches": "総視聴回数",
+		"totalDuration": "総視聴時間",
+		"membersWatched": "視聴したメンバー",
+		"mostFrequent": "最もよく視聴する",
+		"recentHistory": "最近の履歴",
+		"noHistory": "履歴はまだありません",
+		"noHistoryDesc": "記録されたJKT48のライブストリームをまだ視聴していません。",
+		"noGlobalHistory": "ライブ履歴なし",
+		"noGlobalHistoryDesc": "記録されたJKT48のライブストリームが見つかりませんでした。",
+		"times": "回",
+		"buttonSubtitle": "マイ統計",
+		"longestWatch": "最長視聴",
+		"platformWatches": "視聴プラットフォーム",
+		"viewHistory": "視聴履歴",
+		"watchedFor": "視聴時間",
+		"globalTitle": "ライブ履歴",
+		"globalSubtitle": "記録されたすべてのライブの履歴",
+		"globalButtonSubtitle": "すべてのライブ",
+		"globalButton": "ライブ履歴",
+		"rankingTitle": "メンバーランキング",
+		"rankingSubtitle": "あなたが最もよく見るメンバー",
+		"globalStatsTitle": "ライブ統計",
+		"totalLives": "ライブ合計",
+		"uniqueMembers": "ユニークメンバー",
+		"mostFrequentLive": "最多ライブ",
+		"highestViews": "最高視聴数",
+		"globalRankingTitle": "ライブメンバーランキング",
+		"globalRankingSubtitle": "最もライブが多いメンバー",
+		"liveHistory": "ライブ履歴",
+		"longestLive": "最長ライブ",
+		"totalLivePlatform": "総ライブプラットフォーム",
+		"views": "回視聴",
+		"thisWeek": "今週",
+		"thisMonth": "今月",
+		"thisYear": "今年",
+		"allTime": "全期間",
+		"customRange": "カスタム期間"
 	}
 }

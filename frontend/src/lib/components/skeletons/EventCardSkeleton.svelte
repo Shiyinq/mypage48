@@ -1,8 +1,12 @@
 <script lang="ts">
-	/**
-	 * Skeleton for Event Cards matching the aspect-video design
-	 */
-	export let className: string = '';
+	interface Props {
+		/**
+		 * Skeleton for Event Cards matching the aspect-video design
+		 */
+		className?: string;
+	}
+
+	let { className = '' }: Props = $props();
 </script>
 
 <div

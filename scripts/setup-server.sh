@@ -97,21 +97,31 @@ if [ "$SHOULD_SETUP_ENV" = true ]; then
     read -p "🔐 Enter MongoDB Root Password (default: ChangeMe123!): " MONGO_ROOT_PASSWORD
     MONGO_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-ChangeMe123!}
 
-    read -p "📦 Enter MinIO Access Key (default: minioadmin): " MINIO_ACCESS_KEY
-    MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+    echo "📦 --- STORAGE SETTINGS (MinIO or R2) ---"
+    read -p "🔹 Choose Storage Provider (r2/minio) (default: r2): " STORAGE_PROVIDER
+    STORAGE_PROVIDER=${STORAGE_PROVIDER:-r2}
 
-    read -p "🔑 Enter MinIO Secret Key (default: minioadmin123): " MINIO_SECRET_KEY
-    MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin123}
+    if [ "$STORAGE_PROVIDER" == "r2" ]; then
+        read -p "🆔 Enter Cloudflare Account ID: " R2_ACCOUNT_ID
+        STORAGE_ENDPOINT="${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+        STORAGE_SECURE="true"
+        STORAGE_USE_PRESIGNED="true"
+    else
+        STORAGE_ENDPOINT="minio:9000"
+        STORAGE_SECURE="false"
+        STORAGE_USE_PRESIGNED="false"
+    fi
 
+    read -p "🔑 Enter Storage Access Key (MinIO User or R2 Key): " STORAGE_ACCESS_KEY
+    read -p "🤫 Enter Storage Secret Key (MinIO Pass or R2 Secret): " STORAGE_SECRET_KEY
+    read -p "🪣 Enter Storage Bucket Name (default: mypage48-images): " STORAGE_BUCKET
+    STORAGE_BUCKET=${STORAGE_BUCKET:-mypage48-images}
+    
     read -p "🐘 Enter Umami Postgres Password (default: umami123!): " POSTGRES_PASSWORD
     POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-umami123!}
 
-    echo "🔒 --- BACKUP SETTINGS (R2) ---"
+    echo "🔒 --- BACKUP SETTINGS ---"
     read -p "🔐 Enter a Password to ENCRYPT your backups: " BACKUP_PASSWORD
-    read -p "🆔 Enter Cloudflare Account ID: " R2_ACCOUNT_ID
-    read -p "🪣 Enter R2 Bucket Name: " R2_BUCKET
-    read -p "🔑 Enter R2 Access Key ID: " R2_ACCESS_KEY
-    read -p "🤫 Enter R2 Secret Access Key: " R2_SECRET_KEY
     
     # Generate random keys
     SECRET_KEY=$(openssl rand -hex 32)
@@ -122,25 +132,31 @@ if [ "$SHOULD_SETUP_ENV" = true ]; then
     sed -i "s|PUBLIC_CLIENT_SIDE_API_BASE_URL=.*|PUBLIC_CLIENT_SIDE_API_BASE_URL=https://api.$DOMAIN|g" .env.tmp
     sed -i "s|API_BASE_URL=.*|API_BASE_URL=https://api.$DOMAIN|g" .env.tmp
     sed -i "s|PUBLIC_UMAMI_URL=.*|PUBLIC_UMAMI_URL=https://analytics.$DOMAIN|g" .env.tmp
-    sed -i "s|MINIO_PUBLIC_URL=.*|MINIO_PUBLIC_URL=https://storage.$DOMAIN|g" .env.tmp
-    sed -i "s|MINIO_BROWSER_REDIRECT_URL=.*|MINIO_BROWSER_REDIRECT_URL=https://storage.$DOMAIN|g" .env.tmp
-    sed -i "s|ORIGINS=.*|ORIGINS=https://$DOMAIN,https://api.$DOMAIN,https://analytics.$DOMAIN,https://storage.$DOMAIN|g" .env.tmp
     
+    sed -i "s|STORAGE_PROVIDER=.*|STORAGE_PROVIDER=$STORAGE_PROVIDER|g" .env.tmp
+    sed -i "s|STORAGE_ENDPOINT=.*|STORAGE_ENDPOINT=$STORAGE_ENDPOINT|g" .env.tmp
+    sed -i "s|STORAGE_ACCESS_KEY=.*|STORAGE_ACCESS_KEY=$STORAGE_ACCESS_KEY|g" .env.tmp
+    sed -i "s|STORAGE_SECRET_KEY=.*|STORAGE_SECRET_KEY=$STORAGE_SECRET_KEY|g" .env.tmp
+    sed -i "s|STORAGE_BUCKET=.*|STORAGE_BUCKET=$STORAGE_BUCKET|g" .env.tmp
+    sed -i "s|STORAGE_SECURE=.*|STORAGE_SECURE=$STORAGE_SECURE|g" .env.tmp
+    sed -i "s|STORAGE_USE_PRESIGNED=.*|STORAGE_USE_PRESIGNED=$STORAGE_USE_PRESIGNED|g" .env.tmp
+    sed -i "s|STORAGE_PUBLIC_URL=.*|STORAGE_PUBLIC_URL=https://storage.$DOMAIN|g" .env.tmp
+
+    sed -i "s|ORIGINS=.*|ORIGINS=https://$DOMAIN,https://api.$DOMAIN,https://analytics.$DOMAIN,https://storage.$DOMAIN|g" .env.tmp
     sed -i "s|SECRET_KEY=.*|SECRET_KEY=$SECRET_KEY|g" .env.tmp
     sed -i "s|UMAMI_SECRET=.*|UMAMI_SECRET=$UMAMI_SECRET|g" .env.tmp
     
     sed -i "s|MONGO_ROOT_PASSWORD=.*|MONGO_ROOT_PASSWORD=$MONGO_ROOT_PASSWORD|g" .env.tmp
-    sed -i "s|MINIO_ACCESS_KEY=.*|MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY|g" .env.tmp
-    sed -i "s|MINIO_SECRET_KEY=.*|MINIO_SECRET_KEY=$MINIO_SECRET_KEY|g" .env.tmp
     sed -i "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$POSTGRES_PASSWORD|g" .env.tmp
-    sed -i "s|MINIO_SECURE=.*|MINIO_SECURE=false|g" .env.tmp
 
-    # Backup settings
+    # Backup specific (using same R2 for simplicity if r2 chosen)
     sed -i "s|BACKUP_PASSWORD=.*|BACKUP_PASSWORD=$BACKUP_PASSWORD|g" .env.tmp
-    sed -i "s|R2_ACCOUNT_ID=.*|R2_ACCOUNT_ID=$R2_ACCOUNT_ID|g" .env.tmp
-    sed -i "s|R2_BUCKET=.*|R2_BUCKET=$R2_BUCKET|g" .env.tmp
-    sed -i "s|R2_ACCESS_KEY=.*|R2_ACCESS_KEY=$R2_ACCESS_KEY|g" .env.tmp
-    sed -i "s|R2_SECRET_KEY=.*|R2_SECRET_KEY=$R2_SECRET_KEY|g" .env.tmp
+    if [ "$STORAGE_PROVIDER" == "r2" ]; then
+        sed -i "s|R2_ACCOUNT_ID=.*|R2_ACCOUNT_ID=$R2_ACCOUNT_ID|g" .env.tmp
+        sed -i "s|R2_BUCKET=.*|R2_BUCKET=$STORAGE_BUCKET|g" .env.tmp
+        sed -i "s|R2_ACCESS_KEY=.*|R2_ACCESS_KEY=$STORAGE_ACCESS_KEY|g" .env.tmp
+        sed -i "s|R2_SECRET_KEY=.*|R2_SECRET_KEY=$STORAGE_SECRET_KEY|g" .env.tmp
+    fi
 
     mv .env.tmp .env
     echo "✅ .env file generated successfully."
@@ -155,11 +171,11 @@ touch "$CERT_DIR/privkey.pem"
 echo "✅ SSL directory and empty files created."
 
 # 10. Automated Backup Setup (Cron Job)
-echo "⏰ Setting up daily automated backup (00:00)..."
+echo "⏰ Setting up daily automated backup (02:00 AM)..."
 chmod +x scripts/backup-to-r2.sh
 # Check if cron job already exists to avoid duplication
-(crontab -l 2>/dev/null | grep -F "scripts/backup-to-r2.sh") || (crontab -l 2>/dev/null; echo "0 0 * * * $PROJECT_DIR/scripts/backup-to-r2.sh >> $PROJECT_DIR/logs/backup.log 2>&1") | crontab -
-echo "✅ Cron job for daily backup at midnight created."
+(crontab -l 2>/dev/null | grep -F "scripts/backup-to-r2.sh") || (crontab -l 2>/dev/null; echo "0 2 * * * /bin/bash $PROJECT_DIR/scripts/backup-to-r2.sh >> $PROJECT_DIR/logs/backup.log 2>&1") | crontab -
+echo "✅ Cron job for daily backup at 02:00 AM created."
 
 echo "--------------------------------------------------------"
 echo "🎉 SETUP COMPLETE!"

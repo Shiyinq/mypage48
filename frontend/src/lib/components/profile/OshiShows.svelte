@@ -4,19 +4,22 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
 
-	export let upcomingSchedule: OshiShow[] = [];
-	export let pastSchedule: OshiShow[] = [];
-	export let loading: boolean = false;
+	interface Props {
+		upcomingSchedule?: OshiShow[];
+		pastSchedule?: OshiShow[];
+		loading?: boolean;
+	}
+
+	let { upcomingSchedule = [], pastSchedule = [], loading = false }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
 
 <div class="flex flex-col gap-6">
-	<!-- Upcoming Schedule -->
 	<div class="glass-panel p-5 rounded-3xl">
 		<h4 class="font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
 			<Calendar class="w-4 h-4 text-blue-500" />
-			{$t('profile.oshi.upcomingSchedule')}
+			{t('profile.oshi.upcomingSchedule')}
 		</h4>
 
 		<div class="space-y-3">
@@ -34,7 +37,7 @@
 				<div
 					class="text-center py-6 text-gray-500 bg-gray-50/50 dark:bg-zinc-800/30 rounded-2xl border border-dashed border-gray-100 dark:border-zinc-800"
 				>
-					<p class="text-xs">{$t('profile.oshi.noSchedule')}</p>
+					<p class="text-xs">{t('profile.oshi.noSchedule')}</p>
 				</div>
 			{:else}
 				{#each upcomingSchedule as show}
@@ -51,7 +54,7 @@
 								{show.title}
 							</p>
 							<p class="text-[10px] font-medium text-gray-400">
-								{$formatDate(show.date, { day: 'numeric', month: 'short', year: 'numeric' })}
+								{formatDate(show.date, { day: 'numeric', month: 'short', year: 'numeric' })}
 							</p>
 						</div>
 						{#if show.url}
@@ -74,12 +77,12 @@
 	<div class="glass-panel p-5 rounded-3xl">
 		<h4 class="font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
 			<History class="w-4 h-4 text-purple-500" />
-			{$t('profile.oshi.pastSchedule')}
+			{t('profile.oshi.pastSchedule')}
 		</h4>
 
 		<div class="space-y-3">
 			{#if loading}
-				{#each [1, 2] as _}
+				{#each [1, 2]}
 					<div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50/50 dark:bg-zinc-800/30">
 						<div class="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
 						<div class="flex-1 space-y-2">
@@ -92,7 +95,7 @@
 				<div
 					class="text-center py-6 text-gray-500 bg-gray-50/50 dark:bg-zinc-800/30 rounded-2xl border border-dashed border-gray-100 dark:border-zinc-800"
 				>
-					<p class="text-xs">{$t('profile.oshi.noSchedule')}</p>
+					<p class="text-xs">{t('profile.oshi.noSchedule')}</p>
 				</div>
 			{:else}
 				{#each pastSchedule as show}
@@ -109,7 +112,7 @@
 								{show.title}
 							</p>
 							<p class="text-[10px] font-medium text-gray-400">
-								{$formatDate(show.date, { day: 'numeric', month: 'short', year: 'numeric' })}
+								{formatDate(show.date, { day: 'numeric', month: 'short', year: 'numeric' })}
 							</p>
 						</div>
 						{#if show.url}

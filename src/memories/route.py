@@ -2,12 +2,10 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 
-from src import dependencies
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_memories_service, get_storage_service
+from src.dependencies import get_current_user, get_memories_service
 from src.memories.schemas import MemoriesPaginationResponse, TopTwoShotResponse
 from src.memories.service import MemoriesService
-from src.storage.service import StorageService
 
 router = APIRouter()
 
@@ -17,9 +15,13 @@ async def get_memories(
     page: int = 1,
     limit: int = 20,
     type: Optional[str] = None,
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    title: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    days: Optional[str] = None,
+    is_favorite: Optional[bool] = None,
+    current_user: UserCurrent = Depends(get_current_user),
     memories_service: MemoriesService = Depends(get_memories_service),
-    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Get paginated memory items (ticket and 2-shot images).
@@ -32,30 +34,35 @@ async def get_memories(
     Returns:
         MemoriesPaginationResponse: Paginated list of memory items
     """
-    result = await memories_service.get_memories_paginated(
+    return await memories_service.get_memories_paginated(
         user_id=current_user.userId,
         page=page,
         limit=limit,
         type_filter=type,
+        title=title,
+        start_date=start_date,
+        end_date=end_date,
+        days=days.split(",") if days else None,
+        is_favorite=is_favorite,
     )
-
-    # Resolve image URLs for all memory items
-    resolved_data = [
-        storage_service.resolve_memory_item_image(item) for item in result.data
-    ]
-    result.data = resolved_data
-
-    return result
 
 
 @router.get("/top-two-shot", response_model=TopTwoShotResponse)
 async def get_top_two_shot(
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    year: Optional[int] = None,
+    start_month: int = 0,
+    end_month: int = 11,
+    is_all_data: bool = True,
+    current_user: UserCurrent = Depends(get_current_user),
     memories_service: MemoriesService = Depends(get_memories_service),
-    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Get Top 2-Shot statistics.
     """
-    stats = await memories_service.get_top_two_shot(user_id=current_user.userId)
-    return storage_service.resolve_top_twoshot_images(stats)
+    return await memories_service.get_top_two_shot(
+        user_id=current_user.userId,
+        year=year,
+        start_month=start_month,
+        end_month=end_month,
+        is_all_data=is_all_data,
+    )

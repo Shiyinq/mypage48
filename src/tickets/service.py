@@ -1,7 +1,9 @@
+import asyncio
 from datetime import datetime, timezone
 from typing import List, Optional
 
 from src.config import Settings
+from src.exceptions import InvalidDateError
 from src.image_validation import ImageTooLargeError as ImageTooLargeValidationError
 from src.image_validation import ImageValidationError
 from src.image_validation import (
@@ -9,6 +11,7 @@ from src.image_validation import (
 )
 from src.image_validation import validate_base64_image
 from src.logging_config import create_logger
+from src.storage.service import StorageService
 from src.tickets.constants import Info
 from src.tickets.exceptions import (
     ImageTooLargeError,
@@ -30,6 +33,7 @@ from src.tickets.schemas import (
     TicketResponse,
     TicketUpdateRequest,
 )
+from src.utils import cleanse_image_url, parse_date_range
 
 logger = create_logger("theater_service", __name__)
 
@@ -39,9 +43,36 @@ class TicketsService:
         self,
         repository: TicketsRepository,
         config: Settings,
+        storage_service: StorageService,
     ):
         self.repository = repository
         self.config = config
+        self.storage_service = storage_service
+
+    async def _resolve_ticket(self, ticket: dict) -> dict:
+        """Resolve storage paths for ticket images and notes."""
+        if ticket.get("imageUrl"):
+            variants = await self.storage_service.resolve_image_variants(
+                ticket["imageUrl"]
+            )
+            ticket["imageUrl"] = variants["url"]
+            ticket["imageUrl_medium"] = variants["url_medium"]
+            ticket["imageUrl_small"] = variants["url_small"]
+
+        if ticket.get("two_shot") and ticket["two_shot"].get("imageUrl"):
+            variants = await self.storage_service.resolve_image_variants(
+                ticket["two_shot"]["imageUrl"]
+            )
+            ticket["two_shot"]["imageUrl"] = variants["url"]
+            ticket["two_shot"]["imageUrl_medium"] = variants["url_medium"]
+            ticket["two_shot"]["imageUrl_small"] = variants["url_small"]
+
+        if ticket.get("notes"):
+            ticket["notes"] = await self.storage_service.resolve_markdown_images(
+                ticket.get("notes")
+            )
+
+        return ticket
 
     @staticmethod
     def _validate_images(
@@ -79,7 +110,7 @@ class TicketsService:
             ticket_dict = ticket_in_db.model_dump()
             ticket_dict["_id"] = result.inserted_id
 
-            return TicketResponse(**ticket_dict)
+            return TicketResponse(**(await self._resolve_ticket(ticket_dict)))
         except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):
             raise
         except Exception as e:
@@ -97,6 +128,7 @@ class TicketsService:
         days: Optional[List[str]] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
+        is_favorite: Optional[bool] = None,
     ) -> TicketPaginationResponse:
         try:
             # Enforce max limit of 100
@@ -106,6 +138,9 @@ class TicketsService:
             # Default pagination values if not provided (though route usually provides them)
             current_page = page if page else 1
             per_page = limit if limit else 20
+
+            # Validate dates
+            parse_date_range(start_date, end_date)
 
             tickets_data, total_count = await self.repository.get_tickets(
                 user_id,
@@ -117,11 +152,13 @@ class TicketsService:
                 days=days,
                 start_date=start_date,
                 end_date=end_date,
+                is_favorite=is_favorite,
             )
 
-            results = []
-            for t in tickets_data:
-                results.append(TicketResponse(**t))
+            resolved_tickets = await asyncio.gather(
+                *(self._resolve_ticket(t) for t in tickets_data)
+            )
+            results = [TicketResponse(**t) for t in resolved_tickets]
 
             # Calculate total pages
             last_page = (total_count + per_page - 1) // per_page if per_page > 0 else 1
@@ -140,6 +177,8 @@ class TicketsService:
                     next_page=next_page,
                 ),
             )
+        except InvalidDateError:
+            raise
         except Exception:
             raise TicketFetchError()
 
@@ -160,10 +199,13 @@ class TicketsService:
             tickets_data, _ = await self.repository.get_tickets(
                 user_id, year, page=None, limit=None
             )
-            results = []
-            for t in tickets_data:
-                results.append(TicketResponse(**t))
+            resolved_tickets = await asyncio.gather(
+                *(self._resolve_ticket(t) for t in tickets_data)
+            )
+            results = [TicketResponse(**t) for t in resolved_tickets]
             return results
+        except InvalidDateError:
+            raise
         except Exception as e:
             logger.exception(f"Error fetching tickets: {str(e)}")
             raise TicketFetchError()
@@ -173,7 +215,7 @@ class TicketsService:
             ticket = await self.repository.get_ticket(ticket_id, user_id)
             if not ticket:
                 raise TicketNotFoundError()
-            return TicketResponse(**ticket)
+            return TicketResponse(**(await self._resolve_ticket(ticket)))
         except TicketNotFoundError:
             raise
         except Exception as e:
@@ -184,6 +226,16 @@ class TicketsService:
         self, user_id: str, ticket_id: str, data: TicketUpdateRequest
     ) -> TicketResponse:
         try:
+            # Fetch existing to compare images
+            existing = await self.repository.get_ticket(ticket_id, user_id)
+            if not existing:
+                raise TicketNotFoundError()
+
+            if data.imageUrl:
+                data.imageUrl = cleanse_image_url(data.imageUrl)
+            if data.two_shot and data.two_shot.imageUrl:
+                data.two_shot.imageUrl = cleanse_image_url(data.two_shot.imageUrl)
+
             # Validate images if provided
             two_shot_image = data.two_shot.imageUrl if data.two_shot else None
             self._validate_images(data.imageUrl, two_shot_image)
@@ -193,7 +245,41 @@ class TicketsService:
             )
             if not updated_ticket:
                 raise TicketNotFoundError()
-            return TicketResponse(**updated_ticket)
+
+            # Cleanup old images if they were replaced or removed
+            old_images = []
+
+            # Main image cleanup
+            if "imageUrl" in data.model_fields_set:
+                old_img = existing.get("imageUrl")
+                if old_img and data.imageUrl != old_img:
+                    old_images.append(old_img)
+
+            # Two shot image cleanup
+            if "two_shot" in data.model_fields_set:
+                existing_ts = existing.get("two_shot")
+                old_ts_img = existing_ts.get("imageUrl") if existing_ts else None
+
+                if data.two_shot is None:
+                    # Two shot removed completely
+                    if old_ts_img:
+                        old_images.append(old_ts_img)
+                elif (
+                    data.two_shot.imageUrl
+                    and old_ts_img
+                    and data.two_shot.imageUrl != old_ts_img
+                ):
+                    # Image replaced
+                    old_images.append(old_ts_img)
+
+            if old_images:
+                # Fire and forget or await? Let's await to be sure.
+                await asyncio.gather(
+                    *(self.storage_service.delete_image(img) for img in old_images),
+                    return_exceptions=True,
+                )
+
+            return TicketResponse(**(await self._resolve_ticket(updated_ticket)))
         except TicketNotFoundError:
             raise
         except (ImageTooLargeError, InvalidImageTypeError, InvalidImageError):
@@ -202,11 +288,59 @@ class TicketsService:
             logger.exception(f"Error updating ticket: {str(e)}")
             raise TicketUpdateError()
 
+    async def toggle_two_shot_favorite(
+        self, user_id: str, ticket_id: str
+    ) -> TicketResponse:
+        try:
+            ticket = await self.repository.toggle_two_shot_favorite(ticket_id, user_id)
+            if not ticket:
+                raise TicketNotFoundError()
+            return TicketResponse(**(await self._resolve_ticket(ticket)))
+        except TicketNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error toggling two-shot favorite: {str(e)}")
+            raise TicketUpdateError()
+
+    async def toggle_favorite(self, user_id: str, ticket_id: str) -> TicketResponse:
+        try:
+            ticket = await self.repository.toggle_favorite(ticket_id, user_id)
+            if not ticket:
+                raise TicketNotFoundError()
+            return TicketResponse(**(await self._resolve_ticket(ticket)))
+        except TicketNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error toggling favorite: {str(e)}")
+            raise TicketUpdateError()
+
     async def delete_ticket(self, user_id: str, ticket_id: str) -> MessageResponse:
         try:
+            # Fetch ticket first to get image URLs for cleanup
+            ticket = await self.repository.get_ticket(ticket_id, user_id)
+            if not ticket:
+                raise TicketNotFoundError()
+
             success = await self.repository.delete_ticket(ticket_id, user_id)
             if not success:
                 raise TicketNotFoundError()
+
+            # Cleanup images from R2
+            images_to_delete = []
+            if ticket.get("imageUrl"):
+                images_to_delete.append(ticket["imageUrl"])
+            if ticket.get("two_shot") and ticket["two_shot"].get("imageUrl"):
+                images_to_delete.append(ticket["two_shot"]["imageUrl"])
+
+            if images_to_delete:
+                await asyncio.gather(
+                    *(
+                        self.storage_service.delete_image(img)
+                        for img in images_to_delete
+                    ),
+                    return_exceptions=True,
+                )
+
             return MessageResponse(detail=Info.TICKET_DELETED)
         except TicketNotFoundError:
             raise

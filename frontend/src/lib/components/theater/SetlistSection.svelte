@@ -1,21 +1,24 @@
 <script lang="ts">
 	import type { Setlist } from '$lib/apis/setlists';
 	import { ShowCard } from '$lib/components/shows';
-	import { createEventDispatcher } from 'svelte';
 
-	export let title: string;
-	export let items: Setlist[];
-	export let maxAttendance: number;
-	export let isActive = false;
+	interface Props {
+		title: string;
+		items: Setlist[];
+		maxAttendance: number;
+		isActive?: boolean;
+		onclick?: (id: string) => void;
+	}
 
-	const dispatch = createEventDispatcher<{
-		click: string;
-	}>();
+	let { title, items, maxAttendance, isActive = false, onclick }: Props = $props();
 
 	function toShowData(s: Setlist) {
 		return {
 			title: s.title,
 			image: s.imageUrl,
+			imageMedium: s.imageUrl_medium,
+			imageSmall: s.imageUrl_small,
+			blurHash: s.blurHash,
 			count: s.watched.count,
 			percentage: s.watched.percentage,
 			isMostWatched: s.watched.isMostWatched
@@ -37,7 +40,7 @@
 				{show}
 				count={show.count}
 				{maxAttendance}
-				onClick={() => dispatch('click', item.setlistId)}
+				onClick={() => onclick?.(item.setlistId)}
 			/>
 		{/each}
 	</div>

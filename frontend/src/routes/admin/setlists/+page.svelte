@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { adminStore, isAdminSetlistsLoading } from '$lib/stores/admin';
+	import { adminStore, isAdminSetlistsLoading } from '$lib/stores/admin.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { showToast } from '$lib/stores';
 	import type { Setlist } from '$lib/apis/setlists';
@@ -9,29 +9,30 @@
 	import AdminSetlistModal from '$lib/components/admin/AdminSetlistModal.svelte';
 	import AdminDeleteModal from '$lib/components/admin/AdminDeleteModal.svelte';
 	import { Plus, Music, Search, X } from 'lucide-svelte';
+	import { getErrorMessage } from '$lib/utils/api';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
 
 	// Store state
-	$: setlistsList = $adminStore.setlists.data;
-	$: error = $adminStore.setlists.error;
-	$: setlistsHasMore = $adminStore.setlists.hasMore;
+	let setlistsList = $derived(adminStore.setlists.data);
+	let setlistsHasMore = $derived(adminStore.setlists.hasMore);
 
 	// Search state
-	let searchQuery = '';
+	let searchQuery = $state('');
 	let searchTimeout: ReturnType<typeof setTimeout>;
 
 	// Modal states
-	let showSetlistModal = false;
-	let showDeleteModal = false;
-	let editingSetlist: Partial<Setlist> = {};
-	let isCreatingSetlist = false;
-	let isSubmitting = false;
+	let showSetlistModal = $state(false);
+	let showDeleteModal = $state(false);
+	let editingSetlist: Partial<Setlist> = $state({});
+	let isCreatingSetlist = $state(false);
+	let isSubmitting = $state(false);
+	let isDeleting = $derived(adminStore.isDeletingSetlist);
 	let deletingId: string | null = null;
 
 	// Initial load state
-	let isInitialLoad = true;
+	let isInitialLoad = $state(true);
 
 	onMount(() => {
 		// Only load if data is not already cached
@@ -43,9 +44,11 @@
 	});
 
 	// Update initial load state when data is loaded
-	$: if (setlistsList.length > 0) {
-		isInitialLoad = false;
-	}
+	$effect(() => {
+		if (setlistsList.length > 0) {
+			isInitialLoad = false;
+		}
+	});
 
 	onDestroy(() => {
 		if (searchTimeout) clearTimeout(searchTimeout);
@@ -64,7 +67,7 @@
 	}
 
 	function loadMoreSetlists() {
-		if (setlistsHasMore && !$isAdminSetlistsLoading) {
+		if (setlistsHasMore && !isAdminSetlistsLoading.value) {
 			adminStore.loadSetlists();
 		}
 	}
@@ -75,30 +78,33 @@
 		showSetlistModal = true;
 	}
 
-	function openEditSetlist(e: CustomEvent<Setlist>) {
-		editingSetlist = e.detail;
+	function openEditSetlist(setlist: Setlist) {
+		editingSetlist = setlist;
 		isCreatingSetlist = false;
 		showSetlistModal = true;
 	}
 
-	function confirmDeleteSetlist(e: CustomEvent<Setlist>) {
-		deletingId = e.detail.setlistId;
+	function confirmDeleteSetlist(setlist: Setlist) {
+		deletingId = setlist.setlistId;
 		showDeleteModal = true;
 	}
 
-	async function handleSetlistSubmit(e: CustomEvent<any>) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	async function handleSetlistSubmit(data: any) {
+		const setlistData = data as Omit<Setlist, 'setlistId' | 'watched'>;
 		isSubmitting = true;
 		try {
 			if (isCreatingSetlist) {
-				await adminStore.createSetlist(e.detail);
-				showToast($t('admin.setlists.modal.created'), 'success');
+				await adminStore.createSetlist(setlistData);
+				showToast(t('admin.setlists.modal.created'), 'success');
 			} else if (editingSetlist && editingSetlist.setlistId) {
-				await adminStore.updateSetlist(editingSetlist.setlistId, e.detail);
-				showToast($t('admin.setlists.modal.updated'), 'success');
+				await adminStore.updateSetlist(editingSetlist.setlistId, setlistData);
+				showToast(t('admin.setlists.modal.updated'), 'success');
 			}
 			showSetlistModal = false;
-		} catch {
-			showToast($t('admin.setlists.modal.failedSave'), 'error');
+		} catch (e) {
+			const errorMessage = getErrorMessage(e);
+			showToast(errorMessage || t('admin.setlists.modal.failedSave'), 'error');
 		} finally {
 			isSubmitting = false;
 		}
@@ -108,10 +114,11 @@
 		if (deletingId === null) return;
 		try {
 			await adminStore.deleteSetlist(deletingId);
-			showToast($t('admin.setlists.modal.deleted'), 'success');
+			showToast(t('admin.setlists.modal.deleted'), 'success');
 			showDeleteModal = false;
-		} catch {
-			showToast($t('admin.setlists.modal.failedDelete'), 'error');
+		} catch (e) {
+			const errorMessage = getErrorMessage(e);
+			showToast(errorMessage || t('admin.setlists.modal.failedDelete'), 'error');
 		}
 	}
 </script>
@@ -123,7 +130,7 @@
 		<div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<Music class="w-5 h-5 text-purple-500" />
-				{$t('admin.setlists.title')} ({$adminStore.setlists.total})
+				{t('admin.setlists.title')} ({adminStore.setlists.total})
 			</h2>
 
 			<!-- Search Input -->
@@ -132,13 +139,13 @@
 				<input
 					type="text"
 					bind:value={searchQuery}
-					on:input={handleSearch}
-					placeholder={$t('admin.setlists.searchPlaceholder')}
+					oninput={handleSearch}
+					placeholder={t('admin.setlists.searchPlaceholder')}
 					class="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
 				/>
 				{#if searchQuery}
 					<button
-						on:click={clearSearch}
+						onclick={clearSearch}
 						class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
 					>
 						<X class="w-3 h-3" />
@@ -148,44 +155,44 @@
 		</div>
 
 		<button
-			on:click={openCreateSetlist}
+			onclick={openCreateSetlist}
 			class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-opacity shadow-lg shadow-gray-200 dark:shadow-none cursor-pointer"
 		>
 			<Plus class="w-4 h-4" />
-			{$t('admin.setlists.addSetlist')}
+			{t('admin.setlists.addSetlist')}
 		</button>
 	</div>
 
-	{#if isInitialLoad && $isAdminSetlistsLoading}
+	{#if isInitialLoad && isAdminSetlistsLoading.value}
 		<TableSkeleton
 			rows={10}
 			columns={[
-				$t('admin.setlists.table.setlistInfo'),
-				$t('admin.setlists.table.japaneseTitle'),
-				$t('admin.setlists.table.type'),
-				$t('admin.setlists.table.status'),
-				$t('admin.setlists.table.actions')
+				t('admin.setlists.table.setlistInfo'),
+				t('admin.setlists.table.japaneseTitle'),
+				t('admin.setlists.table.type'),
+				t('admin.setlists.table.status'),
+				t('admin.setlists.table.actions')
 			]}
 		/>
 	{:else}
 		<SetlistTable
 			setlists={setlistsList}
-			on:edit={openEditSetlist}
-			on:delete={confirmDeleteSetlist}
+			onedit={openEditSetlist}
+			ondelete={confirmDeleteSetlist}
 		/>
 
 		<!-- Infinite Scroll Sentinel -->
 		{#if setlistsHasMore}
-			<div class="mt-4" use:infiniteScroll on:intersect={loadMoreSetlists}>
-				{#if $isAdminSetlistsLoading}
+			<div class="mt-4" use:infiniteScroll onintersect={loadMoreSetlists}>
+				{#if isAdminSetlistsLoading.value}
 					<TableSkeleton
 						rows={3}
 						columns={[
-							$t('admin.setlists.table.setlistInfo'),
-							$t('admin.setlists.table.japaneseTitle'),
-							$t('admin.setlists.table.type'),
-							$t('admin.setlists.table.status'),
-							$t('admin.setlists.table.actions')
+							t('admin.setlists.table.setlistInfo'),
+							t('admin.setlists.table.japaneseTitle'),
+							t('admin.setlists.table.type'),
+							t('admin.setlists.table.status'),
+							t('admin.setlists.table.actions')
 						]}
 						showHeader={false}
 					/>
@@ -193,11 +200,11 @@
 			</div>
 		{:else if setlistsList.length > 0}
 			<div class="py-12 text-center text-gray-400 text-sm">
-				{$t('admin.setlists.noMoreSetlists')}
+				{t('admin.setlists.noMoreSetlists')}
 			</div>
 		{:else}
 			<div class="py-20 text-center text-gray-500">
-				{$t('admin.setlists.noSetlistsFound', { query: searchQuery })}
+				{t('admin.setlists.noSetlistsFound', { query: searchQuery })}
 			</div>
 		{/if}
 	{/if}
@@ -209,14 +216,15 @@
 	setlist={editingSetlist}
 	isCreating={isCreatingSetlist}
 	{isSubmitting}
-	on:submit={handleSetlistSubmit}
+	onsubmit={handleSetlistSubmit}
 />
 
 <!-- Delete Confirmation Modal -->
 <AdminDeleteModal
 	bind:show={showDeleteModal}
+	{isDeleting}
 	onCancel={() => (showDeleteModal = false)}
 	onConfirm={handleDeleteConfirm}
-	title={$t('admin.setlists.modal.deleteTitle')}
-	description={$t('admin.setlists.modal.deleteDesc')}
+	title={t('admin.setlists.modal.deleteTitle')}
+	description={t('admin.setlists.modal.deleteDesc')}
 />

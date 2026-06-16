@@ -1,19 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { Ticket, Plus, User } from 'lucide-svelte';
+	import { Plus, User } from 'lucide-svelte';
 	import { userProfile, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
-	import { isImmersive } from '$lib/stores/ui';
+	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
-	import { getExternalMediaUrl } from '$lib/utils/media';
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
 	import NavPills from '$lib/components/navigation/NavPills.svelte';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
-	import { crossfade } from 'svelte/transition';
+	import { safeCrossfade } from '$lib/utils/transitions';
 	import { cubicInOut } from 'svelte/easing';
+	import { OptimizedImage } from '$lib/components/common';
 
-	const [send, receive] = crossfade({
+	const [send, receive] = safeCrossfade({
 		duration: 300,
 		easing: cubicInOut
 	});
@@ -21,44 +21,44 @@
 	const { t } = useTranslation();
 
 	/* Loading State */
-	let mounted = false;
+	let mounted = $state(false);
 
 	onMount(() => {
 		mounted = true;
 	});
 
-	$: isLoading = !mounted || ($isAuthenticated && !$isInitialDataLoaded);
+	let isLoading = $derived(!mounted || (isAuthenticated.value && !isInitialDataLoaded.value));
 
 	// Navigation items
-	$: navItems = [
-		{ label: $t('nav.dashboard'), href: '/' },
-		{ label: $t('nav.theater'), href: '/theater/events', activeHref: '/theater' },
-		{ label: $t('nav.achievements'), href: '/achievements' },
-		{ label: $t('nav.journal'), href: '/journal' },
-		{ label: $t('nav.memories'), href: '/memories' },
-		{ label: $t('nav.history'), href: '/history' }
-	];
+	let navItems = $derived([
+		{ label: t('nav.dashboard'), href: '/' },
+		{ label: t('nav.theater'), href: '/theater/events', activeHref: '/theater' },
+		{ label: t('nav.achievements'), href: '/achievements' },
+		{ label: t('nav.journal'), href: '/journal' },
+		{ label: t('nav.memories'), href: '/memories' },
+		{ label: t('nav.history'), href: '/history' }
+	]);
 
-	$: currentPath = $page.url.pathname;
-	$: isTheater = currentPath.startsWith('/theater');
+	let currentPath = $derived($page.url.pathname);
+	let isTheater = $derived(currentPath.startsWith('/theater'));
 
-	$: theaterIsActive = (href: string, exact: boolean = false) => {
+	let theaterIsActive = $derived((href: string, exact: boolean = false) => {
 		if (exact) {
 			return currentPath === href;
 		}
 		return currentPath.startsWith(href);
-	};
+	});
 </script>
 
-{#if !$isImmersive}
+{#if !isImmersive.value}
 	<div class="hidden md:block transition-all duration-300 {isTheater ? 'h-[104px]' : 'h-16'}"></div>
 	<header
-		class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[6000] transition-all duration-300"
+		class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[50] transition-all duration-300"
 	>
 		<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 			<!-- Left: Logo -->
 			<a href="/" class="flex items-center gap-3 cursor-pointer">
-				<NavLogo tagline={$t('header.tagline')} />
+				<NavLogo tagline={t('header.tagline')} />
 			</a>
 
 			<!-- Center: Desktop Navigation -->
@@ -77,7 +77,7 @@
 						class="idol-gradient text-white px-6 py-2 rounded-full font-black text-[11px] uppercase tracking-widest shadow-xl shadow-red-500/20 hover:shadow-red-500/40 hover:-translate-y-0.5 transition-all flex items-center gap-2 group"
 					>
 						<Plus class="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
-						{$t('nav.newTicket')}
+						{t('nav.newTicket')}
 					</a>
 				</div>
 
@@ -93,13 +93,15 @@
 				>
 					{#if isLoading}
 						<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
-					{:else if $userProfile?.data?.oshi?.profilePicture || $userProfile?.data?.profilePicture}
-						<img
-							src={$userProfile?.data?.oshi?.profilePicture
-								? getExternalMediaUrl($userProfile.data.oshi.profilePicture)
-								: $userProfile?.data?.profilePicture}
+					{:else if userProfile.data?.profilePicture}
+						<OptimizedImage
+							src={userProfile.data.profilePicture}
+							srcMedium={userProfile.data.profilePicture_medium}
+							srcSmall={userProfile.data.profilePicture_small}
+							blurHash={userProfile.data?.blurHash}
 							alt="Profile"
 							class="w-full h-full object-cover"
+							sizes="40px"
 						/>
 					{:else}
 						<div
@@ -142,7 +144,7 @@
 								></div>
 							{/if}
 							<span class="relative z-10 flex items-center justify-center">
-								<span>{$t(item.labelKey) || item.labelDefault}</span>
+								<span>{t(item.labelKey) || item.labelDefault}</span>
 							</span>
 						</a>
 					{/each}

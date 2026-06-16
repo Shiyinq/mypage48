@@ -1,10 +1,9 @@
-import { newsStore } from '$lib/stores/news';
+import { newsStore } from '$lib/stores/news.svelte';
 import { browser } from '$app/environment';
 
-export const load = async () => {
+export const load = async ({ url }) => {
+	const page = Number(url.searchParams.get('page')) || 1;
 	if (browser) {
-		setTimeout(() => {
-			newsStore.load(1);
-		}, 0);
+		newsStore.load(page);
 	}
 };

@@ -6,12 +6,18 @@
 	import PlatformLogo from './PlatformLogo.svelte';
 	import LiveStats from './LiveStats.svelte';
 	import { getMemberFrame } from '$lib/constants';
+	import type { LiveStatus } from '$lib/types';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const { t } = useTranslation();
 
-	export let stream: any;
-	export let i: number = 0;
-	export let variant: 'default' | 'theater' = 'default';
+	interface Props {
+		stream: LiveStatus;
+		i?: number;
+		variant?: 'default' | 'theater';
+	}
+
+	let { stream, i = 0, variant = 'default' }: Props = $props();
 
 	const fallbackAvatar = 'https://placehold.co/640x960?text=NO%20IMAGE';
 </script>
@@ -25,23 +31,20 @@
 >
 	<!-- Member Photo Container -->
 	<div class="relative w-full h-full overflow-hidden bg-gray-100 dark:bg-zinc-800">
-		<img
+		<OptimizedImage
 			src={getExternalMediaUrl(
 				stream.platform === 'showroom'
 					? stream.member?.img || stream.image
 					: stream.image || stream.member?.img
 			) || fallbackAvatar}
 			alt={stream.member?.name}
-			on:error={(e) => {
-				if (e.currentTarget instanceof HTMLImageElement) e.currentTarget.src = fallbackAvatar;
-			}}
 			class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
 		/>
 
 		<!-- Frame Image Overlay -->
 		<img
 			src={getMemberFrame(stream.member?.member_type)}
-			alt="frame"
+			alt="member frame"
 			class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 		/>
 
@@ -71,7 +74,7 @@
 				{stream.member?.name}
 			</h3>
 			<p class="text-[10px] text-gray-300 font-medium drop-shadow-sm line-clamp-1">
-				{stream.title || $t('theater.live.multiview.live_status')}
+				{stream.title || t('theater.live.multiview.live_status')}
 			</p>
 			<LiveStats start_at={stream.start_at} variant="compact" showLabel={true} className="mt-1.5" />
 		</div>

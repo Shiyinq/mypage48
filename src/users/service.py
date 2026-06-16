@@ -1,7 +1,8 @@
 import asyncio
 import math
 import time
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Optional
 
 from pymongo.errors import DuplicateKeyError
 
@@ -17,8 +18,10 @@ from src.image_validation import (
     InvalidImageTypeError as InvalidImageTypeValidationError,
 )
 from src.image_validation import validate_base64_image
+from src.live_history.repository import LiveHistoryRepository
 from src.logging_config import create_logger
 from src.members.service import MemberService
+from src.storage.service import StorageService
 from src.tickets.service import TicketsService
 from src.users.constants import Info
 from src.users.exceptions import (
@@ -26,6 +29,9 @@ from src.users.exceptions import (
     ImageTooLargeError,
     InvalidImageError,
     InvalidImageTypeError,
+    OshiAlreadyExistsError,
+    OshiLimitReachedError,
+    OshiNotFoundError,
     OshiUpdateError,
     ProfileStatsFetchError,
     ProviderUserCreationError,
@@ -46,6 +52,7 @@ from src.users.schemas import (
     ProviderUserCreateRequest,
     PublicShowEntry,
     PublicUserResponse,
+    UpdateProfileRequest,
     UserCreated,
     UserCreatedWithEmail,
     UserCreateRequest,
@@ -70,6 +77,8 @@ class UserService:
         member_service: MemberService,
         achievements_service: AchievementsService,
         events_service: EventsService,
+        storage_service: StorageService,
+        live_history_repo: LiveHistoryRepository,
     ):
         self.repository = repository
         self.security_service = security_service
@@ -79,6 +88,8 @@ class UserService:
         self.member_service = member_service
         self.achievements_service = achievements_service
         self.events_service = events_service
+        self.storage_service = storage_service
+        self.live_history_repo = live_history_repo
 
     def _handle_duplicate_key_error(self, dk: DuplicateKeyError):
         """Handle DuplicateKeyError and raise appropriate domain exception."""
@@ -183,13 +194,53 @@ class UserService:
             logger.exception(f"Unexpected error in create_user_provider: {str(e)}")
             raise ProviderUserCreationError()
 
-    async def update_oshi(self, user_id: str, oshi_id: str) -> "MessageResponse":
-        """Update the user's Oshi ID"""
+    async def batch_add_oshi(
+        self, user_id: str, new_oshi_ids: list[str]
+    ) -> "MessageResponse":
+        """Add multiple oshis at once (max 5 total)."""
         try:
-            await self.repository.set_oshi_id(user_id, oshi_id)
-            return MessageResponse(detail=Info.OSHI_UPDATED)
+            user_data = await self.repository.get_user_by_id(user_id)
+            if not user_data:
+                raise UserFetchError()
+
+            current_ids = user_data.get("oshiIds") or []
+
+            if len(current_ids) + len(new_oshi_ids) > 5:
+                raise OshiLimitReachedError()
+
+            already_exists = [oid for oid in new_oshi_ids if oid in current_ids]
+            if already_exists:
+                raise OshiAlreadyExistsError()
+
+            for oshi_id in new_oshi_ids:
+                await self.repository.add_oshi_id(user_id, oshi_id)
+
+            return MessageResponse(detail=Info.OSHI_ADDED)
+        except (OshiLimitReachedError, OshiAlreadyExistsError):
+            raise
         except Exception as e:
-            logger.exception(f"Error updating oshi: {str(e)}")
+            logger.exception(f"Error batch adding oshis: {str(e)}")
+            raise OshiUpdateError()
+
+    async def remove_oshi(self, user_id: str, oshi_id: str) -> "MessageResponse":
+        """Remove an oshi from user's list."""
+        try:
+            user_data = await self.repository.get_user_by_id(user_id)
+            if not user_data:
+                raise UserFetchError()
+
+            oshi_ids = user_data.get("oshiIds") or []
+
+            if oshi_id not in oshi_ids:
+                raise OshiNotFoundError()
+
+            await self.repository.remove_oshi_id(user_id, oshi_id)
+
+            return MessageResponse(detail=Info.OSHI_REMOVED)
+        except OshiNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error removing oshi: {str(e)}")
             raise OshiUpdateError()
 
     async def update_public_status(
@@ -220,16 +271,29 @@ class UserService:
             raise UserFetchError()
 
     async def update_profile_picture(
-        self, user_id: str, profile_picture: str
+        self, user_id: str, profile_picture: str, blur_hash: Optional[str] = None
     ) -> MessageResponse:
         """Update the user's profile picture"""
         try:
+            # Fetch current user to get old profile picture for cleanup
+            current_user = await self.repository.get_user_by_id(user_id)
+            if not current_user:
+                raise UserFetchError()
+
             # Only validate if it's a base64 image (legacy upload)
             # Storage filenames (category/user_id/filename) skip validation
             if profile_picture.startswith("data:"):
                 validate_base64_image(profile_picture)
 
-            await self.repository.set_profile_picture(user_id, profile_picture)
+            await self.repository.set_profile_picture(
+                user_id, profile_picture, blur_hash
+            )
+
+            # Cleanup old profile picture from R2 if it changed
+            old_pic = current_user.get("profilePicture")
+            if old_pic and old_pic != profile_picture:
+                await self.storage_service.delete_image(old_pic)
+
             return MessageResponse(detail=Info.PROFILE_PICTURE_UPDATED)
         except ImageTooLargeValidationError:
             raise ImageTooLargeError()
@@ -239,6 +303,77 @@ class UserService:
             raise InvalidImageError()
         except Exception as e:
             logger.exception(f"Error updating profile picture: {str(e)}")
+            raise UserUpdateError()
+
+    async def update_profile(
+        self, user_id: str, request: UpdateProfileRequest
+    ) -> MessageResponse:
+        """Update user profile information (name, username, email)"""
+        try:
+            # Get current user data
+            user_data = await self.repository.get_user_by_id(user_id)
+            if not user_data:
+                raise UserFetchError()
+
+            current_user = UserInDB(**user_data)
+            update_data = {"updatedAt": datetime.now()}
+
+            # Handle Name Update
+            if request.name is not None:
+                update_data["name"] = request.name
+
+            # Handle Username Update
+            if request.username is not None:
+                new_username = request.username.lower()
+                if new_username != current_user.username:
+                    # Duplicate check is handled by repository unique index + our _handle_duplicate_key_error
+                    update_data["username"] = new_username
+
+            # Handle Email Update
+            email_changed = False
+            if request.email is not None:
+                new_email = request.email.lower()
+                if new_email != current_user.email:
+                    update_data["email"] = new_email
+                    update_data["isEmailVerified"] = False
+                    email_changed = True
+
+            # Handle Bio Update
+            if request.bio is not None:
+                update_data["bio"] = request.bio
+
+            if len(update_data) > 1:  # More than just updatedAt
+                try:
+                    await self.repository.update_one(
+                        {"userId": user_id}, {"$set": update_data}
+                    )
+                except DuplicateKeyError as dk:
+                    self._handle_duplicate_key_error(dk)
+
+            # Send verification email if changed
+            if email_changed:
+                try:
+                    token = await self.security_service.create_and_save_token(
+                        user_id,
+                        "email_verification",
+                        self.config.email_verification_expire_hours,
+                    )
+                    await self.email_service.send_email_verification(
+                        update_data["email"],
+                        token,
+                        update_data.get("username", current_user.username),
+                    )
+                except Exception as e:
+                    logger.warning(
+                        f"Profile updated but error sending verification email: {e}"
+                    )
+
+            return MessageResponse(detail=Info.PROFILE_UPDATED)
+
+        except (UsernameAlreadyExistsError, EmailAlreadyExistsError):
+            raise
+        except Exception as e:
+            logger.exception(f"Error updating profile: {str(e)}")
             raise UserUpdateError()
 
     async def get_public_profile(
@@ -254,25 +389,30 @@ class UserService:
         if not user:
             raise PublicUserNotFoundError()
 
-        oshi_response = None
-        if user.oshiId:
-            try:
-                # Ensure oshiId is string provided to MemberService
-                member_detail = await self.member_service.get_member_by_id(
-                    str(user.oshiId)
-                )
-                member = member_detail.member
-                oshi_response = OshiResponse(
-                    name=member.name,
-                    nickname=member.nickname,
-                    generation=member.generation or "-",
-                    profilePicture=member.img
-                    or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
-                    catchphrase=member.jiko or "-",
-                    socials=member.socials.model_dump() if member.socials else None,
-                )
-            except Exception as e:
-                logger.warning(f"Failed to fetch oshi data for id {user.oshiId}: {e}")
+        oshis = []
+        if user.oshiIds:
+            for oshi_id in user.oshiIds:
+                try:
+                    member_detail = await self.member_service.get_member_by_id(
+                        str(oshi_id)
+                    )
+                    member = member_detail.member
+                    oshi_data = OshiResponse(
+                        id=str(oshi_id),
+                        name=member.name,
+                        nickname=member.nickname,
+                        generation=member.generation or "-",
+                        memberType=member.member_type,
+                        profilePicture=member.img,
+                        profilePicture_medium=member.img_medium,
+                        profilePicture_small=member.img_small,
+                        blurHash=member.blurHash,
+                        catchphrase=member.jiko or "-",
+                        socials=member.socials.model_dump() if member.socials else None,
+                    )
+                    oshis.append(oshi_data)
+                except Exception as e:
+                    logger.warning(f"Failed to fetch oshi data for id {oshi_id}: {e}")
 
         # Calculate Stats
         stats = None
@@ -341,6 +481,34 @@ class UserService:
                     )
                 )
 
+            # Top 2-Shots
+            two_shot_counts = {}
+            for t in tickets:
+                if t.two_shot and t.two_shot.member_name:
+                    name = t.two_shot.member_name
+                    if name not in two_shot_counts:
+                        two_shot_counts[name] = {"name": name, "count": 0}
+                        try:
+                            member = (
+                                await self.member_service.get_member_by_name(name)
+                            ).member
+                            two_shot_counts[name].update(
+                                {
+                                    "imageUrl": member.img,
+                                    "imageUrl_medium": member.img_medium,
+                                    "imageUrl_small": member.img_small,
+                                    "blurHash": member.blurHash,
+                                }
+                            )
+                        except Exception:
+                            pass
+
+                    two_shot_counts[name]["count"] += 1
+
+            top_two_shots = sorted(
+                two_shot_counts.values(), key=lambda x: x["count"], reverse=True
+            )[:5]
+
             # Create Stats Object
             stats = UserStats(
                 totalShows=total_shows,
@@ -352,20 +520,133 @@ class UserService:
                 topShowCount=top_show_count,
                 rowCounts=row_counts,
                 seatCounts=seat_counts,
+                showCounts=show_counts,
+                topTwoShots=top_two_shots,
                 recentActivity=recent_activity,
             )
         except Exception as e:
             logger.warning(f"Failed to calculate stats for user {user.userId}: {e}")
 
+        profile_picture = user.profilePicture
+        if profile_picture:
+            variants = await self.storage_service.resolve_image_variants(
+                profile_picture
+            )
+            profile_picture = variants["url"]
+            profile_picture_medium = variants["url_medium"]
+            profile_picture_small = variants["url_small"]
+            blur_hash = variants["blurHash"]
+        else:
+            profile_picture_medium = None
+            profile_picture_small = None
+            blur_hash = None
+
         return PublicUserResponse(
             name=user.name,
             username=user.username,
-            profilePicture=user.profilePicture,
-            oshi=oshi_response,
+            bio=user.bio,
+            profilePicture=profile_picture,
+            profilePicture_medium=profile_picture_medium,
+            profilePicture_small=profile_picture_small,
+            blurHash=blur_hash,
+            oshis=oshis,
             createdAt=user.createdAt,
             publicYear=display_year,  # Show actual year for "This Year" option
             stats=stats,
         )
+
+    async def _get_single_oshi_data(
+        self, oshi_id: str, tickets
+    ) -> tuple[Optional[OshiResponse], int, int, int]:
+        """Fetch oshi data and calculate per-oshi stats for a single oshi ID.
+
+        Returns (oshi_response, roulette_count, birthday_count, oshi_meetings).
+        """
+        try:
+            member_detail = await self.member_service.get_member_by_id(str(oshi_id))
+            member = member_detail.member
+            oshi_name = member.name
+
+            oshi_response = OshiResponse(
+                id=str(oshi_id),
+                name=member.name,
+                nickname=member.nickname,
+                generation=member.generation or "-",
+                memberType=member.member_type,
+                profilePicture=member.img,
+                profilePicture_medium=member.img_medium,
+                profilePicture_small=member.img_small,
+                blurHash=member.blurHash,
+                catchphrase=member.jiko or "-",
+                socials=member.socials.model_dump() if member.socials else None,
+            )
+
+            roulette_count = 0
+            birthday_count = 0
+            oshi_meetings = 0
+
+            for t in tickets:
+                if t.two_shot and t.two_shot.member_name == oshi_name:
+                    if t.two_shot.type == "Roulette":
+                        roulette_count += 1
+                    elif t.two_shot.type == "Birthday":
+                        birthday_count += 1
+
+            oshi_events = await self.events_service.get_events_for_member(str(oshi_id))
+            oshi_total_shows = len(oshi_events)
+
+            if oshi_response:
+                oshi_response.totalShows = oshi_total_shows
+
+                now = datetime.now()
+                upcoming_events = []
+                past_events = []
+
+                for e in oshi_events:
+                    event_date = e.get("date")
+                    if not isinstance(event_date, datetime):
+                        try:
+                            event_date = datetime.fromisoformat(str(event_date))
+                        except:
+                            continue
+
+                    show_data = OshiShowResponse(
+                        title=e.get("title", "Unknown"),
+                        date=event_date,
+                        url=e.get("url"),
+                    )
+
+                    if event_date >= now:
+                        upcoming_events.append(show_data)
+                    else:
+                        past_events.append(show_data)
+
+                oshi_response.upcomingSchedule = sorted(
+                    upcoming_events, key=lambda x: x.date
+                )
+                oshi_response.pastSchedule = sorted(
+                    past_events, key=lambda x: x.date, reverse=True
+                )[:5]
+
+            oshi_event_keys = set()
+            for e in oshi_events:
+                d = e.get("date")
+                if isinstance(d, datetime):
+                    d = d.strftime("%Y-%m-%d")
+                elif isinstance(d, str):
+                    d = d.split("T")[0]
+                oshi_event_keys.add(f"{e.get('title')}|{d}")
+
+            for t in tickets:
+                ticket_key = f"{t.event.title}|{t.event.date}"
+                if ticket_key in oshi_event_keys:
+                    oshi_meetings += 1
+
+            return oshi_response, roulette_count, birthday_count, oshi_meetings
+
+        except Exception as e:
+            logger.warning(f"Failed to fetch oshi data for id {oshi_id}: {e}")
+            return None, 0, 0, 0
 
     async def get_profile_full(
         self,
@@ -373,32 +654,11 @@ class UserService:
     ) -> ProfileFullResponse:
         """
         Get complete profile with all stats for Profile page.
-        Returns profile, oshi, rank, stats, oshi 2-shots, and recent activity.
+        Returns profile, oshi list, rank, stats, oshi 2-shots, and recent activity.
         """
         try:
-            # Get oshi data
-            oshi_response = None
-            oshi_name = None
-            if current_user.oshiId:
-                try:
-                    member_detail = await self.member_service.get_member_by_id(
-                        str(current_user.oshiId)
-                    )
-                    member = member_detail.member
-                    oshi_name = member.name
-                    oshi_response = OshiResponse(
-                        name=member.name,
-                        nickname=member.nickname,
-                        generation=member.generation or "-",
-                        profilePicture=member.img
-                        or "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg",
-                        catchphrase=member.jiko or "-",
-                        socials=member.socials.model_dump() if member.socials else None,
-                    )
-                except Exception as e:
-                    logger.warning(
-                        f"Failed to fetch oshi data for id {current_user.oshiId}: {e}"
-                    )
+            # Get oshi IDs list
+            oshi_ids = list(current_user.oshiIds) if current_user.oshiIds else []
 
             # Get tickets for stats calculation
             tickets = await self.tickets_service.get_my_tickets(
@@ -412,86 +672,27 @@ class UserService:
                 tickets
             )
 
-            # Calculate oshi 2-shot counts and meetings
-            roulette_count = 0
-            birthday_count = 0
-            oshi_meetings = 0
+            total_two_shots = sum(1 for t in tickets if t.two_shot is not None)
+            total_live_watched = await self.live_history_repo.get_total_history_count(
+                current_user.userId
+            )
 
-            if oshi_name:
-                # 1. 2-Shot Counts
-                for t in tickets:
-                    if t.two_shot and t.two_shot.member_name == oshi_name:
-                        if t.two_shot.type == "Roulette":
-                            roulette_count += 1
-                        elif t.two_shot.type == "Birthday":
-                            birthday_count += 1
+            # Per-oshi data
+            oshi_responses = []
+            oshi_two_shots_list = []
+            oshi_meetings_list = []
 
-                # 2. Oshi Meetings (Attendance at events where Oshi was present)
-                # Fetch all events where Oshi was a member
-                oshi_events = await self.events_service.get_events_for_member(
-                    str(current_user.oshiId)
-                )
-                # Create a set of unique event identifiers (title + date) for O5 events
-                oshi_event_keys = set()
-                for e in oshi_events:
-                    # e is a dict from find_events_by_member_id projection
-                    # key format: "Title|YYYY-MM-DD"
-                    # Ensure date is string YYYY-MM-DD if it's datetime
-                    d = e.get("date")
-                    if isinstance(d, datetime):
-                        d = d.strftime("%Y-%m-%d")
-                    elif isinstance(d, str):
-                        # If date includes time, take only YYYY-MM-DD part
-                        d = d.split("T")[0]
-
-                    oshi_event_keys.add(f"{e.get('title')}|{d}")
-
-                # Check user tickets against these events
-                for t in tickets:
-                    # t.event.date is "YYYY-MM-DD" string
-                    ticket_key = f"{t.event.title}|{t.event.date}"
-                    if ticket_key in oshi_event_keys:
-                        oshi_meetings += 1
-
-                # 3. Calculate oshi total shows
-                oshi_total_shows = len(oshi_events)
-
-                if oshi_response:
-                    oshi_response.totalShows = oshi_total_shows
-
-                    # Split oshi_events into upcoming and history
-                    now = datetime.now()
-                    upcoming_events = []
-                    past_events = []
-
-                    for e in oshi_events:
-                        event_date = e.get("date")
-                        if not isinstance(event_date, datetime):
-                            try:
-                                event_date = datetime.fromisoformat(str(event_date))
-                            except:
-                                continue
-
-                        show_data = OshiShowResponse(
-                            title=e.get("title", "Unknown"),
-                            date=event_date,
-                            url=e.get("url"),
-                        )
-
-                        if event_date >= now:
-                            upcoming_events.append(show_data)
-                        else:
-                            past_events.append(show_data)
-
-                    # Sort and limit
-                    # Upcoming: Ascending (soonest first) - No limit
-                    # History: Descending (most recent first) - Limit 5
-                    oshi_response.upcomingSchedule = sorted(
-                        upcoming_events, key=lambda x: x.date
+            for oshi_id in oshi_ids:
+                result = await self._get_single_oshi_data(oshi_id, tickets)
+                if result and result[0] is not None:
+                    oshi_resp, roulette, birthday, meetings = result
+                    oshi_responses.append(oshi_resp)
+                    oshi_two_shots_list.append(
+                        OshiTwoShotCounts(roulette=roulette, birthday=birthday)
                     )
-                    oshi_response.pastSchedule = sorted(
-                        past_events, key=lambda x: x.date, reverse=True
-                    )[:5]
+                    oshi_meetings_list.append(meetings)
+
+            total_oshi_meetings = sum(oshi_meetings_list)
 
             # Get recent activity (5 most recent shows)
             sorted_tickets = sorted(tickets, key=lambda x: x.event.date, reverse=True)
@@ -509,33 +710,57 @@ class UserService:
                     )
                 )
 
+            # Resolve profile picture if it's a storage path
+            profile_pic = current_user.profilePicture
+            profile_pic_medium = None
+            profile_pic_small = None
+            if profile_pic:
+                variants = await self.storage_service.resolve_image_variants(
+                    profile_pic
+                )
+                profile_pic = variants["url"]
+                profile_pic_medium = variants["url_medium"]
+                profile_pic_small = variants["url_small"]
+                blur_hash = variants["blurHash"]
+            else:
+                blur_hash = getattr(current_user, "blurHash", None)
+
             # Build profile dict from current_user
             profile_dict = {
                 "userId": current_user.userId,
-                "profilePicture": current_user.profilePicture,
+                "profilePicture": profile_pic,
+                "profilePicture_medium": profile_pic_medium,
+                "profilePicture_small": profile_pic_small,
+                "blurHash": blur_hash,
                 "name": current_user.name,
                 "email": current_user.email,
                 "username": current_user.username,
+                "bio": current_user.bio,
                 "memberId": current_user.memberId,
-                "oshiId": current_user.oshiId,
                 "ofcStatus": current_user.ofcStatus,
                 "isPublic": current_user.isPublic,
                 "publicYear": current_user.publicYear,
                 "isAdmin": current_user.isAdmin,
+                "isEmailVerified": current_user.isEmailVerified,
+                "createdAt": current_user.createdAt,
             }
 
             return ProfileFullResponse(
                 profile=profile_dict,
-                oshi=oshi_response,
+                oshis=oshi_responses,
                 rank=rank,
                 stats=ProfileStats(
                     totalShows=total_shows,
                     totalAchievements=total_achievements,
-                    oshiMeetings=oshi_meetings,
+                    totalTwoShots=total_two_shots,
+                    totalLiveWatched=total_live_watched,
+                    oshiMeetings=total_oshi_meetings,
                 ),
-                oshiTwoShots=OshiTwoShotCounts(
-                    roulette=roulette_count, birthday=birthday_count
-                ),
+                oshiTwoShots=oshi_two_shots_list[0]
+                if oshi_two_shots_list
+                else OshiTwoShotCounts(roulette=0, birthday=0),
+                oshiTwoShotsList=oshi_two_shots_list,
+                oshiMeetingsList=oshi_meetings_list,
                 recentActivity=recent_activity,
             )
 
@@ -554,20 +779,51 @@ class UserService:
             users = await self.repository.get_all_paginated(page, limit, search)
             total = await self.repository.count_all(search)
 
-            user_list = [
-                UserListItem(
+            async def _resolve_user(u):
+                profile_pic = u.get("profilePicture")
+                profile_pic_medium = None
+                profile_pic_small = None
+                if profile_pic:
+                    variants = await self.storage_service.resolve_image_variants(
+                        profile_pic
+                    )
+                    profile_pic = variants["url"]
+                    profile_pic_medium = variants["url_medium"]
+                    profile_pic_small = variants["url_small"]
+                    blur_hash = variants["blurHash"]
+                else:
+                    blur_hash = u.get("blurHash")
+
+                last_active = u.get("lastActiveAt")
+                if last_active and last_active.tzinfo is None:
+                    last_active = last_active.replace(tzinfo=timezone.utc)
+
+                created_at = u.get("createdAt")
+                if created_at and created_at.tzinfo is None:
+                    created_at = created_at.replace(tzinfo=timezone.utc)
+
+                return UserListItem(
                     userId=u.get("userId", ""),
                     name=u.get("name", ""),
                     username=u.get("username", ""),
                     email=u.get("email", ""),
-                    profilePicture=u.get("profilePicture"),
+                    profilePicture=profile_pic,
+                    profilePicture_medium=profile_pic_medium,
+                    profilePicture_small=profile_pic_small,
+                    blurHash=blur_hash,
                     isAdmin=u.get("isAdmin", False),
                     isEmailVerified=u.get("isEmailVerified", False),
                     isAccountLocked=u.get("isAccountLocked", False),
-                    createdAt=u.get("createdAt"),
+                    createdAt=created_at,
+                    lastActiveAt=last_active,
                 )
-                for u in users
-            ]
+
+            if users:
+                user_list = list(
+                    await asyncio.gather(*(_resolve_user(u) for u in users))
+                )
+            else:
+                user_list = []
 
             last_page = math.ceil(total / limit) if total > 0 else 1
             next_page = page + 1 if page < last_page else None

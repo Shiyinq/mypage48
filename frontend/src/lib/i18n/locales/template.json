@@ -23,6 +23,7 @@
 		"allSetlists": "",
 		"allData": "",
 		"hasTwoShot": "",
+		"favorite": "",
 		"clearFilters": "",
 		"days": "",
 		"dateRange": "",
@@ -48,6 +49,20 @@
 			"fileTooLarge": "",
 			"invalidType": "",
 			"noFile": ""
+		}
+	},
+	"imageEditor": {
+		"title": "",
+		"done": "",
+		"aspectRatio": "",
+		"ratios": {
+			"free": "",
+			"original": "",
+			"square": "",
+			"sixteenNine": "",
+			"nineSixteen": "",
+			"fourThree": "",
+			"threeFour": ""
 		}
 	},
 	"seo": {
@@ -114,6 +129,7 @@
 			"description": "",
 			"highlight": "",
 			"getStarted": "",
+			"alreadyHaveAccount": "",
 			"openSource": ""
 		},
 		"features": {
@@ -390,6 +406,15 @@
 			"stage": "",
 			"row": ""
 		},
+		"heatmap": {
+			"title": "",
+			"subtitle": "",
+			"noAttendance": "",
+			"attendance": "",
+			"on": "",
+			"less": "",
+			"more": ""
+		},
 		"monthlyAttendance": {
 			"title": "",
 			"subtitle": "",
@@ -410,7 +435,17 @@
 			"save": "",
 			"loading": "",
 			"noMembers": "",
-			"generation": ""
+			"generation": "",
+			"selectHint": "",
+			"maxReached": "",
+			"newSelected": "",
+			"confirmTitle": "",
+			"confirmDesc": "",
+			"confirmRemove": "",
+			"addedToast": "",
+			"removedToast": "",
+			"addErrorToast": "",
+			"removeErrorToast": ""
 		},
 		"title": "",
 		"subtitle": "",
@@ -430,6 +465,8 @@
 		"stats": {
 			"totalShows": "",
 			"achievements": "",
+			"totalTwoShots": "",
+			"totalLiveWatched": "",
 			"oshiMeetings": ""
 		},
 		"oshi": {
@@ -449,7 +486,9 @@
 			"birthday": "",
 			"upcomingSchedule": "",
 			"pastSchedule": "",
-			"noSchedule": ""
+			"noSchedule": "",
+			"addOshi": "",
+			"removeOshi": ""
 		},
 		"recentActivity": {
 			"title": "",
@@ -465,8 +504,9 @@
 			"weeksAgo": ""
 		},
 		"publicActivity": {
-			"wrapped": "",
+			"summary": "",
 			"yearSummary": "",
+			"yearSummaryBadge": "",
 			"watchedTimes": ""
 		},
 		"profilePicture": {
@@ -741,7 +781,9 @@
 		"emptyState": {
 			"title": "",
 			"description": ""
-		}
+		},
+		"shows": "",
+		"liveTitle": ""
 	},
 	"shows": {
 		"backTitle": "",
@@ -844,7 +886,16 @@
 				"sending_gift": "",
 				"seoDescription": ""
 			},
-			"switchMultiview": ""
+			"switchMultiview": "",
+			"share": {
+				"title": "",
+				"description": "",
+				"shareToX": "",
+				"copyLink": "",
+				"shareText": "",
+				"toastSuccess": "",
+				"toastError": ""
+			}
 		},
 		"news": {
 			"title": "",
@@ -919,7 +970,10 @@
 			"setlist": "",
 			"eventType": "",
 			"birthday": "",
-			"tba": ""
+			"tba": "",
+			"promoTitle": "",
+			"promoDesc": "",
+			"promoAction": ""
 		},
 		"eventHistory": {
 			"title": "",
@@ -968,7 +1022,11 @@
 			"shareTextHeader": "",
 			"shareTextFooter": "",
 			"copySuccess": "",
-			"copyFailed": ""
+			"copyFailed": "",
+			"editTitle": "",
+			"editSubtitle": "",
+			"save": "",
+			"cancel": ""
 		}
 	},
 	"top2shot": {
@@ -1051,6 +1109,12 @@
 				"nameRequired": "",
 				"nickname": "",
 				"generation": "",
+				"memberType": "",
+				"birthdate": "",
+				"bloodType": "",
+				"height": "",
+				"horoscope": "",
+				"selectPlaceholder": "",
 				"imageUrl": "",
 				"jikoshoukai": "",
 				"socials": "",

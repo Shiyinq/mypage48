@@ -19,6 +19,9 @@ class Event(BaseModel):
 
     # List View Fields
     imageUrl: Optional[str] = None
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
+    blurHash: Optional[str] = None
     totalMembers: int = 0
     seitansaiMembers: Optional[List[str]] = None
     graduationMembers: Optional[List[str]] = None
@@ -50,6 +53,14 @@ class PaginationMeta(BaseModel):
     total_data: int
     per_page: int
     next_page: Optional[int] = None
+
+
+class MemberEventStats(BaseModel):
+    total_shows: int = 0
+    top_setlist_id: Optional[str] = None
+    top_setlist_title: Optional[str] = None
+    top_setlist_count: int = 0
+    unique_setlists: int = 0
 
 
 class EventPaginationResponse(BaseModel):

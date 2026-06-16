@@ -11,10 +11,14 @@ export const storageApi = {
 	 * Upload a base64 encoded image to storage.
 	 * Returns the filename and presigned URL.
 	 */
-	uploadImage: async (image: string, category: ImageCategory): Promise<ImageUploadResponse> => {
+	uploadImage: async (
+		image: string,
+		category: ImageCategory,
+		slug?: string
+	): Promise<ImageUploadResponse> => {
 		return await client<ImageUploadResponse>('/storage/upload', {
 			method: 'POST',
-			body: { image, category }
+			body: { image, category, slug }
 		});
 	},
 

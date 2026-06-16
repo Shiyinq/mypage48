@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import hashlib
 import io
@@ -68,7 +69,7 @@ class ExportService:
                 # Clean up expired job lazily
                 await self.export_repo.delete_job(user_id)
                 if job.file_path:
-                    self.storage_repo.delete_file(job.file_path)
+                    await self.storage_repo.delete_file(job.file_path)
                 return ExportResponse(status=ExportStatus.IDLE)
 
         return response
@@ -116,8 +117,8 @@ class ExportService:
             profile_pic_url = user_doc.get("profilePicture")
 
             oshi_img_url = None
-            # Try multiple keys for Oshi ID
-            oshi_id = user_doc.get("oshiId")
+            oshi_ids = user_doc.get("oshiIds") or []
+            oshi_id = oshi_ids[0] if oshi_ids else None
 
             if oshi_id:
                 # Oshi ID is stored as string in user doc, matches 'id' in members collection
@@ -179,7 +180,7 @@ class ExportService:
                     zip_file.writestr("data.xlsx", excel_buffer.getvalue())
 
                 # Helper to safely download and add file
-                def add_file_to_zip(
+                async def add_file_to_zip(
                     path: str, zip_path_prefix: str, custom_name: str = None
                 ):
                     if not path:
@@ -226,7 +227,9 @@ class ExportService:
                         # Case 2: External URL (HTTP/HTTPS)
                         elif path.startswith(("http", "https")):
                             logger.info(f"Downloading external image")
-                            res = requests.get(path, timeout=10)
+                            res = await asyncio.to_thread(
+                                requests.get, path, timeout=10
+                            )
                             if res.status_code == 200:
                                 file_data = res.content
                                 if not custom_name:
@@ -241,7 +244,7 @@ class ExportService:
                         # If it has a slash or looks like a filename, try MinIO
                         elif "/" in path or (len(path) < 256 and "." in path):
                             logger.info(f"Downloading MinIO image: {path}")
-                            file_data = self.storage_repo.get_file(path)
+                            file_data = await self.storage_repo.get_file(path)
 
                             if not custom_name and "/" in path:
                                 fname = path.split("/")[-1]
@@ -260,10 +263,10 @@ class ExportService:
                         logger.error(f"Error adding file to export: {e}")
 
                 # Add Profile Picture
-                add_file_to_zip(profile_pic_url, "images/profile", "profile.jpg")
+                await add_file_to_zip(profile_pic_url, "images/profile", "profile.jpg")
 
                 # Add Oshi Image
-                add_file_to_zip(oshi_img_url, "images/oshi", "oshi.jpg")
+                await add_file_to_zip(oshi_img_url, "images/oshi", "oshi.jpg")
 
                 # Add Images
                 for t in tickets:
@@ -276,7 +279,7 @@ class ExportService:
                             name = t["imageUrl"].split("/")[-1]
                         else:
                             name = f"ticket_{t_id}.jpg"
-                        add_file_to_zip(t["imageUrl"], "images/tickets", name)
+                        await add_file_to_zip(t["imageUrl"], "images/tickets", name)
 
                     # 2Shot Image
                     if t.get("two_shot") and t["two_shot"].get("imageUrl"):
@@ -293,7 +296,7 @@ class ExportService:
                             )
                             ts_name = f"2shot_{member}_{t.get('ticket_id', 'id')}.jpg"
 
-                        add_file_to_zip(val, "images/2shots", ts_name)
+                        await add_file_to_zip(val, "images/2shots", ts_name)
 
             zip_buffer.seek(0)
 
@@ -301,7 +304,7 @@ class ExportService:
             zip_filename = (
                 f"exports/{user_id}/{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.zip"
             )
-            self.storage_repo.upload_file(
+            await self.storage_repo.upload_file(
                 zip_buffer.getvalue(), zip_filename, content_type="application/zip"
             )
 
@@ -329,11 +332,11 @@ class ExportService:
         expires_at = job.updated_at + timedelta(hours=24)
         if datetime.utcnow() > expires_at:
             await self.export_repo.delete_job(user_id)
-            self.storage_repo.delete_file(job.file_path)
+            await self.storage_repo.delete_file(job.file_path)
             raise ExportNotFoundError(message="Export file expired.")
 
         # Get stream
-        stream = self.storage_repo.get_file_stream(job.file_path)
+        stream = await self.storage_repo.get_file_stream(job.file_path)
         if not stream:
             raise ExportNotFoundError(message="File not found in storage.")
 
@@ -348,7 +351,7 @@ class ExportService:
 
             # Delete file and job
             logger.info(f"Cleaning up export for user {user_id}")
-            self.storage_repo.delete_file(job.file_path)
+            await self.storage_repo.delete_file(job.file_path)
             await self.export_repo.delete_job(user_id)
 
         filename = "mypage48_export.zip"

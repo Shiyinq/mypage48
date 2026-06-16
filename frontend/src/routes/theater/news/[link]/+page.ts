@@ -6,19 +6,16 @@ export const load: PageLoad = async ({ params }) => {
 	const { link } = params;
 
 	try {
-		// Fetch current news and latest news for the sidebar concurrently
-		const [item, recentNewsResponse] = await Promise.all([
-			news.getNewsByLink(link),
-			news.getNews(1, 10) // fetch 10 latest
-		]);
+		// Fetch current news
+		const item = await news.getNewsByLink(link);
 
 		return {
-			item,
-			recentNews: recentNewsResponse.data
+			item
 		};
-	} catch (e: any) {
+	} catch (err) {
 		// If the API throws an error (e.g., News Not Found),
 		// we capture it and throw SvelteKit's built-in 404 error
+		const e = err as { detail?: string };
 		throw error(404, e?.detail || 'News not found');
 	}
 };

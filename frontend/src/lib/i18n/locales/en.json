@@ -18,19 +18,23 @@
 		"info": "Information",
 		"search": "Search",
 		"filter": "Filter",
+		"setlist": "Setlist",
 		"filters": "Filters",
 		"all": "All",
 		"allSetlists": "All Setlists",
 		"allData": "All Data",
 		"hasTwoShot": "Has 2-Shot",
+		"favorite": "Favorite",
 		"clearFilters": "Clear Filters",
+		"startDate": "Start Date",
+		"endDate": "End Date",
 		"days": "Days",
 		"dateRange": "Date Range",
 		"viewDetails": "View Details",
 		"logout": "Logout",
 		"settings": "Settings",
 		"profile": "Profile",
-		"dashboard": "Dashboard",
+		"dashboard": "Overview",
 		"language": "Language",
 		"noResults": "No results found",
 		"date": "Date",
@@ -39,7 +43,8 @@
 		"fromShort": "Fr",
 		"toShort": "To",
 		"copyLink": "Copy Link",
-		"copied": "Link copied to clipboard!"
+		"copied": "Link copied to clipboard!",
+		"noMoreData": "All data has been loaded"
 	},
 	"validation": {
 		"alert": {
@@ -49,10 +54,24 @@
 			"noFile": "No file selected."
 		}
 	},
+	"imageEditor": {
+		"title": "Edit Image",
+		"done": "Done",
+		"aspectRatio": "Aspect Ratio",
+		"ratios": {
+			"free": "Free",
+			"original": "Original",
+			"square": "1:1",
+			"sixteenNine": "16:9",
+			"nineSixteen": "9:16",
+			"fourThree": "4:3",
+			"threeFour": "3:4"
+		}
+	},
 	"seo": {
 		"default": "MyPage48 - Your ultimate JKT48 theater companion. Track your theater visits, 2-shots, and achievements.",
 		"dashboard": "View your JKT48 theater attendance statistics, spending analysis, and seat map visualization.",
-		"login": "Log in to your MyPage48 account to track your JKT48 theater journey.",
+		"login": "Login to your MyPage48 account to track your JKT48 theater journey.",
 		"register": "Create a new MyPage48 account to track your JKT48 theater journey.",
 		"forgotPassword": "Reset your MyPage48 password to regain access to your account.",
 		"resetPassword": "Set a new secure password for your MyPage48 account.",
@@ -80,8 +99,8 @@
 		"journal": "Your personal digital journal of every show you've attended."
 	},
 	"nav": {
-		"home": "Home",
-		"dashboard": "Dashboard",
+		"home": "Overview",
+		"dashboard": "Overview",
 		"setlists": "Setlists",
 		"events": "Events",
 		"theater": "Theater",
@@ -94,7 +113,7 @@
 		"newTicket": "New Ticket",
 		"journal": "Journal",
 		"journey": "Journey",
-		"top2shot": "Top 2-Shot"
+		"top2shot": "Roulette & Birthday"
 	},
 	"header": {
 		"tagline": "JKT48 THEATER TRACKER"
@@ -115,6 +134,7 @@
 			"description": "Save every trace of your wota journey in one personal {highlight}. More than just a tracker—a silent witness to your dedication.",
 			"highlight": "digital archive",
 			"getStarted": "Get Started",
+			"alreadyHaveAccount": "Already have an account? ",
 			"openSource": "Open Source • No Ads • Fan Made"
 		},
 		"features": {
@@ -133,6 +153,14 @@
 			"achievements": {
 				"title": "ACHIEVEMENTS",
 				"description": "Unlock badges and milestones as you support JKT48. From \"First Show\" to \"Legendary Fan\", track your progress and show off your loyalty."
+			},
+			"sorter": {
+				"title": "SORTER",
+				"description": "Sort your favorite JKT48 members to find out your true oshi ranking. Share your sorter results to social media."
+			},
+			"live": {
+				"title": "LIVE",
+				"description": "Watch JKT48 members streaming live on Showroom or IDN Live. Watch multiple members at once with the Multi-view feature."
 			}
 		},
 		"footer": {
@@ -262,19 +290,24 @@
 	},
 	"auth": {
 		"login": {
-			"title": "Sign In",
+			"title": "Login",
 			"subtitle": "Welcome back, Wota!",
 			"emailLabel": "Email or Username",
 			"emailPlaceholder": "Email or Username",
 			"passwordLabel": "Password",
 			"passwordPlaceholder": "••••••••",
 			"forgotPassword": "Forgot Password?",
-			"signIn": "Sign In",
+			"signIn": "Login",
 			"noAccount": "Don't have an account?",
 			"registerCta": "Register account",
 			"welcomeBack": "Welcome back!",
 			"invalidCredentials": "Invalid email or password",
-			"sessionInvalid": "Your session has expired or is invalid. Please sign in again."
+			"emailNotVerified": "Your email is not verified yet. Please check your inbox or spam folder.",
+			"resendVerification": "Resend verification link",
+			"resendWait": "Wait {seconds}s to resend",
+			"resendSuccess": "Verification link has been sent to your email.",
+			"resendError": "Failed to send verification link. Please try again later.",
+			"sessionInvalid": "Your session has expired or is invalid. Please Login again."
 		},
 		"register": {
 			"title": "Join the Fandom",
@@ -292,7 +325,7 @@
 			"submit": "Create Account",
 			"submitting": "Creating Account...",
 			"hasAccount": "Already have an account?",
-			"signIn": "Sign In to MyPage48",
+			"signIn": "Login to MyPage48",
 			"passwordsMismatch": "Passwords do not match",
 			"success": "Account created! Please check your email to verify your account.",
 			"failed": "Registration failed. Please try again."
@@ -344,22 +377,22 @@
 		}
 	},
 	"dashboard": {
-		"title": "Dashboard",
-		"error": "Failed to load dashboard data",
-		"subtitle": "Your theater activity overview",
-		"filterTitle": "Dashboard Filter",
+		"title": "Overview",
+		"error": "Failed to load overview data",
+		"subtitle": "Your theater activity",
+		"filterTitle": "Overview Filter",
 		"filterSubtitle": "Adjust visualization range",
 		"theater": {
 			"title": "Shows",
-			"subtitle": "Your attendance overview",
+			"subtitle": "Your attendance",
 			"shows": "Shows",
 			"events": "Events",
 			"tickets": "Tickets",
 			"spending": "Expenses",
 			"totalExpenses": "Total Expenses",
-			"topRow": "Top Row",
+			"topRow": "Theater Seat",
 			"mostFrequentSeat": "Most Frequent Seat",
-			"topShow": "Top Show",
+			"topShow": "Setlist",
 			"mostWatched": "Most Watched",
 			"inYear": "In {year}",
 			"firstLast": "First & Last Show",
@@ -377,7 +410,7 @@
 			"totalExpenses": "Total Expenses",
 			"members": "Members",
 			"uniqueIdols": "Unique Idols",
-			"topTwoShot": "Top 2-Shot",
+			"topTwoShot": "Roulette & Birthday",
 			"mostCollected": "Most Collected",
 			"photos": "Photos",
 			"firstLast": "First & Last 2-Shot",
@@ -390,6 +423,15 @@
 			"rowsCollected": "Rows Collected",
 			"stage": "Stage",
 			"row": "Row"
+		},
+		"heatmap": {
+			"title": "Attendance History",
+			"subtitle": "Daily activity for",
+			"noAttendance": "No attendance on",
+			"attendance": "attendance",
+			"on": "on",
+			"less": "Less",
+			"more": "More"
 		},
 		"monthlyAttendance": {
 			"title": "Monthly Attendance",
@@ -414,13 +456,15 @@
 		},
 		"level": {
 			"currentRank": "Current Rank",
-			"xpInfo": "1 XP = 1 Show",
+			"xpInfo": "1 XP = 1 Attendance",
 			"needed": "needed",
 			"for": "for"
 		},
 		"stats": {
-			"totalShows": "Total Shows",
+			"totalShows": "Total Attendance",
 			"achievements": "Achievements",
+			"totalTwoShots": "Total 2-Shot",
+			"totalLiveWatched": "Live Watched",
 			"oshiMeetings": "Met"
 		},
 		"oshi": {
@@ -428,7 +472,7 @@
 			"generation": "Generation",
 			"generationPattern": "Generation {gen}",
 			"totalShowsPattern": "{count} Shows",
-			"showsTooltip": "Recorded data excludes Shonichi setlists and member substitutions, subject to scraping limitations.",
+			"showsTooltip": "Recorded data excludes Shonichi setlists and member substitutions, subject to scrape limitations.",
 			"emptyTitle": "Who is your Oshi?",
 			"emptyDescription": "Select your favorite member to display them on your profile card.",
 			"selectBadge": "Select Oshi",
@@ -440,7 +484,9 @@
 			"birthday": "Birthday",
 			"upcomingSchedule": "Oshi's Next Schedule",
 			"pastSchedule": "Oshi's Previous Schedule",
-			"noSchedule": "No schedule"
+			"noSchedule": "No schedule",
+			"addOshi": "Add Oshi",
+			"removeOshi": "Remove Oshi"
 		},
 		"oshiModal": {
 			"title": "Select Your Oshi",
@@ -450,7 +496,17 @@
 			"noMembers": "No members found matching \"{query}\"",
 			"generation": "Generation {gen}",
 			"cancel": "Cancel",
-			"save": "Save Oshi"
+			"save": "Save Oshi",
+			"selectHint": "Select up to {count} more",
+			"maxReached": "Maximum {max} oshis reached",
+			"newSelected": "{count} new selected",
+			"confirmTitle": "Remove Oshi?",
+			"confirmDesc": "Are you sure you want to remove this oshi from your list?",
+			"confirmRemove": "Remove",
+			"addedToast": "Oshi added successfully!",
+			"removedToast": "Oshi removed successfully!",
+			"addErrorToast": "Failed to add oshi",
+			"removeErrorToast": "Failed to remove oshi"
 		},
 		"recentActivity": {
 			"title": "Recent Activity",
@@ -466,9 +522,14 @@
 			"weeksAgo": "weeks ago"
 		},
 		"publicActivity": {
-			"wrapped": "Theater JKT48 Wrapped {year}",
+			"wrapped": "JKT48 Theater Wrapped {year}",
+			"allTime": "JKT48 Theater Wrapped",
+			"summary": "Summary",
 			"yearSummary": "{year} Summary",
-			"watchedTimes": "Watched {count} times"
+			"yearSummaryBadge": "JKT48 Theater {year}",
+			"watchedTimes": "Watched {count} times",
+			"topSetlists": "Top Setlist",
+			"topTwoShotMembers": "Top 2-Shot"
 		},
 		"profilePicture": {
 			"previewTitle": "Profile Picture Preview",
@@ -480,6 +541,29 @@
 	"settings": {
 		"title": "Settings",
 		"subtitle": "Manage your preferences",
+		"account": {
+			"title": "Account Information",
+			"subtitle": "View and manage your identity",
+			"fullName": "Full Name",
+			"username": "Username",
+			"email": "Email Address",
+			"memberId": "Member ID",
+			"ofcStatus": "OFC Status",
+			"memberSince": "Member Since",
+			"type": "Account Type",
+			"admin": "Administrator",
+			"wota": "Wota",
+			"verified": "Verified",
+			"unverified": "Unverified",
+			"saveSuccess": "Profile updated successfully!",
+			"saveError": "Failed to update profile",
+			"bio": "Bio",
+			"noChanges": "No changes to save",
+			"emailWarning": "Changing your email will require re-verification.",
+			"systemInfo": "Member Information",
+			"systemSubtitle": "Membership details",
+			"verification": "Account Verification"
+		},
 		"language": {
 			"title": "Language",
 			"subtitle": "Choose display language",
@@ -499,7 +583,12 @@
 			"uploadError": "Failed to upload profile picture. Please try again.",
 			"uploadSuccess": "Profile picture updated successfully!",
 			"loadErrorTitle": "Failed to Load Configuration",
-			"loadErrorDesc": "We couldn't load your public profile settings. Please try again."
+			"loadErrorDesc": "We couldn't load your public profile settings. Please try again.",
+			"viewProfile": "View Profile",
+			"bioPlaceholder": "Tell us about yourself...",
+			"noBio": "Add a bio to your public profile...",
+			"updateSuccess": "Bio updated successfully",
+			"updateError": "Failed to update bio"
 		},
 		"developer": {
 			"title": "Developer Access",
@@ -613,15 +702,19 @@
 	"upload": {
 		"title": "Upload Ticket",
 		"subtitle": "Add a new ticket to your collection",
-		"scanTicket": "Scan Ticket",
-		"scanDescription": "Automatically extract details from your ticket image using AI.",
+		"scanTicket": "Scan Theater Ticket",
+		"scanDescription": "Automatically extract details from your theater ticket image using AI.",
 		"manualEntry": "Manual Entry",
 		"manualDescription": "Enter ticket details manually if you don't have a photo.",
 		"saveTicket": "Save Ticket",
 		"uploadSuccess": "Ticket uploaded successfully",
 		"uploadError": "Failed to upload ticket",
 		"analyzingTitle": "Analyzing Ticket",
-		"analyzingDescription": "Extracting show info..."
+		"analyzingDescription": "Extracting show info...",
+		"viewExample": "View Ticket Example",
+		"exampleTitle": "Theater Ticket Example",
+		"exampleSubtitle": "Use a clear screenshot of your JKT48 theater ticket",
+		"exampleDescription": "AI scanning works best with JKT48 theater ticket screenshots like the one above. The AI will automatically extract: Show Title, Date, Show Time, Seat Number, Ticket ID, and Price."
 	},
 	"shows": {
 		"backTitle": "Back to Shows",
@@ -630,12 +723,12 @@
 		"subtitle": "Statistics of visited shows",
 		"totalShows": "Total Shows",
 		"uniqueShows": "Unique Shows",
-		"unit": "Shows",
+		"unit": "Attendance",
 		"performancesAttended": "performances attended",
 		"firstAttended": "First Attended",
 		"lastAttended": "Last Attended",
 		"avgPrice": "Avg Price",
-		"topRow": "Top Row",
+		"topRow": "Theater Seat",
 		"mostFrequentedRow": "Most frequented row",
 		"investmentInMemories": "Investment in memories",
 		"row": "Row",
@@ -643,6 +736,47 @@
 		"notSeen": "Not yet seen",
 		"viewHistory": "View History",
 		"top": "Top"
+	},
+	"liveHistory": {
+		"title": "Watch History",
+		"subtitle": "Your live watch history",
+		"totalWatches": "Total Watches",
+		"totalDuration": "Total Duration",
+		"membersWatched": "Members Watched",
+		"mostFrequent": "Most Frequent",
+		"recentHistory": "Recent History",
+		"noHistory": "No History Yet",
+		"noHistoryDesc": "You haven't watched any recorded JKT48 live streams.",
+		"noGlobalHistory": "No Live History",
+		"noGlobalHistoryDesc": "No recorded JKT48 live streams found.",
+		"times": "times",
+		"buttonSubtitle": "My Statistics",
+		"longestWatch": "Longest Watch",
+		"platformWatches": "Platform Watches",
+		"viewHistory": "Watch History",
+		"watchedFor": "Watched for",
+		"globalTitle": "Live History",
+		"globalSubtitle": "History of all recorded lives",
+		"globalButtonSubtitle": "All Lives",
+		"globalButton": "Live History",
+		"rankingTitle": "Member Ranking",
+		"rankingSubtitle": "Members you watch the most",
+		"globalStatsTitle": "Live Statistics",
+		"totalLives": "Total Lives",
+		"uniqueMembers": "Unique Members",
+		"mostFrequentLive": "Most Frequent Live",
+		"highestViews": "Highest Views",
+		"globalRankingTitle": "Live Member Ranking",
+		"globalRankingSubtitle": "Members who go live the most",
+		"liveHistory": "Live History",
+		"longestLive": "Longest Live",
+		"totalLivePlatform": "Total Live Platform",
+		"views": "Views",
+		"thisWeek": "This Week",
+		"thisMonth": "This Month",
+		"thisYear": "This Year",
+		"allTime": "All Time",
+		"customRange": "Custom Range"
 	},
 	"theater": {
 		"title": "Theater",
@@ -666,6 +800,9 @@
 			"viewer": "Viewers",
 			"startedAt": "Started at",
 			"liveDuration": "Live for",
+			"seoTitle": "JKT48 Live Streaming - Showroom & IDN Live",
+			"seoDescription": "Watch JKT48 members live today on Showroom or IDN Live via MyPage48.",
+			"seoMemberDescription": "Watch {name}'s JKT48 Live stream on MyPage48. Follow your favorite JKT48 member's live broadcast on Showroom or IDN Live.",
 			"empty": "No members are currently live.",
 			"emptyTitle": "OFFLINE",
 			"back": "Back",
@@ -687,6 +824,9 @@
 			"liveBadge": "LIVE",
 			"chat": "Chat",
 			"connected": "Connected",
+			"offline_title": "Stream Offline",
+			"offline_description": "{name} is not live at the moment. This session might have ended or is currently unavailable.",
+			"return_home": "Return Home",
 			"toggleTheme": "Change Theme",
 			"volume": "Volume",
 			"mute": "Mute",
@@ -695,6 +835,10 @@
 			"openOriginal": "Open Original Stream",
 			"multiview": {
 				"title": "Multi-view",
+				"live": {
+					"seoTitle": "JKT48 Multi-view Live - Watch Multiple Streams",
+					"seoDescription": "Watch multiple JKT48 live streams simultaneously on one screen. The ultimate Multi-view experience for JKT48 fans on MyPage48."
+				},
 				"tap_to_play": "Tap to Play",
 				"clear_all": "Clear All",
 				"switch_to_landscape": "Switch to Landscape",
@@ -716,18 +860,41 @@
 				"loading_chat": "Loading chat...",
 				"select_stream_to_chat": "Select a stream to see chat",
 				"member_offline": "{name} offline",
-				"showroom_chat": "Showroom Chat",
-				"chat_started": "Chat Started",
 				"no_messages": "No messages yet",
 				"stream_error": "Stream error: {details}",
 				"hls_not_supported": "HLS not supported",
 				"no_stream_found": "No stream found",
 				"failed_load_stream": "Failed to load stream",
 				"retry": "Retry",
-				"sending_gift": "Sending Gift",
-				"seoDescription": "Watch multiple JKT48 members live at the same time. Switch, resize, and chat across multiple live streams simultaneously."
+				"sending_gift": "Sending Gift"
 			},
-			"switchMultiview": "Switch to Multi-view"
+			"joined": "{name} joined",
+			"group_joined": "{name} and {count} others joined",
+			"chat_started": "Chat Started",
+			"connecting": "Connecting...",
+			"disconnected": "Disconnected",
+			"reconnect_idn": "Connection lost. Retrying in a few seconds...",
+			"switchMultiview": "Multi-view",
+			"share": {
+				"title": "Support mypage48! 🚀",
+				"description": "Love this website? Help us stay alive and grow by sharing this platform with fellow JKT48 fans!",
+				"shareToX": "Share on X",
+				"copyLink": "Copy Link",
+				"shareText": "Check out the latest JKT48 members live streams on mypage48! 🌟",
+				"toastSuccess": "Website link copied successfully!",
+				"toastError": "Failed to copy link."
+			},
+			"promo": {
+				"historyTitle": "Live History Feature",
+				"historyDesc": "You can now view your personal live watch history and statistics! Create your account now.",
+				"historyAction": "Register"
+			},
+			"video_stability": {
+				"title": "Video Stability",
+				"realtime": "Real-time",
+				"balanced": "Balanced",
+				"stable": "Ultra Stable"
+			}
 		},
 		"news": {
 			"title": "News",
@@ -779,7 +946,10 @@
 			"setlist": "Setlist",
 			"eventType": "Event",
 			"birthday": "Birthday",
-			"tba": "TBA"
+			"tba": "TBA",
+			"promoTitle": "Ticket Scan Feature",
+			"promoDesc": "When you verify your theater visit, don't forget to save your theater ticket! On this website, you can use the ticket scan feature to find out whether you usually sit in the front or back rows. Create your account now.",
+			"promoAction": "Register"
 		},
 		"calendar": {
 			"subtitle": "Theater Schedule Calendar",
@@ -790,7 +960,9 @@
 			"subtitle": "JKT48 member data",
 			"comingSoon": "Member data coming soon!",
 			"errorTitle": "Failed to load members",
-			"errorDesc": "Something went wrong while fetching the member list."
+			"errorDesc": "Something went wrong while fetching the member list.",
+			"team": "Team",
+			"allTeams": "All Teams"
 		},
 		"shows": {
 			"title": "Show Schedule",
@@ -850,12 +1022,37 @@
 			"shareTextHeader": "My JKT48 Oshi Sorter Results:",
 			"shareTextFooter": "Sort yours at",
 			"copySuccess": "Results copied to clipboard!",
-			"copyFailed": "Failed to copy results. Please copy manually."
+			"copyFailed": "Failed to copy results. Please copy manually.",
+			"editTitle": "Edit Title",
+			"editSubtitle": "Edit Description",
+			"save": "Save",
+			"cancel": "Cancel",
+			"startNew": "Start Sorter",
+			"history": "Sorter History",
+			"loadingHistory": "Loading Sorter History...",
+			"noHistoryTitle": "No History Yet",
+			"noHistoryDesc": "Complete a sorter run and save the results to see your oshi ranking history here.",
+			"loadHistoryFailed": "Failed to load sorter history",
+			"saveSuccess": "Results saved to history!",
+			"saveFailed": "Failed to save results",
+			"deleteSuccess": "History entry deleted",
+			"deleteFailed": "Failed to delete history entry",
+			"deleteHistory": "Delete History",
+			"backToHistory": "Sorter History",
+			"gridView": "Grid View",
+			"listView": "List View",
+			"confirmYes": "Yes",
+			"confirmCancel": "Cancel",
+			"detail": "Detail",
+			"loginNow": "Register",
+			"historyFeatures": "Sorter History Feature",
+			"landingPromo": "Want to save and view a complete history of your oshi rankings? Create your account now."
 		}
 	},
 	"memories": {
 		"title": "Memories",
 		"subtitle": "Your photo and ticket gallery",
+		"photoType": "Photo Type",
 		"allPhotos": "All Photos",
 		"tickets": "Tickets",
 		"twoShots": "2-Shots",
@@ -870,7 +1067,96 @@
 		"locked": "Locked",
 		"progress": "Progress",
 		"errorTitle": "Failed to load achievements",
-		"errorDesc": "Something went wrong while fetching your achievements."
+		"errorDesc": "Something went wrong while fetching your achievements.",
+		"items": {
+			"first_show": {
+				"title": "First Step",
+				"description": "Attended your first theater show"
+			},
+			"regular_visitor": {
+				"title": "Regular Visitor",
+				"description": "Attended 10 shows",
+				"progress": "{current}/10 shows"
+			},
+			"dedicated_fan_50": {
+				"title": "Dedicated Fan",
+				"description": "Attended 50 shows",
+				"progress": "{current}/50 shows"
+			},
+			"century_club_100": {
+				"title": "Century Club",
+				"description": "Attended 100 shows",
+				"progress": "{current}/100 shows"
+			},
+			"theater_icon_150": {
+				"title": "Theater Icon",
+				"description": "Attended 150 shows",
+				"progress": "{current}/150 shows"
+			},
+			"legendary_wota_200": {
+				"title": "Legendary Wota",
+				"description": "Attended 200 shows",
+				"progress": "{current}/200 shows"
+			},
+			"theater_kami_300": {
+				"title": "Theater Kami",
+				"description": "Attended 300 shows",
+				"progress": "{current}/300 shows"
+			},
+			"absolute_legend_500": {
+				"title": "Absolute Legend",
+				"description": "Attended 500 shows",
+				"progress": "{current}/500 shows"
+			},
+			"super_fan": {
+				"title": "Super Fan",
+				"description": "Watched the same event 10 times",
+				"progress": "{current}/10 times"
+			},
+			"mega_fan": {
+				"title": "Mega Fan",
+				"description": "Watched the same event 20 times",
+				"progress": "{current}/20 times"
+			},
+			"ultra_fan": {
+				"title": "Ultra Fan",
+				"description": "Watched the same event 30 times",
+				"progress": "{current}/30 times"
+			},
+			"theater_enthusiast": {
+				"title": "Theater Enthusiast",
+				"description": "1 year anniversary since first show",
+				"progress": "{current}/365 days"
+			},
+			"theater_veteran": {
+				"title": "Theater Veteran",
+				"description": "2 year anniversary since first show",
+				"progress": "{current}/730 days"
+			},
+			"theater_legend": {
+				"title": "Theater Legend",
+				"description": "3 year anniversary since first show",
+				"progress": "{current}/1095 days"
+			},
+			"elite_row": {
+				"title": "Elite Seat",
+				"description": "Sat in the legendary Row A"
+			},
+			"back_row_warrior": {
+				"title": "Back Row Warrior",
+				"description": "Watched from the furthest row (Row J)"
+			},
+			"seat_explorer": {
+				"title": "Seat Explorer",
+				"description": "Collected a ticket for every row (A-J)",
+				"progress": "{current}/10 rows"
+			},
+			"supporter": {
+				"title": "Top Supporter",
+				"description": "Spent over 5 Million IDR on tickets",
+				"progress": "{current}/5M IDR"
+			}
+		}
 	},
 	"errors": {
 		"404": {
@@ -890,7 +1176,7 @@
 		},
 		"401": {
 			"title": "Unauthorized",
-			"subtitle": "Please sign in to continue.",
+			"subtitle": "Please login to continue.",
 			"description": "You need to be authenticated to access this page."
 		},
 		"default": {
@@ -951,6 +1237,9 @@
 		"relative": {
 			"today": "Today",
 			"yesterday": "Yesterday",
+			"justNow": "Just now",
+			"minsAgo": "{count}m ago",
+			"hoursAgo": "{count}h ago",
 			"daysAgo": "{count} days ago",
 			"weeksAgo": "{count} weeks ago"
 		}
@@ -971,15 +1260,48 @@
 		"emptyState": {
 			"title": "No Members Found",
 			"description": "Try adjusting your search or filter to find who you're looking for."
+		},
+		"loadMore": "Load More",
+		"upcoming": "Upcoming",
+		"past": "Past",
+		"pastShows": "Past Shows",
+		"shows": "Shows",
+		"liveTitle": "Live",
+		"generation": "Gen",
+		"cm": "cm",
+		"count": "x",
+		"viewers": "viewers",
+		"liveFallback": "Live Stream",
+		"eventEmpty": "No shows found for this member",
+		"liveEmpty": "No live history found for this member",
+		"showSidebar": "Show sidebar",
+		"closeSidebar": "Close Sidebar",
+		"memberFrame": "member frame",
+		"officialProfile": "Official Profile",
+		"twitterProfile": "Twitter / X profile",
+		"tiktokProfile": "TikTok profile",
+		"showStats": {
+			"title": "Show Statistics",
+			"totalShows": "Total Shows",
+			"topSetlist": "Most Performed",
+			"uniqueSetlists": "Unique Setlists",
+			"disclaimer": "This data is based on scraping results and may differ from actual data."
+		},
+		"liveStats": {
+			"title": "Live Statistics",
+			"totalLives": "Total Lives",
+			"totalDuration": "Total Duration",
+			"topPlatform": "Top Platform",
+			"longestLive": "Longest Live",
+			"disclaimer": "This data is based on scraping results and may differ from actual data."
 		}
 	},
 	"top2shot": {
-		"title": "Top 2-Shot",
-		"subtitle": "Member analytics & spending breakdown",
+		"title": "Roulette & Birthday",
+		"subtitle": "Member with the most 2-Shot photos",
 		"noData": "No 2-Shot Data Yet",
 		"noDataDesc": "Start adding 2-shot details when creating or editing tickets to see your Oshi rankings!",
 		"mostCollected": "Most Collected",
-		"cherished": "Your most cherished member",
 		"stats2shots": "2-Shots",
 		"statsSpent": "Spent",
 		"budgetSplit": "Budget Split",
@@ -1022,7 +1344,8 @@
 				"userInfo": "User Info",
 				"email": "Email",
 				"status": "Status",
-				"created": "Created"
+				"created": "Created",
+				"lastActive": "Last Active"
 			},
 			"status": {
 				"verified": "Verified",
@@ -1053,6 +1376,12 @@
 				"nameRequired": "Name is required",
 				"nickname": "Nickname",
 				"generation": "Generation",
+				"memberType": "Member Type",
+				"birthdate": "Birthdate",
+				"bloodType": "Blood Type",
+				"height": "Height",
+				"horoscope": "Horoscope",
+				"selectPlaceholder": "Select",
 				"imageUrl": "Image URL",
 				"jikoshoukai": "Jikoshoukai",
 				"socials": "Social Media",
@@ -1128,7 +1457,7 @@
 			"admin": "Admin"
 		},
 		"actions": {
-			"home": "Go to Home",
+			"home": "Go to Overview",
 			"theater": "Go to Theater",
 			"events": "Go to Events",
 			"members": "Go to Members",
@@ -1137,7 +1466,7 @@
 			"memories": "Go to Memories",
 			"profile": "Go to Profile",
 			"settings": "Go to Settings",
-			"scanTicket": "Scan Ticket",
+			"scanTicket": "Scan Theater Ticket",
 			"manualTicket": "Add Ticket Manually",
 			"lightMode": "Switch to Light Mode",
 			"darkMode": "Switch to Dark Mode",

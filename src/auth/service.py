@@ -137,9 +137,6 @@ class AuthService:
         if lock_status["is_locked"]:
             raise AccountLocked()
 
-        if not user.isEmailVerified:
-            raise EmailNotVerified()
-
         if not is_valid_password:
             # Handle failed login
             await self.security_service.handle_failed_login(
@@ -147,7 +144,14 @@ class AuthService:
             )
             raise IncorrectCredentialsError()
 
-        await self.security_service.reset_failed_login_attempts(user.userId)
+        if not user.isEmailVerified:
+            raise EmailNotVerified()
+
+        if user.failedLoginAttempts > 0:
+            await self.security_service.reset_failed_login_attempts(user.userId)
+
+        await self.user_repo.update_last_active(user.userId)
+
         return user
 
     def extract_user_provider(self, user) -> Dict[str, str]:
@@ -245,6 +249,7 @@ class AuthService:
             await self.save_login_history(
                 user_id, device, ip, browser, user_agent_raw=user_agent
             )
+            await self.user_repo.update_last_active(user_id)
             return refresh_token
         except Exception as e:
             logger.exception(f"Error registering refresh token activity: {str(e)}")

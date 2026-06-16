@@ -45,7 +45,7 @@ async def test_get_memories_with_images(client: AsyncClient, db, create_user):
         seat=TicketSeat(section="A", number=5),
         price=200000,
         currency="IDR",
-        imageUrl="data:image/png;base64,iVBORw0KGgo=",
+        imageUrl="ticket/test.webp",
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
     )
@@ -81,12 +81,12 @@ async def test_get_memories_with_2shot(client: AsyncClient, db, create_user):
         seat=TicketSeat(section="B", number=10),
         price=200000,
         currency="IDR",
-        imageUrl="data:image/png;base64,iVBORw0KGgo=",
+        imageUrl="ticket/test.webp",
         two_shot=TicketTwoShot(
             member_name="Freya Jayawardana",
             type="Roulette",
             price=50000,
-            imageUrl="data:image/png;base64,iVBORw0KGgo="
+            imageUrl="twoshot/test.webp"
         ),
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
@@ -118,6 +118,26 @@ async def test_get_memories_with_2shot(client: AsyncClient, db, create_user):
     assert data["meta"]["total_data"] == 1
     assert data["data"][0]["type"] == "2SHOT"
     assert "Freya" in data["data"][0]["twoShotMemberName"]
+
+    # Filter by title
+    response = await client.get("/api/memories?title=Aitakatta", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["meta"]["total_data"] == 2
+    assert "Aitakatta" in data["data"][0]["eventTitle"]
+
+    # Filter by start_date
+    response = await client.get("/api/memories?start_date=2023-02-19", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["meta"]["total_data"] == 2
+
+    # Filter by end_date and days
+    response = await client.get("/api/memories?end_date=2023-02-21&days=Monday,Tuesday", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["meta"]["total_data"] == 2
+    assert data["data"][0]["date"] == "2023-02-20"
 
 
 @pytest.mark.asyncio
@@ -179,12 +199,42 @@ async def test_get_top_two_shot(client: AsyncClient, db, create_user):
     ranking = data["ranking"]
     assert len(ranking) >= 2
     
-    # Freya should be #1
+    # Verify Freya should be #1 with all data
     assert ranking[0]["name"] == "Freya Jayawardana"
     assert ranking[0]["count"] == 2
     assert ranking[0]["spend"] == 110000
     
-    # Christy should be #2
+    # Verify Christy should be #2
     assert ranking[1]["name"] == "Angelina Christy"
     assert ranking[1]["count"] == 1
     assert ranking[1]["spend"] == 50000
+
+    # Test filtering by year/month (Jan 2023)
+    response_filtered = await client.get(
+        "/api/memories/top-two-shot?year=2023&start_month=0&end_month=0&is_all_data=false", 
+        headers=headers
+    )
+    assert response_filtered.status_code == 200
+    data_filtered = response_filtered.json()
+    assert data_filtered["totalTwoShotCount"] == 3
+    assert "available_years" in data_filtered
+
+    # Test filtering by a month with no data (Feb 2023)
+    response_empty = await client.get(
+        "/api/memories/top-two-shot?year=2023&start_month=1&end_month=1&is_all_data=false", 
+        headers=headers
+    )
+    assert response_empty.status_code == 200
+    data_empty = response_empty.json()
+    assert data_empty["totalTwoShotCount"] == 0
+    assert len(data_empty["ranking"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_get_memories_invalid_date(client: AsyncClient, create_user):
+    """Test getting memories with invalid date format."""
+    token, user_id, headers = await create_user("memoryuser_invalid")
+
+    response = await client.get("/api/memories?start_date=2023/13/45", headers=headers)
+    assert response.status_code == 400
+    assert "INVALID_DATE_FORMAT" in response.text

@@ -100,25 +100,6 @@ services:
     networks:
       - internal_net
 
-  minio:
-    image: minio/minio:latest
-    container_name: mypage48-minio
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
-      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL}
-    volumes:
-      - minio_data:/data
-    command: server /data --console-address ":9001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: always
-    networks:
-      - public_net
-      - internal_net
 
   # --- ANALYTICS ---
   umami:
@@ -160,8 +141,25 @@ services:
       - .env
     environment:
       MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017
+      DB_NAME: ${DB_NAME}
+      ENV: ${ENV:-prod}
+      FLARESOLVERR_URL: http://flaresolverr:8191/v1
     depends_on:
       - mongodb
+      - flaresolverr
+    volumes:
+      - ./logs/scraper:/var/log/mypage48
+      - ./scraper/data:/app/scraper/data
+    restart: always
+    networks:
+      - internal_net
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: mypage48-flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - TZ=Asia/Jakarta
     restart: always
     networks:
       - internal_net
@@ -174,5 +172,4 @@ networks:
 
 volumes:
   mongodb_data:
-  minio_data:
   umami_data:

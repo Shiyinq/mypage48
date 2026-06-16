@@ -42,12 +42,21 @@ class MonthlyStatsResponse(BaseModel):
     max_count: int
 
 
+class HeatmapStatsResponse(BaseModel):
+    """Response for heatmap statistics."""
+
+    data: Dict[str, int]
+
+
 class TopShowResponse(BaseModel):
     """Response for top show statistics."""
 
     title: str
     count: int
     image: Optional[str] = None
+    image_medium: Optional[str] = None
+    image_small: Optional[str] = None
+    blurHash: Optional[str] = None
 
 
 class TopMemberResponse(BaseModel):
@@ -56,6 +65,9 @@ class TopMemberResponse(BaseModel):
     name: str
     count: int
     image: Optional[str] = None
+    image_medium: Optional[str] = None
+    image_small: Optional[str] = None
+    blurHash: Optional[str] = None
 
 
 class TwoShotStatsResponse(BaseModel):
@@ -72,6 +84,9 @@ class ExtremeItem(BaseModel):
 
     ticket_id: str
     image: Optional[str] = None
+    image_medium: Optional[str] = None
+    image_small: Optional[str] = None
+    blurHash: Optional[str] = None
     title: str
     date: str
     time: str
@@ -121,6 +136,7 @@ class PeriodStatsGroup(BaseModel):
 
     monthly_stats: MonthlyStatsResponse
     day_stats: DayStatsResponse
+    heatmap_stats: HeatmapStatsResponse
 
 
 class DashboardStatsResponse(BaseModel):

@@ -1,10 +1,23 @@
 <script lang="ts">
-	export let label = '';
-	export let type = 'text';
-	export let value = '';
-	export let placeholder = '';
-	export let error = '';
-	export let id = Math.random().toString(36).substr(2, 9);
+	/* eslint-disable svelte/valid-compile */
+
+	import type { HTMLInputAttributes } from 'svelte/elements';
+
+	interface Props extends HTMLInputAttributes {
+		label?: string;
+		error?: string;
+		value?: string;
+	}
+
+	let {
+		label = '',
+		type = 'text',
+		value = $bindable(''),
+		placeholder = '',
+		error = '',
+		id = Math.random().toString(36).substring(2, 11),
+		...rest
+	}: Props = $props();
 </script>
 
 <div class="input-group">
@@ -18,9 +31,9 @@
 		{placeholder}
 		{value}
 		class="input-field {error ? 'has-error' : ''}"
-		on:input={(e) => (value = e.currentTarget.value)}
-		on:blur
-		{...$$restProps}
+		oninput={(e) => (value = e.currentTarget.value)}
+		onblur={rest.onblur}
+		{...rest}
 	/>
 
 	{#if error}

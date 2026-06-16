@@ -3,24 +3,33 @@
 	import { getExternalMediaUrl } from '$lib/utils/media';
 
 	import { getMemberFrame } from '$lib/constants';
+	import { OptimizedImage } from '$lib/components/common';
 
-	export let member: Member;
+	interface Props {
+		member: Member;
+		onclick?: () => void;
+	}
 
-	$: frameImg = getMemberFrame(member.member_type);
+	let { member, onclick }: Props = $props();
+
+	let frameImg = $derived(getMemberFrame(member.member_type));
 </script>
 
 <button
 	class="group relative aspect-[3/4] flex flex-col bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer text-left"
-	on:click
+	{onclick}
 >
 	<!-- Member Photo Container -->
 	<div class="relative w-full h-full overflow-hidden bg-gray-100 dark:bg-zinc-800">
 		{#if member.img}
-			<img
+			<OptimizedImage
 				src={getExternalMediaUrl(member.img)}
+				srcMedium={getExternalMediaUrl(member.img_medium)}
+				srcSmall={getExternalMediaUrl(member.img_small)}
+				blurHash={member.blurHash}
 				alt={member.name}
-				class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-				loading="lazy"
+				class="w-full h-full transition-transform duration-500 group-hover:scale-110"
+				sizes="(max-width: 640px) 50vw, 25vw"
 			/>
 		{:else}
 			<div
@@ -35,7 +44,7 @@
 		<!-- Frame Image Overlay -->
 		<img
 			src={frameImg}
-			alt="frame"
+			alt="member frame"
 			class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 		/>
 

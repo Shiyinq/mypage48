@@ -1,4 +1,3 @@
-import uuid
 from typing import List, Optional
 
 from src.config import Settings
@@ -20,6 +19,8 @@ from src.setlists.schemas import (
     TicketSeat,
     WatchedStats,
 )
+from src.storage.service import StorageService
+from src.utils import cleanse_image_url
 
 logger = create_logger("setlists_service", __name__)
 
@@ -29,9 +30,35 @@ class SetlistsService:
         self,
         repository: SetlistsRepository,
         config: Settings,
+        storage_service: StorageService,
     ):
         self.repository = repository
         self.config = config
+        self.storage_service = storage_service
+
+    async def _resolve_setlist(self, setlist: dict) -> dict:
+        """Resolve setlist image using storage service."""
+        img_url = setlist.get("imageUrl")
+        if img_url:
+            if not (img_url.startswith("http") or img_url.startswith("https")):
+                res = await self.storage_service.resolve_image_variants(img_url)
+                setlist["imageUrl"] = res["url"]
+                setlist["imageUrl_medium"] = res.get("url_medium")
+                setlist["imageUrl_small"] = res.get("url_small")
+
+                if res.get("blurHash"):
+                    # If it was missing in the DB but found in storage, update the DB
+                    if not setlist.get("blurHash"):
+                        try:
+                            await self.repository.update_one(
+                                setlist["setlistId"], {"blurHash": res["blurHash"]}
+                            )
+                        except Exception as e:
+                            logger.warning(
+                                f"Failed to JIT update blurHash for setlist {setlist.get('setlistId')}: {e}"
+                            )
+                    setlist["blurHash"] = res["blurHash"]
+        return setlist
 
     async def get_all_setlists(
         self,
@@ -41,6 +68,10 @@ class SetlistsService:
         setlist_type: Optional[str] = None,
         active: Optional[bool] = None,
         search: Optional[str] = None,
+        year: Optional[int] = None,
+        start_month: Optional[int] = None,
+        end_month: Optional[int] = None,
+        is_all_data: bool = False,
     ) -> SetlistListResponse:
         """Get all setlists with optional filtering and user statistics"""
         try:
@@ -52,12 +83,19 @@ class SetlistsService:
                 setlist_type=setlist_type,
                 active=active,
                 search=search,
+                year=year,
+                start_month=start_month,
+                end_month=end_month,
+                is_all_data=is_all_data,
             )
             total = await self.repository.count(setlist_type, active, search)
 
             setlist_responses = []
             for setlist in setlists:
-                count = setlist.get("count", 0)
+                # Resolve image URLs
+                resolved = await self._resolve_setlist(setlist)
+
+                count = resolved.get("count", 0)
                 percentage = (count / max_attendance) * 100 if max_attendance > 0 else 0
                 is_most_watched = count == max_attendance and count > 0
 
@@ -68,13 +106,14 @@ class SetlistsService:
                     isMostWatched=is_most_watched,
                 )
 
+                # Prepare data for model, removing MongoDB internal fields
+                model_data = {
+                    k: v for k, v in resolved.items() if k not in ("_id", "count")
+                }
+
                 setlist_responses.append(
                     SetlistWithStats(
-                        **{
-                            k: v
-                            for k, v in setlist.items()
-                            if k not in ("_id", "count")
-                        },
+                        **model_data,
                         watched=watched,
                     )
                 )
@@ -95,7 +134,9 @@ class SetlistsService:
             if not setlist:
                 raise SetlistNotFoundError()
 
-            return SetlistResponse(**{k: v for k, v in setlist.items() if k != "_id"})
+            resolved = await self._resolve_setlist(setlist)
+            response_data = {k: v for k, v in resolved.items() if k != "_id"}
+            return SetlistResponse(**response_data)
         except SetlistNotFoundError:
             raise
         except Exception as e:
@@ -109,7 +150,9 @@ class SetlistsService:
             if not setlist:
                 raise SetlistNotFoundError()
 
-            return SetlistResponse(**{k: v for k, v in setlist.items() if k != "_id"})
+            resolved = await self._resolve_setlist(setlist)
+            response_data = {k: v for k, v in resolved.items() if k != "_id"}
+            return SetlistResponse(**response_data)
         except SetlistNotFoundError:
             raise
         except Exception as e:
@@ -128,16 +171,33 @@ class SetlistsService:
         self,
         setlist_id: str,
         user_id: str,
+        year: Optional[int] = None,
+        start_month: Optional[int] = None,
+        end_month: Optional[int] = None,
+        is_all_data: bool = False,
     ) -> SetlistDetailResponse:
         """Get setlist detail with user's tickets and computed statistics"""
         try:
             # Get setlist with matched tickets
-            result = await self.repository.find_with_tickets(setlist_id, user_id)
+            result = await self.repository.find_with_tickets(
+                setlist_id,
+                user_id,
+                year=year,
+                start_month=start_month,
+                end_month=end_month,
+                is_all_data=is_all_data,
+            )
             if not result:
                 raise SetlistNotFoundError()
 
             # Get max attendance for percentage calculation
-            max_attendance = await self.repository.get_max_attendance(user_id)
+            max_attendance = await self.repository.get_max_attendance(
+                user_id,
+                year=year,
+                start_month=start_month,
+                end_month=end_month,
+                is_all_data=is_all_data,
+            )
 
             # Extract tickets from result
             matched_tickets = result.get("matched_tickets", [])
@@ -203,10 +263,11 @@ class SetlistsService:
                 lastDate=last_date,
             )
 
+            resolved = await self._resolve_setlist(result)
             # Build response excluding internal fields
             setlist_fields = {
                 k: v
-                for k, v in result.items()
+                for k, v in resolved.items()
                 if k not in ("_id", "count", "matched_tickets")
             }
 
@@ -226,15 +287,16 @@ class SetlistsService:
     async def create_setlist(self, data: SetlistCreateRequest) -> SetlistResponse:
         """Create a new setlist"""
         try:
-            setlist_id = str(uuid.uuid4())
+            # Generate setlistId from title: lowercase, no spaces, keep other characters
+            setlist_id = data.title.lower().replace(" ", "")
 
             setlist_data = {
                 "setlistId": setlist_id,
                 **data.model_dump(exclude_none=True),
             }
 
-            setlist = await self.repository.insert_one(setlist_data)
-            return SetlistResponse(**{k: v for k, v in setlist.items() if k != "_id"})
+            await self.repository.insert_one(setlist_data)
+            return await self.get_setlist_by_id(setlist_id)
         except Exception as e:
             logger.exception(f"Error creating setlist: {str(e)}")
             raise SetlistFetchError()
@@ -251,11 +313,41 @@ class SetlistsService:
 
             update_data = data.model_dump(exclude_none=True)
             if update_data:
+                # Cleanse image URL if provided (convert full URL to relative path)
+                if "imageUrl" in update_data:
+                    update_data["imageUrl"] = cleanse_image_url(update_data["imageUrl"])
+
+                # 1. Handle image cleanup or rename
+                has_new_img = (
+                    "imageUrl" in update_data
+                    and existing.get("imageUrl")
+                    and update_data["imageUrl"] != existing["imageUrl"]
+                )
+                title_changed = (
+                    "title" in update_data and update_data["title"] != existing["title"]
+                )
+
+                if has_new_img:
+                    # New image uploaded - delete the old one
+                    await self.storage_service.delete_image(existing["imageUrl"])
+                elif title_changed and existing.get("imageUrl"):
+                    # No new image, but title changed - rename the existing image file
+                    new_img_path = await self.storage_service.rename_image(
+                        existing["imageUrl"], update_data["title"], "setlist"
+                    )
+                    if new_img_path != existing["imageUrl"]:
+                        update_data["imageUrl"] = new_img_path
+
                 setlist = await self.repository.update_one(setlist_id, update_data)
             else:
                 setlist = existing
 
-            return SetlistResponse(**{k: v for k, v in setlist.items() if k != "_id"})
+            if not setlist:
+                raise SetlistNotFoundError()
+
+            resolved = await self._resolve_setlist(setlist)
+            response_data = {k: v for k, v in resolved.items() if k != "_id"}
+            return SetlistResponse(**response_data)
         except SetlistNotFoundError:
             raise
         except Exception as e:
@@ -273,6 +365,10 @@ class SetlistsService:
             deleted = await self.repository.delete_one(setlist_id)
             if not deleted:
                 raise SetlistFetchError()
+
+            # Cleanup image from R2
+            if existing.get("imageUrl"):
+                await self.storage_service.delete_image(existing["imageUrl"])
 
             return MessageResponse(message=Info.SETLIST_DELETED)
         except SetlistNotFoundError:

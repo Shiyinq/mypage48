@@ -1,16 +1,22 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let rows: readonly string[];
-	export let rowStats: { counts: Record<string, number>; maxCount: number };
-	export let isLoading: boolean;
+	interface Props {
+		rows: readonly string[];
+		rowStats: { counts: Record<string, number>; maxCount: number };
+		isLoading: boolean;
+	}
+
+	let { rows, rowStats, isLoading }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
 
 {#if isLoading}
 	<!-- Skeleton Loading for Rows -->
-	<div class="grid grid-cols-2 gap-x-6 md:gap-x-16 gap-y-4 max-w-4xl mx-auto mt-2 pt-4 pb-4 px-4">
+	<div
+		class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 md:gap-x-16 gap-y-4 max-w-4xl mx-auto mt-2 pt-4 pb-4 px-4"
+	>
 		<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 		{#each rows as row}
 			<div class="flex items-center gap-3">
@@ -22,7 +28,9 @@
 		{/each}
 	</div>
 {:else}
-	<div class="grid grid-cols-2 gap-x-6 md:gap-x-16 gap-y-4 max-w-4xl mx-auto mt-2 pt-4 pb-4 px-4">
+	<div
+		class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 md:gap-x-16 gap-y-4 max-w-4xl mx-auto mt-2 pt-4 pb-4 px-4"
+	>
 		{#each rows as row}
 			{@const count = rowStats.counts[row] || 0}
 			{@const intensity = rowStats.maxCount > 0 ? count / rowStats.maxCount : 0}
@@ -52,7 +60,7 @@
 							class={`text-[10px] md:text-xs font-bold uppercase tracking-wide transition-colors duration-300 ${hasData && intensity <= 0.3 ? 'text-gray-600 dark:text-gray-300' : ''} ${!hasData ? 'text-gray-300 dark:text-gray-600' : ''}`}
 							style={hasData && intensity > 0.3
 								? 'color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3)'
-								: ''}>{$t('dashboard.seatMap.row')} {row}</span
+								: ''}>{t('dashboard.seatMap.row')} {row}</span
 						>
 						<span
 							class={`text-base md:text-lg font-black transition-colors duration-300 ${hasData && intensity <= 0.85 ? 'text-red-600 dark:text-red-400' : ''} ${!hasData ? 'text-gray-300 dark:text-gray-600' : ''}`}

@@ -1,14 +1,11 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
 	import { type SetlistDetailResponse } from '$lib/apis/setlists';
 
 	import { ticketsStore, showToast } from '$lib/stores';
-	import { setlistsStore, isSetlistDetailLoading } from '$lib/stores/theater';
+	import { setlistsStore } from '$lib/stores/theater.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { ArrowLeft, Ticket, DollarSign, Trophy } from 'lucide-svelte';
+	import { Ticket, DollarSign, Trophy } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { DeleteConfirmationModal } from '$lib/components/history';
 	import { ErrorState } from '$lib/components';
@@ -17,26 +14,66 @@
 	import SetlistStats from '$lib/components/theater/SetlistStats.svelte';
 	import Timeline from '$lib/components/history/Timeline.svelte';
 	import SetlistTicketItem from '$lib/components/theater/SetlistTicketItem.svelte';
+	import SetlistDetailSkeleton from '$lib/components/theater/SetlistDetailSkeleton.svelte';
+	import { slide } from 'svelte/transition';
+
+	// Import theater components and stores
+	import { TheaterHeader, TheaterFilters } from '$lib/components/theater';
+	import { dashboardFilter, dashboardStatsData } from '$lib/stores/dashboard.svelte';
+	import { AudioLines } from 'lucide-svelte';
+
+	let { data: _data } = $props();
 
 	const { t } = useTranslation();
 
 	// Get setlistId from URL
-	$: setlistId = $page.params.setlistId;
+	let setlistId = $derived($page.params.setlistId);
 
 	// State from store
-	let detail: SetlistDetailResponse | null = null;
-	$: error = $setlistsStore.detailError;
-	let deleteId: string | null = null;
-	let isDeleting = false;
+	let detail: SetlistDetailResponse | null = $state(null);
+	let error = $derived($setlistsStore.detailError);
+	let isLoading = $state(true);
+	let deleteId: string | null = $state(null);
+	let isDeleting = $state(false);
+
+	// Filter state
+	let isFilterOpen = $state(false);
+	const currentYear: number = new Date().getFullYear();
+	let availableYears = $derived(dashboardStatsData.data?.available_years ?? [currentYear]);
+
+	function clickOutside(node: HTMLElement) {
+		const handleClick = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (node && !node.contains(target) && !target.closest('[data-filter-toggle="true"]')) {
+				isFilterOpen = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
 
 	async function fetchDetail() {
 		if (!setlistId) return;
+		isLoading = true;
 		try {
 			// Use store loadDetail which handles caching
-			detail = await setlistsStore.loadDetail(setlistId);
-		} catch (e) {
+			detail = await setlistsStore.loadDetail(setlistId, {
+				year: dashboardFilter.selectedYear,
+				startMonth: dashboardFilter.startMonth,
+				endMonth: dashboardFilter.endMonth,
+				isAllData: dashboardFilter.isAllData
+			});
+		} catch {
 			// Error is handled by store
-			showToast($t('theater.setlists.errorTitle') || 'Failed to load detail', 'error');
+			showToast(t('theater.setlists.errorTitle') || 'Failed to load detail', 'error');
+		} finally {
+			isLoading = false;
 		}
 	}
 
@@ -52,8 +89,8 @@
 
 			// Re-fetch detail to update stats
 			await fetchDetail();
-			showToast($t('history.ticketDeleted'), 'success');
-		} catch (e) {
+			showToast(t('history.ticketDeleted'), 'success');
+		} catch {
 			// Error is handled by ticketsStore internally
 			showToast('Failed to delete ticket', 'error');
 		} finally {
@@ -62,8 +99,10 @@
 		}
 	}
 
-	onMount(() => {
-		fetchDetail();
+	$effect(() => {
+		if (setlistId && dashboardFilter) {
+			fetchDetail();
+		}
 	});
 </script>
 
@@ -80,28 +119,47 @@
 	onConfirm={confirmDelete}
 />
 
-{#if $isSetlistDetailLoading}
-	<div class="animate-pulse space-y-8 max-w-5xl mx-auto">
-		<!-- New Hero Skeleton -->
-		<div class="h-[400px] w-full bg-gray-200 dark:bg-zinc-800 rounded-3xl"></div>
-		<!-- Grid Skeleton -->
-		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-			{#each Array(4) as _}
-				<div class="h-32 bg-gray-200 dark:bg-zinc-800 rounded-2xl"></div>
-			{/each}
+<div class="mb-0 sm:mb-6 relative z-30">
+	<TheaterHeader
+		filter={dashboardFilter}
+		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
+		isOpen={isFilterOpen}
+		title={detail?.title || 'Theater Detail'}
+		subtitle={t('theater.subtitle') || 'Perjalanan teatermu'}
+		icon={AudioLines}
+		theme="purple"
+		showBackButton={true}
+		backUrl="/theater"
+	/>
+	{#if isFilterOpen}
+		<div
+			use:clickOutside
+			transition:slide={{ duration: 200 }}
+			class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
+		>
+			<TheaterFilters
+				bind:isAllData={dashboardFilter.isAllData}
+				bind:selectedYear={dashboardFilter.selectedYear}
+				bind:startMonth={dashboardFilter.startMonth}
+				bind:endMonth={dashboardFilter.endMonth}
+				{availableYears}
+			/>
 		</div>
-	</div>
+	{/if}
+</div>
+
+{#if isLoading}
+	<SetlistDetailSkeleton />
 {:else if error}
 	<ErrorState
-		title={$t('theater.setlists.errorTitle') || 'Failed to load detail'}
+		title={t('theater.setlists.errorTitle') || 'Failed to load detail'}
 		description={error ||
-			$t('theater.setlists.errorDesc') ||
+			t('theater.setlists.errorDesc') ||
 			'Something went wrong while fetching the setlist information.'}
 		onRetry={fetchDetail}
 	/>
 {:else if detail}
-	<div class="max-w-5xl mx-auto animate-fade-in pb-20">
+	<div>
 		<!-- Immersive Hero Section -->
 		<SetlistHero {detail} />
 
@@ -119,13 +177,13 @@
 							<h2
 								class="text-xl md:text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight"
 							>
-								{$t('history.title')}
+								{t('history.title')}
 							</h2>
 							<span
 								class="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-full border border-gray-200 dark:border-zinc-700"
 							>
 								{detail.tickets.length}
-								<span class="hidden sm:inline">{$t('dashboard.theater.tickets')}</span>
+								<span class="hidden sm:inline">{t('dashboard.theater.tickets')}</span>
 							</span>
 						</div>
 
@@ -142,13 +200,13 @@
 								<p
 									class="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center max-w-[250px] mt-1"
 								>
-									{$t('theater.setlists.notAttended')}
+									{t('theater.setlists.notAttended')}
 								</p>
 							</div>
 						{:else}
 							<div class="space-y-3">
 								{#each detail.tickets as ticket (ticket.ticketId)}
-									<SetlistTicketItem {ticket} on:click={() => (deleteId = ticket.ticketId)} />
+									<SetlistTicketItem {ticket} onclick={() => (deleteId = ticket.ticketId)} />
 								{/each}
 							</div>
 						{/if}
@@ -168,13 +226,13 @@
 
 					<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
 						<DollarSign class="w-5 h-5 text-yellow-400" />
-						{$t('theater.setlists.statsOverview')}
+						{t('theater.setlists.statsOverview')}
 					</h3>
 
 					<div class="space-y-6 relative z-10">
 						<div>
 							<div class="flex justify-between text-sm mb-2 opacity-80">
-								<span>{$t('theater.setlists.avgPricePerTicket')}</span>
+								<span>{t('theater.setlists.avgPricePerTicket')}</span>
 							</div>
 							<div class="text-2xl md:text-3xl font-bold text-yellow-400 leading-none">
 								{formatCurrency(detail.stats.avgPrice)}
@@ -185,12 +243,12 @@
 
 						<div>
 							<div class="flex justify-between text-sm mb-2 opacity-80">
-								<span>{$t('theater.setlists.attendanceRate')}</span>
+								<span>{t('theater.setlists.attendanceRate')}</span>
 							</div>
 							<div class="flex items-end gap-2">
 								<span class="text-3xl md:text-4xl font-black">{detail.watched.percentage}%</span>
 								<span class="text-sm opacity-60 mb-1 font-medium">
-									{$t('theater.setlists.ofMax')}
+									{t('theater.setlists.ofMax')}
 								</span>
 							</div>
 							<!-- Progress bar -->

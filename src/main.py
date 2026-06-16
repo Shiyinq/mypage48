@@ -1,3 +1,4 @@
+import asyncio
 import os
 import uuid
 from contextlib import asynccontextmanager
@@ -24,15 +25,18 @@ from src.exception_handlers import (
 )
 from src.exceptions import DomainException
 from src.http_exceptions import BadRequest, DetailedHTTPException, EntityTooLarge
+from src.live_history.monitor import live_monitor_loop
 from src.logging_config import request_id_ctx_var
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await database_instance.connect()
+    monitor_task = asyncio.create_task(live_monitor_loop())
 
     yield
 
+    monitor_task.cancel()
     await database_instance.close()
 
 
@@ -113,7 +117,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=config.cors_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=[
         "Accept",
         "Accept-Language",

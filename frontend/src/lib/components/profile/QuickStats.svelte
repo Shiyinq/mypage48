@@ -1,10 +1,22 @@
 <script lang="ts">
-	import { Trophy, Star } from 'lucide-svelte';
+	import { Camera, PlaySquare, Star, Trophy } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let totalShows: number;
-	export let totalAchievements: number;
-	export let loading: boolean = true;
+	interface Props {
+		totalShows: number;
+		totalAchievements: number;
+		totalTwoShots: number;
+		totalLiveWatched: number;
+		loading?: boolean;
+	}
+
+	let {
+		totalShows,
+		totalAchievements,
+		totalTwoShots,
+		totalLiveWatched,
+		loading = true
+	}: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -22,7 +34,7 @@
 			<span class="text-2xl font-black text-themed">{totalShows}</span>
 		{/if}
 		<span class="text-[10px] font-bold text-gray-400 uppercase"
-			>{$t('profile.stats.totalShows')}</span
+			>{t('profile.stats.totalShows')}</span
 		>
 	</div>
 	<div class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center">
@@ -37,7 +49,37 @@
 			<span class="text-2xl font-black text-themed">{totalAchievements}</span>
 		{/if}
 		<span class="text-[10px] font-bold text-gray-400 uppercase"
-			>{$t('profile.stats.achievements')}</span
+			>{t('profile.stats.achievements')}</span
+		>
+	</div>
+	<div class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+		<div
+			class="w-8 h-8 rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-2"
+		>
+			<Camera class="w-4 h-4" />
+		</div>
+		{#if loading}
+			<span class="inline-block w-10 h-7 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></span>
+		{:else}
+			<span class="text-2xl font-black text-themed">{totalTwoShots}</span>
+		{/if}
+		<span class="text-[10px] font-bold text-gray-400 uppercase"
+			>{t('profile.stats.totalTwoShots')}</span
+		>
+	</div>
+	<div class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+		<div
+			class="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center mb-2"
+		>
+			<PlaySquare class="w-4 h-4" />
+		</div>
+		{#if loading}
+			<span class="inline-block w-10 h-7 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse"></span>
+		{:else}
+			<span class="text-2xl font-black text-themed">{totalLiveWatched}</span>
+		{/if}
+		<span class="text-[10px] font-bold text-gray-400 uppercase"
+			>{t('profile.stats.totalLiveWatched')}</span
 		>
 	</div>
 </div>

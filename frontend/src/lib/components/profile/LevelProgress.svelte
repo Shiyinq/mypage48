@@ -9,11 +9,46 @@
 		nextRankTitle: string;
 	}
 
-	export let level: Level;
-	export let progressPercent: number;
-	export let loading: boolean = true;
+	interface Props {
+		level: Level;
+		progressPercent: number;
+		loading?: boolean;
+	}
+
+	let { level, progressPercent, loading = true }: Props = $props();
 
 	const { t } = useTranslation();
+
+	const rankTitleToId: Record<string, string> = {
+		'First Step': 'first_show',
+		'Regular Visitor': 'regular_visitor',
+		'Dedicated Fan': 'dedicated_fan_50',
+		'Century Club': 'century_club_100',
+		'Theater Icon': 'theater_icon_150',
+		'Legendary Wota': 'legendary_wota_200',
+		'Theater Kami': 'theater_kami_300',
+		'Absolute Legend': 'absolute_legend_500',
+		'Super Fan': 'super_fan',
+		'Mega Fan': 'mega_fan',
+		'Ultra Fan': 'ultra_fan',
+		'Theater Enthusiast': 'theater_enthusiast',
+		'Theater Veteran': 'theater_veteran',
+		'Theater Legend': 'theater_legend',
+		'Elite Seat': 'elite_row',
+		'Back Row Warrior': 'back_row_warrior',
+		'Seat Explorer': 'seat_explorer',
+		'Top Supporter': 'supporter'
+	};
+
+	function translateRank(title: string): string {
+		const id = rankTitleToId[title];
+		if (id) {
+			const key = `achievements.items.${id}.title`;
+			const translated = t(key);
+			return translated !== key ? translated : title;
+		}
+		return title;
+	}
 </script>
 
 <div class="glass-panel p-4 sm:p-6 rounded-3xl relative">
@@ -23,28 +58,34 @@
 				<p
 					class="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase truncate"
 				>
-					{$t('profile.level.currentRank')}
+					{t('profile.level.currentRank')}
 				</p>
-				<div class="relative group flex-shrink-0">
+				<button
+					type="button"
+					class="relative group flex-shrink-0 focus:outline-none"
+					aria-label="Information"
+				>
 					<Info
-						class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-300 cursor-help hover:text-red-400 transition-colors"
+						class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-300 cursor-help group-hover:text-red-400 group-focus:text-red-400 transition-colors"
 					/>
 					<div
-						class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2.5 py-1 bg-gray-800 text-white text-[10px] font-medium rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20"
+						class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2.5 py-1 bg-gray-800 text-white text-[10px] font-medium rounded-md shadow-lg opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20"
 					>
 						1 XP = 1 Show
 						<div
 							class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-4 border-transparent border-t-gray-800"
 						></div>
 					</div>
-				</div>
+				</button>
 			</div>
 			{#if loading}
 				<div
 					class="h-6 sm:h-8 w-24 sm:w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mt-1"
 				></div>
 			{:else}
-				<h3 class="text-xl sm:text-2xl font-black idol-text-gradient truncate">{level.current}</h3>
+				<h3 class="text-xl sm:text-2xl font-black idol-text-gradient truncate">
+					{translateRank(level.current)}
+				</h3>
 			{/if}
 		</div>
 		<div class="text-right flex-shrink min-w-0">
@@ -85,9 +126,11 @@
 				<span class="font-bold text-gray-700 dark:text-gray-200"
 					>{level.nextLevelXp - level.xp} XP</span
 				>
-				{$t('profile.level.needed')}
-				{$t('profile.level.for')}
-				<span class="font-bold text-gray-700 dark:text-gray-200">{level.nextRankTitle}</span>
+				{t('profile.level.needed')}
+				{t('profile.level.for')}
+				<span class="font-bold text-gray-700 dark:text-gray-200"
+					>{translateRank(level.nextRankTitle)}</span
+				>
 			</span>
 		</div>
 	{/if}

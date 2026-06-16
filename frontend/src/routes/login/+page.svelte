@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { onDestroy } from 'svelte';
 	import { isAuthenticated, showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { getErrorMessage } from '$lib/utils/api';
-	import { authStore } from '$lib/stores/auth';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { Lock, ArrowRight, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
@@ -16,17 +16,23 @@
 
 	const { t } = useTranslation();
 
-	let email = '';
-	let password = '';
-	let isLoading = false;
+	let email = $state('');
+	let password = $state('');
+	let isLoading = $state(false);
+	let isResending = $state(false);
+	let showResendVerification = $state(false);
+	let resendCountdown = $state(0);
+	let countdownTimer: ReturnType<typeof setInterval> | null = null;
 	let error: string | null = null;
-	let errors: Record<string, string> = {};
+	let errors: Record<string, string> = $state({});
 
-	$: isValid = email.length > 0 && password.length > 0 && Object.values(errors).every((e) => !e);
+	let isValid = $derived(
+		email.length > 0 && password.length > 0 && Object.values(errors).every((e) => !e)
+	);
 
 	const validateField = (field: 'email' | 'password', value: string) => {
 		try {
-			// @ts-ignore - pick is valid on z.object
+			// @ts-expect-error - dynamic pick keys are not perfectly inferred by TS for Zod
 			const fieldSchema = loginSchema.pick({ [field]: true });
 			fieldSchema.parse({ [field]: value });
 			errors[field] = '';
@@ -49,7 +55,7 @@
 
 			await authStore.login({ username: email, password });
 			isAuthenticated.set(true);
-			showToast($t('auth.login.welcomeBack'));
+			showToast(t('auth.login.welcomeBack'));
 			goto('/');
 		} catch (err) {
 			if (err instanceof ZodError) {
@@ -65,21 +71,69 @@
 
 			const errorMsg = getErrorMessage(err);
 			logger.error('Login failed', err, { context: 'LoginPage' });
-			error = errorMsg || $t('auth.login.failed');
+			error = errorMsg || t('auth.login.failed');
+
+			// Detect if email is not verified
+			if (errorMsg === 'Email is not verified.') {
+				showResendVerification = true;
+			}
+
 			showToast(error, 'error');
 		} finally {
 			isLoading = false;
 		}
 	};
+
+	const handleResendVerification = async () => {
+		if (isResending) return;
+		isResending = true;
+
+		try {
+			await authStore.sendVerificationEmail({ email });
+			showToast(t('auth.login.resendSuccess'), 'success');
+			startCountdown();
+		} catch (err) {
+			logger.error('Failed to resend verification email', err, { context: 'LoginPage' });
+			showToast(getErrorMessage(err), 'error');
+		} finally {
+			isResending = false;
+		}
+	};
+
+	const startCountdown = () => {
+		resendCountdown = 60;
+		if (countdownTimer) clearInterval(countdownTimer);
+		countdownTimer = setInterval(() => {
+			if (resendCountdown > 0) {
+				resendCountdown--;
+			} else {
+				if (countdownTimer) {
+					clearInterval(countdownTimer);
+					countdownTimer = null;
+				}
+			}
+		}, 1000);
+	};
+
+	onDestroy(() => {
+		if (countdownTimer) clearInterval(countdownTimer);
+	});
 </script>
 
-<SEO title={$t('auth.login.title')} path="/login" description={$t('seo.login')} />
+<SEO title={t('auth.login.title')} path="/login" description={t('seo.login')} />
 
-<AuthLayout title={$t('auth.login.title')} subtitle={$t('auth.login.subtitle')}>
-	<form on:submit|preventDefault={handleSubmit} class="space-y-5" novalidate>
+<AuthLayout title={t('auth.login.title')} subtitle={t('auth.login.subtitle')}>
+	<form
+		onsubmit={(e) => {
+			e.preventDefault();
+			handleSubmit();
+		}}
+		class="space-y-5"
+		novalidate
+	>
 		<div>
 			<label for="email" class="block text-sm font-bold text-gray-500 dark:text-gray-400 mb-1.5"
-				>{$t('auth.login.emailLabel')}</label
+				>{t('auth.login.emailLabel')}</label
 			>
 			<div class="relative">
 				<div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
@@ -90,9 +144,9 @@
 					id="email"
 					name="username"
 					bind:value={email}
-					on:input={() => validateField('email', email)}
+					oninput={() => validateField('email', email)}
 					class={`w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-800/50 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-white transition-all placeholder-gray-400 dark:placeholder-zinc-600 ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-zinc-700'}`}
-					placeholder={$t('auth.login.emailPlaceholder')}
+					placeholder={t('auth.login.emailPlaceholder')}
 				/>
 			</div>
 			{#if errors.email}
@@ -104,13 +158,15 @@
 			<PasswordInput
 				id="password"
 				name="password"
-				label={$t('auth.login.passwordLabel')}
-				placeholder={$t('auth.login.passwordPlaceholder')}
+				label={t('auth.login.passwordLabel')}
+				placeholder={t('auth.login.passwordPlaceholder')}
 				bind:value={password}
 				error={errors.password}
-				on:input={() => validateField('password', password)}
+				oninput={() => validateField('password', password)}
 			>
-				<Lock class="w-5 h-5" slot="leading" />
+				{#snippet leading()}
+					<Lock class="w-5 h-5" />
+				{/snippet}
 			</PasswordInput>
 		</div>
 
@@ -119,9 +175,41 @@
 				href="/auth/forgot-password"
 				class="text-xs font-bold text-red-600 hover:text-red-700 hover:underline"
 			>
-				{$t('auth.login.forgotPassword')}
+				{t('auth.login.forgotPassword')}
 			</a>
 		</div>
+
+		{#if showResendVerification}
+			<div
+				class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 p-4 rounded-2xl space-y-2 animate-in fade-in slide-in-from-top-2 duration-300 text-center"
+			>
+				<p class="text-xs text-red-800 dark:text-red-200 font-medium leading-relaxed">
+					{t('auth.login.emailNotVerified')}
+				</p>
+
+				{#if resendCountdown > 0}
+					<p
+						class="text-[10px] text-red-600/70 dark:text-red-400/70 font-bold uppercase tracking-wider animate-pulse"
+					>
+						{t('auth.login.resendWait', { seconds: resendCountdown })}
+					</p>
+				{:else}
+					<button
+						type="button"
+						onclick={handleResendVerification}
+						disabled={isResending}
+						class="text-xs font-bold text-red-600 dark:text-red-400 hover:underline inline-flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:no-underline mx-auto"
+					>
+						{t('auth.login.resendVerification')}
+						{#if isResending}
+							<span
+								class="w-3 h-3 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin"
+							></span>
+						{/if}
+					</button>
+				{/if}
+			</div>
+		{/if}
 
 		<button
 			type="submit"
@@ -132,19 +220,21 @@
 				<span class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"
 				></span>
 			{:else}
-				{$t('auth.login.signIn')} <ArrowRight class="w-5 h-5" />
+				{t('auth.login.signIn')} <ArrowRight class="w-5 h-5" />
 			{/if}
 		</button>
 	</form>
 
-	<div slot="footer">
-		<p class="text-sm text-gray-500 dark:text-gray-400">{$t('auth.login.noAccount')}</p>
-		<button
-			on:click={() => goto('/register')}
-			class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
-		>
-			{$t('auth.login.registerCta')}
-			<User class="w-4 h-4" />
-		</button>
-	</div>
+	{#snippet footer()}
+		<div>
+			<p class="text-sm text-gray-500 dark:text-gray-400">{t('auth.login.noAccount')}</p>
+			<button
+				onclick={() => goto('/register')}
+				class="mt-2 text-red-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 mx-auto cursor-pointer"
+			>
+				{t('auth.login.registerCta')}
+				<User class="w-4 h-4" />
+			</button>
+		</div>
+	{/snippet}
 </AuthLayout>

@@ -15,15 +15,19 @@
 	} from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { fade } from 'svelte/transition';
+	import { OptimizedImage } from '$lib/components/common';
 
 	import { EventHistorySkeleton } from '$lib/components/skeletons';
+	import { TheaterHeader } from '$lib/components/theater';
+	import { DateRangeFilter } from '$lib/components/common';
 	import {
 		eventsStore,
 		historyEvents,
 		isHistoryEventsLoading,
 		historyPagination,
-		historyError
-	} from '$lib/stores/events';
+		historyError,
+		historyFilter
+	} from '$lib/stores/events.svelte';
 
 	const { t } = useTranslation();
 
@@ -31,7 +35,55 @@
 		await eventsStore.loadHistory(1);
 	});
 
-	$: error = $historyError;
+	let error = $derived(historyError.value);
+	let eventsList = $derived(historyEvents.value);
+	let loading = $derived(isHistoryEventsLoading.value);
+	let paginationObj = $derived(historyPagination.value);
+	let isFilterOpen = $state(false);
+
+	function clickOutside(node: HTMLElement) {
+		const handleClick = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (node && !node.contains(target) && !target.closest('[data-filter-toggle="true"]')) {
+				isFilterOpen = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
+
+	$effect(() => {
+		// Track only startDate and endDate
+		const trackStart = historyFilter.startDate;
+		const trackEnd = historyFilter.endDate;
+
+		import('svelte').then(({ untrack }) => {
+			untrack(() => {
+				// Do not fetch if only one of the dates is set
+				if ((trackStart && !trackEnd) || (!trackStart && trackEnd)) {
+					return;
+				}
+				eventsStore.loadHistory(1, false, historyFilter);
+			});
+		});
+	});
+
+	function formatFilterDate(dateStr?: string) {
+		if (!dateStr) return '';
+		return formatDate(dateStr, { day: 'numeric', month: 'short', year: 'numeric' });
+	}
+
+	let filterLabel = $derived(
+		historyFilter.startDate || historyFilter.endDate
+			? `${formatFilterDate(historyFilter.startDate)} - ${formatFilterDate(historyFilter.endDate)}`
+			: t('common.allData') || 'Semua Data'
+	);
 
 	async function handlePageChange(page: number) {
 		eventsStore.loadHistory(page);
@@ -78,25 +130,52 @@
 </script>
 
 <SEO
-	title={$t('theater.eventHistory.title')}
+	title={t('theater.eventHistory.title')}
 	path="/theater/events/history"
-	description={$t('theater.eventHistory.subtitle')}
+	description={t('theater.eventHistory.subtitle')}
 />
 
-<div class="space-y-6">
-	{#if $isHistoryEventsLoading}
+<div class="mb-0 sm:mb-6 relative z-30">
+	<TheaterHeader
+		{filterLabel}
+		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
+		isOpen={isFilterOpen}
+		title={t('theater.eventHistory.title') || 'Event History'}
+		subtitle={t('theater.eventHistory.subtitle') || 'Past events'}
+		icon={History}
+		theme="orange"
+	/>
+	{#if isFilterOpen}
+		<div
+			use:clickOutside
+			transition:fade={{ duration: 200 }}
+			class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
+		>
+			<DateRangeFilter
+				bind:startDate={historyFilter.startDate}
+				bind:endDate={historyFilter.endDate}
+				onClear={() => {
+					isFilterOpen = false;
+				}}
+			/>
+		</div>
+	{/if}
+</div>
+
+<div class="space-y-6 pb-20">
+	{#if loading && eventsList.length === 0}
 		<EventHistorySkeleton rows={10} />
 	{:else if error}
 		<ErrorState
-			title={$t('theater.eventHistory.errorTitle') || 'Failed to load history'}
-			description={$t('theater.eventHistory.errorDesc') || error || ''}
-			onRetry={() => eventsStore.loadHistory($historyPagination.current_page)}
+			title={t('theater.eventHistory.errorTitle') || 'Failed to load history'}
+			description={t('theater.eventHistory.errorDesc') || error || ''}
+			onRetry={() => eventsStore.loadHistory(paginationObj.current_page)}
 		/>
-	{:else if $historyEvents.length === 0}
+	{:else if eventsList.length === 0}
 		<EmptyState
 			icon={History}
-			title={$t('theater.eventHistory.emptyTitle')}
-			description={$t('theater.eventHistory.empty')}
+			title={t('theater.eventHistory.emptyTitle')}
+			description={t('theater.eventHistory.empty')}
 		/>
 	{:else}
 		<div class="glass-panel rounded-3xl overflow-hidden shadow-sm" in:fade={{ duration: 300 }}>
@@ -106,24 +185,24 @@
 						<tr
 							class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 						>
-							<th class="p-4">{$t('common.date')}</th>
-							<th class="p-4">{$t('theater.events.eventName')}</th>
-							<th class="p-4">{$t('theater.eventHistory.table.type')}</th>
-							<th class="p-4">{$t('theater.eventHistory.table.members')}</th>
-							<th class="p-4 text-right">{$t('theater.eventHistory.table.link')}</th>
+							<th class="p-4">{t('common.date')}</th>
+							<th class="p-4">{t('theater.events.eventName')}</th>
+							<th class="p-4">{t('theater.eventHistory.table.type')}</th>
+							<th class="p-4">{t('theater.eventHistory.table.members')}</th>
+							<th class="p-4 text-right">{t('theater.eventHistory.table.link')}</th>
 						</tr>
 					</thead>
 					<tbody
 						class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700"
 					>
-						{#each $historyEvents as event}
+						{#each eventsList as event}
 							<tr
 								class="group border-b border-gray-100 dark:border-zinc-700 hover:bg-orange-50/30 dark:hover:bg-orange-900/10 transition-colors"
 							>
 								<td class="p-4 whitespace-nowrap">
 									<div class="flex flex-col">
 										<span class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-											{$formatDate(event.date, {
+											{formatDate(event.date, {
 												day: 'numeric',
 												month: 'short',
 												year: '2-digit'
@@ -134,7 +213,7 @@
 											class="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5"
 										>
 											<Clock class="w-3 h-3" />
-											{$formatTime(event.date, {
+											{formatTime(event.date, {
 												hour: '2-digit',
 												minute: '2-digit',
 												hour12: false
@@ -152,10 +231,14 @@
 											}`}
 										>
 											{#if event.imageUrl}
-												<img
+												<OptimizedImage
 													src={event.imageUrl}
+													srcMedium={event.imageUrl_medium}
+													srcSmall={event.imageUrl_small}
+													blurHash={event.blurHash}
 													alt="Setlist"
 													class="w-full h-full object-cover"
+													sizes="48px"
 												/>
 											{:else}
 												<div class="w-full h-full flex items-center justify-center">
@@ -247,29 +330,28 @@
 				</table>
 			</div>
 
-			<!-- Numbered Pagination -->
-			{#if $historyPagination.last_page > 1}
+			{#if paginationObj.last_page > 1}
 				<div
 					class="bg-gray-50 dark:bg-zinc-800/50 border-t border-gray-100 dark:border-zinc-800 px-6 py-4 flex items-center justify-between"
 				>
 					<span class="text-xs text-themed-secondary">
-						{$t('theater.eventHistory.pagination.pageOf', {
-							current: $historyPagination.current_page,
-							last: $historyPagination.last_page
+						{t('theater.eventHistory.pagination.pageOf', {
+							current: paginationObj.current_page,
+							last: paginationObj.last_page
 						})}
 					</span>
 					<div class="flex gap-2">
 						<!-- Previous Button -->
 						<button
 							class="w-8 h-8 flex items-center justify-center rounded-md bg-white dark:bg-zinc-900 border border-gray-200 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
-							disabled={$historyPagination.current_page === 1}
-							on:click={() => handlePageChange($historyPagination.current_page - 1)}
+							disabled={paginationObj.current_page === 1}
+							onclick={() => handlePageChange(paginationObj.current_page - 1)}
 						>
 							<ChevronLeft class="w-4 h-4" />
 						</button>
 
 						<!-- Page Numbers -->
-						{#each generatePagination($historyPagination.current_page, $historyPagination.last_page) as page}
+						{#each generatePagination(paginationObj.current_page, paginationObj.last_page) as page}
 							{#if page === '...'}
 								<span class="w-8 h-8 flex items-center justify-center text-xs text-gray-400"
 									>...</span
@@ -277,10 +359,10 @@
 							{:else}
 								<button
 									class="w-8 h-8 flex items-center justify-center text-xs rounded-md border transition-colors cursor-pointer {page ===
-									$historyPagination.current_page
+									paginationObj.current_page
 										? 'bg-orange-500 text-white border-orange-500'
 										: 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800'}"
-									on:click={() => handlePageChange(Number(page))}
+									onclick={() => handlePageChange(Number(page))}
 								>
 									{page}
 								</button>
@@ -290,8 +372,8 @@
 						<!-- Next Button -->
 						<button
 							class="w-8 h-8 flex items-center justify-center rounded-md bg-white dark:bg-zinc-900 border border-gray-200 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
-							disabled={$historyPagination.current_page === $historyPagination.last_page}
-							on:click={() => handlePageChange($historyPagination.current_page + 1)}
+							disabled={paginationObj.current_page === paginationObj.last_page}
+							onclick={() => handlePageChange(paginationObj.current_page + 1)}
 						>
 							<ChevronRight class="w-4 h-4" />
 						</button>

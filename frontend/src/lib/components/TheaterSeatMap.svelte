@@ -3,182 +3,125 @@
 	import SeatMapHeader from './theater/seatmap/SeatMapHeader.svelte';
 	import SeatMapRows from './theater/seatmap/SeatMapRows.svelte';
 	import SeatMapGrid from './theater/seatmap/SeatMapGrid.svelte';
+	import SeatMapFitScaler from './theater/seatmap/SeatMapFitScaler.svelte';
 
-	export let rowStats: { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
-	export let seatStats: Record<string, number>;
-	export let isLoading: boolean = false;
-	export let showSubtitle: boolean = true;
-	export let compact: boolean = false;
+	interface Props {
+		rowStats: { counts: Record<string, number>; maxCount: number; uniqueVisited: number };
+		seatStats: Record<string, number>;
+		isLoading?: boolean;
+		showHeader?: boolean;
+		showSubtitle?: boolean;
+		showRowStats?: boolean;
+		compact?: boolean;
+		embedded?: boolean;
+		mapView?: 'ROWS' | 'SEATS';
+	}
+
+	let {
+		rowStats,
+		seatStats,
+		isLoading = false,
+		showHeader = true,
+		showSubtitle = true,
+		showRowStats = true,
+		compact = false,
+		embedded = false,
+		mapView = $bindable('SEATS')
+	}: Props = $props();
 
 	const { t } = useTranslation();
-	let mapView: 'ROWS' | 'SEATS' = 'SEATS';
 
 	const THEATER_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'] as const;
 
-	const SEAT_LAYOUT = {
-		A: {
-			start: 3,
-			seats: 22,
-			groups: [
-				[3, 6],
-				[7, 12],
-				[13, 18],
-				[19, 24]
-			]
-		},
-		B: {
-			start: 3,
-			seats: 23,
-			groups: [
-				[3, 6],
-				[7, 12],
-				[13, 18],
-				[19, 25]
-			]
-		},
-		C: {
-			start: 2,
-			seats: 25,
-			groups: [
-				[2, 6],
-				[7, 12],
-				[13, 18],
-				[19, 26]
-			]
-		},
-		D: {
-			start: 2,
-			seats: 26,
-			groups: [
-				[2, 6],
-				[7, 12],
-				[13, 18],
-				[19, 27]
-			]
-		},
-		E: {
-			start: 2,
-			seats: 26,
-			groups: [
-				[2, 6],
-				[7, 12],
-				[13, 18],
-				[19, 27]
-			]
-		},
-		F: {
-			start: 1,
-			seats: 28,
-			groups: [
-				[1, 6],
-				[7, 12],
-				[13, 18],
-				[19, 28]
-			]
-		},
-		G: {
-			start: 1,
-			seats: 28,
-			groups: [
-				[1, 6],
-				[7, 12],
-				[13, 18],
-				[19, 28]
-			]
-		},
-		H: {
-			start: 1,
-			seats: 27,
-			groups: [
-				[1, 6],
-				[7, 12],
-				[13, 18],
-				[19, 27]
-			]
-		},
-		I: {
-			start: 2,
-			seats: 26,
-			groups: [
-				[2, 6],
-				[7, 12],
-				[13, 18],
-				[19, 27]
-			]
-		},
-		J: {
-			start: 2,
-			seats: 26,
-			groups: [
-				[2, 6],
-				[7, 12],
-				[13, 18],
-				[19, 27]
-			]
-		}
-	} as const;
+	let maxSeatCount = $derived(seatStats ? Math.max(...Object.values(seatStats), 1) : 1);
 
-	$: maxSeatCount = seatStats ? Math.max(...Object.values(seatStats), 1) : 1;
+	let isMobile = $state(false);
+
+	$effect(() => {
+		const mq = window.matchMedia('(max-width: 767px)');
+		const update = () => {
+			isMobile = mq.matches;
+		};
+		update();
+		mq.addEventListener('change', update);
+		return () => mq.removeEventListener('change', update);
+	});
+
+	let useFitScaler = $derived(embedded && !isMobile);
 </script>
 
-<div class="glass-panel p-6 rounded-3xl">
-	<SeatMapHeader {showSubtitle} {rowStats} totalRows={THEATER_ROWS.length} bind:mapView />
+{#snippet seatMapContent()}
+	{#if showHeader}
+		<SeatMapHeader
+			{showSubtitle}
+			{showRowStats}
+			{rowStats}
+			totalRows={THEATER_ROWS.length}
+			bind:mapView
+		/>
+	{/if}
 
 	<div class="w-full">
 		<div class="w-full mx-auto px-1 sm:px-2">
 			<div class="w-full">
-				{#if mapView === 'SEATS'}
-					<div
-						class="w-3/4 mx-auto mt-8 md:mt-0 h-4 bg-gradient-to-b from-gray-200 dark:from-gray-700 to-white dark:to-gray-800 rounded-t-2xl mb-1 relative shadow-sm border-t border-x border-gray-300 dark:border-gray-600"
-						style="transform: translateX(-24px)"
-					>
-						<div class="absolute inset-0 bg-red-600 opacity-5 blur-xl"></div>
-						<div
-							class="absolute -top-6 left-1/2 bg-gray-100 dark:bg-gray-800 px-4 py-1 rounded-full border border-gray-200 dark:border-gray-700 stage-pill"
-							class:is-compact={compact}
-						>
-							<span
-								class="text-[8px] sm:text-[10px] font-black tracking-[0.3em] text-gray-400 uppercase block text-center"
-								>{$t('dashboard.seatMap.stage')}</span
-							>
-						</div>
-					</div>
-				{/if}
-
 				{#if mapView === 'ROWS'}
 					<SeatMapRows rows={THEATER_ROWS} {rowStats} {isLoading} />
 				{/if}
 
 				{#if mapView === 'SEATS'}
-					<SeatMapGrid
-						rows={THEATER_ROWS}
-						seatLayout={SEAT_LAYOUT}
-						{seatStats}
-						{maxSeatCount}
-						{isLoading}
-						{compact}
-					/>
+					{#snippet stage()}
+						<div
+							class="w-full h-4 bg-gradient-to-b from-gray-200 dark:from-gray-700 to-white dark:to-gray-800 rounded-t-2xl relative shadow-sm border-t border-x border-gray-300 dark:border-gray-600"
+						>
+							<div class="absolute inset-0 bg-red-600 opacity-5 blur-xl"></div>
+							<div
+								class="absolute -top-6 -translate-x-1/2 bg-gray-100 dark:bg-gray-800 px-4 py-1 rounded-full border border-gray-200 dark:border-gray-700"
+								style="left: calc((10 * var(--seat-w) + 1.5 * var(--aisle-w) + 22px) / (22 * var(--seat-w) + 3 * var(--aisle-w) + 48px) * 100%);"
+							>
+								<span
+									class="text-[8px] sm:text-[10px] font-black tracking-[0.3em] text-gray-400 uppercase block text-center"
+									>{t('dashboard.seatMap.stage')}</span
+								>
+							</div>
+						</div>
+					{/snippet}
+					{#if useFitScaler}
+						<SeatMapFitScaler>
+							{#snippet children()}
+								<SeatMapGrid
+									rows={THEATER_ROWS}
+									{seatStats}
+									{maxSeatCount}
+									{isLoading}
+									{compact}
+									fitParent={true}
+									{stage}
+								/>
+							{/snippet}
+						</SeatMapFitScaler>
+					{:else}
+						<SeatMapGrid
+							rows={THEATER_ROWS}
+							{seatStats}
+							{maxSeatCount}
+							{isLoading}
+							{compact}
+							{stage}
+						/>
+					{/if}
 				{/if}
 			</div>
 		</div>
 	</div>
-</div>
+{/snippet}
+
+{#if embedded}
+	{@render seatMapContent()}
+{:else}
+	<div class="glass-panel p-6 rounded-3xl">
+		{@render seatMapContent()}
+	</div>
+{/if}
 
 <style>
-	.stage-pill {
-		--stage-offset: 31px; /* Default Desktop Offset */
-		transform: translateX(calc(-50% - var(--stage-offset, 0px)));
-		white-space: nowrap;
-	}
-
-	.stage-pill.is-compact {
-		--stage-offset: 11px; /* Compact Mode Offset */
-	}
-
-	@media (max-width: 767px) {
-		.stage-pill,
-		.stage-pill.is-compact {
-			--stage-offset: 0px; /* Center on Mobile */
-		}
-	}
 </style>

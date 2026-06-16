@@ -1,9 +1,8 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { authStore } from '$lib/stores/auth';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { getErrorMessage } from '$lib/utils/api';
@@ -13,23 +12,23 @@
 
 	const { t } = useTranslation();
 
-	let status: 'loading' | 'success' | 'error' = 'loading';
-	let message = $t('auth.verifyEmail.loadingMessage');
+	let status: 'loading' | 'success' | 'error' = $state('loading');
+	let message = $state(t('auth.verifyEmail.loadingMessage'));
 
 	onMount(async () => {
 		const token = $page.url.searchParams.get('token');
 
 		if (!token) {
 			status = 'error';
-			message = $t('auth.verifyEmail.invalidLink');
+			message = t('auth.verifyEmail.invalidLink');
 			return;
 		}
 
 		try {
 			await authStore.verifyEmail({ token });
 			status = 'success';
-			message = $t('auth.verifyEmail.successMessage');
-			showToast($t('auth.verifyEmail.successMessage'), 'success');
+			message = t('auth.verifyEmail.successMessage');
+			showToast(t('auth.verifyEmail.successMessage'), 'success');
 			setTimeout(() => {
 				goto('/login');
 			}, 3000);
@@ -37,15 +36,15 @@
 			const errorMsg = getErrorMessage(err);
 			logger.error('Email verification failed', err, { context: 'VerifyEmailPage' });
 			status = 'error';
-			message = errorMsg || $t('auth.verifyEmail.failedMessage');
+			message = errorMsg || t('auth.verifyEmail.failedMessage');
 		}
 	});
 </script>
 
 <SEO
-	title={$t('auth.verifyEmail.loadingTitle')}
+	title={t('auth.verifyEmail.loadingTitle')}
 	path="/auth/verify-email"
-	description={$t('seo.verifyEmail')}
+	description={t('seo.verifyEmail')}
 />
 
 <div
@@ -63,7 +62,7 @@
 
 	<div class="w-full max-w-md">
 		<div
-			class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/60 dark:border-zinc-800 text-center animate-fade-in"
+			class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/60 dark:border-zinc-800 text-center"
 		>
 			<div class="flex justify-center mb-6">
 				{#if status === 'loading'}
@@ -89,11 +88,11 @@
 
 			<h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2">
 				{#if status === 'loading'}
-					{$t('auth.verifyEmail.loadingTitle')}
+					{t('auth.verifyEmail.loadingTitle')}
 				{:else if status === 'success'}
-					{$t('auth.verifyEmail.successTitle')}
+					{t('auth.verifyEmail.successTitle')}
 				{:else}
-					{$t('auth.verifyEmail.errorTitle')}
+					{t('auth.verifyEmail.errorTitle')}
 				{/if}
 			</h1>
 
@@ -103,17 +102,17 @@
 
 			{#if status === 'error'}
 				<button
-					on:click={() => goto('/login')}
+					onclick={() => goto('/login')}
 					class="w-full py-3 rounded-xl font-bold bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
 				>
-					{$t('auth.verifyEmail.backToLogin')}
+					{t('auth.verifyEmail.backToLogin')}
 				</button>
 			{:else if status === 'success'}
 				<button
-					on:click={() => goto('/login')}
+					onclick={() => goto('/login')}
 					class="w-full py-3 rounded-xl font-bold idol-gradient text-white shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer"
 				>
-					{$t('auth.verifyEmail.goToLogin')}
+					{t('auth.verifyEmail.goToLogin')}
 				</button>
 			{/if}
 		</div>

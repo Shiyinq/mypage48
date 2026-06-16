@@ -1,254 +1,312 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-	import { Equal, RotateCcw, ArrowLeft, Heart } from 'lucide-svelte';
+	import { onMount, onDestroy } from 'svelte';
+	import { Equal, RotateCcw, ArrowLeft, Heart, ChevronLeft } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import type { Member } from '$lib/apis/members';
 	import { fade } from 'svelte/transition';
 	import { getMemberFrame } from '$lib/constants';
+	import { OptimizedImage } from '$lib/components/common';
+	import { isImmersive } from '$lib/stores';
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
-	export let numQuestion: number;
-	export let displayProgress: number;
-	export let leftMember: Member | null = null;
-	export let rightMember: Member | null = null;
-	export let isAnimating = false;
-	export let lastSelectedSide: 'left' | 'right' | 'tie' | null = null;
-	export let hasHistory = false;
-	export let variant: 'public' | 'theater' = 'public';
-
-	function handleImageError(e: Event) {
-		const target = e.currentTarget as HTMLImageElement;
-		target.src = 'https://placehold.co/640x960?text=JKT48';
+	interface Props {
+		numQuestion: number;
+		displayProgress: number;
+		leftMember?: Member | null;
+		rightMember?: Member | null;
+		isAnimating?: boolean;
+		lastSelectedSide?: 'left' | 'right' | 'tie' | null;
+		hasHistory?: boolean;
+		variant?: 'public' | 'theater';
+		onselect?: (flag: number) => void;
+		onundo?: () => void;
+		onexit?: () => void;
 	}
 
+	let {
+		numQuestion,
+		displayProgress,
+		leftMember = null,
+		rightMember = null,
+		isAnimating = false,
+		lastSelectedSide = null,
+		hasHistory = false,
+		variant = 'public',
+		onselect,
+		onundo,
+		onexit
+	}: Props = $props();
+
 	function handleSelect(flag: number) {
-		dispatch('select', flag);
+		onselect?.(flag);
 	}
 
 	function undo() {
-		dispatch('undo');
+		onundo?.();
 	}
 
 	function restart() {
-		dispatch('exit');
+		onexit?.();
 	}
 
-	$: isPublic = variant === 'public';
+	let isPublic = $derived(variant === 'public');
+
+	onMount(() => {
+		isImmersive.set(true);
+		if (typeof window !== 'undefined') {
+			document.body.style.overflow = 'hidden';
+		}
+	});
+
+	onDestroy(() => {
+		isImmersive.set(false);
+		if (typeof window !== 'undefined') {
+			document.body.style.overflow = '';
+		}
+	});
 </script>
 
 <div
+	class="fixed inset-0 bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 flex flex-col overflow-hidden z-[40]"
 	in:fade
-	class="w-full max-w-2xl px-4 sm:px-4 space-y-6 flex flex-col items-center overflow-hidden"
 >
-	<div class="w-full space-y-2">
-		<div class="flex justify-between items-end px-2">
-			<div class="space-y-0.5">
-				<h2
-					class={`font-black text-lg uppercase tracking-tighter ${isPublic ? 'text-slate-900 dark:text-white' : 'text-themed'}`}
-				>
-					{$t('theater.sorter.sorting')}
-				</h2>
-				<p
-					class={`text-[8px] font-black uppercase tracking-widest ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
-				>
-					{$t('theater.sorter.questionLabel', { num: numQuestion })}
-				</p>
-			</div>
-			<div class="text-right">
-				<span
-					class={`font-black text-2xl italic tracking-tighter ${isPublic ? 'text-red-600' : 'text-rose-500'}`}
-					>{displayProgress}%</span
-				>
-			</div>
-		</div>
-		<div
-			class="h-3 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden p-1 shadow-inner ring-1 ring-slate-100 dark:ring-zinc-700"
-		>
-			<div
-				class={`h-full bg-gradient-to-r transition-all duration-500 ease-out rounded-full shadow-lg ${isPublic ? 'from-red-500 to-red-600 shadow-red-500/40' : 'from-rose-500 to-rose-600 shadow-rose-500/40'}`}
-				style="width: {displayProgress}%"
-			></div>
-		</div>
-	</div>
-
+	<!-- Dedicated Top Navbar -->
 	<div
-		class={`grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 md:gap-8 w-full max-w-2xl ${isPublic ? '' : 'flex-none flex flex-col justify-center min-h-0 py-1'}`}
+		class="h-14 border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between px-4 z-50 shrink-0"
 	>
-		<button
-			on:click={() => handleSelect(1)}
-			disabled={isAnimating}
-			class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-2 md:border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl mx-auto w-full max-w-[135px] md:max-w-none ${
-				isPublic
-					? 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-500/20'
-					: 'hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-500/20 h-full max-h-[47vh] min-h-[150px] md:min-h-[225px]'
-			} ${
-				lastSelectedSide === 'left' || lastSelectedSide === 'tie'
-					? 'win-animation'
-					: lastSelectedSide === 'right'
-						? 'lose-animation'
-						: ''
-			}`}
-		>
-			<img
-				src={getExternalMediaUrl(leftMember?.img)}
-				alt={leftMember?.name}
-				class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-				on:error={handleImageError}
-			/>
-			<img
-				src={getMemberFrame(leftMember?.member_type)}
-				alt="frame"
-				class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
-			/>
-			<div
-				class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
-			></div>
-			<div class="absolute bottom-3 left-3 right-3 text-left z-30">
-				<span
-					class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
-					>{$t('theater.sorter.genLabel', { gen: leftMember?.generation ?? '' })}</span
+		<div class="flex items-center gap-4">
+			<button
+				onclick={restart}
+				class="flex items-center gap-2 text-slate-900 dark:text-white hover:text-red-600 dark:hover:text-red-400 transition-colors bg-transparent border-none p-0 cursor-pointer font-bold"
+			>
+				<ChevronLeft size={20} />
+				<span class="font-black tracking-tighter text-lg"
+					>Oshi <span class={isPublic ? 'text-red-600 italic' : 'text-rose-500 italic'}>Sorter</span
+					></span
 				>
-				<h3 class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md truncate">
-					{leftMember?.name}
-				</h3>
+			</button>
+			<div class="hidden sm:h-4 sm:w-px sm:bg-gray-200 sm:dark:border-zinc-800"></div>
+			<div
+				class={`hidden xs:flex items-center gap-2 px-3 py-1 rounded-full ${isPublic ? 'bg-red-50 dark:bg-red-500/10' : 'bg-rose-50 dark:bg-rose-500/10'}`}
+			>
+				<span
+					class={`text-[10px] font-black uppercase tracking-widest ${isPublic ? 'text-red-600 dark:text-red-400' : 'text-rose-500 dark:text-rose-400'}`}
+					>{t('theater.sorter.sorting')}</span
+				>
 			</div>
-
-			{#if lastSelectedSide === 'left' || lastSelectedSide === 'tie'}
-				<div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-					<Heart
-						class={`fill-current w-16 h-16 heart-float ${isPublic ? 'text-red-500' : 'text-rose-500'}`}
-					/>
-				</div>
-			{:else if lastSelectedSide === 'right'}
-				<div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-					<div class="w-16 h-16 heart-break flex items-center justify-center">
-						<svg viewBox="0 0 24 24" class="w-full h-full drop-shadow-lg">
-							<path
-								d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-								fill="#94a3b8"
-							/>
-							<path
-								d="M12 5l-2 3 4 3-3 4 3 3-2 3"
-								stroke="white"
-								stroke-width="2"
-								fill="none"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-					</div>
-				</div>
-			{/if}
-		</button>
-
-		<div
-			class={`z-10 w-6 h-6 md:w-10 md:h-10 flex items-center justify-center bg-white dark:bg-zinc-900 rounded-full shadow-2xl border md:border-4 font-black italic text-[6px] md:text-[10px] ${
-				isPublic
-					? 'border-red-600 text-red-600 animate-pulse'
-					: 'border-rose-500 text-rose-500 animate-bounce-slow'
-			} ${isAnimating ? 'vs-pulse' : ''}`}
-		>
-			VS
 		</div>
 
-		<button
-			on:click={() => handleSelect(-1)}
-			disabled={isAnimating}
-			class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-2 md:border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl mx-auto w-full max-w-[135px] md:max-w-none ${
-				isPublic
-					? 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-500/20'
-					: 'hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-500/20 h-full max-h-[47vh] min-h-[150px] md:min-h-[225px]'
-			} ${
-				lastSelectedSide === 'right' || lastSelectedSide === 'tie'
-					? 'win-animation'
-					: lastSelectedSide === 'left'
-						? 'lose-animation'
-						: ''
-			}`}
-		>
-			<img
-				src={getExternalMediaUrl(rightMember?.img)}
-				alt={rightMember?.name}
-				class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-				on:error={handleImageError}
-			/>
-			<img
-				src={getMemberFrame(rightMember?.member_type)}
-				alt="frame"
-				class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
-			/>
-			<div
-				class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
-			></div>
-			<div class="absolute bottom-3 left-3 right-3 text-left z-30">
-				<span
-					class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
-					>{$t('theater.sorter.genLabel', { gen: rightMember?.generation ?? '' })}</span
-				>
-				<h3 class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md truncate">
-					{rightMember?.name}
-				</h3>
-			</div>
-
-			{#if lastSelectedSide === 'right' || lastSelectedSide === 'tie'}
-				<div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-					<Heart
-						class={`fill-current w-16 h-16 heart-float ${isPublic ? 'text-red-500' : 'text-rose-500'}`}
-					/>
-				</div>
-			{:else if lastSelectedSide === 'left'}
-				<div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-					<div class="w-16 h-16 heart-break flex items-center justify-center">
-						<svg viewBox="0 0 24 24" class="w-full h-full drop-shadow-lg">
-							<path
-								d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-								fill="#94a3b8"
-							/>
-							<path
-								d="M12 5l-2 3 4 3-3 4 3 3-2 3"
-								stroke="white"
-								stroke-width="2"
-								fill="none"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-					</div>
-				</div>
-			{/if}
-		</button>
+		<div class="flex items-center gap-2">
+			<span class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+				{t('theater.sorter.questionLabel', { num: numQuestion })}
+			</span>
+		</div>
 	</div>
 
-	<div class="mt-4 md:mt-6 flex justify-center w-full">
-		<div
-			class="flex items-center gap-1 md:gap-2 p-1 bg-zinc-50/50 dark:bg-zinc-900/40 backdrop-blur-sm rounded-full shadow-inner border border-zinc-200/50 dark:border-zinc-800/40 w-fit max-w-full overflow-x-auto scrollbar-hide no-scrollbar"
-		>
-			<button
-				on:click={() => handleSelect(0)}
-				disabled={isAnimating}
-				class="h-10 md:h-11 px-4 md:px-6 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-900 dark:text-white font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 shadow-sm border border-zinc-100 dark:border-zinc-700"
+	<!-- Scrollable content area -->
+	<div class="flex-1 overflow-y-auto px-4 py-8 flex flex-col items-center justify-center">
+		<div class="w-full max-w-2xl space-y-6 flex flex-col items-center pb-12">
+			<div class="w-full space-y-2">
+				<div class="flex justify-between items-end px-2">
+					<div class="space-y-0.5">
+						<span
+							class={`text-xs font-black uppercase tracking-widest ${isPublic ? 'text-slate-400' : 'text-themed-secondary'}`}
+						>
+							{t('theater.sorter.sorting')} ({displayProgress}%)
+						</span>
+					</div>
+				</div>
+				<div
+					class="h-3 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden p-1 shadow-inner ring-1 ring-slate-100 dark:ring-zinc-700"
+				>
+					<div
+						class={`h-full bg-gradient-to-r transition-all duration-500 ease-out rounded-full shadow-lg ${isPublic ? 'from-red-500 to-red-600 shadow-red-500/40' : 'from-rose-500 to-rose-600 shadow-rose-500/40'}`}
+						style="width: {displayProgress}%"
+					></div>
+				</div>
+			</div>
+
+			<div
+				class={`grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 md:gap-8 w-full max-w-2xl ${isPublic ? '' : 'flex-none flex flex-col justify-center min-h-0 py-1'}`}
 			>
-				<Equal size={16} />
-				{$t('theater.sorter.tie')}
-			</button>
-			<button
-				on:click={undo}
-				disabled={!hasHistory || isAnimating}
-				class="h-10 md:h-11 px-4 md:px-6 bg-amber-50 dark:bg-amber-950/20 text-amber-600 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer disabled:opacity-30 whitespace-nowrap flex items-center gap-1.5 shadow-sm border border-amber-100/50 dark:border-amber-900/20"
-			>
-				<RotateCcw size={16} />
-				{$t('theater.sorter.undo')}
-			</button>
-			<button
-				on:click={restart}
-				class={`h-10 md:h-11 px-4 md:px-6 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${isPublic ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20' : 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20'}`}
-			>
-				<ArrowLeft size={16} />
-				{$t('theater.sorter.exit')}
-			</button>
+				<button
+					onclick={() => handleSelect(1)}
+					disabled={isAnimating}
+					class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-2 md:border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl mx-auto w-full max-w-[135px] md:max-w-none ${
+						isPublic
+							? 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-500/20'
+							: 'hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-500/20 h-full max-h-[47vh] min-h-[150px] md:min-h-[225px]'
+					} ${
+						lastSelectedSide === 'left' || lastSelectedSide === 'tie'
+							? 'win-animation'
+							: lastSelectedSide === 'right'
+								? 'lose-animation'
+								: ''
+					}`}
+				>
+					<OptimizedImage
+						src={getExternalMediaUrl(leftMember?.img) || ''}
+						alt={leftMember?.name || ''}
+						class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+					/>
+					<img
+						src={getMemberFrame(leftMember?.member_type) || ''}
+						alt="member frame"
+						class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
+					/>
+					<div
+						class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
+					></div>
+					<div class="absolute bottom-3 left-3 right-3 text-left z-30">
+						<span
+							class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
+							>{t('theater.sorter.genLabel', { gen: leftMember?.generation ?? '' })}</span
+						>
+						<h3
+							class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md line-clamp-2"
+						>
+							{leftMember?.name}
+						</h3>
+					</div>
+
+					{#if lastSelectedSide === 'left' || lastSelectedSide === 'tie'}
+						<div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+							<Heart
+								class={`fill-current w-16 h-16 heart-float ${isPublic ? 'text-red-500' : 'text-rose-500'}`}
+							/>
+						</div>
+					{:else if lastSelectedSide === 'right'}
+						<div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+							<div class="w-16 h-16 heart-break flex items-center justify-center">
+								<svg viewBox="0 0 24 24" class="w-full h-full drop-shadow-lg">
+									<path
+										d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+										fill="#94a3b8"
+									/>
+									<path
+										d="M12 5l-2 3 4 3-3 4 3 3-2 3"
+										stroke="white"
+										stroke-width="2"
+										fill="none"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							</div>
+						</div>
+					{/if}
+				</button>
+
+				<div
+					class={`z-10 w-6 h-6 md:w-10 md:h-10 flex items-center justify-center bg-white dark:bg-zinc-900 rounded-full shadow-2xl border md:border-4 font-black italic text-[6px] md:text-[10px] ${
+						isPublic
+							? 'border-red-600 text-red-600 animate-pulse'
+							: 'border-rose-500 text-rose-500 animate-bounce-slow'
+					} ${isAnimating ? 'vs-pulse' : ''}`}
+				>
+					VS
+				</div>
+
+				<button
+					onclick={() => handleSelect(-1)}
+					disabled={isAnimating}
+					class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-2 md:border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl mx-auto w-full max-w-[135px] md:max-w-none ${
+						isPublic
+							? 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-500/20'
+							: 'hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-500/20 h-full max-h-[47vh] min-h-[150px] md:min-h-[225px]'
+					} ${
+						lastSelectedSide === 'right' || lastSelectedSide === 'tie'
+							? 'win-animation'
+							: lastSelectedSide === 'left'
+								? 'lose-animation'
+								: ''
+					}`}
+				>
+					<OptimizedImage
+						src={getExternalMediaUrl(rightMember?.img) || ''}
+						alt={rightMember?.name || ''}
+						class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+					/>
+					<img
+						src={getMemberFrame(rightMember?.member_type) || ''}
+						alt="member frame"
+						class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
+					/>
+					<div
+						class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
+					></div>
+					<div class="absolute bottom-3 left-3 right-3 text-left z-30">
+						<span
+							class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
+							>{t('theater.sorter.genLabel', { gen: rightMember?.generation ?? '' })}</span
+						>
+						<h3
+							class="text-white text-xs md:text-sm font-black leading-tight drop-shadow-md line-clamp-2"
+						>
+							{rightMember?.name}
+						</h3>
+					</div>
+
+					{#if lastSelectedSide === 'right' || lastSelectedSide === 'tie'}
+						<div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+							<Heart
+								class={`fill-current w-16 h-16 heart-float ${isPublic ? 'text-red-500' : 'text-rose-500'}`}
+							/>
+						</div>
+					{:else if lastSelectedSide === 'left'}
+						<div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+							<div class="w-16 h-16 heart-break flex items-center justify-center">
+								<svg viewBox="0 0 24 24" class="w-full h-full drop-shadow-lg">
+									<path
+										d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+										fill="#94a3b8"
+									/>
+									<path
+										d="M12 5l-2 3 4 3-3 4 3 3-2 3"
+										stroke="white"
+										stroke-width="2"
+										fill="none"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							</div>
+						</div>
+					{/if}
+				</button>
+			</div>
+
+			<div class="mt-4 md:mt-6 flex justify-center w-full">
+				<div
+					class="flex items-center gap-1 md:gap-2 p-1 bg-zinc-50/50 dark:bg-zinc-900/40 backdrop-blur-sm rounded-full shadow-inner border border-zinc-200/50 dark:border-zinc-800/40 w-fit max-w-full overflow-x-auto scrollbar-hide no-scrollbar"
+				>
+					<button
+						onclick={() => handleSelect(0)}
+						disabled={isAnimating}
+						class="h-10 md:h-11 px-4 md:px-6 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-900 dark:text-white font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 shadow-sm border border-zinc-100 dark:border-zinc-700"
+					>
+						<Equal size={16} />
+						{t('theater.sorter.tie')}
+					</button>
+					<button
+						onclick={undo}
+						disabled={!hasHistory || isAnimating}
+						class="h-10 md:h-11 px-4 md:px-6 bg-amber-50 dark:bg-amber-950/20 text-amber-600 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer disabled:opacity-30 whitespace-nowrap flex items-center gap-1.5 shadow-sm border border-amber-100/50 dark:border-amber-900/20"
+					>
+						<RotateCcw size={16} />
+						{t('theater.sorter.undo')}
+					</button>
+					<button
+						onclick={restart}
+						class={`h-10 md:h-11 px-4 md:px-6 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${isPublic ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20' : 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20'}`}
+					>
+						<ArrowLeft size={16} />
+						{t('theater.sorter.exit')}
+					</button>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

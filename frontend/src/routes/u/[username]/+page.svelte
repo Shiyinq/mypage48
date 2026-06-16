@@ -1,14 +1,13 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	export let params: Record<string, string> | undefined = undefined;
-	import { page } from '$app/stores';
+	import { invalidateAll } from '$app/navigation';
 	import { SEO } from '$lib/components';
 	import { Ticket } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { spring } from 'svelte/motion';
-	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 
-	import { userProfile, showToast, storageStore } from '$lib/stores';
+	import { userProfile, showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import {
 		validateImageFile,
@@ -19,25 +18,29 @@
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
 	import PublicProfileHeader from '$lib/components/public-profile/PublicProfileHeader.svelte';
 	import PublicProfileStats from '$lib/components/public-profile/PublicProfileStats.svelte';
-	import PublicProfileRecentActivity from '$lib/components/public-profile/PublicProfileRecentActivity.svelte';
+	import PublicProfileTopTwoShot from '$lib/components/public-profile/PublicProfileTopTwoShot.svelte';
+	import PublicProfileTopSetlists from '$lib/components/public-profile/PublicProfileTopSetlists.svelte';
 	import PublicProfileSeatMap from '$lib/components/public-profile/PublicProfileSeatMap.svelte';
-	import ProfilePictureUploadModal from '$lib/components/public-profile/ProfilePictureUploadModal.svelte';
+	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	const { t } = useTranslation();
-	$: ({ profile } = data);
+	let { profile } = $derived(data);
 
-	let fileInput: HTMLInputElement | undefined;
-	let isUploading = false;
+	let fileInput: HTMLInputElement | undefined = $state();
 
 	// Preview modal state
-	let showPreviewModal = false;
-	let previewImage: string | null = null;
+	let showPreviewModal = $state(false);
+	let previewImage: string | null = $state(null);
 
 	// Validation alert modal state
-	let showValidationAlert = false;
-	let validationAlertMessage = '';
+	let showValidationAlert = $state(false);
+	let validationAlertMessage = $state('');
 
 	async function handleFileSelect(event: Event) {
 		const target = event.target as HTMLInputElement;
@@ -47,7 +50,7 @@
 		// Validate file before processing
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			if (fileInput) fileInput.value = '';
 			return;
@@ -67,7 +70,7 @@
 			showPreviewModal = true;
 		} catch (error) {
 			logger.error('Failed to read file', error, { context: 'PublicProfilePage' });
-			validationAlertMessage = $t('publicProfile.uploadError');
+			validationAlertMessage = t('publicProfile.uploadError');
 			showValidationAlert = true;
 		} finally {
 			// Reset input so the same file can be selected again
@@ -80,59 +83,56 @@
 		previewImage = null;
 	}
 
-	async function confirmUpload() {
-		if (!previewImage) return;
+	async function confirmUpload(croppedBase64: string) {
+		if (!croppedBase64) return;
 
 		// Validate base64 image (type and size)
-		const validation = validateBase64Image(previewImage);
+		const validation = validateBase64Image(croppedBase64);
 		if (!validation.valid) {
-			validationAlertMessage = $t(getValidationErrorI18nKey(validation.error));
+			validationAlertMessage = t(getValidationErrorI18nKey(validation.error));
 			showValidationAlert = true;
 			return;
 		}
 
-		isUploading = true;
+		// Close modal immediately so user sees the loading state on the avatar
+		closePreviewModal();
+
 		try {
-			// Upload image to storage first
-			const uploadResult = await storageStore.uploadImage(previewImage, 'avatar');
+			// Update avatar using the store (handles upload and profile update)
+			await userProfile.updateAvatar(croppedBase64);
 
-			// Save filename to profile
-			await userProfile.updateAvatar(uploadResult.filename);
+			// Refresh page data to show new avatar
+			await invalidateAll();
 
-			// Update local state with presigned URL for immediate feedback
-			profile.profilePicture = uploadResult.url;
-
-			// Close modal and show success toast
-			closePreviewModal();
-			showToast($t('settings.publicProfile.uploadSuccess'), 'success');
+			showToast(t('settings.publicProfile.uploadSuccess'), 'success');
 		} catch (error: unknown) {
 			logger.error('Failed to upload profile picture', error, { context: 'PublicProfilePage' });
 			const errorMessage = getErrorMessage(error);
-			showToast(errorMessage || $t('settings.publicProfile.uploadError'), 'error');
-		} finally {
-			isUploading = false;
+			showToast(errorMessage || t('settings.publicProfile.uploadError'), 'error');
 		}
 	}
 
 	// Prepare data for Seat Map
-	let rowStats = { counts: {}, maxCount: 0, uniqueVisited: 0 };
-	let seatStats = {};
+	let rowStats = $state({ counts: {}, maxCount: 0, uniqueVisited: 0 });
+	let seatStats = $state({});
 
-	$: if (profile?.stats) {
-		const counts = profile.stats.rowCounts || {};
-		const maxCount = Math.max(...Object.values(counts).map(Number), 0);
-		const uniqueVisited = Object.keys(counts).length;
+	$effect(() => {
+		if (profile?.stats) {
+			const counts = profile.stats.rowCounts || {};
+			const maxCount = Math.max(...Object.values(counts).map(Number), 0);
+			const uniqueVisited = Object.keys(counts).length;
 
-		rowStats = {
-			counts,
-			maxCount,
-			uniqueVisited
-		};
-		seatStats = profile.stats.seatCounts || {};
-	}
+			rowStats = {
+				counts,
+				maxCount,
+				uniqueVisited
+			};
+			seatStats = profile.stats.seatCounts || {};
+		}
+	});
 
-	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
-	let scrollY = 0;
+	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
+	let scrollY = $state(0);
 </script>
 
 <SEO
@@ -145,34 +145,34 @@
 <div
 	class="min-h-screen relative overflow-hidden bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 selection:bg-red-500/20"
 >
-	<AnimatedBackground hideDecorationsOnMobile={true} interactive={true} bind:mouse bind:scrollY />
+	<AppBackground hideDecorationsOnMobile={true} interactive={true} bind:mouse bind:scrollY />
 
-	<div class="relative max-w-4xl mx-auto p-4 md:p-8 pb-24 z-10 animate-fade-in space-y-8">
+	<div class="relative max-w-6xl mx-auto p-4 md:p-8 pb-24 z-10 animate-fade-in space-y-8">
 		<!-- Hidden File Input -->
 		<input
 			type="file"
 			accept="image/*"
 			class="hidden"
 			bind:this={fileInput}
-			on:change={handleFileSelect}
+			onchange={handleFileSelect}
 		/>
 
 		<!-- Header Section -->
 		<PublicProfileHeader
 			{profile}
-			isCurrentUser={!!($userProfile.data && $userProfile.data.username === profile.username)}
-			{isUploading}
-			on:triggerUpload={() => fileInput?.click()}
+			isCurrentUser={!!(userProfile.data && userProfile.data.username === profile.username)}
+			isUploading={userProfile.isUpdatingAvatar}
+			ontriggerUpload={() => fileInput?.click()}
 		/>
 
 		<!-- Stats Section -->
 		{#if profile.stats}
-			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				<!-- Main Stats Grid -->
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 items-stretch">
 				<PublicProfileStats stats={profile.stats} year={profile.publicYear} />
-
-				<!-- Activity Feed -->
-				<PublicProfileRecentActivity recentActivity={profile.stats.recentActivity} />
+				<PublicProfileTopTwoShot topTwoShots={profile.stats.topTwoShots} />
+				<div class="md:col-span-2 lg:col-span-1">
+					<PublicProfileTopSetlists showCounts={profile.stats.showCounts} />
+				</div>
 			</div>
 
 			<!-- Theater Seat Map -->
@@ -202,18 +202,13 @@
 
 <!-- Profile Picture Preview Modal -->
 {#if showPreviewModal && previewImage}
-	<ProfilePictureUploadModal
-		{previewImage}
-		{isUploading}
-		on:close={closePreviewModal}
-		on:save={confirmUpload}
-	/>
+	<ImageCropperModal imageUrl={previewImage} onClose={closePreviewModal} onSave={confirmUpload} />
 {/if}
 
 <!-- Validation Alert Modal -->
 <ValidationAlertModal
 	show={showValidationAlert}
-	title={$t('validation.alert.title')}
+	title={t('validation.alert.title')}
 	message={validationAlertMessage}
 	onClose={() => (showValidationAlert = false)}
 />

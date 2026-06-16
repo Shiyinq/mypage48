@@ -29,18 +29,27 @@ export interface Ticket {
 	created_at: string;
 	updated_at: string;
 	imageUrl?: string; // Kept for local UI display functionality
+	imageUrl_medium?: string;
+	imageUrl_small?: string;
+	blurHash?: string;
 	notes?: string; // User's personal notes/diary for the show
+	is_favorite?: boolean;
 	two_shot?: {
 		imageUrl?: string;
+		imageUrl_medium?: string;
+		imageUrl_small?: string;
+		blurHash?: string;
 		member_name: string;
 		type: 'Roulette' | 'Birthday';
 		price: number;
+		is_favorite?: boolean;
 	} | null;
 }
 
 export interface TicketFilters {
 	title?: string;
 	hasTwoShot?: boolean;
+	isFavorite?: boolean;
 	days?: string[];
 	startDate?: string;
 	endDate?: string;

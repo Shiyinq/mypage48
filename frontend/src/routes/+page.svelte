@@ -6,16 +6,20 @@
 	import SplashScreen from '$lib/components/SplashScreen.svelte';
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
 
-	let mounted = false;
+	let { data }: Props = $props();
+
+	let mounted = $state(false);
 
 	onMount(() => {
 		mounted = true;
 	});
 </script>
 
-{#if $isAuthenticated}
+{#if isAuthenticated.value}
 	<DashboardView />
 {:else if data.hasSession && !mounted}
 	<!-- Prevent flash of landing page if likely authenticated but not yet hydrated -->

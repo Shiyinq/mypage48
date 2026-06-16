@@ -1,6 +1,6 @@
 import asyncio
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus, urljoin
 
@@ -45,7 +45,7 @@ class LiveService:
 
     async def get_live_status(self) -> LiveResponse:
         """Get unified live status from Showroom and IDN"""
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         if "data" in self._cache:
             updated_at = self._cache.get("updated_at")
             if updated_at and (now - updated_at).total_seconds() < self._cache_ttl:
@@ -105,42 +105,64 @@ class LiveService:
                 results = []
                 for room in all_rooms:
                     key = room.get("room_url_key")
-                    if key in member_map:
-                        member = member_map[key]
+                    if key in member_map or key == "officialJKT48":
+                        if key in member_map:
+                            member_data = member_map[key]
+                            member = LiveMember(
+                                id=member_data["id"],
+                                name=member_data["name"],
+                                nickname=member_data.get("nickname"),
+                                img=member_data.get("img"),
+                            )
+                        else:
+                            # Fallback for official account
+                            member = LiveMember(
+                                id=f"temp_sr_{key}",
+                                name=room.get("main_name", "JKT48 Official"),
+                                nickname="officialJKT48",
+                                img=room.get("image")
+                                or "/media/news/migrated/jkt48logo.jpg",
+                            )
+
                         results.append(
                             LiveStatus(
                                 platform="showroom",
                                 room_id=str(room.get("room_id")),
                                 room_url_key=key,
+                                live_id=f"{room.get('room_id')}-{room.get('started_at')}"
+                                if room.get("started_at")
+                                else None,
                                 title=room.get("main_name"),
                                 view_num=room.get("view_num", 0),
                                 image=room.get("image"),
-                                start_at=datetime.fromtimestamp(room.get("started_at"))
+                                start_at=datetime.fromtimestamp(
+                                    room.get("started_at"), tz=timezone.utc
+                                )
                                 if room.get("started_at")
                                 else None,
-                                member=LiveMember(
-                                    id=member["id"],
-                                    name=member["name"],
-                                    nickname=member.get("nickname"),
-                                    img=member.get("img"),
-                                ),
+                                member=member,
                             )
                         )
 
                 # DEBUG MOCK: If no JKT48 members are live, take up to 8 Showroom lives for testing multi-view
                 if self.config.is_env_dev and not results and all_rooms:
-                    for room in all_rooms[:8]:
+                    for room in all_rooms[:1]:
                         results.append(
                             LiveStatus(
                                 platform="showroom",
                                 room_id=str(room.get("room_id")),
                                 room_url_key=room.get("room_url_key"),
+                                live_id=f"{room.get('room_id')}-{room.get('started_at')}"
+                                if room.get("started_at")
+                                else None,
                                 title=f"[DEBUG] {room.get('main_name')}",
                                 view_num=room.get("view_num", 0),
                                 image=room.get("image"),
-                                start_at=datetime.fromtimestamp(room.get("started_at"))
+                                start_at=datetime.fromtimestamp(
+                                    room.get("started_at"), tz=timezone.utc
+                                )
                                 if room.get("started_at")
-                                else datetime.now(),
+                                else datetime.now(timezone.utc),
                                 member=LiveMember(
                                     id=f"debug_{room.get('room_id')}",
                                     name=room.get("main_name"),
@@ -177,18 +199,48 @@ class LiveService:
           }
         }
         """
-        variables = {"page": 1}
         try:
             async with httpx.AsyncClient() as client:
-                res = await client.post(
-                    url, json={"query": query, "variables": variables}, timeout=30.0
-                )
-                res.raise_for_status()
-                data = res.json()
+                # Fetch first 4 pages concurrently to ensure we capture all active streams
+                tasks = []
+                for page in range(1, 5):
+                    tasks.append(
+                        client.post(
+                            url,
+                            json={"query": query, "variables": {"page": page}},
+                            timeout=30.0,
+                        )
+                    )
 
-                streams = data.get("data", {}).get("getLivestreams", [])
-                if not streams:
+                responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+                raw_streams = []
+                for res in responses:
+                    if isinstance(res, Exception):
+                        logger.warning(f"Failed to fetch IDN page: {res}")
+                        continue
+                    try:
+                        res.raise_for_status()
+                        res_data = res.json()
+                        page_streams = res_data.get("data", {}).get(
+                            "getLivestreams", []
+                        )
+                        if page_streams:
+                            raw_streams.extend(page_streams)
+                    except Exception as parse_err:
+                        logger.warning(f"Error parsing IDN response page: {parse_err}")
+
+                if not raw_streams:
                     return []
+
+                # Deduplicate streams by slug
+                seen_slugs = set()
+                streams = []
+                for s in raw_streams:
+                    slug = s.get("slug")
+                    if slug and slug not in seen_slugs:
+                        seen_slugs.add(slug)
+                        streams.append(s)
 
                 # Fetch all members to match
                 active_members = await self.member_repository.find_all(limit=500)
@@ -240,7 +292,7 @@ class LiveService:
                                 view_num=stream.get("view_count") or 0,
                                 start_at=datetime.fromisoformat(
                                     stream.get("live_at").replace("Z", "+00:00")
-                                )
+                                ).astimezone(timezone.utc)
                                 if stream.get("live_at")
                                 else None,
                                 streaming_url=streaming_urls,
@@ -279,7 +331,7 @@ class LiveService:
                                     view_num=stream.get("view_count") or 0,
                                     start_at=datetime.fromisoformat(
                                         stream.get("live_at").replace("Z", "+00:00")
-                                    )
+                                    ).astimezone(timezone.utc)
                                     if stream.get("live_at")
                                     else None,
                                     streaming_url=streaming_urls,
@@ -288,7 +340,7 @@ class LiveService:
                                         "username"
                                     ),
                                     member=LiveMember(
-                                        id=f"temp_{username}",
+                                        id=username,
                                         name=creator_name,
                                         nickname=creator_name.split(" ")[0],
                                         img=stream.get("creator", {}).get("avatar")
@@ -312,9 +364,9 @@ class LiveService:
                             view_num=stream.get("view_count") or 0,
                             start_at=datetime.fromisoformat(
                                 stream.get("live_at").replace("Z", "+00:00")
-                            )
+                            ).astimezone(timezone.utc)
                             if stream.get("live_at")
-                            else datetime.now(),
+                            else datetime.now(timezone.utc),
                             streaming_url=[
                                 LiveStreamingURL(
                                     url=stream.get("playback_url"),
@@ -345,8 +397,9 @@ class LiveService:
     async def get_streaming_url(self, platform: str, id: str) -> LiveStreamInfo:
         """Get streaming URL and room info for a specific platform and ID"""
         if platform == "showroom":
-            urls = await self.fetch_showroom_streaming_url(id)
-            profile = await self.fetch_showroom_profile(id)
+            actual_room_id = id.split("-")[0] if "-" in id else id
+            urls = await self.fetch_showroom_streaming_url(actual_room_id)
+            profile = await self.fetch_showroom_profile(actual_room_id)
             if not urls:
                 raise StreamingUrlNotFoundError()
             # Get view_num and start_at from unified list
@@ -355,7 +408,7 @@ class LiveService:
             image = None
             lives = await self.fetch_showroom_lives()
             for live in lives:
-                if live.room_id == id:
+                if live.room_id == actual_room_id:
                     view_num = live.view_num
                     start_at = live.start_at
                     image = live.image

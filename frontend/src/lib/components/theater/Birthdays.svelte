@@ -1,39 +1,46 @@
 <script lang="ts">
-	import { writable } from 'svelte/store';
-	import { onMount } from 'svelte';
 	import { Cake } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { BirthdayResponse } from '$lib/apis/members';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { getMemberFrame } from '$lib/constants';
+	import { OptimizedImage } from '$lib/components/common';
+	import { parseIndonesianDate } from '$lib/utils/time';
 
 	const { t, locale } = useTranslation();
 
-	export let birthdays: BirthdayResponse[] = [];
-	export let isLoading = true;
+	interface Props {
+		birthdays?: BirthdayResponse[];
+		isLoading?: boolean;
+	}
 
-	function getBirthdayText(daysUntil: number, t: Function): string {
+	let { birthdays = [], isLoading = true }: Props = $props();
+
+	function getBirthdayText(
+		daysUntil: number,
+		t: (key: string, values?: Record<string, string | number>) => string
+	): string {
 		if (daysUntil === 0) return t('common.today');
 		if (daysUntil === 1) return t('common.tomorrow');
 		return t('theater.birthdays.daysLeft', { days: daysUntil });
 	}
 
 	// Scroll container reference for possible future enhancements like drag-to-scroll
-	let scrollContainer: HTMLElement;
+	let scrollContainer: HTMLElement | undefined = $state();
 </script>
 
 <div class="space-y-4 mb-8">
 	<div class="flex items-center gap-3">
 		<div class="h-8 w-1.5 bg-pink-500 rounded-full"></div>
 		<h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
-			{$t('theater.birthdays.title') || 'Upcoming Birthdays'}
+			{t('theater.birthdays.title') || 'Upcoming Birthdays'}
 		</h2>
 	</div>
 
 	{#if isLoading}
 		<div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-			{#each Array(4) as _}
+			{#each Array(4)}
 				<div class="flex-none w-40 snap-start">
 					<MemberCardSkeleton />
 				</div>
@@ -43,7 +50,7 @@
 		<div
 			class="p-6 rounded-xl bg-gray-100 dark:bg-zinc-800/50 border border-dashed border-gray-300 dark:border-zinc-700 text-center text-gray-500"
 		>
-			{$t('theater.birthdays.empty') || 'No upcoming birthdays in the next 30 days.'}
+			{t('theater.birthdays.empty') || 'No upcoming birthdays in the next 30 days.'}
 		</div>
 	{:else}
 		<div
@@ -56,10 +63,14 @@
 						class="relative group aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-sm hover:shadow-md transition-all mb-2"
 					>
 						{#if member.img}
-							<img
+							<OptimizedImage
 								src={getExternalMediaUrl(member.img)}
+								srcMedium={getExternalMediaUrl(member.img_medium)}
+								srcSmall={getExternalMediaUrl(member.img_small)}
+								blurHash={member.blurHash}
 								alt={member.name}
 								class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+								sizes="(max-width: 640px) 40vw, 160px"
 							/>
 						{:else}
 							<div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
@@ -73,7 +84,7 @@
 						<!-- Frame Image Overlay -->
 						<img
 							src={getMemberFrame(member.member_type)}
-							alt="frame"
+							alt="member frame"
 							class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
 						/>
 
@@ -90,7 +101,7 @@
 									? 'bg-pink-500/90 text-white animate-pulse'
 									: 'bg-black/40 text-white'}"
 							>
-								{getBirthdayText(member.days_until, $t)}
+								{getBirthdayText(member.days_until, t)}
 							</span>
 						</div>
 
@@ -99,11 +110,13 @@
 								{member.name}
 							</div>
 							<div class="text-gray-200 text-xs font-medium drop-shadow-sm">
-								{new Date(member.birthdate).getDate()}
-								{new Date(member.birthdate).toLocaleString($locale, { month: 'short' })}
+								{parseIndonesianDate(member.birthdate).getDate()}
+								{parseIndonesianDate(member.birthdate).toLocaleString(locale.value, {
+									month: 'short'
+								})}
 								•
 								{member.age}
-								{$t('member.yearsOld') || 'years old'}
+								{t('member.yearsOld') || 'years old'}
 							</div>
 						</div>
 					</div>

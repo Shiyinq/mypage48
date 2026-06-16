@@ -1,7 +1,5 @@
-import { dashboardStatsData, dashboardFilter } from '$lib/stores/dashboard';
+import { dashboardStatsData, dashboardFilter } from '$lib/stores/dashboard.svelte';
 import { isAuthenticated } from '$lib/stores';
-import { get } from 'svelte/store';
-
 import { browser } from '$app/environment';
 
 export const load = async () => {
@@ -9,9 +7,8 @@ export const load = async () => {
 	if (browser) {
 		// Defer store loading to next tick to avoid SvelteKit warning about using window.fetch during load
 		setTimeout(() => {
-			if (get(isAuthenticated)) {
-				const filter = get(dashboardFilter);
-				dashboardStatsData.load(filter);
+			if (isAuthenticated.value) {
+				dashboardStatsData.load(dashboardFilter);
 			}
 		}, 0);
 	}

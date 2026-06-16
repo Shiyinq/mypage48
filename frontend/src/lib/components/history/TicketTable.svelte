@@ -1,19 +1,32 @@
 <script lang="ts">
-	import { Clock, Pencil, Save, Trash2, X, Ticket as TicketIcon } from 'lucide-svelte';
+	import { Clock, Heart, Pencil, Save, Trash2, X, Ticket as TicketIcon } from 'lucide-svelte';
 	import type { Ticket } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
 	import { cleanseMarkdown } from '$lib/utils/markdown';
-	import { createEventDispatcher } from 'svelte';
+	import { OptimizedImage } from '$lib/components/common';
 
-	export let tickets: Ticket[] = [];
+	interface Props {
+		tickets?: Ticket[];
+		onfavoriteToggle?: (ticketId: string) => void;
+		onupdateNote?: (ticketId: string, note: string) => void;
+		oneditTicket?: (ticket: Ticket) => void;
+		ondeleteTicket?: (ticketId: string) => void;
+	}
+
+	let {
+		tickets = [],
+		onfavoriteToggle,
+		onupdateNote,
+		oneditTicket,
+		ondeleteTicket
+	}: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
-	let editingNoteId: string | null = null;
-	let noteText = '';
+	let editingNoteId: string | null = $state(null);
+	let noteText = $state('');
 
 	function startEditingNote(ticket: Ticket) {
 		editingNoteId = ticket._id;
@@ -22,7 +35,7 @@
 
 	function saveNote(ticket: Ticket) {
 		if (ticket.notes !== noteText) {
-			dispatch('updateNote', { ticketId: ticket._id, note: noteText });
+			onupdateNote?.(ticket._id, noteText);
 		}
 		editingNoteId = null;
 	}
@@ -40,12 +53,12 @@
 				<tr
 					class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 				>
-					<th class="p-4">{$t('history.date')}</th>
-					<th class="p-4">{$t('history.eventDetails')}</th>
-					<th class="p-4">{$t('history.seat')}</th>
-					<th class="p-4">{$t('history.price')}</th>
-					<th class="p-4">{$t('history.notes')}</th>
-					<th class="p-4 text-right">{$t('history.actions')}</th>
+					<th class="p-4">{t('history.date')}</th>
+					<th class="p-4">{t('history.eventDetails')}</th>
+					<th class="p-4">{t('history.seat')}</th>
+					<th class="p-4">{t('history.price')}</th>
+					<th class="p-4">{t('history.notes')}</th>
+					<th class="p-4 text-right">{t('history.actions')}</th>
 				</tr>
 			</thead>
 			<tbody class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700">
@@ -56,7 +69,7 @@
 						<td class="p-4">
 							<div class="flex flex-col">
 								<span class="font-bold text-gray-800 dark:text-gray-200 text-sm">
-									{$formatDate(ticket.event.date, {
+									{formatDate(ticket.event.date, {
 										day: 'numeric',
 										month: 'short',
 										year: '2-digit'
@@ -77,7 +90,15 @@
 									class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-zinc-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-zinc-700"
 								>
 									{#if ticket.imageUrl}
-										<img src={ticket.imageUrl} alt="" class="w-full h-full object-cover" />
+										<OptimizedImage
+											src={ticket.imageUrl}
+											srcMedium={ticket.imageUrl_medium}
+											srcSmall={ticket.imageUrl_small}
+											blurHash={ticket.blurHash}
+											alt={ticket.event.title}
+											class="w-full h-full"
+											sizes="40px"
+										/>
 									{:else}
 										<div
 											class="w-full h-full idol-gradient flex items-center justify-center relative overflow-hidden"
@@ -117,33 +138,42 @@
 						<td class="p-4 w-1/3">
 							{#if editingNoteId === ticket._id}
 								<div class="flex items-center gap-2">
-									<!-- svelte-ignore a11y-autofocus -->
+									<!-- svelte-ignore a11y_autofocus -->
 									<input
 										autofocus
 										bind:value={noteText}
 										class="w-full text-sm text-gray-900 dark:text-gray-100 p-2 border border-red-200 dark:border-red-500/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white dark:bg-zinc-800"
-										on:keydown={(e) => e.key === 'Enter' && saveNote(ticket)}
-										on:blur={() => saveNote(ticket)}
+										onkeydown={(e) => e.key === 'Enter' && saveNote(ticket)}
+										onblur={() => saveNote(ticket)}
 									/>
 									<button
-										on:click|stopPropagation={() => saveNote(ticket)}
+										onclick={(e) => {
+											e.stopPropagation();
+											saveNote(ticket);
+										}}
 										class="p-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 cursor-pointer"
 										><Save class="w-3 h-3" /></button
 									>
 									<button
-										on:click|stopPropagation={cancelEditingNote}
+										onclick={(e) => {
+											e.stopPropagation();
+											cancelEditingNote();
+										}}
 										class="p-1.5 bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-zinc-600 cursor-pointer"
 										><X class="w-3 h-3" /></button
 									>
 								</div>
 							{:else}
-								<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 								<div
-									on:click={() => startEditingNote(ticket)}
+									onclick={() => startEditingNote(ticket)}
+									onkeydown={(e) =>
+										(e.key === 'Enter' || e.key === ' ') && startEditingNote(ticket)}
 									class="text-sm text-gray-500 dark:text-gray-400 italic cursor-pointer hover:text-red-600 flex items-center gap-2 group/note"
+									role="button"
+									tabindex="0"
 								>
 									<span class="line-clamp-1"
-										>{cleanseMarkdown(ticket.notes) || $t('history.addNote')}</span
+										>{cleanseMarkdown(ticket.notes) || t('history.addNote')}</span
 									>
 									<Pencil
 										class="w-3 h-3 opacity-0 group-hover/note:opacity-100 transition-opacity"
@@ -154,13 +184,21 @@
 						<td class="p-4 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<button
-									on:click={() => dispatch('editTicket', ticket)}
-									class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-colors cursor-pointer"
+									onclick={() => onfavoriteToggle?.(ticket._id)}
+									class="p-2 rounded-full transition-colors cursor-pointer hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
+									class:text-gray-400={!ticket.is_favorite}
+									class:text-red-500={ticket.is_favorite}
+								>
+									<Heart class="w-5 h-5" fill={ticket.is_favorite ? 'currentColor' : 'none'} />
+								</button>
+								<button
+									onclick={() => oneditTicket?.(ticket)}
+									class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Pencil class="w-4 h-4" />
 								</button>
 								<button
-									on:click={() => dispatch('deleteTicket', ticket._id)}
+									onclick={() => ondeleteTicket?.(ticket._id)}
 									class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Trash2 class="w-4 h-4" />

@@ -3,40 +3,30 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
 	import type { Member } from '$lib/apis/members';
-	import { fade, scale, fly } from 'svelte/transition';
-	import { quintOut, cubicIn } from 'svelte/easing';
+	import { fade, scale } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 	import { portal } from '$lib/actions/portal';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { tick } from 'svelte';
 	import { getMemberFrame } from '$lib/constants';
+	import { OptimizedImage } from '$lib/components/common';
+	import { parseIndonesianDate } from '$lib/utils/time';
 
-	export let show: boolean = false;
-	let sidebarScrollContainer: HTMLDivElement;
-	export let member: Member | null = null;
-	export let members: Member[] = [];
-	export let loading: boolean = false;
-	export let onClose: () => void;
+	let sidebarScrollContainer: HTMLDivElement | undefined = $state();
+	interface Props {
+		show?: boolean;
+		member?: Member | null;
+		members?: Member[];
+		loading?: boolean;
+		onClose: () => void;
+	}
+
+	let { show = false, member = null, members = [], loading = false, onClose }: Props = $props();
 
 	const { t } = useTranslation();
 
-	let internalMemberId: string | number | null = null;
-	let direction = 1;
-
-	$: if (show && member && !internalMemberId) {
-		internalMemberId = member.id;
-	}
-
-	$: if (!show) {
-		internalMemberId = null;
-	}
-
-	$: currentMember = members.find((m) => m.id === internalMemberId) || member;
-
-	$: if (activeTab && sidebarScrollContainer) {
-		tick().then(() => {
-			sidebarScrollContainer.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-		});
-	}
+	let internalMemberId: string | number | null = $state(null);
+	let direction = $state(1);
 
 	function selectMember(m: Member) {
 		if (internalMemberId === m.id) return;
@@ -46,28 +36,8 @@
 		internalMemberId = m.id;
 	}
 
-	let activeTab: 'Member' | 'Trainee' = 'Member';
-	let activeTabSetFor: string | number | null = null;
-
-	$: if (show && currentMember && activeTabSetFor !== currentMember.id) {
-		const type = currentMember.member_type?.toLowerCase() || 'member';
-		activeTab = type === 'trainee' ? 'Trainee' : 'Member';
-		activeTabSetFor = currentMember.id;
-	}
-
-	$: if (!show) activeTabSetFor = null;
-
-	$: displayMembers = members.filter((m) => {
-		const type = m.member_type?.toLowerCase() || 'member';
-		if (activeTab === 'Trainee') return type === 'trainee';
-		return type !== 'trainee';
-	});
-
-	$: currentIndex = displayMembers.findIndex((m) => m.id === currentMember?.id);
-	$: nextMember =
-		displayMembers.length > 1 ? displayMembers[(currentIndex + 1) % displayMembers.length] : null;
-	$: nextNextMember =
-		displayMembers.length > 2 ? displayMembers[(currentIndex + 2) % displayMembers.length] : null;
+	let activeTab: 'Member' | 'Trainee' = $state('Member');
+	let activeTabSetFor: string | number | null = $state(null);
 
 	function switchTab(tab: 'Member' | 'Trainee') {
 		if (activeTab === tab) return;
@@ -136,35 +106,6 @@
 		};
 	}
 
-	$: frameImg = getMemberFrame(currentMember?.member_type);
-
-	function parseIndonesianDate(dateStr: string): Date {
-		const monthMap: { [key: string]: string } = {
-			januari: 'January',
-			februari: 'February',
-			maret: 'March',
-			april: 'April',
-			mei: 'May',
-			juni: 'June',
-			juli: 'July',
-			agustus: 'August',
-			september: 'September',
-			oktober: 'October',
-			november: 'November',
-			desember: 'December'
-		};
-
-		const parts = dateStr.split(' ');
-		if (parts.length >= 3) {
-			const day = parts[0];
-			const month = parts[1].toLowerCase();
-			const year = parts[2];
-			const engMonth = monthMap[month] || month;
-			return new Date(`${engMonth} ${day}, ${year}`);
-		}
-		return new Date(dateStr);
-	}
-
 	function calculateAge(birthdateStr: string): number | string {
 		const birthDate = parseIndonesianDate(birthdateStr);
 		if (isNaN(birthDate.getTime())) return 'N/A';
@@ -172,26 +113,75 @@
 		const ageDate = new Date(diffMs);
 		return Math.abs(ageDate.getUTCFullYear() - 1970);
 	}
+	$effect(() => {
+		if (show && member && !internalMemberId) {
+			internalMemberId = member.id;
+		}
+	});
+	$effect(() => {
+		if (!show) {
+			internalMemberId = null;
+		}
+	});
+	let currentMember = $derived(members.find((m) => m.id === internalMemberId) || member);
+	$effect(() => {
+		if (show && currentMember && activeTabSetFor !== currentMember.id) {
+			const type = currentMember.member_type?.toLowerCase() || 'member';
+			activeTab = type === 'trainee' ? 'Trainee' : 'Member';
+			activeTabSetFor = currentMember.id;
+		}
+	});
+	$effect(() => {
+		if (activeTab && sidebarScrollContainer) {
+			tick().then(() => {
+				sidebarScrollContainer?.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+			});
+		}
+	});
+	$effect(() => {
+		if (!show) activeTabSetFor = null;
+	});
+	let displayMembers = $derived(
+		members.filter((m) => {
+			const type = m.member_type?.toLowerCase() || 'member';
+			if (activeTab === 'Trainee') return type === 'trainee';
+			return type !== 'trainee';
+		})
+	);
+	let currentIndex = $derived(displayMembers.findIndex((m) => m.id === currentMember?.id));
+	let nextMember = $derived(
+		displayMembers.length > 1 ? displayMembers[(currentIndex + 1) % displayMembers.length] : null
+	);
+	let nextNextMember = $derived(
+		displayMembers.length > 2 ? displayMembers[(currentIndex + 2) % displayMembers.length] : null
+	);
+	let frameImg = $derived(getMemberFrame(currentMember?.member_type));
 </script>
 
 {#if show}
 	<div
-		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-hidden"
+		class="fixed inset-0 z-[1000] flex items-center justify-center p-4 overflow-hidden"
 		use:portal
 	>
-		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 		<div
 			class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-			on:click={onClose}
+			onclick={onClose}
+			onkeydown={(e) => e.key === 'Escape' && onClose()}
 			transition:fade={{ duration: 200 }}
+			role="button"
+			tabindex="-1"
+			aria-label="Close details"
 		></div>
 
 		<!-- Modal Container -->
-		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 		<div
 			class="relative w-[95vw] max-w-6xl bg-white dark:bg-zinc-900 rounded-[40px] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col md:flex-row h-[85vh] md:h-[75vh] border border-white/20 dark:border-zinc-800/50"
-			on:click|stopPropagation
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
 			transition:scale={{ duration: 400, start: 0.95, easing: quintOut }}
+			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
 		>
 			<!-- Sidebar (Left) -->
 			{#if members.length > 0}
@@ -206,7 +196,7 @@
 							'Member'
 								? 'text-red-500 border-b-2 border-red-500'
 								: 'text-gray-400 dark:text-zinc-500 hover:text-gray-600'}"
-							on:click={() => switchTab('Member')}
+							onclick={() => switchTab('Member')}
 						>
 							Member
 						</button>
@@ -215,7 +205,7 @@
 							'Trainee'
 								? 'text-red-500 border-b-2 border-red-500'
 								: 'text-gray-400 dark:text-zinc-500 hover:text-gray-600'}"
-							on:click={() => switchTab('Trainee')}
+							onclick={() => switchTab('Trainee')}
 						>
 							Trainee
 						</button>
@@ -231,7 +221,7 @@
 									m.id
 										? 'bg-red-500 text-white shadow-lg shadow-red-500/20'
 										: 'bg-white/50 dark:bg-zinc-900/50 md:bg-transparent hover:bg-gray-100 dark:hover:bg-zinc-800/50 text-themed opacity-70 hover:opacity-100 border border-gray-100 dark:border-zinc-800 md:border-none'}"
-									on:click={() => selectMember(m)}
+									onclick={() => selectMember(m)}
 								>
 									<div class="flex items-center gap-2 md:gap-3 whitespace-nowrap">
 										{#if internalMemberId === m.id}
@@ -271,10 +261,10 @@
 								<div
 									class="absolute inset-0 bg-zinc-200 dark:bg-zinc-800 rounded-3xl transform -rotate-3 translate-x-2 translate-y-1 md:-rotate-6 md:translate-x-4 md:translate-y-2 opacity-40 shadow-xl transition-all duration-700 overflow-hidden border-[3px] border-white/50 dark:border-zinc-700/50"
 								>
-									<img
+									<OptimizedImage
 										src={getExternalMediaUrl(nextNextMember.img)}
 										alt=""
-										class="w-full h-full object-cover object-top grayscale opacity-50"
+										class="w-full h-full grayscale opacity-50"
 									/>
 								</div>
 							{/if}
@@ -282,10 +272,10 @@
 								<div
 									class="absolute inset-0 bg-zinc-300 dark:bg-zinc-700 rounded-3xl transform rotate-2 -translate-x-2 translate-y-1 md:rotate-3 md:-translate-x-3 md:translate-y-1 opacity-60 shadow-xl transition-all duration-700 overflow-hidden border-[3px] border-white/50 dark:border-zinc-700/50"
 								>
-									<img
+									<OptimizedImage
 										src={getExternalMediaUrl(nextMember.img)}
 										alt=""
-										class="w-full h-full object-cover object-top grayscale opacity-50"
+										class="w-full h-full grayscale opacity-50"
 									/>
 								</div>
 							{/if}
@@ -300,14 +290,14 @@
 									<div
 										class="relative w-full h-full z-10 rounded-3xl overflow-hidden border-x-0 md:border-[6px] border-white dark:border-zinc-800 shadow-2xl bg-white dark:bg-zinc-800"
 									>
-										<img
+										<OptimizedImage
 											src={getExternalMediaUrl(currentMember.img)}
 											alt={currentMember.name}
-											class="w-full h-full object-cover object-top grayscale-[10%] group-hover:grayscale-0 transition-all duration-700"
+											class="w-full h-full grayscale-[10%] group-hover:grayscale-0 transition-all duration-700"
 										/>
 										<img
 											src={frameImg}
-											alt="frame"
+											alt="member frame"
 											class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 scale-[1.05]"
 										/>
 									</div>
@@ -318,7 +308,7 @@
 						<!-- Mobile Close Button (Top Right of Content) -->
 						<button
 							class="absolute top-4 right-4 bg-white/10 hover:bg-red-600 text-white p-2 rounded-full backdrop-blur-md transition-all duration-300 cursor-pointer md:hidden z-50 shadow-lg border border-white/20"
-							on:click={onClose}
+							onclick={onClose}
 						>
 							<X class="w-4 h-4" />
 						</button>
@@ -331,7 +321,7 @@
 						<!-- Desktop Close Button -->
 						<button
 							class="absolute top-6 right-6 text-gray-300 hover:text-red-500 transition-all duration-300 cursor-pointer hidden md:block hover:rotate-90 z-50"
-							on:click={onClose}
+							onclick={onClose}
 						>
 							<X class="w-6 h-6" />
 						</button>
@@ -388,15 +378,15 @@
 											<p
 												class="text-[9px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 group-hover:text-red-500 transition-colors"
 											>
-												{$t('member.birthdate')}
+												{t('member.birthdate')}
 											</p>
 											<p class="text-sm font-black text-themed leading-tight">
-												{$formatDate(parseIndonesianDate(currentMember.birthdate), {
+												{formatDate(parseIndonesianDate(currentMember.birthdate), {
 													dateStyle: 'medium'
 												})}
 												<span
 													class="text-[10px] text-gray-500 dark:text-zinc-400 font-bold block mt-1 px-2 py-0.5 bg-gray-200/50 dark:bg-zinc-700/50 w-max rounded-full"
-													>{calculateAge(currentMember.birthdate)} {$t('member.yearsOld')}</span
+													>{calculateAge(currentMember.birthdate)} {t('member.yearsOld')}</span
 												>
 											</p>
 										</div>
@@ -406,7 +396,7 @@
 											<p
 												class="text-[9px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 group-hover:text-red-500 transition-colors"
 											>
-												{$t('member.horoscope')}
+												{t('member.horoscope')}
 											</p>
 											<p class="text-sm font-black text-themed leading-tight">
 												{currentMember.horoscope}
@@ -418,7 +408,7 @@
 											<p
 												class="text-[9px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 group-hover:text-red-500 transition-colors"
 											>
-												{$t('member.bloodType')}
+												{t('member.bloodType')}
 											</p>
 											<p class="text-sm font-black text-themed leading-tight">
 												{currentMember.bloodType}
@@ -430,7 +420,7 @@
 											<p
 												class="text-[9px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 group-hover:text-red-500 transition-colors"
 											>
-												{$t('member.height')}
+												{t('member.height')}
 											</p>
 											<p class="text-sm font-black text-themed leading-tight">
 												{currentMember.height?.toString().toLowerCase().includes('cm')
@@ -451,6 +441,7 @@
 											href={currentMember.socials.twitter}
 											target="_blank"
 											rel="noopener noreferrer"
+											aria-label="Twitter / X profile"
 											class="p-2.5 bg-gray-50 dark:bg-zinc-800 rounded-2xl text-gray-500 dark:text-zinc-400 hover:bg-black hover:text-white transition-all duration-500 hover:-translate-y-1 shadow-sm"
 											><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"
 												><path
@@ -473,6 +464,7 @@
 											href={currentMember.socials.tiktok}
 											target="_blank"
 											rel="noopener noreferrer"
+											aria-label="TikTok profile"
 											class="p-2.5 bg-gray-50 dark:bg-zinc-800 rounded-2xl text-gray-500 dark:text-zinc-400 hover:bg-black hover:text-white transition-all duration-500 hover:-translate-y-1 shadow-sm font-bold"
 										>
 											<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"
@@ -522,11 +514,11 @@
 						<div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
 							<Search class="w-8 h-8 text-red-500" />
 						</div>
-						<h3 class="text-xl font-bold text-gray-900 mb-2">{$t('member.notFound')}</h3>
-						<p class="text-gray-500 max-w-xs mx-auto mb-6">{$t('member.notFoundMessage')}</p>
+						<h3 class="text-xl font-bold text-gray-900 mb-2">{t('member.notFound')}</h3>
+						<p class="text-gray-500 max-w-xs mx-auto mb-6">{t('member.notFoundMessage')}</p>
 						<button
 							class="px-6 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium cursor-pointer"
-							on:click={onClose}>{$t('member.close')}</button
+							onclick={onClose}>{t('member.close')}</button
 						>
 					</div>
 				{/if}

@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { TrendingUp, Camera, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 	import type { TopTwoShotMember } from '$lib/types';
 
-	export let ranking: TopTwoShotMember[] = [];
-	export let totalCount: number = 0;
-	export let topMemberCount: number = 1;
+	interface Props {
+		ranking?: TopTwoShotMember[];
+		totalCount?: number;
+		topMemberCount?: number;
+	}
+
+	let { ranking = [], totalCount = 0, topMemberCount = 1 }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -25,10 +30,10 @@
 	>
 		<div>
 			<h3 class="font-bold text-gray-800 dark:text-gray-200 text-lg">
-				{$t('top2shot.rankingTitle')}
+				{t('top2shot.rankingTitle')}
 			</h3>
 			<p class="text-xs text-gray-500 dark:text-gray-400">
-				{$t('top2shot.rankingSubtitle')}
+				{t('top2shot.rankingSubtitle')}
 			</p>
 		</div>
 		<div
@@ -36,7 +41,7 @@
 		>
 			<TrendingUp class="w-3 h-3" />
 			{totalCount}
-			{$t('top2shot.totalPhotos')}
+			{t('top2shot.totalPhotos')}
 		</div>
 	</div>
 
@@ -65,7 +70,15 @@
 					class="w-12 h-12 rounded-full bg-gray-100 dark:bg-zinc-700 flex-shrink-0 overflow-hidden border border-gray-100 dark:border-zinc-600"
 				>
 					{#if member.image}
-						<img src={member.image} alt={member.name} class="w-full h-full object-cover" />
+						<OptimizedImage
+							src={member.image}
+							srcMedium={member.image_medium}
+							srcSmall={member.image_small}
+							blurHash={member.blurHash}
+							alt={member.name}
+							sizes="48px"
+							class="w-full h-full object-cover"
+						/>
 					{:else}
 						<div
 							class="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-500"
@@ -84,7 +97,7 @@
 						>
 							<Camera class="w-3 h-3" />
 							{member.count}
-							{$t('top2shot.photos')}
+							{t('top2shot.photos')}
 						</span>
 					</div>
 				</div>

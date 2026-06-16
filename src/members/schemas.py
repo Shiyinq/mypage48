@@ -4,15 +4,16 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from src.tickets.schemas import PaginationMeta
+from src.utils import validate_image_path
 
 
 class SocialMedia(BaseModel):
-    twitter: Optional[str] = None
-    instagram: Optional[str] = None
-    tiktok: Optional[str] = None
-    threads: Optional[str] = None
-    showroom: Optional[str] = None
-    idn_app: Optional[str] = None
+    twitter: Optional[str] = Field(default=None, max_length=200)
+    instagram: Optional[str] = Field(default=None, max_length=200)
+    tiktok: Optional[str] = Field(default=None, max_length=200)
+    threads: Optional[str] = Field(default=None, max_length=200)
+    showroom: Optional[str] = Field(default=None, max_length=200)
+    idn_app: Optional[str] = Field(default=None, max_length=200)
 
 
 class MemberBase(BaseModel):
@@ -24,6 +25,9 @@ class MemberBase(BaseModel):
     active: bool = True
     href: Optional[str] = None
     img: Optional[str] = None
+    img_medium: Optional[str] = None
+    img_small: Optional[str] = None
+    blurHash: Optional[str] = None
     birthdate: Optional[str] = None
     bloodType: Optional[str] = None
     horoscope: Optional[str] = None
@@ -88,39 +92,51 @@ class MemberSeedResponse(BaseModel):
 class MemberCreateRequest(BaseModel):
     """Request schema for creating a member"""
 
-    name: str
-    nickname: str
-    generation: Optional[str] = None
-    jiko: Optional[str] = None
+    name: str = Field(max_length=100)
+    nickname: str = Field(max_length=50)
+    generation: Optional[str] = Field(default=None, max_length=50)
+    jiko: Optional[str] = Field(default=None, max_length=500)
     active: bool = True
-    href: Optional[str] = None
-    img: Optional[str] = None
-    birthdate: Optional[str] = None
-    bloodType: Optional[str] = None
-    horoscope: Optional[str] = None
-    height: Optional[str] = None
+    href: Optional[str] = Field(default=None, max_length=200)
+    img: Optional[str] = Field(default=None, max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
+    birthdate: Optional[str] = Field(default=None, max_length=50)
+    bloodType: Optional[str] = Field(default=None, max_length=10)
+    horoscope: Optional[str] = Field(default=None, max_length=50)
+    height: Optional[str] = Field(default=None, max_length=20)
     socials: Optional[SocialMedia] = None
-    member_type: Optional[str] = "JKT48"
-    member_code: Optional[str] = None
+    member_type: Optional[str] = Field(default="JKT48", max_length=50)
+    member_code: Optional[str] = Field(default=None, max_length=50)
+
+    @field_validator("img")
+    @classmethod
+    def validate_img(cls, v: Optional[str]) -> Optional[str]:
+        return validate_image_path(v, "media/jkt48-member/", "Member")
 
 
 class MemberUpdateRequest(BaseModel):
     """Request schema for updating a member (all fields optional)"""
 
-    name: Optional[str] = None
-    nickname: Optional[str] = None
-    generation: Optional[str] = None
-    jiko: Optional[str] = None
+    name: Optional[str] = Field(default=None, max_length=100)
+    nickname: Optional[str] = Field(default=None, max_length=50)
+    generation: Optional[str] = Field(default=None, max_length=50)
+    jiko: Optional[str] = Field(default=None, max_length=500)
     active: Optional[bool] = None
-    href: Optional[str] = None
-    img: Optional[str] = None
-    birthdate: Optional[str] = None
-    bloodType: Optional[str] = None
-    horoscope: Optional[str] = None
-    height: Optional[str] = None
+    href: Optional[str] = Field(default=None, max_length=200)
+    img: Optional[str] = Field(default=None, max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
+    birthdate: Optional[str] = Field(default=None, max_length=50)
+    bloodType: Optional[str] = Field(default=None, max_length=10)
+    horoscope: Optional[str] = Field(default=None, max_length=50)
+    height: Optional[str] = Field(default=None, max_length=20)
     socials: Optional[SocialMedia] = None
-    member_type: Optional[str] = None
-    member_code: Optional[str] = None
+    member_type: Optional[str] = Field(default=None, max_length=50)
+    member_code: Optional[str] = Field(default=None, max_length=50)
+
+    @field_validator("img")
+    @classmethod
+    def validate_img(cls, v: Optional[str]) -> Optional[str]:
+        return validate_image_path(v, "media/jkt48-member/", "Member")
 
 
 class MessageResponse(BaseModel):
@@ -136,6 +152,9 @@ class BirthdayResponse(BaseModel):
     name: str
     active: bool
     img: Optional[str] = None
+    img_medium: Optional[str] = None
+    img_small: Optional[str] = None
+    blurHash: Optional[str] = None
     birthdate: str
     days_until: int
     age: int

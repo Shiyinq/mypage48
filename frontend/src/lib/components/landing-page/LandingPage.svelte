@@ -1,65 +1,78 @@
 <script lang="ts">
 	import {
-		ArrowRight,
 		Ticket,
 		Camera,
 		Users,
 		Trophy,
-		Sparkles,
 		Star,
 		Rocket,
-		Github,
-		ChevronDown
+		ChevronDown,
+		ListOrdered,
+		MonitorPlay
 	} from 'lucide-svelte';
-	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
 	import { spring } from 'svelte/motion';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import LandingNavbar from './LandingNavbar.svelte';
 	import Footer from './Footer.svelte';
-	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 
 	const { t } = useTranslation();
 
-	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
-	let scrollY = 0;
+	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
+	let scrollY = $state(0);
 
 	// Make features reactive to language changes
-	$: features = [
+	let features = $derived([
 		{
-			title: $t('landing.features.theater.title'),
-			description: $t('landing.features.theater.description'),
+			title: t('landing.features.theater.title'),
+			description: t('landing.features.theater.description'),
 			icon: Ticket,
 			color: 'text-red-500',
 			iconBg: 'bg-red-50 dark:bg-red-500/10',
 			type: 'theater'
 		},
 		{
-			title: $t('landing.features.twoShot.title'),
-			description: $t('landing.features.twoShot.description'),
+			title: t('landing.features.twoShot.title'),
+			description: t('landing.features.twoShot.description'),
 			icon: Camera,
 			color: 'text-pink-500',
 			iconBg: 'bg-pink-50 dark:bg-pink-500/10',
 			type: 'twoshot'
 		},
 		{
-			title: $t('landing.features.memories.title'),
-			description: $t('landing.features.memories.description'),
+			title: t('landing.features.memories.title'),
+			description: t('landing.features.memories.description'),
 			icon: Users,
 			color: 'text-blue-500',
 			iconBg: 'bg-blue-50 dark:bg-blue-500/10',
 			type: 'memories'
 		},
 		{
-			title: $t('landing.features.achievements.title'),
-			description: $t('landing.features.achievements.description'),
+			title: t('landing.features.achievements.title'),
+			description: t('landing.features.achievements.description'),
 			icon: Trophy,
 			color: 'text-yellow-500',
 			iconBg: 'bg-yellow-50 dark:bg-yellow-500/10',
 			type: 'achievements'
+		},
+		{
+			title: t('landing.features.sorter.title'),
+			description: t('landing.features.sorter.description'),
+			icon: ListOrdered,
+			color: 'text-rose-500',
+			iconBg: 'bg-rose-50 dark:bg-rose-500/10',
+			type: 'sorter'
+		},
+		{
+			title: t('landing.features.live.title'),
+			description: t('landing.features.live.description'),
+			icon: MonitorPlay,
+			color: 'text-red-500',
+			iconBg: 'bg-red-50 dark:bg-red-500/10',
+			type: 'live'
 		}
-	];
+	]);
 
 	function scrollToFeatures() {
 		const featuresSection = document.getElementById('features');
@@ -67,15 +80,20 @@
 			featuresSection.scrollIntoView({ behavior: 'smooth' });
 		}
 	}
+	let heroDescription = $derived(
+		t('landing.hero.description', {
+			highlight: `<span class="text-slate-800 dark:text-slate-200 font-bold decoration-red-200 decoration-2 underline-offset-4">${t('landing.hero.highlight')}</span>`
+		})
+	);
 </script>
 
-<SEO title="Home" path="/" description={$t('seo.landing')} />
+<SEO title="Home" path="/" description={t('seo.landing')} />
 
 <div
 	role="presentation"
 	class="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 relative overflow-hidden font-sans selection:bg-red-500/20"
 >
-	<AnimatedBackground interactive={true} bind:mouse bind:scrollY />
+	<AppBackground interactive={true} bind:mouse bind:scrollY />
 
 	<!-- NAV -->
 	<LandingNavbar mouse={$mouse} />
@@ -88,9 +106,9 @@
 				class="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 dark:text-white leading-[0.9] pointer-events-auto"
 				style="transform: translate({$mouse.x * 30}px, {$mouse.y * 30}px)"
 			>
-				{$t('landing.hero.titlePrefix')} <br />
+				{t('landing.hero.titlePrefix')} <br />
 				<span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-500">
-					{$t('landing.hero.titleSuffix')}
+					{t('landing.hero.titleSuffix')}
 				</span>
 			</h1>
 		</div>
@@ -101,9 +119,8 @@
 				<p
 					class="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed"
 				>
-					{@html $t('landing.hero.description', {
-						highlight: `<span class="text-slate-800 dark:text-slate-200 font-bold decoration-red-200 decoration-2 underline-offset-4">${$t('landing.hero.highlight')}</span>`
-					})}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html heroDescription}
 				</p>
 			</div>
 		</div>
@@ -116,17 +133,24 @@
 				href="/register"
 				class="group relative inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-red-600 text-white font-bold text-base shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-1 transition-all duration-300"
 			>
-				{$t('landing.hero.getStarted')}
+				{t('landing.hero.getStarted')}
 				<Rocket size={20} class="group-hover:rotate-12 transition-transform" />
 			</a>
+			<a
+				href="/login"
+				class="mt-4 lg:hidden text-sm text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+			>
+				{t('landing.hero.alreadyHaveAccount')}
+				<span class="font-semibold underline underline-offset-2">{t('auth.login.signIn')}</span>
+			</a>
 			<p class="mt-6 text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">
-				{$t('landing.hero.openSource')}
+				{t('landing.hero.openSource')}
 			</p>
 		</div>
 
 		<!-- Scroll Indicator -->
 		<button
-			on:click={scrollToFeatures}
+			onclick={scrollToFeatures}
 			class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 animate-appear cursor-pointer pointer-events-auto group/scroll"
 			style="animation-delay: 500ms;"
 			aria-label="Scroll to features"
@@ -259,6 +283,77 @@
 									</div>
 								</div>
 							{/if}
+
+							<!-- SORTER MOCKUP -->
+							{#if feature.type === 'sorter'}
+								<div
+									class="relative w-[300px] mx-auto space-y-4 transform transition-transform group-hover:scale-105"
+								>
+									<div
+										class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-lg dark:shadow-none border border-slate-100 dark:border-zinc-800 flex items-center gap-4"
+									>
+										<div
+											class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/30 flex-shrink-0"
+										></div>
+										<div class="flex-1 space-y-2">
+											<div class="h-2 w-3/4 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											<div class="h-2 w-1/2 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+										</div>
+										<div class="text-rose-500 font-bold">1</div>
+									</div>
+									<div
+										class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-lg dark:shadow-none border border-slate-100 dark:border-zinc-800 flex items-center gap-4 scale-95 opacity-80"
+									>
+										<div
+											class="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-900/20 flex-shrink-0"
+										></div>
+										<div class="flex-1 space-y-2">
+											<div class="h-2 w-2/3 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											<div class="h-2 w-1/3 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+										</div>
+										<div class="text-rose-400 font-bold">2</div>
+									</div>
+									<div
+										class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-lg dark:shadow-none border border-slate-100 dark:border-zinc-800 flex items-center gap-4 scale-90 opacity-60"
+									>
+										<div
+											class="w-12 h-12 rounded-full bg-rose-50/50 dark:bg-rose-900/10 flex-shrink-0"
+										></div>
+										<div class="flex-1 space-y-2">
+											<div class="h-2 w-1/2 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											<div class="h-2 w-1/4 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+										</div>
+										<div class="text-rose-300 font-bold">3</div>
+									</div>
+								</div>
+							{/if}
+
+							<!-- LIVE MOCKUP -->
+							{#if feature.type === 'live'}
+								<div
+									class="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] dark:shadow-none border border-red-100 dark:border-red-900/20 transform transition-transform duration-500 group-hover:scale-105"
+								>
+									<div
+										class="aspect-video bg-red-50 dark:bg-red-900/20 rounded-xl relative overflow-hidden mb-4"
+									>
+										<div
+											class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md animate-pulse"
+										>
+											LIVE
+										</div>
+										<div class="absolute inset-0 flex items-center justify-center">
+											<MonitorPlay size={48} class="text-red-300 dark:text-red-700/50" />
+										</div>
+									</div>
+									<div class="flex gap-3 px-2">
+										<div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30"></div>
+										<div class="flex-1 space-y-2 py-1">
+											<div class="h-2 w-3/4 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+											<div class="h-2 w-1/2 bg-slate-100 dark:bg-zinc-800 rounded-full"></div>
+										</div>
+									</div>
+								</div>
+							{/if}
 						</div>
 
 						<!-- Hover Background Blob -->
@@ -270,7 +365,11 @@
 									? 'pink'
 									: feature.type === 'memories'
 										? 'blue'
-										: 'yellow'}-50/50 rounded-[3rem] -z-10 transition-colors duration-500"
+										: feature.type === 'achievements'
+											? 'yellow'
+											: feature.type === 'sorter'
+												? 'rose'
+												: 'red'}-50/50 rounded-[3rem] -z-10 transition-colors duration-500"
 						></div>
 					</div>
 
@@ -280,7 +379,7 @@
 							class="inline-flex p-3 rounded-full {feature.iconBg} {feature.color} ring-4 ring-white shadow-lg mb-2"
 							style="transform: translate({$mouse.x * 40}px, {$mouse.y * 40}px)"
 						>
-							<svelte:component this={feature.icon} size={24} />
+							<feature.icon size={24} />
 						</div>
 						<h2
 							class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter"

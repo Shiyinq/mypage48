@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from bson import ObjectId
@@ -12,7 +13,7 @@ class TicketsRepository:
         self.collection = db["tickets"]
 
     async def create_ticket(self, ticket: TicketInDB):
-        return await self.collection.insert_one(ticket.model_dump())
+        return await self.collection.insert_one(ticket.model_dump(exclude_none=True))
 
     async def get_ticket(self, ticket_id: str, user_id: str) -> Optional[dict]:
         try:
@@ -32,6 +33,7 @@ class TicketsRepository:
         days: Optional[List[str]] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
+        is_favorite: Optional[bool] = None,
     ) -> tuple[List[dict], int]:
         query = {"user_id": user_id}
 
@@ -45,10 +47,14 @@ class TicketsRepository:
         if has_two_shot:
             query["two_shot"] = {"$ne": None}
 
+        if is_favorite is not None:
+            query["is_favorite"] = is_favorite if is_favorite else {"$ne": True}
+
         if days:
             # days is a list of strings like ["Saturday", "Sunday"]
             # event.day stores the day name
-            query["event.day"] = {"$in": days}
+            upper_days = [d.upper() for d in days]
+            query["$expr"] = {"$in": [{"$toUpper": "$event.day"}, upper_days]}
 
         if start_date or end_date:
             date_query = {}
@@ -107,8 +113,6 @@ class TicketsRepository:
             return await self.get_ticket(ticket_id, user_id)
 
         # Update updated_at
-        from datetime import datetime, timezone
-
         update_dict["updated_at"] = datetime.now(timezone.utc)
 
         # Use $set to update specific fields
@@ -217,3 +221,55 @@ class TicketsRepository:
 
     async def get_distinct_titles(self, user_id: str) -> List[str]:
         return await self.collection.distinct("event.title", {"user_id": user_id})
+
+    async def toggle_two_shot_favorite(
+        self, ticket_id: str, user_id: str
+    ) -> Optional[dict]:
+        try:
+            oid = ObjectId(ticket_id)
+        except:
+            return None
+
+        ticket = await self.get_ticket(ticket_id, user_id)
+        if not ticket:
+            return None
+
+        current = ticket.get("two_shot", {})
+        if not current:
+            return None
+
+        new_value = not current.get("is_favorite", False)
+
+        return await self.collection.find_one_and_update(
+            {"_id": oid, "user_id": user_id},
+            {
+                "$set": {
+                    "two_shot.is_favorite": new_value,
+                    "updated_at": datetime.now(timezone.utc),
+                }
+            },
+            return_document=ReturnDocument.AFTER,
+        )
+
+    async def toggle_favorite(self, ticket_id: str, user_id: str) -> Optional[dict]:
+        try:
+            oid = ObjectId(ticket_id)
+        except:
+            return None
+
+        ticket = await self.get_ticket(ticket_id, user_id)
+        if not ticket:
+            return None
+
+        new_value = not ticket.get("is_favorite", False)
+
+        return await self.collection.find_one_and_update(
+            {"_id": oid, "user_id": user_id},
+            {
+                "$set": {
+                    "is_favorite": new_value,
+                    "updated_at": datetime.now(timezone.utc),
+                }
+            },
+            return_document=ReturnDocument.AFTER,
+        )

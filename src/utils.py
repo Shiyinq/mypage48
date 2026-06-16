@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import math
 import re
@@ -7,6 +8,7 @@ from urllib.parse import urlparse
 from password_validator import PasswordValidator
 
 from src.config import config
+from src.exceptions import InvalidDateError
 
 
 def pagination(total: int, page: int, limit: int) -> Dict[str, Any]:
@@ -94,7 +96,7 @@ def validate_password_strength(password: str) -> bool:
 
 def cleanse_image_url(url: Optional[str]) -> Optional[str]:
     """
-    Strip API base URL, MinIO endpoint, and signatures from a storage URL to get the internal path.
+    Strip API base URL, Storage endpoint, and signatures from a storage URL to get the internal path.
     Example: http://localhost:8080/api/storage/m/ticket/xyz.png?expires=...
     becomes: ticket/xyz.png
     """
@@ -109,16 +111,21 @@ def cleanse_image_url(url: Optional[str]) -> Optional[str]:
         return url
 
     proxy_match = re.search(
-        r"/storage/m/((journal|ticket|twoshot|avatar)/[^?\s]+)", url
+        r"/storage/m/((journal|ticket|twoshot|avatar|member|setlist)/[^?\s]+)", url
     )
     if proxy_match:
         return proxy_match.group(1)
 
+    # Handle the /media/ paths used by members and setlists
+    media_match = re.search(r"/((media/(jkt48-member|setlists)/)[^?\s]+)", url)
+    if media_match:
+        return media_match.group(1)
+
     try:
         parsed = urlparse(url)
         path = parsed.path.lstrip("/")
-        if path.startswith(f"{config.minio_bucket}/"):
-            return path[len(config.minio_bucket) + 1 :]
+        if path.startswith(f"{config.storage_bucket}/"):
+            return path[len(config.storage_bucket) + 1 :]
     except Exception:
         pass
 
@@ -147,16 +154,57 @@ def cleanse_image_markdown(content: Optional[str]) -> Optional[str]:
 
 
 def resolve_minio_public_url(url: str) -> str:
-    """Replace internal MinIO host with public URL if configured."""
-    if not config.minio_public_url:
+    """Replace internal storage host with public URL if configured."""
+    if not config.storage_public_url:
         return url
 
-    internal_host = config.minio_endpoint
-    public_url = config.minio_public_url
+    internal_host = config.storage_endpoint
+    public_url = config.storage_public_url
 
     # Extract only the host:port part from public_url if it contains http://
     public_host = public_url
     if "://" in public_url:
         public_host = public_url.split("://")[1]
 
+    # For R2, sometimes the internal host is already the public one
+    if internal_host == public_host:
+        return url
+
     return url.replace(internal_host, public_host)
+
+
+def validate_image_path(
+    v: Optional[str], prefix: str, entity_name: str
+) -> Optional[str]:
+    """
+    Cleanses an image URL and validates that it starts with the required prefix.
+    Used as a DRY utility inside Pydantic field validators.
+    """
+    cleansed = cleanse_image_url(v)
+    if cleansed and not cleansed.startswith(prefix):
+        raise ValueError(f"{entity_name} image path must start with '{prefix}'")
+    return cleansed
+
+
+def parse_date_range(start_date: Optional[str], end_date: Optional[str]):
+    """
+    Parses start_date and end_date strings (YYYY-MM-DD) into datetime objects.
+    Raises InvalidDateError if format is invalid.
+    """
+    parsed_start = None
+    parsed_end = None
+    if start_date:
+        try:
+            parsed_start = datetime.datetime.strptime(start_date, "%Y-%m-%d").replace(
+                tzinfo=datetime.timezone.utc
+            )
+        except ValueError:
+            raise InvalidDateError()
+    if end_date:
+        try:
+            parsed_end = datetime.datetime.strptime(end_date, "%Y-%m-%d").replace(
+                hour=23, minute=59, second=59, tzinfo=datetime.timezone.utc
+            )
+        except ValueError:
+            raise InvalidDateError()
+    return parsed_start, parsed_end

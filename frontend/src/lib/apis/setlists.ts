@@ -9,6 +9,9 @@ export interface WatchedStats {
 export interface Setlist {
 	setlistId: string;
 	imageUrl: string;
+	imageUrl_medium?: string;
+	imageUrl_small?: string;
+	blurHash?: string;
 	title: string;
 	titleJapanese?: string;
 	description: string;
@@ -61,6 +64,9 @@ export interface SetlistDetailStats {
 export interface SetlistDetailResponse {
 	setlistId: string;
 	imageUrl: string;
+	imageUrl_medium?: string;
+	imageUrl_small?: string;
+	blurHash?: string;
 	title: string;
 	titleJapanese?: string;
 	description: string;
@@ -74,7 +80,17 @@ export interface SetlistDetailResponse {
 
 export const setlistsApi = {
 	getAll: async (
-		params: { skip?: number; limit?: number; type?: string; active?: boolean; search?: string } = {}
+		params: {
+			skip?: number;
+			limit?: number;
+			type?: string;
+			active?: boolean;
+			search?: string;
+			year?: number;
+			startMonth?: number;
+			endMonth?: number;
+			isAllData?: boolean;
+		} = {}
 	) => {
 		const query = new URLSearchParams();
 		if (params.skip) query.append('skip', params.skip.toString());
@@ -83,15 +99,37 @@ export const setlistsApi = {
 		if (params.active !== undefined) query.append('active', params.active.toString());
 		if (params.search) query.append('search', params.search);
 
+		if (params.year !== undefined) query.append('year', params.year.toString());
+		if (params.startMonth !== undefined) query.append('startMonth', params.startMonth.toString());
+		if (params.endMonth !== undefined) query.append('endMonth', params.endMonth.toString());
+		if (params.isAllData !== undefined) query.append('isAllData', params.isAllData.toString());
+
 		return client<SetlistListResponse>(`/theater/setlists?${query.toString()}`);
 	},
 
 	getById: async (setlistId: string) => {
-		return client<Setlist>(`/theater/setlists/id/${setlistId}`);
+		return client<Setlist>(`/theater/setlists/id/${encodeURIComponent(setlistId)}`);
 	},
 
-	getDetail: async (setlistId: string) => {
-		return client<SetlistDetailResponse>(`/theater/setlists/detail/${setlistId}`);
+	getDetail: async (
+		setlistId: string,
+		params: {
+			year?: number;
+			startMonth?: number;
+			endMonth?: number;
+			isAllData?: boolean;
+		} = {}
+	) => {
+		const query = new URLSearchParams();
+		if (params.year !== undefined) query.append('year', params.year.toString());
+		if (params.startMonth !== undefined) query.append('startMonth', params.startMonth.toString());
+		if (params.endMonth !== undefined) query.append('endMonth', params.endMonth.toString());
+		if (params.isAllData !== undefined) query.append('isAllData', params.isAllData.toString());
+
+		const queryString = query.toString() ? `?${query.toString()}` : '';
+		return client<SetlistDetailResponse>(
+			`/theater/setlists/detail/${encodeURIComponent(setlistId)}${queryString}`
+		);
 	},
 
 	getByTitle: async (title: string) => {
@@ -107,14 +145,14 @@ export const setlistsApi = {
 	},
 
 	update: async (setlistId: string, data: Partial<Omit<Setlist, 'setlistId' | 'watched'>>) => {
-		return client<Setlist>(`/theater/setlists/${setlistId}`, {
+		return client<Setlist>(`/theater/setlists/${encodeURIComponent(setlistId)}`, {
 			method: 'PUT',
 			body: JSON.stringify(data)
 		});
 	},
 
 	delete: async (setlistId: string) => {
-		return client<{ message: string }>(`/theater/setlists/${setlistId}`, {
+		return client<{ message: string }>(`/theater/setlists/${encodeURIComponent(setlistId)}`, {
 			method: 'DELETE'
 		});
 	}

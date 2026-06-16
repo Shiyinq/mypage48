@@ -77,19 +77,26 @@ export async function startVideoRecording(
 	if (!video) return null;
 
 	try {
-		const v = video as any;
-		let stream = v['captureStream'] ? v['captureStream']() : v['mozCaptureStream']();
+		const v = video as HTMLVideoElement & {
+			captureStream?(): MediaStream;
+			mozCaptureStream?(): MediaStream;
+		};
+		let stream = v.captureStream ? v.captureStream() : v.mozCaptureStream?.();
+
+		if (!stream) return null;
 
 		// Zero-Loss Strategy: Check for tracks INSTANTLY
 		if (stream.getTracks().length === 0) {
 			await new Promise((r) => setTimeout(r, 200));
-			stream = v['captureStream'] ? v['captureStream']() : v['mozCaptureStream']();
+			stream = v.captureStream ? v.captureStream() : v.mozCaptureStream?.();
 		}
+
+		if (!stream) return null;
 
 		const mimeType = getSupportedVideoMimeType();
 		const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
 
-		mediaRecorder.ondataavailable = (e: any) => {
+		mediaRecorder.ondataavailable = (e: BlobEvent) => {
 			if (e.data.size > 0) {
 				onData(e.data);
 			}

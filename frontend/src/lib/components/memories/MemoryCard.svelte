@@ -1,20 +1,28 @@
 <script lang="ts">
-	import { Image as ImageIcon, MapPin, Calendar, Sparkles, User } from 'lucide-svelte';
+	import { Heart, Image as ImageIcon, MapPin, Calendar, Sparkles, User } from 'lucide-svelte';
 	import { formatDate } from '$lib/i18n';
 	import type { MemoryItem } from '$lib/types';
+	import { OptimizedImage } from '$lib/components/common';
 
-	export let item: MemoryItem;
-	export let rotation: number = 0;
-	export let onClick: (item: MemoryItem) => void;
+	interface Props {
+		item: MemoryItem;
+		rotation?: number;
+		onClick: (item: MemoryItem) => void;
+		onfavoriteToggle?: (item: MemoryItem) => void;
+	}
 
-	$: tapeColor = item.type === '2SHOT' ? 'bg-purple-200/80' : 'bg-red-200/80';
+	let { item, rotation = 0, onClick, onfavoriteToggle }: Props = $props();
+
+	let tapeColor = $derived(item.type === '2SHOT' ? 'bg-purple-200/80' : 'bg-red-200/80');
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 <div
 	class="group relative transition-all duration-500 hover:z-10 hover:scale-105 cursor-pointer"
 	style={`transform: rotate(${rotation}deg)`}
-	on:click={() => onClick(item)}
+	onclick={() => onClick(item)}
+	onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick(item)}
+	role="button"
+	tabindex="0"
 >
 	<!-- Washi Tape -->
 	<div
@@ -29,13 +37,38 @@
 		<div
 			class="aspect-[4/5] w-full bg-gray-100 mb-4 overflow-hidden relative border border-gray-50 grayscale-[20%] group-hover:grayscale-0 transition-all duration-500"
 		>
-			<img src={item.imageUrl} alt={item.title} class="w-full h-full object-cover" loading="lazy" />
+			<OptimizedImage
+				src={item.imageUrl}
+				srcMedium={item.imageUrl_medium}
+				srcSmall={item.imageUrl_small}
+				sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 256px"
+				blurHash={item.blurHash}
+				alt={item.title}
+				class="w-full h-full"
+			/>
+
+			<!-- Heart Icon -->
+			<div
+				onclick={(e) => {
+					e.stopPropagation();
+					onfavoriteToggle?.(item);
+				}}
+				onkeydown={(e) => e.key === 'Enter' && onfavoriteToggle?.(item)}
+				class="absolute top-2 right-2 z-10 cursor-pointer transition-transform hover:scale-110"
+				role="button"
+				tabindex="0"
+				aria-label="Toggle favorite"
+			>
+				<Heart
+					class={`w-5 h-5 drop-shadow-lg ${item.is_favorite ? 'text-red-500 fill-red-500' : 'text-white/60'}`}
+				/>
+			</div>
 
 			<!-- Date Stamp -->
 			<div
 				class="absolute bottom-2 right-2 bg-black/50 backdrop-blur-sm text-white text-[10px] font-mono px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
 			>
-				{$formatDate(item.date, {
+				{formatDate(item.date, {
 					day: 'numeric',
 					month: 'short',
 					year: '2-digit'

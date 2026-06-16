@@ -3,20 +3,24 @@
 
 	const { t } = useTranslation();
 
-	export let stats: {
-		name: string;
-		count: number;
-	}[];
-	export let maxCount: number;
-	export let loading: boolean = false;
+	interface Props {
+		stats: {
+			name: string;
+			count: number;
+		}[];
+		maxCount: number;
+		loading?: boolean;
+	}
+
+	let { stats, maxCount, loading = false }: Props = $props();
 </script>
 
 <div class="glass-panel p-6 rounded-3xl flex flex-col">
 	<div class="mb-6">
 		<h3 class="text-xl font-bold text-themed">
-			{$t('dashboard.dayPreference.title')}
+			{t('dashboard.dayPreference.title')}
 		</h3>
-		<p class="text-xs text-gray-400">{$t('dashboard.dayPreference.subtitle')}</p>
+		<p class="text-xs text-gray-400">{t('dashboard.dayPreference.subtitle')}</p>
 	</div>
 
 	<div class="flex flex-wrap justify-center gap-3 flex-1 content-start w-full">
@@ -58,7 +62,7 @@
 							<span
 								class={`text-[8px] font-bold uppercase tracking-wider transition-colors duration-300 ${isHighIntensity ? 'text-white/80' : 'text-red-600/70 dark:text-red-400/70'}`}
 							>
-								{$t('shows.unit')}
+								{t('shows.unit')}
 							</span>
 						{:else}
 							<span class="text-gray-300 dark:text-gray-600 text-xl font-bold opacity-30">-</span>
@@ -67,7 +71,7 @@
 					<div class="text-center w-full">
 						<span
 							class="text-[10px] font-bold text-gray-500 dark:text-gray-400 block uppercase tracking-wide group-hover:text-red-500 transition-colors"
-							>{$t('time.daysShort.' + day.name.substring(0, 3).toLowerCase())}</span
+							>{t('time.daysShort.' + day.name.substring(0, 3).toLowerCase())}</span
 						>
 					</div>
 				</div>

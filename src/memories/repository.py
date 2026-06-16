@@ -15,6 +15,11 @@ class MemoriesRepository:
         page: int,
         limit: int,
         type_filter: Optional[str] = None,
+        title: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        days: Optional[List[str]] = None,
+        is_favorite: Optional[bool] = None,
     ) -> Tuple[List[dict], int]:
         """
         Get paginated memory items from tickets.
@@ -35,12 +40,36 @@ class MemoriesRepository:
         # Use $facet to get both ticket images and 2-shot images separately
         # Then combine them with $unionWith or process separately
 
-        base_match = {"$match": {"user_id": user_id}}
+        match_conditions = {"user_id": user_id}
+
+        if title:
+            match_conditions["event.title"] = title
+
+        if start_date or end_date:
+            date_query = {}
+            if start_date:
+                date_query["$gte"] = start_date
+            if end_date:
+                date_query["$lte"] = end_date
+            if date_query:
+                match_conditions["event.date"] = date_query
+
+        if days:
+            upper_days = [d.upper() for d in days]
+            match_conditions["$expr"] = {
+                "$in": [{"$toUpper": "$event.day"}, upper_days]
+            }
+
+        base_match = {"$match": match_conditions}
 
         # Pipeline for ticket images
+        ticket_favorite_match = (
+            [{"$match": {"is_favorite": True}}] if is_favorite else []
+        )
         ticket_pipeline = [
             base_match,
             {"$match": {"imageUrl": {"$exists": True, "$ne": None, "$ne": ""}}},
+            *ticket_favorite_match,
             {
                 "$project": {
                     "_id": 0,
@@ -53,14 +82,19 @@ class MemoriesRepository:
                     "seatSection": "$seat.section",
                     "seatNumber": {"$toString": "$seat.number"},
                     "notes": "$notes",
+                    "blurHash": "$blurHash",
                     "eventTitle": "$event.title",
                     "twoShotMemberName": {"$literal": None},
                     "twoShotType": {"$literal": None},
+                    "is_favorite": {"$ifNull": ["$is_favorite", False]},
                 }
             },
         ]
 
         # Pipeline for 2-shot images
+        twoshot_favorite_match = (
+            [{"$match": {"two_shot.is_favorite": True}}] if is_favorite else []
+        )
         twoshot_pipeline = [
             base_match,
             {
@@ -68,6 +102,7 @@ class MemoriesRepository:
                     "two_shot.imageUrl": {"$exists": True, "$ne": None, "$ne": ""}
                 }
             },
+            *twoshot_favorite_match,
             {
                 "$project": {
                     "_id": 0,
@@ -85,22 +120,21 @@ class MemoriesRepository:
                     "seatSection": {"$literal": None},
                     "seatNumber": {"$literal": None},
                     "notes": "$notes",
+                    "blurHash": "$two_shot.blurHash",
                     "eventTitle": "$event.title",
                     "twoShotMemberName": "$two_shot.member_name",
                     "twoShotType": "$two_shot.type",
+                    "is_favorite": {"$ifNull": ["$two_shot.is_favorite", False]},
                 }
             },
         ]
 
         # Apply type filter
         if type_filter == "TICKET":
-            # Only get ticket images
             pipeline = ticket_pipeline
         elif type_filter == "2SHOT":
-            # Only get 2-shot images
             pipeline = twoshot_pipeline
         else:
-            # Get both and union them using $facet
             pipeline = [
                 base_match,
                 {
@@ -115,6 +149,7 @@ class MemoriesRepository:
                                     }
                                 }
                             },
+                            *ticket_favorite_match,
                             {
                                 "$project": {
                                     "_id": 0,
@@ -127,9 +162,11 @@ class MemoriesRepository:
                                     "seatSection": "$seat.section",
                                     "seatNumber": {"$toString": "$seat.number"},
                                     "notes": "$notes",
+                                    "blurHash": "$blurHash",
                                     "eventTitle": "$event.title",
                                     "twoShotMemberName": {"$literal": None},
                                     "twoShotType": {"$literal": None},
+                                    "is_favorite": {"$ifNull": ["$is_favorite", False]},
                                 }
                             },
                         ],
@@ -143,6 +180,7 @@ class MemoriesRepository:
                                     }
                                 }
                             },
+                            *twoshot_favorite_match,
                             {
                                 "$project": {
                                     "_id": 0,
@@ -165,23 +203,24 @@ class MemoriesRepository:
                                     "seatSection": {"$literal": None},
                                     "seatNumber": {"$literal": None},
                                     "notes": "$notes",
+                                    "blurHash": "$two_shot.blurHash",
                                     "eventTitle": "$event.title",
                                     "twoShotMemberName": "$two_shot.member_name",
                                     "twoShotType": "$two_shot.type",
+                                    "is_favorite": {
+                                        "$ifNull": ["$two_shot.is_favorite", False]
+                                    },
                                 }
                             },
                         ],
                     }
                 },
-                # Combine both arrays
                 {
                     "$project": {
                         "combined": {"$concatArrays": ["$tickets", "$twoshots"]}
                     }
                 },
-                # Unwind the combined array
                 {"$unwind": "$combined"},
-                # Replace root with item
                 {"$replaceRoot": {"newRoot": "$combined"}},
             ]
 
@@ -223,6 +262,7 @@ class MemoriesRepository:
                                     }
                                 }
                             },
+                            *ticket_favorite_match,
                             {"$count": "count"},
                         ],
                         "twoshotCount": [
@@ -235,6 +275,7 @@ class MemoriesRepository:
                                     }
                                 }
                             },
+                            *twoshot_favorite_match,
                             {"$count": "count"},
                         ],
                     }
@@ -269,7 +310,14 @@ class MemoriesRepository:
             results = await self.collection.aggregate(pipeline).to_list(length=None)
             return results, total_count
 
-    async def get_top_two_shot_stats(self, user_id: str) -> dict:
+    async def get_top_two_shot_stats(
+        self,
+        user_id: str,
+        year: Optional[int] = None,
+        start_month: int = 0,
+        end_month: int = 11,
+        is_all_data: bool = True,
+    ) -> dict:
         """
         Calculate Top 2-Shot stats using aggregation.
         """
@@ -279,45 +327,92 @@ class MemoriesRepository:
                     "user_id": user_id,
                     "two_shot.member_name": {"$exists": True, "$ne": None, "$ne": ""},
                 }
-            },
-            # Sort by date descending first to help finding the latest image in grouping
-            {"$sort": {"event.date": -1}},
-            {
-                "$facet": {
-                    "ranking": [
-                        {
-                            "$group": {
-                                "_id": {"$trim": {"input": "$two_shot.member_name"}},
-                                "count": {"$sum": 1},
-                                "spend": {"$sum": "$two_shot.price"},
-                                "lastDate": {"$first": "$event.date"},
-                                "image": {"$first": "$two_shot.imageUrl"},
-                            }
-                        },
-                        {
-                            "$project": {
-                                "_id": 0,
-                                "name": "$_id",
-                                "count": 1,
-                                "spend": 1,
-                                "lastDate": 1,
-                                "image": 1,
-                            }
-                        },
-                        {"$sort": {"count": -1, "spend": -1}},
-                    ],
-                    "totals": [
-                        {
-                            "$group": {
-                                "_id": None,
-                                "totalSpend": {"$sum": "$two_shot.price"},
-                                "totalCount": {"$sum": 1},
+            }
+        ]
+
+        if not is_all_data and year is not None:
+            pipeline.extend(
+                [
+                    {
+                        "$match": {
+                            "event.date": {
+                                "$exists": True,
+                                "$type": "string",
+                                "$regex": r"^\d{4}-\d{2}-\d{2}",
                             }
                         }
-                    ],
-                }
-            },
-        ]
+                    },
+                    {
+                        "$addFields": {
+                            "parsedDate": {
+                                "$dateFromString": {
+                                    "dateString": "$event.date",
+                                    "format": "%Y-%m-%d",
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "$addFields": {
+                            "year": {"$year": "$parsedDate"},
+                            "month": {"$month": "$parsedDate"},
+                        }
+                    },
+                    {
+                        "$match": {
+                            "year": year,
+                            "month": {"$gte": start_month + 1, "$lte": end_month + 1},
+                        }
+                    },
+                    {"$project": {"parsedDate": 0, "year": 0, "month": 0}},
+                ]
+            )
+
+        pipeline.extend(
+            [
+                {
+                    "$facet": {
+                        "ranking": [
+                            # Sort descending inside the facet before grouping to guarantee $first picks the newest
+                            {"$sort": {"event.date": -1}},
+                            {
+                                "$group": {
+                                    "_id": {
+                                        "$trim": {"input": "$two_shot.member_name"}
+                                    },
+                                    "count": {"$sum": 1},
+                                    "spend": {"$sum": "$two_shot.price"},
+                                    "lastDate": {"$first": "$event.date"},
+                                    "image": {"$first": "$two_shot.imageUrl"},
+                                    "blurHash": {"$first": "$two_shot.blurHash"},
+                                }
+                            },
+                            {
+                                "$project": {
+                                    "_id": 0,
+                                    "name": "$_id",
+                                    "count": 1,
+                                    "spend": 1,
+                                    "lastDate": 1,
+                                    "image": 1,
+                                    "blurHash": 1,
+                                }
+                            },
+                            {"$sort": {"count": -1, "spend": -1, "lastDate": -1}},
+                        ],
+                        "totals": [
+                            {
+                                "$group": {
+                                    "_id": None,
+                                    "totalSpend": {"$sum": "$two_shot.price"},
+                                    "totalCount": {"$sum": 1},
+                                }
+                            }
+                        ],
+                    }
+                },
+            ]
+        )
 
         result = await self.collection.aggregate(pipeline).to_list(length=1)
 

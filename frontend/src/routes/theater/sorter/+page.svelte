@@ -1,299 +1,149 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import type { Member } from '$lib/apis/members';
-	import { membersStore } from '$lib/stores/theater';
-	import { showToast } from '$lib/stores';
-	import { fade } from 'svelte/transition';
 	import SorterGenerationSelect from '$lib/components/sorter/SorterGenerationSelect.svelte';
 	import SorterProcess from '$lib/components/sorter/SorterProcess.svelte';
-	import SorterResults from '$lib/components/sorter/SorterResults.svelte';
+	import { createSorter } from '$lib/stores/sorter.svelte';
+	import { isImmersive } from '$lib/stores';
+
+	import { ChevronLeft, LayoutGrid, List, Share2, RotateCcw, Save, Check } from 'lucide-svelte';
+	import { fade } from 'svelte/transition';
+	import SorterRankDisplay from '$lib/components/sorter/SorterRankDisplay.svelte';
+	import SorterEditableHeader from '$lib/components/sorter/SorterEditableHeader.svelte';
+	import { sorterApi } from '$lib/apis/sorter';
 
 	const { t } = useTranslation();
+	const sorter = createSorter(t, '/theater/sorter');
 
-	// Sorter State
-	type SorterState = 'landing' | 'sorting' | 'results';
-	let currentState: SorterState = 'landing';
+	let layoutMode: 'card' | 'list' = $state('card');
 
-	let allMembers: Member[] = [];
-	let selectedMembers: Member[] = [];
-	let generations: string[] = [];
-	let selectedGenerations: Set<string> = new Set();
-	let loadingGenerations = true;
+	onMount(() => {
+		sorter.fetchMembers();
+	});
 
-	// Sorting Logic State
-	let lstMember: any[] = [];
-	let parent: number[] = [];
-	let rec: number[] = [];
-	let cmp1 = 0;
-	let cmp2 = 0;
-	let head1 = 0;
-	let head2 = 0;
-	let nrec = 0;
-	let numQuestion = 0;
-	let finishSize = 0;
-	let finishFlag = 0;
+	// For inline results
+	let isPublic = false;
+	let customTitle = $state(t('theater.sorter.results'));
+	let customSubtitle = $state(t('theater.sorter.resultsSubtitle'));
+	let sortedSelectedGens = $derived(
+		[...sorter.selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b))
+	);
 
-	// Results
-	interface ResultMember extends Member {
-		rank: number;
-	}
-	let results: ResultMember[] = [];
-	let layoutMode: 'card' | 'list' = 'card';
+	let isEditingTitle = $state(false);
+	let isEditingSubtitle = $state(false);
+	let tempTitle = $state('');
+	let tempSubtitle = $state('');
+	let isSaving = $state(false);
+	let savedHistoryId = $state<string | null>(null);
 
-	// History for Undo
-	let history: any[] = [];
+	const TITLE_LIMIT = 50;
+	const SUBTITLE_LIMIT = 100;
 
-	// Animation State
-	let isAnimating = false;
-	let lastSelectedSide: 'left' | 'right' | 'tie' | null = null;
-
-	async function handleSelect(event: CustomEvent<number>) {
-		const flag = event.detail;
-		if (isAnimating) return;
-
-		lastSelectedSide = flag === 1 ? 'left' : flag === -1 ? 'right' : 'tie';
-		isAnimating = true;
-
-		// Wait for animation to play
-		await new Promise((resolve) => setTimeout(resolve, 450));
-
-		sortList(flag);
-
-		isAnimating = false;
-		lastSelectedSide = null;
+	function startEditTitle() {
+		tempTitle = customTitle;
+		isEditingTitle = true;
 	}
 
-	async function fetchMembers() {
-		try {
-			await membersStore.load({ limit: 100 }, true);
-			allMembers = $membersStore.list;
-			const gens = await membersStore.getGenerations();
-			generations = gens.sort((a, b) => parseInt(a) - parseInt(b));
-			selectedGenerations = new Set();
-		} catch (e) {
-			showToast($t('theater.members.errorTitle') || 'Failed to load members', 'error');
-		} finally {
-			loadingGenerations = false;
-		}
-	}
-
-	function toggleGeneration(event: CustomEvent<string>) {
-		const gen = event.detail;
-		if (selectedGenerations.has(gen)) {
-			selectedGenerations.delete(gen);
-		} else {
-			selectedGenerations.add(gen);
-		}
-		selectedGenerations = selectedGenerations;
-	}
-
-	function selectAllGenerations() {
-		selectedGenerations = new Set(generations);
-	}
-
-	function deselectAllGenerations() {
-		selectedGenerations = new Set();
-	}
-
-	function startSort() {
-		selectedMembers = allMembers.filter((m) => selectedGenerations.has(m.generation));
-		if (selectedMembers.length < 2) {
-			showToast($t('theater.sorter.minSelection'), 'error');
-			return;
-		}
-		selectedMembers = [...selectedMembers].sort(() => Math.random() - 0.5);
-		lstMember = selectedMembers.map((_, i) => [i]);
-		parent = [];
-		rec = [];
-		nrec = 0;
-		numQuestion = 1;
-		cmp1 = 0;
-		cmp2 = 1;
-		head1 = 0;
-		head2 = 0;
-		finishSize = 0;
-		finishFlag = 0;
-		history = [];
-		currentState = 'sorting';
-	}
-
-	function saveHistory() {
-		history = [
-			...history,
-			JSON.parse(
-				JSON.stringify({
-					lstMember,
-					parent,
-					rec,
-					cmp1,
-					cmp2,
-					head1,
-					head2,
-					nrec,
-					numQuestion,
-					finishSize,
-					finishFlag
-				})
-			)
-		];
-		if (history.length > 30) history = history.slice(1);
-	}
-
-	function undo() {
-		if (history.length === 0) return;
-		const last = history[history.length - 1];
-		history = history.slice(0, -1);
-		lstMember = last.lstMember;
-		parent = last.parent;
-		rec = last.rec;
-		cmp1 = last.cmp1;
-		cmp2 = last.cmp2;
-		head1 = last.head1;
-		head2 = last.head2;
-		nrec = last.nrec;
-		numQuestion = last.numQuestion;
-		finishSize = last.finishSize;
-		finishFlag = last.finishFlag;
-	}
-
-	function sortList(flag: number) {
-		saveHistory();
-		if (flag === 1) {
-			rec[nrec] = lstMember[cmp1][head1];
-			head1++;
-			nrec++;
-			finishSize++;
-		} else if (flag === -1) {
-			rec[nrec] = lstMember[cmp2][head2];
-			head2++;
-			nrec++;
-			finishSize++;
-		} else {
-			rec[nrec] = lstMember[cmp1][head1];
-			head1++;
-			nrec++;
-			finishSize++;
-			rec[nrec] = lstMember[cmp2][head2];
-			head2++;
-			nrec++;
-			finishSize++;
-		}
-
-		if (head1 < lstMember[cmp1].length && head2 < lstMember[cmp2].length) {
-			numQuestion++;
-		} else {
-			while (head1 < lstMember[cmp1].length) {
-				rec[nrec] = lstMember[cmp1][head1];
-				head1++;
-				nrec++;
-				finishSize++;
-			}
-			while (head2 < lstMember[cmp2].length) {
-				rec[nrec] = lstMember[cmp2][head2];
-				head2++;
-				nrec++;
-				finishSize++;
-			}
-			lstMember.splice(cmp1, 2, [...rec]);
-			cmp1 = cmp1 + 1;
-			cmp2 = cmp1 + 1;
-			head1 = 0;
-			head2 = 0;
-			rec = [];
-			nrec = 0;
-			if (cmp1 >= lstMember.length - 1) {
-				if (lstMember.length === 1) {
-					finishFlag = 1;
-					showResults();
-					return;
+	async function saveTitle() {
+		if (tempTitle.trim()) {
+			customTitle = tempTitle.trim().slice(0, TITLE_LIMIT);
+			if (savedHistoryId) {
+				isSaving = true;
+				try {
+					await sorterApi.updateSorterHistory(savedHistoryId, { title: customTitle });
+				} catch (e) {
+					console.error('Failed to update title', e);
+				} finally {
+					isSaving = false;
 				}
-				cmp1 = 0;
-				cmp2 = 1;
 			}
-			numQuestion++;
+		}
+		isEditingTitle = false;
+	}
+
+	function cancelTitle() {
+		isEditingTitle = false;
+	}
+
+	function startEditSubtitle() {
+		tempSubtitle = customSubtitle;
+		isEditingSubtitle = true;
+	}
+
+	async function saveSubtitle() {
+		if (tempSubtitle.trim()) {
+			customSubtitle = tempSubtitle.trim().slice(0, SUBTITLE_LIMIT);
+			if (savedHistoryId) {
+				isSaving = true;
+				try {
+					await sorterApi.updateSorterHistory(savedHistoryId, { description: customSubtitle });
+				} catch (e) {
+					console.error('Failed to update description', e);
+				} finally {
+					isSaving = false;
+				}
+			}
+		}
+		isEditingSubtitle = false;
+	}
+
+	function cancelSubtitle() {
+		isEditingSubtitle = false;
+	}
+
+	async function saveResults() {
+		if (isSaving) return;
+		isSaving = true;
+		try {
+			const saved = await sorter.saveCurrentResult(customTitle, customSubtitle);
+			savedHistoryId = saved._id;
+		} finally {
+			isSaving = false;
 		}
 	}
 
-	function showResults() {
-		const finalOrder = lstMember[0];
-		results = finalOrder.map((idx: number, i: number) => ({
-			...selectedMembers[idx],
-			rank: i + 1
-		}));
-		currentState = 'results';
+	function setLayout(mode: 'card' | 'list') {
+		layoutMode = mode;
+	}
+
+	function shareResults() {
+		sorter.shareResults(customTitle, customSubtitle);
 	}
 
 	function restart() {
-		currentState = 'landing';
-		history = [];
+		savedHistoryId = null;
+		customTitle = t('theater.sorter.results');
+		customSubtitle = t('theater.sorter.resultsSubtitle');
+		sorter.restart();
 	}
 
-	onMount(() => {
-		fetchMembers();
+	$effect(() => {
+		if (sorter.currentState === 'results' || sorter.currentState === 'sorting') {
+			isImmersive.set(true);
+			if (typeof window !== 'undefined') {
+				document.body.style.overflow = 'hidden';
+			}
+		} else {
+			isImmersive.set(false);
+			if (typeof window !== 'undefined') {
+				document.body.style.overflow = '';
+			}
+		}
 	});
 
-	$: leftMember = selectedMembers[lstMember[cmp1]?.[head1]];
-	$: rightMember = selectedMembers[lstMember[cmp2]?.[head2]];
-	$: progress = finishFlag
-		? 100
-		: Math.floor(
-				(finishSize / (selectedMembers.length * Math.log2(selectedMembers.length) * 0.7)) * 100
-			);
-	$: displayProgress = Math.min(progress, 99);
-
-	async function copyToClipboard(text: string): Promise<boolean> {
-		try {
-			if (navigator.clipboard?.writeText) {
-				await navigator.clipboard.writeText(text);
-				return true;
-			}
-		} catch {}
-		try {
-			const textarea = document.createElement('textarea');
-			textarea.value = text;
-			textarea.setAttribute('readonly', '');
-			textarea.style.position = 'fixed';
-			textarea.style.left = '-9999px';
-			document.body.appendChild(textarea);
-			textarea.select();
-			const ok = document.execCommand('copy');
-			document.body.removeChild(textarea);
-			return ok;
-		} catch {
-			return false;
+	onDestroy(() => {
+		isImmersive.set(false);
+		if (typeof window !== 'undefined') {
+			document.body.style.overflow = '';
 		}
-	}
-
-	async function shareResults() {
-		const text = results
-			.slice(0, 10)
-			.map((r) => `#${r.rank} ${r.name}`)
-			.join('\n');
-		const shareText = `${$t('theater.sorter.shareTextHeader')}\n${text}\n\n${$t('theater.sorter.shareTextFooter')} ${window.location.origin}/theater/sorter`;
-		if (navigator.share) {
-			try {
-				await navigator.share({
-					title: $t('theater.sorter.shareTitle'),
-					text: shareText,
-					url: window.location.href
-				});
-				return;
-			} catch (err) {
-				if (err instanceof DOMException && err.name === 'AbortError') return;
-			}
-		}
-		const copied = await copyToClipboard(shareText);
-		if (copied) showToast($t('theater.sorter.copySuccess'), 'success');
-		else showToast($t('theater.sorter.copyFailed'), 'error');
-	}
+	});
 </script>
 
 <SEO
-	title={$t('theater.sorter.title')}
+	title={t('theater.sorter.title')}
 	path="/theater/sorter"
-	description={$t('theater.sorter.subtitle')}
+	description={t('theater.sorter.subtitle')}
 />
 
 <svelte:head>
@@ -311,43 +161,160 @@
 </svelte:head>
 
 <div
-	class={`w-full flex flex-col items-center justify-start min-h-[calc(100svh-120px)] ${currentState === 'results' ? 'pt-0 pb-12' : 'pt-0 pb-4 overflow-hidden'}`}
+	class={`w-full flex flex-col items-center justify-start min-h-[calc(100svh-120px)] ${sorter.currentState === 'results' ? 'pt-0 pb-12' : 'pt-0 pb-4 overflow-hidden'}`}
 >
-	{#if currentState === 'landing'}
+	{#if sorter.currentState === 'landing'}
 		<SorterGenerationSelect
-			{generations}
-			{selectedGenerations}
-			{loadingGenerations}
-			selectedMembersCount={allMembers.filter((m) => selectedGenerations.has(m.generation)).length}
-			on:toggle={toggleGeneration}
-			on:selectAll={selectAllGenerations}
-			on:deselectAll={deselectAllGenerations}
-			on:start={startSort}
+			generations={sorter.generations}
+			selectedGenerations={sorter.selectedGenerations}
+			loadingGenerations={sorter.loadingGenerations}
+			selectedMembersCount={sorter.allMembers.filter((m) =>
+				sorter.selectedGenerations.has(m.generation)
+			).length}
+			ontoggle={sorter.toggleGeneration}
+			onselectAll={sorter.selectAllGenerations}
+			ondeselectAll={sorter.deselectAllGenerations}
+			onstart={sorter.startSort}
 			variant="theater"
 		/>
-	{:else if currentState === 'sorting'}
+	{:else if sorter.currentState === 'sorting'}
 		<SorterProcess
-			{numQuestion}
-			{displayProgress}
-			{leftMember}
-			{rightMember}
-			{isAnimating}
-			{lastSelectedSide}
-			hasHistory={history.length > 0}
-			on:select={handleSelect}
-			on:undo={undo}
-			on:exit={restart}
+			numQuestion={sorter.numQuestion}
+			displayProgress={sorter.displayProgress}
+			leftMember={sorter.leftMember}
+			rightMember={sorter.rightMember}
+			isAnimating={sorter.isAnimating}
+			lastSelectedSide={sorter.lastSelectedSide}
+			hasHistory={sorter.history.length > 0}
+			onselect={sorter.handleSelect}
+			onundo={sorter.undo}
+			onexit={sorter.restart}
 			variant="theater"
 		/>
-	{:else if currentState === 'results'}
-		<SorterResults
-			{results}
-			{layoutMode}
-			on:share={shareResults}
-			on:restart={restart}
-			on:changeLayout={(e) => (layoutMode = e.detail)}
-			variant="theater"
-		/>
+	{:else if sorter.currentState === 'results'}
+		<div
+			class="fixed inset-0 bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 flex flex-col overflow-hidden z-[40]"
+			in:fade
+		>
+			<!-- Dedicated Top Navbar -->
+			<div
+				class="h-14 border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between px-4 z-50 shrink-0"
+			>
+				<div class="flex items-center gap-4">
+					<button
+						onclick={restart}
+						class="flex items-center gap-2 text-slate-900 dark:text-white hover:text-red-600 dark:hover:text-red-400 transition-colors bg-transparent border-none p-0 cursor-pointer font-bold"
+					>
+						<ChevronLeft size={20} />
+						<span class="font-black tracking-tighter text-lg"
+							>Oshi <span class="text-rose-500 italic">Sorter</span></span
+						>
+					</button>
+					<div class="hidden sm:h-4 sm:w-px sm:bg-gray-200 sm:dark:border-zinc-800"></div>
+					<div
+						class="hidden xs:flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-500/10"
+					>
+						<span
+							class="text-[10px] font-black uppercase tracking-widest text-rose-500 dark:text-rose-400"
+							>{t('theater.sorter.results')}</span
+						>
+					</div>
+				</div>
+
+				<div class="flex items-center gap-2 sm:gap-3">
+					<div
+						class="flex bg-gray-50/50 dark:bg-zinc-800/30 backdrop-blur-md rounded-full p-1 border shadow-inner border-zinc-200 dark:border-zinc-800"
+					>
+						<button
+							onclick={() => setLayout('card')}
+							class={`p-1.5 rounded-full transition-all cursor-pointer ${layoutMode === 'card' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+							title={t('theater.sorter.gridView')}
+						>
+							<LayoutGrid size={16} />
+						</button>
+						<button
+							onclick={() => setLayout('list')}
+							class={`p-1.5 rounded-full transition-all cursor-pointer ${layoutMode === 'list' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+							title={t('theater.sorter.listView')}
+						>
+							<List size={16} />
+						</button>
+					</div>
+
+					{#if !savedHistoryId}
+						<button
+							onclick={saveResults}
+							disabled={isSaving}
+							class="w-8 h-8 bg-green-600 hover:bg-green-700 text-white font-black rounded-full transition-all shadow-lg flex items-center justify-center cursor-pointer disabled:opacity-50"
+							title={t('theater.sorter.save') || 'Save Results'}
+						>
+							{#if isSaving}
+								<div
+									class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+								></div>
+							{:else}
+								<Save size={14} />
+							{/if}
+						</button>
+					{:else}
+						<div
+							class="w-8 h-8 bg-green-500/20 text-green-600 dark:text-green-400 font-black rounded-full flex items-center justify-center cursor-default"
+							title={t('theater.sorter.saveSuccess') || 'Tersimpan'}
+						>
+							<Check size={14} />
+						</div>
+					{/if}
+
+					<button
+						onclick={shareResults}
+						class="w-8 h-8 text-white font-black rounded-full transition-all shadow-lg flex items-center justify-center cursor-pointer bg-rose-500 hover:bg-rose-600 shadow-rose-500/20"
+						title={t('theater.sorter.share')}
+					>
+						<Share2 size={14} />
+					</button>
+					<button
+						onclick={restart}
+						class="w-8 h-8 bg-white dark:bg-zinc-800 font-black rounded-full transition-all shadow-md border flex items-center justify-center cursor-pointer text-themed border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+						title={t('theater.sorter.restart')}
+					>
+						<RotateCcw size={14} />
+					</button>
+				</div>
+			</div>
+
+			<!-- Scrollable content area -->
+			<div class="flex-1 overflow-y-auto px-4 pt-4 pb-8 sm:py-8 flex flex-col items-center">
+				<div
+					class={`w-full space-y-8 px-1.5 sm:px-4 mx-auto pb-24 ${layoutMode === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}
+				>
+					<div class="flex flex-col md:flex-row md:items-start justify-between gap-4 w-full">
+						<div class="flex flex-col gap-2 w-full min-w-0">
+							<SorterEditableHeader
+								title={customTitle}
+								description={customSubtitle}
+								{tempTitle}
+								tempDescription={tempSubtitle}
+								{isEditingTitle}
+								isEditingDescription={isEditingSubtitle}
+								{isSaving}
+								placeholderDescription={t('theater.sorter.resultsSubtitle') || 'Subtitle'}
+								onTitleChange={(v) => (tempTitle = v)}
+								onDescriptionChange={(v) => (tempSubtitle = v)}
+								onstartEditTitle={startEditTitle}
+								oncancelEditTitle={cancelTitle}
+								onsaveTitle={saveTitle}
+								onstartEditDescription={startEditSubtitle}
+								oncancelEditDescription={cancelSubtitle}
+								onsaveDescription={saveSubtitle}
+								filters={sortedSelectedGens}
+							/>
+						</div>
+					</div>
+
+					<SorterRankDisplay results={sorter.results} {layoutMode} {isPublic} />
+				</div>
+			</div>
+		</div>
 	{/if}
 </div>
 

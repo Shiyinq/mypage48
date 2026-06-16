@@ -3,8 +3,28 @@ name: CI Check
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'nginx/**'
+      - '.agent/**'
+      - 'scraper/**'
+      - '.gitignore'
+      - '.dockerignore'
+      - '.cursorignore'
+      - 'LICENSE'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'nginx/**'
+      - '.agent/**'
+      - 'scraper/**'
+      - '.gitignore'
+      - '.dockerignore'
+      - '.cursorignore'
+      - 'LICENSE'
 
 jobs:
   frontend-check:
@@ -16,7 +36,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.10.0
+          node-version: 24
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -24,8 +44,12 @@ jobs:
         run: npm ci
         working-directory: frontend
 
-      - name: Sync SvelteKit
-        run: npx svelte-kit sync
+      - name: Lint check
+        run: npm run lint
+        working-directory: frontend
+
+      - name: Type check
+        run: npm run check
         working-directory: frontend
 
       - name: Build check

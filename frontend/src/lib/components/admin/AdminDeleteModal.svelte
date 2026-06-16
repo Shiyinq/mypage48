@@ -3,27 +3,45 @@
 	import { fade, scale } from 'svelte/transition';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let show: boolean = false;
-	export let isDeleting: boolean = false;
-	export let onCancel: () => void;
-	export let onConfirm: () => void;
-	export let title: string;
-	export let description: string;
+	interface Props {
+		show?: boolean;
+		isDeleting?: boolean;
+		onCancel: () => void;
+		onConfirm: () => void;
+		title: string;
+		description: string;
+	}
+
+	let {
+		show = $bindable(false),
+		isDeleting = false,
+		onCancel,
+		onConfirm,
+		title,
+		description
+	}: Props = $props();
 
 	const { t } = useTranslation();
 </script>
 
 {#if show}
-	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 	<div
 		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-		on:click={onCancel}
+		onclick={onCancel}
+		onkeydown={(e) => e.key === 'Escape' && onCancel()}
 		transition:fade={{ duration: 150 }}
+		role="button"
+		tabindex="-1"
+		aria-label="Close modal"
 	>
 		<div
 			class="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-sm w-full p-6"
-			on:click={(e) => e.stopPropagation()}
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
 			transition:scale={{ duration: 200, start: 0.95 }}
+			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
 		>
 			<div
 				class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-500 flex items-center justify-center mb-4 mx-auto"
@@ -40,14 +58,14 @@
 			</div>
 			<div class="grid grid-cols-2 gap-3">
 				<button
-					on:click={onCancel}
+					onclick={onCancel}
 					disabled={isDeleting}
 					class="px-4 py-2.5 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					{$t('common.cancel')}
+					{t('common.cancel')}
 				</button>
 				<button
-					on:click={onConfirm}
+					onclick={onConfirm}
 					disabled={isDeleting}
 					class="px-4 py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 dark:shadow-none transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
 				>
@@ -55,9 +73,9 @@
 						<div
 							class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
 						></div>
-						{$t('common.loading')}
+						{t('common.loading')}
 					{:else}
-						{$t('history.deleteConfirm.confirm')}
+						{t('history.deleteConfirm.confirm')}
 					{/if}
 				</button>
 			</div>

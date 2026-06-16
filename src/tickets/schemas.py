@@ -3,7 +3,7 @@ from typing import Annotated, List, Optional, Union
 
 from pydantic import BaseModel, BeforeValidator, Field, field_validator
 
-from src.utils import cleanse_image_markdown, cleanse_image_url
+from src.utils import cleanse_image_markdown, validate_image_path
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
@@ -32,13 +32,20 @@ class TicketTwoShotBase(BaseModel):
     type: str = "Roulette"  # 'Roulette' | 'Birthday'
     price: float
     imageUrl: Optional[str] = None
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
+    blurHash: Optional[str] = None
+    is_favorite: bool = False
 
 
 class TicketTwoShot(TicketTwoShotBase):
+    imageUrl: Optional[str] = Field(default=None, max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
+
     @field_validator("imageUrl")
     @classmethod
     def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
-        return cleanse_image_url(v)
+        return validate_image_path(v, "twoshot/", "Two-shot")
 
 
 class TicketBase(BaseModel):
@@ -49,16 +56,22 @@ class TicketBase(BaseModel):
     currency: str = "IDR"
     rules: TicketRules = Field(default_factory=TicketRules)
     imageUrl: Optional[str] = None
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
+    blurHash: Optional[str] = None
     notes: Optional[str] = None
+    is_favorite: bool = False
 
 
 class TicketCreateRequest(TicketBase):
     two_shot: Optional[TicketTwoShot] = None
+    imageUrl: Optional[str] = Field(default=None, max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
 
     @field_validator("imageUrl")
     @classmethod
     def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
-        return cleanse_image_url(v)
+        return validate_image_path(v, "ticket/", "Ticket")
 
     @field_validator("notes")
     @classmethod
@@ -72,14 +85,16 @@ class TicketUpdateRequest(BaseModel):
     seat: Optional[TicketSeat] = None
     price: Optional[float] = None
     rules: Optional[TicketRules] = None
-    imageUrl: Optional[str] = None
+    imageUrl: Optional[str] = Field(default=None, max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
     notes: Optional[str] = None
     two_shot: Optional[TicketTwoShot] = None
+    is_favorite: Optional[bool] = None
 
     @field_validator("imageUrl")
     @classmethod
     def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
-        return cleanse_image_url(v)
+        return validate_image_path(v, "ticket/", "Ticket")
 
     @field_validator("notes")
     @classmethod

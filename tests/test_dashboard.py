@@ -38,6 +38,9 @@ async def test_get_dashboard_stats_empty(client: AsyncClient, db, create_user):
     assert data["two_shot"]["total_count"] == 0
     assert data["two_shot"]["total_spend"] == 0
 
+    # Verify empty heatmap
+    assert data["period"]["heatmap_stats"]["data"] == {}
+
 
 @pytest.mark.asyncio
 async def test_get_dashboard_stats_with_tickets(client: AsyncClient, db, create_user, create_ticket):
@@ -81,6 +84,15 @@ async def test_get_dashboard_stats_with_tickets(client: AsyncClient, db, create_
     # Verify seat map stats
     assert data["seat_map"]["row_stats"]["counts"]["A"] == 2
     assert data["seat_map"]["row_stats"]["counts"]["B"] == 1
+
+    # Verify heatmap stats
+    heatmap_data = data["period"]["heatmap_stats"]["data"]
+    assert "2024-06-15" in heatmap_data
+    assert "2024-07-20" in heatmap_data
+    assert "2024-08-10" in heatmap_data
+    assert heatmap_data["2024-06-15"] == 1
+    assert heatmap_data["2024-07-20"] == 1
+    assert heatmap_data["2024-08-10"] == 1
 
 
 @pytest.mark.asyncio
@@ -297,14 +309,17 @@ async def test_dashboard_stats_resolves_minio_urls(client: AsyncClient, db, crea
     token, user_id, headers = await create_user("dashboard_minio")
 
     # Mock Repository
-    mock_repo = MagicMock()
+    from unittest.mock import AsyncMock
+    mock_repo = AsyncMock()
     # Mock resolve_url logic via repository
     mock_repo.get_presigned_url.side_effect = lambda x, expires=3600: f"https://minio.example.com/{x}?signed=true"
+    mock_repo.get_metadata.return_value = {"blurhash": "U2TI:j|cfQ|c|cjtfQjtfQfQfQfQ|cjtfQjt"}
 
     # Use real service with mocked repo and config
     mock_config = MagicMock()
     mock_config.secret_key = "dummy_secret_key_for_testing"
     mock_config.api_base_url = "https://minio.example.com"
+    mock_config.storage_use_presigned = False
     storage_service = StorageService(mock_repo, mock_config)
 
     # Override dependency

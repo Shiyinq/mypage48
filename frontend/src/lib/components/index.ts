@@ -13,3 +13,4 @@ export { default as SplashScreen } from './SplashScreen.svelte';
 export { default as StatCard } from './StatCard.svelte';
 export { default as TheaterSeatMap } from './TheaterSeatMap.svelte';
 export { default as ValidationAlertModal } from './ValidationAlertModal.svelte';
+export { default as NoMoreData } from './NoMoreData.svelte';

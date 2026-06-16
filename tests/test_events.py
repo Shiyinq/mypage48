@@ -44,7 +44,7 @@ async def test_get_events_paginated(client, create_event, create_user):
         "label": "/images/icon.cat17.png"
     })
 
-    response = await client.get("/api/events/?page=1&limit=10", headers=headers)
+    response = await client.get("/api/events?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()
     
@@ -123,7 +123,7 @@ async def test_events_sorting(client, create_event, create_user):
     
     # 1. Test History (All events) -> Should be Descending (Latest first)
     # Expected order: future-later, future-soon, past-recent, past-old
-    response = await client.get("/api/events/?page=1&limit=10", headers=headers)
+    response = await client.get("/api/events?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()["data"]
     ids = [e["id"] for e in data]
@@ -176,14 +176,16 @@ async def test_get_events_with_aggregation(client, create_event, db, create_user
         "memberIds": ["member-1"]
     })
     
-    response = await client.get("/api/events/?page=1&limit=10", headers=headers)
+    response = await client.get("/api/events?page=1&limit=10", headers=headers)
     assert response.status_code == 200
     data = response.json()["data"]
     
     event = next(e for e in data if e["id"] == "event-agg")
     
     # Verify flattened aggregation
-    assert event.get("imageUrl") == "img"
+    assert "img" in event.get("imageUrl")
+    assert event.get("imageUrl_medium") is not None
+    assert event.get("imageUrl_small") is not None
     assert event.get("totalMembers") == 1
     
     assert event.get("memberIds") is None or event.get("memberIds") == []
@@ -282,7 +284,7 @@ async def test_get_events_paginated_error(client, monkeypatch, create_user):
     monkeypatch.setattr("src.events.repository.EventsRepository.count_events", mock_find)
     
     # Depending on where count is called first
-    response = await client.get("/api/events/", headers=headers)
+    response = await client.get("/api/events", headers=headers)
     assert response.status_code == 500
     assert response.json()["detail"] == "Failed to fetch event data."
 
@@ -362,3 +364,228 @@ async def test_get_calendar_events_with_cross_month_birthdays(client, create_use
     
     titles = [e["title"] for e in data]
     assert "March Baby" in titles
+
+
+@pytest.mark.asyncio
+async def test_get_events_with_date_range(client, create_event, create_user):
+    # Auth
+    _, _, headers = await create_user("testuser")
+
+    # Create events with specific dates
+    await create_event({
+        "id": "event-1",
+        "title": "Jan Event",
+        "date": "2026-01-15T00:00:00",
+        "url": "/link1",
+        "label": "lbl1"
+    })
+    await create_event({
+        "id": "event-2",
+        "title": "Feb Event",
+        "date": "2026-02-15T00:00:00",
+        "url": "/link2",
+        "label": "lbl2"
+    })
+    await create_event({
+        "id": "event-3",
+        "title": "Mar Event",
+        "date": "2026-03-15T00:00:00",
+        "url": "/link3",
+        "label": "lbl3"
+    })
+
+    # Filter for Feb only
+    response = await client.get(
+        "/api/events?start_date=2026-02-01T00:00:00&end_date=2026-02-28T23:59:59",
+        headers=headers
+    )
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["meta"]["total_data"] == 1
+    assert len(data["data"]) == 1
+    assert data["data"][0]["id"] == "event-2"
+
+
+@pytest.mark.asyncio
+async def test_get_member_events_paginated(client, create_event, create_user, db):
+    _, _, headers = await create_user("testuser")
+
+    # Insert a setlist for image lookup
+    await db["setlists"].insert_one({
+        "setlistId": "sl-member",
+        "title": "Member Setlist",
+        "imageUrl": "/images/setlist.jpg",
+        "description": "desc",
+        "type": "setlist",
+        "active": True
+    })
+
+    # Create events for member "mem-1"
+    for i in range(5):
+        month = i + 1
+        await create_event({
+            "id": f"mem-event-{i}",
+            "title": f"Member Event {i}",
+            "date": f"2026-{month:02d}-15T00:00:00",
+            "url": f"/event/{i}",
+            "label": "/images/icon.cat2.png",
+            "memberIds": ["mem-1"],
+            "setlistId": "sl-member" if i == 0 else None
+        })
+
+    # Create event for another member (should NOT be returned)
+    await create_event({
+        "id": "other-event",
+        "title": "Other Member Event",
+        "date": "2026-06-15T00:00:00",
+        "url": "/other",
+        "label": "lbl",
+        "memberIds": ["mem-2"]
+    })
+
+    # Fetch first page (limit=2)
+    response = await client.get("/api/events/member/mem-1?page=1&limit=2", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "data" in data
+    assert "meta" in data
+    assert data["meta"]["total_data"] == 5
+    assert data["meta"]["current_page"] == 1
+    assert data["meta"]["per_page"] == 2
+    assert data["meta"]["last_page"] == 3
+    assert data["meta"]["next_page"] == 2
+    assert len(data["data"]) == 2
+
+    event = data["data"][0]
+    assert event["id"] == "mem-event-4"
+    assert event["title"] == "Member Event 4"
+    assert event["totalMembers"] == 1
+
+    # Fetch second page
+    response = await client.get("/api/events/member/mem-1?page=2&limit=2", headers=headers)
+    data = response.json()
+    assert len(data["data"]) == 2
+    assert data["data"][0]["id"] == "mem-event-2"
+
+    # Fetch last page
+    response = await client.get("/api/events/member/mem-1?page=3&limit=2", headers=headers)
+    data = response.json()
+    assert len(data["data"]) == 1
+    assert data["meta"]["next_page"] is None
+
+
+@pytest.mark.asyncio
+async def test_get_member_events_paginated_empty(client, create_user):
+    _, _, headers = await create_user("testuser")
+
+    response = await client.get("/api/events/member/nonexistent?page=1&limit=10", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["meta"]["total_data"] == 0
+    assert len(data["data"]) == 0
+    assert data["meta"]["last_page"] == 1
+    assert data["meta"]["next_page"] is None
+
+
+@pytest.mark.asyncio
+async def test_get_member_events_paginated_error(client, monkeypatch, create_user):
+    _, _, headers = await create_user("testuser")
+
+    async def mock_count(*args, **kwargs):
+        raise Exception("DB Error")
+
+    monkeypatch.setattr("src.events.repository.EventsRepository.count_member_events", mock_count)
+
+    response = await client.get("/api/events/member/mem-1?page=1&limit=10", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["meta"]["total_data"] == 0
+    assert len(data["data"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_get_member_event_stats(client, create_event, create_user, db):
+    _, _, headers = await create_user("testuser")
+
+    # Insert setlists
+    await db["setlists"].insert_one({
+        "setlistId": "sl-top",
+        "title": "Top Setlist",
+        "imageUrl": "",
+        "description": "",
+        "type": "setlist",
+        "active": True
+    })
+    await db["setlists"].insert_one({
+        "setlistId": "sl-other",
+        "title": "Other Setlist",
+        "imageUrl": "",
+        "description": "",
+        "type": "setlist",
+        "active": True
+    })
+
+    # Create events with setlistIds
+    for i in range(5):
+        month = i + 1
+        await create_event({
+            "id": f"stats-event-{i}",
+            "title": f"Stats Event {i}",
+            "date": f"2026-{month:02d}-10T00:00:00",
+            "url": "/stats",
+            "label": "lbl",
+            "memberIds": ["mem-stats"],
+            "setlistId": "sl-top" if i < 3 else "sl-other"
+        })
+
+    # Create event without setlistId (should not count in unique/top)
+    await create_event({
+        "id": "stats-event-no-sl",
+        "title": "No Setlist Event",
+        "date": "2026-06-10T00:00:00",
+        "url": "/stats",
+        "label": "lbl",
+        "memberIds": ["mem-stats"]
+    })
+
+    response = await client.get("/api/events/member/mem-stats/stats", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total_shows"] == 6
+    assert data["unique_setlists"] == 2
+    assert data["top_setlist_title"] == "Top Setlist"
+    assert data["top_setlist_count"] == 3
+
+
+@pytest.mark.asyncio
+async def test_get_member_event_stats_no_data(client, create_user):
+    _, _, headers = await create_user("testuser")
+
+    response = await client.get("/api/events/member/no-data/stats", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total_shows"] == 0
+    assert data["unique_setlists"] == 0
+    assert data["top_setlist_title"] is None
+    assert data["top_setlist_count"] == 0
+
+
+@pytest.mark.asyncio
+async def test_get_member_event_stats_error(client, monkeypatch, create_user):
+    _, _, headers = await create_user("testuser")
+
+    async def mock_stats(*args, **kwargs):
+        raise Exception("DB Error")
+
+    monkeypatch.setattr("src.events.repository.EventsRepository.get_member_event_stats", mock_stats)
+
+    response = await client.get("/api/events/member/mem-1/stats", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_shows"] == 0
+    assert data["unique_setlists"] == 0
+

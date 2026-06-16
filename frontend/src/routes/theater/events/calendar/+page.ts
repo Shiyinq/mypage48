@@ -1,4 +1,4 @@
-import { eventsStore } from '$lib/stores/events';
+import { eventsStore } from '$lib/stores/events.svelte';
 import { browser } from '$app/environment';
 import type { PageLoad } from './$types';
 

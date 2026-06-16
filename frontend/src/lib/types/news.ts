@@ -4,6 +4,7 @@ export interface News {
 	category: string;
 	link: string;
 	background_image?: string;
+	blurHash?: string;
 	is_published: boolean;
 	valid_date_from: string;
 	content_body: string;

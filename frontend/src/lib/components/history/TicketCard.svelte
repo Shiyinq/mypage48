@@ -2,6 +2,7 @@
 	import {
 		Calendar,
 		Clock,
+		Heart,
 		MapPin,
 		NotebookPen,
 		Pencil,
@@ -10,20 +11,26 @@
 		X,
 		Ticket as TicketIcon
 	} from 'lucide-svelte';
-	import type { Ticket } from '$lib/types';
+	import type { Ticket } from '../../types/ticket';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
 	import { cleanseMarkdown } from '$lib/utils/markdown';
-	import { createEventDispatcher } from 'svelte';
+	import { OptimizedImage } from '$lib/components/common';
+	interface Props {
+		ticket: Ticket;
+		onfavoriteToggle?: (ticketId: string) => void;
+		onupdateNote?: (ticketId: string, note: string) => void;
+		oneditTicket?: (ticket: Ticket) => void;
+		ondeleteTicket?: (ticketId: string) => void;
+	}
 
-	export let ticket: Ticket;
+	let { ticket, onfavoriteToggle, onupdateNote, oneditTicket, ondeleteTicket }: Props = $props();
 
 	const { t } = useTranslation();
-	const dispatch = createEventDispatcher();
 
-	let isEditingNote = false;
-	let noteText = '';
+	let isEditingNote = $state(false);
+	let noteText = $state('');
 
 	function startEditingNote() {
 		isEditingNote = true;
@@ -37,7 +44,7 @@
 
 	function saveNote() {
 		if (ticket.notes !== noteText) {
-			dispatch('updateNote', { ticketId: ticket._id, note: noteText });
+			onupdateNote?.(ticket._id, noteText);
 		}
 		isEditingNote = false;
 	}
@@ -51,16 +58,20 @@
 </script>
 
 <div
-	class="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-zinc-700 flex flex-row group animate-fade-in h-[210px] w-full"
+	class="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-zinc-700 flex flex-row group h-[210px] w-full"
 >
 	<!-- Image Section (Left) -->
 	<div class="w-[140px] sm:w-[180px] h-full relative bg-gray-50 overflow-hidden flex-shrink-0">
 		{#if ticket.imageUrl}
 			<div class="w-full h-full relative">
-				<img
+				<OptimizedImage
 					src={ticket.imageUrl}
+					srcMedium={ticket.imageUrl_medium}
+					srcSmall={ticket.imageUrl_small}
+					blurHash={ticket.blurHash}
 					alt={ticket.event.title}
-					class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+					class="w-full h-full transition-transform duration-700 group-hover:scale-105"
+					sizes="(max-width: 640px) 140px, 180px"
 				/>
 				<div
 					class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent opacity-60"
@@ -81,9 +92,19 @@
 			<span
 				class="inline-block px-2 py-0.5 bg-black/40 backdrop-blur-md text-white text-[10px] font-bold rounded-md uppercase tracking-wider border border-white/20 shadow-sm"
 			>
-				{ticket.event.day ? $t('time.days.' + ticket.event.day.toLowerCase()) : $t('history.show')}
+				{ticket.event.day ? t('time.days.' + ticket.event.day.toLowerCase()) : t('history.show')}
 			</span>
 		</div>
+
+		<button
+			onclick={() => onfavoriteToggle?.(ticket._id)}
+			class="absolute top-2 right-2 z-10 cursor-pointer transition-transform hover:scale-110"
+			aria-label="Toggle favorite"
+		>
+			<Heart
+				class={`w-5 h-5 drop-shadow-lg ${ticket.is_favorite ? 'text-red-500 fill-red-500' : 'text-white/60'}`}
+			/>
+		</button>
 	</div>
 
 	<!-- Content Section (Right) -->
@@ -115,7 +136,7 @@
 			<div class="flex items-center text-gray-600 dark:text-gray-400">
 				<Calendar class="w-3 h-3 mr-1.5 text-red-500 flex-shrink-0" />
 				<span class="truncate"
-					>{$formatDate(ticket.event.date, {
+					>{formatDate(ticket.event.date, {
 						day: 'numeric',
 						month: 'short',
 						year: '2-digit'
@@ -143,22 +164,22 @@
 		<!-- Notes Area (Compact) -->
 		<div class="px-3 flex-1 min-h-0 flex flex-col">
 			{#if isEditingNote}
-				<div class="flex-1 relative animate-fade-in pb-1">
+				<div class="flex-1 relative pb-1">
 					<textarea
 						bind:value={noteText}
-						on:keydown={handleKeydown}
+						onkeydown={handleKeydown}
 						class="w-full h-full p-2 text-xs text-gray-900 border border-gray-200 rounded-lg focus:ring-1 focus:ring-red-500 focus:border-transparent outline-none bg-yellow-50/50 resize-none"
 						placeholder="Add note..."
 					></textarea>
 					<div class="absolute bottom-2 right-2 flex gap-1">
 						<button
-							on:click={cancelEditingNote}
+							onclick={cancelEditingNote}
 							class="p-1 text-gray-400 hover:text-gray-600 bg-white rounded shadow-sm border border-gray-100 cursor-pointer"
 						>
 							<X class="w-3 h-3" />
 						</button>
 						<button
-							on:click={saveNote}
+							onclick={saveNote}
 							class="p-1 text-red-600 hover:text-red-700 bg-white rounded shadow-sm border border-red-50 cursor-pointer"
 						>
 							<Save class="w-3 h-3" />
@@ -168,8 +189,8 @@
 			{:else}
 				<div
 					class="group/note relative flex-1 bg-gray-50 dark:bg-zinc-800/50 rounded-lg px-2 py-1.5 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors cursor-pointer"
-					on:click={startEditingNote}
-					on:keydown={(e) => e.key === 'Enter' && startEditingNote()}
+					onclick={startEditingNote}
+					onkeydown={(e) => e.key === 'Enter' && startEditingNote()}
 					role="button"
 					tabindex="0"
 				>
@@ -182,7 +203,7 @@
 							class="h-full flex items-center text-gray-400 dark:text-gray-600 italic text-[10px]"
 						>
 							<NotebookPen class="w-3 h-3 mr-1 opacity-50" />
-							{$t('history.addNote')}
+							{t('history.addNote')}
 						</div>
 					{/if}
 					<div
@@ -199,14 +220,14 @@
 			class="px-3 py-2 flex justify-between items-center border-t border-gray-50 dark:border-zinc-800 mt-1"
 		>
 			<button
-				on:click={() => dispatch('editTicket', ticket)}
+				onclick={() => oneditTicket?.(ticket)}
 				class="text-[10px] font-bold text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors cursor-pointer"
 			>
 				<Pencil class="w-3 h-3" />
-				{$t('history.editDetails')}
+				{t('history.editDetails')}
 			</button>
 			<button
-				on:click={() => dispatch('deleteTicket', ticket._id)}
+				onclick={() => ondeleteTicket?.(ticket._id)}
 				class="text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
 			>
 				<Trash2 class="w-3.5 h-3.5" />

@@ -18,12 +18,16 @@
 		"info": "Informasi",
 		"search": "Cari",
 		"filter": "Filter",
+		"setlist": "Setlist",
 		"filters": "Filter",
 		"all": "Semua",
 		"allSetlists": "Semua Setlist",
 		"allData": "Semua Data",
 		"hasTwoShot": "Ada 2-Shot",
+		"favorite": "Favorit",
 		"clearFilters": "Hapus Filter",
+		"startDate": "Mulai Tanggal",
+		"endDate": "Sampai Tanggal",
 		"days": "Hari",
 		"dateRange": "Rentang Tanggal",
 		"viewDetails": "Lihat Detail",
@@ -31,7 +35,7 @@
 		"events": "Event",
 		"settings": "Pengaturan",
 		"profile": "Profil",
-		"dashboard": "Dasbor",
+		"dashboard": "Ringkasan",
 		"language": "Bahasa",
 		"noResults": "Tidak ada hasil ditemukan",
 		"date": "Tanggal",
@@ -40,7 +44,8 @@
 		"fromShort": "Dari",
 		"toShort": "Ke",
 		"copyLink": "Salin Tautan",
-		"copied": "Tautan disalin ke clipboard!"
+		"copied": "Tautan disalin ke clipboard!",
+		"noMoreData": "Seluruh data telah dimuat"
 	},
 	"validation": {
 		"alert": {
@@ -48,6 +53,20 @@
 			"fileTooLarge": "File terlalu besar. Maksimum 3MB.",
 			"invalidType": "Format file tidak didukung. Gunakan JPEG, PNG, atau WebP.",
 			"noFile": "Tidak ada file yang dipilih."
+		}
+	},
+	"imageEditor": {
+		"title": "Edit Gambar",
+		"done": "Selesai",
+		"aspectRatio": "Rasio Aspek",
+		"ratios": {
+			"free": "Bebas",
+			"original": "Asli",
+			"square": "1:1",
+			"sixteenNine": "16:9",
+			"nineSixteen": "9:16",
+			"fourThree": "4:3",
+			"threeFour": "3:4"
 		}
 	},
 	"seo": {
@@ -81,8 +100,8 @@
 		"journal": "Jurnal digital personal dari setiap pertunjukan yang telah kamu hadiri."
 	},
 	"nav": {
-		"home": "Beranda",
-		"dashboard": "Dasbor",
+		"home": "Ringkasan",
+		"dashboard": "Ringkasan",
 		"setlists": "Setlists",
 		"events": "Event",
 		"theater": "Theater",
@@ -95,7 +114,7 @@
 		"settings": "Pengaturan",
 		"newTicket": "Tiket Baru",
 		"journal": "Jurnal",
-		"top2shot": "Top 2-Shot"
+		"top2shot": "Roulette & Birthday"
 	},
 	"header": {
 		"tagline": "PELACAK TEATER JKT48"
@@ -116,6 +135,7 @@
 			"description": "Simpan setiap jejak perjalanan-mu menjadi wota dalam satu {highlight} yang personal. Bukan sekadar pelacak, tapi saksi bisu dedikasi kamu.",
 			"highlight": "arsip digital",
 			"getStarted": "Mulai Sekarang",
+			"alreadyHaveAccount": "Sudah punya akun? ",
 			"openSource": "Open Source • Tanpa Iklan • Buatan Fans"
 		},
 		"features": {
@@ -134,6 +154,14 @@
 			"achievements": {
 				"title": "PENCAPAIAN",
 				"description": "Buka lencana dan pencapaian saat kamu mendukung JKT48. Dari \"Pertunjukan Pertama\" hingga \"Fans Legendaris\", lacak kemajuanmu dan tunjukkan loyalitasmu."
+			},
+			"sorter": {
+				"title": "SORTER",
+				"description": "Urutkan member JKT48 favoritmu untuk mengetahui urutan oshi yang sebenarnya. Bagikan hasil sorter-mu ke media sosial."
+			},
+			"live": {
+				"title": "LIVE",
+				"description": "Tonton member JKT48 yang sedang siaran langsung di Showroom atau IDN Live. Tonton beberapa member sekaligus dengan fitur Multi-view."
 			}
 		},
 		"footer": {
@@ -275,6 +303,11 @@
 			"registerCta": "Daftar akun",
 			"welcomeBack": "Selamat datang kembali!",
 			"invalidCredentials": "Email atau kata sandi salah",
+			"emailNotVerified": "Email Anda belum diverifikasi. Silakan cek kotak masuk atau folder spam Anda.",
+			"resendVerification": "Kirim ulang link verifikasi",
+			"resendWait": "Tunggu {seconds}d untuk kirim ulang",
+			"resendSuccess": "Link verifikasi telah dikirim ke email Anda.",
+			"resendError": "Gagal mengirim link verifikasi. Silakan coba lagi nanti.",
 			"sessionInvalid": "Sesi Anda telah berakhir atau tidak valid. Silakan masuk kembali."
 		},
 		"register": {
@@ -345,24 +378,24 @@
 		}
 	},
 	"dashboard": {
-		"title": "Dasbor",
-		"error": "Gagal memuat data dasbor",
-		"subtitle": "Ringkasan aktivitas teater kamu",
-		"filterTitle": "Filter Dasbor",
+		"title": "Ringkasan",
+		"error": "Gagal memuat data ringkasan",
+		"subtitle": "Aktivitas teater kamu",
+		"filterTitle": "Filter Ringkasan",
 		"filterSubtitle": "Atur rentang visualisasi",
 		"theater": {
-			"title": "Show",
-			"subtitle": "Ringkasan kehadiran kamu",
+			"title": "Pertunjukan",
+			"subtitle": "Kehadiran kamu",
 			"shows": "Pertunjukan",
 			"tickets": "Tiket",
 			"spending": "Pengeluaran",
 			"totalExpenses": "Total Pengeluaran",
-			"topRow": "Baris Favorit",
+			"topRow": "Kursi Teater",
 			"mostFrequentSeat": "Kursi Tersering",
-			"topShow": "Pertunjukan Favorit",
+			"topShow": "Setlist",
 			"mostWatched": "Paling Sering Ditonton",
 			"inYear": "Pada {year}",
-			"firstLast": "Show Pertama & Terakhir",
+			"firstLast": "Pertunjukan Pertama & Terakhir",
 			"first": "Pertama",
 			"last": "Terakhir",
 			"times": "Kali",
@@ -377,7 +410,7 @@
 			"totalExpenses": "Total Pengeluaran",
 			"members": "Member",
 			"uniqueIdols": "Idola Unik",
-			"topTwoShot": "Top 2-Shot",
+			"topTwoShot": "Roulette & Birthday",
 			"mostCollected": "Koleksi Terbanyak",
 			"photos": "Foto",
 			"firstLast": "2-Shot Pertama & Terakhir",
@@ -390,6 +423,15 @@
 			"rowsCollected": "Baris Terkumpul",
 			"stage": "Panggung",
 			"row": "Baris"
+		},
+		"heatmap": {
+			"title": "Riwayat Kehadiran",
+			"subtitle": "Aktivitas harian tahun",
+			"noAttendance": "Tidak ada kehadiran pada",
+			"attendance": "kehadiran",
+			"on": "pada",
+			"less": "Kurang",
+			"more": "Lebih"
 		},
 		"monthlyAttendance": {
 			"title": "Kehadiran Bulanan",
@@ -411,7 +453,17 @@
 			"save": "Simpan Oshi",
 			"loading": "Memuat member...",
 			"noMembers": "Tidak ada member yang cocok dengan \"{query}\"",
-			"generation": "Generasi {gen}"
+			"generation": "Generasi {gen}",
+			"selectHint": "Pilih hingga {count} lagi",
+			"maxReached": "Maksimal {max} oshi tercapai",
+			"newSelected": "{count} baru dipilih",
+			"confirmTitle": "Hapus Oshi?",
+			"confirmDesc": "Yakin ingin menghapus oshi ini dari daftar?",
+			"confirmRemove": "Hapus",
+			"addedToast": "Oshi berhasil ditambahkan!",
+			"removedToast": "Oshi berhasil dihapus!",
+			"addErrorToast": "Gagal menambah oshi",
+			"removeErrorToast": "Gagal menghapus oshi"
 		},
 		"title": "Profil Saya",
 		"subtitle": "Identitas & Stats Penggemar",
@@ -424,13 +476,15 @@
 		},
 		"level": {
 			"currentRank": "Peringkat Saat Ini",
-			"xpInfo": "1 XP = 1 Pertunjukan",
+			"xpInfo": "1 XP = 1 Kehadiran",
 			"needed": "dibutuhkan",
 			"for": "untuk"
 		},
 		"stats": {
-			"totalShows": "Total Pertunjukan",
+			"totalShows": "Total Kehadiran",
 			"achievements": "Pencapaian",
+			"totalTwoShots": "Total 2-Shot",
+			"totalLiveWatched": "Live Ditonton",
 			"oshiMeetings": "Bertemu"
 		},
 		"oshi": {
@@ -438,7 +492,7 @@
 			"generation": "Generasi",
 			"generationPattern": "Generasi {gen}",
 			"totalShowsPattern": "{count} Show",
-			"showsTooltip": "Data yang tercatat tidak termasuk Shonichi setlist dan menggantikan member lain (under) untuk show, serta keterbatasan data hasil scraping.",
+			"showsTooltip": "Data yang tercatat tidak termasuk Shonichi setlist dan menggantikan member lain (under) untuk show, serta keterbatasan data hasil scrape.",
 			"emptyTitle": "Siapa Oshi kamu?",
 			"emptyDescription": "Pilih member favoritmu untuk ditampilkan di kartu profilmu.",
 			"selectBadge": "Pilih Oshi",
@@ -450,7 +504,9 @@
 			"birthday": "Birthday",
 			"upcomingSchedule": "Jadwal Oshi selanjutnya",
 			"pastSchedule": "Jadwal Oshi sebelumnya",
-			"noSchedule": "Tidak ada jadwal"
+			"noSchedule": "Tidak ada jadwal",
+			"addOshi": "Tambah Oshi",
+			"removeOshi": "Hapus Oshi"
 		},
 		"recentActivity": {
 			"title": "Aktivitas Terbaru",
@@ -466,9 +522,14 @@
 			"weeksAgo": "minggu yang lalu"
 		},
 		"publicActivity": {
-			"wrapped": "Theater JKT48 Wrapped {year}",
+			"wrapped": "JKT48 Theater Wrapped {year}",
+			"allTime": "JKT48 Theater Wrapped",
+			"summary": "Ringkasan",
 			"yearSummary": "Ringkasan {year}",
-			"watchedTimes": "Ditonton {count} kali"
+			"yearSummaryBadge": "JKT48 Theater {year}",
+			"watchedTimes": "Ditonton {count} kali",
+			"topSetlists": "Top Setlist",
+			"topTwoShotMembers": "Top 2-Shot"
 		},
 		"profilePicture": {
 			"previewTitle": "Preview Foto Profil",
@@ -480,6 +541,29 @@
 	"settings": {
 		"title": "Pengaturan",
 		"subtitle": "Kelola preferensi kamu",
+		"account": {
+			"title": "Informasi Akun",
+			"subtitle": "Lihat dan kelola identitas Anda",
+			"fullName": "Nama Lengkap",
+			"username": "Username",
+			"email": "Alamat Email",
+			"memberId": "ID Member",
+			"ofcStatus": "Status OFC",
+			"memberSince": "Member Sejak",
+			"type": "Tipe Akun",
+			"admin": "Administrator",
+			"wota": "Wota",
+			"verified": "Terverifikasi",
+			"unverified": "Belum Verifikasi",
+			"saveSuccess": "Profil berhasil diperbarui!",
+			"saveError": "Gagal memperbarui profil",
+			"bio": "Bio",
+			"noChanges": "Tidak ada perubahan",
+			"emailWarning": "Mengubah email akan memerlukan verifikasi ulang.",
+			"systemInfo": "Informasi Anggota",
+			"systemSubtitle": "Detail data keanggotaan Anda",
+			"verification": "Verifikasi Akun"
+		},
 		"language": {
 			"title": "Bahasa",
 			"subtitle": "Pilih bahasa tampilan",
@@ -499,7 +583,12 @@
 			"uploadError": "Gagal mengunggah foto profil. Silakan coba lagi.",
 			"uploadSuccess": "Foto profil berhasil diperbarui!",
 			"loadErrorTitle": "Gagal Memuat Konfigurasi",
-			"loadErrorDesc": "Kami tidak dapat memuat pengaturan profil publik Anda. Silakan coba lagi."
+			"loadErrorDesc": "Kami tidak dapat memuat pengaturan profil publik Anda. Silakan coba lagi.",
+			"viewProfile": "Lihat Profil",
+			"bioPlaceholder": "Ceritakan sedikit tentang dirimu...",
+			"noBio": "Tambahkan bio ke profil publikmu...",
+			"updateSuccess": "Bio berhasil diperbarui",
+			"updateError": "Gagal memperbarui bio"
 		},
 		"developer": {
 			"title": "Akses Developer",
@@ -578,6 +667,7 @@
 	"memories": {
 		"title": "Kenangan",
 		"subtitle": "Galeri foto dan tiket kamu",
+		"photoType": "Jenis Foto",
 		"allPhotos": "Semua Foto",
 		"tickets": "Tiket",
 		"twoShots": "2-Shot",
@@ -592,7 +682,96 @@
 		"locked": "Terkunci",
 		"progress": "Progres",
 		"errorTitle": "Gagal memuat pencapaian",
-		"errorDesc": "Terjadi kesalahan saat mengambil pencapaian kamu."
+		"errorDesc": "Terjadi kesalahan saat mengambil pencapaian kamu.",
+		"items": {
+			"first_show": {
+				"title": "Langkah Pertama",
+				"description": "Menghadiri pertunjukan teater pertamamu"
+			},
+			"regular_visitor": {
+				"title": "Pengunjung Tetap",
+				"description": "Menghadiri 10 pertunjukan",
+				"progress": "{current}/10 pertunjukan"
+			},
+			"dedicated_fan_50": {
+				"title": "Penggemar Berdedikasi",
+				"description": "Menghadiri 50 pertunjukan",
+				"progress": "{current}/50 pertunjukan"
+			},
+			"century_club_100": {
+				"title": "Klub Century",
+				"description": "Menghadiri 100 pertunjukan",
+				"progress": "{current}/100 pertunjukan"
+			},
+			"theater_icon_150": {
+				"title": "Ikon Teater",
+				"description": "Menghadiri 150 pertunjukan",
+				"progress": "{current}/150 pertunjukan"
+			},
+			"legendary_wota_200": {
+				"title": "Wota Legendaris",
+				"description": "Menghadiri 200 pertunjukan",
+				"progress": "{current}/200 pertunjukan"
+			},
+			"theater_kami_300": {
+				"title": "Teater Kami",
+				"description": "Menghadiri 300 pertunjukan",
+				"progress": "{current}/300 pertunjukan"
+			},
+			"absolute_legend_500": {
+				"title": "Legenda Sejati",
+				"description": "Menghadiri 500 pertunjukan",
+				"progress": "{current}/500 pertunjukan"
+			},
+			"super_fan": {
+				"title": "Super Penggemar",
+				"description": "Menonton acara yang sama 10 kali",
+				"progress": "{current}/10 kali"
+			},
+			"mega_fan": {
+				"title": "Mega Penggemar",
+				"description": "Menonton acara yang sama 20 kali",
+				"progress": "{current}/20 kali"
+			},
+			"ultra_fan": {
+				"title": "Ultra Penggemar",
+				"description": "Menonton acara yang sama 30 kali",
+				"progress": "{current}/30 kali"
+			},
+			"theater_enthusiast": {
+				"title": "Pecinta Teater",
+				"description": "1 tahun anniversary sejak pertunjukan pertama",
+				"progress": "{current}/365 hari"
+			},
+			"theater_veteran": {
+				"title": "Veteran Teater",
+				"description": "2 tahun anniversary sejak pertunjukan pertama",
+				"progress": "{current}/730 hari"
+			},
+			"theater_legend": {
+				"title": "Legenda Teater",
+				"description": "3 tahun anniversary sejak pertunjukan pertama",
+				"progress": "{current}/1095 hari"
+			},
+			"elite_row": {
+				"title": "Kursi Elite",
+				"description": "Duduk di Baris A yang legendaris"
+			},
+			"back_row_warrior": {
+				"title": "Prajurit Baris Belakang",
+				"description": "Menonton dari baris terjauh (Baris J)"
+			},
+			"seat_explorer": {
+				"title": "Penjelajah Kursi",
+				"description": "Mengoleksi tiket untuk semua baris (A-J)",
+				"progress": "{current}/10 baris"
+			},
+			"supporter": {
+				"title": "Top Supporter",
+				"description": "Menghabiskan lebih dari 5 Juta Rupiah untuk tiket",
+				"progress": "{current}/5 jt"
+			}
+		}
 	},
 	"errors": {
 		"404": {
@@ -673,6 +852,9 @@
 		"relative": {
 			"today": "Hari ini",
 			"yesterday": "Kemarin",
+			"justNow": "Baru saja",
+			"minsAgo": "{count}m yang lalu",
+			"hoursAgo": "{count}j yang lalu",
 			"daysAgo": "{count} hari yang lalu",
 			"weeksAgo": "{count} minggu yang lalu"
 		}
@@ -680,15 +862,19 @@
 	"upload": {
 		"title": "Unggah Tiket",
 		"subtitle": "Tambahkan tiket baru ke koleksi",
-		"scanTicket": "Pindai Tiket",
-		"scanDescription": "Unggah gambar dan biarkan AI mengekstrak info detail.",
+		"scanTicket": "Pindai Tiket Teater",
+		"scanDescription": "Unggah gambar tiket teater dan biarkan AI mengekstrak info detail.",
 		"manualEntry": "Input Manual",
 		"manualDescription": "Ketik detailnya sendiri.",
 		"saveTicket": "Simpan Tiket",
 		"uploadSuccess": "Tiket berhasil diunggah",
 		"uploadError": "Gagal mengunggah tiket",
 		"analyzingTitle": "Menganalisis Tiket",
-		"analyzingDescription": "Mengekstrak info pertunjukan..."
+		"analyzingDescription": "Mengekstrak info pertunjukan...",
+		"viewExample": "Lihat Contoh Tiket",
+		"exampleTitle": "Contoh Tiket Teater JKT48",
+		"exampleSubtitle": "Gunakan screenshot tiket teater JKT48 yang jelas",
+		"exampleDescription": "Pindai AI bekerja paling optimal dengan gambar/screenshot tiket teater JKT48 seperti di atas. AI akan membaca otomatis: Judul Setlist, Tanggal, Waktu Show, Nomor Kursi, ID Tiket, dan Harga."
 	},
 	"forms": {
 		"analysisFailed": "Gagal membaca detail tiket secara otomatis.",
@@ -742,6 +928,40 @@
 		"emptyState": {
 			"title": "Tidak Ada Member",
 			"description": "Coba sesuaikan pencarian atau filter untuk menemukan member yang kamu cari."
+		},
+		"loadMore": "Muat Lebih Banyak",
+		"upcoming": "Akan Datang",
+		"past": "Sebelumnya",
+		"pastShows": "Pertunjukan Sebelumnya",
+		"shows": "Pertunjukan",
+		"liveTitle": "Live",
+		"generation": "Gen",
+		"cm": "cm",
+		"count": "x",
+		"viewers": "Views",
+		"liveFallback": "Live Stream",
+		"eventEmpty": "Tidak ada pertunjukan untuk member ini",
+		"liveEmpty": "Tidak ada riwayat live untuk member ini",
+		"showSidebar": "Tampilkan sidebar",
+		"closeSidebar": "Tutup Sidebar",
+		"memberFrame": "bingkai member",
+		"officialProfile": "Profil Resmi",
+		"twitterProfile": "Profil Twitter / X",
+		"tiktokProfile": "Profil TikTok",
+		"showStats": {
+			"title": "Statistik Show",
+			"totalShows": "Total Show",
+			"topSetlist": "Paling Sering Dibawakan",
+			"uniqueSetlists": "Setlist Unik",
+			"disclaimer": "Data ini berdasarkan hasil scraping dan mungkin berbeda dengan data asli."
+		},
+		"liveStats": {
+			"title": "Statistik Live",
+			"totalLives": "Total Live",
+			"totalDuration": "Total Durasi",
+			"topPlatform": "Platform Teratas",
+			"longestLive": "Live Terlama",
+			"disclaimer": "Data ini berdasarkan hasil scraping dan mungkin berbeda dengan data asli."
 		}
 	},
 	"shows": {
@@ -757,11 +977,11 @@
 		"firstAttended": "Pertama Nonton",
 		"lastAttended": "Terakhir Nonton",
 		"avgPrice": "Rata-rata Harga",
-		"topRow": "Baris Favorit",
+		"topRow": "Kursi Teater",
 		"mostFrequentedRow": "Baris yang paling sering ditempati",
 		"investmentInMemories": "Investasi kenangan",
 		"row": "Baris",
-		"unit": "Pertunjukan",
+		"unit": "Kehadiran",
 		"totalShows": "Total Pertunjukan",
 		"uniqueShows": "Pertunjukan Unik"
 	},
@@ -787,6 +1007,9 @@
 			"viewer": "Penonton",
 			"startedAt": "Mulai sejak",
 			"liveDuration": "Sudah Live",
+			"seoTitle": "JKT48 Live Streaming - Showroom & IDN Live",
+			"seoDescription": "Tonton member JKT48 Live Streaming hari ini di Showroom atau IDN Live melalui MyPage48.",
+			"seoMemberDescription": "Tonton JKT48 Live Streaming {name} di MyPage48. Ikuti siaran langsung member JKT48 favoritmu di Showroom atau IDN Live.",
 			"empty": "Tidak ada member yang sedang siaran langsung saat ini.",
 			"emptyTitle": "Belum Ada Live",
 			"back": "Kembali",
@@ -808,6 +1031,9 @@
 			"liveBadge": "LANGSUNG",
 			"chat": "Obrolan",
 			"connected": "Terhubung",
+			"offline_title": "Stream Offline",
+			"offline_description": "{name} tidak sedang live saat ini. Sesi ini mungkin telah berakhir atau sedang tidak tersedia.",
+			"return_home": "Kembali ke Beranda",
 			"toggleTheme": "Ganti Tema",
 			"volume": "Volume",
 			"mute": "Senyap",
@@ -816,6 +1042,10 @@
 			"openOriginal": "Buka Stream Asli",
 			"multiview": {
 				"title": "Multi-view",
+				"live": {
+					"seoTitle": "JKT48 Multi-view Live - Tonton Banyak Live Sekaligus",
+					"seoDescription": "Nonton banyak member JKT48 live sekaligus dalam satu layar. Fitur Multi-view terbaik untuk fans JKT48 di MyPage48."
+				},
 				"tap_to_play": "Ketuk untuk Memutar",
 				"clear_all": "Hapus Semua",
 				"switch_to_landscape": "Pindah ke Lanskap",
@@ -837,18 +1067,41 @@
 				"loading_chat": "Memuat chat...",
 				"select_stream_to_chat": "Pilih stream untuk melihat chat",
 				"member_offline": "{name} offline",
-				"showroom_chat": "Chat Showroom",
-				"chat_started": "Chat Dimulai",
 				"no_messages": "Belum ada pesan",
 				"stream_error": "Kesalahan stream: {details}",
 				"hls_not_supported": "HLS tidak didukung",
 				"no_stream_found": "Stream tidak ditemukan",
 				"failed_load_stream": "Gagal memuat stream",
 				"retry": "Coba Lagi",
-				"sending_gift": "Mengirim Gift",
-				"seoDescription": "Tonton beberapa member JKT48 live secara bersamaan. Ganti, atur ulang, dan chat di beberapa live stream sekaligus."
+				"sending_gift": "Mengirim Gift"
 			},
-			"switchMultiview": "Pindah ke Multi-view"
+			"joined": "{name} bergabung",
+			"group_joined": "{name} dan {count} lainnya bergabung",
+			"chat_started": "Obrolan dimulai",
+			"connecting": "Menyambungkan...",
+			"disconnected": "Terputus",
+			"reconnect_idn": "Koneksi terputus. Mencoba menghubungkan kembali dalam beberapa detik...",
+			"switchMultiview": "Multi-view",
+			"share": {
+				"title": "Dukung mypage48! 🚀",
+				"description": "Suka dengan website ini? Bantu kami tetap hidup dan berkembang dengan membagikan platform ini ke sesama fans JKT48!",
+				"shareToX": "Bagikan ke X",
+				"copyLink": "Salin Link",
+				"shareText": "Yuk pantau live streaming member JKT48 terupdate di mypage48! 🌟",
+				"toastSuccess": "Link website berhasil disalin!",
+				"toastError": "Gagal menyalin link."
+			},
+			"promo": {
+				"historyTitle": "Fitur Live History",
+				"historyDesc": "Kini kamu bisa melihat statistik riwayat tontonan live-mu sendiri lho! Yuk buat akun sekarang.",
+				"historyAction": "Daftar"
+			},
+			"video_stability": {
+				"title": "Stabilitas Video",
+				"realtime": "Real-time",
+				"balanced": "Seimbang",
+				"stable": "Ultra Stabil"
+			}
 		},
 		"news": {
 			"title": "Berita",
@@ -895,7 +1148,9 @@
 			"subtitle": "Data member JKT48",
 			"comingSoon": "Data member akan segera hadir!",
 			"errorTitle": "Gagal memuat member",
-			"errorDesc": "Terjadi kesalahan saat mengambil daftar member."
+			"errorDesc": "Terjadi kesalahan saat mengambil daftar member.",
+			"team": "Tim",
+			"allTeams": "Semua Tim"
 		},
 		"upcomingEvents": {
 			"title": "Jadwal Mendatang",
@@ -923,7 +1178,10 @@
 			"setlist": "Setlist",
 			"eventType": "Event",
 			"birthday": "Ulang Tahun",
-			"tba": "TBA"
+			"tba": "TBA",
+			"promoTitle": "Fitur Scan Tiket",
+			"promoDesc": "Kalau kamu verif teater jangan lupa tiket teaternya disimpan atau dicatet, di web ini bisa pakai fitur scan tiket teater loh, nanti kamu bisa tau kamu sering duduk di row belakang atau depan, yuk buat akun sekarang.",
+			"promoAction": "Daftar"
 		},
 		"eventHistory": {
 			"title": "Riwayat Event",
@@ -972,16 +1230,39 @@
 			"shareTextHeader": "Hasil JKT48 Oshi Sorter-ku:",
 			"shareTextFooter": "Coba punya kamu di",
 			"copySuccess": "Hasil berhasil disalin ke clipboard!",
-			"copyFailed": "Gagal menyalin hasil. Silakan salin manual."
+			"copyFailed": "Gagal menyalin hasil. Silakan salin manual.",
+			"editTitle": "Edit Judul",
+			"editSubtitle": "Edit Deskripsi",
+			"save": "Simpan",
+			"cancel": "Batal",
+			"startNew": "Mulai Sorter",
+			"history": "Riwayat Sorter",
+			"loadingHistory": "Memuat Riwayat Sorter...",
+			"noHistoryTitle": "Belum Ada Riwayat",
+			"noHistoryDesc": "Selesaikan sorter dan simpan hasilnya untuk melihat riwayat peringkat oshi terbaikmu di sini.",
+			"loadHistoryFailed": "Gagal memuat riwayat sorter",
+			"saveSuccess": "Hasil berhasil disimpan ke riwayat!",
+			"saveFailed": "Gagal menyimpan hasil",
+			"deleteSuccess": "Entri riwayat berhasil dihapus",
+			"deleteFailed": "Gagal menghapus entri riwayat",
+			"deleteHistory": "Hapus Riwayat",
+			"backToHistory": "Riwayat Sorter",
+			"gridView": "Tampilan Grid",
+			"listView": "Tampilan List",
+			"confirmYes": "Ya",
+			"confirmCancel": "Batal",
+			"detail": "Detail",
+			"loginNow": "Daftar",
+			"historyFeatures": "Fitur Riwayat Sorter",
+			"landingPromo": "Ingin menyimpan dan melihat riwayat lengkap urutan oshi-mu? Yuk buat akun sekarang."
 		}
 	},
 	"top2shot": {
-		"title": "Top 2-Shot",
-		"subtitle": "Analisis member & rincian pengeluaran",
+		"title": "Roulette & Birthday",
+		"subtitle": "2-Shot dengan member terbanyak",
 		"noData": "Belum Ada Data 2-Shot",
 		"noDataDesc": "Mulai tambahkan detail 2-shot saat membuat atau mengedit tiket untuk melihat peringkat Oshi kamu!",
 		"mostCollected": "KOLEKSI TERBANYAK",
-		"cherished": "Member paling kamu sayangi",
 		"stats2shots": "2-Shot",
 		"statsSpent": "Pengeluaran",
 		"budgetSplit": "Pembagian Anggaran",
@@ -1024,7 +1305,8 @@
 				"userInfo": "Info Pengguna",
 				"email": "Email",
 				"status": "Status",
-				"created": "Dibuat"
+				"created": "Dibuat",
+				"lastActive": "Terakhir Aktif"
 			},
 			"status": {
 				"verified": "Terverifikasi",
@@ -1055,6 +1337,12 @@
 				"nameRequired": "Nama wajib diisi",
 				"nickname": "Nama Panggilan",
 				"generation": "Generasi",
+				"memberType": "Tipe Member",
+				"birthdate": "Tanggal Lahir",
+				"bloodType": "Golongan Darah",
+				"height": "Tinggi Badan",
+				"horoscope": "Zodiak",
+				"selectPlaceholder": "Pilih",
 				"imageUrl": "URL Gambar",
 				"jikoshoukai": "Jikoshoukai",
 				"socials": "Media Sosial",
@@ -1141,7 +1429,7 @@
 			"memories": "Ke Kenangan",
 			"profile": "Ke Profil",
 			"settings": "Ke Pengaturan",
-			"scanTicket": "Pindai Tiket",
+			"scanTicket": "Pindai Tiket Teater",
 			"manualTicket": "Tambah Tiket Manual",
 			"lightMode": "Ganti ke Mode Terang",
 			"darkMode": "Ganti ke Mode Gelap",
@@ -1205,5 +1493,46 @@
 		"showSidebar": "Tampilkan Daftar",
 		"uploadingImage": "Mengunggah gambar...",
 		"cancelImage": "Batal"
+	},
+	"liveHistory": {
+		"title": "Riwayat Nonton",
+		"subtitle": "Riwayat menonton live kamu",
+		"totalWatches": "Total Menonton",
+		"totalDuration": "Total Durasi",
+		"membersWatched": "Member Ditonton",
+		"mostFrequent": "Paling Sering",
+		"recentHistory": "Riwayat Terakhir",
+		"noHistory": "Belum Ada Riwayat",
+		"noHistoryDesc": "Kamu belum pernah menonton live stream JKT48 yang tercatat.",
+		"noGlobalHistory": "Tidak Ada Riwayat Live",
+		"noGlobalHistoryDesc": "Tidak ada riwayat live stream JKT48 yang ditemukan.",
+		"times": "kali",
+		"buttonSubtitle": "Statistik Saya",
+		"longestWatch": "Nonton Terlama",
+		"platformWatches": "Platform Menonton",
+		"viewHistory": "Riwayat Menonton",
+		"watchedFor": "Menonton",
+		"globalTitle": "Riwayat Live",
+		"globalSubtitle": "Riwayat seluruh live yang tercatat",
+		"globalButtonSubtitle": "Semua Live",
+		"globalButton": "Riwayat Live",
+		"rankingTitle": "Peringkat Member",
+		"rankingSubtitle": "Member paling sering kamu tonton",
+		"globalStatsTitle": "Statistik Live",
+		"totalLives": "Total Live",
+		"uniqueMembers": "Member Unik",
+		"mostFrequentLive": "Paling Sering Live",
+		"highestViews": "Views Tertinggi",
+		"globalRankingTitle": "Peringkat Member Live",
+		"globalRankingSubtitle": "Member paling sering live",
+		"liveHistory": "Riwayat Live",
+		"longestLive": "Live Terlama",
+		"totalLivePlatform": "Total Live Platform",
+		"views": "Views",
+		"thisWeek": "Minggu Ini",
+		"thisMonth": "Bulan Ini",
+		"thisYear": "Tahun Ini",
+		"allTime": "Semua Waktu",
+		"customRange": "Rentang Kustom"
 	}
 }

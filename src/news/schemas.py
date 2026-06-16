@@ -10,6 +10,7 @@ class NewsResponse(BaseModel):
     category: str
     link: str
     background_image: Optional[str] = None
+    blurHash: Optional[str] = None
     is_published: bool
     valid_date_from: datetime
     content_body: str

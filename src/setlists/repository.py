@@ -8,6 +8,51 @@ class SetlistsRepository:
         self.collection = db["setlists"]
         self.db = db
 
+    def _get_date_filter_pipeline(
+        self,
+        year: Optional[int],
+        start_month: Optional[int],
+        end_month: Optional[int],
+        is_all_data: bool,
+    ) -> List[dict]:
+        if is_all_data or year is None or start_month is None or end_month is None:
+            return []
+
+        return [
+            {
+                "$match": {
+                    "event.date": {
+                        "$exists": True,
+                        "$type": "string",
+                        "$regex": r"^\d{4}-\d{2}-\d{2}",
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "parsedDate": {
+                        "$dateFromString": {
+                            "dateString": "$event.date",
+                            "format": "%Y-%m-%d",
+                        }
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "year": {"$year": "$parsedDate"},
+                    "month": {"$month": "$parsedDate"},
+                }
+            },
+            {
+                "$match": {
+                    "year": year,
+                    "month": {"$gte": start_month + 1, "$lte": end_month + 1},
+                }
+            },
+            {"$project": {"parsedDate": 0, "year": 0, "month": 0}},
+        ]
+
     async def insert_many(self, setlists: List[dict]) -> int:
         result = await self.collection.insert_many(setlists)
         return len(result.inserted_ids)
@@ -45,6 +90,10 @@ class SetlistsRepository:
         setlist_type: Optional[str] = None,
         active: Optional[bool] = None,
         search: Optional[str] = None,
+        year: Optional[int] = None,
+        start_month: Optional[int] = None,
+        end_month: Optional[int] = None,
+        is_all_data: bool = False,
     ) -> tuple[List[dict], int]:
         """
         Get all setlists with ticket count stats using aggregation.
@@ -94,7 +143,10 @@ class SetlistsRepository:
                                         }
                                     }
                                 }
-                            ],
+                            ]
+                            + self._get_date_filter_pipeline(
+                                year, start_month, end_month, is_all_data
+                            ),
                             "as": "matched_tickets",
                         }
                     },
@@ -169,6 +221,10 @@ class SetlistsRepository:
         self,
         setlist_id: str,
         user_id: str,
+        year: Optional[int] = None,
+        start_month: Optional[int] = None,
+        end_month: Optional[int] = None,
+        is_all_data: bool = False,
     ) -> Optional[dict]:
         """
         Get setlist by ID with user's matching tickets.
@@ -195,7 +251,12 @@ class SetlistsRepository:
                                     ]
                                 }
                             }
-                        },
+                        }
+                    ]
+                    + self._get_date_filter_pipeline(
+                        year, start_month, end_month, is_all_data
+                    )
+                    + [
                         {"$sort": {"event.date": 1}},  # Sort by date ascending
                         {
                             "$project": {
@@ -218,7 +279,14 @@ class SetlistsRepository:
         results = await cursor.to_list(length=1)
         return results[0] if results else None
 
-    async def get_max_attendance(self, user_id: str) -> int:
+    async def get_max_attendance(
+        self,
+        user_id: str,
+        year: Optional[int] = None,
+        start_month: Optional[int] = None,
+        end_month: Optional[int] = None,
+        is_all_data: bool = False,
+    ) -> int:
         """Get the maximum ticket count for any setlist for this user"""
         pipeline = [
             {
@@ -241,7 +309,10 @@ class SetlistsRepository:
                                 }
                             }
                         }
-                    ],
+                    ]
+                    + self._get_date_filter_pipeline(
+                        year, start_month, end_month, is_all_data
+                    ),
                     "as": "matched_tickets",
                 }
             },
@@ -263,7 +334,7 @@ class SetlistsRepository:
         result = await self.collection.update_one(
             {"setlistId": setlist_id}, {"$set": update_data}
         )
-        if result.modified_count == 0:
+        if result.matched_count == 0:
             return None
         return await self.find_by_setlist_id(setlist_id)
 

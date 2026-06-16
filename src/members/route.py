@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query, status
 
-from src.dependencies import get_member_service, require_admin
+from src.dependencies import get_member_service, require_admin, require_csrf_protection
 from src.logging_config import create_logger
 from src.members.schemas import (
     BirthdayResponse,
@@ -89,7 +89,7 @@ async def get_member_by_nickname(
     "",
     status_code=status.HTTP_201_CREATED,
     response_model=MemberResponse,
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_admin), Depends(require_csrf_protection)],
 )
 async def create_member(
     data: MemberCreateRequest,
@@ -104,7 +104,7 @@ async def create_member(
 @router.put(
     "/{member_id}",
     response_model=MemberResponse,
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_admin), Depends(require_csrf_protection)],
 )
 async def update_member(
     member_id: str,
@@ -120,7 +120,7 @@ async def update_member(
 @router.delete(
     "/{member_id}",
     response_model=MessageResponse,
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_admin), Depends(require_csrf_protection)],
 )
 async def delete_member(
     member_id: str,

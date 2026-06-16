@@ -26,6 +26,8 @@ from src.health.service import HealthService
 from src.http_exceptions import AdminRequired
 from src.infrastructure import AsyncBackgroundRunner
 from src.live.service import LiveService
+from src.live_history.repository import LiveHistoryRepository
+from src.live_history.service import LiveHistoryService
 from src.llm.repository import LLMRepository
 from src.llm.service import LLMService
 from src.logging_config import create_logger
@@ -37,6 +39,8 @@ from src.news.repository import NewsRepository
 from src.news.service import NewsService
 from src.setlists.repository import SetlistsRepository
 from src.setlists.service import SetlistsService
+from src.sorter.repository import SortersRepository
+from src.sorter.service import SortersService
 from src.storage.repository import StorageRepository
 from src.storage.service import StorageService
 from src.tickets.repository import TicketsRepository
@@ -59,6 +63,19 @@ def get_settings() -> Settings:
 def get_email_service(config: Settings = Depends(get_settings)) -> EmailService:
     background_runner = AsyncBackgroundRunner()
     return EmailService(config, background_runner)
+
+
+def get_storage_repository(
+    config: Settings = Depends(get_settings),
+) -> StorageRepository:
+    return StorageRepository(config)
+
+
+def get_storage_service(
+    repo: StorageRepository = Depends(get_storage_repository),
+    config: Settings = Depends(get_settings),
+) -> StorageService:
+    return StorageService(repo, config)
 
 
 def get_api_key_repository(db=Depends(get_db)) -> ApiKeyRepository:
@@ -104,15 +121,18 @@ def get_auth_service(
 
 
 async def get_current_user(
+    background_tasks: BackgroundTasks,
     token: str = Depends(oauth2_scheme),
     api_key_service: ApiKeyService = Depends(get_api_key_service),
     auth_service: AuthService = Depends(get_auth_service),
-    background_tasks: BackgroundTasks = None,
+    user_repo: UserRepository = Depends(get_user_repository),
     config: Settings = Depends(get_settings),
 ):
     if token.startswith(config.api_key_prefix):
         try:
             user = await api_key_service.validate_api_key(token)
+            if background_tasks:
+                background_tasks.add_task(user_repo.update_last_active, user["userId"])
             return UserCurrent(**user)
         except Exception as e:
             logger.warning(f"API Key validation failed: {str(e)}")
@@ -123,6 +143,10 @@ async def get_current_user(
     if user is None:
         logger.warning("User not found for provided token")
         raise InvalidJWTToken()
+
+    if background_tasks:
+        background_tasks.add_task(user_repo.update_last_active, user.userId)
+
     return UserCurrent(**user.model_dump())
 
 
@@ -207,8 +231,9 @@ def get_tickets_repository(db=Depends(get_db)) -> TicketsRepository:
 def get_tickets_service(
     repo: TicketsRepository = Depends(get_tickets_repository),
     config: Settings = Depends(get_settings),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> TicketsService:
-    return TicketsService(repo, config)
+    return TicketsService(repo, config, storage_service)
 
 
 def get_member_repository(db=Depends(get_db)) -> MemberRepository:
@@ -218,17 +243,21 @@ def get_member_repository(db=Depends(get_db)) -> MemberRepository:
 def get_member_service(
     repo: MemberRepository = Depends(get_member_repository),
     config: Settings = Depends(get_settings),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> MemberService:
-    return MemberService(repo, config)
+    return MemberService(repo, config, storage_service)
 
 
 def get_events_service(
     repo: EventsRepository = Depends(get_events_repository),
     config: Settings = Depends(get_settings),
     member_service: MemberService = Depends(get_member_service),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> EventsService:
     background_runner = AsyncBackgroundRunner()
-    return EventsService(repo, background_runner, config, member_service)
+    return EventsService(
+        repo, background_runner, config, member_service, storage_service
+    )
 
 
 def get_achievements_service(
@@ -236,6 +265,16 @@ def get_achievements_service(
     config: Settings = Depends(get_settings),
 ) -> AchievementsService:
     return AchievementsService(tickets_service, config)
+
+
+def get_live_history_repository(db=Depends(get_db)) -> LiveHistoryRepository:
+    return LiveHistoryRepository(db)
+
+
+def get_live_history_service(
+    repo: LiveHistoryRepository = Depends(get_live_history_repository),
+) -> LiveHistoryService:
+    return LiveHistoryService(repo)
 
 
 def get_user_service(
@@ -247,6 +286,8 @@ def get_user_service(
     member_service: MemberService = Depends(get_member_service),
     achievements_service: AchievementsService = Depends(get_achievements_service),
     events_service: EventsService = Depends(get_events_service),
+    storage_service: StorageService = Depends(get_storage_service),
+    live_history_repo: LiveHistoryRepository = Depends(get_live_history_repository),
 ) -> UserService:
     return UserService(
         repo,
@@ -257,14 +298,9 @@ def get_user_service(
         member_service,
         achievements_service,
         events_service,
+        storage_service,
+        live_history_repo,
     )
-
-
-def get_dashboard_service(
-    tickets_repo: TicketsRepository = Depends(get_tickets_repository),
-    config: Settings = Depends(get_settings),
-) -> DashboardService:
-    return DashboardService(tickets_repo, config)
 
 
 def get_memories_repository(db=Depends(get_db)) -> MemoriesRepository:
@@ -274,8 +310,10 @@ def get_memories_repository(db=Depends(get_db)) -> MemoriesRepository:
 def get_memories_service(
     repo: MemoriesRepository = Depends(get_memories_repository),
     config: Settings = Depends(get_settings),
+    storage_service: StorageService = Depends(get_storage_service),
+    tickets_repo: TicketsRepository = Depends(get_tickets_repository),
 ) -> MemoriesService:
-    return MemoriesService(repo, config)
+    return MemoriesService(repo, config, storage_service, tickets_repo)
 
 
 def get_setlists_repository(db=Depends(get_db)) -> SetlistsRepository:
@@ -285,21 +323,18 @@ def get_setlists_repository(db=Depends(get_db)) -> SetlistsRepository:
 def get_setlists_service(
     repo: SetlistsRepository = Depends(get_setlists_repository),
     config: Settings = Depends(get_settings),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> SetlistsService:
-    return SetlistsService(repo, config)
+    return SetlistsService(repo, config, storage_service)
 
 
-def get_storage_repository(
+def get_dashboard_service(
+    tickets_repo: TicketsRepository = Depends(get_tickets_repository),
+    setlists_repo: SetlistsRepository = Depends(get_setlists_repository),
+    events_repo: EventsRepository = Depends(get_events_repository),
     config: Settings = Depends(get_settings),
-) -> StorageRepository:
-    return StorageRepository(config)
-
-
-def get_storage_service(
-    repo: StorageRepository = Depends(get_storage_repository),
-    config: Settings = Depends(get_settings),
-) -> StorageService:
-    return StorageService(repo, config)
+) -> DashboardService:
+    return DashboardService(tickets_repo, setlists_repo, events_repo, config)
 
 
 def get_health_service(
@@ -351,8 +386,9 @@ def get_news_repository(db=Depends(get_db)) -> NewsRepository:
 def get_news_service(
     repo: NewsRepository = Depends(get_news_repository),
     config: Settings = Depends(get_settings),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> NewsService:
-    return NewsService(repo, config)
+    return NewsService(repo, config, storage_service)
 
 
 def get_live_service(
@@ -360,3 +396,14 @@ def get_live_service(
     config: Settings = Depends(get_settings),
 ) -> LiveService:
     return LiveService(member_repo, config)
+
+
+def get_sorters_repository(db=Depends(get_db)) -> SortersRepository:
+    return SortersRepository(db)
+
+
+def get_sorters_service(
+    repo: SortersRepository = Depends(get_sorters_repository),
+    config: Settings = Depends(get_settings),
+) -> SortersService:
+    return SortersService(repo, config)

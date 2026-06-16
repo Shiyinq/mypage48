@@ -1,11 +1,16 @@
-from typing import List, Optional
+from typing import List, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
+
+from src.utils import validate_image_path
 
 
 class SetlistBase(BaseModel):
     setlistId: str
     imageUrl: str
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
+    blurHash: Optional[str] = None
     title: str
     titleJapanese: Optional[str] = None
     description: str
@@ -93,25 +98,37 @@ class SetlistDetailResponse(SetlistBase):
 class SetlistCreateRequest(BaseModel):
     """Request schema for creating a setlist"""
 
-    imageUrl: str
-    title: str
-    titleJapanese: Optional[str] = None
-    description: str
-    type: str  # "setlist" or "event"
+    imageUrl: str = Field(max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
+    title: str = Field(max_length=100)
+    titleJapanese: Optional[str] = Field(default=None, max_length=100)
+    description: str = Field(max_length=1000)
+    type: Literal["setlist", "event"]
     active: bool = False
     songs: Optional[List[str]] = []
+
+    @field_validator("imageUrl")
+    @classmethod
+    def validate_image_url(cls, v: str) -> str:
+        return validate_image_path(v, "media/setlists/", "Setlist")
 
 
 class SetlistUpdateRequest(BaseModel):
     """Request schema for updating a setlist (all fields optional)"""
 
-    imageUrl: Optional[str] = None
-    title: Optional[str] = None
-    titleJapanese: Optional[str] = None
-    description: Optional[str] = None
-    type: Optional[str] = None
+    imageUrl: Optional[str] = Field(default=None, max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
+    title: Optional[str] = Field(default=None, max_length=100)
+    titleJapanese: Optional[str] = Field(default=None, max_length=100)
+    description: Optional[str] = Field(default=None, max_length=1000)
+    type: Optional[Literal["setlist", "event"]] = None
     active: Optional[bool] = None
     songs: Optional[List[str]] = None
+
+    @field_validator("imageUrl")
+    @classmethod
+    def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
+        return validate_image_path(v, "media/setlists/", "Setlist")
 
 
 class MessageResponse(BaseModel):

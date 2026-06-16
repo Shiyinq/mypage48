@@ -4,6 +4,7 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+		<meta name="google-site-verification" content="6TNLz82OFcXfZkiS7_07d1A51GwM4z9gjcBnOM2fbVw" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -11,6 +12,20 @@
 			rel="stylesheet"
 		/>
 		<script>
+			// Fix malformed URIs (naked % characters) on the client side before SvelteKit starts
+			if (window.location.pathname.includes('%')) {
+				try {
+					decodeURI(window.location.pathname);
+				} catch (e) {
+					const newPath = window.location.pathname.replace(/%(?![0-9a-fA-F]{2})/g, '%25');
+					window.history.replaceState(
+						null,
+						'',
+						newPath + window.location.search + window.location.hash
+					);
+				}
+			}
+
 			(function () {
 				const theme = localStorage.getItem('mypage48_theme') || 'auto';
 				let isDark = false;

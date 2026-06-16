@@ -36,10 +36,11 @@
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
-| **Backend** | FastAPI (Python 3.10+) |
-| **Frontend** | SvelteKit 2.x |
-| **Database** | MongoDB & PostgreSQL (Umami) |
-| **Storage** | MinIO |
+| --- | --- |
+| **Backend** | FastAPI |
+| **Frontend** | Svelte & SvelteKit |
+| **Database** | MongoDB |
+| **Storage** | MinIO & Cloudflare R2 |
 | **Reverse Proxy**| Nginx |
 | **Analytics** | Umami |
 | **LLM** | Google Gemini |
@@ -58,7 +59,7 @@ mypage48/
 ├── tests/                 # Backend tests
 ├── DEPLOYMENT.md          # PRODUCTION DEPLOYMENT GUIDE 🚀
 ├── docker-compose.yml     # Local Development Compose
-└── docker-compose.prod.yml # Production Environment Compose
+├── docker-compose.prod.yml # Production Environment Compose
 ```
 
 ## 🚀 Quick Start
@@ -66,16 +67,44 @@ mypage48/
 ### Prerequisites
 
 - Python 3.10+
-- Node.js 18+
+- Node.js 24+
+- MongoDB 7+
 - Docker & Docker Compose
-- MongoDB (local or Atlas)
 
 ### Local Development
+
+The easiest way to get started is using the provided `Makefile`:
+
+1. **Install Dependencies**
+   ```bash
+   make install
+   ```
+
+2. **Setup Environment Variables**
+   ```bash
+   cp .env.example .env
+   cp frontend/.env.example frontend/.env
+   ```
+
+3. **Run All Services**
+   ```bash
+   make dev
+   ```
+
+   *Tip: Use `make help` to see all available management commands.*
+
+   - **App:** http://localhost:5173
+   - **API:** http://localhost:8000/docs
+   - **MinIO:** http://localhost:9001
+
+#### Alternative: Manual Setup
+
+If you prefer not to use `make`, you can set up the project manually:
 
 1. **Setup Backend**
    ```bash
    python -m venv .venv && source .venv/bin/activate
-   pip install -r requirements/dev.txt
+   pip install -r requirements/base.txt -r requirements/dev.txt
    cp .env.example .env
    ```
 
@@ -88,10 +117,6 @@ mypage48/
    ```bash
    sh scripts/start-all-dev.sh
    ```
-
-   - App: http://localhost:5173
-   - API: http://localhost:8000/docs
-   - MinIO: http://localhost:9001
 
 ## 🐳 Production Deployment
 

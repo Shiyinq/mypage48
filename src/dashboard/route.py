@@ -41,4 +41,4 @@ async def get_dashboard_stats(
         end_month=end_month,
         is_all_data=is_all_data,
     )
-    return storage_service.resolve_dashboard_stats(stats)
+    return await storage_service.resolve_dashboard_stats(stats)

@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, Query
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 
-from src import dependencies
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_storage_service
+from src.dependencies import (
+    get_current_user,
+    get_storage_service,
+    require_csrf_protection,
+)
 from src.logging_config import create_logger
 from src.storage.schemas import (
     BatchPresignedUrlRequest,
@@ -45,7 +48,10 @@ async def proxy_storage_media(
 
     content, media_type, status_code = await storage_service.get_internal_media(path)
 
-    return Response(
+    if status_code != 200:
+        return Response(content=content, status_code=status_code, media_type=media_type)
+
+    return StreamingResponse(
         content=content,
         status_code=status_code,
         media_type=media_type,
@@ -70,7 +76,10 @@ async def proxy_external_media(
     """
     content, media_type, status_code = await storage_service.get_external_media(path)
 
-    return Response(
+    if status_code != 200:
+        return Response(content=content, status_code=status_code, media_type=media_type)
+
+    return StreamingResponse(
         content=content,
         status_code=status_code,
         media_type=media_type,
@@ -83,8 +92,9 @@ async def proxy_external_media(
 @router.post("/storage/upload", status_code=201, response_model=ImageUploadResponse)
 async def upload_image(
     request: ImageUploadRequest,
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
     storage_service: StorageService = Depends(get_storage_service),
+    _=Depends(require_csrf_protection),
 ):
     """
     Upload an image to storage.
@@ -92,10 +102,11 @@ async def upload_image(
     Accepts base64 encoded image and category.
     Returns filename and presigned URL.
     """
-    result = storage_service.upload_image(
+    result = await storage_service.upload_image(
         user_id=current_user.userId,
         base64_image=request.image,
         category=request.category,
+        slug=request.slug,
     )
     logger.info(f"Image uploaded: {result.filename}")
     return result
@@ -104,7 +115,7 @@ async def upload_image(
 @router.get("/storage/url/{filename:path}", response_model=PresignedUrlResponse)
 async def get_presigned_url(
     filename: str,
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
     storage_service: StorageService = Depends(get_storage_service),
 ):
     """
@@ -112,16 +123,17 @@ async def get_presigned_url(
 
     Returns URL with expiration time.
     """
-    return storage_service.get_presigned_url(filename)
+    return await storage_service.get_presigned_url(filename)
 
 
 @router.post("/storage/presign/bulk", response_model=BatchPresignedUrlResponse)
 async def get_bulk_presigned_urls(
     request: BatchPresignedUrlRequest,
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
     storage_service: StorageService = Depends(get_storage_service),
+    _=Depends(require_csrf_protection),
 ):
     """
     Get presigned URLs for multiple images in bulk.
     """
-    return storage_service.get_bulk_presigned_urls(request.filenames)
+    return await storage_service.get_bulk_presigned_urls(request.filenames)

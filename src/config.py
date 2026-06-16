@@ -48,15 +48,18 @@ class Settings(BaseSettings):
     DB_MAX_POOL_SIZE: int = 50
     MAX_UPLOAD_SIZE_BYTES: int = 10_485_760  # 10 MB
 
-    # MinIO Settings
-    MINIO_ENDPOINT: str = "localhost:9000"
-    MINIO_ACCESS_KEY: SecretStr = SecretStr("minioadmin")
-    MINIO_SECRET_KEY: SecretStr = SecretStr("minioadmin123")
-    MINIO_BUCKET: str = "mypage48-images"
-    MINIO_SECURE: bool = False
-    MINIO_PUBLIC_URL: Optional[str] = None
+    # Storage Settings (Agnostic S3/R2)
+    STORAGE_PROVIDER: str = "minio"  # "minio" or "r2"
+    STORAGE_ENDPOINT: str = "localhost:9000"
+    STORAGE_ACCESS_KEY: SecretStr = SecretStr("minioadmin")
+    STORAGE_SECRET_KEY: SecretStr = SecretStr("minioadmin123")
+    STORAGE_BUCKET: str = "mypage48-images"
+    STORAGE_SECURE: bool = False
+    STORAGE_PUBLIC_URL: Optional[str] = None
+    STORAGE_USE_PRESIGNED: bool = False
 
     API_BASE_URL: str = "http://localhost:8080/api"
+    COOKIE_DOMAIN: Optional[str] = None
 
     # Analytics (Optional, mainly for frontend build but added here for central config)
     PUBLIC_UMAMI_WEBSITE_ID: Optional[str] = None
@@ -84,10 +87,10 @@ class Settings(BaseSettings):
                         f"{field} cannot contain 'localhost' or '127.0.0.1' in production. Value was: {val}"
                     )
 
-            # 2. Force MinIO Secure if not explicitly overridden to False
+            # 2. Force Storage Secure if not explicitly overridden to False
             # (though explicitly False in prod is also suspicious unless behind a very specific internal proxy)
             # For now, let's just warn or nudge.
-            if not self.MINIO_SECURE:
+            if not self.storage_secure:
                 # We could raise an error, but let's allow it if they really know what they are doing (e.g. internal network)
                 # but default it to True in our recommended template.
                 pass
@@ -268,32 +271,69 @@ class Settings(BaseSettings):
         return self.MAX_UPLOAD_SIZE_BYTES
 
     @property
+    def storage_provider(self) -> str:
+        return self.STORAGE_PROVIDER
+
+    @property
+    def storage_endpoint(self) -> str:
+        return self.STORAGE_ENDPOINT
+
+    @property
+    def storage_access_key(self) -> str:
+        return self.STORAGE_ACCESS_KEY.get_secret_value()
+
+    @property
+    def storage_secret_key(self) -> str:
+        return self.STORAGE_SECRET_KEY.get_secret_value()
+
+    @property
+    def storage_bucket(self) -> str:
+        return self.STORAGE_BUCKET
+
+    @property
+    def storage_secure(self) -> bool:
+        return self.STORAGE_SECURE
+
+    @property
+    def storage_public_url(self) -> Optional[str]:
+        return self.STORAGE_PUBLIC_URL
+
+    @property
+    def storage_use_presigned(self) -> bool:
+        return self.STORAGE_USE_PRESIGNED
+
+    # Backward compatibility properties (will be removed after full migration)
+    @property
     def minio_endpoint(self) -> str:
-        return self.MINIO_ENDPOINT
+        return self.STORAGE_ENDPOINT
 
     @property
     def minio_access_key(self) -> str:
-        return self.MINIO_ACCESS_KEY.get_secret_value()
+        return self.STORAGE_ACCESS_KEY.get_secret_value()
 
     @property
     def minio_secret_key(self) -> str:
-        return self.MINIO_SECRET_KEY.get_secret_value()
+        return self.STORAGE_SECRET_KEY.get_secret_value()
 
     @property
     def minio_bucket(self) -> str:
-        return self.MINIO_BUCKET
+        return self.STORAGE_BUCKET
 
     @property
     def minio_secure(self) -> bool:
-        return self.MINIO_SECURE
+        return self.STORAGE_SECURE
 
     @property
     def minio_public_url(self) -> Optional[str]:
-        return self.MINIO_PUBLIC_URL
+        return self.STORAGE_PUBLIC_URL
 
     @property
     def api_base_url(self) -> str:
         return self.API_BASE_URL.rstrip("/")
+
+    @property
+    def cookie_domain(self) -> Optional[str]:
+        return self.COOKIE_DOMAIN
 
 
 config = Settings()

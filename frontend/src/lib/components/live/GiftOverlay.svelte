@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { fade, scale, slide } from 'svelte/transition';
-	import { giftEvents, type GiftEvent } from '$lib/stores/gift';
+	import { giftEvents, type GiftEvent } from '$lib/stores/gift.svelte';
 
-	export let roomIdentifier: string = '';
-
-	let activeGift: GiftEvent | null = null;
-	let giftTimeout: any;
-
-	$: if ($giftEvents && $giftEvents.roomIdentifier === roomIdentifier) {
-		showGift($giftEvents);
+	interface Props {
+		roomIdentifier?: string;
 	}
+
+	let { roomIdentifier = '' }: Props = $props();
+
+	let activeGift: GiftEvent | null = $state(null);
+	let giftTimeout: ReturnType<typeof setTimeout> | undefined;
 
 	function showGift(event: GiftEvent) {
 		activeGift = event;
@@ -37,19 +37,24 @@
 				const u = new URL(url);
 				u.searchParams.delete('timestamp');
 				return u.toString();
-			} catch (e) {
+			} catch {
 				return url;
 			}
 		}
 		return url;
 	}
+	$effect(() => {
+		if (giftEvents.value && giftEvents.value.roomIdentifier === roomIdentifier) {
+			showGift(giftEvents.value);
+		}
+	});
 </script>
 
 {#if activeGift}
 	{#key activeGift.timestamp}
 		<div
 			transition:fade={{ duration: 300 }}
-			class="absolute inset-0 z-30 pointer-events-none p-4 rounded-2xl overflow-hidden"
+			class="absolute inset-0 z-[5600] pointer-events-none p-4 rounded-2xl overflow-hidden"
 		>
 			<!-- Official IDN Style Top Toast -->
 			<div
@@ -100,9 +105,11 @@
 								style="width: 200px; height: 200px;"
 								loop
 								autoplay
-								on:ready={startGiftTimer}
-								on:error={() => {
-									activeGift = null;
+								onready={startGiftTimer}
+								onerror={() => {
+									setTimeout(() => {
+										activeGift = null;
+									}, 100);
 								}}
 							></lottie-player>
 						{:else}
@@ -112,9 +119,11 @@
 								referrerpolicy="no-referrer"
 								style="width: 150px; height: 150px;"
 								class="object-contain drop-shadow-2xl"
-								on:load={startGiftTimer}
-								on:error={() => {
-									activeGift = null;
+								onload={startGiftTimer}
+								onerror={() => {
+									setTimeout(() => {
+										activeGift = null;
+									}, 100);
 								}}
 							/>
 						{/if}

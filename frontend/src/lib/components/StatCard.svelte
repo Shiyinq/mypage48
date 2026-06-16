@@ -1,17 +1,33 @@
 <script lang="ts">
 	import type { ComponentType } from 'svelte';
 	import { Eye, EyeOff, Crown } from 'lucide-svelte';
+	import { OptimizedImage } from '$lib/components/common';
 
-	export let title: string;
-	export let value: string | number;
-	export let sub: string = '';
-	export let icon: ComponentType | null = null;
-	export let theme: 'red' | 'emerald' | 'amber' | 'purple' | 'pink' | 'blue' | 'gray' = 'gray';
-	export let image: string | undefined = undefined;
-	export let loading: boolean = false;
-	export let hideable: boolean = false;
-	export let showCrown: boolean = false;
-	export let detail: string | undefined = undefined;
+	interface Props {
+		title: string;
+		value: string | number;
+		sub?: string;
+		icon?: ComponentType | null;
+		theme?: 'red' | 'emerald' | 'amber' | 'purple' | 'pink' | 'blue' | 'gray';
+		image?: string | undefined;
+		loading?: boolean;
+		hideable?: boolean;
+		showCrown?: boolean;
+		detail?: string | undefined;
+	}
+
+	let {
+		title,
+		value,
+		sub = '',
+		icon = null,
+		theme = 'gray',
+		image = undefined,
+		loading = false,
+		hideable = false,
+		showCrown = false,
+		detail = undefined
+	}: Props = $props();
 
 	// Map themes to classes
 	const themes = {
@@ -52,19 +68,22 @@
 		}
 	};
 
-	$: selectedTheme = themes[theme] || themes.gray;
+	let selectedTheme = $derived(themes[theme] || themes.gray);
 
 	// When hideable is true, start with value hidden
-	let isHidden = hideable;
+	let isHidden = $state(false);
+	$effect(() => {
+		isHidden = hideable;
+	});
 
 	const toggleVisibility = () => {
 		isHidden = !isHidden;
 	};
 
-	$: valueStr = String(value);
-	$: isSuperLong = valueStr.length > 12;
-	$: isVeryLong = valueStr.length > 8 && valueStr.length <= 12;
-	$: isMediumLong = valueStr.length > 4 && valueStr.length <= 8;
+	let valueStr = $derived(String(value));
+	let isSuperLong = $derived(valueStr.length > 12);
+	let isVeryLong = $derived(valueStr.length > 8 && valueStr.length <= 12);
+	let isMediumLong = $derived(valueStr.length > 4 && valueStr.length <= 8);
 </script>
 
 <div
@@ -76,11 +95,12 @@
 				<div
 					class="w-10 h-10 -ml-1 rounded-full overflow-hidden border-2 border-white dark:border-gray-700 shadow-md flex-shrink-0 bg-gray-100 dark:bg-gray-800"
 				>
-					<img src={image} alt={title} class="w-full h-full object-cover" />
+					<OptimizedImage src={image} alt={title} class="w-full h-full object-cover" />
 				</div>
 			{:else if icon}
+				{@const SvelteComponent = icon}
 				<div class={`p-2 rounded-xl ${selectedTheme.icon}`}>
-					<svelte:component this={icon} class="w-5 h-5" />
+					<SvelteComponent class="w-5 h-5" />
 				</div>
 			{/if}
 			<p
@@ -93,7 +113,7 @@
 			{/if}
 			{#if hideable}
 				<button
-					on:click={toggleVisibility}
+					onclick={toggleVisibility}
 					class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
 					title={isHidden ? 'Show value' : 'Hide value'}
 				>

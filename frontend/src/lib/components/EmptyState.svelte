@@ -1,20 +1,27 @@
 <script lang="ts">
 	import type { ComponentType } from 'svelte';
 
-	/**
-	 * Reusable empty state component for pages with no data
-	 */
-	export let icon: ComponentType;
-	export let title: string;
-	export let description: string = '';
-	export let className: string = '';
+	interface Props {
+		/**
+		 * Reusable empty state component for pages with no data
+		 */
+		icon: ComponentType;
+		title: string;
+		description?: string;
+		className?: string;
+		children?: import('svelte').Snippet;
+	}
+
+	let { icon, title, description = '', className = '', children }: Props = $props();
+
+	const SvelteComponent = $derived(icon);
 </script>
 
 <div class="flex flex-col items-center justify-center min-h-[400px] p-8 text-center {className}">
 	<div
 		class="w-20 h-20 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center mb-6 text-gray-300 dark:text-zinc-600"
 	>
-		<svelte:component this={icon} class="w-10 h-10" />
+		<SvelteComponent class="w-10 h-10" />
 	</div>
 	<h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">
 		{title}
@@ -24,5 +31,5 @@
 			{description}
 		</p>
 	{/if}
-	<slot />
+	{@render children?.()}
 </div>

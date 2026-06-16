@@ -4,13 +4,19 @@
 	import LandingNavbar from '$lib/components/landing-page/LandingNavbar.svelte';
 	import Footer from '$lib/components/landing-page/Footer.svelte';
 	import { page } from '$app/stores';
-	import AnimatedBackground from '$lib/components/common/AnimatedBackground.svelte';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 	import ScrollToTop from '$lib/components/common/ScrollToTop.svelte';
+	import { isImmersive } from '$lib/stores';
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
 
-	let scrollY = 0;
-	let mouse = spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 });
+	let { children }: Props = $props();
 
-	$: isFullScreenRoute = $page.url.pathname.includes('/live/multiview');
+	let scrollY = $state(0);
+	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
+
+	let isFullScreenRoute = $derived($page.url.pathname.includes('/live/multiview'));
 
 	// Use addEventListener instead of svelte:window bind:scrollY
 	// to avoid conflicting with ScrollToTop's own bind:scrollY binding
@@ -27,22 +33,24 @@
 	class="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 relative font-sans selection:bg-red-500/20"
 >
 	<!-- Background Elements -->
-	<AnimatedBackground interactive={true} bind:mouse {scrollY} />
+	<AppBackground interactive={true} bind:mouse {scrollY} />
 
 	<!-- NAV -->
-	{#if !isFullScreenRoute}
+	{#if !isFullScreenRoute && !isImmersive.value}
 		<LandingNavbar mouse={$mouse} showLogin={true} />
 	{/if}
 
 	<!-- CONTENT -->
 	<main
-		class={isFullScreenRoute ? 'relative w-full h-full' : 'relative max-w-7xl mx-auto px-3 sm:px-6'}
+		class={isFullScreenRoute || isImmersive.value
+			? 'relative w-full h-full'
+			: 'relative max-w-7xl mx-auto px-3 sm:px-6'}
 	>
-		<slot />
+		{@render children?.()}
 	</main>
 
 	<!-- FOOTER -->
-	{#if !isFullScreenRoute}
+	{#if !isFullScreenRoute && !isImmersive.value}
 		<Footer />
 	{/if}
 </div>

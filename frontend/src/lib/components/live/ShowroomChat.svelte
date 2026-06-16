@@ -1,27 +1,72 @@
 <script lang="ts">
-	import { onMount, onDestroy, tick } from 'svelte';
+	import { tick } from 'svelte';
+	import { slide } from 'svelte/transition';
 	import { MessageCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { API_BASE } from '$lib/apis/client';
+	import { OptimizedImage } from '$lib/components/common';
 	import type { LiveChatShowroomMessage } from '$lib/types';
 
-	export let roomId: string;
+	interface Props {
+		roomId: string;
+		onStatusChange?: (status: 'connecting' | 'connected' | 'disconnected') => void;
+	}
+
+	let { roomId, onStatusChange }: Props = $props();
 
 	const { t } = useTranslation();
 
-	let messages: LiveChatShowroomMessage[] = [];
-	let chatContainer: HTMLElement;
-	let pollingInterval: any;
+	let messages: LiveChatShowroomMessage[] = $state([]);
+	let chatContainer: HTMLElement | undefined = $state();
 	let lastCommentTime = 0;
-	let loading = true;
+	let status: 'connecting' | 'connected' | 'disconnected' = $state('connecting');
+	let loading = $state(true);
 	let isFirstLoad = true;
+
+	$effect(() => {
+		onStatusChange?.(status);
+	});
+
+	$effect(() => {
+		if (roomId) {
+			messages = []; // Clear messages when room changes
+			lastCommentTime = 0;
+			isFirstLoad = true;
+
+			fetchComments();
+			const interval = setInterval(fetchComments, 4000);
+
+			// For testing purposes
+			/*
+			if (typeof window !== 'undefined') {
+				console.log('ShowroomChat mounted. Testing utility available: forceShowroomDisconnect()');
+				
+				(window as any).forceShowroomDisconnect = () => {
+					status = 'disconnected';
+					console.log('Showroom: Connection failure simulated. Auto-recovery will attempt in 4 seconds...');
+				};
+			}
+			*/
+
+			return () => {
+				clearInterval(interval);
+				/*
+				if (typeof window !== 'undefined') {
+					delete (window as any).forceShowroomDisconnect;
+				}
+				*/
+			};
+		}
+	});
 
 	async function fetchComments() {
 		try {
 			const res = await fetch(`${API_BASE}/jkt48/live/showroom/comments?room_id=${roomId}`);
+			if (!res.ok) throw new Error('Failed to fetch');
 			const data = await res.json();
 
 			if (data && data.comment_log) {
+				status = 'connected';
 				// Filter specifically for comments, not gifts (gifts have comment field too but often special ua)
 				// showroom returns latest first, so we reverse it to process chronologically
 				const validComments = data.comment_log
@@ -57,7 +102,7 @@
 
 					// Avoid duplicates based on ID
 					const existingIds = new Set(messages.map((m) => m.id));
-					const uniqueNew = mapped.filter((m: any) => !existingIds.has(m.id));
+					const uniqueNew = mapped.filter((m: LiveChatShowroomMessage) => !existingIds.has(m.id));
 
 					if (uniqueNew.length > 0) {
 						const isAtBottom =
@@ -83,36 +128,44 @@
 			loading = false;
 		} catch (e) {
 			console.error('Failed to fetch Showroom comments:', e);
+			status = 'disconnected';
 		}
 	}
-
-	onMount(() => {
-		fetchComments();
-		pollingInterval = setInterval(fetchComments, 4000); // 4 seconds interval to be safe
-	});
-
-	onDestroy(() => {
-		if (pollingInterval) clearInterval(pollingInterval);
-	});
 </script>
 
-<div class="flex-1 min-h-0 flex flex-col overflow-hidden">
+<div class="flex-1 min-h-0 flex flex-col overflow-hidden relative">
+	<!-- Connection Status Overlay -->
+	<div
+		class="absolute inset-x-0 top-0 z-30 pointer-events-none p-2 flex flex-col items-center gap-2"
+	>
+		{#if status === 'disconnected'}
+			<div
+				class="w-full bg-red-500/90 backdrop-blur-md border border-red-400/30 rounded-xl p-2.5 flex items-center justify-center shadow-sm transition-all duration-300 pointer-events-auto"
+				transition:slide={{ duration: 300 }}
+			>
+				<p class="text-[9px] text-white font-medium text-center">
+					{t('theater.live.reconnect_showroom')}
+				</p>
+			</div>
+		{/if}
+	</div>
+
 	<div
 		bind:this={chatContainer}
 		class="flex-1 p-4 overflow-y-auto flex flex-col gap-3 scroll-smooth"
 	>
-		{#if messages.length === 0}
+		{#if messages.length === 0 && status === 'connected'}
 			<div
 				class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900"
 			>
-				{$t('theater.live.multiview.showroom_chat')}
+				{t('theater.live.chat_started')}
 			</div>
 		{/if}
 
 		{#each messages as msg (msg.id)}
 			<div class="flex items-start gap-3 group">
 				{#if msg.avatar}
-					<img
+					<OptimizedImage
 						src={msg.avatar}
 						alt={msg.user}
 						class="w-8 h-8 rounded-full object-cover border border-gray-100 dark:border-zinc-800"
@@ -141,7 +194,7 @@
 			<div class="flex-1 flex flex-col items-center justify-center text-center py-20 opacity-40">
 				<MessageCircle size={32} class="text-slate-300 dark:text-zinc-700 mb-2" />
 				<p class="text-xs font-bold uppercase tracking-widest text-slate-400">
-					{$t('theater.live.multiview.no_messages')}
+					{t('theater.live.multiview.no_messages')}
 				</p>
 			</div>
 		{/if}

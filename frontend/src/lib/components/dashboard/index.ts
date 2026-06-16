@@ -7,3 +7,4 @@ export { default as FirstLastCard } from './FirstLastCard.svelte';
 export { default as MonthlyAttendance } from './MonthlyAttendance.svelte';
 export { default as DayPreference } from './DayPreference.svelte';
 export { default as FirstLastPopup } from './FirstLastPopup.svelte';
+export { default as HeatmapCalendar } from './HeatmapCalendar.svelte';

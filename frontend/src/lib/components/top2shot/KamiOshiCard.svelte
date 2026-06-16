@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { Crown, User } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { OptimizedImage } from '$lib/components/common';
 	import type { TopTwoShotMember } from '$lib/types';
 
-	export let member: TopTwoShotMember;
+	interface Props {
+		member: TopTwoShotMember;
+	}
+
+	let { member }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -29,7 +34,7 @@
 				class="bg-gradient-to-r from-amber-100 to-amber-200 dark:from-amber-900/40 dark:to-amber-800/40 text-amber-700 dark:text-amber-400 text-[10px] font-black tracking-widest px-4 py-1.5 rounded-full mb-6 shadow-sm flex items-center gap-1.5 border border-amber-200/50 dark:border-amber-700/30"
 			>
 				<Crown class="w-3.5 h-3.5 fill-current" />
-				{$t('top2shot.mostCollected')}
+				{t('top2shot.mostCollected')}
 			</div>
 
 			<div class="relative mb-6 group-hover:scale-105 transition-transform duration-500">
@@ -40,7 +45,15 @@
 						class="w-full h-full rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-700 relative"
 					>
 						{#if member.image}
-							<img src={member.image} alt={member.name} class="w-full h-full object-cover" />
+							<OptimizedImage
+								src={member.image}
+								srcMedium={member.image_medium}
+								srcSmall={member.image_small}
+								blurHash={member.blurHash}
+								alt={member.name}
+								sizes="144px"
+								class="w-full h-full object-cover"
+							/>
 						{:else}
 							<div
 								class="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600"
@@ -58,21 +71,16 @@
 				</div>
 			</div>
 
-			<h3 class="text-2xl font-black text-gray-900 dark:text-white mb-1">
+			<h3 class="text-2xl font-black text-gray-900 dark:text-white mb-6">
 				{member.name}
 			</h3>
-			<p
-				class="text-pink-500 font-bold text-sm mb-8 bg-pink-50 dark:bg-pink-900/20 px-3 py-1 rounded-lg"
-			>
-				{$t('top2shot.cherished')}
-			</p>
 
 			<div class="grid grid-cols-2 gap-4 w-full">
 				<div
 					class="bg-gray-50 dark:bg-zinc-700/30 rounded-2xl p-4 border border-gray-100 dark:border-zinc-700/50"
 				>
 					<div class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold mb-1">
-						{$t('top2shot.stats2shots')}
+						{t('top2shot.stats2shots')}
 					</div>
 					<div class="text-2xl font-black text-gray-800 dark:text-gray-100">
 						{member.count}x
@@ -82,7 +90,7 @@
 					class="bg-gray-50 dark:bg-zinc-700/30 rounded-2xl p-4 border border-gray-100 dark:border-zinc-700/50"
 				>
 					<div class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold mb-1">
-						{$t('top2shot.statsSpent')}
+						{t('top2shot.statsSpent')}
 					</div>
 					<div class="text-lg font-black text-gray-800 dark:text-gray-100 mt-1">
 						{formatCompact(member.spend)}

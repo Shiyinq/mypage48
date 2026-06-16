@@ -1,13 +1,19 @@
 <script lang="ts">
 	import { Pencil, Trash2, User } from 'lucide-svelte';
 	import type { Member } from '$lib/apis/members';
-	import { createEventDispatcher } from 'svelte';
+
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { OptimizedImage } from '$lib/components/common';
 
-	export let members: Member[] = [];
+	interface Props {
+		members?: Member[];
+		onedit?: (member: Member) => void;
+		ondelete?: (member: Member) => void;
+	}
 
-	const dispatch = createEventDispatcher();
+	let { members = [], onedit, ondelete }: Props = $props();
+
 	const { t } = useTranslation();
 </script>
 
@@ -18,11 +24,11 @@
 				<tr
 					class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
 				>
-					<th class="p-4">{$t('admin.members.table.memberInfo')}</th>
-					<th class="p-4">{$t('admin.members.table.generation')}</th>
-					<th class="p-4">{$t('admin.members.table.jikoshoukai')}</th>
-					<th class="p-4">{$t('admin.members.table.status')}</th>
-					<th class="p-4 text-right">{$t('admin.members.table.actions')}</th>
+					<th class="p-4">{t('admin.members.table.memberInfo')}</th>
+					<th class="p-4">{t('admin.members.table.generation')}</th>
+					<th class="p-4">{t('admin.members.table.jikoshoukai')}</th>
+					<th class="p-4">{t('admin.members.table.status')}</th>
+					<th class="p-4 text-right">{t('admin.members.table.actions')}</th>
 				</tr>
 			</thead>
 			<tbody class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700">
@@ -36,9 +42,13 @@
 									class="w-10 h-10 rounded-full bg-gray-100 dark:bg-zinc-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-zinc-700"
 								>
 									{#if member.img}
-										<img
-											src={getExternalMediaUrl(member.img)}
-											alt={member.name}
+										<OptimizedImage
+											src={getExternalMediaUrl(member.img) || ''}
+											srcMedium={getExternalMediaUrl(member.img_medium)}
+											srcSmall={getExternalMediaUrl(member.img_small)}
+											blurHash={member.blurHash}
+											alt={member.name || ''}
+											sizes="40px"
 											class="w-full h-full object-cover"
 										/>
 									{:else}
@@ -61,7 +71,7 @@
 						</td>
 						<td class="p-4">
 							<span class="text-sm font-medium text-gray-600 dark:text-gray-400">
-								{$t('admin.members.table.gen', { gen: member.generation })}
+								{t('admin.members.table.gen', { gen: member.generation })}
 							</span>
 						</td>
 						<td class="p-4 max-w-xs">
@@ -76,20 +86,20 @@
 									: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'}"
 							>
 								{member.active
-									? $t('admin.members.table.active')
-									: $t('admin.members.table.graduated')}
+									? t('admin.members.table.active')
+									: t('admin.members.table.graduated')}
 							</span>
 						</td>
 						<td class="p-4 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<button
-									on:click={() => dispatch('edit', member)}
+									onclick={() => onedit?.(member)}
 									class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Pencil class="w-4 h-4" />
 								</button>
 								<button
-									on:click={() => dispatch('delete', member)}
+									onclick={() => ondelete?.(member)}
 									class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors cursor-pointer"
 								>
 									<Trash2 class="w-4 h-4" />

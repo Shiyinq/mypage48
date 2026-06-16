@@ -1,17 +1,20 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
 	import { X, ZoomIn, ZoomOut, RotateCcw, Download } from 'lucide-svelte';
-	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 
-	export let src: string = '';
-	export let alt: string = '';
-	export let isOpen: boolean = false;
-	export let onClose: () => void = () => {};
+	interface Props {
+		src?: string;
+		alt?: string;
+		isOpen?: boolean;
+		onClose?: () => void;
+	}
 
-	let zoomScale = 1;
-	let translateX = 0;
-	let translateY = 0;
+	let { src = '', alt = '', isOpen = false, onClose = () => {} }: Props = $props();
+
+	let zoomScale = $state(1);
+	let translateX = $state(0);
+	let translateY = $state(0);
 	let isDragging = false;
 	let startX = 0;
 	let startY = 0;
@@ -43,18 +46,20 @@
 		translateY = e.clientY - startY;
 	}
 
-	function handleTouchStart(e: TouchEvent) {
-		if (e.touches.length === 1) {
+	function handleTouchStart(e: Event) {
+		const touchEvent = e as TouchEvent;
+		if (touchEvent.touches.length === 1) {
 			isDragging = true;
-			startX = e.touches[0].clientX - translateX;
-			startY = e.touches[0].clientY - translateY;
+			startX = touchEvent.touches[0].clientX - translateX;
+			startY = touchEvent.touches[0].clientY - translateY;
 		}
 	}
 
-	function handleTouchMove(e: TouchEvent) {
-		if (!isDragging || e.touches.length !== 1) return;
-		translateX = e.touches[0].clientX - startX;
-		translateY = e.touches[0].clientY - startY;
+	function handleTouchMove(e: Event) {
+		const touchEvent = e as TouchEvent;
+		if (!isDragging || touchEvent.touches.length !== 1) return;
+		translateX = touchEvent.touches[0].clientX - startX;
+		translateY = touchEvent.touches[0].clientY - startY;
 	}
 
 	function handleMouseUp() {
@@ -99,22 +104,20 @@
 		}
 	}
 
-	onMount(() => {
-		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
+	$effect(() => {
+		if (browser && isOpen) {
+			document.body.classList.add('modal-open');
+			window.addEventListener('keydown', handleKeyDown);
+			return () => {
+				document.body.classList.remove('modal-open');
+				window.removeEventListener('keydown', handleKeyDown);
+			};
+		}
 	});
 
-	onDestroy(() => {
-		if (browser) document.body.classList.remove('modal-open');
+	$effect(() => {
+		if (!isOpen) resetZoom();
 	});
-
-	$: if (browser && isOpen) {
-		document.body.classList.add('modal-open');
-	} else if (browser) {
-		document.body.classList.remove('modal-open');
-	}
-
-	$: if (!isOpen) resetZoom();
 </script>
 
 {#if isOpen}
@@ -126,11 +129,9 @@
 		aria-label="Image lightbox"
 	>
 		<!-- Backdrop -->
-		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div
 			class="absolute inset-0 bg-black/95 backdrop-blur-sm cursor-pointer"
-			on:click={onClose}
+			onclick={onClose}
 			role="presentation"
 		></div>
 
@@ -140,7 +141,7 @@
 				class="flex items-center gap-1 md:gap-2 bg-zinc-900/80 backdrop-blur-md p-1 md:p-1.5 rounded-full border border-white/10 shadow-2xl"
 			>
 				<button
-					on:click={handleZoomOut}
+					onclick={handleZoomOut}
 					class="p-1.5 md:p-2 hover:bg-white/10 rounded-full transition-colors text-white cursor-pointer"
 					title="Zoom Out"
 					aria-label="Zoom out"
@@ -151,7 +152,7 @@
 					{Math.round(zoomScale * 100)}%
 				</div>
 				<button
-					on:click={handleZoomIn}
+					onclick={handleZoomIn}
 					class="p-1.5 md:p-2 hover:bg-white/10 rounded-full transition-colors text-white cursor-pointer"
 					title="Zoom In"
 					aria-label="Zoom in"
@@ -161,7 +162,7 @@
 			</div>
 
 			<button
-				on:click={resetZoom}
+				onclick={resetZoom}
 				class="flex p-2.5 md:p-3 bg-zinc-900/80 hover:bg-zinc-800 backdrop-blur-md rounded-full transition-all text-white border border-white/10 shadow-2xl cursor-pointer"
 				title="Reset Zoom"
 				aria-label="Reset zoom"
@@ -170,7 +171,7 @@
 			</button>
 
 			<button
-				on:click={downloadImage}
+				onclick={downloadImage}
 				class="flex p-2.5 md:p-3 bg-zinc-900/80 hover:bg-zinc-800 backdrop-blur-md rounded-full transition-all text-white border border-white/10 shadow-2xl cursor-pointer"
 				title="Download"
 				aria-label="Download image"
@@ -179,7 +180,7 @@
 			</button>
 
 			<button
-				on:click={onClose}
+				onclick={onClose}
 				class="p-2.5 md:p-3 bg-red-600 hover:bg-red-700 backdrop-blur-md rounded-full transition-all text-white shadow-lg shadow-red-600/20 cursor-pointer"
 				title="Close"
 				aria-label="Close lightbox"
@@ -189,21 +190,20 @@
 		</div>
 
 		<!-- Image Container -->
-		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div
 			class="relative w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing pointer-events-none"
 			role="presentation"
 		>
 			<div
 				class="pointer-events-auto"
-				on:mousedown={handleMouseDown}
-				on:mousemove={handleMouseMove}
-				on:mouseup={handleMouseUp}
-				on:mouseleave={handleMouseUp}
-				on:touchstart|passive={handleTouchStart}
-				on:touchmove|passive={handleTouchMove}
-				on:touchend={handleMouseUp}
-				on:wheel={handleWheel}
+				onmousedown={handleMouseDown}
+				onmousemove={handleMouseMove}
+				onmouseup={handleMouseUp}
+				onmouseleave={handleMouseUp}
+				ontouchstart={handleTouchStart}
+				ontouchmove={handleTouchMove}
+				ontouchend={handleMouseUp}
+				onwheel={handleWheel}
 				role="presentation"
 			>
 				<img

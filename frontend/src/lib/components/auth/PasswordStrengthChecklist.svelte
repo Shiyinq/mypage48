@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { Check, X } from 'lucide-svelte';
-	import { useTranslation } from '$lib/i18n/useTranslation';
 
-	export let password = '';
+	interface Props {
+		password?: string;
+	}
 
-	const { t } = useTranslation();
+	let { password = '' }: Props = $props();
 
-	$: requirements = [
+	let requirements = $derived([
 		{
 			label: 'Min. 8 characters',
 			valid: password.length >= 8
@@ -35,7 +36,7 @@
 			label: 'No spaces',
 			valid: !/\s/.test(password) && password.length > 0
 		}
-	];
+	]);
 </script>
 
 <div

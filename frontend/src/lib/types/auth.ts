@@ -9,10 +9,15 @@ export interface OshiShow {
 }
 
 export interface UserOshi {
+	id: string;
 	name: string;
 	nickname: string;
 	generation: string;
+	memberType?: string;
 	profilePicture: string;
+	profilePicture_medium?: string | null;
+	profilePicture_small?: string | null;
+	blurHash?: string | null;
 	catchphrase: string;
 	socials?: {
 		twitter: string | null;
@@ -32,10 +37,14 @@ export interface User {
 	email: string;
 	username: string;
 	name?: string;
+	bio?: string | null;
 	memberId?: string;
 	ofcStatus?: string;
 	profilePicture?: string | null;
-	oshi?: UserOshi | null;
+	profilePicture_medium?: string | null;
+	profilePicture_small?: string | null;
+	blurHash?: string | null;
+	oshis?: UserOshi[];
 	isPublic?: boolean;
 	publicYear?: number | null;
 	provider?: string;

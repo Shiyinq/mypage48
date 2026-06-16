@@ -1,17 +1,16 @@
 from fastapi import APIRouter, Depends
 
-from src import dependencies
 from src.achievements.schemas import AchievementsResponse
 from src.achievements.service import AchievementsService
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_achievements_service
+from src.dependencies import get_achievements_service, get_current_user
 
 router = APIRouter()
 
 
 @router.get("", response_model=AchievementsResponse)
 async def get_achievements(
-    current_user: UserCurrent = Depends(dependencies.get_current_user),
+    current_user: UserCurrent = Depends(get_current_user),
     achievements_service: AchievementsService = Depends(get_achievements_service),
 ):
     """

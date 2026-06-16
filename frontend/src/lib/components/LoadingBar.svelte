@@ -5,8 +5,8 @@
 	// Delay before showing loading bar (ms) - prevents flashing on fast navigations
 	const SHOW_DELAY = 150;
 
-	let p = 0;
-	let visible = false;
+	let p = $state(0);
+	let visible = $state(false);
 	let interval: ReturnType<typeof setInterval>;
 	let delayTimeout: ReturnType<typeof setTimeout>;
 
@@ -51,13 +51,15 @@
 	}
 
 	// Watch for navigation changes
-	$: if ($navigating) {
-		if (!visible || p >= 1) {
-			start();
+	$effect(() => {
+		if ($navigating) {
+			if (!visible || p >= 1) {
+				start();
+			}
+		} else {
+			finish();
 		}
-	} else {
-		finish();
-	}
+	});
 
 	onDestroy(() => {
 		clearInterval(interval);

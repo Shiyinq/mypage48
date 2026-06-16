@@ -7,7 +7,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator, model_validato
 from src.achievements.schemas import RankInfo
 from src.auth.schemas import OshiResponse
 from src.users.constants import ErrorCode, Info
-from src.utils import cleanse_image_url, validate_password_strength
+from src.utils import cleanse_image_url, validate_image_path, validate_password_strength
 
 
 class UserCreateRequest(BaseModel):
@@ -71,14 +71,16 @@ class UserInDB(BaseModel):
 
     userId: str = Field(default_factory=lambda: str(uuid4()))
     profilePicture: Optional[str] = Field(default=None)
+    blurHash: Optional[str] = Field(default=None)
     name: str = Field(max_length=100)  # Stores fullName or OAuth name
     memberId: Optional[str] = Field(
         max_length=20, default=None
     )  # Optional for OAuth users
-    oshiId: Optional[str] = Field(default=None)
+    oshiIds: list[str] = Field(default_factory=list)
     username: str = Field(max_length=50)
     email: EmailStr
     ofcStatus: str = Field(default="Active")
+    bio: Optional[str] = Field(default=None, max_length=300)
     password: Optional[str] = Field(default=None)
     provider: Optional[str] = Field(default=None)
     createdAt: datetime = Field(default_factory=datetime.now)
@@ -89,13 +91,7 @@ class UserInDB(BaseModel):
     failedLoginAttempts: int = Field(default=0)
     isAccountLocked: bool = Field(default=False)
     accountLockedUntil: Optional[datetime] = Field(default=None)
-
-    @field_validator("oshiId", mode="before")
-    @classmethod
-    def allow_int_oshi_id(cls, v):
-        if v is None:
-            return None
-        return str(v)
+    lastActiveAt: Optional[datetime] = Field(default=None)
 
 
 class UserCreateResponse(BaseModel):
@@ -126,29 +122,48 @@ class UserStats(BaseModel):
     topShowCount: Optional[int] = 0
     rowCounts: Optional[dict] = None
     seatCounts: Optional[dict] = None
+    showCounts: Optional[dict] = None
+    topTwoShots: Optional[list[dict]] = None
     recentActivity: Optional[list[PublicShowEntry]] = None
 
 
 class PublicUserResponse(BaseModel):
     name: str
     username: str
+    bio: Optional[str] = None
     profilePicture: Optional[str] = None
-    oshi: Optional[OshiResponse] = None
+    profilePicture_medium: Optional[str] = None
+    profilePicture_small: Optional[str] = None
+    blurHash: Optional[str] = None
+    oshis: list[OshiResponse] = []
     createdAt: datetime
+    lastActiveAt: Optional[datetime] = None
     publicYear: Optional[int] = None
     stats: Optional[UserStats] = None
 
 
 class UpdateProfilePictureRequest(BaseModel):
-    profilePicture: str
+    profilePicture: str = Field(max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
 
     @field_validator("profilePicture")
     @classmethod
     def validate_profile_picture(cls, v: str) -> str:
-        return cleanse_image_url(v)
+        return validate_image_path(v, "avatar/", "Profile picture")
 
 
-class UpdateOshiRequest(BaseModel):
+class BatchAddOshiRequest(BaseModel):
+    oshiIds: list[str]
+
+    @field_validator("oshiIds", mode="before")
+    @classmethod
+    def allow_int_oshi_ids(cls, v):
+        if v is None:
+            return None
+        return [str(x) for x in v]
+
+
+class RemoveOshiRequest(BaseModel):
     oshiId: str
 
     @field_validator("oshiId", mode="before")
@@ -164,6 +179,13 @@ class UpdatePublicStatusRequest(BaseModel):
     publicYear: Optional[int] = None  # None means "All Time"
 
 
+class UpdateProfileRequest(BaseModel):
+    name: Optional[str] = Field(None, max_length=100)
+    username: Optional[str] = Field(None, max_length=50)
+    email: Optional[EmailStr] = None
+    bio: Optional[str] = Field(None, max_length=300)
+
+
 class MessageResponse(BaseModel):
     detail: str
 
@@ -173,6 +195,8 @@ class ProfileStats(BaseModel):
 
     totalShows: int
     totalAchievements: int
+    totalTwoShots: int = 0
+    totalLiveWatched: int = 0
     oshiMeetings: int = 0
 
 
@@ -199,10 +223,12 @@ class ProfileFullResponse(BaseModel):
     """Complete profile response with all sections."""
 
     profile: dict  # UserCurrent as dict to avoid circular import
-    oshi: Optional[OshiResponse] = None
+    oshis: list[OshiResponse] = []
     rank: RankInfo
     stats: ProfileStats
     oshiTwoShots: OshiTwoShotCounts
+    oshiTwoShotsList: list[OshiTwoShotCounts] = []
+    oshiMeetingsList: list[int] = []
     recentActivity: list[ProfileRecentActivity]
 
 
@@ -215,10 +241,14 @@ class UserListItem(BaseModel):
     username: str
     email: str
     profilePicture: Optional[str] = None
+    profilePicture_medium: Optional[str] = None
+    profilePicture_small: Optional[str] = None
+    blurHash: Optional[str] = None
     isAdmin: bool = False
     isEmailVerified: bool = False
     isAccountLocked: bool = False
     createdAt: datetime
+    lastActiveAt: Optional[datetime] = None
 
 
 class UserPaginationMeta(BaseModel):

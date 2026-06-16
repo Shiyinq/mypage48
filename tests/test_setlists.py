@@ -264,3 +264,71 @@ async def test_delete_setlist_forbidden(client: AsyncClient, db, create_user):
     setlist_id = "pajamadrive"
     response = await client.delete(f"/api/theater/setlists/{setlist_id}", headers=headers)
     assert response.status_code == 403
+
+@pytest.mark.asyncio
+async def test_setlist_validation(client: AsyncClient, db, create_user):
+    """Test validation of setlist imageUrl, title, type, and description."""
+    token, user_id, headers = await create_user("setlistval", is_admin=True)
+
+    # 1. Invalid image prefix
+    payload = {
+        "title": "New",
+        "description": "Desc",
+        "type": "setlist",
+        "imageUrl": "wrong/prefix.jpg"
+    }
+    res = await client.post("/api/theater/setlists", json=payload, headers=headers)
+    assert res.status_code == 422
+    assert "Setlist image path must start with 'media/setlists/'" in res.text
+
+    # 2. Invalid type
+    payload["imageUrl"] = "media/setlists/ok.jpg"
+    payload["type"] = "concert" # only 'setlist' or 'event' allowed
+    res = await client.post("/api/theater/setlists", json=payload, headers=headers)
+    assert res.status_code == 422
+
+    # 3. Test max length for title
+    payload["type"] = "setlist"
+    payload["title"] = "a" * 101
+    res = await client.post("/api/theater/setlists", json=payload, headers=headers)
+    assert res.status_code == 422
+
+@pytest.mark.asyncio
+async def test_get_setlists_date_filter(client: AsyncClient, db, seed_setlists_db, create_user):
+    """Test filtering setlists by date (year and month)."""
+    token, user_id, headers = await create_user("datefilteruser")
+
+    # Insert two tickets for different dates
+    ticket_1 = TicketInDB(
+        user_id=user_id,
+        ticket_id="T001",
+        event=TicketEvent(title="Pajama Drive", date="2023-01-15", day="Sunday", time="14:00", venue="JKT48 Theater"),
+        seat=TicketSeat(section="A", number=1), price=200000, currency="IDR",
+        created_at=datetime.utcnow(), updated_at=datetime.utcnow()
+    )
+    ticket_2 = TicketInDB(
+        user_id=user_id,
+        ticket_id="T002",
+        event=TicketEvent(title="Pajama Drive", date="2024-05-20", day="Monday", time="19:00", venue="JKT48 Theater"),
+        seat=TicketSeat(section="A", number=2), price=200000, currency="IDR",
+        created_at=datetime.utcnow(), updated_at=datetime.utcnow()
+    )
+    await db["tickets"].insert_many([ticket_1.model_dump(), ticket_2.model_dump()])
+
+    # Filter for year 2023, month 0 (Jan)
+    res = await client.get("/api/theater/setlists?year=2023&startMonth=0&endMonth=0", headers=headers)
+    assert res.status_code == 200
+    pajama = next((s for s in res.json()["setlists"] if s["title"] == "Pajama Drive"), None)
+    assert pajama["watched"]["count"] == 1
+
+    # Filter for year 2024, month 4 (May)
+    res = await client.get("/api/theater/setlists?year=2024&startMonth=4&endMonth=4", headers=headers)
+    assert res.status_code == 200
+    pajama = next((s for s in res.json()["setlists"] if s["title"] == "Pajama Drive"), None)
+    assert pajama["watched"]["count"] == 1
+
+    # Filter isAllData
+    res = await client.get("/api/theater/setlists?isAllData=true", headers=headers)
+    assert res.status_code == 200
+    pajama = next((s for s in res.json()["setlists"] if s["title"] == "Pajama Drive"), None)
+    assert pajama["watched"]["count"] == 2

@@ -1,41 +1,65 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { ArrowLeft } from 'lucide-svelte';
-	import { createEventDispatcher, type ComponentType } from 'svelte';
-
-	const dispatch = createEventDispatcher();
+	import { type ComponentType } from 'svelte';
+	import { pageHeaderStore } from '$lib/stores';
+	import { onDestroy } from 'svelte';
 
 	/**
 	 * Reusable page header component with icon, title, subtitle, and optional back button
 	 */
-	export let icon: ComponentType | undefined = undefined;
-	export let title: string;
-	export let subtitle: string = '';
-	export let badge: string | undefined = undefined;
-	export let actions:
-		| Array<{
-				icon: ComponentType;
-				label?: string;
-				onClick: () => void;
-				theme?: string;
-		  }>
-		| undefined = undefined;
-	export let rotation: number = -6;
-	export let theme:
-		| 'red'
-		| 'blue'
-		| 'green'
-		| 'purple'
-		| 'pink'
-		| 'amber'
-		| 'yellow'
-		| 'orange'
-		| 'rose'
-		| 'indigo' = 'red';
-	export let showBackButton = false;
-	export let backUrl: string | undefined = undefined;
-	export let loading = false;
-	export let hidden = false;
+	interface Props {
+		icon?: ComponentType;
+		title: string;
+		subtitle?: string;
+		badge?: string;
+		actionItems?: Array<{
+			icon?: ComponentType;
+			label?: string;
+			onClick: () => void;
+			theme?: string;
+			loading?: boolean;
+			showLabel?: boolean;
+			badge?: number | string;
+			filterToggle?: boolean;
+		}>;
+		rotation?: number;
+		theme?:
+			| 'red'
+			| 'blue'
+			| 'green'
+			| 'purple'
+			| 'pink'
+			| 'amber'
+			| 'yellow'
+			| 'orange'
+			| 'rose'
+			| 'indigo';
+		showBackButton?: boolean;
+		backUrl?: string;
+		loading?: boolean;
+		hidden?: boolean;
+		mobileActions?: boolean;
+		actions?: import('svelte').Snippet;
+		onback?: () => void;
+	}
+
+	let {
+		icon,
+		title,
+		subtitle = '',
+		badge,
+		actionItems,
+		rotation = -6,
+		theme = 'red',
+		showBackButton = false,
+		backUrl,
+		loading = false,
+		hidden = false,
+		mobileActions = false,
+		actions,
+		onback
+	}: Props = $props();
 
 	const themeClasses = {
 		red: {
@@ -100,13 +124,18 @@
 		}
 	};
 
-	import { pageHeaderStore } from '$lib/stores/ui';
-	import { onDestroy } from 'svelte';
+	let colors = $derived(themeClasses[theme]);
 
-	$: colors = themeClasses[theme];
+	const handleBack = () => {
+		if (backUrl) {
+			goto(backUrl);
+		} else {
+			onback?.();
+		}
+	};
 
-	$: {
-		if (title) {
+	$effect(() => {
+		if (title && !hidden) {
 			pageHeaderStore.set({
 				title,
 				subtitle,
@@ -116,22 +145,14 @@
 				theme,
 				showBackButton,
 				handleBack,
-				actions
+				actions: actionItems
 			});
 		}
-	}
+	});
 
 	onDestroy(() => {
 		pageHeaderStore.reset();
 	});
-
-	const handleBack = () => {
-		if (backUrl) {
-			goto(backUrl);
-		} else {
-			dispatch('back');
-		}
-	};
 </script>
 
 {#if !hidden}
@@ -141,7 +162,7 @@
 		<div class="hidden sm:flex items-center gap-2 sm:gap-4 min-w-0">
 			{#if showBackButton}
 				<button
-					on:click={handleBack}
+					onclick={handleBack}
 					class="p-2 sm:p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer flex-shrink-0"
 				>
 					<ArrowLeft class="w-4 h-4 sm:w-5 sm:h-5" />
@@ -149,11 +170,12 @@
 			{/if}
 
 			{#if icon}
+				{@const IconComponent = icon}
 				<div
 					class="p-1.5 rounded-lg sm:p-3 sm:rounded-2xl {colors.bg} {colors.text} shadow-lg {colors.shadow} border-2 border-white dark:border-gray-800 flex-shrink-0"
 					style="transform: rotate({rotation}deg)"
 				>
-					<svelte:component this={icon} class="w-4 h-4 sm:w-6 sm:h-6" />
+					<IconComponent class="w-4 h-4 sm:w-6 sm:h-6" />
 				</div>
 			{/if}
 
@@ -176,12 +198,58 @@
 			</div>
 		</div>
 
-		{#if $$slots.actions}
-			<div
-				class={`flex items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-2 overflow-visible max-w-full ${actions ? 'hidden sm:flex' : ''}`}
-			>
-				<slot name="actions" />
-			</div>
-		{/if}
+		<div
+			class="{mobileActions
+				? 'flex w-full sm:mt-0'
+				: 'hidden sm:flex'} items-center gap-1.5 sm:gap-3 justify-end ml-auto sm:ml-0 py-0 sm:py-2 overflow-visible sm:max-w-full sm:w-auto"
+		>
+			{#if actions}
+				{@render actions()}
+			{:else if actionItems && actionItems.length > 0}
+				{#each actionItems as action}
+					<button
+						onclick={action.onClick}
+						disabled={action.loading}
+						data-filter-toggle={action.filterToggle ? 'true' : undefined}
+						class={`flex items-center gap-2 px-3 py-1.5 sm:py-2 rounded-full font-bold text-[10px] sm:text-xs shadow-sm border transition-all cursor-pointer h-8 sm:h-9 ${
+							action.theme === 'rose'
+								? 'bg-rose-500 text-white border-transparent shadow-md shadow-rose-500/20 hover:bg-rose-600'
+								: action.theme === 'red'
+									? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800'
+									: action.theme === 'blue'
+										? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+										: 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-zinc-700 hover:border-red-200 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400'
+						}`}
+					>
+						{#if action.icon}
+							{@const ActionIcon = action.icon}
+							<ActionIcon class="w-4 h-4" />
+						{/if}
+						{#if action.label}
+							<span class="hidden md:inline">{action.label}</span>
+							{#if action.showLabel !== false}
+								<span class="md:hidden">{action.label}</span>
+							{/if}
+						{/if}
+						{#if action.badge}
+							<span
+								class="ml-1 px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-black text-[9px] dark:bg-zinc-800 dark:text-zinc-400"
+							>
+								{action.badge}
+							</span>
+						{/if}
+					</button>
+					{#if action.loading}
+						<div
+							class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 flex items-center justify-center rounded-full"
+						>
+							<div
+								class="w-4 h-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin"
+							></div>
+						</div>
+					{/if}
+				{/each}
+			{/if}
+		</div>
 	</div>
 {/if}

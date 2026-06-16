@@ -18,11 +18,16 @@ class MemoryItem(BaseModel):
     uniqueId: str
     type: MemoryType
     imageUrl: Optional[str] = None
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
+    blurHash: Optional[str] = None
     date: str
     time: str
     title: str
     subtitle: str
     notes: Optional[str] = None
+    is_favorite: bool = False
+    ticketRef: Optional[str] = None
     # Additional fields needed by frontend MemoryCard for 2SHOT display
     eventTitle: Optional[str] = None  # Original event title for 2SHOT
     twoShotMemberName: Optional[str] = None  # Member name for 2SHOT
@@ -41,9 +46,13 @@ class TopTwoShotMember(BaseModel):
     spend: int
     lastDate: str
     image: Optional[str] = None
+    image_medium: Optional[str] = None
+    image_small: Optional[str] = None
+    blurHash: Optional[str] = None
 
 
 class TopTwoShotResponse(BaseModel):
+    available_years: list[int]
     ranking: list[TopTwoShotMember]
     totalTwoShotSpend: int
     totalTwoShotCount: int

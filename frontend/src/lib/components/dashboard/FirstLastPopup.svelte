@@ -2,32 +2,41 @@
 	import { Calendar, X, Star, Camera } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { fade, scale } from 'svelte/transition';
+	import { OptimizedImage } from '$lib/components/common';
 
 	const { t } = useTranslation();
 
-	export let show: boolean = false;
-	export let onClose: () => void;
-	export let title: string;
-	export let type: 'theater' | 'twoShot';
-
-	export let first: {
-		image?: string | null;
+	interface Props {
+		show?: boolean;
+		onClose: () => void;
 		title: string;
-		date: string;
-		detail?: string;
-	} | null;
+		type: 'theater' | 'twoShot';
+		first: {
+			image?: string | null;
+			image_medium?: string | null;
+			image_small?: string | null;
+			blurHash?: string | null;
+			title: string;
+			date: string;
+			detail?: string;
+		} | null;
+		last: {
+			image?: string | null;
+			image_medium?: string | null;
+			image_small?: string | null;
+			blurHash?: string | null;
+			title: string;
+			date: string;
+			detail?: string;
+		} | null;
+	}
 
-	export let last: {
-		image?: string | null;
-		title: string;
-		date: string;
-		detail?: string;
-	} | null;
+	let { show = false, onClose, title, type, first, last }: Props = $props();
 
-	const theme = type === 'theater' ? 'purple' : 'pink';
-	const PlaceholderIcon = type === 'theater' ? Star : Camera;
+	let theme = $derived(type === 'theater' ? 'purple' : 'pink');
+	let PlaceholderIcon = $derived(type === 'theater' ? Star : Camera);
 
-	$: themeClasses =
+	let themeClasses = $derived(
 		theme === 'purple'
 			? {
 					bg: 'bg-purple-50 dark:bg-zinc-900',
@@ -60,42 +69,46 @@
 					date: 'text-pink-400 dark:text-pink-400',
 					placeholderText: 'text-pink-300',
 					placeholderEmptyText: 'text-pink-300'
-				};
+				}
+	);
 
-	$: labels =
+	let labels = $derived(
 		type === 'theater'
-			? { first: $t('dashboard.theater.first'), last: $t('dashboard.theater.last') }
-			: { first: $t('dashboard.twoShot.first'), last: $t('dashboard.twoShot.last') };
+			? { first: t('dashboard.theater.first'), last: t('dashboard.theater.last') }
+			: { first: t('dashboard.twoShot.first'), last: t('dashboard.twoShot.last') }
+	);
 </script>
 
 {#if show}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-		on:click|self={onClose}
+		class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+		onclick={(e) => {
+			if (e.target === e.currentTarget) onClose();
+		}}
+		onkeydown={(e) => e.key === 'Escape' && onClose()}
 		role="dialog"
 		aria-modal="true"
+		tabindex="-1"
 		transition:fade={{ duration: 200 }}
 	>
 		<div
-			class={`w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border ${themeClasses.bg} ${themeClasses.border}`}
+			class={`w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col rounded-3xl shadow-2xl overflow-hidden border ${themeClasses.bg} ${themeClasses.border}`}
 			transition:scale={{ duration: 200, start: 0.95 }}
 		>
 			<!-- Header -->
 			<div
-				class={`p-6 border-b ${themeClasses.border} flex items-center justify-between ${themeClasses.headerBg}`}
+				class={`p-4 md:p-6 border-b shrink-0 ${themeClasses.border} flex items-center justify-between ${themeClasses.headerBg} gap-2`}
 			>
-				<div class={`flex items-center gap-3 ${themeClasses.text}`}>
-					<div class={`p-2 rounded-xl ${themeClasses.iconBg}`}>
-						<Calendar class="w-6 h-6" />
+				<div class={`flex items-center gap-2 sm:gap-3 ${themeClasses.text}`}>
+					<div class={`p-1.5 sm:p-2 rounded-xl shrink-0 ${themeClasses.iconBg}`}>
+						<Calendar class="w-5 h-5 sm:w-6 sm:h-6" />
 					</div>
-					<h3 class="font-bold text-xl text-gray-800 dark:text-gray-100">
+					<h3 class="font-bold text-base sm:text-xl leading-tight text-gray-800 dark:text-gray-100">
 						{title}
 					</h3>
 				</div>
 				<button
-					on:click={onClose}
+					onclick={onClose}
 					class={`p-2 rounded-full transition-colors cursor-pointer ${themeClasses.closeBtnBg} ${themeClasses.closeBtnHover}`}
 				>
 					<X class={`w-6 h-6 ${themeClasses.closeBtnIcon}`} />
@@ -103,26 +116,30 @@
 			</div>
 
 			<!-- Content -->
-			<div class="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 relative">
-				<div
-					class={`hidden md:block absolute left-1/2 top-10 bottom-10 w-px ${themeClasses.divider}`}
-				></div>
+			<div
+				class="p-4 sm:p-6 md:p-10 grid grid-cols-2 gap-4 sm:gap-8 md:gap-12 relative overflow-y-auto"
+			>
+				<div class={`absolute left-1/2 top-8 bottom-8 w-px ${themeClasses.divider}`}></div>
 
 				<!-- First -->
 				<div class="flex flex-col items-center text-center">
 					<span
-						class={`text-xs font-black tracking-[0.2em] ${themeClasses.text} uppercase mb-6 px-3 py-1 rounded-full ${themeClasses.labelBg}`}
+						class={`text-[10px] sm:text-xs font-black tracking-[0.1em] sm:tracking-[0.2em] ${themeClasses.text} uppercase mb-3 sm:mb-6 px-2 sm:px-3 py-1 rounded-full ${themeClasses.labelBg}`}
 						>{labels.first}</span
 					>
 					{#if first}
 						<div
-							class={`w-48 h-64 md:w-64 md:h-80 rounded-2xl bg-gray-200 dark:bg-gray-800 shadow-xl mb-6 overflow-hidden relative group border ${themeClasses.border}`}
+							class={`w-32 h-44 sm:w-48 sm:h-64 md:w-64 md:h-80 rounded-xl sm:rounded-2xl bg-gray-200 dark:bg-gray-800 shadow-xl mb-3 sm:mb-6 overflow-hidden relative group border ${themeClasses.border}`}
 						>
 							{#if first.image}
-								<img
+								<OptimizedImage
 									src={first.image}
+									srcMedium={first.image_medium}
+									srcSmall={first.image_small}
+									blurHash={first.blurHash}
 									alt={first.title}
 									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+									sizes="(max-width: 640px) 128px, (max-width: 768px) 192px, 256px"
 								/>
 								<div
 									class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
@@ -131,18 +148,18 @@
 								<div
 									class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderText}`}
 								>
-									<svelte:component this={PlaceholderIcon} class="w-16 h-16" />
+									<PlaceholderIcon class="w-16 h-16" />
 								</div>
 							{/if}
 						</div>
-						<h4 class="text-2xl font-black text-themed mb-2 leading-tight">
+						<h4 class="text-base sm:text-2xl font-black text-themed mb-1 sm:mb-2 leading-tight">
 							{first.title}
 						</h4>
-						<p class={`text-lg font-bold mb-1 ${themeClasses.date}`}>
+						<p class={`text-xs sm:text-lg font-bold mb-1 ${themeClasses.date}`}>
 							{first.date}
 						</p>
 						{#if first.detail}
-							<p class="text-sm font-bold text-gray-400">
+							<p class="text-[10px] sm:text-sm font-bold text-gray-400">
 								{first.detail}
 							</p>
 						{/if}
@@ -154,18 +171,22 @@
 				<!-- Last -->
 				<div class="flex flex-col items-center text-center">
 					<span
-						class={`text-xs font-black tracking-[0.2em] ${themeClasses.text} uppercase mb-6 px-3 py-1 rounded-full ${themeClasses.secondaryBg}`}
+						class={`text-[10px] sm:text-xs font-black tracking-[0.1em] sm:tracking-[0.2em] ${themeClasses.text} uppercase mb-3 sm:mb-6 px-2 sm:px-3 py-1 rounded-full ${themeClasses.secondaryBg}`}
 						>{labels.last}</span
 					>
 					{#if last}
 						<div
-							class={`w-48 h-64 md:w-64 md:h-80 rounded-2xl bg-gray-200 dark:bg-gray-800 shadow-xl mb-6 overflow-hidden relative group border ${themeClasses.border}`}
+							class={`w-32 h-44 sm:w-48 sm:h-64 md:w-64 md:h-80 rounded-xl sm:rounded-2xl bg-gray-200 dark:bg-gray-800 shadow-xl mb-3 sm:mb-6 overflow-hidden relative group border ${themeClasses.border}`}
 						>
 							{#if last.image}
-								<img
+								<OptimizedImage
 									src={last.image}
+									srcMedium={last.image_medium}
+									srcSmall={last.image_small}
+									blurHash={last.blurHash}
 									alt={last.title}
 									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+									sizes="(max-width: 640px) 128px, (max-width: 768px) 192px, 256px"
 								/>
 								<div
 									class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
@@ -174,18 +195,18 @@
 								<div
 									class={`w-full h-full flex items-center justify-center ${themeClasses.placeholderEmptyText}`}
 								>
-									<svelte:component this={PlaceholderIcon} class="w-16 h-16" />
+									<PlaceholderIcon class="w-16 h-16" />
 								</div>
 							{/if}
 						</div>
-						<h4 class="text-2xl font-black text-themed mb-2 leading-tight">
+						<h4 class="text-base sm:text-2xl font-black text-themed mb-1 sm:mb-2 leading-tight">
 							{last.title}
 						</h4>
-						<p class={`text-lg font-bold mb-1 ${themeClasses.date}`}>
+						<p class={`text-xs sm:text-lg font-bold mb-1 ${themeClasses.date}`}>
 							{last.date}
 						</p>
 						{#if last.detail}
-							<p class="text-sm font-bold text-gray-400">
+							<p class="text-[10px] sm:text-sm font-bold text-gray-400">
 								{last.detail}
 							</p>
 						{/if}

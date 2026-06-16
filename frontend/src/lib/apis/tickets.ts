@@ -19,6 +19,7 @@ export const ticketsApi = {
 			if (filters.title) query.append('title', filters.title);
 			if (filters.hasTwoShot !== undefined)
 				query.append('has_two_shot', filters.hasTwoShot.toString());
+			if (filters.isFavorite) query.append('is_favorite', 'true');
 			if (filters.startDate) query.append('start_date', filters.startDate);
 			if (filters.endDate) query.append('end_date', filters.endDate);
 			if (filters.days && filters.days.length > 0) {
@@ -41,6 +42,18 @@ export const ticketsApi = {
 		return await client<Ticket>(`/theater/tickets/${ticketId}`, {
 			method: 'PUT',
 			body: ticket
+		});
+	},
+
+	toggleFavorite: async (ticketId: string) => {
+		return await client<Ticket>(`/theater/tickets/${ticketId}/favorite`, {
+			method: 'PATCH'
+		});
+	},
+
+	toggleTwoShotFavorite: async (ticketId: string) => {
+		return await client<Ticket>(`/theater/tickets/${ticketId}/two-shot/favorite`, {
+			method: 'PATCH'
 		});
 	},
 

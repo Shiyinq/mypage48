@@ -1,1 +1,11 @@
 export { default as ErrorFallback } from './ErrorFallback.svelte';
+export { default as OptimizedImage } from './OptimizedImage.svelte';
+export { default as AnimatedBackground } from './AnimatedBackground.svelte';
+export { default as AppBackground } from './AppBackground.svelte';
+export { default as ScrollToTop } from './ScrollToTop.svelte';
+export { default as ImageLightbox } from './ImageLightbox.svelte';
+export { default as ImageOverlayActions } from './ImageOverlayActions.svelte';
+export { default as PromoBanner } from './PromoBanner.svelte';
+export { default as DateRangeFilter } from './DateRangeFilter.svelte';
+export { default as VersionDisplay } from './VersionDisplay.svelte';
+export { default as FlyingOshiIcons } from './FlyingOshiIcons.svelte';

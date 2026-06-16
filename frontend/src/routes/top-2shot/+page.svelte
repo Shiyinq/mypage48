@@ -1,85 +1,124 @@
 <script lang="ts">
-	export let params: Record<string, string> | undefined = undefined;
 	import { isAuthenticated, showToast } from '$lib/stores';
-	import { isCacheExpired } from '$lib/utils/cache';
-	import { logger } from '$lib/utils/logger';
 	import { Heart, Camera } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { onMount } from 'svelte';
-	import { PageHeader, EmptyState, ErrorState } from '$lib/components';
+	import { EmptyState, ErrorState } from '$lib/components';
 	import { KamiOshiCard, Leaderboard } from '$lib/components/top2shot';
 	import { Top2ShotSkeleton } from '$lib/components/skeletons';
 	import type { TopTwoShotResponse } from '$lib/types';
-	import { topTwoShotStore, isTopTwoShotLoading } from '$lib/stores/memories';
+	import { topTwoShotStore, isTopTwoShotLoading } from '$lib/stores/memories.svelte';
+	import { TheaterHeader, TheaterFilters } from '$lib/components/theater';
+	import { dashboardFilter } from '$lib/stores/dashboard.svelte';
+	import { slide } from 'svelte/transition';
 
 	const { t } = useTranslation();
 
 	/* Loading State */
-	let mounted = false;
+	let mounted = $state(false);
 
 	// Default stats if store is null
 	let defaultStats: TopTwoShotResponse = {
+		available_years: [new Date().getFullYear()],
 		ranking: [],
 		totalTwoShotSpend: 0,
 		totalTwoShotCount: 0
 	};
 
-	$: stats = $topTwoShotStore.data || defaultStats;
-	$: error = $topTwoShotStore.error;
+	let stats = $derived(topTwoShotStore.data || defaultStats);
+	let error = $derived(topTwoShotStore.error);
+
+	let isFilterOpen = $state(false);
+	let availableYears = $derived(stats.available_years ?? [new Date().getFullYear()]);
+
+	function clickOutside(node: HTMLElement) {
+		const handleClick = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (node && !node.contains(target) && !target.closest('[data-filter-toggle="true"]')) {
+				isFilterOpen = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
 
 	onMount(async () => {
 		mounted = true;
-		if ($isAuthenticated) {
-			await fetchTopTwoShot();
-		}
 	});
 
-	async function fetchTopTwoShot() {
-		// If data exists and is not expired, no need to show loading
-		// Store load check handles cache expiration check too, but we can double check here or just call load()
-		if ($topTwoShotStore.data && !isCacheExpired($topTwoShotStore.lastUpdated)) return;
-
+	async function loadData() {
 		try {
-			await topTwoShotStore.load();
-		} catch (e) {
+			await topTwoShotStore.load({
+				selectedYear: dashboardFilter.selectedYear,
+				startMonth: dashboardFilter.startMonth,
+				endMonth: dashboardFilter.endMonth,
+				isAllData: dashboardFilter.isAllData
+			});
+		} catch {
 			// Error state is handled by store, we just show toast
-			showToast($t('top2shot.errorTitle') || 'Failed to load data', 'error');
+			showToast(t('top2shot.errorTitle') || 'Failed to load data', 'error');
 		}
 	}
 
-	$: mostCollected = stats.ranking.length > 0 ? stats.ranking[0] : undefined;
+	$effect(() => {
+		if (isAuthenticated.value && mounted && dashboardFilter) {
+			loadData();
+		}
+	});
+
+	let mostCollected = $derived(stats.ranking.length > 0 ? stats.ranking[0] : undefined);
 </script>
 
-<SEO title={$t('top2shot.title')} path="/top-2shot" description={$t('seo.top2shot')} />
+<SEO title={t('top2shot.title')} path="/top-2shot" description={t('seo.top2shot')} />
 
-<div class="max-w-6xl mx-auto pt-4 sm:pt-6 px-4 pb-24 animate-fade-in">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32">
 	<!-- Header -->
-	<div class="mb-8">
-		<PageHeader
+	<div class="mb-0 sm:mb-8 relative z-30">
+		<TheaterHeader
+			filter={dashboardFilter}
+			onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
+			isOpen={isFilterOpen}
+			title={t('top2shot.title')}
+			subtitle={t('top2shot.subtitle')}
 			icon={Heart}
-			title={$t('top2shot.title')}
-			subtitle={$t('top2shot.subtitle')}
 			theme="pink"
 		/>
+		{#if isFilterOpen}
+			<div
+				use:clickOutside
+				transition:slide={{ duration: 200 }}
+				class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
+			>
+				<TheaterFilters
+					bind:isAllData={dashboardFilter.isAllData}
+					bind:selectedYear={dashboardFilter.selectedYear}
+					bind:startMonth={dashboardFilter.startMonth}
+					bind:endMonth={dashboardFilter.endMonth}
+					{availableYears}
+				/>
+			</div>
+		{/if}
 	</div>
 
-	{#if $isTopTwoShotLoading || !mounted}
+	{#if isTopTwoShotLoading.value || !mounted}
 		<Top2ShotSkeleton />
 	{:else if error && stats.ranking.length === 0}
 		<ErrorState
-			title={$t('top2shot.errorTitle') || 'Failed to load data'}
-			description={$t('top2shot.errorDesc') ||
+			title={t('top2shot.errorTitle') || 'Failed to load data'}
+			description={t('top2shot.errorDesc') ||
 				error ||
 				'Something went wrong while fetching the leaderboard.'}
-			onRetry={fetchTopTwoShot}
+			onRetry={loadData}
 		/>
 	{:else if stats.ranking.length === 0}
-		<EmptyState
-			icon={Camera}
-			title={$t('top2shot.noData')}
-			description={$t('top2shot.noDataDesc')}
-		/>
+		<EmptyState icon={Camera} title={t('top2shot.noData')} description={t('top2shot.noDataDesc')} />
 	{:else}
 		<div class="grid lg:grid-cols-3 gap-6">
 			<!-- LEFT COL: Kami Oshi Card -->

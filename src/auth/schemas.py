@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, model_validator
 
 from src.auth.http_exceptions import PasswordPolicyViolation, PasswordsNotMatch
 from src.utils import validate_password_strength
@@ -23,12 +23,17 @@ class OshiShowResponse(BaseModel):
 
 
 class OshiResponse(BaseModel):
+    id: str = ""
     name: str = "Unknown"
     nickname: str = "-"
     generation: str = "-"
+    memberType: Optional[str] = None
     profilePicture: str = (
         "https://upload.wikimedia.org/wikipedia/commons/8/82/JKT48.svg"
     )
+    profilePicture_medium: Optional[str] = None
+    profilePicture_small: Optional[str] = None
+    blurHash: Optional[str] = None
     catchphrase: str = "-"
     socials: Optional[OshiSocials] = None
     totalShows: int = 0
@@ -39,27 +44,25 @@ class OshiResponse(BaseModel):
 class UserLoginBase(BaseModel):
     userId: str
     profilePicture: str | None = None
+    profilePicture_medium: str | None = None
+    profilePicture_small: str | None = None
+    blurHash: str | None = None
     name: str
     email: str
     username: str
     memberId: str | None = None
-    oshiId: str | None = None
+    oshiIds: list[str] = []
     ofcStatus: str | None = None
+    bio: str | None = None
     isPublic: bool = False
     publicYear: int | None = None
     isAdmin: bool = False
-
-    @field_validator("oshiId", mode="before")
-    @classmethod
-    def allow_int_oshi_id(cls, v):
-        if v is None:
-            return None
-        return str(v)
+    isEmailVerified: bool = False
+    createdAt: datetime | None = None
 
 
 class UserLogin(UserLoginBase):
     password: Optional[str] = None
-    isEmailVerified: bool = False
     failedLoginAttempts: int = 0
     isAccountLocked: bool = False
     accountLockedUntil: Optional[datetime] = None
