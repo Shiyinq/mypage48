@@ -1531,6 +1531,32 @@
 		"thisMonth": "今月",
 		"thisYear": "今年",
 		"allTime": "全期間",
-		"customRange": "カスタム期間"
+		"customRange": "カスタム期間",
+		"pcLive": {
+			"description": "フォトカードライブコレクション",
+			"tabs": {
+				"all": "すべてのカード",
+				"owned": "所持",
+				"notOwned": "未所持"
+			},
+			"emptyTitle": "履歴がありません",
+			"emptyDesc": "フォトカードとして表示するライブ履歴データがありません。",
+			"sort": {
+				"dateDesc": "新しい順",
+				"dateAsc": "古い順",
+				"tierDesc": "レア度が高い順",
+				"tierAsc": "レア度が低い順"
+			}
+		},
+		"tier": {
+			"ultraRare": "ULTRA RARE",
+			"rare": "RARE",
+			"legendary": "LEGENDARY",
+			"epic": "EPIC",
+			"normal": "NORMAL",
+			"common": "COMMON",
+			"premium": "PREMIUM",
+			"notOwned": "未所持"
+		}
 	}
 }

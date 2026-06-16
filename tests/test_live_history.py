@@ -364,3 +364,119 @@ async def test_invalid_date_format(client: AsyncClient, db, create_user):
     response4 = await client.get("/api/history/lives/stats?start_date=31-juni-2025")
     assert response4.status_code == 400
     assert "INVALID_DATE_FORMAT" in response4.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_get_pc_collection_all(client: AsyncClient, db, create_user, seed_global_live_history):
+    """Test getting all PC collection cards with ownership status."""
+    token, user_id, headers = await create_user("pcuser1")
+
+    # Mark "gl1" as watched (owned)
+    payload = {
+        "live_id": "gl1",
+        "member_id": "gm1",
+        "member_name": "Member Alpha",
+        "platform": "showroom",
+        "ping_duration": 30,
+        "live_title": "Showroom Live 1"
+    }
+    await client.post("/api/history/lives/update", json=payload, headers=headers)
+
+    response = await client.get("/api/history/lives/pc?collection_type=all", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert "total" in data
+    assert data["total"] == 3
+    assert len(data["data"]) == 3
+
+    # Verify ownership assignment
+    for item in data["data"]:
+        if item["live_id"] == "gl1":
+            assert item["is_owned"] is True
+        else:
+            assert item["is_owned"] is False
+
+
+@pytest.mark.asyncio
+async def test_get_pc_collection_owned(client: AsyncClient, db, create_user, seed_global_live_history):
+    """Test getting only owned PC collection cards."""
+    token, user_id, headers = await create_user("pcuser2")
+
+    payload = {
+        "live_id": "gl2",
+        "member_id": "gm1",
+        "member_name": "Member Alpha",
+        "platform": "idn",
+        "ping_duration": 60,
+        "live_title": "IDN Live 1"
+    }
+    await client.post("/api/history/lives/update", json=payload, headers=headers)
+
+    response = await client.get("/api/history/lives/pc?collection_type=owned", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert data["total"] == 1
+    assert len(data["data"]) == 1
+    assert data["data"][0]["live_id"] == "gl2"
+    assert data["data"][0]["is_owned"] is True
+
+
+@pytest.mark.asyncio
+async def test_get_pc_collection_unowned(client: AsyncClient, db, create_user, seed_global_live_history):
+    """Test getting only unowned PC collection cards."""
+    token, user_id, headers = await create_user("pcuser3")
+
+    payload = {
+        "live_id": "gl3",
+        "member_id": "gm2",
+        "member_name": "Member Beta",
+        "platform": "showroom",
+        "ping_duration": 30,
+        "live_title": "Showroom Live 2"
+    }
+    await client.post("/api/history/lives/update", json=payload, headers=headers)
+
+    response = await client.get("/api/history/lives/pc?collection_type=unowned", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert data["total"] == 2
+    assert len(data["data"]) == 2
+    
+    for item in data["data"]:
+        assert item["live_id"] != "gl3"
+        assert item["is_owned"] is False
+
+
+@pytest.mark.asyncio
+async def test_get_pc_collection_sorting(client: AsyncClient, db, create_user, seed_global_live_history):
+    """Test getting PC collection cards with different sort_by parameters."""
+    token, user_id, headers = await create_user("pcuser4")
+
+    # Update one live to have more view_num by seeding it manually or it's already seeded
+    # seed_global_live_history provides gl1, gl2, gl3 with some data.
+    # We will test sort_by=tier_desc which should order by view_num descending
+
+    response = await client.get("/api/history/lives/pc?collection_type=all&sort_by=tier_desc", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert data["total"] > 0
+    # Check if view_num is actually descending
+    for i in range(len(data["data"]) - 1):
+        assert data["data"][i].get("view_num", 0) >= data["data"][i + 1].get("view_num", 0)
+
+    # Test date_asc
+    response = await client.get("/api/history/lives/pc?collection_type=all&sort_by=date_asc", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert data["total"] > 0
+    # Check if start_at is ascending
+    for i in range(len(data["data"]) - 1):
+        start_1 = data["data"][i].get("start_at")
+        start_2 = data["data"][i + 1].get("start_at")
+        if start_1 and start_2:
+            assert start_1 <= start_2

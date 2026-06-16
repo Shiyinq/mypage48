@@ -12,6 +12,7 @@ from src.live_history.schemas import (
     LiveHistoryStatsResponse,
     LiveHistoryUpdateRequest,
     MemberLiveHistoryStatsResponse,
+    PCLiveHistoryPaginationResponse,
     WatchedLiveMemberRankingResponse,
 )
 from src.utils import parse_date_range
@@ -234,3 +235,34 @@ class LiveHistoryService:
             member_id, start_date=parsed_start, end_date=parsed_end
         )
         return GlobalSingleMemberLiveHistoryStatsResponse(**stats)
+
+    async def get_pc_collection(
+        self,
+        user_id: str,
+        collection_type: str = "all",
+        page: int = 1,
+        limit: int = 20,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        sort_by: str = "date_desc",
+    ) -> PCLiveHistoryPaginationResponse:
+        parsed_start, parsed_end = parse_date_range(start_date, end_date)
+        skip = (page - 1) * limit
+
+        items = await self.repository.get_pc_collection(
+            user_id=user_id,
+            collection_type=collection_type,
+            skip=skip,
+            limit=limit,
+            start_date=parsed_start,
+            end_date=parsed_end,
+            sort_by=sort_by,
+        )
+        total = await self.repository.get_total_pc_collection_count(
+            user_id, collection_type, start_date=parsed_start, end_date=parsed_end
+        )
+        total_pages = math.ceil(total / limit) if limit > 0 else 1
+
+        return PCLiveHistoryPaginationResponse(
+            data=items, total=total, page=page, limit=limit, total_pages=total_pages
+        )

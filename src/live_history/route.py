@@ -15,6 +15,7 @@ from src.live_history.schemas import (
     LiveHistoryStatsResponse,
     LiveHistoryUpdateRequest,
     MemberLiveHistoryStatsResponse,
+    PCLiveHistoryPaginationResponse,
     WatchedLiveMemberRankingResponse,
 )
 from src.live_history.service import LiveHistoryService
@@ -172,4 +173,29 @@ async def get_global_member_history(
         limit=limit,
         start_date=start_date,
         end_date=end_date,
+    )
+
+
+@router.get("/pc", response_model=PCLiveHistoryPaginationResponse)
+async def get_pc_collection(
+    collection_type: str = Query(
+        "all", description="Type of collection: owned, unowned, or all"
+    ),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
+    sort_by: str = Query("date_desc", description="Sort by: date_desc, date_asc, tier_desc, tier_asc"),
+    current_user: UserCurrent = Depends(get_current_user),
+    service: LiveHistoryService = Depends(get_live_history_service),
+):
+    """Get PC Live Collection items marked with ownership status."""
+    return await service.get_pc_collection(
+        user_id=current_user.userId,
+        collection_type=collection_type,
+        page=page,
+        limit=limit,
+        start_date=start_date,
+        end_date=end_date,
+        sort_by=sort_by,
     )

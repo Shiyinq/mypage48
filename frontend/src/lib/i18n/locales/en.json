@@ -776,7 +776,33 @@
 		"thisMonth": "This Month",
 		"thisYear": "This Year",
 		"allTime": "All Time",
-		"customRange": "Custom Range"
+		"customRange": "Custom Range",
+		"pcLive": {
+			"description": "Photo Card Live Collection",
+			"tabs": {
+				"all": "All Cards",
+				"owned": "Owned",
+				"notOwned": "Not Owned"
+			},
+			"emptyTitle": "No Live History",
+			"emptyDesc": "There is no live history data to display as Photo Cards.",
+			"sort": {
+				"dateDesc": "Latest First",
+				"dateAsc": "Oldest First",
+				"tierDesc": "Highest Rarity",
+				"tierAsc": "Lowest Rarity"
+			}
+		},
+		"tier": {
+			"ultraRare": "ULTRA RARE",
+			"rare": "RARE",
+			"legendary": "LEGENDARY",
+			"epic": "EPIC",
+			"normal": "NORMAL",
+			"common": "COMMON",
+			"premium": "PREMIUM",
+			"notOwned": "NOT OWNED"
+		}
 	},
 	"theater": {
 		"title": "Theater",
