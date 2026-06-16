@@ -70,6 +70,7 @@
 
 	function setTab(tab: 'all' | 'owned' | 'unowned') {
 		if (activeTab === tab) return;
+		if (isPublic && tab !== 'all') return;
 		activeTab = tab;
 		// The $effect will trigger reload because activeTab is a dependency
 	}
@@ -139,24 +140,26 @@
 					>
 						{t('liveHistory.pcLive.tabs.all') || 'All Cards'}
 					</button>
-					<button
-						class="flex-1 cursor-pointer pb-3 text-xs sm:text-sm font-bold transition-all border-b-2 {activeTab ===
-						'owned'
-							? 'border-pink-500 text-zinc-900 dark:text-white'
-							: 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-white'}"
-						onclick={() => setTab('owned')}
-					>
-						{t('liveHistory.pcLive.tabs.owned') || 'Owned'}
-					</button>
-					<button
-						class="flex-1 cursor-pointer pb-3 text-xs sm:text-sm font-bold transition-all border-b-2 {activeTab ===
-						'unowned'
-							? 'border-pink-500 text-zinc-900 dark:text-white'
-							: 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-white'}"
-						onclick={() => setTab('unowned')}
-					>
-						{t('liveHistory.pcLive.tabs.notOwned') || 'Not Owned'}
-					</button>
+					{#if !isPublic}
+						<button
+							class="flex-1 cursor-pointer pb-3 text-xs sm:text-sm font-bold transition-all border-b-2 {activeTab ===
+							'owned'
+								? 'border-pink-500 text-zinc-900 dark:text-white'
+								: 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-white'}"
+							onclick={() => setTab('owned')}
+						>
+							{t('liveHistory.pcLive.tabs.owned') || 'Owned'}
+						</button>
+						<button
+							class="flex-1 cursor-pointer pb-3 text-xs sm:text-sm font-bold transition-all border-b-2 {activeTab ===
+							'unowned'
+								? 'border-pink-500 text-zinc-900 dark:text-white'
+								: 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-white'}"
+							onclick={() => setTab('unowned')}
+						>
+							{t('liveHistory.pcLive.tabs.notOwned') || 'Not Owned'}
+						</button>
+					{/if}
 				</div>
 			</div>
 
