@@ -1535,6 +1535,8 @@
 		"allTime": "Semua Waktu",
 		"customRange": "Rentang Kustom",
 		"pcLive": {
+			"title": "PC Live",
+			"buttonSubtitle": "KOLEKSI",
 			"description": "Koleksi Photo Card Live",
 			"tabs": {
 				"all": "Semua Kartu",

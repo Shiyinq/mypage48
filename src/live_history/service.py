@@ -238,7 +238,7 @@ class LiveHistoryService:
 
     async def get_pc_collection(
         self,
-        user_id: str,
+        user_id: Optional[str],
         collection_type: str = "all",
         page: int = 1,
         limit: int = 20,

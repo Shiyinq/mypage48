@@ -3,7 +3,11 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query, status
 
 from src.auth.schemas import UserCurrent
-from src.dependencies import get_current_user, get_live_history_service
+from src.dependencies import (
+    get_current_user,
+    get_current_user_optional,
+    get_live_history_service,
+)
 from src.live_history.exceptions import LiveHistoryUpdateError
 from src.live_history.http_exceptions import LiveHistoryUpdateFailed
 from src.live_history.schemas import (
@@ -185,13 +189,16 @@ async def get_pc_collection(
     limit: int = Query(20, ge=1, le=100),
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
-    sort_by: str = Query("date_desc", description="Sort by: date_desc, date_asc, tier_desc, tier_asc"),
-    current_user: UserCurrent = Depends(get_current_user),
+    sort_by: str = Query(
+        "date_desc", description="Sort by: date_desc, date_asc, tier_desc, tier_asc"
+    ),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
     service: LiveHistoryService = Depends(get_live_history_service),
 ):
     """Get PC Live Collection items marked with ownership status."""
+    user_id = current_user.userId if current_user else None
     return await service.get_pc_collection(
-        user_id=current_user.userId,
+        user_id=user_id,
         collection_type=collection_type,
         page=page,
         limit=limit,

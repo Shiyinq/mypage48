@@ -2,4 +2,4 @@
 	import PCLiveCollection from '$lib/components/live/PCLiveCollection.svelte';
 </script>
 
-<PCLiveCollection isPublic={false} basePath="/theater/live/pc" />
+<PCLiveCollection isPublic={true} basePath="/jkt48/live/pc" />

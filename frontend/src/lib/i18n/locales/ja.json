@@ -1533,6 +1533,8 @@
 		"allTime": "全期間",
 		"customRange": "カスタム期間",
 		"pcLive": {
+			"title": "PC Live",
+			"buttonSubtitle": "コレクション",
 			"description": "フォトカードライブコレクション",
 			"tabs": {
 				"all": "すべてのカード",

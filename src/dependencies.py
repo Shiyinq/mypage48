@@ -1,3 +1,5 @@
+import typing
+
 from fastapi import BackgroundTasks, Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from fastapi_sso.sso.github import GithubSSO
@@ -148,6 +150,40 @@ async def get_current_user(
         background_tasks.add_task(user_repo.update_last_active, user.userId)
 
     return UserCurrent(**user.model_dump())
+
+
+async def get_current_user_optional(
+    background_tasks: BackgroundTasks,
+    request: Request,
+    api_key_service: ApiKeyService = Depends(get_api_key_service),
+    auth_service: AuthService = Depends(get_auth_service),
+    user_repo: UserRepository = Depends(get_user_repository),
+    config: Settings = Depends(get_settings),
+) -> typing.Optional[UserCurrent]:
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    token = auth_header.split(" ")[1]
+
+    try:
+        if token.startswith(config.api_key_prefix):
+            user = await api_key_service.validate_api_key(token)
+            if background_tasks:
+                background_tasks.add_task(user_repo.update_last_active, user["userId"])
+            return UserCurrent(**user)
+
+        token_data = auth_service.verify_access_token(token)
+        user = await auth_service.get_user(username_or_email=token_data.username)
+        if user is None:
+            raise InvalidJWTToken()
+
+        if background_tasks:
+            background_tasks.add_task(user_repo.update_last_active, user.userId)
+
+        return UserCurrent(**user.model_dump())
+    except Exception as e:
+        logger.warning(f"Optional auth failed: {e}")
+        raise InvalidJWTToken()
 
 
 def require_csrf_protection(request: Request, config: Settings = Depends(get_settings)):

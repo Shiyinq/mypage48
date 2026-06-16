@@ -480,3 +480,19 @@ async def test_get_pc_collection_sorting(client: AsyncClient, db, create_user, s
         start_2 = data["data"][i + 1].get("start_at")
         if start_1 and start_2:
             assert start_1 <= start_2
+
+
+@pytest.mark.asyncio
+async def test_get_pc_collection_unauthenticated(client: AsyncClient, db, seed_global_live_history):
+    """Test getting PC collection cards without authentication."""
+    # Request without headers (no auth token)
+    response = await client.get("/api/history/lives/pc?collection_type=all")
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert data["total"] > 0
+    assert len(data["data"]) > 0
+    
+    # All cards should have is_owned = False for unauthenticated users
+    for item in data["data"]:
+        assert item["is_owned"] is False

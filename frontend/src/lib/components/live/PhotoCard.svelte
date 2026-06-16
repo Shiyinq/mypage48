@@ -8,9 +8,11 @@
 
 	interface Props {
 		item: PCLiveHistory;
+		isPublic?: boolean;
 	}
 
-	let { item }: Props = $props();
+	let { item, isPublic = false }: Props = $props();
+	let isOwned = $derived(isPublic ? false : item.is_owned);
 	const { t, locale } = useTranslation();
 
 	let rotateX = $state(0);
@@ -306,7 +308,7 @@
 			class="absolute inset-0 rounded-2xl overflow-hidden bg-zinc-900 border-[3px] {tierConfig.border} {tierConfig.shadow} transition-colors duration-300"
 			style="backface-visibility: hidden;"
 		>
-			{#if !item.is_owned}
+			{#if !isOwned}
 				<div
 					class="absolute inset-0 z-20 bg-black/40 backdrop-blur-[1px] rounded-xl sm:rounded-2xl flex flex-col items-center justify-center pointer-events-none"
 				>
@@ -316,14 +318,14 @@
 						<Lock class="w-4 h-4 sm:w-6 sm:h-6 text-white/60" />
 					</div>
 					<span
-						class="text-white/60 text-[8px] sm:text-[10px] font-black tracking-widest uppercase drop-shadow-md"
+						class="text-[9px] sm:text-xs font-black tracking-widest bg-zinc-900/80 px-2 py-0.5 rounded text-white backdrop-blur-sm"
 						>{t('liveHistory.tier.notOwned') || 'NOT OWNED'}</span
 					>
 				</div>
 			{/if}
 
 			<!-- Background Image -->
-			<div class="absolute inset-0 {item.is_owned ? '' : 'grayscale-[0.85] opacity-80'}">
+			<div class="absolute inset-0 {isOwned ? '' : 'grayscale-[0.85] opacity-80'}">
 				<img
 					src={memberImage || '/images/default-avatar.png'}
 					alt={item.title || 'Live'}
@@ -335,7 +337,7 @@
 			</div>
 
 			<!-- Holographic glare effect (Only if owned) -->
-			{#if item.is_owned}
+			{#if isOwned}
 				<!-- Auto shine for top tiers when not hovered -->
 				{#if !isHovered && (cardTier === 'ultra-rare' || cardTier === 'rare' || cardTier === 'legendary')}
 					<div
@@ -363,7 +365,7 @@
 
 			<!-- Card Content -->
 			<div
-				class="relative z-10 p-2 sm:p-3 h-full flex flex-col justify-between {item.is_owned
+				class="relative z-10 p-2 sm:p-3 h-full flex flex-col justify-between {isOwned
 					? 'text-white'
 					: 'text-gray-300'}"
 			>

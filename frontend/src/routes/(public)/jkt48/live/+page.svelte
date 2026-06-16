@@ -3,7 +3,7 @@
 	import { fly } from 'svelte/transition';
 	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Users, Share2, Globe } from 'lucide-svelte';
+	import { Users, Share2, Globe, Image } from 'lucide-svelte';
 	import LiveGrid from '$lib/components/live/LiveGrid.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { showToast } from '$lib/stores';
@@ -137,6 +137,30 @@
 							>
 							<span class="text-sm font-black tracking-tight text-slate-900 dark:text-white"
 								>{t('liveHistory.globalButton') || 'Live History'}</span
+							>
+						</div>
+					</a>
+					<a
+						href="/jkt48/live/pc"
+						class="group relative flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden sm:w-auto"
+					>
+						<div
+							class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
+						></div>
+
+						<div
+							class="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-300"
+						>
+							<Image size={18} />
+						</div>
+
+						<div class="flex flex-col items-start leading-none gap-0.5">
+							<span
+								class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors"
+								>{t('liveHistory.pcLive.buttonSubtitle') || 'COLLECTION'}</span
+							>
+							<span class="text-sm font-black tracking-tight text-slate-900 dark:text-white"
+								>{t('liveHistory.pcLive.title') || 'PC Live'}</span
 							>
 						</div>
 					</a>
