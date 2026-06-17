@@ -18,6 +18,7 @@
 	import { spring } from 'svelte/motion';
 	import AppBackground from '$lib/components/common/AppBackground.svelte';
 	import { membersStore } from '$lib/stores/theater.svelte';
+	import type { LiveHistory } from '$lib/types/liveHistory';
 
 	let memberId = $derived($page.params.member_id as string);
 	let mounted = $state(false);
@@ -68,6 +69,17 @@
 
 	function formatDate(dateStr: string) {
 		return formatLiveDate(dateStr, locale.value);
+	}
+
+	function getMember(item: LiveHistory) {
+		return membersStore.list.find(
+			(m) =>
+				String(m.id) === String(item.member_id) ||
+				m.name === item.member_name ||
+				m.nickname === item.member_name ||
+				(m.socials?.idn_app && String(item.member_id).includes(m.socials.idn_app)) ||
+				(m.socials?.showroom && String(item.member_id) === String(m.socials.showroom))
+		);
 	}
 </script>
 
@@ -177,9 +189,14 @@
 			{:else}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each list as item (item._id)}
+						{@const member = getMember(item)}
 						<LiveHistoryItemCard
 							href="#"
 							mode="watched"
+							memberImage={member?.img || ''}
+							memberImageMedium={member?.img_medium}
+							memberImageSmall={member?.img_small}
+							blurHash={member?.blurHash}
 							memberName={item.member_name}
 							liveTitle={item.live_title}
 							platform={item.platform}

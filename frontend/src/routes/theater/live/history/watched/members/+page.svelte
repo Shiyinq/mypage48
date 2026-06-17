@@ -58,16 +58,8 @@
 		loadRanking(pagination.current_page + 1);
 	}
 
-	function getMemberImageStr(memberId: string, memberName?: string) {
-		const member = membersStore.list.find(
-			(m) =>
-				String(m.id) === String(memberId) ||
-				(memberName && m.name === memberName) ||
-				(memberName && m.nickname === memberName) ||
-				(m.socials?.idn_app && String(memberId).includes(m.socials.idn_app)) ||
-				(m.socials?.showroom && String(memberId) === String(m.socials.showroom))
-		);
-		return member?.img || '';
+	function getMemberObj(memberId: string) {
+		return membersStore.list.find((m) => String(m.id) === String(memberId));
 	}
 </script>
 
@@ -111,13 +103,17 @@
 				/>
 			{:else}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-					{#each rankingList as item, index}
+					{#each rankingList as member, i}
+						{@const memberObj = getMemberObj(member.member_id)}
 						<LiveRankingCard
-							{item}
-							{index}
-							href={`/theater/live/history/watched/${item.member_id}`}
+							item={member}
+							index={i}
+							href={`/theater/live/history/watched/${member.member_id}`}
 							mode="watched"
-							memberImage={getMemberImageStr(item.member_id, item.member_name)}
+							memberImage={memberObj?.img || ''}
+							memberImageMedium={memberObj?.img_medium}
+							memberImageSmall={memberObj?.img_small}
+							blurHash={memberObj?.blurHash}
 							timesLabel={t('liveHistory.times')}
 						/>
 					{/each}

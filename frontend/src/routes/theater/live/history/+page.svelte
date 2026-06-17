@@ -221,9 +221,16 @@
 								? `${baseLivePath}/${item.platform}/${item.live_id}`
 								: `${basePath}/members/${item.member?.id || ''}`}
 							mode="global"
-							memberImage={item.platform === 'showroom'
-								? item.member?.img || item.image
+							memberImage={item.platform === 'showroom' && item.member?.img
+								? item.member.img
 								: item.image || item.member?.img}
+							memberImageMedium={item.platform === 'showroom' && item.member?.img
+								? null
+								: item.image_medium}
+							memberImageSmall={item.platform === 'showroom' && item.member?.img
+								? null
+								: item.image_small}
+							blurHash={item.platform === 'showroom' && item.member?.img ? null : item.blurHash}
 							memberName={item.member?.name}
 							liveTitle={item.title}
 							platform={item.platform}

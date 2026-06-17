@@ -142,9 +142,21 @@ async def test_get_member_stats(client: AsyncClient, db, create_user):
 
 
 @pytest.mark.asyncio
-async def test_get_global_history(client: AsyncClient, db):
+async def test_get_global_history(client: AsyncClient, db, seed_global_live_history, monkeypatch):
     """Test getting global live history."""
-    # Assuming there are no lives initially or we just test the endpoint structure
+    
+    # Mock storage_service resolve_image_variants
+    from src.storage.service import StorageService
+    async def mock_resolve_image_variants(self, path: str):
+        # path is "live/gl1.webp"
+        return {
+            "url": f"https://mocked-s3.com/{path}",
+            "url_medium": f"https://mocked-s3.com/{path.replace('.webp', '_medium.webp')}",
+            "url_small": f"https://mocked-s3.com/{path.replace('.webp', '_small.webp')}",
+            "blurHash": "U00000000000000000000000000000000000"
+        }
+    monkeypatch.setattr(StorageService, "resolve_image_variants", mock_resolve_image_variants)
+
     response = await client.get("/api/history/lives")
     
     assert response.status_code == 200
@@ -155,6 +167,15 @@ async def test_get_global_history(client: AsyncClient, db):
     assert "page" in data
     assert "limit" in data
     assert "total_pages" in data
+
+    # Check if the variants are resolved for the first item (gl1)
+    # The API sorts descending by default, so gl3 is first, gl2 is second, gl1 is third.
+    items = data["data"]
+    gl1_item = next(item for item in items if item["live_id"] == "gl1")
+    assert gl1_item["image"] == "https://mocked-s3.com/live/gl1.webp"
+    assert gl1_item["image_medium"] == "https://mocked-s3.com/live/gl1_medium.webp"
+    assert gl1_item["image_small"] == "https://mocked-s3.com/live/gl1_small.webp"
+    assert gl1_item["blurHash"] == "U00000000000000000000000000000000000"
 
 
 @pytest.mark.asyncio
@@ -197,7 +218,7 @@ async def seed_global_live_history(db):
             "live_id": "gl1",
             "platform": "showroom",
             "title": "Showroom Live 1",
-            "image": None,
+            "image": "live/gl1.webp",
             "view_num": 5000,
             "start_at": now - datetime.timedelta(hours=3),
             "end_at": now - datetime.timedelta(hours=2),

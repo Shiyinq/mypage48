@@ -5,6 +5,7 @@
 	import { Eye, Lock, Play } from 'lucide-svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
 
 	interface Props {
 		item: PCLiveHistory;
@@ -114,10 +115,20 @@
 	}
 
 	let memberImage = $derived(
-		getExternalMediaUrl(
-			item.platform === 'showroom' ? item.member?.img || item.image : item.image || item.member?.img
-		)
+		item.platform === 'showroom' && item.member?.img
+			? item.member.img
+			: item.image || item.member?.img
 	);
+
+	let memberImageMedium = $derived(
+		item.platform === 'showroom' && item.member?.img ? null : item.image_medium
+	);
+
+	let memberImageSmall = $derived(
+		item.platform === 'showroom' && item.member?.img ? null : item.image_small
+	);
+
+	let blurHash = $derived(item.platform === 'showroom' && item.member?.img ? null : item.blurHash);
 
 	let displayDate = $derived.by(() => {
 		if (!item.start_at) return '';
@@ -326,9 +337,13 @@
 
 			<!-- Background Image -->
 			<div class="absolute inset-0 {isOwned ? '' : 'grayscale-[0.85] opacity-80'}">
-				<img
-					src={memberImage || '/images/default-avatar.png'}
+				<OptimizedImage
+					src={memberImage ? getExternalMediaUrl(memberImage) : '/images/default-avatar.png'}
+					srcMedium={memberImageMedium ? getExternalMediaUrl(memberImageMedium) : null}
+					srcSmall={memberImageSmall ? getExternalMediaUrl(memberImageSmall) : null}
+					{blurHash}
 					alt={item.title || 'Live'}
+					sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
 					class="w-full h-full object-cover transition-transform duration-500"
 					style="transform: scale(1.05);"
 				/>

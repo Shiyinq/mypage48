@@ -18,10 +18,22 @@
 		href: string;
 		mode?: 'watched' | 'global';
 		memberImage?: string;
+		memberImageMedium?: string | null;
+		memberImageSmall?: string | null;
+		blurHash?: string | null;
 		timesLabel: string;
 	}
 
-	let { item, index, href, memberImage = '', timesLabel }: Props = $props();
+	let {
+		item,
+		index,
+		href,
+		memberImage = '',
+		memberImageMedium,
+		memberImageSmall,
+		blurHash,
+		timesLabel
+	}: Props = $props();
 
 	function formatDuration(seconds: number) {
 		const h = Math.floor(seconds / 3600);
@@ -59,7 +71,11 @@
 		{#if memberImage}
 			<OptimizedImage
 				src={getExternalMediaUrl(memberImage)}
+				srcMedium={memberImageMedium ? getExternalMediaUrl(memberImageMedium) : null}
+				srcSmall={memberImageSmall ? getExternalMediaUrl(memberImageSmall) : null}
+				{blurHash}
 				alt={item.member_name || item.member_id}
+				sizes="64px"
 				class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
 			/>
 		{:else}

@@ -11,6 +11,9 @@
 	interface Props {
 		href: string;
 		memberImage?: string;
+		memberImageMedium?: string | null;
+		memberImageSmall?: string | null;
+		blurHash?: string | null;
 		memberName: string;
 		liveTitle?: string;
 		platform: string;
@@ -27,6 +30,9 @@
 	let {
 		href,
 		memberImage = '',
+		memberImageMedium = null,
+		memberImageSmall = null,
+		blurHash = null,
 		memberName,
 		liveTitle,
 		platform,
@@ -108,7 +114,11 @@
 					{#if memberImage}
 						<OptimizedImage
 							src={getExternalMediaUrl(memberImage)}
+							srcMedium={memberImageMedium ? getExternalMediaUrl(memberImageMedium) : null}
+							srcSmall={memberImageSmall ? getExternalMediaUrl(memberImageSmall) : null}
+							{blurHash}
 							alt={memberName}
+							sizes="64px"
 							class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
 						/>
 					{:else}
@@ -138,7 +148,11 @@
 				{#if memberImage}
 					<OptimizedImage
 						src={getExternalMediaUrl(memberImage)}
+						srcMedium={memberImageMedium ? getExternalMediaUrl(memberImageMedium) : null}
+						srcSmall={memberImageSmall ? getExternalMediaUrl(memberImageSmall) : null}
+						{blurHash}
 						alt={memberName}
+						sizes="64px"
 						class="w-full h-full object-cover"
 					/>
 				{:else}

@@ -309,8 +309,9 @@ def get_live_history_repository(db=Depends(get_db)) -> LiveHistoryRepository:
 
 def get_live_history_service(
     repo: LiveHistoryRepository = Depends(get_live_history_repository),
+    storage_service: StorageService = Depends(get_storage_service),
 ) -> LiveHistoryService:
-    return LiveHistoryService(repo)
+    return LiveHistoryService(repo, storage_service)
 
 
 def get_user_service(

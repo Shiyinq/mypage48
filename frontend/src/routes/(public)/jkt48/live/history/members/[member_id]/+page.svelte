@@ -202,9 +202,18 @@
 								? `${baseLivePath}/${item.platform}/${item.live_id}`
 								: `${basePath}/${item.member?.id || ''}`}
 							mode="global"
-							memberImage={item.platform === 'showroom'
-								? item.member?.img || item.image
-								: item.image || item.member?.img}
+							memberImage={item.platform === 'showroom' && !item.image?.includes('live/')
+								? memberInfo()?.img || item.member?.img || item.image
+								: item.image || memberInfo()?.img || item.member?.img}
+							memberImageMedium={item.platform === 'showroom' && !item.image?.includes('live/')
+								? memberInfo()?.img_medium
+								: item.image_medium || memberInfo()?.img_medium}
+							memberImageSmall={item.platform === 'showroom' && !item.image?.includes('live/')
+								? memberInfo()?.img_small
+								: item.image_small || memberInfo()?.img_small}
+							blurHash={item.platform === 'showroom' && !item.image?.includes('live/')
+								? memberInfo()?.blurHash
+								: item.blurHash || memberInfo()?.blurHash}
 							memberName={item.member?.name}
 							liveTitle={item.title}
 							platform={item.platform}

@@ -88,6 +88,9 @@ class GlobalLiveHistory(BaseModel):
     platform: str
     title: Optional[str] = None
     image: Optional[str] = None
+    image_medium: Optional[str] = None
+    image_small: Optional[str] = None
+    blurHash: Optional[str] = None
     view_num: int = 0
     start_at: datetime
     end_at: Optional[datetime] = None
