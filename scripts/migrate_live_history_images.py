@@ -27,7 +27,10 @@ async def process_live_history(db, storage_service, storage_repo):
     lives = await cursor.to_list(length=None)
     migrated_count = 0
     
-    async with httpx.AsyncClient() as client:
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+    async with httpx.AsyncClient(timeout=30.0, headers=headers) as client:
         for live in lives:
             image_url = live.get("image")
             if not image_url or image_url.startswith("live/"):
@@ -69,7 +72,7 @@ async def process_live_history(db, storage_service, storage_repo):
                 else:
                     logger.warning(f"Failed to fetch {image_url}, status code: {resp.status_code}")
             except Exception as e:
-                logger.error(f"Error migrating {image_url}: {e}")
+                logger.error(f"Error migrating {image_url}: {str(e)}")
                 
     logger.info(f"Migration completed! Migrated {migrated_count} images.")
 
