@@ -53,7 +53,7 @@ async def _process_new_live_image(
 
             return filename, blurHash
     except Exception as e:
-        logger.error(f"Failed to upload new live image {image_url}: {e}")
+        logger.error(f"Failed to upload new live image {image_url}: {str(e)}")
 
     return None, None
 
@@ -79,7 +79,10 @@ async def live_monitor_loop():
 
             current_live_ids = []
 
-            async with httpx.AsyncClient() as client:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            }
+            async with httpx.AsyncClient(timeout=30.0, headers=headers) as client:
                 for live in current_lives:
                     live_dict = live.model_dump()
                     live_id = live_dict.get("live_id")
@@ -132,7 +135,7 @@ async def live_monitor_loop():
             await live_history_repo.mark_missing_lives_as_ended(current_live_ids)
 
         except Exception as e:
-            logger.error(f"Error in live monitor loop: {e}")
+            logger.error(f"Error in live monitor loop: {str(e)}")
 
         # Wait 1 minute before the next poll
         await asyncio.sleep(60)
