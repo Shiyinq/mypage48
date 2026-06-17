@@ -7,7 +7,7 @@ class PCCollectionStore {
 	list = $state<PCLiveHistory[]>([]);
 	isLoading = $state(false);
 	error = $state<string | null>(null);
-	pagination = $state({ page: 1, limit: 20, total: 0, total_pages: 1 });
+	pagination = $state({ page: 1, limit: 10, total: 0, total_pages: 1 });
 	currentType = $state<'all' | 'owned' | 'unowned'>('all');
 	currentSort = $state<string>('date_desc');
 
@@ -16,7 +16,7 @@ class PCCollectionStore {
 
 		if (force || this.currentType !== type) {
 			this.list = [];
-			this.pagination = { page: 1, limit: 20, total: 0, total_pages: 1 };
+			this.pagination = { page: 1, limit: 10, total: 0, total_pages: 1 };
 			this.currentType = type;
 		}
 
@@ -27,7 +27,7 @@ class PCCollectionStore {
 			const response = await liveHistoryApi.getPCCollection(
 				type,
 				page,
-				20,
+				this.pagination.limit,
 				range?.start,
 				range?.end,
 				this.currentSort
@@ -58,7 +58,7 @@ class PCCollectionStore {
 	reset() {
 		this.list = [];
 		this.error = null;
-		this.pagination = { page: 1, limit: 20, total: 0, total_pages: 1 };
+		this.pagination = { page: 1, limit: 10, total: 0, total_pages: 1 };
 		this.currentType = 'all';
 		this.currentSort = 'date_desc';
 	}
