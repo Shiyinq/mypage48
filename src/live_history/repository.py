@@ -288,17 +288,19 @@ class LiveHistoryRepository:
                 view_num = max(
                     existing.get("view_num", 0), live_data.get("view_num", 0)
                 )
+                update_set = {
+                    "view_num": view_num,
+                    "last_seen_at": now,
+                    "title": live_data.get("title"),
+                    "image": live_data.get("image"),
+                    "status": "live",
+                }
+                if "blurHash" in live_data:
+                    update_set["blurHash"] = live_data["blurHash"]
+
                 await self.history_col.update_one(
                     {"_id": existing["_id"]},
-                    {
-                        "$set": {
-                            "view_num": view_num,
-                            "last_seen_at": now,
-                            "title": live_data.get("title"),
-                            "image": live_data.get("image"),
-                            "status": "live",
-                        }
-                    },
+                    {"$set": update_set},
                 )
             else:
                 # Insert new

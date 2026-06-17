@@ -18,6 +18,7 @@
 	import LiveStatCard from '$lib/components/live/history/shared/LiveStatCard.svelte';
 	import LiveHistoryItemCard from '$lib/components/live/history/shared/LiveHistoryItemCard.svelte';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
+	import { membersStore } from '$lib/stores/theater.svelte';
 
 	const basePath = '/jkt48/live/history';
 	const baseLivePath = '/jkt48/live';
@@ -41,6 +42,7 @@
 		mounted = true;
 		isImmersive.set(true);
 		document.body.style.overflow = 'hidden';
+		membersStore.load({ limit: 100 });
 		return () => {
 			isImmersive.set(false);
 			document.body.style.overflow = '';
@@ -65,6 +67,10 @@
 			});
 		}
 	});
+
+	function getMemberObj(memberId: string) {
+		return membersStore.list.find((m) => String(m.id) === String(memberId));
+	}
 
 	function handleIntersect() {
 		if (!mounted || isLoading || !hasMore) return;
@@ -216,14 +222,24 @@
 			{:else}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each list as item (item._id)}
+						{@const memberObj = getMemberObj(item.member?.id || '')}
 						<LiveHistoryItemCard
 							href={item.status === 'live'
 								? `${baseLivePath}/${item.platform}/${item.live_id}`
 								: `${basePath}/members/${item.member?.id || ''}`}
 							mode="global"
-							memberImage={item.platform === 'showroom'
-								? item.member?.img || item.image
-								: item.image || item.member?.img}
+							memberImage={item.platform === 'showroom' && !item.image?.includes('live/')
+								? memberObj?.img || item.member?.img || item.image
+								: item.image || memberObj?.img || item.member?.img}
+							memberImageMedium={item.platform === 'showroom' && !item.image?.includes('live/')
+								? memberObj?.img_medium
+								: item.image_medium || memberObj?.img_medium}
+							memberImageSmall={item.platform === 'showroom' && !item.image?.includes('live/')
+								? memberObj?.img_small
+								: item.image_small || memberObj?.img_small}
+							blurHash={item.platform === 'showroom' && !item.image?.includes('live/')
+								? memberObj?.blurHash
+								: item.blurHash || memberObj?.blurHash}
 							memberName={item.member?.name}
 							liveTitle={item.title}
 							platform={item.platform}

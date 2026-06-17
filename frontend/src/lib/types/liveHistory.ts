@@ -74,6 +74,9 @@ export interface GlobalLiveHistory {
 	platform: string;
 	title?: string;
 	image?: string;
+	image_medium?: string;
+	image_small?: string;
+	blurHash?: string;
 	view_num: number;
 	start_at: string;
 	end_at?: string;

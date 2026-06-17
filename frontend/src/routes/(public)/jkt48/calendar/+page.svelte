@@ -386,9 +386,12 @@
 							<div class="hidden md:flex flex-col w-full gap-1 px-1 overflow-hidden min-w-0">
 								{#each dayEvents.slice(0, 3) as event}
 									<button
-										class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider truncate cursor-pointer {event.isBirthday
-											? 'bg-pink-100 text-pink-700'
-											: 'bg-red-50 text-red-700'} brightness-95 min-w-0 hover:scale-[1.02] active:scale-95 transition-transform"
+										class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider truncate cursor-pointer {event.type ===
+											'BIRTHDAY' || event.isBirthday
+											? 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400'
+											: event.type === 'SHOW' || (!event.type && event.setlistId)
+												? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+												: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'} brightness-95 min-w-0 hover:scale-[1.02] active:scale-95 transition-transform"
 										onclick={(e) => {
 											e.stopPropagation();
 											openDayModal(date, dayEvents);

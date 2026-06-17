@@ -1,3 +1,4 @@
+import asyncio
 import math
 from typing import Any, Dict, Optional
 
@@ -15,12 +16,16 @@ from src.live_history.schemas import (
     PCLiveHistoryPaginationResponse,
     WatchedLiveMemberRankingResponse,
 )
+from src.storage.service import StorageService
 from src.utils import parse_date_range
 
 
 class LiveHistoryService:
-    def __init__(self, repository: LiveHistoryRepository):
+    def __init__(
+        self, repository: LiveHistoryRepository, storage_service: StorageService
+    ):
         self.repository = repository
+        self.storage_service = storage_service
 
     async def get_global_history(
         self,
@@ -38,6 +43,17 @@ class LiveHistoryService:
             start_date=parsed_start, end_date=parsed_end
         )
         total_pages = math.ceil(total / limit) if limit > 0 else 1
+
+        async def resolve_variants(d: dict):
+            if d.get("image") and d["image"].startswith("live/"):
+                variants = await self.storage_service.resolve_image_variants(d["image"])
+                d["image"] = variants.get("url")
+                d["image_medium"] = variants.get("url_medium")
+                d["image_small"] = variants.get("url_small")
+                if variants.get("blurHash") and not d.get("blurHash"):
+                    d["blurHash"] = variants.get("blurHash")
+
+        await asyncio.gather(*(resolve_variants(d) for d in lives))
 
         return GlobalLiveHistoryPaginationResponse(
             data=lives, total=total, page=page, limit=limit, total_pages=total_pages
@@ -220,6 +236,17 @@ class LiveHistoryService:
         )
         total_pages = math.ceil(total / limit) if limit > 0 else 1
 
+        async def resolve_variants(d: dict):
+            if d.get("image") and d["image"].startswith("live/"):
+                variants = await self.storage_service.resolve_image_variants(d["image"])
+                d["image"] = variants.get("url")
+                d["image_medium"] = variants.get("url_medium")
+                d["image_small"] = variants.get("url_small")
+                if variants.get("blurHash") and not d.get("blurHash"):
+                    d["blurHash"] = variants.get("blurHash")
+
+        await asyncio.gather(*(resolve_variants(d) for d in lives))
+
         return GlobalLiveHistoryPaginationResponse(
             data=lives, total=total, page=page, limit=limit, total_pages=total_pages
         )
@@ -262,6 +289,17 @@ class LiveHistoryService:
             user_id, collection_type, start_date=parsed_start, end_date=parsed_end
         )
         total_pages = math.ceil(total / limit) if limit > 0 else 1
+
+        async def resolve_variants(d: dict):
+            if d.get("image") and d["image"].startswith("live/"):
+                variants = await self.storage_service.resolve_image_variants(d["image"])
+                d["image"] = variants.get("url")
+                d["image_medium"] = variants.get("url_medium")
+                d["image_small"] = variants.get("url_small")
+                if variants.get("blurHash") and not d.get("blurHash"):
+                    d["blurHash"] = variants.get("blurHash")
+
+        await asyncio.gather(*(resolve_variants(d) for d in items))
 
         return PCLiveHistoryPaginationResponse(
             data=items, total=total, page=page, limit=limit, total_pages=total_pages

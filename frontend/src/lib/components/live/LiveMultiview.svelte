@@ -418,7 +418,7 @@
 	}}
 >
 	<!-- Background Decor (Stars, Dots, Glows) -->
-	<AppBackground interactive={true} bind:mouse bind:scrollY />
+	<AppBackground hideDecorationsOnMobile={true} interactive={true} bind:mouse bind:scrollY />
 
 	<!-- Top Bar -->
 	<div

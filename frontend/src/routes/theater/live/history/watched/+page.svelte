@@ -88,8 +88,8 @@
 		return formatLiveDate(dateStr, locale.value);
 	}
 
-	function getMemberImageStr(item: LiveHistory) {
-		const member = membersStore.list.find(
+	function getMember(item: LiveHistory) {
+		return membersStore.list.find(
 			(m) =>
 				String(m.id) === String(item.member_id) ||
 				m.name === item.member_name ||
@@ -97,7 +97,6 @@
 				(m.socials?.idn_app && String(item.member_id).includes(m.socials.idn_app)) ||
 				(m.socials?.showroom && String(item.member_id) === String(m.socials.showroom))
 		);
-		return member?.img || '';
 	}
 </script>
 
@@ -114,7 +113,7 @@
 		mouse.set({ x, y });
 	}}
 >
-	<AppBackground interactive={true} bind:mouse bind:scrollY />
+	<AppBackground hideDecorationsOnMobile={true} interactive={true} bind:mouse bind:scrollY />
 
 	<HistoryTopBar
 		title={t('liveHistory.title')}
@@ -254,10 +253,14 @@
 			{:else}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each list as item (item._id)}
+						{@const member = getMember(item)}
 						<LiveHistoryItemCard
 							href={`/theater/live/history/watched/${item.member_id}`}
 							mode="watched"
-							memberImage={getMemberImageStr(item)}
+							memberImage={member?.img || ''}
+							memberImageMedium={member?.img_medium}
+							memberImageSmall={member?.img_small}
+							blurHash={member?.blurHash}
 							memberName={item.member_name}
 							liveTitle={item.live_title}
 							platform={item.platform}

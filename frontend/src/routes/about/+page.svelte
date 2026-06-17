@@ -43,7 +43,7 @@
 		<div class="grid gap-8">
 			<!-- Mission -->
 			<div
-				class="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 md:p-10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-none border border-slate-100 dark:border-zinc-800 flex items-start gap-6 group hover:-translate-y-1 transition-transform duration-300"
+				class="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 md:p-10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-none border border-slate-100 dark:border-zinc-800 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 md:gap-6 group hover:-translate-y-1 transition-transform duration-300"
 			>
 				<div
 					class="p-4 bg-red-50 dark:bg-red-900/20 rounded-2xl text-red-600 dark:text-red-400 shrink-0 ring-4 ring-white dark:ring-zinc-800 shadow-xl shadow-red-500/10 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300"
@@ -62,7 +62,7 @@
 
 			<!-- Team -->
 			<div
-				class="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 md:p-10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-none border border-slate-100 dark:border-zinc-800 flex items-start gap-6 group hover:-translate-y-1 transition-transform duration-300"
+				class="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 md:p-10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-none border border-slate-100 dark:border-zinc-800 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 md:gap-6 group hover:-translate-y-1 transition-transform duration-300"
 			>
 				<div
 					class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-blue-600 dark:text-blue-400 shrink-0 ring-4 ring-white dark:ring-zinc-800 shadow-xl shadow-blue-500/10 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300"
@@ -80,7 +80,7 @@
 			</div>
 			<!-- Open Source -->
 			<div
-				class="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 md:p-10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-none border border-slate-100 dark:border-zinc-800 flex items-start gap-6 group hover:-translate-y-1 transition-transform duration-300"
+				class="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 md:p-10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-none border border-slate-100 dark:border-zinc-800 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 md:gap-6 group hover:-translate-y-1 transition-transform duration-300"
 			>
 				<div
 					class="p-4 bg-slate-100 dark:bg-slate-900/20 rounded-2xl text-slate-600 dark:text-slate-400 shrink-0 ring-4 ring-white dark:ring-zinc-800 shadow-xl shadow-slate-500/10 group-hover:bg-slate-600 group-hover:text-white transition-colors duration-300"
