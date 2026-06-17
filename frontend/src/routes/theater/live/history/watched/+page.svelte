@@ -114,7 +114,7 @@
 		mouse.set({ x, y });
 	}}
 >
-	<AppBackground interactive={true} bind:mouse bind:scrollY />
+	<AppBackground hideDecorationsOnMobile={true} interactive={true} bind:mouse bind:scrollY />
 
 	<HistoryTopBar
 		title={t('liveHistory.title')}

@@ -104,7 +104,7 @@
 		mouse.set({ x: clientX / innerWidth - 0.5, y: clientY / innerHeight - 0.5 });
 	}}
 >
-	<AppBackground interactive={true} bind:mouse bind:scrollY />
+	<AppBackground hideDecorationsOnMobile={true} interactive={true} bind:mouse bind:scrollY />
 
 	<HistoryTopBar
 		title={displayName()}
