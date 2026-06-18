@@ -141,7 +141,7 @@
 									icon: Users,
 									label: t('theater.live.switchMultiview') || 'Multi-View',
 									onClick: () => goto('/theater/live/multiview'),
-									showLabel: true,
+									showLabel: false,
 									theme: 'gray',
 									badge: liveList.value.length
 								}
