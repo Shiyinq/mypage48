@@ -494,7 +494,7 @@
 			"totalShowsPattern": "{count} Show",
 			"showsTooltip": "Data yang tercatat tidak termasuk Shonichi setlist dan menggantikan member lain (under) untuk show, serta keterbatasan data hasil scrape.",
 			"emptyTitle": "Siapa Oshi kamu?",
-			"emptyDescription": "Pilih member favoritmu untuk ditampilkan di kartu profilmu.",
+			"emptyDescription": "Pilih member favoritmu untuk ditampilkan di kartu profilmu. Kamu bisa memilih sampai 5 oshi.",
 			"selectBadge": "Pilih Oshi",
 			"browseButton": "Lihat Member",
 			"changeOshi": "Ganti Oshi",

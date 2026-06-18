@@ -474,7 +474,7 @@
 			"totalShowsPattern": "{count} Shows",
 			"showsTooltip": "Recorded data excludes Shonichi setlists and member substitutions, subject to scrape limitations.",
 			"emptyTitle": "Who is your Oshi?",
-			"emptyDescription": "Select your favorite member to display them on your profile card.",
+			"emptyDescription": "Select your favorite member to display them on your profile card. You can choose up to 5 oshis.",
 			"selectBadge": "Select Oshi",
 			"browseButton": "Browse Members",
 			"changeOshi": "Change Oshi",
