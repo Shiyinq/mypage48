@@ -204,7 +204,6 @@
 					t('history.date'),
 					t('history.eventDetails'),
 					t('history.seat'),
-					t('history.price'),
 					t('history.notes'),
 					t('history.actions')
 				]}
@@ -254,7 +253,6 @@
 									t('history.date'),
 									t('history.eventDetails'),
 									t('history.seat'),
-									t('history.price'),
 									t('history.notes'),
 									t('history.actions')
 								]}

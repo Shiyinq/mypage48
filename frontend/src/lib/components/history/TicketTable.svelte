@@ -2,7 +2,6 @@
 	import { Clock, Heart, Pencil, Save, Trash2, X, Ticket as TicketIcon } from 'lucide-svelte';
 	import type { Ticket } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
 	import { cleanseMarkdown } from '$lib/utils/markdown';
 	import { OptimizedImage } from '$lib/components/common';
@@ -56,7 +55,6 @@
 					<th class="p-4">{t('history.date')}</th>
 					<th class="p-4">{t('history.eventDetails')}</th>
 					<th class="p-4">{t('history.seat')}</th>
-					<th class="p-4">{t('history.price')}</th>
 					<th class="p-4">{t('history.notes')}</th>
 					<th class="p-4 text-right">{t('history.actions')}</th>
 				</tr>
@@ -129,11 +127,6 @@
 									>{ticket.seat.number}</span
 								>
 							</div>
-						</td>
-						<td class="p-4">
-							<span class="text-sm font-medium text-gray-600 dark:text-gray-400">
-								{formatCurrency(ticket.price)}
-							</span>
 						</td>
 						<td class="p-4 w-1/3">
 							{#if editingNoteId === ticket._id}
