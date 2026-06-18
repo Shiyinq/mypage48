@@ -1287,7 +1287,10 @@
 		"close": "Close",
 		"emptyState": {
 			"title": "No Members Found",
-			"description": "Try adjusting your search or filter to find who you're looking for."
+			"description": "Try adjusting your search or filter to find who you're looking for.",
+			"titleGenTeam": "No members in Gen {gen} in {team}",
+			"titleTeam": "No members in {team}",
+			"titleGen": "No members in Gen {gen}"
 		},
 		"loadMore": "Load More",
 		"upcoming": "Upcoming",
