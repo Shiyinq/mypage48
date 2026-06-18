@@ -1,6 +1,7 @@
 import type { Member } from '$lib/apis/members';
 import type { Setlist } from '$lib/apis/setlists';
 import type { UserListItem } from '$lib/apis/users';
+import type { DataUsersStats, DataMyPageStats, DataTheaterStats } from '$lib/apis/admin';
 
 export interface AdminState {
 	members: {
@@ -27,5 +28,12 @@ export interface AdminState {
 		total: number;
 		search: string;
 		error: string | null;
+	};
+	dashboardStats: {
+		users: DataUsersStats | null;
+		mypage: DataMyPageStats | null;
+		theater: DataTheaterStats | null;
+		error: string | null;
+		isLoaded: boolean;
 	};
 }
