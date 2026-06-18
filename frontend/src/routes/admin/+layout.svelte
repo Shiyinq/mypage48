@@ -52,7 +52,7 @@
 	let tabs = $derived([
 		{
 			href: '/admin',
-			label: 'Dashboard',
+			label: t('admin.dashboard.tabs.dashboard'),
 			icon: ShieldCheck,
 			exact: true,
 			activeClass: 'bg-indigo-500 shadow-indigo-500/20'

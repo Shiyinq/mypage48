@@ -113,7 +113,8 @@
 		"newTicket": "New Ticket",
 		"journal": "Journal",
 		"journey": "Journey",
-		"top2shot": "Roulette & Birthday"
+		"top2shot": "Roulette & Birthday",
+		"admin": "Admin"
 	},
 	"header": {
 		"tagline": "JKT48 THEATER TRACKER"
@@ -1351,6 +1352,7 @@
 			"title": "Admin Dashboard",
 			"subtitle": "Manage users, members, and setlists",
 			"tabs": {
+				"dashboard": "Dashboard",
 				"users": "Users",
 				"members": "Members",
 				"setlists": "Setlists",
@@ -1538,6 +1540,7 @@
 			"langJa": "Change Language to Japanese",
 			"logout": "Logout",
 			"adminDashboard": "Go to Admin Dashboard",
+			"adminUsers": "Go to Admin Users",
 			"adminMembers": "Go to Admin Members",
 			"adminSetlists": "Go to Admin Setlists",
 			"calendar": "Go to Calendar",

@@ -113,7 +113,8 @@
 		"settings": "設定",
 		"newTicket": "新規チケット",
 		"journal": "ジャーナル",
-		"top2shot": "ルーレット＆バースデー"
+		"top2shot": "ルーレット＆バースデー",
+		"admin": "管理"
 	},
 	"header": {
 		"tagline": "JKT48劇場トラッカー"
@@ -980,6 +981,7 @@
 			"title": "管理ダッシュボード",
 			"subtitle": "ユーザー、メンバー、セットリストの管理",
 			"tabs": {
+				"dashboard": "ダッシュボード",
 				"users": "ユーザー",
 				"members": "メンバー",
 				"setlists": "セットリスト",
@@ -1471,6 +1473,7 @@
 			"langJa": "言語を日本語に変更",
 			"logout": "ログアウト",
 			"adminDashboard": "管理ダッシュボードへ",
+			"adminUsers": "管理ユーザー一覧へ",
 			"adminMembers": "管理メンバー一覧へ",
 			"adminSetlists": "管理セットリスト一覧へ",
 			"calendar": "カレンダーへ",

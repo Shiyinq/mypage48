@@ -114,7 +114,8 @@
 		"settings": "Pengaturan",
 		"newTicket": "Tiket Baru",
 		"journal": "Jurnal",
-		"top2shot": "Roulette & Birthday"
+		"top2shot": "Roulette & Ulang Tahun",
+		"admin": "Admin"
 	},
 	"header": {
 		"tagline": "PELACAK TEATER JKT48"
@@ -1284,9 +1285,10 @@
 			"title": "Dasbor Admin",
 			"subtitle": "Kelola pengguna, member, dan setlist",
 			"tabs": {
-				"users": "Pengguna",
-				"members": "Member",
-				"setlists": "Setlist",
+				"dashboard": "Dashboard",
+				"users": "Users",
+				"members": "Members",
+				"setlists": "Setlists",
 				"feedback": "Masukan"
 			},
 			"stats": {
@@ -1473,6 +1475,7 @@
 			"langJa": "Ganti Bahasa ke Jepang",
 			"logout": "Keluar",
 			"adminDashboard": "Ke Admin Dashboard",
+			"adminUsers": "Ke Admin Users",
 			"adminMembers": "Ke Admin Member",
 			"adminSetlists": "Ke Admin Setlists",
 			"calendar": "Ke Kalender",

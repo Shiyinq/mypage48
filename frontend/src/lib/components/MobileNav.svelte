@@ -43,7 +43,7 @@
 		{
 			href: '/admin',
 			icon: ShieldCheck,
-			label: 'Dashboard',
+			label: 'admin.dashboard.tabs.dashboard',
 			color: 'text-indigo-500',
 			exact: true
 		},
@@ -236,7 +236,7 @@
 		<div
 			class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5"
 		>
-			<h3 class="text-lg font-bold text-gray-900 dark:text-white">Admin</h3>
+			<h3 class="text-lg font-bold text-gray-900 dark:text-white">{t('nav.admin') || 'Admin'}</h3>
 			<button class="p-2 text-gray-400 hover:text-gray-600" onclick={closeAllMenus}>
 				<X class="w-6 h-6" />
 			</button>
@@ -338,7 +338,7 @@
 				/>
 				<span
 					class={`text-[10px] transition-all truncate w-full text-center ${isAdminMenuOpen || $page.url.pathname.startsWith('/admin') ? 'text-zinc-700 dark:text-white font-bold' : 'font-medium'}`}
-					>Admin</span
+					>{t('nav.admin') || 'Admin'}</span
 				>
 			</button>
 		{:else}
