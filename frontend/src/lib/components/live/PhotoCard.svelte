@@ -312,7 +312,7 @@
 			: 'transition-transform ease-out group-hover:scale-[1.02]'}"
 		style="{isFlipping
 			? ''
-			: `transform: perspective(1000px) rotateX(${rotateX}deg) rotateY(${isFlipped ? rotateY + 180 : rotateY}deg); transition-duration: ${isFlippingTransition ? '500ms' : '150ms'};`} transform-style: preserve-3d;"
+			: `transform: perspective(1000px) translateZ(0) rotateX(${rotateX}deg) rotateY(${isFlipped ? rotateY + 180 : rotateY}deg); transition-duration: ${isFlippingTransition ? '500ms' : '150ms'};`} transform-style: preserve-3d; will-change: transform;"
 	>
 		<!-- Front Face -->
 		<div
@@ -321,15 +321,15 @@
 		>
 			{#if !isOwned}
 				<div
-					class="absolute inset-0 z-20 bg-black/40 backdrop-blur-[1px] rounded-xl sm:rounded-2xl flex flex-col items-center justify-center pointer-events-none"
+					class="absolute inset-0 z-20 bg-black/60 flex flex-col items-center justify-center pointer-events-none"
 				>
 					<div
-						class="bg-black/60 p-2 sm:p-3 rounded-full border border-white/10 mb-1 sm:mb-2 shadow-xl backdrop-blur-md"
+						class="bg-black/80 p-2 sm:p-3 rounded-full border border-white/10 mb-1 sm:mb-2 shadow-xl"
 					>
 						<Lock class="w-4 h-4 sm:w-6 sm:h-6 text-white/60" />
 					</div>
 					<span
-						class="text-[9px] sm:text-xs font-black tracking-widest bg-zinc-900/80 px-2 py-0.5 rounded text-white backdrop-blur-sm"
+						class="text-[9px] sm:text-xs font-black tracking-widest bg-zinc-900/90 px-2 py-0.5 rounded text-white"
 						>{t('liveHistory.tier.notOwned') || 'NOT OWNED'}</span
 					>
 				</div>
@@ -397,7 +397,7 @@
 
 					<div class="flex flex-col items-end gap-1 sm:gap-1.5 min-w-0 shrink">
 						<div
-							class="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-bold bg-black/60 backdrop-blur-md px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-white/10 shadow-sm text-white whitespace-nowrap shrink-0"
+							class="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-bold bg-black/80 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-white/10 shadow-sm text-white whitespace-nowrap shrink-0"
 						>
 							<span>{displayDate}</span>
 							<div class="w-px h-2 sm:h-2.5 bg-white/20"></div>
@@ -413,14 +413,14 @@
 				<div class="flex flex-col items-start gap-1 sm:gap-1.5">
 					<!-- Tier Badge -->
 					<div
-						class="bg-gradient-to-r {tierConfig.color} backdrop-blur-md px-1 sm:px-1.5 py-[1px] sm:py-0.5 rounded border border-white/20 {tierConfig.text} text-[6px] sm:text-[7px] font-black tracking-widest uppercase shadow-sm whitespace-nowrap shrink-0"
+						class="bg-gradient-to-r {tierConfig.color} px-1 sm:px-1.5 py-[1px] sm:py-0.5 rounded border border-white/20 {tierConfig.text} text-[6px] sm:text-[7px] font-black tracking-widest uppercase shadow-sm whitespace-nowrap shrink-0"
 					>
 						{tierConfig.name}
 					</div>
 
 					<div class="flex flex-col w-full">
 						<h3
-							class="font-black text-sm sm:text-lg lg:text-xl leading-tight mb-0.5 sm:mb-1 line-clamp-2 drop-shadow-lg"
+							class="font-black text-sm sm:text-lg lg:text-xl leading-tight mb-0.5 sm:mb-1 line-clamp-2 [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]"
 						>
 							{item.member?.name || 'Member'}
 						</h3>

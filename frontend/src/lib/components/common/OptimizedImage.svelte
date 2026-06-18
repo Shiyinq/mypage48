@@ -79,17 +79,21 @@
 
 	$effect(() => {
 		if (blurHash && !isLoaded && canvasRef) {
-			try {
-				const pixels = decode(blurHash, 32, 32);
-				const ctx = canvasRef.getContext('2d');
-				if (ctx) {
-					const imageData = ctx.createImageData(32, 32);
-					imageData.data.set(pixels);
-					ctx.putImageData(imageData, 0, 0);
+			const currentCanvas = canvasRef;
+			setTimeout(() => {
+				if (!currentCanvas || isLoaded) return;
+				try {
+					const pixels = decode(blurHash, 32, 32);
+					const ctx = currentCanvas.getContext('2d');
+					if (ctx) {
+						const imageData = ctx.createImageData(32, 32);
+						imageData.data.set(pixels);
+						ctx.putImageData(imageData, 0, 0);
+					}
+				} catch (e) {
+					console.error('Failed to decode blurhash', e);
 				}
-			} catch (e) {
-				console.error('Failed to decode blurhash', e);
-			}
+			}, 50); // Small delay to prevent blocking the main thread during fast scroll
 		}
 	});
 
@@ -172,7 +176,5 @@
 </div>
 
 <style>
-	img {
-		will-change: opacity, transform, filter;
-	}
+	/* Removed will-change to save GPU memory on large lists */
 </style>
