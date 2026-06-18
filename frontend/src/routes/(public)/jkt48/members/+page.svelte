@@ -5,7 +5,7 @@
 	import { MemberDetailModal } from '$lib/components/profile';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { showToast } from '$lib/stores';
-	import { Search, Heart, Flame, Star, Sprout, Bot } from 'lucide-svelte';
+	import { Search, Heart, Flame, Star, Sprout, Bot, ChevronDown, Filter, X } from 'lucide-svelte';
 	import { membersStore, isMembersLoading } from '$lib/stores/theater.svelte';
 	import MemberCard from '$lib/components/theater/MemberCard.svelte';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
@@ -16,7 +16,6 @@
 	const { t } = useTranslation();
 
 	// State
-	let loadingGenerations = $state(true);
 	let searchQuery = $state('');
 	let selectedGeneration: string | null = $state(null);
 	let selectedType: string | null = $state(null);
@@ -48,8 +47,6 @@
 			}
 		} catch {
 			// Error logged by store
-		} finally {
-			loadingGenerations = false;
 		}
 	}
 
@@ -68,6 +65,7 @@
 		}
 	}
 
+	/*
 	let searchTimeout: ReturnType<typeof setTimeout>;
 	function handleSearch(e: Event) {
 		const target = e.target as HTMLInputElement;
@@ -77,6 +75,7 @@
 			fetchMembers(true);
 		}, 300);
 	}
+	*/
 
 	function setGeneration(gen: string | null) {
 		selectedGeneration = gen;
@@ -140,6 +139,19 @@
 			.sort()
 	);
 	let allSortedTypes = $derived([...types, ...otherTypes]);
+
+	let emptyStateTitle = $derived(
+		selectedGeneration && selectedType
+			? t('member.emptyState.titleGenTeam', {
+					gen: selectedGeneration,
+					team: teamNames[selectedType] || selectedType
+				})
+			: selectedType
+				? t('member.emptyState.titleTeam', { team: teamNames[selectedType] || selectedType })
+				: selectedGeneration
+					? t('member.emptyState.titleGen', { gen: selectedGeneration })
+					: t('member.emptyState.title')
+	);
 </script>
 
 <SEO title={t('theater.members.title')} path="/jkt48/members" description={t('seo.members')} />
@@ -159,93 +171,84 @@
 	</div>
 
 	<!-- Search and Filters -->
-	<div class="space-y-6 mb-2">
-		<div class="flex flex-col md:flex-row gap-4 md:items-center justify-between">
-			<!-- Generation Filters -->
-			<div class="flex-1 w-full overflow-x-auto pb-2 -mx-3 px-3 md:mx-0 md:px-0 scrollbar-hide">
-				<div class="flex items-center gap-2">
+	<div
+		class="flex flex-col md:flex-row gap-3 items-center justify-center mb-8 w-full max-w-4xl mx-auto px-4 md:px-0"
+	>
+		<!-- Filter Pill -->
+		<div
+			class="flex items-center bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-full px-2 py-1 shadow-sm border border-gray-100 dark:border-zinc-800 shrink-0 w-full md:w-auto h-[46px] sm:h-[50px]"
+		>
+			<div class="flex items-center px-2 sm:px-4 text-gray-400">
+				{#if selectedGeneration || selectedType}
 					<button
-						onclick={() => setGeneration(null)}
-						class={`px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-							selectedGeneration === null
-								? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/20'
-								: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-zinc-800 hover:text-red-600 dark:hover:text-red-400'
-						}`}
+						class="text-red-500 hover:text-red-700 hover:bg-red-500/10 p-1.5 -m-1.5 rounded-full cursor-pointer transition-all"
+						onclick={() => {
+							selectedGeneration = null;
+							selectedType = null;
+							fetchMembers(true);
+						}}
+						aria-label={t('common.clearFilters')}
 					>
-						{t('common.all')}
+						<X class="w-4 sm:w-4.5 h-4 sm:h-4.5" />
 					</button>
-					{#if loadingGenerations}
-						{#each Array(5)}
-							<div
-								class="h-[42px] w-20 bg-gray-100 dark:bg-zinc-800 rounded-full animate-pulse shrink-0"
-							></div>
-						{/each}
-					{:else}
-						{#each generations as gen}
-							<button
-								onclick={() => setGeneration(gen)}
-								class={`px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-									selectedGeneration === gen
-										? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/20'
-										: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-zinc-800 hover:text-red-600 dark:hover:text-red-400'
-								}`}
-							>
-								Gen {gen}
-							</button>
-						{/each}
-					{/if}
-				</div>
+				{:else}
+					<Filter class="w-4 sm:w-4.5 h-4 sm:h-4.5" />
+				{/if}
 			</div>
 
-			<!-- Search Bar -->
-			<div class="relative w-full md:w-80 shrink-0">
-				<Search
-					class="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-				/>
-				<input
-					type="text"
-					placeholder={t('common.search')}
-					value={searchQuery}
-					oninput={handleSearch}
-					class="w-full pl-9.5 pr-4 py-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 rounded-full text-sm text-themed placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-sm"
-				/>
-			</div>
-		</div>
+			<div class="h-6 w-px bg-gray-200 dark:bg-zinc-800 mx-1"></div>
 
-		<!-- Team Filters -->
-		<div class="overflow-x-auto pb-4 -mx-3 px-3 md:mx-0 md:px-0 scrollbar-hide">
-			<div class="flex items-center gap-2">
-				<button
-					onclick={() => setType(null)}
-					class={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-						selectedType === null
-							? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-100 dark:ring-red-500/20'
-							: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-zinc-800 hover:border-red-500/50'
-					}`}
+			<!-- Generation -->
+			<div class="relative flex-1 md:flex-none">
+				<select
+					class="w-full appearance-none bg-transparent pl-2 sm:pl-4 pr-7 sm:pr-9 py-2 text-[13px] sm:text-sm font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer hover:text-red-600 dark:hover:text-red-400 transition-colors"
+					value={selectedGeneration === null ? '' : selectedGeneration}
+					onchange={(e) =>
+						setGeneration(e.currentTarget.value === '' ? null : e.currentTarget.value)}
 				>
-					{t('theater.members.allTeams')}
-				</button>
-				{#each teamOrder as type}
-					<button
-						onclick={() => setType(type)}
-						class={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer border ${
-							selectedType === type
-								? 'shadow-sm border-0 ring-1'
-								: 'bg-white dark:bg-zinc-900 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-zinc-800 hover:border-themed'
-						}`}
-						style:color={selectedType === type ? getTeamColors(type).badgeText : undefined}
-						style:background-color={selectedType === type
-							? getTeamColors(type).badgeBg + '1A'
-							: undefined}
-						style:--tw-ring-color={selectedType === type
-							? getTeamColors(type).badgeBorder + '33'
-							: undefined}
-					>
-						{teamNames[type] || type}
-					</button>
-				{/each}
+					<option value="" class="dark:bg-zinc-800">{t('common.all')} Gen</option>
+					{#each generations as gen}
+						<option value={gen} class="dark:bg-zinc-800">Gen {gen}</option>
+					{/each}
+				</select>
+				<ChevronDown
+					class="absolute right-2 sm:right-3.5 top-1/2 transform -translate-y-1/2 w-3.5 sm:w-4 h-3.5 sm:h-4 text-gray-400 pointer-events-none"
+				/>
+			</div>
+
+			<div class="h-6 w-px bg-gray-200 dark:bg-zinc-800 mx-1"></div>
+
+			<!-- Team -->
+			<div class="relative flex-1 md:flex-none">
+				<select
+					class="w-full appearance-none bg-transparent pl-2 sm:pl-4 pr-7 sm:pr-9 py-2 text-[13px] sm:text-sm font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer hover:text-red-600 dark:hover:text-red-400 transition-colors"
+					value={selectedType === null ? '' : selectedType}
+					onchange={(e) => setType(e.currentTarget.value === '' ? null : e.currentTarget.value)}
+				>
+					<option value="" class="dark:bg-zinc-800">{t('theater.members.allTeams')}</option>
+					{#each teamOrder as type}
+						<option value={type} class="dark:bg-zinc-800">{teamNames[type] || type}</option>
+					{/each}
+				</select>
+				<ChevronDown
+					class="absolute right-2 sm:right-3.5 top-1/2 transform -translate-y-1/2 w-3.5 sm:w-4 h-3.5 sm:h-4 text-gray-400 pointer-events-none"
+				/>
 			</div>
 		</div>
+
+		<!-- Search Pill (Hidden temporarily) -->
+		<!-- 
+		<div class="relative w-full md:w-72 shrink-0">
+			<Search class="absolute left-5 top-1/2 transform -translate-y-1/2 w-4.5 h-4.5 text-gray-400 z-10 pointer-events-none" />
+			<input
+				type="text"
+				placeholder={t('common.search')}
+				value={searchQuery}
+				oninput={handleSearch}
+				class="w-full pl-12 pr-5 py-3 sm:py-3.5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-full text-sm font-bold text-slate-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm border border-gray-100 dark:border-zinc-800 transition-all"
+			/>
+		</div>
+		-->
 	</div>
 
 	<!-- Members Grid -->
@@ -263,18 +266,19 @@
 			description={t('theater.members.errorDesc') || error || ''}
 			onRetry={fetchMembers}
 		/>
-	{:else if membersList.length === 0}
+	{:else if filteredList.length === 0}
 		<EmptyState
 			icon={Search}
-			title={t('member.emptyState.title')}
+			title={emptyStateTitle}
 			description={t('member.emptyState.description')}
 		>
-			{#if searchQuery || selectedGeneration}
+			{#if searchQuery || selectedGeneration || selectedType}
 				<button
 					onclick={() => {
 						searchQuery = '';
 						selectedGeneration = null;
-						fetchMembers();
+						selectedType = null;
+						fetchMembers(true);
 					}}
 					class="mt-4 px-6 py-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full text-sm font-bold hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors cursor-pointer"
 				>

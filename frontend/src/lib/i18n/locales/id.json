@@ -927,7 +927,10 @@
 		"close": "Tutup",
 		"emptyState": {
 			"title": "Tidak Ada Member",
-			"description": "Coba sesuaikan pencarian atau filter untuk menemukan member yang kamu cari."
+			"description": "Coba ubah filter atau pencarian Anda untuk menemukan member yang dicari.",
+			"titleGenTeam": "Tidak ada member Gen {gen} di {team}",
+			"titleTeam": "Tidak ada member di {team}",
+			"titleGen": "Tidak ada member Gen {gen}"
 		},
 		"loadMore": "Muat Lebih Banyak",
 		"upcoming": "Akan Datang",

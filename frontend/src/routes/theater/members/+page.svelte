@@ -7,7 +7,18 @@
 	import type { Member } from '$lib/apis/members';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { showToast } from '$lib/stores';
-	import { Search, ChevronDown, Users, Heart, Flame, Star, Sprout, Bot } from 'lucide-svelte';
+	import {
+		Search,
+		ChevronDown,
+		Users,
+		Heart,
+		Flame,
+		Star,
+		Sprout,
+		Bot,
+		Filter,
+		X
+	} from 'lucide-svelte';
 	import { membersStore, isMembersLoading } from '$lib/stores/theater.svelte';
 	import MemberCard from '$lib/components/theater/MemberCard.svelte';
 	import MemberCardSkeleton from '$lib/components/theater/MemberCardSkeleton.svelte';
@@ -67,6 +78,7 @@
 	}
 
 	// Watch filters
+	/*
 	let searchTimeout: ReturnType<typeof setTimeout>;
 	function handleSearch(e: Event) {
 		const target = e.target as HTMLInputElement;
@@ -76,6 +88,7 @@
 			fetchMembers(true);
 		}, 300);
 	}
+	*/
 
 	function setGeneration(gen: string | null) {
 		selectedGeneration = gen;
@@ -138,6 +151,19 @@
 			.sort()
 	);
 	let allSortedTypes = $derived([...types, ...otherTypes]);
+
+	let emptyStateTitle = $derived(
+		selectedGeneration && selectedType
+			? t('member.emptyState.titleGenTeam', {
+					gen: selectedGeneration,
+					team: teamNames[selectedType] || selectedType
+				})
+			: selectedType
+				? t('member.emptyState.titleTeam', { team: teamNames[selectedType] || selectedType })
+				: selectedGeneration
+					? t('member.emptyState.titleGen', { gen: selectedGeneration })
+					: t('member.emptyState.title')
+	);
 </script>
 
 <SEO
@@ -156,44 +182,68 @@
 	>
 		{#snippet actions()}
 			<div class="flex flex-col md:flex-row gap-3 items-start md:items-center w-full md:w-auto">
-				<!-- Dropdown Filters -->
-				<div class="flex w-full md:w-auto gap-2">
+				<!-- Dropdown Filters Pill -->
+				<div
+					class="flex items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full shadow-sm w-full md:w-auto h-8 sm:h-9 px-1.5 shrink-0 transition-all hover:border-pink-300 dark:hover:border-zinc-500 focus-within:ring-2 focus-within:ring-pink-500/20 focus-within:border-pink-500"
+				>
+					<div class="flex items-center px-1 text-gray-400">
+						{#if selectedGeneration || selectedType}
+							<button
+								class="text-pink-500 hover:text-pink-700 hover:bg-pink-500/10 p-1 -m-1 rounded-full cursor-pointer transition-all"
+								onclick={() => {
+									selectedGeneration = null;
+									selectedType = null;
+									fetchMembers(true);
+								}}
+								aria-label={t('common.clearFilters')}
+							>
+								<X class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+							</button>
+						{:else}
+							<Filter class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+						{/if}
+					</div>
+
+					<div class="h-4 w-px bg-gray-200 dark:bg-zinc-800 mx-1"></div>
+
 					<!-- Generation Select -->
 					<div class="relative flex-1 md:flex-none">
 						<select
 							value={selectedGeneration === null ? '' : String(selectedGeneration)}
 							onchange={(e) => setGeneration((e.target as HTMLSelectElement).value || null)}
-							class="w-full appearance-none px-3 md:px-4 pr-9 md:pr-10 py-1.5 sm:py-2 h-8 sm:h-9 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all shadow-sm cursor-pointer hover:border-pink-300 dark:hover:border-zinc-500"
+							class="w-full appearance-none bg-transparent pl-2 pr-6 py-1 text-xs font-bold text-gray-600 dark:text-gray-300 focus:outline-none cursor-pointer hover:text-pink-600 dark:hover:text-pink-400 transition-colors"
 						>
-							<option value="">{t('common.all')} Gen</option>
+							<option value="" class="dark:bg-zinc-800">{t('common.all')} Gen</option>
 							{#each generations as gen}
-								<option value={gen}>Gen {gen}</option>
+								<option value={gen} class="dark:bg-zinc-800">Gen {gen}</option>
 							{/each}
 						</select>
 						<ChevronDown
-							class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+							class="absolute right-1 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"
 						/>
 					</div>
+
+					<div class="h-4 w-px bg-gray-200 dark:bg-zinc-800 mx-1"></div>
 
 					<!-- Team Select -->
 					<div class="relative flex-1 md:flex-none">
 						<select
 							value={selectedType === null ? '' : selectedType}
 							onchange={(e) => setType((e.target as HTMLSelectElement).value || null)}
-							class="w-full appearance-none px-3 md:px-4 pr-9 md:pr-10 py-1.5 sm:py-2 h-8 sm:h-9 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all shadow-sm cursor-pointer hover:border-pink-300 dark:hover:border-zinc-500"
+							class="w-full appearance-none bg-transparent pl-2 pr-6 py-1 text-xs font-bold text-gray-600 dark:text-gray-300 focus:outline-none cursor-pointer hover:text-pink-600 dark:hover:text-pink-400 transition-colors"
 						>
-							<option value="">{t('theater.members.allTeams')}</option>
+							<option value="" class="dark:bg-zinc-800">{t('theater.members.allTeams')}</option>
 							{#each teamOrder as type}
-								<option value={type}>{teamNames[type] || type}</option>
+								<option value={type} class="dark:bg-zinc-800">{teamNames[type] || type}</option>
 							{/each}
 						</select>
 						<ChevronDown
-							class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+							class="absolute right-1 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"
 						/>
 					</div>
 				</div>
 
-				<!-- Search Bar -->
+				<!-- Search Bar
 				<div class="relative w-full md:w-64 shrink-0 hidden md:block">
 					<Search
 						class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
@@ -206,6 +256,7 @@
 						class="w-full pl-9 pr-4 py-1.5 sm:py-2 h-8 sm:h-9 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-full text-xs font-semibold text-themed placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all shadow-sm"
 					/>
 				</div>
+				-->
 			</div>
 		{/snippet}
 	</PageHeader>
@@ -227,17 +278,18 @@
 		description={t('theater.members.errorDesc') || error || ''}
 		onRetry={() => fetchMembers(true)}
 	/>
-{:else if membersList.length === 0}
+{:else if filteredList.length === 0}
 	<EmptyState
 		icon={Search}
-		title={t('member.emptyState.title')}
+		title={emptyStateTitle}
 		description={t('member.emptyState.description')}
 	>
-		{#if searchQuery || selectedGeneration}
+		{#if searchQuery || selectedGeneration || selectedType}
 			<button
 				onclick={() => {
 					searchQuery = '';
 					selectedGeneration = null;
+					selectedType = null;
 					fetchMembers(true);
 				}}
 				class="mt-4 px-6 py-2 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full text-sm font-bold hover:bg-pink-200 dark:hover:bg-pink-900/50 transition-colors cursor-pointer"

@@ -1365,7 +1365,10 @@
 		"close": "閉じる",
 		"emptyState": {
 			"title": "メンバーが見つかりません",
-			"description": "検索条件やフィルターを変更して、お探しのメンバーを見つけてください。"
+			"description": "検索条件やフィルターを変更して、お探しのメンバーを見つけてください。",
+			"titleGenTeam": "{team}に{gen}期生のメンバーがいません",
+			"titleTeam": "{team}にメンバーがいません",
+			"titleGen": "{gen}期生のメンバーがいません"
 		},
 		"loadMore": "もっと読み込む",
 		"upcoming": " upcoming",
