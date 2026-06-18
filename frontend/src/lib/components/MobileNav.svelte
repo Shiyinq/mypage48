@@ -163,31 +163,34 @@
 {/if}
 
 <nav
-	class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-gray-200 dark:border-zinc-800 z-[80] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-none transition-transform duration-300 ease-in-out"
+	class="md:hidden fixed bottom-0 left-0 right-0 backdrop-blur-xl border-t z-[80] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)] dark:shadow-none transition-all duration-300 ease-in-out {isMenuOpen ||
+	isTheaterMenuOpen
+		? 'bg-white dark:bg-zinc-950 border-gray-200 dark:border-zinc-800'
+		: 'bg-white/60 dark:bg-zinc-950/60 border-black/5 dark:border-white/5'}"
 >
 	<div class="flex h-16 items-center justify-around max-w-[420px] mx-auto px-4">
 		<a
 			href="/"
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 group min-w-[56px]"
+			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 group min-w-[56px]"
 		>
 			<LayoutDashboard
 				class={`w-6 h-6 transition-all ${$page.url.pathname === '/' ? 'text-red-600 dark:text-red-400 scale-110' : ''}`}
 			/>
 			<span
-				class={`text-[10px] font-medium transition-all truncate w-full text-center ${$page.url.pathname === '/' ? 'text-red-600 dark:text-red-400' : ''}`}
+				class={`text-[10px] transition-all truncate w-full text-center ${$page.url.pathname === '/' ? 'text-red-600 dark:text-red-400 font-bold' : 'font-medium'}`}
 				>{t('nav.home')}</span
 			>
 		</a>
 
 		<button
 			onclick={toggleTheaterMenu}
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 group min-w-[56px]"
+			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 group min-w-[56px]"
 		>
 			<AudioLines
 				class={`w-6 h-6 transition-all ${isTheaterMenuOpen || isRouteTheater ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`}
 			/>
 			<span
-				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isTheaterMenuOpen || isRouteTheater ? 'text-purple-600 dark:text-purple-400' : ''}`}
+				class={`text-[10px] transition-all truncate w-full text-center ${isTheaterMenuOpen || isRouteTheater ? 'text-purple-600 dark:text-purple-400 font-bold' : 'font-medium'}`}
 				>{t('nav.theater')}</span
 			>
 		</button>
@@ -204,26 +207,26 @@
 
 		<button
 			onclick={toggleMenu}
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 group min-w-[56px]"
+			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 group min-w-[56px]"
 		>
 			<Menu
 				class={`w-6 h-6 transition-all ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400 scale-110' : ''}`}
 			/>
 			<span
-				class={`text-[10px] font-medium transition-all truncate w-full text-center ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400' : ''}`}
+				class={`text-[10px] transition-all truncate w-full text-center ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'font-medium'}`}
 				>{t('nav.journey') || 'Journey'}</span
 			>
 		</button>
 
 		<a
 			href="/profile"
-			class="flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 group min-w-[56px]"
+			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 group min-w-[56px]"
 		>
 			<User
 				class={`w-6 h-6 transition-all ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white scale-110' : ''}`}
 			/>
 			<span
-				class={`text-[10px] font-medium transition-all truncate w-full text-center ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white' : ''}`}
+				class={`text-[10px] transition-all truncate w-full text-center ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white font-bold' : 'font-medium'}`}
 				>{t('nav.profile') || 'Profile'}</span
 			>
 		</a>

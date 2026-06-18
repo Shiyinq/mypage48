@@ -22,7 +22,7 @@
 {#if !isImmersive.value}
 	<div class="h-16 md:hidden"></div>
 	<header
-		class="md:hidden bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[50] transition-all duration-300 ease-in-out"
+		class="md:hidden bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl border-b border-black/5 dark:border-white/5 fixed top-0 left-0 right-0 z-[50] transition-all duration-300 ease-in-out"
 	>
 		<div class="h-16 px-4 flex items-center justify-between gap-4">
 			<!-- Left: Title & Icon -->
@@ -43,7 +43,7 @@
 								/>
 								<div class="flex flex-col min-w-0">
 									<h1
-										class="font-black text-lg tracking-tighter text-zinc-950 dark:text-white truncate leading-none pt-0.5"
+										class="font-extrabold text-lg tracking-tight text-zinc-950 dark:text-white truncate leading-none pt-0.5"
 									>
 										{headerInfo.title}
 									</h1>
@@ -58,7 +58,7 @@
 									</div>
 								{/if}
 								<h1
-									class="font-black text-lg tracking-tighter text-zinc-950 dark:text-white truncate leading-none pt-0.5"
+									class="font-extrabold text-lg tracking-tight text-zinc-950 dark:text-white truncate leading-none pt-0.5"
 								>
 									{headerInfo.title}
 								</h1>
