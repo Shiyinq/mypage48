@@ -169,7 +169,7 @@
 >
 	<!-- Top Navbar -->
 	<div
-		class="h-14 border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between px-4 z-50 shrink-0"
+		class="absolute top-0 left-0 right-0 h-16 border-b border-black/5 dark:border-white/5 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl flex items-center justify-between px-4 z-50 shrink-0"
 	>
 		<div class="flex items-center gap-4">
 			<button
@@ -177,7 +177,7 @@
 				class="flex items-center gap-2 text-slate-900 dark:text-white hover:text-red-600 dark:hover:text-red-400 transition-colors bg-transparent border-none p-0 cursor-pointer font-bold"
 			>
 				<ChevronLeft size={20} />
-				<span class="font-black tracking-tighter text-sm uppercase"
+				<span class="font-extrabold tracking-tight text-sm uppercase"
 					>{t('theater.sorter.backToHistory')}</span
 				>
 			</button>
@@ -207,7 +207,7 @@
 	</div>
 
 	<!-- Scrollable Content -->
-	<div class="flex-1 overflow-y-auto px-4 pt-4 pb-8 sm:py-8 flex flex-col items-center">
+	<div class="flex-1 overflow-y-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-8 flex flex-col items-center">
 		<div
 			class={`w-full space-y-8 px-1.5 sm:px-4 mx-auto pb-24 ${layoutMode === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}
 		>

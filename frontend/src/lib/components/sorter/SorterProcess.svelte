@@ -74,7 +74,7 @@
 >
 	<!-- Dedicated Top Navbar -->
 	<div
-		class="h-14 border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between px-4 z-50 shrink-0"
+		class="h-16 border-b border-black/5 dark:border-white/5 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl flex items-center justify-between px-4 z-50 shrink-0"
 	>
 		<div class="flex items-center gap-4">
 			<button
@@ -82,7 +82,7 @@
 				class="flex items-center gap-2 text-slate-900 dark:text-white hover:text-red-600 dark:hover:text-red-400 transition-colors bg-transparent border-none p-0 cursor-pointer font-bold"
 			>
 				<ChevronLeft size={20} />
-				<span class="font-black tracking-tighter text-lg"
+				<span class="font-extrabold tracking-tight text-lg"
 					>Oshi <span class={isPublic ? 'text-red-600 italic' : 'text-rose-500 italic'}>Sorter</span
 					></span
 				>
@@ -106,7 +106,7 @@
 	</div>
 
 	<!-- Scrollable content area -->
-	<div class="flex-1 overflow-y-auto px-4 py-8 flex flex-col items-center justify-center">
+	<div class="flex-1 overflow-y-auto px-4 py-8 pt-22 flex flex-col items-center justify-center">
 		<div class="w-full max-w-2xl space-y-6 flex flex-col items-center pb-12">
 			<div class="w-full space-y-2">
 				<div class="flex justify-between items-end px-2">

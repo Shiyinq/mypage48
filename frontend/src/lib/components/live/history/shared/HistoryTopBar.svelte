@@ -68,9 +68,9 @@
 </script>
 
 <div
-	class="relative w-full z-[10000] shrink-0 border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md"
+	class="absolute top-0 left-0 right-0 w-full z-[10000] shrink-0 border-b border-black/5 dark:border-white/5 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl"
 >
-	<div class="h-14 flex items-center justify-between px-4">
+	<div class="h-16 flex items-center justify-between px-4">
 		<button
 			onclick={handleBack}
 			class="flex items-center gap-3 cursor-pointer group text-left min-w-0 flex-1"
@@ -82,9 +82,9 @@
 			</div>
 			<div class="flex flex-col min-w-0">
 				<h1
-					class="text-sm font-bold text-slate-900 dark:text-white truncate flex items-center gap-1.5"
+					class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white truncate flex items-center gap-1.5"
 				>
-					<Icon size={14} class={iconColor} />
+					<Icon size={16} class={iconColor} />
 					{title}
 				</h1>
 				{#if subtitle}

@@ -422,7 +422,7 @@
 
 	<!-- Top Bar -->
 	<div
-		class="h-14 border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between px-4 z-[10000]"
+		class="absolute top-0 left-0 right-0 h-16 border-b border-black/5 dark:border-white/5 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl flex items-center justify-between px-4 z-[10000]"
 	>
 		<div class="flex items-center gap-4">
 			<a
@@ -430,7 +430,7 @@
 				class="flex items-center gap-1 sm:gap-2 text-slate-900 dark:text-white hover:text-red-600 transition-colors"
 			>
 				<ChevronLeft size={20} class="shrink-0" />
-				<span class="font-black tracking-tighter text-lg whitespace-nowrap"
+				<span class="font-extrabold tracking-tight text-lg whitespace-nowrap"
 					>JKT48 <span class="text-red-600 italic">LIVE</span></span
 				>
 			</a>
@@ -492,7 +492,7 @@
 		</div>
 	</div>
 
-	<div class="flex-1 flex overflow-hidden">
+	<div class="flex-1 flex overflow-hidden pt-14">
 		<!-- Member Picker Sidebar -->
 		{#if showPicker}
 			<div
