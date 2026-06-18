@@ -6,14 +6,17 @@ from pydantic import BaseModel, EmailStr, Field
 from src.feedback.constants import FeedbackType
 
 
-class FeedbackCreate(BaseModel):
+class FeedbackBase(BaseModel):
     type: FeedbackType
     message: str = Field(..., min_length=10, max_length=1000)
-    email: Optional[EmailStr] = None
     name: Optional[str] = None
 
 
-class FeedbackResponse(FeedbackCreate):
+class FeedbackCreate(FeedbackBase):
+    email: Optional[EmailStr] = None
+
+
+class FeedbackResponse(FeedbackBase):
     id: str
     created_at: datetime
 
