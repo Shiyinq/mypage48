@@ -6,6 +6,8 @@ from fastapi_sso.sso.github import GithubSSO
 from fastapi_sso.sso.google import GoogleSSO
 
 from src.achievements.service import AchievementsService
+from src.admin.repository import AdminRepository
+from src.admin.service import AdminService
 from src.api_keys.repository import ApiKeyRepository
 from src.api_keys.service import ApiKeyService
 from src.auth.csrf_service import CSRFService
@@ -444,3 +446,13 @@ def get_sorters_service(
     config: Settings = Depends(get_settings),
 ) -> SortersService:
     return SortersService(repo, config)
+
+
+def get_admin_repository(db=Depends(get_db)) -> AdminRepository:
+    return AdminRepository(db)
+
+
+def get_admin_service(
+    repo: AdminRepository = Depends(get_admin_repository),
+) -> AdminService:
+    return AdminService(repo)

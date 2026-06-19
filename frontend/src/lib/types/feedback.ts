@@ -10,7 +10,6 @@ export interface FeedbackMessage {
 	id: string; // UUID (public)
 	type: 'issue' | 'suggestion' | 'other';
 	message: string;
-	email?: string;
 	name?: string;
 	created_at: string;
 	user_id?: string;

@@ -113,7 +113,8 @@
 		"newTicket": "New Ticket",
 		"journal": "Journal",
 		"journey": "Journey",
-		"top2shot": "Roulette & Birthday"
+		"top2shot": "Roulette & Birthday",
+		"admin": "Admin"
 	},
 	"header": {
 		"tagline": "JKT48 THEATER TRACKER"
@@ -1351,10 +1352,42 @@
 			"title": "Admin Dashboard",
 			"subtitle": "Manage users, members, and setlists",
 			"tabs": {
+				"dashboard": "Dashboard",
 				"users": "Users",
 				"members": "Members",
 				"setlists": "Setlists",
 				"feedback": "Feedback"
+			},
+			"stats": {
+				"dataUsers": "Data Users",
+				"totalUsers": "Total Users",
+				"joinedToday": "+ {count} joined today",
+				"active7d": "active (7d)",
+				"publicProfiles": "Public Profiles",
+				"verified": "Verified",
+				"unverified": "Unverified",
+				"admins": "Admins",
+				"feedback": "Feedback",
+				"dataMyPage": "Data MyPage",
+				"ticketsLogged": "Tickets Logged",
+				"total2Shot": "Total 2-Shot",
+				"journals": "Journals",
+				"favorites": "Favorites",
+				"totalEstSpent": "Total Est. Spent",
+				"dataTheater": "Data Theater",
+				"members": "Members",
+				"active": "active",
+				"grad": "grad",
+				"setlists": "Setlists",
+				"inactive": "inactive",
+				"shows": "Shows",
+				"upcoming": "upcoming",
+				"events": "Events",
+				"newsPublished": "News Published",
+				"liveHistory": "Live History",
+				"birthdaysThisYear": "Birthdays this year",
+				"sr": "SR",
+				"idn": "IDN"
 			}
 		},
 		"feedback": {
@@ -1507,6 +1540,7 @@
 			"langJa": "Change Language to Japanese",
 			"logout": "Logout",
 			"adminDashboard": "Go to Admin Dashboard",
+			"adminUsers": "Go to Admin Users",
 			"adminMembers": "Go to Admin Members",
 			"adminSetlists": "Go to Admin Setlists",
 			"calendar": "Go to Calendar",

@@ -32,7 +32,9 @@
 	};
 
 	onMount(() => {
-		loadData(1);
+		if (feedbackStore.data.length === 0) {
+			loadData(1);
+		}
 	});
 
 	const getIcon = (type: string) => {
@@ -132,16 +134,11 @@
 							>
 								{item.message}
 							</p>
-							{#if item.email || item.name}
+							{#if item.name}
 								<div class="mt-3 flex items-center gap-3 text-xs text-slate-400">
-									{#if item.name}
-										<span class="font-bold text-slate-500 dark:text-slate-400">
-											{item.name}
-										</span>
-									{/if}
-									{#if item.email}
-										<span>{item.email}</span>
-									{/if}
+									<span class="font-bold text-slate-500 dark:text-slate-400">
+										{item.name}
+									</span>
 								</div>
 							{/if}
 						</div>

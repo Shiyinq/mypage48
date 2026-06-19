@@ -8,6 +8,7 @@
 		Sun,
 		Home,
 		User,
+		UserCheck,
 		Settings,
 		LogOut,
 		Command,
@@ -68,6 +69,13 @@
 							icon: ShieldCheck,
 							section: 'admin',
 							perform: () => goto('/admin')
+						},
+						{
+							id: 'admin-users',
+							title: t('command.actions.adminUsers'),
+							icon: UserCheck,
+							section: 'admin',
+							perform: () => goto('/admin/users')
 						},
 						{
 							id: 'admin-members',

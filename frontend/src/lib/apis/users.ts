@@ -4,7 +4,6 @@ export interface UserListItem {
 	userId: string;
 	name: string;
 	username: string;
-	email: string;
 	profilePicture?: string | null;
 	profilePicture_medium?: string | null;
 	profilePicture_small?: string | null;

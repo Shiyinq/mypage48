@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from src.achievements.route import router as achievements_router
+from src.admin.route import router as admin_router
 from src.api_keys.route import router as api_keys_router
 from src.auth.route import router as auth_router
 from src.dashboard.route import router as dashboard_router
@@ -25,6 +26,7 @@ router = APIRouter()
 
 router.include_router(auth_router, tags=["Auth"])
 router.include_router(api_keys_router, tags=["API Keys"])
+router.include_router(admin_router, prefix="/admin", tags=["Admin"])
 router.include_router(user_router, tags=["Users"])
 router.include_router(health_router, tags=["Health"])
 router.include_router(llm_router, prefix="/llm", tags=["LLM"])

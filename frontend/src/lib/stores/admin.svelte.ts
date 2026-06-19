@@ -1,6 +1,7 @@
 import { members as membersApi, type Member } from '$lib/apis/members';
 import { setlistsApi, type Setlist } from '$lib/apis/setlists';
 import { usersApi } from '$lib/apis/users';
+import { adminApi } from '$lib/apis/admin';
 import { showToast } from './toast.svelte';
 import type { AdminState } from '$lib/types';
 
@@ -34,6 +35,13 @@ const initialState: AdminState = {
 		total: 0,
 		search: '',
 		error: null
+	},
+	dashboardStats: {
+		users: null,
+		mypage: null,
+		theater: null,
+		error: null,
+		isLoaded: false
 	}
 };
 
@@ -43,6 +51,7 @@ const state = $state<AdminState>(initialState);
 let isMembersLoading = $state(false);
 let isSetlistsLoading = $state(false);
 let isUsersLoading = $state(false);
+let isDashboardStatsLoading = $state(false);
 let isDeletingMember = $state(false);
 let isDeletingSetlist = $state(false);
 
@@ -57,6 +66,9 @@ function createAdminStore() {
 		get users() {
 			return state.users;
 		},
+		get dashboardStats() {
+			return state.dashboardStats;
+		},
 		get isMembersLoading() {
 			return isMembersLoading;
 		},
@@ -65,6 +77,9 @@ function createAdminStore() {
 		},
 		get isUsersLoading() {
 			return isUsersLoading;
+		},
+		get isDashboardStatsLoading() {
+			return isDashboardStatsLoading;
 		},
 		get isDeletingMember() {
 			return isDeletingMember;
@@ -264,6 +279,33 @@ function createAdminStore() {
 		setUserSearch(query: string) {
 			state.users.search = query;
 			this.loadUsers(true);
+		},
+
+		// --- Dashboard Actions ---
+		async loadDashboardStats(force = false) {
+			if (isDashboardStatsLoading || (state.dashboardStats.isLoaded && !force)) return;
+
+			isDashboardStatsLoading = true;
+			state.dashboardStats.error = null;
+
+			try {
+				const [usersData, mypageData, theaterData] = await Promise.all([
+					adminApi.getUsersStats(),
+					adminApi.getMyPageStats(),
+					adminApi.getTheaterStats()
+				]);
+
+				state.dashboardStats.users = usersData;
+				state.dashboardStats.mypage = mypageData;
+				state.dashboardStats.theater = theaterData;
+				state.dashboardStats.isLoaded = true;
+			} catch (e) {
+				console.error('Failed to load dashboard stats', e);
+				showToast('Failed to load dashboard stats', 'error');
+				state.dashboardStats.error = 'Failed to load dashboard stats';
+			} finally {
+				isDashboardStatsLoading = false;
+			}
 		},
 
 		/**
