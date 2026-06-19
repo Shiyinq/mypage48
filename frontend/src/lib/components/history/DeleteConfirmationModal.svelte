@@ -6,18 +6,27 @@
 	interface Props {
 		show?: boolean;
 		isDeleting?: boolean;
+		title?: string;
+		description?: string;
 		onCancel: () => void;
 		onConfirm: () => void;
 	}
 
-	let { show = false, isDeleting = false, onCancel, onConfirm }: Props = $props();
+	let {
+		show = false,
+		isDeleting = false,
+		title,
+		description,
+		onCancel,
+		onConfirm
+	}: Props = $props();
 
 	const { t } = useTranslation();
 </script>
 
 {#if show}
 	<div
-		class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+		class="fixed inset-0 z-[10005] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
 		onclick={onCancel}
 		onkeydown={(e) => e.key === 'Escape' && onCancel()}
 		transition:fade={{ duration: 150 }}
@@ -41,10 +50,10 @@
 			</div>
 			<div class="text-center mb-6">
 				<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-					{t('history.deleteConfirm.title')}
+					{title || t('history.deleteConfirm.title')}
 				</h3>
 				<p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-					{t('history.deleteConfirm.description')}
+					{description || t('history.deleteConfirm.description')}
 				</p>
 			</div>
 			<div class="grid grid-cols-2 gap-3">

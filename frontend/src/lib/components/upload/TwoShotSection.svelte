@@ -15,6 +15,7 @@
 		onphotoClick?: () => void;
 		onSelectImage?: () => void;
 		onEdit?: () => void;
+		onDelete?: () => void;
 		ondrop?: (file: File) => void;
 	}
 
@@ -27,6 +28,7 @@
 		onphotoClick,
 		onSelectImage,
 		onEdit,
+		onDelete,
 		ondrop
 	}: Props = $props();
 
@@ -85,6 +87,7 @@
 								onSelectImage?.();
 							}}
 							{onEdit}
+							{onDelete}
 							variant="twoshot"
 						/>
 					{:else}

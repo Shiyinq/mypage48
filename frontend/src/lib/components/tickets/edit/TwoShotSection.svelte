@@ -13,6 +13,7 @@
 		price: number;
 		onSelectImage: () => void;
 		onEdit?: () => void;
+		onDelete?: () => void;
 		ondrop?: (file: File) => void;
 	}
 
@@ -24,6 +25,7 @@
 		price = $bindable(),
 		onSelectImage,
 		onEdit,
+		onDelete,
 		ondrop
 	}: Props = $props();
 
@@ -79,7 +81,7 @@
 							class="w-full h-full"
 							objectFit="contain"
 						/>
-						<ImageOverlayActions onSelect={onSelectImage} {onEdit} variant="twoshot" />
+						<ImageOverlayActions onSelect={onSelectImage} {onEdit} {onDelete} variant="twoshot" />
 					{:else}
 						<button
 							type="button"

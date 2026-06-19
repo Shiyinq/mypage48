@@ -1087,7 +1087,11 @@
 		"twoShots": "2-Shots",
 		"noMemories": "No memories yet",
 		"errorTitle": "Failed to load memories",
-		"errorDesc": "Something went wrong while fetching your memories."
+		"errorDesc": "Something went wrong while fetching your memories.",
+		"deletePhotoConfirm": {
+			"title": "Delete Photo?",
+			"description": "The photo will be deleted from memories and tickets, but your ticket will remain in your ticket history."
+		}
 	},
 	"achievements": {
 		"title": "Achievements",

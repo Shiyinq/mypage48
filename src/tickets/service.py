@@ -17,6 +17,7 @@ from src.tickets.exceptions import (
     ImageTooLargeError,
     InvalidImageError,
     InvalidImageTypeError,
+    InvalidPhotoTypeError,
     TicketCreationError,
     TicketDeletionError,
     TicketFetchError,
@@ -233,8 +234,19 @@ class TicketsService:
 
             if data.imageUrl:
                 data.imageUrl = cleanse_image_url(data.imageUrl)
-            if data.two_shot and data.two_shot.imageUrl:
-                data.two_shot.imageUrl = cleanse_image_url(data.two_shot.imageUrl)
+            elif "imageUrl" in data.model_fields_set and data.imageUrl is None:
+                # If imageUrl is explicitly cleared, clear blurHash as well
+                data.blurHash = None
+
+            if data.two_shot:
+                if data.two_shot.imageUrl:
+                    data.two_shot.imageUrl = cleanse_image_url(data.two_shot.imageUrl)
+                elif (
+                    "imageUrl" in data.two_shot.model_fields_set
+                    and data.two_shot.imageUrl is None
+                ):
+                    # If two_shot imageUrl is explicitly cleared, clear blurHash
+                    data.two_shot.blurHash = None
 
             # Validate images if provided
             two_shot_image = data.two_shot.imageUrl if data.two_shot else None
@@ -264,13 +276,9 @@ class TicketsService:
                     # Two shot removed completely
                     if old_ts_img:
                         old_images.append(old_ts_img)
-                elif (
-                    data.two_shot.imageUrl
-                    and old_ts_img
-                    and data.two_shot.imageUrl != old_ts_img
-                ):
-                    # Image replaced
-                    old_images.append(old_ts_img)
+                elif data.two_shot is not None:
+                    if old_ts_img and data.two_shot.imageUrl != old_ts_img:
+                        old_images.append(old_ts_img)
 
             if old_images:
                 # Fire and forget or await? Let's await to be sure.
@@ -286,6 +294,40 @@ class TicketsService:
             raise
         except Exception as e:
             logger.exception(f"Error updating ticket: {str(e)}")
+            raise TicketUpdateError()
+
+    async def delete_photo(
+        self, user_id: str, ticket_id: str, photo_type: str
+    ) -> TicketResponse:
+        if photo_type not in ["ticket", "twoshot"]:
+            raise InvalidPhotoTypeError()
+        try:
+            existing = await self.repository.get_ticket(ticket_id, user_id)
+            if not existing:
+                raise TicketNotFoundError()
+
+            old_image = None
+            if photo_type == "ticket":
+                old_image = existing.get("imageUrl")
+            elif photo_type == "twoshot":
+                two_shot = existing.get("two_shot")
+                if two_shot:
+                    old_image = two_shot.get("imageUrl")
+
+            updated_ticket = await self.repository.delete_ticket_photo(
+                ticket_id, user_id, photo_type
+            )
+            if not updated_ticket:
+                raise TicketNotFoundError()
+
+            if old_image:
+                await self.storage_service.delete_image(old_image)
+
+            return TicketResponse(**(await self._resolve_ticket(updated_ticket)))
+        except TicketNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Error deleting ticket photo: {str(e)}")
             raise TicketUpdateError()
 
     async def toggle_two_shot_favorite(

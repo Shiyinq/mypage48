@@ -1,4 +1,5 @@
 import { memoriesApi } from '$lib/apis/memories';
+import { ticketsApi } from '$lib/apis/tickets';
 import { logger } from '$lib/utils/logger';
 import { isCacheExpired } from '$lib/utils/cache';
 import { createRequestDedup } from '$lib/utils/requestDedup';
@@ -138,6 +139,28 @@ function createGalleryStore() {
 					};
 				}
 			});
+		},
+
+		deleteMemoryPhoto: async (uniqueId: string, ticketRef: string, type: 'TICKET' | '2SHOT') => {
+			try {
+				await ticketsApi.deletePhoto(ticketRef, type === 'TICKET' ? 'ticket' : 'twoshot');
+
+				// Remove from current list
+				galleryState.list = galleryState.list.filter((item) => item.uniqueId !== uniqueId);
+
+				// Remove from all caches
+				Object.keys(galleryState.cache).forEach((key) => {
+					if (galleryState.cache[key]) {
+						galleryState.cache[key] = {
+							...galleryState.cache[key],
+							list: galleryState.cache[key].list.filter((item) => item.uniqueId !== uniqueId)
+						};
+					}
+				});
+			} catch (e) {
+				logger.error('Failed to delete memory photo', e, { context: 'GalleryStore' });
+				throw e;
+			}
 		},
 
 		reset: () => {

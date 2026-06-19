@@ -68,7 +68,7 @@ class MemoriesRepository:
         )
         ticket_pipeline = [
             base_match,
-            {"$match": {"imageUrl": {"$exists": True, "$ne": None, "$ne": ""}}},
+            {"$match": {"imageUrl": {"$exists": True, "$nin": [None, ""]}}},
             *ticket_favorite_match,
             {
                 "$project": {
@@ -97,11 +97,7 @@ class MemoriesRepository:
         )
         twoshot_pipeline = [
             base_match,
-            {
-                "$match": {
-                    "two_shot.imageUrl": {"$exists": True, "$ne": None, "$ne": ""}
-                }
-            },
+            {"$match": {"two_shot.imageUrl": {"$exists": True, "$nin": [None, ""]}}},
             *twoshot_favorite_match,
             {
                 "$project": {
@@ -144,8 +140,7 @@ class MemoriesRepository:
                                 "$match": {
                                     "imageUrl": {
                                         "$exists": True,
-                                        "$ne": None,
-                                        "$ne": "",
+                                        "$nin": [None, ""],
                                     }
                                 }
                             },
@@ -175,8 +170,7 @@ class MemoriesRepository:
                                 "$match": {
                                     "two_shot.imageUrl": {
                                         "$exists": True,
-                                        "$ne": None,
-                                        "$ne": "",
+                                        "$nin": [None, ""],
                                     }
                                 }
                             },
@@ -257,8 +251,7 @@ class MemoriesRepository:
                                 "$match": {
                                     "imageUrl": {
                                         "$exists": True,
-                                        "$ne": None,
-                                        "$ne": "",
+                                        "$nin": [None, ""],
                                     }
                                 }
                             },
@@ -270,8 +263,7 @@ class MemoriesRepository:
                                 "$match": {
                                     "two_shot.imageUrl": {
                                         "$exists": True,
-                                        "$ne": None,
-                                        "$ne": "",
+                                        "$nin": [None, ""],
                                     }
                                 }
                             },

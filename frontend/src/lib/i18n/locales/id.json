@@ -674,7 +674,11 @@
 		"twoShots": "2-Shot",
 		"noMemories": "Belum ada kenangan",
 		"errorTitle": "Gagal memuat kenangan",
-		"errorDesc": "Terjadi kesalahan saat mengambil kenangan kamu."
+		"errorDesc": "Terjadi kesalahan saat mengambil kenangan kamu.",
+		"deletePhotoConfirm": {
+			"title": "Hapus Foto?",
+			"description": "Foto akan dihapus dari memories dan tiket, namun tiket kamu akan tetap ada di riwayat tiket."
+		}
 	},
 	"achievements": {
 		"title": "Pencapaian",

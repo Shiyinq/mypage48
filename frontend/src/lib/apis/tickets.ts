@@ -63,6 +63,12 @@ export const ticketsApi = {
 		});
 	},
 
+	deletePhoto: async (ticketId: string, type: 'ticket' | 'twoshot') => {
+		return await client<Ticket>(`/theater/tickets/${ticketId}/photo?type=${type}`, {
+			method: 'DELETE'
+		});
+	},
+
 	getTicketTitles: async () => {
 		return await client<string[]>('/theater/tickets/titles', {
 			method: 'GET'

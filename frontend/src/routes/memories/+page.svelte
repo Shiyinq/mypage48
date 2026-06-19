@@ -6,6 +6,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { PageHeader, EmptyState, ErrorState, NoMoreData } from '$lib/components';
+	import DeleteConfirmationModal from '$lib/components/history/DeleteConfirmationModal.svelte';
 	import { Lightbox, MemoriesFilterCard, MemoryCard } from '$lib/components/memories';
 	import { slide } from 'svelte/transition';
 	import { PolaroidSkeleton } from '$lib/components/skeletons';
@@ -24,7 +25,10 @@
 	let error = $derived(galleryStore.error);
 	let isLoading = $derived(isGalleryLoading.value);
 
-	let selectedImage: MemoryItem | null = $state(null);
+	let selectedImage = $state<MemoryItem | null>(null);
+	let showDeleteModal = $state(false);
+	let itemToDelete = $state<MemoryItem | null>(null);
+	let isDeletingPhoto = $state(false);
 	let mounted = $state(false);
 	let isFilterOpen = $state(false);
 	let localFilters: MemoryFiltersType = $state({
@@ -144,6 +148,11 @@
 
 	async function handleToggleFavorite(item: MemoryItem) {
 		galleryStore.toggleFavorite(item.uniqueId);
+		// Update selectedImage immediately for UI reactivity in Lightbox
+		if (selectedImage?.uniqueId === item.uniqueId) {
+			selectedImage.is_favorite = !selectedImage.is_favorite;
+		}
+
 		try {
 			if (item.type === '2SHOT') {
 				await ticketsStore.toggleTwoShotFavorite(item.ticketRef!);
@@ -152,7 +161,37 @@
 			}
 		} catch {
 			galleryStore.toggleFavorite(item.uniqueId);
+			if (selectedImage?.uniqueId === item.uniqueId) {
+				selectedImage.is_favorite = !selectedImage.is_favorite;
+			}
 			showToast(t('common.error'), 'error');
+		}
+	}
+
+	function openDeleteModal(item: MemoryItem) {
+		itemToDelete = item;
+		showDeleteModal = true;
+	}
+
+	async function confirmDeletePhoto() {
+		if (!itemToDelete?.ticketRef) return;
+		isDeletingPhoto = true;
+		try {
+			await galleryStore.deleteMemoryPhoto(
+				itemToDelete.uniqueId,
+				itemToDelete.ticketRef,
+				itemToDelete.type
+			);
+			showToast(t('common.success'), 'success');
+			if (selectedImage?.uniqueId === itemToDelete.uniqueId) {
+				selectedImage = null;
+			}
+			showDeleteModal = false;
+		} catch {
+			showToast(t('common.error'), 'error');
+		} finally {
+			isDeletingPhoto = false;
+			itemToDelete = null;
 		}
 	}
 </script>
@@ -164,6 +203,20 @@
 	{selectedImage}
 	onClose={() => (selectedImage = null)}
 	onfavoriteToggle={handleToggleFavorite}
+	onDeletePhoto={openDeleteModal}
+/>
+
+<!-- Delete Confirmation Modal -->
+<DeleteConfirmationModal
+	show={showDeleteModal}
+	isDeleting={isDeletingPhoto}
+	title={t('memories.deletePhotoConfirm.title')}
+	description={t('memories.deletePhotoConfirm.description')}
+	onCancel={() => {
+		showDeleteModal = false;
+		itemToDelete = null;
+	}}
+	onConfirm={confirmDeletePhoto}
 />
 
 <div class="max-w-[1600px] mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-32">

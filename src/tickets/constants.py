@@ -13,6 +13,7 @@ class ErrorCode:
     IMAGE_TOO_LARGE = "Image is too large. Maximum 3MB allowed."
     INVALID_IMAGE_TYPE = "Invalid image type. Only JPEG, PNG, and WebP are allowed."
     INVALID_IMAGE = "Invalid image data."
+    INVALID_PHOTO_TYPE = "Invalid photo type. Must be 'ticket' or 'twoshot'."
 
 
 class DomainErrorCode:
@@ -24,3 +25,4 @@ class DomainErrorCode:
     IMAGE_TOO_LARGE = "Image is too large"
     INVALID_IMAGE_TYPE = "Invalid image type"
     INVALID_IMAGE = "Invalid image data"
+    INVALID_PHOTO_TYPE = "Invalid photo type"
