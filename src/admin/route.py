@@ -1,21 +1,8 @@
 from fastapi import APIRouter, Depends, Query
 
-from src.admin.repository import AdminRepository
 from src.admin.schemas import DataMyPageStats, DataTheaterStats, DataUsersStats
 from src.admin.service import AdminService
-from src.database import database_instance
-from src.dependencies import require_admin
-
-
-def get_admin_repository() -> AdminRepository:
-    return AdminRepository(database_instance.database)
-
-
-def get_admin_service(
-    repository: AdminRepository = Depends(get_admin_repository),
-) -> AdminService:
-    return AdminService(repository)
-
+from src.dependencies import get_admin_service, require_admin
 
 router = APIRouter()
 
