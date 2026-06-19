@@ -157,22 +157,22 @@
 						>
 							<a
 								href="/profile"
-								class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800/50 hover:text-red-600 dark:hover:text-red-500 transition-colors"
+								class="flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors rounded-t-xl"
 								onclick={() => (isProfileDropdownOpen = false)}
 							>
-								<User class="w-4 h-4" />
-								{t('nav.profile') || 'Profile'}
+								<User class="w-3.5 h-3.5" strokeWidth={2.5} />
+								<span>{t('nav.profile') || 'Profile'}</span>
 							</a>
 
 							{#if userProfile.data?.isAdmin}
 								<div class="h-px bg-gray-100 dark:bg-zinc-800/80 my-1"></div>
 								<a
 									href="/admin"
-									class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800/50 hover:text-red-600 dark:hover:text-red-500 transition-colors"
+									class="flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors rounded-b-xl"
 									onclick={() => (isProfileDropdownOpen = false)}
 								>
-									<LayoutDashboard class="w-4 h-4" />
-									{t('nav.admin') || 'Admin Dashboard'}
+									<LayoutDashboard class="w-3.5 h-3.5" strokeWidth={2.5} />
+									<span>{t('nav.admin') || 'Admin Dashboard'}</span>
 								</a>
 							{/if}
 						</div>
