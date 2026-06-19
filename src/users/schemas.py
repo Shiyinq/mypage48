@@ -239,7 +239,6 @@ class UserListItem(BaseModel):
     userId: str
     name: str
     username: str
-    email: str
     profilePicture: Optional[str] = None
     profilePicture_medium: Optional[str] = None
     profilePicture_small: Optional[str] = None

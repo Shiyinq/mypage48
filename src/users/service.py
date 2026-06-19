@@ -745,6 +745,9 @@ class UserService:
                 "createdAt": current_user.createdAt,
             }
 
+            if current_user.isAdmin is False:
+                profile_dict.pop("isAdmin", None)
+
             return ProfileFullResponse(
                 profile=profile_dict,
                 oshis=oshi_responses,

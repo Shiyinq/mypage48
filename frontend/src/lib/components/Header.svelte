@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { Plus, User } from 'lucide-svelte';
+	import { Plus, User, LayoutDashboard } from 'lucide-svelte';
 	import { userProfile, isAuthenticated, isInitialDataLoaded } from '$lib/stores';
 	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -48,7 +48,23 @@
 		}
 		return currentPath.startsWith(href);
 	});
+
+	/* Profile Dropdown State */
+	let isProfileDropdownOpen = $state(false);
+	let profileDropdownRef: HTMLDivElement | undefined = $state();
+
+	function handleOutsideClick(event: MouseEvent) {
+		if (
+			isProfileDropdownOpen &&
+			profileDropdownRef &&
+			!profileDropdownRef.contains(event.target as Node)
+		) {
+			isProfileDropdownOpen = false;
+		}
+	}
 </script>
+
+<svelte:window onclick={handleOutsideClick} />
 
 {#if !isImmersive.value}
 	<div class="hidden md:block transition-all duration-300 {isTheater ? 'h-[104px]' : 'h-16'}"></div>
@@ -81,39 +97,87 @@
 					</a>
 				</div>
 
-				<!-- Profile Icon Button -->
-				<a
-					href="/profile"
-					class={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative overflow-hidden group
-            ${
-							$page.url.pathname === '/profile'
-								? 'ring-2 ring-red-600 shadow-lg scale-105'
-								: 'ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-red-400'
-						}`}
-				>
-					{#if isLoading}
-						<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
-					{:else if userProfile.data?.profilePicture}
-						<OptimizedImage
-							src={userProfile.data.profilePicture}
-							srcMedium={userProfile.data.profilePicture_medium}
-							srcSmall={userProfile.data.profilePicture_small}
-							blurHash={userProfile.data?.blurHash}
-							alt="Profile"
-							class="w-full h-full object-cover"
-							sizes="40px"
-						/>
-					{:else}
+				<!-- Profile Icon Button & Dropdown -->
+				<div class="relative" bind:this={profileDropdownRef}>
+					{#snippet profileContent()}
+						{#if isLoading}
+							<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
+						{:else if userProfile.data?.profilePicture}
+							<OptimizedImage
+								src={userProfile.data.profilePicture}
+								srcMedium={userProfile.data.profilePicture_medium}
+								srcSmall={userProfile.data.profilePicture_small}
+								blurHash={userProfile.data?.blurHash}
+								alt="Profile"
+								class="w-full h-full object-cover"
+								sizes="40px"
+							/>
+						{:else}
+							<div
+								class="w-full h-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center"
+							>
+								<User class="w-5 h-5 text-gray-400 dark:text-gray-500" />
+							</div>
+						{/if}
 						<div
-							class="w-full h-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center"
+							class={`absolute inset-0 bg-red-500/20 transition-opacity ${$page.url.pathname === '/profile' ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}
+						></div>
+					{/snippet}
+
+					{#if userProfile.data?.isAdmin}
+						<button
+							onclick={() => (isProfileDropdownOpen = !isProfileDropdownOpen)}
+							class={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative overflow-hidden group cursor-pointer
+								${
+									$page.url.pathname === '/profile' || isProfileDropdownOpen
+										? 'ring-2 ring-red-600 shadow-lg scale-105'
+										: 'ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-red-400'
+								}`}
 						>
-							<User class="w-5 h-5 text-gray-400 dark:text-gray-500" />
+							{@render profileContent()}
+						</button>
+					{:else}
+						<a
+							href="/profile"
+							class={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative overflow-hidden group cursor-pointer
+								${
+									$page.url.pathname === '/profile'
+										? 'ring-2 ring-red-600 shadow-lg scale-105'
+										: 'ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-red-400'
+								}`}
+						>
+							{@render profileContent()}
+						</a>
+					{/if}
+
+					<!-- Dropdown Menu -->
+					{#if isProfileDropdownOpen}
+						<div
+							class="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] border border-gray-100 dark:border-zinc-800 py-2 z-50"
+						>
+							<a
+								href="/profile"
+								class="flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors rounded-t-xl"
+								onclick={() => (isProfileDropdownOpen = false)}
+							>
+								<User class="w-3.5 h-3.5" strokeWidth={2.5} />
+								<span>{t('nav.profile') || 'Profile'}</span>
+							</a>
+
+							{#if userProfile.data?.isAdmin}
+								<div class="h-px bg-gray-100 dark:bg-zinc-800/80 my-1"></div>
+								<a
+									href="/admin"
+									class="flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors rounded-b-xl"
+									onclick={() => (isProfileDropdownOpen = false)}
+								>
+									<LayoutDashboard class="w-3.5 h-3.5" strokeWidth={2.5} />
+									<span>{t('nav.admin') || 'Admin Dashboard'}</span>
+								</a>
+							{/if}
 						</div>
 					{/if}
-					<div
-						class={`absolute inset-0 bg-red-500/20 transition-opacity ${$page.url.pathname === '/profile' ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}
-					></div>
-				</a>
+				</div>
 			</div>
 		</div>
 

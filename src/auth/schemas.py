@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_serializer, model_validator
 
 from src.auth.http_exceptions import PasswordPolicyViolation, PasswordsNotMatch
 from src.utils import validate_password_strength
@@ -59,6 +59,13 @@ class UserLoginBase(BaseModel):
     isAdmin: bool = False
     isEmailVerified: bool = False
     createdAt: datetime | None = None
+
+    @model_serializer(mode="wrap")
+    def exclude_false_isAdmin(self, handler):
+        res = handler(self)
+        if isinstance(res, dict) and res.get("isAdmin") is False:
+            res.pop("isAdmin")
+        return res
 
 
 class UserLogin(UserLoginBase):

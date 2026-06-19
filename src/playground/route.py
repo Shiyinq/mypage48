@@ -16,7 +16,7 @@ async def get_playground_openapi(
     Excludes Auth, API Keys, and Admin-only routes.
     """
     filtered_routes = []
-    excluded_tags = {"Auth", "API Keys", "Feedback", "Storage"}
+    excluded_tags = {"Auth", "API Keys", "Feedback", "Storage", "Admin"}
 
     # Define (path, method) pairs to exclude
     excluded_endpoints = {

@@ -1,271 +1,504 @@
 <script lang="ts">
-	import { adminStore, isAdminUsersLoading } from '$lib/stores/admin.svelte';
-	import { infiniteScroll } from '$lib/actions/infiniteScroll';
-	import TableSkeleton from '$lib/components/skeletons/TableSkeleton.svelte';
-	import { Search, X, UserCheck, ShieldCheck, Mail, Lock, Eye, EyeOff } from 'lucide-svelte';
+	import { adminStore } from '$lib/stores/admin.svelte';
+	import { onMount } from 'svelte';
+	import {
+		Users,
+		UserCheck,
+		ShieldCheck,
+		MessageSquare,
+		Activity,
+		Globe,
+		Ticket,
+		Camera,
+		BookOpen,
+		Heart,
+		Wallet,
+		Star,
+		Music,
+		Calendar,
+		MonitorPlay,
+		Radio,
+		Newspaper,
+		Gift
+	} from 'lucide-svelte';
+	import AdminDashboardSkeleton from '$lib/components/skeletons/AdminDashboardSkeleton.svelte';
+
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { OptimizedImage } from '$lib/components/common';
-	import { formatDate } from '$lib/i18n';
-	import { formatTimeAgo } from '$lib/utils/time';
-	import { maskEmail } from '$lib/utils/formatting';
 
 	const { t } = useTranslation();
 
-	// Store state
-	let usersList = $derived(adminStore.users.data);
-	let usersHasMore = $derived(adminStore.users.hasMore);
-
-	// Search state
-	let searchQuery = $state('');
-	let searchTimeout: ReturnType<typeof setTimeout>;
-
-	// Initial load state
-	let isInitialLoad = $state(true);
-
-	let revealedEmails = $state<Record<string, boolean>>({});
-
-	$effect(() => {
-		// Only load if data is not already cached
-		if (usersList.length === 0) {
-			adminStore.loadUsers();
-		} else {
-			isInitialLoad = false;
-		}
-
-		if (usersList.length > 0) {
-			isInitialLoad = false;
-		}
-
-		return () => {
-			if (searchTimeout) clearTimeout(searchTimeout);
-		};
+	onMount(() => {
+		adminStore.loadDashboardStats();
 	});
 
-	function handleSearch() {
-		if (searchTimeout) clearTimeout(searchTimeout);
-		searchTimeout = setTimeout(() => {
-			adminStore.setUserSearch(searchQuery);
-		}, 300);
-	}
+	let usersStats = $derived(adminStore.dashboardStats.users);
+	let mypageStats = $derived(adminStore.dashboardStats.mypage);
+	let theaterStats = $derived(adminStore.dashboardStats.theater);
 
-	function clearSearch() {
-		searchQuery = '';
-		handleSearch();
-	}
-
-	function loadMoreUsers() {
-		if (usersHasMore && !isAdminUsersLoading.value) {
-			adminStore.loadUsers();
-		}
-	}
-
-	function toggleEmail(userId: string) {
-		revealedEmails[userId] = !revealedEmails[userId];
+	function formatCurrency(amount: number) {
+		return new Intl.NumberFormat('id-ID', {
+			style: 'currency',
+			currency: 'IDR',
+			maximumFractionDigits: 0
+		}).format(amount);
 	}
 </script>
 
-<div>
-	<div
-		class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white dark:bg-zinc-800 p-4 rounded-3xl shadow-sm"
-	>
-		<div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
-				<UserCheck class="w-5 h-5 text-red-500" />
-				{t('admin.users.title')} ({adminStore.users.total})
-			</h2>
-
-			<!-- Search Input -->
-			<div class="relative w-full sm:max-w-xs">
-				<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-				<input
-					type="text"
-					bind:value={searchQuery}
-					oninput={handleSearch}
-					placeholder={t('admin.users.searchPlaceholder')}
-					class="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
-				/>
-				{#if searchQuery}
-					<button
-						onclick={clearSearch}
-						class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
-					>
-						<X class="w-3 h-3" />
-					</button>
-				{/if}
-			</div>
-		</div>
-	</div>
-
-	{#if isInitialLoad && isAdminUsersLoading.value}
-		<TableSkeleton
-			rows={10}
-			columns={[
-				t('admin.users.table.userInfo'),
-				t('admin.users.table.email'),
-				t('admin.users.table.status'),
-				t('admin.users.table.created'),
-				t('admin.users.table.lastActive')
-			]}
-		/>
+<div class="space-y-8 pb-10">
+	{#if adminStore.isDashboardStatsLoading || !usersStats || !mypageStats || !theaterStats}
+		<AdminDashboardSkeleton />
 	{:else}
-		<div class="glass-panel rounded-3xl overflow-hidden shadow-sm">
-			<div class="overflow-x-auto">
-				<table class="w-full text-left border-collapse">
-					<thead>
-						<tr
-							class="bg-gray-50/80 dark:bg-zinc-800/80 border-b border-gray-200 dark:border-zinc-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold"
+		<!-- DATA USERS SECTION -->
+		<section>
+			<div class="flex items-center gap-3 mb-4">
+				<div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-500">
+					<Users class="w-6 h-6" />
+				</div>
+				<h2 class="text-xl font-bold text-gray-900 dark:text-white">
+					{t('admin.dashboard.stats.dataUsers')}
+				</h2>
+			</div>
+
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+				<!-- Total Users -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-xl text-blue-500 shrink-0">
+							<Users class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="flex items-baseline gap-2 mb-0.5">
+								<div class="text-2xl font-black text-gray-900 dark:text-white leading-none">
+									{usersStats.total_users}
+								</div>
+								<span class="text-xs font-medium text-gray-400"
+									>{t('admin.dashboard.stats.totalUsers')}</span
+								>
+							</div>
+							<div
+								class="flex items-center gap-1 text-[11px] text-blue-500 dark:text-blue-400 font-medium mt-1"
+							>
+								{t('admin.dashboard.stats.joinedToday', { count: usersStats.users_joined_today })}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Active & Public -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-green-50 dark:bg-green-500/10 rounded-xl text-green-500 shrink-0">
+							<Activity class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="flex items-baseline gap-2 mb-1">
+								<span class="text-2xl font-black text-gray-900 dark:text-white leading-none"
+									>{usersStats.active_users_last_days}</span
+								>
+								<span class="text-xs font-medium text-gray-400"
+									>{t('admin.dashboard.stats.active7d')}</span
+								>
+							</div>
+							<div
+								class="flex items-center gap-1 text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5"
+							>
+								<Globe class="w-3 h-3" />
+								{usersStats.public_profiles}
+								{t('admin.dashboard.stats.publicProfiles')}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Verified/Unverified -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-purple-50 dark:bg-purple-500/10 rounded-xl text-purple-500 shrink-0">
+							<UserCheck class="w-6 h-6" />
+						</div>
+						<div class="flex-1 space-y-1.5">
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+									<div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+									{t('admin.dashboard.stats.verified')}
+								</div>
+								<span class="font-bold text-gray-900 dark:text-white text-sm"
+									>{usersStats.verified_users}</span
+								>
+							</div>
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+									<div class="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
+									{t('admin.dashboard.stats.unverified')}
+								</div>
+								<span class="font-bold text-gray-900 dark:text-white text-sm"
+									>{usersStats.unverified_users}</span
+								>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Admins & Feedback -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-orange-50 dark:bg-orange-500/10 rounded-xl text-orange-500 shrink-0">
+							<ShieldCheck class="w-6 h-6" />
+						</div>
+						<div class="flex-1 space-y-1.5">
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+									<ShieldCheck class="w-3.5 h-3.5" />
+									{t('admin.dashboard.stats.admins')}
+								</div>
+								<span class="font-bold text-gray-900 dark:text-white text-sm"
+									>{usersStats.total_admins}</span
+								>
+							</div>
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+									<MessageSquare class="w-3.5 h-3.5" />
+									{t('admin.dashboard.stats.feedback')}
+								</div>
+								<span class="font-bold text-gray-900 dark:text-white text-sm"
+									>{usersStats.total_feedback}</span
+								>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- DATA MYPAGE SECTION -->
+		<section>
+			<div class="flex items-center gap-3 mb-4 mt-8">
+				<div class="p-2 bg-pink-100 dark:bg-pink-900/30 rounded-xl text-pink-500">
+					<Heart class="w-6 h-6" />
+				</div>
+				<h2 class="text-xl font-bold text-gray-900 dark:text-white">
+					{t('admin.dashboard.stats.dataMyPage')}
+				</h2>
+			</div>
+
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+				<!-- Tickets -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-pink-50 dark:bg-pink-500/10 rounded-xl text-pink-500 shrink-0">
+							<Ticket class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="text-2xl font-black text-gray-900 dark:text-white leading-none mb-1">
+								{mypageStats.total_tickets}
+							</div>
+							<div class="text-xs font-medium text-gray-500 dark:text-gray-400">
+								{t('admin.dashboard.stats.ticketsLogged')}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- 2-Shot -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl text-indigo-500 shrink-0">
+							<Camera class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="text-2xl font-black text-gray-900 dark:text-white leading-none mb-1">
+								{mypageStats.total_2shot}
+							</div>
+							<div class="text-xs font-medium text-gray-500 dark:text-gray-400">
+								{t('admin.dashboard.stats.total2Shot')}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Journals & Favorites -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-teal-50 dark:bg-teal-500/10 rounded-xl text-teal-500 shrink-0">
+							<BookOpen class="w-6 h-6" />
+						</div>
+						<div class="flex-1 space-y-1.5">
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+									<BookOpen class="w-3.5 h-3.5" />
+									{t('admin.dashboard.stats.journals')}
+								</div>
+								<span class="font-bold text-gray-900 dark:text-white text-sm"
+									>{mypageStats.total_journal}</span
+								>
+							</div>
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+									<Star class="w-3.5 h-3.5 text-yellow-400" />
+									{t('admin.dashboard.stats.favorites')}
+								</div>
+								<span class="font-bold text-gray-900 dark:text-white text-sm"
+									>{mypageStats.total_favorites}</span
+								>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Money Spent -->
+				<div
+					class="bg-gradient-to-br from-green-400 to-emerald-600 p-4 rounded-2xl shadow-md text-white"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-white/20 rounded-xl shrink-0">
+							<Wallet class="w-6 h-6" />
+						</div>
+						<div class="overflow-hidden">
+							<div
+								class="text-xl font-black leading-none mb-1 truncate"
+								title={formatCurrency(mypageStats.total_money_spent_idr)}
+							>
+								{formatCurrency(mypageStats.total_money_spent_idr)}
+							</div>
+							<div class="text-xs font-medium text-green-50 truncate">
+								{t('admin.dashboard.stats.totalEstSpent')}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- DATA THEATER SECTION -->
+		<section>
+			<div class="flex items-center gap-3 mb-4 mt-8">
+				<div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-xl text-red-500">
+					<Star class="w-6 h-6" />
+				</div>
+				<h2 class="text-xl font-bold text-gray-900 dark:text-white">
+					{t('admin.dashboard.stats.dataTheater')}
+				</h2>
+			</div>
+
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+				<!-- Members -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl text-red-500 shrink-0">
+							<Users class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="flex items-baseline gap-2 mb-0.5">
+								<div class="text-2xl font-black text-gray-900 dark:text-white leading-none">
+									{theaterStats.total_members_jkt}
+								</div>
+								<span class="text-xs font-medium text-gray-400"
+									>{t('admin.dashboard.stats.members')}</span
+								>
+							</div>
+							<div
+								class="flex items-center gap-3 text-[11px] text-gray-500 dark:text-gray-400 mt-1"
+							>
+								<span class="flex items-center gap-1.5"
+									><div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+									{theaterStats.active_members_count}
+									{t('admin.dashboard.stats.active')}</span
+								>
+								<span class="flex items-center gap-1.5"
+									><div class="w-1.5 h-1.5 rounded-full bg-gray-400"></div>
+									{theaterStats.graduated_members_count}
+									{t('admin.dashboard.stats.grad')}</span
+								>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Setlists -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-purple-50 dark:bg-purple-500/10 rounded-xl text-purple-500 shrink-0">
+							<Music class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="flex items-baseline gap-2 mb-0.5">
+								<div class="text-2xl font-black text-gray-900 dark:text-white leading-none">
+									{theaterStats.total_setlists}
+								</div>
+								<span class="text-xs font-medium text-gray-400"
+									>{t('admin.dashboard.stats.setlists')}</span
+								>
+							</div>
+							<div
+								class="flex items-center gap-3 text-[11px] text-gray-500 dark:text-gray-400 mt-1"
+							>
+								<span class="flex items-center gap-1"
+									><div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+									{theaterStats.active_setlists_count}
+									{t('admin.dashboard.stats.active')}</span
+								>
+								<span class="flex items-center gap-1"
+									><div class="w-1.5 h-1.5 rounded-full bg-gray-400"></div>
+									{theaterStats.inactive_setlists_count}
+									{t('admin.dashboard.stats.inactive')}</span
+								>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Shows -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl text-indigo-500 shrink-0">
+							<MonitorPlay class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="flex items-baseline gap-2 mb-0.5">
+								<div class="text-2xl font-black text-gray-900 dark:text-white leading-none">
+									{theaterStats.total_show_setlist}
+								</div>
+								<span class="text-xs font-medium text-gray-400"
+									>{t('admin.dashboard.stats.shows')}</span
+								>
+							</div>
+							<div
+								class="flex items-center gap-1 text-[11px] text-indigo-500 dark:text-indigo-400 font-medium mt-1"
+							>
+								{theaterStats.total_upcoming_shows}
+								{t('admin.dashboard.stats.upcoming')}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Events -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-orange-50 dark:bg-orange-500/10 rounded-xl text-orange-500 shrink-0">
+							<Calendar class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="flex items-baseline gap-2 mb-0.5">
+								<div class="text-2xl font-black text-gray-900 dark:text-white leading-none">
+									{theaterStats.total_events}
+								</div>
+								<span class="text-xs font-medium text-gray-400"
+									>{t('admin.dashboard.stats.events')}</span
+								>
+							</div>
+							<div
+								class="flex items-center gap-1 text-[11px] text-orange-500 dark:text-orange-400 font-medium mt-1"
+							>
+								{theaterStats.total_upcoming_events}
+								{t('admin.dashboard.stats.upcoming')}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- News -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div
+							class="p-3 bg-gray-100 dark:bg-zinc-700 rounded-xl text-gray-600 dark:text-gray-300 shrink-0"
 						>
-							<th class="p-4">{t('admin.users.table.userInfo')}</th>
-							<th class="p-4">{t('admin.users.table.email')}</th>
-							<th class="p-4">{t('admin.users.table.status')}</th>
-							<th class="p-4">{t('admin.users.table.created')}</th>
-							<th class="p-4">{t('admin.users.table.lastActive')}</th>
-						</tr>
-					</thead>
-					<tbody
-						class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700"
-					>
-						{#each usersList as user}
-							<tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 transition-colors">
-								<td class="p-4">
-									<div class="flex items-center gap-3">
-										{#if user.profilePicture}
-											<OptimizedImage
-												src={user.profilePicture || ''}
-												srcMedium={user.profilePicture_medium}
-												srcSmall={user.profilePicture_small}
-												alt={user.name || ''}
-												blurHash={user.blurHash}
-												sizes="40px"
-												class="w-10 h-10 rounded-full object-cover"
-											/>
-										{:else}
-											<div
-												class="w-10 h-10 rounded-full bg-gradient-to-br from-red-400 to-pink-500 flex items-center justify-center text-white font-bold"
-											>
-												{user.name.charAt(0).toUpperCase()}
-											</div>
-										{/if}
-										<div>
-											<div
-												class="font-semibold text-gray-900 dark:text-white flex items-center gap-2"
-											>
-												{user.name}
-												{#if user.isAdmin}
-													<ShieldCheck class="w-4 h-4 text-red-500" />
-												{/if}
-											</div>
-											<div class="text-sm text-gray-500 dark:text-gray-400">@{user.username}</div>
-										</div>
-									</div>
-								</td>
-								<td class="p-4">
-									<div class="flex items-center gap-2">
-										<span class="text-gray-700 dark:text-gray-300 font-mono text-sm">
-											{revealedEmails[user.userId] ? user.email : maskEmail(user.email)}
-										</span>
-										<button
-											class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none transition-colors cursor-pointer"
-											onclick={() => toggleEmail(user.userId)}
-											title={revealedEmails[user.userId] ? 'Hide email' : 'Show email'}
-										>
-											{#if revealedEmails[user.userId]}
-												<EyeOff class="w-4 h-4" />
-											{:else}
-												<Eye class="w-4 h-4" />
-											{/if}
-										</button>
-									</div>
-								</td>
-								<td class="p-4">
-									<div class="flex items-center gap-2">
-										{#if user.isEmailVerified}
-											<span
-												class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-											>
-												<Mail class="w-3 h-3" />
-												{t('admin.users.status.verified')}
-											</span>
-										{:else}
-											<span
-												class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-											>
-												<Mail class="w-3 h-3" />
-												{t('admin.users.status.unverified')}
-											</span>
-										{/if}
-										{#if user.isAccountLocked}
-											<span
-												class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-											>
-												<Lock class="w-3 h-3" />
-												{t('admin.users.status.locked')}
-											</span>
-										{/if}
-									</div>
-								</td>
-								<td class="p-4">
-									<span class="text-gray-600 dark:text-gray-400 text-sm"
-										>{formatDate(user.createdAt, {
-											year: 'numeric',
-											month: 'short',
-											day: 'numeric'
-										})}</span
-									>
-								</td>
-								<td class="p-4">
-									<span class="text-gray-600 dark:text-gray-400 text-sm">
-										{#if user.lastActiveAt}
-											{@const lastActive = new Date(user.lastActiveAt)}
-											{@const now = new Date()}
-											{@const diffMs = now.getTime() - lastActive.getTime()}
-											{@const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))}
+							<Newspaper class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="text-2xl font-black text-gray-900 dark:text-white leading-none mb-1">
+								{theaterStats.total_news}
+							</div>
+							<div class="text-xs font-medium text-gray-500 dark:text-gray-400">
+								{t('admin.dashboard.stats.newsPublished')}
+							</div>
+						</div>
+					</div>
+				</div>
 
-											{#if diffDays < 7}
-												{formatTimeAgo(user.lastActiveAt, t)}
-											{:else}
-												{formatDate(lastActive, {
-													month: 'short',
-													day: 'numeric'
-												})}
-											{/if}
-										{:else}
-											-
-										{/if}
-									</span>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		</div>
+				<!-- Live -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-cyan-50 dark:bg-cyan-500/10 rounded-xl text-cyan-500 shrink-0">
+							<Radio class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="flex items-baseline gap-2 mb-0.5">
+								<div class="text-2xl font-black text-gray-900 dark:text-white leading-none">
+									{theaterStats.total_live_member}
+								</div>
+								<span class="text-xs font-medium text-gray-400"
+									>{t('admin.dashboard.stats.liveHistory')}</span
+								>
+							</div>
+							<div
+								class="flex items-center gap-3 text-[11px] text-gray-500 dark:text-gray-400 mt-1"
+							>
+								<span class="flex items-center gap-1"
+									><div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+									{theaterStats.showroom_live_count}
+									{t('admin.dashboard.stats.sr')}</span
+								>
+								<span class="flex items-center gap-1"
+									><div class="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+									{theaterStats.idn_live_count}
+									{t('admin.dashboard.stats.idn')}</span
+								>
+							</div>
+						</div>
+					</div>
+				</div>
 
-		<!-- Infinite Scroll Sentinel -->
-		{#if usersHasMore}
-			<div class="mt-4" use:infiniteScroll onintersect={loadMoreUsers}>
-				{#if isAdminUsersLoading.value}
-					<TableSkeleton
-						rows={3}
-						columns={[
-							t('admin.users.table.userInfo'),
-							t('admin.users.table.email'),
-							t('admin.users.table.status'),
-							t('admin.users.table.created'),
-							t('admin.users.table.lastActive')
-						]}
-						showHeader={false}
-					/>
-				{/if}
+				<!-- Birthdays -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div class="p-3 bg-pink-50 dark:bg-pink-500/10 rounded-xl text-pink-500 shrink-0">
+							<Gift class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="flex items-baseline gap-2 mb-1">
+								<div class="text-2xl font-black text-gray-900 dark:text-white leading-none">
+									{theaterStats.upcoming_birthdays_count}
+								</div>
+								<span class="text-xs font-medium text-gray-400"
+									>{t('admin.dashboard.stats.upcoming')}</span
+								>
+							</div>
+							<div class="text-xs font-medium text-gray-500 dark:text-gray-400">
+								{t('admin.dashboard.stats.birthdaysThisYear')}
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
-		{:else if usersList.length > 0}
-			<div class="py-12 text-center text-gray-400 text-sm">
-				{t('admin.users.noMoreUsers')}
-			</div>
-		{:else}
-			<div class="py-20 text-center text-gray-500">
-				{t('admin.users.noUsersFound', { query: searchQuery })}
-			</div>
-		{/if}
+		</section>
 	{/if}
 </div>

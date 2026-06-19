@@ -5,6 +5,8 @@ from fastapi.responses import JSONResponse
 
 from src.achievements.exceptions import AchievementsFetchError
 from src.achievements.http_exceptions import AchievementsFetchHTTPException
+from src.admin.exceptions import AdminStatsFetchError
+from src.admin.http_exceptions import HttpAdminStatsFetchError
 from src.api_keys.exceptions import (
     APIKeyCreationError,
     APIKeyDeletionError,
@@ -289,6 +291,12 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, TheaterInvalidImageType())
     if isinstance(exc, TheaterInvalidImageError):
         return await detailed_http_exception_handler(request, TheaterInvalidImage())
+
+    # Admin errors
+    if isinstance(exc, AdminStatsFetchError):
+        return await detailed_http_exception_handler(
+            request, HttpAdminStatsFetchError()
+        )
 
     # LLM errors
     if isinstance(exc, ImageAnalysisError):
