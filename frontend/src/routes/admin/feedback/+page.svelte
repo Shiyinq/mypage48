@@ -32,7 +32,9 @@
 	};
 
 	onMount(() => {
-		loadData(1);
+		if (feedbackStore.data.length === 0) {
+			loadData(1);
+		}
 	});
 
 	const getIcon = (type: string) => {
