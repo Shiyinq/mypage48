@@ -254,6 +254,8 @@
 				return;
 			}
 
+			if (isLetter) return; // Ignore and hide fan letters completely
+
 			messages = [
 				...messages,
 				{
@@ -441,7 +443,7 @@
 									{msg.gift.name.toUpperCase()}
 								</div>
 							</div>
-						{:else if msg.type === 'letter'}
+							<!-- {:else if msg.type === 'letter'}
 							<div
 								class="inline-flex flex-col gap-3 px-4 py-3 rounded-2xl rounded-tl-none bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 max-w-full"
 							>
@@ -479,7 +481,7 @@
 								<p class="text-sm leading-relaxed font-medium italic">
 									"{msg.text}"
 								</p>
-							</div>
+							</div> -->
 						{:else}
 							<div
 								class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm break-words overflow-wrap-anywhere whitespace-pre-wrap max-w-full"
