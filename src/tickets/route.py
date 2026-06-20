@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
 from src.auth.schemas import UserCurrent
 from src.dependencies import (
@@ -8,7 +8,6 @@ from src.dependencies import (
     get_tickets_service,
     require_csrf_protection,
 )
-
 from src.tickets.schemas import (
     MessageResponse,
     TicketCreateRequest,
