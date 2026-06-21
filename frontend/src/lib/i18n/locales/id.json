@@ -656,7 +656,7 @@
 		"show": "Pertunjukan",
 		"deleteConfirm": {
 			"title": "Hapus Tiket?",
-			"description": "Tindakan ini tidak dapat dibatalkan. Tiket akan dihapus secara permanen.",
+			"description": "Tindakan ini tidak dapat dibatalkan. Tiket beserta foto tiket dan foto 2-shot yang terkait juga akan ikut terhapus secara permanen.",
 			"confirm": "Ya, Hapus",
 			"cancel": "Batal"
 		},

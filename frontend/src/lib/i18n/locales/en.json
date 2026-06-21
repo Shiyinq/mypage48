@@ -655,7 +655,7 @@
 		"show": "Show",
 		"deleteConfirm": {
 			"title": "Delete Ticket?",
-			"description": "This action cannot be undone. The ticket will be permanently deleted.",
+			"description": "This action cannot be undone. The ticket, along with its associated ticket photo and 2-shot photo, will be permanently deleted.",
 			"confirm": "Yes, Delete",
 			"cancel": "Cancel"
 		},
