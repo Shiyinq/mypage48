@@ -241,12 +241,28 @@
 	"feedback": {
 		"title": "Masukan",
 		"subtitle": "Bantu kami meningkatkan MyPage48",
+		"empty": {
+			"title": "Belum ada feedback",
+			"description": "Kamu belum pernah mengirimkan masukan atau saran."
+		},
+		"tabs": {
+			"submit": "Kirim Masukan",
+			"my_feedback": "Masukanku"
+		},
 		"validation": {
 			"messageTooShort": "Pesan harus minimal 10 karakter"
 		},
 		"success": "Masukan terkirim! Terima kasih.",
 		"error": "Gagal mengirim masukan. Silakan coba lagi.",
+		"delete": {
+			"button": "Hapus",
+			"confirmTitle": "Hapus Masukan",
+			"confirmMessage": "Apakah kamu yakin ingin menghapus masukan ini?",
+			"success": "Masukan berhasil dihapus",
+			"error": "Gagal menghapus masukan"
+		},
 		"form": {
+			"info": "Nama dan email kamu diambil secara otomatis dari profil. Informasi ini akan digunakan untuk mengirimkan pemberitahuan ke email kamu apabila ada pembaruan status pada laporan atau saran yang kamu kirimkan.",
 			"type": {
 				"label": "Tipe Masukan",
 				"issue": "Lapor Masalah",
@@ -258,13 +274,21 @@
 				"placeholder": "Ceritakan apa yang ada di pikiranmu... (min 10 karakter)"
 			},
 			"name": {
-				"label": "Nama (Opsional)",
+				"label": "Nama",
 				"placeholder": "Nama kamu"
 			},
 			"email": {
-				"label": "Email (Opsional)",
+				"label": "Email",
 				"placeholder": "email@kamu.com"
 			}
+		},
+		"status": {
+			"pending": "Menunggu Review",
+			"noted": "Dicatat",
+			"in_progress": "Sedang Dikerjakan",
+			"implemented": "Selesai / Diterapkan",
+			"rejected": "Ditolak",
+			"spam": "Spam"
 		}
 	},
 	"terms": {
@@ -1340,8 +1364,17 @@
 			"emptyTitle": "Belum Ada Masukan",
 			"emptyDesc": "Belum ada masukan yang dikirim.",
 			"errorTitle": "Gagal memuat masukan",
-			"errorDesc": "Gagal memuat data masukan dari server.",
-			"noMoreFeedback": "Tidak ada masukan lagi untuk dimuat"
+			"errorDesc": "Gagal memuat masukan dari server.",
+			"noMoreFeedback": "Tidak ada masukan lagi untuk dimuat",
+			"modal": {
+				"title": "Perbarui Status Masukan",
+				"statusLabel": "Status",
+				"notesLabel": "Catatan Admin",
+				"notesPlaceholder": "Tambahkan catatan untuk user...",
+				"notesInfo": "Catatan ini akan dikirimkan ke email user dan muncul di halaman 'My Feedback' mereka.",
+				"saving": "Menyimpan...",
+				"saveChanges": "Simpan Perubahan"
+			}
 		},
 		"users": {
 			"title": "Pengguna",

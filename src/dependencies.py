@@ -414,8 +414,9 @@ def get_feedback_repository(db=Depends(get_db)) -> FeedbackRepository:
 
 def get_feedback_service(
     repo: FeedbackRepository = Depends(get_feedback_repository),
+    email_service: EmailService = Depends(get_email_service),
 ) -> FeedbackService:
-    return FeedbackService(repo)
+    return FeedbackService(repo, email_service)
 
 
 def get_news_repository(db=Depends(get_db)) -> NewsRepository:

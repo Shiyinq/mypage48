@@ -17,9 +17,15 @@
 	import { formatDate } from '$lib/i18n';
 	import { feedbackStore, loadFeedback, isFeedbackLoading } from '$lib/stores/feedback.svelte';
 
+	import AdminFeedbackModal from '$lib/components/admin/AdminFeedbackModal.svelte';
+	import type { FeedbackMessage } from '$lib/types/feedback';
+
 	const { t } = useTranslation();
 
 	let error: string | null = $state(null);
+	let selectedFeedback: FeedbackMessage | null = $state(null);
+	let isModalOpen = $state(false);
+	let isSubmitting = $state(false);
 
 	const loadData = async (page = 1) => {
 		error = null;
@@ -32,9 +38,7 @@
 	};
 
 	onMount(() => {
-		if (feedbackStore.data.length === 0) {
-			loadData(1);
-		}
+		loadData(1);
 	});
 
 	const getIcon = (type: string) => {
@@ -58,6 +62,45 @@
 				return 'text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-400';
 		}
 	};
+
+	const getStatusColor = (status: string) => {
+		switch (status) {
+			case 'pending':
+				return 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-zinc-800 dark:text-slate-400 dark:border-zinc-700';
+			case 'noted':
+				return 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/50';
+			case 'in_progress':
+				return 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50';
+			case 'implemented':
+				return 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50';
+			case 'rejected':
+				return 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50';
+			case 'spam':
+				return 'bg-slate-200 text-slate-500 border-slate-300 dark:bg-zinc-800/50 dark:text-zinc-500 dark:border-zinc-700';
+			default:
+				return 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-zinc-800 dark:text-slate-400 dark:border-zinc-700';
+		}
+	};
+
+	function openModal(item: FeedbackMessage) {
+		selectedFeedback = item;
+		isModalOpen = true;
+	}
+
+	async function handleUpdateStatus(data: { status: string; admin_notes: string }) {
+		if (!selectedFeedback) return;
+		isSubmitting = true;
+		try {
+			await feedbackStore.updateStatus(selectedFeedback.id, data.status, data.admin_notes);
+			showToast('Feedback status updated successfully', 'success');
+			isModalOpen = false;
+		} catch (error) {
+			console.error(error);
+			showToast('Failed to update feedback status', 'error');
+		} finally {
+			isSubmitting = false;
+		}
+	}
 </script>
 
 <SEO title={t('admin.feedback.title')} />
@@ -69,7 +112,7 @@
 		<div class="flex items-center gap-4 flex-1">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<MessageSquare class="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-				{t('admin.feedback.title')} ({feedbackStore.total})
+				{t('admin.feedback.title')} ({feedbackStore.meta.total_data})
 			</h2>
 			<p
 				class="hidden md:block text-slate-500 dark:text-slate-400 text-sm border-l border-gray-200 dark:border-zinc-700 pl-4 ml-2"
@@ -101,8 +144,11 @@
 		<div class="grid gap-4">
 			{#each feedbackStore.data as item}
 				{@const SvelteComponent = getIcon(item.type)}
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div
-					class="p-5 rounded-2xl bg-white dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 hover:border-red-200 dark:hover:border-red-900/30 transition-all group"
+					class="p-5 rounded-2xl bg-white dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 hover:border-cyan-200 dark:hover:border-cyan-900/30 transition-all group cursor-pointer"
+					onclick={() => openModal(item)}
 				>
 					<div class="flex items-start gap-4">
 						<div
@@ -113,15 +159,24 @@
 							<SvelteComponent size={20} />
 						</div>
 						<div class="flex-1 min-w-0">
-							<div class="flex items-center justify-between mb-1">
-								<span
-									class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider {getColor(
-										item.type
-									)}"
-								>
-									{item.type}
-								</span>
-								<span class="text-xs text-slate-400 font-medium">
+							<div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+								<div class="flex flex-wrap items-center gap-2">
+									<span
+										class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider {getColor(
+											item.type
+										)}"
+									>
+										{item.type}
+									</span>
+									<span
+										class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border {getStatusColor(
+											item.status || 'pending'
+										)}"
+									>
+										{t(`feedback.status.${item.status || 'pending'}`)}
+									</span>
+								</div>
+								<span class="text-xs text-slate-400 font-medium whitespace-nowrap">
 									{formatDate(item.created_at, {
 										year: 'numeric',
 										month: 'short',
@@ -135,10 +190,12 @@
 								{item.message}
 							</p>
 							{#if item.name}
-								<div class="mt-3 flex items-center gap-3 text-xs text-slate-400">
-									<span class="font-bold text-slate-500 dark:text-slate-400">
-										{item.name}
-									</span>
+								<div class="mt-3 flex items-center justify-between">
+									<div class="flex items-center gap-3 text-xs text-slate-400">
+										<span class="font-bold text-slate-500 dark:text-slate-400">
+											{item.name}
+										</span>
+									</div>
 								</div>
 							{/if}
 						</div>
@@ -148,35 +205,41 @@
 		</div>
 
 		<!-- Pagination -->
-		{#if feedbackStore.total > feedbackStore.limit}
+		{#if feedbackStore.meta.total_data > feedbackStore.meta.per_page}
 			<div
 				class="flex items-center justify-center gap-4 mt-8 pt-6 border-t border-slate-100 dark:border-zinc-800"
 			>
 				<button
 					class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-					disabled={feedbackStore.page === 1}
-					onclick={() => loadData(feedbackStore.page - 1)}
+					disabled={feedbackStore.meta.current_page === 1}
+					onclick={() => loadData(feedbackStore.meta.current_page - 1)}
 				>
 					<ChevronLeft size={20} />
 				</button>
 				<span class="text-sm text-slate-500 font-medium">
-					Page {feedbackStore.page} of {Math.ceil(feedbackStore.total / feedbackStore.limit)}
+					Page {feedbackStore.meta.current_page} of {feedbackStore.meta.last_page}
 				</span>
 				<button
 					class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-					disabled={!feedbackStore.has_more &&
-						feedbackStore.page * feedbackStore.limit >= feedbackStore.total}
-					onclick={() => loadData(feedbackStore.page + 1)}
+					disabled={feedbackStore.meta.next_page === null}
+					onclick={() => loadData(feedbackStore.meta.current_page + 1)}
 				>
 					<ChevronRight size={20} />
 				</button>
 			</div>
 		{/if}
 
-		{#if !feedbackStore.has_more && feedbackStore.data.length > 0}
+		{#if feedbackStore.meta.next_page === null && feedbackStore.data.length > 0}
 			<div class="pb-12 pt-6 text-center text-gray-400 text-sm">
 				{t('admin.feedback.noMoreFeedback')}
 			</div>
 		{/if}
 	{/if}
 </div>
+
+<AdminFeedbackModal
+	bind:show={isModalOpen}
+	feedback={selectedFeedback}
+	{isSubmitting}
+	onsubmit={handleUpdateStatus}
+/>

@@ -56,11 +56,18 @@ from src.export.exceptions import ExportInProgressError, ExportNotFoundError
 from src.export.http_exceptions import ExportInProgress, ExportNotFound
 from src.feedback.exceptions import (
     FeedbackCreationError,
+    FeedbackDeleteError,
     FeedbackFetchError,
     FeedbackNotFound,
+    FeedbackUpdateError,
 )
-from src.feedback.http_exceptions import FeedbackCreateError, FeedbackFetchFailed
+from src.feedback.http_exceptions import (
+    FeedbackCreateError,
+    FeedbackDeleteFailed,
+    FeedbackFetchFailed,
+)
 from src.feedback.http_exceptions import FeedbackNotFound as HttpFeedbackNotFound
+from src.feedback.http_exceptions import FeedbackUpdateFailed
 from src.http_exceptions import DetailedHTTPException
 from src.live.exceptions import (
     CommentsFetchError,
@@ -359,6 +366,10 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, FeedbackFetchFailed())
     if isinstance(exc, FeedbackNotFound):
         return await detailed_http_exception_handler(request, HttpFeedbackNotFound())
+    if isinstance(exc, FeedbackUpdateError):
+        return await detailed_http_exception_handler(request, FeedbackUpdateFailed())
+    if isinstance(exc, FeedbackDeleteError):
+        return await detailed_http_exception_handler(request, FeedbackDeleteFailed())
 
     # News errors
     if isinstance(exc, NewsNotFoundError):
