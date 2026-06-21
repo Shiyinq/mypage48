@@ -9,6 +9,7 @@
 		"back": "戻る",
 		"submit": "送信",
 		"confirm": "確認",
+		"confirmSelection": "選択を確定",
 		"yes": "はい",
 		"no": "いいえ",
 		"ok": "OK",
@@ -57,6 +58,12 @@
 	"imageEditor": {
 		"title": "画像編集",
 		"done": "完了",
+		"undo": "戻る",
+		"size": "サイズ",
+		"crop": "切り抜き",
+		"draw": "描画",
+		"reset": "リセット",
+		"thickness": "太さを調整",
 		"aspectRatio": "アスペクト比",
 		"ratios": {
 			"free": "自由",

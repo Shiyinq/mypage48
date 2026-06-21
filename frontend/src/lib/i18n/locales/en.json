@@ -9,6 +9,7 @@
 		"back": "Back",
 		"submit": "Submit",
 		"confirm": "Confirm",
+		"confirmSelection": "Confirm Selection",
 		"yes": "Yes",
 		"no": "No",
 		"ok": "OK",
@@ -57,6 +58,12 @@
 	"imageEditor": {
 		"title": "Edit Image",
 		"done": "Done",
+		"undo": "Undo",
+		"size": "Size",
+		"crop": "Crop",
+		"draw": "Draw",
+		"reset": "Reset",
+		"thickness": "Adjust Thickness",
 		"aspectRatio": "Aspect Ratio",
 		"ratios": {
 			"free": "Free",

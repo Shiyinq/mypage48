@@ -9,6 +9,7 @@
 		"back": "Kembali",
 		"submit": "Kirim",
 		"confirm": "Konfirmasi",
+		"confirmSelection": "Konfirmasi Pilihan",
 		"yes": "Ya",
 		"no": "Tidak",
 		"ok": "OK",
@@ -58,6 +59,12 @@
 	"imageEditor": {
 		"title": "Edit Gambar",
 		"done": "Selesai",
+		"undo": "Urungkan",
+		"size": "Ukuran",
+		"crop": "Crop",
+		"draw": "Gambar",
+		"reset": "Ulangi",
+		"thickness": "Atur Ketebalan",
 		"aspectRatio": "Rasio Aspek",
 		"ratios": {
 			"free": "Bebas",

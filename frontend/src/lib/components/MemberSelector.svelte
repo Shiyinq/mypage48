@@ -288,7 +288,7 @@
 					onclick={confirmSelection}
 					class="idol-gradient text-white px-6 py-2 rounded-xl font-bold text-sm shadow-lg shadow-red-200 hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none cursor-pointer"
 				>
-					Confirm Selection
+					{t('common.confirmSelection')}
 				</button>
 			</div>
 		</div>
