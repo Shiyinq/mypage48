@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import Input from '$lib/components/Input.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import { MessageSquare, Send, Loader2, AlertCircle } from 'lucide-svelte';
 	import { showToast } from '$lib/stores';
@@ -204,27 +203,36 @@
 					</div>
 
 					<div class="grid md:grid-cols-2 gap-6">
-						<Input
-							id="name"
-							name="name"
-							autocomplete="name"
-							label={t('feedback.form.name.label')}
-							bind:value={name}
-							placeholder={t('feedback.form.name.placeholder')}
-							readonly
-							class="bg-slate-100 dark:bg-zinc-800 cursor-not-allowed opacity-70"
-						/>
-						<Input
-							id="email"
-							name="email"
-							autocomplete="email"
-							label={t('feedback.form.email.label')}
-							type="email"
-							bind:value={email}
-							placeholder={t('feedback.form.email.placeholder')}
-							readonly
-							class="bg-slate-100 dark:bg-zinc-800 cursor-not-allowed opacity-70"
-						/>
+						<div class="space-y-2">
+							<label class="text-sm font-bold text-slate-900 dark:text-white ml-1" for="name">
+								{t('feedback.form.name.label')}
+							</label>
+							<input
+								id="name"
+								name="name"
+								type="text"
+								autocomplete="name"
+								bind:value={name}
+								placeholder={t('feedback.form.name.placeholder')}
+								readonly
+								class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border-2 border-transparent focus:border-red-500 focus:bg-white dark:focus:bg-zinc-900 focus:ring-0 transition-all outline-none text-slate-900 dark:text-white placeholder:text-slate-400 font-medium cursor-not-allowed opacity-70"
+							/>
+						</div>
+						<div class="space-y-2">
+							<label class="text-sm font-bold text-slate-900 dark:text-white ml-1" for="email">
+								{t('feedback.form.email.label')}
+							</label>
+							<input
+								id="email"
+								name="email"
+								type="email"
+								autocomplete="email"
+								bind:value={email}
+								placeholder={t('feedback.form.email.placeholder')}
+								readonly
+								class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border-2 border-transparent focus:border-red-500 focus:bg-white dark:focus:bg-zinc-900 focus:ring-0 transition-all outline-none text-slate-900 dark:text-white placeholder:text-slate-400 font-medium cursor-not-allowed opacity-70"
+							/>
+						</div>
 					</div>
 				</div>
 
