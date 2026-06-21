@@ -3,6 +3,7 @@
 	import { logger } from '$lib/utils/logger';
 	import { invalidateDashboard } from '$lib/stores/dashboard.svelte';
 	import { invalidateTheater } from '$lib/stores/theater.svelte';
+	import { invalidateMemories } from '$lib/stores/memories.svelte';
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
@@ -291,9 +292,10 @@
 				payload as unknown as Partial<Ticket>
 			);
 
-			// Invalidate dashboard and theater cache
+			// Invalidate dashboard, theater, and memories cache
 			invalidateDashboard();
 			invalidateTheater();
+			invalidateMemories();
 
 			showToast(t('forms.ticketUpdateSuccess'));
 			onsave?.(updated);
@@ -411,6 +413,9 @@
 							>
 								<NotebookPen class="w-4 h-4" />
 								{t('forms.experienceLog')}
+								<span class="text-[10px] text-gray-400/70 font-medium normal-case tracking-normal"
+									>({t('forms.optional')})</span
+								>
 							</h3>
 							<textarea
 								bind:value={formData.notes}

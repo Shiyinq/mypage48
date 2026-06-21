@@ -267,6 +267,9 @@
 			>
 				<NotebookPen class="w-4 h-4" />
 				{t('forms.experienceLog')}
+				<span class="text-[10px] text-gray-400/70 font-medium normal-case tracking-normal"
+					>({t('forms.optional')})</span
+				>
 			</h3>
 			<textarea
 				bind:value={formData.notes}

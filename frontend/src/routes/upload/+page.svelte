@@ -3,6 +3,7 @@
 	import { logger } from '$lib/utils/logger';
 	import { resetDashboard } from '$lib/stores/dashboard.svelte';
 	import { invalidateTheater, setlistsStore } from '$lib/stores/theater.svelte';
+	import { invalidateMemories } from '$lib/stores/memories.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -325,9 +326,10 @@
 			// Use store action (handles API + cache invalidation)
 			await ticketsStore.create(payload as unknown as Partial<Ticket>);
 
-			// Invalidate dashboard and theater cache
+			// Invalidate dashboard, theater, and memories cache
 			resetDashboard();
 			invalidateTheater();
+			invalidateMemories();
 
 			showToast(t('upload.uploadSuccess'), 'success');
 			goto('/');

@@ -92,6 +92,7 @@
 						>
 							<Camera class="w-6 h-6 mb-1" />
 							<span class="text-xs font-medium">{t('forms.uploadPhoto')}</span>
+							<span class="text-[10px] mt-0.5 opacity-70">({t('forms.optional')})</span>
 						</button>
 					{/if}
 				</div>
@@ -125,6 +126,9 @@
 						<select
 							id="twoshot-type"
 							bind:value={type}
+							onchange={(e) => {
+								price = e.currentTarget.value === 'Birthday' ? 250000 : 100000;
+							}}
 							class="w-full pl-9 pr-8 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100 appearance-none cursor-pointer"
 						>
 							<option value="Roulette">Roulette</option>

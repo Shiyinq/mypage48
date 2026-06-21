@@ -1,5 +1,6 @@
 import { memoriesApi } from '$lib/apis/memories';
 import { ticketsApi } from '$lib/apis/tickets';
+import { invalidateTickets } from '$lib/stores/tickets.svelte';
 import { logger } from '$lib/utils/logger';
 import { isCacheExpired } from '$lib/utils/cache';
 import { createRequestDedup } from '$lib/utils/requestDedup';
@@ -157,6 +158,7 @@ function createGalleryStore() {
 						};
 					}
 				});
+				invalidateTickets();
 			} catch (e) {
 				logger.error('Failed to delete memory photo', e, { context: 'GalleryStore' });
 				throw e;
@@ -198,6 +200,11 @@ export const isGalleryLoading = {
 		return () => {};
 	}
 };
+
+export function invalidateMemories() {
+	galleryStore.reset();
+	topTwoShotStore.reset();
+}
 
 // --- Top 2-Shot Store ---
 interface TopTwoShotState {

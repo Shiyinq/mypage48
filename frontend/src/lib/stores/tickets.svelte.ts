@@ -297,6 +297,10 @@ function createTicketsStore() {
 
 export const ticketsStore = createTicketsStore();
 
+export function invalidateTickets() {
+	ticketsStore.reset();
+}
+
 // Compatibility Aliases
 export const tickets = {
 	get value() {

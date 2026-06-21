@@ -2,6 +2,7 @@
 	import { ticketsStore, showToast, isInitialDataLoaded, isTicketsLoading } from '$lib/stores';
 	import { invalidateDashboard } from '$lib/stores/dashboard.svelte';
 	import { invalidateTheater } from '$lib/stores/theater.svelte';
+	import { invalidateMemories } from '$lib/stores/memories.svelte';
 	import { onMount } from 'svelte';
 
 	import type { Ticket as TicketType, TicketFilters } from '$lib/types';
@@ -113,6 +114,7 @@
 			// Invalidate dashboard/theater cache
 			invalidateDashboard();
 			invalidateTheater();
+			invalidateMemories();
 
 			deleteId = null;
 			showToast(t('history.ticketDeleted'), 'success');
