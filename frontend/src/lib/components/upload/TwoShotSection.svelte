@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Camera, ChevronDown, DollarSign, Sparkles } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { preventNonNumericInput, enforceMin } from '$lib/utils/input';
 	import MemberSelector from '$lib/components/MemberSelector.svelte';
 	import { ImageOverlayActions } from '$lib/components/common';
 
@@ -162,7 +163,10 @@
 						<input
 							id="twoshot-price"
 							type="number"
+							min="0"
 							bind:value={twoShotPrice}
+							onkeydown={preventNonNumericInput}
+							oninput={() => (twoShotPrice = enforceMin(twoShotPrice, 0))}
 							class="w-full pl-9 pr-3 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
 						/>
 					</div>

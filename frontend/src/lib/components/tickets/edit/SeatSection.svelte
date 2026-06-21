@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { MapPin, DollarSign, Hash, ChevronDown } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { preventNonNumericInput, enforceMin } from '$lib/utils/input';
 
 	interface Props {
 		section: string;
@@ -56,7 +57,10 @@
 			<input
 				id="seat-number"
 				type="number"
+				min="1"
 				bind:value={number}
+				onkeydown={preventNonNumericInput}
+				oninput={() => (number = enforceMin(number, 1))}
 				class="w-full p-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-center font-black text-lg text-gray-900 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600"
 			/>
 		</div>
@@ -74,7 +78,10 @@
 				<input
 					id="ticket-price"
 					type="number"
+					min="0"
 					bind:value={price}
+					onkeydown={preventNonNumericInput}
+					oninput={() => (price = enforceMin(price, 0))}
 					class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-gray-100"
 				/>
 			</div>
