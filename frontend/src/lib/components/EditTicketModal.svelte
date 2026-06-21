@@ -408,16 +408,19 @@
 
 						<!-- Notes -->
 						<div class="space-y-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
-							<h3
-								class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
+							<label
+								for="edit-ticket-notes"
+								class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2 cursor-pointer"
 							>
 								<NotebookPen class="w-4 h-4" />
 								{t('forms.experienceLog')}
 								<span class="text-[10px] text-gray-400/70 font-medium normal-case tracking-normal"
 									>({t('forms.optional')})</span
 								>
-							</h3>
+							</label>
 							<textarea
+								id="edit-ticket-notes"
+								name="notes"
 								bind:value={formData.notes}
 								class="w-full p-4 bg-yellow-50/50 dark:bg-zinc-800/50 border border-yellow-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-yellow-400 dark:focus:ring-zinc-600 outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 min-h-[120px]"
 								placeholder={t('forms.notesPlaceholder')}

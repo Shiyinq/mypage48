@@ -173,6 +173,7 @@
 							>
 							<input
 								id="setlist-title"
+								name="title"
 								type="text"
 								bind:value={formData.title}
 								placeholder="e.g. Ramune no Nomikata"
@@ -193,6 +194,7 @@
 							>
 							<input
 								id="setlist-title-jp"
+								name="titleJapanese"
 								type="text"
 								bind:value={formData.titleJapanese}
 								placeholder="e.g. ラムネの飲み方"
@@ -212,6 +214,7 @@
 								>
 								<textarea
 									id="setlist-desc"
+									name="description"
 									bind:value={formData.description}
 									placeholder="Brief description of the setlist or event..."
 									class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all min-h-[100px] text-sm"
@@ -223,8 +226,10 @@
 									>{t('admin.setlists.modal.type')}</span
 								>
 								<div class="flex gap-4">
-									<label class="flex items-center gap-2 cursor-pointer">
+									<label for="setlist-type-theater" class="flex items-center gap-2 cursor-pointer">
 										<input
+											id="setlist-type-theater"
+											name="type"
 											type="radio"
 											bind:group={formData.type}
 											value="setlist"
@@ -234,8 +239,10 @@
 											>{t('admin.setlists.table.theaterSetlist')}</span
 										>
 									</label>
-									<label class="flex items-center gap-2 cursor-pointer">
+									<label for="setlist-type-special" class="flex items-center gap-2 cursor-pointer">
 										<input
+											id="setlist-type-special"
+											name="type"
 											type="radio"
 											bind:group={formData.type}
 											value="event"

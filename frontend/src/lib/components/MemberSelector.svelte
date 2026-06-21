@@ -15,6 +15,8 @@
 		placeholder?: string;
 		title?: string;
 		subtitle?: string;
+		id?: string;
+		name?: string;
 		onselect?: (member: Member) => void;
 	}
 
@@ -23,6 +25,8 @@
 		placeholder = '',
 		title = '',
 		subtitle = '',
+		id = '',
+		name = '',
 		onselect
 	}: Props = $props();
 
@@ -140,6 +144,8 @@
 		<User class="w-4 h-4" />
 	</div>
 	<input
+		{id}
+		{name}
 		type="text"
 		readonly
 		{value}
@@ -192,6 +198,8 @@
 				<div class="relative">
 					<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 					<input
+						id="member-search"
+						name="member-search"
 						type="text"
 						bind:value={searchQuery}
 						oninput={handleSearch}

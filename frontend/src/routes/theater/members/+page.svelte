@@ -209,9 +209,12 @@
 					<!-- Generation Select -->
 					<div class="relative flex-1 md:flex-none">
 						<select
+							id="theater-member-gen-select"
+							name="generation"
 							value={selectedGeneration === null ? '' : String(selectedGeneration)}
 							onchange={(e) => setGeneration((e.target as HTMLSelectElement).value || null)}
 							class="w-full appearance-none bg-transparent pl-2 pr-6 py-1 text-xs font-bold text-gray-600 dark:text-gray-300 focus:outline-none cursor-pointer hover:text-pink-600 dark:hover:text-pink-400 transition-colors"
+							aria-label="Generation"
 						>
 							<option value="" class="dark:bg-zinc-800">{t('common.all')} Gen</option>
 							{#each generations as gen}
@@ -228,9 +231,12 @@
 					<!-- Team Select -->
 					<div class="relative flex-1 md:flex-none">
 						<select
+							id="theater-member-team-select"
+							name="team"
 							value={selectedType === null ? '' : selectedType}
 							onchange={(e) => setType((e.target as HTMLSelectElement).value || null)}
 							class="w-full appearance-none bg-transparent pl-2 pr-6 py-1 text-xs font-bold text-gray-600 dark:text-gray-300 focus:outline-none cursor-pointer hover:text-pink-600 dark:hover:text-pink-400 transition-colors"
+							aria-label="Team"
 						>
 							<option value="" class="dark:bg-zinc-800">{t('theater.members.allTeams')}</option>
 							{#each teamOrder as type}

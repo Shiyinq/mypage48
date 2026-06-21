@@ -267,6 +267,7 @@
 								</div>
 								<input
 									id="pfp-upload"
+									name="avatar"
 									type="file"
 									accept="image/*"
 									class="hidden"
@@ -295,12 +296,13 @@
 				<div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 w-full">
 					<!-- Name -->
 					<div class="space-y-1.5">
-						<label
-							for="acc-name"
+						<svelte:element
+							this={isEditing ? 'label' : 'span'}
+							for={isEditing ? 'acc-name' : undefined}
 							class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] pl-1"
 						>
 							{t('settings.account.fullName')}
-						</label>
+						</svelte:element>
 						{#if isEditing}
 							<div class="relative group" in:slide={{ duration: 200 }}>
 								<div
@@ -326,12 +328,13 @@
 
 					<!-- Username -->
 					<div class="space-y-1.5">
-						<label
-							for="acc-username"
+						<svelte:element
+							this={isEditing ? 'label' : 'span'}
+							for={isEditing ? 'acc-username' : undefined}
 							class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] pl-1"
 						>
 							{t('settings.account.username')}
-						</label>
+						</svelte:element>
 						{#if isEditing}
 							<div class="relative group" in:slide={{ duration: 200 }}>
 								<div
@@ -357,12 +360,13 @@
 
 					<!-- Email -->
 					<div class="space-y-1.5 md:col-span-2">
-						<label
-							for="acc-email"
+						<svelte:element
+							this={isEditing ? 'label' : 'span'}
+							for={isEditing ? 'acc-email' : undefined}
 							class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] pl-1"
 						>
 							{t('settings.account.email')}
-						</label>
+						</svelte:element>
 						{#if isEditing}
 							<div class="space-y-2" in:slide={{ duration: 200 }}>
 								<div class="relative group">
@@ -441,12 +445,13 @@
 
 					<!-- Bio -->
 					<div class="space-y-1.5 md:col-span-2">
-						<label
-							for="acc-bio"
+						<svelte:element
+							this={isEditing ? 'label' : 'span'}
+							for={isEditing ? 'acc-bio' : undefined}
 							class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] pl-1"
 						>
 							{t('settings.account.bio')}
-						</label>
+						</svelte:element>
 						{#if isEditing}
 							<div class="relative group" in:slide={{ duration: 200 }}>
 								<textarea

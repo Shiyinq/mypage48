@@ -137,11 +137,14 @@
 			<div class="relative w-full sm:max-w-xs">
 				<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 				<input
+					id="admin-search-setlists"
+					name="search"
 					type="text"
 					bind:value={searchQuery}
 					oninput={handleSearch}
 					placeholder={t('admin.setlists.searchPlaceholder')}
 					class="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
+					aria-label={t('admin.setlists.searchPlaceholder')}
 				/>
 				{#if searchQuery}
 					<button

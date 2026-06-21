@@ -64,10 +64,8 @@
 			class="bg-red-50/50 dark:bg-zinc-800/50 rounded-2xl p-4 border border-red-100 dark:border-red-500/30 space-y-4 animate-fade-in"
 		>
 			<div>
-				<label
-					for="two-shot-photo"
-					class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1"
-					>{t('forms.twoShotPhoto')}</label
+				<span class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1"
+					>{t('forms.twoShotPhoto')}</span
 				>
 				<div
 					id="two-shot-photo"
@@ -113,10 +111,12 @@
 			<div>
 				<label
 					class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-					for="member-selector">{t('forms.memberName')}</label
+					for="twoshot-member-input">{t('forms.memberName')}</label
 				>
-				<div id="member-selector">
+				<div>
 					<MemberSelector
+						id="twoshot-member-input"
+						name="member_name"
 						bind:value={memberName}
 						placeholder={t('forms.memberNamePlaceholder')}
 						title={t('forms.selectMember')}
@@ -137,6 +137,7 @@
 						</div>
 						<select
 							id="twoshot-type"
+							name="two_shot_type"
 							bind:value={twoShotType}
 							onchange={(e) => {
 								twoShotPrice = e.currentTarget.value === 'Birthday' ? 250000 : 100000;
@@ -162,6 +163,7 @@
 						</div>
 						<input
 							id="twoshot-price"
+							name="two_shot_price"
 							type="number"
 							min="0"
 							bind:value={twoShotPrice}
