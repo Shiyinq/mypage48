@@ -7,6 +7,7 @@
 	import { logger } from '$lib/utils/logger';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { OptimizedImage } from '$lib/components/common';
+	import { portal } from '$lib/actions/portal';
 
 	interface Props {
 		// Props
@@ -153,7 +154,7 @@
 </div>
 
 {#if isOpen}
-	<div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+	<div use:portal class="fixed inset-0 z-[2000] flex items-center justify-center p-4">
 		<!-- Backdrop -->
 		<div
 			class="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
@@ -217,17 +218,17 @@
 						</p>
 					</div>
 				{:else}
-					<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+					<div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4">
 						{#each memberList as member}
 							<button
 								type="button"
-								class="group relative flex flex-col items-center text-center p-3 rounded-2xl transition-all duration-200 border-2 cursor-pointer
+								class="group relative flex flex-col items-center text-center p-2 md:p-3 rounded-2xl transition-all duration-200 border-2 cursor-pointer
 								{selectedMember?.id === member.id
 									? 'border-red-500 bg-red-50/50 dark:bg-red-900/20'
 									: 'border-transparent hover:bg-gray-50 dark:hover:bg-zinc-800 hover:border-gray-100 dark:hover:border-zinc-700'}"
 								onclick={() => selectMember(member)}
 							>
-								<div class="relative w-20 h-20 mb-3">
+								<div class="relative w-14 h-14 md:w-20 md:h-20 mb-2 md:mb-3">
 									<OptimizedImage
 										src={getExternalMediaUrl(member.img)}
 										srcMedium={getExternalMediaUrl(member.img_medium)}
@@ -238,21 +239,23 @@
 										member.id
 											? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-zinc-900'
 											: ''}"
-										sizes="80px"
+										sizes="56px 80px"
 									/>
 									{#if selectedMember?.id === member.id}
 										<div
-											class="absolute -right-1 -top-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white shadow-sm animate-scale-up"
+											class="absolute -right-0.5 -top-0.5 w-5 h-5 md:w-6 md:h-6 bg-red-500 rounded-full flex items-center justify-center text-white shadow-sm animate-scale-up"
 										>
-											<Check class="w-3.5 h-3.5" />
+											<Check class="w-3 h-3 md:w-3.5 md:h-3.5" />
 										</div>
 									{/if}
 								</div>
-								<h4 class="font-bold text-gray-800 dark:text-white text-sm leading-tight mb-1">
+								<h4
+									class="font-bold text-gray-800 dark:text-white text-[11px] md:text-sm leading-tight mb-0.5 md:mb-1 truncate w-full"
+								>
 									{member.name}
 								</h4>
 								<span
-									class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors"
+									class="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-100 dark:bg-zinc-800 px-1.5 md:px-2 py-0.5 rounded-full group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors"
 									>{t('profile.oshiModal.generation', { gen: member.generation })}</span
 								>
 							</button>
