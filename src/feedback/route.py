@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
 from src.dependencies import (
     get_current_user,
@@ -6,6 +6,7 @@ from src.dependencies import (
     require_admin,
     require_csrf_protection,
 )
+from src.feedback.constants import FeedbackStatus
 from src.feedback.schemas import (
     FeedbackCreate,
     FeedbackPaginationResponse,
@@ -58,11 +59,12 @@ async def get_my_feedback(
 async def get_feedback(
     page: int = 1,
     limit: int = 20,
+    status: list[FeedbackStatus] | None = Query(default=None),
     current_user=Depends(require_admin),
     service: FeedbackService = Depends(get_feedback_service),
 ):
     """Get all feedback (Admin only)"""
-    return await service.get_all_feedback(page, limit)
+    return await service.get_all_feedback(page, limit, status)
 
 
 @router.patch(

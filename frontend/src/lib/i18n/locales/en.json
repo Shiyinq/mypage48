@@ -260,6 +260,11 @@
 			"success": "Feedback successfully deleted",
 			"error": "Failed to delete feedback"
 		},
+		"filter": {
+			"ongoing": "Ongoing",
+			"done": "Done",
+			"all": "All"
+		},
 		"form": {
 			"info": "Your name and email are automatically fetched from your profile. This information will be used to send notifications to your email whenever there is a status update on the report or suggestion you submit.",
 			"type": {

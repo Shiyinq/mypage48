@@ -27,10 +27,29 @@
 	let isModalOpen = $state(false);
 	let isSubmitting = $state(false);
 
+	type FilterType = 'ongoing' | 'done' | 'all' | 'specific';
+	let currentFilter: FilterType = $state('ongoing');
+	let specificStatus: string = $state('pending');
+
+	const getStatuses = (): string[] => {
+		switch (currentFilter) {
+			case 'ongoing':
+				return ['pending', 'in_progress'];
+			case 'done':
+				return ['noted', 'implemented', 'rejected', 'spam'];
+			case 'all':
+				return [];
+			case 'specific':
+				return [specificStatus];
+			default:
+				return [];
+		}
+	};
+
 	const loadData = async (page = 1) => {
 		error = null;
 		try {
-			await loadFeedback(page);
+			await loadFeedback(page, 20, getStatuses());
 		} catch {
 			error = t('admin.feedback.errorDesc');
 			showToast(t('admin.feedback.errorTitle'), 'error');
@@ -107,18 +126,81 @@
 
 <div class="space-y-6">
 	<div
-		class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white dark:bg-zinc-800 p-4 rounded-3xl shadow-sm"
+		class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white dark:bg-zinc-800 p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-zinc-700"
 	>
-		<div class="flex items-center gap-4 flex-1">
+		<div class="flex items-center gap-4">
 			<h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 min-w-fit">
 				<MessageSquare class="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
 				{t('admin.feedback.title')} ({feedbackStore.meta.total_data})
 			</h2>
 			<p
-				class="hidden md:block text-slate-500 dark:text-slate-400 text-sm border-l border-gray-200 dark:border-zinc-700 pl-4 ml-2"
+				class="hidden lg:block text-slate-500 dark:text-slate-400 text-sm border-l border-gray-200 dark:border-zinc-700 pl-4 ml-2"
 			>
 				{t('admin.feedback.subtitle')}
 			</p>
+		</div>
+
+		<!-- Filter Controls -->
+		<div class="flex flex-wrap items-center gap-2 sm:gap-4">
+			<button
+				class="cursor-pointer px-4 py-2 rounded-xl text-sm font-bold transition-all border {currentFilter ===
+				'ongoing'
+					? 'bg-cyan-50 text-cyan-600 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-900/50'
+					: 'bg-slate-50 text-slate-600 border-transparent hover:bg-slate-100 dark:bg-zinc-800/50 dark:text-slate-400 dark:hover:bg-zinc-800'}"
+				onclick={() => {
+					currentFilter = 'ongoing';
+					loadData(1);
+				}}
+			>
+				{t('feedback.filter.ongoing')}
+			</button>
+			<button
+				class="cursor-pointer px-4 py-2 rounded-xl text-sm font-bold transition-all border {currentFilter ===
+				'done'
+					? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/50'
+					: 'bg-slate-50 text-slate-600 border-transparent hover:bg-slate-100 dark:bg-zinc-800/50 dark:text-slate-400 dark:hover:bg-zinc-800'}"
+				onclick={() => {
+					currentFilter = 'done';
+					loadData(1);
+				}}
+			>
+				{t('feedback.filter.done')}
+			</button>
+			<button
+				class="cursor-pointer px-4 py-2 rounded-xl text-sm font-bold transition-all border {currentFilter ===
+				'all'
+					? 'bg-slate-800 text-white border-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-300'
+					: 'bg-slate-50 text-slate-600 border-transparent hover:bg-slate-100 dark:bg-zinc-800/50 dark:text-slate-400 dark:hover:bg-zinc-800'}"
+				onclick={() => {
+					currentFilter = 'all';
+					loadData(1);
+				}}
+			>
+				{t('feedback.filter.all')}
+			</button>
+
+			<div class="h-6 w-px bg-slate-200 dark:bg-zinc-700 hidden sm:block"></div>
+
+			<div class="w-full sm:w-auto flex items-center gap-2 mt-1 sm:mt-0">
+				<select
+					bind:value={specificStatus}
+					onchange={() => {
+						currentFilter = 'specific';
+						loadData(1);
+					}}
+					class="w-full px-4 py-2 rounded-xl text-sm font-bold bg-slate-50 dark:bg-zinc-800/50 border {currentFilter ===
+					'specific'
+						? 'border-purple-200 text-purple-600 dark:border-purple-900/50 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20'
+						: 'border-transparent text-slate-600 dark:text-slate-400'} outline-none focus:ring-2 focus:ring-purple-500 transition-all cursor-pointer"
+				>
+					<option value="pending">{t('feedback.status.pending') || 'Pending'}</option>
+					<option value="in_progress">{t('feedback.status.in_progress') || 'In Progress'}</option>
+					<option value="noted">{t('feedback.status.noted') || 'Noted'}</option>
+					<option value="implemented">{t('feedback.status.implemented') || 'Implemented'}</option>
+					<option value="rejected">{t('feedback.status.rejected') || 'Rejected'}</option>
+					<option value="spam">{t('feedback.status.spam') || 'Spam'}</option>
+				</select>
+			</div>
 		</div>
 	</div>
 

@@ -15,8 +15,15 @@ class FeedbackRepository:
         await self.collection.insert_one(feedback_dict)
         return feedback_dict
 
-    async def find_all(self, skip: int = 0, limit: int = 100) -> List[dict]:
-        cursor = self.collection.find().sort("created_at", -1).skip(skip).limit(limit)
+    async def find_all(
+        self, skip: int = 0, limit: int = 100, statuses: List[str] = None
+    ) -> List[dict]:
+        query = {}
+        if statuses:
+            query["status"] = {"$in": statuses}
+        cursor = (
+            self.collection.find(query).sort("created_at", -1).skip(skip).limit(limit)
+        )
         return await cursor.to_list(length=limit)
 
     async def find_by_user_id(
@@ -30,8 +37,11 @@ class FeedbackRepository:
         )
         return await cursor.to_list(length=limit)
 
-    async def count(self) -> int:
-        return await self.collection.count_documents({})
+    async def count(self, statuses: List[str] = None) -> int:
+        query = {}
+        if statuses:
+            query["status"] = {"$in": statuses}
+        return await self.collection.count_documents(query)
 
     async def count_by_user_id(self, user_id: str) -> int:
         return await self.collection.count_documents({"user_id": user_id})

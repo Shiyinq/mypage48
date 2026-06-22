@@ -261,6 +261,11 @@
 			"success": "Masukan berhasil dihapus",
 			"error": "Gagal menghapus masukan"
 		},
+		"filter": {
+			"ongoing": "Diproses",
+			"done": "Selesai",
+			"all": "Semua"
+		},
 		"form": {
 			"info": "Nama dan email kamu diambil secara otomatis dari profil. Informasi ini akan digunakan untuk mengirimkan pemberitahuan ke email kamu apabila ada pembaruan status pada laporan atau saran yang kamu kirimkan.",
 			"type": {

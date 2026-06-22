@@ -41,11 +41,13 @@ class FeedbackService:
             logger.exception(f"Error creating feedback: {str(e)}")
             raise FeedbackCreationError()
 
-    async def get_all_feedback(self, page: int = 1, limit: int = 20) -> dict:
+    async def get_all_feedback(
+        self, page: int = 1, limit: int = 20, statuses: list[str] = None
+    ) -> dict:
         try:
             skip = (page - 1) * limit
-            results = await self.repository.find_all(skip, limit)
-            total = await self.repository.count()
+            results = await self.repository.find_all(skip, limit, statuses)
+            total = await self.repository.count(statuses)
 
             data = [FeedbackResponse(**r) for r in results]
 

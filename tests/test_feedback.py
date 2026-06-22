@@ -51,6 +51,44 @@ async def test_get_feedback_admin_success(client: AsyncClient, create_user):
     assert "meta" in data
     assert data["meta"]["current_page"] == 1
 
+
+@pytest.mark.asyncio
+async def test_get_feedback_admin_filter(client: AsyncClient, create_user):
+    token, _, headers = await create_user("adminfilter", is_admin=True)
+
+    # Submit 2 feedbacks
+    res1 = await client.post("/api/feedback", json={
+        "type": "issue", "message": "Feedback A", "email": "a@e.com"
+    }, headers=headers)
+    res2 = await client.post("/api/feedback", json={
+        "type": "issue", "message": "Feedback B", "email": "b@e.com"
+    }, headers=headers)
+    
+    # Update one to implemented
+    await client.patch(f"/api/feedback/{res2.json()['id']}/status", json={
+        "status": "implemented", "admin_notes": ""
+    }, headers=headers)
+
+    # Filter pending
+    res_pending = await client.get("/api/feedback?status=pending", headers=headers)
+    assert res_pending.status_code == 200
+    assert len(res_pending.json()["data"]) == 1
+    assert res_pending.json()["data"][0]["status"] == "pending"
+
+    # Filter multiple (implemented & pending)
+    res_multi = await client.get("/api/feedback?status=pending&status=implemented", headers=headers)
+    assert res_multi.status_code == 200
+    assert len(res_multi.json()["data"]) >= 2
+
+@pytest.mark.asyncio
+async def test_get_feedback_invalid_status_filter(client: AsyncClient, create_user):
+    token, _, headers = await create_user("adminfilter_invalid", is_admin=True)
+
+    # Filter with invalid status
+    response = await client.get("/api/feedback?status=invalid_status", headers=headers)
+    assert response.status_code == 422
+    assert "detail" in response.json()
+
 @pytest.mark.asyncio
 async def test_get_feedback_forbidden_non_admin(client: AsyncClient, create_user):
     # Create normal user

@@ -9,8 +9,14 @@ export const feedback = {
 		});
 	},
 
-	getAll: async (page = 1, limit = 20) => {
-		return client<FeedbackPaginationResponse>(`/feedback?page=${page}&limit=${limit}`);
+	getAll: async (page = 1, limit = 20, statuses?: string[]) => {
+		const params = new URLSearchParams();
+		params.append('page', page.toString());
+		params.append('limit', limit.toString());
+		if (statuses && statuses.length > 0) {
+			statuses.forEach((s) => params.append('status', s));
+		}
+		return client<FeedbackPaginationResponse>(`/feedback?${params.toString()}`);
 	},
 
 	getMy: async (page = 1, limit = 20) => {

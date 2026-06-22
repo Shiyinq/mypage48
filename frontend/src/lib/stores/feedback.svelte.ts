@@ -49,11 +49,11 @@ function createFeedbackStore() {
 			return state.error;
 		},
 
-		load: async (page = 1, limit = 20) => {
+		load: async (page = 1, limit = 20, statuses?: string[]) => {
 			state.isLoading = true;
 			state.error = null;
 			try {
-				const res = await feedbackApi.getAll(page, limit);
+				const res = await feedbackApi.getAll(page, limit, statuses);
 				state.data = res.data;
 				state.meta = res.meta;
 				state.error = null;
@@ -180,4 +180,5 @@ export const isFeedbackLoading = {
 	}
 };
 
-export const loadFeedback = (page?: number, limit?: number) => feedbackStore.load(page, limit);
+export const loadFeedback = (page?: number, limit?: number, statuses?: string[]) =>
+	feedbackStore.load(page, limit, statuses);
