@@ -9,10 +9,11 @@
 		image?: string | null;
 		onChangePhoto: () => void;
 		onEdit?: () => void;
+		onDelete?: () => void;
 		ondrop?: (file: File) => void;
 	}
 
-	let { image = null, onChangePhoto, onEdit, ondrop }: Props = $props();
+	let { image = null, onChangePhoto, onEdit, onDelete, ondrop }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -36,7 +37,7 @@
 				: 'border-gray-200 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800'}"
 		>
 			<img src={image} alt="Preview" class="w-full h-full object-contain p-4" />
-			<ImageOverlayActions onSelect={onChangePhoto} {onEdit} variant="ticket" />
+			<ImageOverlayActions onSelect={onChangePhoto} {onEdit} {onDelete} variant="ticket" />
 		</div>
 	{:else}
 		<button

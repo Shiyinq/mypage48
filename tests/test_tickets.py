@@ -369,3 +369,118 @@ async def test_toggle_two_shot_favorite_no_two_shot(client: AsyncClient, db, cre
 
     response = await client.patch(f"/api/theater/tickets/{ticket_id}/two-shot/favorite", headers=headers)
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_delete_ticket_photo(client: AsyncClient, db, create_user):
+    """Test standalone deletion of a ticket photo and two-shot photo."""
+    token, user_id, headers = await create_user("delphoto")
+
+    # Create a ticket with both photos
+    payload = {
+        "ticket_id": "T-PHOTO1",
+        "event": {"title": "Photo Test", "date": "2024-10-01", "day": "Tuesday", "time": "19:00"},
+        "seat": {"section": "A", "number": "1"},
+        "price": 100000,
+        "imageUrl": "ticket/test1.jpg",
+        "blurHash": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+        "two_shot": {
+            "member_name": "Feni",
+            "price": 50000,
+            "imageUrl": "twoshot/test2.jpg",
+            "blurHash": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+    }
+    create_res = await client.post("/api/theater/tickets", json=payload, headers=headers)
+    assert create_res.status_code == 201
+    ticket_data = create_res.json()
+    ticket_id = ticket_data["_id"]
+
+    # Delete ticket photo
+    del_res = await client.delete(f"/api/theater/tickets/{ticket_id}/photo?type=ticket", headers=headers)
+    assert del_res.status_code == 200
+    updated_data = del_res.json()
+    assert "imageUrl" not in updated_data or updated_data["imageUrl"] is None
+    assert "blurHash" not in updated_data or updated_data["blurHash"] is None
+    assert "twoshot/test2.jpg" in updated_data["two_shot"]["imageUrl"]
+
+    # Delete twoshot photo
+    del_ts_res = await client.delete(f"/api/theater/tickets/{ticket_id}/photo?type=twoshot", headers=headers)
+    assert del_ts_res.status_code == 200
+    updated_ts_data = del_ts_res.json()
+    assert "imageUrl" not in updated_ts_data["two_shot"] or updated_ts_data["two_shot"]["imageUrl"] is None
+    assert "blurHash" not in updated_ts_data["two_shot"] or updated_ts_data["two_shot"]["blurHash"] is None
+
+    # Invalid type
+    inv_res = await client.delete(f"/api/theater/tickets/{ticket_id}/photo?type=invalid", headers=headers)
+    assert inv_res.status_code == 400  # validation error
+
+    # Non-existent ticket
+    fake_id = "000000000000000000000000"
+    notfound_res = await client.delete(f"/api/theater/tickets/{fake_id}/photo?type=ticket", headers=headers)
+    assert notfound_res.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_update_ticket_remove_photos(client: AsyncClient, db, create_user):
+    """Test updating a ticket to remove its photos."""
+    token, user_id, headers = await create_user("updateticketphoto")
+
+    # Create ticket with photos
+    create_payload = {
+        "ticket_id": "T-UPDPHOTO",
+        "event": {
+            "title": "Photo Removal Test",
+            "date": "2024-01-03",
+            "day": "Wednesday",
+            "time": "19:00",
+            "gate_open": "18:30"
+        },
+        "seat": {
+            "section": "C",
+            "number": "3"
+        },
+        "price": 200000,
+        "imageUrl": "ticket/test3.jpg",
+        "blurHash": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+        "two_shot": {
+            "member_name": "Christy",
+            "price": 50000,
+            "imageUrl": "twoshot/test4.jpg",
+            "blurHash": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        }
+    }
+    create_res = await client.post("/api/theater/tickets", json=create_payload, headers=headers)
+    assert create_res.status_code == 201
+    ticket_id = create_res.json()["_id"]
+
+    # Update to remove photos
+    update_data = {
+        "event": {
+            "title": "Photo Removal Test",
+            "date": "2024-01-03",
+            "day": "Wednesday",
+            "time": "19:00",
+            "gate_open": "18:30"
+        },
+        "seat": {
+            "section": "C",
+            "number": "3"
+        },
+        "price": 200000,
+        "imageUrl": None,
+        "two_shot": {
+            "member_name": "Christy",
+            "price": 50000,
+            "imageUrl": None
+        }
+    }
+    response = await client.put(f"/api/theater/tickets/{ticket_id}", json=update_data, headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert "imageUrl" not in data or data["imageUrl"] is None
+    assert "blurHash" not in data or data["blurHash"] is None
+    assert "imageUrl" not in data["two_shot"] or data["two_shot"]["imageUrl"] is None
+    assert "blurHash" not in data["two_shot"] or data["two_shot"]["blurHash"] is None
+
+

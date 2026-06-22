@@ -9,6 +9,7 @@
 		"back": "Back",
 		"submit": "Submit",
 		"confirm": "Confirm",
+		"confirmSelection": "Confirm Selection",
 		"yes": "Yes",
 		"no": "No",
 		"ok": "OK",
@@ -57,6 +58,12 @@
 	"imageEditor": {
 		"title": "Edit Image",
 		"done": "Done",
+		"undo": "Undo",
+		"size": "Size",
+		"crop": "Crop",
+		"draw": "Draw",
+		"reset": "Reset",
+		"thickness": "Adjust Thickness",
 		"aspectRatio": "Aspect Ratio",
 		"ratios": {
 			"free": "Free",
@@ -233,12 +240,33 @@
 	"feedback": {
 		"title": "Feedback",
 		"subtitle": "Help us improve MyPage48",
+		"empty": {
+			"title": "No feedback yet",
+			"description": "You haven't sent any feedback or suggestions yet."
+		},
+		"tabs": {
+			"submit": "Submit Feedback",
+			"my_feedback": "My Feedback"
+		},
 		"validation": {
 			"messageTooShort": "Message must be at least 10 characters long"
 		},
 		"success": "Feedback sent! Thank you.",
 		"error": "Failed to send feedback. Please try again.",
+		"delete": {
+			"button": "Delete",
+			"confirmTitle": "Delete Feedback",
+			"confirmMessage": "Are you sure you want to delete this feedback?",
+			"success": "Feedback successfully deleted",
+			"error": "Failed to delete feedback"
+		},
+		"filter": {
+			"ongoing": "Ongoing",
+			"done": "Done",
+			"all": "All"
+		},
 		"form": {
+			"info": "Your name and email are automatically fetched from your profile. This information will be used to send notifications to your email whenever there is a status update on the report or suggestion you submit.",
 			"type": {
 				"label": "Feedback Type",
 				"issue": "Report Issue",
@@ -250,13 +278,21 @@
 				"placeholder": "Tell us what's on your mind... (min 10 chars)"
 			},
 			"name": {
-				"label": "Name (Optional)",
+				"label": "Name",
 				"placeholder": "Your name"
 			},
 			"email": {
-				"label": "Email (Optional)",
+				"label": "Email",
 				"placeholder": "your@email.com"
 			}
+		},
+		"status": {
+			"pending": "Pending Review",
+			"noted": "Noted",
+			"in_progress": "In Progress",
+			"implemented": "Implemented / Done",
+			"rejected": "Rejected",
+			"spam": "Spam"
 		}
 	},
 	"terms": {
@@ -655,7 +691,7 @@
 		"show": "Show",
 		"deleteConfirm": {
 			"title": "Delete Ticket?",
-			"description": "This action cannot be undone. The ticket will be permanently deleted.",
+			"description": "This action cannot be undone. The ticket, along with its associated ticket photo and 2-shot photo, will be permanently deleted.",
 			"confirm": "Yes, Delete",
 			"cancel": "Cancel"
 		},
@@ -705,8 +741,8 @@
 		"subtitle": "Add a new ticket to your collection",
 		"scanTicket": "Scan Theater Ticket",
 		"scanDescription": "Automatically extract details from your theater ticket image using AI.",
-		"manualEntry": "Manual Entry",
-		"manualDescription": "Enter ticket details manually if you don't have a photo.",
+		"manualEntry": "Type Theater Ticket Details",
+		"manualDescription": "Type the details of your theater ticket manually without using an image.",
 		"saveTicket": "Save Ticket",
 		"uploadSuccess": "Ticket uploaded successfully",
 		"uploadError": "Failed to upload ticket",
@@ -1087,7 +1123,11 @@
 		"twoShots": "2-Shots",
 		"noMemories": "No memories yet",
 		"errorTitle": "Failed to load memories",
-		"errorDesc": "Something went wrong while fetching your memories."
+		"errorDesc": "Something went wrong while fetching your memories.",
+		"deletePhotoConfirm": {
+			"title": "Delete Photo?",
+			"description": "The photo will be deleted from memories and tickets, but your ticket will remain in your ticket history."
+		}
 	},
 	"achievements": {
 		"title": "Achievements",
@@ -1397,7 +1437,16 @@
 			"emptyDesc": "No feedback has been submitted yet.",
 			"errorTitle": "Error loading feedback",
 			"errorDesc": "Failed to load feedback from server.",
-			"noMoreFeedback": "No more feedback to load"
+			"noMoreFeedback": "No more feedback to load",
+			"modal": {
+				"title": "Update Feedback Status",
+				"statusLabel": "Status",
+				"notesLabel": "Admin Notes",
+				"notesPlaceholder": "Add a note for the user...",
+				"notesInfo": "This note will be sent to the user's email and appear on their 'My Feedback' page.",
+				"saving": "Saving...",
+				"saveChanges": "Save Changes"
+			}
 		},
 		"users": {
 			"title": "Users",

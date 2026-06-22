@@ -126,10 +126,13 @@
 				<div class="flex items-center justify-end gap-3 w-full sm:w-auto">
 					{#if isPublic}
 						<select
+							id="public-profile-year"
+							name="public_profile_year"
 							value={selectedPublicYearStr}
 							onchange={handleYearChange}
 							disabled={updatingStatus}
 							class="p-2 text-xs font-bold bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer flex-1 sm:flex-none"
+							aria-label={t('settings.publicProfile.allYears')}
 						>
 							<option value="">{t('settings.publicProfile.allYears')}</option>
 							<option value="-1">{t('settings.publicProfile.thisYear')}</option>

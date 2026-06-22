@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { fade, slide } from 'svelte/transition';
-	import { MessageCircle, Trophy } from 'lucide-svelte';
+	import { slide } from 'svelte/transition';
+	import { MessageCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
 	import { broadcastGift } from '$lib/stores/gift.svelte';
@@ -254,6 +254,8 @@
 				return;
 			}
 
+			if (isLetter) return; // Ignore and hide fan letters completely
+
 			messages = [
 				...messages,
 				{
@@ -332,7 +334,7 @@
 				{@const names = msg.joinNames || []}
 				{@const hasMultiple = names.length > 1}
 				{@const isExpanded = msg.id === expandedSystemId}
-				<div class="flex flex-col items-center gap-1.5 my-1.5 px-2" in:fade>
+				<div class="flex flex-col items-center gap-1.5 my-1.5 px-2">
 					<button
 						class="flex items-center gap-2 w-full opacity-80 group/system transition-all"
 						onclick={() => {
@@ -362,7 +364,6 @@
 					{#if isExpanded && names.length > 0}
 						<div
 							class="w-full max-w-[90%] p-2.5 rounded-2xl bg-slate-50/50 dark:bg-zinc-900/30 border border-slate-100 dark:border-zinc-800/30 backdrop-blur-sm"
-							transition:slide={{ duration: 300 }}
 						>
 							<div class="flex flex-wrap justify-center gap-x-2 gap-y-1">
 								{#each names as name}
@@ -441,7 +442,7 @@
 									{msg.gift.name.toUpperCase()}
 								</div>
 							</div>
-						{:else if msg.type === 'letter'}
+							<!-- {:else if msg.type === 'letter'}
 							<div
 								class="inline-flex flex-col gap-3 px-4 py-3 rounded-2xl rounded-tl-none bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 max-w-full"
 							>
@@ -479,7 +480,7 @@
 								<p class="text-sm leading-relaxed font-medium italic">
 									"{msg.text}"
 								</p>
-							</div>
+							</div> -->
 						{:else}
 							<div
 								class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm break-words overflow-wrap-anywhere whitespace-pre-wrap max-w-full"

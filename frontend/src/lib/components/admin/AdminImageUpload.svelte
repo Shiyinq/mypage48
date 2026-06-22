@@ -139,6 +139,8 @@
 </div>
 
 <input
+	id="admin-image-upload-input"
+	name="image"
 	type="file"
 	bind:this={fileInputRef}
 	class="hidden"

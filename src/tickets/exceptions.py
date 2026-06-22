@@ -32,3 +32,7 @@ class InvalidImageTypeError(DomainException):
 
 class InvalidImageError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.INVALID_IMAGE
+
+
+class InvalidPhotoTypeError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_PHOTO_TYPE

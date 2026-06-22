@@ -8,10 +8,11 @@
 		image: string | null;
 		onSelect: () => void;
 		onEdit?: () => void;
+		onDelete?: () => void;
 		ondrop?: (file: File) => void;
 	}
 
-	let { image, onSelect, onEdit, ondrop }: Props = $props();
+	let { image, onSelect, onEdit, onDelete, ondrop }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -36,7 +37,7 @@
 					: 'border-gray-200 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800'}"
 			>
 				<OptimizedImage src={image} alt="Preview" class="w-full h-full p-4" objectFit="contain" />
-				<ImageOverlayActions {onSelect} {onEdit} variant="ticket" />
+				<ImageOverlayActions {onSelect} {onEdit} {onDelete} variant="ticket" />
 			</div>
 		{:else}
 			<button

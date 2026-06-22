@@ -273,3 +273,37 @@ class TicketsRepository:
             },
             return_document=ReturnDocument.AFTER,
         )
+
+    async def delete_ticket_photo(
+        self, ticket_id: str, user_id: str, photo_type: str
+    ) -> Optional[dict]:
+        try:
+            oid = ObjectId(ticket_id)
+        except:
+            return None
+
+        update_query = {}
+        if photo_type == "ticket":
+            update_query = {
+                "imageUrl": None,
+                "imageUrl_medium": None,
+                "imageUrl_small": None,
+                "blurHash": None,
+            }
+        elif photo_type == "twoshot":
+            update_query = {
+                "two_shot.imageUrl": None,
+                "two_shot.imageUrl_medium": None,
+                "two_shot.imageUrl_small": None,
+                "two_shot.blurHash": None,
+            }
+        else:
+            return None
+
+        update_query["updated_at"] = datetime.now(timezone.utc)
+
+        return await self.collection.find_one_and_update(
+            {"_id": oid, "user_id": user_id},
+            {"$set": update_query},
+            return_document=ReturnDocument.AFTER,
+        )

@@ -61,7 +61,6 @@ class LLMService:
             show_titles = await self.repository.get_show_titles()
             show_titles_list = "\n".join(f"- {title}" for title in show_titles)
 
-            print(show_titles_list)
             prompt = f"""
             Analyze this JKT48 theater ticket image. 
             Extract the following details:

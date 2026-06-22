@@ -56,11 +56,18 @@ from src.export.exceptions import ExportInProgressError, ExportNotFoundError
 from src.export.http_exceptions import ExportInProgress, ExportNotFound
 from src.feedback.exceptions import (
     FeedbackCreationError,
+    FeedbackDeleteError,
     FeedbackFetchError,
     FeedbackNotFound,
+    FeedbackUpdateError,
 )
-from src.feedback.http_exceptions import FeedbackCreateError, FeedbackFetchFailed
+from src.feedback.http_exceptions import (
+    FeedbackCreateError,
+    FeedbackDeleteFailed,
+    FeedbackFetchFailed,
+)
 from src.feedback.http_exceptions import FeedbackNotFound as HttpFeedbackNotFound
+from src.feedback.http_exceptions import FeedbackUpdateFailed
 from src.http_exceptions import DetailedHTTPException
 from src.live.exceptions import (
     CommentsFetchError,
@@ -132,6 +139,7 @@ from src.storage.http_exceptions import (
 from src.tickets.exceptions import ImageTooLargeError as TheaterImageTooLargeError
 from src.tickets.exceptions import InvalidImageError as TheaterInvalidImageError
 from src.tickets.exceptions import InvalidImageTypeError as TheaterInvalidImageTypeError
+from src.tickets.exceptions import InvalidPhotoTypeError as TheaterInvalidPhotoTypeError
 from src.tickets.exceptions import (
     TicketCreationError,
     TicketDeletionError,
@@ -142,6 +150,7 @@ from src.tickets.exceptions import (
 from src.tickets.http_exceptions import ImageTooLarge as TheaterImageTooLarge
 from src.tickets.http_exceptions import InvalidImage as TheaterInvalidImage
 from src.tickets.http_exceptions import InvalidImageType as TheaterInvalidImageType
+from src.tickets.http_exceptions import InvalidPhotoType as TheaterInvalidPhotoType
 from src.tickets.http_exceptions import TicketCreateError, TicketDeleteError
 from src.tickets.http_exceptions import TicketFetchError as HttpTicketFetchError
 from src.tickets.http_exceptions import TicketNotFound
@@ -291,6 +300,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, TheaterInvalidImageType())
     if isinstance(exc, TheaterInvalidImageError):
         return await detailed_http_exception_handler(request, TheaterInvalidImage())
+    if isinstance(exc, TheaterInvalidPhotoTypeError):
+        return await detailed_http_exception_handler(request, TheaterInvalidPhotoType())
 
     # Admin errors
     if isinstance(exc, AdminStatsFetchError):
@@ -355,6 +366,10 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, FeedbackFetchFailed())
     if isinstance(exc, FeedbackNotFound):
         return await detailed_http_exception_handler(request, HttpFeedbackNotFound())
+    if isinstance(exc, FeedbackUpdateError):
+        return await detailed_http_exception_handler(request, FeedbackUpdateFailed())
+    if isinstance(exc, FeedbackDeleteError):
+        return await detailed_http_exception_handler(request, FeedbackDeleteFailed())
 
     # News errors
     if isinstance(exc, NewsNotFoundError):

@@ -3,10 +3,12 @@
 	import { logger } from '$lib/utils/logger';
 	import { resetDashboard } from '$lib/stores/dashboard.svelte';
 	import { invalidateTheater, setlistsStore } from '$lib/stores/theater.svelte';
+	import { invalidateMemories } from '$lib/stores/memories.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { extractTicketData } from '$lib/apis/llm';
+	import type { Ticket } from '$lib/types';
 
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
@@ -103,8 +105,7 @@
 				(showTwoShot &&
 					formData.two_shot.member_name &&
 					formData.two_shot.price !== null &&
-					formData.two_shot.price >= 0 &&
-					twoShotImage))
+					formData.two_shot.price >= 0))
 		)
 	);
 
@@ -308,13 +309,13 @@
 				price: Number(formData.price),
 				currency: 'IDR',
 				rules: formData.rules,
-				imageUrl: cleanseStorageUrl(ticketImageUrl),
-				blurHash: ticketBlurHash,
+				imageUrl: ticketImageUrl ? cleanseStorageUrl(ticketImageUrl) : null,
+				blurHash: image ? ticketBlurHash : null,
 				notes: cleanseMarkdown(formData.notes),
 				two_shot: showTwoShot
 					? {
-							imageUrl: cleanseStorageUrl(twoShotImageUrl),
-							blurHash: twoShotBlurHash,
+							imageUrl: twoShotImageUrl ? cleanseStorageUrl(twoShotImageUrl) : null,
+							blurHash: twoShotImage ? twoShotBlurHash : null,
 							member_name: formData.two_shot.member_name,
 							type: formData.two_shot.type,
 							price: Number(formData.two_shot.price)
@@ -323,11 +324,12 @@
 			};
 
 			// Use store action (handles API + cache invalidation)
-			await ticketsStore.create(payload);
+			await ticketsStore.create(payload as unknown as Partial<Ticket>);
 
-			// Invalidate dashboard and theater cache
+			// Invalidate dashboard, theater, and memories cache
 			resetDashboard();
 			invalidateTheater();
+			invalidateMemories();
 
 			showToast(t('upload.uploadSuccess'), 'success');
 			goto('/');
@@ -401,6 +403,9 @@
 					{image}
 					onChangePhoto={() => fileInputRef?.click()}
 					onEdit={handleEditTicketImage}
+					onDelete={() => {
+						image = null;
+					}}
 					ondrop={handleFileDrop}
 				/>
 			</div>
@@ -415,6 +420,9 @@
 				onsubmit={handleFormSubmit}
 				onphotoClick={() => twoShotInputRef?.click()}
 				onEditTwoShot={handleEditTwoShotImage}
+				onDeleteTwoShot={() => {
+					twoShotImage = null;
+				}}
 				ondrop={handleTwoShotDrop}
 			/>
 		</div>

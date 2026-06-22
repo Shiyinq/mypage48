@@ -16,6 +16,7 @@
 	} from 'lucide-svelte';
 	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
 	import TwoShotSection from './TwoShotSection.svelte';
+	import { preventNonNumericInput, enforceMin } from '$lib/utils/input';
 
 	interface Props {
 		formData: {
@@ -54,6 +55,7 @@
 		onclick?: () => void;
 		onphotoClick?: () => void;
 		onEditTwoShot?: () => void;
+		onDeleteTwoShot?: () => void;
 		ondrop?: (file: File) => void;
 	}
 
@@ -67,6 +69,7 @@
 		onclick,
 		onphotoClick,
 		onEditTwoShot,
+		onDeleteTwoShot,
 		ondrop
 	}: Props = $props();
 
@@ -199,7 +202,10 @@
 					<input
 						id="seat-number"
 						type="number"
+						min="1"
 						bind:value={formData.seat.number}
+						onkeydown={preventNonNumericInput}
+						oninput={() => (formData.seat.number = enforceMin(formData.seat.number, 1))}
 						class="w-full p-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-center font-black text-lg text-gray-900 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600"
 						placeholder="1"
 					/>
@@ -218,7 +224,10 @@
 						<input
 							id="ticket-price"
 							type="number"
+							min="0"
 							bind:value={formData.price}
+							onkeydown={preventNonNumericInput}
+							oninput={() => (formData.price = enforceMin(formData.price, 0))}
 							class="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none font-medium text-gray-900 dark:text-gray-100"
 							placeholder="200000"
 						/>
@@ -254,18 +263,25 @@
 			bind:twoShotPrice={formData.two_shot.price}
 			onphotoClick={() => onphotoClick?.()}
 			onEdit={() => onEditTwoShot?.()}
+			onDelete={() => onDeleteTwoShot?.()}
 			ondrop={(file) => ondrop?.(file)}
 		/>
 
 		<!-- Notes -->
 		<div class="space-y-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
-			<h3
-				class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
+			<label
+				for="ticket-notes"
+				class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2 cursor-pointer"
 			>
 				<NotebookPen class="w-4 h-4" />
 				{t('forms.experienceLog')}
-			</h3>
+				<span class="text-[10px] text-gray-400/70 font-medium normal-case tracking-normal"
+					>({t('forms.optional')})</span
+				>
+			</label>
 			<textarea
+				id="ticket-notes"
+				name="notes"
 				bind:value={formData.notes}
 				class="w-full p-4 bg-yellow-50/50 dark:bg-zinc-800/50 border border-yellow-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-yellow-400 dark:focus:ring-zinc-600 outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 min-h-[120px]"
 				placeholder={t('forms.notesPlaceholder')}

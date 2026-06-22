@@ -108,10 +108,12 @@
 						class="relative shrink-0 pb-3 px-3 sm:px-4 border-r border-black/10 dark:border-white/10 mr-2 sm:mr-3 flex items-center justify-center"
 					>
 						<select
+							id="pc-live-sort"
+							name="sort"
 							class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
 							value={currentSort}
 							onchange={(e) => pcCollectionStore.setSort(e.currentTarget.value)}
-							title={t('liveHistory.pcLive.sort.dateDesc') || 'Sort Filter'}
+							aria-label={t('liveHistory.pcLive.sort.dateDesc') || 'Sort Filter'}
 						>
 							<option value="date_desc" class="text-black"
 								>{t('liveHistory.pcLive.sort.dateDesc') || 'Latest First'}</option

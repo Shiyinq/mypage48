@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Camera, Sparkles, DollarSign, ChevronDown } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { preventNonNumericInput, enforceMin } from '$lib/utils/input';
 	import MemberSelector from '$lib/components/MemberSelector.svelte';
 	import { dragDrop } from '$lib/actions/dragDrop';
 	import { OptimizedImage, ImageOverlayActions } from '$lib/components/common';
@@ -13,6 +14,7 @@
 		price: number;
 		onSelectImage: () => void;
 		onEdit?: () => void;
+		onDelete?: () => void;
 		ondrop?: (file: File) => void;
 	}
 
@@ -24,6 +26,7 @@
 		price = $bindable(),
 		onSelectImage,
 		onEdit,
+		onDelete,
 		ondrop
 	}: Props = $props();
 
@@ -57,9 +60,8 @@
 			class="bg-red-50/50 dark:bg-zinc-800/50 rounded-2xl p-4 border border-red-100 dark:border-red-500/30 space-y-4 animate-fade-in"
 		>
 			<div>
-				<label
-					class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1"
-					for="twoshot-upload">{t('forms.twoShotPhoto')}</label
+				<span class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1"
+					>{t('forms.twoShotPhoto')}</span
 				>
 				<div
 					id="twoshot-upload"
@@ -79,7 +81,7 @@
 							class="w-full h-full"
 							objectFit="contain"
 						/>
-						<ImageOverlayActions onSelect={onSelectImage} {onEdit} variant="twoshot" />
+						<ImageOverlayActions onSelect={onSelectImage} {onEdit} {onDelete} variant="twoshot" />
 					{:else}
 						<button
 							type="button"
@@ -90,6 +92,7 @@
 						>
 							<Camera class="w-6 h-6 mb-1" />
 							<span class="text-xs font-medium">{t('forms.uploadPhoto')}</span>
+							<span class="text-[10px] mt-0.5 opacity-70">({t('forms.optional')})</span>
 						</button>
 					{/if}
 				</div>
@@ -98,10 +101,12 @@
 			<div>
 				<label
 					class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 ml-1"
-					for="member-selector">{t('forms.memberName')}</label
+					for="twoshot-member-input">{t('forms.memberName')}</label
 				>
-				<div id="member-selector">
+				<div>
 					<MemberSelector
+						id="twoshot-member-input"
+						name="member_name"
 						bind:value={memberName}
 						placeholder={t('forms.memberNamePlaceholder')}
 						title={t('forms.selectMember')}
@@ -122,7 +127,11 @@
 						</div>
 						<select
 							id="twoshot-type"
+							name="two_shot_type"
 							bind:value={type}
+							onchange={(e) => {
+								price = e.currentTarget.value === 'Birthday' ? 250000 : 100000;
+							}}
 							class="w-full pl-9 pr-8 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100 appearance-none cursor-pointer"
 						>
 							<option value="Roulette">Roulette</option>
@@ -144,8 +153,12 @@
 						</div>
 						<input
 							id="twoshot-price"
+							name="two_shot_price"
 							type="number"
+							min="0"
 							bind:value={price}
+							onkeydown={preventNonNumericInput}
+							oninput={() => (price = enforceMin(price, 0))}
 							class="w-full pl-9 pr-3 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
 						/>
 					</div>

@@ -9,6 +9,7 @@
 		"back": "戻る",
 		"submit": "送信",
 		"confirm": "確認",
+		"confirmSelection": "選択を確定",
 		"yes": "はい",
 		"no": "いいえ",
 		"ok": "OK",
@@ -57,6 +58,12 @@
 	"imageEditor": {
 		"title": "画像編集",
 		"done": "完了",
+		"undo": "戻る",
+		"size": "サイズ",
+		"crop": "切り抜き",
+		"draw": "描画",
+		"reset": "リセット",
+		"thickness": "太さを調整",
 		"aspectRatio": "アスペクト比",
 		"ratios": {
 			"free": "自由",
@@ -233,12 +240,33 @@
 	"feedback": {
 		"title": "フィードバック",
 		"subtitle": "MyPage48の改善にご協力ください",
+		"empty": {
+			"title": "フィードバックはまだありません",
+			"description": "まだフィードバックや提案を送信していません。"
+		},
+		"tabs": {
+			"submit": "フィードバックを送信",
+			"my_feedback": "マイフィードバック"
+		},
 		"validation": {
 			"messageTooShort": "メッセージは10文字以上である必要があります"
 		},
 		"success": "送信しました！ありがとうございます。",
 		"error": "送信に失敗しました。もう一度お試しください。",
+		"delete": {
+			"button": "削除",
+			"confirmTitle": "フィードバックを削除",
+			"confirmMessage": "このフィードバックを削除してもよろしいですか？",
+			"success": "フィードバックが正常に削除されました",
+			"error": "フィードバックの削除に失敗しました"
+		},
+		"filter": {
+			"ongoing": "対応中",
+			"done": "完了",
+			"all": "すべて"
+		},
 		"form": {
+			"info": "あなたの名前とメールアドレスはプロフィールから自動的に取得されます。この情報は、あなたが送信した報告や提案のステータスが更新された際に、メールで通知を送信するために使用されます。",
 			"type": {
 				"label": "フィードバックの種類",
 				"issue": "問題を報告",
@@ -250,13 +278,21 @@
 				"placeholder": "ご意見をお聞かせください... (10文字以上)"
 			},
 			"name": {
-				"label": "名前 (任意)",
+				"label": "名前",
 				"placeholder": "お名前"
 			},
 			"email": {
-				"label": "メールアドレス (任意)",
+				"label": "メールアドレス",
 				"placeholder": "your@email.com"
 			}
+		},
+		"status": {
+			"pending": "レビュー待ち",
+			"noted": "確認済み",
+			"in_progress": "対応中",
+			"implemented": "対応完了 / 実装済み",
+			"rejected": "却下",
+			"spam": "スパム"
 		}
 	},
 	"terms": {
@@ -656,7 +692,7 @@
 		"show": "公演",
 		"deleteConfirm": {
 			"title": "チケットを削除しますか？",
-			"description": "この操作は取り消せません。チケットは完全に削除されます。",
+			"description": "この操作は取り消せません。チケットと、それに関連するチケット写真および2ショット写真も完全に削除されます。",
 			"confirm": "はい、削除します",
 			"cancel": "キャンセル"
 		},
@@ -1024,9 +1060,18 @@
 			"subtitle": "ユーザーからの報告と提案",
 			"emptyTitle": "フィードバックなし",
 			"emptyDesc": "まだフィードバックは送信されていません。",
-			"errorTitle": "読み込みエラー",
-			"errorDesc": "フィードバックの読み込みに失敗しました。",
-			"noMoreFeedback": "これ以上フィードバックはありません"
+			"errorTitle": "フィードバックの読み込みエラー",
+			"errorDesc": "サーバーからフィードバックを読み込めませんでした。",
+			"noMoreFeedback": "これ以上読み込むフィードバックはありません",
+			"modal": {
+				"title": "フィードバックステータスの更新",
+				"statusLabel": "ステータス",
+				"notesLabel": "管理者メモ",
+				"notesPlaceholder": "ユーザーへのメモを追加...",
+				"notesInfo": "このメモはユーザーのメールに送信され、「マイフィードバック」ページに表示されます。",
+				"saving": "保存中...",
+				"saveChanges": "変更を保存"
+			}
 		},
 		"users": {
 			"title": "ユーザー",
@@ -1335,8 +1380,8 @@
 		"subtitle": "新しいチケットをコレクションに追加",
 		"scanTicket": "劇場チケットをスキャン",
 		"scanDescription": "劇場チケットの画像をアップロードしてAIに詳細を抽出させます。",
-		"manualEntry": "手動入力",
-		"manualDescription": "詳細を自分で入力します。",
+		"manualEntry": "シアターチケットの詳細を入力",
+		"manualDescription": "画像を使用せず、ご自身でシアターチケットの詳細を入力してください。",
 		"saveTicket": "チケットを保存",
 		"uploadSuccess": "チケットが正常にアップロードされました",
 		"uploadError": "チケットのアップロードに失敗しました",

@@ -32,3 +32,7 @@ class InvalidImageType(BadRequest):
 
 class InvalidImage(BadRequest):
     DETAIL = ErrorCode.INVALID_IMAGE
+
+
+class InvalidPhotoType(BadRequest):
+    DETAIL = ErrorCode.INVALID_PHOTO_TYPE

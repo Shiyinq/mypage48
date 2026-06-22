@@ -251,7 +251,9 @@
 								>
 								<input
 									id="member-name"
+									name="name"
 									type="text"
+									autocomplete="off"
 									bind:value={formData.name}
 									placeholder="e.g. Feni Fitriyanti"
 									class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
@@ -269,7 +271,9 @@
 								>
 								<input
 									id="member-nickname"
+									name="nickname"
 									type="text"
+									autocomplete="off"
 									bind:value={formData.nickname}
 									placeholder="e.g. Feni"
 									class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
@@ -285,6 +289,7 @@
 								<div class="relative">
 									<select
 										id="member-gen"
+										name="generation"
 										bind:value={formData.generation}
 										class="w-full px-4 pr-10 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all cursor-pointer appearance-none"
 									>
@@ -308,6 +313,7 @@
 								<div class="relative">
 									<select
 										id="member-type"
+										name="member_type"
 										bind:value={formData.member_type}
 										class="w-full px-4 pr-10 py-3 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all cursor-pointer appearance-none"
 									>
@@ -343,6 +349,7 @@
 							>
 							<input
 								id="member-birthdate"
+								name="birthdate"
 								type="date"
 								bind:value={formData.birthdate}
 								class="w-full px-4 py-2 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm cursor-pointer"
@@ -357,6 +364,7 @@
 							<div class="relative">
 								<select
 									id="member-blood"
+									name="bloodType"
 									bind:value={formData.bloodType}
 									class="w-full px-4 pr-10 py-2 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm cursor-pointer appearance-none"
 								>
@@ -380,6 +388,7 @@
 							<div class="relative">
 								<input
 									id="member-height"
+									name="height"
 									type="number"
 									min="0"
 									bind:value={formData.height}
@@ -401,6 +410,7 @@
 							<div class="relative">
 								<select
 									id="member-horoscope"
+									name="horoscope"
 									bind:value={formData.horoscope}
 									class="w-full px-4 pr-10 py-2 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm cursor-pointer appearance-none"
 								>
@@ -433,6 +443,7 @@
 						<div class="relative">
 							<textarea
 								id="member-jiko"
+								name="jiko"
 								bind:value={formData.jiko}
 								placeholder="Enter catchphrase..."
 								class="w-full px-4 py-3 bg-yellow-50/50 dark:bg-zinc-800/50 border border-yellow-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-yellow-400 outline-none transition-all min-h-[100px] text-sm"
@@ -455,6 +466,7 @@
 								>
 								<input
 									id="social-twitter"
+									name="socials_twitter"
 									type="text"
 									bind:value={formData.socials.twitter}
 									placeholder="URL"
@@ -467,6 +479,7 @@
 								>
 								<input
 									id="social-instagram"
+									name="socials_instagram"
 									type="text"
 									bind:value={formData.socials.instagram}
 									placeholder="URL"
@@ -479,6 +492,7 @@
 								>
 								<input
 									id="social-tiktok"
+									name="socials_tiktok"
 									type="text"
 									bind:value={formData.socials.tiktok}
 									placeholder="URL"
@@ -491,6 +505,7 @@
 								>
 								<input
 									id="social-threads"
+									name="socials_threads"
 									type="text"
 									bind:value={formData.socials.threads}
 									placeholder="URL"
@@ -503,6 +518,7 @@
 								>
 								<input
 									id="social-showroom"
+									name="socials_showroom"
 									type="text"
 									bind:value={formData.socials.showroom}
 									placeholder="URL"
@@ -515,6 +531,7 @@
 								>
 								<input
 									id="social-idn"
+									name="socials_idn_app"
 									type="text"
 									bind:value={formData.socials.idn_app}
 									placeholder="URL"

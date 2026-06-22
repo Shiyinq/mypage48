@@ -1,4 +1,5 @@
 import asyncio
+import html
 
 import resend
 
@@ -171,6 +172,98 @@ class EmailService:
             "from": self.config.email_from,
             "to": email,
             "subject": "Account Locked - MyPage48",
+            "html": html_content,
+        }
+
+        if self.background_tasks:
+            self.background_tasks.add_task(self._send_email, payload)
+        else:
+            await self._send_email(payload)
+
+    async def send_feedback_status_update(
+        self,
+        email: str,
+        name: str,
+        new_status: str,
+        admin_notes: str,
+        feedback_message: str,
+    ):
+        """Send feedback status update notification"""
+        feedback_url = f"{self.config.frontend_url}/feedback?tab=my_feedback"
+
+        # Status translations
+        status_map = {
+            "pending": "Menunggu Review",
+            "noted": "Dicatat",
+            "in_progress": "Sedang Dikerjakan",
+            "implemented": "Telah Diimplementasikan",
+            "rejected": "Ditolak",
+            "spam": "Spam",
+        }
+
+        status_colors = {
+            "pending": "#f59e0b",
+            "noted": "#3b82f6",
+            "in_progress": "#8b5cf6",
+            "implemented": "#10b981",
+            "rejected": "#ef4444",
+            "spam": "#64748b",
+        }
+
+        display_status = status_map.get(new_status, new_status)
+        status_color = status_colors.get(new_status, "#ef4444")
+
+        notes_html = ""
+        if admin_notes:
+            escaped_notes = html.escape(admin_notes)
+            notes_html = f"""
+            <div style="background-color: #f8fafc; padding: 24px; border-radius: 18px; border: 1px dashed #cbd5e1; margin: 30px 0;">
+                <p style="color: #64748b; font-size: 11px; margin: 0 0 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Catatan dari Admin:</p>
+                <p style="color: #334155; font-size: 14px; margin: 0; font-weight: 500; line-height: 1.6;">{escaped_notes}</p>
+            </div>
+            """
+
+        html_content = f"""
+        <div style="background-color: #fdf2f8; padding: 60px 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 28px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); border: 1px solid rgba(236, 72, 153, 0.1);">
+                <div style="padding: 40px 20px; text-align: center; border-bottom: 1px solid #f1f5f9;">
+                    <h1 style="color: #0f172a; margin: 0; font-size: 32px; font-weight: 900; letter-spacing: -0.05em;">MyPage<span style="color: #ef4444;">48</span></h1>
+                    <p style="color: #ef4444; margin: 4px 0 0; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em;">Update Feedback</p>
+                </div>
+                <div style="padding: 48px 40px;">
+                    <h2 style="color: #ef4444; margin: 0 0 16px; font-size: 24px; font-weight: 900; tracking: -0.02em;">Status Laporan Kamu Diperbarui</h2>
+                    <p style="color: #475569; line-height: 1.8; margin: 0 0 24px; font-size: 16px;">Halo <strong>{html.escape(name)}</strong>,</p>
+                    <p style="color: #475569; line-height: 1.8; margin: 0; font-size: 16px;">Terima kasih telah memberikan masukan untuk MyPage48. Kami ingin mengabarkan bahwa status laporan/saran kamu telah diperbarui.</p>
+                    
+                    <div style="background-color: #f8fafc; border-left: 5px solid {status_color}; padding: 24px; border-radius: 0 18px 18px 0; margin: 30px 0;">
+                        <p style="color: #64748b; font-size: 12px; margin: 0 0 8px; font-weight: 600; text-transform: uppercase;">Masukan Kamu:</p>
+                        <p style="color: #475569; font-size: 14px; margin: 0 0 16px; font-style: italic;">"{html.escape(feedback_message)}"</p>
+                        
+                        <p style="color: #64748b; font-size: 12px; margin: 0 0 8px; font-weight: 600; text-transform: uppercase;">Status Saat Ini:</p>
+                        <p style="color: {status_color}; font-size: 18px; margin: 0; font-weight: 800;">{display_status}</p>
+                    </div>
+                    
+                    {notes_html}
+                    
+                    <div style="text-align: center; margin: 40px 0;">
+                        <a href="{feedback_url}" 
+                           style="background-color: #dc2626; color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 18px; display: inline-block; font-weight: 800; font-size: 14px; box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.4); transition: all 0.2s ease;">
+                            Lihat Semua Feedback Saya
+                        </a>
+                    </div>
+                </div>
+                <div style="background-color: #f1f5f9; padding: 32px; text-align: center;">
+                    <p style="color: #0f172a; font-weight: 900; font-size: 14px; margin: 0;">MyPage48</p>
+                    <p style="color: #64748b; font-size: 11px; margin: 4px 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Terima kasih atas kontribusimu!</p>
+                </div>
+            </div>
+        </div>
+        """
+
+        payload = {
+            "from": self.config.email_from,
+            "to": email,
+            "subject": f"Update Status Masukan: {display_status} - MyPage48",
             "html": html_content,
         }
 

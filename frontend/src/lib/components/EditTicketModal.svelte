@@ -3,6 +3,7 @@
 	import { logger } from '$lib/utils/logger';
 	import { invalidateDashboard } from '$lib/stores/dashboard.svelte';
 	import { invalidateTheater } from '$lib/stores/theater.svelte';
+	import { invalidateMemories } from '$lib/stores/memories.svelte';
 	import { validateImageFile, getValidationErrorI18nKey } from '$lib/utils/fileValidation';
 	import { calculateDayFromDate, calculateGateOpenTime } from '$lib/utils/ticketUtils';
 	import ValidationAlertModal from '$lib/components/ValidationAlertModal.svelte';
@@ -113,8 +114,7 @@
 				(showTwoShot &&
 					formData.two_shot.member_name &&
 					formData.two_shot.price !== null &&
-					formData.two_shot.price >= 0 &&
-					twoShotImage))
+					formData.two_shot.price >= 0))
 		)
 	);
 
@@ -273,13 +273,13 @@
 				price: Number(formData.price),
 				currency: 'IDR',
 				rules: formData.rules,
-				imageUrl: cleanseStorageUrl(ticketImageUrl),
-				blurHash: ticketBlurHash,
+				imageUrl: ticketImageUrl ? cleanseStorageUrl(ticketImageUrl) : null,
+				blurHash: image ? ticketBlurHash : null,
 				notes: cleanseMarkdown(formData.notes),
 				two_shot: showTwoShot
 					? {
-							imageUrl: cleanseStorageUrl(twoShotImageUrl),
-							blurHash: twoShotBlurHash,
+							imageUrl: twoShotImageUrl ? cleanseStorageUrl(twoShotImageUrl) : null,
+							blurHash: twoShotImage ? twoShotBlurHash : null,
 							member_name: formData.two_shot.member_name,
 							type: formData.two_shot.type,
 							price: Number(formData.two_shot.price)
@@ -287,11 +287,15 @@
 					: null
 			};
 
-			const updated = await ticketsStore.updateTicket(ticket._id, payload);
+			const updated = await ticketsStore.updateTicket(
+				ticket._id,
+				payload as unknown as Partial<Ticket>
+			);
 
-			// Invalidate dashboard and theater cache
+			// Invalidate dashboard, theater, and memories cache
 			invalidateDashboard();
 			invalidateTheater();
+			invalidateMemories();
 
 			showToast(t('forms.ticketUpdateSuccess'));
 			onsave?.(updated);
@@ -354,6 +358,9 @@
 						fileInputRef?.click();
 					}}
 					onEdit={handleEditTicketImage}
+					onDelete={() => {
+						image = null;
+					}}
 				/>
 
 				<!-- Right: Form -->
@@ -393,18 +400,27 @@
 							bind:price={formData.two_shot.price}
 							onSelectImage={() => twoShotInputRef?.click()}
 							onEdit={handleEditTwoShotImage}
+							onDelete={() => {
+								twoShotImage = null;
+							}}
 							ondrop={handleTwoShotDrop}
 						/>
 
 						<!-- Notes -->
 						<div class="space-y-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
-							<h3
-								class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"
+							<label
+								for="edit-ticket-notes"
+								class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2 cursor-pointer"
 							>
 								<NotebookPen class="w-4 h-4" />
 								{t('forms.experienceLog')}
-							</h3>
+								<span class="text-[10px] text-gray-400/70 font-medium normal-case tracking-normal"
+									>({t('forms.optional')})</span
+								>
+							</label>
 							<textarea
+								id="edit-ticket-notes"
+								name="notes"
 								bind:value={formData.notes}
 								class="w-full p-4 bg-yellow-50/50 dark:bg-zinc-800/50 border border-yellow-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-yellow-400 dark:focus:ring-zinc-600 outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 min-h-[120px]"
 								placeholder={t('forms.notesPlaceholder')}

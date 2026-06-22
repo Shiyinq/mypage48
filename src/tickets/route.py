@@ -172,3 +172,22 @@ async def delete_ticket(
     Delete a ticket.
     """
     return await service.delete_ticket(current_user.userId, ticket_id)
+
+
+@router.delete(
+    "/tickets/{ticket_id}/photo",
+    status_code=status.HTTP_200_OK,
+    response_model=TicketResponse,
+    response_model_by_alias=True,
+)
+async def delete_ticket_photo(
+    ticket_id: str,
+    type: str = Query(..., description="Type of photo to delete (ticket or twoshot)"),
+    current_user: UserCurrent = Depends(get_current_user),
+    service: TicketsService = Depends(get_tickets_service),
+    _=Depends(require_csrf_protection),
+):
+    """
+    Delete a photo (ticket or 2-shot) from a ticket without modifying other fields.
+    """
+    return await service.delete_photo(current_user.userId, ticket_id, type)

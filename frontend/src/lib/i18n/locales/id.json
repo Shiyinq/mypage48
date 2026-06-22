@@ -9,6 +9,7 @@
 		"back": "Kembali",
 		"submit": "Kirim",
 		"confirm": "Konfirmasi",
+		"confirmSelection": "Konfirmasi Pilihan",
 		"yes": "Ya",
 		"no": "Tidak",
 		"ok": "OK",
@@ -58,6 +59,12 @@
 	"imageEditor": {
 		"title": "Edit Gambar",
 		"done": "Selesai",
+		"undo": "Urungkan",
+		"size": "Ukuran",
+		"crop": "Crop",
+		"draw": "Gambar",
+		"reset": "Ulangi",
+		"thickness": "Atur Ketebalan",
 		"aspectRatio": "Rasio Aspek",
 		"ratios": {
 			"free": "Bebas",
@@ -234,12 +241,33 @@
 	"feedback": {
 		"title": "Masukan",
 		"subtitle": "Bantu kami meningkatkan MyPage48",
+		"empty": {
+			"title": "Belum ada feedback",
+			"description": "Kamu belum pernah mengirimkan masukan atau saran."
+		},
+		"tabs": {
+			"submit": "Kirim Masukan",
+			"my_feedback": "Masukanku"
+		},
 		"validation": {
 			"messageTooShort": "Pesan harus minimal 10 karakter"
 		},
 		"success": "Masukan terkirim! Terima kasih.",
 		"error": "Gagal mengirim masukan. Silakan coba lagi.",
+		"delete": {
+			"button": "Hapus",
+			"confirmTitle": "Hapus Masukan",
+			"confirmMessage": "Apakah kamu yakin ingin menghapus masukan ini?",
+			"success": "Masukan berhasil dihapus",
+			"error": "Gagal menghapus masukan"
+		},
+		"filter": {
+			"ongoing": "Diproses",
+			"done": "Selesai",
+			"all": "Semua"
+		},
 		"form": {
+			"info": "Nama dan email kamu diambil secara otomatis dari profil. Informasi ini akan digunakan untuk mengirimkan pemberitahuan ke email kamu apabila ada pembaruan status pada laporan atau saran yang kamu kirimkan.",
 			"type": {
 				"label": "Tipe Masukan",
 				"issue": "Lapor Masalah",
@@ -251,13 +279,21 @@
 				"placeholder": "Ceritakan apa yang ada di pikiranmu... (min 10 karakter)"
 			},
 			"name": {
-				"label": "Nama (Opsional)",
+				"label": "Nama",
 				"placeholder": "Nama kamu"
 			},
 			"email": {
-				"label": "Email (Opsional)",
+				"label": "Email",
 				"placeholder": "email@kamu.com"
 			}
+		},
+		"status": {
+			"pending": "Menunggu Review",
+			"noted": "Dicatat",
+			"in_progress": "Sedang Dikerjakan",
+			"implemented": "Selesai / Diterapkan",
+			"rejected": "Ditolak",
+			"spam": "Spam"
 		}
 	},
 	"terms": {
@@ -656,7 +692,7 @@
 		"show": "Pertunjukan",
 		"deleteConfirm": {
 			"title": "Hapus Tiket?",
-			"description": "Tindakan ini tidak dapat dibatalkan. Tiket akan dihapus secara permanen.",
+			"description": "Tindakan ini tidak dapat dibatalkan. Tiket beserta foto tiket dan foto 2-shot yang terkait juga akan ikut terhapus secara permanen.",
 			"confirm": "Ya, Hapus",
 			"cancel": "Batal"
 		},
@@ -674,7 +710,11 @@
 		"twoShots": "2-Shot",
 		"noMemories": "Belum ada kenangan",
 		"errorTitle": "Gagal memuat kenangan",
-		"errorDesc": "Terjadi kesalahan saat mengambil kenangan kamu."
+		"errorDesc": "Terjadi kesalahan saat mengambil kenangan kamu.",
+		"deletePhotoConfirm": {
+			"title": "Hapus Foto?",
+			"description": "Foto akan dihapus dari memories dan tiket, namun tiket kamu akan tetap ada di riwayat tiket."
+		}
 	},
 	"achievements": {
 		"title": "Pencapaian",
@@ -865,8 +905,8 @@
 		"subtitle": "Tambahkan tiket baru ke koleksi",
 		"scanTicket": "Pindai Tiket Teater",
 		"scanDescription": "Unggah gambar tiket teater dan biarkan AI mengekstrak info detail.",
-		"manualEntry": "Input Manual",
-		"manualDescription": "Ketik detailnya sendiri.",
+		"manualEntry": "Ketik Detail Tiket Teater",
+		"manualDescription": "Ketik detail tiket teater secara manual tanpa perlu menggunakan gambar.",
 		"saveTicket": "Simpan Tiket",
 		"uploadSuccess": "Tiket berhasil diunggah",
 		"uploadError": "Gagal mengunggah tiket",
@@ -1329,8 +1369,17 @@
 			"emptyTitle": "Belum Ada Masukan",
 			"emptyDesc": "Belum ada masukan yang dikirim.",
 			"errorTitle": "Gagal memuat masukan",
-			"errorDesc": "Gagal memuat data masukan dari server.",
-			"noMoreFeedback": "Tidak ada masukan lagi untuk dimuat"
+			"errorDesc": "Gagal memuat masukan dari server.",
+			"noMoreFeedback": "Tidak ada masukan lagi untuk dimuat",
+			"modal": {
+				"title": "Perbarui Status Masukan",
+				"statusLabel": "Status",
+				"notesLabel": "Catatan Admin",
+				"notesPlaceholder": "Tambahkan catatan untuk user...",
+				"notesInfo": "Catatan ini akan dikirimkan ke email user dan muncul di halaman 'My Feedback' mereka.",
+				"saving": "Menyimpan...",
+				"saveChanges": "Simpan Perubahan"
+			}
 		},
 		"users": {
 			"title": "Pengguna",

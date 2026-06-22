@@ -12,3 +12,11 @@ class FeedbackFetchError(DomainException):
 
 class FeedbackNotFound(DomainException):
     ERROR_MESSAGE = DomainErrorCode.FEEDBACK_NOT_FOUND
+
+
+class FeedbackUpdateError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.FEEDBACK_UPDATE_FAILED
+
+
+class FeedbackDeleteError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.FEEDBACK_DELETE_FAILED
