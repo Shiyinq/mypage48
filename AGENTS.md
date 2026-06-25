@@ -63,7 +63,7 @@ These define standard procedures — follow them when applicable:
 
 ## Production
 
-- **Troubleshooting** → consult `DEPLOYMENT.md` first (nginx management, 502/503 debugging, SSL certs, health checks, log locations)
+- **Troubleshooting** → consult `docs/DEPLOYMENT.md` first (nginx management, 502/503 debugging, SSL certs, health checks, log locations)
 - Deploy on `v*` tag via GitHub Actions: SSH → `git pull` → `docker compose -f docker-compose.prod.yml up -d --build`
 - Production config validation: HTTPS-only origins, no localhost URLs, SECRET_KEY ≥ 32 chars
 - `OAUTHLIB_INSECURE_TRANSPORT=1` in dev for OAuth
