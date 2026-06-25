@@ -142,7 +142,7 @@
 				{@const isActive = $page.url.pathname.startsWith(link.href)}
 				<a
 					href={link.href}
-					class={`flex items-center justify-between p-3 rounded-2xl transition-all group ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+					class={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] active:opacity-70 group ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
 					onclick={closeAllMenus}
 				>
 					<div class="flex items-center gap-3">
@@ -196,7 +196,7 @@
 					: $page.url.pathname.startsWith(link.href)}
 				<a
 					href={link.href}
-					class={`flex items-center justify-between p-3 rounded-2xl transition-all group ${isActive ? 'bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+					class={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] active:opacity-70 group ${isActive ? 'bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
 					onclick={closeAllMenus}
 				>
 					<div class="flex items-center gap-3">
@@ -248,7 +248,7 @@
 					: $page.url.pathname.startsWith(link.href)}
 				<a
 					href={link.href}
-					class={`flex items-center justify-between p-3 rounded-2xl transition-all group ${isActive ? 'bg-zinc-50 dark:bg-zinc-500/10 border border-zinc-100 dark:border-zinc-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+					class={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] active:opacity-70 group ${isActive ? 'bg-zinc-50 dark:bg-zinc-500/10 border border-zinc-100 dark:border-zinc-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
 					onclick={closeAllMenus}
 				>
 					<div class="flex items-center gap-3">
@@ -281,7 +281,7 @@
 	<div class="flex h-16 items-center justify-around max-w-[420px] mx-auto px-4">
 		<a
 			href="/"
-			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 group min-w-[56px]"
+			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
 		>
 			<LayoutDashboard
 				class={`w-6 h-6 transition-all ${$page.url.pathname === '/' ? 'text-red-600 dark:text-red-400 scale-110' : ''}`}
@@ -294,7 +294,7 @@
 
 		<button
 			onclick={toggleTheaterMenu}
-			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 group min-w-[56px]"
+			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
 		>
 			<AudioLines
 				class={`w-6 h-6 transition-all ${isTheaterMenuOpen || isRouteTheater ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`}
@@ -317,7 +317,7 @@
 
 		<button
 			onclick={toggleMenu}
-			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 group min-w-[56px]"
+			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
 		>
 			<Menu
 				class={`w-6 h-6 transition-all ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400 scale-110' : ''}`}
@@ -331,7 +331,7 @@
 		{#if userProfile.data?.isAdmin}
 			<button
 				onclick={toggleAdminMenu}
-				class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 group min-w-[56px]"
+				class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
 			>
 				<User
 					class={`w-6 h-6 transition-all ${isAdminMenuOpen || $page.url.pathname.startsWith('/admin') ? 'text-zinc-700 dark:text-white scale-110' : ''}`}
@@ -344,7 +344,7 @@
 		{:else}
 			<a
 				href="/profile"
-				class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 group min-w-[56px]"
+				class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
 			>
 				<User
 					class={`w-6 h-6 transition-all ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white scale-110' : ''}`}
