@@ -11,6 +11,7 @@
 		 */
 		title: string;
 		count: number;
+		setlist_id?: string | null;
 		image: string | null;
 		image_medium?: string | null;
 		image_small?: string | null;
@@ -21,6 +22,7 @@
 	let {
 		title,
 		count,
+		setlist_id,
 		image,
 		image_medium,
 		image_small,
@@ -101,7 +103,7 @@
 		</div>
 	{:else}
 		<a
-			href="/theater"
+			href={setlist_id ? `/theater/${setlist_id}` : '/theater'}
 			class="mt-auto border-t border-purple-100 dark:border-purple-800/30 p-3 w-full text-center text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors flex items-center justify-center gap-1 relative z-20 cursor-pointer"
 		>
 			{t('common.viewDetails')}
