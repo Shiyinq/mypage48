@@ -37,6 +37,7 @@ export interface HeatmapStatsResponse {
 export interface TopShowResponse {
 	title: string;
 	count: number;
+	setlist_id?: string | null;
 	image: string | null;
 	image_medium?: string | null;
 	image_small?: string | null;

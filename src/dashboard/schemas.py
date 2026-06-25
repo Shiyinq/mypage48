@@ -53,6 +53,7 @@ class TopShowResponse(BaseModel):
 
     title: str
     count: int
+    setlist_id: Optional[str] = None
     image: Optional[str] = None
     image_medium: Optional[str] = None
     image_small: Optional[str] = None

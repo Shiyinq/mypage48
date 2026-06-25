@@ -180,7 +180,7 @@ class DashboardService:
     ) -> TopShowResponse:
         """Calculate top show statistics."""
         if not tickets:
-            return TopShowResponse(title="-", count=0, image=None)
+            return TopShowResponse(title="-", count=0, setlist_id=None, image=None)
 
         counts: Dict[str, int] = {}
 
@@ -190,17 +190,21 @@ class DashboardService:
                 counts[title] = counts.get(title, 0) + 1
 
         if not counts:
-            return TopShowResponse(title="-", count=0, image=None)
+            return TopShowResponse(title="-", count=0, setlist_id=None, image=None)
 
         top_title = max(counts.keys(), key=lambda k: counts[k])
 
         # Priority: Setlist Database > Event Database > Constants
         image = None
         blur_hash = None
+        setlist_id = None
         setlist = await self.setlists_repository.find_by_title(top_title)
-        if setlist and (setlist.get("imageUrl") or setlist.get("img")):
-            image = setlist.get("imageUrl") or setlist.get("img")
-            blur_hash = setlist.get("blurHash")
+        if setlist:
+            if setlist.get("setlistId"):
+                setlist_id = setlist.get("setlistId")
+            if setlist.get("imageUrl") or setlist.get("img"):
+                image = setlist.get("imageUrl") or setlist.get("img")
+                blur_hash = setlist.get("blurHash")
         else:
             # Try events collection
             event = await self.events_repository.collection.find_one(
@@ -217,6 +221,7 @@ class DashboardService:
         return TopShowResponse(
             title=top_title,
             count=counts[top_title],
+            setlist_id=setlist_id,
             image=image,
             blurHash=blur_hash,
         )

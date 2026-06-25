@@ -70,6 +70,15 @@ async def test_get_dashboard_stats_with_tickets(client: AsyncClient, db, create_
         "price": 55000,
     })
 
+    # Create a setlist in the db to match Pajama Drive
+    await db["setlists"].insert_one({
+        "setlistId": "pajama-drive",
+        "title": "Pajama Drive",
+        "imageUrl": "https://example.com/pajama.jpg",
+        "active": True,
+        "type": "setlist"
+    })
+
     response = await client.get("/api/dashboard/stats?year=2024", headers=headers)
     assert response.status_code == 200
 
@@ -80,6 +89,7 @@ async def test_get_dashboard_stats_with_tickets(client: AsyncClient, db, create_
     assert data["theater"]["total_spent"] == 165000
     assert data["theater"]["top_show"]["title"] == "Pajama Drive"
     assert data["theater"]["top_show"]["count"] == 2
+    assert data["theater"]["top_show"]["setlist_id"] == "pajama-drive"
 
     # Verify seat map stats
     assert data["seat_map"]["row_stats"]["counts"]["A"] == 2

@@ -112,6 +112,7 @@
 	let topShowStats = $derived({
 		title: dashboardStats?.theater.top_show.title ?? '-',
 		count: dashboardStats?.theater.top_show.count ?? 0,
+		setlist_id: dashboardStats?.theater.top_show.setlist_id ?? null,
 		image: dashboardStats?.theater.top_show.image ?? null,
 		image_medium: dashboardStats?.theater.top_show.image_medium ?? null,
 		image_small: dashboardStats?.theater.top_show.image_small ?? null,
@@ -276,6 +277,7 @@
 				<TopShowCard
 					title={topShowStats.title}
 					count={topShowStats.count}
+					setlist_id={topShowStats.setlist_id}
 					image={topShowStats.image}
 					image_medium={topShowStats.image_medium}
 					image_small={topShowStats.image_small}
