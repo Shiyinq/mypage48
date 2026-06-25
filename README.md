@@ -57,7 +57,7 @@ mypage48/
 ├── nginx/                 # Nginx Configuration (Production)
 ├── scripts/               # Utility & Cron scripts
 ├── tests/                 # Backend tests
-├── DEPLOYMENT.md          # PRODUCTION DEPLOYMENT GUIDE 🚀
+├── docs/                  # Project Documentation (Deployment Guide, etc.)
 ├── docker-compose.yml     # Local Development Compose
 ├── docker-compose.prod.yml # Production Environment Compose
 ```
@@ -129,7 +129,7 @@ MyPage48 is now fully production-ready with a secure, automated infrastructure.
 - **Hardened Security**: Network isolation, Root DB authentication, and HTTPS ready.
 
 ### Guide
-For a step-by-step production setup on a VPS, please follow the **[Deployment Guide](DEPLOYMENT.md)**.
+For a step-by-step production setup on a VPS, please follow the **[Deployment Guide](docs/DEPLOYMENT.md)**.
 
 ## 📝 License
 

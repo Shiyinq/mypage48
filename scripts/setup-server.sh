@@ -187,5 +187,5 @@ echo "   - Open fullchain.pem: nano certbot/conf/live/$DOMAIN/fullchain.pem (Pas
 echo "   - Open privkey.pem:   nano certbot/conf/live/$DOMAIN/privkey.pem   (Paste Private Key)"
 echo "3. Add your GitHub SSH Public Key to your GitHub Profile."
 echo "4. Run deployment: docker compose -f docker-compose.prod.yml up -d"
-echo "5. Configure GitHub Secrets as per DEPLOYMENT.md for Auto-Updates."
+echo "5. Configure GitHub Secrets as per docs/DEPLOYMENT.md for Auto-Updates."
 echo "--------------------------------------------------------"
