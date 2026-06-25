@@ -1644,5 +1644,16 @@
 		"showSidebar": "Show List",
 		"uploadingImage": "Uploading image...",
 		"cancelImage": "Cancel"
+	},
+	"pwa": {
+		"new_version": "A new version is available!",
+		"reload": "Reload",
+		"later": "Later",
+		"description": "A new version of the app is available. Reload now to get the latest features."
+	},
+	"offline": {
+		"title": "Connection Lost",
+		"message": "The browser failed to load this page because there is no internet connection. Please check your Wi-Fi or cellular data.",
+		"retry": "Try Again"
 	}
 }

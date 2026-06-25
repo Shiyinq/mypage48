@@ -2,14 +2,18 @@ import type { Cookies } from '@sveltejs/kit';
 
 export type Locale = 'id' | 'en' | 'ja';
 
+import { building } from '$app/environment';
+
 /**
  * Centrally detects the appropriate locale based on URL, Cookies, and Device settings.
  */
 export function detectLocale(request: Request, cookies: Cookies, url: URL): Locale {
 	// 1. URL Priority (?lang=)
-	const urlLocale = url.searchParams.get('lang');
-	if (urlLocale && (urlLocale === 'id' || urlLocale === 'en' || urlLocale === 'ja')) {
-		return urlLocale as Locale;
+	if (!building) {
+		const urlLocale = url.searchParams.get('lang');
+		if (urlLocale && (urlLocale === 'id' || urlLocale === 'en' || urlLocale === 'ja')) {
+			return urlLocale as Locale;
+		}
 	}
 
 	// 2. Cookie Priority

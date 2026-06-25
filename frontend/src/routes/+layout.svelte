@@ -27,6 +27,8 @@
 	import LandingNavbar from '$lib/components/landing-page/LandingNavbar.svelte';
 	import Footer from '$lib/components/landing-page/Footer.svelte';
 	import AppBackground from '$lib/components/common/AppBackground.svelte';
+	import ReloadPrompt from '$lib/components/ReloadPrompt.svelte';
+	import OfflinePage from './offline/+page.svelte';
 
 	interface Props {
 		data: { locale?: string };
@@ -47,6 +49,9 @@
 
 	// Track if client has mounted - used to delay auth redirects
 	let mounted = $state(false);
+
+	// Track offline status globally
+	let isOffline = $state(false);
 
 	// Global Error Handling
 	let appError: Error | null = $state(null);
@@ -77,12 +82,20 @@
 		initTheme();
 		validateEnv();
 
+		isOffline = !navigator.onLine;
+		const setOffline = () => (isOffline = true);
+		const setOnline = () => (isOffline = false);
+
 		window.addEventListener('error', handleGlobalError);
 		window.addEventListener('unhandledrejection', handleUnhandledRejection);
+		window.addEventListener('offline', setOffline);
+		window.addEventListener('online', setOnline);
 
 		return () => {
 			window.removeEventListener('error', handleGlobalError);
 			window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+			window.removeEventListener('offline', setOffline);
+			window.removeEventListener('online', setOnline);
 		};
 	});
 
@@ -225,14 +238,24 @@
 
 		{#if isPublicPage && !isGuestRoute && !isAuthenticated.value}
 			<!-- Public non-auth pages (like /u/*): render immediately -->
-			{@render children?.()}
+			{#if isOffline}
+				<OfflinePage />
+			{:else}
+				{@render children?.()}
+			{/if}
 		{:else if isGuestRoute}
 			<!-- Guest routes (/login, /register, /auth/*): need auth check -->
 			{#if !mounted}
 				<SplashScreen />
 			{:else if !isAuthenticated.value}
 				<!-- Not authenticated: show login/register page -->
-				{@render children?.()}
+				<main class="flex-1 w-full relative flex flex-col">
+					{#if isOffline}
+						<OfflinePage />
+					{:else}
+						{@render children?.()}
+					{/if}
+				</main>
 			{/if}
 			<!-- If mounted && $isAuthenticated && isGuestRoute: render nothing, redirect will happen -->
 		{:else if !mounted}
@@ -240,7 +263,13 @@
 		{:else if isPublicPage && !isAuthenticated.value}
 			<!-- Render public theater pages for unauthenticated users -->
 			{#if $page.url.pathname === '/'}
-				{@render children?.()}
+				<main class="flex-1 w-full relative flex flex-col">
+					{#if isOffline}
+						<OfflinePage />
+					{:else}
+						{@render children?.()}
+					{/if}
+				</main>
 			{:else}
 				{#if !isFullScreenRoute && !isImmersive.value}
 					<LandingNavbar showLogin={false} />
@@ -248,13 +277,17 @@
 				{@const isLivePublicDetailPage =
 					$page.url.pathname.startsWith('/jkt48/live/') && $page.params.id}
 				<div
-					class={isFullScreenRoute || isImmersive.value
+					class="relative {isFullScreenRoute || isImmersive.value
 						? 'w-full h-full'
 						: isLivePublicDetailPage
 							? 'max-w-7xl mx-auto p-0 sm:p-2 sm:px-4 flex-1'
-							: 'max-w-7xl mx-auto px-4 py-8 flex-1'}
+							: 'max-w-7xl mx-auto px-4 py-8 flex-1'}"
 				>
-					{@render children?.()}
+					{#if isOffline}
+						<OfflinePage />
+					{:else}
+						{@render children?.()}
+					{/if}
 				</div>
 				{#if !isFullScreenRoute && !isImmersive.value}
 					<Footer />
@@ -273,7 +306,11 @@
 				</div>
 			{/if}
 			<main class="flex-1 w-full relative">
-				{@render children?.()}
+				{#if isOffline}
+					<OfflinePage />
+				{:else}
+					{@render children?.()}
+				{/if}
 			</main>
 			{#if !isFullScreenRoute && !isPlaygroundRoute && !isImmersive.value}
 				<MobileNav />
@@ -284,5 +321,6 @@
 		{/if}
 		<!-- If mounted && !$isAuthenticated && !isPublicPage: render nothing, redirect will happen -->
 		<ScrollToTop />
+		<ReloadPrompt />
 	</div>
 {/if}
