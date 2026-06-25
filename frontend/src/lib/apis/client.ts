@@ -34,26 +34,22 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 async function doRefreshAccessToken(): Promise<string | null> {
-	try {
-		// Raw fetch to avoid infinite loops
-		const csrfToken = getCSRFToken();
-		const response = await fetch(`${API_BASE}/auth/refresh`, {
-			method: 'POST',
-			headers: {
-				'X-CSRF-Token': csrfToken
-			},
-			credentials: 'include'
-		});
+	// Raw fetch to avoid infinite loops
+	const csrfToken = getCSRFToken();
+	const response = await fetch(`${API_BASE}/auth/refresh`, {
+		method: 'POST',
+		headers: {
+			'X-CSRF-Token': csrfToken
+		},
+		credentials: 'include'
+	});
 
-		if (response.ok) {
-			const data: AuthResponse = await response.json();
-			accessToken.set(data.access_token);
-			return data.access_token;
-		}
-		return null;
-	} catch {
-		return null;
+	if (response.ok) {
+		const data: AuthResponse = await response.json();
+		accessToken.set(data.access_token);
+		return data.access_token;
 	}
+	return null;
 }
 
 export async function client<T>(
@@ -93,7 +89,10 @@ export async function client<T>(
 	// 1. Token is expired/missing
 	// 2. AND (it's a private endpoint OR we have a session hint)
 	if (isTokenExpired(token) && (!isPublic || hasAuthHint)) {
+		// Network errors during refresh (e.g. offline) will naturally propagate
+		// upwards without clearing the session.
 		const newToken = await refreshAccessToken();
+
 		if (newToken) {
 			token = newToken;
 		} else {

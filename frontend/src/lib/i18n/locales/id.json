@@ -1648,5 +1648,16 @@
 			"premium": "PREMIUM",
 			"notOwned": "BELUM DIMILIKI"
 		}
+	},
+	"pwa": {
+		"new_version": "Ada pembaruan versi baru!",
+		"reload": "Muat Ulang",
+		"later": "Nanti Saja",
+		"description": "Versi terbaru aplikasi telah tersedia. Muat ulang sekarang untuk mendapatkan fitur terbaru."
+	},
+	"offline": {
+		"title": "Koneksi Terputus",
+		"message": "Browser gagal memuat data halaman ini karena tidak ada koneksi internet. Silakan periksa jaringan Wi-Fi atau data seluler Anda.",
+		"retry": "Coba Lagi"
 	}
 }

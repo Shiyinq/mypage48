@@ -1,12 +1,18 @@
 import type { LayoutServerLoad } from './$types';
 import { detectLocale } from '$lib/i18n/server';
 
+import { building } from '$app/environment';
+
 export const load: LayoutServerLoad = async ({ cookies, url, request }) => {
 	// Detect locale using centralized utility
 	const locale = detectLocale(request, cookies, url);
 
 	// If valid lang param is provided via URL, ensure cookie is set for future visits
-	const urlLocale = url.searchParams.get('lang');
+	let urlLocale = null;
+	if (!building) {
+		urlLocale = url.searchParams.get('lang');
+	}
+
 	if (urlLocale && ['id', 'en', 'ja'].includes(urlLocale)) {
 		cookies.set('mypage48_locale', urlLocale, {
 			path: '/',
