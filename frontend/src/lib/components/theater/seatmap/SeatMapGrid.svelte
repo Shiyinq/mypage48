@@ -168,7 +168,7 @@
 		/* 1 column for row label + 34 columns for the theater map layout */
 		/* Columns 10, 17, and 24 are the aisles */
 		grid-template-columns:
-			auto repeat(9, var(--seat-w)) var(--aisle-w) repeat(6, var(--seat-w))
+			max-content repeat(9, var(--seat-w)) var(--aisle-w) repeat(6, var(--seat-w))
 			var(--aisle-w) repeat(6, var(--seat-w)) var(--aisle-w) repeat(10, var(--seat-w));
 		gap: 2px 2px;
 		width: fit-content;

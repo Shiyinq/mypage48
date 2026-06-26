@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { MapPin, StretchHorizontal, Grid3x3 } from 'lucide-svelte';
+	import { MapPin, StretchHorizontal, Grid3x3, Maximize } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
@@ -8,6 +8,7 @@
 		rowStats: { uniqueVisited: number };
 		totalRows: number;
 		mapView: 'ROWS' | 'SEATS';
+		onfullscreen?: () => void;
 	}
 
 	let {
@@ -15,7 +16,8 @@
 		showRowStats = true,
 		rowStats,
 		totalRows,
-		mapView = $bindable()
+		mapView = $bindable(),
+		onfullscreen
 	}: Props = $props();
 
 	const { t } = useTranslation();
@@ -53,5 +55,13 @@
 				<Grid3x3 class="w-4 h-4" />
 			</button>
 		</div>
+		{#if onfullscreen}
+			<button
+				onclick={onfullscreen}
+				class="sm:hidden h-9 w-9 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all cursor-pointer shadow-sm"
+			>
+				<Maximize class="w-4 h-4" />
+			</button>
+		{/if}
 	</div>
 </div>

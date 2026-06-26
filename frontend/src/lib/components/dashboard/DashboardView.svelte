@@ -361,7 +361,7 @@
 	</div>
 
 	<!-- THEATER MAP -->
-	<TheaterSeatMap {rowStats} {seatStats} isLoading={loading} />
+	<TheaterSeatMap {rowStats} {seatStats} isLoading={loading} showRowStats={false} />
 
 	<div class="grid lg:grid-cols-3 gap-6">
 		<MonthlyAttendance
