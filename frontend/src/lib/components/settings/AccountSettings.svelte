@@ -392,53 +392,55 @@
 								{/if}
 							</div>
 						{:else}
-							<div class="px-1 flex items-center gap-2" in:fade>
-								<p class="text-base font-bold text-gray-800 dark:text-gray-200">
+							<div class="px-1 flex items-center gap-2 min-w-0" in:fade>
+								<p class="text-base font-bold text-gray-800 dark:text-gray-200 truncate">
 									{showEmail ? userProfile.data.email || '-' : maskEmail(userProfile.data.email)}
 								</p>
-								<button
-									type="button"
-									onclick={() => (showEmail = !showEmail)}
-									class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
-									title={showEmail ? t('common.hide') : t('common.show')}
-								>
-									{#if showEmail}
-										<EyeOff class="w-4 h-4" />
-									{:else}
-										<Eye class="w-4 h-4" />
-									{/if}
-								</button>
-								<button
-									type="button"
-									class="relative group/tooltip focus:outline-none"
-									tabindex="0"
-								>
-									{#if userProfile.data.isEmailVerified}
-										<ShieldCheck
-											class="w-4 h-4 text-blue-500 cursor-help group-focus/tooltip:text-blue-600 transition-colors"
-										/>
-										<div
-											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-zinc-800 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 group-focus/tooltip:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20 shadow-xl border border-white/10"
-										>
-											{t('settings.account.verified')}
+								<div class="flex items-center gap-1 shrink-0">
+									<button
+										type="button"
+										onclick={() => (showEmail = !showEmail)}
+										class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
+										title={showEmail ? t('common.hide') : t('common.show')}
+									>
+										{#if showEmail}
+											<EyeOff class="w-4 h-4" />
+										{:else}
+											<Eye class="w-4 h-4" />
+										{/if}
+									</button>
+									<button
+										type="button"
+										class="relative group/tooltip focus:outline-none"
+										tabindex="0"
+									>
+										{#if userProfile.data.isEmailVerified}
+											<ShieldCheck
+												class="w-4 h-4 text-blue-500 cursor-help group-focus/tooltip:text-blue-600 transition-colors"
+											/>
 											<div
-												class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900 dark:border-t-zinc-800"
-											></div>
-										</div>
-									{:else}
-										<Info
-											class="w-4 h-4 text-amber-500 cursor-help group-focus/tooltip:text-amber-600 transition-colors"
-										/>
-										<div
-											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-zinc-800 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 group-focus/tooltip:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20 shadow-xl border border-white/10"
-										>
-											{t('settings.account.unverified')}
+												class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-zinc-800 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 group-focus/tooltip:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20 shadow-xl border border-white/10"
+											>
+												{t('settings.account.verified')}
+												<div
+													class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900 dark:border-t-zinc-800"
+												></div>
+											</div>
+										{:else}
+											<Info
+												class="w-4 h-4 text-amber-500 cursor-help group-focus/tooltip:text-amber-600 transition-colors"
+											/>
 											<div
-												class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900 dark:border-t-zinc-800"
-											></div>
-										</div>
-									{/if}
-								</button>
+												class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-zinc-800 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 group-focus/tooltip:opacity-100 transition-all pointer-events-none whitespace-nowrap z-20 shadow-xl border border-white/10"
+											>
+												{t('settings.account.unverified')}
+												<div
+													class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900 dark:border-t-zinc-800"
+												></div>
+											</div>
+										{/if}
+									</button>
+								</div>
 							</div>
 						{/if}
 					</div>

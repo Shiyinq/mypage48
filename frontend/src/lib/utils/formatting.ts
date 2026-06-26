@@ -33,7 +33,6 @@ export function maskEmail(emailStr: string | undefined | null): string {
 	if (parts.length !== 2) return '••••••••••••';
 	const name = parts[0];
 	const domain = parts[1];
-	const maskedName =
-		name.length > 2 ? name.substring(0, 2) + '•'.repeat(name.length - 2) : '•'.repeat(name.length);
+	const maskedName = name.length > 2 ? name.substring(0, 2) + '•••' : '•••';
 	return `${maskedName}@${domain}`;
 }
