@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { MapPin, StretchHorizontal, Grid3x3 } from 'lucide-svelte';
+	import { MapPin, StretchHorizontal, Grid3x3, Maximize } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import TheaterSeatMap from '$lib/components/TheaterSeatMap.svelte';
 
@@ -13,6 +13,7 @@
 
 	const { t } = useTranslation();
 	let mapView: 'ROWS' | 'SEATS' = $state('SEATS');
+	let isFullscreen = $state(false);
 </script>
 
 <div
@@ -26,21 +27,37 @@
 			{t('dashboard.seatMap.title')}
 		</h3>
 
-		<div class="h-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg flex items-center gap-1">
+		<div class="flex items-center">
+			<div class="h-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg flex items-center gap-1">
+				<button
+					onclick={() => (mapView = 'ROWS')}
+					class={`h-full aspect-square flex items-center justify-center rounded-md transition-all cursor-pointer ${mapView === 'ROWS' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+				>
+					<StretchHorizontal class="w-3.5 h-3.5" />
+				</button>
+				<button
+					onclick={() => (mapView = 'SEATS')}
+					class={`h-full aspect-square flex items-center justify-center rounded-md transition-all cursor-pointer ${mapView === 'SEATS' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+				>
+					<Grid3x3 class="w-3.5 h-3.5" />
+				</button>
+			</div>
 			<button
-				onclick={() => (mapView = 'ROWS')}
-				class={`h-full aspect-square flex items-center justify-center rounded-md transition-all cursor-pointer ${mapView === 'ROWS' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+				onclick={() => (isFullscreen = true)}
+				class="sm:hidden h-8 w-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all cursor-pointer shadow-sm ml-2"
 			>
-				<StretchHorizontal class="w-3.5 h-3.5" />
-			</button>
-			<button
-				onclick={() => (mapView = 'SEATS')}
-				class={`h-full aspect-square flex items-center justify-center rounded-md transition-all cursor-pointer ${mapView === 'SEATS' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-			>
-				<Grid3x3 class="w-3.5 h-3.5" />
+				<Maximize class="w-3.5 h-3.5" />
 			</button>
 		</div>
 	</div>
 
-	<TheaterSeatMap embedded showHeader={false} {rowStats} {seatStats} {isLoading} bind:mapView />
+	<TheaterSeatMap
+		embedded
+		showHeader={false}
+		{rowStats}
+		{seatStats}
+		{isLoading}
+		bind:mapView
+		bind:isFullscreen
+	/>
 </div>

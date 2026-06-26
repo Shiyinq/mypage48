@@ -3,9 +3,11 @@
 
 	interface Props {
 		children: Snippet;
+		allowScaleUp?: boolean;
+		fitHeight?: boolean;
 	}
 
-	let { children }: Props = $props();
+	let { children, allowScaleUp = false, fitHeight = false }: Props = $props();
 
 	let wrapper: HTMLDivElement | undefined = $state();
 	let content: HTMLDivElement | undefined = $state();
@@ -19,15 +21,26 @@
 			requestAnimationFrame(() => {
 				if (!wrapper || !content) return;
 
-				const available = wrapper.clientWidth;
-				const needed = content.scrollWidth;
-				const naturalHeight = content.scrollHeight;
+				const availableW = wrapper.clientWidth;
+				const availableH = wrapper.clientHeight;
+				const neededW = content.scrollWidth;
+				const neededH = content.scrollHeight;
 
-				if (needed <= 0 || naturalHeight <= 0) return;
+				if (neededW <= 0 || neededH <= 0) return;
 
-				const nextScale = Math.min(1, available / needed);
+				let nextScale = availableW / neededW;
+
+				if (fitHeight && availableH > 0) {
+					const scaleH = availableH / neededH;
+					nextScale = Math.min(nextScale, scaleH);
+				}
+
+				if (!allowScaleUp) {
+					nextScale = Math.min(1, nextScale);
+				}
+
 				scale = nextScale;
-				scaledHeight = naturalHeight * nextScale;
+				scaledHeight = neededH * nextScale;
 			});
 		};
 
@@ -42,14 +55,16 @@
 
 <div
 	bind:this={wrapper}
-	class="w-full overflow-hidden"
-	style:height={scaledHeight != null && scaledHeight > 0 ? `${scaledHeight}px` : 'auto'}
+	class="w-full overflow-hidden {fitHeight ? 'flex justify-center h-full items-center' : ''}"
+	style:height={!fitHeight && scaledHeight != null && scaledHeight > 0
+		? `${scaledHeight}px`
+		: undefined}
 >
 	<div
 		bind:this={content}
 		class="w-fit"
 		style:transform="scale({scale})"
-		style:transform-origin="top left"
+		style:transform-origin={fitHeight ? 'center center' : 'top left'}
 	>
 		{@render children()}
 	</div>
