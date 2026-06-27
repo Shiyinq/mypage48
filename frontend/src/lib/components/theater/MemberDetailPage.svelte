@@ -842,8 +842,9 @@
 								{:else}
 									<div class="space-y-2">
 										{#each sortedEvents as event}
-											<div
-												class="flex items-center gap-3 p-3 rounded-xl bg-gray-50/30 dark:bg-zinc-800/20 border border-gray-100 dark:border-zinc-800/50 hover:border-gray-300 dark:hover:border-zinc-600 transition-all group"
+											<a
+												href={`${basePath.replace('/members', '/events')}/${event.id}`}
+												class="flex items-center gap-3 p-3 rounded-xl bg-gray-50/30 dark:bg-zinc-800/20 border border-gray-100 dark:border-zinc-800/50 hover:border-red-200 dark:hover:border-red-900/30 transition-all group cursor-pointer"
 											>
 												<div
 													class="w-10 h-10 rounded-xl overflow-hidden bg-gray-200 dark:bg-zinc-700 shrink-0"
@@ -852,7 +853,7 @@
 														<img
 															src={getExternalMediaUrl(event.imageUrl)}
 															alt={event.title}
-															class="w-full h-full object-cover"
+															class="w-full h-full object-cover transition-transform group-hover:scale-110"
 														/>
 													{:else}
 														<div
@@ -863,7 +864,9 @@
 													{/if}
 												</div>
 												<div class="flex-1 min-w-0">
-													<p class="text-sm font-bold text-gray-800 dark:text-gray-200 break-words">
+													<p
+														class="text-sm font-bold text-gray-800 dark:text-gray-200 break-words group-hover:text-red-500 transition-colors"
+													>
 														{event.title}
 													</p>
 													<p class="text-[10px] font-medium text-gray-400">
@@ -883,7 +886,7 @@
 														{t('member.upcoming')}
 													</span>
 												{/if}
-											</div>
+											</a>
 										{/each}
 									</div>
 
