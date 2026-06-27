@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta
 from math import ceil
 from typing import List, Optional
@@ -49,8 +50,12 @@ class EventsService:
                     event["blurHash"] = res["blurHash"]
 
         if "members" in event:
-            for member in event["members"]:
-                await self.member_service._resolve_member(member)
+            await asyncio.gather(
+                *[
+                    self.member_service._resolve_member(member)
+                    for member in event["members"]
+                ]
+            )
 
         return event
 
