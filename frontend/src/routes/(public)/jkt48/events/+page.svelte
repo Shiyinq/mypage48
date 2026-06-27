@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Calendar, Clock, Cake, ArrowRight, GraduationCap, Users } from 'lucide-svelte';
-	import { EmptyState, ErrorState } from '$lib/components';
+	import { EmptyState, ErrorState, PublicEventFilter } from '$lib/components';
 	import { scale } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { HorizontalEventCardSkeleton } from '$lib/components/skeletons';
@@ -37,6 +37,7 @@
 
 	let showMemberDetail = $state(false);
 	let selectedMember: Member | null = $state(null);
+	let selectedLabels = $state<string[]>([]);
 
 	let mounted = $state(false);
 	onMount(async () => {
@@ -48,7 +49,14 @@
 		mounted = true;
 	});
 
-	let eventsList = $derived(upcomingEvents.value);
+	let eventsList = $derived(
+		upcomingEvents.value.filter((e) => {
+			if (selectedLabels.length === 0) return true;
+			const l = e.label?.toUpperCase() || '';
+			const t = e.type?.toUpperCase() || '';
+			return selectedLabels.includes(l) || selectedLabels.includes(t);
+		})
+	);
 	let loading = $derived(isUpcomingEventsLoading.value);
 	let error = $derived(upcomingError.value);
 	let birthdays = $derived(membersStore.birthdays || []);
@@ -95,18 +103,31 @@
 		<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
 			<div class="flex items-center gap-4 group/header">
 				<div class="h-10 w-2 bg-red-600 rounded-full shadow-lg shadow-red-500/20"></div>
-				<h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+				<h2
+					class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase flex items-center gap-3"
+				>
 					{t('theater.upcomingEvents.title') || 'Upcoming Shows'}
+					{#if mounted && !loading}
+						<span
+							class="px-3 py-1 rounded-full bg-white dark:bg-zinc-900 text-xs font-black text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-800 shadow-sm transition-all"
+						>
+							{eventsList.length}
+						</span>
+					{/if}
 				</h2>
 			</div>
 
-			<a
-				href="/jkt48/event-history"
-				class="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-sm hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all group"
-			>
-				{t('theater.eventHistory.title') || 'Event History'}
-				<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
-			</a>
+			<div class="flex items-center gap-2 w-full sm:w-auto">
+				<PublicEventFilter bind:selectedLabels />
+
+				<a
+					href="/jkt48/event-history"
+					class="flex w-full sm:w-auto flex-1 sm:flex-none h-[46px] sm:h-[50px] items-center justify-center gap-2 px-4 sm:px-6 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-100 dark:border-zinc-800 text-slate-700 dark:text-slate-200 font-bold text-[13px] sm:text-sm shadow-sm hover:bg-white dark:hover:bg-zinc-900 hover:border-red-200 hover:text-red-600 transition-all cursor-pointer group"
+				>
+					{t('theater.eventHistory.title') || 'Event History'}
+					<ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
+				</a>
+			</div>
 		</div>
 
 		{#if loading && eventsList.length === 0}
@@ -282,8 +303,17 @@
 	<div class="space-y-8">
 		<div class="flex items-center gap-4 mb-8 group/header">
 			<div class="h-10 w-2 bg-red-600 rounded-full shadow-lg shadow-red-500/20"></div>
-			<h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+			<h2
+				class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase flex items-center gap-3"
+			>
 				{t('theater.birthdays.title') || 'Upcoming Birthdays'}
+				{#if mounted && !birthdaysLoading}
+					<span
+						class="px-3 py-1 rounded-full bg-white dark:bg-zinc-900 text-xs font-black text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-zinc-800 shadow-sm transition-all"
+					>
+						{birthdays.length}
+					</span>
+				{/if}
 			</h2>
 		</div>
 
