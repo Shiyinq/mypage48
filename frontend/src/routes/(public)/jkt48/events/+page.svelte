@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Calendar, Clock, Cake, ArrowRight } from 'lucide-svelte';
+	import { Calendar, Clock, Cake, ArrowRight, GraduationCap, Users } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { scale } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
-	import { EventCardSkeleton } from '$lib/components/skeletons';
+	import { HorizontalEventCardSkeleton } from '$lib/components/skeletons';
 	import {
 		eventsStore,
 		upcomingEvents,
@@ -19,6 +19,8 @@
 	import { getMemberFrame } from '$lib/constants';
 	import { OptimizedImage, PromoBanner } from '$lib/components/common';
 	import { parseIndonesianDate } from '$lib/utils/time';
+	import { MemberDetailModal } from '$lib/components/profile';
+	import type { Member } from '$lib/apis/members';
 
 	const { t, locale } = useTranslation();
 
@@ -32,10 +34,16 @@
 		);
 	}
 
+	let showMemberDetail = $state(false);
+	let selectedMember: Member | null = $state(null);
+
 	let mounted = $state(false);
 	onMount(async () => {
-		await eventsStore.loadUpcoming();
-		await membersStore.loadBirthdays();
+		await Promise.all([
+			eventsStore.loadUpcoming(),
+			membersStore.loadBirthdays(),
+			membersStore.load() // Load full members data for the modal
+		]);
 		mounted = true;
 	});
 
@@ -101,9 +109,9 @@
 		</div>
 
 		{#if loading && eventsList.length === 0}
-			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+			<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
 				{#each Array(8) as _}
-					<EventCardSkeleton />
+					<HorizontalEventCardSkeleton />
 				{/each}
 			</div>
 		{:else if error}
@@ -119,153 +127,164 @@
 				description={t('theater.upcomingEvents.empty')}
 			/>
 		{:else}
-			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+			<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
 				{#each eventsList as event (event.id)}
 					<a
-						href={`https://jkt48.com${event.url}`}
-						target="_blank"
-						class="group relative block transition-all duration-500 flex flex-row sm:block h-[10rem] sm:h-auto sm:aspect-[2/3] shadow-sm hover:shadow-2xl hover:-translate-y-1 rounded-[2rem] {isToday(
+						href={`/jkt48/events/${event.id}`}
+						class="group relative flex flex-row h-32 sm:h-36 lg:h-40 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-xl rounded-[20px] sm:rounded-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-white/5 {isToday(
 							event.date
 						)
-							? 'ring-4 ring-red-500/40 z-10'
-							: 'border border-gray-100 dark:border-white/5'}"
+							? 'ring-2 ring-red-500/50'
+							: ''}"
 						in:scale={{ duration: 300, start: 0.95 }}
 					>
 						{#if isToday(event.date)}
+							<!-- Premium Pulse Glow Overlay -->
 							<div
-								class="absolute inset-0 rounded-[2rem] animate-pulse pointer-events-none shadow-[0_0_30px_rgba(239,68,68,0.4)] z-0"
+								class="absolute inset-0 z-0 rounded-[20px] sm:rounded-2xl ring-4 ring-red-500/40 animate-pulse pointer-events-none shadow-[0_0_20px_rgba(239,68,68,0.3)]"
 							></div>
 						{/if}
 
-						<!-- Content Container -->
+						<!-- Image / Placeholder (Left side) -->
 						<div
-							class="relative z-10 flex flex-row sm:block w-full h-full overflow-hidden rounded-[2rem] bg-white dark:bg-zinc-900"
+							class="relative w-1/3 sm:w-2/5 shrink-0 overflow-hidden bg-gray-50 dark:bg-zinc-800 z-10"
 						>
-							<!-- Image / Placeholder -->
-							<div
-								class="relative w-[40%] sm:w-full sm:h-full shrink-0 overflow-hidden bg-slate-50 dark:bg-zinc-800"
-							>
-								{#if event.imageUrl}
-									<OptimizedImage
-										src={event.imageUrl}
-										srcMedium={event.imageUrl_medium}
-										srcSmall={event.imageUrl_small}
-										blurHash={event.blurHash}
-										alt={event.title}
-										class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-										sizes="(max-width: 640px) 40vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-									/>
-									<div
-										class="absolute inset-0 sm:hidden bg-gradient-to-r from-black/10 via-transparent to-black/5"
-									></div>
-									<div
-										class="absolute inset-0 hidden sm:block bg-gradient-to-t from-black/95 via-black/40 to-transparent"
-									></div>
-								{:else}
-									<div
-										class="absolute inset-0 bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center opacity-20"
+							{#if event.imageUrl}
+								<OptimizedImage
+									src={event.imageUrl}
+									srcMedium={event.imageUrl_medium}
+									srcSmall={event.imageUrl_small}
+									blurHash={event.blurHash}
+									alt={event.title}
+									sizes="(max-width: 640px) 40vw, (max-width: 1024px) 30vw, 20vw"
+									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+								/>
+								<div
+									class="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+								></div>
+							{:else}
+								<div
+									class="absolute inset-0 bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center"
+								>
+									<Calendar class="w-8 h-8 text-white/50" />
+								</div>
+							{/if}
+
+							<!-- Today Badge -->
+							{#if isToday(event.date)}
+								<div class="absolute bottom-2 left-2 z-20">
+									<span
+										class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold text-white bg-red-500 shadow-lg shadow-red-500/30 backdrop-blur-sm today-badge"
 									>
-										<Calendar class="w-12 h-12 text-white" />
+										{t('theater.events.today')}
+									</span>
+								</div>
+							{/if}
+						</div>
+
+						<!-- Details (Right side) -->
+						<div class="relative flex-1 p-3 sm:p-4 flex flex-col z-10 min-w-0">
+							<!-- Top Metadata Row -->
+							<div class="flex flex-wrap items-center gap-2 mb-1.5 sm:mb-2">
+								{#if event.label}
+									<div
+										class="px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider border shadow-sm {event.label ===
+											'JKT48' ||
+										event.label === 'GENERAL' ||
+										event.label === 'EXCLUSIVE'
+											? 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800/30'
+											: event.label === 'LOVE'
+												? 'bg-pink-50 dark:bg-pink-900/20 text-pink-500 dark:text-pink-400 border-pink-100 dark:border-pink-800/30'
+												: event.label === 'DREAM'
+													? 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-500 dark:text-cyan-400 border-cyan-100 dark:border-cyan-800/30'
+													: event.label === 'PASSION'
+														? 'bg-orange-50 dark:bg-orange-900/20 text-orange-500 dark:text-orange-400 border-orange-100 dark:border-orange-800/30'
+														: 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border-gray-200/50 dark:border-white/5'}"
+									>
+										{event.label}
 									</div>
 								{/if}
-
-								<!-- Today Badge -->
-								{#if isToday(event.date)}
-									<div class="absolute top-4 left-4 z-20">
-										<span
-											class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black text-white bg-red-600 shadow-xl shadow-red-500/30 ring-2 ring-white/20"
-										>
-											{t('theater.events.today')}
-										</span>
+								{#if event.type && event.type !== event.label}
+									<div
+										class="px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider shadow-sm border border-transparent {event.type ===
+										'EVENT'
+											? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-rose-200/30 dark:border-rose-800/20'
+											: event.type === 'SHOW'
+												? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200/30 dark:border-blue-800/20'
+												: event.type === 'GENERAL' || event.type === 'EXCLUSIVE'
+													? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-red-200/30 dark:border-red-800/20'
+													: event.type === 'BIRTHDAY'
+														? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 border-yellow-200/30 dark:border-yellow-800/20'
+														: 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border-gray-200/50 dark:border-white/5'}"
+									>
+										{event.type}
 									</div>
 								{/if}
 							</div>
 
-							<!-- Details -->
-							<div
-								class="relative flex-1 p-5 flex flex-col justify-between sm:justify-end sm:absolute sm:inset-0 z-10"
+							<!-- Text Content -->
+							<h3
+								class="font-bold text-sm sm:text-base leading-snug mb-1 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2 text-gray-900 dark:text-gray-100"
+								title={event.title}
 							>
-								<!-- Types/Labels -->
-								<div class="flex items-center gap-2 mb-2">
-									{#if event.label}
-										<div
-											class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider {event.label ===
-												'JKT48' ||
-											event.label === 'GENERAL' ||
-											event.label === 'EXCLUSIVE'
-												? 'bg-red-600 text-white'
-												: event.label === 'LOVE'
-													? 'bg-pink-600 text-white'
-													: event.label === 'DREAM'
-														? 'bg-cyan-600 text-white'
-														: event.label === 'PASSION'
-															? 'bg-orange-600 text-white'
-															: 'bg-zinc-800 text-white'}"
-										>
-											{event.label}
-										</div>
-									{/if}
-									{#if event.type && event.type !== event.label}
-										<div
-											class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider {event.type ===
-											'EVENT'
-												? 'bg-rose-600 text-white'
-												: event.type === 'SHOW'
-													? 'bg-blue-600 text-white'
-													: event.type === 'GENERAL' || event.type === 'EXCLUSIVE'
-														? 'bg-red-600 text-white'
-														: 'bg-slate-700 text-white'}"
-										>
-											{event.type}
-										</div>
-									{/if}
+								{event.title}
+							</h3>
+
+							{#if (event.seitansaiMembers?.length ?? 0) > 0}
+								<div
+									class="flex items-center gap-1.5 text-[11px] sm:text-xs text-pink-500 font-medium mb-1 w-fit"
+								>
+									<Cake class="w-3.5 h-3.5 text-pink-500" />
+									<span class="line-clamp-1">{event.seitansaiMembers?.join(', ')}</span>
 								</div>
+							{/if}
 
-								<!-- Text Content -->
-								<div>
-									<h3
-										class="font-black text-base sm:text-lg leading-tight mb-2 group-hover:text-red-600 sm:text-white transition-colors line-clamp-2 sm:line-clamp-none text-slate-900 dark:text-white"
-									>
-										{event.title}
-									</h3>
+							{#if (event.graduationMembers?.length ?? 0) > 0}
+								<div
+									class="flex items-center gap-1.5 text-[11px] sm:text-xs text-indigo-500 font-medium mb-1 w-fit"
+								>
+									<GraduationCap class="w-3.5 h-3.5 text-indigo-500" />
+									<span class="line-clamp-1">{event.graduationMembers?.join(', ')}</span>
+								</div>
+							{/if}
 
-									<div class="space-y-1.5">
-										{#if (event.seitansaiMembers?.length ?? 0) > 0}
-											<div
-												class="flex items-center gap-2 text-[10px] sm:text-xs text-pink-600 sm:text-pink-300 font-black uppercase tracking-wider"
-											>
-												<Cake class="w-3.5 h-3.5" />
-												<span class="line-clamp-1">{event.seitansaiMembers?.join(', ')}</span>
-											</div>
-										{/if}
-
-										<!-- Date/Time Meta -->
-										<div class="flex flex-col gap-1 sm:text-white/80">
-											<div
-												class="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest"
-											>
-												<Calendar class="w-3.5 h-3.5" />
-												<span
-													>{formatDate(event.date, {
-														day: 'numeric',
-														month: 'short',
-														year: 'numeric'
-													})}</span
-												>
-											</div>
-											{#if event.setlistId}
-												<div
-													class="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest"
-												>
-													<Clock class="w-3.5 h-3.5" />
-													<span
-														>{formatTime(event.date, { hour: '2-digit', minute: '2-digit' })}</span
-													>
-												</div>
-											{/if}
-										</div>
+							<!-- Metadata Grid -->
+							<div class="flex flex-col gap-0.5 sm:gap-1 mt-auto">
+								<!-- Date & Time -->
+								<div
+									class="flex items-center flex-wrap gap-x-2 gap-y-0.5 text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-gray-400"
+								>
+									<div class="flex items-center gap-1">
+										<Calendar class="w-3 h-3 text-gray-400" />
+										<span>
+											{formatDate(event.date, {
+												weekday: 'short',
+												day: 'numeric',
+												month: 'short',
+												year: 'numeric'
+											})}
+										</span>
 									</div>
+
+									{#if event.setlistId}
+										<div
+											class="flex items-center gap-1 border-l border-gray-200 dark:border-zinc-700 pl-2"
+										>
+											<Clock class="w-3 h-3 text-gray-400" />
+											<span>{formatTime(event.date, { hour: '2-digit', minute: '2-digit' })}</span>
+										</div>
+									{/if}
 								</div>
+
+								<!-- Members -->
+								{#if event.totalMembers > 1}
+									<div
+										class="flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-gray-400"
+									>
+										<Users class="w-3 h-3 text-gray-400" />
+										<span>{event.totalMembers} {t('theater.events.members')}</span>
+									</div>
+								{/if}
 							</div>
 						</div>
 					</a>
@@ -300,7 +319,14 @@
 		{:else}
 			<div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory">
 				{#each birthdays as member}
-					<div class="flex-none w-44 snap-start">
+					<button
+						type="button"
+						class="flex-none w-44 snap-start text-left cursor-pointer"
+						onclick={() => {
+							selectedMember = member as unknown as Member;
+							showMemberDetail = true;
+						}}
+					>
 						<div
 							class="relative group aspect-[3/4] rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-300"
 						>
@@ -361,12 +387,22 @@
 								</div>
 							</div>
 						</div>
-					</div>
+					</button>
 				{/each}
 			</div>
 		{/if}
 	</div>
 </div>
+
+<MemberDetailModal
+	show={showMemberDetail}
+	member={selectedMember}
+	members={membersStore.list.filter((m) => birthdays.some((b) => String(b.id) === String(m.id)))}
+	onClose={() => {
+		showMemberDetail = false;
+		selectedMember = null;
+	}}
+/>
 
 <style>
 	.ring-red-500\/40 {

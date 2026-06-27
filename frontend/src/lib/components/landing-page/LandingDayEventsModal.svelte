@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Calendar, X, ExternalLink, Clock, MapPin } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
 
 	import type { CalendarEvent } from '$lib/types/events';
+	import { getEventUrl } from '$lib/utils/events';
 	import { formatDate } from '$lib/i18n';
 
 	interface LandingCalendarEvent extends CalendarEvent {
@@ -11,7 +13,6 @@
 		time?: string;
 		location?: string;
 		id?: string;
-		news_id?: string;
 	}
 
 	interface Props {
@@ -36,10 +37,15 @@
 	$effect(() => {
 		if (isOpen && typeof window !== 'undefined') {
 			document.body.style.overflow = 'hidden';
+			return () => {
+				document.body.style.overflow = 'unset';
+			};
 		} else if (typeof window !== 'undefined') {
 			document.body.style.overflow = 'unset';
 		}
 	});
+
+	let basePath = $derived($page.url.pathname.startsWith('/theater') ? '/theater' : '/jkt48');
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -101,8 +107,15 @@
 				{:else}
 					<div class="space-y-4">
 						{#each events as event}
-							<div
-								class="group relative bg-white dark:bg-zinc-800/50 p-5 rounded-[2rem] border border-gray-100 dark:border-zinc-800 hover:border-red-200 dark:hover:border-red-900/30 transition-all duration-300"
+							<svelte:element
+								this={event.url || event.id ? 'a' : 'div'}
+								href={event.url || event.id ? getEventUrl(event, basePath) : undefined}
+								target={event.url || event.id
+									? getEventUrl(event, basePath).startsWith('http')
+										? '_blank'
+										: null
+									: undefined}
+								class="group block relative bg-white dark:bg-zinc-800/50 p-5 rounded-[2rem] border border-gray-100 dark:border-zinc-800 hover:border-red-200 dark:hover:border-red-900/30 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
 							>
 								<div class="flex items-start justify-between gap-4">
 									<div class="space-y-3 flex-1">
@@ -148,19 +161,16 @@
 										{/if}
 									</div>
 
-									{#if event.id || event.news_id}
-										<a
-											href={event.news_id
-												? `/jkt48/news/${event.news_id}`
-												: `/theater/schedule/${event.id}`}
-											class="p-3 bg-slate-50 dark:bg-zinc-800 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-all shrink-0"
+									{#if event.url || event.id}
+										<div
+											class="p-3 bg-slate-50 dark:bg-zinc-800 text-slate-400 group-hover:text-red-600 group-hover:bg-red-50 dark:group-hover:bg-red-900/20 rounded-2xl transition-all shrink-0"
 											title={t('theater.news.readMore')}
 										>
 											<ExternalLink class="w-5 h-5" />
-										</a>
+										</div>
 									{/if}
 								</div>
-							</div>
+							</svelte:element>
 						{/each}
 					</div>
 				{/if}

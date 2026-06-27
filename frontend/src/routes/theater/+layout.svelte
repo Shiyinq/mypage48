@@ -51,6 +51,14 @@
 		currentPath.startsWith('/theater/members/') && !isNewsListingPage && !isMembersPage
 	);
 
+	// Check if on event detail page
+	let isEventDetailPage = $derived(
+		currentPath.startsWith('/theater/events/') &&
+			!isEventsHistoryPage &&
+			currentPath !== '/theater/events/calendar' &&
+			currentPath !== '/theater/events'
+	);
+
 	// Check if on setlist detail page
 	let isDetailPage = $derived(
 		(() => {
@@ -196,18 +204,26 @@
 			isEventsHistoryPage ||
 			isNewsListingPage ||
 			isMembersPage ||
-			isMembersDetailPage
+			isMembersDetailPage ||
+			isEventDetailPage
 	);
 </script>
 
 <div
-	class="{isLiveDetailPage || isImmersive.value || isMembersDetailPage
+	class="{isLiveDetailPage || isImmersive.value || isMembersDetailPage || isEventDetailPage
 		? 'max-w-none w-full'
 		: isNewsDetailPage || isDetailPage
 			? 'max-w-5xl w-full'
-			: 'max-w-6xl'} mx-auto {isLiveDetailPage || isImmersive.value || isMembersDetailPage
+			: 'max-w-6xl'} mx-auto {isLiveDetailPage ||
+	isImmersive.value ||
+	isMembersDetailPage ||
+	isEventDetailPage
 		? 'pt-0 sm:pt-0 px-0'
-		: 'pt-4 sm:pt-6 px-4'} {isImmersive.value ? 'pb-0' : isMembersDetailPage ? 'pb-0' : 'pb-24'}"
+		: 'pt-4 sm:pt-6 px-4'} {isImmersive.value
+		? 'pb-0'
+		: isMembersDetailPage || isEventDetailPage
+			? 'pb-0'
+			: 'pb-24'}"
 >
 	<!-- Unified Page Header (Standard or Background Live Sync) -->
 	<PageHeader

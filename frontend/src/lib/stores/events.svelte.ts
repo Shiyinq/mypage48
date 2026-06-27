@@ -1,5 +1,5 @@
 import { events } from '$lib/apis/events';
-import type { Event, CalendarEvent, PaginationMeta } from '$lib/types';
+import type { Event, EventDetail, CalendarEvent, PaginationMeta } from '$lib/types';
 import { isCacheExpired } from '$lib/utils/cache';
 import { logger } from '$lib/utils/logger';
 import { createRequestDedup } from '$lib/utils/requestDedup';
@@ -42,6 +42,8 @@ interface EventsState {
 		month: number;
 		cache: Record<string, { list: CalendarEvent[]; lastUpdated: number }>;
 	};
+	detailCache: Record<string, EventDetail>;
+	isDetailLoading: boolean;
 }
 
 const initialState: EventsState = {
@@ -77,7 +79,9 @@ const initialState: EventsState = {
 		year: 0,
 		month: 0,
 		cache: {}
-	}
+	},
+	detailCache: {},
+	isDetailLoading: false
 };
 
 const state = $state<EventsState>(initialState);
@@ -138,10 +142,37 @@ function createEventsStore() {
 		get calendar() {
 			return state.calendar;
 		},
+		get detailCache() {
+			return state.detailCache;
+		},
+		get isDetailLoading() {
+			return state.isDetailLoading;
+		},
 
 		reset: () => {
 			Object.assign(state, initialState);
 			dedup.clear();
+		},
+
+		loadDetail: async (id: string, forceRefresh = false) => {
+			if (!forceRefresh && state.detailCache[id]) {
+				return state.detailCache[id];
+			}
+
+			const key = `detail:${id}`;
+			return dedup.execute(key, async () => {
+				state.isDetailLoading = true;
+				try {
+					const detail = await events.getEventById(id);
+					state.detailCache[id] = detail;
+					return detail;
+				} catch (e) {
+					logger.error('Failed to load event detail', e);
+					throw e;
+				} finally {
+					state.isDetailLoading = false;
+				}
+			});
 		},
 
 		loadUpcoming: async (forceRefresh = false) => {

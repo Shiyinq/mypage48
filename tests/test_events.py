@@ -589,3 +589,31 @@ async def test_get_member_event_stats_error(client, monkeypatch, create_user):
     assert data["total_shows"] == 0
     assert data["unique_setlists"] == 0
 
+
+@pytest.mark.asyncio
+async def test_get_event_by_id_success(client, create_event, create_user):
+    _, _, headers = await create_user("testuser")
+
+    await create_event({
+        "id": "single-event-1",
+        "title": "Single Event Title",
+        "date": "2026-05-01T12:00:00",
+        "url": "/link",
+        "label": "lbl",
+    })
+
+    response = await client.get("/api/events/single-event-1", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == "single-event-1"
+    assert data["title"] == "Single Event Title"
+
+
+@pytest.mark.asyncio
+async def test_get_event_by_id_not_found(client, create_user):
+    _, _, headers = await create_user("testuser")
+
+    response = await client.get("/api/events/non-existent-event", headers=headers)
+    assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == "Event not found."

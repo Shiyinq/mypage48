@@ -4,7 +4,12 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query
 
 from src.dependencies import get_events_service
-from src.events.schemas import CalendarEvent, EventPaginationResponse, MemberEventStats
+from src.events.schemas import (
+    CalendarEvent,
+    EventDetail,
+    EventPaginationResponse,
+    MemberEventStats,
+)
 from src.events.service import EventsService
 
 router = APIRouter()
@@ -73,3 +78,13 @@ async def get_calendar_events(
     Returns a light version of events optimized for calendar view.
     """
     return await service.get_calendar_events(year=year, month=month)
+
+
+@router.get("/{event_id}", response_model=EventDetail)
+async def get_event(
+    event_id: str,
+    service: EventsService = Depends(get_events_service),
+):
+    """Get single event detail by ID."""
+    event = await service.get_event_by_id(event_id)
+    return event

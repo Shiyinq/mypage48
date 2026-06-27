@@ -1,9 +1,12 @@
+import asyncio
 from datetime import datetime, timedelta
 from math import ceil
 from typing import List, Optional
 
+import httpx
+
 from src.config import Settings
-from src.events.exceptions import EventFetchError
+from src.events.exceptions import EventFetchError, EventNotFoundError
 from src.events.repository import EventsRepository
 from src.events.schemas import (
     CalendarEvent,
@@ -47,6 +50,15 @@ class EventsService:
 
                 if res.get("blurHash"):
                     event["blurHash"] = res["blurHash"]
+
+        if "members" in event:
+            await asyncio.gather(
+                *[
+                    self.member_service._resolve_member(member)
+                    for member in event["members"]
+                ]
+            )
+
         return event
 
     async def get_events_paginated(
@@ -114,6 +126,23 @@ class EventsService:
             logger.exception(f"Failed to fetch paginated events: {str(e)}")
             raise EventFetchError() from e
 
+    async def get_event_by_id(self, event_id: str) -> dict:
+        try:
+            raw_event = await self.repository.find_event_by_id(event_id)
+            if not raw_event:
+                raise EventNotFoundError()
+
+            # Fetch exclusive real-time detail if applicable
+            await self._fetch_and_inject_exclusive_data(event_id, raw_event)
+
+            resolved = await self._resolve_event(raw_event)
+            return resolved
+        except EventNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Failed to fetch event by id {event_id}: {str(e)}")
+            raise EventFetchError() from e
+
     async def get_calendar_events(self, year: int, month: int) -> List[CalendarEvent]:
         # 1. Start Date (Start of the week containing the 1st)
         # We assume Sunday as the start of the week.
@@ -147,6 +176,7 @@ class EventsService:
             for b in birthdays:
                 results.append(
                     CalendarEvent(
+                        id=b["id"],
                         title=b["name"],
                         date=b["date"],
                         url=f"/member/detail/id/{b['id']}",
@@ -244,3 +274,30 @@ class EventsService:
                 f"Failed to fetch detailed events for member {member_id}: {str(e)}"
             )
             return []
+
+    async def _fetch_and_inject_exclusive_data(self, event_id: str, raw_event: dict):
+        raw_data = raw_event.get("raw_data", {})
+        short_data = raw_data.get("short", {})
+        ref_code = short_data.get("reference_code")
+
+        if raw_event.get("type") == "EXCLUSIVE" and ref_code:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                try:
+                    res = await client.get(
+                        f"https://jkt48.com/api/v1/exclusives/{ref_code}"
+                    )
+                    if res.status_code == 200:
+                        data = res.json()
+                        if data.get("status") and "data" in data:
+                            if "raw_data" not in raw_event:
+                                raw_event["raw_data"] = {}
+                            raw_event["raw_data"]["detail"] = data["data"]
+
+                            # Cache it in DB for fallback without overwriting 'short'
+                            await self.repository.update_event_raw_data_detail(
+                                event_id, data["data"]
+                            )
+                except Exception as exc:
+                    logger.warning(
+                        f"Failed to fetch realtime data for {ref_code}: {exc}"
+                    )
