@@ -89,37 +89,45 @@ const dedup = createRequestDedup();
 
 // Maps legacy image-based event types to modern types.
 const legacyMapping: Record<string, string> = {
-	'/images/icon.cat2.png': 'EVENT',
-	'/images/icon.cat9.png': 'EVENT',
-	'/images/icon.cat1.png': 'SHOW',
-	'/images/icon.cat17.png': 'SHOW',
-	'/images/icon.cat19.png': 'SHOW',
-	'/images/icon.cat13.png': 'SHOW',
-	'/images/icon.cat11.png': 'SHOW',
-	'/images/icon.cat12.png': 'SHOW',
-	'/images/icon.cat14.png': 'SHOW',
-	'/images/icon.cat15.png': 'SHOW',
-	'/images/icon.cat18.png': 'SHOW',
-	'/images/icon.cat20.png': 'SHOW',
-	'/images/icon.cat21.png': 'SHOW',
-	'/images/icon.cat23.png': 'SHOW',
-	'/images/icon.cat8.png': 'GENERAL',
-	'/images/icon.cat3.png': 'GENERAL',
-	'/images/icon.cat4.png': 'GENERAL',
-	'/images/icon.cat99.png': 'GENERAL',
-	'/images/icon.cat5.png': 'BIRTHDAY',
-	'/images/icon.cat10.png': 'BIRTHDAY',
-	'/images/icon.cat7.png': 'BIRTHDAY'
+	'icon.cat1.png': 'SHOW',
+	'icon.cat2.png': 'EVENT',
+	'icon.cat3.png': 'GENERAL',
+	'icon.cat4.png': 'GENERAL',
+	'icon.cat5.png': 'BIRTHDAY',
+	'icon.cat7.png': 'BIRTHDAY',
+	'icon.cat8.png': 'GENERAL',
+	'icon.cat9.png': 'EVENT',
+	'icon.cat10.png': 'BIRTHDAY',
+	'icon.cat11.png': 'SHOW',
+	'icon.cat12.png': 'SHOW',
+	'icon.cat13.png': 'SHOW',
+	'icon.cat14.png': 'SHOW',
+	'icon.cat15.png': 'SHOW',
+	'icon.cat17.png': 'SHOW',
+	'icon.cat18.png': 'SHOW',
+	'icon.cat19.png': 'SHOW',
+	'icon.cat20.png': 'SHOW',
+	'icon.cat21.png': 'SHOW',
+	'icon.cat23.png': 'SHOW',
+	'icon.cat99.png': 'GENERAL'
 };
 
 function translateLegacyEvent<T extends Event | CalendarEvent>(event: T): T {
 	const labelLower = event.label?.toLowerCase().trim() || '';
-	if (legacyMapping[labelLower]) {
-		const mappedType = legacyMapping[labelLower];
+
+	let mappedType: string | undefined;
+	for (const [key, value] of Object.entries(legacyMapping)) {
+		if (labelLower.includes(key)) {
+			mappedType = value;
+			break;
+		}
+	}
+
+	if (mappedType) {
 		const updatedEvent = {
 			...event,
 			type: mappedType,
-			label: undefined
+			label: mappedType
 		};
 
 		if (mappedType === 'BIRTHDAY' && 'isBirthday' in updatedEvent) {
@@ -128,6 +136,16 @@ function translateLegacyEvent<T extends Event | CalendarEvent>(event: T): T {
 
 		return updatedEvent as T;
 	}
+
+	// Fallback for any other unexpected legacy paths
+	if (labelLower.includes('/images/icon.cat') || labelLower.includes('.png')) {
+		return {
+			...event,
+			type: 'SHOW',
+			label: 'SHOW'
+		} as T;
+	}
+
 	return event;
 }
 
@@ -164,8 +182,12 @@ function createEventsStore() {
 				state.isDetailLoading = true;
 				try {
 					const detail = await events.getEventById(id);
-					state.detailCache[id] = detail;
-					return detail;
+					// Apply legacy translation for detail view as well
+					const translatedDetail = translateLegacyEvent(
+						detail as unknown as Event
+					) as unknown as typeof detail;
+					state.detailCache[id] = translatedDetail;
+					return translatedDetail;
 				} catch (e) {
 					logger.error('Failed to load event detail', e);
 					throw e;

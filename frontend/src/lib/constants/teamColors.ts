@@ -1,3 +1,5 @@
+import { Heart, Star, Flame, Sprout, Crown } from 'lucide-svelte';
+
 export interface TeamColors {
 	ring: string;
 	glow: string;
@@ -64,10 +66,61 @@ const TEAM_COLORS: Record<string, TeamColors> = {
 		badgeBorder: '#dc2626',
 		badgeDot: '#dc2626',
 		badgeText: '#dc2626'
+	},
+	EVENT: {
+		ring: '#8b5cf6',
+		glow: '#8b5cf6',
+		badgeBg: '#8b5cf6',
+		badgeBorder: '#8b5cf6',
+		badgeDot: '#8b5cf6',
+		badgeText: '#8b5cf6'
+	},
+	SHOW: {
+		ring: '#3b82f6',
+		glow: '#3b82f6',
+		badgeBg: '#3b82f6',
+		badgeBorder: '#3b82f6',
+		badgeDot: '#3b82f6',
+		badgeText: '#3b82f6'
+	},
+	GENERAL: {
+		ring: '#6b7280',
+		glow: '#6b7280',
+		badgeBg: '#6b7280',
+		badgeBorder: '#6b7280',
+		badgeDot: '#6b7280',
+		badgeText: '#6b7280'
+	},
+	BIRTHDAY: {
+		ring: '#f43f5e',
+		glow: '#f43f5e',
+		badgeBg: '#f43f5e',
+		badgeBorder: '#f43f5e',
+		badgeDot: '#f43f5e',
+		badgeText: '#f43f5e'
+	},
+	EXCLUSIVE: {
+		ring: '#d97706',
+		glow: '#d97706',
+		badgeBg: '#d97706',
+		badgeBorder: '#d97706',
+		badgeDot: '#d97706',
+		badgeText: '#d97706'
 	}
 };
 
 export function getTeamColors(memberType?: string): TeamColors {
 	const type = memberType?.toUpperCase();
 	return type && type in TEAM_COLORS ? TEAM_COLORS[type] : DEFAULT_COLORS;
+}
+
+export function getTeamIcon(label: string) {
+	if (!label) return null;
+	const l = label.toUpperCase();
+	if (l === 'LOVE') return Heart;
+	if (l === 'DREAM') return Star;
+	if (l === 'PASSION' || l === 'SESSION') return Flame;
+	if (l === 'TRAINEE') return Sprout;
+	if (l === 'EXCLUSIVE') return Crown;
+	return null;
 }
