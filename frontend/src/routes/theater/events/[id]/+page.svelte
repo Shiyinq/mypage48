@@ -462,6 +462,129 @@
 										</div>
 									</div>
 								{/if}
+
+								<!-- Exclusive Sessions -->
+								{#if event.type === 'EXCLUSIVE' && event.raw_data?.detail?.session && event.raw_data.detail.session.length > 0}
+									<div>
+										<div
+											class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6"
+										>
+											<h3
+												class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"
+											>
+												<Users class="w-6 h-6 text-red-500" />
+												{t('theater.events.sessionsAndQuotas')}
+											</h3>
+											{#if event.raw_data.detail.default_price !== undefined || event.raw_data.detail.total_quota !== undefined}
+												<div
+													class="flex items-center gap-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl text-sm font-bold w-fit"
+												>
+													{#if event.raw_data.detail.default_price !== undefined}
+														<span
+															>Rp {event.raw_data.detail.default_price.toLocaleString(
+																'id-ID'
+															)}</span
+														>
+													{/if}
+													{#if event.raw_data.detail.default_price !== undefined && event.raw_data.detail.total_quota !== undefined}
+														<span class="w-1 h-1 rounded-full bg-red-300 dark:bg-red-800"></span>
+													{/if}
+													{#if event.raw_data.detail.total_quota !== undefined}
+														<span
+															>{t('theater.events.quota') || 'Quota'}
+															{event.raw_data.detail.total_quota}</span
+														>
+													{/if}
+												</div>
+											{/if}
+										</div>
+
+										<div class="space-y-4">
+											{#each event.raw_data.detail.session as session, i}
+												<details
+													class="group bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-700/50 overflow-hidden"
+													open={i === 0}
+												>
+													<summary
+														class="p-4 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none hover:bg-gray-100 dark:hover:bg-zinc-700/50 transition-colors [&::-webkit-details-marker]:hidden"
+													>
+														<div>
+															<h4 class="font-bold text-gray-900 dark:text-white">
+																{session.label.replace('Sesi', t('theater.events.sessionName'))}
+															</h4>
+															<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+																{formatDate(session.date, { day: 'numeric', month: 'short' })} • {session.start_time.substring(
+																	0,
+																	5
+																)} - {session.end_time.substring(0, 5)}
+															</p>
+														</div>
+														<div
+															class="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 shadow-sm border border-gray-100 dark:border-zinc-700 group-open:-rotate-180 transition-transform duration-300 text-gray-500 shrink-0"
+														>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="16"
+																height="16"
+																viewBox="0 0 24 24"
+																fill="none"
+																stroke="currentColor"
+																stroke-width="2"
+																stroke-linecap="round"
+																stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg
+															>
+														</div>
+													</summary>
+
+													<div
+														class="p-4 sm:p-5 border-t border-gray-100 dark:border-zinc-700/50 bg-white dark:bg-zinc-900/30"
+													>
+														<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+															{#each session.session_detail as detail}
+																<div
+																	class="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-800/20"
+																>
+																	<div class="min-w-0 pr-2">
+																		<div
+																			class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-0.5"
+																		>
+																			{detail.label.replace('Jalur', t('theater.events.lane'))}
+																		</div>
+																		<div
+																			class="font-bold text-sm text-gray-900 dark:text-white truncate"
+																		>
+																			{detail.jkt48_member_name}
+																		</div>
+																	</div>
+																	<div class="text-right flex flex-col items-end shrink-0">
+																		{#if detail.available_quota > 0}
+																			<span
+																				class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[10px] font-bold rounded uppercase"
+																			>
+																				{detail.available_quota}
+																				{t('theater.events.available')}
+																			</span>
+																		{:else}
+																			<span
+																				class="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] font-bold rounded uppercase"
+																			>
+																				{t('theater.events.soldOut')}
+																			</span>
+																		{/if}
+																		<div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+																			{detail.tickets_sold}
+																			{t('theater.events.sold')}
+																		</div>
+																	</div>
+																</div>
+															{/each}
+														</div>
+													</div>
+												</details>
+											{/each}
+										</div>
+									</div>
+								{/if}
 							</div>
 
 							<!-- Sidebar / Action Area -->

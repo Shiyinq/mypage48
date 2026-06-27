@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from math import ceil
 from typing import List, Optional
 
+import httpx
+
 from src.config import Settings
 from src.events.exceptions import EventFetchError, EventNotFoundError
 from src.events.repository import EventsRepository
@@ -129,6 +131,9 @@ class EventsService:
             raw_event = await self.repository.find_event_by_id(event_id)
             if not raw_event:
                 raise EventNotFoundError()
+
+            # Fetch exclusive real-time detail if applicable
+            await self._fetch_and_inject_exclusive_data(event_id, raw_event)
 
             resolved = await self._resolve_event(raw_event)
             return resolved
@@ -268,3 +273,30 @@ class EventsService:
                 f"Failed to fetch detailed events for member {member_id}: {str(e)}"
             )
             return []
+
+    async def _fetch_and_inject_exclusive_data(self, event_id: str, raw_event: dict):
+        raw_data = raw_event.get("raw_data", {})
+        short_data = raw_data.get("short", {})
+        ref_code = short_data.get("reference_code")
+
+        if raw_event.get("type") == "EXCLUSIVE" and ref_code:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                try:
+                    res = await client.get(
+                        f"https://jkt48.com/api/v1/exclusives/{ref_code}"
+                    )
+                    if res.status_code == 200:
+                        data = res.json()
+                        if data.get("status") and "data" in data:
+                            if "raw_data" not in raw_event:
+                                raw_event["raw_data"] = {}
+                            raw_event["raw_data"]["detail"] = data["data"]
+
+                            # Cache it in DB for fallback without overwriting 'short'
+                            await self.repository.update_event_raw_data_detail(
+                                event_id, data["data"]
+                            )
+                except Exception as exc:
+                    logger.warning(
+                        f"Failed to fetch realtime data for {ref_code}: {exc}"
+                    )

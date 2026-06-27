@@ -17,6 +17,11 @@ class EventsRepository:
             query = {}
         return await self.collection.count_documents(query)
 
+    async def update_event_raw_data_detail(self, event_id: str, detail_data: dict):
+        return await self.collection.update_one(
+            {"id": event_id}, {"$set": {"raw_data.detail": detail_data}}
+        )
+
     async def find_event_by_id(self, event_id: str) -> dict:
         pipeline = [
             {"$match": {"id": event_id}},
