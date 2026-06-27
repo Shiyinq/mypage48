@@ -318,7 +318,7 @@
 											year: 'numeric'
 										})}</span
 									>
-									<span class="inline sm:hidden truncate"
+									<span class="inline sm:hidden whitespace-nowrap"
 										>{formatDate(event.date, {
 											weekday: 'short',
 											day: 'numeric',
@@ -338,7 +338,7 @@
 												? 'text-red-500 dark:text-red-400'
 												: 'text-red-400'}"
 										/>
-										<span class="truncate">
+										<span class="whitespace-nowrap">
 											{event.raw_data?.detail?.start_time?.slice(0, 5) ||
 												event.raw_data?.short?.start_time?.slice(0, 5)}
 											{#if event.raw_data?.detail?.end_time || event.raw_data?.short?.end_time}
@@ -385,7 +385,7 @@
 									<div
 										class="relative z-20 px-6 sm:px-10 pt-[150px] sm:pt-[200px] pb-6 sm:pb-10 flex flex-col justify-end w-full bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95 pointer-events-none"
 									>
-										<div class="pointer-events-auto w-fit">
+										<div class="pointer-events-auto w-full">
 											{@render heroContent({ isDarkText: true })}
 										</div>
 									</div>
@@ -413,7 +413,7 @@
 									<div
 										class="relative z-10 px-6 sm:px-10 pt-[150px] sm:pt-[200px] pb-6 sm:pb-10 flex flex-col justify-end w-full bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95 pointer-events-none"
 									>
-										<div class="pointer-events-auto w-fit">
+										<div class="pointer-events-auto w-full">
 											{@render heroContent({ isDarkText: true })}
 										</div>
 									</div>
