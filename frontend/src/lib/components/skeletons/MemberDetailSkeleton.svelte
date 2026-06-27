@@ -1,11 +1,17 @@
 <script lang="ts">
+	import { PanelLeft } from 'lucide-svelte';
 	let isWide = $state(false);
+	let isSidebarVisible = $state(false);
 
 	$effect(() => {
 		if (typeof window !== 'undefined') {
 			isWide = window.innerWidth >= 768;
+			isSidebarVisible = isWide;
 			const mq = window.matchMedia('(min-width: 768px)');
-			const handler = (e: MediaQueryListEvent) => (isWide = e.matches);
+			const handler = (e: MediaQueryListEvent) => {
+				isWide = e.matches;
+				if (isWide) isSidebarVisible = true;
+			};
 			mq.addEventListener('change', handler);
 			return () => mq.removeEventListener('change', handler);
 		}
@@ -16,44 +22,68 @@
 	class="h-[calc(100vh-64px)] flex flex-col bg-slate-50/50 dark:bg-zinc-900/40 overflow-hidden relative"
 >
 	<div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+		<!-- Mobile Overlay -->
+		{#if isSidebarVisible && !isWide}
+			<button
+				class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[55] md:hidden cursor-default w-full h-full border-none p-0 m-0 text-left"
+				onclick={() => (isSidebarVisible = false)}
+				aria-label="Close sidebar"
+			></button>
+		{/if}
+
 		<!-- Sidebar Skeleton -->
-		{#if isWide}
-			<div
-				class="h-full overflow-hidden border-r border-gray-100 dark:border-white/5 shrink-0 md:absolute md:inset-y-0 md:left-0 z-[60] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md md:w-64 md:shadow-none"
-			>
-				<div class="w-full md:w-64 h-full flex flex-col overflow-hidden">
-					<!-- Header -->
-					<div
-						class="p-4 pb-2 flex items-center justify-center relative border-b border-gray-100 dark:border-zinc-800 shrink-0"
-					>
-						<div class="flex items-center gap-2">
-							<div class="px-4 py-2 bg-gray-200 dark:bg-zinc-700 rounded-lg w-16 h-4"></div>
-							<div class="px-4 py-2 bg-gray-200 dark:bg-zinc-700 rounded-lg w-20 h-4"></div>
-						</div>
-						<div class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5">
-							<div class="w-4 h-4 bg-gray-200 dark:bg-zinc-700 rounded"></div>
-						</div>
+		<div
+			class="h-full overflow-hidden border-r border-gray-100 dark:border-white/5 shrink-0
+				   fixed md:absolute inset-0 md:inset-y-0 md:left-0 z-[60] bg-white md:bg-white/80 dark:bg-zinc-900 md:dark:bg-zinc-900/80 backdrop-blur-md
+				   transition-transform duration-300 ease-in-out w-full md:w-64 shadow-2xl md:shadow-none
+				   {isSidebarVisible ? 'translate-x-0' : '-translate-x-full'}"
+		>
+			<div class="w-full md:w-64 h-full flex flex-col overflow-hidden">
+				<!-- Header -->
+				<div
+					class="p-4 pb-2 flex items-center justify-center relative border-b border-gray-100 dark:border-zinc-800 shrink-0"
+				>
+					<div class="flex items-center gap-2">
+						<div class="px-4 py-2 bg-gray-200 dark:bg-zinc-700 rounded-lg w-16 h-4"></div>
+						<div class="px-4 py-2 bg-gray-200 dark:bg-zinc-700 rounded-lg w-20 h-4"></div>
 					</div>
-					<!-- Member List -->
-					<div class="flex-1 overflow-y-auto custom-scrollbar p-3 pt-2">
-						<div class="flex flex-col gap-2">
-							{#each [1, 2, 3, 4, 5, 6] as _}
-								<div class="px-4 py-3 rounded-2xl flex items-center gap-3">
-									<div class="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-zinc-700"></div>
-									<div class="h-4 bg-gray-200 dark:bg-zinc-700 rounded w-24"></div>
-								</div>
-							{/each}
-						</div>
+					<div class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5">
+						<div class="w-4 h-4 bg-gray-200 dark:bg-zinc-700 rounded"></div>
+					</div>
+				</div>
+				<!-- Member List -->
+				<div class="flex-1 overflow-y-auto custom-scrollbar p-3 pt-2">
+					<div class="flex flex-col gap-2">
+						{#each [1, 2, 3, 4, 5, 6] as _}
+							<div class="px-4 py-3 rounded-2xl flex items-center gap-3">
+								<div class="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-zinc-700"></div>
+								<div class="h-4 bg-gray-200 dark:bg-zinc-700 rounded w-24"></div>
+							</div>
+						{/each}
 					</div>
 				</div>
 			</div>
+		</div>
 
-			<!-- Desktop spacer -->
+		<!-- Desktop spacer -->
+		{#if isWide}
 			<div class="hidden md:block shrink-0" style="width: 256px;"></div>
 		{/if}
 
 		<!-- Main Content Skeleton -->
 		<div class="flex-1 flex flex-col relative overflow-hidden">
+			<!-- Floating Toggle Button -->
+			{#if !isSidebarVisible}
+				<div class="absolute top-3 left-0 z-[20]">
+					<button
+						onclick={() => (isSidebarVisible = true)}
+						class="flex items-center justify-center w-8 h-10 bg-white dark:bg-zinc-900 border-y border-r border-gray-200 dark:border-white/10 rounded-r-xl shadow-lg text-gray-400 hover:text-red-500 transition-all hover:w-10 active:scale-95 cursor-pointer"
+					>
+						<PanelLeft class="w-4 h-4 ml-1" />
+					</button>
+				</div>
+			{/if}
+
 			<div
 				class="flex-1 flex flex-col overflow-y-auto md:overflow-y-auto custom-scrollbar bg-white dark:bg-zinc-900 relative pb-16 md:pb-0"
 			>

@@ -282,13 +282,13 @@
 		{#if members.length > 0}
 			<div
 				class="h-full overflow-hidden border-r border-gray-100 dark:border-white/5 shrink-0
-					   fixed md:absolute inset-0 md:inset-y-0 md:left-0 z-[60] md:z-[40] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md
+					   fixed md:absolute inset-0 md:inset-y-0 md:left-0 z-[60] md:z-[40] bg-white md:bg-white/80 dark:bg-zinc-900 md:dark:bg-zinc-900/80 backdrop-blur-md
 					   transition-transform duration-300 ease-in-out w-full md:w-64 shadow-2xl md:shadow-none
 					   {isSidebarVisible ? 'translate-x-0' : '-translate-x-full'}"
 			>
 				<div class="w-full md:w-64 h-full flex flex-col overflow-hidden">
 					<div
-						class="p-4 pb-2 flex items-center justify-center relative border-b border-gray-100 dark:border-zinc-800/50 shrink-0"
+						class="p-4 pb-2 flex items-center justify-center relative border-b border-gray-100 dark:border-zinc-800/50 shrink-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur z-10"
 					>
 						<div class="flex items-center gap-2">
 							<button
@@ -318,7 +318,10 @@
 							<PanelLeftClose class="w-4 h-4" />
 						</button>
 					</div>
-					<div class="flex-1 overflow-y-auto custom-scrollbar p-3 pt-2">
+					<div
+						class="flex-1 overflow-y-auto custom-scrollbar p-3 pt-2 pb-28"
+						style="overscroll-behavior: contain;"
+					>
 						<div class="flex flex-col gap-1.5">
 							{#each displayMembers as m (m.id)}
 								<button

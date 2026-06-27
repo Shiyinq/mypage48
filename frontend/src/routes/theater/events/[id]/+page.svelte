@@ -53,6 +53,14 @@
 				showBackButton: true,
 				handleBack: () => goto('/theater/events')
 			});
+		} else {
+			pageHeaderStore.set({
+				title: t('theater.events.title') || 'Theater Events',
+				icon: Calendar,
+				theme: 'pink',
+				showBackButton: true,
+				handleBack: () => goto('/theater/events')
+			});
 		}
 		return () => pageHeaderStore.reset();
 	});
@@ -120,12 +128,14 @@
 
 		<!-- Sidebar Container -->
 		<aside
-			class="fixed md:absolute top-0 bottom-0 left-0 z-[60] md:z-10 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-r border-slate-200 dark:border-zinc-800/80 shadow-2xl md:shadow-none w-64 md:w-64 transition-transform duration-300 ease-in-out flex flex-col"
+			class="fixed md:absolute top-0 bottom-0 left-0 z-[60] md:z-10 bg-white md:bg-white/80 dark:bg-zinc-900 md:dark:bg-zinc-900/80 backdrop-blur-md border-r border-gray-100 dark:border-white/5 shadow-2xl md:shadow-none w-full md:w-64 transition-transform duration-300 ease-in-out flex flex-col"
 			class:-translate-x-full={!isSidebarVisible}
 			class:translate-x-0={isSidebarVisible}
 		>
 			<!-- Sidebar Header -->
-			<div class="relative p-4 border-b border-slate-200 dark:border-zinc-800/80 shrink-0">
+			<div
+				class="relative p-4 border-b border-gray-100 dark:border-zinc-800/50 shrink-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur z-10"
+			>
 				<div class="flex items-center justify-between">
 					<h2 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
 						<div class="w-1.5 h-4 bg-red-500 rounded-full"></div>
@@ -142,7 +152,10 @@
 			</div>
 
 			<!-- Event List -->
-			<div class="flex-1 overflow-y-auto custom-scrollbar p-3 pt-2 pb-24 md:pb-4">
+			<div
+				class="flex-1 overflow-y-auto custom-scrollbar p-3 pt-2 pb-28"
+				style="overscroll-behavior: contain;"
+			>
 				{#if isUpcomingEventsLoading.value}
 					<div class="space-y-3">
 						{#each Array(5)}
@@ -184,24 +197,28 @@
 			</div>
 		</aside>
 
-		<!-- Main Content Area -->
-		<main bind:this={mainContentEl} class="flex-1 overflow-y-auto relative h-full custom-scrollbar">
-			<!-- Floating Toggle Sidebar Button -->
-			{#if !isSidebarVisible}
-				<div
-					class="absolute top-3 left-0 z-30 transition-all duration-300"
-					transition:fade={{ duration: 200 }}
+		<!-- Floating Toggle Sidebar Button -->
+		{#if !isSidebarVisible}
+			<div
+				class="absolute top-3 left-0 z-30 transition-all duration-300"
+				transition:fade={{ duration: 200 }}
+			>
+				<button
+					onclick={toggleSidebar}
+					class="flex items-center justify-center w-8 h-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-lg border-y border-r border-gray-200 dark:border-white/10 rounded-r-xl text-gray-400 hover:text-red-500 transition-all hover:w-10 active:scale-95 cursor-pointer"
+					title={t('common.openSidebar')}
 				>
-					<button
-						onclick={toggleSidebar}
-						class="flex items-center justify-center w-8 h-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-lg border-y border-r border-gray-200 dark:border-white/10 rounded-r-xl text-gray-400 hover:text-red-500 transition-all hover:w-10 active:scale-95 cursor-pointer"
-						title={t('common.openSidebar')}
-					>
-						<PanelLeft class="w-4 h-4 ml-1" />
-					</button>
-				</div>
-			{/if}
+					<PanelLeft class="w-4 h-4 ml-1" />
+				</button>
+			</div>
+		{/if}
 
+		<!-- Main Content Area -->
+		<main
+			bind:this={mainContentEl}
+			class="flex-1 overflow-y-auto relative h-full custom-scrollbar bg-white dark:bg-zinc-900"
+			style="overscroll-behavior: contain;"
+		>
 			<!-- Event Detail Content -->
 			<div class="pb-12 max-w-none w-full mx-auto">
 				{#if event}
