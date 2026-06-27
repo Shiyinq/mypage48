@@ -5,7 +5,7 @@
 	import { browser } from '$app/environment';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { OptimizedImage } from '$lib/components/common';
+	import { OptimizedImage, ImageLightbox } from '$lib/components/common';
 	import { formatDate } from '$lib/i18n';
 	import { fade } from 'svelte/transition';
 	import {
@@ -21,7 +21,8 @@
 		Heart,
 		Star,
 		Flame,
-		Sprout
+		Sprout,
+		ZoomIn
 	} from 'lucide-svelte';
 	import { getMemberFrame } from '$lib/constants';
 	import { getTeamColors } from '$lib/constants/teamColors';
@@ -41,6 +42,16 @@
 
 	let eventId = $derived($page.params.id || '');
 	let event = $derived(eventsStore.detailCache[eventId]);
+	let isLightboxOpen = $state(false);
+
+	let heroImageUrl = $derived.by(() => {
+		if (!event) return null;
+		if (event.imageUrl) return event.imageUrl;
+		if (event.type === 'EXCLUSIVE' && event.raw_data?.detail?.thumbnail_image) {
+			return `/proxy/image?url=${encodeURIComponent(event.raw_data.detail.thumbnail_image)}`;
+		}
+		return null;
+	});
 
 	let innerWidth = $state(0);
 	let isSidebarVisible = $state(browser ? window.innerWidth >= 768 : true);
@@ -328,37 +339,68 @@
 
 						<!-- Hero Section -->
 						<div class="relative w-full flex flex-col">
-							{#if event.imageUrl}
+							{#if heroImageUrl}
 								<div
 									class="relative w-full min-h-[280px] sm:min-h-[350px] flex flex-col justify-end"
 								>
-									<div class="absolute inset-0 overflow-hidden pointer-events-none">
+									<!-- Clickable Image Background -->
+									<button
+										onclick={() => (isLightboxOpen = true)}
+										class="absolute inset-0 w-full h-full overflow-hidden bg-gray-100 dark:bg-zinc-800 group cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+										aria-label="View full image"
+									>
 										<OptimizedImage
-											src={event.imageUrl}
+											src={heroImageUrl}
 											srcMedium={event.imageUrl_medium}
 											srcSmall={event.imageUrl_small}
 											blurHash={event.blurHash}
 											alt={event.title}
-											class="w-full h-full object-cover"
+											class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
 										/>
-									</div>
+										<div
+											class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 z-10 hidden md:flex items-center justify-center pb-24 sm:pb-32"
+										>
+											<ZoomIn
+												class="w-16 h-16 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg"
+											/>
+										</div>
+									</button>
+
 									<!-- Hero Content Overlay with seamless fade to background color -->
 									<div
-										class="relative z-10 px-6 sm:px-10 pt-[150px] sm:pt-[200px] pb-6 sm:pb-10 flex flex-col justify-end w-full bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95"
+										class="relative z-20 px-6 sm:px-10 pt-[150px] sm:pt-[200px] pb-6 sm:pb-10 flex flex-col justify-end w-full bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95 pointer-events-none"
 									>
-										{@render heroContent({ isDarkText: true })}
+										<div class="pointer-events-auto w-fit">
+											{@render heroContent({ isDarkText: true })}
+										</div>
 									</div>
 								</div>
+
+								<ImageLightbox
+									src={heroImageUrl}
+									alt={event.title}
+									isOpen={isLightboxOpen}
+									onClose={() => (isLightboxOpen = false)}
+								/>
 							{:else}
 								<!-- Hero without Image -->
 								<div
-									class="w-full bg-gradient-to-br from-red-500/10 to-rose-700/10 dark:from-red-500/5 dark:to-rose-700/5 p-6 sm:p-10 pt-20 sm:pt-24 pb-12 sm:pb-16 relative overflow-hidden"
+									class="relative w-full min-h-[280px] sm:min-h-[350px] flex flex-col justify-end"
 								>
-									<div class="absolute -top-12 -right-12 text-red-500/10">
-										<Calendar class="w-64 h-64 -rotate-12" />
+									<div
+										class="absolute inset-0 bg-gradient-to-br from-red-500/10 to-rose-700/10 dark:from-red-500/5 dark:to-rose-700/5 overflow-hidden pointer-events-none"
+									>
+										<div class="absolute -top-12 -right-12 text-red-500/5 dark:text-red-500/10">
+											<Calendar class="w-64 h-64 -rotate-12" />
+										</div>
 									</div>
-									<div class="relative z-10">
-										{@render heroContent({ isDarkText: true })}
+									<!-- Hero Content Overlay with seamless fade to background color -->
+									<div
+										class="relative z-10 px-6 sm:px-10 pt-[150px] sm:pt-[200px] pb-6 sm:pb-10 flex flex-col justify-end w-full bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95 pointer-events-none"
+									>
+										<div class="pointer-events-auto w-fit">
+											{@render heroContent({ isDarkText: true })}
+										</div>
 									</div>
 								</div>
 							{/if}
