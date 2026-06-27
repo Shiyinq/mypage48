@@ -249,6 +249,7 @@ class EventsRepository:
             {
                 "$project": {
                     "_id": 0,
+                    "id": 1,
                     "title": 1,
                     "date": 1,
                     "url": 1,

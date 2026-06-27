@@ -33,6 +33,7 @@ class Event(BaseModel):
 
 
 class CalendarEvent(BaseModel):
+    id: Optional[str] = None
     title: str
     date: datetime
     url: str

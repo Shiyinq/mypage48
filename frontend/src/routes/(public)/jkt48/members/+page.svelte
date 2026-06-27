@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { Member } from '$lib/apis/members';
 	import { MemberDetailModal } from '$lib/components/profile';
@@ -101,6 +102,15 @@
 		fetchGenerations();
 		selectedGeneration = null;
 		await membersStore.load({ limit: 100 }, true);
+
+		const idFromUrl = $page.url.searchParams.get('id');
+		if (idFromUrl) {
+			const member = membersList.find((m) => m.id.toString() === idFromUrl);
+			if (member) {
+				openMemberDetail(member);
+			}
+		}
+
 		mounted = true;
 	});
 

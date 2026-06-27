@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate, formatTime } from '$lib/i18n';
 	import type { CalendarEvent } from '$lib/types/events';
+	import { getEventUrl } from '$lib/utils/events';
 	import { Cake, Calendar, ExternalLink } from 'lucide-svelte';
 
 	interface Props {
@@ -24,6 +26,8 @@
 			close();
 		}
 	}
+
+	let basePath = $derived($page.url.pathname.startsWith('/theater') ? '/theater' : '/jkt48');
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -89,8 +93,8 @@
 					<div class="space-y-1">
 						{#each events as event}
 							<a
-								href={`https://jkt48.com${event.url}`}
-								target="_blank"
+								href={getEventUrl(event, basePath)}
+								target={getEventUrl(event, basePath).startsWith('http') ? '_blank' : null}
 								class="block p-3 hover:bg-gray-50 dark:hover:bg-zinc-800/50 rounded-xl transition-colors group"
 							>
 								<div class="flex items-start gap-4">

@@ -176,6 +176,7 @@ class EventsService:
             for b in birthdays:
                 results.append(
                     CalendarEvent(
+                        id=b["id"],
                         title=b["name"],
                         date=b["date"],
                         url=f"/member/detail/id/{b['id']}",
