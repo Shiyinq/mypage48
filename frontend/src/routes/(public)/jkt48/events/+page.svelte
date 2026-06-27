@@ -130,7 +130,7 @@
 			</div>
 		</div>
 
-		{#if loading && eventsList.length === 0}
+		{#if (!mounted || loading) && eventsList.length === 0}
 			<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
 				{#each Array(8) as _}
 					<HorizontalEventCardSkeleton />
