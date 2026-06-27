@@ -122,8 +122,7 @@
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 				{#each eventsList as event (event.id)}
 					<a
-						href={`https://jkt48.com${event.url}`}
-						target="_blank"
+						href={`/jkt48/events/${event.id}`}
 						class="group relative block transition-all duration-500 flex flex-row sm:block h-[10rem] sm:h-auto sm:aspect-[2/3] shadow-sm hover:shadow-2xl hover:-translate-y-1 rounded-[2rem] {isToday(
 							event.date
 						)

@@ -436,9 +436,9 @@
 									class="absolute bottom-0 inset-x-0 p-4 md:p-6 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95 dark:to-transparent border-t border-gray-100/50 dark:border-zinc-800/50 flex items-center justify-center gap-4 z-40"
 									in:fade={{ delay: 200, duration: 400 }}
 								>
-									{#if currentMember.socials.twitter}
+									{#if currentMember.socials?.twitter}
 										<a
-											href={currentMember.socials.twitter}
+											href={currentMember.socials?.twitter}
 											target="_blank"
 											rel="noopener noreferrer"
 											aria-label="Twitter / X profile"
@@ -450,18 +450,18 @@
 											></a
 										>
 									{/if}
-									{#if currentMember.socials.instagram}
+									{#if currentMember.socials?.instagram}
 										<a
-											href={currentMember.socials.instagram}
+											href={currentMember.socials?.instagram}
 											target="_blank"
 											rel="noopener noreferrer"
 											class="p-2.5 bg-gray-50 dark:bg-zinc-800 rounded-2xl text-gray-500 dark:text-zinc-400 hover:bg-pink-600 hover:text-white transition-all duration-500 hover:-translate-y-1 shadow-sm"
 											><Instagram class="w-4 h-4" /></a
 										>
 									{/if}
-									{#if currentMember.socials.tiktok}
+									{#if currentMember.socials?.tiktok}
 										<a
-											href={currentMember.socials.tiktok}
+											href={currentMember.socials?.tiktok}
 											target="_blank"
 											rel="noopener noreferrer"
 											aria-label="TikTok profile"
@@ -474,18 +474,18 @@
 											>
 										</a>
 									{/if}
-									{#if currentMember.socials.idn_app}
+									{#if currentMember.socials?.idn_app}
 										<a
-											href={currentMember.socials.idn_app}
+											href={currentMember.socials?.idn_app}
 											target="_blank"
 											rel="noopener noreferrer"
 											class="p-2.5 bg-gray-50 dark:bg-zinc-800 rounded-2xl text-gray-500 dark:text-zinc-400 hover:bg-red-600 hover:text-white transition-all duration-500 hover:-translate-y-1 shadow-sm"
 											><Smartphone class="w-4 h-4" /></a
 										>
 									{/if}
-									{#if currentMember.socials.showroom}
+									{#if currentMember.socials?.showroom}
 										<a
-											href={currentMember.socials.showroom}
+											href={currentMember.socials?.showroom}
 											target="_blank"
 											rel="noopener noreferrer"
 											class="p-2.5 bg-gray-50 dark:bg-zinc-800 rounded-2xl text-gray-500 dark:text-zinc-400 hover:bg-blue-600 hover:text-white transition-all duration-500 hover:-translate-y-1 shadow-sm"
