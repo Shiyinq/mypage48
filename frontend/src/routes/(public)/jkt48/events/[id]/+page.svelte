@@ -5,6 +5,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { OptimizedImage } from '$lib/components/common';
+	import { ErrorState } from '$lib/components';
 	import { formatDate } from '$lib/i18n';
 	import {
 		Calendar,
@@ -70,9 +71,14 @@
 		return null;
 	});
 
+	let isError = $state(false);
+
 	$effect(() => {
 		if (eventId && !event) {
-			eventsStore.loadDetail(eventId);
+			isError = false;
+			eventsStore.loadDetail(eventId).catch(() => {
+				isError = true;
+			});
 		}
 	});
 
@@ -97,7 +103,16 @@
 	);
 </script>
 
-{#if event}
+{#if isError}
+	<div class="max-w-4xl mx-auto pt-10 pb-20 px-4 sm:px-6 md:px-0">
+		<ErrorState
+			title={t('theater.events.notFound') || '404 Not Found'}
+			description={t('theater.events.notFoundDesc') ||
+				'Maaf, event yang Anda cari tidak ditemukan atau telah dihapus.'}
+			onRetry={() => (window.location.href = '/jkt48/events')}
+		/>
+	</div>
+{:else if event}
 	<SEO
 		title={event.title}
 		path={`/jkt48/events/${event.id}`}

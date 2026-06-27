@@ -6,6 +6,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { OptimizedImage, ImageLightbox } from '$lib/components/common';
+	import { ErrorState } from '$lib/components';
 	import { formatDate } from '$lib/i18n';
 	import { fade } from 'svelte/transition';
 	import {
@@ -56,10 +57,15 @@
 	let innerWidth = $state(0);
 	let isSidebarVisible = $state(browser ? window.innerWidth >= 768 : true);
 
+	let isError = $state(false);
+
 	// Fetch Data
 	$effect(() => {
 		if (eventId) {
-			eventsStore.loadDetail(eventId);
+			isError = false;
+			eventsStore.loadDetail(eventId).catch(() => {
+				isError = true;
+			});
 			eventsStore.loadUpcoming();
 		}
 	});
@@ -247,7 +253,16 @@
 		>
 			<!-- Event Detail Content -->
 			<div class="pb-12 max-w-none w-full mx-auto">
-				{#if event}
+				{#if isError}
+					<div class="max-w-4xl mx-auto pt-20 pb-20 px-4 sm:px-6 md:px-0">
+						<ErrorState
+							title={t('theater.events.notFound') || '404 Not Found'}
+							description={t('theater.events.notFoundDesc') ||
+								'Maaf, event yang Anda cari tidak ditemukan atau telah dihapus.'}
+							onRetry={() => (window.location.href = '/theater/events')}
+						/>
+					</div>
+				{:else if event}
 					<!-- Unified Card Container -->
 					<div class="bg-white dark:bg-zinc-900 overflow-hidden">
 						{#snippet heroContent({ isDarkText = false }: { isDarkText?: boolean })}

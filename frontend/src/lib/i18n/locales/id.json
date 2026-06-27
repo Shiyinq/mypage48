@@ -1229,6 +1229,8 @@
 			"ticketInfo": "Informasi Tiket",
 			"interested": "Tertarik dengan event ini?",
 			"interestedDesc": "Buka situs resmi JKT48 untuk melihat detail lebih lanjut, membeli tiket, atau berpartisipasi.",
+			"notFound": "404 Tidak Ditemukan",
+			"notFoundDesc": "Maaf, event yang Anda cari tidak ditemukan atau telah dihapus.",
 			"sessionsAndQuotas": "Sesi & Kuota",
 			"sessionName": "Sesi",
 			"lane": "Jalur",

@@ -1018,6 +1018,8 @@
 			"ticketInfo": "Ticket Information",
 			"interested": "Interested in this event?",
 			"interestedDesc": "Visit the official JKT48 website to view more details, buy tickets, or participate.",
+			"notFound": "404 Not Found",
+			"notFoundDesc": "Sorry, the event you are looking for could not be found or has been removed.",
 			"sessionsAndQuotas": "Sessions & Quotas",
 			"sessionName": "Session",
 			"lane": "Lane",

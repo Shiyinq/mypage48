@@ -897,6 +897,8 @@
 			"ticketInfo": "チケット情報",
 			"interested": "このイベントに興味がありますか？",
 			"interestedDesc": "JKT48公式サイトにアクセスして詳細を確認し、チケットを購入するか参加してください。",
+			"notFound": "404 見つかりません",
+			"notFoundDesc": "申し訳ありませんが、お探しのイベントは見つからないか、削除されています。",
 			"sessionsAndQuotas": "セッションと枠",
 			"sessionName": "セッション",
 			"lane": "レーン",
