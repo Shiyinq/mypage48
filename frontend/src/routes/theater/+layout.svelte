@@ -40,6 +40,9 @@
 	// Check if on news listing page
 	let isNewsListingPage = $derived(currentPath === '/theater/news');
 
+	// Check if on events listing page
+	let isEventsListingPage = $derived(currentPath === '/theater/events');
+
 	// Check if on events history page
 	let isEventsHistoryPage = $derived(currentPath === '/theater/events/history');
 
@@ -202,6 +205,7 @@
 			isTheaterRoot ||
 			isDetailPage ||
 			isEventsHistoryPage ||
+			isEventsListingPage ||
 			isNewsListingPage ||
 			isMembersPage ||
 			isMembersDetailPage ||

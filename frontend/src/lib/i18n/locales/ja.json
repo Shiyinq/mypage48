@@ -21,6 +21,7 @@
 		"filter": "フィルター",
 		"setlist": "セットリスト",
 		"filters": "フィルター",
+		"clear": "クリア",
 		"all": "すべて",
 		"allSetlists": "全セットリスト",
 		"allData": "全データ",
@@ -877,6 +878,16 @@
 			"listErrorDesc": "劇場セットリストの取得中にエラーが発生しました。"
 		},
 		"events": {
+			"filterBy": "フィルター",
+			"labels": {
+				"event": "EVENT",
+				"show": "SHOW",
+				"exclusive": "EXCLUSIVE",
+				"dream": "DREAM",
+				"love": "LOVE",
+				"passion": "PASSION",
+				"trainee": "TRAINEE"
+			},
 			"title": "イベント予定",
 			"subtitle": "スケジュールとお知らせ",
 			"eventName": "イベント名",

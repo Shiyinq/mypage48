@@ -43,6 +43,14 @@
 	let isTheater = $derived(currentPath.startsWith('/theater'));
 
 	let theaterIsActive = $derived((href: string, exact: boolean = false) => {
+		if (href === '/theater/events') {
+			return (
+				currentPath === href ||
+				(currentPath.startsWith(href + '/') &&
+					!currentPath.includes('/history') &&
+					!currentPath.includes('/calendar'))
+			);
+		}
 		if (exact) {
 			return currentPath === href;
 		}
