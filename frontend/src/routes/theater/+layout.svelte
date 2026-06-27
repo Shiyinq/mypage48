@@ -55,6 +55,7 @@
 	let isEventDetailPage = $derived(
 		currentPath.startsWith('/theater/events/') &&
 			!isEventsHistoryPage &&
+			currentPath !== '/theater/events/calendar' &&
 			currentPath !== '/theater/events'
 	);
 
