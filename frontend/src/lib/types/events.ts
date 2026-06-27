@@ -42,3 +42,20 @@ export interface EventPaginationResponse {
 	data: Event[];
 	meta: PaginationMeta;
 }
+
+export interface EventMember {
+	id: string;
+	name: string;
+	img?: string;
+	img_medium?: string;
+	img_small?: string;
+	blurHash?: string;
+	member_type?: string;
+	nickname?: string;
+}
+
+export interface EventDetail extends Event {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	raw_data?: any;
+	members?: EventMember[];
+}

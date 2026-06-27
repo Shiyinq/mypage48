@@ -3,7 +3,7 @@ from math import ceil
 from typing import List, Optional
 
 from src.config import Settings
-from src.events.exceptions import EventFetchError
+from src.events.exceptions import EventFetchError, EventNotFoundError
 from src.events.repository import EventsRepository
 from src.events.schemas import (
     CalendarEvent,
@@ -47,6 +47,11 @@ class EventsService:
 
                 if res.get("blurHash"):
                     event["blurHash"] = res["blurHash"]
+
+        if "members" in event:
+            for member in event["members"]:
+                await self.member_service._resolve_member(member)
+
         return event
 
     async def get_events_paginated(
@@ -112,6 +117,20 @@ class EventsService:
             return EventPaginationResponse(data=events_data, meta=meta)
         except Exception as e:
             logger.exception(f"Failed to fetch paginated events: {str(e)}")
+            raise EventFetchError() from e
+
+    async def get_event_by_id(self, event_id: str) -> dict:
+        try:
+            raw_event = await self.repository.find_event_by_id(event_id)
+            if not raw_event:
+                raise EventNotFoundError()
+
+            resolved = await self._resolve_event(raw_event)
+            return resolved
+        except EventNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(f"Failed to fetch event by id {event_id}: {str(e)}")
             raise EventFetchError() from e
 
     async def get_calendar_events(self, year: int, month: int) -> List[CalendarEvent]:

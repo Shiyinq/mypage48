@@ -1,5 +1,5 @@
 import { client } from './client';
-import type { EventPaginationResponse, CalendarEvent } from '$lib/types';
+import type { EventPaginationResponse, CalendarEvent, EventDetail } from '$lib/types';
 
 export interface MemberEventStats {
 	total_shows: number;
@@ -22,6 +22,9 @@ export const events = {
 	},
 	getCurrentEvents: async (page = 1, limit = 20) => {
 		return await client<EventPaginationResponse>(`/events/current?page=${page}&limit=${limit}`);
+	},
+	getEventById: async (id: string) => {
+		return await client<EventDetail>(`/events/${id}`);
 	},
 	getCalendarEvents: async (year: number, month: number) => {
 		return await client<CalendarEvent[]>(`/events/calendar?year=${year}&month=${month}`);

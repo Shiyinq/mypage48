@@ -1014,7 +1014,17 @@
 			"tba": "TBA",
 			"promoTitle": "Ticket Scan Feature",
 			"promoDesc": "When you verify your theater visit, don't forget to save your theater ticket! On this website, you can use the ticket scan feature to find out whether you usually sit in the front or back rows. Create your account now.",
-			"promoAction": "Register"
+			"promoAction": "Register",
+			"ticketInfo": "Ticket Information",
+			"interested": "Interested in this event?",
+			"interestedDesc": "Visit the official JKT48 website to view more details, buy tickets, or participate.",
+			"viewOnJkt48": "View on JKT48.com",
+			"salesPeriod": "Sales Period:",
+			"raffle": "Raffle",
+			"firstCome": "First Come",
+			"performingMembers": "Performing Members",
+			"eventInfo": "Event Information",
+			"quota": "Quota:"
 		},
 		"calendar": {
 			"subtitle": "Theater Schedule Calendar",

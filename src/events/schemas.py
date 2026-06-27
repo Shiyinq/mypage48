@@ -66,3 +66,19 @@ class MemberEventStats(BaseModel):
 class EventPaginationResponse(BaseModel):
     data: List[Event]
     meta: PaginationMeta
+
+
+class EventMember(BaseModel):
+    id: str
+    name: str
+    img: Optional[str] = None
+    img_medium: Optional[str] = None
+    img_small: Optional[str] = None
+    blurHash: Optional[str] = None
+    member_type: Optional[str] = None
+    nickname: Optional[str] = None
+
+
+class EventDetail(Event):
+    raw_data: Optional[dict] = None
+    members: Optional[List[EventMember]] = None

@@ -974,7 +974,17 @@
 			"tba": "",
 			"promoTitle": "",
 			"promoDesc": "",
-			"promoAction": ""
+			"promoAction": "",
+			"ticketInfo": "",
+			"interested": "",
+			"interestedDesc": "",
+			"viewOnJkt48": "",
+			"salesPeriod": "",
+			"raffle": "",
+			"firstCome": "",
+			"performingMembers": "",
+			"eventInfo": "",
+			"quota": ""
 		},
 		"eventHistory": {
 			"title": "",

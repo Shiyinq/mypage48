@@ -17,6 +17,88 @@ class EventsRepository:
             query = {}
         return await self.collection.count_documents(query)
 
+    async def find_event_by_id(self, event_id: str) -> dict:
+        pipeline = [
+            {"$match": {"id": event_id}},
+            {
+                "$lookup": {
+                    "from": "setlists",
+                    "localField": "setlistId",
+                    "foreignField": "setlistId",
+                    "as": "setlist_docs",
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "members",
+                    "localField": "memberIds",
+                    "foreignField": "id",
+                    "as": "members_docs",
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "members",
+                    "localField": "seitansaiIds",
+                    "foreignField": "id",
+                    "as": "seitansai_members",
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "members",
+                    "localField": "graduationIds",
+                    "foreignField": "id",
+                    "as": "graduation_members",
+                }
+            },
+            {
+                "$addFields": {
+                    "setlist_temp": {"$arrayElemAt": ["$setlist_docs", 0]},
+                    "totalMembers": {
+                        "$cond": {
+                            "if": {"$isArray": "$memberIds"},
+                            "then": {"$size": "$memberIds"},
+                            "else": 0,
+                        }
+                    },
+                    "members": "$members_docs",
+                    "seitansaiMembers": {
+                        "$map": {
+                            "input": "$seitansai_members",
+                            "as": "member",
+                            "in": "$$member.name",
+                        }
+                    },
+                    "graduationMembers": {
+                        "$map": {
+                            "input": "$graduation_members",
+                            "as": "member",
+                            "in": "$$member.name",
+                        }
+                    },
+                }
+            },
+            {"$addFields": {"imageUrl": "$setlist_temp.imageUrl"}},
+            {
+                "$project": {
+                    "setlist_docs": 0,
+                    "setlist_temp": 0,
+                    "members_docs": 0,
+                    "graduation_members": 0,
+                    "graduationIds": 0,
+                    "seitansai_members": 0,
+                    "seitansaiIds": 0,
+                }
+            },
+        ]
+
+        cursor = self.collection.aggregate(pipeline)
+        result = await cursor.to_list(length=1)
+        if result:
+            return result[0]
+        return None
+
     async def find_events_paginated(
         self, skip: int, limit: int, query: dict = None, sort_direction: int = 1
     ) -> List[dict]:

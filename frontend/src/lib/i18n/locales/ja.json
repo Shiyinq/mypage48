@@ -893,7 +893,17 @@
 			"tba": "未定",
 			"promoTitle": "チケットスキャン機能",
 			"promoDesc": "劇場に行ったら、劇場チケットを保存またはメモするのをお忘れなく！このサイトのチケットスキャン機能を使えば、前方席か後方席のどちらに座ることが多いか確認できます。今すぐアカウントを作成しましょう。",
-			"promoAction": "新規登録"
+			"promoAction": "新規登録",
+			"ticketInfo": "チケット情報",
+			"interested": "このイベントに興味がありますか？",
+			"interestedDesc": "JKT48公式サイトにアクセスして詳細を確認し、チケットを購入するか参加してください。",
+			"viewOnJkt48": "JKT48.comで見る",
+			"salesPeriod": "販売期間:",
+			"raffle": "抽選",
+			"firstCome": "先着",
+			"performingMembers": "出演メンバー",
+			"eventInfo": "イベント情報",
+			"quota": "定員:"
 		},
 		"members": {
 			"title": "メンバー",
