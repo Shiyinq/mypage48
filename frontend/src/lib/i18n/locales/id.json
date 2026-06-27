@@ -21,6 +21,7 @@
 		"filter": "Filter",
 		"setlist": "Setlist",
 		"filters": "Filter",
+		"clear": "Bersihkan",
 		"all": "Semua",
 		"allSetlists": "Semua Setlist",
 		"allData": "Semua Data",
@@ -1209,6 +1210,16 @@
 		},
 		"events": {
 			"header": "Event",
+			"filterBy": "Filter Berdasarkan",
+			"labels": {
+				"event": "EVENT",
+				"show": "SHOW",
+				"exclusive": "EXCLUSIVE",
+				"dream": "DREAM",
+				"love": "LOVE",
+				"passion": "PASSION",
+				"trainee": "TRAINEE"
+			},
 			"title": "Event Teater",
 			"subtitle": "Jelajahi event teater",
 			"eventName": "Nama Event",

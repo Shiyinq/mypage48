@@ -2,9 +2,9 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { Calendar, Clock, Users, Cake, GraduationCap } from 'lucide-svelte';
+	import { Calendar, Clock, Users, Cake, GraduationCap, Check } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
-	import { scale } from 'svelte/transition';
+	import { slide, scale } from 'svelte/transition';
 
 	import { HorizontalEventCardSkeleton } from '$lib/components/skeletons';
 	import {
@@ -15,6 +15,7 @@
 	} from '$lib/stores/events.svelte';
 	import { membersStore, isBirthdaysLoading } from '$lib/stores/theater.svelte';
 	import Birthdays from '$lib/components/theater/Birthdays.svelte';
+	import { TheaterHeader } from '$lib/components/theater';
 	import { OptimizedImage } from '$lib/components/common';
 	import { getTeamColors } from '$lib/constants/teamColors';
 
@@ -39,7 +40,43 @@
 		mounted = true;
 	});
 
-	let eventsList = $derived(upcomingEvents.value);
+	let isFilterOpen = $state(false);
+	let selectedLabels = $state<string[]>([]);
+	const filterOptions = ['SHOW', 'EVENT', 'EXCLUSIVE', 'LOVE', 'DREAM', 'PASSION', 'TRAINEE'];
+
+	function toggleLabel(label: string) {
+		if (selectedLabels.includes(label)) {
+			selectedLabels = selectedLabels.filter((l) => l !== label);
+		} else {
+			selectedLabels = [...selectedLabels, label];
+		}
+	}
+
+	function clickOutside(node: HTMLElement) {
+		const handleClick = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (node && !node.contains(target) && !target.closest('[data-filter-toggle="true"]')) {
+				isFilterOpen = false;
+			}
+		};
+
+		document.addEventListener('click', handleClick, true);
+
+		return {
+			destroy() {
+				document.removeEventListener('click', handleClick, true);
+			}
+		};
+	}
+
+	let eventsList = $derived(
+		upcomingEvents.value.filter((e) => {
+			if (selectedLabels.length === 0) return true;
+			const l = e.label?.toUpperCase() || '';
+			const t = e.type?.toUpperCase() || '';
+			return selectedLabels.includes(l) || selectedLabels.includes(t);
+		})
+	);
 	let error = $derived(upcomingError.value);
 </script>
 
@@ -49,11 +86,76 @@
 	description={t('theater.events.subtitle')}
 />
 
+<div class="mb-0 sm:mb-6 relative z-30">
+	<TheaterHeader
+		filterLabel={selectedLabels.length > 0
+			? `${selectedLabels.length} ${t('common.filter') || 'Filter'}`
+			: t('common.allData') || 'Semua Data'}
+		onOpenFilter={() => (isFilterOpen = !isFilterOpen)}
+		isOpen={isFilterOpen}
+		title={t('theater.events.title') || 'Event Teater'}
+		subtitle={t('theater.events.subtitle') || 'Jelajahi event teater'}
+		icon={Calendar}
+		theme="blue"
+	/>
+	{#if isFilterOpen}
+		<div
+			use:clickOutside
+			transition:slide={{ duration: 200 }}
+			class="fixed md:absolute top-[72px] md:top-full left-0 right-0 md:left-auto md:right-0 mt-0 md:mt-2 px-4 md:px-0 z-[7000]"
+		>
+			<div
+				class="w-full md:w-64 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-800 p-3 sm:p-4"
+			>
+				<div class="flex items-center justify-between mb-3">
+					<h3 class="text-sm font-bold text-gray-900 dark:text-white">
+						{t('theater.events.filterBy') || 'Filter By'}
+					</h3>
+					{#if selectedLabels.length > 0}
+						<button
+							class="text-xs text-red-500 hover:text-red-600 font-medium cursor-pointer"
+							onclick={() => (selectedLabels = [])}
+						>
+							{t('common.clear') || 'Clear'}
+						</button>
+					{/if}
+				</div>
+				<div
+					class="flex flex-col gap-1.5 max-h-[60vh] md:max-h-80 overflow-y-auto custom-scrollbar pr-1"
+				>
+					{#each filterOptions as option}
+						<button
+							class="flex items-center justify-between w-full px-3 py-2 text-xs sm:text-sm rounded-xl transition-colors cursor-pointer {selectedLabels.includes(
+								option
+							)
+								? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-bold'
+								: 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 font-medium'}"
+							onclick={() => toggleLabel(option)}
+						>
+							<span>{t(`theater.events.labels.${option.toLowerCase()}`) || option}</span>
+							{#if selectedLabels.includes(option)}
+								<Check size={16} />
+							{/if}
+						</button>
+					{/each}
+				</div>
+			</div>
+		</div>
+	{/if}
+</div>
+
 <div class="space-y-6">
 	<div class="flex items-center gap-3 mb-4">
 		<div class="h-8 w-1.5 bg-red-500 rounded-full"></div>
-		<h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
+		<h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
 			{t('theater.upcomingEvents.title') || 'Upcoming Shows'}
+			{#if mounted && !$isUpcomingEventsLoading}
+				<span
+					class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] sm:text-xs font-black dark:bg-zinc-800 dark:text-zinc-400 transition-all"
+				>
+					{eventsList.length}
+				</span>
+			{/if}
 		</h2>
 	</div>
 
@@ -185,11 +287,11 @@
 						<div class="flex flex-col gap-0.5 sm:gap-1 mt-auto">
 							<!-- Date & Time -->
 							<div
-								class="flex items-center flex-wrap gap-x-2 gap-y-0.5 text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-gray-400"
+								class="flex items-center gap-x-1.5 sm:gap-x-2 text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-gray-400 overflow-hidden"
 							>
-								<div class="flex items-center gap-1">
-									<Calendar class="w-3 h-3 text-gray-400" />
-									<span>
+								<div class="flex items-center gap-1 truncate">
+									<Calendar class="w-3 h-3 text-gray-400 shrink-0" />
+									<span class="truncate">
 										{formatDate(event.date, {
 											weekday: 'short',
 											day: 'numeric',
@@ -201,9 +303,9 @@
 
 								{#if event.setlistId}
 									<div
-										class="flex items-center gap-1 border-l border-gray-200 dark:border-zinc-700 pl-2"
+										class="flex items-center gap-1 border-l border-gray-200 dark:border-zinc-700 pl-1.5 sm:pl-2 shrink-0"
 									>
-										<Clock class="w-3 h-3 text-gray-400" />
+										<Clock class="w-3 h-3 text-gray-400 shrink-0" />
 										<span>{formatTime(event.date, { hour: '2-digit', minute: '2-digit' })}</span>
 									</div>
 								{/if}

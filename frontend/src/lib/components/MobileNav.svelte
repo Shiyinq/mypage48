@@ -191,9 +191,15 @@
 		</div>
 		<div class="p-3 grid grid-cols-1 gap-1.5 max-h-[calc(100dvh-12rem)] overflow-y-auto relative">
 			{#each theaterNavItems as link}
-				{@const isActive = link.exact
-					? $page.url.pathname === link.href
-					: $page.url.pathname.startsWith(link.href)}
+				{@const isActive =
+					link.href === '/theater/events'
+						? $page.url.pathname === link.href ||
+							($page.url.pathname.startsWith(link.href + '/') &&
+								!$page.url.pathname.includes('/history') &&
+								!$page.url.pathname.includes('/calendar'))
+						: link.exact
+							? $page.url.pathname === link.href
+							: $page.url.pathname.startsWith(link.href)}
 				<a
 					href={link.href}
 					class={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] active:opacity-70 group ${isActive ? 'bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}

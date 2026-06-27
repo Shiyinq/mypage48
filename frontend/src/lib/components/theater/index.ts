@@ -6,3 +6,4 @@ export { default as SetlistTicketItem } from './SetlistTicketItem.svelte';
 export { default as TheaterHeader } from './TheaterHeader.svelte';
 export { default as TheaterFilters } from './TheaterFilters.svelte';
 export { default as MemberCardSkeleton } from './MemberCardSkeleton.svelte';
+export { default as EventFilter } from './EventFilter.svelte';

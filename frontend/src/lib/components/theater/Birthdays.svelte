@@ -33,8 +33,15 @@
 <div class="space-y-4 mb-8">
 	<div class="flex items-center gap-3">
 		<div class="h-8 w-1.5 bg-pink-500 rounded-full"></div>
-		<h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
+		<h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
 			{t('theater.birthdays.title') || 'Upcoming Birthdays'}
+			{#if !isLoading && birthdays.length > 0}
+				<span
+					class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] sm:text-xs font-black dark:bg-zinc-800 dark:text-zinc-400"
+				>
+					{birthdays.length}
+				</span>
+			{/if}
 		</h2>
 	</div>
 
