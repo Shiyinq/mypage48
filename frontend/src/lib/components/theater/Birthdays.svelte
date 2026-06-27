@@ -59,8 +59,9 @@
 		>
 			{#each birthdays as member}
 				<div class="flex-none w-40 snap-start">
-					<div
-						class="relative group aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-sm hover:shadow-md transition-all mb-2"
+					<a
+						href={`/theater/members/${member.id}`}
+						class="relative block group aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-sm hover:shadow-md transition-all mb-2"
 					>
 						{#if member.img}
 							<OptimizedImage
@@ -119,7 +120,7 @@
 								{t('member.yearsOld') || 'years old'}
 							</div>
 						</div>
-					</div>
+					</a>
 				</div>
 			{/each}
 		</div>

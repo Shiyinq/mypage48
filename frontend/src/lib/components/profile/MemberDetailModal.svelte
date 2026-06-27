@@ -11,6 +11,7 @@
 	import { getMemberFrame } from '$lib/constants';
 	import { OptimizedImage } from '$lib/components/common';
 	import { parseIndonesianDate } from '$lib/utils/time';
+	import { ErrorState } from '$lib/components';
 
 	let sidebarScrollContainer: HTMLDivElement | undefined = $state();
 	interface Props {
@@ -508,16 +509,14 @@
 						</div>
 					</div>
 				{:else}
-					<div
-						class="col-span-2 p-12 flex flex-col items-center justify-center min-h-[400px] text-center"
-					>
-						<div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-							<Search class="w-8 h-8 text-red-500" />
-						</div>
-						<h3 class="text-xl font-bold text-gray-900 mb-2">{t('member.notFound')}</h3>
-						<p class="text-gray-500 max-w-xs mx-auto mb-6">{t('member.notFoundMessage')}</p>
+					<div class="col-span-2 flex flex-col items-center justify-center min-h-[400px]">
+						<ErrorState
+							icon={Search}
+							title={t('member.notFound')}
+							description={t('member.notFoundMessage')}
+						/>
 						<button
-							class="px-6 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium cursor-pointer"
+							class="mt-2 px-6 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium cursor-pointer"
 							onclick={onClose}>{t('member.close')}</button
 						>
 					</div>

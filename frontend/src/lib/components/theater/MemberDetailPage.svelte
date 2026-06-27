@@ -42,6 +42,7 @@
 	} from 'lucide-svelte';
 
 	import SEO from '$lib/components/SEO.svelte';
+	import { ErrorState } from '$lib/components';
 
 	interface Props {
 		memberId: string | undefined;
@@ -371,14 +372,12 @@
 				<!-- Floating Toggle Button -->
 
 				{#if !currentMember}
-					<div
-						class="flex-1 p-12 flex flex-col items-center justify-center min-h-[400px] text-center"
-					>
-						<div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-							<Search class="w-8 h-8 text-red-500" />
-						</div>
-						<h3 class="text-xl font-bold text-gray-900 mb-2">{t('member.notFound')}</h3>
-						<p class="text-gray-500 max-w-xs mx-auto mb-6">{t('member.notFoundMessage')}</p>
+					<div class="flex-1 flex flex-col items-center justify-center min-h-[400px]">
+						<ErrorState
+							icon={Search}
+							title={t('member.notFound')}
+							description={t('member.notFoundMessage')}
+						/>
 					</div>
 				{:else}
 					<div class="w-full max-w-6xl mx-auto p-4 md:p-8 space-y-10">

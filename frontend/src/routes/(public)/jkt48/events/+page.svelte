@@ -19,6 +19,8 @@
 	import { getMemberFrame } from '$lib/constants';
 	import { OptimizedImage, PromoBanner } from '$lib/components/common';
 	import { parseIndonesianDate } from '$lib/utils/time';
+	import { MemberDetailModal } from '$lib/components/profile';
+	import type { Member } from '$lib/apis/members';
 
 	const { t, locale } = useTranslation();
 
@@ -32,10 +34,16 @@
 		);
 	}
 
+	let showMemberDetail = $state(false);
+	let selectedMember: Member | null = $state(null);
+
 	let mounted = $state(false);
 	onMount(async () => {
-		await eventsStore.loadUpcoming();
-		await membersStore.loadBirthdays();
+		await Promise.all([
+			eventsStore.loadUpcoming(),
+			membersStore.loadBirthdays(),
+			membersStore.load() // Load full members data for the modal
+		]);
 		mounted = true;
 	});
 
@@ -311,7 +319,14 @@
 		{:else}
 			<div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory">
 				{#each birthdays as member}
-					<div class="flex-none w-44 snap-start">
+					<button
+						type="button"
+						class="flex-none w-44 snap-start text-left cursor-pointer"
+						onclick={() => {
+							selectedMember = member as unknown as Member;
+							showMemberDetail = true;
+						}}
+					>
 						<div
 							class="relative group aspect-[3/4] rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-300"
 						>
@@ -372,12 +387,22 @@
 								</div>
 							</div>
 						</div>
-					</div>
+					</button>
 				{/each}
 			</div>
 		{/if}
 	</div>
 </div>
+
+<MemberDetailModal
+	show={showMemberDetail}
+	member={selectedMember}
+	members={membersStore.list.filter((m) => birthdays.some((b) => String(b.id) === String(m.id)))}
+	onClose={() => {
+		showMemberDetail = false;
+		selectedMember = null;
+	}}
+/>
 
 <style>
 	.ring-red-500\/40 {
