@@ -17,12 +17,27 @@
 		Cake,
 		GraduationCap,
 		PanelLeft,
-		PanelLeftClose
+		PanelLeftClose,
+		Heart,
+		Star,
+		Flame,
+		Sprout
 	} from 'lucide-svelte';
 	import { getMemberFrame } from '$lib/constants';
+	import { getTeamColors } from '$lib/constants/teamColors';
 	import { eventsStore, upcomingEvents, isUpcomingEventsLoading } from '$lib/stores/events.svelte';
 
 	const { t } = useTranslation();
+
+	function getTeamIcon(label: string) {
+		if (!label) return null;
+		const l = label.toUpperCase();
+		if (l === 'LOVE') return Heart;
+		if (l === 'DREAM') return Star;
+		if (l === 'PASSION' || l === 'SESSION') return Flame;
+		if (l === 'TRAINEE') return Sprout;
+		return null;
+	}
 
 	let eventId = $derived($page.params.id || '');
 	let event = $derived(eventsStore.detailCache[eventId]);
@@ -227,15 +242,21 @@
 						{#snippet heroContent({ isDarkText = false }: { isDarkText?: boolean })}
 							<div class="flex flex-wrap gap-2 mb-3">
 								{#if event.label}
+									{@const colors = getTeamColors(event.label)}
+									{@const Icon = getTeamIcon(event.label)}
 									<span
-										class="px-3 py-1 text-xs font-bold rounded-lg uppercase tracking-wider bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+										class="px-3 py-1.5 text-[11px] font-black rounded-lg uppercase tracking-widest flex items-center gap-1.5 shadow-sm"
+										style="background-color: {colors.badgeBg}20; color: {colors.badgeText}; border: 1px solid {colors.badgeBorder}40;"
 									>
+										{#if Icon}
+											<Icon class="w-3.5 h-3.5" strokeWidth={3} />
+										{/if}
 										{event.label}
 									</span>
 								{/if}
 								{#if event.type && event.type !== event.label}
 									<span
-										class="px-3 py-1 text-xs font-bold rounded-lg uppercase tracking-wider bg-red-500 text-white shadow-sm"
+										class="px-3 py-1.5 text-[11px] font-black rounded-lg uppercase tracking-widest bg-red-500 text-white shadow-sm"
 									>
 										{event.type}
 									</span>
@@ -366,7 +387,7 @@
 									</div>
 								{/if}
 
-								{#if event.members && event.members.length > 0}
+								{#if (event.members && event.members.length > 0) || event.setlistId}
 									<div>
 										<div class="flex items-center justify-between mb-6">
 											<h2
@@ -379,86 +400,132 @@
 												class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium text-gray-500 bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full shrink-0 whitespace-nowrap"
 											>
 												<Users class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-												{event.members.length}
+												{event.members && event.members.length > 0 ? event.members.length : '?'}
 												{t('theater.events.members')}
 											</div>
 										</div>
 
 										<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-											{#each event.members as member}
-												{@const isSeitansai = event.seitansaiMembers?.includes(member.name)}
-												{@const isGrad = event.graduationMembers?.includes(member.name)}
-												<a
-													href={`/theater/members/${member.id}`}
-													class="group relative bg-white dark:bg-zinc-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all block text-left"
-												>
-													{#if isSeitansai}
-														<div
-															class="absolute top-2 left-2 z-20 bg-pink-500 text-white p-1.5 rounded-full shadow-lg shadow-pink-500/30"
-														>
-															<Cake class="w-3.5 h-3.5" />
-														</div>
-													{/if}
-													{#if isGrad}
-														<div
-															class="absolute top-2 right-2 z-20 bg-indigo-500 text-white p-1.5 rounded-full shadow-lg shadow-indigo-500/30"
-														>
-															<GraduationCap class="w-3.5 h-3.5" />
-														</div>
-													{/if}
-													<div
-														class="relative aspect-[3/4] overflow-hidden bg-gray-200 dark:bg-zinc-700"
+											{#if event.members && event.members.length > 0}
+												{#each event.members as member}
+													{@const isSeitansai = event.seitansaiMembers?.includes(member.name)}
+													{@const isGrad = event.graduationMembers?.includes(member.name)}
+													<a
+														href={`/theater/members/${member.id}`}
+														class="group relative bg-white dark:bg-zinc-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all block text-left"
 													>
-														{#if member.img}
-															<OptimizedImage
-																src={member.img}
-																srcMedium={member.img_medium}
-																srcSmall={member.img_small}
-																blurHash={member.blurHash}
-																alt={member.name}
-																class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-																sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-															/>
-														{:else}
+														{#if isSeitansai}
 															<div
-																class="w-full h-full bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/30 dark:to-purple-900/30 flex items-center justify-center"
+																class="absolute top-2 left-2 z-20 bg-pink-500 text-white p-1.5 rounded-full shadow-lg shadow-pink-500/30"
 															>
-																<span class="text-4xl font-bold text-pink-400">
-																	{member.nickname?.charAt(0) || member.name?.charAt(0)}
-																</span>
+																<Cake class="w-3.5 h-3.5" />
 															</div>
 														{/if}
-
-														<!-- Frame Image Overlay -->
-														<img
-															src={getMemberFrame(member.member_type || 'JKT48')}
-															alt="member frame"
-															class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
-														/>
-
-														<!-- Gradient Overlay -->
+														{#if isGrad}
+															<div
+																class="absolute top-2 right-2 z-20 bg-indigo-500 text-white p-1.5 rounded-full shadow-lg shadow-indigo-500/30"
+															>
+																<GraduationCap class="w-3.5 h-3.5" />
+															</div>
+														{/if}
 														<div
-															class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
-														></div>
-
-														<!-- Content Area (Overlay) -->
-														<div
-															class="absolute bottom-0 left-0 right-0 p-3 flex flex-col justify-end z-30"
+															class="relative aspect-[3/4] overflow-hidden bg-gray-200 dark:bg-zinc-700"
 														>
-															<h3
-																class="font-bold text-white text-base leading-tight drop-shadow-sm"
+															{#if member.img}
+																<OptimizedImage
+																	src={member.img}
+																	srcMedium={member.img_medium}
+																	srcSmall={member.img_small}
+																	blurHash={member.blurHash}
+																	alt={member.name}
+																	class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+																	sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+																/>
+															{:else}
+																<div
+																	class="w-full h-full bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/30 dark:to-purple-900/30 flex items-center justify-center"
+																>
+																	<span class="text-4xl font-bold text-pink-400">
+																		{member.nickname?.charAt(0) || member.name?.charAt(0)}
+																	</span>
+																</div>
+															{/if}
+
+															<!-- Frame Image Overlay -->
+															<img
+																src={getMemberFrame(member.member_type || 'JKT48')}
+																alt="member frame"
+																class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10"
+															/>
+
+															<!-- Gradient Overlay -->
+															<div
+																class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent z-20"
+															></div>
+
+															<!-- Content Area (Overlay) -->
+															<div
+																class="absolute bottom-0 left-0 right-0 p-3 flex flex-col justify-end z-30"
 															>
-																{member.nickname || member.name}
-															</h3>
-															<p
-																class="text-[10px] text-gray-300 font-bold uppercase tracking-wider mt-0.5"
+																<h3
+																	class="font-bold text-white text-base leading-tight drop-shadow-sm"
+																>
+																	{member.nickname || member.name}
+																</h3>
+																<p
+																	class="text-[10px] text-gray-300 font-bold uppercase tracking-wider mt-0.5"
+																>
+																	{member.member_type || 'JKT48'}
+																</p>
+															</div>
+														</div>
+													</a>
+												{/each}
+											{:else}
+												{#each Array(16) as _, _i}
+													<div
+														class="group relative bg-white dark:bg-zinc-800 rounded-xl overflow-hidden shadow-sm block text-left opacity-80"
+													>
+														<div
+															class="relative aspect-[3/4] overflow-hidden bg-gray-200 dark:bg-zinc-700/50"
+														>
+															<div
+																class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-zinc-800 dark:to-zinc-900 flex items-center justify-center"
 															>
-																{member.member_type || 'JKT48'}
-															</p>
+																<Users class="w-12 h-12 text-gray-400 dark:text-zinc-600" />
+															</div>
+
+															<!-- Frame Image Overlay (Standard) -->
+															<img
+																src={getMemberFrame('JKT48')}
+																alt="member frame"
+																class="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 grayscale opacity-40"
+															/>
+
+															<!-- Gradient Overlay -->
+															<div
+																class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent z-20"
+															></div>
+
+															<!-- Content Area (Overlay) -->
+															<div
+																class="absolute bottom-0 left-0 right-0 p-3 flex flex-col justify-end z-30"
+															>
+																<h3
+																	class="font-bold text-white/70 text-base leading-tight drop-shadow-sm"
+																>
+																	???
+																</h3>
+																<p
+																	class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5"
+																>
+																	TBA
+																</p>
+															</div>
 														</div>
 													</div>
-												</a>
-											{/each}
+												{/each}
+											{/if}
 										</div>
 									</div>
 								{/if}
