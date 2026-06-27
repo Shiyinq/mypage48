@@ -13,16 +13,12 @@
 		Users,
 		Cake,
 		GraduationCap,
-		Heart,
-		Star,
-		Flame,
-		Sprout,
 		MoveLeft,
 		ChevronDown,
 		ExternalLink
 	} from 'lucide-svelte';
 	import { getMemberFrame } from '$lib/constants';
-	import { getTeamColors } from '$lib/constants/teamColors';
+	import { getTeamColors, getTeamIcon } from '$lib/constants/teamColors';
 	import { eventsStore } from '$lib/stores/events.svelte';
 	import { membersStore } from '$lib/stores/theater.svelte';
 	import DOMPurify from 'isomorphic-dompurify';
@@ -82,16 +78,6 @@
 		}
 	});
 
-	function getTeamIcon(label: string) {
-		if (!label) return null;
-		const l = label.toUpperCase();
-		if (l === 'LOVE') return Heart;
-		if (l === 'DREAM') return Star;
-		if (l === 'PASSION' || l === 'SESSION') return Flame;
-		if (l === 'TRAINEE') return Sprout;
-		return null;
-	}
-
 	let contentBody = $derived(
 		event?.raw_data?.detail?.content_body
 			? DOMPurify.sanitize(proxyExternalImageUrls(event.raw_data.detail.content_body))
@@ -136,9 +122,13 @@
 		{#snippet heroContent({ isDarkText = false }: { isDarkText?: boolean })}
 			<div class="flex flex-wrap items-center gap-3 mb-4">
 				{#if event.type && event.type !== event.label}
+					{@const typeColors = getTeamColors(event.type)}
+					{@const TypeIcon = getTeamIcon(event.type)}
 					<span
-						class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+						class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm"
+						style="background-color: {typeColors.badgeBg}20; color: {typeColors.badgeText}; border: 1px solid {typeColors.badgeBorder}40;"
 					>
+						{#if TypeIcon}<TypeIcon class="w-3.5 h-3.5" strokeWidth={3} />{/if}
 						{event.type}
 					</span>
 				{/if}

@@ -19,27 +19,13 @@
 		GraduationCap,
 		PanelLeft,
 		PanelLeftClose,
-		Heart,
-		Star,
-		Flame,
-		Sprout,
 		ZoomIn
 	} from 'lucide-svelte';
 	import { getMemberFrame } from '$lib/constants';
-	import { getTeamColors } from '$lib/constants/teamColors';
+	import { getTeamColors, getTeamIcon } from '$lib/constants/teamColors';
 	import { eventsStore, upcomingEvents, isUpcomingEventsLoading } from '$lib/stores/events.svelte';
 
 	const { t } = useTranslation();
-
-	function getTeamIcon(label: string) {
-		if (!label) return null;
-		const l = label.toUpperCase();
-		if (l === 'LOVE') return Heart;
-		if (l === 'DREAM') return Star;
-		if (l === 'PASSION' || l === 'SESSION') return Flame;
-		if (l === 'TRAINEE') return Sprout;
-		return null;
-	}
 
 	let eventId = $derived($page.params.id || '');
 	let event = $derived(eventsStore.detailCache[eventId]);
@@ -281,9 +267,15 @@
 									</span>
 								{/if}
 								{#if event.type && event.type !== event.label}
+									{@const typeColors = getTeamColors(event.type)}
+									{@const TypeIcon = getTeamIcon(event.type)}
 									<span
-										class="px-3 py-1.5 text-[11px] font-black rounded-lg uppercase tracking-widest bg-red-500 text-white shadow-sm"
+										class="px-3 py-1.5 text-[11px] font-black rounded-lg uppercase tracking-widest flex items-center gap-1.5 shadow-sm"
+										style="background-color: {typeColors.badgeBg}20; color: {typeColors.badgeText}; border: 1px solid {typeColors.badgeBorder}40;"
 									>
+										{#if TypeIcon}
+											<TypeIcon class="w-3.5 h-3.5" strokeWidth={3} />
+										{/if}
 										{event.type}
 									</span>
 								{/if}

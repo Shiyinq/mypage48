@@ -21,6 +21,7 @@
 	import { parseIndonesianDate } from '$lib/utils/time';
 	import { MemberDetailModal } from '$lib/components/profile';
 	import type { Member } from '$lib/apis/members';
+	import { getTeamColors } from '$lib/constants/teamColors';
 
 	const { t, locale } = useTranslation();
 
@@ -187,35 +188,19 @@
 							<!-- Top Metadata Row -->
 							<div class="flex flex-wrap items-center gap-2 mb-1.5 sm:mb-2">
 								{#if event.label}
+									{@const labelColors = getTeamColors(event.label)}
 									<div
-										class="px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider border shadow-sm {event.label ===
-											'JKT48' ||
-										event.label === 'GENERAL' ||
-										event.label === 'EXCLUSIVE'
-											? 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800/30'
-											: event.label === 'LOVE'
-												? 'bg-pink-50 dark:bg-pink-900/20 text-pink-500 dark:text-pink-400 border-pink-100 dark:border-pink-800/30'
-												: event.label === 'DREAM'
-													? 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-500 dark:text-cyan-400 border-cyan-100 dark:border-cyan-800/30'
-													: event.label === 'PASSION'
-														? 'bg-orange-50 dark:bg-orange-900/20 text-orange-500 dark:text-orange-400 border-orange-100 dark:border-orange-800/30'
-														: 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border-gray-200/50 dark:border-white/5'}"
+										class="px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider border shadow-sm"
+										style="background-color: {labelColors.badgeBg}20; color: {labelColors.badgeText}; border-color: {labelColors.badgeBorder}40;"
 									>
 										{event.label}
 									</div>
 								{/if}
 								{#if event.type && event.type !== event.label}
+									{@const typeColors = getTeamColors(event.type)}
 									<div
-										class="px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider shadow-sm border border-transparent {event.type ===
-										'EVENT'
-											? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-rose-200/30 dark:border-rose-800/20'
-											: event.type === 'SHOW'
-												? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200/30 dark:border-blue-800/20'
-												: event.type === 'GENERAL' || event.type === 'EXCLUSIVE'
-													? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-red-200/30 dark:border-red-800/20'
-													: event.type === 'BIRTHDAY'
-														? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 border-yellow-200/30 dark:border-yellow-800/20'
-														: 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border-gray-200/50 dark:border-white/5'}"
+										class="px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider shadow-sm border"
+										style="background-color: {typeColors.badgeBg}20; color: {typeColors.badgeText}; border-color: {typeColors.badgeBorder}40;"
 									>
 										{event.type}
 									</div>
