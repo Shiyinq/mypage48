@@ -85,6 +85,8 @@ class SetlistDetailStats(BaseModel):
     topRow: Optional[str] = None
     firstDate: Optional[str] = None
     lastDate: Optional[str] = None
+    firstSeat: Optional[str] = None
+    lastSeat: Optional[str] = None
 
 
 class SetlistDetailResponse(SetlistBase):

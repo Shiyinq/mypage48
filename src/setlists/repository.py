@@ -257,7 +257,7 @@ class SetlistsRepository:
                         year, start_month, end_month, is_all_data
                     )
                     + [
-                        {"$sort": {"event.date": 1}},  # Sort by date ascending
+                        {"$sort": {"event.date": -1}},  # Sort by date descending
                         {
                             "$project": {
                                 "_id": 1,

@@ -505,7 +505,12 @@
 
 								<!-- Timeline Card -->
 								<div class="order-2">
-									<Timeline firstDate={detail.stats.firstDate} lastDate={detail.stats.lastDate} />
+									<Timeline
+										firstDate={detail.stats.firstDate}
+										lastDate={detail.stats.lastDate}
+										firstSeat={detail.stats.firstSeat}
+										lastSeat={detail.stats.lastSeat}
+									/>
 								</div>
 							</div>
 						</div>

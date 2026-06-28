@@ -250,9 +250,19 @@ class SetlistsService:
                 max(row_counts.items(), key=lambda x: x[1])[0] if row_counts else None
             )
 
-            # First and last dates
-            first_date = tickets[0].event.date if tickets else None
-            last_date = tickets[-1].event.date if tickets else None
+            # First and last dates and seats (tickets are sorted newest to oldest)
+            first_date = tickets[-1].event.date if tickets else None
+            last_date = tickets[0].event.date if tickets else None
+            first_seat = (
+                f"{tickets[-1].seat.section}-{tickets[-1].seat.number}"
+                if tickets and tickets[-1].seat.section
+                else None
+            )
+            last_seat = (
+                f"{tickets[0].seat.section}-{tickets[0].seat.number}"
+                if tickets and tickets[0].seat.section
+                else None
+            )
 
             stats = SetlistDetailStats(
                 totalAttendance=count,
@@ -261,6 +271,8 @@ class SetlistsService:
                 topRow=top_row,
                 firstDate=first_date,
                 lastDate=last_date,
+                firstSeat=first_seat,
+                lastSeat=last_seat,
             )
 
             resolved = await self._resolve_setlist(result)

@@ -59,6 +59,8 @@ export interface SetlistDetailStats {
 	topRow?: string;
 	firstDate?: string;
 	lastDate?: string;
+	firstSeat?: string;
+	lastSeat?: string;
 }
 
 export interface SetlistDetailResponse {
