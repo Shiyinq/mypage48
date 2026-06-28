@@ -266,6 +266,7 @@ class SetlistsRepository:
                                 "seat": 1,
                                 "price": 1,
                                 "notes": 1,
+                                "two_shot": 1,
                             }
                         },
                     ],

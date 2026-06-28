@@ -5,14 +5,13 @@
 	import { ticketsStore, showToast } from '$lib/stores';
 	import { setlistsStore } from '$lib/stores/theater.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Ticket, DollarSign, Trophy } from 'lucide-svelte';
+	import { Ticket } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { DeleteConfirmationModal } from '$lib/components/history';
 	import { ErrorState } from '$lib/components';
-	import { formatCurrency } from '$lib/utils/formatting';
+	import { OptimizedImage } from '$lib/components/common';
 	import SetlistHero from '$lib/components/theater/SetlistHero.svelte';
 	import SetlistStats from '$lib/components/theater/SetlistStats.svelte';
-	import Timeline from '$lib/components/history/Timeline.svelte';
 	import SetlistTicketItem from '$lib/components/theater/SetlistTicketItem.svelte';
 	import SetlistDetailSkeleton from '$lib/components/theater/SetlistDetailSkeleton.svelte';
 	import { fade, slide } from 'svelte/transition';
@@ -241,7 +240,7 @@
 
 		<!-- Sidebar Container -->
 		<aside
-			class="fixed md:absolute top-0 bottom-0 left-0 z-[60] md:z-10 bg-white md:bg-white/80 dark:bg-zinc-900 md:dark:bg-zinc-900/80 backdrop-blur-md border-r border-gray-100 dark:border-white/5 shadow-2xl md:shadow-none w-full md:w-64 transition-transform duration-300 ease-in-out flex flex-col"
+			class="fixed md:absolute top-0 bottom-0 left-0 z-[60] md:z-40 bg-white md:bg-white/80 dark:bg-zinc-900 md:dark:bg-zinc-900/80 backdrop-blur-md border-r border-gray-100 dark:border-white/5 shadow-2xl md:shadow-none w-full md:w-64 transition-transform duration-300 ease-in-out flex flex-col"
 			class:-translate-x-full={!isSidebarVisible}
 			class:translate-x-0={isSidebarVisible}
 		>
@@ -332,16 +331,7 @@
 									>
 										{s.title}
 									</h3>
-									<div class="flex items-center justify-between mt-1.5">
-										{#if !s.active}
-											<div
-												class="text-[10px] font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full"
-											>
-												{t('theater.setlists.ended') || 'Ended'}
-											</div>
-										{:else}
-											<div></div>
-										{/if}
+									<div class="flex items-center justify-end mt-1.5">
 										<div
 											class="flex items-center gap-1 text-[11px] font-bold {isActive
 												? 'text-purple-600 dark:text-purple-400'
@@ -398,120 +388,114 @@
 						<SetlistHero {detail} />
 
 						<!-- Main Content Grid -->
-						<div
-							class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 p-6 sm:p-8 lg:p-10 max-w-5xl mx-auto"
-						>
-							<!-- stats & History (Left Column on Desktop) -->
-							<div class="md:col-span-8 contents md:flex md:flex-col md:gap-8">
-								<div class="order-1">
-									<SetlistStats stats={detail.stats} />
+						<div class="p-6 sm:p-8 lg:p-10 max-w-5xl mx-auto flex flex-col gap-8">
+							<div class="w-full">
+								<SetlistStats stats={detail.stats} watched={detail.watched} />
+							</div>
+
+							<div
+								class="w-full grid grid-cols-1 {detail.twoShots?.length
+									? 'md:grid-cols-12'
+									: ''} gap-8"
+							>
+								<div
+									class="mt-4 md:mt-0 order-2 md:order-1 {detail.twoShots?.length
+										? 'md:col-span-8 lg:col-span-8'
+										: 'w-full'}"
+								>
+									<div class="flex items-center justify-between mb-6">
+										<h2
+											class="text-xl md:text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight"
+										>
+											{t('history.title')}
+										</h2>
+										<span
+											class="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-full border border-gray-200 dark:border-zinc-700"
+										>
+											{detail.tickets.length}
+											<span class="hidden sm:inline">{t('dashboard.theater.tickets')}</span>
+										</span>
+									</div>
+
+									{#if detail.tickets.length === 0}
+										<div
+											class="flex flex-col items-center justify-center py-16 px-4 bg-gray-50 dark:bg-zinc-900/50 rounded-[2rem] border border-dashed border-gray-200 dark:border-zinc-800"
+										>
+											<div
+												class="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4"
+											>
+												<Ticket class="w-6 h-6 text-gray-400" />
+											</div>
+											<p class="font-bold text-gray-600 dark:text-gray-300">
+												{t('theater.setlists.noTicketsFound')}
+											</p>
+											<p
+												class="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center max-w-[250px] mt-1"
+											>
+												{t('theater.setlists.notAttended')}
+											</p>
+										</div>
+									{:else}
+										<div class="space-y-3">
+											{#each detail.tickets as ticket (ticket.ticketId)}
+												<SetlistTicketItem {ticket} onclick={() => (deleteId = ticket.ticketId)} />
+											{/each}
+										</div>
+									{/if}
 								</div>
 
-								<div class="order-3 md:order-2">
-									<div class="mt-4 md:mt-0">
+								{#if detail.twoShots?.length > 0}
+									<div class="md:col-span-4 lg:col-span-4 mt-4 md:mt-0 order-1 md:order-2">
 										<div class="flex items-center justify-between mb-6">
 											<h2
 												class="text-xl md:text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight"
 											>
-												{t('history.title')}
+												{t('memories.twoShots') || '2-Shot'}
 											</h2>
 											<span
 												class="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-full border border-gray-200 dark:border-zinc-700"
 											>
-												{detail.tickets.length}
-												<span class="hidden sm:inline">{t('dashboard.theater.tickets')}</span>
+												{detail.stats.total2Shot}
+												{t('top2shot.total') || 'Total'}
 											</span>
 										</div>
-
-										{#if detail.tickets.length === 0}
-											<div
-												class="flex flex-col items-center justify-center py-16 px-4 bg-gray-50 dark:bg-zinc-900/50 rounded-[2rem] border border-dashed border-gray-200 dark:border-zinc-800"
-											>
+										<div class="space-y-3">
+											{#each detail.twoShots as item}
 												<div
-													class="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4"
+													class="flex items-center gap-4 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-3 rounded-2xl hover:shadow-md transition-all"
 												>
-													<Ticket class="w-6 h-6 text-gray-400" />
+													{#if item.imageUrl}
+														<div class="w-12 h-12 rounded-xl overflow-hidden shrink-0">
+															<OptimizedImage
+																src={item.imageUrl}
+																srcMedium={item.imageUrl_medium}
+																srcSmall={item.imageUrl_small}
+																blurHash={item.blurHash}
+																alt={item.name}
+																sizes="48px"
+																class="w-full h-full object-cover"
+															/>
+														</div>
+													{:else}
+														<div
+															class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"
+														>
+															<span class="text-gray-400 text-sm font-bold"
+																>{item.name.charAt(0)}</span
+															>
+														</div>
+													{/if}
+													<div class="flex-1 min-w-0">
+														<div class="font-bold text-gray-900 dark:text-white truncate">
+															{item.name}
+														</div>
+														<div class="text-sm font-semibold text-pink-500">{item.count}x</div>
+													</div>
 												</div>
-												<p class="font-bold text-gray-600 dark:text-gray-300">No tickets found</p>
-												<p
-													class="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center max-w-[250px] mt-1"
-												>
-													{t('theater.setlists.notAttended')}
-												</p>
-											</div>
-										{:else}
-											<div class="space-y-3">
-												{#each detail.tickets as ticket (ticket.ticketId)}
-													<SetlistTicketItem
-														{ticket}
-														onclick={() => (deleteId = ticket.ticketId)}
-													/>
-												{/each}
-											</div>
-										{/if}
-									</div>
-								</div>
-							</div>
-
-							<!-- Summary & Timeline (Right Column on Desktop) -->
-							<div class="md:col-span-4 contents md:flex md:flex-col md:gap-6">
-								<!-- Quick Stats Card -->
-								<div
-									class="order-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-[2rem] p-6 md:p-8 text-white shadow-md shadow-gray-200 dark:shadow-none relative overflow-hidden"
-								>
-									<div class="absolute top-0 right-0 p-8 opacity-10">
-										<Trophy class="w-32 h-32 rotate-12" />
-									</div>
-
-									<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
-										<DollarSign class="w-5 h-5 text-yellow-400" />
-										{t('theater.setlists.statsOverview')}
-									</h3>
-
-									<div class="space-y-6 relative z-10">
-										<div>
-											<div class="flex justify-between text-sm mb-2 opacity-80">
-												<span>{t('theater.setlists.avgPricePerTicket')}</span>
-											</div>
-											<div class="text-2xl md:text-3xl font-bold text-yellow-400 leading-none">
-												{formatCurrency(detail.stats.avgPrice)}
-											</div>
-										</div>
-
-										<div class="h-px bg-white/10"></div>
-
-										<div>
-											<div class="flex justify-between text-sm mb-2 opacity-80">
-												<span>{t('theater.setlists.attendanceRate')}</span>
-											</div>
-											<div class="flex items-end gap-2">
-												<span class="text-3xl md:text-4xl font-black"
-													>{detail.watched.percentage}%</span
-												>
-												<span class="text-sm opacity-60 mb-1 font-medium">
-													{t('theater.setlists.ofMax')}
-												</span>
-											</div>
-											<!-- Progress bar -->
-											<div class="w-full bg-white/10 h-1.5 rounded-full mt-3 overflow-hidden">
-												<div
-													class="h-full bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.5)]"
-													style="width: {detail.watched.percentage}%"
-												></div>
-											</div>
+											{/each}
 										</div>
 									</div>
-								</div>
-
-								<!-- Timeline Card -->
-								<div class="order-2">
-									<Timeline
-										firstDate={detail.stats.firstDate}
-										lastDate={detail.stats.lastDate}
-										firstSeat={detail.stats.firstSeat}
-										lastSeat={detail.stats.lastSeat}
-									/>
-								</div>
+								{/if}
 							</div>
 						</div>
 					</div>
