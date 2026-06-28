@@ -100,7 +100,10 @@
 		event?.raw_data?.detail?.sales_period && event.raw_data.detail.sales_period.length > 0
 	);
 	let contentBody = $derived(
-		event?.raw_data?.detail?.content_body || event?.raw_data?.short?.content_body
+		(event?.raw_data?.detail?.content_body || event?.raw_data?.short?.content_body || '').replace(
+			/color:\s*(#000000|#000|black|rgb\(0,\s*0,\s*0\));?/gi,
+			''
+		)
 	);
 
 	let mainContentEl: HTMLElement | undefined = $state();
@@ -238,7 +241,7 @@
 			style="overscroll-behavior: contain;"
 		>
 			<!-- Event Detail Content -->
-			<div class="pb-12 max-w-none w-full mx-auto">
+			<div class="pb-28 md:pb-12 max-w-none w-full mx-auto">
 				{#if isError}
 					<div class="max-w-4xl mx-auto pt-20 pb-20 px-4 sm:px-6 md:px-0">
 						<ErrorState
@@ -704,7 +707,7 @@
 							</div>
 
 							<!-- Sidebar / Action Area -->
-							<div class="space-y-10">
+							<div class="space-y-5">
 								<!-- Ticket Information -->
 								{#if hasSales}
 									<div>
@@ -791,7 +794,7 @@
 
 								<!-- Action Card -->
 								<div
-									class="bg-gradient-to-br from-red-500 to-rose-600 rounded-3xl p-6 text-white shadow-xl shadow-red-500/20"
+									class="bg-gradient-to-br from-red-500 to-rose-600 rounded-3xl p-6 text-white shadow-sm"
 								>
 									<h3 class="font-bold text-lg mb-2">{t('theater.events.interested')}</h3>
 									<p class="text-sm text-red-100 mb-6">
