@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { PanelLeft } from 'lucide-svelte';
-	let isWide = $state(false);
-	let isSidebarVisible = $state(false);
+	import { browser } from '$app/environment';
+	let isWide = $state(browser ? window.innerWidth >= 768 : true);
+	let isSidebarVisible = $state(browser ? window.innerWidth >= 768 : true);
 
 	$effect(() => {
 		if (typeof window !== 'undefined') {
@@ -31,21 +32,20 @@
 			></button>
 		{/if}
 
-		<!-- Sidebar Skeleton -->
 		<div
 			class="h-full overflow-hidden border-r border-gray-100 dark:border-white/5 shrink-0
-				   fixed md:absolute inset-0 md:inset-y-0 md:left-0 z-[60] bg-white md:bg-white/80 dark:bg-zinc-900 md:dark:bg-zinc-900/80 backdrop-blur-md
+				   fixed md:absolute inset-0 md:inset-y-0 md:left-0 z-[60] md:z-[40] bg-white md:bg-white/80 dark:bg-zinc-900 md:dark:bg-zinc-900/80 backdrop-blur-md
 				   transition-transform duration-300 ease-in-out w-full md:w-64 shadow-2xl md:shadow-none
 				   {isSidebarVisible ? 'translate-x-0' : '-translate-x-full'}"
 		>
 			<div class="w-full md:w-64 h-full flex flex-col overflow-hidden">
 				<!-- Header -->
 				<div
-					class="p-4 pb-2 flex items-center justify-center relative border-b border-gray-100 dark:border-zinc-800 shrink-0"
+					class="p-4 pb-2 flex items-center justify-center relative border-b border-gray-100 dark:border-zinc-800/50 shrink-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur z-10"
 				>
 					<div class="flex items-center gap-2">
-						<div class="px-4 py-2 bg-gray-200 dark:bg-zinc-700 rounded-lg w-16 h-4"></div>
-						<div class="px-4 py-2 bg-gray-200 dark:bg-zinc-700 rounded-lg w-20 h-4"></div>
+						<div class="w-16 h-7 bg-gray-200 dark:bg-zinc-700 rounded-md"></div>
+						<div class="w-20 h-7 bg-gray-200 dark:bg-zinc-700 rounded-md"></div>
 					</div>
 					<div class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5">
 						<div class="w-4 h-4 bg-gray-200 dark:bg-zinc-700 rounded"></div>
@@ -54,9 +54,9 @@
 				<!-- Member List -->
 				<div class="flex-1 overflow-y-auto custom-scrollbar p-3 pt-2">
 					<div class="flex flex-col gap-2">
-						{#each [1, 2, 3, 4, 5, 6] as _}
-							<div class="px-4 py-3 rounded-2xl flex items-center gap-3">
-								<div class="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-zinc-700"></div>
+						{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as _}
+							<div class="px-4 py-2 rounded-2xl flex items-center gap-3">
+								<div class="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-zinc-700 shrink-0"></div>
 								<div class="h-4 bg-gray-200 dark:bg-zinc-700 rounded w-24"></div>
 							</div>
 						{/each}
