@@ -149,6 +149,25 @@
 	// Skeleton columns for loading state
 	const skeletonCols = 53;
 	const skeletonRows = 7;
+
+	let selectedCellText = $state('');
+	let clearTextTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	function getCellText(day: { date: Date | null; count: number }) {
+		if (!day.date) return '';
+		if (day.count === 0) return `${t('dashboard.heatmap.noAttendance')} ${formatDateStr(day.date)}`;
+		return `${day.count} ${t('dashboard.heatmap.attendance')}${day.count > 1 ? 's' : ''} ${t('dashboard.heatmap.on')} ${formatDateStr(day.date)}`;
+	}
+
+	function handleCellClick(day: { date: Date | null; count: number }) {
+		if (!day.date) return;
+		selectedCellText = getCellText(day);
+
+		if (clearTextTimeout) clearTimeout(clearTextTimeout);
+		clearTextTimeout = setTimeout(() => {
+			selectedCellText = '';
+		}, 3000);
+	}
 </script>
 
 <div class="glass-panel p-4 sm:p-6 rounded-3xl w-full">
@@ -161,26 +180,26 @@
 		<!-- Skeleton loading -->
 		<div class="w-full overflow-hidden">
 			<div class="heatmap-outer">
-				<!-- Skeleton month labels -->
-				<div class="heatmap-month-row">
-					<div class="heatmap-spacer"></div>
-					<div class="flex flex-1 justify-between pr-4">
-						{#each monthsLabelList as _m}
-							<div class="skeleton-text"></div>
-						{/each}
-					</div>
-				</div>
-				<!-- Skeleton grid -->
 				<div class="heatmap-body">
 					<div class="heatmap-day-col">
 						{#each daysOfWeek as day}
 							<div class="heatmap-day-text">{day}</div>
 						{/each}
 					</div>
-					<div class="heatmap-grid" style="grid-template-columns: repeat({skeletonCols}, 1fr);">
-						{#each { length: skeletonCols * skeletonRows } as _}
-							<div class="heatmap-cell skeleton-cell"></div>
-						{/each}
+					<div class="heatmap-grid-area">
+						<div class="heatmap-month-skeleton">
+							{#each monthsLabelList as _m}
+								<div class="skeleton-text"></div>
+							{/each}
+						</div>
+						<div
+							class="heatmap-grid"
+							style="grid-template-columns: repeat({skeletonCols}, minmax(11px, 1fr));"
+						>
+							{#each { length: skeletonCols * skeletonRows } as _}
+								<div class="heatmap-cell skeleton-cell"></div>
+							{/each}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -189,22 +208,6 @@
 		<!-- Scrollable heatmap area (scroll only on mobile) -->
 		<div class="heatmap-scroll-wrapper">
 			<div class="heatmap-outer">
-				<!-- Month labels -->
-				<div class="heatmap-month-row">
-					<div class="heatmap-spacer"></div>
-					<div class="heatmap-month-track">
-						{#each monthLabels as month}
-							<span
-								class="heatmap-month-label"
-								style="left: {(month.colIndex / weeks.length) * 100}%;"
-							>
-								{month.label}
-							</span>
-						{/each}
-					</div>
-				</div>
-
-				<!-- Day labels + Heatmap grid -->
 				<div class="heatmap-body">
 					<!-- Day labels column -->
 					<div class="heatmap-day-col">
@@ -213,49 +216,78 @@
 						{/each}
 					</div>
 
-					<!-- Flat heatmap grid (auto-flow: column) -->
-					<div class="heatmap-grid" style="grid-template-columns: repeat({weeks.length}, 1fr);">
-						{#each weeks as week}
-							{#each week as day}
-								{#if day.date === null}
-									<div class="heatmap-cell"></div>
-								{:else if day.count === 0}
-									<div class="heatmap-cell heatmap-cell-empty">
-										<span class="heatmap-tooltip"
-											>{t('dashboard.heatmap.noAttendance')} {formatDateStr(day.date)}</span
-										>
-									</div>
-								{:else}
-									<div
-										class="heatmap-cell heatmap-cell-filled"
-										style="background-color: rgba(227, 0, 15, {getIntensity(day.count)});"
-									>
-										<span class="heatmap-tooltip"
-											>{day.count}
-											{t('dashboard.heatmap.attendance')}{day.count > 1 ? 's' : ''}
-											{t('dashboard.heatmap.on')}
-											{formatDateStr(day.date)}</span
-										>
-									</div>
-								{/if}
-							{/each}
+					<!-- Month labels + Heatmap grid in same container -->
+					<div class="heatmap-grid-area">
+						{#each monthLabels as month}
+							<span
+								class="heatmap-month-label"
+								style="left: {(month.colIndex / weeks.length) * 100}%;"
+							>
+								{month.label}
+							</span>
 						{/each}
+						<div
+							class="heatmap-grid"
+							style="grid-template-columns: repeat({weeks.length}, minmax(11px, 1fr));"
+						>
+							{#each weeks as week}
+								{#each week as day}
+									{#if day.date === null}
+										<div class="heatmap-cell"></div>
+									{:else if day.count === 0}
+										<div
+											class="heatmap-cell heatmap-cell-empty cursor-pointer"
+											role="button"
+											tabindex="0"
+											onclick={() => handleCellClick(day)}
+											onkeydown={(e) => e.key === 'Enter' && handleCellClick(day)}
+										>
+											<span class="heatmap-tooltip">{getCellText(day)}</span>
+										</div>
+									{:else}
+										<div
+											class="heatmap-cell heatmap-cell-filled cursor-pointer"
+											style="background-color: rgba(227, 0, 15, {getIntensity(day.count)});"
+											role="button"
+											tabindex="0"
+											onclick={() => handleCellClick(day)}
+											onkeydown={(e) => e.key === 'Enter' && handleCellClick(day)}
+										>
+											<span class="heatmap-tooltip">{getCellText(day)}</span>
+										</div>
+									{/if}
+								{/each}
+							{/each}
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- Legend — OUTSIDE the scroll container -->
-		<div class="flex items-center justify-end mt-3 gap-1.5 text-[10px] text-gray-400">
-			<span>{t('dashboard.heatmap.less')}</span>
-			<div class="flex gap-1">
-				<div class="legend-box heatmap-cell-empty"></div>
-				<div class="legend-box" style="background-color: rgba(227, 0, 15, 0.25);"></div>
-				<div class="legend-box" style="background-color: rgba(227, 0, 15, 0.5);"></div>
-				<div class="legend-box" style="background-color: rgba(227, 0, 15, 0.75);"></div>
-				<div class="legend-box" style="background-color: rgba(227, 0, 15, 1);"></div>
+		<div
+			class="flex flex-col sm:flex-row sm:items-center mt-3 gap-2 sm:gap-1.5 text-[10px] text-gray-400"
+		>
+			<div class="flex-1 min-h-[16px] text-center transition-opacity duration-200 sm:hidden">
+				{#if selectedCellText}
+					<span class="text-themed bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
+						{selectedCellText}
+					</span>
+				{/if}
 			</div>
-			<span>{t('dashboard.heatmap.more')}</span>
+			<div
+				class="flex items-center justify-center sm:justify-end gap-1.5 shrink-0 w-full sm:w-auto sm:ml-auto"
+			>
+				<span>{t('dashboard.heatmap.less')}</span>
+				<div class="flex gap-1">
+					<div class="legend-box heatmap-cell-empty"></div>
+					<div class="legend-box" style="background-color: rgba(227, 0, 15, 0.25);"></div>
+					<div class="legend-box" style="background-color: rgba(227, 0, 15, 0.5);"></div>
+					<div class="legend-box" style="background-color: rgba(227, 0, 15, 0.75);"></div>
+					<div class="legend-box" style="background-color: rgba(227, 0, 15, 1);"></div>
+				</div>
+				<span>{t('dashboard.heatmap.more')}</span>
+			</div>
 		</div>
 	{/if}
 </div>
@@ -275,9 +307,9 @@
 		}
 	}
 
-	/* Outer wrapper ensures minimum usable width on mobile */
+	/* Outer wrapper: fits grid content on mobile, fills container on desktop */
 	.heatmap-outer {
-		min-width: 620px;
+		min-width: max-content;
 		width: 100%;
 	}
 
@@ -319,21 +351,11 @@
 		}
 	}
 
-	/* Month label row */
-	.heatmap-month-row {
-		display: flex;
-		margin-bottom: 4px;
-	}
-
-	.heatmap-spacer {
-		width: 30px;
-		flex-shrink: 0;
-	}
-
-	.heatmap-month-track {
+	/* Grid area wraps month labels + heatmap grid so labels align with actual grid width */
+	.heatmap-grid-area {
 		flex: 1;
 		position: relative;
-		height: 16px;
+		padding-top: 20px;
 	}
 
 	.heatmap-month-label {
@@ -343,6 +365,16 @@
 		font-weight: 500;
 		color: var(--color-gray-400, #9ca3af);
 		white-space: nowrap;
+	}
+
+	.heatmap-month-skeleton {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		display: flex;
+		justify-content: space-between;
+		padding-right: 16px;
 	}
 
 	/* Body: day labels + grid side by side */
@@ -358,6 +390,7 @@
 		gap: 3px;
 		width: 30px;
 		flex-shrink: 0;
+		padding-top: 20px;
 	}
 
 	.heatmap-day-text {
@@ -366,6 +399,7 @@
 		justify-content: flex-end;
 		padding-right: 4px;
 		font-size: 10px;
+		line-height: 1;
 		font-weight: 500;
 		color: var(--color-gray-400, #9ca3af);
 	}
@@ -376,7 +410,6 @@
 		grid-template-rows: repeat(7, auto);
 		grid-auto-flow: column;
 		gap: 3px;
-		flex: 1;
 	}
 
 	/* Each cell: square via aspect-ratio */
@@ -425,9 +458,11 @@
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 	}
 
-	.heatmap-cell:hover .heatmap-tooltip {
-		opacity: 1;
-		visibility: visible;
+	@media (hover: hover) {
+		.heatmap-cell:hover .heatmap-tooltip {
+			opacity: 1;
+			visibility: visible;
+		}
 	}
 
 	/* Legend color boxes */
@@ -447,7 +482,6 @@
 			font-size: 11px;
 		}
 
-		.heatmap-spacer,
 		.heatmap-day-col {
 			width: 34px;
 		}
