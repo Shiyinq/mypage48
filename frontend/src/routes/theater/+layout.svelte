@@ -209,7 +209,8 @@
 			isNewsListingPage ||
 			isMembersPage ||
 			isMembersDetailPage ||
-			isEventDetailPage
+			isEventDetailPage ||
+			isNewsDetailPage
 	);
 </script>
 
@@ -218,19 +219,19 @@
 	isImmersive.value ||
 	isMembersDetailPage ||
 	isEventDetailPage ||
-	isDetailPage
+	isDetailPage ||
+	isNewsDetailPage
 		? 'max-w-none w-full'
-		: isNewsDetailPage
-			? 'max-w-5xl w-full'
-			: 'max-w-6xl'} mx-auto {isLiveDetailPage ||
+		: 'max-w-6xl'} mx-auto {isLiveDetailPage ||
 	isImmersive.value ||
 	isMembersDetailPage ||
 	isEventDetailPage ||
-	isDetailPage
+	isDetailPage ||
+	isNewsDetailPage
 		? 'pt-0 sm:pt-0 px-0'
 		: 'pt-4 sm:pt-6 px-4'} {isImmersive.value
 		? 'pb-0'
-		: isMembersDetailPage || isEventDetailPage || isDetailPage
+		: isMembersDetailPage || isEventDetailPage || isDetailPage || isNewsDetailPage
 			? 'pb-0'
 			: 'pb-24'}"
 >
