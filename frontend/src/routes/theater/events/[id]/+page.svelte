@@ -380,7 +380,7 @@
 									<div
 										class="relative z-20 px-6 sm:px-10 pt-[150px] sm:pt-[200px] pb-6 sm:pb-10 flex flex-col justify-end w-full bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95 pointer-events-none"
 									>
-										<div class="pointer-events-auto w-full">
+										<div class="pointer-events-auto w-full max-w-5xl mx-auto">
 											{@render heroContent({ isDarkText: true })}
 										</div>
 									</div>
@@ -408,7 +408,7 @@
 									<div
 										class="relative z-10 px-6 sm:px-10 pt-[150px] sm:pt-[200px] pb-6 sm:pb-10 flex flex-col justify-end w-full bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95 pointer-events-none"
 									>
-										<div class="pointer-events-auto w-full">
+										<div class="pointer-events-auto w-full max-w-5xl mx-auto">
 											{@render heroContent({ isDarkText: true })}
 										</div>
 									</div>
@@ -816,28 +816,28 @@
 					<!-- Loading Skeleton exactly mimicking the unified card structure -->
 					<div class="bg-white dark:bg-zinc-900 overflow-hidden animate-pulse">
 						<!-- Hero Skeleton -->
-						<div class="relative w-full flex flex-col">
+						<div
+							class="relative w-full min-h-[280px] sm:min-h-[350px] flex flex-col justify-end bg-gray-200 dark:bg-zinc-800"
+						>
 							<div
-								class="relative w-full aspect-[21/9] sm:aspect-[3/1] bg-slate-200 dark:bg-zinc-800"
-								style="-webkit-mask-image: linear-gradient(to top, transparent, black 60%); mask-image: linear-gradient(to top, transparent, black 60%);"
-							></div>
-							<div
-								class="relative z-10 px-6 sm:px-10 pb-6 sm:pb-10 -mt-20 sm:-mt-28 flex flex-col justify-end w-full"
+								class="relative z-20 px-6 sm:px-10 pt-[150px] sm:pt-[200px] pb-6 sm:pb-10 flex flex-col justify-end w-full"
 							>
-								<div class="flex flex-wrap gap-2 mb-3">
-									<div class="w-16 h-6 bg-slate-200 dark:bg-zinc-800 rounded-lg"></div>
-									<div class="w-20 h-6 bg-slate-200 dark:bg-zinc-800 rounded-lg"></div>
-								</div>
-								<div
-									class="w-3/4 max-w-lg h-10 sm:h-12 bg-slate-200 dark:bg-zinc-800 rounded-lg mb-4"
-								></div>
-								<div class="flex flex-row w-full sm:w-auto gap-2 sm:gap-4">
+								<div class="pointer-events-auto w-full max-w-5xl mx-auto">
+									<div class="flex flex-wrap gap-2 mb-3">
+										<div class="w-16 h-6 bg-gray-300 dark:bg-zinc-700 rounded-lg"></div>
+										<div class="w-20 h-6 bg-gray-300 dark:bg-zinc-700 rounded-lg"></div>
+									</div>
 									<div
-										class="flex-1 sm:flex-none w-32 h-10 bg-slate-200 dark:bg-zinc-800 rounded-xl"
+										class="w-3/4 max-w-lg h-10 sm:h-12 bg-gray-300 dark:bg-zinc-700 rounded-lg mb-4"
 									></div>
-									<div
-										class="flex-1 sm:flex-none w-40 h-10 bg-slate-200 dark:bg-zinc-800 rounded-xl"
-									></div>
+									<div class="flex flex-row w-full sm:w-auto gap-2 sm:gap-4">
+										<div
+											class="flex-1 sm:flex-none w-32 h-10 bg-gray-300 dark:bg-zinc-700 rounded-xl"
+										></div>
+										<div
+											class="flex-1 sm:flex-none w-40 h-10 bg-gray-300 dark:bg-zinc-700 rounded-xl"
+										></div>
+									</div>
 								</div>
 							</div>
 						</div>

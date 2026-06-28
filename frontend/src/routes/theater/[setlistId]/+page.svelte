@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
 	import { type SetlistDetailResponse } from '$lib/apis/setlists';
 
 	import { ticketsStore, showToast } from '$lib/stores';
@@ -127,7 +128,7 @@
 		}
 	}
 
-	let isSidebarVisible = $state(false);
+	let isSidebarVisible = $state(browser ? window.innerWidth >= 768 : true);
 	let innerWidth = $state(0);
 	let mainContentEl: HTMLElement | null = $state(null);
 
