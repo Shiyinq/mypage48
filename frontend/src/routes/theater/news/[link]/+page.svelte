@@ -9,7 +9,8 @@
 		Copy,
 		PanelLeft,
 		PanelLeftClose,
-		ZoomIn
+		ZoomIn,
+		Newspaper
 	} from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
 	import { navigating } from '$app/stores';
@@ -373,7 +374,11 @@
 								>
 									<div
 										class="absolute inset-0 bg-gradient-to-br from-red-500/10 to-rose-700/10 dark:from-red-500/5 dark:to-rose-700/5 overflow-hidden pointer-events-none"
-									></div>
+									>
+										<div class="absolute -top-12 -right-12 text-red-500/5 dark:text-red-500/10">
+											<Newspaper class="w-64 h-64 -rotate-12" />
+										</div>
+									</div>
 									<div
 										class="relative z-10 px-6 sm:px-10 pt-[150px] sm:pt-[200px] pb-6 sm:pb-10 flex flex-col justify-end w-full bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95 pointer-events-none"
 									>
