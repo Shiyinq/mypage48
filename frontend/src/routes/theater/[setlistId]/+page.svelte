@@ -456,7 +456,7 @@
 												class="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-full border border-gray-200 dark:border-zinc-700"
 											>
 												{detail.stats.total2Shot}
-												{t('top2shot.total') || 'Total'}
+												<span class="hidden sm:inline">{t('top2shot.total') || 'Total'}</span>
 											</span>
 										</div>
 										<div class="space-y-3">
