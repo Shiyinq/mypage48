@@ -457,7 +457,7 @@
 											</div>
 										</div>
 
-										<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+										<div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
 											{#if event.members && event.members.length > 0}
 												{#each event.members as member}
 													{@const isSeitansai = event.seitansaiMembers?.includes(member.name)}
@@ -852,7 +852,7 @@
 									<div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-5/6"></div>
 									<div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-4/6"></div>
 								</div>
-								<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 pt-6">
+								<div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 pt-6">
 									{#each Array(8)}
 										<div class="aspect-[3/4] bg-gray-200 dark:bg-zinc-800 rounded-xl"></div>
 									{/each}
