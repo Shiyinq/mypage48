@@ -66,6 +66,15 @@ class TicketSeat(BaseModel):
     number: int
 
 
+class TwoShotHistoryItem(BaseModel):
+    name: str
+    count: int
+    imageUrl: Optional[str] = None
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
+    blurHash: Optional[str] = None
+
+
 class TicketItem(BaseModel):
     """Ticket summary for setlist detail"""
 
@@ -83,8 +92,12 @@ class SetlistDetailStats(BaseModel):
     totalSpent: int
     avgPrice: float
     topRow: Optional[str] = None
+    topRowCount: int = 0
     firstDate: Optional[str] = None
     lastDate: Optional[str] = None
+    firstSeat: Optional[str] = None
+    lastSeat: Optional[str] = None
+    total2Shot: int = 0
 
 
 class SetlistDetailResponse(SetlistBase):
@@ -93,6 +106,7 @@ class SetlistDetailResponse(SetlistBase):
     watched: WatchedStats
     stats: SetlistDetailStats
     tickets: List[TicketItem]
+    twoShots: List[TwoShotHistoryItem] = Field(default_factory=list)
 
 
 class SetlistCreateRequest(BaseModel):

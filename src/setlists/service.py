@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Optional
 
 from src.config import Settings
@@ -237,30 +238,94 @@ class SetlistsService:
                 )
 
             # Compute stats
-            total_spent = sum(t.price for t in tickets)
+            total_spent = sum(
+                t.get("price", 0) + (t.get("two_shot") or {}).get("price", 0)
+                for t in matched_tickets
+            )
             avg_price = total_spent / len(tickets) if tickets else 0
 
-            # Calculate top row
+            # Calculate top row and top row count
             row_counts: dict[str, int] = {}
             for t in tickets:
                 row = t.seat.section.upper()[0] if t.seat.section else ""
                 if row:
                     row_counts[row] = row_counts.get(row, 0) + 1
-            top_row = (
-                max(row_counts.items(), key=lambda x: x[1])[0] if row_counts else None
+
+            top_row = None
+            top_row_count = 0
+            if row_counts:
+                top_row, top_row_count = max(row_counts.items(), key=lambda x: x[1])
+
+            # First and last dates and seats (tickets are sorted newest to oldest)
+            first_date = tickets[-1].event.date if tickets else None
+            last_date = tickets[0].event.date if tickets else None
+            first_seat = (
+                f"{tickets[-1].seat.section}-{tickets[-1].seat.number}"
+                if tickets and tickets[-1].seat.section
+                else None
+            )
+            last_seat = (
+                f"{tickets[0].seat.section}-{tickets[0].seat.number}"
+                if tickets and tickets[0].seat.section
+                else None
             )
 
-            # First and last dates
-            first_date = tickets[0].event.date if tickets else None
-            last_date = tickets[-1].event.date if tickets else None
+            # Count total 2-shots and build 2-shots history
+            two_shots_dict = {}
+            total_2shot = 0
+            for t in matched_tickets:
+                two_shot = t.get("two_shot")
+                if two_shot:
+                    total_2shot += 1
+                    name = two_shot.get("member_name")
+                    if name:
+                        if name not in two_shots_dict:
+                            two_shots_dict[name] = {
+                                "name": name,
+                                "count": 0,
+                                "imageUrl": two_shot.get("imageUrl"),
+                                "blurHash": two_shot.get("blurHash"),
+                            }
+                        two_shots_dict[name]["count"] += 1
+
+            two_shots_list = sorted(
+                two_shots_dict.values(), key=lambda x: x["count"], reverse=True
+            )
+
+            # Resolve image variants for 2-shots
+            async def _resolve_twoshot(item: dict):
+                image_url = item.get("imageUrl")
+                item["imageUrl_medium"] = None
+                item["imageUrl_small"] = None
+
+                if image_url:
+                    if not image_url.startswith("http"):
+                        variants = await self.storage_service.resolve_image_variants(
+                            image_url
+                        )
+                        item["imageUrl"] = variants["url"]
+                        item["imageUrl_medium"] = variants.get("url_medium")
+                        item["imageUrl_small"] = variants.get("url_small")
+                        item["blurHash"] = variants.get("blurHash") or item.get(
+                            "blurHash"
+                        )
+                return item
+
+            if two_shots_list:
+                tasks = [_resolve_twoshot(item) for item in two_shots_list]
+                two_shots_list = list(await asyncio.gather(*tasks))
 
             stats = SetlistDetailStats(
                 totalAttendance=count,
                 totalSpent=total_spent,
                 avgPrice=round(avg_price),
                 topRow=top_row,
+                topRowCount=top_row_count,
                 firstDate=first_date,
                 lastDate=last_date,
+                firstSeat=first_seat,
+                lastSeat=last_seat,
+                total2Shot=total_2shot,
             )
 
             resolved = await self._resolve_setlist(result)
@@ -276,6 +341,7 @@ class SetlistsService:
                 watched=watched,
                 stats=stats,
                 tickets=tickets,
+                twoShots=two_shots_list,
             )
 
         except SetlistNotFoundError:

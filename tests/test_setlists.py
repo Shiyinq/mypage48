@@ -148,6 +148,78 @@ async def test_get_setlist_by_id(client: AsyncClient, seed_setlists_db, create_u
     assert data["title"] == "Pajama Drive"
 
 @pytest.mark.asyncio
+async def test_get_setlist_detail(client: AsyncClient, db, seed_setlists_db, create_user):
+    """Test getting a setlist detail with stats and tickets."""
+    token, user_id, headers = await create_user("detailuser")
+
+    # Insert multiple tickets for Pajama Drive
+    ticket_1 = TicketInDB(
+        user_id=user_id,
+        ticket_id="T001",
+        event=TicketEvent(title="Pajama Drive", date="2023-01-15", day="Sunday", time="14:00", venue="JKT48 Theater"),
+        seat=TicketSeat(section="A", number=5),
+        price=200000,
+        currency="IDR",
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
+        two_shot={
+            "member_name": "Azizi Asadel",
+            "type": "Roulette",
+            "price": 100000,
+            "imageUrl": "twoshot/zee.jpg",
+            "blurHash": "U00000000000000000000000000000000000",
+            "is_favorite": True
+        }
+    )
+    ticket_2 = TicketInDB(
+        user_id=user_id,
+        ticket_id="T002",
+        event=TicketEvent(title="Pajama Drive", date="2023-02-20", day="Monday", time="19:00", venue="JKT48 Theater"),
+        seat=TicketSeat(section="J", number=3),
+        price=200000,
+        currency="IDR",
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    await db["tickets"].insert_many([ticket_1.model_dump(), ticket_2.model_dump()])
+
+    setlist_id = "pajamadrive"
+    response = await client.get(f"/api/theater/setlists/detail/{setlist_id}", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert data["setlistId"] == setlist_id
+    assert data["watched"]["count"] == 2
+    
+    # Check stats
+    stats = data["stats"]
+    assert stats["firstDate"] == "2023-01-15"
+    assert stats["lastDate"] == "2023-02-20"
+    assert stats["firstSeat"] == "A-5"
+    assert stats["lastSeat"] == "J-3"
+    assert stats["total2Shot"] == 1
+    
+    # Check twoShots
+    two_shots = data.get("twoShots", [])
+    assert len(two_shots) == 1
+    assert two_shots[0]["name"] == "Azizi Asadel"
+    assert two_shots[0]["count"] == 1
+    assert two_shots[0]["imageUrl"].startswith("http")
+    assert two_shots[0]["imageUrl_medium"].startswith("http")
+    assert two_shots[0]["imageUrl_small"].startswith("http")
+    assert two_shots[0]["blurHash"] == "U00000000000000000000000000000000000"
+    
+    # Tickets should be descending order by date
+    tickets = data["tickets"]
+    assert len(tickets) == 2
+    assert tickets[0]["event"]["date"] == "2023-02-20"
+    assert tickets[0]["seat"]["section"] == "J"
+    assert tickets[0]["seat"]["number"] == 3
+    assert tickets[1]["event"]["date"] == "2023-01-15"
+    assert tickets[1]["seat"]["section"] == "A"
+    assert tickets[1]["seat"]["number"] == 5
+
+@pytest.mark.asyncio
 async def test_get_setlist_by_id_not_found(client: AsyncClient, create_user):
     """Test getting a non-existent setlist by ID returns 404."""
     token, user_id, headers = await create_user("notfounduser")

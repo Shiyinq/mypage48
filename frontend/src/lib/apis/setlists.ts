@@ -52,13 +52,26 @@ export interface TicketItem {
 	notes?: string;
 }
 
+export interface TwoShotHistoryItem {
+	name: string;
+	count: number;
+	imageUrl?: string;
+	imageUrl_medium?: string;
+	imageUrl_small?: string;
+	blurHash?: string;
+}
+
 export interface SetlistDetailStats {
 	totalAttendance: number;
 	totalSpent: number;
 	avgPrice: number;
 	topRow?: string;
+	topRowCount: number;
 	firstDate?: string;
 	lastDate?: string;
+	firstSeat?: string;
+	lastSeat?: string;
+	total2Shot: number;
 }
 
 export interface SetlistDetailResponse {
@@ -76,6 +89,7 @@ export interface SetlistDetailResponse {
 	watched: WatchedStats;
 	stats: SetlistDetailStats;
 	tickets: TicketItem[];
+	twoShots: TwoShotHistoryItem[];
 }
 
 export const setlistsApi = {

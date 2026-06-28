@@ -3,6 +3,7 @@
 	import { Clock, Trash2 } from 'lucide-svelte';
 	import { formatCurrency } from '$lib/utils/formatting';
 	import { formatDate } from '$lib/i18n';
+	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
 		ticket: TicketItem;
@@ -10,6 +11,8 @@
 	}
 
 	let { ticket, onclick }: Props = $props();
+
+	const { t } = useTranslation();
 
 	function handleDelete(e: MouseEvent) {
 		e.stopPropagation();
@@ -55,7 +58,9 @@
 				</span>
 			</div>
 			<div class="flex items-baseline gap-2">
-				<span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Seat</span>
+				<span class="text-sm text-gray-500 dark:text-gray-400 font-medium"
+					>{t('theater.setlists.seat') || 'Seat'}</span
+				>
 				<span class="text-lg font-bold text-gray-900 dark:text-white font-mono tracking-tight">
 					{ticket.seat.section}-{ticket.seat.number}
 				</span>

@@ -214,18 +214,23 @@
 </script>
 
 <div
-	class="{isLiveDetailPage || isImmersive.value || isMembersDetailPage || isEventDetailPage
+	class="{isLiveDetailPage ||
+	isImmersive.value ||
+	isMembersDetailPage ||
+	isEventDetailPage ||
+	isDetailPage
 		? 'max-w-none w-full'
-		: isNewsDetailPage || isDetailPage
+		: isNewsDetailPage
 			? 'max-w-5xl w-full'
 			: 'max-w-6xl'} mx-auto {isLiveDetailPage ||
 	isImmersive.value ||
 	isMembersDetailPage ||
-	isEventDetailPage
+	isEventDetailPage ||
+	isDetailPage
 		? 'pt-0 sm:pt-0 px-0'
 		: 'pt-4 sm:pt-6 px-4'} {isImmersive.value
 		? 'pb-0'
-		: isMembersDetailPage || isEventDetailPage
+		: isMembersDetailPage || isEventDetailPage || isDetailPage
 			? 'pb-0'
 			: 'pb-24'}"
 >

@@ -6,9 +6,11 @@
 	interface Props {
 		firstDate: string | undefined;
 		lastDate: string | undefined;
+		firstSeat?: string | undefined;
+		lastSeat?: string | undefined;
 	}
 
-	let { firstDate, lastDate }: Props = $props();
+	let { firstDate, lastDate, firstSeat, lastSeat }: Props = $props();
 
 	const { t } = useTranslation();
 </script>
@@ -35,6 +37,11 @@
 					? formatDate(firstDate, { day: 'numeric', month: 'long', year: 'numeric' })
 					: '-'}
 			</p>
+			{#if firstSeat}
+				<p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-1">
+					{t('history.seat')} <span class="text-gray-700 dark:text-gray-300">{firstSeat}</span>
+				</p>
+			{/if}
 		</div>
 
 		<!-- Last -->
@@ -48,6 +55,11 @@
 			<p class="font-bold text-gray-900 dark:text-white">
 				{lastDate ? formatDate(lastDate, { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
 			</p>
+			{#if lastSeat}
+				<p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-1">
+					{t('history.seat')} <span class="text-gray-700 dark:text-gray-300">{lastSeat}</span>
+				</p>
+			{/if}
 		</div>
 	</div>
 </div>
