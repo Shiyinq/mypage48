@@ -111,6 +111,30 @@
 		secondaryLinks.some((link) => $page.url.pathname.startsWith(link.href))
 	);
 	let isRouteTheater = $derived($page.url.pathname.startsWith('/theater'));
+
+	let theaterIsActive = $derived((href: string, exact: boolean = false) => {
+		const currentPath = $page.url.pathname;
+		if (href === '/theater/events') {
+			return (
+				currentPath === href ||
+				(currentPath.startsWith(href + '/') &&
+					!currentPath.includes('/history') &&
+					!currentPath.includes('/calendar'))
+			);
+		}
+		if (href === '/theater') {
+			const parts = currentPath.split('/').filter(Boolean);
+			if (parts.length === 1 && parts[0] === 'theater') return true;
+			if (parts.length === 2 && parts[0] === 'theater') {
+				return !['members', 'news', 'events', 'live', 'sorter'].includes(parts[1]);
+			}
+			return false;
+		}
+		if (exact) {
+			return currentPath === href;
+		}
+		return currentPath.startsWith(href);
+	});
 </script>
 
 <!-- Menu Drawer Overlay -->
@@ -191,15 +215,7 @@
 		</div>
 		<div class="p-3 grid grid-cols-1 gap-1.5 max-h-[calc(100dvh-12rem)] overflow-y-auto relative">
 			{#each theaterNavItems as link}
-				{@const isActive =
-					link.href === '/theater/events'
-						? $page.url.pathname === link.href ||
-							($page.url.pathname.startsWith(link.href + '/') &&
-								!$page.url.pathname.includes('/history') &&
-								!$page.url.pathname.includes('/calendar'))
-						: link.exact
-							? $page.url.pathname === link.href
-							: $page.url.pathname.startsWith(link.href)}
+				{@const isActive = theaterIsActive(link.href, link.exact)}
 				<a
 					href={link.href}
 					class={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] active:opacity-70 group ${isActive ? 'bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}

@@ -857,7 +857,8 @@
 		"setlists": {
 			"section": "セットリスト",
 			"events": "スペシャルイベント",
-			"attendedCount": "{count}回出席",
+			"ended": "終了",
+			"attendedCount": "{count}回参加しました",
 			"notAttended": "まだ参加していない",
 			"statsOverview": "統計概要",
 			"avgPricePerTicket": "平均チケット価格",

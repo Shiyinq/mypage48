@@ -104,7 +104,10 @@ function createSetlistsStore() {
 			const filterKey = filter ? JSON.stringify(filter) : 'none';
 			const cacheKey = `${id}-${filterKey}`;
 
-			if (setlistsState.detailCache[cacheKey]) return setlistsState.detailCache[cacheKey];
+			if (setlistsState.detailCache[cacheKey]) {
+				setlistsState.detailError = null;
+				return setlistsState.detailCache[cacheKey];
+			}
 
 			// Deduplicate concurrent requests for the same detail id and filter
 			return setlistsDedup.execute(`detail:${cacheKey}`, async () => {

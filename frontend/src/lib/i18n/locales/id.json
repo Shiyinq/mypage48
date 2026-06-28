@@ -1162,9 +1162,10 @@
 			"errorDesc": "Terjadi kesalahan saat mengambil daftar berita."
 		},
 		"setlists": {
-			"section": "Setlist",
+			"section": "Setlists",
 			"events": "Event Spesial",
-			"attendedCount": "{count}x Kehadiran",
+			"ended": "Selesai",
+			"attendedCount": "Menonton {count}x",
 			"notAttended": "Belum pernah hadir",
 			"statsOverview": "Ringkasan Statistik",
 			"avgPricePerTicket": "Rata-rata Harga Tiket",

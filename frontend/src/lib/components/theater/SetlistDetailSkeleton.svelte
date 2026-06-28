@@ -1,38 +1,42 @@
 <script lang="ts">
 </script>
 
-<div class="animate-pulse space-y-8">
+<div class="animate-pulse bg-white dark:bg-zinc-900 overflow-hidden">
 	<!-- Hero Skeleton -->
-	<div
-		class="relative w-full min-h-[400px] rounded-[2.5rem] overflow-hidden mb-8 bg-gray-200 dark:bg-zinc-800"
-	>
+	<div class="relative w-full flex flex-col">
 		<div
-			class="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-gray-900/30 to-transparent"
-		></div>
-		<div
-			class="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-transparent to-transparent"
-		></div>
-		<div class="relative z-10 p-6 md:p-12 w-full flex items-end h-full">
-			<div class="flex items-start justify-between gap-6 w-full">
-				<div class="space-y-3 md:space-y-4 max-w-full md:max-w-2xl">
-					<div class="flex gap-2">
-						<div class="w-20 h-6 bg-gray-300 dark:bg-zinc-700 rounded-full"></div>
-						<div class="w-28 h-6 bg-gray-300 dark:bg-zinc-700 rounded-full"></div>
+			class="relative w-full min-h-[280px] sm:min-h-[350px] flex flex-col justify-end bg-gray-200 dark:bg-zinc-800"
+		>
+			<!-- Gradient Overlay -->
+			<div
+				class="absolute inset-0 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95"
+			></div>
+
+			<!-- Content Container -->
+			<div
+				class="relative z-20 px-6 sm:px-10 pt-[150px] sm:pt-[200px] pb-6 sm:pb-10 flex flex-col justify-end w-full"
+			>
+				<div class="w-full flex items-end justify-between gap-6 max-w-5xl mx-auto">
+					<div class="space-y-3 w-full md:max-w-2xl">
+						<div class="flex gap-2">
+							<div class="w-20 h-6 bg-gray-300 dark:bg-zinc-700 rounded-full"></div>
+							<div class="w-28 h-6 bg-gray-300 dark:bg-zinc-700 rounded-full"></div>
+						</div>
+						<div class="w-3/4 h-10 md:h-12 bg-gray-300 dark:bg-zinc-700 rounded-lg"></div>
+						<div class="w-1/2 h-5 md:h-6 bg-gray-300/50 dark:bg-zinc-700/50 rounded-lg"></div>
+						<div class="w-full max-w-xl h-4 bg-gray-300 dark:bg-zinc-700 rounded-lg"></div>
+						<div class="w-2/3 max-w-sm h-4 bg-gray-300 dark:bg-zinc-700 rounded-lg"></div>
 					</div>
-					<div class="w-3/4 h-10 md:h-12 bg-gray-300 dark:bg-zinc-700 rounded-lg"></div>
-					<div class="w-1/2 h-5 md:h-6 bg-gray-300/50 dark:bg-zinc-700/50 rounded-lg"></div>
-					<div class="w-full max-w-xl h-4 bg-gray-300 dark:bg-zinc-700 rounded-lg"></div>
-					<div class="w-2/3 max-w-sm h-4 bg-gray-300 dark:bg-zinc-700 rounded-lg"></div>
-				</div>
-				<div class="hidden md:block">
-					<div class="w-[140px] h-[110px] bg-gray-300 dark:bg-zinc-700 rounded-2xl"></div>
+					<div class="hidden md:block">
+						<div class="w-[140px] h-[110px] bg-gray-300 dark:bg-zinc-700 rounded-2xl"></div>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 
 	<!-- Main Content Grid -->
-	<div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+	<div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 p-6 sm:p-8 lg:p-10 max-w-5xl mx-auto">
 		<!-- Left Column -->
 		<div class="md:col-span-8 space-y-8">
 			<!-- Stats Cards -->

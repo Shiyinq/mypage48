@@ -51,6 +51,14 @@
 					!currentPath.includes('/calendar'))
 			);
 		}
+		if (href === '/theater') {
+			const parts = currentPath.split('/').filter(Boolean);
+			if (parts.length === 1 && parts[0] === 'theater') return true;
+			if (parts.length === 2 && parts[0] === 'theater') {
+				return !['members', 'news', 'events', 'live', 'sorter'].includes(parts[1]);
+			}
+			return false;
+		}
 		if (exact) {
 			return currentPath === href;
 		}

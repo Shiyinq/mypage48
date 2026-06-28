@@ -978,6 +978,7 @@
 		"setlists": {
 			"section": "Setlists",
 			"events": "Special Events",
+			"ended": "Ended",
 			"attendedCount": "Attended {count}x",
 			"notAttended": "Not attended yet",
 			"statsOverview": "Stats Overview",
