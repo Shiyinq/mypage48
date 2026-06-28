@@ -7,8 +7,6 @@
 		ExternalLink,
 		Share2,
 		Copy,
-		Menu,
-		X,
 		PanelLeft,
 		PanelLeftClose,
 		ZoomIn
