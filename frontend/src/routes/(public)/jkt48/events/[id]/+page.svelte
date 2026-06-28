@@ -80,7 +80,10 @@
 
 	let contentBody = $derived(
 		event?.raw_data?.detail?.content_body
-			? DOMPurify.sanitize(proxyExternalImageUrls(event.raw_data.detail.content_body))
+			? DOMPurify.sanitize(proxyExternalImageUrls(event.raw_data.detail.content_body)).replace(
+					/color:\s*(#000000|#000|black|rgb\(0,\s*0,\s*0\));?/gi,
+					''
+				)
 			: ''
 	);
 
