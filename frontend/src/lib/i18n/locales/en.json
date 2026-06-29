@@ -776,6 +776,10 @@
 		"top": "Top"
 	},
 	"liveHistory": {
+		"publicWatchedEmptyTitle": "Watch History",
+		"publicWatchedEmptyDesc": "Please login or register to start tracking your JKT48 Live watch history.",
+		"loginToWatch": "Login",
+		"registerToWatch": "Register",
 		"title": "Watch History",
 		"subtitle": "Your live watch history",
 		"totalWatches": "Total Watches",

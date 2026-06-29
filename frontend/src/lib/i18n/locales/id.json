@@ -1614,6 +1614,10 @@
 		"cancelImage": "Batal"
 	},
 	"liveHistory": {
+		"publicWatchedEmptyTitle": "Riwayat Menonton",
+		"publicWatchedEmptyDesc": "Silakan masuk atau daftar untuk mulai melacak riwayat menonton JKT48 Live Anda.",
+		"loginToWatch": "Masuk",
+		"registerToWatch": "Daftar",
 		"title": "Riwayat Nonton",
 		"subtitle": "Riwayat menonton live kamu",
 		"totalWatches": "Total Menonton",

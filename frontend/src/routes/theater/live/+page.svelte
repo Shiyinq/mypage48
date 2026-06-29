@@ -4,6 +4,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import LiveGrid from '$lib/components/live/LiveGrid.svelte';
+	import LivePlatformIndicator from '$lib/components/live/LivePlatformIndicator.svelte';
 	import AppBackground from '$lib/components/common/AppBackground.svelte';
 
 	const { t } = useTranslation();
@@ -35,6 +36,8 @@
 />
 
 <AppBackground hideDecorationsOnMobile={true} />
+<LivePlatformIndicator />
+
 <div class="h-full w-full overflow-y-auto py-8 px-4 sm:px-6 lg:px-8 pb-28">
 	<div class="max-w-7xl mx-auto w-full">
 		<LiveGrid

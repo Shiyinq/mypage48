@@ -37,7 +37,7 @@
 
 	onMount(() => {
 		mounted = true;
-		const shouldManage = !basePath.startsWith('/theater/live');
+		const shouldManage = false;
 		if (shouldManage) isImmersive.set(true);
 		document.body.style.overflow = 'hidden';
 		return () => {
@@ -81,7 +81,7 @@
 
 <div
 	role="presentation"
-	class="fixed inset-0 bg-gradient-to-b from-slate-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 flex flex-col overflow-hidden z-[9999]"
+	class="h-full w-full flex flex-col overflow-hidden bg-gradient-to-b from-slate-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900"
 	onmousemove={(e) => {
 		const { clientX, clientY } = e;
 		const { innerWidth, innerHeight } = window;
@@ -100,7 +100,7 @@
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-32 relative z-10">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 relative z-10">
 			<!-- Tabs & Filter -->
 			<div class="flex justify-center mb-6 sm:mb-8 w-full max-w-lg mx-auto">
 				<div class="flex w-full items-end border-b border-black/10 dark:border-white/10">

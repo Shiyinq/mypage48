@@ -14,7 +14,7 @@
 	interface Props {
 		stream: LiveStatus;
 		i?: number;
-		variant?: 'default' | 'theater';
+		variant?: 'default' | 'theater' | 'public';
 	}
 
 	let { stream, i = 0, variant = 'default' }: Props = $props();

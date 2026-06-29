@@ -11,7 +11,7 @@
 		liveList?: LiveStatus[];
 		loading?: boolean;
 		initialLoading?: boolean;
-		variant?: 'default' | 'theater';
+		variant?: 'default' | 'theater' | 'public';
 	}
 
 	let {

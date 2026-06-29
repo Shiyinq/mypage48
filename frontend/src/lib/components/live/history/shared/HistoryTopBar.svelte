@@ -18,12 +18,12 @@
 	}
 
 	let {
-		title,
-		subtitle = '',
-		icon: Icon,
-		iconColor = 'text-red-500',
+		title: _title,
+		subtitle: _subtitle = '',
+		icon: _Icon,
+		iconColor: _iconColor = 'text-red-500',
 		showDateFilter = false,
-		onBack
+		onBack: _onBack
 	}: Props = $props();
 
 	let isFilterOpen = $state(false);
@@ -58,13 +58,10 @@
 		};
 	}
 
-	import { page } from '$app/stores';
 	import { liveNavbarStore } from '$lib/stores/liveNavbar.svelte';
 
-	let isTheaterLive = $derived($page.url.pathname.startsWith('/theater/live'));
-
 	$effect(() => {
-		if (showDateFilter && isTheaterLive) {
+		if (showDateFilter) {
 			liveNavbarStore.rightSnippet = rightActions;
 		}
 		return () => {
@@ -108,28 +105,3 @@
 		{/if}
 	</div>
 {/snippet}
-
-<div
-	class="sticky top-0 z-[90] shrink-0 border-b border-black/5 dark:border-white/5 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl w-full"
->
-	<div class="h-14 flex items-center justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-		<div class="flex items-center gap-3 min-w-0 flex-1">
-			<div class="flex flex-col min-w-0">
-				<h1
-					class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white truncate flex items-center gap-2"
-				>
-					<Icon size={16} class={iconColor} />
-					{title}
-				</h1>
-				{#if subtitle}
-					<p class="text-[10px] text-slate-500 dark:text-zinc-400 truncate font-medium">
-						{subtitle}
-					</p>
-				{/if}
-			</div>
-		</div>
-		{#if showDateFilter && !isTheaterLive}
-			{@render rightActions()}
-		{/if}
-	</div>
-</div>

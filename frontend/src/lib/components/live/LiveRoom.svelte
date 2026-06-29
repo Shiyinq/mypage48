@@ -297,7 +297,7 @@
 		}
 	});
 
-	const shouldManage = $derived(!basePath.startsWith('/theater/live'));
+	const shouldManage = false;
 
 	$effect(() => {
 		// Always enable immersive mode for live player to match public layout

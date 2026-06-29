@@ -45,7 +45,7 @@
 		basePath?: string;
 	}
 
-	let { basePath = '/jkt48/live' }: Props = $props();
+	let { basePath: _basePath = '/jkt48/live' }: Props = $props();
 
 	// Multi-view State
 	let slots: LiveStatus[] = $state([]);
@@ -142,7 +142,7 @@
 			if (window.innerWidth >= 1024) {
 				showPicker = true;
 				showChat = true;
-				const shouldManage = !basePath.startsWith('/theater/live');
+				const shouldManage = false;
 				if (shouldManage) isImmersive.set(true);
 				document.body.style.overflow = 'hidden';
 			}
@@ -171,7 +171,7 @@
 				window.removeEventListener('resize', updateIsMobile);
 				// Re-enable body scroll when leaving multiview
 				document.body.style.overflow = '';
-				const shouldManage = !basePath.startsWith('/theater/live');
+				const shouldManage = false;
 				if (shouldManage) isImmersive.set(false);
 			}
 		};

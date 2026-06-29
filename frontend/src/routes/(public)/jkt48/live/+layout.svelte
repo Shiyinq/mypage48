@@ -9,6 +9,6 @@
 	let { children }: Props = $props();
 </script>
 
-<LiveLayout basePath="/theater/live" backPath="/theater">
+<LiveLayout basePath="/jkt48/live" backPath="/">
 	{@render children()}
 </LiveLayout>
