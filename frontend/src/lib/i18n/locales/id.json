@@ -565,8 +565,8 @@
 			"summary": "Ringkasan",
 			"yearSummary": "Ringkasan {year}",
 			"yearSummaryBadge": "JKT48 Theater {year}",
-			"watchedTimes": "Ditonton {count} kali",
-			"topSetlists": "Top Setlist",
+			"watchedTimes": "Menonton {count} kali",
+			"topSetlists": "Top Show",
 			"topTwoShotMembers": "Top 2-Shot"
 		},
 		"profilePicture": {

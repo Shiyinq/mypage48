@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import { LayoutGrid } from 'lucide-svelte';
 
 	interface Props {
 		year: number;
 		data?: Record<string, number>;
 		isLoading?: boolean;
+		variant?: 'dashboard' | 'public';
 	}
 
-	let { year, data = {}, isLoading = false }: Props = $props();
+	let { year, data = {}, isLoading = false, variant = 'dashboard' }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -170,11 +172,27 @@
 	}
 </script>
 
-<div class="glass-panel p-4 sm:p-6 rounded-3xl w-full">
-	<div class="mb-4 sm:mb-6">
-		<h3 class="text-lg sm:text-xl font-bold text-themed">{t('dashboard.heatmap.title')}</h3>
-		<p class="text-[10px] sm:text-xs text-gray-400">{t('dashboard.heatmap.subtitle')} {year}</p>
-	</div>
+<div
+	class="w-full {variant === 'public'
+		? 'bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 relative overflow-hidden shadow-2xl shadow-red-500/10 dark:shadow-red-950/40 transition-all duration-300 hover:shadow-red-500/15'
+		: 'glass-panel p-4 sm:p-6 rounded-3xl'}"
+>
+	{#if variant === 'public'}
+		<div class="flex items-center justify-between mb-5">
+			<h3
+				class="font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] text-gray-400 flex items-center gap-2"
+			>
+				<LayoutGrid class="w-4 h-4 text-red-500" />
+				{t('dashboard.heatmap.title')}
+				{year}
+			</h3>
+		</div>
+	{:else}
+		<div class="mb-4 sm:mb-6">
+			<h3 class="text-lg sm:text-xl font-bold text-themed">{t('dashboard.heatmap.title')}</h3>
+			<p class="text-[10px] sm:text-xs text-gray-400">{t('dashboard.heatmap.subtitle')} {year}</p>
+		</div>
+	{/if}
 
 	{#if isLoading}
 		<!-- Skeleton loading -->

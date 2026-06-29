@@ -125,6 +125,7 @@ class UserStats(BaseModel):
     showCounts: Optional[dict] = None
     topTwoShots: Optional[list[dict]] = None
     recentActivity: Optional[list[PublicShowEntry]] = None
+    heatmapData: Optional[dict] = None
 
 
 class PublicUserResponse(BaseModel):
