@@ -4,7 +4,6 @@
 	import { liveHistoryFilterStore } from '$lib/stores/liveHistoryFilter.svelte';
 	import { Trophy, History } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
-	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { spring } from 'svelte/motion';
@@ -29,14 +28,7 @@
 
 	onMount(() => {
 		mounted = true;
-		isImmersive.set(true);
-		document.body.style.overflow = 'hidden';
 		membersStore.load({ limit: 100 });
-
-		return () => {
-			isImmersive.set(false);
-			document.body.style.overflow = '';
-		};
 	});
 
 	$effect(() => {
@@ -88,7 +80,7 @@
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-32 relative z-10">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-32 relative z-10">
 			{#if isLoading && rankingList.length === 0}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each Array(6) as _}

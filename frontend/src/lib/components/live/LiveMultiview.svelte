@@ -14,8 +14,6 @@
 		Volume2,
 		VolumeX,
 		MessageCircle,
-		LayoutGrid,
-		ChevronLeft,
 		Search,
 		UserPlus,
 		RefreshCw,
@@ -144,7 +142,8 @@
 			if (window.innerWidth >= 1024) {
 				showPicker = true;
 				showChat = true;
-				isImmersive.set(true);
+				const shouldManage = !basePath.startsWith('/theater/live');
+				if (shouldManage) isImmersive.set(true);
 				document.body.style.overflow = 'hidden';
 			}
 
@@ -172,7 +171,8 @@
 				window.removeEventListener('resize', updateIsMobile);
 				// Re-enable body scroll when leaving multiview
 				document.body.style.overflow = '';
-				isImmersive.set(false);
+				const shouldManage = !basePath.startsWith('/theater/live');
+				if (shouldManage) isImmersive.set(false);
 			}
 		};
 	});
@@ -392,12 +392,70 @@
 							: 'grid-cols-2 lg:grid-cols-3 max-w-none'
 	);
 	// Aspect ratio persistence
+	import { liveNavbarStore } from '$lib/stores/liveNavbar.svelte';
+
 	$effect(() => {
-		if (typeof localStorage !== 'undefined') {
+		if (typeof window !== 'undefined') {
 			localStorage.setItem('mypage48_multiview_portrait', String(isPortrait));
 		}
 	});
+
+	$effect(() => {
+		liveNavbarStore.rightSnippet = rightActions;
+		return () => {
+			if (liveNavbarStore.rightSnippet === rightActions) {
+				liveNavbarStore.rightSnippet = undefined;
+			}
+		};
+	});
 </script>
+
+{#snippet rightActions()}
+	<div class="flex items-center gap-0.5 sm:gap-2 shrink-0">
+		<button
+			onclick={clearAll}
+			class="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
+			title={t('theater.live.multiview.clear_all')}
+		>
+			<Trash2 size={20} />
+		</button>
+		<button
+			onclick={() => (isPortrait = !isPortrait)}
+			class="p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+			title={isPortrait
+				? t('theater.live.multiview.switch_to_landscape')
+				: t('theater.live.multiview.switch_to_portrait')}
+		>
+			{#if isPortrait}
+				<Monitor size={20} />
+			{:else}
+				<Smartphone size={20} />
+			{/if}
+		</button>
+		<button
+			onclick={togglePicker}
+			class="p-2 rounded-lg {showPicker
+				? 'bg-red-50 text-red-600'
+				: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
+			title={t('theater.live.multiview.toggle_picker')}
+		>
+			<UserPlus size={20} />
+		</button>
+		<button
+			onclick={toggleChat}
+			class="p-2 rounded-lg {showChat
+				? 'bg-red-50 text-red-600'
+				: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
+			title={t('theater.live.multiview.toggle_chat')}
+		>
+			<MessageCircle size={20} />
+		</button>
+		<div class="w-px h-5 bg-slate-200 dark:bg-zinc-800 mx-1"></div>
+		<div class="flex items-center justify-center -ml-1">
+			<HlsSettingsDropdown variant="multiview" />
+		</div>
+	</div>
+{/snippet}
 
 <SEO
 	title={t('theater.live.multiview.live.seoTitle')}
@@ -420,79 +478,7 @@
 	<!-- Background Decor (Stars, Dots, Glows) -->
 	<AppBackground hideDecorationsOnMobile={true} interactive={true} bind:mouse bind:scrollY />
 
-	<!-- Top Bar -->
-	<div
-		class="absolute top-0 left-0 right-0 h-16 border-b border-black/5 dark:border-white/5 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl flex items-center justify-between px-4 z-[10000]"
-	>
-		<div class="flex items-center gap-4">
-			<a
-				href={basePath}
-				class="flex items-center gap-1 sm:gap-2 text-slate-900 dark:text-white hover:text-red-600 transition-colors"
-			>
-				<ChevronLeft size={20} class="shrink-0" />
-				<span class="font-extrabold tracking-tight text-lg whitespace-nowrap"
-					>JKT48 <span class="text-red-600 italic">LIVE</span></span
-				>
-			</a>
-			<div class="hidden sm:h-4 sm:w-px sm:bg-gray-200 sm:dark:border-zinc-800"></div>
-			<div
-				class="hidden xs:flex items-center gap-2 px-3 py-1 bg-red-50 dark:bg-red-500/10 rounded-full"
-			>
-				<LayoutGrid size={14} class="text-red-600" />
-				<span
-					class="text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400"
-					>{t('theater.live.multiview.title')}</span
-				>
-			</div>
-		</div>
-
-		<div class="flex items-center gap-0.5 sm:gap-2 shrink-0">
-			<button
-				onclick={clearAll}
-				class="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
-				title={t('theater.live.multiview.clear_all')}
-			>
-				<Trash2 size={20} />
-			</button>
-			<button
-				onclick={() => (isPortrait = !isPortrait)}
-				class="p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
-				title={isPortrait
-					? t('theater.live.multiview.switch_to_landscape')
-					: t('theater.live.multiview.switch_to_portrait')}
-			>
-				{#if isPortrait}
-					<Monitor size={20} />
-				{:else}
-					<Smartphone size={20} />
-				{/if}
-			</button>
-			<button
-				onclick={togglePicker}
-				class="p-2 rounded-lg {showPicker
-					? 'bg-red-50 text-red-600'
-					: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
-				title={t('theater.live.multiview.toggle_picker')}
-			>
-				<UserPlus size={20} />
-			</button>
-			<button
-				onclick={toggleChat}
-				class="p-2 rounded-lg {showChat
-					? 'bg-red-50 text-red-600'
-					: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
-				title={t('theater.live.multiview.toggle_chat')}
-			>
-				<MessageCircle size={20} />
-			</button>
-			<div class="w-px h-5 bg-slate-200 dark:bg-zinc-800 mx-1"></div>
-			<div class="flex items-center justify-center -ml-1">
-				<HlsSettingsDropdown variant="multiview" />
-			</div>
-		</div>
-	</div>
-
-	<div class="flex-1 flex overflow-hidden pt-14">
+	<div class="flex-1 flex overflow-hidden pt-16">
 		<!-- Member Picker Sidebar -->
 		{#if showPicker}
 			<div

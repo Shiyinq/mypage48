@@ -14,6 +14,7 @@
 		id?: string;
 		activeHref?: string;
 		exact?: boolean;
+		match?: (currentPath: string) => boolean;
 		activeClass?: string;
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[key: string]: any;
@@ -33,11 +34,13 @@
 	class="items-center gap-0.5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-gray-100 dark:border-zinc-800 p-1 rounded-full shadow-sm overflow-x-auto md:overflow-visible flex whitespace-nowrap lg:gap-1 {className}"
 >
 	{#each items as entry (entry.href)}
-		{@const isActive = entry.exact
-			? currentPath === (entry.activeHref || entry.href)
-			: (entry.activeHref || entry.href) === '/'
-				? currentPath === '/'
-				: currentPath.startsWith(entry.activeHref || entry.href)}
+		{@const isActive = entry.match
+			? entry.match(currentPath)
+			: entry.exact
+				? currentPath === (entry.activeHref || entry.href)
+				: (entry.activeHref || entry.href) === '/'
+					? currentPath === '/'
+					: currentPath.startsWith(entry.activeHref || entry.href)}
 		<li>
 			<a
 				href={entry.href}

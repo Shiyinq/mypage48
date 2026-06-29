@@ -37,10 +37,11 @@
 
 	onMount(() => {
 		mounted = true;
-		isImmersive.set(true);
+		const shouldManage = !basePath.startsWith('/theater/live');
+		if (shouldManage) isImmersive.set(true);
 		document.body.style.overflow = 'hidden';
 		return () => {
-			isImmersive.set(false);
+			if (shouldManage) isImmersive.set(false);
 			document.body.style.overflow = '';
 		};
 	});
@@ -99,7 +100,7 @@
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-32 relative z-10">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-32 relative z-10">
 			<!-- Tabs & Filter -->
 			<div class="flex justify-center mb-6 sm:mb-8 w-full max-w-lg mx-auto">
 				<div class="flex w-full items-end border-b border-black/10 dark:border-white/10">

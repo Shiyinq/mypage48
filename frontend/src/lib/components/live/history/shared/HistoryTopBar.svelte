@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ChevronLeft, Filter } from 'lucide-svelte';
+	import { Filter } from 'lucide-svelte';
 	import type { ComponentType } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import HistoryDateFilter from './HistoryDateFilter.svelte';
@@ -43,14 +43,6 @@
 		return '';
 	});
 
-	function handleBack() {
-		if (onBack) {
-			onBack();
-		} else {
-			history.back();
-		}
-	}
-
 	function clickOutside(node: HTMLElement) {
 		const handleClick = (event: MouseEvent) => {
 			const target = event.target as Element;
@@ -65,24 +57,66 @@
 			}
 		};
 	}
+
+	import { page } from '$app/stores';
+	import { liveNavbarStore } from '$lib/stores/liveNavbar.svelte';
+
+	let isTheaterLive = $derived($page.url.pathname.startsWith('/theater/live'));
+
+	$effect(() => {
+		if (showDateFilter && isTheaterLive) {
+			liveNavbarStore.rightSnippet = rightActions;
+		}
+		return () => {
+			if (liveNavbarStore.rightSnippet === rightActions) {
+				liveNavbarStore.rightSnippet = undefined;
+			}
+		};
+	});
 </script>
 
-<div
-	class="absolute top-0 left-0 right-0 w-full z-[10000] shrink-0 border-b border-black/5 dark:border-white/5 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl"
->
-	<div class="h-16 flex items-center justify-between px-4">
-		<button
-			onclick={handleBack}
-			class="flex items-center gap-3 cursor-pointer group text-left min-w-0 flex-1"
+{#snippet rightActions()}
+	<div class="flex items-center gap-2 relative">
+		<span
+			class="hidden md:flex text-[10px] sm:text-xs font-black text-gray-700 dark:text-gray-200 bg-white dark:bg-zinc-800 px-3 py-1.5 rounded-full border border-gray-100 dark:border-white/5 shadow-sm whitespace-nowrap items-center justify-center h-8 sm:h-9"
 		>
+			{displayLabel}
+		</span>
+		<button
+			onclick={() => (isFilterOpen = !isFilterOpen)}
+			data-filter-toggle="true"
+			class={`flex items-center justify-center rounded-full font-bold transition-all cursor-pointer border
+				${
+					isFilterOpen
+						? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-800 sm:border-red-200'
+						: 'bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-zinc-700 sm:bg-white sm:dark:bg-zinc-900 sm:text-gray-600 sm:dark:text-gray-300 sm:border-gray-200 hover:border-red-200 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400'
+				}
+				w-8 h-8 shadow-none sm:w-auto sm:h-9 sm:px-4 sm:py-2 sm:gap-2 sm:text-xs sm:shadow-sm`}
+		>
+			<Filter class="w-4 h-4 shrink-0" />
+			<span class="hidden sm:inline">{t('common.filters')}</span>
+		</button>
+
+		{#if isFilterOpen}
 			<div
-				class="flex items-center justify-center w-8 h-8 rounded-full group-hover:bg-gray-100 dark:group-hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition-colors shrink-0"
+				use:clickOutside
+				transition:slide={{ duration: 200 }}
+				class="absolute top-full left-auto right-0 mt-2 z-[7000] min-w-[260px]"
 			>
-				<ChevronLeft size={20} />
+				<HistoryDateFilter />
 			</div>
+		{/if}
+	</div>
+{/snippet}
+
+<div
+	class="sticky top-0 z-[90] shrink-0 border-b border-black/5 dark:border-white/5 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl w-full"
+>
+	<div class="h-14 flex items-center justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+		<div class="flex items-center gap-3 min-w-0 flex-1">
 			<div class="flex flex-col min-w-0">
 				<h1
-					class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white truncate flex items-center gap-1.5"
+					class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white truncate flex items-center gap-2"
 				>
 					<Icon size={16} class={iconColor} />
 					{title}
@@ -93,40 +127,9 @@
 					</p>
 				{/if}
 			</div>
-		</button>
-
-		{#if showDateFilter}
-			<div class="flex items-center gap-2">
-				<span
-					class="hidden md:flex text-[10px] sm:text-xs font-black text-gray-700 dark:text-gray-200 bg-white dark:bg-zinc-800 px-3 py-1.5 rounded-full border border-gray-100 dark:border-white/5 shadow-sm whitespace-nowrap items-center justify-center h-8 sm:h-9"
-				>
-					{displayLabel}
-				</span>
-				<button
-					onclick={() => (isFilterOpen = !isFilterOpen)}
-					data-filter-toggle="true"
-					class={`flex items-center justify-center rounded-full font-bold transition-all cursor-pointer border
-						${
-							isFilterOpen
-								? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-800 sm:border-red-200'
-								: 'bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-zinc-700 sm:bg-white sm:dark:bg-zinc-900 sm:text-gray-600 sm:dark:text-gray-300 sm:border-gray-200 hover:border-red-200 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400'
-						}
-						w-8 h-8 shadow-none sm:w-auto sm:h-9 sm:px-4 sm:py-2 sm:gap-2 sm:text-xs sm:shadow-sm`}
-				>
-					<Filter class="w-4 h-4 shrink-0" />
-					<span class="hidden sm:inline">{t('common.filters')}</span>
-				</button>
-			</div>
+		</div>
+		{#if showDateFilter && !isTheaterLive}
+			{@render rightActions()}
 		{/if}
 	</div>
-
-	{#if showDateFilter && isFilterOpen}
-		<div
-			use:clickOutside
-			transition:slide={{ duration: 200 }}
-			class="absolute top-full left-0 right-0 md:left-auto md:right-4 mt-2 px-4 md:px-0 z-[7000]"
-		>
-			<HistoryDateFilter />
-		</div>
-	{/if}
 </div>

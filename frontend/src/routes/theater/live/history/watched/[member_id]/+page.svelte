@@ -13,7 +13,6 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
-	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { spring } from 'svelte/motion';
 	import AppBackground from '$lib/components/common/AppBackground.svelte';
@@ -36,13 +35,9 @@
 
 	onMount(() => {
 		mounted = true;
-		isImmersive.set(true);
-		document.body.style.overflow = 'hidden';
 		membersStore.load({ limit: 100 });
 
 		return () => {
-			isImmersive.set(false);
-			document.body.style.overflow = '';
 			liveHistoryStore.reset();
 		};
 	});
@@ -108,7 +103,7 @@
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-32 relative z-10">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-32 relative z-10">
 			<!-- Member Stats -->
 			{#if stats}
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">

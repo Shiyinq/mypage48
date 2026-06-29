@@ -6,7 +6,6 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { History, Clock, Trophy, Users, Smartphone, Eye, PlaySquare } from 'lucide-svelte';
-	import { isImmersive } from '$lib/stores';
 	import AppBackground from '$lib/components/common/AppBackground.svelte';
 	import { spring } from 'svelte/motion';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
@@ -39,12 +38,6 @@
 
 	onMount(() => {
 		mounted = true;
-		isImmersive.set(true);
-		document.body.style.overflow = 'hidden';
-		return () => {
-			isImmersive.set(false);
-			document.body.style.overflow = '';
-		};
 	});
 
 	async function loadHistory(page: number, force: boolean = false) {
@@ -103,7 +96,7 @@
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-32 relative z-10">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-32 relative z-10">
 			<!-- Stats Section -->
 			{#if globalStats && !isLoadingStats}
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
