@@ -297,10 +297,12 @@
 		}
 	});
 
+	const shouldManage = false;
+
 	$effect(() => {
 		// Always enable immersive mode for live player to match public layout
 		isFocusMode = true;
-		isImmersive.set(true);
+		if (shouldManage) isImmersive.set(true);
 		if (typeof document !== 'undefined') {
 			document.body.style.overflow = 'hidden';
 		}
@@ -368,7 +370,7 @@
 			if (hls) hls.destroy();
 			if (recordingTimer) clearInterval(recordingTimer);
 			liveStore.reset();
-			isImmersive.set(false);
+			if (shouldManage) isImmersive.set(false);
 			if (typeof document !== 'undefined') {
 				document.body.style.overflow = '';
 			}
@@ -377,7 +379,7 @@
 
 	function toggleFocus() {
 		isFocusMode = !isFocusMode;
-		isImmersive.set(isFocusMode);
+		if (shouldManage) isImmersive.set(isFocusMode);
 		if (typeof document !== 'undefined') {
 			if (isFocusMode) {
 				document.body.style.overflow = 'hidden';

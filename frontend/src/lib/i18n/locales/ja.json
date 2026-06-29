@@ -1608,6 +1608,10 @@
 		"cancelImage": "キャンセル"
 	},
 	"liveHistory": {
+		"publicWatchedEmptyTitle": "視聴履歴",
+		"publicWatchedEmptyDesc": "JKT48ライブの視聴履歴を記録するには、ログインまたは登録してください。",
+		"loginToWatch": "ログイン",
+		"registerToWatch": "登録",
 		"title": "視聴履歴",
 		"subtitle": "あなたのライブ視聴履歴",
 		"totalWatches": "総視聴回数",

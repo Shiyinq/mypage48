@@ -16,7 +16,7 @@
 	let scrollY = $state(0);
 	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
 
-	let isFullScreenRoute = $derived($page.url.pathname.includes('/live/multiview'));
+	let isLiveRoute = $derived($page.url.pathname.includes('/live'));
 
 	// Use addEventListener instead of svelte:window bind:scrollY
 	// to avoid conflicting with ScrollToTop's own bind:scrollY binding
@@ -36,13 +36,13 @@
 	<AppBackground interactive={true} bind:mouse {scrollY} />
 
 	<!-- NAV -->
-	{#if !isFullScreenRoute && !isImmersive.value}
+	{#if !isLiveRoute && !isImmersive.value}
 		<LandingNavbar mouse={$mouse} showLogin={true} />
 	{/if}
 
 	<!-- CONTENT -->
 	<main
-		class={isFullScreenRoute || isImmersive.value
+		class={isLiveRoute || isImmersive.value
 			? 'relative w-full h-full'
 			: 'relative max-w-7xl mx-auto px-3 sm:px-6'}
 	>
@@ -50,7 +50,7 @@
 	</main>
 
 	<!-- FOOTER -->
-	{#if !isFullScreenRoute && !isImmersive.value}
+	{#if !isLiveRoute && !isImmersive.value}
 		<Footer />
 	{/if}
 </div>

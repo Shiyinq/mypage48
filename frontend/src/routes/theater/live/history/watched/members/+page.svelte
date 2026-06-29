@@ -4,7 +4,6 @@
 	import { liveHistoryFilterStore } from '$lib/stores/liveHistoryFilter.svelte';
 	import { Trophy, History } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
-	import { isImmersive } from '$lib/stores';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { spring } from 'svelte/motion';
@@ -29,14 +28,7 @@
 
 	onMount(() => {
 		mounted = true;
-		isImmersive.set(true);
-		document.body.style.overflow = 'hidden';
 		membersStore.load({ limit: 100 });
-
-		return () => {
-			isImmersive.set(false);
-			document.body.style.overflow = '';
-		};
 	});
 
 	$effect(() => {
@@ -67,7 +59,7 @@
 
 <div
 	role="presentation"
-	class="fixed inset-0 bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 flex flex-col overflow-hidden z-[9999]"
+	class="h-full w-full flex flex-col overflow-hidden bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900"
 	onmousemove={(e) => {
 		const { clientX, clientY } = e;
 		const { innerWidth, innerHeight } = window;
@@ -88,7 +80,7 @@
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-32 relative z-10">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 relative z-10">
 			{#if isLoading && rankingList.length === 0}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each Array(6) as _}

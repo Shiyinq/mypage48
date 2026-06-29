@@ -148,6 +148,7 @@
 			$page.url.pathname.startsWith('/auth/')
 	);
 	let isFullScreenRoute = $derived($page.url.pathname.includes('/live/multiview'));
+	let isLiveRoute = $derived($page.url.pathname.startsWith('/theater/live'));
 	let isPlaygroundRoute = $derived($page.url.pathname.startsWith('/playground'));
 	// Reset state when user logs out
 	$effect(() => {
@@ -312,7 +313,7 @@
 					{@render children?.()}
 				{/if}
 			</main>
-			{#if !isFullScreenRoute && !isPlaygroundRoute && !isImmersive.value}
+			{#if !isLiveRoute && !isFullScreenRoute && !isPlaygroundRoute && !isImmersive.value}
 				<MobileNav />
 			{/if}
 		{:else}
