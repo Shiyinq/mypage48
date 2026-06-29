@@ -1,12 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { goto } from '$app/navigation';
 	import SEO from '$lib/components/SEO.svelte';
 
-	import { onMount, onDestroy } from 'svelte';
-	import { isImmersive } from '$lib/stores';
-	import { ChevronLeft, LayoutGrid, List } from 'lucide-svelte';
-	import { fade } from 'svelte/transition';
+	import { onMount } from 'svelte';
+	import { sorterNavbarStore } from '$lib/stores/sorterNavbar.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { membersStore } from '$lib/stores/theater.svelte';
 	import { sorterApi } from '$lib/apis/sorter';
@@ -20,11 +17,7 @@
 		historyItem = data.historyItem;
 	});
 
-	const { t, locale } = useTranslation();
-
-	function handleBack() {
-		goto('/theater/sorter/history');
-	}
+	const { locale } = useTranslation();
 
 	function parseUTCDate(dateStr: string) {
 		const timePart = dateStr.split('T')[1] || '';
@@ -143,103 +136,69 @@
 		if (membersStore.list.length === 0) {
 			membersStore.load({ limit: 100 });
 		}
-		isImmersive.set(true);
-		if (typeof window !== 'undefined') {
-			document.body.style.overflow = 'hidden';
-		}
 	});
 
-	onDestroy(() => {
-		isImmersive.set(false);
-		if (typeof window !== 'undefined') {
-			document.body.style.overflow = '';
-		}
+	function shareResult() {
+		// Share logic here
+	}
+
+	$effect(() => {
+		sorterNavbarStore.update({
+			pageType: 'history-detail',
+			layoutMode,
+			onSetLayout: (mode) => (layoutMode = mode),
+			onShare: shareResult
+		});
+		return () => {
+			sorterNavbarStore.reset();
+		};
 	});
 </script>
 
 <SEO
-	title={`${historyItem.title} - Oshi Sorter`}
+	title={`${historyItem?.title || 'History'} | Oshi Sorter`}
 	path={`/theater/sorter/history/${historyItem._id}`}
 	description={historyItem.description || 'Hasil Oshi Sorter'}
 />
 
 <div
-	class="fixed inset-0 bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 flex flex-col overflow-hidden z-[40]"
-	in:fade
+	class="w-full flex flex-col items-center justify-start min-h-[calc(100svh-64px)] pt-4 md:pt-8 pb-12"
 >
-	<!-- Top Navbar -->
-	<div
-		class="absolute top-0 left-0 right-0 h-16 border-b border-black/5 dark:border-white/5 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl flex items-center justify-between px-4 z-50 shrink-0"
-	>
-		<div class="flex items-center gap-4">
-			<button
-				onclick={handleBack}
-				class="flex items-center gap-2 text-slate-900 dark:text-white hover:text-red-600 dark:hover:text-red-400 transition-colors bg-transparent border-none p-0 cursor-pointer font-bold"
-			>
-				<ChevronLeft size={20} />
-				<span class="font-extrabold tracking-tight text-sm uppercase"
-					>{t('theater.sorter.backToHistory')}</span
-				>
-			</button>
-		</div>
-
-		<!-- Layout controllers -->
-		<div class="flex items-center gap-2 sm:gap-3">
+	{#if historyItem}
+		<div class="w-full flex flex-col items-center">
 			<div
-				class="flex bg-gray-50/50 dark:bg-zinc-800/30 backdrop-blur-md rounded-full p-1 border border-zinc-200 dark:border-zinc-800 shadow-inner"
+				class={`w-full space-y-8 px-4 sm:px-4 mx-auto pb-24 ${layoutMode === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}
 			>
-				<button
-					onclick={() => (layoutMode = 'card')}
-					class={`p-1.5 rounded-full transition-all cursor-pointer ${layoutMode === 'card' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
-					title={t('theater.sorter.gridView')}
-				>
-					<LayoutGrid size={16} />
-				</button>
-				<button
-					onclick={() => (layoutMode = 'list')}
-					class={`p-1.5 rounded-full transition-all cursor-pointer ${layoutMode === 'list' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
-					title={t('theater.sorter.listView')}
-				>
-					<List size={16} />
-				</button>
-			</div>
-		</div>
-	</div>
-
-	<!-- Scrollable Content -->
-	<div class="flex-1 overflow-y-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-8 flex flex-col items-center">
-		<div
-			class={`w-full space-y-8 px-1.5 sm:px-4 mx-auto pb-24 ${layoutMode === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}
-		>
-			<div class="flex flex-col md:flex-row md:items-start justify-between gap-4 w-full">
-				<div class="flex flex-col gap-2 w-full min-w-0">
-					<SorterEditableHeader
-						title={historyItem.title}
-						description={historyItem.description || ''}
-						{tempTitle}
-						{tempDescription}
-						{isEditingTitle}
-						{isEditingDescription}
-						{isSaving}
-						date={formatDateTime(historyItem.created_at)}
-						onTitleChange={(v) => (tempTitle = v)}
-						onDescriptionChange={(v) => (tempDescription = v)}
-						onstartEditTitle={startEditTitle}
-						oncancelEditTitle={cancelEditTitle}
-						onsaveTitle={saveTitle}
-						onstartEditDescription={startEditDescription}
-						oncancelEditDescription={cancelEditDescription}
-						onsaveDescription={saveDescription}
-						titleLimit={TITLE_LIMIT}
-						descriptionLimit={DESCRIPTION_LIMIT}
-						filters={historyItem.filters}
-					/>
+				<div class="flex flex-col md:flex-row md:items-start justify-between gap-4 w-full">
+					<div class="flex flex-col gap-2 w-full min-w-0">
+						<SorterEditableHeader
+							title={historyItem.title}
+							description={historyItem.description || ''}
+							{tempTitle}
+							{tempDescription}
+							{isEditingTitle}
+							{isEditingDescription}
+							{isSaving}
+							date={formatDateTime(historyItem.created_at)}
+							onTitleChange={(v) => (tempTitle = v)}
+							onDescriptionChange={(v) => (tempDescription = v)}
+							onstartEditTitle={startEditTitle}
+							oncancelEditTitle={cancelEditTitle}
+							onsaveTitle={saveTitle}
+							onstartEditDescription={startEditDescription}
+							oncancelEditDescription={cancelEditDescription}
+							onsaveDescription={saveDescription}
+							titleLimit={TITLE_LIMIT}
+							descriptionLimit={DESCRIPTION_LIMIT}
+							filters={historyItem.filters}
+						/>
+					</div>
 				</div>
-			</div>
 
-			<SorterRankDisplay results={resolvedResults} {layoutMode} isPublic={false} />
+				<SorterRankDisplay results={resolvedResults} {layoutMode} isPublic={false} />
+			</div>
 		</div>
-	</div>
+	{/if}
 </div>
 
 <style>

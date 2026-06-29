@@ -17,6 +17,7 @@
 	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
 
 	let isLiveRoute = $derived($page.url.pathname.includes('/live'));
+	let isSorterRoute = $derived($page.url.pathname.includes('/sorter'));
 
 	// Use addEventListener instead of svelte:window bind:scrollY
 	// to avoid conflicting with ScrollToTop's own bind:scrollY binding
@@ -36,13 +37,13 @@
 	<AppBackground interactive={true} bind:mouse {scrollY} />
 
 	<!-- NAV -->
-	{#if !isLiveRoute && !isImmersive.value}
+	{#if !isLiveRoute && !isSorterRoute && !isImmersive.value}
 		<LandingNavbar mouse={$mouse} showLogin={true} />
 	{/if}
 
 	<!-- CONTENT -->
 	<main
-		class={isLiveRoute || isImmersive.value
+		class={isLiveRoute || isSorterRoute || isImmersive.value
 			? 'relative w-full h-full'
 			: 'relative max-w-7xl mx-auto px-3 sm:px-6'}
 	>
@@ -50,7 +51,7 @@
 	</main>
 
 	<!-- FOOTER -->
-	{#if !isLiveRoute && !isImmersive.value}
+	{#if !isLiveRoute && !isSorterRoute && !isImmersive.value}
 		<Footer />
 	{/if}
 </div>

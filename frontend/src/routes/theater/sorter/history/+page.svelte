@@ -3,6 +3,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { createSorter } from '$lib/stores/sorter.svelte';
+	import { sorterNavbarStore } from '$lib/stores/sorterNavbar.svelte';
 
 	import { Calendar, Trash2, Eye, History, Loader2 } from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
@@ -54,6 +55,15 @@
 	onMount(() => {
 		sorter.loadSavedHistories(true);
 	});
+
+	$effect(() => {
+		sorterNavbarStore.update({
+			pageType: 'history-list'
+		});
+		return () => {
+			sorterNavbarStore.reset();
+		};
+	});
 </script>
 
 <SEO
@@ -62,24 +72,12 @@
 	description={t('theater.sorter.subtitle')}
 />
 
-<svelte:head>
-	<style>
-		/* Keep sorter layout roomy without breaking theater layout rhythm */
-		:global(.max-w-6xl.mx-auto.p-4.pb-24),
-		:global(.max-w-6xl.mx-auto) {
-			padding-bottom: 1rem !important;
-			max-width: 100% !important;
-		}
-		:global(.mb-6.flex.flex-col.md\:flex-row) {
-			margin-bottom: 1rem !important;
-		}
-	</style>
-</svelte:head>
+<svelte:head></svelte:head>
 
 <div
-	class="w-full flex flex-col items-center justify-start min-h-[calc(100svh-120px)] pt-0 pb-4 overflow-hidden"
+	class="w-full flex flex-col items-center justify-start min-h-[calc(100svh-64px)] pt-4 md:pt-8 pb-12 overflow-hidden"
 >
-	<div in:fade={{ duration: 300 }} class="w-full max-w-5xl mx-auto px-1 pb-12">
+	<div in:fade={{ duration: 300 }} class="w-full max-w-5xl mx-auto px-4 pb-12">
 		{#if sorter.loadingHistory}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 				{#each Array(3) as _}

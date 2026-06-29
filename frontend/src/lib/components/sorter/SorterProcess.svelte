@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { Equal, RotateCcw, ArrowLeft, Heart, ChevronLeft } from 'lucide-svelte';
+	import { Equal, RotateCcw, ArrowLeft, Heart } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import type { Member } from '$lib/apis/members';
 	import { fade } from 'svelte/transition';
 	import { getMemberFrame } from '$lib/constants';
 	import { OptimizedImage } from '$lib/components/common';
-	import { isImmersive } from '$lib/stores';
 
 	const { t } = useTranslation();
 
@@ -26,7 +25,6 @@
 	}
 
 	let {
-		numQuestion,
 		displayProgress,
 		leftMember = null,
 		rightMember = null,
@@ -54,57 +52,19 @@
 	let isPublic = $derived(variant === 'public');
 
 	onMount(() => {
-		isImmersive.set(true);
 		if (typeof window !== 'undefined') {
 			document.body.style.overflow = 'hidden';
 		}
 	});
 
 	onDestroy(() => {
-		isImmersive.set(false);
 		if (typeof window !== 'undefined') {
 			document.body.style.overflow = '';
 		}
 	});
 </script>
 
-<div
-	class="fixed inset-0 bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 flex flex-col overflow-hidden z-[40]"
-	in:fade
->
-	<!-- Dedicated Top Navbar -->
-	<div
-		class="h-16 border-b border-black/5 dark:border-white/5 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl flex items-center justify-between px-4 z-50 shrink-0"
-	>
-		<div class="flex items-center gap-4">
-			<button
-				onclick={restart}
-				class="flex items-center gap-2 text-slate-900 dark:text-white hover:text-red-600 dark:hover:text-red-400 transition-colors bg-transparent border-none p-0 cursor-pointer font-bold"
-			>
-				<ChevronLeft size={20} />
-				<span class="font-extrabold tracking-tight text-lg"
-					>Oshi <span class={isPublic ? 'text-red-600 italic' : 'text-rose-500 italic'}>Sorter</span
-					></span
-				>
-			</button>
-			<div class="hidden sm:h-4 sm:w-px sm:bg-gray-200 sm:dark:border-zinc-800"></div>
-			<div
-				class={`hidden xs:flex items-center gap-2 px-3 py-1 rounded-full ${isPublic ? 'bg-red-50 dark:bg-red-500/10' : 'bg-rose-50 dark:bg-rose-500/10'}`}
-			>
-				<span
-					class={`text-[10px] font-black uppercase tracking-widest ${isPublic ? 'text-red-600 dark:text-red-400' : 'text-rose-500 dark:text-rose-400'}`}
-					>{t('theater.sorter.sorting')}</span
-				>
-			</div>
-		</div>
-
-		<div class="flex items-center gap-2">
-			<span class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-				{t('theater.sorter.questionLabel', { num: numQuestion })}
-			</span>
-		</div>
-	</div>
-
+<div class="w-full flex flex-col flex-1 pb-12" in:fade>
 	<!-- Scrollable content area -->
 	<div class="flex-1 overflow-y-auto px-4 py-8 pt-22 flex flex-col items-center justify-center">
 		<div class="w-full max-w-2xl space-y-6 flex flex-col items-center pb-12">

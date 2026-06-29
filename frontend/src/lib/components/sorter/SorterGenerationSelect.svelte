@@ -48,7 +48,7 @@
 	let isPublic = $derived(variant === 'public');
 </script>
 
-<div in:fade={{ duration: 300 }} class="w-full max-w-2xl space-y-6">
+<div in:fade={{ duration: 300 }} class="w-full max-w-2xl px-4 space-y-6">
 	<div
 		class={isPublic
 			? 'bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-xl border border-gray-100 dark:border-zinc-800 space-y-6'
