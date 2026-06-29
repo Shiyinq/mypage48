@@ -509,6 +509,15 @@ class UserService:
                 two_shot_counts.values(), key=lambda x: x["count"], reverse=True
             )[:5]
 
+            # Calculate heatmap data
+            heatmap_data = {}
+            for t in tickets:
+                if t.event and t.event.date:
+                    date_str = t.event.date
+                    if isinstance(date_str, datetime):
+                        date_str = date_str.strftime("%Y-%m-%d")
+                    heatmap_data[date_str] = heatmap_data.get(date_str, 0) + 1
+
             # Create Stats Object
             stats = UserStats(
                 totalShows=total_shows,
@@ -523,6 +532,7 @@ class UserService:
                 showCounts=show_counts,
                 topTwoShots=top_two_shots,
                 recentActivity=recent_activity,
+                heatmapData=heatmap_data,
             )
         except Exception as e:
             logger.warning(f"Failed to calculate stats for user {user.userId}: {e}")

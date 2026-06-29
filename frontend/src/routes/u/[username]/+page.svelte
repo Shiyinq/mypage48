@@ -22,6 +22,7 @@
 	import PublicProfileTopSetlists from '$lib/components/public-profile/PublicProfileTopSetlists.svelte';
 	import PublicProfileSeatMap from '$lib/components/public-profile/PublicProfileSeatMap.svelte';
 	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
+	import { HeatmapCalendar } from '$lib/components/dashboard';
 
 	interface Props {
 		data: PageData;
@@ -179,6 +180,23 @@
 			<div class="animate-on-scroll">
 				<PublicProfileSeatMap {rowStats} {seatStats} />
 			</div>
+
+			<!-- Heatmap -->
+			{#if profile.stats.heatmapData && Object.keys(profile.stats.heatmapData).length > 0}
+				{@const heatmapYears = Array.from(
+					new Set(Object.keys(profile.stats.heatmapData).map((d) => parseInt(d.substring(0, 4))))
+				).sort((a, b) => b - a)}
+				<div class="animate-on-scroll flex flex-col gap-6">
+					{#each heatmapYears.length > 0 ? heatmapYears : [new Date().getFullYear()] as year}
+						<HeatmapCalendar
+							{year}
+							data={profile.stats.heatmapData}
+							isLoading={false}
+							variant="public"
+						/>
+					{/each}
+				</div>
+			{/if}
 		{/if}
 
 		<!-- Footer / Watermark -->

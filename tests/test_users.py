@@ -144,7 +144,7 @@ async def test_update_profile_picture_validation(client: AsyncClient, db, create
     assert response.status_code == 422
 
 @pytest.mark.asyncio
-async def test_get_public_profile(client: AsyncClient, db):
+async def test_get_public_profile(client: AsyncClient, db, create_ticket):
     # Register a user who is public
     register_payload = {
         "fullName": "Visible User",
@@ -156,10 +156,17 @@ async def test_get_public_profile(client: AsyncClient, db):
     await client.post("/api/users/signup", json=register_payload)
     
     # Set public status in DB directly or via API
+    user = await db["users"].find_one({"username": "visibleuser"})
+    user_id = user["userId"]
     await db["users"].update_one(
         {"username": "visibleuser"}, 
         {"$set": {"isPublic": True, "isEmailVerified": True}}
     )
+
+    # Create tickets to test heatmapData
+    await create_ticket(user_id, {"date": "2026-06-01"})
+    await create_ticket(user_id, {"date": "2026-06-01"})
+    await create_ticket(user_id, {"date": "2026-06-15"})
 
     # Get Public Profile
     response = await client.get("/api/u/visibleuser")
@@ -167,6 +174,13 @@ async def test_get_public_profile(client: AsyncClient, db):
     data = response.json()
     assert data["username"] == "visibleuser"
     assert data["name"] == "Visible User"
+    
+    # Verify heatmapData logic
+    assert data["stats"] is not None
+    heatmap_data = data["stats"].get("heatmapData")
+    assert heatmap_data is not None
+    assert heatmap_data.get("2026-06-01") == 2
+    assert heatmap_data.get("2026-06-15") == 1
 
 @pytest.mark.asyncio
 async def test_oshi_meetings_logic(client: AsyncClient, db, create_user, create_ticket):

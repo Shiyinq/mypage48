@@ -101,4 +101,5 @@ export interface PublicProfileStats {
 		imageUrl_small?: string | null;
 		blurHash?: string | null;
 	}>;
+	heatmapData?: Record<string, number>;
 }
