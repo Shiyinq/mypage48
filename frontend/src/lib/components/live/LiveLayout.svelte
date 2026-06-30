@@ -108,7 +108,7 @@
 				exact?: boolean;
 				match?: (path: string) => boolean;
 				activeHref?: string;
-				icon: any;
+				icon: typeof Globe;
 		  };
 
 	const mobileNavItems = $derived<MobileNavItem[]>([

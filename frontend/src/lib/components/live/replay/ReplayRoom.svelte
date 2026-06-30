@@ -39,8 +39,6 @@
 	let youTubeReady = $state(false);
 	let currentTime = $state(0);
 	let duration = $state(0);
-	let isPlaying = $state(false);
-	let isPaused = $state(true);
 	let chatVisible = $state(true);
 	let videoContainer: HTMLDivElement | undefined = $state();
 	let initAttempted = $state(false);
@@ -126,8 +124,6 @@
 					},
 					onStateChange: (event: { data: number }) => {
 						const state = event.data;
-						isPlaying = state === PlayerState.PLAYING;
-						isPaused = state !== PlayerState.PLAYING && state !== PlayerState.BUFFERING;
 						if (state === PlayerState.PLAYING) {
 							duration = youTubePlayer?.getDuration() || duration;
 						}
