@@ -179,7 +179,7 @@
 />
 
 <div
-	class="fixed inset-0 !top-0 !mt-0 z-[7000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-[100dvh] w-screen flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out overflow-x-hidden"
+	class="fixed inset-0 !top-0 !mt-0 z-[7000] bg-white dark:bg-zinc-950 p-2 sm:p-4 h-[100dvh] w-screen flex flex-col lg:flex-row gap-4 transition-all duration-500 ease-in-out overflow-hidden"
 >
 	<div class="flex-[1.5] lg:flex-1 flex flex-col gap-3 min-h-0 p-0">
 		{#if isTheater}
@@ -278,7 +278,7 @@
 		-->
 		<div
 			bind:this={videoContainer}
-			class="relative flex-1 bg-black sm:rounded-3xl sm:overflow-clip border border-gray-100 dark:border-zinc-800 shadow-sm"
+			class="relative z-10 flex-1 bg-black sm:rounded-3xl sm:overflow-clip border border-gray-100 dark:border-zinc-800 shadow-sm"
 		>
 			{#if !initAttempted}
 				<div
@@ -336,11 +336,10 @@
 
 	{#if chatVisible}
 		<div
-			class="w-full lg:w-[320px] flex flex-col gap-4 min-h-0 p-1 h-[40%] lg:h-full lg:flex-none"
-			transition:fade={{ duration: 300 }}
+			class="w-full lg:w-[320px] flex flex-col gap-4 min-h-0 p-1 h-[40%] lg:h-full lg:flex-none overflow-hidden"
 		>
 			<div
-				class="bg-white dark:bg-zinc-950 rounded-3xl border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col shadow-sm flex-1"
+				class="bg-white dark:bg-zinc-950 rounded-3xl border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col shadow-sm flex-1 min-h-0"
 			>
 				{#if video && video.srt_file}
 					<ReplayChat srtFile={video.srt_file} {currentTime} />

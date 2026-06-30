@@ -168,7 +168,7 @@
 	}
 </script>
 
-<div class="flex flex-col h-full relative">
+<div class="flex flex-col flex-1 relative overflow-hidden min-h-0">
 	<div
 		class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-zinc-800 flex-shrink-0"
 	>
