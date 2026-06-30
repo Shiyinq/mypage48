@@ -103,22 +103,22 @@
 					origin: window.location.origin
 				},
 				events: {
-				onReady: (event: {
-					target: {
-						getDuration: () => number;
-						playVideo: () => void;
-						unMute: () => void;
-						unloadModule?: (module: string) => void;
-					};
-				}) => {
-					youTubePlayer = event.target;
-					youTubeReady = true;
-					initAttempted = true;
-					duration = event.target.getDuration() || 0;
-					event.target.unMute();
-					event.target.playVideo();
-					disableCaptions();
-				},
+					onReady: (event: {
+						target: {
+							getDuration: () => number;
+							playVideo: () => void;
+							unMute: () => void;
+							unloadModule?: (module: string) => void;
+						};
+					}) => {
+						youTubePlayer = event.target;
+						youTubeReady = true;
+						initAttempted = true;
+						duration = event.target.getDuration() || 0;
+						event.target.unMute();
+						event.target.playVideo();
+						disableCaptions();
+					},
 					onApiChange: () => {
 						disableCaptions();
 					},
@@ -330,7 +330,6 @@
 				id="replay-youtube-player"
 				class="relative w-full h-full bg-black"
 			></div>
-
 		</div>
 	</div>
 

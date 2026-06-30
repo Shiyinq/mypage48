@@ -272,7 +272,7 @@
 					{/if}
 				</main>
 			{:else}
-				{#if !isFullScreenRoute && !isImmersive.value}
+				{#if !isFullScreenRoute && !isImmersive.value && !isLiveRoute}
 					<LandingNavbar showLogin={false} />
 				{/if}
 				{@const isLivePublicDetailPage =
@@ -290,7 +290,7 @@
 						{@render children?.()}
 					{/if}
 				</div>
-				{#if !isFullScreenRoute && !isImmersive.value}
+				{#if !isFullScreenRoute && !isImmersive.value && !isLiveRoute}
 					<Footer />
 				{/if}
 			{/if}
@@ -298,7 +298,7 @@
 			<!-- Protected pages: user authenticated, show full content -->
 			{#if isPlaygroundRoute}
 				<PlaygroundHeader />
-			{:else if !isFullScreenRoute && !isImmersive.value}
+			{:else if !isFullScreenRoute && !isImmersive.value && !isLiveRoute}
 				<div class="hidden md:block">
 					<Header />
 				</div>

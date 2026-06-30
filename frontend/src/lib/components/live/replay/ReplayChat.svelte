@@ -104,7 +104,6 @@
 		return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 	}
 
-
 	let visibleMessages = $derived.by(() => {
 		let msgs = allMessages.filter((msg) => msg.startTime <= currentTime);
 
@@ -236,9 +235,7 @@
 							{msg.username[0]}
 						</div>
 						<div class="flex-1 min-w-0">
-							<p
-								class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate"
-							>
+							<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate">
 								{#if msg.isGift}
 									<Gift size={11} class="inline text-yellow-500 mr-0.5" />
 								{/if}
