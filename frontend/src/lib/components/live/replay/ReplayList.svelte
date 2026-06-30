@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { replayStore } from '$lib/stores/replay.svelte';
 	import { liveNavbarStore } from '$lib/stores/liveNavbar.svelte';
-	import { members } from '$lib/apis/members';
+	import { membersStore } from '$lib/stores/theater.svelte';
 	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -27,9 +27,26 @@
 	let isFilterOpen = $state(false);
 	let isSearchOpen = $state(false);
 	let searchInput: HTMLInputElement | undefined = $state();
-	let memberMap = $state<Map<string, { img_small?: string; blurHash?: string }>>(new Map());
-	let memberList = $state<{ nickname: string; img_small?: string; blurHash?: string }[]>([]);
-	let membersLoading = $state(true);
+	let memberMap = $derived.by(() => {
+		const map = new Map<string, { img_small?: string; blurHash?: string }>();
+		for (const m of membersStore.list) {
+			const key = m.nickname?.toLowerCase();
+			if (key) {
+				map.set(key, { img_small: m.img_small, blurHash: m.blurHash });
+			}
+		}
+		return map;
+	});
+	let memberList = $derived.by(() => {
+		const list: { nickname: string; img_small?: string; blurHash?: string }[] = [];
+		for (const m of membersStore.list) {
+			const key = m.nickname?.toLowerCase();
+			if (key) {
+				list.push({ nickname: key, img_small: m.img_small, blurHash: m.blurHash });
+			}
+		}
+		return list;
+	});
 	let avatarScrollRef: HTMLDivElement | undefined = $state();
 	let atEnd = $state(true);
 	let containerRef: HTMLDivElement | undefined = $state();
@@ -49,25 +66,7 @@
 
 	onMount(() => {
 		replayStore.loadVideos();
-		members
-			.getAll({ limit: 100 })
-			.then((res) => {
-				const map = new Map<string, { img_small?: string; blurHash?: string }>();
-				const list: { nickname: string; img_small?: string; blurHash?: string }[] = [];
-				for (const m of res.data) {
-					const key = m.nickname?.toLowerCase();
-					if (key) {
-						map.set(key, { img_small: m.img_small, blurHash: m.blurHash });
-						list.push({ nickname: key, img_small: m.img_small, blurHash: m.blurHash });
-					}
-				}
-				memberMap = map;
-				memberList = list;
-				membersLoading = false;
-			})
-			.catch(() => {
-				membersLoading = false;
-			});
+		membersStore.load({ limit: 100 }, true);
 	});
 
 	$effect(() => {
@@ -272,7 +271,7 @@
 	<div class="max-w-7xl mx-auto w-full">
 		<div class="flex flex-col gap-6">
 			{#if !(replayStore.loading && replayStore.videos.length === 0) && !(replayStore.error && replayStore.videos.length === 0)}
-				{#if membersLoading}
+				{#if membersStore.isLoading}
 					<div class="flex gap-3 py-2 px-1">
 						{#each Array(5) as _}
 							<div class="shrink-0 flex flex-col items-center gap-1">
@@ -442,7 +441,7 @@
 							</div>
 							<div class="flex gap-2.5 mt-2.5 px-1">
 								<div class="shrink-0">
-									{#if membersLoading}
+									{#if membersStore.isLoading}
 										<div
 											class="w-9 h-9 rounded-full bg-slate-200 dark:bg-zinc-800 animate-pulse"
 										></div>
