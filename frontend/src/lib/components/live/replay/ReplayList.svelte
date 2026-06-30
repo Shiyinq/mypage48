@@ -114,8 +114,8 @@
 	let totalPages = $derived(Math.ceil(totalCount / perPage));
 	let paginatedVideos = $derived(filteredVideos.slice((page - 1) * perPage, page * perPage));
 
-	let startIndex = $derived((page - 1) * perPage + 1);
-	let endIndex = $derived(Math.min(page * perPage, totalCount));
+	let startIndex = $derived(totalCount === 0 ? 0 : (page - 1) * perPage + 1);
+	let endIndex = $derived(totalCount === 0 ? 0 : Math.min(page * perPage, totalCount));
 
 	function getYouTubeThumbnail(youtubeId: string): string {
 		return `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
