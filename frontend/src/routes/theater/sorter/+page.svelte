@@ -12,10 +12,14 @@
 
 	onMount(() => {
 		sorter.fetchMembers();
+		// If we land here (e.g. browser back) while sorter is active, reset it
+		if (sorter.currentState !== 'landing') {
+			sorter.restart();
+		}
 	});
 
 	$effect(() => {
-		if (sorter.currentState !== 'landing') {
+		if (sorter.currentState === 'sorting') {
 			goto('/theater/sorter/sorting');
 		}
 	});

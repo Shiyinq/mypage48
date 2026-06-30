@@ -110,7 +110,7 @@
 	}
 </script>
 
-<div class="flex flex-col min-h-screen w-full relative bg-pink-50/30 dark:bg-zinc-950">
+<div class="flex flex-col min-h-screen w-full relative bg-red-50/30 dark:bg-zinc-950">
 	<AppBackground hideDecorationsOnMobile={true} />
 
 	<!-- Main Sorter Navbar -->
@@ -124,25 +124,25 @@
 				<a
 					href={backPath}
 					onclick={handleBackClick}
-					class="flex items-center gap-2 sm:gap-3 text-slate-900 dark:text-white hover:text-rose-600 transition-colors cursor-pointer inline-flex group"
+					class="flex items-center gap-2 sm:gap-3 text-slate-900 dark:text-white hover:text-red-600 transition-colors cursor-pointer inline-flex group"
 				>
 					<div
-						class="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 shadow-sm border border-gray-200 dark:border-zinc-800 group-hover:border-rose-200 dark:group-hover:border-rose-900/50 group-hover:shadow-md transition-all"
+						class="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 shadow-sm border border-gray-200 dark:border-zinc-800 group-hover:border-red-200 dark:group-hover:border-red-900/50 group-hover:shadow-md transition-all"
 					>
 						{#if isBackIcon}
 							<ArrowLeft
 								size={16}
-								class="shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-rose-600 dark:group-hover:text-rose-500"
+								class="shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-600"
 							/>
 						{:else}
 							<X
 								size={16}
-								class="shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-rose-600 dark:group-hover:text-rose-500"
+								class="shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-600"
 							/>
 						{/if}
 					</div>
 					<span class="font-extrabold tracking-tight text-lg whitespace-nowrap"
-						>Oshi <span class="text-rose-500 italic">Sorter</span></span
+						>Oshi <span class="text-red-600 italic">Sorter</span></span
 					>
 				</a>
 			</div>
@@ -164,14 +164,14 @@
 						>
 							<button
 								onclick={() => sorterNavbarStore.onSetLayout?.('card')}
-								class={`p-1.5 rounded-full transition-all cursor-pointer ${sorterNavbarStore.layoutMode === 'card' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+								class={`p-1.5 rounded-full transition-all cursor-pointer ${sorterNavbarStore.layoutMode === 'card' ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
 								title={t('theater.sorter.gridView')}
 							>
 								<LayoutGrid size={16} />
 							</button>
 							<button
 								onclick={() => sorterNavbarStore.onSetLayout?.('list')}
-								class={`p-1.5 rounded-full transition-all cursor-pointer ${sorterNavbarStore.layoutMode === 'list' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+								class={`p-1.5 rounded-full transition-all cursor-pointer ${sorterNavbarStore.layoutMode === 'list' ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
 								title={t('theater.sorter.listView')}
 							>
 								<List size={16} />
@@ -207,7 +207,7 @@
 
 							<button
 								onclick={() => sorterNavbarStore.onShare?.()}
-								class="w-8 h-8 text-white font-black rounded-full transition-all shadow-lg flex items-center justify-center cursor-pointer bg-rose-500 hover:bg-rose-600 shadow-rose-500/20"
+								class="w-8 h-8 text-white font-black rounded-full transition-all shadow-lg flex items-center justify-center cursor-pointer bg-red-600 hover:bg-red-600 shadow-red-600/20"
 								title={t('theater.sorter.share')}
 							>
 								<Share2 size={14} />
@@ -224,10 +224,10 @@
 				{:else if sorterNavbarStore.pageType === 'sorter' && sorterNavbarStore.sorterState === 'sorting'}
 					<div class="flex items-center gap-2">
 						<div
-							class="hidden xs:flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-500/10"
+							class="hidden xs:flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 dark:bg-red-600/10"
 						>
 							<span
-								class="text-[10px] font-black uppercase tracking-widest text-rose-500 dark:text-rose-400"
+								class="text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400"
 							>
 								{t('theater.sorter.sorting')}
 							</span>
@@ -264,13 +264,13 @@
 							: $page.url.pathname.startsWith(item.href)}
 					<a
 						href={item.href}
-						class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[60px] shrink-0"
+						class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[60px] shrink-0"
 					>
 						<item.icon
-							class={`w-5 h-5 sm:w-6 sm:h-6 transition-all ${isActive ? 'text-rose-600 dark:text-rose-400 scale-110' : ''}`}
+							class={`w-5 h-5 sm:w-6 sm:h-6 transition-all ${isActive ? 'text-red-600 dark:text-red-400 scale-110' : ''}`}
 						/>
 						<span
-							class={`text-[10px] sm:text-[11px] transition-all truncate w-full text-center ${isActive ? 'text-rose-600 dark:text-rose-400 font-bold' : 'font-medium'}`}
+							class={`text-[10px] sm:text-[11px] transition-all truncate w-full text-center ${isActive ? 'text-red-600 dark:text-red-400 font-bold' : 'font-medium'}`}
 						>
 							{item.mobileLabel || item.label}
 						</span>

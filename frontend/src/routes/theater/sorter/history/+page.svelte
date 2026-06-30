@@ -119,9 +119,9 @@
 				class="flex flex-col items-center justify-center text-center p-8 sm:p-16 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md"
 			>
 				<div
-					class="w-16 h-16 bg-rose-50 dark:bg-rose-500/10 rounded-full flex items-center justify-center mb-4"
+					class="w-16 h-16 bg-red-50 dark:bg-red-600/10 rounded-full flex items-center justify-center mb-4"
 				>
-					<History class="w-8 h-8 text-rose-500" />
+					<History class="w-8 h-8 text-red-600" />
 				</div>
 				<h3 class="text-lg font-black text-themed tracking-tight mb-2 uppercase">
 					{t('theater.sorter.noHistoryTitle') || 'Belum Ada Riwayat'}
@@ -141,7 +141,7 @@
 					<div
 						in:fly={{ y: 20, delay: i * 50, duration: 400 }}
 						onclick={() => sorter.viewHistoryDetail(item)}
-						class="group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 hover:border-rose-400 dark:hover:border-rose-500/50 transition-all hover:scale-[1.01] hover:shadow-xl hover:shadow-rose-500/[0.02] flex flex-col justify-between min-h-[190px] cursor-pointer"
+						class="group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 hover:border-red-400 dark:hover:border-red-600/50 transition-all hover:scale-[1.01] hover:shadow-xl hover:shadow-red-600/[0.02] flex flex-col justify-between min-h-[190px] cursor-pointer"
 					>
 						<div class="space-y-3">
 							<!-- Top: Date and delete icon -->
@@ -149,7 +149,7 @@
 								class="flex items-center justify-between text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider"
 							>
 								<div class="flex items-center gap-1.5">
-									<Calendar size={12} class="text-rose-500" />
+									<Calendar size={12} class="text-red-600" />
 									<span>{formatDate(item.created_at)}</span>
 								</div>
 
@@ -191,7 +191,7 @@
 							<!-- Middle: Title & Description -->
 							<div class="space-y-1">
 								<h4
-									class="font-black text-themed text-base group-hover:text-rose-500 transition-colors uppercase tracking-tight line-clamp-1 leading-snug"
+									class="font-black text-themed text-base group-hover:text-red-600 transition-colors uppercase tracking-tight line-clamp-1 leading-snug"
 								>
 									{item.title}
 								</h4>
@@ -213,7 +213,7 @@
 							<div class="flex flex-wrap gap-1 max-w-[70%]">
 								{#each item.filters as gen}
 									<span
-										class="px-2 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase bg-rose-50/80 dark:bg-rose-500/10 border border-rose-100/50 dark:border-rose-900/30 text-rose-500 dark:text-rose-400 select-none"
+										class="px-2 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase bg-red-50/80 dark:bg-red-600/10 border border-red-100/50 dark:border-red-900/30 text-red-600 dark:text-red-400 select-none"
 									>
 										{t('theater.sorter.genLabel', { gen })}
 									</span>
@@ -226,7 +226,7 @@
 									e.stopPropagation();
 									sorter.viewHistoryDetail(item);
 								}}
-								class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 hover:bg-rose-500 hover:text-white border border-zinc-200 dark:border-zinc-700 hover:border-rose-600 transition-all font-black text-xs cursor-pointer group-hover:shadow-md group-hover:shadow-rose-500/10"
+								class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 hover:bg-red-600 hover:text-white border border-zinc-200 dark:border-zinc-700 hover:border-red-600 transition-all font-black text-xs cursor-pointer group-hover:shadow-md group-hover:shadow-red-600/10"
 							>
 								<Eye size={12} />
 								<span>{t('theater.sorter.detail').toUpperCase()}</span>
@@ -245,7 +245,7 @@
 					}}
 				>
 					{#if sorter.loadingHistory}
-						<Loader2 class="w-6 h-6 text-rose-500 animate-spin" />
+						<Loader2 class="w-6 h-6 text-red-600 animate-spin" />
 					{/if}
 				</div>
 			{/if}

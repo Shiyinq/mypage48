@@ -82,7 +82,7 @@
 					class="h-3 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden p-1 shadow-inner ring-1 ring-slate-100 dark:ring-zinc-700"
 				>
 					<div
-						class={`h-full bg-gradient-to-r transition-all duration-500 ease-out rounded-full shadow-lg ${isPublic ? 'from-red-500 to-red-600 shadow-red-500/40' : 'from-rose-500 to-rose-600 shadow-rose-500/40'}`}
+						class={`h-full bg-gradient-to-r transition-all duration-500 ease-out rounded-full shadow-lg ${isPublic ? 'from-red-600 to-red-600 shadow-red-600/40' : 'from-red-600 to-red-600 shadow-red-600/40'}`}
 						style="width: {displayProgress}%"
 					></div>
 				</div>
@@ -96,8 +96,8 @@
 					disabled={isAnimating}
 					class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-2 md:border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl mx-auto w-full max-w-[135px] md:max-w-none ${
 						isPublic
-							? 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-500/20'
-							: 'hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-500/20 h-full max-h-[47vh] min-h-[150px] md:min-h-[225px]'
+							? 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-600/20'
+							: 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-600/20 h-full max-h-[47vh] min-h-[150px] md:min-h-[225px]'
 					} ${
 						lastSelectedSide === 'left' || lastSelectedSide === 'tie'
 							? 'win-animation'
@@ -121,7 +121,7 @@
 					></div>
 					<div class="absolute bottom-3 left-3 right-3 text-left z-30">
 						<span
-							class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
+							class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-red-600'}`}
 							>{t('theater.sorter.genLabel', { gen: leftMember?.generation ?? '' })}</span
 						>
 						<h3
@@ -134,7 +134,7 @@
 					{#if lastSelectedSide === 'left' || lastSelectedSide === 'tie'}
 						<div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
 							<Heart
-								class={`fill-current w-16 h-16 heart-float ${isPublic ? 'text-red-500' : 'text-rose-500'}`}
+								class={`fill-current w-16 h-16 heart-float ${isPublic ? 'text-red-600' : 'text-red-600'}`}
 							/>
 						</div>
 					{:else if lastSelectedSide === 'right'}
@@ -163,7 +163,7 @@
 					class={`z-10 w-6 h-6 md:w-10 md:h-10 flex items-center justify-center bg-white dark:bg-zinc-900 rounded-full shadow-2xl border md:border-4 font-black italic text-[6px] md:text-[10px] ${
 						isPublic
 							? 'border-red-600 text-red-600 animate-pulse'
-							: 'border-rose-500 text-rose-500 animate-bounce-slow'
+							: 'border-red-600 text-red-600 animate-bounce-slow'
 					} ${isAnimating ? 'vs-pulse' : ''}`}
 				>
 					VS
@@ -174,8 +174,8 @@
 					disabled={isAnimating}
 					class={`group relative aspect-[2/3] md:aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden border-2 md:border-4 border-transparent transition-all active:scale-95 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-xl mx-auto w-full max-w-[135px] md:max-w-none ${
 						isPublic
-							? 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-500/20'
-							: 'hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-500/20 h-full max-h-[47vh] min-h-[150px] md:min-h-[225px]'
+							? 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-600/20'
+							: 'hover:border-red-600 hover:shadow-2xl hover:shadow-red-600/20 h-full max-h-[47vh] min-h-[150px] md:min-h-[225px]'
 					} ${
 						lastSelectedSide === 'right' || lastSelectedSide === 'tie'
 							? 'win-animation'
@@ -199,7 +199,7 @@
 					></div>
 					<div class="absolute bottom-3 left-3 right-3 text-left z-30">
 						<span
-							class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-rose-500'}`}
+							class={`px-1.5 py-0.5 text-white text-[7px] font-black rounded-md uppercase tracking-widest mb-1 block w-fit ${isPublic ? 'bg-red-600' : 'bg-red-600'}`}
 							>{t('theater.sorter.genLabel', { gen: rightMember?.generation ?? '' })}</span
 						>
 						<h3
@@ -212,7 +212,7 @@
 					{#if lastSelectedSide === 'right' || lastSelectedSide === 'tie'}
 						<div class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
 							<Heart
-								class={`fill-current w-16 h-16 heart-float ${isPublic ? 'text-red-500' : 'text-rose-500'}`}
+								class={`fill-current w-16 h-16 heart-float ${isPublic ? 'text-red-600' : 'text-red-600'}`}
 							/>
 						</div>
 					{:else if lastSelectedSide === 'left'}
@@ -260,7 +260,7 @@
 					</button>
 					<button
 						onclick={restart}
-						class={`h-10 md:h-11 px-4 md:px-6 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${isPublic ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20' : 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20'}`}
+						class={`h-10 md:h-11 px-4 md:px-6 font-black rounded-full transition-all text-xs md:text-sm cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${isPublic ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20' : 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20'}`}
 					>
 						<ArrowLeft size={16} />
 						{t('theater.sorter.exit')}
