@@ -7,7 +7,6 @@
 		History,
 		LayoutGrid,
 		List,
-		Share2,
 		RotateCcw,
 		Save,
 		Check
@@ -159,25 +158,6 @@
 			<div class="flex-1 flex justify-end items-center">
 				{#if (sorterNavbarStore.pageType === 'sorter' && sorterNavbarStore.sorterState === 'results') || sorterNavbarStore.pageType === 'history-detail'}
 					<div class="flex items-center gap-2 sm:gap-3">
-						<div
-							class="flex bg-gray-50/50 dark:bg-zinc-800/30 backdrop-blur-md rounded-full p-1 border shadow-inner border-zinc-200 dark:border-zinc-800"
-						>
-							<button
-								onclick={() => sorterNavbarStore.onSetLayout?.('card')}
-								class={`p-1.5 rounded-full transition-all cursor-pointer ${sorterNavbarStore.layoutMode === 'card' ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
-								title={t('theater.sorter.gridView')}
-							>
-								<LayoutGrid size={16} />
-							</button>
-							<button
-								onclick={() => sorterNavbarStore.onSetLayout?.('list')}
-								class={`p-1.5 rounded-full transition-all cursor-pointer ${sorterNavbarStore.layoutMode === 'list' ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
-								title={t('theater.sorter.listView')}
-							>
-								<List size={16} />
-							</button>
-						</div>
-
 						{#if sorterNavbarStore.pageType === 'sorter'}
 							{#if !isPublic}
 								{#if !sorterNavbarStore.savedHistoryId}
@@ -206,13 +186,6 @@
 							{/if}
 
 							<button
-								onclick={() => sorterNavbarStore.onShare?.()}
-								class="w-8 h-8 text-white font-black rounded-full transition-all shadow-lg flex items-center justify-center cursor-pointer bg-red-600 hover:bg-red-600 shadow-red-600/20"
-								title={t('theater.sorter.share')}
-							>
-								<Share2 size={14} />
-							</button>
-							<button
 								onclick={() => sorterNavbarStore.onRestart?.()}
 								class="w-8 h-8 bg-white dark:bg-zinc-800 font-black rounded-full transition-all shadow-md border flex items-center justify-center cursor-pointer text-themed border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700"
 								title={t('theater.sorter.restart')}
@@ -220,6 +193,25 @@
 								<RotateCcw size={14} />
 							</button>
 						{/if}
+
+						<div
+							class="flex bg-gray-50/50 dark:bg-zinc-800/30 backdrop-blur-md rounded-full p-1 border shadow-inner border-zinc-200 dark:border-zinc-800"
+						>
+							<button
+								onclick={() => sorterNavbarStore.onSetLayout?.('card')}
+								class={`p-1.5 rounded-full transition-all cursor-pointer ${sorterNavbarStore.layoutMode === 'card' ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+								title={t('theater.sorter.gridView')}
+							>
+								<LayoutGrid size={16} />
+							</button>
+							<button
+								onclick={() => sorterNavbarStore.onSetLayout?.('list')}
+								class={`p-1.5 rounded-full transition-all cursor-pointer ${sorterNavbarStore.layoutMode === 'list' ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+								title={t('theater.sorter.listView')}
+							>
+								<List size={16} />
+							</button>
+						</div>
 					</div>
 				{:else if sorterNavbarStore.pageType === 'sorter' && sorterNavbarStore.sorterState === 'sorting'}
 					<div class="flex items-center gap-2">

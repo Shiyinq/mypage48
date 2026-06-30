@@ -1297,5 +1297,63 @@
 		"title": "Connection Lost",
 		"message": "The browser failed to load this page because there is no internet connection. Please check your Wi-Fi or cellular data.",
 		"retry": "Try Again"
+	},
+	"replay": {
+		"nav": "",
+		"list": {
+			"seoTitle": "",
+			"seoDescription": "",
+			"all": "",
+			"idn": "",
+			"showroom": "",
+			"searchPlaceholder": "",
+			"allMembers": "",
+			"loadError": "",
+			"retry": "",
+			"empty": "",
+			"noSearchResults": "",
+			"noVideos": "",
+			"sourceDomain": "",
+			"prev": "",
+			"next": "",
+			"originalSource": ""
+		},
+		"room": {
+			"seoTitle": "",
+			"seoTitleFallback": "",
+			"seoDesc": "",
+			"fallbackTitle": "",
+			"openInYoutube": "",
+			"loadingTitle": "",
+			"loadingSubtext": "",
+			"videoNotFound": "",
+			"videoNotFoundDesc": "",
+			"back": "",
+			"playerLabel": "",
+			"play": "",
+			"pause": "",
+			"unmute": "",
+			"mute": "",
+			"pip": "",
+			"screenshot": "",
+			"theme": "",
+			"exitFocus": "",
+			"focusMode": "",
+			"exit": "",
+			"fullscreen": "",
+			"hideChat": "",
+			"showChat": "",
+			"chatNotAvailable": ""
+		},
+		"chat": {
+			"error": "",
+			"header": "",
+			"messages": "",
+			"searchPlaceholder": "",
+			"loading": "",
+			"startPlaying": "",
+			"notFound": "",
+			"noChatAtTime": ""
+		}
 	}
 }
