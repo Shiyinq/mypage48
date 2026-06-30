@@ -20,32 +20,38 @@
 	const isLiveRoom = $derived(!!$page.params.platform && !!$page.params.id);
 
 	const navItems = $derived([
-		{ label: 'LIVE', mobileLabel: 'LIVE', href: basePath, exact: true, icon: Tv },
 		{
-			label: t('theater.live.switchMultiview') || 'Multi-View',
-			mobileLabel: 'Multi',
+			label: t('nav.live'),
+			mobileLabel: t('nav.live'),
+			href: basePath,
+			exact: true,
+			icon: Tv
+		},
+		{
+			label: t('nav.switchMultiview') || 'Multi-View',
+			mobileLabel: t('nav.multiview') || 'Multi',
 			href: `${basePath}/multiview`,
 			exact: true,
 			icon: LayoutGrid
 		},
 		{
-			label: t('liveHistory.globalButton') || 'Riwayat Live',
-			mobileLabel: 'Riwayat',
+			label: t('nav.liveHistory') || 'Riwayat Live',
+			mobileLabel: t('nav.history') || 'History',
 			href: `${basePath}/history`,
 			match: (path: string) =>
 				path === `${basePath}/history` || path.startsWith(`${basePath}/history/members`),
 			icon: Globe
 		},
 		{
-			label: t('liveHistory.viewHistory') || 'Riwayat Menonton',
-			mobileLabel: 'Menonton',
+			label: t('nav.watchHistory') || 'Riwayat Menonton',
+			mobileLabel: t('nav.watched') || 'Watched',
 			href: `${basePath}/history/watched`,
 			match: (path: string) => path.startsWith(`${basePath}/history/watched`),
 			icon: History
 		},
 		{
-			label: t('liveHistory.pcLive.title') || 'PC Live',
-			mobileLabel: 'PC Live',
+			label: t('nav.pcLive') || 'PC Live',
+			mobileLabel: t('nav.pcLive') || 'PC Live',
 			href: `${basePath}/pc`,
 			activeHref: `${basePath}/pc`,
 			exact: false,

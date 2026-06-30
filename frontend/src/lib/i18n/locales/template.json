@@ -109,7 +109,17 @@
 		"profile": "",
 		"settings": "",
 		"newTicket": "",
-		"journal": ""
+		"journal": "",
+		"multiview": "",
+		"watched": "",
+		"live": "",
+		"sorter": "",
+		"pcLive": "",
+		"switchMultiview": "",
+		"liveHistory": "",
+		"watchHistory": "",
+		"startSorter": "",
+		"sorterHistory": ""
 	},
 	"header": {
 		"tagline": ""

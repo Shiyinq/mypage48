@@ -64,7 +64,7 @@
 		<div
 			class="flex items-center justify-start gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2"
 		>
-			<Calendar size={12} class="text-rose-500" />
+			<Calendar size={12} class="text-red-600" />
 			<span>{date}</span>
 		</div>
 	{/if}
@@ -76,7 +76,7 @@
 				class="flex-1 max-w-2xl bg-zinc-50 dark:bg-zinc-800/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 border border-zinc-200 dark:border-zinc-700/50 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 transition-colors shadow-sm"
 			>
 				<div
-					class="flex-1 relative flex items-center bg-white dark:bg-zinc-900 rounded-lg sm:rounded-xl border border-zinc-200 dark:border-zinc-700 focus-within:border-rose-500 dark:focus-within:border-rose-500 focus-within:ring-2 focus-within:ring-rose-500/20 transition-all overflow-hidden group"
+					class="flex-1 relative flex items-center bg-white dark:bg-zinc-900 rounded-lg sm:rounded-xl border border-zinc-200 dark:border-zinc-700 focus-within:border-red-600 dark:focus-within:border-red-600 focus-within:ring-2 focus-within:ring-red-600/20 transition-all overflow-hidden group"
 				>
 					<input
 						type="text"
@@ -96,7 +96,7 @@
 						class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none select-none"
 					>
 						<span
-							class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 group-focus-within:text-rose-500 transition-colors"
+							class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 group-focus-within:text-red-600 transition-colors"
 						>
 							{tempTitle.length}/{titleLimit}
 						</span>
@@ -120,7 +120,7 @@
 					<button
 						onclick={oncancelEditTitle}
 						disabled={isSaving}
-						class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-red-500 hover:bg-red-50 hover:border-red-200 dark:hover:bg-red-500/10 dark:hover:border-red-500/30 transition-all cursor-pointer"
+						class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200 dark:hover:bg-red-600/10 dark:hover:border-red-600/30 transition-all cursor-pointer"
 						title={t('common.cancel') || 'Cancel'}
 					>
 						<X size={16} />
@@ -137,7 +137,7 @@
 				{#if !hideEdit}
 					<button
 						onclick={onstartEditTitle}
-						class="p-1.5 rounded-full text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all cursor-pointer shrink-0"
+						class="p-1.5 rounded-full text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-600/10 transition-all cursor-pointer shrink-0"
 						title={t('common.edit') || 'Edit'}
 					>
 						<Pencil size={18} />
@@ -154,7 +154,7 @@
 				class="w-full max-w-2xl bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-2 sm:p-3 border border-zinc-200 dark:border-zinc-700/50 flex flex-col sm:flex-row items-end sm:items-start gap-2 sm:gap-3 transition-colors shadow-sm"
 			>
 				<div
-					class="flex-1 w-full relative flex items-start bg-white dark:bg-zinc-900 rounded-lg sm:rounded-xl border border-zinc-200 dark:border-zinc-700 focus-within:border-rose-500 dark:focus-within:border-rose-500 focus-within:ring-2 focus-within:ring-rose-500/20 transition-all overflow-hidden group"
+					class="flex-1 w-full relative flex items-start bg-white dark:bg-zinc-900 rounded-lg sm:rounded-xl border border-zinc-200 dark:border-zinc-700 focus-within:border-red-600 dark:focus-within:border-red-600 focus-within:ring-2 focus-within:ring-red-600/20 transition-all overflow-hidden group"
 				>
 					<textarea
 						value={tempDescription}
@@ -175,7 +175,7 @@
 						class="absolute right-2 bottom-1.5 flex items-center pointer-events-none select-none bg-white/80 dark:bg-zinc-900/80 px-1 rounded backdrop-blur-sm"
 					>
 						<span
-							class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 group-focus-within:text-rose-500 transition-colors"
+							class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 group-focus-within:text-red-600 transition-colors"
 						>
 							{tempDescription.length}/{descriptionLimit}
 						</span>
@@ -199,7 +199,7 @@
 					<button
 						onclick={oncancelEditDescription}
 						disabled={isSaving}
-						class="flex items-center justify-center w-8 h-8 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-red-500 hover:bg-red-50 hover:border-red-200 dark:hover:bg-red-500/10 dark:hover:border-red-500/30 transition-all cursor-pointer"
+						class="flex items-center justify-center w-8 h-8 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200 dark:hover:bg-red-600/10 dark:hover:border-red-600/30 transition-all cursor-pointer"
 						title={t('common.cancel') || 'Cancel'}
 					>
 						<X size={14} />
@@ -219,7 +219,7 @@
 				{#if !hideEdit}
 					<button
 						onclick={onstartEditDescription}
-						class="p-1 rounded-full text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all cursor-pointer shrink-0 mt-0.5"
+						class="p-1 rounded-full text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-600/10 transition-all cursor-pointer shrink-0 mt-0.5"
 						title={t('common.edit') || 'Edit'}
 					>
 						<Pencil size={14} />
@@ -234,7 +234,7 @@
 		<div class="flex flex-wrap gap-1.5 pt-2">
 			{#each filters as gen}
 				<span
-					class="px-2.5 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase border transition-all hover:scale-105 select-none bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30 text-rose-500 dark:text-rose-400"
+					class="px-2.5 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase border transition-all hover:scale-105 select-none bg-red-50/50 dark:bg-red-950/20 border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400"
 				>
 					{t('theater.sorter.genLabel', { gen })}
 				</span>

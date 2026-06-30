@@ -227,7 +227,7 @@
 							{#each results.slice(3) as member, i (member.id)}
 								<div
 									in:fly={{ y: 20, delay: (i + 3) * 30, duration: 500, easing: quintOut }}
-									class={`flex items-center gap-3 bg-white dark:bg-zinc-900 rounded-xl p-2.5 border transition-all hover:scale-[1.02] hover:shadow-xl group relative overflow-hidden shadow-sm cursor-pointer ${isPublic ? 'border-slate-100 dark:border-zinc-800 hover:border-red-600' : 'border-zinc-100 dark:border-zinc-800 hover:border-rose-500'}`}
+									class={`flex items-center gap-3 bg-white dark:bg-zinc-900 rounded-xl p-2.5 border transition-all hover:scale-[1.02] hover:shadow-xl group relative overflow-hidden shadow-sm cursor-pointer ${isPublic ? 'border-slate-100 dark:border-zinc-800 hover:border-red-600' : 'border-zinc-100 dark:border-zinc-800 hover:border-red-600'}`}
 								>
 									<div
 										class={`rank-badge w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0 z-30 bg-slate-100 dark:bg-zinc-800 border shadow-sm ${isPublic ? 'text-slate-900 dark:text-white border-slate-200 dark:border-zinc-700' : 'text-themed border-zinc-200 dark:border-zinc-700'}`}

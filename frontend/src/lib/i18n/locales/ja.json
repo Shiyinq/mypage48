@@ -122,7 +122,17 @@
 		"newTicket": "新規チケット",
 		"journal": "ジャーナル",
 		"top2shot": "ルーレット＆バースデー",
-		"admin": "管理"
+		"admin": "管理",
+		"multiview": "マルチ",
+		"watched": "視聴",
+		"live": "ライブ",
+		"sorter": "ソーター",
+		"pcLive": "PC Live",
+		"switchMultiview": "マルチビュー",
+		"liveHistory": "ライブ履歴",
+		"watchHistory": "視聴履歴",
+		"startSorter": "ソーターを開始",
+		"sorterHistory": "ソーター履歴"
 	},
 	"header": {
 		"tagline": "JKT48劇場トラッカー"

@@ -122,7 +122,17 @@
 		"journal": "Journal",
 		"journey": "Journey",
 		"top2shot": "Roulette & Birthday",
-		"admin": "Admin"
+		"admin": "Admin",
+		"multiview": "Multi",
+		"watched": "Watched",
+		"live": "Live",
+		"sorter": "Sorter",
+		"pcLive": "PC Live",
+		"switchMultiview": "Multi-view",
+		"liveHistory": "Live History",
+		"watchHistory": "Watch History",
+		"startSorter": "Start Sorter",
+		"sorterHistory": "Sorter History"
 	},
 	"header": {
 		"tagline": "JKT48 THEATER TRACKER"

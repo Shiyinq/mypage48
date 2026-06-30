@@ -11,6 +11,7 @@
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		icon?: any;
 		storageKey?: string;
+		hideCloseIcon?: boolean;
 		onClose?: () => void;
 		actions?: Snippet;
 	}
@@ -23,6 +24,7 @@
 		class: className = '',
 		icon: IconComponent = Info,
 		storageKey,
+		hideCloseIcon = false,
 		onClose,
 		actions
 	}: Props = $props();
@@ -58,13 +60,15 @@
 			class="absolute -left-12 -top-12 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl pointer-events-none"
 		></div>
 
-		<button
-			class="absolute top-3 right-3 p-1 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900 transition-all cursor-pointer z-20"
-			onclick={handleClose}
-			aria-label="Close banner"
-		>
-			<X size={15} />
-		</button>
+		{#if !hideCloseIcon}
+			<button
+				class="absolute top-3 right-3 p-1 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900 transition-all cursor-pointer z-20"
+				onclick={handleClose}
+				aria-label="Close banner"
+			>
+				<X size={15} />
+			</button>
+		{/if}
 
 		<div
 			class="flex flex-col sm:flex-row items-center sm:items-start gap-3 text-center sm:text-left z-10 flex-1 w-full"

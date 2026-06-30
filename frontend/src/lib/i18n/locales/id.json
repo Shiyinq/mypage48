@@ -123,7 +123,17 @@
 		"newTicket": "Tiket Baru",
 		"journal": "Jurnal",
 		"top2shot": "Roulette & Ulang Tahun",
-		"admin": "Admin"
+		"admin": "Admin",
+		"multiview": "Multi",
+		"watched": "Menonton",
+		"live": "Live",
+		"sorter": "Sorter",
+		"pcLive": "PC Live",
+		"switchMultiview": "Multi-view",
+		"liveHistory": "Riwayat Live",
+		"watchHistory": "Riwayat Menonton",
+		"startSorter": "Mulai Sorter",
+		"sorterHistory": "Riwayat Sorter"
 	},
 	"header": {
 		"tagline": "PELACAK TEATER JKT48"

@@ -3,7 +3,7 @@ import { membersStore } from '$lib/stores/theater.svelte';
 import { showToast } from '$lib/stores';
 import { sorterApi, type SorterResponse } from '$lib/apis/sorter';
 import { goto } from '$app/navigation';
-
+import { t as translate } from '$lib/i18n';
 /**
  * Calculates the total number of element moves in the sorter's merge sort implementation.
  */
@@ -84,18 +84,8 @@ export function createSorter(
 	let lastSelectedSide = $state<'left' | 'right' | 'tie' | null>(null);
 
 	// Derived
-	const currentLeft = $derived(selectedMembers[lstMember[cmp1]?.[head1]]);
-	const currentRight = $derived(selectedMembers[lstMember[cmp2]?.[head2]]);
-
-	let leftMember = $state<Member | null>(null);
-	let rightMember = $state<Member | null>(null);
-
-	$effect(() => {
-		if (currentLeft && currentRight) {
-			leftMember = currentLeft;
-			rightMember = currentRight;
-		}
-	});
+	const leftMember = $derived(selectedMembers[lstMember[cmp1]?.[head1]] || null);
+	const rightMember = $derived(selectedMembers[lstMember[cmp2]?.[head2]] || null);
 
 	const progress = $derived(
 		finishFlag ? 100 : totalMoves > 0 ? Math.floor((finishSize / totalMoves) * 100) : 0
@@ -495,3 +485,6 @@ export function createSorter(
 		goToHistory
 	};
 }
+
+export const publicSorter = createSorter(translate, '/jkt48/sorter');
+export const theaterSorter = createSorter(translate, '/theater/sorter');
