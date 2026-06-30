@@ -16,6 +16,7 @@
 		exact?: boolean;
 		match?: (currentPath: string) => boolean;
 		activeClass?: string;
+		disabled?: boolean;
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[key: string]: any;
 	}
@@ -43,10 +44,12 @@
 					: currentPath.startsWith(entry.activeHref || entry.href)}
 		<li>
 			<a
-				href={entry.href}
+				href={entry.disabled ? undefined : entry.href}
 				class="relative px-2.5 lg:px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-1.5 {isActive
 					? 'text-white'
-					: 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
+					: 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'} {entry.disabled
+					? 'pointer-events-none opacity-40 cursor-not-allowed'
+					: ''}"
 			>
 				{#if isActive}
 					<div
