@@ -1619,7 +1619,7 @@
 	},
 	"liveHistory": {
 		"publicWatchedEmptyTitle": "視聴履歴",
-		"publicWatchedEmptyDesc": "JKT48ライブの視聴履歴を記録するには、ログインまたは登録してください。",
+		"publicWatchedEmptyDesc": "この機能はアカウントを持ち、ログインしている場合のみ利用できます。",
 		"loginToWatch": "ログイン",
 		"registerToWatch": "登録",
 		"title": "視聴履歴",
@@ -1665,6 +1665,7 @@
 			"title": "PC Live",
 			"buttonSubtitle": "コレクション",
 			"description": "フォトカードライブコレクション",
+			"promoDesc": "この機能はアカウントを持ち、ログインしている場合のみ利用できます。",
 			"tabs": {
 				"all": "すべてのカード",
 				"owned": "所持",

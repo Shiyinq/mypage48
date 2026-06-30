@@ -13,6 +13,8 @@
 
 	import PhotoCard from '$lib/components/live/PhotoCard.svelte';
 	import HistoryTopBar from '$lib/components/live/history/shared/HistoryTopBar.svelte';
+	import { PromoBanner } from '$lib/components/common';
+	import { Camera } from 'lucide-svelte';
 
 	interface Props {
 		isPublic?: boolean;
@@ -101,6 +103,21 @@
 	<!-- Main Content -->
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 relative z-10">
+			{#if isPublic}
+				<div class="mb-6 sm:mb-8 flex justify-center">
+					<PromoBanner
+						title={t('liveHistory.pcLive.title') || 'PC Live'}
+						desc={t('liveHistory.pcLive.promoDesc') ||
+							'Login to see your full Photo Card collection.'}
+						actionText={t('liveHistory.registerToWatch')}
+						href="/register"
+						class="max-w-xl w-full"
+						hideCloseIcon={true}
+						icon={Camera}
+					/>
+				</div>
+			{/if}
+
 			<!-- Tabs & Filter -->
 			<div class="flex justify-center mb-6 sm:mb-8 w-full max-w-lg mx-auto">
 				<div class="flex w-full items-end border-b border-black/10 dark:border-white/10">

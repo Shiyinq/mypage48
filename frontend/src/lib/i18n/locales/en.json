@@ -787,7 +787,7 @@
 	},
 	"liveHistory": {
 		"publicWatchedEmptyTitle": "Watch History",
-		"publicWatchedEmptyDesc": "Please login or register to start tracking your JKT48 Live watch history.",
+		"publicWatchedEmptyDesc": "This feature can only be used if you have an account and are logged in.",
 		"loginToWatch": "Login",
 		"registerToWatch": "Register",
 		"title": "Watch History",
@@ -833,6 +833,7 @@
 			"title": "PC Live",
 			"buttonSubtitle": "COLLECTION",
 			"description": "Photo Card Live Collection",
+			"promoDesc": "This feature can only be used if you have an account and are logged in.",
 			"tabs": {
 				"all": "All Cards",
 				"owned": "Owned",

@@ -1625,7 +1625,7 @@
 	},
 	"liveHistory": {
 		"publicWatchedEmptyTitle": "Riwayat Menonton",
-		"publicWatchedEmptyDesc": "Silakan masuk atau daftar untuk mulai melacak riwayat menonton JKT48 Live Anda.",
+		"publicWatchedEmptyDesc": "Fitur ini hanya bisa digunakan jika kamu telah mempunyai akun dan login.",
 		"loginToWatch": "Masuk",
 		"registerToWatch": "Daftar",
 		"title": "Riwayat Nonton",
@@ -1671,6 +1671,7 @@
 			"title": "PC Live",
 			"buttonSubtitle": "KOLEKSI",
 			"description": "Koleksi Photo Card Live",
+			"promoDesc": "Fitur ini hanya bisa digunakan jika kamu telah mempunyai akun dan login.",
 			"tabs": {
 				"all": "Semua Kartu",
 				"owned": "Dimiliki",
