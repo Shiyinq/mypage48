@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { tick, onMount } from 'svelte';
 	import { replayApi } from '$lib/apis/replay';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { ReplayChatMessage } from '$lib/types/replay';
-	import { MessageCircle, Gift, Search } from 'lucide-svelte';
+	import { MessageCircle, Gift, Search, ChevronDown } from 'lucide-svelte';
 
 	const { t } = useTranslation();
 
@@ -21,6 +21,13 @@
 	let autoScroll = $state(true);
 	let chatContainer: HTMLDivElement | undefined = $state();
 	let isFirstLoad = $state(true);
+	let newMessageCount = $state(0);
+	let prevCount = $state(0);
+	let scrollTimer: ReturnType<typeof setTimeout> | undefined;
+
+	onMount(() => {
+		return () => clearTimeout(scrollTimer);
+	});
 
 	$effect(() => {
 		async function fetchSrt() {
@@ -97,35 +104,6 @@
 		return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 	}
 
-	function getUsernameColor(username: string): string {
-		const colors = [
-			'#FF6B6B',
-			'#4ECDC4',
-			'#45B7D1',
-			'#96CEB4',
-			'#FFEAA7',
-			'#DDA0DD',
-			'#98D8C8',
-			'#F7DC6F',
-			'#BB8FCE',
-			'#82E0AA',
-			'#F1948A',
-			'#85C1E9',
-			'#F0B27A',
-			'#A3E4D7',
-			'#D2B4DE',
-			'#AED6F1',
-			'#A9DFBF',
-			'#FAD7A0',
-			'#A9CCE3',
-			'#D5DBDB'
-		];
-		let hash = 0;
-		for (let i = 0; i < username.length; i++) {
-			hash = username.charCodeAt(i) + ((hash << 5) - hash);
-		}
-		return colors[Math.abs(hash) % colors.length];
-	}
 
 	let visibleMessages = $derived.by(() => {
 		let msgs = allMessages.filter((msg) => msg.startTime <= currentTime);
@@ -142,7 +120,21 @@
 	});
 
 	$effect(() => {
-		if (!chatContainer || !autoScroll) return;
+		if (!chatContainer) return;
+		const count = visibleMessages.length;
+
+		if (count > prevCount && !autoScroll && !isFirstLoad && prevCount > 0) {
+			newMessageCount += count - prevCount;
+			clearTimeout(scrollTimer);
+			scrollTimer = setTimeout(() => {
+				if (chatContainer && newMessageCount > 0) {
+					chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+					newMessageCount = 0;
+					autoScroll = true;
+				}
+			}, 8000);
+		}
+		prevCount = count;
 
 		if (isFirstLoad || autoScroll) {
 			tick().then(() => {
@@ -161,10 +153,22 @@
 		if (!chatContainer) return;
 		const diff = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
 		autoScroll = diff < 60;
+		if (autoScroll) {
+			newMessageCount = 0;
+			clearTimeout(scrollTimer);
+		}
+	}
+
+	function scrollToBottom() {
+		if (!chatContainer) return;
+		chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+		newMessageCount = 0;
+		autoScroll = true;
+		clearTimeout(scrollTimer);
 	}
 </script>
 
-<div class="flex flex-col h-full">
+<div class="flex flex-col h-full relative">
 	<div
 		class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-zinc-800 flex-shrink-0"
 	>
@@ -175,7 +179,8 @@
 			>
 		</div>
 		<span class="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
-			{allMessages.length.toLocaleString()} {t('replay.chat.messages')}
+			{allMessages.length.toLocaleString()}
+			{t('replay.chat.messages')}
 		</span>
 	</div>
 
@@ -208,6 +213,8 @@
 			bind:this={chatContainer}
 			onscroll={handleScroll}
 			class="flex-1 p-4 overflow-y-auto flex flex-col gap-3 scroll-smooth"
+			class:scrollbar-hide={autoScroll}
+			class:custom-scrollbar={!autoScroll}
 		>
 			{#if visibleMessages.length === 0}
 				<div class="flex flex-col items-center justify-center text-center py-20 opacity-40">
@@ -230,8 +237,7 @@
 						</div>
 						<div class="flex-1 min-w-0">
 							<p
-								class="text-[11px] font-bold mb-0.5 truncate"
-								style="color: {getUsernameColor(msg.username)}"
+								class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate"
 							>
 								{#if msg.isGift}
 									<Gift size={11} class="inline text-yellow-500 mr-0.5" />
@@ -260,5 +266,14 @@
 				{/each}
 			{/if}
 		</div>
+		{#if newMessageCount > 0}
+			<button
+				onclick={scrollToBottom}
+				class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold shadow-lg transition-all cursor-pointer z-10"
+			>
+				{newMessageCount}
+				<ChevronDown size={14} />
+			</button>
+		{/if}
 	{/if}
 </div>

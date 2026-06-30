@@ -1301,6 +1301,8 @@
 	"replay": {
 		"nav": "",
 		"list": {
+			"seoTitle": "",
+			"seoDescription": "",
 			"all": "",
 			"idn": "",
 			"showroom": "",

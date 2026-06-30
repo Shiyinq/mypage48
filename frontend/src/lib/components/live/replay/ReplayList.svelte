@@ -9,7 +9,7 @@
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getPlatformIcon } from '$lib/constants/live';
-	import { Search, Play, ChevronDown, User, List, ExternalLink } from 'lucide-svelte';
+	import { Search, Play, User, List, ExternalLink } from 'lucide-svelte';
 
 	const { t } = useTranslation();
 
@@ -32,36 +32,42 @@
 	let membersLoading = $state(true);
 	let avatarScrollRef: HTMLDivElement | undefined = $state();
 	let atEnd = $state(true);
+	let containerRef: HTMLDivElement | undefined = $state();
 
 	$effect(() => {
 		if (avatarScrollRef) {
-			atEnd = avatarScrollRef.scrollLeft + avatarScrollRef.clientWidth >= avatarScrollRef.scrollWidth - 4;
+			atEnd =
+				avatarScrollRef.scrollLeft + avatarScrollRef.clientWidth >= avatarScrollRef.scrollWidth - 4;
 		}
 	});
 
 	function onAvatarScroll() {
 		if (!avatarScrollRef) return;
-		atEnd = avatarScrollRef.scrollLeft + avatarScrollRef.clientWidth >= avatarScrollRef.scrollWidth - 4;
+		atEnd =
+			avatarScrollRef.scrollLeft + avatarScrollRef.clientWidth >= avatarScrollRef.scrollWidth - 4;
 	}
 
 	onMount(() => {
 		replayStore.loadVideos();
-		members.getAll({ limit: 100 }).then((res) => {
-			const map = new Map<string, { img_small?: string; blurHash?: string }>();
-			const list: { nickname: string; img_small?: string; blurHash?: string }[] = [];
-			for (const m of res.data) {
-				const key = m.nickname?.toLowerCase();
-				if (key) {
-					map.set(key, { img_small: m.img_small, blurHash: m.blurHash });
-					list.push({ nickname: key, img_small: m.img_small, blurHash: m.blurHash });
+		members
+			.getAll({ limit: 100 })
+			.then((res) => {
+				const map = new Map<string, { img_small?: string; blurHash?: string }>();
+				const list: { nickname: string; img_small?: string; blurHash?: string }[] = [];
+				for (const m of res.data) {
+					const key = m.nickname?.toLowerCase();
+					if (key) {
+						map.set(key, { img_small: m.img_small, blurHash: m.blurHash });
+						list.push({ nickname: key, img_small: m.img_small, blurHash: m.blurHash });
+					}
 				}
-			}
-			memberMap = map;
-			memberList = list;
-			membersLoading = false;
-		}).catch(() => {
-			membersLoading = false;
-		});
+				memberMap = map;
+				memberList = list;
+				membersLoading = false;
+			})
+			.catch(() => {
+				membersLoading = false;
+			});
 	});
 
 	$effect(() => {
@@ -73,17 +79,10 @@
 		};
 	});
 
-	function clickOutside(
-		node: HTMLElement,
-		param: { close: () => void; exclude?: string }
-	) {
+	function clickOutside(node: HTMLElement, param: { close: () => void; exclude?: string }) {
 		const handle = (event: MouseEvent) => {
 			const target = event.target as Element;
-			if (
-				node &&
-				!node.contains(target) &&
-				(!param.exclude || !target.closest(param.exclude))
-			) {
+			if (node && !node.contains(target) && (!param.exclude || !target.closest(param.exclude))) {
 				param.close();
 			}
 		};
@@ -147,6 +146,7 @@
 
 	function goToPage(p: number) {
 		page = p;
+		containerRef?.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 
 	function setMemberFilter(nickname: string | null) {
@@ -183,7 +183,9 @@
 
 {#snippet rightActions()}
 	<div class="flex items-center gap-2">
-		<span class="text-xs text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap tabular-nums">
+		<span
+			class="text-xs text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap tabular-nums"
+		>
 			{startIndex}-{endIndex}/{totalCount}
 		</span>
 		<div class="relative">
@@ -199,7 +201,10 @@
 
 			{#if isSearchOpen}
 				<div
-					use:clickOutside={{ close: () => (isSearchOpen = false), exclude: '[data-replay-search]' }}
+					use:clickOutside={{
+						close: () => (isSearchOpen = false),
+						exclude: '[data-replay-search]'
+					}}
 					transition:slide={{ duration: 150 }}
 					class="absolute top-full right-0 mt-2 z-[7000] w-64 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-700 shadow-xl overflow-hidden p-3"
 				>
@@ -224,7 +229,10 @@
 					: 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-zinc-700 hover:border-red-200 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400'}"
 			>
 				{#if selectedOption.icon}
-					<span class="text-[10px] sm:text-xs font-black uppercase text-slate-700 dark:text-slate-300">{getPlatformIcon(selectedOption.icon).charAt(0)}</span>
+					<span
+						class="text-[10px] sm:text-xs font-black uppercase text-slate-700 dark:text-slate-300"
+						>{getPlatformIcon(selectedOption.icon).charAt(0)}</span
+					>
 				{:else}
 					<List size={15} />
 				{/if}
@@ -232,7 +240,10 @@
 
 			{#if isFilterOpen}
 				<div
-					use:clickOutside={{ close: () => (isFilterOpen = false), exclude: '[data-replay-filter]' }}
+					use:clickOutside={{
+						close: () => (isFilterOpen = false),
+						exclude: '[data-replay-filter]'
+					}}
 					transition:slide={{ duration: 150 }}
 					class="absolute top-full right-0 mt-2 z-[7000] min-w-[180px] bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-700 shadow-xl overflow-hidden"
 				>
@@ -257,70 +268,82 @@
 	</div>
 {/snippet}
 
-<div class="h-full w-full overflow-y-auto pt-4 px-4 sm:px-6 lg:px-8 pb-28">
+<div bind:this={containerRef} class="h-full w-full overflow-y-auto pt-4 px-4 sm:px-6 lg:px-8 pb-28">
 	<div class="max-w-7xl mx-auto w-full">
 		<div class="flex flex-col gap-6">
 			{#if !(replayStore.loading && replayStore.videos.length === 0) && !(replayStore.error && replayStore.videos.length === 0)}
 				{#if membersLoading}
 					<div class="flex gap-3 py-2 px-1">
-						{#each Array(8) as _}
+						{#each Array(5) as _}
 							<div class="shrink-0 flex flex-col items-center gap-1">
-								<div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-200 dark:bg-zinc-800 animate-pulse"></div>
+								<div
+									class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-200 dark:bg-zinc-800 animate-pulse"
+								></div>
 								<div class="w-8 h-2 rounded bg-slate-200 dark:bg-zinc-800 animate-pulse"></div>
 							</div>
 						{/each}
 					</div>
 				{:else if memberList.length > 0}
-					<div
-						bind:this={avatarScrollRef}
-						onscroll={onAvatarScroll}
-						class="flex gap-3 overflow-x-auto py-2 px-1 hide-scrollbar"
-						style="scrollbar-width: none; -ms-overflow-style: none; -webkit-mask-image: {!atEnd ? 'linear-gradient(to right, black calc(100% - 40px), transparent 100%)' : 'none'}; mask-image: {!atEnd ? 'linear-gradient(to right, black calc(100% - 40px), transparent 100%)' : 'none'};"
-					>
-						<button
-							onclick={() => setMemberFilter(null)}
-							class="shrink-0 flex flex-col items-center gap-1 cursor-pointer"
-							title={t('replay.list.allMembers')}
-						>
-							<div
-								class="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-xs font-bold transition-all {!memberFilter
-									? 'ring-2 ring-red-500 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 bg-red-500 text-white'
-									: 'bg-slate-200 dark:bg-zinc-700 text-slate-500 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-zinc-600'}"
-							>
-								<List size={16} />
-							</div>
-							<span class="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-12 text-center font-medium">
-								{t('replay.list.all')}
-							</span>
-						</button>
-						{#each memberList as m}
+					<div class="flex gap-3 py-2 px-1">
+						<div class="shrink-0">
 							<button
-								onclick={() => setMemberFilter(m.nickname)}
-								class="shrink-0 flex flex-col items-center gap-1 cursor-pointer"
-								title={m.nickname}
+								onclick={() => setMemberFilter(null)}
+								class="flex flex-col items-center gap-1 cursor-pointer"
+								title={t('replay.list.allMembers')}
 							>
 								<div
-									class="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden transition-all {memberFilter ===
-									m.nickname
-										? 'ring-2 ring-red-500 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900'
-										: 'ring-1 ring-slate-300 dark:ring-zinc-600 hover:ring-slate-400 dark:hover:ring-zinc-500'}"
+									class="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-xs font-bold transition-all {!memberFilter
+										? 'ring-2 ring-red-500 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 bg-red-500 text-white'
+										: 'bg-slate-200 dark:bg-zinc-700 text-slate-500 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-zinc-600'}"
 								>
-									<OptimizedImage
-										src={m.img_small}
-										srcSmall={m.img_small}
-										blurHash={m.blurHash}
-										alt={m.nickname}
-										class="w-full h-full object-cover"
-										noBackground={true}
-									/>
+									<List size={16} />
 								</div>
 								<span
 									class="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-12 text-center font-medium"
 								>
-									{m.nickname}
+									{t('replay.list.all')}
 								</span>
 							</button>
-						{/each}
+						</div>
+						<div
+							bind:this={avatarScrollRef}
+							onscroll={onAvatarScroll}
+							class="flex gap-3 overflow-x-auto overflow-y-clip hide-scrollbar flex-1 py-1 pl-1"
+							style="scrollbar-width: none; -ms-overflow-style: none; -webkit-mask-image: {!atEnd
+								? 'linear-gradient(to right, black calc(100% - 40px), transparent 100%)'
+								: 'none'}; mask-image: {!atEnd
+								? 'linear-gradient(to right, black calc(100% - 40px), transparent 100%)'
+								: 'none'};"
+						>
+							{#each memberList as m}
+								<button
+									onclick={() => setMemberFilter(m.nickname)}
+									class="shrink-0 flex flex-col items-center gap-1 cursor-pointer"
+									title={m.nickname}
+								>
+									<div
+										class="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden transition-all {memberFilter ===
+										m.nickname
+											? 'ring-2 ring-red-500 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900'
+											: 'ring-1 ring-slate-300 dark:ring-zinc-600 hover:ring-slate-400 dark:hover:ring-zinc-500'}"
+									>
+										<OptimizedImage
+											src={m.img_small}
+											srcSmall={m.img_small}
+											blurHash={m.blurHash}
+											alt={m.nickname}
+											class="w-full h-full object-cover"
+											noBackground={true}
+										/>
+									</div>
+									<span
+										class="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-12 text-center font-medium"
+									>
+										{m.nickname}
+									</span>
+								</button>
+							{/each}
+						</div>
 					</div>
 				{/if}
 			{/if}
@@ -363,7 +386,9 @@
 					>
 						<Play size={40} class="ml-1" />
 					</div>
-					<h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2">{t('replay.list.empty')}</h2>
+					<h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2">
+						{t('replay.list.empty')}
+					</h2>
 					<p class="text-slate-500 dark:text-slate-400 font-medium max-w-md text-sm">
 						{search || platformFilter !== 'all'
 							? t('replay.list.noSearchResults')
@@ -396,7 +421,7 @@
 										<Play size={20} class="text-red-600 ml-0.5" fill="currentColor" />
 									</div>
 									<a
-										href={"https://jkt48.gemes.in/replay/?v=" + video.youtube_id}
+										href={'https://jkt48.gemes.in/replay/?v=' + video.youtube_id}
 										target="_blank"
 										rel="noopener noreferrer"
 										class="inline-flex items-center gap-1 text-[10px] text-white/80 hover:text-white underline underline-offset-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-300 group/link"
@@ -417,26 +442,26 @@
 							</div>
 							<div class="flex gap-2.5 mt-2.5 px-1">
 								<div class="shrink-0">
-								{#if membersLoading}
-									<div
-										class="w-9 h-9 rounded-full bg-slate-200 dark:bg-zinc-800 animate-pulse"
-									></div>
-								{:else if memberData}
-									<OptimizedImage
-										src={memberData.img_small}
-										srcSmall={memberData.img_small}
-										blurHash={memberData.blurHash}
-										alt={video.member}
-										class="w-9 h-9 rounded-full object-cover"
-										noBackground={true}
-									/>
-								{:else}
-									<div
-										class="w-9 h-9 rounded-full bg-slate-200 dark:bg-zinc-700 flex items-center justify-center"
-									>
-										<User size={16} class="text-slate-400 dark:text-zinc-500" />
-									</div>
-								{/if}
+									{#if membersLoading}
+										<div
+											class="w-9 h-9 rounded-full bg-slate-200 dark:bg-zinc-800 animate-pulse"
+										></div>
+									{:else if memberData}
+										<OptimizedImage
+											src={memberData.img_small}
+											srcSmall={memberData.img_small}
+											blurHash={memberData.blurHash}
+											alt={video.member}
+											class="w-9 h-9 rounded-full object-cover"
+											noBackground={true}
+										/>
+									{:else}
+										<div
+											class="w-9 h-9 rounded-full bg-slate-200 dark:bg-zinc-700 flex items-center justify-center"
+										>
+											<User size={16} class="text-slate-400 dark:text-zinc-500" />
+										</div>
+									{/if}
 								</div>
 								<div class="min-w-0 flex-1">
 									<h3
@@ -461,7 +486,8 @@
 				{#if totalPages > 1}
 					<div class="flex items-center justify-center gap-2 mt-8">
 						<button
-							class="px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer {page === 1
+							class="px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer {page ===
+							1
 								? 'text-slate-400 cursor-not-allowed'
 								: 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800'}"
 							disabled={page === 1}
@@ -475,7 +501,8 @@
 								<span class="px-2 text-slate-400">...</span>
 							{:else}
 								<button
-									class="w-9 h-9 rounded-xl text-xs font-bold transition-all cursor-pointer {page === p
+									class="w-9 h-9 rounded-xl text-xs font-bold transition-all cursor-pointer {page ===
+									p
 										? 'bg-red-600 text-white shadow-md shadow-red-600/20'
 										: 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800'}"
 									onclick={() => goToPage(p as number)}
@@ -486,7 +513,8 @@
 						{/each}
 
 						<button
-							class="px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer {page === totalPages
+							class="px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer {page ===
+							totalPages
 								? 'text-slate-400 cursor-not-allowed'
 								: 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800'}"
 							disabled={page === totalPages}

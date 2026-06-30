@@ -1704,6 +1704,8 @@
 	"replay": {
 		"nav": "リプレイ",
 		"list": {
+			"seoTitle": "JKT48 リプレイライブ - 過去の配信を視聴",
+			"seoDescription": "ShowroomとIDN LiveのJKT48ライブ配信リプレイを視聴。MyPage48でお気に入りメンバーの過去の放送をチェック。",
 			"all": "すべて",
 			"idn": "IDN",
 			"showroom": "Showroom",

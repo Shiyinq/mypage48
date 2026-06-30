@@ -1,6 +1,15 @@
 <script lang="ts">
 	import { isImmersive } from '$lib/stores';
-	import { X, Tv, LayoutGrid, Globe, History, Image as ImageIcon, RotateCcw, ChevronRight } from 'lucide-svelte';
+	import {
+		X,
+		Tv,
+		LayoutGrid,
+		Globe,
+		History,
+		Image as ImageIcon,
+		RotateCcw,
+		ChevronRight
+	} from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { page } from '$app/stores';
 	import { afterNavigate } from '$app/navigation';
@@ -284,15 +293,15 @@
 	{/if}
 
 	{#if !isLiveRoom && isHistoryDrawerOpen}
-	<div
-		role="presentation"
-		class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[10000]"
-		onclick={closeHistoryDrawer}
-		onkeydown={() => {}}
-		transition:fade={{ duration: 200 }}
-	></div>
-	<div
-		class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[10001] shadow-2xl border-t border-gray-100 dark:border-white/5 overflow-hidden"
+		<div
+			role="presentation"
+			class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[10000]"
+			onclick={closeHistoryDrawer}
+			onkeydown={() => {}}
+			transition:fade={{ duration: 200 }}
+		></div>
+		<div
+			class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[10001] shadow-2xl border-t border-gray-100 dark:border-white/5 overflow-hidden"
 			transition:fly={{ y: 200, duration: 250, opacity: 0 }}
 		>
 			<div

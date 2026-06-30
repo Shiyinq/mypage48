@@ -1706,6 +1706,8 @@
 	"replay": {
 		"nav": "Replay",
 		"list": {
+			"seoTitle": "JKT48 Replay Live - Watch Past Streams",
+			"seoDescription": "Watch JKT48 live stream replays from Showroom and IDN Live. Catch up on past broadcasts of your favorite members on MyPage48.",
 			"all": "All",
 			"idn": "IDN",
 			"showroom": "Showroom",
