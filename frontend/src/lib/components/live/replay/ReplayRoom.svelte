@@ -13,6 +13,8 @@
 		Tv,
 		PanelRightClose,
 		PanelRightOpen,
+		PanelBottomClose,
+		PanelBottomOpen,
 		MessageCircle,
 		Calendar,
 		ExternalLink
@@ -93,9 +95,9 @@
 					autoplay: 1,
 					mute: 1,
 					rel: 0,
-					modestbranding: 1,
 					controls: 1,
 					playsinline: 1,
+					fs: 1,
 					iv_load_policy: 3,
 					cc_load_policy: 0,
 					origin: window.location.origin
@@ -261,17 +263,22 @@
 					title={chatVisible ? t('replay.room.hideChat') : t('replay.room.showChat')}
 				>
 					{#if chatVisible}
-						<PanelRightClose size={18} />
+						<PanelBottomClose size={18} />
 					{:else}
-						<PanelRightOpen size={18} />
+						<PanelBottomOpen size={18} />
 					{/if}
 				</button>
 			</div>
 		</div>
 
+		<!--
+			`overflow-clip` + `rounded-*` on mobile breaks YouTube touch/click events on the iframe,
+			preventing the native player controls from appearing on tap.
+			Rounded corners & overflow-clip are intentionally desktop-only.
+		-->
 		<div
 			bind:this={videoContainer}
-			class="relative flex-1 bg-black rounded-xl sm:rounded-3xl overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm group"
+			class="relative flex-1 bg-black sm:rounded-3xl sm:overflow-clip border border-gray-100 dark:border-zinc-800 shadow-sm"
 		>
 			{#if !initAttempted}
 				<div
@@ -321,7 +328,7 @@
 			<div
 				bind:this={playerContainer}
 				id="replay-youtube-player"
-				class="relative w-full h-full flex items-center justify-center bg-black overflow-hidden"
+				class="relative w-full h-full bg-black"
 			></div>
 
 		</div>
@@ -350,5 +357,4 @@
 	{/if}
 </div>
 
-<style>
-</style>
+<style></style>
