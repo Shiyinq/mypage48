@@ -52,11 +52,13 @@
 
 	let isTheater = $derived(basePath.startsWith('/theater'));
 
+	const shouldManage = false;
+
 	$effect(() => {
-		isImmersive.set(true);
+		if (shouldManage) isImmersive.set(true);
 		document.body.style.overflow = 'hidden';
 		return () => {
-			isImmersive.set(false);
+			if (shouldManage) isImmersive.set(false);
 			document.body.style.overflow = '';
 		};
 	});
