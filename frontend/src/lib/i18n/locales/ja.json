@@ -1700,5 +1700,61 @@
 		"title": "接続が切れました",
 		"message": "インターネット接続がないため、ページを読み込めませんでした。Wi-Fiまたはモバイルデータ通信を確認してください。",
 		"retry": "再試行"
+	},
+	"replay": {
+		"nav": "リプレイ",
+		"list": {
+			"all": "すべて",
+			"idn": "IDN",
+			"showroom": "Showroom",
+			"searchPlaceholder": "タイトルまたはメンバーを検索...",
+			"allMembers": "すべてのメンバー",
+			"loadError": "リプレイの読み込みに失敗しました",
+			"retry": "再試行",
+			"empty": "リプレイがありません",
+			"noSearchResults": "この検索に該当する結果はありません",
+			"noVideos": "まだリプレイ動画はありません",
+			"sourceDomain": "jkt48.gemes.in",
+			"prev": "前へ",
+			"next": "次へ",
+			"originalSource": "オリジナルソース: jkt48.gemes.in"
+		},
+		"room": {
+			"seoTitle": "{member} - リプレイ JKT48 Live",
+			"seoTitleFallback": "リプレイ JKT48 Live",
+			"seoDesc": "{member}のリプレイを視聴: {title}",
+			"fallbackTitle": "リプレイ LIVE",
+			"openInYoutube": "YouTubeで開く",
+			"loadingTitle": "リプレイを読み込み中",
+			"loadingSubtext": "YouTube ストリーム",
+			"videoNotFound": "動画が見つかりません",
+			"videoNotFoundDesc": "リプレイは利用できないか、削除されました",
+			"back": "戻る",
+			"playerLabel": "リプレイ動画プレーヤー",
+			"play": "再生",
+			"pause": "一時停止",
+			"unmute": "ミュート解除",
+			"mute": "ミュート",
+			"pip": "PiP",
+			"screenshot": "スクリーンショット",
+			"theme": "テーマ",
+			"exitFocus": "フォーカス解除",
+			"focusMode": "フォーカスモード",
+			"exit": "終了",
+			"fullscreen": "全画面",
+			"hideChat": "チャットを隠す",
+			"showChat": "チャットを表示",
+			"chatNotAvailable": "チャットリプレイは利用できません"
+		},
+		"chat": {
+			"error": "この動画ではチャットリプレイは利用できません",
+			"header": "チャットリプレイ",
+			"messages": "メッセージ",
+			"searchPlaceholder": "ユーザー名、メッセージ、ギフトを検索...",
+			"loading": "チャットリプレイを読み込み中...",
+			"startPlaying": "動画を再生してチャットを表示",
+			"notFound": "チャットが見つかりません",
+			"noChatAtTime": "この時間のチャットはありません"
+		}
 	}
 }

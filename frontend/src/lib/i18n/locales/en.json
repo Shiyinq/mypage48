@@ -1702,5 +1702,61 @@
 		"title": "Connection Lost",
 		"message": "The browser failed to load this page because there is no internet connection. Please check your Wi-Fi or cellular data.",
 		"retry": "Try Again"
+	},
+	"replay": {
+		"nav": "Replay",
+		"list": {
+			"all": "All",
+			"idn": "IDN",
+			"showroom": "Showroom",
+			"searchPlaceholder": "Search title or member...",
+			"allMembers": "All members",
+			"loadError": "Failed to load replay",
+			"retry": "Retry",
+			"empty": "No replay",
+			"noSearchResults": "No results for this search",
+			"noVideos": "No replay videos available yet",
+			"sourceDomain": "jkt48.gemes.in",
+			"prev": "Prev",
+			"next": "Next",
+			"originalSource": "Original Source: jkt48.gemes.in"
+		},
+		"room": {
+			"seoTitle": "{member} - Replay JKT48 Live",
+			"seoTitleFallback": "Replay JKT48 Live",
+			"seoDesc": "Watch replay of {member}: {title}",
+			"fallbackTitle": "Replay LIVE",
+			"openInYoutube": "Open in YouTube",
+			"loadingTitle": "Loading Replay",
+			"loadingSubtext": "YouTube Stream",
+			"videoNotFound": "Video not found",
+			"videoNotFoundDesc": "Replay not available or has been removed",
+			"back": "Back",
+			"playerLabel": "Replay Video Player",
+			"play": "Play",
+			"pause": "Pause",
+			"unmute": "Unmute",
+			"mute": "Mute",
+			"pip": "PiP",
+			"screenshot": "Screenshot",
+			"theme": "Theme",
+			"exitFocus": "Exit Focus",
+			"focusMode": "Focus Mode",
+			"exit": "Exit",
+			"fullscreen": "Fullscreen",
+			"hideChat": "Hide Chat",
+			"showChat": "Show Chat",
+			"chatNotAvailable": "Chat replay not available"
+		},
+		"chat": {
+			"error": "Chat replay not available for this video",
+			"header": "CHAT REPLAY",
+			"messages": "MESSAGES",
+			"searchPlaceholder": "Search username, message or gift...",
+			"loading": "Loading chat replay...",
+			"startPlaying": "Play the video to see chat replay",
+			"notFound": "Chat not found",
+			"noChatAtTime": "No chat at this time"
+		}
 	}
 }

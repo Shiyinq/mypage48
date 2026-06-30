@@ -1706,5 +1706,61 @@
 		"title": "Koneksi Terputus",
 		"message": "Browser gagal memuat data halaman ini karena tidak ada koneksi internet. Silakan periksa jaringan Wi-Fi atau data seluler Anda.",
 		"retry": "Coba Lagi"
+	},
+	"replay": {
+		"nav": "Replay",
+		"list": {
+			"all": "Semua",
+			"idn": "IDN",
+			"showroom": "Showroom",
+			"searchPlaceholder": "Cari judul atau member...",
+			"allMembers": "Semua member",
+			"loadError": "Gagal memuat replay",
+			"retry": "Coba lagi",
+			"empty": "Tidak ada replay",
+			"noSearchResults": "Tidak ada hasil untuk pencarian ini",
+			"noVideos": "Belum ada replay video yang tersedia",
+			"sourceDomain": "jkt48.gemes.in",
+			"prev": "Prev",
+			"next": "Next",
+			"originalSource": "Original Source: jkt48.gemes.in"
+		},
+		"room": {
+			"seoTitle": "{member} - Replay JKT48 Live",
+			"seoTitleFallback": "Replay JKT48 Live",
+			"seoDesc": "Tonton replay {member}: {title}",
+			"fallbackTitle": "Replay LIVE",
+			"openInYoutube": "Buka di YouTube",
+			"loadingTitle": "Memuat Replay",
+			"loadingSubtext": "YouTube Stream",
+			"videoNotFound": "Video tidak ditemukan",
+			"videoNotFoundDesc": "Replay tidak tersedia atau telah dihapus",
+			"back": "Kembali",
+			"playerLabel": "Replay Video Player",
+			"play": "Putar",
+			"pause": "Jeda",
+			"unmute": "Aktifkan Suara",
+			"mute": "Nonaktifkan Suara",
+			"pip": "PiP",
+			"screenshot": "Screenshot",
+			"theme": "Tema",
+			"exitFocus": "Keluar Fokus",
+			"focusMode": "Mode Fokus",
+			"exit": "Keluar",
+			"fullscreen": "Layar Penuh",
+			"hideChat": "Sembunyikan Chat",
+			"showChat": "Tampilkan Chat",
+			"chatNotAvailable": "Chat replay tidak tersedia"
+		},
+		"chat": {
+			"error": "Chat replay tidak tersedia untuk video ini",
+			"header": "CHAT REPLAY",
+			"messages": "PESAN",
+			"searchPlaceholder": "Cari username, pesan atau gift...",
+			"loading": "Memuat chat replay...",
+			"startPlaying": "Putar video untuk melihat chat replay",
+			"notFound": "Chat tidak ditemukan",
+			"noChatAtTime": "Belum ada chat di waktu ini"
+		}
 	}
 }
