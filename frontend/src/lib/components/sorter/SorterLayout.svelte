@@ -48,8 +48,8 @@
 			disabled?: boolean;
 		}> = [
 			{
-				label: t('theater.sorter.startNew') || 'Mulai Sorter',
-				mobileLabel: 'Sorter',
+				label: t('nav.startSorter') || 'Mulai Sorter',
+				mobileLabel: t('nav.sorter') || 'Sorter',
 				href: basePath,
 				exact: true,
 				icon: ArrowUpDown,
@@ -58,8 +58,8 @@
 		];
 
 		items.push({
-			label: t('theater.sorter.history') || 'Riwayat Sorter',
-			mobileLabel: 'Riwayat',
+			label: t('nav.sorterHistory') || 'Riwayat Sorter',
+			mobileLabel: t('nav.history') || 'History',
 			href: `${basePath}/history`,
 			exact: false,
 			match: (path: string) => path.startsWith(`${basePath}/history`),
