@@ -388,25 +388,25 @@
 										{member.rank || i + 4}
 									</div>
 
-										<div
-											class="relative w-11 aspect-[3/4] rounded-lg overflow-hidden shrink-0 border border-slate-100 dark:border-zinc-800 z-30 shadow-sm"
-											style="container-type:inline-size"
-										>
-											{#if flippedCards[idx]}
-												<div
-													in:fade={{ duration: 200 }}
-													out:fade={{ duration: 200 }}
-													class="absolute inset-0"
-												>
-													<SorterCardBack rank={member.rank || i + 4} />
-												</div>
-									{:else}
-										<div
-											in:fade={{ duration: 200 }}
-											out:fade={{ duration: 200 }}
-											class="absolute inset-0 shiny-card"
-										>
-											<OptimizedImage
+									<div
+										class="relative w-11 aspect-[3/4] rounded-lg overflow-hidden shrink-0 border border-slate-100 dark:border-zinc-800 z-30 shadow-sm"
+										style="container-type:inline-size"
+									>
+										{#if flippedCards[idx]}
+											<div
+												in:fade={{ duration: 200 }}
+												out:fade={{ duration: 200 }}
+												class="absolute inset-0"
+											>
+												<SorterCardBack rank={member.rank || i + 4} />
+											</div>
+										{:else}
+											<div
+												in:fade={{ duration: 200 }}
+												out:fade={{ duration: 200 }}
+												class="absolute inset-0 shiny-card"
+											>
+												<OptimizedImage
 													src={getExternalMediaUrl(member.img || '') || ''}
 													alt={member.name}
 													class="w-full h-full object-cover"

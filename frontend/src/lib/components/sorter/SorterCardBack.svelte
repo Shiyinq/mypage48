@@ -10,7 +10,8 @@
 	class="relative w-full h-full flex flex-col items-center p-[8%] bg-gradient-to-br from-red-800 to-red-950 overflow-hidden"
 >
 	<span
-		class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-center leading-none select-none drop-shadow-md text-[clamp(18px,7cqw,48px)] {rank === 1
+		class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-center leading-none select-none drop-shadow-md text-[clamp(18px,7cqw,48px)] {rank ===
+		1
 			? 'text-yellow-400'
 			: rank === 2
 				? 'text-slate-300'
