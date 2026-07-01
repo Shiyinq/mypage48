@@ -1,5 +1,14 @@
 <script lang="ts">
-	import { Heart, X, Calendar, MapPin, Sparkles, Trash2 } from 'lucide-svelte';
+	import {
+		Heart,
+		X,
+		Calendar,
+		MapPin,
+		Sparkles,
+		Trash2,
+		Download,
+		LoaderCircle
+	} from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { formatDate } from '$lib/i18n';
 	import type { MemoryItem } from '$lib/types';
@@ -13,6 +22,32 @@
 	}
 
 	let { selectedImage = null, onClose, onfavoriteToggle, onDeletePhoto }: Props = $props();
+	let isDownloading = $state(false);
+
+	async function downloadImage() {
+		if (!selectedImage || isDownloading) return;
+		isDownloading = true;
+		try {
+			const proxyUrl = `/proxy/image?url=${encodeURIComponent(selectedImage.imageUrl)}`;
+			const response = await fetch(proxyUrl);
+			const blob = await response.blob();
+			const url = window.URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			const filename =
+				selectedImage.imageUrl.split('/').pop()?.split('?')[0] || selectedImage.title || 'image';
+			link.download = filename.includes('.') ? filename : `${filename}.jpg`;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			window.URL.revokeObjectURL(url);
+		} catch (error) {
+			console.error('Download failed:', error);
+			window.open(`/proxy/image?url=${encodeURIComponent(selectedImage.imageUrl)}`, '_blank');
+		} finally {
+			isDownloading = false;
+		}
+	}
 </script>
 
 {#if selectedImage}
@@ -61,25 +96,6 @@
 				<div
 					class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium text-white/90 mt-3"
 				>
-					{#if onDeletePhoto}
-						<div
-							onclick={(e: MouseEvent) => {
-								e.stopPropagation();
-								onDeletePhoto(image);
-							}}
-							onkeydown={(e: KeyboardEvent) => {
-								if (e.key === 'Enter') {
-									onDeletePhoto(image);
-								}
-							}}
-							class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full backdrop-blur-md border border-white/10 bg-white/10 cursor-pointer transition-transform hover:scale-105 hover:bg-red-500/20 hover:border-red-500/30 group"
-							role="button"
-							tabindex="0"
-							aria-label="Delete photo"
-						>
-							<Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/70 group-hover:text-red-400" />
-						</div>
-					{/if}
 					<span
 						class="flex items-center gap-1.5 bg-white/10 px-2.5 sm:px-3 py-1.5 rounded-full backdrop-blur-md border border-white/10"
 					>
@@ -100,6 +116,46 @@
 						{/if}
 						{image.subtitle}
 					</span>
+				</div>
+				<div class="flex items-center justify-center gap-2 sm:gap-2 mt-2">
+					{#if onDeletePhoto}
+						<div
+							onclick={(e: MouseEvent) => {
+								e.stopPropagation();
+								onDeletePhoto(image);
+							}}
+							onkeydown={(e: KeyboardEvent) => {
+								if (e.key === 'Enter') {
+									onDeletePhoto(image);
+								}
+							}}
+							class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full backdrop-blur-md border border-white/10 bg-white/10 cursor-pointer transition-transform hover:scale-105 hover:bg-red-500/20 hover:border-red-500/30 group"
+							role="button"
+							tabindex="0"
+							aria-label="Delete photo"
+						>
+							<Trash2 class="w-4 h-4 sm:w-5 sm:h-5 text-white/70 group-hover:text-red-400" />
+						</div>
+					{/if}
+					<div
+						onclick={(e: MouseEvent) => {
+							e.stopPropagation();
+							downloadImage();
+						}}
+						onkeydown={(e: KeyboardEvent) => {
+							if (e.key === 'Enter') downloadImage();
+						}}
+						class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full backdrop-blur-md border border-white/10 bg-white/10 cursor-pointer transition-transform hover:scale-105 hover:bg-pink-500/20 hover:border-pink-500/30 group disabled:opacity-50 disabled:cursor-not-allowed"
+						role="button"
+						tabindex="0"
+						aria-label="Download photo"
+					>
+						{#if isDownloading}
+							<LoaderCircle class="w-4 h-4 sm:w-5 sm:h-5 text-pink-400 animate-spin" />
+						{:else}
+							<Download class="w-4 h-4 sm:w-5 sm:h-5 text-white/70 group-hover:text-pink-400" />
+						{/if}
+					</div>
 					<div
 						onclick={(e: MouseEvent) => {
 							e.stopPropagation();
@@ -108,14 +164,14 @@
 						onkeydown={(e: KeyboardEvent) => {
 							if (e.key === 'Enter') onfavoriteToggle?.(image);
 						}}
-						class={'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full backdrop-blur-md border border-white/10 cursor-pointer transition-transform hover:scale-105 ' +
+						class={'flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full backdrop-blur-md border border-white/10 cursor-pointer transition-transform hover:scale-105 ' +
 							(image.is_favorite ? 'bg-red-500/20' : 'bg-white/10')}
 						role="button"
 						tabindex="0"
 						aria-label="Toggle favorite"
 					>
 						<Heart
-							class={'w-3.5 h-3.5 sm:w-4 sm:h-4 ' +
+							class={'w-4 h-4 sm:w-5 sm:h-5 ' +
 								(image.is_favorite ? 'fill-current text-red-400' : 'text-white/70')}
 						/>
 					</div>
