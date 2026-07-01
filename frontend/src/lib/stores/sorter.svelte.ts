@@ -101,6 +101,14 @@ export function createSorter(
 			const gens = await membersStore.getGenerations();
 			generations = gens.sort((a, b) => parseInt(a) - parseInt(b));
 			selectedGenerations = new Set();
+
+			// Preload medium images for all members as soon as page opens
+			for (const m of allMembers) {
+				if (m.img_medium) {
+					const url = getExternalMediaUrl(m.img_medium);
+					if (url) new Image().src = url;
+				}
+			}
 		} catch {
 			showToast(t('theater.members.errorTitle') || 'Failed to load members', 'error');
 		} finally {
@@ -133,14 +141,6 @@ export function createSorter(
 			return;
 		}
 		selectedMembers = [...selectedMembers].sort(() => Math.random() - 0.5);
-
-		// Preload member images for smoother card transitions
-		for (const m of selectedMembers) {
-			if (m.img) {
-				const url = getExternalMediaUrl(m.img);
-				if (url) new Image().src = url;
-			}
-		}
 
 		lstMember = selectedMembers.map((_, i) => [i]);
 		rec = [];
