@@ -187,7 +187,7 @@
 					}`}
 				>
 					<OptimizedImage
-						src={getExternalMediaUrl(rightMember?.img_medium) || ''}
+						src={getExternalMediaUrl(rightMember?.img) || ''}
 						blurHash={rightMember?.blurHash || ''}
 						alt={rightMember?.name || ''}
 						class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
