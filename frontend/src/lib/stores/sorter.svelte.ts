@@ -4,6 +4,7 @@ import { showToast } from '$lib/stores';
 import { sorterApi, type SorterResponse } from '$lib/apis/sorter';
 import { goto } from '$app/navigation';
 import { t as translate } from '$lib/i18n';
+import { getExternalMediaUrl } from '$lib/utils/media';
 /**
  * Calculates the total number of element moves in the sorter's merge sort implementation.
  */
@@ -132,6 +133,15 @@ export function createSorter(
 			return;
 		}
 		selectedMembers = [...selectedMembers].sort(() => Math.random() - 0.5);
+
+		// Preload member images for smoother card transitions
+		for (const m of selectedMembers) {
+			if (m.img) {
+				const url = getExternalMediaUrl(m.img);
+				if (url) new Image().src = url;
+			}
+		}
+
 		lstMember = selectedMembers.map((_, i) => [i]);
 		rec = [];
 		nrec = 0;

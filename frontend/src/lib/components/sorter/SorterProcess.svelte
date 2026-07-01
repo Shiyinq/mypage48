@@ -108,8 +108,10 @@
 				>
 					<OptimizedImage
 						src={getExternalMediaUrl(leftMember?.img) || ''}
+						blurHash={leftMember?.blurHash || ''}
 						alt={leftMember?.name || ''}
 						class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+						sizes="(max-width: 640px) 100vw, 50vw"
 					/>
 					<img
 						src={getMemberFrame(leftMember?.member_type) || ''}
@@ -185,9 +187,11 @@
 					}`}
 				>
 					<OptimizedImage
-						src={getExternalMediaUrl(rightMember?.img) || ''}
+						src={getExternalMediaUrl(rightMember?.img_medium) || ''}
+						blurHash={rightMember?.blurHash || ''}
 						alt={rightMember?.name || ''}
 						class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+						sizes="(max-width: 640px) 100vw, 50vw"
 					/>
 					<img
 						src={getMemberFrame(rightMember?.member_type) || ''}
