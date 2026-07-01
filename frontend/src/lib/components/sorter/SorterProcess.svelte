@@ -107,7 +107,7 @@
 					}`}
 				>
 					<OptimizedImage
-						src={getExternalMediaUrl(leftMember?.img) || ''}
+						src={getExternalMediaUrl(leftMember?.img_medium) || ''}
 						blurHash={leftMember?.blurHash || ''}
 						alt={leftMember?.name || ''}
 						class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
@@ -187,7 +187,7 @@
 					}`}
 				>
 					<OptimizedImage
-						src={getExternalMediaUrl(rightMember?.img) || ''}
+						src={getExternalMediaUrl(rightMember?.img_medium) || ''}
 						blurHash={rightMember?.blurHash || ''}
 						alt={rightMember?.name || ''}
 						class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
