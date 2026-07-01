@@ -170,7 +170,7 @@
 	{#if !isLiveRoom}
 		<!-- Main Live Navbar -->
 		<div
-			class="shrink-0 w-full z-[10000] border-b border-black/5 dark:border-white/5 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl"
+			class="fixed top-0 left-0 right-0 w-full z-[10000] border-b border-black/5 dark:border-white/5 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl transition-all duration-300 ease-in-out"
 		>
 			<div
 				class="max-w-7xl mx-auto w-full h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8"
@@ -232,7 +232,7 @@
 	{/if}
 
 	<!-- Content Area -->
-	<div class="flex-1 relative overflow-hidden">
+	<div class="flex-1 relative overflow-hidden pt-12 sm:pt-16">
 		{@render children()}
 	</div>
 

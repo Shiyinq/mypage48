@@ -269,7 +269,7 @@
 
 <div bind:this={containerRef} class="h-full w-full overflow-y-auto pt-4 px-4 sm:px-6 lg:px-8 pb-28">
 	<div class="max-w-7xl mx-auto w-full">
-		<div class="flex flex-col gap-6">
+		<div class="flex flex-col gap-2">
 			{#if !(replayStore.loading && replayStore.videos.length === 0) && !(replayStore.error && replayStore.videos.length === 0)}
 				{#if membersStore.isLoading}
 					<div class="flex gap-3 py-2 px-1">
