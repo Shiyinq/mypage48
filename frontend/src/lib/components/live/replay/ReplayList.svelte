@@ -9,7 +9,7 @@
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getPlatformIcon } from '$lib/constants/live';
-	import { Search, Play, User, List, ExternalLink } from 'lucide-svelte';
+	import { Search, Play, RotateCcw, User, List, ExternalLink } from 'lucide-svelte';
 
 	const { t } = useTranslation();
 
@@ -270,8 +270,8 @@
 <div bind:this={containerRef} class="h-full w-full overflow-y-auto pt-4 px-4 sm:px-6 lg:px-8 pb-28">
 	<div class="max-w-7xl mx-auto w-full">
 		<div class="flex flex-col gap-2">
-			{#if !(replayStore.loading && replayStore.videos.length === 0) && !(replayStore.error && replayStore.videos.length === 0)}
-				{#if membersStore.isLoading}
+			{#if !(replayStore.error && replayStore.videos.length === 0)}
+				{#if memberList.length === 0}
 					<div class="flex gap-3 py-2 px-1">
 						{#each Array(5) as _}
 							<div class="shrink-0 flex flex-col items-center gap-1">
@@ -282,7 +282,7 @@
 							</div>
 						{/each}
 					</div>
-				{:else if memberList.length > 0}
+				{:else}
 					<div class="flex gap-3 py-2 px-1">
 						<div class="shrink-0">
 							<button
@@ -363,7 +363,7 @@
 					<div
 						class="w-24 h-24 rounded-full bg-slate-100 dark:bg-zinc-900 flex items-center justify-center mb-6 text-slate-300 dark:text-zinc-800"
 					>
-						<Play size={40} class="ml-1" />
+						<RotateCcw size={40} />
 					</div>
 					<h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2">
 						{t('replay.list.loadError')}
@@ -383,7 +383,7 @@
 					<div
 						class="w-24 h-24 rounded-full bg-slate-100 dark:bg-zinc-900 flex items-center justify-center mb-6 text-slate-300 dark:text-zinc-800"
 					>
-						<Play size={40} class="ml-1" />
+						<RotateCcw size={40} />
 					</div>
 					<h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2">
 						{t('replay.list.empty')}
