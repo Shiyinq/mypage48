@@ -1,0 +1,17 @@
+# Output recordings (large files + subfolders)
+recordings/raw/*
+!recordings/raw/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Env
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
