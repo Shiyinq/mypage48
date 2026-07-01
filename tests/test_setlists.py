@@ -203,7 +203,7 @@ async def test_get_setlist_detail(client: AsyncClient, db, seed_setlists_db, cre
     two_shots = data.get("twoShots", [])
     assert len(two_shots) == 1
     assert two_shots[0]["name"] == "Azizi Asadel"
-    assert two_shots[0]["count"] == 1
+    assert two_shots[0]["date"] == "2023-01-15"
     assert two_shots[0]["imageUrl"].startswith("http")
     assert two_shots[0]["imageUrl_medium"].startswith("http")
     assert two_shots[0]["imageUrl_small"].startswith("http")

@@ -54,7 +54,7 @@ export interface TicketItem {
 
 export interface TwoShotHistoryItem {
 	name: string;
-	count: number;
+	date: string;
 	imageUrl?: string;
 	imageUrl_medium?: string;
 	imageUrl_small?: string;

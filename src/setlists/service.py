@@ -270,8 +270,8 @@ class SetlistsService:
                 else None
             )
 
-            # Count total 2-shots and build 2-shots history
-            two_shots_dict = {}
+            # Build 2-shots history (individual entries, no grouping)
+            two_shots_list = []
             total_2shot = 0
             for t in matched_tickets:
                 two_shot = t.get("two_shot")
@@ -279,18 +279,12 @@ class SetlistsService:
                     total_2shot += 1
                     name = two_shot.get("member_name")
                     if name:
-                        if name not in two_shots_dict:
-                            two_shots_dict[name] = {
-                                "name": name,
-                                "count": 0,
-                                "imageUrl": two_shot.get("imageUrl"),
-                                "blurHash": two_shot.get("blurHash"),
-                            }
-                        two_shots_dict[name]["count"] += 1
-
-            two_shots_list = sorted(
-                two_shots_dict.values(), key=lambda x: x["count"], reverse=True
-            )
+                        two_shots_list.append({
+                            "name": name,
+                            "date": t.get("event", {}).get("date", ""),
+                            "imageUrl": two_shot.get("imageUrl"),
+                            "blurHash": two_shot.get("blurHash"),
+                        })
 
             # Resolve image variants for 2-shots
             async def _resolve_twoshot(item: dict):

@@ -5,6 +5,7 @@
 
 	import { ticketsStore, showToast } from '$lib/stores';
 	import { setlistsStore } from '$lib/stores/theater.svelte';
+	import { formatDate } from '$lib/i18n';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { Ticket } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
@@ -490,7 +491,13 @@
 														<div class="font-bold text-gray-900 dark:text-white truncate">
 															{item.name}
 														</div>
-														<div class="text-sm font-semibold text-pink-500">{item.count}x</div>
+														<div class="text-sm text-gray-500 dark:text-gray-400">
+															{formatDate(item.date, {
+																day: 'numeric',
+																month: 'short',
+																year: 'numeric'
+															})}
+														</div>
 													</div>
 												</div>
 											{/each}
