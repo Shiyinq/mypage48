@@ -46,7 +46,7 @@ class RecordingManager:
         if not self.sessions:
             return
 
-        print("── Recording Progress ────────────────────────────")
+        print("Recording Progress:")
         for live_id, session in self.sessions.items():
             elapsed = time.time() - session.recording_start_time
             duration_str = self._format_duration(elapsed)
@@ -63,13 +63,7 @@ class RecordingManager:
                 except Exception:
                     pass
 
-            member_short = session.member_name[:20]
-            print(
-                f"  {member_short:>20} | {session.platform:<8} | "
-                f"{duration_str:>8} | {self._format_size(file_size):>8} | "
-                f"{chat_count:>5} chats"
-            )
-        print("──────────────────────────────────────────────────")
+            print(f"  {session.member_name} ({session.platform}) | {duration_str} | {self._format_size(file_size)} | {chat_count} chats")
 
     @staticmethod
     def _format_duration(seconds: float) -> str:
