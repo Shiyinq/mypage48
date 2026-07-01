@@ -85,8 +85,9 @@
 
 	const showBottomNav = $derived(
 		!(
-			sorterNavbarStore.pageType === 'sorter' &&
-			(sorterNavbarStore.sorterState === 'sorting' || sorterNavbarStore.sorterState === 'results')
+			sorterNavbarStore.pageType === 'history-detail' ||
+			(sorterNavbarStore.pageType === 'sorter' &&
+				(sorterNavbarStore.sorterState === 'sorting' || sorterNavbarStore.sorterState === 'results'))
 		)
 	);
 
