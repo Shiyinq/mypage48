@@ -120,6 +120,8 @@
 			name: found?.name || name,
 			nickname: found?.nickname || name,
 			img: found?.img || '',
+			img_medium: found?.img_medium || '',
+			blurHash: found?.blurHash || '',
 			member_type: found?.member_type || 'JKT48',
 			generation: found?.generation || ''
 		};

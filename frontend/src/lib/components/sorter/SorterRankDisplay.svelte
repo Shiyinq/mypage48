@@ -15,6 +15,8 @@
 		name: string;
 		nickname?: string;
 		img?: string;
+		img_medium?: string;
+		blurHash?: string;
 		member_type?: string;
 		generation?: string;
 		rank?: number;
@@ -124,9 +126,11 @@
 										class:shiny-card={i <= 2}
 									>
 										<OptimizedImage
-											src={getExternalMediaUrl(member.img || '') || ''}
+											src={getExternalMediaUrl(member.img_medium || '') || ''}
+											blurHash={member.blurHash || ''}
 											alt={member.name}
 											class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+											sizes="(max-width: 640px) 100vw, 50vw"
 										/>
 
 										<img
@@ -198,9 +202,11 @@
 											class="absolute inset-0 shiny-card"
 										>
 											<OptimizedImage
-												src={getExternalMediaUrl(results[0].img || '') || ''}
+												src={getExternalMediaUrl(results[0].img_medium || '') || ''}
+												blurHash={results[0].blurHash || ''}
 												alt={results[0].name}
 												class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+												sizes="(max-width: 640px) 100vw, 50vw"
 											/>
 											<img
 												src={getMemberFrame(results[0].member_type || '') || ''}
@@ -265,9 +271,11 @@
 											class="absolute inset-0 shiny-card"
 										>
 											<OptimizedImage
-												src={getExternalMediaUrl(results[1].img || '') || ''}
+												src={getExternalMediaUrl(results[1].img_medium || '') || ''}
+												blurHash={results[1].blurHash || ''}
 												alt={results[1].name}
 												class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+												sizes="(max-width: 640px) 100vw, 50vw"
 											/>
 											<img
 												src={getMemberFrame(results[1].member_type || '') || ''}
@@ -331,9 +339,11 @@
 											class="absolute inset-0 shiny-card"
 										>
 											<OptimizedImage
-												src={getExternalMediaUrl(results[2].img || '') || ''}
+												src={getExternalMediaUrl(results[2].img_medium || '') || ''}
+												blurHash={results[2].blurHash || ''}
 												alt={results[2].name}
 												class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+												sizes="(max-width: 640px) 100vw, 50vw"
 											/>
 											<img
 												src={getMemberFrame(results[2].member_type || '') || ''}
@@ -407,9 +417,11 @@
 												class="absolute inset-0 shiny-card"
 											>
 												<OptimizedImage
-													src={getExternalMediaUrl(member.img || '') || ''}
+													src={getExternalMediaUrl(member.img_medium || '') || ''}
+													blurHash={member.blurHash || ''}
 													alt={member.name}
 													class="w-full h-full object-cover"
+													sizes="(max-width: 640px) 100vw, 50vw"
 												/>
 												<img
 													src={getMemberFrame(member.member_type || '') || ''}
