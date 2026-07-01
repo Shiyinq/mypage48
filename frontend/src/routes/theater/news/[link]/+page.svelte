@@ -25,6 +25,8 @@
 	import DOMPurify from 'isomorphic-dompurify';
 	import { onMount } from 'svelte';
 	import { newsStore, newsList } from '$lib/stores/news.svelte';
+	import { infiniteScroll } from '$lib/actions/infiniteScroll';
+	import { NoMoreData } from '$lib/components';
 
 	interface Props {
 		data: PageData;
@@ -52,7 +54,7 @@
 	}
 
 	onMount(() => {
-		if (newsList.value.length === 0) {
+		if (newsList.value.length === 0 || newsStore.pagination.current_page !== 1) {
 			newsStore.load(1);
 		}
 	});
@@ -226,6 +228,22 @@
 							</a>
 						{/each}
 					</div>
+
+					{#if newsStore.pagination.next_page}
+						<div
+							use:infiniteScroll
+							onintersect={() => newsStore.loadMore()}
+							class="w-full py-4 flex justify-center"
+						>
+							{#if newsStore.isLoading}
+								<span
+									class="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"
+								></span>
+							{/if}
+						</div>
+					{:else if newsList.value.length > 0}
+						<NoMoreData theme="red" padding="py-8" />
+					{/if}
 				{/if}
 			</div>
 		</aside>
