@@ -68,7 +68,7 @@ class TicketSeat(BaseModel):
 
 class TwoShotHistoryItem(BaseModel):
     name: str
-    count: int
+    date: str
     imageUrl: Optional[str] = None
     imageUrl_medium: Optional[str] = None
     imageUrl_small: Optional[str] = None
