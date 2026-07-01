@@ -73,7 +73,7 @@
 	<div class="flex items-center gap-2">
 		{#if isEditingTitle}
 			<div
-				class="flex-1 max-w-2xl bg-zinc-50 dark:bg-zinc-800/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 border border-zinc-200 dark:border-zinc-700/50 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 transition-colors shadow-sm"
+				class="flex-1 max-w-2xl bg-zinc-50 dark:bg-zinc-800/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 border border-zinc-200 dark:border-zinc-700/50 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 transition-colors"
 			>
 				<div
 					class="flex-1 relative flex items-center bg-white dark:bg-zinc-900 rounded-lg sm:rounded-xl border border-zinc-200 dark:border-zinc-700 focus-within:border-red-600 dark:focus-within:border-red-600 focus-within:ring-2 focus-within:ring-red-600/20 transition-all overflow-hidden group"
@@ -151,7 +151,7 @@
 	<div class="flex items-start gap-2">
 		{#if isEditingDescription}
 			<div
-				class="w-full max-w-2xl bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-2 sm:p-3 border border-zinc-200 dark:border-zinc-700/50 flex flex-col sm:flex-row items-end sm:items-start gap-2 sm:gap-3 transition-colors shadow-sm"
+				class="w-full max-w-2xl bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-2 sm:p-3 border border-zinc-200 dark:border-zinc-700/50 flex flex-col sm:flex-row items-end sm:items-start gap-2 sm:gap-3 transition-colors"
 			>
 				<div
 					class="flex-1 w-full relative flex items-start bg-white dark:bg-zinc-900 rounded-lg sm:rounded-xl border border-zinc-200 dark:border-zinc-700 focus-within:border-red-600 dark:focus-within:border-red-600 focus-within:ring-2 focus-within:ring-red-600/20 transition-all overflow-hidden group"
