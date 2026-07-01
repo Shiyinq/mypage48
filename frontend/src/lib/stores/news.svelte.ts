@@ -22,6 +22,7 @@ interface NewsState {
 	lastUpdated: number;
 	isLoading: boolean;
 	cache: Record<string, NewsPageCache>;
+	loadedPages: Set<number>;
 }
 
 export interface NewsFilter {
@@ -41,7 +42,8 @@ const getInitialState = (): NewsState => ({
 	error: null,
 	lastUpdated: 0,
 	isLoading: false,
-	cache: {}
+	cache: {},
+	loadedPages: new Set()
 });
 
 const state = $state<NewsState>(getInitialState());
@@ -50,6 +52,7 @@ const newsDedup = createRequestDedup();
 
 function createNewsStore() {
 	let currentRequestId = 0;
+	let loadGeneration = 0;
 
 	return {
 		get list() {
@@ -73,6 +76,7 @@ function createNewsStore() {
 			state.lastUpdated = freshState.lastUpdated;
 			state.isLoading = freshState.isLoading;
 			state.cache = freshState.cache;
+			state.loadedPages = freshState.loadedPages;
 			currentRequestId++;
 			newsDedup.clear();
 		},
@@ -83,6 +87,8 @@ function createNewsStore() {
 			const filterKey = JSON.stringify(currentFilter);
 			const cacheKey = `${page}-${filterKey}`;
 
+			loadGeneration++;
+
 			// Check multi-page cache first
 			const cachedPage = state.cache[cacheKey];
 			if (cachedPage && !forceRefresh && !isCacheExpired(cachedPage.lastUpdated)) {
@@ -92,6 +98,7 @@ function createNewsStore() {
 				state.lastUpdated = cachedPage.lastUpdated;
 				state.isLoading = false;
 				state.error = null;
+				state.loadedPages = new Set([page]);
 				return;
 			}
 
@@ -101,6 +108,7 @@ function createNewsStore() {
 			// If no valid cache or forceRefresh, proceed with loading
 			state.error = null;
 			state.isLoading = true;
+			state.loadedPages = new Set([page]);
 
 			// REPLACE rather than mutate to avoid bleeding state into cache
 			state.pagination = {
@@ -141,6 +149,79 @@ function createNewsStore() {
 				if (requestId === currentRequestId) {
 					logger.error('Failed to load news', e);
 					state.error = 'Failed to load news';
+				}
+			} finally {
+				if (requestId === currentRequestId) {
+					state.isLoading = false;
+				}
+			}
+		},
+
+		loadMore: async (limit = 12) => {
+			const gen = loadGeneration;
+			const nextPage = state.pagination.next_page;
+			if (!nextPage || state.isLoading) return;
+
+			if (state.loadedPages.has(nextPage)) {
+				return;
+			}
+			state.loadedPages.add(nextPage);
+
+			const now = Date.now();
+			const currentFilter = newsFilter;
+			const filterKey = JSON.stringify(currentFilter);
+			const cacheKey = `${nextPage}-${filterKey}`;
+
+			const cachedPage = state.cache[cacheKey];
+			if (cachedPage && !isCacheExpired(cachedPage.lastUpdated)) {
+				if (gen !== loadGeneration) return;
+				state.list = [...state.list, ...cachedPage.list];
+				state.pagination = {
+					...cachedPage.pagination,
+					current_page: cachedPage.pagination.current_page
+				};
+				state.lastUpdated = cachedPage.lastUpdated;
+				return;
+			}
+
+			const requestId = currentRequestId;
+			state.isLoading = true;
+
+			try {
+				const res = await newsDedup.execute(`news-${cacheKey}`, async () => {
+					return await news.getNews(
+						nextPage,
+						limit,
+						currentFilter.startDate,
+						currentFilter.endDate
+					);
+				});
+
+				if (requestId !== currentRequestId) return;
+				if (gen !== loadGeneration) return;
+
+				const standardizedMeta: PaginationMeta = {
+					current_page: res.meta.page,
+					last_page: res.meta.total_page,
+					total_data: res.meta.count_total,
+					per_page: res.meta.limit_per_page,
+					next_page: res.meta.page < res.meta.total_page ? res.meta.page + 1 : null
+				};
+
+				const existingIds = new Set(state.list.map((n) => n.news_id));
+				const newItems = res.data.filter((n) => !existingIds.has(n.news_id));
+				state.list = [...state.list, ...newItems];
+				state.pagination = standardizedMeta;
+				state.lastUpdated = now;
+
+				state.cache[cacheKey] = {
+					list: res.data,
+					pagination: standardizedMeta,
+					lastUpdated: now
+				};
+			} catch (e) {
+				if (requestId === currentRequestId) {
+					logger.error('Failed to load more news', e);
 				}
 			} finally {
 				if (requestId === currentRequestId) {
