@@ -1,3 +1,4 @@
+import asyncio
 import subprocess
 import time
 from dataclasses import dataclass, field
@@ -36,5 +37,5 @@ class RecordingSession:
     member_image: str
     start_at: str
     ffmpeg_proc: Optional[subprocess.Popen] = None
-    chat_task: Optional[object] = None
+    chat_task: Optional["asyncio.Task"] = None
     started_at: float = field(default_factory=time.time)

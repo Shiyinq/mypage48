@@ -101,20 +101,21 @@ class RecordingManager:
         open(chat_log_path, "w").close()
 
         hls_url = live.hls_url
-        if not hls_url:
-            stream_info = await self.detector.get_streaming_url(
-                live.platform, live.room_id, live.live_id
-            )
-            if not stream_info:
-                print(f"[manager] Failed to get streaming URL for {live.live_id}")
-                return
+        stream_info = await self.detector.get_streaming_url(
+            live.platform, live.room_id, live.live_id
+        )
+        if not stream_info:
+            print(f"[manager] Failed to get streaming URL for {live.live_id}")
+            return
 
+        if not hls_url:
             hls_url = self.detector.pick_best_url(stream_info)
             if not hls_url:
                 print(f"[manager] No streaming URLs for {live.live_id}")
                 return
-            if not live.room_identifier:
-                live.room_identifier = stream_info.get("room_identifier")
+
+        if not live.room_identifier:
+            live.room_identifier = stream_info.get("room_identifier")
 
         recording_start_time = time.time()
 
