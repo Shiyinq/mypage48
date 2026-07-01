@@ -87,7 +87,8 @@
 		!(
 			sorterNavbarStore.pageType === 'history-detail' ||
 			(sorterNavbarStore.pageType === 'sorter' &&
-				(sorterNavbarStore.sorterState === 'sorting' || sorterNavbarStore.sorterState === 'results'))
+				(sorterNavbarStore.sorterState === 'sorting' ||
+					sorterNavbarStore.sorterState === 'results'))
 		)
 	);
 
