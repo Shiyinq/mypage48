@@ -298,7 +298,7 @@
 	isTheaterMenuOpen ||
 	isAdminMenuOpen
 		? 'bg-white dark:bg-zinc-950 border-gray-200 dark:border-zinc-800'
-		: 'bg-white/60 dark:bg-zinc-950/60 border-black/5 dark:border-white/5'}"
+		: 'bg-white/85 dark:bg-zinc-950/60 border-black/5 dark:border-white/5'}"
 >
 	<div class="flex h-16 items-center justify-around max-w-[420px] mx-auto px-4">
 		<a

@@ -114,7 +114,7 @@
 
 	<!-- Main Sorter Navbar -->
 	<div
-		class="fixed top-0 left-0 right-0 w-full z-[50] border-b border-black/5 dark:border-white/5 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl"
+		class="fixed top-0 left-0 right-0 w-full z-[50] border-b border-black/5 dark:border-white/5 bg-white/85 dark:bg-zinc-950/60 backdrop-blur-xl"
 	>
 		<div
 			class="max-w-7xl mx-auto w-full h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8"
@@ -243,7 +243,7 @@
 	<!-- Mobile Specific Sorter Navbar (Bottom) -->
 	{#if showBottomNav}
 		<nav
-			class="sm:hidden fixed bottom-0 left-0 right-0 z-[50] backdrop-blur-xl border-t pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)] dark:shadow-none transition-all duration-300 ease-in-out bg-white/60 dark:bg-zinc-950/60 border-black/5 dark:border-white/5"
+			class="sm:hidden fixed bottom-0 left-0 right-0 z-[50] backdrop-blur-xl border-t pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)] dark:shadow-none transition-all duration-300 ease-in-out bg-white/85 dark:bg-zinc-950/60 border-black/5 dark:border-white/5"
 		>
 			<div
 				class="flex h-16 items-center justify-around w-full overflow-x-auto no-scrollbar px-2 max-w-[420px] mx-auto"
