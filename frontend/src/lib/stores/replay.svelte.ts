@@ -13,7 +13,7 @@ interface ReplayState {
 
 const state = $state<ReplayState>({
 	videos: [],
-	loading: false,
+	loading: true,
 	error: null,
 	lastUpdated: 0
 });

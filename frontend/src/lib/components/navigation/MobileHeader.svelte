@@ -22,7 +22,7 @@
 {#if !isImmersive.value}
 	<div class="h-16 md:hidden"></div>
 	<header
-		class="md:hidden bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl border-b border-black/5 dark:border-white/5 fixed top-0 left-0 right-0 z-[50] transition-all duration-300 ease-in-out"
+		class="md:hidden bg-white/85 dark:bg-zinc-950/60 backdrop-blur-xl border-b border-black/5 dark:border-white/5 fixed top-0 left-0 right-0 z-[50] transition-all duration-300 ease-in-out"
 	>
 		<div class="h-16 px-4 flex items-center justify-between gap-4">
 			<!-- Left: Title & Icon -->

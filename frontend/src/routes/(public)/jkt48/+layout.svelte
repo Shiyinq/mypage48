@@ -34,7 +34,9 @@
 	class="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 relative font-sans selection:bg-red-500/20"
 >
 	<!-- Background Elements -->
-	<AppBackground interactive={true} bind:mouse {scrollY} />
+	{#if !isLiveRoute && !isSorterRoute && !isImmersive.value}
+		<AppBackground interactive={true} bind:mouse {scrollY} />
+	{/if}
 
 	<!-- NAV -->
 	{#if !isLiveRoute && !isSorterRoute && !isImmersive.value}

@@ -35,6 +35,46 @@
 		[...sorter.selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b))
 	);
 
+	let isEditingTitle = $state(false);
+	let isEditingSubtitle = $state(false);
+	let tempTitle = $state('');
+	let tempSubtitle = $state('');
+
+	const TITLE_LIMIT = 50;
+	const SUBTITLE_LIMIT = 100;
+
+	function startEditTitle() {
+		tempTitle = customTitle;
+		isEditingTitle = true;
+	}
+
+	function saveTitle() {
+		if (tempTitle.trim()) {
+			customTitle = tempTitle.trim().slice(0, TITLE_LIMIT);
+		}
+		isEditingTitle = false;
+	}
+
+	function cancelTitle() {
+		isEditingTitle = false;
+	}
+
+	function startEditSubtitle() {
+		tempSubtitle = customSubtitle;
+		isEditingSubtitle = true;
+	}
+
+	function saveSubtitle() {
+		if (tempSubtitle.trim()) {
+			customSubtitle = tempSubtitle.trim().slice(0, SUBTITLE_LIMIT);
+		}
+		isEditingSubtitle = false;
+	}
+
+	function cancelSubtitle() {
+		isEditingSubtitle = false;
+	}
+
 	function setLayout(mode: 'card' | 'list') {
 		layoutMode = mode;
 	}
@@ -44,6 +84,8 @@
 	}
 
 	function restart() {
+		customTitle = t('theater.sorter.results');
+		customSubtitle = t('theater.sorter.resultsSubtitle');
 		sorter.restart();
 	}
 
@@ -93,12 +135,20 @@
 						<SorterEditableHeader
 							title={customTitle}
 							description={customSubtitle}
-							tempTitle=""
-							tempDescription=""
-							isEditingTitle={false}
-							isEditingDescription={false}
+							{tempTitle}
+							tempDescription={tempSubtitle}
+							{isEditingTitle}
+							isEditingDescription={isEditingSubtitle}
+							placeholderDescription={t('theater.sorter.resultsSubtitle') || 'Subtitle'}
+							onTitleChange={(v) => (tempTitle = v)}
+							onDescriptionChange={(v) => (tempSubtitle = v)}
+							onstartEditTitle={startEditTitle}
+							oncancelEditTitle={cancelTitle}
+							onsaveTitle={saveTitle}
+							onstartEditDescription={startEditSubtitle}
+							oncancelEditDescription={cancelSubtitle}
+							onsaveDescription={saveSubtitle}
 							filters={sortedSelectedGens}
-							hideEdit={true}
 						/>
 					</div>
 				</div>
