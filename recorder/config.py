@@ -18,6 +18,7 @@ class RecorderConfig(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
     youtube_refresh_token: str = ""
+    youtube_privacy_status: str = "unlisted"
 
     model_config = {
         "env_file": (

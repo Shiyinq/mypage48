@@ -69,7 +69,7 @@ def _do_upload_blocking(
             "description": description,
         },
         "status": {
-            "privacyStatus": "public",
+            "privacyStatus": config.youtube_privacy_status,
             "selfDeclaredMadeForKids": False,
         },
     }
@@ -128,11 +128,18 @@ async def _upload_to_youtube(
         return None
 
     title = _format_title(meta)
-    description = (
-        f"Live recorded from {meta.get('platform', 'unknown').upper()}\n"
-        f"Member: {meta.get('member_name', '')}\n"
-        "#JKT48"
+    nickname_clean = (
+        (meta.get("member_nickname") or "").replace(" ", "").replace("/", "_")
     )
+    desc_lines = [
+        f"Live recorded from {meta.get('platform', 'unknown').upper()}",
+        f"Member: {meta.get('member_name', '')}",
+    ]
+    if nickname_clean:
+        desc_lines.append(f"#{nickname_clean}JKT48")
+    else:
+        desc_lines.append("#JKT48")
+    description = "\n".join(desc_lines)
 
     log.info("Uploading: %s", title)
     loop = asyncio.get_running_loop()
