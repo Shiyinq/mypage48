@@ -17,16 +17,16 @@ Auto-record live stream video + chat from SHOWROOM and IDN Live, ready for YouTu
 source .venv/bin/activate
 
 # 2. Install dependencies (one-time)
-pip install -r liverecorder/requirements.txt
+pip install -r recorder/requirements.txt
 
 # 3. Run
-python -m liverecorder.main
+python -m recorder.main
 ```
 
-Output is in `liverecorder/recordings/raw/`:
+Output is in `recorder/recordings/raw/`:
 
 ```
-liverecorder/recordings/raw/
+recorder/recordings/raw/
 ├── idn_ayo-ngobrol-bareng-260701223500/
 │   ├── ayo-ngobrol-bareng-260701223500.mp4
 │   ├── ayo-ngobrol-bareng-260701223500.srt
@@ -100,7 +100,7 @@ This format is 100% compatible with the `ReplayChat.svelte` parser on the fronte
 |----------|---------|-------------|
 | `REC_API_BASE_URL` | `http://localhost:8000/api` | Backend API URL |
 | `REC_POLL_INTERVAL` | `10` | Live poll interval in seconds |
-| `REC_RECORDINGS_DIR` | `liverecorder/recordings/raw` | Output directory |
+| `REC_RECORDINGS_DIR` | `recorder/recordings/raw` | Output directory |
 | `REC_MAX_RECORDING_HOURS` | `4` | Max recording duration |
 | `REC_SHOWROOM_COMMENT_INTERVAL` | `2.0` | SHOWROOM chat poll interval |
 | `REC_LOG_LEVEL` | `INFO` | Logging level |

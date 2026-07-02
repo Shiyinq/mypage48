@@ -20,8 +20,8 @@ async def main():
     loop.add_signal_handler(signal.SIGINT, handle_signal)
     loop.add_signal_handler(signal.SIGTERM, handle_signal)
 
-    print(f"[liverecorder] Starting — poll interval {config.poll_interval}s")
-    print(f"[liverecorder] Output: {config.recordings_dir}")
+    print(f"[recorder] Starting — poll interval {config.poll_interval}s")
+    print(f"[recorder] Output: {config.recordings_dir}")
 
     asyncio.create_task(uploader.upload_existing(config))
 
@@ -36,7 +36,7 @@ async def main():
                     manager.log_progress()
 
             except Exception as e:
-                print(f"[liverecorder] Loop error: {e}")
+                print(f"[recorder] Loop error: {e}")
 
             try:
                 await asyncio.wait_for(
@@ -46,9 +46,9 @@ async def main():
             except asyncio.TimeoutError:
                 pass
     finally:
-        print("[liverecorder] Shutting down...")
+        print("[recorder] Shutting down...")
         await manager.shutdown()
-        print("[liverecorder] Goodbye.")
+        print("[recorder] Goodbye.")
 
 
 if __name__ == "__main__":
