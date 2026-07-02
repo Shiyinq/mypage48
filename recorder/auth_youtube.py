@@ -13,7 +13,13 @@ Output: refresh token to paste in .env as REC_YOUTUBE_REFRESH_TOKEN
 import json
 import os
 import sys
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
+
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent.parent / ".env")  # root .env
+load_dotenv(Path(__file__).parent / ".env")  # recorder/.env
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
