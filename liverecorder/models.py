@@ -33,7 +33,9 @@ class RecordingSession:
     chat_log_path: str
     srt_path: str
     json_path: str
+    jsonl_path: str
     thumbnail_path: str
+    screenshots_folder: str
     live_folder: str
     title: str
     member_image: str

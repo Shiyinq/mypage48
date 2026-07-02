@@ -14,6 +14,31 @@ from . import chat_capture
 from . import srt_generator
 
 
+def _parse_start_at(start_at: str) -> int:
+    if not start_at:
+        return int(time.time())
+    try:
+        dt = datetime.fromisoformat(start_at.replace("Z", "+00:00"))
+        return int(dt.timestamp())
+    except Exception:
+        return int(time.time())
+
+
+def _get_duration(mp4_path: str) -> float:
+    try:
+        result = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries",
+             "format=duration", "-of",
+             "default=noprint_wrappers=1:nokey=1", mp4_path],
+            capture_output=True, text=True, timeout=30,
+        )
+        if result.stdout.strip():
+            return float(result.stdout.strip())
+    except Exception:
+        pass
+    return 0.0
+
+
 class RecordingManager:
     def __init__(self, config: RecorderConfig):
         self.config = config
@@ -30,7 +55,7 @@ class RecordingManager:
 
         ended_ids = set(self.sessions.keys()) - current_ids
         for live_id in ended_ids:
-            await self._end_session(live_id)
+            await self._end_session(live_id, reason="completed")
 
     async def check_health(self):
         dead_ids = []
@@ -40,7 +65,7 @@ class RecordingManager:
                 dead_ids.append(live_id)
 
         for live_id in dead_ids:
-            await self._end_session(live_id)
+            await self._end_session(live_id, reason="error")
 
     def log_progress(self):
         if not self.sessions:
@@ -82,17 +107,24 @@ class RecordingManager:
     async def _start_session(self, live: LiveInfo):
         recordings_dir = self.config.recordings_dir
 
-        live_folder = os.path.join(recordings_dir, f"{live.platform}_{live.live_id}")
+        start_at_unix = _parse_start_at(live.start_at)
+        nickname_lower = live.member_nickname.lower().replace(" ", "_").replace("/", "_")
+        live_folder = os.path.join(recordings_dir, f"{nickname_lower}_{start_at_unix}")
         os.makedirs(live_folder, exist_ok=True)
+
+        screenshots_folder = os.path.join(live_folder, "screenshots")
+        os.makedirs(screenshots_folder, exist_ok=True)
 
         base = live.live_id
         mkv_path = os.path.join(live_folder, f"{base}.mkv")
         chat_log_path = os.path.join(live_folder, f"{base}.log")
+        jsonl_path = os.path.join(live_folder, f"{base}.jsonl")
         srt_path = os.path.join(live_folder, f"{base}.srt")
         json_path = os.path.join(live_folder, f"{base}.json")
-        thumbnail_path = os.path.join(live_folder, f"{base}.jpg")
+        thumbnail_path = os.path.join(live_folder, f"{base}.webp")
 
         open(chat_log_path, "w").close()
+        open(jsonl_path, "w").close()
 
         hls_url = live.hls_url
         stream_info = await self.detector.get_streaming_url(
@@ -124,6 +156,7 @@ class RecordingManager:
                     self.config.api_base_url,
                     live.room_id,
                     chat_log_path,
+                    jsonl_path,
                     recording_start_time,
                     self.config.showroom_comment_interval,
                     stop_event,
@@ -134,6 +167,7 @@ class RecordingManager:
                 chat_capture.capture_idn(
                     live.room_identifier,
                     chat_log_path,
+                    jsonl_path,
                     recording_start_time,
                     stop_event,
                 )
@@ -143,7 +177,7 @@ class RecordingManager:
             chat_task = asyncio.create_task(
                 self._retry_idn_room(
                     live.live_id, live.room_id, live.live_id,
-                    chat_log_path, recording_start_time, stop_event,
+                    chat_log_path, jsonl_path, recording_start_time, stop_event,
                 )
             )
         else:
@@ -162,7 +196,9 @@ class RecordingManager:
             chat_log_path=chat_log_path,
             srt_path=srt_path,
             json_path=json_path,
+            jsonl_path=jsonl_path,
             thumbnail_path=thumbnail_path,
+            screenshots_folder=screenshots_folder,
             live_folder=live_folder,
             title=live.title,
             member_image=live.member_image,
@@ -173,13 +209,15 @@ class RecordingManager:
 
         self.sessions[live.live_id] = session
 
+        asyncio.create_task(self._periodic_thumbnails(session))
         asyncio.create_task(self._capture_initial_thumbnail(session))
 
         print(f"[manager] Started recording {live.platform}/{live.member_name} ({live.live_id})")
 
     async def _retry_idn_room(
         self, live_id: str, room_id: str, id_live_id: str,
-        chat_log_path: str, recording_start_time: float, stop_event: asyncio.Event,
+        chat_log_path: str, jsonl_path: str,
+        recording_start_time: float, stop_event: asyncio.Event,
     ):
         for attempt in range(1, 11):
             await asyncio.sleep(15)
@@ -194,7 +232,7 @@ class RecordingManager:
                 session.room_identifier = rid
                 print(f"[manager] Got room_identifier for {live_id}, starting chat capture")
                 try:
-                    await chat_capture.capture_idn(rid, chat_log_path, recording_start_time, stop_event)
+                    await chat_capture.capture_idn(rid, chat_log_path, jsonl_path, recording_start_time, stop_event)
                 except asyncio.CancelledError:
                     pass
                 return
@@ -208,13 +246,44 @@ class RecordingManager:
         try:
             subprocess.run(
                 ["ffmpeg", "-ss", "30", "-i", session.output_path,
-                 "-vframes", "1", "-q:v", "2", "-y", session.thumbnail_path],
+                 "-vframes", "1", "-y", session.thumbnail_path],
+                capture_output=True, timeout=15,
+            )
+            ts = int(time.time())
+            ss_path = os.path.join(session.screenshots_folder, f"{session.member_nickname.lower()}_{ts}.webp")
+            subprocess.run(
+                ["ffmpeg", "-ss", "30", "-i", session.output_path,
+                 "-vframes", "1", "-y", ss_path],
                 capture_output=True, timeout=15,
             )
         except Exception:
             pass
 
-    async def _end_session(self, live_id: str):
+    async def _periodic_thumbnails(self, session: RecordingSession):
+        await asyncio.sleep(300)
+        interval = 300
+        while session.live_id in self.sessions:
+            if not os.path.exists(session.output_path):
+                break
+            duration = time.time() - session.recording_start_time
+            try:
+                subprocess.run(
+                    ["ffmpeg", "-ss", str(int(duration)), "-i", session.output_path,
+                     "-vframes", "1", "-y", session.thumbnail_path],
+                    capture_output=True, timeout=30,
+                )
+                ts = int(time.time())
+                ss_path = os.path.join(session.screenshots_folder, f"{session.member_nickname.lower()}_{ts}.webp")
+                subprocess.run(
+                    ["ffmpeg", "-ss", str(int(duration)), "-i", session.output_path,
+                     "-vframes", "1", "-y", ss_path],
+                    capture_output=True, timeout=30,
+                )
+            except Exception:
+                pass
+            await asyncio.sleep(interval)
+
+    async def _end_session(self, live_id: str, reason: str = "completed"):
         session = self.sessions.get(live_id)
         if not session:
             return
@@ -240,6 +309,7 @@ class RecordingManager:
 
         mkv_path = session.output_path
         mp4_path = os.path.splitext(mkv_path)[0] + ".mp4"
+        remux_ok = False
 
         if os.path.exists(mkv_path):
             try:
@@ -251,6 +321,7 @@ class RecordingManager:
                 )
                 os.remove(mkv_path)
                 session.output_path = mp4_path
+                remux_ok = True
                 print(f"[manager] Remuxed to MP4: {mp4_path}")
             except Exception as e:
                 print(f"[manager] Remux failed: {e}")
@@ -258,12 +329,21 @@ class RecordingManager:
         final_mp4 = mp4_path if os.path.exists(mp4_path) else mkv_path
         duration = 0
         if os.path.exists(final_mp4):
-            duration = time.time() - session.recording_start_time
+            duration = _get_duration(final_mp4)
+            if duration <= 0:
+                duration = time.time() - session.recording_start_time
             try:
                 target_sec = min(max(30, int(duration // 2)), 300)
                 subprocess.run(
                     ["ffmpeg", "-ss", str(target_sec), "-i", final_mp4,
-                     "-vframes", "1", "-q:v", "2", "-y", session.thumbnail_path],
+                     "-vframes", "1", "-y", session.thumbnail_path],
+                    capture_output=True, timeout=30,
+                )
+                ts = int(time.time())
+                ss_path = os.path.join(session.screenshots_folder, f"{session.member_nickname.lower()}_{ts}.webp")
+                subprocess.run(
+                    ["ffmpeg", "-ss", str(target_sec), "-i", final_mp4,
+                     "-vframes", "1", "-y", ss_path],
                     capture_output=True, timeout=30,
                 )
             except Exception:
@@ -279,6 +359,7 @@ class RecordingManager:
         try:
             metadata = {
                 "live_id": session.live_id,
+                "status": reason,
                 "platform": session.platform,
                 "room_id": session.room_id if session.platform == "showroom" else None,
                 "room_identifier": session.room_identifier,
@@ -291,6 +372,7 @@ class RecordingManager:
                 ).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "recording_ended_at": recording_ended_at,
                 "duration_seconds": int(duration),
+                "srt_file": os.path.basename(session.srt_path),
                 "youtube_id": None,
             }
             with open(session.json_path, "w") as f:
@@ -299,6 +381,21 @@ class RecordingManager:
         except Exception as e:
             print(f"[manager] JSON write failed: {e}")
 
+        if remux_ok:
+            for fpath in [session.chat_log_path]:
+                if os.path.exists(fpath):
+                    try:
+                        os.remove(fpath)
+                    except Exception:
+                        pass
+
+            ffmpeg_log = os.path.splitext(session.output_path)[0].replace(".mp4", "") + ".ffmpeg.log"
+            if os.path.exists(ffmpeg_log):
+                try:
+                    os.remove(ffmpeg_log)
+                except Exception:
+                    pass
+
         self.sessions.pop(live_id, None)
         self._stop_events.pop(live_id, None)
 
@@ -306,5 +403,5 @@ class RecordingManager:
 
     async def shutdown(self):
         for live_id in list(self.sessions.keys()):
-            await self._end_session(live_id)
+            await self._end_session(live_id, reason="interrupted")
         await self.detector.close()
