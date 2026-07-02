@@ -25,11 +25,12 @@ async def main():
     try:
         while not stop_event.is_set():
             try:
-                lives = await manager.detector.poll()
+                lives, ok = await manager.detector.poll()
 
-                await manager.sync(lives)
-                await manager.check_health()
-                manager.log_progress()
+                if ok:
+                    await manager.sync(lives)
+                    await manager.check_health()
+                    manager.log_progress()
 
             except Exception as e:
                 print(f"[liverecorder] Loop error: {e}")

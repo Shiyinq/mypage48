@@ -12,14 +12,14 @@ class LiveDetector:
         self.client = httpx.AsyncClient(timeout=15.0)
         self._last_live_ids: set[str] = set()
 
-    async def poll(self) -> List[LiveInfo]:
+    async def poll(self) -> Tuple[List[LiveInfo], bool]:
         try:
             resp = await self.client.get(f"{self.api_base_url}/jkt48/live", params={"t": int(time.time() * 1000)})
             resp.raise_for_status()
             data = resp.json()
         except Exception as e:
             print(f"[live_detector] Failed to poll live status: {e}")
-            return []
+            return [], False
 
         lives: List[LiveInfo] = []
         for item in data.get("data", []):
@@ -57,7 +57,7 @@ class LiveDetector:
             )
             lives.append(live_info)
 
-        return lives
+        return lives, True
 
     def diff(self, current_lives: List[LiveInfo]) -> Tuple[List[LiveInfo], set[str]]:
         current_ids = {l.live_id for l in current_lives}

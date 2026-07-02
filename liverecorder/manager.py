@@ -139,8 +139,13 @@ class RecordingManager:
                 )
             )
         elif live.platform == "idn" and not live.room_identifier:
-            print(f"[manager] No room_identifier for IDN live {live.live_id}")
-            chat_task = None
+            print(f"[manager] No room_identifier for IDN live {live.live_id}, will retry")
+            chat_task = asyncio.create_task(
+                self._retry_idn_room(
+                    live.live_id, live.room_id, live.live_id,
+                    chat_log_path, recording_start_time, stop_event,
+                )
+            )
         else:
             chat_task = None
 
@@ -171,6 +176,30 @@ class RecordingManager:
         asyncio.create_task(self._capture_initial_thumbnail(session))
 
         print(f"[manager] Started recording {live.platform}/{live.member_name} ({live.live_id})")
+
+    async def _retry_idn_room(
+        self, live_id: str, room_id: str, id_live_id: str,
+        chat_log_path: str, recording_start_time: float, stop_event: asyncio.Event,
+    ):
+        for attempt in range(1, 11):
+            await asyncio.sleep(15)
+            if stop_event.is_set():
+                return
+            session = self.sessions.get(live_id)
+            if not session or session.room_identifier:
+                return
+            info = await self.detector.get_streaming_url("idn", room_id, id_live_id)
+            if info and info.get("room_identifier"):
+                rid = info.get("room_identifier")
+                session.room_identifier = rid
+                print(f"[manager] Got room_identifier for {live_id}, starting chat capture")
+                try:
+                    await chat_capture.capture_idn(rid, chat_log_path, recording_start_time, stop_event)
+                except asyncio.CancelledError:
+                    pass
+                return
+            print(f"[manager] Retry room_identifier {attempt}/10 for {live_id} — still null")
+        print(f"[manager] Failed to get room_identifier for {live_id} after 10 retries")
 
     async def _capture_initial_thumbnail(self, session: RecordingSession):
         await asyncio.sleep(30)
