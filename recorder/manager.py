@@ -67,10 +67,15 @@ class RecordingManager:
                 dead_ids.append(live_id)
                 continue
             if os.path.exists(session.output_path):
+                current_size = os.path.getsize(session.output_path)
                 age = now - os.path.getmtime(session.output_path)
-                if age > 120:
-                    print(f"[manager] ffmpeg stalled for {live_id} (file age: {age:.0f}s)")
+
+                if age > 300 and current_size == session.last_file_size:
+                    print(f"[manager] ffmpeg stalled for {live_id} "
+                          f"(age: {age:.0f}s, size unchanged: {current_size})")
                     dead_ids.append(live_id)
+
+                session.last_file_size = current_size
 
         for live_id in dead_ids:
             await self._end_session(live_id, reason="error")
