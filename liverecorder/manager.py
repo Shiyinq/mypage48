@@ -59,10 +59,17 @@ class RecordingManager:
 
     async def check_health(self):
         dead_ids = []
+        now = time.time()
         for live_id, session in self.sessions.items():
             if session.ffmpeg_proc and not stream_recorder.is_running(session.ffmpeg_proc):
                 print(f"[manager] ffmpeg died for {live_id}")
                 dead_ids.append(live_id)
+                continue
+            if os.path.exists(session.output_path):
+                age = now - os.path.getmtime(session.output_path)
+                if age > 120:
+                    print(f"[manager] ffmpeg stalled for {live_id} (file age: {age:.0f}s)")
+                    dead_ids.append(live_id)
 
         for live_id in dead_ids:
             await self._end_session(live_id, reason="error")
@@ -121,7 +128,7 @@ class RecordingManager:
         jsonl_path = os.path.join(live_folder, f"{base}.jsonl")
         srt_path = os.path.join(live_folder, f"{base}.srt")
         json_path = os.path.join(live_folder, f"{base}.json")
-        thumbnail_path = os.path.join(live_folder, f"{base}.webp")
+        thumbnail_path = os.path.join(live_folder, f"{base}.jpg")
 
         open(chat_log_path, "w").close()
         open(jsonl_path, "w").close()
@@ -239,49 +246,73 @@ class RecordingManager:
             print(f"[manager] Retry room_identifier {attempt}/10 for {live_id} — still null")
         print(f"[manager] Failed to get room_identifier for {live_id} after 10 retries")
 
+    async def _capture_screenshot(self, source: str, dest: str, seek: str, timeout: int = 30):
+        try:
+            r = await asyncio.create_subprocess_exec(
+                "ffmpeg", "-loglevel", "error",
+                "-ss", seek, "-i", source,
+                "-vframes", "1",
+                "-strict", "unofficial",
+                "-y", dest,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            try:
+                _, stderr = await asyncio.wait_for(r.communicate(), timeout=timeout)
+            except asyncio.TimeoutError:
+                r.kill()
+                await r.wait()
+                return False
+            if r.returncode != 0:
+                err = stderr.decode(errors='ignore').strip()
+                print(f"[manager] ffmpeg screenshot failed (seek={seek}): {err}")
+                return False
+            if not os.path.exists(dest) or os.path.getsize(dest) == 0:
+                err = stderr.decode(errors='ignore').strip()
+                print(f"[manager] Screenshot file missing/empty: {dest}")
+                if err:
+                    print(f"[manager]   ffmpeg stderr: {err}")
+                return False
+            return True
+        except Exception as e:
+            print(f"[manager] screenshot error: {e}")
+            return False
+
     async def _capture_initial_thumbnail(self, session: RecordingSession):
         await asyncio.sleep(30)
         if session.live_id not in self.sessions:
             return
-        try:
-            subprocess.run(
-                ["ffmpeg", "-ss", "30", "-i", session.output_path,
-                 "-vframes", "1", "-y", session.thumbnail_path],
-                capture_output=True, timeout=15,
-            )
-            ts = int(time.time())
-            ss_path = os.path.join(session.screenshots_folder, f"{session.member_nickname.lower()}_{ts}.webp")
-            subprocess.run(
-                ["ffmpeg", "-ss", "30", "-i", session.output_path,
-                 "-vframes", "1", "-y", ss_path],
-                capture_output=True, timeout=15,
-            )
-        except Exception:
-            pass
+        if not os.path.exists(session.output_path):
+            print(f"[manager] Initial thumb: {session.output_path} not found, skipping")
+            return
+        print(f"[manager] Initial thumb: capturing at 30s...")
+        ts = int(time.time())
+        ss_name = f"{session.member_nickname.lower()}_{ts}.jpg"
+        ss_path = os.path.join(session.screenshots_folder, ss_name)
+        ok = await self._capture_screenshot(session.output_path, ss_path, "5", 30)
+        if ok:
+            print(f"[manager] Initial screenshot saved: {ss_name}")
+        else:
+            print(f"[manager] Initial screenshot FAILED")
 
     async def _periodic_thumbnails(self, session: RecordingSession):
         await asyncio.sleep(300)
-        interval = 300
+        print(f"[manager] Periodic thumb: starting 5-min cycle")
         while session.live_id in self.sessions:
             if not os.path.exists(session.output_path):
+                print(f"[manager] Periodic thumb: {session.output_path} gone, stopping")
                 break
-            duration = time.time() - session.recording_start_time
-            try:
-                subprocess.run(
-                    ["ffmpeg", "-ss", str(int(duration)), "-i", session.output_path,
-                     "-vframes", "1", "-y", session.thumbnail_path],
-                    capture_output=True, timeout=30,
-                )
-                ts = int(time.time())
-                ss_path = os.path.join(session.screenshots_folder, f"{session.member_nickname.lower()}_{ts}.webp")
-                subprocess.run(
-                    ["ffmpeg", "-ss", str(int(duration)), "-i", session.output_path,
-                     "-vframes", "1", "-y", ss_path],
-                    capture_output=True, timeout=30,
-                )
-            except Exception:
-                pass
-            await asyncio.sleep(interval)
+            elapsed = int(time.time() - session.recording_start_time)
+            seek = str(max(5, elapsed - 30))
+            ts = int(time.time())
+            ss_name = f"{session.member_nickname.lower()}_{ts}.jpg"
+            ss_path = os.path.join(session.screenshots_folder, ss_name)
+            ok = await self._capture_screenshot(session.output_path, ss_path, seek, 30)
+            if ok:
+                print(f"[manager] Screenshot at {seek}s: {ss_name}")
+            else:
+                print(f"[manager] Periodic screenshot FAILED at {seek}s")
+            await asyncio.sleep(300)
 
     async def _end_session(self, live_id: str, reason: str = "completed"):
         session = self.sessions.get(live_id)
@@ -332,22 +363,27 @@ class RecordingManager:
             duration = _get_duration(final_mp4)
             if duration <= 0:
                 duration = time.time() - session.recording_start_time
+            if duration > 0:
+                target_sec = min(int(duration * 0.5), 300)
+            else:
+                target_sec = 0
             try:
-                target_sec = min(max(30, int(duration // 2)), 300)
-                subprocess.run(
-                    ["ffmpeg", "-ss", str(target_sec), "-i", final_mp4,
-                     "-vframes", "1", "-y", session.thumbnail_path],
-                    capture_output=True, timeout=30,
-                )
                 ts = int(time.time())
-                ss_path = os.path.join(session.screenshots_folder, f"{session.member_nickname.lower()}_{ts}.webp")
-                subprocess.run(
-                    ["ffmpeg", "-ss", str(target_sec), "-i", final_mp4,
-                     "-vframes", "1", "-y", ss_path],
+                ss_path = os.path.join(session.screenshots_folder, f"{session.member_nickname.lower()}_{ts}.jpg")
+                r = subprocess.run(
+                    ["ffmpeg", "-loglevel", "error",
+                     "-ss", str(target_sec), "-i", final_mp4,
+                     "-vframes", "1",
+                     "-strict", "unofficial",
+                     "-y", ss_path],
                     capture_output=True, timeout=30,
                 )
-            except Exception:
-                pass
+                if r.returncode == 0 and os.path.exists(ss_path):
+                    print(f"[manager] Final screenshot captured: {os.path.basename(ss_path)}")
+                elif r.returncode != 0:
+                    print(f"[manager] Final screenshot failed: {r.stderr.decode(errors='ignore').strip()}")
+            except Exception as e:
+                print(f"[manager] Screenshot error: {e}")
 
         if os.path.exists(session.chat_log_path):
             try:
