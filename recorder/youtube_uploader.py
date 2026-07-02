@@ -82,7 +82,7 @@ def _do_upload_blocking(
     while response is None:
         status, response = request.next_chunk()
         if status and progress_callback:
-            progress_callback(status.progress(), status.total_size())
+            progress_callback(status.progress(), status.total_size)
 
     return response["id"]
 
