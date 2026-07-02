@@ -1,0 +1,93 @@
+from datetime import datetime
+from typing import Annotated, Any, Optional
+
+from fastapi import UploadFile
+from pydantic import BaseModel, BeforeValidator, Field, field_serializer
+
+
+def _serialize_dt(v: Optional[datetime]) -> Optional[str]:
+    if v is None:
+        return None
+    return v.isoformat().replace("+00:00", "Z")
+
+PyObjectId = Annotated[str, BeforeValidator(str)]
+
+
+class ReplayUploadRequest(BaseModel):
+    metadata: str = Field(
+        ..., description="JSON string of the info.json metadata"
+    )
+    thumbnail: UploadFile = Field(
+        ..., description="Thumbnail image file (JPG)"
+    )
+    jsonl: UploadFile = Field(
+        ..., description="Chat log file (JSONL)"
+    )
+    srt: UploadFile = Field(
+        ..., description="Subtitle file (SRT)"
+    )
+    screenshots: list[UploadFile] = Field(
+        default_factory=list,
+        description="Screenshot images from screenshots/ folder",
+    )
+
+
+class ReplayFilesInfo(BaseModel):
+    json_file: str
+    thumbnail: Optional[str] = None
+    jsonl: str
+    srt: str
+    screenshots: list[str]
+
+
+class ReplayResponse(BaseModel):
+    id: PyObjectId = Field(..., alias="_id")
+    live_id: str
+    platform: str
+    room_id: Optional[str] = None
+    room_identifier: Optional[str] = None
+    title: Optional[str] = None
+    member_name: str
+    member_nickname: str
+    status: str
+    start_at: Optional[datetime] = None
+    recording_started_at: Optional[datetime] = None
+    recording_ended_at: Optional[datetime] = None
+    duration_seconds: int = 0
+    srt_file: Optional[str] = None
+    youtube_id: Optional[str] = None
+    files: ReplayFilesInfo
+    chats: list[dict[str, Any]] = []
+    created_at: datetime
+    updated_at: datetime
+
+
+class ReplayListItem(BaseModel):
+    id: PyObjectId = Field(..., alias="_id")
+    live_id: str
+    platform: str
+    member: str
+    member_nickname: str
+    room_id: Optional[str] = None
+    room_identifier: Optional[str] = None
+    title: Optional[str] = None
+    status: str
+    start_at: Optional[datetime] = None
+    recording_started_at: Optional[datetime] = None
+    recording_ended_at: Optional[datetime] = None
+    duration_seconds: int = 0
+    srt_file: Optional[str] = None
+    youtube_id: Optional[str] = None
+    files: ReplayFilesInfo
+    created_at: datetime
+    updated_at: datetime
+
+    @field_serializer(
+        "start_at",
+        "recording_started_at",
+        "recording_ended_at",
+        "created_at",
+        "updated_at",
+    )
+    def serialize_dt(self, v: Optional[datetime]) -> Optional[str]:
+        return _serialize_dt(v)

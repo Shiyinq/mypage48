@@ -4,6 +4,7 @@ import sys
 
 from .config import RecorderConfig
 from .manager import RecordingManager
+from . import uploader
 
 
 async def main():
@@ -21,6 +22,8 @@ async def main():
 
     print(f"[liverecorder] Starting — poll interval {config.poll_interval}s")
     print(f"[liverecorder] Output: {config.recordings_dir}")
+
+    asyncio.create_task(uploader.upload_existing(config))
 
     try:
         while not stop_event.is_set():

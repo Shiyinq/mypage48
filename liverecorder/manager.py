@@ -12,6 +12,7 @@ from .models import LiveInfo, RecordingSession
 from . import stream_recorder
 from . import chat_capture
 from . import srt_generator
+from . import uploader
 
 
 def _parse_start_at(start_at: str) -> int:
@@ -436,6 +437,9 @@ class RecordingManager:
         self._stop_events.pop(live_id, None)
 
         print(f"[manager] Finished recording {session.platform}/{session.member_name}")
+
+        if reason == "completed":
+            asyncio.create_task(uploader.upload(session, self.config))
 
     async def shutdown(self):
         for live_id in list(self.sessions.keys()):
