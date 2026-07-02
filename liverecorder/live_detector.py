@@ -29,7 +29,8 @@ class LiveDetector:
                 continue
 
             member = item.get("member") or {}
-            member_name = member.get("nickname") or member.get("name", "unknown")
+            member_name = member.get("name", "unknown")
+            member_nickname = member.get("nickname") or member_name
 
             room_id: str = ""
             if platform == "showroom":
@@ -46,6 +47,7 @@ class LiveDetector:
                 live_id=live_id,
                 platform=platform,
                 member_name=member_name,
+                member_nickname=member_nickname,
                 room_id=room_id,
                 room_identifier=item.get("room_identifier"),
                 hls_url=hls_url,

@@ -63,7 +63,7 @@ class RecordingManager:
                 except Exception:
                     pass
 
-            print(f"  {session.member_name} ({session.platform}) | {duration_str} | {self._format_size(file_size)} | {chat_count} chats")
+            print(f"  {session.member_nickname} ({session.platform}) | {duration_str} | {self._format_size(file_size)} | {chat_count} chats")
 
     @staticmethod
     def _format_duration(seconds: float) -> str:
@@ -148,6 +148,7 @@ class RecordingManager:
             live_id=live.live_id,
             platform=live.platform,
             member_name=live.member_name,
+            member_nickname=live.member_nickname,
             room_id=live.room_id,
             room_identifier=live.room_identifier,
             hls_url=hls_url,
@@ -254,6 +255,7 @@ class RecordingManager:
                 "room_identifier": session.room_identifier,
                 "title": session.title,
                 "member_name": session.member_name,
+                "member_nickname": session.member_nickname,
                 "start_at": session.start_at,
                 "recording_started_at": datetime.fromtimestamp(
                     session.recording_start_time, tz=timezone.utc

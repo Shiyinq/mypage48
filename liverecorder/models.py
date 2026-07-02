@@ -10,6 +10,7 @@ class LiveInfo:
     live_id: str
     platform: str
     member_name: str
+    member_nickname: str
     room_id: str
     room_identifier: Optional[str] = None
     hls_url: Optional[str] = None
@@ -23,6 +24,7 @@ class RecordingSession:
     live_id: str
     platform: str
     member_name: str
+    member_nickname: str
     room_id: str
     room_identifier: Optional[str]
     hls_url: str
