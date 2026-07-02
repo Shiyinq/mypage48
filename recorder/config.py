@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from pydantic_settings import BaseSettings
@@ -10,6 +11,8 @@ class RecorderConfig(BaseSettings):
     max_recording_hours: int = 4
     showroom_comment_interval: float = 2.0
     log_level: str = "INFO"
+    log_mode: str = "stdout"
+    logs_dir: str = str(Path(__file__).parent / "logs")
     replay_api_url: str = "/admin/replay/upload"
     replay_api_key: str = ""
     google_client_id: str = ""
@@ -24,3 +27,7 @@ class RecorderConfig(BaseSettings):
         "env_prefix": "REC_",
         "extra": "ignore",
     }
+
+    @property
+    def uploads_history_path(self) -> str:
+        return os.path.join(self.logs_dir, "uploads.jsonl")

@@ -2,6 +2,7 @@ import asyncio
 import io
 import json
 import os
+from logging import Logger
 
 import httpx
 
@@ -40,21 +41,24 @@ def _read_file(path: str) -> bytes | None:
         return None
 
 
-async def upload(session: RecordingSession, config: RecorderConfig) -> bool:
+async def upload(
+    session: RecordingSession, config: RecorderConfig, log: Logger
+) -> bool:
     api_url = f"{config.api_base_url.rstrip('/')}{config.replay_api_url}"
     api_key = config.replay_api_key
     if not api_url or not api_key:
-        print("[uploader] replay_api_url or replay_api_key not configured, skipping")
+        log.warning("replay_api_url or replay_api_key not configured, skipping")
         return False
 
     metadata = _read_json_safe(session.json_path)
     if not metadata:
-        print(f"[uploader] Failed to read metadata: {session.json_path}")
+        log.error("Failed to read metadata: %s", session.json_path)
         return False
 
     if metadata.get("status") != "completed":
-        print(
-            f"[uploader] Status is '{metadata.get('status')}', not 'completed'. Skipping upload."
+        log.warning(
+            "Status is '%s', not 'completed'. Skipping upload.",
+            metadata.get("status"),
         )
         return False
 
@@ -105,11 +109,11 @@ async def upload(session: RecordingSession, config: RecorderConfig) -> bool:
                     api_url, data=data, files=files, headers=headers
                 )
         except httpx.TimeoutException:
-            print(f"[uploader] Timeout (attempt {attempt}/3)")
+            log.warning("Timeout (attempt %d/3)", attempt)
             await asyncio.sleep(5)
             continue
         except httpx.RequestError as e:
-            print(f"[uploader] Request failed (attempt {attempt}/3): {e}")
+            log.warning("Request failed (attempt %d/3): %s", attempt, e)
             await asyncio.sleep(5)
             continue
         finally:
@@ -120,76 +124,16 @@ async def upload(session: RecordingSession, config: RecorderConfig) -> bool:
                     pass
 
         if resp.is_success:
-            print(f"[uploader] Replay uploaded: {live_id}")
+            log.info("Replay uploaded: %s", live_id)
             return True
         else:
             body = resp.text[:500]
-            print(
-                f"[uploader] Upload failed (attempt {attempt}/3): {resp.status_code} {body}"
+            log.warning(
+                "Upload failed (attempt %d/3): %s %s", attempt, resp.status_code, body
             )
             if resp.status_code == 409:
                 return False
             await asyncio.sleep(5)
 
-    print(f"[uploader] All retries exhausted for {live_id}")
+    log.error("All retries exhausted for %s", live_id)
     return False
-
-
-async def upload_existing(config: RecorderConfig):
-    """Scan raw recordings dir and upload any completed sessions in parallel."""
-    raw_dir = config.recordings_dir
-    if not os.path.isdir(raw_dir):
-        return
-
-    tasks = []
-    for entry in sorted(os.listdir(raw_dir)):
-        folder_path = os.path.join(raw_dir, entry)
-        if not os.path.isdir(folder_path):
-            continue
-
-        json_file = jsonl_file = srt_file = None
-        for f in os.listdir(folder_path):
-            if f.endswith(".json") and not f.endswith(".jsonl"):
-                json_file = f
-            elif f.endswith(".jsonl"):
-                jsonl_file = f
-            elif f.endswith(".srt"):
-                srt_file = f
-
-        if not json_file:
-            continue
-
-        meta_path = os.path.join(folder_path, json_file)
-        meta = _read_json_safe(meta_path)
-        if not meta or meta.get("status") != "completed":
-            continue
-
-        live_id = meta.get("live_id", json_file.replace(".json", ""))
-
-        session = RecordingSession(
-            live_id=live_id,
-            platform=meta.get("platform", ""),
-            member_name=meta.get("member_name", ""),
-            member_nickname=meta.get("member_nickname", ""),
-            room_id=meta.get("room_id", ""),
-            room_identifier=meta.get("room_identifier"),
-            hls_url="",
-            recording_start_time=0.0,
-            output_path=os.path.join(folder_path, f"{live_id}.mp4"),
-            chat_log_path=os.path.join(folder_path, f"{live_id}.txt"),
-            srt_path=os.path.join(folder_path, srt_file) if srt_file else "",
-            json_path=meta_path,
-            jsonl_path=os.path.join(folder_path, jsonl_file) if jsonl_file else "",
-            thumbnail_path="",
-            screenshots_folder=os.path.join(folder_path, "screenshots"),
-            live_folder=folder_path,
-            title=meta.get("title", ""),
-            member_image="",
-            start_at=meta.get("start_at", ""),
-        )
-
-        tasks.append(upload(session, config))
-
-    if tasks:
-        print(f"[uploader] Processing {len(tasks)} existing completed session(s)...")
-        await asyncio.gather(*tasks, return_exceptions=True)

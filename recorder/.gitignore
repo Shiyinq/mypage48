@@ -2,6 +2,9 @@
 recordings/raw/*
 !recordings/raw/.gitkeep
 
+# Logs
+logs/
+
 # Python
 __pycache__/
 *.py[cod]
