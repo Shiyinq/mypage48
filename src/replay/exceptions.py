@@ -1,5 +1,5 @@
-from src.replay.constants import DomainErrorCode
 from src.exceptions import DomainException
+from src.replay.constants import DomainErrorCode
 
 
 class ReplayUploadError(DomainException):

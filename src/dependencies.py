@@ -8,8 +8,6 @@ from fastapi_sso.sso.google import GoogleSSO
 from src.achievements.service import AchievementsService
 from src.admin.repository import AdminRepository
 from src.admin.service import AdminService
-from src.replay.repository import ReplayRepository
-from src.replay.service import ReplayService
 from src.api_keys.repository import ApiKeyRepository
 from src.api_keys.service import ApiKeyService
 from src.auth.csrf_service import CSRFService
@@ -43,6 +41,8 @@ from src.memories.repository import MemoriesRepository
 from src.memories.service import MemoriesService
 from src.news.repository import NewsRepository
 from src.news.service import NewsService
+from src.replay.repository import ReplayRepository
+from src.replay.service import ReplayService
 from src.setlists.repository import SetlistsRepository
 from src.setlists.service import SetlistsService
 from src.sorter.repository import SortersRepository

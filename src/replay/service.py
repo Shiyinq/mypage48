@@ -1,13 +1,12 @@
-import io
 import json
 from datetime import datetime, timezone
 from typing import Optional
 
 from src.config import Settings
 from src.logging_config import create_logger
-from src.replay.exceptions import ReplayAlreadyExists, ReplayNotFound, ReplayUploadError
+from src.replay.exceptions import ReplayAlreadyExists, ReplayUploadError
 from src.replay.repository import ReplayRepository
-from src.replay.schemas import ReplayFilesInfo, ReplayResponse
+from src.replay.schemas import ReplayResponse
 from src.storage.repository import StorageRepository
 
 logger = create_logger("replay_service", __name__)
@@ -120,12 +119,12 @@ class ReplayService:
         doc_id = await self.repository.insert(doc)
         doc["_id"] = doc_id
 
-        logger.info(f"Replay uploaded: {live_id} ({len(chats)} chats, {len(screenshot_paths)} screenshots)")
+        logger.info(
+            f"Replay uploaded: {live_id} ({len(chats)} chats, {len(screenshot_paths)} screenshots)"
+        )
         return ReplayResponse(**doc)
 
-    async def _upload_bytes(
-        self, data: bytes, path: str, content_type: str
-    ) -> str:
+    async def _upload_bytes(self, data: bytes, path: str, content_type: str) -> str:
         await self.storage.upload_file(data, path, content_type=content_type)
         return path
 

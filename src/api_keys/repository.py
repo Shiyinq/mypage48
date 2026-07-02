@@ -43,7 +43,7 @@ class ApiKeyRepository:
                     "name": "$user.name",
                     "username": "$user.username",
                     "email": "$user.email",
-                    "isAdmin": "$user.isAdmin"
+                    "isAdmin": "$user.isAdmin",
                 }
             },
         ]

@@ -1,15 +1,10 @@
 import json
-
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import Response
 
-from src.dependencies import (
-    get_current_user,
-    get_replay_service,
-    require_admin,
-)
+from src.dependencies import get_replay_service, require_admin
 from src.replay.exceptions import ReplayNotFound, ReplayUploadError
 from src.replay.schemas import ReplayListItem, ReplayResponse
 from src.replay.service import ReplayService

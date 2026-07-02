@@ -110,7 +110,11 @@ from src.news.http_exceptions import (
     NewsNotFound,
 )
 from src.replay.exceptions import ReplayAlreadyExists, ReplayNotFound, ReplayUploadError
-from src.replay.http_exceptions import HttpReplayAlreadyExists, HttpReplayNotFound, HttpReplayUploadError
+from src.replay.http_exceptions import (
+    HttpReplayAlreadyExists,
+    HttpReplayNotFound,
+    HttpReplayUploadError,
+)
 from src.setlists.exceptions import SetlistFetchError, SetlistNotFoundError
 from src.setlists.http_exceptions import SetlistFetchError as SetlistFetchHTTPException
 from src.setlists.http_exceptions import SetlistNotFound
@@ -417,9 +421,7 @@ async def domain_exception_handler(request: Request, exc: DomainException):
 
     # Replay errors
     if isinstance(exc, ReplayAlreadyExists):
-        return await detailed_http_exception_handler(
-            request, HttpReplayAlreadyExists()
-        )
+        return await detailed_http_exception_handler(request, HttpReplayAlreadyExists())
     if isinstance(exc, ReplayUploadError):
         return await detailed_http_exception_handler(request, HttpReplayUploadError())
     if isinstance(exc, ReplayNotFound):

@@ -10,22 +10,15 @@ def _serialize_dt(v: Optional[datetime]) -> Optional[str]:
         return None
     return v.isoformat().replace("+00:00", "Z")
 
+
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
 
 class ReplayUploadRequest(BaseModel):
-    metadata: str = Field(
-        ..., description="JSON string of the info.json metadata"
-    )
-    thumbnail: UploadFile = Field(
-        ..., description="Thumbnail image file (JPG)"
-    )
-    jsonl: UploadFile = Field(
-        ..., description="Chat log file (JSONL)"
-    )
-    srt: UploadFile = Field(
-        ..., description="Subtitle file (SRT)"
-    )
+    metadata: str = Field(..., description="JSON string of the info.json metadata")
+    thumbnail: UploadFile = Field(..., description="Thumbnail image file (JPG)")
+    jsonl: UploadFile = Field(..., description="Chat log file (JSONL)")
+    srt: UploadFile = Field(..., description="Subtitle file (SRT)")
     screenshots: list[UploadFile] = Field(
         default_factory=list,
         description="Screenshot images from screenshots/ folder",

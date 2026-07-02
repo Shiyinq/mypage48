@@ -29,6 +29,11 @@ class ReplayRepository:
     async def update_youtube_id(self, live_id: str, youtube_id: str) -> bool:
         result = await self.col.update_one(
             {"live_id": live_id},
-            {"$set": {"youtube_id": youtube_id, "updated_at": datetime.now(timezone.utc)}},
+            {
+                "$set": {
+                    "youtube_id": youtube_id,
+                    "updated_at": datetime.now(timezone.utc),
+                }
+            },
         )
         return result.modified_count > 0
