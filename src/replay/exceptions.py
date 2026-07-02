@@ -8,3 +8,7 @@ class ReplayUploadError(DomainException):
 
 class ReplayNotFound(DomainException):
     ERROR_MESSAGE = DomainErrorCode.REPLAY_NOT_FOUND
+
+
+class ReplayAlreadyExists(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.REPLAY_ALREADY_EXISTS

@@ -5,7 +5,7 @@ from typing import Optional
 
 from src.config import Settings
 from src.logging_config import create_logger
-from src.replay.exceptions import ReplayUploadError
+from src.replay.exceptions import ReplayAlreadyExists, ReplayNotFound, ReplayUploadError
 from src.replay.repository import ReplayRepository
 from src.replay.schemas import ReplayFilesInfo, ReplayResponse
 from src.storage.repository import StorageRepository
@@ -61,7 +61,7 @@ class ReplayService:
 
         if await self.repository.exists(live_id):
             logger.warning(f"Replay {live_id} already exists, skipping")
-            raise ReplayUploadError(f"Replay {live_id} already exists")
+            raise ReplayAlreadyExists(f"Replay {live_id} already exists")
 
         r2_base = f"replay/{live_id}"
 

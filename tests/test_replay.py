@@ -6,7 +6,7 @@ from httpx import AsyncClient
 
 from src.replay.service import ReplayService
 from src.replay.schemas import ReplayListItem, ReplayResponse
-from src.replay.exceptions import ReplayUploadError
+from src.replay.exceptions import ReplayAlreadyExists, ReplayNotFound, ReplayUploadError
 from src.dependencies import get_replay_service, get_current_user
 from src.main import app
 from src.config import Settings
@@ -124,7 +124,7 @@ async def test_upload_already_exists(replay_service):
         "status": "completed",
     }).encode()
 
-    with pytest.raises(ReplayUploadError, match="already exists"):
+    with pytest.raises(ReplayAlreadyExists, match="already exists"):
         await replay_service.upload(
             live_id="existing-live",
             metadata_bytes=metadata,
