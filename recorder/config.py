@@ -12,6 +12,9 @@ class RecorderConfig(BaseSettings):
     log_level: str = "INFO"
     replay_api_url: str = "/admin/replay/upload"
     replay_api_key: str = ""
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    youtube_refresh_token: str = ""
 
     model_config = {
         "env_file": (
