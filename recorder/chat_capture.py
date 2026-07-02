@@ -129,14 +129,14 @@ async def capture_idn(
                                 continue
 
                             offset = time.time() - recording_start_time
-                            username, text, is_gift = _parse_idn_message(message)
+                            username, text, is_gift, json_body = _parse_idn_message(message)
                             if username == "" and text == "":
                                 continue
                             f.write(f"{offset:.3f}\t{username}\t{text}\t{is_gift}\n")
                             f.flush()
 
-                            if jsonl_f:
-                                jsonl_f.write(message + "\n")
+                            if jsonl_f and json_body:
+                                jsonl_f.write(json_body + "\n")
                                 jsonl_f.flush()
 
                 except websockets.ConnectionClosed:
@@ -159,6 +159,7 @@ def _parse_idn_message(raw: str) -> tuple:
     username = ""
     text = ""
     is_gift = False
+    json_body = ""
 
     tags = {}
     if raw.startswith("@"):
@@ -172,16 +173,17 @@ def _parse_idn_message(raw: str) -> tuple:
 
     msg_idx = raw.find(" :", raw.find("PRIVMSG"))
     if msg_idx == -1:
-        return username, text, is_gift
+        return username, text, is_gift, ""
 
     body = raw[msg_idx + 2:]
 
     if body.startswith("***"):
-        return "", "", False
+        return "", "", False, ""
 
     username = tags.get("display-name") or tags.get("idn.app/display-name") or ""
 
     if body.startswith("{"):
+        json_body = body
         try:
             parsed = json.loads(body)
             if parsed.get("user"):
@@ -210,6 +212,6 @@ def _parse_idn_message(raw: str) -> tuple:
         text = body
 
     if not username and not text:
-        return "", "", False
+        return "", "", False, json_body
 
-    return username, text, is_gift
+    return username, text, is_gift, json_body
