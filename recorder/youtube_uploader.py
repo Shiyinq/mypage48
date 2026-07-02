@@ -8,13 +8,23 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
+from . import uploader
 from .config import RecorderConfig
 from .models import RecordingSession
-from . import uploader
 
 _MONTHS_ID = {
-    1: "Januari", 2: "Februari", 3: "Maret", 4: "April", 5: "Mei", 6: "Juni",
-    7: "Juli", 8: "Agustus", 9: "September", 10: "Oktober", 11: "November", 12: "Desember",
+    1: "Januari",
+    2: "Februari",
+    3: "Maret",
+    4: "April",
+    5: "Mei",
+    6: "Juni",
+    7: "Juli",
+    8: "Agustus",
+    9: "September",
+    10: "Oktober",
+    11: "November",
+    12: "Desember",
 }
 
 
@@ -45,7 +55,9 @@ def _build_youtube(config: RecorderConfig):
     return build("youtube", "v3", credentials=creds)
 
 
-def _do_upload_blocking(config: RecorderConfig, mp4_path: str, title: str, description: str) -> str:
+def _do_upload_blocking(
+    config: RecorderConfig, mp4_path: str, title: str, description: str
+) -> str:
     youtube = _build_youtube(config)
     body = {
         "snippet": {
@@ -58,13 +70,21 @@ def _do_upload_blocking(config: RecorderConfig, mp4_path: str, title: str, descr
         },
     }
     media = MediaFileUpload(mp4_path, chunksize=-1, resumable=True)
-    request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
+    request = youtube.videos().insert(
+        part="snippet,status", body=body, media_body=media
+    )
     response = request.execute()
     return response["id"]
 
 
-async def _upload_to_youtube(session: RecordingSession, config: RecorderConfig) -> str | None:
-    if not config.google_client_id or not config.google_client_secret or not config.youtube_refresh_token:
+async def _upload_to_youtube(
+    session: RecordingSession, config: RecorderConfig
+) -> str | None:
+    if (
+        not config.google_client_id
+        or not config.google_client_secret
+        or not config.youtube_refresh_token
+    ):
         return None
 
     meta_path = session.json_path

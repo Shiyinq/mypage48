@@ -56,7 +56,9 @@ async def capture_showroom(
                             f.flush()
 
                             if jsonl_f:
-                                jsonl_f.write(json.dumps(comment, ensure_ascii=False) + "\n")
+                                jsonl_f.write(
+                                    json.dumps(comment, ensure_ascii=False) + "\n"
+                                )
                                 jsonl_f.flush()
 
                     except Exception as e:
@@ -104,10 +106,16 @@ async def capture_idn(
                     ) as ws:
                         retry_delay = 1.0
 
-                        await ws.send(f"NICK idn-{random.randint(1, 999999)}-{int(time.time() * 1000)}\n")
-                        await ws.send(f"USER {random.randint(1, 999999)}_{uuid.uuid4().hex[:8]} 0 * null\n")
+                        await ws.send(
+                            f"NICK idn-{random.randint(1, 999999)}-{int(time.time() * 1000)}\n"
+                        )
+                        await ws.send(
+                            f"USER {random.randint(1, 999999)}_{uuid.uuid4().hex[:8]} 0 * null\n"
+                        )
                         await ws.send("CAP LS 302\n")
-                        await ws.send("CAP REQ :idn.app/tags idn.app/commands idn.app/membership\n")
+                        await ws.send(
+                            "CAP REQ :idn.app/tags idn.app/commands idn.app/membership\n"
+                        )
                         await ws.send("CAP END\n")
 
                         joined = False
@@ -129,7 +137,9 @@ async def capture_idn(
                                 continue
 
                             offset = time.time() - recording_start_time
-                            username, text, is_gift, json_body = _parse_idn_message(message)
+                            username, text, is_gift, json_body = _parse_idn_message(
+                                message
+                            )
                             if username == "" and text == "":
                                 continue
                             f.write(f"{offset:.3f}\t{username}\t{text}\t{is_gift}\n")
@@ -175,7 +185,7 @@ def _parse_idn_message(raw: str) -> tuple:
     if msg_idx == -1:
         return username, text, is_gift, ""
 
-    body = raw[msg_idx + 2:]
+    body = raw[msg_idx + 2 :]
 
     if body.startswith("***"):
         return "", "", False, ""

@@ -2,9 +2,9 @@ import asyncio
 import signal
 import sys
 
+from . import youtube_uploader
 from .config import RecorderConfig
 from .manager import RecordingManager
-from . import youtube_uploader
 
 
 async def main():
@@ -39,9 +39,7 @@ async def main():
                 print(f"[recorder] Loop error: {e}")
 
             try:
-                await asyncio.wait_for(
-                    stop_event.wait(), timeout=config.poll_interval
-                )
+                await asyncio.wait_for(stop_event.wait(), timeout=config.poll_interval)
                 break
             except asyncio.TimeoutError:
                 pass

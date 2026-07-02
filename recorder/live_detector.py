@@ -14,7 +14,9 @@ class LiveDetector:
 
     async def poll(self) -> Tuple[List[LiveInfo], bool]:
         try:
-            resp = await self.client.get(f"{self.api_base_url}/jkt48/live", params={"t": int(time.time() * 1000)})
+            resp = await self.client.get(
+                f"{self.api_base_url}/jkt48/live", params={"t": int(time.time() * 1000)}
+            )
             resp.raise_for_status()
             data = resp.json()
         except Exception as e:
@@ -66,7 +68,9 @@ class LiveDetector:
         self._last_live_ids = current_ids
         return new_lives, ended_ids
 
-    async def get_streaming_url(self, platform: str, room_id: str, live_id: str = "") -> Optional[dict]:
+    async def get_streaming_url(
+        self, platform: str, room_id: str, live_id: str = ""
+    ) -> Optional[dict]:
         identifier = room_id if platform == "showroom" else (live_id or room_id)
         try:
             resp = await self.client.get(
@@ -75,7 +79,9 @@ class LiveDetector:
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
-            print(f"[live_detector] Failed to get streaming URL for {platform}/{identifier}: {e}")
+            print(
+                f"[live_detector] Failed to get streaming URL for {platform}/{identifier}: {e}"
+            )
             return None
 
     @staticmethod

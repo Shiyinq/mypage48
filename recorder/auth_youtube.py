@@ -19,8 +19,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-CLIENT_ID = os.environ.get("REC_GOOGLE_CLIENT_ID") or input("GOOGLE_CLIENT_ID: ").strip()
-CLIENT_SECRET = os.environ.get("REC_GOOGLE_CLIENT_SECRET") or input("GOOGLE_CLIENT_SECRET: ").strip()
+CLIENT_ID = (
+    os.environ.get("REC_GOOGLE_CLIENT_ID") or input("GOOGLE_CLIENT_ID: ").strip()
+)
+CLIENT_SECRET = (
+    os.environ.get("REC_GOOGLE_CLIENT_SECRET")
+    or input("GOOGLE_CLIENT_SECRET: ").strip()
+)
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
 
 client_config = {

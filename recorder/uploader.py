@@ -53,7 +53,9 @@ async def upload(session: RecordingSession, config: RecorderConfig) -> bool:
         return False
 
     if metadata.get("status") != "completed":
-        print(f"[uploader] Status is '{metadata.get('status')}', not 'completed'. Skipping upload.")
+        print(
+            f"[uploader] Status is '{metadata.get('status')}', not 'completed'. Skipping upload."
+        )
         return False
 
     live_id = session.live_id
@@ -67,21 +69,41 @@ async def upload(session: RecordingSession, config: RecorderConfig) -> bool:
         try:
             thumbnail_path = _find_latest_screenshot(screenshot_dir)
             if thumbnail_path:
-                files.append(("thumbnail", (f"{live_id}.jpg", open(thumbnail_path, "rb"), "image/jpeg")))
+                files.append(
+                    (
+                        "thumbnail",
+                        (f"{live_id}.jpg", open(thumbnail_path, "rb"), "image/jpeg"),
+                    )
+                )
 
             if os.path.isdir(screenshot_dir):
                 for fname in sorted(os.listdir(screenshot_dir)):
                     if fname.endswith(".jpg"):
                         fpath = os.path.join(screenshot_dir, fname)
-                        files.append(("screenshots", (fname, open(fpath, "rb"), "image/jpeg")))
+                        files.append(
+                            ("screenshots", (fname, open(fpath, "rb"), "image/jpeg"))
+                        )
 
             jsonl_data = _read_file(session.jsonl_path) or b""
             srt_data = _read_file(session.srt_path) or b""
-            files.append(("jsonl", (f"{live_id}.jsonl", io.BytesIO(jsonl_data), "application/x-ndjson")))
-            files.append(("srt", (f"{live_id}.srt", io.BytesIO(srt_data), "text/plain")))
+            files.append(
+                (
+                    "jsonl",
+                    (
+                        f"{live_id}.jsonl",
+                        io.BytesIO(jsonl_data),
+                        "application/x-ndjson",
+                    ),
+                )
+            )
+            files.append(
+                ("srt", (f"{live_id}.srt", io.BytesIO(srt_data), "text/plain"))
+            )
 
             async with httpx.AsyncClient(timeout=_REPLAY_API_TIMEOUT) as client:
-                resp = await client.post(api_url, data=data, files=files, headers=headers)
+                resp = await client.post(
+                    api_url, data=data, files=files, headers=headers
+                )
         except httpx.TimeoutException:
             print(f"[uploader] Timeout (attempt {attempt}/3)")
             await asyncio.sleep(5)
@@ -102,7 +124,9 @@ async def upload(session: RecordingSession, config: RecorderConfig) -> bool:
             return True
         else:
             body = resp.text[:500]
-            print(f"[uploader] Upload failed (attempt {attempt}/3): {resp.status_code} {body}")
+            print(
+                f"[uploader] Upload failed (attempt {attempt}/3): {resp.status_code} {body}"
+            )
             if resp.status_code == 409:
                 return False
             await asyncio.sleep(5)
