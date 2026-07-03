@@ -66,14 +66,23 @@ class RecordingManager:
             await self._end_session(live_id, reason="completed")
 
     async def check_health(self):
-        dead_ids = []
+        completed_ids = []
+        error_ids = []
         now = time.time()
         for live_id, session in self.sessions.items():
             if session.ffmpeg_proc and not stream_recorder.is_running(
                 session.ffmpeg_proc
             ):
                 self.log.warning("ffmpeg died for %s", live_id)
-                dead_ids.append(live_id)
+                stream_info = await self.detector.get_streaming_url(
+                    session.platform, session.room_id, session.live_id
+                )
+                if stream_info:
+                    self.log.warning("Stream still live, marking error for %s", live_id)
+                    error_ids.append(live_id)
+                else:
+                    self.log.info("Stream ended, marking completed for %s", live_id)
+                    completed_ids.append(live_id)
                 continue
             if os.path.exists(session.output_path):
                 current_size = os.path.getsize(session.output_path)
@@ -86,11 +95,13 @@ class RecordingManager:
                         age,
                         current_size,
                     )
-                    dead_ids.append(live_id)
+                    error_ids.append(live_id)
 
                 session.last_file_size = current_size
 
-        for live_id in dead_ids:
+        for live_id in completed_ids:
+            await self._end_session(live_id, reason="completed")
+        for live_id in error_ids:
             await self._end_session(live_id, reason="error")
 
     def log_progress(self):
@@ -300,8 +311,8 @@ class RecordingManager:
     async def _capture_screenshot(
         self, source: str, dest: str, seek: str, timeout: int = 30
     ):
-        try:
-            r = await asyncio.create_subprocess_exec(
+        strategies = [
+            [
                 "ffmpeg",
                 "-loglevel",
                 "error",
@@ -315,29 +326,125 @@ class RecordingManager:
                 "unofficial",
                 "-y",
                 dest,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
+            ],
+            [
+                "ffmpeg",
+                "-loglevel",
+                "error",
+                "-fflags",
+                "+genpts",
+                "-analyzeduration",
+                "1000000",
+                "-ss",
+                seek,
+                "-i",
+                source,
+                "-vframes",
+                "1",
+                "-strict",
+                "unofficial",
+                "-y",
+                dest,
+            ],
+            [
+                "ffmpeg",
+                "-loglevel",
+                "error",
+                "-skip_frame",
+                "nokey",
+                "-i",
+                source,
+                "-ss",
+                seek,
+                "-vframes",
+                "1",
+                "-strict",
+                "unofficial",
+                "-y",
+                dest,
+            ],
+            [
+                "ffmpeg",
+                "-loglevel",
+                "error",
+                "-i",
+                source,
+                "-ss",
+                seek,
+                "-vframes",
+                "1",
+                "-strict",
+                "unofficial",
+                "-y",
+                dest,
+            ],
+        ]
+
+        last_err = ""
+        for i, cmd in enumerate(strategies):
+            strategy_name = ["fast seek", "+genpts", "skip_frame nokey", "full scan"][i]
             try:
-                _, stderr = await asyncio.wait_for(r.communicate(), timeout=timeout)
-            except asyncio.TimeoutError:
-                r.kill()
-                await r.wait()
-                return False
-            if r.returncode != 0:
-                err = stderr.decode(errors="ignore").strip()
-                self.log.warning("ffmpeg screenshot failed (seek=%s): %s", seek, err)
-                return False
-            if not os.path.exists(dest) or os.path.getsize(dest) == 0:
-                err = stderr.decode(errors="ignore").strip()
-                self.log.warning("Screenshot file missing/empty: %s", dest)
-                if err:
-                    self.log.warning("  ffmpeg stderr: %s", err)
-                return False
-            return True
-        except Exception as e:
-            self.log.error("screenshot error: %s", e)
-            return False
+                r = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                try:
+                    _, stderr = await asyncio.wait_for(r.communicate(), timeout=timeout)
+                except asyncio.TimeoutError:
+                    r.kill()
+                    await r.wait()
+                    self.log.info(
+                        "  strategy %d/%d (%s): timeout",
+                        i + 1,
+                        len(strategies),
+                        strategy_name,
+                    )
+                    continue
+
+                if r.returncode != 0:
+                    last_err = stderr.decode(errors="ignore").strip()
+                    self.log.info(
+                        "  strategy %d/%d (%s): failed (%s)",
+                        i + 1,
+                        len(strategies),
+                        strategy_name,
+                        last_err[:80],
+                    )
+                    continue
+
+                if not os.path.exists(dest) or os.path.getsize(dest) == 0:
+                    last_err = stderr.decode(errors="ignore").strip()
+                    self.log.info(
+                        "  strategy %d/%d (%s): empty output",
+                        i + 1,
+                        len(strategies),
+                        strategy_name,
+                    )
+                    continue
+
+                self.log.info(
+                    "  screenshot OK with strategy %d/%d (%s)",
+                    i + 1,
+                    len(strategies),
+                    strategy_name,
+                )
+                return True
+            except Exception as e:
+                last_err = str(e)
+                self.log.info(
+                    "  strategy %d/%d (%s): exception (%s)",
+                    i + 1,
+                    len(strategies),
+                    strategy_name,
+                    e,
+                )
+                continue
+
+        self.log.warning("Screenshot file missing/empty: %s", dest)
+        if last_err:
+            self.log.warning("  ffmpeg stderr: %s", last_err)
+        return False
 
     async def _capture_initial_thumbnail(self, session: RecordingSession):
         await asyncio.sleep(30)
@@ -538,7 +645,12 @@ class RecordingManager:
         self.sessions.pop(live_id, None)
         self._stop_events.pop(live_id, None)
 
-        self.log.info("Finished recording %s/%s", session.platform, session.member_name)
+        self.log.info(
+            "Finished recording %s/%s with status %s",
+            session.platform,
+            session.member_name,
+            reason.upper(),
+        )
 
     async def shutdown(self):
         for live_id in list(self.sessions.keys()):

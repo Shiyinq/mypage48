@@ -9,7 +9,7 @@ from logging import Logger
 from . import r2_uploader
 from .config import RecorderConfig
 from .models import RecordingSession
-from .youtube_uploader import _upload_to_youtube
+from .youtube_uploader import _format_title, _upload_to_youtube
 
 
 class Watcher:
@@ -42,7 +42,6 @@ class Watcher:
             return
 
         done = self._read_history()
-        tasks = []
 
         for entry in sorted(os.listdir(raw_dir)):
             folder_path = os.path.join(raw_dir, entry)
@@ -66,28 +65,30 @@ class Watcher:
                 elapsed = int(time.time() - info.get("started_at", time.time()))
                 phase = info.get("phase", "?")
                 pct = info.get("pct")
+                title = info.get("title", "?")
                 if pct is not None:
                     self.log_rec.info(
-                        "Already processing %s (%s, %d%%, %ds elapsed)",
-                        live_id,
+                        "Upload progress | %s | %s | %d%% | %ds",
+                        title,
                         phase,
                         pct,
                         elapsed,
                     )
                 else:
                     self.log_rec.info(
-                        "Already processing %s (%s, %ds elapsed)",
-                        live_id,
+                        "Upload progress | %s | %s | %ds",
+                        title,
                         phase,
                         elapsed,
                     )
                 continue
 
-            self._processing[live_id] = {"started_at": time.time(), "phase": "pending"}
-            tasks.append(self._process_folder(folder_path, live_id))
-
-        if tasks:
-            await asyncio.gather(*tasks, return_exceptions=True)
+            self._processing[live_id] = {
+                "started_at": time.time(),
+                "phase": "pending",
+                "title": _format_title(meta),
+            }
+            asyncio.create_task(self._process_folder(folder_path, live_id))
 
     async def _process_folder(self, folder_path: str, live_id: str):
         try:
@@ -122,9 +123,16 @@ class Watcher:
             try:
                 self._processing[live_id]["phase"] = "uploading to YouTube"
 
-                def _on_progress(done_bytes, total_bytes):
-                    pct = int(done_bytes * 100 / total_bytes) if total_bytes else 0
+                _last_pct = [0]
+
+                def _on_progress(progress_fraction, _total_bytes):
+                    pct = int(progress_fraction * 100)
                     self._processing[live_id]["pct"] = pct
+                    if pct >= _last_pct[0] + 10:
+                        _last_pct[0] = pct
+                        self.log_upl.info(
+                            "YouTube upload: %d%% — %s", pct, session.title
+                        )
 
                 ytid = await _upload_to_youtube(
                     session,
