@@ -12,6 +12,16 @@ from ..models import RecordingSession
 from .youtube_uploader import _format_title, _upload_to_youtube
 
 
+def _fmt_duration(seconds: int) -> str:
+    h, rem = divmod(seconds, 3600)
+    m, s = divmod(rem, 60)
+    if h:
+        return f"{h}h{m}m{s}s"
+    if m:
+        return f"{m}m{s}s"
+    return f"{s}s"
+
+
 class Watcher:
     def __init__(self, config: RecorderConfig, log_rec: Logger, log_upl: Logger):
         self.config = config
@@ -68,18 +78,18 @@ class Watcher:
                 title = info.get("title", "?")
                 if pct is not None:
                     self.log_rec.info(
-                        "Upload progress | %s | %s | %d%% | %ds",
+                        "Upload progress | %s | %s | %d%% | %s",
                         title,
                         phase,
                         pct,
-                        elapsed,
+                        _fmt_duration(elapsed),
                     )
                 else:
                     self.log_rec.info(
-                        "Upload progress | %s | %s | %ds",
+                        "Upload progress | %s | %s | %s",
                         title,
                         phase,
-                        elapsed,
+                        _fmt_duration(elapsed),
                     )
                 continue
 
@@ -130,9 +140,6 @@ class Watcher:
                     self._processing[live_id]["pct"] = pct
                     if pct >= _last_pct[0] + 10:
                         _last_pct[0] = pct
-                        self.log_upl.info(
-                            "YouTube upload: %d%% — %s", pct, session.title
-                        )
 
                 ytid = await _upload_to_youtube(
                     session,
