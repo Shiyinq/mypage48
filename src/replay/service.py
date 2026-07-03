@@ -3,11 +3,13 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from src.config import Settings
+from src.live_history.repository import LiveHistoryRepository
 from src.logging_config import create_logger
 from src.replay.exceptions import ReplayAlreadyExists, ReplayUploadError
 from src.replay.repository import ReplayRepository
-from src.replay.schemas import ReplayResponse
+from src.replay.schemas import ReplayDetailResponse, ReplayResponse
 from src.storage.repository import StorageRepository
+from src.storage.service import StorageService
 
 logger = create_logger("replay_service", __name__)
 
@@ -27,15 +29,92 @@ def _parse_jsonl(content: bytes) -> list[dict]:
     return chats
 
 
+def _compute_chat_stats(
+    chats: list[dict], platform: str
+) -> tuple[list[dict], list[dict], int, int, int, int]:
+    gift_map: dict[str, dict] = {}
+    fan_map: dict[str, dict] = {}
+    chat_count = 0
+    gift_count = 0
+    loveletter_count = 0
+    total_gold = 0
+
+    for raw in chats:
+        if platform == "idn" or not platform:
+            user = raw.get("user", {})
+            if not isinstance(user, dict) or not user:
+                continue
+
+            gift_data = raw.get("gift")
+            if gift_data:
+                name = gift_data.get("name", "Gift")
+                gold = gift_data.get("gold", 0) or 0
+                total_gold += gold
+                gift_count += 1
+
+                entry = gift_map.setdefault(name, {"count": 0, "total_gold": 0})
+                entry["count"] += 1
+                entry["total_gold"] += gold
+
+                username = user.get("name", "Unknown")
+                avatar = user.get("avatar_url")
+                fan_entry = fan_map.setdefault(
+                    username, {"total_gold": 0, "count": 0, "avatar": None}
+                )
+                fan_entry["total_gold"] += gold
+                fan_entry["count"] += 1
+                if avatar and not fan_entry["avatar"]:
+                    fan_entry["avatar"] = avatar
+            elif raw.get("letter"):
+                loveletter_count += 1
+            elif raw.get("chat"):
+                chat_count += 1
+            elif raw.get("message") or raw.get("text"):
+                chat_count += 1
+
+        elif platform == "showroom":
+            # TODO: Implement Showroom gift parsing in the future.
+            # Note: Be careful not to count "1-50" (Hitobito) chats directly as large gold values.
+            # Actual gifts might have a different JSON structure than regular chats.
+            chat_count += 1
+
+    top_gifts = sorted(
+        [
+            {"name": k, "count": v["count"], "total_gold": v["total_gold"]}
+            for k, v in gift_map.items()
+        ],
+        key=lambda x: (x["total_gold"], x["count"]),
+        reverse=True,
+    )
+    top_fans = sorted(
+        [
+            {
+                "user": k,
+                "avatar": v["avatar"],
+                "total_gold": v["total_gold"],
+                "count": v["count"],
+            }
+            for k, v in fan_map.items()
+        ],
+        key=lambda x: x["total_gold"],
+        reverse=True,
+    )
+
+    return top_gifts, top_fans, chat_count, gift_count, total_gold, loveletter_count
+
+
 class ReplayService:
     def __init__(
         self,
         repository: ReplayRepository,
         storage_repository: StorageRepository,
+        live_history_repo: LiveHistoryRepository,
         config: Settings,
     ):
         self.repository = repository
         self.storage = storage_repository
+        self.live_history_repo = live_history_repo
+        self.storage_service = StorageService(storage_repository, config)
         self.config = config
 
     async def upload(
@@ -55,7 +134,8 @@ class ReplayService:
         status = metadata.get("status")
         if status != "completed":
             raise ReplayUploadError(
-                f"Cannot upload replay with status '{status}'. Only 'completed' allowed."
+                f"Cannot upload replay with status '{status}'. "
+                "Only 'completed' allowed."
             )
 
         if await self.repository.exists(live_id):
@@ -120,7 +200,8 @@ class ReplayService:
         doc["_id"] = doc_id
 
         logger.info(
-            f"Replay uploaded: {live_id} ({len(chats)} chats, {len(screenshot_paths)} screenshots)"
+            f"Replay uploaded: {live_id} "
+            f"({len(chats)} chats, {len(screenshot_paths)} screenshots)"
         )
         return ReplayResponse(**doc)
 
@@ -134,6 +215,70 @@ class ReplayService:
             doc["_id"] = str(doc["_id"])
             return ReplayResponse(**doc)
         return None
+
+    async def get_detail(self, live_id: str) -> Optional[ReplayDetailResponse]:
+        doc = await self.repository.find_by_live_id(live_id)
+        if not doc:
+            return None
+        doc["_id"] = str(doc["_id"])
+
+        # Fetch live history data
+        lh_doc = await self.live_history_repo.get_global_history_by_live_id(live_id)
+        if lh_doc:
+            doc["title"] = lh_doc.get("title") or doc.get("title")
+            doc["image"] = lh_doc.get("image")
+            doc["view_num"] = lh_doc.get("view_num", 0)
+            doc["start_at"] = lh_doc.get("start_at") or doc.get("start_at")
+            doc["end_at"] = lh_doc.get("end_at")
+            doc["last_seen_at"] = lh_doc.get("last_seen_at")
+            doc["status"] = lh_doc.get("status", "ended")
+            doc["member"] = lh_doc.get("member", {})
+            doc["duration"] = lh_doc.get("duration", doc.get("duration_seconds", 0))
+            doc["blurHash"] = lh_doc.get("blurHash")
+
+            if doc.get("image") and doc["image"].startswith("live/"):
+                variants = await self.storage_service.resolve_image_variants(
+                    doc["image"]
+                )
+                doc["image"] = variants.get("url")
+                doc["image_medium"] = variants.get("url_medium")
+                doc["image_small"] = variants.get("url_small")
+                if variants.get("blurHash") and not doc.get("blurHash"):
+                    doc["blurHash"] = variants.get("blurHash")
+
+        raw_chats = doc.get("chats", [])
+        platform = doc.get("platform", "")
+        (
+            top_gifts,
+            top_fans,
+            chat_count,
+            gift_count,
+            total_gold,
+            loveletter_count,
+        ) = _compute_chat_stats(raw_chats, platform)
+
+        doc["total_chats"] = chat_count
+        doc["total_gifts"] = gift_count
+        doc["total_gold"] = total_gold
+        doc["total_loveletters"] = loveletter_count
+        doc["top_gifts"] = top_gifts
+        doc["top_fans"] = top_fans
+        doc.pop("chats", None)
+
+        files = doc.get("files", {})
+        screenshots = files.get("screenshots", [])
+
+        # Get absolute URLs for screenshots
+        r2_base = f"replay/{live_id}/screenshots"
+        resolved_screenshots = []
+        for s in screenshots:
+            url = await self.storage_service.resolve_url(f"{r2_base}/{s}")
+            if url:
+                resolved_screenshots.append(url)
+
+        doc["files"] = {"screenshots": resolved_screenshots}
+
+        return ReplayDetailResponse(**doc)
 
     async def list_all(self) -> list[dict]:
         docs = await self.repository.find_all()

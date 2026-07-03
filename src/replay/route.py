@@ -6,7 +6,7 @@ from fastapi.responses import Response
 
 from src.dependencies import get_replay_service, require_admin
 from src.replay.exceptions import ReplayNotFound, ReplayUploadError
-from src.replay.schemas import ReplayListItem, ReplayResponse
+from src.replay.schemas import ReplayDetailResponse, ReplayListItem, ReplayResponse
 from src.replay.service import ReplayService
 
 router = APIRouter()
@@ -58,6 +58,17 @@ async def list_replays(
 ):
     docs = await service.list_all()
     return [ReplayListItem(**d) for d in docs]
+
+
+@router.get("/replays/{live_id}", response_model=ReplayDetailResponse)
+async def get_replay_detail(
+    live_id: str,
+    service: ReplayService = Depends(get_replay_service),
+):
+    doc = await service.get_detail(live_id)
+    if not doc:
+        raise ReplayNotFound()
+    return doc
 
 
 @router.get("/replays/{live_id}/srt")

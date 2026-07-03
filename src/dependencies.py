@@ -468,6 +468,7 @@ def get_replay_repository(db=Depends(get_db)) -> ReplayRepository:
 def get_replay_service(
     repo: ReplayRepository = Depends(get_replay_repository),
     storage_repo: StorageRepository = Depends(get_storage_repository),
+    live_history_repo: LiveHistoryRepository = Depends(get_live_history_repository),
     config: Settings = Depends(get_settings),
 ) -> ReplayService:
-    return ReplayService(repo, storage_repo, config)
+    return ReplayService(repo, storage_repo, live_history_repo, config)

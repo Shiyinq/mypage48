@@ -1624,6 +1624,28 @@
 		"cancelImage": "Batal"
 	},
 	"liveHistory": {
+		"detail": {
+			"errorTitle": "Detail Live Tidak Tersedia",
+			"errorDesc": "Mohon maaf, data statistik, chat, dan detail tangkapan layar untuk live ini belum didukung atau tidak ditemukan di sistem.",
+			"back": "Kembali",
+			"broadcast": "Siaran",
+			"stats": {
+				"start": "Mulai",
+				"end": "Selesai",
+				"duration": "Durasi",
+				"recording": "Rekaman",
+				"title": "Statistik",
+				"views": "Views",
+				"gifts": "Gifts",
+				"chats": "Chats",
+				"loveLetters": "Love Letters"
+			},
+			"screenshots": "Screenshots",
+			"images": "Images",
+			"cover": "Cover",
+			"topGifter": "Top Gifter",
+			"giftList": "Gift List"
+		},
 		"publicWatchedEmptyTitle": "Riwayat Menonton",
 		"publicWatchedEmptyDesc": "Fitur ini hanya bisa digunakan jika kamu telah mempunyai akun dan login.",
 		"loginToWatch": "Masuk",

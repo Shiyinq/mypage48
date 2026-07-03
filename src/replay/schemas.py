@@ -33,6 +33,10 @@ class ReplayFilesInfo(BaseModel):
     screenshots: list[str]
 
 
+class ReplayDetailFilesInfo(BaseModel):
+    screenshots: list[str]
+
+
 class ReplayResponse(BaseModel):
     id: PyObjectId = Field(..., alias="_id")
     live_id: str
@@ -51,6 +55,55 @@ class ReplayResponse(BaseModel):
     youtube_id: Optional[str] = None
     files: ReplayFilesInfo
     chats: list[dict[str, Any]] = []
+    created_at: datetime
+    updated_at: datetime
+
+
+class ReplayGiftSummary(BaseModel):
+    name: str
+    count: int
+    total_gold: int
+
+
+class ReplayTopFan(BaseModel):
+    user: str
+    avatar: Optional[str] = None
+    total_gold: int
+    count: int
+
+
+class ReplayDetailResponse(BaseModel):
+    id: PyObjectId = Field(..., alias="_id")
+    live_id: str
+    platform: str
+    title: Optional[str] = None
+    image: Optional[str] = None
+    image_medium: Optional[str] = None
+    image_small: Optional[str] = None
+    blurHash: Optional[str] = None
+    view_num: int = 0
+    start_at: Optional[datetime] = None
+    end_at: Optional[datetime] = None
+    last_seen_at: Optional[datetime] = None
+    status: str = "live"
+    member: dict = {}
+    duration: int = 0
+
+    room_id: Optional[str] = None
+    room_identifier: Optional[str] = None
+    member_name: str
+    member_nickname: str
+    recording_started_at: Optional[datetime] = None
+    recording_ended_at: Optional[datetime] = None
+    duration_seconds: int = 0
+    youtube_id: Optional[str] = None
+    files: ReplayDetailFilesInfo
+    total_chats: int = 0
+    total_gifts: int = 0
+    total_gold: int = 0
+    total_loveletters: int = 0
+    top_gifts: list[ReplayGiftSummary] = []
+    top_fans: list[ReplayTopFan] = []
     created_at: datetime
     updated_at: datetime
 

@@ -212,7 +212,7 @@
 						<LiveHistoryItemCard
 							href={item.status === 'live'
 								? `${baseLivePath}/${item.platform}/${item.live_id}`
-								: `${basePath}/members/${item.member?.id || ''}`}
+								: `/theater/live/history/live/${item.live_id}`}
 							mode="global"
 							memberImage={item.platform === 'showroom' && item.member?.img
 								? item.member.img

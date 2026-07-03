@@ -786,6 +786,28 @@
 		"top": "Top"
 	},
 	"liveHistory": {
+		"detail": {
+			"errorTitle": "Live Detail Not Available",
+			"errorDesc": "Sorry, statistics, chat, and screenshots data for this live stream is not yet supported or could not be found.",
+			"back": "Back",
+			"broadcast": "Broadcast",
+			"stats": {
+				"start": "Start",
+				"end": "End",
+				"duration": "Duration",
+				"recording": "Recording",
+				"title": "Statistics",
+				"views": "Views",
+				"gifts": "Gifts",
+				"chats": "Chats",
+				"loveLetters": "Love Letters"
+			},
+			"screenshots": "Screenshots",
+			"images": "Images",
+			"cover": "Cover",
+			"topGifter": "Top Gifter",
+			"giftList": "Gift List"
+		},
 		"publicWatchedEmptyTitle": "Watch History",
 		"publicWatchedEmptyDesc": "This feature can only be used if you have an account and are logged in.",
 		"loginToWatch": "Login",
