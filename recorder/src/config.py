@@ -7,12 +7,12 @@ from pydantic_settings import BaseSettings
 class RecorderConfig(BaseSettings):
     api_base_url: str = "http://localhost:8000/api"
     poll_interval: int = 10
-    recordings_dir: str = str(Path(__file__).parent / "recordings" / "raw")
+    recordings_dir: str = str(Path(__file__).parent.parent / "recordings")
     max_recording_hours: int = 4
     showroom_comment_interval: float = 2.0
     log_level: str = "INFO"
     log_mode: str = "stdout"
-    logs_dir: str = str(Path(__file__).parent / "logs")
+    logs_dir: str = str(Path(__file__).parent.parent / "logs")
     replay_api_url: str = "/admin/replay/upload"
     replay_api_key: str = ""
     google_client_id: str = ""

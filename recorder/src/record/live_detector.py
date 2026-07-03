@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple
 
 import httpx
 
-from .models import LiveInfo
+from ..models import LiveInfo
 
 
 class LiveDetector:

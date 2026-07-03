@@ -6,8 +6,8 @@ from logging import Logger
 
 import httpx
 
-from .config import RecorderConfig
-from .models import RecordingSession
+from ..config import RecorderConfig
+from ..models import RecordingSession
 
 _REPLAY_API_TIMEOUT = 120
 

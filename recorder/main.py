@@ -2,10 +2,10 @@ import asyncio
 import signal
 import sys
 
-from .config import RecorderConfig
-from .logging_config import setup_logging
-from .manager import RecordingManager
-from .watcher import Watcher
+from .src.config import RecorderConfig
+from .src.logging_config import setup_logging
+from .src.record.manager import RecordingManager
+from .src.upload.watcher import Watcher
 
 
 async def main():

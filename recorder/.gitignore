@@ -1,6 +1,6 @@
 # Output recordings (large files + subfolders)
-recordings/raw/*
-!recordings/raw/.gitkeep
+recordings/*
+!recordings/.gitkeep
 
 # Logs
 logs/
