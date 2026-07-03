@@ -6,9 +6,9 @@ import time
 from datetime import datetime, timezone
 from logging import Logger
 
-from . import r2_uploader
 from ..config import RecorderConfig
 from ..models import RecordingSession
+from . import r2_uploader
 from .youtube_uploader import _format_title, _upload_to_youtube
 
 

@@ -6,10 +6,10 @@ import time
 from datetime import datetime, timezone
 from logging import Logger
 
-from . import chat_capture, srt_generator, stream_recorder
 from ..config import RecorderConfig
-from .live_detector import LiveDetector
 from ..models import LiveInfo, RecordingSession
+from . import chat_capture, srt_generator, stream_recorder
+from .live_detector import LiveDetector
 
 
 def _parse_start_at(start_at: str) -> int:
