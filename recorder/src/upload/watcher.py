@@ -77,7 +77,7 @@ class Watcher:
                 pct = info.get("pct")
                 title = info.get("title", "?")
                 if pct is not None:
-                    self.log_rec.info(
+                    self.log_upl.info(
                         "Upload progress | %s | %s | %d%% | %s",
                         title,
                         phase,
@@ -85,7 +85,7 @@ class Watcher:
                         _fmt_duration(elapsed),
                     )
                 else:
-                    self.log_rec.info(
+                    self.log_upl.info(
                         "Upload progress | %s | %s | %s",
                         title,
                         phase,
