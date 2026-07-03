@@ -10,8 +10,8 @@ def setup_logging(config: RecorderConfig) -> tuple[Logger, Logger]:
     os.makedirs(config.logs_dir, exist_ok=True)
 
     formatter = logging.Formatter(
-        "%(asctime)s [%(name)s] %(levelname)s %(message)s",
-        datefmt="%H:%M:%S",
+        "[%(asctime)s - %(name)s] %(levelname)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
 
     rec = logging.getLogger("recorder")

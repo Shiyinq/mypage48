@@ -42,7 +42,7 @@ def _read_file(path: str) -> bytes | None:
 
 
 async def upload(
-    session: RecordingSession, config: RecorderConfig, log: Logger
+    session: RecordingSession, config: RecorderConfig, log: Logger, title: str = ""
 ) -> bool:
     api_url = f"{config.api_base_url.rstrip('/')}{config.replay_api_url}"
     api_key = config.replay_api_key
@@ -124,7 +124,7 @@ async def upload(
                     pass
 
         if resp.is_success:
-            log.info("Replay uploaded: %s", live_id)
+            log.info("Replay data: %s → uploaded", title or live_id)
             return True
         else:
             body = resp.text[:500]
@@ -135,5 +135,5 @@ async def upload(
                 return False
             await asyncio.sleep(5)
 
-    log.error("All retries exhausted for %s", live_id)
+    log.error("All retries exhausted for %s", title or live_id)
     return False

@@ -61,7 +61,9 @@ def _do_upload_blocking(
     title: str,
     description: str,
     progress_callback=None,
-) -> str:
+    resume_uri: str | None = None,
+    save_uri_callback=None,
+) -> tuple[str | None, str | None]:
     youtube = _build_youtube(config)
     body = {
         "snippet": {
@@ -77,14 +79,26 @@ def _do_upload_blocking(
     request = youtube.videos().insert(
         part="snippet,status", body=body, media_body=media
     )
+    if resume_uri:
+        request.resumable_uri = resume_uri
 
     response = None
-    while response is None:
-        status, response = request.next_chunk()
-        if status and progress_callback:
-            progress_callback(status.progress(), status.total_size)
+    _uri_saved = bool(resume_uri)
+    try:
+        while response is None:
+            status, response = request.next_chunk()
+            if status and progress_callback:
+                progress_callback(status.progress(), status.total_size)
+            if save_uri_callback and not _uri_saved and request.resumable_uri:
+                if request.resumable_uri != resume_uri:
+                    save_uri_callback(request.resumable_uri)
+                    _uri_saved = True
+    except Exception:
+        upload_uri = getattr(request, "resumable_uri", None) or resume_uri
+        return None, upload_uri
 
-    return response["id"]
+    upload_uri = getattr(request, "resumable_uri", None) or resume_uri
+    return response["id"], upload_uri
 
 
 async def _upload_to_youtube(
@@ -92,7 +106,9 @@ async def _upload_to_youtube(
     config: RecorderConfig,
     log: Logger | None = None,
     progress_callback=None,
-) -> str | None:
+    resume_uri: str | None = None,
+    save_uri_callback=None,
+) -> tuple[str | None, str | None]:
     if log is None:
         log = _get_fallback_logger()
 
@@ -101,19 +117,19 @@ async def _upload_to_youtube(
         or not config.google_client_secret
         or not config.youtube_refresh_token
     ):
-        return None
+        return None, None
 
     meta_path = session.json_path
     if not os.path.exists(meta_path):
         log.warning("Metadata not found")
-        return None
+        return None, None
 
     with open(meta_path) as f:
         meta = json.load(f)
 
     if meta.get("youtube_id"):
         log.info("Already has youtube_id: %s, skipping", meta["youtube_id"])
-        return meta["youtube_id"]
+        return meta["youtube_id"], None
 
     mp4_path = None
     base = os.path.splitext(session.output_path)[0]
@@ -125,7 +141,7 @@ async def _upload_to_youtube(
 
     if not mp4_path:
         log.warning("No video file found")
-        return None
+        return None, None
 
     title = _format_title(meta)
     nickname_clean = (
@@ -142,8 +158,10 @@ async def _upload_to_youtube(
     description = "\n".join(desc_lines)
 
     log.info("Uploading: %s", title)
+    if resume_uri:
+        log.info("Resuming upload for %s with saved URI", title)
     loop = asyncio.get_running_loop()
-    youtube_id = await loop.run_in_executor(
+    youtube_id, upload_uri = await loop.run_in_executor(
         None,
         _do_upload_blocking,
         config,
@@ -151,14 +169,19 @@ async def _upload_to_youtube(
         title,
         description,
         progress_callback,
+        resume_uri,
+        save_uri_callback,
     )
+
+    if not youtube_id:
+        return None, upload_uri
 
     meta["youtube_id"] = youtube_id
     with open(meta_path, "w") as f:
         json.dump(meta, f, indent=2, ensure_ascii=False)
 
-    log.info("Uploaded: https://youtu.be/%s", youtube_id)
-    return youtube_id
+    log.info("Video: %s → https://youtu.be/%s", title, youtube_id)
+    return youtube_id, upload_uri
 
 
 def _get_fallback_logger() -> Logger:

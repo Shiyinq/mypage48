@@ -111,6 +111,7 @@ class Watcher:
         if not meta or not session:
             return
 
+        title_log = _format_title(meta)
         youtube_id = meta.get("youtube_id")
 
         mp4_path = os.path.join(folder_path, f"{live_id}.mp4")
@@ -123,10 +124,19 @@ class Watcher:
             ]
         )
 
+        uri_path = os.path.join(folder_path, f"{live_id}.upload_uri")
+        resume_uri = None
+        if os.path.exists(uri_path):
+            try:
+                with open(uri_path) as f:
+                    resume_uri = f.read().strip() or None
+            except Exception:
+                pass
+
         if has_mp4:
             if not yt_configured:
                 self.log_rec.info(
-                    "YouTube not configured, keeping folder for %s", live_id
+                    "YouTube not configured, keeping folder for %s", title_log
                 )
                 return
 
@@ -141,37 +151,49 @@ class Watcher:
                     if pct >= _last_pct[0] + 10:
                         _last_pct[0] = pct
 
-                ytid = await _upload_to_youtube(
+                def _save_uri(uri: str):
+                    with open(uri_path, "w") as f:
+                        f.write(uri)
+
+                ytid, upload_uri = await _upload_to_youtube(
                     session,
                     self.config,
                     self.log_upl,
                     progress_callback=_on_progress,
+                    resume_uri=resume_uri,
+                    save_uri_callback=_save_uri,
                 )
                 if ytid:
                     youtube_id = ytid
                     os.remove(mp4_path)
+                    if os.path.exists(uri_path):
+                        os.remove(uri_path)
                 else:
+                    if upload_uri:
+                        if upload_uri != resume_uri:
+                            with open(uri_path, "w") as f:
+                                f.write(upload_uri)
                     self.log_upl.warning(
-                        "YouTube upload failed for %s, will retry", live_id
+                        "YouTube upload failed for %s, will retry", title_log
                     )
                     return
             except Exception as e:
-                self.log_upl.error("YouTube upload failed for %s: %s", live_id, e)
+                self.log_upl.error("YouTube upload failed for %s: %s", title_log, e)
                 return
         else:
-            self.log_rec.info("No mp4 for %s, skipping YouTube", live_id)
+            self.log_rec.info("No mp4 for %s, skipping YouTube", title_log)
 
         self._processing[live_id]["phase"] = "uploading to R2"
         self._processing[live_id].pop("pct", None)
 
-        ok = await r2_uploader.upload(session, self.config, self.log_upl)
+        ok = await r2_uploader.upload(session, self.config, self.log_upl, title_log)
         if not ok:
-            self.log_upl.warning("R2 upload failed for %s, will retry", live_id)
+            self.log_upl.warning("R2 upload failed for %s, will retry", title_log)
             return
 
         self._append_history(live_id, youtube_id or "")
         shutil.rmtree(folder_path)
-        self.log_rec.info("Done: %s", live_id)
+        self.log_rec.info("Done: %s", title_log)
 
     def _read_history(self) -> set[str]:
         path = self.config.uploads_history_path
