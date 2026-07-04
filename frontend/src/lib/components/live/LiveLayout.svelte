@@ -2,6 +2,7 @@
 	import { isImmersive } from '$lib/stores';
 	import {
 		X,
+		ArrowLeft,
 		Tv,
 		LayoutGrid,
 		Globe,
@@ -31,6 +32,12 @@
 	const isLiveRoom = $derived(
 		!!($page.params.platform && $page.params.id) ||
 			($page.url.pathname.includes('/replay/') && $page.params.id)
+	);
+
+	let isHistoryPage = $derived(
+		$page.url.pathname.startsWith(`${basePath}/history`) &&
+			$page.url.pathname !== `${basePath}/history` &&
+			$page.url.pathname !== `${basePath}/history/watched`
 	);
 
 	const navItems = $derived([
@@ -180,22 +187,41 @@
 				class="max-w-7xl mx-auto w-full h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8"
 			>
 				<div class="flex-1 min-w-0">
-					<a
-						href={backPath}
-						class="flex items-center gap-2 sm:gap-3 text-slate-900 dark:text-white hover:text-red-600 transition-colors cursor-pointer inline-flex group"
-					>
-						<div
-							class="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-zinc-800 shadow-sm border border-gray-200 dark:border-zinc-700 group-hover:border-red-200 dark:group-hover:border-red-900 group-hover:shadow-md transition-all"
+					{#if isHistoryPage}
+						<button
+							onclick={() => history.back()}
+							class="flex items-center gap-2 sm:gap-3 text-slate-900 dark:text-white hover:text-red-600 transition-colors cursor-pointer inline-flex group"
 						>
-							<X
-								size={16}
-								class="shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-500"
-							/>
-						</div>
-						<span class="font-extrabold tracking-tight text-lg whitespace-nowrap"
-							>JKT48 <span class="text-red-600 italic">LIVE</span></span
+							<div
+								class="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-zinc-800 shadow-sm border border-gray-200 dark:border-zinc-700 group-hover:border-red-200 dark:group-hover:border-red-900 group-hover:shadow-md transition-all"
+							>
+								<ArrowLeft
+									size={16}
+									class="shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-500"
+								/>
+							</div>
+							<span class="font-extrabold tracking-tight text-lg whitespace-nowrap"
+								>JKT48 <span class="text-red-600 italic">LIVE</span></span
+							>
+						</button>
+					{:else}
+						<a
+							href={backPath}
+							class="flex items-center gap-2 sm:gap-3 text-slate-900 dark:text-white hover:text-red-600 transition-colors cursor-pointer inline-flex group"
 						>
-					</a>
+							<div
+								class="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-zinc-800 shadow-sm border border-gray-200 dark:border-zinc-700 group-hover:border-red-200 dark:group-hover:border-red-900 group-hover:shadow-md transition-all"
+							>
+								<X
+									size={16}
+									class="shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-500"
+								/>
+							</div>
+							<span class="font-extrabold tracking-tight text-lg whitespace-nowrap"
+								>JKT48 <span class="text-red-600 italic">LIVE</span></span
+							>
+						</a>
+					{/if}
 				</div>
 
 				<div class="hidden md:flex items-center justify-center">
