@@ -41,6 +41,7 @@ def replay_service(mock_replay_repo, mock_storage_repo):
     mock_config = MagicMock(spec=Settings)
     return ReplayService(
         repository=mock_replay_repo,
+        live_history_repo=AsyncMock(),
         storage_repository=mock_storage_repo,
         config=mock_config,
     )
@@ -236,6 +237,7 @@ async def test_replay_list_success(client: AsyncClient, mock_replay_repo):
     """GET /replays returns list of replays."""
     app.dependency_overrides[get_replay_service] = lambda: ReplayService(
         repository=mock_replay_repo,
+        live_history_repo=AsyncMock(),
         storage_repository=MockStorageRepository(),
         config=MagicMock(spec=Settings),
     )
@@ -289,6 +291,7 @@ async def test_replay_list_empty(client: AsyncClient, mock_replay_repo):
     """GET /replays returns empty list."""
     app.dependency_overrides[get_replay_service] = lambda: ReplayService(
         repository=mock_replay_repo,
+        live_history_repo=AsyncMock(),
         storage_repository=MockStorageRepository(),
         config=MagicMock(spec=Settings),
     )
@@ -312,6 +315,7 @@ async def test_replay_srt_success(client: AsyncClient, mock_replay_repo):
 
     app.dependency_overrides[get_replay_service] = lambda: ReplayService(
         repository=mock_replay_repo,
+        live_history_repo=AsyncMock(),
         storage_repository=mock_storage,
         config=MagicMock(spec=Settings),
     )
@@ -331,6 +335,7 @@ async def test_replay_srt_not_found(client: AsyncClient, mock_replay_repo):
 
     app.dependency_overrides[get_replay_service] = lambda: ReplayService(
         repository=mock_replay_repo,
+        live_history_repo=AsyncMock(),
         storage_repository=MockStorageRepository(),
         config=MagicMock(spec=Settings),
     )
@@ -365,6 +370,7 @@ async def test_replay_upload_success(
 
     app.dependency_overrides[get_replay_service] = lambda: ReplayService(
         repository=mock_replay_repo,
+        live_history_repo=AsyncMock(),
         storage_repository=mock_storage_repo,
         config=MagicMock(spec=Settings),
     )
@@ -420,3 +426,183 @@ async def test_replay_upload_invalid_metadata(
         ],
     )
     assert res.status_code == 500
+
+
+async def test_replay_detail_showroom_free_paid_split(
+    client: AsyncClient, mock_replay_repo
+):
+    """GET /replays/{live_id} returns correct free/paid split for showroom."""
+    mock_storage = MockStorageRepository()
+    mock_replay_repo.find_by_live_id.return_value = {
+        "_id": "r_showroom_split",
+        "live_id": "sr-split-001",
+        "platform": "showroom",
+        "room_id": "12345",
+        "member_name": "Fahira",
+        "member_nickname": "Fahira",
+        "title": "Showroom Live",
+        "status": "completed",
+        "duration_seconds": 3600,
+        "files": {"screenshots": []},
+        "chats": [
+            {
+                "type": "gift",
+                "gift_name": "Star",
+                "num": 1,
+                "total_point": 10,
+                "free": False,
+                "image": "https://img.sr/star.png",
+                "name": "Alice",
+                "avatar_url": "https://avatar.sr/alice.jpg",
+                "created_at": 100,
+            },
+            {
+                "type": "gift",
+                "gift_name": "Heart",
+                "num": 3,
+                "total_point": 30,
+                "free": True,
+                "image": "https://img.sr/heart.png",
+                "name": "Alice",
+                "avatar_url": "https://avatar.sr/alice.jpg",
+                "created_at": 200,
+            },
+            {
+                "type": "gift",
+                "gift_name": "Star",
+                "num": 2,
+                "total_point": 20,
+                "free": False,
+                "image": "https://img.sr/star.png",
+                "name": "Bob",
+                "created_at": 300,
+            },
+            {
+                "type": "gift",
+                "gift_name": "Rainbow",
+                "num": 1,
+                "total_point": 100,
+                "free": True,
+                "image": "https://img.sr/rainbow.png",
+                "name": "Bob",
+                "created_at": 400,
+            },
+            {
+                "type": "chat",
+                "message": "hello",
+                "name": "Charlie",
+                "created_at": 500,
+            },
+        ],
+        "created_at": "2026-07-04T00:00:00Z",
+        "updated_at": "2026-07-04T00:00:00Z",
+    }
+
+    live_history_repo = AsyncMock()
+    live_history_repo.get_global_history_by_live_id.return_value = None
+
+    app.dependency_overrides[get_replay_service] = lambda: ReplayService(
+        repository=mock_replay_repo,
+        storage_repository=mock_storage,
+        live_history_repo=live_history_repo,
+        config=MagicMock(spec=Settings),
+    )
+
+    try:
+        res = await client.get("/api/replays/sr-split-001")
+        assert res.status_code == 200
+        data = res.json()
+
+        # Aggregate counts
+        assert data["total_gifts"] == 3  # paid: 1 + 2
+        assert data["total_free_gifts"] == 4  # free: 3 + 1
+        assert data["total_gold"] == 30  # paid: 10 + 20
+        assert data["total_chats"] == 1  # only the chat message
+
+        # top_fans sorted by total_gold DESC
+        fans = data["top_fans"]
+        assert len(fans) == 2
+        assert fans[0]["user"] == "Bob"
+        assert fans[0]["total_gold"] == 20
+        assert fans[0]["count"] == 2
+        assert fans[0]["free_gold"] == 100
+        assert fans[0]["free_count"] == 1
+
+        assert fans[1]["user"] == "Alice"
+        assert fans[1]["total_gold"] == 10
+        assert fans[1]["count"] == 1
+        assert fans[1]["free_gold"] == 30
+        assert fans[1]["free_count"] == 3
+
+        # top_gifts deduplicated by name (free/paid count combined)
+        gifts = data["top_gifts"]
+        assert len(gifts) == 3
+        star = next(g for g in gifts if g["name"] == "Star")
+        assert star["count"] == 3
+        assert star["total_gold"] == 30
+        assert star["free"] is False  # first occurrence was paid
+    finally:
+        app.dependency_overrides.pop(get_replay_service, None)
+
+
+async def test_replay_detail_idn_basic(
+    client: AsyncClient, mock_replay_repo
+):
+    """GET /replays/{live_id} works for IDN (no free/paid split)."""
+    mock_storage = MockStorageRepository()
+    mock_replay_repo.find_by_live_id.return_value = {
+        "_id": "r_idn_basic",
+        "live_id": "idn-basic-001",
+        "platform": "idn",
+        "room_identifier": "room-abc",
+        "member_name": "Feni",
+        "member_nickname": "Feni",
+        "title": "IDN Live",
+        "status": "completed",
+        "duration_seconds": 1800,
+        "files": {"screenshots": []},
+        "chats": [
+            {
+                "user": {"name": "Alice", "avatar_url": "https://avatar.idn/alice.jpg"},
+                "gift": {"name": "Gold", "gold": 50},
+            },
+            {
+                "user": {"name": "Bob", "avatar_url": "https://avatar.idn/bob.jpg"},
+                "gift": {"name": "Silver", "gold": 30},
+            },
+            {"user": {"name": "Charlie"}, "chat": "Nice stream!"},
+        ],
+        "created_at": "2026-07-04T00:00:00Z",
+        "updated_at": "2026-07-04T00:00:00Z",
+    }
+
+    live_history_repo = AsyncMock()
+    live_history_repo.get_global_history_by_live_id.return_value = None
+
+    app.dependency_overrides[get_replay_service] = lambda: ReplayService(
+        repository=mock_replay_repo,
+        storage_repository=mock_storage,
+        live_history_repo=live_history_repo,
+        config=MagicMock(spec=Settings),
+    )
+
+    try:
+        res = await client.get("/api/replays/idn-basic-001")
+        assert res.status_code == 200
+        data = res.json()
+
+        assert data["total_gifts"] == 2
+        assert data["total_free_gifts"] == 0
+        assert data["total_gold"] == 80
+        assert data["total_chats"] == 1
+
+        fans = data["top_fans"]
+        assert len(fans) == 2
+        assert fans[0]["total_gold"] == 50
+        assert fans[1]["total_gold"] == 30
+        # IDN top_fans should have no free fields (defaults to 0)
+        assert "free_gold" in fans[0]
+        assert fans[0]["free_gold"] == 0
+        assert fans[0]["free_count"] == 0
+    finally:
+        app.dependency_overrides.pop(get_replay_service, None)

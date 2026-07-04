@@ -186,3 +186,51 @@ async def test_get_streaming_url_not_found(client: AsyncClient):
             # Should be 404 with our new StreamingUrlNotFound exception
             assert response.status_code == 404
             assert response.json()["detail"] == "No streaming URL found for this room."
+
+
+@pytest.mark.asyncio
+async def test_get_showroom_gifts_success(client: AsyncClient):
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "gift_log": [
+            {
+                "gift_id": 31,
+                "gift_name": "Star",
+                "num": 1,
+                "total_point": 10,
+                "free": False,
+                "image": "https://image.showroom-live.com/star.png",
+                "name": "Alice",
+                "avatar_url": "https://avatar.showroom-live.com/alice.jpg",
+                "created_at": 1234567890,
+            }
+        ]
+    }
+
+    mock_client = MagicMock()
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=None)
+    mock_client.get = AsyncMock(return_value=mock_resp)
+
+    with patch("src.live.service.httpx.AsyncClient", return_value=mock_client):
+        response = await client.get("/api/jkt48/live/showroom/gifts?room_id=318227")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["gift_log"]) == 1
+        assert data["gift_log"][0]["gift_name"] == "Star"
+        assert data["gift_log"][0]["total_point"] == 10
+        assert data["gift_log"][0]["free"] is False
+
+
+@pytest.mark.asyncio
+async def test_get_showroom_gifts_error(client: AsyncClient):
+    mock_client = MagicMock()
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=None)
+    mock_client.get = AsyncMock(side_effect=Exception("Connection error"))
+
+    with patch("src.live.service.httpx.AsyncClient", return_value=mock_client):
+        response = await client.get("/api/jkt48/live/showroom/gifts?room_id=318227")
+        assert response.status_code == 500
+        assert response.json()["detail"] == "Failed to fetch showroom gifts."
