@@ -41,6 +41,8 @@ from src.memories.repository import MemoriesRepository
 from src.memories.service import MemoriesService
 from src.news.repository import NewsRepository
 from src.news.service import NewsService
+from src.replay.repository import ReplayRepository
+from src.replay.service import ReplayService
 from src.setlists.repository import SetlistsRepository
 from src.setlists.service import SetlistsService
 from src.sorter.repository import SortersRepository
@@ -457,3 +459,16 @@ def get_admin_service(
     repo: AdminRepository = Depends(get_admin_repository),
 ) -> AdminService:
     return AdminService(repo)
+
+
+def get_replay_repository(db=Depends(get_db)) -> ReplayRepository:
+    return ReplayRepository(db)
+
+
+def get_replay_service(
+    repo: ReplayRepository = Depends(get_replay_repository),
+    storage_repo: StorageRepository = Depends(get_storage_repository),
+    live_history_repo: LiveHistoryRepository = Depends(get_live_history_repository),
+    config: Settings = Depends(get_settings),
+) -> ReplayService:
+    return ReplayService(repo, storage_repo, live_history_repo, config)

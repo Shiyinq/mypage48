@@ -17,6 +17,7 @@
 	import HistoryTopBar from '$lib/components/live/history/shared/HistoryTopBar.svelte';
 	import LiveHistoryItemSkeleton from '$lib/components/live/history/shared/LiveHistoryItemSkeleton.svelte';
 	import LiveStatCard from '$lib/components/live/history/shared/LiveStatCard.svelte';
+	import LiveStatCardSkeleton from '$lib/components/live/history/shared/LiveStatCardSkeleton.svelte';
 	import LiveHistoryItemCard from '$lib/components/live/history/shared/LiveHistoryItemCard.svelte';
 
 	const basePath = '/theater/live/history/members';
@@ -165,6 +166,12 @@
 						{/snippet}
 					</LiveStatCard>
 				</div>
+			{:else}
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+					{#each Array(4) as _}
+						<LiveStatCardSkeleton />
+					{/each}
+				</div>
 			{/if}
 
 			<div class="flex items-center gap-2 mb-6">
@@ -192,7 +199,7 @@
 						<LiveHistoryItemCard
 							href={item.status === 'live'
 								? `${baseLivePath}/${item.platform}/${item.live_id}`
-								: `${basePath}/${item.member?.id || ''}`}
+								: `/theater/live/history/live/${item.live_id}`}
 							mode="global"
 							memberImage={item.platform === 'showroom' && item.member?.img
 								? item.member.img

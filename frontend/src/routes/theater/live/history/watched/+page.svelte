@@ -217,7 +217,7 @@
 					</LiveStatCard>
 				</div>
 			{:else if isLoading && !overallStats}
-				<div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
 					{#each Array(4) as _}
 						<LiveStatCardSkeleton />
 					{/each}
@@ -247,7 +247,7 @@
 					{#each list as item (item._id)}
 						{@const member = getMember(item)}
 						<LiveHistoryItemCard
-							href={`/theater/live/history/watched/${item.member_id}`}
+							href={`/theater/live/history/live/${item.live_id}`}
 							mode="watched"
 							memberImage={member?.img || ''}
 							memberImageMedium={member?.img_medium}

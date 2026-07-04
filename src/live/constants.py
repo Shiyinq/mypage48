@@ -8,6 +8,7 @@ class ErrorCode:
     STREAMING_URL_NOT_FOUND = "No streaming URL found for this room."
     PROXY_FAILED = "Live streaming proxy failed."
     COMMENTS_FETCH_FAILED = "Failed to fetch showroom comments."
+    GIFTS_FETCH_FAILED = "Failed to fetch showroom gifts."
 
 
 class DomainErrorCode:
@@ -16,3 +17,4 @@ class DomainErrorCode:
     STREAMING_URL_NOT_FOUND = "Streaming URL not found."
     PROXY_ERROR = "Failed to proxy stream request."
     COMMENTS_FETCH_ERROR = "Failed to fetch showroom comments."
+    GIFTS_FETCH_ERROR = "Failed to fetch showroom gifts."

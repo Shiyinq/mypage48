@@ -368,6 +368,11 @@ class LiveHistoryRepository:
         query = self._build_date_query({}, start_date, end_date)
         return await self.history_col.count_documents(query)
 
+    async def get_global_history_by_live_id(
+        self, live_id: str
+    ) -> Optional[Dict[str, Any]]:
+        return await self.history_col.find_one({"live_id": live_id})
+
     async def get_total_watched_live_members_count(
         self,
         user_id: str,

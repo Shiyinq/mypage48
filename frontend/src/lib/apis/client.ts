@@ -79,7 +79,8 @@ export async function client<T>(
 		'/history/lives?page=',
 		'/history/lives/stats',
 		'/history/lives/members',
-		'/history/lives/pc'
+		'/history/lives/pc',
+		'/replays/'
 	];
 
 	const isPublic = publicEndpoints.some((p) => endpoint.startsWith(p));

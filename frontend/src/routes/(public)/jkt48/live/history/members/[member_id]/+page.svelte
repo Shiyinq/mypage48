@@ -192,7 +192,7 @@
 						<LiveHistoryItemCard
 							href={item.status === 'live'
 								? `${baseLivePath}/${item.platform}/${item.live_id}`
-								: `${basePath}/${item.member?.id || ''}`}
+								: `/jkt48/live/history/live/${item.live_id}`}
 							mode="global"
 							memberImage={item.platform === 'showroom' && !item.image?.includes('live/')
 								? memberInfo()?.img || item.member?.img || item.image
