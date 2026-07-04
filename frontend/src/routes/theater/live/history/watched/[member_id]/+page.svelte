@@ -9,6 +9,7 @@
 	import HistoryTopBar from '$lib/components/live/history/shared/HistoryTopBar.svelte';
 	import LiveHistoryItemSkeleton from '$lib/components/live/history/shared/LiveHistoryItemSkeleton.svelte';
 	import LiveStatCard from '$lib/components/live/history/shared/LiveStatCard.svelte';
+	import LiveStatCardSkeleton from '$lib/components/live/history/shared/LiveStatCardSkeleton.svelte';
 	import LiveHistoryItemCard from '$lib/components/live/history/shared/LiveHistoryItemCard.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
@@ -161,6 +162,12 @@
 						{/snippet}
 					</LiveStatCard>
 				</div>
+			{:else}
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+					{#each Array(4) as _}
+						<LiveStatCardSkeleton />
+					{/each}
+				</div>
 			{/if}
 
 			<!-- Detail List -->
@@ -186,7 +193,7 @@
 					{#each list as item (item._id)}
 						{@const member = getMember(item)}
 						<LiveHistoryItemCard
-							href="#"
+							href={`/theater/live/history/live/${item.live_id}`}
 							mode="watched"
 							memberImage={member?.img || ''}
 							memberImageMedium={member?.img_medium}
