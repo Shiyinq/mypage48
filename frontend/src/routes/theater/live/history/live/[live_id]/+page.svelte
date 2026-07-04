@@ -10,7 +10,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import AppBackground from '$lib/components/common/AppBackground.svelte';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
-	import { OptimizedImage } from '$lib/components/common';
+	import { OptimizedImage, ImageLightbox } from '$lib/components/common';
 	import {
 		MessageCircle,
 		Gift,
@@ -43,6 +43,22 @@
 	let scrollY = $state(0);
 	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
 	let screenshotsContainer = $state<HTMLDivElement | null>(null);
+
+	let showLightbox = $state(false);
+	let lightboxIndex = $state(0);
+
+	let allImages = $derived.by(() => {
+		if (!replayData) return [];
+		const imgs: string[] = [];
+		if (replayData.image) imgs.push(replayData.image);
+		if (replayData.files?.screenshots) imgs.push(...replayData.files.screenshots);
+		return imgs;
+	});
+
+	function openLightbox(index: number) {
+		lightboxIndex = index;
+		showLightbox = true;
+	}
 
 	function scrollScreenshots(direction: 'left' | 'right') {
 		if (screenshotsContainer) {
@@ -447,6 +463,10 @@
 											{#if data.image}
 												<div
 													class="shrink-0 h-40 w-[90px] sm:h-80 sm:w-[180px] rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 snap-center shadow-sm hover:border-red-500/50 transition-colors cursor-pointer group/img relative"
+													onclick={() => openLightbox(0)}
+													onkeydown={(e) => e.key === 'Enter' && openLightbox(0)}
+													role="button"
+													tabindex="0"
 												>
 													<OptimizedImage
 														src={data.image}
@@ -465,9 +485,14 @@
 												</div>
 											{/if}
 											{#if data.files.screenshots}
-												{#each data.files.screenshots as url}
+												{#each data.files.screenshots as url, i}
+													{@const ssIndex = (data.image ? 1 : 0) + i}
 													<div
 														class="shrink-0 h-40 w-[90px] sm:h-80 sm:w-[180px] rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 snap-center shadow-sm hover:border-red-500/50 transition-colors cursor-pointer group/img"
+														onclick={() => openLightbox(ssIndex)}
+														onkeydown={(e) => e.key === 'Enter' && openLightbox(ssIndex)}
+														role="button"
+														tabindex="0"
 													>
 														<img
 															src={url}
@@ -644,3 +669,11 @@
 		</div>
 	</div>
 </div>
+
+<ImageLightbox
+	images={allImages}
+	currentIndex={lightboxIndex}
+	onIndexChange={(i) => (lightboxIndex = i)}
+	isOpen={showLightbox}
+	onClose={() => (showLightbox = false)}
+/>
