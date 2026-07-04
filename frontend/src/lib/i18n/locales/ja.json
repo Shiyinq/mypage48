@@ -1638,7 +1638,8 @@
 			"images": "画像",
 			"cover": "カバー",
 			"topGifter": "トップギフター",
-			"giftList": "ギフトリスト"
+			"giftList": "ギフトリスト",
+			"watchReplay": "リプレイを見る"
 		},
 		"publicWatchedEmptyTitle": "視聴履歴",
 		"publicWatchedEmptyDesc": "この機能はアカウントを持ち、ログインしている場合のみ利用できます。",

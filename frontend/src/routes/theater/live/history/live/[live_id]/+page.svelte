@@ -23,7 +23,8 @@
 		Video,
 		ChevronLeft,
 		ChevronRight,
-		Mail
+		Mail,
+		Play
 	} from 'lucide-svelte';
 
 	const { t, locale } = useTranslation();
@@ -232,8 +233,29 @@
 										{data.title}
 									</p>
 								{/if}
+								{#if data.youtube_id}
+									<a
+										href="/theater/live/replay/{data.youtube_id}"
+										data-sveltekit-preload-data
+										class="hidden lg:inline-flex items-center gap-2 mt-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-full transition-colors shadow-sm w-fit"
+									>
+										<Play size={14} />
+										{t('liveHistory.detail.watchReplay') || 'Watch Replay'}
+									</a>
+								{/if}
 							</div>
 						</div>
+
+						{#if data.youtube_id}
+							<a
+								href="/theater/live/replay/{data.youtube_id}"
+								data-sveltekit-preload-data
+								class="lg:hidden inline-flex items-center justify-center gap-2 mt-3 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-full transition-colors shadow-sm w-full"
+							>
+								<Play size={14} />
+								{t('liveHistory.detail.watchReplay') || 'Watch Replay'}
+							</a>
+						{/if}
 
 						<!-- Right Side: Waktu Siaran, Stats, Screenshots -->
 						<div class="flex-1 w-full flex flex-col sm:flex-row gap-5 sm:gap-6 min-w-0">
@@ -594,8 +616,14 @@
 												/>
 											{/if}
 										{/if}
-										<span class="font-bold text-sm text-slate-800 dark:text-white truncate block">
+										<span
+											class="font-bold text-sm text-slate-800 dark:text-white truncate"
+											title={gift.name}
+										>
 											{gift.name}
+										</span>
+										<span class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 shrink-0">
+											{gift.count}x
 										</span>
 									</div>
 									<div class="flex flex-col items-end shrink-0">
@@ -603,14 +631,9 @@
 											{gift.total_gold.toLocaleString()}
 											{isShowroom ? 'point' : 'gold'}
 										</span>
-										<span
-											class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mt-0.5 flex items-center gap-1"
-										>
-											{#if gift.free === true}
-												<span class="text-green-500">Free</span>
-											{/if}
-											{gift.count}x
-										</span>
+										{#if gift.free === true}
+											<span class="text-[10px] font-bold text-green-500 mt-0.5">Free</span>
+										{/if}
 									</div>
 								</div>
 							{/each}

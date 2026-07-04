@@ -806,7 +806,8 @@
 			"images": "Images",
 			"cover": "Cover",
 			"topGifter": "Top Gifter",
-			"giftList": "Gift List"
+			"giftList": "Gift List",
+			"watchReplay": "Watch Replay"
 		},
 		"publicWatchedEmptyTitle": "Watch History",
 		"publicWatchedEmptyDesc": "This feature can only be used if you have an account and are logged in.",
