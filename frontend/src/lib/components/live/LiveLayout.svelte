@@ -60,7 +60,9 @@
 			mobileLabel: t('nav.history') || 'History',
 			href: `${basePath}/history`,
 			match: (path: string) =>
-				path === `${basePath}/history` || path.startsWith(`${basePath}/history/members`),
+				path === `${basePath}/history` ||
+				path.startsWith(`${basePath}/history/members`) ||
+				path.startsWith(`${basePath}/history/live`),
 			icon: Globe
 		},
 		{
@@ -87,7 +89,9 @@
 			label: t('nav.liveHistory') || 'Riwayat Live',
 			href: `${basePath}/history`,
 			match: (path: string) =>
-				path === `${basePath}/history` || path.startsWith(`${basePath}/history/members`),
+				path === `${basePath}/history` ||
+				path.startsWith(`${basePath}/history/members`) ||
+				path.startsWith(`${basePath}/history/live`),
 			icon: Globe
 		},
 		{
