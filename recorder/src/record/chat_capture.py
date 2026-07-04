@@ -83,6 +83,124 @@ def _is_showroom_gift(text: str) -> bool:
     return False
 
 
+async def capture_showroom_gifts(
+    api_base_url: str,
+    room_id: str,
+    log_path: str,
+    jsonl_path: str,
+    recording_start_time: float,
+    poll_interval: float,
+    stop_event,
+):
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    api_base_url = api_base_url.rstrip("/")
+
+    gift_list_cache: dict[int, dict] = {}
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(
+                "https://www.showroom-live.com/api/live/gift_list",
+                params={"room_id": room_id},
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                    "Accept": "application/json, text/plain, */*",
+                    "Referer": "https://www.showroom-live.com/",
+                },
+            )
+            if resp.status_code == 200:
+                items = resp.json()
+                entries = (
+                    items.get("normal", [])
+                    if isinstance(items, dict)
+                    else (items if isinstance(items, list) else [])
+                )
+                for g in entries:
+                    gift_id = g.get("gift_id")
+                    if gift_id:
+                        gift_list_cache[gift_id] = {
+                            "gift_name": g.get("gift_name", "Unknown"),
+                            "point": g.get("point", 0),
+                            "free": g.get("free", False),
+                            "image": g.get("image", ""),
+                        }
+    except Exception as e:
+        print(f"[showroom_gift] Failed to fetch gift list: {e}")
+
+    last_created_at: int = 0
+    client = httpx.AsyncClient(timeout=10.0)
+    try:
+        with open(log_path, "a") as f:
+            jsonl_f = open(jsonl_path, "a") if jsonl_path else None
+            try:
+                while not stop_event.is_set():
+                    try:
+                        resp = await client.get(
+                            f"{api_base_url}/jkt48/live/showroom/gifts",
+                            params={"room_id": room_id},
+                        )
+                        resp.raise_for_status()
+                        data = resp.json()
+
+                        gift_log = data.get("gift_log") or []
+                        for gift in reversed(gift_log):
+                            created_at = gift.get("created_at", 0)
+                            if created_at <= last_created_at:
+                                continue
+                            last_created_at = created_at
+
+                            offset = created_at - recording_start_time
+                            if offset < 0:
+                                offset = time.time() - recording_start_time
+
+                            gift_id = gift.get("gift_id")
+                            meta = gift_list_cache.get(gift_id, {})
+                            gift_name = meta.get("gift_name", f"gift_{gift_id}")
+                            point = meta.get("point", 0)
+                            free = meta.get("free", False)
+                            image = meta.get("image") or gift.get("image", "")
+                            num = gift.get("num", 1)
+                            total_point = point * num
+
+                            name = gift.get("name", "Unknown")
+                            text = f"{gift_name} x{num}"
+
+                            f.write(f"{offset:.3f}\t{name}\t{text}\ttrue\n")
+                            f.flush()
+
+                            if jsonl_f:
+                                enriched = {
+                                    "type": "gift",
+                                    "gift_id": gift_id,
+                                    "gift_name": gift_name,
+                                    "num": num,
+                                    "point": point,
+                                    "total_point": total_point,
+                                    "free": free,
+                                    "image": image,
+                                    "name": name,
+                                    "user_id": gift.get("user_id"),
+                                    "avatar_url": gift.get("avatar_url", ""),
+                                    "created_at": created_at,
+                                }
+                                jsonl_f.write(
+                                    json.dumps(enriched, ensure_ascii=False) + "\n"
+                                )
+                                jsonl_f.flush()
+
+                    except Exception as e:
+                        print(f"[showroom_gift] Error: {e}")
+
+                    try:
+                        await asyncio.wait_for(stop_event.wait(), timeout=poll_interval)
+                    except asyncio.TimeoutError:
+                        pass
+            finally:
+                if jsonl_f:
+                    jsonl_f.close()
+    finally:
+        await client.aclose()
+
+
 async def capture_idn(
     room_identifier: str,
     log_path: str,

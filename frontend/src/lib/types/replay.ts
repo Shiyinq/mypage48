@@ -26,6 +26,8 @@ export interface ReplayGiftSummary {
 	name: string;
 	count: number;
 	total_gold: number;
+	image?: string;
+	free?: boolean;
 }
 
 export interface ReplayTopFan {
@@ -33,6 +35,8 @@ export interface ReplayTopFan {
 	avatar?: string;
 	total_gold: number;
 	count: number;
+	free_gold?: number;
+	free_count?: number;
 }
 
 export interface ReplayDetailResponse {
@@ -55,6 +59,7 @@ export interface ReplayDetailResponse {
 	files: ReplayDetailFiles;
 	total_chats: number;
 	total_gifts: number;
+	total_free_gifts?: number;
 	total_gold: number;
 	total_loveletters?: number;
 	top_gifts: ReplayGiftSummary[];

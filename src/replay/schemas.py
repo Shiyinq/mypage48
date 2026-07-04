@@ -63,6 +63,8 @@ class ReplayGiftSummary(BaseModel):
     name: str
     count: int
     total_gold: int
+    image: Optional[str] = None
+    free: Optional[bool] = None
 
 
 class ReplayTopFan(BaseModel):
@@ -70,6 +72,8 @@ class ReplayTopFan(BaseModel):
     avatar: Optional[str] = None
     total_gold: int
     count: int
+    free_gold: int = 0
+    free_count: int = 0
 
 
 class ReplayDetailResponse(BaseModel):
@@ -100,6 +104,7 @@ class ReplayDetailResponse(BaseModel):
     files: ReplayDetailFilesInfo
     total_chats: int = 0
     total_gifts: int = 0
+    total_free_gifts: int = 0
     total_gold: int = 0
     total_loveletters: int = 0
     top_gifts: list[ReplayGiftSummary] = []

@@ -42,5 +42,6 @@ class RecordingSession:
     start_at: str
     ffmpeg_proc: Optional[subprocess.Popen] = None
     chat_task: Optional["asyncio.Task"] = None
+    gift_task: Optional["asyncio.Task"] = None
     started_at: float = field(default_factory=time.time)
     last_file_size: int = 0

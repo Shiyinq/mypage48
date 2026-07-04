@@ -73,11 +73,13 @@ from src.live.exceptions import (
     CommentsFetchError,
     FetchIdnError,
     FetchShowroomError,
+    GiftsFetchError,
     ProxyError,
     StreamingUrlNotFoundError,
 )
 from src.live.http_exceptions import (
     CommentsFetchFailed,
+    GiftsFetchFailed,
     IdnFetchFailed,
     ProxyRequestFailed,
     ShowroomFetchFailed,
@@ -404,6 +406,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, ProxyRequestFailed())
     if isinstance(exc, CommentsFetchError):
         return await detailed_http_exception_handler(request, CommentsFetchFailed())
+    if isinstance(exc, GiftsFetchError):
+        return await detailed_http_exception_handler(request, GiftsFetchFailed())
 
     # Live History exceptions
     if isinstance(exc, LiveHistoryNotFoundError):

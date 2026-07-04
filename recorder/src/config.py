@@ -10,6 +10,7 @@ class RecorderConfig(BaseSettings):
     recordings_dir: str = str(Path(__file__).parent.parent / "recordings")
     max_recording_hours: int = 4
     showroom_comment_interval: float = 2.0
+    showroom_gift_interval: float = 5.0
     log_level: str = "INFO"
     log_mode: str = "stdout"
     logs_dir: str = str(Path(__file__).parent.parent / "logs")

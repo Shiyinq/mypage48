@@ -208,6 +208,17 @@ class RecordingManager:
                     stop_event,
                 )
             )
+            gift_task = asyncio.create_task(
+                chat_capture.capture_showroom_gifts(
+                    self.config.api_base_url,
+                    live.room_id,
+                    chat_log_path,
+                    jsonl_path,
+                    recording_start_time,
+                    self.config.showroom_gift_interval,
+                    stop_event,
+                )
+            )
         elif live.platform == "idn" and live.room_identifier:
             chat_task = asyncio.create_task(
                 chat_capture.capture_idn(
@@ -235,6 +246,7 @@ class RecordingManager:
             )
         else:
             chat_task = None
+            gift_task = None
 
         session = RecordingSession(
             live_id=live.live_id,
@@ -254,6 +266,7 @@ class RecordingManager:
             screenshots_folder=screenshots_folder,
             live_folder=live_folder,
             title=live.title,
+            gift_task=gift_task,
             member_image=live.member_image,
             start_at=live.start_at,
             ffmpeg_proc=ffmpeg_proc,
@@ -511,6 +524,15 @@ class RecordingManager:
                 pass
             except Exception as e:
                 self.log.error("Chat task error for %s: %s", live_id, e)
+
+        if session.gift_task:
+            session.gift_task.cancel()
+            try:
+                await session.gift_task
+            except asyncio.CancelledError:
+                pass
+            except Exception as e:
+                self.log.error("Gift task error for %s: %s", live_id, e)
 
         if session.ffmpeg_proc:
             stream_recorder.stop(session.ffmpeg_proc)

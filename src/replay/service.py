@@ -31,13 +31,14 @@ def _parse_jsonl(content: bytes) -> list[dict]:
 
 def _compute_chat_stats(
     chats: list[dict], platform: str
-) -> tuple[list[dict], list[dict], int, int, int, int]:
+) -> tuple[list[dict], list[dict], int, int, int, int, int]:
     gift_map: dict[str, dict] = {}
     fan_map: dict[str, dict] = {}
     chat_count = 0
     gift_count = 0
     loveletter_count = 0
     total_gold = 0
+    free_gift_count = 0
 
     for raw in chats:
         if platform == "idn" or not platform:
@@ -73,14 +74,61 @@ def _compute_chat_stats(
                 chat_count += 1
 
         elif platform == "showroom":
-            # TODO: Implement Showroom gift parsing in the future.
-            # Note: Be careful not to count "1-50" (Hitobito) chats directly as large gold values.
-            # Actual gifts might have a different JSON structure than regular chats.
-            chat_count += 1
+            if raw.get("type") == "gift":
+                is_free = raw.get("free") == True
+                gift_name = raw.get("gift_name", "Unknown")
+                total_point = raw.get("total_point", 0) or 0
+                num = raw.get("num", 0)
+
+                if is_free:
+                    free_gift_count += num
+                else:
+                    total_gold += total_point
+                    gift_count += num
+
+                entry = gift_map.setdefault(
+                    gift_name,
+                    {"count": 0, "total_gold": 0, "image": None, "free": None},
+                )
+                entry["count"] += num
+                entry["total_gold"] += total_point
+                if entry["image"] is None:
+                    entry["image"] = raw.get("image", "")
+                if entry["free"] is None:
+                    entry["free"] = is_free
+
+                username = raw.get("name", "Unknown")
+                avatar = raw.get("avatar_url")
+                fan_entry = fan_map.setdefault(
+                    username,
+                    {
+                        "total_gold": 0,
+                        "count": 0,
+                        "avatar": None,
+                        "free_gold": 0,
+                        "free_count": 0,
+                    },
+                )
+                if is_free:
+                    fan_entry["free_gold"] += total_point
+                    fan_entry["free_count"] += num
+                else:
+                    fan_entry["total_gold"] += total_point
+                    fan_entry["count"] += num
+                if avatar and not fan_entry["avatar"]:
+                    fan_entry["avatar"] = avatar
+            else:
+                chat_count += 1
 
     top_gifts = sorted(
         [
-            {"name": k, "count": v["count"], "total_gold": v["total_gold"]}
+            {
+                "name": k,
+                "count": v["count"],
+                "total_gold": v["total_gold"],
+                "image": v.get("image"),
+                "free": v.get("free"),
+            }
             for k, v in gift_map.items()
         ],
         key=lambda x: (x["total_gold"], x["count"]),
@@ -93,6 +141,8 @@ def _compute_chat_stats(
                 "avatar": v["avatar"],
                 "total_gold": v["total_gold"],
                 "count": v["count"],
+                "free_gold": v.get("free_gold", 0),
+                "free_count": v.get("free_count", 0),
             }
             for k, v in fan_map.items()
         ],
@@ -100,7 +150,15 @@ def _compute_chat_stats(
         reverse=True,
     )
 
-    return top_gifts, top_fans, chat_count, gift_count, total_gold, loveletter_count
+    return (
+        top_gifts,
+        top_fans,
+        chat_count,
+        gift_count,
+        free_gift_count,
+        total_gold,
+        loveletter_count,
+    )
 
 
 class ReplayService:
@@ -253,12 +311,14 @@ class ReplayService:
             top_fans,
             chat_count,
             gift_count,
+            free_gift_count,
             total_gold,
             loveletter_count,
         ) = _compute_chat_stats(raw_chats, platform)
 
         doc["total_chats"] = chat_count
         doc["total_gifts"] = gift_count
+        doc["total_free_gifts"] = free_gift_count
         doc["total_gold"] = total_gold
         doc["total_loveletters"] = loveletter_count
         doc["top_gifts"] = top_gifts

@@ -4,6 +4,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatTimeAgo, parseUTCDate } from '$lib/utils/time';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { formatGoldToIdr } from '$lib/utils/formatting';
 	import { spring } from 'svelte/motion';
 	import type { ReplayDetailResponse } from '$lib/types/replay';
 	import SEO from '$lib/components/SEO.svelte';
@@ -31,6 +32,8 @@
 	let replayData = $derived(liveHistoryDetailStore.data[liveId]);
 	let loading = $derived(liveHistoryDetailStore.loading[liveId] ?? false);
 	let error = $derived(liveHistoryDetailStore.error[liveId] ?? null);
+
+	let isShowroom = $derived(replayData?.platform === 'showroom');
 
 	let scrollY = $state(0);
 	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
@@ -343,7 +346,7 @@
 												{#if data.total_gold}
 													<div class="mt-0.5 flex">
 														<span class="text-[10px] font-bold text-emerald-500 leading-none"
-															>~ Rp {((data.total_gold * 7500) / 3).toLocaleString('id-ID')}</span
+															>~ Rp {formatGoldToIdr(data.total_gold, isShowroom)}</span
 														>
 													</div>
 												{/if}
@@ -372,6 +375,18 @@
 												>
 													<Mail size={16} class="text-rose-500" />
 													{data.total_loveletters.toLocaleString()}
+												</div>
+											</div>
+										{/if}
+
+										{#if isShowroom && data.total_free_gifts && data.total_free_gifts > 0}
+											<div>
+												<p class="text-[10px] font-bold text-zinc-400 uppercase mb-1">Free Gifts</p>
+												<div
+													class="flex items-center gap-2 text-base font-black text-slate-700 dark:text-zinc-200 leading-none"
+												>
+													<Gift size={16} class="text-green-400" />
+													{data.total_free_gifts.toLocaleString()}
 												</div>
 											</div>
 										{/if}
@@ -513,9 +528,25 @@
 												{fan.count}x
 											</span>
 											<span class="text-[10px] font-bold text-amber-600 dark:text-amber-400">
-												{fan.total_gold.toLocaleString()} gold
+												{fan.total_gold.toLocaleString()}
+												gold
 											</span>
 										</div>
+										<div class="flex items-center gap-2 mt-0.5">
+											<span class="text-[10px] font-bold text-emerald-500 leading-none">
+												~ Rp {formatGoldToIdr(fan.total_gold, isShowroom)}
+											</span>
+										</div>
+										{#if isShowroom && fan.free_count}
+											<div class="flex items-center gap-2 mt-0.5">
+												<span class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
+													{fan.free_count}x
+												</span>
+												<span class="text-[10px] font-bold text-green-500">
+													{fan.free_gold!.toLocaleString()} point (free)
+												</span>
+											</div>
+										{/if}
 									</div>
 								</div>
 							{/each}
@@ -539,16 +570,29 @@
 								<div
 									class="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 hover:shadow-md transition-shadow"
 								>
-									<div class="min-w-0 flex-1 pr-2">
+									<div class="flex items-center gap-2 min-w-0 flex-1 pr-2">
+										{#if gift.image}
+											<img
+												src={gift.image}
+												alt={gift.name}
+												class="w-7 h-7 object-contain shrink-0"
+											/>
+										{/if}
 										<span class="font-bold text-sm text-slate-800 dark:text-white truncate block">
 											{gift.name}
 										</span>
 									</div>
 									<div class="flex flex-col items-end shrink-0">
 										<span class="text-xs font-bold text-amber-600 dark:text-amber-400">
-											{gift.total_gold.toLocaleString()} gold
+											{gift.total_gold.toLocaleString()}
+											{isShowroom ? 'point' : 'gold'}
 										</span>
-										<span class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mt-0.5">
+										<span
+											class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mt-0.5 flex items-center gap-1"
+										>
+											{#if gift.free === true}
+												<span class="text-green-500">Free</span>
+											{/if}
 											{gift.count}x
 										</span>
 									</div>

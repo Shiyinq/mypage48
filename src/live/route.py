@@ -44,6 +44,18 @@ async def get_showroom_comments(
     return await service.get_showroom_comments(actual_room_id)
 
 
+@router.get("/showroom/gifts")
+@limiter.limit(
+    f"{config.live_proxy_requests_per_minute}/minute", override_defaults=True
+)
+async def get_showroom_gifts(
+    request: Request, room_id: str, service: LiveService = Depends(get_live_service)
+):
+    """Get showroom gift log via proxy to bypass CORS"""
+    actual_room_id = room_id.split("-")[0] if "-" in room_id else room_id
+    return await service.get_showroom_gifts(actual_room_id)
+
+
 @router.get("/{platform}/{id}/streaming-url", response_model=LiveStreamInfo)
 async def get_streaming_url(
     platform: str, id: str, service: LiveService = Depends(get_live_service)
