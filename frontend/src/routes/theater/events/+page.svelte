@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { Calendar, Clock, Users, Cake, GraduationCap, Check } from 'lucide-svelte';
+	import { Calendar, Clock, Users, Cake, Check } from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { slide, scale } from 'svelte/transition';
 
@@ -274,14 +274,14 @@
 							</div>
 						{/if}
 
-						{#if (event.graduationMembers?.length ?? 0) > 0}
+						<!-- {#if (event.graduationMembers?.length ?? 0) > 0}
 							<div
 								class="flex items-center gap-1.5 text-[11px] sm:text-xs text-indigo-500 font-medium mb-1 w-fit"
 							>
 								<GraduationCap class="w-3.5 h-3.5 text-indigo-500" />
 								<span class="line-clamp-1">{event.graduationMembers?.join(', ')}</span>
 							</div>
-						{/if}
+						{/if} -->
 
 						<!-- Metadata Grid -->
 						<div class="flex flex-col gap-0.5 sm:gap-1 mt-auto">
