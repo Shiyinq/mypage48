@@ -10,6 +10,57 @@ Auto-record live stream video + chat + gift from SHOWROOM and IDN Live, with aut
 | ffmpeg | 4.4+ (`ffmpeg -version`) |
 | Backend | `make dev-be` running on `localhost:8000` |
 
+## System Flow
+
+```mermaid
+flowchart TD
+    subgraph Main["main.py"]
+        A[Start] --> B[Recording Loop]
+        A --> C[Upload Loop]
+    end
+
+    subgraph Recording["Recording Loop (every 10s)"]
+        D[Poll GET /api/jkt48/live] --> E{Sync with active sessions}
+        E -->|New live| F[Start ffmpeg HLS→MKV]
+        F --> G[Start chat capture]
+        G --> G1["SHOWROOM: HTTP poll comments<br/>+ HTTP poll gifts<br/>IDN: WebSocket IRC"]
+        G1 --> G2[Start periodic screenshots<br/>30s + every 5 min]
+        E -->|Ended live| H[Stop ffmpeg + chats]
+        H --> I[Remux MKV→MP4]
+        I --> J[Generate SRT + JSON<br/>+ final screenshot 50% dur]
+        J --> K[Delete temp files log/ffmpeg.log]
+        K --> L[Recording folder with metadata status:completed]
+        E -->|Still active| M{Check ffmpeg health}
+        M -->|ffmpeg died + stream ended| H
+        M -->|ffmpeg died + stream live| N[Mark error → end]
+        M -->|File stalled >5 min| N
+        N --> H
+    end
+
+    subgraph Upload["Upload Loop (every 10s)"]
+        P[Scan recordings/] --> Q{Folder has status:completed?}
+        Q -->|No| P
+        Q -->|Yes| R{YT configured?}
+        R -->|Yes| R2{MP4 exists?}
+        R2 -->|Yes| S[Upload MP4 to YouTube<br/>resumable, save URI after first chunk]
+        S --> S1{YouTube upload status?}
+        S1 -->|Success| T[Delete MP4]
+        S1 -->|Fail| U[Retry later with saved URI]
+        U --> P
+        R2 -->|No| V
+        R -->|No| V
+        T --> V
+        V{R2 configured?}
+        V -->|Yes| W[Upload JSONL + SRT + screenshots<br/>→ /admin/replay/upload]
+        W --> W1{Success?}
+        W1 -->|Yes| X[Log to uploads.jsonl]
+        X --> Y[rm -rf recording folder]
+        W1 -->|No| P
+    end
+
+    L --> P
+```
+
 ## Directory Structure
 
 ```
