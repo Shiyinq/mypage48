@@ -53,9 +53,23 @@ def _compute_chat_stats(
                 total_gold += gold
                 gift_count += 1
 
-                entry = gift_map.setdefault(name, {"count": 0, "total_gold": 0})
+                entry = gift_map.setdefault(
+                    name, {"count": 0, "total_gold": 0, "image": None}
+                )
                 entry["count"] += 1
                 entry["total_gold"] += gold
+                if entry["image"] is None:
+                    entry["image"] = (
+                        gift_data.get("animation_small")
+                        or gift_data.get("animation_small_url")
+                        or gift_data.get("animation_large")
+                        or gift_data.get("animation_large_url")
+                        or gift_data.get("image_url")
+                        or gift_data.get("image")
+                        or gift_data.get("icon_url")
+                        or gift_data.get("icon")
+                        or gift_data.get("sticker_url")
+                    )
 
                 username = user.get("name", "Unknown")
                 avatar = user.get("avatar_url")

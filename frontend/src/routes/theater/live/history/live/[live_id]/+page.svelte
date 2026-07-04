@@ -35,6 +35,10 @@
 
 	let isShowroom = $derived(replayData?.platform === 'showroom');
 
+	function isLottieUrl(url: string): boolean {
+		return url.includes('/animation/') || !url.match(/\.(png|jpg|jpeg|webp|gif|svg)(\?|#|$)/i);
+	}
+
 	let scrollY = $state(0);
 	let mouse = $state(spring({ x: 0, y: 0 }, { stiffness: 0.1, damping: 0.25 }));
 	let screenshotsContainer = $state<HTMLDivElement | null>(null);
@@ -572,11 +576,23 @@
 								>
 									<div class="flex items-center gap-2 min-w-0 flex-1 pr-2">
 										{#if gift.image}
-											<img
-												src={gift.image}
-												alt={gift.name}
-												class="w-7 h-7 object-contain shrink-0"
-											/>
+											{#if isLottieUrl(gift.image)}
+												<lottie-player
+													src={gift.image}
+													background="transparent"
+													speed="1"
+													style="width: 44px; height: 44px;"
+													loop
+													autoplay
+													class="shrink-0"
+												></lottie-player>
+											{:else}
+												<img
+													src={gift.image}
+													alt={gift.name}
+													class="w-11 h-11 object-contain shrink-0"
+												/>
+											{/if}
 										{/if}
 										<span class="font-bold text-sm text-slate-800 dark:text-white truncate block">
 											{gift.name}
