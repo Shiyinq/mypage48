@@ -698,27 +698,27 @@
 										<p class="text-xs font-bold text-slate-800 dark:text-white truncate">
 											{fan.user}
 										</p>
-										<div class="flex items-center gap-2 mt-0.5">
-											<span class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
-												{fan.count}x
-											</span>
-											<span class="text-[10px] font-bold text-amber-600 dark:text-amber-400">
-												{fan.total_gold.toLocaleString()}
-												gold
-											</span>
-										</div>
-										<div class="flex items-center gap-2 mt-0.5">
-											<span class="text-[10px] font-bold text-emerald-500 leading-none">
-												~ Rp {formatGoldToIdr(fan.total_gold, isShowroom)}
-											</span>
-										</div>
+										{#if fan.total_gold > 0}
+											<div class="flex items-center gap-2 mt-0.5">
+												<span class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
+													{fan.count}x
+												</span>
+												<span class="text-[10px] font-bold text-amber-600 dark:text-amber-400">
+													{fan.total_gold.toLocaleString()} gold
+													<span class="text-emerald-500">
+														(~ Rp {formatGoldToIdr(fan.total_gold, isShowroom)})
+													</span>
+												</span>
+											</div>
+										{/if}
 										{#if isShowroom && fan.free_count}
 											<div class="flex items-center gap-2 mt-0.5">
 												<span class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
 													{fan.free_count}x
 												</span>
-												<span class="text-[10px] font-bold text-green-500">
-													{fan.free_gold!.toLocaleString()} point (free)
+												<span class="text-[10px] font-bold text-amber-600 dark:text-amber-400">
+													{fan.free_gold!.toLocaleString()} point
+													<span class="text-green-500">(free)</span>
 												</span>
 											</div>
 										{/if}
