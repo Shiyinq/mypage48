@@ -140,10 +140,131 @@
 	<div class="flex-1 overflow-y-auto" onscroll={(e) => (scrollY = e.currentTarget.scrollTop)}>
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 relative z-10">
 			{#if loading}
-				<div class="flex items-center justify-center py-20">
+				<div class="animate-pulse">
 					<div
-						class="w-10 h-10 border-4 border-red-500/30 border-t-red-500 rounded-full animate-spin"
-					></div>
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 mb-6"
+					>
+						<div class="flex flex-col lg:flex-row items-start justify-between gap-6 lg:gap-8">
+							<div
+								class="flex flex-row lg:flex-col items-start gap-4 sm:gap-5 w-full lg:w-36 xl:w-44"
+							>
+								<div
+									class="w-24 sm:w-28 xl:w-32 aspect-[3/4] rounded-xl bg-zinc-200 dark:bg-zinc-700 shrink-0 border-[3px] sm:border-4 border-zinc-200 dark:border-zinc-700"
+								></div>
+								<div class="flex flex-col flex-1 lg:w-full gap-2 py-1">
+									<div class="flex items-center gap-3 mb-2">
+										<div class="w-16 h-5 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+										<div class="w-24 h-4 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+									</div>
+									<div class="w-40 h-7 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+									<div class="w-28 h-4 rounded bg-zinc-200 dark:bg-zinc-700 mt-1"></div>
+									<div class="w-full h-4 rounded bg-zinc-200 dark:bg-zinc-700 mt-2"></div>
+									<div class="w-3/4 h-4 rounded bg-zinc-200 dark:bg-zinc-700 mt-1"></div>
+									<div
+										class="hidden lg:block w-32 h-9 rounded-full bg-zinc-200 dark:bg-zinc-700 mt-3"
+									></div>
+								</div>
+							</div>
+							<div class="lg:hidden w-full h-11 rounded-full bg-zinc-200 dark:bg-zinc-700"></div>
+							<div class="flex-1 w-full flex flex-col sm:flex-row gap-5 sm:gap-6">
+								<div class="w-full lg:w-[320px] space-y-6">
+									<div>
+										<div class="w-20 h-4 rounded bg-zinc-200 dark:bg-zinc-700 mb-4"></div>
+										<div class="grid grid-cols-2 gap-4 sm:gap-6">
+											<div>
+												<div class="w-12 h-3 rounded bg-zinc-200 dark:bg-zinc-700 mb-2"></div>
+												<div class="w-20 h-5 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+												<div class="w-28 h-3 rounded bg-zinc-200 dark:bg-zinc-700 mt-2"></div>
+											</div>
+											<div>
+												<div class="w-12 h-3 rounded bg-zinc-200 dark:bg-zinc-700 mb-2"></div>
+												<div class="w-20 h-5 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+												<div class="w-28 h-3 rounded bg-zinc-200 dark:bg-zinc-700 mt-2"></div>
+											</div>
+											<div>
+												<div class="w-12 h-3 rounded bg-zinc-200 dark:bg-zinc-700 mb-2"></div>
+												<div class="w-16 h-5 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+											</div>
+										</div>
+									</div>
+									<div class="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+										<div class="w-20 h-4 rounded bg-zinc-200 dark:bg-zinc-700 mb-4"></div>
+										<div class="grid grid-cols-2 gap-4 sm:gap-6">
+											<div>
+												<div class="w-12 h-3 rounded bg-zinc-200 dark:bg-zinc-700 mb-2"></div>
+												<div class="w-16 h-5 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+											</div>
+											<div>
+												<div class="w-12 h-3 rounded bg-zinc-200 dark:bg-zinc-700 mb-2"></div>
+												<div class="w-20 h-5 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+											</div>
+											<div>
+												<div class="w-12 h-3 rounded bg-zinc-200 dark:bg-zinc-700 mb-2"></div>
+												<div class="w-16 h-5 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div
+									class="flex-1 min-w-0 border-t sm:border-t-0 sm:border-l border-zinc-100 dark:border-zinc-800 pt-4 sm:pt-0 sm:pl-6 mt-2 sm:mt-0"
+								>
+									<div class="flex items-center justify-between mb-2 px-1">
+										<div class="w-28 h-4 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+										<div class="w-20 h-5 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+									</div>
+									<div class="flex gap-3 sm:gap-4 overflow-hidden">
+										<div
+											class="shrink-0 h-40 w-[90px] sm:h-80 sm:w-[180px] rounded-xl bg-zinc-200 dark:bg-zinc-700"
+										></div>
+										<div
+											class="shrink-0 h-40 w-[90px] sm:h-80 sm:w-[180px] rounded-xl bg-zinc-200 dark:bg-zinc-700"
+										></div>
+										<div
+											class="shrink-0 h-40 w-[90px] sm:h-80 sm:w-[180px] rounded-xl bg-zinc-200 dark:bg-zinc-700"
+										></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 mb-6"
+					>
+						<div class="w-28 h-6 rounded bg-zinc-200 dark:bg-zinc-700 mb-4"></div>
+						<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+							{#each [1, 2, 3, 4] as _}
+								<div
+									class="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700"
+								>
+									<div class="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-700 shrink-0"></div>
+									<div class="flex-1 space-y-1">
+										<div class="w-24 h-4 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+										<div class="w-16 h-3 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+										<div class="w-20 h-3 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+					<div
+						class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 mb-6"
+					>
+						<div class="w-24 h-6 rounded bg-zinc-200 dark:bg-zinc-700 mb-4"></div>
+						<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+							{#each [1, 2, 3, 4] as _}
+								<div
+									class="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700"
+								>
+									<div class="flex items-center gap-2 flex-1">
+										<div class="w-11 h-11 rounded bg-zinc-200 dark:bg-zinc-700 shrink-0"></div>
+										<div class="w-20 h-4 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+										<div class="w-8 h-3 rounded bg-zinc-200 dark:bg-zinc-700 shrink-0"></div>
+									</div>
+									<div class="w-16 h-4 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+								</div>
+							{/each}
+						</div>
+					</div>
 				</div>
 			{:else if error}
 				<div
