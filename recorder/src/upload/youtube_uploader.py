@@ -177,6 +177,7 @@ async def _upload_to_youtube(
         return None, upload_uri
 
     meta["youtube_id"] = youtube_id
+    meta["youtube_title"] = title
     with open(meta_path, "w") as f:
         json.dump(meta, f, indent=2, ensure_ascii=False)
 

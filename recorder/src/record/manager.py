@@ -639,6 +639,7 @@ class RecordingManager:
                 "duration_seconds": int(duration),
                 "srt_file": os.path.basename(session.srt_path),
                 "youtube_id": None,
+                "youtube_title": None,
             }
             with open(session.json_path, "w") as f:
                 json.dump(metadata, f, indent=2, ensure_ascii=False)
