@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import re
 import subprocess
 import time
 from datetime import datetime, timezone
@@ -44,6 +45,10 @@ def _get_duration(mp4_path: str) -> float:
     except Exception:
         pass
     return 0.0
+
+
+def _sanitize_filename(name: str) -> str:
+    return re.sub(r"[^\w\s\-]", "_", name).strip().lower()
 
 
 class RecordingManager:
@@ -146,7 +151,9 @@ class RecordingManager:
                 self.log.error("Loop error: %s", e)
 
             try:
-                await asyncio.wait_for(stop_event.wait(), timeout=self.config.poll_interval)
+                await asyncio.wait_for(
+                    stop_event.wait(), timeout=self.config.poll_interval
+                )
                 break
             except asyncio.TimeoutError:
                 pass
@@ -172,9 +179,7 @@ class RecordingManager:
         recordings_dir = self.config.recordings_dir
 
         start_at_unix = _parse_start_at(live.start_at)
-        nickname_lower = (
-            live.member_nickname.lower().replace(" ", "_").replace("/", "_")
-        )
+        nickname_lower = _sanitize_filename(live.member_nickname)
         live_folder = os.path.join(recordings_dir, f"{nickname_lower}_{start_at_unix}")
         os.makedirs(live_folder, exist_ok=True)
 
@@ -345,8 +350,37 @@ class RecordingManager:
         self.log.error("Failed to get room_identifier for %s after 10 retries", live_id)
 
     async def _capture_screenshot(
-        self, source: str, dest: str, seek: str, timeout: int = 30
+        self,
+        source: str,
+        dest: str,
+        seek: str,
+        timeout: int = 30,
+        *,
+        live: bool = False,
     ):
+        if live:
+            for attempt in range(1, 4):
+                try:
+                    r = await asyncio.create_subprocess_exec(
+                        "ffmpeg", "-loglevel", "error",
+                        "-i", source,
+                        "-vframes", "1", "-strict", "unofficial", "-y", dest,
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE,
+                    )
+                    _, stderr = await asyncio.wait_for(r.communicate(), timeout=120)
+                    if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
+                        self.log.info("  screenshot (HLS) OK")
+                        return True
+                    err_msg = stderr.decode(errors="ignore").strip()[:200]
+                    self.log.info("  screenshot (HLS attempt %d/3): %s", attempt, err_msg or "failed")
+                except asyncio.TimeoutError:
+                    self.log.info("  screenshot (HLS attempt %d/3): timeout", attempt)
+                except Exception as e:
+                    self.log.info("  screenshot (HLS attempt %d/3): %s", attempt, e)
+                await asyncio.sleep(5)
+            return False
+
         strategies = [
             [
                 "ffmpeg",
@@ -430,20 +464,14 @@ class RecordingManager:
                 except asyncio.TimeoutError:
                     r.kill()
                     await r.wait()
-                    self.log.info(
-                        "  strategy %d/%d (%s): timeout",
-                        i + 1,
-                        len(strategies),
-                        strategy_name,
-                    )
+                    self.log.info("  strategy %d/4 (%s): timeout", i + 1, strategy_name)
                     continue
 
                 if r.returncode != 0:
                     last_err = stderr.decode(errors="ignore").strip()
                     self.log.info(
-                        "  strategy %d/%d (%s): failed (%s)",
+                        "  strategy %d/4 (%s): failed (%s)",
                         i + 1,
-                        len(strategies),
                         strategy_name,
                         last_err[:80],
                     )
@@ -452,28 +480,18 @@ class RecordingManager:
                 if not os.path.exists(dest) or os.path.getsize(dest) == 0:
                     last_err = stderr.decode(errors="ignore").strip()
                     self.log.info(
-                        "  strategy %d/%d (%s): empty output",
-                        i + 1,
-                        len(strategies),
-                        strategy_name,
+                        "  strategy %d/4 (%s): empty output", i + 1, strategy_name
                     )
                     continue
 
                 self.log.info(
-                    "  screenshot OK with strategy %d/%d (%s)",
-                    i + 1,
-                    len(strategies),
-                    strategy_name,
+                    "  screenshot OK with strategy %d/4 (%s)", i + 1, strategy_name
                 )
                 return True
             except Exception as e:
                 last_err = str(e)
                 self.log.info(
-                    "  strategy %d/%d (%s): exception (%s)",
-                    i + 1,
-                    len(strategies),
-                    strategy_name,
-                    e,
+                    "  strategy %d/4 (%s): exception (%s)", i + 1, strategy_name, e
                 )
                 continue
 
@@ -486,16 +504,13 @@ class RecordingManager:
         await asyncio.sleep(30)
         if session.live_id not in self.sessions:
             return
-        if not os.path.exists(session.output_path):
-            self.log.warning(
-                "Initial thumb: %s not found, skipping", session.output_path
-            )
-            return
         self.log.info("Initial thumb: capturing at 30s...")
         ts = int(time.time())
-        ss_name = f"{session.member_nickname.lower()}_{ts}.jpg"
+        ss_name = f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg"
         ss_path = os.path.join(session.screenshots_folder, ss_name)
-        ok = await self._capture_screenshot(session.output_path, ss_path, "5", 30)
+        ok = await self._capture_screenshot(
+            session.hls_url, ss_path, "5", 30, live=True
+        )
         if ok:
             self.log.info("Initial screenshot saved: %s", ss_name)
         else:
@@ -505,17 +520,14 @@ class RecordingManager:
         await asyncio.sleep(300)
         self.log.info("Periodic thumb: starting 5-min cycle")
         while session.live_id in self.sessions:
-            if not os.path.exists(session.output_path):
-                self.log.warning(
-                    "Periodic thumb: %s gone, stopping", session.output_path
-                )
-                break
             elapsed = int(time.time() - session.recording_start_time)
             seek = str(max(5, elapsed - 30))
             ts = int(time.time())
-            ss_name = f"{session.member_nickname.lower()}_{ts}.jpg"
+            ss_name = f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg"
             ss_path = os.path.join(session.screenshots_folder, ss_name)
-            ok = await self._capture_screenshot(session.output_path, ss_path, seek, 30)
+            ok = await self._capture_screenshot(
+                session.hls_url, ss_path, seek, 30, live=True
+            )
             if ok:
                 self.log.info("Screenshot at %ss: %s", seek, ss_name)
             else:
@@ -604,7 +616,7 @@ class RecordingManager:
                 ts = int(time.time())
                 ss_path = os.path.join(
                     session.screenshots_folder,
-                    f"{session.member_nickname.lower()}_{ts}.jpg",
+                    f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg",
                 )
                 r = subprocess.run(
                     [

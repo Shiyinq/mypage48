@@ -61,6 +61,12 @@ async def capture_showroom(
                                 )
                                 jsonl_f.flush()
 
+                    except httpx.HTTPStatusError as e:
+                        print(
+                            f"[showroom_chat] HTTP {e.response.status_code}: {e.response.text[:200]}"
+                        )
+                    except httpx.RequestError as e:
+                        print(f"[showroom_chat] Request failed: {e}")
                     except Exception as e:
                         print(f"[showroom_chat] Error: {e}")
 
@@ -187,6 +193,12 @@ async def capture_showroom_gifts(
                                 )
                                 jsonl_f.flush()
 
+                    except httpx.HTTPStatusError as e:
+                        print(
+                            f"[showroom_gift] HTTP {e.response.status_code}: {e.response.text[:200]}"
+                        )
+                    except httpx.RequestError as e:
+                        print(f"[showroom_gift] Request failed: {e}")
                     except Exception as e:
                         print(f"[showroom_gift] Error: {e}")
 

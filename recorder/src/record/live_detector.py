@@ -19,6 +19,14 @@ class LiveDetector:
             )
             resp.raise_for_status()
             data = resp.json()
+        except httpx.HTTPStatusError as e:
+            print(
+                f"[live_detector] Poll live status: HTTP {e.response.status_code}: {e.response.text[:200]}"
+            )
+            return [], False
+        except httpx.RequestError as e:
+            print(f"[live_detector] Poll live status failed: {e}")
+            return [], False
         except Exception as e:
             print(f"[live_detector] Failed to poll live status: {e}")
             return [], False
@@ -78,10 +86,16 @@ class LiveDetector:
             )
             resp.raise_for_status()
             return resp.json()
-        except Exception as e:
+        except httpx.HTTPStatusError as e:
             print(
-                f"[live_detector] Failed to get streaming URL for {platform}/{identifier}: {e}"
+                f"[live_detector] Streaming URL {platform}/{identifier}: HTTP {e.response.status_code}: {e.response.text[:200]}"
             )
+            return None
+        except httpx.RequestError as e:
+            print(f"[live_detector] Streaming URL {platform}/{identifier}: {e}")
+            return None
+        except Exception as e:
+            print(f"[live_detector] Failed to get streaming URL: {e}")
             return None
 
     @staticmethod
