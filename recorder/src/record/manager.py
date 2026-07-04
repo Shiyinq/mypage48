@@ -134,6 +134,26 @@ class RecordingManager:
                 chat_count,
             )
 
+    async def run(self, stop_event: asyncio.Event):
+        while not stop_event.is_set():
+            try:
+                lives, ok = await self.detector.poll()
+                if ok:
+                    await self.sync(lives)
+                    await self.check_health()
+                    self.log_progress()
+            except Exception as e:
+                self.log.error("Loop error: %s", e)
+
+            try:
+                await asyncio.wait_for(stop_event.wait(), timeout=self.config.poll_interval)
+                break
+            except asyncio.TimeoutError:
+                pass
+        self.log.info("Shutting down...")
+        await self.shutdown()
+        self.log.info("Goodbye.")
+
     @staticmethod
     def _format_duration(seconds: float) -> str:
         m, s = divmod(int(seconds), 60)
@@ -195,6 +215,9 @@ class RecordingManager:
 
         stop_event = asyncio.Event()
         self._stop_events[live.live_id] = stop_event
+
+        chat_task = None
+        gift_task = None
 
         if live.platform == "showroom":
             chat_task = asyncio.create_task(
