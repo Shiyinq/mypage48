@@ -1,6 +1,6 @@
 import json
 import pytest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, ANY
 from httpx import AsyncClient
 
@@ -138,7 +138,8 @@ async def test_upload_already_exists(replay_service):
 
 @pytest.mark.asyncio
 async def test_list_all(replay_service):
-    now = datetime.now(timezone.utc)
+    now_utc = datetime.now(timezone.utc)
+    now_wib = now_utc.astimezone(timezone(timedelta(hours=7)))
     replay_service.repository.find_all.return_value = [
         {
             "_id": "id1",
@@ -150,9 +151,9 @@ async def test_list_all(replay_service):
             "member_name": "Fahira",
             "member_nickname": "Fahira",
             "status": "completed",
-            "start_at": now,
-            "recording_started_at": now,
-            "recording_ended_at": now,
+            "start_at": now_utc,
+            "recording_started_at": now_utc,
+            "recording_ended_at": now_utc,
             "duration_seconds": 3600,
             "srt_file": None,
             "youtube_id": None,
@@ -164,17 +165,24 @@ async def test_list_all(replay_service):
                 "screenshots": ["shot1.jpg"],
             },
             "chats": [{"name": "Alice", "message": "hi"}],
-            "created_at": now,
-            "updated_at": now,
+            "created_at": now_utc,
+            "updated_at": now_utc,
         },
     ]
 
     docs = await replay_service.list_all()
 
     assert len(docs) == 1
-    assert docs[0]["live_id"] == "live-1"
+    assert docs[0]["youtube_id"] == ""
+    assert docs[0]["title"] == "Test 1"
     assert docs[0]["member"] == "Fahira"
+    assert docs[0]["date"] == now_wib.strftime("%Y-%m-%d")
+    assert docs[0]["platform"] == "SHOWROOM"
+    assert docs[0]["live_id"] == "live-1"
+    assert "srt_file" not in docs[0]
     assert "member_name" not in docs[0]
+    assert "files" not in docs[0]
+    assert "chats" not in docs[0]
 
 
 @pytest.mark.asyncio
@@ -241,7 +249,8 @@ async def test_replay_list_success(client: AsyncClient, mock_replay_repo):
         storage_repository=MockStorageRepository(),
         config=MagicMock(spec=Settings),
     )
-    now = datetime.now(timezone.utc)
+    now_utc = datetime.now(timezone.utc)
+    now_wib = now_utc.astimezone(timezone(timedelta(hours=7)))
     mock_replay_repo.find_all.return_value = [
         {
             "_id": "r1",
@@ -253,9 +262,9 @@ async def test_replay_list_success(client: AsyncClient, mock_replay_repo):
             "member_name": "Fahira",
             "member_nickname": "Fahira",
             "status": "completed",
-            "start_at": now,
-            "recording_started_at": now,
-            "recording_ended_at": now,
+            "start_at": now_utc,
+            "recording_started_at": now_utc,
+            "recording_ended_at": now_utc,
             "duration_seconds": 3600,
             "srt_file": "live-1.srt",
             "youtube_id": None,
@@ -267,8 +276,8 @@ async def test_replay_list_success(client: AsyncClient, mock_replay_repo):
                 "screenshots": [],
             },
             "chats": [{"name": "Alice", "message": "hi"}],
-            "created_at": now,
-            "updated_at": now,
+            "created_at": now_utc,
+            "updated_at": now_utc,
         }
     ]
 
@@ -277,12 +286,14 @@ async def test_replay_list_success(client: AsyncClient, mock_replay_repo):
         assert res.status_code == 200
         data = res.json()
         assert len(data) == 1
-        assert data[0]["live_id"] == "live-1"
+        assert data[0]["youtube_id"] == ""
+        assert data[0]["title"] == "Test Live"
         assert data[0]["member"] == "Fahira"
-        assert data[0]["member_nickname"] == "Fahira"
-        assert "chats" not in data[0]
-        assert data[0]["duration_seconds"] == 3600
-        assert data[0]["created_at"].endswith("Z")
+        assert data[0]["date"] == now_wib.strftime("%Y-%m-%d")
+        assert data[0]["platform"] == "SHOWROOM"
+        assert data[0]["live_id"] == "live-1"
+        assert "srt_file" not in data[0]
+        assert data[0]["added_at"].endswith("Z")
     finally:
         app.dependency_overrides.pop(get_replay_service, None)
 

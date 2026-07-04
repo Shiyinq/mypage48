@@ -114,31 +114,14 @@ class ReplayDetailResponse(BaseModel):
 
 
 class ReplayListItem(BaseModel):
-    id: PyObjectId = Field(..., alias="_id")
-    live_id: str
-    platform: str
-    member: str
-    member_nickname: str
-    room_id: Optional[str] = None
-    room_identifier: Optional[str] = None
+    live_id: str = ""
+    youtube_id: str = ""
     title: Optional[str] = None
-    status: str
-    start_at: Optional[datetime] = None
-    recording_started_at: Optional[datetime] = None
-    recording_ended_at: Optional[datetime] = None
-    duration_seconds: int = 0
-    srt_file: Optional[str] = None
-    youtube_id: Optional[str] = None
-    files: ReplayFilesInfo
-    created_at: datetime
-    updated_at: datetime
+    member: str = ""
+    date: Optional[str] = None
+    platform: str = ""
+    added_at: Optional[datetime] = None
 
-    @field_serializer(
-        "start_at",
-        "recording_started_at",
-        "recording_ended_at",
-        "created_at",
-        "updated_at",
-    )
+    @field_serializer("added_at")
     def serialize_dt(self, v: Optional[datetime]) -> Optional[str]:
         return _serialize_dt(v)

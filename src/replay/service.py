@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from src.config import Settings
@@ -256,6 +256,7 @@ class ReplayService:
             "duration_seconds": metadata.get("duration_seconds", 0),
             "srt_file": metadata.get("srt_file"),
             "youtube_id": metadata.get("youtube_id"),
+            "youtube_title": metadata.get("youtube_title"),
             "files": {
                 "json_file": files["json_file"],
                 "thumbnail": files["thumbnail"],
@@ -355,12 +356,32 @@ class ReplayService:
         return ReplayDetailResponse(**doc)
 
     async def list_all(self) -> list[dict]:
+        wib = timezone(timedelta(hours=7))
         docs = await self.repository.find_all()
         result = []
         for doc in docs:
-            doc["_id"] = str(doc["_id"])
-            doc["member"] = doc.pop("member_name", "")
-            result.append(doc)
+            start_at = doc.get("start_at") or doc.get("recording_started_at")
+            if isinstance(start_at, str):
+                try:
+                    dt = datetime.fromisoformat(start_at.replace("Z", "+00:00"))
+                    start_at = dt.astimezone(wib)
+                except (ValueError, AttributeError):
+                    start_at = None
+            elif isinstance(start_at, datetime):
+                start_at = start_at.astimezone(wib)
+            date_str = start_at.strftime("%Y-%m-%d") if start_at else None
+            result.append(
+                {
+                    "live_id": doc.get("live_id", ""),
+                    "youtube_id": doc.get("youtube_id") or "",
+                    "title": doc.get("youtube_title") or doc.get("title"),
+                    "member": doc.get("member_nickname", ""),
+                    "date": date_str,
+                    "platform": doc.get("platform", "").upper(),
+                    "added_at": doc.get("created_at"),
+                    "live_id": doc.get("live_id", ""),
+                }
+            )
         return result
 
     async def get_srt_content(self, live_id: str) -> Optional[str]:
