@@ -58,6 +58,7 @@ class RecordingManager:
         self.detector = LiveDetector(config.api_base_url)
         self.sessions: dict[str, RecordingSession] = {}
         self._stop_events: dict[str, asyncio.Event] = {}
+        self._gone_count: dict[str, int] = {}
 
     async def sync(self, current_lives: list[LiveInfo]):
         current_ids = {l.live_id for l in current_lives}
@@ -68,7 +69,14 @@ class RecordingManager:
 
         ended_ids = set(self.sessions.keys()) - current_ids
         for live_id in ended_ids:
-            await self._end_session(live_id, reason="completed")
+            count = self._gone_count.get(live_id, 0) + 1
+            self._gone_count[live_id] = count
+            if count >= 3:
+                del self._gone_count[live_id]
+                await self._end_session(live_id, reason="completed")
+
+        for live_id in current_ids:
+            self._gone_count.pop(live_id, None)
 
     async def check_health(self):
         completed_ids = []
@@ -100,7 +108,13 @@ class RecordingManager:
                         age,
                         current_size,
                     )
-                    error_ids.append(live_id)
+                    stream_info = await self.detector.get_streaming_url(
+                        session.platform, session.room_id, session.live_id
+                    )
+                    if stream_info:
+                        error_ids.append(live_id)
+                    else:
+                        completed_ids.append(live_id)
 
                 session.last_file_size = current_size
 
@@ -362,18 +376,34 @@ class RecordingManager:
             for attempt in range(1, 4):
                 try:
                     r = await asyncio.create_subprocess_exec(
-                        "ffmpeg", "-loglevel", "error",
-                        "-i", source,
-                        "-vframes", "1", "-strict", "unofficial", "-y", dest,
+                        "ffmpeg",
+                        "-loglevel",
+                        "error",
+                        "-i",
+                        source,
+                        "-vframes",
+                        "1",
+                        "-strict",
+                        "unofficial",
+                        "-y",
+                        dest,
                         stdout=asyncio.subprocess.PIPE,
                         stderr=asyncio.subprocess.PIPE,
                     )
                     _, stderr = await asyncio.wait_for(r.communicate(), timeout=120)
-                    if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
+                    if (
+                        r.returncode == 0
+                        and os.path.exists(dest)
+                        and os.path.getsize(dest) > 0
+                    ):
                         self.log.info("  screenshot (HLS) OK")
                         return True
                     err_msg = stderr.decode(errors="ignore").strip()[:200]
-                    self.log.info("  screenshot (HLS attempt %d/3): %s", attempt, err_msg or "failed")
+                    self.log.info(
+                        "  screenshot (HLS attempt %d/3): %s",
+                        attempt,
+                        err_msg or "failed",
+                    )
                 except asyncio.TimeoutError:
                     self.log.info("  screenshot (HLS attempt %d/3): timeout", attempt)
                 except Exception as e:
