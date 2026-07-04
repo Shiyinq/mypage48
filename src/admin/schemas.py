@@ -17,6 +17,7 @@ class DataMyPageStats(BaseModel):
     total_2shot: int
     total_journal: int
     total_favorites: int
+    total_sorter: int
     total_money_spent_idr: float
 
 
@@ -37,3 +38,6 @@ class DataTheaterStats(BaseModel):
     total_live_member: int
     showroom_live_count: int
     idn_live_count: int
+    total_replay_live: int
+    showroom_replay_count: int
+    idn_replay_count: int

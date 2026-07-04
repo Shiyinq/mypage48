@@ -1484,6 +1484,7 @@
 				"total2Shot": "Total 2-Shot",
 				"journals": "Journals",
 				"favorites": "Favorites",
+				"sorters": "Sorter",
 				"totalEstSpent": "Total Est. Spent",
 				"dataTheater": "Data Theater",
 				"members": "Members",
@@ -1498,7 +1499,9 @@
 				"liveHistory": "Live History",
 				"birthdaysThisYear": "Birthdays this year",
 				"sr": "SR",
-				"idn": "IDN"
+				"idn": "IDN",
+				"replayLive": "Replay Live",
+				"totalReplays": "Total Replay"
 			}
 		},
 		"feedback": {

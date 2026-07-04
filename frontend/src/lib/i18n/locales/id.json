@@ -1389,6 +1389,7 @@
 				"total2Shot": "Total 2-Shot",
 				"journals": "Jurnal",
 				"favorites": "Favorit",
+				"sorters": "Sorter",
 				"totalEstSpent": "Total Perkiraan Pengeluaran",
 				"dataTheater": "Data Teater",
 				"members": "Member",
@@ -1403,7 +1404,9 @@
 				"liveHistory": "Riwayat Live",
 				"birthdaysThisYear": "Ulang tahun tahun ini",
 				"sr": "SR",
-				"idn": "IDN"
+				"idn": "IDN",
+				"replayLive": "Replay Live",
+				"totalReplays": "Total Replay"
 			}
 		},
 		"feedback": {
