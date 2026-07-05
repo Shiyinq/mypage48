@@ -10,7 +10,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import AppBackground from '$lib/components/common/AppBackground.svelte';
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
-	import { OptimizedImage, ImageLightbox } from '$lib/components/common';
+	import { OptimizedImage, ImageLightbox, LottieAnimation } from '$lib/components/common';
 	import {
 		MessageCircle,
 		Gift,
@@ -766,15 +766,13 @@
 									<div class="flex items-center gap-2 min-w-0 flex-1 pr-2">
 										{#if gift.image}
 											{#if isLottieUrl(gift.image)}
-												<lottie-player
+												<LottieAnimation
 													src={gift.image}
-													background="transparent"
-													speed="1"
-													style="width: 44px; height: 44px;"
-													loop
-													autoplay
-													class="shrink-0"
-												></lottie-player>
+													speed={1}
+													width="44px"
+													height="44px"
+													className="shrink-0"
+												/>
 											{:else}
 												<img
 													src={gift.image}

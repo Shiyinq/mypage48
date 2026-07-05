@@ -9,3 +9,4 @@ export { default as PromoBanner } from './PromoBanner.svelte';
 export { default as DateRangeFilter } from './DateRangeFilter.svelte';
 export { default as VersionDisplay } from './VersionDisplay.svelte';
 export { default as FlyingOshiIcons } from './FlyingOshiIcons.svelte';
+export { default as LottieAnimation } from './LottieAnimation.svelte';

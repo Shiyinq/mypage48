@@ -5,7 +5,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
 	import { broadcastGift } from '$lib/stores/gift.svelte';
-	import { OptimizedImage } from '$lib/components/common';
+	import { OptimizedImage, LottieAnimation } from '$lib/components/common';
 
 	interface Props {
 		roomIdentifier: string;
@@ -292,12 +292,6 @@
 			console.log('Raw message that failed:', raw);
 		}
 	}
-
-	function handleMediaError(e: Event) {
-		if (e.currentTarget instanceof HTMLElement) {
-			e.currentTarget.style.display = 'none';
-		}
-	}
 </script>
 
 <div class="flex-1 min-h-0 flex flex-col overflow-hidden relative">
@@ -410,16 +404,13 @@
 							>
 								{#if msg.gift.img}
 									{#if isLottie && isRecent}
-										<lottie-player
+										<LottieAnimation
 											src={getExternalMediaUrl(msg.gift.img)}
-											background="transparent"
-											speed="1"
-											style="width: 50px; height: 50px;"
-											class="object-contain drop-shadow-md"
-											loop
-											autoplay
-											onerror={handleMediaError}
-										></lottie-player>
+											speed={1}
+											width="50px"
+											height="50px"
+											className="object-contain drop-shadow-md"
+										/>
 									{:else if isLottie}
 										<!-- Static fallback for older Lottie gifts to save resources -->
 										<div class="w-[50px] h-[50px] flex items-center justify-center opacity-50">
