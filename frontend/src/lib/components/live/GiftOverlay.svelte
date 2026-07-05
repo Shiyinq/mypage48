@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade, scale, slide } from 'svelte/transition';
 	import { giftEvents, type GiftEvent } from '$lib/stores/gift.svelte';
-	import { LottieAnimation } from '$lib/components/common';
+	import { LottieAnimation, RiveAnimation } from '$lib/components/common';
 
 	interface Props {
 		roomIdentifier?: string;
@@ -99,18 +99,32 @@
 						class="relative flex items-center justify-center p-8 scale-90 sm:scale-110 md:scale-125"
 					>
 						{#if activeGift.gift.img.includes('/animation/') || !activeGift.gift.img.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i)}
-							<LottieAnimation
-								src={getExternalMediaUrl(activeGift.gift.img)}
-								speed={1.2}
-								width="200px"
-								height="200px"
-								onready={startGiftTimer}
-								onerror={() => {
-									setTimeout(() => {
-										activeGift = null;
-									}, 100);
-								}}
-							/>
+							{#if activeGift.gift.img.toLowerCase().endsWith('.riv')}
+								<RiveAnimation
+									src={getExternalMediaUrl(activeGift.gift.img)}
+									width="200px"
+									height="200px"
+									onready={startGiftTimer}
+									onerror={() => {
+										setTimeout(() => {
+											activeGift = null;
+										}, 100);
+									}}
+								/>
+							{:else}
+								<LottieAnimation
+									src={getExternalMediaUrl(activeGift.gift.img)}
+									speed={1.2}
+									width="200px"
+									height="200px"
+									onready={startGiftTimer}
+									onerror={() => {
+										setTimeout(() => {
+											activeGift = null;
+										}, 100);
+									}}
+								/>
+							{/if}
 						{:else}
 							<img
 								src={getExternalMediaUrl(activeGift.gift.img)}
