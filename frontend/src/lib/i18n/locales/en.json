@@ -420,6 +420,7 @@
 			"successMessage": "Email verified successfully! You can now login.",
 			"invalidLink": "Invalid verification link. Missing token.",
 			"failedMessage": "Verification failed. The link may be invalid or expired.",
+			"resendInfo": "You can request a new verification link by logging in with your correct username and password, then clicking 'Resend verification link'.",
 			"backToLogin": "Back to Login",
 			"goToLogin": "Go to Login"
 		}

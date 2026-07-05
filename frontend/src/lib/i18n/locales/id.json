@@ -421,6 +421,7 @@
 			"successMessage": "Email berhasil diverifikasi! Anda sekarang dapat login.",
 			"invalidLink": "Link verifikasi tidak valid. Token hilang.",
 			"failedMessage": "Verifikasi gagal. Link mungkin tidak valid atau kedaluwarsa.",
+			"resendInfo": "Kamu bisa mendapatkan link verifikasi email kembali jika login dengan username dan password yang benar, kemudian klik 'Kirim ulang link verifikasi'.",
 			"backToLogin": "Kembali ke Login",
 			"goToLogin": "Ke Login"
 		}
