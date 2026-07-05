@@ -9,7 +9,7 @@ import httpx
 from ..config import RecorderConfig
 from ..models import RecordingSession
 
-_REPLAY_API_TIMEOUT = 120
+_REPLAY_API_TIMEOUT = 180
 
 
 def _read_json_safe(path: str) -> dict | None:
@@ -132,7 +132,8 @@ async def upload(
                 "Upload failed (attempt %d/3): %s %s", attempt, resp.status_code, body
             )
             if resp.status_code == 409:
-                return False
+                log.info("Replay data already exists (409). Treating as success for %s", title or live_id)
+                return True
             await asyncio.sleep(5)
 
     log.error("All retries exhausted for %s", title or live_id)
