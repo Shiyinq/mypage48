@@ -1641,6 +1641,7 @@
 				"end": "Selesai",
 				"duration": "Durasi",
 				"recording": "Rekaman",
+				"recordingInfo": "Auto rekam live bisa saja mengalami keterlambatan atau kendala koneksi server dalam merekam live member",
 				"title": "Statistik",
 				"views": "Views",
 				"gifts": "Gifts",
