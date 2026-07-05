@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from logging import Logger
 
 from google.auth.transport.requests import Request
@@ -35,6 +35,10 @@ def _format_title(meta: dict) -> str:
 
     try:
         dt = datetime.fromisoformat(start_at.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        wib_tz = timezone(timedelta(hours=7))
+        dt = dt.astimezone(wib_tz)
         date_str = f"{dt.day} {_MONTHS_ID[dt.month]} {dt.year}"
         time_str = dt.strftime("%H:%M")
         return f"LIVE {platform} {nickname} JKT48 | {date_str} {time_str} WIB"

@@ -45,3 +45,4 @@ class RecordingSession:
     gift_task: Optional["asyncio.Task"] = None
     started_at: float = field(default_factory=time.time)
     last_file_size: int = 0
+    mkv_parts: list[str] = field(default_factory=list)
