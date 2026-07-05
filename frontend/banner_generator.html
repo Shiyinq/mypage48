@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Banner Generator (Pixel Style)</title>
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+		body,
+		html {
+			margin: 0;
+			padding: 0;
+			width: 2560px;
+			height: 1440px;
+			background-color: #e3000f;
+			/* JKT48 Red background */
+			font-family: 'Press Start 2P', monospace;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			overflow: hidden;
+			position: relative;
+		}
+
+		#grid {
+			display: grid;
+			grid-template-columns: repeat(40, 64px);
+			grid-template-rows: repeat(23, 64px);
+			width: 2560px;
+			height: 1472px;
+			position: absolute;
+			top: -16px;
+			left: 0;
+		}
+
+		.cell {
+			width: 64px;
+			height: 64px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 30px;
+			color: #b8000c;
+			/* Darker red for pattern text */
+			background-color: #e3000f;
+			border: 2px solid #c8000d;
+			/* Subtle grid lines */
+			box-sizing: border-box;
+		}
+
+		.highlight {
+			color: #ffffff;
+			font-size: 32px;
+		}
+
+		.star-svg {
+			width: 44px;
+			height: 44px;
+			color: #ffffff;
+		}
+
+		#download-btn {
+			position: fixed;
+			top: 50px;
+			left: 50px;
+			padding: 20px 40px;
+			font-size: 30px;
+			background: #0f172a;
+			color: white;
+			border: none;
+			border-radius: 10px;
+			cursor: pointer;
+			z-index: 100;
+		}
+	</style>
+</head>
+
+<body>
+	<button id="download-btn">Loading Fonts...</button>
+	<div id="grid"></div>
+
+	<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+	<script>
+		const grid = document.getElementById('grid');
+		const cols = 40;
+		const rows = 23;
+		const word = 'MYPAGE48';
+
+		// Stars positions similar to the reference image
+		const stars = [
+			{ r: 5, c: 15 },
+			{ r: 8, c: 20 },
+			{ r: 11, c: 5 },
+			{ r: 12, c: 7 },
+			{ r: 11, c: 32 },
+			{ r: 12, c: 34 },
+			{ r: 15, c: 22 },
+			{ r: 16, c: 20 },
+			{ r: 20, c: 8 },
+			{ r: 20, c: 31 },
+			{ r: 2, c: 6 },
+			{ r: 1, c: 33 }
+		];
+
+		// Central highlight
+		const centerRow = 10;
+		// Text: [STAR] M Y P A G E 4 8
+		// Length = 9 cells.
+		const startCol = Math.floor(cols / 2) - 4;
+
+		for (let r = 0; r < rows; r++) {
+			for (let c = 0; c < cols; c++) {
+				const cell = document.createElement('div');
+				cell.className = 'cell';
+
+				const isStar = stars.some((s) => s.r === r && s.c === c);
+
+				let isHighlight = false;
+				let char = '';
+
+				if (r === centerRow && c >= startCol && c < startCol + 9) {
+					isHighlight = true;
+					if (c === startCol) {
+						char = 'STAR';
+					} else {
+						char = word[c - startCol - 1];
+					}
+				} else if (isStar) {
+					char = 'STAR';
+				} else {
+					const index = (r * 3 + c) % word.length;
+					char = word[index];
+				}
+
+				if (char === 'STAR') {
+					cell.innerHTML = `<svg class="star-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                        <path d="M13 5v2"/>
+                        <path d="M13 17v2"/>
+                        <path d="M13 11v2"/>
+                    </svg>`;
+				} else {
+					cell.textContent = char;
+					if (isHighlight) {
+						cell.classList.add('highlight');
+					}
+				}
+
+				grid.appendChild(cell);
+			}
+		}
+
+		const btn = document.getElementById('download-btn');
+		document.fonts.ready.then(() => {
+			btn.textContent = 'Download HD PNG';
+			btn.disabled = false;
+		});
+
+		btn.addEventListener('click', () => {
+			btn.style.display = 'none';
+
+			html2canvas(document.body, {
+				width: 2560,
+				height: 1440,
+				scale: 1,
+				logging: false,
+				useCORS: true
+			}).then((canvas) => {
+				const link = document.createElement('a');
+				link.download = 'mypage48_pixel_banner.png';
+				link.href = canvas.toDataURL('image/png');
+				link.click();
+				btn.style.display = 'block';
+				if (!document.getElementById('download-complete')) {
+					document.body.innerHTML +=
+						'<div id="download-complete" style="position:fixed;bottom:10px;left:10px;background:green;color:white;padding:10px;z-index:9999;">Download Complete</div>';
+				}
+			});
+		});
+	</script>
+</body>
+
+</html>
