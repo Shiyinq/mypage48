@@ -146,13 +146,17 @@ export function parseUTCDate(dateStr: string): Date {
 	return new Date(dateStr);
 }
 
+export function getLocaleMap(locale: string = 'id'): string {
+	const localeMap: Record<string, string> = { id: 'id-ID', en: 'en-US', ja: 'ja-JP' };
+	return localeMap[locale] || locale || 'id-ID';
+}
+
 /**
  * Format a date for Live History with the given locale.
  */
 export function formatLiveDate(dateStr: string, locale: string = 'id'): string {
 	if (!dateStr) return '';
-	const localeMap: Record<string, string> = { id: 'id-ID', en: 'en-US', ja: 'ja-JP' };
-	return new Intl.DateTimeFormat(localeMap[locale] || 'id-ID', {
+	return new Intl.DateTimeFormat(getLocaleMap(locale), {
 		day: 'numeric',
 		month: 'short',
 		year: 'numeric',
@@ -184,8 +188,7 @@ export function formatLiveStartEnd(
 		start.getMonth() === end.getMonth() &&
 		start.getDate() === end.getDate();
 
-	const localeMap: Record<string, string> = { id: 'id-ID', en: 'en-US', ja: 'ja-JP' };
-	const loc = localeMap[locale] || 'id-ID';
+	const loc = getLocaleMap(locale);
 
 	if (isSameDay) {
 		const formattedEndTime = new Intl.DateTimeFormat(loc, {
@@ -195,5 +198,36 @@ export function formatLiveStartEnd(
 	} else {
 		const formattedEndFull = formatLiveDate(endAtStr, locale);
 		return `${formattedStart} - ${formattedEndFull}`;
+	}
+}
+
+/**
+ * Format a date only (e.g. 5 July 2026) with the given locale.
+ */
+export function formatDateOnly(dateStr: string | undefined | null, locale: string = 'id'): string {
+	if (!dateStr) return '';
+	try {
+		return parseUTCDate(dateStr).toLocaleDateString(getLocaleMap(locale), {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric'
+		});
+	} catch {
+		return dateStr;
+	}
+}
+
+/**
+ * Format a time only (e.g. 23:13) with the given locale.
+ */
+export function formatTimeOnly(dateStr: string | undefined | null, locale: string = 'id'): string {
+	if (!dateStr) return '-';
+	try {
+		return new Intl.DateTimeFormat(getLocaleMap(locale), {
+			hour: '2-digit',
+			minute: '2-digit'
+		}).format(parseUTCDate(dateStr));
+	} catch {
+		return '-';
 	}
 }

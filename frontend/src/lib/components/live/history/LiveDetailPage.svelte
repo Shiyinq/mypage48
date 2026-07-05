@@ -2,7 +2,13 @@
 	import { page } from '$app/stores';
 	import { liveHistoryDetailStore } from '$lib/stores/liveHistoryDetail.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { formatTimeAgo, parseUTCDate } from '$lib/utils/time';
+	import {
+		formatTimeAgo,
+		parseUTCDate,
+		formatDateOnly,
+		formatTimeOnly as formatTimeHelper,
+		formatDurationSeconds
+	} from '$lib/utils/time';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { formatGoldToIdr } from '$lib/utils/formatting';
 	import { spring } from 'svelte/motion';
@@ -84,37 +90,18 @@
 	});
 
 	function formatDate(dateStr?: string) {
-		if (!dateStr) return '';
-		try {
-			const d = new Date(dateStr);
-			return d.toLocaleDateString(locale.value === 'id' ? 'id-ID' : 'en-US', {
-				day: 'numeric',
-				month: 'long',
-				year: 'numeric'
-			});
-		} catch {
-			return dateStr;
-		}
+		return formatDateOnly(dateStr, locale.value);
 	}
 
 	function formatDuration(seconds: number) {
-		const h = Math.floor(seconds / 3600);
-		const m = Math.floor((seconds % 3600) / 60);
-		const s = Math.floor(seconds % 60);
-		if (h > 0) return `${h}h ${m}m ${s}s`;
-		if (m > 0) return `${m}m ${s}s`;
-		return `${s}s`;
+		return formatDurationSeconds(seconds, true)
+			.replace(/0(\d)h/, '$1h')
+			.replace(/ 0(\d)m/, ' $1m')
+			.replace(/ 0(\d)s/, ' $1s');
 	}
 
 	function formatTimeOnly(dateStr?: string | null) {
-		if (!dateStr) return '-';
-		try {
-			return new Intl.DateTimeFormat(locale.value, { hour: '2-digit', minute: '2-digit' }).format(
-				parseUTCDate(dateStr)
-			);
-		} catch {
-			return '-';
-		}
+		return formatTimeHelper(dateStr, locale.value);
 	}
 
 	function getEndTime(data: ReplayDetailResponse) {
