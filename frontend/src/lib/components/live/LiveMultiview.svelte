@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { page } from '$app/stores';
 	import SEO from '$lib/components/SEO.svelte';
-	import { fly } from 'svelte/transition';
+	import { fly, fade } from 'svelte/transition';
 	import { spring } from 'svelte/motion';
 	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import type { LiveStatus, LiveStreamingResponse } from '$lib/types';
@@ -24,7 +24,8 @@
 		RotateCw,
 		Circle,
 		Square,
-		Trash2
+		Trash2,
+		Tv
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { OptimizedImage } from '$lib/components/common';
@@ -504,11 +505,13 @@
 						</button>
 					{/if}
 				</div>
-				<div class="flex-1 overflow-y-auto p-2 space-y-1">
+				<div class="flex-1 overflow-y-auto p-2 space-y-1 relative">
 					{#if liveLoading.value && activeStreams.length === 0}
 						{#each Array(6)}
 							<div class="h-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl animate-pulse"></div>
 						{/each}
+					{:else if activeStreams.length > 0 && filteredStreams.length === 0}
+						<!-- Keep an empty space so it doesn't look weird if they type a wrong search -->
 					{:else}
 						{#each filteredStreams as stream}
 							{@const selectedIndex = slots.findIndex(
@@ -574,6 +577,20 @@
 						{/each}
 					{/if}
 				</div>
+
+				{#if !liveLoading.value && (activeStreams.length === 0 || filteredStreams.length === 0)}
+					<div
+						class="absolute inset-0 flex flex-col items-center justify-center text-center p-8 pointer-events-none z-0"
+						in:fade
+					>
+						<Tv size={32} class="text-gray-300 mb-4" />
+						<p class="text-[10px] font-black uppercase tracking-widest text-gray-400">
+							{activeStreams.length === 0
+								? t('theater.live.multiview.no_live_members')
+								: t('theater.live.multiview.no_search_results')}
+						</p>
+					</div>
+				{/if}
 			</div>
 		{/if}
 

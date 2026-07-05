@@ -955,6 +955,8 @@
 				"remove_stream": "Remove stream",
 				"unmute": "Unmute",
 				"mute": "Mute",
+				"no_live_members": "No live members",
+				"no_search_results": "No results found",
 				"take_screenshot": "Take Screenshot",
 				"stop_recording": "Stop Recording",
 				"start_recording": "Start Recording",
