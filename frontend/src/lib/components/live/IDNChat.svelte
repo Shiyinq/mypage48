@@ -5,7 +5,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { LiveChatIDNMessage } from '$lib/types';
 	import { broadcastGift } from '$lib/stores/gift.svelte';
-	import { OptimizedImage, LottieAnimation } from '$lib/components/common';
+	import { OptimizedImage, LottieAnimation, RiveAnimation } from '$lib/components/common';
 
 	interface Props {
 		roomIdentifier: string;
@@ -404,13 +404,22 @@
 							>
 								{#if msg.gift.img}
 									{#if isLottie && isRecent}
-										<LottieAnimation
-											src={getExternalMediaUrl(msg.gift.img)}
-											speed={1}
-											width="50px"
-											height="50px"
-											className="object-contain drop-shadow-md"
-										/>
+										{#if msg.gift.img.toLowerCase().endsWith('.riv')}
+											<RiveAnimation
+												src={getExternalMediaUrl(msg.gift.img)}
+												width="50px"
+												height="50px"
+												className="object-contain drop-shadow-md"
+											/>
+										{:else}
+											<LottieAnimation
+												src={getExternalMediaUrl(msg.gift.img)}
+												speed={1}
+												width="50px"
+												height="50px"
+												className="object-contain drop-shadow-md"
+											/>
+										{/if}
 									{:else if isLottie}
 										<!-- Static fallback for older Lottie gifts to save resources -->
 										<div class="w-[50px] h-[50px] flex items-center justify-center opacity-50">
