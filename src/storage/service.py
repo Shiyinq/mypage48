@@ -767,6 +767,38 @@ class StorageService:
                     f"Failed to generate {suffix} variant for {base_path}: {e}"
                 )
 
+    async def process_and_upload_webp(
+        self, image_bytes: bytes, path: str
+    ) -> Optional[str]:
+        """Convert raw image bytes to WebP, generate blurhash, upload.
+
+        Returns blurHash if successful.
+        """
+        try:
+            with Image.open(BytesIO(image_bytes)) as img:
+                blurHash = self._generate_blurhash_from_image(img)
+
+                output = BytesIO()
+                if img.mode in ("RGBA", "LA", "P"):
+                    img = img.convert("RGBA")
+                else:
+                    img = img.convert("RGB")
+
+                if max(img.width, img.height) > self.MAX_IMAGE_DIMENSION:
+                    img.thumbnail((self.MAX_IMAGE_DIMENSION, self.MAX_IMAGE_DIMENSION))
+
+                img.save(output, format="WEBP", quality=self.WEBP_QUALITY)
+                webp_bytes = output.getvalue()
+
+                metadata = {"blurHash": blurHash} if blurHash else None
+                await self.repository.upload_file(
+                    webp_bytes, path, "image/webp", metadata=metadata
+                )
+                return blurHash
+        except Exception as e:
+            logger.error(f"Failed to process and upload WebP to {path}: {e}")
+            return None
+
     async def get_internal_media(
         self,
         path: str,

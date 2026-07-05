@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { ChevronLeft, ChevronRight, Cake, GraduationCap } from 'lucide-svelte';
+	import { ChevronLeft, ChevronRight, Cake } from 'lucide-svelte';
 	import { calendarEvents, calendarLoading, eventsStore } from '$lib/stores/events.svelte';
 	import DayEventsModal from '$lib/components/calendar/DayEventsModal.svelte';
 	import type { CalendarEvent } from '$lib/types/events';
@@ -466,11 +466,11 @@
 												<Cake class="w-3 h-3 mt-[-2px]" strokeWidth={2.5} />
 											{:else if event.seitansaiMembers && event.seitansaiMembers.length > 0}
 												<Cake class="w-3 h-3 mt-[-4px] text-pink-500" strokeWidth={2.5} />
-											{:else if event.graduationMembers && event.graduationMembers.length > 0}
+												<!-- {:else if event.graduationMembers && event.graduationMembers.length > 0}
 												<GraduationCap
 													class="w-3 h-3 mt-[-4px] text-indigo-500"
 													strokeWidth={2.5}
-												/>
+												/> -->
 											{/if}
 										</div>
 

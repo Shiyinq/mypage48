@@ -19,7 +19,9 @@
 		MonitorPlay,
 		Radio,
 		Newspaper,
-		Gift
+		Gift,
+		Video,
+		ListOrdered
 	} from 'lucide-svelte';
 	import AdminDashboardSkeleton from '$lib/components/skeletons/AdminDashboardSkeleton.svelte';
 
@@ -237,22 +239,27 @@
 							<BookOpen class="w-6 h-6" />
 						</div>
 						<div class="flex-1 space-y-1.5">
-							<div class="flex items-center justify-between">
+							<div class="flex items-center gap-4">
 								<div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
 									<BookOpen class="w-3.5 h-3.5" />
 									{t('admin.dashboard.stats.journals')}
+									<span class="font-bold text-gray-900 dark:text-white text-sm ml-0.5"
+										>{mypageStats.total_journal}</span
+									>
 								</div>
-								<span class="font-bold text-gray-900 dark:text-white text-sm"
-									>{mypageStats.total_journal}</span
-								>
-							</div>
-							<div class="flex items-center justify-between">
 								<div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
 									<Star class="w-3.5 h-3.5 text-yellow-400" />
 									{t('admin.dashboard.stats.favorites')}
+									<span class="font-bold text-gray-900 dark:text-white text-sm ml-0.5"
+										>{mypageStats.total_favorites}</span
+									>
 								</div>
-								<span class="font-bold text-gray-900 dark:text-white text-sm"
-									>{mypageStats.total_favorites}</span
+							</div>
+							<div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+								<ListOrdered class="w-3.5 h-3.5 text-blue-400" />
+								{t('admin.dashboard.stats.sorters')}
+								<span class="font-bold text-gray-900 dark:text-white text-sm ml-0.5"
+									>{mypageStats.total_sorter}</span
 								>
 							</div>
 						</div>
@@ -468,6 +475,43 @@
 								<span class="flex items-center gap-1"
 									><div class="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
 									{theaterStats.idn_live_count}
+									{t('admin.dashboard.stats.idn')}</span
+								>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Replay Live -->
+				<div
+					class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-700/50"
+				>
+					<div class="flex items-center gap-4">
+						<div
+							class="p-3 bg-fuchsia-50 dark:bg-fuchsia-500/10 rounded-xl text-fuchsia-500 shrink-0"
+						>
+							<Video class="w-6 h-6" />
+						</div>
+						<div>
+							<div class="flex items-baseline gap-2 mb-0.5">
+								<div class="text-2xl font-black text-gray-900 dark:text-white leading-none">
+									{theaterStats.total_replay_live}
+								</div>
+								<span class="text-xs font-medium text-gray-400"
+									>{t('admin.dashboard.stats.replayLive')}</span
+								>
+							</div>
+							<div
+								class="flex items-center gap-3 text-[11px] text-gray-500 dark:text-gray-400 mt-1"
+							>
+								<span class="flex items-center gap-1"
+									><div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+									{theaterStats.showroom_replay_count}
+									{t('admin.dashboard.stats.sr')}</span
+								>
+								<span class="flex items-center gap-1"
+									><div class="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+									{theaterStats.idn_replay_count}
 									{t('admin.dashboard.stats.idn')}</span
 								>
 							</div>

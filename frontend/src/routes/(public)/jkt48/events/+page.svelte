@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { Calendar, Clock, Cake, ArrowRight, GraduationCap, Users } from 'lucide-svelte';
+	import { Calendar, Clock, Cake, ArrowRight, Users } from 'lucide-svelte';
 	import { EmptyState, ErrorState, PublicEventFilter } from '$lib/components';
 	import { scale } from 'svelte/transition';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -245,14 +245,14 @@
 								</div>
 							{/if}
 
-							{#if (event.graduationMembers?.length ?? 0) > 0}
+							<!-- {#if (event.graduationMembers?.length ?? 0) > 0}
 								<div
 									class="flex items-center gap-1.5 text-[11px] sm:text-xs text-indigo-500 font-medium mb-1 w-fit"
 								>
 									<GraduationCap class="w-3.5 h-3.5 text-indigo-500" />
 									<span class="line-clamp-1">{event.graduationMembers?.join(', ')}</span>
 								</div>
-							{/if}
+							{/if} -->
 
 							<!-- Metadata Grid -->
 							<div class="flex flex-col gap-0.5 sm:gap-1 mt-auto">

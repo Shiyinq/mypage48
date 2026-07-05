@@ -16,7 +16,6 @@
 		Ticket,
 		ExternalLink,
 		Cake,
-		GraduationCap,
 		PanelLeft,
 		PanelLeftClose,
 		ZoomIn
@@ -461,7 +460,7 @@
 											{#if event.members && event.members.length > 0}
 												{#each event.members as member}
 													{@const isSeitansai = event.seitansaiMembers?.includes(member.name)}
-													{@const isGrad = event.graduationMembers?.includes(member.name)}
+													<!-- {@const isGrad = event.graduationMembers?.includes(member.name)} -->
 													<a
 														href={`/theater/members/${member.id}`}
 														class="group relative bg-white dark:bg-zinc-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all block text-left"
@@ -473,13 +472,13 @@
 																<Cake class="w-3.5 h-3.5" />
 															</div>
 														{/if}
-														{#if isGrad}
+														<!-- {#if isGrad}
 															<div
 																class="absolute top-2 right-2 z-20 bg-indigo-500 text-white p-1.5 rounded-full shadow-lg shadow-indigo-500/30"
 															>
 																<GraduationCap class="w-3.5 h-3.5" />
 															</div>
-														{/if}
+														{/if} -->
 														<div
 															class="relative aspect-[3/4] overflow-hidden bg-gray-200 dark:bg-zinc-700"
 														>

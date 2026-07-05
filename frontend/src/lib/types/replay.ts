@@ -1,3 +1,11 @@
+export interface ReplayChatMessage {
+	id: number;
+	startTime: number;
+	username: string;
+	message: string;
+	isGift: boolean;
+}
+
 export interface ReplayVideo {
 	youtube_id: string;
 	title: string;
@@ -10,10 +18,59 @@ export interface ReplayVideo {
 	transcript_file?: string;
 }
 
-export interface ReplayChatMessage {
-	id: number;
-	startTime: number;
-	username: string;
-	message: string;
-	isGift: boolean;
+export interface ReplayDetailFiles {
+	screenshots: string[];
+}
+
+export interface ReplayGiftSummary {
+	name: string;
+	count: number;
+	total_gold: number;
+	image?: string;
+	free?: boolean;
+}
+
+export interface ReplayTopFan {
+	user: string;
+	avatar?: string;
+	total_gold: number;
+	count: number;
+	free_gold?: number;
+	free_count?: number;
+}
+
+export interface ReplayDetailResponse {
+	id: string;
+	live_id: string;
+	platform: string;
+	member_name: string;
+	member_nickname: string;
+	title?: string;
+	image?: string;
+	image_medium?: string;
+	image_small?: string;
+	blurHash?: string;
+	view_num?: number;
+	duration_seconds: number;
+	start_at?: string;
+	end_at?: string;
+	duration?: number;
+	youtube_id?: string;
+	files: ReplayDetailFiles;
+	total_chats: number;
+	total_gifts: number;
+	total_free_gifts?: number;
+	total_gold: number;
+	total_loveletters?: number;
+	top_gifts: ReplayGiftSummary[];
+	top_fans: ReplayTopFan[];
+	chats: Record<string, unknown>[];
+	recording_started_at?: string;
+	member?: {
+		id: string;
+		name: string;
+		nickname?: string;
+		img?: string;
+		member_type?: string;
+	};
 }

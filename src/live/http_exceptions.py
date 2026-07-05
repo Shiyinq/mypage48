@@ -20,3 +20,7 @@ class ProxyRequestFailed(InternalServerError):
 
 class CommentsFetchFailed(InternalServerError):
     DETAIL = ErrorCode.COMMENTS_FETCH_FAILED
+
+
+class GiftsFetchFailed(InternalServerError):
+    DETAIL = ErrorCode.GIFTS_FETCH_FAILED

@@ -786,6 +786,29 @@
 		"top": "Top"
 	},
 	"liveHistory": {
+		"detail": {
+			"errorTitle": "Live Detail Not Available",
+			"errorDesc": "Sorry, statistics, chat, and screenshots data for this live stream is not yet supported or could not be found.",
+			"back": "Back",
+			"broadcast": "Broadcast",
+			"stats": {
+				"start": "Start",
+				"end": "End",
+				"duration": "Duration",
+				"recording": "Recording",
+				"title": "Statistics",
+				"views": "Views",
+				"gifts": "Gifts",
+				"chats": "Chats",
+				"loveLetters": "Love Letters"
+			},
+			"screenshots": "Screenshots",
+			"images": "Images",
+			"cover": "Cover",
+			"topGifter": "Top Gifter",
+			"giftList": "Gift List",
+			"watchReplay": "Watch Replay"
+		},
 		"publicWatchedEmptyTitle": "Watch History",
 		"publicWatchedEmptyDesc": "This feature can only be used if you have an account and are logged in.",
 		"loginToWatch": "Login",
@@ -932,6 +955,9 @@
 				"remove_stream": "Remove stream",
 				"unmute": "Unmute",
 				"mute": "Mute",
+				"no_live_members": "No live members",
+				"no_search_results": "No results found",
+				"select_member": "Select Member",
 				"take_screenshot": "Take Screenshot",
 				"stop_recording": "Stop Recording",
 				"start_recording": "Start Recording",
@@ -1461,6 +1487,7 @@
 				"total2Shot": "Total 2-Shot",
 				"journals": "Journals",
 				"favorites": "Favorites",
+				"sorters": "Sorter",
 				"totalEstSpent": "Total Est. Spent",
 				"dataTheater": "Data Theater",
 				"members": "Members",
@@ -1475,7 +1502,9 @@
 				"liveHistory": "Live History",
 				"birthdaysThisYear": "Birthdays this year",
 				"sr": "SR",
-				"idn": "IDN"
+				"idn": "IDN",
+				"replayLive": "Replay Live",
+				"totalReplays": "Total Replay"
 			}
 		},
 		"feedback": {

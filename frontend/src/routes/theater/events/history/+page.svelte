@@ -10,8 +10,7 @@
 		Clock,
 		ChevronLeft,
 		ChevronRight,
-		Cake,
-		GraduationCap
+		Cake
 	} from 'lucide-svelte';
 	import { EmptyState, ErrorState } from '$lib/components';
 	import { fade } from 'svelte/transition';
@@ -260,14 +259,14 @@
 														<span>{event.seitansaiMembers?.join(', ')}</span>
 													</div>
 												{/if}
-												{#if (event.graduationMembers?.length ?? 0) > 0}
+												<!-- {#if (event.graduationMembers?.length ?? 0) > 0}
 													<div
 														class="flex items-center gap-1 text-[10px] text-indigo-500 font-medium"
 													>
 														<GraduationCap class="w-3 h-3" />
 														<span>{event.graduationMembers?.join(', ')}</span>
 													</div>
-												{/if}
+												{/if} -->
 											</div>
 										</div>
 									</div>

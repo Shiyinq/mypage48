@@ -7,16 +7,7 @@
 	import { OptimizedImage } from '$lib/components/common';
 	import { ErrorState } from '$lib/components';
 	import { formatDate } from '$lib/i18n';
-	import {
-		Calendar,
-		Clock,
-		Users,
-		Cake,
-		GraduationCap,
-		MoveLeft,
-		ChevronDown,
-		ExternalLink
-	} from 'lucide-svelte';
+	import { Calendar, Clock, Users, Cake, MoveLeft, ChevronDown, ExternalLink } from 'lucide-svelte';
 	import { getMemberFrame } from '$lib/constants';
 	import { getTeamColors, getTeamIcon } from '$lib/constants/teamColors';
 	import { eventsStore } from '$lib/stores/events.svelte';
@@ -498,7 +489,7 @@
 					{#if event.members && event.members.length > 0}
 						{#each event.members as member}
 							{@const isSeitansai = event.seitansaiMembers?.includes(member.name)}
-							{@const isGrad = event.graduationMembers?.includes(member.name)}
+							<!-- {@const isGrad = event.graduationMembers?.includes(member.name)} -->
 							<button
 								type="button"
 								onclick={() => openMemberDetail(member)}
@@ -511,13 +502,13 @@
 										<Cake class="w-3.5 h-3.5" />
 									</div>
 								{/if}
-								{#if isGrad}
+								<!-- {#if isGrad}
 									<div
 										class="absolute top-2 right-2 z-20 bg-indigo-500 text-white p-1.5 rounded-full shadow-lg shadow-indigo-500/30"
 									>
 										<GraduationCap class="w-3.5 h-3.5" />
 									</div>
-								{/if}
+								{/if} -->
 								<div
 									class="relative aspect-[3/4] overflow-hidden bg-slate-200 dark:bg-zinc-700 rounded-t-2xl"
 								>

@@ -20,3 +20,7 @@ class ProxyError(DomainException):
 
 class CommentsFetchError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.COMMENTS_FETCH_ERROR
+
+
+class GiftsFetchError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.GIFTS_FETCH_ERROR

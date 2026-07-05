@@ -1,16 +1,55 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
-	import { X, ZoomIn, ZoomOut, RotateCcw, Download } from 'lucide-svelte';
+	import {
+		X,
+		ZoomIn,
+		ZoomOut,
+		RotateCcw,
+		Download,
+		ChevronLeft,
+		ChevronRight
+	} from 'lucide-svelte';
 	import { browser } from '$app/environment';
 
 	interface Props {
 		src?: string;
 		alt?: string;
+		images?: string[];
+		currentIndex?: number;
+		onIndexChange?: (index: number) => void;
 		isOpen?: boolean;
 		onClose?: () => void;
 	}
 
-	let { src = '', alt = '', isOpen = false, onClose = () => {} }: Props = $props();
+	let {
+		src: singleSrc = '',
+		alt = '',
+		images = [],
+		currentIndex = 0,
+		onIndexChange = (_i: number) => {},
+		isOpen = false,
+		onClose = () => {}
+	}: Props = $props();
+
+	let isGallery = $derived(images.length > 1);
+	let src = $derived(isGallery ? images[currentIndex] || '' : singleSrc);
+
+	function goTo(index: number) {
+		if (!isGallery) return;
+		const clamped = Math.max(0, Math.min(index, images.length - 1));
+		if (clamped !== currentIndex) {
+			onIndexChange(clamped);
+			resetZoom();
+		}
+	}
+
+	function goNext() {
+		goTo(currentIndex + 1);
+	}
+
+	function goPrev() {
+		goTo(currentIndex - 1);
+	}
 
 	let zoomScale = $state(1);
 	let translateX = $state(0);
@@ -18,6 +57,7 @@
 	let isDragging = false;
 	let startX = 0;
 	let startY = 0;
+	let isSwiping = false;
 
 	function resetZoom() {
 		zoomScale = 1;
@@ -50,6 +90,7 @@
 		const touchEvent = e as TouchEvent;
 		if (touchEvent.touches.length === 1) {
 			isDragging = true;
+			isSwiping = true;
 			startX = touchEvent.touches[0].clientX - translateX;
 			startY = touchEvent.touches[0].clientY - translateY;
 		}
@@ -62,8 +103,23 @@
 		translateY = touchEvent.touches[0].clientY - startY;
 	}
 
+	function handleTouchEnd() {
+		if (isSwiping && isGallery && zoomScale === 1) {
+			const swipeThreshold = 50;
+			const dx = translateX;
+			if (Math.abs(dx) > swipeThreshold) {
+				if (dx < 0) goNext();
+				else goPrev();
+			}
+		}
+		isDragging = false;
+		isSwiping = false;
+		resetZoom();
+	}
+
 	function handleMouseUp() {
 		isDragging = false;
+		isSwiping = false;
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
@@ -71,6 +127,8 @@
 		if (e.key === 'Escape') onClose();
 		if (e.key === '+') handleZoomIn();
 		if (e.key === '-') handleZoomOut();
+		if (e.key === 'ArrowLeft') goPrev();
+		if (e.key === 'ArrowRight') goNext();
 	}
 
 	async function downloadImage() {
@@ -81,7 +139,6 @@
 			const link = document.createElement('a');
 			link.href = url;
 
-			// Try to extract filename from src or use alt
 			const filename = src.split('/').pop()?.split('?')[0] || alt || 'image';
 			link.download = filename.includes('.') ? filename : `${filename}.jpg`;
 
@@ -91,7 +148,6 @@
 			window.URL.revokeObjectURL(url);
 		} catch (error) {
 			console.error('Download failed:', error);
-			// Fallback: just open in new tab if fetch fails
 			window.open(src, '_blank');
 		}
 	}
@@ -122,7 +178,7 @@
 
 {#if isOpen}
 	<div
-		class="fixed inset-0 z-[10000] flex items-center justify-center transition-all"
+		class="fixed inset-0 z-[10010] flex items-center justify-center transition-all"
 		transition:fade={{ duration: 200 }}
 		role="dialog"
 		aria-modal="true"
@@ -135,8 +191,17 @@
 			role="presentation"
 		></div>
 
-		<!-- Controls -->
-		<div class="fixed top-4 right-4 md:top-6 md:right-6 flex items-center gap-2 md:gap-4 z-[10001]">
+		<!-- Top Controls -->
+		<div class="fixed top-4 right-4 md:top-6 md:right-6 flex items-center gap-2 md:gap-4 z-[10011]">
+			{#if isGallery}
+				<div
+					class="flex items-center gap-1 md:gap-2 bg-zinc-900/80 backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-white/10 shadow-2xl"
+				>
+					<span class="text-white text-xs md:text-sm font-mono font-bold tabular-nums">
+						{currentIndex + 1} / {images.length}
+					</span>
+				</div>
+			{/if}
 			<div
 				class="flex items-center gap-1 md:gap-2 bg-zinc-900/80 backdrop-blur-md p-1 md:p-1.5 rounded-full border border-white/10 shadow-2xl"
 			>
@@ -189,6 +254,28 @@
 			</button>
 		</div>
 
+		<!-- Prev / Next Arrows -->
+		{#if isGallery}
+			<button
+				onclick={goPrev}
+				disabled={currentIndex <= 0}
+				class="fixed left-4 md:left-6 top-1/2 -translate-y-1/2 z-[10011] p-2 md:p-3 bg-zinc-900/80 hover:bg-zinc-800 backdrop-blur-md rounded-full transition-all text-white border border-white/10 shadow-2xl disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+				title="Previous"
+				aria-label="Previous image"
+			>
+				<ChevronLeft class="w-5 h-5 md:w-6 md:h-6" />
+			</button>
+			<button
+				onclick={goNext}
+				disabled={currentIndex >= images.length - 1}
+				class="fixed right-4 md:right-6 top-1/2 -translate-y-1/2 z-[10011] p-2 md:p-3 bg-zinc-900/80 hover:bg-zinc-800 backdrop-blur-md rounded-full transition-all text-white border border-white/10 shadow-2xl disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+				title="Next"
+				aria-label="Next image"
+			>
+				<ChevronRight class="w-5 h-5 md:w-6 md:h-6" />
+			</button>
+		{/if}
+
 		<!-- Image Container -->
 		<div
 			class="relative w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing pointer-events-none"
@@ -202,7 +289,7 @@
 				onmouseleave={handleMouseUp}
 				ontouchstart={handleTouchStart}
 				ontouchmove={handleTouchMove}
-				ontouchend={handleMouseUp}
+				ontouchend={handleTouchEnd}
 				onwheel={handleWheel}
 				role="presentation"
 			>

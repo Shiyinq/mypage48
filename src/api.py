@@ -16,6 +16,7 @@ from src.members.route import router as members_router
 from src.memories.route import router as memories_router
 from src.news.route import router as news_router
 from src.playground.route import router as playground_router
+from src.replay.route import router as replay_router
 from src.setlists.route import router as setlists_router
 from src.sorter.route import router as sorter_router
 from src.storage.route import router as storage_router
@@ -49,3 +50,4 @@ router.include_router(
     live_history_router, prefix="/history/lives", tags=["Live History"]
 )
 router.include_router(playground_router, prefix="/playground", tags=["Playground"])
+router.include_router(replay_router, tags=["Replay"])

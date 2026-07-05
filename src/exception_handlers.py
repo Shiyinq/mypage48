@@ -73,11 +73,13 @@ from src.live.exceptions import (
     CommentsFetchError,
     FetchIdnError,
     FetchShowroomError,
+    GiftsFetchError,
     ProxyError,
     StreamingUrlNotFoundError,
 )
 from src.live.http_exceptions import (
     CommentsFetchFailed,
+    GiftsFetchFailed,
     IdnFetchFailed,
     ProxyRequestFailed,
     ShowroomFetchFailed,
@@ -108,6 +110,12 @@ from src.news.http_exceptions import (
     NewsFetchHTTPError,
     NewsItemFetchHTTPError,
     NewsNotFound,
+)
+from src.replay.exceptions import ReplayAlreadyExists, ReplayNotFound, ReplayUploadError
+from src.replay.http_exceptions import (
+    HttpReplayAlreadyExists,
+    HttpReplayNotFound,
+    HttpReplayUploadError,
 )
 from src.setlists.exceptions import SetlistFetchError, SetlistNotFoundError
 from src.setlists.http_exceptions import SetlistFetchError as SetlistFetchHTTPException
@@ -398,6 +406,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, ProxyRequestFailed())
     if isinstance(exc, CommentsFetchError):
         return await detailed_http_exception_handler(request, CommentsFetchFailed())
+    if isinstance(exc, GiftsFetchError):
+        return await detailed_http_exception_handler(request, GiftsFetchFailed())
 
     # Live History exceptions
     if isinstance(exc, LiveHistoryNotFoundError):
@@ -412,6 +422,14 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, ExportInProgress())
     if isinstance(exc, ExportNotFoundError):
         return await detailed_http_exception_handler(request, ExportNotFound())
+
+    # Replay errors
+    if isinstance(exc, ReplayAlreadyExists):
+        return await detailed_http_exception_handler(request, HttpReplayAlreadyExists())
+    if isinstance(exc, ReplayUploadError):
+        return await detailed_http_exception_handler(request, HttpReplayUploadError())
+    if isinstance(exc, ReplayNotFound):
+        return await detailed_http_exception_handler(request, HttpReplayNotFound())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

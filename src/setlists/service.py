@@ -279,12 +279,14 @@ class SetlistsService:
                     total_2shot += 1
                     name = two_shot.get("member_name")
                     if name:
-                        two_shots_list.append({
-                            "name": name,
-                            "date": t.get("event", {}).get("date", ""),
-                            "imageUrl": two_shot.get("imageUrl"),
-                            "blurHash": two_shot.get("blurHash"),
-                        })
+                        two_shots_list.append(
+                            {
+                                "name": name,
+                                "date": t.get("event", {}).get("date", ""),
+                                "imageUrl": two_shot.get("imageUrl"),
+                                "blurHash": two_shot.get("blurHash"),
+                            }
+                        )
 
             # Resolve image variants for 2-shots
             async def _resolve_twoshot(item: dict):

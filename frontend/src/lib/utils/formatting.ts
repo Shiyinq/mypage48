@@ -25,6 +25,23 @@ export function formatCompactCurrency(value: number): string {
 }
 
 /**
+ * Convert gold to IDR based on platform.
+ *
+ * Showroom: 1 G = 1 JPY, kurs Rp 111.50/JPY (4 Jul 2026) → gold * 111.5
+ * IDN:      3 gold = Rp 7.500 → 1 gold = Rp 2.500
+ */
+export function goldToIdr(gold: number, isShowroom: boolean): number {
+	return isShowroom ? gold * 111.5 : (gold * 7500) / 3;
+}
+
+/**
+ * Format gold to IDR string
+ */
+export function formatGoldToIdr(gold: number, isShowroom: boolean): string {
+	return goldToIdr(gold, isShowroom).toLocaleString('id-ID');
+}
+
+/**
  * Mask an email address
  */
 export function maskEmail(emailStr: string | undefined | null): string {

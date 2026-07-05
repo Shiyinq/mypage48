@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { page } from '$app/stores';
 	import SEO from '$lib/components/SEO.svelte';
-	import { fly } from 'svelte/transition';
+	import { fly, fade } from 'svelte/transition';
 	import { spring } from 'svelte/motion';
 	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import type { LiveStatus, LiveStreamingResponse } from '$lib/types';
@@ -24,7 +24,9 @@
 		RotateCw,
 		Circle,
 		Square,
-		Trash2
+		Trash2,
+		Tv,
+		LayoutGrid
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { OptimizedImage } from '$lib/components/common';
@@ -411,17 +413,17 @@
 </script>
 
 {#snippet rightActions()}
-	<div class="flex items-center gap-0.5 sm:gap-2 shrink-0">
+	<div class="flex items-center gap-0 md:gap-2 shrink-0 ml-2 md:ml-0">
 		<button
 			onclick={clearAll}
-			class="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
+			class="p-1.5 md:p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
 			title={t('theater.live.multiview.clear_all')}
 		>
 			<Trash2 size={20} />
 		</button>
 		<button
 			onclick={() => (isPortrait = !isPortrait)}
-			class="p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+			class="p-1.5 md:p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
 			title={isPortrait
 				? t('theater.live.multiview.switch_to_landscape')
 				: t('theater.live.multiview.switch_to_portrait')}
@@ -434,7 +436,7 @@
 		</button>
 		<button
 			onclick={togglePicker}
-			class="p-2 rounded-lg {showPicker
+			class="p-1.5 md:p-2 rounded-lg {showPicker
 				? 'bg-red-50 text-red-600'
 				: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
 			title={t('theater.live.multiview.toggle_picker')}
@@ -443,7 +445,7 @@
 		</button>
 		<button
 			onclick={toggleChat}
-			class="p-2 rounded-lg {showChat
+			class="p-1.5 md:p-2 rounded-lg {showChat
 				? 'bg-red-50 text-red-600'
 				: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
 			title={t('theater.live.multiview.toggle_chat')}
@@ -504,11 +506,13 @@
 						</button>
 					{/if}
 				</div>
-				<div class="flex-1 overflow-y-auto p-2 space-y-1">
+				<div class="flex-1 overflow-y-auto p-2 space-y-1 relative">
 					{#if liveLoading.value && activeStreams.length === 0}
 						{#each Array(6)}
 							<div class="h-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl animate-pulse"></div>
 						{/each}
+					{:else if activeStreams.length > 0 && filteredStreams.length === 0}
+						<!-- Keep an empty space so it doesn't look weird if they type a wrong search -->
 					{:else}
 						{#each filteredStreams as stream}
 							{@const selectedIndex = slots.findIndex(
@@ -574,6 +578,20 @@
 						{/each}
 					{/if}
 				</div>
+
+				{#if !liveLoading.value && (activeStreams.length === 0 || filteredStreams.length === 0)}
+					<div
+						class="absolute inset-0 flex flex-col items-center justify-center text-center p-8 pointer-events-none z-0"
+						in:fade
+					>
+						<Tv size={32} class="text-gray-300 mb-4" />
+						<p class="text-[10px] font-black uppercase tracking-widest text-gray-400">
+							{activeStreams.length === 0
+								? t('theater.live.multiview.no_live_members')
+								: t('theater.live.multiview.no_search_results')}
+						</p>
+					</div>
+				{/if}
 			</div>
 		{/if}
 
@@ -765,16 +783,25 @@
 						<div
 							class="w-20 h-20 rounded-3xl bg-white dark:bg-zinc-900 border border-dashed border-gray-200 dark:border-zinc-800 flex items-center justify-center mb-6 shadow-sm"
 						>
-							<Plus size={32} class="text-gray-300" />
+							<LayoutGrid size={32} class="text-gray-300" />
 						</div>
 						<h3
 							class="text-xl font-black uppercase tracking-widest text-slate-900 dark:text-white mb-2"
 						>
 							{t('theater.live.multiview.empty_title')}
 						</h3>
-						<p class="text-sm text-slate-500 dark:text-zinc-500 max-w-xs mx-auto italic">
+						<p class="text-sm text-slate-500 dark:text-zinc-500 max-w-xs mx-auto italic mb-6">
 							{t('theater.live.multiview.empty_description')}
 						</p>
+						{#if isMobile}
+							<button
+								onclick={togglePicker}
+								class="px-6 py-3 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-xl shadow-sm active:scale-95 transition-all flex items-center gap-2 cursor-pointer uppercase tracking-wider"
+							>
+								<UserPlus size={18} />
+								{t('theater.live.multiview.select_member') || 'Select Member'}
+							</button>
+						{/if}
 					</div>
 				{/if}
 			</div>

@@ -16,6 +16,7 @@ export interface DataMyPageStats {
 	total_2shot: number;
 	total_journal: number;
 	total_favorites: number;
+	total_sorter: number;
 	total_money_spent_idr: number;
 }
 
@@ -36,6 +37,9 @@ export interface DataTheaterStats {
 	total_live_member: number;
 	showroom_live_count: number;
 	idn_live_count: number;
+	total_replay_live: number;
+	showroom_replay_count: number;
+	idn_replay_count: number;
 }
 
 export const adminApi = {

@@ -67,6 +67,7 @@ class AdminService:
             total_favorites = await self.repository.count_documents(
                 "tickets", {"is_favorite": True}
             )
+            total_sorter = await self.repository.count_documents("sorter_results")
 
             pipeline = [
                 {
@@ -88,6 +89,7 @@ class AdminService:
                 total_2shot=total_2shot,
                 total_journal=total_journal,
                 total_favorites=total_favorites,
+                total_sorter=total_sorter,
                 total_money_spent_idr=float(total_money),
             )
         except Exception:
@@ -115,6 +117,14 @@ class AdminService:
             )
             idn_live_count = await self.repository.count_documents(
                 "live_history", {"platform": "idn"}
+            )
+
+            total_replay_live = await self.repository.count_documents("replay")
+            showroom_replay_count = await self.repository.count_documents(
+                "replay", {"platform": "showroom"}
+            )
+            idn_replay_count = await self.repository.count_documents(
+                "replay", {"platform": "idn"}
             )
 
             # Calculate upcoming birthdays for the rest of the year
@@ -194,6 +204,9 @@ class AdminService:
                 total_live_member=total_live_member,
                 showroom_live_count=showroom_live_count,
                 idn_live_count=idn_live_count,
+                total_replay_live=total_replay_live,
+                showroom_replay_count=showroom_replay_count,
+                idn_replay_count=idn_replay_count,
             )
         except Exception:
             logger.exception("Error fetching theater stats")

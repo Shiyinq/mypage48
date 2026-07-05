@@ -177,7 +177,7 @@
 					</LiveStatCard>
 				</div>
 			{:else if isLoadingStats}
-				<div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
 					{#each Array(4) as _}
 						<LiveStatCardSkeleton />
 					{/each}
@@ -212,7 +212,7 @@
 						<LiveHistoryItemCard
 							href={item.status === 'live'
 								? `${baseLivePath}/${item.platform}/${item.live_id}`
-								: `${basePath}/members/${item.member?.id || ''}`}
+								: `/theater/live/history/live/${item.live_id}`}
 							mode="global"
 							memberImage={item.platform === 'showroom' && item.member?.img
 								? item.member.img
