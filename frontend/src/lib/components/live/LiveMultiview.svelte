@@ -413,17 +413,17 @@
 </script>
 
 {#snippet rightActions()}
-	<div class="flex items-center gap-0.5 sm:gap-2 shrink-0">
+	<div class="flex items-center gap-0 md:gap-2 shrink-0 ml-2 md:ml-0">
 		<button
 			onclick={clearAll}
-			class="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
+			class="p-1.5 md:p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
 			title={t('theater.live.multiview.clear_all')}
 		>
 			<Trash2 size={20} />
 		</button>
 		<button
 			onclick={() => (isPortrait = !isPortrait)}
-			class="p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+			class="p-1.5 md:p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
 			title={isPortrait
 				? t('theater.live.multiview.switch_to_landscape')
 				: t('theater.live.multiview.switch_to_portrait')}
@@ -436,7 +436,7 @@
 		</button>
 		<button
 			onclick={togglePicker}
-			class="p-2 rounded-lg {showPicker
+			class="p-1.5 md:p-2 rounded-lg {showPicker
 				? 'bg-red-50 text-red-600'
 				: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
 			title={t('theater.live.multiview.toggle_picker')}
@@ -445,7 +445,7 @@
 		</button>
 		<button
 			onclick={toggleChat}
-			class="p-2 rounded-lg {showChat
+			class="p-1.5 md:p-2 rounded-lg {showChat
 				? 'bg-red-50 text-red-600'
 				: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
 			title={t('theater.live.multiview.toggle_chat')}
