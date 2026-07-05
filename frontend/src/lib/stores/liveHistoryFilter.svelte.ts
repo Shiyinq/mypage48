@@ -6,11 +6,11 @@ export interface DateRange {
 }
 
 class LiveHistoryFilterStore {
-	filterType: FilterType = $state('this_week');
+	filterType: FilterType = $state('this_month');
 	customRange: DateRange = $state({ start: '', end: '' });
 
 	constructor() {
-		// Default is this week, so we don't need to do anything here since getters handle it
+		// Default is this month, so we don't need to do anything here since getters handle it
 	}
 
 	get dateRange(): DateRange | null {
