@@ -78,6 +78,24 @@ class RecordingManager:
         for live_id in current_ids:
             self._gone_count.pop(live_id, None)
 
+    def _restart_ffmpeg(self, session: RecordingSession, stream_info: dict):
+        if session.ffmpeg_proc and stream_recorder.is_running(session.ffmpeg_proc):
+            stream_recorder.stop(session.ffmpeg_proc)
+
+        part_idx = len(session.mkv_parts) + 1
+        old_mkv = session.output_path
+        new_mkv = old_mkv.replace(".mkv", f"_part{part_idx}.mkv")
+        if os.path.exists(old_mkv):
+            try:
+                os.rename(old_mkv, new_mkv)
+                session.mkv_parts.append(new_mkv)
+            except Exception as e:
+                self.log.error("Failed to rename mkv part: %s", e)
+
+        new_hls_url = self.detector.pick_best_url(stream_info) or session.hls_url
+        session.hls_url = new_hls_url
+        session.ffmpeg_proc = stream_recorder.start(new_hls_url, old_mkv)
+
     async def check_health(self):
         completed_ids = []
         error_ids = []
@@ -91,8 +109,10 @@ class RecordingManager:
                     session.platform, session.room_id, session.live_id
                 )
                 if stream_info:
-                    self.log.warning("Stream still live, marking error for %s", live_id)
-                    error_ids.append(live_id)
+                    self.log.warning(
+                        "Stream still live, restarting ffmpeg for %s", live_id
+                    )
+                    self._restart_ffmpeg(session, stream_info)
                 else:
                     self.log.info("Stream ended, marking completed for %s", live_id)
                     completed_ids.append(live_id)
@@ -112,7 +132,11 @@ class RecordingManager:
                         session.platform, session.room_id, session.live_id
                     )
                     if stream_info:
-                        error_ids.append(live_id)
+                        self.log.warning(
+                            "Stream still live, restarting stalled ffmpeg for %s",
+                            live_id,
+                        )
+                        self._restart_ffmpeg(session, stream_info)
                     else:
                         completed_ids.append(live_id)
 
@@ -208,8 +232,8 @@ class RecordingManager:
         json_path = os.path.join(live_folder, f"{base}.json")
         thumbnail_path = os.path.join(live_folder, f"{base}.jpg")
 
-        open(chat_log_path, "w").close()
-        open(jsonl_path, "w").close()
+        open(chat_log_path, "a").close()
+        open(jsonl_path, "a").close()
 
         hls_url = live.hls_url
         stream_info = await self.detector.get_streaming_url(
@@ -606,31 +630,85 @@ class RecordingManager:
         mp4_path = os.path.splitext(mkv_path)[0] + ".mp4"
         remux_ok = False
 
+        parts_to_concat = session.mkv_parts.copy()
         if os.path.exists(mkv_path):
-            try:
-                subprocess.run(
-                    [
-                        "ffmpeg",
-                        "-i",
-                        mkv_path,
-                        "-c",
-                        "copy",
-                        "-bsf:a",
-                        "aac_adtstoasc",
-                        "-movflags",
-                        "+faststart",
-                        "-y",
+            parts_to_concat.append(mkv_path)
+
+        if parts_to_concat:
+            if len(parts_to_concat) == 1:
+                target_mkv = parts_to_concat[0]
+                try:
+                    subprocess.run(
+                        [
+                            "ffmpeg",
+                            "-i",
+                            target_mkv,
+                            "-c",
+                            "copy",
+                            "-bsf:a",
+                            "aac_adtstoasc",
+                            "-movflags",
+                            "+faststart",
+                            "-y",
+                            mp4_path,
+                        ],
+                        capture_output=True,
+                        timeout=300,
+                    )
+                    os.remove(target_mkv)
+                    session.output_path = mp4_path
+                    remux_ok = True
+                    self.log.info("Remuxed to MP4: %s", mp4_path)
+                except Exception as e:
+                    self.log.warning("Remux failed: %s", e)
+            else:
+                concat_list_path = os.path.join(session.live_folder, "concat.txt")
+                try:
+                    with open(concat_list_path, "w") as f:
+                        for p in parts_to_concat:
+                            f.write(f"file '{os.path.abspath(p)}'\n")
+
+                    subprocess.run(
+                        [
+                            "ffmpeg",
+                            "-f",
+                            "concat",
+                            "-safe",
+                            "0",
+                            "-i",
+                            concat_list_path,
+                            "-c",
+                            "copy",
+                            "-bsf:a",
+                            "aac_adtstoasc",
+                            "-movflags",
+                            "+faststart",
+                            "-y",
+                            mp4_path,
+                        ],
+                        capture_output=True,
+                        timeout=300,
+                    )
+
+                    for p in parts_to_concat:
+                        try:
+                            os.remove(p)
+                        except Exception:
+                            pass
+                    try:
+                        os.remove(concat_list_path)
+                    except Exception:
+                        pass
+
+                    session.output_path = mp4_path
+                    remux_ok = True
+                    self.log.info(
+                        "Remuxed to MP4 (concat %d parts): %s",
+                        len(parts_to_concat),
                         mp4_path,
-                    ],
-                    capture_output=True,
-                    timeout=300,
-                )
-                os.remove(mkv_path)
-                session.output_path = mp4_path
-                remux_ok = True
-                self.log.info("Remuxed to MP4: %s", mp4_path)
-            except Exception as e:
-                self.log.warning("Remux failed: %s", e)
+                    )
+                except Exception as e:
+                    self.log.warning("Concat remux failed: %s", e)
 
         final_mp4 = mp4_path if os.path.exists(mp4_path) else mkv_path
         duration = 0
