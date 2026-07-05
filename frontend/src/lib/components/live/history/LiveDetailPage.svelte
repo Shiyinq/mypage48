@@ -24,7 +24,8 @@
 		ChevronLeft,
 		ChevronRight,
 		Mail,
-		Play
+		Play,
+		Info
 	} from 'lucide-svelte';
 
 	const { t, locale } = useTranslation();
@@ -457,9 +458,25 @@
 
 										{#if data.duration && data.duration_seconds && Math.abs(data.duration - data.duration_seconds) > 60}
 											<div>
-												<p class="text-[10px] font-bold text-zinc-400 uppercase mb-1">
-													{t('liveHistory.detail.stats.recording') || 'Rekaman'}
-												</p>
+												<div class="flex items-center gap-1 mb-1">
+													<p class="text-[10px] font-bold text-zinc-400 uppercase">
+														{t('liveHistory.detail.stats.recording') || 'Rekaman'}
+													</p>
+													<button
+														type="button"
+														class="group/info relative cursor-help focus:outline-none inline-flex items-center justify-center"
+													>
+														<Info class="w-3 h-3 text-zinc-400 hover:text-zinc-500" />
+														<div
+															class="absolute bottom-full left-1/2 -translate-x-[85%] sm:-translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible group-focus/info:opacity-100 group-focus/info:visible transition-all z-50 text-center pointer-events-none font-normal normal-case tracking-normal leading-relaxed"
+														>
+															{t('liveHistory.detail.stats.recordingInfo') || 'Auto rekam live bisa saja mengalami keterlambatan dalam merekam live member'}
+															<div
+																class="absolute top-full left-[85%] sm:left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"
+															></div>
+														</div>
+													</button>
+												</div>
 												<div
 													class="flex items-center gap-2 text-base font-black text-slate-700 dark:text-zinc-200 leading-none"
 												>
