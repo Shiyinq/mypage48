@@ -86,11 +86,17 @@ class RecordingManager:
         old_mkv = session.output_path
         new_mkv = old_mkv.replace(".mkv", f"_part{part_idx}.mkv")
         if os.path.exists(old_mkv):
-            try:
-                os.rename(old_mkv, new_mkv)
-                session.mkv_parts.append(new_mkv)
-            except Exception as e:
-                self.log.error("Failed to rename mkv part: %s", e)
+            if os.path.getsize(old_mkv) > 1024:
+                try:
+                    os.rename(old_mkv, new_mkv)
+                    session.mkv_parts.append(new_mkv)
+                except Exception as e:
+                    self.log.error("Failed to rename mkv part: %s", e)
+            else:
+                try:
+                    os.remove(old_mkv)
+                except Exception:
+                    pass
 
         new_hls_url = self.detector.pick_best_url(stream_info) or session.hls_url
         session.hls_url = new_hls_url
