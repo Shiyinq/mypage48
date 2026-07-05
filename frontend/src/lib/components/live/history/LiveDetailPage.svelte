@@ -470,7 +470,8 @@
 														<div
 															class="absolute bottom-full left-1/2 -translate-x-[85%] sm:-translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible group-focus/info:opacity-100 group-focus/info:visible transition-all z-50 text-center pointer-events-none font-normal normal-case tracking-normal leading-relaxed"
 														>
-															{t('liveHistory.detail.stats.recordingInfo') || 'Auto rekam live bisa saja mengalami keterlambatan dalam merekam live member'}
+															{t('liveHistory.detail.stats.recordingInfo') ||
+																'Auto rekam live bisa saja mengalami keterlambatan dalam merekam live member'}
 															<div
 																class="absolute top-full left-[85%] sm:left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"
 															></div>
