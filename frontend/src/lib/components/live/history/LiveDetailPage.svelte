@@ -242,7 +242,7 @@
 					>
 						<div class="w-28 h-6 rounded bg-zinc-200 dark:bg-zinc-700 mb-4"></div>
 						<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-							{#each [1, 2, 3, 4] as _}
+							{#each [1, 2, 3, 4] as item (item)}
 								<div
 									class="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700"
 								>
@@ -261,7 +261,7 @@
 					>
 						<div class="w-24 h-6 rounded bg-zinc-200 dark:bg-zinc-700 mb-4"></div>
 						<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-							{#each [1, 2, 3, 4] as _}
+							{#each [1, 2, 3, 4] as item (item)}
 								<div
 									class="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700"
 								>
@@ -628,7 +628,7 @@
 												</div>
 											{/if}
 											{#if data.files.screenshots}
-												{#each data.files.screenshots as url, i}
+												{#each data.files.screenshots as url, i (url)}
 													{@const ssIndex = (data.image ? 1 : 0) + i}
 													<div
 														class="shrink-0 h-40 w-[90px] sm:h-80 sm:w-[180px] rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 snap-center shadow-sm hover:border-red-500/50 transition-colors cursor-pointer group/img"
@@ -681,7 +681,7 @@
 							{t('liveHistory.detail.topGifter') || 'Top Gifter'}
 						</h2>
 						<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-							{#each data.top_fans as fan, index}
+							{#each data.top_fans as fan, index (fan.user)}
 								<div
 									class="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 hover:shadow-md transition-shadow"
 								>
@@ -759,7 +759,7 @@
 							{t('liveHistory.detail.giftList') || 'Gift List'}
 						</h2>
 						<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-							{#each data.top_gifts as gift}
+							{#each data.top_gifts as gift (gift.name)}
 								<div
 									class="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 hover:shadow-md transition-shadow"
 								>
