@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -221,9 +222,11 @@ class ReplayService:
             metadata_bytes, f"{r2_base}/{live_id}.json", "application/json"
         )
         if thumbnail_bytes:
-            files["thumbnail"] = await self._upload_bytes(
-                thumbnail_bytes, f"{r2_base}/{live_id}.jpg", "image/jpeg"
+            thumbnail_path = f"{r2_base}/{live_id}.webp"
+            await self.storage_service.process_and_upload_webp(
+                thumbnail_bytes, thumbnail_path
             )
+            files["thumbnail"] = thumbnail_path
         else:
             files["thumbnail"] = None
         files["jsonl"] = await self._upload_bytes(
@@ -235,9 +238,11 @@ class ReplayService:
 
         screenshot_paths = []
         for filename, data in screenshot_bytes_list:
-            path = f"{r2_base}/screenshots/{filename}"
-            await self._upload_bytes(data, path, "image/jpeg")
-            screenshot_paths.append(filename)
+            base, _ = os.path.splitext(filename)
+            webp_filename = f"{base}.webp"
+            path = f"{r2_base}/screenshots/{webp_filename}"
+            await self.storage_service.process_and_upload_webp(data, path)
+            screenshot_paths.append(webp_filename)
 
         chats = _parse_jsonl(jsonl_bytes)
 
