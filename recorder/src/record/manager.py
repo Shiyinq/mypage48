@@ -81,7 +81,7 @@ class RecordingManager:
     def _restart_ffmpeg(self, session: RecordingSession, stream_info: dict):
         if session.ffmpeg_proc and stream_recorder.is_running(session.ffmpeg_proc):
             stream_recorder.stop(session.ffmpeg_proc)
-            
+
         part_idx = len(session.mkv_parts) + 1
         old_mkv = session.output_path
         new_mkv = old_mkv.replace(".mkv", f"_part{part_idx}.mkv")
