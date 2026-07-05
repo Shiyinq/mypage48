@@ -25,7 +25,8 @@
 		Circle,
 		Square,
 		Trash2,
-		Tv
+		Tv,
+		LayoutGrid
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { OptimizedImage } from '$lib/components/common';
@@ -782,16 +783,25 @@
 						<div
 							class="w-20 h-20 rounded-3xl bg-white dark:bg-zinc-900 border border-dashed border-gray-200 dark:border-zinc-800 flex items-center justify-center mb-6 shadow-sm"
 						>
-							<Plus size={32} class="text-gray-300" />
+							<LayoutGrid size={32} class="text-gray-300" />
 						</div>
 						<h3
 							class="text-xl font-black uppercase tracking-widest text-slate-900 dark:text-white mb-2"
 						>
 							{t('theater.live.multiview.empty_title')}
 						</h3>
-						<p class="text-sm text-slate-500 dark:text-zinc-500 max-w-xs mx-auto italic">
+						<p class="text-sm text-slate-500 dark:text-zinc-500 max-w-xs mx-auto italic mb-6">
 							{t('theater.live.multiview.empty_description')}
 						</p>
+						{#if isMobile}
+							<button
+								onclick={togglePicker}
+								class="px-6 py-3 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-xl shadow-sm active:scale-95 transition-all flex items-center gap-2 cursor-pointer uppercase tracking-wider"
+							>
+								<UserPlus size={18} />
+								{t('theater.live.multiview.select_member') || 'Select Member'}
+							</button>
+						{/if}
 					</div>
 				{/if}
 			</div>
