@@ -9,6 +9,7 @@
 	import { CircleCheck, CircleX, LoaderCircle } from 'lucide-svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import AppBackground from '$lib/components/common/AppBackground.svelte';
 
 	const { t } = useTranslation();
 
@@ -31,7 +32,7 @@
 			showToast(t('auth.verifyEmail.successMessage'), 'success');
 			setTimeout(() => {
 				goto('/login');
-			}, 3000);
+			}, 10000);
 		} catch (err) {
 			const errorMsg = getErrorMessage(err);
 			logger.error('Email verification failed', err, { context: 'VerifyEmailPage' });
@@ -48,21 +49,14 @@
 />
 
 <div
-	class="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-zinc-950 relative overflow-hidden"
+	class="min-h-screen flex items-center justify-center p-3 relative overflow-hidden py-4 sm:py-6 bg-gradient-to-b from-pink-50/20 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 font-sans selection:bg-red-500/20"
 >
-	<!-- Background decorations matching login/register -->
-	<div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-		<div
-			class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-red-500/10 blur-[100px] animate-pulse"
-		></div>
-		<div
-			class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/10 blur-[100px] animate-pulse"
-		></div>
-	</div>
+	<!-- Background Elements -->
+	<AppBackground hideDecorationsOnMobile={true} />
 
-	<div class="w-full max-w-md">
+	<div class="w-full max-w-md px-1">
 		<div
-			class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/60 dark:border-zinc-800 text-center"
+			class="glass-panel p-5 sm:p-7 rounded-[2rem] shadow-sm border border-gray-200/50 dark:border-zinc-800/80 backdrop-blur-xl transition-all text-center"
 		>
 			<div class="flex justify-center mb-6">
 				{#if status === 'loading'}
@@ -101,16 +95,22 @@
 			</p>
 
 			{#if status === 'error'}
+				<div
+					class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 p-4 rounded-2xl mb-8 text-left text-sm text-red-800 dark:text-red-200 leading-relaxed"
+				>
+					{t('auth.verifyEmail.resendInfo')}
+				</div>
+
 				<button
 					onclick={() => goto('/login')}
-					class="w-full py-3 rounded-xl font-bold bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+					class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:shadow-md hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer border border-white/20"
 				>
 					{t('auth.verifyEmail.backToLogin')}
 				</button>
 			{:else if status === 'success'}
 				<button
 					onclick={() => goto('/login')}
-					class="w-full py-3 rounded-xl font-bold idol-gradient text-white shadow-lg shadow-red-200 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer"
+					class="w-full idol-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:shadow-md hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer border border-white/20"
 				>
 					{t('auth.verifyEmail.goToLogin')}
 				</button>
