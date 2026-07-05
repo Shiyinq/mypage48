@@ -132,7 +132,10 @@ async def upload(
                 "Upload failed (attempt %d/3): %s %s", attempt, resp.status_code, body
             )
             if resp.status_code == 409:
-                log.info("Replay data already exists (409). Treating as success for %s", title or live_id)
+                log.info(
+                    "Replay data already exists (409). Treating as success for %s",
+                    title or live_id,
+                )
                 return True
             await asyncio.sleep(5)
 
