@@ -11,6 +11,7 @@ from googleapiclient.http import MediaFileUpload
 
 from ..config import RecorderConfig
 from ..models import RecordingSession
+from .thumbnail_generator import generate_youtube_thumbnail
 
 _MONTHS_ID = {
     1: "Januari",
@@ -108,6 +109,21 @@ def _do_upload_blocking(
     return response["id"], upload_uri
 
 
+def _upload_thumbnail(
+    config: RecorderConfig, youtube, video_id: str, thumbnail_path: str, log: Logger
+):
+    try:
+        request = youtube.thumbnails().set(
+            videoId=video_id, media_body=MediaFileUpload(thumbnail_path)
+        )
+        response = request.execute()
+        log.info("Custom thumbnail uploaded successfully for %s", video_id)
+        return True
+    except Exception as e:
+        log.warning("Failed to upload custom thumbnail for %s: %s", video_id, e)
+        return False
+
+
 def _add_to_playlist_blocking(
     config: RecorderConfig, video_id: str, meta: dict, log: Logger
 ) -> None:
@@ -193,6 +209,15 @@ async def _upload_to_youtube(
         log.info("Already has youtube_id: %s, skipping", meta["youtube_id"])
         return meta["youtube_id"], None
 
+    # Try generating a custom 16:9 thumbnail
+    thumbnail_path = os.path.join(
+        session.live_folder, f"{session.live_id}_yt_thumb.jpg"
+    )
+    if not os.path.exists(thumbnail_path):
+        thumbnail_path = generate_youtube_thumbnail(
+            session.screenshots_folder, thumbnail_path, log
+        )
+
     mp4_path = None
     base = os.path.splitext(session.output_path)[0]
     for ext in [".mp4", ".mkv"]:
@@ -223,6 +248,7 @@ async def _upload_to_youtube(
     if resume_uri:
         log.info("Resuming upload for %s with saved URI", title)
     loop = asyncio.get_running_loop()
+
     youtube_id, upload_uri = await loop.run_in_executor(
         None,
         _do_upload_blocking,
@@ -234,6 +260,11 @@ async def _upload_to_youtube(
         resume_uri,
         save_uri_callback,
     )
+
+    # Upload the custom thumbnail if generation was successful and video upload succeeded
+    if youtube_id and thumbnail_path and os.path.exists(thumbnail_path):
+        youtube = _build_youtube(config)
+        _upload_thumbnail(config, youtube, youtube_id, thumbnail_path, log)
 
     if not youtube_id:
         return None, upload_uri

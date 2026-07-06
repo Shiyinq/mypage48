@@ -8,7 +8,7 @@ def start(hls_url: str, mkv_path: str) -> subprocess.Popen:
     os.makedirs(os.path.dirname(mkv_path), exist_ok=True)
 
     ffmpeg_log = os.path.splitext(mkv_path)[0] + ".ffmpeg.log"
-    stderr_f = open(ffmpeg_log, "w")
+    stderr_f = open(ffmpeg_log, "a")
     stderr_f.write(f"=== ffmpeg start at {time.time()} ===\n")
     stderr_f.write(f"URL: {hls_url}\n\n")
     stderr_f.flush()
