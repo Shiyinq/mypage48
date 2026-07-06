@@ -93,6 +93,17 @@ class RecordingManager:
                 try:
                     os.rename(old_mkv, new_mkv)
                     session.mkv_parts.append(new_mkv)
+
+                    # Update JSON safely so we don't lose track of parts if it crashes
+                    try:
+                        with open(session.json_path, "r") as f:
+                            data = json.load(f)
+                        data["mkv_parts"] = session.mkv_parts
+                        with open(session.json_path, "w") as f:
+                            json.dump(data, f, indent=2, ensure_ascii=False)
+                    except Exception as e:
+                        self.log.warning("Failed to update JSON after restart: %s", e)
+
                 except Exception as e:
                     self.log.error("Failed to rename mkv part: %s", e)
             else:
@@ -236,9 +247,9 @@ class RecordingManager:
             try:
                 with open(jf, "r") as f:
                     data = json.load(f)
-                if (
-                    data.get("live_id") == live.live_id
-                    and data.get("status") == "interrupted"
+                if data.get("live_id") == live.live_id and data.get("status") in (
+                    "interrupted",
+                    "recording",
                 ):
                     resumed_folder = os.path.dirname(jf)
                     resumed_mkv_parts = data.get("mkv_parts", [])
@@ -405,6 +416,28 @@ class RecordingManager:
         )
 
         self.sessions[live.live_id] = session
+
+        # Write initial JSON with status "recording" as safety net for crash recovery
+        try:
+            initial_metadata = {
+                "live_id": session.live_id,
+                "status": "recording",
+                "platform": session.platform,
+                "room_id": session.room_id if session.platform == "showroom" else None,
+                "room_identifier": session.room_identifier,
+                "title": session.title,
+                "member_name": session.member_name,
+                "member_nickname": session.member_nickname,
+                "start_at": session.start_at,
+                "recording_started_at": datetime.fromtimestamp(
+                    session.recording_start_time, tz=timezone.utc
+                ).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "mkv_parts": session.mkv_parts,
+            }
+            with open(session.json_path, "w") as f:
+                json.dump(initial_metadata, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            self.log.warning("Failed to write initial JSON: %s", e)
 
         asyncio.create_task(self._periodic_thumbnails(session))
         asyncio.create_task(self._capture_initial_thumbnail(session))
