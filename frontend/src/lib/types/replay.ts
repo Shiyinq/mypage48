@@ -13,7 +13,8 @@ export interface ReplayVideo {
 	date: string;
 	platform: string;
 	added_at: string;
-	srt_file: string;
+	srt_file?: string;
+	live_id?: string;
 	has_loveletter?: boolean;
 	transcript_file?: string;
 }

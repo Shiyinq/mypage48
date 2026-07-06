@@ -9,7 +9,8 @@
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getPlatformIcon } from '$lib/constants/live';
-	import { Search, Play, RotateCcw, User, List, ExternalLink } from 'lucide-svelte';
+	import { Search, Play, RotateCcw, User, List, ExternalLink, Database } from 'lucide-svelte';
+	import type { ReplaySource } from '$lib/stores/replay.svelte';
 
 	const { t } = useTranslation();
 
@@ -21,10 +22,12 @@
 
 	let search = $state('');
 	let platformFilter = $state('all');
+	let sourceFilter = $state<ReplaySource>(replayStore.currentSource);
 	let memberFilter = $state<string | null>(null);
 	let page = $state(1);
 	const perPage = 12;
 	let isFilterOpen = $state(false);
+	let isSourceFilterOpen = $state(false);
 	let isSearchOpen = $state(false);
 	let searchInput: HTMLInputElement | undefined = $state();
 	let memberMap = $derived.by(() => {
@@ -65,7 +68,7 @@
 	}
 
 	onMount(() => {
-		replayStore.loadVideos();
+		replayStore.loadVideos(sourceFilter);
 		membersStore.load({ limit: 100 }, true);
 	});
 
@@ -117,7 +120,8 @@
 	let startIndex = $derived(totalCount === 0 ? 0 : (page - 1) * perPage + 1);
 	let endIndex = $derived(totalCount === 0 ? 0 : Math.min(page * perPage, totalCount));
 
-	function getYouTubeThumbnail(youtubeId: string): string {
+	function getYouTubeThumbnail(youtubeId: string | undefined): string {
+		if (!youtubeId) return '';
 		return `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
 	}
 
@@ -141,6 +145,13 @@
 		platformFilter = filter;
 		isFilterOpen = false;
 		page = 1;
+	}
+
+	function setSource(source: ReplaySource) {
+		sourceFilter = source;
+		isSourceFilterOpen = false;
+		page = 1;
+		replayStore.loadVideos(source);
 	}
 
 	function goToPage(p: number) {
@@ -173,6 +184,11 @@
 		{ label: t('replay.list.all'), value: 'all', icon: null },
 		{ label: t('replay.list.idn'), value: 'idn', icon: 'idn' },
 		{ label: t('replay.list.showroom'), value: 'showroom', icon: 'showroom' }
+	];
+
+	const sourceOptions: { label: string; value: ReplaySource }[] = [
+		{ label: 'MyPage48', value: 'mypage48' },
+		{ label: 'JeketiBots', value: 'jeketibots' }
 	];
 
 	let selectedOption = $derived(
@@ -215,6 +231,42 @@
 						oninput={handleSearch}
 						class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 outline-none focus:border-red-500/50 focus:ring-2 focus:ring-red-500/10 transition-all"
 					/>
+				</div>
+			{/if}
+		</div>
+
+		<div class="relative">
+			<button
+				data-replay-source="true"
+				onclick={() => (isSourceFilterOpen = !isSourceFilterOpen)}
+				class="flex items-center justify-center rounded-full transition-all cursor-pointer border h-8 sm:h-9 w-8 sm:w-9 shadow-sm {isSourceFilterOpen
+					? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-800'
+					: 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-zinc-700 hover:border-red-200 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400'}"
+				title="Source"
+			>
+				<Database size={15} />
+			</button>
+
+			{#if isSourceFilterOpen}
+				<div
+					use:clickOutside={{
+						close: () => (isSourceFilterOpen = false),
+						exclude: '[data-replay-source]'
+					}}
+					transition:slide={{ duration: 150 }}
+					class="absolute top-full right-0 mt-2 z-[7000] min-w-[150px] bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-700 shadow-xl overflow-hidden"
+				>
+					{#each sourceOptions as opt}
+						<button
+							class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold transition-colors text-left cursor-pointer {sourceFilter ===
+							opt.value
+								? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+								: 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-zinc-800'}"
+							onclick={() => setSource(opt.value)}
+						>
+							{opt.label}
+						</button>
+					{/each}
 				</div>
 			{/if}
 		</div>
@@ -396,11 +448,13 @@
 				</div>
 			{:else}
 				<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-					{#each paginatedVideos as video (video.youtube_id)}
+					{#each paginatedVideos as video (video.youtube_id || video.live_id || video.title)}
 						{@const memberData = memberMap.get(video.member.toLowerCase())}
 						<button
 							class="group text-left w-full focus:outline-none cursor-pointer"
-							onclick={() => handleVideoClick(video.youtube_id)}
+							onclick={() => {
+								if (video.youtube_id) handleVideoClick(video.youtube_id);
+							}}
 						>
 							<div
 								class="relative aspect-video rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-800"
@@ -420,14 +474,18 @@
 										<Play size={20} class="text-red-600 ml-0.5" fill="currentColor" />
 									</div>
 									<a
-										href={'https://jkt48.gemes.in/replay/?v=' + video.youtube_id}
+										href={'https://www.youtube.com/watch?v=' + video.youtube_id}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="inline-flex items-center gap-1 text-[10px] text-white/80 hover:text-white underline underline-offset-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-300 group/link"
+										class="relative inline-flex items-center justify-center text-[10px] text-white/80 hover:text-white underline underline-offset-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-300 group/link"
 										onclick={(e) => e.stopPropagation()}
 									>
-										{t('replay.list.sourceDomain')}
-										<span class="opacity-0 group-hover/link:opacity-100 transition-opacity">
+										<span
+											>{replayStore.currentSource === 'mypage48' ? 'MyPage48' : 'JeketiBots'}</span
+										>
+										<span
+											class="absolute -right-4 opacity-0 group-hover/link:opacity-100 transition-opacity"
+										>
 											<ExternalLink size={10} />
 										</span>
 									</a>
@@ -524,14 +582,23 @@
 					</div>
 				{/if}
 			{/if}
-			<div class="flex justify-center pb-6">
+			<div class="flex justify-center mt-10 pb-6">
 				<a
-					href="https://jkt48.gemes.in/replay/"
+					href={replayStore.currentSource === 'mypage48'
+						? 'https://www.youtube.com/@MyPage48'
+						: 'https://www.youtube.com/@JeketiBots'}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="text-[11px] text-slate-400 dark:text-zinc-600 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors font-medium"
+					class="group flex items-center gap-1 text-[11px] text-slate-400 dark:text-zinc-600 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors font-medium"
 				>
-					{t('replay.list.originalSource')}
+					<span>
+						{t('replay.list.originalSource')}
+						{replayStore.currentSource === 'mypage48' ? 'MyPage48' : 'JeketiBots'}
+					</span>
+					<ExternalLink
+						size={12}
+						class="opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0"
+					/>
 				</a>
 			</div>
 		</div>

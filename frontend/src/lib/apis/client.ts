@@ -80,7 +80,7 @@ export async function client<T>(
 		'/history/lives/stats',
 		'/history/lives/members',
 		'/history/lives/pc',
-		'/replays/'
+		'/replays'
 	];
 
 	const isPublic = publicEndpoints.some((p) => endpoint.startsWith(p));

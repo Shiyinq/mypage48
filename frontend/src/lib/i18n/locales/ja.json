@@ -1748,10 +1748,9 @@
 			"empty": "リプレイがありません",
 			"noSearchResults": "この検索に該当する結果はありません",
 			"noVideos": "まだリプレイ動画はありません",
-			"sourceDomain": "jkt48.gemes.in",
 			"prev": "前へ",
 			"next": "次へ",
-			"originalSource": "オリジナルソース: jkt48.gemes.in"
+			"originalSource": "オリジナルソース:"
 		},
 		"room": {
 			"seoTitle": "{member} - リプレイ JKT48 Live",
