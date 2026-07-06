@@ -1750,10 +1750,9 @@
 			"empty": "No replay",
 			"noSearchResults": "No results for this search",
 			"noVideos": "No replay videos available yet",
-			"sourceDomain": "jkt48.gemes.in",
 			"prev": "Prev",
 			"next": "Next",
-			"originalSource": "Original Source: jkt48.gemes.in"
+			"originalSource": "Original Source:"
 		},
 		"room": {
 			"seoTitle": "{member} - Replay JKT48 Live",

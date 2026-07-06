@@ -1754,10 +1754,9 @@
 			"empty": "Tidak ada replay",
 			"noSearchResults": "Tidak ada hasil untuk pencarian ini",
 			"noVideos": "Belum ada replay video yang tersedia",
-			"sourceDomain": "jkt48.gemes.in",
-			"prev": "Prev",
-			"next": "Next",
-			"originalSource": "Original Source: jkt48.gemes.in"
+			"prev": "Sebelumnya",
+			"next": "Selanjutnya",
+			"originalSource": "Sumber Asli:"
 		},
 		"room": {
 			"seoTitle": "{member} - Replay JKT48 Live",
