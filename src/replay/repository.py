@@ -15,11 +15,15 @@ class ReplayRepository:
         result = await self.col.insert_one(data)
         return str(result.inserted_id)
 
-    async def find_by_live_id(self, live_id: str) -> Optional[dict[str, Any]]:
-        return await self.col.find_one({"live_id": live_id})
+    async def find_by_live_id(
+        self, live_id: str, projection: Optional[dict[str, Any]] = None
+    ) -> Optional[dict[str, Any]]:
+        return await self.col.find_one({"live_id": live_id}, projection)
 
-    async def find_all(self) -> list[dict[str, Any]]:
-        cursor = self.col.find({}).sort("recording_ended_at", -1)
+    async def find_all(
+        self, projection: Optional[dict[str, Any]] = None
+    ) -> list[dict[str, Any]]:
+        cursor = self.col.find({}, projection).sort("recording_ended_at", -1)
         return await cursor.to_list(length=None)
 
     async def exists(self, live_id: str) -> bool:

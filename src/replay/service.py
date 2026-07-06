@@ -362,7 +362,7 @@ class ReplayService:
 
     async def list_all(self) -> list[dict]:
         wib = timezone(timedelta(hours=7))
-        docs = await self.repository.find_all()
+        docs = await self.repository.find_all(projection={"chats": 0})
         result = []
         for doc in docs:
             start_at = doc.get("start_at") or doc.get("recording_started_at")
@@ -390,7 +390,9 @@ class ReplayService:
         return result
 
     async def get_srt_content(self, live_id: str) -> Optional[str]:
-        doc = await self.repository.find_by_live_id(live_id)
+        doc = await self.repository.find_by_live_id(
+            live_id, projection={"files.srt": 1}
+        )
         if not doc:
             return None
         srt_path = doc.get("files", {}).get("srt")
