@@ -29,11 +29,9 @@ _MONTHS_ID = {
 }
 
 
-def _format_title(meta: dict) -> str:
-    platform = (meta.get("platform") or "live").upper()
-    nickname = meta.get("member_nickname") or meta.get("member_name") or "Unknown"
-    start_at = meta.get("start_at", "")
-
+def _parse_wib_datetime(start_at: str) -> tuple[str, str]:
+    if not start_at:
+        return "", ""
     try:
         dt = datetime.fromisoformat(start_at.replace("Z", "+00:00"))
         if dt.tzinfo is None:
@@ -42,9 +40,54 @@ def _format_title(meta: dict) -> str:
         dt = dt.astimezone(wib_tz)
         date_str = f"{dt.day} {_MONTHS_ID[dt.month]} {dt.year}"
         time_str = dt.strftime("%H:%M")
-        return f"LIVE {platform} {nickname} JKT48 | {date_str} {time_str} WIB"
+        return date_str, time_str
     except (ValueError, AttributeError, KeyError):
-        return f"LIVE {platform} {nickname} JKT48"
+        return "", ""
+
+
+def _format_title(meta: dict) -> str:
+    platform = (meta.get("platform") or "live").upper()
+    nickname = meta.get("member_nickname") or meta.get("member_name") or "Unknown"
+    date_str, time_str = _parse_wib_datetime(meta.get("start_at", ""))
+
+    if date_str and time_str:
+        return f"LIVE {platform} {nickname} JKT48 | {date_str} {time_str} WIB"
+    return f"LIVE {platform} {nickname} JKT48"
+
+
+def _format_description(meta: dict) -> str:
+    date_str, time_str = _parse_wib_datetime(meta.get("start_at", ""))
+    full_name = meta.get("member_name", "")
+    nickname = meta.get("member_nickname", "")
+    member_text = (
+        f"{full_name} ({nickname}) JKT48" if nickname else f"{full_name} JKT48"
+    )
+
+    desc_lines = [
+        f"Arsip siaran langsung dari platform {meta.get('platform', 'unknown').upper()}.",
+        f"Member: {member_text}",
+    ]
+
+    if date_str and time_str:
+        desc_lines.append(f"Waktu Live: {date_str}, {time_str} WIB")
+
+    desc_lines.extend(
+        [
+            "",
+            "Terima kasih sudah menonton! Jangan lupa dukung terus JKT48 dan member kesayanganmu.",
+            "",
+        ]
+    )
+
+    hashtags = ["#ArsipJKT48"]
+
+    nickname_clean = (nickname or "").replace(" ", "").replace("/", "_")
+    if nickname_clean:
+        hashtags.append(f"#{nickname_clean}JKT48")
+
+    desc_lines.append(" ".join(hashtags))
+
+    return "\n".join(desc_lines)
 
 
 def _build_youtube(config: RecorderConfig):
@@ -132,6 +175,12 @@ def _add_to_playlist_blocking(
     platform = (meta.get("platform") or "live").upper()
     nickname = meta.get("member_nickname") or meta.get("member_name") or "Unknown"
 
+    full_name = meta.get("member_name", "")
+    raw_nickname = meta.get("member_nickname", "")
+    member_text = (
+        f"{full_name} ({raw_nickname}) JKT48" if raw_nickname else f"{full_name} JKT48"
+    )
+
     playlist_title = f"{nickname} JKT48 - Live {platform}"
 
     try:
@@ -156,7 +205,7 @@ def _add_to_playlist_blocking(
                     body={
                         "snippet": {
                             "title": playlist_title,
-                            "description": f"Live recordings of {nickname} JKT48 on {platform}",
+                            "description": f"Kumpulan arsip siaran langsung {member_text} dari platform {platform}.",
                         },
                         "status": {"privacyStatus": config.youtube_privacy_status},
                     },
@@ -231,18 +280,7 @@ async def _upload_to_youtube(
         return None, None
 
     title = _format_title(meta)
-    nickname_clean = (
-        (meta.get("member_nickname") or "").replace(" ", "").replace("/", "_")
-    )
-    desc_lines = [
-        f"Live recorded from {meta.get('platform', 'unknown').upper()}",
-        f"Member: {meta.get('member_name', '')}",
-    ]
-    if nickname_clean:
-        desc_lines.append(f"#{nickname_clean}JKT48")
-    else:
-        desc_lines.append("#JKT48")
-    description = "\n".join(desc_lines)
+    description = _format_description(meta)
 
     log.info("Uploading: %s", title)
     if resume_uri:
