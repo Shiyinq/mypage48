@@ -165,31 +165,30 @@
 			fetchInitialDataIfNeeded();
 		}
 	});
-	// Only check auth redirects after component is mounted (hydrated)
-	// This prevents premature redirects during slow connections
+	// Centralized Auth Redirect Logic
 	$effect(() => {
-		if (mounted && !isAuthenticated.value && !isPublicPage) {
-			goto('/login');
-		}
-	});
-	// Redirect logged-in users away from guest-only routes (login/register)
-	// asking to view a public profile (/u/...) should NOT trigger this!
-	$effect(() => {
-		if (mounted && isAuthenticated.value && isGuestRoute) {
+		if (!mounted) return;
+		const path = $page.url.pathname;
+		const isAuth = isAuthenticated.value;
+
+		if (isAuth && isGuestRoute) {
 			goto('/');
-		}
-	});
-	// Redirect logged-in users away from public JKT48 routes to their theater counterparts
-	$effect(() => {
-		if (mounted && isAuthenticated.value && $page.url.pathname.startsWith('/jkt48/')) {
-			let theaterPath = $page.url.pathname.replace('/jkt48/', '/theater/');
-			// Special case for sub-routes that might have different structures
-			if ($page.url.pathname === '/jkt48/event-history') {
-				theaterPath = '/theater/events/history';
-			} else if ($page.url.pathname === '/jkt48/calendar') {
-				theaterPath = '/theater/events/calendar';
+		} else if (isAuth && path.startsWith('/jkt48/')) {
+			const map: Record<string, string> = {
+				'/jkt48/event-history': '/theater/events/history',
+				'/jkt48/calendar': '/theater/events/calendar'
+			};
+			goto(map[path] || path.replace('/jkt48/', '/theater/'));
+		} else if (!isAuth && !isPublicPage) {
+			if (/^\/theater\/(events|live|members|news|sorter)/.test(path)) {
+				const map: Record<string, string> = {
+					'/theater/events/history': '/jkt48/event-history',
+					'/theater/events/calendar': '/jkt48/calendar'
+				};
+				goto(map[path] || path.replace('/theater/', '/jkt48/'));
+			} else {
+				goto('/login');
 			}
-			goto(theaterPath);
 		}
 	});
 </script>

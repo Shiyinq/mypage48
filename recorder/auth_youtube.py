@@ -32,7 +32,10 @@ CLIENT_SECRET = (
     os.environ.get("REC_GOOGLE_CLIENT_SECRET")
     or input("GOOGLE_CLIENT_SECRET: ").strip()
 )
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+SCOPES = [
+    "https://www.googleapis.com/auth/youtube.upload",
+    "https://www.googleapis.com/auth/youtube",
+]
 
 client_config = {
     "installed": {
