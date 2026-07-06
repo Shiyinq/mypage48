@@ -53,7 +53,10 @@ def _build_youtube(config: RecorderConfig):
         token_uri="https://oauth2.googleapis.com/token",
         client_id=config.google_client_id,
         client_secret=config.google_client_secret,
-        scopes=["https://www.googleapis.com/auth/youtube.upload"],
+        scopes=[
+            "https://www.googleapis.com/auth/youtube.upload",
+            "https://www.googleapis.com/auth/youtube",
+        ],
     )
     creds.refresh(Request())
     return build("youtube", "v3", credentials=creds)
@@ -103,6 +106,61 @@ def _do_upload_blocking(
 
     upload_uri = getattr(request, "resumable_uri", None) or resume_uri
     return response["id"], upload_uri
+
+
+def _add_to_playlist_blocking(
+    config: RecorderConfig, video_id: str, meta: dict, log: Logger
+) -> None:
+    youtube = _build_youtube(config)
+
+    platform = (meta.get("platform") or "live").upper()
+    nickname = meta.get("member_nickname") or meta.get("member_name") or "Unknown"
+
+    playlist_title = f"{nickname} JKT48 - Live {platform}"
+
+    try:
+        request = youtube.playlists().list(part="snippet", mine=True, maxResults=50)
+        playlist_id = None
+        while request is not None:
+            response = request.execute()
+            for item in response.get("items", []):
+                if item["snippet"]["title"] == playlist_title:
+                    playlist_id = item["id"]
+                    break
+            if playlist_id:
+                break
+            request = youtube.playlists().list_next(request, response)
+
+        if not playlist_id:
+            log.info("Creating playlist: %s", playlist_title)
+            playlist_response = (
+                youtube.playlists()
+                .insert(
+                    part="snippet,status",
+                    body={
+                        "snippet": {
+                            "title": playlist_title,
+                            "description": f"Live recordings of {nickname} JKT48 on {platform}",
+                        },
+                        "status": {"privacyStatus": config.youtube_privacy_status},
+                    },
+                )
+                .execute()
+            )
+            playlist_id = playlist_response["id"]
+
+        log.info("Adding video %s to playlist %s", video_id, playlist_title)
+        youtube.playlistItems().insert(
+            part="snippet",
+            body={
+                "snippet": {
+                    "playlistId": playlist_id,
+                    "resourceId": {"kind": "youtube#video", "videoId": video_id},
+                }
+            },
+        ).execute()
+    except Exception as e:
+        log.error("Failed to add video to playlist: %s", e)
 
 
 async def _upload_to_youtube(
@@ -186,6 +244,17 @@ async def _upload_to_youtube(
         json.dump(meta, f, indent=2, ensure_ascii=False)
 
     log.info("Video: %s → https://youtu.be/%s", title, youtube_id)
+
+    # Add to playlist
+    await loop.run_in_executor(
+        None,
+        _add_to_playlist_blocking,
+        config,
+        youtube_id,
+        meta,
+        log,
+    )
+
     return youtube_id, upload_uri
 
 
