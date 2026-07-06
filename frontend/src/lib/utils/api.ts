@@ -4,7 +4,7 @@ import type { ApiError } from '$lib/types/common';
  * Type guard to check if an error is an ApiError.
  */
 export function isApiError(error: unknown): error is ApiError {
-	return typeof error === 'object' && error !== null && 'detail' in error;
+	return typeof error === 'object' && error !== null && ('detail' in error || 'error' in error);
 }
 
 /**
@@ -13,6 +13,10 @@ export function isApiError(error: unknown): error is ApiError {
  */
 export function getErrorMessage(error: unknown): string {
 	if (isApiError(error)) {
+		if ('error' in error && typeof error.error === 'string') {
+			return error.error;
+		}
+
 		const { detail } = error;
 		if (typeof detail === 'string') {
 			return detail;

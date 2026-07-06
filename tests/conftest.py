@@ -18,6 +18,9 @@ from src.database import database_instance
 from src.dependencies import require_csrf_protection
 
 
+# Disable rate limiter during testing
+limiter.enabled = False
+
 # Mock CSRF protection to always pass
 app.dependency_overrides[require_csrf_protection] = lambda: True
 

@@ -21,10 +21,11 @@ export interface GenericResponse {
 
 export interface ApiError {
 	status?: number;
-	detail:
+	detail?:
 		| string
 		| { loc: (string | number)[]; msg: string; type: string }[]
 		| Record<string, unknown>;
+	error?: string;
 }
 
 export type ViewState =

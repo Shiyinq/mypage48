@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 
 from src.auth.schemas import UserCurrent
 from src.dependencies import (
@@ -9,6 +9,7 @@ from src.dependencies import (
     require_admin,
     require_csrf_protection,
 )
+from src.limiter import limiter
 from src.logging_config import create_logger
 from src.users.schemas import (
     BatchAddOshiRequest,
@@ -52,8 +53,11 @@ async def get_all_users(
 
 
 @router.post("/users/signup", status_code=201, response_model=UserCreateResponse)
+@limiter.limit("5/day", override_defaults=True)
 async def signup(
-    user: UserCreateRequest, user_service: UserService = Depends(get_user_service)
+    request: Request,
+    user: UserCreateRequest,
+    user_service: UserService = Depends(get_user_service),
 ):
     """
     Register a new user account.
