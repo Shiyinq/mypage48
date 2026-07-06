@@ -81,6 +81,7 @@ recorder/
 │   │   ├── {live_id}.json        # Metadata
 │   │   ├── {live_id}.ffmpeg.log  # ffmpeg stderr (deleted after remux)
 │   │   ├── {live_id}.upload_uri  # YT resume URI (deleted after upload)
+│   │   ├── {live_id}_yt_thumb.jpg# Auto-generated 16:9 collage thumbnail
 │   │   └── screenshots/
 │   │       ├── {nickname}_{ts}.jpg
 │   │       └── ...
@@ -121,6 +122,18 @@ pip install -r recorder/requirements.txt
 python -m recorder.main
 ```
 
+### CLI Arguments
+
+You can pass several arguments to `recorder/main.py` for advanced control:
+
+| Argument | Description | Example |
+|----------|-------------|---------|
+| `--mode {both,record,upload}` | Run only specific loop (default: `both`). Useful for systemd services. | `python -m recorder.main --mode record` |
+| `--status [folder]` | Check status of all recordings or a specific folder. | `python -m recorder.main --status` |
+| `--remux [folder]` | Force remux interrupted/stuck `.mkv` files to `.mp4`. | `python -m recorder.main --remux all` |
+| `--delete [folder]` | Delete all recording folders or a specific one. | `python -m recorder.main --delete oline_1782911092` |
+| `-y, --yes` | Bypass confirmation prompts for destructive commands. | `python -m recorder.main --delete all -y` |
+
 Output is in `recorder/recordings/`:
 
 ```
@@ -130,6 +143,7 @@ recorder/recordings/
 │   ├── ayo-ngobrol-bareng-260701223500.srt
 │   ├── ayo-ngobrol-bareng-260701223500.json
 │   ├── ayo-ngobrol-bareng-260701223500.jsonl
+│   ├── ayo-ngobrol-bareng-260701223500_yt_thumb.jpg
 │   └── screenshots/
 │       ├── oline_1782911092.jpg
 │       └── ...
@@ -144,8 +158,8 @@ recorder/recordings/
 1. Poll `GET /api/jkt48/live` every 10 seconds
 2. New live detected → start ffmpeg + chat capture (comments + gifts)
 3. Live ends → stop, remux `.mkv` → `.mp4`, generate `.srt` + `.json` + screenshots
-4. Output: `.mp4` (video) + `.srt` (chat) + `.json` (metadata) + `.jsonl` (raw chat data) + `screenshots/`
-5. **Upload pipeline**: Watcher picks up completed recordings → upload to YouTube (if configured) → upload replay data (JSONL + SRT + screenshots) to backend API for R2 storage → cleanup folder
+4. Output: `.mp4` (video) + `.srt` (chat) + `.json` (metadata) + `.jsonl` (raw chat data) + `screenshots/` + `_yt_thumb.jpg` (collage)
+5. **Upload pipeline**: Watcher picks up completed recordings → generate `_yt_thumb.jpg` → upload to YouTube (if configured) → upload replay data (JSONL + SRT + Thumbnails) to backend API for R2 storage → cleanup folder
 
 ## Output Files
 
@@ -157,6 +171,7 @@ recorder/recordings/
 | `*.jsonl` | Structured chat/gift data (NDJSON, uploaded to backend then kept) |
 | `*.srt` | Chat transcript synced to video |
 | `*.json` | Metadata (member, timestamps, title, youtube_id, etc.) |
+| `*_yt_thumb.jpg` | Auto-generated 16:9 collage thumbnail for YouTube and R2 |
 | `screenshots/` | Periodic `.jpg` captures every 5 min + final capture at 50% duration |
 
 After successful upload to YouTube and backend, the entire folder is removed.
@@ -248,6 +263,9 @@ A: Set `REC_RECORDINGS_DIR` in `.env` or as an environment variable.
 
 **Q: How to enable YouTube upload?**
 A: Follow the [YouTube Upload Setup](#youtube-upload-setup) steps below.
+
+**Q: Why are some videos uploaded as YouTube Shorts?**
+A: Due to a recent YouTube update, all vertical videos (like IDN Live) under 3 minutes are automatically classified as Shorts. Horizontal videos (like Showroom) remain regular videos regardless of length.
 
 **Q: How to skip specific members?**
 A: (Not yet implemented — currently records all active streams.)
