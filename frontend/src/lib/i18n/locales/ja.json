@@ -1574,7 +1574,23 @@
 			"calendar": "カレンダーへ",
 			"eventHistory": "イベント履歴へ",
 			"feedback": "フィードバックへ移動",
-			"adminFeedback": "管理フィードバックへ"
+			"adminFeedback": "管理フィードバックへ",
+			"publicProfile": "公開プロフィールへ移動",
+			"journal": "ジャーナルへ移動",
+			"top2shot": "ルーレット＆誕生日へ移動",
+			"live": "ライブへ移動",
+			"multiview": "マルチビューへ移動",
+			"liveHistory": "ライブ履歴へ移動",
+			"watchHistory": "視聴履歴へ移動",
+			"liveReplay": "リプレイへ移動",
+			"livePc": "PCライブへ移動",
+			"sorter": "ソーターへ移動",
+			"sorterHistory": "ソーター履歴へ移動",
+			"news": "ニュースへ移動",
+			"about": "MyPage48について",
+			"privacy": "プライバシーポリシーへ",
+			"terms": "利用規約へ",
+			"cookies": "Cookieポリシーへ"
 		}
 	},
 	"playground": {

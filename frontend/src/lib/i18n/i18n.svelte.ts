@@ -131,6 +131,18 @@ export function t(key: string, params?: Record<string, string | number>): string
 }
 
 /**
+ * Get translations for a key across all supported locales
+ * Useful for search functionality
+ */
+export function getAllTranslations(key: string): string[] {
+	return [
+		getNestedValue(translations.id, key),
+		getNestedValue(translations.en, key),
+		getNestedValue(translations.ja, key)
+	].filter((t) => typeof t === 'string');
+}
+
+/**
  * Reactive time formatting
  */
 export function formatTime(

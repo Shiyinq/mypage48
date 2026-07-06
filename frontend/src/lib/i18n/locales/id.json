@@ -1580,7 +1580,23 @@
 			"calendar": "Ke Kalender",
 			"eventHistory": "Ke Riwayat Event",
 			"feedback": "Ke Masukan",
-			"adminFeedback": "Ke Masukan Admin"
+			"adminFeedback": "Ke Masukan Admin",
+			"publicProfile": "Ke Profil Publik",
+			"journal": "Ke Jurnal",
+			"top2shot": "Ke Roulette & Ulang Tahun",
+			"live": "Ke Live",
+			"multiview": "Ke Multi-view",
+			"liveHistory": "Ke Riwayat Live",
+			"watchHistory": "Ke Riwayat Menonton",
+			"liveReplay": "Ke Replay",
+			"livePc": "Ke PC Live",
+			"sorter": "Ke Sorter",
+			"sorterHistory": "Ke Riwayat Sorter",
+			"news": "Ke Berita",
+			"about": "Ke Tentang Kami",
+			"privacy": "Ke Kebijakan Privasi",
+			"terms": "Ke Syarat & Ketentuan",
+			"cookies": "Ke Kebijakan Cookie"
 		}
 	},
 	"playground": {

@@ -1674,7 +1674,23 @@
 			"calendar": "Go to Calendar",
 			"eventHistory": "Go to Event History",
 			"feedback": "Go to Feedback",
-			"adminFeedback": "Go to Admin Feedback"
+			"adminFeedback": "Go to Admin Feedback",
+			"publicProfile": "Go to Public Profile",
+			"journal": "Go to Journal",
+			"top2shot": "Go to Roulette & Birthday",
+			"live": "Go to Live",
+			"multiview": "Go to Multi-view",
+			"liveHistory": "Go to Live History",
+			"watchHistory": "Go to Watch History",
+			"liveReplay": "Go to Replay",
+			"livePc": "Go to PC Live",
+			"sorter": "Go to Sorter",
+			"sorterHistory": "Go to Sorter History",
+			"news": "Go to News",
+			"about": "Go to About Us",
+			"privacy": "Go to Privacy Policy",
+			"terms": "Go to Terms & Conditions",
+			"cookies": "Go to Cookie Policy"
 		}
 	},
 	"playground": {
