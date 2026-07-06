@@ -1,8 +1,11 @@
 import asyncio
+import glob
 import json
 import os
 import re
+import shutil
 import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from logging import Logger
@@ -222,16 +225,73 @@ class RecordingManager:
     async def _start_session(self, live: LiveInfo):
         recordings_dir = self.config.recordings_dir
 
-        start_at_unix = _parse_start_at(live.start_at)
-        nickname_lower = _sanitize_filename(live.member_nickname)
-        live_folder = os.path.join(recordings_dir, f"{nickname_lower}_{start_at_unix}")
-        os.makedirs(live_folder, exist_ok=True)
+        resumed_folder = None
+        resumed_mkv_parts = []
+        resumed_start_time = time.time()
+
+        json_files = glob.glob(
+            os.path.join(recordings_dir, "*", f"{live.live_id}.json")
+        )
+        for jf in json_files:
+            try:
+                with open(jf, "r") as f:
+                    data = json.load(f)
+                if (
+                    data.get("live_id") == live.live_id
+                    and data.get("status") == "interrupted"
+                ):
+                    resumed_folder = os.path.dirname(jf)
+                    resumed_mkv_parts = data.get("mkv_parts", [])
+                    rec_started = data.get("recording_started_at")
+                    if rec_started:
+                        try:
+                            dt = datetime.strptime(rec_started, "%Y-%m-%dT%H:%M:%SZ")
+                            dt = dt.replace(tzinfo=timezone.utc)
+                            resumed_start_time = dt.timestamp()
+                        except Exception:
+                            pass
+                    break
+            except Exception:
+                pass
+
+        if resumed_folder:
+            live_folder = resumed_folder
+            recording_start_time = resumed_start_time
+            mkv_parts = resumed_mkv_parts
+            self.log.info(
+                "Resuming interrupted session for %s in %s", live.live_id, live_folder
+            )
+        else:
+            start_at_unix = _parse_start_at(live.start_at)
+            nickname_lower = _sanitize_filename(live.member_nickname)
+            live_folder = os.path.join(
+                recordings_dir, f"{nickname_lower}_{start_at_unix}"
+            )
+            os.makedirs(live_folder, exist_ok=True)
+            recording_start_time = time.time()
+            mkv_parts = []
 
         screenshots_folder = os.path.join(live_folder, "screenshots")
         os.makedirs(screenshots_folder, exist_ok=True)
 
         base = live.live_id
         mkv_path = os.path.join(live_folder, f"{base}.mkv")
+
+        if resumed_folder and os.path.exists(mkv_path):
+            if os.path.getsize(mkv_path) > 1024:
+                part_idx = len(mkv_parts) + 1
+                new_mkv = mkv_path.replace(".mkv", f"_part{part_idx}.mkv")
+                try:
+                    os.rename(mkv_path, new_mkv)
+                    mkv_parts.append(new_mkv)
+                except Exception:
+                    pass
+            else:
+                try:
+                    os.remove(mkv_path)
+                except Exception:
+                    pass
+
         chat_log_path = os.path.join(live_folder, f"{base}.log")
         jsonl_path = os.path.join(live_folder, f"{base}.jsonl")
         srt_path = os.path.join(live_folder, f"{base}.srt")
@@ -257,8 +317,6 @@ class RecordingManager:
 
         if not live.room_identifier:
             live.room_identifier = stream_info.get("room_identifier")
-
-        recording_start_time = time.time()
 
         ffmpeg_proc = stream_recorder.start(hls_url, mkv_path)
 
@@ -343,6 +401,7 @@ class RecordingManager:
             start_at=live.start_at,
             ffmpeg_proc=ffmpeg_proc,
             chat_task=chat_task,
+            mkv_parts=mkv_parts,
         )
 
         self.sessions[live.live_id] = session
@@ -636,8 +695,24 @@ class RecordingManager:
         mp4_path = os.path.splitext(mkv_path)[0] + ".mp4"
         remux_ok = False
 
-        parts_to_concat = session.mkv_parts.copy()
-        if os.path.exists(mkv_path):
+        if reason == "interrupted":
+            if os.path.exists(mkv_path):
+                if os.path.getsize(mkv_path) > 1024:
+                    part_idx = len(session.mkv_parts) + 1
+                    new_mkv = mkv_path.replace(".mkv", f"_part{part_idx}.mkv")
+                    try:
+                        os.rename(mkv_path, new_mkv)
+                        session.mkv_parts.append(new_mkv)
+                    except Exception:
+                        pass
+                else:
+                    try:
+                        os.remove(mkv_path)
+                    except Exception:
+                        pass
+
+        parts_to_concat = session.mkv_parts.copy() if reason != "interrupted" else []
+        if os.path.exists(mkv_path) and reason != "interrupted":
             parts_to_concat.append(mkv_path)
 
         if parts_to_concat:
@@ -718,7 +793,7 @@ class RecordingManager:
 
         final_mp4 = mp4_path if os.path.exists(mp4_path) else mkv_path
         duration = 0
-        if os.path.exists(final_mp4):
+        if os.path.exists(final_mp4) and reason != "interrupted":
             duration = _get_duration(final_mp4)
             if duration <= 0:
                 duration = time.time() - session.recording_start_time
@@ -763,7 +838,7 @@ class RecordingManager:
             except Exception as e:
                 self.log.error("Screenshot error: %s", e)
 
-        if os.path.exists(session.chat_log_path):
+        if os.path.exists(session.chat_log_path) and reason != "interrupted":
             try:
                 srt_generator.generate(session.chat_log_path, session.srt_path)
                 self.log.info("SRT generated: %s", session.srt_path)
@@ -785,10 +860,13 @@ class RecordingManager:
                     session.recording_start_time, tz=timezone.utc
                 ).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "recording_ended_at": recording_ended_at,
-                "duration_seconds": int(duration),
+                "duration_seconds": int(duration)
+                if duration > 0
+                else int(time.time() - session.recording_start_time),
                 "srt_file": os.path.basename(session.srt_path),
                 "youtube_id": None,
                 "youtube_title": None,
+                "mkv_parts": session.mkv_parts,
             }
             with open(session.json_path, "w") as f:
                 json.dump(metadata, f, indent=2, ensure_ascii=False)
@@ -828,3 +906,155 @@ class RecordingManager:
         for live_id in list(self.sessions.keys()):
             await self._end_session(live_id, reason="interrupted")
         await self.detector.close()
+
+    def check_status_cli(self, folder: str):
+        recordings_dir = self.config.recordings_dir
+        if folder == "all":
+            json_files = glob.glob(os.path.join(recordings_dir, "*", "*.json"))
+        else:
+            json_files = glob.glob(os.path.join(recordings_dir, folder, "*.json"))
+
+        self.log.info("--- Recordings Status ---")
+        found = 0
+        for jf in json_files:
+            try:
+                with open(jf, "r") as f:
+                    data = json.load(f)
+                status = data.get("status", "unknown")
+                live_id = data.get("live_id", "unknown")
+                mkv_parts = data.get("mkv_parts", [])
+                parent_folder = os.path.basename(os.path.dirname(jf))
+                self.log.info(
+                    f"[{status.upper()}] Folder: {parent_folder} | Live: {live_id} | Parts: {len(mkv_parts)}"
+                )
+                found += 1
+            except Exception:
+                pass
+
+        if found == 0:
+            self.log.info("No recordings found matching criteria.")
+
+    async def force_remux(self, folder: str):
+        recordings_dir = self.config.recordings_dir
+        if folder == "all":
+            json_files = glob.glob(os.path.join(recordings_dir, "*", "*.json"))
+        else:
+            json_files = glob.glob(os.path.join(recordings_dir, folder, "*.json"))
+
+        processed = 0
+        for jf in json_files:
+            try:
+                with open(jf, "r") as f:
+                    data = json.load(f)
+            except Exception as e:
+                self.log.error(f"Failed to read {jf}: {e}")
+                continue
+
+            status = data.get("status", "")
+            if status == "completed":
+                self.log.info(f"Skipping {jf} (Status is already completed)")
+                continue
+
+            live_id = data.get("live_id")
+            if not live_id:
+                continue
+
+            processed += 1
+            live_folder = os.path.dirname(jf)
+            self.log.info(f"Force remuxing interrupted session: {live_folder}")
+
+            rec_started = data.get("recording_started_at")
+            resumed_start_time = time.time()
+            if rec_started:
+                try:
+                    dt = datetime.strptime(rec_started, "%Y-%m-%dT%H:%M:%SZ")
+                    dt = dt.replace(tzinfo=timezone.utc)
+                    resumed_start_time = dt.timestamp()
+                except Exception:
+                    pass
+
+            session = RecordingSession(
+                live_id=live_id,
+                platform=data.get("platform", "unknown"),
+                member_name=data.get("member_name", "unknown"),
+                member_nickname=data.get("member_nickname", "unknown"),
+                room_id=data.get("room_id", ""),
+                room_identifier=data.get("room_identifier", ""),
+                hls_url="",
+                recording_start_time=resumed_start_time,
+                output_path=os.path.join(live_folder, f"{live_id}.mkv"),
+                chat_log_path=os.path.join(live_folder, f"{live_id}.log"),
+                srt_path=os.path.join(live_folder, f"{live_id}.srt"),
+                json_path=jf,
+                jsonl_path=os.path.join(live_folder, f"{live_id}.jsonl"),
+                thumbnail_path=os.path.join(live_folder, f"{live_id}.jpg"),
+                screenshots_folder=os.path.join(live_folder, "screenshots"),
+                live_folder=live_folder,
+                title=data.get("title", ""),
+                member_image="",
+                start_at=data.get("start_at", ""),
+                mkv_parts=data.get("mkv_parts", []),
+            )
+
+            self.sessions[live_id] = session
+            await self._end_session(live_id, reason="completed")
+
+        if processed == 0:
+            self.log.info("No recordings found matching criteria to remux.")
+
+    def delete_recordings_cli(self, folder: str, force: bool = False):
+        recordings_dir = self.config.recordings_dir
+        if folder == "all":
+            folders = glob.glob(os.path.join(recordings_dir, "*"))
+        else:
+            folders = glob.glob(os.path.join(recordings_dir, folder))
+
+        folders_to_delete = [f for f in folders if os.path.isdir(f)]
+
+        if not folders_to_delete:
+            self.log.info("No recording folders found to delete.")
+            return
+
+        if folder == "all":
+            warning_msg = f"WARNING: You are about to delete ALL {len(folders_to_delete)} recording folders in {recordings_dir}."
+            folder_list = "\n".join(
+                f"  - {os.path.basename(f)}" for f in folders_to_delete
+            )
+            warning_msg = f"{warning_msg}\n{folder_list}"
+        else:
+            warning_msg = f"WARNING: You are about to delete the folder: {os.path.basename(folders_to_delete[0])}."
+
+        if not force:
+            sys.stderr.write(f"\n{warning_msg}\n")
+            sys.stderr.write("Are you sure you want to continue? (y/N): ")
+            sys.stderr.flush()
+
+            try:
+                import termios
+
+                fd = sys.stdin.fileno()
+                old_settings = termios.tcgetattr(fd)
+                new_settings = termios.tcgetattr(fd)
+                # Force canonical mode + echo + translate CR to NL
+                new_settings[0] = new_settings[0] | termios.ICRNL
+                new_settings[3] = new_settings[3] | termios.ICANON | termios.ECHO
+                termios.tcsetattr(fd, termios.TCSANOW, new_settings)
+                answer = sys.stdin.readline().strip()
+                termios.tcsetattr(fd, termios.TCSANOW, old_settings)
+            except (ImportError, termios.error):
+                answer = sys.stdin.readline().strip()
+
+            if answer.lower() not in ["y", "yes"]:
+                self.log.info("Deletion aborted by user.")
+                return
+
+        deleted = 0
+        for f in folders_to_delete:
+            try:
+                shutil.rmtree(f)
+                self.log.info(f"Deleted folder: {os.path.basename(f)}")
+                deleted += 1
+            except Exception as e:
+                self.log.error(f"Failed to delete {f}: {e}")
+
+        self.log.info(f"Successfully deleted {deleted} folders.")
