@@ -71,7 +71,11 @@ async def upload(
     for attempt in range(1, 4):
         files = []
         try:
-            thumbnail_path = _find_latest_screenshot(screenshot_dir)
+            yt_thumb_path = os.path.join(session.live_folder, f"{live_id}_yt_thumb.jpg")
+            if os.path.exists(yt_thumb_path):
+                thumbnail_path = yt_thumb_path
+            else:
+                thumbnail_path = _find_latest_screenshot(screenshot_dir)
             if thumbnail_path:
                 files.append(
                     (
