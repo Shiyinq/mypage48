@@ -9,7 +9,7 @@ from .src.record.manager import RecordingManager
 from .src.upload.watcher import Watcher
 
 
-async def main():
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
@@ -17,8 +17,55 @@ async def main():
         default="both",
         help="Run mode: record, upload, or both (default)",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--status",
+        nargs="?",
+        const="all",
+        help="Check the status of recordings. Use without value for 'all', or specify a folder name.",
+    )
+    parser.add_argument(
+        "--remux",
+        nargs="?",
+        const="all",
+        help="Force remux an interrupted recording. Use without value for 'all', or specify a folder name.",
+    )
+    parser.add_argument(
+        "--delete",
+        nargs="?",
+        const="all",
+        help="Delete recording folders. Use without value for 'all', or specify a folder name.",
+    )
+    parser.add_argument(
+        "--yes",
+        "-y",
+        action="store_true",
+        help="Bypass confirmation prompts for destructive actions.",
+    )
+    return parser.parse_args()
 
+
+def handle_cli(args):
+    """Handle synchronous CLI commands (--status, --remux, --delete).
+    Returns True if a CLI command was handled, False otherwise.
+    """
+    if not (args.status or args.remux or args.delete):
+        return False
+
+    config = RecorderConfig()
+    log_rec, _ = setup_logging(config)
+    manager = RecordingManager(config, log_rec)
+
+    if args.status:
+        manager.check_status_cli(args.status)
+    if args.remux:
+        asyncio.run(manager.force_remux(args.remux))
+    if args.delete:
+        manager.delete_recordings_cli(args.delete, force=args.yes)
+
+    return True
+
+
+async def main(args):
     config = RecorderConfig()
     log_rec, log_upl = setup_logging(config)
 
@@ -49,6 +96,8 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        args = parse_args()
+        if not handle_cli(args):
+            asyncio.run(main(args))
     except KeyboardInterrupt:
         sys.exit(0)

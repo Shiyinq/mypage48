@@ -25,7 +25,7 @@ async def capture_showroom(
 
     client = httpx.AsyncClient(timeout=10.0)
     try:
-        with open(log_path, "w") as f:
+        with open(log_path, "a") as f:
             jsonl_f = open(jsonl_path, "a") if jsonl_path else None
             try:
                 while not stop_event.is_set():
@@ -222,7 +222,7 @@ async def capture_idn(
 ):
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
 
-    with open(log_path, "w") as f:
+    with open(log_path, "a") as f:
         jsonl_f = open(jsonl_path, "a") if jsonl_path else None
         try:
             retry_delay = 1.0
