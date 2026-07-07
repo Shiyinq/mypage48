@@ -11,6 +11,8 @@
 	import { page } from '$app/stores';
 	import { PageHeader } from '$lib/components';
 
+	import { getErrorMessage } from '$lib/utils/api';
+
 	import FeedbackList from '$lib/components/feedback/FeedbackList.svelte';
 
 	const { t } = useTranslation();
@@ -71,9 +73,10 @@
 			type = issueType;
 			// Automatically switch to my feedback to see the submitted one
 			activeTab = 'my_feedback';
-		} catch (error) {
-			console.error(error);
-			showToast(t('feedback.error'), 'error');
+		} catch (e) {
+			console.error(e);
+			const errorMsg = getErrorMessage(e);
+			showToast(errorMsg !== 'An unknown error occurred' ? errorMsg : t('feedback.error'), 'error');
 		}
 	};
 </script>
