@@ -148,7 +148,7 @@
 			$page.url.pathname.startsWith('/auth/')
 	);
 	let isFullScreenRoute = $derived($page.url.pathname.includes('/live/multiview'));
-	let isLiveRoute = $derived($page.url.pathname.startsWith('/theater/live'));
+	let isLiveRoute = $derived($page.url.pathname.startsWith('/live'));
 	let isPlaygroundRoute = $derived($page.url.pathname.startsWith('/playground'));
 	// Reset state when user logs out
 	$effect(() => {

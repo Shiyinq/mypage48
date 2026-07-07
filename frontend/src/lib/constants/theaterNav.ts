@@ -1,4 +1,4 @@
-import { AudioLines, Users, Newspaper, Calendar, History, ArrowUpDown, Tv } from 'lucide-svelte';
+import { AudioLines, Users, Newspaper, Calendar, History } from 'lucide-svelte';
 
 export const theaterNavItems = [
 	{
@@ -47,21 +47,5 @@ export const theaterNavItems = [
 		icon: History,
 		theme: 'orange',
 		color: 'text-orange-500'
-	},
-	{
-		labelKey: 'theater.subNav.sorter',
-		labelDefault: 'Sorter',
-		href: '/theater/sorter',
-		icon: ArrowUpDown,
-		theme: 'rose',
-		color: 'text-rose-500'
-	},
-	{
-		labelKey: 'theater.subNav.live',
-		labelDefault: 'Live',
-		href: '/theater/live',
-		icon: Tv,
-		theme: 'red',
-		color: 'text-red-600'
 	}
 ];

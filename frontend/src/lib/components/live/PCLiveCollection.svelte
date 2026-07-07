@@ -21,7 +21,7 @@
 		basePath?: string;
 	}
 
-	let { isPublic = false, basePath = '/theater/live/pc' }: Props = $props();
+	let { isPublic = false, basePath = '/live/pc' }: Props = $props();
 
 	const { t } = useTranslation();
 

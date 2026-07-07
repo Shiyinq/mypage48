@@ -43,7 +43,7 @@
 	const { t } = useTranslation();
 
 	interface Props {
-		/** Base path for back-navigation. Use '/jkt48/live' for public, '/theater/live' for theater. */
+		/** Base path for back-navigation. Use '/jkt48/live' for public, '/live' for theater. */
 		basePath?: string;
 	}
 

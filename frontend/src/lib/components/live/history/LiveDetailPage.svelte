@@ -49,7 +49,7 @@
 	let isShowroom = $derived(replayData?.platform === 'showroom');
 
 	let replayBasePath = $derived(
-		$page.url.pathname.startsWith('/jkt48/') ? '/jkt48/live/replay' : '/theater/live/replay'
+		$page.url.pathname.startsWith('/jkt48/') ? '/jkt48/live/replay' : '/live/replay'
 	);
 
 	function isLottieUrl(url: string): boolean {

@@ -4,6 +4,9 @@
 	import { userProfile } from '$lib/stores';
 	import {
 		LayoutDashboard,
+		LayoutGrid,
+		Tv,
+		ArrowUpDown,
 		AudioLines,
 		Plus,
 		Image as ImageIcon,
@@ -19,7 +22,8 @@
 		UserCheck,
 		Users,
 		Music,
-		MessageSquare
+		MessageSquare,
+		Upload
 	} from 'lucide-svelte';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -29,13 +33,28 @@
 	let isMenuOpen = $state(false);
 	let isTheaterMenuOpen = $state(false);
 	let isAdminMenuOpen = $state(false);
+	let isAppsMenuOpen = $state(false);
+
+	let lastScrollY = $state(0);
+	let isScrollingDown = $state(false);
+
+	function handleScroll() {
+		const currentScrollY = window.scrollY;
+		if (currentScrollY > 60 && currentScrollY > lastScrollY) {
+			isScrollingDown = true;
+		} else {
+			isScrollingDown = false;
+		}
+		lastScrollY = currentScrollY;
+	}
 
 	const secondaryLinks = [
 		{ href: '/memories', icon: ImageIcon, label: 'nav.memories', color: 'text-pink-500' },
 		{ href: '/top-2shot', icon: Crown, label: 'nav.top2shot', color: 'text-indigo-500' },
 		{ href: '/journal', icon: BookOpen, label: 'nav.journal', color: 'text-green-500' },
 		{ href: '/achievements', icon: Trophy, label: 'nav.achievements', color: 'text-amber-500' },
-		{ href: '/history', icon: History, label: 'nav.history', color: 'text-red-500' }
+		{ href: '/history', icon: History, label: 'nav.history', color: 'text-red-500' },
+		{ href: '/upload', icon: Upload, label: 'nav.newTicket', color: 'text-rose-500' }
 	];
 
 	const adminLinks = [
@@ -76,6 +95,7 @@
 	function toggleMenu() {
 		isMenuOpen = !isMenuOpen;
 		if (isMenuOpen) {
+			isAppsMenuOpen = false;
 			isTheaterMenuOpen = false;
 			isAdminMenuOpen = false;
 		}
@@ -84,6 +104,7 @@
 	function toggleTheaterMenu() {
 		isTheaterMenuOpen = !isTheaterMenuOpen;
 		if (isTheaterMenuOpen) {
+			isAppsMenuOpen = false;
 			isMenuOpen = false;
 			isAdminMenuOpen = false;
 		}
@@ -92,12 +113,23 @@
 	function toggleAdminMenu() {
 		isAdminMenuOpen = !isAdminMenuOpen;
 		if (isAdminMenuOpen) {
+			isAppsMenuOpen = false;
 			isMenuOpen = false;
 			isTheaterMenuOpen = false;
 		}
 	}
 
+	function toggleAppsMenu() {
+		isAppsMenuOpen = !isAppsMenuOpen;
+		if (isAppsMenuOpen) {
+			isMenuOpen = false;
+			isTheaterMenuOpen = false;
+			isAdminMenuOpen = false;
+		}
+	}
+
 	function closeAllMenus() {
+		isAppsMenuOpen = false;
 		isMenuOpen = false;
 		isTheaterMenuOpen = false;
 		isAdminMenuOpen = false;
@@ -136,6 +168,74 @@
 		return currentPath.startsWith(href);
 	});
 </script>
+
+<!-- Apps Menu Drawer -->
+{#if isAppsMenuOpen}
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
+		onclick={closeAllMenus}
+		transition:fade={{ duration: 200 }}
+	></div>
+
+	<div
+		class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[70] shadow-2xl border-t border-gray-100 dark:border-white/5 overflow-hidden"
+		transition:fly={{ y: 300, duration: 300 }}
+	>
+		<div
+			class="px-6 py-5 flex items-center justify-between border-b border-gray-50 dark:border-white/5"
+		>
+			<h3 class="text-lg font-bold text-gray-900 dark:text-white">{t('nav.apps') || 'Apps'}</h3>
+			<button class="p-2 text-gray-400 hover:text-gray-600" onclick={closeAllMenus}>
+				<X class="w-6 h-6" />
+			</button>
+		</div>
+		<div class="p-3 grid grid-cols-1 gap-1.5 max-h-[calc(100dvh-12rem)] overflow-y-auto">
+			<a
+				href="/live"
+				class={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] active:opacity-70 group ${$page.url.pathname.startsWith('/live') ? 'bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+				onclick={closeAllMenus}
+			>
+				<div class="flex items-center gap-3">
+					<div
+						class={`p-2.5 rounded-xl transition-transform ${$page.url.pathname.startsWith('/live') ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 text-red-500' : 'bg-gray-50 dark:bg-white/5 text-red-500'} group-hover:scale-110`}
+					>
+						<Tv class="w-5 h-5" />
+					</div>
+					<span
+						class={`font-bold transition-colors ${$page.url.pathname.startsWith('/live') ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'}`}
+						>{t('nav.live') || 'Live'}</span
+					>
+				</div>
+				<ChevronRight
+					class={`w-4 h-4 transition-all ${$page.url.pathname.startsWith('/live') ? 'text-red-500 transform translate-x-1' : 'text-gray-300'}`}
+				/>
+			</a>
+			<a
+				href="/sorter"
+				class={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] active:opacity-70 group ${$page.url.pathname.startsWith('/sorter') ? 'bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+				onclick={closeAllMenus}
+			>
+				<div class="flex items-center gap-3">
+					<div
+						class={`p-2.5 rounded-xl transition-transform ${$page.url.pathname.startsWith('/sorter') ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 text-rose-500' : 'bg-gray-50 dark:bg-white/5 text-rose-500'} group-hover:scale-110`}
+					>
+						<ArrowUpDown class="w-5 h-5" />
+					</div>
+					<span
+						class={`font-bold transition-colors ${$page.url.pathname.startsWith('/sorter') ? 'text-rose-600 dark:text-rose-400' : 'text-gray-700 dark:text-gray-200'}`}
+						>{t('nav.sorter') || 'Sorter'}</span
+					>
+				</div>
+				<ChevronRight
+					class={`w-4 h-4 transition-all ${$page.url.pathname.startsWith('/sorter') ? 'text-rose-500 transform translate-x-1' : 'text-gray-300'}`}
+				/>
+			</a>
+		</div>
+	</div>
+{/if}
+<svelte:window onscroll={handleScroll} />
 
 <!-- Menu Drawer Overlay -->
 {#if isMenuOpen}
@@ -296,11 +396,12 @@
 <nav
 	class="md:hidden fixed bottom-0 left-0 right-0 backdrop-blur-xl border-t z-[80] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)] dark:shadow-none transition-all duration-300 ease-in-out {isMenuOpen ||
 	isTheaterMenuOpen ||
-	isAdminMenuOpen
+	isAdminMenuOpen ||
+	isAppsMenuOpen
 		? 'bg-white dark:bg-zinc-950 border-gray-200 dark:border-zinc-800'
 		: 'bg-white/85 dark:bg-zinc-950/60 border-black/5 dark:border-white/5'}"
 >
-	<div class="flex h-16 items-center justify-around max-w-[420px] mx-auto px-4">
+	<div class="flex h-16 items-center justify-around max-w-[420px] mx-auto px-4 relative">
 		<a
 			href="/"
 			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
@@ -328,7 +429,9 @@
 		</button>
 
 		<!-- Floating Action Button (FAB) -->
-		<div class="relative -top-5 flex justify-center px-1">
+		<div
+			class={`absolute left-1/2 -translate-x-1/2 -top-14 flex justify-center transition-all duration-300 ease-in-out z-10 ${isScrollingDown || isMenuOpen || isTheaterMenuOpen || isAdminMenuOpen || isAppsMenuOpen ? 'translate-y-24 opacity-0 pointer-events-none scale-50' : 'translate-y-0 opacity-100 scale-100'}`}
+		>
 			<a
 				href="/upload"
 				class="flex justify-center w-12 h-12 rounded-full idol-gradient text-white shadow-lg shadow-red-300 dark:shadow-red-900/50 border-4 border-gray-50 dark:border-zinc-950 items-center transform transition-transform active:scale-90 hover:scale-105"
@@ -347,6 +450,19 @@
 			<span
 				class={`text-[10px] transition-all truncate w-full text-center ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'font-medium'}`}
 				>{t('nav.journey') || 'Journey'}</span
+			>
+		</button>
+
+		<button
+			onclick={toggleAppsMenu}
+			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
+		>
+			<LayoutGrid
+				class={`w-6 h-6 transition-all ${isAppsMenuOpen ? 'text-cyan-600 dark:text-cyan-400 scale-110' : ''}`}
+			/>
+			<span
+				class={`text-[10px] transition-all truncate w-full text-center ${isAppsMenuOpen ? 'text-cyan-600 dark:text-cyan-400 font-bold' : 'font-medium'}`}
+				>{t('nav.apps') || 'Apps'}</span
 			>
 		</button>
 

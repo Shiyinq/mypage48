@@ -59,7 +59,7 @@
 
 	interface Props {
 		/** Base path determines back-links and other-live member hrefs.
-		 *  Use '/jkt48/live' for public pages, '/theater/live' for theater pages. */
+		 *  Use '/jkt48/live' for public pages, '/live' for theater pages. */
 		basePath?: string;
 	}
 
