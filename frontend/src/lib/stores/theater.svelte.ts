@@ -285,7 +285,10 @@ function createMembersStore() {
 						limit: params.limit || 100
 					});
 
-					const newList = reset ? res.data : [...membersState.list, ...res.data];
+					const newItems = reset
+						? []
+						: res.data.filter((item: Member) => !membersState.list.some((m) => m.id === item.id));
+					const newList = reset ? res.data : [...membersState.list, ...newItems];
 					const newPagination = {
 						page: pageToLoad,
 						hasMore: !!res.meta.next_page
