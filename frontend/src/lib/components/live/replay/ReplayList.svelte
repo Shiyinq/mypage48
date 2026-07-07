@@ -9,11 +9,11 @@
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getPlatformIcon } from '$lib/constants/live';
-	import { formatTimeAgo } from '$lib/utils/time';
+	import { formatTimeAgo, formatLiveDate, formatDateOnly } from '$lib/utils/time';
 	import { Search, Play, RotateCcw, User, List, ExternalLink, Database } from 'lucide-svelte';
 	import type { ReplaySource } from '$lib/stores/replay.svelte';
 
-	const { t } = useTranslation();
+	const { t, locale } = useTranslation();
 
 	interface Props {
 		basePath?: string;
@@ -41,6 +41,22 @@
 		}
 		return map;
 	});
+
+	function getIsoDate(dateStr: string | null | undefined): string {
+		if (!dateStr) return '';
+		if (dateStr.includes(' WIB')) {
+			return dateStr.replace(' WIB', '').replace(' ', 'T') + '+07:00';
+		}
+		return dateStr;
+	}
+
+	function getDisplayDate(dateStr: string | null | undefined, loc: string): string {
+		if (!dateStr) return '';
+		if (dateStr.includes(' WIB')) {
+			return formatLiveDate(getIsoDate(dateStr), loc);
+		}
+		return formatDateOnly(dateStr, loc);
+	}
 	let memberList = $derived.by(() => {
 		const list: { nickname: string; img_small?: string; blurHash?: string }[] = [];
 		for (const m of membersStore.list) {
@@ -537,17 +553,12 @@
 											<span class="font-semibold text-slate-700 dark:text-slate-300"
 												>{video.member}</span
 											>
-											• {video.date
-												? formatTimeAgo(
-														video.date.replace(' WIB', '').replace(' ', 'T') + '+07:00',
-														t
-													)
-												: ''}
+											• {video.date ? formatTimeAgo(getIsoDate(video.date), t) : ''}
 										</p>
 										<div
 											class="text-xs sm:text-[13px] text-slate-500 dark:text-[#AAAAAA] truncate leading-snug"
 										>
-											{video.date}
+											{getDisplayDate(video.date, locale.value)}
 										</div>
 									</div>
 								</div>
