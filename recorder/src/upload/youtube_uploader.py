@@ -101,6 +101,15 @@ def _format_description(meta: dict) -> str:
     return "\n".join(desc_lines)
 
 
+def _get_privacy_status(meta: dict, default_status: str) -> str:
+    nickname = meta.get("member_nickname") or meta.get("member_name") or "Unknown"
+    full_name = meta.get("member_name", "")
+    is_official = full_name.upper() == "JKT48" and (
+        nickname.upper() == "JKT48" or not nickname
+    )
+    return "unlisted" if is_official else default_status
+
+
 def _build_youtube(config: RecorderConfig):
     creds = Credentials(
         None,
@@ -125,15 +134,17 @@ def _do_upload_blocking(
     progress_callback=None,
     resume_uri: str | None = None,
     save_uri_callback=None,
+    privacy_status: str | None = None,
 ) -> tuple[str | None, str | None]:
     youtube = _build_youtube(config)
+    actual_privacy = privacy_status or config.youtube_privacy_status
     body = {
         "snippet": {
             "title": title,
             "description": description,
         },
         "status": {
-            "privacyStatus": config.youtube_privacy_status,
+            "privacyStatus": actual_privacy,
             "selfDeclaredMadeForKids": False,
         },
     }
@@ -179,9 +190,14 @@ def _upload_thumbnail(
 
 
 def _add_to_playlist_blocking(
-    config: RecorderConfig, video_id: str, meta: dict, log: Logger
+    config: RecorderConfig,
+    video_id: str,
+    meta: dict,
+    log: Logger,
+    privacy_status: str | None = None,
 ) -> None:
     youtube = _build_youtube(config)
+    actual_privacy = privacy_status or config.youtube_privacy_status
 
     platform = (meta.get("platform") or "live").upper()
     nickname = meta.get("member_nickname") or meta.get("member_name") or "Unknown"
@@ -230,7 +246,7 @@ def _add_to_playlist_blocking(
                             "title": playlist_title,
                             "description": f"Kumpulan arsip siaran langsung {member_text} dari platform {platform}.",
                         },
-                        "status": {"privacyStatus": config.youtube_privacy_status},
+                        "status": {"privacyStatus": actual_privacy},
                     },
                 )
                 .execute()
@@ -305,6 +321,8 @@ async def _upload_to_youtube(
     title = _format_title(meta)
     description = _format_description(meta)
 
+    privacy_status = _get_privacy_status(meta, config.youtube_privacy_status)
+
     log.info("Uploading: %s", title)
     if resume_uri:
         log.info("Resuming upload for %s with saved URI", title)
@@ -320,6 +338,7 @@ async def _upload_to_youtube(
         progress_callback,
         resume_uri,
         save_uri_callback,
+        privacy_status,
     )
 
     # Upload the custom thumbnail if generation was successful and video upload succeeded
@@ -345,6 +364,7 @@ async def _upload_to_youtube(
         youtube_id,
         meta,
         log,
+        privacy_status,
     )
 
     return youtube_id, upload_uri
