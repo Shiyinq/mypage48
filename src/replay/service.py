@@ -374,12 +374,13 @@ class ReplayService:
                     start_at = None
             elif isinstance(start_at, datetime):
                 start_at = start_at.astimezone(wib)
-            date_str = start_at.strftime("%Y-%m-%d") if start_at else None
+            date_str = start_at.strftime("%Y-%m-%d %H:%M WIB") if start_at else None
             result.append(
                 {
                     "live_id": doc.get("live_id", ""),
                     "youtube_id": doc.get("youtube_id") or "",
-                    "title": doc.get("youtube_title") or doc.get("title"),
+                    "title": doc.get("title"),
+                    "youtube_title": doc.get("youtube_title"),
                     "member": doc.get("member_nickname", ""),
                     "date": date_str,
                     "platform": doc.get("platform", "").upper(),

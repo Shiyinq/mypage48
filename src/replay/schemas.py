@@ -53,6 +53,7 @@ class ReplayResponse(BaseModel):
     duration_seconds: int = 0
     srt_file: Optional[str] = None
     youtube_id: Optional[str] = None
+    youtube_title: Optional[str] = None
     files: ReplayFilesInfo
     chats: list[dict[str, Any]] = []
     created_at: datetime
@@ -101,6 +102,7 @@ class ReplayDetailResponse(BaseModel):
     recording_ended_at: Optional[datetime] = None
     duration_seconds: int = 0
     youtube_id: Optional[str] = None
+    youtube_title: Optional[str] = None
     files: ReplayDetailFilesInfo
     total_chats: int = 0
     total_gifts: int = 0
@@ -117,6 +119,7 @@ class ReplayListItem(BaseModel):
     live_id: str = ""
     youtube_id: str = ""
     title: Optional[str] = None
+    youtube_title: Optional[str] = None
     member: str = ""
     date: Optional[str] = None
     platform: str = ""
