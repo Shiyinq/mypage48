@@ -143,6 +143,9 @@
 		secondaryLinks.some((link) => $page.url.pathname.startsWith(link.href))
 	);
 	let isRouteTheater = $derived($page.url.pathname.startsWith('/theater'));
+	let anyDrawerOpen = $derived(
+		isMenuOpen || isTheaterMenuOpen || isAdminMenuOpen || isAppsMenuOpen
+	);
 
 	let theaterIsActive = $derived((href: string, exact: boolean = false) => {
 		const currentPath = $page.url.pathname;
@@ -407,10 +410,10 @@
 			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
 		>
 			<LayoutDashboard
-				class={`w-6 h-6 transition-all ${$page.url.pathname === '/' ? 'text-red-600 dark:text-red-400 scale-110' : ''}`}
+				class={`w-6 h-6 transition-all ${$page.url.pathname === '/' && !anyDrawerOpen ? 'text-red-600 dark:text-red-400 scale-110' : ''}`}
 			/>
 			<span
-				class={`text-[10px] transition-all truncate w-full text-center ${$page.url.pathname === '/' ? 'text-red-600 dark:text-red-400 font-bold' : 'font-medium'}`}
+				class={`text-[10px] transition-all truncate w-full text-center ${$page.url.pathname === '/' && !anyDrawerOpen ? 'text-red-600 dark:text-red-400 font-bold' : 'font-medium'}`}
 				>{t('nav.home')}</span
 			>
 		</a>
@@ -420,17 +423,17 @@
 			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
 		>
 			<AudioLines
-				class={`w-6 h-6 transition-all ${isTheaterMenuOpen || isRouteTheater ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`}
+				class={`w-6 h-6 transition-all ${isTheaterMenuOpen || (isRouteTheater && !anyDrawerOpen) ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`}
 			/>
 			<span
-				class={`text-[10px] transition-all truncate w-full text-center ${isTheaterMenuOpen || isRouteTheater ? 'text-purple-600 dark:text-purple-400 font-bold' : 'font-medium'}`}
+				class={`text-[10px] transition-all truncate w-full text-center ${isTheaterMenuOpen || (isRouteTheater && !anyDrawerOpen) ? 'text-purple-600 dark:text-purple-400 font-bold' : 'font-medium'}`}
 				>{t('nav.theater')}</span
 			>
 		</button>
 
 		<!-- Floating Action Button (FAB) -->
 		<div
-			class={`absolute left-1/2 -translate-x-1/2 -top-14 flex justify-center transition-all duration-300 ease-in-out z-10 ${isScrollingDown || isMenuOpen || isTheaterMenuOpen || isAdminMenuOpen || isAppsMenuOpen ? 'translate-y-24 opacity-0 pointer-events-none scale-50' : 'translate-y-0 opacity-100 scale-100'}`}
+			class={`absolute left-1/2 -translate-x-1/2 -top-14 flex justify-center transition-all duration-300 ease-in-out z-10 ${isScrollingDown || isMenuOpen || isTheaterMenuOpen || isAdminMenuOpen || isAppsMenuOpen || $page.url.pathname !== '/' ? 'translate-y-24 opacity-0 pointer-events-none scale-50' : 'translate-y-0 opacity-100 scale-100'}`}
 		>
 			<a
 				href="/upload"
@@ -445,10 +448,10 @@
 			class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
 		>
 			<Menu
-				class={`w-6 h-6 transition-all ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400 scale-110' : ''}`}
+				class={`w-6 h-6 transition-all ${isMenuOpen || (isRouteMore && !anyDrawerOpen) ? 'text-indigo-600 dark:text-indigo-400 scale-110' : ''}`}
 			/>
 			<span
-				class={`text-[10px] transition-all truncate w-full text-center ${isMenuOpen || isRouteMore ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'font-medium'}`}
+				class={`text-[10px] transition-all truncate w-full text-center ${isMenuOpen || (isRouteMore && !anyDrawerOpen) ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'font-medium'}`}
 				>{t('nav.journey') || 'Journey'}</span
 			>
 		</button>
@@ -472,10 +475,10 @@
 				class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
 			>
 				<User
-					class={`w-6 h-6 transition-all ${isAdminMenuOpen || $page.url.pathname.startsWith('/admin') ? 'text-zinc-700 dark:text-white scale-110' : ''}`}
+					class={`w-6 h-6 transition-all ${isAdminMenuOpen || (($page.url.pathname.startsWith('/admin') || $page.url.pathname === '/profile') && !anyDrawerOpen) ? 'text-zinc-700 dark:text-white scale-110' : ''}`}
 				/>
 				<span
-					class={`text-[10px] transition-all truncate w-full text-center ${isAdminMenuOpen || $page.url.pathname.startsWith('/admin') ? 'text-zinc-700 dark:text-white font-bold' : 'font-medium'}`}
+					class={`text-[10px] transition-all truncate w-full text-center ${isAdminMenuOpen || (($page.url.pathname.startsWith('/admin') || $page.url.pathname === '/profile') && !anyDrawerOpen) ? 'text-zinc-700 dark:text-white font-bold' : 'font-medium'}`}
 					>{t('nav.admin') || 'Admin'}</span
 				>
 			</button>
@@ -485,10 +488,10 @@
 				class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[56px]"
 			>
 				<User
-					class={`w-6 h-6 transition-all ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white scale-110' : ''}`}
+					class={`w-6 h-6 transition-all ${$page.url.pathname === '/profile' && !anyDrawerOpen ? 'text-zinc-700 dark:text-white scale-110' : ''}`}
 				/>
 				<span
-					class={`text-[10px] transition-all truncate w-full text-center ${$page.url.pathname === '/profile' ? 'text-zinc-700 dark:text-white font-bold' : 'font-medium'}`}
+					class={`text-[10px] transition-all truncate w-full text-center ${$page.url.pathname === '/profile' && !anyDrawerOpen ? 'text-zinc-700 dark:text-white font-bold' : 'font-medium'}`}
 					>{t('nav.profile') || 'Profile'}</span
 				>
 			</a>

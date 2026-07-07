@@ -12,7 +12,7 @@
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
 	import { safeCrossfade } from '$lib/utils/transitions';
 	import { cubicInOut } from 'svelte/easing';
-	import { slide } from 'svelte/transition';
+	import { slide, type SlideParams } from 'svelte/transition';
 	import { OptimizedImage } from '$lib/components/common';
 
 	const [send, receive] = safeCrossfade({
@@ -20,7 +20,7 @@
 		easing: cubicInOut
 	});
 
-	function safeSlide(node: HTMLElement, params: any) {
+	function safeSlide(node: HTMLElement, params: SlideParams) {
 		if (typeof window !== 'undefined' && window.getComputedStyle(node).display === 'none') {
 			return { duration: 0 };
 		}

@@ -283,12 +283,14 @@
 							class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[60px] shrink-0"
 						>
 							<Globe
-								class="w-6 h-6 transition-all {isHistoryDrawerOpen
+								class="w-6 h-6 transition-all {isHistoryDrawerOpen ||
+								$page.url.pathname.startsWith('/live/history')
 									? 'text-red-600 dark:text-red-400 scale-110'
 									: ''}"
 							/>
 							<span
-								class="text-[10px] sm:text-[11px] transition-all truncate w-full text-center font-medium {isHistoryDrawerOpen
+								class="text-[10px] sm:text-[11px] transition-all truncate w-full text-center font-medium {isHistoryDrawerOpen ||
+								$page.url.pathname.startsWith('/live/history')
 									? 'text-red-600 dark:text-red-400 font-bold'
 									: ''}"
 							>
@@ -296,13 +298,15 @@
 							</span>
 						</button>
 					{:else}
-						{@const isActive = item.match
-							? item.match($page.url.pathname)
-							: item.exact
-								? $page.url.pathname === (item.activeHref || item.href)
-								: (item.activeHref || item.href) === '/'
-									? $page.url.pathname === '/'
-									: $page.url.pathname.startsWith(item.activeHref || item.href)}
+						{@const isActive =
+							!isHistoryDrawerOpen &&
+							(item.match
+								? item.match($page.url.pathname)
+								: item.exact
+									? $page.url.pathname === (item.activeHref || item.href)
+									: (item.activeHref || item.href) === '/'
+										? $page.url.pathname === '/'
+										: $page.url.pathname.startsWith(item.activeHref || item.href))}
 						<a
 							href={item.href}
 							class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[60px] shrink-0"
