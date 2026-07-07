@@ -943,8 +943,11 @@
 								{:else}
 									<div class="space-y-2">
 										{#each allLiveHistory as live}
-											<div
-												class="flex items-center gap-3 p-3 rounded-xl bg-gray-50/50 dark:bg-zinc-800/20 border border-gray-100 dark:border-zinc-800/50 hover:border-gray-300 dark:hover:border-zinc-600 transition-all group"
+											<a
+												href="{basePath.includes('/jkt48')
+													? '/jkt48'
+													: ''}/live/history/live/{live.live_id}"
+												class="flex items-center gap-3 p-3 rounded-xl bg-gray-50/50 dark:bg-zinc-800/20 border border-gray-100 dark:border-zinc-800/50 hover:border-red-200 dark:hover:border-red-900/30 transition-all group cursor-pointer"
 											>
 												<div
 													class="w-10 h-10 rounded-xl overflow-hidden bg-gray-200 dark:bg-zinc-700 shrink-0"
@@ -953,7 +956,7 @@
 														<img
 															src={getExternalMediaUrl(live.image)}
 															alt={live.title || t('member.liveFallback')}
-															class="w-full h-full object-cover"
+															class="w-full h-full object-cover transition-transform group-hover:scale-110"
 														/>
 													{:else}
 														<div
@@ -964,7 +967,9 @@
 													{/if}
 												</div>
 												<div class="flex-1 min-w-0">
-													<p class="text-sm font-bold text-gray-800 dark:text-gray-200 break-words">
+													<p
+														class="text-sm font-bold text-gray-800 dark:text-gray-200 break-words group-hover:text-red-500 transition-colors"
+													>
 														{live.title || t('member.liveFallback')}
 													</p>
 													<p
@@ -996,7 +1001,7 @@
 														{t('member.viewers')}
 													</span>
 												</div>
-											</div>
+											</a>
 										{/each}
 									</div>
 
