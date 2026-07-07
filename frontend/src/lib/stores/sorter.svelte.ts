@@ -402,7 +402,7 @@ export function createSorter(
 
 	function viewHistoryDetail(historyItem: SorterResponse) {
 		selectedHistory = historyItem;
-		goto(`/theater/sorter/history/${historyItem._id}`);
+		goto(`/sorter/history/${historyItem._id}`);
 	}
 
 	function goToHistory() {
@@ -497,4 +497,4 @@ export function createSorter(
 }
 
 export const publicSorter = createSorter(translate, '/jkt48/sorter');
-export const theaterSorter = createSorter(translate, '/theater/sorter');
+export const theaterSorter = createSorter(translate, '/sorter');

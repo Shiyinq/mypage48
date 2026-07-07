@@ -24,7 +24,7 @@
 
 <a
 	href={variant === 'theater'
-		? `/theater/live/${stream.platform}/${stream.room_id || stream.live_id}`
+		? `/live/${stream.platform}/${stream.room_id || stream.live_id}`
 		: `/jkt48/live/${stream.platform}/${stream.room_id || stream.live_id}`}
 	class="group relative aspect-[3/4] flex flex-col bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer border border-slate-100 dark:border-zinc-800/50"
 	in:fade={{ duration: 400, delay: i * 50 }}

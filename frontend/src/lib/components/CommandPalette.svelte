@@ -267,7 +267,7 @@
 				translationKey: 'command.actions.live',
 				icon: Radio,
 				section: 'navigation',
-				perform: () => goto('/theater/live')
+				perform: () => goto('/live')
 			},
 			{
 				id: 'nav-multiview',
@@ -275,7 +275,7 @@
 				translationKey: 'command.actions.multiview',
 				icon: LayoutGrid,
 				section: 'navigation',
-				perform: () => goto('/theater/live/multiview')
+				perform: () => goto('/live/multiview')
 			},
 			{
 				id: 'nav-live-history',
@@ -283,7 +283,7 @@
 				translationKey: 'command.actions.liveHistory',
 				icon: History,
 				section: 'navigation',
-				perform: () => goto('/theater/live/history')
+				perform: () => goto('/live/history')
 			},
 			{
 				id: 'nav-watch-history',
@@ -291,7 +291,7 @@
 				translationKey: 'command.actions.watchHistory',
 				icon: History,
 				section: 'navigation',
-				perform: () => goto('/theater/live/history/watched')
+				perform: () => goto('/live/history/watched')
 			},
 			{
 				id: 'nav-live-replay',
@@ -299,7 +299,7 @@
 				translationKey: 'command.actions.liveReplay',
 				icon: Play,
 				section: 'navigation',
-				perform: () => goto('/theater/live/replay')
+				perform: () => goto('/live/replay')
 			},
 			{
 				id: 'nav-live-pc',
@@ -307,7 +307,7 @@
 				translationKey: 'command.actions.livePc',
 				icon: MonitorPlay,
 				section: 'navigation',
-				perform: () => goto('/theater/live/pc')
+				perform: () => goto('/live/pc')
 			},
 			{
 				id: 'nav-sorter',
@@ -315,7 +315,7 @@
 				translationKey: 'command.actions.sorter',
 				icon: ListOrdered,
 				section: 'navigation',
-				perform: () => goto('/theater/sorter')
+				perform: () => goto('/sorter')
 			},
 			{
 				id: 'nav-sorter-history',
@@ -323,7 +323,7 @@
 				translationKey: 'command.actions.sorterHistory',
 				icon: History,
 				section: 'navigation',
-				perform: () => goto('/theater/sorter/history')
+				perform: () => goto('/sorter/history')
 			},
 			{
 				id: 'nav-about',

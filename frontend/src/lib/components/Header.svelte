@@ -8,15 +8,24 @@
 	import NavLogo from '$lib/components/navigation/NavLogo.svelte';
 	import NavPills from '$lib/components/navigation/NavPills.svelte';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
+	import { journeyNavItems } from '$lib/constants/journeyNav';
 	import { getThemeStyles } from '$lib/constants/theaterTheme';
 	import { safeCrossfade } from '$lib/utils/transitions';
 	import { cubicInOut } from 'svelte/easing';
+	import { slide, type SlideParams } from 'svelte/transition';
 	import { OptimizedImage } from '$lib/components/common';
 
 	const [send, receive] = safeCrossfade({
 		duration: 300,
 		easing: cubicInOut
 	});
+
+	function safeSlide(node: HTMLElement, params: SlideParams) {
+		if (typeof window !== 'undefined' && window.getComputedStyle(node).display === 'none') {
+			return { duration: 0 };
+		}
+		return slide(node, params);
+	}
 
 	const { t } = useTranslation();
 
@@ -29,18 +38,37 @@
 
 	let isLoading = $derived(!mounted || (isAuthenticated.value && !isInitialDataLoaded.value));
 
-	// Navigation items
 	let navItems = $derived([
 		{ label: t('nav.dashboard'), href: '/' },
-		{ label: t('nav.theater'), href: '/theater/events', activeHref: '/theater' },
-		{ label: t('nav.achievements'), href: '/achievements' },
-		{ label: t('nav.journal'), href: '/journal' },
-		{ label: t('nav.memories'), href: '/memories' },
-		{ label: t('nav.history'), href: '/history' }
+		{
+			label: t('nav.theater'),
+			href: '/theater/events',
+			match: (path: string) =>
+				path.startsWith('/theater') && !path.startsWith('/live') && !path.startsWith('/sorter')
+		},
+		{
+			label: t('nav.journey') || 'Perjalanan',
+			href: '/memories',
+			match: (path: string) =>
+				['/memories', '/top-2shot', '/journal', '/achievements', '/history'].some((p) =>
+					path.startsWith(p)
+				)
+		},
+		{ label: t('nav.live') || 'Live', href: '/live' },
+		{ label: t('nav.sorter') || 'Sorter', href: '/sorter' }
 	]);
 
 	let currentPath = $derived($page.url.pathname);
-	let isTheater = $derived(currentPath.startsWith('/theater'));
+	let isTheater = $derived(
+		currentPath.startsWith('/theater') &&
+			!currentPath.startsWith('/live') &&
+			!currentPath.startsWith('/sorter')
+	);
+	let isJourney = $derived(
+		['/memories', '/top-2shot', '/journal', '/achievements', '/history'].some((path) =>
+			currentPath.startsWith(path)
+		)
+	);
 
 	let theaterIsActive = $derived((href: string, exact: boolean = false) => {
 		if (href === '/theater/events') {
@@ -83,7 +111,11 @@
 <svelte:window onclick={handleOutsideClick} />
 
 {#if !isImmersive.value}
-	<div class="hidden md:block transition-all duration-300 {isTheater ? 'h-[104px]' : 'h-16'}"></div>
+	<div
+		class="hidden md:block transition-all duration-300 {isTheater || isJourney
+			? 'h-[104px]'
+			: 'h-16'}"
+	></div>
 	<header
 		class="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-[50] transition-all duration-300"
 	>
@@ -197,37 +229,60 @@
 			</div>
 		</div>
 
-		<!-- Theater Sub Navigation -->
-		{#if isTheater}
+		<!-- Sub Navigation -->
+		{#if isTheater || isJourney}
 			<div
 				class="max-w-7xl mx-auto px-4 pb-2 hidden md:block"
-				in:receive={{ key: 'theater-subnav' }}
-				out:send={{ key: 'theater-subnav' }}
+				transition:safeSlide={{ duration: 300, axis: 'y' }}
 			>
 				<div
 					class="flex items-center gap-1 bg-gray-50/50 dark:bg-zinc-900/30 backdrop-blur-md border border-gray-100 dark:border-zinc-800/50 p-1 rounded-full shadow-sm w-fit mx-auto"
 				>
-					{#each theaterNavItems as item (item.href)}
-						{@const active = theaterIsActive(item.href, item.exact)}
-						{@const itemTheme = getThemeStyles(item.theme || 'purple')}
-						<a
-							href={item.href}
-							class="relative px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center whitespace-nowrap {active
-								? 'text-white'
-								: 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
-						>
-							{#if active}
-								<div
-									class="absolute inset-0 rounded-full shadow-lg z-0 {itemTheme.navActive}"
-									in:receive={{ key: 'theater-nav-active' }}
-									out:send={{ key: 'theater-nav-active' }}
-								></div>
-							{/if}
-							<span class="relative z-10 flex items-center justify-center">
-								<span>{t(item.labelKey) || item.labelDefault}</span>
-							</span>
-						</a>
-					{/each}
+					{#if isTheater}
+						{#each theaterNavItems as item (item.href)}
+							{@const active = theaterIsActive(item.href, item.exact)}
+							{@const itemTheme = getThemeStyles(item.theme || 'purple')}
+							<a
+								href={item.href}
+								class="relative px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center whitespace-nowrap {active
+									? 'text-white'
+									: 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
+							>
+								{#if active}
+									<div
+										class="absolute inset-0 rounded-full shadow-lg z-0 {itemTheme.navActive}"
+										in:receive={{ key: 'theater-nav-active' }}
+										out:send={{ key: 'theater-nav-active' }}
+									></div>
+								{/if}
+								<span class="relative z-10 flex items-center justify-center">
+									<span>{t(item.labelKey) || item.labelDefault}</span>
+								</span>
+							</a>
+						{/each}
+					{:else if isJourney}
+						{#each journeyNavItems as item (item.href)}
+							{@const active = currentPath.startsWith(item.href)}
+							{@const itemTheme = getThemeStyles(item.theme || 'purple')}
+							<a
+								href={item.href}
+								class="relative px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center whitespace-nowrap {active
+									? 'text-white'
+									: 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-800'}"
+							>
+								{#if active}
+									<div
+										class="absolute inset-0 rounded-full shadow-lg z-0 {itemTheme.navActive}"
+										in:receive={{ key: 'journey-nav-active' }}
+										out:send={{ key: 'journey-nav-active' }}
+									></div>
+								{/if}
+								<span class="relative z-10 flex items-center justify-center">
+									<span>{t(item.labelKey)}</span>
+								</span>
+							</a>
+						{/each}
+					{/if}
 				</div>
 			</div>
 		{/if}

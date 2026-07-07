@@ -261,7 +261,7 @@
 						class="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 active:scale-90 active:opacity-70 transition-all duration-200 group min-w-[60px] shrink-0"
 					>
 						<item.icon
-							class={`w-5 h-5 sm:w-6 sm:h-6 transition-all ${isActive ? 'text-red-600 dark:text-red-400 scale-110' : ''}`}
+							class={`w-6 h-6 transition-all ${isActive ? 'text-red-600 dark:text-red-400 scale-110' : ''}`}
 						/>
 						<span
 							class={`text-[10px] sm:text-[11px] transition-all truncate w-full text-center ${isActive ? 'text-red-600 dark:text-red-400 font-bold' : 'font-medium'}`}
