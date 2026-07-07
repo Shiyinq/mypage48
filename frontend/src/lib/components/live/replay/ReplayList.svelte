@@ -9,6 +9,7 @@
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getPlatformIcon } from '$lib/constants/live';
+	import { formatTimeAgo } from '$lib/utils/time';
 	import { Search, Play, RotateCcw, User, List, ExternalLink, Database } from 'lucide-svelte';
 	import type { ReplaySource } from '$lib/stores/replay.svelte';
 
@@ -451,7 +452,7 @@
 					{#each paginatedVideos as video (video.youtube_id || video.live_id || video.title)}
 						{@const memberData = memberMap.get(video.member.toLowerCase())}
 						<button
-							class="group text-left w-full focus:outline-none cursor-pointer"
+							class="group flex flex-col justify-start text-left w-full h-full focus:outline-none cursor-pointer"
 							onclick={() => {
 								if (video.youtube_id) handleVideoClick(video.youtube_id);
 							}}
@@ -521,18 +522,33 @@
 									{/if}
 								</div>
 								<div class="min-w-0 flex-1">
-									<h3
-										class="text-sm font-bold text-slate-900 dark:text-white truncate leading-snug"
-									>
-										{video.member}
-									</h3>
-									<p
-										class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5 leading-relaxed"
-									>
-										{video.title}
-									</p>
-									<div class="text-[11px] text-slate-400 dark:text-zinc-500 font-medium mt-0.5">
-										{video.date}
+									{#if video.title}
+										<h3
+											class="text-sm sm:text-[15px] font-semibold text-slate-900 dark:text-white line-clamp-2 leading-snug mb-1"
+											title={video.title}
+										>
+											{video.title}
+										</h3>
+									{/if}
+									<div class="flex flex-col gap-0.5">
+										<p
+											class="text-xs sm:text-[13px] text-slate-500 dark:text-[#AAAAAA] truncate leading-snug"
+										>
+											<span class="font-semibold text-slate-700 dark:text-slate-300"
+												>{video.member}</span
+											>
+											• {video.date
+												? formatTimeAgo(
+														video.date.replace(' WIB', '').replace(' ', 'T') + '+07:00',
+														t
+													)
+												: ''}
+										</p>
+										<div
+											class="text-xs sm:text-[13px] text-slate-500 dark:text-[#AAAAAA] truncate leading-snug"
+										>
+											{video.date}
+										</div>
 									</div>
 								</div>
 							</div>
