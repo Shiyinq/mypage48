@@ -50,22 +50,30 @@ def _format_title(meta: dict) -> str:
     nickname = meta.get("member_nickname") or meta.get("member_name") or "Unknown"
     date_str, time_str = _parse_wib_datetime(meta.get("start_at", ""))
 
+    member_title = "JKT48" if nickname.upper() == "JKT48" else f"{nickname} JKT48"
+
     if date_str and time_str:
-        return f"LIVE {platform} {nickname} JKT48 | {date_str} {time_str} WIB"
-    return f"LIVE {platform} {nickname} JKT48"
+        return f"LIVE {platform} {member_title} | {date_str} {time_str} WIB"
+    return f"LIVE {platform} {member_title}"
 
 
 def _format_description(meta: dict) -> str:
     date_str, time_str = _parse_wib_datetime(meta.get("start_at", ""))
     full_name = meta.get("member_name", "")
     nickname = meta.get("member_nickname", "")
-    member_text = (
-        f"{full_name} ({nickname}) JKT48" if nickname else f"{full_name} JKT48"
-    )
+
+    if full_name.upper() == "JKT48" and (nickname.upper() == "JKT48" or not nickname):
+        member_text = "JKT48"
+        role_label = "Official"
+    else:
+        member_text = (
+            f"{full_name} ({nickname}) JKT48" if nickname else f"{full_name} JKT48"
+        )
+        role_label = "Member"
 
     desc_lines = [
         f"Arsip siaran langsung dari platform {meta.get('platform', 'unknown').upper()}.",
-        f"Member: {member_text}",
+        f"{role_label}: {member_text}",
     ]
 
     if date_str and time_str:
@@ -83,7 +91,10 @@ def _format_description(meta: dict) -> str:
 
     nickname_clean = (nickname or "").replace(" ", "").replace("/", "_")
     if nickname_clean:
-        hashtags.append(f"#{nickname_clean}JKT48")
+        if nickname_clean.upper() == "JKT48":
+            hashtags.append("#JKT48")
+        else:
+            hashtags.append(f"#{nickname_clean}JKT48")
 
     desc_lines.append(" ".join(hashtags))
 
@@ -177,11 +188,23 @@ def _add_to_playlist_blocking(
 
     full_name = meta.get("member_name", "")
     raw_nickname = meta.get("member_nickname", "")
-    member_text = (
-        f"{full_name} ({raw_nickname}) JKT48" if raw_nickname else f"{full_name} JKT48"
-    )
 
-    playlist_title = f"{nickname} JKT48 - Live {platform}"
+    if full_name.upper() == "JKT48" and (
+        raw_nickname.upper() == "JKT48" or not raw_nickname
+    ):
+        member_text = "JKT48"
+    else:
+        member_text = (
+            f"{full_name} ({raw_nickname}) JKT48"
+            if raw_nickname
+            else f"{full_name} JKT48"
+        )
+
+    playlist_title = (
+        f"JKT48 - Live {platform}"
+        if nickname.upper() == "JKT48"
+        else f"{nickname} JKT48 - Live {platform}"
+    )
 
     try:
         request = youtube.playlists().list(part="snippet", mine=True, maxResults=50)
