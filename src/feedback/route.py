@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Request, status
 
 from src.dependencies import (
     get_current_user,
@@ -14,6 +14,7 @@ from src.feedback.schemas import (
     FeedbackUpdateStatus,
 )
 from src.feedback.service import FeedbackService
+from src.limiter import limiter
 
 router = APIRouter()
 
@@ -23,7 +24,9 @@ router = APIRouter()
     response_model=FeedbackResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@limiter.limit("3/day", override_defaults=True)
 async def submit_feedback(
+    request: Request,
     feedback: FeedbackCreate,
     current_user=Depends(get_current_user),
     service: FeedbackService = Depends(get_feedback_service),
