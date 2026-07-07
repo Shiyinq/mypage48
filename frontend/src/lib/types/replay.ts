@@ -9,6 +9,7 @@ export interface ReplayChatMessage {
 export interface ReplayVideo {
 	youtube_id: string;
 	title: string;
+	youtube_title?: string;
 	member: string;
 	date: string;
 	platform: string;
@@ -47,6 +48,7 @@ export interface ReplayDetailResponse {
 	member_name: string;
 	member_nickname: string;
 	title?: string;
+	youtube_title?: string;
 	image?: string;
 	image_medium?: string;
 	image_small?: string;

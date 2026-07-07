@@ -175,8 +175,9 @@ async def test_list_all(replay_service):
     assert len(docs) == 1
     assert docs[0]["youtube_id"] == ""
     assert docs[0]["title"] == "Test 1"
+    assert docs[0]["youtube_title"] is None
     assert docs[0]["member"] == "Fahira"
-    assert docs[0]["date"] == now_wib.strftime("%Y-%m-%d")
+    assert docs[0]["date"] == now_wib.strftime("%Y-%m-%d %H:%M WIB")
     assert docs[0]["platform"] == "SHOWROOM"
     assert docs[0]["live_id"] == "live-1"
     assert "srt_file" not in docs[0]
@@ -288,8 +289,9 @@ async def test_replay_list_success(client: AsyncClient, mock_replay_repo):
         assert len(data) == 1
         assert data[0]["youtube_id"] == ""
         assert data[0]["title"] == "Test Live"
+        assert data[0]["youtube_title"] is None
         assert data[0]["member"] == "Fahira"
-        assert data[0]["date"] == now_wib.strftime("%Y-%m-%d")
+        assert data[0]["date"] == now_wib.strftime("%Y-%m-%d %H:%M WIB")
         assert data[0]["platform"] == "SHOWROOM"
         assert data[0]["live_id"] == "live-1"
         assert "srt_file" not in data[0]
