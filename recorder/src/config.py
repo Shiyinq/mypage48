@@ -20,6 +20,8 @@ class RecorderConfig(BaseSettings):
     google_client_secret: str = ""
     youtube_refresh_token: str = ""
     youtube_privacy_status: str = "unlisted"
+    telegram_bot_token: str = ""
+    telegram_chat_id: str = ""
 
     model_config = {
         "env_file": (

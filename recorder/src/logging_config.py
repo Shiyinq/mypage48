@@ -16,15 +16,20 @@ def setup_logging(config: RecorderConfig) -> tuple[Logger, Logger]:
 
     rec = logging.getLogger("recorder")
     upl = logging.getLogger("uploader")
+    notif = logging.getLogger("notify")
 
     rec.setLevel(config.log_level.upper())
     upl.setLevel(config.log_level.upper())
+    notif.setLevel(config.log_level.upper())
 
     _add_handler(
         rec, formatter, config.log_mode, os.path.join(config.logs_dir, "recorder.log")
     )
     _add_handler(
         upl, formatter, config.log_mode, os.path.join(config.logs_dir, "uploader.log")
+    )
+    _add_handler(
+        notif, formatter, config.log_mode, os.path.join(config.logs_dir, "notify.log")
     )
 
     return rec, upl

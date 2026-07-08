@@ -12,6 +12,7 @@ from logging import Logger
 
 from ..config import RecorderConfig
 from ..models import LiveInfo, RecordingSession
+from ..notify import telegram_notifier
 from . import chat_capture, srt_generator, stream_recorder
 from .live_detector import LiveDetector
 
@@ -396,6 +397,7 @@ class RecordingManager:
             member_nickname=live.member_nickname,
             room_id=live.room_id,
             room_identifier=live.room_identifier,
+            room_url_key=live.room_url_key,
             hls_url=hls_url,
             recording_start_time=recording_start_time,
             output_path=mkv_path,
@@ -441,6 +443,11 @@ class RecordingManager:
 
         asyncio.create_task(self._periodic_thumbnails(session))
         asyncio.create_task(self._capture_initial_thumbnail(session))
+
+        if not resumed_folder:
+            asyncio.create_task(
+                telegram_notifier.send_live_start_notification(live, self.config)
+            )
 
         self.log.info(
             "Started recording %s/%s (%s)",
@@ -1013,6 +1020,7 @@ class RecordingManager:
                 member_nickname=data.get("member_nickname", "unknown"),
                 room_id=data.get("room_id", ""),
                 room_identifier=data.get("room_identifier", ""),
+                room_url_key=data.get("room_url_key", ""),
                 hls_url="",
                 recording_start_time=resumed_start_time,
                 output_path=os.path.join(live_folder, f"{live_id}.mkv"),

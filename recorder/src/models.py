@@ -13,9 +13,11 @@ class LiveInfo:
     member_nickname: str
     room_id: str
     room_identifier: Optional[str] = None
+    room_url_key: Optional[str] = None
     hls_url: Optional[str] = None
     title: str = ""
     member_image: str = ""
+    image: str = ""
     start_at: str = ""
 
 
@@ -27,6 +29,7 @@ class RecordingSession:
     member_nickname: str
     room_id: str
     room_identifier: Optional[str]
+    room_url_key: Optional[str]
     hls_url: str
     recording_start_time: float
     output_path: str
