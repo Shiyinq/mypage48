@@ -22,6 +22,14 @@ class EventsRepository:
             {"id": event_id}, {"$set": {"raw_data.detail": detail_data}}
         )
 
+    async def update_event_live_members(
+        self, event_id: str, member_ids: List[str], seitansai_ids: List[str]
+    ):
+        return await self.collection.update_one(
+            {"id": event_id},
+            {"$set": {"memberIds": member_ids, "seitansaiIds": seitansai_ids}},
+        )
+
     async def find_event_by_id(self, event_id: str) -> dict:
         pipeline = [
             {"$match": {"id": event_id}},

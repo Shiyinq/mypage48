@@ -132,8 +132,8 @@ class EventsService:
             if not raw_event:
                 raise EventNotFoundError()
 
-            # Fetch exclusive real-time detail if applicable
-            await self._fetch_and_inject_exclusive_data(event_id, raw_event)
+            # Fetch realtime detail if applicable (EXCLUSIVE, SHOW)
+            await self._fetch_and_inject_realtime_data(event_id, raw_event)
 
             resolved = await self._resolve_event(raw_event)
             return resolved
@@ -275,17 +275,33 @@ class EventsService:
             )
             return []
 
-    async def _fetch_and_inject_exclusive_data(self, event_id: str, raw_event: dict):
+    async def _fetch_and_inject_realtime_data(self, event_id: str, raw_event: dict):
         raw_data = raw_event.get("raw_data", {})
         short_data = raw_data.get("short", {})
         ref_code = short_data.get("reference_code")
+        event_type = raw_event.get("type")
 
-        if raw_event.get("type") == "EXCLUSIVE" and ref_code:
+        if not ref_code:
+            return
+
+        url = None
+        if event_type == "EXCLUSIVE":
+            url = f"https://jkt48.com/api/v1/exclusives/{ref_code}"
+        elif event_type == "SHOW":
+            url = f"https://jkt48.com/api/v1/theater-shows/{ref_code}?lang=id"
+
+        if url:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
+                "Referer": f"https://jkt48.com/purchase/schedule/show?code={ref_code}"
+                if event_type == "SHOW"
+                else f"https://jkt48.com/purchase/exclusive?code={ref_code}",
+            }
             async with httpx.AsyncClient(timeout=10.0) as client:
                 try:
-                    res = await client.get(
-                        f"https://jkt48.com/api/v1/exclusives/{ref_code}"
-                    )
+                    res = await client.get(url, headers=headers)
                     if res.status_code == 200:
                         data = res.json()
                         if data.get("status") and "data" in data:
@@ -297,7 +313,74 @@ class EventsService:
                             await self.repository.update_event_raw_data_detail(
                                 event_id, data["data"]
                             )
+
+                            if event_type == "SHOW":
+                                await self._sync_show_members_dynamically(
+                                    event_id, raw_event, data["data"]
+                                )
+
                 except Exception as exc:
                     logger.warning(
                         f"Failed to fetch realtime data for {ref_code}: {exc}"
                     )
+
+    async def _sync_show_members_dynamically(
+        self, event_id: str, raw_event: dict, show_detail: dict
+    ):
+        jkt_members = show_detail.get("jkt48_member", [])
+        bday_names = show_detail.get("birthday_member_name", [])
+
+        if jkt_members and len(raw_event.get("members", [])) != len(jkt_members):
+            active_members = await self.member_service.repository.find_all_active()
+            name_to_member = {m["name"].lower(): m for m in active_members}
+
+            member_ids = []
+            resolved_members = []
+
+            for jm in jkt_members:
+                jm_name = jm.get("name", "").strip().lower()
+                current_id = str(jm.get("member_id", ""))
+
+                db_member = name_to_member.get(jm_name)
+                if not db_member:
+                    # fallback partial match
+                    for key, m in name_to_member.items():
+                        if jm_name in key or key in jm_name:
+                            db_member = m
+                            break
+
+                legacy_id = db_member["id"] if db_member else current_id
+                member_ids.append(legacy_id)
+
+                if db_member:
+                    resolved_members.append(db_member)
+
+            seitansai_ids = []
+            if bday_names:
+                for name in bday_names:
+                    name_lower = name.lower()
+                    db_member = name_to_member.get(name_lower)
+                    if not db_member:
+                        for key, m in name_to_member.items():
+                            if name_lower in key or key in name_lower:
+                                db_member = m
+                                break
+                    if db_member:
+                        seitansai_ids.append(db_member["id"])
+
+            if member_ids:
+                await self.repository.update_event_live_members(
+                    event_id, member_ids, seitansai_ids
+                )
+
+                # Inject so it resolves in the current request
+                raw_event["members"] = resolved_members
+                raw_event["memberIds"] = member_ids
+                raw_event["seitansaiIds"] = seitansai_ids
+
+                # Aggregate creates seitansaiMembers as list of names, let's inject it too
+                seitansai_names = [
+                    m["name"] for m in resolved_members if m["id"] in seitansai_ids
+                ]
+                raw_event["seitansaiMembers"] = seitansai_names
+                raw_event["totalMembers"] = len(member_ids)
