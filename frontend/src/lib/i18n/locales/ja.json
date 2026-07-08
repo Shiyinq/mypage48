@@ -376,8 +376,17 @@
 			"hasAccount": "すでにアカウントをお持ちですか？",
 			"signIn": "MyPage48にログイン",
 			"passwordsMismatch": "パスワードが一致しません",
-			"success": "アカウントが作成されました！メールを確認して認証してください。",
-			"failed": "登録に失敗しました。もう一度お試しください。"
+			"success": "登録完了！",
+			"successDesc": "アカウントを有効にするため、メールをご確認ください。",
+			"failed": "登録に失敗しました。もう一度お試しください。",
+			"faq": {
+				"title": "よくある質問とトラブルシューティング",
+				"missingEmailTitle": "認証メールが届きませんか？",
+				"missingEmailPoint1": "迷惑メールまたはスパムフォルダをご確認ください。",
+				"missingEmailPoint2": "メールを受信できるように、Google Storage / Gmailの容量がいっぱいになっていないか確認してください。",
+				"missingEmailPoint3": "登録したメールアドレスに間違いがないか再度ご確認ください。",
+				"missingEmailPoint4": "それでも認証メールが届かない場合は、上の「{buttonName}」ボタンをクリックしてみてください。"
+			}
 		},
 		"logout": {
 			"success": "ログアウトしました",

@@ -147,11 +147,11 @@
 			</div>
 
 			<div class="space-y-2">
-				<h3 class="text-2xl font-bold text-gray-900 dark:text-white px-4">
+				<h3 class="text-2xl font-bold text-gray-900 dark:text-white px-4 leading-snug">
 					{t('auth.register.success')}
 				</h3>
 				<p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto leading-relaxed px-4">
-					{t('auth.login.emailNotVerified')}
+					{t('auth.register.successDesc')}
 				</p>
 			</div>
 
@@ -184,6 +184,53 @@
 				>
 					{t('auth.login.signIn')}
 				</button>
+			</div>
+
+			<div
+				class="w-full max-w-lg mx-auto text-left border-t border-gray-100 dark:border-zinc-800/50 pt-5 px-4 sm:px-0 !mt-2"
+			>
+				<h4 class="text-sm font-bold text-gray-900 dark:text-white mb-3">
+					{t('auth.register.faq.title')}
+				</h4>
+				<div
+					class="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-xl p-3.5 sm:p-4"
+				>
+					<h5
+						class="text-sm font-bold text-amber-900 dark:text-amber-500 mb-2.5 flex items-start gap-2 leading-snug"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="lucide lucide-alert-circle shrink-0 mt-0.5"
+							><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line
+								x1="12"
+								x2="12.01"
+								y1="16"
+								y2="16"
+							/></svg
+						>
+						{t('auth.register.faq.missingEmailTitle')}
+					</h5>
+					<ul
+						class="text-xs text-amber-800 dark:text-amber-400/80 leading-relaxed ml-4 sm:ml-5 list-disc pl-1 space-y-2"
+					>
+						<li>{t('auth.register.faq.missingEmailPoint1')}</li>
+						<li>{t('auth.register.faq.missingEmailPoint2')}</li>
+						<li>{t('auth.register.faq.missingEmailPoint3')}</li>
+						<li>
+							{t('auth.register.faq.missingEmailPoint4', {
+								buttonName: t('auth.login.resendVerification')
+							})}
+						</li>
+					</ul>
+				</div>
 			</div>
 		</div>
 	{:else}

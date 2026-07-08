@@ -321,7 +321,16 @@
 			"signIn": "",
 			"passwordsMismatch": "",
 			"success": "",
-			"failed": ""
+			"successDesc": "",
+			"failed": "",
+			"faq": {
+				"title": "",
+				"missingEmailTitle": "",
+				"missingEmailPoint1": "",
+				"missingEmailPoint2": "",
+				"missingEmailPoint3": "",
+				"missingEmailPoint4": ""
+			}
 		},
 		"logout": {
 			"success": "",
