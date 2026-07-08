@@ -377,8 +377,17 @@
 			"hasAccount": "Sudah punya akun?",
 			"signIn": "Masuk ke MyPage48",
 			"passwordsMismatch": "Password tidak cocok",
-			"success": "Akun dibuat! Silakan cek email Anda untuk verifikasi.",
-			"failed": "Pendaftaran gagal. Silakan coba lagi."
+			"success": "Registrasi berhasil!",
+			"successDesc": "Silakan cek email Anda untuk mengaktifkan akun.",
+			"failed": "Pendaftaran gagal. Silakan coba lagi.",
+			"faq": {
+				"title": "FAQ & Bantuan",
+				"missingEmailTitle": "Tidak menerima email verifikasi?",
+				"missingEmailPoint1": "Pastikan untuk mengecek folder Spam / Junk di email Anda.",
+				"missingEmailPoint2": "Pastikan ruang penyimpanan Google Storage / Gmail Anda tidak penuh, agar email dapat masuk.",
+				"missingEmailPoint3": "Pastikan alamat email yang dimasukkan saat mendaftar sudah benar dan tidak ada salah ketik.",
+				"missingEmailPoint4": "Jika masih tidak mendapatkan email verifikasi, coba klik tombol '{buttonName}' di atas."
+			}
 		},
 		"logout": {
 			"success": "Berhasil keluar",

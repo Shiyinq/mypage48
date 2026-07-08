@@ -376,8 +376,17 @@
 			"hasAccount": "Already have an account?",
 			"signIn": "Login to MyPage48",
 			"passwordsMismatch": "Passwords do not match",
-			"success": "Account created! Please check your email to verify your account.",
-			"failed": "Registration failed. Please try again."
+			"success": "Registration successful!",
+			"successDesc": "Please check your email to activate your account.",
+			"failed": "Registration failed. Please try again.",
+			"faq": {
+				"title": "FAQ & Troubleshooting",
+				"missingEmailTitle": "Didn't receive the verification email?",
+				"missingEmailPoint1": "Please check your Spam or Junk folder.",
+				"missingEmailPoint2": "Please ensure your Google Storage / Gmail is not full, so the email can be delivered.",
+				"missingEmailPoint3": "Please double-check that the email address you registered is correct.",
+				"missingEmailPoint4": "If you still haven't received the verification email, try clicking the '{buttonName}' button above."
+			}
 		},
 		"logout": {
 			"success": "Logged out successfully",

@@ -1,7 +1,10 @@
+import logging
 import time
 from typing import List, Optional, Tuple
 
 import httpx
+
+logger = logging.getLogger("recorder")
 
 from ..models import LiveInfo
 
@@ -20,15 +23,15 @@ class LiveDetector:
             resp.raise_for_status()
             data = resp.json()
         except httpx.HTTPStatusError as e:
-            print(
+            logger.error(
                 f"[live_detector] Poll live status: HTTP {e.response.status_code}: {e.response.text[:200]}"
             )
             return [], False
         except httpx.RequestError as e:
-            print(f"[live_detector] Poll live status failed: {e}")
+            logger.error(f"[live_detector] Poll live status failed: {e}")
             return [], False
         except Exception as e:
-            print(f"[live_detector] Failed to poll live status: {e}")
+            logger.error(f"[live_detector] Failed to poll live status: {e}")
             return [], False
 
         lives: List[LiveInfo] = []
@@ -87,15 +90,15 @@ class LiveDetector:
             resp.raise_for_status()
             return resp.json()
         except httpx.HTTPStatusError as e:
-            print(
+            logger.error(
                 f"[live_detector] Streaming URL {platform}/{identifier}: HTTP {e.response.status_code}: {e.response.text[:200]}"
             )
             return None
         except httpx.RequestError as e:
-            print(f"[live_detector] Streaming URL {platform}/{identifier}: {e}")
+            logger.error(f"[live_detector] Streaming URL {platform}/{identifier}: {e}")
             return None
         except Exception as e:
-            print(f"[live_detector] Failed to get streaming URL: {e}")
+            logger.error(f"[live_detector] Failed to get streaming URL: {e}")
             return None
 
     @staticmethod
