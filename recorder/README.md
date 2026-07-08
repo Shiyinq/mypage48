@@ -120,7 +120,7 @@ pip install -r recorder/requirements.txt
 playwright install chromium
 
 # 3. (Server Linux only) Install system libraries for headless Chromium
-sudo playwright install-deps chromium
+sudo .venv/bin/playwright install-deps chromium
 
 # 4. Run
 python -m recorder.main
