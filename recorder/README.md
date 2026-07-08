@@ -117,8 +117,12 @@ source .venv/bin/activate
 
 # 2. Install dependencies (one-time)
 pip install -r recorder/requirements.txt
+playwright install chromium
 
-# 3. Run
+# 3. (Server Linux only) Install system libraries for headless Chromium
+sudo playwright install-deps chromium
+
+# 4. Run
 python -m recorder.main
 ```
 
@@ -231,6 +235,8 @@ This format is 100% compatible with the `ReplayChat.svelte` parser on the fronte
 | `REC_GOOGLE_CLIENT_SECRET` | `""` | Google OAuth client secret |
 | `REC_YOUTUBE_REFRESH_TOKEN` | `""` | YouTube refresh token |
 | `REC_YOUTUBE_PRIVACY_STATUS` | `unlisted` | YouTube video privacy (`public`, `unlisted`, `private`) |
+| `REC_TELEGRAM_BOT_TOKEN` | `""` | Telegram Bot Token for notifications |
+| `REC_TELEGRAM_CHAT_ID` | `""` | Telegram Chat/Channel ID for notifications |
 
 ## Platform Support
 
@@ -322,3 +328,39 @@ expire after **7 days**. To get a permanent token:
 
 > **Without publishing, you must re-run `auth_youtube.py` every 7 days** to
 > get a fresh token.
+
+## Telegram Notification Setup
+
+To receive real-time notifications when a live stream starts or ends (with screenshots), you can configure a Telegram Bot.
+
+### 1. Create a Telegram Bot
+
+1. Open Telegram and search for **@BotFather** (https://t.me/botfather).
+2. Send the command `/newbot`.
+3. Follow the instructions to choose a name and username for your bot.
+4. Once created, BotFather will give you an **API Token**. Copy this token.
+
+### 2. Get the Chat or Channel ID
+
+1. Create a new Telegram Channel (or Group) where you want to receive the notifications.
+2. Add your newly created bot to the Channel as an **Administrator** so it has permission to send messages and media.
+3. **If your channel is Public:**
+   You can simply use your channel's username with an `@` symbol.
+   Example: `REC_TELEGRAM_CHAT_ID=@mypage48_live`
+4. **If your channel is Private:**
+   Private channels don't have usernames, so you need the numeric ID (usually starts with `-100`). The easiest way to get it:
+   - Login to Telegram via Web (`web.telegram.org/a/` or `/k/`).
+   - Open your channel there.
+   - Check the URL in your browser. It will look something like this: `https://web.telegram.org/a/#-1001234567890`.
+   - Copy the numbers starting from `-100...`
+   - Example: `REC_TELEGRAM_CHAT_ID=-1001234567890`
+
+### 3. Set environment variables
+
+Add the credentials to your `recorder/.env` file:
+
+```bash
+# In recorder/.env
+REC_TELEGRAM_BOT_TOKEN=1234567890:ABCdefGHIjklxxxxxzzzxxxxxxzzzzzz
+REC_TELEGRAM_CHAT_ID=-1001234567890
+```

@@ -8,6 +8,7 @@ from logging import Logger
 
 from ..config import RecorderConfig
 from ..models import RecordingSession
+from ..notify import telegram_notifier
 from . import r2_uploader
 from .youtube_uploader import _format_title, _upload_to_youtube
 
@@ -191,6 +192,11 @@ class Watcher:
             self.log_upl.warning("R2 upload failed for %s, will retry", title_log)
             return
 
+        self._processing[live_id]["phase"] = "sending notification"
+        await telegram_notifier.send_end_live_notification(
+            live_id, self.config, folder_path
+        )
+
         self._append_history(live_id, youtube_id or "")
         shutil.rmtree(folder_path)
         self.log_rec.info("Done: %s", title_log)
@@ -277,6 +283,7 @@ class Watcher:
             member_nickname=meta.get("member_nickname", ""),
             room_id=meta.get("room_id", ""),
             room_identifier=meta.get("room_identifier"),
+            room_url_key=meta.get("room_url_key"),
             hls_url="",
             recording_start_time=0.0,
             output_path=os.path.join(folder_path, f"{live_id}.mp4"),

@@ -63,9 +63,11 @@ class LiveDetector:
                 member_nickname=member_nickname,
                 room_id=room_id,
                 room_identifier=item.get("room_identifier"),
+                room_url_key=item.get("room_url_key"),
                 hls_url=hls_url,
                 title=item.get("title", ""),
                 member_image=member.get("img", ""),
+                image=item.get("image", ""),
                 start_at=item.get("start_at", ""),
             )
             lives.append(live_info)
