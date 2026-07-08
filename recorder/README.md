@@ -117,8 +117,12 @@ source .venv/bin/activate
 
 # 2. Install dependencies (one-time)
 pip install -r recorder/requirements.txt
+playwright install chromium
 
-# 3. Run
+# 3. (Server Linux only) Install system libraries for headless Chromium
+sudo playwright install-deps chromium
+
+# 4. Run
 python -m recorder.main
 ```
 

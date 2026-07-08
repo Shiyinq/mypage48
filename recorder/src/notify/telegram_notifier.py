@@ -7,8 +7,11 @@ import httpx
 
 from ..config import RecorderConfig
 from ..models import LiveInfo
+from .web_screenshot import capture_web_screenshot
 
 log = logging.getLogger("notify")
+
+LIVE_DETAIL_BASE_URL = "https://mypage48.com/jkt48/live/history/live"
 
 
 def _format_date_wib(iso_string: str) -> str:
@@ -195,17 +198,25 @@ async def send_end_live_notification(
 
             images_to_send = []
 
-            # 1. Add cover image first
-            thumbnail_path = ""
+            # 1. Try web screenshot first (non-blocking: failure won't stop notification)
+            if folder_path:
+                web_screenshot_path = os.path.join(folder_path, f"{live_id}_web.png")
+                try:
+                    url = f"{LIVE_DETAIL_BASE_URL}/{live_id}"
+                    success = await capture_web_screenshot(url, web_screenshot_path)
+                    if success and os.path.exists(web_screenshot_path):
+                        images_to_send.append(("web", web_screenshot_path))
+                except Exception as e:
+                    log.warning("Web screenshot failed, continuing: %s", e)
+
+            # 2. Add cover/thumbnail image
             if folder_path:
                 yt_thumb = os.path.join(folder_path, f"{live_id}_yt_thumb.jpg")
+                cover = os.path.join(folder_path, f"{live_id}.jpg")
                 if os.path.exists(yt_thumb):
-                    thumbnail_path = yt_thumb
-                else:
-                    thumbnail_path = os.path.join(folder_path, f"{live_id}.jpg")
-
-            if thumbnail_path and os.path.exists(thumbnail_path):
-                images_to_send.append(("cover", thumbnail_path))
+                    images_to_send.append(("cover", yt_thumb))
+                elif os.path.exists(cover):
+                    images_to_send.append(("cover", cover))
 
             # 2. Add screenshots (limit to max 4 total images)
             if folder_path:
