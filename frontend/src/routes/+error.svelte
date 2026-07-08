@@ -78,8 +78,12 @@
 			window.location.reload();
 		}
 	}
-	let status = $derived($page.status);
-	let message = $derived($page.error?.message);
+	let {
+		overrideStatus = null,
+		overrideMessage = null
+	}: { overrideStatus?: number | null; overrideMessage?: string | null } = $props();
+	let status = $derived(overrideStatus || $page.status);
+	let message = $derived(overrideMessage || $page.error?.message);
 	// Define error info based on status code
 	let errorInfo = $derived(getErrorInfo(status, t));
 </script>

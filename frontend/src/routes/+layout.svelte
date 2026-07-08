@@ -29,6 +29,7 @@
 	import AppBackground from '$lib/components/common/AppBackground.svelte';
 	import ReloadPrompt from '$lib/components/ReloadPrompt.svelte';
 	import OfflinePage from './offline/+page.svelte';
+	import ErrorPage from './+error.svelte';
 
 	interface Props {
 		data: { locale?: string };
@@ -53,22 +54,23 @@
 	// Track offline status globally
 	let isOffline = $state(false);
 
+	// Track forced 404s for unauthorized routes
+	let force404 = $state(false);
+
 	// Global Error Handling
 	let appError: Error | null = $state(null);
 
 	function handleGlobalError(event: ErrorEvent) {
 		// Don't catch 404s or other navigation errors which are handled by SvelteKit
-		if (event.message.includes('Not found') || event.message.includes('404')) return;
+		if (event.message?.includes('404') || event.message?.includes('Not Found')) return;
 
-		logger.error('Global unhandled error', event.error, { context: 'GlobalBoundary' });
 		appError = event.error;
+		logger.error('Global unhandled error:', event.error, { context: 'Layout' });
 	}
 
 	function handleUnhandledRejection(event: PromiseRejectionEvent) {
-		logger.error('Unhandled promise rejection', event.reason, { context: 'GlobalBoundary' });
-		// Optional: decide if unhandled rejections should crash the app.
-		// Usually safer to just log them unless critical.
-		// appError = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+		appError = event.reason;
+		logger.error('Unhandled promise rejection:', event.reason, { context: 'Layout' });
 	}
 
 	function resetError() {
@@ -78,31 +80,27 @@
 
 	onMount(() => {
 		mounted = true;
-
-		initTheme();
 		validateEnv();
+		initTheme();
 
-		isOffline = !navigator.onLine;
-		const setOffline = () => (isOffline = true);
-		const setOnline = () => (isOffline = false);
-
+		// Add global error listeners
 		window.addEventListener('error', handleGlobalError);
 		window.addEventListener('unhandledrejection', handleUnhandledRejection);
-		window.addEventListener('offline', setOffline);
-		window.addEventListener('online', setOnline);
+		window.addEventListener('online', () => (isOffline = false));
+		window.addEventListener('offline', () => (isOffline = true));
+		isOffline = !navigator.onLine;
 
 		return () => {
 			window.removeEventListener('error', handleGlobalError);
 			window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-			window.removeEventListener('offline', setOffline);
-			window.removeEventListener('online', setOnline);
+			window.removeEventListener('online', () => (isOffline = false));
+			window.removeEventListener('offline', () => (isOffline = true));
 		};
 	});
 
 	// Fetch profile when authenticated
 	async function fetchInitialDataIfNeeded() {
 		if (hasFetchedInitialData) return;
-
 		hasFetchedInitialData = true;
 
 		// Fetch profile if needed
@@ -168,6 +166,10 @@
 	// Centralized Auth Redirect Logic
 	$effect(() => {
 		if (!mounted) return;
+
+		force404 = false;
+
+		if ($page.status === 404) return; // Prevent redirecting on typo/unmatched routes
 		const path = $page.url.pathname;
 		const isAuth = isAuthenticated.value;
 
@@ -178,22 +180,28 @@
 				'/jkt48/event-history': '/theater/events/history',
 				'/jkt48/calendar': '/theater/events/calendar'
 			};
-			goto(map[path] || path.replace('/jkt48/', '/theater/'));
+			if (map[path]) goto(map[path]);
+			else if (/^\/jkt48\/(live|sorter)/.test(path)) goto(path.replace('/jkt48/', '/'));
+			else goto(path.replace('/jkt48/', '/theater/'));
 		} else if (!isAuth && !isPublicPage) {
-			if (/^\/theater\/(events|live|members|news|sorter)/.test(path)) {
-				const map: Record<string, string> = {
-					'/theater/events/history': '/jkt48/event-history',
-					'/theater/events/calendar': '/jkt48/calendar'
-				};
-				goto(map[path] || path.replace('/theater/', '/jkt48/'));
-			} else {
-				goto('/login');
+			const map: Record<string, string> = {
+				'/theater/events/history': '/jkt48/event-history',
+				'/theater/events/calendar': '/jkt48/calendar'
+			};
+			if (map[path]) goto(map[path]);
+			else if (/^\/theater\/(events|live|members|news|sorter)/.test(path))
+				goto(path.replace('/theater/', '/jkt48/'));
+			else if (/^\/(live|sorter)/.test(path)) goto(`/jkt48${path}`);
+			else {
+				force404 = true;
 			}
 		}
 	});
 </script>
 
-{#if appError}
+{#if force404}
+	<ErrorPage overrideStatus={404} overrideMessage="Not Found" />
+{:else if appError}
 	<ErrorFallback error={appError} onRetry={resetError} />
 {:else}
 	<LoadingBar />
@@ -315,6 +323,14 @@
 			{#if !isLiveRoute && !isFullScreenRoute && !isPlaygroundRoute && !isImmersive.value}
 				<MobileNav />
 			{/if}
+		{:else if $page.status === 404}
+			<main class="flex-1 w-full relative flex flex-col h-full">
+				{#if isOffline}
+					<OfflinePage />
+				{:else}
+					{@render children?.()}
+				{/if}
+			</main>
 		{:else}
 			<!-- Fallback or Catch-all (should be handled by redirects above) -->
 			<div class="hidden">Nothing to show</div>
