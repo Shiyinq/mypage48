@@ -32,11 +32,11 @@
 	let isSearchOpen = $state(false);
 	let searchInput: HTMLInputElement | undefined = $state();
 	let memberMap = $derived.by(() => {
-		const map = new Map<string, { img_small?: string; blurHash?: string }>();
+		const map = new Map<string, { id?: string | number; img_small?: string; blurHash?: string }>();
 		for (const m of membersStore.list) {
 			const key = m.nickname?.toLowerCase();
 			if (key) {
-				map.set(key, { img_small: m.img_small, blurHash: m.blurHash });
+				map.set(key, { id: m.id, img_small: m.img_small, blurHash: m.blurHash });
 			}
 		}
 		return map;
@@ -521,14 +521,36 @@
 											class="w-9 h-9 rounded-full bg-slate-200 dark:bg-zinc-800 animate-pulse"
 										></div>
 									{:else if memberData}
-										<OptimizedImage
-											src={memberData.img_small}
-											srcSmall={memberData.img_small}
-											blurHash={memberData.blurHash}
-											alt={video.member}
-											class="w-9 h-9 rounded-full object-cover"
-											noBackground={true}
-										/>
+										{#if memberData.id && video.member.toUpperCase() !== 'JKT48'}
+											<a
+												href="/theater/members/{memberData.id}"
+												class="block w-9 h-9 rounded-full hover:ring-2 hover:ring-red-500 transition-all cursor-pointer z-10 relative"
+												onclick={(e) => {
+													e.preventDefault();
+													e.stopPropagation();
+													goto(`/theater/members/${memberData.id}`);
+												}}
+												data-sveltekit-preload-data="hover"
+											>
+												<OptimizedImage
+													src={memberData.img_small}
+													srcSmall={memberData.img_small}
+													blurHash={memberData.blurHash}
+													alt={video.member}
+													class="w-9 h-9 rounded-full object-cover"
+													noBackground={true}
+												/>
+											</a>
+										{:else}
+											<OptimizedImage
+												src={memberData.img_small}
+												srcSmall={memberData.img_small}
+												blurHash={memberData.blurHash}
+												alt={video.member}
+												class="w-9 h-9 rounded-full object-cover"
+												noBackground={true}
+											/>
+										{/if}
 									{:else}
 										<div
 											class="w-9 h-9 rounded-full bg-slate-200 dark:bg-zinc-700 flex items-center justify-center"
@@ -550,9 +572,24 @@
 										<p
 											class="text-xs sm:text-[13px] text-slate-500 dark:text-[#AAAAAA] truncate leading-snug"
 										>
-											<span class="font-semibold text-slate-700 dark:text-slate-300"
-												>{video.member}</span
-											>
+											{#if memberData?.id && video.member.toUpperCase() !== 'JKT48'}
+												<a
+													href="/theater/members/{memberData.id}"
+													class="font-semibold text-slate-700 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer z-10 relative"
+													onclick={(e) => {
+														e.preventDefault();
+														e.stopPropagation();
+														goto(`/theater/members/${memberData.id}`);
+													}}
+													data-sveltekit-preload-data="hover"
+												>
+													{video.member}
+												</a>
+											{:else}
+												<span class="font-semibold text-slate-700 dark:text-slate-300"
+													>{video.member}</span
+												>
+											{/if}
 											• {video.date ? formatTimeAgo(getIsoDate(video.date), t) : ''}
 										</p>
 										<div
