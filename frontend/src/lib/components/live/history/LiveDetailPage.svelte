@@ -285,7 +285,7 @@
 							'Mohon maaf, data statistik, chat, dan detail tangkapan layar untuk live ini belum didukung atau tidak ditemukan di sistem.'}
 					</p>
 					<button
-						class="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-full transition-colors shadow-sm"
+						class="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-full transition-colors shadow-sm cursor-pointer"
 						onclick={() => history.back()}
 					>
 						<div class="flex items-center gap-2">
@@ -351,16 +351,33 @@
 									{/if}
 								</div>
 
-								<h1
-									class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight"
-								>
-									{data.member_name}
-								</h1>
+								{#if data.member?.id}
+									<a href="/theater/members/{data.member.id}" class="group/member block w-fit">
+										<h1
+											class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight group-hover/member:text-red-500 transition-colors"
+										>
+											{data.member_name}
+										</h1>
+										{#if data.member_nickname}
+											<p
+												class="text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-0.5 group-hover/member:text-red-400 transition-colors"
+											>
+												@{data.member_nickname}
+											</p>
+										{/if}
+									</a>
+								{:else}
+									<h1
+										class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight"
+									>
+										{data.member_name}
+									</h1>
 
-								{#if data.member_nickname}
-									<p class="text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
-										@{data.member_nickname}
-									</p>
+									{#if data.member_nickname}
+										<p class="text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
+											@{data.member_nickname}
+										</p>
+									{/if}
 								{/if}
 
 								{#if data.title}
