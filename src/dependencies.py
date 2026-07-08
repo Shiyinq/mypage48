@@ -241,10 +241,28 @@ def get_github_sso(config: Settings = Depends(get_settings)) -> GithubSSO:
 
 
 async def require_admin(
-    current_user: UserCurrent = Depends(get_current_user),
+    background_tasks: BackgroundTasks,
+    request: Request,
+    api_key_service: ApiKeyService = Depends(get_api_key_service),
+    auth_service: AuthService = Depends(get_auth_service),
+    user_repo: UserRepository = Depends(get_user_repository),
+    config: Settings = Depends(get_settings),
 ) -> UserCurrent:
     """Dependency that requires the current user to be an admin."""
-    if not current_user.isAdmin:
+    current_user = None
+    try:
+        current_user = await get_current_user_optional(
+            background_tasks=background_tasks,
+            request=request,
+            api_key_service=api_key_service,
+            auth_service=auth_service,
+            user_repo=user_repo,
+            config=config,
+        )
+    except Exception:
+        pass
+
+    if not current_user or not current_user.isAdmin:
         raise AdminRequired()
     return current_user
 

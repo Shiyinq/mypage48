@@ -316,7 +316,7 @@ async def test_create_setlist_forbidden(client: AsyncClient, db, create_user):
         "active": True
     }
     response = await client.post("/api/theater/setlists", json=payload, headers=headers)
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 @pytest.mark.asyncio
 async def test_update_setlist_forbidden(client: AsyncClient, db, create_user):
@@ -326,7 +326,7 @@ async def test_update_setlist_forbidden(client: AsyncClient, db, create_user):
     setlist_id = "pajamadrive"
     payload = {"title": "Updated Title"}
     response = await client.put(f"/api/theater/setlists/{setlist_id}", json=payload, headers=headers)
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 @pytest.mark.asyncio
 async def test_delete_setlist_forbidden(client: AsyncClient, db, create_user):
@@ -335,7 +335,7 @@ async def test_delete_setlist_forbidden(client: AsyncClient, db, create_user):
 
     setlist_id = "pajamadrive"
     response = await client.delete(f"/api/theater/setlists/{setlist_id}", headers=headers)
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 @pytest.mark.asyncio
 async def test_setlist_validation(client: AsyncClient, db, create_user):

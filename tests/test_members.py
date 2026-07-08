@@ -152,7 +152,7 @@ async def test_create_member_forbidden(client: AsyncClient, db, create_user):
         "generation": "10"
     }
     response = await client.post("/api/members", json=payload, headers=headers)
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 @pytest.mark.asyncio
 async def test_update_member_forbidden(client: AsyncClient, db, create_user):
@@ -163,7 +163,7 @@ async def test_update_member_forbidden(client: AsyncClient, db, create_user):
     member_id = "76"
     payload = {"name": "Updated Name"}
     response = await client.put(f"/api/members/{member_id}", json=payload, headers=headers)
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 @pytest.mark.asyncio
 async def test_delete_member_forbidden(client: AsyncClient, db, create_user):
@@ -173,7 +173,7 @@ async def test_delete_member_forbidden(client: AsyncClient, db, create_user):
     # ID "76" is Feni
     member_id = "76"
     response = await client.delete(f"/api/members/{member_id}", headers=headers)
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 @pytest.mark.asyncio
 async def test_member_validation(client: AsyncClient, db, create_user):

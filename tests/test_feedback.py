@@ -95,7 +95,7 @@ async def test_get_feedback_forbidden_non_admin(client: AsyncClient, create_user
     token, _, headers = await create_user("normaluser", is_admin=False)
 
     response = await client.get("/api/feedback", headers=headers)
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 @pytest.mark.asyncio
 async def test_get_my_feedback(client: AsyncClient, create_user):

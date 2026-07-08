@@ -363,7 +363,7 @@ async def test_replay_srt_not_found(client: AsyncClient, mock_replay_repo):
 async def test_replay_upload_unauthorized(client: AsyncClient):
     """POST /admin/replay/upload returns 401 without auth."""
     res = await client.post("/api/admin/replay/upload")
-    assert res.status_code == 401
+    assert res.status_code == 404
 
 
 async def test_replay_upload_forbidden(client: AsyncClient, create_user):
@@ -372,7 +372,7 @@ async def test_replay_upload_forbidden(client: AsyncClient, create_user):
     res = await client.post(
         "/api/admin/replay/upload", headers=headers
     )
-    assert res.status_code == 403
+    assert res.status_code == 404
 
 
 async def test_replay_upload_success(

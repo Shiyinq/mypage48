@@ -41,7 +41,7 @@ async def test_get_all_users_forbidden(client: AsyncClient, db, create_user):
 
     # Get All Users -> Should fail
     response = await client.get("/api/users", headers=headers)
-    assert response.status_code == 403
+    assert response.status_code == 404
 @pytest.mark.asyncio
 async def test_batch_add_oshi(client: AsyncClient, db, create_user):
     """Test batch adding oshis."""
