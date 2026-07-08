@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 import random
 import time
@@ -7,6 +8,8 @@ import uuid
 
 import httpx
 import websockets
+
+logger = logging.getLogger("recorder")
 
 
 async def capture_showroom(
@@ -62,13 +65,13 @@ async def capture_showroom(
                                 jsonl_f.flush()
 
                     except httpx.HTTPStatusError as e:
-                        print(
+                        logger.error(
                             f"[showroom_chat] HTTP {e.response.status_code}: {e.response.text[:200]}"
                         )
                     except httpx.RequestError as e:
-                        print(f"[showroom_chat] Request failed: {e}")
+                        logger.error(f"[showroom_chat] Request failed: {e}")
                     except Exception as e:
-                        print(f"[showroom_chat] Error: {e}")
+                        logger.error(f"[showroom_chat] Error: {e}")
 
                     try:
                         await asyncio.wait_for(stop_event.wait(), timeout=poll_interval)
@@ -130,7 +133,7 @@ async def capture_showroom_gifts(
                             "image": g.get("image", ""),
                         }
     except Exception as e:
-        print(f"[showroom_gift] Failed to fetch gift list: {e}")
+        logger.error(f"[showroom_gift] Failed to fetch gift list: {e}")
 
     last_created_at: int = 0
     client = httpx.AsyncClient(timeout=10.0)
@@ -194,13 +197,13 @@ async def capture_showroom_gifts(
                                 jsonl_f.flush()
 
                     except httpx.HTTPStatusError as e:
-                        print(
+                        logger.error(
                             f"[showroom_gift] HTTP {e.response.status_code}: {e.response.text[:200]}"
                         )
                     except httpx.RequestError as e:
-                        print(f"[showroom_gift] Request failed: {e}")
+                        logger.error(f"[showroom_gift] Request failed: {e}")
                     except Exception as e:
-                        print(f"[showroom_gift] Error: {e}")
+                        logger.error(f"[showroom_gift] Error: {e}")
 
                     try:
                         await asyncio.wait_for(stop_event.wait(), timeout=poll_interval)
@@ -283,7 +286,7 @@ async def capture_idn(
                     if stop_event.is_set():
                         return
                 except Exception as e:
-                    print(f"[idn_chat] Connection error: {e}")
+                    logger.error(f"[idn_chat] Connection error: {e}")
 
                 try:
                     await asyncio.wait_for(stop_event.wait(), timeout=retry_delay)
