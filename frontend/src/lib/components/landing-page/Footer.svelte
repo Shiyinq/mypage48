@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Ticket, Github, Youtube } from 'lucide-svelte';
+	import { Ticket, Github, Youtube, Send } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import VersionDisplay from '$lib/components/common/VersionDisplay.svelte';
 
@@ -35,12 +35,12 @@
 				YouTube
 			</a>
 			<a
-				href="https://github.com/shiyinq/mypage48"
+				href="https://t.me/MyPage48"
 				target="_blank"
-				class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
+				class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-950/30 text-blue-500 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
 			>
-				<Github size={14} />
-				{t('landing.footer.openSource')}
+				<Send size={14} />
+				Telegram
 			</a>
 		</div>
 
@@ -75,6 +75,16 @@
 			{t('landing.footer.disclaimer')}
 		</p>
 
-		<VersionDisplay />
+		<div class="flex flex-col items-center gap-2">
+			<a
+				href="https://github.com/shiyinq/mypage48"
+				target="_blank"
+				class="inline-flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors font-semibold"
+			>
+				<Github size={12} />
+				{t('landing.footer.openSource')}
+			</a>
+			<VersionDisplay />
+		</div>
 	</div>
 </footer>
