@@ -28,7 +28,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -q -r requirements.txt
 playwright install chromium
-sudo playwright install-deps chromium
+sudo .venv/bin/playwright install-deps chromium
 
 # Step 2: .env
 echo "[2/5] Setting up .env..."
