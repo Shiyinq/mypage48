@@ -146,33 +146,33 @@ class LiveService:
                         )
 
                 # DEBUG MOCK: If no JKT48 members are live, take up to 8 Showroom lives for testing multi-view
-                # if self.config.is_env_dev and not results and all_rooms:
-                #     for room in all_rooms[:1]:
-                #         results.append(
-                #             LiveStatus(
-                #                 platform="showroom",
-                #                 room_id=str(room.get("room_id")),
-                #                 room_url_key=room.get("room_url_key"),
-                #                 live_id=f"{room.get('room_id')}-{room.get('started_at')}"
-                #                 if room.get("started_at")
-                #                 else None,
-                #                 title=f"[DEBUG] {room.get('main_name')}",
-                #                 view_num=room.get("view_num", 0),
-                #                 image=room.get("image"),
-                #                 start_at=datetime.fromtimestamp(
-                #                     room.get("started_at"), tz=timezone.utc
-                #                 )
-                #                 if room.get("started_at")
-                #                 else datetime.now(timezone.utc),
-                #                 member=LiveMember(
-                #                     id=f"debug_{room.get('room_id')}",
-                #                     name=room.get("main_name"),
-                #                     nickname=room.get("nickname")
-                #                     or room.get("main_name"),
-                #                     img="",
-                #                 ),
-                #             )
-                #         )
+                if self.config.is_env_dev and not results and all_rooms:
+                    for room in all_rooms[:1]:
+                        results.append(
+                            LiveStatus(
+                                platform="showroom",
+                                room_id=str(room.get("room_id")),
+                                room_url_key=room.get("room_url_key"),
+                                live_id=f"{room.get('room_id')}-{room.get('started_at')}"
+                                if room.get("started_at")
+                                else None,
+                                title=f"[DEBUG] {room.get('main_name')}",
+                                view_num=room.get("view_num", 0),
+                                image=room.get("image"),
+                                start_at=datetime.fromtimestamp(
+                                    room.get("started_at"), tz=timezone.utc
+                                )
+                                if room.get("started_at")
+                                else datetime.now(timezone.utc),
+                                member=LiveMember(
+                                    id=f"debug_{room.get('room_id')}",
+                                    name=room.get("main_name"),
+                                    nickname=room.get("nickname")
+                                    or room.get("main_name"),
+                                    img="",
+                                ),
+                            )
+                        )
 
                 return results
         except Exception as e:
