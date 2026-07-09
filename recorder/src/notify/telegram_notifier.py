@@ -272,11 +272,11 @@ async def send_end_live_notification(
                             tg_resp.status_code,
                             tg_resp.text,
                         )
-                except Exception as e:
+                except Exception:
                     for _, f, _ in files.values():
                         if not f.closed:
                             f.close()
-                    log.warning("Exception during MediaGroup upload: %s", e)
+                    log.exception("Exception during MediaGroup upload:")
 
             elif len(images_to_send) == 1:
                 name, path = images_to_send[0]
@@ -303,8 +303,8 @@ async def send_end_live_notification(
                             tg_resp.status_code,
                             tg_resp.text,
                         )
-                except Exception as e:
-                    log.warning("Exception during Photo upload: %s", e)
+                except Exception:
+                    log.exception("Exception during Photo upload:")
 
             if upload_success:
                 log.info(
@@ -335,8 +335,8 @@ async def send_end_live_notification(
             log.info("Telegram notification sent successfully for %s", live_id)
             return True
 
-    except Exception as e:
-        log.error("Exception during Telegram notification for %s: %s", live_id, e)
+    except Exception:
+        log.exception("Exception during Telegram notification for %s:", live_id)
         return False
 
 
@@ -429,6 +429,6 @@ async def send_live_start_notification(live: LiveInfo, config: RecorderConfig) -
                 return False
 
             return True
-    except Exception as e:
-        log.error("Exception during live start notification: %s", e)
+    except Exception:
+        log.exception("Exception during live start notification:")
         return False
