@@ -64,7 +64,12 @@ app.add_middleware(SlowAPIMiddleware)
 
 @app.middleware("http")
 async def limit_upload_size(request: Request, call_next):
-    max_upload_size = config.max_upload_size_bytes
+    # Allow larger limit specifically for the replay upload endpoint
+    if request.url.path.endswith("/admin/replay/upload"):
+        max_upload_size = config.max_replay_upload_size_bytes
+    else:
+        max_upload_size = config.max_upload_size_bytes
+
     content_length = request.headers.get("content-length")
     if content_length:
         try:

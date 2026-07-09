@@ -10,6 +10,7 @@ from ..config import RecorderConfig
 from ..models import RecordingSession
 
 _REPLAY_API_TIMEOUT = 180
+_MAX_UPLOAD_SIZE_BYTES = 52_428_800  # 50 MB
 
 
 def _read_json_safe(path: str) -> dict | None:
@@ -41,6 +42,20 @@ def _read_file(path: str) -> bytes | None:
         return None
 
 
+def _get_dir_size(path: str) -> int:
+    total_size = 0
+    if not os.path.isdir(path):
+        return total_size
+    for dirpath, _, filenames in os.walk(path):
+        for f in filenames:
+            if f.endswith(".mp4") or f.endswith(".ts"):
+                continue
+            fp = os.path.join(dirpath, f)
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+    return total_size
+
+
 async def upload(
     session: RecordingSession, config: RecorderConfig, log: Logger, title: str = ""
 ) -> bool:
@@ -64,6 +79,21 @@ async def upload(
 
     live_id = session.live_id
     screenshot_dir = session.screenshots_folder
+
+    live_folder_size = _get_dir_size(session.live_folder)
+    if live_folder_size >= _MAX_UPLOAD_SIZE_BYTES:
+        log.warning(
+            "Folder size %s bytes exceeds 50MB limit. Skipping upload for %s",
+            live_folder_size,
+            title or live_id,
+        )
+        metadata["status"] = "tolarge"
+        try:
+            with open(session.json_path, "w", encoding="utf-8") as f:
+                json.dump(metadata, f, indent=4)
+        except Exception as e:
+            log.error("Failed to update status to 'tolarge': %s", e)
+        return False
 
     data = {"metadata": json.dumps(metadata)}
     headers = {"Authorization": f"Bearer {api_key}"}

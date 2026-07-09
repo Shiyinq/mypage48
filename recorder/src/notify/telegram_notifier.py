@@ -13,81 +13,73 @@ log = logging.getLogger("notify")
 
 LIVE_DETAIL_BASE_URL = "https://mypage48.com/jkt48/live/history/live"
 
+ID_MONTHS = [
+    "",
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+]
+ID_DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+WIB_TZ = timezone(timedelta(hours=7))
+
 
 def _format_date_wib(iso_string: str) -> str:
     if not iso_string:
         return ""
     try:
         dt = datetime.fromisoformat(iso_string.replace("Z", "+00:00"))
-        wib_tz = timezone(timedelta(hours=7))
-        dt_wib = dt.astimezone(wib_tz)
+        dt_wib = dt.astimezone(WIB_TZ)
 
-        months = [
-            "",
-            "Januari",
-            "Februari",
-            "Maret",
-            "April",
-            "Mei",
-            "Juni",
-            "Juli",
-            "Agustus",
-            "September",
-            "Oktober",
-            "November",
-            "Desember",
-        ]
+        day_name = ID_DAYS[dt_wib.weekday()]
+
         day = dt_wib.day
-        month = months[dt_wib.month]
+        month = ID_MONTHS[dt_wib.month]
         year = dt_wib.year
         time_str = dt_wib.strftime("%H:%M")
 
-        return f"{day} {month} {year}, {time_str} WIB"
+        return f"{day_name}, {day} {month} {year}, {time_str} WIB"
     except Exception:
         return iso_string
 
 
-def _format_date_range_wib(start_iso: str, duration_s: int) -> str:
+def _format_date_range_wib(start_iso: str, end_iso: str) -> str:
     if not start_iso:
         return ""
     try:
         dt_start = datetime.fromisoformat(start_iso.replace("Z", "+00:00"))
-        wib_tz = timezone(timedelta(hours=7))
-        dt_wib_start = dt_start.astimezone(wib_tz)
-        dt_wib_end = dt_wib_start + timedelta(seconds=duration_s)
+        dt_wib_start = dt_start.astimezone(WIB_TZ)
 
-        months = [
-            "",
-            "Januari",
-            "Februari",
-            "Maret",
-            "April",
-            "Mei",
-            "Juni",
-            "Juli",
-            "Agustus",
-            "September",
-            "Oktober",
-            "November",
-            "Desember",
-        ]
+        if end_iso:
+            dt_end = datetime.fromisoformat(end_iso.replace("Z", "+00:00"))
+            dt_wib_end = dt_end.astimezone(WIB_TZ)
+        else:
+            dt_wib_end = dt_wib_start
 
+        start_day_name = ID_DAYS[dt_wib_start.weekday()]
         start_day = dt_wib_start.day
-        start_month = months[dt_wib_start.month]
+        start_month = ID_MONTHS[dt_wib_start.month]
         start_year = dt_wib_start.year
         start_time = dt_wib_start.strftime("%H:%M")
 
+        end_day_name = ID_DAYS[dt_wib_end.weekday()]
         end_day = dt_wib_end.day
-        end_month = months[dt_wib_end.month]
+        end_month = ID_MONTHS[dt_wib_end.month]
         end_year = dt_wib_end.year
         end_time = dt_wib_end.strftime("%H:%M")
 
         if start_day == end_day and start_month == end_month and start_year == end_year:
-            return (
-                f"{start_day} {start_month} {start_year}, {start_time} - {end_time} WIB"
-            )
+            return f"{start_day_name}, {start_day} {start_month} {start_year}, {start_time} - {end_time} WIB"
         else:
-            return f"{start_day} {start_month} {start_year}, {start_time} - {end_day} {end_month} {end_year}, {end_time} WIB"
+            return f"{start_day_name}, {start_day} {start_month} {start_year}, {start_time} - {end_day_name}, {end_day} {end_month} {end_year}, {end_time} WIB"
     except Exception:
         return start_iso
 
@@ -120,7 +112,8 @@ def _format_end_live_caption(data: dict, live_id: str = "") -> str:
         duration_str = f"{s}d"
 
     start_at_iso = data.get("start_at", "")
-    date_wib_range = _format_date_range_wib(start_at_iso, duration_s)
+    end_at_iso = data.get("end_at", "")
+    date_wib_range = _format_date_range_wib(start_at_iso, end_at_iso)
 
     # Stats
     views = data.get("view_num", 0)
@@ -150,20 +143,16 @@ def _format_end_live_caption(data: dict, live_id: str = "") -> str:
         for i, fan in enumerate(paid_fans[:10], 1):
             name = fan.get("user", "Unknown")
             gold = fan.get("total_gold", 0)
-            fan_idr = _gold_to_idr(gold, is_showroom)
-            fan_idr_str = f" (~ {_format_rp(fan_idr)})" if gold > 0 else ""
-            caption += f"{i}. {name} (<b>{gold:,} gold</b>{fan_idr_str})\n"
+            caption += f"{i}. {name} ({gold:,} gold)\n"
 
     live_id = live_id or data.get("live_id")
     if live_id:
         history_url = f"https://mypage48.com/jkt48/live/history/live/{live_id}"
-        caption += f"\n<a href='{history_url}'>Data Lengkap di MyPage48</a>"
+        caption += f"\n• <a href='{history_url}'>Data Lengkap di MyPage48</a>"
 
     youtube_id = data.get("youtube_id")
     if youtube_id:
-        caption += (
-            f"\n<a href='https://youtu.be/{youtube_id}'>Tayangan ulang di YouTube</a>\n"
-        )
+        caption += f"\n• <a href='https://youtu.be/{youtube_id}'>Tayangan ulang di YouTube</a>\n"
     else:
         caption += "\n"
 
@@ -210,13 +199,13 @@ async def send_end_live_notification(
                     log.warning("Web screenshot failed, continuing: %s", e)
 
             # 2. Add cover/thumbnail image
-            if folder_path:
-                yt_thumb = os.path.join(folder_path, f"{live_id}_yt_thumb.jpg")
-                cover = os.path.join(folder_path, f"{live_id}.jpg")
-                if os.path.exists(yt_thumb):
-                    images_to_send.append(("cover", yt_thumb))
-                elif os.path.exists(cover):
-                    images_to_send.append(("cover", cover))
+            # if folder_path:
+            #     yt_thumb = os.path.join(folder_path, f"{live_id}_yt_thumb.jpg")
+            #     cover = os.path.join(folder_path, f"{live_id}.jpg")
+            #     if os.path.exists(yt_thumb):
+            #         images_to_send.append(("cover", yt_thumb))
+            #     elif os.path.exists(cover):
+            #         images_to_send.append(("cover", cover))
 
             # 2. Add screenshots (limit to max 4 total images)
             if folder_path:
@@ -272,11 +261,11 @@ async def send_end_live_notification(
                             tg_resp.status_code,
                             tg_resp.text,
                         )
-                except Exception as e:
+                except Exception:
                     for _, f, _ in files.values():
                         if not f.closed:
                             f.close()
-                    log.warning("Exception during MediaGroup upload: %s", e)
+                    log.exception("Exception during MediaGroup upload:")
 
             elif len(images_to_send) == 1:
                 name, path = images_to_send[0]
@@ -303,8 +292,8 @@ async def send_end_live_notification(
                             tg_resp.status_code,
                             tg_resp.text,
                         )
-                except Exception as e:
-                    log.warning("Exception during Photo upload: %s", e)
+                except Exception:
+                    log.exception("Exception during Photo upload:")
 
             if upload_success:
                 log.info(
@@ -335,18 +324,13 @@ async def send_end_live_notification(
             log.info("Telegram notification sent successfully for %s", live_id)
             return True
 
-    except Exception as e:
-        log.error("Exception during Telegram notification for %s: %s", live_id, e)
+    except Exception:
+        log.exception("Exception during Telegram notification for %s:", live_id)
         return False
 
 
-async def send_live_start_notification(live: LiveInfo, config: RecorderConfig) -> bool:
-    """Send a notification to Telegram when a live stream starts."""
-    if not config.telegram_bot_token or not config.telegram_chat_id:
-        return False
-
-    log.info("Sending live start Telegram notification for %s", live.live_id)
-
+def _format_live_start_caption(live: LiveInfo) -> str:
+    """Format the Telegram caption for live start."""
     member_nickname = live.member_nickname or live.member_name or "Unknown"
     title = live.title or "Siaran Langsung"
     title = unicodedata.normalize("NFKC", str(title)).strip()
@@ -376,14 +360,25 @@ async def send_live_start_notification(live: LiveInfo, config: RecorderConfig) -
     caption += f"\n❝<i>{title}</i>❞\n\n"
 
     if app_url:
-        caption += f"<a href='{app_url}'>Nonton di IDN App</a>\n"
-        caption += f"<a href='{official_url}'>Nonton di IDN Web</a>\n\n"
+        caption += f"• <a href='{app_url}'>Nonton di IDN App</a>\n"
+        caption += f"• <a href='{official_url}'>Nonton di IDN Web</a>\n\n"
     elif official_url:
-        caption += f"<a href='{official_url}'>Nonton di {platform}</a>\n\n"
-    caption += f"<a href='{watch_url}'>Nonton di MyPage48</a>\n"
-    caption += f"<a href='{multiview_url}'>Nonton via MultiView</a>\n\n"
+        caption += f"• <a href='{official_url}'>Nonton di {platform}</a>\n\n"
+    caption += f"• <a href='{watch_url}'>Nonton di MyPage48</a>\n"
+    caption += f"• <a href='{multiview_url}'>Nonton via MultiView</a>\n\n"
 
     caption += "<i>~ MyPage48 ~</i>"
+    return caption
+
+
+async def send_live_start_notification(live: LiveInfo, config: RecorderConfig) -> bool:
+    """Send a notification to Telegram when a live stream starts."""
+    if not config.telegram_bot_token or not config.telegram_chat_id:
+        return False
+
+    log.info("Sending live start Telegram notification for %s", live.live_id)
+
+    caption = _format_live_start_caption(live)
 
     # Priority: cover image > member avatar
     image_url = live.image or live.member_image
@@ -429,6 +424,6 @@ async def send_live_start_notification(live: LiveInfo, config: RecorderConfig) -
                 return False
 
             return True
-    except Exception as e:
-        log.error("Exception during live start notification: %s", e)
+    except Exception:
+        log.exception("Exception during live start notification:")
         return False

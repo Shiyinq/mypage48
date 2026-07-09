@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 from datetime import datetime, timedelta, timezone
@@ -237,12 +238,22 @@ class ReplayService:
         )
 
         screenshot_paths = []
-        for filename, data in screenshot_bytes_list:
-            base, _ = os.path.splitext(filename)
-            webp_filename = f"{base}.webp"
-            path = f"{r2_base}/screenshots/{webp_filename}"
-            await self.storage_service.process_and_upload_webp(data, path)
-            screenshot_paths.append(webp_filename)
+        if screenshot_bytes_list:
+            sem = asyncio.Semaphore(10)
+
+            async def process_screenshot(filename: str, data: bytes) -> str:
+                async with sem:
+                    base, _ = os.path.splitext(filename)
+                    webp_filename = f"{base}.webp"
+                    path = f"{r2_base}/screenshots/{webp_filename}"
+                    await self.storage_service.process_and_upload_webp(data, path)
+                    return webp_filename
+
+            tasks = [
+                process_screenshot(filename, data)
+                for filename, data in screenshot_bytes_list
+            ]
+            screenshot_paths = await asyncio.gather(*tasks)
 
         chats = _parse_jsonl(jsonl_bytes)
 
