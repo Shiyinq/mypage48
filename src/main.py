@@ -1,4 +1,3 @@
-from os import path
 import asyncio
 import os
 import uuid
