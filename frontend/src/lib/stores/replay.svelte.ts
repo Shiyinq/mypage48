@@ -16,7 +16,7 @@ interface ReplayState {
 
 const state = $state<ReplayState>({
 	videos: { jeketibots: [], mypage48: [] },
-	currentSource: 'jeketibots',
+	currentSource: 'mypage48',
 	loading: true,
 	error: null,
 	lastUpdated: { jeketibots: 0, mypage48: 0 }
@@ -38,7 +38,7 @@ function createReplayStore() {
 		get error() {
 			return state.error;
 		},
-		loadVideos: async (source: ReplaySource = 'jeketibots', force = false) => {
+		loadVideos: async (source: ReplaySource = 'mypage48', force = false) => {
 			state.currentSource = source;
 			if (
 				!force &&

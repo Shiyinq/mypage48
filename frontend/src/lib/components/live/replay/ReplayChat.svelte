@@ -10,10 +10,9 @@
 	interface Props {
 		srtFile: string;
 		currentTime: number;
-		source?: 'jeketibots' | 'mypage48';
+		source?: 'mypage48' | 'jeketibots';
 	}
-
-	let { srtFile, currentTime, source = 'jeketibots' }: Props = $props();
+	let { srtFile, currentTime, source = 'mypage48' }: Props = $props();
 
 	let allMessages: ReplayChatMessage[] = $state([]);
 	let loading = $state(true);
