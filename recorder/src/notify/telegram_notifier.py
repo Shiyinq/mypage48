@@ -148,11 +148,11 @@ def _format_end_live_caption(data: dict, live_id: str = "") -> str:
     live_id = live_id or data.get("live_id")
     if live_id:
         history_url = f"https://mypage48.com/jkt48/live/history/live/{live_id}"
-        caption += f"\n📊 <a href='{history_url}'>Data Lengkap di MyPage48</a>"
+        caption += f"\n• <a href='{history_url}'>Data Lengkap di MyPage48</a>"
 
     youtube_id = data.get("youtube_id")
     if youtube_id:
-        caption += f"\n▶️ <a href='https://youtu.be/{youtube_id}'>Tayangan ulang di YouTube</a>\n"
+        caption += f"\n• <a href='https://youtu.be/{youtube_id}'>Tayangan ulang di YouTube</a>\n"
     else:
         caption += "\n"
 
@@ -360,12 +360,12 @@ def _format_live_start_caption(live: LiveInfo) -> str:
     caption += f"\n❝<i>{title}</i>❞\n\n"
 
     if app_url:
-        caption += f"📱 <a href='{app_url}'>Nonton di IDN App</a>\n"
-        caption += f"💻 <a href='{official_url}'>Nonton di IDN Web</a>\n\n"
+        caption += f"• <a href='{app_url}'>Nonton di IDN App</a>\n"
+        caption += f"• <a href='{official_url}'>Nonton di IDN Web</a>\n\n"
     elif official_url:
-        caption += f"📺 <a href='{official_url}'>Nonton di {platform}</a>\n\n"
-    caption += f"▶️ <a href='{watch_url}'>Nonton di MyPage48</a>\n"
-    caption += f"🔀 <a href='{multiview_url}'>Nonton via MultiView</a>\n\n"
+        caption += f"• <a href='{official_url}'>Nonton di {platform}</a>\n\n"
+    caption += f"• <a href='{watch_url}'>Nonton di MyPage48</a>\n"
+    caption += f"• <a href='{multiview_url}'>Nonton via MultiView</a>\n\n"
 
     caption += "<i>~ MyPage48 ~</i>"
     return caption
