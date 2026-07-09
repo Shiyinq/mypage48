@@ -12,20 +12,25 @@ LIVE_DETAIL_BASE_URL = "https://mypage48.com/jkt48/live/history/live"
 
 
 async def main():
-    # live_id = "510064-1783518537"
-    live_id = "ayo-ngobrol-bareng-260708162059"
-    output_dir = os.path.join(RECORDINGS_DIR, f"test_{live_id}")
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, f"{live_id}_web.png")
-    url = f"{LIVE_DETAIL_BASE_URL}/{live_id}"
-    print(f"Capturing screenshot for {live_id}")
-    print(f"URL: {url}")
-    print(f"Output: {output_path}")
-    success = await capture_web_screenshot(url, output_path)
-    if success:
-        print(f"Screenshot saved to {output_path}")
-    else:
-        print("Failed to capture screenshot")
+    live_ids = [
+        "510064-1783518537",
+        "ayo-ngobrol-bareng-260708162059",
+        "haii-260709221413",
+    ]
+
+    for live_id in live_ids:
+        output_dir = os.path.join(RECORDINGS_DIR, f"test_{live_id}")
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, f"{live_id}_web.png")
+        url = f"{LIVE_DETAIL_BASE_URL}/{live_id}"
+        print(f"\\nCapturing screenshot for {live_id}")
+        print(f"URL: {url}")
+        print(f"Output: {output_path}")
+        success = await capture_web_screenshot(url, output_path)
+        if success:
+            print(f"Screenshot saved to {output_path}")
+        else:
+            print("Failed to capture screenshot")
 
 
 if __name__ == "__main__":
