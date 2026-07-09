@@ -152,9 +152,9 @@
 							<div class="w-full h-full bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
 						{:else if userProfile.data?.profilePicture}
 							<OptimizedImage
-								src={userProfile.data.profilePicture}
-								srcMedium={userProfile.data.profilePicture_medium}
-								srcSmall={userProfile.data.profilePicture_small}
+								src={userProfile.data?.profilePicture}
+								srcMedium={userProfile.data?.profilePicture_medium}
+								srcSmall={userProfile.data?.profilePicture_small}
 								blurHash={userProfile.data?.blurHash}
 								alt="Profile"
 								class="w-full h-full object-cover"
