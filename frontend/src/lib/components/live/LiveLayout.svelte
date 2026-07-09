@@ -201,7 +201,7 @@
 								/>
 							</div>
 							<span class="font-extrabold tracking-tight text-lg whitespace-nowrap"
-								>JKT48 <span class="text-red-600 italic">LIVE</span></span
+								>Oshi <span class="text-red-600 italic">Live</span></span
 							>
 						</button>
 					{:else}
@@ -218,7 +218,7 @@
 								/>
 							</div>
 							<span class="font-extrabold tracking-tight text-lg whitespace-nowrap"
-								>JKT48 <span class="text-red-600 italic">LIVE</span></span
+								>Oshi <span class="text-red-600 italic">Live</span></span
 							>
 						</a>
 					{/if}
