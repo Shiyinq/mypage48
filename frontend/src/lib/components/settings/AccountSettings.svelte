@@ -238,13 +238,13 @@
 						<div
 							class="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-inner border-4 border-white dark:border-zinc-700 relative"
 						>
-							{#if userProfile.data.profilePicture}
+							{#if userProfile.data?.profilePicture}
 								<OptimizedImage
-									src={userProfile.data.profilePicture}
-									srcMedium={userProfile.data.profilePicture_medium}
-									srcSmall={userProfile.data.profilePicture_small}
-									blurHash={userProfile.data.blurHash}
-									alt={userProfile.data.name}
+									src={userProfile.data?.profilePicture}
+									srcMedium={userProfile.data?.profilePicture_medium}
+									srcSmall={userProfile.data?.profilePicture_small}
+									blurHash={userProfile.data?.blurHash}
+									alt={userProfile.data?.name}
 									class="w-full h-full object-cover transition-transform group-hover:scale-110"
 									sizes="(max-width: 640px) 96px, 128px"
 								/>
