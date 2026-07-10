@@ -129,6 +129,7 @@ class NewsChecker:
                 processed_ids = self._get_processed_ids()
                 new_processed_ids = list(processed_ids)
                 today_wib = datetime.now(timezone(timedelta(hours=7))).date()
+                # today_wib = datetime(2026, 6, 13).date()
 
                 new_news_found = False
 
@@ -261,8 +262,8 @@ class NewsChecker:
                         len(processed_ids),
                     )
 
-        except Exception as e:
-            self.log.error("Exception during news check: %s", e)
+        except Exception:
+            self.log.exception("Exception during news check:")
 
     async def run(self, stop_event: asyncio.Event):
         while not stop_event.is_set():

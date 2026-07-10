@@ -464,11 +464,12 @@ async def send_news_notification(news_data: dict, config: RecorderConfig) -> boo
     # Format the date using the new function that only shows the date
     date_wib = _format_date_only_wib(date_iso)
 
-    category_badge = f"[{category}] " if category else ""
     caption = f"📰 <b>Berita Baru JKT48</b>\n\n"
-    caption += f"<b>{category_badge}{title}</b>\n\n"
+    caption += f"<b>{title}</b>\n\n"
     if date_wib:
         caption += f"📅 {date_wib}\n"
+    if category:
+        caption += f"🏷 {category}\n"
 
     caption += f"\n• <a href='{url}'>Baca selengkapnya di jkt48.com</a>\n\n"
     caption += "<i>~ MyPage48 ~</i>"
