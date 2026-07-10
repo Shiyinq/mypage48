@@ -1,10 +1,10 @@
 import asyncio
 import json
+import logging
 import os
 import shutil
 import time
 from datetime import datetime, timezone
-from logging import Logger
 
 from ..config import RecorderConfig
 from ..models import RecordingSession
@@ -24,10 +24,10 @@ def _fmt_duration(seconds: int) -> str:
 
 
 class Watcher:
-    def __init__(self, config: RecorderConfig, log_rec: Logger, log_upl: Logger):
+    def __init__(self, config: RecorderConfig):
         self.config = config
-        self.log_rec = log_rec
-        self.log_upl = log_upl
+        self.log_rec = logging.getLogger("recorder")
+        self.log_upl = logging.getLogger("uploader")
         self._processing: dict[str, dict] = {}
 
     async def run(self, stop_event: asyncio.Event):
@@ -159,7 +159,6 @@ class Watcher:
                 ytid, upload_uri = await _upload_to_youtube(
                     session,
                     self.config,
-                    self.log_upl,
                     progress_callback=_on_progress,
                     resume_uri=resume_uri,
                     save_uri_callback=_save_uri,
@@ -187,7 +186,7 @@ class Watcher:
         self._processing[live_id]["phase"] = "uploading to R2"
         self._processing[live_id].pop("pct", None)
 
-        ok = await r2_uploader.upload(session, self.config, self.log_upl, title_log)
+        ok = await r2_uploader.upload(session, self.config, title_log)
         if not ok:
             self.log_upl.warning("R2 upload failed for %s, will retry", title_log)
             return

@@ -1,6 +1,7 @@
 import asyncio
 import glob
 import json
+import logging
 import os
 import re
 import shutil
@@ -8,7 +9,6 @@ import subprocess
 import sys
 import time
 from datetime import datetime, timezone
-from logging import Logger
 
 from ..config import RecorderConfig
 from ..models import LiveInfo, RecordingSession
@@ -56,9 +56,9 @@ def _sanitize_filename(name: str) -> str:
 
 
 class RecordingManager:
-    def __init__(self, config: RecorderConfig, log: Logger):
+    def __init__(self, config: RecorderConfig):
         self.config = config
-        self.log = log
+        self.log = logging.getLogger("recorder")
         self.detector = LiveDetector(config.api_base_url)
         self.sessions: dict[str, RecordingSession] = {}
         self._stop_events: dict[str, asyncio.Event] = {}

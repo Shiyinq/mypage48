@@ -4,13 +4,12 @@ from typing import List, Optional, Tuple
 
 import httpx
 
-logger = logging.getLogger("recorder")
-
 from ..models import LiveInfo
 
 
 class LiveDetector:
     def __init__(self, api_base_url: str):
+        self.log = logging.getLogger("recorder")
         self.api_base_url = api_base_url.rstrip("/")
         self.client = httpx.AsyncClient(timeout=15.0)
         self._last_live_ids: set[str] = set()
@@ -23,15 +22,15 @@ class LiveDetector:
             resp.raise_for_status()
             data = resp.json()
         except httpx.HTTPStatusError as e:
-            logger.error(
+            self.log.error(
                 f"[live_detector] Poll live status: HTTP {e.response.status_code}: {e.response.text[:200]}"
             )
             return [], False
         except httpx.RequestError as e:
-            logger.error(f"[live_detector] Poll live status failed: {e}")
+            self.log.error(f"[live_detector] Poll live status failed: {e}")
             return [], False
         except Exception as e:
-            logger.error(f"[live_detector] Failed to poll live status: {e}")
+            self.log.error(f"[live_detector] Failed to poll live status: {e}")
             return [], False
 
         lives: List[LiveInfo] = []
@@ -92,15 +91,17 @@ class LiveDetector:
             resp.raise_for_status()
             return resp.json()
         except httpx.HTTPStatusError as e:
-            logger.error(
+            self.log.error(
                 f"[live_detector] Streaming URL {platform}/{identifier}: HTTP {e.response.status_code}: {e.response.text[:200]}"
             )
             return None
         except httpx.RequestError as e:
-            logger.error(f"[live_detector] Streaming URL {platform}/{identifier}: {e}")
+            self.log.error(
+                f"[live_detector] Streaming URL {platform}/{identifier}: {e}"
+            )
             return None
         except Exception as e:
-            logger.error(f"[live_detector] Failed to get streaming URL: {e}")
+            self.log.error(f"[live_detector] Failed to get streaming URL: {e}")
             return None
 
     @staticmethod

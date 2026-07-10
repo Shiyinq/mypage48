@@ -1,8 +1,8 @@
 import asyncio
 import json
+import logging
 import os
 from datetime import datetime, timedelta, timezone
-from logging import Logger
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -12,6 +12,8 @@ from googleapiclient.http import MediaFileUpload
 from ..config import RecorderConfig
 from ..models import RecordingSession
 from .thumbnail_generator import generate_youtube_thumbnail
+
+log = logging.getLogger("uploader")
 
 _MONTHS_ID = {
     1: "Januari",
@@ -178,7 +180,7 @@ def _do_upload_blocking(
 
 
 def _upload_thumbnail(
-    config: RecorderConfig, youtube, video_id: str, thumbnail_path: str, log: Logger
+    config: RecorderConfig, youtube, video_id: str, thumbnail_path: str
 ):
     try:
         request = youtube.thumbnails().set(
@@ -196,7 +198,6 @@ def _add_to_playlist_blocking(
     config: RecorderConfig,
     video_id: str,
     meta: dict,
-    log: Logger,
     privacy_status: str | None = None,
 ) -> None:
     youtube = _build_youtube(config)
@@ -273,14 +274,10 @@ def _add_to_playlist_blocking(
 async def _upload_to_youtube(
     session: RecordingSession,
     config: RecorderConfig,
-    log: Logger | None = None,
     progress_callback=None,
     resume_uri: str | None = None,
     save_uri_callback=None,
 ) -> tuple[str | None, str | None]:
-    if log is None:
-        log = _get_fallback_logger()
-
     if (
         not config.google_client_id
         or not config.google_client_secret
@@ -347,7 +344,7 @@ async def _upload_to_youtube(
     # Upload the custom thumbnail if generation was successful and video upload succeeded
     if youtube_id and thumbnail_path and os.path.exists(thumbnail_path):
         youtube = _build_youtube(config)
-        _upload_thumbnail(config, youtube, youtube_id, thumbnail_path, log)
+        _upload_thumbnail(config, youtube, youtube_id, thumbnail_path)
 
     if not youtube_id:
         return None, upload_uri
@@ -366,18 +363,7 @@ async def _upload_to_youtube(
         config,
         youtube_id,
         meta,
-        log,
         privacy_status,
     )
 
     return youtube_id, upload_uri
-
-
-def _get_fallback_logger() -> Logger:
-    import logging
-
-    logger = logging.getLogger("uploader")
-    if not logger.handlers:
-        logger.addHandler(logging.StreamHandler())
-        logger.setLevel(logging.INFO)
-    return logger
