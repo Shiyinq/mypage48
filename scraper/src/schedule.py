@@ -44,8 +44,10 @@ def _get_event_url(event_type: str, code: str, slug: str, title: str = "") -> st
         return f"/purchase/schedule/show?code={code}"
     elif event_type == "EXCLUSIVE":
         return f"/purchase/exclusive?code={code}"
+    elif event_type == "EVENT":
+        return f"/purchase/schedule/event?code={code}"
     else:
-        # Default to /schedule/slug for GENERAL, EVENT, etc.
+        # Default to /schedule/slug for GENERAL, etc.
         url_slug = slug or slugify(title)
         return f"/schedule/{url_slug}"
 
