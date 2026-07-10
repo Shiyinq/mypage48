@@ -356,11 +356,11 @@ class ScheduleChecker:
             .schedule-card {{ background: #ffffff; border: 1px solid #e4e4e7; border-radius: 16px; padding: 24px; }}
             .schedule-header {{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }}
             .schedule-title {{ font-size: 18px; font-weight: 900; color: #111827; }}
-            .update-badge {{ background: #ef4444; color: white; font-size: 11px; padding: 4px 10px; border-radius: 9999px; font-weight: 800; letter-spacing: 0.5px; white-space: nowrap; }}
+            .update-badge {{ background: #fee2e2; color: #dc2626; font-size: 10px; padding: 4px 8px; border-radius: 9999px; font-weight: 700; letter-spacing: 0.5px; white-space: nowrap; }}
             .schedule-time {{ color: #4b5563; font-size: 14px; font-weight: 500; margin-bottom: 20px; }}
             .section-title {{ font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px; }}
             .member-list {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }}
-            .member-badge {{ background-color: #fee2e2; color: #dc2626; padding: 6px 14px; border-radius: 9999px; font-size: 13px; font-weight: 600; border: none; }}
+            .member-badge {{ background-color: #fafafa; color: #52525b; border: 1px solid #e4e4e7; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 500; }}
             .ticket-list {{ list-style-type: none; padding: 0; display: flex; flex-direction: column; gap: 10px; margin: 0; }}
             .ticket-list li {{ background: #fafafa; border: 1px solid #f4f4f5; border-radius: 12px; padding: 12px 16px; font-size: 13px; color: #3f3f46; font-weight: 500; }}
             .ticket-list li strong {{ color: #18181b; font-size: 14px; }}
