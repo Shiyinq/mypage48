@@ -168,7 +168,12 @@ def get_theater_or_event_detail(
 ) -> Dict[str, Any]:
     """Get theater or event schedule detail from API."""
     try:
-        api_path = "theater-shows" if event_type == "SHOW" else "events"
+        if event_type == "SHOW":
+            api_path = "theater-shows"
+        elif event_type == "EXCLUSIVE":
+            api_path = "exclusives"
+        else:
+            api_path = "events"
         url = f"https://jkt48.com/api/v1/{api_path}/{reference_code}?lang=id"
 
         response = request("GET", url, headers=headers or {}, impersonate="chrome")
