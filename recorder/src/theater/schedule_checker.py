@@ -8,7 +8,10 @@ from datetime import datetime, timedelta, timezone
 import httpx
 
 from ..config import RecorderConfig
-from ..notify.telegram_notifier import _format_date_only_wib
+from ..notify.telegram_notifier import (
+    _format_date_only_wib,
+    send_daily_schedule_reminder,
+)
 from .html_screenshot import capture_html_screenshot
 
 
@@ -68,8 +71,8 @@ class ScheduleChecker:
             "Origin": "https://jkt48.com",
         }
 
-        # MOCK DATE to July 1st, 2026
-        today_wib = datetime(2026, 7, 1, 10, 0, tzinfo=timezone(timedelta(hours=7)))
+        # Use real-time WIB date
+        today_wib = datetime.now(timezone(timedelta(hours=7)))
 
         months_to_check = [(today_wib.month, today_wib.year)]
 
@@ -220,7 +223,9 @@ class ScheduleChecker:
             "Successfully prepared schedule notification payload: %s", payload_file
         )
 
-    def _generate_html(self, new_schedules, updated_schedules) -> str:
+    def _generate_html(
+        self, new_schedules, updated_schedules, is_reminder=False
+    ) -> str:
         ID_MONTHS = [
             "",
             "Januari",
@@ -246,15 +251,21 @@ class ScheduleChecker:
             except Exception:
                 return iso_str
 
-        def render_schedule(sch, is_update=False):
-            if is_update:
+        def render_schedule(sch, is_update=False, is_reminder=False):
+            if is_reminder:
+                badge_text = "HARI INI"
+                badge_html = f"<span class='update-badge' style='background:#ef4444;color:white;'>{badge_text}</span>"
+            elif is_update:
                 types = sch.get("update_types", ["MEMBER"])
                 types_str = " & ".join(types)
                 badge_text = f"UPDATE {types_str}"
+                badge_html = f"<span class='update-badge'>{badge_text}</span>"
             else:
                 badge_text = "BARU"
-
-            badge_html = f"<span class='update-badge'>{badge_text}</span>"
+                badge_html = f"<span class='update-badge'>{badge_text}</span>"
+                types = sch.get("update_types", ["MEMBER"])
+                types_str = " & ".join(types)
+                badge_text = f"UPDATE {types_str}"
 
             date_str = sch["date"]
             try:
@@ -314,19 +325,23 @@ class ScheduleChecker:
                 </div>
             """
 
-        # MOCK DATE to July 1st, 2026
-        today_wib = datetime(2026, 7, 1, 10, 0, tzinfo=timezone(timedelta(hours=7)))
+        # Use real-time WIB date
+        today_wib = datetime.now(timezone(timedelta(hours=7)))
         today_str = _format_date_only_wib(today_wib.isoformat())
 
         content_html = ""
 
         if new_schedules:
             for sch in new_schedules:
-                content_html += render_schedule(sch, is_update=False)
+                content_html += render_schedule(
+                    sch, is_update=False, is_reminder=is_reminder
+                )
 
         if updated_schedules:
             for sch in updated_schedules:
-                content_html += render_schedule(sch, is_update=True)
+                content_html += render_schedule(
+                    sch, is_update=True, is_reminder=is_reminder
+                )
 
         content_html += (
             "<div class='footer'>Mohon dukungannya selalu untuk JKT48.</div>"
@@ -380,7 +395,97 @@ class ScheduleChecker:
         </html>
         """
 
+    async def _daily_reminder_loop(self, stop_event: asyncio.Event):
+        last_sent_date = None
+
+        while not stop_event.is_set():
+            tz_wib = timezone(timedelta(hours=7))
+            now = datetime.now(tz_wib)
+
+            # Check if it's 12:00 PM WIB (between 12:00 and 12:01)
+            if now.hour == 12 and now.minute == 0:
+                today_date = now.date()
+                if last_sent_date != today_date:
+                    self.log.info("Running daily schedule reminder check...")
+                    await self._check_daily_schedules(now)
+                    last_sent_date = today_date
+
+            try:
+                await asyncio.wait_for(stop_event.wait(), timeout=30)
+            except asyncio.TimeoutError:
+                pass
+
+    async def _check_daily_schedules(self, now_wib: datetime):
+        month = now_wib.month
+        year = now_wib.year
+        today_str = now_wib.strftime("%Y-%m-%d")
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Referer": "https://jkt48.com/theater/schedule",
+            "Origin": "https://jkt48.com",
+        }
+
+        try:
+            today_schedules = []
+            async with httpx.AsyncClient(timeout=15.0, headers=headers) as client:
+                url = f"https://jkt48.com/api/v1/schedules?lang=id&month={month}&year={year}"
+                resp = await client.get(url)
+                if not resp.is_success:
+                    self.log.warning("Daily reminder failed to fetch schedules.")
+                    return
+
+                data = resp.json()
+                schedules = data.get("data", [])
+
+                # Filter for today
+                for sch in schedules:
+                    if sch.get("date") == today_str:
+                        sch_id = str(sch.get("schedule_id"))
+                        if not sch_id:
+                            continue
+
+                        members = []
+                        sales_period = []
+                        if sch.get("type") == "SHOW" and sch.get("reference_code"):
+                            members, sales_period = await self._fetch_detail(
+                                client, sch.get("reference_code")
+                            )
+
+                        sch_data = {
+                            "title": sch.get("title", ""),
+                            "date": sch.get("date", ""),
+                            "start_time": sch.get("start_time", ""),
+                            "type": sch.get("type", ""),
+                            "jkt48_member_type": sch.get("jkt48_member_type", ""),
+                            "members": members,
+                            "sales_period": sales_period,
+                            "id": sch_id,
+                            "link": sch.get("link", ""),
+                            "reference_code": sch.get("reference_code", ""),
+                        }
+                        today_schedules.append(sch_data)
+
+            if today_schedules:
+                self.log.info(
+                    "Sending daily reminder for %d schedules.", len(today_schedules)
+                )
+
+                payload = {
+                    "schedules": today_schedules,
+                }
+
+                await send_daily_schedule_reminder(payload, self.config)
+
+        except Exception:
+            self.log.exception("Exception in daily reminder:")
+
     async def run(self, stop_event: asyncio.Event):
+        # Start the daily reminder loop in background
+        reminder_task = asyncio.create_task(self._daily_reminder_loop(stop_event))
+
         while not stop_event.is_set():
             await self._check_schedules()
 
@@ -388,6 +493,8 @@ class ScheduleChecker:
                 await asyncio.wait_for(
                     stop_event.wait(), timeout=self.config.news_check_interval
                 )
-                break
             except asyncio.TimeoutError:
                 pass
+
+        # Wait for reminder loop to finish
+        await reminder_task

@@ -716,3 +716,80 @@ async def send_schedule_notification(payload: dict, config: RecorderConfig) -> b
     except Exception:
         log.exception("Exception during schedule notification:")
         return False
+
+
+async def send_daily_schedule_reminder(payload: dict, config: RecorderConfig) -> bool:
+    """Send a daily reminder of today's schedules."""
+    schedules = payload.get("schedules", [])
+    if not schedules:
+        return True
+
+    count = len(schedules)
+    caption = f"☀️Selamat siang, hari ini ada {count} jadwal~\n\n"
+
+    for sch in schedules:
+        title = sch.get("title", "")
+        if sch.get("type") == "SHOW" and sch.get("jkt48_member_type"):
+            title += f" ({sch.get('jkt48_member_type')})"
+
+        date_str = sch.get("date", "")
+        time_str = sch.get("start_time", "")
+        if time_str.count(":") == 2:
+            time_str = ":".join(time_str.split(":")[:2])
+
+        try:
+            date_wib = _format_date_only_wib(f"{date_str}T00:00:00Z")
+        except Exception:
+            date_wib = date_str
+
+        sch_id = sch.get("id", "")
+        ref_code = sch.get("reference_code", "")
+        sch_type = sch.get("type", "")
+
+        if ref_code:
+            if sch_type == "SHOW":
+                url = f"https://jkt48.com/purchase/schedule/show?code={ref_code}"
+            elif sch_type == "EVENT":
+                url = f"https://jkt48.com/purchase/schedule/event?code={ref_code}"
+            elif sch_type == "EXCLUSIVE":
+                url = f"https://jkt48.com/purchase/exclusive?code={ref_code}"
+            else:
+                url = f"https://jkt48.com/theater/schedule?id={sch_id}&lang=id"
+        else:
+            url = f"https://jkt48.com/theater/schedule?id={sch_id}&lang=id"
+
+        members = sch.get("members", [])
+
+        entry = f"• <b>{title}</b>"
+        entry += f"\n  {date_wib} {time_str} WIB"
+
+        if members:
+            entry += f"\n  {len(members)} Member"
+            for m in members:
+                entry += f"\n  • {m}"
+
+        entry += f"\n  <a href='{url}'>Detail</a>\n\n"
+        caption += entry
+
+    tg_url = f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            tg_resp = await client.post(
+                tg_url,
+                json={
+                    "chat_id": config.telegram_chat_id,
+                    "text": caption,
+                    "parse_mode": "HTML",
+                    "disable_web_page_preview": True,
+                },
+            )
+            if not tg_resp.is_success:
+                log.error("Daily reminder notification failed: %s", tg_resp.text)
+                return False
+
+            return True
+
+    except Exception:
+        log.exception("Exception during daily reminder notification:")
+        return False
