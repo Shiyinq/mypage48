@@ -7,6 +7,7 @@ from .src.config import RecorderConfig
 from .src.logging_config import setup_logging
 from .src.record.manager import RecordingManager
 from .src.theater.news_checker import NewsChecker
+from .src.theater.schedule_checker import ScheduleChecker
 from .src.theater.watcher import TheaterWatcher
 from .src.upload.watcher import Watcher
 
@@ -98,9 +99,11 @@ async def main(args):
         log_th.info("Mode: %s — poll interval %ss", args.mode, config.poll_interval)
         log_th.info("Output: %s", config.recordings_dir)
         news_checker = NewsChecker(config)
+        schedule_checker = ScheduleChecker(config)
         theater_watcher = TheaterWatcher(config)
 
         tasks.append(asyncio.create_task(news_checker.run(stop_event)))
+        tasks.append(asyncio.create_task(schedule_checker.run(stop_event)))
         tasks.append(asyncio.create_task(theater_watcher.run(stop_event)))
 
     await asyncio.gather(*tasks)

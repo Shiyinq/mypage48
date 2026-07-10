@@ -587,3 +587,132 @@ async def send_news_notification(news_data: dict, config: RecorderConfig) -> boo
     except Exception:
         log.exception("Exception during news notification:")
         return False
+
+
+async def send_schedule_notification(payload: dict, config: RecorderConfig) -> bool:
+    """Send a notification to Telegram for new or updated schedules."""
+    if not config.telegram_bot_token or not config.telegram_chat_id:
+        return False
+
+    log.info("Sending schedule Telegram notification")
+
+    new_count = payload.get("new_count", 0)
+    updated_count = payload.get("updated_count", 0)
+    screenshot_path = payload.get("screenshot_path")
+
+    caption = ""
+    new_schedules = payload.get("new_schedules", [])
+    updated_schedules = payload.get("updated_schedules", [])
+
+    def _format_schedule_summary(sch):
+        title = sch.get("title", "")
+
+        date_str = sch.get("date", "")
+        time_str = sch.get("start_time", "")
+        if time_str.count(":") == 2:
+            time_str = ":".join(time_str.split(":")[:2])
+        try:
+            date_wib = _format_date_only_wib(f"{date_str}T00:00:00Z")
+        except Exception:
+            date_wib = date_str
+
+        sch_id = sch.get("id", "")
+        ref_code = sch.get("reference_code", "")
+        sch_type = sch.get("type", "")
+
+        if ref_code:
+            if sch_type == "SHOW":
+                url = f"https://jkt48.com/purchase/schedule/show?code={ref_code}"
+            elif sch_type == "EVENT":
+                url = f"https://jkt48.com/purchase/schedule/event?code={ref_code}"
+            elif sch_type == "EXCLUSIVE":
+                url = f"https://jkt48.com/purchase/exclusive?code={ref_code}"
+            else:
+                url = f"https://jkt48.com/theater/schedule?id={sch_id}&lang=id"
+        else:
+            url = f"https://jkt48.com/theater/schedule?id={sch_id}&lang=id"
+
+        return f"• <b>{title}</b>\n├─ {date_wib} {time_str} WIB\n└─ <a href='{url}'>Detail</a>\n\n"
+
+    if new_schedules:
+        caption += f"<b>🆕 Berikut {new_count} jadwal yang akan datang</b>\n\n"
+        for sch in new_schedules:
+            caption += _format_schedule_summary(sch)
+
+    if updated_schedules:
+        all_types = set()
+        for sch in updated_schedules:
+            all_types.update(sch.get("update_types", ["MEMBER"]))
+
+        if "MEMBER" in all_types and "TIKET" in all_types:
+            types_str = "lineup & tiket"
+        elif "TIKET" in all_types:
+            types_str = "tiket"
+        else:
+            types_str = "lineup"
+
+        caption += (
+            f"<b>🔄 Terdapat {updated_count} jadwal dengan update {types_str}</b>\n\n"
+        )
+        for sch in updated_schedules:
+            caption += _format_schedule_summary(sch)
+
+    caption += "• <a href='https://jkt48.com/theater/schedule'>Cek selengkapnya di jkt48.com</a>\n\n"
+    caption += "<i>~ MyPage48 ~</i>"
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            upload_success = False
+
+            if screenshot_path and os.path.exists(screenshot_path):
+                log.info("Sending schedule notification with Photo")
+                tg_url = (
+                    f"https://api.telegram.org/bot{config.telegram_bot_token}/sendPhoto"
+                )
+                try:
+                    with open(screenshot_path, "rb") as f:
+                        tg_resp = await client.post(
+                            tg_url,
+                            data={
+                                "chat_id": config.telegram_chat_id,
+                                "caption": caption,
+                                "parse_mode": "HTML",
+                            },
+                            files={"photo": ("schedule.jpg", f, "image/jpeg")},
+                        )
+                    if tg_resp.is_success:
+                        upload_success = True
+                    else:
+                        log.warning(
+                            "Telegram Photo failed: %s %s",
+                            tg_resp.status_code,
+                            tg_resp.text,
+                        )
+                except Exception:
+                    log.exception("Exception during Photo upload:")
+
+            if upload_success:
+                return True
+
+            # Fallback to text message
+            tg_url = (
+                f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
+            )
+            tg_resp = await client.post(
+                tg_url,
+                json={
+                    "chat_id": config.telegram_chat_id,
+                    "text": caption,
+                    "parse_mode": "HTML",
+                    "disable_web_page_preview": False,
+                },
+            )
+            if not tg_resp.is_success:
+                log.error("Schedule notification failed: %s", tg_resp.text)
+                return False
+
+            return True
+
+    except Exception:
+        log.exception("Exception during schedule notification:")
+        return False
