@@ -28,6 +28,8 @@ _MONTHS_ID = {
     12: "Desember",
 }
 
+_DAYS_ID = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+
 
 def _parse_wib_datetime(start_at: str) -> tuple[str, str]:
     if not start_at:
@@ -38,7 +40,8 @@ def _parse_wib_datetime(start_at: str) -> tuple[str, str]:
             dt = dt.replace(tzinfo=timezone.utc)
         wib_tz = timezone(timedelta(hours=7))
         dt = dt.astimezone(wib_tz)
-        date_str = f"{dt.day} {_MONTHS_ID[dt.month]} {dt.year}"
+        day_name = _DAYS_ID[dt.weekday()]
+        date_str = f"{day_name}, {dt.day} {_MONTHS_ID[dt.month]} {dt.year}"
         time_str = dt.strftime("%H:%M")
         return date_str, time_str
     except (ValueError, AttributeError, KeyError):
