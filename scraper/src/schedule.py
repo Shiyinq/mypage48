@@ -44,8 +44,10 @@ def _get_event_url(event_type: str, code: str, slug: str, title: str = "") -> st
         return f"/purchase/schedule/show?code={code}"
     elif event_type == "EXCLUSIVE":
         return f"/purchase/exclusive?code={code}"
+    elif event_type == "EVENT":
+        return f"/purchase/schedule/event?code={code}"
     else:
-        # Default to /schedule/slug for GENERAL, EVENT, etc.
+        # Default to /schedule/slug for GENERAL, etc.
         url_slug = slug or slugify(title)
         return f"/schedule/{url_slug}"
 
@@ -168,7 +170,12 @@ def get_theater_or_event_detail(
 ) -> Dict[str, Any]:
     """Get theater or event schedule detail from API."""
     try:
-        api_path = "theater-shows" if event_type == "SHOW" else "events"
+        if event_type == "SHOW":
+            api_path = "theater-shows"
+        elif event_type == "EXCLUSIVE":
+            api_path = "exclusives"
+        else:
+            api_path = "events"
         url = f"https://jkt48.com/api/v1/{api_path}/{reference_code}?lang=id"
 
         response = request("GET", url, headers=headers or {}, impersonate="chrome")
