@@ -18,3 +18,7 @@ __pycache__/
 .idea/
 *.swp
 *.swo
+
+# Theater data
+theater/*
+!theater/.gitkeep

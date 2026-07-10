@@ -6,6 +6,8 @@ import sys
 from .src.config import RecorderConfig
 from .src.logging_config import setup_logging
 from .src.record.manager import RecordingManager
+from .src.theater.news_checker import NewsChecker
+from .src.theater.watcher import TheaterWatcher
 from .src.upload.watcher import Watcher
 
 
@@ -13,9 +15,9 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
-        choices=["both", "record", "upload"],
+        choices=["both", "record", "upload", "theater", "all"],
         default="both",
-        help="Run mode: record, upload, or both (default)",
+        help="Run mode: record, upload, theater, both (record+upload, default), or all",
     )
     parser.add_argument(
         "--status",
@@ -52,7 +54,7 @@ def handle_cli(args):
         return False
 
     config = RecorderConfig()
-    log_rec, _ = setup_logging(config)
+    log_rec, _, _ = setup_logging(config)
     manager = RecordingManager(config, log_rec)
 
     if args.status:
@@ -67,7 +69,7 @@ def handle_cli(args):
 
 async def main(args):
     config = RecorderConfig()
-    log_rec, log_upl = setup_logging(config)
+    log_rec, log_upl, log_th = setup_logging(config)
 
     stop_event = asyncio.Event()
 
@@ -83,13 +85,20 @@ async def main(args):
 
     tasks = []
 
-    if args.mode in ("both", "record"):
+    if args.mode in ("all", "both", "record"):
         manager = RecordingManager(config, log_rec)
         tasks.append(asyncio.create_task(manager.run(stop_event)))
 
-    if args.mode in ("both", "upload"):
+    if args.mode in ("all", "both", "upload"):
         watcher = Watcher(config, log_rec, log_upl)
         tasks.append(asyncio.create_task(watcher.run(stop_event)))
+
+    if args.mode in ("all", "theater"):
+        news_checker = NewsChecker(config)
+        theater_watcher = TheaterWatcher(config)
+
+        tasks.append(asyncio.create_task(news_checker.run(stop_event)))
+        tasks.append(asyncio.create_task(theater_watcher.run(stop_event)))
 
     await asyncio.gather(*tasks)
 

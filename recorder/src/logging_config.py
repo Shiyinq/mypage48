@@ -6,7 +6,7 @@ from logging import Logger
 from .config import RecorderConfig
 
 
-def setup_logging(config: RecorderConfig) -> tuple[Logger, Logger]:
+def setup_logging(config: RecorderConfig) -> tuple[Logger, Logger, Logger]:
     os.makedirs(config.logs_dir, exist_ok=True)
 
     formatter = logging.Formatter(
@@ -17,10 +17,12 @@ def setup_logging(config: RecorderConfig) -> tuple[Logger, Logger]:
     rec = logging.getLogger("recorder")
     upl = logging.getLogger("uploader")
     notif = logging.getLogger("notify")
+    theater = logging.getLogger("theater")
 
     rec.setLevel(config.log_level.upper())
     upl.setLevel(config.log_level.upper())
     notif.setLevel(config.log_level.upper())
+    theater.setLevel(config.log_level.upper())
 
     _add_handler(
         rec, formatter, config.log_mode, os.path.join(config.logs_dir, "recorder.log")
@@ -31,8 +33,14 @@ def setup_logging(config: RecorderConfig) -> tuple[Logger, Logger]:
     _add_handler(
         notif, formatter, config.log_mode, os.path.join(config.logs_dir, "notify.log")
     )
+    _add_handler(
+        theater,
+        formatter,
+        config.log_mode,
+        os.path.join(config.logs_dir, "theater.log"),
+    )
 
-    return rec, upl
+    return rec, upl, theater
 
 
 def _add_handler(
