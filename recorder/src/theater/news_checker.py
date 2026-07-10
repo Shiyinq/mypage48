@@ -13,12 +13,11 @@ from ..config import RecorderConfig
 from ..notify.telegram_notifier import _format_date_only_wib
 from .html_screenshot import capture_html_screenshot
 
-log = logging.getLogger("theater")
-
 
 class NewsChecker:
     def __init__(self, config: RecorderConfig):
         self.config = config
+        self.log = logging.getLogger("theater")
         self.api_url = "https://jkt48.com/api/v1/news?lang=id&page=1"
         self.theater_dir = self.config.theater_dir
         self.state_file = os.path.join(self.theater_dir, "last_news_id.json")
@@ -94,18 +93,18 @@ class NewsChecker:
                         f.write(resp.content)
                     saved_images.append(local_path)
                 else:
-                    log.warning(
+                    self.log.warning(
                         "Failed to download image %s: HTTP %s",
                         full_url,
                         resp.status_code,
                     )
             except Exception as e:
-                log.warning("Exception downloading image %s: %s", full_url, e)
+                self.log.warning("Exception downloading image %s: %s", full_url, e)
 
         return html_content, saved_images
 
     async def _check_news(self):
-        log.info("Checking JKT48 news...")
+        self.log.info("Checking JKT48 news...")
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -119,7 +118,7 @@ class NewsChecker:
             async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:
                 resp = await client.get(self.api_url)
                 if not resp.is_success:
-                    log.warning("Failed to fetch news: %s", resp.status_code)
+                    self.log.warning("Failed to fetch news: %s", resp.status_code)
                     return
 
                 data = resp.json()
@@ -154,7 +153,7 @@ class NewsChecker:
 
                     if news_date_wib >= today_wib:
                         new_news_found = True
-                        log.info(
+                        self.log.info(
                             "New news detected: %s (ID: %s)",
                             news_item.get("title"),
                             current_news_id,
@@ -162,7 +161,7 @@ class NewsChecker:
 
                         link = news_item.get("link")
                         if not link:
-                            log.warning("News has no link, skipping screenshot.")
+                            self.log.warning("News has no link, skipping screenshot.")
                             continue
 
                         news_url = f"https://jkt48.com/news/{link}"
@@ -223,7 +222,7 @@ class NewsChecker:
                                 html_content, screenshot_path, wait_ms=1000
                             )
                         else:
-                            log.warning(
+                            self.log.warning(
                                 "Failed to fetch detail news API: %s",
                                 detail_resp.status_code,
                             )
@@ -251,19 +250,19 @@ class NewsChecker:
                         # Update state immediately in case of crash during loop
                         new_processed_ids.append(current_news_id)
                         self._save_processed_ids(new_processed_ids)
-                        log.info(
+                        self.log.info(
                             "Successfully prepared news notification payload: %s",
                             payload_file,
                         )
 
                 if not new_news_found:
-                    log.debug(
+                    self.log.debug(
                         "No new news found today. Processed IDs count: %d",
                         len(processed_ids),
                     )
 
         except Exception as e:
-            log.error("Exception during news check: %s", e)
+            self.log.error("Exception during news check: %s", e)
 
     async def run(self, stop_event: asyncio.Event):
         while not stop_event.is_set():

@@ -1,13 +1,15 @@
 import asyncio
 import io
 import json
+import logging
 import os
-from logging import Logger
 
 import httpx
 
 from ..config import RecorderConfig
 from ..models import RecordingSession
+
+log = logging.getLogger("uploader")
 
 _REPLAY_API_TIMEOUT = 180
 _MAX_UPLOAD_SIZE_BYTES = 52_428_800  # 50 MB
@@ -57,7 +59,7 @@ def _get_dir_size(path: str) -> int:
 
 
 async def upload(
-    session: RecordingSession, config: RecorderConfig, log: Logger, title: str = ""
+    session: RecordingSession, config: RecorderConfig, title: str = ""
 ) -> bool:
     api_url = f"{config.api_base_url.rstrip('/')}{config.replay_api_url}"
     api_key = config.replay_api_key

@@ -55,7 +55,7 @@ def handle_cli(args):
 
     config = RecorderConfig()
     log_rec, _, _ = setup_logging(config)
-    manager = RecordingManager(config, log_rec)
+    manager = RecordingManager(config)
 
     if args.status:
         manager.check_status_cli(args.status)
@@ -80,20 +80,23 @@ async def main(args):
     loop.add_signal_handler(signal.SIGINT, handle_signal)
     loop.add_signal_handler(signal.SIGTERM, handle_signal)
 
-    log_rec.info("Mode: %s — poll interval %ss", args.mode, config.poll_interval)
-    log_rec.info("Output: %s", config.recordings_dir)
-
     tasks = []
 
     if args.mode in ("all", "both", "record"):
-        manager = RecordingManager(config, log_rec)
+        log_rec.info("Mode: %s — poll interval %ss", args.mode, config.poll_interval)
+        log_rec.info("Output: %s", config.recordings_dir)
+        manager = RecordingManager(config)
         tasks.append(asyncio.create_task(manager.run(stop_event)))
 
     if args.mode in ("all", "both", "upload"):
-        watcher = Watcher(config, log_rec, log_upl)
+        log_upl.info("Mode: %s — poll interval %ss", args.mode, config.poll_interval)
+        log_upl.info("Output: %s", config.recordings_dir)
+        watcher = Watcher(config)
         tasks.append(asyncio.create_task(watcher.run(stop_event)))
 
     if args.mode in ("all", "theater"):
+        log_th.info("Mode: %s — poll interval %ss", args.mode, config.poll_interval)
+        log_th.info("Output: %s", config.recordings_dir)
         news_checker = NewsChecker(config)
         theater_watcher = TheaterWatcher(config)
 

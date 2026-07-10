@@ -7,21 +7,20 @@ from pathlib import Path
 from ..config import RecorderConfig
 from ..notify.telegram_notifier import send_news_notification
 
-log = logging.getLogger("theater")
-
 
 class TheaterWatcher:
     """Watches the pending_notifications folder and sends them to Telegram."""
 
     def __init__(self, config: RecorderConfig):
         self.config = config
+        self.log = logging.getLogger("theater")
         self.pending_dir = os.path.join(
             self.config.theater_dir, "pending_notifications"
         )
         os.makedirs(self.pending_dir, exist_ok=True)
 
     async def run(self, stop_event: asyncio.Event):
-        log.info("Starting TheaterWatcher to monitor pending notifications...")
+        self.log.info("Starting TheaterWatcher to monitor pending notifications...")
         while not stop_event.is_set():
             await self._process_pending_notifications()
 
@@ -46,17 +45,17 @@ class TheaterWatcher:
                 with open(filepath, "r") as f:
                     payload = json.load(f)
             except Exception as e:
-                log.error("Failed to read payload %s: %s", filepath, e)
+                self.log.error("Failed to read payload %s: %s", filepath, e)
                 continue
 
             notification_type = payload.get("type")
             success = False
 
             if notification_type == "news":
-                log.info("Processing pending news notification: %s", filename)
+                self.log.info("Processing pending news notification: %s", filename)
                 success = await send_news_notification(payload, self.config)
             else:
-                log.warning(
+                self.log.warning(
                     "Unknown notification type in %s: %s", filename, notification_type
                 )
                 # Treat as success to delete the unknown type and avoid infinite loop
@@ -67,7 +66,9 @@ class TheaterWatcher:
                 try:
                     os.remove(filepath)
                 except Exception as e:
-                    log.error("Failed to delete processed payload %s: %s", filepath, e)
+                    self.log.error(
+                        "Failed to delete processed payload %s: %s", filepath, e
+                    )
 
                 # Cleanup associated screenshot if any
                 screenshot_path = payload.get("screenshot_path")
@@ -75,7 +76,7 @@ class TheaterWatcher:
                     try:
                         os.remove(screenshot_path)
                     except Exception as e:
-                        log.error(
+                        self.log.error(
                             "Failed to delete associated screenshot %s: %s",
                             screenshot_path,
                             e,
@@ -88,10 +89,10 @@ class TheaterWatcher:
                         try:
                             os.remove(img_path)
                         except Exception as e:
-                            log.error(
+                            self.log.error(
                                 "Failed to delete associated image %s: %s", img_path, e
                             )
             else:
-                log.warning(
+                self.log.warning(
                     "Failed to send notification for %s, will retry later.", filename
                 )
