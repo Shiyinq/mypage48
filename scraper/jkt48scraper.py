@@ -102,6 +102,14 @@ def process_schedules(
     for schedule in schedules:
         ref_code = schedule["id"]
         event_type = schedule.get("type", "EVENT")
+        if event_type == "EXCLUSIVE":
+            ref_code = (
+                ref_code
+                + "-"
+                + schedule.get("raw_data", {})
+                .get("short", {})
+                .get("reference_code", ref_code)
+            )
 
         time.sleep(0.35)
         print(f"Fetching detail for {event_type} {ref_code}")
@@ -112,6 +120,8 @@ def process_schedules(
                 results["members"].append(member)
 
             for detail_event in detail_data["show"]:
+                if event_type == "EXCLUSIVE":
+                    detail_event["date"] = schedule.get("date")
                 detail_event["raw_data"]["short"] = schedule.get("raw_data", {}).get(
                     "short", {}
                 )
