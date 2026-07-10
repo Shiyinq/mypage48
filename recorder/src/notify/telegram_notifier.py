@@ -632,7 +632,7 @@ async def send_schedule_notification(payload: dict, config: RecorderConfig) -> b
         else:
             url = f"https://jkt48.com/theater/schedule?id={sch_id}&lang=id"
 
-        return f"• <b>{title}</b>\n├─ {date_wib} {time_str} WIB\n└─ <a href='{url}'>Detail</a>\n\n"
+        return f"• <b>{title}</b>\n  • {date_wib} {time_str} WIB\n  • <a href='{url}'>Detail</a>\n\n"
 
     if new_schedules:
         caption += f"<b>🆕 Berikut {new_count} jadwal yang akan datang</b>\n\n"
@@ -761,14 +761,14 @@ async def send_daily_schedule_reminder(payload: dict, config: RecorderConfig) ->
         members = sch.get("members", [])
 
         entry = f"• <b>{title}</b>"
-        entry += f"\n  {date_wib} {time_str} WIB"
+        entry += f"\n  • {date_wib} {time_str} WIB"
 
         if members:
-            entry += f"\n  {len(members)} Member"
+            entry += f"\n  • {len(members)} Member"
             for m in members:
-                entry += f"\n  • {m}"
+                entry += f"\n    • {m}"
 
-        entry += f"\n  <a href='{url}'>Detail</a>\n\n"
+        entry += f"\n  • <a href='{url}'>Detail</a>\n\n"
         caption += entry
 
     tg_url = f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
