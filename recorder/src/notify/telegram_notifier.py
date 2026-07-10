@@ -51,6 +51,24 @@ def _format_date_wib(iso_string: str) -> str:
         return iso_string
 
 
+def _format_date_only_wib(iso_string: str) -> str:
+    """Format only the date part, assuming the string is already in WIB despite having 'Z'."""
+    if not iso_string:
+        return ""
+    try:
+        dt = datetime.fromisoformat(iso_string.replace("Z", "+00:00"))
+        dt_wib = dt.astimezone(WIB_TZ)
+
+        day_name = ID_DAYS[dt_wib.weekday()]
+        day = dt_wib.day
+        month = ID_MONTHS[dt_wib.month]
+        year = dt_wib.year
+
+        return f"{day_name}, {day} {month} {year}"
+    except Exception:
+        return iso_string
+
+
 def _format_date_range_wib(start_iso: str, end_iso: str) -> str:
     if not start_iso:
         return ""
@@ -426,4 +444,145 @@ async def send_live_start_notification(live: LiveInfo, config: RecorderConfig) -
             return True
     except Exception:
         log.exception("Exception during live start notification:")
+        return False
+
+
+async def send_news_notification(news_data: dict, config: RecorderConfig) -> bool:
+    """Send a notification to Telegram for new JKT48 news."""
+    if not config.telegram_bot_token or not config.telegram_chat_id:
+        return False
+
+    log.info("Sending news Telegram notification for %s", news_data.get("news_id"))
+
+    title = news_data.get("title", "Berita JKT48")
+    category = news_data.get("category", "")
+    date_iso = news_data.get("valid_date_from", "")
+    url = news_data.get("url", "")
+    screenshot_path = news_data.get("screenshot_path")
+    article_images = news_data.get("article_images", [])
+
+    # Format the date using the new function that only shows the date
+    date_wib = _format_date_only_wib(date_iso)
+
+    category_badge = f"[{category}] " if category else ""
+    caption = f"📰 <b>Berita Baru JKT48</b>\n\n"
+    caption += f"<b>{category_badge}{title}</b>\n\n"
+    if date_wib:
+        caption += f"📅 {date_wib}\n"
+
+    caption += f"\n• <a href='{url}'>Baca selengkapnya di jkt48.com</a>\n\n"
+    caption += "<i>~ MyPage48 ~</i>"
+
+    images_to_send = []
+    if screenshot_path and os.path.exists(screenshot_path):
+        images_to_send.append(("news_screenshot", screenshot_path))
+
+    for idx, img_path in enumerate(article_images):
+        if os.path.exists(img_path):
+            images_to_send.append((f"img_{idx}", img_path))
+        if len(images_to_send) >= 10:  # Telegram MediaGroup max limit
+            break
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            upload_success = False
+
+            if len(images_to_send) > 1:
+                import json
+
+                log.info(
+                    "Sending news notification with MediaGroup (%d images)",
+                    len(images_to_send),
+                )
+                tg_url = f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMediaGroup"
+                media = []
+                files = {}
+                for i, (name, path) in enumerate(images_to_send):
+                    media_item = {"type": "photo", "media": f"attach://{name}"}
+                    if i == 0:
+                        media_item["caption"] = caption
+                        media_item["parse_mode"] = "HTML"
+                    media.append(media_item)
+
+                    ext = os.path.splitext(path)[1].lower()
+                    mime_type = "image/png" if ext == ".png" else "image/jpeg"
+                    files[name] = (name + ext, open(path, "rb"), mime_type)
+
+                try:
+                    tg_resp = await client.post(
+                        tg_url,
+                        data={
+                            "chat_id": config.telegram_chat_id,
+                            "media": json.dumps(media),
+                        },
+                        files=files,
+                    )
+                    for _, f, _ in files.values():
+                        f.close()
+                    if tg_resp.is_success:
+                        upload_success = True
+                    else:
+                        log.warning(
+                            "Telegram MediaGroup failed: %s %s",
+                            tg_resp.status_code,
+                            tg_resp.text,
+                        )
+                except Exception:
+                    for _, f, _ in files.values():
+                        if not f.closed:
+                            f.close()
+                    log.exception("Exception during MediaGroup upload:")
+
+            elif len(images_to_send) == 1:
+                name, path = images_to_send[0]
+                log.info("Sending news notification with single Photo")
+                tg_url = (
+                    f"https://api.telegram.org/bot{config.telegram_bot_token}/sendPhoto"
+                )
+                try:
+                    with open(path, "rb") as f:
+                        ext = os.path.splitext(path)[1].lower()
+                        mime_type = "image/png" if ext == ".png" else "image/jpeg"
+                        tg_resp = await client.post(
+                            tg_url,
+                            data={
+                                "chat_id": config.telegram_chat_id,
+                                "caption": caption,
+                                "parse_mode": "HTML",
+                            },
+                            files={"photo": (name + ext, f, mime_type)},
+                        )
+                    if tg_resp.is_success:
+                        upload_success = True
+                    else:
+                        log.warning(
+                            "Telegram Photo failed: %s %s",
+                            tg_resp.status_code,
+                            tg_resp.text,
+                        )
+                except Exception:
+                    log.exception("Exception during Photo upload:")
+
+            if upload_success:
+                return True
+
+            # Fallback to text message if screenshot failed or wasn't provided
+            tg_url = (
+                f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
+            )
+            tg_data = {
+                "chat_id": config.telegram_chat_id,
+                "text": caption,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": False,
+            }
+
+            tg_resp = await client.post(tg_url, json=tg_data)
+            if not tg_resp.is_success:
+                log.error("News notification failed: %s", tg_resp.text)
+                return False
+
+            return True
+    except Exception:
+        log.exception("Exception during news notification:")
         return False

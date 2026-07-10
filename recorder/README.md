@@ -102,11 +102,16 @@ recorder/
     │   ├── chat_capture.py       # SHOWROOM (HTTP) + IDN (WS) chat/gift
     │   ├── srt_generator.py      # .log TSV -> .srt conversion
     │   └── manager.py            # Recording lifecycle orchestration
-    └── upload/
+    ├── upload/
+    │   ├── __init__.py
+    │   ├── watcher.py            # Background upload pipeline
+    │   ├── youtube_uploader.py   # Resumable YT upload via API
+    │   └── r2_uploader.py        # Replay data -> backend -> R2
+    └── theater/
         ├── __init__.py
-        ├── watcher.py            # Background upload pipeline
-        ├── youtube_uploader.py   # Resumable YT upload via API
-        └── r2_uploader.py        # Replay data -> backend -> R2
+        ├── news_checker.py       # Check for new JKT48 news and announcements
+        ├── html_screenshot.py    # Playwright utility for full-page HTML capture
+        └── watcher.py            # Background notification sender for Telegram
 ```
 
 ## Quick Start
@@ -132,7 +137,7 @@ You can pass several arguments to `recorder/main.py` for advanced control:
 
 | Argument | Description | Example |
 |----------|-------------|---------|
-| `--mode {both,record,upload}` | Run only specific loop (default: `both`). Useful for systemd services. | `python -m recorder.main --mode record` |
+| `--mode {both,record,upload,theater}` | Run only specific loop. `theater` checks news and schedules. | `python -m recorder.main --mode theater` |
 | `--status [folder]` | Check status of all recordings or a specific folder. | `python -m recorder.main --status` |
 | `--remux [folder]` | Force remux interrupted/stuck `.mkv` files to `.mp4`. | `python -m recorder.main --remux all` |
 | `--delete [folder]` | Delete all recording folders or a specific one. | `python -m recorder.main --delete oline_1782911092` |
@@ -164,6 +169,7 @@ recorder/recordings/
 3. Live ends → stop, remux `.mkv` → `.mp4`, generate `.srt` + `.json` + screenshots
 4. Output: `.mp4` (video) + `.srt` (chat) + `.json` (metadata) + `.jsonl` (raw chat data) + `screenshots/` + `_yt_thumb.jpg` (collage)
 5. **Upload pipeline**: Watcher picks up completed recordings → generate `_yt_thumb.jpg` → upload to YouTube (if configured) → upload replay data (JSONL + SRT + Thumbnails) to backend API for R2 storage → cleanup folder
+6. **Theater mode**: Runs independently to monitor JKT48 News and send MediaGroup notifications to Telegram when new announcements appear.
 
 ## Output Files
 
