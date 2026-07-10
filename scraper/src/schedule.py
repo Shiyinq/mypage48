@@ -174,6 +174,8 @@ def get_theater_or_event_detail(
             api_path = "theater-shows"
         elif event_type == "EXCLUSIVE":
             api_path = "exclusives"
+            show_id_exclusive = reference_code.split("-")[0]
+            reference_code = reference_code.split("-")[1]
         else:
             api_path = "events"
         url = f"https://jkt48.com/api/v1/{api_path}/{reference_code}?lang=id"
@@ -242,7 +244,11 @@ def get_theater_or_event_detail(
 
         title = detail.get("title", "")
         setlist_id = title.replace(" ", "").lower().strip()
-        show_id = str(detail.get("code", reference_code))
+        show_id = (
+            str(detail.get("code", reference_code))
+            if event_type != "EXCLUSIVE"
+            else str(show_id_exclusive)
+        )
 
         member_type = detail.get("jkt48_member_type", "")
         team_id = member_type.lower()
@@ -285,7 +291,10 @@ def get_theater_or_event_detail(
                 "memberIds": member_ids,
                 "seitansaiIds": seitansai_ids,
                 "url": _get_event_url(
-                    event_type, show_id, detail.get("link", ""), title
+                    event_type,
+                    show_id if event_type != "EXCLUSIVE" else reference_code,
+                    detail.get("link", ""),
+                    title,
                 ),
                 "raw_data": {"detail": detail},
             }
