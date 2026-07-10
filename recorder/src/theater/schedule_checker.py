@@ -249,9 +249,12 @@ class ScheduleChecker:
         def render_schedule(sch, is_update=False):
             if is_update:
                 types = sch.get("update_types", ["MEMBER"])
-                badge_text = f"[UPDATE {' & '.join(types)}]"
+                types_str = " & ".join(types)
+                badge_text = f"UPDATE {types_str}"
             else:
-                badge_text = "[BARU]"
+                badge_text = "BARU"
+
+            badge_html = f"<span class='update-badge'>{badge_text}</span>"
 
             date_str = sch["date"]
             try:
@@ -272,14 +275,14 @@ class ScheduleChecker:
                 members_badges = "".join(
                     f'<span class="member-badge">{m}</span>' for m in sch["members"]
                 )
-                members_html = f"<br><br><strong>Anggota yang tampil:</strong><div class='member-list'>{members_badges}</div>"
+                members_html = f"<div class='section-title'>Anggota yang tampil:</div><div class='member-list'>{members_badges}</div>"
             else:
                 if sch["type"] == "SHOW":
-                    members_html = '<br><br><strong>Anggota yang tampil:</strong><div class="member-list"><em>Belum tersedia</em></div>'
+                    members_html = f"<div class='section-title'>Anggota yang tampil:</div><div class='member-list'><span class='member-badge' style='background:#f3f4f6;color:#6b7280;border-color:#e5e7eb;'>Akan segera diumumkan</span></div>"
 
             sales_html = ""
-            if sch.get("sales_period"):
-                sales_html += "<strong>Info Tiket:</strong><ul class='ticket-list'>"
+            if sch["sales_period"]:
+                sales_html = "<div class='section-title'>Periode Penjualan Tiket:</div><ul class='ticket-list'>"
                 for sp in sch["sales_period"]:
                     lbl = sp.get("label", "")
                     start_d = format_ticket_date(sp.get("start_date", ""))
@@ -288,26 +291,34 @@ class ScheduleChecker:
                     quotas = []
                     for pricing in sp.get("pricing", []):
                         if "quota" in pricing:
-                            quotas.append(f"{pricing.get('quota')} tiket")
-                    quota_str = ""
-                    if quotas:
-                        quota_str = f" (Quota: {', '.join(quotas)})"
+                            quotas.append(
+                                f"{pricing['quota']} {pricing.get('label', '')}".strip()
+                            )
 
-                    sales_html += f"<li>{lbl}: {start_d} - {end_d}{quota_str}</li>"
+                    quota_html = ""
+                    if quotas:
+                        quota_html = f"<div style='margin-bottom: 2px; color: #4b5563;'>Quota: {', '.join(quotas)}</div>"
+
+                    sales_html += f"<li><strong>{lbl}</strong>{quota_html}<div style='color: #6b7280;'>{start_d} - {end_d}</div></li>"
                 sales_html += "</ul>"
 
             return f"""
-                <li class="schedule-item">
-                    <strong>{badge_text} {title_text}</strong><br>
-                    {date_wib} • {time_str} WIB{members_html}{sales_html}
-                </li>
+                <div class="schedule-card">
+                    <div class="schedule-header">
+                        <span class="schedule-title">{title_text}</span>
+                        {badge_html}
+                    </div>
+                    <div class="schedule-time">📅 {date_wib} &bull; ⏰ {time_str} WIB</div>
+                    {members_html}
+                    {sales_html}
+                </div>
             """
 
         # MOCK DATE to July 1st, 2026
         today_wib = datetime(2026, 7, 1, 10, 0, tzinfo=timezone(timedelta(hours=7)))
         today_str = _format_date_only_wib(today_wib.isoformat())
 
-        content_html = "<p>Terima kasih atas dukungannya untuk JKT48.</p><p>Berikut adalah informasi mengenai jadwal dan lineup terbaru:</p><ul>"
+        content_html = ""
 
         if new_schedules:
             for sch in new_schedules:
@@ -317,39 +328,54 @@ class ScheduleChecker:
             for sch in updated_schedules:
                 content_html += render_schedule(sch, is_update=True)
 
-        content_html += "</ul><br><p>Mohon dukungannya selalu untuk JKT48.</p>"
+        content_html += (
+            "<div class='footer'>Mohon dukungannya selalu untuk JKT48.</div>"
+        )
 
         return f"""
         <!DOCTYPE html>
         <html>
         <head>
         <meta charset="utf-8">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
         <style>
-            body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; background: #fff; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto; }}
-            h1 {{ color: #d6001c; font-size: 26px; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 15px; }}
-            .date {{ color: #777; font-size: 14px; margin-bottom: 30px; font-weight: bold; }}
-            .content {{ font-size: 16px; }}
-            ul {{ margin-bottom: 20px; }}
-            .schedule-item {{ margin-bottom: 25px; }}
-            .member-list {{ margin-top: 10px; margin-bottom: 25px; }}
-            .ticket-list {{ margin-top: 5px; list-style-type: circle; margin-bottom: 0; }}
-            .ticket-list li {{ margin-bottom: 5px; font-size: 14px; }}
-            .member-badge {{
-                background-color: #fee2e2;
-                color: #dc2626;
-                padding: 4px 12px;
-                border-radius: 9999px;
-                display: inline-block;
-                margin-right: 6px;
-                margin-bottom: 8px;
-                font-size: 14px;
+            html {{ background-color: #fcfcfc; }}
+            body {{ 
+                font-family: 'Inter', -apple-system, sans-serif; 
+                padding: 40px; 
+                background-color: #fcfcfc; 
+                color: #1f2937; 
+                line-height: 1.5; 
+                max-width: 800px; 
+                margin: 0 auto;
             }}
+            h1 {{ color: #111827; font-size: 28px; margin-bottom: 8px; font-weight: 900; border: none; margin-top: 0; }}
+            .date {{ color: #6b7280; font-size: 14px; margin-bottom: 24px; font-weight: 500; }}
+            .subtitle {{ font-size: 15px; color: #4b5563; margin-bottom: 0; }}
+            .schedule-container {{ display: flex; flex-direction: column; gap: 20px; }}
+            .schedule-card {{ background: #ffffff; border: 1px solid #e4e4e7; border-radius: 16px; padding: 24px; }}
+            .schedule-header {{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }}
+            .schedule-title {{ font-size: 18px; font-weight: 900; color: #111827; }}
+            .update-badge {{ background: #ef4444; color: white; font-size: 11px; padding: 4px 10px; border-radius: 9999px; font-weight: 800; letter-spacing: 0.5px; white-space: nowrap; }}
+            .schedule-time {{ color: #4b5563; font-size: 14px; font-weight: 500; margin-bottom: 20px; }}
+            .section-title {{ font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px; }}
+            .member-list {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }}
+            .member-badge {{ background-color: #fee2e2; color: #dc2626; padding: 6px 14px; border-radius: 9999px; font-size: 13px; font-weight: 600; border: none; }}
+            .ticket-list {{ list-style-type: none; padding: 0; display: flex; flex-direction: column; gap: 10px; margin: 0; }}
+            .ticket-list li {{ background: #fafafa; border: 1px solid #f4f4f5; border-radius: 12px; padding: 12px 16px; font-size: 13px; color: #3f3f46; font-weight: 500; }}
+            .ticket-list li strong {{ color: #18181b; font-size: 14px; }}
+            .footer {{ margin-top: 32px; font-size: 14px; color: #6b7280; font-weight: 500; text-align: center; }}
         </style>
         </head>
         <body>
-            <h1>Informasi Jadwal & Lineup Terbaru</h1>
-            <div class="date">{today_str}</div>
-            <div class="content">{content_html}</div>
+            <div class="schedule-container">
+                <div class="schedule-card">
+                    <h1>Informasi Jadwal & Lineup Terbaru</h1>
+                    <div class="date">{today_str}</div>
+                    <p class="subtitle">Terima kasih atas dukungannya untuk JKT48.<br>Berikut adalah informasi mengenai jadwal dan lineup terbaru</p>
+                </div>
+                {content_html}
+            </div>
         </body>
         </html>
         """
