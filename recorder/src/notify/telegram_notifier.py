@@ -793,3 +793,63 @@ async def send_daily_schedule_reminder(payload: dict, config: RecorderConfig) ->
     except Exception:
         log.exception("Exception during daily reminder notification:")
         return False
+
+
+async def send_birthday_notification(member: dict, config) -> bool:
+    name = member.get("name", "Member")
+    age = member.get("age", "?")
+    img_url = member.get("img", "")
+
+    caption = f"🎂 Selamat ulang tahun {name} yang ke {age}"
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            upload_success = False
+
+            if img_url:
+                log.info("Sending birthday notification with Photo")
+                tg_url = (
+                    f"https://api.telegram.org/bot{config.telegram_bot_token}/sendPhoto"
+                )
+                tg_resp = await client.post(
+                    tg_url,
+                    json={
+                        "chat_id": config.telegram_chat_id,
+                        "caption": caption,
+                        "parse_mode": "HTML",
+                        "photo": img_url,
+                    },
+                )
+                if tg_resp.is_success:
+                    upload_success = True
+                else:
+                    log.warning(
+                        "Telegram Photo failed for birthday: %s %s",
+                        tg_resp.status_code,
+                        tg_resp.text,
+                    )
+
+            if upload_success:
+                return True
+
+            # Fallback to text message if photo fails
+            tg_url = (
+                f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
+            )
+            tg_resp = await client.post(
+                tg_url,
+                json={
+                    "chat_id": config.telegram_chat_id,
+                    "text": caption,
+                    "parse_mode": "HTML",
+                },
+            )
+            if not tg_resp.is_success:
+                log.error("Birthday notification failed: %s", tg_resp.text)
+                return False
+
+            return True
+
+    except Exception:
+        log.exception("Exception during birthday notification:")
+        return False
