@@ -146,7 +146,6 @@ def _format_end_live_caption(data: dict, live_id: str = "") -> str:
     if date_wib_range:
         caption += f"📅 {date_wib_range}\n"
 
-    caption += f"\nArsip Live: {member_nickname} ({platform})\n"
     caption += f"❝<i>{title}</i>❞\n\n"
 
     caption += f"<b>Durasi:</b> {duration_str}\n"
