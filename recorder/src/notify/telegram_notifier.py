@@ -878,11 +878,13 @@ async def send_upcoming_schedule_reminder(sch: dict, config) -> bool:
             greeting = "malam"
 
         if sch_type == "SHOW":
-            team_name = (
-                "JKT48 Trainee"
-                if member_type.upper() == "TRAINEE"
-                else f"Team {member_type} JKT48"
-            )
+            m_type_up = member_type.upper()
+            if m_type_up == "TRAINEE":
+                team_name = "JKT48 Trainee"
+            elif m_type_up == "JKT48":
+                team_name = "JKT48"
+            else:
+                team_name = f"Team {m_type_up} JKT48"
             text = f"Selamat {greeting}! Sudah siapkah untuk menyaksikan pertunjukan {title} oleh {team_name}?"
         else:
             text = f"Selamat {greeting}! Sudah siapkah untuk mengikuti {title}?"
