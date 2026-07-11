@@ -853,3 +853,60 @@ async def send_birthday_notification(member: dict, config) -> bool:
     except Exception:
         log.exception("Exception during birthday notification:")
         return False
+
+
+async def send_upcoming_schedule_reminder(sch: dict, config) -> bool:
+    try:
+        title = sch.get("title", "")
+        sch_type = sch.get("type", "")
+        member_type = sch.get("jkt48_member_type", "")
+        start_time_str = sch.get("start_time", "00:00:00")
+
+        # Parse hour for greeting
+        try:
+            hour = int(start_time_str.split(":")[0])
+        except Exception:
+            hour = 12
+
+        if 0 <= hour < 11:
+            greeting = "pagi"
+        elif 11 <= hour < 15:
+            greeting = "siang"
+        elif 15 <= hour < 18:
+            greeting = "sore"
+        else:
+            greeting = "malam"
+
+        if sch_type == "SHOW":
+            m_type_up = member_type.upper()
+            if m_type_up == "TRAINEE":
+                team_name = "JKT48 Trainee"
+            elif m_type_up == "JKT48":
+                team_name = "JKT48"
+            else:
+                team_name = f"Team {m_type_up} JKT48"
+            text = f"Selamat {greeting}! Sudah siapkah untuk menyaksikan pertunjukan {title} oleh {team_name}?"
+        else:
+            text = f"Selamat {greeting}! Sudah siapkah untuk mengikuti {title}?"
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            tg_url = (
+                f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
+            )
+            tg_resp = await client.post(
+                tg_url,
+                json={
+                    "chat_id": config.telegram_chat_id,
+                    "text": text,
+                    "parse_mode": "HTML",
+                },
+            )
+            if not tg_resp.is_success:
+                log.error("Upcoming schedule reminder failed: %s", tg_resp.text)
+                return False
+
+            return True
+
+    except Exception:
+        log.exception("Exception during upcoming schedule reminder:")
+        return False

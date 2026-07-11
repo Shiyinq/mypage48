@@ -2,6 +2,17 @@
 
 Auto-record live stream video + chat + gift from SHOWROOM and IDN Live, with automatic upload to YouTube and replay data storage to R2.
 
+## Key Features
+
+- **🎥 Auto-Recording**: Automatically detects and records live streams from SHOWROOM and IDN Live in real-time.
+- **💬 Chat & Gift Logging**: Captures live chat and gifts, exporting them to structured NDJSON and video-synced SRT formats.
+- **🔄 Auto YouTube Upload**: Automatically uploads the finalized MP4 videos to YouTube (supports resumable uploads and OAuth flow).
+- **☁️ Cloud Replay Storage**: Syncs metadata, chat logs, and generated thumbnails to the backend/R2 for the web replay player.
+- **🎭 Theater & News Monitor**: Continuously tracks JKT48 official news and theater schedules, sending real-time alerts to Telegram for any updates.
+- **📅 Daily Schedule Reminder**: Automatically sends a summary of today's JKT48 theater/event schedules to Telegram at exactly 12:00 PM WIB.
+- **⏳ Upcoming Schedule Reminder**: Sends a dynamic text notification exactly 30 minutes before a show or event begins.
+- **🎂 Birthday Notifier**: Checks and sends birthday greetings with member photos to Telegram at exactly 00:00 AM WIB.
+
 ## Prerequisites
 
 | Tool | Minimum |
@@ -110,8 +121,10 @@ recorder/
     └── theater/
         ├── __init__.py
         ├── news_checker.py       # Check for new JKT48 news and announcements
+        ├── schedule_checker.py   # Background loop for daily schedule notifications at 12:00 WIB
+        ├── birthday_checker.py   # Background loop for daily birthday notifications at 00:00 WIB
         ├── html_screenshot.py    # Playwright utility for full-page HTML capture
-        └── watcher.py            # Background notification sender for Telegram
+        └── watcher.py            # Main theater orchestration (if any)
 ```
 
 ## Quick Start
@@ -169,7 +182,10 @@ recorder/recordings/
 3. Live ends → stop, remux `.mkv` → `.mp4`, generate `.srt` + `.json` + screenshots
 4. Output: `.mp4` (video) + `.srt` (chat) + `.json` (metadata) + `.jsonl` (raw chat data) + `screenshots/` + `_yt_thumb.jpg` (collage)
 5. **Upload pipeline**: Watcher picks up completed recordings → generate `_yt_thumb.jpg` → upload to YouTube (if configured) → upload replay data (JSONL + SRT + Thumbnails) to backend API for R2 storage → cleanup folder
-6. **Theater mode**: Runs independently to monitor JKT48 News and send MediaGroup notifications to Telegram when new announcements appear.
+6. **Theater mode**: Runs independently to monitor JKT48 News, track Schedule updates, and send automated notifications to Telegram. It also includes daily background routines:
+   - **Daily Schedule Reminder**: Triggers every day at 12:00 PM WIB to summarize today's shows.
+   - **Upcoming Schedule Reminder**: Triggers dynamically 30 minutes before any show or event starts.
+   - **Daily Birthday Reminder**: Triggers every day at 12:00 AM WIB to congratulate members having a birthday today.
 
 ## Output Files
 
@@ -228,6 +244,8 @@ This format is 100% compatible with the `ReplayChat.svelte` parser on the fronte
 |----------|---------|-------------|
 | `REC_API_BASE_URL` | `http://localhost:8000/api` | Backend API URL |
 | `REC_POLL_INTERVAL` | `10` | Live poll interval in seconds |
+| `REC_NEWS_CHECK_INTERVAL` | `480` | News check poll interval in seconds |
+| `REC_SCHEDULE_CHECK_INTERVAL` | `480` | Schedule check poll interval in seconds |
 | `REC_RECORDINGS_DIR` | `recorder/recordings` | Output directory |
 | `REC_MAX_RECORDING_HOURS` | `4` | Max recording duration |
 | `REC_SHOWROOM_COMMENT_INTERVAL` | `2.0` | SHOWROOM comment poll interval |

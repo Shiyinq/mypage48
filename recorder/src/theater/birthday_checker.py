@@ -17,7 +17,8 @@ class BirthdayChecker:
         self.log.info("Checking member birthdays for %s", now_wib.strftime("%Y-%m-%d"))
         try:
             async with httpx.AsyncClient(timeout=15.0) as client:
-                resp = await client.get("https://api.mypage48.com/members/birthdays")
+                api_url = f"{self.config.api_base_url}/members/birthdays"
+                resp = await client.get(api_url)
                 if not resp.is_success:
                     self.log.warning(
                         "Failed to fetch birthdays: HTTP %s", resp.status_code

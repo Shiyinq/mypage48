@@ -11,6 +11,7 @@ from ..config import RecorderConfig
 from ..notify.telegram_notifier import (
     _format_date_only_wib,
     send_daily_schedule_reminder,
+    send_upcoming_schedule_reminder,
 )
 from .html_screenshot import capture_html_screenshot
 
@@ -21,7 +22,11 @@ class ScheduleChecker:
         self.log = logging.getLogger("theater")
         self.theater_dir = self.config.theater_dir
         self.state_file = os.path.join(self.theater_dir, "last_schedules_state.json")
+        self.upcoming_state_file = os.path.join(
+            self.theater_dir, "upcoming_reminders_state.json"
+        )
         self.pending_dir = os.path.join(self.theater_dir, "pending_notifications")
+        self.today_schedules_cache = []
 
         os.makedirs(self.theater_dir, exist_ok=True)
         os.makedirs(self.pending_dir, exist_ok=True)
@@ -37,6 +42,19 @@ class ScheduleChecker:
 
     def _save_schedule_state(self, state: dict):
         with open(self.state_file, "w") as f:
+            json.dump(state, f)
+
+    def _get_upcoming_state(self) -> dict:
+        if os.path.exists(self.upcoming_state_file):
+            try:
+                with open(self.upcoming_state_file, "r") as f:
+                    return json.load(f)
+            except Exception:
+                return {}
+        return {}
+
+    def _save_upcoming_state(self, state: dict):
+        with open(self.upcoming_state_file, "w") as f:
             json.dump(state, f)
 
     async def _fetch_detail(
@@ -95,6 +113,7 @@ class ScheduleChecker:
 
         new_schedules = []
         updated_schedules = []
+        schedules_today_cache = []
 
         try:
             async with httpx.AsyncClient(timeout=15.0, headers=headers) as client:
@@ -182,6 +201,10 @@ class ScheduleChecker:
                                 "sales_period": sales_period,
                             }
 
+                        # Cache today's schedules for upcoming reminder loop
+                        if sch_date_str == today_wib.date().isoformat():
+                            schedules_today_cache.append(sch_data)
+
                 if new_schedules or updated_schedules:
                     self.log.info(
                         "Found %d new schedules and %d updated schedules.",
@@ -207,6 +230,8 @@ class ScheduleChecker:
                     self._save_schedule_state(new_state)
                 else:
                     self.log.debug("No new schedules or updates found.")
+
+                self.today_schedules_cache = schedules_today_cache
 
         except Exception:
             self.log.exception("Exception during schedule check:")
@@ -512,6 +537,9 @@ class ScheduleChecker:
         # Start the daily reminder loop in background
         reminder_task = asyncio.create_task(self._daily_reminder_loop(stop_event))
 
+        # Start upcoming reminder loop in background
+        upcoming_task = asyncio.create_task(self._upcoming_reminder_loop(stop_event))
+
         while not stop_event.is_set():
             await self._check_schedules()
 
@@ -524,3 +552,67 @@ class ScheduleChecker:
 
         # Wait for reminder loop to finish
         await reminder_task
+        await upcoming_task
+
+    async def _upcoming_reminder_loop(self, stop_event: asyncio.Event):
+        while not stop_event.is_set():
+            tz_wib = timezone(timedelta(hours=7))
+            now = datetime.now(tz_wib)
+            today_str = now.strftime("%Y-%m-%d")
+
+            try:
+                upcoming_state = self._get_upcoming_state()
+                state_changed = False
+
+                # Cleanup old dates
+                for k in list(upcoming_state.keys()):
+                    if upcoming_state[k] != today_str:
+                        del upcoming_state[k]
+                        state_changed = True
+
+                for sch in self.today_schedules_cache:
+                    sch_id = str(sch.get("id"))
+                    start_time_str = sch.get("start_time")
+                    date_str = sch.get("date")
+
+                    if not sch_id or not start_time_str or not date_str:
+                        continue
+
+                    try:
+                        # Combine date and time
+                        dt_str = f"{date_str} {start_time_str}"
+                        sch_dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+                        sch_dt = sch_dt.replace(tzinfo=tz_wib)
+
+                        time_diff = (sch_dt - now).total_seconds() / 60.0
+
+                        # Trigger exactly between 0 to 30 mins before the show
+                        if 0 <= time_diff <= 30.0:
+                            if upcoming_state.get(sch_id) != today_str:
+                                self.log.info(
+                                    "Sending upcoming (H-30) reminder for schedule: %s",
+                                    sch_id,
+                                )
+                                success = await send_upcoming_schedule_reminder(
+                                    sch, self.config
+                                )
+                                if success:
+                                    upcoming_state[sch_id] = today_str
+                                    state_changed = True
+                    except Exception as e:
+                        self.log.warning(
+                            "Exception processing time for upcoming reminder (sch_id=%s): %s",
+                            sch_id,
+                            e,
+                        )
+
+                if state_changed:
+                    self._save_upcoming_state(upcoming_state)
+
+            except Exception as e:
+                self.log.exception("Exception in upcoming reminder loop: %s", e)
+
+            try:
+                await asyncio.wait_for(stop_event.wait(), timeout=60)
+            except asyncio.TimeoutError:
+                pass
