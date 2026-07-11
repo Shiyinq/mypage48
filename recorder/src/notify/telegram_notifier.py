@@ -771,6 +771,8 @@ async def send_daily_schedule_reminder(payload: dict, config: RecorderConfig) ->
         entry += f"\n  • <a href='{url}'>Detail</a>\n\n"
         caption += entry
 
+    caption += "<i>~ MyPage48 ~</i>"
+
     tg_url = f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
 
     try:
@@ -800,7 +802,7 @@ async def send_birthday_notification(member: dict, config) -> bool:
     age = member.get("age", "?")
     img_url = member.get("img", "")
 
-    caption = f"🎂 Selamat ulang tahun {name} yang ke {age}"
+    caption = f"🎂 Selamat ulang tahun {name} yang ke {age}\n\n<i>~ MyPage48 ~</i>"
 
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
@@ -885,9 +887,9 @@ async def send_upcoming_schedule_reminder(sch: dict, config) -> bool:
                 team_name = "JKT48"
             else:
                 team_name = f"Team {m_type_up} JKT48"
-            text = f"Selamat {greeting}! Sudah siapkah untuk menyaksikan pertunjukan {title} oleh {team_name}?"
+            text = f"Selamat {greeting}! Sudah siapkah untuk menyaksikan pertunjukan {title} oleh {team_name}?\n\n<i>~ MyPage48 ~</i>"
         else:
-            text = f"Selamat {greeting}! Sudah siapkah untuk mengikuti {title}?"
+            text = f"Selamat {greeting}! Sudah siapkah untuk mengikuti {title}?\n\n<i>~ MyPage48 ~</i>"
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             tg_url = (
@@ -924,6 +926,8 @@ async def send_monthly_birthday_list(month_name: str, members: list, config) -> 
             name = m.get("name", "")
             age = m.get("new_age", "")
             text += f"• {name} - {b_date} ({age} Tahun)\n"
+
+        text += "\n<i>~ MyPage48 ~</i>"
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             tg_url = (
