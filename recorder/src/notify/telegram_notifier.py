@@ -910,3 +910,39 @@ async def send_upcoming_schedule_reminder(sch: dict, config) -> bool:
     except Exception:
         log.exception("Exception during upcoming schedule reminder:")
         return False
+
+
+async def send_monthly_birthday_list(month_name: str, members: list, config) -> bool:
+    try:
+        if not members:
+            return True
+
+        text = f"🎉 <b>Daftar Ulang Tahun Member JKT48 Bulan {month_name.capitalize()}</b> 🎉\n\n"
+
+        for m in members:
+            b_date = m.get("birthdate", "")
+            name = m.get("name", "")
+            age = m.get("new_age", "")
+            text += f"• {name} - {b_date} ({age} Tahun)\n"
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            tg_url = (
+                f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
+            )
+            tg_resp = await client.post(
+                tg_url,
+                json={
+                    "chat_id": config.telegram_chat_id,
+                    "text": text,
+                    "parse_mode": "HTML",
+                },
+            )
+            if not tg_resp.is_success:
+                log.error("Monthly birthday list failed: %s", tg_resp.text)
+                return False
+
+            return True
+
+    except Exception:
+        log.exception("Exception during monthly birthday list:")
+        return False
