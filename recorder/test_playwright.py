@@ -13,10 +13,14 @@ LIVE_DETAIL_BASE_URL = "https://mypage48.com/jkt48/live/history/live"
 
 async def main():
     live_ids = [
+        "510064-1783782000",
         "510064-1783518537",
         "ayo-ngobrol-bareng-260708162059",
         "haii-260709221413",
+        "hi-260711230704",
     ]
+
+    from recorder.src.notify.telegram_notifier import _process_and_split_image
 
     for live_id in live_ids:
         output_dir = os.path.join(RECORDINGS_DIR, f"test_{live_id}")
@@ -29,6 +33,14 @@ async def main():
         success = await capture_web_screenshot(url, output_path)
         if success:
             print(f"Screenshot saved to {output_path}")
+            # Test the splitting logic
+            split_paths = _process_and_split_image(output_path)
+            if len(split_paths) > 1:
+                print(f"✅ Image split successfully into {len(split_paths)} parts!")
+                for i, p in enumerate(split_paths):
+                    print(f"  Part {i+1}: {p}")
+            else:
+                print("Image size is within limits, no splitting required.")
         else:
             print("Failed to capture screenshot")
 
