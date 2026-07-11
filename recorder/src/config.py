@@ -8,6 +8,7 @@ class RecorderConfig(BaseSettings):
     api_base_url: str = "http://localhost:8000/api"
     poll_interval: int = 10
     news_check_interval: int = 480
+    schedule_check_interval: int = 480
     recordings_dir: str = str(Path(__file__).parent.parent / "recordings")
     theater_dir: str = str(Path(__file__).parent.parent / "theater")
     max_recording_hours: int = 4
