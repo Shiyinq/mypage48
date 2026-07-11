@@ -278,7 +278,7 @@ async def send_end_live_notification(
                                     os.path.join(screenshot_dir, fname),
                                 )
                             )
-                            if len(images_to_send) >= 4:
+                            if len(images_to_send) >= 5:
                                 break
 
             upload_success = False
