@@ -517,7 +517,7 @@ class ScheduleChecker:
 
             try:
                 await asyncio.wait_for(
-                    stop_event.wait(), timeout=self.config.news_check_interval
+                    stop_event.wait(), timeout=self.config.schedule_check_interval
                 )
             except asyncio.TimeoutError:
                 pass
