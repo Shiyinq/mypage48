@@ -41,7 +41,7 @@ class ScheduleChecker:
 
     async def _fetch_detail(
         self, client: httpx.AsyncClient, ref_code: str
-    ) -> tuple[list[str], list[dict]]:
+    ) -> tuple[list[str] | None, list[dict] | None]:
         detail_url = f"https://jkt48.com/api/v1/theater-shows/{ref_code}?lang=id"
         try:
             resp = await client.get(detail_url, timeout=10.0)
@@ -56,9 +56,16 @@ class ScheduleChecker:
                     elif isinstance(m, str):
                         members.append(m)
                 return sorted(members), sales_period
+            else:
+                self.log.warning(
+                    "Failed to fetch schedule detail %s: HTTP %s",
+                    ref_code,
+                    resp.status_code,
+                )
+                return None, None
         except Exception as e:
             self.log.warning("Exception fetching schedule detail %s: %s", ref_code, e)
-        return [], []
+        return None, None
 
     async def _check_schedules(self):
         self.log.info("Checking JKT48 schedules...")
@@ -124,9 +131,18 @@ class ScheduleChecker:
                         members = []
                         sales_period = []
                         if sch.get("type") == "SHOW" and sch.get("reference_code"):
-                            members, sales_period = await self._fetch_detail(
+                            fetched_members, fetched_sales = await self._fetch_detail(
                                 client, sch.get("reference_code")
                             )
+                            if fetched_members is None:
+                                if sch_id in current_state:
+                                    members = current_state[sch_id].get("members", [])
+                                    sales_period = current_state[sch_id].get(
+                                        "sales_period", []
+                                    )
+                            else:
+                                members = fetched_members
+                                sales_period = fetched_sales
 
                         sch_data = {
                             "title": sch.get("title", ""),
@@ -450,9 +466,19 @@ class ScheduleChecker:
                         members = []
                         sales_period = []
                         if sch.get("type") == "SHOW" and sch.get("reference_code"):
-                            members, sales_period = await self._fetch_detail(
+                            fetched_members, fetched_sales = await self._fetch_detail(
                                 client, sch.get("reference_code")
                             )
+                            if fetched_members is None:
+                                current_state = self._get_schedule_state()
+                                if sch_id in current_state:
+                                    members = current_state[sch_id].get("members", [])
+                                    sales_period = current_state[sch_id].get(
+                                        "sales_period", []
+                                    )
+                            else:
+                                members = fetched_members
+                                sales_period = fetched_sales
 
                         sch_data = {
                             "title": sch.get("title", ""),
