@@ -10,6 +10,7 @@ Auto-record live stream video + chat + gift from SHOWROOM and IDN Live, with aut
 - **☁️ Cloud Replay Storage**: Syncs metadata, chat logs, and generated thumbnails to the backend/R2 for the web replay player.
 - **🎭 Theater & News Monitor**: Continuously tracks JKT48 official news and theater schedules, sending real-time alerts to Telegram for any updates.
 - **📅 Daily Schedule Reminder**: Automatically sends a summary of today's JKT48 theater/event schedules to Telegram at exactly 12:00 PM WIB.
+- **⏳ Upcoming Schedule Reminder**: Sends a dynamic text notification exactly 30 minutes before a show or event begins.
 - **🎂 Birthday Notifier**: Checks and sends birthday greetings with member photos to Telegram at exactly 00:00 AM WIB.
 
 ## Prerequisites
@@ -183,6 +184,7 @@ recorder/recordings/
 5. **Upload pipeline**: Watcher picks up completed recordings → generate `_yt_thumb.jpg` → upload to YouTube (if configured) → upload replay data (JSONL + SRT + Thumbnails) to backend API for R2 storage → cleanup folder
 6. **Theater mode**: Runs independently to monitor JKT48 News, track Schedule updates, and send automated notifications to Telegram. It also includes daily background routines:
    - **Daily Schedule Reminder**: Triggers every day at 12:00 PM WIB to summarize today's shows.
+   - **Upcoming Schedule Reminder**: Triggers dynamically 30 minutes before any show or event starts.
    - **Daily Birthday Reminder**: Triggers every day at 12:00 AM WIB to congratulate members having a birthday today.
 
 ## Output Files
