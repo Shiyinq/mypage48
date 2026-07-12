@@ -4,7 +4,7 @@ import subprocess
 import time
 
 
-def start(hls_url: str, mkv_path: str) -> subprocess.Popen:
+def start(hls_url: str, mkv_path: str, headers: dict = None) -> subprocess.Popen:
     os.makedirs(os.path.dirname(mkv_path), exist_ok=True)
 
     ffmpeg_log = os.path.splitext(mkv_path)[0] + ".ffmpeg.log"
@@ -13,11 +13,14 @@ def start(hls_url: str, mkv_path: str) -> subprocess.Popen:
     stderr_f.write(f"URL: {hls_url}\n\n")
     stderr_f.flush()
 
-    proc = subprocess.Popen(
+    ffmpeg_args = ["ffmpeg", "-live_start_index", "-3"]
+
+    if headers:
+        header_str = "".join([f"{k}: {v}\r\n" for k, v in headers.items()])
+        ffmpeg_args.extend(["-headers", header_str])
+
+    ffmpeg_args.extend(
         [
-            "ffmpeg",
-            "-live_start_index",
-            "-3",
             "-i",
             hls_url,
             "-c",
@@ -28,7 +31,11 @@ def start(hls_url: str, mkv_path: str) -> subprocess.Popen:
             "matroska",
             "-y",
             mkv_path,
-        ],
+        ]
+    )
+
+    proc = subprocess.Popen(
+        ffmpeg_args,
         stdout=subprocess.DEVNULL,
         stderr=stderr_f,
     )

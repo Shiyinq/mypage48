@@ -38,6 +38,8 @@ class LiveStatus(BaseModel):
     image: Optional[str] = None
     streaming_url: List[LiveStreamingURL] = []
     member: Optional[LiveMember] = None
+    live_type: str = "public"
+    streamer_uuid: Optional[str] = None
 
 
 class LiveResponse(BaseModel):

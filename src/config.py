@@ -26,6 +26,17 @@ class Settings(BaseSettings):
 
     GEMINI_API_KEY: SecretStr
 
+    # IDN API Key for premium (IDN Live+) streams
+    IDN_LIVE_PLUS_API_KEY: Optional[SecretStr] = None
+    # IDN Auth Token (Bearer) for fetching AWS IVS playback tokens
+    IDN_AUTH_TOKEN: Optional[SecretStr] = None
+    # AES key used by IDN to decrypt the "arishem" token
+    IDN_AES_KEY: str = ""
+    # IDN Access Token (Header: Access-Token)
+    IDN_ACCESS_TOKEN: Optional[SecretStr] = None
+    # IDN Session ID (Header: Session-Id)
+    IDN_SESSION_ID: Optional[str] = None
+
     FRONTEND_URL: str
     ORIGINS: str
 
@@ -206,6 +217,28 @@ class Settings(BaseSettings):
     @property
     def gemini_api_key(self) -> str:
         return self.GEMINI_API_KEY.get_secret_value()
+
+    @property
+    def idn_live_plus_api_key(self) -> Optional[str]:
+        return (
+            self.IDN_LIVE_PLUS_API_KEY.get_secret_value()
+            if self.IDN_LIVE_PLUS_API_KEY
+            else None
+        )
+
+    @property
+    def idn_auth_token(self) -> Optional[str]:
+        return self.IDN_AUTH_TOKEN.get_secret_value() if self.IDN_AUTH_TOKEN else None
+
+    @property
+    def idn_access_token(self) -> Optional[str]:
+        return (
+            self.IDN_ACCESS_TOKEN.get_secret_value() if self.IDN_ACCESS_TOKEN else None
+        )
+
+    @property
+    def idn_session_id(self) -> Optional[str]:
+        return self.IDN_SESSION_ID
 
     @property
     def frontend_url(self) -> str:

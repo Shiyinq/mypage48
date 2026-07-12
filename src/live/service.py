@@ -179,6 +179,45 @@ class LiveService:
             logger.exception(f"Exception in fetch_showroom_lives: {str(e)}")
             raise FetchShowroomError()
 
+    async def _fetch_premium_idn_raw_streams(self) -> List[dict]:
+        from src.config import config
+
+        api_key = config.idn_live_plus_api_key
+        if not api_key:
+            return []
+
+        url = "https://api.idn.app/api/v4/livestreams?category=idnliveplus&n=1"
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.get(
+                    url, headers={"x-api-key": api_key}, timeout=30.0
+                )
+                res.raise_for_status()
+                res_data = res.json()
+                items = res_data.get("data") or []
+
+                normalized = []
+                for item in items:
+                    # Normalize live_at integer to ISO format string so the existing parser doesn't break
+                    live_at_int = item.get("live_at")
+                    live_at_str = None
+                    if live_at_int:
+                        try:
+                            # Convert to ISO string with Z
+                            dt = datetime.fromtimestamp(live_at_int, tz=timezone.utc)
+                            live_at_str = dt.isoformat().replace("+00:00", "Z")
+                        except Exception:
+                            pass
+
+                    item["live_at"] = live_at_str
+                    item["live_type"] = "idnliveplus"
+                    item["streamer_uuid"] = item.get("creator", {}).get("uuid")
+                    normalized.append(item)
+                return normalized
+        except Exception as e:
+            logger.warning(f"Failed to fetch IDN premium streams: {e}")
+            return []
+
     async def fetch_idn_lives(self) -> List[LiveStatus]:
         """Fetch active JKT48 streams from official IDN GraphQL"""
         url = "https://api.idn.app/graphql"
@@ -230,6 +269,9 @@ class LiveService:
                             raw_streams.extend(page_streams)
                     except Exception as parse_err:
                         logger.warning(f"Error parsing IDN response page: {parse_err}")
+
+                premium_streams = await self._fetch_premium_idn_raw_streams()
+                raw_streams = premium_streams + raw_streams
 
                 if not raw_streams:
                     return []
@@ -297,7 +339,10 @@ class LiveService:
                                 if stream.get("live_at")
                                 else None,
                                 streaming_url=streaming_urls,
-                                room_identifier=stream.get("room_identifier"),
+                                room_identifier=stream.get("chat_room_id")
+                                if stream.get("live_type") == "idnliveplus"
+                                and stream.get("chat_room_id")
+                                else stream.get("room_identifier"),
                                 room_url_key=stream.get("creator", {}).get("username"),
                                 member=LiveMember(
                                     id=member["id"],
@@ -305,6 +350,8 @@ class LiveService:
                                     nickname=member.get("nickname"),
                                     img=member.get("img"),
                                 ),
+                                live_type=stream.get("live_type", "public"),
+                                streamer_uuid=stream.get("streamer_uuid"),
                             )
                         )
                     else:
@@ -336,7 +383,10 @@ class LiveService:
                                     if stream.get("live_at")
                                     else None,
                                     streaming_url=streaming_urls,
-                                    room_identifier=stream.get("room_identifier"),
+                                    room_identifier=stream.get("chat_room_id")
+                                    if stream.get("live_type") == "idnliveplus"
+                                    and stream.get("chat_room_id")
+                                    else stream.get("room_identifier"),
                                     room_url_key=stream.get("creator", {}).get(
                                         "username"
                                     ),
@@ -347,15 +397,20 @@ class LiveService:
                                         img=stream.get("creator", {}).get("avatar")
                                         or "/media/news/migrated/jkt48logo.jpg",
                                     ),
+                                    live_type=stream.get("live_type", "public"),
+                                    streamer_uuid=stream.get("streamer_uuid"),
                                 )
                             )
 
                 # DEBUG MOCK: If no JKT48 members are live, take the first available IDN live for testing
                 if self.config.is_env_dev and not results and streams:
                     stream = streams[0]
-                    room_id = stream.get("room_identifier") or stream.get(
-                        "creator", {}
-                    ).get("username")
+                    room_id = (
+                        stream.get("chat_room_id")
+                        if stream.get("live_type") == "idnliveplus"
+                        and stream.get("chat_room_id")
+                        else stream.get("room_identifier")
+                    )
                     results.append(
                         LiveStatus(
                             platform="idn",
@@ -395,6 +450,95 @@ class LiveService:
             logger.exception(f"Exception in fetch_idn_lives: {str(e)}")
             raise FetchIdnError()
 
+    async def get_idn_playback_token(
+        self, streamer_uuid: str, slug: str
+    ) -> Optional[str]:
+        """Fetch AWS IVS playback token for premium streams"""
+        from src.config import config
+
+        auth_token = config.idn_auth_token
+        if not auth_token:
+            logger.warning("IDN_AUTH_TOKEN is missing. Cannot fetch playback token.")
+            return None
+
+        url = f"https://api.idn.app/api/v1/apt?streamer_uuid={streamer_uuid}&slug={slug}&n=1"
+        try:
+            # Note: auth_token is expected to include "Bearer ", but let's handle if it doesn't
+            bearer = (
+                auth_token
+                if auth_token.startswith("Bearer ")
+                else f"Bearer {auth_token}"
+            )
+
+            headers = {"Authorization": bearer}
+            if config.idn_live_plus_api_key:
+                headers["X-Api-Key"] = config.idn_live_plus_api_key
+            if config.idn_access_token:
+                headers["Access-Token"] = config.idn_access_token
+            if config.idn_session_id:
+                headers["Session-Id"] = config.idn_session_id
+
+            async with httpx.AsyncClient() as client:
+                res = await client.post(url, headers=headers, timeout=10.0)
+                res.raise_for_status()
+                data = res.json()
+                # `arishem` is the primary playback token for IVS, but it is AES-256-CBC encrypted
+                encrypted_arishem = data.get("data", {}).get("arishem")
+                if not encrypted_arishem:
+                    return None
+
+                import base64
+                import json
+
+                from cryptography.hazmat.backends import default_backend
+                from cryptography.hazmat.primitives.ciphers import (
+                    Cipher,
+                    algorithms,
+                    modes,
+                )
+
+                try:
+                    # The arishem token is a base64 encoded JSON string
+                    if isinstance(encrypted_arishem, str):
+                        try:
+                            decoded_str = base64.b64decode(encrypted_arishem).decode(
+                                "utf-8"
+                            )
+                            payload = json.loads(decoded_str)
+                        except Exception:
+                            # Fallback if it's not base64 encoded
+                            if encrypted_arishem.startswith("{"):
+                                payload = json.loads(encrypted_arishem)
+                            else:
+                                raise ValueError("Invalid arishem format")
+                    else:
+                        payload = encrypted_arishem
+
+                    iv = base64.b64decode(payload["iv"])
+                    ciphertext = base64.b64decode(payload["value"])
+                    key = config.IDN_AES_KEY.encode("utf-8")
+
+                    # Decrypt using AES-256-CBC
+                    cipher = Cipher(
+                        algorithms.AES(key), modes.CBC(iv), backend=default_backend()
+                    )
+                    decryptor = cipher.decryptor()
+                    decrypted_padded = (
+                        decryptor.update(ciphertext) + decryptor.finalize()
+                    )
+
+                    # Remove PKCS7 padding
+                    padding_len = decrypted_padded[-1]
+                    decrypted = decrypted_padded[:-padding_len].decode("utf-8")
+
+                    return decrypted
+                except Exception as e:
+                    logger.error(f"Failed to decrypt IDN arishem token for {slug}: {e}")
+                    return None
+        except Exception as e:
+            logger.exception(f"Failed to fetch IDN playback token for {slug}: {e}")
+            return None
+
     async def get_streaming_url(self, platform: str, id: str) -> LiveStreamInfo:
         """Get streaming URL and room info for a specific platform and ID"""
         if platform == "showroom":
@@ -428,10 +572,42 @@ class LiveService:
                 if live.live_id == id:
                     room_id = live.room_identifier
 
-                    # If room_id is None, try scraping from the live page
-                    if not room_id and live.room_url_key:
+                    # For IDN Live+, we use the detail API to get the AWS IVS Chat Room ARN
+                    if live.live_type == "idnliveplus" and (
+                        not room_id or not str(room_id).startswith("arn:")
+                    ):
                         try:
-                            # IDN Live URL: https://www.idn.app/{username}/live/{slug}
+                            detail_url = (
+                                f"https://api.idn.app/api/v4/livestream/{id}?n=1"
+                            )
+                            async with httpx.AsyncClient(timeout=10.0) as client:
+                                headers = {}
+                                if self.config.idn_live_plus_api_key:
+                                    headers[
+                                        "x-api-key"
+                                    ] = self.config.idn_live_plus_api_key
+                                res = await client.get(detail_url, headers=headers)
+                                if res.status_code == 200:
+                                    data = res.json().get("data", {})
+                                    api_chat_room_id = data.get("chat_room_id")
+                                    if api_chat_room_id:
+                                        room_id = api_chat_room_id
+                                else:
+                                    logger.warning(
+                                        f"Failed to fetch IDN chat room ID. Status: {res.status_code}, Body: {res.text}"
+                                    )
+                        except Exception as api_err:
+                            logger.exception(
+                                f"Failed to fetch IDN chat room ID from detail API for {id}: {api_err}"
+                            )
+
+                    # For regular IDN Live streams, fallback to scraping HTML for the UUID
+                    elif (
+                        live.live_type != "idnliveplus"
+                        and not room_id
+                        and live.room_url_key
+                    ):
+                        try:
                             username = live.room_url_key
                             slug = id
                             scrape_url = f"https://www.idn.app/{username}/live/{slug}"
@@ -461,8 +637,26 @@ class LiveService:
                                 f"Failed to scrape IDN chat room ID for {id}: {scrape_err}"
                             )
 
+                    # For premium streams, fetch and append the playback auth token
+                    streaming_urls = live.streaming_url
+                    if (
+                        live.live_type == "idnliveplus"
+                        and live.streamer_uuid
+                        and streaming_urls
+                    ):
+                        token = await self.get_idn_playback_token(
+                            live.streamer_uuid, id
+                        )
+                        if token:
+                            # Append the token to the URL
+                            base_url = streaming_urls[0].url
+                            separator = "&" if "?" in base_url else "?"
+                            streaming_urls[
+                                0
+                            ].url = f"{base_url}{separator}token={token}"
+
                     return LiveStreamInfo(
-                        streaming_urls=live.streaming_url,
+                        streaming_urls=streaming_urls,
                         room_identifier=room_id,
                         view_num=live.view_num,
                         start_at=live.start_at,
@@ -551,7 +745,12 @@ class LiveService:
     async def proxy_hls_request(self, url: str) -> Dict[str, Any]:
         """Proxy HLS playlist and segments to bypass CORS"""
         try:
-            headers = self.showroom_headers if "showroom-live.com" in url else {}
+            if "showroom-live.com" in url:
+                headers = self.showroom_headers
+            elif "live-video.net" in url or "idn.app" in url:
+                headers = {"Origin": "https://www.idn.app"}
+            else:
+                headers = {}
             async with httpx.AsyncClient(
                 headers=headers, follow_redirects=True, timeout=30.0
             ) as client:
