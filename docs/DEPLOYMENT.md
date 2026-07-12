@@ -245,3 +245,13 @@ If `ufw-docker` accidentally blocks internal container communication (e.g. Nginx
    sudo systemctl restart docker
    ```
 4. **Re-apply Securely**: Once everything is back online and tested, you can safely re-run `bash scripts/setup-server.sh` to apply the secure patch again.
+
+### Updating Cloudflare IPs (Routine Maintenance)
+Cloudflare occasionally adds new IP ranges to their network (roughly every 1-2 years). If Cloudflare introduces a new IP and your firewall isn't updated, some legitimate visitors might get blocked because their traffic originates from that new Cloudflare edge node.
+
+**Solution:**
+If users report that the website is suddenly unreachable from certain regions, or just as a routine check every 6 months, simply refresh the firewall rules by running the setup script again:
+```bash
+bash scripts/setup-server.sh
+```
+This script will safely re-download the latest official Cloudflare IPs (`https://www.cloudflare.com/ips-v4`) and apply them to your UFW Docker rules.
