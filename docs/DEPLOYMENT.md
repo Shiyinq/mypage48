@@ -325,6 +325,18 @@ sudo systemctl restart ssh
 ```
 Your server is now 100% immune to SSH brute-force attacks!
 
+### 11.4b Alternative: Defending Password Auth with Fail2Ban
+If you decide to keep Password Authentication enabled for convenience or safety against lockouts, you **must** protect your server against brute-force bots using `fail2ban`. This tool will automatically ban the IP addresses of hackers who repeatedly guess the wrong password.
+
+Log into your VPS and run these commands to install and activate it:
+```bash
+sudo apt update
+sudo apt install fail2ban -y
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+```
+*(By default, Fail2Ban is automatically configured to monitor SSH. If an IP fails to log in 5 times within 10 minutes, they will be blocked for 10 minutes. This eliminates 99% of brute-force spam.)*
+
 ### 11.5 Emergency Access & Adding New Devices
 **Q: What if I lose my laptop or my SSH key gets deleted? Am I locked out forever?**
 No. You can always log into your VPS provider's website (e.g., Hostinger, DigitalOcean, AWS) and use their **Web Console / VNC** feature. This console acts like a physical monitor plugged directly into the server, bypassing SSH entirely, so it will still accept your VPS password.
