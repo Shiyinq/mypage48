@@ -43,6 +43,7 @@ class LiveStatus(BaseModel):
     member: Optional[LiveMember] = None
     live_type: str = "public"
     streamer_uuid: Optional[str] = None
+    scheduled_at: Optional[datetime] = None
 
 
 class LiveResponse(BaseModel):

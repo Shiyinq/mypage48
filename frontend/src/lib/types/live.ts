@@ -21,6 +21,7 @@ export interface LiveStatus {
 	member: LiveMember;
 	image?: string;
 	live_type?: string;
+	scheduled_at?: string;
 }
 
 export interface StreamingUrl {

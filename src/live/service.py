@@ -180,7 +180,9 @@ class LiveService:
             logger.exception(f"Exception in fetch_showroom_lives: {str(e)}")
             raise FetchShowroomError()
 
-    async def _fetch_premium_idn_raw_streams(self) -> List[dict]:
+    async def _fetch_premium_idn_raw_streams(
+        self, status_filter: Optional[List[str]] = None
+    ) -> List[dict]:
         from src.config import config
 
         api_key = config.idn_live_plus_api_key
@@ -199,6 +201,10 @@ class LiveService:
 
                 normalized = []
                 for item in items:
+                    status = str(item.get("status", "")).upper()
+                    if status_filter is not None and status not in status_filter:
+                        continue
+
                     # Normalize live_at integer to ISO format string so the existing parser doesn't break
                     live_at_int = item.get("live_at")
                     live_at_str = None
@@ -271,7 +277,9 @@ class LiveService:
                     except Exception as parse_err:
                         logger.warning(f"Error parsing IDN response page: {parse_err}")
 
-                premium_streams = await self._fetch_premium_idn_raw_streams()
+                premium_streams = await self._fetch_premium_idn_raw_streams(
+                    status_filter=["LIVE", "ON_LIVE"]
+                )
                 raw_streams = premium_streams + raw_streams
 
                 if not raw_streams:
@@ -836,3 +844,49 @@ class LiveService:
         except Exception as e:
             logger.exception(f"Error proxying HLS request for {url}: {e}")
             raise ProxyError()
+
+    async def get_scheduled_premium_lives(self) -> LiveResponse:
+        """Fetch scheduled IDN Live+ streams"""
+        streams = await self._fetch_premium_idn_raw_streams(status_filter=["SCHEDULED"])
+
+        results = []
+        for stream in streams:
+            scheduled_at_ts = stream.get("scheduled_at")
+            scheduled_at = (
+                datetime.fromtimestamp(scheduled_at_ts, tz=timezone.utc)
+                if scheduled_at_ts
+                else None
+            )
+
+            results.append(
+                LiveStatus(
+                    platform="idn",
+                    live_id=stream.get("slug"),
+                    title=stream.get("title"),
+                    image=stream.get("image_url"),
+                    view_num=stream.get("view_count") or 0,
+                    start_at=scheduled_at,
+                    scheduled_at=scheduled_at,
+                    streaming_url=[],
+                    room_identifier=stream.get("room_identifier"),
+                    room_url_key=stream.get("creator", {}).get("username"),
+                    member=LiveMember(
+                        id=stream.get("creator", {}).get("username") or "",
+                        name=stream.get("creator", {}).get("name") or "",
+                        nickname=str(
+                            stream.get("creator", {}).get("username") or ""
+                        ).split(" ")[0],
+                        img=stream.get("creator", {}).get("image_url")
+                        or stream.get("creator", {}).get("avatar")
+                        or "/media/news/migrated/jkt48logo.jpg",
+                    ),
+                    live_type="idnliveplus",
+                    streamer_uuid=stream.get("streamer_uuid"),
+                )
+            )
+
+        return LiveResponse(
+            data=results,
+            total=len(results),
+            updated_at=datetime.now(timezone.utc),
+        )

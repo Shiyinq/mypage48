@@ -92,6 +92,48 @@ async def test_get_live_status_success(client: AsyncClient, seed_member_socials)
         assert "idn" in platforms
 
 @pytest.mark.asyncio
+async def test_get_scheduled_live_status_success(client: AsyncClient, seed_member_socials):
+    # Mock IDN API for scheduled premium streams
+    mock_idn_resp = MagicMock()
+    mock_idn_resp.status_code = 200
+    mock_idn_resp.raise_for_status = MagicMock()
+    mock_idn_resp.json.return_value = {
+        "data": [
+            {
+                "slug": "idn-scheduled-slug",
+                "title": "IDN Live Feni Scheduled",
+                "playback_url": "",
+                "room_identifier": "feni_room",
+                "status": "scheduled",
+                "scheduled_at": int(datetime.now().timestamp()) + 3600,
+                "idnliveplus": {},
+                "creator": {
+                    "name": "Feni JKT48",
+                    "username": "@jkt48-feni"
+                }
+            }
+        ]
+    }
+
+    async def mock_post(*args, **kwargs):
+        return mock_idn_resp
+
+    mock_client = MagicMock()
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=None)
+    mock_client.get = AsyncMock(side_effect=mock_post)
+
+    with patch("src.live.service.httpx.AsyncClient", return_value=mock_client):
+        response = await client.get("/api/jkt48/live/scheduled")
+        assert response.status_code == 200
+        data = response.json()
+        assert "data" in data
+        assert data["total"] == 1
+        
+        assert data["data"][0]["platform"] == "idn"
+        assert data["data"][0]["live_type"] == "idnliveplus"
+
+@pytest.mark.asyncio
 async def test_get_streaming_url_showroom(client: AsyncClient):
     mock_stream_resp = MagicMock()
     mock_stream_resp.status_code = 200

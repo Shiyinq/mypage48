@@ -18,6 +18,12 @@ async def get_live_status(service: LiveService = Depends(get_live_service)):
     return await service.get_live_status()
 
 
+@router.get("/scheduled", response_model=LiveResponse)
+async def get_scheduled_live_status(service: LiveService = Depends(get_live_service)):
+    """Get scheduled premium live status from IDN"""
+    return await service.get_scheduled_premium_lives()
+
+
 @router.get("/proxy")
 @limiter.limit(
     f"{config.live_proxy_requests_per_minute}/minute", override_defaults=True

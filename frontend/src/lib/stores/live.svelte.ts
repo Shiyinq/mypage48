@@ -16,6 +16,9 @@ interface LiveState {
 	error: string | null;
 	lastUpdated: number;
 	isLoading: boolean;
+	scheduledList: LiveStatus[];
+	scheduledLastUpdated: number;
+	isScheduledLoading: boolean;
 }
 
 const initialState: LiveState = {
@@ -24,7 +27,10 @@ const initialState: LiveState = {
 	currentStream: null,
 	error: null,
 	lastUpdated: 0,
-	isLoading: false
+	isLoading: false,
+	scheduledList: [],
+	scheduledLastUpdated: 0,
+	isScheduledLoading: false
 };
 
 const state = $state<LiveState>(initialState);
@@ -57,6 +63,15 @@ function createLiveStore() {
 		get isLoading() {
 			return state.isLoading;
 		},
+		get scheduledList() {
+			return state.scheduledList;
+		},
+		get isScheduledLoading() {
+			return state.isScheduledLoading;
+		},
+		get scheduledLastUpdated() {
+			return state.scheduledLastUpdated;
+		},
 
 		reset: () => {
 			state.currentStream = null;
@@ -88,6 +103,31 @@ function createLiveStore() {
 					state.error = 'Failed to load live status';
 				} finally {
 					state.isLoading = false;
+				}
+			});
+		},
+
+		loadScheduledList: async (forceRefresh = false) => {
+			const nowVal = Date.now();
+			if (
+				!forceRefresh &&
+				state.scheduledList.length > 0 &&
+				!isCacheExpired(state.scheduledLastUpdated)
+			) {
+				return;
+			}
+
+			const key = `scheduledLive:${forceRefresh}`;
+			return dedup.execute(key, async () => {
+				state.isScheduledLoading = true;
+				try {
+					const data = await liveApi.getScheduledLiveList();
+					state.scheduledList = data || [];
+					state.scheduledLastUpdated = nowVal;
+				} catch (e) {
+					logger.error('Failed to load scheduled lives', e);
+				} finally {
+					state.isScheduledLoading = false;
 				}
 			});
 		},
@@ -217,6 +257,32 @@ export const liveLoading = {
 		fn(state.isLoading);
 		$effect.root(() => {
 			$effect(() => fn(state.isLoading));
+		});
+		return () => {};
+	}
+};
+
+export const scheduledLiveList = {
+	get value() {
+		return state.scheduledList;
+	},
+	subscribe: (cb: (val: LiveStatus[]) => void) => {
+		cb(state.scheduledList);
+		$effect.root(() => {
+			$effect(() => cb(state.scheduledList));
+		});
+		return () => {};
+	}
+};
+
+export const scheduledLiveLoading = {
+	get value() {
+		return state.isScheduledLoading;
+	},
+	subscribe: (fn: (val: boolean) => void) => {
+		fn(state.isScheduledLoading);
+		$effect.root(() => {
+			$effect(() => fn(state.isScheduledLoading));
 		});
 		return () => {};
 	}
