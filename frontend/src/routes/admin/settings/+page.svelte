@@ -84,7 +84,7 @@
 			</p>
 		</div>
 
-		<form on:submit|preventDefault={handleSave} class="space-y-5">
+		<form on:submit|preventDefault={handleSave} autocomplete="off" class="space-y-5">
 			<div class="space-y-2">
 				<label for="auth_token" class="text-sm font-medium text-slate-700 dark:text-slate-300">
 					{t('admin.settings.idnLivePlus.authToken')}
