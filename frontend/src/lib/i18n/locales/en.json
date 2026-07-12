@@ -948,6 +948,7 @@
 			"mute": "Mute",
 			"unmute": "Unmute",
 			"pip": "Picture in Picture",
+			"premium_redirect": "This is a Premium Live. Redirecting to IDN App...",
 			"openOriginal": "Open Original Stream",
 			"multiview": {
 				"title": "Multi-view",

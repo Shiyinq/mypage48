@@ -565,6 +565,9 @@ class LiveService:
                 start_at=start_at,
                 image=image,
                 member=profile,
+                live_type="public",  # Showroom is always public
+                live_id=None,
+                room_url_key=None,
             )
         elif platform == "idn":
             lives = await self.fetch_idn_lives()
@@ -662,6 +665,9 @@ class LiveService:
                         start_at=live.start_at,
                         image=live.image,
                         member=live.member,
+                        live_type=live.live_type,
+                        live_id=live.live_id,
+                        room_url_key=live.room_url_key,
                     )
         raise StreamingUrlNotFoundError()
 

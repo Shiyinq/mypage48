@@ -798,6 +798,7 @@
 			"mute": "ミュート",
 			"unmute": "ミュート解除",
 			"pip": "ピクチャー・イン・ピクチャー",
+			"premium_redirect": "これはプレミアムライブです。IDNアプリにリダイレクトしています...",
 			"openOriginal": "オリジナル配信を開く",
 			"multiview": {
 				"title": "マルチビュー",

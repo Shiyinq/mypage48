@@ -12,7 +12,15 @@
 	} from '$lib/stores/live.svelte';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
 	import { OptimizedImage } from '$lib/components/common';
-	import { showToast, isImmersive, theme, setTheme, isAuthenticated } from '$lib/stores';
+	import {
+		showToast,
+		isImmersive,
+		theme,
+		setTheme,
+		isAuthenticated,
+		userProfile
+	} from '$lib/stores';
+	import { getPremiumLiveRedirectUrl } from '$lib/utils/live';
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveStatus } from '$lib/types';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
@@ -167,6 +175,16 @@
 			if (currentInit !== initCount) return;
 
 			const current = currentStream.value;
+
+			// Add IDN Premium check here
+			if (current) {
+				const redirectUrl = getPremiumLiveRedirectUrl(current, userProfile.data, t, i);
+				if (redirectUrl) {
+					window.location.replace(redirectUrl);
+					return;
+				}
+			}
+
 			if (current && current.streaming_urls && current.streaming_urls.length > 0) {
 				const rawUrl = current.streaming_urls[0]?.url;
 				if (!rawUrl) return;
