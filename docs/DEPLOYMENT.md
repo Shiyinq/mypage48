@@ -129,14 +129,26 @@ We are using Cloudflare Proxy, so we use **Cloudflare Origin Certificates** for 
 
 ## 5. Secure Database Access (MongoDB Compass)
 
-To view your data safely from your laptop:
+To view your data safely from your laptop using SSH Tunnel (since port 27017 is blocked by firewall):
 
 1.  Open **MongoDB Compass**.
-2.  Set Connection String: `mongodb://admin:secret@localhost:27017`
-3.  Go to **More Options** -> **SSH Tunnel**.
-4.  SSH Host: `Your Server IP`
-5.  SSH Username: `Your VPS Username` (e.g. root/ubuntu)
-6.  SSH Key: `Path to your .pem or .id_rsa file`
+2.  Set Connection String URI: `mongodb://YOUR_MONGO_ROOT_USERNAME:YOUR_MONGO_ROOT_PASSWORD@localhost:27017`
+3.  Go to the **Proxy/SSH** tab and configure your tunnel:
+
+    **Option A: Using SSH Key (Recommended & Required if Password Auth is disabled)**
+    - Select **SSH with Identity File**
+    - **SSH Hostname**: `Your Server IP`
+    - **SSH Port**: `22`
+    - **SSH Username**: `Your VPS Username` (e.g., ubuntu / myusername)
+    - **SSH Identity File**: Select `~/.ssh/id_ed25519` (In the Mac file picker, press `Cmd+Shift+G` and type `~/.ssh` to easily find this hidden folder).
+    - **SSH Passphrase**: Enter your local SSH key password (if you set one).
+
+    **Option B: Using Password**
+    - Select **SSH with Password**
+    - **SSH Hostname**: `Your Server IP`
+    - **SSH Port**: `22`
+    - **SSH Username**: `Your VPS Username`
+    - **SSH Password**: `Your VPS Password`
 
 ---
 
@@ -255,3 +267,71 @@ If users report that the website is suddenly unreachable from certain regions, o
 bash scripts/setup-server.sh
 ```
 This script will safely re-download the latest official Cloudflare IPs (`https://www.cloudflare.com/ips-v4`) and apply them to your UFW Docker rules.
+
+---
+
+## 11. SSH Hardening & Local Access
+
+For maximum security against brute-force attacks, it is highly recommended to disable password authentication and use SSH Keys exclusively. You can also configure an SSH alias on your local machine for faster logins.
+
+### 11.1 Generating a Personal SSH Key
+If you haven't already, generate a modern `ed25519` SSH key on your personal computer (Mac/Linux):
+```bash
+ssh-keygen -t ed25519
+```
+*Note: Press Enter to save in the default location (`~/.ssh/id_ed25519`). You can leave the passphrase empty for seamless logins.*
+
+**Tip: Adding or Changing a Passphrase Later**
+If you initially created the key without a passphrase but later decide you want extra local security (e.g., if you share your laptop), you don't need to generate a new key. You can add a passphrase to your existing key by running:
+```bash
+ssh-keygen -p -f ~/.ssh/id_ed25519
+```
+Just press Enter for the old passphrase, then type your new secure passphrase.
+
+
+### 11.2 Copying the Key to the VPS
+Send your public key to the server:
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub username@YOUR_VPS_IP
+```
+*After running this, it will ask for your VPS password one last time. Once successful, test it by running `ssh username@YOUR_VPS_IP` again—you should instantly log in without a password!*
+
+
+### 11.3 Setting Up an SSH Alias (Optional)
+To avoid typing `ssh username@IP` every time, configure an alias in your local `~/.ssh/config` file:
+```bash
+nano ~/.ssh/config
+```
+Add the following block:
+```text
+Host mypage48
+    HostName YOUR_VPS_IP
+    User YOUR_VPS_USERNAME
+    IdentityFile ~/.ssh/id_ed25519
+```
+Now you can instantly log in from your terminal by just typing:
+```bash
+ssh mypage48
+```
+
+### 11.4 Disabling Password Authentication (Crucial)
+Once you have verified that you can log in without a password using your SSH key, you MUST disable password authentication to prevent bots from brute-forcing your server.
+
+Log into your VPS and run:
+```bash
+sudo sed -i 's/^#*PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+sudo sed -i 's/^PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+sudo systemctl restart ssh
+```
+Your server is now 100% immune to SSH brute-force attacks!
+
+### 11.5 Emergency Access & Adding New Devices
+**Q: What if I lose my laptop or my SSH key gets deleted? Am I locked out forever?**
+No. You can always log into your VPS provider's website (e.g., Hostinger, DigitalOcean, AWS) and use their **Web Console / VNC** feature. This console acts like a physical monitor plugged directly into the server, bypassing SSH entirely, so it will still accept your VPS password.
+
+**Q: How do I grant access to a new laptop?**
+1. Generate a new key on the new laptop (`ssh-keygen -t ed25519`).
+2. Print the public key: `cat ~/.ssh/id_ed25519.pub` and copy the text.
+3. From your original laptop (or the Web Console), SSH into the server and run `nano ~/.ssh/authorized_keys`.
+4. Paste the copied text onto a **new line** at the bottom, save, and exit.
+5. The new laptop now has secure access!
