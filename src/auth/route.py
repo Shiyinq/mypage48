@@ -51,11 +51,17 @@ from src.users.service import UserService
 
 def _extract_request_info(request: Request):
     user_agent = request.headers.get("user-agent", "")
-    x_forwarded_for = request.headers.get("x-forwarded-for")
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(",")[0].strip()
+
+    cf_ip = request.headers.get("cf-connecting-ip")
+    if cf_ip:
+        ip = cf_ip.strip()
     else:
-        ip = request.client.host if request.client else "unknown"
+        x_forwarded_for = request.headers.get("x-forwarded-for")
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(",")[0].strip()
+        else:
+            ip = request.client.host if request.client else "unknown"
+
     from user_agents import parse as parse_ua
 
     ua = parse_ua(user_agent)
