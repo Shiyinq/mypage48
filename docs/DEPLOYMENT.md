@@ -129,14 +129,26 @@ We are using Cloudflare Proxy, so we use **Cloudflare Origin Certificates** for 
 
 ## 5. Secure Database Access (MongoDB Compass)
 
-To view your data safely from your laptop:
+To view your data safely from your laptop using SSH Tunnel (since port 27017 is blocked by firewall):
 
 1.  Open **MongoDB Compass**.
-2.  Set Connection String: `mongodb://admin:secret@localhost:27017`
-3.  Go to **More Options** -> **SSH Tunnel**.
-4.  SSH Host: `Your Server IP`
-5.  SSH Username: `Your VPS Username` (e.g. root/ubuntu)
-6.  SSH Key: `Path to your .pem or .id_rsa file`
+2.  Set Connection String URI: `mongodb://YOUR_MONGO_ROOT_USERNAME:YOUR_MONGO_ROOT_PASSWORD@localhost:27017`
+3.  Go to the **Proxy/SSH** tab and configure your tunnel:
+
+    **Option A: Using SSH Key (Recommended & Required if Password Auth is disabled)**
+    - Select **SSH with Identity File**
+    - **SSH Hostname**: `Your Server IP`
+    - **SSH Port**: `22`
+    - **SSH Username**: `Your VPS Username` (e.g., ubuntu / myusername)
+    - **SSH Identity File**: Select `~/.ssh/id_ed25519` (In the Mac file picker, press `Cmd+Shift+G` and type `~/.ssh` to easily find this hidden folder).
+    - **SSH Passphrase**: Enter your local SSH key password (if you set one).
+
+    **Option B: Using Password**
+    - Select **SSH with Password**
+    - **SSH Hostname**: `Your Server IP`
+    - **SSH Port**: `22`
+    - **SSH Username**: `Your VPS Username`
+    - **SSH Password**: `Your VPS Password`
 
 ---
 
