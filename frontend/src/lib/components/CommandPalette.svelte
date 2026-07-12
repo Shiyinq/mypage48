@@ -116,6 +116,14 @@
 							icon: MessageSquare,
 							section: 'admin',
 							perform: () => goto('/admin/feedback')
+						},
+						{
+							id: 'admin-settings',
+							title: t('command.actions.adminSettings'),
+							translationKey: 'command.actions.adminSettings',
+							icon: Settings,
+							section: 'admin',
+							perform: () => goto('/admin/settings')
 						}
 					] as Action[])
 				: []),

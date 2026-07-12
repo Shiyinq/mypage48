@@ -1,11 +1,13 @@
 import asyncio
 import json
+import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus, urljoin
 
 import httpx
 
+from src.admin.service import AdminService
 from src.auth.schemas import UserCurrent
 from src.config import Settings
 from src.live.exceptions import (
@@ -33,12 +35,16 @@ class LiveService:
     def __init__(
         self,
         member_repository: MemberRepository,
+        admin_service: AdminService,
         config: Settings,
     ):
         self.member_repository = member_repository
+        self.admin_service = admin_service
         self.config = config
         self._cache = {}
         self._cache_ttl = 60  # seconds cache
+        self._idn_config_cache = None
+        self._idn_config_updated_at = 0
         self.showroom_headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
             "Accept": "application/json, text/plain, */*",
@@ -180,12 +186,48 @@ class LiveService:
             logger.exception(f"Exception in fetch_showroom_lives: {str(e)}")
             raise FetchShowroomError()
 
+    async def _get_idn_config(self) -> dict:
+        """Fetch IDN config from cache or DB, fallback to .env."""
+        now = time.time()
+        if self._idn_config_cache and (now - self._idn_config_updated_at) < 60:
+            return self._idn_config_cache
+
+        try:
+            db_config = await self.admin_service.get_idn_live_plus_config()
+        except Exception as e:
+            logger.warning(f"Failed to fetch IDN config from DB: {e}")
+            db_config = None
+
+        merged_config = {
+            "api_key": self.config.idn_live_plus_api_key,
+            "auth_token": self.config.idn_auth_token,
+            "access_token": self.config.idn_access_token,
+            "session_id": self.config.idn_session_id,
+            "aes_key": self.config.IDN_AES_KEY,
+        }
+
+        if db_config:
+            if db_config.api_key:
+                merged_config["api_key"] = db_config.api_key
+            if db_config.auth_token:
+                merged_config["auth_token"] = db_config.auth_token
+            if db_config.access_token:
+                merged_config["access_token"] = db_config.access_token
+            if db_config.session_id:
+                merged_config["session_id"] = db_config.session_id
+            if db_config.aes_key:
+                merged_config["aes_key"] = db_config.aes_key
+
+        self._idn_config_cache = merged_config
+        self._idn_config_updated_at = now
+        return merged_config
+
     async def _fetch_premium_idn_raw_streams(
         self, status_filter: Optional[List[str]] = None
     ) -> List[dict]:
-        from src.config import config
-
-        api_key = config.idn_live_plus_api_key
+        """Fetch premium streams (IDN Live+) using the IDN API Key"""
+        idn_config = await self._get_idn_config()
+        api_key = idn_config.get("api_key")
         if not api_key:
             return []
 
@@ -463,9 +505,8 @@ class LiveService:
         self, streamer_uuid: str, slug: str
     ) -> Optional[str]:
         """Fetch AWS IVS playback token for premium streams"""
-        from src.config import config
-
-        auth_token = config.idn_auth_token
+        idn_config = await self._get_idn_config()
+        auth_token = idn_config.get("auth_token")
         if not auth_token:
             logger.warning("IDN_AUTH_TOKEN is missing. Cannot fetch playback token.")
             return None
@@ -480,12 +521,12 @@ class LiveService:
             )
 
             headers = {"Authorization": bearer}
-            if config.idn_live_plus_api_key:
-                headers["X-Api-Key"] = config.idn_live_plus_api_key
-            if config.idn_access_token:
-                headers["Access-Token"] = config.idn_access_token
-            if config.idn_session_id:
-                headers["Session-Id"] = config.idn_session_id
+            if idn_config.get("api_key"):
+                headers["X-Api-Key"] = idn_config["api_key"]
+            if idn_config.get("access_token"):
+                headers["Access-Token"] = idn_config["access_token"]
+            if idn_config.get("session_id"):
+                headers["Session-Id"] = idn_config["session_id"]
 
             async with httpx.AsyncClient() as client:
                 res = await client.post(url, headers=headers, timeout=10.0)
@@ -525,7 +566,7 @@ class LiveService:
 
                     iv = base64.b64decode(payload["iv"])
                     ciphertext = base64.b64decode(payload["value"])
-                    key = config.IDN_AES_KEY.encode("utf-8")
+                    key = (idn_config.get("aes_key") or "").encode("utf-8")
 
                     # Decrypt using AES-256-CBC
                     cipher = Cipher(
@@ -598,10 +639,9 @@ class LiveService:
                                 )
                                 async with httpx.AsyncClient(timeout=10.0) as client:
                                     headers = {}
-                                    if self.config.idn_live_plus_api_key:
-                                        headers[
-                                            "x-api-key"
-                                        ] = self.config.idn_live_plus_api_key
+                                    idn_config = await self._get_idn_config()
+                                    if idn_config.get("api_key"):
+                                        headers["x-api-key"] = idn_config.get("api_key")
                                     res = await client.get(detail_url, headers=headers)
                                     if res.status_code == 200:
                                         data = res.json().get("data", {})

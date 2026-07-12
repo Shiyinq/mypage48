@@ -1083,7 +1083,8 @@
 				"users": "ユーザー",
 				"members": "メンバー",
 				"setlists": "セットリスト",
-				"feedback": "フィードバック"
+				"feedback": "フィードバック",
+				"settings": "設定"
 			},
 			"stats": {
 				"dataUsers": "ユーザーデータ",
@@ -1137,6 +1138,28 @@
 				"saving": "保存中...",
 				"saveChanges": "変更を保存"
 			}
+		},
+		"settings": {
+			"title": "設定",
+			"subtitle": "システム設定とAPI連携の管理",
+			"idnLivePlus": {
+				"title": "IDN Live+ 設定",
+				"description": "IDN Live+プレミアムストリームの取得・再生に必要な認証トークンと復号キーを設定します。これらのトークンはデータベースに暗号化して保存されます。",
+				"authToken": "IDN認証トークン（Bearer）",
+				"authTokenHelp": "再生URLのリクエストに使用されるトークン。",
+				"accessToken": "IDNアクセストークン（Header）",
+				"accessTokenHelp": "Access-Tokenヘッダーで使用されるトークン。",
+				"sessionId": "IDNセッションID",
+				"sessionIdHelp": "Session-Idヘッダーの値。",
+				"apiKey": "IDN Live+ APIキー",
+				"apiKeyHelp": "スケジュールの取得に使用されるX-Api-Key。",
+				"aesKey": "IDN AES復号キー",
+				"aesKeyHelp": "AES-256暗号化されたArishemの再生トークンを復号するためのキー。"
+			},
+			"saving": "保存中...",
+			"saveConfig": "設定を保存",
+			"saveSuccess": "設定が正常に保存されました",
+			"saveFailed": "設定の保存に失敗しました"
 		},
 		"users": {
 			"title": "ユーザー",
@@ -1590,6 +1613,7 @@
 			"eventHistory": "イベント履歴へ",
 			"feedback": "フィードバックへ移動",
 			"adminFeedback": "管理フィードバックへ",
+			"adminSettings": "管理設定へ",
 			"publicProfile": "公開プロフィールへ移動",
 			"journal": "ジャーナルへ移動",
 			"top2shot": "ルーレット＆誕生日へ移動",

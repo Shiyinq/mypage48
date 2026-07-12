@@ -23,6 +23,7 @@
 		Users,
 		Music,
 		MessageSquare,
+		Settings,
 		Upload
 	} from 'lucide-svelte';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
@@ -89,6 +90,12 @@
 			icon: MessageSquare,
 			label: 'admin.dashboard.tabs.feedback',
 			color: 'text-cyan-500'
+		},
+		{
+			href: '/admin/settings',
+			icon: Settings,
+			label: 'admin.dashboard.tabs.settings',
+			color: 'text-slate-500'
 		}
 	];
 

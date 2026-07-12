@@ -1,3 +1,4 @@
+import base64
 import datetime
 import hashlib
 import math
@@ -5,6 +6,7 @@ import re
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
+from cryptography.fernet import Fernet
 from password_validator import PasswordValidator
 
 from src.config import config
@@ -75,6 +77,33 @@ def pagination_aggregate(page: int, limit: int) -> Dict[str, Any]:
 
 def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
+
+
+def _get_fernet() -> Fernet:
+    """Generate a Fernet key using the SECRET_KEY from config."""
+    secret = config.secret_key
+    key_bytes = hashlib.sha256(secret.encode()).digest()
+    return Fernet(base64.urlsafe_b64encode(key_bytes))
+
+
+def fernet_encrypt_value(value: Optional[str]) -> Optional[str]:
+    """Encrypt a string using Fernet and the app's SECRET_KEY."""
+    if not value:
+        return value
+    f = _get_fernet()
+    return f.encrypt(value.encode()).decode()
+
+
+def fernet_decrypt_value(encrypted_value: Optional[str]) -> Optional[str]:
+    """Decrypt a string using Fernet and the app's SECRET_KEY."""
+    if not encrypted_value:
+        return encrypted_value
+    f = _get_fernet()
+    try:
+        return f.decrypt(encrypted_value.encode()).decode()
+    except Exception:
+        # If decryption fails, it might not be encrypted or key changed
+        return encrypted_value
 
 
 def validate_password_strength(password: str) -> bool:

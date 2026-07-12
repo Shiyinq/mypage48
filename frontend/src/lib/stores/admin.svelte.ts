@@ -1,7 +1,7 @@
 import { members as membersApi, type Member } from '$lib/apis/members';
 import { setlistsApi, type Setlist } from '$lib/apis/setlists';
 import { usersApi } from '$lib/apis/users';
-import { adminApi } from '$lib/apis/admin';
+import { adminApi, type IDNLivePlusConfig } from '$lib/apis/admin';
 import { showToast } from './toast.svelte';
 import type { AdminState } from '$lib/types';
 
@@ -42,6 +42,11 @@ const initialState: AdminState = {
 		theater: null,
 		error: null,
 		isLoaded: false
+	},
+	idnLivePlusConfig: {
+		data: null,
+		error: null,
+		isLoaded: false
 	}
 };
 
@@ -52,6 +57,7 @@ let isMembersLoading = $state(false);
 let isSetlistsLoading = $state(false);
 let isUsersLoading = $state(false);
 let isDashboardStatsLoading = $state(false);
+let isIdnLivePlusConfigLoading = $state(false);
 let isDeletingMember = $state(false);
 let isDeletingSetlist = $state(false);
 
@@ -69,6 +75,9 @@ function createAdminStore() {
 		get dashboardStats() {
 			return state.dashboardStats;
 		},
+		get idnLivePlusConfig() {
+			return state.idnLivePlusConfig;
+		},
 		get isMembersLoading() {
 			return isMembersLoading;
 		},
@@ -80,6 +89,9 @@ function createAdminStore() {
 		},
 		get isDashboardStatsLoading() {
 			return isDashboardStatsLoading;
+		},
+		get isIdnLivePlusConfigLoading() {
+			return isIdnLivePlusConfigLoading;
 		},
 		get isDeletingMember() {
 			return isDeletingMember;
@@ -305,6 +317,38 @@ function createAdminStore() {
 				state.dashboardStats.error = 'Failed to load dashboard stats';
 			} finally {
 				isDashboardStatsLoading = false;
+			}
+		},
+
+		// --- IDN Live+ Config Actions ---
+		async loadIdnLivePlusConfig(force = false) {
+			if (isIdnLivePlusConfigLoading) return;
+			if (state.idnLivePlusConfig.isLoaded && !force) return;
+
+			isIdnLivePlusConfigLoading = true;
+			state.idnLivePlusConfig.error = null;
+
+			try {
+				const response = await adminApi.getIdnLivePlusConfig();
+				state.idnLivePlusConfig.data = response.data;
+				state.idnLivePlusConfig.isLoaded = true;
+			} catch (e) {
+				console.error('Failed to load IDN Live+ config', e);
+				showToast('Failed to load IDN Live+ config', 'error');
+				state.idnLivePlusConfig.error = 'Failed to load IDN Live+ config';
+			} finally {
+				isIdnLivePlusConfigLoading = false;
+			}
+		},
+
+		async updateIdnLivePlusConfig(config: IDNLivePlusConfig) {
+			try {
+				const response = await adminApi.updateIdnLivePlusConfig(config);
+				state.idnLivePlusConfig.data = response.data;
+				return response;
+			} catch (e) {
+				console.error('Failed to update IDN Live+ config', e);
+				throw e;
 			}
 		},
 

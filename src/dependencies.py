@@ -451,11 +451,22 @@ def get_news_service(
     return NewsService(repo, config, storage_service)
 
 
+def get_admin_repository(db=Depends(get_db)) -> AdminRepository:
+    return AdminRepository(db)
+
+
+def get_admin_service(
+    repo: AdminRepository = Depends(get_admin_repository),
+) -> AdminService:
+    return AdminService(repo)
+
+
 def get_live_service(
     member_repo: MemberRepository = Depends(get_member_repository),
+    admin_service: AdminService = Depends(get_admin_service),
     config: Settings = Depends(get_settings),
 ) -> LiveService:
-    return LiveService(member_repo, config)
+    return LiveService(member_repo, admin_service, config)
 
 
 def get_sorters_repository(db=Depends(get_db)) -> SortersRepository:
@@ -467,16 +478,6 @@ def get_sorters_service(
     config: Settings = Depends(get_settings),
 ) -> SortersService:
     return SortersService(repo, config)
-
-
-def get_admin_repository(db=Depends(get_db)) -> AdminRepository:
-    return AdminRepository(db)
-
-
-def get_admin_service(
-    repo: AdminRepository = Depends(get_admin_repository),
-) -> AdminService:
-    return AdminService(repo)
 
 
 def get_replay_repository(db=Depends(get_db)) -> ReplayRepository:
