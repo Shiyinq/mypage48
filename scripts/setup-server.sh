@@ -50,11 +50,22 @@ fi
 # 5. Firewall Configuration (UFW)
 echo "🛡️ Configuring Firewall (UFW)..."
 sudo ufw allow ssh
-# Allow Cloudflare IPs
+
+echo "🐋 Installing ufw-docker to prevent Docker firewall bypass..."
+sudo wget -O /usr/local/bin/ufw-docker https://github.com/chaifeng/ufw-docker/raw/master/ufw-docker
+sudo chmod +x /usr/local/bin/ufw-docker
+sudo ufw-docker install
+
+# Allow Cloudflare IPs to access Docker exposed ports
 echo "☁️ Allowing Cloudflare IP ranges..."
-for ip in $(curl -s https://www.cloudflare.com/ips-v4); do sudo ufw allow from $ip to any port 80; done
-for ip in $(curl -s https://www.cloudflare.com/ips-v4); do sudo ufw allow from $ip to any port 443; done
+for ip in $(curl -s https://www.cloudflare.com/ips-v4); do 
+    sudo ufw route allow proto tcp from $ip to any port 80
+    sudo ufw route allow proto tcp from $ip to any port 443
+done
+
 sudo ufw --force enable
+sudo systemctl restart ufw
+sudo systemctl restart docker
 echo "✅ Firewall configured."
 
 # 6. Project Directory Setup
