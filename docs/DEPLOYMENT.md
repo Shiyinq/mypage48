@@ -214,3 +214,44 @@ You need to tell your VPS to trust this new key:
 5.  Add other required secrets: `REMOTE_HOST` (IP), `REMOTE_USER` (e.g. `myremote`), and `REMOTE_TARGET` (e.g. `/home/myremote/mypage48`).
 
 Now, every push to `main` will trigger a fresh deployment!
+
+---
+
+## 10. Troubleshooting UFW & Docker (Firewall)
+
+This project uses `ufw-docker` to solve the classic Docker firewall bypass issue. By default, we lock down Docker exposed ports (80, 443) to ONLY accept traffic from Cloudflare IPs.
+
+If you ever encounter "502 Bad Gateway" internally or your website becomes completely unreachable from Cloudflare, the firewall might be misconfigured.
+
+### How to verify the problem:
+1. **Check if ports are externally open**: From your personal laptop, run `nmap -Pn YOUR_VPS_IP`. If 80/443 are "open" instead of "filtered" or "closed", your Docker is bypassing UFW.
+2. **Check UFW Rules**: Run `sudo ufw status numbered` in the VPS.
+   - You should see rules labeled `ALLOW FWD` for Cloudflare IPs.
+   - If you see `ALLOW IN Anywhere` for port 80 or 443, **DELETE IT** (`sudo ufw delete [number]`), as it leaks your IP to attackers.
+
+### Rollback / Emergency Fix
+If `ufw-docker` accidentally blocks internal container communication (e.g. Nginx cannot reach the backend) or Cloudflare cannot connect:
+
+1. **Clear ufw-docker rules**:
+   ```bash
+   sudo ufw-docker clear
+   ```
+2. **Temporarily Disable UFW** (Optional, if still completely broken):
+   ```bash
+   sudo ufw disable
+   ```
+3. **Restart Docker** (Crucial step to reset internal iptables):
+   ```bash
+   sudo systemctl restart docker
+   ```
+4. **Re-apply Securely**: Once everything is back online and tested, you can safely re-run `bash scripts/setup-server.sh` to apply the secure patch again.
+
+### Updating Cloudflare IPs (Routine Maintenance)
+Cloudflare occasionally adds new IP ranges to their network (roughly every 1-2 years). If Cloudflare introduces a new IP and your firewall isn't updated, some legitimate visitors might get blocked because their traffic originates from that new Cloudflare edge node.
+
+**Solution:**
+If users report that the website is suddenly unreachable from certain regions, or just as a routine check every 6 months, simply refresh the firewall rules by running the setup script again:
+```bash
+bash scripts/setup-server.sh
+```
+This script will safely re-download the latest official Cloudflare IPs (`https://www.cloudflare.com/ips-v4`) and apply them to your UFW Docker rules.
