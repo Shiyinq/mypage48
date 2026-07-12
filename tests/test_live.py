@@ -3,6 +3,8 @@ from httpx import AsyncClient
 from unittest.mock import MagicMock, patch, AsyncMock
 from datetime import datetime
 
+from src.live.schemas import LiveStatus, LiveStreamingURL
+
 @pytest.fixture
 async def seed_member_socials(db):
     """Seed member with socials to match in live status."""
@@ -234,3 +236,62 @@ async def test_get_showroom_gifts_error(client: AsyncClient):
         response = await client.get("/api/jkt48/live/showroom/gifts?room_id=318227")
         assert response.status_code == 500
         assert response.json()["detail"] == "Failed to fetch showroom gifts."
+
+@pytest.mark.asyncio
+async def test_get_streaming_url_idn_premium_forbidden(client: AsyncClient):
+    
+    mock_idn_lives = [
+        LiveStatus(
+            platform="idn",
+            live_id="idn-live-1",
+            room_identifier="feni_room",
+            live_type="idnliveplus"
+        )
+    ]
+    with patch("src.live.service.LiveService.fetch_idn_lives", return_value=mock_idn_lives):
+        response = await client.get("/api/jkt48/live/idn/idn-live-1/streaming-url")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "No streaming URL found for this room."
+
+@pytest.mark.asyncio
+async def test_get_streaming_url_idn_premium_admin(client: AsyncClient, create_user):
+    
+    token, _, _ = await create_user(username="admin_user", is_admin=True)
+    
+    mock_idn_lives = [
+        LiveStatus(
+            platform="idn",
+            live_id="idn-live-1",
+            room_identifier="arn:aws:ivschat:us-west-2:123456789012:room/123",
+            live_type="idnliveplus",
+            streaming_url=[LiveStreamingURL(url="https://example.com/premium.m3u8", quality=1, label="Original")]
+        )
+    ]
+    
+    mock_stream_resp = MagicMock()
+    mock_stream_resp.status_code = 200
+    mock_stream_resp.json.return_value = {
+        "data": {
+            "getLivestreamPlaybackUrl": {
+                "playback_url": "https://example.com/premium.m3u8"
+            }
+        }
+    }
+    
+    mock_client = MagicMock()
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=None)
+    mock_client.post = AsyncMock(return_value=mock_stream_resp)
+
+    with patch("src.live.service.LiveService.fetch_idn_lives", return_value=mock_idn_lives), \
+         patch("src.live.service.httpx.AsyncClient", return_value=mock_client):
+        
+        response = await client.get(
+            "/api/jkt48/live/idn/idn-live-1/streaming-url",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["live_type"] == "idnliveplus"
+        assert len(data["streaming_urls"]) == 1
+        assert data["streaming_urls"][0]["url"] == "https://example.com/premium.m3u8"

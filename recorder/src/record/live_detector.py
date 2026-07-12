@@ -4,6 +4,8 @@ from typing import List, Optional, Tuple
 
 import httpx
 
+from src.config import config
+
 from ..models import LiveInfo
 
 
@@ -11,7 +13,10 @@ class LiveDetector:
     def __init__(self, api_base_url: str):
         self.log = logging.getLogger("recorder")
         self.api_base_url = api_base_url.rstrip("/")
-        self.client = httpx.AsyncClient(timeout=15.0)
+        self.headers = {}
+        if config.api_key:
+            self.headers["Authorization"] = f"Bearer {config.api_key}"
+        self.client = httpx.AsyncClient(timeout=15.0, headers=self.headers)
         self._last_live_ids: set[str] = set()
 
     async def poll(self) -> Tuple[List[LiveInfo], bool]:

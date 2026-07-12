@@ -6,6 +6,7 @@ from urllib.parse import quote_plus, urljoin
 
 import httpx
 
+from src.auth.schemas import UserCurrent
 from src.config import Settings
 from src.live.exceptions import (
     CommentsFetchError,
@@ -539,7 +540,9 @@ class LiveService:
             logger.exception(f"Failed to fetch IDN playback token for {slug}: {e}")
             return None
 
-    async def get_streaming_url(self, platform: str, id: str) -> LiveStreamInfo:
+    async def get_streaming_url(
+        self, platform: str, id: str, current_user: Optional[UserCurrent] = None
+    ) -> LiveStreamInfo:
         """Get streaming URL and room info for a specific platform and ID"""
         if platform == "showroom":
             actual_room_id = id.split("-")[0] if "-" in id else id
@@ -576,33 +579,35 @@ class LiveService:
                     room_id = live.room_identifier
 
                     # For IDN Live+, we use the detail API to get the AWS IVS Chat Room ARN
-                    if live.live_type == "idnliveplus" and (
-                        not room_id or not str(room_id).startswith("arn:")
-                    ):
-                        try:
-                            detail_url = (
-                                f"https://api.idn.app/api/v4/livestream/{id}?n=1"
-                            )
-                            async with httpx.AsyncClient(timeout=10.0) as client:
-                                headers = {}
-                                if self.config.idn_live_plus_api_key:
-                                    headers[
-                                        "x-api-key"
-                                    ] = self.config.idn_live_plus_api_key
-                                res = await client.get(detail_url, headers=headers)
-                                if res.status_code == 200:
-                                    data = res.json().get("data", {})
-                                    api_chat_room_id = data.get("chat_room_id")
-                                    if api_chat_room_id:
-                                        room_id = api_chat_room_id
-                                else:
-                                    logger.warning(
-                                        f"Failed to fetch IDN chat room ID. Status: {res.status_code}, Body: {res.text}"
-                                    )
-                        except Exception as api_err:
-                            logger.exception(
-                                f"Failed to fetch IDN chat room ID from detail API for {id}: {api_err}"
-                            )
+                    if live.live_type == "idnliveplus":
+                        if not current_user or not current_user.isAdmin:
+                            raise StreamingUrlNotFoundError()
+
+                        if not room_id or not str(room_id).startswith("arn:"):
+                            try:
+                                detail_url = (
+                                    f"https://api.idn.app/api/v4/livestream/{id}?n=1"
+                                )
+                                async with httpx.AsyncClient(timeout=10.0) as client:
+                                    headers = {}
+                                    if self.config.idn_live_plus_api_key:
+                                        headers[
+                                            "x-api-key"
+                                        ] = self.config.idn_live_plus_api_key
+                                    res = await client.get(detail_url, headers=headers)
+                                    if res.status_code == 200:
+                                        data = res.json().get("data", {})
+                                        api_chat_room_id = data.get("chat_room_id")
+                                        if api_chat_room_id:
+                                            room_id = api_chat_room_id
+                                    else:
+                                        logger.warning(
+                                            f"Failed to fetch IDN chat room ID. Status: {res.status_code}, Body: {res.text}"
+                                        )
+                            except Exception as api_err:
+                                logger.exception(
+                                    f"Failed to fetch IDN chat room ID from detail API for {id}: {api_err}"
+                                )
 
                     # For regular IDN Live streams, fallback to scraping HTML for the UUID
                     elif (

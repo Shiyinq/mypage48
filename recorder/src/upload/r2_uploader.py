@@ -62,9 +62,9 @@ async def upload(
     session: RecordingSession, config: RecorderConfig, title: str = ""
 ) -> bool:
     api_url = f"{config.api_base_url.rstrip('/')}{config.replay_api_url}"
-    api_key = config.replay_api_key
-    if not api_url or not api_key:
-        log.warning("replay_api_url or replay_api_key not configured, skipping")
+    headers = {"Authorization": f"Bearer {config.api_key}"}
+    if not api_url or not config.api_key:
+        log.warning("replay_api_url or api_key not configured, skipping")
         return False
 
     metadata = _read_json_safe(session.json_path)
@@ -98,7 +98,6 @@ async def upload(
         return False
 
     data = {"metadata": json.dumps(metadata)}
-    headers = {"Authorization": f"Bearer {api_key}"}
 
     for attempt in range(1, 4):
         files = []
