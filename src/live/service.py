@@ -207,16 +207,17 @@ class LiveService:
         }
 
         if db_config:
-            if db_config.api_key:
-                merged_config["api_key"] = db_config.api_key
-            if db_config.auth_token:
-                merged_config["auth_token"] = db_config.auth_token
-            if db_config.access_token:
-                merged_config["access_token"] = db_config.access_token
-            if db_config.session_id:
-                merged_config["session_id"] = db_config.session_id
-            if db_config.aes_key:
-                merged_config["aes_key"] = db_config.aes_key
+            config_data = db_config.data
+            if config_data.api_key:
+                merged_config["api_key"] = config_data.api_key
+            if config_data.auth_token:
+                merged_config["auth_token"] = config_data.auth_token
+            if config_data.access_token:
+                merged_config["access_token"] = config_data.access_token
+            if config_data.session_id:
+                merged_config["session_id"] = config_data.session_id
+            if config_data.aes_key:
+                merged_config["aes_key"] = config_data.aes_key
 
         self._idn_config_cache = merged_config
         self._idn_config_updated_at = now
