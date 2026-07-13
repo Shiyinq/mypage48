@@ -9,6 +9,10 @@ export const live = {
 		const res = await live.getLiveStatus();
 		return res.data || [];
 	},
+	getScheduledLiveList: async () => {
+		const res = await client<{ data: LiveStatus[] }>(`/jkt48/live/scheduled?t=${Date.now()}`);
+		return res.data || [];
+	},
 	getStreamingUrl: async (platform: string, id: string) => {
 		return await client<LiveStreamingResponse>(
 			`/jkt48/live/${platform}/${id}/streaming-url?t=${Date.now()}`

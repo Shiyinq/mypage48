@@ -24,6 +24,9 @@ class LiveStreamInfo(BaseModel):
     start_at: Optional[datetime] = None
     image: Optional[str] = None
     member: Optional[LiveMember] = None
+    live_type: str = "public"
+    live_id: Optional[str] = None
+    room_url_key: Optional[str] = None
 
 
 class LiveStatus(BaseModel):
@@ -38,6 +41,9 @@ class LiveStatus(BaseModel):
     image: Optional[str] = None
     streaming_url: List[LiveStreamingURL] = []
     member: Optional[LiveMember] = None
+    live_type: str = "public"
+    streamer_uuid: Optional[str] = None
+    scheduled_at: Optional[datetime] = None
 
 
 class LiveResponse(BaseModel):

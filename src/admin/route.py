@@ -1,6 +1,12 @@
 from fastapi import APIRouter, Depends, Query
 
-from src.admin.schemas import DataMyPageStats, DataTheaterStats, DataUsersStats
+from src.admin.schemas import (
+    DataMyPageStats,
+    DataTheaterStats,
+    DataUsersStats,
+    IDNLivePlusConfig,
+    IDNLivePlusConfigResponse,
+)
 from src.admin.service import AdminService
 from src.dependencies import get_admin_service, require_admin
 
@@ -30,3 +36,22 @@ async def get_theater_stats(
     service: AdminService = Depends(get_admin_service),
 ):
     return await service.get_theater_stats()
+
+
+@router.get("/settings/idnliveplus", response_model=IDNLivePlusConfigResponse)
+async def get_idn_live_plus_config(
+    _=Depends(require_admin),
+    service: AdminService = Depends(get_admin_service),
+):
+    """Get the IDN Live+ configuration from settings."""
+    return await service.get_idn_live_plus_config()
+
+
+@router.put("/settings/idnliveplus", response_model=IDNLivePlusConfigResponse)
+async def update_idn_live_plus_config(
+    config: IDNLivePlusConfig,
+    _=Depends(require_admin),
+    service: AdminService = Depends(get_admin_service),
+):
+    """Update the IDN Live+ configuration in settings."""
+    return await service.update_idn_live_plus_config(config)

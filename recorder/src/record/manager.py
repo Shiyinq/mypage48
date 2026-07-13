@@ -59,7 +59,7 @@ class RecordingManager:
     def __init__(self, config: RecorderConfig):
         self.config = config
         self.log = logging.getLogger("recorder")
-        self.detector = LiveDetector(config.api_base_url)
+        self.detector = LiveDetector(config)
         self.sessions: dict[str, RecordingSession] = {}
         self._stop_events: dict[str, asyncio.Event] = {}
         self._gone_count: dict[str, int] = {}
@@ -313,7 +313,6 @@ class RecordingManager:
         open(chat_log_path, "a").close()
         open(jsonl_path, "a").close()
 
-        hls_url = live.hls_url
         stream_info = await self.detector.get_streaming_url(
             live.platform, live.room_id, live.live_id
         )
@@ -321,16 +320,22 @@ class RecordingManager:
             self.log.warning("Failed to get streaming URL for %s", live.live_id)
             return
 
+        hls_url = self.detector.pick_best_url(stream_info)
         if not hls_url:
-            hls_url = self.detector.pick_best_url(stream_info)
-            if not hls_url:
-                self.log.warning("No streaming URLs for %s", live.live_id)
-                return
+            hls_url = live.hls_url
 
-        if not live.room_identifier:
+        if not hls_url:
+            self.log.warning("No streaming URLs for %s", live.live_id)
+            return
+
+        if stream_info.get("room_identifier"):
             live.room_identifier = stream_info.get("room_identifier")
 
-        ffmpeg_proc = stream_recorder.start(hls_url, mkv_path)
+        headers = None
+        if live.platform == "idn":
+            headers = {"Origin": "https://www.idn.app"}
+
+        ffmpeg_proc = stream_recorder.start(hls_url, mkv_path, headers=headers)
 
         stop_event = asyncio.Event()
         self._stop_events[live.live_id] = stop_event
@@ -471,7 +476,10 @@ class RecordingManager:
             if stop_event.is_set():
                 return
             session = self.sessions.get(live_id)
-            if not session or session.room_identifier:
+            if not session or (
+                session.room_identifier
+                and str(session.room_identifier).startswith("arn:")
+            ):
                 return
             info = await self.detector.get_streaming_url("idn", room_id, id_live_id)
             if info and info.get("room_identifier"):

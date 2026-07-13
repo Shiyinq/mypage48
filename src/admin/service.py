@@ -1,9 +1,21 @@
 import logging
 from datetime import datetime, timedelta, timezone
 
-from src.admin.exceptions import AdminStatsFetchError
+from src.admin.constants import SuccessMessage
+from src.admin.exceptions import (
+    AdminConfigFetchError,
+    AdminConfigUpdateError,
+    AdminStatsFetchError,
+)
 from src.admin.repository import AdminRepository
-from src.admin.schemas import DataMyPageStats, DataTheaterStats, DataUsersStats
+from src.admin.schemas import (
+    DataMyPageStats,
+    DataTheaterStats,
+    DataUsersStats,
+    IDNLivePlusConfig,
+    IDNLivePlusConfigResponse,
+)
+from src.utils import fernet_decrypt_value, fernet_encrypt_value
 
 logger = logging.getLogger(__name__)
 
@@ -211,3 +223,51 @@ class AdminService:
         except Exception:
             logger.exception("Error fetching theater stats")
             raise AdminStatsFetchError()
+
+    async def get_idn_live_plus_config(self) -> IDNLivePlusConfigResponse:
+        try:
+            doc = await self.repository.get_setting("idn_live_plus_config")
+            if not doc or "data" not in doc:
+                config = IDNLivePlusConfig()
+            else:
+                data = doc["data"]
+                config = IDNLivePlusConfig(
+                    auth_token=fernet_decrypt_value(data.get("auth_token")),
+                    access_token=fernet_decrypt_value(data.get("access_token")),
+                    session_id=data.get("session_id"),
+                    api_key=fernet_decrypt_value(data.get("api_key")),
+                    aes_key=fernet_decrypt_value(data.get("aes_key")),
+                )
+            return IDNLivePlusConfigResponse(
+                data=config, detail=SuccessMessage.IDN_LIVE_PLUS_CONFIG_FETCHED
+            )
+        except Exception:
+            logger.exception("Error fetching idn live plus config")
+            raise AdminConfigFetchError()
+
+    async def update_idn_live_plus_config(
+        self, config: IDNLivePlusConfig
+    ) -> IDNLivePlusConfigResponse:
+        try:
+            data = {
+                "auth_token": fernet_encrypt_value(config.auth_token)
+                if config.auth_token
+                else None,
+                "access_token": fernet_encrypt_value(config.access_token)
+                if config.access_token
+                else None,
+                "session_id": config.session_id,
+                "api_key": fernet_encrypt_value(config.api_key)
+                if config.api_key
+                else None,
+                "aes_key": fernet_encrypt_value(config.aes_key)
+                if config.aes_key
+                else None,
+            }
+            await self.repository.upsert_setting("idn_live_plus_config", data)
+            return IDNLivePlusConfigResponse(
+                data=config, detail=SuccessMessage.IDN_LIVE_PLUS_CONFIG_UPDATED
+            )
+        except Exception:
+            logger.exception("Error updating idn live plus config")
+            raise AdminConfigUpdateError()

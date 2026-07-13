@@ -1,7 +1,10 @@
+import typing
+
 from fastapi import APIRouter, Depends, Request, Response
 
+from src.auth.schemas import UserCurrent
 from src.config import config
-from src.dependencies import get_live_service
+from src.dependencies import get_current_user_optional, get_live_service
 from src.limiter import limiter
 from src.live.schemas import LiveResponse, LiveStreamInfo
 from src.live.service import LiveService
@@ -13,6 +16,12 @@ router = APIRouter()
 async def get_live_status(service: LiveService = Depends(get_live_service)):
     """Get summarized live status from Showroom and IDN"""
     return await service.get_live_status()
+
+
+@router.get("/scheduled", response_model=LiveResponse)
+async def get_scheduled_live_status(service: LiveService = Depends(get_live_service)):
+    """Get scheduled premium live status from IDN"""
+    return await service.get_scheduled_premium_lives()
 
 
 @router.get("/proxy")
@@ -58,7 +67,10 @@ async def get_showroom_gifts(
 
 @router.get("/{platform}/{id}/streaming-url", response_model=LiveStreamInfo)
 async def get_streaming_url(
-    platform: str, id: str, service: LiveService = Depends(get_live_service)
+    platform: str,
+    id: str,
+    current_user: typing.Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: LiveService = Depends(get_live_service),
 ):
     """Get streaming URL for a specific room/live"""
-    return await service.get_streaming_url(platform, id)
+    return await service.get_streaming_url(platform, id, current_user)

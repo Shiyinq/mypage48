@@ -18,7 +18,7 @@ class RecorderConfig(BaseSettings):
     log_mode: str = "stdout"
     logs_dir: str = str(Path(__file__).parent.parent / "logs")
     replay_api_url: str = "/admin/replay/upload"
-    replay_api_key: str = ""
+    api_key: str = ""
     google_client_id: str = ""
     google_client_secret: str = ""
     youtube_refresh_token: str = ""

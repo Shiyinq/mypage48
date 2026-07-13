@@ -55,3 +55,36 @@ async def test_get_dashboard_theater_success(client: AsyncClient, create_user):
     data = res.json()
     assert "total_members_jkt" in data
     assert "active_members_count" in data
+
+async def test_get_put_idn_live_plus_config(client: AsyncClient, create_user):
+    _, _, headers = await create_user("admin_user_settings", is_admin=True)
+    
+    # 1. GET (should be empty initially)
+    res = await client.get("/api/admin/settings/idnliveplus", headers=headers)
+    assert res.status_code == 200
+    data = res.json()["data"]
+    assert data["auth_token"] is None
+    assert data["api_key"] is None
+
+    # 2. PUT (update config)
+    payload = {
+        "auth_token": "test_auth_token",
+        "access_token": "test_access",
+        "session_id": "test_session",
+        "api_key": "test_api_key",
+        "aes_key": "test_aes_key"
+    }
+    res = await client.put("/api/admin/settings/idnliveplus", json=payload, headers=headers)
+    assert res.status_code == 200
+    data = res.json()["data"]
+    assert data["auth_token"] == "test_auth_token"
+    assert data["api_key"] == "test_api_key"
+    assert data["aes_key"] == "test_aes_key"
+
+    # 3. GET (should now have the decrypted values)
+    res = await client.get("/api/admin/settings/idnliveplus", headers=headers)
+    assert res.status_code == 200
+    data = res.json()["data"]
+    assert data["auth_token"] == "test_auth_token"
+    assert data["api_key"] == "test_api_key"
+    assert data["aes_key"] == "test_aes_key"

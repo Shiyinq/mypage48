@@ -42,6 +42,18 @@ export interface DataTheaterStats {
 	idn_replay_count: number;
 }
 
+export interface IDNLivePlusConfig {
+	auth_token: string | null;
+	access_token: string | null;
+	session_id: string | null;
+	api_key: string | null;
+	aes_key: string | null;
+}
+
+export interface IDNLivePlusConfigResponse {
+	data: IDNLivePlusConfig;
+	detail: string;
+}
 export const adminApi = {
 	getUsersStats: async (activeDays: number = 7) => {
 		return client<DataUsersStats>(`/admin/dashboard/users?active_days=${activeDays}`);
@@ -53,5 +65,16 @@ export const adminApi = {
 
 	getTheaterStats: async () => {
 		return client<DataTheaterStats>('/admin/dashboard/theater');
+	},
+
+	getIdnLivePlusConfig: async () => {
+		return client<IDNLivePlusConfigResponse>('/admin/settings/idnliveplus');
+	},
+
+	updateIdnLivePlusConfig: async (config: IDNLivePlusConfig) => {
+		return client<IDNLivePlusConfigResponse>('/admin/settings/idnliveplus', {
+			method: 'PUT',
+			body: JSON.stringify(config)
+		});
 	}
 };

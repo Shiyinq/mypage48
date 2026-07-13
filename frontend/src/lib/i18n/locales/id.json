@@ -1078,6 +1078,10 @@
 			"seoMemberDescription": "Tonton JKT48 Live Streaming {name} di MyPage48. Ikuti siaran langsung member JKT48 favoritmu di Showroom atau IDN Live.",
 			"empty": "Tidak ada member yang sedang siaran langsung saat ini.",
 			"emptyTitle": "Belum Ada Live",
+			"scheduled": "Terjadwal",
+			"scheduledTitle": "Live JKT48 Mendatang",
+			"buyWith": "Beli dengan",
+			"buyAtIdn": "Beli di IDN",
 			"back": "Kembali",
 			"focusMode": "Mode Fokus",
 			"exitFocus": "Keluar Fokus",
@@ -1105,6 +1109,7 @@
 			"mute": "Senyap",
 			"unmute": "Bunyikan",
 			"pip": "Gambar dalam Gambar (PiP)",
+			"premium_redirect": "Ini adalah Live Premium. Mengalihkan ke Aplikasi IDN...",
 			"openOriginal": "Buka Stream Asli",
 			"multiview": {
 				"title": "Multi-view",
@@ -1386,7 +1391,8 @@
 				"users": "Users",
 				"members": "Members",
 				"setlists": "Setlists",
-				"feedback": "Masukan"
+				"feedback": "Masukan",
+				"settings": "Pengaturan"
 			},
 			"stats": {
 				"dataUsers": "Data Pengguna",
@@ -1440,6 +1446,28 @@
 				"saving": "Menyimpan...",
 				"saveChanges": "Simpan Perubahan"
 			}
+		},
+		"settings": {
+			"title": "Pengaturan",
+			"subtitle": "Kelola konfigurasi sistem dan integrasi API.",
+			"idnLivePlus": {
+				"title": "Konfigurasi IDN Live+",
+				"description": "Atur token autentikasi dan kunci dekripsi yang diperlukan untuk mengambil dan memutar streaming premium IDN Live+. Token ini dienkripsi saat disimpan di database.",
+				"authToken": "IDN Auth Token (Bearer)",
+				"authTokenHelp": "Token yang digunakan untuk meminta URL pemutaran.",
+				"accessToken": "IDN Access Token (Header)",
+				"accessTokenHelp": "Token yang digunakan di header Access-Token.",
+				"sessionId": "IDN Session ID",
+				"sessionIdHelp": "Nilai header Session-Id.",
+				"apiKey": "IDN Live+ API Key",
+				"apiKeyHelp": "X-Api-Key yang digunakan untuk mengambil jadwal mentah.",
+				"aesKey": "IDN AES Decryption Key",
+				"aesKeyHelp": "Kunci yang digunakan untuk mendekripsi token pemutaran Arishem terenkripsi AES-256."
+			},
+			"saving": "Menyimpan...",
+			"saveConfig": "Simpan Konfigurasi",
+			"saveSuccess": "Konfigurasi berhasil disimpan",
+			"saveFailed": "Gagal menyimpan konfigurasi"
 		},
 		"users": {
 			"title": "Pengguna",
@@ -1591,6 +1619,7 @@
 			"eventHistory": "Ke Riwayat Event",
 			"feedback": "Ke Masukan",
 			"adminFeedback": "Ke Masukan Admin",
+			"adminSettings": "Ke Pengaturan Admin",
 			"publicProfile": "Ke Profil Publik",
 			"journal": "Ke Jurnal",
 			"top2shot": "Ke Roulette & Ulang Tahun",

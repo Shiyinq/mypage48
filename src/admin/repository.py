@@ -1,4 +1,5 @@
-from typing import Any, Dict, List
+import datetime
+from typing import Any, Dict, List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -26,3 +27,20 @@ class AdminRepository:
         if query is None:
             query = {}
         return await self.db[collection_name].find(query).to_list(length=None)
+
+    async def get_setting(self, key: str) -> Optional[Dict[str, Any]]:
+        return await self.db["settings"].find_one({"key": key})
+
+    async def upsert_setting(self, key: str, data: Dict[str, Any]) -> None:
+        await self.db["settings"].update_one(
+            {"key": key},
+            {
+                "$set": {
+                    "data": data,
+                    "updated_at": datetime.datetime.now(
+                        datetime.timezone.utc
+                    ).isoformat(),
+                }
+            },
+            upsert=True,
+        )

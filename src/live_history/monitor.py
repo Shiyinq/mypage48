@@ -6,6 +6,8 @@ from urllib.parse import urlparse
 import httpx
 from PIL import Image
 
+from src.admin.repository import AdminRepository
+from src.admin.service import AdminService
 from src.config import config
 from src.database import database_instance
 from src.live.service import LiveService
@@ -67,7 +69,9 @@ async def live_monitor_loop():
         try:
             db = database_instance.database
             member_repo = MemberRepository(db)
-            live_service = LiveService(member_repo, config)
+            admin_repo = AdminRepository(db)
+            admin_service = AdminService(admin_repo)
+            live_service = LiveService(member_repo, admin_service, config)
             live_history_repo = LiveHistoryRepository(db)
 
             storage_repo = StorageRepository(config)

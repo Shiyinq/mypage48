@@ -13,6 +13,7 @@
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
 	import { OptimizedImage } from '$lib/components/common';
 	import { showToast, isImmersive, theme, setTheme, isAuthenticated } from '$lib/stores';
+
 	import { API_BASE } from '$lib/apis/client';
 	import type { LiveStatus } from '$lib/types';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';

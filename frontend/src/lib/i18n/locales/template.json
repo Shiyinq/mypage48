@@ -1087,7 +1087,8 @@
 				"users": "",
 				"members": "",
 				"setlists": "",
-				"feedback": ""
+				"feedback": "",
+				"settings": ""
 			}
 		},
 		"feedback": {
@@ -1248,6 +1249,7 @@
 			"eventHistory": "",
 			"feedback": "",
 			"adminFeedback": "",
+			"adminSettings": "",
 			"publicProfile": "",
 			"journal": "",
 			"top2shot": "",

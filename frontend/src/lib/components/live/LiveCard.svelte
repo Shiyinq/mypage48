@@ -8,6 +8,8 @@
 	import { getMemberFrame } from '$lib/constants';
 	import type { LiveStatus } from '$lib/types';
 	import { OptimizedImage } from '$lib/components/common';
+	import { userProfile } from '$lib/stores';
+	import { getPremiumLiveRedirectUrl } from '$lib/utils/live';
 
 	const { t } = useTranslation();
 
@@ -20,12 +22,23 @@
 	let { stream, i = 0, variant = 'default' }: Props = $props();
 
 	const fallbackAvatar = 'https://placehold.co/640x960?text=NO%20IMAGE';
+
+	function handleLiveClick(e: MouseEvent) {
+		const redirectUrl = getPremiumLiveRedirectUrl(stream, userProfile.data, t);
+		if (redirectUrl) {
+			e.preventDefault();
+			window.open(redirectUrl, '_blank');
+		}
+	}
 </script>
 
 <a
-	href={variant === 'theater'
-		? `/live/${stream.platform}/${stream.room_id || stream.live_id}`
-		: `/jkt48/live/${stream.platform}/${stream.room_id || stream.live_id}`}
+	href={stream.live_type === 'idnliveplus' && !userProfile.data?.isAdmin
+		? undefined
+		: variant === 'theater'
+			? `/live/${stream.platform}/${stream.room_id || stream.live_id}`
+			: `/jkt48/live/${stream.platform}/${stream.room_id || stream.live_id}`}
+	onclick={handleLiveClick}
 	class="group relative aspect-[3/4] flex flex-col bg-white dark:bg-zinc-900 rounded-xl overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer border border-slate-100 dark:border-zinc-800/50"
 	in:fade={{ duration: 400, delay: i * 50 }}
 >

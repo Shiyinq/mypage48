@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -41,3 +43,16 @@ class DataTheaterStats(BaseModel):
     total_replay_live: int
     showroom_replay_count: int
     idn_replay_count: int
+
+
+class IDNLivePlusConfig(BaseModel):
+    auth_token: Optional[str] = None
+    access_token: Optional[str] = None
+    session_id: Optional[str] = None
+    api_key: Optional[str] = None
+    aes_key: Optional[str] = None
+
+
+class IDNLivePlusConfigResponse(BaseModel):
+    data: IDNLivePlusConfig
+    detail: str

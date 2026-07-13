@@ -1,18 +1,19 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
+	import { liveStore, liveList, liveLoading, scheduledLiveList } from '$lib/stores/live.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import LiveGrid from '$lib/components/live/LiveGrid.svelte';
 	import LivePlatformIndicator from '$lib/components/live/LivePlatformIndicator.svelte';
 	import AppBackground from '$lib/components/common/AppBackground.svelte';
+	import ScheduledLiveCard from '$lib/components/live/ScheduledLiveCard.svelte';
 
 	const { t } = useTranslation();
 
 	let initialLoading = $state(liveList.value.length === 0);
 
 	async function fetchLives() {
-		await liveStore.loadLiveList();
+		await Promise.all([liveStore.loadLiveList(), liveStore.loadScheduledList()]);
 		initialLoading = false;
 	}
 
@@ -23,6 +24,7 @@
 
 		const intervalId = setInterval(() => {
 			liveStore.loadLiveList(true);
+			liveStore.loadScheduledList(true);
 		}, 30000);
 
 		return () => clearInterval(intervalId);
@@ -47,5 +49,20 @@
 			{initialLoading}
 			variant="public"
 		/>
+
+		{#if scheduledLiveList.value.length > 0}
+			<div class="mt-10 mb-10">
+				<div class="flex items-center justify-between mb-4">
+					<h2 class="text-xl font-black text-slate-900 dark:text-white">
+						{t('theater.live.scheduledTitle', { default: 'Live JKT48 Mendatang' })}
+					</h2>
+				</div>
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+					{#each scheduledLiveList.value as scheduledLive (scheduledLive.live_id)}
+						<ScheduledLiveCard live={scheduledLive} />
+					{/each}
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>

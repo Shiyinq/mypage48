@@ -5,8 +5,16 @@ from fastapi.responses import JSONResponse
 
 from src.achievements.exceptions import AchievementsFetchError
 from src.achievements.http_exceptions import AchievementsFetchHTTPException
-from src.admin.exceptions import AdminStatsFetchError
-from src.admin.http_exceptions import HttpAdminStatsFetchError
+from src.admin.exceptions import (
+    AdminConfigFetchError,
+    AdminConfigUpdateError,
+    AdminStatsFetchError,
+)
+from src.admin.http_exceptions import (
+    HttpAdminConfigFetchError,
+    HttpAdminConfigUpdateError,
+    HttpAdminStatsFetchError,
+)
 from src.api_keys.exceptions import (
     APIKeyCreationError,
     APIKeyDeletionError,
@@ -315,6 +323,16 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     if isinstance(exc, AdminStatsFetchError):
         return await detailed_http_exception_handler(
             request, HttpAdminStatsFetchError()
+        )
+
+    if isinstance(exc, AdminConfigFetchError):
+        return await detailed_http_exception_handler(
+            request, HttpAdminConfigFetchError()
+        )
+
+    if isinstance(exc, AdminConfigUpdateError):
+        return await detailed_http_exception_handler(
+            request, HttpAdminConfigUpdateError()
         )
 
     # LLM errors

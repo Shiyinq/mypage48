@@ -921,6 +921,10 @@
 			"seoMemberDescription": "Watch {name}'s JKT48 Live stream on MyPage48. Follow your favorite JKT48 member's live broadcast on Showroom or IDN Live.",
 			"empty": "No members are currently live.",
 			"emptyTitle": "OFFLINE",
+			"scheduled": "Scheduled",
+			"scheduledTitle": "Upcoming JKT48 Live",
+			"buyWith": "Buy with",
+			"buyAtIdn": "Buy at IDN",
 			"back": "Back",
 			"focusMode": "Focus Mode",
 			"exitFocus": "Exit Focus",
@@ -948,6 +952,7 @@
 			"mute": "Mute",
 			"unmute": "Unmute",
 			"pip": "Picture in Picture",
+			"premium_redirect": "This is a Premium Live. Redirecting to IDN App...",
 			"openOriginal": "Open Original Stream",
 			"multiview": {
 				"title": "Multi-view",
@@ -1482,7 +1487,8 @@
 				"users": "Users",
 				"members": "Members",
 				"setlists": "Setlists",
-				"feedback": "Feedback"
+				"feedback": "Feedback",
+				"settings": "Settings"
 			},
 			"stats": {
 				"dataUsers": "Data Users",
@@ -1536,6 +1542,28 @@
 				"saving": "Saving...",
 				"saveChanges": "Save Changes"
 			}
+		},
+		"settings": {
+			"title": "Settings",
+			"subtitle": "Manage system configurations and API integrations.",
+			"idnLivePlus": {
+				"title": "IDN Live+ Configuration",
+				"description": "Configure authentication and decryption keys required to fetch and play IDN Live+ premium streams. These tokens are encrypted at rest in the database.",
+				"authToken": "IDN Auth Token (Bearer)",
+				"authTokenHelp": "The token used for requesting the playback URL.",
+				"accessToken": "IDN Access Token (Header)",
+				"accessTokenHelp": "The token used in the Access-Token header.",
+				"sessionId": "IDN Session ID",
+				"sessionIdHelp": "The Session-Id header value.",
+				"apiKey": "IDN Live+ API Key",
+				"apiKeyHelp": "The X-Api-Key used for fetching raw schedules.",
+				"aesKey": "IDN AES Decryption Key",
+				"aesKeyHelp": "The key used to decrypt the AES-256 encrypted Arishem playback token."
+			},
+			"saving": "Saving...",
+			"saveConfig": "Save Configuration",
+			"saveSuccess": "Configuration saved successfully",
+			"saveFailed": "Failed to save configuration"
 		},
 		"users": {
 			"title": "Users",
@@ -1685,6 +1713,7 @@
 			"eventHistory": "Go to Event History",
 			"feedback": "Go to Feedback",
 			"adminFeedback": "Go to Admin Feedback",
+			"adminSettings": "Go to Admin Settings",
 			"publicProfile": "Go to Public Profile",
 			"journal": "Go to Journal",
 			"top2shot": "Go to Roulette & Birthday",

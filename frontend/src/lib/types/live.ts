@@ -20,6 +20,8 @@ export interface LiveStatus {
 	duration?: number;
 	member: LiveMember;
 	image?: string;
+	live_type?: string;
+	scheduled_at?: string;
 }
 
 export interface StreamingUrl {
@@ -34,6 +36,10 @@ export interface LiveStreamingResponse {
 	start_at?: string;
 	member: LiveMember;
 	image?: string;
+	live_type?: string;
+	room_id?: string;
+	live_id?: string;
+	room_url_key?: string;
 }
 
 export interface LiveChatIDNMessage {

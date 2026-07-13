@@ -4,7 +4,7 @@
 	import { userProfile, isInitialDataLoaded } from '$lib/stores';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import NotFound from '$lib/components/NotFound.svelte';
-	import { ShieldCheck, Users, Music, UserCheck, MessageSquare } from 'lucide-svelte';
+	import { ShieldCheck, Users, Music, UserCheck, MessageSquare, Settings } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { goto } from '$app/navigation';
 	import NavPills from '$lib/components/navigation/NavPills.svelte';
@@ -81,6 +81,12 @@
 			label: t('admin.dashboard.tabs.feedback'),
 			icon: MessageSquare,
 			activeClass: 'bg-cyan-500 shadow-cyan-500/20'
+		},
+		{
+			href: '/admin/settings',
+			label: t('admin.dashboard.tabs.settings'),
+			icon: Settings,
+			activeClass: 'bg-slate-500 shadow-slate-500/20'
 		}
 	]);
 	let currentPath = $derived($page.url.pathname);
