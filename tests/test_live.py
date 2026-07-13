@@ -339,3 +339,29 @@ async def test_get_streaming_url_idn_premium_admin(client: AsyncClient, create_u
         assert data["live_type"] == "idnliveplus"
         assert len(data["streaming_urls"]) == 1
         assert data["streaming_urls"][0]["url"] == "https://example.com/premium.m3u8"
+
+
+@pytest.mark.asyncio
+async def test_get_showroom_gift_list_success(client: AsyncClient):
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.raise_for_status = MagicMock()
+    mock_resp.json.return_value = {
+        "normal": [
+            {"gift_id": 1, "gift_name": "Gift 1", "image": "img1.png"},
+            {"gift_id": 2, "gift_name": "Gift 2", "image": "img2.png"}
+        ]
+    }
+
+    mock_client = MagicMock()
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=None)
+    mock_client.get = AsyncMock(return_value=mock_resp)
+
+    with patch("src.live.service.httpx.AsyncClient", return_value=mock_client):
+        response = await client.get("/api/jkt48/live/showroom/gift-list?room_id=12345")
+        assert response.status_code == 200
+        data = response.json()
+        assert "normal" in data
+        assert len(data["normal"]) == 2
+        assert data["normal"][0]["gift_name"] == "Gift 1"

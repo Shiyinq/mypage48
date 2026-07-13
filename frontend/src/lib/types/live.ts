@@ -61,4 +61,42 @@ export interface LiveChatShowroomMessage {
 	user: string;
 	text: string;
 	avatar?: string;
+	isGift?: boolean;
+	gift?: { name: string; img: string; num: number };
+}
+
+export interface ShowroomCommentLogEntry {
+	user_id: number;
+	name: string;
+	comment: string;
+	created_at: number;
+	avatar_url?: string;
+}
+
+export interface ShowroomCommentLogResponse {
+	comment_log: ShowroomCommentLogEntry[];
+}
+
+export interface ShowroomGiftLogEntry {
+	user_id: number;
+	name: string;
+	gift_id: number;
+	num: number;
+	created_at: number;
+	avatar_url?: string;
+	image?: string;
+}
+
+export interface ShowroomGiftLogResponse {
+	gift_log: ShowroomGiftLogEntry[];
+}
+
+export interface ShowroomGiftListItem {
+	gift_id: number;
+	gift_name: string;
+	image: string;
+}
+
+export interface ShowroomGiftListResponse {
+	normal: ShowroomGiftListItem[];
 }
