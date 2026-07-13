@@ -6,6 +6,7 @@ from pathlib import Path
 
 from ..config import RecorderConfig
 from ..notify.telegram_notifier import (
+    send_health_notification,
     send_idn_live_plus_notification,
     send_news_notification,
     send_schedule_notification,
@@ -66,6 +67,9 @@ class TheaterWatcher:
                     "Processing pending IDN Live Plus notification: %s", filename
                 )
                 success = await send_idn_live_plus_notification(payload, self.config)
+            elif notification_type == "health":
+                self.log.info("Processing pending health notification: %s", filename)
+                success = await send_health_notification(payload, self.config)
             else:
                 self.log.warning(
                     "Unknown notification type in %s: %s", filename, notification_type
