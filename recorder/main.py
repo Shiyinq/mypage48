@@ -4,6 +4,7 @@ import signal
 import sys
 
 from .src.config import RecorderConfig
+from .src.heartbeat import run_heartbeat
 from .src.logging_config import setup_logging
 from .src.record.manager import RecordingManager
 from .src.theater.birthday_checker import BirthdayChecker
@@ -19,9 +20,9 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
-        choices=["both", "record", "upload", "theater", "all"],
-        default="both",
-        help="Run mode: record, upload, theater, both (record+upload, default), or all",
+        choices=["record", "upload", "theater", "all"],
+        default="all",
+        help="Run mode: record, upload, theater, or all (default)",
     )
     parser.add_argument(
         "--status",
@@ -86,13 +87,16 @@ async def main(args):
 
     tasks = []
 
-    if args.mode in ("all", "both", "record"):
+    # Always run the heartbeat task
+    tasks.append(asyncio.create_task(run_heartbeat(config, args.mode, stop_event)))
+
+    if args.mode in ("all", "record"):
         log_rec.info("Mode: %s — poll interval %ss", args.mode, config.poll_interval)
         log_rec.info("Output: %s", config.recordings_dir)
         manager = RecordingManager(config)
         tasks.append(asyncio.create_task(manager.run(stop_event)))
 
-    if args.mode in ("all", "both", "upload"):
+    if args.mode in ("all", "upload"):
         log_upl.info("Mode: %s — poll interval %ss", args.mode, config.poll_interval)
         log_upl.info("Output: %s", config.recordings_dir)
         watcher = Watcher(config)

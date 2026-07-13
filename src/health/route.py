@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, Response, status
 
-from src.dependencies import get_health_service
+from src.auth.schemas import UserCurrent
+from src.dependencies import get_health_service, require_admin
 from src.health.constants import HealthStatus
-from src.health.schemas import HealthCheckResponse
+from src.health.schemas import HealthCheckResponse, RecorderHeartbeatRequest
 from src.health.service import HealthService
 
 router = APIRouter()
@@ -21,3 +22,21 @@ async def health_check(
         response.status_code = status.HTTP_200_OK
 
     return health_status
+
+
+@router.post("/health/recorder", status_code=status.HTTP_200_OK)
+async def record_recorder_heartbeat(
+    request: RecorderHeartbeatRequest,
+    service: HealthService = Depends(get_health_service),
+    current_user: "UserCurrent" = Depends(require_admin),
+):
+    """
+    Endpoint for the recorder script to send its heartbeat.
+    Requires Admin privileges (or Admin API Key).
+    """
+    await service.record_recorder_heartbeat(
+        mode=request.mode,
+        bot_token=request.bot_token,
+        chat_id=request.chat_id,
+    )
+    return {"status": "ok"}

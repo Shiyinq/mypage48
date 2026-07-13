@@ -26,6 +26,7 @@ from src.export.repository import ExportRepository
 from src.export.service import ExportService
 from src.feedback.repository import FeedbackRepository
 from src.feedback.service import FeedbackService
+from src.health.repository import HealthRepository
 from src.health.service import HealthService
 from src.http_exceptions import AdminRequired
 from src.infrastructure import AsyncBackgroundRunner
@@ -396,10 +397,15 @@ def get_dashboard_service(
     return DashboardService(tickets_repo, setlists_repo, events_repo, config)
 
 
+def get_health_repository(db=Depends(get_db)) -> HealthRepository:
+    return HealthRepository(db)
+
+
 def get_health_service(
     storage_repo: StorageRepository = Depends(get_storage_repository),
+    health_repo: HealthRepository = Depends(get_health_repository),
 ) -> HealthService:
-    return HealthService(database_instance, storage_repo)
+    return HealthService(database_instance, storage_repo, health_repo)
 
 
 def get_export_repository(db=Depends(get_db)) -> ExportRepository:

@@ -1,16 +1,24 @@
 from src.database import Database
 from src.health.constants import DatabaseStatus, HealthStatus
+from src.health.repository import HealthRepository
 from src.health.schemas import HealthCheckResponse
 from src.logging_config import create_logger
 from src.storage.repository import StorageRepository
+from src.utils import fernet_encrypt_value
 
 logger = create_logger("health_service", __name__)
 
 
 class HealthService:
-    def __init__(self, db: Database, storage_repo: StorageRepository):
+    def __init__(
+        self,
+        db: Database,
+        storage_repo: StorageRepository,
+        health_repo: HealthRepository,
+    ):
         self.db = db
         self.storage_repo = storage_repo
+        self.health_repo = health_repo
 
     async def check_health(self) -> HealthCheckResponse:
         database_status = DatabaseStatus.UNKNOWN
@@ -53,4 +61,17 @@ class HealthService:
             database=database_status,
             storage=storage_status,
             detail=detail,
+        )
+
+    async def record_recorder_heartbeat(
+        self, mode: str, bot_token: str = None, chat_id: str = None
+    ):
+        """Record the heartbeat from the recorder script."""
+        encrypted_bot_token = fernet_encrypt_value(bot_token) if bot_token else None
+        encrypted_chat_id = fernet_encrypt_value(chat_id) if chat_id else None
+
+        await self.health_repo.upsert_recorder_heartbeat(
+            mode=mode,
+            encrypted_bot_token=encrypted_bot_token,
+            encrypted_chat_id=encrypted_chat_id,
         )

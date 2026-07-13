@@ -57,6 +57,7 @@ class Settings(BaseSettings):
 
     API_KEY_PREFIX: str = "ffk_"
     DB_MAX_POOL_SIZE: int = 50
+    RECORDER_HEARTBEAT_TIMEOUT_SECONDS: int = 180
     MAX_UPLOAD_SIZE_BYTES: int = 10_485_760  # 10 MB
     MAX_REPLAY_UPLOAD_SIZE_BYTES: int = 52_428_800  # 50 MB
 
@@ -299,6 +300,10 @@ class Settings(BaseSettings):
     @property
     def db_max_pool_size(self) -> int:
         return self.DB_MAX_POOL_SIZE
+
+    @property
+    def recorder_heartbeat_timeout_seconds(self) -> int:
+        return self.RECORDER_HEARTBEAT_TIMEOUT_SECONDS
 
     @property
     def max_upload_size_bytes(self) -> int:
