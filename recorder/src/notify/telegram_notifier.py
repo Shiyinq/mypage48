@@ -1106,3 +1106,75 @@ async def send_idn_live_plus_notification(
     except Exception:
         log.exception("Exception during IDN Live Plus notification:")
         return False
+
+
+async def send_health_notification(payload: dict, config: RecorderConfig) -> bool:
+    """Send a notification to Telegram for health status changes."""
+    if not config.telegram_bot_token or not config.telegram_chat_id:
+        return False
+
+    log.info("Sending Health Telegram notification")
+
+    changes = payload.get("changes", [])
+    if not changes:
+        return True
+
+    state = payload.get("state", {})
+    if not state:
+        # Fallback if state is not in payload for some reason
+        state = {c.get("service"): c.get("new_state") for c in changes}
+
+    services = [
+        ("frontend", "Web"),
+        ("api", "API"),
+        ("database", "Database"),
+        ("storage", "Image Storage"),
+    ]
+
+    is_any_down = any(state.get(k) == "DOWN" for k, _ in services)
+
+    if is_any_down:
+        text = "⚠️ <b>Monitoring Alert</b>\n\n"
+        text += "Mohon maaf <a href='https://mypage48.com'>MyPage48.com</a> sedang mengalami kendala\n\n"
+    else:
+        text = "✅ <b>Monitoring Alert</b>\n\n"
+        text += "<a href='https://mypage48.com'>MyPage48.com</a> kembali beroperasi dengan normal\n\n"
+
+    for key, name in services:
+        status = state.get(key, "UNKNOWN")
+        icon = "🔴" if status == "DOWN" else "🟢" if status == "UP" else "⚪️"
+
+        # Add HTTP status code dynamically for Web and API
+        code_str = ""
+        if key in ("frontend", "api"):
+            code = state.get(f"{key}_code")
+            if code:
+                code_str = f" ({code})"
+
+        text += f"{icon} <b>{name}</b> is {status}{code_str}\n"
+
+    text += "\n<i>~ MyPage48 ~</i>"
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            tg_url = (
+                f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
+            )
+            tg_resp = await client.post(
+                tg_url,
+                json={
+                    "chat_id": config.telegram_chat_id,
+                    "text": text,
+                    "parse_mode": "HTML",
+                    "disable_web_page_preview": True,
+                },
+            )
+            if not tg_resp.is_success:
+                log.error("Health notification failed: %s", tg_resp.text)
+                return False
+
+            return True
+
+    except Exception:
+        log.exception("Exception during Health notification:")
+        return False

@@ -8,6 +8,7 @@ from .src.logging_config import setup_logging
 from .src.record.manager import RecordingManager
 from .src.theater.birthday_checker import BirthdayChecker
 from .src.theater.idn_live_plus_checker import IdnLivePlusChecker
+from .src.theater.mypage48_health_checker import HealthChecker
 from .src.theater.news_checker import NewsChecker
 from .src.theater.schedule_checker import ScheduleChecker
 from .src.theater.watcher import TheaterWatcher
@@ -104,12 +105,14 @@ async def main(args):
         schedule_checker = ScheduleChecker(config)
         birthday_checker = BirthdayChecker(config)
         idn_live_plus_checker = IdnLivePlusChecker(config)
+        health_checker = HealthChecker(config)
         theater_watcher = TheaterWatcher(config)
 
         tasks.append(asyncio.create_task(news_checker.run(stop_event)))
         tasks.append(asyncio.create_task(schedule_checker.run(stop_event)))
         tasks.append(asyncio.create_task(birthday_checker.run(stop_event)))
         tasks.append(asyncio.create_task(idn_live_plus_checker.run(stop_event)))
+        tasks.append(asyncio.create_task(health_checker.run(stop_event)))
         tasks.append(asyncio.create_task(theater_watcher.run(stop_event)))
 
     await asyncio.gather(*tasks)
