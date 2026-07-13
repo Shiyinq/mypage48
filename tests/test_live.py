@@ -92,7 +92,9 @@ async def test_get_live_status_success(client: AsyncClient, seed_member_socials)
         assert "idn" in platforms
 
 @pytest.mark.asyncio
-async def test_get_scheduled_live_status_success(client: AsyncClient, seed_member_socials):
+@patch("src.live.service.LiveService._get_idn_config", new_callable=AsyncMock)
+async def test_get_scheduled_live_status_success(mock_get_idn_config, client: AsyncClient, seed_member_socials):
+    mock_get_idn_config.return_value = {"api_key": "test_key", "aes_key": "test_key"}
     # Mock IDN API for scheduled premium streams
     mock_idn_resp = MagicMock()
     mock_idn_resp.status_code = 200
