@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+import re
 import unicodedata
 from datetime import datetime, timedelta, timezone
 
@@ -990,4 +991,118 @@ async def send_monthly_birthday_list(month_name: str, members: list, config) -> 
 
     except Exception:
         log.exception("Exception during monthly birthday list:")
+        return False
+
+
+async def send_idn_live_plus_notification(
+    payload: dict, config: RecorderConfig
+) -> bool:
+    """Send a notification to Telegram for new or updated IDN Live Plus schedules."""
+    if not config.telegram_bot_token or not config.telegram_chat_id:
+        return False
+
+    log.info("Sending IDN Live Plus schedule Telegram notification")
+
+    new_count = payload.get("new_count", 0)
+    updated_count = payload.get("updated_count", 0)
+    screenshot_path = payload.get("screenshot_path")
+
+    caption = ""
+    new_schedules = payload.get("new_schedules", [])
+    updated_schedules = payload.get("updated_schedules", [])
+
+    def _format_schedule_summary(sch):
+        title = sch.get("title", "")
+        # Remove trailing date suffix like ' - 2026/07/16'
+        title = re.sub(r"\s*-\s*\d{4}/\d{2}/\d{2}$", "", title).strip() or title
+        scheduled_at = sch.get("scheduled_at", "")
+        live_id = sch.get("live_id", "")
+
+        date_wib = _format_date_wib(scheduled_at) if scheduled_at else ""
+        preview_url = f"https://www.idn.app/jkt48-official/live/preview/{live_id}"
+
+        return f"• <b>{title}</b>\n  • {date_wib}\n  • <a href='{preview_url}'>Detail</a>\n\n"
+
+    if new_schedules:
+        caption += (
+            f"<b>📺 Berikut {new_count} jadwal IDN Live Plus yang akan datang</b>\n\n"
+        )
+        for sch in new_schedules:
+            caption += _format_schedule_summary(sch)
+
+    if updated_schedules:
+        all_types = set()
+        for sch in updated_schedules:
+            all_types.update(sch.get("update_types", []))
+
+        types_str = " & ".join(sorted(all_types))
+        caption += (
+            f"<b>🔄 Terdapat {updated_count} jadwal dengan update {types_str}</b>\n\n"
+        )
+        for sch in updated_schedules:
+            caption += _format_schedule_summary(sch)
+
+    caption += "<i>~ MyPage48 ~</i>"
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            upload_success = False
+
+            if screenshot_path and os.path.exists(screenshot_path):
+                log.info("Sending IDN Live Plus notification with Photo")
+                tg_url = (
+                    f"https://api.telegram.org/bot{config.telegram_bot_token}/sendPhoto"
+                )
+                try:
+                    with open(screenshot_path, "rb") as f:
+                        tg_resp = await client.post(
+                            tg_url,
+                            data={
+                                "chat_id": config.telegram_chat_id,
+                                "caption": caption,
+                                "parse_mode": "HTML",
+                            },
+                            files={
+                                "photo": (
+                                    "idn_live_plus.jpg",
+                                    f,
+                                    "image/jpeg",
+                                )
+                            },
+                        )
+                    if tg_resp.is_success:
+                        upload_success = True
+                    else:
+                        log.warning(
+                            "Telegram Photo failed: %s %s",
+                            tg_resp.status_code,
+                            tg_resp.text,
+                        )
+                except Exception:
+                    log.exception("Exception during Photo upload:")
+
+            if upload_success:
+                return True
+
+            # Fallback to text message
+            tg_url = (
+                f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
+            )
+            tg_resp = await client.post(
+                tg_url,
+                json={
+                    "chat_id": config.telegram_chat_id,
+                    "text": caption,
+                    "parse_mode": "HTML",
+                    "disable_web_page_preview": False,
+                },
+            )
+            if not tg_resp.is_success:
+                log.error("IDN Live Plus notification failed: %s", tg_resp.text)
+                return False
+
+            return True
+
+    except Exception:
+        log.exception("Exception during IDN Live Plus notification:")
         return False
