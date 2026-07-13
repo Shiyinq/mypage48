@@ -146,7 +146,7 @@ def _format_end_live_caption(data: dict, live_id: str = "") -> str:
 
     caption = f"🔚 <b>{member_nickname} telah selesai LIVE {platform}!</b>\n"
     if date_wib_range:
-        caption += f"📅 {date_wib_range}\n"
+        caption += f"📅 {date_wib_range}\n\n"
 
     caption += f"❝<i>{title}</i>❞\n\n"
 

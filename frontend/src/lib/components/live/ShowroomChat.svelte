@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { tick, onDestroy, untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { MessageCircle } from 'lucide-svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { API_BASE } from '$lib/apis/client';
 	import { OptimizedImage } from '$lib/components/common';
-	import type { LiveChatShowroomMessage } from '$lib/types';
+	import { showroomChatStore } from '$lib/stores/showroomChat.svelte';
 
 	interface Props {
 		roomId: string;
@@ -16,121 +15,57 @@
 
 	const { t } = useTranslation();
 
-	let messages: LiveChatShowroomMessage[] = $state([]);
 	let chatContainer: HTMLElement | undefined = $state();
-	let lastCommentTime = 0;
-	let status: 'connecting' | 'connected' | 'disconnected' = $state('connecting');
-	let loading = $state(true);
-	let isFirstLoad = true;
+	let isUserAtBottom = $state(true);
 
 	$effect(() => {
-		onStatusChange?.(status);
+		onStatusChange?.(showroomChatStore.status);
 	});
 
 	$effect(() => {
 		if (roomId) {
-			messages = []; // Clear messages when room changes
-			lastCommentTime = 0;
-			isFirstLoad = true;
-
-			fetchComments();
-			const interval = setInterval(fetchComments, 4000);
-
-			// For testing purposes
-			/*
-			if (typeof window !== 'undefined') {
-				console.log('ShowroomChat mounted. Testing utility available: forceShowroomDisconnect()');
-				
-				(window as any).forceShowroomDisconnect = () => {
-					status = 'disconnected';
-					console.log('Showroom: Connection failure simulated. Auto-recovery will attempt in 4 seconds...');
-				};
-			}
-			*/
-
-			return () => {
-				clearInterval(interval);
-				/*
-				if (typeof window !== 'undefined') {
-					delete (window as any).forceShowroomDisconnect;
-				}
-				*/
-			};
+			showroomChatStore.init(roomId);
 		}
 	});
 
-	async function fetchComments() {
-		try {
-			const res = await fetch(`${API_BASE}/jkt48/live/showroom/comments?room_id=${roomId}`);
-			if (!res.ok) throw new Error('Failed to fetch');
-			const data = await res.json();
+	onDestroy(() => {
+		showroomChatStore.cleanup();
+	});
 
-			if (data && data.comment_log) {
-				status = 'connected';
-				// Filter specifically for comments, not gifts (gifts have comment field too but often special ua)
-				// showroom returns latest first, so we reverse it to process chronologically
-				const validComments = data.comment_log
-					.filter((c: { comment: string }) => c.comment && !c.comment.match(/^\d+$/))
-					.reverse();
+	function handleScroll(e: Event) {
+		const target = e.target as HTMLElement;
+		// 150px threshold for bottom detection
+		isUserAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 150;
+	}
 
-				const newComments = validComments.filter(
-					(c: { created_at: number }) => c.created_at > lastCommentTime
-				);
+	// Auto scroll logic when new messages arrive
+	$effect(() => {
+		// Only react to the number of messages changing
+		const msgLength = showroomChatStore.messages.length;
 
-				if (newComments.length > 0) {
-					lastCommentTime = Math.max(
-						...newComments.map((c: { created_at: number }) => c.created_at)
-					);
+		if (msgLength > 0 && chatContainer) {
+			// Untrack to prevent re-running when user manually scrolls
+			const atBottom = untrack(() => isUserAtBottom);
+			const firstLoad = untrack(() => showroomChatStore.isFirstLoad);
 
-					const mapped = newComments.map(
-						(
-							c: {
-								user_id: number;
-								created_at: number;
-								name: string;
-								comment: string;
-								avatar_url?: string;
-							},
-							index: number
-						) => ({
-							id: `${c.user_id}-${c.created_at}-${index}`,
-							user: c.name,
-							text: c.comment,
-							avatar: c.avatar_url
-						})
-					);
-
-					// Avoid duplicates based on ID
-					const existingIds = new Set(messages.map((m) => m.id));
-					const uniqueNew = mapped.filter((m: LiveChatShowroomMessage) => !existingIds.has(m.id));
-
-					if (uniqueNew.length > 0) {
-						const isAtBottom =
-							chatContainer &&
-							chatContainer.scrollHeight - chatContainer.scrollTop <=
-								chatContainer.clientHeight + 100;
-						messages = [...messages, ...uniqueNew].slice(-100);
-
-						// Auto-scroll logic
-						if (isFirstLoad || isAtBottom) {
-							await tick();
-							if (chatContainer) {
-								chatContainer.scrollTo({
-									top: chatContainer.scrollHeight,
-									behavior: isFirstLoad ? 'auto' : 'smooth'
-								});
-								isFirstLoad = false;
+			if (firstLoad || atBottom) {
+				tick().then(() => {
+					// Add a small delay to ensure the browser has fully calculated the new layout heights
+					setTimeout(() => {
+						if (chatContainer) {
+							chatContainer.scrollTo({
+								top: chatContainer.scrollHeight + 1000, // Extra padding to guarantee bottom
+								behavior: firstLoad ? 'auto' : 'smooth'
+							});
+							if (firstLoad) {
+								showroomChatStore.setIsFirstLoad(false);
 							}
 						}
-					}
-				}
+					}, 50);
+				});
 			}
-			loading = false;
-		} catch (e) {
-			console.error('Failed to fetch Showroom comments:', e);
-			status = 'disconnected';
 		}
-	}
+	});
 </script>
 
 <div class="flex-1 min-h-0 flex flex-col overflow-hidden relative">
@@ -138,23 +73,36 @@
 	<div
 		class="absolute inset-x-0 top-0 z-30 pointer-events-none p-2 flex flex-col items-center gap-2"
 	>
-		{#if status === 'disconnected'}
+		{#if showroomChatStore.status === 'disconnected'}
 			<div
 				class="w-full bg-red-500/90 backdrop-blur-md border border-red-400/30 rounded-xl p-2.5 flex items-center justify-center shadow-sm transition-all duration-300 pointer-events-auto"
 				transition:slide={{ duration: 300 }}
 			>
 				<p class="text-[9px] text-white font-medium text-center">
-					{t('theater.live.reconnect_showroom')}
+					{t('theater.live.reconnect_idn')}
 				</p>
 			</div>
 		{/if}
 	</div>
 
+	<!-- Messages Area -->
 	<div
 		bind:this={chatContainer}
+		onscroll={handleScroll}
 		class="flex-1 p-4 overflow-y-auto flex flex-col gap-3 scroll-smooth"
 	>
-		{#if messages.length === 0 && status === 'connected'}
+		{#if showroomChatStore.loading && showroomChatStore.messages.length === 0}
+			<div class="flex-1 flex flex-col items-center justify-center text-center py-10 opacity-60">
+				<div
+					class="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin mb-3"
+				></div>
+				<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-400">
+					{t('theater.live.connecting')}
+				</p>
+			</div>
+		{/if}
+
+		{#if showroomChatStore.messages.length === 0 && showroomChatStore.status === 'connected'}
 			<div
 				class="text-[10px] text-center text-slate-400 py-4 font-bold uppercase tracking-widest flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-100 dark:before:bg-zinc-900 after:h-px after:flex-1 after:bg-slate-100 dark:after:bg-zinc-900"
 			>
@@ -162,7 +110,7 @@
 			</div>
 		{/if}
 
-		{#each messages as msg (msg.id)}
+		{#each showroomChatStore.messages as msg (msg.id)}
 			<div class="flex items-start gap-3 group">
 				{#if msg.avatar}
 					<OptimizedImage
@@ -181,16 +129,46 @@
 					<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate">
 						{msg.user}
 					</p>
-					<div
-						class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm break-words overflow-wrap-anywhere whitespace-pre-wrap max-w-full"
-					>
-						{msg.text}
-					</div>
+					{#if msg.isGift && msg.gift}
+						<div
+							class="inline-flex items-center gap-3 px-3.5 py-2 rounded-2xl rounded-tl-none text-white text-[13px] font-black italic transition-all max-w-full"
+							style="background: #19191a;"
+						>
+							{#if msg.gift.img}
+								<OptimizedImage
+									src={msg.gift.img}
+									alt={msg.gift.name}
+									referrerPolicy="no-referrer"
+									style="width: 36px; height: 36px;"
+									class="object-contain"
+									noBackground={true}
+								/>
+							{/if}
+							<div class="flex flex-col justify-center">
+								<p
+									class="text-[9px] uppercase tracking-tighter mb-0.5 font-bold not-italic w-fit"
+									style="background: linear-gradient(to right, #F8B62D, #A4D233, #00AEEF, #B95BA5, #EA5571); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"
+								>
+									{t('theater.live.multiview.sending_gift')}
+								</p>
+								<span class="leading-tight">
+									{msg.gift.name.toUpperCase()}
+									{msg.gift.num > 1 ? `x${msg.gift.num}` : ''}
+								</span>
+							</div>
+						</div>
+					{:else}
+						<div
+							class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm break-words overflow-wrap-anywhere whitespace-pre-wrap max-w-full"
+						>
+							{msg.text}
+						</div>
+					{/if}
 				</div>
 			</div>
 		{/each}
 
-		{#if messages.length === 0 && !loading}
+		{#if showroomChatStore.messages.length === 0 && !showroomChatStore.loading && showroomChatStore.status !== 'connected'}
 			<div class="flex-1 flex flex-col items-center justify-center text-center py-20 opacity-40">
 				<MessageCircle size={32} class="text-slate-300 dark:text-zinc-700 mb-2" />
 				<p class="text-xs font-bold uppercase tracking-widest text-slate-400">

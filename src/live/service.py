@@ -802,6 +802,19 @@ class LiveService:
             logger.exception(f"Error fetching showroom gifts for {room_id}: {e}")
             raise GiftsFetchError()
 
+    async def get_showroom_gift_list(self, room_id: str) -> Dict[Any, Any]:
+        """Fetch Showroom gift list via proxy to bypass CORS"""
+        url = f"https://www.showroom-live.com/api/live/gift_list?room_id={room_id}"
+        try:
+            async with httpx.AsyncClient(
+                headers=self.showroom_headers, timeout=10.0
+            ) as client:
+                res = await client.get(url)
+                return res.json()
+        except Exception as e:
+            logger.exception(f"Error fetching showroom gift list for {room_id}: {e}")
+            raise GiftsFetchError()
+
     async def proxy_hls_request(self, url: str) -> Dict[str, Any]:
         """Proxy HLS playlist and segments to bypass CORS"""
         try:
