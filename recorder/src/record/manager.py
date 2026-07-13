@@ -59,7 +59,7 @@ class RecordingManager:
     def __init__(self, config: RecorderConfig):
         self.config = config
         self.log = logging.getLogger("recorder")
-        self.detector = LiveDetector(config.api_base_url)
+        self.detector = LiveDetector(config)
         self.sessions: dict[str, RecordingSession] = {}
         self._stop_events: dict[str, asyncio.Event] = {}
         self._gone_count: dict[str, int] = {}
