@@ -3,7 +3,7 @@ import logging
 
 import httpx
 
-logger = logging.getLogger("recorder_heartbeat")
+logger = logging.getLogger("heartbeat")
 
 
 async def run_heartbeat(config, mode: str, stop_event: asyncio.Event):
