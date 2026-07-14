@@ -65,11 +65,15 @@ class LiveService:
 
         if isinstance(showroom_lives, Exception):
             logger.error(f"Error fetching Showroom lives: {showroom_lives}")
-            showroom_lives = []
+            showroom_lives = self._cache.get("showroom_lives", [])
+        else:
+            self._cache["showroom_lives"] = showroom_lives
 
         if isinstance(idn_lives, Exception):
             logger.error(f"Error fetching IDN lives: {idn_lives}")
-            idn_lives = []
+            idn_lives = self._cache.get("idn_lives", [])
+        else:
+            self._cache["idn_lives"] = idn_lives
 
         all_lives = showroom_lives + idn_lives
         response = LiveResponse(data=all_lives, total=len(all_lives), updated_at=now)
