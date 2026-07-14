@@ -1,3 +1,4 @@
+import html
 import logging
 import math
 import os
@@ -116,10 +117,12 @@ def _format_rp(amount: float) -> str:
 
 def _format_end_live_caption(data: dict, live_id: str = "") -> str:
     """Format the Telegram caption."""
-    member_nickname = data.get("member_nickname") or data.get("member_name", "Unknown")
+    member_nickname = html.escape(
+        data.get("member_nickname") or data.get("member_name", "Unknown")
+    )
     title = data.get("title") or "Siaran Langsung"
-    title = unicodedata.normalize("NFKC", str(title)).strip()
-    platform = str(data.get("platform", "")).upper()
+    title = html.escape(unicodedata.normalize("NFKC", str(title)).strip())
+    platform = html.escape(str(data.get("platform", "")).upper())
 
     # Format duration
     duration_s = data.get("duration", 0)
@@ -161,7 +164,7 @@ def _format_end_live_caption(data: dict, live_id: str = "") -> str:
     if paid_fans:
         caption += "<b>Top Gifter:</b>\n"
         for i, fan in enumerate(paid_fans[:10], 1):
-            name = fan.get("user", "Unknown")
+            name = html.escape(fan.get("user", "Unknown"))
             gold = fan.get("total_gold", 0)
             caption += f"{i}. {name} ({gold:,} gold)\n"
 
@@ -391,10 +394,10 @@ async def send_end_live_notification(
 
 def _format_live_start_caption(live: LiveInfo) -> str:
     """Format the Telegram caption for live start."""
-    member_nickname = live.member_nickname or live.member_name or "Unknown"
+    member_nickname = html.escape(live.member_nickname or live.member_name or "Unknown")
     title = live.title or "Siaran Langsung"
-    title = unicodedata.normalize("NFKC", str(title)).strip()
-    platform = live.platform.upper()
+    title = html.escape(unicodedata.normalize("NFKC", str(title)).strip())
+    platform = html.escape(live.platform.upper())
 
     start_at_iso = live.start_at
     date_wib = _format_date_wib(start_at_iso)
@@ -496,8 +499,8 @@ async def send_news_notification(news_data: dict, config: RecorderConfig) -> boo
 
     log.info("Sending news Telegram notification for %s", news_data.get("news_id"))
 
-    title = news_data.get("title", "Berita JKT48")
-    category = news_data.get("category", "")
+    title = html.escape(news_data.get("title", "Berita JKT48"))
+    category = html.escape(news_data.get("category", ""))
     date_iso = news_data.get("valid_date_from", "")
     url = news_data.get("url", "")
     screenshot_path = news_data.get("screenshot_path")
@@ -647,7 +650,7 @@ async def send_schedule_notification(payload: dict, config: RecorderConfig) -> b
     updated_schedules = payload.get("updated_schedules", [])
 
     def _format_schedule_summary(sch):
-        title = sch.get("title", "")
+        title = html.escape(sch.get("title", ""))
 
         date_str = sch.get("date", "")
         time_str = sch.get("start_time", "")
@@ -773,6 +776,7 @@ async def send_daily_schedule_reminder(payload: dict, config: RecorderConfig) ->
         title = sch.get("title", "")
         if sch.get("type") == "SHOW" and sch.get("jkt48_member_type"):
             title += f" ({sch.get('jkt48_member_type')})"
+        title = html.escape(title)
 
         date_str = sch.get("date", "")
         time_str = sch.get("start_time", "")
@@ -808,7 +812,8 @@ async def send_daily_schedule_reminder(payload: dict, config: RecorderConfig) ->
         if members:
             entry += f"\n  • {len(members)} Member"
             for m in members:
-                entry += f"\n    • {m}"
+                safe_m = html.escape(m)
+                entry += f"\n    • {safe_m}"
 
         entry += f"\n  • <a href='{url}'>Detail</a>\n\n"
         caption += entry
@@ -840,7 +845,7 @@ async def send_daily_schedule_reminder(payload: dict, config: RecorderConfig) ->
 
 
 async def send_birthday_notification(member: dict, config) -> bool:
-    name = member.get("name", "Member")
+    name = html.escape(member.get("name", "Member"))
     age = member.get("age", "?")
     img_url = member.get("img", "")
 
@@ -901,7 +906,7 @@ async def send_birthday_notification(member: dict, config) -> bool:
 
 async def send_upcoming_schedule_reminder(sch: dict, config) -> bool:
     try:
-        title = sch.get("title", "")
+        title = html.escape(sch.get("title", ""))
         sch_type = sch.get("type", "")
         member_type = sch.get("jkt48_member_type", "")
         start_time_str = sch.get("start_time", "00:00:00")
@@ -965,7 +970,7 @@ async def send_monthly_birthday_list(month_name: str, members: list, config) -> 
 
         for m in members:
             b_date = m.get("birthdate", "")
-            name = m.get("name", "")
+            name = html.escape(m.get("name", ""))
             age = m.get("new_age", "")
             text += f"• {name} - {b_date} ({age} Tahun)\n"
 
@@ -1021,7 +1026,8 @@ async def send_idn_live_plus_notification(
         date_wib = _format_date_wib(scheduled_at) if scheduled_at else ""
         preview_url = f"https://www.idn.app/jkt48-official/live/preview/{live_id}"
 
-        return f"• <b>{title}</b>\n  • {date_wib}\n  • <a href='{preview_url}'>Detail</a>\n\n"
+        safe_title = html.escape(title)
+        return f"• <b>{safe_title}</b>\n  • {date_wib}\n  • <a href='{preview_url}'>Detail</a>\n\n"
 
     if new_schedules:
         caption += (
