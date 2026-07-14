@@ -18,11 +18,13 @@ def setup_logging(config: RecorderConfig) -> tuple[Logger, Logger, Logger]:
     upl = logging.getLogger("uploader")
     notif = logging.getLogger("notify")
     theater = logging.getLogger("theater")
+    heartbeat = logging.getLogger("heartbeat")
 
     rec.setLevel(config.log_level.upper())
     upl.setLevel(config.log_level.upper())
     notif.setLevel(config.log_level.upper())
     theater.setLevel(config.log_level.upper())
+    heartbeat.setLevel(config.log_level.upper())
 
     _add_handler(
         rec, formatter, config.log_mode, os.path.join(config.logs_dir, "recorder.log")
@@ -38,6 +40,12 @@ def setup_logging(config: RecorderConfig) -> tuple[Logger, Logger, Logger]:
         formatter,
         config.log_mode,
         os.path.join(config.logs_dir, "theater.log"),
+    )
+    _add_handler(
+        heartbeat,
+        formatter,
+        config.log_mode,
+        os.path.join(config.logs_dir, "heartbeat.log"),
     )
 
     return rec, upl, theater
