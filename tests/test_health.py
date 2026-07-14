@@ -90,3 +90,43 @@ async def test_health_check_minio_failure(client):
         
     finally:
         app.dependency_overrides.pop(get_storage_repository, None)
+
+@pytest.mark.asyncio
+async def test_record_recorder_heartbeat_success(client, create_user, db):
+    """
+    Test recorder heartbeat endpoint succeeds for admin users.
+    """
+    _, _, headers = await create_user("healthadmin", is_admin=True)
+    
+    payload = {
+        "mode": "all",
+        "bot_token": "some_token",
+        "chat_id": "some_id"
+    }
+    
+    response = await client.post("/api/health/recorder", json=payload, headers=headers)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {"status": "ok"}
+    
+    # Verify in DB
+    heartbeat = await db["recorder_heartbeats"].find_one({"_id": "recorder_all"})
+    assert heartbeat is not None
+    assert heartbeat["mode"] == "all"
+    assert heartbeat["encrypted_bot_token"] is not None
+    assert heartbeat["encrypted_bot_token"] != "some_token"
+
+@pytest.mark.asyncio
+async def test_record_recorder_heartbeat_unauthorized(client, create_user):
+    """
+    Test recorder heartbeat endpoint fails for non-admin users.
+    """
+    _, _, headers = await create_user("healthuser", is_admin=False)
+    
+    payload = {
+        "mode": "all",
+        "bot_token": "some_token",
+        "chat_id": "some_id"
+    }
+    
+    response = await client.post("/api/health/recorder", json=payload, headers=headers)
+    assert response.status_code == status.HTTP_404_NOT_FOUND

@@ -11,6 +11,7 @@ class RecorderConfig(BaseSettings):
     news_check_interval: int = 480
     schedule_check_interval: int = 480
     health_check_interval: int = 300
+    heartbeat_interval: int = 120
     recordings_dir: str = str(Path(__file__).parent.parent / "recordings")
     theater_dir: str = str(Path(__file__).parent.parent / "theater")
     max_recording_hours: int = 4

@@ -10,3 +10,9 @@ class HealthCheckResponse(BaseModel):
     database: DatabaseStatus
     storage: DatabaseStatus
     detail: Optional[str] = None
+
+
+class RecorderHeartbeatRequest(BaseModel):
+    mode: str
+    bot_token: Optional[str] = None
+    chat_id: Optional[str] = None

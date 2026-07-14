@@ -24,6 +24,7 @@ from src.exception_handlers import (
     request_validation_exception_handler,
 )
 from src.exceptions import DomainException
+from src.health.monitor import monitor_recorder_heartbeat
 from src.http_exceptions import BadRequest, DetailedHTTPException, EntityTooLarge
 from src.live_history.monitor import live_monitor_loop
 from src.logging_config import request_id_ctx_var
@@ -33,10 +34,12 @@ from src.logging_config import request_id_ctx_var
 async def lifespan(app: FastAPI):
     await database_instance.connect()
     monitor_task = asyncio.create_task(live_monitor_loop())
+    health_monitor_task = asyncio.create_task(monitor_recorder_heartbeat())
 
     yield
 
     monitor_task.cancel()
+    health_monitor_task.cancel()
     await database_instance.close()
 
 
