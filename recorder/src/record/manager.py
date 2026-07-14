@@ -919,6 +919,13 @@ class RecordingManager:
             with open(session.json_path, "w") as f:
                 json.dump(metadata, f, indent=2, ensure_ascii=False)
             self.log.info("JSON metadata: %s", session.json_path)
+
+            if reason == "completed":
+                metadata["end_at"] = recording_ended_at
+                asyncio.create_task(
+                    telegram_notifier.send_end_live_notification(self.config, metadata)
+                )
+
         except Exception as e:
             self.log.error("JSON write failed: %s", e)
 

@@ -115,8 +115,8 @@ def _format_rp(amount: float) -> str:
     return f"Rp {s}"
 
 
-def _format_end_live_caption(data: dict, live_id: str = "") -> str:
-    """Format the Telegram caption."""
+def _format_recap_end_live_caption(data: dict, live_id: str = "") -> str:
+    """Format the Telegram caption for recap."""
     member_nickname = html.escape(
         data.get("member_nickname") or data.get("member_name", "Unknown")
     )
@@ -148,11 +148,10 @@ def _format_end_live_caption(data: dict, live_id: str = "") -> str:
     total_idr = _gold_to_idr(total_gold, is_showroom)
     idr_str = f" (~ {_format_rp(total_idr)})" if total_gold > 0 else ""
 
-    caption = f"🔚 <b>{member_nickname} telah selesai LIVE {platform}!</b>\n"
+    caption = f"🎬 Recap Live {platform} {member_nickname}\n\n"
+    caption += f"❝<i>{title}</i>❞\n"
     if date_wib_range:
-        caption += f"📅 {date_wib_range}\n\n"
-
-    caption += f"❝<i>{title}</i>❞\n\n"
+        caption += f"{date_wib_range}\n\n"
 
     caption += f"<b>Durasi:</b> {duration_str}\n"
     caption += f"<b>Tayangan:</b> {views:,}\n"
@@ -182,6 +181,61 @@ def _format_end_live_caption(data: dict, live_id: str = "") -> str:
     caption += "\n<i>~ MyPage48 ~</i>"
 
     return caption
+
+
+def _format_end_live_caption(data: dict) -> str:
+    """Format the Telegram caption for simple end live."""
+    member_nickname = html.escape(
+        data.get("member_nickname") or data.get("member_name", "Unknown")
+    )
+    platform = html.escape(str(data.get("platform", "")).upper())
+
+    start_at_iso = data.get("start_at", "")
+    end_at_iso = data.get("end_at", "")
+    date_wib_range = _format_date_range_wib(start_at_iso, end_at_iso)
+
+    title = data.get("title") or "Siaran Langsung"
+    title = html.escape(unicodedata.normalize("NFKC", str(title)).strip())
+
+    caption = f"🏁 <b>{member_nickname} telah selesai LIVE {platform}!</b>\n\n"
+    caption += f"❝<i>{title}</i>❞\n\n"
+    if date_wib_range:
+        caption += f"📅 {date_wib_range}\n\n"
+
+    caption += "<i>~ MyPage48 ~</i>"
+    return caption
+
+
+async def send_end_live_notification(config: RecorderConfig, data: dict) -> bool:
+    """Send a simple notification to Telegram when a live stream ends."""
+    if not config.telegram_bot_token or not config.telegram_chat_id:
+        return False
+
+    log.info("Sending simple end live Telegram notification")
+
+    caption = _format_end_live_caption(data)
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            tg_url = (
+                f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
+            )
+            tg_data = {
+                "chat_id": config.telegram_chat_id,
+                "text": caption,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": True,
+            }
+
+            tg_resp = await client.post(tg_url, json=tg_data)
+            if not tg_resp.is_success:
+                log.error("Simple end live notification failed: %s", tg_resp.text)
+                return False
+
+            return True
+    except Exception:
+        log.exception("Exception during simple end live notification:")
+        return False
 
 
 def _process_and_split_image(image_path: str, max_height: int = 8000) -> list[str]:
@@ -221,16 +275,16 @@ def _process_and_split_image(image_path: str, max_height: int = 8000) -> list[st
         return [image_path]
 
 
-async def send_end_live_notification(
+async def send_recap_end_live_notification(
     live_id: str, config: RecorderConfig, folder_path: str = ""
 ) -> bool:
-    """Fetch replay data and send a notification to Telegram."""
+    """Fetch replay data and send a recap notification to Telegram."""
     if not config.telegram_bot_token or not config.telegram_chat_id:
         log.info("Telegram not configured (bot token or chat ID missing). Skipping.")
         return False
 
     api_url = f"{config.api_base_url.rstrip('/')}/replays/{live_id}"
-    log.info("Fetching replay data for Telegram notification from %s", api_url)
+    log.info("Fetching replay data for Telegram recap notification from %s", api_url)
 
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
@@ -243,7 +297,7 @@ async def send_end_live_notification(
                 return False
 
             data = resp.json()
-            caption = _format_end_live_caption(data, live_id=live_id)
+            caption = _format_recap_end_live_caption(data, live_id=live_id)
 
             images_to_send = []
 
@@ -417,10 +471,10 @@ def _format_live_start_caption(live: LiveInfo) -> str:
     else:
         official_url = ""
 
-    caption = f"🔴 <b>{member_nickname} sedang LIVE {platform}!</b>\n"
-    if date_wib:
-        caption += f"📅 {date_wib}\n"
+    caption = f"🚀 <b>{member_nickname} sedang LIVE {platform}!</b>\n"
     caption += f"\n❝<i>{title}</i>❞\n\n"
+    if date_wib:
+        caption += f"📅 {date_wib}\n\n"
 
     if app_url:
         caption += f"• <a href='{app_url}'>Nonton di IDN App</a>\n"

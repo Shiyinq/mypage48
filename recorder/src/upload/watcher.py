@@ -192,7 +192,7 @@ class Watcher:
             return
 
         self._processing[live_id]["phase"] = "sending notification"
-        await telegram_notifier.send_end_live_notification(
+        await telegram_notifier.send_recap_end_live_notification(
             live_id, self.config, folder_path
         )
 
