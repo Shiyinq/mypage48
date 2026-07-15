@@ -116,6 +116,13 @@
 
 	let filteredVideos = $derived.by(() => {
 		let result = replayStore.videos;
+		const seen = new Set<string>();
+		result = result.filter((v) => {
+			const key = v.live_id || v.youtube_id || `${v.member}-${v.title}-${v.date}`;
+			if (seen.has(key)) return false;
+			seen.add(key);
+			return true;
+		});
 		if (memberFilter) {
 			result = result.filter((v) => v.member.toLowerCase() === memberFilter);
 		}
@@ -384,7 +391,7 @@
 								? 'linear-gradient(to right, black calc(100% - 40px), transparent 100%)'
 								: 'none'};"
 						>
-							{#each memberList as m}
+							{#each memberList as m (m.nickname)}
 								<button
 									onclick={() => setMemberFilter(m.nickname)}
 									class="shrink-0 flex flex-col items-center gap-1 cursor-pointer"
@@ -418,7 +425,7 @@
 			{/if}
 			{#if replayStore.loading && replayStore.videos.length === 0}
 				<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-					{#each Array(8) as _}
+					{#each Array(8) as _, index (index)}
 						<div class="animate-pulse">
 							<div class="aspect-video bg-slate-200 dark:bg-zinc-800 rounded-xl"></div>
 							<div class="mt-3 space-y-2 px-1">
@@ -466,7 +473,7 @@
 				</div>
 			{:else}
 				<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-					{#each paginatedVideos as video (video.youtube_id || video.live_id || video.title)}
+					{#each paginatedVideos as video, index (video.live_id || video.youtube_id ? `${video.live_id || video.youtube_id}-${index}` : index)}
 						{@const memberData = memberMap.get(video.member.toLowerCase())}
 						<button
 							class="group flex flex-col justify-start text-left w-full h-full focus:outline-none cursor-pointer"
