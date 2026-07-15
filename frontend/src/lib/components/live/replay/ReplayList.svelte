@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 	import { goto } from '$app/navigation';
+	import { page as pageStore } from '$app/stores';
 	import { replayStore } from '$lib/stores/replay.svelte';
 	import { liveNavbarStore } from '$lib/stores/liveNavbar.svelte';
 	import { membersStore } from '$lib/stores/theater.svelte';
@@ -523,12 +524,18 @@
 									{:else if memberData}
 										{#if memberData.id && video.member.toUpperCase() !== 'JKT48'}
 											<a
-												href="/theater/members/{memberData.id}"
+												href={$pageStore.url.pathname.startsWith('/jkt48')
+													? `/jkt48/members?id=${memberData.id}`
+													: `/theater/members/${memberData.id}`}
 												class="block w-9 h-9 rounded-full hover:ring-2 hover:ring-red-500 transition-all cursor-pointer z-10 relative"
 												onclick={(e) => {
 													e.preventDefault();
 													e.stopPropagation();
-													goto(`/theater/members/${memberData.id}`);
+													goto(
+														$pageStore.url.pathname.startsWith('/jkt48')
+															? `/jkt48/members?id=${memberData.id}`
+															: `/theater/members/${memberData.id}`
+													);
 												}}
 												data-sveltekit-preload-data="hover"
 											>
@@ -574,12 +581,18 @@
 										>
 											{#if memberData?.id && video.member.toUpperCase() !== 'JKT48'}
 												<a
-													href="/theater/members/{memberData.id}"
+													href={$pageStore.url.pathname.startsWith('/jkt48')
+														? `/jkt48/members?id=${memberData.id}`
+														: `/theater/members/${memberData.id}`}
 													class="font-semibold text-slate-700 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer z-10 relative"
 													onclick={(e) => {
 														e.preventDefault();
 														e.stopPropagation();
-														goto(`/theater/members/${memberData.id}`);
+														goto(
+															$pageStore.url.pathname.startsWith('/jkt48')
+																? `/jkt48/members?id=${memberData.id}`
+																: `/theater/members/${memberData.id}`
+														);
 													}}
 													data-sveltekit-preload-data="hover"
 												>

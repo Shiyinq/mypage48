@@ -600,6 +600,10 @@
 	"settings": {
 		"title": "設定",
 		"subtitle": "設定を管理",
+		"logout": {
+			"title": "ログアウト",
+			"description": "現在のセッションを終了する"
+		},
 		"account": {
 			"title": "アカウント情報",
 			"subtitle": "プロフィールの管理",
