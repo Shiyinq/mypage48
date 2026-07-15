@@ -600,6 +600,10 @@
 	"settings": {
 		"title": "Settings",
 		"subtitle": "Manage your preferences",
+		"logout": {
+			"title": "Logout",
+			"description": "End your current session"
+		},
 		"account": {
 			"title": "Account Information",
 			"subtitle": "View and manage your identity",

@@ -600,6 +600,10 @@
 	"settings": {
 		"title": "Pengaturan",
 		"subtitle": "Kelola preferensi kamu",
+		"logout": {
+			"title": "Keluar",
+			"description": "Akhiri sesi Anda saat ini"
+		},
 		"account": {
 			"title": "Informasi Akun",
 			"subtitle": "Lihat dan kelola identitas Anda",

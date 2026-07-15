@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isAuthenticated, showToast, userProfile, authStore } from '$lib/stores';
+	import { isAuthenticated, showToast, userProfile } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { goto } from '$app/navigation';
 	import { members, type Member } from '$lib/apis/members';
-	import { User as UserIcon, LogOut, Settings, LoaderCircle } from 'lucide-svelte';
+	import { User as UserIcon, Settings, LoaderCircle } from 'lucide-svelte';
 	import { scale } from 'svelte/transition';
 	import SEO from '$lib/components/SEO.svelte';
 	import { PageHeader, ErrorState } from '$lib/components';
@@ -73,8 +73,6 @@
 	// Confirm remove state
 	let showRemoveConfirm = $state(false);
 	let removeTargetId = $state<string | null>(null);
-
-	let isLoggingOut = $derived(authStore.isLoggingOut);
 
 	// Progress percent derived from level
 	let progressPercent = $derived(
@@ -147,16 +145,6 @@
 			showToast(t('profile.errorTitle'), 'error');
 		}
 	}
-
-	const logout = async () => {
-		try {
-			await authStore.logout();
-			showToast(t('auth.logout.success'), 'success');
-			goto('/login');
-		} catch (e) {
-			logger.error('Logout error', e, { context: 'ProfilePage' });
-		}
-	};
 
 	// Oshi Modal Logic
 	const openOshiModal = () => {
@@ -249,13 +237,6 @@
 					icon: Settings,
 					label: 'Settings',
 					onClick: () => goto('/settings')
-				},
-				{
-					icon: LogOut,
-					label: t('common.logout'),
-					onClick: logout,
-					theme: 'red',
-					loading: isLoggingOut
 				}
 			]}
 		>
@@ -267,19 +248,6 @@
 					title="Settings"
 				>
 					<Settings class="w-5 h-5" />
-				</button>
-				<!-- Logout Button -->
-				<button
-					onclick={logout}
-					disabled={isLoggingOut}
-					class="p-2 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors border border-red-100/50 dark:border-red-500/30 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-					title={t('common.logout')}
-				>
-					{#if isLoggingOut}
-						<LoaderCircle class="w-5 h-5 animate-spin" />
-					{:else}
-						<LogOut class="w-5 h-5" />
-					{/if}
 				</button>
 			{/snippet}
 		</PageHeader>
