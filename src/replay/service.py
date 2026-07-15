@@ -4,6 +4,8 @@ import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+from pymongo.errors import DuplicateKeyError
+
 from src.config import Settings
 from src.live_history.repository import LiveHistoryRepository
 from src.logging_config import create_logger
@@ -285,7 +287,11 @@ class ReplayService:
             "updated_at": datetime.now(timezone.utc),
         }
 
-        doc_id = await self.repository.insert(doc)
+        try:
+            doc_id = await self.repository.insert(doc)
+        except DuplicateKeyError:
+            logger.warning(f"Replay {live_id} duplicate key on insert, skipping")
+            raise ReplayAlreadyExists(f"Replay {live_id} already exists")
         doc["_id"] = doc_id
 
         logger.info(
@@ -375,7 +381,14 @@ class ReplayService:
         wib = timezone(timedelta(hours=7))
         docs = await self.repository.find_all(projection={"chats": 0})
         result = []
+        seen_live_ids = set()
         for doc in docs:
+            live_id = doc.get("live_id", "")
+            if live_id and live_id in seen_live_ids:
+                continue
+            if live_id:
+                seen_live_ids.add(live_id)
+
             start_at = doc.get("start_at") or doc.get("recording_started_at")
             if isinstance(start_at, str):
                 try:
@@ -388,7 +401,7 @@ class ReplayService:
             date_str = start_at.strftime("%Y-%m-%d %H:%M WIB") if start_at else None
             result.append(
                 {
-                    "live_id": doc.get("live_id", ""),
+                    "live_id": live_id,
                     "youtube_id": doc.get("youtube_id") or "",
                     "title": doc.get("title"),
                     "youtube_title": doc.get("youtube_title"),
@@ -396,7 +409,6 @@ class ReplayService:
                     "date": date_str,
                     "platform": doc.get("platform", "").upper(),
                     "added_at": doc.get("created_at"),
-                    "live_id": doc.get("live_id", ""),
                 }
             )
         return result

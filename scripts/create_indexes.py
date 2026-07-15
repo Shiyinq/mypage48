@@ -56,6 +56,9 @@ async def create_indexes():
             ("event.time", -1)
         ])
 
+        # Replay indexes
+        await db["replay"].create_index("live_id", unique=True)
+
         print("Database indexes created successfully")
     except Exception as e:
         print(f"Failed to create indexes: {str(e)}")
