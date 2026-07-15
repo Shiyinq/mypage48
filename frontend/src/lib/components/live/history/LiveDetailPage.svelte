@@ -351,8 +351,13 @@
 									{/if}
 								</div>
 
-								{#if data.member?.id}
-									<a href="/theater/members/{data.member.id}" class="group/member block w-fit">
+								{#if data.member?.id && data.member_name?.toUpperCase() !== 'JKT48'}
+									<a
+										href={$page.url.pathname.startsWith('/jkt48')
+											? `/jkt48/members?id=${data.member.id}`
+											: `/theater/members/${data.member.id}`}
+										class="group/member block w-fit"
+									>
 										<h1
 											class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight group-hover/member:text-red-500 transition-colors"
 										>
