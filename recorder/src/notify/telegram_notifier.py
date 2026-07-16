@@ -1,4 +1,5 @@
 import html
+import json
 import logging
 import math
 import os
@@ -115,7 +116,9 @@ def _format_rp(amount: float) -> str:
     return f"Rp {s}"
 
 
-def _format_recap_end_live_caption(data: dict, live_id: str = "") -> str:
+def _format_recap_end_live_caption(
+    data: dict, live_id: str = "", live_type: str = "public"
+) -> str:
     """Format the Telegram caption for recap."""
     member_nickname = html.escape(
         data.get("member_nickname") or data.get("member_name", "Unknown")
@@ -173,7 +176,7 @@ def _format_recap_end_live_caption(data: dict, live_id: str = "") -> str:
         caption += f"\n• <a href='{history_url}'>Data Lengkap di MyPage48</a>"
 
     youtube_id = data.get("youtube_id")
-    if youtube_id:
+    if youtube_id and live_type == "public":
         caption += f"\n• <a href='https://youtu.be/{youtube_id}'>Tayangan ulang di YouTube</a>\n"
     else:
         caption += "\n"
@@ -297,7 +300,21 @@ async def send_recap_end_live_notification(
                 return False
 
             data = resp.json()
-            caption = _format_recap_end_live_caption(data, live_id=live_id)
+
+            live_type = "public"
+            if folder_path:
+                meta_path = os.path.join(folder_path, f"{live_id}.json")
+                if os.path.exists(meta_path):
+                    try:
+                        with open(meta_path) as f:
+                            meta = json.load(f)
+                            live_type = meta.get("live_type", "public")
+                    except Exception:
+                        pass
+
+            caption = _format_recap_end_live_caption(
+                data, live_id=live_id, live_type=live_type
+            )
 
             images_to_send = []
 
@@ -481,8 +498,10 @@ def _format_live_start_caption(live: LiveInfo) -> str:
         caption += f"• <a href='{official_url}'>Nonton di IDN Web</a>\n\n"
     elif official_url:
         caption += f"• <a href='{official_url}'>Nonton di {platform}</a>\n\n"
-    caption += f"• <a href='{watch_url}'>Nonton di MyPage48</a>\n"
-    caption += f"• <a href='{multiview_url}'>Nonton via MultiView</a>\n\n"
+
+    if live.live_type == "public":
+        caption += f"• <a href='{watch_url}'>Nonton di MyPage48</a>\n"
+        caption += f"• <a href='{multiview_url}'>Nonton via MultiView</a>\n\n"
 
     caption += "<i>~ MyPage48 ~</i>"
     return caption

@@ -63,6 +63,7 @@ class RecordingManager:
         self.sessions: dict[str, RecordingSession] = {}
         self._stop_events: dict[str, asyncio.Event] = {}
         self._gone_count: dict[str, int] = {}
+        self._pending_ends: set[str] = set()
 
     async def sync(self, current_lives: list[LiveInfo]):
         current_ids = {l.live_id for l in current_lives}
@@ -71,13 +72,13 @@ class RecordingManager:
             if live.live_id not in self.sessions:
                 await self._start_session(live)
 
-        ended_ids = set(self.sessions.keys()) - current_ids
+        ended_ids = set(self.sessions.keys()) - current_ids - self._pending_ends
         for live_id in ended_ids:
             count = self._gone_count.get(live_id, 0) + 1
             self._gone_count[live_id] = count
             if count >= 3:
                 del self._gone_count[live_id]
-                await self._end_session(live_id, reason="completed")
+                asyncio.create_task(self._end_session(live_id, reason="completed"))
 
         for live_id in current_ids:
             self._gone_count.pop(live_id, None)
@@ -115,7 +116,9 @@ class RecordingManager:
 
         new_hls_url = self.detector.pick_best_url(stream_info) or session.hls_url
         session.hls_url = new_hls_url
-        session.ffmpeg_proc = stream_recorder.start(new_hls_url, old_mkv)
+        session.ffmpeg_proc = stream_recorder.start(
+            new_hls_url, old_mkv, headers=self._get_platform_headers(session)
+        )
 
     async def check_health(self):
         completed_ids = []
@@ -164,9 +167,9 @@ class RecordingManager:
                 session.last_file_size = current_size
 
         for live_id in completed_ids:
-            await self._end_session(live_id, reason="completed")
+            asyncio.create_task(self._end_session(live_id, reason="completed"))
         for live_id in error_ids:
-            await self._end_session(live_id, reason="error")
+            asyncio.create_task(self._end_session(live_id, reason="error"))
 
     def log_progress(self):
         if not self.sessions:
@@ -189,13 +192,27 @@ class RecordingManager:
                 except Exception:
                     pass
 
+            screenshot_count = 0
+            if os.path.exists(session.screenshots_folder):
+                try:
+                    screenshot_count = len(
+                        [
+                            f
+                            for f in os.listdir(session.screenshots_folder)
+                            if f.endswith(".jpg")
+                        ]
+                    )
+                except Exception:
+                    pass
+
             self.log.info(
-                "  %s (%s) | %s | %s | %s chats",
+                "  %s (%s) | %s | %s | %s chats | %s screenshots",
                 session.member_nickname,
                 session.platform,
                 duration_str,
                 self._format_size(file_size),
                 chat_count,
+                screenshot_count,
             )
 
     async def run(self, stop_event: asyncio.Event):
@@ -331,11 +348,9 @@ class RecordingManager:
         if stream_info.get("room_identifier"):
             live.room_identifier = stream_info.get("room_identifier")
 
-        headers = None
-        if live.platform == "idn":
-            headers = {"Origin": "https://www.idn.app"}
-
-        ffmpeg_proc = stream_recorder.start(hls_url, mkv_path, headers=headers)
+        ffmpeg_proc = stream_recorder.start(
+            hls_url, mkv_path, headers=self._get_platform_headers(live)
+        )
 
         stop_event = asyncio.Event()
         self._stop_events[live.live_id] = stop_event
@@ -417,6 +432,7 @@ class RecordingManager:
             gift_task=gift_task,
             member_image=live.member_image,
             start_at=live.start_at,
+            live_type=live.live_type,
             ffmpeg_proc=ffmpeg_proc,
             chat_task=chat_task,
             mkv_parts=mkv_parts,
@@ -436,6 +452,7 @@ class RecordingManager:
                 "member_name": session.member_name,
                 "member_nickname": session.member_nickname,
                 "start_at": session.start_at,
+                "live_type": session.live_type,
                 "recording_started_at": datetime.fromtimestamp(
                     session.recording_start_time, tz=timezone.utc
                 ).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -508,22 +525,36 @@ class RecordingManager:
         timeout: int = 30,
         *,
         live: bool = False,
+        headers: dict = None,
     ):
+        header_args = []
+        if headers:
+            header_str = "".join([f"{k}: {v}\r\n" for k, v in headers.items()])
+            header_args.extend(["-headers", header_str])
+
         if live:
             for attempt in range(1, 4):
                 try:
+                    args = (
+                        [
+                            "ffmpeg",
+                            "-loglevel",
+                            "error",
+                        ]
+                        + header_args
+                        + [
+                            "-i",
+                            source,
+                            "-vframes",
+                            "1",
+                            "-strict",
+                            "unofficial",
+                            "-y",
+                            dest,
+                        ]
+                    )
                     r = await asyncio.create_subprocess_exec(
-                        "ffmpeg",
-                        "-loglevel",
-                        "error",
-                        "-i",
-                        source,
-                        "-vframes",
-                        "1",
-                        "-strict",
-                        "unofficial",
-                        "-y",
-                        dest,
+                        *args,
                         stdout=asyncio.subprocess.PIPE,
                         stderr=asyncio.subprocess.PIPE,
                     )
@@ -555,6 +586,7 @@ class RecordingManager:
                 "error",
                 "-ss",
                 seek,
+                *header_args,
                 "-i",
                 source,
                 "-vframes",
@@ -574,6 +606,7 @@ class RecordingManager:
                 "1000000",
                 "-ss",
                 seek,
+                *header_args,
                 "-i",
                 source,
                 "-vframes",
@@ -589,6 +622,7 @@ class RecordingManager:
                 "error",
                 "-skip_frame",
                 "nokey",
+                *header_args,
                 "-i",
                 source,
                 "-ss",
@@ -604,6 +638,7 @@ class RecordingManager:
                 "ffmpeg",
                 "-loglevel",
                 "error",
+                *header_args,
                 "-i",
                 source,
                 "-ss",
@@ -667,6 +702,25 @@ class RecordingManager:
             self.log.warning("  ffmpeg stderr: %s", last_err)
         return False
 
+    def _get_platform_headers(self, obj: LiveInfo | RecordingSession) -> dict | None:
+        if obj.platform == "idn":
+            return {
+                "Origin": "https://www.idn.app",
+                "Referer": "https://www.idn.app/",
+            }
+        return None
+
+    async def _get_fresh_hls_url(self, session: RecordingSession) -> str:
+        if session.platform == "idn" and session.live_type != "public":
+            stream_info = await self.detector.get_streaming_url(
+                session.platform, session.room_id, session.live_id
+            )
+            if stream_info:
+                fresh_url = self.detector.pick_best_url(stream_info)
+                if fresh_url:
+                    return fresh_url
+        return session.hls_url
+
     async def _capture_initial_thumbnail(self, session: RecordingSession):
         await asyncio.sleep(30)
         if session.live_id not in self.sessions:
@@ -675,8 +729,13 @@ class RecordingManager:
         ts = int(time.time())
         ss_name = f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg"
         ss_path = os.path.join(session.screenshots_folder, ss_name)
+
+        headers = self._get_platform_headers(session)
+        ss_url = await self._get_fresh_hls_url(session)
+        self.log.info("Initial thumb URL: %s | headers: %s", ss_url, headers)
+
         ok = await self._capture_screenshot(
-            session.hls_url, ss_path, "5", 30, live=True
+            ss_url, ss_path, "5", 30, live=True, headers=headers
         )
         if ok:
             self.log.info("Initial screenshot saved: %s", ss_name)
@@ -686,14 +745,20 @@ class RecordingManager:
     async def _periodic_thumbnails(self, session: RecordingSession):
         await asyncio.sleep(300)
         self.log.info("Periodic thumb: starting 5-min cycle")
+
+        headers = self._get_platform_headers(session)
+
         while session.live_id in self.sessions:
             elapsed = int(time.time() - session.recording_start_time)
             seek = str(max(5, elapsed - 30))
             ts = int(time.time())
             ss_name = f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg"
             ss_path = os.path.join(session.screenshots_folder, ss_name)
+
+            ss_url = await self._get_fresh_hls_url(session)
+            self.log.info("Periodic thumb URL: %s | headers: %s", ss_url, headers)
             ok = await self._capture_screenshot(
-                session.hls_url, ss_path, seek, 30, live=True
+                ss_url, ss_path, seek, 30, live=True, headers=headers
             )
             if ok:
                 self.log.info("Screenshot at %ss: %s", seek, ss_name)
@@ -705,6 +770,8 @@ class RecordingManager:
         session = self.sessions.get(live_id)
         if not session:
             return
+
+        self._pending_ends.add(live_id)
 
         self.log.info(
             "Ending recording %s/%s (%s)",
@@ -782,7 +849,7 @@ class RecordingManager:
                             mp4_path,
                         ],
                         capture_output=True,
-                        timeout=300,
+                        timeout=self.config.remux_timeout,
                     )
                     os.remove(target_mkv)
                     session.output_path = mp4_path
@@ -816,7 +883,7 @@ class RecordingManager:
                             mp4_path,
                         ],
                         capture_output=True,
-                        timeout=300,
+                        timeout=self.config.remux_timeout,
                     )
 
                     for p in parts_to_concat:
@@ -914,6 +981,7 @@ class RecordingManager:
                 "srt_file": os.path.basename(session.srt_path),
                 "youtube_id": None,
                 "youtube_title": None,
+                "live_type": session.live_type,
                 "mkv_parts": session.mkv_parts,
             }
             with open(session.json_path, "w") as f:
@@ -949,6 +1017,7 @@ class RecordingManager:
 
         self.sessions.pop(live_id, None)
         self._stop_events.pop(live_id, None)
+        self._pending_ends.discard(live_id)
 
         self.log.info(
             "Finished recording %s/%s with status %s",

@@ -19,6 +19,7 @@ class LiveInfo:
     member_image: str = ""
     image: str = ""
     start_at: str = ""
+    live_type: str = "public"
 
 
 @dataclass
@@ -43,6 +44,7 @@ class RecordingSession:
     title: str
     member_image: str
     start_at: str
+    live_type: str = "public"
     ffmpeg_proc: Optional[subprocess.Popen] = None
     chat_task: Optional["asyncio.Task"] = None
     gift_task: Optional["asyncio.Task"] = None
