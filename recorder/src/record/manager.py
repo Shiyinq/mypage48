@@ -115,15 +115,8 @@ class RecordingManager:
 
         new_hls_url = self.detector.pick_best_url(stream_info) or session.hls_url
         session.hls_url = new_hls_url
-
-        headers = None
-        if session.platform == "idn":
-            headers = {
-                "Origin": "https://www.idn.app",
-                "Referer": "https://www.idn.app/",
-            }
         session.ffmpeg_proc = stream_recorder.start(
-            new_hls_url, old_mkv, headers=headers
+            new_hls_url, old_mkv, headers=self._get_platform_headers(session)
         )
 
     async def check_health(self):
@@ -340,14 +333,9 @@ class RecordingManager:
         if stream_info.get("room_identifier"):
             live.room_identifier = stream_info.get("room_identifier")
 
-        headers = None
-        if live.platform == "idn":
-            headers = {
-                "Origin": "https://www.idn.app",
-                "Referer": "https://www.idn.app/",
-            }
-
-        ffmpeg_proc = stream_recorder.start(hls_url, mkv_path, headers=headers)
+        ffmpeg_proc = stream_recorder.start(
+            hls_url, mkv_path, headers=self._get_platform_headers(live)
+        )
 
         stop_event = asyncio.Event()
         self._stop_events[live.live_id] = stop_event
@@ -698,6 +686,25 @@ class RecordingManager:
             self.log.warning("  ffmpeg stderr: %s", last_err)
         return False
 
+    def _get_platform_headers(self, obj: LiveInfo | RecordingSession) -> dict | None:
+        if obj.platform == "idn":
+            return {
+                "Origin": "https://www.idn.app",
+                "Referer": "https://www.idn.app/",
+            }
+        return None
+
+    async def _get_fresh_hls_url(self, session: RecordingSession) -> str:
+        if session.platform == "idn" and session.live_type != "public":
+            stream_info = await self.detector.get_streaming_url(
+                session.platform, session.room_id, session.live_id
+            )
+            if stream_info:
+                fresh_url = self.detector.pick_best_url(stream_info)
+                if fresh_url:
+                    return fresh_url
+        return session.hls_url
+
     async def _capture_initial_thumbnail(self, session: RecordingSession):
         await asyncio.sleep(30)
         if session.live_id not in self.sessions:
@@ -707,23 +714,8 @@ class RecordingManager:
         ss_name = f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg"
         ss_path = os.path.join(session.screenshots_folder, ss_name)
 
-        headers = None
-        if session.platform == "idn":
-            headers = {
-                "Origin": "https://www.idn.app",
-                "Referer": "https://www.idn.app/",
-            }
-
-        ss_url = session.hls_url
-        if session.platform == "idn" and session.live_type == "idnliveplus":
-            stream_info = await self.detector.get_streaming_url(
-                session.platform, session.room_id, session.live_id
-            )
-            if stream_info:
-                fresh_url = self.detector.pick_best_url(stream_info)
-                if fresh_url:
-                    ss_url = fresh_url
-
+        headers = self._get_platform_headers(session)
+        ss_url = await self._get_fresh_hls_url(session)
         self.log.info("Initial thumb URL: %s | headers: %s", ss_url, headers)
 
         ok = await self._capture_screenshot(
@@ -738,12 +730,7 @@ class RecordingManager:
         await asyncio.sleep(300)
         self.log.info("Periodic thumb: starting 5-min cycle")
 
-        headers = None
-        if session.platform == "idn":
-            headers = {
-                "Origin": "https://www.idn.app",
-                "Referer": "https://www.idn.app/",
-            }
+        headers = self._get_platform_headers(session)
 
         while session.live_id in self.sessions:
             elapsed = int(time.time() - session.recording_start_time)
@@ -752,16 +739,7 @@ class RecordingManager:
             ss_name = f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg"
             ss_path = os.path.join(session.screenshots_folder, ss_name)
 
-            ss_url = session.hls_url
-            if session.platform == "idn" and session.live_type == "idnliveplus":
-                stream_info = await self.detector.get_streaming_url(
-                    session.platform, session.room_id, session.live_id
-                )
-                if stream_info:
-                    fresh_url = self.detector.pick_best_url(stream_info)
-                    if fresh_url:
-                        ss_url = fresh_url
-
+            ss_url = await self._get_fresh_hls_url(session)
             self.log.info("Periodic thumb URL: %s | headers: %s", ss_url, headers)
             ok = await self._capture_screenshot(
                 ss_url, ss_path, seek, 30, live=True, headers=headers
