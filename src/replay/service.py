@@ -267,6 +267,7 @@ class ReplayService:
             "title": metadata.get("title"),
             "member_name": metadata.get("member_name"),
             "member_nickname": metadata.get("member_nickname"),
+            "live_type": metadata.get("live_type", "public"),
             "status": status,
             "start_at": metadata.get("start_at"),
             "recording_started_at": metadata.get("recording_started_at"),
