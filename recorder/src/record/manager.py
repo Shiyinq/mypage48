@@ -451,6 +451,7 @@ class RecordingManager:
                 "member_name": session.member_name,
                 "member_nickname": session.member_nickname,
                 "start_at": session.start_at,
+                "live_type": session.live_type,
                 "recording_started_at": datetime.fromtimestamp(
                     session.recording_start_time, tz=timezone.utc
                 ).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -977,6 +978,7 @@ class RecordingManager:
                 "srt_file": os.path.basename(session.srt_path),
                 "youtube_id": None,
                 "youtube_title": None,
+                "live_type": session.live_type,
                 "mkv_parts": session.mkv_parts,
             }
             with open(session.json_path, "w") as f:
