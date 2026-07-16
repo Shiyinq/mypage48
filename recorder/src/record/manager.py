@@ -63,6 +63,7 @@ class RecordingManager:
         self.sessions: dict[str, RecordingSession] = {}
         self._stop_events: dict[str, asyncio.Event] = {}
         self._gone_count: dict[str, int] = {}
+        self._pending_ends: set[str] = set()
 
     async def sync(self, current_lives: list[LiveInfo]):
         current_ids = {l.live_id for l in current_lives}
@@ -71,7 +72,7 @@ class RecordingManager:
             if live.live_id not in self.sessions:
                 await self._start_session(live)
 
-        ended_ids = set(self.sessions.keys()) - current_ids
+        ended_ids = set(self.sessions.keys()) - current_ids - self._pending_ends
         for live_id in ended_ids:
             count = self._gone_count.get(live_id, 0) + 1
             self._gone_count[live_id] = count
@@ -770,6 +771,8 @@ class RecordingManager:
         if not session:
             return
 
+        self._pending_ends.add(live_id)
+
         self.log.info(
             "Ending recording %s/%s (%s)",
             session.platform,
@@ -1014,6 +1017,7 @@ class RecordingManager:
 
         self.sessions.pop(live_id, None)
         self._stop_events.pop(live_id, None)
+        self._pending_ends.discard(live_id)
 
         self.log.info(
             "Finished recording %s/%s with status %s",
