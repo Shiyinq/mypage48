@@ -191,13 +191,27 @@ class RecordingManager:
                 except Exception:
                     pass
 
+            screenshot_count = 0
+            if os.path.exists(session.screenshots_folder):
+                try:
+                    screenshot_count = len(
+                        [
+                            f
+                            for f in os.listdir(session.screenshots_folder)
+                            if f.endswith(".jpg")
+                        ]
+                    )
+                except Exception:
+                    pass
+
             self.log.info(
-                "  %s (%s) | %s | %s | %s chats",
+                "  %s (%s) | %s | %s | %s chats | %s screenshots",
                 session.member_nickname,
                 session.platform,
                 duration_str,
                 self._format_size(file_size),
                 chat_count,
+                screenshot_count,
             )
 
     async def run(self, stop_event: asyncio.Event):
