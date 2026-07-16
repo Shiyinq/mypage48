@@ -508,14 +508,21 @@ class RecordingManager:
         timeout: int = 30,
         *,
         live: bool = False,
+        headers: dict = None,
     ):
+        header_args = []
+        if headers:
+            header_str = "".join([f"{k}: {v}\r\n" for k, v in headers.items()])
+            header_args.extend(["-headers", header_str])
+
         if live:
             for attempt in range(1, 4):
                 try:
-                    r = await asyncio.create_subprocess_exec(
+                    args = [
                         "ffmpeg",
                         "-loglevel",
                         "error",
+                    ] + header_args + [
                         "-i",
                         source,
                         "-vframes",
@@ -524,6 +531,9 @@ class RecordingManager:
                         "unofficial",
                         "-y",
                         dest,
+                    ]
+                    r = await asyncio.create_subprocess_exec(
+                        *args,
                         stdout=asyncio.subprocess.PIPE,
                         stderr=asyncio.subprocess.PIPE,
                     )
@@ -555,6 +565,7 @@ class RecordingManager:
                 "error",
                 "-ss",
                 seek,
+                *header_args,
                 "-i",
                 source,
                 "-vframes",
@@ -574,6 +585,7 @@ class RecordingManager:
                 "1000000",
                 "-ss",
                 seek,
+                *header_args,
                 "-i",
                 source,
                 "-vframes",
@@ -589,6 +601,7 @@ class RecordingManager:
                 "error",
                 "-skip_frame",
                 "nokey",
+                *header_args,
                 "-i",
                 source,
                 "-ss",
@@ -604,6 +617,7 @@ class RecordingManager:
                 "ffmpeg",
                 "-loglevel",
                 "error",
+                *header_args,
                 "-i",
                 source,
                 "-ss",
@@ -675,8 +689,13 @@ class RecordingManager:
         ts = int(time.time())
         ss_name = f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg"
         ss_path = os.path.join(session.screenshots_folder, ss_name)
+        
+        headers = None
+        if session.platform == "idn":
+            headers = {"Origin": "https://www.idn.app"}
+            
         ok = await self._capture_screenshot(
-            session.hls_url, ss_path, "5", 30, live=True
+            session.hls_url, ss_path, "5", 30, live=True, headers=headers
         )
         if ok:
             self.log.info("Initial screenshot saved: %s", ss_name)
@@ -686,6 +705,11 @@ class RecordingManager:
     async def _periodic_thumbnails(self, session: RecordingSession):
         await asyncio.sleep(300)
         self.log.info("Periodic thumb: starting 5-min cycle")
+        
+        headers = None
+        if session.platform == "idn":
+            headers = {"Origin": "https://www.idn.app"}
+            
         while session.live_id in self.sessions:
             elapsed = int(time.time() - session.recording_start_time)
             seek = str(max(5, elapsed - 30))
@@ -693,7 +717,7 @@ class RecordingManager:
             ss_name = f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg"
             ss_path = os.path.join(session.screenshots_folder, ss_name)
             ok = await self._capture_screenshot(
-                session.hls_url, ss_path, seek, 30, live=True
+                session.hls_url, ss_path, seek, 30, live=True, headers=headers
             )
             if ok:
                 self.log.info("Screenshot at %ss: %s", seek, ss_name)
