@@ -4,7 +4,12 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import Response
 
-from src.dependencies import get_replay_service, require_admin
+from src.auth.schemas import UserCurrent
+from src.dependencies import (
+    get_current_user_optional,
+    get_replay_service,
+    require_admin,
+)
 from src.replay.exceptions import ReplayNotFound, ReplayUploadError
 from src.replay.schemas import ReplayDetailResponse, ReplayListItem, ReplayResponse
 from src.replay.service import ReplayService
@@ -54,9 +59,10 @@ async def upload_replay(
 
 @router.get("/replays", response_model=list[ReplayListItem])
 async def list_replays(
+    current_user: UserCurrent | None = Depends(get_current_user_optional),
     service: ReplayService = Depends(get_replay_service),
 ):
-    docs = await service.list_all()
+    docs = await service.list_all(current_user=current_user)
     return [ReplayListItem(**d) for d in docs]
 
 

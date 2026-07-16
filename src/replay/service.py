@@ -6,6 +6,7 @@ from typing import Optional
 
 from pymongo.errors import DuplicateKeyError
 
+from src.auth.schemas import UserCurrent
 from src.config import Settings
 from src.live_history.repository import LiveHistoryRepository
 from src.logging_config import create_logger
@@ -378,9 +379,22 @@ class ReplayService:
 
         return ReplayDetailResponse(**doc)
 
-    async def list_all(self) -> list[dict]:
+    async def list_all(self, current_user: UserCurrent | None = None) -> list[dict]:
         wib = timezone(timedelta(hours=7))
-        docs = await self.repository.find_all(projection={"chats": 0})
+        is_admin = current_user.isAdmin if current_user else False
+        filter_query = (
+            None
+            if is_admin
+            else {
+                "$or": [
+                    {"live_type": "public"},
+                    {"live_type": {"$exists": False}},
+                ]
+            }
+        )
+        docs = await self.repository.find_all(
+            projection={"chats": 0}, filter_query=filter_query
+        )
         result = []
         seen_live_ids = set()
         for doc in docs:

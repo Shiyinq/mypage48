@@ -21,9 +21,13 @@ class ReplayRepository:
         return await self.col.find_one({"live_id": live_id}, projection)
 
     async def find_all(
-        self, projection: Optional[dict[str, Any]] = None
+        self,
+        projection: Optional[dict[str, Any]] = None,
+        filter_query: Optional[dict[str, Any]] = None,
     ) -> list[dict[str, Any]]:
-        cursor = self.col.find({}, projection).sort("recording_ended_at", -1)
+        cursor = self.col.find(filter_query or {}, projection).sort(
+            "recording_ended_at", -1
+        )
         return await cursor.to_list(length=None)
 
     async def exists(self, live_id: str) -> bool:
