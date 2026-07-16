@@ -106,13 +106,19 @@ def _format_description(meta: dict) -> str:
     return "\n".join(desc_lines)
 
 
-def _get_privacy_status(meta: dict, default_status: str) -> str:
+def _is_official_jkt48(meta: dict) -> bool:
     nickname = meta.get("member_nickname") or meta.get("member_name") or "Unknown"
     full_name = meta.get("member_name", "")
-    is_official = full_name.upper() == "JKT48" and (
+    return full_name.upper() == "JKT48" and (
         nickname.upper() == "JKT48" or not nickname
     )
-    return "unlisted" if is_official else default_status
+
+
+def _get_privacy_status(meta: dict, default_status: str) -> str:
+    live_type = meta.get("live_type", "public")
+    if live_type != "public" and _is_official_jkt48(meta):
+        return "private"
+    return "unlisted" if _is_official_jkt48(meta) else default_status
 
 
 def _build_youtube(config: RecorderConfig):
@@ -225,6 +231,11 @@ def _add_to_playlist_blocking(
         if nickname.upper() == "JKT48"
         else f"{nickname} JKT48 - Live {platform}"
     )
+
+    live_type = meta.get("live_type", "public")
+    if live_type != "public" and _is_official_jkt48(meta):
+        playlist_title = f"{playlist_title} - {live_type.upper()}"
+        actual_privacy = "private"
 
     try:
         request = youtube.playlists().list(part="snippet", mine=True, maxResults=50)
