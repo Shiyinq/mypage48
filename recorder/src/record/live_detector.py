@@ -72,6 +72,7 @@ class LiveDetector:
                 member_image=member.get("img", ""),
                 image=item.get("image", ""),
                 start_at=item.get("start_at", ""),
+                live_type=item.get("live_type", "public"),
             )
             lives.append(live_info)
 

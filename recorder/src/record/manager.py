@@ -115,7 +115,16 @@ class RecordingManager:
 
         new_hls_url = self.detector.pick_best_url(stream_info) or session.hls_url
         session.hls_url = new_hls_url
-        session.ffmpeg_proc = stream_recorder.start(new_hls_url, old_mkv)
+
+        headers = None
+        if session.platform == "idn":
+            headers = {
+                "Origin": "https://www.idn.app",
+                "Referer": "https://www.idn.app/",
+            }
+        session.ffmpeg_proc = stream_recorder.start(
+            new_hls_url, old_mkv, headers=headers
+        )
 
     async def check_health(self):
         completed_ids = []
@@ -333,7 +342,10 @@ class RecordingManager:
 
         headers = None
         if live.platform == "idn":
-            headers = {"Origin": "https://www.idn.app"}
+            headers = {
+                "Origin": "https://www.idn.app",
+                "Referer": "https://www.idn.app/",
+            }
 
         ffmpeg_proc = stream_recorder.start(hls_url, mkv_path, headers=headers)
 
@@ -417,6 +429,7 @@ class RecordingManager:
             gift_task=gift_task,
             member_image=live.member_image,
             start_at=live.start_at,
+            live_type=live.live_type,
             ffmpeg_proc=ffmpeg_proc,
             chat_task=chat_task,
             mkv_parts=mkv_parts,
@@ -518,20 +531,24 @@ class RecordingManager:
         if live:
             for attempt in range(1, 4):
                 try:
-                    args = [
-                        "ffmpeg",
-                        "-loglevel",
-                        "error",
-                    ] + header_args + [
-                        "-i",
-                        source,
-                        "-vframes",
-                        "1",
-                        "-strict",
-                        "unofficial",
-                        "-y",
-                        dest,
-                    ]
+                    args = (
+                        [
+                            "ffmpeg",
+                            "-loglevel",
+                            "error",
+                        ]
+                        + header_args
+                        + [
+                            "-i",
+                            source,
+                            "-vframes",
+                            "1",
+                            "-strict",
+                            "unofficial",
+                            "-y",
+                            dest,
+                        ]
+                    )
                     r = await asyncio.create_subprocess_exec(
                         *args,
                         stdout=asyncio.subprocess.PIPE,
@@ -689,13 +706,28 @@ class RecordingManager:
         ts = int(time.time())
         ss_name = f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg"
         ss_path = os.path.join(session.screenshots_folder, ss_name)
-        
+
         headers = None
         if session.platform == "idn":
-            headers = {"Origin": "https://www.idn.app"}
-            
+            headers = {
+                "Origin": "https://www.idn.app",
+                "Referer": "https://www.idn.app/",
+            }
+
+        ss_url = session.hls_url
+        if session.platform == "idn" and session.live_type == "idnliveplus":
+            stream_info = await self.detector.get_streaming_url(
+                session.platform, session.room_id, session.live_id
+            )
+            if stream_info:
+                fresh_url = self.detector.pick_best_url(stream_info)
+                if fresh_url:
+                    ss_url = fresh_url
+
+        self.log.info("Initial thumb URL: %s | headers: %s", ss_url, headers)
+
         ok = await self._capture_screenshot(
-            session.hls_url, ss_path, "5", 30, live=True, headers=headers
+            ss_url, ss_path, "5", 30, live=True, headers=headers
         )
         if ok:
             self.log.info("Initial screenshot saved: %s", ss_name)
@@ -705,19 +737,34 @@ class RecordingManager:
     async def _periodic_thumbnails(self, session: RecordingSession):
         await asyncio.sleep(300)
         self.log.info("Periodic thumb: starting 5-min cycle")
-        
+
         headers = None
         if session.platform == "idn":
-            headers = {"Origin": "https://www.idn.app"}
-            
+            headers = {
+                "Origin": "https://www.idn.app",
+                "Referer": "https://www.idn.app/",
+            }
+
         while session.live_id in self.sessions:
             elapsed = int(time.time() - session.recording_start_time)
             seek = str(max(5, elapsed - 30))
             ts = int(time.time())
             ss_name = f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg"
             ss_path = os.path.join(session.screenshots_folder, ss_name)
+
+            ss_url = session.hls_url
+            if session.platform == "idn" and session.live_type == "idnliveplus":
+                stream_info = await self.detector.get_streaming_url(
+                    session.platform, session.room_id, session.live_id
+                )
+                if stream_info:
+                    fresh_url = self.detector.pick_best_url(stream_info)
+                    if fresh_url:
+                        ss_url = fresh_url
+
+            self.log.info("Periodic thumb URL: %s | headers: %s", ss_url, headers)
             ok = await self._capture_screenshot(
-                session.hls_url, ss_path, seek, 30, live=True, headers=headers
+                ss_url, ss_path, seek, 30, live=True, headers=headers
             )
             if ok:
                 self.log.info("Screenshot at %ss: %s", seek, ss_name)
