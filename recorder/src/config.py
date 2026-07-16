@@ -28,6 +28,7 @@ class RecorderConfig(BaseSettings):
     youtube_privacy_status: str = "unlisted"
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
+    remux_timeout: int = 600
 
     model_config = {
         "env_file": (

@@ -77,7 +77,7 @@ class RecordingManager:
             self._gone_count[live_id] = count
             if count >= 3:
                 del self._gone_count[live_id]
-                await self._end_session(live_id, reason="completed")
+                asyncio.create_task(self._end_session(live_id, reason="completed"))
 
         for live_id in current_ids:
             self._gone_count.pop(live_id, None)
@@ -166,9 +166,9 @@ class RecordingManager:
                 session.last_file_size = current_size
 
         for live_id in completed_ids:
-            await self._end_session(live_id, reason="completed")
+            asyncio.create_task(self._end_session(live_id, reason="completed"))
         for live_id in error_ids:
-            await self._end_session(live_id, reason="error")
+            asyncio.create_task(self._end_session(live_id, reason="error"))
 
     def log_progress(self):
         if not self.sessions:
@@ -846,7 +846,7 @@ class RecordingManager:
                             mp4_path,
                         ],
                         capture_output=True,
-                        timeout=300,
+                        timeout=self.config.remux_timeout,
                     )
                     os.remove(target_mkv)
                     session.output_path = mp4_path
@@ -880,7 +880,7 @@ class RecordingManager:
                             mp4_path,
                         ],
                         capture_output=True,
-                        timeout=300,
+                        timeout=self.config.remux_timeout,
                     )
 
                     for p in parts_to_concat:
