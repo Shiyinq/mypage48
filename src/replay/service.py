@@ -319,6 +319,10 @@ class ReplayService:
             return None
         doc["_id"] = str(doc["_id"])
 
+        live_type = doc.get("live_type", "public")
+        if live_type != "public":
+            doc["youtube_id"] = None
+
         # Fetch live history data
         lh_doc = await self.live_history_repo.get_global_history_by_live_id(live_id)
         if lh_doc:
