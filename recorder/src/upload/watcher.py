@@ -132,7 +132,7 @@ class Watcher:
                 with open(uri_path) as f:
                     resume_uri = f.read().strip() or None
             except Exception:
-                pass
+                self.log_upl.warning("Failed to read upload resume URI for %s", live_id)
 
         if has_mp4:
             if not yt_configured:
