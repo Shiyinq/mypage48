@@ -5,19 +5,25 @@
 	import { adminStore } from '$lib/stores/admin.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 
-	const { t } = useTranslation();
+	const { t, locale } = useTranslation();
 
 	let config: IDNLivePlusConfig = {
 		auth_token: '',
 		access_token: '',
 		session_id: '',
 		api_key: '',
-		aes_key: ''
+		aes_key: '',
+		refresh_token: '',
+		cognito_client_id: '',
+		updated_at: '',
+		enabled: true
 	};
 	let loading = false;
 	let error = '';
+
+	let expiryInterval: ReturnType<typeof setInterval> | undefined;
 
 	onMount(async () => {
 		loading = true;
@@ -26,7 +32,45 @@
 			config = { ...adminStore.idnLivePlusConfig.data };
 		}
 		loading = false;
+
+		expiryInterval = setInterval(() => {}, 60000);
 	});
+
+	onDestroy(() => {
+		if (expiryInterval) clearInterval(expiryInterval);
+	});
+
+	function getJwtExp(token: string | null): Date | null {
+		if (!token) return null;
+		try {
+			const payload = JSON.parse(atob(token.split('.')[1]));
+			return payload.exp ? new Date(payload.exp * 1000) : null;
+		} catch {
+			return null;
+		}
+	}
+
+	function formatWIB(date: Date | null): string {
+		if (!date) return '';
+		const localeMap: Record<string, string> = { id: 'id-ID', en: 'en-US', ja: 'ja-JP' };
+		return date.toLocaleString(localeMap[locale.value] || 'id-ID', {
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
+			timeZone: 'Asia/Jakarta'
+		});
+	}
+
+	function expiresIn(expDate: Date | null): string {
+		if (!expDate) return '';
+		const diff = expDate.getTime() - Date.now();
+		if (diff <= 0) return t('admin.settings.idnLivePlus.expired');
+		const h = Math.floor(diff / 3600000);
+		const m = Math.floor((diff % 3600000) / 60000);
+		return t('admin.settings.idnLivePlus.expiresIn', { h: `${h}`, m: `${m}` });
+	}
 
 	async function handleSave() {
 		try {
@@ -85,6 +129,33 @@
 		</div>
 
 		<form on:submit|preventDefault={handleSave} autocomplete="off" class="space-y-5">
+			<div
+				class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50"
+			>
+				<div>
+					<p class="text-sm font-medium text-slate-700 dark:text-slate-300">
+						{t('admin.settings.idnLivePlus.enabled')}
+					</p>
+					<p class="text-xs text-slate-500">{t('admin.settings.idnLivePlus.enabledHelp')}</p>
+				</div>
+				<button
+					type="button"
+					role="switch"
+					aria-checked={config.enabled}
+					aria-label={t('admin.settings.idnLivePlus.enabled')}
+					on:click={() => (config.enabled = !config.enabled)}
+					class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 {config.enabled
+						? 'bg-red-600'
+						: 'bg-slate-300 dark:bg-slate-600'}"
+				>
+					<span
+						class="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition-transform {config.enabled
+							? 'translate-x-5'
+							: 'translate-x-0'}"
+					></span>
+				</button>
+			</div>
+
 			<div class="space-y-2">
 				<label for="auth_token" class="text-sm font-medium text-slate-700 dark:text-slate-300">
 					{t('admin.settings.idnLivePlus.authToken')}
@@ -96,7 +167,14 @@
 					placeholder="eyJh..."
 					class="w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:border-slate-700 dark:text-white dark:focus:border-red-500"
 				/>
-				<p class="text-xs text-slate-500">{t('admin.settings.idnLivePlus.authTokenHelp')}</p>
+				<p class="text-xs text-slate-500">
+					{t('admin.settings.idnLivePlus.authTokenHelp')}
+					{#if getJwtExp(config.auth_token)}
+						<br />
+						{t('admin.settings.idnLivePlus.expiresAt')}: {formatWIB(getJwtExp(config.auth_token))} WIB
+						&middot; {expiresIn(getJwtExp(config.auth_token))}
+					{/if}
+				</p>
 			</div>
 
 			<div class="space-y-2">
@@ -110,7 +188,14 @@
 					placeholder="eyJh..."
 					class="w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:border-slate-700 dark:text-white dark:focus:border-red-500"
 				/>
-				<p class="text-xs text-slate-500">{t('admin.settings.idnLivePlus.accessTokenHelp')}</p>
+				<p class="text-xs text-slate-500">
+					{t('admin.settings.idnLivePlus.accessTokenHelp')}
+					{#if getJwtExp(config.access_token)}
+						<br />
+						{t('admin.settings.idnLivePlus.expiresAt')}: {formatWIB(getJwtExp(config.access_token))} WIB
+						&middot; {expiresIn(getJwtExp(config.access_token))}
+					{/if}
+				</p>
 			</div>
 
 			<div class="space-y-2">
@@ -156,6 +241,43 @@
 					{t('admin.settings.idnLivePlus.aesKeyHelp')}
 				</p>
 			</div>
+
+			<div class="space-y-2">
+				<label for="refresh_token" class="text-sm font-medium text-slate-700 dark:text-slate-300">
+					{t('admin.settings.idnLivePlus.refreshToken')}
+				</label>
+				<input
+					type="text"
+					id="refresh_token"
+					bind:value={config.refresh_token}
+					placeholder="eyJ..."
+					class="w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:border-slate-700 dark:text-white dark:focus:border-red-500"
+				/>
+				<p class="text-xs text-slate-500">{t('admin.settings.idnLivePlus.refreshTokenHelp')}</p>
+			</div>
+
+			<div class="space-y-2">
+				<label
+					for="cognito_client_id"
+					class="text-sm font-medium text-slate-700 dark:text-slate-300"
+				>
+					{t('admin.settings.idnLivePlus.cognitoClientId')}
+				</label>
+				<input
+					type="text"
+					id="cognito_client_id"
+					bind:value={config.cognito_client_id}
+					placeholder="Cognito Client ID"
+					class="w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:border-slate-700 dark:text-white dark:focus:border-red-500"
+				/>
+				<p class="text-xs text-slate-500">{t('admin.settings.idnLivePlus.cognitoClientIdHelp')}</p>
+			</div>
+
+			{#if config.updated_at}
+				<div class="text-xs text-slate-500">
+					{t('admin.settings.idnLivePlus.lastRefreshed')}: {formatWIB(new Date(config.updated_at))} WIB
+				</div>
+			{/if}
 
 			<div class="flex justify-end pt-4">
 				<button

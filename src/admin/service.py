@@ -1,4 +1,7 @@
+import base64
+import json
 import logging
+import time as _time
 from datetime import datetime, timedelta, timezone
 
 from src.admin.constants import SuccessMessage
@@ -15,6 +18,7 @@ from src.admin.schemas import (
     IDNLivePlusConfig,
     IDNLivePlusConfigResponse,
 )
+from src.live.idn_auth import cognito_refresh_tokens, extract_session_id
 from src.utils import fernet_decrypt_value, fernet_encrypt_value
 
 logger = logging.getLogger(__name__)
@@ -231,12 +235,23 @@ class AdminService:
                 config = IDNLivePlusConfig()
             else:
                 data = doc["data"]
+                updated_at = doc.get("updated_at")
+                if isinstance(updated_at, str):
+                    updated_at = datetime.fromisoformat(updated_at)
+                elif not isinstance(updated_at, datetime):
+                    updated_at = None
                 config = IDNLivePlusConfig(
                     auth_token=fernet_decrypt_value(data.get("auth_token")),
                     access_token=fernet_decrypt_value(data.get("access_token")),
-                    session_id=data.get("session_id"),
+                    session_id=fernet_decrypt_value(data.get("session_id")),
                     api_key=fernet_decrypt_value(data.get("api_key")),
                     aes_key=fernet_decrypt_value(data.get("aes_key")),
+                    refresh_token=fernet_decrypt_value(data.get("refresh_token")),
+                    cognito_client_id=fernet_decrypt_value(
+                        data.get("cognito_client_id")
+                    ),
+                    updated_at=updated_at,
+                    enabled=data.get("enabled", True),
                 )
             return IDNLivePlusConfigResponse(
                 data=config, detail=SuccessMessage.IDN_LIVE_PLUS_CONFIG_FETCHED
@@ -245,10 +260,77 @@ class AdminService:
             logger.exception("Error fetching idn live plus config")
             raise AdminConfigFetchError()
 
+    async def _refresh_via_cognito(
+        self, config: IDNLivePlusConfig
+    ) -> IDNLivePlusConfig:
+        if not config.refresh_token or not config.cognito_client_id:
+            return config
+        result = await cognito_refresh_tokens(
+            config.refresh_token, config.cognito_client_id
+        )
+        if result:
+            config.auth_token = result["id_token"]
+            config.access_token = result["access_token"]
+            config.updated_at = datetime.now(timezone.utc)
+            session_id = extract_session_id(result["id_token"])
+            if session_id:
+                config.session_id = session_id
+            logger.info(
+                "Cognito refresh successful on save: "
+                f"auth_token={result['id_token'][:10]}..., "
+                f"access_token={result['access_token'][:10]}..., "
+                f"session_id={session_id}"
+            )
+        return config
+
     async def update_idn_live_plus_config(
         self, config: IDNLivePlusConfig
     ) -> IDNLivePlusConfigResponse:
         try:
+            doc = await self.repository.get_setting("idn_live_plus_config")
+            existing = (doc or {}).get("data", {})
+
+            def _merge_encrypted(val, key):
+                return val if val else fernet_decrypt_value(existing.get(key))
+
+            config.auth_token = _merge_encrypted(config.auth_token, "auth_token")
+            config.access_token = _merge_encrypted(config.access_token, "access_token")
+            config.session_id = _merge_encrypted(config.session_id, "session_id")
+            config.api_key = _merge_encrypted(config.api_key, "api_key")
+            config.aes_key = _merge_encrypted(config.aes_key, "aes_key")
+            config.refresh_token = _merge_encrypted(
+                config.refresh_token, "refresh_token"
+            )
+            config.cognito_client_id = _merge_encrypted(
+                config.cognito_client_id, "cognito_client_id"
+            )
+            if config.enabled is None:
+                config.enabled = existing.get("enabled", True)
+
+            should_refresh = False
+            if config.refresh_token and config.cognito_client_id:
+                auth_token = config.auth_token
+                if not auth_token:
+                    should_refresh = True
+                else:
+                    try:
+                        _, payload_b64, _ = auth_token.split(".")
+                        padding = 4 - len(payload_b64) % 4
+                        if padding != 4:
+                            payload_b64 += "=" * padding
+
+                        payload = json.loads(base64.b64decode(payload_b64))
+                        exp = int(payload.get("exp", 0))
+                        if not exp or _time.time() >= exp - 1800:
+                            should_refresh = True
+                    except Exception:
+                        should_refresh = True
+
+            if should_refresh:
+                config = await self._refresh_via_cognito(config)
+            else:
+                config.updated_at = datetime.now(timezone.utc)
+
             data = {
                 "auth_token": fernet_encrypt_value(config.auth_token)
                 if config.auth_token
@@ -256,14 +338,24 @@ class AdminService:
                 "access_token": fernet_encrypt_value(config.access_token)
                 if config.access_token
                 else None,
-                "session_id": config.session_id,
+                "session_id": fernet_encrypt_value(config.session_id)
+                if config.session_id
+                else None,
                 "api_key": fernet_encrypt_value(config.api_key)
                 if config.api_key
                 else None,
                 "aes_key": fernet_encrypt_value(config.aes_key)
                 if config.aes_key
                 else None,
+                "refresh_token": fernet_encrypt_value(config.refresh_token)
+                if config.refresh_token
+                else None,
+                "cognito_client_id": fernet_encrypt_value(config.cognito_client_id)
+                if config.cognito_client_id
+                else None,
+                "enabled": config.enabled if config.enabled is not None else True,
             }
+            config.updated_at = datetime.now(timezone.utc)
             await self.repository.upsert_setting("idn_live_plus_config", data)
             return IDNLivePlusConfigResponse(
                 data=config, detail=SuccessMessage.IDN_LIVE_PLUS_CONFIG_UPDATED

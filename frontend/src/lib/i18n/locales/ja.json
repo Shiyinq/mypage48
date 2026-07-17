@@ -1158,7 +1158,17 @@
 				"apiKey": "IDN Live+ APIキー",
 				"apiKeyHelp": "スケジュールの取得に使用されるX-Api-Key。",
 				"aesKey": "IDN AES復号キー",
-				"aesKeyHelp": "AES-256暗号化されたArishemの再生トークンを復号するためのキー。"
+				"aesKeyHelp": "AES-256暗号化されたArishemの再生トークンを復号するためのキー。",
+				"refreshToken": "IDN Cognito Refresh Token",
+				"refreshTokenHelp": "Cognito localStorageからのリフレッシュトークン。22時間ごとにauth/accessトークンを自動更新します。",
+				"cognitoClientId": "Cognito Client ID",
+				"cognitoClientIdHelp": "IDNアプリのCognitoアプリクライアントID。",
+				"lastRefreshed": "最終更新",
+				"enabled": "IDN Live+ を有効にする",
+				"enabledHelp": "無効にすると、すべてのIDN Live+機能がスキップされます。",
+				"expiresAt": "有効期限",
+				"expiresIn": "残り {h}時間 {m}分",
+				"expired": "期限切れ"
 			},
 			"saving": "保存中...",
 			"saveConfig": "設定を保存",
