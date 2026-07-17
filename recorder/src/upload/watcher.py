@@ -10,7 +10,7 @@ from ..config import RecorderConfig
 from ..models import RecordingSession
 from ..notify import telegram_notifier
 from . import r2_uploader
-from .youtube_uploader import _format_title, _upload_to_youtube
+from .youtube_uploader import QuotaExceededError, _format_title, _upload_to_youtube
 
 
 def _fmt_duration(seconds: int) -> str:
@@ -29,6 +29,7 @@ class Watcher:
         self.log_rec = logging.getLogger("recorder")
         self.log_upl = logging.getLogger("uploader")
         self._processing: dict[str, dict] = {}
+        self._quota_cooldown_until: float = 0.0
 
     async def run(self, stop_event: asyncio.Event):
         os.makedirs(self.config.logs_dir, exist_ok=True)
@@ -108,6 +109,9 @@ class Watcher:
             self._processing.pop(live_id, None)
 
     async def _process_folder_inner(self, folder_path: str, live_id: str):
+        if time.time() < self._quota_cooldown_until:
+            return
+
         meta, session = self._build_session(folder_path, live_id)
         if not meta or not session:
             return
@@ -177,6 +181,12 @@ class Watcher:
                         "YouTube upload failed for %s, will retry", title_log
                     )
                     return
+            except QuotaExceededError:
+                self._quota_cooldown_until = time.time() + 3600
+                self.log_upl.warning(
+                    "Quota exceeded, backing off 1 hour for %s", title_log
+                )
+                return
             except Exception as e:
                 self.log_upl.error("YouTube upload failed for %s: %s", title_log, e)
                 return
