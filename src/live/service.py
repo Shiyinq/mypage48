@@ -251,6 +251,7 @@ class LiveService:
             "aes_key": self.config.IDN_AES_KEY,
             "refresh_token": self.config.idn_refresh_token,
             "cognito_client_id": self.config.cognito_client_id,
+            "enabled": True,
         }
 
         enabled = True
@@ -258,6 +259,7 @@ class LiveService:
         if db_config:
             config_data = db_config.data
             enabled = config_data.enabled
+            merged_config["enabled"] = enabled if enabled is not None else True
             if config_data.api_key:
                 merged_config["api_key"] = config_data.api_key
             if config_data.auth_token:
@@ -345,6 +347,7 @@ class LiveService:
                     item["live_at"] = live_at_str
                     item["live_type"] = "idnliveplus"
                     item["streamer_uuid"] = item.get("creator", {}).get("uuid")
+                    item["record"] = idn_config.get("enabled", True)
                     normalized.append(item)
                 return normalized
         except Exception as e:
@@ -487,6 +490,7 @@ class LiveService:
                                 ),
                                 live_type=stream.get("live_type", "public"),
                                 streamer_uuid=stream.get("streamer_uuid"),
+                                record=stream.get("record", True),
                             )
                         )
                     else:
@@ -534,6 +538,7 @@ class LiveService:
                                     ),
                                     live_type=stream.get("live_type", "public"),
                                     streamer_uuid=stream.get("streamer_uuid"),
+                                    record=stream.get("record", True),
                                 )
                             )
 

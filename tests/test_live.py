@@ -90,6 +90,8 @@ async def test_get_live_status_success(client: AsyncClient, seed_member_socials)
         platforms = [item["platform"] for item in data["data"]]
         assert "showroom" in platforms
         assert "idn" in platforms
+        for item in data["data"]:
+            assert item["record"] is True
 
 @pytest.mark.asyncio
 @patch("src.live.service.LiveService._get_idn_config", new_callable=AsyncMock)
@@ -134,6 +136,7 @@ async def test_get_scheduled_live_status_success(mock_get_idn_config, client: As
         
         assert data["data"][0]["platform"] == "idn"
         assert data["data"][0]["live_type"] == "idnliveplus"
+        assert data["data"][0]["record"] is True
 
 @pytest.mark.asyncio
 async def test_get_streaming_url_showroom(client: AsyncClient):
