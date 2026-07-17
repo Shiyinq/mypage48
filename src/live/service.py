@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import json
 import time
 from datetime import datetime, timezone
@@ -7,9 +8,11 @@ from urllib.parse import quote_plus, urljoin
 
 import httpx
 
+from src.admin.schemas import IDNLivePlusConfig
 from src.admin.service import AdminService
 from src.auth.schemas import UserCurrent
 from src.config import Settings
+from src.live.constants import IDN_HEADERS
 from src.live.exceptions import (
     CommentsFetchError,
     FetchIdnError,
@@ -18,6 +21,7 @@ from src.live.exceptions import (
     ProxyError,
     StreamingUrlNotFoundError,
 )
+from src.live.idn_auth import cognito_refresh_tokens, extract_session_id
 from src.live.schemas import (
     LiveMember,
     LiveResponse,
@@ -45,6 +49,7 @@ class LiveService:
         self._cache_ttl = 60  # seconds cache
         self._idn_config_cache = None
         self._idn_config_updated_at = 0
+        self._token_expires_at = 0.0
         self.showroom_headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
             "Accept": "application/json, text/plain, */*",
@@ -190,10 +195,47 @@ class LiveService:
             logger.exception(f"Exception in fetch_showroom_lives: {str(e)}")
             raise FetchShowroomError()
 
+    async def _refresh_idn_tokens(self, refresh_token: str, client_id: str) -> bool:
+        result = await cognito_refresh_tokens(refresh_token, client_id)
+        if not result:
+            return False
+        try:
+            id_token = result["id_token"]
+            access_token = result["access_token"]
+            expires_in = result.get("expires_in", 86400)
+            session_id = extract_session_id(id_token) or self._idn_config_cache.get(
+                "session_id"
+            )
+            update_data = IDNLivePlusConfig(
+                auth_token=id_token,
+                access_token=access_token,
+                session_id=session_id,
+                refresh_token=refresh_token,
+                cognito_client_id=client_id,
+            )
+            await self.admin_service.update_idn_live_plus_config(update_data)
+            self._token_expires_at = time.time() + expires_in
+            self._idn_config_cache = None
+            logger.info(
+                "IDN tokens refreshed via Cognito (fallback). "
+                f"Expires in {expires_in}s"
+            )
+            return True
+        except Exception as e:
+            logger.exception(f"Failed to save refreshed IDN tokens: {e}")
+            return False
+
     async def _get_idn_config(self) -> dict:
         """Fetch IDN config from cache or DB, fallback to .env."""
         now = time.time()
-        if self._idn_config_cache and (now - self._idn_config_updated_at) < 60:
+        token_expired = (
+            self._token_expires_at > 0 and now >= self._token_expires_at - 1800
+        )
+        if (
+            self._idn_config_cache
+            and (now - self._idn_config_updated_at) < 60
+            and not token_expired
+        ):
             return self._idn_config_cache
 
         try:
@@ -208,10 +250,17 @@ class LiveService:
             "access_token": self.config.idn_access_token,
             "session_id": self.config.idn_session_id,
             "aes_key": self.config.IDN_AES_KEY,
+            "refresh_token": self.config.idn_refresh_token,
+            "cognito_client_id": self.config.cognito_client_id,
+            "enabled": True,
         }
+
+        enabled = True
 
         if db_config:
             config_data = db_config.data
+            enabled = config_data.enabled
+            merged_config["enabled"] = enabled if enabled is not None else True
             if config_data.api_key:
                 merged_config["api_key"] = config_data.api_key
             if config_data.auth_token:
@@ -222,6 +271,39 @@ class LiveService:
                 merged_config["session_id"] = config_data.session_id
             if config_data.aes_key:
                 merged_config["aes_key"] = config_data.aes_key
+            if config_data.refresh_token:
+                merged_config["refresh_token"] = config_data.refresh_token
+            if config_data.cognito_client_id:
+                merged_config["cognito_client_id"] = config_data.cognito_client_id
+
+        # Override _token_expires_at from actual JWT expiry (accurate after restart)
+        for token_key in ("auth_token", "access_token"):
+            token = merged_config.get(token_key)
+            if token:
+                try:
+                    _, payload_b64, _ = token.split(".")
+                    padding = 4 - len(payload_b64) % 4
+                    if padding != 4:
+                        payload_b64 += "=" * padding
+                    payload = json.loads(base64.b64decode(payload_b64))
+                    exp = int(payload.get("exp", 0))
+                    if exp and (
+                        not self._token_expires_at or exp < self._token_expires_at
+                    ):
+                        self._token_expires_at = exp
+                except Exception:
+                    pass
+
+        refresh_token = merged_config.get("refresh_token")
+        client_id = merged_config.get("cognito_client_id")
+        if refresh_token and client_id and enabled:
+            if not self._token_expires_at:
+                self._token_expires_at = now
+            if token_expired or not merged_config.get("auth_token"):
+                logger.info("IDN tokens expired or missing, attempting Cognito refresh")
+                await self._refresh_idn_tokens(refresh_token, client_id)
+                merged_config = await self._get_idn_config()
+                return merged_config
 
         self._idn_config_cache = merged_config
         self._idn_config_updated_at = now
@@ -240,7 +322,7 @@ class LiveService:
         try:
             async with httpx.AsyncClient() as client:
                 res = await client.get(
-                    url, headers={"x-api-key": api_key}, timeout=30.0
+                    url, headers={"x-api-key": api_key, **IDN_HEADERS}, timeout=30.0
                 )
                 res.raise_for_status()
                 res_data = res.json()
@@ -266,6 +348,7 @@ class LiveService:
                     item["live_at"] = live_at_str
                     item["live_type"] = "idnliveplus"
                     item["streamer_uuid"] = item.get("creator", {}).get("uuid")
+                    item["record"] = idn_config.get("enabled", True)
                     normalized.append(item)
                 return normalized
         except Exception as e:
@@ -302,6 +385,7 @@ class LiveService:
                         client.post(
                             url,
                             json={"query": query, "variables": {"page": page}},
+                            headers=IDN_HEADERS,
                             timeout=30.0,
                         )
                     )
@@ -408,6 +492,7 @@ class LiveService:
                                 ),
                                 live_type=stream.get("live_type", "public"),
                                 streamer_uuid=stream.get("streamer_uuid"),
+                                record=stream.get("record", True),
                             )
                         )
                     else:
@@ -455,6 +540,7 @@ class LiveService:
                                     ),
                                     live_type=stream.get("live_type", "public"),
                                     streamer_uuid=stream.get("streamer_uuid"),
+                                    record=stream.get("record", True),
                                 )
                             )
 
@@ -516,6 +602,10 @@ class LiveService:
             logger.warning("IDN_AUTH_TOKEN is missing. Cannot fetch playback token.")
             return None
 
+        if not idn_config.get("enabled", True):
+            logger.info("Playback token skipped (IDN Live+ disabled)")
+            return None
+
         url = f"https://api.idn.app/api/v1/apt?streamer_uuid={streamer_uuid}&slug={slug}&n=1"
         try:
             # Note: auth_token is expected to include "Bearer ", but let's handle if it doesn't
@@ -525,7 +615,7 @@ class LiveService:
                 else f"Bearer {auth_token}"
             )
 
-            headers = {"Authorization": bearer}
+            headers = {"Authorization": bearer, **IDN_HEADERS}
             if idn_config.get("api_key"):
                 headers["X-Api-Key"] = idn_config["api_key"]
             if idn_config.get("access_token"):
@@ -541,9 +631,6 @@ class LiveService:
                 encrypted_arishem = data.get("data", {}).get("arishem")
                 if not encrypted_arishem:
                     return None
-
-                import base64
-                import json
 
                 from cryptography.hazmat.backends import default_backend
                 from cryptography.hazmat.primitives.ciphers import (
@@ -643,7 +730,7 @@ class LiveService:
                                     f"https://api.idn.app/api/v4/livestream/{id}?n=1"
                                 )
                                 async with httpx.AsyncClient(timeout=10.0) as client:
-                                    headers = {}
+                                    headers = {**IDN_HEADERS}
                                     idn_config = await self._get_idn_config()
                                     if idn_config.get("api_key"):
                                         headers["x-api-key"] = idn_config.get("api_key")

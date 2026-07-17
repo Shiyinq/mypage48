@@ -72,7 +72,10 @@ async def test_get_put_idn_live_plus_config(client: AsyncClient, create_user):
         "access_token": "test_access",
         "session_id": "test_session",
         "api_key": "test_api_key",
-        "aes_key": "test_aes_key"
+        "aes_key": "test_aes_key",
+        "refresh_token": "test_refresh",
+        "cognito_client_id": "test_client_id",
+        "enabled": True,
     }
     res = await client.put("/api/admin/settings/idnliveplus", json=payload, headers=headers)
     assert res.status_code == 200
@@ -80,6 +83,10 @@ async def test_get_put_idn_live_plus_config(client: AsyncClient, create_user):
     assert data["auth_token"] == "test_auth_token"
     assert data["api_key"] == "test_api_key"
     assert data["aes_key"] == "test_aes_key"
+    assert data["refresh_token"] == "test_refresh"
+    assert data["cognito_client_id"] == "test_client_id"
+    assert data["enabled"] is True
+    assert data.get("updated_at") is not None
 
     # 3. GET (should now have the decrypted values)
     res = await client.get("/api/admin/settings/idnliveplus", headers=headers)
@@ -88,3 +95,7 @@ async def test_get_put_idn_live_plus_config(client: AsyncClient, create_user):
     assert data["auth_token"] == "test_auth_token"
     assert data["api_key"] == "test_api_key"
     assert data["aes_key"] == "test_aes_key"
+    assert data["refresh_token"] == "test_refresh"
+    assert data["cognito_client_id"] == "test_client_id"
+    assert data["enabled"] is True
+    assert data.get("updated_at") is not None

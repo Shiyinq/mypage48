@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     IDN_ACCESS_TOKEN: Optional[SecretStr] = None
     # IDN Session ID (Header: Session-Id)
     IDN_SESSION_ID: Optional[str] = None
+    # IDN Cognito refresh token (for auto-refreshing auth/access tokens)
+    IDN_REFRESH_TOKEN: Optional[SecretStr] = None
+    # IDN Cognito app client ID
+    COGNITO_CLIENT_ID: Optional[str] = None
 
     FRONTEND_URL: str
     ORIGINS: str
@@ -240,6 +244,18 @@ class Settings(BaseSettings):
     @property
     def idn_session_id(self) -> Optional[str]:
         return self.IDN_SESSION_ID
+
+    @property
+    def idn_refresh_token(self) -> Optional[str]:
+        return (
+            self.IDN_REFRESH_TOKEN.get_secret_value()
+            if self.IDN_REFRESH_TOKEN
+            else None
+        )
+
+    @property
+    def cognito_client_id(self) -> Optional[str]:
+        return self.COGNITO_CLIENT_ID
 
     @property
     def frontend_url(self) -> str:

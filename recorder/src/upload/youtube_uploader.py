@@ -177,7 +177,8 @@ def _do_upload_blocking(
                 if request.resumable_uri != resume_uri:
                     save_uri_callback(request.resumable_uri)
                     _uri_saved = True
-    except Exception:
+    except Exception as e:
+        log.warning("YouTube upload failed: %s", e)
         upload_uri = getattr(request, "resumable_uri", None) or resume_uri
         return None, upload_uri
 

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel
@@ -51,6 +52,10 @@ class IDNLivePlusConfig(BaseModel):
     session_id: Optional[str] = None
     api_key: Optional[str] = None
     aes_key: Optional[str] = None
+    refresh_token: Optional[str] = None
+    cognito_client_id: Optional[str] = None
+    updated_at: Optional[datetime] = None
+    enabled: Optional[bool] = None
 
 
 class IDNLivePlusConfigResponse(BaseModel):

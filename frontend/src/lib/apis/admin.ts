@@ -48,6 +48,10 @@ export interface IDNLivePlusConfig {
 	session_id: string | null;
 	api_key: string | null;
 	aes_key: string | null;
+	refresh_token: string | null;
+	cognito_client_id: string | null;
+	updated_at: string | null;
+	enabled: boolean;
 }
 
 export interface IDNLivePlusConfigResponse {

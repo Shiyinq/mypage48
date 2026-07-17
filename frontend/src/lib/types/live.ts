@@ -22,6 +22,7 @@ export interface LiveStatus {
 	image?: string;
 	live_type?: string;
 	scheduled_at?: string;
+	record: boolean;
 }
 
 export interface StreamingUrl {

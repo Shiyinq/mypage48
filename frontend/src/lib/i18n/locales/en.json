@@ -1562,7 +1562,17 @@
 				"apiKey": "IDN Live+ API Key",
 				"apiKeyHelp": "The X-Api-Key used for fetching raw schedules.",
 				"aesKey": "IDN AES Decryption Key",
-				"aesKeyHelp": "The key used to decrypt the AES-256 encrypted Arishem playback token."
+				"aesKeyHelp": "The key used to decrypt the AES-256 encrypted Arishem playback token.",
+				"refreshToken": "IDN Cognito Refresh Token",
+				"refreshTokenHelp": "Refresh token from Cognito localStorage. Used to auto-refresh auth/access tokens every 22 hours.",
+				"cognitoClientId": "Cognito Client ID",
+				"cognitoClientIdHelp": "The Cognito app client ID from the IDN app.",
+				"lastRefreshed": "Last refreshed",
+				"enabled": "Enable IDN Live+",
+				"enabledHelp": "When disabled, all IDN Live+ features will be skipped.",
+				"expiresAt": "Expires",
+				"expiresIn": "Expires in {h}h {m}m",
+				"expired": "Expired"
 			},
 			"saving": "Saving...",
 			"saveConfig": "Save Configuration",

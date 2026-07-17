@@ -301,7 +301,8 @@ class RecordingManager:
             mkv_parts = []
 
         screenshots_folder = os.path.join(live_folder, "screenshots")
-        os.makedirs(screenshots_folder, exist_ok=True)
+        if live.record:
+            os.makedirs(screenshots_folder, exist_ok=True)
 
         base = live.live_id
         mkv_path = os.path.join(live_folder, f"{base}.mkv")
@@ -348,9 +349,16 @@ class RecordingManager:
         if stream_info.get("room_identifier"):
             live.room_identifier = stream_info.get("room_identifier")
 
-        ffmpeg_proc = stream_recorder.start(
-            hls_url, mkv_path, headers=self._get_platform_headers(live)
-        )
+        ffmpeg_proc = None
+        if not live.record:
+            self.log.info(
+                "Recording disabled for %s (record=False). Chat+gift will still be captured.",
+                live.live_id,
+            )
+        if live.record:
+            ffmpeg_proc = stream_recorder.start(
+                hls_url, mkv_path, headers=self._get_platform_headers(live)
+            )
 
         stop_event = asyncio.Event()
         self._stop_events[live.live_id] = stop_event
@@ -463,8 +471,9 @@ class RecordingManager:
         except Exception as e:
             self.log.warning("Failed to write initial JSON: %s", e)
 
-        asyncio.create_task(self._periodic_thumbnails(session))
-        asyncio.create_task(self._capture_initial_thumbnail(session))
+        if live.record:
+            asyncio.create_task(self._periodic_thumbnails(session))
+            asyncio.create_task(self._capture_initial_thumbnail(session))
 
         if not resumed_folder:
             asyncio.create_task(
@@ -472,7 +481,8 @@ class RecordingManager:
             )
 
         self.log.info(
-            "Started recording %s/%s (%s)",
+            "%s %s/%s (%s)",
+            "Started recording" if live.record else "Monitoring chat+gift for",
             live.platform,
             live.member_name,
             live.live_id,
