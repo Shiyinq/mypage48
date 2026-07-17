@@ -13,6 +13,11 @@ from ..config import RecorderConfig
 from ..models import RecordingSession
 from .thumbnail_generator import generate_youtube_thumbnail
 
+
+class QuotaExceededError(Exception):
+    pass
+
+
 log = logging.getLogger("uploader")
 
 _MONTHS_ID = {
@@ -179,6 +184,18 @@ def _do_upload_blocking(
                     _uri_saved = True
     except Exception as e:
         log.warning("YouTube upload failed: %s", e)
+        is_quota = False
+        try:
+            if hasattr(e, "content") and e.content:
+                body = json.loads(e.content)
+                for err in body.get("error", {}).get("errors", []):
+                    if err.get("reason") in ("quotaExceeded", "rateLimitExceeded"):
+                        is_quota = True
+                        break
+        except Exception:
+            pass
+        if is_quota or "quotaExceeded" in str(e) or "rateLimitExceeded" in str(e):
+            raise QuotaExceededError() from e
         upload_uri = getattr(request, "resumable_uri", None) or resume_uri
         return None, upload_uri
 
