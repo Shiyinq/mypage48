@@ -12,6 +12,7 @@ from src.admin.schemas import IDNLivePlusConfig
 from src.admin.service import AdminService
 from src.auth.schemas import UserCurrent
 from src.config import Settings
+from src.live.constants import IDN_HEADERS
 from src.live.exceptions import (
     CommentsFetchError,
     FetchIdnError,
@@ -321,7 +322,7 @@ class LiveService:
         try:
             async with httpx.AsyncClient() as client:
                 res = await client.get(
-                    url, headers={"x-api-key": api_key}, timeout=30.0
+                    url, headers={"x-api-key": api_key, **IDN_HEADERS}, timeout=30.0
                 )
                 res.raise_for_status()
                 res_data = res.json()
@@ -384,6 +385,7 @@ class LiveService:
                         client.post(
                             url,
                             json={"query": query, "variables": {"page": page}},
+                            headers=IDN_HEADERS,
                             timeout=30.0,
                         )
                     )
@@ -613,7 +615,7 @@ class LiveService:
                 else f"Bearer {auth_token}"
             )
 
-            headers = {"Authorization": bearer}
+            headers = {"Authorization": bearer, **IDN_HEADERS}
             if idn_config.get("api_key"):
                 headers["X-Api-Key"] = idn_config["api_key"]
             if idn_config.get("access_token"):
@@ -728,7 +730,7 @@ class LiveService:
                                     f"https://api.idn.app/api/v4/livestream/{id}?n=1"
                                 )
                                 async with httpx.AsyncClient(timeout=10.0) as client:
-                                    headers = {}
+                                    headers = {**IDN_HEADERS}
                                     idn_config = await self._get_idn_config()
                                     if idn_config.get("api_key"):
                                         headers["x-api-key"] = idn_config.get("api_key")
