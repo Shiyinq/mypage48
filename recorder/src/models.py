@@ -20,6 +20,7 @@ class LiveInfo:
     image: str = ""
     start_at: str = ""
     live_type: str = "public"
+    record: bool = True
 
 
 @dataclass

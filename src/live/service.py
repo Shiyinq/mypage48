@@ -600,6 +600,10 @@ class LiveService:
             logger.warning("IDN_AUTH_TOKEN is missing. Cannot fetch playback token.")
             return None
 
+        if not idn_config.get("enabled", True):
+            logger.info("Playback token skipped (IDN Live+ disabled)")
+            return None
+
         url = f"https://api.idn.app/api/v1/apt?streamer_uuid={streamer_uuid}&slug={slug}&n=1"
         try:
             # Note: auth_token is expected to include "Bearer ", but let's handle if it doesn't
