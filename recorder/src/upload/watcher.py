@@ -109,9 +109,6 @@ class Watcher:
             self._processing.pop(live_id, None)
 
     async def _process_folder_inner(self, folder_path: str, live_id: str):
-        if time.time() < self._quota_cooldown_until:
-            return
-
         meta, session = self._build_session(folder_path, live_id)
         if not meta or not session:
             return
@@ -143,6 +140,9 @@ class Watcher:
                 self.log_rec.info(
                     "YouTube not configured, keeping folder for %s", title_log
                 )
+                return
+            if time.time() < self._quota_cooldown_until:
+                self.log_upl.info("Quota cooldown active, skipping %s", title_log)
                 return
 
             try:
