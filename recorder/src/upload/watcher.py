@@ -30,6 +30,8 @@ class Watcher:
         self.log_upl = logging.getLogger("uploader")
         self._processing: dict[str, dict] = {}
         self._quota_cooldown_until: float = 0.0
+        self._max_concurrent = config.max_concurrent_uploads
+        self._upload_semaphore = asyncio.Semaphore(self._max_concurrent)
 
     async def run(self, stop_event: asyncio.Event):
         os.makedirs(self.config.logs_dir, exist_ok=True)
@@ -55,6 +57,12 @@ class Watcher:
 
         done = self._read_history()
 
+        if self.config.enable_upload_queue:
+            await self._scan_queue(raw_dir, done)
+        else:
+            await self._scan_direct(raw_dir, done)
+
+    def _iter_pending(self, raw_dir: str, done: set[str]):
         for entry in sorted(os.listdir(raw_dir)):
             folder_path = os.path.join(raw_dir, entry)
             if not os.path.isdir(folder_path):
@@ -95,12 +103,53 @@ class Watcher:
                     )
                 continue
 
+            yield meta, live_id, folder_path
+
+    async def _scan_queue(self, raw_dir: str, done: set[str]):
+        candidates = []
+
+        for meta, live_id, folder_path in self._iter_pending(raw_dir, done):
+            mp4_path = os.path.join(folder_path, f"{live_id}.mp4")
+            try:
+                mp4_size = os.path.getsize(mp4_path) if os.path.isfile(mp4_path) else 0
+            except OSError:
+                mp4_size = 0
+            candidates.append((mp4_size, live_id, folder_path, meta))
+
+        candidates.sort(key=lambda x: (x[0], x[1]))
+
+        if candidates or self._processing:
+            active = self._max_concurrent - self._upload_semaphore._value
+            total_pending = len(self._processing) + len(candidates)
+            waiting = total_pending - active
+            self.log_upl.info(
+                "Queue: %d total | %d waiting | %d uploading | max %d concurrent",
+                total_pending,
+                waiting,
+                active,
+                self._max_concurrent,
+            )
+
+        for mp4_size, live_id, folder_path, meta in candidates:
+            self._processing[live_id] = {
+                "started_at": time.time(),
+                "phase": "pending",
+                "title": _format_title(meta),
+            }
+            asyncio.create_task(self._process_with_semaphore(folder_path, live_id))
+
+    async def _scan_direct(self, raw_dir: str, done: set[str]):
+        for meta, live_id, folder_path in self._iter_pending(raw_dir, done):
             self._processing[live_id] = {
                 "started_at": time.time(),
                 "phase": "pending",
                 "title": _format_title(meta),
             }
             asyncio.create_task(self._process_folder(folder_path, live_id))
+
+    async def _process_with_semaphore(self, folder_path: str, live_id: str):
+        async with self._upload_semaphore:
+            await self._process_folder(folder_path, live_id)
 
     async def _process_folder(self, folder_path: str, live_id: str):
         try:
