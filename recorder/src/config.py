@@ -29,6 +29,8 @@ class RecorderConfig(BaseSettings):
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
     remux_timeout: int = 600
+    max_concurrent_uploads: int = 2
+    enable_upload_queue: bool = True
 
     model_config = {
         "env_file": (
