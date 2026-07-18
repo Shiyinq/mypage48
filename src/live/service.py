@@ -239,13 +239,12 @@ class LiveService:
             and now >= LiveService._token_expires_at - 1800
         )
 
-        self._log_token_expiry(now, prefix="[CACHED] ")
-
         if (
             LiveService._idn_config_cache
             and (now - LiveService._idn_config_updated_at) < 60
             and not is_token_expired
         ):
+            self._log_token_expiry(now, prefix="[CACHED] ")
             logger.info("Using cached IDN config")
             return LiveService._idn_config_cache
         try:
