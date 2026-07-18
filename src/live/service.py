@@ -36,6 +36,12 @@ logger = create_logger("live_service", __name__)
 
 
 class LiveService:
+    _cache = {}
+    _cache_ttl = 60  # seconds cache
+    _idn_config_cache = None
+    _idn_config_updated_at = 0
+    _token_expires_at = 0.0
+
     def __init__(
         self,
         member_repository: MemberRepository,
@@ -45,11 +51,6 @@ class LiveService:
         self.member_repository = member_repository
         self.admin_service = admin_service
         self.config = config
-        self._cache = {}
-        self._cache_ttl = 60  # seconds cache
-        self._idn_config_cache = None
-        self._idn_config_updated_at = 0
-        self._token_expires_at = 0.0
         self.showroom_headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
             "Accept": "application/json, text/plain, */*",
@@ -59,10 +60,13 @@ class LiveService:
     async def get_live_status(self) -> LiveResponse:
         """Get unified live status from Showroom and IDN"""
         now = datetime.now(timezone.utc)
-        if "data" in self._cache:
-            updated_at = self._cache.get("updated_at")
-            if updated_at and (now - updated_at).total_seconds() < self._cache_ttl:
-                return self._cache["data"]
+        if "data" in LiveService._cache:
+            updated_at = LiveService._cache.get("updated_at")
+            if (
+                updated_at
+                and (now - updated_at).total_seconds() < LiveService._cache_ttl
+            ):
+                return LiveService._cache["data"]
 
         showroom_lives, idn_lives = await asyncio.gather(
             self.fetch_showroom_lives(), self.fetch_idn_lives(), return_exceptions=True
@@ -70,21 +74,21 @@ class LiveService:
 
         if isinstance(showroom_lives, Exception):
             logger.error(f"Error fetching Showroom lives: {showroom_lives}")
-            showroom_lives = self._cache.get("showroom_lives", [])
+            showroom_lives = LiveService._cache.get("showroom_lives", [])
         else:
-            self._cache["showroom_lives"] = showroom_lives
+            LiveService._cache["showroom_lives"] = showroom_lives
 
         if isinstance(idn_lives, Exception):
             logger.error(f"Error fetching IDN lives: {idn_lives}")
-            idn_lives = self._cache.get("idn_lives", [])
+            idn_lives = LiveService._cache.get("idn_lives", [])
         else:
-            self._cache["idn_lives"] = idn_lives
+            LiveService._cache["idn_lives"] = idn_lives
 
         all_lives = showroom_lives + idn_lives
         response = LiveResponse(data=all_lives, total=len(all_lives), updated_at=now)
 
-        self._cache["data"] = response
-        self._cache["updated_at"] = now
+        LiveService._cache["data"] = response
+        LiveService._cache["updated_at"] = now
         return response
 
     async def fetch_showroom_lives(self) -> List[LiveStatus]:
@@ -203,8 +207,10 @@ class LiveService:
             id_token = result["id_token"]
             access_token = result["access_token"]
             expires_in = result.get("expires_in", 86400)
-            session_id = extract_session_id(id_token) or self._idn_config_cache.get(
-                "session_id"
+            session_id = extract_session_id(id_token) or (
+                LiveService._idn_config_cache.get("session_id")
+                if LiveService._idn_config_cache
+                else None
             )
             update_data = IDNLivePlusConfig(
                 auth_token=id_token,
@@ -214,8 +220,8 @@ class LiveService:
                 cognito_client_id=client_id,
             )
             await self.admin_service.update_idn_live_plus_config(update_data)
-            self._token_expires_at = time.time() + expires_in
-            self._idn_config_cache = None
+            LiveService._token_expires_at = time.time() + expires_in
+            LiveService._idn_config_cache = None
             logger.info(
                 "IDN tokens refreshed via Cognito (fallback). "
                 f"Expires in {expires_in}s"
@@ -228,16 +234,20 @@ class LiveService:
     async def _get_idn_config(self) -> dict:
         """Fetch IDN config from cache or DB, fallback to .env."""
         now = time.time()
-        token_expired = (
-            self._token_expires_at > 0 and now >= self._token_expires_at - 1800
+        is_token_expired = (
+            LiveService._token_expires_at > 0
+            and now >= LiveService._token_expires_at - 1800
         )
-        if (
-            self._idn_config_cache
-            and (now - self._idn_config_updated_at) < 60
-            and not token_expired
-        ):
-            return self._idn_config_cache
 
+        self._log_token_expiry(now, prefix="[CACHED] ")
+
+        if (
+            LiveService._idn_config_cache
+            and (now - LiveService._idn_config_updated_at) < 60
+            and not is_token_expired
+        ):
+            logger.info("Using cached IDN config")
+            return LiveService._idn_config_cache
         try:
             db_config = await self.admin_service.get_idn_live_plus_config()
         except Exception as e:
@@ -285,29 +295,60 @@ class LiveService:
                     padding = 4 - len(payload_b64) % 4
                     if padding != 4:
                         payload_b64 += "=" * padding
-                    payload = json.loads(base64.b64decode(payload_b64))
+                    payload = json.loads(base64.urlsafe_b64decode(payload_b64))
                     exp = int(payload.get("exp", 0))
                     if exp and (
-                        not self._token_expires_at or exp < self._token_expires_at
+                        not LiveService._token_expires_at
+                        or exp < LiveService._token_expires_at
                     ):
-                        self._token_expires_at = exp
-                except Exception:
-                    pass
+                        LiveService._token_expires_at = exp
+                except Exception as e:
+                    logger.exception(f"Failed to check intial token expiry: {e}")
+        # Re-evaluate token expiry after fetching from DB/JWT
+        is_token_expired = (
+            LiveService._token_expires_at > 0
+            and now >= LiveService._token_expires_at - 1800
+        )
 
         refresh_token = merged_config.get("refresh_token")
         client_id = merged_config.get("cognito_client_id")
         if refresh_token and client_id and enabled:
-            if not self._token_expires_at:
-                self._token_expires_at = now
-            if token_expired or not merged_config.get("auth_token"):
+            if not LiveService._token_expires_at:
+                LiveService._token_expires_at = now
+            if is_token_expired or not merged_config.get("auth_token"):
                 logger.info("IDN tokens expired or missing, attempting Cognito refresh")
                 await self._refresh_idn_tokens(refresh_token, client_id)
                 merged_config = await self._get_idn_config()
                 return merged_config
 
-        self._idn_config_cache = merged_config
-        self._idn_config_updated_at = now
+        LiveService._idn_config_cache = merged_config
+        LiveService._idn_config_updated_at = now
+
+        self._log_token_expiry(now, prefix="[FETCHED] ")
         return merged_config
+
+    def _log_token_expiry(self, now: float, prefix: str = ""):
+        if LiveService._token_expires_at > 0:
+            from datetime import timedelta
+
+            exp_dt = datetime.fromtimestamp(
+                LiveService._token_expires_at, tz=timezone(timedelta(hours=7))
+            )
+            exp_str = exp_dt.strftime("%d %b %Y, %H:%M WIB")
+            diff_sec = int(LiveService._token_expires_at - now)
+
+            if diff_sec > 0:
+                h, r = divmod(diff_sec, 3600)
+                m, s = divmod(r, 60)
+                expires_in = f"{h}h {m}m" if h > 0 else f"{m}m {s}s"
+            else:
+                expires_in = "already expired"
+
+            logger.info(
+                f"{prefix}IDN Token Status | Expires at: {exp_str} · Expires in {expires_in}"
+            )
+        else:
+            logger.info(f"{prefix}IDN Token Status | No token expiry set in database")
 
     async def _fetch_premium_idn_raw_streams(
         self, status_filter: Optional[List[str]] = None
