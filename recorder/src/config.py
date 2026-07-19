@@ -8,8 +8,8 @@ class RecorderConfig(BaseSettings):
     api_base_url: str = "http://localhost:8000/api"
     frontend_base_url: str = "http://localhost:5173"
     poll_interval: int = 10
-    news_check_interval: int = 480
-    schedule_check_interval: int = 480
+    news_check_interval: int = 300
+    schedule_check_interval: int = 300
     health_check_interval: int = 300
     heartbeat_interval: int = 120
     recordings_dir: str = str(Path(__file__).parent.parent / "recordings")
