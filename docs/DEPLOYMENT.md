@@ -205,7 +205,7 @@ ssh-keygen -t rsa -b 4096 -f github_deploy_key
 
 ### 9.2 Add Public Key to VPS
 You need to tell your VPS to trust this new key:
-1.  Copy the content of `github_deploy_key.pub`.
+1.  Copy the content of `cat github_deploy_key.pub`.
 2.  Login to your VPS and run: `nano ~/.ssh/authorized_keys`.
 3.  Paste the key on a **new line** at the bottom.
 4.  Save and exit (**Ctrl+O, Enter, Ctrl+X**).
