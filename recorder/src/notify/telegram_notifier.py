@@ -116,6 +116,14 @@ def _format_rp(amount: float) -> str:
     return f"Rp {s}"
 
 
+def _format_platform_name(platform_str: str) -> str:
+    if not platform_str:
+        return ""
+    if platform_str.lower() == "idn":
+        return "IDN"
+    return platform_str.title()
+
+
 def _format_recap_end_live_caption(
     data: dict, live_id: str = "", live_type: str = "public"
 ) -> str:
@@ -125,7 +133,8 @@ def _format_recap_end_live_caption(
     )
     title = data.get("title") or "Siaran Langsung"
     title = html.escape(unicodedata.normalize("NFKC", str(title)).strip())
-    platform = html.escape(str(data.get("platform", "")).upper())
+    raw_platform = str(data.get("platform", ""))
+    platform = html.escape(_format_platform_name(raw_platform))
 
     # Format duration
     duration_s = data.get("duration", 0)
@@ -147,7 +156,7 @@ def _format_recap_end_live_caption(
     chats = data.get("total_chats", 0)
     total_gold = data.get("total_gold", 0)
 
-    is_showroom = platform == "SHOWROOM"
+    is_showroom = raw_platform.upper() == "SHOWROOM"
     total_idr = _gold_to_idr(total_gold, is_showroom)
     idr_str = f" (~ {_format_rp(total_idr)})" if total_gold > 0 else ""
 
@@ -191,7 +200,7 @@ def _format_end_live_caption(data: dict) -> str:
     member_nickname = html.escape(
         data.get("member_nickname") or data.get("member_name", "Unknown")
     )
-    platform = html.escape(str(data.get("platform", "")).upper())
+    platform = html.escape(_format_platform_name(str(data.get("platform", ""))))
 
     start_at_iso = data.get("start_at", "")
     end_at_iso = data.get("end_at", "")
@@ -200,7 +209,7 @@ def _format_end_live_caption(data: dict) -> str:
     title = data.get("title") or "Siaran Langsung"
     title = html.escape(unicodedata.normalize("NFKC", str(title)).strip())
 
-    caption = f"🏁 <b>{member_nickname} telah selesai LIVE {platform}!</b>\n\n"
+    caption = f"🏁 <b>{member_nickname} telah selesai Live {platform}!</b>\n\n"
     caption += f"❝<i>{title}</i>❞\n\n"
     if date_wib_range:
         caption += f"📅 {date_wib_range}\n\n"
@@ -468,7 +477,7 @@ def _format_live_start_caption(live: LiveInfo) -> str:
     member_nickname = html.escape(live.member_nickname or live.member_name or "Unknown")
     title = live.title or "Siaran Langsung"
     title = html.escape(unicodedata.normalize("NFKC", str(title)).strip())
-    platform = html.escape(live.platform.upper())
+    platform = html.escape(_format_platform_name(live.platform))
 
     start_at_iso = live.start_at
     date_wib = _format_date_wib(start_at_iso)
@@ -488,7 +497,7 @@ def _format_live_start_caption(live: LiveInfo) -> str:
     else:
         official_url = ""
 
-    caption = f"🚀 <b>{member_nickname} sedang LIVE {platform}!</b>\n"
+    caption = f"🚀 <b>{member_nickname} sedang Live {platform}!</b>\n"
     caption += f"\n❝<i>{title}</i>❞\n\n"
     if date_wib:
         caption += f"📅 {date_wib}\n\n"
