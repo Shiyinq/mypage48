@@ -844,7 +844,8 @@ class RecordingManager:
             if len(parts_to_concat) == 1:
                 target_mkv = parts_to_concat[0]
                 try:
-                    subprocess.run(
+                    await asyncio.to_thread(
+                        subprocess.run,
                         [
                             "ffmpeg",
                             "-i",
@@ -874,7 +875,8 @@ class RecordingManager:
                         for p in parts_to_concat:
                             f.write(f"file '{os.path.abspath(p)}'\n")
 
-                    subprocess.run(
+                    await asyncio.to_thread(
+                        subprocess.run,
                         [
                             "ffmpeg",
                             "-f",
@@ -932,7 +934,8 @@ class RecordingManager:
                     session.screenshots_folder,
                     f"{_sanitize_filename(session.member_nickname)}_{ts}.jpg",
                 )
-                r = subprocess.run(
+                r = await asyncio.to_thread(
+                    subprocess.run,
                     [
                         "ffmpeg",
                         "-loglevel",
