@@ -56,30 +56,32 @@ async def monitor_recorder_heartbeat():
                 )
 
                 if is_stale and not is_down:
-                    # Recorder is DOWN
-                    logger.warning(
-                        f"Recorder (mode: {mode}) is DOWN. Last seen: {updated_at}"
-                    )
-                    msg_text = DOWN_MESSAGES.get(
-                        mode, f"Recorder (Mode: {mode}) is DOWN."
-                    )
-                    await _send_telegram_alert(
-                        encrypted_bot_token,
-                        encrypted_chat_id,
-                        f"🔴 <b>Monitoring Alert</b>\n\n{msg_text}\n\n~ <i>MyPage48</i> ~",
-                    )
-                    await health_repo.mark_as_down(hb["_id"])
+                    # Attempt to atomically mark as down
+                    if await health_repo.mark_as_down_atomic(hb["_id"]):
+                        logger.warning(
+                            f"Recorder (mode: {mode}) is DOWN. Last seen: {updated_at}"
+                        )
+                        msg_text = DOWN_MESSAGES.get(
+                            mode, f"Recorder (Mode: {mode}) is DOWN."
+                        )
+                        await _send_telegram_alert(
+                            encrypted_bot_token,
+                            encrypted_chat_id,
+                            f"🔴 <b>Monitoring Alert</b>\n\n{msg_text}\n\n~ <i>MyPage48</i> ~",
+                        )
 
                 elif not is_stale and is_down:
-                    # Recorder is UP again
-                    logger.info(f"Recorder (mode: {mode}) is UP again.")
-                    msg_text = UP_MESSAGES.get(mode, f"Recorder (Mode: {mode}) is UP.")
-                    await _send_telegram_alert(
-                        encrypted_bot_token,
-                        encrypted_chat_id,
-                        f"🟢 <b>Monitoring Alert</b>\n\n{msg_text}\n\n~ <i>MyPage48</i> ~",
-                    )
-                    await health_repo.mark_as_up(hb["_id"])
+                    # Attempt to atomically mark as up
+                    if await health_repo.mark_as_up_atomic(hb["_id"]):
+                        logger.info(f"Recorder (mode: {mode}) is UP again.")
+                        msg_text = UP_MESSAGES.get(
+                            mode, f"Recorder (Mode: {mode}) is UP."
+                        )
+                        await _send_telegram_alert(
+                            encrypted_bot_token,
+                            encrypted_chat_id,
+                            f"🟢 <b>Monitoring Alert</b>\n\n{msg_text}\n\n~ <i>MyPage48</i> ~",
+                        )
 
         except Exception as e:
             logger.error(f"Error in monitor_recorder_heartbeat: {e}")

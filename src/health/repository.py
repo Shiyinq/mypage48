@@ -48,5 +48,17 @@ class HealthRepository:
     async def mark_as_down(self, doc_id: str):
         await self.collection.update_one({"_id": doc_id}, {"$set": {"is_down": True}})
 
+    async def mark_as_down_atomic(self, doc_id: str) -> bool:
+        result = await self.collection.update_one(
+            {"_id": doc_id, "is_down": False}, {"$set": {"is_down": True}}
+        )
+        return result.modified_count > 0
+
     async def mark_as_up(self, doc_id: str):
         await self.collection.update_one({"_id": doc_id}, {"$set": {"is_down": False}})
+
+    async def mark_as_up_atomic(self, doc_id: str) -> bool:
+        result = await self.collection.update_one(
+            {"_id": doc_id, "is_down": True}, {"$set": {"is_down": False}}
+        )
+        return result.modified_count > 0

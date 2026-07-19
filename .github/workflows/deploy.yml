@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-mypage48:
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -25,3 +25,57 @@ jobs:
             git checkout ${{ github.ref_name }}
             docker compose -f docker-compose.prod.yml up -d --build
             docker image prune -f
+
+  recorder-change:
+    runs-on: ubuntu-latest
+    outputs:
+      recorder: ${{ steps.check.outputs.recorder }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check for recorder changes
+        id: check
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            echo "No previous tag found, defaulting to true."
+            echo "recorder=true" >> $GITHUB_OUTPUT
+          else
+            echo "Comparing HEAD with previous tag: $PREV_TAG"
+            if git diff --name-only $PREV_TAG HEAD | grep -q '^recorder/'; then
+              echo "Changes detected in recorder directory."
+              echo "recorder=true" >> $GITHUB_OUTPUT
+            else
+              echo "No changes in recorder directory."
+              echo "recorder=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  deploy-recorder48:
+    needs: recorder-change
+    if: needs.recorder-change.outputs.recorder == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - name: Deploy Recorder to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.RECORDER_HOST }}
+          username: ${{ secrets.RECORDER_USER }}
+          key: ${{ secrets.RECORDER_SSH_KEY }}
+          script: |
+            cd ${{ secrets.RECORDER_TARGET }}
+            git fetch --all --tags
+            git checkout ${{ github.ref_name }}
+            cd recorder
+            .venv/bin/pip install -r requirements.txt
+            sudo systemctl restart mypage48-record
+            sudo systemctl restart mypage48-upload
+            sudo systemctl restart mypage48-theater
+            
+            sleep 2
+            sudo systemctl status mypage48-record --no-pager
+            sudo systemctl status mypage48-upload --no-pager
+            sudo systemctl status mypage48-theater --no-pager
