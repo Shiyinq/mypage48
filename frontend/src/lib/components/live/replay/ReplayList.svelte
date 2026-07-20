@@ -10,8 +10,13 @@
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getPlatformIcon } from '$lib/constants/live';
-	import { formatTimeAgo, formatLiveDate, formatDateOnly, formatDurationColon } from '$lib/utils/time';
-	import { Search, Play, RotateCcw, User, List, ExternalLink, Database } from 'lucide-svelte';
+	import {
+		formatTimeAgo,
+		formatLiveDate,
+		formatDateOnly,
+		formatDurationColon
+	} from '$lib/utils/time';
+	import { Search, Play, RotateCcw, User, List, ExternalLink } from 'lucide-svelte';
 
 	const { t, locale } = useTranslation();
 
@@ -203,7 +208,6 @@
 		{ label: t('replay.list.showroom'), value: 'showroom', icon: 'showroom' }
 	];
 
-
 	let selectedOption = $derived(
 		platformOptions.find((o) => o.value === platformFilter) || platformOptions[0]
 	);
@@ -247,8 +251,6 @@
 				</div>
 			{/if}
 		</div>
-
-
 
 		<div class="relative">
 			<button
@@ -459,9 +461,7 @@
 										class="relative inline-flex items-center justify-center text-[10px] text-white/80 hover:text-white underline underline-offset-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-300 group/link"
 										onclick={(e) => e.stopPropagation()}
 									>
-										<span
-											>MyPage48</span
-										>
+										<span>MyPage48</span>
 										<span
 											class="absolute -right-4 opacity-0 group-hover/link:opacity-100 transition-opacity"
 										>

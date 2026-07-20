@@ -1,7 +1,6 @@
 import { client } from './client';
 import type { ReplayVideo, ReplayDetailResponse } from '$lib/types/replay';
 
-
 export const replayApi = {
 	getReplayByLiveId: async (liveId: string): Promise<ReplayDetailResponse> => {
 		return await client<ReplayDetailResponse>(`/replays/${liveId}`);
@@ -11,5 +10,5 @@ export const replayApi = {
 	},
 	getSrt: async (liveId: string): Promise<string> => {
 		return await client<string>(`/replays/${liveId}/srt`, { responseType: 'text' });
-	},
+	}
 };

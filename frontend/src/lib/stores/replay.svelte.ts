@@ -32,11 +32,7 @@ function createReplayStore() {
 			return state.error;
 		},
 		loadVideos: async (force = false) => {
-			if (
-				!force &&
-				state.videos.length > 0 &&
-				Date.now() - state.lastUpdated < REPLAY_CACHE_TTL
-			) {
+			if (!force && state.videos.length > 0 && Date.now() - state.lastUpdated < REPLAY_CACHE_TTL) {
 				return;
 			}
 
