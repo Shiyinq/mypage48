@@ -10,9 +10,13 @@
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getPlatformIcon } from '$lib/constants/live';
-	import { formatTimeAgo, formatLiveDate, formatDateOnly } from '$lib/utils/time';
-	import { Search, Play, RotateCcw, User, List, ExternalLink, Database } from 'lucide-svelte';
-	import type { ReplaySource } from '$lib/stores/replay.svelte';
+	import {
+		formatTimeAgo,
+		formatLiveDate,
+		formatDateOnly,
+		formatDurationColon
+	} from '$lib/utils/time';
+	import { Search, Play, RotateCcw, User, List, ExternalLink } from 'lucide-svelte';
 
 	const { t, locale } = useTranslation();
 
@@ -24,12 +28,12 @@
 
 	let search = $state('');
 	let platformFilter = $state('all');
-	let sourceFilter = $state<ReplaySource>(replayStore.currentSource);
+
 	let memberFilter = $state<string | null>(null);
 	let page = $state(1);
 	const perPage = 12;
 	let isFilterOpen = $state(false);
-	let isSourceFilterOpen = $state(false);
+
 	let isSearchOpen = $state(false);
 	let searchInput: HTMLInputElement | undefined = $state();
 	let memberMap = $derived.by(() => {
@@ -86,7 +90,7 @@
 	}
 
 	onMount(() => {
-		replayStore.loadVideos(sourceFilter);
+		replayStore.loadVideos();
 		membersStore.load({ limit: 100 }, true);
 	});
 
@@ -172,13 +176,6 @@
 		page = 1;
 	}
 
-	function setSource(source: ReplaySource) {
-		sourceFilter = source;
-		isSourceFilterOpen = false;
-		page = 1;
-		replayStore.loadVideos(source);
-	}
-
 	function goToPage(p: number) {
 		page = p;
 		containerRef?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -209,11 +206,6 @@
 		{ label: t('replay.list.all'), value: 'all', icon: null },
 		{ label: t('replay.list.idn'), value: 'idn', icon: 'idn' },
 		{ label: t('replay.list.showroom'), value: 'showroom', icon: 'showroom' }
-	];
-
-	const sourceOptions: { label: string; value: ReplaySource }[] = [
-		{ label: 'MyPage48', value: 'mypage48' },
-		{ label: 'JeketiBots', value: 'jeketibots' }
 	];
 
 	let selectedOption = $derived(
@@ -256,42 +248,6 @@
 						oninput={handleSearch}
 						class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 outline-none focus:border-red-500/50 focus:ring-2 focus:ring-red-500/10 transition-all"
 					/>
-				</div>
-			{/if}
-		</div>
-
-		<div class="relative">
-			<button
-				data-replay-source="true"
-				onclick={() => (isSourceFilterOpen = !isSourceFilterOpen)}
-				class="flex items-center justify-center rounded-full transition-all cursor-pointer border h-8 sm:h-9 w-8 sm:w-9 shadow-sm {isSourceFilterOpen
-					? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-800'
-					: 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-zinc-700 hover:border-red-200 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400'}"
-				title="Source"
-			>
-				<Database size={15} />
-			</button>
-
-			{#if isSourceFilterOpen}
-				<div
-					use:clickOutside={{
-						close: () => (isSourceFilterOpen = false),
-						exclude: '[data-replay-source]'
-					}}
-					transition:slide={{ duration: 150 }}
-					class="absolute top-full right-0 mt-2 z-[7000] min-w-[150px] bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-700 shadow-xl overflow-hidden"
-				>
-					{#each sourceOptions as opt}
-						<button
-							class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold transition-colors text-left cursor-pointer {sourceFilter ===
-							opt.value
-								? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-								: 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-zinc-800'}"
-							onclick={() => setSource(opt.value)}
-						>
-							{opt.label}
-						</button>
-					{/each}
 				</div>
 			{/if}
 		</div>
@@ -505,9 +461,7 @@
 										class="relative inline-flex items-center justify-center text-[10px] text-white/80 hover:text-white underline underline-offset-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-300 group/link"
 										onclick={(e) => e.stopPropagation()}
 									>
-										<span
-											>{replayStore.currentSource === 'mypage48' ? 'MyPage48' : 'JeketiBots'}</span
-										>
+										<span>MyPage48</span>
 										<span
 											class="absolute -right-4 opacity-0 group-hover/link:opacity-100 transition-opacity"
 										>
@@ -521,6 +475,13 @@
 										size="xs"
 									/>
 								</div>
+								{#if video.duration}
+									<div
+										class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[11px] font-medium px-1.5 py-0.5 rounded tracking-wide tabular-nums"
+									>
+										{formatDurationColon(video.duration)}
+									</div>
+								{/if}
 							</div>
 							<div class="flex gap-2.5 mt-2.5 px-1">
 								<div class="shrink-0">
@@ -668,16 +629,14 @@
 			{/if}
 			<div class="flex justify-center mt-10 pb-6">
 				<a
-					href={replayStore.currentSource === 'mypage48'
-						? 'https://www.youtube.com/@MyPage48'
-						: 'https://www.youtube.com/@JeketiBots'}
+					href="https://www.youtube.com/@MyPage48"
 					target="_blank"
 					rel="noopener noreferrer"
 					class="group flex items-center gap-1 text-[11px] text-slate-400 dark:text-zinc-600 hover:text-slate-600 dark:hover:text-zinc-400 transition-colors font-medium"
 				>
 					<span>
 						{t('replay.list.originalSource')}
-						{replayStore.currentSource === 'mypage48' ? 'MyPage48' : 'JeketiBots'}
+						MyPage48
 					</span>
 					<ExternalLink
 						size={12}

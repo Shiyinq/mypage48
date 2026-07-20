@@ -338,12 +338,8 @@
 			<div
 				class="bg-white dark:bg-zinc-950 rounded-3xl border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col shadow-sm flex-1 min-h-0"
 			>
-				{#if video && (video.srt_file || (replayStore.currentSource === 'mypage48' && video.live_id))}
-					<ReplayChat
-						srtFile={video.srt_file || video.live_id || ''}
-						source={replayStore.currentSource}
-						{currentTime}
-					/>
+				{#if video && (video.srt_file || video.live_id)}
+					<ReplayChat srtFile={video.srt_file || video.live_id || ''} {currentTime} />
 				{:else}
 					<div class="flex-1 flex items-center justify-center text-zinc-500">
 						<div class="text-center px-4">

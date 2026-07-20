@@ -10,9 +10,8 @@
 	interface Props {
 		srtFile: string;
 		currentTime: number;
-		source?: 'mypage48' | 'jeketibots';
 	}
-	let { srtFile, currentTime, source = 'mypage48' }: Props = $props();
+	let { srtFile, currentTime }: Props = $props();
 
 	let allMessages: ReplayChatMessage[] = $state([]);
 	let loading = $state(true);
@@ -35,11 +34,7 @@
 				loading = true;
 				error = null;
 				let text: string;
-				if (source === 'mypage48') {
-					text = await replayApi.getSrt(srtFile); // srtFile acts as liveId for mypage48
-				} else {
-					text = await replayApi.getJeketiBotsSrt(srtFile);
-				}
+				text = await replayApi.getSrt(srtFile); // srtFile acts as liveId for mypage48
 				allMessages = parseSrt(text);
 			} catch (e) {
 				console.error('Failed to fetch SRT:', e);

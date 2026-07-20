@@ -18,6 +18,7 @@ export interface ReplayVideo {
 	live_id?: string;
 	has_loveletter?: boolean;
 	transcript_file?: string;
+	duration?: number;
 }
 
 export interface ReplayDetailFiles {

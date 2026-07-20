@@ -189,12 +189,21 @@ def _do_upload_blocking(
             if hasattr(e, "content") and e.content:
                 body = json.loads(e.content)
                 for err in body.get("error", {}).get("errors", []):
-                    if err.get("reason") in ("quotaExceeded", "rateLimitExceeded"):
+                    if err.get("reason") in (
+                        "quotaExceeded",
+                        "rateLimitExceeded",
+                        "uploadLimitExceeded",
+                    ):
                         is_quota = True
                         break
         except Exception:
             pass
-        if is_quota or "quotaExceeded" in str(e) or "rateLimitExceeded" in str(e):
+        if (
+            is_quota
+            or "quotaExceeded" in str(e)
+            or "rateLimitExceeded" in str(e)
+            or "uploadLimitExceeded" in str(e)
+        ):
             raise QuotaExceededError() from e
         upload_uri = getattr(request, "resumable_uri", None) or resume_uri
         return None, upload_uri

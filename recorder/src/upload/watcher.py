@@ -191,7 +191,13 @@ class Watcher:
                 )
                 return
             if time.time() < self._quota_cooldown_until:
-                self.log_upl.info("Quota cooldown active, skipping %s", title_log)
+                rem_s = int(self._quota_cooldown_until - time.time())
+                self.log_upl.info(
+                    "Quota cooldown active (%dh %dm remaining), skipping %s",
+                    rem_s // 3600,
+                    (rem_s % 3600) // 60,
+                    title_log,
+                )
                 return
 
             try:
@@ -230,10 +236,13 @@ class Watcher:
                         "YouTube upload failed for %s, will retry", title_log
                     )
                     return
-            except QuotaExceededError:
-                self._quota_cooldown_until = time.time() + 3600
+            except QuotaExceededError as e:
+                self._quota_cooldown_until = time.time() + 86400
+                orig_err = getattr(e, "__cause__", str(e))
                 self.log_upl.warning(
-                    "Quota exceeded, backing off 1 hour for %s", title_log
+                    "Quota exceeded [Reason: %s], backing off 24 hours for %s",
+                    orig_err,
+                    title_log,
                 )
                 return
             except Exception as e:
