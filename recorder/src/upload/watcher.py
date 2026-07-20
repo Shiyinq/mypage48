@@ -29,9 +29,26 @@ class Watcher:
         self.log_rec = logging.getLogger("recorder")
         self.log_upl = logging.getLogger("uploader")
         self._processing: dict[str, dict] = {}
+        self._cooldown_file = os.path.join(self.config.logs_dir, ".youtube_cooldown")
         self._quota_cooldown_until: float = 0.0
+        self._load_cooldown()
         self._max_concurrent = config.max_concurrent_uploads
         self._upload_semaphore = asyncio.Semaphore(self._max_concurrent)
+
+    def _load_cooldown(self) -> None:
+        if os.path.exists(self._cooldown_file):
+            try:
+                with open(self._cooldown_file, "r") as f:
+                    self._quota_cooldown_until = float(f.read().strip())
+            except Exception:
+                pass
+
+    def _save_cooldown(self) -> None:
+        try:
+            with open(self._cooldown_file, "w") as f:
+                f.write(str(self._quota_cooldown_until))
+        except Exception:
+            pass
 
     async def run(self, stop_event: asyncio.Event):
         os.makedirs(self.config.logs_dir, exist_ok=True)
@@ -238,6 +255,7 @@ class Watcher:
                     return
             except QuotaExceededError as e:
                 self._quota_cooldown_until = time.time() + 86400
+                self._save_cooldown()
                 orig_err = getattr(e, "__cause__", str(e))
                 self.log_upl.warning(
                     "Quota exceeded [Reason: %s], backing off 24 hours for %s",
