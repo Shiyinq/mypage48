@@ -4,22 +4,18 @@ import { createRequestDedup } from '$lib/utils/requestDedup';
 
 const REPLAY_CACHE_TTL = 5 * 60 * 1000;
 
-export type ReplaySource = 'jeketibots' | 'mypage48';
-
 interface ReplayState {
-	videos: Record<ReplaySource, ReplayVideo[]>;
-	currentSource: ReplaySource;
+	videos: ReplayVideo[];
 	loading: boolean;
 	error: string | null;
-	lastUpdated: Record<ReplaySource, number>;
+	lastUpdated: number;
 }
 
 const state = $state<ReplayState>({
-	videos: { jeketibots: [], mypage48: [] },
-	currentSource: 'mypage48',
+	videos: [],
 	loading: true,
 	error: null,
-	lastUpdated: { jeketibots: 0, mypage48: 0 }
+	lastUpdated: 0
 });
 
 const dedup = createRequestDedup();
@@ -27,10 +23,7 @@ const dedup = createRequestDedup();
 function createReplayStore() {
 	return {
 		get videos() {
-			return state.videos[state.currentSource];
-		},
-		get currentSource() {
-			return state.currentSource;
+			return state.videos;
 		},
 		get loading() {
 			return state.loading;
@@ -38,28 +31,21 @@ function createReplayStore() {
 		get error() {
 			return state.error;
 		},
-		loadVideos: async (source: ReplaySource = 'mypage48', force = false) => {
-			state.currentSource = source;
+		loadVideos: async (force = false) => {
 			if (
 				!force &&
-				state.videos[source].length > 0 &&
-				Date.now() - state.lastUpdated[source] < REPLAY_CACHE_TTL
+				state.videos.length > 0 &&
+				Date.now() - state.lastUpdated < REPLAY_CACHE_TTL
 			) {
 				return;
 			}
 
-			return dedup.execute(`replay-videos-${source}`, async () => {
+			return dedup.execute(`replay-videos-mypage48`, async () => {
 				try {
 					state.loading = true;
 					state.error = null;
-					let fetchedVideos: ReplayVideo[];
-					if (source === 'mypage48') {
-						fetchedVideos = await replayApi.getVideos();
-					} else {
-						fetchedVideos = await replayApi.getJeketiBotsVideos();
-					}
-					state.videos[source] = fetchedVideos;
-					state.lastUpdated[source] = Date.now();
+					state.videos = await replayApi.getVideos();
+					state.lastUpdated = Date.now();
 				} catch (e) {
 					state.error = (e as Error).message;
 					console.error('Failed to load replay videos:', e);
