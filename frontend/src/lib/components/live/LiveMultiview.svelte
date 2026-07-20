@@ -6,6 +6,8 @@
 	import { spring } from 'svelte/motion';
 	import { liveStore, liveList, liveLoading } from '$lib/stores/live.svelte';
 	import type { LiveStatus, LiveStreamingResponse } from '$lib/types';
+	import type { ReplayVideo } from '$lib/types/replay';
+	import { replayStore } from '$lib/stores/replay.svelte';
 	import { live } from '$lib/apis/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
@@ -32,7 +34,9 @@
 	import { OptimizedImage } from '$lib/components/common';
 	import ShowroomChat from '$lib/components/live/ShowroomChat.svelte';
 	import IDNChat from '$lib/components/live/IDNChat.svelte';
+	import ReplayChat from '$lib/components/live/replay/ReplayChat.svelte';
 	import MultiPlayer from '$lib/components/live/MultiPlayer.svelte';
+	import YoutubeMultiPlayer from '$lib/components/live/YoutubeMultiPlayer.svelte';
 	import HlsSettingsDropdown from '$lib/components/live/HlsSettingsDropdown.svelte';
 	import { showToast, isImmersive, isAuthenticated } from '$lib/stores';
 	import { liveHistoryStore } from '$lib/stores/liveHistory.svelte';
@@ -50,7 +54,11 @@
 	let { basePath: _basePath = '/jkt48/live' }: Props = $props();
 
 	// Multi-view State
-	let slots: LiveStatus[] = $state([]);
+	export type MultiviewSlot =
+		| { type: 'live'; data: LiveStatus }
+		| { type: 'replay'; data: ReplayVideo };
+	let slots: MultiviewSlot[] = $state([]);
+	let activeTab: 'live' | 'replay' = $state('live');
 	let focusedSlotIndex: number = $state(0);
 	let focusedStreamDetails: LiveStreamingResponse | null = $state(null);
 	let lastLoadedId: string | null = $state(null);
@@ -89,35 +97,39 @@
 	let volumes: number[] = $state(Array(8).fill(1));
 	let muted: boolean[] = $state(Array(8).fill(false));
 	let isRecording: boolean[] = $state(Array(8).fill(false));
-	let playerRefs: (ReturnType<typeof MultiPlayer> | null)[] = $state(Array(8).fill(null));
+	let focusedCurrentTime: number = $state(0);
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let playerRefs: any[] = $state(Array(8).fill(null));
 	$effect(() => {
 		untrack(() => {
 			liveStore.loadLiveList();
+			replayStore.loadVideos();
 		});
 		const interval = setInterval(async () => {
 			await liveStore.loadLiveList(true);
-			// Sync slots with new data from liveList (to update viewer counts and detect offline)
 			const currentLive = liveList.value;
 
 			let hasGoneOffline = false;
 			const updatedSlots = slots
 				.map((slot) => {
+					if (slot.type === 'replay') return slot;
+					const liveData = slot.data;
 					const updated = currentLive.find(
 						(l) =>
-							(l.platform === slot.platform && l.room_id === slot.room_id && l.room_id) ||
-							(l.platform === slot.platform && l.live_id === slot.live_id && l.live_id)
+							(l.platform === liveData.platform && l.room_id === liveData.room_id && l.room_id) ||
+							(l.platform === liveData.platform && l.live_id === liveData.live_id && l.live_id)
 					);
 					if (!updated) {
 						hasGoneOffline = true;
 						showToast(
-							t('theater.live.multiview.member_offline', { name: slot.member?.name }),
+							t('theater.live.multiview.member_offline', { name: liveData.member?.name }),
 							'error'
 						);
 						return null;
 					}
-					return { ...slot, ...updated };
+					return { type: 'live', data: { ...liveData, ...updated } } as MultiviewSlot;
 				})
-				.filter((s): s is LiveStatus => s !== null);
+				.filter((s): s is MultiviewSlot => s !== null);
 
 			if (hasGoneOffline) {
 				slots = updatedSlots;
@@ -186,12 +198,14 @@
 
 			// Track all active streams in multiview slots
 			slots.forEach((slot) => {
-				const platform = slot.platform || '';
-				const liveId = slot.live_id || slot.room_url_key || slot.room_id || '';
-				const memberId = slot.member?.id || slot.room_url_key || '';
-				const memberName = slot.member?.name || slot.title || 'Unknown';
-				const memberNickname = slot.member?.nickname || undefined;
-				const title = slot.title;
+				if (slot.type === 'replay') return;
+				const liveData = slot.data;
+				const platform = liveData.platform || '';
+				const liveId = liveData.live_id || liveData.room_url_key || liveData.room_id || '';
+				const memberId = liveData.member?.id || liveData.room_url_key || '';
+				const memberName = liveData.member?.name || liveData.title || 'Unknown';
+				const memberNickname = liveData.member?.nickname || undefined;
+				const title = liveData.title;
 
 				if (liveId && platform) {
 					liveHistoryStore.updateWatchDuration(
@@ -216,18 +230,27 @@
 		localStorage.setItem('mypage48_multiview_slots', JSON.stringify(slots));
 	}
 
-	function addMemberToSlot(stream: LiveStatus) {
+	function addSlot(slot: MultiviewSlot) {
 		if (slots.length >= 8) return;
 
-		// Check if already in slots
-		const exists = slots.find(
-			(s) =>
-				(s.platform === stream.platform && s.room_id === stream.room_id && s.room_id) ||
-				(s.platform === stream.platform && s.live_id === stream.live_id && s.live_id)
-		);
+		const exists = slots.find((s) => {
+			if (s.type === 'live' && slot.type === 'live') {
+				return (
+					(s.data.platform === slot.data.platform &&
+						s.data.room_id === slot.data.room_id &&
+						s.data.room_id) ||
+					(s.data.platform === slot.data.platform &&
+						s.data.live_id === slot.data.live_id &&
+						s.data.live_id)
+				);
+			} else if (s.type === 'replay' && slot.type === 'replay') {
+				return s.data.youtube_id === slot.data.youtube_id;
+			}
+			return false;
+		});
 		if (exists) return;
 
-		slots = [...slots, stream];
+		slots = [...slots, slot];
 		focusedSlotIndex = slots.length - 1;
 		saveSlots();
 	}
@@ -236,14 +259,15 @@
 		focusedSlotIndex = index;
 	}
 
-	async function loadFocusedDetails(stream: LiveStatus) {
+	async function loadFocusedDetails(stream: MultiviewSlot) {
 		focusedStreamDetails = null; // Clear old info
+		if (stream.type === 'replay') return;
 		try {
-			const platform = stream.platform;
+			const platform = stream.data.platform;
 			const id =
 				platform === 'showroom'
-					? stream.room_id || stream.room_url_key
-					: stream.live_id || stream.room_url_key;
+					? stream.data.room_id || stream.data.room_url_key
+					: stream.data.live_id || stream.data.room_url_key;
 			const details = await live.getStreamingUrl(platform, id);
 			if (details) {
 				focusedStreamDetails = details;
@@ -339,29 +363,60 @@
 				s.title?.toLowerCase().includes(searchQuery.toLowerCase())
 		)
 	);
+	let activeReplays = $derived(replayStore.videos);
+	let filteredReplays = $derived(
+		activeReplays.filter(
+			(v) =>
+				v.member.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				v.title.toLowerCase().includes(searchQuery.toLowerCase())
+		)
+	);
 	// Auto-initialize first slot if empty and no saved session
 	$effect(() => {
 		if (
 			slots.length === 0 &&
-			(liveList.value?.length ?? 0) > 0 &&
+			((liveList.value?.length ?? 0) > 0 || replayStore.videos.length > 0) &&
 			typeof localStorage !== 'undefined' &&
 			!localStorage.getItem('mypage48_multiview_slots')
 		) {
 			const firstLive =
 				(liveList.value || []).find((l) => l.platform === 'idn') || liveList.value?.[0];
 			if (firstLive) {
-				slots = [firstLive];
+				slots = [{ type: 'live', data: firstLive }];
+				setFocusedSlot(0);
+			} else if (replayStore.videos.length > 0) {
+				slots = [{ type: 'replay', data: replayStore.videos[0] }];
 				setFocusedSlot(0);
 			}
 		}
 	});
 	let focusedStream = $derived(slots[focusedSlotIndex]);
+
+	$effect(() => {
+		const interval = setInterval(() => {
+			if (focusedStream?.type === 'replay' && playerRefs[focusedSlotIndex]) {
+				const player = playerRefs[focusedSlotIndex];
+				if (typeof player.getCurrentTime === 'function') {
+					focusedCurrentTime = player.getCurrentTime();
+				}
+			}
+		}, 500);
+		return () => clearInterval(interval);
+	});
+
+	$effect(() => {
+		if (!liveLoading.value && liveList.value.length === 0 && activeTab === 'live') {
+			activeTab = 'replay';
+		}
+	});
 	$effect(() => {
 		if (focusedStream) {
 			const currentId =
-				focusedStream.platform === 'showroom'
-					? focusedStream.room_id || focusedStream.room_url_key
-					: focusedStream.live_id || focusedStream.room_url_key;
+				focusedStream.type === 'live'
+					? focusedStream.data.platform === 'showroom'
+						? focusedStream.data.room_id || focusedStream.data.room_url_key
+						: focusedStream.data.live_id || focusedStream.data.room_url_key
+					: focusedStream.data.youtube_id;
 			if (currentId !== lastLoadedId) {
 				lastLoadedId = currentId;
 				loadFocusedDetails(focusedStream);
@@ -487,6 +542,26 @@
 				class="fixed md:relative top-14 md:top-0 left-0 w-full md:w-72 h-[calc(100dvh-56px)] md:h-auto border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col z-[5000]"
 				transition:fly={{ x: isMobile ? -500 : -288, duration: 300 }}
 			>
+				<div class="flex items-center gap-4 px-4 pt-4">
+					<button
+						onclick={() => (activeTab = 'live')}
+						class="flex-1 py-2 text-center text-xs font-bold rounded-t-lg transition-colors border-b-2 cursor-pointer uppercase {activeTab ===
+						'live'
+							? 'border-red-500 text-red-500'
+							: 'border-transparent text-gray-400 hover:text-gray-600'}"
+					>
+						{t('nav.live')} ({activeStreams.length})
+					</button>
+					<button
+						onclick={() => (activeTab = 'replay')}
+						class="flex-1 py-2 text-center text-xs font-bold rounded-t-lg transition-colors border-b-2 cursor-pointer uppercase {activeTab ===
+						'replay'
+							? 'border-red-500 text-red-500'
+							: 'border-transparent text-gray-400 hover:text-gray-600'}"
+					>
+						{t('replay.nav')} ({activeReplays.length})
+					</button>
+				</div>
 				<div class="p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center gap-2">
 					<div class="relative flex-1">
 						<Search class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -507,25 +582,33 @@
 					{/if}
 				</div>
 				<div class="flex-1 overflow-y-auto p-2 space-y-1 relative">
-					{#if liveLoading.value && activeStreams.length === 0}
+					{#if activeTab === 'live' && liveLoading.value && activeStreams.length === 0}
 						{#each Array(6)}
 							<div class="h-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl animate-pulse"></div>
 						{/each}
-					{:else if activeStreams.length > 0 && filteredStreams.length === 0}
-						<!-- Keep an empty space so it doesn't look weird if they type a wrong search -->
-					{:else}
+					{:else if activeTab === 'replay' && replayStore.loading && activeReplays.length === 0}
+						{#each Array(6)}
+							<div class="h-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl animate-pulse"></div>
+						{/each}
+					{:else if activeTab === 'live'}
 						{#each filteredStreams as stream}
 							{@const selectedIndex = slots.findIndex(
 								(s) =>
-									(s.platform === stream.platform && s.room_id === stream.room_id && s.room_id) ||
-									(s.platform === stream.platform && s.live_id === stream.live_id && s.live_id)
+									s.type === 'live' &&
+									((s.data.platform === stream.platform &&
+										s.data.room_id === stream.room_id &&
+										stream.room_id) ||
+										(s.data.platform === stream.platform &&
+											s.data.live_id === stream.live_id &&
+											stream.live_id))
 							)}
 							{@const isSelected = selectedIndex !== -1}
 							<button
 								onclick={() =>
-									isSelected ? removeMemberFromSlot(selectedIndex) : addMemberToSlot(stream)}
-								class="w-full flex items-center gap-3 p-2 rounded-xl border transition-all text-left group cursor-pointer
-									{isSelected
+									isSelected
+										? removeMemberFromSlot(selectedIndex)
+										: addSlot({ type: 'live', data: stream })}
+								class="w-full flex items-center gap-3 p-2 rounded-xl border transition-all text-left group cursor-pointer {isSelected
 									? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 shadow-inner'
 									: 'border-transparent hover:border-red-500/20 hover:bg-slate-50 dark:hover:bg-zinc-800/50'}"
 							>
@@ -549,7 +632,6 @@
 									>
 										{stream.member?.name}
 									</div>
-
 									<div
 										class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate mb-0.5 {isSelected
 											? 'opacity-50'
@@ -557,7 +639,6 @@
 									>
 										{stream.title || t('theater.live.multiview.live_status')}
 									</div>
-
 									<LiveStats
 										view_num={stream.view_num}
 										start_at={stream.start_at}
@@ -566,20 +647,68 @@
 										className={isSelected ? 'opacity-50' : ''}
 									/>
 								</div>
-								{#if isSelected}
-									<Check size={16} class="text-red-500" />
-								{:else}
-									<Plus
+								{#if isSelected}<Check size={16} class="text-red-500" />{:else}<Plus
 										size={16}
 										class="text-gray-300 group-hover:text-red-500 transition-colors"
+									/>{/if}
+							</button>
+						{/each}
+					{:else}
+						{#each filteredReplays as replay}
+							{@const selectedIndex = slots.findIndex(
+								(s) => s.type === 'replay' && s.data.youtube_id === replay.youtube_id
+							)}
+							{@const isSelected = selectedIndex !== -1}
+							<button
+								onclick={() =>
+									isSelected
+										? removeMemberFromSlot(selectedIndex)
+										: addSlot({ type: 'replay', data: replay })}
+								class="w-full flex items-center gap-3 p-2 rounded-xl border transition-all text-left group cursor-pointer {isSelected
+									? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 shadow-inner'
+									: 'border-transparent hover:border-red-500/20 hover:bg-slate-50 dark:hover:bg-zinc-800/50'}"
+							>
+								<div class="relative shrink-0">
+									<OptimizedImage
+										src={`https://img.youtube.com/vi/${replay.youtube_id}/mqdefault.jpg`}
+										alt={replay.member || 'Member'}
+										class="w-10 h-10 rounded-lg object-cover {isSelected
+											? 'grayscale-[0.5] opacity-80'
+											: ''}"
 									/>
-								{/if}
+									<div class="absolute -bottom-1 -right-1">
+										<PlatformLogo platform="youtube" size="xs" />
+									</div>
+								</div>
+								<div class="flex-1 min-w-0">
+									<div
+										class="font-bold text-xs text-slate-900 dark:text-white truncate {isSelected
+											? 'opacity-50'
+											: ''}"
+									>
+										{replay.member}
+									</div>
+									<div
+										class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate mb-0.5 {isSelected
+											? 'opacity-50'
+											: ''}"
+									>
+										{replay.title}
+									</div>
+									<div class="text-[10px] font-bold text-gray-400 {isSelected ? 'opacity-50' : ''}">
+										{replay.date}
+									</div>
+								</div>
+								{#if isSelected}<Check size={16} class="text-red-500" />{:else}<Plus
+										size={16}
+										class="text-gray-300 group-hover:text-red-500 transition-colors"
+									/>{/if}
 							</button>
 						{/each}
 					{/if}
 				</div>
 
-				{#if !liveLoading.value && (activeStreams.length === 0 || filteredStreams.length === 0)}
+				{#if activeTab === 'live' && !liveLoading.value && (activeStreams.length === 0 || filteredStreams.length === 0)}
 					<div
 						class="absolute inset-0 flex flex-col items-center justify-center text-center p-8 pointer-events-none z-0"
 						in:fade
@@ -591,6 +720,16 @@
 								: t('theater.live.multiview.no_search_results')}
 						</p>
 					</div>
+				{:else if activeTab === 'replay' && !replayStore.loading && (activeReplays.length === 0 || filteredReplays.length === 0)}
+					<div
+						class="absolute inset-0 flex flex-col items-center justify-center text-center p-8 pointer-events-none z-0"
+						in:fade
+					>
+						<Tv size={32} class="text-gray-300 mb-4" />
+						<p class="text-[10px] font-black uppercase tracking-widest text-gray-400">
+							No replays found
+						</p>
+					</div>
 				{/if}
 			</div>
 		{/if}
@@ -598,7 +737,7 @@
 		<!-- Main Grid Area -->
 		<div class="flex-1 bg-transparent p-2 md:p-4 overflow-y-auto">
 			<div class="grid {gridClass} gap-2 md:gap-6 h-fit transition-all duration-500 pb-20">
-				{#each slots as stream, i (stream.platform + '-' + (stream.live_id || stream.room_id || stream.room_url_key))}
+				{#each slots as slot, i (slot.type === 'live' ? slot.data.platform + '-' + (slot.data.live_id || slot.data.room_id || slot.data.room_url_key) : slot.data.youtube_id)}
 					<div
 						class="relative {isPortrait
 							? 'aspect-[9/16]'
@@ -621,21 +760,37 @@
 						onkeydown={(e) => e.key === 'Enter' && setFocusedSlot(i)}
 						role="button"
 						tabindex="0"
-						aria-label={t('theater.live.multiview.focus_member', { name: stream.member?.name })}
+						aria-label={t('theater.live.multiview.focus_member', {
+							name: slot.type === 'live' ? slot.data.member?.name : slot.data.member
+						})}
 					>
 						<div class="absolute inset-0 z-0">
-							<MultiPlayer
-								bind:this={playerRefs[i]}
-								bind:isRecording={isRecording[i]}
-								platform={stream.platform}
-								id={stream.platform === 'showroom'
-									? stream.room_id || stream.room_url_key
-									: stream.live_id || stream.room_url_key}
-								roomIdentifier={stream.room_url_key}
-								volume={volumes[i] || 1}
-								muted={muted[i]}
-								onoffline={() => handleRoomOffline(i, stream.member?.name || 'Member')}
-							/>
+							{#if slot.type === 'live'}
+								<MultiPlayer
+									bind:this={playerRefs[i]}
+									bind:isRecording={isRecording[i]}
+									platform={slot.data.platform}
+									id={slot.data.platform === 'showroom'
+										? slot.data.room_id || slot.data.room_url_key
+										: slot.data.live_id || slot.data.room_url_key}
+									roomIdentifier={slot.data.room_url_key}
+									volume={volumes[i] || 1}
+									muted={muted[i]}
+									onoffline={() => handleRoomOffline(i, slot.data.member?.name || 'Member')}
+								/>
+							{:else}
+								<YoutubeMultiPlayer
+									bind:this={playerRefs[i]}
+									id={slot.data.youtube_id}
+									volume={volumes[i] || 1}
+									muted={muted[i]}
+									controls={true}
+								/>
+								{#if focusedSlotIndex !== i}
+									<!-- Intercept clicks so user can click anywhere on unfocused video to focus it -->
+									<div class="absolute inset-0 z-10 cursor-pointer bg-transparent"></div>
+								{/if}
+							{/if}
 						</div>
 
 						<!-- Slot Header (Overlay) -->
@@ -643,23 +798,40 @@
 							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-b from-black/60 to-transparent"
 						>
 							<div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
-								<OptimizedImage
-									src={getExternalMediaUrl(stream.member?.img) || fallbackAvatar}
-									alt={stream.member?.name || 'Member'}
-									class="w-8 h-8 rounded-lg object-cover border border-white/20 shadow-lg shrink-0"
-								/>
-								<div class="flex flex-col min-w-0">
-									<span
-										class="text-[10px] font-black text-white uppercase tracking-wider truncate drop-shadow-md"
-										>{stream.member?.name}</span
-									>
-									<LiveStats
-										view_num={stream.view_num}
-										start_at={stream.start_at}
-										variant="overlay"
-										className="mt-0.5"
+								{#if slot.type === 'live'}
+									<OptimizedImage
+										src={getExternalMediaUrl(slot.data.member?.img) || fallbackAvatar}
+										alt={slot.data.member?.name || 'Member'}
+										class="w-8 h-8 rounded-lg object-cover border border-white/20 shadow-lg shrink-0"
 									/>
-								</div>
+									<div class="flex flex-col min-w-0">
+										<span
+											class="text-[10px] font-black text-white uppercase tracking-wider truncate drop-shadow-md"
+											>{slot.data.member?.name}</span
+										>
+										<LiveStats
+											view_num={slot.data.view_num}
+											start_at={slot.data.start_at}
+											variant="overlay"
+											className="mt-0.5"
+										/>
+									</div>
+								{:else}
+									<OptimizedImage
+										src={`https://img.youtube.com/vi/${slot.data.youtube_id}/mqdefault.jpg`}
+										alt={slot.data.member || 'Member'}
+										class="w-8 h-8 rounded-lg object-cover border border-white/20 shadow-lg shrink-0"
+									/>
+									<div class="flex flex-col min-w-0">
+										<span
+											class="text-[10px] font-black text-white uppercase tracking-wider truncate drop-shadow-md"
+											>{slot.data.member}</span
+										>
+										<div class="text-[10px] font-bold text-gray-300 drop-shadow-md truncate">
+											{slot.data.title}
+										</div>
+									</div>
+								{/if}
 							</div>
 							<button
 								onclick={(e) => {
@@ -674,107 +846,104 @@
 						</div>
 
 						<!-- Slot Controls (Bottom Overlay) -->
-						<div
-							class="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-t from-black/60 to-transparent"
-						>
-							<div class="flex items-center gap-0 group/volume relative h-8">
-								<button
-									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10 cursor-pointer"
-									onclick={(e) => {
-										e.stopPropagation();
-										muted[i] = !muted[i];
-									}}
-									aria-label={muted[i] || volumes[i] === 0
-										? t('theater.live.multiview.unmute')
-										: t('theater.live.multiview.mute')}
-								>
-									{#if muted[i] || volumes[i] === 0}<VolumeX size={16} />{:else}<Volume2
-											size={16}
-										/>{/if}
-								</button>
-								<div
-									class="hidden md:flex w-0 group-hover/volume:w-24 h-8 overflow-hidden transition-all duration-500 bg-white/10 backdrop-blur-md rounded-r-xl -ml-2 pl-4 items-center"
-								>
-									<input
-										type="range"
-										min="0"
-										max="1"
-										step="0.01"
-										value={volumes[i]}
-										oninput={(e) => {
-											let val = parseFloat(e.currentTarget.value);
-											if (val < 0.05) {
-												val = 0;
-												muted[i] = true;
-											} else if (muted[i] && val > 0) {
-												muted[i] = false;
-											}
-											volumes[i] = val;
-											volumes = volumes; // Trigger reactivity
-											muted = muted;
+						{#if slot.type === 'live'}
+							<div
+								class="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-t from-black/60 to-transparent"
+							>
+								<div class="flex items-center gap-0 group/volume relative h-8">
+									<button
+										class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10 cursor-pointer"
+										onclick={(e) => {
+											e.stopPropagation();
+											muted[i] = !muted[i];
 										}}
-										onclick={(e) => e.stopPropagation()}
-										class="w-16 h-1 accent-white cursor-pointer"
-									/>
+										aria-label={muted[i] || volumes[i] === 0
+											? t('theater.live.multiview.unmute')
+											: t('theater.live.multiview.mute')}
+									>
+										{#if muted[i] || volumes[i] === 0}<VolumeX size={16} />{:else}<Volume2
+												size={16}
+											/>{/if}
+									</button>
+									<div
+										class="hidden md:flex w-0 group-hover/volume:w-24 h-8 overflow-hidden transition-all duration-500 bg-white/10 backdrop-blur-md rounded-r-xl -ml-2 pl-4 items-center"
+									>
+										<input
+											type="range"
+											min="0"
+											max="1"
+											step="0.01"
+											value={volumes[i]}
+											oninput={(e) => {
+												let val = parseFloat(e.currentTarget.value);
+												if (val < 0.05) {
+													val = 0;
+													muted[i] = true;
+												} else if (muted[i] && val > 0) {
+													muted[i] = false;
+												}
+												volumes[i] = val;
+												volumes = volumes; // Trigger reactivity
+												muted = muted;
+											}}
+											onclick={(e) => e.stopPropagation()}
+											class="w-16 h-1 accent-white cursor-pointer"
+										/>
+									</div>
+								</div>
+
+								<div class="flex items-center gap-2">
+									<!-- Rotate Button -->
+									<button
+										class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-zinc-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/rot cursor-pointer"
+										onclick={(e) => {
+											e.stopPropagation();
+											playerRefs[i]?.rotateVideo();
+										}}
+										title={t('theater.live.rotate') || 'Rotate Video'}
+									>
+										<RotateCw
+											size={16}
+											class="group-hover/rot:rotate-90 transition-transform duration-300"
+										/>
+									</button>
+
+									{#if slot.type === 'live'}
+										<button
+											class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-blue-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/cam cursor-pointer"
+											onclick={(e) => {
+												e.stopPropagation();
+												playerRefs[i]?.takeScreenshot(slot.data.member?.name);
+											}}
+											title={t('theater.live.multiview.take_screenshot')}
+										>
+											<Camera
+												size={16}
+												class="group-hover/cam:rotate-12 transition-transform duration-300"
+											/>
+										</button>
+										<button
+											class="w-8 h-8 rounded-xl {isRecording[i]
+												? 'bg-red-600 animate-pulse'
+												: 'bg-white/10 backdrop-blur-md grayscale hover:grayscale-0 hover:bg-red-600'} text-white flex items-center justify-center hover:scale-105 transition-all shadow-lg group/rec cursor-pointer"
+											onclick={(e) => {
+												e.stopPropagation();
+												playerRefs[i]?.toggleRecording(slot.data.member?.name);
+											}}
+											title={isRecording[i]
+												? t('theater.live.multiview.stop_recording')
+												: t('theater.live.multiview.start_recording')}
+										>
+											{#if isRecording[i]}<Square size={14} fill="currentColor" />{:else}<Circle
+													size={14}
+													fill="currentColor"
+													class="text-red-500 group-hover/rec:scale-110 transition-transform"
+												/>{/if}
+										</button>
+									{/if}
 								</div>
 							</div>
-
-							<div class="flex items-center gap-2">
-								<!-- Rotate Button -->
-								<button
-									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-zinc-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/rot cursor-pointer"
-									onclick={(e) => {
-										e.stopPropagation();
-										playerRefs[i]?.rotateVideo();
-									}}
-									title={t('theater.live.rotate') || 'Rotate Video'}
-								>
-									<RotateCw
-										size={16}
-										class="group-hover/rot:rotate-90 transition-transform duration-300"
-									/>
-								</button>
-
-								<!-- Screenshot Button -->
-								<button
-									class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-blue-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/cam cursor-pointer"
-									onclick={(e) => {
-										e.stopPropagation();
-										playerRefs[i]?.takeScreenshot(stream.member?.name);
-									}}
-									title={t('theater.live.multiview.take_screenshot')}
-								>
-									<Camera
-										size={16}
-										class="group-hover/cam:rotate-12 transition-transform duration-300"
-									/>
-								</button>
-
-								<!-- Record Button -->
-								<button
-									class="w-8 h-8 rounded-xl {isRecording[i]
-										? 'bg-red-600 animate-pulse'
-										: 'bg-white/10 backdrop-blur-md grayscale hover:grayscale-0 hover:bg-red-600'} text-white flex items-center justify-center hover:scale-105 transition-all shadow-lg group/rec cursor-pointer"
-									onclick={(e) => {
-										e.stopPropagation();
-										playerRefs[i]?.toggleRecording(stream.member?.name);
-									}}
-									title={isRecording[i]
-										? t('theater.live.multiview.stop_recording')
-										: t('theater.live.multiview.start_recording')}
-								>
-									{#if isRecording[i]}
-										<Square size={14} fill="currentColor" />
-									{:else}
-										<Circle
-											size={14}
-											fill="currentColor"
-											class="text-red-500 group-hover/rec:scale-110 transition-transform"
-										/>
-									{/if}
-								</button>
-							</div>
-						</div>
+						{/if}
 					</div>
 				{/each}
 
@@ -814,41 +983,59 @@
 				transition:fly={{ x: isMobile ? 500 : 320, duration: 300 }}
 			>
 				{#if focusedStream}
-					<div
-						class="p-3 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-800/30"
-					>
-						<div class="flex items-center gap-2 min-w-0">
-							<div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-							<span
-								class="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white truncate"
-							>
-								{t('theater.live.multiview.chat_with', { name: focusedStream.member?.name })}
-							</span>
-						</div>
-						{#if isMobile}
-							<button
-								onclick={toggleChat}
-								class="p-1 text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
-							>
-								<X size={20} />
-							</button>
-						{/if}
-					</div>
-					<div class="flex-1 overflow-hidden relative flex flex-col">
-						{#key focusedStream.room_url_key || focusedStream.live_id || focusedStream.room_id}
-							{#if focusedStream.platform === 'showroom' && focusedStream.room_id}
-								<ShowroomChat roomId={focusedStream.room_id} />
-							{:else if focusedStreamDetails}
-								<IDNChat roomIdentifier={focusedStreamDetails?.room_identifier || ''} />
-							{:else}
-								<div class="flex flex-col items-center justify-center h-full text-center p-8">
-									<RefreshCw size={24} class="text-gray-300 animate-spin mb-4" />
-									<p class="text-[10px] font-black uppercase tracking-widest text-gray-400">
-										{t('theater.live.multiview.loading_chat')}
-									</p>
-								</div>
+					{#if focusedStream.type === 'live'}
+						<div
+							class="p-3 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-800/30"
+						>
+							<div class="flex items-center gap-2 min-w-0">
+								<div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+								<span
+									class="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white truncate"
+								>
+									{t('theater.live.multiview.chat_with', { name: focusedStream.data.member?.name })}
+								</span>
+							</div>
+							{#if isMobile}
+								<button
+									onclick={toggleChat}
+									class="p-1 text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
+								>
+									<X size={20} />
+								</button>
 							{/if}
-						{/key}
+						</div>
+					{/if}
+					<div class="flex-1 overflow-hidden relative flex flex-col">
+						{#if focusedStream.type === 'live'}
+							{#key focusedStream.data.room_url_key || focusedStream.data.live_id || focusedStream.data.room_id}
+								{#if focusedStream.data.platform === 'showroom' && focusedStream.data.room_id}
+									<ShowroomChat roomId={focusedStream.data.room_id} />
+								{:else if focusedStreamDetails}
+									<IDNChat roomIdentifier={focusedStreamDetails?.room_identifier || ''} />
+								{:else}
+									<div class="flex flex-col items-center justify-center h-full text-center p-8">
+										<RefreshCw size={24} class="text-gray-300 animate-spin mb-4" />
+										<p class="text-[10px] font-black uppercase tracking-widest text-gray-400">
+											{t('theater.live.multiview.loading_chat')}
+										</p>
+									</div>
+								{/if}
+							{/key}
+						{:else if focusedStream.data.srt_file || focusedStream.data.live_id}
+							<div class="flex-1 overflow-hidden relative flex flex-col">
+								<ReplayChat
+									srtFile={focusedStream.data.srt_file || focusedStream.data.live_id || ''}
+									currentTime={focusedCurrentTime}
+								/>
+							</div>
+						{:else}
+							<div class="flex flex-col items-center justify-center h-full text-center p-8">
+								<MessageCircle size={32} class="text-gray-300 mb-4" />
+								<p class="text-[10px] font-black uppercase tracking-widest text-gray-400">
+									{t('replay.chat.notAvailable')}
+								</p>
+							</div>
+						{/if}
 					</div>
 				{:else}
 					<div class="flex flex-col items-center justify-center h-full text-center p-8">

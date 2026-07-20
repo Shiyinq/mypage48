@@ -33,6 +33,7 @@
 			try {
 				loading = true;
 				error = null;
+				allMessages = [];
 				let text: string;
 				text = await replayApi.getSrt(srtFile); // srtFile acts as liveId for mypage48
 				allMessages = parseSrt(text);
