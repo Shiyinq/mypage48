@@ -10,8 +10,9 @@
 	interface Props {
 		srtFile: string;
 		currentTime: number;
+		memberName?: string;
 	}
-	let { srtFile, currentTime }: Props = $props();
+	let { srtFile, currentTime, memberName = '' }: Props = $props();
 
 	let allMessages: ReplayChatMessage[] = $state([]);
 	let loading = $state(true);
@@ -175,7 +176,7 @@
 		<div class="flex items-center gap-2">
 			<span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
 			<span class="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-zinc-100"
-				>{t('replay.chat.header')}</span
+				>{t('replay.chat.header')}{memberName ? ` ${memberName}` : ''}</span
 			>
 		</div>
 		<span class="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">

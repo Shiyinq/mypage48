@@ -795,10 +795,10 @@
 
 						<!-- Slot Header (Overlay) -->
 						<div
-							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-b from-black/60 to-transparent"
+							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 {slot.type === 'live' ? 'bg-gradient-to-b from-black/60 to-transparent' : ''} pointer-events-none"
 						>
-							<div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
-								{#if slot.type === 'live'}
+							{#if slot.type === 'live'}
+								<div class="flex items-center gap-2 flex-1 min-w-0 pr-2 pointer-events-auto">
 									<OptimizedImage
 										src={getExternalMediaUrl(slot.data.member?.img) || fallbackAvatar}
 										alt={slot.data.member?.name || 'Member'}
@@ -816,29 +816,16 @@
 											className="mt-0.5"
 										/>
 									</div>
-								{:else}
-									<OptimizedImage
-										src={`https://img.youtube.com/vi/${slot.data.youtube_id}/mqdefault.jpg`}
-										alt={slot.data.member || 'Member'}
-										class="w-8 h-8 rounded-lg object-cover border border-white/20 shadow-lg shrink-0"
-									/>
-									<div class="flex flex-col min-w-0">
-										<span
-											class="text-[10px] font-black text-white uppercase tracking-wider truncate drop-shadow-md"
-											>{slot.data.member}</span
-										>
-										<div class="text-[10px] font-bold text-gray-300 drop-shadow-md truncate">
-											{slot.data.title}
-										</div>
-									</div>
-								{/if}
-							</div>
+								</div>
+							{:else}
+								<div class="flex-1"></div>
+							{/if}
 							<button
 								onclick={(e) => {
 									e.stopPropagation();
 									removeMemberFromSlot(i);
 								}}
-								class="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg cursor-pointer"
+								class="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg cursor-pointer pointer-events-auto {slot.type !== 'live' ? 'order-first' : ''}"
 								aria-label={t('theater.live.multiview.remove_stream')}
 							>
 								<X size={14} />
@@ -1026,6 +1013,7 @@
 								<ReplayChat
 									srtFile={focusedStream.data.srt_file || focusedStream.data.live_id || ''}
 									currentTime={focusedCurrentTime}
+									memberName={focusedStream.data.member}
 								/>
 							</div>
 						{:else}
