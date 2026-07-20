@@ -428,6 +428,7 @@ class ReplayService:
                     "date": date_str,
                     "platform": doc.get("platform", "").upper(),
                     "added_at": doc.get("created_at"),
+                    "duration": doc.get("duration_seconds"),
                 }
             )
         return result

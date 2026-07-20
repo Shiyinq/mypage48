@@ -10,7 +10,7 @@
 	import PlatformLogo from '$lib/components/live/PlatformLogo.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { getPlatformIcon } from '$lib/constants/live';
-	import { formatTimeAgo, formatLiveDate, formatDateOnly } from '$lib/utils/time';
+	import { formatTimeAgo, formatLiveDate, formatDateOnly, formatDurationColon } from '$lib/utils/time';
 	import { Search, Play, RotateCcw, User, List, ExternalLink, Database } from 'lucide-svelte';
 
 	const { t, locale } = useTranslation();
@@ -475,6 +475,13 @@
 										size="xs"
 									/>
 								</div>
+								{#if video.duration}
+									<div
+										class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[11px] font-medium px-1.5 py-0.5 rounded tracking-wide tabular-nums"
+									>
+										{formatDurationColon(video.duration)}
+									</div>
+								{/if}
 							</div>
 							<div class="flex gap-2.5 mt-2.5 px-1">
 								<div class="shrink-0">

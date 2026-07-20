@@ -53,6 +53,22 @@ export function formatDurationSeconds(seconds: number, showSeconds: boolean = tr
 }
 
 /**
+ * Format a duration in seconds into a YouTube style colon format (H:MM:SS or M:SS).
+ * @param seconds Duration in seconds
+ * @returns Formatted duration string
+ */
+export function formatDurationColon(seconds: number): string {
+	const h = Math.floor(seconds / 3600);
+	const m = Math.floor((seconds % 3600) / 60);
+	const s = seconds % 60;
+
+	if (h > 0) {
+		return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+	}
+	return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+/**
  * Parses an Indonesian date string (e.g., "28 Mei 2009") into a JavaScript Date object.
  *
  * @param dateStr Indonesian date string

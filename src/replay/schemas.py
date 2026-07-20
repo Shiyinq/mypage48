@@ -124,6 +124,7 @@ class ReplayListItem(BaseModel):
     date: Optional[str] = None
     platform: str = ""
     added_at: Optional[datetime] = None
+    duration: Optional[int] = None
 
     @field_serializer("added_at")
     def serialize_dt(self, v: Optional[datetime]) -> Optional[str]:
