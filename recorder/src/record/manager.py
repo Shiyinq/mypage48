@@ -125,6 +125,9 @@ class RecordingManager:
         error_ids = []
         now = time.time()
         for live_id, session in self.sessions.items():
+            if live_id in self._pending_ends:
+                continue
+
             if session.ffmpeg_proc and not stream_recorder.is_running(
                 session.ffmpeg_proc
             ):
@@ -777,6 +780,9 @@ class RecordingManager:
             await asyncio.sleep(300)
 
     async def _end_session(self, live_id: str, reason: str = "completed"):
+        if live_id in self._pending_ends:
+            return
+
         session = self.sessions.get(live_id)
         if not session:
             return
