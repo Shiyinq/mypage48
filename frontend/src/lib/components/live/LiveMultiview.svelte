@@ -55,8 +55,8 @@
 
 	// Multi-view State
 	export type MultiviewSlot =
-		| { type: 'live'; data: LiveStatus }
-		| { type: 'replay'; data: ReplayVideo };
+		| { type: 'live'; data: LiveStatus; order?: number }
+		| { type: 'replay'; data: ReplayVideo; order?: number };
 	let slots: MultiviewSlot[] = $state([]);
 	let activeTab: 'live' | 'replay' = $state('live');
 	let focusedSlotIndex: number = $state(0);
@@ -250,6 +250,9 @@
 		});
 		if (exists) return;
 
+		const maxOrder = slots.reduce((max, s) => Math.max(max, s.order ?? 0), -1);
+		slot.order = maxOrder + 1;
+
 		slots = [...slots, slot];
 		focusedSlotIndex = slots.length - 1;
 		saveSlots();
@@ -279,14 +282,24 @@
 
 	function removeMemberFromSlot(index: number) {
 		slots = slots.filter((_, i) => i !== index);
+		volumes = volumes.filter((_, i) => i !== index);
+		muted = muted.filter((_, i) => i !== index);
+		isRecording = isRecording.filter((_, i) => i !== index);
+		playerRefs = playerRefs.filter((_, i) => i !== index);
 		saveSlots();
-		if (focusedSlotIndex >= slots.length) {
+		if (focusedSlotIndex === index) {
 			setFocusedSlot(Math.max(0, slots.length - 1));
+		} else if (focusedSlotIndex > index) {
+			setFocusedSlot(focusedSlotIndex - 1);
 		}
 	}
 
 	function clearAll() {
 		slots = [];
+		volumes = [];
+		muted = [];
+		isRecording = [];
+		playerRefs = [];
 		saveSlots();
 	}
 
@@ -302,37 +315,29 @@
 	function handleDrop(index: number) {
 		if (draggedIndex === null || draggedIndex === index) return;
 
-		const newSlots = [...slots];
-		const draggedItem = newSlots[draggedIndex];
+		// Ensure all slots have an order
+		slots.forEach((s, i) => {
+			if (s.order === undefined) s.order = i;
+		});
 
-		const newVolumes = [...volumes];
-		const draggedVolume = newVolumes[draggedIndex] ?? 1;
+		// Sort indices by order to get visual order
+		const visualIndices = slots.map((_, i) => i).sort((a, b) => slots[a].order! - slots[b].order!);
 
-		const newMuted = [...muted];
-		const draggedMuted = newMuted[draggedIndex] ?? false;
+		// Find the visual index of dragged and target
+		const visualDraggedIdx = visualIndices.indexOf(draggedIndex);
+		const visualTargetIdx = visualIndices.indexOf(index);
 
-		newSlots.splice(draggedIndex, 1);
-		newSlots.splice(index, 0, draggedItem);
+		// Perform the insertion in the visual array
+		const [movedIdx] = visualIndices.splice(visualDraggedIdx, 1);
+		visualIndices.splice(visualTargetIdx, 0, movedIdx);
 
-		newVolumes.splice(draggedIndex, 1);
-		newVolumes.splice(index, 0, draggedVolume);
+		// Now reassign order based on the new visual order
+		visualIndices.forEach((originalIndex, visualIndex) => {
+			slots[originalIndex].order = visualIndex;
+		});
 
-		newMuted.splice(draggedIndex, 1);
-		newMuted.splice(index, 0, draggedMuted);
-
-		slots = newSlots;
-		volumes = newVolumes;
-		muted = newMuted;
+		slots = [...slots]; // trigger reactivity
 		saveSlots();
-
-		// Adjust focused slot if it was moved
-		if (focusedSlotIndex === draggedIndex) {
-			focusedSlotIndex = index;
-		} else if (draggedIndex < focusedSlotIndex && index >= focusedSlotIndex) {
-			focusedSlotIndex--;
-		} else if (draggedIndex > focusedSlotIndex && index <= focusedSlotIndex) {
-			focusedSlotIndex++;
-		}
 	}
 
 	function handleDragEnd() {
@@ -751,6 +756,7 @@
 							: ''} group shadow-sm transition-all hover:shadow-md text-left cursor-pointer transition-[aspect-ratio,transform,opacity] duration-500 {isPortrait
 							? 'max-h-[calc(100dvh-140px)]'
 							: ''} mx-auto w-full"
+						style="order: {slot.order ?? i};"
 						draggable="true"
 						ondragstart={() => handleDragStart(i)}
 						ondragover={(e) => handleDragOver(e, i)}
@@ -786,8 +792,8 @@
 									muted={muted[i]}
 									controls={true}
 								/>
-								{#if focusedSlotIndex !== i}
-									<!-- Intercept clicks so user can click anywhere on unfocused video to focus it -->
+								{#if focusedSlotIndex !== i || draggedIndex !== null}
+									<!-- Intercept clicks so user can click anywhere on unfocused video to focus it, and catch drag events over iframes -->
 									<div class="absolute inset-0 z-10 cursor-pointer bg-transparent"></div>
 								{/if}
 							{/if}
@@ -795,10 +801,13 @@
 
 						<!-- Slot Header (Overlay) -->
 						<div
-							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-b from-black/60 to-transparent"
+							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 {slot.type ===
+							'live'
+								? 'bg-gradient-to-b from-black/60 to-transparent'
+								: ''} pointer-events-none"
 						>
-							<div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
-								{#if slot.type === 'live'}
+							{#if slot.type === 'live'}
+								<div class="flex items-center gap-2 flex-1 min-w-0 pr-2 pointer-events-auto">
 									<OptimizedImage
 										src={getExternalMediaUrl(slot.data.member?.img) || fallbackAvatar}
 										alt={slot.data.member?.name || 'Member'}
@@ -816,29 +825,19 @@
 											className="mt-0.5"
 										/>
 									</div>
-								{:else}
-									<OptimizedImage
-										src={`https://img.youtube.com/vi/${slot.data.youtube_id}/mqdefault.jpg`}
-										alt={slot.data.member || 'Member'}
-										class="w-8 h-8 rounded-lg object-cover border border-white/20 shadow-lg shrink-0"
-									/>
-									<div class="flex flex-col min-w-0">
-										<span
-											class="text-[10px] font-black text-white uppercase tracking-wider truncate drop-shadow-md"
-											>{slot.data.member}</span
-										>
-										<div class="text-[10px] font-bold text-gray-300 drop-shadow-md truncate">
-											{slot.data.title}
-										</div>
-									</div>
-								{/if}
-							</div>
+								</div>
+							{:else}
+								<div class="flex-1"></div>
+							{/if}
 							<button
 								onclick={(e) => {
 									e.stopPropagation();
 									removeMemberFromSlot(i);
 								}}
-								class="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg cursor-pointer"
+								class="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg cursor-pointer pointer-events-auto {slot.type !==
+								'live'
+									? 'order-first'
+									: ''}"
 								aria-label={t('theater.live.multiview.remove_stream')}
 							>
 								<X size={14} />
@@ -1026,6 +1025,7 @@
 								<ReplayChat
 									srtFile={focusedStream.data.srt_file || focusedStream.data.live_id || ''}
 									currentTime={focusedCurrentTime}
+									memberName={focusedStream.data.member}
 								/>
 							</div>
 						{:else}
