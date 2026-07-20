@@ -841,6 +841,16 @@
 		}
 	},
 	"errors": {
+		"401": {
+			"title": "Tidak Terautorisasi",
+			"subtitle": "Silakan masuk untuk melanjutkan.",
+			"description": "Kamu perlu diautentikasi untuk mengakses halaman ini."
+		},
+		"403": {
+			"title": "Akses Ditolak",
+			"subtitle": "Kamu tidak memiliki izin untuk mengakses halaman ini.",
+			"description": "Pastikan kamu memiliki kredensial yang benar atau hubungi dukungan."
+		},
 		"404": {
 			"title": "Halaman Tidak Ditemukan",
 			"subtitle": "Oops! Halaman yang kamu cari tidak ada.",
@@ -850,16 +860,6 @@
 			"title": "Kesalahan Server",
 			"subtitle": "Ada yang salah di sisi kami.",
 			"description": "Tim kami sudah diberitahu dan sedang memperbaikinya. Silakan coba lagi nanti."
-		},
-		"403": {
-			"title": "Akses Ditolak",
-			"subtitle": "Kamu tidak memiliki izin untuk mengakses halaman ini.",
-			"description": "Pastikan kamu memiliki kredensial yang benar atau hubungi dukungan."
-		},
-		"401": {
-			"title": "Tidak Terautorisasi",
-			"subtitle": "Silakan masuk untuk melanjutkan.",
-			"description": "Kamu perlu diautentikasi untuk mengakses halaman ini."
 		},
 		"default": {
 			"title": "Terjadi Kesalahan",
@@ -1396,7 +1396,8 @@
 				"members": "Members",
 				"setlists": "Setlists",
 				"feedback": "Masukan",
-				"settings": "Pengaturan"
+				"settings": "Pengaturan",
+				"more": "Lainnya"
 			},
 			"stats": {
 				"dataUsers": "Data Pengguna",

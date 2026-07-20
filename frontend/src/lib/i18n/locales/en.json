@@ -1323,6 +1323,16 @@
 		}
 	},
 	"errors": {
+		"401": {
+			"title": "Unauthorized",
+			"subtitle": "Please login to continue.",
+			"description": "You need to be authenticated to access this page."
+		},
+		"403": {
+			"title": "Access Denied",
+			"subtitle": "You don't have permission to access this page.",
+			"description": "Please make sure you have the right credentials or contact support."
+		},
 		"404": {
 			"title": "Page Not Found",
 			"subtitle": "Oops! The page you're looking for doesn't exist.",
@@ -1332,16 +1342,6 @@
 			"title": "Server Error",
 			"subtitle": "Something went wrong on our end.",
 			"description": "Our team has been notified and we're working to fix it. Please try again later."
-		},
-		"403": {
-			"title": "Access Denied",
-			"subtitle": "You don't have permission to access this page.",
-			"description": "Please make sure you have the right credentials or contact support."
-		},
-		"401": {
-			"title": "Unauthorized",
-			"subtitle": "Please login to continue.",
-			"description": "You need to be authenticated to access this page."
 		},
 		"default": {
 			"title": "Something Went Wrong",
@@ -1492,7 +1492,8 @@
 				"members": "Members",
 				"setlists": "Setlists",
 				"feedback": "Feedback",
-				"settings": "Settings"
+				"settings": "Settings",
+				"more": "More"
 			},
 			"stats": {
 				"dataUsers": "Data Users",

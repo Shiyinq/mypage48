@@ -654,12 +654,7 @@
 		"errorDesc": ""
 	},
 	"errors": {
-		"404": {
-			"title": "",
-			"subtitle": "",
-			"description": ""
-		},
-		"500": {
+		"401": {
 			"title": "",
 			"subtitle": "",
 			"description": ""
@@ -669,7 +664,12 @@
 			"subtitle": "",
 			"description": ""
 		},
-		"401": {
+		"404": {
+			"title": "",
+			"subtitle": "",
+			"description": ""
+		},
+		"500": {
 			"title": "",
 			"subtitle": "",
 			"description": ""
@@ -1088,7 +1088,8 @@
 				"members": "",
 				"setlists": "",
 				"feedback": "",
-				"settings": ""
+				"settings": "",
+				"more": ""
 			}
 		},
 		"feedback": {

@@ -19,11 +19,6 @@
 		User,
 		Crown,
 		ShieldCheck,
-		UserCheck,
-		Users,
-		Music,
-		MessageSquare,
-		Settings,
 		Upload
 	} from 'lucide-svelte';
 	import { theaterNavItems } from '$lib/constants/theaterNav';
@@ -63,39 +58,9 @@
 		{
 			href: '/admin',
 			icon: ShieldCheck,
-			label: 'admin.dashboard.tabs.dashboard',
+			label: 'nav.admin',
 			color: 'text-indigo-500',
-			exact: true
-		},
-		{
-			href: '/admin/users',
-			icon: UserCheck,
-			label: 'admin.dashboard.tabs.users',
-			color: 'text-red-500'
-		},
-		{
-			href: '/admin/members',
-			icon: Users,
-			label: 'admin.dashboard.tabs.members',
-			color: 'text-pink-500'
-		},
-		{
-			href: '/admin/setlists',
-			icon: Music,
-			label: 'admin.dashboard.tabs.setlists',
-			color: 'text-purple-500'
-		},
-		{
-			href: '/admin/feedback',
-			icon: MessageSquare,
-			label: 'admin.dashboard.tabs.feedback',
-			color: 'text-cyan-500'
-		},
-		{
-			href: '/admin/settings',
-			icon: Settings,
-			label: 'admin.dashboard.tabs.settings',
-			color: 'text-slate-500'
+			exact: false
 		}
 	];
 
