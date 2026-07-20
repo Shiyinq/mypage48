@@ -386,16 +386,13 @@ class ReplayService:
     async def list_all(self, current_user: UserCurrent | None = None) -> list[dict]:
         wib = timezone(timedelta(hours=7))
         is_admin = current_user.isAdmin if current_user else False
-        filter_query = (
-            None
-            if is_admin
-            else {
-                "$or": [
-                    {"live_type": "public"},
-                    {"live_type": {"$exists": False}},
-                ]
-            }
-        )
+
+        filter_query: dict = {"youtube_id": {"$exists": True, "$nin": [None, ""]}}
+        if not is_admin:
+            filter_query["$or"] = [
+                {"live_type": "public"},
+                {"live_type": {"$exists": False}},
+            ]
         docs = await self.repository.find_all(
             projection={"chats": 0}, filter_query=filter_query
         )
