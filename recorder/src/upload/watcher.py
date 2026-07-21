@@ -31,6 +31,7 @@ class Watcher:
         self._processing: dict[str, dict] = {}
         self._cooldown_file = os.path.join(self.config.logs_dir, ".youtube_cooldown")
         self._quota_cooldown_until: float = 0.0
+        self._next_upload_time: float = 0.0
         self._load_cooldown()
         self._max_concurrent = config.max_concurrent_uploads
         self._upload_semaphore = asyncio.Semaphore(self._max_concurrent)
@@ -217,6 +218,16 @@ class Watcher:
                 )
                 return
 
+            delay_minutes = self.config.youtube_upload_delay_minutes
+            if delay_minutes > 0 and time.time() < self._next_upload_time:
+                rem_s = int(self._next_upload_time - time.time())
+                self.log_upl.info(
+                    "Upload delay active (%dm remaining), skipping %s",
+                    rem_s // 60,
+                    title_log,
+                )
+                return
+
             try:
                 self._processing[live_id]["phase"] = "uploading to YouTube"
 
@@ -244,6 +255,9 @@ class Watcher:
                     os.remove(mp4_path)
                     if os.path.exists(uri_path):
                         os.remove(uri_path)
+
+                    if delay_minutes > 0:
+                        self._next_upload_time = time.time() + (delay_minutes * 60)
                 else:
                     if upload_uri:
                         if upload_uri != resume_uri:

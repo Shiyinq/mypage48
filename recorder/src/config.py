@@ -31,6 +31,7 @@ class RecorderConfig(BaseSettings):
     remux_timeout: int = 600
     max_concurrent_uploads: int = 2
     enable_upload_queue: bool = True
+    youtube_upload_delay_minutes: int = 30
 
     model_config = {
         "env_file": (
