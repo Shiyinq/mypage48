@@ -11,10 +11,13 @@ from googleapiclient.http import MediaFileUpload
 
 from ..config import RecorderConfig
 from ..models import RecordingSession
-from .thumbnail_generator import generate_youtube_thumbnail
 
 
 class QuotaExceededError(Exception):
+    pass
+
+
+class InvalidGrantError(Exception):
     pass
 
 
@@ -138,7 +141,12 @@ def _build_youtube(config: RecorderConfig):
             "https://www.googleapis.com/auth/youtube",
         ],
     )
-    creds.refresh(Request())
+    try:
+        creds.refresh(Request())
+    except Exception as e:
+        if "invalid_grant" in str(e):
+            raise InvalidGrantError() from e
+        raise
     return build("youtube", "v3", credentials=creds)
 
 
@@ -205,6 +213,8 @@ def _do_upload_blocking(
             or "uploadLimitExceeded" in str(e)
         ):
             raise QuotaExceededError() from e
+        if "invalid_grant" in str(e):
+            raise InvalidGrantError() from e
         upload_uri = getattr(request, "resumable_uri", None) or resume_uri
         return None, upload_uri
 
@@ -335,14 +345,12 @@ async def _upload_to_youtube(
         log.info("Already has youtube_id: %s, skipping", meta["youtube_id"])
         return meta["youtube_id"], None
 
-    # Try generating a custom 16:9 thumbnail
+    # Check if a custom 16:9 thumbnail exists
     thumbnail_path = os.path.join(
         session.live_folder, f"{session.live_id}_yt_thumb.jpg"
     )
     if not os.path.exists(thumbnail_path):
-        thumbnail_path = generate_youtube_thumbnail(
-            session.screenshots_folder, thumbnail_path, log
-        )
+        thumbnail_path = None
 
     mp4_path = None
     base = os.path.splitext(session.output_path)[0]

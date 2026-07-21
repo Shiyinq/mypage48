@@ -34,12 +34,15 @@ class ReplayRepository:
         doc = await self.col.find_one({"live_id": live_id}, {"_id": 1})
         return doc is not None
 
-    async def update_youtube_id(self, live_id: str, youtube_id: str) -> bool:
+    async def update_youtube_data(
+        self, live_id: str, youtube_id: str, youtube_title: str
+    ) -> bool:
         result = await self.col.update_one(
             {"live_id": live_id},
             {
                 "$set": {
                     "youtube_id": youtube_id,
+                    "youtube_title": youtube_title,
                     "updated_at": datetime.now(timezone.utc),
                 }
             },

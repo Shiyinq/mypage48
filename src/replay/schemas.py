@@ -25,6 +25,11 @@ class ReplayUploadRequest(BaseModel):
     )
 
 
+class ReplayUpdateYouTube(BaseModel):
+    youtube_id: str
+    youtube_title: str
+
+
 class ReplayFilesInfo(BaseModel):
     json_file: str
     thumbnail: Optional[str] = None

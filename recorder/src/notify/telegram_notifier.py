@@ -472,6 +472,96 @@ async def send_recap_end_live_notification(
         return False
 
 
+async def send_replay_live_notification(
+    live_id: str,
+    youtube_title: str,
+    youtube_id: str,
+    config: RecorderConfig,
+    folder_path: str,
+) -> bool:
+    """Send a Telegram notification for a new YouTube replay."""
+    if not config.telegram_bot_token or not config.telegram_chat_id:
+        return False
+
+    log.info("Sending replay live Telegram notification for %s", live_id)
+
+    # Read meta to get platform and member info
+    meta_path = os.path.join(folder_path, f"{live_id}.json")
+    meta = {}
+    if os.path.exists(meta_path):
+        try:
+            with open(meta_path) as f:
+                meta = json.load(f)
+        except Exception:
+            pass
+
+    member_nickname = html.escape(
+        meta.get("member_nickname") or meta.get("member_name") or "Unknown"
+    )
+    platform = html.escape(_format_platform_name(meta.get("platform", "")))
+
+    caption = f"▶️ <b>Replay Live {platform} {member_nickname} telah diupload</b>\n\n"
+    caption += f"❝<i>{html.escape(youtube_title)}</i>❞\n"
+    caption += f"• https://youtu.be/{youtube_id}\n\n"
+    caption += "<i>~ MyPage48 ~</i>"
+
+    image_path = os.path.join(folder_path, f"{live_id}_yt_thumb.jpg")
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            if os.path.exists(image_path):
+                tg_url = (
+                    f"https://api.telegram.org/bot{config.telegram_bot_token}/sendPhoto"
+                )
+                try:
+                    with open(image_path, "rb") as f:
+                        tg_resp = await client.post(
+                            tg_url,
+                            data={
+                                "chat_id": config.telegram_chat_id,
+                                "caption": caption,
+                                "parse_mode": "HTML",
+                            },
+                            files={"photo": ("thumbnail.jpg", f, "image/jpeg")},
+                        )
+                    if tg_resp.is_success:
+                        return True
+                    else:
+                        log.warning(
+                            "Telegram Photo failed: %s %s",
+                            tg_resp.status_code,
+                            tg_resp.text,
+                        )
+                except Exception:
+                    log.exception(
+                        "Exception during Photo upload for replay notification:"
+                    )
+
+            # Fallback to text message
+            tg_url = (
+                f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMessage"
+            )
+            tg_data = {
+                "chat_id": config.telegram_chat_id,
+                "text": caption,
+                "parse_mode": "HTML",
+            }
+
+            tg_resp = await client.post(tg_url, json=tg_data)
+            if not tg_resp.is_success:
+                log.error(
+                    "Telegram replay notification failed: %s %s",
+                    tg_resp.status_code,
+                    tg_resp.text,
+                )
+                return False
+
+            return True
+    except Exception:
+        log.exception("Exception during Telegram replay notification for %s:", live_id)
+        return False
+
+
 def _format_live_start_caption(live: LiveInfo) -> str:
     """Format the Telegram caption for live start."""
     member_nickname = html.escape(live.member_nickname or live.member_name or "Unknown")

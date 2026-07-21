@@ -176,3 +176,30 @@ async def upload(
 
     log.error("All retries exhausted for %s", title or live_id)
     return False
+
+
+async def update_youtube_metadata(
+    live_id: str, youtube_id: str, youtube_title: str, config: RecorderConfig, log_upl
+) -> bool:
+    """Send a PATCH request to the backend to update YouTube data for a replay."""
+    if not config.api_base_url or not config.api_key:
+        log_upl.error("API base URL or API key not configured")
+        return False
+
+    api_url = f"{config.api_base_url.rstrip('/')}/admin/replay/{live_id}/youtube"
+    headers = {"Authorization": f"Bearer {config.api_key}"}
+
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.patch(
+                api_url,
+                json={"youtube_id": youtube_id, "youtube_title": youtube_title},
+                headers=headers,
+            )
+            if not resp.is_success:
+                log_upl.error("Failed to patch YouTube ID: %s", resp.text)
+                return False
+            return True
+    except Exception as e:
+        log_upl.error("Error patching YouTube ID: %s", e)
+        return False
