@@ -133,7 +133,7 @@ class Watcher:
                 mp4_size = 0
             candidates.append((mp4_size, live_id, folder_path, meta))
 
-        candidates.sort(key=lambda x: (x[0], x[1]))
+        candidates.sort(key=lambda x: (-x[0], x[1]))
 
         if candidates or self._processing:
             active = self._max_concurrent - self._upload_semaphore._value
