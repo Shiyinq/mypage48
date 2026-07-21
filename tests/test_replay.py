@@ -1,15 +1,17 @@
 import json
-import pytest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import AsyncMock, MagicMock, ANY
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 from httpx import AsyncClient
 
-from src.replay.service import ReplayService
-from src.replay.schemas import ReplayListItem, ReplayResponse
-from src.replay.exceptions import ReplayAlreadyExists, ReplayNotFound, ReplayUploadError
-from src.dependencies import get_replay_service, get_current_user
-from src.main import app
+from src.auth.schemas import UserCurrent
 from src.config import Settings
+from src.dependencies import get_replay_service, require_admin
+from src.main import app
+from src.replay.exceptions import ReplayAlreadyExists, ReplayUploadError
+from src.replay.schemas import ReplayResponse
+from src.replay.service import ReplayService
 
 
 class MockReplayRepository:
@@ -51,20 +53,23 @@ def replay_service(mock_replay_repo, mock_storage_repo):
 # Service unit tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_upload_success(replay_service):
     replay_service.repository.exists.return_value = False
     replay_service.repository.insert.return_value = "mock_id_123"
 
     live_id = "test-live-001"
-    metadata = json.dumps({
-        "live_id": live_id,
-        "platform": "SHOWROOM",
-        "status": "completed",
-        "member_name": "Fahira",
-        "member_nickname": "Fahira",
-        "duration_seconds": 3600,
-    }).encode()
+    metadata = json.dumps(
+        {
+            "live_id": live_id,
+            "platform": "SHOWROOM",
+            "status": "completed",
+            "member_name": "Fahira",
+            "member_nickname": "Fahira",
+            "duration_seconds": 3600,
+        }
+    ).encode()
 
     result = await replay_service.upload(
         live_id=live_id,
@@ -101,10 +106,12 @@ async def test_upload_invalid_metadata(replay_service):
 
 @pytest.mark.asyncio
 async def test_upload_non_completed_status(replay_service):
-    metadata = json.dumps({
-        "live_id": "test-live",
-        "status": "interrupted",
-    }).encode()
+    metadata = json.dumps(
+        {
+            "live_id": "test-live",
+            "status": "interrupted",
+        }
+    ).encode()
 
     with pytest.raises(ReplayUploadError, match="Only 'completed' allowed"):
         await replay_service.upload(
@@ -120,10 +127,12 @@ async def test_upload_non_completed_status(replay_service):
 @pytest.mark.asyncio
 async def test_upload_already_exists(replay_service):
     replay_service.repository.exists.return_value = True
-    metadata = json.dumps({
-        "live_id": "existing-live",
-        "status": "completed",
-    }).encode()
+    metadata = json.dumps(
+        {
+            "live_id": "existing-live",
+            "status": "completed",
+        }
+    ).encode()
 
     with pytest.raises(ReplayAlreadyExists, match="already exists"):
         await replay_service.upload(
@@ -206,9 +215,7 @@ async def test_get_srt_content_success(replay_service):
 
     content = await replay_service.get_srt_content("live-1")
     assert content == "1\n00:00:01,000 --> 00:00:02,000\nHello"
-    replay_service.storage.get_file.assert_called_with(
-        "replay/live-1/live-1.srt"
-    )
+    replay_service.storage.get_file.assert_called_with("replay/live-1/live-1.srt")
 
 
 @pytest.mark.asyncio
@@ -369,9 +376,7 @@ async def test_replay_upload_unauthorized(client: AsyncClient):
 async def test_replay_upload_forbidden(client: AsyncClient, create_user):
     """POST /admin/replay/upload returns 403 for non-admin."""
     _, _, headers = await create_user("regular_user", is_admin=False)
-    res = await client.post(
-        "/api/admin/replay/upload", headers=headers
-    )
+    res = await client.post("/api/admin/replay/upload", headers=headers)
     assert res.status_code == 404
 
 
@@ -391,14 +396,16 @@ async def test_replay_upload_success(
     mock_replay_repo.exists.return_value = False
     mock_replay_repo.insert.return_value = "mock_id_456"
 
-    metadata = json.dumps({
-        "live_id": "upload-test-live",
-        "platform": "IDN",
-        "status": "completed",
-        "member_name": "Fahira",
-        "member_nickname": "Fahira",
-        "duration_seconds": 1800,
-    })
+    metadata = json.dumps(
+        {
+            "live_id": "upload-test-live",
+            "platform": "IDN",
+            "status": "completed",
+            "member_name": "Fahira",
+            "member_nickname": "Fahira",
+            "duration_seconds": 1800,
+        }
+    )
 
     try:
         res = await client.post(
@@ -407,7 +414,14 @@ async def test_replay_upload_success(
             data={"metadata": metadata},
             files=[
                 ("thumbnail", ("thumb.jpg", b"fake_thumb", "image/jpeg")),
-                ("jsonl", ("chat.jsonl", b'{"name":"A","message":"hi"}', "application/x-ndjson")),
+                (
+                    "jsonl",
+                    (
+                        "chat.jsonl",
+                        b'{"name":"A","message":"hi"}',
+                        "application/x-ndjson",
+                    ),
+                ),
                 ("srt", ("sub.srt", b"1\n00:00:01 --> 00:00:02\nHi", "text/plain")),
             ],
         )
@@ -422,9 +436,7 @@ async def test_replay_upload_success(
         app.dependency_overrides.pop(get_replay_service, None)
 
 
-async def test_replay_upload_invalid_metadata(
-    client: AsyncClient, create_user
-):
+async def test_replay_upload_invalid_metadata(client: AsyncClient, create_user):
     """POST /admin/replay/upload returns error for invalid metadata JSON."""
     _, _, headers = await create_user("admin_replay2", is_admin=True)
 
@@ -558,9 +570,7 @@ async def test_replay_detail_showroom_free_paid_split(
         app.dependency_overrides.pop(get_replay_service, None)
 
 
-async def test_replay_detail_idn_basic(
-    client: AsyncClient, mock_replay_repo
-):
+async def test_replay_detail_idn_basic(client: AsyncClient, mock_replay_repo):
     """GET /replays/{live_id} works for IDN (no free/paid split)."""
     mock_storage = MockStorageRepository()
     mock_replay_repo.find_by_live_id.return_value = {
@@ -619,3 +629,47 @@ async def test_replay_detail_idn_basic(
         assert fans[0]["free_count"] == 0
     finally:
         app.dependency_overrides.pop(get_replay_service, None)
+
+
+async def test_update_youtube_data_admin(client: AsyncClient, mock_replay_repo):
+    """PATCH /admin/replay/{live_id}/youtube requires admin and calls service."""
+    mock_storage = MockStorageRepository()
+    mock_replay_repo.update_youtube_data = AsyncMock(return_value=True)
+
+    app.dependency_overrides[get_replay_service] = lambda: ReplayService(
+        repository=mock_replay_repo,
+        storage_repository=mock_storage,
+        live_history_repo=AsyncMock(),
+        config=MagicMock(spec=Settings),
+    )
+
+    app.dependency_overrides[require_admin] = lambda: UserCurrent(
+        id="admin_123",
+        userId="admin_123",
+        username="admin",
+        name="admin",
+        email="admin@test.com",
+        isAdmin=True,
+    )
+
+    try:
+        res = await client.patch(
+            "/api/admin/replay/test-live-123/youtube",
+            json={"youtube_id": "xyz123", "youtube_title": "Test YouTube Title"},
+        )
+        assert res.status_code == 200
+        assert res.json() == {"status": "ok"}
+
+        mock_replay_repo.update_youtube_data.assert_called_once_with(
+            "test-live-123", "xyz123", "Test YouTube Title"
+        )
+
+        mock_replay_repo.update_youtube_data.return_value = False
+        res2 = await client.patch(
+            "/api/admin/replay/test-live-123/youtube",
+            json={"youtube_id": "xyz123", "youtube_title": "Title"},
+        )
+        assert res2.status_code == 404
+    finally:
+        app.dependency_overrides.pop(get_replay_service, None)
+        app.dependency_overrides.pop(require_admin, None)

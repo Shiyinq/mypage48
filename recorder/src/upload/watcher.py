@@ -10,7 +10,13 @@ from ..config import RecorderConfig
 from ..models import RecordingSession
 from ..notify import telegram_notifier
 from . import r2_uploader
-from .youtube_uploader import QuotaExceededError, _format_title, _upload_to_youtube
+from .thumbnail_generator import generate_youtube_thumbnail
+from .youtube_uploader import (
+    InvalidGrantError,
+    QuotaExceededError,
+    _format_title,
+    _upload_to_youtube,
+)
 
 
 def _fmt_duration(seconds: int) -> str:
@@ -34,7 +40,9 @@ class Watcher:
         self._next_upload_time: float = 0.0
         self._load_cooldown()
         self._max_concurrent = config.max_concurrent_uploads
-        self._upload_semaphore = asyncio.Semaphore(self._max_concurrent)
+        self._r2_semaphore = asyncio.Semaphore(self._max_concurrent)
+        self._yt_semaphore = asyncio.Semaphore(self._max_concurrent)
+        self._youtube_disabled = False
 
     def _load_cooldown(self) -> None:
         if os.path.exists(self._cooldown_file):
@@ -124,49 +132,103 @@ class Watcher:
             yield meta, live_id, folder_path
 
     async def _scan_queue(self, raw_dir: str, done: set[str]):
-        candidates = []
+        r2_candidates = []
+        yt_candidates = []
 
         for meta, live_id, folder_path in self._iter_pending(raw_dir, done):
+            r2_done_path = os.path.join(folder_path, ".r2_done")
+            is_r2 = not os.path.exists(r2_done_path)
+
             mp4_path = os.path.join(folder_path, f"{live_id}.mp4")
             try:
                 mp4_size = os.path.getsize(mp4_path) if os.path.isfile(mp4_path) else 0
             except OSError:
                 mp4_size = 0
-            candidates.append((mp4_size, live_id, folder_path, meta))
 
-        candidates.sort(key=lambda x: (-x[0], x[1]))
+            if is_r2:
+                r2_candidates.append((mp4_size, live_id, folder_path, meta))
+            elif not self._youtube_disabled:
+                yt_candidates.append((mp4_size, live_id, folder_path, meta))
 
-        if candidates or self._processing:
-            active = self._max_concurrent - self._upload_semaphore._value
-            total_pending = len(self._processing) + len(candidates)
-            waiting = total_pending - active
+        r2_candidates.sort(key=lambda x: (-x[0], x[1]))
+        yt_candidates.sort(key=lambda x: (-x[0], x[1]))
+
+        if r2_candidates or yt_candidates or self._processing:
+            r2_active = self._max_concurrent - self._r2_semaphore._value
+            yt_active = self._max_concurrent - self._yt_semaphore._value
+
+            total_r2 = len(
+                [
+                    k
+                    for k, v in self._processing.items()
+                    if not os.path.exists(
+                        os.path.join(v.get("folder_path", ""), ".r2_done")
+                    )
+                ]
+            ) + len(r2_candidates)
+            total_yt = len(
+                [
+                    k
+                    for k, v in self._processing.items()
+                    if os.path.exists(
+                        os.path.join(v.get("folder_path", ""), ".r2_done")
+                    )
+                ]
+            ) + len(yt_candidates)
+
+            r2_waiting = max(0, total_r2 - r2_active)
+            yt_waiting = max(0, total_yt - yt_active)
+
             self.log_upl.info(
-                "Queue: %d total | %d waiting | %d uploading | max %d concurrent",
-                total_pending,
-                waiting,
-                active,
+                "Queue | R2: %d waiting, %d uploading | YT: %d waiting, %d uploading | Max %d",
+                r2_waiting,
+                r2_active,
+                yt_waiting,
+                yt_active,
                 self._max_concurrent,
             )
 
-        for mp4_size, live_id, folder_path, meta in candidates:
+        for mp4_size, live_id, folder_path, meta in r2_candidates:
             self._processing[live_id] = {
                 "started_at": time.time(),
                 "phase": "pending",
                 "title": _format_title(meta),
+                "folder_path": folder_path,
             }
-            asyncio.create_task(self._process_with_semaphore(folder_path, live_id))
+            asyncio.create_task(
+                self._process_with_semaphore(folder_path, live_id, True)
+            )
+
+        for mp4_size, live_id, folder_path, meta in yt_candidates:
+            self._processing[live_id] = {
+                "started_at": time.time(),
+                "phase": "pending",
+                "title": _format_title(meta),
+                "folder_path": folder_path,
+            }
+            asyncio.create_task(
+                self._process_with_semaphore(folder_path, live_id, False)
+            )
 
     async def _scan_direct(self, raw_dir: str, done: set[str]):
         for meta, live_id, folder_path in self._iter_pending(raw_dir, done):
+            r2_done_path = os.path.join(folder_path, ".r2_done")
+            if os.path.exists(r2_done_path) and self._youtube_disabled:
+                continue
+
             self._processing[live_id] = {
                 "started_at": time.time(),
                 "phase": "pending",
                 "title": _format_title(meta),
+                "folder_path": folder_path,
             }
             asyncio.create_task(self._process_folder(folder_path, live_id))
 
-    async def _process_with_semaphore(self, folder_path: str, live_id: str):
-        async with self._upload_semaphore:
+    async def _process_with_semaphore(
+        self, folder_path: str, live_id: str, is_r2: bool
+    ):
+        semaphore = self._r2_semaphore if is_r2 else self._yt_semaphore
+        async with semaphore:
             await self._process_folder(folder_path, live_id)
 
     async def _process_folder(self, folder_path: str, live_id: str):
@@ -185,6 +247,70 @@ class Watcher:
 
         mp4_path = os.path.join(folder_path, f"{live_id}.mp4")
         has_mp4 = os.path.exists(mp4_path) and os.path.getsize(mp4_path) > 0
+        r2_done_path = os.path.join(folder_path, ".r2_done")
+        is_r2_done = os.path.exists(r2_done_path)
+
+        # ---------------------------
+        # Phase 1: R2 Upload
+        # ---------------------------
+        if not is_r2_done:
+            # 1. Generate thumbnail if not exists
+            thumbnail_path = os.path.join(
+                session.live_folder, f"{session.live_id}_yt_thumb.jpg"
+            )
+            if not os.path.exists(thumbnail_path):
+                generate_youtube_thumbnail(
+                    session.screenshots_folder, thumbnail_path, self.log_upl
+                )
+
+            # 2. Upload to R2
+            self._processing[live_id]["phase"] = "uploading to R2"
+            self._processing[live_id].pop("pct", None)
+
+            ok = await r2_uploader.upload(session, self.config, title_log)
+            if not ok:
+                self.log_upl.warning("R2 upload failed for %s, will retry", title_log)
+                return
+
+            # 3. Send Recap Notification
+            self._processing[live_id]["phase"] = "sending notification"
+            await telegram_notifier.send_recap_end_live_notification(
+                live_id, self.config, folder_path
+            )
+
+            # 4. Create marker
+            with open(r2_done_path, "w") as f:
+                f.write("done")
+
+            # 5. Yield or finish
+            if not has_mp4:
+                self.log_upl.info(
+                    "No mp4 for %s, finishing directly after R2", title_log
+                )
+                self._append_history(live_id, youtube_id or "")
+                shutil.rmtree(folder_path)
+                self.log_upl.info("Done: %s", title_log)
+            else:
+                self.log_upl.info(
+                    "Phase 1 complete for %s, yielding for YouTube", title_log
+                )
+
+            # Return to release lock
+            return
+
+        # ---------------------------
+        # Phase 2: YouTube Upload
+        # ---------------------------
+        if self._youtube_disabled:
+            return
+
+        if not has_mp4:
+            # Should not happen normally, but just in case
+            self._append_history(live_id, youtube_id or "")
+            shutil.rmtree(folder_path)
+            self.log_upl.info("Done: %s", title_log)
+            return
+
         yt_configured = all(
             [
                 self.config.google_client_id,
@@ -192,113 +318,116 @@ class Watcher:
                 self.config.youtube_refresh_token,
             ]
         )
-
-        uri_path = os.path.join(folder_path, f"{live_id}.upload_uri")
-        resume_uri = None
-        if os.path.exists(uri_path):
-            try:
-                with open(uri_path) as f:
-                    resume_uri = f.read().strip() or None
-            except Exception:
-                self.log_upl.warning("Failed to read upload resume URI for %s", live_id)
-
-        if has_mp4:
-            if not yt_configured:
-                self.log_rec.info(
-                    "YouTube not configured, keeping folder for %s", title_log
-                )
-                return
-            if time.time() < self._quota_cooldown_until:
-                rem_s = int(self._quota_cooldown_until - time.time())
-                self.log_upl.info(
-                    "Quota cooldown active (%dh %dm remaining), skipping %s",
-                    rem_s // 3600,
-                    (rem_s % 3600) // 60,
-                    title_log,
-                )
-                return
-
-            delay_minutes = self.config.youtube_upload_delay_minutes
-            if delay_minutes > 0 and time.time() < self._next_upload_time:
-                rem_s = int(self._next_upload_time - time.time())
-                self.log_upl.info(
-                    "Upload delay active (%dm remaining), skipping %s",
-                    rem_s // 60,
-                    title_log,
-                )
-                return
-
-            try:
-                self._processing[live_id]["phase"] = "uploading to YouTube"
-
-                _last_pct = [0]
-
-                def _on_progress(progress_fraction, _total_bytes):
-                    pct = int(progress_fraction * 100)
-                    self._processing[live_id]["pct"] = pct
-                    if pct >= _last_pct[0] + 10:
-                        _last_pct[0] = pct
-
-                def _save_uri(uri: str):
-                    with open(uri_path, "w") as f:
-                        f.write(uri)
-
-                ytid, upload_uri = await _upload_to_youtube(
-                    session,
-                    self.config,
-                    progress_callback=_on_progress,
-                    resume_uri=resume_uri,
-                    save_uri_callback=_save_uri,
-                )
-                if ytid:
-                    youtube_id = ytid
-                    os.remove(mp4_path)
-                    if os.path.exists(uri_path):
-                        os.remove(uri_path)
-
-                    if delay_minutes > 0:
-                        self._next_upload_time = time.time() + (delay_minutes * 60)
-                else:
-                    if upload_uri:
-                        if upload_uri != resume_uri:
-                            with open(uri_path, "w") as f:
-                                f.write(upload_uri)
-                    self.log_upl.warning(
-                        "YouTube upload failed for %s, will retry", title_log
-                    )
-                    return
-            except QuotaExceededError as e:
-                self._quota_cooldown_until = time.time() + 86400
-                self._save_cooldown()
-                orig_err = getattr(e, "__cause__", str(e))
-                self.log_upl.warning(
-                    "Quota exceeded [Reason: %s], backing off 24 hours for %s",
-                    orig_err,
-                    title_log,
-                )
-                return
-            except Exception as e:
-                self.log_upl.error("YouTube upload failed for %s: %s", title_log, e)
-                return
-        else:
-            self.log_rec.info("No mp4 for %s, skipping YouTube", title_log)
-
-        self._processing[live_id]["phase"] = "uploading to R2"
-        self._processing[live_id].pop("pct", None)
-
-        ok = await r2_uploader.upload(session, self.config, title_log)
-        if not ok:
-            self.log_upl.warning("R2 upload failed for %s, will retry", title_log)
+        if not yt_configured:
+            self.log_upl.info(
+                "YouTube not configured, keeping folder for %s", title_log
+            )
             return
 
-        self._processing[live_id]["phase"] = "sending notification"
-        await telegram_notifier.send_recap_end_live_notification(
-            live_id, self.config, folder_path
-        )
+        if time.time() < self._quota_cooldown_until:
+            rem_s = int(self._quota_cooldown_until - time.time())
+            self.log_upl.info(
+                "Quota cooldown active (%dh %dm remaining), skipping %s",
+                rem_s // 3600,
+                (rem_s % 3600) // 60,
+                title_log,
+            )
+            return
 
-        self._append_history(live_id, youtube_id or "")
-        shutil.rmtree(folder_path)
-        self.log_rec.info("Done: %s", title_log)
+        delay_minutes = self.config.youtube_upload_delay_minutes
+        if delay_minutes > 0 and time.time() < self._next_upload_time:
+            rem_s = int(self._next_upload_time - time.time())
+            self.log_upl.info(
+                "Upload delay active (%dm remaining), skipping %s",
+                rem_s // 60,
+                title_log,
+            )
+            return
+
+        try:
+            self._processing[live_id]["phase"] = "uploading to YouTube"
+
+            _last_pct = [0]
+
+            def _on_progress(progress_fraction, _total_bytes):
+                pct = int(progress_fraction * 100)
+                self._processing[live_id]["pct"] = pct
+                if pct >= _last_pct[0] + 10:
+                    _last_pct[0] = pct
+
+            uri_path = os.path.join(folder_path, f"{live_id}.upload_uri")
+            resume_uri = None
+            if os.path.exists(uri_path):
+                try:
+                    with open(uri_path) as f:
+                        resume_uri = f.read().strip() or None
+                except Exception:
+                    self.log_upl.warning(
+                        "Failed to read upload resume URI for %s", live_id
+                    )
+
+            def _save_uri(uri: str):
+                with open(uri_path, "w") as f:
+                    f.write(uri)
+
+            ytid, upload_uri = await _upload_to_youtube(
+                session,
+                self.config,
+                progress_callback=_on_progress,
+                resume_uri=resume_uri,
+                save_uri_callback=_save_uri,
+            )
+
+            if ytid:
+                youtube_id = ytid
+
+                # PATCH backend
+                await r2_uploader.update_youtube_metadata(
+                    live_id, ytid, title_log, self.config, self.log_upl
+                )
+
+                # Send Replay notification
+                await telegram_notifier.send_replay_live_notification(
+                    live_id, title_log, ytid, self.config, folder_path
+                )
+
+                if delay_minutes > 0:
+                    self._next_upload_time = time.time() + (delay_minutes * 60)
+
+                # Cleanup
+                self._append_history(live_id, youtube_id or "")
+                shutil.rmtree(folder_path)
+                self.log_upl.info("Done: %s", title_log)
+
+            else:
+                if upload_uri:
+                    if upload_uri != resume_uri:
+                        with open(uri_path, "w") as f:
+                            f.write(upload_uri)
+                self.log_upl.warning(
+                    "YouTube upload failed for %s, will retry", title_log
+                )
+                return
+        except QuotaExceededError as e:
+            self._quota_cooldown_until = time.time() + 86400
+            self._save_cooldown()
+            orig_err = getattr(e, "__cause__", str(e))
+            self.log_upl.warning(
+                "Quota exceeded [Reason: %s], backing off 24 hours for %s",
+                orig_err,
+                title_log,
+            )
+            return
+        except InvalidGrantError:
+            self.log_upl.critical(
+                "Invalid grant detected for YouTube (Token expired or revoked). "
+                "Disabling all YouTube uploads until program is restarted manually."
+            )
+            self._youtube_disabled = True
+            return
+        except Exception as e:
+            self.log_upl.error("YouTube upload failed for %s: %s", title_log, e)
+            return
 
     def _read_history(self) -> set[str]:
         path = self.config.uploads_history_path

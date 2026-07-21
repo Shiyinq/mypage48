@@ -11,7 +11,12 @@ from src.dependencies import (
     require_admin,
 )
 from src.replay.exceptions import ReplayNotFound, ReplayUploadError
-from src.replay.schemas import ReplayDetailResponse, ReplayListItem, ReplayResponse
+from src.replay.schemas import (
+    ReplayDetailResponse,
+    ReplayListItem,
+    ReplayResponse,
+    ReplayUpdateYouTube,
+)
 from src.replay.service import ReplayService
 
 router = APIRouter()
@@ -55,6 +60,21 @@ async def upload_replay(
         srt_bytes=srt_bytes,
         screenshot_bytes_list=screenshot_list,
     )
+
+
+@router.patch("/admin/replay/{live_id}/youtube")
+async def update_youtube_data(
+    live_id: str,
+    data: ReplayUpdateYouTube,
+    _=Depends(require_admin),
+    service: ReplayService = Depends(get_replay_service),
+):
+    success = await service.update_youtube_data(
+        live_id, data.youtube_id, data.youtube_title
+    )
+    if not success:
+        raise ReplayNotFound()
+    return {"status": "ok"}
 
 
 @router.get("/replays", response_model=list[ReplayListItem])

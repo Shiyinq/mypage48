@@ -306,6 +306,13 @@ class ReplayService:
         await self.storage.upload_file(data, path, content_type=content_type)
         return path
 
+    async def update_youtube_data(
+        self, live_id: str, youtube_id: str, youtube_title: str
+    ) -> bool:
+        return await self.repository.update_youtube_data(
+            live_id, youtube_id, youtube_title
+        )
+
     async def find_by_live_id(self, live_id: str) -> Optional[ReplayResponse]:
         doc = await self.repository.find_by_live_id(live_id)
         if doc:
