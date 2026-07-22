@@ -509,14 +509,16 @@
 						</div>
 					</div>
 				{:else}
-					<div class="col-span-2 flex flex-col items-center justify-center min-h-[400px]">
+					<div
+						class="w-full h-full min-h-[350px] flex flex-col items-center justify-center p-8 text-center my-auto"
+					>
 						<ErrorState
 							icon={Search}
 							title={t('member.notFound')}
 							description={t('member.notFoundMessage')}
 						/>
 						<button
-							class="mt-2 px-6 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium cursor-pointer"
+							class="mt-4 px-6 py-2.5 bg-gray-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl hover:bg-black dark:hover:bg-white transition-colors font-medium cursor-pointer"
 							onclick={onClose}>{t('member.close')}</button
 						>
 					</div>

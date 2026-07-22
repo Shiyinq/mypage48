@@ -170,7 +170,7 @@
 		memberDetail = null;
 		loadingMemberDetail = true;
 		try {
-			const res = await members.getAll({ search: memberName });
+			const res = await members.getAll({ search: memberName, include_inactive: true });
 			if (res.data.length > 0) {
 				const exact = res.data.find((m) => m.name === memberName);
 				memberDetail = exact || res.data[0];

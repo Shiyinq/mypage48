@@ -125,7 +125,7 @@
 	role="presentation"
 >
 	<!-- Error State -->
-	{#if isError && fallback}
+	{#if (isError || !src) && fallback}
 		<div
 			class="absolute inset-0 z-20 flex items-center justify-center bg-gray-200 dark:bg-zinc-800 text-gray-400"
 		>
