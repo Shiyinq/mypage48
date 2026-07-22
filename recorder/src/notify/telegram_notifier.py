@@ -502,7 +502,8 @@ async def send_replay_live_notification(
 
     caption = f"▶️ <b>Replay Live {platform} {member_nickname} telah diupload</b>\n\n"
     caption += f"❝<i>{html.escape(youtube_title)}</i>❞\n"
-    caption += f"• https://youtu.be/{youtube_id}\n\n"
+    caption += f"• https://youtu.be/{youtube_id}\n"
+    caption += f"• https://mypage48.com/live/replay/{youtube_id}\n\n"
     caption += "<i>~ MyPage48 ~</i>"
 
     image_path = os.path.join(folder_path, f"{live_id}_yt_thumb.jpg")
