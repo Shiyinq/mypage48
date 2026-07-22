@@ -400,8 +400,21 @@ class ReplayService:
                 {"live_type": "public"},
                 {"live_type": {"$exists": False}},
             ]
+        projection = {
+            "live_id": 1,
+            "youtube_id": 1,
+            "title": 1,
+            "youtube_title": 1,
+            "member_nickname": 1,
+            "start_at": 1,
+            "recording_started_at": 1,
+            "platform": 1,
+            "created_at": 1,
+            "duration_seconds": 1,
+            "_id": 0,
+        }
         docs = await self.repository.find_all(
-            projection={"chats": 0}, filter_query=filter_query
+            projection=projection, filter_query=filter_query
         )
         result = []
         seen_live_ids = set()
