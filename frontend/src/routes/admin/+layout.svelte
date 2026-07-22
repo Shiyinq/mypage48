@@ -186,7 +186,7 @@
 		<AppBackground hideDecorationsOnMobile={true} />
 		<!-- Main Admin Navbar -->
 		<div
-			class="fixed top-0 left-0 right-0 w-full z-[10000] border-b border-black/5 dark:border-white/5 bg-white/85 dark:bg-zinc-950/60 backdrop-blur-xl transition-all duration-300 ease-in-out"
+			class="fixed top-0 left-0 right-0 w-full z-[100] border-b border-black/5 dark:border-white/5 bg-white/85 dark:bg-zinc-950/60 backdrop-blur-xl transition-all duration-300 ease-in-out"
 		>
 			<div
 				class="max-w-7xl mx-auto w-full h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8"
@@ -244,7 +244,7 @@
 
 		<!-- Mobile Specific Admin Navbar (Bottom) -->
 		<nav
-			class="md:hidden fixed bottom-0 left-0 right-0 z-[10002] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)] dark:shadow-none transition-all duration-300 ease-in-out {isMoreDrawerOpen
+			class="md:hidden fixed bottom-0 left-0 right-0 z-[102] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)] dark:shadow-none transition-all duration-300 ease-in-out {isMoreDrawerOpen
 				? 'bg-white dark:bg-zinc-950 border-t border-black/5 dark:border-white/5'
 				: 'bg-white/85 dark:bg-zinc-950/60 backdrop-blur-xl border-t border-black/5 dark:border-white/5'}"
 		>
@@ -300,13 +300,13 @@
 		{#if isMoreDrawerOpen}
 			<div
 				role="presentation"
-				class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[10000]"
+				class="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
 				onclick={closeMoreDrawer}
 				onkeydown={() => {}}
 				transition:fade={{ duration: 200 }}
 			></div>
 			<div
-				class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[10001] shadow-2xl border-t border-gray-100 dark:border-white/5 overflow-hidden"
+				class="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-3xl z-[101] shadow-2xl border-t border-gray-100 dark:border-white/5 overflow-hidden"
 				transition:fly={{ y: 200, duration: 250, opacity: 0 }}
 			>
 				<div
