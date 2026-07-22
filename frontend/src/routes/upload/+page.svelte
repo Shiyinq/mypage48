@@ -17,7 +17,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { PageHeader } from '$lib/components';
-	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
+	import { THEATER_ROWS } from '$lib/constants';
 	import { UploadModeSelection, UploadAnalyzing, TicketImagePreview } from '$lib/components/upload';
 	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 	import TicketForm from '$lib/components/upload/TicketForm.svelte';
@@ -26,9 +26,6 @@
 	import { getErrorMessage } from '$lib/utils/api';
 
 	const { t } = useTranslation();
-
-	// Constants
-	const SHOW_OPTIONS = SHOW_IMAGES.map((s) => s.title);
 
 	onMount(() => {
 		// Prefetch setlist options to warm up cache for the selector modal
@@ -182,7 +179,7 @@
 			const result = await extractTicketData(base64);
 			const options = await setlistsStore.loadOptions();
 
-			const currentSetlists = options ? options.map((s) => s.title) : SHOW_OPTIONS;
+			const currentSetlists = options ? options.map((s) => s.title) : [];
 
 			const detectedTitle =
 				currentSetlists.find((opt) =>

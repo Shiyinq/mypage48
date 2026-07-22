@@ -16,7 +16,6 @@
 	import { OptimizedImage } from '$lib/components/common';
 	import { onMount } from 'svelte';
 	import { setlistsStore, getTicketSlideIndex } from '$lib/stores/theater.svelte';
-	import { getShowImage } from '$lib/constants/shows';
 
 	interface Props {
 		tickets?: Ticket[];
@@ -68,17 +67,6 @@
 					srcMedium: matched.imageUrl_medium,
 					srcSmall: matched.imageUrl_small,
 					blurHash: matched.blurHash
-				};
-			}
-		}
-		if (ticket.event?.title) {
-			const fallback = getShowImage(ticket.event.title);
-			if (fallback) {
-				return {
-					src: fallback,
-					srcMedium: undefined,
-					srcSmall: undefined,
-					blurHash: undefined
 				};
 			}
 		}
@@ -156,10 +144,10 @@
 													: 'opacity-100'}"
 											>
 												<OptimizedImage
-													src={poster.src}
-													srcMedium={poster.srcMedium}
-													srcSmall={poster.srcSmall}
-													blurHash={poster.blurHash}
+													src={poster?.src}
+													srcMedium={poster?.srcMedium}
+													srcSmall={poster?.srcSmall}
+													blurHash={poster?.blurHash}
 													alt={ticket.event.title}
 													class="w-full h-full object-cover"
 													sizes="40px"
@@ -175,10 +163,10 @@
 													: 'opacity-100'}"
 											>
 												<OptimizedImage
-													src={user.src}
-													srcMedium={user.srcMedium}
-													srcSmall={user.srcSmall}
-													blurHash={user.blurHash}
+													src={user?.src}
+													srcMedium={user?.srcMedium}
+													srcSmall={user?.srcSmall}
+													blurHash={user?.blurHash}
 													alt={ticket.event.title}
 													class="w-full h-full object-cover"
 													sizes="40px"

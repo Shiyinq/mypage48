@@ -64,11 +64,13 @@
 
 	let isLoaded = $state(false);
 	let isError = $state(false);
+	let hasShownImage = $state(false);
 	let imgRef: HTMLImageElement | undefined = $state();
 	let canvasRef: HTMLCanvasElement | undefined = $state();
 
 	function handleLoad() {
 		isLoaded = true;
+		hasShownImage = true;
 		if (src) loadedImageUrls.add(src);
 	}
 
@@ -136,7 +138,7 @@
 		<!-- Image (renders immediately to support progressive loading) -->
 		{#if src}
 			<!-- BlurHash Placeholder -->
-			{#if blurHash && !isLoaded && !isError}
+			{#if blurHash && !isLoaded && !isError && !hasShownImage}
 				<canvas
 					bind:this={canvasRef}
 					width="32"
@@ -165,7 +167,7 @@
 		{/if}
 
 		<!-- Loading Overlay (shows over the blurring image/canvas) -->
-		{#if !isLoaded && !isError && !blurHash}
+		{#if !isLoaded && !isError && !blurHash && !hasShownImage}
 			<div
 				class="absolute inset-0 z-10 flex items-center justify-center bg-white/5 dark:bg-black/5 border border-white/10 dark:border-black/10 backdrop-blur-[1px] transition-opacity duration-500"
 			>

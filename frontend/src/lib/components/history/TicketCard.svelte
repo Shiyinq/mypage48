@@ -19,7 +19,6 @@
 	import { OptimizedImage } from '$lib/components/common';
 	import { onMount } from 'svelte';
 	import { setlistsStore, getTicketSlideIndex } from '$lib/stores/theater.svelte';
-	import { getShowImage } from '$lib/constants/shows';
 	interface Props {
 		ticket: Ticket;
 		onfavoriteToggle?: (ticketId: string) => void;
@@ -76,17 +75,6 @@
 				};
 			}
 		}
-		if (ticket.event?.title) {
-			const fallback = getShowImage(ticket.event.title);
-			if (fallback) {
-				return {
-					src: fallback,
-					srcMedium: undefined,
-					srcSmall: undefined,
-					blurHash: undefined
-				};
-			}
-		}
 		return null;
 	});
 
@@ -132,10 +120,10 @@
 								: 'opacity-100'}"
 						>
 							<OptimizedImage
-								src={posterImage.src}
-								srcMedium={posterImage.srcMedium}
-								srcSmall={posterImage.srcSmall}
-								blurHash={posterImage.blurHash}
+								src={posterImage?.src}
+								srcMedium={posterImage?.srcMedium}
+								srcSmall={posterImage?.srcSmall}
+								blurHash={posterImage?.blurHash}
 								alt={ticket.event.title}
 								class="w-full h-full transition-transform duration-700 group-hover:scale-105"
 								sizes="(max-width: 640px) 140px, 180px"
@@ -151,10 +139,10 @@
 								: 'opacity-100'}"
 						>
 							<OptimizedImage
-								src={userImage.src}
-								srcMedium={userImage.srcMedium}
-								srcSmall={userImage.srcSmall}
-								blurHash={userImage.blurHash}
+								src={userImage?.src}
+								srcMedium={userImage?.srcMedium}
+								srcSmall={userImage?.srcSmall}
+								blurHash={userImage?.blurHash}
 								alt={ticket.event.title}
 								class="w-full h-full transition-transform duration-700 group-hover:scale-105"
 								sizes="(max-width: 640px) 140px, 180px"

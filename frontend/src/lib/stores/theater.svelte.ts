@@ -180,7 +180,11 @@ function createSetlistsStore() {
 		},
 
 		reset: () => {
-			Object.assign(setlistsState, initialSetlistsState);
+			Object.assign(setlistsState, {
+				...initialSetlistsState,
+				options: setlistsState.options,
+				isOptionsLoading: setlistsState.isOptionsLoading
+			});
 			setlistsDedup.clear();
 		},
 
@@ -368,7 +372,10 @@ function createMembersStore() {
 		},
 
 		reset: () => {
-			Object.assign(membersState, initialMembersState);
+			Object.assign(membersState, {
+				...initialMembersState,
+				generationsCache: membersState.generationsCache
+			});
 			membersDedup.clear();
 		},
 
