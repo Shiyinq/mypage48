@@ -9,13 +9,17 @@
 		Save,
 		Trash2,
 		X,
-		Ticket as TicketIcon
+		Ticket as TicketIcon,
+		Images
 	} from 'lucide-svelte';
 	import type { Ticket } from '../../types/ticket';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
 	import { cleanseMarkdown } from '$lib/utils/markdown';
 	import { OptimizedImage } from '$lib/components/common';
+	import { onMount } from 'svelte';
+	import { setlistsStore, getTicketSlideIndex } from '$lib/stores/theater.svelte';
+	import { getShowImage } from '$lib/constants/shows';
 	interface Props {
 		ticket: Ticket;
 		onfavoriteToggle?: (ticketId: string) => void;
@@ -54,6 +58,60 @@
 			saveNote();
 		}
 	}
+
+	onMount(() => {
+		setlistsStore.loadOptions();
+	});
+
+	let posterImage = $derived.by(() => {
+		if (setlistsStore.options && ticket.event?.title) {
+			const titleLower = ticket.event.title.toLowerCase();
+			const matched = setlistsStore.options.find((opt) => opt.title.toLowerCase() === titleLower);
+			if (matched?.imageUrl) {
+				return {
+					src: matched.imageUrl,
+					srcMedium: matched.imageUrl_medium,
+					srcSmall: matched.imageUrl_small,
+					blurHash: matched.blurHash
+				};
+			}
+		}
+		if (ticket.event?.title) {
+			const fallback = getShowImage(ticket.event.title);
+			if (fallback) {
+				return {
+					src: fallback,
+					srcMedium: undefined,
+					srcSmall: undefined,
+					blurHash: undefined
+				};
+			}
+		}
+		return null;
+	});
+
+	let userImage = $derived(
+		ticket.imageUrl
+			? {
+					src: ticket.imageUrl,
+					srcMedium: ticket.imageUrl_medium,
+					srcSmall: ticket.imageUrl_small,
+					blurHash: ticket.blurHash
+				}
+			: null
+	);
+
+	let overrideImageIndex = $state<number | null>(null);
+
+	let activeImageIndex = $derived.by(() => {
+		if (overrideImageIndex !== null) {
+			return overrideImageIndex;
+		}
+		if (userImage && posterImage) {
+			return getTicketSlideIndex();
+		}
+		return userImage ? 1 : 0;
+	});
 </script>
 
 <div
@@ -64,20 +122,93 @@
 	>
 		<!-- Image Section (Left) -->
 		<div class="w-[140px] sm:w-[180px] h-full relative bg-gray-50 overflow-hidden flex-shrink-0">
-			{#if ticket.imageUrl}
+			{#if posterImage || userImage}
 				<div class="w-full h-full relative">
-					<OptimizedImage
-						src={ticket.imageUrl}
-						srcMedium={ticket.imageUrl_medium}
-						srcSmall={ticket.imageUrl_small}
-						blurHash={ticket.blurHash}
-						alt={ticket.event.title}
-						class="w-full h-full transition-transform duration-700 group-hover:scale-105"
-						sizes="(max-width: 640px) 140px, 180px"
-					/>
+					{#if posterImage}
+						<div
+							class="absolute inset-0 transition-opacity duration-1000 ease-in-out {userImage &&
+							activeImageIndex === 1
+								? 'opacity-0 pointer-events-none'
+								: 'opacity-100'}"
+						>
+							<OptimizedImage
+								src={posterImage.src}
+								srcMedium={posterImage.srcMedium}
+								srcSmall={posterImage.srcSmall}
+								blurHash={posterImage.blurHash}
+								alt={ticket.event.title}
+								class="w-full h-full transition-transform duration-700 group-hover:scale-105"
+								sizes="(max-width: 640px) 140px, 180px"
+							/>
+						</div>
+					{/if}
+
+					{#if userImage}
+						<div
+							class="absolute inset-0 transition-opacity duration-1000 ease-in-out {posterImage &&
+							activeImageIndex === 0
+								? 'opacity-0 pointer-events-none'
+								: 'opacity-100'}"
+						>
+							<OptimizedImage
+								src={userImage.src}
+								srcMedium={userImage.srcMedium}
+								srcSmall={userImage.srcSmall}
+								blurHash={userImage.blurHash}
+								alt={ticket.event.title}
+								class="w-full h-full transition-transform duration-700 group-hover:scale-105"
+								sizes="(max-width: 640px) 140px, 180px"
+							/>
+						</div>
+					{/if}
+
 					<div
-						class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent opacity-60"
+						class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent opacity-60 pointer-events-none"
 					></div>
+
+					{#if posterImage && userImage}
+						<button
+							type="button"
+							class="absolute bottom-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full border border-white/20 z-10 text-white shadow-md transition-all cursor-pointer hover:scale-105 active:scale-95"
+							onclick={(e) => {
+								e.stopPropagation();
+								overrideImageIndex = activeImageIndex === 0 ? 1 : 0;
+							}}
+							title="Klik untuk ganti gambar"
+						>
+							<Images class="w-3 h-3 text-white/90" />
+							<div class="flex items-center gap-1">
+								<span
+									onclick={(e) => {
+										e.stopPropagation();
+										overrideImageIndex = 0;
+									}}
+									role="button"
+									tabindex="0"
+									onkeydown={(e) => e.key === 'Enter' && (overrideImageIndex = 0)}
+									class="h-1.5 rounded-full transition-all duration-300 hover:bg-white {activeImageIndex ===
+									0
+										? 'bg-white w-2.5'
+										: 'bg-white/40 w-1.5'}"
+									title="Poster Pertunjukan"
+								></span>
+								<span
+									onclick={(e) => {
+										e.stopPropagation();
+										overrideImageIndex = 1;
+									}}
+									role="button"
+									tabindex="0"
+									onkeydown={(e) => e.key === 'Enter' && (overrideImageIndex = 1)}
+									class="h-1.5 rounded-full transition-all duration-300 hover:bg-white {activeImageIndex ===
+									1
+										? 'bg-white w-2.5'
+										: 'bg-white/40 w-1.5'}"
+									title="Foto Tiket User"
+								></span>
+							</div>
+						</button>
+					{/if}
 				</div>
 			{:else}
 				<div

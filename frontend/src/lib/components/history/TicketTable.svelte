@@ -1,10 +1,22 @@
 <script lang="ts">
-	import { Clock, Heart, Pencil, Save, Trash2, X, Ticket as TicketIcon } from 'lucide-svelte';
+	import {
+		Clock,
+		Heart,
+		Pencil,
+		Save,
+		Trash2,
+		X,
+		Ticket as TicketIcon,
+		Images
+	} from 'lucide-svelte';
 	import type { Ticket } from '$lib/types';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { formatDate } from '$lib/i18n';
 	import { cleanseMarkdown } from '$lib/utils/markdown';
 	import { OptimizedImage } from '$lib/components/common';
+	import { onMount } from 'svelte';
+	import { setlistsStore, getTicketSlideIndex } from '$lib/stores/theater.svelte';
+	import { getShowImage } from '$lib/constants/shows';
 
 	interface Props {
 		tickets?: Ticket[];
@@ -39,6 +51,51 @@
 		editingNoteId = null;
 	}
 
+	onMount(() => {
+		setlistsStore.loadOptions();
+	});
+
+	let overrideMap = $state<Record<string, number>>({});
+	let globalActiveIndex = $derived(getTicketSlideIndex());
+
+	function getPosterImage(ticket: Ticket) {
+		if (setlistsStore.options && ticket.event?.title) {
+			const titleLower = ticket.event.title.toLowerCase();
+			const matched = setlistsStore.options.find((opt) => opt.title.toLowerCase() === titleLower);
+			if (matched?.imageUrl) {
+				return {
+					src: matched.imageUrl,
+					srcMedium: matched.imageUrl_medium,
+					srcSmall: matched.imageUrl_small,
+					blurHash: matched.blurHash
+				};
+			}
+		}
+		if (ticket.event?.title) {
+			const fallback = getShowImage(ticket.event.title);
+			if (fallback) {
+				return {
+					src: fallback,
+					srcMedium: undefined,
+					srcSmall: undefined,
+					blurHash: undefined
+				};
+			}
+		}
+		return null;
+	}
+
+	function getUserImage(ticket: Ticket) {
+		return ticket.imageUrl
+			? {
+					src: ticket.imageUrl,
+					srcMedium: ticket.imageUrl_medium,
+					srcSmall: ticket.imageUrl_small,
+					blurHash: ticket.blurHash
+				}
+			: null;
+	}
+
 	function cancelEditingNote() {
 		editingNoteId = null;
 		noteText = '';
@@ -61,6 +118,8 @@
 			</thead>
 			<tbody class="bg-white/50 dark:bg-zinc-900/50 divide-y divide-gray-100 dark:divide-zinc-700">
 				{#each tickets as ticket (ticket._id)}
+					{@const poster = getPosterImage(ticket)}
+					{@const user = getUserImage(ticket)}
 					<tr
 						class="group border-b border-gray-100 dark:border-zinc-700 hover:bg-red-50/30 dark:hover:bg-red-900/10 transition-colors"
 					>
@@ -85,18 +144,61 @@
 						<td class="p-4">
 							<div class="flex items-center gap-3">
 								<div
-									class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-zinc-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-zinc-700"
+									class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-zinc-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-zinc-700 relative"
 								>
-									{#if ticket.imageUrl}
-										<OptimizedImage
-											src={ticket.imageUrl}
-											srcMedium={ticket.imageUrl_medium}
-											srcSmall={ticket.imageUrl_small}
-											blurHash={ticket.blurHash}
-											alt={ticket.event.title}
-											class="w-full h-full"
-											sizes="40px"
-										/>
+									{#if poster || user}
+										{#if poster}
+											{@const activeIdx = overrideMap[ticket._id] ?? globalActiveIndex}
+											<div
+												class="absolute inset-0 transition-opacity duration-1000 ease-in-out {user &&
+												activeIdx === 1
+													? 'opacity-0 pointer-events-none'
+													: 'opacity-100'}"
+											>
+												<OptimizedImage
+													src={poster.src}
+													srcMedium={poster.srcMedium}
+													srcSmall={poster.srcSmall}
+													blurHash={poster.blurHash}
+													alt={ticket.event.title}
+													class="w-full h-full object-cover"
+													sizes="40px"
+												/>
+											</div>
+										{/if}
+										{#if user}
+											{@const activeIdx = overrideMap[ticket._id] ?? globalActiveIndex}
+											<div
+												class="absolute inset-0 transition-opacity duration-1000 ease-in-out {poster &&
+												activeIdx === 0
+													? 'opacity-0 pointer-events-none'
+													: 'opacity-100'}"
+											>
+												<OptimizedImage
+													src={user.src}
+													srcMedium={user.srcMedium}
+													srcSmall={user.srcSmall}
+													blurHash={user.blurHash}
+													alt={ticket.event.title}
+													class="w-full h-full object-cover"
+													sizes="40px"
+												/>
+											</div>
+										{/if}
+										{#if poster && user}
+											<button
+												type="button"
+												class="absolute bottom-0.5 right-0.5 p-0.5 bg-black/60 hover:bg-black/90 backdrop-blur-sm rounded-full z-10 cursor-pointer transition-transform hover:scale-110"
+												onclick={(e) => {
+													e.stopPropagation();
+													overrideMap[ticket._id] =
+														(overrideMap[ticket._id] ?? globalActiveIndex) === 0 ? 1 : 0;
+												}}
+												title="Klik untuk ganti gambar"
+											>
+												<Images class="w-2.5 h-2.5 text-white/90" />
+											</button>
+										{/if}
 									{:else}
 										<div
 											class="w-full h-full idol-gradient flex items-center justify-center relative overflow-hidden"

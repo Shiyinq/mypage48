@@ -43,6 +43,17 @@ const initialSetlistsState: SetlistsState = {
 const setlistsState = $state<SetlistsState>(initialSetlistsState);
 const setlistsDedup = createRequestDedup();
 
+let globalTicketSlideIndex = $state(0);
+let ticketSlideTimer: ReturnType<typeof setInterval> | null = null;
+
+function ensureTicketSlideTimer() {
+	if (typeof window !== 'undefined' && !ticketSlideTimer) {
+		ticketSlideTimer = setInterval(() => {
+			globalTicketSlideIndex = (globalTicketSlideIndex + 1) % 2;
+		}, 10000);
+	}
+}
+
 function createSetlistsStore() {
 	return {
 		get data() {
@@ -447,4 +458,9 @@ export const isSetlistDetailLoading = {
 export function invalidateTheater() {
 	setlistsStore.reset();
 	membersStore.reset();
+}
+
+export function getTicketSlideIndex() {
+	ensureTicketSlideTimer();
+	return globalTicketSlideIndex;
 }
