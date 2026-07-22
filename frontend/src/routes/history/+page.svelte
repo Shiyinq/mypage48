@@ -3,7 +3,7 @@
 	import { invalidateDashboard } from '$lib/stores/dashboard.svelte';
 	import { invalidateTheater } from '$lib/stores/theater.svelte';
 	import { invalidateMemories } from '$lib/stores/memories.svelte';
-	import { setlistsStore, membersStore } from '$lib/stores/theater.svelte';
+	import { setlistsStore } from '$lib/stores/theater.svelte';
 	import { onMount } from 'svelte';
 
 	import type { Ticket as TicketType, TicketFilters } from '$lib/types';
@@ -47,7 +47,6 @@
 	onMount(() => {
 		mounted = true;
 		setlistsStore.loadOptions();
-		membersStore.load();
 
 		// Initial load check
 		if (filteredTickets.length === 0 || isCacheExpired(ticketsStore.lastUpdated)) {
