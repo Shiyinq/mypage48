@@ -125,14 +125,14 @@
 	<div use:portal class="fixed inset-0 z-[2000] flex items-center justify-center p-4">
 		<!-- Backdrop -->
 		<div
-			class="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+			class="absolute inset-0 bg-black/75 animate-fade-in"
 			onclick={close}
 			role="presentation"
 		></div>
 
 		<!-- Modal Content -->
 		<div
-			class="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden animate-scale-up flex flex-col max-h-[85vh]"
+			class="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[85vh]"
 		>
 			<!-- Header -->
 			<div
@@ -172,7 +172,7 @@
 			</div>
 
 			<!-- Setlist Grid -->
-			<div class="flex-1 overflow-y-auto p-6 scrollbar-hide">
+			<div class="flex-1 overflow-y-auto p-6 scrollbar-hide overscroll-contain">
 				{#if loading && allOptions.length === 0}
 					<div class="flex flex-col items-center justify-center py-12">
 						<div
@@ -188,7 +188,7 @@
 					</div>
 				{:else}
 					<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4">
-						{#each filteredOptions as option}
+						{#each filteredOptions as option (option.setlistId)}
 							<button
 								type="button"
 								class="group relative flex flex-col items-center text-center p-2 md:p-3 rounded-2xl transition-all duration-200 border-2 cursor-pointer
