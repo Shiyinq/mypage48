@@ -16,6 +16,7 @@ from .youtube_uploader import (
     QuotaExceededError,
     _format_title,
     _upload_to_youtube,
+    is_official_jkt48,
 )
 
 
@@ -180,7 +181,8 @@ class Watcher:
             yt_waiting = max(0, total_yt - yt_active)
 
             self.log_upl.info(
-                "Queue | R2: %d waiting, %d uploading | YT: %d waiting, %d uploading | Max %d",
+                "Queue | R2: %d waiting, %d uploading | "
+                "YT: %d waiting, %d uploading | Max %d",
                 r2_waiting,
                 r2_active,
                 yt_waiting,
@@ -387,9 +389,11 @@ class Watcher:
                 )
 
                 # Send Replay notification
-                await telegram_notifier.send_replay_live_notification(
-                    live_id, title_log, ytid, self.config, folder_path
-                )
+                live_type = str(meta.get("live_type") or "public").strip().lower()
+                if not is_official_jkt48(meta) and live_type == "public":
+                    await telegram_notifier.send_replay_live_notification(
+                        live_id, title_log, ytid, self.config, folder_path
+                    )
 
                 if delay_minutes > 0:
                     self._next_upload_time = time.time() + (delay_minutes * 60)
