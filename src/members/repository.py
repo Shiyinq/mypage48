@@ -17,8 +17,9 @@ class MemberRepository:
         limit: int = 100,
         generation: Optional[str] = None,
         search: Optional[str] = None,
+        include_inactive: bool = False,
     ) -> List[dict]:
-        query = {"active": True}
+        query = {} if include_inactive else {"active": True}
 
         if generation:
             query["generation"] = generation
@@ -29,18 +30,26 @@ class MemberRepository:
                 {"nickname": {"$regex": search, "$options": "i"}},
             ]
 
-        cursor = self.collection.find(query).skip(skip).limit(limit)
+        cursor = (
+            self.collection.find(query)
+            .sort([("active", -1), ("name", 1)])
+            .skip(skip)
+            .limit(limit)
+        )
         return await cursor.to_list(length=limit)
 
     async def find_all_active(self) -> List[dict]:
         """Find all active members without pagination"""
-        cursor = self.collection.find({"active": True})
+        cursor = self.collection.find({"active": True}).sort([("name", 1)])
         return await cursor.to_list(length=None)
 
     async def count(
-        self, generation: Optional[str] = None, search: Optional[str] = None
+        self,
+        generation: Optional[str] = None,
+        search: Optional[str] = None,
+        include_inactive: bool = False,
     ) -> int:
-        query = {"active": True}
+        query = {} if include_inactive else {"active": True}
 
         if generation:
             query["generation"] = generation

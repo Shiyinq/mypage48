@@ -115,7 +115,8 @@ function createAdminStore() {
 				const res = await membersApi.getAll({
 					page: state.members.page,
 					limit: 20,
-					search: state.members.search
+					search: state.members.search,
+					include_inactive: true
 				});
 
 				const combinedData = reset ? res.data : [...state.members.data, ...res.data];
@@ -124,7 +125,7 @@ function createAdminStore() {
 				);
 				state.members.page = state.members.page + 1;
 				state.members.total = res.meta.total_data;
-				state.members.hasMore = res.data.length === 20;
+				state.members.hasMore = !!res.meta.next_page;
 			} catch (e) {
 				console.error('Failed to load members', e);
 				showToast('Failed to load members', 'error');

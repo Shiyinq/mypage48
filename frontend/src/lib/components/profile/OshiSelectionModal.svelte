@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { Search, X, Check } from 'lucide-svelte';
+	import { Search, X, Check, User } from 'lucide-svelte';
 	import { logger } from '$lib/utils/logger';
 	import Button from '$lib/components/Button.svelte';
 	import { untrack } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { members as membersApi, type Member } from '$lib/apis/members';
+	import { type Member } from '$lib/apis/members';
+	import { selectorMembersStore } from '$lib/stores/theater.svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { tick } from 'svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
@@ -41,7 +42,6 @@
 
 	let memberList: Member[] = $state([]);
 	let loading = $state(false);
-	let page = 1;
 	let hasMore = true;
 	let isAppending = $state(false);
 	let searchTimeout: ReturnType<typeof setTimeout>;
@@ -59,40 +59,27 @@
 		if (sentinel) observer.observe(sentinel);
 	}
 
-	// membersCacheStore removed
-	// import { membersCacheStore } from '$lib/stores/theater.svelte';
-	// import { get } from 'svelte/store'; -- removed
-
-	// ... (imports remain)
-
 	async function fetchMembers(reset = false) {
-		// cacheKey logic removed as we are not using global cache for modal
-
 		if (reset) {
 			loading = true;
-			page = 1;
 			hasMore = true;
 		} else {
-			if (!hasMore || isAppending) return;
+			if (!hasMore || isAppending || loading) return;
 			isAppending = true;
 		}
 
 		try {
-			const res = await membersApi.getAll({
-				page: reset ? 1 : page + 1,
-				limit: 20,
-				search: searchQuery || undefined
-			});
+			await selectorMembersStore.load(
+				{
+					search: searchQuery || undefined,
+					include_inactive: true,
+					limit: 20
+				},
+				reset
+			);
 
-			if (reset) {
-				memberList = res.data.filter((m) => m.active);
-				page = 1;
-			} else {
-				memberList = [...memberList, ...res.data.filter((m) => m.active)];
-				page += 1;
-			}
-
-			hasMore = !!res.meta.next_page;
+			memberList = selectorMembersStore.list;
+			hasMore = selectorMembersStore.pagination.hasMore;
 
 			await tick();
 			initObserver();
@@ -236,7 +223,7 @@
 						</p>
 					{/if}
 					<div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4">
-						{#each memberList as member}
+						{#each memberList as member (member.id)}
 							<button
 								class="group relative flex flex-col items-center text-center p-2 md:p-3 rounded-2xl transition-all duration-200 border-2 cursor-pointer
 								{isSelected(member.id)
@@ -245,19 +232,31 @@
 								onclick={() => toggleMember(member)}
 							>
 								<div class="relative w-14 h-14 md:w-20 md:h-20 mb-2 md:mb-3">
-									<OptimizedImage
-										src={getExternalMediaUrl(member.img)}
-										srcMedium={getExternalMediaUrl(member.img_medium)}
-										srcSmall={getExternalMediaUrl(member.img_small)}
-										blurHash={member.blurHash}
-										alt={member.name}
-										class="w-full h-full rounded-full object-cover shadow-sm group-hover:shadow-md transition-shadow {isSelected(
-											member.id
-										)
-											? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-zinc-900'
-											: ''}"
-										sizes="56px 80px"
-									/>
+									{#if member.img}
+										<OptimizedImage
+											src={getExternalMediaUrl(member.img)}
+											srcMedium={getExternalMediaUrl(member.img_medium)}
+											srcSmall={getExternalMediaUrl(member.img_small)}
+											blurHash={member.blurHash}
+											alt={member.name}
+											class="w-full h-full rounded-full object-cover shadow-sm group-hover:shadow-md transition-shadow {isSelected(
+												member.id
+											)
+												? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-zinc-900'
+												: ''}"
+											sizes="56px 80px"
+										/>
+									{:else}
+										<div
+											class="w-full h-full rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow {isSelected(
+												member.id
+											)
+												? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-zinc-900'
+												: ''}"
+										>
+											<User class="w-7 h-7 md:w-10 md:h-10 text-gray-400 dark:text-zinc-400" />
+										</div>
+									{/if}
 									{#if isSelected(member.id)}
 										<div
 											class="absolute -right-0.5 -top-0.5 w-5 h-5 md:w-6 md:h-6 bg-red-500 rounded-full flex items-center justify-center text-white shadow-sm"
@@ -267,15 +266,29 @@
 										</div>
 									{/if}
 								</div>
-								<h4
-									class="font-bold text-gray-800 dark:text-white text-[11px] md:text-sm leading-tight mb-0.5 md:mb-1 truncate w-full"
-								>
-									{member.name}
-								</h4>
-								<span
-									class="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-100 dark:bg-zinc-800 px-1.5 md:px-2 py-0.5 rounded-full group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors"
-									>{t('profile.oshiModal.generation', { gen: member.generation })}</span
-								>
+								<div class="h-7 md:h-8 flex items-center justify-center w-full mb-1">
+									<h4
+										class="font-bold text-gray-800 dark:text-white text-[11px] md:text-xs leading-snug line-clamp-2 overflow-hidden text-center w-full"
+									>
+										{member.name}
+									</h4>
+								</div>
+								<div class="flex items-center gap-1 flex-wrap justify-center">
+									{#if member.generation && member.generation !== '-'}
+										<span
+											class="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-100 dark:bg-zinc-800 px-1.5 md:px-2 py-0.5 rounded-full group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors"
+										>
+											{t('profile.oshiModal.generation', { gen: member.generation })}
+										</span>
+									{/if}
+									{#if !member.active}
+										<span
+											class="text-[9px] md:text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide bg-amber-50 dark:bg-amber-900/30 px-1.5 md:px-2 py-0.5 rounded-full"
+										>
+											{member.member_type || 'EX-MEMBER'}
+										</span>
+									{/if}
+								</div>
 							</button>
 						{/each}
 					</div>

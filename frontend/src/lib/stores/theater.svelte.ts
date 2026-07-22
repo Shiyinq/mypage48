@@ -252,22 +252,20 @@ interface MembersState {
 	isBirthdaysLoading: boolean;
 }
 
-const initialMembersState: MembersState = {
-	list: [],
-	birthdays: [],
-	pagination: { page: 0, hasMore: true },
-	cache: {},
-	generationsCache: null,
-	currentFilter: {},
-	error: null,
-	isMembersLoading: false,
-	isBirthdaysLoading: false
-};
-
-const membersState = $state<MembersState>(initialMembersState);
-const membersDedup = createRequestDedup();
-
 function createMembersStore() {
+	const membersState = $state<MembersState>({
+		list: [],
+		birthdays: [],
+		pagination: { page: 0, hasMore: true },
+		cache: {},
+		generationsCache: null,
+		currentFilter: {},
+		error: null,
+		isMembersLoading: false,
+		isBirthdaysLoading: false
+	});
+	const membersDedup = createRequestDedup();
+
 	return {
 		get list() {
 			return membersState.list;
@@ -309,10 +307,20 @@ function createMembersStore() {
 		},
 
 		load: async (
-			params: { page?: number; limit?: number; generation?: string; search?: string } = {},
+			params: {
+				page?: number;
+				limit?: number;
+				generation?: string;
+				search?: string;
+				include_inactive?: boolean;
+			} = {},
 			reset = false
 		) => {
-			const cacheKey = JSON.stringify({ generation: params.generation, search: params.search });
+			const cacheKey = JSON.stringify({
+				generation: params.generation,
+				search: params.search,
+				include_inactive: params.include_inactive
+			});
 
 			if (reset && membersState.cache[cacheKey]) {
 				const cached = membersState.cache[cacheKey];
@@ -373,7 +381,14 @@ function createMembersStore() {
 
 		reset: () => {
 			Object.assign(membersState, {
-				...initialMembersState,
+				list: [],
+				birthdays: [],
+				pagination: { page: 0, hasMore: true },
+				cache: {},
+				currentFilter: {},
+				error: null,
+				isMembersLoading: false,
+				isBirthdaysLoading: false,
 				generationsCache: membersState.generationsCache
 			});
 			membersDedup.clear();
@@ -395,16 +410,17 @@ function createMembersStore() {
 }
 
 export const membersStore = createMembersStore();
+export const selectorMembersStore = createMembersStore();
 
 // Derived Compatibility Aliases
 export const isMembersLoading = {
 	get value() {
-		return membersState.isMembersLoading;
+		return membersStore.isLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
-		fn(membersState.isMembersLoading);
+		fn(membersStore.isLoading);
 		$effect.root(() => {
-			$effect(() => fn(membersState.isMembersLoading));
+			$effect(() => fn(membersStore.isLoading));
 		});
 		return () => {};
 	}
@@ -412,12 +428,12 @@ export const isMembersLoading = {
 
 export const isBirthdaysLoading = {
 	get value() {
-		return membersState.isBirthdaysLoading;
+		return membersStore.isBirthdaysLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
-		fn(membersState.isBirthdaysLoading);
+		fn(membersStore.isBirthdaysLoading);
 		$effect.root(() => {
-			$effect(() => fn(membersState.isBirthdaysLoading));
+			$effect(() => fn(membersStore.isBirthdaysLoading));
 		});
 		return () => {};
 	}
@@ -425,12 +441,12 @@ export const isBirthdaysLoading = {
 
 export const membersPagination = {
 	get value() {
-		return membersState.pagination;
+		return membersStore.pagination;
 	},
 	subscribe: (cb: (val: { page: number; hasMore: boolean }) => void) => {
-		cb(membersState.pagination);
+		cb(membersStore.pagination);
 		$effect.root(() => {
-			$effect(() => cb(membersState.pagination));
+			$effect(() => cb(membersStore.pagination));
 		});
 		return () => {};
 	}

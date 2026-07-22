@@ -27,6 +27,7 @@ async def get_members(
         None, description="Filter by generation (e.g., '3', '7', '11')"
     ),
     search: Optional[str] = Query(None, description="Search by name or nickname"),
+    include_inactive: bool = Query(False, description="Include inactive/ex-members"),
     service: MemberService = Depends(get_member_service),
 ):
     """
@@ -36,8 +37,11 @@ async def get_members(
     - **limit**: Items per page (default 20, max 100)
     - **generation**: Filter by generation number
     - **search**: Search by member name or nickname
+    - **include_inactive**: Include inactive/ex-members (default False)
     """
-    return await service.get_all_members(page, limit, generation, search)
+    return await service.get_all_members(
+        page, limit, generation, search, include_inactive
+    )
 
 
 @router.get("/generations", response_model=List[str])

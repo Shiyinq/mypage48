@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-	import { ImageIcon, LoaderCircle } from 'lucide-svelte';
+	import { ImageOff, LoaderCircle } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { decode } from 'blurhash';
 
@@ -127,12 +127,9 @@
 	<!-- Error State -->
 	{#if isError && fallback}
 		<div
-			class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800"
+			class="absolute inset-0 z-20 flex items-center justify-center bg-gray-200 dark:bg-zinc-800 text-gray-400"
 		>
-			<ImageIcon class="w-8 h-8 text-gray-300 dark:text-zinc-700 mb-2" />
-			<span class="text-[10px] uppercase tracking-widest text-gray-400 font-bold"
-				>Failed to load</span
-			>
+			<ImageOff class="w-6 h-6 text-gray-400 dark:text-zinc-400" />
 		</div>
 	{:else}
 		<!-- Image (renders immediately to support progressive loading) -->
