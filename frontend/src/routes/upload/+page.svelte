@@ -31,7 +31,8 @@
 	const SHOW_OPTIONS = SHOW_IMAGES.map((s) => s.title);
 
 	onMount(() => {
-		setlistsStore.load();
+		// Prefetch setlist options to warm up cache for the selector modal
+		setlistsStore.loadOptions().catch((e) => logger.error('Failed to prefetch options', e));
 	});
 
 	// App State
@@ -179,11 +180,9 @@
 		mode = 'ANALYSING';
 		try {
 			const result = await extractTicketData(base64);
-			await setlistsStore.load();
+			const options = await setlistsStore.loadOptions();
 
-			const currentSetlists = setlistsStore.data
-				? setlistsStore.data.map((s) => s.title)
-				: SHOW_OPTIONS;
+			const currentSetlists = options ? options.map((s) => s.title) : SHOW_OPTIONS;
 
 			const detectedTitle =
 				currentSetlists.find((opt) =>

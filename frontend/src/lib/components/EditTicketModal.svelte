@@ -11,7 +11,7 @@
 	import { LoaderCircle, CircleCheck, NotebookPen } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
+	import { THEATER_ROWS } from '$lib/constants';
 	import { setlistsStore } from '$lib/stores/theater.svelte';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
 	import { getErrorMessage } from '$lib/utils/api';
@@ -33,12 +33,8 @@
 
 	const { t } = useTranslation();
 
-	let SHOW_OPTIONS = $derived(
-		setlistsStore.data ? setlistsStore.data.map((s) => s.title) : SHOW_IMAGES.map((s) => s.title)
-	);
-
 	onMount(() => {
-		setlistsStore.load();
+		setlistsStore.loadOptions();
 	});
 
 	const ROW_OPTIONS = THEATER_ROWS;
@@ -379,7 +375,6 @@
 							bind:title={formData.event.title}
 							bind:date={formData.event.date}
 							bind:time={formData.event.time}
-							showOptions={SHOW_OPTIONS}
 						/>
 
 						<!-- Seat & Payment -->

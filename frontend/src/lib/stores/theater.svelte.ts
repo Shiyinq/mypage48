@@ -1,4 +1,9 @@
-import { setlistsApi, type Setlist, type SetlistDetailResponse } from '$lib/apis/setlists';
+import {
+	setlistsApi,
+	type Setlist,
+	type SetlistDetailResponse,
+	type SetlistOption
+} from '$lib/apis/setlists';
 import { members as membersApi, type Member, type BirthdayResponse } from '$lib/apis/members';
 import { logger } from '$lib/utils/logger';
 import { createRequestDedup } from '$lib/utils/requestDedup';
@@ -18,6 +23,8 @@ interface SetlistsState {
 	isSetlistDetailLoading: boolean;
 	maxAttendance: number;
 	lastFilterKey: string | null;
+	options: SetlistOption[] | null;
+	isOptionsLoading: boolean;
 }
 
 const initialSetlistsState: SetlistsState = {
@@ -28,7 +35,9 @@ const initialSetlistsState: SetlistsState = {
 	isSetlistsLoading: false,
 	isSetlistDetailLoading: false,
 	maxAttendance: 1,
-	lastFilterKey: null
+	lastFilterKey: null,
+	options: null,
+	isOptionsLoading: false
 };
 
 const setlistsState = $state<SetlistsState>(initialSetlistsState);
@@ -56,6 +65,12 @@ function createSetlistsStore() {
 		},
 		get maxAttendance() {
 			return setlistsState.maxAttendance;
+		},
+		get options() {
+			return setlistsState.options;
+		},
+		get isOptionsLoading() {
+			return setlistsState.isOptionsLoading;
 		},
 
 		load: async (filter?: {
@@ -125,6 +140,30 @@ function createSetlistsStore() {
 					throw e;
 				} finally {
 					setlistsState.isSetlistDetailLoading = false;
+				}
+			});
+		},
+
+		loadOptions: async () => {
+			if (setlistsState.options) {
+				return setlistsState.options;
+			}
+
+			return setlistsDedup.execute('options', async () => {
+				setlistsState.error = null;
+				setlistsState.isOptionsLoading = true;
+
+				try {
+					const options = await setlistsApi.getOptions();
+					setlistsState.options = options;
+					setlistsState.error = null;
+					return options;
+				} catch (e) {
+					logger.error('Failed to load setlist options', e, { context: 'SetlistsStore' });
+					setlistsState.error = 'Failed to load options';
+					throw e;
+				} finally {
+					setlistsState.isOptionsLoading = false;
 				}
 			});
 		},

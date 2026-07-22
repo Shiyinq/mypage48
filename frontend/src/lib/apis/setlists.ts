@@ -21,6 +21,17 @@ export interface Setlist {
 	watched: WatchedStats;
 }
 
+export interface SetlistOption {
+	setlistId: string;
+	title: string;
+	type: string;
+	active: boolean;
+	imageUrl: string;
+	imageUrl_medium?: string;
+	imageUrl_small?: string;
+	blurHash?: string;
+}
+
 export interface SetlistListResponse {
 	total: number;
 	maxAttendance: number;
@@ -119,6 +130,10 @@ export const setlistsApi = {
 		if (params.isAllData !== undefined) query.append('isAllData', params.isAllData.toString());
 
 		return client<SetlistListResponse>(`/theater/setlists?${query.toString()}`);
+	},
+
+	getOptions: async () => {
+		return client<SetlistOption[]>('/theater/setlists/options');
 	},
 
 	getById: async (setlistId: string) => {
