@@ -15,6 +15,7 @@ from src.setlists.schemas import (
     SetlistCreateRequest,
     SetlistDetailResponse,
     SetlistListResponse,
+    SetlistOption,
     SetlistResponse,
     SetlistUpdateRequest,
 )
@@ -76,6 +77,17 @@ async def get_types(
     Get list of all available setlist types.
     """
     return await service.get_types()
+
+
+@router.get("/options", response_model=List[SetlistOption])
+async def get_options(
+    service: SetlistsService = Depends(get_setlists_service),
+    _current_user: UserCurrent = Depends(get_current_user),
+):
+    """
+    Get list of all active setlists with basic info (id, title, images, type) for dropdowns.
+    """
+    return await service.get_setlist_options()
 
 
 @router.get("/id/{setlist_id}", response_model=SetlistResponse)

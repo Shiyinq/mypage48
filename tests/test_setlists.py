@@ -136,6 +136,42 @@ async def test_get_setlist_types(client: AsyncClient, seed_setlists_db, create_u
     assert "event" in types
 
 @pytest.mark.asyncio
+async def test_get_setlist_options(client: AsyncClient, seed_setlists_db, create_user):
+    """Test getting setlist options for dropdowns."""
+    token, user_id, headers = await create_user("optionsuser")
+    
+    response = await client.get("/api/theater/setlists/options", headers=headers)
+    assert response.status_code == 200
+    options = response.json()
+    assert isinstance(options, list)
+    
+    # In test data, we have 3 setlists: 2 active ("Pajama Drive", "Pertaruhan Cinta")
+    # and 1 inactive ("Special Event"). All should be returned now.
+    assert len(options) == 3
+    titles = [o["title"] for o in options]
+    assert "Pajama Drive" in titles
+    assert "Pertaruhan Cinta" in titles
+    assert "Special Event" in titles
+    
+    # Check fields
+    pajama = next((o for o in options if o["title"] == "Pajama Drive"), None)
+    assert pajama is not None
+    assert "setlistId" in pajama
+    assert "title" in pajama
+    assert "type" in pajama
+    assert "active" in pajama
+    assert pajama["active"] is True
+    assert "imageUrl" in pajama
+    assert "imageUrl_medium" in pajama
+    assert "imageUrl_small" in pajama
+    assert "blurHash" in pajama
+    
+    # Check inactive
+    special_event = next((o for o in options if o["title"] == "Special Event"), None)
+    assert special_event is not None
+    assert special_event["active"] is False
+
+@pytest.mark.asyncio
 async def test_get_setlist_by_id(client: AsyncClient, seed_setlists_db, create_user):
     """Test getting a setlist by its ID."""
     token, user_id, headers = await create_user("iduser")

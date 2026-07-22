@@ -11,10 +11,11 @@
 	import { LoaderCircle, CircleCheck, NotebookPen } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
-	import { SHOW_IMAGES, THEATER_ROWS } from '$lib/constants';
+	import { THEATER_ROWS } from '$lib/constants';
 	import { setlistsStore } from '$lib/stores/theater.svelte';
 	import { cleanseMarkdown, cleanseStorageUrl } from '$lib/utils/markdown';
 	import { getErrorMessage } from '$lib/utils/api';
+	import { portal } from '$lib/actions/portal';
 
 	// Sub-components
 	import ImagePreview from './tickets/edit/ImagePreview.svelte';
@@ -33,12 +34,13 @@
 
 	const { t } = useTranslation();
 
-	let SHOW_OPTIONS = $derived(
-		setlistsStore.data ? setlistsStore.data.map((s) => s.title) : SHOW_IMAGES.map((s) => s.title)
-	);
-
 	onMount(() => {
-		setlistsStore.load();
+		setlistsStore.loadOptions();
+		const originalOverflow = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+		return () => {
+			document.body.style.overflow = originalOverflow;
+		};
 	});
 
 	const ROW_OPTIONS = THEATER_ROWS;
@@ -310,18 +312,18 @@
 	};
 </script>
 
-<div class="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6">
+<div use:portal class="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6">
 	<!-- Backdrop -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
+		class="absolute inset-0 bg-black/90 transition-opacity duration-300"
 		onclick={() => onclose?.()}
 	></div>
 
 	<!-- Modal Content -->
 	<div
-		class="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl w-full max-w-5xl h-[90vh] rounded-3xl shadow-2xl overflow-y-auto custom-scrollbar relative z-10 animate-fade-in"
+		class="bg-white dark:bg-zinc-900 w-full max-w-5xl h-[90vh] rounded-3xl shadow-2xl overflow-y-auto custom-scrollbar relative z-10 animate-fade-in"
 	>
 		<div class="max-w-5xl mx-auto p-4 md:p-8 pb-24">
 			<!-- Header -->
@@ -379,7 +381,6 @@
 							bind:title={formData.event.title}
 							bind:date={formData.event.date}
 							bind:time={formData.event.time}
-							showOptions={SHOW_OPTIONS}
 						/>
 
 						<!-- Seat & Payment -->

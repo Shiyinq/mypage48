@@ -758,6 +758,8 @@
 		"eventDetails": "",
 		"showTitle": "",
 		"selectSetlist": "",
+		"searchSetlist": "",
+		"noSetlistsFound": "",
 		"date": "",
 		"showTime": "",
 		"seatPayment": "",

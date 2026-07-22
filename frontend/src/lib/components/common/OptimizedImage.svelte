@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-	import { ImageIcon, LoaderCircle } from 'lucide-svelte';
+	import { ImageOff, LoaderCircle } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { decode } from 'blurhash';
 
@@ -64,11 +64,13 @@
 
 	let isLoaded = $state(false);
 	let isError = $state(false);
+	let hasShownImage = $state(false);
 	let imgRef: HTMLImageElement | undefined = $state();
 	let canvasRef: HTMLCanvasElement | undefined = $state();
 
 	function handleLoad() {
 		isLoaded = true;
+		hasShownImage = true;
 		if (src) loadedImageUrls.add(src);
 	}
 
@@ -123,20 +125,17 @@
 	role="presentation"
 >
 	<!-- Error State -->
-	{#if isError && fallback}
+	{#if (isError || !src) && fallback}
 		<div
-			class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800"
+			class="absolute inset-0 z-20 flex items-center justify-center bg-gray-200 dark:bg-zinc-800 text-gray-400"
 		>
-			<ImageIcon class="w-8 h-8 text-gray-300 dark:text-zinc-700 mb-2" />
-			<span class="text-[10px] uppercase tracking-widest text-gray-400 font-bold"
-				>Failed to load</span
-			>
+			<ImageOff class="w-6 h-6 text-gray-400 dark:text-zinc-400" />
 		</div>
 	{:else}
 		<!-- Image (renders immediately to support progressive loading) -->
 		{#if src}
 			<!-- BlurHash Placeholder -->
-			{#if blurHash && !isLoaded && !isError}
+			{#if blurHash && !isLoaded && !isError && !hasShownImage}
 				<canvas
 					bind:this={canvasRef}
 					width="32"
@@ -165,7 +164,7 @@
 		{/if}
 
 		<!-- Loading Overlay (shows over the blurring image/canvas) -->
-		{#if !isLoaded && !isError && !blurHash}
+		{#if !isLoaded && !isError && !blurHash && !hasShownImage}
 			<div
 				class="absolute inset-0 z-10 flex items-center justify-center bg-white/5 dark:bg-black/5 border border-white/10 dark:border-black/10 backdrop-blur-[1px] transition-opacity duration-500"
 			>

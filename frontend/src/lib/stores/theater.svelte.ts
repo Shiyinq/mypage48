@@ -1,4 +1,9 @@
-import { setlistsApi, type Setlist, type SetlistDetailResponse } from '$lib/apis/setlists';
+import {
+	setlistsApi,
+	type Setlist,
+	type SetlistDetailResponse,
+	type SetlistOption
+} from '$lib/apis/setlists';
 import { members as membersApi, type Member, type BirthdayResponse } from '$lib/apis/members';
 import { logger } from '$lib/utils/logger';
 import { createRequestDedup } from '$lib/utils/requestDedup';
@@ -18,6 +23,8 @@ interface SetlistsState {
 	isSetlistDetailLoading: boolean;
 	maxAttendance: number;
 	lastFilterKey: string | null;
+	options: SetlistOption[] | null;
+	isOptionsLoading: boolean;
 }
 
 const initialSetlistsState: SetlistsState = {
@@ -28,11 +35,24 @@ const initialSetlistsState: SetlistsState = {
 	isSetlistsLoading: false,
 	isSetlistDetailLoading: false,
 	maxAttendance: 1,
-	lastFilterKey: null
+	lastFilterKey: null,
+	options: null,
+	isOptionsLoading: false
 };
 
 const setlistsState = $state<SetlistsState>(initialSetlistsState);
 const setlistsDedup = createRequestDedup();
+
+let globalTicketSlideIndex = $state(0);
+let ticketSlideTimer: ReturnType<typeof setInterval> | null = null;
+
+function ensureTicketSlideTimer() {
+	if (typeof window !== 'undefined' && !ticketSlideTimer) {
+		ticketSlideTimer = setInterval(() => {
+			globalTicketSlideIndex = (globalTicketSlideIndex + 1) % 2;
+		}, 10000);
+	}
+}
 
 function createSetlistsStore() {
 	return {
@@ -56,6 +76,12 @@ function createSetlistsStore() {
 		},
 		get maxAttendance() {
 			return setlistsState.maxAttendance;
+		},
+		get options() {
+			return setlistsState.options;
+		},
+		get isOptionsLoading() {
+			return setlistsState.isOptionsLoading;
 		},
 
 		load: async (filter?: {
@@ -129,8 +155,36 @@ function createSetlistsStore() {
 			});
 		},
 
+		loadOptions: async () => {
+			if (setlistsState.options) {
+				return setlistsState.options;
+			}
+
+			return setlistsDedup.execute('options', async () => {
+				setlistsState.error = null;
+				setlistsState.isOptionsLoading = true;
+
+				try {
+					const options = await setlistsApi.getOptions();
+					setlistsState.options = options;
+					setlistsState.error = null;
+					return options;
+				} catch (e) {
+					logger.error('Failed to load setlist options', e, { context: 'SetlistsStore' });
+					setlistsState.error = 'Failed to load options';
+					throw e;
+				} finally {
+					setlistsState.isOptionsLoading = false;
+				}
+			});
+		},
+
 		reset: () => {
-			Object.assign(setlistsState, initialSetlistsState);
+			Object.assign(setlistsState, {
+				...initialSetlistsState,
+				options: setlistsState.options,
+				isOptionsLoading: setlistsState.isOptionsLoading
+			});
 			setlistsDedup.clear();
 		},
 
@@ -198,22 +252,20 @@ interface MembersState {
 	isBirthdaysLoading: boolean;
 }
 
-const initialMembersState: MembersState = {
-	list: [],
-	birthdays: [],
-	pagination: { page: 0, hasMore: true },
-	cache: {},
-	generationsCache: null,
-	currentFilter: {},
-	error: null,
-	isMembersLoading: false,
-	isBirthdaysLoading: false
-};
-
-const membersState = $state<MembersState>(initialMembersState);
-const membersDedup = createRequestDedup();
-
 function createMembersStore() {
+	const membersState = $state<MembersState>({
+		list: [],
+		birthdays: [],
+		pagination: { page: 0, hasMore: true },
+		cache: {},
+		generationsCache: null,
+		currentFilter: {},
+		error: null,
+		isMembersLoading: false,
+		isBirthdaysLoading: false
+	});
+	const membersDedup = createRequestDedup();
+
 	return {
 		get list() {
 			return membersState.list;
@@ -255,10 +307,20 @@ function createMembersStore() {
 		},
 
 		load: async (
-			params: { page?: number; limit?: number; generation?: string; search?: string } = {},
+			params: {
+				page?: number;
+				limit?: number;
+				generation?: string;
+				search?: string;
+				include_inactive?: boolean;
+			} = {},
 			reset = false
 		) => {
-			const cacheKey = JSON.stringify({ generation: params.generation, search: params.search });
+			const cacheKey = JSON.stringify({
+				generation: params.generation,
+				search: params.search,
+				include_inactive: params.include_inactive
+			});
 
 			if (reset && membersState.cache[cacheKey]) {
 				const cached = membersState.cache[cacheKey];
@@ -318,7 +380,17 @@ function createMembersStore() {
 		},
 
 		reset: () => {
-			Object.assign(membersState, initialMembersState);
+			Object.assign(membersState, {
+				list: [],
+				birthdays: [],
+				pagination: { page: 0, hasMore: true },
+				cache: {},
+				currentFilter: {},
+				error: null,
+				isMembersLoading: false,
+				isBirthdaysLoading: false,
+				generationsCache: membersState.generationsCache
+			});
 			membersDedup.clear();
 		},
 
@@ -338,16 +410,17 @@ function createMembersStore() {
 }
 
 export const membersStore = createMembersStore();
+export const selectorMembersStore = createMembersStore();
 
 // Derived Compatibility Aliases
 export const isMembersLoading = {
 	get value() {
-		return membersState.isMembersLoading;
+		return membersStore.isLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
-		fn(membersState.isMembersLoading);
+		fn(membersStore.isLoading);
 		$effect.root(() => {
-			$effect(() => fn(membersState.isMembersLoading));
+			$effect(() => fn(membersStore.isLoading));
 		});
 		return () => {};
 	}
@@ -355,12 +428,12 @@ export const isMembersLoading = {
 
 export const isBirthdaysLoading = {
 	get value() {
-		return membersState.isBirthdaysLoading;
+		return membersStore.isBirthdaysLoading;
 	},
 	subscribe: (fn: (val: boolean) => void) => {
-		fn(membersState.isBirthdaysLoading);
+		fn(membersStore.isBirthdaysLoading);
 		$effect.root(() => {
-			$effect(() => fn(membersState.isBirthdaysLoading));
+			$effect(() => fn(membersStore.isBirthdaysLoading));
 		});
 		return () => {};
 	}
@@ -368,12 +441,12 @@ export const isBirthdaysLoading = {
 
 export const membersPagination = {
 	get value() {
-		return membersState.pagination;
+		return membersStore.pagination;
 	},
 	subscribe: (cb: (val: { page: number; hasMore: boolean }) => void) => {
-		cb(membersState.pagination);
+		cb(membersStore.pagination);
 		$effect.root(() => {
-			$effect(() => cb(membersState.pagination));
+			$effect(() => cb(membersStore.pagination));
 		});
 		return () => {};
 	}
@@ -408,4 +481,9 @@ export const isSetlistDetailLoading = {
 export function invalidateTheater() {
 	setlistsStore.reset();
 	membersStore.reset();
+}
+
+export function getTicketSlideIndex() {
+	ensureTicketSlideTimer();
+	return globalTicketSlideIndex;
 }

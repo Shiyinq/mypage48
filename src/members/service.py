@@ -45,28 +45,25 @@ class MemberService:
         if img_path.startswith("data:") or img_path.startswith("http"):
             return member
 
-        # If it looks like an internal storage path
+        # If it looks like an internal storage path (e.g. media/jkt48-member/...)
         if img_path.startswith("media/") or "/" not in img_path:
-            res = await self.storage_service.resolve_image_variants(img_path)
-        else:
-            # Fallback to external media resolution (jkt48.com)
-            res = await self.storage_service.resolve_external_media(img_path)
+            url, url_medium, url_small = await asyncio.gather(
+                self.storage_service.resolve_url(img_path),
+                self.storage_service.resolve_url(img_path, variant="medium"),
+                self.storage_service.resolve_url(img_path, variant="small"),
+            )
+            member["img"] = url
+            member["img_medium"] = url_medium
+            member["img_small"] = url_small
+            return member
 
+        # Fallback to external media resolution (jkt48.com)
+        res = await self.storage_service.resolve_external_media(img_path)
         member["img"] = res["url"]
         member["img_medium"] = res.get("url_medium")
         member["img_small"] = res.get("url_small")
 
-        if res.get("blurHash"):
-            # If it was missing in the DB but found in storage, update the DB
-            if not member.get("blurHash"):
-                try:
-                    await self.repository.update_one(
-                        member["id"], {"blurHash": res["blurHash"]}
-                    )
-                except Exception as e:
-                    logger.warning(
-                        f"Failed to JIT update blurHash for member {member.get('id')}: {e}"
-                    )
+        if res.get("blurHash") and not member.get("blurHash"):
             member["blurHash"] = res["blurHash"]
 
         return member
@@ -77,12 +74,15 @@ class MemberService:
         limit: int = 20,
         generation: Optional[str] = None,
         search: Optional[str] = None,
+        include_inactive: bool = False,
     ) -> MemberListResponse:
         """Get all members with optional filtering"""
         try:
             skip = (page - 1) * limit
-            members = await self.repository.find_all(skip, limit, generation, search)
-            total = await self.repository.count(generation, search)
+            members = await self.repository.find_all(
+                skip, limit, generation, search, include_inactive
+            )
+            total = await self.repository.count(generation, search, include_inactive)
 
             resolved_members = await asyncio.gather(
                 *(self._resolve_member(member) for member in members)

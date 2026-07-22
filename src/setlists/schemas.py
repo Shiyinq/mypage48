@@ -19,6 +19,19 @@ class SetlistBase(BaseModel):
     songs: Optional[List[str]] = []
 
 
+class SetlistOption(BaseModel):
+    """Lightweight schema for setlist dropdowns"""
+
+    setlistId: str
+    title: str
+    type: str
+    active: bool
+    imageUrl: str
+    imageUrl_medium: Optional[str] = None
+    imageUrl_small: Optional[str] = None
+    blurHash: Optional[str] = None
+
+
 class WatchedStats(BaseModel):
     """User-specific watch statistics for a setlist"""
 

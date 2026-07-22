@@ -53,13 +53,20 @@ export interface BirthdayResponse {
 
 export const members = {
 	getAll: async (
-		params: { page?: number; limit?: number; generation?: string; search?: string } = {}
+		params: {
+			page?: number;
+			limit?: number;
+			generation?: string;
+			search?: string;
+			include_inactive?: boolean;
+		} = {}
 	) => {
 		const query = new URLSearchParams();
 		if (params.page) query.append('page', params.page.toString());
 		if (params.limit) query.append('limit', params.limit.toString());
 		if (params.generation) query.append('generation', params.generation);
 		if (params.search) query.append('search', params.search);
+		if (params.include_inactive) query.append('include_inactive', 'true');
 
 		return client<MemberListResponse>(`/members?${query.toString()}`);
 	},

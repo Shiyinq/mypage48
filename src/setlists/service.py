@@ -12,6 +12,7 @@ from src.setlists.schemas import (
     SetlistDetailResponse,
     SetlistDetailStats,
     SetlistListResponse,
+    SetlistOption,
     SetlistResponse,
     SetlistUpdateRequest,
     SetlistWithStats,
@@ -91,11 +92,13 @@ class SetlistsService:
             )
             total = await self.repository.count(setlist_type, active, search)
 
-            setlist_responses = []
-            for setlist in setlists:
-                # Resolve image URLs
-                resolved = await self._resolve_setlist(setlist)
+            # Resolve image URLs concurrently to speed up the API
+            resolved_setlists = await asyncio.gather(
+                *[self._resolve_setlist(setlist) for setlist in setlists]
+            )
 
+            setlist_responses = []
+            for resolved in resolved_setlists:
                 count = resolved.get("count", 0)
                 percentage = (count / max_attendance) * 100 if max_attendance > 0 else 0
                 is_most_watched = count == max_attendance and count > 0
@@ -166,6 +169,39 @@ class SetlistsService:
             return await self.repository.get_types()
         except Exception as e:
             logger.exception(f"Error fetching types: {str(e)}")
+            raise SetlistFetchError()
+
+    async def get_setlist_options(self) -> List[SetlistOption]:
+        """Get list of setlist options for dropdowns"""
+        try:
+            # We fetch up to 500 setlists for the dropdown, including inactive
+            setlists = await self.repository.find_all(limit=500)
+
+            # Resolve setlists concurrently to speed up the API
+            resolved_setlists = await asyncio.gather(
+                *[self._resolve_setlist(setlist) for setlist in setlists]
+            )
+
+            options = []
+            for resolved in resolved_setlists:
+                options.append(
+                    SetlistOption(
+                        setlistId=resolved.get("setlistId"),
+                        title=resolved.get("title"),
+                        type=resolved.get("type", "setlist"),
+                        active=resolved.get("active", False),
+                        imageUrl=resolved.get("imageUrl", ""),
+                        imageUrl_medium=resolved.get("imageUrl_medium"),
+                        imageUrl_small=resolved.get("imageUrl_small"),
+                        blurHash=resolved.get("blurHash"),
+                    )
+                )
+
+            # Sort by active (desc), type, then title
+            options.sort(key=lambda x: (not x.active, x.type, x.title))
+            return options
+        except Exception as e:
+            logger.exception(f"Error fetching setlist options: {str(e)}")
             raise SetlistFetchError()
 
     async def get_setlist_detail(
