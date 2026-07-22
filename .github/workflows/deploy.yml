@@ -72,7 +72,7 @@ jobs:
     if: needs.check-changes.outputs.recorder48 == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment:
-      name: production
+      name: production-recorder
     steps:
       - name: Deploy Recorder to VPS
         uses: appleboy/ssh-action@master
