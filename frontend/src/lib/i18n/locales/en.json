@@ -945,6 +945,8 @@
 			"stopRecord": "Stop Recording",
 			"fullscreen": "Fullscreen",
 			"exitFullscreen": "Exit Fullscreen",
+			"tripleView": "Triple Screen Mode",
+			"exitTripleView": "Exit Triple Screen",
 			"play": "Play",
 			"pause": "Pause",
 			"loading_stream": "Connecting to Stream...",

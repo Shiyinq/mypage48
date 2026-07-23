@@ -862,6 +862,8 @@
 			"stopRecord": "",
 			"fullscreen": "",
 			"exitFullscreen": "",
+			"tripleView": "",
+			"exitTripleView": "",
 			"play": "",
 			"pause": "",
 			"loading_stream": "",
