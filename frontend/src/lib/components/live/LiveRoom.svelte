@@ -1159,62 +1159,6 @@
 
 							<!-- Right: Screenshot, Record, Theme, Focus, Fullscreen, Refresh, Rotate, Sidebar, Chat -->
 							<div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
-									onclick={takeScreenshot}
-								>
-									<Camera size={18} />
-									<div
-										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
-									>
-										{t('theater.live.screenshot')}
-									</div>
-								</button>
-
-								<div class="flex items-center gap-1.5 min-w-[40px] transition-all duration-300">
-									<button
-										class="group/btn relative w-10 h-10 flex items-center justify-center {isRecording
-											? 'bg-red-600 animate-pulse'
-											: 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all flex-shrink-0 active:scale-95 cursor-pointer"
-										onclick={toggleRecording}
-									>
-										{#if isRecording}<Square size={16} fill="white" />{:else}<Circle
-												size={16}
-												fill="white"
-												class="text-white"
-											/>{/if}
-										<div
-											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
-										>
-											{isRecording ? t('theater.live.stopRecord') : t('theater.live.record')}
-										</div>
-									</button>
-									{#if isRecording}
-										<div
-											class="text-white text-[11px] font-mono font-bold tabular-nums px-1.5 py-0.5 bg-red-600 rounded-sm shadow-sm"
-											in:fly={{ x: -10, duration: 300 }}
-										>
-											{formatTime(recordingDuration)}
-										</div>
-									{/if}
-								</div>
-
-								<div class="w-px h-4 bg-white/20 mx-1"></div>
-
-								{#if isFocusMode}
-									<button
-										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
-										onclick={toggleTheme}
-									>
-										{#if theme.value === 'dark'}<Moon size={18} />{:else}<Sun size={18} />{/if}
-										<div
-											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
-										>
-											{t('theater.live.toggleTheme')}
-										</div>
-									</button>
-								{/if}
-
 								{#if platform === 'idn'}
 									<!-- Triple View: desktop only -->
 									<button
@@ -1262,6 +1206,63 @@
 										{isFullscreen ? t('theater.live.exitFullscreen') : t('theater.live.fullscreen')}
 									</div>
 								</button>
+
+								<div class="w-px h-4 bg-white/20 mx-1"></div>
+
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
+									onclick={takeScreenshot}
+								>
+									<Camera size={18} />
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
+									>
+										{t('theater.live.screenshot')}
+									</div>
+								</button>
+
+								<div class="flex items-center gap-1.5 min-w-[40px] transition-all duration-300">
+									<button
+										class="group/btn relative w-10 h-10 flex items-center justify-center {isRecording
+											? 'bg-red-600 animate-pulse'
+											: 'bg-white/10 hover:bg-white/20'} text-white rounded-full transition-all flex-shrink-0 active:scale-95 cursor-pointer"
+										onclick={toggleRecording}
+									>
+										{#if isRecording}<Square size={16} fill="white" />{:else}<Circle
+												size={16}
+												fill="white"
+												class="text-white"
+											/>{/if}
+										<div
+											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
+										>
+											{isRecording ? t('theater.live.stopRecord') : t('theater.live.record')}
+										</div>
+									</button>
+									{#if isRecording}
+										<div
+											class="text-white text-[11px] font-mono font-bold tabular-nums px-1.5 py-0.5 bg-red-600 rounded-sm shadow-sm"
+											in:fly={{ x: -10, duration: 300 }}
+										>
+											{formatTime(recordingDuration)}
+										</div>
+									{/if}
+								</div>
+
+								{#if isFocusMode}
+									<div class="w-px h-4 bg-white/20 mx-1"></div>
+									<button
+										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
+										onclick={toggleTheme}
+									>
+										{#if theme.value === 'dark'}<Moon size={18} />{:else}<Sun size={18} />{/if}
+										<div
+											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+										>
+											{t('theater.live.toggleTheme')}
+										</div>
+									</button>
+								{/if}
 
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
@@ -1324,7 +1325,12 @@
 										: 'bg-white text-black'} rounded-full transition-all flex-shrink-0 cursor-pointer"
 									onclick={() => (chatVisible = !chatVisible)}
 								>
-									<ChevronRight size={18} class={chatVisible ? 'rotate-0' : 'rotate-180'} />
+									<ChevronRight
+										size={18}
+										class="transition-transform duration-300 {chatVisible
+											? 'rotate-90 lg:rotate-0'
+											: '-rotate-90 lg:rotate-180'}"
+									/>
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>
