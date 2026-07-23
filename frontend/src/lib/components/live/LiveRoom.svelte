@@ -1143,8 +1143,9 @@
 									/>
 								</div>
 
+								<!-- PiP button: desktop/tablet only -->
 								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
+									class="group/btn relative w-10 h-10 hidden sm:flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
 									onclick={togglePiP}
 								>
 									<PictureInPicture2 size={18} />
@@ -1214,35 +1215,39 @@
 									</button>
 								{/if}
 
-								<!-- Triple View: desktop only -->
-								<button
-									class="group/btn relative w-10 h-10 hidden sm:flex items-center justify-center {isTripleView
-										? 'bg-white text-black'
-										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									onclick={toggleTripleView}
-								>
-									<Columns3 size={18} />
-									<div
-										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+								{#if platform === 'idn'}
+									<!-- Triple View: desktop only -->
+									<button
+										class="group/btn relative w-10 h-10 hidden sm:flex items-center justify-center {isTripleView
+											? 'bg-white text-black'
+											: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
+										onclick={toggleTripleView}
 									>
-										{isTripleView ? t('theater.live.exitTripleView') : t('theater.live.tripleView')}
-									</div>
-								</button>
+										<Columns3 size={18} />
+										<div
+											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+										>
+											{isTripleView
+												? t('theater.live.exitTripleView')
+												: t('theater.live.tripleView')}
+										</div>
+									</button>
 
-								<!-- Fill Screen: mobile only -->
-								<button
-									class="group/btn relative w-10 h-10 flex sm:hidden items-center justify-center {isFillMode
-										? 'bg-white text-black'
-										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									onclick={() => (isFillMode = !isFillMode)}
-								>
-									<Ratio size={18} />
-									<div
-										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+									<!-- Fill Screen: mobile only -->
+									<button
+										class="group/btn relative w-10 h-10 flex sm:hidden items-center justify-center {isFillMode
+											? 'bg-white text-black'
+											: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
+										onclick={() => (isFillMode = !isFillMode)}
 									>
-										{isFillMode ? t('theater.live.exitFillMode') : t('theater.live.fillMode')}
-									</div>
-								</button>
+										<Ratio size={18} />
+										<div
+											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+										>
+											{isFillMode ? t('theater.live.exitFillMode') : t('theater.live.fillMode')}
+										</div>
+									</button>
+								{/if}
 
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center {isFullscreen
