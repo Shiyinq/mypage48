@@ -211,10 +211,10 @@
 						parsedText = `GIFT: ${g.name}`;
 					} else if (json.chat && json.chat.message) {
 						parsedText = json.chat.message;
-					} else if (json.letter && json.letter.message) {
+					} else if (json.letter) {
 						isLetter = true;
 						letterType = json.letter.type?.name || 'Letter';
-						parsedText = json.letter.message;
+						parsedText = json.letter.message || '';
 						if (json.letter.recipient) {
 							recipient = {
 								name: json.letter.recipient.name,
