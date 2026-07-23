@@ -27,8 +27,6 @@
 		Info,
 		ChevronRight,
 		RefreshCw,
-		Maximize2,
-		Minimize2,
 		Maximize,
 		Minimize,
 		Camera,
@@ -377,20 +375,6 @@
 			}
 		};
 	});
-
-	function toggleFocus() {
-		isFocusMode = !isFocusMode;
-		if (shouldManage) isImmersive.set(isFocusMode);
-		if (typeof document !== 'undefined') {
-			if (isFocusMode) {
-				document.body.style.overflow = 'hidden';
-				if (window.innerWidth < 1024) chatVisible = false;
-			} else {
-				document.body.style.overflow = 'auto';
-				chatVisible = true;
-			}
-		}
-	}
 
 	async function refreshStream() {
 		if (hls) {
@@ -1053,20 +1037,6 @@
 										</div>
 									</button>
 								{/if}
-
-								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center {isFocusMode
-										? 'bg-white text-black'
-										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									onclick={toggleFocus}
-								>
-									{#if isFocusMode}<Minimize2 size={18} />{:else}<Maximize2 size={18} />{/if}
-									<div
-										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
-									>
-										{isFocusMode ? t('theater.live.exitFocus') : t('theater.live.focusMode')}
-									</div>
-								</button>
 
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center {isFullscreen
