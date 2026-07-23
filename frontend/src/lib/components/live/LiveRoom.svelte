@@ -27,8 +27,6 @@
 		Info,
 		ChevronRight,
 		RefreshCw,
-		Maximize2,
-		Minimize2,
 		Maximize,
 		Minimize,
 		Camera,
@@ -43,6 +41,8 @@
 		Moon,
 		RotateCw,
 		Tv,
+		Columns3,
+		Ratio,
 		ExternalLink
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
@@ -107,6 +107,94 @@
 	let playerHeight = $state(0);
 	let isBuffering = $state(false);
 	let autoplayBlocked = $state(false);
+	let isFillMode = $state(false);
+
+	let isTripleView = $state(false);
+	let leftVideoElement = $state<HTMLVideoElement | null>(null);
+	let rightVideoElement = $state<HTMLVideoElement | null>(null);
+	let leftCanvasElement = $state<HTMLCanvasElement | null>(null);
+	let rightCanvasElement = $state<HTMLCanvasElement | null>(null);
+	let useCanvasFallback = $state(false);
+	let tripleViewAnimFrame: number | null = null;
+	let activeTripleStream: MediaStream | null = null;
+
+	function toggleTripleView() {
+		isTripleView = !isTripleView;
+		if (!isTripleView) {
+			if (tripleViewAnimFrame) {
+				cancelAnimationFrame(tripleViewAnimFrame);
+				tripleViewAnimFrame = null;
+			}
+			if (leftVideoElement) leftVideoElement.srcObject = null;
+			if (rightVideoElement) rightVideoElement.srcObject = null;
+		} else {
+			syncTripleViewStreams();
+		}
+	}
+
+	function syncTripleViewStreams() {
+		if (!isTripleView || !videoElement) return;
+
+		if (!activeTripleStream) {
+			try {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const ve = videoElement as any;
+				const stream = ve.captureStream
+					? ve.captureStream()
+					: ve.mozCaptureStream
+						? ve.mozCaptureStream()
+						: null;
+				if (stream && stream.getVideoTracks().length > 0) {
+					activeTripleStream = stream;
+				}
+			} catch (e) {
+				console.warn('TripleView captureStream unavailable, using canvas fallback:', e);
+				useCanvasFallback = true;
+			}
+		}
+
+		if (activeTripleStream) {
+			if (leftVideoElement && leftVideoElement.srcObject !== activeTripleStream) {
+				leftVideoElement.muted = true;
+				leftVideoElement.srcObject = activeTripleStream;
+				leftVideoElement.play().catch(() => {});
+			}
+			if (rightVideoElement && rightVideoElement.srcObject !== activeTripleStream) {
+				rightVideoElement.muted = true;
+				rightVideoElement.srcObject = activeTripleStream;
+				rightVideoElement.play().catch(() => {});
+			}
+		} else if (useCanvasFallback) {
+			if (!tripleViewAnimFrame) {
+				renderCanvasTripleView();
+			}
+		}
+	}
+
+	function renderCanvasTripleView() {
+		if (!isTripleView || !videoElement || videoElement.paused || videoElement.ended) return;
+		const vw = videoElement.videoWidth;
+		const vh = videoElement.videoHeight;
+		if (vw && vh) {
+			if (leftCanvasElement) {
+				if (leftCanvasElement.width !== vw) {
+					leftCanvasElement.width = vw;
+					leftCanvasElement.height = vh;
+				}
+				const ctx = leftCanvasElement.getContext('2d');
+				ctx?.drawImage(videoElement, 0, 0, vw, vh);
+			}
+			if (rightCanvasElement) {
+				if (rightCanvasElement.width !== vw) {
+					rightCanvasElement.width = vw;
+					rightCanvasElement.height = vh;
+				}
+				const ctx = rightCanvasElement.getContext('2d');
+				ctx?.drawImage(videoElement, 0, 0, vw, vh);
+			}
+		}
+		tripleViewAnimFrame = requestAnimationFrame(renderCanvasTripleView);
+	}
 
 	function rotateVideo() {
 		rotation += 90;
@@ -370,6 +458,7 @@
 			clearInterval(heartbeatInterval);
 			if (hls) hls.destroy();
 			if (recordingTimer) clearInterval(recordingTimer);
+			if (tripleViewAnimFrame) cancelAnimationFrame(tripleViewAnimFrame);
 			liveStore.reset();
 			if (shouldManage) isImmersive.set(false);
 			if (typeof document !== 'undefined') {
@@ -377,20 +466,6 @@
 			}
 		};
 	});
-
-	function toggleFocus() {
-		isFocusMode = !isFocusMode;
-		if (shouldManage) isImmersive.set(isFocusMode);
-		if (typeof document !== 'undefined') {
-			if (isFocusMode) {
-				document.body.style.overflow = 'hidden';
-				if (window.innerWidth < 1024) chatVisible = false;
-			} else {
-				document.body.style.overflow = 'auto';
-				chatVisible = true;
-			}
-		}
-	}
 
 	async function refreshStream() {
 		if (hls) {
@@ -402,6 +477,15 @@
 			videoElement.src = '';
 			videoElement.load();
 		}
+		if (leftVideoElement) {
+			leftVideoElement.pause();
+			leftVideoElement.srcObject = null;
+		}
+		if (rightVideoElement) {
+			rightVideoElement.pause();
+			rightVideoElement.srcObject = null;
+		}
+		activeTripleStream = null;
 		peakDuration = 0;
 		await initPlayer();
 	}
@@ -825,40 +909,116 @@
 					</div>
 				</div>
 
-				<video
-					bind:this={videoElement}
-					class="relative z-10 w-full h-full object-contain cursor-pointer bg-transparent transition-transform duration-300"
-					style="transform: rotate({rotation}deg);"
-					crossorigin="anonymous"
-					autoplay
-					playsinline
-					ontimeupdate={() => {
-						currentTime = videoElement?.currentTime || 0;
-						updateBufferAndDuration();
-					}}
-					onloadedmetadata={() => {
-						duration = videoElement?.duration || 0;
-						// videoWidth = videoElement?.videoWidth || 0;
-						// videoHeight = videoElement?.videoHeight || 0;
-						updateBufferAndDuration();
-					}}
-					onplay={() => (isPaused = false)}
-					onpause={() => {
-						isPaused = true;
-						isBuffering = false;
-					}}
-					onclick={() => {
-						if (ignoreNextVideoClick) {
-							ignoreNextVideoClick = false;
-							return;
-						}
-						togglePlayPause();
-					}}
-					onwaiting={() => (isBuffering = true)}
-					onplaying={() => (isBuffering = false)}
-					onstalled={() => (isBuffering = true)}
-					oncanplay={() => (isBuffering = false)}
-				></video>
+				<div
+					class="relative z-10 w-full h-full flex items-center justify-center bg-black overflow-hidden"
+				>
+					<!-- Left Side Clone -->
+					<div
+						class={isTripleView
+							? 'w-1/3 h-full overflow-hidden relative flex items-center justify-center'
+							: 'hidden'}
+					>
+						{#if !useCanvasFallback}
+							<video
+								bind:this={leftVideoElement}
+								class="w-full h-full object-cover scale-[1.45] pointer-events-none opacity-90 transition-all duration-300"
+								style="transform: rotate({rotation}deg);"
+								autoplay
+								playsinline
+								muted
+							></video>
+						{:else}
+							<canvas
+								bind:this={leftCanvasElement}
+								class="w-full h-full object-cover scale-[1.45] pointer-events-none opacity-90 transition-all duration-300"
+								style="transform: rotate({rotation}deg);"
+							></canvas>
+						{/if}
+					</div>
+
+					<!-- Center (PERMANENT SINGLE videoElement, NEVER UNMOUNTED) -->
+					<div
+						class="{isTripleView
+							? 'w-1/3 h-full overflow-hidden'
+							: 'w-full h-full'} relative flex items-center justify-center transition-all duration-300"
+					>
+						<video
+							bind:this={videoElement}
+							class="w-full h-full {isTripleView
+								? 'object-cover scale-[1.45]'
+								: isFillMode
+									? 'object-cover'
+									: 'object-contain'} relative z-10 cursor-pointer bg-transparent transition-all duration-300"
+							style="transform: rotate({rotation}deg);"
+							crossorigin="anonymous"
+							autoplay
+							playsinline
+							ontimeupdate={() => {
+								currentTime = videoElement?.currentTime || 0;
+								updateBufferAndDuration();
+								if (isTripleView) syncTripleViewStreams();
+							}}
+							onloadedmetadata={() => {
+								duration = videoElement?.duration || 0;
+								updateBufferAndDuration();
+								if (isTripleView) syncTripleViewStreams();
+							}}
+							onplay={() => {
+								isPaused = false;
+								if (isTripleView) syncTripleViewStreams();
+							}}
+							onpause={() => {
+								isPaused = true;
+								isBuffering = false;
+							}}
+							onclick={() => {
+								if (ignoreNextVideoClick) {
+									ignoreNextVideoClick = false;
+									return;
+								}
+								togglePlayPause();
+							}}
+							ontouchstart={(e) => {
+								e.stopPropagation();
+								resetControlsTimeout(true);
+							}}
+							onwaiting={() => (isBuffering = true)}
+							onplaying={() => {
+								isBuffering = false;
+								if (isTripleView) syncTripleViewStreams();
+							}}
+							onstalled={() => (isBuffering = true)}
+							oncanplay={() => {
+								isBuffering = false;
+								if (isTripleView) syncTripleViewStreams();
+							}}
+						></video>
+					</div>
+
+					<!-- Right Side Clone -->
+					<div
+						class={isTripleView
+							? 'w-1/3 h-full overflow-hidden relative flex items-center justify-center'
+							: 'hidden'}
+					>
+						{#if !useCanvasFallback}
+							<video
+								bind:this={rightVideoElement}
+								class="w-full h-full object-cover scale-[1.45] pointer-events-none opacity-90 transition-all duration-300"
+								style="transform: rotate({rotation}deg);"
+								autoplay
+								playsinline
+								muted
+							></video>
+						{:else}
+							<canvas
+								bind:this={rightCanvasElement}
+								class="w-full h-full object-cover scale-[1.45] pointer-events-none opacity-90 transition-all duration-300"
+								style="transform: rotate({rotation}deg);"
+							></canvas>
+						{/if}
+					</div>
+				</div>
 
 				{#if autoplayBlocked}
 					<button
@@ -983,8 +1143,9 @@
 									/>
 								</div>
 
+								<!-- PiP button: desktop/tablet only -->
 								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
+									class="group/btn relative w-10 h-10 hidden sm:flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-all flex-shrink-0 cursor-pointer"
 									onclick={togglePiP}
 								>
 									<PictureInPicture2 size={18} />
@@ -998,6 +1159,56 @@
 
 							<!-- Right: Screenshot, Record, Theme, Focus, Fullscreen, Refresh, Rotate, Sidebar, Chat -->
 							<div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+								{#if platform === 'idn'}
+									<!-- Triple View: desktop only -->
+									<button
+										class="group/btn relative w-10 h-10 hidden sm:flex items-center justify-center {isTripleView
+											? 'bg-white text-black'
+											: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
+										onclick={toggleTripleView}
+									>
+										<Columns3 size={18} />
+										<div
+											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+										>
+											{isTripleView
+												? t('theater.live.exitTripleView')
+												: t('theater.live.tripleView')}
+										</div>
+									</button>
+
+									<!-- Fill Screen: mobile only -->
+									<button
+										class="group/btn relative w-10 h-10 flex sm:hidden items-center justify-center {isFillMode
+											? 'bg-white text-black'
+											: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
+										onclick={() => (isFillMode = !isFillMode)}
+									>
+										<Ratio size={18} />
+										<div
+											class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+										>
+											{isFillMode ? t('theater.live.exitFillMode') : t('theater.live.fillMode')}
+										</div>
+									</button>
+								{/if}
+
+								<button
+									class="group/btn relative w-10 h-10 flex items-center justify-center {isFullscreen
+										? 'bg-white text-black'
+										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
+									onclick={toggleFullscreen}
+								>
+									{#if isFullscreen}<Minimize size={18} />{:else}<Maximize size={18} />{/if}
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+									>
+										{isFullscreen ? t('theater.live.exitFullscreen') : t('theater.live.fullscreen')}
+									</div>
+								</button>
+
+								<div class="w-px h-4 bg-white/20 mx-1"></div>
+
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
 									onclick={takeScreenshot}
@@ -1038,9 +1249,8 @@
 									{/if}
 								</div>
 
-								<div class="w-px h-4 bg-white/20 mx-1"></div>
-
 								{#if isFocusMode}
+									<div class="w-px h-4 bg-white/20 mx-1"></div>
 									<button
 										class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
 										onclick={toggleTheme}
@@ -1053,34 +1263,6 @@
 										</div>
 									</button>
 								{/if}
-
-								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center {isFocusMode
-										? 'bg-white text-black'
-										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									onclick={toggleFocus}
-								>
-									{#if isFocusMode}<Minimize2 size={18} />{:else}<Maximize2 size={18} />{/if}
-									<div
-										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
-									>
-										{isFocusMode ? t('theater.live.exitFocus') : t('theater.live.focusMode')}
-									</div>
-								</button>
-
-								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center {isFullscreen
-										? 'bg-white text-black'
-										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
-									onclick={toggleFullscreen}
-								>
-									{#if isFullscreen}<Minimize size={18} />{:else}<Maximize size={18} />{/if}
-									<div
-										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
-									>
-										{isFullscreen ? t('theater.live.exitFullscreen') : t('theater.live.fullscreen')}
-									</div>
-								</button>
 
 								<button
 									class="group/btn relative w-10 h-10 flex items-center justify-center hover:bg-white/10 text-white rounded-full transition-all flex-shrink-0 cursor-pointer"
@@ -1143,7 +1325,12 @@
 										: 'bg-white text-black'} rounded-full transition-all flex-shrink-0 cursor-pointer"
 									onclick={() => (chatVisible = !chatVisible)}
 								>
-									<ChevronRight size={18} class={chatVisible ? 'rotate-0' : 'rotate-180'} />
+									<ChevronRight
+										size={18}
+										class="transition-transform duration-300 {chatVisible
+											? 'rotate-90 lg:rotate-0'
+											: '-rotate-90 lg:rotate-180'}"
+									/>
 									<div
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none"
 									>

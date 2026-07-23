@@ -1,4 +1,4 @@
-export type FilterType = 'this_week' | 'this_month' | 'this_year' | 'custom' | 'all_time';
+export type FilterType = 'today' | 'this_week' | 'this_month' | 'this_year' | 'custom' | 'all_time';
 
 export interface DateRange {
 	start: string;
@@ -24,6 +24,9 @@ class LiveHistoryFilterStore {
 		};
 
 		switch (this.filterType) {
+			case 'today': {
+				return { start: formatDate(now), end: formatDate(now) };
+			}
 			case 'this_week': {
 				const day = now.getDay();
 				const diffToMonday = now.getDate() - day + (day === 0 ? -6 : 1);
