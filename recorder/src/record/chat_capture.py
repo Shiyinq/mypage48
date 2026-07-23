@@ -275,8 +275,11 @@ async def capture_idn(
                             )
                             if username == "" and text == "":
                                 continue
-                            f.write(f"{offset:.3f}\t{username}\t{text}\t{is_gift}\n")
-                            f.flush()
+                            if username and text:
+                                f.write(
+                                    f"{offset:.3f}\t{username}\t{text}\t{is_gift}\n"
+                                )
+                                f.flush()
 
                             if jsonl_f and json_body:
                                 jsonl_f.write(json_body + "\n")
@@ -343,8 +346,8 @@ def _parse_idn_message(raw: str) -> tuple:
                 text = f"GIFT: {gift_name}"
             elif parsed.get("chat") and parsed["chat"].get("message"):
                 text = parsed["chat"]["message"]
-            elif parsed.get("letter") and parsed["letter"].get("message"):
-                text = parsed["letter"]["message"]
+            elif parsed.get("letter"):
+                text = parsed["letter"].get("message") or ""
             elif parsed.get("system") and parsed["system"].get("message"):
                 text = parsed["system"]["message"]
             else:
