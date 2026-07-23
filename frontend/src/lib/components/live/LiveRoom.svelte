@@ -978,6 +978,10 @@
 								}
 								togglePlayPause();
 							}}
+							ontouchstart={(e) => {
+								e.stopPropagation();
+								resetControlsTimeout(true);
+							}}
 							onwaiting={() => (isBuffering = true)}
 							onplaying={() => {
 								isBuffering = false;
