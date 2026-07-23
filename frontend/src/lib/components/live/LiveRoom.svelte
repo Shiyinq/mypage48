@@ -42,6 +42,7 @@
 		RotateCw,
 		Tv,
 		Columns3,
+		Ratio,
 		ExternalLink
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
@@ -106,6 +107,7 @@
 	let playerHeight = $state(0);
 	let isBuffering = $state(false);
 	let autoplayBlocked = $state(false);
+	let isFillMode = $state(false);
 
 	let isTripleView = $state(false);
 	let leftVideoElement = $state<HTMLVideoElement | null>(null);
@@ -944,7 +946,9 @@
 							bind:this={videoElement}
 							class="w-full h-full {isTripleView
 								? 'object-cover scale-[1.45]'
-								: 'object-contain'} relative z-10 cursor-pointer bg-transparent transition-all duration-300"
+								: isFillMode
+									? 'object-cover'
+									: 'object-contain'} relative z-10 cursor-pointer bg-transparent transition-all duration-300"
 							style="transform: rotate({rotation}deg);"
 							crossorigin="anonymous"
 							autoplay
@@ -1206,8 +1210,9 @@
 									</button>
 								{/if}
 
+								<!-- Triple View: desktop only -->
 								<button
-									class="group/btn relative w-10 h-10 flex items-center justify-center {isTripleView
+									class="group/btn relative w-10 h-10 hidden sm:flex items-center justify-center {isTripleView
 										? 'bg-white text-black'
 										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
 									onclick={toggleTripleView}
@@ -1217,6 +1222,21 @@
 										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
 									>
 										{isTripleView ? t('theater.live.exitTripleView') : t('theater.live.tripleView')}
+									</div>
+								</button>
+
+								<!-- Fill Screen: mobile only -->
+								<button
+									class="group/btn relative w-10 h-10 flex sm:hidden items-center justify-center {isFillMode
+										? 'bg-white text-black'
+										: 'hover:bg-white/10 text-white'} rounded-full transition-all flex-shrink-0 cursor-pointer"
+									onclick={() => (isFillMode = !isFillMode)}
+								>
+									<Ratio size={18} />
+									<div
+										class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded shadow-xl opacity-0 invisible group-hover/btn:opacity-100 group-hover/btn:visible transition-all duration-200 whitespace-nowrap z-[6000] pointer-events-none uppercase tracking-widest"
+									>
+										{isFillMode ? t('theater.live.exitFillMode') : t('theater.live.fillMode')}
 									</div>
 								</button>
 

@@ -1104,6 +1104,8 @@
 			"exitFullscreen": "Keluar Layar Penuh",
 			"tripleView": "Mode 3 Layar",
 			"exitTripleView": "Keluar 3 Layar",
+			"fillMode": "Isi Layar",
+			"exitFillMode": "Keluar Isi Layar",
 			"play": "Putar",
 			"pause": "Jeda",
 			"loading_stream": "Menghubungkan ke Stream...",

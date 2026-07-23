@@ -793,6 +793,8 @@
 			"exitFullscreen": "全画面表示終了",
 			"tripleView": "3画面モード",
 			"exitTripleView": "3画面モード終了",
+			"fillMode": "画面フィル",
+			"exitFillMode": "画面フィル終了",
 			"play": "再生",
 			"pause": "一時停止",
 			"loading_stream": "ストリームに接続中...",

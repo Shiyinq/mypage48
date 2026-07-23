@@ -947,6 +947,8 @@
 			"exitFullscreen": "Exit Fullscreen",
 			"tripleView": "Triple Screen Mode",
 			"exitTripleView": "Exit Triple Screen",
+			"fillMode": "Fill Screen",
+			"exitFillMode": "Exit Fill Screen",
 			"play": "Play",
 			"pause": "Pause",
 			"loading_stream": "Connecting to Stream...",
