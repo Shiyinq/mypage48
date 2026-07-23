@@ -30,6 +30,7 @@
 
 	let displayLabel = $derived.by(() => {
 		const type = liveHistoryFilterStore.filterType;
+		if (type === 'today') return t('liveHistory.today');
 		if (type === 'this_week') return t('liveHistory.thisWeek');
 		if (type === 'this_month') return t('liveHistory.thisMonth');
 		if (type === 'this_year') return t('liveHistory.thisYear');

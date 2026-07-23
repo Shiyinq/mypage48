@@ -42,6 +42,7 @@
 				onchange={handleTypeChange}
 				class="w-full appearance-none bg-gray-50 hover:bg-gray-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700 pl-4 pr-10 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 cursor-pointer transition-colors"
 			>
+				<option value="today">{t('liveHistory.today')}</option>
 				<option value="this_week">{t('liveHistory.thisWeek')}</option>
 				<option value="this_month">{t('liveHistory.thisMonth')}</option>
 				<option value="this_year">{t('liveHistory.thisYear')}</option>
