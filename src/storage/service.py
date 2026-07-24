@@ -416,12 +416,26 @@ class StorageService:
         return f"{self.config.api_base_url}/storage/m/{encoded_path}?expires={expires}&signature={signature}"
 
     async def resolve_image_variants(
-        self, path: Optional[str]
+        self, path: Optional[str], default_blur_hash: Optional[str] = None
     ) -> dict[str, Optional[str]]:
         """
         Resolve all image variants (Original, Medium, Small) for a given path.
         Returns a dict with 'url', 'url_medium', 'url_small', and 'blurHash'.
         """
+        if default_blur_hash:
+            results = await asyncio.gather(
+                self.resolve_url(path),
+                self.resolve_url(path, variant="medium"),
+                self.resolve_url(path, variant="small"),
+            )
+            url, url_medium, url_small = results
+            return {
+                "url": url,
+                "url_medium": url_medium,
+                "url_small": url_small,
+                "blurHash": default_blur_hash,
+            }
+
         # Gather URLs and metadata
         results = await asyncio.gather(
             self.resolve_url(path),

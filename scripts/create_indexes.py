@@ -59,6 +59,10 @@ async def create_indexes():
         # Replay indexes
         await db["replay"].create_index("live_id", unique=True)
         await db["replay"].create_index([("recording_ended_at", -1)])
+        await db["replay"].create_index(
+            [("youtube_id", 1), ("recording_ended_at", -1)],
+            sparse=True
+        )
 
         # Live history indexes
         await db["live_history"].create_index([("start_at", -1)])
@@ -66,9 +70,11 @@ async def create_indexes():
         await db["live_history"].create_index("member.id")
 
         # Watched live history indexes
-        await db["watched_live_history"].create_index("user_id")
         await db["watched_live_history"].create_index([("user_id", 1), ("started_at", -1)])
         await db["watched_live_history"].create_index([("live_id", 1)])
+        await db["watched_live_history"].create_index(
+            [("user_id", 1), ("member_id", 1), ("started_at", -1)]
+        )
 
         print("Database indexes created successfully")
     except Exception as e:

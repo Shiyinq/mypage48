@@ -274,7 +274,7 @@ class AchievementsService:
         Get all achievements with unlock status and progress for Achievements page.
         """
         try:
-            tickets = await self.tickets_service.get_my_tickets(user_id, None)
+            tickets = await self.tickets_service.get_my_tickets(user_id, None, resolve_images=False)
             achievements_data = self.calculate_achievements_full(tickets)
 
             # Convert to AchievementItem models

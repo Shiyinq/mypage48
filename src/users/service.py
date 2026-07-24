@@ -672,7 +672,7 @@ class UserService:
 
             # Get tickets for stats calculation
             tickets = await self.tickets_service.get_my_tickets(
-                current_user.userId, None
+                current_user.userId, None, resolve_images=False
             )
 
             total_shows = len(tickets)
