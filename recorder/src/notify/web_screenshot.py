@@ -28,6 +28,7 @@ async def capture_web_screenshot(
                     page = await browser.new_page(
                         viewport={"width": 1080, "height": 1920},
                         device_scale_factor=2,
+                        timezone_id="Asia/Jakarta",
                     )
                     log.info(
                         "Capturing web screenshot at %s (attempt %d/%d)",
