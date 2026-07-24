@@ -1,12 +1,26 @@
 import { client } from './client';
-import type { ReplayVideo, ReplayDetailResponse } from '$lib/types/replay';
+import type { ReplayDetailResponse, ReplayPaginationResponse } from '$lib/types/replay';
 
 export const replayApi = {
 	getReplayByLiveId: async (liveId: string): Promise<ReplayDetailResponse> => {
 		return await client<ReplayDetailResponse>(`/replays/${liveId}`);
 	},
-	getVideos: async (): Promise<ReplayVideo[]> => {
-		return await client<ReplayVideo[]>('/replays');
+	getVideos: async (
+		page = 1,
+		limit = 20,
+		search?: string,
+		platform?: string,
+		member?: string
+	): Promise<ReplayPaginationResponse> => {
+		const query = new URLSearchParams({
+			page: page.toString(),
+			limit: limit.toString()
+		});
+		if (search) query.append('search', search);
+		if (platform && platform !== 'all') query.append('platform', platform);
+		if (member) query.append('member', member);
+
+		return await client<ReplayPaginationResponse>(`/replays?${query.toString()}`);
 	},
 	getSrt: async (liveId: string): Promise<string> => {
 		return await client<string>(`/replays/${liveId}/srt`, { responseType: 'text' });

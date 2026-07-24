@@ -1,7 +1,7 @@
 import json
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import Response
 
 from src.auth.schemas import UserCurrent
@@ -13,7 +13,7 @@ from src.dependencies import (
 from src.replay.exceptions import ReplayNotFound, ReplayUploadError
 from src.replay.schemas import (
     ReplayDetailResponse,
-    ReplayListItem,
+    ReplayPaginationResponse,
     ReplayResponse,
     ReplayUpdateYouTube,
 )
@@ -77,13 +77,24 @@ async def update_youtube_data(
     return {"status": "ok"}
 
 
-@router.get("/replays", response_model=list[ReplayListItem])
+@router.get("/replays", response_model=ReplayPaginationResponse)
 async def list_replays(
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Items per page"),
+    search: Optional[str] = Query(None, description="Search term for filtering"),
+    platform: Optional[str] = Query(None, description="Platform filter"),
+    member: Optional[str] = Query(None, description="Member filter"),
     current_user: UserCurrent | None = Depends(get_current_user_optional),
     service: ReplayService = Depends(get_replay_service),
 ):
-    docs = await service.list_all(current_user=current_user)
-    return [ReplayListItem(**d) for d in docs]
+    return await service.list_all(
+        current_user=current_user,
+        page=page,
+        limit=limit,
+        search=search,
+        platform=platform,
+        member=member,
+    )
 
 
 @router.get("/replays/{live_id}", response_model=ReplayDetailResponse)

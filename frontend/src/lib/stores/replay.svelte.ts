@@ -1,29 +1,56 @@
 import { replayApi } from '$lib/apis/replay';
 import type { ReplayVideo } from '$lib/types/replay';
+import type { PaginationMeta } from '$lib/types/common';
 import { createRequestDedup } from '$lib/utils/requestDedup';
 
 const REPLAY_CACHE_TTL = 5 * 60 * 1000;
 
-interface ReplayState {
+interface ReplayPageCache {
 	videos: ReplayVideo[];
-	loading: boolean;
-	error: string | null;
+	pagination: PaginationMeta;
 	lastUpdated: number;
 }
 
-const state = $state<ReplayState>({
+interface ReplayState {
+	videos: ReplayVideo[];
+	pagination: PaginationMeta;
+	loading: boolean;
+	error: string | null;
+	lastUpdated: number;
+	cache: Record<string, ReplayPageCache>;
+	loadedPages: Set<number>;
+}
+
+const getInitialState = (): ReplayState => ({
 	videos: [],
+	pagination: {
+		current_page: 1,
+		last_page: 1,
+		total_data: 0,
+		per_page: 20,
+		next_page: null
+	},
 	loading: true,
 	error: null,
-	lastUpdated: 0
+	lastUpdated: 0,
+	cache: {},
+	loadedPages: new Set()
 });
+
+const state = $state<ReplayState>(getInitialState());
 
 const dedup = createRequestDedup();
 
 function createReplayStore() {
+	let currentRequestId = 0;
+	let loadGeneration = 0;
+
 	return {
 		get videos() {
 			return state.videos;
+		},
+		get pagination() {
+			return state.pagination;
 		},
 		get loading() {
 			return state.loading;
@@ -31,24 +58,141 @@ function createReplayStore() {
 		get error() {
 			return state.error;
 		},
-		loadVideos: async (force = false) => {
-			if (!force && state.videos.length > 0 && Date.now() - state.lastUpdated < REPLAY_CACHE_TTL) {
+
+		reset: () => {
+			const freshState = getInitialState();
+			state.videos = freshState.videos;
+			state.pagination = freshState.pagination;
+			state.loading = freshState.loading;
+			state.error = freshState.error;
+			state.lastUpdated = freshState.lastUpdated;
+			state.cache = freshState.cache;
+			state.loadedPages = freshState.loadedPages;
+			currentRequestId++;
+			dedup.clear();
+		},
+
+		loadVideos: async (
+			page = 1,
+			limit = 20,
+			search = '',
+			platform = '',
+			member = '',
+			force = false
+		) => {
+			const normSearch = search.trim();
+			const normPlatform = platform === 'all' || !platform ? '' : platform.trim().toLowerCase();
+			const normMember = member.trim();
+
+			const filterKey = `${normSearch}-${normPlatform}-${normMember}`;
+			const cacheKey = `${page}-${filterKey}`;
+			const now = Date.now();
+
+			loadGeneration++;
+
+			const cachedPage = state.cache[cacheKey];
+			if (cachedPage && !force && now - cachedPage.lastUpdated < REPLAY_CACHE_TTL) {
+				state.videos = cachedPage.videos;
+				state.pagination = cachedPage.pagination;
+				state.lastUpdated = cachedPage.lastUpdated;
+				state.loading = false;
+				state.error = null;
+				state.loadedPages = new Set([page]);
 				return;
 			}
 
-			return dedup.execute(`replay-videos-mypage48`, async () => {
-				try {
-					state.loading = true;
-					state.error = null;
-					state.videos = await replayApi.getVideos();
-					state.lastUpdated = Date.now();
-				} catch (e) {
+			const requestId = currentRequestId;
+			state.error = null;
+			state.loading = true;
+			state.loadedPages = new Set([page]);
+
+			// Clear videos when loading page 1 to show loading skeleton
+			if (page === 1) {
+				state.videos = [];
+			}
+
+			try {
+				const res = await dedup.execute(`replay-${cacheKey}`, async () => {
+					return await replayApi.getVideos(page, limit, normSearch, normPlatform, normMember);
+				});
+
+				if (requestId !== currentRequestId) return;
+
+				state.videos = res.data;
+				state.pagination = res.meta;
+				state.lastUpdated = now;
+
+				state.cache[cacheKey] = {
+					videos: res.data,
+					pagination: res.meta,
+					lastUpdated: now
+				};
+			} catch (e) {
+				if (requestId === currentRequestId) {
 					state.error = (e as Error).message;
 					console.error('Failed to load replay videos:', e);
-				} finally {
+				}
+			} finally {
+				if (requestId === currentRequestId) {
 					state.loading = false;
 				}
-			});
+			}
+		},
+
+		loadMore: async (limit = 20, search = '', platform = '', member = '') => {
+			const gen = loadGeneration;
+			const nextPage = state.pagination.next_page;
+			if (!nextPage || state.loading) return;
+
+			if (state.loadedPages.has(nextPage)) return;
+			state.loadedPages.add(nextPage);
+
+			const normSearch = search.trim();
+			const normPlatform = platform === 'all' || !platform ? '' : platform.trim().toLowerCase();
+			const normMember = member.trim();
+
+			const filterKey = `${normSearch}-${normPlatform}-${normMember}`;
+			const cacheKey = `${nextPage}-${filterKey}`;
+			const now = Date.now();
+
+			const cachedPage = state.cache[cacheKey];
+			if (cachedPage && now - cachedPage.lastUpdated < REPLAY_CACHE_TTL) {
+				if (gen !== loadGeneration) return;
+				state.videos = [...state.videos, ...cachedPage.videos];
+				state.pagination = cachedPage.pagination;
+				state.lastUpdated = cachedPage.lastUpdated;
+				return;
+			}
+
+			const requestId = currentRequestId;
+			state.loading = true;
+
+			try {
+				const res = await dedup.execute(`replay-${cacheKey}`, async () => {
+					return await replayApi.getVideos(nextPage, limit, normSearch, normPlatform, normMember);
+				});
+
+				if (requestId !== currentRequestId || gen !== loadGeneration) return;
+
+				state.videos = [...state.videos, ...res.data];
+				state.pagination = res.meta;
+				state.lastUpdated = now;
+
+				state.cache[cacheKey] = {
+					videos: res.data,
+					pagination: res.meta,
+					lastUpdated: now
+				};
+			} catch (e) {
+				if (requestId === currentRequestId) {
+					state.error = (e as Error).message;
+					console.error('Failed to load more replay videos:', e);
+				}
+			} finally {
+				if (requestId === currentRequestId) {
+					state.loading = false;
+				}
+			}
 		}
 	};
 }

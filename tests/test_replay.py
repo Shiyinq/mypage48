@@ -19,7 +19,9 @@ class MockReplayRepository:
         self.insert = AsyncMock()
         self.find_by_live_id = AsyncMock()
         self.find_all = AsyncMock()
+        self.count = AsyncMock(return_value=0)
         self.exists = AsyncMock(return_value=False)
+
 
 
 class MockStorageRepository:
@@ -149,6 +151,7 @@ async def test_upload_already_exists(replay_service):
 async def test_list_all(replay_service):
     now_utc = datetime.now(timezone.utc)
     now_wib = now_utc.astimezone(timezone(timedelta(hours=7)))
+    replay_service.repository.count.return_value = 1
     replay_service.repository.find_all.return_value = [
         {
             "_id": "id1",
@@ -179,27 +182,31 @@ async def test_list_all(replay_service):
         },
     ]
 
-    docs = await replay_service.list_all()
+    res = await replay_service.list_all()
+    docs = res.data
+    meta = res.meta
 
     assert len(docs) == 1
-    assert docs[0]["youtube_id"] == ""
-    assert docs[0]["title"] == "Test 1"
-    assert docs[0]["youtube_title"] is None
-    assert docs[0]["member"] == "Fahira"
-    assert docs[0]["date"] == now_wib.strftime("%Y-%m-%d %H:%M WIB")
-    assert docs[0]["platform"] == "SHOWROOM"
-    assert docs[0]["live_id"] == "live-1"
-    assert "srt_file" not in docs[0]
-    assert "member_name" not in docs[0]
-    assert "files" not in docs[0]
-    assert "chats" not in docs[0]
+    assert docs[0].youtube_id == ""
+    assert docs[0].title == "Test 1"
+    assert docs[0].youtube_title is None
+    assert docs[0].member == "Fahira"
+    assert docs[0].date == now_wib.strftime("%Y-%m-%d %H:%M WIB")
+    assert docs[0].platform == "SHOWROOM"
+    assert docs[0].live_id == "live-1"
+    assert meta.total_data == 1
+    assert meta.current_page == 1
+    assert meta.per_page == 20
 
 
 @pytest.mark.asyncio
 async def test_list_all_empty(replay_service):
+    replay_service.repository.count.return_value = 0
     replay_service.repository.find_all.return_value = []
-    docs = await replay_service.list_all()
-    assert docs == []
+    res = await replay_service.list_all()
+    assert res.data == []
+    assert res.meta.total_data == 0
+
 
 
 @pytest.mark.asyncio
@@ -259,6 +266,8 @@ async def test_replay_list_success(client: AsyncClient, mock_replay_repo):
     )
     now_utc = datetime.now(timezone.utc)
     now_wib = now_utc.astimezone(timezone(timedelta(hours=7)))
+    mock_replay_repo.count.return_value = 1
+
     mock_replay_repo.find_all.return_value = [
         {
             "_id": "r1",
@@ -289,10 +298,14 @@ async def test_replay_list_success(client: AsyncClient, mock_replay_repo):
         }
     ]
 
+
     try:
         res = await client.get("/api/replays")
         assert res.status_code == 200
-        data = res.json()
+        result = res.json()
+        assert "data" in result
+        assert "meta" in result
+        data = result["data"]
         assert len(data) == 1
         assert data[0]["youtube_id"] == ""
         assert data[0]["title"] == "Test Live"
@@ -315,12 +328,15 @@ async def test_replay_list_empty(client: AsyncClient, mock_replay_repo):
         storage_repository=MockStorageRepository(),
         config=MagicMock(spec=Settings),
     )
+    mock_replay_repo.count.return_value = 0
     mock_replay_repo.find_all.return_value = []
 
     try:
         res = await client.get("/api/replays")
         assert res.status_code == 200
-        assert res.json() == []
+        result = res.json()
+        assert result["data"] == []
+        assert result["meta"]["total_data"] == 0
     finally:
         app.dependency_overrides.pop(get_replay_service, None)
 

@@ -12,7 +12,12 @@ from src.live_history.repository import LiveHistoryRepository
 from src.logging_config import create_logger
 from src.replay.exceptions import ReplayAlreadyExists, ReplayUploadError
 from src.replay.repository import ReplayRepository
-from src.replay.schemas import ReplayDetailResponse, ReplayResponse
+from src.replay.schemas import (
+    PaginationMeta,
+    ReplayDetailResponse,
+    ReplayPaginationResponse,
+    ReplayResponse,
+)
 from src.storage.repository import StorageRepository
 from src.storage.service import StorageService
 
@@ -390,16 +395,114 @@ class ReplayService:
 
         return ReplayDetailResponse(**doc)
 
-    async def list_all(self, current_user: UserCurrent | None = None) -> list[dict]:
+    async def list_all(
+        self,
+        current_user: UserCurrent | None = None,
+        page: int = 1,
+        limit: int = 20,
+        search: Optional[str] = None,
+        platform: Optional[str] = None,
+        member: Optional[str] = None,
+    ) -> ReplayPaginationResponse:
         wib = timezone(timedelta(hours=7))
         is_admin = current_user.isAdmin if current_user else False
 
-        filter_query: dict = {"youtube_id": {"$exists": True, "$nin": [None, ""]}}
+        conditions = []
+        conditions.append({"youtube_id": {"$exists": True, "$nin": [None, ""]}})
         if not is_admin:
-            filter_query["$or"] = [
-                {"live_type": "public"},
-                {"live_type": {"$exists": False}},
-            ]
+            conditions.append(
+                {
+                    "$or": [
+                        {"live_type": "public"},
+                        {"live_type": {"$exists": False}},
+                    ]
+                }
+            )
+
+        if search:
+            search_regex = {"$regex": search, "$options": "i"}
+
+            # Formats Date objects to WIB timezone "YYYY-MM-DD HH:MM WIB" to match displayed string
+            date_expr = {
+                "$expr": {
+                    "$regexMatch": {
+                        "input": {
+                            "$concat": [
+                                {
+                                    "$dateToString": {
+                                        "format": "%Y-%m-%d %H:%M",
+                                        "date": {
+                                            "$cond": {
+                                                "if": {
+                                                    "$eq": [
+                                                        {"$type": "$start_at"},
+                                                        "date",
+                                                    ]
+                                                },
+                                                "then": "$start_at",
+                                                "else": {
+                                                    "$cond": {
+                                                        "if": {
+                                                            "$eq": [
+                                                                {
+                                                                    "$type": "$recording_started_at"
+                                                                },
+                                                                "date",
+                                                            ]
+                                                        },
+                                                        "then": "$recording_started_at",
+                                                        "else": datetime.fromtimestamp(
+                                                            0, tz=timezone.utc
+                                                        ),
+                                                    }
+                                                },
+                                            }
+                                        },
+                                        "timezone": "+07:00",
+                                    }
+                                },
+                                " WIB",
+                            ]
+                        },
+                        "regex": search,
+                        "options": "i",
+                    }
+                }
+            }
+
+            conditions.append(
+                {
+                    "$or": [
+                        {"title": search_regex},
+                        {"member_name": search_regex},
+                        {"member_nickname": search_regex},
+                        {"youtube_title": search_regex},
+                        {"room_identifier": search_regex},
+                        {"start_at": search_regex},
+                        {"recording_started_at": search_regex},
+                        date_expr,
+                    ]
+                }
+            )
+
+        if platform and platform != "all":
+            conditions.append(
+                {"platform": {"$regex": f"^{platform}$", "$options": "i"}}
+            )
+
+        if member:
+            conditions.append(
+                {"member_nickname": {"$regex": f"^{member}$", "$options": "i"}}
+            )
+
+        filter_query = (
+            {"$and": conditions}
+            if len(conditions) > 1
+            else (conditions[0] if conditions else {})
+        )
+
+        total = await self.repository.count(filter_query=filter_query)
+
         projection = {
             "live_id": 1,
             "youtube_id": 1,
@@ -413,18 +516,14 @@ class ReplayService:
             "duration_seconds": 1,
             "_id": 0,
         }
-        docs = await self.repository.find_all(
-            projection=projection, filter_query=filter_query
-        )
-        result = []
-        seen_live_ids = set()
-        for doc in docs:
-            live_id = doc.get("live_id", "")
-            if live_id and live_id in seen_live_ids:
-                continue
-            if live_id:
-                seen_live_ids.add(live_id)
 
+        skip = (page - 1) * limit
+        docs = await self.repository.find_all(
+            projection=projection, filter_query=filter_query, skip=skip, limit=limit
+        )
+
+        result = []
+        for doc in docs:
             start_at = doc.get("start_at") or doc.get("recording_started_at")
             if isinstance(start_at, str):
                 try:
@@ -437,7 +536,7 @@ class ReplayService:
             date_str = start_at.strftime("%Y-%m-%d %H:%M WIB") if start_at else None
             result.append(
                 {
-                    "live_id": live_id,
+                    "live_id": doc.get("live_id", ""),
                     "youtube_id": doc.get("youtube_id") or "",
                     "title": doc.get("title"),
                     "youtube_title": doc.get("youtube_title"),
@@ -448,7 +547,22 @@ class ReplayService:
                     "duration": doc.get("duration_seconds"),
                 }
             )
-        return result
+
+        last_page = (total + limit - 1) // limit if limit > 0 else 1
+        if last_page < 1:
+            last_page = 1
+        next_page = page + 1 if page < last_page else None
+
+        return ReplayPaginationResponse(
+            data=result,
+            meta=PaginationMeta(
+                current_page=page,
+                last_page=last_page,
+                total_data=total,
+                per_page=limit,
+                next_page=next_page,
+            ),
+        )
 
     async def get_srt_content(self, live_id: str) -> Optional[str]:
         doc = await self.repository.find_by_live_id(

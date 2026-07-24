@@ -134,3 +134,16 @@ class ReplayListItem(BaseModel):
     @field_serializer("added_at")
     def serialize_dt(self, v: Optional[datetime]) -> Optional[str]:
         return _serialize_dt(v)
+
+
+class PaginationMeta(BaseModel):
+    current_page: int
+    last_page: int
+    total_data: int
+    per_page: int
+    next_page: Optional[int] = None
+
+
+class ReplayPaginationResponse(BaseModel):
+    data: list[ReplayListItem]
+    meta: PaginationMeta
