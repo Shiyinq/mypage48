@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 	import { goto } from '$app/navigation';
 	import { page as pageStore } from '$app/stores';
@@ -16,7 +16,18 @@
 		formatDateOnly,
 		formatDurationColon
 	} from '$lib/utils/time';
-	import { Search, Play, RotateCcw, User, List, ExternalLink } from 'lucide-svelte';
+	import {
+		Search,
+		Play,
+		RotateCcw,
+		User,
+		List,
+		ExternalLink,
+		ChevronLeft,
+		ChevronRight,
+		X,
+		LoaderCircle
+	} from 'lucide-svelte';
 
 	const { t, locale } = useTranslation();
 
@@ -31,7 +42,7 @@
 
 	let memberFilter = $state<string | null>(null);
 	let page = $state(1);
-	const perPage = 12;
+	const perPage = 20;
 	let isFilterOpen = $state(false);
 
 	let isSearchOpen = $state(false);
@@ -90,8 +101,29 @@
 	}
 
 	onMount(() => {
-		replayStore.loadVideos();
 		membersStore.load({ limit: 100 }, true);
+	});
+
+	let debouncedSearch = $state('');
+
+	$effect(() => {
+		const currentSearch = search;
+		const timeout = setTimeout(() => {
+			debouncedSearch = currentSearch;
+		}, 300);
+		return () => clearTimeout(timeout);
+	});
+
+	$effect(() => {
+		// Reset page when search query changes
+		const _ = search;
+		untrack(() => {
+			page = 1;
+		});
+	});
+
+	$effect(() => {
+		replayStore.loadVideos(page, perPage, debouncedSearch, platformFilter, memberFilter || '');
 	});
 
 	$effect(() => {
@@ -118,33 +150,9 @@
 		};
 	}
 
-	let filteredVideos = $derived.by(() => {
-		let result = replayStore.videos;
-		const seen = new Set<string>();
-		result = result.filter((v) => {
-			const key = v.live_id || v.youtube_id || `${v.member}-${v.title}-${v.date}`;
-			if (seen.has(key)) return false;
-			seen.add(key);
-			return true;
-		});
-		if (memberFilter) {
-			result = result.filter((v) => v.member.toLowerCase() === memberFilter);
-		}
-		if (search) {
-			const lower = search.toLowerCase();
-			result = result.filter(
-				(v) => v.title.toLowerCase().includes(lower) || v.member.toLowerCase().includes(lower)
-			);
-		}
-		if (platformFilter !== 'all') {
-			result = result.filter((v) => v.platform.toLowerCase() === platformFilter.toLowerCase());
-		}
-		return result;
-	});
-
-	let totalCount = $derived(filteredVideos.length);
-	let totalPages = $derived(Math.ceil(totalCount / perPage));
-	let paginatedVideos = $derived(filteredVideos.slice((page - 1) * perPage, page * perPage));
+	let paginatedVideos = $derived(replayStore.videos);
+	let totalCount = $derived(replayStore.pagination.total_data);
+	let totalPages = $derived(replayStore.pagination.last_page);
 
 	let startIndex = $derived(totalCount === 0 ? 0 : (page - 1) * perPage + 1);
 	let endIndex = $derived(totalCount === 0 ? 0 : Math.min(page * perPage, totalCount));
@@ -156,12 +164,6 @@
 
 	function handleVideoClick(youtubeId: string) {
 		goto(`${basePath}/${youtubeId}`);
-	}
-
-	function handleSearch(e: Event) {
-		const target = e.target as HTMLInputElement;
-		search = target.value;
-		page = 1;
 	}
 
 	$effect(() => {
@@ -240,14 +242,31 @@
 					transition:slide={{ duration: 150 }}
 					class="absolute top-full right-0 mt-2 z-[7000] w-64 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-700 shadow-xl overflow-hidden p-3"
 				>
-					<input
-						bind:this={searchInput}
-						type="text"
-						placeholder={t('replay.list.searchPlaceholder')}
-						value={search}
-						oninput={handleSearch}
-						class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 outline-none focus:border-red-500/50 focus:ring-2 focus:ring-red-500/10 transition-all"
-					/>
+					<div class="relative flex items-center w-full">
+						<input
+							bind:this={searchInput}
+							type="text"
+							placeholder={t('replay.list.searchPlaceholder')}
+							bind:value={search}
+							class="w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 outline-none focus:border-red-500/50 focus:ring-2 focus:ring-red-500/10 transition-all"
+						/>
+						<div class="absolute right-2.5 flex items-center justify-center">
+							{#if replayStore.loading || search !== debouncedSearch}
+								<LoaderCircle size={15} class="animate-spin text-slate-400 dark:text-zinc-500" />
+							{:else if search}
+								<button
+									onclick={() => {
+										search = '';
+										searchInput?.focus();
+									}}
+									class="p-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
+									aria-label="Clear search"
+								>
+									<X size={14} />
+								</button>
+							{/if}
+						</div>
+					</div>
 				</div>
 			{/if}
 		</div>
@@ -586,24 +605,28 @@
 				</div>
 
 				{#if totalPages > 1}
-					<div class="flex items-center justify-center gap-2 mt-8">
+					<div class="flex items-center justify-center gap-1 sm:gap-2 mt-8 flex-wrap">
 						<button
-							class="px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer {page ===
+							class="flex items-center justify-center h-9 px-2.5 sm:px-3.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 {page ===
 							1
-								? 'text-slate-400 cursor-not-allowed'
+								? 'text-slate-400 dark:text-zinc-600 cursor-not-allowed'
 								: 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800'}"
 							disabled={page === 1}
 							onclick={() => goToPage(page - 1)}
 						>
-							{t('replay.list.prev')}
+							<ChevronLeft size={16} />
+							<span class="hidden sm:inline ml-1">{t('replay.list.prev')}</span>
 						</button>
 
 						{#each pageNumbers as p}
 							{#if p === '...'}
-								<span class="px-2 text-slate-400">...</span>
+								<span
+									class="w-9 h-9 flex items-center justify-center text-xs text-slate-400 dark:text-zinc-600 shrink-0 select-none"
+									>...</span
+								>
 							{:else}
 								<button
-									class="w-9 h-9 rounded-xl text-xs font-bold transition-all cursor-pointer {page ===
+									class="w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 {page ===
 									p
 										? 'bg-red-600 text-white shadow-md shadow-red-600/20'
 										: 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800'}"
@@ -615,14 +638,15 @@
 						{/each}
 
 						<button
-							class="px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer {page ===
+							class="flex items-center justify-center h-9 px-2.5 sm:px-3.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 {page ===
 							totalPages
-								? 'text-slate-400 cursor-not-allowed'
+								? 'text-slate-400 dark:text-zinc-600 cursor-not-allowed'
 								: 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800'}"
 							disabled={page === totalPages}
 							onclick={() => goToPage(page + 1)}
 						>
-							{t('replay.list.next')}
+							<span class="hidden sm:inline mr-1">{t('replay.list.next')}</span>
+							<ChevronRight size={16} />
 						</button>
 					</div>
 				{/if}

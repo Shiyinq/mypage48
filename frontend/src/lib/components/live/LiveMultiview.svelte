@@ -8,6 +8,7 @@
 	import type { LiveStatus, LiveStreamingResponse } from '$lib/types';
 	import type { ReplayVideo } from '$lib/types/replay';
 	import { replayStore } from '$lib/stores/replay.svelte';
+	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 	import { live } from '$lib/apis/live';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
@@ -100,6 +101,15 @@
 	let focusedCurrentTime: number = $state(0);
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let playerRefs: any[] = $state(Array(8).fill(null));
+	$effect(() => {
+		if (activeTab === 'replay') {
+			const timeout = setTimeout(() => {
+				replayStore.loadVideos(1, 20, searchQuery);
+			}, 300);
+			return () => clearTimeout(timeout);
+		}
+	});
+
 	$effect(() => {
 		untrack(() => {
 			liveStore.loadLiveList();
@@ -710,6 +720,17 @@
 									/>{/if}
 							</button>
 						{/each}
+						{#if activeTab === 'replay' && replayStore.pagination.next_page}
+							<div
+								use:infiniteScroll
+								onintersect={() => replayStore.loadMore(20, searchQuery)}
+								class="w-full py-4 flex items-center justify-center shrink-0"
+							>
+								<div
+									class="w-5 h-5 rounded-full border-2 border-red-500 border-t-transparent animate-spin"
+								></div>
+							</div>
+						{/if}
 					{/if}
 				</div>
 

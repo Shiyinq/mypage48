@@ -24,11 +24,20 @@ class ReplayRepository:
         self,
         projection: Optional[dict[str, Any]] = None,
         filter_query: Optional[dict[str, Any]] = None,
+        skip: int = 0,
+        limit: Optional[int] = None,
     ) -> list[dict[str, Any]]:
-        cursor = self.col.find(filter_query or {}, projection).sort(
-            "recording_ended_at", -1
+        cursor = (
+            self.col.find(filter_query or {}, projection)
+            .sort("recording_ended_at", -1)
+            .skip(skip)
         )
+        if limit is not None:
+            cursor = cursor.limit(limit)
         return await cursor.to_list(length=None)
+
+    async def count(self, filter_query: Optional[dict[str, Any]] = None) -> int:
+        return await self.col.count_documents(filter_query or {})
 
     async def exists(self, live_id: str) -> bool:
         doc = await self.col.find_one({"live_id": live_id}, {"_id": 1})

@@ -1,3 +1,5 @@
+import type { PaginationMeta } from './common';
+
 export interface ReplayChatMessage {
 	id: number;
 	startTime: number;
@@ -77,4 +79,9 @@ export interface ReplayDetailResponse {
 		img?: string;
 		member_type?: string;
 	};
+}
+
+export interface ReplayPaginationResponse {
+	data: ReplayVideo[];
+	meta: PaginationMeta;
 }
