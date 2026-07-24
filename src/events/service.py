@@ -108,10 +108,10 @@ class EventsService:
                 skip, limit, query, sort_direction
             )
 
-            events_data = []
-            for e in raw_events:
-                resolved = await self._resolve_event(e)
-                events_data.append(Event(**resolved))
+            resolved_events = await asyncio.gather(
+                *(self._resolve_event(e) for e in raw_events)
+            )
+            events_data = [Event(**resolved) for resolved in resolved_events]
 
             next_page = page + 1 if page < last_page else None
 
@@ -229,10 +229,10 @@ class EventsService:
                 member_id, skip=skip, limit=limit
             )
 
-            events_data = []
-            for e in raw_events:
-                resolved = await self._resolve_event(e)
-                events_data.append(Event(**resolved))
+            resolved_events = await asyncio.gather(
+                *(self._resolve_event(e) for e in raw_events)
+            )
+            events_data = [Event(**resolved) for resolved in resolved_events]
 
             next_page = page + 1 if page < last_page else None
 
@@ -266,10 +266,10 @@ class EventsService:
             raw_events = await self.repository.find_events_by_member_id_detailed(
                 member_id
             )
-            events_data = []
-            for e in raw_events:
-                resolved = await self._resolve_event(e)
-                events_data.append(Event(**resolved))
+            resolved_events = await asyncio.gather(
+                *(self._resolve_event(e) for e in raw_events)
+            )
+            events_data = [Event(**resolved) for resolved in resolved_events]
             return events_data
         except Exception as e:
             logger.exception(

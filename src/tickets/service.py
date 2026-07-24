@@ -62,7 +62,8 @@ class TicketsService:
 
         if ticket.get("two_shot") and ticket["two_shot"].get("imageUrl"):
             variants = await self.storage_service.resolve_image_variants(
-                ticket["two_shot"]["imageUrl"], default_blur_hash=ticket["two_shot"].get("blurHash")
+                ticket["two_shot"]["imageUrl"],
+                default_blur_hash=ticket["two_shot"].get("blurHash"),
             )
             ticket["two_shot"]["imageUrl"] = variants["url"]
             ticket["two_shot"]["imageUrl_medium"] = variants["url_medium"]
