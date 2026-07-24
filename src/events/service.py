@@ -43,7 +43,9 @@ class EventsService:
         img_url = event.get("imageUrl")
         if img_url:
             if not (img_url.startswith("http") or img_url.startswith("https")):
-                res = await self.storage_service.resolve_image_variants(img_url)
+                res = await self.storage_service.resolve_image_variants(
+                    img_url, default_blur_hash=event.get("blurHash")
+                )
                 event["imageUrl"] = res["url"]
                 event["imageUrl_medium"] = res.get("url_medium")
                 event["imageUrl_small"] = res.get("url_small")

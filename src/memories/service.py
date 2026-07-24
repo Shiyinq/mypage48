@@ -190,7 +190,7 @@ class MemoriesService:
                 blur_hash = None
                 if image_url:
                     variants = await self.storage_service.resolve_image_variants(
-                        image_url
+                        image_url, default_blur_hash=item.get("blurHash")
                     )
                     image_url = variants["url"]
                     img_medium = variants["url_medium"]

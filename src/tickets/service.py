@@ -54,7 +54,7 @@ class TicketsService:
         """Resolve storage paths for ticket images and notes."""
         if ticket.get("imageUrl"):
             variants = await self.storage_service.resolve_image_variants(
-                ticket["imageUrl"]
+                ticket["imageUrl"], default_blur_hash=ticket.get("blurHash")
             )
             ticket["imageUrl"] = variants["url"]
             ticket["imageUrl_medium"] = variants["url_medium"]
@@ -62,7 +62,7 @@ class TicketsService:
 
         if ticket.get("two_shot") and ticket["two_shot"].get("imageUrl"):
             variants = await self.storage_service.resolve_image_variants(
-                ticket["two_shot"]["imageUrl"]
+                ticket["two_shot"]["imageUrl"], default_blur_hash=ticket["two_shot"].get("blurHash")
             )
             ticket["two_shot"]["imageUrl"] = variants["url"]
             ticket["two_shot"]["imageUrl_medium"] = variants["url_medium"]
@@ -190,6 +190,7 @@ class TicketsService:
         self,
         user_id: str,
         year: Optional[int] = None,
+        resolve_images: bool = True,
     ) -> List[TicketResponse]:
         """
         Get all tickets for internal use (stats etc).
@@ -200,9 +201,12 @@ class TicketsService:
             tickets_data, _ = await self.repository.get_tickets(
                 user_id, year, page=None, limit=None
             )
-            resolved_tickets = await asyncio.gather(
-                *(self._resolve_ticket(t) for t in tickets_data)
-            )
+            if resolve_images:
+                resolved_tickets = await asyncio.gather(
+                    *(self._resolve_ticket(t) for t in tickets_data)
+                )
+            else:
+                resolved_tickets = tickets_data
             results = [TicketResponse(**t) for t in resolved_tickets]
             return results
         except InvalidDateError:
