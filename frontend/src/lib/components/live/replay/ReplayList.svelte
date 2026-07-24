@@ -24,7 +24,9 @@
 		List,
 		ExternalLink,
 		ChevronLeft,
-		ChevronRight
+		ChevronRight,
+		X,
+		LoaderCircle
 	} from 'lucide-svelte';
 
 	const { t, locale } = useTranslation();
@@ -105,8 +107,9 @@
 	let debouncedSearch = $state('');
 
 	$effect(() => {
+		const currentSearch = search;
 		const timeout = setTimeout(() => {
-			debouncedSearch = search;
+			debouncedSearch = currentSearch;
 		}, 300);
 		return () => clearTimeout(timeout);
 	});
@@ -239,13 +242,31 @@
 					transition:slide={{ duration: 150 }}
 					class="absolute top-full right-0 mt-2 z-[7000] w-64 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-700 shadow-xl overflow-hidden p-3"
 				>
-					<input
-						bind:this={searchInput}
-						type="text"
-						placeholder={t('replay.list.searchPlaceholder')}
-						bind:value={search}
-						class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 outline-none focus:border-red-500/50 focus:ring-2 focus:ring-red-500/10 transition-all"
-					/>
+					<div class="relative flex items-center w-full">
+						<input
+							bind:this={searchInput}
+							type="text"
+							placeholder={t('replay.list.searchPlaceholder')}
+							bind:value={search}
+							class="w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 outline-none focus:border-red-500/50 focus:ring-2 focus:ring-red-500/10 transition-all"
+						/>
+						<div class="absolute right-2.5 flex items-center justify-center">
+							{#if replayStore.loading || search !== debouncedSearch}
+								<LoaderCircle size={15} class="animate-spin text-slate-400 dark:text-zinc-500" />
+							{:else if search}
+								<button
+									onclick={() => {
+										search = '';
+										searchInput?.focus();
+									}}
+									class="p-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
+									aria-label="Clear search"
+								>
+									<X size={14} />
+								</button>
+							{/if}
+						</div>
+					</div>
 				</div>
 			{/if}
 		</div>
