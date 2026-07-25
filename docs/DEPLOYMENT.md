@@ -167,6 +167,21 @@ Since we use Cloudflare Origin Certificates (15 years) and a Swap File, maintena
 1.  **Logs**: Check logs in `./logs/` if anything goes wrong.
 2.  **Backups**: Regularly backup your `mongodb_data` and `minio_data` volumes.
 3.  **Updates**: To update the app, run `git pull` followed by `docker compose -f docker-compose.prod.yml up -d --build`.
+4.  **Disk Space Cleanup**: Over time, Docker build cache, system journals, and application logs will consume disk space. We provide an automated cleanup script.
+    
+    To run the cleanup manually:
+    ```bash
+    ./scripts/clean-disk.sh
+    ```
+    
+    To automate this weekly, you can add it to your server's crontab:
+    ```bash
+    sudo crontab -e
+    ```
+    Then append this line to run it every Sunday at midnight:
+    ```text
+    0 0 * * 0 /home/YOUR_VPS_USERNAME/mypage48/scripts/clean-disk.sh > /dev/null 2>&1
+    ```
 
 ---
 
