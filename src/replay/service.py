@@ -408,7 +408,7 @@ class ReplayService:
         is_admin = current_user.isAdmin if current_user else False
 
         conditions = []
-        conditions.append({"youtube_id": {"$exists": True, "$nin": [None, ""]}})
+        conditions.append({"youtube_id": {"$gt": ""}})
         if not is_admin:
             conditions.append(
                 {
@@ -501,7 +501,8 @@ class ReplayService:
             else (conditions[0] if conditions else {})
         )
 
-        total = await self.repository.count(filter_query=filter_query)
+        hint = "youtube_id_1_recording_ended_at_-1"
+        total = await self.repository.count(filter_query=filter_query, hint=hint)
 
         projection = {
             "live_id": 1,
@@ -519,7 +520,11 @@ class ReplayService:
 
         skip = (page - 1) * limit
         docs = await self.repository.find_all(
-            projection=projection, filter_query=filter_query, skip=skip, limit=limit
+            projection=projection,
+            filter_query=filter_query,
+            skip=skip,
+            limit=limit,
+            hint=hint,
         )
 
         result = []
