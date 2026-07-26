@@ -59,6 +59,7 @@ async def create_indexes():
         # Replay indexes
         await db["replay"].create_index("live_id", unique=True)
         await db["replay"].create_index([("recording_ended_at", -1)])
+        await db["replay"].create_index("youtube_id", sparse=True)
 
         await db["replay"].create_index(
             [("recording_ended_at", -1)],

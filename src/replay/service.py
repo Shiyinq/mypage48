@@ -501,8 +501,14 @@ class ReplayService:
             else (conditions[0] if conditions else {})
         )
 
-        hint = "partial_recording_ended_at_-1_youtube"
-        total = await self.repository.count(filter_query=filter_query, hint=hint)
+        # For count, if there are no search/platform/member filters, we can just count youtube_id
+        # without the $or filter to allow a covered index scan (which avoids fetching massive documents).
+        if search or (platform and platform != "all") or member:
+            count_filter = filter_query
+        else:
+            count_filter = {"youtube_id": {"$gt": ""}}
+
+        total = await self.repository.count(filter_query=count_filter, hint=None)
 
         projection = {
             "live_id": 1,
@@ -524,7 +530,7 @@ class ReplayService:
             filter_query=filter_query,
             skip=skip,
             limit=limit,
-            hint=hint,
+            hint="partial_recording_ended_at_-1_youtube",
         )
 
         result = []
