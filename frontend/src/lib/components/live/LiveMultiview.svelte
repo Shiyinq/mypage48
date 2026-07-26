@@ -103,8 +103,10 @@
 	let playerRefs: any[] = $state(Array(8).fill(null));
 	$effect(() => {
 		if (activeTab === 'replay') {
+			// Read synchronously so Svelte 5 tracks the dependency
+			const currentSearch = searchQuery;
 			const timeout = setTimeout(() => {
-				replayStore.loadVideos(1, 20, searchQuery);
+				replayStore.loadVideos(1, 20, currentSearch);
 			}, 300);
 			return () => clearTimeout(timeout);
 		}
