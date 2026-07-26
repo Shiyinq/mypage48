@@ -133,6 +133,7 @@ MyPage48 is now fully production-ready with a secure, automated infrastructure.
 - **Umami Analytics**: Privacy-focused, self-hosted visitor tracking.
 - **Automated Scraper**: Periodic daily sync (12:00 AM) using isolated cron service.
 - **Hardened Security**: Strict UFW Firewall (Cloudflare IPs only), Network isolation, Root DB authentication, and HTTPS ready.
+- **CI/CD Auto-Deployment**: Automatic deployment pipeline via GitHub Actions on new release tags.
 
 ### Guide
 For a step-by-step production setup on a VPS, please follow the **[Deployment Guide](docs/DEPLOYMENT.md)**.
