@@ -34,7 +34,7 @@ class ReplayRepository:
             cursor = cursor.hint(hint)
         if collation is not None:
             cursor = cursor.collation(collation)
-        cursor = cursor.sort([("recording_ended_at", -1), ("_id", -1)]).skip(skip)
+        cursor = cursor.sort("recording_ended_at", -1).skip(skip)
         if limit is not None:
             cursor = cursor.limit(limit)
         return await cursor.to_list(length=None)
