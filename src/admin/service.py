@@ -126,17 +126,31 @@ class AdminService:
                 self.repository.count_documents("setlists", {"active": True}),
                 self.repository.count_documents("news"),
                 self.repository.count_documents("live_history"),
-                self.repository.count_documents("live_history", {"platform": "showroom"}),
+                self.repository.count_documents(
+                    "live_history", {"platform": "showroom"}
+                ),
                 self.repository.count_documents("live_history", {"platform": "idn"}),
                 self.repository.count_documents("replay"),
                 self.repository.count_documents("replay", {"platform": "showroom"}),
                 self.repository.count_documents("replay", {"platform": "idn"}),
                 self.repository.find("members", {"active": True}),
-                self.repository.count_documents("events", {"setlistId": {"$in": [None, ""]}}),
-                self.repository.count_documents("events", {"setlistId": {"$nin": [None, ""]}}),
-                self.repository.count_documents("events", {"date": {"$gte": start_of_day}}),
-                self.repository.count_documents("events", {"date": {"$gte": start_of_day}, "setlistId": {"$in": [None, ""]}}),
-                self.repository.count_documents("events", {"date": {"$gte": start_of_day}, "setlistId": {"$nin": [None, ""]}}),
+                self.repository.count_documents(
+                    "events", {"setlistId": {"$in": [None, ""]}}
+                ),
+                self.repository.count_documents(
+                    "events", {"setlistId": {"$nin": [None, ""]}}
+                ),
+                self.repository.count_documents(
+                    "events", {"date": {"$gte": start_of_day}}
+                ),
+                self.repository.count_documents(
+                    "events",
+                    {"date": {"$gte": start_of_day}, "setlistId": {"$in": [None, ""]}},
+                ),
+                self.repository.count_documents(
+                    "events",
+                    {"date": {"$gte": start_of_day}, "setlistId": {"$nin": [None, ""]}},
+                ),
             ]
 
             results = await asyncio.gather(*queries)
