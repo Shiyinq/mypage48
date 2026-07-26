@@ -501,7 +501,7 @@ class ReplayService:
             else (conditions[0] if conditions else {})
         )
 
-        hint = "youtube_id_1_recording_ended_at_-1"
+        hint = "partial_recording_ended_at_-1_youtube"
         total = await self.repository.count(filter_query=filter_query, hint=hint)
 
         projection = {
