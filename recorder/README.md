@@ -9,9 +9,11 @@ Auto-record live stream video + chat + gift from SHOWROOM and IDN Live, with aut
 - **🔄 Auto YouTube Upload**: Automatically uploads the finalized MP4 videos to YouTube (supports resumable uploads and OAuth flow).
 - **☁️ Cloud Replay Storage**: Syncs metadata, chat logs, and generated thumbnails to the backend/R2 for the web replay player.
 - **🎭 Theater & News Monitor**: Continuously tracks JKT48 official news and theater schedules, sending real-time alerts to Telegram for any updates.
+- **🌟 IDN Live+ Tracker**: Detects premium IDN Live+ streams and alerts via Telegram.
 - **📅 Daily Schedule Reminder**: Automatically sends a summary of today's JKT48 theater/event schedules to Telegram at exactly 12:00 PM WIB.
 - **⏳ Upcoming Schedule Reminder**: Sends a dynamic text notification exactly 30 minutes before a show or event begins.
 - **🎂 Birthday Notifier**: Checks and sends daily birthday greetings with member photos, as well as a complete monthly birthday recap on the 1st of every month to Telegram at exactly 00:00 AM WIB.
+- **💓 System Health Monitoring**: Monitors backend health status and sends Telegram alerts if downtime is detected.
 
 ## Prerequisites
 
@@ -25,9 +27,12 @@ Auto-record live stream video + chat + gift from SHOWROOM and IDN Live, with aut
 
 ```mermaid
 flowchart TD
-    subgraph Main["main.py"]
-        A[Start] --> B[Recording Loop]
-        A --> C[Upload Loop]
+
+    subgraph Theater["Theater Loop (Independent Checkers)"]
+        T1[News, Schedule, Birthday] --> T2[(pending_notifications/)]
+        T3[IDN Live+, Health] --> T2
+        T2 -->|Read by| T4[Theater Watcher]
+        T4 -->|Sends payload| T5[Telegram Notifier]
     end
 
     subgraph Recording["Recording Loop (every 10s)"]
@@ -41,35 +46,51 @@ flowchart TD
         I --> J[Generate SRT + JSON<br/>+ final screenshot 50% dur]
         J --> K[Delete temp files log/ffmpeg.log]
         K --> L[Recording folder with metadata status:completed]
+        L --> LA[Send End Live Notif]
         E -->|Still active| M{Check ffmpeg health}
-        M -->|ffmpeg died + stream ended| H
-        M -->|ffmpeg died + stream live| N[Mark error → end]
-        M -->|File stalled >5 min| N
-        N --> H
+        M -->|ffmpeg died OR stalled >5 min| N{Stream still live?}
+        N -->|Yes| O[Restart ffmpeg]
+        N -->|No| H
     end
 
     subgraph Upload["Upload Loop (every 10s)"]
-        P[Scan recordings/] --> Q{Folder has status:completed?}
-        Q -->|No| P
-        Q -->|Yes| R{YT configured?}
-        R -->|Yes| R2{MP4 exists?}
-        R2 -->|Yes| S[Upload MP4 to YouTube<br/>resumable, save URI after first chunk]
-        S --> S1{YouTube upload status?}
-        S1 -->|Success| T[Delete MP4]
-        S1 -->|Fail| U[Retry later with saved URI]
-        U --> P
-        R2 -->|No| V
-        R -->|No| V
-        T --> V
-        V{R2 configured?}
-        V -->|Yes| W[Upload JSONL + SRT + screenshots<br/>→ /admin/replay/upload]
-        W --> W1{Success?}
-        W1 -->|Yes| X[Log to uploads.jsonl]
-        X --> Y[rm -rf recording folder]
-        W1 -->|No| P
+        P[Scan recordings/] --> Q{enable_upload_queue?}
+        Q -->|Yes| R[Queue Manager: Sort by size/phase]
+        Q -->|No| S[Direct Processing]
+        
+        R --> T{Apply max_concurrent}
+        T --> U[Phase 1: R2 Upload]
+        S --> U
+        U --> V[Generate Thumbnail & Upload Replay Data]
+        V --> W{Success?}
+        W -->|No| X[Retry Later]
+        W -->|Yes| Y[Send Recap Notif & mark .r2_done]
+        
+        Y --> Z{YouTube Enabled?}
+        Z -->|Yes| AA[Phase 2: YouTube Upload]
+        AA --> AB{Success?}
+        AB -->|No| X
+        AB -->|Yes| AC[PATCH Backend: youtube_id & youtube_title<br/>+ Send Replay Notif]
+        
+        Z -->|No| AD[Log to uploads.jsonl & rm -rf folder]
+        AC --> AD
+        X --> P
     end
 
-    L --> P
+    subgraph Heartbeat["Heartbeat Loop"]
+        H1[POST /api/health/recorder] --> H2{Backend Alive?}
+        H2 -->|Yes| H3[Sync Status: Active]
+        H2 -->|No| H4[Log Error]
+    end
+
+    subgraph Main["main.py"]
+        A[Start] --> M1[Heartbeat Loop]
+        A --> M2[Recording Loop]
+        A --> M3[Upload Loop]
+        A --> M4[Theater Loop]
+    end
+
+    LA --> P
 ```
 
 ## Directory Structure
@@ -105,6 +126,7 @@ recorder/
     ├── __init__.py
     ├── config.py                 # Pydantic settings (REC_* env vars)
     ├── logging_config.py         # Dual logger setup (recorder + uploader)
+    ├── heartbeat.py              # Heartbeat to signal process is alive
     ├── models.py                 # LiveInfo, RecordingSession dataclasses
     ├── record/
     │   ├── __init__.py
@@ -117,14 +139,21 @@ recorder/
     │   ├── __init__.py
     │   ├── watcher.py            # Background upload pipeline
     │   ├── youtube_uploader.py   # Resumable YT upload via API
+    │   ├── thumbnail_generator.py# Generates thumbnails for recordings
     │   └── r2_uploader.py        # Replay data -> backend -> R2
-    └── theater/
+    ├── theater/
+    │   ├── __init__.py
+    │   ├── news_checker.py       # Check for new JKT48 news and announcements
+    │   ├── schedule_checker.py   # Daily schedule notifications at 12:00 WIB
+    │   ├── birthday_checker.py   # Daily birthday notifications at 00:00 WIB
+    │   ├── idn_live_plus_checker.py # Checks for premium IDN Live+ streams
+    │   ├── mypage48_health_checker.py # Monitors backend health status
+    │   ├── html_screenshot.py    # Playwright utility for full-page HTML capture
+    │   └── watcher.py            # Monitors pending_notifications and sends them
+    └── notify/
         ├── __init__.py
-        ├── news_checker.py       # Check for new JKT48 news and announcements
-        ├── schedule_checker.py   # Background loop for daily schedule notifications at 12:00 WIB
-        ├── birthday_checker.py   # Background loop for daily birthday notifications at 00:00 WIB
-        ├── html_screenshot.py    # Playwright utility for full-page HTML capture
-        └── watcher.py            # Main theater orchestration (if any)
+        ├── telegram_notifier.py  # Telegram bot integration
+        └── web_screenshot.py     # Webpage screenshot utility
 ```
 
 ## Quick Start
@@ -150,7 +179,7 @@ You can pass several arguments to `recorder/main.py` for advanced control:
 
 | Argument | Description | Example |
 |----------|-------------|---------|
-| `--mode {both,record,upload,theater}` | Run only specific loop. `theater` checks news and schedules. | `python -m recorder.main --mode theater` |
+| `--mode {record,upload,theater,all}` | Run specific loop or `all` (default). `theater` runs all independent background checkers. | `python -m recorder.main --mode theater` |
 | `--status [folder]` | Check status of all recordings or a specific folder. | `python -m recorder.main --status` |
 | `--remux [folder]` | Force remux interrupted/stuck `.mkv` files to `.mp4`. | `python -m recorder.main --remux all` |
 | `--delete [folder]` | Delete all recording folders or a specific one. | `python -m recorder.main --delete oline_1782911092` |
@@ -187,6 +216,8 @@ recorder/recordings/
    - **Upcoming Schedule Reminder**: Triggers dynamically 30 minutes before any show or event starts.
    - **Daily Birthday Reminder**: Triggers every day at 12:00 AM WIB to congratulate members having a birthday today.
    - **Monthly Birthday Recap**: Triggers on the 1st of every month at 12:00 AM WIB to send a full list of all members celebrating their birthdays in that month.
+   - **IDN Live+ Alerts**: Detects premium streams and notifies via Telegram.
+   - **Health Checks**: Monitors backend health and alerts on downtime.
 
 ## Output Files
 
@@ -249,6 +280,9 @@ This format is 100% compatible with the `ReplayChat.svelte` parser on the fronte
 | `REC_SCHEDULE_CHECK_INTERVAL` | `480` | Schedule check poll interval in seconds |
 | `REC_RECORDINGS_DIR` | `recorder/recordings` | Output directory |
 | `REC_MAX_RECORDING_HOURS` | `4` | Max recording duration |
+| `REC_MAX_CONCURRENT_UPLOADS` | `2` | Max concurrent uploads for R2/YouTube |
+| `REC_ENABLE_UPLOAD_QUEUE` | `True` | Enable size/phase based upload priority queue |
+| `REC_YOUTUBE_UPLOAD_DELAY_MINUTES`| `30` | Delay before uploading to YouTube after R2 |
 | `REC_SHOWROOM_COMMENT_INTERVAL` | `2.0` | SHOWROOM comment poll interval |
 | `REC_SHOWROOM_GIFT_INTERVAL` | `5.0` | SHOWROOM gift poll interval |
 | `REC_LOG_LEVEL` | `INFO` | Logging level |
@@ -272,11 +306,11 @@ This format is 100% compatible with the `ReplayChat.svelte` parser on the fronte
 
 ## Upload Pipeline
 
-After a recording ends (`status: "completed"` in metadata), a background **Watcher** processes it:
+After a recording ends (`status: "completed"` in metadata), a background **Watcher** processes it using a two-phase concurrency-limited queue system:
 
-1. **YouTube upload** (if `REC_GOOGLE_*` + `REC_YOUTUBE_REFRESH_TOKEN` configured) — resumable upload with progress tracking; `.mp4` is deleted after success
-2. **Replay upload** (if `REC_REPLAY_API_KEY` configured) — sends `.jsonl` (raw chat data), `.srt`, and screenshots to the backend API, which stores them in R2
-3. **Cleanup** — on success, the entire recording folder is removed; upload history is tracked in `logs/uploads.jsonl` to prevent re-upload
+1. **Phase 1 (R2 Upload)**: Generates a thumbnail, uploads replay data (`.jsonl`, `.srt`, screenshots) to the backend API/R2, sends a Recap Telegram notification, and marks `.r2_done`.
+2. **Phase 2 (YouTube Upload)**: If configured, waits for any defined delay (`REC_YOUTUBE_UPLOAD_DELAY_MINUTES`), then uploads the `.mp4` to YouTube (supports resumable uploads). Once successful, it updates the backend with the YouTube ID and sends a Replay Telegram notification.
+3. **Queue & Cleanup**: Processing can use an upload queue (`REC_ENABLE_UPLOAD_QUEUE`) to prioritize uploads by file size and is limited by `REC_MAX_CONCURRENT_UPLOADS`. On full success, the folder is deleted and tracked in `logs/uploads.jsonl`.
 
 ## FAQ
 
