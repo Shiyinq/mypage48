@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import json
 import logging
@@ -114,39 +115,71 @@ class AdminService:
 
     async def get_theater_stats(self) -> DataTheaterStats:
         try:
-            total_members_jkt = await self.repository.count_documents("members")
-            active_members_count = await self.repository.count_documents(
-                "members", {"active": True}
-            )
-            graduated_members_count = total_members_jkt - active_members_count
+            now = datetime.now()
+            start_of_day = datetime(now.year, now.month, now.day)
 
-            total_setlists = await self.repository.count_documents("setlists")
-            active_setlists_count = await self.repository.count_documents(
-                "setlists", {"active": True}
-            )
+            # Define all queries to run concurrently
+            queries = [
+                self.repository.count_documents("members"),
+                self.repository.count_documents("members", {"active": True}),
+                self.repository.count_documents("setlists"),
+                self.repository.count_documents("setlists", {"active": True}),
+                self.repository.count_documents("news"),
+                self.repository.count_documents("live_history"),
+                self.repository.count_documents(
+                    "live_history", {"platform": "showroom"}
+                ),
+                self.repository.count_documents("live_history", {"platform": "idn"}),
+                self.repository.count_documents("replay"),
+                self.repository.count_documents("replay", {"platform": "showroom"}),
+                self.repository.count_documents("replay", {"platform": "idn"}),
+                self.repository.find("members", {"active": True}),
+                self.repository.count_documents(
+                    "events", {"setlistId": {"$in": [None, ""]}}
+                ),
+                self.repository.count_documents(
+                    "events", {"setlistId": {"$nin": [None, ""]}}
+                ),
+                self.repository.count_documents(
+                    "events", {"date": {"$gte": start_of_day}}
+                ),
+                self.repository.count_documents(
+                    "events",
+                    {"date": {"$gte": start_of_day}, "setlistId": {"$in": [None, ""]}},
+                ),
+                self.repository.count_documents(
+                    "events",
+                    {"date": {"$gte": start_of_day}, "setlistId": {"$nin": [None, ""]}},
+                ),
+            ]
+
+            results = await asyncio.gather(*queries)
+
+            (
+                total_members_jkt,
+                active_members_count,
+                total_setlists,
+                active_setlists_count,
+                total_news,
+                total_live_member,
+                showroom_live_count,
+                idn_live_count,
+                total_replay_live,
+                showroom_replay_count,
+                idn_replay_count,
+                members,
+                total_events,
+                total_show_setlist,
+                total_upcoming,
+                total_upcoming_events,
+                total_upcoming_shows,
+            ) = results
+
+            graduated_members_count = total_members_jkt - active_members_count
             inactive_setlists_count = total_setlists - active_setlists_count
 
-            total_news = await self.repository.count_documents("news")
-            total_live_member = await self.repository.count_documents("live_history")
-            showroom_live_count = await self.repository.count_documents(
-                "live_history", {"platform": "showroom"}
-            )
-            idn_live_count = await self.repository.count_documents(
-                "live_history", {"platform": "idn"}
-            )
-
-            total_replay_live = await self.repository.count_documents("replay")
-            showroom_replay_count = await self.repository.count_documents(
-                "replay", {"platform": "showroom"}
-            )
-            idn_replay_count = await self.repository.count_documents(
-                "replay", {"platform": "idn"}
-            )
-
             # Calculate upcoming birthdays for the rest of the year
-            members = await self.repository.find("members", {"active": True})
             upcoming_birthdays_count = 0
-            now = datetime.now()
             today = now.date()
             months_map = {
                 "Januari": 1,
@@ -182,26 +215,6 @@ class AdminService:
                         upcoming_birthdays_count += 1
                 except (ValueError, TypeError):
                     continue
-
-            total_events = await self.repository.count_documents(
-                "events", {"setlistId": {"$in": [None, ""]}}
-            )
-            total_show_setlist = await self.repository.count_documents(
-                "events", {"setlistId": {"$nin": [None, ""]}}
-            )
-
-            start_of_day = datetime(now.year, now.month, now.day)
-            total_upcoming = await self.repository.count_documents(
-                "events", {"date": {"$gte": start_of_day}}
-            )
-            total_upcoming_events = await self.repository.count_documents(
-                "events",
-                {"date": {"$gte": start_of_day}, "setlistId": {"$in": [None, ""]}},
-            )
-            total_upcoming_shows = await self.repository.count_documents(
-                "events",
-                {"date": {"$gte": start_of_day}, "setlistId": {"$nin": [None, ""]}},
-            )
 
             return DataTheaterStats(
                 total_members_jkt=total_members_jkt,

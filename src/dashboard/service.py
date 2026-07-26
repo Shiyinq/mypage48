@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -338,9 +339,13 @@ class DashboardService:
                 detail=f"Row {row} - {number}" if row and number else None,
             )
 
+        first_item, last_item = await asyncio.gather(
+            to_extreme_item(first), to_extreme_item(last)
+        )
+
         return ExtremesResponse(
-            first=await to_extreme_item(first),
-            last=await to_extreme_item(last),
+            first=first_item,
+            last=last_item,
         )
 
     def _calculate_two_shot_extremes(
@@ -423,13 +428,14 @@ class DashboardService:
                 filtered_tickets, start_month, end_month, is_all_data
             )
             heatmap_stats = self._calculate_heatmap_stats(filtered_tickets)
-            top_show = await self._calculate_top_show(filtered_tickets)
             two_shot_stats = self._calculate_two_shot_stats(filtered_tickets)
-            show_extremes = await self._calculate_show_extremes(
-                filtered_tickets, is_all_data
-            )
             two_shot_extremes = self._calculate_two_shot_extremes(
                 filtered_tickets, is_all_data
+            )
+
+            top_show, show_extremes = await asyncio.gather(
+                self._calculate_top_show(filtered_tickets),
+                self._calculate_show_extremes(filtered_tickets, is_all_data),
             )
 
             # Calculate most frequent row
