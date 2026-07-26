@@ -275,11 +275,16 @@ This format is 100% compatible with the `ReplayChat.svelte` parser on the fronte
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `REC_API_BASE_URL` | `http://localhost:8000/api` | Backend API URL |
+| `REC_FRONTEND_BASE_URL` | `http://localhost:5173` | Frontend URL for replay links |
 | `REC_POLL_INTERVAL` | `10` | Live poll interval in seconds |
-| `REC_NEWS_CHECK_INTERVAL` | `480` | News check poll interval in seconds |
-| `REC_SCHEDULE_CHECK_INTERVAL` | `480` | Schedule check poll interval in seconds |
+| `REC_NEWS_CHECK_INTERVAL` | `300` | News check poll interval in seconds |
+| `REC_SCHEDULE_CHECK_INTERVAL` | `300` | Schedule check poll interval in seconds |
+| `REC_HEALTH_CHECK_INTERVAL` | `300` | Backend health check interval in seconds |
+| `REC_HEARTBEAT_INTERVAL` | `120` | Heartbeat interval to signal recorder status |
 | `REC_RECORDINGS_DIR` | `recorder/recordings` | Output directory |
+| `REC_THEATER_DIR` | `recorder/theater` | Output directory for theater checks |
 | `REC_MAX_RECORDING_HOURS` | `4` | Max recording duration |
+| `REC_REMUX_TIMEOUT` | `600` | Timeout in seconds for ffmpeg remuxing |
 | `REC_MAX_CONCURRENT_UPLOADS` | `2` | Max concurrent uploads for R2/YouTube |
 | `REC_ENABLE_UPLOAD_QUEUE` | `True` | Enable size/phase based upload priority queue |
 | `REC_YOUTUBE_UPLOAD_DELAY_MINUTES`| `30` | Delay before uploading to YouTube after R2 |
@@ -289,7 +294,7 @@ This format is 100% compatible with the `ReplayChat.svelte` parser on the fronte
 | `REC_LOG_MODE` | `stdout` | Log output: `stdout` or `file` |
 | `REC_LOGS_DIR` | `recorder/logs` | Log storage directory |
 | `REC_REPLAY_API_URL` | `/admin/replay/upload` | Backend endpoint for replay upload |
-| `REC_REPLAY_API_KEY` | `""` | API key for replay upload |
+| `REC_API_KEY` | `""` | Admin API key for replay upload |
 | `REC_GOOGLE_CLIENT_ID` | `""` | Google OAuth client ID (YouTube upload) |
 | `REC_GOOGLE_CLIENT_SECRET` | `""` | Google OAuth client secret |
 | `REC_YOUTUBE_REFRESH_TOKEN` | `""` | YouTube refresh token |
