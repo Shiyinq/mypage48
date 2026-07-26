@@ -66,6 +66,20 @@ async def create_indexes():
             name="partial_recording_ended_at_-1_youtube",
             partialFilterExpression={"youtube_id": {"$gt": ""}}
         )
+        
+        await db["replay"].create_index(
+            [("platform", 1), ("recording_ended_at", -1)],
+            name="partial_platform_-1_youtube",
+            collation={"locale": "en", "strength": 2},
+            partialFilterExpression={"youtube_id": {"$gt": ""}}
+        )
+
+        await db["replay"].create_index(
+            [("member_nickname", 1), ("recording_ended_at", -1)],
+            name="partial_member_-1_youtube",
+            collation={"locale": "en", "strength": 2},
+            partialFilterExpression={"youtube_id": {"$gt": ""}}
+        )
 
         # Live history indexes
         await db["live_history"].create_index([("start_at", -1)])
