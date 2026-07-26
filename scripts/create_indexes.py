@@ -59,9 +59,11 @@ async def create_indexes():
         # Replay indexes
         await db["replay"].create_index("live_id", unique=True)
         await db["replay"].create_index([("recording_ended_at", -1)])
+
         await db["replay"].create_index(
-            [("youtube_id", 1), ("recording_ended_at", -1)],
-            sparse=True
+            [("recording_ended_at", -1)],
+            name="partial_recording_ended_at_-1_youtube",
+            partialFilterExpression={"youtube_id": {"$gt": ""}}
         )
 
         # Live history indexes
