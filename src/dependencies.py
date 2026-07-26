@@ -17,6 +17,8 @@ from src.auth.repository import AuthRepository
 from src.auth.schemas import UserCurrent
 from src.auth.security_service import SecurityService
 from src.auth.service import AuthService
+from src.concerts.repository import ConcertsRepository
+from src.concerts.service import ConcertsService
 from src.config import Settings, config
 from src.dashboard.service import DashboardService
 from src.database import database_instance
@@ -497,3 +499,15 @@ def get_replay_service(
     config: Settings = Depends(get_settings),
 ) -> ReplayService:
     return ReplayService(repo, storage_repo, live_history_repo, config)
+
+
+def get_concerts_repository(db=Depends(get_db)) -> ConcertsRepository:
+    return ConcertsRepository(db)
+
+
+def get_concerts_service(
+    repo: ConcertsRepository = Depends(get_concerts_repository),
+    config: Settings = Depends(get_settings),
+) -> ConcertsService:
+    background_runner = AsyncBackgroundRunner()
+    return ConcertsService(repo, background_runner, config)

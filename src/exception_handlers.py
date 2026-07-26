@@ -51,6 +51,14 @@ from src.auth.http_exceptions import (
     SuspiciousActivity,
     VerificationTokenInvalid,
 )
+from src.concerts.exceptions import ConcertCreationError
+from src.concerts.exceptions import ConcertDeleteError as DomainConcertDeleteError
+from src.concerts.exceptions import ConcertNotFoundError
+from src.concerts.exceptions import ConcertUpdateError as DomainConcertUpdateError
+from src.concerts.http_exceptions import ConcertCreateError
+from src.concerts.http_exceptions import ConcertDeleteError as HttpConcertDeleteError
+from src.concerts.http_exceptions import ConcertNotFound
+from src.concerts.http_exceptions import ConcertUpdateError as HttpConcertUpdateError
 from src.dashboard.exceptions import StatsFetchError
 from src.dashboard.http_exceptions import StatsFetchFailed
 from src.events.exceptions import (
@@ -448,6 +456,16 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, HttpReplayUploadError())
     if isinstance(exc, ReplayNotFound):
         return await detailed_http_exception_handler(request, HttpReplayNotFound())
+
+    # Concerts errors
+    if isinstance(exc, ConcertNotFoundError):
+        return await detailed_http_exception_handler(request, ConcertNotFound())
+    if isinstance(exc, ConcertCreationError):
+        return await detailed_http_exception_handler(request, ConcertCreateError())
+    if isinstance(exc, DomainConcertUpdateError):
+        return await detailed_http_exception_handler(request, HttpConcertUpdateError())
+    if isinstance(exc, DomainConcertDeleteError):
+        return await detailed_http_exception_handler(request, HttpConcertDeleteError())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

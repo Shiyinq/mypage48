@@ -4,6 +4,7 @@ from src.achievements.route import router as achievements_router
 from src.admin.route import router as admin_router
 from src.api_keys.route import router as api_keys_router
 from src.auth.route import router as auth_router
+from src.concerts.route import router as concerts_router
 from src.dashboard.route import router as dashboard_router
 from src.events.route import router as events_router
 from src.export.router import router as export_router
@@ -51,3 +52,4 @@ router.include_router(
 )
 router.include_router(playground_router, prefix="/playground", tags=["Playground"])
 router.include_router(replay_router, tags=["Replay"])
+router.include_router(concerts_router, prefix="/theater/concerts", tags=["Concerts"])
