@@ -486,20 +486,20 @@ class ReplayService:
             )
 
         if platform and platform != "all":
-            conditions.append(
-                {"platform": {"$regex": f"^{platform}$", "$options": "i"}}
-            )
+            conditions.append({"platform": platform})
 
         if member:
-            conditions.append(
-                {"member_nickname": {"$regex": f"^{member}$", "$options": "i"}}
-            )
+            conditions.append({"member_nickname": member})
 
         filter_query = (
             {"$and": conditions}
             if len(conditions) > 1
             else (conditions[0] if conditions else {})
         )
+
+        collation = None
+        if member or (platform and platform != "all"):
+            collation = {"locale": "en", "strength": 2}
 
         # For count, if there are no search/platform/member filters, we can just count youtube_id
         # without the $or filter to allow a covered index scan (which avoids fetching massive documents).
@@ -508,7 +508,9 @@ class ReplayService:
         else:
             count_filter = {"youtube_id": {"$gt": ""}}
 
-        total = await self.repository.count(filter_query=count_filter, hint=None)
+        total = await self.repository.count(
+            filter_query=count_filter, hint=None, collation=collation
+        )
 
         projection = {
             "live_id": 1,
@@ -524,13 +526,23 @@ class ReplayService:
             "_id": 0,
         }
 
+        # Dynamic index hint
+        find_hint = "partial_recording_ended_at_-1_youtube"
+        if search:
+            find_hint = None
+        elif member:
+            find_hint = "partial_member_-1_youtube"
+        elif platform and platform != "all":
+            find_hint = "partial_platform_-1_youtube"
+
         skip = (page - 1) * limit
         docs = await self.repository.find_all(
             projection=projection,
             filter_query=filter_query,
             skip=skip,
             limit=limit,
-            hint="partial_recording_ended_at_-1_youtube",
+            hint=find_hint,
+            collation=collation,
         )
 
         result = []

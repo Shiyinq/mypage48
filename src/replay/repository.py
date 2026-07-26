@@ -27,10 +27,13 @@ class ReplayRepository:
         skip: int = 0,
         limit: Optional[int] = None,
         hint: Optional[Any] = None,
+        collation: Optional[dict[str, Any]] = None,
     ) -> list[dict[str, Any]]:
         cursor = self.col.find(filter_query or {}, projection)
         if hint is not None:
             cursor = cursor.hint(hint)
+        if collation is not None:
+            cursor = cursor.collation(collation)
         cursor = cursor.sort("recording_ended_at", -1).skip(skip)
         if limit is not None:
             cursor = cursor.limit(limit)
@@ -40,10 +43,13 @@ class ReplayRepository:
         self,
         filter_query: Optional[dict[str, Any]] = None,
         hint: Optional[Any] = None,
+        collation: Optional[dict[str, Any]] = None,
     ) -> int:
         kwargs = {}
         if hint is not None:
             kwargs["hint"] = hint
+        if collation is not None:
+            kwargs["collation"] = collation
         return await self.col.count_documents(filter_query or {}, **kwargs)
 
     async def exists(self, live_id: str) -> bool:
