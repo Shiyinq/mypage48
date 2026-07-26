@@ -21,17 +21,22 @@
 - 🖼️ **Digital Photobook** - Browse your collected memories in a beautiful gallery view
 - 🗺️ **Seat Map Visualization** - Interactive theater seat map showing your seating history
 - 🏆 **Achievements System** - Unlock achievements based on your theater journey
+- 📓 **Theater Journal** - Write personal notes and keep track of your theater experiences
 - 👤 **Public Profile** - Share your theater stats with a public profile page (Wrapped)
 - 📅 **Interactive Calendar** - Browse JKT48 schedule and events in a monthly view
 - 📜 **Event History** - Comprehensive history of all past JKT48 events
 - 📦 **Data Export** - Download your complete data including images in a ZIP archive
 - 📺 **JKT48 Live Stream** - Watch Showroom and IDN Live with a real-time multiview experience
+- 🔄 **Replay** - Watch recorded JKT48 live streams with synchronized chat and gifts
 - 📉 **Oshi Sorter** - Rank your favorite JKT48 members with an interactive sorting tool
 - 🌏 **Multi-language Support** - Available in English, Indonesian, and Japanese
 - 🌙 **Dark Mode** - Beautiful dark-themed UI with glassmorphism design
 - 🕷️ **Built-in Scraper** - Automated fetching of JKT48 schedule, news, and member data
 - 💬 **Feedback System** - Built-in tool for reporting issues or suggestions
 - 🛡️ **Admin Dashboard** - Comprehensive user management and content moderation tools
+- 🎥 **Auto Liverecorder** - Auto-record SHOWROOM & IDN Live streams with chat/gifts and upload to YouTube
+- 🔔 **Telegram Notifications** - Real-time alerts for JKT48 news, schedules, and live streams
+- 📱 **Progressive Web App (PWA)** - Installable on desktop and mobile devices for an app-like experience
 
 ## 🛠️ Tech Stack
 
@@ -53,6 +58,7 @@
 mypage48/
 ├── src/                   # Backend (FastAPI)
 ├── scraper/               # JKT48 Web Scraper
+├── recorder/              # SHOWROOM & IDN Live Auto-Recorder
 ├── frontend/              # Frontend (SvelteKit)
 ├── nginx/                 # Nginx Configuration (Production)
 ├── scripts/               # Utility & Cron scripts
@@ -126,7 +132,8 @@ MyPage48 is now fully production-ready with a secure, automated infrastructure.
 - **Nginx Reverse Proxy**: Subdomain routing for App, API, Analytics, and Storage.
 - **Umami Analytics**: Privacy-focused, self-hosted visitor tracking.
 - **Automated Scraper**: Periodic daily sync (12:00 AM) using isolated cron service.
-- **Hardened Security**: Network isolation, Root DB authentication, and HTTPS ready.
+- **Hardened Security**: Strict UFW Firewall (Cloudflare IPs only), Network isolation, Root DB authentication, and HTTPS ready.
+- **CI/CD Auto-Deployment**: Automatic deployment pipeline via GitHub Actions on new release tags.
 
 ### Guide
 For a step-by-step production setup on a VPS, please follow the **[Deployment Guide](docs/DEPLOYMENT.md)**.
