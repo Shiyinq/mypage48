@@ -19,6 +19,7 @@ interface ReplayState {
 	lastUpdated: number;
 	cache: Record<string, ReplayPageCache>;
 	loadedPages: Set<number>;
+	currentFilterKey: string;
 }
 
 const getInitialState = (): ReplayState => ({
@@ -34,7 +35,8 @@ const getInitialState = (): ReplayState => ({
 	error: null,
 	lastUpdated: 0,
 	cache: {},
-	loadedPages: new Set()
+	loadedPages: new Set(),
+	currentFilterKey: ''
 });
 
 const state = $state<ReplayState>(getInitialState());
@@ -89,6 +91,7 @@ function createReplayStore() {
 			const now = Date.now();
 
 			loadGeneration++;
+			state.currentFilterKey = filterKey;
 
 			const cachedPage = state.cache[cacheKey];
 			if (cachedPage && !force && now - cachedPage.lastUpdated < REPLAY_CACHE_TTL) {
@@ -106,9 +109,10 @@ function createReplayStore() {
 			state.loading = true;
 			state.loadedPages = new Set([page]);
 
-			// Clear videos when loading page 1 to show loading skeleton
+			// Clear videos and reset pagination when loading page 1 to show loading skeleton
 			if (page === 1) {
 				state.videos = [];
+				state.pagination = getInitialState().pagination;
 			}
 
 			try {
@@ -152,6 +156,8 @@ function createReplayStore() {
 			const normMember = member.trim();
 
 			const filterKey = `${normSearch}-${normPlatform}-${normMember}`;
+			if (filterKey !== state.currentFilterKey) return;
+
 			const cacheKey = `${nextPage}-${filterKey}`;
 			const now = Date.now();
 
