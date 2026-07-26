@@ -496,20 +496,29 @@ class ReplayService:
             if len(conditions) > 1
             else (conditions[0] if conditions else {})
         )
-
         collation = None
         if member or (platform and platform != "all"):
             collation = {"locale": "en", "strength": 2}
 
-        # For count, if there are no search/platform/member filters, we can just count youtube_id
-        # without the $or filter to allow a covered index scan (which avoids fetching massive documents).
+        # For count, we use the exact filter_query so the count is 100% accurate (including live_type).
         if search or (platform and platform != "all") or member:
             count_filter = filter_query
         else:
             count_filter = {"youtube_id": {"$gt": ""}}
 
+        # Assign the exact hint so the planner doesn't get confused and do a collection scan
+        count_hint = "youtube_id"
+        if search:
+            count_hint = None
+        elif member:
+            count_hint = "partial_member_-1_youtube"
+        elif platform and platform != "all":
+            count_hint = "partial_platform_-1_youtube"
+        else:
+            count_hint = None
+
         total = await self.repository.count(
-            filter_query=count_filter, hint=None, collation=collation
+            filter_query=count_filter, hint=count_hint, collation=collation
         )
 
         projection = {
