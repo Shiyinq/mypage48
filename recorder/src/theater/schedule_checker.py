@@ -59,7 +59,7 @@ class ScheduleChecker:
 
     async def _fetch_detail(
         self, client: httpx.AsyncClient, ref_code: str
-    ) -> tuple[list[str] | None, list[dict] | None]:
+    ) -> dict | None:
         detail_url = f"https://jkt48.com/api/v1/theater-shows/{ref_code}?lang=id"
         try:
             resp = await client.get(detail_url, timeout=10.0)
@@ -67,23 +67,38 @@ class ScheduleChecker:
                 data = resp.json().get("data", {})
                 members_data = data.get("jkt48_member", [])
                 sales_period = data.get("sales_period", [])
+                birthday_members = data.get("birthday_member_name", [])
+
                 members = []
                 for m in members_data:
                     if isinstance(m, dict):
                         members.append(m.get("name", "Unknown"))
                     elif isinstance(m, str):
                         members.append(m)
-                return sorted(members), sales_period
+
+                if not isinstance(birthday_members, list):
+                    birthday_members = [birthday_members] if birthday_members else []
+
+                # Add birthday members to lineup if not already present
+                for bm in birthday_members:
+                    if bm and bm not in members:
+                        members.append(bm)
+
+                return {
+                    "members": sorted(list(set(members))),
+                    "sales_period": sales_period,
+                    "birthday_members": birthday_members,
+                }
             else:
                 self.log.warning(
                     "Failed to fetch schedule detail %s: HTTP %s",
                     ref_code,
                     resp.status_code,
                 )
-                return None, None
+                return None
         except Exception as e:
             self.log.warning("Exception fetching schedule detail %s: %s", ref_code, e)
-        return None, None
+        return None
 
     async def _check_schedules(self):
         self.log.info("Checking JKT48 schedules...")
@@ -149,19 +164,37 @@ class ScheduleChecker:
 
                         members = []
                         sales_period = []
+                        birthday_members = []
                         if sch.get("type") == "SHOW" and sch.get("reference_code"):
-                            fetched_members, fetched_sales = await self._fetch_detail(
+                            detail = await self._fetch_detail(
                                 client, sch.get("reference_code")
                             )
-                            if fetched_members is None:
+                            if detail is None:
                                 if sch_id in current_state:
                                     members = current_state[sch_id].get("members", [])
                                     sales_period = current_state[sch_id].get(
                                         "sales_period", []
                                     )
+                                    birthday_members = current_state[sch_id].get(
+                                        "birthday_members", []
+                                    )
                             else:
-                                members = fetched_members
-                                sales_period = fetched_sales
+                                members = detail["members"]
+                                sales_period = detail["sales_period"]
+                                birthday_members = detail["birthday_members"]
+
+                                # Protect birthday_members from disappearing
+                                if sch_id in current_state:
+                                    old_birthdays = current_state[sch_id].get(
+                                        "birthday_members", []
+                                    )
+                                    if not birthday_members and old_birthdays:
+                                        birthday_members = old_birthdays
+                                        # Make sure they're in members again if needed
+                                        for bm in birthday_members:
+                                            if bm not in members:
+                                                members.append(bm)
+                                        members = sorted(list(set(members)))
 
                         sch_data = {
                             "title": sch.get("title", ""),
@@ -171,34 +204,64 @@ class ScheduleChecker:
                             "jkt48_member_type": sch.get("jkt48_member_type", ""),
                             "members": members,
                             "sales_period": sales_period,
+                            "birthday_members": birthday_members,
                             "id": sch_id,
                             "link": sch.get("link", ""),
                             "reference_code": sch.get("reference_code", ""),
                         }
 
                         if sch_id not in current_state:
+                            sch_data["new_members"] = members
+                            sch_data["new_sales_labels"] = [
+                                sp.get("label") for sp in sales_period
+                            ]
                             new_schedules.append(sch_data)
                             new_state[sch_id] = {
                                 "members": members,
                                 "sales_period": sales_period,
+                                "birthday_members": birthday_members,
                             }
                         else:
                             old_members = current_state[sch_id].get("members", [])
                             old_sales = current_state[sch_id].get("sales_period", [])
+                            old_birthdays = current_state[sch_id].get(
+                                "birthday_members", []
+                            )
 
                             update_types = []
+                            new_members_diff = [
+                                m for m in members if m not in old_members
+                            ]
+                            removed_members_diff = [
+                                m for m in old_members if m not in members
+                            ]
+
+                            old_sales_labels = {sp.get("label") for sp in old_sales}
+                            new_sales_labels = [
+                                sp.get("label")
+                                for sp in sales_period
+                                if sp.get("label") not in old_sales_labels
+                            ]
+
                             if members != old_members:
                                 update_types.append("MEMBER")
                             if sales_period != old_sales:
                                 update_types.append("TIKET")
+                            if birthday_members != old_birthdays:
+                                if "MEMBER" not in update_types:
+                                    update_types.append("MEMBER")
 
                             if update_types:
                                 sch_data["update_types"] = update_types
+                                sch_data["new_members"] = new_members_diff
+                                sch_data["removed_members"] = removed_members_diff
+                                sch_data["new_sales_labels"] = new_sales_labels
                                 updated_schedules.append(sch_data)
 
                             new_state[sch_id] = {
                                 "members": members,
                                 "sales_period": sales_period,
+                                "birthday_members": birthday_members,
                             }
 
                         # Cache today's schedules for upcoming reminder loop
@@ -238,19 +301,31 @@ class ScheduleChecker:
 
     async def _generate_and_send_notification(self, new_schedules, updated_schedules):
         timestamp_ms = int(time.time() * 1000)
-        screenshot_path = os.path.join(self.pending_dir, f"schedule_{timestamp_ms}.jpg")
+        screenshot_paths = []
 
-        html_content = self._generate_html(new_schedules, updated_schedules)
+        async def _gen_and_cap(sch, is_upd, idx):
+            html_content = self._generate_html(
+                [sch] if not is_upd else [], [sch] if is_upd else []
+            )
+            path = os.path.join(
+                self.pending_dir,
+                f"schedule_{timestamp_ms}_{'upd' if is_upd else 'new'}_{idx}.jpg",
+            )
+            success = await capture_html_screenshot(html_content, path, wait_ms=1000)
+            if success:
+                screenshot_paths.append(path)
 
-        success = await capture_html_screenshot(
-            html_content, screenshot_path, wait_ms=1000
-        )
+        for i, sch in enumerate(new_schedules):
+            await _gen_and_cap(sch, False, i)
+
+        for i, sch in enumerate(updated_schedules):
+            await _gen_and_cap(sch, True, i)
 
         payload = {
             "type": "schedule",
             "new_count": len(new_schedules),
             "updated_count": len(updated_schedules),
-            "screenshot_path": screenshot_path if success else None,
+            "screenshot_paths": screenshot_paths,
             "timestamp": timestamp_ms,
             "new_schedules": new_schedules,
             "updated_schedules": updated_schedules,
@@ -323,11 +398,38 @@ class ScheduleChecker:
                 title_text += f" ({sch['jkt48_member_type']})"
 
             members_html = ""
-            if sch["members"]:
-                members_badges = "".join(
-                    f'<span class="member-badge">{m}</span>' for m in sch["members"]
-                )
-                members_html = f"<div class='section-title'>Anggota yang tampil:</div><div class='member-list'>{members_badges}</div>"
+            if sch["members"] or sch.get("removed_members"):
+                members_badges = []
+                for m in sch["members"]:
+                    is_new = m in sch.get("new_members", [])
+                    is_birthday = m in sch.get("birthday_members", [])
+
+                    badge_style = ""
+                    badge_class = "member-badge"
+                    if is_update and is_new:
+                        badge_style = "border-color: #3b82f6; background-color: #eff6ff; color: #1d4ed8;"
+                    if is_birthday:
+                        badge_style += " border-color: #ec4899; background-color: #fdf2f8; color: #be185d;"
+                        m_text = f"🎂 {m}"
+                    else:
+                        m_text = m
+
+                    if is_update and is_new:
+                        m_text += " <span style='font-size: 10px; color: #ef4444; font-weight: 700;'>(BARU)</span>"
+
+                    members_badges.append(
+                        f'<span class="{badge_class}" style="{badge_style}">{m_text}</span>'
+                    )
+
+                if is_update and sch.get("removed_members"):
+                    for m in sch["removed_members"]:
+                        badge_style = "color: #9ca3af; background-color: #f3f4f6; border-color: #e5e7eb;"
+                        m_text = f"<span style='text-decoration: line-through;'>{m}</span> <span style='font-size: 10px; color: #6b7280; font-weight: 700;'>(BATAL)</span>"
+                        members_badges.append(
+                            f'<span class="member-badge" style="{badge_style}">{m_text}</span>'
+                        )
+
+                members_html = f"<div class='section-title'>Anggota yang tampil:</div><div class='member-list'>{''.join(members_badges)}</div>"
             else:
                 if sch["type"] == "SHOW":
                     members_html = f"<div class='section-title'>Anggota yang tampil:</div><div class='member-list'><span class='member-badge' style='background:#f3f4f6;color:#6b7280;border-color:#e5e7eb;'>Akan segera diumumkan</span></div>"
@@ -337,6 +439,8 @@ class ScheduleChecker:
                 sales_html = "<div class='section-title'>Periode Penjualan Tiket:</div><ul class='ticket-list'>"
                 for sp in sch["sales_period"]:
                     lbl = sp.get("label", "")
+                    is_new_ticket = lbl in sch.get("new_sales_labels", [])
+
                     start_d = format_ticket_date(sp.get("start_date", ""))
                     end_d = format_ticket_date(sp.get("end_date", ""))
 
@@ -351,7 +455,13 @@ class ScheduleChecker:
                     if quotas:
                         quota_html = f"<div style='margin-bottom: 2px; color: #4b5563;'>Quota: {', '.join(quotas)}</div>"
 
-                    sales_html += f"<li><strong>{lbl}</strong>{quota_html}<div style='color: #6b7280;'>{start_d} - {end_d}</div></li>"
+                    new_badge = ""
+                    li_style = ""
+                    if is_new_ticket and is_update:
+                        new_badge = "<span style='background: #fee2e2; color: #dc2626; font-size: 10px; padding: 2px 6px; border-radius: 9999px; margin-left: 8px; font-weight: 700;'>BARU</span>"
+                        li_style = "border-color: #fca5a5; background-color: #fef2f2;"
+
+                    sales_html += f"<li style='{li_style}'><strong>{lbl}</strong>{new_badge}{quota_html}<div style='color: #6b7280;'>{start_d} - {end_d}</div></li>"
                 sales_html += "</ul>"
 
             return f"""
@@ -490,20 +600,37 @@ class ScheduleChecker:
 
                         members = []
                         sales_period = []
+                        birthday_members = []
                         if sch.get("type") == "SHOW" and sch.get("reference_code"):
-                            fetched_members, fetched_sales = await self._fetch_detail(
+                            detail = await self._fetch_detail(
                                 client, sch.get("reference_code")
                             )
-                            if fetched_members is None:
+                            if detail is None:
                                 current_state = self._get_schedule_state()
                                 if sch_id in current_state:
                                     members = current_state[sch_id].get("members", [])
                                     sales_period = current_state[sch_id].get(
                                         "sales_period", []
                                     )
+                                    birthday_members = current_state[sch_id].get(
+                                        "birthday_members", []
+                                    )
                             else:
-                                members = fetched_members
-                                sales_period = fetched_sales
+                                members = detail["members"]
+                                sales_period = detail["sales_period"]
+                                birthday_members = detail["birthday_members"]
+
+                                current_state = self._get_schedule_state()
+                                if sch_id in current_state:
+                                    old_birthdays = current_state[sch_id].get(
+                                        "birthday_members", []
+                                    )
+                                    if not birthday_members and old_birthdays:
+                                        birthday_members = old_birthdays
+                                        for bm in birthday_members:
+                                            if bm not in members:
+                                                members.append(bm)
+                                        members = sorted(list(set(members)))
 
                         sch_data = {
                             "title": sch.get("title", ""),
@@ -513,6 +640,7 @@ class ScheduleChecker:
                             "jkt48_member_type": sch.get("jkt48_member_type", ""),
                             "members": members,
                             "sales_period": sales_period,
+                            "birthday_members": birthday_members,
                             "id": sch_id,
                             "link": sch.get("link", ""),
                             "reference_code": sch.get("reference_code", ""),
