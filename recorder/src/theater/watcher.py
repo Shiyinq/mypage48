@@ -98,6 +98,16 @@ class TheaterWatcher:
                             e,
                         )
 
+                screenshot_paths = payload.get("screenshot_paths", [])
+                for p in screenshot_paths:
+                    if os.path.exists(p):
+                        try:
+                            os.remove(p)
+                        except Exception as e:
+                            self.log.error(
+                                "Failed to delete associated screenshot %s: %s", p, e
+                            )
+
                 # Cleanup associated article images if any
                 article_images = payload.get("article_images", [])
                 for img_path in article_images:

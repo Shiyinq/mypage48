@@ -816,7 +816,10 @@ async def send_schedule_notification(payload: dict, config: RecorderConfig) -> b
 
     new_count = payload.get("new_count", 0)
     updated_count = payload.get("updated_count", 0)
-    screenshot_path = payload.get("screenshot_path")
+
+    screenshot_paths = payload.get("screenshot_paths", [])
+    if not screenshot_paths and payload.get("screenshot_path"):
+        screenshot_paths = [payload.get("screenshot_path")]
 
     caption = ""
     new_schedules = payload.get("new_schedules", [])
@@ -850,7 +853,31 @@ async def send_schedule_notification(payload: dict, config: RecorderConfig) -> b
         else:
             url = f"https://jkt48.com/theater/schedule?id={sch_id}&lang=id"
 
-        return f"• <b>{title}</b>\n  • {date_wib} {time_str} WIB\n  • <a href='{url}'>Detail</a>\n\n"
+        bday_members = sch.get("birthday_members", [])
+        birthday_str = ""
+        if bday_members:
+            birthday_str = f"  • 🎂 {', '.join(bday_members)}\n"
+
+        new_tickets = sch.get("new_sales_labels", [])
+        new_tickets_str = ""
+        if new_tickets:
+            sales_periods = sch.get("sales_period", [])
+            for nt in new_tickets:
+                quotas = []
+                for sp in sales_periods:
+                    if sp.get("label") == nt:
+                        for pricing in sp.get("pricing", []):
+                            if "quota" in pricing:
+                                quotas.append(str(pricing["quota"]))
+                        break
+
+                quota_str = ""
+                if quotas:
+                    quota_str = f" - {', '.join(quotas)}"
+
+                new_tickets_str += f"  • 🎟️ Tiket {nt}{quota_str}\n"
+
+        return f"• <b>{title}</b>\n  • {date_wib} {time_str} WIB\n{birthday_str}{new_tickets_str}  • <a href='{url}'>Detail</a>\n\n"
 
     if new_schedules:
         caption += f"<b>🆕 Berikut {new_count} jadwal yang akan datang</b>\n\n"
@@ -882,32 +909,77 @@ async def send_schedule_notification(payload: dict, config: RecorderConfig) -> b
         async with httpx.AsyncClient(timeout=60.0) as client:
             upload_success = False
 
-            if screenshot_path and os.path.exists(screenshot_path):
-                log.info("Sending schedule notification with Photo")
-                tg_url = (
-                    f"https://api.telegram.org/bot{config.telegram_bot_token}/sendPhoto"
-                )
-                try:
-                    with open(screenshot_path, "rb") as f:
+            if screenshot_paths:
+                valid_paths = [p for p in screenshot_paths if os.path.exists(p)]
+                if len(valid_paths) == 1:
+                    log.info("Sending schedule notification with Photo")
+                    tg_url = f"https://api.telegram.org/bot{config.telegram_bot_token}/sendPhoto"
+                    try:
+                        with open(valid_paths[0], "rb") as f:
+                            tg_resp = await client.post(
+                                tg_url,
+                                data={
+                                    "chat_id": config.telegram_chat_id,
+                                    "caption": caption,
+                                    "parse_mode": "HTML",
+                                },
+                                files={"photo": ("schedule.jpg", f, "image/jpeg")},
+                            )
+                        if tg_resp.is_success:
+                            upload_success = True
+                        else:
+                            log.warning(
+                                "Telegram Photo failed: %s %s",
+                                tg_resp.status_code,
+                                tg_resp.text,
+                            )
+                    except Exception:
+                        log.exception("Exception during Photo upload:")
+                elif len(valid_paths) > 1:
+                    log.info(
+                        f"Sending schedule notification with {len(valid_paths)} Photos in MediaGroup"
+                    )
+                    tg_url = f"https://api.telegram.org/bot{config.telegram_bot_token}/sendMediaGroup"
+
+                    media_group = []
+                    files = {}
+                    import json
+
+                    for i, path in enumerate(valid_paths[:10]):
+                        filename = f"photo_{i}.jpg"
+                        files[filename] = (filename, open(path, "rb"), "image/jpeg")
+
+                        media_item = {"type": "photo", "media": f"attach://{filename}"}
+                        if i == 0:
+                            media_item["caption"] = caption
+                            media_item["parse_mode"] = "HTML"
+
+                        media_group.append(media_item)
+
+                    try:
                         tg_resp = await client.post(
                             tg_url,
                             data={
                                 "chat_id": config.telegram_chat_id,
-                                "caption": caption,
-                                "parse_mode": "HTML",
+                                "media": json.dumps(media_group),
                             },
-                            files={"photo": ("schedule.jpg", f, "image/jpeg")},
+                            files=files,
                         )
-                    if tg_resp.is_success:
-                        upload_success = True
-                    else:
-                        log.warning(
-                            "Telegram Photo failed: %s %s",
-                            tg_resp.status_code,
-                            tg_resp.text,
-                        )
-                except Exception:
-                    log.exception("Exception during Photo upload:")
+                        for f_tuple in files.values():
+                            f_tuple[1].close()
+
+                        if tg_resp.is_success:
+                            upload_success = True
+                        else:
+                            log.warning(
+                                "Telegram MediaGroup failed: %s %s",
+                                tg_resp.status_code,
+                                tg_resp.text,
+                            )
+                    except Exception:
+                        log.exception("Exception during MediaGroup upload:")
+                        for f_tuple in files.values():
+                            f_tuple[1].close()
 
             if upload_success:
                 return True
@@ -978,9 +1050,12 @@ async def send_daily_schedule_reminder(payload: dict, config: RecorderConfig) ->
             url = f"https://jkt48.com/theater/schedule?id={sch_id}&lang=id"
 
         members = sch.get("members", [])
+        bday_members = sch.get("birthday_members", [])
 
         entry = f"• <b>{title}</b>"
         entry += f"\n  • {date_wib} {time_str} WIB"
+        if bday_members:
+            entry += f"\n  • 🎂 {', '.join(bday_members)}"
 
         if members:
             entry += f"\n  • {len(members)} Member"
