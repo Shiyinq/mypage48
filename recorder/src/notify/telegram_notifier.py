@@ -1313,24 +1313,11 @@ async def send_health_notification(payload: dict, config: RecorderConfig) -> boo
     is_any_down = any(state.get(k) == "DOWN" for k, _ in services)
 
     if is_any_down:
-        text = "⚠️ <b>Monitoring Alert</b>\n\n"
-        text += "Mohon maaf <a href='https://mypage48.com'>MyPage48.com</a> sedang mengalami kendala\n\n"
+        text = "🔴 <b>Monitoring Alert</b>\n\n"
+        text += "Mohon maaf <a href='https://mypage48.com'>MyPage48.com</a> sedang mengalami kendala, saat ini web tidak dapat diakses untuk sementara waktu.\n"
     else:
-        text = "✅ <b>Monitoring Alert</b>\n\n"
-        text += "<a href='https://mypage48.com'>MyPage48.com</a> kembali beroperasi dengan normal\n\n"
-
-    for key, name in services:
-        status = state.get(key, "UNKNOWN")
-        icon = "🔴" if status == "DOWN" else "🟢" if status == "UP" else "⚪️"
-
-        # Add HTTP status code dynamically for Web and API
-        code_str = ""
-        if key in ("frontend", "api"):
-            code = state.get(f"{key}_code")
-            if code:
-                code_str = f" ({code})"
-
-        text += f"{icon} <b>{name}</b> is {status}{code_str}\n"
+        text = "🟢 <b>Monitoring Alert</b>\n\n"
+        text += "<a href='https://mypage48.com'>MyPage48.com</a> kembali beroperasi dengan normal.\n"
 
     text += "\n<i>~ MyPage48 ~</i>"
 
