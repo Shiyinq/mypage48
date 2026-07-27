@@ -1314,7 +1314,7 @@ async def send_health_notification(payload: dict, config: RecorderConfig) -> boo
 
     if is_any_down:
         text = "🔴 <b>Monitoring Alert</b>\n\n"
-        text += "Mohon maaf <a href='https://mypage48.com'>MyPage48.com</a> sedang mengalami kendala, untuk saat ini web tidak dapat diakses untuk sementara waktu.\n"
+        text += "Mohon maaf <a href='https://mypage48.com'>MyPage48.com</a> sedang mengalami kendala, saat ini web tidak dapat diakses untuk sementara waktu.\n"
     else:
         text = "🟢 <b>Monitoring Alert</b>\n\n"
         text += "<a href='https://mypage48.com'>MyPage48.com</a> kembali beroperasi dengan normal.\n"
