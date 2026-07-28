@@ -109,14 +109,14 @@ async def main(args):
         schedule_checker = ScheduleChecker(config)
         birthday_checker = BirthdayChecker(config)
         idn_live_plus_checker = IdnLivePlusChecker(config)
-        health_checker = HealthChecker(config)
+        # health_checker = HealthChecker(config)
         theater_watcher = TheaterWatcher(config)
 
         tasks.append(asyncio.create_task(news_checker.run(stop_event)))
         tasks.append(asyncio.create_task(schedule_checker.run(stop_event)))
         tasks.append(asyncio.create_task(birthday_checker.run(stop_event)))
         tasks.append(asyncio.create_task(idn_live_plus_checker.run(stop_event)))
-        tasks.append(asyncio.create_task(health_checker.run(stop_event)))
+        # tasks.append(asyncio.create_task(health_checker.run(stop_event)))
         tasks.append(asyncio.create_task(theater_watcher.run(stop_event)))
 
     await asyncio.gather(*tasks)
