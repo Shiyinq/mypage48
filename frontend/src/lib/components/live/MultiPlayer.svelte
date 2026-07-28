@@ -23,6 +23,8 @@
 	let autoplayBlocked = $state(false);
 
 	interface Props {
+		isFillMode?: boolean;
+		onLandscapeChange?: (isLandscape: boolean) => void;
 		platform?: string; // 'showroom' or 'idn'
 		id?: string; // room_id or live_id
 		volume?: number;
@@ -33,6 +35,8 @@
 	}
 
 	let {
+		isFillMode = false,
+		onLandscapeChange,
 		platform = '',
 		id = '',
 		volume = 1,
@@ -49,6 +53,108 @@
 	let isEffectivelyMuted = $state(false);
 	$effect(() => {
 		isEffectivelyMuted = muted || (isNaN(Number(volume)) ? false : Number(volume) === 0);
+	});
+
+	let containerWidth = $state(0);
+	let containerHeight = $state(0);
+	let isContainerLandscape = $state(false);
+
+	$effect(() => {
+		const newVal = containerWidth > containerHeight;
+		if (newVal !== isContainerLandscape) {
+			isContainerLandscape = newVal;
+			if (onLandscapeChange) onLandscapeChange(newVal);
+		}
+	});
+
+	let isTripleView = $derived(isFillMode && isContainerLandscape);
+
+	let leftVideoElement = $state<HTMLVideoElement | null>(null);
+	let rightVideoElement = $state<HTMLVideoElement | null>(null);
+	let leftCanvasElement = $state<HTMLCanvasElement | null>(null);
+	let rightCanvasElement = $state<HTMLCanvasElement | null>(null);
+	let useCanvasFallback = $state(false);
+	let tripleViewAnimFrame: number | null = null;
+	let activeTripleStream: MediaStream | null = null;
+
+	function syncTripleViewStreams() {
+		if (!isTripleView || !videoElement) return;
+
+		if (!activeTripleStream) {
+			try {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const ve = videoElement as any;
+				const stream = ve.captureStream
+					? ve.captureStream()
+					: ve.mozCaptureStream
+						? ve.mozCaptureStream()
+						: null;
+				if (stream && stream.getVideoTracks().length > 0) {
+					activeTripleStream = stream;
+				}
+			} catch (e) {
+				console.warn('TripleView captureStream unavailable, using canvas fallback:', e);
+				useCanvasFallback = true;
+			}
+		}
+
+		if (activeTripleStream) {
+			if (leftVideoElement && leftVideoElement.srcObject !== activeTripleStream) {
+				leftVideoElement.muted = true;
+				leftVideoElement.srcObject = activeTripleStream;
+				leftVideoElement.play().catch(() => {});
+			}
+			if (rightVideoElement && rightVideoElement.srcObject !== activeTripleStream) {
+				rightVideoElement.muted = true;
+				rightVideoElement.srcObject = activeTripleStream;
+				rightVideoElement.play().catch(() => {});
+			}
+		} else if (useCanvasFallback) {
+			if (!tripleViewAnimFrame) {
+				renderCanvasTripleView();
+			}
+		}
+	}
+
+	function renderCanvasTripleView() {
+		if (!isTripleView || !videoElement || videoElement.paused || videoElement.ended) {
+			tripleViewAnimFrame = null;
+			return;
+		}
+		const vw = videoElement.videoWidth;
+		const vh = videoElement.videoHeight;
+		if (vw && vh) {
+			if (leftCanvasElement) {
+				if (leftCanvasElement.width !== vw) {
+					leftCanvasElement.width = vw;
+					leftCanvasElement.height = vh;
+				}
+				const ctx = leftCanvasElement.getContext('2d');
+				ctx?.drawImage(videoElement, 0, 0, vw, vh);
+			}
+			if (rightCanvasElement) {
+				if (rightCanvasElement.width !== vw) {
+					rightCanvasElement.width = vw;
+					rightCanvasElement.height = vh;
+				}
+				const ctx = rightCanvasElement.getContext('2d');
+				ctx?.drawImage(videoElement, 0, 0, vw, vh);
+			}
+		}
+		tripleViewAnimFrame = requestAnimationFrame(renderCanvasTripleView);
+	}
+
+	$effect(() => {
+		if (isTripleView) {
+			syncTripleViewStreams();
+		} else {
+			if (tripleViewAnimFrame) {
+				cancelAnimationFrame(tripleViewAnimFrame);
+				tripleViewAnimFrame = null;
+			}
+			if (leftVideoElement) leftVideoElement.srcObject = null;
+			if (rightVideoElement) rightVideoElement.srcObject = null;
+		}
 	});
 
 	function syncAudioState() {
@@ -327,24 +433,103 @@
 	});
 </script>
 
-<div class="relative w-full h-full bg-black group/player overflow-hidden">
-	<video
-		bind:this={videoElement}
-		class="w-full h-full object-contain transition-transform duration-300"
-		style="transform: rotate({rotation}deg);"
-		playsinline
-		muted={isEffectivelyMuted}
-		onplay={syncAudioState}
-		onplaying={() => {
-			syncAudioState();
-			isBuffering = false;
-		}}
-		onwaiting={() => (isBuffering = true)}
-		onstalled={() => (isBuffering = true)}
-		oncanplay={() => (isBuffering = false)}
-		onpause={() => (isBuffering = false)}
-		onvolumechange={syncAudioState}
-	></video>
+<div
+	bind:clientWidth={containerWidth}
+	bind:clientHeight={containerHeight}
+	class="relative w-full h-full bg-black group/player overflow-hidden flex items-center justify-center"
+>
+	<!-- Left Side Clone -->
+	<div
+		class={isTripleView
+			? 'w-1/3 h-full overflow-hidden relative flex items-center justify-center'
+			: 'hidden'}
+	>
+		{#if !useCanvasFallback}
+			<video
+				bind:this={leftVideoElement}
+				class="w-full h-full object-cover scale-[1.45] pointer-events-none opacity-90 transition-all duration-300"
+				style="transform: rotate({rotation}deg);"
+				autoplay
+				playsinline
+				muted
+			></video>
+		{:else}
+			<canvas
+				bind:this={leftCanvasElement}
+				class="w-full h-full object-cover scale-[1.45] pointer-events-none opacity-90 transition-all duration-300"
+				style="transform: rotate({rotation}deg);"
+			></canvas>
+		{/if}
+	</div>
+
+	<!-- Center Video -->
+	<div
+		class="{isTripleView
+			? 'w-1/3 h-full overflow-hidden'
+			: 'w-full h-full'} relative flex items-center justify-center transition-all duration-300"
+	>
+		<video
+			bind:this={videoElement}
+			class="w-full h-full {isTripleView
+				? 'object-cover scale-[1.45]'
+				: isFillMode
+					? platform === 'idn'
+						? 'object-cover scale-[1.25]'
+						: 'object-cover'
+					: 'object-contain'} transition-all duration-300 relative z-10 bg-transparent"
+			style="transform: rotate({rotation}deg);"
+			playsinline
+			muted={isEffectivelyMuted}
+			crossorigin="anonymous"
+			onloadedmetadata={() => {
+				if (isTripleView) syncTripleViewStreams();
+			}}
+			ontimeupdate={() => {
+				if (isTripleView) syncTripleViewStreams();
+			}}
+			onplay={() => {
+				syncAudioState();
+				if (isTripleView) syncTripleViewStreams();
+			}}
+			onplaying={() => {
+				syncAudioState();
+				isBuffering = false;
+				if (isTripleView) syncTripleViewStreams();
+			}}
+			onwaiting={() => (isBuffering = true)}
+			onstalled={() => (isBuffering = true)}
+			oncanplay={() => {
+				isBuffering = false;
+				if (isTripleView) syncTripleViewStreams();
+			}}
+			onpause={() => (isBuffering = false)}
+			onvolumechange={syncAudioState}
+		></video>
+	</div>
+
+	<!-- Right Side Clone -->
+	<div
+		class={isTripleView
+			? 'w-1/3 h-full overflow-hidden relative flex items-center justify-center'
+			: 'hidden'}
+	>
+		{#if !useCanvasFallback}
+			<video
+				bind:this={rightVideoElement}
+				class="w-full h-full object-cover scale-[1.45] pointer-events-none opacity-90 transition-all duration-300"
+				style="transform: rotate({rotation}deg);"
+				autoplay
+				playsinline
+				muted
+			></video>
+		{:else}
+			<canvas
+				bind:this={rightCanvasElement}
+				class="w-full h-full object-cover scale-[1.45] pointer-events-none opacity-90 transition-all duration-300"
+				style="transform: rotate({rotation}deg);"
+			></canvas>
+		{/if}
+	</div>
 
 	{#if autoplayBlocked}
 		<button

@@ -29,7 +29,9 @@
 		Square,
 		Trash2,
 		Tv,
-		LayoutGrid
+		LayoutGrid,
+		Ratio,
+		Columns3
 	} from 'lucide-svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
 	import { OptimizedImage } from '$lib/components/common';
@@ -68,6 +70,8 @@
 	let isPortrait = $state(true);
 	let searchQuery = $state('');
 	let isMobile = $state(false);
+	let showLayoutDropdown = $state(false);
+	let layoutDropdownRef: HTMLDivElement | undefined = $state();
 
 	// Background Decoration State
 	let scrollY = $state(0);
@@ -98,9 +102,16 @@
 	let volumes: number[] = $state(Array(8).fill(1));
 	let muted: boolean[] = $state(Array(8).fill(false));
 	let isRecording: boolean[] = $state(Array(8).fill(false));
+	let fillModes: boolean[] = $state(Array(8).fill(false));
+	let landscapes: boolean[] = $state(Array(8).fill(false));
 	let focusedCurrentTime: number = $state(0);
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let playerRefs: any[] = $state(Array(8).fill(null));
+
+	let windowWidth = $state(0);
+	let windowHeight = $state(0);
+	let isEffectiveLandscape = $derived(!isPortrait);
+
 	$effect(() => {
 		if (activeTab === 'replay') {
 			// Read synchronously so Svelte 5 tracks the dependency
@@ -122,8 +133,9 @@
 			const currentLive = liveList.value;
 
 			let hasGoneOffline = false;
+			const indicesToRemove: number[] = [];
 			const updatedSlots = slots
-				.map((slot) => {
+				.map((slot, index) => {
 					if (slot.type === 'replay') return slot;
 					const liveData = slot.data;
 					const updated = currentLive.find(
@@ -133,6 +145,7 @@
 					);
 					if (!updated) {
 						hasGoneOffline = true;
+						indicesToRemove.push(index);
 						showToast(
 							t('theater.live.multiview.member_offline', { name: liveData.member?.name }),
 							'error'
@@ -144,6 +157,14 @@
 				.filter((s): s is MultiviewSlot => s !== null);
 
 			if (hasGoneOffline) {
+				const keep = (i: number) => !indicesToRemove.includes(i);
+				volumes = volumes.filter((_, i) => keep(i));
+				muted = muted.filter((_, i) => keep(i));
+				isRecording = isRecording.filter((_, i) => keep(i));
+				fillModes = fillModes.filter((_, i) => keep(i));
+				landscapes = landscapes.filter((_, i) => keep(i));
+				playerRefs = playerRefs.filter((_, i) => keep(i));
+
 				slots = updatedSlots;
 				saveSlots();
 				if (focusedSlotIndex >= slots.length) {
@@ -159,7 +180,16 @@
 			const savedSlots = localStorage.getItem('mypage48_multiview_slots');
 			if (savedSlots) {
 				try {
-					slots = JSON.parse(savedSlots);
+					const parsedSlots = JSON.parse(savedSlots);
+					parsedSlots.forEach((s: MultiviewSlot, i: number) => {
+						if (s.type === 'live' && s.data.platform === 'idn') fillModes[i] = true;
+						else fillModes[i] = false;
+						landscapes[i] = false;
+						isRecording[i] = false;
+						volumes[i] = 1;
+						muted[i] = false;
+					});
+					slots = parsedSlots;
 				} catch (e) {
 					console.error('Failed to load saved slots:', e);
 				}
@@ -265,6 +295,17 @@
 		const maxOrder = slots.reduce((max, s) => Math.max(max, s.order ?? 0), -1);
 		slot.order = maxOrder + 1;
 
+		const newIndex = slots.length;
+		if (slot.type === 'live' && slot.data.platform === 'idn') {
+			fillModes[newIndex] = true;
+		} else {
+			fillModes[newIndex] = false;
+		}
+		landscapes[newIndex] = false;
+		isRecording[newIndex] = false;
+		muted[newIndex] = false;
+		volumes[newIndex] = 1;
+
 		slots = [...slots, slot];
 		focusedSlotIndex = slots.length - 1;
 		saveSlots();
@@ -297,6 +338,8 @@
 		volumes = volumes.filter((_, i) => i !== index);
 		muted = muted.filter((_, i) => i !== index);
 		isRecording = isRecording.filter((_, i) => i !== index);
+		fillModes = fillModes.filter((_, i) => i !== index);
+		landscapes = landscapes.filter((_, i) => i !== index);
 		playerRefs = playerRefs.filter((_, i) => i !== index);
 		saveSlots();
 		if (focusedSlotIndex === index) {
@@ -312,6 +355,8 @@
 		muted = [];
 		isRecording = [];
 		playerRefs = [];
+		fillModes = [];
+		landscapes = [];
 		saveSlots();
 	}
 
@@ -338,6 +383,27 @@
 		// Find the visual index of dragged and target
 		const visualDraggedIdx = visualIndices.indexOf(draggedIndex);
 		const visualTargetIdx = visualIndices.indexOf(index);
+
+		// Swap volume, muted, recording, fillMode states
+		const tempVol = volumes[draggedIndex];
+		volumes[draggedIndex] = volumes[index];
+		volumes[index] = tempVol;
+
+		const tempMuted = muted[draggedIndex];
+		muted[draggedIndex] = muted[index];
+		muted[index] = tempMuted;
+
+		const tempRec = isRecording[draggedIndex];
+		isRecording[draggedIndex] = isRecording[index];
+		isRecording[index] = tempRec;
+
+		const tempFill = fillModes[draggedIndex];
+		fillModes[draggedIndex] = fillModes[index];
+		fillModes[index] = tempFill;
+
+		const tempLand = landscapes[draggedIndex];
+		landscapes[draggedIndex] = landscapes[index];
+		landscapes[index] = tempLand;
 
 		// Perform the insertion in the visual array
 		const [movedIdx] = visualIndices.splice(visualDraggedIdx, 1);
@@ -443,12 +509,36 @@
 			lastLoadedId = null;
 		}
 	});
+	let idnStreamsCount = $derived(
+		slots.filter((s) => s.type === 'live' && s.data.platform === 'idn').length
+	);
+	let isAnyGlobalFillMode = $derived(
+		slots.some((s, i) => s.type === 'live' && s.data.platform === 'idn' && fillModes[i])
+	);
+
+	function toggleGlobalFillMode() {
+		let anyOff = false;
+		slots.forEach((s, i) => {
+			if (s.type === 'live' && s.data.platform === 'idn' && !fillModes[i]) {
+				anyOff = true;
+			}
+		});
+
+		slots.forEach((s, i) => {
+			if (s.type === 'live' && s.data.platform === 'idn') {
+				fillModes[i] = anyOff;
+			}
+		});
+	}
+
 	// Responsive grid logic
 	let gridClass = $derived(
 		isMobile
-			? slots.length === 1
+			? isPortrait
 				? 'grid-cols-1'
-				: 'grid-cols-1' // On mobile always 1 col unless landscape? Let's stick to 1 col for now or 2 if many
+				: slots.length === 1
+					? 'grid-cols-1'
+					: 'grid-cols-1 sm:grid-cols-2'
 			: isPortrait
 				? slots.length === 1
 					? 'grid-cols-1 max-w-md mx-auto'
@@ -488,27 +578,115 @@
 	<div class="flex items-center gap-0 md:gap-2 shrink-0 ml-2 md:ml-0">
 		<button
 			onclick={clearAll}
-			class="p-1.5 md:p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
+			class="p-1.5 md:p-2 shrink-0 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
 			title={t('theater.live.multiview.clear_all')}
 		>
 			<Trash2 size={20} />
 		</button>
-		<button
-			onclick={() => (isPortrait = !isPortrait)}
-			class="p-1.5 md:p-2 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
-			title={isPortrait
-				? t('theater.live.multiview.switch_to_landscape')
-				: t('theater.live.multiview.switch_to_portrait')}
-		>
-			{#if isPortrait}
-				<Monitor size={20} />
-			{:else}
-				<Smartphone size={20} />
+		{#if isMobile}
+			<div class="relative inline-block text-left" bind:this={layoutDropdownRef}>
+				<button
+					onclick={(e) => {
+						e.stopPropagation();
+						showLayoutDropdown = !showLayoutDropdown;
+					}}
+					class="p-1.5 shrink-0 rounded-lg {showLayoutDropdown
+						? 'bg-red-50 text-red-600'
+						: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
+					title="Layout Settings"
+				>
+					<LayoutGrid size={20} />
+				</button>
+
+				{#if showLayoutDropdown}
+					<div
+						in:fly={{ y: -10, duration: 200 }}
+						out:fade={{ duration: 150 }}
+						class="absolute right-auto left-1/2 -translate-x-1/2 mt-3 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/50 z-50 w-52 rounded-xl overflow-hidden"
+					>
+						<div class="py-1 flex flex-col">
+							<div
+								class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 border-b border-slate-100 dark:border-zinc-700/50"
+							>
+								{t('theater.live.multiview.layout') || 'Layout'}
+							</div>
+
+							<button
+								onclick={(e) => {
+									e.stopPropagation();
+									isPortrait = !isPortrait;
+									showLayoutDropdown = false;
+								}}
+								class="w-full cursor-pointer text-left px-4 py-3 text-sm flex items-center gap-3 transition-colors text-slate-700 hover:bg-slate-50 dark:text-zinc-300 dark:hover:bg-zinc-700/50 dark:hover:text-white"
+							>
+								{#if isPortrait}
+									<Monitor size={16} />
+									{t('theater.live.multiview.switch_to_landscape')}
+								{:else}
+									<Smartphone size={16} />
+									{t('theater.live.multiview.switch_to_portrait')}
+								{/if}
+							</button>
+
+							{#if idnStreamsCount > 0}
+								<button
+									onclick={(e) => {
+										e.stopPropagation();
+										toggleGlobalFillMode();
+										showLayoutDropdown = false;
+									}}
+									class="w-full cursor-pointer text-left px-4 py-3 text-sm flex items-center gap-3 transition-colors {isAnyGlobalFillMode
+										? 'text-red-600 bg-red-50 dark:bg-red-500/10 dark:text-red-500 font-bold'
+										: 'text-slate-700 hover:bg-slate-50 dark:text-zinc-300 dark:hover:bg-zinc-700/50 dark:hover:text-white'}"
+								>
+									{#if isEffectiveLandscape}
+										<Columns3 size={16} />
+										{t('theater.live.tripleView')}
+									{:else}
+										<Ratio size={16} />
+										{t('theater.live.fillMode')}
+									{/if}
+								</button>
+							{/if}
+						</div>
+					</div>
+				{/if}
+			</div>
+		{:else}
+			<button
+				onclick={() => (isPortrait = !isPortrait)}
+				class="p-2 shrink-0 rounded-lg text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+				title={isPortrait
+					? t('theater.live.multiview.switch_to_landscape')
+					: t('theater.live.multiview.switch_to_portrait')}
+			>
+				{#if isPortrait}
+					<Monitor size={20} />
+				{:else}
+					<Smartphone size={20} />
+				{/if}
+			</button>
+			{#if idnStreamsCount > 0}
+				<button
+					onclick={toggleGlobalFillMode}
+					class="p-2 shrink-0 rounded-lg {isAnyGlobalFillMode
+						? 'bg-red-50 text-red-600'
+						: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
+					title={isEffectiveLandscape
+						? 'Toggle Triple Screen for IDN Streams'
+						: 'Toggle Fill Mode for IDN Streams'}
+				>
+					{#if isEffectiveLandscape}
+						<Columns3 size={20} />
+					{:else}
+						<Ratio size={20} />
+					{/if}
+				</button>
 			{/if}
-		</button>
+		{/if}
 		<button
 			onclick={togglePicker}
-			class="p-1.5 md:p-2 rounded-lg {showPicker
+			class="p-1.5 md:p-2 shrink-0 rounded-lg {showPicker
 				? 'bg-red-50 text-red-600'
 				: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
 			title={t('theater.live.multiview.toggle_picker')}
@@ -517,15 +695,15 @@
 		</button>
 		<button
 			onclick={toggleChat}
-			class="p-1.5 md:p-2 rounded-lg {showChat
+			class="p-1.5 md:p-2 shrink-0 rounded-lg {showChat
 				? 'bg-red-50 text-red-600'
 				: 'text-slate-500 hover:bg-gray-100 dark:hover:bg-zinc-800'} transition-all cursor-pointer"
 			title={t('theater.live.multiview.toggle_chat')}
 		>
 			<MessageCircle size={20} />
 		</button>
-		<div class="w-px h-5 bg-slate-200 dark:bg-zinc-800 mx-1"></div>
-		<div class="flex items-center justify-center -ml-1">
+		<div class="w-px h-5 bg-slate-200 dark:bg-zinc-800 mx-1 shrink-0"></div>
+		<div class="flex items-center justify-center shrink-0 -ml-1">
 			<HlsSettingsDropdown variant="multiview" />
 		</div>
 	</div>
@@ -536,6 +714,16 @@
 	path={$page.url.pathname}
 	description={t('theater.live.multiview.live.seoDescription')}
 	keywords="JKT48 Multi-view, JKT48 Live, JKT48 Showroom, JKT48 IDN Live, Multi Room Live JKT48, Multi View Live JKT48"
+/>
+
+<svelte:window
+	bind:innerWidth={windowWidth}
+	bind:innerHeight={windowHeight}
+	onclick={(e) => {
+		if (showLayoutDropdown && layoutDropdownRef && !layoutDropdownRef.contains(e.target as Node)) {
+			showLayoutDropdown = false;
+		}
+	}}
 />
 
 <div
@@ -551,7 +739,6 @@
 >
 	<!-- Background Decor (Stars, Dots, Glows) -->
 	<AppBackground hideDecorationsOnMobile={true} interactive={true} bind:mouse bind:scrollY />
-
 	<div class="flex-1 flex overflow-hidden pt-16">
 		<!-- Member Picker Sidebar -->
 		{#if showPicker}
@@ -767,205 +954,236 @@
 			<div class="grid {gridClass} gap-2 md:gap-6 h-fit transition-all duration-500 pb-20">
 				{#each slots as slot, i (slot.type === 'live' ? slot.data.platform + '-' + (slot.data.live_id || slot.data.room_id || slot.data.room_url_key) : slot.data.youtube_id)}
 					<div
-						class="relative {isPortrait
-							? 'aspect-[9/16]'
-							: 'aspect-video'} bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border {focusedSlotIndex ===
-						i
-							? 'border-red-500 ring-2 ring-red-500/50'
-							: 'border-gray-200 dark:border-zinc-800'} {dragOverIndex === i
-							? 'opacity-50 border-dashed border-red-400 scale-[0.98]'
-							: ''} {draggedIndex === i
-							? 'opacity-20 translate-y-2'
-							: ''} group shadow-sm transition-all hover:shadow-md text-left cursor-pointer transition-[aspect-ratio,transform,opacity] duration-500 {isPortrait
-							? 'max-h-[calc(100dvh-140px)]'
-							: ''} mx-auto w-full"
+						class="relative flex items-center justify-center w-full h-full"
 						style="order: {slot.order ?? i};"
-						draggable="true"
-						ondragstart={() => handleDragStart(i)}
-						ondragover={(e) => handleDragOver(e, i)}
-						ondrop={() => handleDrop(i)}
-						ondragend={handleDragEnd}
-						onclick={() => setFocusedSlot(i)}
-						onkeydown={(e) => e.key === 'Enter' && setFocusedSlot(i)}
-						role="button"
-						tabindex="0"
-						aria-label={t('theater.live.multiview.focus_member', {
-							name: slot.type === 'live' ? slot.data.member?.name : slot.data.member
-						})}
 					>
-						<div class="absolute inset-0 z-0">
-							{#if slot.type === 'live'}
-								<MultiPlayer
-									bind:this={playerRefs[i]}
-									bind:isRecording={isRecording[i]}
-									platform={slot.data.platform}
-									id={slot.data.platform === 'showroom'
-										? slot.data.room_id || slot.data.room_url_key
-										: slot.data.live_id || slot.data.room_url_key}
-									roomIdentifier={slot.data.room_url_key}
-									volume={volumes[i] || 1}
-									muted={muted[i]}
-									onoffline={() => handleRoomOffline(i, slot.data.member?.name || 'Member')}
-								/>
-							{:else}
-								<YoutubeMultiPlayer
-									bind:this={playerRefs[i]}
-									id={slot.data.youtube_id}
-									volume={volumes[i] || 1}
-									muted={muted[i]}
-									controls={true}
-								/>
-								{#if focusedSlotIndex !== i || draggedIndex !== null}
-									<!-- Intercept clicks so user can click anywhere on unfocused video to focus it, and catch drag events over iframes -->
-									<div class="absolute inset-0 z-10 cursor-pointer bg-transparent"></div>
-								{/if}
-							{/if}
-						</div>
-
-						<!-- Slot Header (Overlay) -->
 						<div
-							class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 {slot.type ===
-							'live'
-								? 'bg-gradient-to-b from-black/60 to-transparent'
-								: ''} pointer-events-none"
+							class="relative {isEffectiveLandscape
+								? 'aspect-video'
+								: 'aspect-[9/16]'} mx-auto bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border {focusedSlotIndex ===
+							i
+								? 'border-red-500 ring-2 ring-red-500/50'
+								: 'border-gray-200 dark:border-zinc-800'} {dragOverIndex === i
+								? 'opacity-50 border-dashed border-red-400 scale-[0.98]'
+								: ''} {draggedIndex === i
+								? 'opacity-20 translate-y-2'
+								: ''} group shadow-sm transition-all hover:shadow-md text-left cursor-pointer transition-[aspect-ratio,transform,opacity] duration-500"
+							style="width: min(100%, calc((100dvh - 140px) * {isEffectiveLandscape
+								? 16 / 9
+								: 9 / 16}));"
+							draggable="true"
+							ondragstart={() => handleDragStart(i)}
+							ondragover={(e) => handleDragOver(e, i)}
+							ondrop={() => handleDrop(i)}
+							ondragend={handleDragEnd}
+							onclick={() => setFocusedSlot(i)}
+							onkeydown={(e) => e.key === 'Enter' && setFocusedSlot(i)}
+							role="button"
+							tabindex="0"
+							aria-label={t('theater.live.multiview.focus_member', {
+								name: slot.type === 'live' ? slot.data.member?.name : slot.data.member
+							})}
 						>
-							{#if slot.type === 'live'}
-								<div class="flex items-center gap-2 flex-1 min-w-0 pr-2 pointer-events-auto">
-									<OptimizedImage
-										src={getExternalMediaUrl(slot.data.member?.img) || fallbackAvatar}
-										alt={slot.data.member?.name || 'Member'}
-										class="w-8 h-8 rounded-lg object-cover border border-white/20 shadow-lg shrink-0"
+							<div class="absolute inset-0 z-0">
+								{#if slot.type === 'live'}
+									<MultiPlayer
+										bind:this={playerRefs[i]}
+										bind:isRecording={isRecording[i]}
+										platform={slot.data.platform}
+										id={slot.data.platform === 'showroom'
+											? slot.data.room_id || slot.data.room_url_key
+											: slot.data.live_id || slot.data.room_url_key}
+										roomIdentifier={slot.data.room_url_key}
+										volume={volumes[i] || 1}
+										muted={muted[i]}
+										isFillMode={fillModes[i]}
+										onLandscapeChange={(val) => {
+											landscapes[i] = val;
+										}}
+										onoffline={() => handleRoomOffline(i, slot.data.member?.name || 'Member')}
 									/>
-									<div class="flex flex-col min-w-0">
-										<span
-											class="text-[10px] font-black text-white uppercase tracking-wider truncate drop-shadow-md"
-											>{slot.data.member?.name}</span
-										>
-										<LiveStats
-											view_num={slot.data.view_num}
-											start_at={slot.data.start_at}
-											variant="overlay"
-											className="mt-0.5"
-										/>
-									</div>
-								</div>
-							{:else}
-								<div class="flex-1"></div>
-							{/if}
-							<button
-								onclick={(e) => {
-									e.stopPropagation();
-									removeMemberFromSlot(i);
-								}}
-								class="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg cursor-pointer pointer-events-auto {slot.type !==
-								'live'
-									? 'order-first'
-									: ''}"
-								aria-label={t('theater.live.multiview.remove_stream')}
-							>
-								<X size={14} />
-							</button>
-						</div>
+								{:else}
+									<YoutubeMultiPlayer
+										bind:this={playerRefs[i]}
+										id={slot.data.youtube_id}
+										volume={volumes[i] || 1}
+										muted={muted[i]}
+										controls={true}
+									/>
+									{#if focusedSlotIndex !== i || draggedIndex !== null}
+										<!-- Intercept clicks so user can click anywhere on unfocused video to focus it, and catch drag events over iframes -->
+										<div class="absolute inset-0 z-10 cursor-pointer bg-transparent"></div>
+									{/if}
+								{/if}
+							</div>
 
-						<!-- Slot Controls (Bottom Overlay) -->
-						{#if slot.type === 'live'}
+							<!-- Slot Header (Overlay) -->
 							<div
-								class="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-t from-black/60 to-transparent"
+								class="absolute inset-x-0 top-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 {slot.type ===
+								'live'
+									? 'bg-gradient-to-b from-black/60 to-transparent'
+									: ''} pointer-events-none"
 							>
-								<div class="flex items-center gap-0 group/volume relative h-8">
-									<button
-										class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10 cursor-pointer"
-										onclick={(e) => {
-											e.stopPropagation();
-											muted[i] = !muted[i];
-										}}
-										aria-label={muted[i] || volumes[i] === 0
-											? t('theater.live.multiview.unmute')
-											: t('theater.live.multiview.mute')}
-									>
-										{#if muted[i] || volumes[i] === 0}<VolumeX size={16} />{:else}<Volume2
-												size={16}
-											/>{/if}
-									</button>
-									<div
-										class="hidden md:flex w-0 group-hover/volume:w-24 h-8 overflow-hidden transition-all duration-500 bg-white/10 backdrop-blur-md rounded-r-xl -ml-2 pl-4 items-center"
-									>
-										<input
-											type="range"
-											min="0"
-											max="1"
-											step="0.01"
-											value={volumes[i]}
-											oninput={(e) => {
-												let val = parseFloat(e.currentTarget.value);
-												if (val < 0.05) {
-													val = 0;
-													muted[i] = true;
-												} else if (muted[i] && val > 0) {
-													muted[i] = false;
-												}
-												volumes[i] = val;
-												volumes = volumes; // Trigger reactivity
-												muted = muted;
-											}}
-											onclick={(e) => e.stopPropagation()}
-											class="w-16 h-1 accent-white cursor-pointer"
+								{#if slot.type === 'live'}
+									<div class="flex items-center gap-2 flex-1 min-w-0 pr-2 pointer-events-auto">
+										<OptimizedImage
+											src={getExternalMediaUrl(slot.data.member?.img) || fallbackAvatar}
+											alt={slot.data.member?.name || 'Member'}
+											class="w-8 h-8 rounded-lg object-cover border border-white/20 shadow-lg shrink-0"
 										/>
-									</div>
-								</div>
-
-								<div class="flex items-center gap-2">
-									<!-- Rotate Button -->
-									<button
-										class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-zinc-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/rot cursor-pointer"
-										onclick={(e) => {
-											e.stopPropagation();
-											playerRefs[i]?.rotateVideo();
-										}}
-										title={t('theater.live.rotate') || 'Rotate Video'}
-									>
-										<RotateCw
-											size={16}
-											class="group-hover/rot:rotate-90 transition-transform duration-300"
-										/>
-									</button>
-
-									{#if slot.type === 'live'}
-										<button
-											class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-blue-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/cam cursor-pointer"
-											onclick={(e) => {
-												e.stopPropagation();
-												playerRefs[i]?.takeScreenshot(slot.data.member?.name);
-											}}
-											title={t('theater.live.multiview.take_screenshot')}
-										>
-											<Camera
-												size={16}
-												class="group-hover/cam:rotate-12 transition-transform duration-300"
+										<div class="flex flex-col min-w-0">
+											<span
+												class="text-[10px] font-black text-white uppercase tracking-wider truncate drop-shadow-md"
+												>{slot.data.member?.name}</span
+											>
+											<LiveStats
+												view_num={slot.data.view_num}
+												start_at={slot.data.start_at}
+												variant="overlay"
+												className="mt-0.5"
 											/>
-										</button>
+										</div>
+									</div>
+								{:else}
+									<div class="flex-1"></div>
+								{/if}
+								<button
+									onclick={(e) => {
+										e.stopPropagation();
+										removeMemberFromSlot(i);
+									}}
+									class="w-8 h-8 shrink-0 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg cursor-pointer pointer-events-auto {slot.type !==
+									'live'
+										? 'order-first'
+										: ''}"
+									aria-label={t('theater.live.multiview.remove_stream')}
+								>
+									<X size={14} />
+								</button>
+							</div>
+
+							<!-- Slot Controls (Bottom Overlay) -->
+							{#if slot.type === 'live'}
+								<div
+									class="absolute inset-x-0 bottom-0 p-2 sm:p-3 flex flex-wrap items-center justify-between gap-y-2 opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-t from-black/60 to-transparent"
+								>
+									<div class="flex items-center gap-0 group/volume relative h-8">
 										<button
-											class="w-8 h-8 rounded-xl {isRecording[i]
-												? 'bg-red-600 animate-pulse'
-												: 'bg-white/10 backdrop-blur-md grayscale hover:grayscale-0 hover:bg-red-600'} text-white flex items-center justify-center hover:scale-105 transition-all shadow-lg group/rec cursor-pointer"
+											class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10 cursor-pointer"
 											onclick={(e) => {
 												e.stopPropagation();
-												playerRefs[i]?.toggleRecording(slot.data.member?.name);
+												muted[i] = !muted[i];
 											}}
-											title={isRecording[i]
-												? t('theater.live.multiview.stop_recording')
-												: t('theater.live.multiview.start_recording')}
+											aria-label={muted[i] || volumes[i] === 0
+												? t('theater.live.multiview.unmute')
+												: t('theater.live.multiview.mute')}
 										>
-											{#if isRecording[i]}<Square size={14} fill="currentColor" />{:else}<Circle
-													size={14}
-													fill="currentColor"
-													class="text-red-500 group-hover/rec:scale-110 transition-transform"
+											{#if muted[i] || volumes[i] === 0}<VolumeX size={16} />{:else}<Volume2
+													size={16}
 												/>{/if}
 										</button>
-									{/if}
+										<div
+											class="hidden md:flex w-0 group-hover/volume:w-20 lg:group-hover/volume:w-24 h-8 overflow-hidden transition-all duration-500 bg-white/10 backdrop-blur-md rounded-r-xl -ml-2 pl-4 items-center"
+										>
+											<input
+												type="range"
+												min="0"
+												max="1"
+												step="0.01"
+												value={volumes[i]}
+												oninput={(e) => {
+													let val = parseFloat(e.currentTarget.value);
+													if (val < 0.05) {
+														val = 0;
+														muted[i] = true;
+													} else if (muted[i] && val > 0) {
+														muted[i] = false;
+													}
+													volumes[i] = val;
+													volumes = volumes; // Trigger reactivity
+													muted = muted;
+												}}
+												onclick={(e) => e.stopPropagation()}
+												class="w-12 lg:w-16 h-1 accent-white cursor-pointer"
+											/>
+										</div>
+									</div>
+
+									<div class="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
+										<!-- Rotate Button -->
+										<button
+											class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-zinc-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/rot cursor-pointer"
+											onclick={(e) => {
+												e.stopPropagation();
+												playerRefs[i]?.rotateVideo();
+											}}
+											title={t('theater.live.rotate') || 'Rotate Video'}
+										>
+											<RotateCw
+												size={16}
+												class="group-hover/rot:rotate-90 transition-transform duration-300"
+											/>
+										</button>
+
+										{#if slot.type === 'live'}
+											<button
+												class="w-8 h-8 rounded-xl {fillModes[i]
+													? 'bg-white text-black'
+													: 'bg-white/10 backdrop-blur-md grayscale hover:grayscale-0 hover:bg-white hover:text-black text-white'} flex items-center justify-center hover:scale-105 transition-all shadow-lg group/fill cursor-pointer"
+												onclick={(e) => {
+													e.stopPropagation();
+													fillModes[i] = !fillModes[i];
+												}}
+												title={fillModes[i]
+													? landscapes[i]
+														? t('theater.live.exitTripleView')
+														: t('theater.live.exitFillMode')
+													: landscapes[i]
+														? t('theater.live.tripleView')
+														: t('theater.live.fillMode')}
+											>
+												{#if landscapes[i]}
+													<Columns3 size={16} />
+												{:else}
+													<Ratio size={16} />
+												{/if}
+											</button>
+											<button
+												class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-blue-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/cam cursor-pointer"
+												onclick={(e) => {
+													e.stopPropagation();
+													playerRefs[i]?.takeScreenshot(slot.data.member?.name);
+												}}
+												title={t('theater.live.multiview.take_screenshot')}
+											>
+												<Camera
+													size={16}
+													class="group-hover/cam:rotate-12 transition-transform duration-300"
+												/>
+											</button>
+											<button
+												class="w-8 h-8 rounded-xl {isRecording[i]
+													? 'bg-red-600 animate-pulse'
+													: 'bg-white/10 backdrop-blur-md grayscale hover:grayscale-0 hover:bg-red-600'} text-white flex items-center justify-center hover:scale-105 transition-all shadow-lg group/rec cursor-pointer"
+												onclick={(e) => {
+													e.stopPropagation();
+													playerRefs[i]?.toggleRecording(slot.data.member?.name);
+												}}
+												title={isRecording[i]
+													? t('theater.live.multiview.stop_recording')
+													: t('theater.live.multiview.start_recording')}
+											>
+												{#if isRecording[i]}<Square size={14} fill="currentColor" />{:else}<Circle
+														size={14}
+														fill="currentColor"
+														class="text-red-500 group-hover/rec:scale-110 transition-transform"
+													/>{/if}
+											</button>
+										{/if}
+									</div>
 								</div>
-							</div>
-						{/if}
+							{/if}
+						</div>
 					</div>
 				{/each}
 

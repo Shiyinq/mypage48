@@ -975,6 +975,7 @@
 				},
 				"tap_to_play": "Tap to Play",
 				"clear_all": "Clear All",
+				"layout": "Layout",
 				"switch_to_landscape": "Switch to Landscape",
 				"switch_to_portrait": "Switch to Portrait",
 				"toggle_picker": "Toggle Member Picker",
