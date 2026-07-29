@@ -370,6 +370,11 @@ class LiveService:
 
                 normalized = []
                 for item in items:
+                    # Only include streams created by JKT48
+                    creator_name = item.get("creator", {}).get("name", "")
+                    if creator_name.strip().upper() != "JKT48":
+                        continue
+
                     status = str(item.get("status", "")).upper()
                     if status_filter is not None and status not in status_filter:
                         continue
