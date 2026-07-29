@@ -146,10 +146,10 @@
 
 <div class="relative w-full h-full bg-black group/player overflow-hidden">
 	<div
-		class="w-full h-full object-contain transition-all duration-300 {controls
+		class="absolute top-1/2 left-1/2 object-contain transition-all duration-300 {controls
 			? ''
-			: 'pointer-events-none'} {isFillMode ? 'scale-[1.8]' : ''}"
-		style="transform: rotate({rotation}deg); display: flex; align-items: center; justify-content: center;"
+			: 'pointer-events-none'}"
+		style="width: {isFillMode ? '180%' : '100%'}; height: {isFillMode ? '180%' : '100%'}; transform: translate(-50%, -50%) rotate({rotation}deg); display: flex; align-items: center; justify-content: center;"
 	>
 		<div
 			id={containerId}
