@@ -182,7 +182,8 @@
 				try {
 					const parsedSlots = JSON.parse(savedSlots);
 					parsedSlots.forEach((s: MultiviewSlot, i: number) => {
-						if (s.type === 'live' && s.data.platform === 'idn') fillModes[i] = true;
+						if ((s.type === 'live' && s.data.platform === 'idn') || s.type === 'replay')
+							fillModes[i] = true;
 						else fillModes[i] = false;
 						landscapes[i] = false;
 						isRecording[i] = false;
@@ -296,7 +297,7 @@
 		slot.order = maxOrder + 1;
 
 		const newIndex = slots.length;
-		if (slot.type === 'live' && slot.data.platform === 'idn') {
+		if ((slot.type === 'live' && slot.data.platform === 'idn') || slot.type === 'replay') {
 			fillModes[newIndex] = true;
 		} else {
 			fillModes[newIndex] = false;
@@ -509,23 +510,30 @@
 			lastLoadedId = null;
 		}
 	});
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	function isFillEligible(s: any): boolean {
+		return (s.type === 'live' && s.data.platform === 'idn') || s.type === 'replay';
+	}
+
+	let fillEligibleCount = $derived(slots.filter((s) => isFillEligible(s)).length);
 	let idnStreamsCount = $derived(
 		slots.filter((s) => s.type === 'live' && s.data.platform === 'idn').length
 	);
-	let isAnyGlobalFillMode = $derived(
-		slots.some((s, i) => s.type === 'live' && s.data.platform === 'idn' && fillModes[i])
+	let shouldShowGlobalFillToggle = $derived(
+		fillEligibleCount > 0 && !(isEffectiveLandscape && idnStreamsCount === 0)
 	);
+	let isAnyGlobalFillMode = $derived(slots.some((s, i) => isFillEligible(s) && fillModes[i]));
 
 	function toggleGlobalFillMode() {
 		let anyOff = false;
 		slots.forEach((s, i) => {
-			if (s.type === 'live' && s.data.platform === 'idn' && !fillModes[i]) {
+			if (isFillEligible(s) && !fillModes[i]) {
 				anyOff = true;
 			}
 		});
 
 		slots.forEach((s, i) => {
-			if (s.type === 'live' && s.data.platform === 'idn') {
+			if (isFillEligible(s)) {
 				fillModes[i] = anyOff;
 			}
 		});
@@ -628,7 +636,7 @@
 								{/if}
 							</button>
 
-							{#if idnStreamsCount > 0}
+							{#if shouldShowGlobalFillToggle}
 								<button
 									onclick={(e) => {
 										e.stopPropagation();
@@ -666,7 +674,7 @@
 					<Smartphone size={20} />
 				{/if}
 			</button>
-			{#if idnStreamsCount > 0}
+			{#if shouldShowGlobalFillToggle}
 				<button
 					onclick={toggleGlobalFillMode}
 					class="p-2 shrink-0 rounded-lg {isAnyGlobalFillMode
@@ -1009,6 +1017,7 @@
 										volume={volumes[i] || 1}
 										muted={muted[i]}
 										controls={true}
+										isFillMode={fillModes[i] && !isEffectiveLandscape}
 									/>
 									{#if focusedSlotIndex !== i || draggedIndex !== null}
 										<!-- Intercept clicks so user can click anywhere on unfocused video to focus it, and catch drag events over iframes -->
@@ -1063,16 +1072,17 @@
 							</div>
 
 							<!-- Slot Controls (Bottom Overlay) -->
-							{#if slot.type === 'live'}
+							{#if slot.type === 'live' || slot.type === 'replay'}
 								<div
 									class="absolute inset-x-0 bottom-0 p-2 sm:p-3 flex flex-wrap items-center justify-between gap-y-2 opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity z-20 bg-gradient-to-t from-black/60 to-transparent"
 								>
-									<div class="flex items-center gap-0 group/volume relative h-8">
+									<div class="flex items-center group/volume relative w-8 h-8">
 										<button
-											class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10 cursor-pointer"
+											class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg z-10 cursor-pointer relative"
 											onclick={(e) => {
 												e.stopPropagation();
 												muted[i] = !muted[i];
+												muted = muted; // Trigger reactivity
 											}}
 											aria-label={muted[i] || volumes[i] === 0
 												? t('theater.live.multiview.unmute')
@@ -1083,29 +1093,31 @@
 												/>{/if}
 										</button>
 										<div
-											class="hidden md:flex w-0 group-hover/volume:w-20 lg:group-hover/volume:w-24 h-8 overflow-hidden transition-all duration-500 bg-white/10 backdrop-blur-md rounded-r-xl -ml-2 pl-4 items-center"
+											class="absolute bottom-4 left-0 hidden md:flex h-0 group-hover/volume:h-28 w-8 overflow-hidden transition-all duration-500 bg-white/10 backdrop-blur-md rounded-t-xl z-0 items-end justify-center"
 										>
-											<input
-												type="range"
-												min="0"
-												max="1"
-												step="0.01"
-												value={volumes[i]}
-												oninput={(e) => {
-													let val = parseFloat(e.currentTarget.value);
-													if (val < 0.05) {
-														val = 0;
-														muted[i] = true;
-													} else if (muted[i] && val > 0) {
-														muted[i] = false;
-													}
-													volumes[i] = val;
-													volumes = volumes; // Trigger reactivity
-													muted = muted;
-												}}
-												onclick={(e) => e.stopPropagation()}
-												class="w-12 lg:w-16 h-1 accent-white cursor-pointer"
-											/>
+											<div class="w-8 h-28 flex items-center justify-center pb-4">
+												<input
+													type="range"
+													min="0"
+													max="1"
+													step="0.01"
+													value={volumes[i]}
+													oninput={(e) => {
+														let val = parseFloat(e.currentTarget.value);
+														if (val < 0.05) {
+															val = 0;
+															muted[i] = true;
+														} else if (muted[i] && val > 0) {
+															muted[i] = false;
+														}
+														volumes[i] = val;
+														volumes = volumes; // Trigger reactivity
+														muted = muted;
+													}}
+													onclick={(e) => e.stopPropagation()}
+													class="w-20 h-1 accent-white cursor-pointer origin-center -rotate-90"
+												/>
+											</div>
 										</div>
 									</div>
 
@@ -1125,7 +1137,7 @@
 											/>
 										</button>
 
-										{#if slot.type === 'live'}
+										{#if slot.type === 'live' || !isEffectiveLandscape}
 											<button
 												class="w-8 h-8 rounded-xl {fillModes[i]
 													? 'bg-white text-black'
@@ -1148,6 +1160,8 @@
 													<Ratio size={16} />
 												{/if}
 											</button>
+										{/if}
+										{#if slot.type === 'live'}
 											<button
 												class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-blue-600 hover:scale-105 transition-all shadow-lg grayscale hover:grayscale-0 group/cam cursor-pointer"
 												onclick={(e) => {
