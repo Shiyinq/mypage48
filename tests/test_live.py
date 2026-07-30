@@ -112,8 +112,8 @@ async def test_get_scheduled_live_status_success(mock_get_idn_config, client: As
                 "scheduled_at": int(datetime.now().timestamp()) + 3600,
                 "idnliveplus": {},
                 "creator": {
-                    "name": "Feni JKT48",
-                    "username": "@jkt48-feni"
+                    "name": "JKT48",
+                    "username": "@jkt48"
                 }
             }
         ]

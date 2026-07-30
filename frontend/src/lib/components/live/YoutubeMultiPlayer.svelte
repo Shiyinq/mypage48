@@ -11,6 +11,7 @@
 		muted?: boolean;
 		currentTime?: number;
 		controls?: boolean;
+		isFillMode?: boolean;
 	}
 
 	let {
@@ -18,12 +19,14 @@
 		volume = 1,
 		muted = false,
 		currentTime = $bindable(0),
-		controls = false
+		controls = false,
+		isFillMode = false
 	}: Props = $props();
 
 	let containerId = `yt-${Math.random().toString(36).substr(2, 9)}`;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let player: any = null;
+	let playerReady = $state(false);
 	let loading = $state(true);
 	let error: string | null = $state(null);
 	let rotation = $state(0);
@@ -45,12 +48,12 @@
 	});
 
 	$effect(() => {
-		if (player && typeof player.setVolume === 'function') {
+		if (playerReady && player && typeof player.setVolume === 'function') {
 			if (muted || volume === 0) {
 				player.mute();
 			} else {
 				player.unMute();
-				player.setVolume(volume * 100);
+				player.setVolume(Math.round(volume * 100));
 			}
 		}
 	});
@@ -102,7 +105,9 @@
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				onReady: (event: any) => {
 					loading = false;
-					const vol = volume * 100;
+					player = event.target;
+					playerReady = true;
+					const vol = Math.round(volume * 100);
 					if (muted || volume === 0) {
 						event.target.mute();
 					} else {
@@ -141,10 +146,12 @@
 
 <div class="relative w-full h-full bg-black group/player overflow-hidden">
 	<div
-		class="w-full h-full object-contain transition-transform duration-300 {controls
+		class="absolute top-1/2 left-1/2 object-contain transition-all duration-300 {controls
 			? ''
 			: 'pointer-events-none'}"
-		style="transform: rotate({rotation}deg); display: flex; align-items: center; justify-content: center;"
+		style="width: {isFillMode ? '180%' : '100%'}; height: {isFillMode
+			? '180%'
+			: '100%'}; transform: translate(-50%, -50%) rotate({rotation}deg); display: flex; align-items: center; justify-content: center;"
 	>
 		<div
 			id={containerId}

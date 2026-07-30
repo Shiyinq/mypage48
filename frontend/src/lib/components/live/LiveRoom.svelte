@@ -947,7 +947,9 @@
 							class="w-full h-full {isTripleView
 								? 'object-cover scale-[1.45]'
 								: isFillMode
-									? 'object-cover'
+									? platform === 'idn'
+										? 'object-cover scale-[1.25]'
+										: 'object-cover'
 									: 'object-contain'} relative z-10 cursor-pointer bg-transparent transition-all duration-300"
 							style="transform: rotate({rotation}deg);"
 							crossorigin="anonymous"

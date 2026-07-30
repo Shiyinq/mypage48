@@ -62,11 +62,11 @@
 	let v = $derived(variants[variant]);
 </script>
 
-<div class="{v.container} {className}">
+<div class="{v.container} {className} max-w-full">
 	{#if hasViewers}
-		<div class="flex items-center gap-1 shrink-0">
-			<Users size={v.icon} class={v.viewerIconColor} />
-			<span class="{v.text} tabular-nums">
+		<div class="flex items-center gap-1 shrink-0 min-w-0">
+			<Users size={v.icon} class="{v.viewerIconColor} shrink-0" />
+			<span class="{v.text} tabular-nums truncate">
 				{view_num?.toLocaleString() ?? 0}
 			</span>
 		</div>
@@ -74,18 +74,18 @@
 
 	{#if hasViewers && hasStartAt}
 		{#if variant === 'detailed'}
-			<div class={v.dot}></div>
+			<div class="{v.dot} shrink-0"></div>
 		{:else}
-			<div class={v.dot}></div>
+			<div class="{v.dot} shrink-0"></div>
 		{/if}
 	{/if}
 
 	{#if hasStartAt}
-		<div class="flex items-center gap-1 shrink-0">
-			<Clock size={v.icon} class={v.durationIconColor} />
-			<span class="{v.text} {v.durationTextColor} tabular-nums">
+		<div class="flex items-center gap-1 min-w-0">
+			<Clock size={v.icon} class="{v.durationIconColor} shrink-0" />
+			<span class="{v.text} {v.durationTextColor} tabular-nums truncate">
 				{#if showLabel}
-					<span class="opacity-60 text-[9px] mr-1">{t('theater.live.liveDuration')}</span>
+					<span class="opacity-60 text-[9px] mr-1 truncate">{t('theater.live.liveDuration')}</span>
 				{/if}
 				{formatDuration(start_at, $now, showSeconds)}
 			</span>

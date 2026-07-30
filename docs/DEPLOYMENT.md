@@ -362,3 +362,49 @@ No. You can always log into your VPS provider's website (e.g., Hostinger, Digita
 3. From your original laptop (or the Web Console), SSH into the server and run `nano ~/.ssh/authorized_keys`.
 4. Paste the copied text onto a **new line** at the bottom, save, and exit.
 5. The new laptop now has secure access!
+
+---
+
+## 12. Restoring Database Backup from Cloudflare R2
+
+If you need to restore the MongoDB database from the automated Cloudflare R2 backup to your local machine or a new server, follow these steps:
+
+### Step 1: Download & Extract
+Download the `.7z` backup file from Cloudflare R2 (e.g., `mypage48_backup_XXX.7z`). Since the archive is encrypted, extract it using the password from your production `.env` (`BACKUP_PASSWORD`):
+```bash
+7za x mypage48_backup_XXX.7z -p"YOUR_BACKUP_PASSWORD"
+```
+This will extract `mongodb.archive` and `data_assets.tar.gz`.
+
+### Step 2: Restore to Localhost or Server
+The database dump was created using `mongodump --archive`, so it must be restored using `mongorestore --archive`.
+
+**A. If restoring on a production server (Requires Auth):**
+SSH into your VPS, transfer the extracted `mongodb.archive` to the server, and run:
+```bash
+docker cp mongodb.archive mypage48-mongodb:/tmp/mongodb.archive
+docker exec mypage48-mongodb mongorestore --username "YOUR_MONGO_ROOT_USER" --password "YOUR_MONGO_ROOT_PASSWORD" --archive=/tmp/mongodb.archive --drop
+```
+
+**B. If restoring locally via Docker Compose (No Password):**
+Ensure your local environment is running (`make dev`). Then copy the archive into the container and execute the restore:
+```bash
+# 1. Copy archive into the container
+docker cp mongodb.archive mypage48-mongodb-1:/tmp/mongodb.archive
+
+# 2. Execute restore inside the container
+docker exec mypage48-mongodb-1 mongorestore --archive=/tmp/mongodb.archive --drop
+```
+*(Note: The `--drop` flag will delete existing collections before restoring. Remove it if you only want to merge data).*
+
+**C. If restoring locally using native `mongorestore` (Without Docker Exec):**
+If you have MongoDB tools installed on your Mac, you can restore directly to the local exposed port. (Note: Our `docker-compose.yml` maps MongoDB to port `27018`, but standard local MongoDB runs on `27017`. Adjust accordingly):
+```bash
+mongorestore --uri="mongodb://localhost:27018" --archive=mongodb.archive --drop
+```
+
+### Note on Renaming Databases during Restore
+If you want to restore the production backup locally but keep your existing local dev database safe, you can restore the backup to a new database name (e.g., `mypage48_prod`) using the `--nsFrom` and `--nsTo` flags:
+```bash
+docker exec mypage48-mongodb-1 mongorestore --archive=/tmp/mongodb.archive --nsFrom="mypage48.*" --nsTo="mypage48_prod.*"
+```
