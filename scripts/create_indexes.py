@@ -82,6 +82,9 @@ async def create_indexes():
             partialFilterExpression={"youtube_id": {"$gt": ""}}
         )
 
+        # Replay Chats indexes
+        await db["replay_chats"].create_index("live_id", unique=True)
+
         # Live history indexes
         await db["live_history"].create_index("platform")
         await db["live_history"].create_index([("start_at", -1)])
