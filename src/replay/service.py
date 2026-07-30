@@ -265,6 +265,17 @@ class ReplayService:
 
         chats = _parse_jsonl(jsonl_bytes)
 
+        platform = metadata.get("platform", "")
+        (
+            top_gifts,
+            top_fans,
+            chat_count,
+            gift_count,
+            free_gift_count,
+            total_gold,
+            loveletter_count,
+        ) = _compute_chat_stats(chats, platform)
+
         doc = {
             "live_id": live_id,
             "platform": metadata.get("platform"),
@@ -289,13 +300,20 @@ class ReplayService:
                 "srt": files["srt"],
                 "screenshots": screenshot_paths,
             },
-            "chats": chats,
+            "total_chats": chat_count,
+            "total_gifts": gift_count,
+            "total_free_gifts": free_gift_count,
+            "total_gold": total_gold,
+            "total_loveletters": loveletter_count,
+            "top_gifts": top_gifts,
+            "top_fans": top_fans,
             "created_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc),
         }
 
         try:
             doc_id = await self.repository.insert(doc)
+            await self.repository.insert_chats(live_id, chats)
         except DuplicateKeyError:
             logger.warning(f"Replay {live_id} duplicate key on insert, skipping")
             raise ReplayAlreadyExists(f"Replay {live_id} already exists")
@@ -359,25 +377,6 @@ class ReplayService:
                 if variants.get("blurHash") and not doc.get("blurHash"):
                     doc["blurHash"] = variants.get("blurHash")
 
-        raw_chats = doc.get("chats", [])
-        platform = doc.get("platform", "")
-        (
-            top_gifts,
-            top_fans,
-            chat_count,
-            gift_count,
-            free_gift_count,
-            total_gold,
-            loveletter_count,
-        ) = _compute_chat_stats(raw_chats, platform)
-
-        doc["total_chats"] = chat_count
-        doc["total_gifts"] = gift_count
-        doc["total_free_gifts"] = free_gift_count
-        doc["total_gold"] = total_gold
-        doc["total_loveletters"] = loveletter_count
-        doc["top_gifts"] = top_gifts
-        doc["top_fans"] = top_fans
         doc.pop("chats", None)
 
         files = doc.get("files", {})

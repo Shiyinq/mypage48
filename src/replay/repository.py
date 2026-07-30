@@ -9,11 +9,19 @@ from src.logging_config import create_logger
 class ReplayRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.col = db.replay
+        self.col_chats = db.replay_chats
         self.logger = create_logger("replay_repository", __name__)
 
     async def insert(self, data: dict[str, Any]) -> str:
         result = await self.col.insert_one(data)
         return str(result.inserted_id)
+
+    async def insert_chats(self, live_id: str, chats: list[dict[str, Any]]) -> None:
+        await self.col_chats.update_one(
+            {"live_id": live_id},
+            {"$set": {"live_id": live_id, "chats": chats}},
+            upsert=True,
+        )
 
     async def find_by_live_id(
         self, live_id: str, projection: Optional[dict[str, Any]] = None

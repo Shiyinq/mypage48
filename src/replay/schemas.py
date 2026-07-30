@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Any, Optional
+from typing import Annotated, Optional
 
 from fastapi import UploadFile
 from pydantic import BaseModel, BeforeValidator, Field, field_serializer
@@ -42,6 +42,23 @@ class ReplayDetailFilesInfo(BaseModel):
     screenshots: list[str]
 
 
+class ReplayGiftSummary(BaseModel):
+    name: str
+    count: int
+    total_gold: int
+    image: Optional[str] = None
+    free: Optional[bool] = None
+
+
+class ReplayTopFan(BaseModel):
+    user: str
+    avatar: Optional[str] = None
+    total_gold: int
+    count: int
+    free_gold: int = 0
+    free_count: int = 0
+
+
 class ReplayResponse(BaseModel):
     id: PyObjectId = Field(..., alias="_id")
     live_id: str
@@ -60,26 +77,8 @@ class ReplayResponse(BaseModel):
     youtube_id: Optional[str] = None
     youtube_title: Optional[str] = None
     files: ReplayFilesInfo
-    chats: list[dict[str, Any]] = []
     created_at: datetime
     updated_at: datetime
-
-
-class ReplayGiftSummary(BaseModel):
-    name: str
-    count: int
-    total_gold: int
-    image: Optional[str] = None
-    free: Optional[bool] = None
-
-
-class ReplayTopFan(BaseModel):
-    user: str
-    avatar: Optional[str] = None
-    total_gold: int
-    count: int
-    free_gold: int = 0
-    free_count: int = 0
 
 
 class ReplayDetailResponse(BaseModel):
