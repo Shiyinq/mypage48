@@ -149,7 +149,9 @@
 		class="absolute top-1/2 left-1/2 object-contain transition-all duration-300 {controls
 			? ''
 			: 'pointer-events-none'}"
-		style="width: {isFillMode ? '180%' : '100%'}; height: {isFillMode ? '180%' : '100%'}; transform: translate(-50%, -50%) rotate({rotation}deg); display: flex; align-items: center; justify-content: center;"
+		style="width: {isFillMode ? '180%' : '100%'}; height: {isFillMode
+			? '180%'
+			: '100%'}; transform: translate(-50%, -50%) rotate({rotation}deg); display: flex; align-items: center; justify-content: center;"
 	>
 		<div
 			id={containerId}
