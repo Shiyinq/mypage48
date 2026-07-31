@@ -181,7 +181,10 @@
 			if (savedSlots) {
 				try {
 					const parsedSlots = JSON.parse(savedSlots);
-					parsedSlots.forEach((s: MultiviewSlot, i: number) => {
+					const validSlots = parsedSlots.filter(
+						(s: Partial<MultiviewSlot>) => s && s.type && s.data
+					);
+					validSlots.forEach((s: MultiviewSlot, i: number) => {
 						if ((s.type === 'live' && s.data.platform === 'idn') || s.type === 'replay')
 							fillModes[i] = true;
 						else fillModes[i] = false;
@@ -190,7 +193,7 @@
 						volumes[i] = 1;
 						muted[i] = false;
 					});
-					slots = parsedSlots;
+					slots = validSlots;
 				} catch (e) {
 					console.error('Failed to load saved slots:', e);
 				}
@@ -287,7 +290,7 @@
 						s.data.live_id)
 				);
 			} else if (s.type === 'replay' && slot.type === 'replay') {
-				return s.data.youtube_id === slot.data.youtube_id;
+				return s.data?.youtube_id === slot.data?.youtube_id;
 			}
 			return false;
 		});
@@ -497,10 +500,10 @@
 		if (focusedStream) {
 			const currentId =
 				focusedStream.type === 'live'
-					? focusedStream.data.platform === 'showroom'
-						? focusedStream.data.room_id || focusedStream.data.room_url_key
-						: focusedStream.data.live_id || focusedStream.data.room_url_key
-					: focusedStream.data.youtube_id;
+					? focusedStream.data?.platform === 'showroom'
+						? focusedStream.data?.room_id || focusedStream.data?.room_url_key
+						: focusedStream.data?.live_id || focusedStream.data?.room_url_key
+					: focusedStream.data?.youtube_id;
 			if (currentId !== lastLoadedId) {
 				lastLoadedId = currentId;
 				loadFocusedDetails(focusedStream);
@@ -868,7 +871,7 @@
 					{:else}
 						{#each filteredReplays as replay}
 							{@const selectedIndex = slots.findIndex(
-								(s) => s.type === 'replay' && s.data.youtube_id === replay.youtube_id
+								(s) => s.type === 'replay' && s.data?.youtube_id === replay.youtube_id
 							)}
 							{@const isSelected = selectedIndex !== -1}
 							<button
@@ -960,7 +963,7 @@
 		<!-- Main Grid Area -->
 		<div class="flex-1 bg-transparent p-2 md:p-4 overflow-y-auto">
 			<div class="grid {gridClass} gap-2 md:gap-6 h-fit transition-all duration-500 pb-20">
-				{#each slots as slot, i (slot.type === 'live' ? slot.data.platform + '-' + (slot.data.live_id || slot.data.room_id || slot.data.room_url_key) : slot.data.youtube_id)}
+				{#each slots as slot, i (slot.type === 'live' ? slot.data?.platform + '-' + (slot.data?.live_id || slot.data?.room_id || slot.data?.room_url_key) : slot.data?.youtube_id)}
 					<div
 						class="relative flex items-center justify-center w-full h-full"
 						style="order: {slot.order ?? i};"
@@ -1013,7 +1016,7 @@
 								{:else}
 									<YoutubeMultiPlayer
 										bind:this={playerRefs[i]}
-										id={slot.data.youtube_id}
+										id={slot.data?.youtube_id}
 										volume={volumes[i] || 1}
 										muted={muted[i]}
 										controls={true}
