@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from math import ceil
 from typing import List, Optional
 
-import httpx
+from curl_cffi.requests import AsyncSession
 
 from src.config import Settings
 from src.events.exceptions import EventFetchError, EventNotFoundError
@@ -301,7 +301,7 @@ class EventsService:
                 if event_type == "SHOW"
                 else f"https://jkt48.com/purchase/exclusive?code={ref_code}",
             }
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with AsyncSession(timeout=10.0, impersonate="chrome124") as client:
                 try:
                     res = await client.get(url, headers=headers)
                     if res.status_code == 200:

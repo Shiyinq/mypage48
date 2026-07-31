@@ -7,7 +7,7 @@ import re
 import time
 from datetime import datetime, timedelta, timezone
 
-import httpx
+from curl_cffi.requests import AsyncSession
 
 from ..config import RecorderConfig
 from ..notify.telegram_notifier import _format_date_only_wib
@@ -45,7 +45,7 @@ class NewsChecker:
             json.dump({"processed_ids": processed_ids}, f)
 
     async def _embed_images_in_html(
-        self, html_content: str, client: httpx.AsyncClient, current_news_id: int
+        self, html_content: str, client: AsyncSession, current_news_id: int
     ) -> tuple[str, list]:
         """Download images, save them locally for telegram, and embed them as base64."""
         img_urls = re.findall(
@@ -71,8 +71,8 @@ class NewsChecker:
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                     "Referer": "https://jkt48.com/",
                 }
-                resp = await client.get(full_url, headers=headers, timeout=15.0)
-                if resp.is_success:
+                resp = await client.get(full_url, headers=headers, timeout=30.0)
+                if resp.ok:
                     content_type = resp.headers.get("content-type", "image/jpeg")
                     # Some JKT48 images return application/octet-stream, so we force image/jpeg
                     if "octet-stream" in content_type:
@@ -115,10 +115,16 @@ class NewsChecker:
         }
 
         try:
-            async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:
+            async with AsyncSession(
+                timeout=30.0, headers=headers, impersonate="chrome124"
+            ) as client:
                 resp = await client.get(self.api_url)
-                if not resp.is_success:
-                    self.log.warning("Failed to fetch news: %s", resp.status_code)
+                if not resp.ok:
+                    self.log.warning(
+                        "Failed to fetch news: HTTP %s - %s",
+                        resp.status_code,
+                        resp.text,
+                    )
                     return
 
                 data = resp.json()
@@ -175,7 +181,7 @@ class NewsChecker:
                         # Fetch detail API
                         detail_resp = await client.get(detail_api_url)
                         success = False
-                        if detail_resp.is_success:
+                        if detail_resp.ok:
                             detail_data = detail_resp.json()
                             content_body = (
                                 detail_data.get("data", {})
@@ -224,8 +230,9 @@ class NewsChecker:
                             )
                         else:
                             self.log.warning(
-                                "Failed to fetch detail news API: %s",
+                                "Failed to fetch detail news API: HTTP %s - %s",
                                 detail_resp.status_code,
+                                detail_resp.text,
                             )
 
                         payload = {

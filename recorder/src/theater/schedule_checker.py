@@ -5,7 +5,7 @@ import os
 import time
 from datetime import datetime, timedelta, timezone
 
-import httpx
+from curl_cffi.requests import AsyncSession
 
 from ..config import RecorderConfig
 from ..notify.telegram_notifier import (
@@ -57,13 +57,11 @@ class ScheduleChecker:
         with open(self.upcoming_state_file, "w") as f:
             json.dump(state, f)
 
-    async def _fetch_detail(
-        self, client: httpx.AsyncClient, ref_code: str
-    ) -> dict | None:
+    async def _fetch_detail(self, client: AsyncSession, ref_code: str) -> dict | None:
         detail_url = f"https://jkt48.com/api/v1/theater-shows/{ref_code}?lang=id"
         try:
-            resp = await client.get(detail_url, timeout=10.0)
-            if resp.is_success:
+            resp = await client.get(detail_url, timeout=30.0)
+            if resp.ok:
                 data = resp.json().get("data", {})
                 members_data = data.get("jkt48_member", [])
                 sales_period = data.get("sales_period", [])
@@ -91,9 +89,10 @@ class ScheduleChecker:
                 }
             else:
                 self.log.warning(
-                    "Failed to fetch schedule detail %s: HTTP %s",
+                    "Failed to fetch schedule detail %s: HTTP %s - %s",
                     ref_code,
                     resp.status_code,
+                    resp.text,
                 )
                 return None
         except Exception as e:
@@ -131,16 +130,19 @@ class ScheduleChecker:
         schedules_today_cache = []
 
         try:
-            async with httpx.AsyncClient(timeout=15.0, headers=headers) as client:
+            async with AsyncSession(
+                timeout=30.0, headers=headers, impersonate="chrome124"
+            ) as client:
                 for month, year in months_to_check:
                     url = f"https://jkt48.com/api/v1/schedules?lang=id&month={month}&year={year}"
                     resp = await client.get(url)
-                    if not resp.is_success:
+                    if not resp.ok:
                         self.log.warning(
-                            "Failed to fetch schedules for %02d-%04d: %s",
+                            "Failed to fetch schedules for %02d-%04d: %s - %s",
                             month,
                             year,
                             resp.status_code,
+                            resp.text,
                         )
                         continue
 
@@ -581,11 +583,17 @@ class ScheduleChecker:
 
         try:
             today_schedules = []
-            async with httpx.AsyncClient(timeout=15.0, headers=headers) as client:
+            async with AsyncSession(
+                timeout=30.0, headers=headers, impersonate="chrome124"
+            ) as client:
                 url = f"https://jkt48.com/api/v1/schedules?lang=id&month={month}&year={year}"
                 resp = await client.get(url)
-                if not resp.is_success:
-                    self.log.warning("Daily reminder failed to fetch schedules.")
+                if not resp.ok:
+                    self.log.warning(
+                        "Daily reminder failed to fetch schedules. HTTP %s - %s",
+                        resp.status_code,
+                        resp.text,
+                    )
                     return
 
                 data = resp.json()
