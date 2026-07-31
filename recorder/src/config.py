@@ -12,6 +12,9 @@ class RecorderConfig(BaseSettings):
     schedule_check_interval: int = 300
     health_check_interval: int = 300
     heartbeat_interval: int = 120
+    env: str = "dev"
+    enable_flaresolverr: bool = False
+    flaresolverr_url: str = "http://localhost:8191/v1"
     recordings_dir: str = str(Path(__file__).parent.parent / "recordings")
     theater_dir: str = str(Path(__file__).parent.parent / "theater")
     max_recording_hours: int = 4

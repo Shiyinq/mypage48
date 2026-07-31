@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import signal
+import subprocess
 import sys
 
 from .src.config import RecorderConfig
@@ -77,6 +78,32 @@ async def main(args):
     log_rec, log_upl, log_th = setup_logging(config)
 
     stop_event = asyncio.Event()
+
+    # Manage FlareSolverr Docker container lifecycle (theater only in prod)
+    if args.mode in ("all", "theater") and config.env == "prod":
+        try:
+            if config.enable_flaresolverr:
+                log_th.info(
+                    "FlareSolverr is ENABLED in config. Ensuring docker container is running..."
+                )
+                subprocess.run(
+                    "docker start recorder-flaresolverr || docker run -d --name recorder-flaresolverr -p 8191:8191 --restart always ghcr.io/flaresolverr/flaresolverr:latest",
+                    shell=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            else:
+                log_th.info(
+                    "FlareSolverr is DISABLED in config. Ensuring docker container is stopped..."
+                )
+                subprocess.run(
+                    "docker stop recorder-flaresolverr",
+                    shell=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+        except Exception as e:
+            log_th.warning(f"Failed to manage FlareSolverr docker container: {e}")
 
     def handle_signal():
         stop_event.set()
