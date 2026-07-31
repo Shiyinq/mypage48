@@ -97,7 +97,7 @@ async def upload(
             log.error("Failed to update status to 'tolarge': %s", e)
         return False
 
-    data = {"metadata": json.dumps(metadata)}
+    data = {"metadata": json.dumps(metadata), "force_update": "true"}
 
     for attempt in range(1, 4):
         files = []

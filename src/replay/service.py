@@ -207,6 +207,7 @@ class ReplayService:
         srt_bytes: bytes,
         screenshot_bytes_list: list[tuple[str, bytes]],
         thumbnail_bytes: Optional[bytes] = None,
+        force_update: bool = False,
     ) -> ReplayResponse:
         try:
             metadata = json.loads(metadata_bytes)
@@ -220,7 +221,10 @@ class ReplayService:
                 "Only 'completed' allowed."
             )
 
-        if await self.repository.exists(live_id):
+        existing_doc = await self.repository.find_by_live_id(live_id, {"_id": 1})
+        exists = existing_doc is not None
+
+        if exists and not force_update:
             logger.warning(f"Replay {live_id} already exists, skipping")
             raise ReplayAlreadyExists(f"Replay {live_id} already exists")
 
@@ -312,12 +316,17 @@ class ReplayService:
         }
 
         try:
-            doc_id = await self.repository.insert(doc)
-            await self.repository.insert_chats(live_id, chats)
+            if exists:
+                await self.repository.update(live_id, doc)
+                await self.repository.insert_chats(live_id, chats)
+                doc["_id"] = str(existing_doc["_id"])
+            else:
+                doc_id = await self.repository.insert(doc)
+                await self.repository.insert_chats(live_id, chats)
+                doc["_id"] = doc_id
         except DuplicateKeyError:
             logger.warning(f"Replay {live_id} duplicate key on insert, skipping")
             raise ReplayAlreadyExists(f"Replay {live_id} already exists")
-        doc["_id"] = doc_id
 
         logger.info(
             f"Replay uploaded: {live_id} "

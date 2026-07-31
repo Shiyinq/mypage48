@@ -183,6 +183,11 @@ def _do_upload_blocking(
     _uri_saved = bool(resume_uri)
     try:
         while response is None:
+            if mp4_path:
+                abort_path = os.path.join(os.path.dirname(mp4_path), ".abort_upload")
+                if os.path.exists(abort_path):
+                    raise Exception("Upload aborted: Live stream reconnected")
+
             status, response = request.next_chunk()
             if status and progress_callback:
                 progress_callback(status.progress(), status.total_size)
@@ -192,6 +197,8 @@ def _do_upload_blocking(
                     _uri_saved = True
     except Exception as e:
         log.warning("YouTube upload failed: %s", e)
+        if "Upload aborted" in str(e):
+            raise
         is_quota = False
         try:
             if hasattr(e, "content") and e.content:

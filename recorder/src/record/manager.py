@@ -271,6 +271,7 @@ class RecordingManager:
                 if data.get("live_id") == live.live_id and data.get("status") in (
                     "interrupted",
                     "recording",
+                    "completed",
                 ):
                     resumed_folder = os.path.dirname(jf)
                     resumed_mkv_parts = data.get("mkv_parts", [])
@@ -289,6 +290,45 @@ class RecordingManager:
         if resumed_folder:
             live_folder = resumed_folder
             recording_start_time = resumed_start_time
+
+            valid_mkv_parts = []
+            for p in resumed_mkv_parts:
+                if os.path.exists(p):
+                    valid_mkv_parts.append(p)
+            resumed_mkv_parts = valid_mkv_parts
+
+            mp4_path = os.path.join(live_folder, f"{live.live_id}.mp4")
+            if os.path.exists(mp4_path):
+                part_idx = len(resumed_mkv_parts) + 1
+                new_part_path = os.path.join(
+                    live_folder, f"{live.live_id}_part{part_idx}.mp4"
+                )
+                try:
+                    os.rename(mp4_path, new_part_path)
+                    resumed_mkv_parts.append(new_part_path)
+                except Exception as e:
+                    self.log.warning("Failed to rename existing mp4 for resume: %s", e)
+
+            r2_done_path = os.path.join(live_folder, ".r2_done")
+            if os.path.exists(r2_done_path):
+                try:
+                    os.remove(r2_done_path)
+                except Exception:
+                    pass
+
+            uri_path = os.path.join(live_folder, f"{live.live_id}.upload_uri")
+            if os.path.exists(uri_path):
+                try:
+                    os.remove(uri_path)
+                except Exception:
+                    pass
+
+            abort_path = os.path.join(live_folder, ".abort_upload")
+            try:
+                open(abort_path, "w").close()
+            except Exception:
+                pass
+
             mkv_parts = resumed_mkv_parts
             self.log.info(
                 "Resuming interrupted session for %s in %s", live.live_id, live_folder
@@ -789,6 +829,14 @@ class RecordingManager:
 
         self._pending_ends.add(live_id)
 
+        if reason == "completed":
+            abort_path = os.path.join(session.live_folder, ".abort_upload")
+            if os.path.exists(abort_path):
+                try:
+                    os.remove(abort_path)
+                except Exception:
+                    pass
+
         self.log.info(
             "Ending recording %s/%s (%s)",
             session.platform,
@@ -880,17 +928,46 @@ class RecordingManager:
                     self.log.warning("Remux failed: %s", e)
             else:
                 concat_list_path = os.path.join(session.live_folder, "concat.txt")
+                normalized_parts = []
                 try:
+                    # Normalize all parts to MKV first to avoid timestamp issues
+                    for p in parts_to_concat:
+                        if p.endswith(".mp4"):
+                            norm_mkv = p.replace(".mp4", "_norm.mkv")
+                            await asyncio.to_thread(
+                                subprocess.run,
+                                [
+                                    "ffmpeg",
+                                    "-fflags",
+                                    "+genpts+igndts",
+                                    "-i",
+                                    p,
+                                    "-c",
+                                    "copy",
+                                    "-y",
+                                    norm_mkv,
+                                ],
+                                capture_output=True,
+                                timeout=self.config.remux_timeout,
+                            )
+                            normalized_parts.append(norm_mkv)
+                        else:
+                            normalized_parts.append(p)
+
                     with open(concat_list_path, "w") as f:
-                        for p in parts_to_concat:
+                        for p in normalized_parts:
                             f.write(f"file '{os.path.abspath(p)}'\n")
 
+                    temp_mkv = os.path.join(
+                        session.live_folder,
+                        f"{session.live_id}_concat.mkv",
+                    )
                     await asyncio.to_thread(
                         subprocess.run,
                         [
                             "ffmpeg",
                             "-fflags",
-                            "+genpts",
+                            "+genpts+igndts",
                             "-f",
                             "concat",
                             "-safe",
@@ -901,6 +978,24 @@ class RecordingManager:
                             "copy",
                             "-avoid_negative_ts",
                             "make_zero",
+                            "-y",
+                            temp_mkv,
+                        ],
+                        capture_output=True,
+                        timeout=self.config.remux_timeout,
+                    )
+
+                    # Remux the concatenated MKV to final MP4
+                    await asyncio.to_thread(
+                        subprocess.run,
+                        [
+                            "ffmpeg",
+                            "-fflags",
+                            "+genpts",
+                            "-i",
+                            temp_mkv,
+                            "-c",
+                            "copy",
                             "-bsf:a",
                             "aac_adtstoasc",
                             "-movflags",
@@ -912,11 +1007,22 @@ class RecordingManager:
                         timeout=self.config.remux_timeout,
                     )
 
+                    # Cleanup all intermediate files
                     for p in parts_to_concat:
                         try:
                             os.remove(p)
                         except Exception:
                             pass
+                    for p in normalized_parts:
+                        if p not in parts_to_concat:
+                            try:
+                                os.remove(p)
+                            except Exception:
+                                pass
+                    try:
+                        os.remove(temp_mkv)
+                    except Exception:
+                        pass
                     try:
                         os.remove(concat_list_path)
                     except Exception:
