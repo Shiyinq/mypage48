@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from curl_cffi.requests import AsyncSession
 
 from ..config import RecorderConfig
+from ..flaresolverr import fetch_with_retry
 from ..notify.telegram_notifier import (
     _format_date_only_wib,
     send_daily_schedule_reminder,
@@ -60,7 +61,14 @@ class ScheduleChecker:
     async def _fetch_detail(self, client: AsyncSession, ref_code: str) -> dict | None:
         detail_url = f"https://jkt48.com/api/v1/theater-shows/{ref_code}?lang=id"
         try:
-            resp = await client.get(detail_url, timeout=30.0)
+            resp = await fetch_with_retry(
+                client,
+                "GET",
+                detail_url,
+                self.config.flaresolverr_url,
+                self.config.enable_flaresolverr,
+                timeout=30.0,
+            )
             if resp.ok:
                 data = resp.json().get("data", {})
                 members_data = data.get("jkt48_member", [])
@@ -135,7 +143,13 @@ class ScheduleChecker:
             ) as client:
                 for month, year in months_to_check:
                     url = f"https://jkt48.com/api/v1/schedules?lang=id&month={month}&year={year}"
-                    resp = await client.get(url)
+                    resp = await fetch_with_retry(
+                        client,
+                        "GET",
+                        url,
+                        self.config.flaresolverr_url,
+                        self.config.enable_flaresolverr,
+                    )
                     if not resp.ok:
                         self.log.warning(
                             "Failed to fetch schedules for %02d-%04d: %s - %s",
@@ -587,7 +601,13 @@ class ScheduleChecker:
                 timeout=30.0, headers=headers, impersonate="chrome124"
             ) as client:
                 url = f"https://jkt48.com/api/v1/schedules?lang=id&month={month}&year={year}"
-                resp = await client.get(url)
+                resp = await fetch_with_retry(
+                    client,
+                    "GET",
+                    url,
+                    self.config.flaresolverr_url,
+                    self.config.enable_flaresolverr,
+                )
                 if not resp.ok:
                     self.log.warning(
                         "Daily reminder failed to fetch schedules. HTTP %s - %s",

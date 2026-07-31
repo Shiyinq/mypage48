@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 from curl_cffi.requests import AsyncSession
 
 from ..config import RecorderConfig
+from ..flaresolverr import fetch_with_retry
 from ..notify.telegram_notifier import _format_date_only_wib
 from .html_screenshot import capture_html_screenshot
 
@@ -71,7 +72,15 @@ class NewsChecker:
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                     "Referer": "https://jkt48.com/",
                 }
-                resp = await client.get(full_url, headers=headers, timeout=30.0)
+                resp = await fetch_with_retry(
+                    client,
+                    "GET",
+                    full_url,
+                    self.config.flaresolverr_url,
+                    self.config.enable_flaresolverr,
+                    headers=headers,
+                    timeout=30.0,
+                )
                 if resp.ok:
                     content_type = resp.headers.get("content-type", "image/jpeg")
                     # Some JKT48 images return application/octet-stream, so we force image/jpeg
@@ -118,7 +127,13 @@ class NewsChecker:
             async with AsyncSession(
                 timeout=30.0, headers=headers, impersonate="chrome124"
             ) as client:
-                resp = await client.get(self.api_url)
+                resp = await fetch_with_retry(
+                    client,
+                    "GET",
+                    self.api_url,
+                    self.config.flaresolverr_url,
+                    self.config.enable_flaresolverr,
+                )
                 if not resp.ok:
                     self.log.warning(
                         "Failed to fetch news: HTTP %s - %s",
@@ -179,7 +194,13 @@ class NewsChecker:
                         )
 
                         # Fetch detail API
-                        detail_resp = await client.get(detail_api_url)
+                        detail_resp = await fetch_with_retry(
+                            client,
+                            "GET",
+                            detail_api_url,
+                            self.config.flaresolverr_url,
+                            self.config.enable_flaresolverr,
+                        )
                         success = False
                         if detail_resp.ok:
                             detail_data = detail_resp.json()
