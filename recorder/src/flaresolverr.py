@@ -108,6 +108,10 @@ async def fetch_with_retry(
 
     kwargs["headers"] = headers
 
+    # Prevent old cookies from overriding our explicitly injected Cookie header
+    if hasattr(client, "cookies"):
+        client.cookies.clear()
+
     resp = await client.request(method, url, **kwargs)
     if resp.status_code != 403 or not use_flaresolverr:
         return resp
