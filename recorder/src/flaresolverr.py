@@ -127,7 +127,7 @@ async def fetch_with_retry(
 
         kwargs["headers"] = headers
         kwargs["impersonate"] = "chrome"
-        log.info("Retrying request...")
+        log.info(f"Retrying request for {url}...")
         async with AsyncSession(
             timeout=kwargs.get("timeout", 30.0), impersonate="chrome"
         ) as retry_client:
