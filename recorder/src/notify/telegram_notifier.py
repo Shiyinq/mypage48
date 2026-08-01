@@ -830,7 +830,7 @@ async def send_schedule_notification(payload: dict, config: RecorderConfig) -> b
 
         date_str = sch.get("date", "")
         time_str = sch.get("start_time", "")
-        if time_str.count(":") == 2:
+        if time_str and time_str.count(":") == 2:
             time_str = ":".join(time_str.split(":")[:2])
         try:
             date_wib = _format_date_only_wib(f"{date_str}T00:00:00Z")
@@ -1025,7 +1025,7 @@ async def send_daily_schedule_reminder(payload: dict, config: RecorderConfig) ->
 
         date_str = sch.get("date", "")
         time_str = sch.get("start_time", "")
-        if time_str.count(":") == 2:
+        if time_str and time_str.count(":") == 2:
             time_str = ":".join(time_str.split(":")[:2])
 
         try:
