@@ -111,11 +111,12 @@ async def fetch_with_retry(
 
     kwargs["headers"] = headers
 
-    # Prevent old cookies from overriding our explicitly injected Cookie header
-    if hasattr(client, "cookies"):
-        client.cookies.clear()
-
-    resp = await client.request(method, url, **kwargs)
+    kwargs["impersonate"] = "chrome"
+    # Use a completely fresh session for EVERY request to avoid TLS/Connection caching issues with Cloudflare
+    async with AsyncSession(
+        timeout=kwargs.get("timeout", 30.0), impersonate="chrome"
+    ) as oneoff_client:
+        resp = await oneoff_client.request(method, url, **kwargs)
     if resp.status_code != 403 or not use_flaresolverr:
         return resp
 
