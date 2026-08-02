@@ -31,6 +31,7 @@ async def upload_replay(
     screenshots: list[UploadFile] = File(
         default_factory=list, description="Screenshot files"
     ),
+    force_update: bool = Form(False, description="Force update existing replay"),
     _=Depends(require_admin),
     service: ReplayService = Depends(get_replay_service),
 ):
@@ -59,6 +60,7 @@ async def upload_replay(
         jsonl_bytes=jsonl_bytes,
         srt_bytes=srt_bytes,
         screenshot_bytes_list=screenshot_list,
+        force_update=force_update,
     )
 
 

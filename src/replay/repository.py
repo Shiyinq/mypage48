@@ -23,6 +23,10 @@ class ReplayRepository:
             upsert=True,
         )
 
+    async def update(self, live_id: str, data: dict[str, Any]) -> bool:
+        result = await self.col.update_one({"live_id": live_id}, {"$set": data})
+        return result.modified_count > 0
+
     async def find_by_live_id(
         self, live_id: str, projection: Optional[dict[str, Any]] = None
     ) -> Optional[dict[str, Any]]:
