@@ -1,4 +1,5 @@
 import asyncio
+import glob
 import json
 import logging
 import os
@@ -239,6 +240,12 @@ class Watcher:
         finally:
             self._processing.pop(live_id, None)
 
+    def _has_raw_parts(self, folder_path: str) -> bool:
+        return bool(
+            glob.glob(os.path.join(folder_path, "*.mkv"))
+            + glob.glob(os.path.join(folder_path, "*part*.mp4"))
+        )
+
     async def _process_folder_inner(self, folder_path: str, live_id: str):
         meta, session = self._build_session(folder_path, live_id)
         if not meta or not session:
@@ -286,11 +293,20 @@ class Watcher:
 
             # 5. Yield or finish
             if not has_mp4:
-                self.log_upl.info(
-                    "No mp4 for %s, finishing directly after R2", title_log
-                )
                 self._append_history(live_id, youtube_id or "")
-                shutil.rmtree(folder_path)
+                expected_mp4 = meta.get("record", True)
+
+                if expected_mp4 and self._has_raw_parts(folder_path):
+                    self.log_upl.error(
+                        "MP4 missing for %s (remux/concat failed). Raw parts found. Keeping folder for manual recovery.",
+                        title_log,
+                    )
+                else:
+                    self.log_upl.info(
+                        "No mp4/raw parts for %s (likely too short), finishing directly after R2",
+                        title_log,
+                    )
+                    shutil.rmtree(folder_path)
                 self.log_upl.info("Done: %s", title_log)
             else:
                 self.log_upl.info(
@@ -307,9 +323,16 @@ class Watcher:
             return
 
         if not has_mp4:
-            # Should not happen normally, but just in case
             self._append_history(live_id, youtube_id or "")
-            shutil.rmtree(folder_path)
+            expected_mp4 = meta.get("record", True)
+
+            if expected_mp4 and self._has_raw_parts(folder_path):
+                self.log_upl.error(
+                    "MP4 missing for %s in Phase 2. Raw parts found. Keeping folder.",
+                    title_log,
+                )
+            else:
+                shutil.rmtree(folder_path)
             self.log_upl.info("Done: %s", title_log)
             return
 

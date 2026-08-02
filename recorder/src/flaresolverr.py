@@ -4,7 +4,7 @@ import logging
 import os
 from typing import Dict
 
-from curl_cffi.requests import AsyncSession
+from curl_cffi import requests
 
 log = logging.getLogger("theater")
 
@@ -68,31 +68,32 @@ async def refresh_cookies_via_flaresolverr(url: str, proxy_url: str) -> bool:
         }
         headers = {"Content-Type": "application/json"}
 
-        # We must use AsyncSession to not block the recorder loop
-        async with AsyncSession(timeout=65.0) as client:
-            response = await client.post(proxy_url, json=payload, headers=headers)
-            response.raise_for_status()
+        # Use to_thread with sync requests to avoid AsyncSession bugs
+        response = await asyncio.to_thread(
+            requests.post, proxy_url, json=payload, headers=headers, timeout=65.0
+        )
+        response.raise_for_status()
 
-            data = response.json()
-            if data.get("status") == "ok":
-                solution = data.get("solution", {})
-                new_config = {
-                    "cookies": _format_cookies(solution.get("cookies", [])),
-                    "user_agent": solution.get("userAgent", ""),
-                }
-                save_flaresolverr_config(new_config)
-                log.info("FlareSolverr successfully fetched new cookies.")
-                return True
-            else:
-                log.warning(f"FlareSolverr error: {data}")
-                return False
+        data = response.json()
+        if data.get("status") == "ok":
+            solution = data.get("solution", {})
+            new_config = {
+                "cookies": _format_cookies(solution.get("cookies", [])),
+                "user_agent": solution.get("userAgent", ""),
+            }
+            save_flaresolverr_config(new_config)
+            log.info("FlareSolverr successfully fetched new cookies.")
+            return True
+        else:
+            log.warning(f"FlareSolverr error: {data}")
+            return False
     except Exception as e:
         log.warning(f"FlareSolverr connection failed: {e}")
         return False
 
 
 async def fetch_with_retry(
-    client: AsyncSession,
+    client,  # We keep the parameter for backwards compatibility but ignore it
     method: str,
     url: str,
     proxy_url: str,
@@ -101,6 +102,8 @@ async def fetch_with_retry(
 ):
     """
     Make a request. If 403, retry once by refreshing cookies via FlareSolverr.
+    Uses asyncio.to_thread with sync requests to exactly mirror the scraper's behavior
+    and avoid AsyncSession TLS fingerprint bugs.
     """
     config = get_flaresolverr_config()
     headers = kwargs.pop("headers", {})
@@ -110,18 +113,15 @@ async def fetch_with_retry(
         headers["User-Agent"] = config["user_agent"]
 
     kwargs["headers"] = headers
-
     kwargs["impersonate"] = "chrome"
-    # Use a completely fresh session for EVERY request to avoid TLS/Connection caching issues with Cloudflare
-    async with AsyncSession(
-        timeout=kwargs.get("timeout", 30.0), impersonate="chrome"
-    ) as oneoff_client:
-        resp = await oneoff_client.request(method, url, **kwargs)
+
+    # 1. Initial Request
+    resp = await asyncio.to_thread(requests.request, method, url, **kwargs)
     if resp.status_code != 403 or not use_flaresolverr:
         return resp
 
+    # 2. Lock and Retry Logic
     async with _flaresolverr_lock:
-        # Check if another task already refreshed the cookies while we were waiting
         new_config = get_flaresolverr_config()
         if new_config.get("cookies") and new_config.get("cookies") != config.get(
             "cookies"
@@ -133,15 +133,17 @@ async def fetch_with_retry(
             headers["User-Agent"] = new_config.get("user_agent")
             kwargs["headers"] = headers
             kwargs["impersonate"] = "chrome"
-            async with AsyncSession(
-                timeout=kwargs.get("timeout", 30.0), impersonate="chrome"
-            ) as retry_client:
-                retry_resp = await retry_client.request(method, url, **kwargs)
-                if retry_resp.status_code != 403:
-                    return retry_resp
+
+            retry_resp = await asyncio.to_thread(
+                requests.request, method, url, **kwargs
+            )
+            if retry_resp.status_code != 403:
+                return retry_resp
 
         log.info(f"Got 403 for {url}. Refreshing cookies via FlareSolverr...")
         success = await refresh_cookies_via_flaresolverr("https://jkt48.com", proxy_url)
+
+    # 3. Final Retry outside the lock
     if success:
         config = get_flaresolverr_config()
         if config.get("cookies"):
@@ -154,9 +156,7 @@ async def fetch_with_retry(
         log.info(f"Waiting 3 seconds for Cloudflare edge nodes to sync...")
         await asyncio.sleep(3.0)
         log.info(f"Retrying request for {url}...")
-        async with AsyncSession(
-            timeout=kwargs.get("timeout", 30.0), impersonate="chrome"
-        ) as retry_client:
-            return await retry_client.request(method, url, **kwargs)
+
+        return await asyncio.to_thread(requests.request, method, url, **kwargs)
 
     return resp
