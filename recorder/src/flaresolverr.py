@@ -151,6 +151,8 @@ async def fetch_with_retry(
 
         kwargs["headers"] = headers
         kwargs["impersonate"] = "chrome"
+        log.info(f"Waiting 3 seconds for Cloudflare edge nodes to sync...")
+        await asyncio.sleep(3.0)
         log.info(f"Retrying request for {url}...")
         async with AsyncSession(
             timeout=kwargs.get("timeout", 30.0), impersonate="chrome"
