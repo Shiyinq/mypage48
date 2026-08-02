@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -6,6 +7,8 @@ from typing import Dict
 from curl_cffi.requests import AsyncSession
 
 log = logging.getLogger("theater")
+
+_flaresolverr_lock = asyncio.Lock()
 
 # We use the same theater_dir for the cookies state
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -108,12 +111,37 @@ async def fetch_with_retry(
 
     kwargs["headers"] = headers
 
-    resp = await client.request(method, url, **kwargs)
+    kwargs["impersonate"] = "chrome"
+    # Use a completely fresh session for EVERY request to avoid TLS/Connection caching issues with Cloudflare
+    async with AsyncSession(
+        timeout=kwargs.get("timeout", 30.0), impersonate="chrome"
+    ) as oneoff_client:
+        resp = await oneoff_client.request(method, url, **kwargs)
     if resp.status_code != 403 or not use_flaresolverr:
         return resp
 
-    log.info(f"Got 403 for {url}. Refreshing cookies via FlareSolverr...")
-    success = await refresh_cookies_via_flaresolverr("https://jkt48.com", proxy_url)
+    async with _flaresolverr_lock:
+        # Check if another task already refreshed the cookies while we were waiting
+        new_config = get_flaresolverr_config()
+        if new_config.get("cookies") and new_config.get("cookies") != config.get(
+            "cookies"
+        ):
+            log.info(
+                f"Cookies were updated by another task. Retrying {url} with new cookies first..."
+            )
+            headers["Cookie"] = new_config.get("cookies")
+            headers["User-Agent"] = new_config.get("user_agent")
+            kwargs["headers"] = headers
+            kwargs["impersonate"] = "chrome"
+            async with AsyncSession(
+                timeout=kwargs.get("timeout", 30.0), impersonate="chrome"
+            ) as retry_client:
+                retry_resp = await retry_client.request(method, url, **kwargs)
+                if retry_resp.status_code != 403:
+                    return retry_resp
+
+        log.info(f"Got 403 for {url}. Refreshing cookies via FlareSolverr...")
+        success = await refresh_cookies_via_flaresolverr("https://jkt48.com", proxy_url)
     if success:
         config = get_flaresolverr_config()
         if config.get("cookies"):
@@ -122,7 +150,11 @@ async def fetch_with_retry(
             headers["User-Agent"] = config["user_agent"]
 
         kwargs["headers"] = headers
-        log.info("Retrying request...")
-        return await client.request(method, url, **kwargs)
+        kwargs["impersonate"] = "chrome"
+        log.info(f"Retrying request for {url}...")
+        async with AsyncSession(
+            timeout=kwargs.get("timeout", 30.0), impersonate="chrome"
+        ) as retry_client:
+            return await retry_client.request(method, url, **kwargs)
 
     return resp

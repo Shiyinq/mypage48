@@ -125,7 +125,7 @@ class NewsChecker:
 
         try:
             async with AsyncSession(
-                timeout=30.0, headers=headers, impersonate="chrome124"
+                timeout=30.0, headers=headers, impersonate="chrome"
             ) as client:
                 resp = await fetch_with_retry(
                     client,

@@ -139,7 +139,7 @@ class ScheduleChecker:
 
         try:
             async with AsyncSession(
-                timeout=30.0, headers=headers, impersonate="chrome124"
+                timeout=30.0, headers=headers, impersonate="chrome"
             ) as client:
                 for month, year in months_to_check:
                     url = f"https://jkt48.com/api/v1/schedules?lang=id&month={month}&year={year}"
@@ -406,7 +406,7 @@ class ScheduleChecker:
                 date_wib = date_str
 
             time_str = sch["start_time"]
-            if time_str.count(":") == 2:
+            if time_str and time_str.count(":") == 2:
                 time_str = ":".join(time_str.split(":")[:2])
 
             title_text = sch["title"]
@@ -598,7 +598,7 @@ class ScheduleChecker:
         try:
             today_schedules = []
             async with AsyncSession(
-                timeout=30.0, headers=headers, impersonate="chrome124"
+                timeout=30.0, headers=headers, impersonate="chrome"
             ) as client:
                 url = f"https://jkt48.com/api/v1/schedules?lang=id&month={month}&year={year}"
                 resp = await fetch_with_retry(
