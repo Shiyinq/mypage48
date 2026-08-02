@@ -46,6 +46,7 @@ class RecordingSession:
     member_image: str
     start_at: str
     live_type: str = "public"
+    record: bool = True
     ffmpeg_proc: Optional[subprocess.Popen] = None
     chat_task: Optional["asyncio.Task"] = None
     gift_task: Optional["asyncio.Task"] = None

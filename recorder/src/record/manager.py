@@ -283,6 +283,24 @@ class RecordingManager:
         return f"{size_bytes / (1024 * 1024):.1f}MB"
 
     async def _start_session(self, live: LiveInfo):
+        stream_info, _ = await self.detector.get_streaming_url(
+            live.platform, live.room_id, live.live_id
+        )
+        if not stream_info:
+            self.log.warning("Failed to get streaming URL for %s", live.live_id)
+            return
+
+        hls_url = self.detector.pick_best_url(stream_info)
+        if not hls_url:
+            hls_url = live.hls_url
+
+        if not hls_url:
+            self.log.warning("No streaming URLs for %s", live.live_id)
+            return
+
+        if stream_info.get("room_identifier"):
+            live.room_identifier = stream_info.get("room_identifier")
+
         recordings_dir = self.config.recordings_dir
 
         resumed_folder = None
@@ -402,24 +420,6 @@ class RecordingManager:
         open(chat_log_path, "a").close()
         open(jsonl_path, "a").close()
 
-        stream_info, _ = await self.detector.get_streaming_url(
-            live.platform, live.room_id, live.live_id
-        )
-        if not stream_info:
-            self.log.warning("Failed to get streaming URL for %s", live.live_id)
-            return
-
-        hls_url = self.detector.pick_best_url(stream_info)
-        if not hls_url:
-            hls_url = live.hls_url
-
-        if not hls_url:
-            self.log.warning("No streaming URLs for %s", live.live_id)
-            return
-
-        if stream_info.get("room_identifier"):
-            live.room_identifier = stream_info.get("room_identifier")
-
         ffmpeg_proc = None
         if not live.record:
             self.log.info(
@@ -512,6 +512,7 @@ class RecordingManager:
             member_image=live.member_image,
             start_at=live.start_at,
             live_type=live.live_type,
+            record=live.record,
             ffmpeg_proc=ffmpeg_proc,
             chat_task=chat_task,
             mkv_parts=mkv_parts,
@@ -532,6 +533,7 @@ class RecordingManager:
                 "member_nickname": session.member_nickname,
                 "start_at": session.start_at,
                 "live_type": session.live_type,
+                "record": session.record,
                 "recording_started_at": datetime.fromtimestamp(
                     session.recording_start_time, tz=timezone.utc
                 ).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -946,14 +948,22 @@ class RecordingManager:
                             mp4_path,
                         ],
                         capture_output=True,
+                        check=True,
                         timeout=self.config.remux_timeout,
                     )
-                    os.remove(target_mkv)
-                    session.output_path = mp4_path
-                    remux_ok = True
-                    self.log.info("Remuxed to MP4: %s", mp4_path)
+                    if os.path.exists(mp4_path):
+                        os.remove(target_mkv)
+                        session.output_path = mp4_path
+                        remux_ok = True
+                        file_size = self._format_size(os.path.getsize(mp4_path))
+                        self.log.info("Remuxed to MP4 (%s): %s", file_size, mp4_path)
+                    else:
+                        self.log.warning(
+                            "Remux failed for %s: MP4 file not generated",
+                            session.live_id,
+                        )
                 except Exception as e:
-                    self.log.warning("Remux failed: %s", e)
+                    self.log.warning("Remux failed for %s: %s", session.live_id, e)
             else:
                 concat_list_path = os.path.join(session.live_folder, "concat.txt")
                 normalized_parts = []
@@ -976,6 +986,7 @@ class RecordingManager:
                                     norm_mkv,
                                 ],
                                 capture_output=True,
+                                check=True,
                                 timeout=self.config.remux_timeout,
                             )
                             normalized_parts.append(norm_mkv)
@@ -1010,6 +1021,7 @@ class RecordingManager:
                             temp_mkv,
                         ],
                         capture_output=True,
+                        check=True,
                         timeout=self.config.remux_timeout,
                     )
 
@@ -1032,39 +1044,51 @@ class RecordingManager:
                             mp4_path,
                         ],
                         capture_output=True,
+                        check=True,
                         timeout=self.config.remux_timeout,
                     )
 
-                    # Cleanup all intermediate files
-                    for p in parts_to_concat:
-                        try:
-                            os.remove(p)
-                        except Exception:
-                            pass
-                    for p in normalized_parts:
-                        if p not in parts_to_concat:
+                    if os.path.exists(mp4_path):
+                        # Cleanup all intermediate files only if successful
+                        for p in parts_to_concat:
                             try:
                                 os.remove(p)
                             except Exception:
                                 pass
-                    try:
-                        os.remove(temp_mkv)
-                    except Exception:
-                        pass
-                    try:
-                        os.remove(concat_list_path)
-                    except Exception:
-                        pass
+                        for p in normalized_parts:
+                            if p not in parts_to_concat:
+                                try:
+                                    os.remove(p)
+                                except Exception:
+                                    pass
+                        try:
+                            os.remove(temp_mkv)
+                        except Exception:
+                            pass
+                        try:
+                            os.remove(concat_list_path)
+                        except Exception:
+                            pass
 
-                    session.output_path = mp4_path
-                    remux_ok = True
-                    self.log.info(
-                        "Remuxed to MP4 (concat %d parts): %s",
-                        len(parts_to_concat),
-                        mp4_path,
-                    )
+                        session.output_path = mp4_path
+                        remux_ok = True
+                        file_size = self._format_size(os.path.getsize(mp4_path))
+                        self.log.info(
+                            "Remuxed to MP4 (concat %d parts, %s): %s",
+                            len(parts_to_concat),
+                            file_size,
+                            mp4_path,
+                        )
+                    else:
+                        self.log.error(
+                            "Concat remux failed for %s: MP4 file not generated",
+                            session.live_id,
+                        )
+
                 except Exception as e:
-                    self.log.warning("Concat remux failed: %s", e)
+                    self.log.warning(
+                        "Concat remux failed for %s: %s", session.live_id, e
+                    )
 
         final_mp4 = mp4_path if os.path.exists(mp4_path) else mkv_path
         duration = 0
@@ -1132,6 +1156,7 @@ class RecordingManager:
                 "member_name": session.member_name,
                 "member_nickname": session.member_nickname,
                 "start_at": session.start_at,
+                "record": session.record,
                 "recording_started_at": datetime.fromtimestamp(
                     session.recording_start_time, tz=timezone.utc
                 ).strftime("%Y-%m-%dT%H:%M:%SZ"),
