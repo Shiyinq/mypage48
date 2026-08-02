@@ -88,27 +88,34 @@ class LiveDetector:
 
     async def get_streaming_url(
         self, platform: str, room_id: str, live_id: str = ""
-    ) -> Optional[dict]:
+    ) -> Tuple[Optional[dict], bool]:
+        """Returns (stream_info, is_not_found).
+
+        - (dict, False) → stream is live, URL available
+        - (None, True)  → 404, stream has ended
+        - (None, False) → other error, status unknown
+        """
         identifier = room_id if platform == "showroom" else (live_id or room_id)
         try:
             resp = await self.client.get(
                 f"{self.api_base_url}/jkt48/live/{platform}/{identifier}/streaming-url"
             )
             resp.raise_for_status()
-            return resp.json()
+            return resp.json(), False
         except httpx.HTTPStatusError as e:
             self.log.error(
                 f"[live_detector] Streaming URL {platform}/{identifier}: HTTP {e.response.status_code}: {e.response.text[:200]}"
             )
-            return None
+            is_not_found = e.response.status_code == 404
+            return None, is_not_found
         except httpx.RequestError as e:
             self.log.error(
                 f"[live_detector] Streaming URL {platform}/{identifier}: {e}"
             )
-            return None
+            return None, False
         except Exception as e:
             self.log.error(f"[live_detector] Failed to get streaming URL: {e}")
-            return None
+            return None, False
 
     @staticmethod
     def pick_best_url(stream_info: dict) -> Optional[str]:

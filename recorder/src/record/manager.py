@@ -77,6 +77,27 @@ class RecordingManager:
             count = self._gone_count.get(live_id, 0) + 1
             self._gone_count[live_id] = count
             if count >= 3:
+                session = self.sessions.get(live_id)
+                if session:
+                    stream_info, is_not_found = await self.detector.get_streaming_url(
+                        session.platform, session.room_id, session.live_id
+                    )
+                    if stream_info:
+                        self.log.warning(
+                            "Live %s disappeared from poll but stream URL still active, "
+                            "resetting gone count",
+                            live_id,
+                        )
+                        self._gone_count[live_id] = 0
+                        continue
+                    if not is_not_found:
+                        self.log.warning(
+                            "Live %s gone from poll but streaming URL check failed "
+                            "(not 404), keeping session",
+                            live_id,
+                        )
+                        self._gone_count[live_id] = 0
+                        continue
                 del self._gone_count[live_id]
                 asyncio.create_task(self._end_session(live_id, reason="completed"))
 
@@ -132,7 +153,7 @@ class RecordingManager:
                 session.ffmpeg_proc
             ):
                 self.log.warning("ffmpeg died for %s", live_id)
-                stream_info = await self.detector.get_streaming_url(
+                stream_info, is_not_found = await self.detector.get_streaming_url(
                     session.platform, session.room_id, session.live_id
                 )
                 if stream_info:
@@ -140,9 +161,11 @@ class RecordingManager:
                         "Stream still live, restarting ffmpeg for %s", live_id
                     )
                     self._restart_ffmpeg(session, stream_info)
-                else:
+                elif is_not_found:
                     self.log.info("Stream ended, marking completed for %s", live_id)
                     completed_ids.append(live_id)
+                else:
+                    self.log.warning("Failed to get streaming URL for %s", live_id)
                 continue
             if os.path.exists(session.output_path):
                 current_size = os.path.getsize(session.output_path)
@@ -155,7 +178,7 @@ class RecordingManager:
                         age,
                         current_size,
                     )
-                    stream_info = await self.detector.get_streaming_url(
+                    stream_info, is_not_found = await self.detector.get_streaming_url(
                         session.platform, session.room_id, session.live_id
                     )
                     if stream_info:
@@ -164,8 +187,13 @@ class RecordingManager:
                             live_id,
                         )
                         self._restart_ffmpeg(session, stream_info)
-                    else:
+                    elif is_not_found:
                         completed_ids.append(live_id)
+                    else:
+                        self.log.warning(
+                            "Failed to get streaming URL for %s, keeping session",
+                            live_id,
+                        )
 
                 session.last_file_size = current_size
 
@@ -374,7 +402,7 @@ class RecordingManager:
         open(chat_log_path, "a").close()
         open(jsonl_path, "a").close()
 
-        stream_info = await self.detector.get_streaming_url(
+        stream_info, _ = await self.detector.get_streaming_url(
             live.platform, live.room_id, live.live_id
         )
         if not stream_info:
@@ -551,7 +579,7 @@ class RecordingManager:
                 and str(session.room_identifier).startswith("arn:")
             ):
                 return
-            info = await self.detector.get_streaming_url("idn", room_id, id_live_id)
+            info, _ = await self.detector.get_streaming_url("idn", room_id, id_live_id)
             if info and info.get("room_identifier"):
                 rid = info.get("room_identifier")
                 session.room_identifier = rid
@@ -765,7 +793,7 @@ class RecordingManager:
 
     async def _get_fresh_hls_url(self, session: RecordingSession) -> str:
         if session.platform == "idn" and session.live_type != "public":
-            stream_info = await self.detector.get_streaming_url(
+            stream_info, _ = await self.detector.get_streaming_url(
                 session.platform, session.room_id, session.live_id
             )
             if stream_info:
