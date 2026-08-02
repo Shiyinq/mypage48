@@ -60,6 +60,7 @@ def replay_service(mock_replay_repo, mock_storage_repo):
 @pytest.mark.asyncio
 async def test_upload_success(replay_service):
     replay_service.repository.exists.return_value = False
+    replay_service.repository.find_by_live_id.return_value = None
     replay_service.repository.insert.return_value = "mock_id_123"
 
     live_id = "test-live-001"
@@ -129,6 +130,7 @@ async def test_upload_non_completed_status(replay_service):
 @pytest.mark.asyncio
 async def test_upload_already_exists(replay_service):
     replay_service.repository.exists.return_value = True
+    replay_service.repository.find_by_live_id.return_value = {"_id": "mock_existing_id"}
     metadata = json.dumps(
         {
             "live_id": "existing-live",
@@ -408,6 +410,7 @@ async def test_replay_upload_success(
     )
 
     mock_replay_repo.exists.return_value = False
+    mock_replay_repo.find_by_live_id.return_value = None
     mock_replay_repo.insert.return_value = "mock_id_456"
 
     metadata = json.dumps(
@@ -466,7 +469,7 @@ async def test_replay_upload_invalid_metadata(client: AsyncClient, create_user):
     assert res.status_code == 500
 
 
-def test_compute_chat_stats_showroom():
+async def test_compute_chat_stats_showroom():
     chats = [
         {"type": "gift", "gift_name": "Star", "num": 1, "total_point": 10, "free": False, "name": "Alice", "avatar_url": "https://avatar.sr/alice.jpg"},
         {"type": "gift", "gift_name": "Heart", "num": 3, "total_point": 30, "free": True, "name": "Alice", "avatar_url": "https://avatar.sr/alice.jpg"},
@@ -486,7 +489,7 @@ def test_compute_chat_stats_showroom():
     assert len(top_gifts) == 3
 
 
-def test_compute_chat_stats_idn():
+async def test_compute_chat_stats_idn():
     chats = [
         {"user": {"name": "Alice"}, "gift": {"name": "Gold", "gold": 50}},
         {"user": {"name": "Bob"}, "gift": {"name": "Silver", "gold": 30}},
