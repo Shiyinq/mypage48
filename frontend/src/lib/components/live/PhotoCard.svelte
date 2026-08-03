@@ -5,6 +5,7 @@
 	import { Eye, Lock, Play } from 'lucide-svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { getExternalMediaUrl } from '$lib/utils/media';
+	import { fade } from 'svelte/transition';
 	import OptimizedImage from '$lib/components/common/OptimizedImage.svelte';
 
 	interface Props {
@@ -24,6 +25,83 @@
 	let isHovered = $state(false);
 	let clickTimeout: ReturnType<typeof setTimeout> | null = null;
 	let cardEl = $state<HTMLDivElement | null>(null);
+
+	let isCardExpanded = $state(false);
+	let modalFlipped = $state(false);
+	let modalFlippingTransition = $state(false);
+	let modalSpin360 = $state(false);
+	let modalClickTimeout: ReturnType<typeof setTimeout> | null = null;
+	let modalEl = $state<HTMLDivElement | null>(null);
+
+	function handleModalMouseMove(e: MouseEvent) {
+		if (modalFlippingTransition || !modalEl) return;
+		const rect = modalEl.getBoundingClientRect();
+		const x = e.clientX - rect.left;
+		const y = e.clientY - rect.top;
+		const centerX = rect.width / 2;
+		const centerY = rect.height / 2;
+
+		// max rotation 20 deg
+		rotateY = ((x - centerX) / centerX) * 20;
+		rotateX = -((y - centerY) / centerY) * 20;
+	}
+
+	function handleModalMouseLeave() {
+		rotateX = 0;
+		rotateY = 0;
+		isHovered = false;
+	}
+
+	function handleModalMouseEnter() {
+		if (window.matchMedia('(hover: hover)').matches) {
+			isHovered = true;
+		}
+	}
+
+	function closeCard() {
+		isCardExpanded = false;
+		isHovered = false;
+		rotateX = 0;
+		rotateY = 0;
+	}
+
+	function portal(node: HTMLElement) {
+		document.body.appendChild(node);
+		return {
+			destroy() {
+				if (node.parentNode) {
+					node.parentNode.removeChild(node);
+				}
+			}
+		};
+	}
+
+	function handleModalClick(e: Event) {
+		e.stopPropagation();
+		if (modalFlippingTransition || modalSpin360) return;
+
+		if (modalClickTimeout) {
+			clearTimeout(modalClickTimeout);
+			modalClickTimeout = null;
+			// Double click triggers 360 spin
+			modalSpin360 = true;
+			setTimeout(() => {
+				modalSpin360 = false;
+			}, 1000);
+		} else {
+			modalClickTimeout = setTimeout(() => {
+				modalClickTimeout = null;
+				// Single click flips the card
+				modalFlipped = !modalFlipped;
+				modalFlippingTransition = true;
+				rotateX = 0;
+				rotateY = 0;
+				setTimeout(() => {
+					modalFlippingTransition = false;
+				}, 600);
+			}, 250);
+		}
+	}
 
 	function handleMouseMove(e: MouseEvent) {
 		if (isFlipping || !cardEl) return;
@@ -45,7 +123,9 @@
 	}
 
 	function handleMouseEnter() {
-		isHovered = true;
+		if (window.matchMedia('(hover: hover)').matches) {
+			isHovered = true;
+		}
 	}
 
 	function handleDeviceOrientation(e: DeviceOrientationEvent) {
@@ -93,14 +173,8 @@
 			// Wait for double click
 			clickTimeout = setTimeout(() => {
 				clickTimeout = null;
-				// Single click: flip the card
-				isFlipped = !isFlipped;
-				isFlippingTransition = true;
-				rotateX = 0;
-				rotateY = 0;
-				setTimeout(() => {
-					isFlippingTransition = false;
-				}, 500); // 500ms duration for flip
+				// Single click: expand the card
+				isCardExpanded = true;
 			}, 250);
 		}
 	}
@@ -314,163 +388,242 @@
 			? ''
 			: `transform: perspective(1000px) translateZ(0) rotateX(${rotateX}deg) rotateY(${isFlipped ? rotateY + 180 : rotateY}deg); transition-duration: ${isFlippingTransition ? '500ms' : '150ms'};`} transform-style: preserve-3d; will-change: transform;"
 	>
-		<!-- Front Face -->
-		<div
-			class="absolute inset-0 rounded-2xl overflow-hidden bg-zinc-900 border-[3px] {tierConfig.border} {tierConfig.shadow} transition-colors duration-300"
-			style="backface-visibility: hidden;"
-		>
-			{#if !isOwned}
-				<div
-					class="absolute inset-0 z-20 bg-black/60 flex flex-col items-center justify-center pointer-events-none"
-				>
-					<div
-						class="bg-black/80 p-2 sm:p-3 rounded-full border border-white/10 mb-1 sm:mb-2 shadow-xl"
-					>
-						<Lock class="w-4 h-4 sm:w-6 sm:h-6 text-white/60" />
-					</div>
-					<span
-						class="text-[9px] sm:text-xs font-black tracking-widest bg-zinc-900/90 px-2 py-0.5 rounded text-white"
-						>{t('liveHistory.tier.notOwned') || 'NOT OWNED'}</span
-					>
-				</div>
-			{/if}
+		{@render cardFaces('rounded-2xl')}
+	</div>
+</div>
 
-			<!-- Background Image -->
-			<div class="absolute inset-0 {isOwned ? '' : 'grayscale-[0.85] opacity-80'}">
-				<OptimizedImage
-					src={memberImage ? getExternalMediaUrl(memberImage) : '/images/default-avatar.png'}
-					srcMedium={memberImageMedium ? getExternalMediaUrl(memberImageMedium) : null}
-					srcSmall={memberImageSmall ? getExternalMediaUrl(memberImageSmall) : null}
-					{blurHash}
-					alt={item.title || 'Live'}
-					sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-					class="w-full h-full object-cover transition-transform duration-500"
-					style="transform: scale(1.05);"
-				/>
-				<!-- Gradient Overlay -->
-				<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10"></div>
-			</div>
-
-			<!-- Holographic glare effect (Only if owned) -->
-			{#if isOwned}
-				<!-- Auto shine for top tiers when not hovered -->
-				{#if !isHovered && (cardTier === 'ultra-rare' || cardTier === 'rare' || cardTier === 'legendary')}
-					<div
-						class="absolute inset-0 pointer-events-none mix-blend-color-dodge rounded-2xl overflow-hidden z-20 animate-auto-shine"
-						style="background: {autoShineStyle}; background-size: 200% 100%; background-repeat: no-repeat;"
-					></div>
-				{/if}
-
-				<!-- Premium Gloss Reflection -->
-				<div
-					class="absolute inset-0 opacity-0 transition-opacity duration-300 pointer-events-none mix-blend-overlay"
-					style="opacity: {isHovered
-						? glossOpacity
-						: 0}; background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.7) 40%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.7) 60%, transparent 75%); background-size: 300% 300%; background-position: {glareX}% {glareY}%;"
-				></div>
-
-				<!-- Holographic Foil -->
-				<div
-					class="absolute inset-0 opacity-0 transition-opacity duration-300 pointer-events-none mix-blend-color-dodge"
-					style="opacity: {isHovered
-						? 0.6
-						: 0}; background: {foilStyle}; background-size: 300% 300%; background-position: {glareX}% {glareY}%;"
-				></div>
-			{/if}
-
-			<!-- Card Content -->
+{#snippet cardFaces(radiusClass = 'rounded-2xl')}
+	<!-- Front Face -->
+	<div
+		class="absolute inset-0 {radiusClass} overflow-hidden bg-zinc-900 border-[3px] {tierConfig.border} {tierConfig.shadow} transition-colors duration-300"
+		style="backface-visibility: hidden;"
+	>
+		{#if !isOwned}
 			<div
-				class="relative z-10 p-2 sm:p-3 h-full flex flex-col justify-between {isOwned
-					? 'text-white'
-					: 'text-gray-300'}"
+				class="absolute inset-0 z-20 bg-black/60 flex flex-col items-center justify-center pointer-events-none"
 			>
-				<!-- Top Bar -->
-				<div class="flex justify-between items-start gap-1 w-full">
-					<div class="flex items-center shrink-0">
-						<div class="sm:hidden flex">
-							<PlatformLogo platform={item.platform} size="xs" />
-						</div>
-						<div class="hidden sm:flex">
-							<PlatformLogo platform={item.platform} size="sm" />
-						</div>
-					</div>
-
-					<div class="flex flex-col items-end gap-1 sm:gap-1.5 min-w-0 shrink">
-						<div
-							class="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-bold bg-black/80 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-white/10 shadow-sm text-white whitespace-nowrap shrink-0"
-						>
-							<span>{displayDate}</span>
-							<div class="w-px h-2 sm:h-2.5 bg-white/20"></div>
-							<span class="flex items-center gap-0.5">
-								{item.view_num?.toLocaleString() || '-'}
-								<Eye class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-300" />
-							</span>
-						</div>
-					</div>
+				<div
+					class="bg-black/80 p-2 sm:p-3 rounded-full border border-white/10 mb-1 sm:mb-2 shadow-xl"
+				>
+					<Lock class="w-4 h-4 sm:w-6 sm:h-6 text-white/60" />
 				</div>
-
-				<!-- Bottom Info -->
-				<div class="flex flex-col items-start gap-1 sm:gap-1.5">
-					<!-- Tier Badge -->
-					<div
-						class="bg-gradient-to-r {tierConfig.color} px-1 sm:px-1.5 py-[1px] sm:py-0.5 rounded border border-white/20 {tierConfig.text} text-[6px] sm:text-[7px] font-black tracking-widest uppercase shadow-sm whitespace-nowrap shrink-0"
-					>
-						{tierConfig.name}
-					</div>
-
-					<div class="flex flex-col w-full">
-						<h3
-							class="font-black text-sm sm:text-lg lg:text-xl leading-tight mb-0.5 sm:mb-1 line-clamp-2 [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]"
-						>
-							{item.member?.name || 'Member'}
-						</h3>
-
-						<p class="text-[9px] sm:text-xs text-gray-300 line-clamp-2">
-							{item.title || 'JKT48 Live'}
-						</p>
-					</div>
-				</div>
+				<span
+					class="text-[9px] sm:text-xs font-black tracking-widest bg-zinc-900/90 px-2 py-0.5 rounded text-white"
+					>{t('liveHistory.tier.notOwned') || 'NOT OWNED'}</span
+				>
 			</div>
+		{/if}
+
+		<!-- Background Image -->
+		<div class="absolute inset-0 {isOwned ? '' : 'grayscale-[0.85] opacity-80'}">
+			<OptimizedImage
+				src={memberImage ? getExternalMediaUrl(memberImage) : '/images/default-avatar.png'}
+				srcMedium={memberImageMedium ? getExternalMediaUrl(memberImageMedium) : null}
+				srcSmall={memberImageSmall ? getExternalMediaUrl(memberImageSmall) : null}
+				{blurHash}
+				alt={item.title || 'Live'}
+				sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+				class="w-full h-full object-cover transition-transform duration-500"
+				style="transform: scale(1.05);"
+			/>
+			<!-- Gradient Overlay -->
+			<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10"></div>
 		</div>
 
-		<!-- Back Face -->
-		<div
-			class="absolute inset-0 rounded-2xl overflow-hidden shadow-xl bg-zinc-900 border-[3px] {tierConfig.border}"
-			style="backface-visibility: hidden; transform: rotateY(180deg);"
-		>
-			<div
-				class="absolute inset-0 bg-gradient-to-br {backFaceConfig.bgFrom} via-zinc-900 to-black"
-			></div>
-			<div
-				class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-30"
-			></div>
-
-			<!-- Pattern overlay -->
-			<div
-				class="absolute inset-0 opacity-10"
-				style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"
-			></div>
-
-			<div class="absolute inset-0 flex flex-col items-center justify-center p-2">
+		<!-- Holographic glare effect (Only if owned) -->
+		{#if isOwned}
+			<!-- Auto shine for top tiers when not hovered -->
+			{#if !isHovered && (cardTier === 'ultra-rare' || cardTier === 'rare' || cardTier === 'legendary')}
 				<div
-					class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mb-2 sm:mb-4 backdrop-blur-sm"
-				>
-					<Play
-						class="w-6 h-6 sm:w-8 sm:h-8 ml-1 sm:ml-1.5 {backFaceConfig.text} {backFaceConfig.dropShadow}"
-					/>
+					class="absolute inset-0 pointer-events-none mix-blend-color-dodge {radiusClass} overflow-hidden z-20 animate-auto-shine"
+					style="background: {autoShineStyle}; background-size: 200% 100%; background-repeat: no-repeat;"
+				></div>
+			{/if}
+
+			<!-- Premium Gloss Reflection -->
+			<div
+				class="absolute inset-0 opacity-0 transition-opacity duration-300 pointer-events-none mix-blend-overlay"
+				style="opacity: {isHovered
+					? glossOpacity
+					: 0}; background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.7) 40%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.7) 60%, transparent 75%); background-size: 300% 300%; background-position: {glareX}% {glareY}%;"
+			></div>
+
+			<!-- Holographic Foil -->
+			<div
+				class="absolute inset-0 opacity-0 transition-opacity duration-300 pointer-events-none mix-blend-color-dodge"
+				style="opacity: {isHovered
+					? 0.6
+					: 0}; background: {foilStyle}; background-size: 300% 300%; background-position: {glareX}% {glareY}%;"
+			></div>
+		{/if}
+
+		<!-- Card Content -->
+		<div
+			class="relative z-10 p-2 sm:p-3 h-full flex flex-col justify-between {isOwned
+				? 'text-white'
+				: 'text-gray-300'}"
+		>
+			<!-- Top Bar -->
+			<div class="flex justify-between items-start gap-1 w-full">
+				<div class="flex items-center shrink-0">
+					<div class="sm:hidden flex">
+						<PlatformLogo platform={item.platform} size="xs" />
+					</div>
+					<div class="hidden sm:flex">
+						<PlatformLogo platform={item.platform} size="sm" />
+					</div>
 				</div>
-				<h3 class="font-black text-lg sm:text-2xl tracking-tight text-white mb-0.5 sm:mb-1">
-					PC <span class="{backFaceConfig.text} {backFaceConfig.dropShadow}">LIVE</span>
-				</h3>
-				<p
-					class="text-[7px] sm:text-[10px] text-gray-400 font-bold tracking-widest uppercase text-center leading-tight"
+
+				<div class="flex flex-col items-end gap-1 sm:gap-1.5 min-w-0 shrink">
+					<div
+						class="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-bold bg-black/80 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-white/10 shadow-sm text-white whitespace-nowrap shrink-0"
+					>
+						<span>{displayDate}</span>
+						<div class="w-px h-2 sm:h-2.5 bg-white/20"></div>
+						<span class="flex items-center gap-0.5">
+							{item.view_num?.toLocaleString() || '-'}
+							<Eye class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-300" />
+						</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Bottom Info -->
+			<div class="flex flex-col items-start gap-1 sm:gap-1.5">
+				<!-- Tier Badge -->
+				<div
+					class="bg-gradient-to-r {tierConfig.color} px-1 sm:px-1.5 py-[1px] sm:py-0.5 rounded border border-white/20 {tierConfig.text} text-[6px] sm:text-[7px] font-black tracking-widest uppercase shadow-sm whitespace-nowrap shrink-0"
 				>
-					{t('liveHistory.pcLive.description') || 'Photo Card Collection'}
-				</p>
+					{tierConfig.name}
+				</div>
+
+				<div class="flex flex-col w-full">
+					<h3
+						class="font-black text-sm sm:text-lg lg:text-xl leading-tight mb-0.5 sm:mb-1 line-clamp-2 [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]"
+					>
+						{item.member?.name || 'Member'}
+					</h3>
+
+					<p class="text-[9px] sm:text-xs text-gray-300 line-clamp-2">
+						{item.title || 'JKT48 Live'}
+					</p>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
+
+	<!-- Back Face -->
+	<div
+		class="absolute inset-0 {radiusClass} overflow-hidden shadow-xl bg-zinc-900 border-[3px] {tierConfig.border}"
+		style="backface-visibility: hidden; transform: rotateY(180deg);"
+	>
+		<div
+			class="absolute inset-0 bg-gradient-to-br {backFaceConfig.bgFrom} via-zinc-900 to-black"
+		></div>
+		<div
+			class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-30"
+		></div>
+
+		<!-- Pattern overlay -->
+		<div
+			class="absolute inset-0 opacity-10"
+			style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"
+		></div>
+
+		<div class="absolute inset-0 flex flex-col items-center justify-center p-2">
+			<div
+				class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mb-2 sm:mb-4 backdrop-blur-sm"
+			>
+				<Play
+					class="w-6 h-6 sm:w-8 sm:h-8 ml-1 sm:ml-1.5 {backFaceConfig.text} {backFaceConfig.dropShadow}"
+				/>
+			</div>
+			<h3 class="font-black text-lg sm:text-2xl tracking-tight text-white mb-0.5 sm:mb-1">
+				PC <span class="{backFaceConfig.text} {backFaceConfig.dropShadow}">LIVE</span>
+			</h3>
+			<p
+				class="text-[7px] sm:text-[10px] text-gray-400 font-bold tracking-widest uppercase text-center leading-tight"
+			>
+				{t('liveHistory.pcLive.description') || 'Photo Card Collection'}
+			</p>
+		</div>
+	</div>
+{/snippet}
+
+<!-- Expanded Modal -->
+{#if isCardExpanded}
+	<div
+		use:portal
+		class="fixed inset-0 z-[99999] flex flex-col items-center justify-center p-4 gap-4 sm:gap-8 perspective-1000"
+		transition:fade={{ duration: 200 }}
+	>
+		<button
+			class="absolute inset-0 w-full h-full bg-black/60 backdrop-blur-sm border-none cursor-default"
+			onclick={closeCard}
+			aria-label="Close modal"
+		></button>
+
+		<div
+			bind:this={modalEl}
+			class="relative w-full max-w-[300px] sm:max-w-[360px] md:max-w-[400px] aspect-[3/4] cursor-pointer perspective-1000"
+			onclick={handleModalClick}
+			onmouseenter={handleModalMouseEnter}
+			onmousemove={handleModalMouseMove}
+			onmouseleave={handleModalMouseLeave}
+			onkeydown={(e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					handleModalClick(e);
+				}
+			}}
+			role="button"
+			tabindex="0"
+			aria-label="Rotate Card"
+		>
+			<div
+				class="relative w-full h-full rounded-3xl shadow-2xl select-none {modalSpin360
+					? modalFlipped
+						? 'animate-flip-back'
+						: 'animate-flip-front'
+					: 'transition-transform ease-out'}"
+				style="transform-style: preserve-3d; will-change: transform; {modalSpin360
+					? ''
+					: `transform: perspective(1000px) translateZ(0) rotateX(${rotateX}deg) rotateY(${modalFlipped ? rotateY + 180 : rotateY}deg); transition-duration: ${modalFlippingTransition ? '600ms' : '150ms'};`}"
+			>
+				{@render cardFaces('rounded-3xl')}
+			</div>
+		</div>
+
+		<button
+			onclick={(e) => {
+				e.stopPropagation();
+				closeCard();
+			}}
+			class="p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all cursor-pointer text-white shadow-xl hover:scale-110 active:scale-95 z-10"
+			aria-label="Close"
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				class="w-6 h-6"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2.5"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<line x1="18" y1="6" x2="6" y2="18"></line>
+				<line x1="6" y1="6" x2="18" y2="18"></line>
+			</svg>
+		</button>
+	</div>
+{/if}
+
+<svelte:window
+	onkeydown={(e) => {
+		if (isCardExpanded && e.key === 'Escape') closeCard();
+	}}
+/>
 
 <style>
 	@keyframes flip-front {
