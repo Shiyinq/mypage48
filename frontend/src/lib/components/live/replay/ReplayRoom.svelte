@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { untrack } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { replayStore } from '$lib/stores/replay.svelte';
 	import { isImmersive } from '$lib/stores';
@@ -140,11 +141,13 @@
 
 	$effect(() => {
 		if (id && !initAttempted) {
-			if (replayStore.videos.length === 0) {
-				replayStore.loadVideos().then(() => loadYTApi());
-			} else {
-				loadYTApi();
-			}
+			untrack(() => {
+				if (replayStore.videos.length === 0) {
+					replayStore.loadVideos().then(() => loadYTApi());
+				} else {
+					loadYTApi();
+				}
+			});
 		}
 	});
 
