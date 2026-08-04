@@ -1,5 +1,5 @@
 import { dev } from '$app/environment';
-import { showToast } from '$lib/stores';
+import { showToast } from '$lib/stores/toast.svelte';
 
 type LogLevel = 'info' | 'warn' | 'error';
 
