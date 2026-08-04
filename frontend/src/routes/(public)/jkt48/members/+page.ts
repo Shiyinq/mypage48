@@ -3,8 +3,7 @@ import { browser } from '$app/environment';
 
 export const load = async () => {
 	if (browser) {
-		setTimeout(() => {
-			membersStore.load({ limit: 100 }, true);
-		}, 0);
+		await membersStore.load({ limit: 100 }, true);
+		await membersStore.getGenerations();
 	}
 };
