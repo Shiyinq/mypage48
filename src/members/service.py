@@ -58,7 +58,9 @@ class MemberService:
             return member
 
         # Fallback to external media resolution (jkt48.com)
-        res = await self.storage_service.resolve_external_media(img_path)
+        res = await self.storage_service.resolve_external_media(
+            img_path, existing_blurhash=member.get("blurHash")
+        )
         member["img"] = res["url"]
         member["img_medium"] = res.get("url_medium")
         member["img_small"] = res.get("url_small")
