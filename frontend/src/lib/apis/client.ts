@@ -1,6 +1,6 @@
 import { accessToken } from '$lib/stores/accessToken.svelte';
 import { isAuthenticated } from '$lib/stores/authStatus.svelte';
-import { showToast } from '$lib/stores';
+import { showToast } from '$lib/stores/toast.svelte';
 import { t } from '$lib/i18n';
 import { isTokenExpired, getCSRFToken } from '$lib/utils/auth';
 import type { ApiError, AuthResponse } from '$lib/types';
