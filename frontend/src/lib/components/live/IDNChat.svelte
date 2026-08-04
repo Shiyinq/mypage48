@@ -507,8 +507,12 @@
 <style>
 	.overflow-y-auto {
 		scrollbar-width: thin;
-		scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+		scrollbar-color: transparent transparent;
 		overflow-y: auto !important;
+	}
+
+	.overflow-y-auto:hover {
+		scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
 	}
 
 	/* Force scrollbar to be visible for debugging */
@@ -520,7 +524,7 @@
 		border-radius: 10px;
 	}
 
-	:global(.dark) .overflow-y-auto {
+	:global(.dark) .overflow-y-auto:hover {
 		scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 	}
 </style>

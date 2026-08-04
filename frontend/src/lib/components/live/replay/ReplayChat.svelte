@@ -215,7 +215,6 @@
 			onscroll={handleScroll}
 			class="flex-1 p-4 overflow-y-auto flex flex-col gap-3 scroll-smooth"
 			class:scrollbar-hide={autoScroll}
-			class:custom-scrollbar={!autoScroll}
 		>
 			{#if visibleMessages.length === 0}
 				<div class="flex flex-col items-center justify-center text-center py-20 opacity-40">
@@ -276,3 +275,27 @@
 		{/if}
 	{/if}
 </div>
+
+<style>
+	.overflow-y-auto {
+		scrollbar-width: thin;
+		scrollbar-color: transparent transparent;
+		overflow-y: auto !important;
+	}
+
+	.overflow-y-auto:hover {
+		scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+	}
+
+	.overflow-y-auto::-webkit-scrollbar {
+		width: 6px;
+	}
+	.overflow-y-auto::-webkit-scrollbar-thumb {
+		background: rgba(0, 0, 0, 0.2);
+		border-radius: 10px;
+	}
+
+	:global(.dark) .overflow-y-auto:hover {
+		scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+	}
+</style>

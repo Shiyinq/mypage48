@@ -297,7 +297,8 @@ function createMembersStore() {
 				membersState.isBirthdaysLoading = true;
 				try {
 					const results = await membersApi.getBirthdays();
-					membersState.birthdays = results;
+					membersState.birthdays.length = 0;
+					membersState.birthdays.push(...results);
 				} catch (e) {
 					logger.error('Failed to load birthdays', e, { context: 'MembersStore' });
 				} finally {
@@ -324,7 +325,8 @@ function createMembersStore() {
 
 			if (reset && membersState.cache[cacheKey]) {
 				const cached = membersState.cache[cacheKey];
-				membersState.list = cached.members;
+				membersState.list.length = 0;
+				membersState.list.push(...cached.members);
 				membersState.pagination = cached.pagination;
 				membersState.currentFilter = { generation: params.generation, search: params.search };
 				membersState.error = null;
@@ -350,16 +352,25 @@ function createMembersStore() {
 					const newItems = reset
 						? []
 						: res.data.filter((item: Member) => !membersState.list.some((m) => m.id === item.id));
-					const newList = reset ? res.data : [...membersState.list, ...newItems];
+
+					if (reset) {
+						membersState.list.length = 0;
+						membersState.list.push(...res.data);
+					} else {
+						membersState.list.push(...newItems);
+					}
+
 					const newPagination = {
 						page: pageToLoad,
 						hasMore: !!res.meta.next_page
 					};
 
-					membersState.list = newList;
 					membersState.pagination = newPagination;
 					membersState.currentFilter = { generation: params.generation, search: params.search };
-					membersState.cache[cacheKey] = { members: newList, pagination: newPagination };
+					membersState.cache[cacheKey] = {
+						members: [...membersState.list],
+						pagination: newPagination
+					};
 				} catch (e) {
 					logger.error('Failed to load members', e, { context: 'MembersStore' });
 					membersState.error = 'Failed to load members';
@@ -380,9 +391,9 @@ function createMembersStore() {
 		},
 
 		reset: () => {
+			membersState.list.length = 0;
+			membersState.birthdays.length = 0;
 			Object.assign(membersState, {
-				list: [],
-				birthdays: [],
 				pagination: { page: 0, hasMore: true },
 				cache: {},
 				currentFilter: {},

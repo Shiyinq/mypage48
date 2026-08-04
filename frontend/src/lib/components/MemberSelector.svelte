@@ -119,11 +119,7 @@
 		searchQuery = '';
 		memberList = [];
 	}
-	$effect(() => {
-		if (isOpen && memberList.length === 0) {
-			loadMembers(true);
-		}
-	});
+	// Load members only when opened (handled in onclick/onkeydown)
 	$effect(() => {
 		if (isOpen && sentinel && observer) {
 			observer.observe(sentinel);
@@ -141,8 +137,16 @@
 		type="text"
 		readonly
 		{value}
-		onclick={() => (isOpen = true)}
-		onkeydown={(e) => e.key === 'Enter' && (isOpen = true)}
+		onclick={() => {
+			isOpen = true;
+			if (memberList.length === 0) loadMembers(true);
+		}}
+		onkeydown={(e) => {
+			if (e.key === 'Enter') {
+				isOpen = true;
+				if (memberList.length === 0) loadMembers(true);
+			}
+		}}
 		class="w-full pl-9 pr-10 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-red-500 outline-none text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
 		{placeholder}
 	/>

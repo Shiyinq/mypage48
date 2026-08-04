@@ -55,6 +55,7 @@ class StorageService:
     MEDIUM_IMAGE_DIMENSION = 1000
     SMALL_IMAGE_DIMENSION = 500
     WEBP_QUALITY = 75
+    _external_cache_verified = set()
 
     def __init__(self, repository: StorageRepository, config: Settings):
         self.repository = repository
@@ -509,7 +510,9 @@ class StorageService:
         # Now it's guaranteed to be in R2, resolve via standard logic
         return await self.resolve_url(cache_key)
 
-    async def resolve_external_media(self, value: Optional[str]) -> dict:
+    async def resolve_external_media(
+        self, value: Optional[str], existing_blurhash: Optional[str] = None
+    ) -> dict:
         """
         New specialized resolve that returns URL variants and BlurHash.
         """
@@ -531,28 +534,32 @@ class StorageService:
                     "url": value,
                     "url_medium": None,
                     "url_small": None,
-                    "blurHash": None,
+                    "blurHash": existing_blurhash,
                 }
 
         path = value.lstrip("/")
         cache_key = f"cache/external/{path}"
         blurHash = None
 
-        if not await self.repository.file_exists(cache_key):
-            try:
-                blurHash = await self._cache_external_media(path)
-            except Exception as e:
-                logger.error(f"Failed to JIT cache external media {path}: {e}")
-                # Fallback to backend proxy if cache fails
-                return {
-                    "url": f"{self.config.api_base_url}/storage/external/{path}",
-                    "url_medium": None,
-                    "url_small": None,
-                    "blurHash": None,
-                }
+        if cache_key not in self.__class__._external_cache_verified:
+            if not await self.repository.file_exists(cache_key):
+                try:
+                    blurHash = await self._cache_external_media(path)
+                except Exception as e:
+                    logger.error(f"Failed to JIT cache external media {path}: {e}")
+                    # Fallback to backend proxy if cache fails
+                    return {
+                        "url": f"{self.config.api_base_url}/storage/external/{path}",
+                        "url_medium": None,
+                        "url_small": None,
+                        "blurHash": existing_blurhash,
+                    }
+            self.__class__._external_cache_verified.add(cache_key)
 
         # Guaranteed to be in R2 (either previously or just now)
-        variants = await self.resolve_image_variants(cache_key)
+        variants = await self.resolve_image_variants(
+            cache_key, default_blur_hash=existing_blurhash
+        )
 
         # If we just cached it, blurHash is from _cache_external_media.
         # Otherwise, it will be in variants["blurHash"] from metadata.

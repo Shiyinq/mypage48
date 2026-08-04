@@ -17,15 +17,23 @@ logger = create_logger("storage_repository", __name__)
 class StorageRepository:
     """Low-level S3-compatible client wrapper (MinIO/R2)."""
 
+    _bucket_ensured: bool = False
+    _ensure_lock: Optional[asyncio.Lock] = None
+    _global_client: Optional[Minio] = None
+
     def __init__(self, config: Settings):
         self.config = config
-        self._client: Optional[Minio] = None
-        self._bucket_ensured = False
+
+    @classmethod
+    def _get_lock(cls) -> asyncio.Lock:
+        if cls._ensure_lock is None:
+            cls._ensure_lock = asyncio.Lock()
+        return cls._ensure_lock
 
     @property
     def client(self) -> Minio:
-        """Lazy initialization of S3 client."""
-        if self._client is None:
+        """Lazy initialization of S3 client (Global)."""
+        if self.__class__._global_client is None:
             # Clean endpoint: strip protocol and trailing slashes
             # Minio library expects hostname:port and handles protocol via 'secure' flag
             endpoint = self.config.storage_endpoint
@@ -33,53 +41,57 @@ class StorageRepository:
                 endpoint.replace("https://", "").replace("http://", "").strip("/")
             )
 
-            self._client = Minio(
+            self.__class__._global_client = Minio(
                 endpoint,
                 access_key=self.config.storage_access_key,
                 secret_key=self.config.storage_secret_key,
                 secure=self.config.storage_secure,
             )
-        return self._client
+        return self.__class__._global_client
 
     async def _ensure_bucket(self) -> None:
         """Ensure the bucket exists and set lifecycle rules (mainly for local MinIO)."""
-        if self._bucket_ensured:
+        if self.__class__._bucket_ensured:
             return
 
         # For R2/Cloudflare, we typically manage buckets and lifecycle via Dashboard
         # and API tokens might not have permission to list/check buckets.
         if self.config.storage_provider in ["r2", "cloudflare"]:
-            self._bucket_ensured = True
+            self.__class__._bucket_ensured = True
             return
 
-        try:
+        async with self._get_lock():
+            if self.__class__._bucket_ensured:
+                return
 
-            def _ensure():
-                if not self.client.bucket_exists(self.config.storage_bucket):
-                    self.client.make_bucket(self.config.storage_bucket)
-                    logger.info(f"Created bucket: {self.config.storage_bucket}")
+            try:
 
-                # Set lifecycle rules for cache/external/
-                lifecycle_config = LifecycleConfig(
-                    [
-                        Rule(
-                            status="Enabled",
-                            rule_filter=Filter(prefix="cache/external/"),
-                            rule_id="expire_external_cache",
-                            expiration=Expiration(days=7),
-                        )
-                    ]
-                )
-                self.client.set_bucket_lifecycle(
-                    self.config.storage_bucket, lifecycle_config
-                )
+                def _ensure():
+                    if not self.client.bucket_exists(self.config.storage_bucket):
+                        self.client.make_bucket(self.config.storage_bucket)
+                        logger.info(f"Created bucket: {self.config.storage_bucket}")
 
-            await asyncio.to_thread(_ensure)
-            self._bucket_ensured = True
-        except S3Error as e:
-            logger.error(f"Failed to ensure bucket or set lifecycle: {e}")
-            # Don't crash if lifecycle fails (might be unsupported by provider)
-            self._bucket_ensured = True
+                    # Set lifecycle rules for cache/external/
+                    lifecycle_config = LifecycleConfig(
+                        [
+                            Rule(
+                                status="Enabled",
+                                rule_filter=Filter(prefix="cache/external/"),
+                                rule_id="expire_external_cache",
+                                expiration=Expiration(days=7),
+                            )
+                        ]
+                    )
+                    self.client.set_bucket_lifecycle(
+                        self.config.storage_bucket, lifecycle_config
+                    )
+
+                await asyncio.to_thread(_ensure)
+                self.__class__._bucket_ensured = True
+            except S3Error as e:
+                logger.error(f"Failed to ensure bucket or set lifecycle: {e}")
+                # Don't crash if lifecycle fails (might be unsupported by provider)
+                self.__class__._bucket_ensured = True
 
     async def upload_file(
         self,

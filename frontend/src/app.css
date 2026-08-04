@@ -96,6 +96,15 @@
 	/* Global Custom Scrollbar */
 	* {
 		scrollbar-width: thin;
+		/* Make scrollbar transparent by default in Firefox to mimic auto-hide */
+		scrollbar-color: transparent transparent;
+	}
+
+	/* Show scrollbar color on hover for scrollable containers */
+	.overflow-auto:hover,
+	.overflow-y-auto:hover,
+	.overflow-x-auto:hover,
+	.custom-scrollbar:hover {
 		scrollbar-color: var(--color-scrollbar) transparent;
 	}
 
@@ -155,7 +164,7 @@
 	/* Scoped Custom Scrollbar */
 	.custom-scrollbar {
 		scrollbar-width: thin;
-		scrollbar-color: var(--color-scrollbar) transparent;
+		scrollbar-color: transparent transparent;
 	}
 
 	.custom-scrollbar::-webkit-scrollbar {
