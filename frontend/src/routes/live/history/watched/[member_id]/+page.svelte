@@ -36,27 +36,30 @@
 
 	onMount(() => {
 		mounted = true;
+		if (memberId) {
+			loadHistory(1, false);
+			liveHistoryStore.loadMemberStats(memberId);
+		}
 		membersStore.load({ limit: 100 });
-
-		return () => {
-			liveHistoryStore.reset();
-		};
 	});
 
+	async function loadHistory(page: number, force: boolean = false) {
+		if (!memberId) return;
+		await liveHistoryStore.load(page, memberId, force);
+	}
+
 	$effect(() => {
-		// React to dateRange or memberId changes
-		const _range = liveHistoryFilterStore.dateRange;
-		if (mounted) {
+		const _trigger =
+			liveHistoryFilterStore.filterType +
+			liveHistoryFilterStore.customRange.start +
+			liveHistoryFilterStore.customRange.end;
+		if (mounted && memberId) {
 			untrack(() => {
-				loadHistory(1, true);
+				loadHistory(1, false);
 				liveHistoryStore.loadMemberStats(memberId);
 			});
 		}
 	});
-
-	async function loadHistory(pageIdx: number, force: boolean = false) {
-		await liveHistoryStore.load(pageIdx, memberId, force);
-	}
 
 	function handleIntersect() {
 		if (!mounted || isLoading || !hasMore) return;

@@ -45,9 +45,18 @@
 	let initAttempted = $state(false);
 	let { id } = $derived($page.params);
 
-	let video: ReplayVideo | undefined = $derived(
-		replayStore.videos.find((v) => v.youtube_id === id)
-	);
+	let videoStore = $derived(replayStore.videos.find((v) => v.youtube_id === id));
+
+	let video = $state<ReplayVideo | undefined>();
+
+	$effect(() => {
+		if (video?.youtube_id !== id) {
+			video = undefined;
+		}
+		if (videoStore) {
+			video = videoStore;
+		}
+	});
 
 	let isTheater = $derived(basePath.startsWith('/theater'));
 

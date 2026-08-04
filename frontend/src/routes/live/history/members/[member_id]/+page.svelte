@@ -57,7 +57,7 @@
 	onMount(() => {
 		mounted = true;
 		if (memberId) {
-			liveHistoryStore.loadGlobalMemberHistory(memberId, 1, true);
+			liveHistoryStore.loadGlobalMemberHistory(memberId, 1, false);
 			liveHistoryStore.loadGlobalMemberStats(memberId);
 		}
 		membersStore.load({ limit: 100 });
@@ -70,7 +70,7 @@
 			liveHistoryFilterStore.customRange.end;
 		if (mounted && memberId) {
 			untrack(() => {
-				liveHistoryStore.loadGlobalMemberHistory(memberId, 1, true);
+				liveHistoryStore.loadGlobalMemberHistory(memberId, 1, false);
 				liveHistoryStore.loadGlobalMemberStats(memberId);
 			});
 		}

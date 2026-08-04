@@ -1,5 +1,6 @@
 import { replayApi } from '$lib/apis/replay';
 import type { ReplayDetailResponse } from '$lib/types/replay';
+import { createRequestDedup } from '$lib/utils/requestDedup';
 
 interface LiveHistoryDetailState {
 	data: Record<string, ReplayDetailResponse>;
@@ -12,6 +13,8 @@ const state = $state<LiveHistoryDetailState>({
 	loading: {},
 	error: {}
 });
+
+const dedup = createRequestDedup();
 
 function createLiveHistoryDetailStore() {
 	return {
@@ -34,21 +37,23 @@ function createLiveHistoryDetailStore() {
 				return state.data[liveId];
 			}
 
-			try {
-				state.loading[liveId] = true;
-				state.error[liveId] = null;
-				const detail = await replayApi.getReplayByLiveId(liveId);
-				if (detail) {
-					state.data[liveId] = detail;
+			return dedup.execute(`liveDetail:${liveId}`, async () => {
+				try {
+					state.loading[liveId] = true;
+					state.error[liveId] = null;
+					const detail = await replayApi.getReplayByLiveId(liveId);
+					if (detail) {
+						state.data[liveId] = detail;
+					}
+					return detail;
+				} catch (e) {
+					state.error[liveId] = (e as Error).message || 'Failed to load replay detail';
+					console.error(`Failed to load replay detail for ${liveId}:`, e);
+					return null;
+				} finally {
+					state.loading[liveId] = false;
 				}
-				return detail;
-			} catch (e) {
-				state.error[liveId] = (e as Error).message || 'Failed to load replay detail';
-				console.error(`Failed to load replay detail for ${liveId}:`, e);
-				return null;
-			} finally {
-				state.loading[liveId] = false;
-			}
+			});
 		}
 	};
 }

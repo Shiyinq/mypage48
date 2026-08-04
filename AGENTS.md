@@ -2,6 +2,10 @@
 
 Monorepo: `src/` (FastAPI backend), `frontend/` (SvelteKit 2 + Svelte 5 + TailwindCSS v4), `scraper/` (Python CLI).
 
+## General Guidelines
+
+- **Code Modification**: Before making any code changes, you must conduct a deep analysis and create an implementation plan first. However, if the task is deemed simple, you may proceed to directly edit the code after your analysis.
+
 ## Agent workflows (`.agent/workflows/`)
 
 These define standard procedures — follow them when applicable:
