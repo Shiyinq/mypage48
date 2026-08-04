@@ -50,7 +50,7 @@
 
 	async function loadHistory(page: number, force: boolean = false) {
 		await pcCollectionStore.load(activeTab, page, force);
-		if (force) initialLoading = false;
+		initialLoading = false;
 	}
 
 	$effect(() => {
@@ -61,7 +61,7 @@
 			activeTab;
 		if (mounted) {
 			untrack(() => {
-				loadHistory(1, true);
+				loadHistory(1, false);
 			});
 		}
 	});

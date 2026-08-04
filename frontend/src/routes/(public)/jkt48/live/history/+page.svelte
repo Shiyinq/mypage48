@@ -45,7 +45,7 @@
 
 	async function loadHistory(page: number, force: boolean = false) {
 		await liveHistoryStore.loadGlobal(page, force);
-		if (force) initialLoading = false;
+		initialLoading = false;
 	}
 
 	$effect(() => {
@@ -56,7 +56,7 @@
 			liveHistoryFilterStore.customRange.end;
 		if (mounted) {
 			untrack(() => {
-				loadHistory(1, true);
+				loadHistory(1, false);
 				liveHistoryStore.loadGlobalStats();
 			});
 		}

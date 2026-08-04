@@ -1,11 +1,10 @@
-import { liveStore } from '$lib/stores/live.svelte';
+import { pcCollectionStore } from '$lib/stores/pcCollection.svelte';
 import { browser } from '$app/environment';
 
 export const load = async () => {
 	if (browser) {
 		queueMicrotask(() => {
-			liveStore.loadLiveList();
-			liveStore.loadScheduledList();
+			pcCollectionStore.load('all', 1, false);
 		});
 	}
 };

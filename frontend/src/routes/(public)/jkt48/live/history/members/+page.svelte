@@ -30,7 +30,7 @@
 
 	onMount(() => {
 		mounted = true;
-		loadRanking(1, true);
+		loadRanking(1, false);
 		membersStore.load({ limit: 100 });
 	});
 
@@ -45,7 +45,7 @@
 			liveHistoryFilterStore.customRange.end;
 		if (mounted) {
 			untrack(() => {
-				loadRanking(1, true);
+				loadRanking(1, false);
 			});
 		}
 	});

@@ -70,12 +70,25 @@ class LiveHistoryStore {
 	});
 
 	currentMemberFilter = $state<string | undefined>(undefined);
+	currentGlobalFilterKey = $state<string>('');
+	currentWatchedFilterKey = $state<string>('');
+	currentRankingFilterKey = $state<string>('');
+	currentGlobalRankingFilterKey = $state<string>('');
+	currentGlobalMemberHistoryFilterKey = $state<string>('');
+
+	lastUpdatedWatched = $state<number>(0);
+	lastUpdatedGlobal = $state<number>(0);
+	lastUpdatedOverallStats = $state<number>(0);
+	lastUpdatedGlobalStats = $state<number>(0);
+	lastUpdatedMembersRanking = $state<number>(0);
+	lastUpdatedGlobalMembersRanking = $state<number>(0);
+	lastUpdatedGlobalMemberHistory = $state<number>(0);
 
 	async load(page: number = 1, memberId?: string, force: boolean = false) {
-		if (this.isLoading) return;
+		const range = liveHistoryFilterStore.dateRange;
+		const filterKey = JSON.stringify({ memberId, range });
 
-		// Reset if filter changed or force refresh
-		if (this.currentMemberFilter !== memberId || force) {
+		if (this.currentWatchedFilterKey !== filterKey || force) {
 			this.list = [];
 			this.pagination = {
 				current_page: 1,
@@ -84,48 +97,58 @@ class LiveHistoryStore {
 				last_page: 1,
 				next_page: null
 			};
-		}
-
-		try {
-			this.isLoading = true;
-			this.error = null;
+			this.currentWatchedFilterKey = filterKey;
 			this.currentMemberFilter = memberId;
-
-			const range = liveHistoryFilterStore.dateRange;
-
-			const response = await liveHistoryApi.getWatchedHistory(
-				page,
-				20,
-				memberId,
-				range?.start,
-				range?.end
-			);
-
-			if (page === 1) {
-				this.list = response.data;
-			} else {
-				// Filter out duplicates in case of race conditions
-				const newItems = response.data.filter(
-					(newItem) => !this.list.some((existingItem) => existingItem._id === newItem._id)
-				);
-				this.list = [...this.list, ...newItems];
-			}
-
-			this.pagination = response.meta;
-			this.lastUpdated = Date.now();
-		} catch (err: unknown) {
-			this.error = (err as Error).message || 'Failed to load live history';
-			logger.error('LiveHistoryStore load error:', err);
-			throw err;
-		} finally {
-			this.isLoading = false;
+		} else if (
+			!force &&
+			this.lastUpdatedWatched > 0 &&
+			page === 1 &&
+			Date.now() - this.lastUpdatedWatched < 300000
+		) {
+			return;
 		}
+
+		const cacheKey = `watched-${page}-${filterKey}`;
+
+		return this.dedup.execute(cacheKey, async () => {
+			try {
+				this.isLoading = true;
+				this.error = null;
+
+				const response = await liveHistoryApi.getWatchedHistory(
+					page,
+					20,
+					memberId,
+					range?.start,
+					range?.end
+				);
+
+				if (page === 1) {
+					this.list = response.data;
+				} else {
+					const newItems = response.data.filter(
+						(newItem) => !this.list.some((existingItem) => existingItem._id === newItem._id)
+					);
+					this.list = [...this.list, ...newItems];
+				}
+
+				this.pagination = response.meta;
+				this.lastUpdatedWatched = Date.now();
+			} catch (err: unknown) {
+				this.error = (err as Error).message || 'Failed to load live history';
+				logger.error('LiveHistoryStore load error:', err);
+				throw err;
+			} finally {
+				this.isLoading = false;
+			}
+		});
 	}
 
 	async loadGlobal(page: number = 1, force: boolean = false) {
-		if (this.isLoading) return;
+		const range = liveHistoryFilterStore.dateRange;
+		const filterKey = JSON.stringify({ range });
 
-		if (force) {
+		if (this.currentGlobalFilterKey !== filterKey || force) {
 			this.globalList = [];
 			this.globalPagination = {
 				page: 1,
@@ -133,47 +156,73 @@ class LiveHistoryStore {
 				total: 0,
 				total_pages: 1
 			};
+			this.currentGlobalFilterKey = filterKey;
+		} else if (
+			!force &&
+			this.lastUpdatedGlobal > 0 &&
+			page === 1 &&
+			Date.now() - this.lastUpdatedGlobal < 300000
+		) {
+			return;
 		}
 
-		try {
-			this.isLoading = true;
-			this.error = null;
+		const cacheKey = `globalHistory-${page}-${filterKey}`;
 
-			const range = liveHistoryFilterStore.dateRange;
+		return this.dedup.execute(cacheKey, async () => {
+			try {
+				this.isLoading = true;
+				this.error = null;
 
-			const response = await liveHistoryApi.getGlobalHistory(page, 20, range?.start, range?.end);
+				const response = await liveHistoryApi.getGlobalHistory(page, 20, range?.start, range?.end);
 
-			if (page === 1) {
-				this.globalList = response.data;
-			} else {
-				const newItems = response.data.filter(
-					(newItem) => !this.globalList.some((existingItem) => existingItem._id === newItem._id)
-				);
-				this.globalList = [...this.globalList, ...newItems];
+				if (page === 1) {
+					this.globalList = response.data;
+				} else {
+					const newItems = response.data.filter(
+						(newItem) => !this.globalList.some((existingItem) => existingItem._id === newItem._id)
+					);
+					this.globalList = [...this.globalList, ...newItems];
+				}
+
+				this.globalPagination = {
+					page: response.page,
+					limit: response.limit,
+					total: response.total,
+					total_pages: response.total_pages
+				};
+				this.lastUpdatedGlobal = Date.now();
+			} catch (e: unknown) {
+				logger.error('Failed to load global live history', e);
+				this.error = (e as Error).message || 'Failed to load global live history';
+			} finally {
+				this.isLoading = false;
 			}
-
-			this.globalPagination = {
-				page: response.page,
-				limit: response.limit,
-				total: response.total,
-				total_pages: response.total_pages
-			};
-			this.lastUpdated = Date.now();
-		} catch (e: unknown) {
-			logger.error('Failed to load global live history', e);
-			this.error = (e as Error).message || 'Failed to load global live history';
-		} finally {
-			this.isLoading = false;
-		}
+		});
 	}
 
-	async loadOverallStats() {
+	currentOverallStatsFilterKey = $state<string>('');
+	currentGlobalStatsFilterKey = $state<string>('');
+
+	async loadOverallStats(force: boolean = false) {
 		const range = liveHistoryFilterStore.dateRange;
+		const filterKey = JSON.stringify({ range });
+
+		if (this.currentOverallStatsFilterKey !== filterKey || force) {
+			this.currentOverallStatsFilterKey = filterKey;
+		} else if (
+			!force &&
+			this.overallStats !== null &&
+			Date.now() - this.lastUpdatedOverallStats < 300000
+		) {
+			return;
+		}
+
 		const key = JSON.stringify({ method: 'loadOverallStats', range });
 
 		return this.dedup.execute(key, async () => {
 			try {
 				this.overallStats = await liveHistoryApi.getWatchedStats(range?.start, range?.end);
+				this.lastUpdatedOverallStats = Date.now();
 			} catch (err) {
 				logger.error('Failed to load overall live stats:', err);
 			}
@@ -199,9 +248,10 @@ class LiveHistoryStore {
 	}
 
 	async loadMembersRanking(page: number = 1, force: boolean = false) {
-		if (this.isLoading) return;
+		const range = liveHistoryFilterStore.dateRange;
+		const filterKey = JSON.stringify({ range });
 
-		if (force) {
+		if (this.currentRankingFilterKey !== filterKey || force) {
 			this.membersRanking = [];
 			this.rankingPagination = {
 				current_page: 1,
@@ -210,45 +260,70 @@ class LiveHistoryStore {
 				last_page: 1,
 				next_page: null
 			};
+			this.currentRankingFilterKey = filterKey;
+		} else if (
+			!force &&
+			this.lastUpdatedMembersRanking > 0 &&
+			page === 1 &&
+			Date.now() - this.lastUpdatedMembersRanking < 300000
+		) {
+			return;
 		}
 
-		try {
-			this.isLoading = true;
-			const range = liveHistoryFilterStore.dateRange;
-			const response = await liveHistoryApi.getWatchedLiveMembersRanking(
-				page,
-				20,
-				range?.start,
-				range?.end
-			);
+		const cacheKey = `membersRanking-${page}-${filterKey}`;
 
-			if (page === 1) {
-				this.membersRanking = response.data;
-			} else {
-				const newItems = response.data.filter(
-					(newItem) =>
-						!this.membersRanking.some(
-							(existingItem) => existingItem.member_id === newItem.member_id
-						)
+		return this.dedup.execute(cacheKey, async () => {
+			try {
+				this.isLoading = true;
+				const response = await liveHistoryApi.getWatchedLiveMembersRanking(
+					page,
+					20,
+					range?.start,
+					range?.end
 				);
-				this.membersRanking = [...this.membersRanking, ...newItems];
+
+				if (page === 1) {
+					this.membersRanking = response.data;
+				} else {
+					const newItems = response.data.filter(
+						(newItem) =>
+							!this.membersRanking.some(
+								(existingItem) => existingItem.member_id === newItem.member_id
+							)
+					);
+					this.membersRanking = [...this.membersRanking, ...newItems];
+				}
+				this.rankingPagination = response.meta;
+				this.lastUpdatedMembersRanking = Date.now();
+			} catch (err) {
+				logger.error('Failed to load members ranking:', err);
+			} finally {
+				this.isLoading = false;
 			}
-			this.rankingPagination = response.meta;
-		} catch (err) {
-			logger.error('Failed to load members ranking:', err);
-		} finally {
-			this.isLoading = false;
-		}
+		});
 	}
 
-	async loadGlobalStats() {
+	async loadGlobalStats(force: boolean = false) {
 		const range = liveHistoryFilterStore.dateRange;
+		const filterKey = JSON.stringify({ range });
+
+		if (this.currentGlobalStatsFilterKey !== filterKey || force) {
+			this.currentGlobalStatsFilterKey = filterKey;
+		} else if (
+			!force &&
+			this.globalStats !== null &&
+			Date.now() - this.lastUpdatedGlobalStats < 300000
+		) {
+			return;
+		}
+
 		const key = JSON.stringify({ method: 'loadGlobalStats', range });
 
 		return this.dedup.execute(key, async () => {
 			try {
 				this.isLoadingGlobalStats = true;
 				this.globalStats = await liveHistoryApi.getGlobalStats(range?.start, range?.end);
+				this.lastUpdatedGlobalStats = Date.now();
 			} catch (err) {
 				logger.error('Failed to load global live stats:', err);
 			} finally {
@@ -258,9 +333,10 @@ class LiveHistoryStore {
 	}
 
 	async loadGlobalMembersRanking(page: number = 1, force: boolean = false) {
-		if (this.isLoading) return;
+		const range = liveHistoryFilterStore.dateRange;
+		const filterKey = JSON.stringify({ range });
 
-		if (force) {
+		if (this.currentGlobalRankingFilterKey !== filterKey || force) {
 			this.globalMembersRanking = [];
 			this.globalRankingPagination = {
 				current_page: 1,
@@ -269,35 +345,47 @@ class LiveHistoryStore {
 				last_page: 1,
 				next_page: null
 			};
+			this.currentGlobalRankingFilterKey = filterKey;
+		} else if (
+			!force &&
+			this.lastUpdatedGlobalMembersRanking > 0 &&
+			page === 1 &&
+			Date.now() - this.lastUpdatedGlobalMembersRanking < 300000
+		) {
+			return;
 		}
 
-		try {
-			this.isLoading = true;
-			const range = liveHistoryFilterStore.dateRange;
-			const response = await liveHistoryApi.getGlobalMembersRanking(
-				page,
-				20,
-				range?.start,
-				range?.end
-			);
+		const cacheKey = `globalMembersRanking-${page}-${filterKey}`;
 
-			if (page === 1) {
-				this.globalMembersRanking = response.data;
-			} else {
-				const newItems = response.data.filter(
-					(newItem) =>
-						!this.globalMembersRanking.some(
-							(existingItem) => existingItem.member_id === newItem.member_id
-						)
+		return this.dedup.execute(cacheKey, async () => {
+			try {
+				this.isLoading = true;
+				const response = await liveHistoryApi.getGlobalMembersRanking(
+					page,
+					20,
+					range?.start,
+					range?.end
 				);
-				this.globalMembersRanking = [...this.globalMembersRanking, ...newItems];
+
+				if (page === 1) {
+					this.globalMembersRanking = response.data;
+				} else {
+					const newItems = response.data.filter(
+						(newItem) =>
+							!this.globalMembersRanking.some(
+								(existingItem) => existingItem.member_id === newItem.member_id
+							)
+					);
+					this.globalMembersRanking = [...this.globalMembersRanking, ...newItems];
+				}
+				this.globalRankingPagination = response.meta;
+				this.lastUpdatedGlobalMembersRanking = Date.now();
+			} catch (err) {
+				logger.error('Failed to load global members ranking:', err);
+			} finally {
+				this.isLoading = false;
 			}
-			this.globalRankingPagination = response.meta;
-		} catch (err) {
-			logger.error('Failed to load global members ranking:', err);
-		} finally {
-			this.isLoading = false;
-		}
+		});
 	}
 
 	async loadGlobalMemberStats(memberId: string) {
@@ -315,9 +403,10 @@ class LiveHistoryStore {
 	}
 
 	async loadGlobalMemberHistory(memberId: string, page: number = 1, force: boolean = false) {
-		if (this.isLoading) return;
+		const range = liveHistoryFilterStore.dateRange;
+		const filterKey = JSON.stringify({ memberId, range });
 
-		if (force) {
+		if (this.currentGlobalMemberHistoryFilterKey !== filterKey || force) {
 			this.globalMemberHistory = [];
 			this.globalMemberHistoryPagination = {
 				page: 1,
@@ -325,40 +414,52 @@ class LiveHistoryStore {
 				total: 0,
 				total_pages: 1
 			};
+			this.currentGlobalMemberHistoryFilterKey = filterKey;
+		} else if (
+			!force &&
+			this.lastUpdatedGlobalMemberHistory > 0 &&
+			page === 1 &&
+			Date.now() - this.lastUpdatedGlobalMemberHistory < 300000
+		) {
+			return;
 		}
 
-		try {
-			this.isLoading = true;
-			const range = liveHistoryFilterStore.dateRange;
-			const response = await liveHistoryApi.getGlobalMemberHistory(
-				memberId,
-				page,
-				20,
-				range?.start,
-				range?.end
-			);
+		const cacheKey = `globalMemberHistory-${page}-${filterKey}`;
 
-			if (page === 1) {
-				this.globalMemberHistory = response.data;
-			} else {
-				const newItems = response.data.filter(
-					(newItem) =>
-						!this.globalMemberHistory.some((existingItem) => existingItem._id === newItem._id)
+		return this.dedup.execute(cacheKey, async () => {
+			try {
+				this.isLoading = true;
+				const response = await liveHistoryApi.getGlobalMemberHistory(
+					memberId,
+					page,
+					20,
+					range?.start,
+					range?.end
 				);
-				this.globalMemberHistory = [...this.globalMemberHistory, ...newItems];
-			}
 
-			this.globalMemberHistoryPagination = {
-				page: response.page,
-				limit: response.limit,
-				total: response.total,
-				total_pages: response.total_pages
-			};
-		} catch (err) {
-			logger.error('Failed to load global member history:', err);
-		} finally {
-			this.isLoading = false;
-		}
+				if (page === 1) {
+					this.globalMemberHistory = response.data;
+				} else {
+					const newItems = response.data.filter(
+						(newItem) =>
+							!this.globalMemberHistory.some((existingItem) => existingItem._id === newItem._id)
+					);
+					this.globalMemberHistory = [...this.globalMemberHistory, ...newItems];
+				}
+
+				this.globalMemberHistoryPagination = {
+					page: response.page,
+					limit: response.limit,
+					total: response.total,
+					total_pages: response.total_pages
+				};
+				this.lastUpdatedGlobalMemberHistory = Date.now();
+			} catch (err) {
+				logger.error('Failed to load global member history:', err);
+			} finally {
+				this.isLoading = false;
+			}
+		});
 	}
 
 	async updateWatchDuration(
@@ -394,6 +495,20 @@ class LiveHistoryStore {
 		this.membersRanking = [];
 		this.error = null;
 		this.lastUpdated = 0;
+		this.lastUpdatedWatched = 0;
+		this.lastUpdatedGlobal = 0;
+		this.lastUpdatedOverallStats = 0;
+		this.lastUpdatedGlobalStats = 0;
+		this.lastUpdatedMembersRanking = 0;
+		this.lastUpdatedGlobalMembersRanking = 0;
+		this.lastUpdatedGlobalMemberHistory = 0;
+		this.currentWatchedFilterKey = '';
+		this.currentGlobalFilterKey = '';
+		this.currentOverallStatsFilterKey = '';
+		this.currentGlobalStatsFilterKey = '';
+		this.currentRankingFilterKey = '';
+		this.currentGlobalRankingFilterKey = '';
+		this.currentGlobalMemberHistoryFilterKey = '';
 		this.pagination = {
 			current_page: 1,
 			per_page: 20,
@@ -409,6 +524,7 @@ class LiveHistoryStore {
 			next_page: null
 		};
 		this.currentMemberFilter = undefined;
+		this.dedup.clear();
 	}
 }
 

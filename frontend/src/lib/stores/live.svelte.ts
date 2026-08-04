@@ -1,6 +1,5 @@
 import { live as liveApi } from '$lib/apis/live';
 import type { LiveStatus, LiveStreamingResponse } from '$lib/types';
-import { isCacheExpired } from '$lib/utils/cache';
 import { logger } from '$lib/utils/logger';
 import { createRequestDedup } from '$lib/utils/requestDedup';
 
@@ -43,6 +42,8 @@ const ticker = setInterval(() => {
 	currentTime = Date.now();
 }, 1000);
 
+const LIVE_CACHE_TTL = 30 * 1000; // 30 seconds TTL for live status & scheduled list
+
 function createLiveStore() {
 	return {
 		get list() {
@@ -83,7 +84,7 @@ function createLiveStore() {
 
 		loadLiveList: async (forceRefresh = false) => {
 			const nowVal = Date.now();
-			if (!forceRefresh && state.list.length > 0 && !isCacheExpired(state.lastUpdated)) {
+			if (!forceRefresh && state.lastUpdated > 0 && nowVal - state.lastUpdated < LIVE_CACHE_TTL) {
 				return;
 			}
 
@@ -111,8 +112,8 @@ function createLiveStore() {
 			const nowVal = Date.now();
 			if (
 				!forceRefresh &&
-				state.scheduledList.length > 0 &&
-				!isCacheExpired(state.scheduledLastUpdated)
+				state.scheduledLastUpdated > 0 &&
+				nowVal - state.scheduledLastUpdated < LIVE_CACHE_TTL
 			) {
 				return;
 			}
