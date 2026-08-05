@@ -6,6 +6,9 @@ export interface ReplayChatMessage {
 	username: string;
 	message: string;
 	isGift: boolean;
+	isJoin?: boolean;
+	isJoinGroup?: boolean;
+	joinGroup?: ReplayChatMessage[];
 }
 
 export interface ReplayVideo {

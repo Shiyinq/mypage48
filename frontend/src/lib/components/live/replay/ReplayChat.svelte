@@ -24,6 +24,7 @@
 	let newMessageCount = $state(0);
 	let prevCount = $state(0);
 	let scrollTimer: ReturnType<typeof setTimeout> | undefined;
+	let expandedGroups = $state<Set<number>>(new Set());
 
 	onMount(() => {
 		return () => clearTimeout(scrollTimer);
@@ -76,12 +77,21 @@
 
 			let username: string;
 			let message: string;
+			let isJoin = false;
 			if (colonIndex !== -1) {
 				username = cleanText.substring(0, colonIndex).trim();
 				message = cleanText.substring(colonIndex + 2).trim();
+				if (message.replace(/\s+/g, ' ') === `${username} bergabung`.replace(/\s+/g, ' ')) {
+					isJoin = true;
+				}
 			} else {
-				username = 'Unknown';
 				message = cleanText;
+				if (message.endsWith(' bergabung')) {
+					username = message.substring(0, message.length - 10).trim();
+					isJoin = true;
+				} else {
+					username = 'Unknown';
+				}
 			}
 
 			entries.push({
@@ -89,7 +99,8 @@
 				startTime: startSeconds,
 				username,
 				message,
-				isGift
+				isGift,
+				isJoin
 			});
 		}
 
@@ -106,18 +117,58 @@
 		return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 	}
 
-	let visibleMessages = $derived.by(() => {
-		let msgs = allMessages.filter((msg) => msg.startTime <= currentTime);
+	let groupedAllMessages = $derived.by(() => {
+		const grouped: ReplayChatMessage[] = [];
+		for (const msg of allMessages) {
+			if (msg.isJoin) {
+				const last = grouped[grouped.length - 1];
+				if (last && last.isJoinGroup) {
+					last.joinGroup!.push(msg);
+				} else {
+					grouped.push({ ...msg, isJoinGroup: true, joinGroup: [msg] });
+				}
+			} else {
+				grouped.push(msg);
+			}
+		}
+		return grouped;
+	});
 
+	let visibleMessages = $derived.by(() => {
 		if (search) {
 			const searchLower = search.toLowerCase();
-			msgs = msgs.filter(
-				(msg) =>
+			const msgs = groupedAllMessages.filter((msg) => {
+				if (msg.isJoinGroup) {
+					return (
+						msg.joinGroup!.some((j) => j.username.toLowerCase().includes(searchLower)) ||
+						msg.message.toLowerCase().includes(searchLower)
+					);
+				}
+				return (
 					msg.username.toLowerCase().includes(searchLower) ||
 					msg.message.toLowerCase().includes(searchLower)
-			);
+				);
+			});
+			return msgs.slice(-100);
+		} else {
+			let left = 0;
+			let right = groupedAllMessages.length - 1;
+			let lastIdx = -1;
+
+			while (left <= right) {
+				const mid = Math.floor((left + right) / 2);
+				if (groupedAllMessages[mid].startTime <= currentTime) {
+					lastIdx = mid;
+					left = mid + 1;
+				} else {
+					right = mid - 1;
+				}
+			}
+
+			if (lastIdx === -1) return [];
+			const startIdx = Math.max(0, lastIdx - 99);
+			return groupedAllMessages.slice(startIdx, lastIdx + 1);
 		}
-		return msgs.slice(-100);
 	});
 
 	$effect(() => {
@@ -229,38 +280,70 @@
 				</div>
 			{:else}
 				{#each visibleMessages as msg (msg.id)}
-					<div class="flex items-start gap-3 group">
-						<div
-							class="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0"
-						>
-							{msg.username[0]}
-						</div>
-						<div class="flex-1 min-w-0">
-							<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate">
-								{#if msg.isGift}
-									<Gift size={11} class="inline text-yellow-500 mr-0.5" />
+					{#if msg.isJoinGroup}
+						<div class="flex items-center justify-center py-1">
+							<button
+								class="px-3 bg-slate-100 dark:bg-zinc-800/50 flex gap-2 text-[10px] font-medium text-slate-500 dark:text-zinc-400 max-w-full hover:bg-slate-200 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer text-left {expandedGroups.has(
+									msg.id
+								) && msg.joinGroup!.length > 1
+									? 'py-2.5 rounded-2xl items-start'
+									: 'py-1 rounded-full items-center'}"
+								onclick={() => {
+									if (expandedGroups.has(msg.id)) {
+										expandedGroups.delete(msg.id);
+									} else {
+										expandedGroups.add(msg.id);
+									}
+									expandedGroups = new Set(expandedGroups);
+								}}
+							>
+								{#if msg.joinGroup!.length === 1}
+									<span class="truncate flex-1">{msg.joinGroup![0].username} bergabung</span>
+								{:else if expandedGroups.has(msg.id)}
+									<span class="whitespace-normal leading-relaxed flex-1">
+										{msg.joinGroup!.map((j) => j.username).join(', ')} bergabung
+									</span>
+								{:else}
+									<span class="truncate flex-1"
+										>{msg.joinGroup![0].username} dan {msg.joinGroup!.length - 1} lainnya bergabung</span
+									>
 								{/if}
-								{msg.username}
-								<span class="text-[10px] text-slate-400 dark:text-zinc-600 ml-2 font-normal"
+								<span class="text-[9px] opacity-70 shrink-0 mt-0.5"
 									>{formatTime(msg.startTime)}</span
 								>
-							</p>
-							{#if msg.isGift}
-								<div
-									class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl rounded-tl-none bg-yellow-50 dark:bg-yellow-500/15 border border-yellow-200 dark:border-yellow-500/30 text-yellow-800 dark:text-yellow-200 text-sm font-bold shadow-sm max-w-full"
-								>
-									<Gift size={14} class="text-yellow-500 shrink-0" />
-									{msg.message}
-								</div>
-							{:else}
-								<div
-									class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm break-words overflow-wrap-anywhere whitespace-pre-wrap max-w-full"
-								>
-									{msg.message}
-								</div>
-							{/if}
+							</button>
 						</div>
-					</div>
+					{:else}
+						<div class="flex items-start gap-3 group">
+							<div
+								class="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0"
+							>
+								{msg.username[0]}
+							</div>
+							<div class="flex-1 min-w-0">
+								<p class="text-[11px] font-bold text-slate-500 dark:text-zinc-500 mb-0.5 truncate">
+									{msg.username}
+									<span class="text-[10px] text-slate-400 dark:text-zinc-600 ml-2 font-normal"
+										>{formatTime(msg.startTime)}</span
+									>
+								</p>
+								{#if msg.isGift}
+									<div
+										class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl rounded-tl-none bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 text-red-800 dark:text-red-200 text-sm font-bold shadow-sm max-w-full"
+									>
+										<Gift size={14} class="text-red-500 shrink-0" />
+										{msg.message}
+									</div>
+								{:else}
+									<div
+										class="inline-block px-3 py-2 rounded-2xl rounded-tl-none bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 text-sm leading-relaxed shadow-sm break-words overflow-wrap-anywhere whitespace-pre-wrap max-w-full"
+									>
+										{msg.message}
+									</div>
+								{/if}
+							</div>
+						</div>
+					{/if}
 				{/each}
 			{/if}
 		</div>
