@@ -203,6 +203,9 @@
 	});
 
 	const youtubeUrl = $derived(`https://www.youtube.com/watch?v=${id}`);
+	let activeTab = $state<'chat' | 'info'>('chat');
+
+	import ReplayInfo from './ReplayInfo.svelte';
 </script>
 
 <SEO
@@ -308,11 +311,6 @@
 			</div>
 		</div>
 
-		<!--
-			`overflow-clip` + `rounded-*` on mobile breaks YouTube touch/click events on the iframe,
-			preventing the native player controls from appearing on tap.
-			Rounded corners & overflow-clip are intentionally desktop-only.
-		-->
 		<div
 			bind:this={videoContainer}
 			class="relative z-10 flex-1 bg-black sm:rounded-3xl sm:overflow-clip border border-gray-100 dark:border-zinc-800 shadow-sm"
@@ -372,20 +370,59 @@
 
 	{#if chatVisible}
 		<div
-			class="w-full lg:w-[320px] flex flex-col gap-4 min-h-0 p-1 h-[40%] lg:h-full lg:flex-none overflow-hidden"
+			class="w-full lg:w-[340px] flex flex-col gap-4 min-h-0 p-1 h-[40%] lg:h-full lg:flex-none overflow-hidden"
 		>
 			<div
 				class="bg-white dark:bg-zinc-950 rounded-3xl border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col shadow-sm flex-1 min-h-0"
 			>
-				{#if video && (video.srt_file || video.live_id)}
-					<ReplayChat srtFile={video.srt_file || video.live_id || ''} {currentTime} />
-				{:else}
-					<div class="flex-1 flex items-center justify-center text-zinc-500">
-						<div class="text-center px-4">
-							<MessageCircle size={32} class="mx-auto mb-3 text-zinc-700" />
-							<p class="text-xs font-bold">{t('replay.room.chatNotAvailable')}</p>
+				<div
+					class="flex bg-slate-50 dark:bg-zinc-900 p-1 rounded-t-3xl border-b border-slate-200 dark:border-zinc-800 shrink-0"
+				>
+					<button
+						class="flex-1 py-2 px-3 text-[11px] font-black uppercase tracking-widest rounded-full transition-all text-center cursor-pointer {activeTab ===
+						'chat'
+							? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm'
+							: 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-300'}"
+						onclick={() => (activeTab = 'chat')}
+					>
+						{t('theater.live.chat') || 'Chat'}
+					</button>
+					<button
+						class="flex-1 py-2 px-3 text-[11px] font-black uppercase tracking-widest rounded-full transition-all text-center cursor-pointer {activeTab ===
+						'info'
+							? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm'
+							: 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-300'}"
+						onclick={() => (activeTab = 'info')}
+					>
+						{t('liveHistory.detail.stats.gifts') || 'Gifts'}
+					</button>
+				</div>
+
+				{#if activeTab === 'chat'}
+					{#if video && (video.srt_file || video.live_id)}
+						<ReplayChat
+							srtFile={video.srt_file || video.live_id || ''}
+							{currentTime}
+							memberName={video.member}
+						/>
+					{:else}
+						<div class="flex-1 flex items-center justify-center text-zinc-500">
+							<div class="text-center px-4">
+								<MessageCircle size={32} class="mx-auto mb-3 text-zinc-700" />
+								<p class="text-xs font-bold">{t('replay.room.chatNotAvailable')}</p>
+							</div>
 						</div>
-					</div>
+					{/if}
+				{:else if activeTab === 'info'}
+					{#if video?.live_id}
+						<ReplayInfo liveId={video.live_id} />
+					{:else}
+						<div class="flex-1 flex items-center justify-center text-zinc-500">
+							<div class="text-center px-4">
+								<p class="text-xs font-bold">Info not available</p>
+							</div>
+						</div>
+					{/if}
 				{/if}
 			</div>
 		</div>
