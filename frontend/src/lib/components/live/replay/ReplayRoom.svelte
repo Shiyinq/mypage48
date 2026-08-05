@@ -48,6 +48,7 @@
 	let videoStore = $derived(replayStore.videos.find((v) => v.youtube_id === id));
 
 	let video = $state<ReplayVideo | undefined>();
+	let fetchingId = $state<string | undefined>();
 
 	$effect(() => {
 		if (video?.youtube_id !== id) {
@@ -55,18 +56,32 @@
 		}
 		if (videoStore) {
 			video = videoStore;
-		} else if (!video) {
+		} else if (!video && fetchingId !== id) {
+			fetchingId = id; // mark as fetching to avoid duplicate calls
 			try {
 				const saved = localStorage.getItem('replay_video');
 				if (saved) {
 					const parsed = JSON.parse(saved);
 					if (parsed.youtube_id === id) {
 						video = parsed;
+						return;
 					}
 				}
 			} catch (e) {
 				console.error('Failed to read replay_video from localStorage:', e);
 			}
+
+			if (id)
+				replayStore.getVideoByYoutubeId(id).then((v) => {
+					if (v) {
+						video = v;
+						try {
+							localStorage.setItem('replay_video', JSON.stringify(v));
+						} catch (e) {
+							console.error('Failed to save replay_video to localStorage:', e);
+						}
+					}
+				});
 		}
 	});
 

@@ -411,12 +411,16 @@ class ReplayService:
         search: Optional[str] = None,
         platform: Optional[str] = None,
         member: Optional[str] = None,
+        youtube_id: Optional[str] = None,
     ) -> ReplayPaginationResponse:
         wib = timezone(timedelta(hours=7))
         is_admin = current_user.isAdmin if current_user else False
 
         conditions = []
-        conditions.append({"youtube_id": {"$gt": ""}})
+        if youtube_id:
+            conditions.append({"youtube_id": youtube_id})
+        else:
+            conditions.append({"youtube_id": {"$gt": ""}})
         if not is_admin:
             conditions.append(
                 {

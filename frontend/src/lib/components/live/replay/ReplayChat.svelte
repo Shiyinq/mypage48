@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick, onMount } from 'svelte';
-	import { replayApi } from '$lib/apis/replay';
+	import { replayStore } from '$lib/stores/replay.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import type { ReplayChatMessage } from '$lib/types/replay';
 	import { MessageCircle, Gift, Search, ChevronDown } from 'lucide-svelte';
@@ -37,7 +37,7 @@
 				error = null;
 				allMessages = [];
 				let text: string;
-				text = await replayApi.getSrt(srtFile); // srtFile acts as liveId for mypage48
+				text = await replayStore.getSrt(srtFile);
 				allMessages = parseSrt(text);
 			} catch (e) {
 				console.error('Failed to fetch SRT:', e);
