@@ -281,37 +281,55 @@
 			{:else}
 				{#each visibleMessages as msg (msg.id)}
 					{#if msg.isJoinGroup}
-						<div class="flex items-center justify-center py-1">
+						<div class="flex flex-col items-center gap-1.5 my-1.5 px-2">
 							<button
-								class="px-3 bg-slate-100 dark:bg-zinc-800/50 flex gap-2 text-[10px] font-medium text-slate-500 dark:text-zinc-400 max-w-full hover:bg-slate-200 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer text-left {expandedGroups.has(
-									msg.id
-								) && msg.joinGroup!.length > 1
-									? 'py-2.5 rounded-2xl items-start'
-									: 'py-1 rounded-full items-center'}"
+								class="flex items-center gap-2 w-full opacity-80 group/system transition-all"
 								onclick={() => {
-									if (expandedGroups.has(msg.id)) {
-										expandedGroups.delete(msg.id);
-									} else {
-										expandedGroups.add(msg.id);
+									if (msg.joinGroup!.length > 1) {
+										if (expandedGroups.has(msg.id)) {
+											expandedGroups.delete(msg.id);
+										} else {
+											expandedGroups.add(msg.id);
+										}
+										expandedGroups = new Set(expandedGroups);
 									}
-									expandedGroups = new Set(expandedGroups);
 								}}
 							>
-								{#if msg.joinGroup!.length === 1}
-									<span class="truncate flex-1">{msg.joinGroup![0].username} bergabung</span>
-								{:else if expandedGroups.has(msg.id)}
-									<span class="whitespace-normal leading-relaxed flex-1">
-										{msg.joinGroup!.map((j) => j.username).join(', ')} bergabung
-									</span>
-								{:else}
-									<span class="truncate flex-1"
-										>{msg.joinGroup![0].username} dan {msg.joinGroup!.length - 1} lainnya bergabung</span
-									>
-								{/if}
-								<span class="text-[9px] opacity-70 shrink-0 mt-0.5"
-									>{formatTime(msg.startTime)}</span
+								<div class="h-px flex-1 min-w-[12px] bg-slate-200 dark:bg-zinc-800/50"></div>
+								<p
+									class="text-[9px] font-bold text-slate-500 dark:text-zinc-400 tracking-[0.05em] text-center {msg
+										.joinGroup!.length > 1
+										? 'group-hover/system:text-red-500 cursor-pointer transition-colors'
+										: ''}"
 								>
+									{#if msg.joinGroup!.length > 1}
+										{t('theater.live.group_joined', {
+											name: msg.joinGroup![0].username,
+											count: msg.joinGroup!.length - 1
+										})}
+									{:else}
+										{t('theater.live.joined', { name: msg.joinGroup![0].username })}
+									{/if}
+									<span class="opacity-60 ml-1.5 font-normal tracking-normal"
+										>{formatTime(msg.startTime)}</span
+									>
+								</p>
+								<div class="h-px flex-1 min-w-[12px] bg-slate-200 dark:bg-zinc-800/50"></div>
 							</button>
+
+							{#if expandedGroups.has(msg.id) && msg.joinGroup!.length > 1}
+								<div
+									class="w-full max-w-[90%] p-2.5 rounded-2xl bg-slate-50/50 dark:bg-zinc-900/30 border border-slate-100 dark:border-zinc-800/30 backdrop-blur-sm"
+								>
+									<div class="flex flex-wrap justify-center gap-x-2 gap-y-1">
+										{#each msg.joinGroup! as j}
+											<span class="text-[9px] font-semibold text-slate-500 dark:text-zinc-400">
+												{j.username}
+											</span>
+										{/each}
+									</div>
+								</div>
+							{/if}
 						</div>
 					{:else}
 						<div class="flex items-start gap-3 group">
