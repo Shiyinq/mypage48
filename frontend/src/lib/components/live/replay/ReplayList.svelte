@@ -2,6 +2,7 @@
 	import { onMount, untrack } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 	import { goto } from '$app/navigation';
+	import type { ReplayVideo } from '$lib/types/replay';
 	import { page as pageStore } from '$app/stores';
 	import { replayStore } from '$lib/stores/replay.svelte';
 	import { liveNavbarStore } from '$lib/stores/liveNavbar.svelte';
@@ -162,8 +163,13 @@
 		return `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
 	}
 
-	function handleVideoClick(youtubeId: string) {
-		goto(`${basePath}/${youtubeId}`);
+	function handleVideoClick(vid: ReplayVideo) {
+		try {
+			localStorage.setItem('replay_video', JSON.stringify(vid));
+		} catch (e) {
+			console.error('Failed to save replay_video to localStorage:', e);
+		}
+		goto(`${basePath}/${vid.youtube_id}`);
 	}
 
 	$effect(() => {
@@ -453,7 +459,7 @@
 						<button
 							class="group flex flex-col justify-start text-left w-full h-full focus:outline-none cursor-pointer"
 							onclick={() => {
-								if (video.youtube_id) handleVideoClick(video.youtube_id);
+								if (video.youtube_id) handleVideoClick(video);
 							}}
 						>
 							<div

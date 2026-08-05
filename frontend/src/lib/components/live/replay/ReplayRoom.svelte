@@ -55,6 +55,18 @@
 		}
 		if (videoStore) {
 			video = videoStore;
+		} else if (!video) {
+			try {
+				const saved = localStorage.getItem('replay_video');
+				if (saved) {
+					const parsed = JSON.parse(saved);
+					if (parsed.youtube_id === id) {
+						video = parsed;
+					}
+				}
+			} catch (e) {
+				console.error('Failed to read replay_video from localStorage:', e);
+			}
 		}
 	});
 
