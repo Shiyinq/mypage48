@@ -10,7 +10,8 @@ export const replayApi = {
 		limit = 20,
 		search?: string,
 		platform?: string,
-		member?: string
+		member?: string,
+		youtubeId?: string
 	): Promise<ReplayPaginationResponse> => {
 		const query = new URLSearchParams({
 			page: page.toString(),
@@ -19,6 +20,7 @@ export const replayApi = {
 		if (search) query.append('search', search);
 		if (platform && platform !== 'all') query.append('platform', platform);
 		if (member) query.append('member', member);
+		if (youtubeId) query.append('youtube_id', youtubeId);
 
 		return await client<ReplayPaginationResponse>(`/replays?${query.toString()}`);
 	},

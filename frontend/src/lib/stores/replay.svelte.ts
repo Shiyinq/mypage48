@@ -199,6 +199,20 @@ function createReplayStore() {
 					state.loading = false;
 				}
 			}
+		},
+
+		getVideoByYoutubeId: async (youtubeId: string): Promise<ReplayVideo | null> => {
+			try {
+				const res = await replayApi.getVideos(1, 1, undefined, undefined, undefined, youtubeId);
+				return res.data?.[0] || null;
+			} catch (e) {
+				console.error('Failed to fetch replay by youtube_id:', e);
+				return null;
+			}
+		},
+
+		getSrt: async (liveId: string): Promise<string> => {
+			return await replayApi.getSrt(liveId);
 		}
 	};
 }

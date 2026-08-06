@@ -86,6 +86,7 @@ async def list_replays(
     search: Optional[str] = Query(None, description="Search term for filtering"),
     platform: Optional[str] = Query(None, description="Platform filter"),
     member: Optional[str] = Query(None, description="Member filter"),
+    youtube_id: Optional[str] = Query(None, description="YouTube ID filter"),
     current_user: UserCurrent | None = Depends(get_current_user_optional),
     service: ReplayService = Depends(get_replay_service),
 ):
@@ -96,6 +97,7 @@ async def list_replays(
         search=search,
         platform=platform,
         member=member,
+        youtube_id=youtube_id,
     )
 
 

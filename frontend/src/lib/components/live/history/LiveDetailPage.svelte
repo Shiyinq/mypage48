@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { liveHistoryDetailStore } from '$lib/stores/liveHistoryDetail.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
@@ -102,6 +103,26 @@
 
 	function formatTimeOnly(dateStr?: string | null) {
 		return formatTimeHelper(dateStr, locale.value);
+	}
+
+	function goToReplay(data: ReplayDetailResponse) {
+		try {
+			localStorage.setItem(
+				'replay_video',
+				JSON.stringify({
+					youtube_id: data.youtube_id,
+					title: data.title || data.youtube_title || '',
+					member: data.member?.nickname || data.member_name || '',
+					date: data.start_at || '',
+					platform: data.platform,
+					added_at: data.start_at || '',
+					live_id: data.live_id
+				})
+			);
+		} catch (e) {
+			console.error('Failed to save replay_video to localStorage:', e);
+		}
+		goto(`${replayBasePath}/${data.youtube_id}`);
 	}
 
 	function getEndTime(data: ReplayDetailResponse) {
@@ -393,27 +414,25 @@
 									</p>
 								{/if}
 								{#if data.youtube_id}
-									<a
-										href="{replayBasePath}/{data.youtube_id}"
-										data-sveltekit-preload-data
-										class="hidden lg:inline-flex items-center gap-2 mt-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-full transition-colors shadow-sm w-fit"
+									<button
+										onclick={() => goToReplay(data)}
+										class="hidden lg:inline-flex items-center gap-2 mt-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-full transition-colors shadow-sm w-fit cursor-pointer"
 									>
 										<Play size={14} />
 										{t('liveHistory.detail.watchReplay') || 'Watch Replay'}
-									</a>
+									</button>
 								{/if}
 							</div>
 						</div>
 
 						{#if data.youtube_id}
-							<a
-								href="{replayBasePath}/{data.youtube_id}"
-								data-sveltekit-preload-data
-								class="lg:hidden inline-flex items-center justify-center gap-2 mt-3 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-full transition-colors shadow-sm w-full"
+							<button
+								onclick={() => goToReplay(data)}
+								class="lg:hidden inline-flex items-center justify-center gap-2 mt-3 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-full transition-colors shadow-sm w-full cursor-pointer"
 							>
 								<Play size={14} />
 								{t('liveHistory.detail.watchReplay') || 'Watch Replay'}
-							</a>
+							</button>
 						{/if}
 
 						<!-- Right Side: Waktu Siaran, Stats, Screenshots -->
