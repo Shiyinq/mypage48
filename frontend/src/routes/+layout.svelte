@@ -69,8 +69,24 @@
 	}
 
 	function handleUnhandledRejection(event: PromiseRejectionEvent) {
-		appError = event.reason;
-		logger.error('Unhandled promise rejection:', event.reason, { context: 'Layout' });
+		const reason = event.reason;
+		const message =
+			reason instanceof Error ? reason.message : typeof reason === 'string' ? reason : '';
+
+		// Ignore Service Worker registration errors (expected in crawlers like Googlebot)
+		if (
+			message.includes('serviceWorker') ||
+			message.includes('ServiceWorker') ||
+			message.includes('SW registration')
+		) {
+			logger.warn('Ignored SW registration rejection (non-fatal):', message, {
+				context: 'Layout'
+			});
+			return;
+		}
+
+		appError = reason;
+		logger.error('Unhandled promise rejection:', reason, { context: 'Layout' });
 	}
 
 	function resetError() {
