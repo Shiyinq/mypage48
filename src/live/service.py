@@ -73,13 +73,13 @@ class LiveService:
         )
 
         if isinstance(showroom_lives, Exception):
-            logger.error(f"Error fetching Showroom lives: {showroom_lives}")
+            logger.error(f"Error fetching Showroom lives: {showroom_lives!r}")
             showroom_lives = LiveService._cache.get("showroom_lives", [])
         else:
             LiveService._cache["showroom_lives"] = showroom_lives
 
         if isinstance(idn_lives, Exception):
-            logger.error(f"Error fetching IDN lives: {idn_lives}")
+            logger.error(f"Error fetching IDN lives: {idn_lives!r}")
             idn_lives = LiveService._cache.get("idn_lives", [])
         else:
             LiveService._cache["idn_lives"] = idn_lives
@@ -228,7 +228,7 @@ class LiveService:
             )
             return True
         except Exception as e:
-            logger.exception(f"Failed to save refreshed IDN tokens: {e}")
+            logger.exception(f"Failed to save refreshed IDN tokens: {e!r}")
             return False
 
     async def _get_idn_config(self) -> dict:
@@ -250,7 +250,7 @@ class LiveService:
         try:
             db_config = await self.admin_service.get_idn_live_plus_config()
         except Exception as e:
-            logger.warning(f"Failed to fetch IDN config from DB: {e}")
+            logger.warning(f"Failed to fetch IDN config from DB: {e!r}")
             db_config = None
 
         merged_config = {
@@ -302,7 +302,7 @@ class LiveService:
                     ):
                         LiveService._token_expires_at = exp
                 except Exception as e:
-                    logger.exception(f"Failed to check intial token expiry: {e}")
+                    logger.exception(f"Failed to check intial token expiry: {e!r}")
         # Re-evaluate token expiry after fetching from DB/JWT
         is_token_expired = (
             LiveService._token_expires_at > 0
@@ -397,8 +397,9 @@ class LiveService:
                     normalized.append(item)
                 return normalized
         except Exception as e:
-            logger.warning(f"Failed to fetch IDN premium streams: {e}")
-            return []
+            logger.warning(f"Failed to fetch IDN premium streams: {e!r}")
+
+        return []
 
     async def fetch_idn_lives(self) -> List[LiveStatus]:
         """Fetch active JKT48 streams from official IDN GraphQL"""
@@ -440,7 +441,7 @@ class LiveService:
                 raw_streams = []
                 for res in responses:
                     if isinstance(res, Exception):
-                        logger.warning(f"Failed to fetch IDN page: {res}")
+                        logger.warning(f"Failed to fetch IDN page: {res!r}")
                         continue
                     try:
                         res.raise_for_status()
@@ -451,7 +452,9 @@ class LiveService:
                         if page_streams:
                             raw_streams.extend(page_streams)
                     except Exception as parse_err:
-                        logger.warning(f"Error parsing IDN response page: {parse_err}")
+                        logger.warning(
+                            f"Error parsing IDN response page: {parse_err!r}"
+                        )
 
                 premium_streams = await self._fetch_premium_idn_raw_streams(
                     status_filter=["LIVE", "ON_LIVE"]
@@ -720,10 +723,12 @@ class LiveService:
 
                     return decrypted
                 except Exception as e:
-                    logger.error(f"Failed to decrypt IDN arishem token for {slug}: {e}")
+                    logger.error(
+                        f"Failed to decrypt IDN arishem token for {slug}: {e!r}"
+                    )
                     return None
         except Exception as e:
-            logger.exception(f"Failed to fetch IDN playback token for {slug}: {e}")
+            logger.exception(f"Failed to fetch IDN playback token for {slug}: {e!r}")
             return None
 
     async def get_streaming_url(
@@ -791,7 +796,7 @@ class LiveService:
                                         )
                             except Exception as api_err:
                                 logger.exception(
-                                    f"Failed to fetch IDN chat room ID from detail API for {id}: {api_err}"
+                                    f"Failed to fetch IDN chat room ID from detail API for {id}: {api_err!r}"
                                 )
 
                     # For regular IDN Live streams, fallback to scraping HTML for the UUID
@@ -827,7 +832,7 @@ class LiveService:
                                     room_id = livestream.get("chat_room_id")
                         except Exception as scrape_err:
                             logger.exception(
-                                f"Failed to scrape IDN chat room ID for {id}: {scrape_err}"
+                                f"Failed to scrape IDN chat room ID for {id}: {scrape_err!r}"
                             )
 
                     # For premium streams, fetch and append the playback auth token
@@ -876,7 +881,7 @@ class LiveService:
                         img=data.get("image"),
                     )
         except Exception as e:
-            logger.exception(f"Failed to fetch showroom profile for {room_id}: {e}")
+            logger.exception(f"Failed to fetch showroom profile for {room_id}: {e!r}")
             return None
 
     async def fetch_showroom_streaming_url(
@@ -908,7 +913,7 @@ class LiveService:
                 return streaming_urls
         except Exception as e:
             logger.exception(
-                f"Error fetching Showroom streaming URL for {room_id}: {e}"
+                f"Error fetching Showroom streaming URL for {room_id}: {e!r}"
             )
             return []
 
@@ -922,7 +927,7 @@ class LiveService:
                 res = await client.get(url)
                 return res.json()
         except Exception as e:
-            logger.exception(f"Error fetching showroom comments for {room_id}: {e}")
+            logger.exception(f"Error fetching showroom comments for {room_id}: {e!r}")
             raise CommentsFetchError()
 
     async def get_showroom_gifts(self, room_id: str) -> Dict[Any, Any]:
@@ -935,7 +940,7 @@ class LiveService:
                 res = await client.get(url)
                 return res.json()
         except Exception as e:
-            logger.exception(f"Error fetching showroom gifts for {room_id}: {e}")
+            logger.exception(f"Error fetching showroom gifts for {room_id}: {e!r}")
             raise GiftsFetchError()
 
     async def get_showroom_gift_list(self, room_id: str) -> Dict[Any, Any]:
@@ -948,7 +953,7 @@ class LiveService:
                 res = await client.get(url)
                 return res.json()
         except Exception as e:
-            logger.exception(f"Error fetching showroom gift list for {room_id}: {e}")
+            logger.exception(f"Error fetching showroom gift list for {room_id}: {e!r}")
             raise GiftsFetchError()
 
     async def proxy_hls_request(self, url: str) -> Dict[str, Any]:
@@ -1032,7 +1037,7 @@ class LiveService:
             }
 
         except Exception as e:
-            logger.exception(f"Error proxying HLS request for {url}: {e}")
+            logger.exception(f"Error proxying HLS request for {url}: {e!r}")
             raise ProxyError()
 
     async def get_scheduled_premium_lives(self) -> LiveResponse:
