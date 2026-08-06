@@ -398,7 +398,7 @@
 					</button>
 				</div>
 
-				{#if activeTab === 'chat'}
+				<div class="flex-1 flex flex-col min-h-0 {activeTab !== 'chat' ? 'hidden' : ''}">
 					{#if video && (video.srt_file || video.live_id)}
 						<ReplayChat
 							srtFile={video.srt_file || video.live_id || ''}
@@ -413,17 +413,21 @@
 							</div>
 						</div>
 					{/if}
-				{:else if activeTab === 'info'}
+				</div>
+
+				<div class="flex-1 flex flex-col min-h-0 {activeTab !== 'info' ? 'hidden' : ''}">
 					{#if video?.live_id}
 						<ReplayInfo liveId={video.live_id} />
 					{:else}
 						<div class="flex-1 flex items-center justify-center text-zinc-500">
 							<div class="text-center px-4">
-								<p class="text-xs font-bold">Info not available</p>
+								<p class="text-xs font-bold">
+									{t('liveHistory.detail.errorTitle') || 'Info not available'}
+								</p>
 							</div>
 						</div>
 					{/if}
-				{/if}
+				</div>
 			</div>
 		</div>
 	{/if}
