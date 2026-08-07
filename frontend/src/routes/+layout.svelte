@@ -72,12 +72,15 @@
 		const reason = event.reason;
 		const message =
 			reason instanceof Error ? reason.message : typeof reason === 'string' ? reason : '';
+		const stack = reason instanceof Error ? reason.stack || '' : '';
+		const fullText = `${message} ${stack}`;
 
 		// Ignore Service Worker registration errors (expected in crawlers like Googlebot)
+		// Googlebot WRS throws Error("Rejected") with serviceWorker only in the stack trace
 		if (
-			message.includes('serviceWorker') ||
-			message.includes('ServiceWorker') ||
-			message.includes('SW registration')
+			fullText.includes('serviceWorker') ||
+			fullText.includes('ServiceWorker') ||
+			fullText.includes('SW registration')
 		) {
 			logger.warn('Ignored SW registration rejection (non-fatal):', message, {
 				context: 'Layout'
