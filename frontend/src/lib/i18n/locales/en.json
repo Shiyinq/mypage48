@@ -1864,7 +1864,7 @@
 		},
 		"chat": {
 			"error": "Chat replay not available for this video",
-			"header": "CHAT REPLAY",
+			"header": "Message History",
 			"messages": "MESSAGES",
 			"searchPlaceholder": "Search username, message or gift...",
 			"loading": "Loading chat replay...",

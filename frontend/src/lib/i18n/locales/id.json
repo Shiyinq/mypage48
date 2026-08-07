@@ -1868,7 +1868,7 @@
 		},
 		"chat": {
 			"error": "Chat replay tidak tersedia untuk video ini",
-			"header": "CHAT REPLAY",
+			"header": "Riwayat Pesan",
 			"messages": "PESAN",
 			"searchPlaceholder": "Cari username, pesan atau gift...",
 			"loading": "Memuat chat replay...",
