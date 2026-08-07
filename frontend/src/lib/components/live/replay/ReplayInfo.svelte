@@ -56,7 +56,7 @@
 					<p
 						class="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-500"
 					>
-						{t('liveHistory.detail.stats.gifts') || 'Gifts'}
+						{t('liveHistory.detail.stats.totalGifts') || 'Total Gifts'}
 					</p>
 					{#if data.total_gold}
 						<div class="flex items-center gap-2 mt-1">

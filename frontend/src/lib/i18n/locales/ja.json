@@ -1718,6 +1718,7 @@
 				"title": "統計",
 				"views": "視聴回数",
 				"gifts": "ギフト",
+				"totalGifts": "合計",
 				"chats": "チャット",
 				"loveLetters": "ラブレター"
 			},
@@ -1861,7 +1862,7 @@
 		},
 		"chat": {
 			"error": "この動画ではチャットリプレイは利用できません",
-			"header": "チャットリプレイ",
+			"header": "メッセージ履歴",
 			"messages": "メッセージ",
 			"searchPlaceholder": "ユーザー名、メッセージ、ギフトを検索...",
 			"loading": "チャットリプレイを読み込み中...",
