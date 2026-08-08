@@ -281,6 +281,23 @@ class Watcher:
                 self.log_upl.warning("R2 upload failed for %s, will retry", title_log)
                 return
 
+            # 2.5 Re-check metadata status before writing done marker (Fake End Protection)
+            try:
+                with open(session.json_path, "r") as f:
+                    current_meta = json.load(f)
+                if current_meta.get("status") != "completed":
+                    self.log_upl.warning(
+                        "Live status changed to '%s' during R2 upload for %s. "
+                        "Aborting recap and .r2_done (fake end).",
+                        current_meta.get("status"),
+                        title_log,
+                    )
+                    return
+            except Exception as e:
+                self.log_upl.error(
+                    "Failed to re-read meta.json for %s: %s", title_log, e
+                )
+
             # 3. Send Recap Notification
             self._processing[live_id]["phase"] = "sending notification"
             await telegram_notifier.send_recap_end_live_notification(
@@ -298,12 +315,14 @@ class Watcher:
 
                 if expected_mp4 and self._has_raw_parts(folder_path):
                     self.log_upl.error(
-                        "MP4 missing for %s (remux/concat failed). Raw parts found. Keeping folder for manual recovery.",
+                        "MP4 missing for %s (remux/concat failed). "
+                        "Raw parts found. Keeping folder for manual recovery.",
                         title_log,
                     )
                 else:
                     self.log_upl.info(
-                        "No mp4/raw parts for %s (likely too short), finishing directly after R2",
+                        "No mp4/raw parts for %s (likely too short), "
+                        "finishing directly after R2",
                         title_log,
                     )
                     shutil.rmtree(folder_path)

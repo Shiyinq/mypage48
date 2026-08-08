@@ -867,6 +867,13 @@ class RecordingManager:
                 except Exception:
                     pass
 
+            r2_done_path = os.path.join(session.live_folder, ".r2_done")
+            if os.path.exists(r2_done_path):
+                try:
+                    os.remove(r2_done_path)
+                except Exception:
+                    pass
+
         self.log.info(
             "Ending recording %s/%s (%s)",
             session.platform,
