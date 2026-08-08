@@ -83,14 +83,12 @@ class Watcher:
         if not os.path.isdir(raw_dir):
             return
 
-        done = self._read_history()
-
         if self.config.enable_upload_queue:
-            await self._scan_queue(raw_dir, done)
+            await self._scan_queue(raw_dir)
         else:
-            await self._scan_direct(raw_dir, done)
+            await self._scan_direct(raw_dir)
 
-    def _iter_pending(self, raw_dir: str, done: set[str]):
+    def _iter_pending(self, raw_dir: str):
         for entry in sorted(os.listdir(raw_dir)):
             folder_path = os.path.join(raw_dir, entry)
             if not os.path.isdir(folder_path):
@@ -104,8 +102,15 @@ class Watcher:
             if not live_id:
                 continue
 
-            if live_id in done:
-                self.log_rec.info("Skipping %s (already in uploads history)", live_id)
+            r2_done_path = os.path.join(folder_path, ".r2_done")
+            yt_done_path = os.path.join(folder_path, ".yt_done")
+
+            if os.path.exists(r2_done_path) and os.path.exists(yt_done_path):
+                try:
+                    shutil.rmtree(folder_path)
+                    self.log_rec.info("Cleaned up fully uploaded folder: %s", live_id)
+                except Exception as e:
+                    self.log_rec.warning("Failed to clean up folder %s: %s", live_id, e)
                 continue
 
             if live_id in self._processing:
@@ -133,11 +138,11 @@ class Watcher:
 
             yield meta, live_id, folder_path
 
-    async def _scan_queue(self, raw_dir: str, done: set[str]):
+    async def _scan_queue(self, raw_dir: str):
         r2_candidates = []
         yt_candidates = []
 
-        for meta, live_id, folder_path in self._iter_pending(raw_dir, done):
+        for meta, live_id, folder_path in self._iter_pending(raw_dir):
             r2_done_path = os.path.join(folder_path, ".r2_done")
             is_r2 = not os.path.exists(r2_done_path)
 
@@ -149,8 +154,10 @@ class Watcher:
 
             if is_r2:
                 r2_candidates.append((mp4_size, live_id, folder_path, meta))
-            elif not self._youtube_disabled:
-                yt_candidates.append((mp4_size, live_id, folder_path, meta))
+            else:
+                yt_done_path = os.path.join(folder_path, ".yt_done")
+                if not self._youtube_disabled and not os.path.exists(yt_done_path):
+                    yt_candidates.append((mp4_size, live_id, folder_path, meta))
 
         r2_candidates.sort(key=lambda x: (-x[0], x[1]))
         yt_candidates.sort(key=lambda x: (-x[0], x[1]))
@@ -213,8 +220,8 @@ class Watcher:
                 self._process_with_semaphore(folder_path, live_id, False)
             )
 
-    async def _scan_direct(self, raw_dir: str, done: set[str]):
-        for meta, live_id, folder_path in self._iter_pending(raw_dir, done):
+    async def _scan_direct(self, raw_dir: str):
+        for meta, live_id, folder_path in self._iter_pending(raw_dir):
             r2_done_path = os.path.join(folder_path, ".r2_done")
             if os.path.exists(r2_done_path) and self._youtube_disabled:
                 continue
@@ -281,6 +288,23 @@ class Watcher:
                 self.log_upl.warning("R2 upload failed for %s, will retry", title_log)
                 return
 
+            # 2.5 Re-check metadata status before writing done marker (Fake End Protection)
+            try:
+                with open(session.json_path, "r") as f:
+                    current_meta = json.load(f)
+                if current_meta.get("status") != "completed":
+                    self.log_upl.warning(
+                        "Live status changed to '%s' during R2 upload for %s. "
+                        "Aborting recap and .r2_done (fake end).",
+                        current_meta.get("status"),
+                        title_log,
+                    )
+                    return
+            except Exception as e:
+                self.log_upl.error(
+                    "Failed to re-read meta.json for %s: %s", title_log, e
+                )
+
             # 3. Send Recap Notification
             self._processing[live_id]["phase"] = "sending notification"
             await telegram_notifier.send_recap_end_live_notification(
@@ -298,12 +322,14 @@ class Watcher:
 
                 if expected_mp4 and self._has_raw_parts(folder_path):
                     self.log_upl.error(
-                        "MP4 missing for %s (remux/concat failed). Raw parts found. Keeping folder for manual recovery.",
+                        "MP4 missing for %s (remux/concat failed). "
+                        "Raw parts found. Keeping folder for manual recovery.",
                         title_log,
                     )
                 else:
                     self.log_upl.info(
-                        "No mp4/raw parts for %s (likely too short), finishing directly after R2",
+                        "No mp4/raw parts for %s (likely too short), "
+                        "finishing directly after R2",
                         title_log,
                     )
                     shutil.rmtree(folder_path)
@@ -421,10 +447,14 @@ class Watcher:
                 if delay_minutes > 0:
                     self._next_upload_time = time.time() + (delay_minutes * 60)
 
+                # Create marker
+                yt_done_path = os.path.join(folder_path, ".yt_done")
+                with open(yt_done_path, "w") as f:
+                    f.write("done")
+
                 # Cleanup
                 self._append_history(live_id, youtube_id or "")
-                shutil.rmtree(folder_path)
-                self.log_upl.info("Done: %s", title_log)
+                self.log_upl.info("Phase 2 complete: %s", title_log)
 
             else:
                 if upload_uri:
