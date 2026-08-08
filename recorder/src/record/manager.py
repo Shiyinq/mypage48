@@ -362,6 +362,13 @@ class RecordingManager:
                 except Exception:
                     pass
 
+            yt_done_path = os.path.join(live_folder, ".yt_done")
+            if os.path.exists(yt_done_path):
+                try:
+                    os.remove(yt_done_path)
+                except Exception:
+                    pass
+
             uri_path = os.path.join(live_folder, f"{live.live_id}.upload_uri")
             if os.path.exists(uri_path):
                 try:
@@ -871,6 +878,13 @@ class RecordingManager:
             if os.path.exists(r2_done_path):
                 try:
                     os.remove(r2_done_path)
+                except Exception:
+                    pass
+
+            yt_done_path = os.path.join(session.live_folder, ".yt_done")
+            if os.path.exists(yt_done_path):
+                try:
+                    os.remove(yt_done_path)
                 except Exception:
                     pass
 
