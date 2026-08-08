@@ -37,7 +37,7 @@ logger = create_logger("live_service", __name__)
 
 class LiveService:
     _cache = {}
-    _cache_ttl = 60  # seconds cache
+    _cache_ttl = 10  # seconds cache
     _idn_config_cache = None
     _idn_config_updated_at = 0
     _token_expires_at = 0.0

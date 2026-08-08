@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings
 class RecorderConfig(BaseSettings):
     api_base_url: str = "http://localhost:8000/api"
     frontend_base_url: str = "http://localhost:5173"
-    poll_interval: int = 10
+    poll_interval: int = 3
     news_check_interval: int = 300
     schedule_check_interval: int = 300
     health_check_interval: int = 300
