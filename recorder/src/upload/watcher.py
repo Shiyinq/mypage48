@@ -108,9 +108,9 @@ class Watcher:
             if os.path.exists(r2_done_path) and os.path.exists(yt_done_path):
                 try:
                     shutil.rmtree(folder_path)
-                    self.log_rec.info("Cleaned up fully uploaded folder: %s", live_id)
+                    self.log_upl.info("Cleaned up fully uploaded folder: %s", live_id)
                 except Exception as e:
-                    self.log_rec.warning("Failed to clean up folder %s: %s", live_id, e)
+                    self.log_upl.warning("Failed to clean up folder %s: %s", live_id, e)
                 continue
 
             if live_id in self._processing:
