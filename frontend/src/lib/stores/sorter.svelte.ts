@@ -47,9 +47,13 @@ export interface SorterHistoryState {
 	finishFlag: number;
 }
 
+const LOCAL_PROGRESS_KEY = 'oshi_sorter_progress';
+const LOCAL_HISTORY_KEY = 'oshi_sorter_history';
+
 export function createSorter(
 	t: (key: string, params?: Record<string, string | number>) => string,
-	path: string
+	path: string,
+	mode: 'public' | 'theater' = 'public'
 ) {
 	// State
 	let currentState = $state<SorterState>('landing');
@@ -79,6 +83,14 @@ export function createSorter(
 	let loadingHistory = $state(false);
 	let historyPage = $state(1);
 	let historyHasMore = $state(true);
+
+	let hasSavedProgress = $state(false);
+
+	let resultsTitle = $state(t('theater.sorter.results') || 'HASIL');
+	let resultsDescription = $state(
+		t('theater.sorter.resultsSubtitle') || 'Ini adalah peringkat terbaikmu!'
+	);
+	let lastSavedLocalHistoryId = $state<string | null>(null);
 
 	// Animation State
 	let isAnimating = $state(false);
@@ -114,6 +126,8 @@ export function createSorter(
 		} finally {
 			loadingGenerations = false;
 		}
+
+		checkSavedProgress();
 	}
 
 	function toggleGeneration(gen: string) {
@@ -155,6 +169,91 @@ export function createSorter(
 		totalMoves = calculateTotalMoves(selectedMembers.length);
 		history = [];
 		currentState = 'sorting';
+		saveProgressLocal();
+	}
+
+	function checkSavedProgress() {
+		try {
+			const saved = localStorage.getItem(LOCAL_PROGRESS_KEY);
+			if (saved) {
+				const parsed = JSON.parse(saved);
+				if (parsed && !parsed.finishFlag && parsed.lstMember && parsed.lstMember.length > 0) {
+					hasSavedProgress = true;
+					return;
+				}
+			}
+		} catch (_e) {
+			// ignore
+		}
+		hasSavedProgress = false;
+	}
+
+	function saveProgressLocal() {
+		try {
+			if (finishFlag) {
+				clearProgressLocal();
+				return;
+			}
+			const stateToSave = {
+				selectedMembers,
+				selectedGenerations: Array.from(selectedGenerations),
+				lstMember,
+				rec,
+				cmp1,
+				cmp2,
+				head1,
+				head2,
+				nrec,
+				numQuestion,
+				finishSize,
+				finishFlag,
+				totalMoves,
+				history
+			};
+			localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(stateToSave));
+			hasSavedProgress = true;
+		} catch (_e) {
+			// ignore
+		}
+	}
+
+	function clearProgressLocal() {
+		try {
+			localStorage.removeItem(LOCAL_PROGRESS_KEY);
+			hasSavedProgress = false;
+		} catch (_e) {
+			// ignore
+		}
+	}
+
+	function resumeSort() {
+		try {
+			const saved = localStorage.getItem(LOCAL_PROGRESS_KEY);
+			if (saved) {
+				const parsed = JSON.parse(saved);
+				if (parsed && !parsed.finishFlag) {
+					selectedMembers = parsed.selectedMembers;
+					selectedGenerations = new Set(parsed.selectedGenerations);
+					lstMember = parsed.lstMember;
+					rec = parsed.rec;
+					cmp1 = parsed.cmp1;
+					cmp2 = parsed.cmp2;
+					head1 = parsed.head1;
+					head2 = parsed.head2;
+					nrec = parsed.nrec;
+					numQuestion = parsed.numQuestion;
+					finishSize = parsed.finishSize;
+					finishFlag = parsed.finishFlag;
+					totalMoves = parsed.totalMoves;
+					history = parsed.history;
+					currentState = 'sorting';
+					return;
+				}
+			}
+		} catch (_e) {
+			// ignore
+		}
+		showToast('Failed to resume sorter', 'error');
 	}
 
 	function saveHistory() {
@@ -192,6 +291,7 @@ export function createSorter(
 		numQuestion = last.numQuestion;
 		finishSize = last.finishSize;
 		finishFlag = last.finishFlag;
+		saveProgressLocal();
 	}
 
 	function sortList(flag: number) {
@@ -249,6 +349,7 @@ export function createSorter(
 			}
 			numQuestion++;
 		}
+		saveProgressLocal();
 	}
 
 	async function handleSelect(flag: number) {
@@ -277,11 +378,81 @@ export function createSorter(
 			rank: i + 1
 		}));
 		currentState = 'results';
+		clearProgressLocal();
+		saveHistoryLocalAuto();
 	}
 
 	function restart() {
 		currentState = 'landing';
 		history = [];
+		resultsTitle = t('theater.sorter.results') || 'HASIL';
+		resultsDescription = t('theater.sorter.resultsSubtitle') || 'Ini adalah peringkat terbaikmu!';
+		lastSavedLocalHistoryId = null;
+	}
+
+	function updateLocalHistoryTitle(title: string, description: string) {
+		resultsTitle = title;
+		resultsDescription = description;
+		if (lastSavedLocalHistoryId) {
+			try {
+				const saved = localStorage.getItem(LOCAL_HISTORY_KEY);
+				if (saved) {
+					const histories: SorterResponse[] = JSON.parse(saved);
+					const h = histories.find((h) => h._id === lastSavedLocalHistoryId);
+					if (h) {
+						h.title = title;
+						h.description = description;
+						localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(histories));
+						savedHistories = histories;
+					}
+				}
+			} catch {
+				// ignore
+			}
+		}
+	}
+
+	function saveHistoryLocalAuto() {
+		try {
+			const reqFilters = [...selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b));
+			const reqResults = results.map((r) => ({
+				id: String(r.id),
+				name: r.name,
+				rank: r.rank
+			}));
+			const d = new Date();
+
+			const newHistory: SorterResponse = {
+				_id: `local-${d.getTime()}`,
+				user_id: 'local',
+				title: resultsTitle,
+				description: resultsDescription,
+				filters: reqFilters,
+				results: reqResults,
+				created_at: d.toISOString(),
+				updated_at: d.toISOString()
+			};
+			lastSavedLocalHistoryId = newHistory._id;
+
+			const saved = localStorage.getItem(LOCAL_HISTORY_KEY);
+			let histories: SorterResponse[] = [];
+			if (saved) {
+				try {
+					histories = JSON.parse(saved);
+				} catch {
+					histories = [];
+				}
+			}
+
+			histories.unshift(newHistory);
+			if (histories.length > 30) {
+				histories = histories.slice(0, 30);
+			}
+
+			localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(histories));
+		} catch (e) {
+			console.error('Failed to auto-save local history', e);
+		}
 	}
 
 	async function copyToClipboard(text: string): Promise<boolean> {
@@ -346,8 +517,17 @@ export function createSorter(
 		loadingHistory = true;
 		try {
 			const res = await sorterApi.getSorterHistories(historyPage, 15);
+			let locals: SorterResponse[] = [];
+
 			if (reset) {
-				savedHistories = res.data;
+				// Only load local histories on the first page
+				try {
+					const saved = localStorage.getItem(LOCAL_HISTORY_KEY);
+					if (saved) locals = JSON.parse(saved);
+				} catch {
+					// ignore
+				}
+				savedHistories = [...locals, ...res.data];
 			} else {
 				savedHistories = [...savedHistories, ...res.data];
 			}
@@ -364,6 +544,20 @@ export function createSorter(
 		}
 	}
 
+	function loadSavedHistoriesLocal() {
+		try {
+			const saved = localStorage.getItem(LOCAL_HISTORY_KEY);
+			if (saved) {
+				savedHistories = JSON.parse(saved);
+			} else {
+				savedHistories = [];
+			}
+		} catch {
+			savedHistories = [];
+		}
+		historyHasMore = false;
+	}
+
 	async function saveCurrentResult(title: string, description: string) {
 		try {
 			const reqFilters = [...selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b));
@@ -378,6 +572,12 @@ export function createSorter(
 				filters: reqFilters,
 				results: reqResults
 			});
+
+			if (lastSavedLocalHistoryId) {
+				deleteSavedHistoryLocal(lastSavedLocalHistoryId, true);
+				lastSavedLocalHistoryId = null;
+			}
+
 			showToast(t('theater.sorter.saveSuccess') || 'Results saved to history!', 'success');
 			return saved;
 		} catch (err) {
@@ -387,6 +587,10 @@ export function createSorter(
 	}
 
 	async function deleteSavedHistory(id: string) {
+		if (id.startsWith('local-')) {
+			deleteSavedHistoryLocal(id);
+			return;
+		}
 		try {
 			await sorterApi.deleteSorterHistory(id);
 			savedHistories = savedHistories.filter((h) => h._id !== id);
@@ -400,14 +604,43 @@ export function createSorter(
 		}
 	}
 
+	function deleteSavedHistoryLocal(id: string, silent: boolean = false) {
+		try {
+			const saved = localStorage.getItem(LOCAL_HISTORY_KEY);
+			if (saved) {
+				let histories: SorterResponse[] = JSON.parse(saved);
+				histories = histories.filter((h) => h._id !== id);
+				localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(histories));
+				savedHistories = histories;
+				if (!silent)
+					showToast(t('theater.sorter.deleteSuccess') || 'History entry deleted', 'success');
+				if (selectedHistory?._id === id) {
+					selectedHistory = null;
+					currentState = 'history';
+				}
+			}
+		} catch {
+			if (!silent)
+				showToast(t('theater.sorter.deleteFailed') || 'Failed to delete history entry', 'error');
+		}
+	}
+
 	function viewHistoryDetail(historyItem: SorterResponse) {
 		selectedHistory = historyItem;
-		goto(`/sorter/history/${historyItem._id}`);
+		if (mode === 'public') {
+			goto(`/jkt48/sorter/history/${historyItem._id}`);
+		} else {
+			goto(`/sorter/history/${historyItem._id}`);
+		}
 	}
 
 	function goToHistory() {
 		currentState = 'history';
-		loadSavedHistories();
+		if (mode === 'public') {
+			loadSavedHistoriesLocal();
+		} else {
+			loadSavedHistories();
+		}
 	}
 
 	return {
@@ -478,6 +711,18 @@ export function createSorter(
 		get loadingHistory() {
 			return loadingHistory;
 		},
+		get hasSavedProgress() {
+			return hasSavedProgress;
+		},
+		get mode() {
+			return mode;
+		},
+		get resultsTitle() {
+			return resultsTitle;
+		},
+		get resultsDescription() {
+			return resultsDescription;
+		},
 
 		fetchMembers,
 		toggleGeneration,
@@ -491,10 +736,14 @@ export function createSorter(
 		loadSavedHistories,
 		saveCurrentResult,
 		deleteSavedHistory,
+		deleteSavedHistoryLocal,
 		viewHistoryDetail,
-		goToHistory
+		goToHistory,
+		resumeSort,
+		loadSavedHistoriesLocal,
+		updateLocalHistoryTitle
 	};
 }
 
-export const publicSorter = createSorter(translate, '/jkt48/sorter');
-export const theaterSorter = createSorter(translate, '/sorter');
+export const publicSorter = createSorter(translate, '/jkt48/sorter', 'public');
+export const theaterSorter = createSorter(translate, '/sorter', 'theater');

@@ -160,7 +160,7 @@
 			<div class="flex-1 flex justify-end items-center">
 				{#if (sorterNavbarStore.pageType === 'sorter' && sorterNavbarStore.sorterState === 'results') || sorterNavbarStore.pageType === 'history-detail'}
 					<div class="flex items-center gap-2 sm:gap-3">
-						{#if sorterNavbarStore.pageType === 'sorter'}
+						{#if sorterNavbarStore.pageType === 'sorter' || (sorterNavbarStore.pageType === 'history-detail' && sorterNavbarStore.isLocalHistory)}
 							{#if !isPublic}
 								{#if !sorterNavbarStore.savedHistoryId}
 									<button

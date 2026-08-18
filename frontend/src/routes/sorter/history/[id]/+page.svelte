@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import SEO from '$lib/components/SEO.svelte';
 
 	import { onMount } from 'svelte';
@@ -10,14 +9,33 @@
 	import SorterRankDisplay from '$lib/components/sorter/SorterRankDisplay.svelte';
 	import SorterEditableHeader from '$lib/components/sorter/SorterEditableHeader.svelte';
 
-	let { data }: { data: PageData } = $props();
-	let historyItem = $derived(data.historyItem);
+	import { Info } from 'lucide-svelte';
+	import type { SorterResponse } from '$lib/apis/sorter';
+	import { goto } from '$app/navigation';
+	import { theaterSorter } from '$lib/stores/sorter.svelte';
+	import { showToast } from '$lib/stores';
+
+	let { data }: { data: { id: string; isLocal?: boolean; historyItem?: SorterResponse } } =
+		$props();
+	let historyItem = $state<SorterResponse | null>(null);
 
 	$effect(() => {
-		historyItem = data.historyItem;
+		if (data.isLocal) {
+			try {
+				const saved = localStorage.getItem('oshi_sorter_history');
+				if (saved) {
+					const histories: SorterResponse[] = JSON.parse(saved);
+					historyItem = histories.find((h) => h._id === data.id) || null;
+				}
+			} catch (_e) {
+				// ignore
+			}
+		} else {
+			historyItem = data.historyItem || null;
+		}
 	});
 
-	const { locale } = useTranslation();
+	const { locale, t } = useTranslation();
 
 	function parseUTCDate(dateStr: string) {
 		const timePart = dateStr.split('T')[1] || '';
@@ -56,8 +74,10 @@
 	const DESCRIPTION_LIMIT = 500;
 
 	function startEditTitle() {
-		tempTitle = historyItem.title;
-		isEditingTitle = true;
+		if (historyItem) {
+			tempTitle = historyItem.title;
+			isEditingTitle = true;
+		}
 	}
 
 	function cancelEditTitle() {
@@ -65,14 +85,24 @@
 	}
 
 	async function saveTitle() {
-		if (!tempTitle.trim() || tempTitle.trim() === historyItem.title) {
+		if (!historyItem || !tempTitle.trim() || tempTitle.trim() === historyItem.title) {
 			isEditingTitle = false;
 			return;
 		}
+
+		const newTitle = tempTitle.trim().slice(0, TITLE_LIMIT);
+
+		if (data.isLocal) {
+			theaterSorter.updateLocalHistoryTitle(newTitle, historyItem.description || '');
+			historyItem.title = newTitle;
+			isEditingTitle = false;
+			return;
+		}
+
 		isSaving = true;
 		try {
 			const res = await sorterApi.updateSorterHistory(historyItem._id, {
-				title: tempTitle.trim().slice(0, TITLE_LIMIT)
+				title: newTitle
 			});
 			historyItem.title = res.title;
 			isEditingTitle = false;
@@ -84,8 +114,10 @@
 	}
 
 	function startEditDescription() {
-		tempDescription = historyItem.description || '';
-		isEditingDescription = true;
+		if (historyItem) {
+			tempDescription = historyItem.description || '';
+			isEditingDescription = true;
+		}
 	}
 
 	function cancelEditDescription() {
@@ -93,11 +125,21 @@
 	}
 
 	async function saveDescription() {
+		if (!historyItem) return;
+
 		const newDesc = tempDescription.trim().slice(0, DESCRIPTION_LIMIT);
 		if (newDesc === (historyItem.description || '')) {
 			isEditingDescription = false;
 			return;
 		}
+
+		if (data.isLocal) {
+			theaterSorter.updateLocalHistoryTitle(historyItem.title, newDesc);
+			historyItem.description = newDesc;
+			isEditingDescription = false;
+			return;
+		}
+
 		isSaving = true;
 		try {
 			const res = await sorterApi.updateSorterHistory(historyItem._id, {
@@ -128,10 +170,12 @@
 	}
 
 	let resolvedResults = $derived(
-		historyItem.results.map((item) => ({
-			...item,
-			...resolveMember(item.id, item.name)
-		}))
+		historyItem
+			? historyItem.results.map((item) => ({
+					...item,
+					...resolveMember(item.id, item.name)
+				}))
+			: []
 	);
 
 	onMount(() => {
@@ -144,12 +188,35 @@
 		// Share logic here
 	}
 
+	async function saveToDB() {
+		if (!historyItem || isSaving) return;
+		isSaving = true;
+		try {
+			const saved = await sorterApi.saveSorterHistory({
+				title: historyItem.title,
+				description: historyItem.description,
+				filters: historyItem.filters,
+				results: historyItem.results
+			});
+			theaterSorter.deleteSavedHistoryLocal(historyItem._id, true);
+			showToast(t('theater.sorter.saveSuccess') || 'Results saved to history!', 'success');
+			goto(`/sorter/history/${saved._id}`, { replaceState: true });
+		} catch (e) {
+			console.error('Failed to save', e);
+			showToast(t('theater.sorter.saveFailed') || 'Failed to save results', 'error');
+		} finally {
+			isSaving = false;
+		}
+	}
+
 	$effect(() => {
 		sorterNavbarStore.update({
 			pageType: 'history-detail',
 			layoutMode,
+			isLocalHistory: data.isLocal,
 			onSetLayout: (mode) => (layoutMode = mode),
-			onShare: shareResult
+			onShare: shareResult,
+			onSave: data.isLocal ? saveToDB : undefined
 		});
 		return () => {
 			sorterNavbarStore.reset();
@@ -159,8 +226,8 @@
 
 <SEO
 	title={`${historyItem?.title || 'History'} | Oshi Sorter`}
-	path={`/sorter/history/${historyItem._id}`}
-	description={historyItem.description || 'Hasil Oshi Sorter'}
+	path={`/sorter/history/${historyItem?._id || data.id}`}
+	description={historyItem?.description || 'Hasil Oshi Sorter'}
 />
 
 <div
@@ -171,6 +238,22 @@
 			<div
 				class={`w-full space-y-8 px-4 sm:px-4 mx-auto pb-24 ${layoutMode === 'list' ? 'max-w-3xl' : 'max-w-6xl'}`}
 			>
+				{#if data.isLocal}
+					<div
+						class="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 flex gap-3 items-start"
+					>
+						<Info class="w-5 h-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+						<div class="text-sm font-medium text-amber-800 dark:text-amber-200/80">
+							{t('theater.sorter.publicHistoryWarning') ||
+								'Riwayat yang tersimpan di sini bersifat lokal pada browser perangkat ini. Kapasitas penyimpanan terbatas dan riwayat ini akan hilang secara permanen jika Anda menghapus data situs atau cache browser.'}
+							<span class="font-bold">
+								{t('theater.sorter.localHistorySaveInstruction') ||
+									'Klik tombol Simpan di atas untuk menyimpannya secara permanen.'}
+							</span>
+						</div>
+					</div>
+				{/if}
+
 				<div class="flex flex-col md:flex-row md:items-start justify-between gap-4 w-full">
 					<div class="flex flex-col gap-2 w-full min-w-0">
 						<SorterEditableHeader

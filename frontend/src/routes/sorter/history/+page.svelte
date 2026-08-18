@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
-	import { createSorter } from '$lib/stores/sorter.svelte';
+	import { theaterSorter } from '$lib/stores/sorter.svelte';
 	import { sorterNavbarStore } from '$lib/stores/sorterNavbar.svelte';
 
 	import { Calendar, Trash2, Eye, History, Loader2 } from 'lucide-svelte';
@@ -10,7 +10,7 @@
 	import { infiniteScroll } from '$lib/actions/infiniteScroll';
 
 	const { t, locale } = useTranslation();
-	const sorter = createSorter(t, '/sorter');
+	const sorter = theaterSorter;
 
 	let deleteConfirmId = $state<string | null>(null);
 

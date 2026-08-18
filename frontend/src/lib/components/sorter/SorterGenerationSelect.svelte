@@ -11,10 +11,12 @@
 		loadingGenerations: boolean;
 		selectedMembersCount: number;
 		variant?: 'public' | 'theater';
+		hasSavedProgress?: boolean;
 		ontoggle?: (gen: string) => void;
 		onselectAll?: () => void;
 		ondeselectAll?: () => void;
 		onstart?: () => void;
+		onresume?: () => void;
 	}
 
 	let {
@@ -23,10 +25,12 @@
 		loadingGenerations,
 		selectedMembersCount,
 		variant = 'public',
+		hasSavedProgress = false,
 		ontoggle,
 		onselectAll,
 		ondeselectAll,
-		onstart
+		onstart,
+		onresume
 	}: Props = $props();
 
 	function toggleGeneration(gen: string) {
@@ -133,16 +137,27 @@
 		</div>
 	</div>
 
-	<button
-		onclick={start}
-		disabled={loadingGenerations || selectedMembersCount < 2}
-		class={`w-full sm:w-80 h-16 rounded-full font-black text-xl shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:grayscale mx-auto cursor-pointer ${
-			isPublic
-				? 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30'
-				: 'bg-red-600 hover:bg-red-600 text-white shadow-none'
-		}`}
-	>
-		<Play class="w-6 h-6 fill-current group-hover:translate-x-1 transition-transform" />
-		{t('theater.sorter.start')}
-	</button>
+	<div class="flex flex-col gap-3 w-full sm:w-80 mx-auto">
+		<button
+			onclick={start}
+			disabled={loadingGenerations || selectedMembersCount < 2}
+			class={`w-full h-16 rounded-full font-black text-xl shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:grayscale cursor-pointer ${
+				isPublic
+					? 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30'
+					: 'bg-red-600 hover:bg-red-600 text-white shadow-none'
+			}`}
+		>
+			<Play class="w-6 h-6 fill-current group-hover:translate-x-1 transition-transform" />
+			{t('theater.sorter.start')}
+		</button>
+
+		{#if hasSavedProgress}
+			<button
+				onclick={onresume}
+				class="w-full h-12 rounded-full font-bold text-sm bg-white dark:bg-zinc-800 border-2 border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300 flex items-center justify-center cursor-pointer shadow-md"
+			>
+				{t('theater.sorter.resume') || 'Lanjutkan Sorter Sebelumnya'}
+			</button>
+		{/if}
+	</div>
 </div>
