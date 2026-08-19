@@ -27,10 +27,7 @@
 		}
 	});
 
-	// For inline results
 	let isPublic = true;
-	let customTitle = $state(t('theater.sorter.results'));
-	let customSubtitle = $state(t('theater.sorter.resultsSubtitle'));
 	let sortedSelectedGens = $derived(
 		[...sorter.selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b))
 	);
@@ -44,13 +41,16 @@
 	const SUBTITLE_LIMIT = 100;
 
 	function startEditTitle() {
-		tempTitle = customTitle;
+		tempTitle = sorter.resultsTitle;
 		isEditingTitle = true;
 	}
 
 	function saveTitle() {
 		if (tempTitle.trim()) {
-			customTitle = tempTitle.trim().slice(0, TITLE_LIMIT);
+			sorter.updateLocalHistoryTitle(
+				tempTitle.trim().slice(0, TITLE_LIMIT),
+				sorter.resultsDescription
+			);
 		}
 		isEditingTitle = false;
 	}
@@ -60,13 +60,16 @@
 	}
 
 	function startEditSubtitle() {
-		tempSubtitle = customSubtitle;
+		tempSubtitle = sorter.resultsDescription;
 		isEditingSubtitle = true;
 	}
 
 	function saveSubtitle() {
 		if (tempSubtitle.trim()) {
-			customSubtitle = tempSubtitle.trim().slice(0, SUBTITLE_LIMIT);
+			sorter.updateLocalHistoryTitle(
+				sorter.resultsTitle,
+				tempSubtitle.trim().slice(0, SUBTITLE_LIMIT)
+			);
 		}
 		isEditingSubtitle = false;
 	}
@@ -80,12 +83,10 @@
 	}
 
 	function shareResults() {
-		sorter.shareResults(customTitle, customSubtitle);
+		sorter.shareResults(sorter.resultsTitle, sorter.resultsDescription);
 	}
 
 	function restart() {
-		customTitle = t('theater.sorter.results');
-		customSubtitle = t('theater.sorter.resultsSubtitle');
 		sorter.restart();
 	}
 
@@ -133,8 +134,8 @@
 				<div class="flex flex-col md:flex-row md:items-start justify-between gap-4 w-full">
 					<div class="flex flex-col gap-2 w-full min-w-0">
 						<SorterEditableHeader
-							title={customTitle}
-							description={customSubtitle}
+							title={sorter.resultsTitle}
+							description={sorter.resultsDescription}
 							{tempTitle}
 							tempDescription={tempSubtitle}
 							{isEditingTitle}

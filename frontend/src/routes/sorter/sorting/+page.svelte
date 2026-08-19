@@ -54,6 +54,7 @@
 	async function saveTitle() {
 		if (tempTitle.trim()) {
 			customTitle = tempTitle.trim().slice(0, TITLE_LIMIT);
+			sorter.updateLocalHistoryTitle(customTitle, customSubtitle);
 			if (savedHistoryId) {
 				isSaving = true;
 				try {
@@ -80,6 +81,7 @@
 	async function saveSubtitle() {
 		if (tempSubtitle.trim()) {
 			customSubtitle = tempSubtitle.trim().slice(0, SUBTITLE_LIMIT);
+			sorter.updateLocalHistoryTitle(customTitle, customSubtitle);
 			if (savedHistoryId) {
 				isSaving = true;
 				try {

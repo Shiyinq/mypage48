@@ -8,6 +8,7 @@ type SorterPageState = {
 	numQuestion: number;
 	isSaving: boolean;
 	savedHistoryId: string | null;
+	isLocalHistory?: boolean;
 	// callbacks
 	onSetLayout?: (mode: 'card' | 'list') => void;
 	onSave?: () => void;
@@ -21,7 +22,8 @@ const defaultState: SorterPageState = {
 	sorterState: 'landing',
 	numQuestion: 0,
 	isSaving: false,
-	savedHistoryId: null
+	savedHistoryId: null,
+	isLocalHistory: false
 };
 
 const state = $state<SorterPageState>({ ...defaultState });
@@ -44,6 +46,9 @@ export const sorterNavbarStore = {
 	},
 	get savedHistoryId() {
 		return state.savedHistoryId;
+	},
+	get isLocalHistory() {
+		return state.isLocalHistory;
 	},
 	get onSetLayout() {
 		return state.onSetLayout;

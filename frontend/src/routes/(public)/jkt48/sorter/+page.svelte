@@ -53,6 +53,8 @@
 		onselectAll={sorter.selectAllGenerations}
 		ondeselectAll={sorter.deselectAllGenerations}
 		onstart={sorter.startSort}
+		hasSavedProgress={sorter.hasSavedProgress}
+		onresume={sorter.resumeSort}
 		variant="public"
 	/>
 </div>
