@@ -55,6 +55,5 @@
 		onstart={sorter.startSort}
 		hasSavedProgress={sorter.hasSavedProgress}
 		onresume={sorter.resumeSort}
-		variant="theater"
 	/>
 </div>
