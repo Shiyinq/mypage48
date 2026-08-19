@@ -187,13 +187,15 @@
 								{/if}
 							{/if}
 
-							<button
-								onclick={() => sorterNavbarStore.onRestart?.()}
-								class="w-8 h-8 bg-white dark:bg-zinc-800 font-black rounded-full transition-all shadow-md border flex items-center justify-center cursor-pointer text-themed border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700"
-								title={t('theater.sorter.restart')}
-							>
-								<RotateCcw size={14} />
-							</button>
+							{#if sorterNavbarStore.pageType === 'sorter'}
+								<button
+									onclick={() => sorterNavbarStore.onRestart?.()}
+									class="w-8 h-8 bg-white dark:bg-zinc-800 font-black rounded-full transition-all shadow-md border flex items-center justify-center cursor-pointer text-themed border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+									title={t('theater.sorter.restart')}
+								>
+									<RotateCcw size={14} />
+								</button>
+							{/if}
 						{/if}
 
 						<div

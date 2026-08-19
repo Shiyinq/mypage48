@@ -93,8 +93,20 @@
 		const newTitle = tempTitle.trim().slice(0, TITLE_LIMIT);
 
 		if (data.isLocal) {
-			theaterSorter.updateLocalHistoryTitle(newTitle, historyItem.description || '');
-			historyItem.title = newTitle;
+			try {
+				const saved = localStorage.getItem('oshi_sorter_history');
+				if (saved) {
+					let histories: SorterResponse[] = JSON.parse(saved);
+					const idx = histories.findIndex((h) => h._id === historyItem?._id);
+					if (idx !== -1) {
+						histories[idx].title = newTitle;
+						localStorage.setItem('oshi_sorter_history', JSON.stringify(histories));
+						historyItem.title = newTitle;
+					}
+				}
+			} catch (_e) {
+				// ignore
+			}
 			isEditingTitle = false;
 			return;
 		}
@@ -134,8 +146,20 @@
 		}
 
 		if (data.isLocal) {
-			theaterSorter.updateLocalHistoryTitle(historyItem.title, newDesc);
-			historyItem.description = newDesc;
+			try {
+				const saved = localStorage.getItem('oshi_sorter_history');
+				if (saved) {
+					let histories: SorterResponse[] = JSON.parse(saved);
+					const idx = histories.findIndex((h) => h._id === historyItem?._id);
+					if (idx !== -1) {
+						histories[idx].description = newDesc;
+						localStorage.setItem('oshi_sorter_history', JSON.stringify(histories));
+						historyItem.description = newDesc;
+					}
+				}
+			} catch (_e) {
+				// ignore
+			}
 			isEditingDescription = false;
 			return;
 		}
