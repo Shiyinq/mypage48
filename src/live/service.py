@@ -775,6 +775,11 @@ class LiveService:
                             raise StreamingUrlNotFoundError()
 
                         if not room_id or not str(room_id).startswith("arn:"):
+                            pass
+                            # NOTE: The detail endpoint /api/v4/livestream/{id} currently returns a 404.
+                            # This is likely because IDN has removed it or because the stream has ended.
+                            # The code below is temporarily commented out until replaced with playback_url parsing logic.
+                            """
                             try:
                                 detail_url = (
                                     f"https://api.idn.app/api/v4/livestream/{id}?n=1"
@@ -798,42 +803,68 @@ class LiveService:
                                 logger.exception(
                                     f"Failed to fetch IDN chat room ID from detail API for {id}: {api_err!r}"
                                 )
+                            """
 
-                    # For regular IDN Live streams, fallback to scraping HTML for the UUID
-                    elif (
-                        live.live_type != "idnliveplus"
-                        and not room_id
-                        and live.room_url_key
-                    ):
-                        try:
-                            username = live.room_url_key
-                            slug = id
-                            scrape_url = f"https://www.idn.app/{username}/live/{slug}"
+                            # NEW METHOD: Scrape the chat_room_id from the web HTML's __NEXT_DATA__
+                            # We can share this logic for both premium and regular streams!
 
-                            async with httpx.AsyncClient(
-                                follow_redirects=True, timeout=30.0
-                            ) as client:
-                                res = await client.get(scrape_url)
-                                html = res.text
-
-                                import re
-
-                                match = re.search(
-                                    r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
-                                    html,
+                    # Fallback to scraping HTML for both IDN Live+ (if missing ARN) and regular IDN Live
+                    if (
+                        live.live_type == "idnliveplus"
+                        and (not room_id or not str(room_id).startswith("arn:"))
+                    ) or (live.live_type != "idnliveplus" and not room_id):
+                        if live.room_url_key:
+                            try:
+                                username = live.room_url_key
+                                slug = id
+                                scrape_url = (
+                                    f"https://www.idn.app/{username}/live/{slug}"
                                 )
-                                if match:
-                                    data = json.loads(match.group(1))
-                                    livestream = (
-                                        data.get("props", {})
-                                        .get("pageProps", {})
-                                        .get("livestream", {})
+
+                                async with httpx.AsyncClient(
+                                    follow_redirects=True, timeout=30.0
+                                ) as client:
+                                    res = await client.get(scrape_url)
+
+                                    import re
+
+                                    match = re.search(
+                                        r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
+                                        res.text,
                                     )
-                                    room_id = livestream.get("chat_room_id")
-                        except Exception as scrape_err:
-                            logger.exception(
-                                f"Failed to scrape IDN chat room ID for {id}: {scrape_err!r}"
-                            )
+                                    if match:
+                                        data = json.loads(match.group(1))
+                                        livestream = (
+                                            data.get("props", {})
+                                            .get("pageProps", {})
+                                            .get("livestream", {})
+                                        )
+                                        scraped_chat_room_id = livestream.get(
+                                            "chat_room_id"
+                                        )
+
+                                        if live.live_type == "idnliveplus":
+                                            if scraped_chat_room_id and str(
+                                                scraped_chat_room_id
+                                            ).startswith("arn:"):
+                                                room_id = scraped_chat_room_id
+                                            else:
+                                                logger.warning(
+                                                    f"chat_room_id (ARN) not found in __NEXT_DATA__ for premium {id}"
+                                                )
+                                        else:
+                                            room_id = (
+                                                scraped_chat_room_id
+                                                or livestream.get("room_identifier")
+                                            )
+                                    else:
+                                        logger.warning(
+                                            f"__NEXT_DATA__ script tag not found for {id}"
+                                        )
+                            except Exception as scrape_err:
+                                logger.exception(
+                                    f"Failed to scrape IDN chat room ID for {id}: {scrape_err!r}"
+                                )
 
                     # For premium streams, fetch and append the playback auth token
                     streaming_urls = live.streaming_url
