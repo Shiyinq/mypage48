@@ -87,7 +87,7 @@ async def main(args):
                     "FlareSolverr is ENABLED in config. Ensuring docker container is running..."
                 )
                 subprocess.run(
-                    "docker start recorder-flaresolverr || docker run -d --name recorder-flaresolverr -p 8191:8191 --restart always ghcr.io/flaresolverr/flaresolverr:latest",
+                    "docker start recorder-flaresolverr || docker run -d --name recorder-flaresolverr -p 8191:8191 --tmpfs /tmp --log-opt max-size=10m --log-opt max-file=3 --restart always ghcr.io/flaresolverr/flaresolverr:latest",
                     shell=True,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
