@@ -50,7 +50,7 @@ def _get_dir_size(path: str) -> int:
         return total_size
     for dirpath, _, filenames in os.walk(path):
         for f in filenames:
-            if f.endswith(".mp4") or f.endswith(".ts"):
+            if f.endswith((".mp4", ".ts", ".mkv")):
                 continue
             fp = os.path.join(dirpath, f)
             if not os.path.islink(fp):
