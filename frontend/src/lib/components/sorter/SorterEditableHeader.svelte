@@ -232,11 +232,13 @@
 	<!-- FILTERS (Generations) -->
 	{#if filters && filters.length > 0}
 		<div class="flex flex-wrap gap-1.5 pt-2">
-			{#each filters as gen}
+			{#each filters as filter}
 				<span
 					class="px-2.5 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase border transition-all hover:scale-105 select-none bg-red-50/50 dark:bg-red-950/20 border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400"
 				>
-					{t('theater.sorter.genLabel', { gen })}
+					{filter.match(/^\d+$/)
+						? t('theater.sorter.genLabel', { gen: filter })
+						: filter.charAt(0) + filter.slice(1).toLowerCase()}
 				</span>
 			{/each}
 		</div>

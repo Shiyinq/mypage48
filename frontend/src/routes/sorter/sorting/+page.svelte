@@ -32,9 +32,6 @@
 	let isPublic = false;
 	let customTitle = $state(t('theater.sorter.results'));
 	let customSubtitle = $state(t('theater.sorter.resultsSubtitle'));
-	let sortedSelectedGens = $derived(
-		[...sorter.selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b))
-	);
 
 	let isEditingTitle = $state(false);
 	let isEditingSubtitle = $state(false);
@@ -207,7 +204,11 @@
 							onstartEditDescription={startEditSubtitle}
 							oncancelEditDescription={cancelSubtitle}
 							onsaveDescription={saveSubtitle}
-							filters={sortedSelectedGens}
+							titleLimit={TITLE_LIMIT}
+							descriptionLimit={SUBTITLE_LIMIT}
+							filters={sorter.filterMode === 'generation'
+								? Array.from(sorter.selectedGenerations).sort((a, b) => parseInt(a) - parseInt(b))
+								: Array.from(sorter.selectedTeams).sort()}
 						/>
 					</div>
 				</div>
