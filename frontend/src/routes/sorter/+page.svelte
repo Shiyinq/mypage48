@@ -42,18 +42,5 @@
 <div
 	class="w-full flex flex-col items-center justify-start min-h-[calc(100svh-64px)] pt-4 md:pt-8 pb-12"
 >
-	<SorterGenerationSelect
-		generations={sorter.generations}
-		selectedGenerations={sorter.selectedGenerations}
-		loadingGenerations={sorter.loadingGenerations}
-		selectedMembersCount={sorter.allMembers.filter((m) =>
-			sorter.selectedGenerations.has(m.generation)
-		).length}
-		ontoggle={sorter.toggleGeneration}
-		onselectAll={sorter.selectAllGenerations}
-		ondeselectAll={sorter.deselectAllGenerations}
-		onstart={sorter.startSort}
-		hasSavedProgress={sorter.hasSavedProgress}
-		onresume={sorter.resumeSort}
-	/>
+	<SorterGenerationSelect {sorter} />
 </div>

@@ -63,6 +63,10 @@ export function createSorter(
 	let selectedGenerations = $state<Set<string>>(new Set());
 	let loadingGenerations = $state(true);
 
+	let filterMode = $state<'generation' | 'team'>('generation');
+	let teams = $state<string[]>([]);
+	let selectedTeams = $state<Set<string>>(new Set());
+
 	// Sorting Logic State
 	let lstMember = $state<number[][]>([]);
 	let rec = $state<number[]>([]);
@@ -114,6 +118,22 @@ export function createSorter(
 			generations = gens.sort((a, b) => parseInt(a) - parseInt(b));
 			selectedGenerations = new Set();
 
+			const uniqueTeams = new Set(
+				allMembers
+					.map((m) => m.member_type)
+					.filter((type) => Boolean(type) && type !== 'JKT48_VIRTUAL') as string[]
+			);
+			const teamOrder = ['LOVE', 'DREAM', 'PASSION', 'TRAINEE'];
+			teams = Array.from(uniqueTeams).sort((a, b) => {
+				const indexA = teamOrder.indexOf(a);
+				const indexB = teamOrder.indexOf(b);
+				if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+				if (indexA !== -1) return -1;
+				if (indexB !== -1) return 1;
+				return a.localeCompare(b);
+			});
+			selectedTeams = new Set();
+
 			// Preload medium images for all members as soon as page opens
 			for (const m of allMembers) {
 				if (m.img_medium) {
@@ -148,8 +168,30 @@ export function createSorter(
 		selectedGenerations = new Set();
 	}
 
+	function toggleTeam(team: string) {
+		const next = new Set(selectedTeams);
+		if (next.has(team)) {
+			next.delete(team);
+		} else {
+			next.add(team);
+		}
+		selectedTeams = next;
+	}
+
+	function selectAllTeams() {
+		selectedTeams = new Set(teams);
+	}
+
+	function deselectAllTeams() {
+		selectedTeams = new Set();
+	}
+
 	function startSort() {
-		selectedMembers = allMembers.filter((m) => selectedGenerations.has(m.generation));
+		if (filterMode === 'generation') {
+			selectedMembers = allMembers.filter((m) => selectedGenerations.has(m.generation));
+		} else {
+			selectedMembers = allMembers.filter((m) => m.member_type && selectedTeams.has(m.member_type));
+		}
 		if (selectedMembers.length < 2) {
 			showToast(t('theater.sorter.minSelection'), 'error');
 			return;
@@ -197,6 +239,8 @@ export function createSorter(
 			const stateToSave = {
 				selectedMembers,
 				selectedGenerations: Array.from(selectedGenerations),
+				filterMode,
+				selectedTeams: Array.from(selectedTeams),
 				lstMember,
 				rec,
 				cmp1,
@@ -234,6 +278,8 @@ export function createSorter(
 				if (parsed && !parsed.finishFlag) {
 					selectedMembers = parsed.selectedMembers;
 					selectedGenerations = new Set(parsed.selectedGenerations);
+					filterMode = parsed.filterMode || 'generation';
+					selectedTeams = new Set(parsed.selectedTeams || []);
 					lstMember = parsed.lstMember;
 					rec = parsed.rec;
 					cmp1 = parsed.cmp1;
@@ -414,7 +460,10 @@ export function createSorter(
 
 	function saveHistoryLocalAuto() {
 		try {
-			const reqFilters = [...selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b));
+			const reqFilters =
+				filterMode === 'generation'
+					? [...selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b))
+					: [...selectedTeams].sort();
 			const reqResults = results.map((r) => ({
 				id: String(r.id),
 				name: r.name,
@@ -560,7 +609,10 @@ export function createSorter(
 
 	async function saveCurrentResult(title: string, description: string) {
 		try {
-			const reqFilters = [...selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b));
+			const reqFilters =
+				filterMode === 'generation'
+					? [...selectedGenerations].sort((a, b) => parseInt(a) - parseInt(b))
+					: [...selectedTeams].sort();
 			const reqResults = results.map((r) => ({
 				id: String(r.id),
 				name: r.name,
@@ -665,6 +717,18 @@ export function createSorter(
 		get loadingGenerations() {
 			return loadingGenerations;
 		},
+		get filterMode() {
+			return filterMode;
+		},
+		set filterMode(val: 'generation' | 'team') {
+			filterMode = val;
+		},
+		get teams() {
+			return teams;
+		},
+		get selectedTeams() {
+			return selectedTeams;
+		},
 		get numQuestion() {
 			return numQuestion;
 		},
@@ -728,6 +792,9 @@ export function createSorter(
 		toggleGeneration,
 		selectAllGenerations,
 		deselectAllGenerations,
+		toggleTeam,
+		selectAllTeams,
+		deselectAllTeams,
 		startSort,
 		handleSelect,
 		undo,

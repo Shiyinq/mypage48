@@ -438,8 +438,14 @@ class Watcher:
                 )
 
                 # Send Replay notification
+                # Skip if YouTube privacy is not public (unlisted/private)
                 live_type = str(meta.get("live_type") or "public").strip().lower()
-                if not is_official_jkt48(meta) and live_type == "public":
+                yt_privacy = self.config.youtube_privacy_status.lower()
+                if (
+                    not is_official_jkt48(meta)
+                    and live_type == "public"
+                    and yt_privacy == "public"
+                ):
                     await telegram_notifier.send_replay_live_notification(
                         live_id, title_log, ytid, self.config, folder_path
                     )

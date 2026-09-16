@@ -190,7 +190,9 @@
 									<span
 										class="px-2 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase bg-red-50/80 dark:bg-red-600/10 border border-red-100/50 dark:border-red-900/30 text-red-600 dark:text-red-400 select-none"
 									>
-										{t('theater.sorter.genLabel', { gen })}
+										{gen.match(/^\d+$/)
+											? t('theater.sorter.genLabel', { gen })
+											: gen.charAt(0) + gen.slice(1).toLowerCase()}
 									</span>
 								{/each}
 							</div>
