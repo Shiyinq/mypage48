@@ -1877,5 +1877,19 @@
 			"notFound": "Chat not found",
 			"noChatAtTime": "No chat at this time"
 		}
+	},
+	"liveDisabled": {
+		"title": "Oshi Live Feature Discontinued",
+		"description": "Thank you for using our live feature all this time. We apologize, but this feature has been discontinued to comply with the new IDN Terms of Service regarding content protection and copyright.",
+		"featuresLabel": "Details of discontinued features",
+		"featureLive": "Live — Watch JKT48 members streaming live.",
+		"featureMultiview": "Multiview — Watch multiple members simultaneously.",
+		"featureReplay": "Replay — Replay recorded live streams.",
+		"featureHistory": "History — View live history and watch history.",
+		"featurePC": "PC Live — View photo collections from live streams.",
+		"infoWatchOfficial": "Please watch live streams directly through the",
+		"watchOfficialLink": "official IDN app",
+		"readTos": "Read IDN Terms",
+		"goBack": "Go Back"
 	}
 }

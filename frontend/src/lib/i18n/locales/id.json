@@ -1881,5 +1881,19 @@
 			"notFound": "Chat tidak ditemukan",
 			"noChatAtTime": "Belum ada chat di waktu ini"
 		}
+	},
+	"liveDisabled": {
+		"title": "Fitur Oshi Live Dihentikan",
+		"description": "Terima kasih telah menggunakan fitur live kami selama ini. Mohon maaf, fitur ini telah dihentikan untuk mematuhi Ketentuan Layanan IDN yang baru terkait perlindungan konten dan hak cipta.",
+		"featuresLabel": "Detail Fitur yang dihentikan",
+		"featureLive": "Live — Menonton streaming member JKT48 secara langsung.",
+		"featureMultiview": "Multiview — Menonton beberapa member secara bersamaan.",
+		"featureReplay": "Replay — Memutar ulang rekaman live streaming.",
+		"featureHistory": "Riwayat — Melihat riwayat live dan riwayat menonton.",
+		"featurePC": "PC Live — Menampilkan koleksi foto dari live streaming.",
+		"infoWatchOfficial": "Silakan tonton live streaming langsung melalui",
+		"watchOfficialLink": "aplikasi resmi IDN",
+		"readTos": "Baca Ketentuan IDN",
+		"goBack": "Kembali"
 	}
 }

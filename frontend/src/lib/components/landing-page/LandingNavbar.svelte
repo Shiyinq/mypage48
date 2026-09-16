@@ -7,6 +7,7 @@
 	import { isAuthenticated } from '$lib/stores';
 	import { fade, fly } from 'svelte/transition';
 	import { liveStore, liveList } from '$lib/stores/live.svelte';
+	import { FEATURES } from '$lib/config/features';
 	import { onMount } from 'svelte';
 	// import RadioEngine from './radio-player/RadioEngine.svelte';
 	// import RadioWidget from './radio-player/RadioWidget.svelte';
@@ -43,7 +44,9 @@
 	}
 
 	onMount(() => {
-		liveStore.loadLiveList();
+		if (FEATURES.OSHI_LIVE_ENABLED) {
+			liveStore.loadLiveList();
+		}
 	});
 
 	let navItems = $derived([

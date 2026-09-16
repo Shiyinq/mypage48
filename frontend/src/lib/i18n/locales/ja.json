@@ -1875,5 +1875,19 @@
 			"notFound": "チャットが見つかりません",
 			"noChatAtTime": "この時間のチャットはありません"
 		}
+	},
+	"liveDisabled": {
+		"title": "推しライブ機能は終了しました",
+		"description": "これまでライブ機能をご利用いただき、ありがとうございました。申し訳ございませんが、コンテンツ保護と著作権に関するIDN利用規約の新しい規定に準拠するため、この機能は終了しました。",
+		"featuresLabel": "終了した機能の詳細",
+		"featureLive": "ライブ — JKT48メンバーのライブストリーミングを視聴。",
+		"featureMultiview": "マルチビュー — 複数のメンバーを同時に視聴。",
+		"featureReplay": "リプレイ — ライブストリーミングの録画を再生。",
+		"featureHistory": "履歴 — ライブ履歴と視聴履歴を表示。",
+		"featurePC": "PCライブ — ライブストリーミングの写真コレクションを表示。",
+		"infoWatchOfficial": "ライブストリーミングは",
+		"watchOfficialLink": "IDN公式アプリ",
+		"readTos": "IDN利用規約を読む",
+		"goBack": "戻る"
 	}
 }
