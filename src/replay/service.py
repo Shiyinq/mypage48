@@ -242,9 +242,7 @@ class ReplayService:
             files["thumbnail"] = thumbnail_path
         else:
             files["thumbnail"] = None
-        files["jsonl"] = await self._upload_bytes(
-            jsonl_bytes, f"{r2_base}/{live_id}.jsonl", "application/x-ndjson"
-        )
+        files["jsonl"] = None
         files["srt"] = await self._upload_bytes(
             srt_bytes, f"{r2_base}/{live_id}.srt", "text/plain"
         )
