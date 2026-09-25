@@ -90,6 +90,11 @@ async def test_upload_success(replay_service):
     assert result.member_name == "Fahira"
     assert result.duration_seconds == 3600
     assert len(result.files.screenshots) == 1
+    assert result.files.jsonl is None
+    uploaded_paths = [
+        call.args[1] for call in replay_service.storage.upload_file.call_args_list
+    ]
+    assert not any(p.endswith(".jsonl") for p in uploaded_paths)
     replay_service.repository.insert.assert_called_once()
     replay_service.storage.upload_file.assert_called()
 

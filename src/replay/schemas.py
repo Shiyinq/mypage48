@@ -33,7 +33,7 @@ class ReplayUpdateYouTube(BaseModel):
 class ReplayFilesInfo(BaseModel):
     json_file: str
     thumbnail: Optional[str] = None
-    jsonl: str
+    jsonl: Optional[str] = None
     srt: str
     screenshots: list[str]
 
