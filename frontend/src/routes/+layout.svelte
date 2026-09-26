@@ -165,7 +165,9 @@
 			$page.url.pathname.startsWith('/auth/')
 	);
 	let isFullScreenRoute = $derived($page.url.pathname.includes('/live/multiview'));
-	let isLiveRoute = $derived($page.url.pathname.startsWith('/live'));
+	let isLiveRoute = $derived(
+		$page.url.pathname.startsWith('/live') || $page.url.pathname.startsWith('/jkt48/live')
+	);
 	let isPlaygroundRoute = $derived($page.url.pathname.startsWith('/playground'));
 	// Reset state when user logs out
 	$effect(() => {
@@ -195,6 +197,7 @@
 		if (isAuth && isGuestRoute) {
 			goto('/');
 		} else if (isAuth && path.startsWith('/jkt48/')) {
+			if (path.startsWith('/jkt48/live/details')) return;
 			const map: Record<string, string> = {
 				'/jkt48/event-history': '/theater/events/history',
 				'/jkt48/calendar': '/theater/events/calendar'
