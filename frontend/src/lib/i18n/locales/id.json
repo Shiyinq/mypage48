@@ -134,7 +134,8 @@
 		"liveHistory": "Riwayat Live",
 		"watchHistory": "Riwayat Menonton",
 		"startSorter": "Mulai Sorter",
-		"sorterHistory": "Riwayat Sorter"
+		"sorterHistory": "Riwayat Sorter",
+		"page48": "Page48"
 	},
 	"header": {
 		"tagline": "PELACAK TEATER JKT48"
@@ -1895,5 +1896,124 @@
 		"watchOfficialLink": "aplikasi resmi IDN",
 		"readTos": "Baca Ketentuan IDN",
 		"goBack": "Kembali"
+	},
+	"page48": {
+		"nav": {
+			"home": "Beranda",
+			"photos": "Gambar",
+			"videos": "Video",
+			"trending": "Trending",
+			"members": "Member"
+		},
+		"aria": {
+			"profile": "Profil",
+			"openPost": "Buka postingan",
+			"more": "Opsi lainnya",
+			"like": "Suka",
+			"comment": "Komentar",
+			"repost": "Repost",
+			"bookmark": "Simpan",
+			"share": "Bagikan",
+			"media": "Media postingan",
+			"viewImage": "Lihat gambar {index} dari {total}",
+			"cancelReply": "Batalkan balasan",
+			"openX": "Buka X @{username}",
+			"imageCount": "{count} gambar"
+		},
+		"composer": {
+			"placeholder": "Apa yang baru?",
+			"replyPlaceholder": "Balas @{username}",
+			"submit": "Posting",
+			"reply": "Balas",
+			"addPhoto": "Tambahkan Foto",
+			"maxPhotos": "Maksimal 4 foto per postingan.",
+			"maxSize": "Ukuran foto maksimal 3MB.",
+			"previewAlt": "Pratinjau foto"
+		},
+		"feed": {
+			"emptyTitle": "Belum ada postingan",
+			"emptyText": "Jadilah yang pertama menulis sesuatu!",
+			"loadError": "Gagal memuat feed",
+			"end": "Anda sudah melihat semuanya",
+			"postSuccess": "Postingan berhasil dikirim",
+			"postError": "Gagal mengirim postingan"
+		},
+		"photos": {
+			"emptyTitle": "Belum ada gambar",
+			"emptyText": "Postingan yang berisi gambar akan muncul di sini."
+		},
+		"videos": {
+			"emptyTitle": "Belum ada video",
+			"emptyText": "Postingan yang berisi video akan muncul di sini."
+		},
+		"time": {
+			"secondsShort": "d",
+			"minutesShort": "m",
+			"hoursShort": "j",
+			"daysShort": "h",
+			"monthsShort": "bln",
+			"yearsShort": "thn"
+		},
+		"trending": {
+			"title": "Trending di Page48",
+			"subtitle": "Tag paling banyak dipakai",
+			"empty": "Belum ada tag. Gunakan #hashtag di postinganmu.",
+			"postCount": "{count} post",
+			"loadError": "Gagal memuat trending"
+		},
+		"members": {
+			"title": "Hashtag Member",
+			"subtitle": "Username X member JKT48 yang aktif",
+			"empty": "Belum ada data akun X member.",
+			"loadError": "Gagal memuat data member"
+		},
+		"tag": {
+			"header": "Postingan dengan tag ini",
+			"headerFiltered": "Postingan dengan tag ini • filter {media}",
+			"mediaText": "Teks",
+			"mediaImage": "Gambar",
+			"mediaVideo": "Video",
+			"empty": "Belum ada postingan dengan tag #{tag}.",
+			"loadError": "Gagal memuat"
+		},
+		"post": {
+			"loadError": "Gagal memuat postingan",
+			"notFound": "Postingan tidak ditemukan",
+			"replyingTo": "Membalas",
+			"replySent": "Balasan terkirim",
+			"replyError": "Gagal mengirim balasan",
+			"emptyReplies": "Belum ada balasan. Jadilah yang pertama membalas."
+		},
+		"userPage": {
+			"notFoundTitle": "Pengguna tidak ditemukan",
+			"notFoundText": "Profil yang kamu cari tidak ada atau sudah dihapus.",
+			"loadError": "Gagal memuat profil",
+			"editInSettings": "Edit di Pengaturan",
+			"fullProfile": "Profil lengkap",
+			"reposted": "Direpost",
+			"countPosts": "{count} Postingan",
+			"countReposts": "{count} Repost"
+		},
+		"tabs": {
+			"posts": "Postingan",
+			"media": "Gambar",
+			"reposts": "Repost",
+			"replies": "Balasan",
+			"likes": "Suka",
+			"bookmarks": "Tersimpan"
+		},
+		"empty": {
+			"posts": "Belum ada postingan.",
+			"media": "Belum ada gambar.",
+			"reposts": "Belum ada repost.",
+			"replies": "Belum ada balasan.",
+			"likes": "Belum ada postingan yang disukai.",
+			"bookmarks": "Belum ada postingan tersimpan."
+		},
+		"error": {
+			"action": "Gagal memproses. Coba lagi.",
+			"shareCopied": "Tautan disalin",
+			"shareError": "Gagal membagikan tautan"
+		}
 	}
 }

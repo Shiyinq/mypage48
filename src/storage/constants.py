@@ -19,4 +19,12 @@ class DomainErrorCode:
     INVALID_CATEGORY = "Invalid image category"
 
 
-VALID_CATEGORIES = {"ticket", "twoshot", "avatar", "journal", "member", "setlist"}
+VALID_CATEGORIES = {
+    "ticket",
+    "twoshot",
+    "avatar",
+    "journal",
+    "member",
+    "setlist",
+    "page48",
+}

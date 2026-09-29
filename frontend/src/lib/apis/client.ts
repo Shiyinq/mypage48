@@ -80,7 +80,12 @@ export async function client<T>(
 		'/history/lives/stats',
 		'/history/lives/members',
 		'/history/lives/pc',
-		'/replays'
+		'/replays',
+		'/page48/feed',
+		'/page48/posts/',
+		'/page48/users/',
+		'/page48/tags/',
+		'/page48/search'
 	];
 
 	const isPublic = publicEndpoints.some((p) => endpoint.startsWith(p));

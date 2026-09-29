@@ -32,7 +32,11 @@
 	}: Props = $props();
 
 	let isGallery = $derived(images.length > 1);
-	let src = $derived(isGallery ? images[currentIndex] || '' : singleSrc);
+	// Fall back to the first gallery image when only a single image is provided
+	// via `images` (and no explicit `src`), so a one-image lightbox still shows.
+	let src = $derived(
+		isGallery ? images[currentIndex] || '' : singleSrc || images[currentIndex] || ''
+	);
 
 	function goTo(index: number) {
 		if (!isGallery) return;

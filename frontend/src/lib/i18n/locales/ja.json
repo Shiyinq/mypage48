@@ -133,7 +133,8 @@
 		"liveHistory": "ライブ履歴",
 		"watchHistory": "視聴履歴",
 		"startSorter": "ソーターを開始",
-		"sorterHistory": "ソーター履歴"
+		"sorterHistory": "ソーター履歴",
+		"page48": "ページ48"
 	},
 	"header": {
 		"tagline": "JKT48劇場トラッカー"
@@ -1889,5 +1890,124 @@
 		"watchOfficialLink": "IDN公式アプリ",
 		"readTos": "IDN利用規約を読む",
 		"goBack": "戻る"
+	},
+	"page48": {
+		"nav": {
+			"home": "ホーム",
+			"photos": "画像",
+			"videos": "動画",
+			"trending": "トレンド",
+			"members": "メンバー"
+		},
+		"aria": {
+			"profile": "プロフィール",
+			"openPost": "投稿を開く",
+			"more": "その他のオプション",
+			"like": "いいね",
+			"comment": "コメント",
+			"repost": "リポスト",
+			"bookmark": "保存",
+			"share": "共有",
+			"media": "投稿メディア",
+			"viewImage": "画像 {index} / {total} を表示",
+			"cancelReply": "返信をキャンセル",
+			"openX": "X @{username} を開く",
+			"imageCount": "画像 {count} 枚"
+		},
+		"composer": {
+			"placeholder": "いまどうしてる？",
+			"replyPlaceholder": "@{username} に返信",
+			"submit": "投稿",
+			"reply": "返信",
+			"addPhoto": "写真を追加",
+			"maxPhotos": "1投稿につき最大4枚まで。",
+			"maxSize": "写真は最大3MBまで。",
+			"previewAlt": "アップロードのプレビュー"
+		},
+		"feed": {
+			"emptyTitle": "まだ投稿がありません",
+			"emptyText": "最初の投稿をしてみましょう！",
+			"loadError": "フィードの読み込みに失敗しました",
+			"end": "すべて表示しました",
+			"postSuccess": "投稿しました",
+			"postError": "投稿に失敗しました"
+		},
+		"photos": {
+			"emptyTitle": "まだ画像がありません",
+			"emptyText": "画像を含む投稿がここに表示されます。"
+		},
+		"videos": {
+			"emptyTitle": "まだ動画がありません",
+			"emptyText": "動画を含む投稿がここに表示されます。"
+		},
+		"time": {
+			"secondsShort": "秒",
+			"minutesShort": "分",
+			"hoursShort": "時間",
+			"daysShort": "日",
+			"monthsShort": "ヶ月",
+			"yearsShort": "年"
+		},
+		"trending": {
+			"title": "Page48のトレンド",
+			"subtitle": "最も使われているタグ",
+			"empty": "まだタグがありません。投稿で#ハッシュタグを使ってみましょう。",
+			"postCount": "{count} 件",
+			"loadError": "トレンドの読み込みに失敗しました"
+		},
+		"members": {
+			"title": "メンバーのハッシュタグ",
+			"subtitle": "活動中のJKT48メンバーのXユーザー名",
+			"empty": "メンバーのXアカウント情報がまだありません。",
+			"loadError": "メンバー情報の読み込みに失敗しました"
+		},
+		"tag": {
+			"header": "このタグの投稿",
+			"headerFiltered": "このタグの投稿 • {media}フィルター",
+			"mediaText": "テキスト",
+			"mediaImage": "画像",
+			"mediaVideo": "動画",
+			"empty": "タグ #{tag} の投稿はまだありません。",
+			"loadError": "読み込みに失敗しました"
+		},
+		"post": {
+			"loadError": "投稿の読み込みに失敗しました",
+			"notFound": "投稿が見つかりません",
+			"replyingTo": "返信先",
+			"replySent": "返信を送信しました",
+			"replyError": "返信の送信に失敗しました",
+			"emptyReplies": "まだ返信がありません。最初に返信しましょう。"
+		},
+		"userPage": {
+			"notFoundTitle": "ユーザーが見つかりません",
+			"notFoundText": "探しているプロフィールは存在しないか、削除されました。",
+			"loadError": "プロフィールの読み込みに失敗しました",
+			"editInSettings": "設定で編集",
+			"fullProfile": "フルプロフィール",
+			"reposted": "リポスト",
+			"countPosts": "{count} 投稿",
+			"countReposts": "{count} リポスト"
+		},
+		"tabs": {
+			"posts": "投稿",
+			"media": "画像",
+			"reposts": "リポスト",
+			"replies": "返信",
+			"likes": "いいね",
+			"bookmarks": "保存済み"
+		},
+		"empty": {
+			"posts": "まだ投稿がありません。",
+			"media": "まだ画像がありません。",
+			"reposts": "まだリポストがありません。",
+			"replies": "まだ返信がありません。",
+			"likes": "いいねした投稿はまだありません。",
+			"bookmarks": "保存した投稿はまだありません。"
+		},
+		"error": {
+			"action": "処理に失敗しました。もう一度お試しください。",
+			"shareCopied": "リンクをコピーしました",
+			"shareError": "リンクの共有に失敗しました"
+		}
 	}
 }

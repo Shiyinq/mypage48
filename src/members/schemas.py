@@ -65,6 +65,16 @@ class MemberBase(BaseModel):
         return v
 
 
+class MemberXAccount(BaseModel):
+    """A member's X (Twitter) handle, for use as a Page48 hashtag."""
+
+    memberId: str
+    name: str
+    nickname: Optional[str] = None
+    username: str
+    url: str
+
+
 class MemberCreate(MemberBase):
     createdAt: datetime = Field(default_factory=datetime.now)
     updatedAt: datetime = Field(default_factory=datetime.now)

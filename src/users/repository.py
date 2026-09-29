@@ -18,6 +18,13 @@ class UserRepository:
         user = await self.collection.find_one({"userId": user_id})
         return user
 
+    async def get_users_by_ids(self, user_ids: list[str]) -> list[dict]:
+        """Fetch multiple users by their userId in a single query."""
+        if not user_ids:
+            return []
+        cursor = self.collection.find({"userId": {"$in": user_ids}})
+        return await cursor.to_list(length=None)
+
     async def update_one(self, filter_query: dict, update_data: dict):
         return await self.collection.update_one(filter_query, update_data)
 

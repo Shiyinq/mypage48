@@ -154,7 +154,8 @@
 				'/jkt48/calendar',
 				'/jkt48/event-history',
 				'/jkt48/sorter',
-				'/jkt48/live'
+				'/jkt48/live',
+				'/page48'
 			].some((path) => $page.url.pathname.startsWith(path))
 	);
 	// Determine if current page is strictly for guests (login/register pages)

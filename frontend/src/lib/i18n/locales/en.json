@@ -133,7 +133,8 @@
 		"liveHistory": "Live History",
 		"watchHistory": "Watch History",
 		"startSorter": "Start Sorter",
-		"sorterHistory": "Sorter History"
+		"sorterHistory": "Sorter History",
+		"page48": "Page48"
 	},
 	"header": {
 		"tagline": "JKT48 THEATER TRACKER"
@@ -1891,5 +1892,124 @@
 		"watchOfficialLink": "official IDN app",
 		"readTos": "Read IDN Terms",
 		"goBack": "Go Back"
+	},
+	"page48": {
+		"nav": {
+			"home": "Home",
+			"photos": "Photos",
+			"videos": "Videos",
+			"trending": "Trending",
+			"members": "Members"
+		},
+		"aria": {
+			"profile": "Profile",
+			"openPost": "Open post",
+			"more": "More options",
+			"like": "Like",
+			"comment": "Comment",
+			"repost": "Repost",
+			"bookmark": "Save",
+			"share": "Share",
+			"media": "Post media",
+			"viewImage": "View image {index} of {total}",
+			"cancelReply": "Cancel reply",
+			"openX": "Open X @{username}",
+			"imageCount": "{count} images"
+		},
+		"composer": {
+			"placeholder": "What's new?",
+			"replyPlaceholder": "Reply to @{username}",
+			"submit": "Post",
+			"reply": "Reply",
+			"addPhoto": "Add Photo",
+			"maxPhotos": "Maximum 4 photos per post.",
+			"maxSize": "Maximum photo size is 3MB.",
+			"previewAlt": "Upload preview"
+		},
+		"feed": {
+			"emptyTitle": "No posts yet",
+			"emptyText": "Be the first to write something!",
+			"loadError": "Failed to load feed",
+			"end": "You've seen everything",
+			"postSuccess": "Post sent successfully",
+			"postError": "Failed to send post"
+		},
+		"photos": {
+			"emptyTitle": "No photos yet",
+			"emptyText": "Posts with photos will appear here."
+		},
+		"videos": {
+			"emptyTitle": "No videos yet",
+			"emptyText": "Posts with videos will appear here."
+		},
+		"time": {
+			"secondsShort": "s",
+			"minutesShort": "m",
+			"hoursShort": "h",
+			"daysShort": "d",
+			"monthsShort": "mo",
+			"yearsShort": "y"
+		},
+		"trending": {
+			"title": "Trending on Page48",
+			"subtitle": "Most used tags",
+			"empty": "No tags yet. Use #hashtags in your posts.",
+			"postCount": "{count} posts",
+			"loadError": "Failed to load trending"
+		},
+		"members": {
+			"title": "Member Hashtags",
+			"subtitle": "Active JKT48 members' X usernames",
+			"empty": "No member X accounts yet.",
+			"loadError": "Failed to load member data"
+		},
+		"tag": {
+			"header": "Posts with this tag",
+			"headerFiltered": "Posts with this tag • {media} filter",
+			"mediaText": "Text",
+			"mediaImage": "Photos",
+			"mediaVideo": "Videos",
+			"empty": "No posts with the #{tag} tag yet.",
+			"loadError": "Failed to load"
+		},
+		"post": {
+			"loadError": "Failed to load post",
+			"notFound": "Post not found",
+			"replyingTo": "Replying to",
+			"replySent": "Reply sent",
+			"replyError": "Failed to send reply",
+			"emptyReplies": "No replies yet. Be the first to reply."
+		},
+		"userPage": {
+			"notFoundTitle": "User not found",
+			"notFoundText": "The profile you're looking for doesn't exist or was deleted.",
+			"loadError": "Failed to load profile",
+			"editInSettings": "Edit in Settings",
+			"fullProfile": "Full profile",
+			"reposted": "Reposted",
+			"countPosts": "{count} Posts",
+			"countReposts": "{count} Reposts"
+		},
+		"tabs": {
+			"posts": "Posts",
+			"media": "Photos",
+			"reposts": "Reposts",
+			"replies": "Replies",
+			"likes": "Likes",
+			"bookmarks": "Saved"
+		},
+		"empty": {
+			"posts": "No posts yet.",
+			"media": "No photos yet.",
+			"reposts": "No reposts yet.",
+			"replies": "No replies yet.",
+			"likes": "No liked posts yet.",
+			"bookmarks": "No saved posts yet."
+		},
+		"error": {
+			"action": "Failed to process. Try again.",
+			"shareCopied": "Link copied",
+			"shareError": "Failed to share link"
+		}
 	}
 }

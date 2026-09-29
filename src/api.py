@@ -16,6 +16,7 @@ from src.llm.route import router as llm_router
 from src.members.route import router as members_router
 from src.memories.route import router as memories_router
 from src.news.route import router as news_router
+from src.page48.route import router as page48_router
 from src.playground.route import router as playground_router
 from src.replay.route import router as replay_router
 from src.setlists.route import router as setlists_router
@@ -53,3 +54,4 @@ router.include_router(
 router.include_router(playground_router, prefix="/playground", tags=["Playground"])
 router.include_router(replay_router, tags=["Replay"])
 router.include_router(concerts_router, prefix="/theater/concerts", tags=["Concerts"])
+router.include_router(page48_router, prefix="/page48", tags=["Page48"])

@@ -55,7 +55,8 @@
 				)
 		},
 		{ label: t('nav.live') || 'Live', href: '/live' },
-		{ label: t('nav.sorter') || 'Sorter', href: '/sorter' }
+		{ label: t('nav.sorter') || 'Sorter', href: '/sorter' },
+		{ label: t('nav.page48'), href: '/page48' }
 	]);
 
 	let currentPath = $derived($page.url.pathname);

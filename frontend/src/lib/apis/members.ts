@@ -51,6 +51,14 @@ export interface BirthdayResponse {
 	member_type?: string;
 }
 
+export interface MemberXAccount {
+	memberId: string;
+	name: string;
+	nickname?: string | null;
+	username: string;
+	url: string;
+}
+
 export const members = {
 	getAll: async (
 		params: {
@@ -77,6 +85,10 @@ export const members = {
 
 	getGenerations: async () => {
 		return client<string[]>('/members/generations');
+	},
+
+	getXAccounts: async () => {
+		return client<MemberXAccount[]>('/members/socials/x');
 	},
 
 	// Admin-only CRUD operations

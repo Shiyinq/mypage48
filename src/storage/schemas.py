@@ -2,7 +2,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel
 
-ImageCategory = Literal["ticket", "twoshot", "avatar", "journal", "member", "setlist"]
+ImageCategory = Literal["ticket", "twoshot", "avatar", "journal", "member", "setlist", "page48"]
 
 
 class ImageUploadRequest(BaseModel):
