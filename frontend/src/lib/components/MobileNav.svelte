@@ -168,23 +168,23 @@
 		</div>
 		<div class="p-3 grid grid-cols-1 gap-1.5 max-h-[calc(100dvh-12rem)] overflow-y-auto">
 			<a
-				href="/live"
-				class={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] active:opacity-70 group ${$page.url.pathname.startsWith('/live') ? 'bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+				href="/page48"
+				class={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] active:opacity-70 group ${$page.url.pathname.startsWith('/page48') ? 'bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
 				onclick={closeAllMenus}
 			>
 				<div class="flex items-center gap-3">
 					<div
-						class={`p-2.5 rounded-xl transition-transform ${$page.url.pathname.startsWith('/live') ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 text-red-500' : 'bg-gray-50 dark:bg-white/5 text-red-500'} group-hover:scale-110`}
+						class={`p-2.5 rounded-xl transition-transform ${$page.url.pathname.startsWith('/page48') ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 text-red-500' : 'bg-gray-50 dark:bg-white/5 text-red-500'} group-hover:scale-110`}
 					>
-						<Tv class="w-5 h-5" />
+						<span class="font-black text-[15px] italic leading-none">48</span>
 					</div>
 					<span
-						class={`font-bold transition-colors ${$page.url.pathname.startsWith('/live') ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'}`}
-						>{t('nav.live') || 'Live'}</span
+						class={`font-bold transition-colors ${$page.url.pathname.startsWith('/page48') ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'}`}
+						>{t('nav.page48')}</span
 					>
 				</div>
 				<ChevronRight
-					class={`w-4 h-4 transition-all ${$page.url.pathname.startsWith('/live') ? 'text-red-500 transform translate-x-1' : 'text-gray-300'}`}
+					class={`w-4 h-4 transition-all ${$page.url.pathname.startsWith('/page48') ? 'text-red-500 transform translate-x-1' : 'text-gray-300'}`}
 				/>
 			</a>
 			<a
@@ -208,23 +208,23 @@
 				/>
 			</a>
 			<a
-				href="/page48"
-				class={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] active:opacity-70 group ${$page.url.pathname.startsWith('/page48') ? 'bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+				href="/live"
+				class={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] active:opacity-70 group ${$page.url.pathname.startsWith('/live') ? 'bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
 				onclick={closeAllMenus}
 			>
 				<div class="flex items-center gap-3">
 					<div
-						class={`p-2.5 rounded-xl transition-transform ${$page.url.pathname.startsWith('/page48') ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 text-red-500' : 'bg-gray-50 dark:bg-white/5 text-red-500'} group-hover:scale-110`}
+						class={`p-2.5 rounded-xl transition-transform ${$page.url.pathname.startsWith('/live') ? 'bg-white dark:bg-zinc-800 shadow-sm scale-110 text-red-500' : 'bg-gray-50 dark:bg-white/5 text-red-500'} group-hover:scale-110`}
 					>
-						<span class="font-black text-[15px] italic leading-none">48</span>
+						<Tv class="w-5 h-5" />
 					</div>
 					<span
-						class={`font-bold transition-colors ${$page.url.pathname.startsWith('/page48') ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'}`}
-						>{t('nav.page48')}</span
+						class={`font-bold transition-colors ${$page.url.pathname.startsWith('/live') ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'}`}
+						>{t('nav.live') || 'Live'}</span
 					>
 				</div>
 				<ChevronRight
-					class={`w-4 h-4 transition-all ${$page.url.pathname.startsWith('/page48') ? 'text-red-500 transform translate-x-1' : 'text-gray-300'}`}
+					class={`w-4 h-4 transition-all ${$page.url.pathname.startsWith('/live') ? 'text-red-500 transform translate-x-1' : 'text-gray-300'}`}
 				/>
 			</a>
 		</div>

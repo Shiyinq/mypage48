@@ -6,6 +6,7 @@
 	import { page48NavbarStore } from '$lib/stores/page48.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
+	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
 
 	const { t } = useTranslation();
 
@@ -97,3 +98,5 @@
 		</ul>
 	{/if}
 </div>
+
+<Page48Sidebars showTrending={false} />

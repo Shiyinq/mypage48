@@ -9,6 +9,7 @@ from src.dependencies import (
     require_csrf_protection,
 )
 from src.page48.schemas import (
+    ActiveUsersResponse,
     AdminReportPaginationResponse,
     CreatePostRequest,
     EditPostRequest,
@@ -127,6 +128,17 @@ async def get_trending_tags(
     service: Page48Service = Depends(get_page48_service),
 ):
     return await service.get_trending_tags(limit)
+
+
+@router.get("/users/active", response_model=ActiveUsersResponse)
+async def get_active_users(
+    limit: int = Query(5, ge=1, le=20),
+    days: int = Query(7, ge=1, le=30),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_active_users(limit, days, user_id)
 
 
 @router.get("/tags/{tag}/posts", response_model=PostPaginationResponse)

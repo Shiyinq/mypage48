@@ -2031,6 +2031,12 @@
 			"empty": "No member X accounts yet.",
 			"loadError": "Failed to load member data"
 		},
+		"activeUsers": {
+			"title": "Most Active",
+			"empty": "No user activity yet.",
+			"loadError": "Failed to load active users",
+			"postCount": "{count} posts"
+		},
 		"tag": {
 			"header": "Posts with this tag",
 			"headerFiltered": "Posts with this tag • {media} filter",

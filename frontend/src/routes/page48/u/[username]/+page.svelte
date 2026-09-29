@@ -78,6 +78,34 @@
 		loadProfile();
 	});
 
+	// Active tab lives in the URL (?tab=…) in both directions: clicking a tab
+	// updates the URL, and opening a URL directly activates that tab.
+	let tabParam = $derived($page.url.searchParams.get('tab'));
+	let lastTabKey = '';
+
+	function resolveTab(raw: string | null): Tab {
+		const allowed: Tab[] = isOwnProfile
+			? ['posts', 'media', 'videos', 'reposts', 'replies', 'likes', 'bookmarks']
+			: ['posts', 'media', 'videos', 'reposts', 'replies'];
+		return raw && (allowed as string[]).includes(raw) ? (raw as Tab) : 'posts';
+	}
+
+	$effect(() => {
+		const name = username;
+		const target = resolveTab(tabParam);
+		if (!name) return;
+		const key = `${name}|${target}`;
+		if (key === lastTabKey) return;
+		lastTabKey = key;
+		void loadTab(target);
+	});
+
+	function selectTab(key: Tab) {
+		if (key === activeTab) return;
+		const url = key === 'posts' ? `/page48/u/${username}` : `/page48/u/${username}?tab=${key}`;
+		void goto(url, { keepFocus: true, noScroll: true });
+	}
+
 	async function loadProfile() {
 		try {
 			loadingProfile = true;
@@ -88,7 +116,6 @@
 				return;
 			}
 			profile = await page48Api.getUserProfile(username);
-			await loadTab('posts');
 		} catch (err: unknown) {
 			const e = err as { status?: number; message?: string };
 			if (e?.status === 404) {
@@ -389,7 +416,7 @@
 		<div class="flex border-b border-gray-200/60 dark:border-white/10 overflow-x-auto no-scrollbar">
 			{#each tabs as tab}
 				<button
-					onclick={() => loadTab(tab.key)}
+					onclick={() => selectTab(tab.key)}
 					class={`shrink-0 sm:flex-1 px-4 sm:px-2 py-3 text-[14px] font-semibold whitespace-nowrap transition-colors cursor-pointer border-b-2 -mb-px ${
 						activeTab === tab.key
 							? 'text-red-600 dark:text-red-400 border-red-600 dark:border-red-400'

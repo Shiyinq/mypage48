@@ -1,6 +1,6 @@
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, List
 
 from src.auth.schemas import UserCurrent
@@ -26,6 +26,8 @@ from src.page48.exceptions import (
 )
 from src.page48.repository import Page48Repository
 from src.page48.schemas import (
+    ActiveUserItem,
+    ActiveUsersResponse,
     AdminReportItem,
     AdminReportPaginationMeta,
     AdminReportPaginationResponse,
@@ -252,6 +254,45 @@ class Page48Service:
         return TrendingTagsResponse(
             tags=[TrendingTag(tag=row["_id"], count=row["count"]) for row in rows]
         )
+
+    async def get_active_users(
+        self,
+        limit: int = 5,
+        days: int = 7,
+        exclude_user_id: Optional[str] = None,
+    ) -> ActiveUsersResponse:
+        """Most active (most top-level posts) users in the last `days`."""
+        since = datetime.now() - timedelta(days=days)
+        # Fetch one extra row when we may need to drop the current user.
+        rows = await self.repository.get_most_active_users(
+            limit + 1 if exclude_user_id else limit, since
+        )
+        if exclude_user_id:
+            rows = [row for row in rows if row["_id"] != exclude_user_id]
+        rows = rows[:limit]
+
+        user_ids = [row["_id"] for row in rows if row.get("_id")]
+        users = await self.user_repository.get_users_by_ids(user_ids)
+        user_map = {u["userId"]: u for u in users}
+
+        picture_cache: dict = {}
+        items: List[ActiveUserItem] = []
+        for row in rows:
+            user = user_map.get(row["_id"])
+            picture = await self._resolve_picture(
+                (user or {}).get("profilePicture"), picture_cache
+            )
+            items.append(
+                ActiveUserItem(
+                    userId=row["_id"],
+                    username=(user or {}).get("username") or row.get("username") or "",
+                    name=(user or {}).get("name") or row.get("name") or "",
+                    profilePicture=picture,
+                    postCount=row.get("postCount", 0),
+                    lastPostedAt=row.get("lastPostedAt"),
+                )
+            )
+        return ActiveUsersResponse(users=items)
 
     async def get_posts_by_tag(
         self,

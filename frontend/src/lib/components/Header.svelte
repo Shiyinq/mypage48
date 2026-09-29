@@ -54,9 +54,9 @@
 					path.startsWith(p)
 				)
 		},
-		{ label: t('nav.live') || 'Live', href: '/live' },
+		{ label: t('nav.page48'), href: '/page48' },
 		{ label: t('nav.sorter') || 'Sorter', href: '/sorter' },
-		{ label: t('nav.page48'), href: '/page48' }
+		{ label: t('nav.live') || 'Live', href: '/live' }
 	]);
 
 	let currentPath = $derived($page.url.pathname);

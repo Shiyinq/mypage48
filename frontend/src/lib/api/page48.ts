@@ -105,6 +105,19 @@ export interface TrendingTagsResponse {
 	tags: TrendingTag[];
 }
 
+export interface ActiveUser {
+	userId: string;
+	username: string;
+	name: string;
+	profilePicture: string | null;
+	postCount: number;
+	lastPostedAt: string | null;
+}
+
+export interface ActiveUsersResponse {
+	users: ActiveUser[];
+}
+
 export type ReportTargetType = 'post' | 'user';
 export type ReportReason = 'spam' | 'harassment' | 'inappropriate' | 'other';
 
@@ -344,6 +357,10 @@ export const page48Api = {
 
 	getTrendingTags: async (limit: number = 10): Promise<TrendingTagsResponse> => {
 		return client<TrendingTagsResponse>(`/page48/tags/trending?limit=${limit}`);
+	},
+
+	getActiveUsers: async (limit: number = 5, days: number = 7): Promise<ActiveUsersResponse> => {
+		return client<ActiveUsersResponse>(`/page48/users/active?limit=${limit}&days=${days}`);
 	},
 
 	getPostsByTag: async (

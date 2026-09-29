@@ -150,6 +150,32 @@ class Page48Repository:
             {"username": username, "parentPostId": None}
         )
 
+    async def get_most_active_users(
+        self, limit: int = 5, since: Optional[datetime] = None
+    ) -> List[dict]:
+        """Top-level posters in a time window, most posts first."""
+        match: dict = {"parentPostId": None}
+        if since is not None:
+            match["createdAt"] = {"$gte": since}
+
+        pipeline = [
+            {"$match": match},
+            {"$sort": {"createdAt": -1}},
+            {
+                "$group": {
+                    "_id": "$userId",
+                    "postCount": {"$sum": 1},
+                    "username": {"$last": "$username"},
+                    "name": {"$last": "$userDisplayName"},
+                    "lastPostedAt": {"$max": "$createdAt"},
+                }
+            },
+            {"$sort": {"postCount": -1, "lastPostedAt": -1}},
+            {"$limit": limit},
+        ]
+        cursor = self.posts.aggregate(pipeline)
+        return await cursor.to_list(length=limit)
+
     async def get_trending_tags(self, limit: int = 10) -> List[dict]:
         """Return the most used tags across all posts, most frequent first."""
         pipeline = [

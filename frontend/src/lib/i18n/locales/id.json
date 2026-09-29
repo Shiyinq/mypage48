@@ -2035,6 +2035,12 @@
 			"empty": "Belum ada data akun X member.",
 			"loadError": "Gagal memuat data member"
 		},
+		"activeUsers": {
+			"title": "Paling Aktif",
+			"empty": "Belum ada aktivitas pengguna.",
+			"loadError": "Gagal memuat pengguna aktif",
+			"postCount": "{count} post"
+		},
 		"tag": {
 			"header": "Postingan dengan tag ini",
 			"headerFiltered": "Postingan dengan tag ini • filter {media}",

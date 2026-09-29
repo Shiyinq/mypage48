@@ -1,4 +1,4 @@
-import { page48Api, type TrendingTag } from '$lib/api/page48';
+import { page48Api, type ActiveUser, type TrendingTag } from '$lib/api/page48';
 import { members as membersApi, type MemberXAccount } from '$lib/apis/members';
 import { logger } from '$lib/utils/logger';
 import { createRequestDedup } from '$lib/utils/requestDedup';
@@ -95,6 +95,12 @@ export const memberXTagsStore = createCachedListStore<MemberXAccount>('member X 
 export const trendingTagsStore = createCachedListStore<TrendingTag>(
 	'trending tags',
 	async () => (await page48Api.getTrendingTags(8)).tags
+);
+
+/** Most active users (last 7 days), shown under the trending tags. */
+export const activeUsersStore = createCachedListStore<ActiveUser>(
+	'active users',
+	async () => (await page48Api.getActiveUsers(5)).users
 );
 
 /**

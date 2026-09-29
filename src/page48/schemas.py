@@ -110,6 +110,19 @@ class TrendingTagsResponse(BaseModel):
     tags: list[TrendingTag] = []
 
 
+class ActiveUserItem(BaseModel):
+    userId: str
+    username: str
+    name: str
+    profilePicture: Optional[str] = None
+    postCount: int = 0
+    lastPostedAt: Optional[datetime] = None
+
+
+class ActiveUsersResponse(BaseModel):
+    users: list[ActiveUserItem] = []
+
+
 ReportTargetType = Literal["post", "user"]
 ReportReason = Literal["spam", "harassment", "inappropriate", "other"]
 

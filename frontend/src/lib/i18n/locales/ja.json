@@ -2017,7 +2017,7 @@
 			"yearsShort": "年"
 		},
 		"trending": {
-			"title": "Page48のトレンド",
+			"title": "ページ48のトレンド",
 			"subtitle": "最も使われているタグ",
 			"empty": "まだタグがありません。投稿で#ハッシュタグを使ってみましょう。",
 			"postCount": "{count} 件",
@@ -2028,6 +2028,12 @@
 			"subtitle": "活動中のJKT48メンバーのXユーザー名",
 			"empty": "メンバーのXアカウント情報がまだありません。",
 			"loadError": "メンバー情報の読み込みに失敗しました"
+		},
+		"activeUsers": {
+			"title": "最もアクティブ",
+			"empty": "まだユーザーの活動がありません。",
+			"loadError": "アクティブユーザーの読み込みに失敗しました",
+			"postCount": "{count} 投稿"
 		},
 		"tag": {
 			"header": "このタグの投稿",
