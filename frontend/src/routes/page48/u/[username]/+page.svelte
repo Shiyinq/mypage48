@@ -14,6 +14,7 @@
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import SEO from '$lib/components/SEO.svelte';
 	import { fade } from 'svelte/transition';
 
 	const { t } = useTranslation();
@@ -39,6 +40,14 @@
 	// Known before the profile loads (from the route param), so the loading
 	// skeleton matches the real header (settings pill vs. 3-dot menu).
 	let isSameUser = $derived(!!userProfile.data?.username && userProfile.data.username === username);
+
+	let seoTitle = $derived(
+		profile ? `${profile.name} (@${profile.username}) · Page48` : t('page48.seo.userTitle')
+	);
+	let seoDescription = $derived(
+		profile?.bio?.trim() ? profile.bio.trim().slice(0, 160) : t('page48.seo.userDesc')
+	);
+	let seoImage = $derived(profile ? getAvatarUrl(profile) : undefined);
 
 	let tabs = $derived.by(() => {
 		const items: { key: Tab; label: string }[] = [
@@ -198,6 +207,14 @@
 </script>
 
 <svelte:window onscroll={handleScroll} />
+
+<SEO
+	title={seoTitle}
+	path={`/page48/u/${username}`}
+	description={seoDescription}
+	image={seoImage}
+	keywords={`Page48, JKT48, ${profile?.username ?? username}, profil Page48`}
+/>
 
 <div
 	class="max-w-[620px] mx-auto w-full min-h-screen bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl sm:border-x border-gray-200/60 dark:border-white/10 pb-24 shadow-sm shadow-black/5 dark:shadow-none transition-all"

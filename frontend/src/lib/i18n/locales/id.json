@@ -1934,6 +1934,24 @@
 			"trending": "Trending",
 			"members": "Member"
 		},
+		"seo": {
+			"feedTitle": "Page48",
+			"feedDesc": "Page48 - ruang sosial komunitas JKT48. Bagikan postingan teks, gambar, dan video, serta ikuti hashtag member JKT48.",
+			"photosTitle": "Gambar di Page48",
+			"photosDesc": "Kumpulan postingan bergambar dari komunitas Page48 JKT48.",
+			"videosTitle": "Video di Page48",
+			"videosDesc": "Kumpulan postingan video dari komunitas Page48 JKT48.",
+			"trendingTitle": "Trending di Page48",
+			"trendingDesc": "Hashtag yang sedang populer di komunitas Page48 JKT48.",
+			"membersTitle": "Hashtag Member Page48",
+			"membersDesc": "Hashtag berdasarkan username X member JKT48 yang aktif.",
+			"tagTitle": "Postingan #{tag} di Page48",
+			"tagDesc": "Lihat semua postingan dengan hashtag #{tag} di Page48.",
+			"postTitle": "Postingan Page48",
+			"postDesc": "Lihat postingan dan balasan di Page48.",
+			"userTitle": "Profil Page48",
+			"userDesc": "Lihat postingan, repost, dan gambar pengguna di Page48."
+		},
 		"aria": {
 			"profile": "Profil",
 			"openPost": "Buka postingan",

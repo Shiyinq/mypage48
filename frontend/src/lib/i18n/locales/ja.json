@@ -1928,6 +1928,24 @@
 			"trending": "トレンド",
 			"members": "メンバー"
 		},
+		"seo": {
+			"feedTitle": "ページ48",
+			"feedDesc": "ページ48 - JKT48コミュニティのソーシャルスペース。テキスト・写真・動画の投稿やメンバーのハッシュタグをチェック。",
+			"photosTitle": "ページ48の写真",
+			"photosDesc": "ページ48 JKT48コミュニティの写真投稿。",
+			"videosTitle": "ページ48の動画",
+			"videosDesc": "ページ48 JKT48コミュニティの動画投稿。",
+			"trendingTitle": "ページ48のトレンド",
+			"trendingDesc": "ページ48 JKT48コミュニティで人気のハッシュタグ。",
+			"membersTitle": "ページ48 メンバーハッシュタグ",
+			"membersDesc": "活動中のJKT48メンバーのXユーザー名に基づくハッシュタグ。",
+			"tagTitle": "ページ48の #{tag} 投稿",
+			"tagDesc": "ページ48で #{tag} が付いた投稿をすべて表示。",
+			"postTitle": "ページ48の投稿",
+			"postDesc": "ページ48の投稿と返信を表示。",
+			"userTitle": "ページ48プロフィール",
+			"userDesc": "ページ48でユーザーの投稿・リポスト・写真を表示。"
+		},
 		"aria": {
 			"profile": "プロフィール",
 			"openPost": "投稿を開く",

@@ -1930,6 +1930,24 @@
 			"trending": "Trending",
 			"members": "Members"
 		},
+		"seo": {
+			"feedTitle": "Page48",
+			"feedDesc": "Page48 - the social space for the JKT48 community. Share text, photo, and video posts, and follow JKT48 member hashtags.",
+			"photosTitle": "Photos on Page48",
+			"photosDesc": "Photo posts from the Page48 JKT48 community.",
+			"videosTitle": "Videos on Page48",
+			"videosDesc": "Video posts from the Page48 JKT48 community.",
+			"trendingTitle": "Trending on Page48",
+			"trendingDesc": "Popular hashtags in the Page48 JKT48 community.",
+			"membersTitle": "Page48 Member Hashtags",
+			"membersDesc": "Hashtags based on active JKT48 members' X usernames.",
+			"tagTitle": "#{tag} posts on Page48",
+			"tagDesc": "See all posts tagged #{tag} on Page48.",
+			"postTitle": "Page48 post",
+			"postDesc": "View a post and its replies on Page48.",
+			"userTitle": "Page48 profile",
+			"userDesc": "See a user's posts, reposts, and photos on Page48."
+		},
 		"aria": {
 			"profile": "Profile",
 			"openPost": "Open post",

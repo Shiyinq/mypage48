@@ -5,6 +5,7 @@
 	import { ErrorState } from '$lib/components';
 	import { page48NavbarStore } from '$lib/stores/page48.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import SEO from '$lib/components/SEO.svelte';
 
 	const { t } = useTranslation();
 
@@ -31,6 +32,13 @@
 		}
 	}
 </script>
+
+<SEO
+	title={t('page48.seo.trendingTitle')}
+	path="/page48/trending"
+	description={t('page48.seo.trendingDesc')}
+	keywords="Page48, JKT48, trending, hashtag JKT48"
+/>
 
 <div
 	class="max-w-[620px] mx-auto w-full min-h-screen bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl sm:border-x border-gray-200/60 dark:border-white/10 pb-24 shadow-sm shadow-black/5 dark:shadow-none transition-all"

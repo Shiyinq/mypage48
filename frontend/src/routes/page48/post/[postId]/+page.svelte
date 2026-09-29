@@ -11,6 +11,7 @@
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import SEO from '$lib/components/SEO.svelte';
 
 	const { t } = useTranslation();
 	import {
@@ -29,6 +30,12 @@
 	let replyTarget = $state<Page48Post | null>(null);
 
 	let postId = $derived($page.params.postId ?? '');
+
+	let seoTitle = $derived(focused ? `@${focused.username} · Page48` : t('page48.seo.postTitle'));
+	let seoDescription = $derived(
+		focused?.content?.trim() ? focused.content.trim().slice(0, 160) : t('page48.seo.postDesc')
+	);
+	let seoImage = $derived(focused?.images?.[0]?.url ?? undefined);
 
 	onMount(() => {
 		page48NavbarStore.pageType = 'post-detail';
@@ -168,6 +175,14 @@
 		</div>
 	{/if}
 {/snippet}
+
+<SEO
+	title={seoTitle}
+	path={`/page48/post/${postId}`}
+	description={seoDescription}
+	image={seoImage}
+	keywords="Page48, JKT48, postingan JKT48, komunitas JKT48"
+/>
 
 <div
 	class="max-w-[620px] mx-auto w-full min-h-screen bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl sm:border-x border-gray-200/60 dark:border-white/10 pb-24 shadow-sm shadow-black/5 dark:shadow-none transition-all"
