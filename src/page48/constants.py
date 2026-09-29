@@ -6,6 +6,7 @@ class Info:
     REPOST_TOGGLED = "Repost status toggled."
     BOOKMARK_TOGGLED = "Bookmark status toggled."
     REPORT_CREATED = "Report submitted successfully."
+    VIDEO_UPLOADED = "Video uploaded successfully."
 
 class ErrorCode:
     POST_NOT_FOUND = "Post not found."
@@ -18,6 +19,12 @@ class ErrorCode:
     CANNOT_REPORT_SELF = "You cannot report yourself."
     REPORT_ALREADY_EXISTS = "You have already reported this."
     INVALID_REPORT_TARGET = "The reported target does not exist."
+    VIDEO_UPLOAD_ERROR = "Failed to upload video."
+    VIDEO_TOO_LARGE = "Video exceeds the maximum size of 50MB."
+    INVALID_VIDEO_TYPE = "Unsupported video format. Allowed: MP4 or WebM."
+    MAX_VIDEO_EXCEEDED = "Maximum number of videos allowed per post is 1."
+    INVALID_MEDIA_COMBINATION = "A post cannot contain both images and a video."
+    INVALID_VIDEO = "The video reference is invalid."
 
 class DomainErrorCode:
     POST_NOT_FOUND = "Post not found."
@@ -28,3 +35,9 @@ class DomainErrorCode:
     CANNOT_REPORT_SELF = "You cannot report yourself."
     REPORT_ALREADY_EXISTS = "You have already reported this."
     INVALID_REPORT_TARGET = "The reported target does not exist."
+    VIDEO_UPLOAD_FAILED = "Failed to upload video."
+    VIDEO_TOO_LARGE = "Video exceeds the maximum size of 50MB."
+    INVALID_VIDEO_TYPE = "Unsupported video format. Allowed: MP4 or WebM."
+    MAX_VIDEO_EXCEEDED = "Maximum number of videos allowed per post is 1."
+    INVALID_MEDIA_COMBINATION = "A post cannot contain both images and a video."
+    INVALID_VIDEO = "The video reference is invalid."

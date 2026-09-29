@@ -9,7 +9,13 @@
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { t } from '$lib/i18n';
-	import { sharePost, togglePostInteraction, uploadPage48Images } from '$lib/utils/page48';
+	import {
+		sharePost,
+		togglePostInteraction,
+		uploadPage48Images,
+		uploadPage48Video,
+		type VideoDraft
+	} from '$lib/utils/page48';
 
 	interface Props {
 		media?: 'text' | 'image' | 'video' | null;
@@ -115,10 +121,11 @@
 		posts = posts.filter((p) => p.postId !== postId);
 	}
 
-	async function handleCreatePost(content: string, files: File[]) {
+	async function handleCreatePost(content: string, files: File[], video: VideoDraft | null) {
 		try {
 			const filenames = files.length > 0 ? await uploadPage48Images(files) : [];
-			const newPost = await page48Api.createPost(content, filenames);
+			const videos = video ? [await uploadPage48Video(video)] : [];
+			const newPost = await page48Api.createPost(content, filenames, videos);
 			if (newPost) {
 				posts = [newPost, ...posts];
 				showToast(t('page48.feed.postSuccess'), 'success');

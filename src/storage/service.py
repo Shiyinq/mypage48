@@ -416,6 +416,33 @@ class StorageService:
         encoded_path = quote(path)
         return f"{self.config.api_base_url}/storage/m/{encoded_path}?expires={expires}&signature={signature}"
 
+    async def upload_object(
+        self, data: bytes, object_name: str, content_type: str
+    ) -> str:
+        """Upload raw bytes (e.g. a video) to storage and return the object path."""
+        await self.repository.upload_file(
+            data, object_name, content_type=content_type
+        )
+        return object_name
+
+    async def resolve_video_url(self, path: Optional[str]) -> Optional[str]:
+        """Resolve a video object to a direct (presigned) URL.
+
+        Video playback needs HTTP Range support, which presigned S3/R2 URLs
+        provide natively; the image proxy reads whole objects into memory, so we
+        only fall back to it if presigning fails.
+        """
+        if not path:
+            return None
+        if path.startswith("http") or path.startswith("data:"):
+            return path
+        clean = path.lstrip("/")
+        try:
+            return await self.repository.get_presigned_url(clean, expires=21600)
+        except Exception as e:
+            logger.error(f"Failed to presign video {clean}: {e}")
+            return await self.resolve_url(clean)
+
     async def resolve_image_variants(
         self, path: Optional[str], default_blur_hash: Optional[str] = None
     ) -> dict[str, Optional[str]]:

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { Repeat2, Settings, ExternalLink, LoaderCircle, Copy } from 'lucide-svelte';
+	import { Repeat2, Settings, ExternalLink, LoaderCircle, Copy, Play } from 'lucide-svelte';
 	import { page48Api, type Page48Post, type Page48UserProfile } from '$lib/api/page48';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
@@ -19,7 +19,7 @@
 
 	const { t } = useTranslation();
 
-	type Tab = 'posts' | 'media' | 'reposts' | 'replies' | 'likes' | 'bookmarks';
+	type Tab = 'posts' | 'media' | 'videos' | 'reposts' | 'replies' | 'likes' | 'bookmarks';
 
 	let username = $derived($page.params.username ?? '');
 
@@ -53,6 +53,7 @@
 		const items: { key: Tab; label: string }[] = [
 			{ key: 'posts', label: t('page48.tabs.posts') },
 			{ key: 'media', label: t('page48.tabs.media') },
+			{ key: 'videos', label: t('page48.tabs.videos') },
 			{ key: 'reposts', label: t('page48.tabs.reposts') },
 			{ key: 'replies', label: t('page48.tabs.replies') }
 		];
@@ -104,6 +105,8 @@
 		switch (tab) {
 			case 'media':
 				return page48Api.getUserPosts(username, 20, cursor, 'image');
+			case 'videos':
+				return page48Api.getUserPosts(username, 20, cursor, 'video');
 			case 'reposts':
 				return page48Api.getUserReposts(username, 20, cursor);
 			case 'replies':
@@ -204,6 +207,12 @@
 			return (p.profilePicture_small || p.profilePicture) as string;
 		return `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=fca5a5&color=fff`;
 	}
+
+	function formatDuration(seconds: number): string {
+		const m = Math.floor(seconds / 60);
+		const s = Math.floor(seconds % 60);
+		return `${m}:${s.toString().padStart(2, '0')}`;
+	}
 </script>
 
 <svelte:window onscroll={handleScroll} />
@@ -233,6 +242,9 @@
 							</div>
 							<div class="flex items-center gap-2 shrink-0">
 								<div class="h-8 w-28 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
+								{#if isSameUser}
+									<div class="h-8 w-32 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
+								{/if}
 								{#if isAuthenticated.value && !isSameUser}
 									<div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
 								{/if}
@@ -252,11 +264,6 @@
 				</div>
 
 				<!-- Action button (own profile only) -->
-				{#if isSameUser}
-					<div class="flex items-center gap-2">
-						<div class="h-9 w-36 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
-					</div>
-				{/if}
 			</div>
 
 			<!-- Tabs -->
@@ -340,6 +347,15 @@
 								<ExternalLink size={15} />
 								{t('page48.userPage.fullProfile')}
 							</a>
+							{#if isOwnProfile}
+								<button
+									onclick={() => goto('/settings')}
+									class="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-zinc-800 text-[13px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
+								>
+									<Settings size={15} />
+									{t('page48.userPage.editInSettings')}
+								</button>
+							{/if}
 							{#if !isOwnProfile && isAuthenticated.value}
 								<UserMenu onReport={() => (showReportUser = true)} />
 							{/if}
@@ -366,18 +382,6 @@
 				<p class="text-[14px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
 					{profile.bio}
 				</p>
-			{/if}
-
-			{#if isOwnProfile}
-				<div class="flex items-center gap-2">
-					<button
-						onclick={() => goto('/settings')}
-						class="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-zinc-800 text-[13px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
-					>
-						<Settings size={15} />
-						{t('page48.userPage.editInSettings')}
-					</button>
-				</div>
 			{/if}
 		</div>
 
@@ -417,6 +421,8 @@
 					{t('page48.empty.posts')}
 				{:else if activeTab === 'media'}
 					{t('page48.empty.media')}
+				{:else if activeTab === 'videos'}
+					{t('page48.empty.videos')}
 				{:else if activeTab === 'reposts'}
 					{t('page48.empty.reposts')}
 				{:else if activeTab === 'likes'}
@@ -451,6 +457,56 @@
 									title={t('page48.aria.imageCount', { count: post.images.length })}
 								>
 									<Copy size={16} fill="currentColor" />
+								</span>
+							{/if}
+						</a>
+					{/if}
+				{/each}
+			</div>
+
+			{#if loadingMore}
+				<div class="p-4 flex justify-center">
+					<LoaderCircle size={20} class="animate-spin text-gray-400" />
+				</div>
+			{/if}
+
+			{#if !hasMore && posts.length > 0}
+				<div class="p-10 text-center flex flex-col items-center gap-3">
+					<div class="w-1.5 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+					<span class="text-[13px] font-medium text-gray-400 dark:text-gray-500">
+						{t('page48.feed.end')}
+					</span>
+				</div>
+			{/if}
+		{:else if activeTab === 'videos'}
+			<div class="grid grid-cols-3 gap-0.5 p-0.5" in:fade={{ duration: 250 }}>
+				{#each posts as post (post.postId)}
+					{@const clip = post.videos?.[0]}
+					{#if clip?.url}
+						<a
+							href={`/page48/post/${post.postId}`}
+							class="relative block aspect-square bg-gray-100 dark:bg-zinc-800 overflow-hidden cursor-pointer group"
+							aria-label={t('page48.video.play')}
+						>
+							<video
+								src={clip.url}
+								muted
+								playsinline
+								preload="metadata"
+								class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+							></video>
+							<span class="absolute inset-0 flex items-center justify-center pointer-events-none">
+								<span
+									class="w-9 h-9 rounded-full bg-black/45 backdrop-blur flex items-center justify-center"
+								>
+									<Play size={16} class="text-white translate-x-0.5" fill="currentColor" />
+								</span>
+							</span>
+							{#if clip.duration > 0}
+								<span
+									class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-medium tabular-nums"
+								>
+									{formatDuration(clip.duration)}
 								</span>
 							{/if}
 						</a>

@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, Query, Path
+from fastapi import APIRouter, Depends, File, Form, Query, Path, UploadFile
 
 from src.auth.schemas import UserCurrent
 from src.dependencies import (
@@ -20,6 +20,7 @@ from src.page48.schemas import (
     ThreadResponse,
     ToggleResponse,
     TrendingTagsResponse,
+    VideoUploadResponse,
 )
 from src.page48.service import Page48Service
 from src.dependencies import get_page48_service
@@ -152,6 +153,22 @@ async def create_post(
     service: Page48Service = Depends(get_page48_service),
 ):
     return await service.create_post(request, current_user)
+
+
+@router.post("/videos", response_model=VideoUploadResponse, status_code=201)
+async def upload_video(
+    file: UploadFile = File(..., description="Video file (MP4 or WebM, max 50MB)"),
+    width: int = Form(0, description="Video width in pixels"),
+    height: int = Form(0, description="Video height in pixels"),
+    duration: float = Form(0.0, description="Video duration in seconds"),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    data = await file.read()
+    return await service.upload_video(
+        current_user, data, file.content_type, width, height, duration
+    )
 
 
 @router.patch("/posts/{postId}", response_model=PostResponse)

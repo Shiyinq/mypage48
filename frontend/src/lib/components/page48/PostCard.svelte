@@ -6,6 +6,7 @@
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
+	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
 	import { portal } from '$lib/actions/portal';
 	import { page } from '$app/stores';
 	import { userProfile } from '$lib/stores/profile.svelte';
@@ -270,6 +271,19 @@
 						/>
 					</button>
 				{/each}
+			</div>
+		{/if}
+
+		<!-- Post Video (single, X/Twitter style: click to play) -->
+		{#if post.videos && post.videos.length > 0 && post.videos[0].url}
+			<div class="relative z-[1] mt-3">
+				<VideoPlayer
+					src={post.videos[0].url}
+					width={post.videos[0].width}
+					height={post.videos[0].height}
+					maxHeight={510}
+					controls
+				/>
 			</div>
 		{/if}
 

@@ -106,6 +106,9 @@
 			page48NavbarStore.pageType === 'members'
 	);
 
+	// Immersive video mode: hide the top navbar on mobile so the clip fills the screen.
+	let isVideoMode = $derived($page.url.pathname.startsWith('/page48/videos'));
+
 	function handleBackClick(e: MouseEvent) {
 		if (isBackIcon) {
 			e.preventDefault();
@@ -121,9 +124,9 @@
 >
 	<AppBackground hideDecorationsOnMobile={true} />
 
-	<!-- Main Page48 Navbar -->
+	<!-- Main Page48 Navbar (hidden on mobile in immersive video mode) -->
 	<div
-		class="fixed top-0 left-0 right-0 w-full z-[50] border-b border-black/5 dark:border-white/5 bg-white/85 dark:bg-zinc-950/60 backdrop-blur-xl"
+		class={`fixed top-0 left-0 right-0 w-full z-[50] border-b border-black/5 dark:border-white/5 bg-white/85 dark:bg-zinc-950/60 backdrop-blur-xl ${isVideoMode ? 'hidden xl:block' : ''}`}
 	>
 		<div
 			class="max-w-7xl mx-auto w-full h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8"
@@ -189,7 +192,9 @@
 	</div>
 
 	<!-- Content Area -->
-	<div class="flex-1 relative w-full pt-16 pb-16 xl:pb-0">
+	<div
+		class={`flex-1 relative w-full ${isVideoMode ? 'pt-0 xl:pt-16 pb-0' : 'pt-16 pb-16 xl:pb-0'}`}
+	>
 		{@render children()}
 	</div>
 

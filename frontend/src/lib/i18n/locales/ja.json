@@ -1970,7 +1970,22 @@
 			"addPhoto": "写真を追加",
 			"maxPhotos": "1投稿につき最大4枚まで。",
 			"maxSize": "写真は最大3MBまで。",
-			"previewAlt": "アップロードのプレビュー"
+			"previewAlt": "アップロードのプレビュー",
+			"addVideo": "動画を追加",
+			"removeVideo": "動画を削除",
+			"videoTooLong": "動画は1分以内にしてください。",
+			"videoTooLarge": "動画は50MB以内にしてください。",
+			"videoInvalidType": "動画はMP4またはWebMにしてください。",
+			"videoUnreadable": "この動画は読み込めません。"
+		},
+		"video": {
+			"play": "再生",
+			"pause": "一時停止",
+			"mute": "ミュート",
+			"unmute": "ミュート解除",
+			"seek": "シーク",
+			"prev": "前の動画",
+			"next": "次の動画"
 		},
 		"feed": {
 			"emptyTitle": "まだ投稿がありません",
@@ -1987,6 +2002,11 @@
 		"videos": {
 			"emptyTitle": "まだ動画がありません",
 			"emptyText": "動画を含む投稿がここに表示されます。"
+		},
+		"videosFeed": {
+			"emptyTitle": "動画はまだありません",
+			"emptyText": "表示する動画がまだありません。",
+			"loadError": "動画の読み込みに失敗しました"
 		},
 		"time": {
 			"secondsShort": "秒",
@@ -2039,6 +2059,7 @@
 		"tabs": {
 			"posts": "投稿",
 			"media": "画像",
+			"videos": "動画",
 			"reposts": "リポスト",
 			"replies": "返信",
 			"likes": "いいね",
@@ -2047,6 +2068,7 @@
 		"empty": {
 			"posts": "まだ投稿がありません。",
 			"media": "まだ画像がありません。",
+			"videos": "まだ動画がありません。",
 			"reposts": "まだリポストがありません。",
 			"replies": "まだ返信がありません。",
 			"likes": "いいねした投稿はまだありません。",

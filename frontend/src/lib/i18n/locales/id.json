@@ -1976,7 +1976,22 @@
 			"addPhoto": "Tambahkan Foto",
 			"maxPhotos": "Maksimal 4 foto per postingan.",
 			"maxSize": "Ukuran foto maksimal 3MB.",
-			"previewAlt": "Pratinjau foto"
+			"previewAlt": "Pratinjau foto",
+			"addVideo": "Tambahkan Video",
+			"removeVideo": "Hapus video",
+			"videoTooLong": "Video maksimal 1 menit.",
+			"videoTooLarge": "Ukuran video maksimal 50MB.",
+			"videoInvalidType": "Format video harus MP4 atau WebM.",
+			"videoUnreadable": "Video tidak bisa dibaca."
+		},
+		"video": {
+			"play": "Putar",
+			"pause": "Jeda",
+			"mute": "Bisukan",
+			"unmute": "Nyalakan suara",
+			"seek": "Geser video",
+			"prev": "Video sebelumnya",
+			"next": "Video berikutnya"
 		},
 		"feed": {
 			"emptyTitle": "Belum ada postingan",
@@ -1993,6 +2008,11 @@
 		"videos": {
 			"emptyTitle": "Belum ada video",
 			"emptyText": "Postingan yang berisi video akan muncul di sini."
+		},
+		"videosFeed": {
+			"emptyTitle": "Belum ada video",
+			"emptyText": "Belum ada video untuk ditampilkan.",
+			"loadError": "Gagal memuat video"
 		},
 		"time": {
 			"secondsShort": "d",
@@ -2045,6 +2065,7 @@
 		"tabs": {
 			"posts": "Postingan",
 			"media": "Gambar",
+			"videos": "Video",
 			"reposts": "Repost",
 			"replies": "Balasan",
 			"likes": "Suka",
@@ -2053,6 +2074,7 @@
 		"empty": {
 			"posts": "Belum ada postingan.",
 			"media": "Belum ada gambar.",
+			"videos": "Belum ada video.",
 			"reposts": "Belum ada repost.",
 			"replies": "Belum ada balasan.",
 			"likes": "Belum ada postingan yang disukai.",

@@ -1,13 +1,21 @@
 <script lang="ts">
-	import { Image as ImageIcon, X, Loader2 } from 'lucide-svelte';
+	import { Image as ImageIcon, Video as VideoIcon, X, Loader2 } from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
 	import { userProfile } from '$lib/stores/profile.svelte';
+	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
+	import {
+		probeVideo,
+		PAGE48_VIDEO_ALLOWED_TYPES,
+		PAGE48_VIDEO_MAX_BYTES,
+		PAGE48_VIDEO_MAX_SECONDS,
+		type VideoDraft
+	} from '$lib/utils/page48';
 
 	const { t } = useTranslation();
 
 	interface Props {
-		onPost: (content: string, images: File[]) => Promise<void>;
+		onPost: (content: string, images: File[], video: VideoDraft | null) => Promise<void>;
 		isReply?: boolean;
 		placeholder?: string;
 	}
@@ -19,8 +27,12 @@
 	let content = $state('');
 	let images = $state<File[]>([]);
 	let imagePreviews = $state<string[]>([]);
+	let video = $state<VideoDraft | null>(null);
+	let videoPreview = $state<string | null>(null);
+	let probing = $state(false);
 	let isSubmitting = $state(false);
 	let fileInput: HTMLInputElement;
+	let videoInput: HTMLInputElement;
 
 	function handleFileSelect(e: Event) {
 		const target = e.target as HTMLInputElement;
@@ -42,6 +54,9 @@
 			imagePreviews = [...imagePreviews, URL.createObjectURL(file)];
 		}
 
+		// Images and a video can't be combined: picking images drops the video.
+		if (images.length > 0) clearVideo();
+
 		// Reset input
 		target.value = '';
 	}
@@ -52,17 +67,71 @@
 		imagePreviews = imagePreviews.filter((_, i) => i !== index);
 	}
 
+	async function handleVideoSelect(e: Event) {
+		const target = e.target as HTMLInputElement;
+		const file = target.files?.[0];
+		target.value = '';
+		if (!file) return;
+
+		if (!PAGE48_VIDEO_ALLOWED_TYPES.includes(file.type)) {
+			showToast(t('page48.composer.videoInvalidType'), 'error');
+			return;
+		}
+		if (file.size > PAGE48_VIDEO_MAX_BYTES) {
+			showToast(t('page48.composer.videoTooLarge'), 'error');
+			return;
+		}
+
+		probing = true;
+		try {
+			const meta = await probeVideo(file);
+			if (!Number.isFinite(meta.duration) || meta.duration <= 0) {
+				showToast(t('page48.composer.videoUnreadable'), 'error');
+				return;
+			}
+			if (meta.duration > PAGE48_VIDEO_MAX_SECONDS + 0.5) {
+				showToast(t('page48.composer.videoTooLong'), 'error');
+				return;
+			}
+
+			// A video can't be combined with images: drop any attached photos.
+			images.forEach((_, i) => URL.revokeObjectURL(imagePreviews[i]));
+			images = [];
+			imagePreviews = [];
+
+			clearVideo();
+			video = {
+				file,
+				width: meta.width,
+				height: meta.height,
+				duration: meta.duration
+			};
+			videoPreview = URL.createObjectURL(file);
+		} catch {
+			showToast(t('page48.composer.videoUnreadable'), 'error');
+		} finally {
+			probing = false;
+		}
+	}
+
+	function clearVideo() {
+		if (videoPreview) URL.revokeObjectURL(videoPreview);
+		videoPreview = null;
+		video = null;
+	}
+
 	async function handleSubmit() {
-		if (!content.trim() && images.length === 0) return;
+		if (!content.trim() && images.length === 0 && !video) return;
 		if (isSubmitting) return;
 
 		try {
 			isSubmitting = true;
-			await onPost(content, images);
+			await onPost(content, images, video);
 			content = '';
 			images = [];
 			imagePreviews.forEach(URL.revokeObjectURL);
 			imagePreviews = [];
+			clearVideo();
 		} catch (error) {
 			console.error(error);
 		} finally {
@@ -148,30 +217,73 @@
 			</div>
 		{/if}
 
+		<!-- Video Preview -->
+		{#if videoPreview}
+			<div class="relative mt-2 mb-2 w-full max-w-[320px]" in:fade>
+				<video
+					src={videoPreview}
+					controls
+					playsinline
+					muted
+					class="w-full rounded-xl border border-gray-200 dark:border-zinc-800 bg-black max-h-80"
+				></video>
+				<button
+					class="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
+					onclick={clearVideo}
+					aria-label={t('page48.composer.removeVideo')}
+				>
+					<X size={14} />
+				</button>
+			</div>
+		{/if}
+
 		<!-- Action Bar -->
 		<div class="flex items-center justify-between mt-3 pt-2 border-t border-transparent">
-			<!-- Media Input -->
-			<button
-				class="p-2 -ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
-				onclick={() => fileInput.click()}
-				disabled={images.length >= 4 || isSubmitting}
-				title={t('page48.composer.addPhoto')}
-			>
-				<ImageIcon size={20} class="group-hover:scale-110 transition-transform" />
-			</button>
-			<input
-				type="file"
-				accept="image/jpeg,image/png,image/webp"
-				multiple
-				class="hidden"
-				bind:this={fileInput}
-				onchange={handleFileSelect}
-			/>
+			<div class="flex items-center gap-1">
+				<!-- Image Input -->
+				<button
+					class="p-2 -ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
+					onclick={() => fileInput.click()}
+					disabled={images.length >= 4 || !!video || probing || isSubmitting}
+					title={t('page48.composer.addPhoto')}
+				>
+					<ImageIcon size={20} class="group-hover:scale-110 transition-transform" />
+				</button>
+				<input
+					type="file"
+					accept="image/jpeg,image/png,image/webp"
+					multiple
+					class="hidden"
+					bind:this={fileInput}
+					onchange={handleFileSelect}
+				/>
+
+				<!-- Video Input -->
+				<button
+					class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
+					onclick={() => videoInput.click()}
+					disabled={!!video || images.length > 0 || probing || isSubmitting}
+					title={t('page48.composer.addVideo')}
+				>
+					{#if probing}
+						<Loader2 size={20} class="animate-spin" />
+					{:else}
+						<VideoIcon size={20} class="group-hover:scale-110 transition-transform" />
+					{/if}
+				</button>
+				<input
+					type="file"
+					accept="video/mp4,video/webm"
+					class="hidden"
+					bind:this={videoInput}
+					onchange={handleVideoSelect}
+				/>
+			</div>
 
 			<!-- Submit Button -->
 			<button
 				class="px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-[14px] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-gray-800 dark:hover:bg-gray-200 transition-all flex items-center gap-2 active:scale-95 shadow-sm"
-				disabled={(!content.trim() && images.length === 0) || isSubmitting}
+				disabled={(!content.trim() && images.length === 0 && !video) || isSubmitting || probing}
 				onclick={handleSubmit}
 			>
 				{#if isSubmitting}

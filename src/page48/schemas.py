@@ -14,11 +14,37 @@ class Page48Image(BaseModel):
     height: Optional[int] = 0
 
 
+class VideoRef(BaseModel):
+    """A reference to an already-uploaded video, sent when creating a post."""
+
+    filename: str
+    width: Optional[int] = 0
+    height: Optional[int] = 0
+    duration: Optional[float] = 0.0
+
+
+class Page48Video(BaseModel):
+    filename: str
+    url: Optional[str] = None
+    width: Optional[int] = 0
+    height: Optional[int] = 0
+    duration: Optional[float] = 0.0
+
+
+class VideoUploadResponse(BaseModel):
+    filename: str
+    url: Optional[str] = None
+    width: Optional[int] = 0
+    height: Optional[int] = 0
+    duration: Optional[float] = 0.0
+
+
 class CreatePostRequest(BaseModel):
     content: str = Field(..., max_length=500)
     images: list[str] = Field(default_factory=list, max_length=4)  # max 4 filenames
     parentPostId: Optional[str] = None
     tags: list[str] = Field(default_factory=list)
+    videos: list[VideoRef] = Field(default_factory=list, max_length=1)
 
 
 class EditPostRequest(BaseModel):
@@ -42,6 +68,7 @@ class PostResponse(BaseModel):
     
     content: str
     images: list[Page48Image] = []
+    videos: list[Page48Video] = []
     tags: list[str] = []
     
     likesCount: int = 0

@@ -1,4 +1,10 @@
-from src.http_exceptions import BadRequest, InternalServerError, NotFound, PermissionDenied
+from src.http_exceptions import (
+    BadRequest,
+    EntityTooLarge,
+    InternalServerError,
+    NotFound,
+    PermissionDenied,
+)
 from src.page48.constants import ErrorCode
 
 
@@ -40,3 +46,27 @@ class ReportAlreadyExists(BadRequest):
 
 class InvalidReportTarget(BadRequest):
     DETAIL = ErrorCode.INVALID_REPORT_TARGET
+
+
+class VideoUploadError(InternalServerError):
+    DETAIL = ErrorCode.VIDEO_UPLOAD_ERROR
+
+
+class VideoTooLarge(EntityTooLarge):
+    DETAIL = ErrorCode.VIDEO_TOO_LARGE
+
+
+class InvalidVideoType(BadRequest):
+    DETAIL = ErrorCode.INVALID_VIDEO_TYPE
+
+
+class MaxVideoExceeded(BadRequest):
+    DETAIL = ErrorCode.MAX_VIDEO_EXCEEDED
+
+
+class MediaConflict(BadRequest):
+    DETAIL = ErrorCode.INVALID_MEDIA_COMBINATION
+
+
+class InvalidVideo(BadRequest):
+    DETAIL = ErrorCode.INVALID_VIDEO

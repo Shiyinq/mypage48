@@ -96,3 +96,13 @@ export const trendingTagsStore = createCachedListStore<TrendingTag>(
 	'trending tags',
 	async () => (await page48Api.getTrendingTags(8)).tags
 );
+
+/**
+ * Global video sound preference (session-scoped). Videos autoplay muted, but once
+ * the user unmutes one video every subsequent video also plays with sound.
+ */
+export const page48SoundStore = $state<{ enabled: boolean }>({ enabled: false });
+
+export function setPage48Sound(enabled: boolean) {
+	page48SoundStore.enabled = enabled;
+}

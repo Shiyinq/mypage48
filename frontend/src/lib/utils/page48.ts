@@ -7,6 +7,17 @@ export type Page48Interaction = 'like' | 'repost' | 'bookmark';
 
 export type Page48Media = 'text' | 'image' | 'video';
 
+export const PAGE48_VIDEO_MAX_BYTES = 50 * 1024 * 1024;
+export const PAGE48_VIDEO_MAX_SECONDS = 60;
+export const PAGE48_VIDEO_ALLOWED_TYPES = ['video/mp4', 'video/webm'];
+
+export interface VideoDraft {
+	file: File;
+	width: number;
+	height: number;
+	duration: number;
+}
+
 /**
  * The media filter currently active, derived from the URL:
  * `/page48/photos` → image, `/page48/videos` → video, or a `?media=` query param.
@@ -41,6 +52,64 @@ export async function uploadPage48Images(files: File[]): Promise<string[]> {
 		if (result.filename) filenames.push(result.filename);
 	}
 	return filenames;
+}
+
+/**
+ * Read a local video file's duration and dimensions before uploading.
+ * Client-side only: this is a UX guard, the server enforces the size limit.
+ */
+export function probeVideo(
+	file: File
+): Promise<{ duration: number; width: number; height: number }> {
+	return new Promise((resolve, reject) => {
+		const url = URL.createObjectURL(file);
+		const video = document.createElement('video');
+		video.preload = 'metadata';
+		video.muted = true;
+
+		const finish = () => {
+			resolve({ duration: video.duration, width: video.videoWidth, height: video.videoHeight });
+			video.removeAttribute('src');
+			video.load();
+			URL.revokeObjectURL(url);
+		};
+
+		video.onloadedmetadata = () => {
+			// Some containers (webm / fragmented mp4) report Infinity until seeked.
+			if (!Number.isFinite(video.duration)) {
+				video.currentTime = 1e101;
+				video.ontimeupdate = () => {
+					video.ontimeupdate = null;
+					finish();
+				};
+			} else {
+				finish();
+			}
+		};
+		video.onerror = () => {
+			URL.revokeObjectURL(url);
+			reject(new Error('unreadable video'));
+		};
+		video.src = url;
+	});
+}
+
+/** Upload a video to Page48 storage; returns its stored reference + metadata. */
+export async function uploadPage48Video(
+	draft: VideoDraft,
+	onProgress?: (percent: number) => void
+): Promise<{ filename: string; width: number; height: number; duration: number }> {
+	const res = await page48Api.uploadVideo(
+		draft.file,
+		{ width: draft.width, height: draft.height, duration: draft.duration },
+		onProgress
+	);
+	return {
+		filename: res.filename,
+		width: res.width || draft.width,
+		height: res.height || draft.height,
+		duration: res.duration || draft.duration
+	};
 }
 
 /** Absolute URL to a post's detail page (works in SSR too). */

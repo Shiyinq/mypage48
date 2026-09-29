@@ -130,22 +130,36 @@ from src.news.http_exceptions import (
 from src.page48.exceptions import (
     CannotReportSelfError,
     InvalidReportTargetError,
+    InvalidVideoError,
+    InvalidVideoTypeError,
+    MaxVideoExceededError,
+    MediaConflictError,
     PostCreationError,
     PostNotFoundError,
     ReportAlreadyExistsError,
     ReportCreationError,
     UnauthorizedActionError,
     UserProfileNotFoundError,
+    VideoTooLargeError,
+    VideoUploadError,
 )
 from src.page48.http_exceptions import (
     CannotReportSelf,
     InvalidReportTarget,
+    InvalidVideo,
+    InvalidVideoType,
+    MaxVideoExceeded,
+    MediaConflict,
     PostCreateError,
     PostNotFound,
     ReportAlreadyExists,
     ReportCreateError,
     UnauthorizedAction,
     UserProfileNotFound,
+    VideoTooLarge,
+)
+from src.page48.http_exceptions import (
+    VideoUploadError as VideoUploadHTTPError,
 )
 from src.replay.exceptions import ReplayAlreadyExists, ReplayNotFound, ReplayUploadError
 from src.replay.http_exceptions import (
@@ -504,6 +518,18 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, ReportAlreadyExists())
     if isinstance(exc, InvalidReportTargetError):
         return await detailed_http_exception_handler(request, InvalidReportTarget())
+    if isinstance(exc, VideoTooLargeError):
+        return await detailed_http_exception_handler(request, VideoTooLarge())
+    if isinstance(exc, InvalidVideoTypeError):
+        return await detailed_http_exception_handler(request, InvalidVideoType())
+    if isinstance(exc, MaxVideoExceededError):
+        return await detailed_http_exception_handler(request, MaxVideoExceeded())
+    if isinstance(exc, MediaConflictError):
+        return await detailed_http_exception_handler(request, MediaConflict())
+    if isinstance(exc, InvalidVideoError):
+        return await detailed_http_exception_handler(request, InvalidVideo())
+    if isinstance(exc, VideoUploadError):
+        return await detailed_http_exception_handler(request, VideoUploadHTTPError())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

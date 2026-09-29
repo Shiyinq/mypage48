@@ -1972,7 +1972,22 @@
 			"addPhoto": "Add Photo",
 			"maxPhotos": "Maximum 4 photos per post.",
 			"maxSize": "Maximum photo size is 3MB.",
-			"previewAlt": "Upload preview"
+			"previewAlt": "Upload preview",
+			"addVideo": "Add Video",
+			"removeVideo": "Remove video",
+			"videoTooLong": "Video must be 1 minute or less.",
+			"videoTooLarge": "Video must be 50MB or less.",
+			"videoInvalidType": "Video must be MP4 or WebM.",
+			"videoUnreadable": "This video can't be read."
+		},
+		"video": {
+			"play": "Play",
+			"pause": "Pause",
+			"mute": "Mute",
+			"unmute": "Unmute",
+			"seek": "Seek video",
+			"prev": "Previous video",
+			"next": "Next video"
 		},
 		"feed": {
 			"emptyTitle": "No posts yet",
@@ -1989,6 +2004,11 @@
 		"videos": {
 			"emptyTitle": "No videos yet",
 			"emptyText": "Posts with videos will appear here."
+		},
+		"videosFeed": {
+			"emptyTitle": "No videos yet",
+			"emptyText": "There are no videos to show yet.",
+			"loadError": "Failed to load videos"
 		},
 		"time": {
 			"secondsShort": "s",
@@ -2041,6 +2061,7 @@
 		"tabs": {
 			"posts": "Posts",
 			"media": "Photos",
+			"videos": "Videos",
 			"reposts": "Reposts",
 			"replies": "Replies",
 			"likes": "Likes",
@@ -2049,6 +2070,7 @@
 		"empty": {
 			"posts": "No posts yet.",
 			"media": "No photos yet.",
+			"videos": "No videos yet.",
 			"reposts": "No reposts yet.",
 			"replies": "No replies yet.",
 			"likes": "No liked posts yet.",

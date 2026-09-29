@@ -1,4 +1,6 @@
-import { client } from '$lib/apis/client';
+import { client, API_BASE } from '$lib/apis/client';
+import { accessToken } from '$lib/stores/accessToken.svelte';
+import { getCSRFToken } from '$lib/utils/auth';
 
 export interface Page48Image {
 	filename: string;
@@ -8,6 +10,22 @@ export interface Page48Image {
 	blurHash?: string | null;
 	width: number;
 	height: number;
+}
+
+export interface Page48Video {
+	filename: string;
+	url: string | null;
+	width: number;
+	height: number;
+	duration: number;
+}
+
+export interface VideoUploadResponse {
+	filename: string;
+	url: string | null;
+	width: number;
+	height: number;
+	duration: number;
 }
 
 export interface Page48Post {
@@ -26,6 +44,7 @@ export interface Page48Post {
 
 	content: string;
 	images: Page48Image[];
+	videos: Page48Video[];
 	tags: string[];
 
 	likesCount: number;
@@ -170,10 +189,63 @@ export const page48Api = {
 		);
 	},
 
-	createPost: async (content: string, images: string[], parentPostId?: string) => {
+	createPost: async (
+		content: string,
+		images: string[] = [],
+		videos: { filename: string; width: number; height: number; duration: number }[] = [],
+		parentPostId?: string
+	) => {
 		return client<Page48Post>('/page48/posts', {
 			method: 'POST',
-			body: { content, images, parentPostId }
+			body: { content, images, videos, parentPostId }
+		});
+	},
+
+	uploadVideo: async (
+		file: File,
+		meta: { width: number; height: number; duration: number },
+		onProgress?: (percent: number) => void
+	): Promise<VideoUploadResponse> => {
+		// Raw XHR (not `client`) because multipart/form-data must keep the browser's
+		// boundary, and XHR also gives us upload progress for large files.
+		const form = new FormData();
+		form.append('file', file, file.name);
+		form.append('width', String(Math.round(meta.width) || 0));
+		form.append('height', String(Math.round(meta.height) || 0));
+		form.append('duration', String(meta.duration || 0));
+
+		return new Promise<VideoUploadResponse>((resolve, reject) => {
+			const xhr = new XMLHttpRequest();
+			xhr.open('POST', `${API_BASE}/page48/videos`);
+			xhr.withCredentials = true;
+
+			const token = accessToken.value;
+			if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+			const csrf = getCSRFToken();
+			if (csrf) xhr.setRequestHeader('X-CSRF-Token', csrf);
+
+			xhr.upload.onprogress = (e) => {
+				if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
+			};
+			xhr.onload = () => {
+				if (xhr.status >= 200 && xhr.status < 300) {
+					try {
+						resolve(JSON.parse(xhr.responseText) as VideoUploadResponse);
+					} catch (err) {
+						reject(err);
+					}
+					return;
+				}
+				let detail = 'Upload failed';
+				try {
+					detail = (JSON.parse(xhr.responseText) as { detail?: string })?.detail || detail;
+				} catch {
+					// keep default detail
+				}
+				reject({ detail, status: xhr.status });
+			};
+			xhr.onerror = () => reject({ detail: 'Network error' });
+			xhr.send(form);
 		});
 	},
 

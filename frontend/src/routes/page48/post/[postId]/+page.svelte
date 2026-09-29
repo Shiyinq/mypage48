@@ -18,7 +18,9 @@
 		sharePost,
 		togglePostInteraction,
 		uploadPage48Images,
-		type Page48Interaction
+		uploadPage48Video,
+		type Page48Interaction,
+		type VideoDraft
 	} from '$lib/utils/page48';
 	import { fade } from 'svelte/transition';
 
@@ -112,12 +114,13 @@
 		replies = replies.filter((p) => p.postId !== postId);
 	}
 
-	async function handleReply(content: string, files: File[]) {
+	async function handleReply(content: string, files: File[], video: VideoDraft | null) {
 		const target = replyTarget ?? focused;
 		if (!target) return;
 		try {
 			const filenames = files.length > 0 ? await uploadPage48Images(files) : [];
-			await page48Api.createPost(content, filenames, target.postId);
+			const videos = video ? [await uploadPage48Video(video)] : [];
+			await page48Api.createPost(content, filenames, videos, target.postId);
 			showToast(t('page48.post.replySent'), 'success');
 			await load();
 		} catch (err: unknown) {

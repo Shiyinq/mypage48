@@ -11,12 +11,18 @@ from src.page48.constants import Info
 from src.page48.exceptions import (
     CannotReportSelfError,
     InvalidReportTargetError,
+    InvalidVideoError,
+    InvalidVideoTypeError,
+    MaxVideoExceededError,
+    MediaConflictError,
     PostCreationError,
     PostNotFoundError,
     ReportAlreadyExistsError,
     ReportCreationError,
     UnauthorizedActionError,
     UserProfileNotFoundError,
+    VideoTooLargeError,
+    VideoUploadError,
 )
 from src.page48.repository import Page48Repository
 from src.page48.schemas import (
@@ -27,6 +33,7 @@ from src.page48.schemas import (
     EditPostRequest,
     Page48Image,
     Page48UserProfileResponse,
+    Page48Video,
     PostPaginationMeta,
     PostPaginationResponse,
     PostResponse,
@@ -36,6 +43,7 @@ from src.page48.schemas import (
     ToggleResponse,
     TrendingTag,
     TrendingTagsResponse,
+    VideoUploadResponse,
 )
 from src.storage.service import StorageService
 from src.users.repository import UserRepository
@@ -45,6 +53,11 @@ logger = create_logger("page48_service", __name__)
 TAG_PATTERN = re.compile(r"#(\w+)", re.UNICODE)
 MAX_TAGS = 10
 MAX_TAG_LENGTH = 50
+MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024
+ALLOWED_VIDEO_TYPES = {
+    "video/mp4": "mp4",
+    "video/webm": "webm",
+}
 
 
 class Page48Service:
@@ -146,6 +159,24 @@ class Page48Service:
             except Exception as e:
                 logger.error(f"Failed to resolve image {img.get('filename')}: {str(e)}")
 
+        # Resolve videos (direct presigned URL so playback supports HTTP Range)
+        videos = []
+        for vid in post.get("videos", []):
+            try:
+                filename = vid["filename"]
+                url = await self.storage_service.resolve_video_url(filename)
+                videos.append(
+                    Page48Video(
+                        filename=filename,
+                        url=url,
+                        width=vid.get("width", 0),
+                        height=vid.get("height", 0),
+                        duration=vid.get("duration", 0) or 0.0,
+                    )
+                )
+            except Exception as e:
+                logger.error(f"Failed to resolve video {vid.get('filename')}: {str(e)}")
+
         return PostResponse(
             postId=post["postId"],
             rootPostId=post.get("rootPostId"),
@@ -162,6 +193,7 @@ class Page48Service:
             
             content=post["content"],
             images=images,
+            videos=videos,
             tags=post.get("tags", []),
             
             likesCount=post.get("likesCount", 0),
@@ -262,6 +294,44 @@ class Page48Service:
             meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more),
         )
 
+    async def upload_video(
+        self,
+        user: UserCurrent,
+        data: bytes,
+        content_type: Optional[str],
+        width: int = 0,
+        height: int = 0,
+        duration: float = 0.0,
+    ) -> VideoUploadResponse:
+        """Validate and store an uploaded video, returning its reference + URL."""
+        if not data:
+            raise InvalidVideoTypeError()
+        if len(data) > MAX_VIDEO_SIZE_BYTES:
+            raise VideoTooLargeError()
+
+        extension = ALLOWED_VIDEO_TYPES.get((content_type or "").lower())
+        if not extension:
+            raise InvalidVideoTypeError()
+
+        try:
+            filename = f"page48/{user.userId}/{uuid.uuid4().hex}.{extension}"
+            await self.storage_service.upload_object(
+                data, filename, content_type or "video/mp4"
+            )
+            url = await self.storage_service.resolve_video_url(filename)
+            return VideoUploadResponse(
+                filename=filename,
+                url=url,
+                width=width or 0,
+                height=height or 0,
+                duration=duration or 0.0,
+            )
+        except (VideoTooLargeError, InvalidVideoTypeError):
+            raise
+        except Exception as e:
+            logger.exception(f"Error uploading video: {str(e)}")
+            raise VideoUploadError()
+
     async def create_post(self, data: CreatePostRequest, user: UserCurrent) -> PostResponse:
         try:
             post_id = str(uuid.uuid4())
@@ -282,6 +352,32 @@ class Page48Service:
                 await self.repository.increment_post_stats(data.parentPostId, "replyCount", 1)
 
             images_data = [{"filename": fn} for fn in data.images]
+            video_refs = data.videos or []
+
+            # A post is either images or a single video, never both.
+            if images_data and video_refs:
+                raise MediaConflictError()
+            if len(video_refs) > 1:
+                raise MaxVideoExceededError()
+
+            videos_data = []
+            for ref in video_refs:
+                # The object must live under the uploader's own prefix.
+                if not ref.filename.startswith(f"page48/{user.userId}/"):
+                    raise InvalidVideoError()
+                if not await self.storage_service.repository.file_exists(
+                    ref.filename
+                ):
+                    raise InvalidVideoError()
+                videos_data.append(
+                    {
+                        "filename": ref.filename,
+                        "width": ref.width or 0,
+                        "height": ref.height or 0,
+                        "duration": ref.duration or 0.0,
+                    }
+                )
+
             tags = self._extract_tags(data.content, data.tags)
 
             post_data = {
@@ -300,6 +396,7 @@ class Page48Service:
                 
                 "content": data.content,
                 "images": images_data,
+                "videos": videos_data,
                 "tags": tags,
                 
                 "likesCount": 0,
@@ -316,7 +413,12 @@ class Page48Service:
             # Enrich and return
             return await self._enrich_post(post_data)
             
-        except PostNotFoundError:
+        except (
+            PostNotFoundError,
+            MediaConflictError,
+            MaxVideoExceededError,
+            InvalidVideoError,
+        ):
             raise
         except Exception as e:
             logger.exception(f"Error creating post: {str(e)}")

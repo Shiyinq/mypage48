@@ -32,3 +32,27 @@ class ReportAlreadyExistsError(DomainException):
 
 class InvalidReportTargetError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.INVALID_REPORT_TARGET
+
+
+class VideoUploadError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.VIDEO_UPLOAD_FAILED
+
+
+class VideoTooLargeError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.VIDEO_TOO_LARGE
+
+
+class InvalidVideoTypeError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_VIDEO_TYPE
+
+
+class MaxVideoExceededError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.MAX_VIDEO_EXCEEDED
+
+
+class MediaConflictError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_MEDIA_COMBINATION
+
+
+class InvalidVideoError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_VIDEO
