@@ -11,6 +11,7 @@
 		MessageSquare,
 		Settings,
 		X,
+		Flag,
 		ChevronRight,
 		Menu
 	} from 'lucide-svelte';
@@ -95,6 +96,12 @@
 			activeClass: 'bg-cyan-500 shadow-cyan-500/20'
 		},
 		{
+			href: '/admin/reports',
+			label: t('admin.dashboard.tabs.reports'),
+			icon: Flag,
+			activeClass: 'bg-rose-500 shadow-rose-500/20'
+		},
+		{
 			href: '/admin/settings',
 			label: t('admin.dashboard.tabs.settings'),
 			icon: Settings,
@@ -141,6 +148,11 @@
 	const moreDrawerLinks = $derived<
 		{ href: string; label: string; icon: ComponentType; exact?: boolean }[]
 	>([
+		{
+			href: '/admin/reports',
+			label: t('admin.dashboard.tabs.reports'),
+			icon: Flag
+		},
 		{
 			href: '/admin/feedback',
 			label: t('admin.dashboard.tabs.feedback'),

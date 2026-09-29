@@ -113,6 +113,10 @@
 	function handleShare(post: Page48Post) {
 		void sharePost(post);
 	}
+
+	function handleDelete(postId: string) {
+		posts = posts.filter((p) => p.postId !== postId);
+	}
 </script>
 
 <svelte:window onscroll={handleScroll} />
@@ -173,6 +177,7 @@
 					onBookmark={handleBookmark}
 					onComment={handleComment}
 					onShare={handleShare}
+					onDelete={handleDelete}
 				/>
 			{/each}
 

@@ -1099,6 +1099,7 @@
 				"members": "メンバー",
 				"setlists": "セットリスト",
 				"feedback": "フィードバック",
+				"reports": "報告",
 				"settings": "設定",
 				"more": "その他"
 			},
@@ -1153,6 +1154,32 @@
 				"notesInfo": "このメモはユーザーのメールに送信され、「マイフィードバック」ページに表示されます。",
 				"saving": "保存中...",
 				"saveChanges": "変更を保存"
+			}
+		},
+		"reports": {
+			"title": "報告",
+			"subtitle": "他のユーザーからの投稿・ユーザー報告",
+			"emptyTitle": "報告はまだありません",
+			"emptyDesc": "まだ報告が送信されていません。",
+			"errorTitle": "報告の読み込みに失敗しました",
+			"errorDesc": "サーバーから報告を読み込めませんでした。",
+			"loadMore": "もっと読み込む",
+			"noMore": "読み込む報告はもうありません",
+			"filters": {
+				"all": "すべて",
+				"post": "投稿",
+				"user": "ユーザー"
+			},
+			"reportedBy": "@{username} による報告",
+			"deletedTarget": "対象は存在しないか削除されています。",
+			"imageCount": "画像{count}枚",
+			"viewPost": "投稿を見る",
+			"viewUser": "プロフィールを見る",
+			"status": {
+				"pending": "保留中",
+				"reviewed": "確認済み",
+				"resolved": "解決済み",
+				"dismissed": "却下"
 			}
 		},
 		"settings": {
@@ -1643,6 +1670,7 @@
 			"eventHistory": "イベント履歴へ",
 			"feedback": "フィードバックへ移動",
 			"adminFeedback": "管理フィードバックへ",
+			"adminReports": "管理報告へ",
 			"adminSettings": "管理設定へ",
 			"publicProfile": "公開プロフィールへ移動",
 			"journal": "ジャーナルへ移動",
@@ -1912,7 +1940,8 @@
 			"viewImage": "画像 {index} / {total} を表示",
 			"cancelReply": "返信をキャンセル",
 			"openX": "X @{username} を開く",
-			"imageCount": "画像 {count} 枚"
+			"imageCount": "画像 {count} 枚",
+			"close": "閉じる"
 		},
 		"composer": {
 			"placeholder": "いまどうしてる？",
@@ -2008,6 +2037,42 @@
 			"action": "処理に失敗しました。もう一度お試しください。",
 			"shareCopied": "リンクをコピーしました",
 			"shareError": "リンクの共有に失敗しました"
-		}
+		},
+		"menu": {
+			"edit": "編集",
+			"delete": "削除",
+			"report": "報告"
+		},
+		"edit": {
+			"title": "投稿を編集",
+			"placeholder": "いまどうしてる？",
+			"save": "保存",
+			"success": "投稿を更新しました",
+			"error": "投稿の更新に失敗しました"
+		},
+		"delete": {
+			"title": "投稿を削除",
+			"message": "この投稿は完全に削除されます。続行しますか？",
+			"confirm": "削除",
+			"success": "投稿を削除しました",
+			"error": "投稿の削除に失敗しました"
+		},
+		"report": {
+			"titlePost": "投稿を報告",
+			"titleUser": "ユーザーを報告",
+			"reasonLabel": "理由",
+			"noteLabel": "補足（任意）",
+			"reason": {
+				"spam": "スパム",
+				"harassment": "嫌がらせ・ヘイトスピーチ",
+				"inappropriate": "不適切なコンテンツ",
+				"other": "その他"
+			},
+			"submit": "報告を送信",
+			"success": "報告を送信しました。ありがとうございます。",
+			"error": "報告の送信に失敗しました",
+			"already": "すでに報告済みです。"
+		},
+		"reportUser": "ユーザーを報告"
 	}
 }

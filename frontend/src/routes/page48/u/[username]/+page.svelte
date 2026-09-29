@@ -5,6 +5,8 @@
 	import { Repeat2, Settings, ExternalLink, LoaderCircle, Copy } from 'lucide-svelte';
 	import { page48Api, type Page48Post, type Page48UserProfile } from '$lib/api/page48';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
+	import ReportModal from '$lib/components/page48/ReportModal.svelte';
+	import UserMenu from '$lib/components/page48/UserMenu.svelte';
 	import { ErrorState } from '$lib/components';
 	import { OptimizedImage } from '$lib/components/common';
 	import { page48NavbarStore } from '$lib/stores/page48.svelte';
@@ -177,6 +179,12 @@
 		void sharePost(post);
 	}
 
+	function handleDelete(postId: string) {
+		posts = posts.filter((p) => p.postId !== postId);
+	}
+
+	let showReportUser = $state(false);
+
 	function getAvatarUrl(p: Page48UserProfile): string {
 		if (p.profilePicture_small || p.profilePicture)
 			return (p.profilePicture_small || p.profilePicture) as string;
@@ -236,10 +244,19 @@
 					/>
 				</div>
 				<div class="flex-1 min-w-0 pt-1">
-					<h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
-						{profile.name}
-					</h1>
-					<p class="text-[14px] text-gray-500 dark:text-gray-400 truncate">@{profile.username}</p>
+					<div class="flex items-start justify-between gap-2">
+						<div class="min-w-0">
+							<h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
+								{profile.name}
+							</h1>
+							<p class="text-[14px] text-gray-500 dark:text-gray-400 truncate">
+								@{profile.username}
+							</p>
+						</div>
+						{#if !isOwnProfile}
+							<UserMenu onReport={() => (showReportUser = true)} />
+						{/if}
+					</div>
 					<div class="flex items-center gap-3 mt-2 text-[13px] text-gray-500 dark:text-gray-400">
 						<span
 							><span class="font-semibold text-gray-900 dark:text-gray-100"
@@ -396,6 +413,7 @@
 							onBookmark={handleBookmark}
 							onComment={handleComment}
 							onShare={handleShare}
+							onDelete={handleDelete}
 						/>
 					</div>
 				{/each}
@@ -418,3 +436,11 @@
 		{/if}
 	{/if}
 </div>
+
+{#if showReportUser && profile}
+	<ReportModal
+		targetType="user"
+		targetId={profile.userId}
+		onClose={() => (showReportUser = false)}
+	/>
+{/if}

@@ -9,13 +9,20 @@ from src.infrastructure import AsyncBackgroundRunner
 from src.logging_config import create_logger
 from src.page48.constants import Info
 from src.page48.exceptions import (
+    CannotReportSelfError,
+    InvalidReportTargetError,
     PostCreationError,
     PostNotFoundError,
+    ReportAlreadyExistsError,
+    ReportCreationError,
     UnauthorizedActionError,
     UserProfileNotFoundError,
 )
 from src.page48.repository import Page48Repository
 from src.page48.schemas import (
+    AdminReportItem,
+    AdminReportPaginationMeta,
+    AdminReportPaginationResponse,
     CreatePostRequest,
     EditPostRequest,
     Page48Image,
@@ -23,6 +30,8 @@ from src.page48.schemas import (
     PostPaginationMeta,
     PostPaginationResponse,
     PostResponse,
+    ReportCreate,
+    ReportResponse,
     ThreadResponse,
     ToggleResponse,
     TrendingTag,
@@ -488,6 +497,243 @@ class Page48Service:
             
         return ToggleResponse(status=new_status, count=new_count)
         
+    async def edit_post(
+        self, post_id: str, data: EditPostRequest, user_id: str
+    ) -> PostResponse:
+        post = await self.repository.get_post_by_id(post_id)
+        if not post:
+            raise PostNotFoundError()
+
+        if post["userId"] != user_id:
+            raise UnauthorizedActionError()
+
+        tags = self._extract_tags(data.content, data.tags)
+        await self.repository.update_post(
+            post_id,
+            {
+                "content": data.content,
+                "tags": tags,
+                "isEdited": True,
+                "updatedAt": datetime.now(),
+            },
+        )
+
+        updated = await self.repository.get_post_by_id(post_id)
+        enriched = await self._enrich_posts([updated], user_id)
+        return enriched[0]
+
+    async def create_report(
+        self, data: ReportCreate, reporter: UserCurrent
+    ) -> ReportResponse:
+        try:
+            owner_id = None
+            if data.targetType == "post":
+                target = await self.repository.get_post_by_id(data.targetId)
+                if not target:
+                    raise InvalidReportTargetError()
+                owner_id = target.get("userId")
+            else:
+                target = await self.user_repository.find_one({"userId": data.targetId})
+                if not target:
+                    raise InvalidReportTargetError()
+                owner_id = target.get("userId")
+
+            if owner_id and owner_id == reporter.userId:
+                raise CannotReportSelfError()
+
+            existing = await self.repository.get_report(
+                reporter.userId, data.targetType, data.targetId
+            )
+            if existing:
+                raise ReportAlreadyExistsError()
+
+            report_id = str(uuid.uuid4())
+            now = datetime.now()
+            report_data = {
+                "reportId": report_id,
+                "targetType": data.targetType,
+                "targetId": data.targetId,
+                "targetOwnerUserId": owner_id,
+                "reporterUserId": reporter.userId,
+                "reporterUsername": reporter.username,
+                "reason": data.reason,
+                "note": data.note,
+                "status": "pending",
+                "createdAt": now,
+            }
+            await self.repository.insert_report(report_data)
+
+            return ReportResponse(
+                reportId=report_id,
+                targetType=data.targetType,
+                targetId=data.targetId,
+                reason=data.reason,
+                note=data.note,
+                status="pending",
+                createdAt=now,
+            )
+        except (
+            InvalidReportTargetError,
+            CannotReportSelfError,
+            ReportAlreadyExistsError,
+        ):
+            raise
+        except Exception as e:
+            logger.exception(f"Error creating report: {str(e)}")
+            raise ReportCreationError()
+
+    async def _resolve_picture(self, raw: Optional[str], cache: dict) -> Optional[str]:
+        """Resolve a stored picture path to a small URL, cached per request."""
+        if not raw:
+            return None
+        if raw in cache:
+            return cache[raw]
+        try:
+            url = await self.storage_service.resolve_url(raw, variant="small")
+        except Exception as e:
+            logger.error(f"Failed to resolve report picture {raw}: {str(e)}")
+            url = None
+        cache[raw] = url
+        return url
+
+    async def _enrich_reports(self, reports: List[dict]) -> List[AdminReportItem]:
+        """Attach target previews and reporter info to raw report documents."""
+        if not reports:
+            return []
+
+        post_ids = [
+            r["targetId"] for r in reports if r.get("targetType") == "post"
+        ]
+        post_targets = await self.repository.get_posts_by_ids(post_ids)
+        post_map = {p["postId"]: p for p in post_targets}
+
+        user_ids: set = set()
+        for r in reports:
+            if r.get("reporterUserId"):
+                user_ids.add(r["reporterUserId"])
+            if r.get("targetType") == "user" and r.get("targetId"):
+                user_ids.add(r["targetId"])
+        for p in post_targets:
+            if p.get("userId"):
+                user_ids.add(p["userId"])
+
+        users = await self.user_repository.get_users_by_ids(list(user_ids))
+        user_map = {u["userId"]: u for u in users}
+
+        avatar_cache: dict = {}
+        items: List[AdminReportItem] = []
+        for r in reports:
+            target_type = r.get("targetType")
+            if target_type not in ("post", "user"):
+                target_type = "post"
+            reason = r.get("reason")
+            if reason not in ("spam", "harassment", "inappropriate", "other"):
+                reason = "other"
+
+            target_id = r.get("targetId", "")
+            target_exists = True
+            target_username = None
+            target_display_name = None
+            target_content = None
+            target_image_count = 0
+            target_picture = None
+
+            if target_type == "post":
+                post = post_map.get(target_id)
+                if post:
+                    target_content = post.get("content")
+                    target_image_count = len(post.get("images") or [])
+                    owner = user_map.get(post.get("userId"))
+                    target_username = post.get("username")
+                    target_display_name = (
+                        owner.get("name") if owner else post.get("userDisplayName")
+                    )
+                    raw_picture = (
+                        owner.get("profilePicture") if owner else None
+                    ) or post.get("userProfilePicture")
+                    target_picture = await self._resolve_picture(
+                        raw_picture, avatar_cache
+                    )
+                else:
+                    target_exists = False
+            else:
+                user = user_map.get(target_id)
+                if user:
+                    target_username = user.get("username")
+                    target_display_name = user.get("name")
+                    target_picture = await self._resolve_picture(
+                        user.get("profilePicture"), avatar_cache
+                    )
+                else:
+                    target_exists = False
+
+            reporter = user_map.get(r.get("reporterUserId"))
+            reporter_username = r.get("reporterUsername") or (
+                reporter.get("username") if reporter else None
+            )
+
+            items.append(
+                AdminReportItem(
+                    reportId=r["reportId"],
+                    targetType=target_type,
+                    targetId=target_id,
+                    reason=reason,
+                    note=r.get("note"),
+                    status=r.get("status", "pending"),
+                    createdAt=r["createdAt"],
+                    reporterUserId=r.get("reporterUserId", ""),
+                    reporterUsername=reporter_username,
+                    targetExists=target_exists,
+                    targetUsername=target_username,
+                    targetDisplayName=target_display_name,
+                    targetContent=target_content,
+                    targetImageCount=target_image_count,
+                    targetProfilePicture=target_picture,
+                )
+            )
+        return items
+
+    async def get_reports_admin(
+        self,
+        limit: int = 20,
+        cursor: Optional[str] = None,
+        target_type: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> AdminReportPaginationResponse:
+        cursor_dict = None
+        if cursor:
+            try:
+                parts = cursor.split("_")
+                cursor_dict = {
+                    "createdAt": datetime.fromisoformat(parts[0]),
+                    "reportId": parts[1],
+                }
+            except Exception:
+                pass
+
+        reports = await self.repository.get_reports(
+            limit + 1, cursor_dict, target_type, status
+        )
+
+        has_more = len(reports) > limit
+        if has_more:
+            reports = reports[:limit]
+
+        items = await self._enrich_reports(reports)
+        total = await self.repository.count_reports(target_type, status)
+
+        next_cursor = None
+        if has_more and reports:
+            last = reports[-1]
+            next_cursor = f"{last['createdAt'].isoformat()}_{last['reportId']}"
+
+        return AdminReportPaginationResponse(
+            data=items,
+            meta=AdminReportPaginationMeta(
+                nextCursor=next_cursor, hasMore=has_more, total=total
+            ),
+        )
+
     async def delete_post(self, post_id: str, user_id: str, is_admin: bool = False):
         post = await self.repository.get_post_by_id(post_id)
         if not post:

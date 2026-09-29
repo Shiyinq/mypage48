@@ -1509,6 +1509,7 @@
 				"members": "Members",
 				"setlists": "Setlists",
 				"feedback": "Feedback",
+				"reports": "Reports",
 				"settings": "Settings",
 				"more": "More"
 			},
@@ -1563,6 +1564,32 @@
 				"notesInfo": "This note will be sent to the user's email and appear on their 'My Feedback' page.",
 				"saving": "Saving...",
 				"saveChanges": "Save Changes"
+			}
+		},
+		"reports": {
+			"title": "Reports",
+			"subtitle": "Post and user reports submitted by other users",
+			"emptyTitle": "No Reports Yet",
+			"emptyDesc": "No reports have been submitted yet.",
+			"errorTitle": "Failed to load reports",
+			"errorDesc": "Failed to load reports from the server.",
+			"loadMore": "Load more",
+			"noMore": "No more reports to load",
+			"filters": {
+				"all": "All",
+				"post": "Posts",
+				"user": "Users"
+			},
+			"reportedBy": "Reported by @{username}",
+			"deletedTarget": "Target no longer exists or has been deleted.",
+			"imageCount": "{count} images",
+			"viewPost": "View post",
+			"viewUser": "View profile",
+			"status": {
+				"pending": "Pending",
+				"reviewed": "Reviewed",
+				"resolved": "Resolved",
+				"dismissed": "Dismissed"
 			}
 		},
 		"settings": {
@@ -1745,6 +1772,7 @@
 			"eventHistory": "Go to Event History",
 			"feedback": "Go to Feedback",
 			"adminFeedback": "Go to Admin Feedback",
+			"adminReports": "Go to Admin Reports",
 			"adminSettings": "Go to Admin Settings",
 			"publicProfile": "Go to Public Profile",
 			"journal": "Go to Journal",
@@ -1914,7 +1942,8 @@
 			"viewImage": "View image {index} of {total}",
 			"cancelReply": "Cancel reply",
 			"openX": "Open X @{username}",
-			"imageCount": "{count} images"
+			"imageCount": "{count} images",
+			"close": "Close"
 		},
 		"composer": {
 			"placeholder": "What's new?",
@@ -2010,6 +2039,42 @@
 			"action": "Failed to process. Try again.",
 			"shareCopied": "Link copied",
 			"shareError": "Failed to share link"
-		}
+		},
+		"menu": {
+			"edit": "Edit",
+			"delete": "Delete",
+			"report": "Report"
+		},
+		"edit": {
+			"title": "Edit Post",
+			"placeholder": "What's new?",
+			"save": "Save",
+			"success": "Post updated",
+			"error": "Failed to update post"
+		},
+		"delete": {
+			"title": "Delete Post",
+			"message": "This post will be permanently deleted. Continue?",
+			"confirm": "Delete",
+			"success": "Post deleted",
+			"error": "Failed to delete post"
+		},
+		"report": {
+			"titlePost": "Report Post",
+			"titleUser": "Report User",
+			"reasonLabel": "Reason",
+			"noteLabel": "Additional note (optional)",
+			"reason": {
+				"spam": "Spam",
+				"harassment": "Harassment or hate speech",
+				"inappropriate": "Inappropriate content",
+				"other": "Other"
+			},
+			"submit": "Submit Report",
+			"success": "Report submitted. Thank you.",
+			"error": "Failed to submit report",
+			"already": "You have already reported this."
+		},
+		"reportUser": "Report User"
 	}
 }

@@ -111,6 +111,10 @@
 		void sharePost(post);
 	}
 
+	function handleDelete(postId: string) {
+		posts = posts.filter((p) => p.postId !== postId);
+	}
+
 	async function handleCreatePost(content: string, files: File[]) {
 		try {
 			const filenames = files.length > 0 ? await uploadPage48Images(files) : [];
@@ -181,6 +185,7 @@
 					onBookmark={handleBookmark}
 					onComment={handleComment}
 					onShare={handleShare}
+					onDelete={handleDelete}
 				/>
 			{/each}
 

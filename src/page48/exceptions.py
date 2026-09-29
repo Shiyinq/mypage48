@@ -16,3 +16,19 @@ class UnauthorizedActionError(DomainException):
 
 class UserProfileNotFoundError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.USER_NOT_FOUND
+
+
+class ReportCreationError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.REPORT_CREATION_FAILED
+
+
+class CannotReportSelfError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.CANNOT_REPORT_SELF
+
+
+class ReportAlreadyExistsError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.REPORT_ALREADY_EXISTS
+
+
+class InvalidReportTargetError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_REPORT_TARGET

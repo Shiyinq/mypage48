@@ -127,6 +127,26 @@ from src.news.http_exceptions import (
     NewsItemFetchHTTPError,
     NewsNotFound,
 )
+from src.page48.exceptions import (
+    CannotReportSelfError,
+    InvalidReportTargetError,
+    PostCreationError,
+    PostNotFoundError,
+    ReportAlreadyExistsError,
+    ReportCreationError,
+    UnauthorizedActionError,
+    UserProfileNotFoundError,
+)
+from src.page48.http_exceptions import (
+    CannotReportSelf,
+    InvalidReportTarget,
+    PostCreateError,
+    PostNotFound,
+    ReportAlreadyExists,
+    ReportCreateError,
+    UnauthorizedAction,
+    UserProfileNotFound,
+)
 from src.replay.exceptions import ReplayAlreadyExists, ReplayNotFound, ReplayUploadError
 from src.replay.http_exceptions import (
     HttpReplayAlreadyExists,
@@ -466,6 +486,24 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, HttpConcertUpdateError())
     if isinstance(exc, DomainConcertDeleteError):
         return await detailed_http_exception_handler(request, HttpConcertDeleteError())
+
+    # Page48 errors
+    if isinstance(exc, PostNotFoundError):
+        return await detailed_http_exception_handler(request, PostNotFound())
+    if isinstance(exc, PostCreationError):
+        return await detailed_http_exception_handler(request, PostCreateError())
+    if isinstance(exc, UnauthorizedActionError):
+        return await detailed_http_exception_handler(request, UnauthorizedAction())
+    if isinstance(exc, UserProfileNotFoundError):
+        return await detailed_http_exception_handler(request, UserProfileNotFound())
+    if isinstance(exc, ReportCreationError):
+        return await detailed_http_exception_handler(request, ReportCreateError())
+    if isinstance(exc, CannotReportSelfError):
+        return await detailed_http_exception_handler(request, CannotReportSelf())
+    if isinstance(exc, ReportAlreadyExistsError):
+        return await detailed_http_exception_handler(request, ReportAlreadyExists())
+    if isinstance(exc, InvalidReportTargetError):
+        return await detailed_http_exception_handler(request, InvalidReportTarget())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

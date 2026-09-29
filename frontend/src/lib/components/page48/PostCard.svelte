@@ -1,9 +1,15 @@
 <script lang="ts">
-	import type { Page48Post } from '$lib/api/page48';
+	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { Heart, MessageCircle, Repeat2, Bookmark, Share } from 'lucide-svelte';
 	import { OptimizedImage, ImageLightbox } from '$lib/components/common';
+	import PostMenu from '$lib/components/page48/PostMenu.svelte';
+	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
+	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
+	import ReportModal from '$lib/components/page48/ReportModal.svelte';
 	import { portal } from '$lib/actions/portal';
 	import { page } from '$app/stores';
+	import { userProfile } from '$lib/stores/profile.svelte';
+	import { showToast } from '$lib/stores/toast.svelte';
 	import { getActiveMedia, tagUrl } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -17,6 +23,8 @@
 		onBookmark?: (postId: string) => void;
 		onShare?: (post: Page48Post) => void;
 		onComment?: (post: Page48Post) => void;
+		onDelete?: (postId: string) => void;
+		onUpdated?: (post: Page48Post) => void;
 	}
 
 	let {
@@ -26,7 +34,9 @@
 		onRepost,
 		onBookmark,
 		onShare,
-		onComment
+		onComment,
+		onDelete,
+		onUpdated
 	}: Props = $props();
 
 	let detailHref = $derived(`/page48/post/${post.postId}`);
@@ -36,6 +46,43 @@
 
 	let lightboxOpen = $state(false);
 	let lightboxIndex = $state(0);
+
+	// Show the owner menu (Edit/Delete) only for the signed-in author.
+	let isOwner = $derived(
+		!!userProfile.data &&
+			(userProfile.data.userId
+				? userProfile.data.userId === post.userId
+				: userProfile.data.username === post.username)
+	);
+
+	let showEdit = $state(false);
+	let showDelete = $state(false);
+	let showReport = $state(false);
+	let deleting = $state(false);
+
+	function handleEditSaved(updated: Page48Post) {
+		post.content = updated.content;
+		post.tags = updated.tags;
+		post.isEdited = updated.isEdited;
+		post.updatedAt = updated.updatedAt;
+		onUpdated?.(post);
+	}
+
+	async function handleDelete() {
+		if (deleting) return;
+		deleting = true;
+		try {
+			await page48Api.deletePost(post.postId);
+			showToast(t('page48.delete.success'), 'success');
+			showDelete = false;
+			onDelete?.(post.postId);
+		} catch (err: unknown) {
+			const e = err as { detail?: string; message?: string };
+			showToast(e?.detail || e?.message || t('page48.delete.error'), 'error');
+		} finally {
+			deleting = false;
+		}
+	}
 
 	function openLightbox(index: number) {
 		lightboxIndex = index;
@@ -138,19 +185,12 @@
 			</a>
 			<div class="flex items-center gap-2 shrink-0">
 				<span class="text-[15px] text-gray-500 hover:underline">{timeAgo}</span>
-				<button
-					class="text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 cursor-pointer"
-					aria-label={t('page48.aria.more')}
-				>
-					<svg
-						aria-label={t('page48.aria.more')}
-						role="img"
-						viewBox="0 0 24 24"
-						class="w-5 h-5 fill-current"
-						><circle cx="12" cy="12" r="1.5"></circle><circle cx="19.5" cy="12" r="1.5"
-						></circle><circle cx="4.5" cy="12" r="1.5"></circle></svg
-					>
-				</button>
+				<PostMenu
+					{isOwner}
+					onEdit={() => (showEdit = true)}
+					onDelete={() => (showDelete = true)}
+					onReport={() => (showReport = true)}
+				/>
 			</div>
 		</div>
 
@@ -307,5 +347,24 @@
 				onClose={() => (lightboxOpen = false)}
 			/>
 		</div>
+	{/if}
+
+	{#if showEdit}
+		<EditPostModal {post} onClose={() => (showEdit = false)} onSaved={handleEditSaved} />
+	{/if}
+
+	{#if showDelete}
+		<ConfirmModal
+			title={t('page48.delete.title')}
+			message={t('page48.delete.message')}
+			confirmText={t('page48.delete.confirm')}
+			destructive
+			onCancel={() => (showDelete = false)}
+			onConfirm={handleDelete}
+		/>
+	{/if}
+
+	{#if showReport}
+		<ReportModal targetType="post" targetId={post.postId} onClose={() => (showReport = false)} />
 	{/if}
 </article>

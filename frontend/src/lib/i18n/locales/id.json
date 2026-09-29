@@ -1411,6 +1411,7 @@
 				"members": "Members",
 				"setlists": "Setlists",
 				"feedback": "Masukan",
+				"reports": "Laporan",
 				"settings": "Pengaturan",
 				"more": "Lainnya"
 			},
@@ -1465,6 +1466,32 @@
 				"notesInfo": "Catatan ini akan dikirimkan ke email user dan muncul di halaman 'My Feedback' mereka.",
 				"saving": "Menyimpan...",
 				"saveChanges": "Simpan Perubahan"
+			}
+		},
+		"reports": {
+			"title": "Laporan",
+			"subtitle": "Laporan postingan dan pengguna dari pengguna lain",
+			"emptyTitle": "Belum Ada Laporan",
+			"emptyDesc": "Belum ada laporan yang masuk.",
+			"errorTitle": "Gagal memuat laporan",
+			"errorDesc": "Gagal memuat laporan dari server.",
+			"loadMore": "Muat lebih banyak",
+			"noMore": "Tidak ada laporan lagi untuk dimuat",
+			"filters": {
+				"all": "Semua",
+				"post": "Postingan",
+				"user": "Pengguna"
+			},
+			"reportedBy": "Dilaporkan oleh @{username}",
+			"deletedTarget": "Target sudah tidak ada atau telah dihapus.",
+			"imageCount": "{count} gambar",
+			"viewPost": "Lihat postingan",
+			"viewUser": "Lihat profil",
+			"status": {
+				"pending": "Menunggu",
+				"reviewed": "Ditinjau",
+				"resolved": "Selesai",
+				"dismissed": "Ditolak"
 			}
 		},
 		"settings": {
@@ -1649,6 +1676,7 @@
 			"eventHistory": "Ke Riwayat Event",
 			"feedback": "Ke Masukan",
 			"adminFeedback": "Ke Masukan Admin",
+			"adminReports": "Ke Laporan Admin",
 			"adminSettings": "Ke Pengaturan Admin",
 			"publicProfile": "Ke Profil Publik",
 			"journal": "Ke Jurnal",
@@ -1918,7 +1946,8 @@
 			"viewImage": "Lihat gambar {index} dari {total}",
 			"cancelReply": "Batalkan balasan",
 			"openX": "Buka X @{username}",
-			"imageCount": "{count} gambar"
+			"imageCount": "{count} gambar",
+			"close": "Tutup"
 		},
 		"composer": {
 			"placeholder": "Apa yang baru?",
@@ -2014,6 +2043,42 @@
 			"action": "Gagal memproses. Coba lagi.",
 			"shareCopied": "Tautan disalin",
 			"shareError": "Gagal membagikan tautan"
-		}
+		},
+		"menu": {
+			"edit": "Edit",
+			"delete": "Hapus",
+			"report": "Laporkan"
+		},
+		"edit": {
+			"title": "Edit Postingan",
+			"placeholder": "Apa yang baru?",
+			"save": "Simpan",
+			"success": "Postingan diperbarui",
+			"error": "Gagal memperbarui postingan"
+		},
+		"delete": {
+			"title": "Hapus Postingan",
+			"message": "Postingan ini akan dihapus permanen. Lanjutkan?",
+			"confirm": "Hapus",
+			"success": "Postingan dihapus",
+			"error": "Gagal menghapus postingan"
+		},
+		"report": {
+			"titlePost": "Laporkan Postingan",
+			"titleUser": "Laporkan Pengguna",
+			"reasonLabel": "Alasan",
+			"noteLabel": "Catatan tambahan (opsional)",
+			"reason": {
+				"spam": "Spam",
+				"harassment": "Pelecehan atau ujaran kebencian",
+				"inappropriate": "Konten tidak pantas",
+				"other": "Lainnya"
+			},
+			"submit": "Kirim Laporan",
+			"success": "Laporan terkirim. Terima kasih.",
+			"error": "Gagal mengirim laporan",
+			"already": "Kamu sudah melaporkan ini."
+		},
+		"reportUser": "Laporkan Pengguna"
 	}
 }

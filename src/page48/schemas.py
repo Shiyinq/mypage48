@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -81,6 +81,59 @@ class TrendingTag(BaseModel):
 
 class TrendingTagsResponse(BaseModel):
     tags: list[TrendingTag] = []
+
+
+ReportTargetType = Literal["post", "user"]
+ReportReason = Literal["spam", "harassment", "inappropriate", "other"]
+
+
+class ReportCreate(BaseModel):
+    targetType: ReportTargetType
+    targetId: str
+    reason: ReportReason
+    note: Optional[str] = Field(default=None, max_length=500)
+
+
+class ReportResponse(BaseModel):
+    reportId: str
+    targetType: ReportTargetType
+    targetId: str
+    reason: ReportReason
+    note: Optional[str] = None
+    status: str = "pending"
+    createdAt: datetime
+
+
+class AdminReportItem(BaseModel):
+    reportId: str
+    targetType: ReportTargetType
+    targetId: str
+    reason: ReportReason
+    note: Optional[str] = None
+    status: str = "pending"
+    createdAt: datetime
+
+    reporterUserId: str
+    reporterUsername: Optional[str] = None
+
+    # Target preview (post content or reported user profile).
+    targetExists: bool = True
+    targetUsername: Optional[str] = None
+    targetDisplayName: Optional[str] = None
+    targetContent: Optional[str] = None
+    targetImageCount: int = 0
+    targetProfilePicture: Optional[str] = None
+
+
+class AdminReportPaginationMeta(BaseModel):
+    nextCursor: Optional[str] = None
+    hasMore: bool = False
+    total: int = 0
+
+
+class AdminReportPaginationResponse(BaseModel):
+    data: list[AdminReportItem]
+    meta: AdminReportPaginationMeta
 
 
 class ThreadResponse(BaseModel):

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { X } from 'lucide-svelte';
 	import { page48Api, type Page48Post, type ThreadResponse } from '$lib/api/page48';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
@@ -93,6 +94,15 @@
 
 	function handleShare(post: Page48Post) {
 		void sharePost(post);
+	}
+
+	function handleDelete(postId: string) {
+		// Deleting the focused post leaves nothing to show here — go back to the feed.
+		if (focused?.postId === postId) {
+			goto('/page48');
+			return;
+		}
+		replies = replies.filter((p) => p.postId !== postId);
 	}
 
 	async function handleReply(content: string, files: File[]) {
@@ -188,6 +198,7 @@
 				onBookmark={handleReplyBookmark}
 				onComment={handleComment}
 				onShare={handleShare}
+				onDelete={handleDelete}
 			/>
 			{@render inlineComposer(focused)}
 
@@ -200,6 +211,7 @@
 					onBookmark={handleReplyBookmark}
 					onComment={handleComment}
 					onShare={handleShare}
+					onDelete={handleDelete}
 				/>
 				{@render inlineComposer(reply)}
 			{/each}

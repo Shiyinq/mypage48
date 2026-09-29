@@ -1,4 +1,4 @@
-from src.http_exceptions import BadRequest, Forbidden, InternalServerError, NotFound
+from src.http_exceptions import BadRequest, InternalServerError, NotFound, PermissionDenied
 from src.page48.constants import ErrorCode
 
 
@@ -10,7 +10,7 @@ class PostCreateError(InternalServerError):
     DETAIL = ErrorCode.POST_CREATE_ERROR
 
 
-class UnauthorizedAction(Forbidden):
+class UnauthorizedAction(PermissionDenied):
     DETAIL = ErrorCode.UNAUTHORIZED_ACTION
 
 
@@ -24,3 +24,19 @@ class ReplyNotFound(NotFound):
 
 class UserProfileNotFound(NotFound):
     DETAIL = ErrorCode.USER_NOT_FOUND
+
+
+class ReportCreateError(InternalServerError):
+    DETAIL = ErrorCode.REPORT_CREATE_ERROR
+
+
+class CannotReportSelf(BadRequest):
+    DETAIL = ErrorCode.CANNOT_REPORT_SELF
+
+
+class ReportAlreadyExists(BadRequest):
+    DETAIL = ErrorCode.REPORT_ALREADY_EXISTS
+
+
+class InvalidReportTarget(BadRequest):
+    DETAIL = ErrorCode.INVALID_REPORT_TARGET

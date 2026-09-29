@@ -1093,6 +1093,7 @@
 				"members": "",
 				"setlists": "",
 				"feedback": "",
+				"reports": "",
 				"settings": "",
 				"more": ""
 			}
@@ -1105,6 +1106,32 @@
 			"errorTitle": "",
 			"errorDesc": "",
 			"noMoreFeedback": ""
+		},
+		"reports": {
+			"title": "",
+			"subtitle": "",
+			"emptyTitle": "",
+			"emptyDesc": "",
+			"errorTitle": "",
+			"errorDesc": "",
+			"loadMore": "",
+			"noMore": "",
+			"filters": {
+				"all": "",
+				"post": "",
+				"user": ""
+			},
+			"reportedBy": "",
+			"deletedTarget": "",
+			"imageCount": "",
+			"viewPost": "",
+			"viewUser": "",
+			"status": {
+				"pending": "",
+				"reviewed": "",
+				"resolved": "",
+				"dismissed": ""
+			}
 		},
 		"users": {
 			"title": "",
@@ -1255,6 +1282,7 @@
 			"eventHistory": "",
 			"feedback": "",
 			"adminFeedback": "",
+			"adminReports": "",
 			"adminSettings": "",
 			"publicProfile": "",
 			"journal": "",

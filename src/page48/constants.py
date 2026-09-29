@@ -5,6 +5,7 @@ class Info:
     LIKE_TOGGLED = "Like status toggled."
     REPOST_TOGGLED = "Repost status toggled."
     BOOKMARK_TOGGLED = "Bookmark status toggled."
+    REPORT_CREATED = "Report submitted successfully."
 
 class ErrorCode:
     POST_NOT_FOUND = "Post not found."
@@ -13,9 +14,17 @@ class ErrorCode:
     MAX_MEDIA_EXCEEDED = "Maximum number of media allowed per post is 4."
     REPLY_NOT_FOUND = "The post you are trying to reply to does not exist."
     USER_NOT_FOUND = "User not found."
+    REPORT_CREATE_ERROR = "Failed to submit report."
+    CANNOT_REPORT_SELF = "You cannot report yourself."
+    REPORT_ALREADY_EXISTS = "You have already reported this."
+    INVALID_REPORT_TARGET = "The reported target does not exist."
 
 class DomainErrorCode:
     POST_NOT_FOUND = "Post not found."
     POST_CREATION_FAILED = "Failed to create post."
     UNAUTHORIZED = "Unauthorized."
     USER_NOT_FOUND = "User not found."
+    REPORT_CREATION_FAILED = "Failed to submit report."
+    CANNOT_REPORT_SELF = "You cannot report yourself."
+    REPORT_ALREADY_EXISTS = "You have already reported this."
+    INVALID_REPORT_TARGET = "The reported target does not exist."

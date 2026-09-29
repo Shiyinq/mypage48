@@ -11,12 +11,20 @@ class Page48Repository:
         self.likes = db["page48_likes"]
         self.bookmarks = db["page48_bookmarks"]
         self.reposts = db["page48_reposts"]
+        self.reports = db["page48_reports"]
 
     async def insert_post(self, post_data: dict):
         return await self.posts.insert_one(post_data)
 
     async def get_post_by_id(self, post_id: str) -> Optional[dict]:
         return await self.posts.find_one({"postId": post_id})
+
+    async def get_posts_by_ids(self, post_ids: List[str]) -> List[dict]:
+        if not post_ids:
+            return []
+        return await self.posts.find({"postId": {"$in": post_ids}}).to_list(
+            length=None
+        )
 
     async def update_post(self, post_id: str, update_data: dict):
         return await self.posts.update_one({"postId": post_id}, {"$set": update_data})
@@ -310,6 +318,73 @@ class Page48Repository:
         )
 
         return {"reposts": repost_list, "posts": posts}
+
+    # Reports
+    async def insert_report(self, report_data: dict):
+        return await self.reports.insert_one(report_data)
+
+    async def get_report(
+        self, reporter_user_id: str, target_type: str, target_id: str
+    ) -> Optional[dict]:
+        return await self.reports.find_one(
+            {
+                "reporterUserId": reporter_user_id,
+                "targetType": target_type,
+                "targetId": target_id,
+            }
+        )
+
+    @staticmethod
+    def _reports_query(
+        target_type: Optional[str] = None, status: Optional[str] = None
+    ) -> dict:
+        conditions: List[dict] = []
+        if target_type:
+            conditions.append({"targetType": target_type})
+        if status:
+            conditions.append({"status": status})
+        if not conditions:
+            return {}
+        return {"$and": conditions}
+
+    async def get_reports(
+        self,
+        limit: int = 20,
+        cursor: Optional[dict] = None,
+        target_type: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> List[dict]:
+        conditions: List[dict] = []
+        base = self._reports_query(target_type, status)
+        if base:
+            conditions.append(base)
+        if cursor:
+            conditions.append(
+                {
+                    "$or": [
+                        {"createdAt": {"$lt": cursor["createdAt"]}},
+                        {
+                            "createdAt": cursor["createdAt"],
+                            "reportId": {"$lt": cursor["reportId"]},
+                        },
+                    ]
+                }
+            )
+
+        query = {"$and": conditions} if conditions else {}
+        cursor_obj = (
+            self.reports.find(query)
+            .sort([("createdAt", -1), ("reportId", -1)])
+            .limit(limit)
+        )
+        return await cursor_obj.to_list(length=limit)
+
+    async def count_reports(
+        self, target_type: Optional[str] = None, status: Optional[str] = None
+    ) -> int:
+        return await self.reports.count_documents(
+            self._reports_query(target_type, status)
+        )
 
     async def get_user_interactions(self, post_ids: List[str], user_id: str) -> Dict[str, Dict[str, bool]]:
         """Batch get user interactions for a list of posts."""

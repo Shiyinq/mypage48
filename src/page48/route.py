@@ -9,11 +9,14 @@ from src.dependencies import (
     require_csrf_protection,
 )
 from src.page48.schemas import (
+    AdminReportPaginationResponse,
     CreatePostRequest,
     EditPostRequest,
     Page48UserProfileResponse,
     PostPaginationResponse,
     PostResponse,
+    ReportCreate,
+    ReportResponse,
     ThreadResponse,
     ToggleResponse,
     TrendingTagsResponse,
@@ -151,6 +154,17 @@ async def create_post(
     return await service.create_post(request, current_user)
 
 
+@router.patch("/posts/{postId}", response_model=PostResponse)
+async def edit_post(
+    request: EditPostRequest,
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.edit_post(postId, request, current_user.userId)
+
+
 @router.delete("/posts/{postId}")
 async def delete_post(
     postId: str = Path(...),
@@ -160,6 +174,16 @@ async def delete_post(
 ):
     await service.delete_post(postId, current_user.userId, is_admin=False)
     return {"message": "Post deleted successfully"}
+
+
+@router.post("/reports", response_model=ReportResponse, status_code=201)
+async def create_report(
+    request: ReportCreate,
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.create_report(request, current_user)
 
 
 @router.post("/posts/{postId}/like", response_model=ToggleResponse)
@@ -222,3 +246,15 @@ async def admin_delete_post(
 ):
     await service.delete_post(postId, current_user.userId, is_admin=True)
     return {"message": "Post deleted by admin"}
+
+
+@router.get("/admin/reports", response_model=AdminReportPaginationResponse)
+async def get_admin_reports(
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    targetType: Optional[str] = Query(None, pattern="^(post|user)$"),
+    status: Optional[str] = Query(None, max_length=32),
+    _: UserCurrent = Depends(require_admin),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_reports_admin(limit, cursor, targetType, status)

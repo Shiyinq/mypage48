@@ -23,6 +23,7 @@
 		History, // History
 		Music, // Admin Setlists
 		MessageSquare, // Feedback
+		Flag, // Reports
 		Terminal, // Playground
 		ShieldCheck, // Admin Dashboard
 		Book,
@@ -116,6 +117,14 @@
 							icon: MessageSquare,
 							section: 'admin',
 							perform: () => goto('/admin/feedback')
+						},
+						{
+							id: 'admin-reports',
+							title: t('command.actions.adminReports'),
+							translationKey: 'command.actions.adminReports',
+							icon: Flag,
+							section: 'admin',
+							perform: () => goto('/admin/reports')
 						},
 						{
 							id: 'admin-settings',

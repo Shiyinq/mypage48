@@ -115,6 +115,11 @@ async def create_indexes():
         await db["page48_reposts"].create_index([("postId", 1), ("userId", 1)], unique=True)
         await db["page48_reposts"].create_index([("userId", 1), ("createdAt", -1)])
 
+        await db["page48_reports"].create_index([("status", 1), ("createdAt", -1)])
+        await db["page48_reports"].create_index(
+            [("reporterUserId", 1), ("targetType", 1), ("targetId", 1)], unique=True
+        )
+
         print("Database indexes created successfully")
     except Exception as e:
         print(f"Failed to create indexes: {str(e)}")

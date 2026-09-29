@@ -86,6 +86,53 @@ export interface TrendingTagsResponse {
 	tags: TrendingTag[];
 }
 
+export type ReportTargetType = 'post' | 'user';
+export type ReportReason = 'spam' | 'harassment' | 'inappropriate' | 'other';
+
+export interface ReportCreate {
+	targetType: ReportTargetType;
+	targetId: string;
+	reason: ReportReason;
+	note?: string | null;
+}
+
+export interface ReportResponse {
+	reportId: string;
+	targetType: ReportTargetType;
+	targetId: string;
+	reason: ReportReason;
+	note: string | null;
+	status: string;
+	createdAt: string;
+}
+
+export interface AdminReportItem {
+	reportId: string;
+	targetType: ReportTargetType;
+	targetId: string;
+	reason: ReportReason;
+	note: string | null;
+	status: string;
+	createdAt: string;
+	reporterUserId: string;
+	reporterUsername: string | null;
+	targetExists: boolean;
+	targetUsername: string | null;
+	targetDisplayName: string | null;
+	targetContent: string | null;
+	targetImageCount: number;
+	targetProfilePicture: string | null;
+}
+
+export interface AdminReportPaginationResponse {
+	data: AdminReportItem[];
+	meta: {
+		nextCursor: string | null;
+		hasMore: boolean;
+		total: number;
+	};
+}
+
 function buildCursorQuery(limit: number, cursor: string | null): string {
 	const searchParams = new URLSearchParams();
 	searchParams.set('limit', limit.toString());
@@ -132,6 +179,31 @@ export const page48Api = {
 
 	deletePost: async (postId: string) => {
 		return client(`/page48/posts/${postId}`, { method: 'DELETE' });
+	},
+
+	editPost: async (postId: string, content: string): Promise<Page48Post> => {
+		return client<Page48Post>(`/page48/posts/${postId}`, {
+			method: 'PATCH',
+			body: { content }
+		});
+	},
+
+	createReport: async (payload: ReportCreate): Promise<ReportResponse> => {
+		return client<ReportResponse>('/page48/reports', { method: 'POST', body: { ...payload } });
+	},
+
+	getAdminReports: async (
+		limit: number = 20,
+		cursor: string | null = null,
+		targetType: ReportTargetType | null = null
+	): Promise<AdminReportPaginationResponse> => {
+		const searchParams = new URLSearchParams();
+		searchParams.set('limit', limit.toString());
+		if (cursor) searchParams.set('cursor', cursor);
+		if (targetType) searchParams.set('targetType', targetType);
+		return client<AdminReportPaginationResponse>(
+			`/page48/admin/reports?${searchParams.toString()}`
+		);
 	},
 
 	toggleLike: async (postId: string): Promise<ToggleResponse> => {
