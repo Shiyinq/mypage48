@@ -11,6 +11,7 @@
 	import { OptimizedImage } from '$lib/components/common';
 	import { page48NavbarStore } from '$lib/stores/page48.svelte';
 	import { userProfile } from '$lib/stores/profile.svelte';
+	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import { fade } from 'svelte/transition';
@@ -34,6 +35,10 @@
 	let nextCursor = $state<string | null>(null);
 
 	let isOwnProfile = $derived(!!profile && userProfile.data?.username === profile.username);
+
+	// Known before the profile loads (from the route param), so the loading
+	// skeleton matches the real header (settings pill vs. 3-dot menu).
+	let isSameUser = $derived(!!userProfile.data?.username && userProfile.data.username === username);
 
 	let tabs = $derived.by(() => {
 		const items: { key: Tab; label: string }[] = [
@@ -198,12 +203,69 @@
 	class="max-w-[620px] mx-auto w-full min-h-screen bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl sm:border-x border-gray-200/60 dark:border-white/10 pb-24 shadow-sm shadow-black/5 dark:shadow-none transition-all"
 >
 	{#if loadingProfile}
-		<div class="p-5 flex gap-4 animate-pulse">
-			<div class="w-20 h-20 rounded-full bg-gray-200/80 dark:bg-zinc-800 shrink-0"></div>
-			<div class="flex-1 space-y-3 pt-2">
-				<div class="h-5 bg-gray-200 dark:bg-zinc-800 rounded w-1/3"></div>
-				<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-1/4"></div>
-				<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-2/3"></div>
+		<div class="animate-pulse">
+			<!-- Header -->
+			<div class="flex flex-col gap-4 px-5 sm:px-6 pt-6 pb-4">
+				<div class="flex items-start gap-4">
+					<div class="w-20 h-20 rounded-full bg-gray-200/80 dark:bg-zinc-800 shrink-0"></div>
+					<div class="flex-1 min-w-0 pt-1">
+						<div class="flex items-start justify-between gap-2">
+							<div class="min-w-0 space-y-2">
+								<div class="h-5 bg-gray-200 dark:bg-zinc-800 rounded w-1/2"></div>
+								<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-1/3"></div>
+							</div>
+							<div class="flex items-center gap-2 shrink-0">
+								<div class="h-8 w-28 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
+								{#if isAuthenticated.value && !isSameUser}
+									<div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
+								{/if}
+							</div>
+						</div>
+						<div class="flex items-center gap-3 mt-2">
+							<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-16"></div>
+							<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-16"></div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Bio -->
+				<div class="space-y-2">
+					<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-full"></div>
+					<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-2/3"></div>
+				</div>
+
+				<!-- Action button (own profile only) -->
+				{#if isSameUser}
+					<div class="flex items-center gap-2">
+						<div class="h-9 w-36 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Tabs -->
+			<div class="flex border-b border-gray-200/60 dark:border-white/10">
+				{#each Array(4) as _}
+					<div class="flex-1 px-4 sm:px-2 py-3 flex justify-center">
+						<div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-3/4"></div>
+					</div>
+				{/each}
+			</div>
+
+			<!-- Post list -->
+			<div class="divide-y divide-gray-200/60 dark:divide-white/10">
+				{#each Array(4) as _}
+					<div class="p-5 flex gap-4">
+						<div class="w-11 h-11 rounded-full bg-gray-200/80 dark:bg-zinc-800 shrink-0"></div>
+						<div class="flex-1 space-y-2">
+							<div class="flex items-center justify-between">
+								<div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/4"></div>
+								<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-12"></div>
+							</div>
+							<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-3/4"></div>
+							<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-1/2"></div>
+						</div>
+					</div>
+				{/each}
 			</div>
 		</div>
 	{:else if notFound}
@@ -253,9 +315,18 @@
 								@{profile.username}
 							</p>
 						</div>
-						{#if !isOwnProfile}
-							<UserMenu onReport={() => (showReportUser = true)} />
-						{/if}
+						<div class="flex items-center gap-2 shrink-0">
+							<a
+								href={`/u/${profile.username}`}
+								class="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-zinc-800 text-[13px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
+							>
+								<ExternalLink size={15} />
+								{t('page48.userPage.fullProfile')}
+							</a>
+							{#if !isOwnProfile && isAuthenticated.value}
+								<UserMenu onReport={() => (showReportUser = true)} />
+							{/if}
+						</div>
 					</div>
 					<div class="flex items-center gap-3 mt-2 text-[13px] text-gray-500 dark:text-gray-400">
 						<span
@@ -280,8 +351,8 @@
 				</p>
 			{/if}
 
-			<div class="flex items-center gap-2">
-				{#if isOwnProfile}
+			{#if isOwnProfile}
+				<div class="flex items-center gap-2">
 					<button
 						onclick={() => goto('/settings')}
 						class="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-zinc-800 text-[13px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
@@ -289,15 +360,8 @@
 						<Settings size={15} />
 						{t('page48.userPage.editInSettings')}
 					</button>
-				{/if}
-				<a
-					href={`/u/${profile.username}`}
-					class="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-zinc-800 text-[13px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
-				>
-					<ExternalLink size={15} />
-					{t('page48.userPage.fullProfile')}
-				</a>
-			</div>
+				</div>
+			{/if}
 		</div>
 
 		<!-- Tabs -->

@@ -2,25 +2,20 @@
 	import { onMount } from 'svelte';
 	import { Hash, ExternalLink } from 'lucide-svelte';
 	import { page } from '$app/stores';
-	import { members, type MemberXAccount } from '$lib/apis/members';
+	import { memberXTagsStore } from '$lib/stores/page48.svelte';
 	import { getActiveMedia, tagUrl } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
 
-	let accounts = $state<MemberXAccount[]>([]);
-	let loading = $state(true);
+	// Cached in the store, so navigating between Page48 pages doesn't refetch.
+	let accounts = $derived(memberXTagsStore.data);
+	let loading = $derived(memberXTagsStore.isLoading || !memberXTagsStore.isLoaded);
 	// Keep the active media filter (Gambar/Video) when opening a tag.
 	let activeMedia = $derived(getActiveMedia($page.url.pathname, $page.url.search));
 
-	onMount(async () => {
-		try {
-			accounts = await members.getXAccounts();
-		} catch (err) {
-			console.error(err);
-		} finally {
-			loading = false;
-		}
+	onMount(() => {
+		void memberXTagsStore.load();
 	});
 
 	function tagHref(username: string): string {

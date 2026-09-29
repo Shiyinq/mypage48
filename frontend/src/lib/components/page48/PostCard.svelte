@@ -9,6 +9,7 @@
 	import { portal } from '$lib/actions/portal';
 	import { page } from '$app/stores';
 	import { userProfile } from '$lib/stores/profile.svelte';
+	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { getActiveMedia, tagUrl } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -59,6 +60,15 @@
 	let showDelete = $state(false);
 	let showReport = $state(false);
 	let deleting = $state(false);
+
+	// Public (unauthenticated) visitors can look but not interact. Hover styling
+	// (background/text colour) still applies, only the click action is blocked.
+	let canInteract = $derived(isAuthenticated.value);
+	let actionCursor = $derived(canInteract ? 'cursor-pointer' : 'cursor-default');
+
+	function interact(fn: () => void) {
+		if (canInteract) fn();
+	}
 
 	function handleEditSaved(updated: Page48Post) {
 		post.content = updated.content;
@@ -147,8 +157,11 @@
 </script>
 
 <article
-	class="flex w-full gap-4 pt-5 pb-3 px-5 sm:px-6 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors group"
+	class="relative isolate flex w-full gap-4 pt-5 pb-3 px-5 sm:px-6 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors group cursor-pointer"
 >
+	<!-- Full-card click target: opens the post detail. Interactive children sit above it. -->
+	<a href={detailHref} class="absolute inset-0 z-0" aria-label={t('page48.aria.openPost')}></a>
+
 	<!-- Left Column: Avatar & Thread Line -->
 	<div class="flex flex-col items-center shrink-0">
 		<!-- Avatar -->
@@ -177,49 +190,49 @@
 	<div class="flex flex-col flex-1 min-w-0 pt-0.5">
 		<!-- Header (Name, Username, Time) -->
 		<div class="flex items-center justify-between gap-2 mb-0.5">
-			<a href={`/page48/u/${post.username}`} class="flex items-center gap-1.5 truncate group/name">
+			<a
+				href={`/page48/u/${post.username}`}
+				class="relative z-[1] flex items-center gap-1.5 truncate group/name"
+			>
 				<span
 					class="font-semibold text-[15px] tracking-tight text-gray-900 dark:text-gray-100 group-hover/name:underline truncate"
 					>{post.userDisplayName}</span
 				>
 			</a>
-			<div class="flex items-center gap-2 shrink-0">
+			<div class="relative z-[1] flex items-center gap-2 shrink-0">
 				<span class="text-[15px] text-gray-500 hover:underline">{timeAgo}</span>
-				<PostMenu
-					{isOwner}
-					onEdit={() => (showEdit = true)}
-					onDelete={() => (showDelete = true)}
-					onReport={() => (showReport = true)}
-				/>
+				{#if isAuthenticated.value}
+					<PostMenu
+						{isOwner}
+						onEdit={() => (showEdit = true)}
+						onDelete={() => (showDelete = true)}
+						onReport={() => (showReport = true)}
+					/>
+				{/if}
 			</div>
 		</div>
 
-		<!-- Post Content (clickable hashtags; rest opens post detail) -->
+		<!-- Post Content (clickable hashtags; rest of the card opens post detail) -->
 		{#if post.content}
-			<div class="relative">
-				<a href={detailHref} class="absolute inset-0 z-0" aria-label={t('page48.aria.openPost')}
-				></a>
-				<p
-					class="relative z-[1] pointer-events-none text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words"
-				>
-					{#each contentParts as part, i (i)}
-						{#if part.tag}
-							<a
-								href={tagUrl(part.tag, activeMedia)}
-								class="pointer-events-auto text-red-500 hover:underline cursor-pointer"
-								>{part.text}</a
-							>
-						{:else}
-							{part.text}
-						{/if}
-					{/each}
-				</p>
-			</div>
+			<p
+				class="relative z-[1] pointer-events-none text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words"
+			>
+				{#each contentParts as part, i (i)}
+					{#if part.tag}
+						<a
+							href={tagUrl(part.tag, activeMedia)}
+							class="pointer-events-auto text-red-500 hover:underline cursor-pointer">{part.text}</a
+						>
+					{:else}
+						{part.text}
+					{/if}
+				{/each}
+			</p>
 		{/if}
 
 		<!-- Extra tags (only those not already shown inline) -->
 		{#if extraTags.length > 0}
-			<div class="flex flex-wrap gap-x-2.5 gap-y-1 mt-1.5">
+			<div class="relative z-[1] flex flex-wrap gap-x-2.5 gap-y-1 mt-1.5">
 				{#each extraTags as tag (tag)}
 					<a
 						href={tagUrl(tag, activeMedia)}
@@ -234,7 +247,7 @@
 		<!-- Post Images (Max 4 Grid) — click opens full image lightbox -->
 		{#if post.images && post.images.length > 0}
 			<div
-				class={`mt-3 grid gap-1.5 rounded-2xl overflow-hidden border border-gray-100 dark:border-white/5 ${
+				class={`relative z-[1] mt-3 grid gap-1.5 rounded-2xl overflow-hidden border border-gray-100 dark:border-white/5 ${
 					post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
 				}`}
 			>
@@ -262,13 +275,14 @@
 
 		<!-- Action Bar -->
 		<div
-			class="flex items-center gap-1 -ml-2.5 mt-2.5 w-full justify-between sm:justify-start sm:gap-6 text-gray-500 dark:text-gray-400"
+			class="relative z-[1] flex items-center gap-1 -ml-2.5 mt-2.5 w-full justify-between sm:justify-start sm:gap-6 text-gray-500 dark:text-gray-400"
 		>
 			<!-- Like -->
 			<button
-				class="flex items-center gap-1.5 p-2 rounded-full cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-500 transition-all group/btn"
+				class={`flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-500 transition-all group/btn`}
 				aria-label={t('page48.aria.like')}
-				onclick={() => onLike?.(post.postId)}
+				aria-disabled={!canInteract}
+				onclick={() => interact(() => onLike?.(post.postId))}
 			>
 				<Heart
 					size={18}
@@ -283,9 +297,10 @@
 
 			<!-- Comment -->
 			<button
-				class="flex items-center gap-1.5 p-2 rounded-full cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800/80 hover:text-gray-900 dark:hover:text-gray-200 transition-all group/btn"
+				class={`flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-gray-100 dark:hover:bg-zinc-800/80 hover:text-gray-900 dark:hover:text-gray-200 transition-all group/btn`}
 				aria-label={t('page48.aria.comment')}
-				onclick={() => onComment?.(post)}
+				aria-disabled={!canInteract}
+				onclick={() => interact(() => onComment?.(post))}
 			>
 				<MessageCircle size={18} class="transition-transform group-active/btn:scale-90" />
 				{#if post.replyCount > 0}
@@ -295,9 +310,10 @@
 
 			<!-- Repost -->
 			<button
-				class="flex items-center gap-1.5 p-2 rounded-full cursor-pointer hover:bg-green-50 dark:hover:bg-green-950/40 hover:text-green-500 transition-all group/btn"
+				class={`flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-green-50 dark:hover:bg-green-950/40 hover:text-green-500 transition-all group/btn`}
 				aria-label={t('page48.aria.repost')}
-				onclick={() => onRepost?.(post.postId)}
+				aria-disabled={!canInteract}
+				onclick={() => interact(() => onRepost?.(post.postId))}
 			>
 				<Repeat2
 					size={18}
@@ -313,9 +329,10 @@
 			<div class="flex items-center ml-auto sm:ml-0 gap-1 sm:gap-2">
 				<!-- Bookmark -->
 				<button
-					class="flex items-center gap-1.5 p-2 rounded-full cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-500 transition-all group/btn"
+					class={`flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-500 transition-all group/btn`}
 					aria-label={t('page48.aria.bookmark')}
-					onclick={() => onBookmark?.(post.postId)}
+					aria-disabled={!canInteract}
+					onclick={() => interact(() => onBookmark?.(post.postId))}
 				>
 					<Bookmark
 						size={18}
@@ -327,9 +344,10 @@
 
 				<!-- Share -->
 				<button
-					class="flex items-center p-2 rounded-full cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800/80 hover:text-gray-900 dark:hover:text-gray-200 transition-all group/btn"
+					class={`flex items-center p-2 rounded-full ${actionCursor} hover:bg-gray-100 dark:hover:bg-zinc-800/80 hover:text-gray-900 dark:hover:text-gray-200 transition-all group/btn`}
 					aria-label={t('page48.aria.share')}
-					onclick={() => onShare?.(post)}
+					aria-disabled={!canInteract}
+					onclick={() => interact(() => onShare?.(post))}
 				>
 					<Share size={18} class="transition-transform group-active/btn:scale-90" />
 				</button>

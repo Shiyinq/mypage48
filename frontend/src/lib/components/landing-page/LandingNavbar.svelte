@@ -54,6 +54,7 @@
 		{ label: t('landing.nav.members'), href: '/jkt48/members' },
 		{ label: t('landing.nav.events'), href: '/jkt48/events' },
 		{ label: t('landing.nav.calendar'), href: '/jkt48/calendar' },
+		{ label: t('landing.nav.page48'), href: '/page48' },
 		{ label: t('landing.nav.sorter'), href: '/jkt48/sorter' },
 		{ label: t('landing.nav.live'), href: '/jkt48/live', id: 'live' }
 	]);

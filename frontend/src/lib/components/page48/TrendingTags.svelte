@@ -2,26 +2,20 @@
 	import { onMount } from 'svelte';
 	import { TrendingUp } from 'lucide-svelte';
 	import { page } from '$app/stores';
-	import { page48Api, type TrendingTag } from '$lib/api/page48';
+	import { trendingTagsStore } from '$lib/stores/page48.svelte';
 	import { getActiveMedia, tagUrl } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
 
-	let tags = $state<TrendingTag[]>([]);
-	let loading = $state(true);
+	// Cached in the store, so navigating between Page48 pages doesn't refetch.
+	let tags = $derived(trendingTagsStore.data);
+	let loading = $derived(trendingTagsStore.isLoading || !trendingTagsStore.isLoaded);
 	// Keep the active media filter (Gambar/Video) when opening a tag.
 	let activeMedia = $derived(getActiveMedia($page.url.pathname, $page.url.search));
 
-	onMount(async () => {
-		try {
-			const response = await page48Api.getTrendingTags(8);
-			tags = response.tags;
-		} catch (err) {
-			console.error(err);
-		} finally {
-			loading = false;
-		}
+	onMount(() => {
+		void trendingTagsStore.load();
 	});
 </script>
 
