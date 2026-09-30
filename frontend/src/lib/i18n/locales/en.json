@@ -1987,7 +1987,8 @@
 			"videoInvalidType": "Video must be MP4 or WebM.",
 			"videoUnreadable": "This video can't be read.",
 			"addEmoji": "Add emoji",
-			"emojiTooLong": "Character limit reached."
+			"emojiTooLong": "Character limit reached.",
+			"newPost": "Create a new post"
 		},
 		"poll": {
 			"create": "Add poll",

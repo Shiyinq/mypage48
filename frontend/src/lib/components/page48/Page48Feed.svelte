@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
@@ -48,6 +49,18 @@
 	$effect(() => {
 		void media;
 		loadFeed();
+	});
+
+	// A post created from the navbar composer arrives as a window event, so the feed
+	// can show it without a refetch (only when no media filter is active).
+	onMount(() => {
+		function handleCreated(event: Event) {
+			if (media) return;
+			const post = (event as CustomEvent<Page48Post>).detail;
+			if (post?.postId) posts = [post, ...posts];
+		}
+		window.addEventListener('page48:post-created', handleCreated);
+		return () => window.removeEventListener('page48:post-created', handleCreated);
 	});
 
 	async function loadFeed() {

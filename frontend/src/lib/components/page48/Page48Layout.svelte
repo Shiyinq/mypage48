@@ -6,6 +6,7 @@
 		User,
 		TrendingUp,
 		Hash,
+		Plus,
 		Image as ImageIcon,
 		Video,
 		X
@@ -13,6 +14,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import NavPills from '$lib/components/navigation/NavPills.svelte';
+	import PostComposerModal from '$lib/components/page48/PostComposerModal.svelte';
 	import type { ComponentType, Snippet } from 'svelte';
 	import { AppBackground } from '$lib/components/common';
 	import { page48NavbarStore } from '$lib/stores/page48.svelte';
@@ -28,6 +30,8 @@
 	}
 
 	let { children, basePath }: Props = $props();
+
+	let composerOpen = $state(false);
 
 	let profileHref = $derived(
 		isAuthenticated.value && userProfile.data?.username
@@ -167,6 +171,19 @@
 			</div>
 
 			<div class="flex-1 flex justify-end items-center gap-2">
+				{#if isAuthenticated.value}
+					<!-- New post -->
+					<button
+						onclick={() => (composerOpen = true)}
+						aria-label={t('page48.composer.submit')}
+						title={t('page48.composer.newPost')}
+						class="h-9 px-3.5 rounded-full flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-[13px] font-bold shadow-sm transition-colors shrink-0 cursor-pointer"
+					>
+						<Plus size={16} />
+						{t('page48.composer.submit')}
+					</button>
+				{/if}
+
 				<!-- Profile / account -->
 				<a
 					href={profileHref}
@@ -225,4 +242,8 @@
 			{/each}
 		</div>
 	</nav>
+
+	{#if composerOpen}
+		<PostComposerModal onClose={() => (composerOpen = false)} />
+	{/if}
 </div>

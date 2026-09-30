@@ -9,7 +9,7 @@
 		X,
 		Loader2
 	} from 'lucide-svelte';
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import EmojiPicker from '$lib/components/page48/EmojiPicker.svelte';
 	import { userProfile } from '$lib/stores/profile.svelte';
@@ -42,9 +42,11 @@
 		onPostThread?: (drafts: PostDraftInput[]) => Promise<void>;
 		isReply?: boolean;
 		placeholder?: string;
+		/** Focus the textarea on mount (e.g. when the composer is opened in a modal). */
+		autofocus?: boolean;
 	}
 
-	let { onPost, onPostThread, isReply = false, placeholder }: Props = $props();
+	let { onPost, onPostThread, isReply = false, placeholder, autofocus = false }: Props = $props();
 
 	let resolvedPlaceholder = $derived(placeholder ?? t('page48.composer.placeholder'));
 
@@ -69,6 +71,14 @@
 	let emojiButton = $state<HTMLButtonElement>();
 	let fileInput = $state<HTMLInputElement>();
 	let videoInput = $state<HTMLInputElement>();
+
+	// Focus when the composer is opened as a modal. Deferred by one frame because the
+	// modal is portalled (its node is moved to <body> right after mount), and moving a
+	// node in the DOM blurs anything focused inside it during that same mount pass.
+	onMount(() => {
+		if (!autofocus) return;
+		requestAnimationFrame(() => textareaEl?.focus());
+	});
 
 	function autoGrow(el: HTMLTextAreaElement) {
 		el.style.height = 'auto';

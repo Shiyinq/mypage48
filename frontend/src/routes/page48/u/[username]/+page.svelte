@@ -74,6 +74,19 @@
 		page48NavbarStore.pageType = 'user-profile';
 	});
 
+	// A post created from the navbar composer arrives as a window event.
+	onMount(() => {
+		function handleCreated(event: Event) {
+			const post = (event as CustomEvent<Page48Post>).detail;
+			if (!post?.postId) return;
+			if (activeTab !== 'posts') return;
+			if (!profile || post.username !== profile.username) return;
+			posts = [post, ...posts];
+		}
+		window.addEventListener('page48:post-created', handleCreated);
+		return () => window.removeEventListener('page48:post-created', handleCreated);
+	});
+
 	// Reload when the route param changes (component is reused for same-route nav).
 	$effect(() => {
 		const name = username;

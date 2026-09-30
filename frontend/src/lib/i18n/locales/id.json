@@ -1991,7 +1991,8 @@
 			"videoInvalidType": "Format video harus MP4 atau WebM.",
 			"videoUnreadable": "Video tidak bisa dibaca.",
 			"addEmoji": "Tambahkan emoji",
-			"emojiTooLong": "Batas karakter tercapai."
+			"emojiTooLong": "Batas karakter tercapai.",
+			"newPost": "Buat postingan baru"
 		},
 		"poll": {
 			"create": "Buat polling",

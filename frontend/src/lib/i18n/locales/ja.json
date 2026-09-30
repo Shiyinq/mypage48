@@ -1985,7 +1985,8 @@
 			"videoInvalidType": "動画はMP4またはWebMにしてください。",
 			"videoUnreadable": "この動画は読み込めません。",
 			"addEmoji": "絵文字を追加",
-			"emojiTooLong": "文字数の上限に達しました。"
+			"emojiTooLong": "文字数の上限に達しました。",
+			"newPost": "新しい投稿を作成"
 		},
 		"poll": {
 			"create": "投票を作成",
