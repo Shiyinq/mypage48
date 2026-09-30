@@ -41,7 +41,7 @@
 	// skeleton matches the real header (settings pill vs. 3-dot menu).
 	let isSameUser = $derived(!!userProfile.data?.username && userProfile.data.username === username);
 
-	// Only shift the header/overlap the avatar when there is a cover to overlap.
+	// Whether this profile has a Page48 cover image to render.
 	let hasBanner = $derived(!!profile?.bannerPicture);
 
 	let seoTitle = $derived(
@@ -266,41 +266,30 @@
 	{#if loadingProfile}
 		<div class="animate-pulse">
 			<!-- Header -->
-			<div class="flex flex-col gap-4 px-5 sm:px-6 pt-6 pb-4">
+			<div class="relative flex flex-col gap-4 px-5 sm:px-6 pt-6 pb-4">
+				{#if isSameUser || isAuthenticated.value}
+					<div class="absolute top-0 right-0">
+						<div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
+					</div>
+				{/if}
 				<div class="flex items-start gap-4">
-					<div class="w-20 h-20 rounded-full bg-gray-200/80 dark:bg-zinc-800 shrink-0"></div>
-					<div class="flex-1 min-w-0 pt-1 flex justify-end">
-						<div class="flex items-center gap-2 shrink-0">
-							<div class="h-8 w-28 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
-							{#if isSameUser}
-								<div class="h-8 w-32 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
-							{/if}
-							{#if isAuthenticated.value && !isSameUser}
-								<div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
-							{/if}
+					<div class="flex-1 min-w-0 pt-1">
+						<div class="space-y-2">
+							<div class="h-5 bg-gray-200 dark:bg-zinc-800 rounded w-1/2"></div>
+							<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-1/3"></div>
+						</div>
+						<div class="flex items-center gap-3 mt-2">
+							<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-16"></div>
+							<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-16"></div>
+						</div>
+						<!-- Bio -->
+						<div class="space-y-2 mt-2">
+							<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-full"></div>
+							<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-2/3"></div>
 						</div>
 					</div>
+					<div class="w-36 h-36 rounded-full bg-gray-200/80 dark:bg-zinc-800 shrink-0"></div>
 				</div>
-
-				<!-- Name + username -->
-				<div class="space-y-2">
-					<div class="h-5 bg-gray-200 dark:bg-zinc-800 rounded w-1/2"></div>
-					<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-1/3"></div>
-				</div>
-
-				<!-- Stats -->
-				<div class="flex items-center gap-3">
-					<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-16"></div>
-					<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-16"></div>
-				</div>
-
-				<!-- Bio -->
-				<div class="space-y-2">
-					<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-full"></div>
-					<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-2/3"></div>
-				</div>
-
-				<!-- Action button (own profile only) -->
 			</div>
 
 			<!-- Tabs -->
@@ -366,14 +355,64 @@
 		{/if}
 
 		<!-- Profile header -->
-		<div class="flex flex-col gap-4 px-5 sm:px-6 pb-4 {hasBanner ? '-mt-14 sm:-mt-16' : 'pt-6'}">
+		<div class="relative flex flex-col gap-4 px-5 sm:px-6 pt-6 pb-4">
+			<!-- Actions (top-right corner, just below the cover) -->
+			{#if isOwnProfile || isAuthenticated.value}
+				<div class="absolute top-0 right-0 flex items-center gap-1">
+					{#if isOwnProfile}
+						<button
+							onclick={openSettings}
+							title={t('page48.userPage.editInSettings')}
+							aria-label={t('page48.userPage.editInSettings')}
+							class="p-1 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+						>
+							<Settings class="w-5 h-5" />
+						</button>
+					{/if}
+					{#if !isOwnProfile && isAuthenticated.value}
+						<UserMenu onReport={() => (showReportUser = true)} />
+					{/if}
+				</div>
+			{/if}
+
 			<div class="flex items-start gap-4">
+				<!-- Name + username + stats -->
+				<div class="flex-1 min-w-0 pt-1">
+					<div class="min-w-0">
+						<h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
+							{profile.name}
+						</h1>
+						<p class="text-[14px] text-gray-500 dark:text-gray-400 truncate">
+							@{profile.username}
+						</p>
+					</div>
+					<div class="flex items-center gap-3 mt-2 text-[13px] text-gray-500 dark:text-gray-400">
+						<span
+							><span class="font-semibold text-gray-900 dark:text-gray-100"
+								>{profile.postCount}</span
+							>
+							{t('page48.tabs.posts')}</span
+						>
+						<span
+							><span class="font-semibold text-gray-900 dark:text-gray-100"
+								>{profile.repostCount}</span
+							>
+							{t('page48.tabs.reposts')}</span
+						>
+					</div>
+
+					{#if profile.bio}
+						<p
+							class="mt-2 text-[14px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words"
+						>
+							{profile.bio}
+						</p>
+					{/if}
+				</div>
+
+				<!-- Profile photo (right) -->
 				<div
-					class="{hasBanner
-						? 'w-28 h-28 sm:w-32 sm:h-32'
-						: 'w-20 h-20'} relative z-10 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 {hasBanner
-						? 'ring-4 ring-white shadow-md shadow-black/10 dark:ring-zinc-900 dark:shadow-black/40'
-						: 'ring-2 ring-white shadow-sm dark:ring-zinc-900'}"
+					class="w-36 h-36 relative z-10 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 ring-2 ring-white shadow-sm dark:ring-zinc-900"
 				>
 					<OptimizedImage
 						src={getAvatarUrl(profile)}
@@ -382,54 +421,10 @@
 						blurHash={profile.blurHash}
 						alt={profile.name}
 						class="w-full h-full object-cover"
-						sizes={hasBanner ? '(max-width: 640px) 112px, 128px' : '80px'}
+						sizes="144px"
 					/>
 				</div>
-				<div class="flex-1 min-w-0 flex justify-end {hasBanner ? 'pt-16 sm:pt-20' : 'pt-1'}">
-					<div class="flex items-center gap-2 shrink-0">
-						{#if isOwnProfile}
-							<button
-								onclick={openSettings}
-								class="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-zinc-800 text-[13px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
-							>
-								<Settings size={15} />
-								{t('page48.userPage.editInSettings')}
-							</button>
-						{/if}
-						{#if !isOwnProfile && isAuthenticated.value}
-							<UserMenu onReport={() => (showReportUser = true)} />
-						{/if}
-					</div>
-				</div>
 			</div>
-
-			<!-- Name + username -->
-			<div class="min-w-0">
-				<h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
-					{profile.name}
-				</h1>
-				<p class="text-[14px] text-gray-500 dark:text-gray-400 truncate">
-					@{profile.username}
-				</p>
-			</div>
-
-			<!-- Stats -->
-			<div class="flex items-center gap-3 text-[13px] text-gray-500 dark:text-gray-400">
-				<span
-					><span class="font-semibold text-gray-900 dark:text-gray-100">{profile.postCount}</span>
-					{t('page48.tabs.posts')}</span
-				>
-				<span
-					><span class="font-semibold text-gray-900 dark:text-gray-100">{profile.repostCount}</span>
-					{t('page48.tabs.reposts')}</span
-				>
-			</div>
-
-			{#if profile.bio}
-				<p class="text-[14px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
-					{profile.bio}
-				</p>
-			{/if}
 		</div>
 
 		<!-- Tabs -->
