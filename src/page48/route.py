@@ -271,6 +271,26 @@ async def toggle_bookmark(
     return await service.toggle_bookmark(postId, current_user.userId)
 
 
+@router.post("/posts/{postId}/pin", response_model=PostResponse)
+async def pin_post(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.pin_post(postId, current_user.userId)
+
+
+@router.delete("/posts/{postId}/pin", response_model=PostResponse)
+async def unpin_post(
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.unpin_post(postId, current_user.userId)
+
+
 @router.get("/me/bookmarks", response_model=PostPaginationResponse)
 async def get_my_bookmarks(
     limit: int = Query(20, le=50),

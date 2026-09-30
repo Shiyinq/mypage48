@@ -229,6 +229,24 @@ export function getPostUrl(postId: string): string {
 	return `${window.location.origin}/page48/post/${postId}`;
 }
 
+/** Short relative label such as "5m" / "3j", shared by the card and the quote embed. */
+export function formatTimeAgo(dateStr: string): string {
+	try {
+		const now = Date.now();
+		const then = new Date(dateStr).getTime();
+		const diff = Math.max(0, Math.floor((now - then) / 1000));
+
+		if (diff < 60) return `${diff}${t('page48.time.secondsShort')}`;
+		if (diff < 3600) return `${Math.floor(diff / 60)}${t('page48.time.minutesShort')}`;
+		if (diff < 86400) return `${Math.floor(diff / 3600)}${t('page48.time.hoursShort')}`;
+		if (diff < 2592000) return `${Math.floor(diff / 86400)}${t('page48.time.daysShort')}`;
+		if (diff < 31536000) return `${Math.floor(diff / 2592000)}${t('page48.time.monthsShort')}`;
+		return `${Math.floor(diff / 31536000)}${t('page48.time.yearsShort')}`;
+	} catch {
+		return '';
+	}
+}
+
 /**
  * Toggle like/repost/bookmark for a post with an optimistic update.
  * Mutates `post` in place (works with Svelte 5 deep `$state` proxies) and

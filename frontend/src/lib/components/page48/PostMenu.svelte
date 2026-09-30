@@ -1,16 +1,19 @@
 <script lang="ts">
-	import { Pencil, Trash2, Flag } from 'lucide-svelte';
+	import { Pencil, Trash2, Flag, Pin, PinOff } from 'lucide-svelte';
 	import { portal } from '$lib/actions/portal';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
 		isOwner: boolean;
+		/** Only meaningful on the author's own post. */
+		isPinned?: boolean;
 		onEdit?: () => void;
 		onDelete?: () => void;
 		onReport?: () => void;
+		onTogglePin?: () => void;
 	}
 
-	let { isOwner, onEdit, onDelete, onReport }: Props = $props();
+	let { isOwner, isPinned = false, onEdit, onDelete, onReport, onTogglePin }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -70,6 +73,20 @@
 			role="presentation"
 		>
 			{#if isOwner}
+				{#if onTogglePin}
+					<button
+						class="w-full flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+						onclick={() => run(onTogglePin)}
+					>
+						{#if isPinned}
+							<PinOff size={15} />
+							{t('page48.menu.unpin')}
+						{:else}
+							<Pin size={15} />
+							{t('page48.menu.pin')}
+						{/if}
+					</button>
+				{/if}
 				<button
 					class="w-full flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
 					onclick={() => run(onEdit)}

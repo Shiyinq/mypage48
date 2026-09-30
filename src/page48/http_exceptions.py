@@ -106,3 +106,15 @@ class ThreadTooShort(BadRequest):
 
 class ThreadTooLong(BadRequest):
     DETAIL = ErrorCode.THREAD_TOO_LONG
+
+
+class QuotedPostNotFound(NotFound):
+    DETAIL = ErrorCode.QUOTED_POST_NOT_FOUND
+
+
+class QuotePollConflict(BadRequest):
+    DETAIL = ErrorCode.POLL_QUOTE_CONFLICT
+
+
+class CannotPinReply(BadRequest):
+    DETAIL = ErrorCode.CANNOT_PIN_REPLY

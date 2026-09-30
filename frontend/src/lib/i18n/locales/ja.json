@@ -1960,6 +1960,7 @@
 			"repost": "リポスト",
 			"bookmark": "保存",
 			"share": "共有",
+			"removeQuote": "引用を削除",
 			"media": "投稿メディア",
 			"viewImage": "画像 {index} / {total} を表示",
 			"cancelReply": "返信をキャンセル",
@@ -2105,6 +2106,7 @@
 			"loadError": "プロフィールの読み込みに失敗しました",
 			"editInSettings": "設定で編集",
 			"reposted": "リポスト",
+			"pinned": "固定されたポスト",
 			"countPosts": "{count} 投稿",
 			"countReposts": "{count} リポスト"
 		},
@@ -2134,7 +2136,19 @@
 		"menu": {
 			"edit": "編集",
 			"delete": "削除",
-			"report": "報告"
+			"report": "報告",
+			"pin": "プロフィールに固定",
+			"unpin": "固定を解除"
+		},
+		"repostMenu": {
+			"repost": "リポスト",
+			"undo": "リポストを解除",
+			"quote": "引用ポスト"
+		},
+		"pin": {
+			"pinned": "ポストを固定しました。",
+			"unpinned": "固定を解除しました。",
+			"error": "固定の変更に失敗しました。"
 		},
 		"edit": {
 			"title": "投稿を編集",
@@ -2169,7 +2183,8 @@
 		"reportUser": "ユーザーを報告",
 		"post": {
 			"showMore": "もっと見る",
-			"showLess": "折りたたむ"
+			"showLess": "折りたたむ",
+			"quotedUnavailable": "このポストは利用できません。"
 		}
 	}
 }

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { Repeat2, Settings, LoaderCircle, Copy, Play } from 'lucide-svelte';
+	import { Repeat2, Settings, LoaderCircle, Copy, Play, Pin } from 'lucide-svelte';
 	import { page48Api, type Page48Post, type Page48UserProfile } from '$lib/api/page48';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
@@ -246,6 +246,16 @@
 
 	function handleDelete(postId: string) {
 		posts = posts.filter((p) => p.postId !== postId);
+	}
+
+	// Only one post can be pinned, so pinning moves it to the top and clears any
+	// other pin. Unpinning needs no work: PostCard already flipped the shared
+	// post object, and the order stays as it was.
+	function handlePinChanged(updated: Page48Post) {
+		if (activeTab !== 'posts' || !updated.isPinned) return;
+		const others = posts.filter((p) => p.postId !== updated.postId);
+		for (const p of others) p.isPinned = false;
+		posts = [updated, ...others];
 	}
 
 	let showReportUser = $state(false);
@@ -597,6 +607,13 @@
 								<Repeat2 size={14} class="text-green-500" />
 								{t('page48.userPage.reposted')}
 							</div>
+						{:else if activeTab === 'posts' && post.isPinned}
+							<div
+								class="flex items-center gap-2 px-5 sm:px-6 pt-4 text-[13px] font-semibold text-red-500 dark:text-red-400"
+							>
+								<Pin size={14} class="fill-red-500/20" />
+								{t('page48.userPage.pinned')}
+							</div>
 						{/if}
 						<PostCard
 							{post}
@@ -606,6 +623,7 @@
 							onComment={handleComment}
 							onShare={handleShare}
 							onDelete={handleDelete}
+							onPinChanged={handlePinChanged}
 						/>
 					</div>
 				{/each}

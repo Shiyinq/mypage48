@@ -95,6 +95,9 @@ class CreatePostRequest(BaseModel):
     tags: list[str] = Field(default_factory=list)
     videos: list[VideoRef] = Field(default_factory=list, max_length=1)
     poll: Optional[CreatePollRequest] = None
+    # When set, this post quotes the referenced post: it is a normal post of
+    # its own that embeds a read-only preview of the quoted one.
+    quotedPostId: Optional[str] = None
 
 
 class EditPostRequest(BaseModel):
@@ -134,6 +137,9 @@ class PostResponse(BaseModel):
     createdAt: datetime
     updatedAt: datetime
 
+    # Set only on a user's own profile when they pinned this post.
+    isPinned: bool = False
+
     # Context for current user (optional, returned if user is logged in)
     isLiked: Optional[bool] = False
     isReposted: Optional[bool] = False
@@ -141,6 +147,12 @@ class PostResponse(BaseModel):
 
     # Populated when the post is returned as a user's repost
     repostedAt: Optional[datetime] = None
+
+    # A read-only preview of the post this one quotes, if any. Never nested
+    # more than one level deep.
+    quotedPost: Optional["PostResponse"] = None
+    # Kept alongside the preview so a deleted original can still be detected.
+    quotedPostId: Optional[str] = None
 
 
 class Page48UserProfileResponse(BaseModel):
@@ -258,3 +270,8 @@ class ToggleResponse(BaseModel):
 class CreateThreadResponse(BaseModel):
     rootPostId: str
     posts: list[PostResponse] = []
+
+
+# `quotedPost` refers to `PostResponse` from inside its own definition, so the
+# forward reference is resolved once the module has finished loading.
+PostResponse.model_rebuild()

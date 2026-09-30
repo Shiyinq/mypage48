@@ -10,6 +10,7 @@ from src.config import Settings
 from src.infrastructure import AsyncBackgroundRunner
 from src.logging_config import create_logger
 from src.page48.exceptions import (
+    CannotPinReplyError,
     CannotReportSelfError,
     InvalidPollOptionError,
     InvalidPollOptionsError,
@@ -25,6 +26,8 @@ from src.page48.exceptions import (
     PollReplyNotAllowedError,
     PostCreationError,
     PostNotFoundError,
+    QuotePollConflictError,
+    QuotedPostNotFoundError,
     ReportAlreadyExistsError,
     ReportCreationError,
     ThreadTooLongError,
@@ -223,10 +226,12 @@ class Page48Service:
             isEdited=post.get("isEdited", False),
             createdAt=post["createdAt"],
             updatedAt=post["updatedAt"],
+            isPinned=bool(post.get("pinnedAt")),
             isLiked=interactions.get("isLiked", False),
             isReposted=interactions.get("isReposted", False),
             isBookmarked=interactions.get("isBookmarked", False),
             threadCount=thread_count,
+            quotedPostId=post.get("quotedPostId"),
             poll=(
                 self._build_poll_response(
                     post["poll"], poll_counts, interactions.get("pollOptionId")
@@ -237,7 +242,10 @@ class Page48Service:
         )
 
     async def _enrich_posts(
-        self, posts: List[dict], user_id: Optional[str] = None
+        self,
+        posts: List[dict],
+        user_id: Optional[str] = None,
+        include_quotes: bool = True,
     ) -> List[PostResponse]:
         if not posts:
             return []
@@ -272,7 +280,41 @@ class Page48Service:
                 )
             )
 
+        if include_quotes:
+            await self._attach_quoted_posts(posts, enriched, user_id)
+
         return enriched
+
+    async def _attach_quoted_posts(
+        self,
+        posts: List[dict],
+        enriched: List[PostResponse],
+        user_id: Optional[str],
+    ) -> None:
+        """Fill in each post's `quotedPost` preview, one level deep only."""
+        by_id = {item.postId: item for item in enriched}
+        quoted_ids = [
+            post["quotedPostId"] for post in posts if post.get("quotedPostId")
+        ]
+        # A quoted post may be part of this same batch; only fetch the rest.
+        missing = [qid for qid in dict.fromkeys(quoted_ids) if qid not in by_id]
+        if missing:
+            rows = await self.repository.get_posts_by_ids(missing)
+            nested = await self._enrich_posts(rows, user_id, include_quotes=False)
+            for quoted in nested:
+                by_id[quoted.postId] = quoted
+
+        for post, enriched_post in zip(posts, enriched):
+            quoted_id = post.get("quotedPostId")
+            if quoted_id and quoted_id != enriched_post.postId:
+                # A dangling id (the original was deleted) stays None, which the
+                # client renders as an "unavailable" placeholder.
+                quoted = by_id.get(quoted_id)
+                if quoted is not None and quoted.quotedPost is not None:
+                    # The preview itself was a quote (it came from this same
+                    # batch); never embed more than one level deep.
+                    quoted = quoted.model_copy(update={"quotedPost": None})
+                enriched_post.quotedPost = quoted
 
     async def _count_self_threads(self, posts: List[dict]) -> dict:
         """Thread size starting at each post, the post itself included.
@@ -573,10 +615,17 @@ class Page48Service:
 
         tags = self._extract_tags(data.content, data.tags)
 
+        # A quote is an ordinary post that embeds a preview of another one.
+        quoted_post_id = getattr(data, "quotedPostId", None)
+        if quoted_post_id and not await self.repository.get_post_by_id(quoted_post_id):
+            raise QuotedPostNotFoundError()
+
         poll_data = None
         if data.poll is not None:
             if images_data or videos_data:
                 raise PollMediaConflictError()
+            if quoted_post_id:
+                raise QuotePollConflictError()
             if parent_post_id:
                 raise PollReplyNotAllowedError()
             poll_data = {
@@ -601,6 +650,8 @@ class Page48Service:
             "videos": videos_data,
             "poll": poll_data,
             "tags": tags,
+            "quotedPostId": quoted_post_id,
+            "pinnedAt": None,
             "likesCount": 0,
             "repostCount": 0,
             "bookmarksCount": 0,
@@ -618,16 +669,20 @@ class Page48Service:
             )
             await self.repository.insert_post(post_data)
 
-            # Enrich and return
-            return await self._enrich_post(post_data)
+            # Enrich and return (via the batch helper so a quote preview is
+            # attached exactly like it is everywhere else).
+            posts = await self._enrich_posts([post_data], user.userId)
+            return posts[0]
 
         except (
             PostNotFoundError,
+            QuotedPostNotFoundError,
             MediaConflictError,
             MaxVideoExceededError,
             InvalidVideoError,
             InvalidPollOptionsError,
             PollMediaConflictError,
+            QuotePollConflictError,
             PollReplyNotAllowedError,
         ):
             raise
@@ -897,6 +952,33 @@ class Page48Service:
             new_count = post.get("bookmarksCount", 0) + 1
 
         return ToggleResponse(status=new_status, count=new_count)
+
+    async def pin_post(self, post_id: str, user_id: str) -> PostResponse:
+        """Pin a post to the top of the caller's profile. One pin per user:
+        pinning again silently replaces the previous pin."""
+        post = await self.repository.get_post_by_id(post_id)
+        if not post:
+            raise PostNotFoundError()
+        if post["userId"] != user_id:
+            raise UnauthorizedActionError()
+        if post.get("parentPostId"):
+            raise CannotPinReplyError()
+
+        now = datetime.now()
+        await self.repository.pin_post(post_id, post["username"], now)
+        post["pinnedAt"] = now
+        return (await self._enrich_posts([post], user_id))[0]
+
+    async def unpin_post(self, post_id: str, user_id: str) -> PostResponse:
+        post = await self.repository.get_post_by_id(post_id)
+        if not post:
+            raise PostNotFoundError()
+        if post["userId"] != user_id:
+            raise UnauthorizedActionError()
+
+        await self.repository.unpin_post(post_id)
+        post["pinnedAt"] = None
+        return (await self._enrich_posts([post], user_id))[0]
 
     async def edit_post(
         self, post_id: str, data: EditPostRequest, user_id: str
@@ -1176,12 +1258,23 @@ class Page48Service:
         if has_more:
             posts = posts[:limit]
 
-        enriched_posts = await self._enrich_posts(posts, current_user_id)
-
         next_cursor = None
-        if has_more and enriched_posts:
+        if has_more and posts:
             last_post = posts[-1]
             next_cursor = f"{last_post['createdAt'].isoformat()}_{last_post['postId']}"
+
+        # The pinned post leads the plain post list. It is fetched separately so
+        # cursor pagination can never skip or duplicate it.
+        pinned_post = None
+        if media is None and cursor_dict is None:
+            pinned_post = await self.repository.get_pinned_post(target_username)
+            if pinned_post:
+                posts = [p for p in posts if p["postId"] != pinned_post["postId"]]
+
+        enriched_posts = await self._enrich_posts(posts, current_user_id)
+        if pinned_post:
+            pinned = await self._enrich_posts([pinned_post], current_user_id)
+            enriched_posts = [*pinned, *enriched_posts]
 
         return PostPaginationResponse(
             data=enriched_posts,

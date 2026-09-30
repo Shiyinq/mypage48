@@ -95,6 +95,14 @@ export interface Page48Post {
 	isReposted: boolean;
 	isBookmarked: boolean;
 
+	/** Set on a profile page when the author pinned this post (one per user). */
+	isPinned?: boolean;
+
+	/** The post this one quotes, if any. Never nested more than one level. */
+	quotedPost?: Page48Post | null;
+	/** Kept even when the quoted post is gone, so the UI can detect a dangling quote. */
+	quotedPostId?: string | null;
+
 	// Populated when the post is returned as a user's repost
 	repostedAt?: string | null;
 }
@@ -247,11 +255,12 @@ export const page48Api = {
 		images: Page48ImageRef[] = [],
 		videos: { filename: string; width: number; height: number; duration: number }[] = [],
 		parentPostId?: string,
-		poll?: { options: string[] } | null
+		poll?: { options: string[] } | null,
+		quotedPostId?: string
 	) => {
 		return client<Page48Post>('/page48/posts', {
 			method: 'POST',
-			body: { content, images, videos, parentPostId, poll: poll ?? null }
+			body: { content, images, videos, parentPostId, poll: poll ?? null, quotedPostId }
 		});
 	},
 
@@ -356,6 +365,14 @@ export const page48Api = {
 
 	toggleBookmark: async (postId: string): Promise<ToggleResponse> => {
 		return client<ToggleResponse>(`/page48/posts/${postId}/bookmark`, { method: 'POST' });
+	},
+
+	pinPost: async (postId: string): Promise<Page48Post> => {
+		return client<Page48Post>(`/page48/posts/${postId}/pin`, { method: 'POST' });
+	},
+
+	unpinPost: async (postId: string): Promise<Page48Post> => {
+		return client<Page48Post>(`/page48/posts/${postId}/pin`, { method: 'DELETE' });
 	},
 
 	getBookmarks: async (

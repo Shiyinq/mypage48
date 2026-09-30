@@ -12,6 +12,8 @@
 	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import EmojiPicker from '$lib/components/page48/EmojiPicker.svelte';
+	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
+	import type { Page48Post } from '$lib/api/page48';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -44,9 +46,20 @@
 		placeholder?: string;
 		/** Focus the textarea on mount (e.g. when the composer is opened in a modal). */
 		autofocus?: boolean;
+		/** When set, this composer publishes a quote of that post. */
+		quotedPost?: Page48Post | null;
+		onRemoveQuote?: () => void;
 	}
 
-	let { onPost, onPostThread, isReply = false, placeholder, autofocus = false }: Props = $props();
+	let {
+		onPost,
+		onPostThread,
+		isReply = false,
+		placeholder,
+		autofocus = false,
+		quotedPost = null,
+		onRemoveQuote
+	}: Props = $props();
 
 	let resolvedPlaceholder = $derived(placeholder ?? t('page48.composer.placeholder'));
 
@@ -294,7 +307,8 @@
 
 		const drafts = [...threadItems];
 		const active = currentDraft();
-		if (draftHasContent(active)) drafts.push(active);
+		// A quote may be published with no text of its own.
+		if (draftHasContent(active) || quotedPost) drafts.push(active);
 		if (drafts.length === 0) return;
 
 		// Extra drafts only exist when a thread handler was provided.
@@ -318,7 +332,7 @@
 	}
 
 	let canSubmit = $derived(
-		(draftHasContent(currentDraft()) || threadItems.length > 0) && pollReady
+		(draftHasContent(currentDraft()) || threadItems.length > 0 || !!quotedPost) && pollReady
 	);
 	let isThread = $derived(threadItems.length > 0);
 
@@ -535,6 +549,11 @@
 			</div>
 		{/if}
 
+		<!-- Quoted post being replied to by this composer -->
+		{#if quotedPost}
+			<QuotedPostCard post={quotedPost} removable onRemove={onRemoveQuote} />
+		{/if}
+
 		{#if showToolRow}
 			<!-- Action Bar -->
 			<div class="flex items-center justify-between mt-3 pt-2 border-t border-transparent">
@@ -598,8 +617,8 @@
 						<Smile size={20} class="group-hover:scale-110 transition-transform" />
 					</button>
 
-					<!-- Poll -->
-					{#if !isReply}
+					<!-- Poll (not available on replies or quotes) -->
+					{#if !isReply && !quotedPost}
 						<button
 							class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
 								pollOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'

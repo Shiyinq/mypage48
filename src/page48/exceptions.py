@@ -96,3 +96,15 @@ class ThreadTooShortError(DomainException):
 
 class ThreadTooLongError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.THREAD_TOO_LONG
+
+
+class QuotedPostNotFoundError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.QUOTED_POST_NOT_FOUND
+
+
+class QuotePollConflictError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.POLL_QUOTE_CONFLICT
+
+
+class CannotPinReplyError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.CANNOT_PIN_REPLY

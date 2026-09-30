@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { page48Api, type Page48Post } from '$lib/api/page48';
-	import { Heart, MessageCircle, Repeat2, Bookmark, Share, Check } from 'lucide-svelte';
+	import { Heart, MessageCircle, Bookmark, Share, Check } from 'lucide-svelte';
 	import { OptimizedImage, ImageLightbox } from '$lib/components/common';
 	import PostMenu from '$lib/components/page48/PostMenu.svelte';
+	import RepostMenu from '$lib/components/page48/RepostMenu.svelte';
+	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
+	import PostComposerModal from '$lib/components/page48/PostComposerModal.svelte';
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
@@ -15,6 +18,7 @@
 	import { showToast } from '$lib/stores/toast.svelte';
 	import {
 		formatPollRemaining,
+		formatTimeAgo,
 		getActiveMedia,
 		imageRatio,
 		measureMissingImageSizes,
@@ -42,6 +46,8 @@
 		onComment?: (post: Page48Post) => void;
 		onDelete?: (postId: string) => void;
 		onUpdated?: (post: Page48Post) => void;
+		/** Fired after the pin state changed, so a profile list can re-sort itself. */
+		onPinChanged?: (post: Page48Post) => void;
 		/** Collapse long text behind a "show more" toggle (lists pass this; the detail page does not). */
 		clampContent?: boolean;
 	}
@@ -59,6 +65,7 @@
 		onComment,
 		onDelete,
 		onUpdated,
+		onPinChanged,
 		clampContent = true
 	}: Props = $props();
 
@@ -194,26 +201,40 @@
 		}
 	}
 
+	// Pinning is owner-only and one per user: pinning another post replaces this
+	// one on the server, so the list is told to re-sort via `onUpdated`.
+	let pinning = $state(false);
+
+	async function handleTogglePin() {
+		if (pinning) return;
+		pinning = true;
+		try {
+			const updated = post.isPinned
+				? await page48Api.unpinPost(post.postId)
+				: await page48Api.pinPost(post.postId);
+			post.isPinned = updated.isPinned;
+			showToast(updated.isPinned ? t('page48.pin.pinned') : t('page48.pin.unpinned'), 'success');
+			onPinChanged?.(post);
+		} catch (err: unknown) {
+			const e = err as { detail?: string; message?: string };
+			showToast(e?.detail || e?.message || t('page48.pin.error'), 'error');
+		} finally {
+			pinning = false;
+		}
+	}
+
+	// Quoting reuses the shared composer in a modal, prefilled with this post.
+	let showQuote = $state(false);
+	let quoteTarget = $state<Page48Post | null>(null);
+
+	function openQuote() {
+		quoteTarget = post;
+		showQuote = true;
+	}
+
 	function openLightbox(index: number) {
 		lightboxIndex = index;
 		lightboxOpen = true;
-	}
-
-	function formatTimeAgo(dateStr: string): string {
-		try {
-			const now = Date.now();
-			const then = new Date(dateStr).getTime();
-			const diff = Math.max(0, Math.floor((now - then) / 1000));
-
-			if (diff < 60) return `${diff}${t('page48.time.secondsShort')}`;
-			if (diff < 3600) return `${Math.floor(diff / 60)}${t('page48.time.minutesShort')}`;
-			if (diff < 86400) return `${Math.floor(diff / 3600)}${t('page48.time.hoursShort')}`;
-			if (diff < 2592000) return `${Math.floor(diff / 86400)}${t('page48.time.daysShort')}`;
-			if (diff < 31536000) return `${Math.floor(diff / 2592000)}${t('page48.time.monthsShort')}`;
-			return `${Math.floor(diff / 31536000)}${t('page48.time.yearsShort')}`;
-		} catch {
-			return '';
-		}
 	}
 
 	let timeAgo = $derived(formatTimeAgo(post.createdAt));
@@ -304,9 +325,11 @@
 				{#if isAuthenticated.value}
 					<PostMenu
 						{isOwner}
+						isPinned={post.isPinned}
 						onEdit={() => (showEdit = true)}
 						onDelete={() => (showDelete = true)}
 						onReport={() => (showReport = true)}
+						onTogglePin={isOwner && !post.parentPostId ? handleTogglePin : undefined}
 					/>
 				{/if}
 			</div>
@@ -470,6 +493,13 @@
 			</div>
 		{/if}
 
+		<!-- Quoted post preview -->
+		{#if post.quotedPostId}
+			<div class="pointer-events-auto relative z-[1]">
+				<QuotedPostCard post={post.quotedPost ?? null} unavailable={!post.quotedPost} />
+			</div>
+		{/if}
+
 		<!-- Thread continuation: opens the detail page where the chain is shown -->
 		{#if showThreadLink && post.threadCount > 0}
 			<a
@@ -516,23 +546,15 @@
 				{/if}
 			</button>
 
-			<!-- Repost -->
-			<button
-				class={`pointer-events-auto flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-green-50 dark:hover:bg-green-950/40 hover:text-green-500 transition-all group/btn`}
-				aria-label={t('page48.aria.repost')}
-				aria-disabled={!canInteract}
-				onclick={() => interact(() => onRepost?.(post.postId))}
-			>
-				<Repeat2
-					size={18}
-					class={`transition-transform group-active/btn:scale-90 ${post.isReposted ? 'text-green-500' : ''}`}
-				/>
-				{#if post.repostCount > 0}
-					<span class={`text-[13px] font-medium ${post.isReposted ? 'text-green-500' : ''}`}
-						>{post.repostCount}</span
-					>
-				{/if}
-			</button>
+			<!-- Repost / Quote -->
+			<RepostMenu
+				isReposted={post.isReposted}
+				count={post.repostCount}
+				cursorClass={actionCursor}
+				disabled={!canInteract}
+				onRepost={() => interact(() => onRepost?.(post.postId))}
+				onQuote={() => interact(openQuote)}
+			/>
 
 			<div class="flex items-center ml-auto sm:ml-0 gap-1 sm:gap-2">
 				<!-- Bookmark -->
@@ -592,5 +614,13 @@
 
 	{#if showReport}
 		<ReportModal targetType="post" targetId={post.postId} onClose={() => (showReport = false)} />
+	{/if}
+
+	{#if showQuote}
+		<PostComposerModal
+			quotedPost={quoteTarget}
+			onRemoveQuote={() => (quoteTarget = null)}
+			onClose={() => (showQuote = false)}
+		/>
 	{/if}
 </article>

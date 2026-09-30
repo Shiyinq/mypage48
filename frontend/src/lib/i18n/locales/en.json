@@ -1962,6 +1962,7 @@
 			"repost": "Repost",
 			"bookmark": "Save",
 			"share": "Share",
+			"removeQuote": "Remove quote",
 			"media": "Post media",
 			"viewImage": "View image {index} of {total}",
 			"cancelReply": "Cancel reply",
@@ -2107,6 +2108,7 @@
 			"loadError": "Failed to load profile",
 			"editInSettings": "Edit in Settings",
 			"reposted": "Reposted",
+			"pinned": "Pinned",
 			"countPosts": "{count} Posts",
 			"countReposts": "{count} Reposts"
 		},
@@ -2136,7 +2138,19 @@
 		"menu": {
 			"edit": "Edit",
 			"delete": "Delete",
-			"report": "Report"
+			"report": "Report",
+			"pin": "Pin to profile",
+			"unpin": "Unpin from profile"
+		},
+		"repostMenu": {
+			"repost": "Repost",
+			"undo": "Undo repost",
+			"quote": "Quote post"
+		},
+		"pin": {
+			"pinned": "Post pinned.",
+			"unpinned": "Post unpinned.",
+			"error": "Failed to update pin."
 		},
 		"edit": {
 			"title": "Edit Post",
@@ -2171,7 +2185,8 @@
 		"reportUser": "Report User",
 		"post": {
 			"showMore": "Show more",
-			"showLess": "Show less"
+			"showLess": "Show less",
+			"quotedUnavailable": "This post is no longer available."
 		}
 	}
 }

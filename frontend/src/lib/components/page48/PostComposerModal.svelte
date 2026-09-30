@@ -3,7 +3,7 @@
 	import { portal } from '$lib/actions/portal';
 	import { fade } from 'svelte/transition';
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
-	import { page48Api } from '$lib/api/page48';
+	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
@@ -15,9 +15,12 @@
 
 	interface Props {
 		onClose: () => void;
+		/** When set, the composer publishes a quote of this post. */
+		quotedPost?: Page48Post | null;
+		onRemoveQuote?: () => void;
 	}
 
-	let { onClose }: Props = $props();
+	let { onClose, quotedPost = null, onRemoveQuote }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -45,7 +48,14 @@
 		try {
 			const images = files.length > 0 ? await uploadPage48Images(files) : [];
 			const videos = video ? [await uploadPage48Video(video)] : [];
-			const newPost = await page48Api.createPost(content, images, videos, undefined, poll);
+			const newPost = await page48Api.createPost(
+				content,
+				images,
+				videos,
+				undefined,
+				poll,
+				quotedPost?.postId
+			);
 			if (newPost) {
 				announce(newPost);
 				showToast(t('page48.feed.postSuccess'), 'success');
@@ -108,7 +118,7 @@
 			class="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-gray-100 px-4 dark:border-white/10 sm:px-6"
 		>
 			<h2 class="text-[15px] font-bold text-gray-900 dark:text-gray-100">
-				{t('page48.composer.newPost')}
+				{quotedPost ? t('page48.repostMenu.quote') : t('page48.composer.newPost')}
 			</h2>
 			<button
 				class="-mr-2 p-2 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer"
@@ -120,7 +130,13 @@
 		</div>
 
 		<div class="flex-1 overflow-y-auto overscroll-contain">
-			<PostComposer onPost={handlePost} onPostThread={handleThread} autofocus />
+			<PostComposer
+				onPost={handlePost}
+				onPostThread={quotedPost ? undefined : handleThread}
+				{quotedPost}
+				{onRemoveQuote}
+				autofocus
+			/>
 		</div>
 	</div>
 </div>

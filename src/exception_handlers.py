@@ -128,6 +128,7 @@ from src.news.http_exceptions import (
     NewsNotFound,
 )
 from src.page48.exceptions import (
+    CannotPinReplyError,
     CannotReportSelfError,
     InvalidPollOptionError,
     InvalidPollOptionsError,
@@ -143,6 +144,8 @@ from src.page48.exceptions import (
     PollReplyNotAllowedError,
     PostCreationError,
     PostNotFoundError,
+    QuotePollConflictError,
+    QuotedPostNotFoundError,
     ReportAlreadyExistsError,
     ReportCreationError,
     ThreadTooLongError,
@@ -153,6 +156,7 @@ from src.page48.exceptions import (
     VideoUploadError,
 )
 from src.page48.http_exceptions import (
+    CannotPinReply,
     CannotReportSelf,
     InvalidPollOption,
     InvalidPollOptions,
@@ -168,6 +172,8 @@ from src.page48.http_exceptions import (
     PollReplyNotAllowed,
     PostCreateError,
     PostNotFound,
+    QuotePollConflict,
+    QuotedPostNotFound,
     ReportAlreadyExists,
     ReportCreateError,
     ThreadTooLong,
@@ -564,6 +570,12 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, ThreadTooShort())
     if isinstance(exc, ThreadTooLongError):
         return await detailed_http_exception_handler(request, ThreadTooLong())
+    if isinstance(exc, QuotedPostNotFoundError):
+        return await detailed_http_exception_handler(request, QuotedPostNotFound())
+    if isinstance(exc, QuotePollConflictError):
+        return await detailed_http_exception_handler(request, QuotePollConflict())
+    if isinstance(exc, CannotPinReplyError):
+        return await detailed_http_exception_handler(request, CannotPinReply())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

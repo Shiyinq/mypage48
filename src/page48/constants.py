@@ -9,6 +9,9 @@ class Info:
     VIDEO_UPLOADED = "Video uploaded successfully."
     POLL_VOTED = "Vote submitted successfully."
     THREAD_CREATED = "Thread created successfully."
+    QUOTE_CREATED = "Quote post created successfully."
+    POST_PINNED = "Post pinned successfully."
+    POST_UNPINNED = "Post unpinned successfully."
 
 
 class ErrorCode:
@@ -37,6 +40,9 @@ class ErrorCode:
     POLL_REPLY_NOT_ALLOWED = "Polls are only supported on top-level posts."
     THREAD_TOO_SHORT = "A thread needs at least 2 posts."
     THREAD_TOO_LONG = "A thread can have at most 25 posts."
+    QUOTED_POST_NOT_FOUND = "The post you are trying to quote does not exist."
+    POLL_QUOTE_CONFLICT = "A quote cannot include a poll."
+    CANNOT_PIN_REPLY = "Only top-level posts can be pinned."
 
 
 class DomainErrorCode:
@@ -64,3 +70,6 @@ class DomainErrorCode:
     THREAD_CREATION_FAILED = "Failed to create thread."
     THREAD_TOO_SHORT = "A thread needs at least 2 posts."
     THREAD_TOO_LONG = "A thread can have at most 25 posts."
+    QUOTED_POST_NOT_FOUND = "The post you are trying to quote does not exist."
+    POLL_QUOTE_CONFLICT = "A quote cannot include a poll."
+    CANNOT_PIN_REPLY = "Only top-level posts can be pinned."

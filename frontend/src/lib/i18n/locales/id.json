@@ -1966,6 +1966,7 @@
 			"repost": "Repost",
 			"bookmark": "Simpan",
 			"share": "Bagikan",
+			"removeQuote": "Hapus kutipan",
 			"media": "Media postingan",
 			"viewImage": "Lihat gambar {index} dari {total}",
 			"cancelReply": "Batalkan balasan",
@@ -2111,6 +2112,7 @@
 			"loadError": "Gagal memuat profil",
 			"editInSettings": "Edit di Pengaturan",
 			"reposted": "Direpost",
+			"pinned": "Disematkan",
 			"countPosts": "{count} Postingan",
 			"countReposts": "{count} Repost"
 		},
@@ -2140,7 +2142,19 @@
 		"menu": {
 			"edit": "Edit",
 			"delete": "Hapus",
-			"report": "Laporkan"
+			"report": "Laporkan",
+			"pin": "Sematkan ke profil",
+			"unpin": "Lepas sematan"
+		},
+		"repostMenu": {
+			"repost": "Repost",
+			"undo": "Batalkan repost",
+			"quote": "Kutip postingan"
+		},
+		"pin": {
+			"pinned": "Postingan disematkan.",
+			"unpinned": "Sematan dilepas.",
+			"error": "Gagal mengubah sematan."
 		},
 		"edit": {
 			"title": "Edit Postingan",
@@ -2175,7 +2189,8 @@
 		"reportUser": "Laporkan Pengguna",
 		"post": {
 			"showMore": "Selengkapnya",
-			"showLess": "Sembunyikan"
+			"showLess": "Sembunyikan",
+			"quotedUnavailable": "Postingan ini sudah tidak tersedia."
 		}
 	}
 }

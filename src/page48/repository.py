@@ -46,6 +46,26 @@ class Page48Repository:
             {"postId": post_id}, {"$inc": {field: amount}}
         )
 
+    async def get_pinned_post(self, username: str) -> Optional[dict]:
+        return await self.posts.find_one(
+            {"username": username, "pinnedAt": {"$ne": None}}
+        )
+
+    async def pin_post(self, post_id: str, username: str, pinned_at: datetime):
+        """Pin one post per user; any previous pin by the same user is cleared."""
+        await self.posts.update_many(
+            {"username": username, "pinnedAt": {"$ne": None}},
+            {"$set": {"pinnedAt": None}},
+        )
+        return await self.posts.update_one(
+            {"postId": post_id}, {"$set": {"pinnedAt": pinned_at}}
+        )
+
+    async def unpin_post(self, post_id: str):
+        return await self.posts.update_one(
+            {"postId": post_id}, {"$set": {"pinnedAt": None}}
+        )
+
     @staticmethod
     def _media_query(media: Optional[str]) -> dict:
         """Build a Mongo filter for a feed media type."""
