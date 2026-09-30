@@ -106,6 +106,11 @@
 		void goto(url, { keepFocus: true, noScroll: true });
 	}
 
+	/** The Page48 settings page for this profile (it is only ever your own). */
+	function openSettings() {
+		void goto(`/page48/u/${profile?.username ?? username}/settings`);
+	}
+
 	async function loadProfile() {
 		try {
 			loadingProfile = true;
@@ -369,7 +374,7 @@
 						<div class="flex items-center gap-2 shrink-0">
 							{#if isOwnProfile}
 								<button
-									onclick={() => goto('/settings')}
+									onclick={openSettings}
 									class="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-zinc-800 text-[13px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
 								>
 									<Settings size={15} />
