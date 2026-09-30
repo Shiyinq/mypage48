@@ -2,6 +2,12 @@ import { client, API_BASE } from '$lib/apis/client';
 import { accessToken } from '$lib/stores/accessToken.svelte';
 import { getCSRFToken } from '$lib/utils/auth';
 
+export interface Page48ImageRef {
+	filename: string;
+	width: number;
+	height: number;
+}
+
 export interface Page48Image {
 	filename: string;
 	url: string;
@@ -220,7 +226,7 @@ export const page48Api = {
 
 	createPost: async (
 		content: string,
-		images: string[] = [],
+		images: Page48ImageRef[] = [],
 		videos: { filename: string; width: number; height: number; duration: number }[] = [],
 		parentPostId?: string,
 		poll?: { options: string[] } | null

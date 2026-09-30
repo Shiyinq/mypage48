@@ -478,7 +478,16 @@ class Page48Service:
                     data.parentPostId, "replyCount", 1
                 )
 
-            images_data = [{"filename": fn} for fn in data.images]
+            # Dimensions come from the client so the feed can reserve the right
+            # box for each photo without cropping it.
+            images_data = [
+                {
+                    "filename": ref.filename,
+                    "width": ref.width or 0,
+                    "height": ref.height or 0,
+                }
+                for ref in data.images
+            ]
             video_refs = data.videos or []
 
             # A post is either images or a single video, never both.

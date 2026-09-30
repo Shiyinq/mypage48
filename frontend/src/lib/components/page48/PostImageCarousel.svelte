@@ -2,6 +2,7 @@
 	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
 	import { OptimizedImage } from '$lib/components/common';
 	import type { Page48Image } from '$lib/api/page48';
+	import { carouselRatio, imageRatio, measureMissingImageSizes } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
@@ -25,18 +26,24 @@
 	/** Set when the swipe itself moved `index`, so the effect below leaves it alone. */
 	let indexFromSwipe = false;
 
-	// Two slides are visible at once, so the last reachable position already shows
-	// the final two images — that's why the leading index tops out at length - 2.
-	let maxIndex = $derived(Math.max(0, images.length - 2));
-	let hasOverflow = $derived(maxIndex > 0);
-	/** Photo the badge points at: the last one visible in the strip. */
-	let visibleTo = $derived(Math.min(index + 2, images.length));
-
 	/**
-	 * Scroll offset that lines slide `i` up with the left edge, clamped to the
-	 * scrollable range (the final slides can't reach the left edge).
+	 * Two slides of the reference ratio fill the strip, which is what sets the
+	 * shared height. The reference is the geometric mean of the photos, so a mixed
+	 * post keeps both orientations reasonable; each slide then keeps its *own* ratio
+	 * at that height — narrower or wider, but never cropped or padded.
 	 */
-	function targetOffset(slideIndex: number): number {
+	const SLIDE_FRACTION = 0.48;
+	let slideRatio = $derived(carouselRatio(images));
+	let stripRatio = $derived(slideRatio / SLIDE_FRACTION);
+
+	/** Measured from the DOM: last reachable stop, and whether content overflows. */
+	let maxIndex = $state(0);
+	let hasOverflow = $state(false);
+	/** 1-based number of the last slide currently in view, for the badge. */
+	let visibleTo = $state(1);
+
+	/** Scroll offset that lines slide `i` up with the left edge (clamped). */
+	function stopOffset(slideIndex: number): number {
 		const el = track;
 		const slide = el?.children[slideIndex] as HTMLElement | undefined;
 		if (!el || !slide) return 0;
@@ -45,13 +52,55 @@
 		return Math.min(slide.offsetLeft, maxScroll);
 	}
 
+	function updateVisibleTo() {
+		const el = track;
+		if (!el) return;
+
+		const right = el.scrollLeft + el.clientWidth;
+		let last = index;
+		for (let i = 0; i < images.length; i += 1) {
+			const slide = el.children[i] as HTMLElement | undefined;
+			if (slide && slide.offsetLeft < right - 4) last = i;
+		}
+		visibleTo = Math.min(last + 1, images.length);
+	}
+
+	function measure() {
+		const el = track;
+		if (!el) return;
+
+		const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+		hasOverflow = maxScroll > 4;
+
+		let last = 0;
+		for (let i = 0; i < images.length; i += 1) {
+			const slide = el.children[i] as HTMLElement | undefined;
+			if (slide && slide.offsetLeft <= maxScroll + 4) last = i;
+		}
+		maxIndex = last;
+		updateVisibleTo();
+	}
+
+	$effect(() => measureMissingImageSizes(images));
+
+	$effect(() => {
+		const el = track;
+		const count = images.length;
+		if (!el || count === 0) return;
+
+		measure();
+		const observer = new ResizeObserver(() => measure());
+		observer.observe(el);
+		return () => observer.disconnect();
+	});
+
 	// Keep the requested slide in view. A swipe already updates `index` itself, so
-	// the tolerance below stops this from fighting the browser's snap.
+	// the flag below stops this from fighting the browser's snap.
 	$effect(() => {
 		const el = track;
 		if (!el) return;
 
-		const target = targetOffset(index);
+		const target = stopOffset(index);
 		if (indexFromSwipe) {
 			// The strip is already where the user dragged it; scrolling to the
 			// target here would yank it back to the previous stop.
@@ -60,14 +109,12 @@
 		}
 		if (Math.abs(el.scrollLeft - target) > 4) {
 			el.scrollTo({ left: target, behavior: 'smooth' });
+		} else {
+			updateVisibleTo();
 		}
 	});
 
-	/**
-	 * Leading slide = the snap stop closest to the current scroll offset. Comparing
-	 * against the clamped offsets keeps both ends correct: with two slides visible
-	 * the first stop is `0` (not `1`) and the last stop is `length - 2`.
-	 */
+	/** Leading slide = the snap stop closest to the current scroll offset. */
 	function handleScroll() {
 		const el = track;
 		if (!el) return;
@@ -86,6 +133,7 @@
 			}
 		}
 
+		updateVisibleTo();
 		if (leading !== index) {
 			indexFromSwipe = true;
 			index = leading;
@@ -107,12 +155,14 @@
 	<div
 		bind:this={track}
 		onscroll={handleScroll}
-		class="scrollbar-hide relative flex snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain"
+		style={`aspect-ratio: ${stripRatio};`}
+		class={`scrollbar-hide relative flex max-h-[600px] snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain ${hasOverflow ? 'justify-start' : 'justify-center'}`}
 	>
 		{#each images as image, i (image.filename)}
 			<button
 				type="button"
-				class="relative aspect-[4/5] w-[48%] shrink-0 cursor-zoom-in snap-start overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 dark:border-white/5 dark:bg-zinc-800"
+				style={`aspect-ratio: ${imageRatio(image)}; height: 100%;`}
+				class="relative shrink-0 cursor-zoom-in snap-start overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 dark:border-white/5 dark:bg-zinc-800"
 				onpointerdown={(event) => (pointerStartX = event.clientX)}
 				onclick={(event) => handleSlideClick(i, event)}
 				aria-label={t('page48.aria.viewImage', { index: i + 1, total: images.length })}

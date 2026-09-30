@@ -1,4 +1,4 @@
-import { page48Api, type Page48Post } from '$lib/api/page48';
+import { page48Api, type Page48Image, type Page48ImageRef, type Page48Post } from '$lib/api/page48';
 import { storageApi } from '$lib/apis/storage';
 import { showToast } from '$lib/stores/toast.svelte';
 import { t } from '$lib/i18n';
@@ -20,6 +20,54 @@ export interface VideoDraft {
 	duration: number;
 }
 
+/** Aspect ratio (width / height) of an image; falls back to 16:9 when unknown. */
+export function imageRatio(image: Page48Image): number {
+	return image.width && image.height ? image.width / image.height : 16 / 9;
+}
+
+/**
+ * Fill in dimensions for photos stored before sizes were saved (older posts).
+ * Mutates the passed items, so the caller can rely on `imageRatio()` afterwards.
+ * Returns a cleanup function for use inside an effect.
+ */
+export function measureMissingImageSizes(images: Page48Image[]): () => void {
+	let cancelled = false;
+
+	for (const image of images) {
+		if (image.width && image.height) continue;
+
+		const src = image.url_small || image.url_medium || image.url;
+		if (!src) continue;
+
+		const probe = new Image();
+		probe.onload = () => {
+			if (cancelled || !probe.naturalWidth || !probe.naturalHeight) return;
+			image.width = probe.naturalWidth;
+			image.height = probe.naturalHeight;
+		};
+		probe.src = src;
+	}
+
+	return () => {
+		cancelled = true;
+	};
+}
+
+/**
+ * Box ratio used to size a multi-image strip (its height). The geometric mean of
+ * every photo is used, so the strip lands between the narrowest and the widest
+ * photo: neither orientation turns into a sliver, and none ends up wider than the
+ * strip itself. Each slide still keeps its own ratio at that height.
+ */
+export function carouselRatio(images: Page48Image[]): number {
+	const ratios = images.map(imageRatio).filter((ratio) => ratio > 0);
+	if (ratios.length === 0) return 16 / 9;
+
+	const logMean = ratios.reduce((sum, ratio) => sum + Math.log(ratio), 0) / ratios.length;
+
+	return Math.min(Math.max(Math.exp(logMean), 9 / 16), 16 / 9);
+}
+
 /**
  * The media filter currently active, derived from the URL:
  * `/page48/photos` → image, `/page48/videos` → video, or a `?media=` query param.
@@ -39,23 +87,66 @@ export function tagUrl(tag: string, media?: Page48Media | null): string {
 	return media ? `${base}?media=${media}` : base;
 }
 
-/** Upload a list of files to storage (limited concurrency) and return filenames. */
-export async function uploadPage48Images(files: File[], concurrency = 3): Promise<string[]> {
-	const filenames: string[] = new Array(files.length).fill('');
+/**
+ * Read an image file's natural dimensions before uploading, so the feed knows the
+ * right box for it. Falls back to 0 when the browser can't decode the file.
+ */
+async function probeImage(file: File): Promise<{ width: number; height: number }> {
+	if (typeof createImageBitmap === 'function') {
+		try {
+			const bitmap = await createImageBitmap(file);
+			const size = { width: bitmap.width, height: bitmap.height };
+			bitmap.close();
+			return size;
+		} catch {
+			// Fall through to the <img> path below.
+		}
+	}
+
+	return new Promise((resolve) => {
+		const url = URL.createObjectURL(file);
+		const image = new Image();
+		image.onload = () => {
+			resolve({ width: image.naturalWidth, height: image.naturalHeight });
+			URL.revokeObjectURL(url);
+		};
+		image.onerror = () => {
+			resolve({ width: 0, height: 0 });
+			URL.revokeObjectURL(url);
+		};
+		image.src = url;
+	});
+}
+
+/** Upload images to storage (limited concurrency); returns references + sizes. */
+export async function uploadPage48Images(
+	files: File[],
+	concurrency = 3
+): Promise<Page48ImageRef[]> {
+	const uploaded: (Page48ImageRef | null)[] = new Array(files.length).fill(null);
 	let next = 0;
 
 	async function worker() {
 		while (next < files.length) {
 			const index = next++;
+			const file = files[index];
+			const size = await probeImage(file);
+
 			const base64 = await new Promise<string>((resolve, reject) => {
 				const reader = new FileReader();
 				reader.onload = () => resolve(reader.result as string);
 				reader.onerror = reject;
-				reader.readAsDataURL(files[index]);
+				reader.readAsDataURL(file);
 			});
 
 			const result = await storageApi.uploadImage(base64, 'page48');
-			filenames[index] = result?.filename ?? '';
+			if (result?.filename) {
+				uploaded[index] = {
+					filename: result.filename,
+					width: size.width,
+					height: size.height
+				};
+			}
 		}
 	}
 
@@ -63,7 +154,7 @@ export async function uploadPage48Images(files: File[], concurrency = 3): Promis
 	await Promise.all(Array.from({ length: workers }, worker));
 
 	// Keep the picked order, dropping anything that failed to upload.
-	return filenames.filter((filename) => filename.length > 0);
+	return uploaded.filter((image): image is Page48ImageRef => image !== null);
 }
 
 /**

@@ -128,9 +128,9 @@
 		poll: { options: string[] } | null
 	) {
 		try {
-			const filenames = files.length > 0 ? await uploadPage48Images(files) : [];
+			const images = files.length > 0 ? await uploadPage48Images(files) : [];
 			const videos = video ? [await uploadPage48Video(video)] : [];
-			const newPost = await page48Api.createPost(content, filenames, videos, undefined, poll);
+			const newPost = await page48Api.createPost(content, images, videos, undefined, poll);
 			if (newPost) {
 				posts = [newPost, ...posts];
 				showToast(t('page48.feed.postSuccess'), 'success');

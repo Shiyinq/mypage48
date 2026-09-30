@@ -118,9 +118,9 @@
 		const target = replyTarget ?? focused;
 		if (!target) return;
 		try {
-			const filenames = files.length > 0 ? await uploadPage48Images(files) : [];
+			const images = files.length > 0 ? await uploadPage48Images(files) : [];
 			const videos = video ? [await uploadPage48Video(video)] : [];
-			await page48Api.createPost(content, filenames, videos, target.postId);
+			await page48Api.createPost(content, images, videos, target.postId);
 			showToast(t('page48.post.replySent'), 'success');
 			await load();
 		} catch (err: unknown) {

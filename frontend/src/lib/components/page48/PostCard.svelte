@@ -16,6 +16,8 @@
 	import {
 		formatPollRemaining,
 		getActiveMedia,
+		imageRatio,
+		measureMissingImageSizes,
 		pollPercentage,
 		tagUrl,
 		voteOnPoll
@@ -55,6 +57,17 @@
 
 	let lightboxOpen = $state(false);
 	let lightboxIndex = $state(0);
+
+	// A lone photo may not get taller than this; the box is capped by width
+	// instead (see below) so its ratio always matches the photo.
+	const IMAGE_MAX_HEIGHT = 500;
+
+	// Older posts stored no dimensions; measure the photo in the browser instead.
+	$effect(() => {
+		if (post.images?.length) return measureMissingImageSizes(post.images);
+	});
+
+	let singleImageRatio = $derived(post.images?.length === 1 ? imageRatio(post.images[0]) : 16 / 9);
 
 	// Show the owner menu (Edit/Delete) only for the signed-in author.
 	let isOwner = $derived(
@@ -329,17 +342,23 @@
 		{#if post.images && post.images.length > 0}
 			<div class="relative z-[1] mt-3">
 				{#if post.images.length === 1}
+					{@const image = post.images[0]}
+					<!-- Same trick as VideoPlayer: keep the photo's own ratio and cap the box by
+					     width, so the photo fills it exactly (no crop, no letterbox bars). -->
 					<button
 						type="button"
-						class="relative block w-full max-h-[500px] overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 cursor-zoom-in dark:border-white/5 dark:bg-zinc-800"
+						class="relative mx-auto block w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 cursor-zoom-in dark:border-white/5 dark:bg-zinc-800"
+						style={`aspect-ratio: ${singleImageRatio}; max-width: min(100%, ${Math.round(
+							IMAGE_MAX_HEIGHT * singleImageRatio
+						)}px);`}
 						onclick={() => openLightbox(0)}
 						aria-label={t('page48.aria.viewImage', { index: 1, total: 1 })}
 					>
 						<OptimizedImage
-							src={post.images[0].url}
-							srcMedium={post.images[0].url_medium}
-							srcSmall={post.images[0].url_small}
-							blurHash={post.images[0].blurHash}
+							src={image.url}
+							srcMedium={image.url_medium}
+							srcSmall={image.url_small}
+							blurHash={image.blurHash}
 							alt={t('page48.aria.media')}
 							class="w-full h-full object-cover"
 							objectFit="cover"
