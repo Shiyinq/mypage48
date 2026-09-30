@@ -152,6 +152,10 @@ class Page48UserProfileResponse(BaseModel):
     profilePicture_medium: Optional[str] = None
     profilePicture_small: Optional[str] = None
     blurHash: Optional[str] = None
+    bannerPicture: Optional[str] = None
+    bannerPicture_medium: Optional[str] = None
+    bannerPicture_small: Optional[str] = None
+    bannerBlurHash: Optional[str] = None
     postCount: int = 0
     repostCount: int = 0
 

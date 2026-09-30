@@ -95,6 +95,17 @@ class UserRepository:
             {"userId": user_id}, {"$set": update_data}
         )
 
+    async def set_banner_picture(
+        self, user_id: str, banner_picture: str, blur_hash: Optional[str] = None
+    ):
+        update_data = {"bannerPicture": banner_picture}
+        if blur_hash:
+            update_data["bannerBlurHash"] = blur_hash
+
+        return await self.collection.update_one(
+            {"userId": user_id}, {"$set": update_data}
+        )
+
     async def update_last_active(self, user_id: str):
         return await self.collection.update_one(
             {"userId": user_id}, {"$set": {"lastActiveAt": datetime.now(timezone.utc)}}

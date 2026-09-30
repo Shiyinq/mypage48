@@ -72,6 +72,7 @@
 			"square": "1:1",
 			"sixteenNine": "16:9",
 			"nineSixteen": "9:16",
+			"threeOne": "3:1",
 			"fourThree": "4:3",
 			"threeFour": "3:4"
 		}
@@ -627,7 +628,11 @@
 			"emailWarning": "Changing your email will require re-verification.",
 			"systemInfo": "Member Information",
 			"systemSubtitle": "Membership details",
-			"verification": "Account Verification"
+			"verification": "Account Verification",
+			"banner": "Banner",
+			"bannerHint": "Ideal size is 3:1. You can adjust the crop in the editor.",
+			"bannerUploadSuccess": "Banner updated successfully!",
+			"bannerUploadError": "Failed to upload banner. Please try again."
 		},
 		"language": {
 			"title": "Language",

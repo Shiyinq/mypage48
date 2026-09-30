@@ -47,6 +47,8 @@ class UserLoginBase(BaseModel):
     profilePicture_medium: str | None = None
     profilePicture_small: str | None = None
     blurHash: str | None = None
+    bannerPicture: str | None = None
+    bannerBlurHash: str | None = None
     name: str
     email: str
     username: str

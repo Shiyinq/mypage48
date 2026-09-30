@@ -16,7 +16,8 @@ export type ImageCategory =
 	| 'journal'
 	| 'member'
 	| 'setlist'
-	| 'page48';
+	| 'page48'
+	| 'banner';
 
 export interface BatchPresignedUrlRequest {
 	filenames: string[];

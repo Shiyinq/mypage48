@@ -72,6 +72,8 @@ class UserInDB(BaseModel):
     userId: str = Field(default_factory=lambda: str(uuid4()))
     profilePicture: Optional[str] = Field(default=None)
     blurHash: Optional[str] = Field(default=None)
+    bannerPicture: Optional[str] = Field(default=None)
+    bannerBlurHash: Optional[str] = Field(default=None)
     name: str = Field(max_length=100)  # Stores fullName or OAuth name
     memberId: Optional[str] = Field(
         max_length=20, default=None
@@ -151,6 +153,16 @@ class UpdateProfilePictureRequest(BaseModel):
     @classmethod
     def validate_profile_picture(cls, v: str) -> str:
         return validate_image_path(v, "avatar/", "Profile picture")
+
+
+class UpdateBannerRequest(BaseModel):
+    bannerPicture: str = Field(max_length=100)
+    blurHash: Optional[str] = Field(default=None, max_length=100)
+
+    @field_validator("bannerPicture")
+    @classmethod
+    def validate_banner_picture(cls, v: str) -> str:
+        return validate_image_path(v, "banner/", "Banner")
 
 
 class BatchAddOshiRequest(BaseModel):

@@ -1331,6 +1331,24 @@ class Page48Service:
                     f"Failed to resolve profile picture for {username}: {str(e)}"
                 )
 
+        raw_banner = user.get("bannerPicture")
+        banner_picture = None
+        banner_picture_medium = None
+        banner_picture_small = None
+        banner_blur_hash = user.get("bannerBlurHash")
+
+        if raw_banner:
+            try:
+                banner_picture = await self.storage_service.resolve_url(raw_banner)
+                banner_picture_medium = await self.storage_service.resolve_url(
+                    raw_banner, variant="medium"
+                )
+                banner_picture_small = await self.storage_service.resolve_url(
+                    raw_banner, variant="small"
+                )
+            except Exception as e:
+                logger.error(f"Failed to resolve banner for {username}: {str(e)}")
+
         post_count = await self.repository.count_user_posts(stored_username)
         repost_count = await self.repository.count_user_reposts(user.get("userId", ""))
 
@@ -1343,6 +1361,10 @@ class Page48Service:
             profilePicture_medium=profile_picture_medium,
             profilePicture_small=profile_picture_small,
             blurHash=blur_hash,
+            bannerPicture=banner_picture,
+            bannerPicture_medium=banner_picture_medium,
+            bannerPicture_small=banner_picture_small,
+            bannerBlurHash=banner_blur_hash,
             postCount=post_count,
             repostCount=repost_count,
         )

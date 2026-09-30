@@ -26,10 +26,16 @@
 
 	const { t } = useTranslation();
 
+	// The Page48 profile banner (cover) is Page48-only, so the upload control is
+	// opt-in and the main settings page does not render it.
+	let { showBanner = false }: { showBanner?: boolean } = $props();
+
 	let isSaving = $state(false);
 	let isEditing = $state(false);
 	let showCropper = $state(false);
 	let previewImage = $state<string | null>(null);
+	let showBannerCropper = $state(false);
+	let bannerPreviewImage = $state<string | null>(null);
 	let showEmail = $state(false);
 
 	// Form state
@@ -110,6 +116,32 @@
 			logger.error('Failed to upload profile picture', err);
 			const errorMessage = getErrorMessage(err);
 			showToast(errorMessage || t('settings.publicProfile.uploadError'), 'error');
+		}
+	};
+
+	const onBannerFileSelected = (e: Event) => {
+		const target = e.target as HTMLInputElement;
+		if (target.files && target.files.length > 0) {
+			const reader = new FileReader();
+			reader.onload = (re) => {
+				bannerPreviewImage = re.target?.result as string;
+				showBannerCropper = true;
+			};
+			reader.readAsDataURL(target.files[0]);
+			// Reset input
+			target.value = '';
+		}
+	};
+
+	const onBannerCropDone = async (base64: string) => {
+		showBannerCropper = false;
+		try {
+			await userProfile.updateBanner(base64);
+			showToast(t('settings.account.bannerUploadSuccess'), 'success');
+		} catch (err) {
+			logger.error('Failed to upload banner', err);
+			const errorMessage = getErrorMessage(err);
+			showToast(errorMessage || t('settings.account.bannerUploadError'), 'error');
 		}
 	};
 
@@ -231,6 +263,77 @@
 		</div>
 
 		<div class="space-y-8 relative">
+			{#if showBanner}
+				<!-- BANNER (Page48 cover) -->
+				<div class="space-y-2">
+					<label
+						for="banner-upload"
+						class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] pl-1"
+					>
+						{t('settings.account.banner')}
+					</label>
+					<div class="relative group">
+						<div
+							class="w-full aspect-[3/1] rounded-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shadow-inner relative"
+						>
+							{#if userProfile.data?.bannerPicture}
+								<OptimizedImage
+									src={userProfile.data?.bannerPicture}
+									srcMedium={userProfile.data?.bannerPicture_medium}
+									srcSmall={userProfile.data?.bannerPicture_small}
+									blurHash={userProfile.data?.bannerBlurHash}
+									alt={userProfile.data?.name}
+									class="w-full h-full object-cover transition-transform group-hover:scale-105"
+									sizes="(max-width: 640px) 100vw, 620px"
+								/>
+							{:else}
+								<div
+									class="w-full h-full bg-gradient-to-br from-red-100 to-pink-100 dark:from-red-950/30 dark:to-pink-950/30"
+								></div>
+							{/if}
+
+							<!-- Overlay on hover -->
+							<label
+								for="banner-upload"
+								class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+							>
+								<div class="flex flex-col items-center gap-1">
+									<Camera class="w-6 h-6 text-white" />
+									<span class="text-[8px] text-white font-bold uppercase tracking-widest"
+										>{t('common.edit')}</span
+									>
+								</div>
+							</label>
+							<input
+								id="banner-upload"
+								name="banner"
+								type="file"
+								accept="image/*"
+								class="hidden"
+								onchange={onBannerFileSelected}
+								disabled={userProfile.isUpdatingBanner}
+							/>
+
+							<!-- Loading Indicator -->
+							{#if userProfile.isUpdatingBanner}
+								<div
+									class="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center z-10"
+									in:fade={{ duration: 200 }}
+								>
+									<LoaderCircle class="w-8 h-8 text-white animate-spin mb-2" />
+									<span class="text-[10px] text-white font-bold uppercase tracking-widest"
+										>{t('common.loading')}</span
+									>
+								</div>
+							{/if}
+						</div>
+						<p class="text-[10px] text-gray-400 dark:text-gray-500 pl-1">
+							{t('settings.account.bannerHint')}
+						</p>
+					</div>
+				</div>
+			{/if}
+
 			<div class="flex flex-col sm:flex-row gap-8 items-start">
 				<!-- LEFT: PROFILE PICTURE -->
 				<div class="flex-shrink-0 mx-auto sm:mx-0">
@@ -598,5 +701,14 @@
 		imageUrl={previewImage}
 		onSave={onCropDone}
 		onClose={() => (showCropper = false)}
+	/>
+{/if}
+
+{#if showBannerCropper && bannerPreviewImage}
+	<ImageCropperModal
+		imageUrl={bannerPreviewImage}
+		defaultRatio={3}
+		onSave={onBannerCropDone}
+		onClose={() => (showBannerCropper = false)}
 	/>
 {/if}

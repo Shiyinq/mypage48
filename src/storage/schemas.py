@@ -3,7 +3,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel
 
 ImageCategory = Literal[
-    "ticket", "twoshot", "avatar", "journal", "member", "setlist", "page48"
+    "ticket", "twoshot", "avatar", "journal", "member", "setlist", "page48", "banner"
 ]
 
 

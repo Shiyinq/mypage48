@@ -27,4 +27,5 @@ VALID_CATEGORIES = {
     "member",
     "setlist",
     "page48",
+    "banner",
 }

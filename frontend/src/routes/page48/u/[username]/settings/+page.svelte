@@ -42,6 +42,6 @@
 	class="max-w-[620px] mx-auto w-full min-h-screen bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl sm:border-x border-gray-200/60 dark:border-white/10 pb-24 shadow-sm shadow-black/5 dark:shadow-none transition-all"
 >
 	<div class="px-4 sm:px-6 py-4">
-		<SettingsSections showExtras={false} />
+		<SettingsSections showExtras={false} showBanner />
 	</div>
 </div>

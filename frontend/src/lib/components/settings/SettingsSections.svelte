@@ -25,9 +25,14 @@
 		 * settings page shows them; the Page48 one asks for a trimmed-down panel.
 		 */
 		showExtras?: boolean;
+		/**
+		 * Render the Page48 profile banner (cover) upload control. Page48-only, so the
+		 * main settings page leaves it off.
+		 */
+		showBanner?: boolean;
 	}
 
-	let { showExtras = true }: Props = $props();
+	let { showExtras = true, showBanner = false }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -87,7 +92,7 @@
 
 <div class="space-y-6">
 	<!-- ACCOUNT SETTINGS -->
-	<AccountSettings />
+	<AccountSettings {showBanner} />
 
 	<!-- PUBLIC PROFILE SETTINGS -->
 	<PublicProfileSettings />

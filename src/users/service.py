@@ -305,6 +305,39 @@ class UserService:
             logger.exception(f"Error updating profile picture: {str(e)}")
             raise UserUpdateError()
 
+    async def update_banner(
+        self, user_id: str, banner_picture: str, blur_hash: Optional[str] = None
+    ) -> MessageResponse:
+        """Update the user's profile banner (Page48 cover image)"""
+        try:
+            # Fetch current user to get old banner for cleanup
+            current_user = await self.repository.get_user_by_id(user_id)
+            if not current_user:
+                raise UserFetchError()
+
+            # Only validate if it's a base64 image (legacy upload)
+            # Storage filenames (category/user_id/filename) skip validation
+            if banner_picture.startswith("data:"):
+                validate_base64_image(banner_picture)
+
+            await self.repository.set_banner_picture(user_id, banner_picture, blur_hash)
+
+            # Cleanup old banner from R2 if it changed
+            old_banner = current_user.get("bannerPicture")
+            if old_banner and old_banner != banner_picture:
+                await self.storage_service.delete_image(old_banner)
+
+            return MessageResponse(detail=Info.BANNER_UPDATED)
+        except ImageTooLargeValidationError:
+            raise ImageTooLargeError()
+        except InvalidImageTypeValidationError:
+            raise InvalidImageTypeError()
+        except ImageValidationError:
+            raise InvalidImageError()
+        except Exception as e:
+            logger.exception(f"Error updating banner: {str(e)}")
+            raise UserUpdateError()
+
     async def update_profile(
         self, user_id: str, request: UpdateProfileRequest
     ) -> MessageResponse:
@@ -735,6 +768,22 @@ class UserService:
             else:
                 blur_hash = getattr(current_user, "blurHash", None)
 
+            # Resolve banner (Page48 cover) if it's a storage path
+            banner_pic = getattr(current_user, "bannerPicture", None)
+            banner_pic_medium = None
+            banner_pic_small = None
+            banner_blur_hash = None
+            if banner_pic:
+                banner_variants = await self.storage_service.resolve_image_variants(
+                    banner_pic
+                )
+                banner_pic = banner_variants["url"]
+                banner_pic_medium = banner_variants["url_medium"]
+                banner_pic_small = banner_variants["url_small"]
+                banner_blur_hash = banner_variants["blurHash"]
+            else:
+                banner_blur_hash = getattr(current_user, "bannerBlurHash", None)
+
             # Build profile dict from current_user
             profile_dict = {
                 "userId": current_user.userId,
@@ -742,6 +791,10 @@ class UserService:
                 "profilePicture_medium": profile_pic_medium,
                 "profilePicture_small": profile_pic_small,
                 "blurHash": blur_hash,
+                "bannerPicture": banner_pic,
+                "bannerPicture_medium": banner_pic_medium,
+                "bannerPicture_small": banner_pic_small,
+                "bannerBlurHash": banner_blur_hash,
                 "name": current_user.name,
                 "email": current_user.email,
                 "username": current_user.username,
