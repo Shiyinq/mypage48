@@ -158,9 +158,7 @@ from src.page48.http_exceptions import (
     UserProfileNotFound,
     VideoTooLarge,
 )
-from src.page48.http_exceptions import (
-    VideoUploadError as VideoUploadHTTPError,
-)
+from src.page48.http_exceptions import VideoUploadError as VideoUploadHTTPError
 from src.replay.exceptions import ReplayAlreadyExists, ReplayNotFound, ReplayUploadError
 from src.replay.http_exceptions import (
     HttpReplayAlreadyExists,
@@ -562,12 +560,21 @@ async def domain_exception_handler(request: Request, exc: DomainException):
     )
 
 
-async def detailed_http_exception_handler(request: Request, exc: DetailedHTTPException):
+def detailed_http_exception_response(exc: DetailedHTTPException) -> JSONResponse:
+    """Build the JSON response for a `DetailedHTTPException`.
+
+    Middlewares can't rely on the registered exception handlers because they run
+    outside `ExceptionMiddleware`, so they use this to respond directly.
+    """
     return JSONResponse(
         status_code=exc.STATUS_CODE,
         content={"detail": exc.detail},
         headers=getattr(exc, "headers", None),
     )
+
+
+async def detailed_http_exception_handler(request: Request, exc: DetailedHTTPException):
+    return detailed_http_exception_response(exc)
 
 
 async def request_validation_exception_handler(

@@ -1,13 +1,12 @@
 import re
 import uuid
 from datetime import datetime, timedelta
-from typing import Optional, List
+from typing import List, Optional
 
 from src.auth.schemas import UserCurrent
 from src.config import Settings
 from src.infrastructure import AsyncBackgroundRunner
 from src.logging_config import create_logger
-from src.page48.constants import Info
 from src.page48.exceptions import (
     CannotReportSelfError,
     InvalidReportTargetError,
@@ -55,7 +54,6 @@ logger = create_logger("page48_service", __name__)
 TAG_PATTERN = re.compile(r"#(\w+)", re.UNICODE)
 MAX_TAGS = 10
 MAX_TAG_LENGTH = 50
-MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024
 ALLOWED_VIDEO_TYPES = {
     "video/mp4": "mp4",
     "video/webm": "webm",
@@ -138,7 +136,7 @@ class Page48Service:
         user_picture, user_picture_small = await self._resolve_author_avatar(
             post, user_map, avatar_cache
         )
-        
+
         # Resolve image variants
         images = []
         for img in post.get("images", []):
@@ -185,40 +183,39 @@ class Page48Service:
             parentPostId=post.get("parentPostId"),
             depth=post.get("depth", 0),
             replyCount=post.get("replyCount", 0),
-            
             userId=post["userId"],
             username=post["username"],
             userDisplayName=post["userDisplayName"],
             userProfilePicture=user_picture,
             userProfilePicture_small=user_picture_small,
             userBlurHash=post.get("userBlurHash"),
-            
             content=post["content"],
             images=images,
             videos=videos,
             tags=post.get("tags", []),
-            
             likesCount=post.get("likesCount", 0),
             repostCount=post.get("repostCount", 0),
             bookmarksCount=post.get("bookmarksCount", 0),
-            
             isEdited=post.get("isEdited", False),
             createdAt=post["createdAt"],
             updatedAt=post["updatedAt"],
-            
             isLiked=interactions.get("isLiked", False),
             isReposted=interactions.get("isReposted", False),
             isBookmarked=interactions.get("isBookmarked", False),
         )
 
-    async def _enrich_posts(self, posts: List[dict], user_id: Optional[str] = None) -> List[PostResponse]:
+    async def _enrich_posts(
+        self, posts: List[dict], user_id: Optional[str] = None
+    ) -> List[PostResponse]:
         if not posts:
             return []
-            
+
         post_ids = [p["postId"] for p in posts]
         interactions = {}
         if user_id:
-            interactions = await self.repository.get_user_interactions(post_ids, user_id)
+            interactions = await self.repository.get_user_interactions(
+                post_ids, user_id
+            )
 
         author_ids = list({p["userId"] for p in posts if p.get("userId")})
         users = await self.user_repository.get_users_by_ids(author_ids)
@@ -233,7 +230,9 @@ class Page48Service:
 
         return enriched
 
-    def _extract_tags(self, content: str, explicit: Optional[List[str]] = None) -> List[str]:
+    def _extract_tags(
+        self, content: str, explicit: Optional[List[str]] = None
+    ) -> List[str]:
         """Collect hashtags from the content plus any explicitly provided tags."""
         tags: List[str] = []
 
@@ -347,7 +346,7 @@ class Page48Service:
         """Validate and store an uploaded video, returning its reference + URL."""
         if not data:
             raise InvalidVideoTypeError()
-        if len(data) > MAX_VIDEO_SIZE_BYTES:
+        if len(data) > self.config.max_page48_video_upload_size_bytes:
             raise VideoTooLargeError()
 
         extension = ALLOWED_VIDEO_TYPES.get((content_type or "").lower())
@@ -373,24 +372,28 @@ class Page48Service:
             logger.exception(f"Error uploading video: {str(e)}")
             raise VideoUploadError()
 
-    async def create_post(self, data: CreatePostRequest, user: UserCurrent) -> PostResponse:
+    async def create_post(
+        self, data: CreatePostRequest, user: UserCurrent
+    ) -> PostResponse:
         try:
             post_id = str(uuid.uuid4())
             now = datetime.now()
-            
+
             root_post_id = None
             depth = 0
-            
+
             if data.parentPostId:
                 parent = await self.repository.get_post_by_id(data.parentPostId)
                 if not parent:
                     raise PostNotFoundError()
-                    
+
                 root_post_id = parent.get("rootPostId") or data.parentPostId
                 depth = parent.get("depth", 0) + 1
-                
+
                 # Update reply count of parent
-                await self.repository.increment_post_stats(data.parentPostId, "replyCount", 1)
+                await self.repository.increment_post_stats(
+                    data.parentPostId, "replyCount", 1
+                )
 
             images_data = [{"filename": fn} for fn in data.images]
             video_refs = data.videos or []
@@ -406,9 +409,7 @@ class Page48Service:
                 # The object must live under the uploader's own prefix.
                 if not ref.filename.startswith(f"page48/{user.userId}/"):
                     raise InvalidVideoError()
-                if not await self.storage_service.repository.file_exists(
-                    ref.filename
-                ):
+                if not await self.storage_service.repository.file_exists(ref.filename):
                     raise InvalidVideoError()
                 videos_data.append(
                     {
@@ -427,33 +428,29 @@ class Page48Service:
                 "parentPostId": data.parentPostId,
                 "depth": depth,
                 "replyCount": 0,
-                
                 "userId": user.userId,
                 "username": user.username,
                 "userDisplayName": user.name,
                 "userProfilePicture": user.profilePicture,
                 "userProfilePicture_small": user.profilePicture_small,
                 "userBlurHash": user.blurHash,
-                
                 "content": data.content,
                 "images": images_data,
                 "videos": videos_data,
                 "tags": tags,
-                
                 "likesCount": 0,
                 "repostCount": 0,
                 "bookmarksCount": 0,
-                
                 "isEdited": False,
                 "createdAt": now,
                 "updatedAt": now,
             }
-            
+
             await self.repository.insert_post(post_data)
-            
+
             # Enrich and return
             return await self._enrich_post(post_data)
-            
+
         except (
             PostNotFoundError,
             MediaConflictError,
@@ -484,65 +481,73 @@ class Page48Service:
                 pass
 
         posts = await self.repository.get_feed(limit + 1, cursor_dict, media)
-        
+
         has_more = len(posts) > limit
         if has_more:
             posts = posts[:limit]
-            
+
         enriched_posts = await self._enrich_posts(posts, user_id)
-        
+
         next_cursor = None
         if has_more and enriched_posts:
             last_post = posts[-1]
             next_cursor = f"{last_post['createdAt'].isoformat()}_{last_post['postId']}"
-            
+
         return PostPaginationResponse(
             data=enriched_posts,
-            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more)
+            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more),
         )
 
-    async def get_post(self, post_id: str, user_id: Optional[str] = None) -> PostResponse:
+    async def get_post(
+        self, post_id: str, user_id: Optional[str] = None
+    ) -> PostResponse:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
-            
+
         enriched_posts = await self._enrich_posts([post], user_id)
         return enriched_posts[0]
 
-    async def _build_thread_tree(self, post_id: str, posts_by_parent: dict, enriched_dict: dict) -> ThreadResponse:
+    async def _build_thread_tree(
+        self, post_id: str, posts_by_parent: dict, enriched_dict: dict
+    ) -> ThreadResponse:
         post = enriched_dict[post_id]
         replies = []
-        
+
         for reply_id in posts_by_parent.get(post_id, []):
-            replies.append(await self._build_thread_tree(reply_id, posts_by_parent, enriched_dict))
-            
+            replies.append(
+                await self._build_thread_tree(reply_id, posts_by_parent, enriched_dict)
+            )
+
         return ThreadResponse(post=post, replies=replies)
 
-    async def get_thread(self, post_id: str, user_id: Optional[str] = None) -> ThreadResponse:
+    async def get_thread(
+        self, post_id: str, user_id: Optional[str] = None
+    ) -> ThreadResponse:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
-            
+
         root_id = post.get("rootPostId") or post_id
-        
+
         # Get all posts in this thread (root + all replies)
         if root_id == post_id:
             all_raw = [post]
         else:
             root_post = await self.repository.get_post_by_id(root_id)
             all_raw = [root_post] if root_post else []
-            
+
         replies_raw = await self.repository.get_thread_replies(root_id)
-        
+
         raw_dict = {p["postId"]: p for p in all_raw + replies_raw}
         if post_id not in raw_dict:
             raw_dict[post_id] = post
-            
+
         all_unique = list(raw_dict.values())
         enriched = await self._enrich_posts(all_unique, user_id)
-        
+
         enriched_dict = {p.postId: p for p in enriched}
-        
+
         posts_by_parent = {}
         for p in all_unique:
             pid = p.get("parentPostId")
@@ -550,44 +555,52 @@ class Page48Service:
                 if pid not in posts_by_parent:
                     posts_by_parent[pid] = []
                 posts_by_parent[pid].append(p["postId"])
-                
+
         return await self._build_thread_tree(root_id, posts_by_parent, enriched_dict)
 
-    async def get_direct_replies(self, post_id: str, limit: int = 20, cursor: Optional[str] = None, user_id: Optional[str] = None) -> PostPaginationResponse:
+    async def get_direct_replies(
+        self,
+        post_id: str,
+        limit: int = 20,
+        cursor: Optional[str] = None,
+        user_id: Optional[str] = None,
+    ) -> PostPaginationResponse:
         cursor_dict = None
         if cursor:
             try:
                 parts = cursor.split("_")
                 cursor_dict = {
                     "createdAt": datetime.fromisoformat(parts[0]),
-                    "postId": parts[1]
+                    "postId": parts[1],
                 }
             except Exception:
                 pass
 
-        posts = await self.repository.get_direct_replies(post_id, limit + 1, cursor_dict)
-        
+        posts = await self.repository.get_direct_replies(
+            post_id, limit + 1, cursor_dict
+        )
+
         has_more = len(posts) > limit
         if has_more:
             posts = posts[:limit]
-            
+
         enriched_posts = await self._enrich_posts(posts, user_id)
-        
+
         next_cursor = None
         if has_more and enriched_posts:
             last_post = posts[-1]
             next_cursor = f"{last_post['createdAt'].isoformat()}_{last_post['postId']}"
-            
+
         return PostPaginationResponse(
             data=enriched_posts,
-            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more)
+            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more),
         )
 
     async def toggle_like(self, post_id: str, user_id: str) -> ToggleResponse:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
-            
+
         existing = await self.repository.get_like(post_id, user_id)
         if existing:
             await self.repository.delete_like(post_id, user_id)
@@ -599,14 +612,14 @@ class Page48Service:
             await self.repository.increment_post_stats(post_id, "likesCount", 1)
             new_status = True
             new_count = post.get("likesCount", 0) + 1
-            
+
         return ToggleResponse(status=new_status, count=new_count)
 
     async def toggle_repost(self, post_id: str, user_id: str) -> ToggleResponse:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
-            
+
         existing = await self.repository.get_repost(post_id, user_id)
         if existing:
             await self.repository.delete_repost(post_id, user_id)
@@ -618,14 +631,14 @@ class Page48Service:
             await self.repository.increment_post_stats(post_id, "repostCount", 1)
             new_status = True
             new_count = post.get("repostCount", 0) + 1
-            
+
         return ToggleResponse(status=new_status, count=new_count)
 
     async def toggle_bookmark(self, post_id: str, user_id: str) -> ToggleResponse:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
-            
+
         existing = await self.repository.get_bookmark(post_id, user_id)
         if existing:
             await self.repository.delete_bookmark(post_id, user_id)
@@ -637,9 +650,9 @@ class Page48Service:
             await self.repository.increment_post_stats(post_id, "bookmarksCount", 1)
             new_status = True
             new_count = post.get("bookmarksCount", 0) + 1
-            
+
         return ToggleResponse(status=new_status, count=new_count)
-        
+
     async def edit_post(
         self, post_id: str, data: EditPostRequest, user_id: str
     ) -> PostResponse:
@@ -744,9 +757,7 @@ class Page48Service:
         if not reports:
             return []
 
-        post_ids = [
-            r["targetId"] for r in reports if r.get("targetType") == "post"
-        ]
+        post_ids = [r["targetId"] for r in reports if r.get("targetType") == "post"]
         post_targets = await self.repository.get_posts_by_ids(post_ids)
         post_map = {p["postId"]: p for p in post_targets}
 
@@ -881,14 +892,16 @@ class Page48Service:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
             raise PostNotFoundError()
-            
+
         if not is_admin and post["userId"] != user_id:
             raise UnauthorizedActionError()
-            
+
         await self.repository.delete_post(post_id)
-        
+
         if post.get("parentPostId"):
-            await self.repository.increment_post_stats(post["parentPostId"], "replyCount", -1)
+            await self.repository.increment_post_stats(
+                post["parentPostId"], "replyCount", -1
+            )
 
     async def get_user_posts(
         self,
@@ -912,84 +925,98 @@ class Page48Service:
         posts = await self.repository.get_user_posts(
             target_username, limit + 1, cursor_dict, media
         )
-        
+
         has_more = len(posts) > limit
         if has_more:
             posts = posts[:limit]
-            
+
         enriched_posts = await self._enrich_posts(posts, current_user_id)
-        
+
         next_cursor = None
         if has_more and enriched_posts:
             last_post = posts[-1]
             next_cursor = f"{last_post['createdAt'].isoformat()}_{last_post['postId']}"
-            
+
         return PostPaginationResponse(
             data=enriched_posts,
-            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more)
+            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more),
         )
 
-    async def get_user_replies(self, target_username: str, limit: int = 20, cursor: Optional[str] = None, current_user_id: Optional[str] = None) -> PostPaginationResponse:
+    async def get_user_replies(
+        self,
+        target_username: str,
+        limit: int = 20,
+        cursor: Optional[str] = None,
+        current_user_id: Optional[str] = None,
+    ) -> PostPaginationResponse:
         cursor_dict = None
         if cursor:
             try:
                 parts = cursor.split("_")
                 cursor_dict = {
                     "createdAt": datetime.fromisoformat(parts[0]),
-                    "postId": parts[1]
+                    "postId": parts[1],
                 }
             except Exception:
                 pass
 
-        posts = await self.repository.get_user_replies(target_username, limit + 1, cursor_dict)
-        
+        posts = await self.repository.get_user_replies(
+            target_username, limit + 1, cursor_dict
+        )
+
         has_more = len(posts) > limit
         if has_more:
             posts = posts[:limit]
-            
+
         enriched_posts = await self._enrich_posts(posts, current_user_id)
-        
+
         next_cursor = None
         if has_more and enriched_posts:
             last_post = posts[-1]
             next_cursor = f"{last_post['createdAt'].isoformat()}_{last_post['postId']}"
-            
+
         return PostPaginationResponse(
             data=enriched_posts,
-            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more)
+            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more),
         )
 
-    async def get_user_bookmarks(self, user_id: str, limit: int = 20, cursor: Optional[str] = None) -> PostPaginationResponse:
+    async def get_user_bookmarks(
+        self, user_id: str, limit: int = 20, cursor: Optional[str] = None
+    ) -> PostPaginationResponse:
         cursor_dict = None
         if cursor:
             try:
                 parts = cursor.split("_")
                 cursor_dict = {
                     "createdAt": datetime.fromisoformat(parts[0]),
-                    "_id": parts[1] # Need ObjectId for bookmark pagination
+                    "_id": parts[1],  # Need ObjectId for bookmark pagination
                 }
             except Exception:
                 pass
 
-        result = await self.repository.get_user_bookmarks(user_id, limit + 1, cursor_dict)
+        result = await self.repository.get_user_bookmarks(
+            user_id, limit + 1, cursor_dict
+        )
         bookmarks = result["bookmarks"]
         posts_by_id = {p["postId"]: p for p in result["posts"]}
-        
+
         has_more = len(bookmarks) > limit
         if has_more:
             bookmarks = bookmarks[:limit]
-            
-        ordered_posts = [posts_by_id[b["postId"]] for b in bookmarks if b["postId"] in posts_by_id]
+
+        ordered_posts = [
+            posts_by_id[b["postId"]] for b in bookmarks if b["postId"] in posts_by_id
+        ]
         enriched_posts = await self._enrich_posts(ordered_posts, user_id)
-        
+
         next_cursor = None
         if has_more and bookmarks:
             last_b = bookmarks[-1]
             next_cursor = f"{last_b['createdAt'].isoformat()}_{str(last_b['_id'])}"
-            
+
         return PostPaginationResponse(
             data=enriched_posts,
-            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more)
+            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more),
         )
 
     async def get_user_likes(
@@ -1059,9 +1086,7 @@ class Page48Service:
                 )
 
         post_count = await self.repository.count_user_posts(stored_username)
-        repost_count = await self.repository.count_user_reposts(
-            user.get("userId", "")
-        )
+        repost_count = await self.repository.count_user_reposts(user.get("userId", ""))
 
         return Page48UserProfileResponse(
             userId=user.get("userId", ""),

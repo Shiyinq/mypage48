@@ -20,6 +20,7 @@ if config.oauthlib_insecure_transport:
 
 from src.exception_handlers import (
     detailed_http_exception_handler,
+    detailed_http_exception_response,
     domain_exception_handler,
     request_validation_exception_handler,
 )
@@ -28,6 +29,7 @@ from src.health.monitor import monitor_recorder_heartbeat
 from src.http_exceptions import BadRequest, DetailedHTTPException, EntityTooLarge
 from src.live_history.monitor import live_monitor_loop
 from src.logging_config import request_id_ctx_var
+from src.page48.http_exceptions import VideoTooLarge
 
 
 @asynccontextmanager
@@ -65,21 +67,33 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
 
+# Endpoints allowed to receive bodies larger than the global guard, mapped to
+# their size limit and the error raised when that limit is exceeded.
+UPLOAD_SIZE_OVERRIDES: list[tuple[str, int, type[DetailedHTTPException]]] = [
+    ("/admin/replay/upload", config.max_replay_upload_size_bytes, EntityTooLarge),
+    ("/page48/videos", config.max_page48_video_upload_size_bytes, VideoTooLarge),
+]
+
+
 @app.middleware("http")
 async def limit_upload_size(request: Request, call_next):
-    # Allow larger limit specifically for the replay upload endpoint
-    if request.url.path.endswith("/admin/replay/upload"):
-        max_upload_size = config.max_replay_upload_size_bytes
-    else:
-        max_upload_size = config.max_upload_size_bytes
+    path = request.url.path
+    max_upload_size = config.max_upload_size_bytes
+    too_large: type[DetailedHTTPException] = EntityTooLarge
+    for suffix, limit, exc in UPLOAD_SIZE_OVERRIDES:
+        if path.endswith(suffix):
+            max_upload_size = limit
+            too_large = exc
+            break
 
     content_length = request.headers.get("content-length")
     if content_length:
         try:
-            if int(content_length) > max_upload_size:
-                raise EntityTooLarge()
+            length = int(content_length)
         except ValueError:
-            raise BadRequest()
+            return detailed_http_exception_response(BadRequest())
+        if length > max_upload_size:
+            return detailed_http_exception_response(too_large())
     return await call_next(request)
 
 

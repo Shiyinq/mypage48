@@ -420,9 +420,7 @@ class StorageService:
         self, data: bytes, object_name: str, content_type: str
     ) -> str:
         """Upload raw bytes (e.g. a video) to storage and return the object path."""
-        await self.repository.upload_file(
-            data, object_name, content_type=content_type
-        )
+        await self.repository.upload_file(data, object_name, content_type=content_type)
         return object_name
 
     async def resolve_video_url(self, path: Optional[str]) -> Optional[str]:

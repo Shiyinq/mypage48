@@ -1985,7 +1985,9 @@
 			"unmute": "ミュート解除",
 			"seek": "シーク",
 			"prev": "前の動画",
-			"next": "次の動画"
+			"next": "次の動画",
+			"showMore": "もっと見る",
+			"showLess": "閉じる"
 		},
 		"feed": {
 			"emptyTitle": "まだ投稿がありません",

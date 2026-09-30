@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     RECORDER_HEARTBEAT_TIMEOUT_SECONDS: int = 180
     MAX_UPLOAD_SIZE_BYTES: int = 10_485_760  # 10 MB
     MAX_REPLAY_UPLOAD_SIZE_BYTES: int = 52_428_800  # 50 MB
+    MAX_PAGE48_VIDEO_UPLOAD_SIZE_BYTES: int = 52_428_800  # 50 MB
 
     # Storage Settings (Agnostic S3/R2)
     STORAGE_PROVIDER: str = "minio"  # "minio" or "r2"
@@ -328,6 +329,10 @@ class Settings(BaseSettings):
     @property
     def max_replay_upload_size_bytes(self) -> int:
         return self.MAX_REPLAY_UPLOAD_SIZE_BYTES
+
+    @property
+    def max_page48_video_upload_size_bytes(self) -> int:
+        return self.MAX_PAGE48_VIDEO_UPLOAD_SIZE_BYTES
 
     @property
     def storage_provider(self) -> str:

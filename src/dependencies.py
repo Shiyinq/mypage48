@@ -493,7 +493,6 @@ def get_page48_service(
     return Page48Service(repo, background_runner, config, storage_service, user_repo)
 
 
-
 def get_sorters_repository(db=Depends(get_db)) -> SortersRepository:
     return SortersRepository(db)
 

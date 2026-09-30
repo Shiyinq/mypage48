@@ -1987,7 +1987,9 @@
 			"unmute": "Unmute",
 			"seek": "Seek video",
 			"prev": "Previous video",
-			"next": "Next video"
+			"next": "Next video",
+			"showMore": "Show more",
+			"showLess": "Show less"
 		},
 		"feed": {
 			"emptyTitle": "No posts yet",

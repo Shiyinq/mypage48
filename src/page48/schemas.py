@@ -58,27 +58,27 @@ class PostResponse(BaseModel):
     parentPostId: Optional[str] = None
     depth: int = 0
     replyCount: int = 0
-    
+
     userId: str
     username: str
     userDisplayName: str
     userProfilePicture: Optional[str] = None
     userProfilePicture_small: Optional[str] = None
     userBlurHash: Optional[str] = None
-    
+
     content: str
     images: list[Page48Image] = []
     videos: list[Page48Video] = []
     tags: list[str] = []
-    
+
     likesCount: int = 0
     repostCount: int = 0
     bookmarksCount: int = 0
-    
+
     isEdited: bool = False
     createdAt: datetime
     updatedAt: datetime
-    
+
     # Context for current user (optional, returned if user is logged in)
     isLiked: Optional[bool] = False
     isReposted: Optional[bool] = False

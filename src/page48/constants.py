@@ -8,6 +8,7 @@ class Info:
     REPORT_CREATED = "Report submitted successfully."
     VIDEO_UPLOADED = "Video uploaded successfully."
 
+
 class ErrorCode:
     POST_NOT_FOUND = "Post not found."
     POST_CREATE_ERROR = "Failed to create post."
@@ -25,6 +26,7 @@ class ErrorCode:
     MAX_VIDEO_EXCEEDED = "Maximum number of videos allowed per post is 1."
     INVALID_MEDIA_COMBINATION = "A post cannot contain both images and a video."
     INVALID_VIDEO = "The video reference is invalid."
+
 
 class DomainErrorCode:
     POST_NOT_FOUND = "Post not found."

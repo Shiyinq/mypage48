@@ -34,7 +34,9 @@
 	let isMobile = $state(true);
 
 	onMount(() => {
-		const mq = window.matchMedia('(max-width: 767px)');
+		// Matches the action rail's breakpoint (`sm`) so the immersive layout and the
+		// outside-rail layout never disagree about available width.
+		const mq = window.matchMedia('(max-width: 639px)');
 		const update = () => (isMobile = mq.matches);
 		update();
 		mq.addEventListener('change', update);
@@ -132,13 +134,37 @@
 
 	// Public (unauthenticated) visitors can look but not interact; hover stays.
 	let canInteract = $derived(isAuthenticated.value);
-	let railBtnCls = $derived(
-		`flex flex-col items-center gap-1 sm:gap-0.5 text-white transition-opacity hover:opacity-80 ${canInteract ? 'cursor-pointer' : 'cursor-default'}`
-	);
+
+	function railBtnCls(overVideo: boolean) {
+		return `flex flex-col items-center gap-1 sm:gap-0.5 transition-opacity hover:opacity-80 ${
+			overVideo ? 'text-white' : 'text-gray-600 dark:text-gray-300'
+		} ${canInteract ? 'cursor-pointer' : 'cursor-default'}`;
+	}
+
+	function avatarUrl(post: Page48Post) {
+		return (
+			post.userProfilePicture_small ||
+			post.userProfilePicture ||
+			`https://ui-avatars.com/api/?name=${encodeURIComponent(post.userDisplayName)}&background=fca5a5&color=fff`
+		);
+	}
 
 	// Larger tap targets/typography on mobile (full-screen TikTok view).
-	const iconCls = 'w-[30px] h-[30px] sm:w-6 sm:h-6 drop-shadow-lg';
-	const countCls = 'text-[13px] sm:text-[11px] font-semibold drop-shadow';
+	const iconCls = 'w-[30px] h-[30px] sm:w-6 sm:h-6';
+	const countCls = 'text-[13px] sm:text-[11px] font-semibold';
+
+	// Long captions are clamped with a "show more" toggle (bottom-anchored, so
+	// expanding grows upward while the block's final line stays put).
+	let expandedIds = $state<string[]>([]);
+	function isExpanded(id: string) {
+		return expandedIds.includes(id);
+	}
+	function toggleExpanded(id: string) {
+		expandedIds = isExpanded(id) ? expandedIds.filter((x) => x !== id) : [...expandedIds, id];
+	}
+	function isLongCaption(content: string) {
+		return content.length > 90 || content.includes('\n');
+	}
 </script>
 
 <div
@@ -175,10 +201,15 @@
 					video.width > 0 && video.height > 0
 						? Math.min(Math.max(video.width / video.height, 0.5625), 1.91)
 						: 16 / 9}
-				<section class="relative h-full snap-start" style:scroll-snap-stop="always">
+				<section
+					class="relative h-full snap-start flex items-center justify-center"
+					style:scroll-snap-stop="always"
+				>
 					<div
-						class={`relative w-full h-full mx-auto ${isMobile ? '' : 'flex items-center'}`}
-						style={isMobile ? '' : `max-width: min(100%, calc((100dvh - 4rem) * ${ratio}))`}
+						class={`relative w-full mx-auto ${isMobile ? 'h-full' : ''}`}
+						style={isMobile
+							? ''
+							: `max-width: min(calc(100% - 9rem), calc((100dvh - 4rem) * ${ratio})); aspect-ratio: ${ratio}`}
 					>
 						<VideoPlayer
 							src={video.url ?? ''}
@@ -190,67 +221,24 @@
 							class={isMobile ? 'h-full' : ''}
 						/>
 
-						<!-- Right action rail -->
+						<!-- Action rail: overlaid on the video (mobile) -->
 						<div
-							class="absolute right-2 sm:right-3 bottom-24 flex flex-col items-center gap-4 sm:gap-3 z-[2]"
+							class="sm:hidden absolute right-2 bottom-24 flex flex-col items-center gap-6 z-[2]"
 						>
-							<button
-								class={railBtnCls}
-								onclick={() => handleLike(post.postId)}
-								aria-label={t('page48.aria.like')}
-								aria-disabled={!canInteract}
-							>
-								<Heart
-									class={`${iconCls} ${post.isLiked ? 'fill-red-500 text-red-500' : 'fill-white/20'}`}
-								/>
-								{#if post.likesCount > 0}
-									<span class={countCls}>{post.likesCount}</span>
-								{/if}
-							</button>
-							<button
-								class={railBtnCls}
-								onclick={() => handleComment(post)}
-								aria-label={t('page48.aria.comment')}
-								aria-disabled={!canInteract}
-							>
-								<MessageCircle class={`${iconCls} fill-white/20`} />
-								{#if post.replyCount > 0}
-									<span class={countCls}>{post.replyCount}</span>
-								{/if}
-							</button>
-							<button
-								class={railBtnCls}
-								onclick={() => handleRepost(post.postId)}
-								aria-label={t('page48.aria.repost')}
-								aria-disabled={!canInteract}
-							>
-								<Repeat2 class={`${iconCls} ${post.isReposted ? 'text-green-500' : ''}`} />
-								{#if post.repostCount > 0}
-									<span class={countCls}>{post.repostCount}</span>
-								{/if}
-							</button>
-							<button
-								class={railBtnCls}
-								onclick={() => handleBookmark(post.postId)}
-								aria-label={t('page48.aria.bookmark')}
-								aria-disabled={!canInteract}
-							>
-								<Bookmark
-									class={`${iconCls} ${post.isBookmarked ? 'fill-blue-400 text-blue-400' : 'fill-white/20'}`}
-								/>
-							</button>
-							<button
-								class={railBtnCls}
-								onclick={() => handleShare(post)}
-								aria-label={t('page48.aria.share')}
-								aria-disabled={!canInteract}
-							>
-								<Share class={iconCls} />
-							</button>
+							{@render rail(post, true)}
 						</div>
 
-						<!-- Caption / author (kept above the player's control bar) -->
-						<div class="absolute left-3 right-16 bottom-20 z-[2] text-white pointer-events-none">
+						<!-- Action rail: outside the video on wide screens -->
+						<div
+							class="hidden sm:flex absolute left-full ml-4 bottom-8 z-[2] flex-col items-center gap-4"
+						>
+							{@render rail(post, false)}
+						</div>
+
+						<!-- Caption / author (bottom-anchored so it grows upward when expanded) -->
+						<div
+							class="absolute left-3 right-16 sm:right-3 bottom-16 sm:bottom-12 z-[2] text-white pointer-events-none"
+						>
 							<a
 								href={`/page48/u/${post.username}`}
 								class="font-bold text-[16px] sm:text-[14px] drop-shadow-lg pointer-events-auto"
@@ -259,10 +247,24 @@
 							</a>
 							{#if post.content}
 								<p
-									class="text-[15px] sm:text-[13px] leading-snug line-clamp-3 sm:line-clamp-2 mt-1 drop-shadow-lg"
+									class={`text-[15px] sm:text-[13px] leading-snug mt-1 drop-shadow-lg break-words ${
+										isExpanded(post.postId)
+											? 'whitespace-pre-wrap max-h-[40vh] overflow-y-auto no-scrollbar'
+											: 'line-clamp-2'
+									}`}
 								>
 									{post.content}
 								</p>
+								{#if isLongCaption(post.content)}
+									<button
+										class="pointer-events-auto text-[13px] font-bold opacity-90 mt-1 cursor-pointer drop-shadow"
+										onclick={() => toggleExpanded(post.postId)}
+									>
+										{isExpanded(post.postId)
+											? t('page48.video.showLess')
+											: t('page48.video.showMore')}
+									</button>
+								{/if}
 							{/if}
 						</div>
 					</div>
@@ -295,3 +297,80 @@
 		</div>
 	{/if}
 </div>
+
+{#snippet rail(post: Page48Post, overVideo: boolean)}
+	<!-- Uploader avatar sits above the like icon (mobile & desktop). -->
+	<a
+		href={`/page48/u/${post.username}`}
+		class="w-11 h-11 rounded-full overflow-hidden border-2 border-white dark:border-zinc-200 bg-gray-100 dark:bg-zinc-800 shadow-lg mb-1 shrink-0"
+		aria-label={t('page48.aria.profile')}
+	>
+		<img src={avatarUrl(post)} alt={post.username} class="w-full h-full object-cover" />
+	</a>
+
+	<button
+		class={railBtnCls(overVideo)}
+		onclick={() => handleLike(post.postId)}
+		aria-label={t('page48.aria.like')}
+		aria-disabled={!canInteract}
+	>
+		<Heart
+			class={`${iconCls} ${overVideo ? 'drop-shadow-lg' : ''} ${
+				post.isLiked ? 'fill-red-500 text-red-500' : overVideo ? 'fill-white/20' : ''
+			}`}
+		/>
+		{#if post.likesCount > 0}
+			<span class={`${countCls} ${overVideo ? 'drop-shadow' : ''}`}>{post.likesCount}</span>
+		{/if}
+	</button>
+
+	<button
+		class={railBtnCls(overVideo)}
+		onclick={() => handleComment(post)}
+		aria-label={t('page48.aria.comment')}
+		aria-disabled={!canInteract}
+	>
+		<MessageCircle class={`${iconCls} ${overVideo ? 'fill-white/20 drop-shadow-lg' : ''}`} />
+		{#if post.replyCount > 0}
+			<span class={`${countCls} ${overVideo ? 'drop-shadow' : ''}`}>{post.replyCount}</span>
+		{/if}
+	</button>
+
+	<button
+		class={railBtnCls(overVideo)}
+		onclick={() => handleRepost(post.postId)}
+		aria-label={t('page48.aria.repost')}
+		aria-disabled={!canInteract}
+	>
+		<Repeat2
+			class={`${iconCls} ${overVideo ? 'drop-shadow-lg' : ''} ${
+				post.isReposted ? 'text-green-500' : ''
+			}`}
+		/>
+		{#if post.repostCount > 0}
+			<span class={`${countCls} ${overVideo ? 'drop-shadow' : ''}`}>{post.repostCount}</span>
+		{/if}
+	</button>
+
+	<button
+		class={railBtnCls(overVideo)}
+		onclick={() => handleBookmark(post.postId)}
+		aria-label={t('page48.aria.bookmark')}
+		aria-disabled={!canInteract}
+	>
+		<Bookmark
+			class={`${iconCls} ${overVideo ? 'drop-shadow-lg' : ''} ${
+				post.isBookmarked ? 'fill-blue-500 text-blue-500' : overVideo ? 'fill-white/20' : ''
+			}`}
+		/>
+	</button>
+
+	<button
+		class={railBtnCls(overVideo)}
+		onclick={() => handleShare(post)}
+		aria-label={t('page48.aria.share')}
+		aria-disabled={!canInteract}
+	>
+		<Share class={`${iconCls} ${overVideo ? 'drop-shadow-lg' : ''}`} />
+	</button>
+{/snippet}

@@ -1991,7 +1991,9 @@
 			"unmute": "Nyalakan suara",
 			"seek": "Geser video",
 			"prev": "Video sebelumnya",
-			"next": "Video berikutnya"
+			"next": "Video berikutnya",
+			"showMore": "Selengkapnya",
+			"showLess": "Sembunyikan"
 		},
 		"feed": {
 			"emptyTitle": "Belum ada postingan",

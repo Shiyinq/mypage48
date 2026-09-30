@@ -1,10 +1,12 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, File, Form, Query, Path, UploadFile
+
+from fastapi import APIRouter, Depends, File, Form, Path, Query, UploadFile
 
 from src.auth.schemas import UserCurrent
 from src.dependencies import (
     get_current_user,
     get_current_user_optional,
+    get_page48_service,
     require_admin,
     require_csrf_protection,
 )
@@ -24,7 +26,6 @@ from src.page48.schemas import (
     VideoUploadResponse,
 )
 from src.page48.service import Page48Service
-from src.dependencies import get_page48_service
 
 router = APIRouter()
 

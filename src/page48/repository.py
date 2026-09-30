@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from bson.objectid import ObjectId
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
 class Page48Repository:
@@ -22,9 +22,7 @@ class Page48Repository:
     async def get_posts_by_ids(self, post_ids: List[str]) -> List[dict]:
         if not post_ids:
             return []
-        return await self.posts.find({"postId": {"$in": post_ids}}).to_list(
-            length=None
-        )
+        return await self.posts.find({"postId": {"$in": post_ids}}).to_list(length=None)
 
     async def update_post(self, post_id: str, update_data: dict):
         return await self.posts.update_one({"postId": post_id}, {"$set": update_data})
@@ -33,7 +31,9 @@ class Page48Repository:
         return await self.posts.delete_one({"postId": post_id})
 
     async def increment_post_stats(self, post_id: str, field: str, amount: int = 1):
-        return await self.posts.update_one({"postId": post_id}, {"$inc": {field: amount}})
+        return await self.posts.update_one(
+            {"postId": post_id}, {"$inc": {field: amount}}
+        )
 
     @staticmethod
     def _media_query(media: Optional[str]) -> dict:
@@ -89,15 +89,21 @@ class Page48Repository:
         cursor_obj = self.posts.find({"rootPostId": root_post_id}).sort("createdAt", 1)
         return await cursor_obj.to_list(length=None)
 
-    async def get_direct_replies(self, parent_post_id: str, limit: int = 20, cursor: Optional[dict] = None) -> List[dict]:
+    async def get_direct_replies(
+        self, parent_post_id: str, limit: int = 20, cursor: Optional[dict] = None
+    ) -> List[dict]:
         query = {"parentPostId": parent_post_id}
         if cursor:
             query["$or"] = [
                 {"createdAt": {"$lt": cursor["createdAt"]}},
-                {"createdAt": cursor["createdAt"], "postId": {"$lt": cursor["postId"]}}
+                {"createdAt": cursor["createdAt"], "postId": {"$lt": cursor["postId"]}},
             ]
 
-        cursor_obj = self.posts.find(query).sort([("createdAt", -1), ("postId", -1)]).limit(limit)
+        cursor_obj = (
+            self.posts.find(query)
+            .sort([("createdAt", -1), ("postId", -1)])
+            .limit(limit)
+        )
         return await cursor_obj.to_list(length=limit)
 
     async def get_user_posts(
@@ -134,15 +140,21 @@ class Page48Repository:
         )
         return await cursor_obj.to_list(length=limit)
 
-    async def get_user_replies(self, username: str, limit: int = 20, cursor: Optional[dict] = None) -> List[dict]:
+    async def get_user_replies(
+        self, username: str, limit: int = 20, cursor: Optional[dict] = None
+    ) -> List[dict]:
         query = {"username": username, "parentPostId": {"$ne": None}}
         if cursor:
             query["$or"] = [
                 {"createdAt": {"$lt": cursor["createdAt"]}},
-                {"createdAt": cursor["createdAt"], "postId": {"$lt": cursor["postId"]}}
+                {"createdAt": cursor["createdAt"], "postId": {"$lt": cursor["postId"]}},
             ]
 
-        cursor_obj = self.posts.find(query).sort([("createdAt", -1), ("postId", -1)]).limit(limit)
+        cursor_obj = (
+            self.posts.find(query)
+            .sort([("createdAt", -1), ("postId", -1)])
+            .limit(limit)
+        )
         return await cursor_obj.to_list(length=limit)
 
     async def count_user_posts(self, username: str) -> int:
@@ -227,7 +239,9 @@ class Page48Repository:
         return await self.likes.find_one({"postId": post_id, "userId": user_id})
 
     async def insert_like(self, post_id: str, user_id: str):
-        return await self.likes.insert_one({"postId": post_id, "userId": user_id, "createdAt": datetime.now()})
+        return await self.likes.insert_one(
+            {"postId": post_id, "userId": user_id, "createdAt": datetime.now()}
+        )
 
     async def delete_like(self, post_id: str, user_id: str):
         return await self.likes.delete_one({"postId": post_id, "userId": user_id})
@@ -268,12 +282,16 @@ class Page48Repository:
         return await self.bookmarks.find_one({"postId": post_id, "userId": user_id})
 
     async def insert_bookmark(self, post_id: str, user_id: str):
-        return await self.bookmarks.insert_one({"postId": post_id, "userId": user_id, "createdAt": datetime.now()})
+        return await self.bookmarks.insert_one(
+            {"postId": post_id, "userId": user_id, "createdAt": datetime.now()}
+        )
 
     async def delete_bookmark(self, post_id: str, user_id: str):
         return await self.bookmarks.delete_one({"postId": post_id, "userId": user_id})
 
-    async def get_user_bookmarks(self, user_id: str, limit: int = 20, cursor: Optional[dict] = None) -> dict:
+    async def get_user_bookmarks(
+        self, user_id: str, limit: int = 20, cursor: Optional[dict] = None
+    ) -> dict:
         query = {"userId": user_id}
         if cursor:
             cursor_id = cursor["_id"]
@@ -284,10 +302,14 @@ class Page48Repository:
                     pass
             query["$or"] = [
                 {"createdAt": {"$lt": cursor["createdAt"]}},
-                {"createdAt": cursor["createdAt"], "_id": {"$lt": cursor_id}}
+                {"createdAt": cursor["createdAt"], "_id": {"$lt": cursor_id}},
             ]
 
-        cursor_obj = self.bookmarks.find(query).sort([("createdAt", -1), ("_id", -1)]).limit(limit)
+        cursor_obj = (
+            self.bookmarks.find(query)
+            .sort([("createdAt", -1), ("_id", -1)])
+            .limit(limit)
+        )
         bookmark_list = await cursor_obj.to_list(length=limit)
 
         if not bookmark_list:
@@ -295,7 +317,9 @@ class Page48Repository:
 
         post_ids = [b["postId"] for b in bookmark_list]
 
-        posts = await self.posts.find({"postId": {"$in": post_ids}}).to_list(length=None)
+        posts = await self.posts.find({"postId": {"$in": post_ids}}).to_list(
+            length=None
+        )
 
         return {"bookmarks": bookmark_list, "posts": posts}
 
@@ -304,7 +328,9 @@ class Page48Repository:
         return await self.reposts.find_one({"postId": post_id, "userId": user_id})
 
     async def insert_repost(self, post_id: str, user_id: str):
-        return await self.reposts.insert_one({"postId": post_id, "userId": user_id, "createdAt": datetime.now()})
+        return await self.reposts.insert_one(
+            {"postId": post_id, "userId": user_id, "createdAt": datetime.now()}
+        )
 
     async def delete_repost(self, post_id: str, user_id: str):
         return await self.reposts.delete_one({"postId": post_id, "userId": user_id})
@@ -329,9 +355,7 @@ class Page48Repository:
             ]
 
         cursor_obj = (
-            self.reposts.find(query)
-            .sort([("createdAt", -1), ("_id", -1)])
-            .limit(limit)
+            self.reposts.find(query).sort([("createdAt", -1), ("_id", -1)]).limit(limit)
         )
         repost_list = await cursor_obj.to_list(length=limit)
 
@@ -412,14 +436,25 @@ class Page48Repository:
             self._reports_query(target_type, status)
         )
 
-    async def get_user_interactions(self, post_ids: List[str], user_id: str) -> Dict[str, Dict[str, bool]]:
+    async def get_user_interactions(
+        self, post_ids: List[str], user_id: str
+    ) -> Dict[str, Dict[str, bool]]:
         """Batch get user interactions for a list of posts."""
         if not post_ids or not user_id:
-            return {pid: {"isLiked": False, "isBookmarked": False, "isReposted": False} for pid in post_ids}
+            return {
+                pid: {"isLiked": False, "isBookmarked": False, "isReposted": False}
+                for pid in post_ids
+            }
 
-        likes = await self.likes.find({"userId": user_id, "postId": {"$in": post_ids}}).to_list(length=None)
-        bookmarks = await self.bookmarks.find({"userId": user_id, "postId": {"$in": post_ids}}).to_list(length=None)
-        reposts = await self.reposts.find({"userId": user_id, "postId": {"$in": post_ids}}).to_list(length=None)
+        likes = await self.likes.find(
+            {"userId": user_id, "postId": {"$in": post_ids}}
+        ).to_list(length=None)
+        bookmarks = await self.bookmarks.find(
+            {"userId": user_id, "postId": {"$in": post_ids}}
+        ).to_list(length=None)
+        reposts = await self.reposts.find(
+            {"userId": user_id, "postId": {"$in": post_ids}}
+        ).to_list(length=None)
 
         liked_set = {l["postId"] for l in likes}
         bookmarked_set = {b["postId"] for b in bookmarks}
@@ -430,6 +465,6 @@ class Page48Repository:
             result[pid] = {
                 "isLiked": pid in liked_set,
                 "isBookmarked": pid in bookmarked_set,
-                "isReposted": pid in reposted_set
+                "isReposted": pid in reposted_set,
             }
         return result

@@ -24,6 +24,9 @@
 
 	let resolvedPlaceholder = $derived(placeholder ?? t('page48.composer.placeholder'));
 
+	// Matches the backend limit (CreatePostRequest.content: max_length=500).
+	const MAX_CONTENT_LENGTH = 500;
+
 	let content = $state('');
 	let images = $state<File[]>([]);
 	let imagePreviews = $state<string[]>([]);
@@ -187,6 +190,7 @@
 		<textarea
 			bind:value={content}
 			placeholder={resolvedPlaceholder}
+			maxlength={MAX_CONTENT_LENGTH}
 			class="w-full bg-transparent text-gray-900 dark:text-gray-100 text-[15px] resize-none outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 mt-1 pb-2 leading-relaxed"
 			rows="1"
 			oninput={(e) => {
@@ -280,17 +284,34 @@
 				/>
 			</div>
 
-			<!-- Submit Button -->
-			<button
-				class="px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-[14px] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-gray-800 dark:hover:bg-gray-200 transition-all flex items-center gap-2 active:scale-95 shadow-sm"
-				disabled={(!content.trim() && images.length === 0 && !video) || isSubmitting || probing}
-				onclick={handleSubmit}
-			>
-				{#if isSubmitting}
-					<Loader2 size={16} class="animate-spin" />
+			<!-- Character Counter + Submit Button -->
+			<div class="flex items-center gap-3">
+				{#if content.length > 0}
+					<span
+						class={`text-[13px] font-medium tabular-nums ${
+							content.length >= MAX_CONTENT_LENGTH
+								? 'text-red-500'
+								: content.length >= MAX_CONTENT_LENGTH - 50
+									? 'text-amber-500'
+									: 'text-gray-400 dark:text-gray-500'
+						}`}
+						aria-live="polite"
+					>
+						{content.length}/{MAX_CONTENT_LENGTH}
+					</span>
 				{/if}
-				{isReply ? t('page48.composer.reply') : t('page48.composer.submit')}
-			</button>
+
+				<button
+					class="px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-[14px] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-gray-800 dark:hover:bg-gray-200 transition-all flex items-center gap-2 active:scale-95 shadow-sm"
+					disabled={(!content.trim() && images.length === 0 && !video) || isSubmitting || probing}
+					onclick={handleSubmit}
+				>
+					{#if isSubmitting}
+						<Loader2 size={16} class="animate-spin" />
+					{/if}
+					{isReply ? t('page48.composer.reply') : t('page48.composer.submit')}
+				</button>
+			</div>
 		</div>
 	</div>
 </div>
