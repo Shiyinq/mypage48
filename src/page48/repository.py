@@ -46,15 +46,13 @@ class Page48Repository:
             {"postId": post_id}, {"$inc": {field: amount}}
         )
 
-    async def get_pinned_post(self, username: str) -> Optional[dict]:
-        return await self.posts.find_one(
-            {"username": username, "pinnedAt": {"$ne": None}}
-        )
+    async def get_pinned_post(self, user_id: str) -> Optional[dict]:
+        return await self.posts.find_one({"userId": user_id, "pinnedAt": {"$ne": None}})
 
-    async def pin_post(self, post_id: str, username: str, pinned_at: datetime):
+    async def pin_post(self, post_id: str, user_id: str, pinned_at: datetime):
         """Pin one post per user; any previous pin by the same user is cleared."""
         await self.posts.update_many(
-            {"username": username, "pinnedAt": {"$ne": None}},
+            {"userId": user_id, "pinnedAt": {"$ne": None}},
             {"$set": {"pinnedAt": None}},
         )
         return await self.posts.update_one(
@@ -139,12 +137,14 @@ class Page48Repository:
 
     async def get_user_posts(
         self,
-        username: str,
+        user_id: str,
         limit: int = 20,
         cursor: Optional[dict] = None,
         media: Optional[str] = None,
     ) -> List[dict]:
-        conditions: List[dict] = [{"username": username}]
+        # Posts are keyed by the immutable `userId`, never by `username`: a user
+        # may rename themselves and their posts must stay attached to them.
+        conditions: List[dict] = [{"userId": user_id}]
 
         # The Photos/Videos tabs collect every image or video the user attached,
         # replies included; the plain post list stays top-level posts only.
@@ -177,9 +177,9 @@ class Page48Repository:
         return await cursor_obj.to_list(length=limit)
 
     async def get_user_replies(
-        self, username: str, limit: int = 20, cursor: Optional[dict] = None
+        self, user_id: str, limit: int = 20, cursor: Optional[dict] = None
     ) -> List[dict]:
-        query = {"username": username, "parentPostId": {"$ne": None}}
+        query = {"userId": user_id, "parentPostId": {"$ne": None}}
         if cursor:
             query["$or"] = [
                 {"createdAt": {"$lt": cursor["createdAt"]}},
@@ -193,9 +193,9 @@ class Page48Repository:
         )
         return await cursor_obj.to_list(length=limit)
 
-    async def count_user_posts(self, username: str) -> int:
+    async def count_user_posts(self, user_id: str) -> int:
         return await self.posts.count_documents(
-            {"username": username, "parentPostId": None}
+            {"userId": user_id, "parentPostId": None}
         )
 
     async def get_most_active_users(
@@ -213,8 +213,6 @@ class Page48Repository:
                 "$group": {
                     "_id": "$userId",
                     "postCount": {"$sum": 1},
-                    "username": {"$last": "$username"},
-                    "name": {"$last": "$userDisplayName"},
                     "lastPostedAt": {"$max": "$createdAt"},
                 }
             },

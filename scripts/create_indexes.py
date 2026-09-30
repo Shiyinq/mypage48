@@ -101,12 +101,12 @@ async def create_indexes():
         # Page48 indexes
         await db["page48_posts"].create_index([("createdAt", -1)])
         await db["page48_posts"].create_index("postId", unique=True)
-        await db["page48_posts"].create_index([("username", 1), ("parentPostId", 1), ("createdAt", -1)])
+        await db["page48_posts"].create_index([("userId", 1), ("parentPostId", 1), ("createdAt", -1)])
         await db["page48_posts"].create_index([("rootPostId", 1), ("createdAt", 1)])
         await db["page48_posts"].create_index([("parentPostId", 1), ("createdAt", 1)])
         await db["page48_posts"].create_index("tags")
         await db["page48_posts"].create_index("quotedPostId")
-        await db["page48_posts"].create_index([("username", 1), ("pinnedAt", -1)])
+        await db["page48_posts"].create_index([("userId", 1), ("pinnedAt", -1)])
 
         await db["page48_likes"].create_index([("postId", 1), ("userId", 1)], unique=True)
         await db["page48_likes"].create_index([("userId", 1), ("createdAt", -1)])

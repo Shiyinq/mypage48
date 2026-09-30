@@ -26,8 +26,8 @@ from src.page48.exceptions import (
     PollReplyNotAllowedError,
     PostCreationError,
     PostNotFoundError,
-    QuotePollConflictError,
     QuotedPostNotFoundError,
+    QuotePollConflictError,
     ReportAlreadyExistsError,
     ReportCreationError,
     ThreadTooLongError,
@@ -105,9 +105,8 @@ class Page48Service:
     ) -> tuple[Optional[str], Optional[str]]:
         """Resolve the author's *current* avatar (by userId), cached per request.
 
-        Posts store the avatar path at creation time, which becomes stale if the
-        user later changes or removes their picture, so we prefer the live user
-        document and fall back to the value stored on the post.
+        The avatar is always read from the live user document: posts only store
+        the author's `userId`, never a copy of the picture path.
         """
         user_id = post.get("userId")
         cache_key = user_id or post.get("postId")
@@ -123,8 +122,6 @@ class Page48Service:
                 user_doc = users[0] if users else None
 
         raw = user_doc.get("profilePicture") if user_doc else None
-        if not raw:
-            raw = post.get("userProfilePicture")
 
         picture = None
         picture_small = None
@@ -204,6 +201,14 @@ class Page48Service:
             except Exception as e:
                 logger.error(f"Failed to resolve video {vid.get('filename')}: {str(e)}")
 
+        # Identity is read exclusively from the live user document: posts only
+        # carry the immutable `userId`, so a rename or a new picture is
+        # reflected everywhere at once.
+        author = (user_map or {}).get(post.get("userId")) or {}
+        username = author.get("username") or ""
+        display_name = author.get("name") or username
+        blur_hash = author.get("blurHash")
+
         return PostResponse(
             postId=post["postId"],
             rootPostId=post.get("rootPostId"),
@@ -211,11 +216,11 @@ class Page48Service:
             depth=post.get("depth", 0),
             replyCount=post.get("replyCount", 0),
             userId=post["userId"],
-            username=post["username"],
-            userDisplayName=post["userDisplayName"],
+            username=username,
+            userDisplayName=display_name,
             userProfilePicture=user_picture,
             userProfilePicture_small=user_picture_small,
-            userBlurHash=post.get("userBlurHash"),
+            userBlurHash=blur_hash,
             content=post["content"],
             images=images,
             videos=videos,
@@ -460,8 +465,8 @@ class Page48Service:
             items.append(
                 ActiveUserItem(
                     userId=row["_id"],
-                    username=(user or {}).get("username") or row.get("username") or "",
-                    name=(user or {}).get("name") or row.get("name") or "",
+                    username=(user or {}).get("username") or "",
+                    name=(user or {}).get("name") or "",
                     profilePicture=picture,
                     postCount=row.get("postCount", 0),
                     lastPostedAt=row.get("lastPostedAt"),
@@ -640,11 +645,6 @@ class Page48Service:
             "depth": depth,
             "replyCount": 0,
             "userId": user.userId,
-            "username": user.username,
-            "userDisplayName": user.name,
-            "userProfilePicture": user.profilePicture,
-            "userProfilePicture_small": user.profilePicture_small,
-            "userBlurHash": user.blurHash,
             "content": data.content,
             "images": images_data,
             "videos": videos_data,
@@ -965,7 +965,7 @@ class Page48Service:
             raise CannotPinReplyError()
 
         now = datetime.now()
-        await self.repository.pin_post(post_id, post["username"], now)
+        await self.repository.pin_post(post_id, user_id, now)
         post["pinnedAt"] = now
         return (await self._enrich_posts([post], user_id))[0]
 
@@ -1038,7 +1038,6 @@ class Page48Service:
                 "targetId": data.targetId,
                 "targetOwnerUserId": owner_id,
                 "reporterUserId": reporter.userId,
-                "reporterUsername": reporter.username,
                 "reason": data.reason,
                 "note": data.note,
                 "status": "pending",
@@ -1125,13 +1124,9 @@ class Page48Service:
                     target_content = post.get("content")
                     target_image_count = len(post.get("images") or [])
                     owner = user_map.get(post.get("userId"))
-                    target_username = post.get("username")
-                    target_display_name = (
-                        owner.get("name") if owner else post.get("userDisplayName")
-                    )
-                    raw_picture = (
-                        owner.get("profilePicture") if owner else None
-                    ) or post.get("userProfilePicture")
+                    target_username = (owner or {}).get("username")
+                    target_display_name = (owner or {}).get("name")
+                    raw_picture = (owner or {}).get("profilePicture")
                     target_picture = await self._resolve_picture(
                         raw_picture, avatar_cache
                     )
@@ -1149,9 +1144,7 @@ class Page48Service:
                     target_exists = False
 
             reporter = user_map.get(r.get("reporterUserId"))
-            reporter_username = r.get("reporterUsername") or (
-                reporter.get("username") if reporter else None
-            )
+            reporter_username = (reporter or {}).get("username")
 
             items.append(
                 AdminReportItem(
@@ -1231,6 +1224,13 @@ class Page48Service:
                 post["parentPostId"], "replyCount", -1
             )
 
+    async def _resolve_user_id(self, username: str) -> str:
+        """Map a profile username to the immutable userId every post query uses."""
+        user = await self.user_repository.find_one({"username": username.lower()})
+        if not user:
+            raise UserProfileNotFoundError()
+        return user.get("userId", "")
+
     async def get_user_posts(
         self,
         target_username: str,
@@ -1250,8 +1250,9 @@ class Page48Service:
             except Exception:
                 pass
 
+        target_user_id = await self._resolve_user_id(target_username)
         posts = await self.repository.get_user_posts(
-            target_username, limit + 1, cursor_dict, media
+            target_user_id, limit + 1, cursor_dict, media
         )
 
         has_more = len(posts) > limit
@@ -1267,7 +1268,7 @@ class Page48Service:
         # cursor pagination can never skip or duplicate it.
         pinned_post = None
         if media is None and cursor_dict is None:
-            pinned_post = await self.repository.get_pinned_post(target_username)
+            pinned_post = await self.repository.get_pinned_post(target_user_id)
             if pinned_post:
                 posts = [p for p in posts if p["postId"] != pinned_post["postId"]]
 
@@ -1300,7 +1301,7 @@ class Page48Service:
                 pass
 
         posts = await self.repository.get_user_replies(
-            target_username, limit + 1, cursor_dict
+            await self._resolve_user_id(target_username), limit + 1, cursor_dict
         )
 
         has_more = len(posts) > limit
@@ -1442,7 +1443,7 @@ class Page48Service:
             except Exception as e:
                 logger.error(f"Failed to resolve banner for {username}: {str(e)}")
 
-        post_count = await self.repository.count_user_posts(stored_username)
+        post_count = await self.repository.count_user_posts(user.get("userId", ""))
         repost_count = await self.repository.count_user_reposts(user.get("userId", ""))
 
         return Page48UserProfileResponse(
