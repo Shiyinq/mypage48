@@ -1978,7 +1978,23 @@
 			"videoTooLong": "Video must be 1 minute or less.",
 			"videoTooLarge": "Video must be 50MB or less.",
 			"videoInvalidType": "Video must be MP4 or WebM.",
-			"videoUnreadable": "This video can't be read."
+			"videoUnreadable": "This video can't be read.",
+			"addEmoji": "Add emoji",
+			"emojiTooLong": "Character limit reached."
+		},
+		"emoji": {
+			"search": "Search emoji",
+			"empty": "No emoji found",
+			"recent": "Recently used",
+			"smileys": "Smileys & emotion",
+			"gestures": "People & gestures",
+			"hearts": "Hearts",
+			"animals": "Animals & nature",
+			"food": "Food & drink",
+			"activities": "Activities",
+			"travel": "Travel & places",
+			"objects": "Objects",
+			"symbols": "Symbols"
 		},
 		"video": {
 			"play": "Play",

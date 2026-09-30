@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { Image as ImageIcon, Video as VideoIcon, X, Loader2 } from 'lucide-svelte';
+	import { Image as ImageIcon, Smile, Video as VideoIcon, X, Loader2 } from 'lucide-svelte';
+	import { tick } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import EmojiPicker from '$lib/components/page48/EmojiPicker.svelte';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -34,8 +36,40 @@
 	let videoPreview = $state<string | null>(null);
 	let probing = $state(false);
 	let isSubmitting = $state(false);
+	let emojiOpen = $state(false);
+	let textareaEl = $state<HTMLTextAreaElement>();
+	let emojiButton = $state<HTMLButtonElement>();
 	let fileInput: HTMLInputElement;
 	let videoInput: HTMLInputElement;
+
+	function autoGrow(el: HTMLTextAreaElement) {
+		el.style.height = 'auto';
+		el.style.height = el.scrollHeight + 'px';
+	}
+
+	/** Insert an emoji at the caret, keeping focus and the caret in the textarea. */
+	async function insertEmoji(char: string) {
+		const el = textareaEl;
+		if (!el) {
+			if (content.length + char.length <= MAX_CONTENT_LENGTH) content += char;
+			return;
+		}
+
+		const start = el.selectionStart ?? content.length;
+		const end = el.selectionEnd ?? start;
+		if (content.length - (end - start) + char.length > MAX_CONTENT_LENGTH) {
+			showToast(t('page48.composer.emojiTooLong'), 'error');
+			return;
+		}
+
+		content = content.slice(0, start) + char + content.slice(end);
+		const caret = start + char.length;
+
+		await tick();
+		el.focus();
+		el.setSelectionRange(caret, caret);
+		autoGrow(el);
+	}
 
 	function handleFileSelect(e: Event) {
 		const target = e.target as HTMLInputElement;
@@ -135,6 +169,9 @@
 			imagePreviews.forEach(URL.revokeObjectURL);
 			imagePreviews = [];
 			clearVideo();
+			emojiOpen = false;
+			await tick();
+			if (textareaEl) textareaEl.style.height = 'auto';
 		} catch (error) {
 			console.error(error);
 		} finally {
@@ -188,16 +225,13 @@
 		{/if}
 
 		<textarea
+			bind:this={textareaEl}
 			bind:value={content}
 			placeholder={resolvedPlaceholder}
 			maxlength={MAX_CONTENT_LENGTH}
 			class="w-full bg-transparent text-gray-900 dark:text-gray-100 text-[15px] resize-none outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 mt-1 pb-2 leading-relaxed"
 			rows="1"
-			oninput={(e) => {
-				const target = e.target as HTMLTextAreaElement;
-				target.style.height = 'auto';
-				target.style.height = target.scrollHeight + 'px';
-			}}
+			oninput={(e) => autoGrow(e.target as HTMLTextAreaElement)}
 		></textarea>
 
 		<!-- Image Previews -->
@@ -282,6 +316,22 @@
 					bind:this={videoInput}
 					onchange={handleVideoSelect}
 				/>
+
+				<!-- Emoji Picker -->
+				<button
+					bind:this={emojiButton}
+					class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
+						emojiOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+					}`}
+					onclick={() => (emojiOpen = !emojiOpen)}
+					disabled={isSubmitting}
+					title={t('page48.composer.addEmoji')}
+					aria-label={t('page48.composer.addEmoji')}
+					aria-haspopup="dialog"
+					aria-expanded={emojiOpen}
+				>
+					<Smile size={20} class="group-hover:scale-110 transition-transform" />
+				</button>
 			</div>
 
 			<!-- Character Counter + Submit Button -->
@@ -315,3 +365,7 @@
 		</div>
 	</div>
 </div>
+
+{#if emojiOpen}
+	<EmojiPicker anchor={emojiButton} onPick={insertEmoji} onClose={() => (emojiOpen = false)} />
+{/if}

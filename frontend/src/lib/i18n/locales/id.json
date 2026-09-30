@@ -1982,7 +1982,23 @@
 			"videoTooLong": "Video maksimal 1 menit.",
 			"videoTooLarge": "Ukuran video maksimal 50MB.",
 			"videoInvalidType": "Format video harus MP4 atau WebM.",
-			"videoUnreadable": "Video tidak bisa dibaca."
+			"videoUnreadable": "Video tidak bisa dibaca.",
+			"addEmoji": "Tambahkan emoji",
+			"emojiTooLong": "Batas karakter tercapai."
+		},
+		"emoji": {
+			"search": "Cari emoji",
+			"empty": "Emoji tidak ditemukan",
+			"recent": "Sering dipakai",
+			"smileys": "Wajah & emosi",
+			"gestures": "Gestur & orang",
+			"hearts": "Hati & cinta",
+			"animals": "Hewan & alam",
+			"food": "Makanan & minuman",
+			"activities": "Aktivitas",
+			"travel": "Perjalanan & tempat",
+			"objects": "Benda",
+			"symbols": "Simbol"
 		},
 		"video": {
 			"play": "Putar",
