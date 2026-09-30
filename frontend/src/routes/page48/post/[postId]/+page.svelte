@@ -202,9 +202,12 @@
 			const videos = video ? [await uploadPage48Video(video)] : [];
 			await page48Api.createPost(content, images, videos, target.postId);
 			showToast(t('page48.post.replySent'), 'success');
-			// A reply left on one of the author's continuations lives on that post's own
-			// page, not here — follow it so the new reply is visible right away.
-			if (target.postId !== focused?.postId && chain.some((p) => p.postId === target.postId)) {
+			// A reply only shows up here when it answers the focused post or one of the
+			// listed replies. Anything else — a chain continuation, or the parent post shown
+			// as context — lives on that post's own page, so follow it to keep it visible.
+			const shownHere =
+				target.postId === focused?.postId || replies.some((p) => p.postId === target.postId);
+			if (!shownHere) {
 				await goto(`/page48/post/${target.postId}`);
 				return;
 			}
@@ -355,6 +358,7 @@
 					onShare={handleShare}
 					onDelete={handleDelete}
 				/>
+				{@render inlineComposer(parentContext)}
 			{/if}
 
 			<!-- The author's chain: connected, like a thread should read -->
