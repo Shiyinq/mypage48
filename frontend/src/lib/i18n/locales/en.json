@@ -2100,7 +2100,6 @@
 			"notFoundText": "The profile you're looking for doesn't exist or was deleted.",
 			"loadError": "Failed to load profile",
 			"editInSettings": "Edit in Settings",
-			"fullProfile": "Full profile",
 			"reposted": "Reposted",
 			"countPosts": "{count} Posts",
 			"countReposts": "{count} Reposts"

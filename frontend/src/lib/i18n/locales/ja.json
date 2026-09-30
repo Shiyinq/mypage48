@@ -2098,7 +2098,6 @@
 			"notFoundText": "探しているプロフィールは存在しないか、削除されました。",
 			"loadError": "プロフィールの読み込みに失敗しました",
 			"editInSettings": "設定で編集",
-			"fullProfile": "フルプロフィール",
 			"reposted": "リポスト",
 			"countPosts": "{count} 投稿",
 			"countReposts": "{count} リポスト"

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { Repeat2, Settings, ExternalLink, LoaderCircle, Copy, Play } from 'lucide-svelte';
+	import { Repeat2, Settings, LoaderCircle, Copy, Play } from 'lucide-svelte';
 	import { page48Api, type Page48Post, type Page48UserProfile } from '$lib/api/page48';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
@@ -367,13 +367,6 @@
 							</p>
 						</div>
 						<div class="flex items-center gap-2 shrink-0">
-							<a
-								href={`/u/${profile.username}`}
-								class="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-zinc-800 text-[13px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
-							>
-								<ExternalLink size={15} />
-								{t('page48.userPage.fullProfile')}
-							</a>
 							{#if isOwnProfile}
 								<button
 									onclick={() => goto('/settings')}
