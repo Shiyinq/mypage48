@@ -12,6 +12,7 @@ class Page48Repository:
         self.bookmarks = db["page48_bookmarks"]
         self.reposts = db["page48_reposts"]
         self.reports = db["page48_reports"]
+        self.poll_votes = db["page48_poll_votes"]
 
     async def insert_post(self, post_data: dict):
         return await self.posts.insert_one(post_data)
@@ -438,11 +439,16 @@ class Page48Repository:
 
     async def get_user_interactions(
         self, post_ids: List[str], user_id: str
-    ) -> Dict[str, Dict[str, bool]]:
+    ) -> Dict[str, Dict[str, object]]:
         """Batch get user interactions for a list of posts."""
         if not post_ids or not user_id:
             return {
-                pid: {"isLiked": False, "isBookmarked": False, "isReposted": False}
+                pid: {
+                    "isLiked": False,
+                    "isBookmarked": False,
+                    "isReposted": False,
+                    "pollOptionId": None,
+                }
                 for pid in post_ids
             }
 
@@ -455,10 +461,14 @@ class Page48Repository:
         reposts = await self.reposts.find(
             {"userId": user_id, "postId": {"$in": post_ids}}
         ).to_list(length=None)
+        poll_votes = await self.poll_votes.find(
+            {"userId": user_id, "postId": {"$in": post_ids}}
+        ).to_list(length=None)
 
         liked_set = {l["postId"] for l in likes}
         bookmarked_set = {b["postId"] for b in bookmarks}
         reposted_set = {r["postId"] for r in reposts}
+        poll_option_map = {v["postId"]: v["optionId"] for v in poll_votes}
 
         result = {}
         for pid in post_ids:
@@ -466,5 +476,50 @@ class Page48Repository:
                 "isLiked": pid in liked_set,
                 "isBookmarked": pid in bookmarked_set,
                 "isReposted": pid in reposted_set,
+                "pollOptionId": poll_option_map.get(pid),
             }
         return result
+
+    # Poll votes
+    async def get_poll_vote(self, post_id: str, user_id: str) -> Optional[dict]:
+        return await self.poll_votes.find_one({"postId": post_id, "userId": user_id})
+
+    async def insert_poll_vote(self, post_id: str, user_id: str, option_id: str):
+        return await self.poll_votes.insert_one(
+            {
+                "postId": post_id,
+                "userId": user_id,
+                "optionId": option_id,
+                "createdAt": datetime.now(),
+            }
+        )
+
+    async def delete_poll_votes(self, post_id: str):
+        return await self.poll_votes.delete_many({"postId": post_id})
+
+    async def count_poll_votes(self, post_ids: List[str]) -> Dict[str, Dict[str, int]]:
+        """Count votes per option for the given posts, in a single query.
+
+        Returns `{postId: {optionId: votes}}`; this is the source of truth for
+        poll results (nothing is denormalized on the post document).
+        """
+        if not post_ids:
+            return {}
+
+        pipeline = [
+            {"$match": {"postId": {"$in": post_ids}}},
+            {
+                "$group": {
+                    "_id": {"postId": "$postId", "optionId": "$optionId"},
+                    "votes": {"$sum": 1},
+                }
+            },
+        ]
+        cursor = self.poll_votes.aggregate(pipeline)
+        rows = await cursor.to_list(length=None)
+
+        counts: Dict[str, Dict[str, int]] = {}
+        for row in rows:
+            key = row["_id"]
+            counts.setdefault(key["postId"], {})[key["optionId"]] = row["votes"]
+        return counts

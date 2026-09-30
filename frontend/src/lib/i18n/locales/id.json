@@ -1986,6 +1986,19 @@
 			"addEmoji": "Tambahkan emoji",
 			"emojiTooLong": "Batas karakter tercapai."
 		},
+		"poll": {
+			"create": "Buat polling",
+			"remove": "Hapus polling",
+			"addOption": "Tambah pilihan",
+			"optionPlaceholder": "Pilihan {index}",
+			"removeOption": "Hapus pilihan {index}",
+			"hint": "Isi minimal 2 pilihan (maksimal 6, 50 karakter per pilihan).",
+			"voteFor": "Pilih {option}",
+			"voteError": "Gagal mengirim suara.",
+			"endsIn": "Berakhir dalam {time}",
+			"ended": "Polling berakhir",
+			"votes": "{count} suara"
+		},
 		"emoji": {
 			"search": "Cari emoji",
 			"empty": "Emoji tidak ditemukan",

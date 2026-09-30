@@ -121,11 +121,16 @@
 		posts = posts.filter((p) => p.postId !== postId);
 	}
 
-	async function handleCreatePost(content: string, files: File[], video: VideoDraft | null) {
+	async function handleCreatePost(
+		content: string,
+		files: File[],
+		video: VideoDraft | null,
+		poll: { options: string[] } | null
+	) {
 		try {
 			const filenames = files.length > 0 ? await uploadPage48Images(files) : [];
 			const videos = video ? [await uploadPage48Video(video)] : [];
-			const newPost = await page48Api.createPost(content, filenames, videos);
+			const newPost = await page48Api.createPost(content, filenames, videos, undefined, poll);
 			if (newPost) {
 				posts = [newPost, ...posts];
 				showToast(t('page48.feed.postSuccess'), 'success');

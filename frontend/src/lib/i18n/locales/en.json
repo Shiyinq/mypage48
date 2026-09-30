@@ -1982,6 +1982,19 @@
 			"addEmoji": "Add emoji",
 			"emojiTooLong": "Character limit reached."
 		},
+		"poll": {
+			"create": "Add poll",
+			"remove": "Remove poll",
+			"addOption": "Add option",
+			"optionPlaceholder": "Choice {index}",
+			"removeOption": "Remove choice {index}",
+			"hint": "Add at least 2 choices (up to 6, 50 characters each).",
+			"voteFor": "Vote for {option}",
+			"voteError": "Failed to submit your vote.",
+			"endsIn": "Ends in {time}",
+			"ended": "Poll ended",
+			"votes": "{count} votes"
+		},
 		"emoji": {
 			"search": "Search emoji",
 			"empty": "No emoji found",

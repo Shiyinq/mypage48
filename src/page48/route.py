@@ -16,6 +16,7 @@ from src.page48.schemas import (
     CreatePostRequest,
     EditPostRequest,
     Page48UserProfileResponse,
+    PollResponse,
     PostPaginationResponse,
     PostResponse,
     ReportCreate,
@@ -24,6 +25,7 @@ from src.page48.schemas import (
     ToggleResponse,
     TrendingTagsResponse,
     VideoUploadResponse,
+    VotePollRequest,
 )
 from src.page48.service import Page48Service
 
@@ -234,6 +236,17 @@ async def toggle_repost(
     service: Page48Service = Depends(get_page48_service),
 ):
     return await service.toggle_repost(postId, current_user.userId)
+
+
+@router.post("/posts/{postId}/poll/vote", response_model=PollResponse)
+async def vote_poll(
+    request: VotePollRequest,
+    postId: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.vote_poll(postId, request.optionId, current_user.userId)
 
 
 @router.post("/posts/{postId}/bookmark", response_model=ToggleResponse)

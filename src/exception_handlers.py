@@ -129,11 +129,18 @@ from src.news.http_exceptions import (
 )
 from src.page48.exceptions import (
     CannotReportSelfError,
+    InvalidPollOptionError,
+    InvalidPollOptionsError,
     InvalidReportTargetError,
     InvalidVideoError,
     InvalidVideoTypeError,
     MaxVideoExceededError,
     MediaConflictError,
+    PollAlreadyVotedError,
+    PollEndedError,
+    PollMediaConflictError,
+    PollNotFoundError,
+    PollReplyNotAllowedError,
     PostCreationError,
     PostNotFoundError,
     ReportAlreadyExistsError,
@@ -145,11 +152,18 @@ from src.page48.exceptions import (
 )
 from src.page48.http_exceptions import (
     CannotReportSelf,
+    InvalidPollOption,
+    InvalidPollOptions,
     InvalidReportTarget,
     InvalidVideo,
     InvalidVideoType,
     MaxVideoExceeded,
     MediaConflict,
+    PollAlreadyVoted,
+    PollEnded,
+    PollMediaConflict,
+    PollNotFound,
+    PollReplyNotAllowed,
     PostCreateError,
     PostNotFound,
     ReportAlreadyExists,
@@ -528,6 +542,20 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, InvalidVideo())
     if isinstance(exc, VideoUploadError):
         return await detailed_http_exception_handler(request, VideoUploadHTTPError())
+    if isinstance(exc, PollNotFoundError):
+        return await detailed_http_exception_handler(request, PollNotFound())
+    if isinstance(exc, PollEndedError):
+        return await detailed_http_exception_handler(request, PollEnded())
+    if isinstance(exc, PollAlreadyVotedError):
+        return await detailed_http_exception_handler(request, PollAlreadyVoted())
+    if isinstance(exc, InvalidPollOptionError):
+        return await detailed_http_exception_handler(request, InvalidPollOption())
+    if isinstance(exc, InvalidPollOptionsError):
+        return await detailed_http_exception_handler(request, InvalidPollOptions())
+    if isinstance(exc, PollMediaConflictError):
+        return await detailed_http_exception_handler(request, PollMediaConflict())
+    if isinstance(exc, PollReplyNotAllowedError):
+        return await detailed_http_exception_handler(request, PollReplyNotAllowed())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

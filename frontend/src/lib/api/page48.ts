@@ -28,6 +28,21 @@ export interface VideoUploadResponse {
 	duration: number;
 }
 
+export interface Page48PollOption {
+	id: string;
+	text: string;
+	votes: number;
+}
+
+export interface Page48Poll {
+	options: Page48PollOption[];
+	totalVotes: number;
+	endsAt: string;
+	isExpired: boolean;
+	/** Option picked by the current user, if any. */
+	myOptionId: string | null;
+}
+
 export interface Page48Post {
 	postId: string;
 	rootPostId: string | null;
@@ -46,6 +61,7 @@ export interface Page48Post {
 	images: Page48Image[];
 	videos: Page48Video[];
 	tags: string[];
+	poll: Page48Poll | null;
 
 	likesCount: number;
 	repostCount: number;
@@ -206,11 +222,19 @@ export const page48Api = {
 		content: string,
 		images: string[] = [],
 		videos: { filename: string; width: number; height: number; duration: number }[] = [],
-		parentPostId?: string
+		parentPostId?: string,
+		poll?: { options: string[] } | null
 	) => {
 		return client<Page48Post>('/page48/posts', {
 			method: 'POST',
-			body: { content, images, videos, parentPostId }
+			body: { content, images, videos, parentPostId, poll: poll ?? null }
+		});
+	},
+
+	votePoll: async (postId: string, optionId: string): Promise<Page48Poll> => {
+		return client<Page48Poll>(`/page48/posts/${postId}/poll/vote`, {
+			method: 'POST',
+			body: { optionId }
 		});
 	},
 

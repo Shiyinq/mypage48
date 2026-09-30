@@ -7,6 +7,7 @@ class Info:
     BOOKMARK_TOGGLED = "Bookmark status toggled."
     REPORT_CREATED = "Report submitted successfully."
     VIDEO_UPLOADED = "Video uploaded successfully."
+    POLL_VOTED = "Vote submitted successfully."
 
 
 class ErrorCode:
@@ -26,6 +27,13 @@ class ErrorCode:
     MAX_VIDEO_EXCEEDED = "Maximum number of videos allowed per post is 1."
     INVALID_MEDIA_COMBINATION = "A post cannot contain both images and a video."
     INVALID_VIDEO = "The video reference is invalid."
+    POLL_NOT_FOUND = "This post does not have a poll."
+    POLL_ENDED = "This poll has ended."
+    POLL_ALREADY_VOTED = "You have already voted on this poll."
+    INVALID_POLL_OPTION = "The poll option is invalid."
+    INVALID_POLL_OPTIONS = "A poll requires 2 to 6 options of up to 50 characters each."
+    POLL_MEDIA_CONFLICT = "A poll cannot be combined with images or a video."
+    POLL_REPLY_NOT_ALLOWED = "Polls are only supported on top-level posts."
 
 
 class DomainErrorCode:
@@ -43,3 +51,10 @@ class DomainErrorCode:
     MAX_VIDEO_EXCEEDED = "Maximum number of videos allowed per post is 1."
     INVALID_MEDIA_COMBINATION = "A post cannot contain both images and a video."
     INVALID_VIDEO = "The video reference is invalid."
+    POLL_NOT_FOUND = "This post does not have a poll."
+    POLL_ENDED = "This poll has ended."
+    POLL_ALREADY_VOTED = "You have already voted on this poll."
+    INVALID_POLL_OPTION = "The poll option is invalid."
+    INVALID_POLL_OPTIONS = "A poll requires 2 to 6 options of up to 50 characters each."
+    POLL_MEDIA_CONFLICT = "A poll cannot be combined with images or a video."
+    POLL_REPLY_NOT_ALLOWED = "Polls are only supported on top-level posts."

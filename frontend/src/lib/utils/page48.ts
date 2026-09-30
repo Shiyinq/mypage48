@@ -177,6 +177,63 @@ export async function togglePostInteraction(
 	}
 }
 
+export const POLL_MIN_OPTIONS = 2;
+export const POLL_MAX_OPTIONS = 6;
+export const POLL_MAX_OPTION_LENGTH = 50;
+
+/** Rounded share of the total votes, 0 when nobody voted yet. */
+export function pollPercentage(votes: number, totalVotes: number): number {
+	if (!totalVotes) return 0;
+	return Math.round((votes / totalVotes) * 100);
+}
+
+/** "23j 59m" style countdown until a poll closes. */
+export function formatPollRemaining(endsAt: string, now: number = Date.now()): string {
+	const diff = new Date(endsAt).getTime() - now;
+	if (!Number.isFinite(diff) || diff <= 0) return '';
+
+	const hours = Math.floor(diff / 3_600_000);
+	const minutes = Math.floor((diff % 3_600_000) / 60_000);
+	if (hours > 0)
+		return `${hours}${t('page48.time.hoursShort')} ${minutes}${t('page48.time.minutesShort')}`;
+	if (minutes > 0) return `${minutes}${t('page48.time.minutesShort')}`;
+	return `<${t('page48.time.minutesShort')}`;
+}
+
+/**
+ * Cast a poll vote with an optimistic update, then reconcile with the server.
+ * Mutates `post.poll` in place (works with Svelte 5 deep `$state` proxies).
+ */
+export async function voteOnPoll(post: Page48Post, optionId: string): Promise<void> {
+	const poll = post.poll;
+	if (!poll || poll.isExpired || poll.myOptionId) return;
+
+	const snapshot = {
+		options: poll.options.map((option) => ({ ...option })),
+		totalVotes: poll.totalVotes,
+		myOptionId: poll.myOptionId
+	};
+
+	poll.myOptionId = optionId;
+	const chosen = poll.options.find((option) => option.id === optionId);
+	if (chosen) chosen.votes += 1;
+	poll.totalVotes += 1;
+
+	try {
+		const updated = await page48Api.votePoll(post.postId, optionId);
+		poll.options = updated.options;
+		poll.totalVotes = updated.totalVotes;
+		poll.isExpired = updated.isExpired;
+		poll.myOptionId = updated.myOptionId;
+	} catch (err: unknown) {
+		poll.options = snapshot.options;
+		poll.totalVotes = snapshot.totalVotes;
+		poll.myOptionId = snapshot.myOptionId;
+		const e = err as { detail?: string };
+		showToast(e?.detail || t('page48.poll.voteError'), 'error');
+	}
+}
+
 /** Share a post via the Web Share API, falling back to clipboard copy. */
 export async function sharePost(post: Page48Post): Promise<void> {
 	const url = getPostUrl(post.postId);

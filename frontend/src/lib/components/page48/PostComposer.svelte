@@ -1,5 +1,14 @@
 <script lang="ts">
-	import { Image as ImageIcon, Smile, Video as VideoIcon, X, Loader2 } from 'lucide-svelte';
+	import {
+		Image as ImageIcon,
+		ChartNoAxesColumn,
+		Plus,
+		Smile,
+		Trash2,
+		Video as VideoIcon,
+		X,
+		Loader2
+	} from 'lucide-svelte';
 	import { tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import EmojiPicker from '$lib/components/page48/EmojiPicker.svelte';
@@ -11,13 +20,21 @@
 		PAGE48_VIDEO_ALLOWED_TYPES,
 		PAGE48_VIDEO_MAX_BYTES,
 		PAGE48_VIDEO_MAX_SECONDS,
+		POLL_MAX_OPTION_LENGTH,
+		POLL_MAX_OPTIONS,
+		POLL_MIN_OPTIONS,
 		type VideoDraft
 	} from '$lib/utils/page48';
 
 	const { t } = useTranslation();
 
 	interface Props {
-		onPost: (content: string, images: File[], video: VideoDraft | null) => Promise<void>;
+		onPost: (
+			content: string,
+			images: File[],
+			video: VideoDraft | null,
+			poll: { options: string[] } | null
+		) => Promise<void>;
 		isReply?: boolean;
 		placeholder?: string;
 	}
@@ -37,6 +54,8 @@
 	let probing = $state(false);
 	let isSubmitting = $state(false);
 	let emojiOpen = $state(false);
+	let pollOpen = $state(false);
+	let pollOptions = $state<string[]>(['', '']);
 	let textareaEl = $state<HTMLTextAreaElement>();
 	let emojiButton = $state<HTMLButtonElement>();
 	let fileInput: HTMLInputElement;
@@ -157,18 +176,59 @@
 		video = null;
 	}
 
+	// Poll editor (a poll can't be combined with images or a video)
+	function dropMedia() {
+		imagePreviews.forEach(URL.revokeObjectURL);
+		images = [];
+		imagePreviews = [];
+		clearVideo();
+	}
+
+	function openPoll() {
+		dropMedia();
+		pollOpen = true;
+	}
+
+	function closePoll() {
+		pollOpen = false;
+		pollOptions = ['', ''];
+	}
+
+	function addPollOption() {
+		if (pollOptions.length >= POLL_MAX_OPTIONS) return;
+		pollOptions = [...pollOptions, ''];
+	}
+
+	function removePollOption(index: number) {
+		pollOptions = pollOptions.filter((_, i) => i !== index);
+	}
+
+	/** Mirror the post counter colours: amber near the limit, red at the limit. */
+	function pollCounterClass(length: number) {
+		if (length >= POLL_MAX_OPTION_LENGTH) return 'text-red-500';
+		if (length >= POLL_MAX_OPTION_LENGTH - 10) return 'text-amber-500';
+		return 'text-gray-400 dark:text-gray-500';
+	}
+
+	let pollDraft = $derived(
+		pollOptions.map((option) => option.trim()).filter((option) => option.length > 0)
+	);
+	// Mirrors the server rule: 2..6 options, max 50 characters each.
+	let pollReady = $derived(!pollOpen || pollDraft.length >= POLL_MIN_OPTIONS);
+
 	async function handleSubmit() {
-		if (!content.trim() && images.length === 0 && !video) return;
+		if ((!content.trim() && images.length === 0 && !video) || !pollReady) return;
 		if (isSubmitting) return;
 
 		try {
 			isSubmitting = true;
-			await onPost(content, images, video);
+			await onPost(content, images, video, pollOpen ? { options: pollDraft } : null);
 			content = '';
 			images = [];
 			imagePreviews.forEach(URL.revokeObjectURL);
 			imagePreviews = [];
 			clearVideo();
+			closePoll();
 			emojiOpen = false;
 			await tick();
 			if (textareaEl) textareaEl.style.height = 'auto';
@@ -227,6 +287,68 @@
 			oninput={(e) => autoGrow(e.target as HTMLTextAreaElement)}
 		></textarea>
 
+		<!-- Poll editor -->
+		{#if pollOpen}
+			<div class="mt-2 rounded-2xl border border-gray-200 dark:border-zinc-800 p-2" in:fade>
+				{#each pollOptions as _, i}
+					<div class="flex items-center gap-1 mb-2 last:mb-0">
+						<div class="relative flex-1 min-w-0">
+							<input
+								bind:value={pollOptions[i]}
+								type="text"
+								maxlength={POLL_MAX_OPTION_LENGTH}
+								placeholder={t('page48.poll.optionPlaceholder', { index: i + 1 })}
+								aria-label={t('page48.poll.optionPlaceholder', { index: i + 1 })}
+								class="w-full rounded-lg border border-gray-200 dark:border-zinc-800 pl-3 pr-14 py-2 text-[14px] text-gray-900 dark:text-gray-100 bg-transparent outline-none transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-red-400 dark:focus:border-red-500"
+							/>
+							<span
+								class={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-medium tabular-nums ${pollCounterClass(
+									pollOptions[i].length
+								)}`}
+							>
+								{pollOptions[i].length}/{POLL_MAX_OPTION_LENGTH}
+							</span>
+						</div>
+						{#if pollOptions.length > POLL_MIN_OPTIONS}
+							<button
+								type="button"
+								class="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+								onclick={() => removePollOption(i)}
+								aria-label={t('page48.poll.removeOption', { index: i + 1 })}
+							>
+								<X size={16} />
+							</button>
+						{/if}
+					</div>
+				{/each}
+
+				<div class="flex items-center justify-between mt-1">
+					<button
+						type="button"
+						class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+						onclick={addPollOption}
+						disabled={pollOptions.length >= POLL_MAX_OPTIONS}
+					>
+						<Plus size={15} />
+						{t('page48.poll.addOption')}
+					</button>
+					<button
+						type="button"
+						class="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+						onclick={closePoll}
+						title={t('page48.poll.remove')}
+						aria-label={t('page48.poll.remove')}
+					>
+						<Trash2 size={16} />
+					</button>
+				</div>
+
+				{#if !pollReady}
+					<p class="px-1 mt-1 text-[12px] text-amber-500">{t('page48.poll.hint')}</p>
+				{/if}
+			</div>
+		{/if}
+
 		<!-- Image Previews -->
 		{#if imagePreviews.length > 0}
 			<div class="flex gap-2 mt-2 mb-2 overflow-x-auto pb-2 snap-x" in:fade>
@@ -275,7 +397,7 @@
 				<button
 					class="p-2 -ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
 					onclick={() => fileInput.click()}
-					disabled={images.length >= 4 || !!video || probing || isSubmitting}
+					disabled={images.length >= 4 || !!video || probing || isSubmitting || pollOpen}
 					title={t('page48.composer.addPhoto')}
 				>
 					<ImageIcon size={20} class="group-hover:scale-110 transition-transform" />
@@ -293,7 +415,7 @@
 				<button
 					class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
 					onclick={() => videoInput.click()}
-					disabled={!!video || images.length > 0 || probing || isSubmitting}
+					disabled={!!video || images.length > 0 || probing || isSubmitting || pollOpen}
 					title={t('page48.composer.addVideo')}
 				>
 					{#if probing}
@@ -325,6 +447,22 @@
 				>
 					<Smile size={20} class="group-hover:scale-110 transition-transform" />
 				</button>
+
+				<!-- Poll -->
+				{#if !isReply}
+					<button
+						class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
+							pollOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+						}`}
+						onclick={pollOpen ? closePoll : openPoll}
+						disabled={images.length > 0 || !!video || probing || isSubmitting}
+						title={t('page48.poll.create')}
+						aria-label={t('page48.poll.create')}
+						aria-pressed={pollOpen}
+					>
+						<ChartNoAxesColumn size={20} class="group-hover:scale-110 transition-transform" />
+					</button>
+				{/if}
 			</div>
 
 			<!-- Character Counter + Submit Button -->
@@ -346,7 +484,10 @@
 
 				<button
 					class="px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-[14px] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-gray-800 dark:hover:bg-gray-200 transition-all flex items-center gap-2 active:scale-95 shadow-sm"
-					disabled={(!content.trim() && images.length === 0 && !video) || isSubmitting || probing}
+					disabled={(!content.trim() && images.length === 0 && !video) ||
+						isSubmitting ||
+						probing ||
+						!pollReady}
 					onclick={handleSubmit}
 				>
 					{#if isSubmitting}

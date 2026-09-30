@@ -56,3 +56,31 @@ class MediaConflictError(DomainException):
 
 class InvalidVideoError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.INVALID_VIDEO
+
+
+class PollNotFoundError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.POLL_NOT_FOUND
+
+
+class PollEndedError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.POLL_ENDED
+
+
+class PollAlreadyVotedError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.POLL_ALREADY_VOTED
+
+
+class InvalidPollOptionError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_POLL_OPTION
+
+
+class InvalidPollOptionsError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.INVALID_POLL_OPTIONS
+
+
+class PollMediaConflictError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.POLL_MEDIA_CONFLICT
+
+
+class PollReplyNotAllowedError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.POLL_REPLY_NOT_ALLOWED

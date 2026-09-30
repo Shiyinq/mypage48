@@ -1980,6 +1980,19 @@
 			"addEmoji": "絵文字を追加",
 			"emojiTooLong": "文字数の上限に達しました。"
 		},
+		"poll": {
+			"create": "投票を作成",
+			"remove": "投票を削除",
+			"addOption": "選択肢を追加",
+			"optionPlaceholder": "選択肢 {index}",
+			"removeOption": "選択肢 {index} を削除",
+			"hint": "選択肢を2つ以上入力してください（最大6つ、各50文字まで）。",
+			"voteFor": "{option} に投票",
+			"voteError": "投票を送信できませんでした。",
+			"endsIn": "残り {time}",
+			"ended": "投票は終了しました",
+			"votes": "{count} 票"
+		},
 		"emoji": {
 			"search": "絵文字を検索",
 			"empty": "絵文字が見つかりません",

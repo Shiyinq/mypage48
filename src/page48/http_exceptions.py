@@ -70,3 +70,31 @@ class MediaConflict(BadRequest):
 
 class InvalidVideo(BadRequest):
     DETAIL = ErrorCode.INVALID_VIDEO
+
+
+class PollNotFound(NotFound):
+    DETAIL = ErrorCode.POLL_NOT_FOUND
+
+
+class PollEnded(BadRequest):
+    DETAIL = ErrorCode.POLL_ENDED
+
+
+class PollAlreadyVoted(BadRequest):
+    DETAIL = ErrorCode.POLL_ALREADY_VOTED
+
+
+class InvalidPollOption(BadRequest):
+    DETAIL = ErrorCode.INVALID_POLL_OPTION
+
+
+class InvalidPollOptions(BadRequest):
+    DETAIL = ErrorCode.INVALID_POLL_OPTIONS
+
+
+class PollMediaConflict(BadRequest):
+    DETAIL = ErrorCode.POLL_MEDIA_CONFLICT
+
+
+class PollReplyNotAllowed(BadRequest):
+    DETAIL = ErrorCode.POLL_REPLY_NOT_ALLOWED

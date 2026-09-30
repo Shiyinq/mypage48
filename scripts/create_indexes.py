@@ -120,6 +120,14 @@ async def create_indexes():
             [("reporterUserId", 1), ("targetType", 1), ("targetId", 1)], unique=True
         )
 
+        # Poll votes: the unique key is what guarantees one vote per user, and the
+        # (postId, optionId) index backs the per-option counting aggregation.
+        await db["page48_poll_votes"].create_index(
+            [("postId", 1), ("userId", 1)], unique=True
+        )
+        await db["page48_poll_votes"].create_index([("postId", 1), ("optionId", 1)])
+        await db["page48_poll_votes"].create_index([("userId", 1), ("createdAt", -1)])
+
         print("Database indexes created successfully")
     except Exception as e:
         print(f"Failed to create indexes: {str(e)}")

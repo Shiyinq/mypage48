@@ -3,17 +3,26 @@ import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
+from pymongo.errors import DuplicateKeyError
+
 from src.auth.schemas import UserCurrent
 from src.config import Settings
 from src.infrastructure import AsyncBackgroundRunner
 from src.logging_config import create_logger
 from src.page48.exceptions import (
     CannotReportSelfError,
+    InvalidPollOptionError,
+    InvalidPollOptionsError,
     InvalidReportTargetError,
     InvalidVideoError,
     InvalidVideoTypeError,
     MaxVideoExceededError,
     MediaConflictError,
+    PollAlreadyVotedError,
+    PollEndedError,
+    PollMediaConflictError,
+    PollNotFoundError,
+    PollReplyNotAllowedError,
     PostCreationError,
     PostNotFoundError,
     ReportAlreadyExistsError,
@@ -35,6 +44,8 @@ from src.page48.schemas import (
     Page48Image,
     Page48UserProfileResponse,
     Page48Video,
+    PollOptionResponse,
+    PollResponse,
     PostPaginationMeta,
     PostPaginationResponse,
     PostResponse,
@@ -54,6 +65,10 @@ logger = create_logger("page48_service", __name__)
 TAG_PATTERN = re.compile(r"#(\w+)", re.UNICODE)
 MAX_TAGS = 10
 MAX_TAG_LENGTH = 50
+POLL_DURATION_HOURS = 24
+MIN_POLL_OPTIONS = 2
+MAX_POLL_OPTIONS = 6
+MAX_POLL_OPTION_LENGTH = 50
 ALLOWED_VIDEO_TYPES = {
     "video/mp4": "mp4",
     "video/webm": "webm",
@@ -124,6 +139,7 @@ class Page48Service:
         user_interactions: dict = None,
         avatar_cache: dict = None,
         user_map: Optional[dict] = None,
+        poll_counts: Optional[dict] = None,
     ) -> PostResponse:
         """Helper to format a raw db dict into PostResponse."""
         if not user_interactions:
@@ -202,6 +218,13 @@ class Page48Service:
             isLiked=interactions.get("isLiked", False),
             isReposted=interactions.get("isReposted", False),
             isBookmarked=interactions.get("isBookmarked", False),
+            poll=(
+                self._build_poll_response(
+                    post["poll"], poll_counts, interactions.get("pollOptionId")
+                )
+                if post.get("poll")
+                else None
+            ),
         )
 
     async def _enrich_posts(
@@ -217,6 +240,9 @@ class Page48Service:
                 post_ids, user_id
             )
 
+        poll_post_ids = [p["postId"] for p in posts if p.get("poll")]
+        poll_counts = await self.repository.count_poll_votes(poll_post_ids)
+
         author_ids = list({p["userId"] for p in posts if p.get("userId")})
         users = await self.user_repository.get_users_by_ids(author_ids)
         user_map = {u["userId"]: u for u in users}
@@ -225,10 +251,67 @@ class Page48Service:
         avatar_cache = {}
         for p in posts:
             enriched.append(
-                await self._enrich_post(p, interactions, avatar_cache, user_map)
+                await self._enrich_post(
+                    p,
+                    interactions,
+                    avatar_cache,
+                    user_map,
+                    poll_counts.get(p["postId"]),
+                )
             )
 
         return enriched
+
+    # Polls
+    @staticmethod
+    def _build_poll_options(raw_options: List[str]) -> List[dict]:
+        """Validate the submitted option texts and number them."""
+        options = [str(option).strip() for option in raw_options or []]
+        if not MIN_POLL_OPTIONS <= len(options) <= MAX_POLL_OPTIONS:
+            raise InvalidPollOptionsError()
+        empty_or_too_long = any(
+            not option or len(option) > MAX_POLL_OPTION_LENGTH for option in options
+        )
+        if empty_or_too_long:
+            raise InvalidPollOptionsError()
+
+        return [
+            {"id": f"opt{index + 1}", "text": text}
+            for index, text in enumerate(options)
+        ]
+
+    @staticmethod
+    def _is_poll_expired(poll: dict, now: Optional[datetime] = None) -> bool:
+        """A poll is over as soon as `endsAt` has passed; nothing has to be
+        scheduled for that, it is derived on every read."""
+        ends_at = poll.get("endsAt")
+        if not ends_at:
+            return False
+        return (now or datetime.now()) >= ends_at
+
+    def _build_poll_response(
+        self,
+        poll: dict,
+        counts: Optional[dict] = None,
+        my_option_id: Optional[str] = None,
+    ) -> PollResponse:
+        counts = counts or {}
+        options = [
+            PollOptionResponse(
+                id=option["id"],
+                text=option["text"],
+                votes=counts.get(option["id"], 0),
+            )
+            for option in poll.get("options", [])
+        ]
+
+        return PollResponse(
+            options=options,
+            totalVotes=sum(option.votes for option in options),
+            endsAt=poll["endsAt"],
+            isExpired=self._is_poll_expired(poll),
+            myOptionId=my_option_id,
+        )
 
     def _extract_tags(
         self, content: str, explicit: Optional[List[str]] = None
@@ -422,6 +505,17 @@ class Page48Service:
 
             tags = self._extract_tags(data.content, data.tags)
 
+            poll_data = None
+            if data.poll is not None:
+                if images_data or videos_data:
+                    raise PollMediaConflictError()
+                if data.parentPostId:
+                    raise PollReplyNotAllowedError()
+                poll_data = {
+                    "endsAt": now + timedelta(hours=POLL_DURATION_HOURS),
+                    "options": self._build_poll_options(data.poll.options),
+                }
+
             post_data = {
                 "postId": post_id,
                 "rootPostId": root_post_id,
@@ -437,6 +531,7 @@ class Page48Service:
                 "content": data.content,
                 "images": images_data,
                 "videos": videos_data,
+                "poll": poll_data,
                 "tags": tags,
                 "likesCount": 0,
                 "repostCount": 0,
@@ -456,6 +551,9 @@ class Page48Service:
             MediaConflictError,
             MaxVideoExceededError,
             InvalidVideoError,
+            InvalidPollOptionsError,
+            PollMediaConflictError,
+            PollReplyNotAllowedError,
         ):
             raise
         except Exception as e:
@@ -614,6 +712,35 @@ class Page48Service:
             new_count = post.get("likesCount", 0) + 1
 
         return ToggleResponse(status=new_status, count=new_count)
+
+    async def vote_poll(
+        self, post_id: str, option_id: str, user_id: str
+    ) -> PollResponse:
+        post = await self.repository.get_post_by_id(post_id)
+        if not post:
+            raise PostNotFoundError()
+
+        poll = post.get("poll")
+        if not poll:
+            raise PollNotFoundError()
+        if self._is_poll_expired(poll):
+            raise PollEndedError()
+
+        valid_option_ids = {option["id"] for option in poll.get("options", [])}
+        if option_id not in valid_option_ids:
+            raise InvalidPollOptionError()
+
+        if await self.repository.get_poll_vote(post_id, user_id):
+            raise PollAlreadyVotedError()
+
+        try:
+            await self.repository.insert_poll_vote(post_id, user_id, option_id)
+        except DuplicateKeyError:
+            # Concurrent vote from the same user reached the unique index first.
+            raise PollAlreadyVotedError()
+
+        counts = await self.repository.count_poll_votes([post_id])
+        return self._build_poll_response(poll, counts.get(post_id), option_id)
 
     async def toggle_repost(self, post_id: str, user_id: str) -> ToggleResponse:
         post = await self.repository.get_post_by_id(post_id)
@@ -897,6 +1024,7 @@ class Page48Service:
             raise UnauthorizedActionError()
 
         await self.repository.delete_post(post_id)
+        await self.repository.delete_poll_votes(post_id)
 
         if post.get("parentPostId"):
             await self.repository.increment_post_stats(

@@ -39,12 +39,38 @@ class VideoUploadResponse(BaseModel):
     duration: Optional[float] = 0.0
 
 
+class CreatePollRequest(BaseModel):
+    """Poll attached to a new post. The post content acts as the question."""
+
+    options: list[str] = Field(default_factory=list, max_length=10)
+
+
+class PollOptionResponse(BaseModel):
+    id: str
+    text: str
+    votes: int = 0
+
+
+class PollResponse(BaseModel):
+    options: list[PollOptionResponse] = []
+    totalVotes: int = 0
+    endsAt: datetime
+    isExpired: bool = False
+    # Option picked by the requesting user, if any.
+    myOptionId: Optional[str] = None
+
+
+class VotePollRequest(BaseModel):
+    optionId: str = Field(..., min_length=1, max_length=32)
+
+
 class CreatePostRequest(BaseModel):
     content: str = Field(..., max_length=500)
     images: list[str] = Field(default_factory=list, max_length=4)  # max 4 filenames
     parentPostId: Optional[str] = None
     tags: list[str] = Field(default_factory=list)
     videos: list[VideoRef] = Field(default_factory=list, max_length=1)
+    poll: Optional[CreatePollRequest] = None
 
 
 class EditPostRequest(BaseModel):
@@ -70,6 +96,7 @@ class PostResponse(BaseModel):
     images: list[Page48Image] = []
     videos: list[Page48Video] = []
     tags: list[str] = []
+    poll: Optional[PollResponse] = None
 
     likesCount: int = 0
     repostCount: int = 0
