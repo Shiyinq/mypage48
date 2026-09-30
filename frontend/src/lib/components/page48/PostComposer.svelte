@@ -217,19 +217,12 @@
 
 	<!-- Composer Content -->
 	<div class="flex-1 min-w-0 flex flex-col pt-1.5">
-		<!-- Active Username -->
-		{#if userProfile.data}
-			<span class="font-semibold text-[15px] tracking-tight text-gray-900 dark:text-gray-100"
-				>{userProfile.data.name}</span
-			>
-		{/if}
-
 		<textarea
 			bind:this={textareaEl}
 			bind:value={content}
 			placeholder={resolvedPlaceholder}
 			maxlength={MAX_CONTENT_LENGTH}
-			class="w-full bg-transparent text-gray-900 dark:text-gray-100 text-[15px] resize-none outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 mt-1 pb-2 leading-relaxed"
+			class="w-full bg-transparent text-gray-900 dark:text-gray-100 text-[17px] sm:text-[20px] resize-none outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 pb-2 leading-relaxed"
 			rows="1"
 			oninput={(e) => autoGrow(e.target as HTMLTextAreaElement)}
 		></textarea>
