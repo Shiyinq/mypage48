@@ -7,6 +7,7 @@
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
 	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
+	import PostImageCarousel from '$lib/components/page48/PostImageCarousel.svelte';
 	import { portal } from '$lib/actions/portal';
 	import { page } from '$app/stores';
 	import { userProfile } from '$lib/stores/profile.svelte';
@@ -324,32 +325,34 @@
 			</div>
 		{/if}
 
-		<!-- Post Images (Max 4 Grid) — click opens full image lightbox -->
+		<!-- Post Images: single image inline, several as a swipeable carousel -->
 		{#if post.images && post.images.length > 0}
-			<div
-				class={`relative z-[1] mt-3 grid gap-1.5 rounded-2xl overflow-hidden border border-gray-100 dark:border-white/5 ${
-					post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
-				}`}
-			>
-				{#each post.images as image, i (image.filename)}
-					<!-- Logic for 3 images: first image takes full width of left col, other two share right col -->
+			<div class="relative z-[1] mt-3">
+				{#if post.images.length === 1}
 					<button
 						type="button"
-						class={`relative bg-gray-100 dark:bg-zinc-800 cursor-zoom-in ${post.images.length === 3 && i === 0 ? 'row-span-2' : ''} ${post.images.length === 1 ? 'aspect-auto max-h-[500px]' : 'aspect-square'}`}
-						onclick={() => openLightbox(i)}
-						aria-label={t('page48.aria.viewImage', { index: i + 1, total: post.images.length })}
+						class="relative block w-full max-h-[500px] overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 cursor-zoom-in dark:border-white/5 dark:bg-zinc-800"
+						onclick={() => openLightbox(0)}
+						aria-label={t('page48.aria.viewImage', { index: 1, total: 1 })}
 					>
 						<OptimizedImage
-							src={image.url}
-							srcMedium={image.url_medium}
-							srcSmall={image.url_small}
-							blurHash={image.blurHash}
+							src={post.images[0].url}
+							srcMedium={post.images[0].url_medium}
+							srcSmall={post.images[0].url_small}
+							blurHash={post.images[0].blurHash}
 							alt={t('page48.aria.media')}
 							class="w-full h-full object-cover"
 							objectFit="cover"
+							sizes="(max-width: 640px) 100vw, 600px"
 						/>
 					</button>
-				{/each}
+				{:else}
+					<PostImageCarousel
+						images={post.images}
+						bind:index={lightboxIndex}
+						onOpen={openLightbox}
+					/>
+				{/if}
 			</div>
 		{/if}
 

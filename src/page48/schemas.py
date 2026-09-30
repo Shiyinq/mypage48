@@ -66,7 +66,7 @@ class VotePollRequest(BaseModel):
 
 class CreatePostRequest(BaseModel):
     content: str = Field(..., max_length=500)
-    images: list[str] = Field(default_factory=list, max_length=4)  # max 4 filenames
+    images: list[str] = Field(default_factory=list, max_length=10)  # max 10 filenames
     parentPostId: Optional[str] = None
     tags: list[str] = Field(default_factory=list)
     videos: list[VideoRef] = Field(default_factory=list, max_length=1)

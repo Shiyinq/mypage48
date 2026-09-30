@@ -7,6 +7,8 @@ export type Page48Interaction = 'like' | 'repost' | 'bookmark';
 
 export type Page48Media = 'text' | 'image' | 'video';
 
+export const PAGE48_MAX_IMAGES = 10;
+export const PAGE48_IMAGE_MAX_BYTES = 3 * 1024 * 1024;
 export const PAGE48_VIDEO_MAX_BYTES = 50 * 1024 * 1024;
 export const PAGE48_VIDEO_MAX_SECONDS = 60;
 export const PAGE48_VIDEO_ALLOWED_TYPES = ['video/mp4', 'video/webm'];
@@ -37,21 +39,31 @@ export function tagUrl(tag: string, media?: Page48Media | null): string {
 	return media ? `${base}?media=${media}` : base;
 }
 
-/** Upload a list of files to storage and return their stored filenames. */
-export async function uploadPage48Images(files: File[]): Promise<string[]> {
-	const filenames: string[] = [];
-	for (const file of files) {
-		const base64 = await new Promise<string>((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onload = () => resolve(reader.result as string);
-			reader.onerror = reject;
-			reader.readAsDataURL(file);
-		});
+/** Upload a list of files to storage (limited concurrency) and return filenames. */
+export async function uploadPage48Images(files: File[], concurrency = 3): Promise<string[]> {
+	const filenames: string[] = new Array(files.length).fill('');
+	let next = 0;
 
-		const result = await storageApi.uploadImage(base64, 'page48');
-		if (result.filename) filenames.push(result.filename);
+	async function worker() {
+		while (next < files.length) {
+			const index = next++;
+			const base64 = await new Promise<string>((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onload = () => resolve(reader.result as string);
+				reader.onerror = reject;
+				reader.readAsDataURL(files[index]);
+			});
+
+			const result = await storageApi.uploadImage(base64, 'page48');
+			filenames[index] = result?.filename ?? '';
+		}
 	}
-	return filenames;
+
+	const workers = Math.max(1, Math.min(concurrency, files.length));
+	await Promise.all(Array.from({ length: workers }, worker));
+
+	// Keep the picked order, dropping anything that failed to upload.
+	return filenames.filter((filename) => filename.length > 0);
 }
 
 /**

@@ -1966,6 +1966,8 @@
 			"cancelReply": "Batalkan balasan",
 			"openX": "Buka X @{username}",
 			"imageCount": "{count} gambar",
+			"prevImage": "Gambar sebelumnya",
+			"nextImage": "Gambar berikutnya",
 			"close": "Tutup"
 		},
 		"composer": {
@@ -1974,7 +1976,7 @@
 			"submit": "Posting",
 			"reply": "Balas",
 			"addPhoto": "Tambahkan Foto",
-			"maxPhotos": "Maksimal 4 foto per postingan.",
+			"maxPhotos": "Maksimal 10 foto per postingan.",
 			"maxSize": "Ukuran foto maksimal 3MB.",
 			"previewAlt": "Pratinjau foto",
 			"addVideo": "Tambahkan Video",

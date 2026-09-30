@@ -14,7 +14,7 @@ class ErrorCode:
     POST_NOT_FOUND = "Post not found."
     POST_CREATE_ERROR = "Failed to create post."
     UNAUTHORIZED_ACTION = "You are not authorized to perform this action."
-    MAX_MEDIA_EXCEEDED = "Maximum number of media allowed per post is 4."
+    MAX_MEDIA_EXCEEDED = "Maximum number of media allowed per post is 10."
     REPLY_NOT_FOUND = "The post you are trying to reply to does not exist."
     USER_NOT_FOUND = "User not found."
     REPORT_CREATE_ERROR = "Failed to submit report."

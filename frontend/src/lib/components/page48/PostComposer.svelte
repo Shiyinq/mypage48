@@ -17,6 +17,8 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		probeVideo,
+		PAGE48_IMAGE_MAX_BYTES,
+		PAGE48_MAX_IMAGES,
 		PAGE48_VIDEO_ALLOWED_TYPES,
 		PAGE48_VIDEO_MAX_BYTES,
 		PAGE48_VIDEO_MAX_SECONDS,
@@ -95,14 +97,14 @@
 		if (!target.files) return;
 
 		const newFiles = Array.from(target.files);
-		if (images.length + newFiles.length > 4) {
+		if (images.length + newFiles.length > PAGE48_MAX_IMAGES) {
 			alert(t('page48.composer.maxPhotos'));
 			return;
 		}
 
 		for (const file of newFiles) {
 			if (!file.type.startsWith('image/')) continue;
-			if (file.size > 3 * 1024 * 1024) {
+			if (file.size > PAGE48_IMAGE_MAX_BYTES) {
 				alert(t('page48.composer.maxSize'));
 				continue;
 			}
@@ -397,7 +399,11 @@
 				<button
 					class="p-2 -ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
 					onclick={() => fileInput.click()}
-					disabled={images.length >= 4 || !!video || probing || isSubmitting || pollOpen}
+					disabled={images.length >= PAGE48_MAX_IMAGES ||
+						!!video ||
+						probing ||
+						isSubmitting ||
+						pollOpen}
 					title={t('page48.composer.addPhoto')}
 				>
 					<ImageIcon size={20} class="group-hover:scale-110 transition-transform" />

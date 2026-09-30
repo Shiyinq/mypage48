@@ -1962,6 +1962,8 @@
 			"cancelReply": "Cancel reply",
 			"openX": "Open X @{username}",
 			"imageCount": "{count} images",
+			"prevImage": "Previous image",
+			"nextImage": "Next image",
 			"close": "Close"
 		},
 		"composer": {
@@ -1970,7 +1972,7 @@
 			"submit": "Post",
 			"reply": "Reply",
 			"addPhoto": "Add Photo",
-			"maxPhotos": "Maximum 4 photos per post.",
+			"maxPhotos": "Maximum 10 photos per post.",
 			"maxSize": "Maximum photo size is 3MB.",
 			"previewAlt": "Upload preview",
 			"addVideo": "Add Video",

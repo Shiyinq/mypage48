@@ -1960,6 +1960,8 @@
 			"cancelReply": "返信をキャンセル",
 			"openX": "X @{username} を開く",
 			"imageCount": "画像 {count} 枚",
+			"prevImage": "前の画像",
+			"nextImage": "次の画像",
 			"close": "閉じる"
 		},
 		"composer": {
@@ -1968,7 +1970,7 @@
 			"submit": "投稿",
 			"reply": "返信",
 			"addPhoto": "写真を追加",
-			"maxPhotos": "1投稿につき最大4枚まで。",
+			"maxPhotos": "1投稿につき最大10枚まで。",
 			"maxSize": "写真は最大3MBまで。",
 			"previewAlt": "アップロードのプレビュー",
 			"addVideo": "動画を追加",
