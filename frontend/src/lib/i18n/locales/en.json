@@ -1997,6 +1997,14 @@
 			"ended": "Poll ended",
 			"votes": "{count} votes"
 		},
+		"thread": {
+			"addPost": "Add another post",
+			"removePost": "Remove this post",
+			"publish": "Post all",
+			"show": "Show this thread ({count} posts)",
+			"sent": "Thread posted ({count} posts)",
+			"error": "Failed to post thread"
+		},
 		"emoji": {
 			"search": "Search emoji",
 			"empty": "No emoji found",

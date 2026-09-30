@@ -1,7 +1,7 @@
 import re
 import uuid
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pymongo.errors import DuplicateKeyError
 
@@ -27,6 +27,8 @@ from src.page48.exceptions import (
     PostNotFoundError,
     ReportAlreadyExistsError,
     ReportCreationError,
+    ThreadTooLongError,
+    ThreadTooShortError,
     UnauthorizedActionError,
     UserProfileNotFoundError,
     VideoTooLargeError,
@@ -40,6 +42,8 @@ from src.page48.schemas import (
     AdminReportPaginationMeta,
     AdminReportPaginationResponse,
     CreatePostRequest,
+    CreateThreadRequest,
+    CreateThreadResponse,
     EditPostRequest,
     Page48Image,
     Page48UserProfileResponse,
@@ -51,6 +55,7 @@ from src.page48.schemas import (
     PostResponse,
     ReportCreate,
     ReportResponse,
+    ThreadPostItem,
     ThreadResponse,
     ToggleResponse,
     TrendingTag,
@@ -69,6 +74,8 @@ POLL_DURATION_HOURS = 24
 MIN_POLL_OPTIONS = 2
 MAX_POLL_OPTIONS = 6
 MAX_POLL_OPTION_LENGTH = 50
+MIN_THREAD_POSTS = 2
+MAX_THREAD_POSTS = 25
 ALLOWED_VIDEO_TYPES = {
     "video/mp4": "mp4",
     "video/webm": "webm",
@@ -140,6 +147,7 @@ class Page48Service:
         avatar_cache: dict = None,
         user_map: Optional[dict] = None,
         poll_counts: Optional[dict] = None,
+        thread_count: int = 0,
     ) -> PostResponse:
         """Helper to format a raw db dict into PostResponse."""
         if not user_interactions:
@@ -218,6 +226,7 @@ class Page48Service:
             isLiked=interactions.get("isLiked", False),
             isReposted=interactions.get("isReposted", False),
             isBookmarked=interactions.get("isBookmarked", False),
+            threadCount=thread_count,
             poll=(
                 self._build_poll_response(
                     post["poll"], poll_counts, interactions.get("pollOptionId")
@@ -243,6 +252,8 @@ class Page48Service:
         poll_post_ids = [p["postId"] for p in posts if p.get("poll")]
         poll_counts = await self.repository.count_poll_votes(poll_post_ids)
 
+        thread_counts = await self._count_self_threads(posts)
+
         author_ids = list({p["userId"] for p in posts if p.get("userId")})
         users = await self.user_repository.get_users_by_ids(author_ids)
         user_map = {u["userId"]: u for u in users}
@@ -257,10 +268,50 @@ class Page48Service:
                     avatar_cache,
                     user_map,
                     poll_counts.get(p["postId"]),
+                    thread_counts.get(p["postId"], 0),
                 )
             )
 
         return enriched
+
+    async def _count_self_threads(self, posts: List[dict]) -> dict:
+        """Thread size starting at each post, the post itself included.
+
+        A thread is a linear chain of posts by one author, so one extra query per
+        page is enough; the chain is then walked in memory. Posts that nothing
+        continues are left out of the result (they are not a thread).
+        """
+        root_ids = [p["postId"] for p in posts if not p.get("parentPostId")]
+        if not root_ids:
+            return {}
+
+        descendants = await self.repository.get_posts_by_root_ids(root_ids)
+        children: dict = {}
+        for post in descendants:
+            children.setdefault(post.get("parentPostId"), []).append(post)
+
+        counts = {}
+        for start in posts:
+            count = 1
+            current = start
+            # Bounded so a broken chain can never loop forever.
+            for _ in range(MAX_THREAD_POSTS):
+                continuations = [
+                    child
+                    for child in children.get(current["postId"], [])
+                    if child.get("userId") == start.get("userId")
+                ]
+                if not continuations:
+                    break
+
+                continuations.sort(key=lambda child: child.get("createdAt"))
+                current = continuations[0]
+                count += 1
+
+            if count > 1:
+                counts[start["postId"]] = count
+
+        return counts
 
     # Polls
     @staticmethod
@@ -455,101 +506,116 @@ class Page48Service:
             logger.exception(f"Error uploading video: {str(e)}")
             raise VideoUploadError()
 
-    async def create_post(
-        self, data: CreatePostRequest, user: UserCurrent
-    ) -> PostResponse:
-        try:
-            post_id = str(uuid.uuid4())
-            now = datetime.now()
+    async def _build_post_document(
+        self,
+        data: Union[CreatePostRequest, ThreadPostItem],
+        user: UserCurrent,
+        parent_post_id: Optional[str] = None,
+        now: Optional[datetime] = None,
+        post_id: Optional[str] = None,
+    ) -> dict:
+        """Validate one draft and build its post document (no insert).
 
-            root_post_id = None
-            depth = 0
+        Shared by `create_post` and `create_thread` so both paths enforce exactly
+        the same rules. `parent_post_id` is passed in rather than read from the
+        draft, because a thread chains onto posts created in the same request.
+        """
+        post_id = post_id or str(uuid.uuid4())
+        now = now or datetime.now()
 
-            if data.parentPostId:
-                parent = await self.repository.get_post_by_id(data.parentPostId)
-                if not parent:
-                    raise PostNotFoundError()
+        root_post_id = None
+        depth = 0
 
-                root_post_id = parent.get("rootPostId") or data.parentPostId
-                depth = parent.get("depth", 0) + 1
+        if parent_post_id:
+            parent = await self.repository.get_post_by_id(parent_post_id)
+            if not parent:
+                raise PostNotFoundError()
 
-                # Update reply count of parent
-                await self.repository.increment_post_stats(
-                    data.parentPostId, "replyCount", 1
-                )
+            root_post_id = parent.get("rootPostId") or parent_post_id
+            depth = parent.get("depth", 0) + 1
 
-            # Dimensions come from the client so the feed can reserve the right
-            # box for each photo without cropping it.
-            images_data = [
+            # Update reply count of parent
+            await self.repository.increment_post_stats(parent_post_id, "replyCount", 1)
+
+        # Dimensions come from the client so the feed can reserve the right
+        # box for each photo without cropping it.
+        images_data = [
+            {
+                "filename": ref.filename,
+                "width": ref.width or 0,
+                "height": ref.height or 0,
+            }
+            for ref in data.images
+        ]
+        video_refs = data.videos or []
+
+        # A post is either images or a single video, never both.
+        if images_data and video_refs:
+            raise MediaConflictError()
+        if len(video_refs) > 1:
+            raise MaxVideoExceededError()
+
+        videos_data = []
+        for ref in video_refs:
+            # The object must live under the uploader's own prefix.
+            if not ref.filename.startswith(f"page48/{user.userId}/"):
+                raise InvalidVideoError()
+            if not await self.storage_service.repository.file_exists(ref.filename):
+                raise InvalidVideoError()
+            videos_data.append(
                 {
                     "filename": ref.filename,
                     "width": ref.width or 0,
                     "height": ref.height or 0,
+                    "duration": ref.duration or 0.0,
                 }
-                for ref in data.images
-            ]
-            video_refs = data.videos or []
+            )
 
-            # A post is either images or a single video, never both.
-            if images_data and video_refs:
-                raise MediaConflictError()
-            if len(video_refs) > 1:
-                raise MaxVideoExceededError()
+        tags = self._extract_tags(data.content, data.tags)
 
-            videos_data = []
-            for ref in video_refs:
-                # The object must live under the uploader's own prefix.
-                if not ref.filename.startswith(f"page48/{user.userId}/"):
-                    raise InvalidVideoError()
-                if not await self.storage_service.repository.file_exists(ref.filename):
-                    raise InvalidVideoError()
-                videos_data.append(
-                    {
-                        "filename": ref.filename,
-                        "width": ref.width or 0,
-                        "height": ref.height or 0,
-                        "duration": ref.duration or 0.0,
-                    }
-                )
-
-            tags = self._extract_tags(data.content, data.tags)
-
-            poll_data = None
-            if data.poll is not None:
-                if images_data or videos_data:
-                    raise PollMediaConflictError()
-                if data.parentPostId:
-                    raise PollReplyNotAllowedError()
-                poll_data = {
-                    "endsAt": now + timedelta(hours=POLL_DURATION_HOURS),
-                    "options": self._build_poll_options(data.poll.options),
-                }
-
-            post_data = {
-                "postId": post_id,
-                "rootPostId": root_post_id,
-                "parentPostId": data.parentPostId,
-                "depth": depth,
-                "replyCount": 0,
-                "userId": user.userId,
-                "username": user.username,
-                "userDisplayName": user.name,
-                "userProfilePicture": user.profilePicture,
-                "userProfilePicture_small": user.profilePicture_small,
-                "userBlurHash": user.blurHash,
-                "content": data.content,
-                "images": images_data,
-                "videos": videos_data,
-                "poll": poll_data,
-                "tags": tags,
-                "likesCount": 0,
-                "repostCount": 0,
-                "bookmarksCount": 0,
-                "isEdited": False,
-                "createdAt": now,
-                "updatedAt": now,
+        poll_data = None
+        if data.poll is not None:
+            if images_data or videos_data:
+                raise PollMediaConflictError()
+            if parent_post_id:
+                raise PollReplyNotAllowedError()
+            poll_data = {
+                "endsAt": now + timedelta(hours=POLL_DURATION_HOURS),
+                "options": self._build_poll_options(data.poll.options),
             }
 
+        return {
+            "postId": post_id,
+            "rootPostId": root_post_id,
+            "parentPostId": parent_post_id,
+            "depth": depth,
+            "replyCount": 0,
+            "userId": user.userId,
+            "username": user.username,
+            "userDisplayName": user.name,
+            "userProfilePicture": user.profilePicture,
+            "userProfilePicture_small": user.profilePicture_small,
+            "userBlurHash": user.blurHash,
+            "content": data.content,
+            "images": images_data,
+            "videos": videos_data,
+            "poll": poll_data,
+            "tags": tags,
+            "likesCount": 0,
+            "repostCount": 0,
+            "bookmarksCount": 0,
+            "isEdited": False,
+            "createdAt": now,
+            "updatedAt": now,
+        }
+
+    async def create_post(
+        self, data: CreatePostRequest, user: UserCurrent
+    ) -> PostResponse:
+        try:
+            post_data = await self._build_post_document(
+                data, user, parent_post_id=data.parentPostId
+            )
             await self.repository.insert_post(post_data)
 
             # Enrich and return
@@ -567,6 +633,49 @@ class Page48Service:
             raise
         except Exception as e:
             logger.exception(f"Error creating post: {str(e)}")
+            raise PostCreationError()
+
+    async def create_thread(
+        self, data: CreateThreadRequest, user: UserCurrent
+    ) -> CreateThreadResponse:
+        """Publish a chain of posts, each one replying to the previous."""
+        try:
+            count = len(data.posts)
+            if count < MIN_THREAD_POSTS:
+                raise ThreadTooShortError()
+            if count > MAX_THREAD_POSTS:
+                raise ThreadTooLongError()
+
+            now = datetime.now()
+            documents: List[dict] = []
+            parent_post_id: Optional[str] = None
+
+            for item in data.posts:
+                post_data = await self._build_post_document(
+                    item, user, parent_post_id=parent_post_id, now=now
+                )
+                # Insert as we go, so the next post can chain onto this one.
+                await self.repository.insert_post(post_data)
+                documents.append(post_data)
+                parent_post_id = post_data["postId"]
+
+            posts = await self._enrich_posts(documents, user.userId)
+            return CreateThreadResponse(rootPostId=documents[0]["postId"], posts=posts)
+
+        except (
+            ThreadTooShortError,
+            ThreadTooLongError,
+            PostNotFoundError,
+            MediaConflictError,
+            MaxVideoExceededError,
+            InvalidVideoError,
+            InvalidPollOptionsError,
+            PollMediaConflictError,
+            PollReplyNotAllowedError,
+        ):
+            raise
+        except Exception as e:
+            logger.exception(f"Error creating thread: {str(e)}")
             raise PostCreationError()
 
     async def get_feed(

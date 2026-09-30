@@ -98,3 +98,11 @@ class PollMediaConflict(BadRequest):
 
 class PollReplyNotAllowed(BadRequest):
     DETAIL = ErrorCode.POLL_REPLY_NOT_ALLOWED
+
+
+class ThreadTooShort(BadRequest):
+    DETAIL = ErrorCode.THREAD_TOO_SHORT
+
+
+class ThreadTooLong(BadRequest):
+    DETAIL = ErrorCode.THREAD_TOO_LONG

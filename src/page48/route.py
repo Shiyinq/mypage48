@@ -14,6 +14,8 @@ from src.page48.schemas import (
     ActiveUsersResponse,
     AdminReportPaginationResponse,
     CreatePostRequest,
+    CreateThreadRequest,
+    CreateThreadResponse,
     EditPostRequest,
     Page48UserProfileResponse,
     PollResponse,
@@ -168,6 +170,16 @@ async def create_post(
     service: Page48Service = Depends(get_page48_service),
 ):
     return await service.create_post(request, current_user)
+
+
+@router.post("/posts/thread", response_model=CreateThreadResponse, status_code=201)
+async def create_thread(
+    request: CreateThreadRequest,
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.create_thread(request, current_user)
 
 
 @router.post("/videos", response_model=VideoUploadResponse, status_code=201)

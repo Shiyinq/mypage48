@@ -84,3 +84,15 @@ class PollMediaConflictError(DomainException):
 
 class PollReplyNotAllowedError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.POLL_REPLY_NOT_ALLOWED
+
+
+class ThreadCreationError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.THREAD_CREATION_FAILED
+
+
+class ThreadTooShortError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.THREAD_TOO_SHORT
+
+
+class ThreadTooLongError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.THREAD_TOO_LONG

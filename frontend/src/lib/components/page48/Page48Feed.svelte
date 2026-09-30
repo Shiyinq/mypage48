@@ -14,6 +14,7 @@
 		togglePostInteraction,
 		uploadPage48Images,
 		uploadPage48Video,
+		type PostDraftInput,
 		type VideoDraft
 	} from '$lib/utils/page48';
 
@@ -121,6 +122,34 @@
 		posts = posts.filter((p) => p.postId !== postId);
 	}
 
+	/** Upload one composed draft and return the payload the API expects. */
+	async function buildThreadItem(draft: PostDraftInput) {
+		const images = draft.images.length > 0 ? await uploadPage48Images(draft.images) : [];
+		const videos = draft.video ? [await uploadPage48Video(draft.video)] : [];
+		return { content: draft.content, images, videos, poll: draft.poll };
+	}
+
+	async function handleCreateThread(drafts: PostDraftInput[]) {
+		try {
+			const items = [];
+			for (const draft of drafts) {
+				items.push(await buildThreadItem(draft));
+			}
+
+			const thread = await page48Api.createThread(items);
+			if (thread?.posts?.length) {
+				// Only the first post belongs in the feed; the rest live in the thread.
+				posts = [thread.posts[0], ...posts];
+				showToast(t('page48.thread.sent', { count: thread.posts.length }), 'success');
+			}
+		} catch (err: unknown) {
+			console.error(err);
+			const e = err as { message?: string; detail?: string };
+			showToast(e?.detail || e?.message || t('page48.thread.error'), 'error');
+			throw err; // Rethrow so Composer stops loading state
+		}
+	}
+
 	async function handleCreatePost(
 		content: string,
 		files: File[],
@@ -150,7 +179,7 @@
 	class="relative max-w-[620px] mx-auto w-full min-h-screen bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl sm:border-x border-gray-200/60 dark:border-white/10 pb-24 shadow-sm shadow-black/5 dark:shadow-none transition-all"
 >
 	{#if showComposer && isAuthenticated.value}
-		<PostComposer onPost={handleCreatePost} />
+		<PostComposer onPost={handleCreatePost} onPostThread={handleCreateThread} />
 	{/if}
 
 	{#if loading}

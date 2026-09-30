@@ -29,6 +29,12 @@
 	interface Props {
 		post: Page48Post;
 		isThreadLine?: boolean; // Whether to show the vertical thread line to the next post
+		/** A continuation of the post above (same author): no header, flush top. */
+		isContinuation?: boolean;
+		/** Position inside a chain, rendered as a subtle "2/4" marker. */
+		threadPosition?: { index: number; total: number };
+		/** Hide the "Show this thread" link (e.g. on the detail page, where it is already shown). */
+		showThreadLink?: boolean;
 		onLike?: (postId: string) => void;
 		onRepost?: (postId: string) => void;
 		onBookmark?: (postId: string) => void;
@@ -41,6 +47,9 @@
 	let {
 		post,
 		isThreadLine = false,
+		isContinuation = false,
+		threadPosition = undefined,
+		showThreadLink = true,
 		onLike,
 		onRepost,
 		onBookmark,
@@ -203,7 +212,7 @@
 </script>
 
 <article
-	class="relative isolate flex w-full gap-4 pt-5 pb-3 px-5 sm:px-6 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors group cursor-pointer"
+	class={`relative isolate flex w-full gap-4 ${isContinuation ? 'pt-0' : 'pt-5'} pb-3 px-5 sm:px-6 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors group cursor-pointer`}
 >
 	<!-- Full-card click target: opens the post detail. Interactive children sit above it. -->
 	<a href={detailHref} class="absolute inset-0 z-0" aria-label={t('page48.aria.openPost')}></a>
@@ -226,9 +235,9 @@
 			/>
 		</a>
 
-		<!-- Thread Line (if connected to next post) -->
+		<!-- Thread Line (runs into the card edge so the segments meet) -->
 		{#if isThreadLine}
-			<div class="w-0.5 grow bg-gray-200/70 dark:bg-zinc-800/70 my-2 min-h-[24px]"></div>
+			<div class="w-0.5 grow bg-gray-200/70 dark:bg-zinc-800/70 mt-2 -mb-3 min-h-[24px]"></div>
 		{/if}
 	</div>
 
@@ -276,13 +285,25 @@
 			</p>
 		{/if}
 
+		<!-- Thread position: kept below the last line of the text, like Threads.
+		     The chip is decoration, so it must not swallow clicks meant for the card. -->
+		{#if threadPosition}
+			<div class="pointer-events-none relative z-[1] mt-1.5 flex">
+				<span
+					class="rounded-md border border-gray-200 px-1.5 py-0.5 text-[12px] font-medium tabular-nums text-gray-500 dark:border-zinc-700 dark:text-gray-400"
+				>
+					{threadPosition.index + 1}/{threadPosition.total}
+				</span>
+			</div>
+		{/if}
+
 		<!-- Extra tags (only those not already shown inline) -->
 		{#if extraTags.length > 0}
-			<div class="relative z-[1] flex flex-wrap gap-x-2.5 gap-y-1 mt-1.5">
+			<div class="pointer-events-none relative z-[1] flex flex-wrap gap-x-2.5 gap-y-1 mt-1.5">
 				{#each extraTags as tag (tag)}
 					<a
 						href={tagUrl(tag, activeMedia)}
-						class="text-[14px] font-medium text-red-500 hover:underline cursor-pointer"
+						class="pointer-events-auto text-[14px] font-medium text-red-500 hover:underline cursor-pointer"
 					>
 						#{tag}
 					</a>
@@ -338,16 +359,18 @@
 			</div>
 		{/if}
 
-		<!-- Post Images: single image inline, several as a swipeable carousel -->
+		<!-- Post Images: single image inline, several as a swipeable carousel.
+		     The wrapper is decoration so the empty margins beside a centered photo
+		     still open the card; the media itself opts back in. -->
 		{#if post.images && post.images.length > 0}
-			<div class="relative z-[1] mt-3">
+			<div class="pointer-events-none relative z-[1] mt-3">
 				{#if post.images.length === 1}
 					{@const image = post.images[0]}
 					<!-- Same trick as VideoPlayer: keep the photo's own ratio and cap the box by
 					     width, so the photo fills it exactly (no crop, no letterbox bars). -->
 					<button
 						type="button"
-						class="relative mx-auto block w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 cursor-zoom-in dark:border-white/5 dark:bg-zinc-800"
+						class="pointer-events-auto relative mx-auto block w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 cursor-zoom-in dark:border-white/5 dark:bg-zinc-800"
 						style={`aspect-ratio: ${singleImageRatio}; max-width: min(100%, ${Math.round(
 							IMAGE_MAX_HEIGHT * singleImageRatio
 						)}px);`}
@@ -366,35 +389,49 @@
 						/>
 					</button>
 				{:else}
-					<PostImageCarousel
-						images={post.images}
-						bind:index={lightboxIndex}
-						onOpen={openLightbox}
-					/>
+					<div class="pointer-events-auto">
+						<PostImageCarousel
+							images={post.images}
+							bind:index={lightboxIndex}
+							onOpen={openLightbox}
+						/>
+					</div>
 				{/if}
 			</div>
 		{/if}
 
 		<!-- Post Video (single, X/Twitter style: click to play) -->
 		{#if post.videos && post.videos.length > 0 && post.videos[0].url}
-			<div class="relative z-[1] mt-3">
+			<div class="pointer-events-none relative z-[1] mt-3">
 				<VideoPlayer
 					src={post.videos[0].url}
 					width={post.videos[0].width}
 					height={post.videos[0].height}
 					maxHeight={510}
 					controls
+					class="pointer-events-auto"
 				/>
 			</div>
 		{/if}
 
-		<!-- Action Bar -->
+		<!-- Thread continuation: opens the detail page where the chain is shown -->
+		{#if showThreadLink && post.threadCount > 0}
+			<a
+				href={detailHref}
+				class="relative z-[1] mt-2 inline-block text-[13px] font-semibold text-red-500 hover:underline cursor-pointer"
+			>
+				{t('page48.thread.show', { count: post.threadCount })}
+			</a>
+		{/if}
+
+		<!-- Action Bar: the row itself is decoration, so clicks fall through to the card;
+		     each button opts back in with pointer-events-auto. -->
 		<div
-			class="relative z-[1] flex items-center gap-1 -ml-2.5 mt-2.5 w-full justify-between sm:justify-start sm:gap-6 text-gray-500 dark:text-gray-400"
+			class="pointer-events-none relative z-[1] flex items-center gap-1 -ml-2.5 mt-2.5 w-full justify-between sm:justify-start sm:gap-6 text-gray-500 dark:text-gray-400"
 		>
 			<!-- Like -->
 			<button
-				class={`flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-500 transition-all group/btn`}
+				class={`pointer-events-auto flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-500 transition-all group/btn`}
 				aria-label={t('page48.aria.like')}
 				aria-disabled={!canInteract}
 				onclick={() => interact(() => onLike?.(post.postId))}
@@ -412,7 +449,7 @@
 
 			<!-- Comment -->
 			<button
-				class={`flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-gray-100 dark:hover:bg-zinc-800/80 hover:text-gray-900 dark:hover:text-gray-200 transition-all group/btn`}
+				class={`pointer-events-auto flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-gray-100 dark:hover:bg-zinc-800/80 hover:text-gray-900 dark:hover:text-gray-200 transition-all group/btn`}
 				aria-label={t('page48.aria.comment')}
 				aria-disabled={!canInteract}
 				onclick={() => interact(() => onComment?.(post))}
@@ -425,7 +462,7 @@
 
 			<!-- Repost -->
 			<button
-				class={`flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-green-50 dark:hover:bg-green-950/40 hover:text-green-500 transition-all group/btn`}
+				class={`pointer-events-auto flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-green-50 dark:hover:bg-green-950/40 hover:text-green-500 transition-all group/btn`}
 				aria-label={t('page48.aria.repost')}
 				aria-disabled={!canInteract}
 				onclick={() => interact(() => onRepost?.(post.postId))}
@@ -444,7 +481,7 @@
 			<div class="flex items-center ml-auto sm:ml-0 gap-1 sm:gap-2">
 				<!-- Bookmark -->
 				<button
-					class={`flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-500 transition-all group/btn`}
+					class={`pointer-events-auto flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-500 transition-all group/btn`}
 					aria-label={t('page48.aria.bookmark')}
 					aria-disabled={!canInteract}
 					onclick={() => interact(() => onBookmark?.(post.postId))}
@@ -459,7 +496,7 @@
 
 				<!-- Share -->
 				<button
-					class={`flex items-center p-2 rounded-full ${actionCursor} hover:bg-gray-100 dark:hover:bg-zinc-800/80 hover:text-gray-900 dark:hover:text-gray-200 transition-all group/btn`}
+					class={`pointer-events-auto flex items-center p-2 rounded-full ${actionCursor} hover:bg-gray-100 dark:hover:bg-zinc-800/80 hover:text-gray-900 dark:hover:text-gray-200 transition-all group/btn`}
 					aria-label={t('page48.aria.share')}
 					aria-disabled={!canInteract}
 					onclick={() => interact(() => onShare?.(post))}

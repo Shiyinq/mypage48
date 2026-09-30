@@ -1995,6 +1995,14 @@
 			"ended": "投票は終了しました",
 			"votes": "{count} 票"
 		},
+		"thread": {
+			"addPost": "投稿を追加",
+			"removePost": "この投稿を削除",
+			"publish": "すべて投稿",
+			"show": "スレッドを表示（{count}件）",
+			"sent": "スレッドを投稿しました（{count}件）",
+			"error": "スレッドを投稿できませんでした"
+		},
 		"emoji": {
 			"search": "絵文字を検索",
 			"empty": "絵文字が見つかりません",

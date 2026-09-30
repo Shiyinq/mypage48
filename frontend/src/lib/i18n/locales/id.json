@@ -2001,6 +2001,14 @@
 			"ended": "Polling berakhir",
 			"votes": "{count} suara"
 		},
+		"thread": {
+			"addPost": "Tambah postingan lain",
+			"removePost": "Hapus postingan ini",
+			"publish": "Posting semua",
+			"show": "Tampilkan thread ini ({count} postingan)",
+			"sent": "Thread terkirim ({count} postingan)",
+			"error": "Gagal mengirim thread"
+		},
 		"emoji": {
 			"search": "Cari emoji",
 			"empty": "Emoji tidak ditemukan",

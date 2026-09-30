@@ -20,6 +20,14 @@ export interface VideoDraft {
 	duration: number;
 }
 
+/** One post being composed; the composer hands these to the page for publishing. */
+export interface PostDraftInput {
+	content: string;
+	images: File[];
+	video: VideoDraft | null;
+	poll: { options: string[] } | null;
+}
+
 /** Aspect ratio (width / height) of an image; falls back to 16:9 when unknown. */
 export function imageRatio(image: Page48Image): number {
 	return image.width && image.height ? image.width / image.height : 16 / 9;

@@ -23,7 +23,17 @@ class Page48Repository:
     async def get_posts_by_ids(self, post_ids: List[str]) -> List[dict]:
         if not post_ids:
             return []
+
         return await self.posts.find({"postId": {"$in": post_ids}}).to_list(length=None)
+
+    async def get_posts_by_root_ids(self, root_ids: List[str]) -> List[dict]:
+        """Every post that belongs to the given threads (roots excluded)."""
+        if not root_ids:
+            return []
+
+        return await self.posts.find(
+            {"rootPostId": {"$in": root_ids}, "parentPostId": {"$ne": None}}
+        ).to_list(length=None)
 
     async def update_post(self, post_id: str, update_data: dict):
         return await self.posts.update_one({"postId": post_id}, {"$set": update_data})
@@ -114,7 +124,12 @@ class Page48Repository:
         cursor: Optional[dict] = None,
         media: Optional[str] = None,
     ) -> List[dict]:
-        conditions: List[dict] = [{"username": username, "parentPostId": None}]
+        conditions: List[dict] = [{"username": username}]
+
+        # The Photos/Videos tabs collect every image or video the user attached,
+        # replies included; the plain post list stays top-level posts only.
+        if media not in ("image", "video"):
+            conditions.append({"parentPostId": None})
 
         media_filter = self._media_query(media)
         if media_filter:

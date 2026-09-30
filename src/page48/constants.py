@@ -8,6 +8,7 @@ class Info:
     REPORT_CREATED = "Report submitted successfully."
     VIDEO_UPLOADED = "Video uploaded successfully."
     POLL_VOTED = "Vote submitted successfully."
+    THREAD_CREATED = "Thread created successfully."
 
 
 class ErrorCode:
@@ -34,6 +35,8 @@ class ErrorCode:
     INVALID_POLL_OPTIONS = "A poll requires 2 to 6 options of up to 50 characters each."
     POLL_MEDIA_CONFLICT = "A poll cannot be combined with images or a video."
     POLL_REPLY_NOT_ALLOWED = "Polls are only supported on top-level posts."
+    THREAD_TOO_SHORT = "A thread needs at least 2 posts."
+    THREAD_TOO_LONG = "A thread can have at most 25 posts."
 
 
 class DomainErrorCode:
@@ -58,3 +61,6 @@ class DomainErrorCode:
     INVALID_POLL_OPTIONS = "A poll requires 2 to 6 options of up to 50 characters each."
     POLL_MEDIA_CONFLICT = "A poll cannot be combined with images or a video."
     POLL_REPLY_NOT_ALLOWED = "Polls are only supported on top-level posts."
+    THREAD_CREATION_FAILED = "Failed to create thread."
+    THREAD_TOO_SHORT = "A thread needs at least 2 posts."
+    THREAD_TOO_LONG = "A thread can have at most 25 posts."

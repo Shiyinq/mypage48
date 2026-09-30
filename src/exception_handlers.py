@@ -145,6 +145,8 @@ from src.page48.exceptions import (
     PostNotFoundError,
     ReportAlreadyExistsError,
     ReportCreationError,
+    ThreadTooLongError,
+    ThreadTooShortError,
     UnauthorizedActionError,
     UserProfileNotFoundError,
     VideoTooLargeError,
@@ -168,6 +170,8 @@ from src.page48.http_exceptions import (
     PostNotFound,
     ReportAlreadyExists,
     ReportCreateError,
+    ThreadTooLong,
+    ThreadTooShort,
     UnauthorizedAction,
     UserProfileNotFound,
     VideoTooLarge,
@@ -556,6 +560,10 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, PollMediaConflict())
     if isinstance(exc, PollReplyNotAllowedError):
         return await detailed_http_exception_handler(request, PollReplyNotAllowed())
+    if isinstance(exc, ThreadTooShortError):
+        return await detailed_http_exception_handler(request, ThreadTooShort())
+    if isinstance(exc, ThreadTooLongError):
+        return await detailed_http_exception_handler(request, ThreadTooLong())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

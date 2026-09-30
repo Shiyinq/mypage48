@@ -25,6 +25,7 @@
 		POLL_MAX_OPTION_LENGTH,
 		POLL_MAX_OPTIONS,
 		POLL_MIN_OPTIONS,
+		type PostDraftInput,
 		type VideoDraft
 	} from '$lib/utils/page48';
 
@@ -37,11 +38,13 @@
 			video: VideoDraft | null,
 			poll: { options: string[] } | null
 		) => Promise<void>;
+		/** Only provided where threads make sense (the feed, not the reply composer). */
+		onPostThread?: (drafts: PostDraftInput[]) => Promise<void>;
 		isReply?: boolean;
 		placeholder?: string;
 	}
 
-	let { onPost, isReply = false, placeholder }: Props = $props();
+	let { onPost, onPostThread, isReply = false, placeholder }: Props = $props();
 
 	let resolvedPlaceholder = $derived(placeholder ?? t('page48.composer.placeholder'));
 
@@ -57,11 +60,15 @@
 	let isSubmitting = $state(false);
 	let emojiOpen = $state(false);
 	let pollOpen = $state(false);
+	/** Reply mode hides the tool row until the user engages the composer. */
+	let composerActive = $state(false);
 	let pollOptions = $state<string[]>(['', '']);
+	/** Posts already queued for the thread (the active draft is the one below). */
+	let threadItems = $state<PostDraftInput[]>([]);
 	let textareaEl = $state<HTMLTextAreaElement>();
 	let emojiButton = $state<HTMLButtonElement>();
-	let fileInput: HTMLInputElement;
-	let videoInput: HTMLInputElement;
+	let fileInput = $state<HTMLInputElement>();
+	let videoInput = $state<HTMLInputElement>();
 
 	function autoGrow(el: HTMLTextAreaElement) {
 		el.style.height = 'auto';
@@ -178,6 +185,60 @@
 		video = null;
 	}
 
+	/** The post currently being edited, in the shape the API expects. */
+	function currentDraft(): PostDraftInput {
+		return {
+			content,
+			images: [...images],
+			video,
+			poll: pollOpen ? { options: pollDraft } : null
+		};
+	}
+
+	function draftHasContent(draft: PostDraftInput): boolean {
+		return (
+			draft.content.trim().length > 0 ||
+			draft.images.length > 0 ||
+			!!draft.video ||
+			(!!draft.poll && draft.poll.options.length >= POLL_MIN_OPTIONS)
+		);
+	}
+
+	function resetDraft() {
+		content = '';
+		images = [];
+		imagePreviews.forEach(URL.revokeObjectURL);
+		imagePreviews = [];
+		clearVideo();
+		closePoll();
+		emojiOpen = false;
+		void tick().then(() => {
+			if (textareaEl) textareaEl.style.height = 'auto';
+		});
+	}
+
+	/** Park the current draft as a thread post and start a fresh one. */
+	function addToThread() {
+		const draft = currentDraft();
+		if (!draftHasContent(draft)) return;
+
+		threadItems = [...threadItems, draft];
+		resetDraft();
+	}
+
+	function removeThreadItem(index: number) {
+		threadItems = threadItems.filter((_, i) => i !== index);
+	}
+
+	function draftSummary(draft: PostDraftInput): string {
+		const parts: string[] = [];
+		if (draft.images.length > 0)
+			parts.push(t('page48.aria.imageCount', { count: draft.images.length }));
+		if (draft.video) parts.push(t('page48.composer.addVideo'));
+		if (draft.poll) parts.push(t('page48.poll.create'));
+		return parts.join(' · ');
+	}
+
 	// Poll editor (a poll can't be combined with images or a video)
 	function dropMedia() {
 		imagePreviews.forEach(URL.revokeObjectURL);
@@ -219,27 +280,43 @@
 	let pollReady = $derived(!pollOpen || pollDraft.length >= POLL_MIN_OPTIONS);
 
 	async function handleSubmit() {
-		if ((!content.trim() && images.length === 0 && !video) || !pollReady) return;
-		if (isSubmitting) return;
+		if (!pollReady || isSubmitting) return;
+
+		const drafts = [...threadItems];
+		const active = currentDraft();
+		if (draftHasContent(active)) drafts.push(active);
+		if (drafts.length === 0) return;
+
+		// Extra drafts only exist when a thread handler was provided.
+		const publishAsThread = drafts.length > 1 && !!onPostThread;
 
 		try {
 			isSubmitting = true;
-			await onPost(content, images, video, pollOpen ? { options: pollDraft } : null);
-			content = '';
-			images = [];
-			imagePreviews.forEach(URL.revokeObjectURL);
-			imagePreviews = [];
-			clearVideo();
-			closePoll();
-			emojiOpen = false;
-			await tick();
-			if (textareaEl) textareaEl.style.height = 'auto';
+			if (publishAsThread) {
+				await onPostThread?.(drafts);
+			} else {
+				const [only] = drafts;
+				await onPost(only.content, only.images, only.video, only.poll);
+			}
+			threadItems = [];
+			resetDraft();
 		} catch (error) {
 			console.error(error);
 		} finally {
 			isSubmitting = false;
 		}
 	}
+
+	let canSubmit = $derived(
+		(draftHasContent(currentDraft()) || threadItems.length > 0) && pollReady
+	);
+	let isThread = $derived(threadItems.length > 0);
+
+	// The reply composer starts as just a text box + a disabled post button; the tool row
+	// shows up once it is clicked (or as soon as there is something to attach it to).
+	let showToolRow = $derived(
+		!isReply || composerActive || isThread || draftHasContent(currentDraft())
+	);
 
 	let userAvatar = $derived(
 		userProfile.data?.profilePicture_small ||
@@ -248,6 +325,24 @@
 				: null)
 	);
 </script>
+
+<!-- Submit button: sits beside the input until the tool row appears, then moves into it -->
+{#snippet submitButton()}
+	<button
+		class="px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-[14px] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-gray-800 dark:hover:bg-gray-200 transition-all flex items-center gap-2 active:scale-95 shadow-sm"
+		disabled={!canSubmit || isSubmitting || probing}
+		onclick={handleSubmit}
+	>
+		{#if isSubmitting}
+			<Loader2 size={16} class="animate-spin" />
+		{/if}
+		{isThread
+			? t('page48.thread.publish')
+			: isReply
+				? t('page48.composer.reply')
+				: t('page48.composer.submit')}
+	</button>
+{/snippet}
 
 <div
 	class="flex gap-4 py-5 px-5 sm:px-6 border-b border-gray-100 dark:border-white/10 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl transition-all"
@@ -279,15 +374,53 @@
 
 	<!-- Composer Content -->
 	<div class="flex-1 min-w-0 flex flex-col pt-1.5">
-		<textarea
-			bind:this={textareaEl}
-			bind:value={content}
-			placeholder={resolvedPlaceholder}
-			maxlength={MAX_CONTENT_LENGTH}
-			class="w-full bg-transparent text-gray-900 dark:text-gray-100 text-[17px] sm:text-[20px] resize-none outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 pb-2 leading-relaxed"
-			rows="1"
-			oninput={(e) => autoGrow(e.target as HTMLTextAreaElement)}
-		></textarea>
+		<!-- Queued thread posts -->
+		{#if threadItems.length > 0}
+			<div class="flex flex-col gap-1.5 mb-2" in:fade>
+				{#each threadItems as item, i (i)}
+					{@const summary = draftSummary(item)}
+					<div
+						class="flex items-start gap-2 rounded-xl border border-gray-200 dark:border-zinc-800 px-3 py-2"
+					>
+						<span class="mt-0.5 shrink-0 text-[11px] font-bold tabular-nums text-gray-400">
+							{i + 1}
+						</span>
+						<div class="min-w-0 flex-1">
+							<p class="truncate text-[13px] text-gray-700 dark:text-gray-200">
+								{item.content.trim() || t('page48.aria.media')}
+							</p>
+							{#if summary}
+								<p class="mt-0.5 text-[11px] text-gray-400 dark:text-gray-500">{summary}</p>
+							{/if}
+						</div>
+						<button
+							type="button"
+							class="shrink-0 p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+							onclick={() => removeThreadItem(i)}
+							aria-label={t('page48.thread.removePost')}
+						>
+							<X size={14} />
+						</button>
+					</div>
+				{/each}
+			</div>
+		{/if}
+
+		<div class="flex items-center gap-3">
+			<textarea
+				bind:this={textareaEl}
+				bind:value={content}
+				placeholder={resolvedPlaceholder}
+				maxlength={MAX_CONTENT_LENGTH}
+				class={`min-w-0 flex-1 bg-transparent text-gray-900 dark:text-gray-100 text-[17px] sm:text-[20px] resize-none outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 leading-relaxed ${showToolRow ? 'pb-2' : ''}`}
+				rows="1"
+				oninput={(e) => autoGrow(e.target as HTMLTextAreaElement)}
+				onfocus={() => (composerActive = true)}
+			></textarea>
+			{#if !showToolRow}
+				{@render submitButton()}
+			{/if}
+		</div>
 
 		<!-- Poll editor -->
 		{#if pollOpen}
@@ -392,117 +525,121 @@
 			</div>
 		{/if}
 
-		<!-- Action Bar -->
-		<div class="flex items-center justify-between mt-3 pt-2 border-t border-transparent">
-			<div class="flex items-center gap-1">
-				<!-- Image Input -->
-				<button
-					class="p-2 -ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
-					onclick={() => fileInput.click()}
-					disabled={images.length >= PAGE48_MAX_IMAGES ||
-						!!video ||
-						probing ||
-						isSubmitting ||
-						pollOpen}
-					title={t('page48.composer.addPhoto')}
-				>
-					<ImageIcon size={20} class="group-hover:scale-110 transition-transform" />
-				</button>
-				<input
-					type="file"
-					accept="image/jpeg,image/png,image/webp"
-					multiple
-					class="hidden"
-					bind:this={fileInput}
-					onchange={handleFileSelect}
-				/>
-
-				<!-- Video Input -->
-				<button
-					class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
-					onclick={() => videoInput.click()}
-					disabled={!!video || images.length > 0 || probing || isSubmitting || pollOpen}
-					title={t('page48.composer.addVideo')}
-				>
-					{#if probing}
-						<Loader2 size={20} class="animate-spin" />
-					{:else}
-						<VideoIcon size={20} class="group-hover:scale-110 transition-transform" />
-					{/if}
-				</button>
-				<input
-					type="file"
-					accept="video/mp4,video/webm"
-					class="hidden"
-					bind:this={videoInput}
-					onchange={handleVideoSelect}
-				/>
-
-				<!-- Emoji Picker -->
-				<button
-					bind:this={emojiButton}
-					class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
-						emojiOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-					}`}
-					onclick={() => (emojiOpen = !emojiOpen)}
-					disabled={isSubmitting}
-					title={t('page48.composer.addEmoji')}
-					aria-label={t('page48.composer.addEmoji')}
-					aria-haspopup="dialog"
-					aria-expanded={emojiOpen}
-				>
-					<Smile size={20} class="group-hover:scale-110 transition-transform" />
-				</button>
-
-				<!-- Poll -->
-				{#if !isReply}
+		{#if showToolRow}
+			<!-- Action Bar -->
+			<div class="flex items-center justify-between mt-3 pt-2 border-t border-transparent">
+				<div class="flex items-center gap-1">
+					<!-- Image Input -->
 					<button
-						class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
-							pollOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-						}`}
-						onclick={pollOpen ? closePoll : openPoll}
-						disabled={images.length > 0 || !!video || probing || isSubmitting}
-						title={t('page48.poll.create')}
-						aria-label={t('page48.poll.create')}
-						aria-pressed={pollOpen}
+						class="p-2 -ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
+						onclick={() => fileInput?.click()}
+						disabled={images.length >= PAGE48_MAX_IMAGES ||
+							!!video ||
+							probing ||
+							isSubmitting ||
+							pollOpen}
+						title={t('page48.composer.addPhoto')}
 					>
-						<ChartNoAxesColumn size={20} class="group-hover:scale-110 transition-transform" />
+						<ImageIcon size={20} class="group-hover:scale-110 transition-transform" />
 					</button>
-				{/if}
-			</div>
+					<input
+						type="file"
+						accept="image/jpeg,image/png,image/webp"
+						multiple
+						class="hidden"
+						bind:this={fileInput}
+						onchange={handleFileSelect}
+					/>
 
-			<!-- Character Counter + Submit Button -->
-			<div class="flex items-center gap-3">
-				{#if content.length > 0}
-					<span
-						class={`text-[13px] font-medium tabular-nums ${
-							content.length >= MAX_CONTENT_LENGTH
-								? 'text-red-500'
-								: content.length >= MAX_CONTENT_LENGTH - 50
-									? 'text-amber-500'
-									: 'text-gray-400 dark:text-gray-500'
-						}`}
-						aria-live="polite"
+					<!-- Video Input -->
+					<button
+						class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all disabled:opacity-50 group cursor-pointer"
+						onclick={() => videoInput?.click()}
+						disabled={!!video || images.length > 0 || probing || isSubmitting || pollOpen}
+						title={t('page48.composer.addVideo')}
 					>
-						{content.length}/{MAX_CONTENT_LENGTH}
-					</span>
-				{/if}
+						{#if probing}
+							<Loader2 size={20} class="animate-spin" />
+						{:else}
+							<VideoIcon size={20} class="group-hover:scale-110 transition-transform" />
+						{/if}
+					</button>
+					<input
+						type="file"
+						accept="video/mp4,video/webm"
+						class="hidden"
+						bind:this={videoInput}
+						onchange={handleVideoSelect}
+					/>
 
-				<button
-					class="px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-[14px] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-gray-800 dark:hover:bg-gray-200 transition-all flex items-center gap-2 active:scale-95 shadow-sm"
-					disabled={(!content.trim() && images.length === 0 && !video) ||
-						isSubmitting ||
-						probing ||
-						!pollReady}
-					onclick={handleSubmit}
-				>
-					{#if isSubmitting}
-						<Loader2 size={16} class="animate-spin" />
+					<!-- Emoji Picker -->
+					<button
+						bind:this={emojiButton}
+						class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
+							emojiOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+						}`}
+						onclick={() => (emojiOpen = !emojiOpen)}
+						disabled={isSubmitting}
+						title={t('page48.composer.addEmoji')}
+						aria-label={t('page48.composer.addEmoji')}
+						aria-haspopup="dialog"
+						aria-expanded={emojiOpen}
+					>
+						<Smile size={20} class="group-hover:scale-110 transition-transform" />
+					</button>
+
+					<!-- Poll -->
+					{#if !isReply}
+						<button
+							class={`p-2 rounded-full transition-all disabled:opacity-50 group cursor-pointer hover:bg-red-50 dark:hover:bg-red-500/10 ${
+								pollOpen ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+							}`}
+							onclick={pollOpen ? closePoll : openPoll}
+							disabled={images.length > 0 || !!video || probing || isSubmitting || isThread}
+							title={t('page48.poll.create')}
+							aria-label={t('page48.poll.create')}
+							aria-pressed={pollOpen}
+						>
+							<ChartNoAxesColumn size={20} class="group-hover:scale-110 transition-transform" />
+						</button>
 					{/if}
-					{isReply ? t('page48.composer.reply') : t('page48.composer.submit')}
-				</button>
+				</div>
+
+				<!-- Character Counter + Submit Button -->
+				<div class="flex items-center gap-3">
+					{#if content.length > 0}
+						<span
+							class={`text-[13px] font-medium tabular-nums ${
+								content.length >= MAX_CONTENT_LENGTH
+									? 'text-red-500'
+									: content.length >= MAX_CONTENT_LENGTH - 50
+										? 'text-amber-500'
+										: 'text-gray-400 dark:text-gray-500'
+							}`}
+							aria-live="polite"
+						>
+							{content.length}/{MAX_CONTENT_LENGTH}
+						</span>
+					{/if}
+
+					<!-- Thread: only where a thread makes sense (never in the reply composer) -->
+					{#if onPostThread}
+						<button
+							type="button"
+							class="p-2 rounded-full transition-colors cursor-pointer text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
+							onclick={addToThread}
+							disabled={!draftHasContent(currentDraft()) || isSubmitting || probing}
+							title={t('page48.thread.addPost')}
+							aria-label={t('page48.thread.addPost')}
+						>
+							<Plus size={18} />
+						</button>
+					{/if}
+
+					{@render submitButton()}
+				</div>
 			</div>
-		</div>
+		{/if}
 	</div>
 </div>
 

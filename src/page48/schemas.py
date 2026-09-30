@@ -72,6 +72,22 @@ class VotePollRequest(BaseModel):
     optionId: str = Field(..., min_length=1, max_length=32)
 
 
+class ThreadPostItem(BaseModel):
+    """One post of a thread, chained to the item before it."""
+
+    content: str = Field(..., max_length=500)
+    images: list[ImageRef] = Field(default_factory=list, max_length=10)
+    videos: list[VideoRef] = Field(default_factory=list, max_length=1)
+    poll: Optional[CreatePollRequest] = None
+    tags: list[str] = Field(default_factory=list)
+
+
+class CreateThreadRequest(BaseModel):
+    """A chain of posts published together, each replying to the previous one."""
+
+    posts: list[ThreadPostItem] = Field(default_factory=list, max_length=50)
+
+
 class CreatePostRequest(BaseModel):
     content: str = Field(..., max_length=500)
     images: list[ImageRef] = Field(default_factory=list, max_length=10)
@@ -105,6 +121,10 @@ class PostResponse(BaseModel):
     videos: list[Page48Video] = []
     tags: list[str] = []
     poll: Optional[PollResponse] = None
+
+    # Total number of posts in the thread starting at this post (itself included).
+    # 0 means the post is not a thread.
+    threadCount: int = 0
 
     likesCount: int = 0
     repostCount: int = 0
@@ -229,3 +249,8 @@ class PostPaginationResponse(BaseModel):
 class ToggleResponse(BaseModel):
     status: bool
     count: int
+
+
+class CreateThreadResponse(BaseModel):
+    rootPostId: str
+    posts: list[PostResponse] = []

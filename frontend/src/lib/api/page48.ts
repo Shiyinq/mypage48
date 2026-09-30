@@ -8,6 +8,18 @@ export interface Page48ImageRef {
 	height: number;
 }
 
+export interface Page48ThreadPostInput {
+	content: string;
+	images?: Page48ImageRef[];
+	videos?: { filename: string; width: number; height: number; duration: number }[];
+	poll?: { options: string[] } | null;
+}
+
+export interface Page48ThreadResponse {
+	rootPostId: string;
+	posts: Page48Post[];
+}
+
 export interface Page48Image {
 	filename: string;
 	url: string;
@@ -68,6 +80,8 @@ export interface Page48Post {
 	videos: Page48Video[];
 	tags: string[];
 	poll: Page48Poll | null;
+	/** How many posts by the same author continue this one as a thread. */
+	threadCount: number;
 
 	likesCount: number;
 	repostCount: number;
@@ -241,6 +255,13 @@ export const page48Api = {
 		return client<Page48Poll>(`/page48/posts/${postId}/poll/vote`, {
 			method: 'POST',
 			body: { optionId }
+		});
+	},
+
+	createThread: async (posts: Page48ThreadPostInput[]): Promise<Page48ThreadResponse> => {
+		return client<Page48ThreadResponse>('/page48/posts/thread', {
+			method: 'POST',
+			body: { posts }
 		});
 	},
 
