@@ -2172,6 +2172,10 @@
 			"error": "Gagal mengirim laporan",
 			"already": "Kamu sudah melaporkan ini."
 		},
-		"reportUser": "Laporkan Pengguna"
+		"reportUser": "Laporkan Pengguna",
+		"post": {
+			"showMore": "Selengkapnya",
+			"showLess": "Sembunyikan"
+		}
 	}
 }

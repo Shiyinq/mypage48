@@ -42,6 +42,8 @@
 		onComment?: (post: Page48Post) => void;
 		onDelete?: (postId: string) => void;
 		onUpdated?: (post: Page48Post) => void;
+		/** Collapse long text behind a "show more" toggle (lists pass this; the detail page does not). */
+		clampContent?: boolean;
 	}
 
 	let {
@@ -56,8 +58,51 @@
 		onShare,
 		onComment,
 		onDelete,
-		onUpdated
+		onUpdated,
+		clampContent = true
 	}: Props = $props();
+
+	// Long posts would stretch a feed row, so the text is clamped and a red "show more"
+	// toggle is offered whenever it does not fit. Capped at half the height of the tallest
+	// single photo (a 9/16 portrait, see IMAGE_MAX_HEIGHT) so text stays photo-sized.
+	const CONTENT_CLAMP_PX = 250;
+
+	let contentEl = $state<HTMLParagraphElement>();
+	let contentExpanded = $state(false);
+	let contentOverflows = $state(false);
+
+	// Compare the natural text height against the clamp. Reading `post.content` keeps
+	// this in sync when the post is edited or replaced.
+	$effect(() => {
+		const el = contentEl;
+		void post.content;
+		if (!el) {
+			contentOverflows = false;
+			return;
+		}
+		contentOverflows = el.scrollHeight > CONTENT_CLAMP_PX + 1;
+	});
+
+	// Re-measure whenever the text box changes size (window resize, rotation), otherwise a
+	// post could stay collapsed — or unclamped — after its available width changed.
+	$effect(() => {
+		if (!clampContent) return;
+		const el = contentEl;
+		if (!el) return;
+
+		const observer = new ResizeObserver(() => {
+			contentOverflows = el.scrollHeight > CONTENT_CLAMP_PX + 1;
+		});
+		observer.observe(el);
+		return () => observer.disconnect();
+	});
+
+	let showClamp = $derived(clampContent && contentOverflows && !contentExpanded);
+	let showContentToggle = $derived(clampContent && contentOverflows);
+
+	function toggleContent() {
+		contentExpanded = !contentExpanded;
+	}
 
 	let detailHref = $derived(`/page48/post/${post.postId}`);
 	let imageUrls = $derived(post.images?.map((image) => image.url) ?? []);
@@ -270,7 +315,8 @@
 		<!-- Post Content (clickable hashtags; rest of the card opens post detail) -->
 		{#if post.content}
 			<p
-				class="relative z-[1] pointer-events-none text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words"
+				bind:this={contentEl}
+				class={`relative z-[1] pointer-events-none text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap mt-0.5 leading-relaxed break-words ${showClamp ? 'max-h-[250px] overflow-hidden' : ''}`}
 			>
 				{#each contentParts as part, i (i)}
 					{#if part.tag}
@@ -283,6 +329,16 @@
 					{/if}
 				{/each}
 			</p>
+
+			{#if showContentToggle}
+				<button
+					type="button"
+					class="relative z-[1] self-start mt-1 text-[14px] font-semibold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
+					onclick={toggleContent}
+				>
+					{contentExpanded ? t('page48.post.showLess') : t('page48.post.showMore')}
+				</button>
+			{/if}
 		{/if}
 
 		<!-- Thread position: kept below the last line of the text, like Threads.

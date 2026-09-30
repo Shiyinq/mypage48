@@ -2166,6 +2166,10 @@
 			"error": "報告の送信に失敗しました",
 			"already": "すでに報告済みです。"
 		},
-		"reportUser": "ユーザーを報告"
+		"reportUser": "ユーザーを報告",
+		"post": {
+			"showMore": "もっと見る",
+			"showLess": "折りたたむ"
+		}
 	}
 }
