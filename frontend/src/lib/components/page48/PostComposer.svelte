@@ -20,6 +20,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
 		findActiveMention,
+		parseContent,
 		probeVideo,
 		PAGE48_IMAGE_MAX_BYTES,
 		PAGE48_MAX_IMAGES,
@@ -80,6 +81,13 @@
 	const MENTION_LIMIT = 6;
 	const MENTION_FOLLOWING_LIMIT = 50;
 
+	/**
+	 * Typography shared by the textarea and the highlight layer behind it — they have
+	 * to match exactly or the coloured text would drift away from the real text.
+	 */
+	const CONTENT_TEXT_CLASS =
+		'text-[17px] sm:text-[20px] leading-relaxed whitespace-pre-wrap break-words';
+
 	let content = $state('');
 	let images = $state<File[]>([]);
 	let imagePreviews = $state<string[]>([]);
@@ -120,6 +128,9 @@
 		el.style.height = 'auto';
 		el.style.height = el.scrollHeight + 'px';
 	}
+
+	// Mentions and hashtags are coloured while typing, matching the published post.
+	let contentParts = $derived(parseContent(content));
 
 	/** Insert text at the caret (or over a range), keeping focus and caret in place. */
 	async function insertAtCaret(text: string, rangeStart?: number, rangeEnd?: number) {
@@ -575,21 +586,39 @@
 		{/if}
 
 		<div class="flex items-center gap-3">
-			<textarea
-				bind:this={textareaEl}
-				bind:value={content}
-				placeholder={resolvedPlaceholder}
-				maxlength={MAX_CONTENT_LENGTH}
-				class={`min-w-0 flex-1 bg-transparent text-gray-900 dark:text-gray-100 text-[17px] sm:text-[20px] resize-none outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 leading-relaxed ${showToolRow ? 'pb-2' : ''}`}
-				rows="1"
-				oninput={(e) => {
-					autoGrow(e.target as HTMLTextAreaElement);
-					syncMentionState();
-				}}
-				onkeydown={handleMentionKeydown}
-				onblur={closeMentions}
-				onfocus={() => (composerActive = true)}
-			></textarea>
+			<div class="relative min-w-0 flex-1">
+				<!-- Highlight layer. The textarea's own text is transparent so mentions and
+				     hashtags can be coloured as they are typed. -->
+				<div
+					aria-hidden="true"
+					class={`pointer-events-none absolute inset-0 select-none overflow-hidden text-gray-900 dark:text-gray-100 ${CONTENT_TEXT_CLASS} ${showToolRow ? 'pb-2' : ''}`}
+				>
+					{#each contentParts as part, i (i)}
+						{#if part.tag}
+							<span class="text-red-500">{part.text}</span>
+						{:else if part.mention}
+							<span class="font-semibold text-red-500">{part.text}</span>
+						{:else}
+							{part.text}
+						{/if}
+					{/each}
+				</div>
+				<textarea
+					bind:this={textareaEl}
+					bind:value={content}
+					placeholder={resolvedPlaceholder}
+					maxlength={MAX_CONTENT_LENGTH}
+					class={`relative block w-full resize-none bg-transparent text-transparent caret-gray-900 outline-none placeholder:text-gray-400 dark:caret-gray-100 dark:placeholder:text-gray-500 ${CONTENT_TEXT_CLASS} ${showToolRow ? 'pb-2' : ''}`}
+					rows="1"
+					oninput={(e) => {
+						autoGrow(e.target as HTMLTextAreaElement);
+						syncMentionState();
+					}}
+					onkeydown={handleMentionKeydown}
+					onblur={closeMentions}
+					onfocus={() => (composerActive = true)}
+				></textarea>
+			</div>
 			{#if !showToolRow}
 				{@render submitButton()}
 			{/if}

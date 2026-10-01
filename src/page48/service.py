@@ -1,6 +1,6 @@
 import re
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Union
 
 from pymongo.errors import DuplicateKeyError
@@ -391,7 +391,11 @@ class Page48Service:
         ends_at = poll.get("endsAt")
         if not ends_at:
             return False
-        return (now or datetime.now()) >= ends_at
+        # Documents come back from Mongo with naive datetimes (the driver is not
+        # tz-aware), so the stored value has to be read as UTC before comparing.
+        if ends_at.tzinfo is None:
+            ends_at = ends_at.replace(tzinfo=timezone.utc)
+        return (now or datetime.now(timezone.utc)) >= ends_at
 
     def _build_poll_response(
         self,
@@ -448,7 +452,7 @@ class Page48Service:
         exclude_user_id: Optional[str] = None,
     ) -> ActiveUsersResponse:
         """Most active (most top-level posts) users in the last `days`."""
-        since = datetime.now() - timedelta(days=days)
+        since = datetime.now(timezone.utc) - timedelta(days=days)
         # Fetch one extra row when we may need to drop the current user.
         rows = await self.repository.get_most_active_users(
             limit + 1 if exclude_user_id else limit, since
@@ -574,7 +578,7 @@ class Page48Service:
         draft, because a thread chains onto posts created in the same request.
         """
         post_id = post_id or str(uuid.uuid4())
-        now = now or datetime.now()
+        now = now or datetime.now(timezone.utc)
 
         root_post_id = None
         depth = 0
@@ -707,7 +711,7 @@ class Page48Service:
             if count > MAX_THREAD_POSTS:
                 raise ThreadTooLongError()
 
-            now = datetime.now()
+            now = datetime.now(timezone.utc)
             documents: List[dict] = []
             parent_post_id: Optional[str] = None
 
@@ -1140,7 +1144,7 @@ class Page48Service:
         if post.get("parentPostId"):
             raise CannotPinReplyError()
 
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         await self.repository.pin_post(post_id, user_id, now)
         post["pinnedAt"] = now
         return (await self._enrich_posts([post], user_id))[0]
@@ -1173,7 +1177,7 @@ class Page48Service:
                 "content": data.content,
                 "tags": tags,
                 "isEdited": True,
-                "updatedAt": datetime.now(),
+                "updatedAt": datetime.now(timezone.utc),
             },
         )
 
@@ -1207,7 +1211,7 @@ class Page48Service:
                 raise ReportAlreadyExistsError()
 
             report_id = str(uuid.uuid4())
-            now = datetime.now()
+            now = datetime.now(timezone.utc)
             report_data = {
                 "reportId": report_id,
                 "targetType": data.targetType,

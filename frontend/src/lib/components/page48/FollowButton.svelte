@@ -3,6 +3,7 @@
 	import { page48Api } from '$lib/api/page48';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { userProfile } from '$lib/stores/profile.svelte';
+	import { page48HoverProfileStore } from '$lib/stores/page48.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -41,6 +42,8 @@
 				? await page48Api.unfollowUser(username)
 				: await page48Api.followUser(username);
 			following = res.isFollowing;
+			// The hover card caches this profile, so its counts are now stale.
+			page48HoverProfileStore.invalidate(username);
 			onChange?.(res.isFollowing);
 		} catch (err: unknown) {
 			const e2 = err as { detail?: string; message?: string };

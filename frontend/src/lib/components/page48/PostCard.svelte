@@ -3,6 +3,7 @@
 	import { Heart, MessageCircle, Bookmark, Share, Check } from 'lucide-svelte';
 	import { OptimizedImage } from '$lib/components/common';
 	import PostMenu from '$lib/components/page48/PostMenu.svelte';
+	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
 	import RepostMenu from '$lib/components/page48/RepostMenu.svelte';
 	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
 	import PostComposerModal from '$lib/components/page48/PostComposerModal.svelte';
@@ -19,9 +20,10 @@
 	import { activityNavStore } from '$lib/stores/page48Nav.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
+	import { parseUTCDate } from '$lib/utils/time';
 	import {
 		formatPollRemaining,
-		formatTimeAgo,
+		formatPostTime,
 		getActiveMedia,
 		imageRatio,
 		measureMissingImageSizes,
@@ -59,6 +61,8 @@
 		showActivityLink?: boolean;
 		/** Hide the post's own photo/video (used when the media is shown beside it). */
 		hideMedia?: boolean;
+		/** Show the exact time and date instead of the relative/short timestamp. */
+		fullTimestamp?: boolean;
 	}
 
 	let {
@@ -77,7 +81,8 @@
 		onPinChanged,
 		clampContent = true,
 		showActivityLink = false,
-		hideMedia = false
+		hideMedia = false,
+		fullTimestamp = false
 	}: Props = $props();
 
 	// Long posts would stretch a feed row, so the text is clamped and a red "show more"
@@ -169,7 +174,7 @@
 	// the result once they voted or once the poll ended.
 	let now = $state(Date.now());
 	let pollExpired = $derived(
-		!!post.poll && (post.poll.isExpired || new Date(post.poll.endsAt).getTime() <= now)
+		!!post.poll && (post.poll.isExpired || parseUTCDate(post.poll.endsAt).getTime() <= now)
 	);
 	let pollRemaining = $derived(post.poll ? formatPollRemaining(post.poll.endsAt, now) : '');
 	let canVote = $derived(canInteract && !!post.poll && !pollExpired && !post.poll.myOptionId);
@@ -279,7 +284,9 @@
 		viewerReturnUrl = null;
 	}
 
-	let timeAgo = $derived(formatTimeAgo(post.createdAt));
+	let timeLabel = $derived(formatPostTime(post.createdAt, fullTimestamp));
+	// Shown as a hover tooltip, so lists still say "3j" while the exact time stays reachable.
+	let exactTime = $derived(formatPostTime(post.createdAt, true));
 
 	function getAvatarUrl(url: string | null) {
 		if (!url)
@@ -305,7 +312,8 @@
 	<!-- Left Column: Avatar & Thread Line -->
 	<div class="flex flex-col items-center shrink-0">
 		<!-- Avatar -->
-		<a
+		<UserHoverCard
+			username={post.username}
 			href={`/page48/u/${post.username}`}
 			class="relative block w-11 h-11 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 z-10 ring-2 ring-white dark:ring-zinc-950 shadow-sm transition-transform hover:scale-105"
 		>
@@ -318,7 +326,7 @@
 						`https://ui-avatars.com/api/?name=${encodeURIComponent(post.userDisplayName)}&background=fca5a5&color=fff`;
 				}}
 			/>
-		</a>
+		</UserHoverCard>
 
 		<!-- Thread Line (runs into the card edge so the segments meet) -->
 		{#if isThreadLine}
@@ -330,17 +338,29 @@
 	<div class="flex flex-col flex-1 min-w-0 pt-0.5">
 		<!-- Header (Name, Username, Time) -->
 		<div class="flex items-center justify-between gap-2 mb-0.5">
-			<a
+			<UserHoverCard
+				username={post.username}
 				href={`/page48/u/${post.username}`}
-				class="relative z-[1] flex items-center gap-1.5 truncate group/name"
+				class="relative z-[1] min-w-0 flex items-center gap-1.5 truncate group/name"
 			>
 				<span
 					class="font-semibold text-[15px] tracking-tight text-gray-900 dark:text-gray-100 group-hover/name:underline truncate"
 					>{post.userDisplayName}</span
 				>
-			</a>
+				<span class="truncate text-[14px] text-gray-500 dark:text-gray-400">@{post.username}</span>
+			</UserHoverCard>
 			<div class="relative z-[1] flex items-center gap-2 shrink-0">
-				<span class="text-[15px] text-gray-500 hover:underline">{timeAgo}</span>
+				<span class="group/time relative text-[15px] text-gray-500 hover:underline">
+					{timeLabel}
+					{#if !fullTimestamp}
+						<span
+							aria-hidden="true"
+							class="pointer-events-none absolute right-0 bottom-full z-20 mb-2 px-2 py-1 text-[11px] font-medium text-white whitespace-nowrap rounded-lg bg-gray-900 border border-white/10 opacity-0 shadow-xl transition-all group-hover/time:opacity-100 dark:bg-zinc-800"
+						>
+							{exactTime}
+						</span>
+					{/if}
+				</span>
 				{#if isAuthenticated.value}
 					<PostMenu
 						{isOwner}
@@ -369,10 +389,11 @@
 							class="pointer-events-auto text-red-500 hover:underline cursor-pointer">{part.text}</a
 						>
 					{:else if part.mention}
-						<a
+						<UserHoverCard
+							username={part.mention}
 							href={userUrl(part.mention)}
 							class="pointer-events-auto font-semibold text-red-500 hover:underline cursor-pointer"
-							>{part.text}</a
+							>{part.text}</UserHoverCard
 						>
 					{:else}
 						{part.text}

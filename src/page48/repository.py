@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 from bson.objectid import ObjectId
@@ -280,7 +280,11 @@ class Page48Repository:
 
     async def insert_like(self, post_id: str, user_id: str):
         return await self.likes.insert_one(
-            {"postId": post_id, "userId": user_id, "createdAt": datetime.now()}
+            {
+                "postId": post_id,
+                "userId": user_id,
+                "createdAt": datetime.now(timezone.utc),
+            }
         )
 
     async def delete_like(self, post_id: str, user_id: str):
@@ -323,7 +327,11 @@ class Page48Repository:
 
     async def insert_bookmark(self, post_id: str, user_id: str):
         return await self.bookmarks.insert_one(
-            {"postId": post_id, "userId": user_id, "createdAt": datetime.now()}
+            {
+                "postId": post_id,
+                "userId": user_id,
+                "createdAt": datetime.now(timezone.utc),
+            }
         )
 
     async def delete_bookmark(self, post_id: str, user_id: str):
@@ -369,7 +377,11 @@ class Page48Repository:
 
     async def insert_repost(self, post_id: str, user_id: str):
         return await self.reposts.insert_one(
-            {"postId": post_id, "userId": user_id, "createdAt": datetime.now()}
+            {
+                "postId": post_id,
+                "userId": user_id,
+                "createdAt": datetime.now(timezone.utc),
+            }
         )
 
     async def delete_repost(self, post_id: str, user_id: str):
@@ -480,7 +492,7 @@ class Page48Repository:
             {
                 "followerId": follower_id,
                 "followingId": following_id,
-                "createdAt": datetime.now(),
+                "createdAt": datetime.now(timezone.utc),
             }
         )
 
@@ -665,7 +677,7 @@ class Page48Repository:
                 "postId": post_id,
                 "userId": user_id,
                 "optionId": option_id,
-                "createdAt": datetime.now(),
+                "createdAt": datetime.now(timezone.utc),
             }
         )
 

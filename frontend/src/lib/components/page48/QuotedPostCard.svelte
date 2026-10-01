@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Video as VideoIcon, X } from 'lucide-svelte';
 	import type { Page48Post } from '$lib/api/page48';
-	import { formatTimeAgo } from '$lib/utils/page48';
+	import { formatPostTime } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
@@ -67,7 +67,7 @@
 				<span class="truncate text-gray-500 dark:text-gray-400">@{post.username}</span>
 				<span class="shrink-0 text-gray-400">·</span>
 				<span class="shrink-0 text-gray-500 dark:text-gray-400">
-					{formatTimeAgo(post.createdAt)}
+					{formatPostTime(post.createdAt)}
 				</span>
 				{#if post.videos && post.videos.length > 0}
 					<VideoIcon size={14} class="ml-auto shrink-0 text-gray-400" />

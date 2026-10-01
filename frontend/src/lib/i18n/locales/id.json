@@ -1981,11 +1981,16 @@
 			"prevImage": "Gambar sebelumnya",
 			"nextImage": "Gambar berikutnya",
 			"close": "Tutup",
-			"mentionSuggestions": "Saran pengguna"
+			"mentionSuggestions": "Saran pengguna",
+			"userPreview": "Pratinjau pengguna"
 		},
 		"mentions": {
 			"noResults": "Pengguna tidak ditemukan",
 			"searching": "Mencari…"
+		},
+		"hover": {
+			"notFoundText": "Tidak ada akun dengan username ini. Mungkin sudah dihapus atau mengganti username.",
+			"loadError": "Gagal memuat profil ini. Arahkan kursor lagi untuk mencoba ulang."
 		},
 		"composer": {
 			"placeholder": "Apa yang baru?",

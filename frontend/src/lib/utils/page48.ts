@@ -1,7 +1,8 @@
 import { page48Api, type Page48Image, type Page48ImageRef, type Page48Post } from '$lib/api/page48';
 import { storageApi } from '$lib/apis/storage';
 import { showToast } from '$lib/stores/toast.svelte';
-import { t } from '$lib/i18n';
+import { locale, t } from '$lib/i18n';
+import { getLocaleMap, parseUTCDate } from '$lib/utils/time';
 
 export type Page48Interaction = 'like' | 'repost' | 'bookmark';
 
@@ -340,22 +341,47 @@ export function getPostUrl(postId: string): string {
 	return `${window.location.origin}/page48/post/${postId}`;
 }
 
-/** Short relative label such as "5m" / "3j", shared by the card and the quote embed. */
-export function formatTimeAgo(dateStr: string): string {
-	try {
-		const now = Date.now();
-		const then = new Date(dateStr).getTime();
-		const diff = Math.max(0, Math.floor((now - then) / 1000));
+/**
+ * Timestamp shown on a post. While the post is fresh it is relative ("5m", "3j"),
+ * then it becomes the calendar date and gains the year once it is not the current
+ * one ("1 Oct" / "1 Oct 2025"). A post's own page passes `full` to get the exact
+ * time and date instead ("8:31 PM · Oct 1, 2026").
+ */
+export function formatPostTime(dateStr: string, full = false): string {
+	// The API sends UTC without a timezone marker, so it has to be read as UTC for
+	// the browser to render it in the viewer's own timezone.
+	const date = parseUTCDate(dateStr);
+	if (Number.isNaN(date.getTime())) return '';
 
-		if (diff < 60) return `${diff}${t('page48.time.secondsShort')}`;
-		if (diff < 3600) return `${Math.floor(diff / 60)}${t('page48.time.minutesShort')}`;
-		if (diff < 86400) return `${Math.floor(diff / 3600)}${t('page48.time.hoursShort')}`;
-		if (diff < 2592000) return `${Math.floor(diff / 86400)}${t('page48.time.daysShort')}`;
-		if (diff < 31536000) return `${Math.floor(diff / 2592000)}${t('page48.time.monthsShort')}`;
-		return `${Math.floor(diff / 31536000)}${t('page48.time.yearsShort')}`;
-	} catch {
-		return '';
+	const localeName = getLocaleMap(locale.value);
+
+	if (full) {
+		const time = new Intl.DateTimeFormat(localeName, {
+			hour: 'numeric',
+			minute: '2-digit'
+		}).format(date);
+		const day = new Intl.DateTimeFormat(localeName, {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric'
+		}).format(date);
+		return `${time} · ${day}`;
 	}
+
+	const elapsed = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+	if (elapsed < 86400) {
+		if (elapsed < 60) return `${elapsed}${t('page48.time.secondsShort')}`;
+		if (elapsed < 3600) return `${Math.floor(elapsed / 60)}${t('page48.time.minutesShort')}`;
+		return `${Math.floor(elapsed / 3600)}${t('page48.time.hoursShort')}`;
+	}
+
+	// The year is only worth the pixels once it is not the current one.
+	const sameYear = date.getFullYear() === new Date().getFullYear();
+	return new Intl.DateTimeFormat(localeName, {
+		day: 'numeric',
+		month: 'short',
+		...(sameYear ? {} : { year: 'numeric' })
+	}).format(date);
 }
 
 /**
@@ -429,7 +455,7 @@ export function pollPercentage(votes: number, totalVotes: number): number {
 
 /** "23j 59m" style countdown until a poll closes. */
 export function formatPollRemaining(endsAt: string, now: number = Date.now()): string {
-	const diff = new Date(endsAt).getTime() - now;
+	const diff = parseUTCDate(endsAt).getTime() - now;
 	if (!Number.isFinite(diff) || diff <= 0) return '';
 
 	const hours = Math.floor(diff / 3_600_000);

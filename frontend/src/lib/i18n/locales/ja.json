@@ -1975,11 +1975,16 @@
 			"prevImage": "前の画像",
 			"nextImage": "次の画像",
 			"close": "閉じる",
-			"mentionSuggestions": "ユーザーの候補"
+			"mentionSuggestions": "ユーザーの候補",
+			"userPreview": "ユーザーのプレビュー"
 		},
 		"mentions": {
 			"noResults": "ユーザーが見つかりません",
 			"searching": "検索中…"
+		},
+		"hover": {
+			"notFoundText": "このユーザー名のアカウントはありません。削除されたか、名前が変更された可能性があります。",
+			"loadError": "プロフィールを読み込めませんでした。もう一度ホバーしてください。"
 		},
 		"composer": {
 			"placeholder": "いまどうしてる？",

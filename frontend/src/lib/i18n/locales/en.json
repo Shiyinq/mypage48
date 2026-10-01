@@ -1977,11 +1977,16 @@
 			"prevImage": "Previous image",
 			"nextImage": "Next image",
 			"close": "Close",
-			"mentionSuggestions": "User suggestions"
+			"mentionSuggestions": "User suggestions",
+			"userPreview": "User preview"
 		},
 		"mentions": {
 			"noResults": "No users found",
 			"searching": "Searching…"
+		},
+		"hover": {
+			"notFoundText": "No account uses this username. It may have been deleted or renamed.",
+			"loadError": "Couldn't load this profile. Hover it again to retry."
 		},
 		"composer": {
 			"placeholder": "What's new?",

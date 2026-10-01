@@ -386,6 +386,7 @@
 				threadPosition={chainTotal > 1 ? { index: chainStart + i, total: chainTotal } : undefined}
 				showThreadLink={false}
 				showActivityLink={i === 0}
+				fullTimestamp={item.postId === focused?.postId}
 				hideMedia={hideMedia && i === 0}
 				onLike={handleReplyLike}
 				onRepost={handleReplyRepost}

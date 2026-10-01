@@ -1,4 +1,9 @@
-import { page48Api, type ActiveUser, type TrendingTag } from '$lib/api/page48';
+import {
+	page48Api,
+	type ActiveUser,
+	type Page48UserProfile,
+	type TrendingTag
+} from '$lib/api/page48';
 import { members as membersApi, type MemberXAccount } from '$lib/apis/members';
 import { logger } from '$lib/utils/logger';
 import { createRequestDedup } from '$lib/utils/requestDedup';
@@ -95,6 +100,75 @@ export const activeUsersStore = createCachedListStore<ActiveUser>(
 	'active users',
 	async () => (await page48Api.getActiveUsers(5)).users
 );
+
+/**
+ * How long a hover-card profile may be reused. Long enough that sweeping the
+ * pointer over a feed doesn't refetch, short enough that follow counts and bios
+ * catch up on their own.
+ */
+const HOVER_PROFILE_TTL_MS = 5 * 60 * 1000;
+
+/** A handle that failed to load is retried sooner, in case the account is new. */
+const HOVER_PROFILE_MISS_TTL_MS = 60 * 1000;
+
+/** A hover-card lookup: the profile, a handle that does not exist, or a failure. */
+export type HoverProfileResult =
+	| { status: 'ok'; profile: Page48UserProfile }
+	| { status: 'missing' }
+	| { status: 'error' };
+
+/**
+ * Profiles for the username hover card, keyed by handle.
+ *
+ * Hovering happens constantly and often for the same few authors, so the result is
+ * cached per session with a TTL and concurrent requests for one handle are shared.
+ * A handle that does not exist is cached too (and briefly), so a mention of a
+ * username that was never real is not refetched every time the pointer crosses it.
+ * Failures are deliberately not cached, so the next hover tries again.
+ */
+function createHoverProfileStore() {
+	const cache = new Map<string, { result: HoverProfileResult; at: number }>();
+	const inflight = new Map<string, Promise<HoverProfileResult>>();
+
+	async function get(username: string): Promise<HoverProfileResult> {
+		const key = username.toLowerCase();
+		const hit = cache.get(key);
+		if (hit) {
+			const ttl = hit.result.status === 'ok' ? HOVER_PROFILE_TTL_MS : HOVER_PROFILE_MISS_TTL_MS;
+			if (Date.now() - hit.at < ttl) return hit.result;
+		}
+
+		const pending = inflight.get(key);
+		if (pending) return pending;
+
+		const request = page48Api
+			.getUserProfile(key)
+			.then((profile): HoverProfileResult => ({ status: 'ok', profile }))
+			.catch((err: unknown): HoverProfileResult => {
+				const status = (err as { status?: number } | null)?.status;
+				return status === 404 ? { status: 'missing' } : { status: 'error' };
+			})
+			.then((result) => {
+				if (result.status !== 'error') cache.set(key, { result, at: Date.now() });
+				return result;
+			})
+			.finally(() => {
+				inflight.delete(key);
+			});
+
+		inflight.set(key, request);
+		return request;
+	}
+
+	/** Drop one handle (e.g. after following, which changes the counts). */
+	function invalidate(username: string) {
+		cache.delete(username.toLowerCase());
+	}
+
+	return { get, invalidate };
+}
+
+export const page48HoverProfileStore = createHoverProfileStore();
 
 /**
  * Global video sound preference (session-scoped). Videos autoplay muted, but once
