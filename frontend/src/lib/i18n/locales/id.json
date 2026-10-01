@@ -1937,7 +1937,6 @@
 			"photos": "Gambar",
 			"videos": "Video",
 			"trending": "Trending",
-			"members": "Member",
 			"following": "Mengikuti"
 		},
 		"follow": {
@@ -1955,8 +1954,6 @@
 			"videosDesc": "Kumpulan postingan video dari komunitas Page48 JKT48.",
 			"trendingTitle": "Trending di Page48",
 			"trendingDesc": "Hashtag yang sedang populer di komunitas Page48 JKT48.",
-			"membersTitle": "Hashtag Member Page48",
-			"membersDesc": "Hashtag berdasarkan username X member JKT48 yang aktif.",
 			"tagTitle": "Postingan #{tag} di Page48",
 			"tagDesc": "Lihat semua postingan dengan hashtag #{tag} di Page48.",
 			"postTitle": "Postingan Page48",

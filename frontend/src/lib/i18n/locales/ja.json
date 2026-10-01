@@ -1931,7 +1931,6 @@
 			"photos": "画像",
 			"videos": "動画",
 			"trending": "トレンド",
-			"members": "メンバー",
 			"following": "フォロー中"
 		},
 		"follow": {
@@ -1949,8 +1948,6 @@
 			"videosDesc": "ページ48 JKT48コミュニティの動画投稿。",
 			"trendingTitle": "ページ48のトレンド",
 			"trendingDesc": "ページ48 JKT48コミュニティで人気のハッシュタグ。",
-			"membersTitle": "ページ48 メンバーハッシュタグ",
-			"membersDesc": "活動中のJKT48メンバーのXユーザー名に基づくハッシュタグ。",
 			"tagTitle": "ページ48の #{tag} 投稿",
 			"tagDesc": "ページ48で #{tag} が付いた投稿をすべて表示。",
 			"postTitle": "ページ48の投稿",

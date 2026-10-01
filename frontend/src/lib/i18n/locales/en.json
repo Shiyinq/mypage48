@@ -1933,7 +1933,6 @@
 			"photos": "Photos",
 			"videos": "Videos",
 			"trending": "Trending",
-			"members": "Members",
 			"following": "Following"
 		},
 		"follow": {
@@ -1951,8 +1950,6 @@
 			"videosDesc": "Video posts from the Page48 JKT48 community.",
 			"trendingTitle": "Trending on Page48",
 			"trendingDesc": "Popular hashtags in the Page48 JKT48 community.",
-			"membersTitle": "Page48 Member Hashtags",
-			"membersDesc": "Hashtags based on active JKT48 members' X usernames.",
 			"tagTitle": "#{tag} posts on Page48",
 			"tagDesc": "See all posts tagged #{tag} on Page48.",
 			"postTitle": "Page48 post",

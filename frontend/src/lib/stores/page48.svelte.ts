@@ -4,14 +4,7 @@ import { logger } from '$lib/utils/logger';
 import { createRequestDedup } from '$lib/utils/requestDedup';
 
 export const page48NavbarStore = $state<{
-	pageType:
-		| 'feed'
-		| 'post-detail'
-		| 'user-profile'
-		| 'bookmarks'
-		| 'search'
-		| 'trending'
-		| 'members';
+	pageType: 'feed' | 'post-detail' | 'user-profile' | 'bookmarks' | 'search' | 'trending';
 }>({
 	pageType: 'feed'
 });

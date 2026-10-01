@@ -5,7 +5,6 @@
 		Home,
 		User,
 		TrendingUp,
-		Hash,
 		Plus,
 		Users,
 		Image as ImageIcon,
@@ -89,14 +88,6 @@
 				exact: false,
 				icon: TrendingUp,
 				mobileOnly: true
-			},
-			{
-				label: t('page48.nav.members'),
-				mobileLabel: t('page48.nav.members'),
-				href: `${basePath}/members`,
-				exact: false,
-				icon: Hash,
-				mobileOnly: true
 			}
 		];
 	});
@@ -114,8 +105,7 @@
 	const isBackIcon = $derived(
 		page48NavbarStore.pageType === 'post-detail' ||
 			page48NavbarStore.pageType === 'user-profile' ||
-			page48NavbarStore.pageType === 'trending' ||
-			page48NavbarStore.pageType === 'members'
+			page48NavbarStore.pageType === 'trending'
 	);
 
 	// Immersive video mode: hide the top navbar on mobile so the clip fills the screen.

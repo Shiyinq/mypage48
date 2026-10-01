@@ -7,6 +7,7 @@
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
 	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
+	import MemberXTags from '$lib/components/page48/MemberXTags.svelte';
 
 	const { t } = useTranslation();
 
@@ -97,6 +98,12 @@
 			{/each}
 		</ul>
 	{/if}
+
+	<!-- Member hashtags sit below the trending list, since the mobile menu no longer
+	     has its own entry. Desktop shows them in the left sidebar, hence xl:hidden. -->
+	<div class="xl:hidden border-t border-gray-100/60 dark:border-white/5">
+		<MemberXTags variant="inline" />
+	</div>
 </div>
 
 <Page48Sidebars showTrending={false} />
