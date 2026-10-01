@@ -731,11 +731,13 @@ class Page48Service:
             ThreadTooShortError,
             ThreadTooLongError,
             PostNotFoundError,
+            QuotedPostNotFoundError,
             MediaConflictError,
             MaxVideoExceededError,
             InvalidVideoError,
             InvalidPollOptionsError,
             PollMediaConflictError,
+            QuotePollConflictError,
             PollReplyNotAllowedError,
         ):
             raise

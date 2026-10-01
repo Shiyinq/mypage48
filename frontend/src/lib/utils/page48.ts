@@ -27,6 +27,8 @@ export interface PostDraftInput {
 	images: File[];
 	video: VideoDraft | null;
 	poll: { options: string[] } | null;
+	/** The post this draft quotes, if any. */
+	quotedPostId?: string | null;
 }
 
 /** Aspect ratio (width / height) of an image; falls back to 16:9 when unknown. */
@@ -108,15 +110,24 @@ export interface MentionCandidate {
 	profilePicture?: string | null;
 }
 
-/** A run of post content: plain text, a `#hashtag`, or an `@mention`. */
+/** A run of post content: plain text, a link, a `#hashtag`, or an `@mention`. */
 export interface ContentPart {
 	text: string;
+	link?: string;
 	tag?: string;
 	mention?: string;
 }
 
-/** Matches a `#hashtag`, or an `@mention` that starts a word (`foo@bar` stays text). */
-const CONTENT_PATTERN = '#([\\p{L}\\p{N}_]+)|(^|[^\\p{L}\\p{N}_@])@([\\p{L}\\p{N}_]{1,50})';
+/**
+ * Matches a link (`http(s)://` or `www.`), a `#hashtag`, or an `@mention` that starts
+ * a word (`foo@bar` stays text). Links come first so a `#` or `@` inside a URL is not
+ * split off into a tag or a mention.
+ */
+const CONTENT_PATTERN =
+	'(https?:\\/\\/[^\\s<>"\']+|www\\.[^\\s<>"\']+)|#([\\p{L}\\p{N}_]+)|(^|[^\\p{L}\\p{N}_@])@([\\p{L}\\p{N}_]{1,50})';
+
+/** Punctuation that usually trails a link instead of belonging to it. */
+const LINK_TRAILING = /[.,!?;:)\]}'"»«”’]+$/;
 
 const USERNAME_CHAR = /[\p{L}\p{N}_]/u;
 
@@ -124,9 +135,9 @@ const USERNAME_CHAR = /[\p{L}\p{N}_]/u;
 const MAX_MENTION_LENGTH = 50;
 
 /**
- * Split content into plain text, `#hashtag` and `@mention` runs so both can be
- * rendered as links. `tag`/`mention` are lower-cased for URL building; `text`
- * keeps exactly what the author typed.
+ * Split content into plain text, link, `#hashtag` and `@mention` runs so each can be
+ * rendered as a link. `tag`/`mention` are lower-cased for URL building; `text` keeps
+ * exactly what the author typed.
  */
 export function parseContent(content: string): ContentPart[] {
 	const parts: ContentPart[] = [];
@@ -135,7 +146,7 @@ export function parseContent(content: string): ContentPart[] {
 	let match: RegExpExecArray | null;
 
 	while ((match = regex.exec(content)) !== null) {
-		const [full, tag, lead, mention] = match;
+		const [full, url, tag, lead, mention] = match;
 		// `lead` is the character matched to prove the `@` starts a mention; it
 		// belongs to the plain-text run, so the mention itself begins after it.
 		const start = match.index + (lead ? lead.length : 0);
@@ -143,7 +154,13 @@ export function parseContent(content: string): ContentPart[] {
 		if (start > lastIndex) {
 			parts.push({ text: content.slice(lastIndex, start) });
 		}
-		if (tag) {
+		if (url) {
+			// Trailing punctuation stays in the surrounding text, not in the link.
+			const link = url.replace(LINK_TRAILING, '');
+			parts.push({ text: link, link: linkHref(link) });
+			lastIndex = match.index + link.length;
+			continue;
+		} else if (tag) {
 			parts.push({ text: full, tag: tag.toLowerCase() });
 		} else if (mention) {
 			parts.push({ text: full.slice(lead.length), mention: mention.toLowerCase() });
@@ -155,6 +172,30 @@ export function parseContent(content: string): ContentPart[] {
 		parts.push({ text: content.slice(lastIndex) });
 	}
 	return parts;
+}
+
+/** `www.` links get an explicit scheme so they are real, clickable URLs. */
+function linkHref(link: string): string {
+	return /^www\./i.test(link) ? `https://${link}` : link;
+}
+
+/** A Page48 post link anywhere in `text`, e.g. `https://host/page48/post/<uuid>`. */
+const PAGE48_POST_LINK =
+	/https?:\/\/\S*?\/page48\/post\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\S*/i;
+
+/**
+ * Take the first Page48 post link out of pasted `text`. Returns the post id plus what
+ * is left of the text without the link, so pasting a link can become a quote.
+ */
+export function takeQuotedPostLink(text: string): { postId: string; rest: string } | null {
+	const match = text.match(PAGE48_POST_LINK);
+	if (!match) return null;
+
+	const rest = text
+		.replace(PAGE48_POST_LINK, ' ')
+		.replace(/[ \t]{2,}/g, ' ')
+		.trim();
+	return { postId: match[1].toLowerCase(), rest };
 }
 
 /**

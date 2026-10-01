@@ -14,6 +14,7 @@ export interface Page48ThreadPostInput {
 	images?: Page48ImageRef[];
 	videos?: { filename: string; width: number; height: number; duration: number }[];
 	poll?: { options: string[] } | null;
+	quotedPostId?: string | null;
 }
 
 export interface Page48ThreadResponse {

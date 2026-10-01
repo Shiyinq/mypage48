@@ -2003,6 +2003,7 @@
 			"videoUnreadable": "この動画は読み込めません。",
 			"addEmoji": "絵文字を追加",
 			"emojiTooLong": "文字数の上限に達しました。",
+			"quoteNotFound": "引用した投稿を開けませんでした。",
 			"newPost": "新しい投稿を作成"
 		},
 		"poll": {

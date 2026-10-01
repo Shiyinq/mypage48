@@ -2009,6 +2009,7 @@
 			"videoUnreadable": "Video tidak bisa dibaca.",
 			"addEmoji": "Tambahkan emoji",
 			"emojiTooLong": "Batas karakter tercapai.",
+			"quoteNotFound": "Tidak bisa membuka postingan yang dikutip.",
 			"newPost": "Buat postingan baru"
 		},
 		"poll": {

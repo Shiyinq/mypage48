@@ -8,9 +8,11 @@
 
 	interface Props {
 		post: Page48Post;
+		/** Read-only previews (e.g. inside the composer) keep the poll non-votable. */
+		interactive?: boolean;
 	}
 
-	let { post }: Props = $props();
+	let { post, interactive = true }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -23,10 +25,11 @@
 	);
 	let pollRemaining = $derived(post.poll ? formatPollRemaining(post.poll.endsAt, now) : '');
 	let canVote = $derived(
-		isAuthenticated.value && !!post.poll && !pollExpired && !post.poll.myOptionId
+		interactive && isAuthenticated.value && !!post.poll && !pollExpired && !post.poll.myOptionId
 	);
+	// A read-only preview has no way to vote, so it shows the running result straight away.
 	let showPollResults = $derived(
-		!!post.poll && (pollExpired || !isAuthenticated.value || !!post.poll.myOptionId)
+		!!post.poll && (!interactive || pollExpired || !isAuthenticated.value || !!post.poll.myOptionId)
 	);
 
 	$effect(() => {

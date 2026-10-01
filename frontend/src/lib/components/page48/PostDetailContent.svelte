@@ -216,13 +216,27 @@
 		replyTree = removeFromReplyTree(replyTree, postId);
 	}
 
-	async function handleReply(content: string, files: File[], video: VideoDraft | null) {
+	async function handleReply(
+		content: string,
+		files: File[],
+		video: VideoDraft | null,
+		poll: { options: string[] } | null,
+		quotedPostId: string | null
+	) {
 		const target = replyTarget ?? focused;
 		if (!target) return;
 		try {
 			const images = files.length > 0 ? await uploadPage48Images(files) : [];
 			const videos = video ? [await uploadPage48Video(video)] : [];
-			await page48Api.createPost(content, images, videos, target.postId);
+			// Replies can't carry a poll (server rule), so `poll` is always null here.
+			await page48Api.createPost(
+				content,
+				images,
+				videos,
+				target.postId,
+				poll,
+				quotedPostId ?? undefined
+			);
 			showToast(t('page48.post.replySent'), 'success');
 			// A reply only shows up here when it answers the focused post or one of the
 			// listed replies. Anything else — a chain continuation, or the parent post shown

@@ -153,6 +153,13 @@
 								class="pointer-events-auto font-semibold text-red-500 hover:underline cursor-pointer"
 								>{part.text}</UserHoverCard
 							>
+						{:else if part.link}
+							<a
+								href={part.link}
+								target="_blank"
+								rel="noopener noreferrer nofollow"
+								class="pointer-events-auto text-blue-500 hover:underline break-all">{part.text}</a
+							>
 						{:else}
 							{part.text}
 						{/if}
@@ -160,7 +167,7 @@
 				</p>
 			{/if}
 
-			<PostPoll {post} />
+			<PostPoll {post} {interactive} />
 
 			<PostMedia
 				images={post.images ?? []}

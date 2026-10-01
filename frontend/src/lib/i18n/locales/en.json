@@ -2005,6 +2005,7 @@
 			"videoUnreadable": "This video can't be read.",
 			"addEmoji": "Add emoji",
 			"emojiTooLong": "Character limit reached.",
+			"quoteNotFound": "Couldn't open the quoted post.",
 			"newPost": "Create a new post"
 		},
 		"poll": {

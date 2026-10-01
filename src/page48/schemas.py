@@ -80,6 +80,8 @@ class ThreadPostItem(BaseModel):
     videos: list[VideoRef] = Field(default_factory=list, max_length=1)
     poll: Optional[CreatePollRequest] = None
     tags: list[str] = Field(default_factory=list)
+    # Each thread post may quote its own post, exactly like a standalone one.
+    quotedPostId: Optional[str] = None
 
 
 class CreateThreadRequest(BaseModel):

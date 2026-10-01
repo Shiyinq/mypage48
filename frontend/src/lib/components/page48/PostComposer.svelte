@@ -31,6 +31,7 @@
 		POLL_MAX_OPTIONS,
 		POLL_MIN_OPTIONS,
 		searchMentionCandidates,
+		takeQuotedPostLink,
 		type MentionCandidate,
 		type PostDraftInput,
 		type VideoDraft
@@ -43,7 +44,8 @@
 			content: string,
 			images: File[],
 			video: VideoDraft | null,
-			poll: { options: string[] } | null
+			poll: { options: string[] } | null,
+			quotedPostId: string | null
 		) => Promise<void>;
 		/** Only provided where threads make sense (the feed, not the reply composer). */
 		onPostThread?: (drafts: PostDraftInput[]) => Promise<void>;
@@ -51,7 +53,7 @@
 		placeholder?: string;
 		/** Focus the textarea on mount (e.g. when the composer is opened in a modal). */
 		autofocus?: boolean;
-		/** When set, this composer publishes a quote of that post. */
+		/** Seeds the composer with a quote (e.g. opened from the Repost menu). */
 		quotedPost?: Page48Post | null;
 		onRemoveQuote?: () => void;
 		/**
@@ -100,6 +102,9 @@
 	/** Reply mode hides the tool row until the user engages the composer. */
 	let composerActive = $state(false);
 	let pollOptions = $state<string[]>(['', '']);
+	/** The quote attached to this draft: seeded by the parent, replaced by a paste. */
+	let quoteOverride = $state<Page48Post | null | undefined>(undefined);
+	let quote = $derived(quoteOverride === undefined ? quotedPost : quoteOverride);
 	/** Posts already queued for the thread (the active draft is the one below). */
 	let threadItems = $state<PostDraftInput[]>([]);
 	let textareaEl = $state<HTMLTextAreaElement>();
@@ -369,7 +374,8 @@
 			content,
 			images: [...images],
 			video,
-			poll: pollOpen ? { options: pollDraft } : null
+			poll: pollOpen ? { options: pollDraft } : null,
+			quotedPostId: quote?.postId ?? null
 		};
 	}
 
@@ -378,7 +384,8 @@
 			draft.content.trim().length > 0 ||
 			draft.images.length > 0 ||
 			!!draft.video ||
-			(!!draft.poll && draft.poll.options.length >= POLL_MIN_OPTIONS)
+			(!!draft.poll && draft.poll.options.length >= POLL_MIN_OPTIONS) ||
+			!!draft.quotedPostId
 		);
 	}
 
@@ -389,6 +396,7 @@
 		imagePreviews = [];
 		clearVideo();
 		closePoll();
+		quoteOverride = undefined;
 		emojiOpen = false;
 		void tick().then(() => {
 			if (textareaEl) textareaEl.style.height = 'auto';
@@ -414,6 +422,7 @@
 			parts.push(t('page48.aria.imageCount', { count: draft.images.length }));
 		if (draft.video) parts.push(t('page48.composer.addVideo'));
 		if (draft.poll) parts.push(t('page48.poll.create'));
+		if (draft.quotedPostId) parts.push(t('page48.repostMenu.quote'));
 		return parts.join(' · ');
 	}
 
@@ -433,6 +442,38 @@
 	function closePoll() {
 		pollOpen = false;
 		pollOptions = ['', ''];
+	}
+
+	/** Drop the quote — whether it came from the host card or a pasted link. */
+	function removeQuote() {
+		quoteOverride = null;
+		onRemoveQuote?.();
+	}
+
+	/** A quote and a poll can't coexist (the server rejects the pair). */
+	function attachQuote(post: Page48Post) {
+		quoteOverride = post;
+		closePoll();
+	}
+
+	/**
+	 * Pasting a Page48 post link quotes that post, like X: the link is taken out of
+	 * the text and the post is fetched for the preview.
+	 */
+	async function handlePaste(event: ClipboardEvent) {
+		const text = event.clipboardData?.getData('text') ?? '';
+		const taken = takeQuotedPostLink(text);
+		if (!taken) return;
+
+		event.preventDefault();
+		try {
+			attachQuote(await page48Api.getPost(taken.postId));
+			if (taken.rest) await insertAtCaret(taken.rest);
+		} catch {
+			// Keep the raw text so the pasted link is not lost.
+			showToast(t('page48.composer.quoteNotFound'), 'error');
+			await insertAtCaret(text);
+		}
 	}
 
 	function addPollOption() {
@@ -463,7 +504,7 @@
 		const drafts = [...threadItems];
 		const active = currentDraft();
 		// A quote may be published with no text of its own.
-		if (draftHasContent(active) || quotedPost) drafts.push(active);
+		if (draftHasContent(active) || quote) drafts.push(active);
 		if (drafts.length === 0) return;
 
 		// Extra drafts only exist when a thread handler was provided.
@@ -475,7 +516,7 @@
 				await onPostThread?.(drafts);
 			} else {
 				const [only] = drafts;
-				await onPost(only.content, only.images, only.video, only.poll);
+				await onPost(only.content, only.images, only.video, only.poll, only.quotedPostId ?? null);
 			}
 			threadItems = [];
 			resetDraft();
@@ -487,7 +528,7 @@
 	}
 
 	let canSubmit = $derived(
-		(draftHasContent(currentDraft()) || threadItems.length > 0 || !!quotedPost) && pollReady
+		(draftHasContent(currentDraft()) || threadItems.length > 0 || !!quote) && pollReady
 	);
 	let isThread = $derived(threadItems.length > 0);
 
@@ -587,8 +628,8 @@
 
 		<div class="flex items-center gap-3">
 			<div class="relative min-w-0 flex-1">
-				<!-- Highlight layer. The textarea's own text is transparent so mentions and
-				     hashtags can be coloured as they are typed. -->
+				<!-- Highlight layer. The textarea's own text is transparent so mentions,
+				     hashtags and links can be coloured as they are typed. -->
 				<div
 					aria-hidden="true"
 					class={`pointer-events-none absolute inset-0 select-none overflow-hidden text-gray-900 dark:text-gray-100 ${CONTENT_TEXT_CLASS} ${showToolRow ? 'pb-2' : ''}`}
@@ -598,6 +639,8 @@
 							<span class="text-red-500">{part.text}</span>
 						{:else if part.mention}
 							<span class="font-semibold text-red-500">{part.text}</span>
+						{:else if part.link}
+							<span class="text-blue-500">{part.text}</span>
 						{:else}
 							{part.text}
 						{/if}
@@ -615,6 +658,7 @@
 						syncMentionState();
 					}}
 					onkeydown={handleMentionKeydown}
+					onpaste={handlePaste}
 					onblur={closeMentions}
 					onfocus={() => (composerActive = true)}
 				></textarea>
@@ -728,8 +772,8 @@
 		{/if}
 
 		<!-- Quoted post being replied to by this composer -->
-		{#if quotedPost}
-			<QuotedPostCard post={quotedPost} removable onRemove={onRemoveQuote} />
+		{#if quote}
+			<QuotedPostCard post={quote} removable onRemove={removeQuote} />
 		{/if}
 
 		{#if showToolRow}

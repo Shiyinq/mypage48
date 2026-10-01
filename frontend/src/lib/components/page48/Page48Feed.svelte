@@ -148,7 +148,13 @@
 	async function buildThreadItem(draft: PostDraftInput) {
 		const images = draft.images.length > 0 ? await uploadPage48Images(draft.images) : [];
 		const videos = draft.video ? [await uploadPage48Video(draft.video)] : [];
-		return { content: draft.content, images, videos, poll: draft.poll };
+		return {
+			content: draft.content,
+			images,
+			videos,
+			poll: draft.poll,
+			quotedPostId: draft.quotedPostId ?? null
+		};
 	}
 
 	async function handleCreateThread(drafts: PostDraftInput[]) {
@@ -176,12 +182,20 @@
 		content: string,
 		files: File[],
 		video: VideoDraft | null,
-		poll: { options: string[] } | null
+		poll: { options: string[] } | null,
+		quotedPostId: string | null
 	) {
 		try {
 			const images = files.length > 0 ? await uploadPage48Images(files) : [];
 			const videos = video ? [await uploadPage48Video(video)] : [];
-			const newPost = await page48Api.createPost(content, images, videos, undefined, poll);
+			const newPost = await page48Api.createPost(
+				content,
+				images,
+				videos,
+				undefined,
+				poll,
+				quotedPostId ?? undefined
+			);
 			if (newPost) {
 				posts = [newPost, ...posts];
 				showToast(t('page48.feed.postSuccess'), 'success');
