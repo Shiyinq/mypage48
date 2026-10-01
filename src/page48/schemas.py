@@ -133,6 +133,7 @@ class PostResponse(BaseModel):
 
     likesCount: int = 0
     repostCount: int = 0
+    quoteCount: int = 0
     bookmarksCount: int = 0
 
     isEdited: bool = False

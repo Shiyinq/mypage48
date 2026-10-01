@@ -154,6 +154,7 @@ class Page48Service:
         user_map: Optional[dict] = None,
         poll_counts: Optional[dict] = None,
         thread_count: int = 0,
+        quote_count: int = 0,
     ) -> PostResponse:
         """Helper to format a raw db dict into PostResponse."""
         if not user_interactions:
@@ -233,6 +234,7 @@ class Page48Service:
             tags=post.get("tags", []),
             likesCount=post.get("likesCount", 0),
             repostCount=post.get("repostCount", 0),
+            quoteCount=quote_count,
             bookmarksCount=post.get("bookmarksCount", 0),
             isEdited=post.get("isEdited", False),
             createdAt=post["createdAt"],
@@ -272,6 +274,8 @@ class Page48Service:
         poll_counts = await self.repository.count_poll_votes(poll_post_ids)
 
         thread_counts = await self._count_self_threads(posts)
+        # Live, like the activity tabs: quotes are never denormalized on the post.
+        quote_counts = await self.repository.count_quotes_for_posts(post_ids)
 
         author_ids = list({p["userId"] for p in posts if p.get("userId")})
         users = await self.user_repository.get_users_by_ids(author_ids)
@@ -288,6 +292,7 @@ class Page48Service:
                     user_map,
                     poll_counts.get(p["postId"]),
                     thread_counts.get(p["postId"], 0),
+                    quote_counts.get(p["postId"], 0),
                 )
             )
 

@@ -299,6 +299,8 @@
 </div>
 
 {#snippet rail(post: Page48Post, overVideo: boolean)}
+	<!-- Quotes count towards the repost icon, like X. -->
+	{@const repostTotal = post.repostCount + post.quoteCount}
 	<!-- Uploader avatar sits above the like icon (mobile & desktop). -->
 	<a
 		href={`/page48/u/${post.username}`}
@@ -347,8 +349,8 @@
 				post.isReposted ? 'text-green-500' : ''
 			}`}
 		/>
-		{#if post.repostCount > 0}
-			<span class={`${countCls} ${overVideo ? 'drop-shadow' : ''}`}>{post.repostCount}</span>
+		{#if repostTotal > 0}
+			<span class={`${countCls} ${overVideo ? 'drop-shadow' : ''}`}>{repostTotal}</span>
 		{/if}
 	</button>
 

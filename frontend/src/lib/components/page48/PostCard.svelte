@@ -465,7 +465,7 @@
 			<!-- Repost / Quote -->
 			<RepostMenu
 				isReposted={post.isReposted}
-				count={post.repostCount}
+				count={post.repostCount + post.quoteCount}
 				cursorClass={actionCursor}
 				disabled={!canInteract}
 				onRepost={() => interact(() => onRepost?.(post.postId))}

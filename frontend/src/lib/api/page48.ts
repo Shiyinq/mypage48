@@ -87,6 +87,8 @@ export interface Page48Post {
 
 	likesCount: number;
 	repostCount: number;
+	/** Quotes of this post, counted live; the icon shows it added to reposts. */
+	quoteCount: number;
 	bookmarksCount: number;
 
 	isEdited: boolean;

@@ -442,6 +442,19 @@ class Page48Repository:
     async def count_post_quotes(self, post_id: str) -> int:
         return await self.posts.count_documents({"quotedPostId": post_id})
 
+    async def count_quotes_for_posts(self, post_ids: List[str]) -> Dict[str, int]:
+        """Quote counts for many posts in one query, keyed by the quoted postId."""
+        if not post_ids:
+            return {}
+
+        pipeline = [
+            {"$match": {"quotedPostId": {"$in": post_ids}}},
+            {"$group": {"_id": "$quotedPostId", "count": {"$sum": 1}}},
+        ]
+        cursor = self.posts.aggregate(pipeline)
+        rows = await cursor.to_list(length=None)
+        return {row["_id"]: row["count"] for row in rows}
+
     async def count_post_reposts(self, post_id: str) -> int:
         return await self.reposts.count_documents({"postId": post_id})
 
