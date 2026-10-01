@@ -342,7 +342,6 @@
 				post={parentContext}
 				isThreadLine
 				showThreadLink={false}
-				clampContent={false}
 				onLike={handleReplyLike}
 				onRepost={handleReplyRepost}
 				onBookmark={handleReplyBookmark}
@@ -362,7 +361,6 @@
 				threadPosition={chainTotal > 1 ? { index: chainStart + i, total: chainTotal } : undefined}
 				showThreadLink={false}
 				showActivityLink={i === 0}
-				clampContent={false}
 				hideMedia={hideMedia && i === 0}
 				onLike={handleReplyLike}
 				onRepost={handleReplyRepost}
