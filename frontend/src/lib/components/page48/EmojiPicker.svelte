@@ -164,9 +164,11 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
+<!-- Sits above the Page48 modals (z-10060): the panel is opened from inside the
+     composer modal, and below it the whole panel would hide behind the backdrop. -->
 <div
 	use:portal
-	class="fixed inset-0 z-[10040]"
+	class="fixed inset-0 z-[10070]"
 	onclick={(event) => {
 		if (event.target === event.currentTarget) onClose();
 	}}
