@@ -9,10 +9,10 @@
 		Share,
 		ChevronUp,
 		ChevronDown,
-		LoaderCircle,
 		Video
 	} from 'lucide-svelte';
 	import { page48Api, type Page48Post } from '$lib/api/page48';
+	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
 	import { ErrorState } from '$lib/components';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
@@ -177,7 +177,7 @@
 	>
 		{#if loading}
 			<div class="h-full flex items-center justify-center">
-				<LoaderCircle size={26} class="animate-spin text-gray-400" />
+				<Page48Spinner class="h-[26px] w-[26px]" />
 			</div>
 		{:else if error}
 			<div class="h-full flex items-center justify-center p-6">

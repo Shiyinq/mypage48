@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
-	import { ArrowLeft, LoaderCircle } from 'lucide-svelte';
+	import { ArrowLeft } from 'lucide-svelte';
 	import { page48Api, type PostUserItem } from '$lib/api/page48';
+	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import UserListItem from '$lib/components/page48/UserListItem.svelte';
 	import PostActivityRowsSkeleton from '$lib/components/page48/PostActivityRowsSkeleton.svelte';
@@ -135,7 +136,7 @@
 
 			{#if loadingMore}
 				<div class="flex justify-center p-4">
-					<LoaderCircle size={20} class="animate-spin text-gray-400" />
+					<Page48Spinner />
 				</div>
 			{:else if hasMore}
 				<div class="p-4 flex justify-center">

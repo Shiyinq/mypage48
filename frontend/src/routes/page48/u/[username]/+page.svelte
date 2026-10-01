@@ -2,9 +2,10 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { Repeat2, Settings, LoaderCircle, Copy, Play, Pin } from 'lucide-svelte';
+	import { Repeat2, Settings, Copy, Play, Pin } from 'lucide-svelte';
 	import { page48Api, type Page48Post, type Page48UserProfile } from '$lib/api/page48';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
+	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
 	import UserMenu from '$lib/components/page48/UserMenu.svelte';
 	import FollowButton from '$lib/components/page48/FollowButton.svelte';
@@ -579,7 +580,7 @@
 
 			{#if loadingMore}
 				<div class="p-4 flex justify-center">
-					<LoaderCircle size={20} class="animate-spin text-gray-400" />
+					<Page48Spinner />
 				</div>
 			{/if}
 
@@ -629,7 +630,7 @@
 
 			{#if loadingMore}
 				<div class="p-4 flex justify-center">
-					<LoaderCircle size={20} class="animate-spin text-gray-400" />
+					<Page48Spinner />
 				</div>
 			{/if}
 
@@ -678,7 +679,7 @@
 
 				{#if loadingMore}
 					<div class="p-4 flex justify-center">
-						<LoaderCircle size={20} class="animate-spin text-gray-400" />
+						<Page48Spinner />
 					</div>
 				{/if}
 

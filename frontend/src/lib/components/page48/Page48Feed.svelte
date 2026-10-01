@@ -5,6 +5,7 @@
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import PostComposer from '$lib/components/page48/PostComposer.svelte';
 	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
+	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import { ErrorState } from '$lib/components';
 	import { fade } from 'svelte/transition';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
@@ -253,9 +254,7 @@
 
 			{#if loadingMore}
 				<div class="p-4 flex justify-center">
-					<div
-						class="w-6 h-6 border-2 border-red-200 border-t-red-600 rounded-full animate-spin"
-					></div>
+					<Page48Spinner />
 				</div>
 			{/if}
 

@@ -6,6 +6,7 @@
 	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
+	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import { ErrorState } from '$lib/components';
 	import { page48NavbarStore } from '$lib/stores/page48.svelte';
 	import { sharePost, togglePostInteraction, getActiveMedia } from '$lib/utils/page48';
@@ -191,9 +192,7 @@
 
 			{#if loadingMore}
 				<div class="p-4 flex justify-center">
-					<div
-						class="w-6 h-6 border-2 border-red-200 border-t-red-600 rounded-full animate-spin"
-					></div>
+					<Page48Spinner />
 				</div>
 			{/if}
 

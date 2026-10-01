@@ -156,13 +156,13 @@
 		bind:this={track}
 		onscroll={handleScroll}
 		style={`aspect-ratio: ${stripRatio};`}
-		class={`scrollbar-hide relative flex max-h-[600px] snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain ${hasOverflow ? 'justify-start' : 'justify-center'}`}
+		class={`scrollbar-hide pointer-events-none relative flex max-h-[600px] snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain ${hasOverflow ? 'justify-start' : 'justify-center'}`}
 	>
 		{#each images as image, i (image.filename)}
 			<button
 				type="button"
 				style={`aspect-ratio: ${imageRatio(image)}; height: 100%;`}
-				class="relative shrink-0 cursor-zoom-in snap-start overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 dark:border-white/5 dark:bg-zinc-800"
+				class="pointer-events-auto relative shrink-0 cursor-zoom-in snap-start overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 dark:border-white/5 dark:bg-zinc-800"
 				onpointerdown={(event) => (pointerStartX = event.clientX)}
 				onclick={(event) => handleSlideClick(i, event)}
 				aria-label={t('page48.aria.viewImage', { index: i + 1, total: images.length })}

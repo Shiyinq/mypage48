@@ -1,18 +1,17 @@
 <script lang="ts">
 	import { page48Api, type Page48Post } from '$lib/api/page48';
-	import { Heart, MessageCircle, Bookmark, Share, Check } from 'lucide-svelte';
-	import { OptimizedImage } from '$lib/components/common';
+	import { Heart, MessageCircle, Bookmark, Share } from 'lucide-svelte';
 	import PostMenu from '$lib/components/page48/PostMenu.svelte';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
 	import RepostMenu from '$lib/components/page48/RepostMenu.svelte';
 	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
 	import PostComposerModal from '$lib/components/page48/PostComposerModal.svelte';
 	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
+	import PostMedia from '$lib/components/page48/PostMedia.svelte';
+	import PostPoll from '$lib/components/page48/PostPoll.svelte';
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
-	import VideoPlayer from '$lib/components/page48/VideoPlayer.svelte';
-	import PostImageCarousel from '$lib/components/page48/PostImageCarousel.svelte';
 	import { portal } from '$lib/actions/portal';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -20,19 +19,7 @@
 	import { activityNavStore } from '$lib/stores/page48Nav.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
-	import { parseUTCDate } from '$lib/utils/time';
-	import {
-		formatPollRemaining,
-		formatPostTime,
-		getActiveMedia,
-		imageRatio,
-		measureMissingImageSizes,
-		parseContent,
-		pollPercentage,
-		tagUrl,
-		userUrl,
-		voteOnPoll
-	} from '$lib/utils/page48';
+	import { formatPostTime, getActiveMedia, parseContent, tagUrl, userUrl } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	const { t } = useTranslation();
@@ -136,17 +123,6 @@
 	let lightboxOpen = $state(false);
 	let lightboxIndex = $state(0);
 
-	// A lone photo may not get taller than this; the box is capped by width
-	// instead (see below) so its ratio always matches the photo.
-	const IMAGE_MAX_HEIGHT = 500;
-
-	// Older posts stored no dimensions; measure the photo in the browser instead.
-	$effect(() => {
-		if (post.images?.length) return measureMissingImageSizes(post.images);
-	});
-
-	let singleImageRatio = $derived(post.images?.length === 1 ? imageRatio(post.images[0]) : 16 / 9);
-
 	// Show the owner menu (Edit/Delete) only for the signed-in author.
 	let isOwner = $derived(
 		!!userProfile.data &&
@@ -167,31 +143,6 @@
 
 	function interact(fn: () => void) {
 		if (canInteract) fn();
-	}
-
-	// Polls: public visitors can look but not vote (options stay disabled), and
-	// they get the running result since they can never vote. Signed-in users see
-	// the result once they voted or once the poll ended.
-	let now = $state(Date.now());
-	let pollExpired = $derived(
-		!!post.poll && (post.poll.isExpired || parseUTCDate(post.poll.endsAt).getTime() <= now)
-	);
-	let pollRemaining = $derived(post.poll ? formatPollRemaining(post.poll.endsAt, now) : '');
-	let canVote = $derived(canInteract && !!post.poll && !pollExpired && !post.poll.myOptionId);
-	let showPollResults = $derived(
-		!!post.poll && (pollExpired || !canInteract || !!post.poll.myOptionId)
-	);
-
-	$effect(() => {
-		if (!post.poll || pollExpired) return;
-		// Only the countdown label needs to move, once every 10s is plenty.
-		const timer = setInterval(() => (now = Date.now()), 10_000);
-		return () => clearInterval(timer);
-	});
-
-	function handleVote(optionId: string) {
-		if (!canVote) return;
-		void voteOnPoll(post, optionId);
 	}
 
 	function handleEditSaved(updated: Page48Post) {
@@ -439,106 +390,16 @@
 		{/if}
 
 		<!-- Poll -->
-		{#if post.poll}
-			<div class="relative z-[1] mt-3 flex flex-col gap-1.5">
-				{#each post.poll.options as option (option.id)}
-					{@const percentage = pollPercentage(option.votes, post.poll.totalVotes)}
-					{@const mine = option.id === post.poll.myOptionId}
-					<button
-						type="button"
-						class={`relative isolate w-full overflow-hidden rounded-xl border px-3 py-2 text-left transition-colors ${mine ? 'border-red-400 dark:border-red-500' : 'border-gray-200 dark:border-zinc-700'} ${canVote ? 'cursor-pointer hover:border-red-400 hover:bg-red-50/70 dark:hover:bg-red-950/20' : 'cursor-default'}`}
-						onclick={() => handleVote(option.id)}
-						aria-disabled={!canVote}
-						aria-label={t('page48.poll.voteFor', { option: option.text })}
-					>
-						{#if showPollResults}
-							<span
-								class={`absolute inset-y-0 left-0 -z-10 ${mine ? 'bg-red-500/20 dark:bg-red-500/25' : 'bg-gray-200/60 dark:bg-zinc-700/60'}`}
-								style={`width:${percentage}%`}
-							></span>
-						{/if}
-						<span class="flex items-center justify-between gap-3">
-							<span class="truncate text-[14px] font-medium text-gray-900 dark:text-gray-100">
-								{option.text}
-							</span>
-							{#if showPollResults}
-								<span class="flex shrink-0 items-center gap-1.5">
-									{#if mine}<Check size={14} class="text-red-500" />{/if}
-									<span
-										class={`text-[13px] font-semibold tabular-nums ${mine ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}
-									>
-										{percentage}%
-									</span>
-								</span>
-							{/if}
-						</span>
-					</button>
-				{/each}
+		<PostPoll {post} />
 
-				<p class="px-1 text-[13px] text-gray-500 dark:text-gray-400">
-					{#if pollExpired}
-						{t('page48.poll.ended')}
-					{:else}
-						{t('page48.poll.endsIn', { time: pollRemaining })}
-					{/if}
-					· {t('page48.poll.votes', { count: post.poll.totalVotes })}
-				</p>
-			</div>
-		{/if}
-
-		<!-- Post Images: single image inline, several as a swipeable carousel.
-		     The wrapper is decoration so the empty margins beside a centered photo
-		     still open the card; the media itself opts back in. -->
-		{#if !hideMedia && post.images && post.images.length > 0}
-			<div class="pointer-events-none relative z-[1] mt-3">
-				{#if post.images.length === 1}
-					{@const image = post.images[0]}
-					<!-- Same trick as VideoPlayer: keep the photo's own ratio and cap the box by
-					     width, so the photo fills it exactly (no crop, no letterbox bars). -->
-					<button
-						type="button"
-						class="pointer-events-auto relative mx-auto block w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 cursor-zoom-in dark:border-white/5 dark:bg-zinc-800"
-						style={`aspect-ratio: ${singleImageRatio}; max-width: min(100%, ${Math.round(
-							IMAGE_MAX_HEIGHT * singleImageRatio
-						)}px);`}
-						onclick={() => openLightbox(0)}
-						aria-label={t('page48.aria.viewImage', { index: 1, total: 1 })}
-					>
-						<OptimizedImage
-							src={image.url}
-							srcMedium={image.url_medium}
-							srcSmall={image.url_small}
-							blurHash={image.blurHash}
-							alt={t('page48.aria.media')}
-							class="w-full h-full object-cover"
-							objectFit="cover"
-							sizes="(max-width: 640px) 100vw, 600px"
-						/>
-					</button>
-				{:else}
-					<div class="pointer-events-auto">
-						<PostImageCarousel
-							images={post.images}
-							bind:index={lightboxIndex}
-							onOpen={openLightbox}
-						/>
-					</div>
-				{/if}
-			</div>
-		{/if}
-
-		<!-- Post Video (single, X/Twitter style: click to play) -->
-		{#if !hideMedia && post.videos && post.videos.length > 0 && post.videos[0].url}
-			<div class="pointer-events-none relative z-[1] mt-3">
-				<VideoPlayer
-					src={post.videos[0].url}
-					width={post.videos[0].width}
-					height={post.videos[0].height}
-					maxHeight={510}
-					controls
-					class="pointer-events-auto"
-				/>
-			</div>
+		<!-- Post media: photos (one inline, several as a carousel) and video -->
+		{#if !hideMedia}
+			<PostMedia
+				images={post.images ?? []}
+				videos={post.videos ?? []}
+				bind:index={lightboxIndex}
+				onOpen={openLightbox}
+			/>
 		{/if}
 
 		<!-- Quoted post preview -->
