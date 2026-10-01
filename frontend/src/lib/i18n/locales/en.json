@@ -1976,7 +1976,12 @@
 			"imageCount": "{count} images",
 			"prevImage": "Previous image",
 			"nextImage": "Next image",
-			"close": "Close"
+			"close": "Close",
+			"mentionSuggestions": "User suggestions"
+		},
+		"mentions": {
+			"noResults": "No users found",
+			"searching": "Searching…"
 		},
 		"composer": {
 			"placeholder": "What's new?",

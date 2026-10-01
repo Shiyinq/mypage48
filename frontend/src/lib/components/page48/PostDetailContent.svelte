@@ -14,6 +14,7 @@
 		togglePostInteraction,
 		uploadPage48Images,
 		uploadPage48Video,
+		type MentionCandidate,
 		type Page48Interaction,
 		type VideoDraft
 	} from '$lib/utils/page48';
@@ -50,6 +51,29 @@
 	let replies = $derived(flattenReplies(replyTree));
 	// The post the composer currently replies to (defaults to the focused post).
 	let replyTarget = $state<Page48Post | null>(null);
+
+	/**
+	 * Users offered after an `@` in the reply composer: the post being viewed plus
+	 * everyone who commented on it, deduped.
+	 */
+	let mentionCandidates = $derived.by<MentionCandidate[]>(() => {
+		const seen = new Set<string>();
+		const items: MentionCandidate[] = [];
+
+		for (const post of [focused, parentContext, ...chain, ...replies]) {
+			if (!post) continue;
+			const handle = post.username.toLowerCase();
+			if (seen.has(handle)) continue;
+			seen.add(handle);
+			items.push({
+				username: post.username,
+				name: post.userDisplayName,
+				profilePicture: post.userProfilePicture_small ?? post.userProfilePicture
+			});
+		}
+
+		return items;
+	});
 
 	// Below this many replies a comment's replies are shown nested (like Threads).
 	// At or above it they stay collapsed — the reply counter on the comment icon is
@@ -264,6 +288,7 @@
 				isReply
 				placeholder={t('page48.composer.replyPlaceholder', { username: post.username })}
 				onPost={handleReply}
+				{mentionCandidates}
 			/>
 		</div>
 	{/if}

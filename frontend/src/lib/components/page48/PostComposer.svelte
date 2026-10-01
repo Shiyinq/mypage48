@@ -12,12 +12,14 @@
 	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import EmojiPicker from '$lib/components/page48/EmojiPicker.svelte';
+	import MentionSuggestions from '$lib/components/page48/MentionSuggestions.svelte';
 	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
-	import type { Page48Post } from '$lib/api/page48';
+	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import {
+		findActiveMention,
 		probeVideo,
 		PAGE48_IMAGE_MAX_BYTES,
 		PAGE48_MAX_IMAGES,
@@ -27,6 +29,8 @@
 		POLL_MAX_OPTION_LENGTH,
 		POLL_MAX_OPTIONS,
 		POLL_MIN_OPTIONS,
+		searchMentionCandidates,
+		type MentionCandidate,
 		type PostDraftInput,
 		type VideoDraft
 	} from '$lib/utils/page48';
@@ -49,6 +53,11 @@
 		/** When set, this composer publishes a quote of that post. */
 		quotedPost?: Page48Post | null;
 		onRemoveQuote?: () => void;
+		/**
+		 * Users offered after an `@`: normally the author and commenters of the post
+		 * being viewed. Who the viewer follows is added as a fallback automatically.
+		 */
+		mentionCandidates?: MentionCandidate[];
 	}
 
 	let {
@@ -58,13 +67,18 @@
 		placeholder,
 		autofocus = false,
 		quotedPost = null,
-		onRemoveQuote
+		onRemoveQuote,
+		mentionCandidates = []
 	}: Props = $props();
 
 	let resolvedPlaceholder = $derived(placeholder ?? t('page48.composer.placeholder'));
 
 	// Matches the backend limit (CreatePostRequest.content: max_length=500).
 	const MAX_CONTENT_LENGTH = 500;
+
+	/** Suggestions shown at once, and how many follows to search as a fallback. */
+	const MENTION_LIMIT = 6;
+	const MENTION_FOLLOWING_LIMIT = 50;
 
 	let content = $state('');
 	let images = $state<File[]>([]);
@@ -85,6 +99,15 @@
 	let fileInput = $state<HTMLInputElement>();
 	let videoInput = $state<HTMLInputElement>();
 
+	/** The `@handle` being typed, or null when no suggestion panel should show. */
+	let mentionQuery = $state<string | null>(null);
+	/** Where the handle starts and ends in `content`, so picking replaces all of it. */
+	let mentionRange = $state<{ start: number; end: number } | null>(null);
+	let mentionActive = $state(0);
+	/** Who the viewer follows, fetched at most once and only to widen the search. */
+	let followingCandidates = $state<MentionCandidate[]>([]);
+	let followingLoading = $state(false);
+
 	// Focus when the composer is opened as a modal. Deferred by one frame because the
 	// modal is portalled (its node is moved to <body> right after mount), and moving a
 	// node in the DOM blurs anything focused inside it during that same mount pass.
@@ -98,28 +121,149 @@
 		el.style.height = el.scrollHeight + 'px';
 	}
 
-	/** Insert an emoji at the caret, keeping focus and the caret in the textarea. */
-	async function insertEmoji(char: string) {
+	/** Insert text at the caret (or over a range), keeping focus and caret in place. */
+	async function insertAtCaret(text: string, rangeStart?: number, rangeEnd?: number) {
 		const el = textareaEl;
-		if (!el) {
-			if (content.length + char.length <= MAX_CONTENT_LENGTH) content += char;
-			return;
-		}
+		const start = rangeStart ?? el?.selectionStart ?? content.length;
+		const end = rangeEnd ?? el?.selectionEnd ?? start;
 
-		const start = el.selectionStart ?? content.length;
-		const end = el.selectionEnd ?? start;
-		if (content.length - (end - start) + char.length > MAX_CONTENT_LENGTH) {
+		if (content.length - (end - start) + text.length > MAX_CONTENT_LENGTH) {
 			showToast(t('page48.composer.emojiTooLong'), 'error');
 			return;
 		}
 
-		content = content.slice(0, start) + char + content.slice(end);
-		const caret = start + char.length;
+		content = content.slice(0, start) + text + content.slice(end);
+		const caret = start + text.length;
 
+		if (!el) return;
 		await tick();
 		el.focus();
 		el.setSelectionRange(caret, caret);
 		autoGrow(el);
+	}
+
+	/** Insert an emoji at the caret, keeping focus and the caret in the textarea. */
+	async function insertEmoji(char: string) {
+		await insertAtCaret(char);
+	}
+
+	/**
+	 * Suggestions for the handle being typed: the in-context users first (the post
+	 * and its comments), then who the viewer follows, deduped and without the
+	 * viewer themself.
+	 */
+	let mentionItems = $derived.by(() => {
+		const query = mentionQuery;
+		if (query === null) return [] as MentionCandidate[];
+
+		const self = userProfile.data?.username?.toLowerCase() ?? null;
+		const seen = new Set<string>();
+		const items: MentionCandidate[] = [];
+
+		for (const source of [mentionCandidates, followingCandidates]) {
+			for (const candidate of searchMentionCandidates(source, query)) {
+				const handle = candidate.username.toLowerCase();
+				if (handle === self || seen.has(handle)) continue;
+				seen.add(handle);
+				items.push(candidate);
+				if (items.length >= MENTION_LIMIT) return items;
+			}
+		}
+
+		return items;
+	});
+
+	// `mentionActive` can point past a list that just shrank; clamp for both the
+	// highlight and the item Enter inserts.
+	let activeMentionIndex = $derived(
+		mentionItems.length === 0 ? 0 : Math.min(mentionActive, mentionItems.length - 1)
+	);
+
+	/** Pick up the `@` under the caret after every edit. */
+	function syncMentionState() {
+		const el = textareaEl;
+		if (!el) return;
+
+		const found = findActiveMention(content, el.selectionStart ?? content.length);
+		if (!found) {
+			closeMentions();
+			return;
+		}
+
+		mentionQuery = found.query;
+		mentionRange = { start: found.start, end: found.end };
+		mentionActive = 0;
+		emojiOpen = false;
+
+		// Nothing in context matches, so widen the search to who the viewer follows.
+		if (searchMentionCandidates(mentionCandidates, found.query).length === 0) {
+			void loadFollowingCandidates();
+		}
+	}
+
+	/** Load who the viewer follows, once, for suggestions outside the current post. */
+	async function loadFollowingCandidates() {
+		if (followingLoading || followingCandidates.length > 0) return;
+		const username = userProfile.data?.username;
+		if (!username) return;
+
+		followingLoading = true;
+		try {
+			const response = await page48Api.getFollowing(username, MENTION_FOLLOWING_LIMIT);
+			followingCandidates = response.data.map((user) => ({
+				username: user.username,
+				name: user.name,
+				profilePicture: user.profilePicture_small ?? user.profilePicture
+			}));
+		} catch {
+			// Suggestions simply stay limited to the in-context users.
+		} finally {
+			followingLoading = false;
+		}
+	}
+
+	function closeMentions() {
+		mentionQuery = null;
+		mentionRange = null;
+	}
+
+	async function pickMention(candidate: MentionCandidate | undefined) {
+		const range = mentionRange;
+		if (!candidate || !range) return;
+		closeMentions();
+		// A trailing space so typing continues right after the handle.
+		await insertAtCaret(`@${candidate.username} `, range.start, range.end);
+	}
+
+	/** Returns true when the key was consumed by the suggestion panel. */
+	function handleMentionKeydown(event: KeyboardEvent): boolean {
+		if (mentionQuery === null) return false;
+
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			// Keep the composer modal's window-level Escape handler out of this.
+			event.stopPropagation();
+			closeMentions();
+			return true;
+		}
+
+		const count = mentionItems.length;
+		if (count === 0) return false;
+
+		if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+			event.preventDefault();
+			const step = event.key === 'ArrowDown' ? 1 : -1;
+			mentionActive = (activeMentionIndex + step + count) % count;
+			return true;
+		}
+
+		if (event.key === 'Enter' || event.key === 'Tab') {
+			event.preventDefault();
+			void pickMention(mentionItems[activeMentionIndex]);
+			return true;
+		}
+
+		return false;
 	}
 
 	function handleFileSelect(e: Event) {
@@ -438,7 +582,12 @@
 				maxlength={MAX_CONTENT_LENGTH}
 				class={`min-w-0 flex-1 bg-transparent text-gray-900 dark:text-gray-100 text-[17px] sm:text-[20px] resize-none outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 leading-relaxed ${showToolRow ? 'pb-2' : ''}`}
 				rows="1"
-				oninput={(e) => autoGrow(e.target as HTMLTextAreaElement)}
+				oninput={(e) => {
+					autoGrow(e.target as HTMLTextAreaElement);
+					syncMentionState();
+				}}
+				onkeydown={handleMentionKeydown}
+				onblur={closeMentions}
 				onfocus={() => (composerActive = true)}
 			></textarea>
 			{#if !showToolRow}
@@ -671,6 +820,18 @@
 		{/if}
 	</div>
 </div>
+
+{#if mentionQuery !== null}
+	<MentionSuggestions
+		anchor={textareaEl}
+		items={mentionItems}
+		activeIndex={activeMentionIndex}
+		loading={followingLoading}
+		onHover={(index) => (mentionActive = index)}
+		onPick={pickMention}
+		onClose={closeMentions}
+	/>
+{/if}
 
 {#if emojiOpen}
 	<EmojiPicker anchor={emojiButton} onPick={insertEmoji} onClose={() => (emojiOpen = false)} />

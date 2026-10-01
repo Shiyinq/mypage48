@@ -95,6 +95,117 @@ export function tagUrl(tag: string, media?: Page48Media | null): string {
 	return media ? `${base}?media=${media}` : base;
 }
 
+/** Build a Page48 profile URL. Usernames are stored lower case. */
+export function userUrl(username: string): string {
+	return `/page48/u/${encodeURIComponent(username.toLowerCase())}`;
+}
+
+/** A user the composer can suggest after an `@`. */
+export interface MentionCandidate {
+	username: string;
+	name: string;
+	profilePicture?: string | null;
+}
+
+/** A run of post content: plain text, a `#hashtag`, or an `@mention`. */
+export interface ContentPart {
+	text: string;
+	tag?: string;
+	mention?: string;
+}
+
+/** Matches a `#hashtag`, or an `@mention` that starts a word (`foo@bar` stays text). */
+const CONTENT_PATTERN = '#([\\p{L}\\p{N}_]+)|(^|[^\\p{L}\\p{N}_@])@([\\p{L}\\p{N}_]{1,50})';
+
+const USERNAME_CHAR = /[\p{L}\p{N}_]/u;
+
+// Mirrors the backend's `username` field limit.
+const MAX_MENTION_LENGTH = 50;
+
+/**
+ * Split content into plain text, `#hashtag` and `@mention` runs so both can be
+ * rendered as links. `tag`/`mention` are lower-cased for URL building; `text`
+ * keeps exactly what the author typed.
+ */
+export function parseContent(content: string): ContentPart[] {
+	const parts: ContentPart[] = [];
+	const regex = new RegExp(CONTENT_PATTERN, 'gu');
+	let lastIndex = 0;
+	let match: RegExpExecArray | null;
+
+	while ((match = regex.exec(content)) !== null) {
+		const [full, tag, lead, mention] = match;
+		// `lead` is the character matched to prove the `@` starts a mention; it
+		// belongs to the plain-text run, so the mention itself begins after it.
+		const start = match.index + (lead ? lead.length : 0);
+
+		if (start > lastIndex) {
+			parts.push({ text: content.slice(lastIndex, start) });
+		}
+		if (tag) {
+			parts.push({ text: full, tag: tag.toLowerCase() });
+		} else if (mention) {
+			parts.push({ text: full.slice(lead.length), mention: mention.toLowerCase() });
+		}
+		lastIndex = match.index + full.length;
+	}
+
+	if (lastIndex < content.length) {
+		parts.push({ text: content.slice(lastIndex) });
+	}
+	return parts;
+}
+
+/**
+ * The `@handle` the caret currently sits inside, or null when no mention is being
+ * typed. `end` covers the whole handle so picking replaces all of it even when the
+ * caret is in the middle of it.
+ */
+export function findActiveMention(
+	text: string,
+	caret: number
+): { query: string; start: number; end: number } | null {
+	const upTo = text.slice(0, caret);
+	const at = upTo.lastIndexOf('@');
+	if (at === -1) return null;
+
+	// An `@` glued to a word is an address, not a mention.
+	if (at > 0 && USERNAME_CHAR.test(upTo[at - 1])) return null;
+
+	const query = upTo.slice(at + 1);
+	if (query.length > MAX_MENTION_LENGTH) return null;
+	for (const char of query) {
+		if (!USERNAME_CHAR.test(char)) return null;
+	}
+
+	let end = caret;
+	while (end < text.length && USERNAME_CHAR.test(text[end])) end += 1;
+
+	return { query: query.toLowerCase(), start: at, end };
+}
+
+/** Prefix matches on the handle or the display name, handles first. */
+export function searchMentionCandidates(
+	candidates: MentionCandidate[],
+	query: string
+): MentionCandidate[] {
+	const needle = query.toLowerCase();
+	if (!needle) return candidates;
+
+	const byHandle: MentionCandidate[] = [];
+	const byName: MentionCandidate[] = [];
+
+	for (const candidate of candidates) {
+		if (candidate.username.toLowerCase().startsWith(needle)) {
+			byHandle.push(candidate);
+		} else if (candidate.name.toLowerCase().includes(needle)) {
+			byName.push(candidate);
+		}
+	}
+
+	return [...byHandle, ...byName];
+}
+
 /**
  * Read an image file's natural dimensions before uploading, so the feed knows the
  * right box for it. Falls back to 0 when the browser can't decode the file.

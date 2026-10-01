@@ -1980,7 +1980,12 @@
 			"imageCount": "{count} gambar",
 			"prevImage": "Gambar sebelumnya",
 			"nextImage": "Gambar berikutnya",
-			"close": "Tutup"
+			"close": "Tutup",
+			"mentionSuggestions": "Saran pengguna"
+		},
+		"mentions": {
+			"noResults": "Pengguna tidak ditemukan",
+			"searching": "Mencari…"
 		},
 		"composer": {
 			"placeholder": "Apa yang baru?",

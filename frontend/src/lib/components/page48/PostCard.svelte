@@ -25,8 +25,10 @@
 		getActiveMedia,
 		imageRatio,
 		measureMissingImageSizes,
+		parseContent,
 		pollPercentage,
 		tagUrl,
+		userUrl,
 		voteOnPoll
 	} from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -285,30 +287,7 @@
 		return url;
 	}
 
-	// Split content into plain text and `#hashtag` segments so hashtags can be
-	// rendered as clickable links instead of duplicated tag chips.
-	type ContentPart = { text: string; tag?: string };
-
-	function parseContent(content: string): ContentPart[] {
-		const parts: ContentPart[] = [];
-		const regex = /#([\p{L}\p{N}_]+)/gu;
-		let lastIndex = 0;
-		let match: RegExpExecArray | null;
-
-		while ((match = regex.exec(content)) !== null) {
-			if (match.index > lastIndex) {
-				parts.push({ text: content.slice(lastIndex, match.index) });
-			}
-			parts.push({ text: match[0], tag: match[1].toLowerCase() });
-			lastIndex = match.index + match[0].length;
-		}
-
-		if (lastIndex < content.length) {
-			parts.push({ text: content.slice(lastIndex) });
-		}
-		return parts;
-	}
-
+	// Hashtags and mentions inside the content, so neither needs a duplicated chip.
 	let contentParts = $derived(post.content ? parseContent(post.content) : []);
 	let inlineTags = $derived(
 		new Set(contentParts.filter((part) => part.tag).map((part) => part.tag as string))
@@ -376,7 +355,8 @@
 			</div>
 		</div>
 
-		<!-- Post Content (clickable hashtags; rest of the card opens post detail) -->
+		<!-- Post Content (clickable hashtags and mentions; rest of the card opens
+		     post detail) -->
 		{#if post.content}
 			<p
 				bind:this={contentEl}
@@ -387,6 +367,12 @@
 						<a
 							href={tagUrl(part.tag, activeMedia)}
 							class="pointer-events-auto text-red-500 hover:underline cursor-pointer">{part.text}</a
+						>
+					{:else if part.mention}
+						<a
+							href={userUrl(part.mention)}
+							class="pointer-events-auto font-semibold text-red-500 hover:underline cursor-pointer"
+							>{part.text}</a
 						>
 					{:else}
 						{part.text}

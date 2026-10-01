@@ -1974,7 +1974,12 @@
 			"imageCount": "画像 {count} 枚",
 			"prevImage": "前の画像",
 			"nextImage": "次の画像",
-			"close": "閉じる"
+			"close": "閉じる",
+			"mentionSuggestions": "ユーザーの候補"
+		},
+		"mentions": {
+			"noResults": "ユーザーが見つかりません",
+			"searching": "検索中…"
 		},
 		"composer": {
 			"placeholder": "いまどうしてる？",
