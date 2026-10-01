@@ -13,6 +13,7 @@ class Page48Repository:
         self.reposts = db["page48_reposts"]
         self.reports = db["page48_reports"]
         self.poll_votes = db["page48_poll_votes"]
+        self.follows = db["page48_follows"]
 
     async def insert_post(self, post_data: dict):
         return await self.posts.insert_one(post_data)
@@ -85,8 +86,13 @@ class Page48Repository:
         limit: int = 20,
         cursor: Optional[dict] = None,
         media: Optional[str] = None,
+        author_ids: Optional[List[str]] = None,
     ) -> List[dict]:
         conditions: List[dict] = [{"parentPostId": None}]
+
+        # Used by the "following" feed: only posts written by the given authors.
+        if author_ids is not None:
+            conditions.append({"userId": {"$in": author_ids}})
 
         media_filter = self._media_query(media)
         if media_filter:
@@ -465,6 +471,77 @@ class Page48Repository:
         query = self._with_interaction_cursor({"postId": post_id}, cursor)
         cursor_obj = (
             self.likes.find(query).sort([("createdAt", -1), ("_id", -1)]).limit(limit)
+        )
+        return await cursor_obj.to_list(length=limit)
+
+    # Follows
+    async def insert_follow(self, follower_id: str, following_id: str):
+        return await self.follows.insert_one(
+            {
+                "followerId": follower_id,
+                "followingId": following_id,
+                "createdAt": datetime.now(),
+            }
+        )
+
+    async def delete_follow(self, follower_id: str, following_id: str):
+        return await self.follows.delete_one(
+            {"followerId": follower_id, "followingId": following_id}
+        )
+
+    async def get_follow(self, follower_id: str, following_id: str) -> Optional[dict]:
+        return await self.follows.find_one(
+            {"followerId": follower_id, "followingId": following_id}
+        )
+
+    async def get_following_ids(self, follower_id: str) -> List[str]:
+        """Every account this user follows (ids only, index-only read)."""
+        cursor = self.follows.find({"followerId": follower_id}, {"followingId": 1})
+        rows = await cursor.to_list(length=None)
+        return [row["followingId"] for row in rows]
+
+    async def count_followers(self, user_id: str) -> int:
+        return await self.follows.count_documents({"followingId": user_id})
+
+    async def count_following(self, follower_id: str) -> int:
+        return await self.follows.count_documents({"followerId": follower_id})
+
+    async def get_followed_ids(
+        self, follower_id: str, user_ids: List[str]
+    ) -> List[str]:
+        """Which of `user_ids` this user already follows (for the follow buttons)."""
+        if not user_ids:
+            return []
+        cursor = self.follows.find(
+            {"followerId": follower_id, "followingId": {"$in": user_ids}},
+            {"followingId": 1},
+        )
+        rows = await cursor.to_list(length=None)
+        return [row["followingId"] for row in rows]
+
+    async def get_follow_edges(
+        self,
+        match_field: str,
+        user_id: str,
+        limit: int = 20,
+        cursor: Optional[dict] = None,
+    ) -> List[dict]:
+        """Follow rows where `match_field` (followingId or followerId) is the user."""
+        query: dict = {match_field: user_id}
+        if cursor:
+            cursor_id = cursor.get("_id")
+            if isinstance(cursor_id, str):
+                try:
+                    cursor_id = ObjectId(cursor_id)
+                except Exception:
+                    pass
+            query["$or"] = [
+                {"createdAt": {"$lt": cursor["createdAt"]}},
+                {"createdAt": cursor["createdAt"], "_id": {"$lt": cursor_id}},
+            ]
+
+        cursor_obj = (
+            self.follows.find(query).sort([("createdAt", -1), ("_id", -1)]).limit(limit)
         )
         return await cursor_obj.to_list(length=limit)
 

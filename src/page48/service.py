@@ -10,6 +10,7 @@ from src.config import Settings
 from src.infrastructure import AsyncBackgroundRunner
 from src.logging_config import create_logger
 from src.page48.exceptions import (
+    CannotFollowSelfError,
     CannotPinReplyError,
     CannotReportSelfError,
     InvalidPollOptionError,
@@ -48,6 +49,7 @@ from src.page48.schemas import (
     CreateThreadRequest,
     CreateThreadResponse,
     EditPostRequest,
+    FollowResponse,
     Page48Image,
     Page48UserProfileResponse,
     Page48Video,
@@ -743,19 +745,24 @@ class Page48Service:
         cursor: Optional[str] = None,
         user_id: Optional[str] = None,
         media: Optional[str] = None,
+        following: bool = False,
     ) -> PostPaginationResponse:
-        cursor_dict = None
-        if cursor:
-            try:
-                parts = cursor.split("_")
-                cursor_dict = {
-                    "createdAt": datetime.fromisoformat(parts[0]),
-                    "postId": parts[1],
-                }
-            except Exception:
-                pass
+        cursor_dict = self._parse_post_cursor(cursor)
 
-        posts = await self.repository.get_feed(limit + 1, cursor_dict, media)
+        author_ids = None
+        if following:
+            if not user_id:
+                raise UnauthorizedActionError()
+            author_ids = await self.repository.get_following_ids(user_id)
+            if not author_ids:
+                # Following nobody yet: an empty page, not an error.
+                return PostPaginationResponse(
+                    data=[], meta=PostPaginationMeta(nextCursor=None, hasMore=False)
+                )
+
+        posts = await self.repository.get_feed(
+            limit + 1, cursor_dict, media, author_ids
+        )
 
         has_more = len(posts) > limit
         if has_more:
@@ -949,6 +956,7 @@ class Page48Service:
         post_id: str,
         limit: int = 20,
         cursor: Optional[str] = None,
+        current_user_id: Optional[str] = None,
     ) -> PostUserListResponse:
         if not await self.repository.get_post_by_id(post_id):
             raise PostNotFoundError()
@@ -956,7 +964,7 @@ class Page48Service:
         rows = await self.repository.get_post_reposts(
             post_id, limit + 1, self._parse_interaction_cursor(cursor)
         )
-        return await self._build_user_list(rows, limit)
+        return await self._build_user_list(rows, limit, current_user_id)
 
     async def get_post_likes(
         self,
@@ -975,10 +983,10 @@ class Page48Service:
         rows = await self.repository.get_post_likes(
             post_id, limit + 1, self._parse_interaction_cursor(cursor)
         )
-        return await self._build_user_list(rows, limit)
+        return await self._build_user_list(rows, limit, current_user_id)
 
     async def _build_user_list(
-        self, rows: List[dict], limit: int
+        self, rows: List[dict], limit: int, viewer_id: Optional[str] = None
     ) -> PostUserListResponse:
         """Turn interaction rows into a paginated list of the users behind them."""
         has_more = len(rows) > limit
@@ -1000,6 +1008,15 @@ class Page48Service:
         )
         user_map = {user["userId"]: user for user in users}
 
+        # Which of these accounts the viewer already follows, in one query.
+        followed: set = set()
+        if viewer_id:
+            followed = set(
+                await self.repository.get_followed_ids(
+                    viewer_id, [row["userId"] for row in rows]
+                )
+            )
+
         picture_cache: dict = {}
         items: List[PostUserItem] = []
         for row in rows:
@@ -1018,6 +1035,7 @@ class Page48Service:
                     profilePicture=picture,
                     profilePicture_small=picture_small,
                     bio=user.get("bio"),
+                    isFollowing=user.get("userId", "") in followed,
                 )
             )
 
@@ -1573,7 +1591,9 @@ class Page48Service:
             meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more),
         )
 
-    async def get_user_profile(self, username: str) -> Page48UserProfileResponse:
+    async def get_user_profile(
+        self, username: str, current_user_id: Optional[str] = None
+    ) -> Page48UserProfileResponse:
         user = await self.user_repository.find_one({"username": username.lower()})
         if not user:
             raise UserProfileNotFoundError()
@@ -1618,11 +1638,22 @@ class Page48Service:
             except Exception as e:
                 logger.error(f"Failed to resolve banner for {username}: {str(e)}")
 
-        post_count = await self.repository.count_user_posts(user.get("userId", ""))
-        repost_count = await self.repository.count_user_reposts(user.get("userId", ""))
+        owner_id = user.get("userId", "")
+        post_count = await self.repository.count_user_posts(owner_id)
+        repost_count = await self.repository.count_user_reposts(owner_id)
+        # Counted live: no stored counter that can drift out of sync.
+        follower_count = await self.repository.count_followers(owner_id)
+        following_count = await self.repository.count_following(owner_id)
+
+        is_self = bool(current_user_id) and current_user_id == owner_id
+        is_following = False
+        if current_user_id and not is_self:
+            is_following = bool(
+                await self.repository.get_follow(current_user_id, owner_id)
+            )
 
         return Page48UserProfileResponse(
-            userId=user.get("userId", ""),
+            userId=owner_id,
             name=user.get("name") or stored_username,
             username=stored_username,
             bio=user.get("bio"),
@@ -1636,7 +1667,99 @@ class Page48Service:
             bannerBlurHash=banner_blur_hash,
             postCount=post_count,
             repostCount=repost_count,
+            followerCount=follower_count,
+            followingCount=following_count,
+            isFollowing=is_following,
         )
+
+    # Follows
+    async def _resolve_follow_target(self, username: str) -> dict:
+        user = await self.user_repository.find_one({"username": username.lower()})
+        if not user:
+            raise UserProfileNotFoundError()
+        return user
+
+    async def follow_user(self, username: str, current_user_id: str) -> FollowResponse:
+        target = await self._resolve_follow_target(username)
+        target_id = target.get("userId", "")
+        if not target_id or target_id == current_user_id:
+            raise CannotFollowSelfError()
+
+        if not await self.repository.get_follow(current_user_id, target_id):
+            try:
+                await self.repository.insert_follow(current_user_id, target_id)
+            except DuplicateKeyError:
+                # Two taps raced; the follow already exists.
+                pass
+
+        return FollowResponse(
+            isFollowing=True,
+            followerCount=await self.repository.count_followers(target_id),
+        )
+
+    async def unfollow_user(
+        self, username: str, current_user_id: str
+    ) -> FollowResponse:
+        target = await self._resolve_follow_target(username)
+        target_id = target.get("userId", "")
+        if not target_id or target_id == current_user_id:
+            raise CannotFollowSelfError()
+
+        await self.repository.delete_follow(current_user_id, target_id)
+        return FollowResponse(
+            isFollowing=False,
+            followerCount=await self.repository.count_followers(target_id),
+        )
+
+    async def get_followers(
+        self,
+        username: str,
+        limit: int = 20,
+        cursor: Optional[str] = None,
+        current_user_id: Optional[str] = None,
+    ) -> PostUserListResponse:
+        """Accounts that follow this user."""
+        user = await self._resolve_follow_target(username)
+        rows = await self.repository.get_follow_edges(
+            "followingId",
+            user.get("userId", ""),
+            limit + 1,
+            self._parse_interaction_cursor(cursor),
+        )
+        return await self._build_user_list(
+            self._as_user_rows(rows, "followerId"), limit, current_user_id
+        )
+
+    async def get_following(
+        self,
+        username: str,
+        limit: int = 20,
+        cursor: Optional[str] = None,
+        current_user_id: Optional[str] = None,
+    ) -> PostUserListResponse:
+        """Accounts this user follows."""
+        user = await self._resolve_follow_target(username)
+        rows = await self.repository.get_follow_edges(
+            "followerId",
+            user.get("userId", ""),
+            limit + 1,
+            self._parse_interaction_cursor(cursor),
+        )
+        return await self._build_user_list(
+            self._as_user_rows(rows, "followingId"), limit, current_user_id
+        )
+
+    @staticmethod
+    def _as_user_rows(rows: List[dict], user_field: str) -> List[dict]:
+        """Reshape follow edges into the shape `_build_user_list` expects."""
+        return [
+            {
+                "userId": row.get(user_field, ""),
+                "createdAt": row["createdAt"],
+                "_id": row["_id"],
+            }
+            for row in rows
+        ]
 
     async def get_user_reposts(
         self,

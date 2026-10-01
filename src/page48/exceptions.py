@@ -108,3 +108,7 @@ class QuotePollConflictError(DomainException):
 
 class CannotPinReplyError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.CANNOT_PIN_REPLY
+
+
+class CannotFollowSelfError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.CANNOT_FOLLOW_SELF

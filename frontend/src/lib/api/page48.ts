@@ -123,6 +123,9 @@ export interface Page48UserProfile {
 	bannerBlurHash: string | null;
 	postCount: number;
 	repostCount: number;
+	followerCount: number;
+	followingCount: number;
+	isFollowing: boolean;
 }
 
 export interface ThreadResponse {
@@ -152,11 +155,18 @@ export interface PostUserItem {
 	profilePicture: string | null;
 	profilePicture_small: string | null;
 	bio: string | null;
+	/** Whether the requesting user already follows this account. */
+	isFollowing?: boolean;
 }
 
 export interface PostUserListResponse {
 	data: PostUserItem[];
 	meta: PostPaginationMeta;
+}
+
+export interface FollowResponse {
+	isFollowing: boolean;
+	followerCount: number;
 }
 
 export interface PostActivityResponse {
@@ -274,10 +284,12 @@ export const page48Api = {
 	getFeed: async (
 		limit: number = 20,
 		cursor: string | null = null,
-		media: 'text' | 'image' | 'video' | null = null
+		media: 'text' | 'image' | 'video' | null = null,
+		following: boolean = false
 	): Promise<PostPaginationResponse> => {
 		const mediaParam = media ? `&media=${media}` : '';
-		const url = `/page48/feed?${buildCursorQuery(limit, cursor)}${mediaParam}`;
+		const followingParam = following ? '&following=true' : '';
+		const url = `/page48/feed?${buildCursorQuery(limit, cursor)}${mediaParam}${followingParam}`;
 		return cachedListGet(url, () => client<PostPaginationResponse>(url));
 	},
 
@@ -478,6 +490,38 @@ export const page48Api = {
 
 	getUserProfile: async (username: string): Promise<Page48UserProfile> => {
 		return client<Page48UserProfile>(`/page48/users/${encodeURIComponent(username)}/profile`);
+	},
+
+	followUser: async (username: string): Promise<FollowResponse> => {
+		clearListResponseCache();
+		return client<FollowResponse>(`/page48/users/${encodeURIComponent(username)}/follow`, {
+			method: 'POST'
+		});
+	},
+
+	unfollowUser: async (username: string): Promise<FollowResponse> => {
+		clearListResponseCache();
+		return client<FollowResponse>(`/page48/users/${encodeURIComponent(username)}/follow`, {
+			method: 'DELETE'
+		});
+	},
+
+	getFollowers: async (
+		username: string,
+		limit: number = 20,
+		cursor: string | null = null
+	): Promise<PostUserListResponse> => {
+		const url = `/page48/users/${encodeURIComponent(username)}/followers?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostUserListResponse>(url));
+	},
+
+	getFollowing: async (
+		username: string,
+		limit: number = 20,
+		cursor: string | null = null
+	): Promise<PostUserListResponse> => {
+		const url = `/page48/users/${encodeURIComponent(username)}/following?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostUserListResponse>(url));
 	},
 
 	getUserPosts: async (

@@ -181,7 +181,7 @@
 			{/each}
 		{:else}
 			{#each users as user (user.userId)}
-				<UserListItem {user} />
+				<UserListItem {user} showFollow />
 			{/each}
 		{/if}
 

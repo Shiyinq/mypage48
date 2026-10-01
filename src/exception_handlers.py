@@ -128,6 +128,7 @@ from src.news.http_exceptions import (
     NewsNotFound,
 )
 from src.page48.exceptions import (
+    CannotFollowSelfError,
     CannotPinReplyError,
     CannotReportSelfError,
     InvalidPollOptionError,
@@ -156,6 +157,7 @@ from src.page48.exceptions import (
     VideoUploadError,
 )
 from src.page48.http_exceptions import (
+    CannotFollowSelf,
     CannotPinReply,
     CannotReportSelf,
     InvalidPollOption,
@@ -576,6 +578,8 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, QuotePollConflict())
     if isinstance(exc, CannotPinReplyError):
         return await detailed_http_exception_handler(request, CannotPinReply())
+    if isinstance(exc, CannotFollowSelfError):
+        return await detailed_http_exception_handler(request, CannotFollowSelf())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

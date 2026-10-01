@@ -1933,7 +1933,14 @@
 			"photos": "Photos",
 			"videos": "Videos",
 			"trending": "Trending",
-			"members": "Members"
+			"members": "Members",
+			"following": "Following"
+		},
+		"follow": {
+			"follow": "Follow",
+			"following": "Following",
+			"unfollow": "Unfollow",
+			"error": "Failed to update follow"
 		},
 		"seo": {
 			"feedTitle": "Page48",
@@ -1951,7 +1958,9 @@
 			"postTitle": "Page48 post",
 			"postDesc": "View a post and its replies on Page48.",
 			"userTitle": "Page48 profile",
-			"userDesc": "See a user's posts, reposts, and photos on Page48."
+			"userDesc": "See a user's posts, reposts, and photos on Page48.",
+			"followingTitle": "Following on Page48",
+			"followingDesc": "Posts from the accounts you follow on Page48."
 		},
 		"aria": {
 			"profile": "Profile",
@@ -2043,7 +2052,9 @@
 			"loadError": "Failed to load feed",
 			"end": "You've seen everything",
 			"postSuccess": "Post sent successfully",
-			"postError": "Failed to send post"
+			"postError": "Failed to send post",
+			"followingEmptyTitle": "Your feed is empty",
+			"followingEmptyText": "Posts from accounts you follow will show up here."
 		},
 		"photos": {
 			"emptyTitle": "No photos yet",
@@ -2113,7 +2124,16 @@
 			"reposted": "Reposted",
 			"pinned": "Pinned",
 			"countPosts": "{count} Posts",
-			"countReposts": "{count} Reposts"
+			"countReposts": "{count} Reposts",
+			"followers": "Followers",
+			"following": "Following",
+			"followersTitle": "Followers",
+			"followingTitle": "Following",
+			"emptyFollowers": "No followers yet.",
+			"emptyFollowing": "Not following anyone yet.",
+			"listErrorText": "Something went wrong while loading this list.",
+			"loadMore": "Load more",
+			"back": "Back"
 		},
 		"mediaViewer": {
 			"title": "Post media",

@@ -133,6 +133,14 @@ async def create_indexes():
         await db["page48_poll_votes"].create_index([("postId", 1), ("optionId", 1)])
         await db["page48_poll_votes"].create_index([("userId", 1), ("createdAt", -1)])
 
+        # Follow edges: the unique pair prevents double follows, the two compound
+        # indexes back the followers/following lists and their live counts.
+        await db["page48_follows"].create_index(
+            [("followerId", 1), ("followingId", 1)], unique=True
+        )
+        await db["page48_follows"].create_index([("followerId", 1), ("createdAt", -1)])
+        await db["page48_follows"].create_index([("followingId", 1), ("createdAt", -1)])
+
         print("Database indexes created successfully")
     except Exception as e:
         print(f"Failed to create indexes: {str(e)}")

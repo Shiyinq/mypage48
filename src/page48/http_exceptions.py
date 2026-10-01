@@ -118,3 +118,7 @@ class QuotePollConflict(BadRequest):
 
 class CannotPinReply(BadRequest):
     DETAIL = ErrorCode.CANNOT_PIN_REPLY
+
+
+class CannotFollowSelf(BadRequest):
+    DETAIL = ErrorCode.CANNOT_FOLLOW_SELF

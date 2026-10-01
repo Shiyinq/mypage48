@@ -7,6 +7,7 @@
 	import PostCard from '$lib/components/page48/PostCard.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
 	import UserMenu from '$lib/components/page48/UserMenu.svelte';
+	import FollowButton from '$lib/components/page48/FollowButton.svelte';
 	import { ErrorState } from '$lib/components';
 	import { OptimizedImage } from '$lib/components/common';
 	import { page48NavbarStore } from '$lib/stores/page48.svelte';
@@ -125,6 +126,16 @@
 	/** The Page48 settings page for this profile (it is only ever your own). */
 	function openSettings() {
 		void goto(`/page48/u/${profile?.username ?? username}/settings`);
+	}
+
+	/** Keep the header count in sync when the follow button toggles. */
+	function handleFollowChange(following: boolean) {
+		if (!profile) return;
+		profile = {
+			...profile,
+			isFollowing: following,
+			followerCount: Math.max(0, profile.followerCount + (following ? 1 : -1))
+		};
 	}
 
 	async function loadProfile() {
@@ -291,19 +302,25 @@
 			<!-- Header -->
 			<div class="relative flex flex-col gap-4 px-5 sm:px-6 pt-6 pb-4">
 				{#if isSameUser || isAuthenticated.value}
-					<div class="absolute top-0 right-0">
+					<div class="absolute top-0 right-0 flex items-center gap-1">
 						<div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
 					</div>
 				{/if}
 				<div class="flex items-start gap-4">
 					<div class="flex-1 min-w-0 pt-1">
-						<div class="space-y-2">
-							<div class="h-5 bg-gray-200 dark:bg-zinc-800 rounded w-1/2"></div>
-							<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-1/3"></div>
+						<div class="flex items-center gap-3">
+							<div class="min-w-0 space-y-2">
+								<div class="h-5 w-32 bg-gray-200 dark:bg-zinc-800 rounded"></div>
+								<div class="h-3.5 w-20 bg-gray-200 dark:bg-zinc-800 rounded"></div>
+							</div>
+							{#if !isSameUser && isAuthenticated.value}
+								<div class="h-9 w-20 shrink-0 rounded-full bg-gray-200 dark:bg-zinc-800"></div>
+							{/if}
 						</div>
-						<div class="flex items-center gap-3 mt-2">
-							<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-16"></div>
-							<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-16"></div>
+						<div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
+							{#each Array(4) as _}
+								<div class="h-3.5 bg-gray-200 dark:bg-zinc-800 rounded w-14"></div>
+							{/each}
 						</div>
 						<!-- Bio -->
 						<div class="space-y-2 mt-2">
@@ -401,15 +418,46 @@
 			<div class="flex items-start gap-4">
 				<!-- Name + username + stats -->
 				<div class="flex-1 min-w-0 pt-1">
-					<div class="min-w-0">
-						<h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
-							{profile.name}
-						</h1>
-						<p class="text-[14px] text-gray-500 dark:text-gray-400 truncate">
-							@{profile.username}
-						</p>
+					<div class="flex items-center gap-3">
+						<div class="min-w-0">
+							<h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
+								{profile.name}
+							</h1>
+							<p class="text-[14px] text-gray-500 dark:text-gray-400 truncate">
+								@{profile.username}
+							</p>
+						</div>
+						{#if !isOwnProfile && isAuthenticated.value}
+							<FollowButton
+								username={profile.username}
+								isFollowing={profile.isFollowing}
+								size="md"
+								onChange={handleFollowChange}
+							/>
+						{/if}
 					</div>
-					<div class="flex items-center gap-3 mt-2 text-[13px] text-gray-500 dark:text-gray-400">
+					<div
+						class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[13px] text-gray-500 dark:text-gray-400"
+					>
+						<!-- Follow counts link to the public lists, but only for signed-in users. -->
+						<a
+							href={isAuthenticated.value ? `/page48/u/${profile.username}/followers` : undefined}
+							class={isAuthenticated.value ? 'hover:underline' : undefined}
+						>
+							<span class="font-semibold text-gray-900 dark:text-gray-100"
+								>{profile.followerCount}</span
+							>
+							{t('page48.userPage.followers')}
+						</a>
+						<a
+							href={isAuthenticated.value ? `/page48/u/${profile.username}/following` : undefined}
+							class={isAuthenticated.value ? 'hover:underline' : undefined}
+						>
+							<span class="font-semibold text-gray-900 dark:text-gray-100"
+								>{profile.followingCount}</span
+							>
+							{t('page48.userPage.following')}
+						</a>
 						<span
 							><span class="font-semibold text-gray-900 dark:text-gray-100"
 								>{profile.postCount}</span

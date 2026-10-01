@@ -7,6 +7,7 @@
 		TrendingUp,
 		Hash,
 		Plus,
+		Users,
 		Image as ImageIcon,
 		Video,
 		X
@@ -73,6 +74,13 @@
 				href: `${basePath}/videos`,
 				exact: false,
 				icon: Video
+			},
+			{
+				label: t('page48.nav.following'),
+				mobileLabel: t('page48.nav.following'),
+				href: `${basePath}/following`,
+				exact: false,
+				icon: Users
 			},
 			{
 				label: t('page48.nav.trending'),

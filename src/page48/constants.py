@@ -43,6 +43,7 @@ class ErrorCode:
     QUOTED_POST_NOT_FOUND = "The post you are trying to quote does not exist."
     POLL_QUOTE_CONFLICT = "A quote cannot include a poll."
     CANNOT_PIN_REPLY = "Only top-level posts can be pinned."
+    CANNOT_FOLLOW_SELF = "You cannot follow yourself."
 
 
 class DomainErrorCode:
@@ -73,3 +74,4 @@ class DomainErrorCode:
     QUOTED_POST_NOT_FOUND = "The post you are trying to quote does not exist."
     POLL_QUOTE_CONFLICT = "A quote cannot include a poll."
     CANNOT_PIN_REPLY = "Only top-level posts can be pinned."
+    CANNOT_FOLLOW_SELF = "You cannot follow yourself."

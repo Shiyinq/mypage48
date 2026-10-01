@@ -1937,7 +1937,14 @@
 			"photos": "Gambar",
 			"videos": "Video",
 			"trending": "Trending",
-			"members": "Member"
+			"members": "Member",
+			"following": "Mengikuti"
+		},
+		"follow": {
+			"follow": "Ikuti",
+			"following": "Mengikuti",
+			"unfollow": "Berhenti mengikuti",
+			"error": "Gagal memperbarui status mengikuti"
 		},
 		"seo": {
 			"feedTitle": "Page48",
@@ -1955,7 +1962,9 @@
 			"postTitle": "Postingan Page48",
 			"postDesc": "Lihat postingan dan balasan di Page48.",
 			"userTitle": "Profil Page48",
-			"userDesc": "Lihat postingan, repost, dan gambar pengguna di Page48."
+			"userDesc": "Lihat postingan, repost, dan gambar pengguna di Page48.",
+			"followingTitle": "Mengikuti di Page48",
+			"followingDesc": "Postingan dari akun yang kamu ikuti di Page48."
 		},
 		"aria": {
 			"profile": "Profil",
@@ -2047,7 +2056,9 @@
 			"loadError": "Gagal memuat feed",
 			"end": "Anda sudah melihat semuanya",
 			"postSuccess": "Postingan berhasil dikirim",
-			"postError": "Gagal mengirim postingan"
+			"postError": "Gagal mengirim postingan",
+			"followingEmptyTitle": "Feed kamu masih kosong",
+			"followingEmptyText": "Postingan dari akun yang kamu ikuti akan muncul di sini."
 		},
 		"photos": {
 			"emptyTitle": "Belum ada gambar",
@@ -2117,7 +2128,16 @@
 			"reposted": "Direpost",
 			"pinned": "Disematkan",
 			"countPosts": "{count} Postingan",
-			"countReposts": "{count} Repost"
+			"countReposts": "{count} Repost",
+			"followers": "Pengikut",
+			"following": "Mengikuti",
+			"followersTitle": "Pengikut",
+			"followingTitle": "Mengikuti",
+			"emptyFollowers": "Belum ada pengikut.",
+			"emptyFollowing": "Belum mengikuti siapa pun.",
+			"listErrorText": "Terjadi kesalahan saat memuat daftar ini.",
+			"loadMore": "Muat lagi",
+			"back": "Kembali"
 		},
 		"mediaViewer": {
 			"title": "Media postingan",

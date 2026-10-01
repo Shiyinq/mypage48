@@ -17,6 +17,7 @@ from src.page48.schemas import (
     CreateThreadRequest,
     CreateThreadResponse,
     EditPostRequest,
+    FollowResponse,
     Page48UserProfileResponse,
     PollResponse,
     PostActivityResponse,
@@ -43,11 +44,12 @@ async def get_feed(
     media: Optional[str] = Query(
         None, pattern="^(text|image|video)$", description="Filter by media type"
     ),
+    following: bool = Query(False, description="Only posts from followed accounts"),
     current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
     service: Page48Service = Depends(get_page48_service),
 ):
     user_id = current_user.userId if current_user else None
-    return await service.get_feed(limit, cursor, user_id, media)
+    return await service.get_feed(limit, cursor, user_id, media, following)
 
 
 @router.get("/posts/{postId}", response_model=PostResponse)
@@ -109,9 +111,11 @@ async def get_post_reposts(
     postId: str = Path(...),
     limit: int = Query(20, le=50),
     cursor: Optional[str] = None,
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
     service: Page48Service = Depends(get_page48_service),
 ):
-    return await service.get_post_reposts(postId, limit, cursor)
+    user_id = current_user.userId if current_user else None
+    return await service.get_post_reposts(postId, limit, cursor, user_id)
 
 
 @router.get("/posts/{postId}/likes", response_model=PostUserListResponse)
@@ -155,9 +159,53 @@ async def get_user_replies(
 @router.get("/users/{username}/profile", response_model=Page48UserProfileResponse)
 async def get_user_profile(
     username: str = Path(...),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
     service: Page48Service = Depends(get_page48_service),
 ):
-    return await service.get_user_profile(username)
+    user_id = current_user.userId if current_user else None
+    return await service.get_user_profile(username, user_id)
+
+
+@router.post("/users/{username}/follow", response_model=FollowResponse)
+async def follow_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.follow_user(username, current_user.userId)
+
+
+@router.delete("/users/{username}/follow", response_model=FollowResponse)
+async def unfollow_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.unfollow_user(username, current_user.userId)
+
+
+@router.get("/users/{username}/followers", response_model=PostUserListResponse)
+async def get_followers(
+    username: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_followers(username, limit, cursor, current_user.userId)
+
+
+@router.get("/users/{username}/following", response_model=PostUserListResponse)
+async def get_following(
+    username: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_following(username, limit, cursor, current_user.userId)
 
 
 @router.get("/users/{username}/reposts", response_model=PostPaginationResponse)

@@ -1931,7 +1931,14 @@
 			"photos": "画像",
 			"videos": "動画",
 			"trending": "トレンド",
-			"members": "メンバー"
+			"members": "メンバー",
+			"following": "フォロー中"
+		},
+		"follow": {
+			"follow": "フォロー",
+			"following": "フォロー中",
+			"unfollow": "フォロー解除",
+			"error": "フォローを更新できませんでした"
 		},
 		"seo": {
 			"feedTitle": "ページ48",
@@ -1949,7 +1956,9 @@
 			"postTitle": "ページ48の投稿",
 			"postDesc": "ページ48の投稿と返信を表示。",
 			"userTitle": "ページ48プロフィール",
-			"userDesc": "ページ48でユーザーの投稿・リポスト・写真を表示。"
+			"userDesc": "ページ48でユーザーの投稿・リポスト・写真を表示。",
+			"followingTitle": "ページ48のフォロー中",
+			"followingDesc": "ページ48でフォロー中のアカウントの投稿。"
 		},
 		"aria": {
 			"profile": "プロフィール",
@@ -2041,7 +2050,9 @@
 			"loadError": "フィードの読み込みに失敗しました",
 			"end": "すべて表示しました",
 			"postSuccess": "投稿しました",
-			"postError": "投稿に失敗しました"
+			"postError": "投稿に失敗しました",
+			"followingEmptyTitle": "フィードは空です",
+			"followingEmptyText": "フォロー中のアカウントの投稿がここに表示されます。"
 		},
 		"photos": {
 			"emptyTitle": "まだ画像がありません",
@@ -2111,7 +2122,16 @@
 			"reposted": "リポスト",
 			"pinned": "固定されたポスト",
 			"countPosts": "{count} 投稿",
-			"countReposts": "{count} リポスト"
+			"countReposts": "{count} リポスト",
+			"followers": "フォロワー",
+			"following": "フォロー中",
+			"followersTitle": "フォロワー",
+			"followingTitle": "フォロー中",
+			"emptyFollowers": "まだフォロワーがいません。",
+			"emptyFollowing": "まだ誰もフォローしていません。",
+			"listErrorText": "このリストの読み込み中に問題が発生しました。",
+			"loadMore": "もっと見る",
+			"back": "戻る"
 		},
 		"mediaViewer": {
 			"title": "投稿メディア",

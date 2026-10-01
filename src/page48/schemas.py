@@ -171,6 +171,17 @@ class Page48UserProfileResponse(BaseModel):
     postCount: int = 0
     repostCount: int = 0
 
+    # Counted live from the follow edges; there is no stored counter to drift.
+    followerCount: int = 0
+    followingCount: int = 0
+    # Whether the requesting user follows this profile (false for guests/self).
+    isFollowing: bool = False
+
+
+class FollowResponse(BaseModel):
+    isFollowing: bool
+    followerCount: int = 0
+
 
 class TrendingTag(BaseModel):
     tag: str
@@ -263,7 +274,7 @@ class PostPaginationResponse(BaseModel):
 
 
 class PostUserItem(BaseModel):
-    """A user shown in an interaction list (reposts / likes)."""
+    """A user shown in an interaction list (reposts / likes / followers)."""
 
     userId: str
     username: str
@@ -271,6 +282,8 @@ class PostUserItem(BaseModel):
     profilePicture: Optional[str] = None
     profilePicture_small: Optional[str] = None
     bio: Optional[str] = None
+    # Whether the requesting user already follows this account.
+    isFollowing: bool = False
 
 
 class PostUserListMeta(BaseModel):

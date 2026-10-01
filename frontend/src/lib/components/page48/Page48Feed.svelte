@@ -21,6 +21,8 @@
 
 	interface Props {
 		media?: 'text' | 'image' | 'video' | null;
+		/** Only show posts from accounts the viewer follows (requires sign-in). */
+		following?: boolean;
 		showComposer?: boolean;
 		showSidebars?: boolean;
 		emptyTitle?: string;
@@ -29,14 +31,19 @@
 
 	let {
 		media = null,
+		following = false,
 		showComposer = false,
 		showSidebars = true,
 		emptyTitle,
 		emptyText
 	}: Props = $props();
 
-	let resolvedEmptyTitle = $derived(emptyTitle ?? t('page48.feed.emptyTitle'));
-	let resolvedEmptyText = $derived(emptyText ?? t('page48.feed.emptyText'));
+	let resolvedEmptyTitle = $derived(
+		emptyTitle ?? (following ? t('page48.feed.followingEmptyTitle') : t('page48.feed.emptyTitle'))
+	);
+	let resolvedEmptyText = $derived(
+		emptyText ?? (following ? t('page48.feed.followingEmptyText') : t('page48.feed.emptyText'))
+	);
 
 	let posts: Page48Post[] = $state([]);
 	let loading = $state(true);
@@ -45,17 +52,18 @@
 	let nextCursor = $state<string | null>(null);
 	let loadingMore = $state(false);
 
-	// Load on mount and whenever the media filter changes.
+	// Load on mount and whenever the media filter or mode changes.
 	$effect(() => {
 		void media;
+		void following;
 		loadFeed();
 	});
 
 	// A post created from the navbar composer arrives as a window event, so the feed
-	// can show it without a refetch (only when no media filter is active).
+	// can show it without a refetch (only when no media/following filter is active).
 	onMount(() => {
 		function handleCreated(event: Event) {
-			if (media) return;
+			if (media || following) return;
 			const post = (event as CustomEvent<Page48Post>).detail;
 			if (post?.postId) posts = [post, ...posts];
 		}
@@ -67,7 +75,7 @@
 		try {
 			loading = true;
 			error = null;
-			const response = await page48Api.getFeed(20, null, media);
+			const response = await page48Api.getFeed(20, null, media, following);
 			posts = response.data;
 			hasMore = response.meta.hasMore;
 			nextCursor = response.meta.nextCursor;
@@ -83,7 +91,7 @@
 		if (loadingMore || !hasMore || !nextCursor || loading) return;
 		try {
 			loadingMore = true;
-			const response = await page48Api.getFeed(20, nextCursor, media);
+			const response = await page48Api.getFeed(20, nextCursor, media, following);
 			posts = [...posts, ...response.data];
 			hasMore = response.meta.hasMore;
 			nextCursor = response.meta.nextCursor;
