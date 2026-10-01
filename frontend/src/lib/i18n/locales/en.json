@@ -2100,7 +2100,10 @@
 			"replyingTo": "Replying to",
 			"replySent": "Reply sent",
 			"replyError": "Failed to send reply",
-			"emptyReplies": "No replies yet. Be the first to reply."
+			"emptyReplies": "No replies yet.",
+			"showMore": "Show more",
+			"showLess": "Show less",
+			"quotedUnavailable": "This post is no longer available."
 		},
 		"userPage": {
 			"notFoundTitle": "User not found",
@@ -2111,6 +2114,27 @@
 			"pinned": "Pinned",
 			"countPosts": "{count} Posts",
 			"countReposts": "{count} Reposts"
+		},
+		"mediaViewer": {
+			"title": "Post media",
+			"hideDetails": "Hide details",
+			"showDetails": "Show details",
+			"download": "Download photo"
+		},
+		"activity": {
+			"title": "Post activity",
+			"view": "View activity",
+			"backToPost": "Back to post",
+			"quotes": "Quotes",
+			"reposts": "Reposts",
+			"likes": "Likes",
+			"emptyQuotes": "No quotes yet.",
+			"emptyReposts": "No reposts yet.",
+			"emptyLikes": "No likes yet.",
+			"loadMore": "Load more",
+			"error": "Failed to load the list.",
+			"loadError": "Failed to load activity",
+			"loadErrorText": "Something went wrong while loading this post's activity."
 		},
 		"tabs": {
 			"posts": "Posts",
@@ -2182,11 +2206,6 @@
 			"error": "Failed to submit report",
 			"already": "You have already reported this."
 		},
-		"reportUser": "Report User",
-		"post": {
-			"showMore": "Show more",
-			"showLess": "Show less",
-			"quotedUnavailable": "This post is no longer available."
-		}
+		"reportUser": "Report User"
 	}
 }

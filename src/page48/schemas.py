@@ -262,6 +262,38 @@ class PostPaginationResponse(BaseModel):
     meta: PostPaginationMeta
 
 
+class PostUserItem(BaseModel):
+    """A user shown in an interaction list (reposts / likes)."""
+
+    userId: str
+    username: str
+    name: str
+    profilePicture: Optional[str] = None
+    profilePicture_small: Optional[str] = None
+    bio: Optional[str] = None
+
+
+class PostUserListMeta(BaseModel):
+    nextCursor: Optional[str] = None
+    hasMore: bool = False
+
+
+class PostUserListResponse(BaseModel):
+    data: list[PostUserItem]
+    meta: PostUserListMeta
+
+
+class PostActivityResponse(BaseModel):
+    """Everything the post activity page needs for its header and tabs."""
+
+    post: PostResponse
+    quoteCount: int = 0
+    repostCount: int = 0
+    likeCount: int = 0
+    # Likes are only visible to the author of the post.
+    canViewLikes: bool = False
+
+
 class ToggleResponse(BaseModel):
     status: bool
     count: int

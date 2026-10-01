@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { page48Api, type Page48Post } from '$lib/api/page48';
 	import { Heart, MessageCircle, Bookmark, Share, Check } from 'lucide-svelte';
-	import { OptimizedImage, ImageLightbox } from '$lib/components/common';
+	import { OptimizedImage } from '$lib/components/common';
 	import PostMenu from '$lib/components/page48/PostMenu.svelte';
 	import RepostMenu from '$lib/components/page48/RepostMenu.svelte';
 	import QuotedPostCard from '$lib/components/page48/QuotedPostCard.svelte';
 	import PostComposerModal from '$lib/components/page48/PostComposerModal.svelte';
+	import PostMediaViewer from '$lib/components/page48/PostMediaViewer.svelte';
 	import EditPostModal from '$lib/components/page48/EditPostModal.svelte';
 	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
@@ -13,7 +14,9 @@
 	import PostImageCarousel from '$lib/components/page48/PostImageCarousel.svelte';
 	import { portal } from '$lib/actions/portal';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { userProfile } from '$lib/stores/profile.svelte';
+	import { activityNavStore } from '$lib/stores/page48Nav.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import {
@@ -50,6 +53,10 @@
 		onPinChanged?: (post: Page48Post) => void;
 		/** Collapse long text behind a "show more" toggle (lists pass this; the detail page does not). */
 		clampContent?: boolean;
+		/** Show a "View activity" link under the action bar (used on the detail page). */
+		showActivityLink?: boolean;
+		/** Hide the post's own photo/video (used when the media is shown beside it). */
+		hideMedia?: boolean;
 	}
 
 	let {
@@ -66,7 +73,9 @@
 		onDelete,
 		onUpdated,
 		onPinChanged,
-		clampContent = true
+		clampContent = true,
+		showActivityLink = false,
+		hideMedia = false
 	}: Props = $props();
 
 	// Long posts would stretch a feed row, so the text is clamped and a red "show more"
@@ -112,6 +121,7 @@
 	}
 
 	let detailHref = $derived(`/page48/post/${post.postId}`);
+	let activityHref = $derived(`${detailHref}/activity`);
 	let imageUrls = $derived(post.images?.map((image) => image.url) ?? []);
 	// Keep the active media filter (Gambar/Video) when opening a hashtag.
 	let activeMedia = $derived(getActiveMedia($page.url.pathname, $page.url.search));
@@ -232,9 +242,39 @@
 		showQuote = true;
 	}
 
+	function openActivity() {
+		activityNavStore.fromList = !showActivityLink;
+		void goto(activityHref);
+	}
+
 	function openLightbox(index: number) {
 		lightboxIndex = index;
 		lightboxOpen = true;
+		pushViewerUrl();
+	}
+
+	function closeLightbox() {
+		lightboxOpen = false;
+		restoreViewerUrl();
+	}
+
+	// While a photo is open the address bar shows the post's detail URL, exactly
+	// like the detail page, so the link can be copied or shared from here. The
+	// previous URL is put back when the viewer closes.
+	let viewerReturnUrl: string | null = null;
+
+	function pushViewerUrl() {
+		if (typeof window === 'undefined') return;
+		const target = `/page48/post/${post.postId}`;
+		if (window.location.pathname === target) return;
+		viewerReturnUrl = window.location.pathname + window.location.search + window.location.hash;
+		window.history.replaceState(window.history.state, '', target);
+	}
+
+	function restoreViewerUrl() {
+		if (typeof window === 'undefined' || !viewerReturnUrl) return;
+		window.history.replaceState(window.history.state, '', viewerReturnUrl);
+		viewerReturnUrl = null;
 	}
 
 	let timeAgo = $derived(formatTimeAgo(post.createdAt));
@@ -330,6 +370,7 @@
 						onDelete={() => (showDelete = true)}
 						onReport={() => (showReport = true)}
 						onTogglePin={isOwner && !post.parentPostId ? handleTogglePin : undefined}
+						onViewActivity={openActivity}
 					/>
 				{/if}
 			</div>
@@ -441,7 +482,7 @@
 		<!-- Post Images: single image inline, several as a swipeable carousel.
 		     The wrapper is decoration so the empty margins beside a centered photo
 		     still open the card; the media itself opts back in. -->
-		{#if post.images && post.images.length > 0}
+		{#if !hideMedia && post.images && post.images.length > 0}
 			<div class="pointer-events-none relative z-[1] mt-3">
 				{#if post.images.length === 1}
 					{@const image = post.images[0]}
@@ -480,7 +521,7 @@
 		{/if}
 
 		<!-- Post Video (single, X/Twitter style: click to play) -->
-		{#if post.videos && post.videos.length > 0 && post.videos[0].url}
+		{#if !hideMedia && post.videos && post.videos.length > 0 && post.videos[0].url}
 			<div class="pointer-events-none relative z-[1] mt-3">
 				<VideoPlayer
 					src={post.videos[0].url}
@@ -556,7 +597,7 @@
 				onQuote={() => interact(openQuote)}
 			/>
 
-			<div class="flex items-center ml-auto sm:ml-0 gap-1 sm:gap-2">
+			<div class={`flex items-center gap-1 sm:gap-2 ${showActivityLink ? '' : 'ml-auto sm:ml-0'}`}>
 				<!-- Bookmark -->
 				<button
 					class={`pointer-events-auto flex items-center gap-1.5 p-2 rounded-full ${actionCursor} hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-500 transition-all group/btn`}
@@ -582,17 +623,25 @@
 					<Share size={18} class="transition-transform group-active/btn:scale-90" />
 				</button>
 			</div>
+
+			{#if showActivityLink}
+				<a
+					href={activityHref}
+					class="pointer-events-auto ml-auto cursor-pointer text-[13px] font-semibold text-red-500 hover:underline"
+				>
+					{t('page48.activity.view')}
+				</a>
+			{/if}
 		</div>
 	</div>
 
-	{#if imageUrls.length > 0}
+	{#if !hideMedia && imageUrls.length > 0}
 		<div use:portal>
-			<ImageLightbox
-				images={imageUrls}
-				currentIndex={lightboxIndex}
-				onIndexChange={(i) => (lightboxIndex = i)}
+			<PostMediaViewer
+				{post}
+				initialIndex={lightboxIndex}
 				isOpen={lightboxOpen}
-				onClose={() => (lightboxOpen = false)}
+				onClose={closeLightbox}
 			/>
 		</div>
 	{/if}

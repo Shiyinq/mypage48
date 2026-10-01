@@ -19,8 +19,10 @@ from src.page48.schemas import (
     EditPostRequest,
     Page48UserProfileResponse,
     PollResponse,
+    PostActivityResponse,
     PostPaginationResponse,
     PostResponse,
+    PostUserListResponse,
     ReportCreate,
     ReportResponse,
     ThreadResponse,
@@ -78,6 +80,49 @@ async def get_direct_replies(
 ):
     user_id = current_user.userId if current_user else None
     return await service.get_direct_replies(postId, limit, cursor, user_id)
+
+
+@router.get("/posts/{postId}/activity", response_model=PostActivityResponse)
+async def get_post_activity(
+    postId: str = Path(...),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_post_activity(postId, user_id)
+
+
+@router.get("/posts/{postId}/quotes", response_model=PostPaginationResponse)
+async def get_post_quotes(
+    postId: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
+    service: Page48Service = Depends(get_page48_service),
+):
+    user_id = current_user.userId if current_user else None
+    return await service.get_post_quotes(postId, limit, cursor, user_id)
+
+
+@router.get("/posts/{postId}/reposts", response_model=PostUserListResponse)
+async def get_post_reposts(
+    postId: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_post_reposts(postId, limit, cursor)
+
+
+@router.get("/posts/{postId}/likes", response_model=PostUserListResponse)
+async def get_post_likes(
+    postId: str = Path(...),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_post_likes(postId, limit, cursor, current_user.userId)
 
 
 @router.get("/users/{username}/posts", response_model=PostPaginationResponse)

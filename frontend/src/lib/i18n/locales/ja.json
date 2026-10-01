@@ -2098,7 +2098,10 @@
 			"replyingTo": "返信先",
 			"replySent": "返信を送信しました",
 			"replyError": "返信の送信に失敗しました",
-			"emptyReplies": "まだ返信がありません。最初に返信しましょう。"
+			"emptyReplies": "まだ返信がありません。",
+			"showMore": "もっと見る",
+			"showLess": "折りたたむ",
+			"quotedUnavailable": "このポストは利用できません。"
 		},
 		"userPage": {
 			"notFoundTitle": "ユーザーが見つかりません",
@@ -2109,6 +2112,27 @@
 			"pinned": "固定されたポスト",
 			"countPosts": "{count} 投稿",
 			"countReposts": "{count} リポスト"
+		},
+		"mediaViewer": {
+			"title": "投稿メディア",
+			"hideDetails": "詳細を隠す",
+			"showDetails": "詳細を表示",
+			"download": "写真をダウンロード"
+		},
+		"activity": {
+			"title": "投稿のアクティビティ",
+			"view": "アクティビティを表示",
+			"backToPost": "投稿に戻る",
+			"quotes": "引用",
+			"reposts": "リポスト",
+			"likes": "いいね",
+			"emptyQuotes": "まだ引用がありません。",
+			"emptyReposts": "まだリポストがありません。",
+			"emptyLikes": "まだいいねがありません。",
+			"loadMore": "もっと見る",
+			"error": "リストの読み込みに失敗しました。",
+			"loadError": "アクティビティの読み込みに失敗しました",
+			"loadErrorText": "この投稿のアクティビティの読み込み中にエラーが発生しました。"
 		},
 		"tabs": {
 			"posts": "投稿",
@@ -2180,11 +2204,6 @@
 			"error": "報告の送信に失敗しました",
 			"already": "すでに報告済みです。"
 		},
-		"reportUser": "ユーザーを報告",
-		"post": {
-			"showMore": "もっと見る",
-			"showLess": "折りたたむ",
-			"quotedUnavailable": "このポストは利用できません。"
-		}
+		"reportUser": "ユーザーを報告"
 	}
 }

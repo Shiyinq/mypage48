@@ -403,6 +403,71 @@ class Page48Repository:
 
         return {"reposts": repost_list, "posts": posts}
 
+    # Per-post interactions (the "activity" lists)
+    @staticmethod
+    def _with_interaction_cursor(query: dict, cursor: Optional[dict]) -> dict:
+        """Narrow a query to rows older than `cursor` (createdAt + ObjectId)."""
+        if not cursor:
+            return query
+        cursor_id = cursor.get("_id")
+        if isinstance(cursor_id, str):
+            try:
+                cursor_id = ObjectId(cursor_id)
+            except Exception:
+                pass
+        query["$or"] = [
+            {"createdAt": {"$lt": cursor["createdAt"]}},
+            {"createdAt": cursor["createdAt"], "_id": {"$lt": cursor_id}},
+        ]
+        return query
+
+    async def count_post_quotes(self, post_id: str) -> int:
+        return await self.posts.count_documents({"quotedPostId": post_id})
+
+    async def count_post_reposts(self, post_id: str) -> int:
+        return await self.reposts.count_documents({"postId": post_id})
+
+    async def count_post_likes(self, post_id: str) -> int:
+        return await self.likes.count_documents({"postId": post_id})
+
+    async def get_post_quotes(
+        self, post_id: str, limit: int = 20, cursor: Optional[dict] = None
+    ) -> List[dict]:
+        """Posts that quote the given post, newest first."""
+        query: dict = {"quotedPostId": post_id}
+        if cursor:
+            query["$or"] = [
+                {"createdAt": {"$lt": cursor["createdAt"]}},
+                {"createdAt": cursor["createdAt"], "postId": {"$lt": cursor["postId"]}},
+            ]
+
+        cursor_obj = (
+            self.posts.find(query)
+            .sort([("createdAt", -1), ("postId", -1)])
+            .limit(limit)
+        )
+        return await cursor_obj.to_list(length=limit)
+
+    async def get_post_reposts(
+        self, post_id: str, limit: int = 20, cursor: Optional[dict] = None
+    ) -> List[dict]:
+        """Repost rows for a post, newest first."""
+        query = self._with_interaction_cursor({"postId": post_id}, cursor)
+        cursor_obj = (
+            self.reposts.find(query).sort([("createdAt", -1), ("_id", -1)]).limit(limit)
+        )
+        return await cursor_obj.to_list(length=limit)
+
+    async def get_post_likes(
+        self, post_id: str, limit: int = 20, cursor: Optional[dict] = None
+    ) -> List[dict]:
+        """Like rows for a post, newest first."""
+        query = self._with_interaction_cursor({"postId": post_id}, cursor)
+        cursor_obj = (
+            self.likes.find(query).sort([("createdAt", -1), ("_id", -1)]).limit(limit)
+        )
+        return await cursor_obj.to_list(length=limit)
+
     # Reports
     async def insert_report(self, report_data: dict):
         return await self.reports.insert_one(report_data)

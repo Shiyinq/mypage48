@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Pencil, Trash2, Flag, Pin, PinOff } from 'lucide-svelte';
+	import { Pencil, Trash2, Flag, Pin, PinOff, Activity } from 'lucide-svelte';
 	import { portal } from '$lib/actions/portal';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -11,9 +11,19 @@
 		onDelete?: () => void;
 		onReport?: () => void;
 		onTogglePin?: () => void;
+		/** Opens the post's activity page (quotes / reposts / likes). */
+		onViewActivity?: () => void;
 	}
 
-	let { isOwner, isPinned = false, onEdit, onDelete, onReport, onTogglePin }: Props = $props();
+	let {
+		isOwner,
+		isPinned = false,
+		onEdit,
+		onDelete,
+		onReport,
+		onTogglePin,
+		onViewActivity
+	}: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -72,6 +82,15 @@
 			onclick={(e) => e.stopPropagation()}
 			role="presentation"
 		>
+			{#if onViewActivity}
+				<button
+					class="w-full flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+					onclick={() => run(onViewActivity)}
+				>
+					<Activity size={15} />
+					{t('page48.activity.view')}
+				</button>
+			{/if}
 			{#if isOwner}
 				{#if onTogglePin}
 					<button

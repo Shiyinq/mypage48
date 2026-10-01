@@ -53,9 +53,13 @@ from src.page48.schemas import (
     Page48Video,
     PollOptionResponse,
     PollResponse,
+    PostActivityResponse,
     PostPaginationMeta,
     PostPaginationResponse,
     PostResponse,
+    PostUserItem,
+    PostUserListMeta,
+    PostUserListResponse,
     ReportCreate,
     ReportResponse,
     ThreadPostItem,
@@ -867,6 +871,160 @@ class Page48Service:
             meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more),
         )
 
+    # Post activity (quotes / reposts / likes)
+    @staticmethod
+    def _parse_post_cursor(cursor: Optional[str]) -> Optional[dict]:
+        if not cursor:
+            return None
+        try:
+            created_at, post_id = cursor.split("_")
+            return {"createdAt": datetime.fromisoformat(created_at), "postId": post_id}
+        except Exception:
+            return None
+
+    @staticmethod
+    def _parse_interaction_cursor(cursor: Optional[str]) -> Optional[dict]:
+        if not cursor:
+            return None
+        try:
+            created_at, doc_id = cursor.split("_")
+            return {"createdAt": datetime.fromisoformat(created_at), "_id": doc_id}
+        except Exception:
+            return None
+
+    async def get_post_activity(
+        self, post_id: str, current_user_id: Optional[str] = None
+    ) -> PostActivityResponse:
+        """Counts and context for the post's activity page."""
+        post = await self.repository.get_post_by_id(post_id)
+        if not post:
+            raise PostNotFoundError()
+
+        # Counted live so a tab label can never disagree with its own list.
+        quote_count = await self.repository.count_post_quotes(post_id)
+        repost_count = await self.repository.count_post_reposts(post_id)
+        like_count = await self.repository.count_post_likes(post_id)
+
+        enriched = (await self._enrich_posts([post], current_user_id))[0]
+        return PostActivityResponse(
+            post=enriched,
+            quoteCount=quote_count,
+            repostCount=repost_count,
+            likeCount=like_count,
+            canViewLikes=(
+                bool(current_user_id) and post.get("userId") == current_user_id
+            ),
+        )
+
+    async def get_post_quotes(
+        self,
+        post_id: str,
+        limit: int = 20,
+        cursor: Optional[str] = None,
+        current_user_id: Optional[str] = None,
+    ) -> PostPaginationResponse:
+        if not await self.repository.get_post_by_id(post_id):
+            raise PostNotFoundError()
+
+        quotes = await self.repository.get_post_quotes(
+            post_id, limit + 1, self._parse_post_cursor(cursor)
+        )
+
+        has_more = len(quotes) > limit
+        if has_more:
+            quotes = quotes[:limit]
+
+        next_cursor = None
+        if has_more and quotes:
+            last = quotes[-1]
+            next_cursor = f"{last['createdAt'].isoformat()}_{last['postId']}"
+
+        return PostPaginationResponse(
+            data=await self._enrich_posts(quotes, current_user_id),
+            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more),
+        )
+
+    async def get_post_reposts(
+        self,
+        post_id: str,
+        limit: int = 20,
+        cursor: Optional[str] = None,
+    ) -> PostUserListResponse:
+        if not await self.repository.get_post_by_id(post_id):
+            raise PostNotFoundError()
+
+        rows = await self.repository.get_post_reposts(
+            post_id, limit + 1, self._parse_interaction_cursor(cursor)
+        )
+        return await self._build_user_list(rows, limit)
+
+    async def get_post_likes(
+        self,
+        post_id: str,
+        limit: int = 20,
+        cursor: Optional[str] = None,
+        current_user_id: Optional[str] = None,
+    ) -> PostUserListResponse:
+        post = await self.repository.get_post_by_id(post_id)
+        if not post:
+            raise PostNotFoundError()
+        # Who liked a post is only visible to its author.
+        if not current_user_id or post.get("userId") != current_user_id:
+            raise UnauthorizedActionError()
+
+        rows = await self.repository.get_post_likes(
+            post_id, limit + 1, self._parse_interaction_cursor(cursor)
+        )
+        return await self._build_user_list(rows, limit)
+
+    async def _build_user_list(
+        self, rows: List[dict], limit: int
+    ) -> PostUserListResponse:
+        """Turn interaction rows into a paginated list of the users behind them."""
+        has_more = len(rows) > limit
+        if has_more:
+            rows = rows[:limit]
+
+        next_cursor = None
+        if has_more and rows:
+            last = rows[-1]
+            next_cursor = f"{last['createdAt'].isoformat()}_{str(last['_id'])}"
+
+        if not rows:
+            return PostUserListResponse(
+                data=[], meta=PostUserListMeta(nextCursor=None, hasMore=False)
+            )
+
+        users = await self.user_repository.get_users_by_ids(
+            [row["userId"] for row in rows]
+        )
+        user_map = {user["userId"]: user for user in users}
+
+        picture_cache: dict = {}
+        items: List[PostUserItem] = []
+        for row in rows:
+            user = user_map.get(row.get("userId"))
+            if not user:
+                # The account is gone; skip it rather than show an empty row.
+                continue
+            picture, picture_small = await self._resolve_picture_variants(
+                user.get("profilePicture"), picture_cache
+            )
+            items.append(
+                PostUserItem(
+                    userId=user.get("userId", ""),
+                    username=user.get("username") or "",
+                    name=user.get("name") or user.get("username") or "",
+                    profilePicture=picture,
+                    profilePicture_small=picture_small,
+                    bio=user.get("bio"),
+                )
+            )
+
+        return PostUserListResponse(
+            data=items, meta=PostUserListMeta(nextCursor=next_cursor, hasMore=has_more)
+        )
+
     async def toggle_like(self, post_id: str, user_id: str) -> ToggleResponse:
         post = await self.repository.get_post_by_id(post_id)
         if not post:
@@ -1063,6 +1221,23 @@ class Page48Service:
         except Exception as e:
             logger.exception(f"Error creating report: {str(e)}")
             raise ReportCreationError()
+
+    async def _resolve_picture_variants(
+        self, raw: Optional[str], cache: dict
+    ) -> tuple[Optional[str], Optional[str]]:
+        """Resolve a stored picture path to (full, small) URLs, cached per request."""
+        if not raw:
+            return None, None
+        if raw in cache:
+            return cache[raw]
+        try:
+            full = await self.storage_service.resolve_url(raw)
+            small = await self.storage_service.resolve_url(raw, variant="small")
+        except Exception as e:
+            logger.error(f"Failed to resolve picture {raw}: {str(e)}")
+            full, small = None, None
+        cache[raw] = (full, small)
+        return full, small
 
     async def _resolve_picture(self, raw: Optional[str], cache: dict) -> Optional[str]:
         """Resolve a stored picture path to a small URL, cached per request."""

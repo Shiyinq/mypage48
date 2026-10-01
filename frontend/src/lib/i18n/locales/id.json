@@ -2104,7 +2104,10 @@
 			"replyingTo": "Membalas",
 			"replySent": "Balasan terkirim",
 			"replyError": "Gagal mengirim balasan",
-			"emptyReplies": "Belum ada balasan. Jadilah yang pertama membalas."
+			"emptyReplies": "Belum ada balasan.",
+			"showMore": "Selengkapnya",
+			"showLess": "Sembunyikan",
+			"quotedUnavailable": "Postingan ini sudah tidak tersedia."
 		},
 		"userPage": {
 			"notFoundTitle": "Pengguna tidak ditemukan",
@@ -2115,6 +2118,27 @@
 			"pinned": "Disematkan",
 			"countPosts": "{count} Postingan",
 			"countReposts": "{count} Repost"
+		},
+		"mediaViewer": {
+			"title": "Media postingan",
+			"hideDetails": "Sembunyikan detail",
+			"showDetails": "Tampilkan detail",
+			"download": "Unduh foto"
+		},
+		"activity": {
+			"title": "Aktivitas postingan",
+			"view": "Lihat aktivitas",
+			"backToPost": "Kembali ke postingan",
+			"quotes": "Kutipan",
+			"reposts": "Repost",
+			"likes": "Suka",
+			"emptyQuotes": "Belum ada kutipan.",
+			"emptyReposts": "Belum ada repost.",
+			"emptyLikes": "Belum ada yang menyukai.",
+			"loadMore": "Muat lebih banyak",
+			"error": "Gagal memuat daftar.",
+			"loadError": "Gagal memuat aktivitas",
+			"loadErrorText": "Terjadi kesalahan saat memuat aktivitas postingan ini."
 		},
 		"tabs": {
 			"posts": "Postingan",
@@ -2186,11 +2210,6 @@
 			"error": "Gagal mengirim laporan",
 			"already": "Kamu sudah melaporkan ini."
 		},
-		"reportUser": "Laporkan Pengguna",
-		"post": {
-			"showMore": "Selengkapnya",
-			"showLess": "Sembunyikan",
-			"quotedUnavailable": "Postingan ini sudah tidak tersedia."
-		}
+		"reportUser": "Laporkan Pengguna"
 	}
 }

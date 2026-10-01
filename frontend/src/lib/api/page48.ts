@@ -1,5 +1,6 @@
 import { client, API_BASE } from '$lib/apis/client';
 import { accessToken } from '$lib/stores/accessToken.svelte';
+import { page48NavStore } from '$lib/stores/page48Nav.svelte';
 import { getCSRFToken } from '$lib/utils/auth';
 
 export interface Page48ImageRef {
@@ -144,6 +145,29 @@ export interface PostPaginationResponse {
 	meta: PostPaginationMeta;
 }
 
+export interface PostUserItem {
+	userId: string;
+	username: string;
+	name: string;
+	profilePicture: string | null;
+	profilePicture_small: string | null;
+	bio: string | null;
+}
+
+export interface PostUserListResponse {
+	data: PostUserItem[];
+	meta: PostPaginationMeta;
+}
+
+export interface PostActivityResponse {
+	post: Page48Post;
+	quoteCount: number;
+	repostCount: number;
+	likeCount: number;
+	/** Likes are only visible to the author of the post. */
+	canViewLikes: boolean;
+}
+
 export interface TrendingTag {
 	tag: string;
 	count: number;
@@ -220,6 +244,32 @@ function buildCursorQuery(limit: number, cursor: string | null): string {
 	return searchParams.toString();
 }
 
+/**
+ * Session cache for the list endpoints. It is only read when the current page
+ * was reached with the browser back button, so returning to a list (for example
+ * from a post's activity page) restores it instead of calling the API again.
+ */
+const listResponseCache = new Map<string, unknown>();
+
+/** How long after a back/forward navigation a list may be served from cache. */
+const HISTORY_NAV_WINDOW_MS = 1500;
+
+/** Drop the cache whenever the content of a list may have changed. */
+function clearListResponseCache(): void {
+	listResponseCache.clear();
+}
+
+async function cachedListGet<T>(url: string, fetcher: () => Promise<T>): Promise<T> {
+	const fromHistory = Date.now() - page48NavStore.viaHistoryAt < HISTORY_NAV_WINDOW_MS;
+	if (fromHistory) {
+		const hit = listResponseCache.get(url);
+		if (hit !== undefined) return hit as T;
+	}
+	const data = await fetcher();
+	listResponseCache.set(url, data);
+	return data;
+}
+
 export const page48Api = {
 	getFeed: async (
 		limit: number = 20,
@@ -227,9 +277,8 @@ export const page48Api = {
 		media: 'text' | 'image' | 'video' | null = null
 	): Promise<PostPaginationResponse> => {
 		const mediaParam = media ? `&media=${media}` : '';
-		return client<PostPaginationResponse>(
-			`/page48/feed?${buildCursorQuery(limit, cursor)}${mediaParam}`
-		);
+		const url = `/page48/feed?${buildCursorQuery(limit, cursor)}${mediaParam}`;
+		return cachedListGet(url, () => client<PostPaginationResponse>(url));
 	},
 
 	getPost: async (postId: string): Promise<Page48Post> => {
@@ -245,9 +294,39 @@ export const page48Api = {
 		limit: number = 20,
 		cursor: string | null = null
 	): Promise<PostPaginationResponse> => {
-		return client<PostPaginationResponse>(
-			`/page48/posts/${postId}/replies?${buildCursorQuery(limit, cursor)}`
-		);
+		const url = `/page48/posts/${postId}/replies?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostPaginationResponse>(url));
+	},
+
+	getPostActivity: async (postId: string): Promise<PostActivityResponse> => {
+		return client<PostActivityResponse>(`/page48/posts/${postId}/activity`);
+	},
+
+	getPostQuotes: async (
+		postId: string,
+		limit: number = 20,
+		cursor: string | null = null
+	): Promise<PostPaginationResponse> => {
+		const url = `/page48/posts/${postId}/quotes?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostPaginationResponse>(url));
+	},
+
+	getPostReposts: async (
+		postId: string,
+		limit: number = 20,
+		cursor: string | null = null
+	): Promise<PostUserListResponse> => {
+		const url = `/page48/posts/${postId}/reposts?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostUserListResponse>(url));
+	},
+
+	getPostLikes: async (
+		postId: string,
+		limit: number = 20,
+		cursor: string | null = null
+	): Promise<PostUserListResponse> => {
+		const url = `/page48/posts/${postId}/likes?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostUserListResponse>(url));
 	},
 
 	createPost: async (
@@ -258,6 +337,7 @@ export const page48Api = {
 		poll?: { options: string[] } | null,
 		quotedPostId?: string
 	) => {
+		clearListResponseCache();
 		return client<Page48Post>('/page48/posts', {
 			method: 'POST',
 			body: { content, images, videos, parentPostId, poll: poll ?? null, quotedPostId }
@@ -272,6 +352,7 @@ export const page48Api = {
 	},
 
 	createThread: async (posts: Page48ThreadPostInput[]): Promise<Page48ThreadResponse> => {
+		clearListResponseCache();
 		return client<Page48ThreadResponse>('/page48/posts/thread', {
 			method: 'POST',
 			body: { posts }
@@ -327,10 +408,12 @@ export const page48Api = {
 	},
 
 	deletePost: async (postId: string) => {
+		clearListResponseCache();
 		return client(`/page48/posts/${postId}`, { method: 'DELETE' });
 	},
 
 	editPost: async (postId: string, content: string): Promise<Page48Post> => {
+		clearListResponseCache();
 		return client<Page48Post>(`/page48/posts/${postId}`, {
 			method: 'PATCH',
 			body: { content }
@@ -368,10 +451,12 @@ export const page48Api = {
 	},
 
 	pinPost: async (postId: string): Promise<Page48Post> => {
+		clearListResponseCache();
 		return client<Page48Post>(`/page48/posts/${postId}/pin`, { method: 'POST' });
 	},
 
 	unpinPost: async (postId: string): Promise<Page48Post> => {
+		clearListResponseCache();
 		return client<Page48Post>(`/page48/posts/${postId}/pin`, { method: 'DELETE' });
 	},
 
@@ -379,16 +464,16 @@ export const page48Api = {
 		limit: number = 20,
 		cursor: string | null = null
 	): Promise<PostPaginationResponse> => {
-		return client<PostPaginationResponse>(
-			`/page48/me/bookmarks?${buildCursorQuery(limit, cursor)}`
-		);
+		const url = `/page48/me/bookmarks?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostPaginationResponse>(url));
 	},
 
 	getLikes: async (
 		limit: number = 20,
 		cursor: string | null = null
 	): Promise<PostPaginationResponse> => {
-		return client<PostPaginationResponse>(`/page48/me/likes?${buildCursorQuery(limit, cursor)}`);
+		const url = `/page48/me/likes?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostPaginationResponse>(url));
 	},
 
 	getUserProfile: async (username: string): Promise<Page48UserProfile> => {
@@ -402,9 +487,8 @@ export const page48Api = {
 		media: 'text' | 'image' | 'video' | null = null
 	): Promise<PostPaginationResponse> => {
 		const mediaParam = media ? `&media=${media}` : '';
-		return client<PostPaginationResponse>(
-			`/page48/users/${encodeURIComponent(username)}/posts?${buildCursorQuery(limit, cursor)}${mediaParam}`
-		);
+		const url = `/page48/users/${encodeURIComponent(username)}/posts?${buildCursorQuery(limit, cursor)}${mediaParam}`;
+		return cachedListGet(url, () => client<PostPaginationResponse>(url));
 	},
 
 	getUserReplies: async (
@@ -412,9 +496,8 @@ export const page48Api = {
 		limit: number = 20,
 		cursor: string | null = null
 	): Promise<PostPaginationResponse> => {
-		return client<PostPaginationResponse>(
-			`/page48/users/${encodeURIComponent(username)}/replies?${buildCursorQuery(limit, cursor)}`
-		);
+		const url = `/page48/users/${encodeURIComponent(username)}/replies?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostPaginationResponse>(url));
 	},
 
 	getUserReposts: async (
@@ -422,9 +505,8 @@ export const page48Api = {
 		limit: number = 20,
 		cursor: string | null = null
 	): Promise<PostPaginationResponse> => {
-		return client<PostPaginationResponse>(
-			`/page48/users/${encodeURIComponent(username)}/reposts?${buildCursorQuery(limit, cursor)}`
-		);
+		const url = `/page48/users/${encodeURIComponent(username)}/reposts?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostPaginationResponse>(url));
 	},
 
 	getTrendingTags: async (limit: number = 10): Promise<TrendingTagsResponse> => {
@@ -442,8 +524,7 @@ export const page48Api = {
 		media: 'text' | 'image' | 'video' | null = null
 	): Promise<PostPaginationResponse> => {
 		const mediaParam = media ? `&media=${media}` : '';
-		return client<PostPaginationResponse>(
-			`/page48/tags/${encodeURIComponent(tag)}/posts?${buildCursorQuery(limit, cursor)}${mediaParam}`
-		);
+		const url = `/page48/tags/${encodeURIComponent(tag)}/posts?${buildCursorQuery(limit, cursor)}${mediaParam}`;
+		return cachedListGet(url, () => client<PostPaginationResponse>(url));
 	}
 };
