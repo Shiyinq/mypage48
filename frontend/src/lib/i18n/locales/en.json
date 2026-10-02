@@ -2028,6 +2028,30 @@
 				"follows": "Follows"
 			}
 		},
+		"search": {
+			"title": "Search",
+			"description": "Search Page48 posts, people and hashtags.",
+			"placeholder": "Search Page48",
+			"forTerm": "Search for: “{term}”",
+			"enterHint": "Enter ↵",
+			"hint": "Use #tag, @user and from:user",
+			"prompt": "Type at least 2 characters to search.",
+			"empty": "No results found.",
+			"loadError": "Couldn't load the results.",
+			"loadErrorText": "Check your connection and try again.",
+			"tab": {
+				"top": "Top",
+				"posts": "Posts",
+				"media": "Media",
+				"users": "People",
+				"tags": "Hashtags"
+			},
+			"section": {
+				"users": "People",
+				"tags": "Hashtags",
+				"posts": "Posts"
+			}
+		},
 		"poll": {
 			"create": "Add poll",
 			"remove": "Remove poll",

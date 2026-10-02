@@ -72,6 +72,7 @@ from src.page48.schemas import (
     PostUserListResponse,
     ReportCreate,
     ReportResponse,
+    SearchTopResponse,
     ThreadPostItem,
     ThreadResponse,
     ToggleResponse,
@@ -98,6 +99,18 @@ NOTIFICATION_OVERVIEW_PREVIEW = 2
 NOTIFICATION_MAX_PER_USER = 500
 # These can be repeated by the same actor, so they carry a dedupe key.
 NOTIFICATION_DEDUPED_TYPES = {"like", "repost", "follow"}
+# Search. Free words match token prefixes, so the collection is never scanned.
+SEARCH_TOKEN_PATTERN = re.compile(r"[^\W_]+", re.UNICODE)
+SEARCH_TOKEN_MIN_LENGTH = 2
+MAX_SEARCH_TOKENS = 60
+MAX_SEARCH_WORDS = 5
+SEARCH_QUERY_MIN_LENGTH = 2
+SEARCH_LIMIT_DEFAULT = 20
+SEARCH_USERS_LIMIT = 20
+SEARCH_TAGS_LIMIT = 30
+SEARCH_TOP_USERS = 3
+SEARCH_TOP_TAGS = 3
+SEARCH_TOP_POSTS = 10
 # Which notification types each tab shows. Quotes ride along with reposts,
 # exactly like the repost icon counts them.
 NOTIFICATION_TABS = {
@@ -493,6 +506,77 @@ class Page48Service:
                 mentions.append(username)
         return mentions[:MAX_MENTIONS]
 
+    def _extract_search_tokens(self, content: str) -> List[str]:
+        """Lower-cased words of the content, deduped and capped for post search."""
+        tokens: List[str] = []
+        for match in SEARCH_TOKEN_PATTERN.findall(content or ""):
+            token = match.lower()
+            if len(token) < SEARCH_TOKEN_MIN_LENGTH or token in tokens:
+                continue
+            tokens.append(token)
+            if len(tokens) >= MAX_SEARCH_TOKENS:
+                break
+        return tokens
+
+    def _parse_search_query(self, query: str) -> dict:
+        """Split a raw query into free words plus `from:`/`#`/`@` operators."""
+        words: List[str] = []
+        tags: List[str] = []
+        mentions: List[str] = []
+        authors: List[str] = []
+
+        for part in (query or "").split():
+            lowered = part.lower()
+            if lowered.startswith("from:") and len(lowered) > len("from:"):
+                authors.append(lowered[len("from:") :])
+            elif lowered.startswith("#") and len(lowered) > 1:
+                tags.append(lowered[1:])
+            elif lowered.startswith("@") and len(lowered) > 1:
+                mentions.append(lowered[1:])
+            elif len(lowered) >= SEARCH_TOKEN_MIN_LENGTH:
+                words.append(lowered)
+
+        return {
+            "words": words[:MAX_SEARCH_WORDS],
+            "tags": tags,
+            "mentions": mentions,
+            "authors": authors,
+        }
+
+    @staticmethod
+    def _has_search_criteria(parsed: dict) -> bool:
+        return bool(
+            parsed["words"]
+            or parsed["tags"]
+            or parsed["mentions"]
+            or parsed["authors"]
+        )
+
+    def _search_term_for_people(self, query: str) -> str:
+        """Text a people/tag tab searches: the free words, else the operator value."""
+        parsed = self._parse_search_query(query)
+        if parsed["words"]:
+            return " ".join(parsed["words"])
+        for key in ("authors", "mentions", "tags"):
+            if parsed[key]:
+                return parsed[key][0]
+        return ""
+
+    @staticmethod
+    def _rank_search_users(users: List[dict], term: str) -> List[dict]:
+        """Exact username first, then username prefix, then the rest."""
+        lowered = (term or "").lower()
+
+        def rank(user: dict) -> int:
+            username = (user.get("username") or "").lower()
+            if lowered and username == lowered:
+                return 0
+            if lowered and username.startswith(lowered):
+                return 1
+            return 2
+
+        return sorted(users, key=rank)
+
     async def _notify(
         self,
         recipient_user_id: Optional[str],
@@ -596,6 +680,137 @@ class Page48Service:
         return TrendingTagsResponse(
             tags=[TrendingTag(tag=row["_id"], count=row["count"]) for row in rows]
         )
+
+    # Search
+    async def search_posts(
+        self,
+        query: str,
+        current_user_id: str,
+        tab: str = "posts",
+        limit: int = SEARCH_LIMIT_DEFAULT,
+        cursor: Optional[str] = None,
+    ) -> PostPaginationResponse:
+        empty = PostPaginationResponse(
+            data=[], meta=PostPaginationMeta(nextCursor=None, hasMore=False)
+        )
+        if len((query or "").strip()) < SEARCH_QUERY_MIN_LENGTH:
+            return empty
+
+        parsed = self._parse_search_query(query)
+        if not self._has_search_criteria(parsed):
+            return empty
+
+        author_ids = await self._resolve_search_authors(parsed["authors"])
+        if author_ids is None:
+            # `from:` named an account that does not exist, so nothing can match.
+            return empty
+
+        rows = await self.repository.search_posts(
+            {
+                "words": parsed["words"],
+                "tags": parsed["tags"],
+                "mentions": parsed["mentions"],
+                "author_ids": author_ids,
+                "media": "media" if tab == "media" else None,
+            },
+            limit + 1,
+            self._parse_post_cursor(cursor),
+        )
+
+        has_more = len(rows) > limit
+        if has_more:
+            rows = rows[:limit]
+
+        next_cursor = None
+        if has_more and rows:
+            last = rows[-1]
+            next_cursor = f"{last['createdAt'].isoformat()}_{last['postId']}"
+
+        return PostPaginationResponse(
+            data=await self._enrich_posts(rows, current_user_id),
+            meta=PostPaginationMeta(nextCursor=next_cursor, hasMore=has_more),
+        )
+
+    async def search_users(
+        self, query: str, current_user_id: str, limit: int = SEARCH_USERS_LIMIT
+    ) -> PostUserListResponse:
+        term = self._search_term_for_people(query)
+        empty = PostUserListResponse(
+            data=[], meta=PostUserListMeta(nextCursor=None, hasMore=False)
+        )
+        if len(term.strip()) < SEARCH_QUERY_MIN_LENGTH:
+            return empty
+
+        users = await self.user_repository.search_users(term, limit)
+        return PostUserListResponse(
+            data=await self._build_search_users(
+                self._rank_search_users(users, term), current_user_id
+            ),
+            meta=PostUserListMeta(nextCursor=None, hasMore=False),
+        )
+
+    async def search_tags(
+        self, query: str, limit: int = SEARCH_TAGS_LIMIT
+    ) -> TrendingTagsResponse:
+        term = self._search_term_for_people(query)
+        rows = await self.repository.search_tags(term, limit)
+        return TrendingTagsResponse(
+            tags=[TrendingTag(tag=row["_id"], count=row["count"]) for row in rows]
+        )
+
+    async def search_top(self, query: str, current_user_id: str) -> SearchTopResponse:
+        """Overview tab: a few people, a few tags, then the newest posts."""
+        users = await self.search_users(query, current_user_id, SEARCH_TOP_USERS)
+        tags = await self.search_tags(query, SEARCH_TOP_TAGS)
+        posts = await self.search_posts(
+            query, current_user_id, "posts", SEARCH_TOP_POSTS
+        )
+        return SearchTopResponse(users=users.data, tags=tags.tags, posts=posts.data)
+
+    async def _resolve_search_authors(
+        self, usernames: List[str]
+    ) -> Optional[List[str]]:
+        """Map `from:` usernames to ids; None means one of them does not exist."""
+        if not usernames:
+            return []
+        users = await self.user_repository.get_users_by_usernames(usernames)
+        found = {(user.get("username") or "").lower() for user in users}
+        if any(name not in found for name in usernames):
+            return None
+        return list({user["userId"] for user in users if user.get("userId")})
+
+    async def _build_search_users(
+        self, users: List[dict], viewer_id: Optional[str]
+    ) -> List[PostUserItem]:
+        if not users:
+            return []
+
+        followed: set = set()
+        if viewer_id:
+            followed = set(
+                await self.repository.get_followed_ids(
+                    viewer_id, [user["userId"] for user in users]
+                )
+            )
+
+        picture_cache: dict = {}
+        items: List[PostUserItem] = []
+        for user in users:
+            picture, picture_small = await self._resolve_picture_variants(
+                user.get("profilePicture"), picture_cache
+            )
+            items.append(
+                PostUserItem(
+                    userId=user.get("userId", ""),
+                    username=user.get("username") or "",
+                    name=user.get("name") or user.get("username") or "",
+                    profilePicture=picture,
+                    profilePicture_small=picture_small,
+                    bio=user.get("bio"),
+                    isFollowing=user.get("userId") in followed,
+                )
+            )
+        return items
 
     async def get_active_users(
         self,
@@ -812,6 +1027,8 @@ class Page48Service:
             "videos": videos_data,
             "poll": poll_data,
             "tags": tags,
+            "searchTokens": self._extract_search_tokens(data.content),
+            "mentions": self._extract_mentions(data.content),
             "quotedPostId": quoted_post_id,
             "pinnedAt": None,
             "likesCount": 0,
@@ -1491,6 +1708,8 @@ class Page48Service:
             {
                 "content": data.content,
                 "tags": tags,
+                "searchTokens": self._extract_search_tokens(data.content),
+                "mentions": self._extract_mentions(data.content),
                 "isEdited": True,
                 "updatedAt": datetime.now(timezone.utc),
             },

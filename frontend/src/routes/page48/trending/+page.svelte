@@ -8,6 +8,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import Page48Sidebars from '$lib/components/page48/Page48Sidebars.svelte';
 	import MemberXTags from '$lib/components/page48/MemberXTags.svelte';
+	import SearchBox from '$lib/components/page48/SearchBox.svelte';
 
 	const { t } = useTranslation();
 
@@ -46,6 +47,10 @@
 	class="max-w-[620px] mx-auto w-full min-h-screen bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl sm:border-x border-gray-200/60 dark:border-white/10 pb-24 shadow-sm shadow-black/5 dark:shadow-none transition-all"
 >
 	<div class="px-5 sm:px-6 pt-6 pb-4 border-b border-gray-100/60 dark:border-white/5">
+		<!-- Search lives in the sidebar on desktop, so mobile gets it above the title. -->
+		<div class="mb-4 xl:hidden">
+			<SearchBox />
+		</div>
 		<div class="flex items-center gap-2">
 			<TrendingUp size={22} class="text-red-500" />
 			<h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">

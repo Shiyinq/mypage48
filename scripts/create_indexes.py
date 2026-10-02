@@ -109,6 +109,9 @@ async def create_indexes():
         await db["page48_posts"].create_index([("rootPostId", 1), ("createdAt", 1)])
         await db["page48_posts"].create_index([("parentPostId", 1), ("createdAt", 1)])
         await db["page48_posts"].create_index("tags")
+        # Search: free words match token prefixes, and `@` matches mentions.
+        await db["page48_posts"].create_index("searchTokens")
+        await db["page48_posts"].create_index("mentions")
         await db["page48_posts"].create_index([("quotedPostId", 1), ("createdAt", -1)])
         await db["page48_posts"].create_index("quotedPostId")
         await db["page48_posts"].create_index([("userId", 1), ("pinnedAt", -1)])

@@ -30,6 +30,7 @@ from src.page48.schemas import (
     PostUserListResponse,
     ReportCreate,
     ReportResponse,
+    SearchTopResponse,
     ThreadResponse,
     ToggleResponse,
     TrendingTagsResponse,
@@ -446,6 +447,50 @@ async def mark_notifications_read(
     service: Page48Service = Depends(get_page48_service),
 ):
     return await service.mark_notifications_read(current_user.userId, tab)
+
+
+# Search (signed-in only)
+@router.get("/search/top", response_model=SearchTopResponse)
+async def search_top(
+    query: str = Query("", max_length=100),
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.search_top(query, current_user.userId)
+
+
+@router.get("/search/posts", response_model=PostPaginationResponse)
+async def search_posts(
+    query: str = Query("", max_length=100),
+    tab: str = Query("posts"),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.search_posts(
+        query, current_user.userId, tab=tab, limit=limit, cursor=cursor
+    )
+
+
+@router.get("/search/users", response_model=PostUserListResponse)
+async def search_users(
+    query: str = Query("", max_length=100),
+    limit: int = Query(20, le=50),
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.search_users(query, current_user.userId, limit)
+
+
+@router.get("/search/tags", response_model=TrendingTagsResponse)
+async def search_tags(
+    query: str = Query("", max_length=100),
+    limit: int = Query(30, le=50),
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.search_tags(query, limit)
 
 
 # Admin

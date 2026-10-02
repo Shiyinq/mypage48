@@ -1,8 +1,14 @@
 from datetime import datetime, timezone
+import re
 from typing import Dict, List, Optional
 
 from bson.objectid import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
+
+# A search query may sort its matches on disk, but it must never hang a request.
+SEARCH_MAX_TIME_MS = 5000
+# Posts scanned when counting tag matches; bounds the aggregation's work.
+SEARCH_TAG_POST_SCAN = 20000
 
 
 class Page48Repository:
@@ -73,6 +79,14 @@ class Page48Repository:
             return {"images": {"$exists": True, "$ne": []}}
         if media == "video":
             return {"videos": {"$exists": True, "$ne": []}}
+        if media == "media":
+            # Search's media tab: a photo or a video both count as media.
+            return {
+                "$or": [
+                    {"images": {"$exists": True, "$ne": []}},
+                    {"videos": {"$exists": True, "$ne": []}},
+                ]
+            }
         if media == "text":
             return {
                 "$and": [
@@ -224,6 +238,88 @@ class Page48Repository:
                 }
             },
             {"$sort": {"postCount": -1, "lastPostedAt": -1}},
+            {"$limit": limit},
+        ]
+        cursor = self.posts.aggregate(pipeline)
+        return await cursor.to_list(length=limit)
+
+    # Search
+    async def search_posts(
+        self, filters: dict, limit: int = 20, cursor: Optional[dict] = None
+    ) -> List[dict]:
+        """Posts matching a parsed search query, newest first.
+
+        Free words match token *prefixes* (`oline` finds `olinecintaku`), which is
+        the one shape MongoDB can answer from an index instead of scanning every
+        post in the collection.
+        """
+        conditions: List[dict] = []
+
+        for word in filters.get("words") or []:
+            conditions.append({"searchTokens": {"$regex": f"^{re.escape(word)}"}})
+        for tag in filters.get("tags") or []:
+            conditions.append({"tags": {"$regex": f"^{re.escape(tag)}"}})
+        for mention in filters.get("mentions") or []:
+            conditions.append({"mentions": {"$regex": f"^{re.escape(mention)}"}})
+
+        author_ids = filters.get("author_ids")
+        # An empty list means "no `from:` filter"; an empty `$in` would match nothing.
+        if author_ids:
+            conditions.append({"userId": {"$in": author_ids}})
+
+        media_filter = self._media_query(filters.get("media"))
+        if media_filter:
+            conditions.append(media_filter)
+
+        if not conditions:
+            # Nothing to match on. `$and: []` is an error, and an unfiltered list
+            # would be worse, so an empty filter simply matches nothing.
+            return []
+
+        if cursor:
+            conditions.append(
+                {
+                    "$or": [
+                        {"createdAt": {"$lt": cursor["createdAt"]}},
+                        {
+                            "createdAt": cursor["createdAt"],
+                            "postId": {"$lt": cursor["postId"]},
+                        },
+                    ]
+                }
+            )
+
+        # The token match is served by an index, but the recency sort cannot be: a
+        # multikey index holds one entry per token, so it can never provide a sort
+        # key. The sort therefore happens in memory, and `allowDiskUse` lets it
+        # spill to disk instead of failing on a popular word. That keeps every post
+        # searchable — old ones included — and `maxTimeMS` bounds the worst case
+        # rather than letting one query hang.
+        pipeline: List[dict] = [
+            {"$match": {"$and": conditions}},
+            {"$sort": {"createdAt": -1, "postId": -1}},
+            {"$limit": limit},
+        ]
+        cursor_obj = self.posts.aggregate(
+            pipeline, allowDiskUse=True, maxTimeMS=SEARCH_MAX_TIME_MS
+        )
+        return await cursor_obj.to_list(length=limit)
+
+    async def search_tags(self, term: str, limit: int = 30) -> List[dict]:
+        """Tags starting with `term`, most used first."""
+        if not term:
+            return []
+        prefix = {"$regex": f"^{re.escape(term)}"}
+        pipeline = [
+            {"$match": {"tags": prefix}},
+            # Bounded work: the counts stay exact at a realistic scale and only
+            # become a sample past this ceiling. `$limit` before `$unwind` keeps
+            # the unwound set small, and the whole scan stops there.
+            {"$limit": SEARCH_TAG_POST_SCAN},
+            {"$unwind": "$tags"},
+            {"$match": {"tags": prefix}},
+            {"$group": {"_id": "$tags", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1, "_id": 1}},
             {"$limit": limit},
         ]
         cursor = self.posts.aggregate(pipeline)

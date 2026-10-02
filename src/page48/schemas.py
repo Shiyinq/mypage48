@@ -299,6 +299,14 @@ class PostUserListResponse(BaseModel):
     meta: PostUserListMeta
 
 
+class SearchTopResponse(BaseModel):
+    """The overview tab of search: a few people, tags, then the newest posts."""
+
+    users: list[PostUserItem] = []
+    tags: list[TrendingTag] = []
+    posts: list[PostResponse] = []
+
+
 class PostActivityResponse(BaseModel):
     """Everything the post activity page needs for its header and tabs."""
 

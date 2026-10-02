@@ -214,6 +214,15 @@ export interface Page48NotificationOverview {
 	tabs: Page48NotificationTabSummary[];
 }
 
+export type Page48SearchTab = 'top' | 'posts' | 'media' | 'users' | 'tags';
+
+/** The overview tab of search: a few people, tags, then the newest posts. */
+export interface Page48SearchTopResponse {
+	users: PostUserItem[];
+	tags: TrendingTag[];
+	posts: Page48Post[];
+}
+
 export interface FollowResponse {
 	isFollowing: boolean;
 	followerCount: number;
@@ -542,6 +551,32 @@ export const page48Api = {
 
 	getNotificationOverview: async (): Promise<Page48NotificationOverview> => {
 		return client<Page48NotificationOverview>('/page48/notifications/overview');
+	},
+
+	searchTop: async (query: string): Promise<Page48SearchTopResponse> => {
+		return client<Page48SearchTopResponse>(`/page48/search/top?query=${encodeURIComponent(query)}`);
+	},
+
+	searchPosts: async (
+		query: string,
+		tab: 'posts' | 'media',
+		limit: number = 20,
+		cursor: string | null = null
+	): Promise<PostPaginationResponse> => {
+		const searchParams = new URLSearchParams();
+		searchParams.set('query', query);
+		searchParams.set('tab', tab);
+		searchParams.set('limit', limit.toString());
+		if (cursor) searchParams.set('cursor', cursor);
+		return client<PostPaginationResponse>(`/page48/search/posts?${searchParams.toString()}`);
+	},
+
+	searchUsers: async (query: string): Promise<PostUserListResponse> => {
+		return client<PostUserListResponse>(`/page48/search/users?query=${encodeURIComponent(query)}`);
+	},
+
+	searchTags: async (query: string): Promise<TrendingTagsResponse> => {
+		return client<TrendingTagsResponse>(`/page48/search/tags?query=${encodeURIComponent(query)}`);
 	},
 
 	/** Marks one tab read, so only the tab actually opened loses its unread dot. */

@@ -2032,6 +2032,30 @@
 				"follows": "Mengikuti"
 			}
 		},
+		"search": {
+			"title": "Pencarian",
+			"description": "Cari postingan, pengguna, dan hashtag di Page48.",
+			"placeholder": "Cari di Page48",
+			"forTerm": "Cari: “{term}”",
+			"enterHint": "Enter ↵",
+			"hint": "Gunakan #tag, @user, dan from:user",
+			"prompt": "Ketik minimal 2 karakter untuk mencari.",
+			"empty": "Tidak ada hasil.",
+			"loadError": "Gagal memuat hasil pencarian.",
+			"loadErrorText": "Periksa koneksimu lalu coba lagi.",
+			"tab": {
+				"top": "Teratas",
+				"posts": "Postingan",
+				"media": "Media",
+				"users": "Pengguna",
+				"tags": "Hashtag"
+			},
+			"section": {
+				"users": "Pengguna",
+				"tags": "Hashtag",
+				"posts": "Postingan"
+			}
+		},
 		"poll": {
 			"create": "Buat polling",
 			"remove": "Hapus polling",

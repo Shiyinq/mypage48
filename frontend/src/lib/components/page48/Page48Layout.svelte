@@ -122,7 +122,8 @@
 		page48NavbarStore.pageType === 'post-detail' ||
 			page48NavbarStore.pageType === 'user-profile' ||
 			page48NavbarStore.pageType === 'trending' ||
-			page48NavbarStore.pageType === 'notifications'
+			page48NavbarStore.pageType === 'notifications' ||
+			page48NavbarStore.pageType === 'search'
 	);
 
 	// Immersive video mode: hide the top navbar on mobile so the clip fills the screen.

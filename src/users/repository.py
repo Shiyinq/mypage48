@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import re
 from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -31,6 +32,24 @@ class UserRepository:
             return []
         cursor = self.collection.find({"username": {"$in": usernames}})
         return await cursor.to_list(length=None)
+
+    async def search_users(self, term: str, limit: int = 20) -> list[dict]:
+        """Accounts matching a username prefix or a display-name substring.
+
+        Usernames are stored lower-cased, so an anchored pattern stays on the
+        unique index; the display name has no index and is a small scan.
+        """
+        if not term:
+            return []
+        escaped = re.escape(term)
+        query = {
+            "$or": [
+                {"username": {"$regex": f"^{escaped}"}},
+                {"name": {"$regex": escaped, "$options": "i"}},
+            ]
+        }
+        cursor = self.collection.find(query).limit(limit)
+        return await cursor.to_list(length=limit)
 
     async def update_one(self, filter_query: dict, update_data: dict):
         return await self.collection.update_one(filter_query, update_data)

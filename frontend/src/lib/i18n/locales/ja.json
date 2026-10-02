@@ -2026,6 +2026,30 @@
 				"follows": "フォロー"
 			}
 		},
+		"search": {
+			"title": "検索",
+			"description": "Page48の投稿、ユーザー、ハッシュタグを検索します。",
+			"placeholder": "Page48を検索",
+			"forTerm": "「{term}」を検索",
+			"enterHint": "Enter ↵",
+			"hint": "#タグ、@ユーザー、from:ユーザー が使えます",
+			"prompt": "2文字以上入力してください。",
+			"empty": "結果が見つかりませんでした。",
+			"loadError": "検索結果を読み込めませんでした。",
+			"loadErrorText": "接続を確認して、もう一度お試しください。",
+			"tab": {
+				"top": "トップ",
+				"posts": "投稿",
+				"media": "メディア",
+				"users": "ユーザー",
+				"tags": "ハッシュタグ"
+			},
+			"section": {
+				"users": "ユーザー",
+				"tags": "ハッシュタグ",
+				"posts": "投稿"
+			}
+		},
 		"poll": {
 			"create": "投票を作成",
 			"remove": "投票を削除",
