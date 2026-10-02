@@ -12,6 +12,7 @@ class Info:
     QUOTE_CREATED = "Quote post created successfully."
     POST_PINNED = "Post pinned successfully."
     POST_UNPINNED = "Post unpinned successfully."
+    NOTIFICATIONS_READ = "Notifications marked as read."
 
 
 class ErrorCode:

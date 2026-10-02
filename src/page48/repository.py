@@ -14,6 +14,7 @@ class Page48Repository:
         self.reports = db["page48_reports"]
         self.poll_votes = db["page48_poll_votes"]
         self.follows = db["page48_follows"]
+        self.notifications = db["page48_notifications"]
 
     async def insert_post(self, post_data: dict):
         return await self.posts.insert_one(post_data)
@@ -723,3 +724,64 @@ class Page48Repository:
             key = row["_id"]
             counts.setdefault(key["postId"], {})[key["optionId"]] = row["votes"]
         return counts
+
+    # Notifications
+    async def insert_notification(self, notification: dict):
+        return await self.notifications.insert_one(notification)
+
+    async def get_notifications(
+        self,
+        recipient_id: str,
+        limit: int = 20,
+        cursor: Optional[dict] = None,
+        types: Optional[List[str]] = None,
+    ) -> List[dict]:
+        conditions: List[dict] = [{"recipientUserId": recipient_id}]
+        if types:
+            conditions.append({"type": {"$in": types}})
+
+        if cursor:
+            conditions.append(
+                {
+                    "$or": [
+                        {"createdAt": {"$lt": cursor["createdAt"]}},
+                        {
+                            "createdAt": cursor["createdAt"],
+                            "notificationId": {"$lt": cursor["notificationId"]},
+                        },
+                    ]
+                }
+            )
+
+        cursor_obj = (
+            self.notifications.find({"$and": conditions})
+            .sort([("createdAt", -1), ("notificationId", -1)])
+            .limit(limit)
+        )
+        return await cursor_obj.to_list(length=limit)
+
+    async def count_unread_notifications_by_type(
+        self, recipient_id: str
+    ) -> Dict[str, int]:
+        """Unread notifications grouped by type, in one aggregation."""
+        pipeline = [
+            {"$match": {"recipientUserId": recipient_id, "readAt": None}},
+            {"$group": {"_id": "$type", "count": {"$sum": 1}}},
+        ]
+        cursor = self.notifications.aggregate(pipeline)
+        rows = await cursor.to_list(length=None)
+        return {row["_id"]: row["count"] for row in rows}
+
+    async def mark_notifications_read(
+        self, recipient_id: str, types: List[str], read_at
+    ) -> int:
+        """Stamp the recipient's unread notifications of the given types as read."""
+        result = await self.notifications.update_many(
+            {
+                "recipientUserId": recipient_id,
+                "readAt": None,
+                "type": {"$in": types},
+            },
+            {"$set": {"readAt": read_at}},
+        )
+        return result.modified_count

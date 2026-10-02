@@ -2008,6 +2008,26 @@
 			"quoteNotFound": "Couldn't open the quoted post.",
 			"newPost": "Create a new post"
 		},
+		"notifications": {
+			"title": "Notifications",
+			"empty": "No notifications yet.",
+			"loadError": "Couldn't load notifications.",
+			"loadErrorText": "Check your connection and try again.",
+			"postUnavailable": "This post is no longer available.",
+			"likedPost": "liked your post",
+			"repliedPost": "replied to your post",
+			"repostedPost": "reposted your post",
+			"quotedPost": "quoted your post",
+			"mentionedYou": "mentioned you",
+			"followedYou": "followed you",
+			"tab": {
+				"replies": "Replies",
+				"mentions": "Mentions",
+				"likes": "Likes",
+				"reposts": "Reposts",
+				"follows": "Follows"
+			}
+		},
 		"poll": {
 			"create": "Add poll",
 			"remove": "Remove poll",

@@ -2012,6 +2012,26 @@
 			"quoteNotFound": "Tidak bisa membuka postingan yang dikutip.",
 			"newPost": "Buat postingan baru"
 		},
+		"notifications": {
+			"title": "Notifikasi",
+			"empty": "Belum ada notifikasi.",
+			"loadError": "Gagal memuat notifikasi.",
+			"loadErrorText": "Periksa koneksimu lalu coba lagi.",
+			"postUnavailable": "Postingan ini sudah tidak tersedia.",
+			"likedPost": "menyukai postinganmu",
+			"repliedPost": "membalas postinganmu",
+			"repostedPost": "memposting ulang postinganmu",
+			"quotedPost": "mengutip postinganmu",
+			"mentionedYou": "menyebut kamu",
+			"followedYou": "mengikuti kamu",
+			"tab": {
+				"replies": "Balasan",
+				"mentions": "Sebutan",
+				"likes": "Suka",
+				"reposts": "Repost",
+				"follows": "Mengikuti"
+			}
+		},
 		"poll": {
 			"create": "Buat polling",
 			"remove": "Hapus polling",

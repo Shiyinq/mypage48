@@ -8,6 +8,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.config import config
 from src.database import database_instance
 
+# Page48 notifications older than this are deleted by MongoDB itself.
+NOTIFICATION_TTL_DAYS = 30
+
+
 async def create_indexes():
     """Create database indexes."""
     try:
@@ -123,6 +127,19 @@ async def create_indexes():
         await db["page48_reports"].create_index([("status", 1), ("createdAt", -1)])
         await db["page48_reports"].create_index(
             [("reporterUserId", 1), ("targetType", 1), ("targetId", 1)], unique=True
+        )
+
+        # Notifications: newest first per recipient for the list, plus the unread
+        # count. They expire on their own so the collection cannot grow forever.
+        await db["page48_notifications"].create_index("notificationId", unique=True)
+        await db["page48_notifications"].create_index(
+            [("recipientUserId", 1), ("createdAt", -1), ("notificationId", -1)]
+        )
+        await db["page48_notifications"].create_index(
+            [("recipientUserId", 1), ("readAt", 1)]
+        )
+        await db["page48_notifications"].create_index(
+            "createdAt", expireAfterSeconds=NOTIFICATION_TTL_DAYS * 24 * 60 * 60
         )
 
         # Poll votes: the unique key is what guarantees one vote per user, and the

@@ -167,6 +167,31 @@ export interface PostUserListResponse {
 	meta: PostPaginationMeta;
 }
 
+export type Page48NotificationType = 'reply' | 'mention' | 'follow' | 'like' | 'repost' | 'quote';
+
+export type Page48NotificationTab = 'replies' | 'mentions' | 'likes' | 'reposts' | 'follows';
+
+/** Unread notifications per tab, plus the overall total shown on the bell. */
+export interface Page48NotificationCounts extends Record<Page48NotificationTab, number> {
+	total: number;
+}
+
+export interface Page48Notification {
+	notificationId: string;
+	type: Page48NotificationType;
+	isUnread: boolean;
+	createdAt: string;
+	/** Identity is resolved live by the server, never stored on the notification. */
+	actor: PostUserItem;
+	/** The post to preview and open; null for follows and deleted posts. */
+	post: Page48Post | null;
+}
+
+export interface Page48NotificationPaginationResponse {
+	data: Page48Notification[];
+	meta: PostPaginationMeta;
+}
+
 export interface FollowResponse {
 	isFollowing: boolean;
 	followerCount: number;
@@ -473,6 +498,31 @@ export const page48Api = {
 	unpinPost: async (postId: string): Promise<Page48Post> => {
 		clearListResponseCache();
 		return client<Page48Post>(`/page48/posts/${postId}/pin`, { method: 'DELETE' });
+	},
+
+	getNotifications: async (
+		tab: Page48NotificationTab = 'replies',
+		limit: number = 20,
+		cursor: string | null = null
+	): Promise<Page48NotificationPaginationResponse> => {
+		const searchParams = new URLSearchParams();
+		searchParams.set('tab', tab);
+		searchParams.set('limit', limit.toString());
+		if (cursor) searchParams.set('cursor', cursor);
+		return client<Page48NotificationPaginationResponse>(
+			`/page48/notifications?${searchParams.toString()}`
+		);
+	},
+
+	getNotificationCounts: async (): Promise<Page48NotificationCounts> => {
+		return client<Page48NotificationCounts>('/page48/notifications/counts');
+	},
+
+	/** Marks one tab read, so only the tab actually opened loses its unread dot. */
+	markNotificationsRead: async (tab: Page48NotificationTab): Promise<{ count: number }> => {
+		return client<{ count: number }>(`/page48/notifications/read?tab=${tab}`, {
+			method: 'POST'
+		});
 	},
 
 	getBookmarks: async (

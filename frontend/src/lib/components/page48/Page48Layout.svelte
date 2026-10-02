@@ -2,6 +2,7 @@
 	import { isImmersive } from '$lib/stores';
 	import {
 		ArrowLeft,
+		Bell,
 		Home,
 		User,
 		TrendingUp,
@@ -17,7 +18,11 @@
 	import PostComposerModal from '$lib/components/page48/PostComposerModal.svelte';
 	import type { ComponentType, Snippet } from 'svelte';
 	import { AppBackground } from '$lib/components/common';
-	import { page48NavbarStore } from '$lib/stores/page48.svelte';
+	import {
+		page48NavbarStore,
+		page48UnreadStore,
+		refreshPage48Unread
+	} from '$lib/stores/page48.svelte';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { useTranslation } from '$lib/i18n/useTranslation';
@@ -102,10 +107,22 @@
 		};
 	});
 
+	function refreshUnread() {
+		if (isAuthenticated.value) void refreshPage48Unread();
+	}
+
+	// There are no push notifications, so the badge is refreshed on every
+	// navigation and whenever the tab regains focus.
+	$effect(() => {
+		void $page.url.pathname;
+		refreshUnread();
+	});
+
 	const isBackIcon = $derived(
 		page48NavbarStore.pageType === 'post-detail' ||
 			page48NavbarStore.pageType === 'user-profile' ||
-			page48NavbarStore.pageType === 'trending'
+			page48NavbarStore.pageType === 'trending' ||
+			page48NavbarStore.pageType === 'notifications'
 	);
 
 	// Immersive video mode: hide the top navbar on mobile so the clip fills the screen.
@@ -120,6 +137,8 @@
 		}
 	}
 </script>
+
+<svelte:window onfocus={refreshUnread} />
 
 <div
 	class="flex flex-col min-h-screen w-full relative bg-[#f0f2f5] dark:bg-zinc-950 transition-colors"
@@ -180,6 +199,24 @@
 						<Plus size={16} />
 						{t('page48.composer.submit')}
 					</button>
+				{/if}
+
+				{#if isAuthenticated.value}
+					<a
+						href={`${basePath}/notifications`}
+						aria-label={t('page48.notifications.title')}
+						title={t('page48.notifications.title')}
+						class="relative w-9 h-9 rounded-full flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+					>
+						<Bell size={19} />
+						{#if page48UnreadStore.total > 0}
+							<span
+								class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center"
+							>
+								{page48UnreadStore.total > 99 ? '99+' : page48UnreadStore.total}
+							</span>
+						{/if}
+					</a>
 				{/if}
 
 				<!-- Profile / account -->

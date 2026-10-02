@@ -2006,6 +2006,26 @@
 			"quoteNotFound": "引用した投稿を開けませんでした。",
 			"newPost": "新しい投稿を作成"
 		},
+		"notifications": {
+			"title": "通知",
+			"empty": "まだ通知はありません。",
+			"loadError": "通知を読み込めませんでした。",
+			"loadErrorText": "接続を確認して、もう一度お試しください。",
+			"postUnavailable": "この投稿は利用できません。",
+			"likedPost": "あなたの投稿をいいねしました",
+			"repliedPost": "あなたの投稿に返信しました",
+			"repostedPost": "あなたの投稿をリポストしました",
+			"quotedPost": "あなたの投稿を引用しました",
+			"mentionedYou": "あなたをメンションしました",
+			"followedYou": "あなたをフォローしました",
+			"tab": {
+				"replies": "返信",
+				"mentions": "メンション",
+				"likes": "いいね",
+				"reposts": "リポスト",
+				"follows": "フォロー"
+			}
+		},
 		"poll": {
 			"create": "投票を作成",
 			"remove": "投票を削除",

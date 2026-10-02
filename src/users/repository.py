@@ -25,6 +25,13 @@ class UserRepository:
         cursor = self.collection.find({"userId": {"$in": user_ids}})
         return await cursor.to_list(length=None)
 
+    async def get_users_by_usernames(self, usernames: list[str]) -> list[dict]:
+        """Fetch multiple users by their (lower-cased) username in one query."""
+        if not usernames:
+            return []
+        cursor = self.collection.find({"username": {"$in": usernames}})
+        return await cursor.to_list(length=None)
+
     async def update_one(self, filter_query: dict, update_data: dict):
         return await self.collection.update_one(filter_query, update_data)
 

@@ -18,6 +18,9 @@ from src.page48.schemas import (
     CreateThreadResponse,
     EditPostRequest,
     FollowResponse,
+    MarkNotificationsReadResponse,
+    NotificationCountsResponse,
+    NotificationPaginationResponse,
     Page48UserProfileResponse,
     PollResponse,
     PostActivityResponse,
@@ -402,6 +405,38 @@ async def get_my_likes(
     service: Page48Service = Depends(get_page48_service),
 ):
     return await service.get_user_likes(current_user.userId, limit, cursor)
+
+
+# Notifications
+@router.get("/notifications", response_model=NotificationPaginationResponse)
+async def get_notifications(
+    tab: str = Query("all"),
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_notifications(
+        current_user.userId, tab=tab, limit=limit, cursor=cursor
+    )
+
+
+@router.get("/notifications/counts", response_model=NotificationCountsResponse)
+async def get_notification_counts(
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_notification_counts(current_user.userId)
+
+
+@router.post("/notifications/read", response_model=MarkNotificationsReadResponse)
+async def mark_notifications_read(
+    tab: str = Query("all"),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.mark_notifications_read(current_user.userId, tab)
 
 
 # Admin

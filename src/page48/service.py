@@ -50,6 +50,11 @@ from src.page48.schemas import (
     CreateThreadResponse,
     EditPostRequest,
     FollowResponse,
+    MarkNotificationsReadResponse,
+    NotificationCountsResponse,
+    NotificationItem,
+    NotificationPaginationMeta,
+    NotificationPaginationResponse,
     Page48Image,
     Page48UserProfileResponse,
     Page48Video,
@@ -79,6 +84,32 @@ logger = create_logger("page48_service", __name__)
 TAG_PATTERN = re.compile(r"#(\w+)", re.UNICODE)
 MAX_TAGS = 10
 MAX_TAG_LENGTH = 50
+# Mentions are matched the same informal way as hashtags: a run of username
+# characters right after an `@`.
+MENTION_PATTERN = re.compile(r"(?:^|[^\w@])@(\w{1,50})", re.UNICODE)
+MAX_MENTIONS = 10
+NOTIFICATION_LIMIT_DEFAULT = 20
+# Which notification types each tab shows. Quotes ride along with reposts,
+# exactly like the repost icon counts them.
+NOTIFICATION_TABS = {
+    "replies": ["reply"],
+    "mentions": ["mention"],
+    "follows": ["follow"],
+    "likes": ["like"],
+    "reposts": ["repost", "quote"],
+    "all": ["reply", "mention", "follow", "like", "repost", "quote"],
+}
+# A tab and its badge counts. The tabs shown in the UI, in order.
+NOTIFICATION_TAB_KEYS = ["replies", "mentions", "likes", "reposts", "follows"]
+# Every type belongs to exactly one tab, so a count can be filed without guessing.
+NOTIFICATION_TYPE_TAB = {
+    "reply": "replies",
+    "mention": "mentions",
+    "follow": "follows",
+    "like": "likes",
+    "repost": "reposts",
+    "quote": "reposts",
+}
 POLL_DURATION_HOURS = 24
 MIN_POLL_OPTIONS = 2
 MAX_POLL_OPTIONS = 6
@@ -444,6 +475,79 @@ class Page48Service:
 
         return tags[:MAX_TAGS]
 
+    def _extract_mentions(self, content: str) -> List[str]:
+        """Usernames mentioned with `@` in the content, lower-cased and deduped."""
+        mentions: List[str] = []
+        for match in MENTION_PATTERN.findall(content or ""):
+            username = match.lower()
+            if username and username not in mentions:
+                mentions.append(username)
+        return mentions[:MAX_MENTIONS]
+
+    async def _notify(
+        self,
+        recipient_user_id: Optional[str],
+        actor_user_id: str,
+        notification_type: str,
+        post_id: Optional[str] = None,
+    ) -> None:
+        """Record one notification.
+
+        Nobody is notified about their own action, and a notification failure
+        must never break the action that triggered it, so errors are only logged.
+        """
+        if not recipient_user_id or recipient_user_id == actor_user_id:
+            return
+        try:
+            await self.repository.insert_notification(
+                {
+                    "notificationId": str(uuid.uuid4()),
+                    "recipientUserId": recipient_user_id,
+                    "actorUserId": actor_user_id,
+                    "type": notification_type,
+                    "postId": post_id,
+                    "readAt": None,
+                    "createdAt": datetime.now(timezone.utc),
+                }
+            )
+        except Exception as error:
+            logger.error(f"Failed to record notification: {str(error)}")
+
+    async def _notify_post_created(self, post_data: dict, actor_user_id: str) -> None:
+        """Mention, reply and quote notifications for a freshly created post.
+
+        A mention wins over a reply for the same recipient: a reply that names
+        the author is filed under mentions only, never under both.
+        """
+        post_id = post_data["postId"]
+        notified: set = set()
+
+        usernames = self._extract_mentions(post_data.get("content", ""))
+        if usernames:
+            users = await self.user_repository.get_users_by_usernames(usernames)
+            for mentioned in users:
+                mentioned_id = mentioned.get("userId")
+                if not mentioned_id or mentioned_id in notified:
+                    continue
+                notified.add(mentioned_id)
+                await self._notify(mentioned_id, actor_user_id, "mention", post_id)
+
+        parent_id = post_data.get("parentPostId")
+        if parent_id:
+            parent = await self.repository.get_post_by_id(parent_id)
+            parent_author = parent.get("userId") if parent else None
+            if parent_author and parent_author not in notified:
+                notified.add(parent_author)
+                await self._notify(parent_author, actor_user_id, "reply", post_id)
+
+        quoted_id = post_data.get("quotedPostId")
+        if quoted_id:
+            quoted = await self.repository.get_post_by_id(quoted_id)
+            quoted_author = quoted.get("userId") if quoted else None
+            if quoted_author and quoted_author not in notified:
+                notified.add(quoted_author)
+                await self._notify(quoted_author, actor_user_id, "quote", post_id)
+
     async def get_trending_tags(self, limit: int = 10) -> TrendingTagsResponse:
         rows = await self.repository.get_trending_tags(limit)
         return TrendingTagsResponse(
@@ -683,6 +787,7 @@ class Page48Service:
                 data, user, parent_post_id=data.parentPostId
             )
             await self.repository.insert_post(post_data)
+            await self._notify_post_created(post_data, user.userId)
 
             # Enrich and return (via the batch helper so a quote preview is
             # attached exactly like it is everywhere else).
@@ -726,6 +831,7 @@ class Page48Service:
                 )
                 # Insert as we go, so the next post can chain onto this one.
                 await self.repository.insert_post(post_data)
+                await self._notify_post_created(post_data, user.userId)
                 documents.append(post_data)
                 parent_post_id = post_data["postId"]
 
@@ -934,6 +1040,119 @@ class Page48Service:
             ),
         )
 
+    # Notifications
+    async def get_notifications(
+        self,
+        current_user_id: str,
+        tab: str = "all",
+        limit: int = NOTIFICATION_LIMIT_DEFAULT,
+        cursor: Optional[str] = None,
+    ) -> NotificationPaginationResponse:
+        types = NOTIFICATION_TABS.get(tab, NOTIFICATION_TABS["all"])
+        rows = await self.repository.get_notifications(
+            current_user_id, limit + 1, self._parse_notification_cursor(cursor), types
+        )
+
+        has_more = len(rows) > limit
+        if has_more:
+            rows = rows[:limit]
+
+        next_cursor = None
+        if has_more and rows:
+            last = rows[-1]
+            next_cursor = f"{last['createdAt'].isoformat()}_{last['notificationId']}"
+
+        return NotificationPaginationResponse(
+            data=await self._build_notifications(rows, current_user_id),
+            meta=NotificationPaginationMeta(
+                nextCursor=next_cursor, hasMore=has_more
+            ),
+        )
+
+    async def get_notification_counts(
+        self, current_user_id: str
+    ) -> NotificationCountsResponse:
+        by_type = await self.repository.count_unread_notifications_by_type(
+            current_user_id
+        )
+        counts = {tab: 0 for tab in NOTIFICATION_TAB_KEYS}
+        for type_name, count in by_type.items():
+            tab = NOTIFICATION_TYPE_TAB.get(type_name)
+            if tab:
+                counts[tab] += count
+        return NotificationCountsResponse(total=sum(counts.values()), **counts)
+
+    async def mark_notifications_read(
+        self, current_user_id: str, tab: str = "all"
+    ) -> MarkNotificationsReadResponse:
+        """Mark one tab (or everything) read; the badge follows the counts."""
+        types = NOTIFICATION_TABS.get(tab, NOTIFICATION_TABS["all"])
+        count = await self.repository.mark_notifications_read(
+            current_user_id, types, datetime.now(timezone.utc)
+        )
+        return MarkNotificationsReadResponse(count=count)
+
+    async def _build_notifications(
+        self, rows: List[dict], viewer_id: str
+    ) -> List[NotificationItem]:
+        """Resolve the actors and referenced posts of a page of notifications."""
+        if not rows:
+            return []
+
+        # Both sides are read live and in bulk: post previews through the usual
+        # enrichment, actors straight from the user documents.
+        post_ids = list({row["postId"] for row in rows if row.get("postId")})
+        posts = await self.repository.get_posts_by_ids(post_ids) if post_ids else []
+        enriched = await self._enrich_posts(posts, viewer_id) if posts else []
+        post_map = {post.postId: post for post in enriched}
+
+        actor_ids = list({row["actorUserId"] for row in rows})
+        actors = await self.user_repository.get_users_by_ids(actor_ids)
+        actor_map = {user["userId"]: user for user in actors}
+
+        picture_cache: dict = {}
+        items: List[NotificationItem] = []
+        for row in rows:
+            actor = actor_map.get(row.get("actorUserId"))
+            if not actor:
+                # The account is gone; skip the row rather than show a blank one.
+                continue
+
+            picture, picture_small = await self._resolve_picture_variants(
+                actor.get("profilePicture"), picture_cache
+            )
+            items.append(
+                NotificationItem(
+                    notificationId=row["notificationId"],
+                    type=row["type"],
+                    isUnread=row.get("readAt") is None,
+                    createdAt=row["createdAt"],
+                    actor=PostUserItem(
+                        userId=actor.get("userId", ""),
+                        username=actor.get("username") or "",
+                        name=actor.get("name") or actor.get("username") or "",
+                        profilePicture=picture,
+                        profilePicture_small=picture_small,
+                        bio=actor.get("bio"),
+                    ),
+                    post=post_map.get(row.get("postId") or ""),
+                )
+            )
+        return items
+
+    @staticmethod
+    def _parse_notification_cursor(cursor: Optional[str]) -> Optional[dict]:
+        if not cursor:
+            return None
+        try:
+            created_at, notification_id = cursor.split("_")
+            return {
+                "createdAt": datetime.fromisoformat(created_at),
+                "notificationId": notification_id,
+            }
+        except Exception:
+            return None
+
     async def get_post_quotes(
         self,
         post_id: str,
@@ -1070,6 +1289,7 @@ class Page48Service:
             await self.repository.increment_post_stats(post_id, "likesCount", 1)
             new_status = True
             new_count = post.get("likesCount", 0) + 1
+            await self._notify(post.get("userId"), user_id, "like", post_id)
 
         return ToggleResponse(status=new_status, count=new_count)
 
@@ -1118,6 +1338,7 @@ class Page48Service:
             await self.repository.increment_post_stats(post_id, "repostCount", 1)
             new_status = True
             new_count = post.get("repostCount", 0) + 1
+            await self._notify(post.get("userId"), user_id, "repost", post_id)
 
         return ToggleResponse(status=new_status, count=new_count)
 
@@ -1697,11 +1918,14 @@ class Page48Service:
             raise CannotFollowSelfError()
 
         if not await self.repository.get_follow(current_user_id, target_id):
+            inserted = True
             try:
                 await self.repository.insert_follow(current_user_id, target_id)
             except DuplicateKeyError:
                 # Two taps raced; the follow already exists.
-                pass
+                inserted = False
+            if inserted:
+                await self._notify(target_id, current_user_id, "follow")
 
         return FollowResponse(
             isFollowing=True,

@@ -1,6 +1,7 @@
 import {
 	page48Api,
 	type ActiveUser,
+	type Page48NotificationCounts,
 	type Page48UserProfile,
 	type TrendingTag
 } from '$lib/api/page48';
@@ -9,7 +10,14 @@ import { logger } from '$lib/utils/logger';
 import { createRequestDedup } from '$lib/utils/requestDedup';
 
 export const page48NavbarStore = $state<{
-	pageType: 'feed' | 'post-detail' | 'user-profile' | 'bookmarks' | 'search' | 'trending';
+	pageType:
+		| 'feed'
+		| 'post-detail'
+		| 'user-profile'
+		| 'bookmarks'
+		| 'search'
+		| 'trending'
+		| 'notifications';
 }>({
 	pageType: 'feed'
 });
@@ -178,4 +186,26 @@ export const page48SoundStore = $state<{ enabled: boolean }>({ enabled: false })
 
 export function setPage48Sound(enabled: boolean) {
 	page48SoundStore.enabled = enabled;
+}
+
+/**
+ * Unread Page48 notifications per tab, plus the total shown on the bell. Shared by
+ * the navbar and the notifications page so the badge and the tabs agree.
+ */
+export const page48UnreadStore = $state<Page48NotificationCounts>({
+	total: 0,
+	replies: 0,
+	mentions: 0,
+	likes: 0,
+	reposts: 0,
+	follows: 0
+});
+
+/** Refresh the badge and the per-tab counts. Failures keep the last values. */
+export async function refreshPage48Unread() {
+	try {
+		Object.assign(page48UnreadStore, await page48Api.getNotificationCounts());
+	} catch (error) {
+		logger.warn('Failed to refresh notification counts', error);
+	}
 }

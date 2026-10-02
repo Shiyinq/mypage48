@@ -320,6 +320,50 @@ class CreateThreadResponse(BaseModel):
     posts: list[PostResponse] = []
 
 
+NotificationType = Literal["reply", "mention", "follow", "like", "repost", "quote"]
+
+
+class NotificationItem(BaseModel):
+    """One entry of the notifications feed."""
+
+    notificationId: str
+    type: NotificationType
+    isUnread: bool = False
+    createdAt: datetime
+
+    # Identity is read live from the user document, never copied onto the
+    # notification: a rename or a new picture shows up immediately.
+    actor: PostUserItem
+    # The post to preview and open. Absent for follows, and for posts that no
+    # longer exist (the client renders those as unavailable).
+    post: Optional[PostResponse] = None
+
+
+class NotificationPaginationMeta(BaseModel):
+    nextCursor: Optional[str] = None
+    hasMore: bool = False
+
+
+class NotificationPaginationResponse(BaseModel):
+    data: list[NotificationItem]
+    meta: NotificationPaginationMeta
+
+
+class NotificationCountsResponse(BaseModel):
+    """Unread notifications of one recipient, per tab plus the overall total."""
+
+    total: int = 0
+    replies: int = 0
+    mentions: int = 0
+    likes: int = 0
+    reposts: int = 0
+    follows: int = 0
+
+
+class MarkNotificationsReadResponse(BaseModel):
+    count: int = 0
+
+
 # `quotedPost` refers to `PostResponse` from inside its own definition, so the
 # forward reference is resolved once the module has finished loading.
 PostResponse.model_rebuild()
