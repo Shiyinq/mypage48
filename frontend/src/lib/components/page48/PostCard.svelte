@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page48Api, type Page48Post } from '$lib/api/page48';
-	import { Heart, MessageCircle, Bookmark, Share } from 'lucide-svelte';
+	import { Heart, MessageCircle, Bookmark, Share2 } from 'lucide-svelte';
 	import PostMenu from '$lib/components/page48/PostMenu.svelte';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
 	import RepostMenu from '$lib/components/page48/RepostMenu.svelte';
@@ -495,7 +495,7 @@
 					aria-disabled={!canInteract}
 					onclick={() => interact(() => onShare?.(post))}
 				>
-					<Share size={18} class="transition-transform group-active/btn:scale-90" />
+					<Share2 size={18} class="transition-transform group-active/btn:scale-90" />
 				</button>
 			</div>
 

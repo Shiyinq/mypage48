@@ -6,7 +6,7 @@
 		MessageCircle,
 		Repeat2,
 		Bookmark,
-		Share,
+		Share2,
 		ChevronUp,
 		ChevronDown,
 		Video
@@ -373,6 +373,6 @@
 		aria-label={t('page48.aria.share')}
 		aria-disabled={!canInteract}
 	>
-		<Share class={`${iconCls} ${overVideo ? 'drop-shadow-lg' : ''}`} />
+		<Share2 class={`${iconCls} ${overVideo ? 'drop-shadow-lg' : ''}`} />
 	</button>
 {/snippet}
