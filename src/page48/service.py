@@ -2163,13 +2163,26 @@ class Page48Service:
                 pass
 
         target_user_id = await self._resolve_user_id(target_username)
+        visibility = await self._visibility(current_user_id)
+
+        # The pinned post leads the plain post list. It may be an old post, so it
+        # is fetched separately and kept out of *every* page — otherwise it would
+        # be shown once on top and again wherever it falls in the pagination.
+        pinned_post = None
+        if media is None:
+            pinned_post = await self.repository.get_pinned_post(
+                target_user_id, visibility
+            )
+        pinned_id = pinned_post["postId"] if pinned_post else None
+
+        # One row decides `has_more`; one more absorbs the pinned post if it lands
+        # inside this window.
+        fetch = limit + 1 + (1 if pinned_id else 0)
         posts = await self.repository.get_user_posts(
-            target_user_id,
-            limit + 1,
-            cursor_dict,
-            media,
-            await self._visibility(current_user_id),
+            target_user_id, fetch, cursor_dict, media, visibility
         )
+        if pinned_id:
+            posts = [p for p in posts if p["postId"] != pinned_id]
 
         has_more = len(posts) > limit
         if has_more:
@@ -2180,18 +2193,9 @@ class Page48Service:
             last_post = posts[-1]
             next_cursor = f"{last_post['createdAt'].isoformat()}_{last_post['postId']}"
 
-        # The pinned post leads the plain post list. It is fetched separately so
-        # cursor pagination can never skip or duplicate it.
-        pinned_post = None
-        if media is None and cursor_dict is None:
-            pinned_post = await self.repository.get_pinned_post(
-                target_user_id, await self._visibility(current_user_id)
-            )
-            if pinned_post:
-                posts = [p for p in posts if p["postId"] != pinned_post["postId"]]
-
         enriched_posts = await self._enrich_posts(posts, current_user_id)
-        if pinned_post:
+        # Only the first page carries the pin above the regular list.
+        if pinned_post and cursor_dict is None:
             pinned = await self._enrich_posts([pinned_post], current_user_id)
             enriched_posts = [*pinned, *enriched_posts]
 
