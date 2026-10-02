@@ -122,3 +122,11 @@ class CannotPinReply(BadRequest):
 
 class CannotFollowSelf(BadRequest):
     DETAIL = ErrorCode.CANNOT_FOLLOW_SELF
+
+
+class CannotBlockSelf(BadRequest):
+    DETAIL = ErrorCode.CANNOT_BLOCK_SELF
+
+
+class CannotMuteSelf(BadRequest):
+    DETAIL = ErrorCode.CANNOT_MUTE_SELF

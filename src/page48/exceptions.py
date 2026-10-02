@@ -112,3 +112,11 @@ class CannotPinReplyError(DomainException):
 
 class CannotFollowSelfError(DomainException):
     ERROR_MESSAGE = DomainErrorCode.CANNOT_FOLLOW_SELF
+
+
+class CannotBlockSelfError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.CANNOT_BLOCK_SELF
+
+
+class CannotMuteSelfError(DomainException):
+    ERROR_MESSAGE = DomainErrorCode.CANNOT_MUTE_SELF

@@ -1939,6 +1939,14 @@
 			"follow": "Follow",
 			"following": "Following",
 			"unfollow": "Unfollow",
+			"requested": "Requested",
+			"cancelRequest": "Cancel follow request",
+			"accept": "Accept",
+			"decline": "Decline",
+			"accepted": "Request accepted.",
+			"declined": "Request declined.",
+			"requestPending": "Your follow request is waiting for approval.",
+			"lockedPosts": "This account only shows its posts to approved followers.",
 			"error": "Failed to update follow"
 		},
 		"seo": {
@@ -2020,6 +2028,8 @@
 			"quotedPost": "quoted your post",
 			"mentionedYou": "mentioned you",
 			"followedYou": "followed you",
+			"followRequested": "requested to follow you",
+			"followAccepted": "accepted your follow request",
 			"tab": {
 				"replies": "Replies",
 				"mentions": "Mentions",
@@ -2278,6 +2288,51 @@
 			"error": "Failed to submit report",
 			"already": "You have already reported this."
 		},
-		"reportUser": "Report User"
+		"reportUser": "Report User",
+		"settings": {
+			"title": "Page48",
+			"subtitle": "Privacy and the accounts you've blocked or muted.",
+			"viewList": "View",
+			"lockedTitle": "Lock Page48 profile",
+			"lockedSubtitle": "When on, only followers you approve can see your posts.",
+			"lockedOn": "Your posts are now follower-only.",
+			"lockedOff": "Anyone can see your posts again."
+		},
+		"blockUser": "Block",
+		"unblockUser": "Unblock",
+		"muteUser": "Mute",
+		"unmuteUser": "Unmute",
+		"block": {
+			"title": "Block user?",
+			"message": "{name} will not be able to see your posts and you will not see theirs. You also stop following each other.",
+			"confirm": "Block",
+			"success": "User blocked.",
+			"error": "Could not block this user.",
+			"youBlocked": "You blocked this user.",
+			"blockedBy": "You cannot view this user's posts."
+		},
+		"unblock": {
+			"success": "User unblocked."
+		},
+		"mute": {
+			"title": "Mute user?",
+			"message": "{name}'s posts will stop showing up in your home timeline. They are not told that you muted them, and you can still view their profile.",
+			"confirm": "Mute",
+			"success": "User muted.",
+			"error": "Could not mute this user."
+		},
+		"unmute": {
+			"success": "User unmuted."
+		},
+		"relations": {
+			"blocks": {
+				"title": "Blocked accounts",
+				"empty": "You haven't blocked anyone."
+			},
+			"mutes": {
+				"title": "Muted accounts",
+				"empty": "You haven't muted anyone."
+			}
+		}
 	}
 }

@@ -13,15 +13,19 @@ from src.dependencies import (
 from src.page48.schemas import (
     ActiveUsersResponse,
     AdminReportPaginationResponse,
+    BlockResponse,
     CreatePostRequest,
     CreateThreadRequest,
     CreateThreadResponse,
     EditPostRequest,
     FollowResponse,
     MarkNotificationsReadResponse,
+    MuteResponse,
     NotificationCountsResponse,
     NotificationOverviewResponse,
     NotificationPaginationResponse,
+    Page48SettingsRequest,
+    Page48SettingsResponse,
     Page48UserProfileResponse,
     PollResponse,
     PostActivityResponse,
@@ -191,6 +195,26 @@ async def unfollow_user(
     return await service.unfollow_user(username, current_user.userId)
 
 
+@router.post("/users/{username}/follow/accept", response_model=FollowResponse)
+async def accept_follow_request(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.accept_follow_request(username, current_user.userId)
+
+
+@router.delete("/users/{username}/follow/request", response_model=FollowResponse)
+async def decline_follow_request(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.decline_follow_request(username, current_user.userId)
+
+
 @router.get("/users/{username}/followers", response_model=PostUserListResponse)
 async def get_followers(
     username: str = Path(...),
@@ -228,9 +252,11 @@ async def get_user_reposts(
 @router.get("/tags/trending", response_model=TrendingTagsResponse)
 async def get_trending_tags(
     limit: int = Query(10, ge=1, le=50),
+    current_user: Optional[UserCurrent] = Depends(get_current_user_optional),
     service: Page48Service = Depends(get_page48_service),
 ):
-    return await service.get_trending_tags(limit)
+    user_id = current_user.userId if current_user else None
+    return await service.get_trending_tags(limit, user_id)
 
 
 @router.get("/users/active", response_model=ActiveUsersResponse)
@@ -449,6 +475,77 @@ async def mark_notifications_read(
     return await service.mark_notifications_read(current_user.userId, tab)
 
 
+# Blocks and mutes
+@router.post("/users/{username}/block", response_model=BlockResponse)
+async def block_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.block_user(username, current_user.userId)
+
+
+@router.delete("/users/{username}/block", response_model=BlockResponse)
+async def unblock_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.unblock_user(username, current_user.userId)
+
+
+@router.post("/users/{username}/mute", response_model=MuteResponse)
+async def mute_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.mute_user(username, current_user.userId)
+
+
+@router.delete("/users/{username}/mute", response_model=MuteResponse)
+async def unmute_user(
+    username: str = Path(...),
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.unmute_user(username, current_user.userId)
+
+
+@router.get("/me/blocks", response_model=PostUserListResponse)
+async def get_my_blocks(
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_blocked_users(current_user.userId, limit, cursor)
+
+
+@router.get("/me/mutes", response_model=PostUserListResponse)
+async def get_my_mutes(
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_muted_users(current_user.userId, limit, cursor)
+
+
+@router.patch("/me/settings", response_model=Page48SettingsResponse)
+async def update_my_settings(
+    request: Page48SettingsRequest,
+    current_user: UserCurrent = Depends(get_current_user),
+    _: bool = Depends(require_csrf_protection),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.update_page48_settings(current_user.userId, request.locked)
+
+
 # Search (signed-in only)
 @router.get("/search/top", response_model=SearchTopResponse)
 async def search_top(
@@ -490,7 +587,7 @@ async def search_tags(
     current_user: UserCurrent = Depends(get_current_user),
     service: Page48Service = Depends(get_page48_service),
 ):
-    return await service.search_tags(query, limit)
+    return await service.search_tags(query, limit, current_user.userId)
 
 
 # Admin

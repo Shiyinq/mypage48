@@ -1,13 +1,24 @@
 <script lang="ts">
-	import { Flag } from 'lucide-svelte';
+	import { Ban, Flag, VolumeX } from 'lucide-svelte';
 	import { portal } from '$lib/actions/portal';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
 	interface Props {
 		onReport?: () => void;
+		onToggleBlock?: () => void;
+		onToggleMute?: () => void;
+		/** Current relationship, so the row can offer the matching undo. */
+		isBlocked?: boolean;
+		isMuted?: boolean;
 	}
 
-	let { onReport }: Props = $props();
+	let {
+		onReport,
+		onToggleBlock,
+		onToggleMute,
+		isBlocked = false,
+		isMuted = false
+	}: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -66,6 +77,24 @@
 			onclick={(e) => e.stopPropagation()}
 			role="presentation"
 		>
+			<button
+				class="w-full flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium whitespace-nowrap text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+				onclick={() => run(onToggleBlock)}
+			>
+				<Ban size={15} class="text-red-500" />
+				<span class="text-red-600 dark:text-red-400">
+					{isBlocked ? t('page48.unblockUser') : t('page48.blockUser')}
+				</span>
+			</button>
+
+			<button
+				class="w-full flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium whitespace-nowrap text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+				onclick={() => run(onToggleMute)}
+			>
+				<VolumeX size={15} />
+				{isMuted ? t('page48.unmuteUser') : t('page48.muteUser')}
+			</button>
+
 			<button
 				class="w-full flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium whitespace-nowrap text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
 				onclick={() => run(onReport)}

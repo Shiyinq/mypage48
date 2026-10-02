@@ -45,6 +45,8 @@ class ErrorCode:
     POLL_QUOTE_CONFLICT = "A quote cannot include a poll."
     CANNOT_PIN_REPLY = "Only top-level posts can be pinned."
     CANNOT_FOLLOW_SELF = "You cannot follow yourself."
+    CANNOT_BLOCK_SELF = "You cannot block yourself."
+    CANNOT_MUTE_SELF = "You cannot mute yourself."
 
 
 class DomainErrorCode:
@@ -76,3 +78,5 @@ class DomainErrorCode:
     POLL_QUOTE_CONFLICT = "A quote cannot include a poll."
     CANNOT_PIN_REPLY = "Only top-level posts can be pinned."
     CANNOT_FOLLOW_SELF = "You cannot follow yourself."
+    CANNOT_BLOCK_SELF = "You cannot block yourself."
+    CANNOT_MUTE_SELF = "You cannot mute yourself."

@@ -49,6 +49,10 @@
 		{/if}
 	</div>
 	{#if showFollow}
-		<FollowButton username={user.username} isFollowing={user.isFollowing ?? false} />
+		<FollowButton
+			username={user.username}
+			isFollowing={user.isFollowing ?? false}
+			isPending={user.isPending ?? false}
+		/>
 	{/if}
 </div>

@@ -126,6 +126,14 @@ export interface Page48UserProfile {
 	bannerBlurHash: string | null;
 	postCount: number;
 	repostCount: number;
+	/** How the signed-in viewer stands with this account. */
+	isBlocked: boolean;
+	isBlockedBy: boolean;
+	isMuted: boolean;
+	/** Follower-only account: posts are hidden until a follow is approved. */
+	isLocked: boolean;
+	/** The viewer's follow request is still waiting for approval. */
+	isFollowPending: boolean;
 	followerCount: number;
 	followingCount: number;
 	isFollowing: boolean;
@@ -139,6 +147,14 @@ export interface ThreadResponse {
 export interface ToggleResponse {
 	status: boolean;
 	count: number;
+}
+
+export interface BlockResponse {
+	isBlocked: boolean;
+}
+
+export interface MuteResponse {
+	isMuted: boolean;
 }
 
 export interface PostPaginationMeta {
@@ -160,6 +176,8 @@ export interface PostUserItem {
 	bio: string | null;
 	/** Whether the requesting user already follows this account. */
 	isFollowing?: boolean;
+	/** Whether the requesting user has an unanswered follow request pending. */
+	isPending?: boolean;
 }
 
 export interface PostUserListResponse {
@@ -167,7 +185,15 @@ export interface PostUserListResponse {
 	meta: PostPaginationMeta;
 }
 
-export type Page48NotificationType = 'reply' | 'mention' | 'follow' | 'like' | 'repost' | 'quote';
+export type Page48NotificationType =
+	| 'reply'
+	| 'mention'
+	| 'follow'
+	| 'followRequest'
+	| 'followAccepted'
+	| 'like'
+	| 'repost'
+	| 'quote';
 
 export type Page48NotificationTab = 'replies' | 'mentions' | 'likes' | 'reposts' | 'follows';
 
@@ -225,7 +251,13 @@ export interface Page48SearchTopResponse {
 
 export interface FollowResponse {
 	isFollowing: boolean;
+	/** True when the target is follower-only, so this is a request. */
+	isPending: boolean;
 	followerCount: number;
+}
+
+export interface Page48Settings {
+	locked: boolean;
 }
 
 export interface PostActivityResponse {
@@ -521,6 +553,50 @@ export const page48Api = {
 		return client<ToggleResponse>(`/page48/posts/${postId}/bookmark`, { method: 'POST' });
 	},
 
+	blockUser: async (username: string): Promise<BlockResponse> => {
+		clearListResponseCache();
+		return client<BlockResponse>(`/page48/users/${encodeURIComponent(username)}/block`, {
+			method: 'POST'
+		});
+	},
+
+	unblockUser: async (username: string): Promise<BlockResponse> => {
+		clearListResponseCache();
+		return client<BlockResponse>(`/page48/users/${encodeURIComponent(username)}/block`, {
+			method: 'DELETE'
+		});
+	},
+
+	muteUser: async (username: string): Promise<MuteResponse> => {
+		clearListResponseCache();
+		return client<MuteResponse>(`/page48/users/${encodeURIComponent(username)}/mute`, {
+			method: 'POST'
+		});
+	},
+
+	unmuteUser: async (username: string): Promise<MuteResponse> => {
+		clearListResponseCache();
+		return client<MuteResponse>(`/page48/users/${encodeURIComponent(username)}/mute`, {
+			method: 'DELETE'
+		});
+	},
+
+	getBlocks: async (
+		limit: number = 20,
+		cursor: string | null = null
+	): Promise<PostUserListResponse> => {
+		const url = `/page48/me/blocks?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostUserListResponse>(url));
+	},
+
+	getMutes: async (
+		limit: number = 20,
+		cursor: string | null = null
+	): Promise<PostUserListResponse> => {
+		const url = `/page48/me/mutes?${buildCursorQuery(limit, cursor)}`;
+		return cachedListGet(url, () => client<PostUserListResponse>(url));
+	},
+
 	pinPost: async (postId: string): Promise<Page48Post> => {
 		clearListResponseCache();
 		return client<Page48Post>(`/page48/posts/${postId}/pin`, { method: 'POST' });
@@ -617,6 +693,28 @@ export const page48Api = {
 		clearListResponseCache();
 		return client<FollowResponse>(`/page48/users/${encodeURIComponent(username)}/follow`, {
 			method: 'DELETE'
+		});
+	},
+
+	acceptFollowRequest: async (username: string): Promise<FollowResponse> => {
+		clearListResponseCache();
+		return client<FollowResponse>(`/page48/users/${encodeURIComponent(username)}/follow/accept`, {
+			method: 'POST'
+		});
+	},
+
+	declineFollowRequest: async (username: string): Promise<FollowResponse> => {
+		clearListResponseCache();
+		return client<FollowResponse>(`/page48/users/${encodeURIComponent(username)}/follow/request`, {
+			method: 'DELETE'
+		});
+	},
+
+	updateSettings: async (locked: boolean): Promise<Page48Settings> => {
+		clearListResponseCache();
+		return client<Page48Settings>('/page48/me/settings', {
+			method: 'PATCH',
+			body: { locked }
 		});
 	},
 

@@ -128,7 +128,9 @@ from src.news.http_exceptions import (
     NewsNotFound,
 )
 from src.page48.exceptions import (
+    CannotBlockSelfError,
     CannotFollowSelfError,
+    CannotMuteSelfError,
     CannotPinReplyError,
     CannotReportSelfError,
     InvalidPollOptionError,
@@ -157,7 +159,9 @@ from src.page48.exceptions import (
     VideoUploadError,
 )
 from src.page48.http_exceptions import (
+    CannotBlockSelf,
     CannotFollowSelf,
+    CannotMuteSelf,
     CannotPinReply,
     CannotReportSelf,
     InvalidPollOption,
@@ -580,6 +584,10 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         return await detailed_http_exception_handler(request, CannotPinReply())
     if isinstance(exc, CannotFollowSelfError):
         return await detailed_http_exception_handler(request, CannotFollowSelf())
+    if isinstance(exc, CannotBlockSelfError):
+        return await detailed_http_exception_handler(request, CannotBlockSelf())
+    if isinstance(exc, CannotMuteSelfError):
+        return await detailed_http_exception_handler(request, CannotMuteSelf())
 
     # Storage errors
     if isinstance(exc, StorageConnectionError):

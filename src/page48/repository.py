@@ -9,6 +9,11 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 SEARCH_MAX_TIME_MS = 5000
 # Posts scanned when counting tag matches; bounds the aggregation's work.
 SEARCH_TAG_POST_SCAN = 20000
+# How many block/mute edges one lookup will read before giving up on the rest.
+RELATION_SCAN_LIMIT = 5000
+# A follow is accepted unless it is explicitly waiting for the target's approval.
+# Legacy rows predate the field entirely, so "not pending" is the safe test.
+ACCEPTED_FOLLOW = {"status": {"$ne": "pending"}}
 
 
 class Page48Repository:
@@ -21,6 +26,8 @@ class Page48Repository:
         self.poll_votes = db["page48_poll_votes"]
         self.follows = db["page48_follows"]
         self.notifications = db["page48_notifications"]
+        self.blocks = db["page48_blocks"]
+        self.mutes = db["page48_mutes"]
 
     async def insert_post(self, post_data: dict):
         return await self.posts.insert_one(post_data)
@@ -28,11 +35,15 @@ class Page48Repository:
     async def get_post_by_id(self, post_id: str) -> Optional[dict]:
         return await self.posts.find_one({"postId": post_id})
 
-    async def get_posts_by_ids(self, post_ids: List[str]) -> List[dict]:
+    async def get_posts_by_ids(
+        self, post_ids: List[str], visibility: Optional[dict] = None
+    ) -> List[dict]:
         if not post_ids:
             return []
-
-        return await self.posts.find({"postId": {"$in": post_ids}}).to_list(length=None)
+        query: dict = {"postId": {"$in": post_ids}}
+        if visibility:
+            query = {"$and": [query, visibility]}
+        return await self.posts.find(query).to_list(length=None)
 
     async def get_posts_by_root_ids(self, root_ids: List[str]) -> List[dict]:
         """Every post that belongs to the given threads (roots excluded)."""
@@ -54,8 +65,13 @@ class Page48Repository:
             {"postId": post_id}, {"$inc": {field: amount}}
         )
 
-    async def get_pinned_post(self, user_id: str) -> Optional[dict]:
-        return await self.posts.find_one({"userId": user_id, "pinnedAt": {"$ne": None}})
+    async def get_pinned_post(
+        self, user_id: str, visibility: Optional[dict] = None
+    ) -> Optional[dict]:
+        query: dict = {"userId": user_id, "pinnedAt": {"$ne": None}}
+        if visibility:
+            query = {"$and": [query, visibility]}
+        return await self.posts.find_one(query)
 
     async def pin_post(self, post_id: str, user_id: str, pinned_at: datetime):
         """Pin one post per user; any previous pin by the same user is cleared."""
@@ -102,8 +118,21 @@ class Page48Repository:
         cursor: Optional[dict] = None,
         media: Optional[str] = None,
         author_ids: Optional[List[str]] = None,
+        visibility: Optional[dict] = None,
+        muted_author_ids: Optional[List[str]] = None,
     ) -> List[dict]:
         conditions: List[dict] = [{"parentPostId": None}]
+
+        # Authors this viewer must not read posts from (blocked, or a locked
+        # account they do not follow). The service passes it so every list that
+        # returns posts applies the same rule.
+        if visibility:
+            conditions.append(visibility)
+
+        # Muting only hides someone from the timeline: their posts stay findable
+        # in search and readable on their profile.
+        if muted_author_ids:
+            conditions.append({"userId": {"$nin": muted_author_ids}})
 
         # Used by the "following" feed: only posts written by the given authors.
         if author_ids is not None:
@@ -134,13 +163,22 @@ class Page48Repository:
         )
         return await cursor_obj.to_list(length=limit)
 
-    async def get_thread_replies(self, root_post_id: str) -> List[dict]:
+    async def get_thread_replies(
+        self, root_post_id: str, visibility: Optional[dict] = None
+    ) -> List[dict]:
         # returns all replies for a thread
-        cursor_obj = self.posts.find({"rootPostId": root_post_id}).sort("createdAt", 1)
+        query: dict = {"rootPostId": root_post_id}
+        if visibility:
+            query = {"$and": [query, visibility]}
+        cursor_obj = self.posts.find(query).sort("createdAt", 1)
         return await cursor_obj.to_list(length=None)
 
     async def get_direct_replies(
-        self, parent_post_id: str, limit: int = 20, cursor: Optional[dict] = None
+        self,
+        parent_post_id: str,
+        limit: int = 20,
+        cursor: Optional[dict] = None,
+        visibility: Optional[dict] = None,
     ) -> List[dict]:
         query = {"parentPostId": parent_post_id}
         if cursor:
@@ -148,6 +186,8 @@ class Page48Repository:
                 {"createdAt": {"$lt": cursor["createdAt"]}},
                 {"createdAt": cursor["createdAt"], "postId": {"$lt": cursor["postId"]}},
             ]
+        if visibility:
+            query = {"$and": [query, visibility]}
 
         cursor_obj = (
             self.posts.find(query)
@@ -162,10 +202,14 @@ class Page48Repository:
         limit: int = 20,
         cursor: Optional[dict] = None,
         media: Optional[str] = None,
+        visibility: Optional[dict] = None,
     ) -> List[dict]:
         # Posts are keyed by the immutable `userId`, never by `username`: a user
         # may rename themselves and their posts must stay attached to them.
         conditions: List[dict] = [{"userId": user_id}]
+
+        if visibility:
+            conditions.append(visibility)
 
         # The Photos/Videos tabs collect every image or video the user attached,
         # replies included; the plain post list stays top-level posts only.
@@ -198,7 +242,11 @@ class Page48Repository:
         return await cursor_obj.to_list(length=limit)
 
     async def get_user_replies(
-        self, user_id: str, limit: int = 20, cursor: Optional[dict] = None
+        self,
+        user_id: str,
+        limit: int = 20,
+        cursor: Optional[dict] = None,
+        visibility: Optional[dict] = None,
     ) -> List[dict]:
         query = {"userId": user_id, "parentPostId": {"$ne": None}}
         if cursor:
@@ -206,6 +254,8 @@ class Page48Repository:
                 {"createdAt": {"$lt": cursor["createdAt"]}},
                 {"createdAt": cursor["createdAt"], "postId": {"$lt": cursor["postId"]}},
             ]
+        if visibility:
+            query = {"$and": [query, visibility]}
 
         cursor_obj = (
             self.posts.find(query)
@@ -220,12 +270,17 @@ class Page48Repository:
         )
 
     async def get_most_active_users(
-        self, limit: int = 5, since: Optional[datetime] = None
+        self,
+        limit: int = 5,
+        since: Optional[datetime] = None,
+        visibility: Optional[dict] = None,
     ) -> List[dict]:
         """Top-level posters in a time window, most posts first."""
         match: dict = {"parentPostId": None}
         if since is not None:
             match["createdAt"] = {"$gte": since}
+        if visibility:
+            match.update(visibility)
 
         pipeline = [
             {"$match": match},
@@ -245,7 +300,11 @@ class Page48Repository:
 
     # Search
     async def search_posts(
-        self, filters: dict, limit: int = 20, cursor: Optional[dict] = None
+        self,
+        filters: dict,
+        limit: int = 20,
+        cursor: Optional[dict] = None,
+        visibility: Optional[dict] = None,
     ) -> List[dict]:
         """Posts matching a parsed search query, newest first.
 
@@ -270,6 +329,9 @@ class Page48Repository:
         media_filter = self._media_query(filters.get("media"))
         if media_filter:
             conditions.append(media_filter)
+
+        if visibility:
+            conditions.append(visibility)
 
         if not conditions:
             # Nothing to match on. `$and: []` is an error, and an unfiltered list
@@ -305,13 +367,18 @@ class Page48Repository:
         )
         return await cursor_obj.to_list(length=limit)
 
-    async def search_tags(self, term: str, limit: int = 30) -> List[dict]:
+    async def search_tags(
+        self, term: str, limit: int = 30, visibility: Optional[dict] = None
+    ) -> List[dict]:
         """Tags starting with `term`, most used first."""
         if not term:
             return []
         prefix = {"$regex": f"^{re.escape(term)}"}
+        match: dict = {"tags": prefix}
+        if visibility:
+            match.update(visibility)
         pipeline = [
-            {"$match": {"tags": prefix}},
+            {"$match": match},
             # Bounded work: the counts stay exact at a realistic scale and only
             # become a sample past this ceiling. `$limit` before `$unwind` keeps
             # the unwound set small, and the whole scan stops there.
@@ -325,10 +392,15 @@ class Page48Repository:
         cursor = self.posts.aggregate(pipeline)
         return await cursor.to_list(length=limit)
 
-    async def get_trending_tags(self, limit: int = 10) -> List[dict]:
+    async def get_trending_tags(
+        self, limit: int = 10, visibility: Optional[dict] = None
+    ) -> List[dict]:
         """Return the most used tags across all posts, most frequent first."""
+        match: dict = {"tags": {"$exists": True, "$ne": []}}
+        if visibility:
+            match.update(visibility)
         pipeline = [
-            {"$match": {"tags": {"$exists": True, "$ne": []}}},
+            {"$match": match},
             {"$unwind": "$tags"},
             {"$group": {"_id": "$tags", "count": {"$sum": 1}}},
             {"$sort": {"count": -1, "_id": 1}},
@@ -343,8 +415,12 @@ class Page48Repository:
         limit: int = 20,
         cursor: Optional[dict] = None,
         media: Optional[str] = None,
+        visibility: Optional[dict] = None,
     ) -> List[dict]:
         conditions: List[dict] = [{"tags": tag}]
+
+        if visibility:
+            conditions.append(visibility)
 
         media_filter = self._media_query(media)
         if media_filter:
@@ -388,7 +464,11 @@ class Page48Repository:
         return await self.likes.delete_one({"postId": post_id, "userId": user_id})
 
     async def get_user_likes(
-        self, user_id: str, limit: int = 20, cursor: Optional[dict] = None
+        self,
+        user_id: str,
+        limit: int = 20,
+        cursor: Optional[dict] = None,
+        visibility: Optional[dict] = None,
     ) -> dict:
         query = {"userId": user_id}
         if cursor:
@@ -412,9 +492,10 @@ class Page48Repository:
             return {"likes": [], "posts": []}
 
         post_ids = [like["postId"] for like in like_list]
-        posts = await self.posts.find({"postId": {"$in": post_ids}}).to_list(
-            length=None
-        )
+        post_query: dict = {"postId": {"$in": post_ids}}
+        if visibility:
+            post_query = {"$and": [post_query, visibility]}
+        posts = await self.posts.find(post_query).to_list(length=None)
 
         return {"likes": like_list, "posts": posts}
 
@@ -435,7 +516,11 @@ class Page48Repository:
         return await self.bookmarks.delete_one({"postId": post_id, "userId": user_id})
 
     async def get_user_bookmarks(
-        self, user_id: str, limit: int = 20, cursor: Optional[dict] = None
+        self,
+        user_id: str,
+        limit: int = 20,
+        cursor: Optional[dict] = None,
+        visibility: Optional[dict] = None,
     ) -> dict:
         query = {"userId": user_id}
         if cursor:
@@ -462,9 +547,10 @@ class Page48Repository:
 
         post_ids = [b["postId"] for b in bookmark_list]
 
-        posts = await self.posts.find({"postId": {"$in": post_ids}}).to_list(
-            length=None
-        )
+        post_query: dict = {"postId": {"$in": post_ids}}
+        if visibility:
+            post_query = {"$and": [post_query, visibility]}
+        posts = await self.posts.find(post_query).to_list(length=None)
 
         return {"bookmarks": bookmark_list, "posts": posts}
 
@@ -488,7 +574,11 @@ class Page48Repository:
         return await self.reposts.count_documents({"userId": user_id})
 
     async def get_user_reposts(
-        self, user_id: str, limit: int = 20, cursor: Optional[dict] = None
+        self,
+        user_id: str,
+        limit: int = 20,
+        cursor: Optional[dict] = None,
+        visibility: Optional[dict] = None,
     ) -> dict:
         query = {"userId": user_id}
         if cursor:
@@ -512,9 +602,10 @@ class Page48Repository:
             return {"reposts": [], "posts": []}
 
         post_ids = [r["postId"] for r in repost_list]
-        posts = await self.posts.find({"postId": {"$in": post_ids}}).to_list(
-            length=None
-        )
+        post_query: dict = {"postId": {"$in": post_ids}}
+        if visibility:
+            post_query = {"$and": [post_query, visibility]}
+        posts = await self.posts.find(post_query).to_list(length=None)
 
         return {"reposts": repost_list, "posts": posts}
 
@@ -536,8 +627,13 @@ class Page48Repository:
         ]
         return query
 
-    async def count_post_quotes(self, post_id: str) -> int:
-        return await self.posts.count_documents({"quotedPostId": post_id})
+    async def count_post_quotes(
+        self, post_id: str, visibility: Optional[dict] = None
+    ) -> int:
+        query: dict = {"quotedPostId": post_id}
+        if visibility:
+            query = {"$and": [query, visibility]}
+        return await self.posts.count_documents(query)
 
     async def count_quotes_for_posts(self, post_ids: List[str]) -> Dict[str, int]:
         """Quote counts for many posts in one query, keyed by the quoted postId."""
@@ -552,14 +648,28 @@ class Page48Repository:
         rows = await cursor.to_list(length=None)
         return {row["_id"]: row["count"] for row in rows}
 
-    async def count_post_reposts(self, post_id: str) -> int:
-        return await self.reposts.count_documents({"postId": post_id})
+    async def count_post_reposts(
+        self, post_id: str, visibility: Optional[dict] = None
+    ) -> int:
+        query: dict = {"postId": post_id}
+        if visibility:
+            query = {"$and": [query, visibility]}
+        return await self.reposts.count_documents(query)
 
-    async def count_post_likes(self, post_id: str) -> int:
-        return await self.likes.count_documents({"postId": post_id})
+    async def count_post_likes(
+        self, post_id: str, visibility: Optional[dict] = None
+    ) -> int:
+        query: dict = {"postId": post_id}
+        if visibility:
+            query = {"$and": [query, visibility]}
+        return await self.likes.count_documents(query)
 
     async def get_post_quotes(
-        self, post_id: str, limit: int = 20, cursor: Optional[dict] = None
+        self,
+        post_id: str,
+        limit: int = 20,
+        cursor: Optional[dict] = None,
+        visibility: Optional[dict] = None,
     ) -> List[dict]:
         """Posts that quote the given post, newest first."""
         query: dict = {"quotedPostId": post_id}
@@ -568,6 +678,8 @@ class Page48Repository:
                 {"createdAt": {"$lt": cursor["createdAt"]}},
                 {"createdAt": cursor["createdAt"], "postId": {"$lt": cursor["postId"]}},
             ]
+        if visibility:
+            query = {"$and": [query, visibility]}
 
         cursor_obj = (
             self.posts.find(query)
@@ -597,11 +709,14 @@ class Page48Repository:
         return await cursor_obj.to_list(length=limit)
 
     # Follows
-    async def insert_follow(self, follower_id: str, following_id: str):
+    async def insert_follow(
+        self, follower_id: str, following_id: str, status: str = "accepted"
+    ):
         return await self.follows.insert_one(
             {
                 "followerId": follower_id,
                 "followingId": following_id,
+                "status": status,
                 "createdAt": datetime.now(timezone.utc),
             }
         )
@@ -616,17 +731,31 @@ class Page48Repository:
             {"followerId": follower_id, "followingId": following_id}
         )
 
+    async def update_follow_status(
+        self, follower_id: str, following_id: str, status: str
+    ):
+        return await self.follows.update_one(
+            {"followerId": follower_id, "followingId": following_id},
+            {"$set": {"status": status}},
+        )
+
     async def get_following_ids(self, follower_id: str) -> List[str]:
-        """Every account this user follows (ids only, index-only read)."""
-        cursor = self.follows.find({"followerId": follower_id}, {"followingId": 1})
+        """Accepted follows only; a pending request grants nothing."""
+        cursor = self.follows.find(
+            {"followerId": follower_id, **ACCEPTED_FOLLOW}, {"followingId": 1}
+        )
         rows = await cursor.to_list(length=None)
         return [row["followingId"] for row in rows]
 
     async def count_followers(self, user_id: str) -> int:
-        return await self.follows.count_documents({"followingId": user_id})
+        return await self.follows.count_documents(
+            {"followingId": user_id, **ACCEPTED_FOLLOW}
+        )
 
     async def count_following(self, follower_id: str) -> int:
-        return await self.follows.count_documents({"followerId": follower_id})
+        return await self.follows.count_documents(
+            {"followerId": follower_id, **ACCEPTED_FOLLOW}
+        )
 
     async def get_followed_ids(
         self, follower_id: str, user_ids: List[str]
@@ -635,7 +764,28 @@ class Page48Repository:
         if not user_ids:
             return []
         cursor = self.follows.find(
-            {"followerId": follower_id, "followingId": {"$in": user_ids}},
+            {
+                "followerId": follower_id,
+                "followingId": {"$in": user_ids},
+                **ACCEPTED_FOLLOW,
+            },
+            {"followingId": 1},
+        )
+        rows = await cursor.to_list(length=None)
+        return [row["followingId"] for row in rows]
+
+    async def get_pending_follow_ids(
+        self, follower_id: str, user_ids: List[str]
+    ) -> List[str]:
+        """Which of `user_ids` this user has a pending request to."""
+        if not user_ids:
+            return []
+        cursor = self.follows.find(
+            {
+                "followerId": follower_id,
+                "followingId": {"$in": user_ids},
+                "status": "pending",
+            },
             {"followingId": 1},
         )
         rows = await cursor.to_list(length=None)
@@ -648,8 +798,11 @@ class Page48Repository:
         limit: int = 20,
         cursor: Optional[dict] = None,
     ) -> List[dict]:
-        """Follow rows where `match_field` (followingId or followerId) is the user."""
-        query: dict = {match_field: user_id}
+        """Follow rows where `match_field` (followingId or followerId) is the user.
+
+        Pending requests stay out: neither list shows them until accepted.
+        """
+        query: dict = {match_field: user_id, **ACCEPTED_FOLLOW}
         if cursor:
             cursor_id = cursor.get("_id")
             if isinstance(cursor_id, str):
@@ -837,12 +990,17 @@ class Page48Repository:
             upsert=True,
         )
 
-    async def get_notification_post_previews(self, post_ids: List[str]) -> List[dict]:
+    async def get_notification_post_previews(
+        self, post_ids: List[str], visibility: Optional[dict] = None
+    ) -> List[dict]:
         """Only the fields a notification snippet shows, in one projection."""
         if not post_ids:
             return []
+        query: dict = {"postId": {"$in": post_ids}}
+        if visibility:
+            query = {"$and": [query, visibility]}
         cursor = self.posts.find(
-            {"postId": {"$in": post_ids}},
+            query,
             {"_id": 0, "postId": 1, "content": 1, "createdAt": 1},
         )
         return await cursor.to_list(length=None)
@@ -865,6 +1023,21 @@ class Page48Repository:
             await self.notifications.delete_many(
                 {"_id": {"$in": [row["_id"] for row in stale]}}
             )
+
+    async def delete_notifications(self, recipient_id: str, actor_id: str, types: List[str]) -> int:
+        """Drop a recipient's notifications of the given types from one actor.
+
+        A follow request that was accepted or declined must disappear from the
+        Follows tab, and cancelling a request has the same effect.
+        """
+        result = await self.notifications.delete_many(
+            {
+                "recipientUserId": recipient_id,
+                "actorUserId": actor_id,
+                "type": {"$in": types},
+            }
+        )
+        return result.deleted_count
 
     async def get_notifications(
         self,
@@ -898,11 +1071,18 @@ class Page48Repository:
         return await cursor_obj.to_list(length=limit)
 
     async def count_unread_notifications_by_type(
-        self, recipient_id: str
+        self, recipient_id: str, hidden_actor_ids: Optional[List[str]] = None
     ) -> Dict[str, int]:
-        """Unread notifications grouped by type, in one aggregation."""
+        """Unread notifications grouped by type, in one aggregation.
+
+        Actors hidden from the recipient (blocked, or locked and not followed)
+        are left out, so a badge can never count a row the list will not show.
+        """
+        match: dict = {"recipientUserId": recipient_id, "readAt": None}
+        if hidden_actor_ids:
+            match["actorUserId"] = {"$nin": hidden_actor_ids}
         pipeline = [
-            {"$match": {"recipientUserId": recipient_id, "readAt": None}},
+            {"$match": match},
             {"$group": {"_id": "$type", "count": {"$sum": 1}}},
         ]
         cursor = self.notifications.aggregate(pipeline)
@@ -922,3 +1102,92 @@ class Page48Repository:
             {"$set": {"readAt": read_at}},
         )
         return result.modified_count
+
+    # Blocks and mutes
+    async def insert_block(self, blocker_id: str, blocked_id: str):
+        return await self.blocks.insert_one(
+            {
+                "blockerId": blocker_id,
+                "blockedId": blocked_id,
+                "createdAt": datetime.now(timezone.utc),
+            }
+        )
+
+    async def delete_block(self, blocker_id: str, blocked_id: str):
+        return await self.blocks.delete_one(
+            {"blockerId": blocker_id, "blockedId": blocked_id}
+        )
+
+    async def get_block(self, blocker_id: str, blocked_id: str) -> Optional[dict]:
+        return await self.blocks.find_one(
+            {"blockerId": blocker_id, "blockedId": blocked_id}
+        )
+
+    async def get_blocked_ids(self, viewer_id: str) -> List[str]:
+        """Who the viewer blocked, plus who blocked the viewer: block is mutual."""
+        rows = await self.blocks.find(
+            {"$or": [{"blockerId": viewer_id}, {"blockedId": viewer_id}]},
+            {"blockerId": 1, "blockedId": 1},
+        ).to_list(length=RELATION_SCAN_LIMIT)
+        return [
+            row["blockedId"] if row["blockerId"] == viewer_id else row["blockerId"]
+            for row in rows
+        ]
+
+    async def get_blocked_users(
+        self, blocker_id: str, limit: int = 20, cursor: Optional[dict] = None
+    ) -> List[dict]:
+        """Accounts the viewer blocked, newest first, shaped like an edge row."""
+        query = self._with_interaction_cursor({"blockerId": blocker_id}, cursor)
+        rows = (
+            await self.blocks.find(query)
+            .sort([("createdAt", -1), ("_id", -1)])
+            .limit(limit)
+            .to_list(length=limit)
+        )
+        return [self._edge_row(row["blockedId"], row) for row in rows]
+
+    async def insert_mute(self, muter_id: str, muted_id: str):
+        return await self.mutes.insert_one(
+            {
+                "muterId": muter_id,
+                "mutedId": muted_id,
+                "createdAt": datetime.now(timezone.utc),
+            }
+        )
+
+    async def delete_mute(self, muter_id: str, muted_id: str):
+        return await self.mutes.delete_one(
+            {"muterId": muter_id, "mutedId": muted_id}
+        )
+
+    async def get_mute(self, muter_id: str, muted_id: str) -> Optional[dict]:
+        return await self.mutes.find_one({"muterId": muter_id, "mutedId": muted_id})
+
+    async def get_muted_ids(self, muter_id: str) -> List[str]:
+        """Who the viewer muted. Unlike block, this is one-directional."""
+        rows = await self.mutes.find(
+            {"muterId": muter_id}, {"mutedId": 1}
+        ).to_list(length=RELATION_SCAN_LIMIT)
+        return [row["mutedId"] for row in rows]
+
+    async def get_muted_users(
+        self, muter_id: str, limit: int = 20, cursor: Optional[dict] = None
+    ) -> List[dict]:
+        query = self._with_interaction_cursor({"muterId": muter_id}, cursor)
+        rows = (
+            await self.mutes.find(query)
+            .sort([("createdAt", -1), ("_id", -1)])
+            .limit(limit)
+            .to_list(length=limit)
+        )
+        return [self._edge_row(row["mutedId"], row) for row in rows]
+
+    @staticmethod
+    def _edge_row(user_id: str, row: dict) -> dict:
+        """Shape a block/mute edge like an interaction row, for the user builders."""
+        return {
+            "userId": user_id,
+            "createdAt": row["createdAt"],
+            "_id": row["_id"],
+        }

@@ -10,27 +10,34 @@
 	interface Props {
 		username: string;
 		isFollowing: boolean;
+		/** The target is follower-only and the request has not been answered yet. */
+		isPending?: boolean;
 		/** `md` is the profile header size, `sm` fits inside user lists. */
 		size?: 'sm' | 'md';
-		onChange?: (isFollowing: boolean) => void;
+		onChange?: (isFollowing: boolean, isPending: boolean) => void;
 	}
 
-	let { username, isFollowing = false, size = 'sm', onChange }: Props = $props();
+	let { username, isFollowing = false, isPending = false, size = 'sm', onChange }: Props = $props();
 
 	const { t } = useTranslation();
 
-	// `untrack` because the prop only seeds the initial value; the $effect below
-	// keeps it in sync afterwards.
+	// `untrack` because the props only seed the initial value; the $effect below
+	// keeps them in sync afterwards.
 	let following = $state(untrack(() => isFollowing));
+	let pending = $state(untrack(() => isPending));
 	let busy = $state(false);
 
-	// Follow the parent's value when it reloads (the button owns it in between).
+	// Follow the parent's values when it reloads (the button owns them in between).
 	$effect(() => {
 		following = isFollowing;
+		pending = isPending;
 	});
 
 	let isSelf = $derived(!!userProfile.data && userProfile.data.username === username);
 	let canFollow = $derived(isAuthenticated.value && !isSelf);
+
+	// Either state undoes the relationship: following unfollows, pending cancels.
+	let canUndo = $derived(following || pending);
 
 	async function toggle(e: MouseEvent) {
 		e.preventDefault();
@@ -38,13 +45,14 @@
 		if (busy || !canFollow) return;
 		busy = true;
 		try {
-			const res = following
+			const res = canUndo
 				? await page48Api.unfollowUser(username)
 				: await page48Api.followUser(username);
 			following = res.isFollowing;
+			pending = res.isPending;
 			// The hover card caches this profile, so its counts are now stale.
 			page48HoverProfileStore.invalidate(username);
-			onChange?.(res.isFollowing);
+			onChange?.(res.isFollowing, res.isPending);
 		} catch (err: unknown) {
 			const e2 = err as { detail?: string; message?: string };
 			showToast(e2?.detail || e2?.message || t('page48.follow.error'), 'error');
@@ -52,6 +60,21 @@
 			busy = false;
 		}
 	}
+
+	let label = $derived(
+		pending
+			? t('page48.follow.requested')
+			: following
+				? t('page48.follow.following')
+				: t('page48.follow.follow')
+	);
+	let ariaLabel = $derived(
+		canUndo
+			? pending
+				? t('page48.follow.cancelRequest')
+				: t('page48.follow.unfollow')
+			: t('page48.follow.follow')
+	);
 </script>
 
 {#if canFollow}
@@ -60,14 +83,14 @@
 		class={`shrink-0 rounded-full font-bold transition-colors cursor-pointer disabled:opacity-60 ${
 			size === 'md' ? 'h-9 px-4 text-[13px]' : 'h-8 px-3 text-[12px]'
 		} ${
-			following
+			canUndo
 				? 'border border-gray-300 text-gray-800 hover:border-red-300 hover:text-red-600 dark:border-zinc-700 dark:text-gray-200 dark:hover:border-red-900 dark:hover:text-red-400'
 				: 'bg-red-600 text-white hover:bg-red-700'
 		}`}
 		onclick={toggle}
 		disabled={busy}
-		aria-label={following ? t('page48.follow.unfollow') : t('page48.follow.follow')}
+		aria-label={ariaLabel}
 	>
-		{following ? t('page48.follow.following') : t('page48.follow.follow')}
+		{label}
 	</button>
 {/if}

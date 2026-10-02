@@ -107,12 +107,18 @@
 	}
 
 	/** Keep the follower count in step while the card stays open. */
-	function handleFollowChange(following: boolean) {
+	function handleFollowChange(following: boolean, pending: boolean) {
 		if (!profile) return;
+		const wasFollowing = profile.isFollowing;
 		profile = {
 			...profile,
 			isFollowing: following,
-			followerCount: Math.max(0, profile.followerCount + (following ? 1 : -1))
+			isFollowPending: pending,
+			followerCount: Math.max(
+				0,
+				profile.followerCount +
+					(following && !wasFollowing ? 1 : !following && wasFollowing ? -1 : 0)
+			)
 		};
 	}
 </script>
@@ -158,6 +164,7 @@
 				<FollowButton
 					username={profile.username}
 					isFollowing={profile.isFollowing}
+					isPending={profile.isFollowPending}
 					onChange={handleFollowChange}
 				/>
 			</div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { showToast } from '$lib/stores';
 	import { logger } from '$lib/utils/logger';
 	import { apiKeys } from '$lib/apis/api_keys';
@@ -30,9 +31,14 @@
 		 * main settings page leaves it off.
 		 */
 		showBanner?: boolean;
+		/**
+		 * Page48-only settings (privacy, blocks, mutes). Rendered as its own group
+		 * right below the account section, above the public profile section.
+		 */
+		page48?: Snippet;
 	}
 
-	let { showExtras = true, showBanner = false }: Props = $props();
+	let { showExtras = true, showBanner = false, page48 }: Props = $props();
 
 	const { t } = useTranslation();
 
@@ -93,6 +99,11 @@
 <div class="space-y-6">
 	<!-- ACCOUNT SETTINGS -->
 	<AccountSettings {showBanner} />
+
+	<!-- PAGE48 SETTINGS (privacy, blocked and muted accounts) -->
+	{#if page48}
+		{@render page48()}
+	{/if}
 
 	<!-- PUBLIC PROFILE SETTINGS -->
 	<PublicProfileSettings />

@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import SEO from '$lib/components/SEO.svelte';
 	import { SettingsSections } from '$lib/components/settings';
+	import Page48Settings from '$lib/components/page48/Page48Settings.svelte';
 	import { page48NavbarStore } from '$lib/stores/page48.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
 	import { userProfile } from '$lib/stores/profile.svelte';
@@ -42,6 +43,10 @@
 	class="max-w-[620px] mx-auto w-full min-h-screen bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl sm:border-x border-gray-200/60 dark:border-white/10 pb-24 shadow-sm shadow-black/5 dark:shadow-none transition-all"
 >
 	<div class="px-4 sm:px-6 py-4">
-		<SettingsSections showExtras={false} showBanner />
+		<SettingsSections showExtras={false} showBanner>
+			{#snippet page48()}
+				<Page48Settings {username} />
+			{/snippet}
+		</SettingsSections>
 	</div>
 </div>

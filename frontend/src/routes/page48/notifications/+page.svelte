@@ -285,7 +285,10 @@
 				in:fade={{ duration: 200 }}
 			>
 				{#each items as item (item.notificationId)}
-					<NotificationRow notification={item} />
+					<NotificationRow
+						notification={item}
+						onResolved={(id) => (items = items.filter((n) => n.notificationId !== id))}
+					/>
 				{/each}
 			</div>
 

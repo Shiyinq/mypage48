@@ -10,7 +10,9 @@ from src.config import Settings
 from src.infrastructure import AsyncBackgroundRunner
 from src.logging_config import create_logger
 from src.page48.exceptions import (
+    CannotBlockSelfError,
     CannotFollowSelfError,
+    CannotMuteSelfError,
     CannotPinReplyError,
     CannotReportSelfError,
     InvalidPollOptionError,
@@ -45,12 +47,14 @@ from src.page48.schemas import (
     AdminReportItem,
     AdminReportPaginationMeta,
     AdminReportPaginationResponse,
+    BlockResponse,
     CreatePostRequest,
     CreateThreadRequest,
     CreateThreadResponse,
     EditPostRequest,
     FollowResponse,
     MarkNotificationsReadResponse,
+    MuteResponse,
     NotificationCountsResponse,
     NotificationItem,
     NotificationOverviewResponse,
@@ -59,6 +63,7 @@ from src.page48.schemas import (
     NotificationPostPreview,
     NotificationTabSummary,
     Page48Image,
+    Page48SettingsResponse,
     Page48UserProfileResponse,
     Page48Video,
     PollOptionResponse,
@@ -98,7 +103,7 @@ NOTIFICATION_OVERVIEW_PREVIEW = 2
 # Protects a recipient from a viral post: only the newest ones are kept.
 NOTIFICATION_MAX_PER_USER = 500
 # These can be repeated by the same actor, so they carry a dedupe key.
-NOTIFICATION_DEDUPED_TYPES = {"like", "repost", "follow"}
+NOTIFICATION_DEDUPED_TYPES = {"like", "repost", "follow", "followRequest"}
 # Search. Free words match token prefixes, so the collection is never scanned.
 SEARCH_TOKEN_PATTERN = re.compile(r"[^\W_]+", re.UNICODE)
 SEARCH_TOKEN_MIN_LENGTH = 2
@@ -116,10 +121,19 @@ SEARCH_TOP_POSTS = 10
 NOTIFICATION_TABS = {
     "replies": ["reply"],
     "mentions": ["mention"],
-    "follows": ["follow"],
+    "follows": ["follow", "followRequest", "followAccepted"],
     "likes": ["like"],
     "reposts": ["repost", "quote"],
-    "all": ["reply", "mention", "follow", "like", "repost", "quote"],
+    "all": [
+        "reply",
+        "mention",
+        "follow",
+        "followRequest",
+        "followAccepted",
+        "like",
+        "repost",
+        "quote",
+    ],
 }
 # A tab and its badge counts. The tabs shown in the UI, in order.
 NOTIFICATION_TAB_KEYS = ["replies", "mentions", "likes", "reposts", "follows"]
@@ -128,6 +142,8 @@ NOTIFICATION_TYPE_TAB = {
     "reply": "replies",
     "mention": "mentions",
     "follow": "follows",
+    "followRequest": "follows",
+    "followAccepted": "follows",
     "like": "likes",
     "repost": "reposts",
     "quote": "reposts",
@@ -158,6 +174,76 @@ class Page48Service:
         self.config = config
         self.storage_service = storage_service
         self.user_repository = user_repository
+        # Authors excluded from every post read this request; computed lazily.
+        self._hidden_authors: Optional[List[str]] = None
+
+    async def _hidden_author_ids(self, viewer_id: Optional[str]) -> List[str]:
+        """Authors whose posts this viewer must not read.
+
+        Blocks (either direction) and locked accounts the viewer does not follow
+        land here. It is computed once per request and reused by every query, so
+        the rule cannot be forgotten in one place and applied in another.
+        """
+        if self._hidden_authors is None:
+            hidden: set = set()
+            if viewer_id:
+                hidden |= set(await self.repository.get_blocked_ids(viewer_id))
+            # A locked account is follower-only: guests and non-followers are
+            # outside. The flag lives apart from the MyPage48 stats flag.
+            locked = set(await self.user_repository.get_page48_locked_ids())
+            if locked:
+                following = (
+                    set(await self.repository.get_following_ids(viewer_id))
+                    if viewer_id
+                    else set()
+                )
+                hidden |= locked - following
+            hidden.discard(viewer_id or "")
+            self._hidden_authors = list(hidden)
+        return self._hidden_authors
+
+    async def _author_hidden_for(
+        self, viewer_id: Optional[str], author_id: Optional[str]
+    ) -> bool:
+        """Whether one author's posts are off-limits to one viewer.
+
+        Unlike `_hidden_author_ids` this is neither cached nor tied to the
+        request's viewer, so it can guard a notification aimed at somebody else.
+        """
+        if not author_id or author_id == viewer_id:
+            return False
+        if viewer_id:
+            blocked = set(await self.repository.get_blocked_ids(viewer_id))
+            if author_id in blocked:
+                return True
+        author = await self.user_repository.find_one({"userId": author_id})
+        if not author or not author.get("page48Locked"):
+            return False
+        if not viewer_id:
+            return True
+        following = set(await self.repository.get_following_ids(viewer_id))
+        return author_id not in following
+
+    async def _visibility(self, viewer_id: Optional[str]) -> Optional[dict]:
+        """Mongo condition for the posts a viewer may not see (None when none)."""
+        hidden = await self._hidden_author_ids(viewer_id)
+        if not hidden:
+            return None
+        return {"userId": {"$nin": hidden}}
+
+    async def _assert_post_visible(
+        self, post: dict, viewer_id: Optional[str]
+    ) -> None:
+        """A direct link has to respect visibility: hidden posts look missing."""
+        hidden = await self._hidden_author_ids(viewer_id)
+        if post.get("userId") in hidden:
+            raise PostNotFoundError()
+
+    async def _muted_author_ids(self, viewer_id: Optional[str]) -> List[str]:
+        """Muted accounts: hidden from the timeline only, never from search."""
+        if not viewer_id:
+            return []
+        return await self.repository.get_muted_ids(viewer_id)
 
     async def _resolve_author_avatar(
         self, post: dict, user_map: Optional[dict], cache: dict
@@ -367,8 +453,9 @@ class Page48Service:
         ]
         # A quoted post may be part of this same batch; only fetch the rest.
         missing = [qid for qid in dict.fromkeys(quoted_ids) if qid not in by_id]
+        visibility = await self._visibility(user_id)
         if missing:
-            rows = await self.repository.get_posts_by_ids(missing)
+            rows = await self.repository.get_posts_by_ids(missing, visibility)
             nested = await self._enrich_posts(rows, user_id, include_quotes=False)
             for quoted in nested:
                 by_id[quoted.postId] = quoted
@@ -649,12 +736,20 @@ class Page48Service:
         post_id = post_data["postId"]
         notified: set = set()
 
+        async def can_reach(recipient_id: Optional[str]) -> bool:
+            """Only notify someone who is allowed to see the new post."""
+            if not recipient_id:
+                return False
+            return not await self._author_hidden_for(recipient_id, actor_user_id)
+
         usernames = self._extract_mentions(post_data.get("content", ""))
         if usernames:
             users = await self.user_repository.get_users_by_usernames(usernames)
             for mentioned in users:
                 mentioned_id = mentioned.get("userId")
                 if not mentioned_id or mentioned_id in notified:
+                    continue
+                if not await can_reach(mentioned_id):
                     continue
                 notified.add(mentioned_id)
                 await self._notify(mentioned_id, actor_user_id, "mention", post_id)
@@ -664,19 +759,25 @@ class Page48Service:
             parent = await self.repository.get_post_by_id(parent_id)
             parent_author = parent.get("userId") if parent else None
             if parent_author and parent_author not in notified:
-                notified.add(parent_author)
-                await self._notify(parent_author, actor_user_id, "reply", post_id)
+                if await can_reach(parent_author):
+                    notified.add(parent_author)
+                    await self._notify(parent_author, actor_user_id, "reply", post_id)
 
         quoted_id = post_data.get("quotedPostId")
         if quoted_id:
             quoted = await self.repository.get_post_by_id(quoted_id)
             quoted_author = quoted.get("userId") if quoted else None
             if quoted_author and quoted_author not in notified:
-                notified.add(quoted_author)
-                await self._notify(quoted_author, actor_user_id, "quote", post_id)
+                if await can_reach(quoted_author):
+                    notified.add(quoted_author)
+                    await self._notify(quoted_author, actor_user_id, "quote", post_id)
 
-    async def get_trending_tags(self, limit: int = 10) -> TrendingTagsResponse:
-        rows = await self.repository.get_trending_tags(limit)
+    async def get_trending_tags(
+        self, limit: int = 10, viewer_id: Optional[str] = None
+    ) -> TrendingTagsResponse:
+        rows = await self.repository.get_trending_tags(
+            limit, await self._visibility(viewer_id)
+        )
         return TrendingTagsResponse(
             tags=[TrendingTag(tag=row["_id"], count=row["count"]) for row in rows]
         )
@@ -715,6 +816,7 @@ class Page48Service:
             },
             limit + 1,
             self._parse_post_cursor(cursor),
+            await self._visibility(current_user_id),
         )
 
         has_more = len(rows) > limit
@@ -750,10 +852,15 @@ class Page48Service:
         )
 
     async def search_tags(
-        self, query: str, limit: int = SEARCH_TAGS_LIMIT
+        self,
+        query: str,
+        limit: int = SEARCH_TAGS_LIMIT,
+        viewer_id: Optional[str] = None,
     ) -> TrendingTagsResponse:
         term = self._search_term_for_people(query)
-        rows = await self.repository.search_tags(term, limit)
+        rows = await self.repository.search_tags(
+            term, limit, await self._visibility(viewer_id)
+        )
         return TrendingTagsResponse(
             tags=[TrendingTag(tag=row["_id"], count=row["count"]) for row in rows]
         )
@@ -761,7 +868,7 @@ class Page48Service:
     async def search_top(self, query: str, current_user_id: str) -> SearchTopResponse:
         """Overview tab: a few people, a few tags, then the newest posts."""
         users = await self.search_users(query, current_user_id, SEARCH_TOP_USERS)
-        tags = await self.search_tags(query, SEARCH_TOP_TAGS)
+        tags = await self.search_tags(query, SEARCH_TOP_TAGS, current_user_id)
         posts = await self.search_posts(
             query, current_user_id, "posts", SEARCH_TOP_POSTS
         )
@@ -785,12 +892,21 @@ class Page48Service:
         if not users:
             return []
 
+        hidden = await self._hidden_author_ids(viewer_id)
+        if hidden:
+            users = [user for user in users if user.get("userId") not in hidden]
+            if not users:
+                return []
+
         followed: set = set()
+        pending: set = set()
         if viewer_id:
+            user_ids = [user["userId"] for user in users]
             followed = set(
-                await self.repository.get_followed_ids(
-                    viewer_id, [user["userId"] for user in users]
-                )
+                await self.repository.get_followed_ids(viewer_id, user_ids)
+            )
+            pending = set(
+                await self.repository.get_pending_follow_ids(viewer_id, user_ids)
             )
 
         picture_cache: dict = {}
@@ -808,6 +924,7 @@ class Page48Service:
                     profilePicture_small=picture_small,
                     bio=user.get("bio"),
                     isFollowing=user.get("userId") in followed,
+                    isPending=user.get("userId") in pending,
                 )
             )
         return items
@@ -822,7 +939,11 @@ class Page48Service:
         since = datetime.now(timezone.utc) - timedelta(days=days)
         # Fetch one extra row when we may need to drop the current user.
         rows = await self.repository.get_most_active_users(
-            limit + 1 if exclude_user_id else limit, since
+            limit + 1 if exclude_user_id else limit,
+            since,
+            # The same id doubles as the viewer, so locked or blocked accounts
+            # never surface in this public list.
+            await self._visibility(exclude_user_id),
         )
         if exclude_user_id:
             rows = [row for row in rows if row["_id"] != exclude_user_id]
@@ -873,7 +994,11 @@ class Page48Service:
                 pass
 
         posts = await self.repository.get_posts_by_tag(
-            normalized, limit + 1, cursor_dict, media
+            normalized,
+            limit + 1,
+            cursor_dict,
+            media,
+            await self._visibility(user_id),
         )
 
         has_more = len(posts) > limit
@@ -1138,7 +1263,12 @@ class Page48Service:
                 )
 
         posts = await self.repository.get_feed(
-            limit + 1, cursor_dict, media, author_ids
+            limit + 1,
+            cursor_dict,
+            media,
+            author_ids,
+            await self._visibility(user_id),
+            await self._muted_author_ids(user_id),
         )
 
         has_more = len(posts) > limit
@@ -1164,6 +1294,8 @@ class Page48Service:
         if not post:
             raise PostNotFoundError()
 
+        await self._assert_post_visible(post, user_id)
+
         enriched_posts = await self._enrich_posts([post], user_id)
         return enriched_posts[0]
 
@@ -1187,6 +1319,8 @@ class Page48Service:
         if not post:
             raise PostNotFoundError()
 
+        await self._assert_post_visible(post, user_id)
+
         root_id = post.get("rootPostId") or post_id
 
         # Get all posts in this thread (root + all replies)
@@ -1196,7 +1330,9 @@ class Page48Service:
             root_post = await self.repository.get_post_by_id(root_id)
             all_raw = [root_post] if root_post else []
 
-        replies_raw = await self.repository.get_thread_replies(root_id)
+        replies_raw = await self.repository.get_thread_replies(
+            root_id, await self._visibility(user_id)
+        )
 
         raw_dict = {p["postId"]: p for p in all_raw + replies_raw}
         if post_id not in raw_dict:
@@ -1236,7 +1372,10 @@ class Page48Service:
                 pass
 
         posts = await self.repository.get_direct_replies(
-            post_id, limit + 1, cursor_dict
+            post_id,
+            limit + 1,
+            cursor_dict,
+            await self._visibility(user_id),
         )
 
         has_more = len(posts) > limit
@@ -1284,10 +1423,14 @@ class Page48Service:
         if not post:
             raise PostNotFoundError()
 
-        # Counted live so a tab label can never disagree with its own list.
-        quote_count = await self.repository.count_post_quotes(post_id)
-        repost_count = await self.repository.count_post_reposts(post_id)
-        like_count = await self.repository.count_post_likes(post_id)
+        await self._assert_post_visible(post, current_user_id)
+
+        # Counted live so a tab label can never disagree with its own list, using
+        # the same visibility rule the lists themselves apply.
+        visibility = await self._visibility(current_user_id)
+        quote_count = await self.repository.count_post_quotes(post_id, visibility)
+        repost_count = await self.repository.count_post_reposts(post_id, visibility)
+        like_count = await self.repository.count_post_likes(post_id, visibility)
 
         enriched = (await self._enrich_posts([post], current_user_id))[0]
         return PostActivityResponse(
@@ -1323,7 +1466,7 @@ class Page48Service:
             next_cursor = f"{last['createdAt'].isoformat()}_{last['notificationId']}"
 
         return NotificationPaginationResponse(
-            data=await self._build_notifications(rows),
+            data=await self._build_notifications(rows, current_user_id),
             meta=NotificationPaginationMeta(
                 nextCursor=next_cursor, hasMore=has_more
             ),
@@ -1333,7 +1476,7 @@ class Page48Service:
         self, current_user_id: str
     ) -> NotificationCountsResponse:
         by_type = await self.repository.count_unread_notifications_by_type(
-            current_user_id
+            current_user_id, await self._hidden_author_ids(current_user_id)
         )
         counts = {tab: 0 for tab in NOTIFICATION_TAB_KEYS}
         for type_name, count in by_type.items():
@@ -1392,15 +1535,27 @@ class Page48Service:
         )
         return MarkNotificationsReadResponse(count=count)
 
-    async def _build_notifications(self, rows: List[dict]) -> List[NotificationItem]:
+    async def _build_notifications(
+        self, rows: List[dict], viewer_id: Optional[str]
+    ) -> List[NotificationItem]:
         """Resolve the actors and post snippets of a page of notifications."""
         if not rows:
             return []
 
+        # A blocked or hidden actor's notification is dropped entirely, and their
+        # post snippets never resolve, so nothing leaks through the list.
+        hidden = await self._hidden_author_ids(viewer_id)
+        if hidden:
+            rows = [row for row in rows if row.get("actorUserId") not in hidden]
+            if not rows:
+                return []
+
         # Actors come from the user documents; post snippets use a narrow
         # projection, so no media URL is ever signed for a text preview.
         post_ids = list({row["postId"] for row in rows if row.get("postId")})
-        posts = await self.repository.get_notification_post_previews(post_ids)
+        posts = await self.repository.get_notification_post_previews(
+            post_ids, await self._visibility(viewer_id)
+        )
         post_map = {
             post["postId"]: NotificationPostPreview(
                 postId=post["postId"],
@@ -1464,11 +1619,16 @@ class Page48Service:
         cursor: Optional[str] = None,
         current_user_id: Optional[str] = None,
     ) -> PostPaginationResponse:
-        if not await self.repository.get_post_by_id(post_id):
+        parent = await self.repository.get_post_by_id(post_id)
+        if not parent:
             raise PostNotFoundError()
+        await self._assert_post_visible(parent, current_user_id)
 
         quotes = await self.repository.get_post_quotes(
-            post_id, limit + 1, self._parse_post_cursor(cursor)
+            post_id,
+            limit + 1,
+            self._parse_post_cursor(cursor),
+            await self._visibility(current_user_id),
         )
 
         has_more = len(quotes) > limit
@@ -1495,6 +1655,11 @@ class Page48Service:
         if not await self.repository.get_post_by_id(post_id):
             raise PostNotFoundError()
 
+        parent = await self.repository.get_post_by_id(post_id)
+        if not parent:
+            raise PostNotFoundError()
+        await self._assert_post_visible(parent, current_user_id)
+
         rows = await self.repository.get_post_reposts(
             post_id, limit + 1, self._parse_interaction_cursor(cursor)
         )
@@ -1520,9 +1685,20 @@ class Page48Service:
         return await self._build_user_list(rows, limit, current_user_id)
 
     async def _build_user_list(
-        self, rows: List[dict], limit: int, viewer_id: Optional[str] = None
+        self,
+        rows: List[dict],
+        limit: int,
+        viewer_id: Optional[str] = None,
+        apply_hidden: bool = True,
     ) -> PostUserListResponse:
         """Turn interaction rows into a paginated list of the users behind them."""
+        # Whoever is hidden from this viewer is left out of the list entirely —
+        # except in the block and mute lists, where seeing them is the point.
+        if apply_hidden:
+            hidden = await self._hidden_author_ids(viewer_id)
+            if hidden:
+                rows = [row for row in rows if row.get("userId") not in hidden]
+
         has_more = len(rows) > limit
         if has_more:
             rows = rows[:limit]
@@ -1544,11 +1720,14 @@ class Page48Service:
 
         # Which of these accounts the viewer already follows, in one query.
         followed: set = set()
+        pending: set = set()
         if viewer_id:
+            target_ids = [row["userId"] for row in rows]
             followed = set(
-                await self.repository.get_followed_ids(
-                    viewer_id, [row["userId"] for row in rows]
-                )
+                await self.repository.get_followed_ids(viewer_id, target_ids)
+            )
+            pending = set(
+                await self.repository.get_pending_follow_ids(viewer_id, target_ids)
             )
 
         picture_cache: dict = {}
@@ -1561,15 +1740,17 @@ class Page48Service:
             picture, picture_small = await self._resolve_picture_variants(
                 user.get("profilePicture"), picture_cache
             )
+            user_id = user.get("userId", "")
             items.append(
                 PostUserItem(
-                    userId=user.get("userId", ""),
+                    userId=user_id,
                     username=user.get("username") or "",
                     name=user.get("name") or user.get("username") or "",
                     profilePicture=picture,
                     profilePicture_small=picture_small,
                     bio=user.get("bio"),
-                    isFollowing=user.get("userId", "") in followed,
+                    isFollowing=user_id in followed,
+                    isPending=user_id in pending,
                 )
             )
 
@@ -1983,7 +2164,11 @@ class Page48Service:
 
         target_user_id = await self._resolve_user_id(target_username)
         posts = await self.repository.get_user_posts(
-            target_user_id, limit + 1, cursor_dict, media
+            target_user_id,
+            limit + 1,
+            cursor_dict,
+            media,
+            await self._visibility(current_user_id),
         )
 
         has_more = len(posts) > limit
@@ -1999,7 +2184,9 @@ class Page48Service:
         # cursor pagination can never skip or duplicate it.
         pinned_post = None
         if media is None and cursor_dict is None:
-            pinned_post = await self.repository.get_pinned_post(target_user_id)
+            pinned_post = await self.repository.get_pinned_post(
+                target_user_id, await self._visibility(current_user_id)
+            )
             if pinned_post:
                 posts = [p for p in posts if p["postId"] != pinned_post["postId"]]
 
@@ -2032,7 +2219,10 @@ class Page48Service:
                 pass
 
         posts = await self.repository.get_user_replies(
-            await self._resolve_user_id(target_username), limit + 1, cursor_dict
+            await self._resolve_user_id(target_username),
+            limit + 1,
+            cursor_dict,
+            await self._visibility(current_user_id),
         )
 
         has_more = len(posts) > limit
@@ -2066,7 +2256,7 @@ class Page48Service:
                 pass
 
         result = await self.repository.get_user_bookmarks(
-            user_id, limit + 1, cursor_dict
+            user_id, limit + 1, cursor_dict, await self._visibility(user_id)
         )
         bookmarks = result["bookmarks"]
         posts_by_id = {p["postId"]: p for p in result["posts"]}
@@ -2104,7 +2294,9 @@ class Page48Service:
             except Exception:
                 pass
 
-        result = await self.repository.get_user_likes(user_id, limit + 1, cursor_dict)
+        result = await self.repository.get_user_likes(
+            user_id, limit + 1, cursor_dict, await self._visibility(user_id)
+        )
         likes = result["likes"]
         posts_by_id = {p["postId"]: p for p in result["posts"]}
 
@@ -2177,6 +2369,19 @@ class Page48Service:
                 logger.error(f"Failed to resolve banner for {username}: {str(e)}")
 
         owner_id = user.get("userId", "")
+        # Relationship to the viewer, checked once and only for someone else.
+        is_blocked = False
+        is_blocked_by = False
+        is_muted = False
+        if current_user_id and current_user_id != owner_id:
+            is_blocked = bool(
+                await self.repository.get_block(current_user_id, owner_id)
+            )
+            is_blocked_by = bool(
+                await self.repository.get_block(owner_id, current_user_id)
+            )
+            is_muted = bool(await self.repository.get_mute(current_user_id, owner_id))
+
         post_count = await self.repository.count_user_posts(owner_id)
         repost_count = await self.repository.count_user_reposts(owner_id)
         # Counted live: no stored counter that can drift out of sync.
@@ -2185,10 +2390,12 @@ class Page48Service:
 
         is_self = bool(current_user_id) and current_user_id == owner_id
         is_following = False
+        is_follow_pending = False
         if current_user_id and not is_self:
-            is_following = bool(
-                await self.repository.get_follow(current_user_id, owner_id)
-            )
+            relation = await self.repository.get_follow(current_user_id, owner_id)
+            if relation:
+                is_follow_pending = relation.get("status") == "pending"
+                is_following = not is_follow_pending
 
         return Page48UserProfileResponse(
             userId=owner_id,
@@ -2205,6 +2412,11 @@ class Page48Service:
             bannerBlurHash=banner_blur_hash,
             postCount=post_count,
             repostCount=repost_count,
+            isBlocked=is_blocked,
+            isBlockedBy=is_blocked_by,
+            isMuted=is_muted,
+            isLocked=bool(user.get("page48Locked")),
+            isFollowPending=is_follow_pending,
             followerCount=follower_count,
             followingCount=following_count,
             isFollowing=is_following,
@@ -2223,18 +2435,36 @@ class Page48Service:
         if not target_id or target_id == current_user_id:
             raise CannotFollowSelfError()
 
-        if not await self.repository.get_follow(current_user_id, target_id):
-            inserted = True
+        # A block severs the relationship both ways; following through it would
+        # undo the block from one side behind the blocker's back.
+        if await self.repository.get_block(current_user_id, target_id):
+            raise UnauthorizedActionError()
+        if await self.repository.get_block(target_id, current_user_id):
+            raise UnauthorizedActionError()
+
+        # A locked account turns a follow into a request its owner must approve.
+        locked = bool(target.get("page48Locked"))
+        row = await self.repository.get_follow(current_user_id, target_id)
+        if not row:
+            status = "pending" if locked else "accepted"
             try:
-                await self.repository.insert_follow(current_user_id, target_id)
+                await self.repository.insert_follow(current_user_id, target_id, status)
             except DuplicateKeyError:
-                # Two taps raced; the follow already exists.
-                inserted = False
-            if inserted:
-                await self._notify(target_id, current_user_id, "follow")
+                # Two taps raced; read back whatever the other request stored.
+                row = await self.repository.get_follow(current_user_id, target_id)
+                status = (row or {}).get("status", "accepted")
+            else:
+                await self._notify(
+                    target_id,
+                    current_user_id,
+                    "followRequest" if status == "pending" else "follow",
+                )
+        else:
+            status = row.get("status", "accepted")
 
         return FollowResponse(
-            isFollowing=True,
+            isFollowing=status != "pending",
+            isPending=status == "pending",
             followerCount=await self.repository.count_followers(target_id),
         )
 
@@ -2246,11 +2476,147 @@ class Page48Service:
         if not target_id or target_id == current_user_id:
             raise CannotFollowSelfError()
 
+        row = await self.repository.get_follow(current_user_id, target_id)
         await self.repository.delete_follow(current_user_id, target_id)
+        # Cancelling a request has to clear the owner's Follows tab entry too.
+        if row and row.get("status") == "pending":
+            await self.repository.delete_notifications(
+                target_id, current_user_id, ["followRequest"]
+            )
         return FollowResponse(
             isFollowing=False,
+            isPending=False,
             followerCount=await self.repository.count_followers(target_id),
         )
+
+    async def accept_follow_request(
+        self, username: str, current_user_id: str
+    ) -> FollowResponse:
+        """Approve `username`'s pending request to follow the current user."""
+        requester = await self._resolve_follow_target(username)
+        requester_id = requester.get("userId", "")
+        if not requester_id or requester_id == current_user_id:
+            raise CannotFollowSelfError()
+
+        row = await self.repository.get_follow(requester_id, current_user_id)
+        if row and row.get("status") == "pending":
+            await self.repository.update_follow_status(
+                requester_id, current_user_id, "accepted"
+            )
+            await self.repository.delete_notifications(
+                current_user_id, requester_id, ["followRequest"]
+            )
+            # Let the new follower know the request went through.
+            await self._notify(requester_id, current_user_id, "followAccepted")
+        return FollowResponse(
+            isFollowing=True,
+            followerCount=await self.repository.count_followers(current_user_id),
+        )
+
+    async def decline_follow_request(
+        self, username: str, current_user_id: str
+    ) -> FollowResponse:
+        """Turn down `username`'s pending request to follow the current user."""
+        requester = await self._resolve_follow_target(username)
+        requester_id = requester.get("userId", "")
+        if not requester_id or requester_id == current_user_id:
+            raise CannotFollowSelfError()
+
+        row = await self.repository.get_follow(requester_id, current_user_id)
+        if row and row.get("status") == "pending":
+            await self.repository.delete_follow(requester_id, current_user_id)
+            await self.repository.delete_notifications(
+                current_user_id, requester_id, ["followRequest"]
+            )
+        return FollowResponse(
+            isFollowing=False,
+            followerCount=await self.repository.count_followers(current_user_id),
+        )
+
+    async def update_page48_settings(
+        self, current_user_id: str, locked: bool
+    ) -> Page48SettingsResponse:
+        """Lock or unlock this account's Page48 posts (follower-only when locked)."""
+        await self.user_repository.set_page48_locked(current_user_id, locked)
+        # What this account may see no longer depends on who it follows.
+        self._hidden_authors = None
+        return Page48SettingsResponse(locked=locked)
+
+    async def block_user(self, username: str, current_user_id: str) -> BlockResponse:
+        """Block: mutual silence, and the follow between them is severed."""
+        target = await self._resolve_follow_target(username)
+        target_id = target.get("userId", "")
+        if not target_id or target_id == current_user_id:
+            raise CannotBlockSelfError()
+
+        if not await self.repository.get_block(current_user_id, target_id):
+            try:
+                await self.repository.insert_block(current_user_id, target_id)
+            except DuplicateKeyError:
+                # Two taps raced; the block already exists.
+                pass
+            await self.repository.delete_follow(current_user_id, target_id)
+            await self.repository.delete_follow(target_id, current_user_id)
+
+        # The cached hidden set no longer matches.
+        self._hidden_authors = None
+        return BlockResponse(isBlocked=True)
+
+    async def unblock_user(self, username: str, current_user_id: str) -> BlockResponse:
+        target = await self._resolve_follow_target(username)
+        target_id = target.get("userId", "")
+        if not target_id or target_id == current_user_id:
+            raise CannotBlockSelfError()
+
+        await self.repository.delete_block(current_user_id, target_id)
+        self._hidden_authors = None
+        return BlockResponse(isBlocked=False)
+
+    async def mute_user(self, username: str, current_user_id: str) -> MuteResponse:
+        """Mute only removes someone from the timeline."""
+        target = await self._resolve_follow_target(username)
+        target_id = target.get("userId", "")
+        if not target_id or target_id == current_user_id:
+            raise CannotMuteSelfError()
+
+        if not await self.repository.get_mute(current_user_id, target_id):
+            try:
+                await self.repository.insert_mute(current_user_id, target_id)
+            except DuplicateKeyError:
+                pass
+
+        return MuteResponse(isMuted=True)
+
+    async def unmute_user(self, username: str, current_user_id: str) -> MuteResponse:
+        target = await self._resolve_follow_target(username)
+        target_id = target.get("userId", "")
+        if not target_id or target_id == current_user_id:
+            raise CannotMuteSelfError()
+
+        await self.repository.delete_mute(current_user_id, target_id)
+        return MuteResponse(isMuted=False)
+
+    async def get_blocked_users(
+        self,
+        current_user_id: str,
+        limit: int = 20,
+        cursor: Optional[str] = None,
+    ) -> PostUserListResponse:
+        rows = await self.repository.get_blocked_users(
+            current_user_id, limit + 1, self._parse_interaction_cursor(cursor)
+        )
+        return await self._build_user_list(rows, limit, current_user_id, False)
+
+    async def get_muted_users(
+        self,
+        current_user_id: str,
+        limit: int = 20,
+        cursor: Optional[str] = None,
+    ) -> PostUserListResponse:
+        rows = await self.repository.get_muted_users(
+            current_user_id, limit + 1, self._parse_interaction_cursor(cursor)
+        )
+        return await self._build_user_list(rows, limit, current_user_id, False)
 
     async def get_followers(
         self,
@@ -2325,7 +2691,10 @@ class Page48Service:
                 pass
 
         result = await self.repository.get_user_reposts(
-            user["userId"], limit + 1, cursor_dict
+            user["userId"],
+            limit + 1,
+            cursor_dict,
+            await self._visibility(current_user_id),
         )
         reposts = result["reposts"]
         posts_by_id = {p["postId"]: p for p in result["posts"]}

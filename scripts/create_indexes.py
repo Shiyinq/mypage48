@@ -21,6 +21,11 @@ async def create_indexes():
         await db["users"].create_index("userId", unique=True)
         await db["users"].create_index("username", unique=True)
         await db["users"].create_index("email", unique=True)
+        # Locked Page48 accounts are looked up on every Page48 read; the partial
+        # filter keeps this index tiny when nobody has locked their account.
+        await db["users"].create_index(
+            [("page48Locked", 1)], partialFilterExpression={"page48Locked": True}
+        )
 
         # Refresh token indexes
         await db["refresh_tokens"].create_index("hashRefreshToken", unique=True)
@@ -132,6 +137,18 @@ async def create_indexes():
             [("reporterUserId", 1), ("targetType", 1), ("targetId", 1)], unique=True
         )
 
+        # Blocks and mutes. A block is checked in both directions, so the reverse
+        # pair is indexed too; a mute is only ever read one way.
+        await db["page48_blocks"].create_index(
+            [("blockerId", 1), ("blockedId", 1)], unique=True
+        )
+        await db["page48_blocks"].create_index([("blockedId", 1), ("blockerId", 1)])
+        await db["page48_blocks"].create_index([("blockerId", 1), ("createdAt", -1)])
+        await db["page48_mutes"].create_index(
+            [("muterId", 1), ("mutedId", 1)], unique=True
+        )
+        await db["page48_mutes"].create_index([("muterId", 1), ("createdAt", -1)])
+
         # Notifications: newest first per recipient for the list, plus the unread
         # count. They expire on their own so the collection cannot grow forever.
         await db["page48_notifications"].create_index("notificationId", unique=True)
@@ -175,6 +192,10 @@ async def create_indexes():
         )
         await db["page48_follows"].create_index([("followerId", 1), ("createdAt", -1)])
         await db["page48_follows"].create_index([("followingId", 1), ("createdAt", -1)])
+        # Pending requests are read straight off the Follows tab of a locked account.
+        await db["page48_follows"].create_index(
+            [("followingId", 1), ("status", 1), ("createdAt", -1)]
+        )
 
         print("Database indexes created successfully")
     except Exception as e:

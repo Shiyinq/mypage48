@@ -173,16 +173,36 @@ class Page48UserProfileResponse(BaseModel):
     bannerBlurHash: Optional[str] = None
     postCount: int = 0
     repostCount: int = 0
+    # How the requesting viewer stands with this account.
+    isBlocked: bool = False
+    isBlockedBy: bool = False
+    isMuted: bool = False
 
     # Counted live from the follow edges; there is no stored counter to drift.
     followerCount: int = 0
     followingCount: int = 0
     # Whether the requesting user follows this profile (false for guests/self).
     isFollowing: bool = False
+    # Whether the requesting user has an unanswered follow request pending.
+    isFollowPending: bool = False
+    # True when this account only shows its posts to approved followers.
+    isLocked: bool = False
+
+
+class Page48SettingsRequest(BaseModel):
+    """The Page48-only toggles, kept apart from the MyPage48 `isPublic` stat."""
+
+    locked: bool
+
+
+class Page48SettingsResponse(BaseModel):
+    locked: bool = False
 
 
 class FollowResponse(BaseModel):
     isFollowing: bool
+    # True when the target only accepts followers, so this is a request.
+    isPending: bool = False
     followerCount: int = 0
 
 
@@ -287,6 +307,8 @@ class PostUserItem(BaseModel):
     bio: Optional[str] = None
     # Whether the requesting user already follows this account.
     isFollowing: bool = False
+    # Whether the requesting user has an unanswered follow request pending.
+    isPending: bool = False
 
 
 class PostUserListMeta(BaseModel):
@@ -297,6 +319,14 @@ class PostUserListMeta(BaseModel):
 class PostUserListResponse(BaseModel):
     data: list[PostUserItem]
     meta: PostUserListMeta
+
+
+class BlockResponse(BaseModel):
+    isBlocked: bool = False
+
+
+class MuteResponse(BaseModel):
+    isMuted: bool = False
 
 
 class SearchTopResponse(BaseModel):
@@ -328,7 +358,16 @@ class CreateThreadResponse(BaseModel):
     posts: list[PostResponse] = []
 
 
-NotificationType = Literal["reply", "mention", "follow", "like", "repost", "quote"]
+NotificationType = Literal[
+    "reply",
+    "mention",
+    "follow",
+    "followRequest",
+    "followAccepted",
+    "like",
+    "repost",
+    "quote",
+]
 
 
 class NotificationPostPreview(BaseModel):

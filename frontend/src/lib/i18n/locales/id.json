@@ -1943,6 +1943,14 @@
 			"follow": "Ikuti",
 			"following": "Mengikuti",
 			"unfollow": "Berhenti mengikuti",
+			"requested": "Diminta",
+			"cancelRequest": "Batalkan permintaan mengikuti",
+			"accept": "Setujui",
+			"decline": "Abaikan",
+			"accepted": "Permintaan disetujui.",
+			"declined": "Permintaan diabaikan.",
+			"requestPending": "Permintaan mengikutimu sedang menunggu persetujuan.",
+			"lockedPosts": "Akun ini hanya menampilkan postingannya untuk pengikut yang disetujui.",
 			"error": "Gagal memperbarui status mengikuti"
 		},
 		"seo": {
@@ -2024,6 +2032,8 @@
 			"quotedPost": "mengutip postinganmu",
 			"mentionedYou": "menyebut kamu",
 			"followedYou": "mengikuti kamu",
+			"followRequested": "meminta untuk mengikutimu",
+			"followAccepted": "menerima permintaan mengikutimu",
 			"tab": {
 				"replies": "Balasan",
 				"mentions": "Sebutan",
@@ -2282,6 +2292,51 @@
 			"error": "Gagal mengirim laporan",
 			"already": "Kamu sudah melaporkan ini."
 		},
-		"reportUser": "Laporkan Pengguna"
+		"reportUser": "Laporkan Pengguna",
+		"settings": {
+			"title": "Page48",
+			"subtitle": "Privasi dan daftar akun yang kamu blokir atau bisukan.",
+			"viewList": "Lihat",
+			"lockedTitle": "Kunci Profil Page48",
+			"lockedSubtitle": "Saat aktif, hanya pengikut yang kamu setujui yang bisa melihat postinganmu.",
+			"lockedOn": "Postingan kamu sekarang hanya untuk pengikut.",
+			"lockedOff": "Postingan kamu sekarang bisa dilihat semua orang."
+		},
+		"blockUser": "Blokir",
+		"unblockUser": "Buka blokir",
+		"muteUser": "Bisukan",
+		"unmuteUser": "Batalkan bisukan",
+		"block": {
+			"title": "Blokir pengguna?",
+			"message": "{name} tidak akan bisa melihat postinganmu dan kamu tidak akan melihat postingannya. Kalian juga berhenti saling mengikuti.",
+			"confirm": "Blokir",
+			"success": "Pengguna diblokir.",
+			"error": "Gagal memblokir pengguna ini.",
+			"youBlocked": "Kamu memblokir pengguna ini.",
+			"blockedBy": "Kamu tidak bisa melihat postingan pengguna ini."
+		},
+		"unblock": {
+			"success": "Blokir dibuka."
+		},
+		"mute": {
+			"title": "Bisukan pengguna?",
+			"message": "Postingan {name} tidak akan muncul lagi di beranda (timeline) kamu. Pengguna ini tidak akan tahu kalau kamu membisukannya, dan kamu tetap bisa melihat profilnya.",
+			"confirm": "Bisukan",
+			"success": "Pengguna dibisukan.",
+			"error": "Gagal membisukan pengguna ini."
+		},
+		"unmute": {
+			"success": "Bisukan dibatalkan."
+		},
+		"relations": {
+			"blocks": {
+				"title": "Akun Diblokir",
+				"empty": "Kamu tidak memblokir siapa pun."
+			},
+			"mutes": {
+				"title": "Akun Dibisukan",
+				"empty": "Kamu tidak membisukan siapa pun."
+			}
+		}
 	}
 }

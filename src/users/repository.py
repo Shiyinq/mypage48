@@ -132,6 +132,18 @@ class UserRepository:
             {"userId": user_id}, {"$set": update_data}
         )
 
+    async def set_page48_locked(self, user_id: str, locked: bool):
+        """Page48-only lock flag; unrelated to the MyPage48 `isPublic` stat."""
+        return await self.collection.update_one(
+            {"userId": user_id}, {"$set": {"page48Locked": locked}}
+        )
+
+    async def get_page48_locked_ids(self) -> list[str]:
+        """Every account that made its Page48 posts follower-only."""
+        cursor = self.collection.find({"page48Locked": True}, {"userId": 1})
+        rows = await cursor.to_list(length=None)
+        return [row["userId"] for row in rows]
+
     async def update_last_active(self, user_id: str):
         return await self.collection.update_one(
             {"userId": user_id}, {"$set": {"lastActiveAt": datetime.now(timezone.utc)}}

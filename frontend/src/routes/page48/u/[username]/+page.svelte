@@ -8,12 +8,14 @@
 	import Page48Spinner from '$lib/components/page48/Page48Spinner.svelte';
 	import ReportModal from '$lib/components/page48/ReportModal.svelte';
 	import UserMenu from '$lib/components/page48/UserMenu.svelte';
+	import ConfirmModal from '$lib/components/page48/ConfirmModal.svelte';
 	import FollowButton from '$lib/components/page48/FollowButton.svelte';
 	import { ErrorState } from '$lib/components';
 	import { OptimizedImage } from '$lib/components/common';
 	import { page48NavbarStore } from '$lib/stores/page48.svelte';
 	import { userProfile } from '$lib/stores/profile.svelte';
 	import { isAuthenticated } from '$lib/stores/authStatus.svelte';
+	import { showToast } from '$lib/stores/toast.svelte';
 	import { sharePost, togglePostInteraction } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 	import SEO from '$lib/components/SEO.svelte';
@@ -45,6 +47,15 @@
 
 	// Whether this profile has a Page48 cover image to render.
 	let hasBanner = $derived(!!profile?.bannerPicture);
+
+	// A block cuts the posts both ways, so there is nothing to list here.
+	let canViewPosts = $derived(!profile?.isBlocked && !profile?.isBlockedBy);
+
+	// A follower-only account hides its posts until the follow is approved.
+	let isLockedOut = $derived(!!profile?.isLocked && !isOwnProfile && !profile?.isFollowing);
+
+	// Everything the list area should render: tabs and posts, or a notice.
+	let showPosts = $derived(canViewPosts && !isLockedOut);
 
 	let seoTitle = $derived(
 		profile ? `${profile.name} (@${profile.username}) · Page48` : t('page48.seo.userTitle')
@@ -112,6 +123,16 @@
 		const name = username;
 		const target = resolveTab(tabParam);
 		if (!name) return;
+		if (!showPosts) {
+			activeTab = target;
+			posts = [];
+			hasMore = false;
+			nextCursor = null;
+			loadingList = false;
+			// Leaving this state later must trigger a fresh load.
+			lastTabKey = '';
+			return;
+		}
 		const key = `${name}|${target}`;
 		if (key === lastTabKey) return;
 		lastTabKey = key;
@@ -130,12 +151,18 @@
 	}
 
 	/** Keep the header count in sync when the follow button toggles. */
-	function handleFollowChange(following: boolean) {
+	function handleFollowChange(following: boolean, pending: boolean) {
 		if (!profile) return;
+		const wasFollowing = profile.isFollowing;
 		profile = {
 			...profile,
 			isFollowing: following,
-			followerCount: Math.max(0, profile.followerCount + (following ? 1 : -1))
+			isFollowPending: pending,
+			followerCount: Math.max(
+				0,
+				profile.followerCount +
+					(following && !wasFollowing ? 1 : !following && wasFollowing ? -1 : 0)
+			)
 		};
 	}
 
@@ -271,6 +298,60 @@
 	}
 
 	let showReportUser = $state(false);
+	let showBlockConfirm = $state(false);
+	let showMuteConfirm = $state(false);
+
+	/** Block asks for confirmation first; unblocking is instant. */
+	function requestToggleBlock() {
+		if (!profile) return;
+		if (profile.isBlocked) {
+			void applyBlock(false);
+		} else {
+			showBlockConfirm = true;
+		}
+	}
+
+	async function applyBlock(blocked: boolean) {
+		if (!profile) return;
+		const target = profile.username;
+		try {
+			const res = blocked ? await page48Api.blockUser(target) : await page48Api.unblockUser(target);
+			showBlockConfirm = false;
+			if (profile && profile.username === target) {
+				profile = { ...profile, isBlocked: res.isBlocked, isFollowing: false };
+			}
+			showToast(t(res.isBlocked ? 'page48.block.success' : 'page48.unblock.success'), 'success');
+		} catch (err: unknown) {
+			const e = err as { detail?: string; message?: string };
+			showToast(e?.detail || e?.message || t('page48.block.error'), 'error');
+		}
+	}
+
+	/** Muting explains itself first; unmuting is instant. */
+	function requestToggleMute() {
+		if (!profile) return;
+		if (profile.isMuted) {
+			void applyMute(false);
+		} else {
+			showMuteConfirm = true;
+		}
+	}
+
+	async function applyMute(muted: boolean) {
+		if (!profile) return;
+		const target = profile.username;
+		try {
+			const res = muted ? await page48Api.muteUser(target) : await page48Api.unmuteUser(target);
+			showMuteConfirm = false;
+			if (profile && profile.username === target) {
+				profile = { ...profile, isMuted: res.isMuted };
+			}
+			showToast(t(res.isMuted ? 'page48.mute.success' : 'page48.unmute.success'), 'success');
+		} catch (err: unknown) {
+			const e = err as { detail?: string; message?: string };
+			showToast(e?.detail || e?.message || t('page48.mute.error'), 'error');
+		}
+	}
 
 	function getAvatarUrl(p: Page48UserProfile): string {
 		if (p.profilePicture_small || p.profilePicture)
@@ -411,7 +492,13 @@
 						</button>
 					{/if}
 					{#if !isOwnProfile && isAuthenticated.value}
-						<UserMenu onReport={() => (showReportUser = true)} />
+						<UserMenu
+							onReport={() => (showReportUser = true)}
+							onToggleBlock={requestToggleBlock}
+							onToggleMute={requestToggleMute}
+							isBlocked={profile.isBlocked}
+							isMuted={profile.isMuted}
+						/>
 					{/if}
 				</div>
 			{/if}
@@ -428,10 +515,11 @@
 								@{profile.username}
 							</p>
 						</div>
-						{#if !isOwnProfile && isAuthenticated.value}
+						{#if !isOwnProfile && isAuthenticated.value && !profile.isBlocked && !profile.isBlockedBy}
 							<FollowButton
 								username={profile.username}
 								isFollowing={profile.isFollowing}
+								isPending={profile.isFollowPending}
 								size="md"
 								onChange={handleFollowChange}
 							/>
@@ -500,182 +588,96 @@
 		</div>
 
 		<!-- Tabs -->
-		<div class="flex border-b border-gray-200/60 dark:border-white/10 overflow-x-auto no-scrollbar">
-			{#each tabs as tab}
-				<button
-					onclick={() => selectTab(tab.key)}
-					class={`shrink-0 sm:flex-1 px-4 sm:px-2 py-3 text-[14px] font-semibold whitespace-nowrap transition-colors cursor-pointer border-b-2 -mb-px ${
-						activeTab === tab.key
-							? 'text-red-600 dark:text-red-400 border-red-600 dark:border-red-400'
-							: 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-800 dark:hover:text-gray-200'
-					}`}
-				>
-					{tab.label}
-				</button>
-			{/each}
-		</div>
-
-		<!-- Post list -->
-		{#if loadingList}
-			<div class="divide-y divide-gray-200/60 dark:divide-white/10">
-				{#each Array(4) as _}
-					<div class="p-5 flex gap-4 animate-pulse">
-						<div class="w-11 h-11 rounded-full bg-gray-200/80 dark:bg-zinc-800 shrink-0"></div>
-						<div class="flex-1 space-y-2">
-							<div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/4"></div>
-							<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-3/4"></div>
-							<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-1/2"></div>
-						</div>
-					</div>
-				{/each}
-			</div>
-		{:else if posts.length === 0}
+		{#if !showPosts}
 			<div class="p-12 text-center text-[13px] font-medium text-gray-400 dark:text-gray-500">
-				{#if activeTab === 'posts'}
-					{t('page48.empty.posts')}
-				{:else if activeTab === 'media'}
-					{t('page48.empty.media')}
-				{:else if activeTab === 'videos'}
-					{t('page48.empty.videos')}
-				{:else if activeTab === 'reposts'}
-					{t('page48.empty.reposts')}
-				{:else if activeTab === 'likes'}
-					{t('page48.empty.likes')}
-				{:else if activeTab === 'bookmarks'}
-					{t('page48.empty.bookmarks')}
+				{#if !canViewPosts}
+					{profile.isBlocked ? t('page48.block.youBlocked') : t('page48.block.blockedBy')}
 				{:else}
-					{t('page48.empty.replies')}
+					{profile.isFollowPending
+						? t('page48.follow.requestPending')
+						: t('page48.follow.lockedPosts')}
 				{/if}
 			</div>
-		{:else if activeTab === 'media'}
-			<div class="grid grid-cols-3 gap-0.5 p-0.5" in:fade={{ duration: 250 }}>
-				{#each posts as post (post.postId)}
-					{@const cover = post.images?.[0]}
-					{#if cover}
-						<a
-							href={`/page48/post/${post.postId}`}
-							class="relative block aspect-square bg-gray-100 dark:bg-zinc-800 overflow-hidden cursor-pointer group"
-						>
-							<OptimizedImage
-								src={cover.url}
-								srcMedium={cover.url_medium}
-								srcSmall={cover.url_small}
-								blurHash={cover.blurHash}
-								alt={t('page48.aria.media')}
-								class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-							/>
-							{#if post.images.length > 1}
-								<span
-									class="absolute top-1.5 right-1.5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
-									aria-label={t('page48.aria.imageCount', { count: post.images.length })}
-									title={t('page48.aria.imageCount', { count: post.images.length })}
-								>
-									<Copy size={16} fill="currentColor" />
-								</span>
-							{/if}
-						</a>
-					{/if}
-				{/each}
-			</div>
-
-			{#if loadingMore}
-				<div class="p-4 flex justify-center">
-					<Page48Spinner />
-				</div>
-			{/if}
-
-			{#if !hasMore && posts.length > 0}
-				<div class="p-10 text-center flex flex-col items-center gap-3">
-					<div class="w-1.5 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-					<span class="text-[13px] font-medium text-gray-400 dark:text-gray-500">
-						{t('page48.feed.end')}
-					</span>
-				</div>
-			{/if}
-		{:else if activeTab === 'videos'}
-			<div class="grid grid-cols-3 gap-0.5 p-0.5" in:fade={{ duration: 250 }}>
-				{#each posts as post (post.postId)}
-					{@const clip = post.videos?.[0]}
-					{#if clip?.url}
-						<a
-							href={`/page48/post/${post.postId}`}
-							class="relative block aspect-square bg-gray-100 dark:bg-zinc-800 overflow-hidden cursor-pointer group"
-							aria-label={t('page48.video.play')}
-						>
-							<video
-								src={clip.url}
-								muted
-								playsinline
-								preload="metadata"
-								class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-							></video>
-							<span class="absolute inset-0 flex items-center justify-center pointer-events-none">
-								<span
-									class="w-9 h-9 rounded-full bg-black/45 backdrop-blur flex items-center justify-center"
-								>
-									<Play size={16} class="text-white translate-x-0.5" fill="currentColor" />
-								</span>
-							</span>
-							{#if clip.duration > 0}
-								<span
-									class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-medium tabular-nums"
-								>
-									{formatDuration(clip.duration)}
-								</span>
-							{/if}
-						</a>
-					{/if}
-				{/each}
-			</div>
-
-			{#if loadingMore}
-				<div class="p-4 flex justify-center">
-					<Page48Spinner />
-				</div>
-			{/if}
-
-			{#if !hasMore && posts.length > 0}
-				<div class="p-10 text-center flex flex-col items-center gap-3">
-					<div class="w-1.5 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-					<span class="text-[13px] font-medium text-gray-400 dark:text-gray-500">
-						{t('page48.feed.end')}
-					</span>
-				</div>
-			{/if}
 		{:else}
 			<div
-				class="flex flex-col divide-y divide-gray-200/60 dark:divide-white/10"
-				in:fade={{ duration: 250 }}
+				class="flex border-b border-gray-200/60 dark:border-white/10 overflow-x-auto no-scrollbar"
 			>
-				{#each posts as post (post.postId)}
-					<div>
-						{#if activeTab === 'reposts'}
-							<div
-								class="flex items-center gap-2 px-5 sm:px-6 pt-4 text-[13px] font-medium text-gray-500 dark:text-gray-400"
-							>
-								<Repeat2 size={14} class="text-green-500" />
-								{t('page48.userPage.reposted')}
-							</div>
-						{:else if activeTab === 'posts' && post.isPinned}
-							<div
-								class="flex items-center gap-2 px-5 sm:px-6 pt-4 text-[13px] font-semibold text-red-500 dark:text-red-400"
-							>
-								<Pin size={14} class="fill-red-500/20" />
-								{t('page48.userPage.pinned')}
-							</div>
-						{/if}
-						<PostCard
-							{post}
-							onLike={handleLike}
-							onRepost={handleRepost}
-							onBookmark={handleBookmark}
-							onComment={handleComment}
-							onShare={handleShare}
-							onDelete={handleDelete}
-							onPinChanged={handlePinChanged}
-						/>
-					</div>
+				{#each tabs as tab}
+					<button
+						onclick={() => selectTab(tab.key)}
+						class={`shrink-0 sm:flex-1 px-4 sm:px-2 py-3 text-[14px] font-semibold whitespace-nowrap transition-colors cursor-pointer border-b-2 -mb-px ${
+							activeTab === tab.key
+								? 'text-red-600 dark:text-red-400 border-red-600 dark:border-red-400'
+								: 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-800 dark:hover:text-gray-200'
+						}`}
+					>
+						{tab.label}
+					</button>
 				{/each}
+			</div>
+
+			<!-- Post list -->
+			{#if loadingList}
+				<div class="divide-y divide-gray-200/60 dark:divide-white/10">
+					{#each Array(4) as _}
+						<div class="p-5 flex gap-4 animate-pulse">
+							<div class="w-11 h-11 rounded-full bg-gray-200/80 dark:bg-zinc-800 shrink-0"></div>
+							<div class="flex-1 space-y-2">
+								<div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/4"></div>
+								<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-3/4"></div>
+								<div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-1/2"></div>
+							</div>
+						</div>
+					{/each}
+				</div>
+			{:else if posts.length === 0}
+				<div class="p-12 text-center text-[13px] font-medium text-gray-400 dark:text-gray-500">
+					{#if activeTab === 'posts'}
+						{t('page48.empty.posts')}
+					{:else if activeTab === 'media'}
+						{t('page48.empty.media')}
+					{:else if activeTab === 'videos'}
+						{t('page48.empty.videos')}
+					{:else if activeTab === 'reposts'}
+						{t('page48.empty.reposts')}
+					{:else if activeTab === 'likes'}
+						{t('page48.empty.likes')}
+					{:else if activeTab === 'bookmarks'}
+						{t('page48.empty.bookmarks')}
+					{:else}
+						{t('page48.empty.replies')}
+					{/if}
+				</div>
+			{:else if activeTab === 'media'}
+				<div class="grid grid-cols-3 gap-0.5 p-0.5" in:fade={{ duration: 250 }}>
+					{#each posts as post (post.postId)}
+						{@const cover = post.images?.[0]}
+						{#if cover}
+							<a
+								href={`/page48/post/${post.postId}`}
+								class="relative block aspect-square bg-gray-100 dark:bg-zinc-800 overflow-hidden cursor-pointer group"
+							>
+								<OptimizedImage
+									src={cover.url}
+									srcMedium={cover.url_medium}
+									srcSmall={cover.url_small}
+									blurHash={cover.blurHash}
+									alt={t('page48.aria.media')}
+									class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+								/>
+								{#if post.images.length > 1}
+									<span
+										class="absolute top-1.5 right-1.5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+										aria-label={t('page48.aria.imageCount', { count: post.images.length })}
+										title={t('page48.aria.imageCount', { count: post.images.length })}
+									>
+										<Copy size={16} fill="currentColor" />
+									</span>
+								{/if}
+							</a>
+						{/if}
+					{/each}
+				</div>
 
 				{#if loadingMore}
 					<div class="p-4 flex justify-center">
@@ -691,10 +693,131 @@
 						</span>
 					</div>
 				{/if}
-			</div>
+			{:else if activeTab === 'videos'}
+				<div class="grid grid-cols-3 gap-0.5 p-0.5" in:fade={{ duration: 250 }}>
+					{#each posts as post (post.postId)}
+						{@const clip = post.videos?.[0]}
+						{#if clip?.url}
+							<a
+								href={`/page48/post/${post.postId}`}
+								class="relative block aspect-square bg-gray-100 dark:bg-zinc-800 overflow-hidden cursor-pointer group"
+								aria-label={t('page48.video.play')}
+							>
+								<video
+									src={clip.url}
+									muted
+									playsinline
+									preload="metadata"
+									class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+								></video>
+								<span class="absolute inset-0 flex items-center justify-center pointer-events-none">
+									<span
+										class="w-9 h-9 rounded-full bg-black/45 backdrop-blur flex items-center justify-center"
+									>
+										<Play size={16} class="text-white translate-x-0.5" fill="currentColor" />
+									</span>
+								</span>
+								{#if clip.duration > 0}
+									<span
+										class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-medium tabular-nums"
+									>
+										{formatDuration(clip.duration)}
+									</span>
+								{/if}
+							</a>
+						{/if}
+					{/each}
+				</div>
+
+				{#if loadingMore}
+					<div class="p-4 flex justify-center">
+						<Page48Spinner />
+					</div>
+				{/if}
+
+				{#if !hasMore && posts.length > 0}
+					<div class="p-10 text-center flex flex-col items-center gap-3">
+						<div class="w-1.5 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+						<span class="text-[13px] font-medium text-gray-400 dark:text-gray-500">
+							{t('page48.feed.end')}
+						</span>
+					</div>
+				{/if}
+			{:else}
+				<div
+					class="flex flex-col divide-y divide-gray-200/60 dark:divide-white/10"
+					in:fade={{ duration: 250 }}
+				>
+					{#each posts as post (post.postId)}
+						<div>
+							{#if activeTab === 'reposts'}
+								<div
+									class="flex items-center gap-2 px-5 sm:px-6 pt-4 text-[13px] font-medium text-gray-500 dark:text-gray-400"
+								>
+									<Repeat2 size={14} class="text-green-500" />
+									{t('page48.userPage.reposted')}
+								</div>
+							{:else if activeTab === 'posts' && post.isPinned}
+								<div
+									class="flex items-center gap-2 px-5 sm:px-6 pt-4 text-[13px] font-semibold text-red-500 dark:text-red-400"
+								>
+									<Pin size={14} class="fill-red-500/20" />
+									{t('page48.userPage.pinned')}
+								</div>
+							{/if}
+							<PostCard
+								{post}
+								onLike={handleLike}
+								onRepost={handleRepost}
+								onBookmark={handleBookmark}
+								onComment={handleComment}
+								onShare={handleShare}
+								onDelete={handleDelete}
+								onPinChanged={handlePinChanged}
+							/>
+						</div>
+					{/each}
+
+					{#if loadingMore}
+						<div class="p-4 flex justify-center">
+							<Page48Spinner />
+						</div>
+					{/if}
+
+					{#if !hasMore && posts.length > 0}
+						<div class="p-10 text-center flex flex-col items-center gap-3">
+							<div class="w-1.5 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+							<span class="text-[13px] font-medium text-gray-400 dark:text-gray-500">
+								{t('page48.feed.end')}
+							</span>
+						</div>
+					{/if}
+				</div>
+			{/if}
 		{/if}
 	{/if}
 </div>
+
+{#if showBlockConfirm && profile}
+	<ConfirmModal
+		title={t('page48.block.title')}
+		message={t('page48.block.message', { name: profile.name })}
+		confirmText={t('page48.block.confirm')}
+		destructive
+		onCancel={() => (showBlockConfirm = false)}
+		onConfirm={() => applyBlock(true)}
+	/>
+{/if}
+
+{#if showMuteConfirm && profile}
+	<ConfirmModal
+		title={t('page48.mute.title')}
+		message={t('page48.mute.message', { name: profile.name })}
+		confirmText={t('page48.mute.confirm')}
+		onCancel={() => (showMuteConfirm = false)}
+		onConfirm={() => applyMute(true)}
+	/>
+{/if}
 
 {#if showReportUser && profile}
 	<ReportModal
