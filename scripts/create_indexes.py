@@ -138,6 +138,21 @@ async def create_indexes():
         await db["page48_notifications"].create_index(
             [("recipientUserId", 1), ("readAt", 1)]
         )
+        # The per-tab list filters on the type, so it gets its own index instead of
+        # scanning every entry of the recipient's newest-first index.
+        await db["page48_notifications"].create_index(
+            [
+                ("recipientUserId", 1),
+                ("type", 1),
+                ("createdAt", -1),
+                ("notificationId", -1),
+            ]
+        )
+        # Only like/repost/follow carry a dedupe key, so the index is sparse: the
+        # repeatable types keep one row, while replies and mentions stay a log.
+        await db["page48_notifications"].create_index(
+            "dedupeKey", unique=True, sparse=True
+        )
         await db["page48_notifications"].create_index(
             "createdAt", expireAfterSeconds=NOTIFICATION_TTL_DAYS * 24 * 60 * 60
         )

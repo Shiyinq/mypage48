@@ -20,6 +20,7 @@ from src.page48.schemas import (
     FollowResponse,
     MarkNotificationsReadResponse,
     NotificationCountsResponse,
+    NotificationOverviewResponse,
     NotificationPaginationResponse,
     Page48UserProfileResponse,
     PollResponse,
@@ -419,6 +420,14 @@ async def get_notifications(
     return await service.get_notifications(
         current_user.userId, tab=tab, limit=limit, cursor=cursor
     )
+
+
+@router.get("/notifications/overview", response_model=NotificationOverviewResponse)
+async def get_notification_overview(
+    current_user: UserCurrent = Depends(get_current_user),
+    service: Page48Service = Depends(get_page48_service),
+):
+    return await service.get_notification_overview(current_user.userId)
 
 
 @router.get("/notifications/counts", response_model=NotificationCountsResponse)

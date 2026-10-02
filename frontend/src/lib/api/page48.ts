@@ -176,6 +176,16 @@ export interface Page48NotificationCounts extends Record<Page48NotificationTab, 
 	total: number;
 }
 
+/**
+ * Only what a notification row shows. The server deliberately skips resolving
+ * (and signing) the post's media for it.
+ */
+export interface Page48NotificationPost {
+	postId: string;
+	content: string;
+	createdAt: string;
+}
+
 export interface Page48Notification {
 	notificationId: string;
 	type: Page48NotificationType;
@@ -184,12 +194,24 @@ export interface Page48Notification {
 	/** Identity is resolved live by the server, never stored on the notification. */
 	actor: PostUserItem;
 	/** The post to preview and open; null for follows and deleted posts. */
-	post: Page48Post | null;
+	post: Page48NotificationPost | null;
 }
 
 export interface Page48NotificationPaginationResponse {
 	data: Page48Notification[];
 	meta: PostPaginationMeta;
+}
+
+/** One row of the notifications overview: unread count plus a preview. */
+export interface Page48NotificationTabSummary {
+	tab: Page48NotificationTab;
+	count: number;
+	previews: Page48Notification[];
+}
+
+export interface Page48NotificationOverview {
+	total: number;
+	tabs: Page48NotificationTabSummary[];
 }
 
 export interface FollowResponse {
@@ -516,6 +538,10 @@ export const page48Api = {
 
 	getNotificationCounts: async (): Promise<Page48NotificationCounts> => {
 		return client<Page48NotificationCounts>('/page48/notifications/counts');
+	},
+
+	getNotificationOverview: async (): Promise<Page48NotificationOverview> => {
+		return client<Page48NotificationOverview>('/page48/notifications/overview');
 	},
 
 	/** Marks one tab read, so only the tab actually opened loses its unread dot. */

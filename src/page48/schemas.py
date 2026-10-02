@@ -323,6 +323,18 @@ class CreateThreadResponse(BaseModel):
 NotificationType = Literal["reply", "mention", "follow", "like", "repost", "quote"]
 
 
+class NotificationPostPreview(BaseModel):
+    """Just what a notification snippet renders.
+
+    The full post payload would resolve and sign every media URL for a preview
+    that only ever shows the text, so notifications deliberately carry this.
+    """
+
+    postId: str
+    content: str
+    createdAt: datetime
+
+
 class NotificationItem(BaseModel):
     """One entry of the notifications feed."""
 
@@ -336,7 +348,7 @@ class NotificationItem(BaseModel):
     actor: PostUserItem
     # The post to preview and open. Absent for follows, and for posts that no
     # longer exist (the client renders those as unavailable).
-    post: Optional[PostResponse] = None
+    post: Optional[NotificationPostPreview] = None
 
 
 class NotificationPaginationMeta(BaseModel):
@@ -347,6 +359,19 @@ class NotificationPaginationMeta(BaseModel):
 class NotificationPaginationResponse(BaseModel):
     data: list[NotificationItem]
     meta: NotificationPaginationMeta
+
+
+class NotificationTabSummary(BaseModel):
+    """One row of the notifications overview: unread count plus a preview."""
+
+    tab: str
+    count: int = 0
+    previews: list[NotificationItem] = []
+
+
+class NotificationOverviewResponse(BaseModel):
+    total: int = 0
+    tabs: list[NotificationTabSummary] = []
 
 
 class NotificationCountsResponse(BaseModel):

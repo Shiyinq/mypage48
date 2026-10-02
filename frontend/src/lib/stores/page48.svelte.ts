@@ -201,11 +201,32 @@ export const page48UnreadStore = $state<Page48NotificationCounts>({
 	follows: 0
 });
 
-/** Refresh the badge and the per-tab counts. Failures keep the last values. */
-export async function refreshPage48Unread() {
+/** Write counts that another response already carried (e.g. the overview). */
+export function applyPage48Counts(counts: Page48NotificationCounts) {
+	Object.assign(page48UnreadStore, counts);
+}
+
+/** The counts are cheap but requested on every navigation, so cache them briefly. */
+const UNREAD_CACHE_MS = 30_000;
+let lastUnreadFetch = 0;
+let unreadFetchInFlight = false;
+
+/**
+ * Refresh the badge and the per-tab counts. Failures keep the last values, and a
+ * fetch in flight is never duplicated. Pass `force` after an action that changes
+ * the counts (e.g. opening a tab) to bypass the short cache.
+ */
+export async function refreshPage48Unread(force = false) {
+	if (unreadFetchInFlight) return;
+	if (!force && Date.now() - lastUnreadFetch < UNREAD_CACHE_MS) return;
+
+	unreadFetchInFlight = true;
 	try {
 		Object.assign(page48UnreadStore, await page48Api.getNotificationCounts());
+		lastUnreadFetch = Date.now();
 	} catch (error) {
 		logger.warn('Failed to refresh notification counts', error);
+	} finally {
+		unreadFetchInFlight = false;
 	}
 }

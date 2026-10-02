@@ -726,8 +726,49 @@ class Page48Repository:
         return counts
 
     # Notifications
-    async def insert_notification(self, notification: dict):
-        return await self.notifications.insert_one(notification)
+    async def upsert_notification(self, notification: dict, dedupe_key: Optional[str]):
+        """Insert a notification, or leave an existing one with the same key alone.
+
+        Toggleable actions (like/repost/follow) repeat all the time; the sparse
+        unique index on `dedupeKey` plus `$setOnInsert` keep exactly one row.
+        """
+        if not dedupe_key:
+            return await self.notifications.insert_one(notification)
+
+        return await self.notifications.update_one(
+            {"dedupeKey": dedupe_key},
+            {"$setOnInsert": {**notification, "dedupeKey": dedupe_key}},
+            upsert=True,
+        )
+
+    async def get_notification_post_previews(self, post_ids: List[str]) -> List[dict]:
+        """Only the fields a notification snippet shows, in one projection."""
+        if not post_ids:
+            return []
+        cursor = self.posts.find(
+            {"postId": {"$in": post_ids}},
+            {"_id": 0, "postId": 1, "content": 1, "createdAt": 1},
+        )
+        return await cursor.to_list(length=None)
+
+    async def prune_notifications(self, recipient_id: str, keep: int) -> None:
+        """Drop a recipient's oldest notifications once the cap is exceeded."""
+        total = await self.notifications.count_documents(
+            {"recipientUserId": recipient_id}
+        )
+        if total <= keep:
+            return
+
+        cursor = (
+            self.notifications.find({"recipientUserId": recipient_id}, {"_id": 1})
+            .sort([("createdAt", -1), ("notificationId", -1)])
+            .skip(keep)
+        )
+        stale = await cursor.to_list(length=None)
+        if stale:
+            await self.notifications.delete_many(
+                {"_id": {"$in": [row["_id"] for row in stale]}}
+            )
 
     async def get_notifications(
         self,

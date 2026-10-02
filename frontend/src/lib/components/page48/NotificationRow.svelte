@@ -1,7 +1,10 @@
 <script lang="ts">
-	import { AtSign, Heart, MessageCircle, Quote, Repeat2, UserPlus } from 'lucide-svelte';
-	import type { Page48Notification, Page48NotificationType } from '$lib/api/page48';
+	import type { Page48Notification } from '$lib/api/page48';
 	import UserHoverCard from '$lib/components/page48/UserHoverCard.svelte';
+	import {
+		NOTIFICATION_ACTION_KEYS,
+		NOTIFICATION_ICONS
+	} from '$lib/components/page48/notificationMeta';
 	import { formatPostTime, userUrl } from '$lib/utils/page48';
 	import { useTranslation } from '$lib/i18n/useTranslation';
 
@@ -13,24 +16,6 @@
 
 	const { t } = useTranslation();
 
-	const ICONS: Record<Page48NotificationType, typeof Heart> = {
-		like: Heart,
-		reply: MessageCircle,
-		repost: Repeat2,
-		quote: Quote,
-		mention: AtSign,
-		follow: UserPlus
-	};
-
-	const ACTION_KEYS: Record<Page48NotificationType, string> = {
-		like: 'page48.notifications.likedPost',
-		reply: 'page48.notifications.repliedPost',
-		repost: 'page48.notifications.repostedPost',
-		quote: 'page48.notifications.quotedPost',
-		mention: 'page48.notifications.mentionedYou',
-		follow: 'page48.notifications.followedYou'
-	};
-
 	let avatar = $derived(
 		notification.actor.profilePicture_small ||
 			notification.actor.profilePicture ||
@@ -39,8 +24,8 @@
 			)}&background=fca5a5&color=fff`
 	);
 
-	let action = $derived(ACTION_KEYS[notification.type]);
-	let Icon = $derived(ICONS[notification.type]);
+	let action = $derived(NOTIFICATION_ACTION_KEYS[notification.type]);
+	let Icon = $derived(NOTIFICATION_ICONS[notification.type]);
 	// A follow (and any post that has since been deleted) has no post to open.
 	let href = $derived(
 		notification.type === 'follow' || !notification.post

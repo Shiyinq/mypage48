@@ -53,8 +53,11 @@ from src.page48.schemas import (
     MarkNotificationsReadResponse,
     NotificationCountsResponse,
     NotificationItem,
+    NotificationOverviewResponse,
     NotificationPaginationMeta,
     NotificationPaginationResponse,
+    NotificationPostPreview,
+    NotificationTabSummary,
     Page48Image,
     Page48UserProfileResponse,
     Page48Video,
@@ -89,6 +92,12 @@ MAX_TAG_LENGTH = 50
 MENTION_PATTERN = re.compile(r"(?:^|[^\w@])@(\w{1,50})", re.UNICODE)
 MAX_MENTIONS = 10
 NOTIFICATION_LIMIT_DEFAULT = 20
+# How many notifications the overview shows per tab as a preview.
+NOTIFICATION_OVERVIEW_PREVIEW = 2
+# Protects a recipient from a viral post: only the newest ones are kept.
+NOTIFICATION_MAX_PER_USER = 500
+# These can be repeated by the same actor, so they carry a dedupe key.
+NOTIFICATION_DEDUPED_TYPES = {"like", "repost", "follow"}
 # Which notification types each tab shows. Quotes ride along with reposts,
 # exactly like the repost icon counts them.
 NOTIFICATION_TABS = {
@@ -498,8 +507,18 @@ class Page48Service:
         """
         if not recipient_user_id or recipient_user_id == actor_user_id:
             return
+
+        # Like, repost and follow can be repeated by the same actor, so they carry
+        # a key the sparse unique index uses to keep a single row.
+        dedupe_key = None
+        if notification_type in NOTIFICATION_DEDUPED_TYPES:
+            dedupe_key = (
+                f"{recipient_user_id}:{notification_type}:{post_id or ''}:"
+                f"{actor_user_id}"
+            )
+
         try:
-            await self.repository.insert_notification(
+            await self.repository.upsert_notification(
                 {
                     "notificationId": str(uuid.uuid4()),
                     "recipientUserId": recipient_user_id,
@@ -508,10 +527,34 @@ class Page48Service:
                     "postId": post_id,
                     "readAt": None,
                     "createdAt": datetime.now(timezone.utc),
-                }
+                },
+                dedupe_key,
             )
+            # Only the noisy types can pile up, so only they pay for the cap check.
+            if notification_type in NOTIFICATION_DEDUPED_TYPES:
+                await self.repository.prune_notifications(
+                    recipient_user_id, NOTIFICATION_MAX_PER_USER
+                )
+        except DuplicateKeyError:
+            # A concurrent action won the upsert; one row is all we want.
+            pass
         except Exception as error:
             logger.error(f"Failed to record notification: {str(error)}")
+
+    async def _queue_post_notifications(
+        self, post_data: dict, actor_user_id: str
+    ) -> None:
+        """Fan out a new post's notifications off the request path.
+
+        Looking up the mentioned users, the parent post and the quoted post would
+        otherwise all happen inside `POST /posts`.
+        """
+        if self.background_tasks:
+            self.background_tasks.add_task(
+                self._notify_post_created, post_data, actor_user_id
+            )
+        else:
+            await self._notify_post_created(post_data, actor_user_id)
 
     async def _notify_post_created(self, post_data: dict, actor_user_id: str) -> None:
         """Mention, reply and quote notifications for a freshly created post.
@@ -787,7 +830,7 @@ class Page48Service:
                 data, user, parent_post_id=data.parentPostId
             )
             await self.repository.insert_post(post_data)
-            await self._notify_post_created(post_data, user.userId)
+            await self._queue_post_notifications(post_data, user.userId)
 
             # Enrich and return (via the batch helper so a quote preview is
             # attached exactly like it is everywhere else).
@@ -831,7 +874,7 @@ class Page48Service:
                 )
                 # Insert as we go, so the next post can chain onto this one.
                 await self.repository.insert_post(post_data)
-                await self._notify_post_created(post_data, user.userId)
+                await self._queue_post_notifications(post_data, user.userId)
                 documents.append(post_data)
                 parent_post_id = post_data["postId"]
 
@@ -1048,7 +1091,7 @@ class Page48Service:
         limit: int = NOTIFICATION_LIMIT_DEFAULT,
         cursor: Optional[str] = None,
     ) -> NotificationPaginationResponse:
-        types = NOTIFICATION_TABS.get(tab, NOTIFICATION_TABS["all"])
+        types = None if tab == "all" else NOTIFICATION_TABS.get(tab)
         rows = await self.repository.get_notifications(
             current_user_id, limit + 1, self._parse_notification_cursor(cursor), types
         )
@@ -1063,7 +1106,7 @@ class Page48Service:
             next_cursor = f"{last['createdAt'].isoformat()}_{last['notificationId']}"
 
         return NotificationPaginationResponse(
-            data=await self._build_notifications(rows, current_user_id),
+            data=await self._build_notifications(rows),
             meta=NotificationPaginationMeta(
                 nextCursor=next_cursor, hasMore=has_more
             ),
@@ -1082,29 +1125,73 @@ class Page48Service:
                 counts[tab] += count
         return NotificationCountsResponse(total=sum(counts.values()), **counts)
 
+    async def get_notification_overview(
+        self, current_user_id: str
+    ) -> NotificationOverviewResponse:
+        """Counts plus the latest few notifications of every tab.
+
+        Each tab contributes at most `NOTIFICATION_OVERVIEW_PREVIEW` rows and all
+        of them are enriched in one batch, so the actors still cost a single query.
+        """
+        counts = await self.get_notification_counts(current_user_id)
+
+        rows: List[dict] = []
+        for tab in NOTIFICATION_TAB_KEYS:
+            rows.extend(
+                await self.repository.get_notifications(
+                    current_user_id,
+                    NOTIFICATION_OVERVIEW_PREVIEW,
+                    None,
+                    NOTIFICATION_TABS[tab],
+                )
+            )
+
+        items = await self._build_notifications(rows)
+        by_id = {item.notificationId: item for item in items}
+
+        tabs: List[NotificationTabSummary] = []
+        for tab in NOTIFICATION_TAB_KEYS:
+            previews = [
+                by_id[row["notificationId"]]
+                for row in rows
+                if row["notificationId"] in by_id
+                and NOTIFICATION_TYPE_TAB.get(row["type"]) == tab
+            ]
+            tabs.append(
+                NotificationTabSummary(
+                    tab=tab, count=getattr(counts, tab), previews=previews
+                )
+            )
+
+        return NotificationOverviewResponse(total=counts.total, tabs=tabs)
+
     async def mark_notifications_read(
         self, current_user_id: str, tab: str = "all"
     ) -> MarkNotificationsReadResponse:
         """Mark one tab (or everything) read; the badge follows the counts."""
-        types = NOTIFICATION_TABS.get(tab, NOTIFICATION_TABS["all"])
+        types = NOTIFICATION_TABS.get(tab) or NOTIFICATION_TABS["all"]
         count = await self.repository.mark_notifications_read(
             current_user_id, types, datetime.now(timezone.utc)
         )
         return MarkNotificationsReadResponse(count=count)
 
-    async def _build_notifications(
-        self, rows: List[dict], viewer_id: str
-    ) -> List[NotificationItem]:
-        """Resolve the actors and referenced posts of a page of notifications."""
+    async def _build_notifications(self, rows: List[dict]) -> List[NotificationItem]:
+        """Resolve the actors and post snippets of a page of notifications."""
         if not rows:
             return []
 
-        # Both sides are read live and in bulk: post previews through the usual
-        # enrichment, actors straight from the user documents.
+        # Actors come from the user documents; post snippets use a narrow
+        # projection, so no media URL is ever signed for a text preview.
         post_ids = list({row["postId"] for row in rows if row.get("postId")})
-        posts = await self.repository.get_posts_by_ids(post_ids) if post_ids else []
-        enriched = await self._enrich_posts(posts, viewer_id) if posts else []
-        post_map = {post.postId: post for post in enriched}
+        posts = await self.repository.get_notification_post_previews(post_ids)
+        post_map = {
+            post["postId"]: NotificationPostPreview(
+                postId=post["postId"],
+                content=post.get("content", ""),
+                createdAt=post["createdAt"],
+            )
+            for post in posts
+        }
 
         actor_ids = list({row["actorUserId"] for row in rows})
         actors = await self.user_repository.get_users_by_ids(actor_ids)
